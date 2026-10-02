@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.pyc
+*.db
+*.db-journal
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.env
+# Machinery of the agentic system; task documents under .agentic/tasks/ are versioned.
+.agentic/worktrees/
+.agentic/state.sqlite*
+.agentic/logs/
+.agentic/runs/
