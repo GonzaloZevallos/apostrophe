@@ -1,0 +1,135 @@
+/* apostrophe · tokens como variables CSS
+ *
+ * El tema sigue al sistema operativo (prefers-color-scheme) y se puede forzar
+ * con data-tema="claro" | "oscuro" en <html>.
+ *
+ * Los valores son los mismos de tokens.ts. Si cambiás uno, cambialo en los dos
+ * o generá este archivo desde variablesCss().
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  --papel: #fcfbf8;
+  --superficie: #f2eee6;
+  --tinta: #231e18;
+  --tinta2: #7a7065;
+  --tenue: #9a9085;
+  --linea: #ebe5da;
+
+  --acento: #1b4fa8;
+  --acento-suave: #e9edf7;
+
+  --deuda: #7a4a00;
+  --deuda-fondo: #f3e6cb;
+  --deuda2: #8a6530;
+  --deuda-linea: #e6d5b4;
+
+  --critico: #33281a;
+  --critico-texto: #f7efe0;
+
+  --boton: #231e18;
+  --boton-texto: #fcfbf8;
+  --nav-inactivo: #a79c8d;
+
+  /* Tipografía */
+  --fuente: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+
+  /* Espacio y radios */
+  --espacio-xs: 4px;
+  --espacio-sm: 8px;
+  --espacio-md: 12px;
+  --espacio-lg: 16px;
+  --espacio-xl: 20px;
+  --espacio-xxl: 24px;
+
+  --radio-campo: 16px;
+  --radio-panel: 20px;
+  --radio-panel-grande: 24px;
+  --radio-hoja: 28px;
+  --radio-pildora: 999px;
+
+  --margen-pantalla: 24px;
+  --alto-tocable: 44px;
+  --alto-boton: 56px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema='claro']) {
+    --papel: #10131a;
+    --superficie: #1a1f28;
+    --tinta: #e9edf2;
+    --tinta2: #8a93a1;
+    --tenue: #5e6872;
+    --linea: #262c36;
+
+    --acento: #8ab0ff;
+    --acento-suave: #1b2440;
+
+    --deuda: #edb05a;
+    --deuda-fondo: #2c2113;
+    --deuda2: #c08e4e;
+    --deuda-linea: #3a2c19;
+
+    --critico: #f5c77a;
+    --critico-texto: #231708;
+
+    --boton: #e9edf2;
+    --boton-texto: #10131a;
+    --nav-inactivo: #6e7a73;
+  }
+}
+
+:root[data-tema='oscuro'] {
+  --papel: #10131a;
+  --superficie: #1a1f28;
+  --tinta: #e9edf2;
+  --tinta2: #8a93a1;
+  --tenue: #5e6872;
+  --linea: #262c36;
+
+  --acento: #8ab0ff;
+  --acento-suave: #1b2440;
+
+  --deuda: #edb05a;
+  --deuda-fondo: #2c2113;
+  --deuda2: #c08e4e;
+  --deuda-linea: #3a2c19;
+
+  --critico: #f5c77a;
+  --critico-texto: #231708;
+
+  --boton: #e9edf2;
+  --boton-texto: #10131a;
+  --nav-inactivo: #6e7a73;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--papel);
+  color: var(--tinta);
+  font-family: var(--fuente);
+  /* Las cifras se alinean en columna en las listas. */
+  font-variant-numeric: tabular-nums;
+}
+
+/* Clases de texto — mismos valores que `texto` en tokens.ts */
+.cifra-xl { font-size: 54px; font-weight: 600; letter-spacing: -0.045em; line-height: 1.05 }
+.cifra-l  { font-size: 38px; font-weight: 600; letter-spacing: -0.04em;  line-height: 1.05 }
+.cifra-m  { font-size: 25px; font-weight: 600; letter-spacing: -0.035em; line-height: 1.1 }
+.cifra-s  { font-size: 17px; font-weight: 600 }
+.titulo   { font-size: 20px; font-weight: 600; letter-spacing: -0.02em }
+.cuerpo   { font-size: 16px; font-weight: 400; line-height: 1.5 }
+.rotulo   { font-size: 14px; font-weight: 400; color: var(--tinta2) }
+.pie      { font-size: 13px; font-weight: 400; color: var(--tinta2) }
+
+/* Una fila de lista: línea fina abajo, nunca tarjeta. */
+.fila {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+  padding: var(--espacio-md) 0;
+  border-bottom: 1px solid var(--linea);
+}
+.fila:last-child { border-bottom: 0 }
