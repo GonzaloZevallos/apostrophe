@@ -34,7 +34,11 @@ Success criteria:
   5. **List**: the list price.
 
   Rules 3 to 5 use the variety's current price on the sale's date. A VIP customer whose variety has no bulk price that day pays the list price. A line both marked as a gift and given a special price is refused. A line without a special price, whose variety has no current price that day, is refused.
-- **Total**: the sum of the line totals plus shipping charged.
+- **Line total**:
+  - For list, bulk and VIP lines: grams × the stored price per gram, rounded to the nearest whole peso, with exactly half rounding up. For example, 1.55 g × $10 001 = $15 501.55 → $15 502, and $7 502.50 → $7 503.
+  - A gift line is $0. A special price line is its typed total, so it needs no rounding.
+  - A line total never changes once the sale is recorded.
+- **Total**: the sum of the rounded line totals plus shipping charged. Lines are rounded one by one, never as a sum.
 - **Shipping charged**: whole pesos, zero or more, $0 by default. A negative value is refused.
 - **How it was paid**:
   - **Paid in full on the spot, by cash or transfer.** This records a payment for the full total, on the sale's date, with its method, in a form #4 counts as money received without migration.
@@ -71,9 +75,9 @@ Success criteria:
 
 ## Metrics
 
-- **Pricing matrix**: each rule, the order they apply in, bulk per line, VIP without a bulk price, no price that day with and without a special price, and gift plus special refused. 100% passing. (Criterion 3)
+- **Pricing matrix**: each rule, the order they apply in, bulk per line, VIP without a bulk price, no price that day with and without a special price, and gift plus special refused. It also covers rounding: below .50, exactly .50 and above .50, and a multi-line sale whose total is the sum of the rounded lines. 100% passing. (Criterion 3)
 - **Stored price immutability**: after a price entry is added or deleted, VIP is toggled, or a customer is assigned, existing lines' price, rule and total are unchanged. 100% passing. (Criterion 3)
-- **One sale per order**: a multi-variety sale is one sale, with total = lines + shipping once. (Criterion 2)
+- **One sale per order**: a multi-variety sale is one sale, with total = rounded lines + shipping once. (Criterion 2)
 - **Whole or nothing**: a refused sale leaves 0 new rows in sales, lines and payments. (Criterion 4)
 - **Owing without a customer**: 0 stored; the domain refuses it and a test covers it. (Criterion 4)
 - **Isolation coverage**: every sales route is in the sweep and answers 404 or empty from another business, including references to another business's customer or variety. (Criterion 5)
