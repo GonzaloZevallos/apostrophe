@@ -6,6 +6,7 @@ docs/adr/0004).
 never comes from the URL or the body: only from the session.
 """
 
+from collections.abc import Callable
 from typing import Annotated, NoReturn, cast
 
 from fastapi import Depends, HTTPException, Request, Security
@@ -13,6 +14,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
 from app.accounts.adapters.sql_accounts import SqlAccounts
+from app.accounts.application.ports import BusinessOpening
 from app.accounts.application.sign_in import SignedIn, open_session
 from app.accounts.domain.password import PasswordHasher
 from app.accounts.domain.session_token import SessionSigner
@@ -40,6 +42,14 @@ def get_public_url(request: Request) -> str:
 
 def get_accounts(session: Annotated[Session, Depends(get_session)]) -> SqlAccounts:
     return SqlAccounts(session)
+
+
+def get_business_opening(
+    request: Request, session: Annotated[Session, Depends(get_session)]
+) -> BusinessOpening:
+    # Starlette's `State` is untyped; `create_app` always assigns this factory.
+    factory = cast(Callable[[Session], BusinessOpening], request.app.state.business_opening)
+    return factory(session)
 
 
 def raise_unauthenticated() -> NoReturn:
