@@ -13,3 +13,15 @@ checks:
   tests: uv run --no-project pytest
   lint: uv run --no-project ruff check .
   types: uv run --no-project mypy app tests
+# What a Developer's Edit/Write may never add (CODING_STANDARDS.md, section 6).
+forbidden:
+  - pattern: '#\s*(type:\s*ignore|noqa)\b'
+    extensions: [.py, .pyi]
+    reason: >-
+      this silences mypy or ruff. CODING_STANDARDS.md section 6: fix the code instead;
+      nothing is silenced in this product.
+  - pattern: 'ignore_errors\s*=\s*true'
+    extensions: [.toml]
+    reason: >-
+      this switches mypy off for a module. CODING_STANDARDS.md section 6: every module
+      stays under strict mypy.
