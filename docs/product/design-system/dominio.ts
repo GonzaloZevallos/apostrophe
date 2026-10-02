@@ -81,7 +81,8 @@ export interface Cliente extends DelNegocio {
   id: Id;
   /** Obligatorio: es la clave con la que se busca. */
   telefono: string;
-  nombre: string | null;
+  /** Obligatorio: a quien se registra se lo conoce (Zeta, 02/10/2026). */
+  nombre: string;
   canal: Canal | null;
   vip: boolean;
   creadoEl: Date;

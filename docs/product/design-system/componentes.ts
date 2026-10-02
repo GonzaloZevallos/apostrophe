@@ -97,9 +97,9 @@ export interface SelectorClienteProps {
 }
 
 export interface NuevoCliente {
-  /** Lo único obligatorio. */
+  /** Los dos obligatorios. */
   telefono: string;
-  nombre?: string;
+  nombre: string;
   canal?: Canal;
   vip?: boolean;
 }
