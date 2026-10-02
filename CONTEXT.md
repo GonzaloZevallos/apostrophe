@@ -61,9 +61,9 @@ _In the app_: Cliente
 _Avoid_: client, buyer, contact, user
 
 **Phone number**:
-A customer's mobile number in international form. The same number typed with or without spaces, dashes, country code or the mobile 9 is the same number.
-_In the app_: Teléfono
+A customer's number in international form: an Argentine number always as a mobile (+54 9 and 10 digits with area code), a foreign one as + and its country code and digits. The same number typed with or without spaces, dashes, a leading 0, the 15, the country code or the mobile 9 is the same number.
 _Avoid_: contact, handle, username
+_In the app_: Teléfono
 
 **Channel**:
 Where a customer talks to the business: Telegram or WhatsApp.
@@ -180,3 +180,5 @@ _Avoid_: post, broadcast
 The catalog sent only to the user's own Telegram chat, to see how it looks before publishing.
 _In the app_: Enviarme una prueba
 _Avoid_: preview, draft
+
+## Language

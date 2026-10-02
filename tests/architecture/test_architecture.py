@@ -15,6 +15,7 @@ FIXTURES = Path(__file__).resolve().parent / "fixtures"
 HEXAGON_ROOTS = (
     REPO_ROOT / "app" / "accounts",
     REPO_ROOT / "app" / "varieties",
+    REPO_ROOT / "app" / "customers",
 )
 SHARED_KERNEL_MODULES = tuple(sorted((REPO_ROOT / "app" / "shared").glob("*.py")))
 
