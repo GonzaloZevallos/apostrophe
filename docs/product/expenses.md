@@ -93,6 +93,10 @@ Success criteria:
   - "Categoría", "Monto" and "Detalle" are marked required;
   - submit is blocked while the detail is blank;
   - the date comes filled with today.
+- **A category gone while the expense form is open** (a partner removed it):
+  - saving keeps the form open and everything typed;
+  - the category list refreshes and "Categoría" is left empty;
+  - the field shows "Esa categoría ya no está. Elegí otra."
 - **Deleting an expense**, from the expense reached in the monthly view:
   - it is confirmed with "Antes de borrar", naming the date, category and amount, e.g.
     "¿Borrás el gasto de $ 4.500 en Packaging del 28/09?";
@@ -101,6 +105,9 @@ Success criteria:
     month disappears.
 - **Categories**: add, rename and "Eliminar". A blocked removal shows the fixed refusal
   above.
+- **An expense or category that is gone** when it is saved, deleted or opened follows the
+  app's rule in `accounts.md`: "Eso ya no está." Opening one offers "Volver a Gastos" on
+  the current month.
 - **Toasts**: "Gasto guardado", "Gasto eliminado", "Categoría guardada" and "Categoría
   eliminada", with no amounts in them.
 - **Refusals** show inline and keep what was typed.

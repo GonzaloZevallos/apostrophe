@@ -3,7 +3,7 @@
 Businesses, their users, and the only ways in: an invitation and a login. Every other
 capability reads one thing from here, the business of the user asking, and serves that
 business alone (ADR-0004). It also holds the app as a whole: how it is served, installed
-and navigated, and the Negocio screen.
+and navigated, the feedback rules every screen follows, and the Negocio screen.
 
 ## Jobs
 
@@ -35,7 +35,9 @@ Success criteria:
 4. No `curl` at any point. From the phone alone, a seller can do everything the backend
    does, starting with opening or joining a business from the invitation link.
 5. It feels like a phone app.
-   - It installs with its own name and icon on Android and iOS.
+   - It sits on the home screen with its own name and icon. On iOS it installs over the
+     home network. On Android it is a home-screen shortcut there, and a full install once
+     the app is published with TLS.
    - It follows the phone's light or dark setting.
    - It says "Sin conexión" when the network drops.
    - No state is told by color alone (blue ↔ amber, never green ↔ red).
@@ -88,9 +90,17 @@ Success criteria:
   - Front routes are public static files, outside the API's route list.
 - **Installable, with no offline mode**:
   - a manifest with name, colors and icons for Android and iOS;
-  - a service worker that caches nothing;
-  - Android's own install prompt is offered when the browser makes it available;
-  - iOS uses "Agregar a inicio" with no walkthrough.
+  - a service worker that caches nothing.
+- **Install on the home network**, served over plain http (ADR-0002):
+  - iOS installs through "Agregar a inicio", with no walkthrough;
+  - Android gets a home-screen shortcut, since browsers allow a service worker and the
+    install prompt only on a secure origin;
+  - the app shows no banner or explanation of the difference.
+- **Install once published with TLS**: Android's own install prompt is offered when the
+  browser makes it available. The manifest and service worker already in place need no
+  further work for it.
+- **No network**: when a request fails because the network dropped, the open app shows
+  "Sin conexión" on any origin. This does not rely on the service worker.
 - **Theme**: light and dark follow the phone. The font is self-hosted.
 - **Language and formats**: every word on screen in Rioplatense Spanish with vos. Money
   `$ 11.000`, grams `3,5 g`, dates `dd/mm`.
@@ -113,12 +123,28 @@ Success criteria:
   - "Invitá a un socio": each tap creates one fresh join link, to copy or share with the
     phone's share sheet;
   - log out.
-- **Feedback**:
-  - **Success toasts** are short, fixed and carry no data and no "Deshacer". This
-    capability's: "Negocio renombrado", and "Invitación lista" unless the link is shown on
-    the screen.
-  - **Refusals** show inline and keep what was typed.
-  - **No network** shows "Sin conexión"; a server error shows a generic retry.
+
+### Feedback, on every screen
+
+- **Success toasts** are short, fixed and carry no data and no "Deshacer". This
+  capability's: "Negocio renombrado", and "Invitación lista" unless the link is shown on
+  the screen.
+- **Refusals** show inline and keep what was typed.
+- **No network** shows "Sin conexión"; a server error shows a generic retry.
+- **A record that is gone** answers 404 whether it was deleted, never existed or belongs to
+  another business (ADR-0004). The app never says who deleted it or that it once existed.
+  - **Saving an edit or confirming a delete** of a record that is gone:
+    - the form or dialog closes and what was typed is discarded;
+    - the list it came from refreshes;
+    - a fixed notice shows: "Eso ya no está. La lista ya está al día."
+  - The notice is not a success toast. It has no data, no "Deshacer" and no "Reintentar",
+    and it is announced like a toast.
+  - Confirming the delete of a record already gone gives the same notice, not the delete's
+    success toast.
+  - **Opening the detail of a record that is gone** (a variety, a customer or an expense)
+    shows "Eso ya no está." with one button back to its list: "Volver a Variedades",
+    "Volver a Clientes" or "Volver a Gastos" (the current month). It carries no id, name
+    or date.
 
 ## Metrics
 
@@ -129,9 +155,12 @@ Success criteria:
   - the business routes sit in the isolation sweep and the gated-route test;
   - serving tests prove no path reaches outside `web/dist`;
   - after a full run, browser storage and the console hold nothing personal or money;
-  - no front URL carries a business id.
+  - no front URL carries a business id;
+  - a record of another business, opened by id, shows the same "Eso ya no está." as a
+    deleted one.
 - **Phone app (criterion 5)**:
-  - the manifest passes the installability check;
+  - the manifest passes the browser's installability check, run on `localhost`;
+  - installing on a phone over the home network is not checked automatically;
   - both themes render from the tokens;
   - an offline check shows "Sin conexión";
   - no state is told by color alone.
@@ -146,6 +175,10 @@ Success criteria:
 - Listing past or pending invitations; revoking an invitation.
 - Exporting or deleting a business: part of publishing the app on the internet.
 - Roles within a business.
-- Offline use; an iOS install walkthrough.
+- Offline use; an install walkthrough on iOS or Android.
+- TLS on the home network, including local certificates: it comes with publishing the app
+  (ADR-0002), and with it the full Android install.
+- Live updates between partners: a list refreshes when it is opened or after a save, not
+  when the other partner changes something.
 - Ventas, Stock, "Nueva venta", Análisis and Catálogo entries: they come with their own
   tasks.
