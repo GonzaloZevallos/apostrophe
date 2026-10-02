@@ -56,7 +56,7 @@ def remove_category(
 
 
 def open_default_categories(categories: ExpenseCategories) -> None:
-    """Called once, when a business opens (docs/adr/0005). Never commits: the caller's
+    """Called once, when a business opens (docs/adr/0006). Never commits: the caller's
     own transaction covers it, together with the rest of what opening a business does."""
     for raw_name in DEFAULT_CATEGORY_NAMES:
         categories.add(ExpenseCategory(CategoryName.of(raw_name)))

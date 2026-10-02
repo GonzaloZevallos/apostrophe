@@ -47,6 +47,13 @@ def seed_varieties(client: TestClient) -> dict[str, int]:
     return {"variety_id": variety["id"], "entry_id": entry["id"]}
 
 
+def seed_customers(client: TestClient) -> dict[str, int]:
+    customer = client.post(
+        "/customers", json={"name": f"{MARKER} customer", "phone": "11 2345-6789"}
+    ).json()
+    return {"customer_id": customer["id"]}
+
+
 def seed_expenses(client: TestClient) -> dict[str, int]:
     category = client.post("/expense-categories", json={"name": f"{MARKER} category"})
     assert category.status_code == 201, category.text
@@ -64,7 +71,11 @@ def seed_expenses(client: TestClient) -> dict[str, int]:
     return {"category_id": category_id, "expense_id": expense.json()["id"]}
 
 
-SEEDERS: list[Callable[[TestClient], dict[str, int]]] = [seed_varieties, seed_expenses]
+SEEDERS: list[Callable[[TestClient], dict[str, int]]] = [
+    seed_varieties,
+    seed_customers,
+    seed_expenses,
+]
 
 BODIES: dict[tuple[str, str], dict[str, Any]] = {
     ("POST", "/varieties"): {"name": "Another variety"},
@@ -73,6 +84,8 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
         "effective_from": "2026-02-01",
         "list_price": 12_000,
     },
+    ("POST", "/customers"): {"name": "Another customer", "phone": "11 9876-5432"},
+    ("PATCH", "/customers/{customer_id}"): {"name": "Renamed"},
     ("POST", "/expense-categories"): {"name": "Another category"},
     ("PATCH", "/expense-categories/{category_id}"): {"name": "Renamed category"},
     ("POST", "/expenses"): {

@@ -1,4 +1,4 @@
-"""Implements accounts' `BusinessOpening` port (docs/adr/0005): a new business gets the
+"""Implements accounts' `BusinessOpening` port (docs/adr/0006): a new business gets the
 four default categories, inside the same transaction that opens it. Accounts never
 imports this module; `app/main.py` is the composition root that wires it in."""
 

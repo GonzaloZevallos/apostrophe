@@ -7,7 +7,7 @@ from app.accounts.domain.login_guard import LoginGuard
 
 class BusinessOpening(Protocol):
     """What a business needs set up for it beyond its own accounts rows, when it opens
-    (docs/adr/0005). Accounts declares this port and never imports who implements it;
+    (docs/adr/0006). Accounts declares this port and never imports who implements it;
     `app/main.py` wires the real one in, and `accept_invitation` calls it before its
     single commit."""
 

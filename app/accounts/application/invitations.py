@@ -84,7 +84,7 @@ def accept_invitation(
     any business name: the business is the one that invited.
 
     `opening` sets up whatever a brand-new business needs beyond its own accounts rows
-    (docs/adr/0005); it is called only on the new-business branch, before the single
+    (docs/adr/0006); it is called only on the new-business branch, before the single
     commit, so it lands in the same transaction or not at all."""
     invitation = _usable(accounts, token, now)
     email = Email.of(raw_email)

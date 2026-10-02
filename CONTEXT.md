@@ -61,12 +61,12 @@ _In the app_: Cliente
 _Avoid_: client, buyer, contact, user
 
 **Phone number**:
-A customer's mobile number in international form. The same number typed with or without spaces, dashes, country code or the mobile 9 is the same number.
-_In the app_: Teléfono
+A customer's number in international form: an Argentine number always as a mobile (+54 9 and 10 digits with area code), a foreign one as + and its country code and digits. The same number typed with or without spaces, dashes, a leading 0, the 15, the country code or the mobile 9 is the same number.
 _Avoid_: contact, handle, username
+_In the app_: Teléfono
 
 **Channel**:
-Where a customer talks to the business: Telegram or WhatsApp.
+Where a customer talks to the business: Telegram or WhatsApp. A customer may have neither, and then has no channel.
 _In the app_: Canal
 _Avoid_: platform, app, source
 
@@ -76,9 +76,14 @@ _In the app_: Cliente VIP
 _Avoid_: friend, Amigo, preferred customer
 
 **Sale**:
-Everything a customer takes in one go: a date, at most one customer, the shipping charged, and one or more sale lines. A sale counts on its own date, paid or not. Its customer may be left out only when nothing stays owed.
+Everything a customer takes in one go: a date, at most one customer, the shipping charged, an optional note, and one or more sale lines. A sale counts on its own date, paid or not. Its customer may be left out only when nothing stays owed.
 _In the app_: Venta
 _Avoid_: order, transaction, purchase (that is flower coming in)
+
+**Sale without a customer**:
+A sale paid in full on the spot to someone not registered as a customer, often a buyer who may never come back. It counts in every total and in no customer's history. A customer can be assigned to it later, once; it never moves from one customer to another.
+_In the app_: Sin cliente
+_Avoid_: anonymous sale, walk-in, guest, consumidor final
 
 **Sale line**:
 One variety and its grams within a sale, with the price per gram it was sold at. The bulk minimum is measured per line, never across the sale.
@@ -99,6 +104,11 @@ _Avoid_: override, custom price, discount
 What the customer pays for delivery, added on top of what they bought.
 _In the app_: Envío cobrado
 _Avoid_: delivery fee, shipping cost (that is an expense)
+
+**Note**:
+Free text on a sale to remember what the rest does not say, such as who bought it when there is no customer.
+_In the app_: Nota
+_Avoid_: comment, description, memo
 
 **Payment**:
 Money a customer hands over on a date, in cash or by transfer.
