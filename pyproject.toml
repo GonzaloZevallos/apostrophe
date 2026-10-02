@@ -1,0 +1,45 @@
+[project]
+name = "apostrophe"
+version = "0.1.0"
+description = "Back office for a small business that sells flower by the gram"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "sqlalchemy>=2.0",
+    "alembic>=1.13",
+    "pydantic>=2.11",
+    "tzdata",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "httpx2",
+    "ruff",
+    "mypy",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+# No build system: uv treats the project as virtual and never installs it, so `app` is
+# imported from the checkout root. That keeps every worktree testing its own code.
+pythonpath = ["."]
+
+[tool.uv]
+required-version = ">=0.12.13,<0.13"
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+warn_unused_configs = true
+# Inputs to the architecture checker, parsed with `ast` and never imported.
+exclude = ["^tests/architecture/fixtures/"]

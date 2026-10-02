@@ -1,0 +1,106 @@
+"""The rules of a variety and its price history, with no infrastructure."""
+
+from datetime import date
+
+import pytest
+
+from app.shared.grams import Grams
+from app.varieties.domain.variety import (
+    DuplicateEffectiveDate,
+    InvalidName,
+    InvalidPriceEntry,
+    PriceEntry,
+    UnknownPriceEntry,
+    Variety,
+    VarietyName,
+)
+
+
+def test_a_name_is_trimmed_and_its_inner_spaces_collapsed() -> None:
+    name = VarietyName.of("  24K   Gold ")
+
+    assert name.value == "24K Gold"
+    assert name.key == VarietyName.of("24k gold").key
+
+
+@pytest.mark.parametrize("raw", ["", "   ", "x" * 61])
+def test_a_name_must_be_present_and_short(raw: str) -> None:
+    with pytest.raises(InvalidName):
+        VarietyName.of(raw)
+
+
+def test_a_price_entry_needs_a_positive_list_price() -> None:
+    with pytest.raises(InvalidPriceEntry):
+        PriceEntry.of(date(2026, 1, 1), 0)
+
+
+@pytest.mark.parametrize(
+    ("bulk_price", "bulk_minimum"),
+    [(10_000, None), (None, Grams.of(10))],
+)
+def test_a_bulk_price_and_a_bulk_minimum_go_together(
+    bulk_price: int | None, bulk_minimum: Grams | None
+) -> None:
+    with pytest.raises(InvalidPriceEntry):
+        PriceEntry.of(date(2026, 1, 1), 11_000, bulk_price, bulk_minimum)
+
+
+@pytest.mark.parametrize(
+    ("bulk_price", "bulk_minimum"),
+    [(11_000, Grams.of(10)), (12_000, Grams.of(10)), (0, Grams.of(10)), (10_000, Grams(0))],
+)
+def test_a_bulk_price_is_positive_and_lower_than_the_list_price_from_some_grams(
+    bulk_price: int, bulk_minimum: Grams
+) -> None:
+    with pytest.raises(InvalidPriceEntry):
+        PriceEntry.of(date(2026, 1, 1), 11_000, bulk_price, bulk_minimum)
+
+
+def _gold() -> Variety:
+    variety = Variety(VarietyName.of("24K Gold"))
+    variety.record_price(PriceEntry.of(date(2026, 1, 1), 11_000, 10_000, Grams.of(10), id=1))
+    variety.record_price(PriceEntry.of(date(2026, 3, 1), 12_000, id=2))
+    return variety
+
+
+@pytest.mark.parametrize(
+    ("on", "expected_list_price"),
+    [
+        (date(2025, 12, 31), None),
+        (date(2026, 1, 1), 11_000),
+        (date(2026, 2, 28), 11_000),
+        (date(2026, 3, 1), 12_000),
+        (date(2027, 1, 1), 12_000),
+    ],
+)
+def test_the_current_price_is_the_latest_entry_effective_on_or_before_the_day(
+    on: date, expected_list_price: int | None
+) -> None:
+    price = _gold().current_price(on)
+
+    assert (price.list_price if price else None) == expected_list_price
+
+
+def test_a_variety_has_one_price_entry_per_effective_date() -> None:
+    with pytest.raises(DuplicateEffectiveDate):
+        _gold().record_price(PriceEntry.of(date(2026, 3, 1), 13_000))
+
+
+def test_a_deleted_entry_stops_being_the_current_price() -> None:
+    variety = _gold()
+
+    variety.delete_price(2)
+
+    price = variety.current_price(date(2026, 6, 1))
+    assert price is not None and price.list_price == 11_000
+
+
+def test_deleting_an_entry_the_variety_does_not_have_is_refused() -> None:
+    with pytest.raises(UnknownPriceEntry):
+        _gold().delete_price(99)
+
+
+def test_the_price_history_lists_the_newest_entry_first() -> None:
+    history = _gold().price_history()
+
+    assert [e.effective_from for e in history] == [date(2026, 3, 1), date(2026, 1, 1)]

@@ -1,0 +1,15 @@
+# What this product is built and checked with, and what it is called (agentic-system,
+# ADR-0016 and ADR-0011, third addendum). `setup` prepares every checkout the system
+# creates; `checks` run when a Developer delivers and when a reviewer reproduces an
+# objection. Commands run from the checkout root, the same ones the README documents.
+#
+# `setup` gives each worktree its own environment: without it `uv run --no-project`
+# climbs to the root `.venv` and a subtask would test another branch's code.
+product: apostrophe
+setup:
+  venv: uv venv --python 3.13
+  deps: uv sync --locked --extra dev
+checks:
+  tests: uv run --no-project pytest
+  lint: uv run --no-project ruff check .
+  types: uv run --no-project mypy app tests
