@@ -1,4 +1,4 @@
-"""A calendar month in Argentina time (CONTEXT.md: Monthly view).
+"""A calendar month in Argentina time (docs/product/expenses.md: Monthly view).
 
 This is the only code in the app that parses `?month=` or computes a month's
 boundaries; the repository query and the front both go through it.
@@ -27,11 +27,20 @@ class Month:
 
     @classmethod
     def of(cls, raw: str) -> Month:
-        """Parses `YYYY-MM` strictly: four digits, a dash, then `01`-`12`."""
+        """Parses `YYYY-MM` strictly: four digits, a dash, then `01`-`12`. The regex
+        alone lets through years `date` cannot hold at either boundary (`0000`, or
+        `9999` in December, whose next first day would be year 10000); both boundaries
+        are checked here so a bad month is refused (422), never a 500."""
         match = _PATTERN.match(raw)
         if match is None:
             raise InvalidMonth()
-        return cls(int(match.group(1)), int(match.group(2)))
+        month = cls(int(match.group(1)), int(match.group(2)))
+        try:
+            _ = month.first_day
+            _ = month.next_first_day
+        except ValueError:
+            raise InvalidMonth() from None
+        return month
 
     @classmethod
     def containing(cls, day: date) -> Month:

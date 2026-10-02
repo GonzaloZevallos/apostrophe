@@ -1,4 +1,4 @@
-"""The monthly view (CONTEXT.md: Monthly view): a month's total, broken down by
+"""The monthly view (docs/product/expenses.md: Monthly view): a month's total, broken down by
 category, each with its subtotal and the expenses filed under it.
 
 The total and every subtotal are summed here, from the expenses the repository

@@ -14,7 +14,10 @@ def test_a_well_formed_month_is_parsed() -> None:
     assert month == Month(2026, 10)
 
 
-@pytest.mark.parametrize("raw", ["2026-13", "2026-00", "2026-1", "26-10", "2026/10", "", "nope"])
+@pytest.mark.parametrize(
+    "raw",
+    ["2026-13", "2026-00", "2026-1", "26-10", "2026/10", "", "nope", "0000-01", "9999-12"],
+)
 def test_a_malformed_month_is_refused(raw: str) -> None:
     with pytest.raises(InvalidMonth, match="YYYY-MM"):
         Month.of(raw)
