@@ -9,8 +9,9 @@ from sqlalchemy import MetaData
 
 from app.accounts.adapters import tables as accounts_tables
 from app.db import Base
+from app.expenses.adapters import tables as expenses_tables
 from app.varieties.adapters import tables as varieties_tables
 
-TABLE_MODULES = (accounts_tables, varieties_tables)
+TABLE_MODULES = (accounts_tables, varieties_tables, expenses_tables)
 
 metadata: MetaData = Base.metadata
