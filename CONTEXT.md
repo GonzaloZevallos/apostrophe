@@ -96,9 +96,9 @@ _In the app_: Regalo
 _Avoid_: sample, freebie, promo
 
 **Special price**:
-A total typed by hand that replaces the computed one.
-_In the app_: Precio especial
+A whole-peso total above $0, typed by hand for one sale line, that replaces the computed one. A free line is a gift, never a $0 special price.
 _Avoid_: override, custom price, discount
+_In the app_: Precio especial
 
 **Shipping charged**:
 What the customer pays for delivery, added on top of what they bought.
@@ -190,3 +190,9 @@ _Avoid_: post, broadcast
 The catalog sent only to the user's own Telegram chat, to see how it looks before publishing.
 _In the app_: Enviarme una prueba
 _Avoid_: preview, draft
+
+## Language
+
+**Pricing rule**:
+Which rule priced a sale line: list, bulk, VIP, gift or special price. Exactly one per line, stored with its price when the sale is recorded and never recomputed.
+_Avoid_: type, price type, Amigo
