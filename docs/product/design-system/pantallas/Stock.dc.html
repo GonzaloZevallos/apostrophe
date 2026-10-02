@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Stock por variedad</title>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body { margin: 0 }
+a { color: #1B4FA8 } a:hover { color: #231E18 }
+</style>
+</helmet>
+
+<div style="width: 390px; height: 980px; box-sizing: border-box; background: #FCFBF8; color: #231E18; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden">
+  <div style="padding: 24px 24px 0; display: flex; align-items: center; gap: 12px"><span style="flex: 1; font-size: 20px; font-weight: 600; letter-spacing: -0.02em">Stock</span><span style="font-size: 15px; color: #7A7065">82,5 g en total</span></div>
+  <div style="padding: 20px 24px 0; display: flex; flex-direction: column">
+    <div style="display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid #EBE5DA;">
+      <span style="width: 11px; height: 11px; border-radius: 3px; background: #33281A"></span>
+      <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 17px; font-weight: 600">Sir Jack</span>
+        <span style="font-size: 13px; color: #7A7065">Sin gramos desde el 30/09</span>
+      </span>
+      <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px">
+        <span style="font-size: 20px; font-weight: 600; letter-spacing: -0.03em">0 g</span><span style="font-size: 12px; font-weight: 600; background: #33281A; color: #F7EFE0; padding: 3px 9px; border-radius: 999px">agotada</span>
+      </span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid #EBE5DA;">
+      <span style="width: 11px; height: 11px; border-radius: 999px; background: #7A4A00"></span>
+      <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 17px; font-weight: 600">Golden Cookies</span>
+        <span style="font-size: 13px; color: #7A7065">Avisás abajo de 20 g</span>
+      </span>
+      <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px">
+        <span style="font-size: 20px; font-weight: 600; letter-spacing: -0.03em">18,5 g</span><span style="font-size: 12px; font-weight: 600; background: #F3E6CB; color: #7A4A00; padding: 3px 9px; border-radius: 999px">6 días</span>
+      </span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid #EBE5DA;">
+      <span style="width: 11px; height: 11px; border-radius: 999px; border: 2px solid #7A7065; box-sizing: border-box"></span>
+      <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 17px; font-weight: 600">24K Gold</span>
+        <span style="font-size: 13px; color: #7A7065">Al ritmo de los últimos 30 días</span>
+      </span>
+      <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px">
+        <span style="font-size: 20px; font-weight: 600; letter-spacing: -0.03em">64 g</span><span style="font-size: 13px; color: #7A7065">21 días</span>
+      </span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px; padding: 14px 0;">
+      <span style="width: 11px; height: 11px; border-radius: 999px; border: 2px solid #7A7065; box-sizing: border-box"></span>
+      <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 17px; font-weight: 600">Mango Bomb</span>
+        <span style="font-size: 13px; color: #7A7065">Cargale la primera entrada</span>
+      </span>
+      <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px">
+        <span style="font-size: 20px; font-weight: 600; letter-spacing: -0.03em">—</span><span style="font-size: 13px; color: #7A7065">sin entradas</span>
+      </span>
+    </div>
+  </div>
+  <div style="padding: 18px 24px 0"><a href="EntradaStock.dc.html" style="display: flex; align-items: center; justify-content: center; gap: 9px; height: 52px; border-radius: 999px; background: #F2EEE6; color: #231E18; text-decoration: none; font-size: 16px; font-weight: 600"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>Nueva entrada</a></div>
+  <div style="padding: 18px 24px 6px; font-size: 14px; color: #7A7065">Entradas · costo por gramo</div>
+  <div style="padding: 0 24px; display: flex; flex-direction: column">
+    <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #EBE5DA;">
+      <span style="width: 42px; font-size: 13px; color: #7A7065">28/09</span>
+      <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 16px; font-weight: 500">24K Gold · 50 g</span>
+        <span style="font-size: 13px; color: #7A7065">Compra · $ 325.000</span>
+      </span>
+      <span style="font-size: 16px; font-weight: 600">$ 6.500</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #EBE5DA;">
+      <span style="width: 42px; font-size: 13px; color: #7A7065">20/09</span>
+      <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 16px; font-weight: 500">Golden Cookies · 30 g</span>
+        <span style="font-size: 13px; color: #7A7065">Cosecha · sin costo cargado</span>
+      </span>
+      <span style="font-size: 16px; font-weight: 600">—</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #EBE5DA;">
+      <span style="width: 42px; font-size: 13px; color: #7A7065">12/09</span>
+      <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 16px; font-weight: 500">Sir Jack · 25 g</span>
+        <span style="font-size: 13px; color: #7A7065">Compra · $ 212.500</span>
+      </span>
+      <span style="font-size: 16px; font-weight: 600">$ 8.500</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0;">
+      <span style="width: 42px; font-size: 13px; color: #7A7065">01/09</span>
+      <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 16px; font-weight: 500">24K Gold · 40 g</span>
+        <span style="font-size: 13px; color: #7A7065">Stock inicial · $ 272.000</span>
+      </span>
+      <span style="font-size: 16px; font-weight: 600">$ 6.800</span>
+    </div>
+  </div>
+  <div style="margin-top: auto; padding: 16px 24px 0"><a href="NuevaVenta.dc.html" style="display: flex; align-items: center; justify-content: center; gap: 9px; height: 56px; border-radius: 999px; background: #231E18; color: #FCFBF8; text-decoration: none; font-size: 17px; font-weight: 600"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>Nueva venta</a></div>
+  <nav style="display: flex; padding: 14px 16px 20px">
+    <a href="Inicio.dc.html" style="flex: 1; min-height: 44px; display: flex; flex-direction: column; align-items: center; gap: 5px; text-decoration: none; color: #A79C8D"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.6 12 3.4l9 7.2"/><path d="M5.4 9.6V20h13.2V9.6"/></svg><span style="font-size: 11px; ">Inicio</span></a>
+    <a href="Ventas.dc.html" style="flex: 1; min-height: 44px; display: flex; flex-direction: column; align-items: center; gap: 5px; text-decoration: none; color: #A79C8D"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9.5 8.5h5"/><path d="M9.5 12.5h5"/></svg><span style="font-size: 11px; ">Ventas</span></a>
+    <a href="Clientes.dc.html" style="flex: 1; min-height: 44px; display: flex; flex-direction: column; align-items: center; gap: 5px; text-decoration: none; color: #A79C8D"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19.5c0-3 2.5-5.2 5.5-5.2s5.5 2.2 5.5 5.2"/><path d="M16 6.4a3 3 0 0 1 0 5.4"/></svg><span style="font-size: 11px; ">Clientes</span></a>
+    <a href="Stock.dc.html" style="flex: 1; min-height: 44px; display: flex; flex-direction: column; align-items: center; gap: 5px; text-decoration: none; color: #231E18"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5 12 4l8 4.5v7L12 20l-8-4.5z"/><path d="M4 8.5 12 13l8-4.5"/><path d="M12 13v7"/></svg><span style="font-size: 11px; font-weight: 600; ">Stock</span></a>
+    <a href="Mas.dc.html" style="flex: 1; min-height: 44px; display: flex; flex-direction: column; align-items: center; gap: 5px; text-decoration: none; color: #A79C8D"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="none" aria-hidden="true"><circle cx="5" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="19" cy="12" r="1.5" fill="currentColor"/></svg><span style="font-size: 11px; ">Más</span></a>
+  </nav>
+
+</div>
+</x-dc>
+</body>
+</html>
