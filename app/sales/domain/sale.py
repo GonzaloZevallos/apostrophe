@@ -94,6 +94,14 @@ class SaleLine:
     line_total: int
     id: int | None = None
 
+    def __post_init__(self) -> None:
+        # These never fail from `Sale.record` (`price_line` already enforces them);
+        # they guard the persistence adapter, which rebuilds a `SaleLine` straight
+        # from a stored row with no pricing pass in between.
+        assert self.grams.is_positive, "a sale line always has grams above zero"
+        assert self.price_per_gram >= 0, "a sale line's price per gram is never negative"
+        assert self.line_total >= 0, "a sale line's total is never negative"
+
 
 @dataclass(frozen=True)
 class OnTheSpotPayment:
@@ -105,6 +113,9 @@ class OnTheSpotPayment:
     method: PaymentMethod
     customer_id: int | None
     id: int | None = None
+
+    def __post_init__(self) -> None:
+        assert self.amount > 0, "an on-the-spot payment is always for a positive amount"
 
 
 @dataclass(frozen=True)
@@ -118,6 +129,10 @@ class LineRequest:
     quote: PriceQuote | None
     gift: bool = False
     special_price: int | None = None
+
+    # No `__post_init__` here: a non-positive `grams` (and the other pricing rules)
+    # must still reach `price_line` via `Sale.record` and come back as the matching
+    # `SaleRuleBroken` (422), never as an `AssertionError` raised at construction.
 
 
 @dataclass

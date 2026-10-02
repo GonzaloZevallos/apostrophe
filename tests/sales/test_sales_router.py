@@ -6,7 +6,11 @@ and persistence: status codes, the response shape, and the refusal order for
 assigning a customer (404 sale, then 422 customer, then 409 already assigned)."""
 
 from fastapi.testclient import TestClient
+from sqlalchemy import func, select
+from sqlalchemy.engine import Engine
+from sqlalchemy.orm import Session
 
+from app.sales.adapters.tables import PaymentRow, SaleLineRow, SaleRow
 from tests.conftest import TODAY
 
 
@@ -17,6 +21,30 @@ def _variety(client: TestClient, list_price: int = 10_000) -> int:
         json={"effective_from": "2026-01-01", "list_price": list_price},
     )
     return int(variety["id"])
+
+
+def _variety_with_bulk(
+    client: TestClient, list_price: int = 10_000, bulk_price: int = 8_000, bulk_minimum: str = "50"
+) -> int:
+    variety = client.post("/varieties", json={"name": "Lavanda"}).json()
+    client.post(
+        f"/varieties/{variety['id']}/prices",
+        json={
+            "effective_from": "2026-01-01",
+            "list_price": list_price,
+            "bulk_price": bulk_price,
+            "bulk_minimum": bulk_minimum,
+        },
+    )
+    return int(variety["id"])
+
+
+def _row_counts(engine: Engine) -> tuple[int, int, int]:
+    with Session(engine) as session:
+        sales = session.scalar(select(func.count()).select_from(SaleRow)) or 0
+        lines = session.scalar(select(func.count()).select_from(SaleLineRow)) or 0
+        payments = session.scalar(select(func.count()).select_from(PaymentRow)) or 0
+        return sales, lines, payments
 
 
 def _customer(client: TestClient) -> int:
@@ -290,7 +318,10 @@ def test_list_sales_with_an_inverted_range_answers_an_empty_list(client: TestCli
 
 
 def test_assigning_a_vip_customer_later_does_not_reprice_the_sale(client: TestClient) -> None:
-    variety_id = _variety(client, list_price=10_000)
+    # The variety carries a bulk price, so a repricing bug would visibly change the
+    # line's rule (list -> vip) and its price_per_gram; grams stay below the bulk
+    # minimum so the sale is recorded at list.
+    variety_id = _variety_with_bulk(client, list_price=10_000, bulk_price=8_000, bulk_minimum="50")
     customer_id = _customer(client)
 
     sale_id = client.post(
@@ -299,6 +330,7 @@ def test_assigning_a_vip_customer_later_does_not_reprice_the_sale(client: TestCl
     ).json()["id"]
     before = client.get(f"/sales/{sale_id}").json()
     assert before["lines"][0]["pricing_rule"] == "list"
+    assert before["lines"][0]["price_per_gram"] == 10_000
 
     client.patch(f"/customers/{customer_id}", json={"vip": True})
     response = client.put(f"/sales/{sale_id}/customer", json={"customer_id": customer_id})
@@ -307,3 +339,81 @@ def test_assigning_a_vip_customer_later_does_not_reprice_the_sale(client: TestCl
     assert response.json()["lines"][0]["pricing_rule"] == "list"
     assert response.json()["lines"][0]["price_per_gram"] == before["lines"][0]["price_per_gram"]
     assert response.json()["total"] == before["total"]
+
+
+def test_toggling_a_customers_vip_after_the_sale_does_not_reprice_it(client: TestClient) -> None:
+    variety_id = _variety_with_bulk(client, list_price=10_000, bulk_price=8_000, bulk_minimum="50")
+    customer_id = _customer(client)
+    sale_id = client.post(
+        "/sales",
+        json={
+            "payment": "cash",
+            "customer_id": customer_id,
+            "lines": [{"variety_id": variety_id, "grams": "5"}],
+        },
+    ).json()["id"]
+    before = client.get(f"/sales/{sale_id}").json()
+    assert before["lines"][0]["pricing_rule"] == "list"
+    assert before["lines"][0]["price_per_gram"] == 10_000
+
+    client.patch(f"/customers/{customer_id}", json={"vip": True})
+
+    after = client.get(f"/sales/{sale_id}").json()
+    assert after == before
+
+
+def test_adding_a_price_entry_after_the_sale_does_not_reprice_it(client: TestClient) -> None:
+    variety_id = _variety_with_bulk(client, list_price=10_000, bulk_price=8_000, bulk_minimum="50")
+    sale_id = client.post(
+        "/sales",
+        json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": "5"}]},
+    ).json()["id"]
+    before = client.get(f"/sales/{sale_id}").json()
+
+    # Effective on the sale's date, so it would become the sale's "current price"
+    # if `SqlSales.get` ever repriced from the `PriceBook` instead of the stored row.
+    added = client.post(
+        f"/varieties/{variety_id}/prices",
+        json={
+            "effective_from": TODAY.isoformat(),
+            "list_price": 99_000,
+            "bulk_price": 88_000,
+            "bulk_minimum": "1",
+        },
+    )
+    assert added.status_code == 201, added.text
+
+    after = client.get(f"/sales/{sale_id}").json()
+    assert after == before
+
+
+def test_deleting_a_price_entry_after_the_sale_does_not_reprice_it(client: TestClient) -> None:
+    variety_id = _variety_with_bulk(client, list_price=10_000, bulk_price=8_000, bulk_minimum="50")
+    sale_id = client.post(
+        "/sales",
+        json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": "5"}]},
+    ).json()["id"]
+    before = client.get(f"/sales/{sale_id}").json()
+
+    history = client.get(f"/varieties/{variety_id}/prices").json()
+    entry_id = history[0]["id"]
+    deleted = client.delete(f"/varieties/{variety_id}/prices/{entry_id}")
+    assert deleted.status_code == 204
+
+    after = client.get(f"/sales/{sale_id}").json()
+    assert after == before
+
+
+def test_a_refused_sale_leaves_no_rows_in_sale_line_or_payment(
+    client: TestClient, engine: Engine
+) -> None:
+    variety_id = _variety(client)
+    before = _row_counts(engine)
+
+    response = client.post(
+        "/sales",
+        json={"payment": "owing", "lines": [{"variety_id": variety_id, "grams": "10"}]},
+    )
+
+    assert response.status_code == 422, response.text
+    assert _row_counts(engine) == before

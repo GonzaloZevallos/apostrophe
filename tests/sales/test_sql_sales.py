@@ -213,6 +213,54 @@ def test_assign_customer_a_second_time_is_refused_and_never_replaces_the_first(
     assert fetched.customer_id == first_customer_id
 
 
+def test_assign_customer_from_another_business_does_not_touch_the_sale(
+    client: TestClient, other_client: TestClient, engine: Engine
+) -> None:
+    variety_id = _variety_id(client)
+    business_id = _business_id_of_variety(engine, variety_id)
+    sales = SqlSales(Session(engine), business_id)
+    sale_id = sales.add(_sale(variety_id=variety_id, customer_id=None)).id
+    assert sale_id is not None
+
+    other_variety_id = _variety_id(other_client)
+    other_business_id = _business_id_of_variety(engine, other_variety_id)
+    other_customer_id = _customer_id(other_client)
+    other_sales = SqlSales(Session(engine), other_business_id)
+
+    try:
+        other_sales.assign_customer(sale_id, other_customer_id)
+    except CustomerAlreadyAssigned:
+        pass
+    else:
+        raise AssertionError("expected CustomerAlreadyAssigned: the sale is not this business's")
+
+    fetched = sales.get(sale_id)
+    assert fetched is not None
+    assert fetched.customer_id is None
+    assert fetched.payment is not None
+    assert fetched.payment.customer_id is None
+
+
+def test_delete_from_another_business_does_not_remove_the_sale(
+    client: TestClient, other_client: TestClient, engine: Engine
+) -> None:
+    variety_id = _variety_id(client)
+    business_id = _business_id_of_variety(engine, variety_id)
+    sales = SqlSales(Session(engine), business_id)
+    sale_id = sales.add(_sale(variety_id=variety_id)).id
+    assert sale_id is not None
+
+    other_variety_id = _variety_id(other_client)
+    other_business_id = _business_id_of_variety(engine, other_variety_id)
+    other_sales = SqlSales(Session(engine), other_business_id)
+
+    other_sales.delete(sale_id)
+
+    fetched = sales.get(sale_id)
+    assert fetched is not None
+    assert len(fetched.lines) == 1
+
+
 def test_delete_removes_the_sale_its_lines_and_its_payment(
     client: TestClient, engine: Engine
 ) -> None:

@@ -28,11 +28,13 @@ from app.sales.domain.sale import (
     NegativeShipping,
     NoLines,
     NoteTooLong,
+    OnTheSpotPayment,
     OwingWithoutCustomer,
     PaymentMethod,
     PaymentRequired,
     Sale,
     SaleDateInFuture,
+    SaleLine,
 )
 from app.shared.grams import Grams
 
@@ -309,6 +311,24 @@ def test_every_aggregate_refusal_message_carries_no_input_value() -> None:
             action()
         assert issubclass(exc_type, SaleRuleBroken)
         assert not any(c.isdigit() for c in str(excinfo.value))
+
+
+def test_sale_line_rejects_a_negative_line_total() -> None:
+    # The persistence adapter rebuilds a `SaleLine` straight from a stored row, with
+    # no pricing pass in between; `__post_init__` is what would catch a corrupt row.
+    with pytest.raises(AssertionError):
+        SaleLine(
+            variety_id=1,
+            grams=ONE_GRAM,
+            pricing_rule=PricingRule.LIST,
+            price_per_gram=1_000,
+            line_total=-1,
+        )
+
+
+def test_on_the_spot_payment_rejects_a_non_positive_amount() -> None:
+    with pytest.raises(AssertionError):
+        OnTheSpotPayment(paid_on=TODAY, amount=0, method=PaymentMethod.CASH, customer_id=None)
 
 
 def test_note_too_long_names_the_fixed_limit_never_the_submitted_note() -> None:
