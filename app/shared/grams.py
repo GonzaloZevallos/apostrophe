@@ -9,12 +9,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
+from typing import ClassVar
 
 HUNDREDTHS_PER_GRAM = 100
 
 
 class InvalidGrams(ValueError):
-    pass
+    code: ClassVar[str] = "grams.invalid"
 
 
 @dataclass(frozen=True, order=True)

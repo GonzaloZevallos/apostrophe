@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Response
@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.accounts.adapters.deps import (
     SESSION_COOKIE,
+    CurrentBusinessId,
     CurrentSession,
     get_accounts,
     get_business_opening,
@@ -16,7 +17,7 @@ from app.accounts.adapters.deps import (
     raise_unauthenticated,
 )
 from app.accounts.adapters.sql_accounts import SqlAccounts
-from app.accounts.application import invitations
+from app.accounts.application import invitations, manage_business
 from app.accounts.application.invitations import EmailTaken
 from app.accounts.application.ports import BusinessOpening
 from app.accounts.application.sign_in import LoginLocked, log_in
@@ -24,7 +25,7 @@ from app.accounts.domain.account import AccountRuleBroken
 from app.accounts.domain.invitation import InvitationKind, InvitationNotUsable
 from app.accounts.domain.password import PasswordHasher
 from app.accounts.domain.session_token import SESSION_LIFETIME, SessionSigner
-from app.clock import Clock, get_clock
+from app.clock import Clock, get_clock, get_today
 from app.db import get_session
 from app.http_errors import TranslateErrors
 
@@ -37,6 +38,7 @@ SessionDep = Annotated[Session, Depends(get_session)]
 HasherDep = Annotated[PasswordHasher, Depends(get_hasher)]
 SignerDep = Annotated[SessionSigner, Depends(get_signer)]
 ClockDep = Annotated[Clock, Depends(get_clock)]
+TodayDep = Annotated[date, Depends(get_today)]
 
 as_http = TranslateErrors(
     [
@@ -60,6 +62,22 @@ class SessionOut(BaseModel):
 class MeOut(BaseModel):
     email: str
     business_name: str
+    # The business day (America/Argentina/Buenos_Aires): the front's one clock. It
+    # never builds "today" from a `Date` of its own (docs/adr/0001).
+    today: date
+
+
+class UserOut(BaseModel):
+    email: str
+
+
+class BusinessOut(BaseModel):
+    name: str
+    users: list[UserOut]
+
+
+class BusinessPatchIn(BaseModel):
+    name: str
 
 
 class InvitationOut(BaseModel):
@@ -157,8 +175,30 @@ def accept_invitation(
 
 
 @router.get("/auth/me")
-def me(signed_in: CurrentSession) -> MeOut:
-    return MeOut(email=signed_in.user.email.value, business_name=signed_in.business.name.value)
+def me(signed_in: CurrentSession, today: TodayDep) -> MeOut:
+    return MeOut(
+        email=signed_in.user.email.value,
+        business_name=signed_in.business.name.value,
+        today=today,
+    )
+
+
+@router.get("/business")
+def get_business(business_id: CurrentBusinessId, accounts: AccountsDep) -> BusinessOut:
+    profile = manage_business.business_profile(accounts, business_id)
+    return BusinessOut(name=profile.name, users=[UserOut(email=e) for e in profile.user_emails])
+
+
+@router.patch("/business")
+def rename_business(
+    body: BusinessPatchIn,
+    business_id: CurrentBusinessId,
+    accounts: AccountsDep,
+    session: SessionDep,
+) -> BusinessOut:
+    with as_http:
+        profile = manage_business.rename_business(accounts, session, business_id, body.name)
+    return BusinessOut(name=profile.name, users=[UserOut(email=e) for e in profile.user_emails])
 
 
 @router.post("/invitations", status_code=201)

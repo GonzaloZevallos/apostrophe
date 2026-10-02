@@ -142,7 +142,10 @@ def test_removing_a_category_with_a_filed_expense_is_refused_until_it_has_none(
     refused = client.delete(f"/expense-categories/{category['id']}")
 
     assert refused.status_code == 409
-    assert refused.json() == {"detail": "the category still has expenses and cannot be removed"}
+    assert refused.json() == {
+        "detail": "the category still has expenses and cannot be removed",
+        "code": "expense_category.in_use",
+    }
     assert "Fletes" not in refused.text
 
     with Session(engine) as session:

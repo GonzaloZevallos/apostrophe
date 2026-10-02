@@ -21,8 +21,10 @@ from app.customers.adapters.router import router as customers_router
 from app.db import make_engine
 from app.expenses.adapters.default_categories import ExpenseCategoriesOpening
 from app.expenses.adapters.router import router as expenses_router
+from app.http_errors import Refused
 from app.migrations.runner import upgrade_to_head
 from app.settings import Settings
+from app.static_spa import MissingBuiltFront, SpaStatic, api_segments
 from app.varieties.adapters.router import router as varieties_router
 
 
@@ -35,7 +37,15 @@ async def _without_request_data(request: Request, exc: Exception) -> JSONRespons
         {"loc": list(error["loc"]), "type": error["type"], "msg": error["msg"]}
         for error in exc.errors()
     ]
-    return JSONResponse(status_code=422, content={"detail": detail})
+    return JSONResponse(status_code=422, content={"detail": detail, "code": "RequestInvalid"})
+
+
+async def _refused(request: Request, exc: Exception) -> JSONResponse:
+    # Every `Refused` already carries the broken rule's `code` (docs/adr/0007); the
+    # front maps it, never `detail`.
+    assert isinstance(exc, Refused)
+    content = {"detail": exc.detail, "code": exc.code}
+    return JSONResponse(status_code=exc.status_code, content=content)
 
 
 @asynccontextmanager
@@ -59,6 +69,7 @@ def create_app(
     app.state.hasher = hasher or PasswordHasher()
     app.state.public_url = settings.public_url
     app.add_exception_handler(RequestValidationError, _without_request_data)
+    app.add_exception_handler(Refused, _refused)
     # A factory, not an instance: `get_business_opening` builds it over the request's
     # own `Session`. The next capability that seeds at opening turns this into a
     # composite, not a second keyword argument on `accept_invitation` (docs/adr/0006).
@@ -76,4 +87,12 @@ def create_app(
     app.include_router(varieties_router, dependencies=gated)
     app.include_router(customers_router, dependencies=gated)
     app.include_router(expenses_router, dependencies=gated)
+
+    if settings.web_dist is not None:
+        if not (settings.web_dist / "index.html").is_file():
+            raise MissingBuiltFront(settings.web_dist)
+        # Last: a `Mount` is only ever reached once no API route has matched, and it
+        # adds no entry to `app.openapi()["paths"]`.
+        segments = api_segments(app.openapi()["paths"])
+        app.mount("/", SpaStatic(settings.web_dist, segments))
     return app

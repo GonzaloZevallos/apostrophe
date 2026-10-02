@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import ClassVar
 
 BUSINESS_NAME_MAX_LENGTH = 60
 EMAIL_MAX_LENGTH = 254
@@ -12,17 +13,19 @@ MIN_PASSWORD_LENGTH = 10
 class AccountRuleBroken(ValueError):
     """A rule of businesses and users was broken; the message says which."""
 
+    code: ClassVar[str] = "account.rule_broken"
+
 
 class InvalidEmail(AccountRuleBroken):
-    pass
+    code: ClassVar[str] = "account.email_invalid"
 
 
 class InvalidBusinessName(AccountRuleBroken):
-    pass
+    code: ClassVar[str] = "account.business_name_invalid"
 
 
 class WeakPassword(AccountRuleBroken):
-    pass
+    code: ClassVar[str] = "account.password_weak"
 
 
 @dataclass(frozen=True)
@@ -42,7 +45,9 @@ class Email:
             or self.value != self.value.lower()
             or len(self.value) > EMAIL_MAX_LENGTH
         ):
-            raise InvalidEmail(f"{self.value!r} is not an email address")
+            # No address in the message (docs/adr/0007; CODING_STANDARDS §9): an email
+            # never reaches a log or an error body.
+            raise InvalidEmail("that is not an email address")
 
     @classmethod
     def of(cls, raw: str) -> Email:

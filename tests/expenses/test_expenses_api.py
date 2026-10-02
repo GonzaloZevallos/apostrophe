@@ -239,3 +239,19 @@ def test_editing_with_another_businesss_category_id_is_not_found(
     assert stored["amount"] == expense["amount"]
     assert stored["detail"] == expense["detail"]
     assert stored["category_id"] == expense["category_id"]
+
+
+def test_refusal_bodies_carry_the_rule_s_code(client: TestClient) -> None:
+    """One behaviour test per code family of this capability (docs/adr/0007)."""
+    response = client.post(
+        "/expenses",
+        json={
+            "spent_on": TODAY,
+            "category_id": _category_id(client),
+            "amount": 0,
+            "detail": "algo",
+        },
+    )
+
+    assert response.status_code == 422
+    assert response.json()["code"] == "expense.amount_invalid"

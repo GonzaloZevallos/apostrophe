@@ -9,6 +9,7 @@ category, computed by the repository at the moment of the call.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import ClassVar
 
 from app.shared.names import NameProblem, collapse_spaces, name_key, name_problem
 
@@ -22,12 +23,16 @@ DEFAULT_CATEGORY_NAMES = ("Insumos de cultivo", "Packaging", "Envíos y traslado
 class ExpenseRuleBroken(ValueError):
     """A rule of expenses or their categories was broken; the message says which."""
 
+    code: ClassVar[str] = "expense.rule_broken"
+
 
 class InvalidCategoryName(ExpenseRuleBroken):
-    pass
+    code: ClassVar[str] = "expense_category.name_invalid"
 
 
 class CategoryNotFound(LookupError):
+    code: ClassVar[str] = "expense_category.not_found"
+
     def __init__(self, category_id: int) -> None:
         super().__init__(f"no category {category_id}")
 
@@ -35,12 +40,16 @@ class CategoryNotFound(LookupError):
 class CategoryNameTaken(ValueError):
     """Not an `ExpenseRuleBroken`: it answers 409, not 422."""
 
+    code: ClassVar[str] = "expense_category.name_taken"
+
     def __init__(self) -> None:
         super().__init__("another category of the business already has that name")
 
 
 class CategoryInUse(ValueError):
     """Not an `ExpenseRuleBroken`: it answers 409, not 422."""
+
+    code: ClassVar[str] = "expense_category.in_use"
 
     def __init__(self) -> None:
         super().__init__("the category still has expenses and cannot be removed")

@@ -23,7 +23,11 @@ def test_a_new_business_invitation_opens_a_business_and_signs_its_user_in(
     assert accepted.status_code == 201
     assert SESSION_COOKIE in accepted.cookies
     me = anonymous_client.get("/auth/me").json()
-    assert me == {"email": "nueva@example.com", "business_name": "La Huerta"}
+    assert me == {
+        "email": "nueva@example.com",
+        "business_name": "La Huerta",
+        "today": "2026-10-02",
+    }
 
 
 def test_an_invitation_works_once(
@@ -178,3 +182,65 @@ def test_logging_out_drops_the_cookie(
 
 def test_health_answers_without_a_session(anonymous_client: TestClient) -> None:
     assert anonymous_client.get("/health").json() == {"status": "ok"}
+
+
+def test_refusal_bodies_carry_the_rule_s_code(
+    anonymous_client: TestClient,
+    client: TestClient,
+    engine: Engine,
+    clock: MovableClock,
+) -> None:
+    """One behaviour test per code family of this capability (docs/adr/0007): the
+    front dispatches on `code`, never on `detail`."""
+    not_usable = anonymous_client.post("/invitations/nope/accept", json=NEW_USER)
+    assert not_usable.status_code == 404
+    assert not_usable.json()["code"] == "account.invitation_not_usable"
+
+    token = invite(engine, clock())
+    taken = {**NEW_USER, "email": "UNO@example.com"}
+    email_taken = anonymous_client.post(f"/invitations/{token}/accept", json=taken)
+    assert email_taken.status_code == 409
+    assert email_taken.json()["code"] == "account.email_taken"
+
+    for _ in range(5):
+        anonymous_client.post(
+            "/auth/login", json={"email": "uno@example.com", "password": "wrong password"}
+        )
+    locked = anonymous_client.post(
+        "/auth/login", json={"email": "uno@example.com", "password": PASSWORD}
+    )
+    assert locked.status_code == 429
+    assert locked.json()["code"] == "account.login_locked"
+
+
+def test_get_business_shows_its_name_and_its_users_sorted_by_email(
+    client: TestClient, other_client: TestClient
+) -> None:
+    client.post("/invitations")
+
+    business = client.get("/business")
+
+    assert business.status_code == 200
+    assert business.json() == {"name": "Primer Negocio", "users": [{"email": "uno@example.com"}]}
+    # The business comes only from the session: another business's own call answers
+    # its own business, never business `client`'s (CODING_STANDARDS §9).
+    assert other_client.get("/business").json()["name"] == "Otro Negocio"
+
+
+def test_patch_business_renames_only_the_caller_s_own_business(
+    client: TestClient, other_client: TestClient
+) -> None:
+    renamed = client.patch("/business", json={"name": "La Huerta Nueva"})
+
+    assert renamed.status_code == 200
+    assert renamed.json()["name"] == "La Huerta Nueva"
+    assert client.get("/auth/me").json()["business_name"] == "La Huerta Nueva"
+    # Unaffected: the business comes from the session, never the request.
+    assert other_client.get("/business").json()["name"] == "Otro Negocio"
+
+
+def test_patch_business_refuses_a_blank_name(client: TestClient) -> None:
+    refused = client.patch("/business", json={"name": "   "})
+
+    assert refused.status_code == 422
+    assert refused.json()["code"] == "account.business_name_invalid"

@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
+from typing import ClassVar
 
 from app.accounts.application.ports import Accounts
 from app.accounts.domain.account import Business, Email, InvalidEmail, User
@@ -9,6 +10,8 @@ from app.shared.transaction import Transaction
 
 
 class LoginLocked(Exception):
+    code: ClassVar[str] = "account.login_locked"
+
     def __init__(self) -> None:
         super().__init__("too many failed attempts; try again in a few minutes")
 

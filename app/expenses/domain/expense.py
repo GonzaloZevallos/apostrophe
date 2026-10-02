@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date, datetime
+from typing import ClassVar
 
 from app.expenses.domain.category import ExpenseRuleBroken
 
@@ -19,18 +20,20 @@ DETAIL_MAX_LENGTH = 200
 
 
 class InvalidExpenseDate(ExpenseRuleBroken):
-    pass
+    code: ClassVar[str] = "expense.date_invalid"
 
 
 class InvalidAmount(ExpenseRuleBroken):
-    pass
+    code: ClassVar[str] = "expense.amount_invalid"
 
 
 class InvalidDetail(ExpenseRuleBroken):
-    pass
+    code: ClassVar[str] = "expense.detail_invalid"
 
 
 class ExpenseNotFound(LookupError):
+    code: ClassVar[str] = "expense.not_found"
+
     def __init__(self, expense_id: int) -> None:
         super().__init__(f"no expense {expense_id}")
 

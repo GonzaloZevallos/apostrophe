@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date
+from typing import ClassVar
 
 from app.shared.grams import Grams
 from app.shared.names import NameProblem, collapse_spaces, name_key, name_problem
@@ -18,21 +19,23 @@ NAME_MAX_LENGTH = 60
 class VarietyRuleBroken(ValueError):
     """A rule of varieties and their prices was broken; the message says which."""
 
+    code: ClassVar[str] = "variety.rule_broken"
+
 
 class InvalidName(VarietyRuleBroken):
-    pass
+    code: ClassVar[str] = "variety.name_invalid"
 
 
 class InvalidPriceEntry(VarietyRuleBroken):
-    pass
+    code: ClassVar[str] = "variety.price_entry_invalid"
 
 
 class DuplicateEffectiveDate(VarietyRuleBroken):
-    pass
+    code: ClassVar[str] = "variety.duplicate_effective_date"
 
 
 class UnknownPriceEntry(VarietyRuleBroken):
-    pass
+    code: ClassVar[str] = "variety.price_entry_not_found"
 
 
 @dataclass(frozen=True)

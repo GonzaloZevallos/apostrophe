@@ -178,3 +178,23 @@ def test_a_deleted_entry_leaves_the_history_and_the_previous_price_rules_again(
     assert client.get(f"/varieties/{variety_id}").json()["current_price"]["list_price"] == 11_000
     again = client.delete(f"/varieties/{variety_id}/prices/{mistake['id']}")
     assert again.status_code == 404
+
+
+def test_refusal_bodies_carry_the_rule_s_code(client: TestClient) -> None:
+    """One behaviour test per code family of this capability (docs/adr/0007)."""
+    bad_name = client.post("/varieties", json={"name": ""})
+    assert bad_name.status_code == 422
+    assert bad_name.json()["code"] == "variety.name_invalid"
+
+    variety_id = _register(client)["id"]
+    bad_grams = client.post(
+        f"/varieties/{variety_id}/prices",
+        json={
+            "effective_from": "2026-01-01",
+            "list_price": 11_000,
+            "bulk_price": 10_000,
+            "bulk_minimum": "3.555",
+        },
+    )
+    assert bad_grams.status_code == 422
+    assert bad_grams.json()["code"] == "grams.invalid"
