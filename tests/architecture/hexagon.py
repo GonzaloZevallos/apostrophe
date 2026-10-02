@@ -63,7 +63,7 @@ def scan_hexagon(root: Path, other_hexagons: frozenset[str] = frozenset()) -> Sc
         *(
             Violation(module, imported, "domain-and-application-import-no-other-hexagon")
             for module in (*domain_modules, *application_modules)
-            for imported in imports_of(module)
+            for imported in full_imports_of(module)
             if any(_within(imported, other) for other in other_hexagons)
         ),
     )
@@ -81,6 +81,25 @@ def imports_of(module: Path) -> Iterator[str]:
                     yield node.module
             else:
                 yield _resolve_relative(module, node)
+
+
+def full_imports_of(module: Path) -> Iterator[str]:
+    """Every name a statement in `module` binds, with a `from X import name` or its
+    relative equivalent resolved to `X.name` rather than the bare `X`.
+
+    `imports_of` stops at the bare module for `from app import varieties`, because the
+    other rules only ever check a module's own dotted name against an allow-list of
+    packages. The no-other-hexagon rule needs the imported name too, so `from app
+    import varieties` and `from ... import varieties` (written where `...` reaches
+    `app`) are both seen as reaching `app.varieties`, not the harmless-looking `app`.
+    """
+    tree = ast.parse(module.read_text(), filename=str(module))
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            yield from (alias.name for alias in node.names)
+        elif isinstance(node, ast.ImportFrom):
+            base = node.module if node.level == 0 else _resolve_relative(module, node)
+            yield from (f"{base}.{alias.name}" for alias in node.names)
 
 
 def is_stdlib(module_name: str) -> bool:

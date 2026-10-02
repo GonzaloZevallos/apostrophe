@@ -18,18 +18,33 @@ HEXAGON_ROOTS = (
 )
 ALL_HEXAGON_NAMES = frozenset(dotted(root) for root in HEXAGON_ROOTS)
 SHARED_KERNEL_MODULES = tuple(sorted((REPO_ROOT / "app" / "shared").glob("*.py")))
+# Stands in for a sibling hexagon that `relative_cross_hexagon.py` reaches with dots
+# alone (`from ... import sibling_hexagon`), the way `app/accounts/application` would
+# reach `app.varieties` with the same number of dots. No such package needs to exist:
+# the checker only parses import statements, it never imports them.
+FIXTURE_SIBLING_HEXAGON = "tests.architecture.fixtures.sibling_hexagon"
 
 
 def test_the_checker_reports_the_deliberate_violations() -> None:
     # Proven negative: the checker must be seen to fail before it is trusted to pass.
-    result = scan_hexagon(FIXTURES / "bad_hexagon", other_hexagons=ALL_HEXAGON_NAMES)
+    other_hexagons = ALL_HEXAGON_NAMES | {FIXTURE_SIBLING_HEXAGON}
+
+    result = scan_hexagon(FIXTURES / "bad_hexagon", other_hexagons=other_hexagons)
 
     assert sorted((v.imported, v.rule) for v in result.violations) == [
-        ("app.varieties.domain.variety", "domain-and-application-import-no-other-hexagon"),
+        ("app.varieties", "domain-and-application-import-no-other-hexagon"),
+        (
+            "app.varieties.domain.variety.Variety",
+            "domain-and-application-import-no-other-hexagon",
+        ),
         ("sqlalchemy.orm", "domain-imports-stdlib-and-shared-only"),
         (
             "tests.architecture.fixtures.bad_hexagon.adapters",
             "application-imports-no-framework-or-adapter",
+        ),
+        (
+            "tests.architecture.fixtures.sibling_hexagon",
+            "domain-and-application-import-no-other-hexagon",
         ),
     ]
 
