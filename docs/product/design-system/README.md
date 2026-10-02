@@ -5,6 +5,9 @@ color, los formatos, los tipos del dominio y las reglas de precio. El diseño
 visual completo (28 pantallas, celular y compu) vive en un lienzo aparte:
 <https://claude.ai/code/artifact/297ea685-fd7e-4fd2-b22b-4d402df4220c>
 
+Las pantallas, como HTML estático para leer sin el lienzo, están en
+[`pantallas/`](pantallas/): abrí cualquiera en el navegador.
+
 | Archivo | Qué es |
 | --- | --- |
 | `tokens.ts` | Paleta clara y oscura, escala tipográfica, espacios, radios, medidas. |

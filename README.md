@@ -13,7 +13,7 @@ arrives as issues labelled `agentic` and leaves as pull requests.
 
 ## Run it
 
-Needs [uv](https://docs.astral.sh/uv/) 0.12.
+Needs [uv](https://docs.astral.sh/uv/) 0.12, and Node 24 for the front in `web/`.
 
 ```sh
 cp .env.example .env          # then set APOSTROPHE_SECRET_KEY
@@ -49,8 +49,15 @@ uv run --no-project ruff check .
 uv run --no-project mypy app tests
 ```
 
-The same three commands run in CI and are what the agentic system runs
-(`.agentic/stack.yaml`). The guards worth knowing before adding a route or a table:
+The front, from `web/` (`npm ci` first):
+
+```sh
+npm --prefix web run typecheck
+npm --prefix web run lint
+npm --prefix web test
+```
+
+All of them run in CI and are what the agentic system runs (`.agentic/stack.yaml`). The guards worth knowing before adding a route or a table:
 
 - `tests/test_gated_routes.py`: every route answers 401 without a session.
 - `tests/test_business_isolation.py`: no route reaches another business's records.
