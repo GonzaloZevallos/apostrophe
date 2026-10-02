@@ -155,6 +155,15 @@ def test_clearing_the_phone_with_null_is_refused(client: TestClient) -> None:
     assert response.json()["detail"] == "phone cannot be cleared"
 
 
+def test_clearing_vip_with_null_is_refused(client: TestClient) -> None:
+    customer = _register(client, vip=True)
+
+    response = client.patch(f"/customers/{customer['id']}", json={"vip": None})
+
+    assert response.status_code == 422
+    assert response.json()["detail"] == "vip cannot be cleared"
+
+
 def test_sending_a_customers_own_number_back_on_edit_is_not_a_conflict(
     client: TestClient,
 ) -> None:
