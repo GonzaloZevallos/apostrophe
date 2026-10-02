@@ -36,7 +36,14 @@ def seed_varieties(client: TestClient) -> dict[str, int]:
     return {"variety_id": variety["id"], "entry_id": entry["id"]}
 
 
-SEEDERS: list[Callable[[TestClient], dict[str, int]]] = [seed_varieties]
+def seed_customers(client: TestClient) -> dict[str, int]:
+    customer = client.post(
+        "/customers", json={"name": f"{MARKER} customer", "phone": "11 2345-6789"}
+    ).json()
+    return {"customer_id": customer["id"]}
+
+
+SEEDERS: list[Callable[[TestClient], dict[str, int]]] = [seed_varieties, seed_customers]
 
 BODIES: dict[tuple[str, str], dict[str, Any]] = {
     ("POST", "/varieties"): {"name": "Another variety"},
@@ -45,6 +52,8 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
         "effective_from": "2026-02-01",
         "list_price": 12_000,
     },
+    ("POST", "/customers"): {"name": "Another customer", "phone": "11 9876-5432"},
+    ("PATCH", "/customers/{customer_id}"): {"name": "Renamed"},
 }
 
 PUBLIC_PATHS = {"/health", "/auth/login", "/auth/logout"}

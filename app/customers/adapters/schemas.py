@@ -1,0 +1,64 @@
+"""The HTTP shapes of a customer. Bare: no pydantic length or pattern constraint, so
+every rule stays the domain's and its message is a fixed string (ADR-0005). `PATCH` is
+partial: `model_fields_set` is how `CustomerPatchIn` tells a field left out from a field
+explicitly sent as `null`, which is only allowed for `channel`."""
+
+from typing import Literal
+
+from pydantic import BaseModel
+
+from app.customers.application.errors import RequiredFieldCleared
+from app.customers.application.manage_customers import UNCHANGED, CustomerChanges, Unchanged
+from app.customers.domain.customer import Channel, Customer
+
+
+class CustomerIn(BaseModel):
+    name: str
+    phone: str
+    channel: Channel | None = None
+    vip: bool = False
+
+
+class CustomerPatchIn(BaseModel):
+    name: str | None = None
+    phone: str | None = None
+    channel: Channel | None = None
+    vip: bool | None = None
+
+    def to_changes(self) -> CustomerChanges:
+        present = self.model_fields_set
+        return CustomerChanges(
+            name=_required(self.name, "name" in present, "name"),
+            phone=_required(self.phone, "phone" in present, "phone"),
+            channel=self.channel if "channel" in present else UNCHANGED,
+            vip=_required(self.vip, "vip" in present, "vip"),
+        )
+
+
+class CustomerOut(BaseModel):
+    id: int
+    name: str
+    phone: str
+    channel: Channel | None
+    vip: bool
+
+    @classmethod
+    def of(cls, customer: Customer) -> "CustomerOut":
+        assert customer.id is not None, "only stored customers go out"
+        return cls(
+            id=customer.id,
+            name=customer.name.value,
+            phone=customer.phone.value,
+            channel=customer.channel,
+            vip=customer.vip,
+        )
+
+
+def _required[T](
+    value: T | None, present: bool, field: Literal["name", "phone", "vip"]
+) -> T | Unchanged:
+    if not present:
+        return UNCHANGED
+    if value is None:
+        raise RequiredFieldCleared(field)
+    return value

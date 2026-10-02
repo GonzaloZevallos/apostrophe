@@ -8,4 +8,4 @@ if [ -f .env ]; then
   set +a
 fi
 exec uv run --no-project uvicorn app.main:create_app --factory \
-  --host 0.0.0.0 --port "${APOSTROPHE_PORT:-8000}"
+  --host 0.0.0.0 --port "${APOSTROPHE_PORT:-8000}" --no-access-log

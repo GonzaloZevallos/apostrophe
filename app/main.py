@@ -6,7 +6,9 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from typing import cast
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from sqlalchemy.engine import Engine
 
 from app.accounts.adapters.deps import require_session
@@ -15,10 +17,23 @@ from app.accounts.adapters.router import router as accounts_router
 from app.accounts.domain.password import PasswordHasher
 from app.accounts.domain.session_token import SessionSigner
 from app.clock import Clock, system_clock
+from app.customers.adapters.router import router as customers_router
 from app.db import make_engine
 from app.migrations.runner import upgrade_to_head
 from app.settings import Settings
 from app.varieties.adapters.router import router as varieties_router
+
+
+async def _without_request_data(request: Request, exc: Exception) -> JSONResponse:
+    # The default 422 body echoes each error's `input` (and sometimes `ctx`, `url`),
+    # which for a customer can be a phone number or a name (ADR-0005). This answers
+    # with only `loc`, `type` and `msg`.
+    assert isinstance(exc, RequestValidationError)
+    detail = [
+        {"loc": list(error["loc"]), "type": error["type"], "msg": error["msg"]}
+        for error in exc.errors()
+    ]
+    return JSONResponse(status_code=422, content={"detail": detail})
 
 
 @asynccontextmanager
@@ -41,6 +56,7 @@ def create_app(
     app.state.signer = SessionSigner(settings.secret_key)
     app.state.hasher = hasher or PasswordHasher()
     app.state.public_url = settings.public_url
+    app.add_exception_handler(RequestValidationError, _without_request_data)
 
     @app.get("/health", tags=["health"])
     def health() -> dict[str, str]:
@@ -52,4 +68,5 @@ def create_app(
     gated = [Depends(require_session)]
     app.include_router(accounts_router, dependencies=gated)
     app.include_router(varieties_router, dependencies=gated)
+    app.include_router(customers_router, dependencies=gated)
     return app
