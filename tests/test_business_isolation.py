@@ -50,7 +50,18 @@ def seed_varieties(client: TestClient) -> dict[str, int]:
 def seed_expenses(client: TestClient) -> dict[str, int]:
     category = client.post("/expense-categories", json={"name": f"{MARKER} category"})
     assert category.status_code == 201, category.text
-    return {"category_id": category.json()["id"]}
+    category_id = category.json()["id"]
+    expense = client.post(
+        "/expenses",
+        json={
+            "spent_on": "2026-10-02",
+            "category_id": category_id,
+            "amount": 1_000,
+            "detail": f"{MARKER} detail",
+        },
+    )
+    assert expense.status_code == 201, expense.text
+    return {"category_id": category_id, "expense_id": expense.json()["id"]}
 
 
 SEEDERS: list[Callable[[TestClient], dict[str, int]]] = [seed_varieties, seed_expenses]
@@ -64,6 +75,18 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
     },
     ("POST", "/expense-categories"): {"name": "Another category"},
     ("PATCH", "/expense-categories/{category_id}"): {"name": "Renamed category"},
+    ("POST", "/expenses"): {
+        "spent_on": "2026-10-02",
+        "category_id": 1,
+        "amount": 500,
+        "detail": "another expense",
+    },
+    ("PUT", "/expenses/{expense_id}"): {
+        "spent_on": "2026-10-02",
+        "category_id": 1,
+        "amount": 999,
+        "detail": "edited expense",
+    },
 }
 
 PUBLIC_PATHS = {"/health", "/auth/login", "/auth/logout"}

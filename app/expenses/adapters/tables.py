@@ -7,8 +7,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base, UtcDateTime
 from app.expenses.domain.category import NAME_MAX_LENGTH
-
-DETAIL_MAX_LENGTH = 200
+from app.expenses.domain.expense import DETAIL_MAX_LENGTH
 
 
 class ExpenseCategoryRow(Base):
