@@ -20,6 +20,7 @@ from app.clock import Clock, system_clock
 from app.customers.adapters.router import router as customers_router
 from app.db import make_engine
 from app.migrations.runner import upgrade_to_head
+from app.sales.adapters.router import router as sales_router
 from app.settings import Settings
 from app.varieties.adapters.router import router as varieties_router
 
@@ -69,4 +70,5 @@ def create_app(
     app.include_router(accounts_router, dependencies=gated)
     app.include_router(varieties_router, dependencies=gated)
     app.include_router(customers_router, dependencies=gated)
+    app.include_router(sales_router, dependencies=gated)
     return app

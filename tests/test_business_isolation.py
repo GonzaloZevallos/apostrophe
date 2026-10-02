@@ -43,7 +43,39 @@ def seed_customers(client: TestClient) -> dict[str, int]:
     return {"customer_id": customer["id"]}
 
 
-SEEDERS: list[Callable[[TestClient], dict[str, int]]] = [seed_varieties, seed_customers]
+def seed_sales(client: TestClient) -> dict[str, int]:
+    variety = client.post("/varieties", json={"name": f"{MARKER} sales variety"}).json()
+    client.post(
+        f"/varieties/{variety['id']}/prices",
+        json={"effective_from": "2026-01-01", "list_price": 11_000},
+    )
+    customer = client.post(
+        "/customers", json={"name": f"{MARKER} sales customer", "phone": "11 5555-5555"}
+    ).json()
+    without_customer = client.post(
+        "/sales",
+        json={
+            "payment": "cash",
+            "note": MARKER,
+            "lines": [{"variety_id": variety["id"], "grams": "10"}],
+        },
+    ).json()
+    client.post(
+        "/sales",
+        json={
+            "payment": "owing",
+            "customer_id": customer["id"],
+            "lines": [{"variety_id": variety["id"], "grams": "10"}],
+        },
+    )
+    return {"sale_id": without_customer["id"]}
+
+
+SEEDERS: list[Callable[[TestClient], dict[str, int]]] = [
+    seed_varieties,
+    seed_customers,
+    seed_sales,
+]
 
 BODIES: dict[tuple[str, str], dict[str, Any]] = {
     ("POST", "/varieties"): {"name": "Another variety"},
@@ -54,6 +86,12 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
     },
     ("POST", "/customers"): {"name": "Another customer", "phone": "11 9876-5432"},
     ("PATCH", "/customers/{customer_id}"): {"name": "Renamed"},
+    ("POST", "/sales"): {
+        "payment": "owing",
+        "customer_id": 1,
+        "lines": [{"variety_id": 1, "grams": "1"}],
+    },
+    ("PUT", "/sales/{sale_id}/customer"): {"customer_id": 1},
 }
 
 PUBLIC_PATHS = {"/health", "/auth/login", "/auth/logout"}
@@ -129,6 +167,120 @@ def test_another_business_cannot_reach_a_record(
     assert response.status_code == 404, response.text
     for read in [p for m, p in BY_ID if m == "GET"]:
         assert business_a.get(_concrete(read, seeded)).status_code == 200
+
+
+@pytest.fixture
+def seeded_b(business_a: TestClient) -> dict[str, int]:
+    """Business A's own variety and customer, named without `MARKER`: the valid
+    reference `REFERENCES`-style checks send last, so `MARKER` never has to appear in
+    a body that `test_another_business_lists_none_of_its_records` would then see."""
+    variety = business_a.post("/varieties", json={"name": "Referenced variety"}).json()
+    business_a.post(
+        f"/varieties/{variety['id']}/prices",
+        json={"effective_from": "2026-01-01", "list_price": 11_000},
+    )
+    customer = business_a.post(
+        "/customers", json={"name": "Referenced customer", "phone": "11 1111-2222"}
+    ).json()
+    return {"variety_id": variety["id"], "customer_id": customer["id"]}
+
+
+def _sale_body(*, variety_id: int, customer_id: int) -> dict[str, Any]:
+    return {
+        "payment": "owing",
+        "customer_id": customer_id,
+        "lines": [{"variety_id": variety_id, "grams": "1"}],
+    }
+
+
+def test_a_body_reference_to_a_missing_or_foreign_variety_is_refused_the_same_way(
+    business_a: TestClient, business_b: TestClient, seeded_b: dict[str, int]
+) -> None:
+    foreign_variety = seeded_b["variety_id"]
+    customer_id = business_b.post(
+        "/customers", json={"name": "B customer", "phone": "11 3333-4444"}
+    ).json()["id"]
+
+    missing = business_b.post(
+        "/sales", json=_sale_body(variety_id=999_999, customer_id=customer_id)
+    )
+    other_business = business_b.post(
+        "/sales", json=_sale_body(variety_id=foreign_variety, customer_id=customer_id)
+    )
+
+    assert missing.status_code == 422, missing.text
+    assert other_business.status_code == 422, other_business.text
+    assert missing.json() == other_business.json()
+
+    own_variety = business_b.post("/varieties", json={"name": "B variety"}).json()
+    business_b.post(
+        f"/varieties/{own_variety['id']}/prices",
+        json={"effective_from": "2026-01-01", "list_price": 5_000},
+    )
+    valid = business_b.post(
+        "/sales", json=_sale_body(variety_id=own_variety["id"], customer_id=customer_id)
+    )
+    assert valid.status_code == 201, valid.text
+
+
+def test_a_body_reference_to_a_missing_or_foreign_customer_is_refused_the_same_way(
+    business_a: TestClient, business_b: TestClient, seeded_b: dict[str, int]
+) -> None:
+    variety = business_b.post("/varieties", json={"name": "B variety 2"}).json()
+    business_b.post(
+        f"/varieties/{variety['id']}/prices",
+        json={"effective_from": "2026-01-01", "list_price": 5_000},
+    )
+    foreign_customer = seeded_b["customer_id"]
+
+    missing = business_b.post(
+        "/sales", json=_sale_body(variety_id=variety["id"], customer_id=999_999)
+    )
+    other_business = business_b.post(
+        "/sales", json=_sale_body(variety_id=variety["id"], customer_id=foreign_customer)
+    )
+
+    assert missing.status_code == 422, missing.text
+    assert other_business.status_code == 422, other_business.text
+    assert missing.json() == other_business.json()
+
+    own_customer = business_b.post(
+        "/customers", json={"name": "B customer 2", "phone": "11 7777-8888"}
+    ).json()
+    valid = business_b.post(
+        "/sales", json=_sale_body(variety_id=variety["id"], customer_id=own_customer["id"])
+    )
+    assert valid.status_code == 201, valid.text
+
+
+def test_assigning_a_customer_from_another_business_is_refused_the_same_way_as_missing(
+    business_a: TestClient, business_b: TestClient, seeded_b: dict[str, int]
+) -> None:
+    variety = business_b.post("/varieties", json={"name": "B variety 3"}).json()
+    business_b.post(
+        f"/varieties/{variety['id']}/prices",
+        json={"effective_from": "2026-01-01", "list_price": 5_000},
+    )
+    sale_id = business_b.post(
+        "/sales",
+        json={"payment": "cash", "lines": [{"variety_id": variety["id"], "grams": "1"}]},
+    ).json()["id"]
+    foreign_customer = seeded_b["customer_id"]
+
+    missing = business_b.put(f"/sales/{sale_id}/customer", json={"customer_id": 999_999})
+    other_business = business_b.put(
+        f"/sales/{sale_id}/customer", json={"customer_id": foreign_customer}
+    )
+
+    assert missing.status_code == 422, missing.text
+    assert other_business.status_code == 422, other_business.text
+    assert missing.json() == other_business.json()
+
+    own_customer = business_b.post(
+        "/customers", json={"name": "B customer 3", "phone": "11 6666-5555"}
+    ).json()
+    valid = business_b.put(f"/sales/{sale_id}/customer", json={"customer_id": own_customer["id"]})
+    assert valid.status_code == 200, valid.text
 
 
 @pytest.mark.parametrize("path", LISTS)
