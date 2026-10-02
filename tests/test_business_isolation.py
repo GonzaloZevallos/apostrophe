@@ -11,6 +11,12 @@ A capability adds two things here in the diff that adds its routes:
 - in `BODIES`, a valid body for each of its gated routes that takes one.
 
 A route with a path parameter no seeder names, or with a body and no example, fails.
+
+Every list route (`LISTS`) is also read right after seeding, before B's call: a route
+with no `GET` by id (expense categories have none) could otherwise still be reached and
+rewritten through a by-id route that answers 404 only after it wrote. Comparing A's
+list bodies before and after B's call catches that even when no single-record read
+would.
 """
 
 from collections.abc import Callable, Iterator
@@ -36,7 +42,13 @@ def seed_varieties(client: TestClient) -> dict[str, int]:
     return {"variety_id": variety["id"], "entry_id": entry["id"]}
 
 
-SEEDERS: list[Callable[[TestClient], dict[str, int]]] = [seed_varieties]
+def seed_expenses(client: TestClient) -> dict[str, int]:
+    category = client.post("/expense-categories", json={"name": f"{MARKER} category"})
+    assert category.status_code == 201, category.text
+    return {"category_id": category.json()["id"]}
+
+
+SEEDERS: list[Callable[[TestClient], dict[str, int]]] = [seed_varieties, seed_expenses]
 
 BODIES: dict[tuple[str, str], dict[str, Any]] = {
     ("POST", "/varieties"): {"name": "Another variety"},
@@ -45,6 +57,8 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
         "effective_from": "2026-02-01",
         "list_price": 12_000,
     },
+    ("POST", "/expense-categories"): {"name": "Another category"},
+    ("PATCH", "/expense-categories/{category_id}"): {"name": "Renamed category"},
 }
 
 PUBLIC_PATHS = {"/health", "/auth/login", "/auth/logout"}
@@ -113,6 +127,8 @@ def test_another_business_cannot_reach_a_record(
     method: str,
     path: str,
 ) -> None:
+    before = {list_path: business_a.get(list_path).json() for list_path in LISTS}
+
     response = business_b.request(
         method, _concrete(path, seeded), json=BODIES.get((method, path))
     )
@@ -120,6 +136,8 @@ def test_another_business_cannot_reach_a_record(
     assert response.status_code == 404, response.text
     for read in [p for m, p in BY_ID if m == "GET"]:
         assert business_a.get(_concrete(read, seeded)).status_code == 200
+    for list_path in LISTS:
+        assert business_a.get(list_path).json() == before[list_path]
 
 
 @pytest.mark.parametrize("path", LISTS)
