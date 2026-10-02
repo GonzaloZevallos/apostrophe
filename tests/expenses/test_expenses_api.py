@@ -1,9 +1,12 @@
 """Recording, editing, deleting and listing expenses through the HTTP API, over a
 real database (CODING_STANDARDS §5)."""
 
+from datetime import timedelta
 from typing import Any
 
 from fastapi.testclient import TestClient
+
+from tests.conftest import MovableClock
 
 TODAY = "2026-10-02"
 
@@ -170,9 +173,7 @@ def test_the_total_and_subtotal_hold_after_an_edit_and_a_delete(client: TestClie
     assert view["categories"][0]["subtotal"] == 300
 
 
-def test_expenses_within_a_category_are_newest_date_first_then_most_recently_recorded(
-    client: TestClient,
-) -> None:
+def test_expenses_within_a_category_are_ordered_newest_date_first(client: TestClient) -> None:
     otros = _category_id(client, "Otros")
     older = client.post(
         "/expenses",
@@ -186,3 +187,48 @@ def test_expenses_within_a_category_are_newest_date_first_then_most_recently_rec
     view = client.get("/expenses").json()
     ids = [e["id"] for e in view["categories"][0]["expenses"]]
     assert ids == [newer["id"], older["id"]]
+
+
+def test_on_the_same_date_the_most_recently_recorded_comes_first(
+    client: TestClient, clock: MovableClock
+) -> None:
+    otros = _category_id(client, "Otros")
+    recorded_first = client.post(
+        "/expenses",
+        json={"spent_on": TODAY, "category_id": otros, "amount": 10, "detail": "a"},
+    ).json()
+    clock.set(clock() + timedelta(minutes=1))
+    recorded_second = client.post(
+        "/expenses",
+        json={"spent_on": TODAY, "category_id": otros, "amount": 20, "detail": "b"},
+    ).json()
+
+    view = client.get("/expenses").json()
+    ids = [e["id"] for e in view["categories"][0]["expenses"]]
+    assert ids == [recorded_second["id"], recorded_first["id"]]
+
+
+def test_editing_with_another_businesss_category_id_is_not_found(
+    client: TestClient, other_client: TestClient
+) -> None:
+    expense = _record(client)
+    foreign_category = _category_id(other_client)
+
+    edited = client.put(
+        f"/expenses/{expense['id']}",
+        json={
+            "spent_on": TODAY,
+            "category_id": foreign_category,
+            "amount": 9_999,
+            "detail": "no debería pasar",
+        },
+    )
+
+    assert edited.status_code == 404
+    view = client.get("/expenses").json()
+    stored = next(
+        e for c in view["categories"] for e in c["expenses"] if e["id"] == expense["id"]
+    )
+    assert stored["amount"] == expense["amount"]
+    assert stored["detail"] == expense["detail"]
+    assert stored["category_id"] == expense["category_id"]
