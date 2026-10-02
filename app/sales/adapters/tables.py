@@ -1,7 +1,7 @@
-"""The sales tables (CONTEXT.md: Sale, Sale line, Payment; docs/adr/0006).
+"""The sales tables (CONTEXT.md: Sale, Sale line, Payment; docs/adr/0007).
 
 `payment` is written here until #4's payments hexagon moves it, with no migration
-(ADR-0006): its name and columns are that capability's contract. Every table carries
+(ADR-0007): its name and columns are that capability's contract. Every table carries
 `business_id`, not null, pointing at `business` (CODING_STANDARDS section 9).
 """
 

@@ -1,4 +1,4 @@
-"""`SqlSales` over a real database (CODING_STANDARDS section 9, ADR-0004, ADR-0006):
+"""`SqlSales` over a real database (CODING_STANDARDS section 9, ADR-0004, ADR-0007):
 every statement filters on its business, `customer_id` on `sale` and `payment` is
 written only by `add` and by `assign_customer`'s guarded updates, and `delete` removes
 the lines and the payment explicitly.

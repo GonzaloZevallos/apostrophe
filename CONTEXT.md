@@ -97,8 +97,13 @@ _Avoid_: sample, freebie, promo
 
 **Special price**:
 A whole-peso total above $0, typed by hand for one sale line, that replaces the computed one. A free line is a gift, never a $0 special price.
-_Avoid_: override, custom price, discount
 _In the app_: Precio especial
+_Avoid_: override, custom price, discount
+
+**Pricing rule**:
+Which rule priced a sale line: list, bulk, VIP, gift or special price. Exactly one per line, stored with its price when the sale is recorded and never recomputed.
+_In the app_: lista, por cantidad, VIP, regalo, especial
+_Avoid_: type, price type, Amigo
 
 **Shipping charged**:
 What the customer pays for delivery, added on top of what they bought.
@@ -164,6 +169,11 @@ Money spent on something other than flower, filed under one expense category. Fl
 _In the app_: Gasto
 _Avoid_: cost, outflow, bill
 
+**Expense category**:
+A business's own heading for its expenses, with a name unique within that business whatever the case or spacing. Every business starts with "Insumos de cultivo", "Packaging", "Envíos y traslados" and "Otros"; a category cannot be removed while it has expenses.
+_In the app_: Categoría
+_Avoid_: type, tag, label, account, cost center
+
 **Profit**:
 Sales minus cost of goods sold minus expenses, over a period. A sale counts on its own date, paid or not.
 _In the app_: Ganancia
@@ -190,9 +200,3 @@ _Avoid_: post, broadcast
 The catalog sent only to the user's own Telegram chat, to see how it looks before publishing.
 _In the app_: Enviarme una prueba
 _Avoid_: preview, draft
-
-## Language
-
-**Pricing rule**:
-Which rule priced a sale line: list, bulk, VIP, gift or special price. Exactly one per line, stored with its price when the sale is recorded and never recomputed.
-_Avoid_: type, price type, Amigo

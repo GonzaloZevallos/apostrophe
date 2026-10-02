@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from app.accounts.application.ports import Accounts
+from app.accounts.application.ports import Accounts, BusinessOpening
 from app.accounts.domain.account import (
     Business,
     BusinessName,
@@ -76,10 +76,16 @@ def accept_invitation(
     password: str,
     raw_business_name: str | None,
     now: datetime,
+    *,
+    opening: BusinessOpening,
 ) -> str:
     """Creates the user (and, for a new-business invitation, the business), spends the
     invitation and answers a session token for the new user. A join invitation ignores
-    any business name: the business is the one that invited."""
+    any business name: the business is the one that invited.
+
+    `opening` sets up whatever a brand-new business needs beyond its own accounts rows
+    (docs/adr/0006); it is called only on the new-business branch, before the single
+    commit, so it lands in the same transaction or not at all."""
     invitation = _usable(accounts, token, now)
     email = Email.of(raw_email)
     check_password_strength(password)
@@ -89,6 +95,8 @@ def accept_invitation(
         raise EmailTaken()
     if name is not None:
         business_id = accounts.add_business(Business(name)).id
+        assert business_id is not None
+        opening.opened(business_id)
     else:
         business_id = invitation.business_id
     assert business_id is not None

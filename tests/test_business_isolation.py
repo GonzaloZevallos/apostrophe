@@ -11,6 +11,12 @@ A capability adds two things here in the diff that adds its routes:
 - in `BODIES`, a valid body for each of its gated routes that takes one.
 
 A route with a path parameter no seeder names, or with a body and no example, fails.
+
+Every list route (`LISTS`) is also read right after seeding, before B's call: a route
+with no `GET` by id (expense categories have none) could otherwise still be reached and
+rewritten through a by-id route that answers 404 only after it wrote. Comparing A's
+list bodies before and after B's call catches that even when no single-record read
+would.
 """
 
 from collections.abc import Callable, Iterator
@@ -21,7 +27,12 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy.engine import Engine
 
+from app.expenses.adapters.sql_expense_categories import SqlExpenseCategories
+from app.expenses.adapters.tables import ExpenseCategoryRow
+from app.expenses.application import manage_categories
+from app.expenses.domain.category import CategoryNotFound
 from app.main import create_app
+from app.shared.transaction import Transaction
 from tests.conftest import SETTINGS, TEST_HASHER, MovableClock, open_business, signed_in
 
 MARKER = "zz-isolation-marker"
@@ -41,6 +52,23 @@ def seed_customers(client: TestClient) -> dict[str, int]:
         "/customers", json={"name": f"{MARKER} customer", "phone": "11 2345-6789"}
     ).json()
     return {"customer_id": customer["id"]}
+
+
+def seed_expenses(client: TestClient) -> dict[str, int]:
+    category = client.post("/expense-categories", json={"name": f"{MARKER} category"})
+    assert category.status_code == 201, category.text
+    category_id = category.json()["id"]
+    expense = client.post(
+        "/expenses",
+        json={
+            "spent_on": "2026-10-02",
+            "category_id": category_id,
+            "amount": 1_000,
+            "detail": f"{MARKER} detail",
+        },
+    )
+    assert expense.status_code == 201, expense.text
+    return {"category_id": category_id, "expense_id": expense.json()["id"]}
 
 
 def seed_sales(client: TestClient) -> dict[str, int]:
@@ -74,6 +102,7 @@ def seed_sales(client: TestClient) -> dict[str, int]:
 SEEDERS: list[Callable[[TestClient], dict[str, int]]] = [
     seed_varieties,
     seed_customers,
+    seed_expenses,
     seed_sales,
 ]
 
@@ -86,6 +115,20 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
     },
     ("POST", "/customers"): {"name": "Another customer", "phone": "11 9876-5432"},
     ("PATCH", "/customers/{customer_id}"): {"name": "Renamed"},
+    ("POST", "/expense-categories"): {"name": "Another category"},
+    ("PATCH", "/expense-categories/{category_id}"): {"name": "Renamed category"},
+    ("POST", "/expenses"): {
+        "spent_on": "2026-10-02",
+        "category_id": 1,
+        "amount": 500,
+        "detail": "another expense",
+    },
+    ("PUT", "/expenses/{expense_id}"): {
+        "spent_on": "2026-10-02",
+        "category_id": 1,
+        "amount": 999,
+        "detail": "edited expense",
+    },
     ("POST", "/sales"): {
         "payment": "owing",
         "customer_id": 1,
@@ -152,6 +195,28 @@ def test_there_are_routes_that_name_a_record() -> None:
     assert len(BY_ID) > 0 and len(LISTS) > 0
 
 
+def _assert_another_business_cannot_reach_a_record(
+    business_a: TestClient,
+    business_b: TestClient,
+    seeded: dict[str, int],
+    method: str,
+    path: str,
+) -> None:
+    """The sweep's own check, factored out so the proof below can run this exact
+    comparison against a deliberately broken route, instead of a copy of it."""
+    before = {list_path: business_a.get(list_path).json() for list_path in LISTS}
+
+    response = business_b.request(
+        method, _concrete(path, seeded), json=BODIES.get((method, path))
+    )
+
+    assert response.status_code == 404, response.text
+    for read in [p for m, p in BY_ID if m == "GET"]:
+        assert business_a.get(_concrete(read, seeded)).status_code == 200
+    for list_path in LISTS:
+        assert business_a.get(list_path).json() == before[list_path]
+
+
 @pytest.mark.parametrize(("method", "path"), BY_ID, ids=[f"{m} {p}" for m, p in BY_ID])
 def test_another_business_cannot_reach_a_record(
     business_a: TestClient,
@@ -160,13 +225,7 @@ def test_another_business_cannot_reach_a_record(
     method: str,
     path: str,
 ) -> None:
-    response = business_b.request(
-        method, _concrete(path, seeded), json=BODIES.get((method, path))
-    )
-
-    assert response.status_code == 404, response.text
-    for read in [p for m, p in BY_ID if m == "GET"]:
-        assert business_a.get(_concrete(read, seeded)).status_code == 200
+    _assert_another_business_cannot_reach_a_record(business_a, business_b, seeded, method, path)
 
 
 @pytest.fixture
@@ -291,3 +350,45 @@ def test_another_business_lists_none_of_its_records(
 
     assert response.status_code == 200
     assert MARKER not in response.text
+
+
+def test_the_list_check_catches_a_write_that_a_bare_404_check_would_miss(
+    business_a: TestClient,
+    business_b: TestClient,
+    seeded: dict[str, int],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Proven negative (CODING_STANDARDS §5): before trusting the before/after list
+    comparison in `_assert_another_business_cannot_reach_a_record`, it must be seen to
+    fail on the shape of bug it exists for — a by-id route that writes to another
+    business's record with no business filter, and then answers 404 regardless of what
+    it found (Tech Lead, round-3 Q4). This calls the sweep's own check, not a copy of
+    it: deleting the list-comparison lines from that helper would turn this test red,
+    because the broken route below still answers 404, so the earlier assertions in the
+    helper would no longer catch it."""
+
+    def unfiltered_row(self: SqlExpenseCategories, category_id: int) -> ExpenseCategoryRow | None:
+        return self._session.get(ExpenseCategoryRow, category_id)
+
+    def removes_with_no_filter_then_always_answers_not_found(
+        categories: SqlExpenseCategories, transaction: Transaction, category_id: int
+    ) -> None:
+        categories.remove(category_id)
+        transaction.commit()
+        raise CategoryNotFound(category_id)
+
+    monkeypatch.setattr(SqlExpenseCategories, "_row", unfiltered_row)
+    monkeypatch.setattr(
+        manage_categories,
+        "remove_category",
+        removes_with_no_filter_then_always_answers_not_found,
+    )
+
+    with pytest.raises(AssertionError):
+        _assert_another_business_cannot_reach_a_record(
+            business_a,
+            business_b,
+            seeded,
+            "DELETE",
+            "/expense-categories/{category_id}",
+        )

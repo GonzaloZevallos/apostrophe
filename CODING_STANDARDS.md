@@ -3,7 +3,7 @@
 How code is written in this product. They apply to the code a task adds or touches. They
 replace the agentic system's default standards whole (agentic-system, ADR-0012): sections
 1 to 8 are those practices said for this stack; section 9 is this product's own and
-outranks every other.
+outranks every other; section 10 says the frontend's.
 
 ## 1. Hexagonal architecture
 
@@ -46,6 +46,8 @@ outranks every other.
 
 - `mypy --strict` over `app` and `tests`, and `ruff`, pass with nothing silenced: no
   `type: ignore`, no `noqa`, no per-module `ignore_errors`.
+- The front (`web/`): `tsc` in strict mode and `oxlint` pass the same way: no
+  `@ts-ignore`, `@ts-expect-error`, `@ts-nocheck` or lint-disable comments, no `any`.
 
 ## 7. Observability
 
@@ -83,3 +85,27 @@ Several businesses share one installation and must never see each other
   invitation links only as digests where they are stored.
 - A use case that writes **commits once, at its end**, through the `Transaction` port
   (`app/shared/transaction.py`); repositories never commit.
+
+## 10. The frontend
+
+React, Vite and TypeScript in `web/`, built from the design in `docs/product/design-system/`
+(the contract) and its screens in `docs/product/design-system/pantallas/`.
+
+- **Names in code are English**, the `CONTEXT.md` terms, as in the backend. **Every word
+  on screen is Spanish**, rioplatense with vos ("Cargá", "Te debe"), using the glossary's
+  `_In the app_` word.
+- **The backend decides; the front shows.** A line's price, a sale's total, a balance and
+  where a payment goes come from the API. The front may preview a computation before
+  saving (the design's `precios.ts`), but what it shows after saving is what the API
+  answered.
+- **Color, type and spacing only from the design tokens.** No loose hex values in a
+  component. The design README's accessibility rules are requirements: blue ↔ amber,
+  never green ↔ red; no state told by color alone; text at 4.5:1 at least.
+- **Formats in one place**: money as whole pesos with dot thousands (`$ 11.000`), grams
+  with a comma and up to two decimals (`3,5 g`), dates `dd/mm`, weeks Monday to Sunday.
+- **Section 9 holds in the browser too.** The business is never in a URL. No phone
+  numbers, names, amounts or tokens in `console`, in `localStorage` or in error reports;
+  the session lives in the backend's cookie, never in browser storage.
+- **Tests at the seams**: screens and components with Testing Library, through what the
+  user sees and does, with the API faked at `fetch`. Formats and previews with plain
+  unit tests.

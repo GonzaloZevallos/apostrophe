@@ -1,4 +1,4 @@
-"""The `Sales` port over SQLAlchemy, for one business (docs/adr/0004, docs/adr/0006).
+"""The `Sales` port over SQLAlchemy, for one business (docs/adr/0004, docs/adr/0007).
 
 Every statement filters on that business; a sale of another business is, from here, a
 sale that does not exist. `customer_id` on `sale` and `payment` is written only by

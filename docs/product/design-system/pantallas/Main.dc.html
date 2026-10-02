@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>apostrophe · fundamentos del sistema de diseño</title>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body { margin: 0 }
+a { color: #1B4FA8 } a:hover { color: #231E18 }
+</style>
+</helmet>
+
+<div style="width: 1200px; height: 1680px; box-sizing: border-box; background: #FCFBF8; color: #231E18; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden">
+  <div style="padding: 48px 56px 0; display: flex; align-items: flex-end; justify-content: space-between; gap: 32px; border-bottom: 1px solid #EBE5DA; padding-bottom: 26px">
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <span style="display: flex; align-items: baseline; gap: 3px">
+        <span style="font-size: 44px; font-weight: 700; letter-spacing: -0.045em">apostrophe</span>
+        <span style="font-size: 44px; font-weight: 700; color: #1B4FA8">’</span>
+      </span>
+      <span style="font-size: 17px; color: #7A7065; max-width: 540px; line-height: 1.5">Cargar una venta en el medio de una charla. Celular primero, jerarquía por tamaño y una sola tinta de color.</span>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 4px; text-align: right">
+      <span style="font-size: 14px; color: #7A7065">Sistema de diseño · Papel y azul</span>
+      <span style="font-size: 18px; font-weight: 600">v2 · 02/10/2026</span>
+    </div>
+  </div>
+  <div style="padding: 32px 56px 0; display: flex; flex-direction: column; gap: 34px">
+  <div style="display: flex; flex-direction: column; gap: 18px">
+    <div style="display: flex; align-items: baseline; gap: 12px">
+      <span style="font-size: 22px; font-weight: 600; letter-spacing: -0.025em">Color</span><span style="font-size: 14px; color: #7A7065">Modo claro</span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 18px">
+      <div style="display: flex; flex-direction: column; gap: 7px">
+        <div style="height: 56px; border-radius: 14px; background: #FCFBF8; border: 1px solid #EBE5DA"></div>
+        <span style="font-size: 13px; font-weight: 600">Papel</span>
+        <span style="font-size: 12px; color: #7A7065; line-height: 1.4">Fondo de pantalla</span>
+        <span style="font-size: 11px; color: #9A9085">#FCFBF8</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px">
+        <div style="height: 56px; border-radius: 14px; background: #F2EEE6; border: 1px solid #EBE5DA"></div>
+        <span style="font-size: 13px; font-weight: 600">Superficie</span>
+        <span style="font-size: 12px; color: #7A7065; line-height: 1.4">Paneles suaves, campos</span>
+        <span style="font-size: 11px; color: #9A9085">#F2EEE6</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px">
+        <div style="height: 56px; border-radius: 14px; background: #231E18"></div>
+        <span style="font-size: 13px; font-weight: 600">Tinta</span>
+        <span style="font-size: 12px; color: #7A7065; line-height: 1.4">Texto y botón principal</span>
+        <span style="font-size: 11px; color: #9A9085">#231E18</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px">
+        <div style="height: 56px; border-radius: 14px; background: #7A7065"></div>
+        <span style="font-size: 13px; font-weight: 600">Tinta 2</span>
+        <span style="font-size: 12px; color: #7A7065; line-height: 1.4">Rótulos y datos secundarios</span>
+        <span style="font-size: 11px; color: #9A9085">#7A7065</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px">
+        <div style="height: 56px; border-radius: 14px; background: #1B4FA8"></div>
+        <span style="font-size: 13px; font-weight: 600">Azul</span>
+        <span style="font-size: 12px; color: #7A7065; line-height: 1.4">Acción, enlaces, ganancia</span>
+        <span style="font-size: 11px; color: #9A9085">#1B4FA8</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px">
+        <div style="height: 56px; border-radius: 14px; background: #7A4A00"></div>
+        <span style="font-size: 13px; font-weight: 600">Ámbar</span>
+        <span style="font-size: 12px; color: #7A7065; line-height: 1.4">Deuda y stock bajo</span>
+        <span style="font-size: 11px; color: #9A9085">#7A4A00</span>
+      </div>
+    </div>
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 12px">
+    <div style="display: flex; align-items: baseline; gap: 12px">
+      <span style="font-size: 22px; font-weight: 600; letter-spacing: -0.025em"></span><span style="font-size: 14px; color: #7A7065">Modo oscuro</span>
+    </div>
+    <div style="background: #10131A; border-radius: 20px; padding: 20px; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 18px">
+      <div style="display: flex; flex-direction: column; gap: 7px"><div style="height: 48px; border-radius: 14px; background: #10131A; border: 1px solid #262C36"></div><span style="font-size: 13px; font-weight: 600; color: #E9EDF2">Papel</span><span style="font-size: 11px; color: #8A93A1">#10131A</span></div>
+      <div style="display: flex; flex-direction: column; gap: 7px"><div style="height: 48px; border-radius: 14px; background: #1A1F28; border: 1px solid #262C36"></div><span style="font-size: 13px; font-weight: 600; color: #E9EDF2">Superficie</span><span style="font-size: 11px; color: #8A93A1">#1A1F28</span></div>
+      <div style="display: flex; flex-direction: column; gap: 7px"><div style="height: 48px; border-radius: 14px; background: #E9EDF2; border: 1px solid #262C36"></div><span style="font-size: 13px; font-weight: 600; color: #E9EDF2">Tinta</span><span style="font-size: 11px; color: #8A93A1">#E9EDF2</span></div>
+      <div style="display: flex; flex-direction: column; gap: 7px"><div style="height: 48px; border-radius: 14px; background: #8A93A1; border: 1px solid #262C36"></div><span style="font-size: 13px; font-weight: 600; color: #E9EDF2">Tinta 2</span><span style="font-size: 11px; color: #8A93A1">#8A93A1</span></div>
+      <div style="display: flex; flex-direction: column; gap: 7px"><div style="height: 48px; border-radius: 14px; background: #8AB0FF; border: 1px solid #262C36"></div><span style="font-size: 13px; font-weight: 600; color: #E9EDF2">Azul</span><span style="font-size: 11px; color: #8A93A1">#8AB0FF</span></div>
+      <div style="display: flex; flex-direction: column; gap: 7px"><div style="height: 48px; border-radius: 14px; background: #EDB05A; border: 1px solid #262C36"></div><span style="font-size: 13px; font-weight: 600; color: #E9EDF2">Ámbar</span><span style="font-size: 11px; color: #8A93A1">#EDB05A</span></div>
+    </div>
+  </div>
+    <div style="background: #F2EEE6; border-radius: 20px; padding: 20px 22px; display: flex; align-items: center; gap: 28px">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <span style="font-size: 15px; font-weight: 600">Apto deuteranopia</span>
+        <span style="font-size: 13px; color: #7A7065; line-height: 1.5; max-width: 420px">El eje es azul ↔ ámbar, que se conserva. Nunca verde contra rojo: con deuteranopia caen al mismo tono. Ningún estado se distingue sólo por color: lleva palabra, forma y diferencia de luminosidad.</span>
+      </div>
+      <div style="display: flex; gap: 22px; margin-left: auto">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <span style="font-size: 11px; color: #7A7065">normal</span>
+          <div style="display: flex; gap: 5px">
+            <span style="width: 30px; height: 30px; border-radius: 9px; background: #1B4FA8"></span>
+            <span style="width: 30px; height: 30px; border-radius: 9px; background: #7A4A00"></span>
+            <span style="width: 30px; height: 30px; border-radius: 9px; background: #33281A"></span>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <span style="font-size: 11px; color: #7A7065">deuteranopia</span>
+          <div style="display: flex; gap: 5px">
+            <span style="width: 30px; height: 30px; border-radius: 9px; background: #4444A8"></span>
+            <span style="width: 30px; height: 30px; border-radius: 9px; background: #5B5B00"></span>
+            <span style="width: 30px; height: 30px; border-radius: 9px; background: #2C2C1A"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  <div style="display: flex; flex-direction: column; gap: 18px">
+    <div style="display: flex; align-items: baseline; gap: 12px">
+      <span style="font-size: 22px; font-weight: 600; letter-spacing: -0.025em">Tipografía</span><span style="font-size: 14px; color: #7A7065">Plus Jakarta Sans · 400 y 600, una sola familia</span>
+    </div>
+    <div style="display: grid; grid-template-columns: 1.1fr 1fr; gap: 28px">
+      <div style="display: flex; flex-direction: column; gap: 14px">
+        <span style="font-size: 54px; font-weight: 600; letter-spacing: -0.045em; line-height: 1.05">$ 486.000</span>
+        <span style="font-size: 25px; font-weight: 600; letter-spacing: -0.035em">39,5 g · 14 ventas</span>
+        <div style="display: flex; flex-direction: column; gap: 5px; font-size: 14px; color: #7A7065">
+          <span>Cifra XL · 54 / 600 / −0.045em — total de venta e Inicio</span>
+          <span>Cifra L · 38 / 600 — deuda, saldo de cliente</span>
+          <span>Cifra M · 25 / 600 — tarjetas y subtotales</span>
+          <span>Cifra S · 17 / 600 — filas de lista</span>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 14px">
+        <span style="font-size: 20px; font-weight: 600; letter-spacing: -0.02em">Cargá la venta y seguí la charla</span>
+        <span style="font-size: 16px; line-height: 1.55">Cuerpo 16 / 400. Todo en castellano rioplatense y con vos: Cargá, Guardá, Te debe, Elegí.</span>
+        <div style="display: flex; flex-direction: column; gap: 5px; font-size: 14px; color: #7A7065">
+          <span>Título de pantalla · 20 / 600</span>
+          <span>Cuerpo · 16 / 400 · nombres en 16 / 600</span>
+          <span>Rótulo · 14 / 400 en Tinta 2, siempre en minúscula</span>
+          <span>Al pie · 13 / 400 — fechas y ayudas</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 18px">
+    <div style="display: flex; align-items: baseline; gap: 12px">
+      <span style="font-size: 22px; font-weight: 600; letter-spacing: -0.025em">Medidas y reglas</span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px">
+      <div style="background: #F2EEE6; border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 12px">
+        <span style="font-size: 14px; color: #7A7065">Formatos</span>
+        <div style="display: flex; flex-direction: column; gap: 9px; font-size: 16px">
+          <div style="display: flex; justify-content: space-between; gap: 12px"><span style="color: #7A7065">Plata</span><span style="font-weight: 600">$ 11.000</span></div>
+          <div style="display: flex; justify-content: space-between; gap: 12px"><span style="color: #7A7065">Gramos</span><span style="font-weight: 600">3,5 g</span></div>
+          <div style="display: flex; justify-content: space-between; gap: 12px"><span style="color: #7A7065">Fecha</span><span style="font-weight: 600">02/10</span></div>
+          <div style="display: flex; justify-content: space-between; gap: 12px"><span style="color: #7A7065">Otro año</span><span style="font-weight: 600">14/12/2025</span></div>
+          <div style="display: flex; justify-content: space-between; gap: 12px"><span style="color: #7A7065">Semana</span><span style="font-weight: 600">28/09 – 04/10</span></div>
+        </div>
+        <span style="font-size: 13px; color: #7A7065; line-height: 1.5">Nunca centavos. Punto de miles, coma en gramos. La semana arranca el lunes.</span>
+      </div>
+      <div style="background: #F2EEE6; border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 14px">
+        <span style="font-size: 14px; color: #7A7065">Espacio y radios</span>
+        <div style="display: flex; align-items: flex-end; gap: 8px">
+          <div style="width: 4px; height: 20px; background: #1B4FA8"></div><div style="width: 8px; height: 28px; background: #1B4FA8"></div>
+          <div style="width: 12px; height: 36px; background: #1B4FA8"></div><div style="width: 16px; height: 44px; background: #1B4FA8"></div>
+          <div style="width: 24px; height: 52px; background: #1B4FA8"></div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 7px; font-size: 14px; color: #7A7065">
+          <span>Escala 4 · 8 · 12 · 16 · 20 · 24</span>
+          <span>Margen de pantalla 24 px</span>
+          <span>Radios: campo 16 · panel 20-24 · hoja 28 · píldora 999</span>
+          <span>Filas de 48 a 56 px · tocables ≥ 44 px</span>
+        </div>
+      </div>
+      <div style="background: #231E18; color: #FCFBF8; border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 12px">
+        <span style="font-size: 14px; opacity: 0.6">Reglas de la casa</span>
+        <div style="display: flex; flex-direction: column; gap: 10px; font-size: 14px; line-height: 1.5">
+          <span>La jerarquía la hace el tamaño, no el peso: rótulo de 14 en gris, cifra de 54.</span>
+          <span>Rótulos en minúscula, como una frase. Nada de versalitas con tracking.</span>
+          <span>Separar con líneas finas antes que con tarjetas. Sin sombras.</span>
+          <span>Un solo azul, y sólo para acción, enlace y ganancia.</span>
+          <span>Cada estado dice la palabra. El color nunca va solo.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

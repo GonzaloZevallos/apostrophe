@@ -29,6 +29,32 @@ def test_a_name_must_be_present_and_short(raw: str) -> None:
         VarietyName.of(raw)
 
 
+@pytest.mark.parametrize(
+    ("raw", "message"),
+    [
+        ("", "a variety needs a name"),
+        ("x" * 61, "a variety name has at most 60 characters"),
+    ],
+)
+def test_a_name_s_error_messages_are_unchanged_by_the_shared_name_rule(
+    raw: str, message: str
+) -> None:
+    with pytest.raises(InvalidName, match=f"^{message}$"):
+        VarietyName.of(raw)
+
+    with pytest.raises(InvalidName, match=f"^{message}$"):
+        VarietyName(raw)
+
+
+def test_an_untrimmed_name_built_directly_is_refused_with_its_own_message() -> None:
+    # VarietyName.of() collapses before constructing, so this path is only reached
+    # by building the value object directly with spaces the caller did not collapse.
+    with pytest.raises(
+        InvalidName, match="^a variety name has no leading, trailing or repeated spaces$"
+    ):
+        VarietyName(" 24K Gold")
+
+
 def test_a_price_entry_needs_a_positive_list_price() -> None:
     with pytest.raises(InvalidPriceEntry):
         PriceEntry.of(date(2026, 1, 1), 0)

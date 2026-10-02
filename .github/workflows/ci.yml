@@ -18,3 +18,17 @@ jobs:
       - run: uv run --no-project pytest
       - run: uv run --no-project ruff check .
       - run: uv run --no-project mypy app tests
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm --prefix web ci --no-fund --no-audit
+      - run: npm --prefix web run typecheck
+      - run: npm --prefix web run lint
+      - run: npm --prefix web test
+      - run: npm --prefix web run build
