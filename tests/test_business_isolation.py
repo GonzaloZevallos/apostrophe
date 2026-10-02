@@ -124,14 +124,15 @@ def test_there_are_routes_that_name_a_record() -> None:
     assert len(BY_ID) > 0 and len(LISTS) > 0
 
 
-@pytest.mark.parametrize(("method", "path"), BY_ID, ids=[f"{m} {p}" for m, p in BY_ID])
-def test_another_business_cannot_reach_a_record(
+def _assert_another_business_cannot_reach_a_record(
     business_a: TestClient,
     business_b: TestClient,
     seeded: dict[str, int],
     method: str,
     path: str,
 ) -> None:
+    """The sweep's own check, factored out so the proof below can run this exact
+    comparison against a deliberately broken route, instead of a copy of it."""
     before = {list_path: business_a.get(list_path).json() for list_path in LISTS}
 
     response = business_b.request(
@@ -143,6 +144,17 @@ def test_another_business_cannot_reach_a_record(
         assert business_a.get(_concrete(read, seeded)).status_code == 200
     for list_path in LISTS:
         assert business_a.get(list_path).json() == before[list_path]
+
+
+@pytest.mark.parametrize(("method", "path"), BY_ID, ids=[f"{m} {p}" for m, p in BY_ID])
+def test_another_business_cannot_reach_a_record(
+    business_a: TestClient,
+    business_b: TestClient,
+    seeded: dict[str, int],
+    method: str,
+    path: str,
+) -> None:
+    _assert_another_business_cannot_reach_a_record(business_a, business_b, seeded, method, path)
 
 
 @pytest.mark.parametrize("path", LISTS)
@@ -162,11 +174,13 @@ def test_the_list_check_catches_a_write_that_a_bare_404_check_would_miss(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Proven negative (CODING_STANDARDS §5): before trusting the before/after list
-    comparison added above, it must be seen to fail on the shape of bug it exists for —
-    a by-id route that writes to another business's record with no business filter, and
-    then answers 404 regardless of what it found (Tech Lead, round-3 Q4). The plain
-    status-code check alone does not catch this; only comparing A's list body before and
-    after the call does."""
+    comparison in `_assert_another_business_cannot_reach_a_record`, it must be seen to
+    fail on the shape of bug it exists for — a by-id route that writes to another
+    business's record with no business filter, and then answers 404 regardless of what
+    it found (Tech Lead, round-3 Q4). This calls the sweep's own check, not a copy of
+    it: deleting the list-comparison lines from that helper would turn this test red,
+    because the broken route below still answers 404, so the earlier assertions in the
+    helper would no longer catch it."""
 
     def unfiltered_row(self: SqlExpenseCategories, category_id: int) -> ExpenseCategoryRow | None:
         return self._session.get(ExpenseCategoryRow, category_id)
@@ -184,12 +198,12 @@ def test_the_list_check_catches_a_write_that_a_bare_404_check_would_miss(
         "remove_category",
         removes_with_no_filter_then_always_answers_not_found,
     )
-    category_id = seeded["category_id"]
-    before = business_a.get("/expense-categories").json()
 
-    response = business_b.delete(f"/expense-categories/{category_id}")
-
-    # The broken route still answers 404: a bare status-code check would pass it.
-    assert response.status_code == 404, response.text
     with pytest.raises(AssertionError):
-        assert business_a.get("/expense-categories").json() == before
+        _assert_another_business_cannot_reach_a_record(
+            business_a,
+            business_b,
+            seeded,
+            "DELETE",
+            "/expense-categories/{category_id}",
+        )
