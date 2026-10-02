@@ -184,5 +184,5 @@ _Avoid_: preview, draft
 ## Language
 
 **Expense category**:
-A business's own heading for its expenses, with a name unique within that business whatever the case or spacing. A new business starts with "Insumos de cultivo", "Packaging", "Envíos y traslados" and "Otros"; a category that has ever held an expense cannot be removed. In the app: Categoría.
+A business's own heading for its expenses, with a name unique within that business whatever the case or spacing. Every business starts with "Insumos de cultivo", "Packaging", "Envíos y traslados" and "Otros"; a category cannot be removed while it has expenses. In the app: Categoría.
 _Avoid_: type, tag, label, account, cost center

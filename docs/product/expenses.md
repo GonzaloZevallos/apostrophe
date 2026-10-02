@@ -30,16 +30,23 @@ Success criteria:
   - trimmed, inner spaces collapsed, up to 60 characters;
   - unique within a business whatever the case or spacing;
   - two businesses may each have a category with the same name.
-- A new business opens with four categories: "Insumos de cultivo", "Packaging",
-  "Envíos y traslados" and "Otros". They are created only when the business opens and are
-  never restored later.
+- **Default categories**: "Insumos de cultivo", "Packaging", "Envíos y traslados" and
+  "Otros".
+  - A new business opens with them.
+  - A business opened before expenses existed receives them once, when the app is
+    upgraded.
+  - Each business receives the defaults exactly once. A default it removes is never
+    recreated.
 - **Add**: a duplicate name is refused, with the reason.
 - **Rename**: the category's expenses stay under the new name. Renaming to a name another
   category of the business already has is refused.
-- **Remove**: allowed only if no expense has ever been recorded under the category, in any
-  month. Otherwise it is refused with a message that the category still has expenses and
-  cannot be removed. No breakdown of where it is used is shown.
-- There is no minimum: a business may remove every unused category, defaults included.
+- **Remove**: refused while any expense, of any month, is filed under the category.
+  - The refusal says only that it still has expenses and suggests renaming it instead:
+    "No se puede borrar: todavía tiene gastos. Podés renombrarla." No breakdown of where
+    it is used is shown.
+  - Once its expenses are deleted or moved to another category, it can be removed.
+- There is no minimum: a business may remove every category without expenses, defaults
+  included.
 - The category list shows every category of the business, sorted by name.
 - **Adding a category inside the expense form**: the user can create a category while
   recording an expense, without leaving the form or losing what they already typed.
