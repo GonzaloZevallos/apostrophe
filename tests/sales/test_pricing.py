@@ -13,6 +13,7 @@ import pytest
 from app.sales.domain.pricing import (
     BulkQuote,
     GiftWithSpecialPrice,
+    InvalidPriceQuote,
     InvalidSpecialPrice,
     LinePricing,
     NonPositiveGrams,
@@ -40,6 +41,42 @@ def _price(
     grams: Grams = ONE_GRAM,
 ) -> LinePricing:
     return price_line(gift=gift, special_price=special_price, vip=vip, quote=quote, grams=grams)
+
+
+# -- PriceQuote / BulkQuote: validated in __post_init__ --------------------------------
+
+
+def test_a_price_quote_needs_a_positive_list_price() -> None:
+    with pytest.raises(InvalidPriceQuote):
+        PriceQuote(list_price=0)
+
+
+def test_a_bulk_quote_needs_a_positive_price() -> None:
+    with pytest.raises(InvalidPriceQuote):
+        BulkQuote(price=0, minimum=Grams.of(10))
+
+
+def test_a_bulk_quote_needs_a_positive_minimum() -> None:
+    with pytest.raises(InvalidPriceQuote):
+        BulkQuote(price=700, minimum=Grams.of(0))
+
+
+def test_a_bulk_price_must_be_lower_than_the_list_price() -> None:
+    with pytest.raises(InvalidPriceQuote):
+        PriceQuote(list_price=1_000, bulk=BulkQuote(price=1_000, minimum=Grams.of(10)))
+
+
+def test_every_price_quote_refusal_message_carries_no_input_value() -> None:
+    cases: list[Callable[[], object]] = [
+        lambda: PriceQuote(list_price=0),
+        lambda: BulkQuote(price=0, minimum=Grams.of(10)),
+        lambda: BulkQuote(price=700, minimum=Grams.of(0)),
+        lambda: PriceQuote(list_price=1_000, bulk=BulkQuote(price=1_000, minimum=Grams.of(10))),
+    ]
+    for build in cases:
+        with pytest.raises(InvalidPriceQuote) as excinfo:
+            build()
+        assert not any(c.isdigit() for c in str(excinfo.value))
 
 
 # -- line_total -----------------------------------------------------------------------
