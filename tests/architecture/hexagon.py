@@ -2,6 +2,8 @@
 
 - `domain/` imports the standard library, its own domain package and `app.shared`.
 - `application/` never imports a framework, the database layer or an adapter.
+- `domain/` and `application/` never import another hexagon's package (only their own,
+  `app.shared`, and the standard library).
 - `adapters/` may import anything.
 
 A relative import is resolved the way `importlib` does, so spelling an import
@@ -37,10 +39,10 @@ class ScanResult:
     violations: tuple[Violation, ...]
 
 
-def scan_hexagon(root: Path) -> ScanResult:
+def scan_hexagon(root: Path, other_hexagons: frozenset[str] = frozenset()) -> ScanResult:
     domain_modules = _python_files(root / "domain")
     application_modules = _python_files(root / "application")
-    domain_package = _dotted(root / "domain")
+    domain_package = dotted(root / "domain")
     violations = (
         *(
             Violation(module, imported, "domain-imports-stdlib-and-shared-only")
@@ -57,6 +59,12 @@ def scan_hexagon(root: Path) -> ScanResult:
             for module in application_modules
             for imported in imports_of(module)
             if _forbidden_for_application(imported)
+        ),
+        *(
+            Violation(module, imported, "domain-and-application-import-no-other-hexagon")
+            for module in (*domain_modules, *application_modules)
+            for imported in imports_of(module)
+            if any(_within(imported, other) for other in other_hexagons)
         ),
     )
     return ScanResult(domain_modules, application_modules, violations)
@@ -83,12 +91,12 @@ def _python_files(directory: Path) -> tuple[Path, ...]:
     return tuple(sorted(directory.rglob("*.py"))) if directory.is_dir() else ()
 
 
-def _dotted(path: Path) -> str:
+def dotted(path: Path) -> str:
     return ".".join(path.relative_to(REPO_ROOT).parts)
 
 
 def _resolve_relative(module: Path, node: ast.ImportFrom) -> str:
-    package = _dotted(module.parent).split(".")
+    package = dotted(module.parent).split(".")
     base = package[: len(package) - (node.level - 1)]
     return ".".join([*base, node.module] if node.module else base)
 
