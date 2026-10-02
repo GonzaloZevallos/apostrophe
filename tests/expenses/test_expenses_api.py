@@ -192,20 +192,27 @@ def test_expenses_within_a_category_are_ordered_newest_date_first(client: TestCl
 def test_on_the_same_date_the_most_recently_recorded_comes_first(
     client: TestClient, clock: MovableClock
 ) -> None:
+    """`recorded_at` and `id` are put in conflict on purpose: A is recorded later by
+    the clock but gets the lower id, B is recorded earlier by the clock but gets the
+    higher id. Only `recorded_at DESC` can produce the expected order; `id DESC` alone
+    would list B first."""
     otros = _category_id(client, "Otros")
-    recorded_first = client.post(
+    original = clock()
+    clock.set(original + timedelta(minutes=5))
+    recorded_later_lower_id = client.post(
         "/expenses",
         json={"spent_on": TODAY, "category_id": otros, "amount": 10, "detail": "a"},
     ).json()
-    clock.set(clock() + timedelta(minutes=1))
-    recorded_second = client.post(
+    clock.set(original)
+    recorded_earlier_higher_id = client.post(
         "/expenses",
         json={"spent_on": TODAY, "category_id": otros, "amount": 20, "detail": "b"},
     ).json()
+    assert recorded_earlier_higher_id["id"] > recorded_later_lower_id["id"]
 
     view = client.get("/expenses").json()
     ids = [e["id"] for e in view["categories"][0]["expenses"]]
-    assert ids == [recorded_second["id"], recorded_first["id"]]
+    assert ids == [recorded_later_lower_id["id"], recorded_earlier_higher_id["id"]]
 
 
 def test_editing_with_another_businesss_category_id_is_not_found(
