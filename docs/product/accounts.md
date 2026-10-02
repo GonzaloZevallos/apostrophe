@@ -2,7 +2,8 @@
 
 Businesses, their users, and the only ways in: an invitation and a login. Every other
 capability reads one thing from here, the business of the user asking, and serves that
-business alone (ADR-0004).
+business alone (ADR-0004). It also holds the app as a whole: how it is served, installed
+and navigated, and the Negocio screen.
 
 ## Jobs
 
@@ -17,6 +18,12 @@ anything they will record.
 record a sale in seconds, while nobody else on the network or who guesses at passwords
 gets in.
 
+**When** I run my business from my phone (handing over an order, answering a customer on
+Telegram, paying for something, or catching up at the end of the day), **I want to** get in
+with the link I was sent and keep my customers, my prices and my expenses up to date from
+the phone, **so I can** stop keeping them in the spreadsheet and have real data in place
+when sales arrive. The computer is the same job on a bigger screen.
+
 Success criteria:
 
 1. Nothing of one business is reachable from another, through any route: by id it does not
@@ -25,16 +32,34 @@ Success criteria:
    seven days.
 3. Repeated wrong passwords stop working for a while, and nothing in the answers tells
    which emails have a user.
+4. No `curl` at any point. From the phone alone, a seller can do everything the backend
+   does, starting with opening or joining a business from the invitation link.
+5. It feels like a phone app.
+   - It installs with its own name and icon on Android and iOS.
+   - It follows the phone's light or dark setting.
+   - It says "Sin conexión" when the network drops.
+   - No state is told by color alone (blue ↔ amber, never green ↔ red).
+6. Businesses stay invisible to each other in the browser too.
+   - No business in a URL.
+   - No personal data or money in the console or browser storage.
+   - The session lives only in the backend's cookie.
+   - Serving the front reaches nothing outside the built app.
+7. Nothing invented: no placeholder figures, and no navigation entry for something that
+   does not exist yet.
 
 ## Behaviour
+
+### Invitations and login
 
 - **New-business invitation**: printed by `scripts/invite-business.sh`. Accepting it takes
   a business name, an email and a password, and opens the business with that user in it.
 - **Join invitation**: any user creates one from the app (`POST /invitations`). Accepting
   it takes an email and a password and adds the user to the inviting business; a business
   name sent along is ignored.
-- Looking up an invitation tells its kind, the business it leads to (join only) and when
-  it expires. An unknown, used or expired invitation is not found.
+- **Accepting either invitation** signs the person in, as a login does. They land on Inicio
+  of that business.
+- **Looking up an invitation** tells its kind, the business it leads to (join only) and
+  when it expires. An unknown, used or expired invitation is not found.
 - **Email**: trimmed and lowercased; one user per email across the whole installation.
 - **Password**: at least 10 characters; stored only as a hash.
 - **Login**: email and password answer a session that lasts 30 days, as a cookie and a
@@ -44,8 +69,83 @@ Success criteria:
 - `GET /auth/me` answers the user's email and their business's name.
 - Logging out drops the cookie.
 
+### Business
+
+- **Reading the business** answers its name and its users. Users are shown by email only,
+  sorted by email.
+- **Renaming the business**. The name is trimmed, inner spaces are collapsed, it is up to
+  60 characters and it cannot be blank. There is no uniqueness check across the
+  installation, since a refusal would reveal another business.
+- Both routes take the business only from the session. They are in
+  `tests/test_gated_routes.py` and the isolation sweep.
+
+### The app
+
+- **Serving**: the backend serves the built front from `web/dist` on the API's origin and
+  port.
+  - Front paths never collide with API paths.
+  - Nothing outside `web/dist` is reachable.
+  - Front routes are public static files, outside the API's route list.
+- **Installable, with no offline mode**:
+  - a manifest with name, colors and icons for Android and iOS;
+  - a service worker that caches nothing;
+  - Android's own install prompt is offered when the browser makes it available;
+  - iOS uses "Agregar a inicio" with no walkthrough.
+- **Theme**: light and dark follow the phone. The font is self-hosted.
+- **Language and formats**: every word on screen in Rioplatense Spanish with vos. Money
+  `$ 11.000`, grams `3,5 g`, dates `dd/mm`.
+- **Getting in** (`Entrar`, `NegocioNuevo`, `Invitacion`):
+  - Login shows a fixed hint under the button that five failed attempts lock the email for
+    15 minutes. It shows no count of attempts left. The lock shows the brake message.
+  - A request answered 401 goes to login.
+  - An unknown, used or expired invitation shows "Esta invitación ya no sirve".
+  - Opening `/invitation/{token}` while signed in logs out first, through the backend, then
+    shows the invitation as if signed out. That includes the user's own business's join
+    link.
+- **Shell**: the bottom bar on the phone and the side rail on a computer. They show only
+  Inicio, Clientes and Más.
+- **Inicio**: the business's name. When no variety has a current price today, it shows
+  "Arrancá por las variedades". No figures.
+- **Más**: Gastos, Variedades, Negocio.
+- **Negocio**:
+  - rename the business;
+  - the users by email, the signed-in one marked "vos";
+  - "Invitá a un socio": each tap creates one fresh join link, to copy or share with the
+    phone's share sheet;
+  - log out.
+- **Feedback**:
+  - **Success toasts** are short, fixed and carry no data and no "Deshacer". This
+    capability's: "Negocio renombrado", and "Invitación lista" unless the link is shown on
+    the screen.
+  - **Refusals** show inline and keep what was typed.
+  - **No network** shows "Sin conexión"; a server error shows a generic retry.
+
+## Metrics
+
+- **No curl (criterion 4)**: an end-to-end run through the front alone passes. It accepts a
+  new-business invitation, renames the business, creates a join link and accepts it as a
+  second user.
+- **Isolation (criteria 1, 6)**:
+  - the business routes sit in the isolation sweep and the gated-route test;
+  - serving tests prove no path reaches outside `web/dist`;
+  - after a full run, browser storage and the console hold nothing personal or money;
+  - no front URL carries a business id.
+- **Phone app (criterion 5)**:
+  - the manifest passes the installability check;
+  - both themes render from the tokens;
+  - an offline check shows "Sin conexión";
+  - no state is told by color alone.
+- **Nothing invented (criterion 7)**:
+  - the bar shows exactly Inicio, Clientes and Más;
+  - Más shows exactly Gastos, Variedades and Negocio;
+  - Inicio shows no figures.
+
 ## Out of scope
 
 - Changing or resetting a password from the app; removing a user.
+- Listing past or pending invitations; revoking an invitation.
 - Exporting or deleting a business: part of publishing the app on the internet.
 - Roles within a business.
+- Offline use; an iOS install walkthrough.
+- Ventas, Stock, "Nueva venta", Análisis and Catálogo entries: they come with their own
+  tasks.
