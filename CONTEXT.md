@@ -180,3 +180,9 @@ _Avoid_: post, broadcast
 The catalog sent only to the user's own Telegram chat, to see how it looks before publishing.
 _In the app_: Enviarme una prueba
 _Avoid_: preview, draft
+
+## Language
+
+**Expense category**:
+A business's own heading for its expenses, with a name unique within that business whatever the case or spacing. A new business starts with "Insumos de cultivo", "Packaging", "Envíos y traslados" and "Otros"; a category that has ever held an expense cannot be removed. In the app: Categoría.
+_Avoid_: type, tag, label, account, cost center
