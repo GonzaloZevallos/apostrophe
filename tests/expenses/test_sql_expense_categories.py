@@ -61,3 +61,21 @@ def test_add_raises_category_name_taken_when_the_unique_key_collides(
             # Calls `add` directly, bypassing the use case's own `by_key` check, so the
             # translation under test is the repository's, not the use case's.
             categories.add(ExpenseCategory(CategoryName.of("fletes")))
+
+
+def test_save_raises_category_name_taken_when_the_unique_key_collides(
+    client: TestClient, engine: Engine
+) -> None:
+    with Session(engine) as session:
+        categories = SqlExpenseCategories(session, BUSINESS_ID)
+        categories.add(ExpenseCategory(CategoryName.of("Fletes")))
+        other = categories.add(ExpenseCategory(CategoryName.of("Envíos")))
+        session.commit()
+        assert other.id is not None
+
+        other.rename(CategoryName.of("fletes"))
+        with pytest.raises(CategoryNameTaken):
+            # Calls `save` directly, bypassing the use case's own `by_key` check (which
+            # excludes `other` itself), so the translation under test is the
+            # repository's rename path, not the use case's rename guard.
+            categories.save(other)

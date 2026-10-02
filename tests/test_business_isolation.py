@@ -27,7 +27,12 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy.engine import Engine
 
+from app.expenses.adapters.sql_expense_categories import SqlExpenseCategories
+from app.expenses.adapters.tables import ExpenseCategoryRow
+from app.expenses.application import manage_categories
+from app.expenses.domain.category import CategoryNotFound
 from app.main import create_app
+from app.shared.transaction import Transaction
 from tests.conftest import SETTINGS, TEST_HASHER, MovableClock, open_business, signed_in
 
 MARKER = "zz-isolation-marker"
@@ -148,3 +153,43 @@ def test_another_business_lists_none_of_its_records(
 
     assert response.status_code == 200
     assert MARKER not in response.text
+
+
+def test_the_list_check_catches_a_write_that_a_bare_404_check_would_miss(
+    business_a: TestClient,
+    business_b: TestClient,
+    seeded: dict[str, int],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Proven negative (CODING_STANDARDS §5): before trusting the before/after list
+    comparison added above, it must be seen to fail on the shape of bug it exists for —
+    a by-id route that writes to another business's record with no business filter, and
+    then answers 404 regardless of what it found (Tech Lead, round-3 Q4). The plain
+    status-code check alone does not catch this; only comparing A's list body before and
+    after the call does."""
+
+    def unfiltered_row(self: SqlExpenseCategories, category_id: int) -> ExpenseCategoryRow | None:
+        return self._session.get(ExpenseCategoryRow, category_id)
+
+    def removes_with_no_filter_then_always_answers_not_found(
+        categories: SqlExpenseCategories, transaction: Transaction, category_id: int
+    ) -> None:
+        categories.remove(category_id)
+        transaction.commit()
+        raise CategoryNotFound(category_id)
+
+    monkeypatch.setattr(SqlExpenseCategories, "_row", unfiltered_row)
+    monkeypatch.setattr(
+        manage_categories,
+        "remove_category",
+        removes_with_no_filter_then_always_answers_not_found,
+    )
+    category_id = seeded["category_id"]
+    before = business_a.get("/expense-categories").json()
+
+    response = business_b.delete(f"/expense-categories/{category_id}")
+
+    # The broken route still answers 404: a bare status-code check would pass it.
+    assert response.status_code == 404, response.text
+    with pytest.raises(AssertionError):
+        assert business_a.get("/expense-categories").json() == before
