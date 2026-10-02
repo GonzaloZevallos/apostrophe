@@ -22,6 +22,7 @@ from app.db import make_engine
 from app.expenses.adapters.default_categories import ExpenseCategoriesOpening
 from app.expenses.adapters.router import router as expenses_router
 from app.migrations.runner import upgrade_to_head
+from app.sales.adapters.router import router as sales_router
 from app.settings import Settings
 from app.varieties.adapters.router import router as varieties_router
 
@@ -76,4 +77,5 @@ def create_app(
     app.include_router(varieties_router, dependencies=gated)
     app.include_router(customers_router, dependencies=gated)
     app.include_router(expenses_router, dependencies=gated)
+    app.include_router(sales_router, dependencies=gated)
     return app
