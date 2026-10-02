@@ -7,6 +7,8 @@ assigning a customer (404 sale, then 422 customer, then 409 already assigned).""
 
 from fastapi.testclient import TestClient
 
+from tests.conftest import TODAY
+
 
 def _variety(client: TestClient, list_price: int = 10_000) -> int:
     variety = client.post("/varieties", json={"name": "Lavanda"}).json()
@@ -168,3 +170,140 @@ def test_assign_customer_already_assigned_answers_409(client: TestClient) -> Non
     response = client.put(f"/sales/{sale_id}/customer", json={"customer_id": second_customer})
 
     assert response.status_code == 409, response.text
+
+
+def test_record_sale_defaults_its_date_to_today_from_the_clock(client: TestClient) -> None:
+    variety_id = _variety(client)
+
+    response = client.post(
+        "/sales",
+        json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": "10"}]},
+    )
+
+    assert response.json()["date"] == TODAY.isoformat()
+
+
+def test_a_zero_total_sale_ignores_its_method_and_has_no_payment(client: TestClient) -> None:
+    variety_id = _variety(client)
+
+    response = client.post(
+        "/sales",
+        json={
+            "payment": "cash",
+            "lines": [{"variety_id": variety_id, "grams": "10", "gift": True}],
+        },
+    )
+
+    assert response.status_code == 201, response.text
+    assert response.json()["payment"] == "none"
+    assert response.json()["total"] == 0
+
+
+def test_a_sale_left_owing_answers_owing_as_its_payment(client: TestClient) -> None:
+    variety_id = _variety(client)
+    customer_id = _customer(client)
+
+    response = client.post(
+        "/sales",
+        json={
+            "payment": "owing",
+            "customer_id": customer_id,
+            "lines": [{"variety_id": variety_id, "grams": "10"}],
+        },
+    )
+
+    assert response.status_code == 201, response.text
+    assert response.json()["payment"] == "owing"
+
+
+def test_list_sales_orders_newest_date_first_then_most_recently_recorded(
+    client: TestClient,
+) -> None:
+    variety_id = _variety(client)
+
+    def _record(sale_date: str) -> int:
+        body = {
+            "date": sale_date,
+            "payment": "cash",
+            "lines": [{"variety_id": variety_id, "grams": "10"}],
+        }
+        return int(client.post("/sales", json=body).json()["id"])
+
+    middle_first = _record("2026-09-15")
+    middle_second = _record("2026-09-15")
+    newest = _record("2026-09-20")
+    oldest = _record("2026-09-01")
+
+    response = client.get("/sales")
+
+    assert response.status_code == 200
+    assert [sale["id"] for sale in response.json()] == [
+        newest,
+        middle_second,
+        middle_first,
+        oldest,
+    ]
+
+
+def test_list_sales_filters_by_an_inclusive_date_range(client: TestClient) -> None:
+    variety_id = _variety(client)
+
+    def _record(sale_date: str) -> int:
+        body = {
+            "date": sale_date,
+            "payment": "cash",
+            "lines": [{"variety_id": variety_id, "grams": "10"}],
+        }
+        return int(client.post("/sales", json=body).json()["id"])
+
+    early = _record("2026-09-01")
+    middle = _record("2026-09-15")
+    late = _record("2026-09-30")
+
+    both_ends = client.get("/sales", params={"date_from": "2026-09-01", "date_to": "2026-09-15"})
+    assert [s["id"] for s in both_ends.json()] == [middle, early]
+
+    only_from = client.get("/sales", params={"date_from": "2026-09-15"})
+    assert [s["id"] for s in only_from.json()] == [late, middle]
+
+    only_to = client.get("/sales", params={"date_to": "2026-09-15"})
+    assert [s["id"] for s in only_to.json()] == [middle, early]
+
+
+def test_list_sales_with_an_inverted_range_answers_an_empty_list(client: TestClient) -> None:
+    variety_id = _variety(client)
+    client.post(
+        "/sales",
+        json={
+            "date": "2026-09-15",
+            "payment": "cash",
+            "lines": [{"variety_id": variety_id, "grams": "10"}],
+        },
+    )
+
+    response = client.get(
+        "/sales", params={"date_from": "2026-09-20", "date_to": "2026-09-01"}
+    )
+
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+def test_assigning_a_vip_customer_later_does_not_reprice_the_sale(client: TestClient) -> None:
+    variety_id = _variety(client, list_price=10_000)
+    customer_id = _customer(client)
+
+    sale_id = client.post(
+        "/sales",
+        json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": "5"}]},
+    ).json()["id"]
+    before = client.get(f"/sales/{sale_id}").json()
+    assert before["lines"][0]["pricing_rule"] == "list"
+
+    client.patch(f"/customers/{customer_id}", json={"vip": True})
+    response = client.put(f"/sales/{sale_id}/customer", json={"customer_id": customer_id})
+
+    assert response.status_code == 200, response.text
+    assert response.json()["lines"][0]["pricing_rule"] == "list"
+    assert response.json()["lines"][0]["price_per_gram"] == before["lines"][0]["price_per_gram"]
+    assert response.json()["total"] == before["total"]

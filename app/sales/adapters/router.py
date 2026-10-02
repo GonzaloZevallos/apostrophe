@@ -19,7 +19,7 @@ from app.sales.application.errors import SaleNotFound
 from app.sales.application.record_sale import LineInput
 from app.sales.application.record_sale import record_sale as record_sale_use_case
 from app.sales.domain.pricing import SaleRuleBroken
-from app.sales.domain.sale import CustomerAlreadyAssigned
+from app.sales.domain.sale import CustomerAlreadyAssigned, PaymentMethod
 from app.shared.grams import Grams, InvalidGrams
 
 router = APIRouter(prefix="/sales", tags=["sales"])
@@ -76,6 +76,7 @@ def record_sale(
     clock: ClockDep,
 ) -> SaleOut:
     with as_http:
+        method = body.payment if isinstance(body.payment, PaymentMethod) else None
         sale = record_sale_use_case(
             sales,
             price_book,
@@ -87,7 +88,8 @@ def record_sale(
             shipping_charged=body.shipping_charged,
             note=body.note,
             lines=[_line_input(line) for line in body.lines],
-            payment=body.payment,
+            method=method,
+            left_owing=method is None,
             recorded_at=clock(),
         )
         return SaleOut.of(sale)

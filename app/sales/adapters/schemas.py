@@ -12,8 +12,11 @@ from app.sales.domain.pricing import PricingRule
 from app.sales.domain.sale import PaymentMethod, Sale
 from app.varieties.adapters.schemas import GramsOut
 
-PaymentIn = Literal["cash", "transfer", "owing"]
-PaymentOut = Literal["cash", "transfer", "owing", "none"]
+# "Owing" and "none" are adapter-only words for a sale with no `OnTheSpotPayment`;
+# `PaymentMethod` is still the only declaration of the methods themselves (cash,
+# transfer), never copied here as a string literal.
+PaymentIn = PaymentMethod | Literal["owing"]
+PaymentOut = PaymentMethod | Literal["owing", "none"]
 
 # `SaleIn.date` and `SaleOut.date` name the sale's own date; a bare `date` inside
 # either class body would otherwise resolve to the field, not the type (same trap as
@@ -85,5 +88,5 @@ class SaleOut(BaseModel):
 
 def _payment_out(sale: Sale) -> PaymentOut:
     if sale.payment is not None:
-        return "cash" if sale.payment.method is PaymentMethod.CASH else "transfer"
+        return sale.payment.method
     return "none" if sale.total <= 0 else "owing"

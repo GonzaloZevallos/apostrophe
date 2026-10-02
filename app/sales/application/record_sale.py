@@ -37,7 +37,8 @@ def record_sale(
     shipping_charged: int,
     note: str | None,
     lines: Sequence[LineInput],
-    payment: str,
+    method: PaymentMethod | None,
+    left_owing: bool,
     recorded_at: datetime,
 ) -> Sale:
     customer = None
@@ -47,7 +48,6 @@ def record_sale(
             raise UnknownCustomer()
 
     requests = [_resolve_line(price_book, sale_date, line) for line in lines]
-    method = None if payment == "owing" else PaymentMethod(payment)
 
     sale = Sale.record(
         sale_date=sale_date,
@@ -58,7 +58,7 @@ def record_sale(
         note=note,
         lines=requests,
         method=method,
-        left_owing=payment == "owing",
+        left_owing=left_owing,
         recorded_at=recorded_at,
     )
     stored = sales.add(sale)
