@@ -19,6 +19,8 @@ from app.accounts.domain.session_token import SessionSigner
 from app.clock import Clock, system_clock
 from app.customers.adapters.router import router as customers_router
 from app.db import make_engine
+from app.expenses.adapters.default_categories import ExpenseCategoriesOpening
+from app.expenses.adapters.router import router as expenses_router
 from app.migrations.runner import upgrade_to_head
 from app.settings import Settings
 from app.varieties.adapters.router import router as varieties_router
@@ -57,6 +59,10 @@ def create_app(
     app.state.hasher = hasher or PasswordHasher()
     app.state.public_url = settings.public_url
     app.add_exception_handler(RequestValidationError, _without_request_data)
+    # A factory, not an instance: `get_business_opening` builds it over the request's
+    # own `Session`. The next capability that seeds at opening turns this into a
+    # composite, not a second keyword argument on `accept_invitation` (docs/adr/0006).
+    app.state.business_opening = ExpenseCategoriesOpening
 
     @app.get("/health", tags=["health"])
     def health() -> dict[str, str]:
@@ -69,4 +75,5 @@ def create_app(
     app.include_router(accounts_router, dependencies=gated)
     app.include_router(varieties_router, dependencies=gated)
     app.include_router(customers_router, dependencies=gated)
+    app.include_router(expenses_router, dependencies=gated)
     return app

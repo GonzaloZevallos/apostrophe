@@ -9,6 +9,7 @@ from app.accounts.adapters.deps import (
     SESSION_COOKIE,
     CurrentSession,
     get_accounts,
+    get_business_opening,
     get_hasher,
     get_public_url,
     get_signer,
@@ -17,6 +18,7 @@ from app.accounts.adapters.deps import (
 from app.accounts.adapters.sql_accounts import SqlAccounts
 from app.accounts.application import invitations
 from app.accounts.application.invitations import EmailTaken
+from app.accounts.application.ports import BusinessOpening
 from app.accounts.application.sign_in import LoginLocked, log_in
 from app.accounts.domain.account import AccountRuleBroken
 from app.accounts.domain.invitation import InvitationKind, InvitationNotUsable
@@ -136,6 +138,7 @@ def accept_invitation(
     hasher: HasherDep,
     signer: SignerDep,
     clock: ClockDep,
+    opening: Annotated[BusinessOpening, Depends(get_business_opening)],
 ) -> SessionOut:
     with as_http:
         session_token = invitations.accept_invitation(
@@ -148,6 +151,7 @@ def accept_invitation(
             body.password,
             body.business_name,
             clock(),
+            opening=opening,
         )
     return _open(response, session_token)
 

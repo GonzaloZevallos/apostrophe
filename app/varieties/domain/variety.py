@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from datetime import date
 
 from app.shared.grams import Grams
+from app.shared.names import NameProblem, collapse_spaces, name_key, name_problem
 
 NAME_MAX_LENGTH = 60
 
@@ -42,20 +43,21 @@ class VarietyName:
     value: str
 
     def __post_init__(self) -> None:
-        if not self.value:
+        problem = name_problem(self.value, NAME_MAX_LENGTH)
+        if problem is NameProblem.EMPTY:
             raise InvalidName("a variety needs a name")
-        if self.value != " ".join(self.value.split()):
+        if problem is NameProblem.UNTRIMMED:
             raise InvalidName("a variety name has no leading, trailing or repeated spaces")
-        if len(self.value) > NAME_MAX_LENGTH:
+        if problem is NameProblem.TOO_LONG:
             raise InvalidName(f"a variety name has at most {NAME_MAX_LENGTH} characters")
 
     @classmethod
     def of(cls, raw: str) -> VarietyName:
-        return cls(" ".join(raw.split()))
+        return cls(collapse_spaces(raw))
 
     @property
     def key(self) -> str:
-        return self.value.casefold()
+        return name_key(self.value)
 
 
 @dataclass(frozen=True)
