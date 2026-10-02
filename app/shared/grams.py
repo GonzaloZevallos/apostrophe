@@ -14,7 +14,8 @@ HUNDREDTHS_PER_GRAM = 100
 
 
 class InvalidGrams(ValueError):
-    pass
+    """Grams were invalid. The message is a fixed literal, built from no constructor
+    argument, so it never repeats what was submitted (CODING_STANDARDS.md section 9)."""
 
 
 @dataclass(frozen=True, order=True)
@@ -26,12 +27,12 @@ class Grams:
         try:
             amount = Decimal(value)
         except InvalidOperation as exc:
-            raise InvalidGrams(f"{value!r} is not a number of grams") from exc
+            raise InvalidGrams("grams must be a number") from exc
         if not amount.is_finite():
-            raise InvalidGrams(f"{value!r} is not a number of grams")
+            raise InvalidGrams("grams must be a number")
         scaled = amount * HUNDREDTHS_PER_GRAM
         if scaled != scaled.to_integral_value():
-            raise InvalidGrams(f"{value} has more than two decimals")
+            raise InvalidGrams("grams allow at most two decimals")
         return cls(int(scaled))
 
     @property
