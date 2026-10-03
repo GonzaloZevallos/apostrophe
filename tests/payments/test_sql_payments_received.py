@@ -96,14 +96,23 @@ def test_another_business_s_payments_are_absent(
     )
     assert on_the_spot.status_code == 201, on_the_spot.text
 
+    owning_customer = client.post(
+        "/customers", json={"name": "Owning business's customer", "phone": "11 7000-0000"}
+    ).json()
+    owning_business_id = _business_id_of_customer(engine, owning_customer["id"])
+
     other_customer = other_client.post(
         "/customers", json={"name": "Other business's customer", "phone": "11 6000-0000"}
     ).json()
     other_business_id = _business_id_of_customer(engine, other_customer["id"])
 
+    period = Period(date(2026, 10, 1), date(2026, 10, 31))
     with Session(engine) as session:
-        totals = SqlPaymentsReceived(session, other_business_id).totals(
-            [Period(date(2026, 10, 1), date(2026, 10, 31))]
-        )
+        owning_totals = SqlPaymentsReceived(session, owning_business_id).totals([period])
+        other_totals = SqlPaymentsReceived(session, other_business_id).totals([period])
 
-    assert all(total == 0 for total in totals.values())
+    # The seed's own payment counts for the business it belongs to...
+    assert owning_totals[period] == 5_000
+    # ...and is simply absent from the other business's own read: not zeroed out by a
+    # port that would answer 0 regardless of what it was given.
+    assert all(total == 0 for total in other_totals.values())
