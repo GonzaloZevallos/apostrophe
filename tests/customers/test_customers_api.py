@@ -4,6 +4,9 @@ from typing import Any
 
 from fastapi.testclient import TestClient
 
+from tests.conftest import TODAY
+from tests.contract_shapes import assert_matches_fixture
+
 
 def _register(
     client: TestClient,
@@ -24,6 +27,43 @@ def test_a_registered_customer_comes_back_with_the_canonical_phone(client: TestC
     assert customer["phone"] == "+5491123456789"
     assert customer["channel"] is None
     assert customer["vip"] is False
+    assert_matches_fixture(customer, "customer")
+
+
+def test_a_freshly_registered_customer_has_no_balance(client: TestClient) -> None:
+    customer = _register(client)
+
+    assert customer["balance"] == 0
+    assert customer["owing_since"] is None
+    assert customer["standing"] == "settled"
+
+
+def test_a_customer_with_a_sale_left_owing_shows_the_balance_everywhere_they_are_read(
+    client: TestClient,
+) -> None:
+    customer = _register(client)
+    variety = client.post("/varieties", json={"name": "Lavanda"}).json()
+    client.post(
+        f"/varieties/{variety['id']}/prices",
+        json={"effective_from": "2026-01-01", "list_price": 10_000},
+    )
+    client.post(
+        "/sales",
+        json={
+            "customer_id": customer["id"],
+            "payment": "owing",
+            "lines": [{"variety_id": variety["id"], "grams": "1"}],
+        },
+    )
+
+    for read in (
+        client.get(f"/customers/{customer['id']}").json(),
+        next(c for c in client.get("/customers").json() if c["id"] == customer["id"]),
+    ):
+        assert read["balance"] == 10_000
+        assert read["owing_since"] == TODAY.isoformat()
+        assert read["standing"] == "owes"
+        assert_matches_fixture(read, "customer")
 
 
 def test_a_customer_can_be_registered_vip_with_a_channel(client: TestClient) -> None:
