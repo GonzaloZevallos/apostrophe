@@ -79,7 +79,9 @@ Success criteria:
   - The bottom bar on the phone and the side rail on a computer show only Inicio, Ventas, Clientes, Stock and Más, in that order (the design's).
   - A fixed **"Nueva venta"** button, separate from the tabs, opens the sale form directly (sales.md). It is not a tab.
   - It shows on every signed-in screen except the sale form itself and its customer sheet.
-- **Inicio**: the business's name. When no variety has a current price today, it shows "Arrancá por las variedades". No figures.
+- **Inicio**: the business's name, and no figures. It may show two fixed notices:
+  - "Arrancá por las variedades", when no variety has a current price today;
+  - "Tu catálogo en Telegram está desactualizado", while the pinned catalog is out of date (pinned-catalog.md). It opens Catálogo.
 - **Más**: Gastos, Variedades, Catálogo ("Catálogo · El mensaje de hoy, listo para copiar", catalog.md), Negocio.
 - **Negocio**:
   - rename the business;
@@ -123,7 +125,7 @@ Success criteria:
 - **Nothing invented (criterion 7)**:
   - the bar shows exactly Inicio, Ventas, Clientes, Stock and Más, plus the "Nueva venta" button;
   - Más shows exactly Gastos, Variedades, Catálogo and Negocio;
-  - Inicio shows no figures.
+  - Inicio shows no figures, and no notices other than its two.
 
 ## Out of scope
 

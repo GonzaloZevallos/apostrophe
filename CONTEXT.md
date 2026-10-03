@@ -207,14 +207,14 @@ _Avoid_: menu, price list, flyer
 _In the app_: Catálogo
 
 **Pinned catalog**:
-The catalog message pinned in the business's Telegram chat, kept in step whenever a price changes or a variety sells out.
-_In the app_: Mensaje fijado
+The catalog message pinned in the business's Telegram channel chat by its own bot. Once first published, it is edited in place whenever the catalog text changes, and it is never posted again in that chat. When nothing qualifies, it shows the header, "Por ahora no tenemos nada para ofrecer." and the footer. _In the app_: Mensaje fijado.
 _Avoid_: post, broadcast
+_In the app_: Mensaje fijado
 
 **Test send**:
-The catalog sent only to the user's own Telegram chat, to see how it looks before publishing.
-_In the app_: Enviarme una prueba
+The catalog sent only to the user's own Telegram chat, using the bot settings typed on the screen. They are saved only if it succeeds. A successful test since the settings last changed is required before Publicar. _In the app_: Probarlo.
 _Avoid_: preview, draft
+_In the app_: Enviarme una prueba
 
 ## Language
 
@@ -277,3 +277,15 @@ _Avoid_: unpaid orders, pending sales, open invoices
 **Total owed**:
 The sum of every customer's balance above $0 in a business; credits never subtract from it. _In the app_: the total heading Te deben and in Clientes' header.
 _Avoid_: receivables, outstanding
+
+**Publish**:
+Posting and pinning the catalog in the business's channel chat, or editing the already pinned message there. It always sends, even when the text has not changed. _In the app_: Publicar.
+_Avoid_: broadcast, push, sync
+
+**Bot settings**:
+A business's one Telegram bot token, stored encrypted and never shown again once saved, plus its channel chat and the user's own chat. Changing any of them requires a new test send before publishing. _In the app_: El bot de Telegram.
+_Avoid_: integration, connection, config
+
+**Out of date**:
+The pinned catalog's state after the last automatic update failed, or while changed bot settings are untested. It shows the last publish date and one fixed reason. Its only other state is up to date. _In the app_: Desactualizado / Al día.
+_Avoid_: stale, pending, out of sync, error
