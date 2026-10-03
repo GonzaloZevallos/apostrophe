@@ -13,7 +13,7 @@ import { keys } from '../../api/keys'
 import { isGone } from '../../api/refusals'
 import { formatPhone } from '../../format/phone'
 import ErrorGenerico from '../../components/ErrorGenerico'
-import { readFeedback } from '../../components/feedback'
+import { newSaleFor, readFeedback } from '../../components/feedback'
 import GoneScreen from '../../components/GoneScreen'
 import Notice from '../../components/Notice'
 import SinConexion from '../../components/SinConexion'
@@ -81,6 +81,9 @@ export default function ClienteFicha() {
             <span>{data.vip ? 'Sí' : 'No'}</span>
           </div>
         </div>
+        <Link to="/ventas/nueva" state={newSaleFor(customerId)} className="boton">
+          Nueva venta a {data.name}
+        </Link>
       </div>
     </main>
   )

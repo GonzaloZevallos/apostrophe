@@ -339,6 +339,20 @@
   font-weight: 600;
 }
 
+/* The fixed "Nueva venta" button (accounts.md, "Shell"): a pill above the bottom
+ * bar on the phone, matching `.boton`'s own shape (`Inicio.dc.html`). Its
+ * `--escritorio` twin sits above the side rail's items instead (`InicioCompu.dc.html`)
+ * and is hidden until the `min-width: 900px` query below swaps which one shows,
+ * the same switch `.bar-inferior`/`.riel-lateral` already make. */
+.boton-nueva-venta {
+  margin: 0 var(--margen-pantalla) var(--espacio-md);
+}
+
+.boton-nueva-venta--escritorio {
+  display: none;
+  margin-bottom: var(--espacio-lg);
+}
+
 .mas__lista {
   display: flex;
   flex-direction: column;
@@ -822,6 +836,14 @@
   }
 
   .riel-lateral {
+    display: flex;
+  }
+
+  .boton-nueva-venta {
+    display: none;
+  }
+
+  .boton-nueva-venta--escritorio {
     display: flex;
   }
 }
