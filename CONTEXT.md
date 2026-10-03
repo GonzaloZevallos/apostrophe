@@ -205,3 +205,25 @@ _Avoid_: post, broadcast
 The catalog sent only to the user's own Telegram chat, to see how it looks before publishing.
 _In the app_: Enviarme una prueba
 _Avoid_: preview, draft
+
+## Language
+
+**Stock status**:
+How a variety stands on stock: no entries (it has never had a stock entry), sold out (stock at or below zero), low (above zero and under its low-stock threshold) or ok. On screen it is told by shape and word, never by color alone. _In the app_: Sin entradas, agotada, baja, ok.
+_Avoid_: stock level, alert, availability
+
+**Days left**:
+A variety's stock divided by the average daily grams sold or gifted over the last 30 days, rounded down to whole days. Not shown when stock is at or below zero or nothing went out in those 30 days. _In the app_: Al ritmo de los últimos 30 días.
+_Avoid_: runway, coverage, forecast
+
+**Opening stock**:
+A stock entry recording grams already on hand when a business starts keeping stock. It is an ordinary origin with no limit per variety, and its lot costs $0 unless a cost is recorded. _In the app_: Stock inicial.
+_Avoid_: initial balance, baseline, starting inventory
+
+**Harvest**:
+A stock entry of grams the business grew. Its lot costs $0 unless a cost is recorded; cultivation inputs are expenses, never spread over harvests. _In the app_: Cosecha.
+_Avoid_: crop, yield, production
+
+**Adjustment**:
+A stock entry recording the difference between a physical count and the stock the app shows, plus or minus. A negative adjustment carries no cost and takes its grams out of the oldest lots, as grams going out do. _In the app_: Ajuste.
+_Avoid_: correction, recount, shrinkage, write-off
