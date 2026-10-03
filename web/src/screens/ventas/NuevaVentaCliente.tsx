@@ -10,12 +10,19 @@
  * cliente" embeds `CustomerFields` and creates the customer through the normal
  * `POST /customers`, then hands it straight to `onChosen` — it never navigates (plan,
  * invariants).
+ *
+ * The search itself is frozen under `api/keys.ts`'s `saleFormCustomerSearch`
+ * (`['sale-form', ...]`, `gcTime: 0`, `staleTime: Infinity`, no refetch on focus or
+ * reconnect): its results are where the chosen customer's `vip` comes from, so a
+ * result an earlier mount cached — with a since-changed `vip` — can never be the one
+ * a seller picks here (plan, invariants: "the one customer object the form holds").
  */
 
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { type FormEvent, useState } from 'react'
 import { ApiError, NetworkError } from '../../api/client'
 import { type Customer, type CustomerIn, listCustomers, registerCustomer } from '../../api/customers'
+import { keys } from '../../api/keys'
 import { resolveOverride, type RefusalCode } from '../../api/refusals'
 import SinConexion from '../../components/SinConexion'
 import CustomerFields, { type CustomerFieldsValue } from '../clientes/CustomerFields'
@@ -58,8 +65,12 @@ export default function NuevaVentaCliente({ allowNone, onChosen, onClose }: Nuev
   const [offline, setOffline] = useState(false)
 
   const results = useQuery({
-    queryKey: ['sale-form', 'customer-search', query],
+    queryKey: keys.saleFormCustomerSearch(query),
     queryFn: () => listCustomers(query),
+    gcTime: 0,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   })
 
   const create = useMutation({

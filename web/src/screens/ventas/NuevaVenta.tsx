@@ -42,6 +42,7 @@ import {
   type PriceQuote,
   type PricingRule,
   fromHundredths,
+  hundredthsOfApiGrams,
   priceLine,
   saleTotals,
   toHundredths,
@@ -53,6 +54,8 @@ import NuevaVentaCliente from './NuevaVentaCliente'
 export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
 export const NO_LINES_MESSAGE = 'Cargá al menos una variedad.'
 export const OWING_HINT = 'Para dejar debiendo elegí un cliente'
+export const PAYMENT_REQUIRED_MESSAGE = 'Elegí cómo se pagó, o dejá la venta debiendo'
+export const SPECIAL_PRICE_INVALID_MESSAGE = 'El precio especial tiene que ser mayor a $0'
 
 const RULE_LABEL: Record<PricingRule, string> = {
   list: 'Lista',
@@ -85,7 +88,7 @@ function quoteOf(variety: Variety): PriceQuote | null {
   if (price === null) return null
   const bulk =
     price.bulk_price !== null && price.bulk_minimum !== null
-      ? { price: price.bulk_price, minimumHundredths: toHundredths(price.bulk_minimum.toFixed(2)) }
+      ? { price: price.bulk_price, minimumHundredths: hundredthsOfApiGrams(price.bulk_minimum) }
       : null
   return { listPrice: price.list_price, bulk }
 }
@@ -127,16 +130,19 @@ interface SaleBody {
 }
 
 const SUBMIT_OVERRIDES: Partial<
-  Record<RefusalCode, { field: 'customer' | 'shipping' | 'note' | 'date' | 'form'; message: string }>
+  Record<
+    RefusalCode,
+    { field: 'customer' | 'shipping' | 'note' | 'date' | 'payment' | 'form'; message: string }
+  >
 > = {
   'sale.owing_without_customer': { field: 'customer', message: OWING_HINT },
   'sale.shipping_negative': { field: 'shipping', message: 'El envío no puede ser negativo' },
   'sale.note_too_long': { field: 'note', message: 'La nota es demasiado larga' },
   'sale.date_in_future': { field: 'date', message: 'La fecha no puede ser futura' },
+  'sale.payment_required': { field: 'payment', message: PAYMENT_REQUIRED_MESSAGE },
   'sale.customer_not_found': { field: 'form', message: GENERIC_REFUSAL },
   'sale.variety_not_found': { field: 'form', message: GENERIC_REFUSAL },
   'sale.lines_missing': { field: 'form', message: GENERIC_REFUSAL },
-  'sale.payment_required': { field: 'form', message: GENERIC_REFUSAL },
   'sale.gift_with_special_price': { field: 'form', message: GENERIC_REFUSAL },
   'sale.special_price_invalid': { field: 'form', message: GENERIC_REFUSAL },
   'sale.grams_invalid': { field: 'form', message: GENERIC_REFUSAL },
@@ -163,6 +169,7 @@ export default function NuevaVenta() {
   const [shippingError, setShippingError] = useState<string | null>(null)
   const [noteError, setNoteError] = useState<string | null>(null)
   const [dateError, setDateError] = useState<string | null>(null)
+  const [paymentError, setPaymentError] = useState<string | null>(null)
   const [offline, setOffline] = useState(false)
 
   const savedRef = useRef(false)
@@ -217,6 +224,17 @@ export default function NuevaVenta() {
     return parsed.ok ? parsed.value : null
   }
 
+  /** `parseMoney` (money.ts) already rejects `$0`, a decimal or a negative amount —
+   * but today's code must still never fall silently back to list/bulk pricing for
+   * such a line (sales.md: "Precio especial doesn't accept $0"). A line with
+   * something typed in `specialPrice` that doesn't parse is its own error, distinct
+   * from "no special price at all" (an empty field), and blocks saving the same way
+   * `validateSale`'s own errors do. */
+  function specialPriceErrorFor(line: LineState): string | null {
+    if (line.specialPrice.trim() === '') return null
+    return parseMoney(line.specialPrice).ok ? null : SPECIAL_PRICE_INVALID_MESSAGE
+  }
+
   const lineValidations: LineValidation[] = lines
     .filter((line) => line.varietyId !== '')
     .map((line) => {
@@ -240,10 +258,18 @@ export default function NuevaVenta() {
     return errors.find((error) => error.field === `line:${key}`)?.message ?? null
   }
 
+  /** The one message a line shows, in priority order: an invalid typed special
+   * price first (it is why the line isn't pricing at all), then `validateSale`'s
+   * own "no price that day". */
+  function combinedLineError(line: LineState): string | null {
+    return specialPriceErrorFor(line) ?? lineErrorFor(line.key)
+  }
+
   function previewOf(line: LineState): LinePreview | null {
     if (line.varietyId === '') return null
     const variety = varietyOf(line.varietyId)
     if (variety === undefined) return null
+    if (specialPriceErrorFor(line) !== null) return null
     const grams = parseGrams(line.grams)
     if (!grams.ok) return null
     const quote = quoteOf(variety)
@@ -300,9 +326,11 @@ export default function NuevaVenta() {
     setShippingError(null)
     setNoteError(null)
     setDateError(null)
+    setPaymentError(null)
     setOffline(false)
 
     if (errors.length > 0) return
+    if (lines.some((line) => specialPriceErrorFor(line) !== null)) return
 
     const filled = lines.filter((line) => line.varietyId !== '')
     if (filled.length === 0) {
@@ -356,6 +384,7 @@ export default function NuevaVenta() {
           if (override.field === 'shipping') setShippingError(override.message)
           else if (override.field === 'note') setNoteError(override.message)
           else if (override.field === 'date') setDateError(override.message)
+          else if (override.field === 'payment') setPaymentError(override.message)
           else setFormError(override.message)
         } else if (caught.code !== UNKNOWN_CODE) {
           setFormError(GENERIC_REFUSAL)
@@ -435,7 +464,7 @@ export default function NuevaVenta() {
 
           {lines.map((line, index) => {
             const preview = previews[index] ?? null
-            const lineError = lineErrorFor(line.key)
+            const lineError = combinedLineError(line)
             return (
               <div key={line.key} className="fila">
                 <select
@@ -572,6 +601,11 @@ export default function NuevaVenta() {
             {customer === null && (
               <span className="campo__error" role="alert">
                 {OWING_HINT}
+              </span>
+            )}
+            {paymentError !== null && (
+              <span className="campo__error" role="alert">
+                {paymentError}
               </span>
             )}
           </fieldset>

@@ -176,3 +176,190 @@ test('an untouched form closes at once; a touched one asks "¿Descartás la vent
   await user.click(within(dialogAgain).getByRole('button', { name: 'Sí, descartala' }))
   expect(await screen.findByText('Ventas')).toBeInTheDocument()
 })
+
+test('a refused save keeps everything typed, the message on its field', async () => {
+  const user = userEvent.setup()
+  await openForm({
+    'GET /auth/me': () => jsonResponse(200, ME),
+    'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
+    'POST /sales': () => jsonResponse(422, { detail: 'too long', code: 'sale.note_too_long' }),
+  })
+
+  await user.selectOptions(screen.getByLabelText('Variedad línea 1'), '1')
+  await user.type(screen.getByLabelText('Gramos línea 1'), '2')
+  await user.click(screen.getByRole('radio', { name: 'Efectivo' }))
+  await user.type(screen.getByLabelText('Nota'), 'una nota bien larga')
+  await user.click(screen.getByRole('button', { name: 'Guardar venta' }))
+
+  expect(await screen.findByText('La nota es demasiado larga')).toBeInTheDocument()
+  expect(screen.getByLabelText('Variedad línea 1')).toHaveValue('1')
+  expect(screen.getByLabelText('Gramos línea 1')).toHaveValue('2')
+  expect(screen.getByLabelText('Nota')).toHaveValue('una nota bien larga')
+  expect(screen.getByRole('radio', { name: 'Efectivo' })).toBeChecked()
+  expect(screen.getByText('Nueva venta')).toBeInTheDocument()
+})
+
+test('sale.payment_required shows its own message on "Cómo se pagó", not the generic banner', async () => {
+  const user = userEvent.setup()
+  await openForm({
+    'GET /auth/me': () => jsonResponse(200, ME),
+    'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
+    'POST /sales': () => jsonResponse(422, { detail: 'needs a method', code: 'sale.payment_required' }),
+  })
+
+  await user.selectOptions(screen.getByLabelText('Variedad línea 1'), '1')
+  await user.type(screen.getByLabelText('Gramos línea 1'), '2')
+  await user.click(screen.getByRole('button', { name: 'Guardar venta' }))
+
+  const message = await screen.findByText('Elegí cómo se pagó, o dejá la venta debiendo')
+  expect(message.closest('fieldset')).not.toBeNull()
+  expect(screen.queryByText('Revisá los datos e intentá de nuevo.')).not.toBeInTheDocument()
+})
+
+test('sale.no_price_that_day refetches prices, and the line then shows its own message', async () => {
+  const user = userEvent.setup()
+  let varietiesCalls = 0
+  await openForm({
+    'GET /auth/me': () => jsonResponse(200, ME),
+    'GET /varieties?on=2026-10-02': () => {
+      varietiesCalls += 1
+      // A partner deletes Rosa's price between this form's own fetch and the save
+      // (sales.md): the second answer, after the refetch the refusal triggers, has
+      // no current price any more.
+      const rosa = varietiesCalls === 1 ? ROSA : { ...ROSA, current_price: null }
+      return jsonResponse(200, [rosa])
+    },
+    'POST /sales': () => jsonResponse(422, { detail: 'no price', code: 'sale.no_price_that_day' }),
+  })
+
+  await user.selectOptions(screen.getByLabelText('Variedad línea 1'), '1')
+  await user.type(screen.getByLabelText('Gramos línea 1'), '2')
+  await user.click(screen.getByRole('radio', { name: 'Efectivo' }))
+  expect(await screen.findByText('Lista')).toBeInTheDocument()
+
+  await user.click(screen.getByRole('button', { name: 'Guardar venta' }))
+
+  expect(await screen.findByText('Rosa no tiene precio para esa fecha')).toBeInTheDocument()
+  expect(varietiesCalls).toBe(2)
+})
+
+test('sale.customer_not_found and sale.variety_not_found keep the form open with the generic line', async () => {
+  const user = userEvent.setup()
+  const codes = ['sale.customer_not_found', 'sale.variety_not_found']
+  let call = 0
+  await openForm({
+    'GET /auth/me': () => jsonResponse(200, ME),
+    'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
+    'POST /sales': () => {
+      const code = codes[call] ?? codes[codes.length - 1]
+      call += 1
+      return jsonResponse(404, { detail: 'gone', code })
+    },
+  })
+
+  await user.selectOptions(screen.getByLabelText('Variedad línea 1'), '1')
+  await user.type(screen.getByLabelText('Gramos línea 1'), '2')
+  await user.click(screen.getByRole('radio', { name: 'Efectivo' }))
+
+  await user.click(screen.getByRole('button', { name: 'Guardar venta' }))
+  expect(await screen.findByText('Revisá los datos e intentá de nuevo.')).toBeInTheDocument()
+  expect(screen.getByText('Nueva venta')).toBeInTheDocument()
+  expect(screen.getByLabelText('Gramos línea 1')).toHaveValue('2')
+
+  await user.click(screen.getByRole('button', { name: 'Guardar venta' }))
+  expect(await screen.findByText('Revisá los datos e intentá de nuevo.')).toBeInTheDocument()
+  expect(screen.getByText('Nueva venta')).toBeInTheDocument()
+  expect(screen.getByLabelText('Gramos línea 1')).toHaveValue('2')
+})
+
+test('nothing an earlier mount cached ever renders: a remount with a different price fetches fresh', async () => {
+  const user = userEvent.setup()
+  let listPrice = 1000
+  await openForm({
+    'GET /auth/me': () => jsonResponse(200, ME),
+    'GET /varieties?on=2026-10-02': () =>
+      jsonResponse(200, [{ ...ROSA, current_price: { ...ROSA.current_price, list_price: listPrice } }]),
+  })
+
+  await user.selectOptions(screen.getByLabelText('Variedad línea 1'), '1')
+  await user.type(screen.getByLabelText('Gramos línea 1'), '2')
+  expect(await screen.findByText('$ 1.000 x g')).toBeInTheDocument()
+
+  // Leave (unmounting NuevaVenta — `gcTime: 0` evicts its frozen query right away)
+  // and change what the next fetch answers with, as if a partner had repriced Rosa
+  // meanwhile. The form is touched, so "Cerrar" asks first.
+  await user.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await user.click(await screen.findByRole('button', { name: 'Sí, descartala' }))
+  await screen.findByText('Ventas')
+  listPrice = 5000
+
+  await act(() => router.navigate('/ventas/nueva'))
+  await screen.findByText('Nueva venta')
+  await user.selectOptions(screen.getByLabelText('Variedad línea 1'), '1')
+  await user.type(screen.getByLabelText('Gramos línea 1'), '2')
+
+  expect(await screen.findByText('$ 5.000 x g')).toBeInTheDocument()
+  expect(screen.queryByText('$ 1.000 x g')).not.toBeInTheDocument()
+})
+
+test('a $0 special price is refused rather than silently priced at list, and Regalo/Especial exclude each other', async () => {
+  const user = userEvent.setup()
+  const fetchMock = await openForm({
+    'GET /auth/me': () => jsonResponse(200, ME),
+    'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
+  })
+
+  await user.selectOptions(screen.getByLabelText('Variedad línea 1'), '1')
+  await user.type(screen.getByLabelText('Gramos línea 1'), '2')
+  expect(await screen.findByText('Lista')).toBeInTheDocument()
+
+  await user.type(screen.getByLabelText('Precio especial línea 1'), '0')
+  expect(await screen.findByText('El precio especial tiene que ser mayor a $0')).toBeInTheDocument()
+  expect(screen.queryByText('Lista')).not.toBeInTheDocument()
+  expect(screen.queryByText('Especial')).not.toBeInTheDocument()
+  expect(screen.getByLabelText(`Regalo línea 1`)).toBeDisabled()
+
+  await user.click(screen.getByRole('radio', { name: 'Efectivo' }))
+  await user.click(screen.getByRole('button', { name: 'Guardar venta' }))
+  expect(fetchMock.mock.calls.some(([path, init]) => path === '/sales' && (init as RequestInit)?.method === 'POST')).toBe(
+    false,
+  )
+
+  await user.clear(screen.getByLabelText('Precio especial línea 1'))
+  expect(screen.queryByText('El precio especial tiene que ser mayor a $0')).not.toBeInTheDocument()
+  expect(await screen.findByText('Lista')).toBeInTheDocument()
+  expect(screen.getByLabelText('Regalo línea 1')).toBeEnabled()
+
+  await user.type(screen.getByLabelText('Precio especial línea 1'), '500')
+  expect(await screen.findByText('Especial')).toBeInTheDocument()
+  expect(screen.getByLabelText('Regalo línea 1')).toBeDisabled()
+})
+
+test('"Nueva venta a <name>" prices a VIP customer at the bulk rate below the bulk minimum', async () => {
+  const user = userEvent.setup()
+  const VIP_ANA = { id: 7, name: 'Ana VIP', phone: '+5491100000001', channel: null, vip: true }
+  const WITH_BULK = {
+    id: 3,
+    name: 'Jazmín',
+    current_price: { id: 11, effective_from: '2026-09-01', list_price: 1000, bulk_price: 700, bulk_minimum: 10 },
+  }
+  setupFetch({
+    'GET /auth/me': () => jsonResponse(200, ME),
+    'GET /varieties?on=2026-10-02': () => jsonResponse(200, [WITH_BULK]),
+    'GET /customers/7': () => jsonResponse(200, VIP_ANA),
+  })
+  await act(() => router.navigate('/ventas/nueva', { state: { customerId: '7' } }))
+  render(<App />)
+  await screen.findByText('Nueva venta')
+
+  expect(await screen.findByText('Ana VIP')).toBeInTheDocument()
+  expect(screen.getByText('VIP')).toBeInTheDocument()
+
+  await user.selectOptions(screen.getByLabelText('Variedad línea 1'), '3')
+  await user.type(screen.getByLabelText('Gramos línea 1'), '1')
+
+  // Below the bulk minimum (10 g), but VIP takes the bulk price anyway (sales.md).
+  // Two "VIP"s now: the customer's own badge, and the line's rule badge.
+  await waitFor(() => expect(screen.getAllByText('VIP').length).toBeGreaterThanOrEqual(2))
+  expect(screen.getByText('$ 700 x g')).toBeInTheDocument()
+})

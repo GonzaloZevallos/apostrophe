@@ -8,6 +8,7 @@ import {
   type LineInput,
   type PricingRule,
   fromHundredths,
+  hundredthsOfApiGrams,
   priceLine,
   saleTotals,
   toHundredths,
@@ -138,5 +139,23 @@ describe('validateSale', () => {
   test('does not flag cash or transfer, with or without a customer', () => {
     expect(validateSale({ method: 'cash', hasCustomer: false, lines: [] })).toEqual([])
     expect(validateSale({ method: null, hasCustomer: false, lines: [] })).toEqual([])
+  })
+})
+
+// The only place a bulk minimum's API grams (a JSON float, GramsOut) may turn into
+// hundredths (plan, invariants: "no Math.round, toFixed or float multiplication on
+// grams"; Tech Lead review: a screen calling `toFixed` on grams is a violation).
+describe('hundredthsOfApiGrams', () => {
+  test('a whole number of grams', () => {
+    expect(hundredthsOfApiGrams(10)).toBe(1000)
+  })
+
+  test('one and two decimal places', () => {
+    expect(hundredthsOfApiGrams(0.5)).toBe(50)
+    expect(hundredthsOfApiGrams(3.33)).toBe(333)
+  })
+
+  test('rejects a shape toHundredths itself would reject', () => {
+    expect(() => hundredthsOfApiGrams(Number.NaN)).toThrow()
   })
 })
