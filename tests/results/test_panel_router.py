@@ -16,6 +16,7 @@ from typing import Any
 
 from fastapi.testclient import TestClient
 
+from app.results.domain.periods import periods as compute_periods
 from tests.conftest import PASSWORD, MovableClock, signed_in
 from tests.contract_shapes import assert_matches_fixture
 
@@ -283,20 +284,47 @@ def test_agreement_with_sales_debts_and_stock_at_2026_12_31(
     customer_id = _customer(client, "Deudora")
     _sale(client, ok_id, grams="1", on=day.isoformat(), customer_id=customer_id, payment="owing")
 
+    # A sale in the month but outside the week (the Monday-Sunday week containing
+    # 2026-12-31 runs 2026-12-28..2027-01-03, so 2026-12-01 falls in the month only),
+    # and a sale in the week but outside the month, across the year boundary into
+    # January — so today, week and month each hold a different set of sales, and a
+    # wrong bound at the year boundary cannot pass unnoticed.
+    boundary_id = _variety(client, "Año nuevo", price=5_000)
+    _entry(client, boundary_id, grams="50", total_cost=500, on="2026-12-01")
+    _sale(client, boundary_id, grams="2", on="2026-12-01")
+    clock.set(datetime(2027, 1, 2, 18, 0, tzinfo=UTC))
+    _sale(client, boundary_id, grams="3", on="2027-01-02")
+    clock.set(datetime(2026, 12, 31, 18, 0, tzinfo=UTC))
+
     panel = client.get("/panel").json()
+    bounds = compute_periods(day)
 
-    sales_for_day = client.get(
-        "/sales", params={"date_from": day.isoformat(), "date_to": day.isoformat()}
-    ).json()
-    assert panel["periods"]["today"]["sales"] == sum(s["total"] for s in sales_for_day)
-    assert panel["periods"]["today"]["sales_count"] == len(sales_for_day)
+    ids_by_period: dict[str, set[int]] = {}
+    for key, period in (("today", bounds.today), ("week", bounds.week), ("month", bounds.month)):
+        sales_in_period = client.get(
+            "/sales",
+            params={"date_from": period.start.isoformat(), "date_to": period.end.isoformat()},
+        ).json()
+        assert panel["periods"][key]["sales"] == sum(s["total"] for s in sales_in_period)
+        assert panel["periods"][key]["sales_count"] == len(sales_in_period)
+        ids_by_period[key] = {s["id"] for s in sales_in_period}
 
-    cost_from_lines = 0
-    for sale_summary in sales_for_day:
-        detail = client.get(f"/sales/{sale_summary['id']}").json()
-        for line in detail["lines"]:
-            cost_from_lines += line["cost"]["costed"] or 0
-    assert panel["periods"]["today"]["cost_of_goods"] == cost_from_lines
+        cost_from_lines = 0
+        for sale_summary in sales_in_period:
+            detail = client.get(f"/sales/{sale_summary['id']}").json()
+            for line in detail["lines"]:
+                cost_from_lines += line["cost"]["costed"] or 0
+        assert panel["periods"][key]["cost_of_goods"] == cost_from_lines
+
+    # Proves the boundary sales land exactly where meant, not merged into every
+    # period by a wrong bound: December's sale is in the month but never the week
+    # (which starts 2026-12-28), and January's is in the week but never the month.
+    december_boundary_sale = ids_by_period["month"] - ids_by_period["today"]
+    january_boundary_sale = ids_by_period["week"] - ids_by_period["today"]
+    assert december_boundary_sale and december_boundary_sale.isdisjoint(ids_by_period["week"])
+    assert january_boundary_sale and january_boundary_sale.isdisjoint(ids_by_period["month"])
+    assert ids_by_period["today"] < ids_by_period["week"]
+    assert ids_by_period["today"] < ids_by_period["month"]
 
     debtors = client.get("/payments/debtors").json()
     assert panel["debts"]["total_owed"] == debtors["total_owed"]
@@ -307,7 +335,7 @@ def test_agreement_with_sales_debts_and_stock_at_2026_12_31(
     stock = client.get("/stock").json()
     stock_by_id = {row["variety_id"]: row for row in stock["varieties"]}
     panel_ids = {row["variety_id"] for row in panel["stock"]}
-    assert panel_ids == {no_entries_id, ok_id, sold_out_id, low_id}
+    assert panel_ids == {no_entries_id, ok_id, sold_out_id, low_id, boundary_id}
     statuses = {row["variety_id"]: row["status"] for row in panel["stock"]}
     assert statuses[no_entries_id] == "no_entries"
     assert statuses[ok_id] == "ok"
