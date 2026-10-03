@@ -10,7 +10,7 @@ section 5); only `SqlSales` itself, the seam under test, is built and called dir
 from datetime import UTC, date, datetime
 
 from fastapi.testclient import TestClient
-from sqlalchemy import select
+from sqlalchemy import event, select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
@@ -274,3 +274,130 @@ def test_delete_removes_the_sale_its_lines_and_its_payment(
 
     assert sales.get(sale_id) is None
     assert sales.list(None, None) == []
+
+
+# -- SaleViews (docs/adr/0009) ---------------------------------------------------------
+
+
+def test_get_view_labels_the_sale_with_the_customer_s_name_vip_and_variety_name(
+    client: TestClient, engine: Engine
+) -> None:
+    variety_id = _variety_id(client)
+    customer_id = _customer_id(client)
+    business_id = _business_id_of_variety(engine, variety_id)
+    sales = SqlSales(Session(engine), business_id)
+    sale_id = sales.add(_sale(variety_id=variety_id, customer_id=customer_id)).id
+    assert sale_id is not None
+
+    view = sales.get_view(sale_id)
+
+    assert view is not None
+    assert view.customer is not None
+    assert view.customer.id == customer_id
+    assert view.customer.name == "Fran Araujo"
+    assert view.customer.vip is False
+    assert len(view.lines) == 1
+    assert view.lines[0].variety_name == "Blue Dream"
+    assert view.lines[0].line.variety_id == variety_id
+
+
+def test_get_view_of_a_sale_with_no_customer_has_no_customer(
+    client: TestClient, engine: Engine
+) -> None:
+    variety_id = _variety_id(client)
+    business_id = _business_id_of_variety(engine, variety_id)
+    sales = SqlSales(Session(engine), business_id)
+    sale_id = sales.add(_sale(variety_id=variety_id, customer_id=None)).id
+    assert sale_id is not None
+
+    view = sales.get_view(sale_id)
+
+    assert view is not None
+    assert view.customer is None
+
+
+def test_get_view_of_an_unknown_sale_is_none(client: TestClient, engine: Engine) -> None:
+    variety_id = _variety_id(client)
+    business_id = _business_id_of_variety(engine, variety_id)
+    sales = SqlSales(Session(engine), business_id)
+
+    assert sales.get_view(999_999) is None
+
+
+def test_list_views_orders_the_same_way_as_list_and_carries_every_line(
+    client: TestClient, engine: Engine
+) -> None:
+    variety_id = _variety_id(client)
+    business_id = _business_id_of_variety(engine, variety_id)
+    sales = SqlSales(Session(engine), business_id)
+    first = sales.add(_sale(variety_id=variety_id, sale_date=date(2026, 6, 1))).id
+    second = sales.add(_sale(variety_id=variety_id, sale_date=date(2026, 6, 10))).id
+
+    views = sales.list_views(None, None)
+
+    assert [v.sale.id for v in views] == [second, first]
+    assert all(len(v.lines) == 1 for v in views)
+    assert all(v.lines[0].variety_name == "Blue Dream" for v in views)
+
+
+def test_a_view_of_another_business_s_sale_is_not_reachable_and_never_leaks_through_the_join(
+    client: TestClient, other_client: TestClient, engine: Engine
+) -> None:
+    variety_id = _variety_id(client)
+    business_id = _business_id_of_variety(engine, variety_id)
+    customer_id = _customer_id(client)
+    sales = SqlSales(Session(engine), business_id)
+    sale_id = sales.add(_sale(variety_id=variety_id, customer_id=customer_id)).id
+    assert sale_id is not None
+
+    other_variety_id = _variety_id(other_client)
+    other_business_id = _business_id_of_variety(engine, other_variety_id)
+    other_sales = SqlSales(Session(engine), other_business_id)
+
+    assert other_sales.get_view(sale_id) is None
+    assert other_sales.list_views(None, None) == []
+
+
+def test_list_views_reads_exactly_two_statements_whatever_the_number_of_sales(
+    client: TestClient, engine: Engine
+) -> None:
+    """Not one statement per sale or per line (docs/adr/0009): four sales, each with
+    two lines, still cost exactly two statements."""
+    variety_id = _variety_id(client)
+    business_id = _business_id_of_variety(engine, variety_id)
+    session = Session(engine)
+    sales = SqlSales(session, business_id)
+    two_lines = [
+        LineRequest(variety_id=variety_id, grams=ONE_GRAM, quote=QUOTE),
+        LineRequest(variety_id=variety_id, grams=ONE_GRAM, quote=QUOTE),
+    ]
+    for _ in range(4):
+        sales.add(
+            Sale.record(
+                sale_date=TODAY,
+                today=TODAY,
+                customer_id=None,
+                customer=None,
+                shipping_charged=0,
+                note=None,
+                lines=two_lines,
+                method=PaymentMethod.CASH,
+                left_owing=False,
+                recorded_at=RECORDED_AT,
+            )
+        )
+
+    statements: list[str] = []
+
+    def _record(
+        conn: object, cursor: object, statement: str, parameters: object, *args: object
+    ) -> None:
+        statements.append(statement)
+
+    event.listen(engine, "before_cursor_execute", _record)
+    try:
+        sales.list_views(None, None)
+    finally:
+        event.remove(engine, "before_cursor_execute", _record)
+
+    assert len(statements) == 2, statements

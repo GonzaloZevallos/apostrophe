@@ -16,10 +16,16 @@ from app.sales.application import view_sales
 from app.sales.application.assign_customer import assign_customer as assign_customer_use_case
 from app.sales.application.delete_sale import delete_sale as delete_sale_use_case
 from app.sales.application.errors import SaleNotFound
+from app.sales.application.ports import SaleView
 from app.sales.application.record_sale import LineInput
 from app.sales.application.record_sale import record_sale as record_sale_use_case
 from app.sales.domain.pricing import SaleRuleBroken
-from app.sales.domain.sale import CustomerAlreadyAssigned, PaymentMethod
+from app.sales.domain.sale import (
+    CustomerAlreadyAssigned,
+    PaymentMethod,
+    UnknownCustomer,
+    UnknownVariety,
+)
 from app.shared.grams import Grams, InvalidGrams
 
 router = APIRouter(prefix="/sales", tags=["sales"])
@@ -49,7 +55,7 @@ CustomerFactsDep = Annotated[SqlCustomerFacts, Depends(get_customer_facts)]
 
 as_http = TranslateErrors(
     [
-        (404, (SaleNotFound,)),
+        (404, (SaleNotFound, UnknownCustomer, UnknownVariety)),
         (409, (CustomerAlreadyAssigned,)),
         (422, (SaleRuleBroken, InvalidGrams)),
     ]
@@ -89,17 +95,17 @@ def record_sale(
             note=body.note,
             lines=[_line_input(line) for line in body.lines],
             method=method,
-            left_owing=method is None,
+            left_owing=body.payment == "owing",
             recorded_at=clock(),
         )
-        return SaleOut.of(sale)
+        return SaleOut.of(_view_of(sales, sale.id))
 
 
 @router.get("")
 def list_sales(
     sales: SalesDep, date_from: date | None = None, date_to: date | None = None
 ) -> list[SaleOut]:
-    return [SaleOut.of(sale) for sale in view_sales.list_sales(sales, date_from, date_to)]
+    return [SaleOut.of(view) for view in view_sales.list_sales(sales, date_from, date_to)]
 
 
 @router.get("/{sale_id}")
@@ -118,7 +124,14 @@ def assign_customer(
 ) -> SaleOut:
     with as_http:
         sale = assign_customer_use_case(sales, customer_facts, session, sale_id, body.customer_id)
-        return SaleOut.of(sale)
+        return SaleOut.of(_view_of(sales, sale.id))
+
+
+def _view_of(sales: SqlSales, sale_id: int | None) -> SaleView:
+    assert sale_id is not None, "only a stored sale is read back"
+    view = sales.get_view(sale_id)
+    assert view is not None, "the sale just written or updated still exists"
+    return view
 
 
 @router.delete("/{sale_id}", status_code=204)

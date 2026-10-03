@@ -298,8 +298,8 @@ def test_a_body_reference_to_a_missing_or_foreign_variety_is_refused_the_same_wa
         "/sales", json=_sale_body(variety_id=foreign_variety, customer_id=customer_id)
     )
 
-    assert missing.status_code == 422, missing.text
-    assert other_business.status_code == 422, other_business.text
+    assert missing.status_code == 404, missing.text
+    assert other_business.status_code == 404, other_business.text
     assert missing.json() == other_business.json()
 
     own_variety = business_b.post("/varieties", json={"name": "B variety"}).json()
@@ -330,8 +330,8 @@ def test_a_body_reference_to_a_missing_or_foreign_customer_is_refused_the_same_w
         "/sales", json=_sale_body(variety_id=variety["id"], customer_id=foreign_customer)
     )
 
-    assert missing.status_code == 422, missing.text
-    assert other_business.status_code == 422, other_business.text
+    assert missing.status_code == 404, missing.text
+    assert other_business.status_code == 404, other_business.text
     assert missing.json() == other_business.json()
 
     own_customer = business_b.post(
@@ -362,8 +362,8 @@ def test_assigning_a_customer_from_another_business_is_refused_the_same_way_as_m
         f"/sales/{sale_id}/customer", json={"customer_id": foreign_customer}
     )
 
-    assert missing.status_code == 422, missing.text
-    assert other_business.status_code == 422, other_business.text
+    assert missing.status_code == 404, missing.text
+    assert other_business.status_code == 404, other_business.text
     assert missing.json() == other_business.json()
 
     own_customer = business_b.post(
