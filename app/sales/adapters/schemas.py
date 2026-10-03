@@ -89,9 +89,10 @@ class SaleOut(BaseModel):
     payment: PaymentOut
     total: int
     lines: list[SaleLineOut]
+    still_owing: bool
 
     @classmethod
-    def of(cls, view: SaleView) -> "SaleOut":
+    def of(cls, view: SaleView, still_owing: bool = False) -> "SaleOut":
         sale = view.sale
         assert sale.id is not None, "only stored sales go out"
         return cls(
@@ -103,6 +104,7 @@ class SaleOut(BaseModel):
             payment=_payment_out(sale),
             total=sale.total,
             lines=[SaleLineOut.of(line) for line in view.lines],
+            still_owing=still_owing,
         )
 
 
@@ -165,9 +167,12 @@ class SaleDetailOut(BaseModel):
     total: int
     lines: list[SaleLineDetailOut]
     total_grams: GramsOut
+    still_owing: bool
 
     @classmethod
-    def of(cls, view: SaleView, costs: Sequence[LineCost]) -> "SaleDetailOut":
+    def of(
+        cls, view: SaleView, costs: Sequence[LineCost], still_owing: bool = False
+    ) -> "SaleDetailOut":
         sale = view.sale
         assert sale.id is not None, "only stored sales go out"
         assert len(costs) == len(view.lines), "one LineCost per line, in the same order"
@@ -184,6 +189,7 @@ class SaleDetailOut(BaseModel):
                 for line, cost in zip(view.lines, costs, strict=True)
             ],
             total_grams=sale.total_grams.as_decimal(),
+            still_owing=still_owing,
         )
 
 

@@ -131,3 +131,32 @@ def test_recording_a_later_entry_moves_the_cost_the_next_time_it_is_read(
     assert after["lines"][0]["cost"] == {"costed": 4_000, "pending_grams": 0.0}
     assert after["total"] == before["total"]
     assert after["lines"][0]["price_per_gram"] == before["lines"][0]["price_per_gram"]
+
+
+def test_a_sale_detail_carries_still_owing_from_settlement(client: TestClient) -> None:
+    """`GET /sales/{id}` answers `still_owing` the same way the list route does (the
+    plan's `balances-wiring` brief): both read it from `OwingSales`, never a local
+    comparison. This cannot yet be checked with `assert_matches_fixture(…,
+    "sale-detail")`: that fixture also requires `total_grams`, which is `sale-grams`'s
+    own field and is not on this branch. Integration adds that one check once both
+    branches have merged (Tech Lead finding, plan scope, `test_sale_costs_router.py:90`)."""
+    variety_id = _variety(client)
+    customer = client.post(
+        "/customers", json={"name": "Juana", "phone": "11 2345-6789"}
+    ).json()
+
+    owing = client.post(
+        "/sales",
+        json={
+            "customer_id": customer["id"],
+            "payment": "owing",
+            "lines": [{"variety_id": variety_id, "grams": "1"}],
+        },
+    ).json()
+    paid = client.post(
+        "/sales",
+        json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": "1"}]},
+    ).json()
+
+    assert client.get(f"/sales/{owing['id']}").json()["still_owing"] is True
+    assert client.get(f"/sales/{paid['id']}").json()["still_owing"] is False

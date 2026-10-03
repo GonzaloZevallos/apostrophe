@@ -25,7 +25,7 @@ from app.sales.application import view_sales
 from app.sales.application.assign_customer import assign_customer as assign_customer_use_case
 from app.sales.application.delete_sale import delete_sale as delete_sale_use_case
 from app.sales.application.errors import SaleNotFound
-from app.sales.application.ports import LineCosts, SaleView
+from app.sales.application.ports import LineCosts, OwingSales, SaleView
 from app.sales.application.record_sale import LineInput
 from app.sales.application.record_sale import record_sale as record_sale_use_case
 from app.sales.domain.pricing import SaleRuleBroken
@@ -70,7 +70,18 @@ def get_line_costs(
 SalesDep = Annotated[SqlSales, Depends(get_sales)]
 PriceBookDep = Annotated[SqlPriceBook, Depends(get_price_book)]
 CustomerFactsDep = Annotated[SqlCustomerFacts, Depends(get_customer_facts)]
+def get_owing_sales(
+    request: Request, session: SessionDep, business_id: CurrentBusinessId
+) -> OwingSales:
+    # Sales never imports `app.payments` (CODING_STANDARDS section 1): `app/main.py`
+    # hangs the real implementation (`SqlOwingSales`) on `app.state.owing_sales` as a
+    # factory, the same shape used for `line_costs`.
+    factory = cast(Callable[[Session, int], OwingSales], request.app.state.owing_sales)
+    return factory(session, business_id)
+
+
 LineCostsDep = Annotated[LineCosts, Depends(get_line_costs)]
+OwingSalesDep = Annotated[OwingSales, Depends(get_owing_sales)]
 
 
 as_http = TranslateErrors(
@@ -97,6 +108,7 @@ def record_sale(
     sales: SalesDep,
     price_book: PriceBookDep,
     customer_facts: CustomerFactsDep,
+    owing_sales: OwingSalesDep,
     session: SessionDep,
     today: TodayDep,
     clock: ClockDep,
@@ -118,21 +130,30 @@ def record_sale(
             left_owing=body.payment == "owing",
             recorded_at=clock(),
         )
-        return SaleOut.of(_view_of(sales, sale.id))
+        return _sale_out(sales, owing_sales, sale.id)
 
 
 @router.get("")
 def list_sales(
-    sales: SalesDep, date_from: date | None = None, date_to: date | None = None
+    sales: SalesDep,
+    owing_sales: OwingSalesDep,
+    date_from: date | None = None,
+    date_to: date | None = None,
 ) -> list[SaleOut]:
-    return [SaleOut.of(view) for view in view_sales.list_sales(sales, date_from, date_to)]
+    views = view_sales.list_sales(sales, date_from, date_to)
+    customer_ids = [view.customer.id for view in views if view.customer is not None]
+    owing = owing_sales.still_owing(customer_ids)
+    return [SaleOut.of(view, view.sale.id in owing) for view in views]
 
 
 @router.get("/{sale_id}")
-def get_sale(sale_id: int, sales: SalesDep, line_costs: LineCostsDep) -> SaleDetailOut:
+def get_sale(
+    sale_id: int, sales: SalesDep, line_costs: LineCostsDep, owing_sales: OwingSalesDep
+) -> SaleDetailOut:
     with as_http:
         view, costs = view_sales.get_sale_detail(sales, line_costs, sale_id)
-        return SaleDetailOut.of(view, costs)
+        still_owing = _still_owing(view, owing_sales)
+        return SaleDetailOut.of(view, costs, still_owing)
 
 
 @router.put("/{sale_id}/customer")
@@ -141,11 +162,12 @@ def assign_customer(
     body: AssignCustomerIn,
     sales: SalesDep,
     customer_facts: CustomerFactsDep,
+    owing_sales: OwingSalesDep,
     session: SessionDep,
 ) -> SaleOut:
     with as_http:
         sale = assign_customer_use_case(sales, customer_facts, session, sale_id, body.customer_id)
-        return SaleOut.of(_view_of(sales, sale.id))
+        return _sale_out(sales, owing_sales, sale.id)
 
 
 def _view_of(sales: SqlSales, sale_id: int | None) -> SaleView:
@@ -153,6 +175,19 @@ def _view_of(sales: SqlSales, sale_id: int | None) -> SaleView:
     view = sales.get_view(sale_id)
     assert view is not None, "the sale just written or updated still exists"
     return view
+
+
+def _still_owing(view: SaleView, owing_sales: OwingSales) -> bool:
+    # A sale with no customer never owes: settlement never sees one (the plan's
+    # invariant), so there is nothing to ask the port about.
+    if view.customer is None:
+        return False
+    return view.sale.id in owing_sales.still_owing([view.customer.id])
+
+
+def _sale_out(sales: SqlSales, owing_sales: OwingSales, sale_id: int | None) -> SaleOut:
+    view = _view_of(sales, sale_id)
+    return SaleOut.of(view, _still_owing(view, owing_sales))
 
 
 @router.delete("/{sale_id}", status_code=200)

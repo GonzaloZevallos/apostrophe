@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 from app.payments.adapters.tables import PaymentRow
 from app.sales.adapters.tables import SaleLineRow, SaleRow
 from tests.conftest import TODAY
+from tests.contract_shapes import assert_matches_fixture
 
 
 def _variety(client: TestClient, list_price: int = 10_000) -> int:
@@ -53,6 +54,41 @@ def _customer(client: TestClient) -> int:
         "/customers", json={"name": "Juana", "phone": "11 2345-6789"}
     ).json()
     return int(customer["id"])
+
+
+def test_a_sale_left_owing_is_marked_still_owing_everywhere_it_is_read(
+    client: TestClient,
+) -> None:
+    customer_id = _customer(client)
+    variety_id = _variety(client)
+
+    created = client.post(
+        "/sales",
+        json={
+            "customer_id": customer_id,
+            "payment": "owing",
+            "lines": [{"variety_id": variety_id, "grams": "1"}],
+        },
+    ).json()
+    sale_id = created["id"]
+
+    assert created["still_owing"] is True
+    assert_matches_fixture(created, "sale")
+    listed = next(s for s in client.get("/sales").json() if s["id"] == sale_id)
+    assert listed["still_owing"] is True
+    assert_matches_fixture(listed, "sale")
+
+
+def test_a_sale_paid_on_the_spot_is_never_still_owing(client: TestClient) -> None:
+    variety_id = _variety(client)
+
+    created = client.post(
+        "/sales",
+        json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": "1"}]},
+    ).json()
+
+    assert created["still_owing"] is False
+    assert client.get("/sales").json()[0]["still_owing"] is False
 
 
 def test_record_sale_without_a_customer_paid_cash(client: TestClient) -> None:

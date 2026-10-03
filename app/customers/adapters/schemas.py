@@ -3,12 +3,14 @@ every rule stays the domain's and its message is a fixed string (ADR-0005). `PAT
 partial: `model_fields_set` is how `CustomerPatchIn` tells a field left out from a field
 explicitly sent as `null`, which is only allowed for `channel`."""
 
+from datetime import date
 from typing import Literal
 
 from pydantic import BaseModel
 
 from app.customers.application.errors import RequiredFieldCleared
 from app.customers.application.manage_customers import UNCHANGED, CustomerChanges, Unchanged
+from app.customers.application.ports import CustomerBalance, Standing
 from app.customers.domain.customer import Channel, Customer
 
 
@@ -35,15 +37,24 @@ class CustomerPatchIn(BaseModel):
         )
 
 
+# A customer with no sales recorded has nothing for `Balances.for_customers` to
+# answer (CustomerBalance.for_customers`'s own contract: absent, not an error) — this
+# is the $0/settled default every `CustomerOut.of` falls back to.
+NO_BALANCE = CustomerBalance(balance=0, owing_since=None, standing="settled")
+
+
 class CustomerOut(BaseModel):
     id: int
     name: str
     phone: str
     channel: Channel | None
     vip: bool
+    balance: int
+    owing_since: date | None
+    standing: Standing
 
     @classmethod
-    def of(cls, customer: Customer) -> "CustomerOut":
+    def of(cls, customer: Customer, balance: CustomerBalance = NO_BALANCE) -> "CustomerOut":
         assert customer.id is not None, "only stored customers go out"
         return cls(
             id=customer.id,
@@ -51,6 +62,9 @@ class CustomerOut(BaseModel):
             phone=customer.phone.value,
             channel=customer.channel,
             vip=customer.vip,
+            balance=balance.balance,
+            owing_since=balance.owing_since,
+            standing=balance.standing,
         )
 
 
