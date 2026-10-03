@@ -276,7 +276,7 @@ def test_delete_removes_the_sale_its_lines_and_its_payment(
     assert sales.list(None, None) == []
 
 
-# -- SaleViews (docs/adr/0009) ---------------------------------------------------------
+# -- SaleViews (docs/adr/0011) ---------------------------------------------------------
 
 
 def test_get_view_labels_the_sale_with_the_customer_s_name_vip_and_variety_name(
@@ -361,7 +361,7 @@ def test_a_view_of_another_business_s_sale_is_not_reachable_and_never_leaks_thro
 def test_list_views_reads_exactly_two_statements_whatever_the_number_of_sales(
     client: TestClient, engine: Engine
 ) -> None:
-    """Not one statement per sale or per line (docs/adr/0009): four sales, each with
+    """Not one statement per sale or per line (docs/adr/0011): four sales, each with
     two lines, still cost exactly two statements."""
     variety_id = _variety_id(client)
     business_id = _business_id_of_variety(engine, variety_id)

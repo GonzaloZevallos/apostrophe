@@ -133,7 +133,7 @@ _Avoid_: overdue date, due date
 ## Stock
 
 **Stock entry**:
-Grams of a variety coming in on a date, with one origin: purchase, harvest, opening stock or adjustment. A purchase carries its total cost; an adjustment may be negative.
+Grams of a variety coming in on a date, with one origin: purchase, harvest, opening stock or adjustment. A purchase carries its total cost; an adjustment may be negative. Unlike a price entry, any stock entry may be edited or deleted at any time, whatever it already fed: its date, grams, cost or origin (ADR-0009).
 _In the app_: Entrada
 _Avoid_: restock, delivery, intake
 
@@ -143,14 +143,29 @@ _In the app_: Compra
 _Avoid_: order, buy
 
 **Lot**:
-The grams of one stock entry together with their cost per gram. A harvest costs $0 unless a cost is recorded. Grams sold or gifted come out of the oldest lot of their variety first.
+The grams of one stock entry together with their cost per gram. A harvest costs $0 unless a cost is recorded. Grams sold or gifted come out of the oldest lot of their variety first, oldest by date; a stock entry recorded late or corrected takes its place by date and the lots after it are worked out again (ADR-0009).
 _In the app_: Lote
 _Avoid_: batch
 
 **Stock**:
-The grams of a variety on hand: everything that came in minus everything sold or gifted.
+The grams of a variety on hand: everything that came in minus everything sold or gifted. Can go negative when a sale or gift is recorded for grams not yet in: the figure still shows, never hidden.
 _In the app_: Stock
 _Avoid_: inventory, balance
+
+**Pending cost**:
+What grams sold or gifted beyond everything recorded as coming in cost: not yet known, and never shown as $0. A later stock entry of that variety, wherever its date falls in the lot order, settles it (ADR-0009).
+_In the app_: Costo pendiente
+_Avoid_: unknown cost, zero cost
+
+**Draw**:
+Grams going out of a variety, taking from its lots oldest first: a sale line (gifts included) or a negative adjustment. It has a costed part and, beyond every lot, pending grams.
+_In the app_: no word of its own; on screen it is the line's "Costo de lo vendido".
+_Avoid_: outflow, consumption, movement, out
+
+**Lot order**:
+The one order a variety's lots and draws are taken in: by date, then by recording order.
+_In the app_: no word of its own.
+_Avoid_: chain, chain position, FIFO order
 
 **Low-stock threshold**:
 Optional grams under which a variety's stock counts as low.
@@ -160,7 +175,7 @@ _Avoid_: reorder point, alert level
 ## Results
 
 **Cost of goods sold**:
-What the grams sold or gifted in a period cost, taken from the lots they came out of.
+What the grams sold or gifted in a period cost, taken from the lots they came out of as those lots stand today, oldest first; it is worked out again whenever an earlier stock entry changes, however far back (ADR-0009). Part of it may be pending cost.
 _In the app_: Costo de lo vendido
 _Avoid_: COGS, average cost, cost per gram
 
@@ -200,3 +215,25 @@ _Avoid_: post, broadcast
 The catalog sent only to the user's own Telegram chat, to see how it looks before publishing.
 _In the app_: Enviarme una prueba
 _Avoid_: preview, draft
+
+## Language
+
+**Stock status**:
+How a variety stands on stock, the first that fits in this order: no entries (nothing has moved, with no stock entry and no sale or gift), sold out (stock at or below zero, including sales with no entry), low (above zero and under its low-stock threshold), ok. It is told by shape and word, never by color alone. _In the app_: Sin entradas, agotada, baja, ok.
+_Avoid_: stock level, alert, availability
+
+**Days left**:
+A variety's stock divided by the average daily grams sold or gifted over the last 30 days, rounded down to whole days. Not shown when stock is at or below zero or nothing went out in those 30 days. _In the app_: Al ritmo de los últimos 30 días.
+_Avoid_: runway, coverage, forecast
+
+**Opening stock**:
+A stock entry recording grams already on hand when a business starts keeping stock. It is an ordinary origin with no limit per variety, and its lot costs $0 unless a cost is recorded. _In the app_: Stock inicial.
+_Avoid_: initial balance, baseline, starting inventory
+
+**Harvest**:
+A stock entry of grams the business grew. Its lot costs $0 unless a cost is recorded; cultivation inputs are expenses, never spread over harvests. _In the app_: Cosecha.
+_Avoid_: crop, yield, production
+
+**Adjustment**:
+A stock entry recording the difference between a physical count and the stock the app shows, plus or minus. A negative adjustment carries no cost and takes its grams out of the oldest lots, as grams going out do. _In the app_: Ajuste.
+_Avoid_: correction, recount, shrinkage, write-off

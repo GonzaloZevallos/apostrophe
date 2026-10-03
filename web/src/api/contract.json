@@ -48,6 +48,14 @@
     "sale.payment_required": { "kind": "refusal" },
     "sale.owing_without_customer": { "kind": "refusal" },
     "sale.customer_already_assigned": { "kind": "refusal" },
+    "stock.entry_not_found": { "kind": "gone" },
+    "stock.grams_invalid": { "kind": "refusal" },
+    "stock.cost_required": { "kind": "refusal" },
+    "stock.cost_invalid": { "kind": "refusal" },
+    "stock.cost_on_negative_adjustment": { "kind": "refusal" },
+    "stock.date_in_future": { "kind": "refusal" },
+    "stock.note_too_long": { "kind": "refusal" },
+    "stock.threshold_invalid": { "kind": "refusal" },
     "RequestInvalid": { "kind": "refusal" }
   },
   "frontSegments": [
@@ -57,6 +65,7 @@
     "variedades",
     "gastos",
     "ventas",
+    "mi-stock",
     "mas",
     "negocio",
     "assets",

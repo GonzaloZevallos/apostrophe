@@ -12,6 +12,7 @@ from typing import Protocol
 
 from app.sales.domain.pricing import VarietyPricing
 from app.sales.domain.sale import CustomerFact, Sale, SaleLine
+from app.shared.grams import Grams
 
 
 class PriceBook(Protocol):
@@ -64,7 +65,7 @@ class Sales(Protocol):
 
 @dataclass(frozen=True)
 class SaleViewCustomer:
-    """A sale's customer as a screen needs it (docs/adr/0009): the current name and
+    """A sale's customer as a screen needs it (docs/adr/0011): the current name and
     VIP flag, read fresh — not as they were at recording time (ADR-0003)."""
 
     id: int
@@ -82,7 +83,7 @@ class SaleViewLine:
 
 @dataclass(frozen=True)
 class SaleView:
-    """A sale labelled with what a screen needs to show it (docs/adr/0009): the
+    """A sale labelled with what a screen needs to show it (docs/adr/0011): the
     stored `Sale` itself, its customer's current name and VIP flag (`None` for a
     sale without one), and each line's variety name. Read-only: nothing here is
     ever written back."""
@@ -93,7 +94,7 @@ class SaleView:
 
 
 class SaleViews(Protocol):
-    """Sales joined with the names a screen needs (docs/adr/0009), for one business.
+    """Sales joined with the names a screen needs (docs/adr/0011), for one business.
     A read port, like `CustomerFacts`: `SqlSales` answers it directly, over the same
     rows `Sales` writes, never a second store."""
 
@@ -103,4 +104,29 @@ class SaleViews(Protocol):
 
     def list_views(self, date_from: date | None, date_to: date | None) -> Sequence[SaleView]:
         """Same ordering and range semantics as `Sales.list`."""
+        ...
+
+
+@dataclass(frozen=True)
+class LineCost:
+    """One sale line's cost of goods (ADR-0009): `costed` is `None` exactly when none
+    of the line's grams is costed yet, never a $0 standing in for "not yet known".
+    `pending_grams` is the part of the line with no lot behind it."""
+
+    costed: int | None
+    pending_grams: Grams
+
+
+class LineCosts(Protocol):
+    """Cost of goods for the lines of one sale, allocated fresh on every read — never
+    frozen, never stored on the line itself (ADR-0009). Built for one business.
+
+    Sales never imports `app.stock` (CODING_STANDARDS section 1): the one
+    implementation, `app.stock.adapters.line_costs.SqlLineCosts`, is wired onto
+    `app.state.line_costs` in `app/main.py` and reached from here only through this
+    port.
+    """
+
+    def for_sale(self, sale: Sale) -> list[LineCost]:
+        """One `LineCost` per line of `sale`, in the same order as `sale.lines`."""
         ...

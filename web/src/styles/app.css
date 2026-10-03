@@ -436,6 +436,18 @@
   font-weight: 600;
 }
 
+.variedad-item__encabezado {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-sm);
+}
+
+.variedad-item__aviso {
+  font-size: 14px;
+  color: var(--tinta2);
+}
+
 .variedad-item__sin-precio {
   font-size: 14px;
   color: var(--tinta2);
@@ -1001,6 +1013,198 @@
   font-weight: 600;
   text-decoration: underline;
   cursor: pointer;
+}
+
+/* `Stock` and `EntradaStock` (stock.md, "On screen"). The status mark is told by
+ * shape and word, never by color alone: a square for agotada (the inverted chip,
+ * never red), a filled circle for baja, an empty circle for ok/no entries. */
+.fila-stock {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+  padding: var(--espacio-md) 0;
+  border-bottom: 1px solid var(--linea);
+}
+
+.fila-stock:last-child {
+  border-bottom: 0;
+}
+
+.fila-stock__texto {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fila-stock__nombre {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.fila-stock__detalle {
+  font-size: 13px;
+  color: var(--tinta2);
+}
+
+.fila-stock__cifras {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.fila-stock__gramos {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.fila-stock__insignia {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--tinta2);
+}
+
+.fila-stock__insignia--sold_out {
+  background: var(--critico);
+  color: var(--critico-texto);
+  padding: 3px 9px;
+  border-radius: var(--radio-pildora);
+}
+
+.fila-stock__insignia--low {
+  background: var(--deuda-fondo);
+  color: var(--deuda);
+  padding: 3px 9px;
+  border-radius: var(--radio-pildora);
+}
+
+.marca-estado {
+  display: inline-flex;
+  align-items: center;
+}
+
+.marca-estado__forma {
+  width: 11px;
+  height: 11px;
+  box-sizing: border-box;
+}
+
+.marca-estado--sold_out .marca-estado__forma {
+  border-radius: 3px;
+  background: var(--critico);
+}
+
+.marca-estado--low .marca-estado__forma {
+  border-radius: var(--radio-pildora);
+  background: var(--deuda);
+}
+
+.marca-estado--ok .marca-estado__forma,
+.marca-estado--no_entries .marca-estado__forma {
+  border-radius: var(--radio-pildora);
+  border: 2px solid var(--tinta2);
+}
+
+/* The word next to the shape: visually hidden (never dropped, so a screen reader
+ * and a sighted reader relying on the row's own detail text both still have it),
+ * since the row already spells out the status in words beside it. */
+.marca-estado__palabra {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.lista-stock {
+  display: flex;
+  flex-direction: column;
+}
+
+.lista-entradas {
+  display: flex;
+  flex-direction: column;
+}
+
+.fila-entrada {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+  padding: var(--espacio-md) 0;
+  border-bottom: 1px solid var(--linea);
+  text-decoration: none;
+  color: inherit;
+}
+
+.fila-entrada:last-child {
+  border-bottom: 0;
+}
+
+.fila-entrada__fecha {
+  width: 42px;
+  font-size: 13px;
+  color: var(--tinta2);
+}
+
+.fila-entrada__texto {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fila-entrada__linea1 {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.fila-entrada__linea2 {
+  font-size: 13px;
+  color: var(--tinta2);
+}
+
+.fila-entrada__costo {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.origen-pildoras {
+  display: flex;
+  gap: var(--espacio-sm);
+  flex-wrap: wrap;
+}
+
+.pildora {
+  height: var(--alto-tocable);
+  display: flex;
+  align-items: center;
+  padding: 0 18px;
+  border-radius: var(--radio-pildora);
+  border: 0;
+  background: var(--superficie);
+  color: var(--tinta2);
+  font: inherit;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.pildora--activa {
+  background: var(--boton);
+  color: var(--boton-texto);
+  font-weight: 600;
+}
+
+.campo__ayuda {
+  font-size: 13px;
+  color: var(--tinta2);
 }
 
 @media (min-width: 900px) {

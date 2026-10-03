@@ -101,11 +101,27 @@ def seed_sales(client: TestClient) -> dict[str, int]:
     return {"sale_id": without_customer["id"]}
 
 
+def seed_stock(client: TestClient) -> dict[str, int]:
+    variety = client.post("/varieties", json={"name": f"{MARKER} stock variety"}).json()
+    entry = client.post(
+        "/stock/entries",
+        json={
+            "variety_id": variety["id"],
+            "origin": "opening_stock",
+            "grams": "50",
+            "note": MARKER,
+        },
+    )
+    assert entry.status_code == 201, entry.text
+    return {"stock_entry_id": entry.json()["id"]}
+
+
 SEEDERS: list[Callable[[TestClient], dict[str, int]]] = [
     seed_varieties,
     seed_customers,
     seed_expenses,
     seed_sales,
+    seed_stock,
 ]
 
 BODIES: dict[tuple[str, str], dict[str, Any]] = {
@@ -138,6 +154,17 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
         "lines": [{"variety_id": 1, "grams": "1"}],
     },
     ("PUT", "/sales/{sale_id}/customer"): {"customer_id": 1},
+    ("POST", "/stock/entries"): {
+        "variety_id": 1,
+        "origin": "opening_stock",
+        "grams": "10",
+    },
+    ("PUT", "/stock/entries/{stock_entry_id}"): {
+        "variety_id": 1,
+        "origin": "opening_stock",
+        "grams": "20",
+    },
+    ("PUT", "/stock/varieties/{variety_id}/threshold"): {"grams": "15"},
 }
 
 PUBLIC_PATHS = {"/health", "/auth/login", "/auth/logout"}

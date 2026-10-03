@@ -29,11 +29,13 @@
 import { createBrowserRouter, Navigate } from 'react-router'
 import Root from './Root'
 import Entrar from './screens/Entrar'
+import EntradaStock from './screens/EntradaStock'
 import GastoCategorias from './screens/GastoCategorias'
 import Gastos from './screens/Gastos'
 import Inicio from './screens/Inicio'
 import Invitacion from './screens/Invitacion'
 import Mas from './screens/Mas'
+import Stock from './screens/Stock'
 import ClienteFicha from './screens/clientes/ClienteFicha'
 import ClienteForm from './screens/clientes/ClienteForm'
 import Clientes from './screens/clientes/Clientes'
@@ -75,6 +77,9 @@ export const router = createBrowserRouter([
               { path: 'variedades/:id', element: <VariedadDetalle /> },
               { path: 'gastos', element: <Gastos /> },
               { path: 'gastos/categorias', element: <GastoCategorias /> },
+              { path: 'mi-stock', element: <Stock /> },
+              { path: 'mi-stock/nueva-entrada', element: <EntradaStock mode="nuevo" /> },
+              { path: 'mi-stock/entradas/:id', element: <EntradaStock mode="editar" /> },
               { path: 'negocio', element: <Negocio /> },
               {
                 path: 'ventas',

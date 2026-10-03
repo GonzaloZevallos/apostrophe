@@ -1,6 +1,6 @@
 /**
  * `VentaDetalle` at the screen seam (CODING_STANDARDS §10): Testing Library,
- * `fetch` faked. Everything shown comes from the API's own answer (docs/adr/0009;
+ * `fetch` faked. Everything shown comes from the API's own answer (docs/adr/0011;
  * plan, invariants), never a preview; Deshacer only shows up right after a save,
  * through `feedback.ts`'s closed set, and clears itself from history state once
  * read (plan, invariants).
@@ -51,9 +51,13 @@ const SALE = {
       pricing_rule: 'list',
       price_per_gram: 1200,
       line_total: 6000,
+      cost: { costed: 2500, pending_grams: 0 },
     },
   ],
 }
+
+/** `DELETE /sales/{id}`'s own answer (ADR-0009): the grams the sale gave back. */
+const DELETED = { returned: [{ variety_id: 1, grams: 5 }] }
 
 function renderDetalle(initialState?: unknown) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
@@ -114,7 +118,7 @@ test('a gone sale shows the plain gone-detail state, never the generic retry', a
 
 test('Borrar venta asks "Antes de borrar" naming the date and the amount, then deletes and returns to Ventas', async () => {
   vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(200, SALE))
-  vi.mocked(fetch).mockResolvedValueOnce(new Response(null, { status: 204 }))
+  vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(200, DELETED))
   renderDetalle()
   await screen.findByText('$ 6.500')
 
@@ -145,7 +149,7 @@ test('cancelling the delete confirmation keeps the sale', async () => {
 
 test('right after a save, "Venta guardada" shows with Deshacer, which deletes the sale named by the route\'s own id with no confirmation', async () => {
   vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(200, SALE))
-  vi.mocked(fetch).mockResolvedValueOnce(new Response(null, { status: 204 }))
+  vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(200, DELETED))
   renderDetalle(saleJustSaved())
   await screen.findByText('$ 6.500')
 

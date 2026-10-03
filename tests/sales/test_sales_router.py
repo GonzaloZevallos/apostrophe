@@ -91,7 +91,7 @@ def test_record_sale_left_owing_without_a_customer_is_refused(client: TestClient
 
 
 def test_record_sale_with_an_unknown_variety_is_refused(client: TestClient) -> None:
-    # Missing and foreign stay indistinguishable: gone, not a refusal (docs/adr/0009).
+    # Missing and foreign stay indistinguishable: gone, not a refusal (docs/adr/0011).
     response = client.post(
         "/sales", json={"payment": "cash", "lines": [{"variety_id": 999_999, "grams": "10"}]}
     )
@@ -119,7 +119,7 @@ def test_record_sale_with_an_unknown_customer_is_refused(client: TestClient) -> 
 def test_record_sale_with_no_payment_field_and_a_positive_total_needs_a_method(
     client: TestClient,
 ) -> None:
-    # `payment` optional (docs/adr/0009): omitted means no method and not left owing,
+    # `payment` optional (docs/adr/0011): omitted means no method and not left owing,
     # so a sale above $0 reaches `sale.payment_required` instead of a 422 for a
     # missing required field.
     variety_id = _variety(client)
@@ -170,9 +170,43 @@ def test_delete_sale_removes_it(client: TestClient) -> None:
     ).json()["id"]
 
     deleted = client.delete(f"/sales/{sale_id}")
-    assert deleted.status_code == 204
+    assert deleted.status_code == 200, deleted.text
+    assert deleted.json() == {"returned": [{"variety_id": variety_id, "grams": 10.0}]}
 
     assert client.get(f"/sales/{sale_id}").status_code == 404
+
+
+def test_deleting_a_sale_sums_returned_grams_per_variety_sorted_by_variety_id(
+    client: TestClient,
+) -> None:
+    # Created in this order, so `first_variety < second_variety`; the line order below
+    # (second variety first) proves the response is sorted by `variety_id`, not by the
+    # order the lines were recorded in.
+    first_variety = _variety(client)
+    second_variety = client.post("/varieties", json={"name": "Sativa"}).json()["id"]
+    client.post(
+        f"/varieties/{second_variety}/prices",
+        json={"effective_from": "2026-01-01", "list_price": 10_000},
+    )
+    sale_id = client.post(
+        "/sales",
+        json={
+            "payment": "cash",
+            "lines": [
+                {"variety_id": second_variety, "grams": "3"},
+                {"variety_id": first_variety, "grams": "4"},
+                {"variety_id": second_variety, "grams": "2", "gift": True},
+            ],
+        },
+    ).json()["id"]
+
+    deleted = client.delete(f"/sales/{sale_id}")
+
+    assert deleted.status_code == 200, deleted.text
+    assert deleted.json()["returned"] == [
+        {"variety_id": first_variety, "grams": 4.0},
+        {"variety_id": second_variety, "grams": 5.0},
+    ]
 
 
 def test_assign_customer_to_a_sale_with_none(client: TestClient) -> None:
@@ -401,7 +435,7 @@ def test_toggling_a_customers_vip_after_the_sale_changes_only_its_vip_badge(
     client: TestClient,
 ) -> None:
     # The badge is the customer's current flag, not how the sale was priced
-    # (docs/adr/0009): it is free to change on an unchanged sale, while every line
+    # (docs/adr/0011): it is free to change on an unchanged sale, while every line
     # stays exactly as recorded.
     variety_id = _variety_with_bulk(client, list_price=10_000, bulk_price=8_000, bulk_minimum="50")
     customer_id = _customer(client)

@@ -20,9 +20,9 @@ gets in.
 
 **When** I run my business from my phone (handing over an order, answering a customer on
 Telegram, paying for something, or catching up at the end of the day), **I want to** get in
-with the link I was sent and keep my customers, my prices and my expenses up to date from
-the phone, **so I can** stop keeping them in the spreadsheet and have real data in place
-when sales arrive. The computer is the same job on a bigger screen.
+with the link I was sent and keep my customers, my prices, my stock and my expenses up to
+date from the phone, **so I can** stop keeping them in the spreadsheet and have real data
+in place when sales arrive. The computer is the same job on a bigger screen.
 
 Success criteria:
 
@@ -113,9 +113,8 @@ Success criteria:
     shows the invitation as if signed out. That includes the user's own business's join
     link.
 - **Shell**:
-  - The bottom bar on the phone and the side rail on a computer show only Inicio, Clientes,
-    Ventas and Más, in the design's order (Inicio, Clientes, Ventas, Más when the design
-    shows none).
+  - The bottom bar on the phone and the side rail on a computer show only Inicio, Ventas,
+    Clientes, Stock and Más, in that order (the design's).
   - A fixed **"Nueva venta"** button, separate from the tabs, opens the sale form
     directly (sales.md). It is not a tab.
   - It shows on every signed-in screen except the sale form itself and its customer sheet.
@@ -151,10 +150,10 @@ Success criteria:
     and it is announced like a toast.
   - Confirming the delete of a record already gone gives the same notice, not the delete's
     success toast.
-  - **Opening the detail of a record that is gone** (a variety, a customer, an expense or a
-    sale) shows "Eso ya no está." with one button back to its list: "Volver a
-    Variedades", "Volver a Clientes", "Volver a Gastos" (the current month) or "Volver a
-    Ventas". It carries no id, name or date.
+  - **Opening the detail of a record that is gone** (a variety, a customer, an expense, a
+    sale or a stock entry) shows "Eso ya no está." with one button back to its list:
+    "Volver a Variedades", "Volver a Clientes", "Volver a Gastos" (the current month),
+    "Volver a Ventas" or "Volver a Stock". It carries no id, name or date.
 
 ## Metrics
 
@@ -175,7 +174,8 @@ Success criteria:
   - an offline check shows "Sin conexión";
   - no state is told by color alone.
 - **Nothing invented (criterion 7)**:
-  - the bar shows exactly Inicio, Clientes, Ventas and Más, plus the "Nueva venta" button;
+  - the bar shows exactly Inicio, Ventas, Clientes, Stock and Más, plus the "Nueva venta"
+    button;
   - Más shows exactly Gastos, Variedades and Negocio;
   - Inicio shows no figures.
 
@@ -190,4 +190,4 @@ Success criteria:
   (ADR-0002), and with it the full Android install.
 - Live updates between partners: a list refreshes when it is opened or after a save, not
   when the other partner changes something.
-- Stock, Análisis and Catálogo entries: they come with their own tasks.
+- Análisis and Catálogo entries: they come with their own tasks.

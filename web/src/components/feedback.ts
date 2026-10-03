@@ -33,7 +33,12 @@ import { GONE_NOTICE } from '../api/refusals'
  * "Feedback"; sales.md round 3). "Venta guardada" is deliberately not here —
  * it carries Deshacer, so it is the separate `'saved'` marker below, never a
  * plain toast string. */
-export const TOAST_MESSAGES = ['Cliente guardado', 'Venta eliminada'] as const
+export const TOAST_MESSAGES = [
+  'Cliente guardado',
+  'Venta eliminada',
+  'Entrada guardada',
+  'Entrada eliminada',
+] as const
 
 export type ToastMessage = (typeof TOAST_MESSAGES)[number]
 

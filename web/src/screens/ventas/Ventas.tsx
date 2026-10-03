@@ -4,7 +4,7 @@
  * helpers from `me.today` (plan, invariants) — never `new Date()`. The period's
  * total and count are the sum and the number of the sales the list itself shows,
  * never a separate figure. Each row's VIP badge is the customer's *current* flag,
- * read straight from the API's answer (docs/adr/0009), not how the sale was priced.
+ * read straight from the API's answer (docs/adr/0011), not how the sale was priced.
  */
 
 import { useState } from 'react'

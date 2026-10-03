@@ -26,6 +26,8 @@ from app.migrations.runner import upgrade_to_head
 from app.sales.adapters.router import router as sales_router
 from app.settings import Settings
 from app.static_spa import MissingBuiltFront, SpaStatic, api_segments
+from app.stock.adapters.line_costs import SqlLineCosts
+from app.stock.adapters.router import router as stock_router
 from app.varieties.adapters.router import router as varieties_router
 
 
@@ -75,6 +77,13 @@ def create_app(
     # own `Session`. The next capability that seeds at opening turns this into a
     # composite, not a second keyword argument on `accept_invitation` (docs/adr/0006).
     app.state.business_opening = ExpenseCategoriesOpening
+    # A factory, not an instance (the same shape as `business_opening` above): sales
+    # reaches line cost only through its own `LineCosts` port, never `app.stock`
+    # directly (CODING_STANDARDS section 1). A dependency under `app/sales/adapters/`
+    # builds it over the request's own `Session` and business, the way
+    # `get_business_opening` already does for `business_opening` — not added here, so
+    # this line is the one seam the sales-costs subtask reaches it through.
+    app.state.line_costs = SqlLineCosts
 
     @app.get("/health", tags=["health"])
     def health() -> dict[str, str]:
@@ -89,6 +98,7 @@ def create_app(
     app.include_router(customers_router, dependencies=gated)
     app.include_router(expenses_router, dependencies=gated)
     app.include_router(sales_router, dependencies=gated)
+    app.include_router(stock_router, dependencies=gated)
 
     if settings.web_dist is not None:
         if not (settings.web_dist / "index.html").is_file():

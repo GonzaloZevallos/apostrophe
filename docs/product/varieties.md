@@ -1,9 +1,9 @@
 # Varieties
 
 The varieties a business sells and the price history of each, seen only by that
-business (ADR-0004). Every other capability
-reads prices from here: a sale takes the current price of its day, the catalog shows
-today's.
+business (ADR-0004). Every other capability reads prices from here: a sale takes the
+current price of its day, the catalog shows today's. Variedades also shows each variety's
+low-stock warning and stock status, whose rules belong to stock (`stock.md`).
 
 ## Jobs
 
@@ -15,6 +15,11 @@ right price on any day without remembering when it changed.
 phone, **so I can** stop keeping them in the spreadsheet and have real data in place when
 sales arrive.
 
+**When** I buy, harvest or count flower, **I want** to record it from my phone in a few
+taps, **so I can** know what I have of each variety, see one running out before a customer
+asks for it, and know what the grams I sell or gift cost me. (Served here by the
+low-stock warning and status on Variedades; defined in `stock.md`.)
+
 Success criteria:
 
 1. Asking for a variety's price on a day answers the entry in force that day: the latest
@@ -25,6 +30,8 @@ Success criteria:
    businesses may each have a variety of the same name.
 4. Everything here, deleting a mistaken entry included, is done from the phone with no API
    call by hand.
+5. Variedades says on its own, by shape and word and never by color alone, when a variety
+   is sold out or below its threshold (`stock.md`, criterion 4).
 
 ## Behaviour
 
@@ -41,13 +48,20 @@ Success criteria:
 - A variety's own representation carries its current price **today**, `null` when it has
   none. Today is the business day in Argentina time.
 - The price history lists the newest entry first.
+- **Low-stock threshold**: optional grams, above zero, up to two decimals, set or turned
+  off per variety. Its rules and the stock status are in `stock.md`.
 
 ### On screen (Variedades)
 
-- **The list** (`Variedades`): each variety with today's list price, bulk price and bulk
-  minimum. A variety with no price today shows "Sin precio: no se puede vender".
+- **The list** (`Variedades`):
+  - each variety with today's list price, bulk price and bulk minimum;
+  - its stock status mark (`MarcaEstado`: square = agotada as the inverted chip, filled
+    circle = baja, empty circle = ok);
+  - its warning: "Avisame abajo de 15 g", "Avisando: quedan 18,5 g" or "Aviso apagado".
+  - A variety with no price today shows "Sin precio: no se puede vender".
 - **A variety's detail** (`VariedadDetalle`): the price history with "Rige desde", and a new
-  price entry.
+  price entry. The low-stock threshold is set or turned off from the variety. Toast:
+  "Aviso guardado".
 - Add and rename a variety.
 - **Deleting an entry**: every history row has a delete action. It is confirmed with "Antes
   de borrar" ("¿Borrás…? / No, dejala / Sí, borrala"), and the copy says what takes the
@@ -74,10 +88,11 @@ Success criteria:
 - **Unique names (criterion 3)**: duplicates within a business, whatever the case or
   spacing, are 0.
 - **No curl (criterion 4)**: the end-to-end front run adds a variety, adds a price, renames
-  the variety and deletes a price entry.
+  the variety, deletes a price entry, and sets and turns off a low-stock threshold.
+- **Status shown (criterion 5)**: Variedades shows the status mark and warning for each
+  status, never by color alone; covered by the front tests.
 
 ## Out of scope
 
 - Catalog attributes (shown or hidden, emoji, indica share, aroma): the catalog capability.
-- The low-stock threshold and warning: the stock capability.
 - Deleting a variety.

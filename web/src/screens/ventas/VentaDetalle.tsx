@@ -1,7 +1,7 @@
 /**
  * `VentaDetalle` (`sales.md`, "On screen: Detalle de venta"): the total, each line
  * with its price per gram and rule badge, shipping, the note, how it was paid, and
- * the customer or "Sin cliente" — all from the API's own answer (docs/adr/0009;
+ * the customer or "Sin cliente" — all from the API's own answer (docs/adr/0011;
  * plan, invariants: nothing here is the preview). "Borrás la venta" is confirmed
  * with `Antes de borrar`, naming the date and the amount; "Venta guardada" with
  * Deshacer (`Estados`) is this screen's own banner, read once through
@@ -27,7 +27,7 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router'
 import { ApiError, NetworkError } from '../../api/client'
 import type { Customer } from '../../api/customers'
 import { invalidateResource, keys } from '../../api/keys'
-import { assignCustomer, deleteSale, getSale, type Sale } from '../../api/sales'
+import { assignCustomer, deleteSale, getSale, type Sale, type SaleDetail } from '../../api/sales'
 import { isGone, resolveOverride, type RefusalCode } from '../../api/refusals'
 import AvisoExito from '../../components/AvisoExito'
 import ConfirmDialog from '../../components/ConfirmDialog'
@@ -129,10 +129,15 @@ export default function VentaDetalle() {
     setAssignOffline(false)
     try {
       const updated = await assignMutation.mutateAsync(customer.id)
-      // The PUT already answers the sale as it now stands (docs/adr/0009): this
+      // The PUT already answers the sale as it now stands (docs/adr/0011): this
       // writes that answer straight into the cache instead of a second `GET`
-      // (plan, invariants: what is shown comes from the API's answer).
-      queryClient.setQueryData(keys.sale(saleId), updated)
+      // (plan, invariants: what is shown comes from the API's answer). The PUT's
+      // `SaleOut` carries no line cost (ADR-0009: only `GET /sales/{id}` allocates
+      // one), so each line keeps the cost the detail already read: assigning a
+      // customer never touches a line.
+      queryClient.setQueryData<SaleDetail>(keys.sale(saleId), (current) =>
+        current === undefined ? current : { ...updated, lines: current.lines },
+      )
       invalidateResource(queryClient, 'sales')
       setAssigned(true)
     } catch (caught) {

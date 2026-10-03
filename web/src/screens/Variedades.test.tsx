@@ -23,6 +23,8 @@ vi.mock('../api/client', async () => {
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
 
+const EMPTY_STOCK = { total: 0, varieties: [], entries: [] }
+
 function renderScreen() {
   const queryClient = new QueryClient()
   render(
@@ -38,13 +40,21 @@ function renderScreen() {
   )
 }
 
+function mockGet(varieties: unknown[], stock: unknown = EMPTY_STOCK) {
+  vi.mocked(client.get).mockImplementation((path: string) => {
+    if (path === '/varieties') return Promise.resolve(varieties)
+    if (path === '/stock') return Promise.resolve(stock)
+    return Promise.reject(new Error(`unexpected path: ${path}`))
+  })
+}
+
 beforeEach(() => {
   vi.mocked(client.get).mockReset()
   vi.mocked(client.post).mockReset()
 })
 
 test('shows today\'s list and bulk prices, and the no-price state', async () => {
-  vi.mocked(client.get).mockResolvedValue([
+  mockGet([
     {
       id: 1,
       name: '24K Gold',
@@ -63,7 +73,7 @@ test('shows today\'s list and bulk prices, and the no-price state', async () => 
 })
 
 test('a variety links to its own detail, with no business id in the path', async () => {
-  vi.mocked(client.get).mockResolvedValue([{ id: 7, name: 'Sir Jack', current_price: null }])
+  mockGet([{ id: 7, name: 'Sir Jack', current_price: null }])
 
   renderScreen()
 
@@ -74,7 +84,7 @@ test('a variety links to its own detail, with no business id in the path', async
 describe('adding a variety', () => {
   test('saves it, toasts, and clears the form', async () => {
     const user = userEvent.setup()
-    vi.mocked(client.get).mockResolvedValue([])
+    mockGet([])
     vi.mocked(client.post).mockResolvedValue({ id: 3, name: 'Golden Cookies', current_price: null })
 
     renderScreen()
@@ -91,7 +101,7 @@ describe('adding a variety', () => {
 
   test('a duplicate name is refused inline, keeping what was typed', async () => {
     const user = userEvent.setup()
-    vi.mocked(client.get).mockResolvedValue([])
+    mockGet([])
     vi.mocked(client.post).mockRejectedValue(new ApiError(409, 'variety.name_taken'))
 
     renderScreen()
@@ -106,7 +116,7 @@ describe('adding a variety', () => {
 
   test('a dropped network shows "Sin conexión", keeping what was typed', async () => {
     const user = userEvent.setup()
-    vi.mocked(client.get).mockResolvedValue([])
+    mockGet([])
     vi.mocked(client.post).mockRejectedValue(new NetworkError())
 
     renderScreen()
@@ -117,5 +127,52 @@ describe('adding a variety', () => {
 
     expect(await screen.findByText(SIN_CONEXION_TITULO)).toBeInTheDocument()
     expect(screen.getByRole('textbox')).toHaveValue('Golden Cookies')
+  })
+})
+
+describe('status mark and low-stock warning', () => {
+  test('a threshold set, not low, shows the ok mark by shape and word plus "Avisame abajo de N g"', async () => {
+    mockGet([{ id: 1, name: 'Sir Jack', current_price: null }], {
+      total: 40,
+      varieties: [{ variety_id: 1, grams: 40, status: 'ok', sold_out_since: null, threshold: 15, days_left: 12 }],
+      entries: [],
+    })
+
+    renderScreen()
+
+    expect(await screen.findByText('Sir Jack')).toBeInTheDocument()
+    expect(screen.getByText('ok')).toBeInTheDocument()
+    expect(screen.getByText('Avisame abajo de 15 g')).toBeInTheDocument()
+  })
+
+  test('low shows the baja mark and "Avisando: quedan N g"', async () => {
+    mockGet([{ id: 1, name: 'Sir Jack', current_price: null }], {
+      total: 10,
+      varieties: [{ variety_id: 1, grams: 10, status: 'low', sold_out_since: null, threshold: 15, days_left: 3 }],
+      entries: [],
+    })
+
+    renderScreen()
+
+    expect(await screen.findByText('Sir Jack')).toBeInTheDocument()
+    expect(screen.getByText('baja')).toBeInTheDocument()
+    expect(screen.getByText('Avisando: quedan 10 g')).toBeInTheDocument()
+  })
+
+  test('no threshold shows "Aviso apagado", even when sold out', async () => {
+    mockGet([{ id: 1, name: 'Sir Jack', current_price: null }], {
+      total: -4,
+      varieties: [
+        { variety_id: 1, grams: -4, status: 'sold_out', sold_out_since: '2026-09-28', threshold: null, days_left: null },
+      ],
+      entries: [],
+    })
+
+    renderScreen()
+
+    expect(await screen.findByText('Sir Jack')).toBeInTheDocument()
+    // The mark still shows (shape plus word), threshold or not.
+    expect(screen.getByText('agotada')).toBeInTheDocument()
+    expect(screen.getByText('Aviso apagado')).toBeInTheDocument()
   })
 })

@@ -132,7 +132,7 @@ class SqlSales:
         date_from: date | None = None,
         date_to: date | None = None,
     ) -> Sequence[SaleView]:
-        """`SaleViews` (docs/adr/0009): two statements whatever the number of sales.
+        """`SaleViews` (docs/adr/0011): two statements whatever the number of sales.
         The first joins the sale to its customer and its payment, both filtered on
         this business in their `ON` clause as well as the sale's own `WHERE`; the
         second joins every listed sale's lines to their variety, the same way."""

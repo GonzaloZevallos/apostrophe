@@ -14,6 +14,7 @@ export type Resource =
   | 'expenses'
   | 'expenseCategories'
   | 'sales'
+  | 'stock'
 
 const PREFIX: Record<Resource, string> = {
   me: 'me',
@@ -23,6 +24,7 @@ const PREFIX: Record<Resource, string> = {
   expenses: 'expenses',
   expenseCategories: 'expense-categories',
   sales: 'sales',
+  stock: 'stock',
 }
 
 export const keys = {
@@ -51,6 +53,8 @@ export const keys = {
   saleFormCustomerSearch: (q: string) => ['sale-form', 'customer-search', q] as const,
   sales: (dateFrom: string, dateTo: string) => [PREFIX.sales, { dateFrom, dateTo }] as const,
   sale: (id: string) => [PREFIX.sales, id] as const,
+  stock: () => [PREFIX.stock] as const,
+  stockEntry: (id: string) => [PREFIX.stock, 'entries', id] as const,
 }
 
 // A write on one resource that also stales another, beyond its own prefix (plan,

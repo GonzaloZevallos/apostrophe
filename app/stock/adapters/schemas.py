@@ -1,0 +1,114 @@
+"""The HTTP shapes of a stock entry. Bare: no pydantic length or value constraint, so
+every rule stays the domain's and its message is a fixed string (ADR-0005). Grams are
+typed `Decimal` here and become `Grams` only through `Grams.of`, at the router; every
+grams value out uses the shared `GramsOut` (CODING_STANDARDS: no second grams format).
+"""
+
+from datetime import date
+from decimal import Decimal
+from typing import Literal
+
+from pydantic import BaseModel
+
+from app.stock.application.read_stock import StockView, VarietyStock
+from app.stock.domain.costing import cost_per_gram
+from app.stock.domain.entry import Origin, StockEntry
+from app.varieties.adapters.schemas import GramsOut
+
+# The four values `stock_level` (stock-domain) answers; declared here so every
+# subtask that reads or writes a status reads the one literal type, never a bare str.
+Status = Literal["no_entries", "sold_out", "low", "ok"]
+
+# A bare `date` inside `EntryIn`/`EntryOut` would otherwise resolve to the field named
+# `date`, not the type (the same trap `app.sales.adapters.schemas.SaleDate` documents).
+EntryDate = date
+
+
+class EntryIn(BaseModel):
+    date: EntryDate | None = None
+    variety_id: int
+    origin: Origin
+    grams: Decimal
+    total_cost: int | None = None
+    note: str | None = None
+
+
+class EntryOut(BaseModel):
+    id: int
+    date: EntryDate
+    variety_id: int
+    origin: Origin
+    grams: GramsOut
+    total_cost: int | None
+    cost_per_gram: int | None
+    note: str | None
+
+    @classmethod
+    def of(cls, entry: StockEntry) -> "EntryOut":
+        assert entry.id is not None, "only stored entries go out"
+        total_cost = entry.total_cost
+        per_gram = (
+            cost_per_gram(total_cost, entry.grams)
+            if total_cost is not None and entry.grams.is_positive
+            else None
+        )
+        return cls(
+            id=entry.id,
+            date=entry.entry_date,
+            variety_id=entry.variety_id,
+            origin=entry.origin,
+            grams=entry.grams.as_decimal(),
+            total_cost=entry.total_cost,
+            cost_per_gram=per_gram,
+            note=entry.note,
+        )
+
+
+class ThresholdIn(BaseModel):
+    """`PUT /stock/varieties/{variety_id}/threshold`'s body: `None` turns the
+    threshold off, rather than storing a zero or negative one (`Threshold.of`
+    refuses both)."""
+
+    grams: Decimal | None = None
+
+
+class VarietyStockOut(BaseModel):
+    """One variety's row in `GET /stock` (and the threshold route's own response):
+    computed only by `stock_level` over `lots_and_draws` (stock-domain), never by a
+    SQL aggregate or front code."""
+
+    variety_id: int
+    grams: GramsOut
+    status: Status
+    sold_out_since: date | None
+    threshold: GramsOut | None
+    days_left: int | None
+
+    @classmethod
+    def of(cls, view: VarietyStock) -> "VarietyStockOut":
+        level = view.level
+        return cls(
+            variety_id=view.variety_id,
+            grams=level.grams.as_decimal(),
+            status=level.status,
+            sold_out_since=level.sold_out_since,
+            threshold=view.threshold.grams.as_decimal() if view.threshold is not None else None,
+            days_left=level.days_left,
+        )
+
+
+class StockOut(BaseModel):
+    """`GET /stock`'s own shape: the business's total grams, every variety's own row,
+    and its entries, newest date first then most recently recorded first."""
+
+    total: GramsOut
+    varieties: list[VarietyStockOut]
+    entries: list[EntryOut]
+
+    @classmethod
+    def of(cls, view: StockView) -> "StockOut":
+        return cls(
+            total=view.total.as_decimal(),
+            varieties=[VarietyStockOut.of(variety) for variety in view.varieties],
+            entries=[EntryOut.of(entry) for entry in view.entries],
+        )

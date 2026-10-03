@@ -121,7 +121,7 @@ def test_the_current_price_follows_the_day_asked_for(client: TestClient) -> None
 
 
 def test_listing_varieties_follows_the_day_asked_for(client: TestClient) -> None:
-    # docs/adr/0009: `GET /varieties?on=` is for Nueva venta's date changes, so a
+    # docs/adr/0011: `GET /varieties?on=` is for Nueva venta's date changes, so a
     # variety's `current_price` in the list answer follows that day, not today.
     variety_id = _register(client)["id"]
     _price(client, variety_id, **GOLD_JANUARY)

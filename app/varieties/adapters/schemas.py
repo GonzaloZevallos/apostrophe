@@ -44,7 +44,7 @@ class VarietyOut(BaseModel):
     id: int
     name: str
     # The price in force on the day asked for (today, unless the caller asked for
-    # another day, docs/adr/0009); `null` when the variety has none that day.
+    # another day, docs/adr/0011); `null` when the variety has none that day.
     current_price: PriceEntryOut | None
 
     @classmethod

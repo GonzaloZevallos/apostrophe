@@ -1,8 +1,7 @@
 /**
  * `Shell` at the screen seam: only destinations that exist show (PRD, "Nada
- * inventado"; metric M5) — Inicio, Ventas, Clientes and Más, in the design's own
- * order (`Inicio.dc.html`, `InicioCompu.dc.html`), never Stock, which comes with
- * its own task. The fixed "Nueva venta" button, separate from the tabs, shows on
+ * inventado"; metric M5) — Inicio, Ventas, Clientes, Stock and Más, in the
+ * design's own order (`Inicio.dc.html`, `InicioCompu.dc.html`). The fixed "Nueva venta" button, separate from the tabs, shows on
  * every signed-in screen except the sale form itself (accounts.md: "It shows on
  * every signed-in screen except the sale form itself and its customer sheet" —
  * the sheet shares `NuevaVenta`'s own route, so hiding on that one path covers
@@ -36,7 +35,7 @@ function renderShell(initialPath: string) {
   )
 }
 
-test('shows exactly Inicio, Clientes, Ventas and Más in both navs', () => {
+test('shows exactly Inicio, Ventas, Clientes, Stock and Más in both navs', () => {
   renderShell('/')
 
   const navs = screen.getAllByRole('navigation')
@@ -45,18 +44,18 @@ test('shows exactly Inicio, Clientes, Ventas and Más in both navs', () => {
     expect(nav).toHaveTextContent('Inicio')
     expect(nav).toHaveTextContent('Clientes')
     expect(nav).toHaveTextContent('Ventas')
+    expect(nav).toHaveTextContent('Stock')
     expect(nav).toHaveTextContent('Más')
-    expect(nav).not.toHaveTextContent('Stock')
   }
 })
 
-test('orders the tabs Inicio, Ventas, Clientes, Más — the design\'s own order with Stock dropped', () => {
+test('orders the tabs Inicio, Ventas, Clientes, Stock, Más — the design\'s own order', () => {
   renderShell('/')
 
   const navs = screen.getAllByRole('navigation')
   expect(navs).toHaveLength(2)
   for (const nav of navs) {
-    expect(tabNames(nav)).toEqual(['Inicio', 'Ventas', 'Clientes', 'Más'])
+    expect(tabNames(nav)).toEqual(['Inicio', 'Ventas', 'Clientes', 'Stock', 'Más'])
   }
 })
 

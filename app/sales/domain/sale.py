@@ -68,7 +68,7 @@ class OwingWithoutCustomer(SaleRuleBroken):
 
 
 class UnknownVariety(LookupError):
-    """Missing and foreign stay indistinguishable (docs/adr/0009): a variety that does
+    """Missing and foreign stay indistinguishable (docs/adr/0011): a variety that does
     not exist in this business, registered under 404 like `SaleNotFound`."""
 
     code: ClassVar[str] = "sale.variety_not_found"
@@ -78,7 +78,7 @@ class UnknownVariety(LookupError):
 
 
 class UnknownCustomer(LookupError):
-    """Missing and foreign stay indistinguishable (docs/adr/0009): a customer that
+    """Missing and foreign stay indistinguishable (docs/adr/0011): a customer that
     does not exist in this business, registered under 404 like `SaleNotFound`."""
 
     code: ClassVar[str] = "sale.customer_not_found"
