@@ -43,6 +43,30 @@
     {
       "input": " 🥇 ",
       "stored": "🥇"
+    },
+    {
+      "input": "⭐",
+      "stored": "⭐"
+    },
+    {
+      "input": "✨",
+      "stored": "✨"
+    },
+    {
+      "input": "✅",
+      "stored": "✅"
+    },
+    {
+      "input": "⚡",
+      "stored": "⚡"
+    },
+    {
+      "input": "☘️",
+      "stored": "☘️"
+    },
+    {
+      "input": "❄",
+      "stored": "❄️"
     }
   ],
   "refused": [

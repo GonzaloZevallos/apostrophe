@@ -18,6 +18,18 @@ def test_an_empty_aroma_is_none() -> None:
     assert Aroma.of("   \n\t  ") is None
 
 
+def test_aroma_refuses_direct_construction_with_empty_text() -> None:
+    """The enforcement artefact: `Aroma` holds the invariant `.of` guarantees even
+    against direct construction, never just by convention."""
+    with pytest.raises(ValueError):
+        Aroma("")
+
+
+def test_aroma_refuses_direct_construction_with_uncollapsed_text() -> None:
+    with pytest.raises(ValueError):
+        Aroma("a\nb")
+
+
 def test_aroma_at_200_code_points_is_accepted() -> None:
     aroma = Aroma.of("a" * 200)
 

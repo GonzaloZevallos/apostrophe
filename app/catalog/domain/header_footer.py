@@ -35,6 +35,16 @@ class CatalogHeaderFooter:
     footer: str
 
     def __post_init__(self) -> None:
+        if self.header != header_footer_text(self.header):
+            raise ValueError(
+                "a CatalogHeaderFooter holds an already normalised header; build it "
+                "through CatalogHeaderFooter.of"
+            )
+        if self.footer != header_footer_text(self.footer):
+            raise ValueError(
+                "a CatalogHeaderFooter holds an already normalised footer; build it "
+                "through CatalogHeaderFooter.of"
+            )
         if len(self.header) > MAX_LENGTH:
             raise HeaderTooLong()
         if len(self.footer) > MAX_LENGTH:

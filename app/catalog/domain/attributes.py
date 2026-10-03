@@ -35,6 +35,10 @@ class Aroma:
     text: str
 
     def __post_init__(self) -> None:
+        if not self.text or self.text != " ".join(self.text.split()):
+            raise ValueError(
+                "an Aroma holds collapsed, trimmed, non-empty text; build it through Aroma.of"
+            )
         if len(self.text) > AROMA_MAX_LENGTH:
             raise AromaTooLong()
 

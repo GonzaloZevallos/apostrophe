@@ -1,7 +1,7 @@
 """`catalog_text` (CODING_STANDARDS section 5): the reference set of literal expected
 strings for the Exact-text metric (emoji or none, share at 0/50/100 or none, aroma or
 none, bulk or none with whole and fractional minimums, thousands, a blank header or
-footer, seller `**` markers), plus `None` with no entries."""
+footer, seller `**` markers, two or more blocks), plus `None` with no entries."""
 
 from app.catalog.domain.attributes import CatalogAttributes
 from app.catalog.domain.header_footer import DEFAULT_FOOTER, DEFAULT_HEADER
@@ -64,8 +64,7 @@ def test_no_emoji_gives_a_bare_name_line() -> None:
 
     text = catalog_text("", "", [entry])
 
-    assert text is not None
-    assert text.splitlines()[0] == "**Blue Dream**"
+    assert text == "**Blue Dream**\n• Precio x gramo: $9.000"
 
 
 def test_no_share_leaves_out_the_share_line() -> None:
@@ -73,8 +72,7 @@ def test_no_share_leaves_out_the_share_line() -> None:
 
     text = catalog_text("", "", [entry])
 
-    assert text is not None
-    assert "índica" not in text
+    assert text == "**Blue Dream**\n• Precio x gramo: $9.000"
 
 
 def test_share_at_0_is_written_in_full() -> None:
@@ -82,8 +80,7 @@ def test_share_at_0_is_written_in_full() -> None:
 
     text = catalog_text("", "", [entry])
 
-    assert text is not None
-    assert "• 0% índica / 100% sativa" in text
+    assert text == "**A**\n• 0% índica / 100% sativa\n• Precio x gramo: $1.000"
 
 
 def test_share_at_50_is_written_in_full() -> None:
@@ -91,8 +88,7 @@ def test_share_at_50_is_written_in_full() -> None:
 
     text = catalog_text("", "", [entry])
 
-    assert text is not None
-    assert "• 50% índica / 50% sativa" in text
+    assert text == "**A**\n• 50% índica / 50% sativa\n• Precio x gramo: $1.000"
 
 
 def test_share_at_100_is_written_in_full() -> None:
@@ -100,8 +96,7 @@ def test_share_at_100_is_written_in_full() -> None:
 
     text = catalog_text("", "", [entry])
 
-    assert text is not None
-    assert "• 100% índica / 0% sativa" in text
+    assert text == "**A**\n• 100% índica / 0% sativa\n• Precio x gramo: $1.000"
 
 
 def test_no_aroma_leaves_out_the_aroma_line() -> None:
@@ -109,8 +104,17 @@ def test_no_aroma_leaves_out_the_aroma_line() -> None:
 
     text = catalog_text("", "", [entry])
 
-    assert text is not None
-    assert "Aroma" not in text
+    assert text == "**Blue Dream**\n• Precio x gramo: $9.000"
+
+
+def test_an_aroma_is_written_on_its_own_line() -> None:
+    entry = _entry("Blue Dream", aroma="dulce y terroso", list_price=9000)
+
+    text = catalog_text("", "", [entry])
+
+    assert text == (
+        "**Blue Dream**\n• Aroma/sabor: dulce y terroso\n• Precio x gramo: $9.000"
+    )
 
 
 def test_no_bulk_price_leaves_out_the_bulk_line() -> None:
@@ -118,8 +122,7 @@ def test_no_bulk_price_leaves_out_the_bulk_line() -> None:
 
     text = catalog_text("", "", [entry])
 
-    assert text is not None
-    assert "Desde" not in text
+    assert text == "**Blue Dream**\n• Precio x gramo: $9.000"
 
 
 def test_a_whole_bulk_minimum_has_no_decimals() -> None:
@@ -127,8 +130,9 @@ def test_a_whole_bulk_minimum_has_no_decimals() -> None:
 
     text = catalog_text("", "", [entry])
 
-    assert text is not None
-    assert "• Desde 10 g: $10.000 c/u" in text
+    assert text == (
+        "**A**\n• Precio x gramo: $11.000\n• Desde 10 g: $10.000 c/u"
+    )
 
 
 def test_a_half_gram_bulk_minimum_uses_a_comma() -> None:
@@ -136,8 +140,9 @@ def test_a_half_gram_bulk_minimum_uses_a_comma() -> None:
 
     text = catalog_text("", "", [entry])
 
-    assert text is not None
-    assert "• Desde 2,5 g: $10.000 c/u" in text
+    assert text == (
+        "**A**\n• Precio x gramo: $11.000\n• Desde 2,5 g: $10.000 c/u"
+    )
 
 
 def test_a_two_decimal_bulk_minimum_keeps_both_decimals() -> None:
@@ -145,29 +150,27 @@ def test_a_two_decimal_bulk_minimum_keeps_both_decimals() -> None:
 
     text = catalog_text("", "", [entry])
 
-    assert text is not None
-    assert "• Desde 2,25 g: $10.000 c/u" in text
+    assert text == (
+        "**A**\n• Precio x gramo: $11.000\n• Desde 2,25 g: $10.000 c/u"
+    )
 
 
 def test_money_under_a_thousand_has_no_separator() -> None:
     text = catalog_text("", "", [_entry("A", list_price=900)])
 
-    assert text is not None
-    assert "$900" in text
+    assert text == "**A**\n• Precio x gramo: $900"
 
 
 def test_money_in_the_thousands_gets_one_dot() -> None:
     text = catalog_text("", "", [_entry("A", list_price=11000)])
 
-    assert text is not None
-    assert "$11.000" in text
+    assert text == "**A**\n• Precio x gramo: $11.000"
 
 
 def test_money_in_the_millions_gets_two_dots() -> None:
     text = catalog_text("", "", [_entry("A", list_price=1000000)])
 
-    assert text is not None
-    assert "$1.000.000" in text
+    assert text == "**A**\n• Precio x gramo: $1.000.000"
 
 
 def test_a_blank_header_is_left_out_with_no_extra_blank_line() -> None:
@@ -191,8 +194,7 @@ def test_both_blank_leaves_only_the_blocks() -> None:
 def test_seller_markers_in_the_header_pass_through_untouched() -> None:
     text = catalog_text("**bold header**", "", [_entry("A", list_price=1000)])
 
-    assert text is not None
-    assert text.startswith("**bold header**\n\n")
+    assert text == "**bold header**\n\n**A**\n• Precio x gramo: $1.000"
 
 
 def test_seller_markers_in_the_aroma_pass_through_untouched() -> None:
@@ -200,8 +202,9 @@ def test_seller_markers_in_the_aroma_pass_through_untouched() -> None:
 
     text = catalog_text("", "", [entry])
 
-    assert text is not None
-    assert "• Aroma/sabor: **very** strong" in text
+    assert text == (
+        "**A**\n• Aroma/sabor: **very** strong\n• Precio x gramo: $1.000"
+    )
 
 
 def test_seller_markers_in_the_name_pass_through_untouched() -> None:
@@ -209,15 +212,33 @@ def test_seller_markers_in_the_name_pass_through_untouched() -> None:
 
     text = catalog_text("", "", [entry])
 
-    assert text is not None
-    assert text.startswith("****a **b** c****")
+    assert text == "****a **b** c****\n• Precio x gramo: $1.000"
 
 
 def test_an_unpaired_marker_in_the_header_is_kept_as_typed() -> None:
     text = catalog_text("oops **unpaired", "", [_entry("A", list_price=1000)])
 
-    assert text is not None
-    assert text.startswith("oops **unpaired\n\n")
+    assert text == "oops **unpaired\n\n**A**\n• Precio x gramo: $1.000"
+
+
+def test_two_blocks_between_a_header_and_a_footer_are_each_blank_line_separated() -> None:
+    """The enforcement artefact exercised on the shape it must reject if wrong: blocks
+    joined by a single `\\n` instead of `\\n\\n`, or written out of order, would fail
+    this literal comparison."""
+    first = _entry("24K Gold", emoji="\U0001f947", list_price=11000)
+    second = _entry("Blue Dream", indica_share=40, list_price=9000)
+
+    text = catalog_text(DEFAULT_HEADER, DEFAULT_FOOTER, [first, second])
+
+    assert text == (
+        "\U0001f33f **CATÁLOGO** \U0001f33f\n\n"
+        "\U0001f947 **24K Gold**\n"
+        "• Precio x gramo: $11.000\n\n"
+        "**Blue Dream**\n"
+        "• 40% índica / 60% sativa\n"
+        "• Precio x gramo: $9.000\n\n"
+        "\U0001f4e9 Consultas y pedidos por privado."
+    )
 
 
 def test_entries_are_written_in_the_order_given() -> None:
@@ -226,5 +247,6 @@ def test_entries_are_written_in_the_order_given() -> None:
 
     text = catalog_text("", "", [second, first])
 
-    assert text is not None
-    assert text.index("**B**") < text.index("**A**")
+    assert text == (
+        "**B**\n• Precio x gramo: $2.000\n\n**A**\n• Precio x gramo: $1.000"
+    )

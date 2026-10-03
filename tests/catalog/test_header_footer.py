@@ -52,3 +52,15 @@ def test_both_sides_are_normalised_before_the_length_check() -> None:
 
     assert header_footer.header == "header"
     assert header_footer.footer == "footer"
+
+
+def test_refuses_direct_construction_with_an_unnormalised_header() -> None:
+    """The enforcement artefact: `CatalogHeaderFooter` holds the "already normalised"
+    invariant even against direct construction, never just by convention."""
+    with pytest.raises(ValueError):
+        CatalogHeaderFooter("\r\nheader", "footer")
+
+
+def test_refuses_direct_construction_with_an_unnormalised_footer() -> None:
+    with pytest.raises(ValueError):
+        CatalogHeaderFooter("header", "\n\nfooter\n\n")
