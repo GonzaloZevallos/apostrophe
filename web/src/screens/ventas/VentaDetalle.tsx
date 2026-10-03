@@ -155,8 +155,11 @@ export default function VentaDetalle() {
         <span className="cifra-xl">{formatMoney(sale.total)}</span>
 
         <div className="venta-detalle__lineas">
-          {sale.lines.map((line) => (
-            <div key={line.variety_id} className="venta-detalle__linea">
+          {sale.lines.map((line, index) => (
+            // A sale can have two lines of the same variety (a gift line and a paid
+            // one, say): `SaleIn` sets no uniqueness rule on `variety_id`, so the
+            // line's position — fixed and unique within one sale — joins it in the key.
+            <div key={`${line.variety_id}-${index}`} className="venta-detalle__linea">
               <span className="venta-detalle__variedad">
                 {line.variety_name}
                 <span className="regla-insignia">{RULE_LABEL[line.pricing_rule]}</span>

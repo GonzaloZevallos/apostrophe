@@ -9,12 +9,14 @@
 
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Link, useOutletContext } from 'react-router'
+import { Link, useLocation, useOutletContext } from 'react-router'
 import { NetworkError } from '../../api/client'
 import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
 import { listSales, type Sale } from '../../api/sales'
 import ErrorGenerico from '../../components/ErrorGenerico'
+import { readFeedback } from '../../components/feedback'
+import Notice from '../../components/Notice'
 import SinConexion from '../../components/SinConexion'
 import { type DateRange, formatDate, monthRange, todayRange, weekRange } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
@@ -49,6 +51,8 @@ function countLabel(count: number): string {
 
 export default function Ventas() {
   const me = useOutletContext<Me>()
+  const location = useLocation()
+  const [feedback] = useState(() => readFeedback(location.state))
   const [period, setPeriod] = useState<Period>('hoy')
   const [custom, setCustom] = useState<DateRange>(() => monthRange(me.today))
 
@@ -66,6 +70,8 @@ export default function Ventas() {
     <main className="pantalla">
       <div className="cuerpo">
         <span className="encabezado__titulo">Ventas</span>
+
+        {feedback !== null && <Notice kind={feedback.kind} message={feedback.message} />}
 
         <div className="periodos" role="group" aria-label="Período">
           {PERIODS.map((item) => (
@@ -104,7 +110,6 @@ export default function Ventas() {
                 aria-label="Hasta"
                 value={custom.end}
                 min={custom.start}
-                max={me.today}
                 onChange={(event) =>
                   setCustom((previous) => ({ ...previous, end: event.target.value }))
                 }

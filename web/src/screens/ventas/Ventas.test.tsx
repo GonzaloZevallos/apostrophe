@@ -10,6 +10,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
+import { GONE_NOTICE } from '../../api/refusals'
 import type { Me } from '../../api/me'
 import Ventas from './Ventas'
 
@@ -26,11 +27,11 @@ function Context() {
   return <Outlet context={ME} />
 }
 
-function renderVentas() {
+function renderVentas(state?: unknown) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={['/ventas']}>
+      <MemoryRouter initialEntries={[{ pathname: '/ventas', state }]}>
         <Routes>
           <Route element={<Context />}>
             <Route path="/ventas" element={<Ventas />} />
@@ -104,6 +105,10 @@ test('Fechas opens on the current month and never lets the start run past the en
   expect(start).toHaveValue('2026-10-01')
   expect(end).toHaveValue('2026-10-31')
   expect(start).toHaveAttribute('max', '2026-10-31')
+  // Regression: "Hasta" must never carry a `max` lower than its own default value
+  // (the month's last day, which can fall after today) — that would start the
+  // field invalid and leave no way back to the range the PRD says Fechas opens on.
+  expect(end).not.toHaveAttribute('max')
 })
 
 test("the period's total and count are the sum and the number of sales shown", async () => {
@@ -183,4 +188,18 @@ test('a dropped network shows Sin conexión, never the empty-list text', async (
   expect(
     screen.queryByText('Todavía no registraste ninguna venta en este período.'),
   ).not.toBeInTheDocument()
+})
+
+test('arriving back from Borrar venta or Deshacer shows "Venta eliminada"', async () => {
+  vi.mocked(fetch).mockResolvedValue(jsonResponse(200, []))
+  renderVentas({ toast: 'Venta eliminada' })
+
+  expect(await screen.findByText('Venta eliminada')).toBeInTheDocument()
+})
+
+test('arriving back after deleting an already-gone sale shows the gone notice', async () => {
+  vi.mocked(fetch).mockResolvedValue(jsonResponse(200, []))
+  renderVentas({ notice: GONE_NOTICE })
+
+  expect(await screen.findByText(GONE_NOTICE)).toBeInTheDocument()
 })
