@@ -5,7 +5,7 @@ type checker it never swallows an exception, so a `return` inside the block stil
 counts as the function's return.
 
 Every exception a capability registers here carries a `code: ClassVar[str]`
-(docs/adr/0007): a plain, namespaced string the front maps to its own Spanish text,
+(docs/adr/0008): a plain, namespaced string the front maps to its own Spanish text,
 never derived from the class name, so a refactor does not change the contract.
 """
 
@@ -22,7 +22,7 @@ class _Coded(Protocol):
 
 
 class Refused(HTTPException):
-    """An `HTTPException` that also carries the broken rule's `code` (docs/adr/0007).
+    """An `HTTPException` that also carries the broken rule's `code` (docs/adr/0008).
     `app.main` answers it as `{"detail": ..., "code": ...}`."""
 
     def __init__(self, status_code: int, detail: str, code: str) -> None:

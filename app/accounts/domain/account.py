@@ -45,7 +45,7 @@ class Email:
             or self.value != self.value.lower()
             or len(self.value) > EMAIL_MAX_LENGTH
         ):
-            # No address in the message (docs/adr/0007; CODING_STANDARDS §9): an email
+            # No address in the message (docs/adr/0008; CODING_STANDARDS §9): an email
             # never reaches a log or an error body.
             raise InvalidEmail("that is not an email address")
 

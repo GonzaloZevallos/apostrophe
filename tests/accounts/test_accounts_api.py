@@ -198,7 +198,7 @@ def test_refusal_bodies_carry_the_rule_s_code(
     engine: Engine,
     clock: MovableClock,
 ) -> None:
-    """One behaviour test per code family of this capability (docs/adr/0007): the
+    """One behaviour test per code family of this capability (docs/adr/0008): the
     front dispatches on `code`, never on `detail`."""
     not_usable = anonymous_client.post("/invitations/nope/accept", json=NEW_USER)
     assert not_usable.status_code == 404

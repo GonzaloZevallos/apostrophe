@@ -181,7 +181,7 @@ def test_a_deleted_entry_leaves_the_history_and_the_previous_price_rules_again(
 
 
 def test_refusal_bodies_carry_the_rule_s_code(client: TestClient) -> None:
-    """One behaviour test per code family of this capability (docs/adr/0007)."""
+    """One behaviour test per code family of this capability (docs/adr/0008)."""
     bad_name = client.post("/varieties", json={"name": ""})
     assert bad_name.status_code == 422
     assert bad_name.json()["code"] == "variety.name_invalid"

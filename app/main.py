@@ -23,6 +23,7 @@ from app.expenses.adapters.default_categories import ExpenseCategoriesOpening
 from app.expenses.adapters.router import router as expenses_router
 from app.http_errors import Refused
 from app.migrations.runner import upgrade_to_head
+from app.sales.adapters.router import router as sales_router
 from app.settings import Settings
 from app.static_spa import MissingBuiltFront, SpaStatic, api_segments
 from app.varieties.adapters.router import router as varieties_router
@@ -41,7 +42,7 @@ async def _without_request_data(request: Request, exc: Exception) -> JSONRespons
 
 
 async def _refused(request: Request, exc: Exception) -> JSONResponse:
-    # Every `Refused` already carries the broken rule's `code` (docs/adr/0007); the
+    # Every `Refused` already carries the broken rule's `code` (docs/adr/0008); the
     # front maps it, never `detail`.
     assert isinstance(exc, Refused)
     content = {"detail": exc.detail, "code": exc.code}
@@ -87,6 +88,7 @@ def create_app(
     app.include_router(varieties_router, dependencies=gated)
     app.include_router(customers_router, dependencies=gated)
     app.include_router(expenses_router, dependencies=gated)
+    app.include_router(sales_router, dependencies=gated)
 
     if settings.web_dist is not None:
         if not (settings.web_dist / "index.html").is_file():

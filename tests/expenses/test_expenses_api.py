@@ -257,7 +257,7 @@ def test_editing_with_another_businesss_category_id_is_not_found(
 
 
 def test_refusal_bodies_carry_the_rule_s_code(client: TestClient) -> None:
-    """One behaviour test per code family of this capability (docs/adr/0007)."""
+    """One behaviour test per code family of this capability (docs/adr/0008)."""
     response = client.post(
         "/expenses",
         json={

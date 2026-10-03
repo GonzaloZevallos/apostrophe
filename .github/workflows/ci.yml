@@ -32,3 +32,20 @@ jobs:
       - run: npm --prefix web run lint
       - run: npm --prefix web test
       - run: npm --prefix web run build
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.12.13"
+      - run: uv venv --python 3.13
+      - run: uv sync --locked --extra dev
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm --prefix web ci --no-fund --no-audit
+      - run: npx --prefix web playwright install --with-deps chromium
+      - run: npm --prefix web run e2e

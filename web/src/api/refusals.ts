@@ -1,5 +1,5 @@
 /**
- * Dispatches a backend refusal's `code` on its `kind` (plan, "Refusals", ADR-0007):
+ * Dispatches a backend refusal's `code` on its `kind` (plan, "Refusals", ADR-0008):
  * a screen never renders `detail`. `contract.json` is the shared contract the
  * backend's own tests check itself against (`tests/test_refusal_codes.py`), so a
  * rename on either side fails a check instead of quietly falling back here.

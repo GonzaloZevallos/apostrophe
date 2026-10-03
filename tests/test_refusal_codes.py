@@ -1,6 +1,6 @@
 """Every refusal the backend can answer carries an explicit `code`, and the front's
 contract (`web/src/api/contract.json`) lists exactly that set, with the right `kind`
-(docs/adr/0007).
+(docs/adr/0008).
 
 The checker walks each router's `TranslateErrors` registrations and, for every class it
 finds, also walks that class's own Python subclasses — a concrete rule (`InvalidName`)
