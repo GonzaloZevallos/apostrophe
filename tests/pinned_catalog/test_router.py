@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from fastapi.testclient import TestClient
 
+from app.pinned_catalog.domain.bold import telegram_bold
 from app.pinned_catalog.domain.errors import TelegramUnreachable
 from tests.contract_shapes import assert_matches_fixture
 from tests.fakes.telegram import FakeTelegram
@@ -186,6 +187,36 @@ def test_changing_only_the_own_chat_leaves_the_status_unchanged(
     assert changed.json()["previous_pin_left"] is False
     after = client.get("/pinned-catalog").json()["status"]
     assert after == before
+
+
+def test_the_test_copy_and_the_published_copy_both_match_get_catalog_s_text(
+    client: TestClient, telegram: FakeTelegram
+) -> None:
+    """PRD metric 3 (text fidelity): the source text handed to the port equals
+    `GET /catalog`'s text, bold left-to-right paired the same way the in-app preview
+    is; Probarlo's test send and Publicar's post carry the exact same rendering."""
+    variety = client.post("/varieties", json={"name": "Blue Dream"}).json()
+    client.post(
+        f"/varieties/{variety['id']}/prices",
+        json={"effective_from": "2026-01-01", "list_price": 9000},
+    )
+    client.post(
+        "/stock/entries",
+        json={"variety_id": variety["id"], "origin": "opening_stock", "grams": "50"},
+    )
+    catalog_text = client.get("/catalog").json()["text"]
+    assert catalog_text is not None
+    expected_plain, _ = telegram_bold(catalog_text)
+
+    client.post(
+        "/pinned-catalog/test",
+        json={"token": TOKEN, "own_chat": "111", "channel_chat": "@canal"},
+    )
+    client.post("/pinned-catalog/publish")
+
+    sends = [call for call in telegram.calls if call[0] == "send"]
+    assert len(sends) == 2  # Probarlo's test send, then Publicar's first post
+    assert all(call[3] == expected_plain for call in sends)
 
 
 def test_a_failed_publish_reports_out_of_date_and_a_later_success_clears_it(
