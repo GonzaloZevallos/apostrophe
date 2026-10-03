@@ -1,0 +1,225 @@
+{
+  "lines": [
+    {
+      "name": "list price applies when nothing else does",
+      "input": {
+        "gift": false,
+        "specialPrice": null,
+        "vip": false,
+        "quote": { "listPrice": 1000, "bulk": null },
+        "gramsHundredths": 100
+      },
+      "expect": { "rule": "list", "pricePerGram": 1000, "lineTotal": 1000 }
+    },
+    {
+      "name": "bulk price applies at the minimum, measured per line",
+      "input": {
+        "gift": false,
+        "specialPrice": null,
+        "vip": false,
+        "quote": { "listPrice": 1000, "bulk": { "price": 700, "minimumHundredths": 1000 } },
+        "gramsHundredths": 1000
+      },
+      "expect": { "rule": "bulk", "pricePerGram": 700, "lineTotal": 7000 }
+    },
+    {
+      "name": "below the bulk minimum stays list",
+      "input": {
+        "gift": false,
+        "specialPrice": null,
+        "vip": false,
+        "quote": { "listPrice": 1000, "bulk": { "price": 700, "minimumHundredths": 1000 } },
+        "gramsHundredths": 999
+      },
+      "expect": { "rule": "list", "pricePerGram": 1000, "lineTotal": 9990 }
+    },
+    {
+      "name": "VIP takes the bulk price even below the minimum",
+      "input": {
+        "gift": false,
+        "specialPrice": null,
+        "vip": true,
+        "quote": { "listPrice": 1000, "bulk": { "price": 700, "minimumHundredths": 1000 } },
+        "gramsHundredths": 100
+      },
+      "expect": { "rule": "vip", "pricePerGram": 700, "lineTotal": 700 }
+    },
+    {
+      "name": "VIP without a bulk price pays list",
+      "input": {
+        "gift": false,
+        "specialPrice": null,
+        "vip": true,
+        "quote": { "listPrice": 1000, "bulk": null },
+        "gramsHundredths": 100
+      },
+      "expect": { "rule": "list", "pricePerGram": 1000, "lineTotal": 1000 }
+    },
+    {
+      "name": "gift is zero and wins over VIP",
+      "input": {
+        "gift": true,
+        "specialPrice": null,
+        "vip": true,
+        "quote": { "listPrice": 1000, "bulk": { "price": 700, "minimumHundredths": 1000 } },
+        "gramsHundredths": 500
+      },
+      "expect": { "rule": "gift", "pricePerGram": 0, "lineTotal": 0 }
+    },
+    {
+      "name": "special wins over VIP",
+      "input": {
+        "gift": false,
+        "specialPrice": 50,
+        "vip": true,
+        "quote": { "listPrice": 1000, "bulk": { "price": 700, "minimumHundredths": 1000 } },
+        "gramsHundredths": 200
+      },
+      "expect": { "rule": "special", "pricePerGram": 25, "lineTotal": 50 }
+    },
+    {
+      "name": "special line total is the typed total, not a rounded rate",
+      "input": {
+        "gift": false,
+        "specialPrice": 1,
+        "vip": false,
+        "quote": null,
+        "gramsHundredths": 3
+      },
+      "expect": { "rule": "special", "pricePerGram": 33, "lineTotal": 1 }
+    },
+    {
+      "name": "no price that day without a special price is refused",
+      "input": {
+        "gift": false,
+        "specialPrice": null,
+        "vip": false,
+        "quote": null,
+        "gramsHundredths": 100
+      },
+      "expect": { "error": "NoPriceThatDay" }
+    },
+    {
+      "name": "no price that day with a special price still prices",
+      "input": {
+        "gift": false,
+        "specialPrice": 5,
+        "vip": false,
+        "quote": null,
+        "gramsHundredths": 200
+      },
+      "expect": { "rule": "special", "pricePerGram": 3, "lineTotal": 5 }
+    },
+    {
+      "name": "gift with a special price is refused",
+      "input": {
+        "gift": true,
+        "specialPrice": 12,
+        "vip": false,
+        "quote": null,
+        "gramsHundredths": 100
+      },
+      "expect": { "error": "GiftWithSpecialPrice" }
+    },
+    {
+      "name": "a special price of zero is refused",
+      "input": {
+        "gift": false,
+        "specialPrice": 0,
+        "vip": false,
+        "quote": null,
+        "gramsHundredths": 100
+      },
+      "expect": { "error": "InvalidSpecialPrice" }
+    },
+    {
+      "name": "a negative special price is refused",
+      "input": {
+        "gift": false,
+        "specialPrice": -5,
+        "vip": false,
+        "quote": null,
+        "gramsHundredths": 100
+      },
+      "expect": { "error": "InvalidSpecialPrice" }
+    },
+    {
+      "name": "zero grams is refused",
+      "input": {
+        "gift": false,
+        "specialPrice": null,
+        "vip": false,
+        "quote": { "listPrice": 1000, "bulk": null },
+        "gramsHundredths": 0
+      },
+      "expect": { "error": "NonPositiveGrams" }
+    },
+    {
+      "name": "negative grams is refused",
+      "input": {
+        "gift": false,
+        "specialPrice": null,
+        "vip": false,
+        "quote": { "listPrice": 1000, "bulk": null },
+        "gramsHundredths": -100
+      },
+      "expect": { "error": "NonPositiveGrams" }
+    },
+    {
+      "name": "rounding below .50 rounds down",
+      "input": {
+        "gift": false,
+        "specialPrice": null,
+        "vip": false,
+        "quote": { "listPrice": 1, "bulk": null },
+        "gramsHundredths": 49
+      },
+      "expect": { "rule": "list", "pricePerGram": 1, "lineTotal": 0 }
+    },
+    {
+      "name": "rounding exactly .50 rounds up",
+      "input": {
+        "gift": false,
+        "specialPrice": null,
+        "vip": false,
+        "quote": { "listPrice": 3001, "bulk": null },
+        "gramsHundredths": 250
+      },
+      "expect": { "rule": "list", "pricePerGram": 3001, "lineTotal": 7503 }
+    },
+    {
+      "name": "rounding above .50 rounds up",
+      "input": {
+        "gift": false,
+        "specialPrice": null,
+        "vip": false,
+        "quote": { "listPrice": 10001, "bulk": null },
+        "gramsHundredths": 155
+      },
+      "expect": { "rule": "list", "pricePerGram": 10001, "lineTotal": 15502 }
+    }
+  ],
+  "totals": [
+    {
+      "name": "a multi-line sale's total is the sum of the rounded lines, plus shipping, once",
+      "lines": [
+        {
+          "gift": false,
+          "specialPrice": null,
+          "vip": false,
+          "quote": { "listPrice": 1000, "bulk": null },
+          "gramsHundredths": 100
+        },
+        {
+          "gift": false,
+          "specialPrice": 250,
+          "vip": false,
+          "quote": null,
+          "gramsHundredths": 50
+        }
+      ],
+      "shippingCharged": 100,
+      "expectTotal": 1350
+    }
+  ]
+}
