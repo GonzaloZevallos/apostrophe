@@ -39,6 +39,7 @@
     "stock.cost_on_negative_adjustment": { "kind": "refusal" },
     "stock.date_in_future": { "kind": "refusal" },
     "stock.note_too_long": { "kind": "refusal" },
+    "stock.threshold_invalid": { "kind": "refusal" },
     "RequestInvalid": { "kind": "refusal" }
   },
   "frontSegments": [

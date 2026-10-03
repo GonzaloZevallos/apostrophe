@@ -23,6 +23,7 @@ from app.stock.domain.errors import (
     EntryNoteTooLong,
     EntryNotFound,
 )
+from app.stock.domain.threshold import ThresholdInvalid
 from app.varieties.application.errors import VarietyNotFound
 
 router = APIRouter(prefix="/stock", tags=["stock"])
@@ -57,6 +58,7 @@ as_http = TranslateErrors(
                 EntryDateInFuture,
                 EntryNoteTooLong,
                 InvalidGrams,
+                ThresholdInvalid,
             ),
         ),
     ]

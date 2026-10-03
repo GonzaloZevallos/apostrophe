@@ -6,12 +6,17 @@ grams value out uses the shared `GramsOut` (CODING_STANDARDS: no second grams fo
 
 from datetime import date
 from decimal import Decimal
+from typing import Literal
 
 from pydantic import BaseModel
 
 from app.stock.domain.costing import cost_per_gram
 from app.stock.domain.entry import Origin, StockEntry
 from app.varieties.adapters.schemas import GramsOut
+
+# The four values `stock_level` (stock-domain) answers; declared here so every
+# subtask that reads or writes a status reads the one literal type, never a bare str.
+Status = Literal["no_entries", "sold_out", "low", "ok"]
 
 # A bare `date` inside `EntryIn`/`EntryOut` would otherwise resolve to the field named
 # `date`, not the type (the same trap `app.sales.adapters.schemas.SaleDate` documents).
@@ -56,3 +61,33 @@ class EntryOut(BaseModel):
             cost_per_gram=per_gram,
             note=entry.note,
         )
+
+
+class ThresholdIn(BaseModel):
+    """`PUT /stock/varieties/{variety_id}/threshold`'s body: `None` turns the
+    threshold off, rather than storing a zero or negative one (`Threshold.of`
+    refuses both)."""
+
+    grams: Decimal | None = None
+
+
+class VarietyStockOut(BaseModel):
+    """One variety's row in `GET /stock` (and the threshold route's own response):
+    computed only by `stock_level` over `lots_and_draws` (stock-domain), never by a
+    SQL aggregate or front code."""
+
+    variety_id: int
+    grams: GramsOut
+    status: Status
+    sold_out_since: date | None
+    threshold: GramsOut | None
+    days_left: int | None
+
+
+class StockOut(BaseModel):
+    """`GET /stock`'s own shape: the business's total grams, every variety's own row,
+    and its entries, newest date first then most recently recorded first."""
+
+    total: GramsOut
+    varieties: list[VarietyStockOut]
+    entries: list[EntryOut]

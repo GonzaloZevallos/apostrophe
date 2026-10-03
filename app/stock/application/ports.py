@@ -24,3 +24,8 @@ class VarietyCatalog(Protocol):
     imports `app.varieties` (CODING_STANDARDS section 1) — only its adapters do."""
 
     def exists(self, variety_id: int) -> bool: ...
+
+    def ids(self) -> list[int]:
+        """Every variety id of this business, for a use case that walks all of them
+        (`read_stock`'s per-variety sweep) rather than looking one up at a time."""
+        ...
