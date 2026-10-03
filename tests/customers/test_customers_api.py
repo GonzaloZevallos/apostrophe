@@ -66,6 +66,55 @@ def test_a_customer_with_a_sale_left_owing_shows_the_balance_everywhere_they_are
         assert_matches_fixture(read, "customer")
 
 
+def test_a_later_payment_lowers_the_balance_everywhere_it_is_read(client: TestClient) -> None:
+    """Review finding (balances-wiring): no HTTP test recorded a later payment and
+    then re-read `GET /customers/{id}`, `GET /customers` or `GET /sales` — wiring
+    that ignored payments entirely (balance stuck at the sale's total, `still_owing`
+    stuck `True`) would have left every test green. This proves the wrong answer
+    (balance unchanged, sale still fully owing) is the one case a correct `Balances`/
+    `OwingSales` wiring must reject."""
+    customer = _register(client)
+    variety = client.post("/varieties", json={"name": "Lavanda"}).json()
+    client.post(
+        f"/varieties/{variety['id']}/prices",
+        json={"effective_from": "2026-01-01", "list_price": 10_000},
+    )
+    sale = client.post(
+        "/sales",
+        json={
+            "customer_id": customer["id"],
+            "payment": "owing",
+            "lines": [{"variety_id": variety["id"], "grams": "1"}],
+        },
+    ).json()
+
+    payment = client.post(
+        f"/customers/{customer['id']}/payments",
+        json={"paid_on": TODAY.isoformat(), "amount": 4_000, "method": "cash"},
+    )
+    assert payment.status_code == 201, payment.text
+
+    after_customer = client.get(f"/customers/{customer['id']}").json()
+    assert after_customer["balance"] == 6_000
+    assert after_customer["standing"] == "owes"
+    listed = next(c for c in client.get("/customers").json() if c["id"] == customer["id"])
+    assert listed["balance"] == 6_000
+    sale_after = next(s for s in client.get("/sales").json() if s["id"] == sale["id"])
+    assert sale_after["still_owing"] is True
+
+    full = client.post(
+        f"/customers/{customer['id']}/payments",
+        json={"paid_on": TODAY.isoformat(), "amount": 6_000, "method": "cash"},
+    )
+    assert full.status_code == 201, full.text
+
+    settled_customer = client.get(f"/customers/{customer['id']}").json()
+    assert settled_customer["balance"] == 0
+    assert settled_customer["standing"] == "settled"
+    sale_settled = next(s for s in client.get("/sales").json() if s["id"] == sale["id"])
+    assert sale_settled["still_owing"] is False
+
+
 def test_a_customer_can_be_registered_vip_with_a_channel(client: TestClient) -> None:
     customer = _register(client, channel="telegram", vip=True)
 

@@ -19,6 +19,14 @@
       "applied_to": { "sale_id": 10, "sale_date": "2026-09-14", "amount": 5000 }
     },
     {
+      "kind": "payment",
+      "date": "2026-09-25",
+      "running_balance": 0,
+      "standing": "settled",
+      "payment": { "id": 6, "paid_on": "2026-09-25", "amount": 8000, "method": "transfer" },
+      "applied_to": { "sale_id": 10, "sale_date": "2026-09-14", "amount": 6000 }
+    },
+    {
       "kind": "credit",
       "date": "2026-09-25",
       "running_balance": -2000,

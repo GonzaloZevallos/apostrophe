@@ -234,18 +234,31 @@ test('the account labels a sale, a later payment\'s split and its leftover credi
   // same figure here (nothing had been paid against it yet), so the two are read
   // from their own class, not by text, to tell them apart.
   const filas = Array.from(account?.querySelectorAll('.cuenta-cliente__fila') ?? [])
-  expect(filas).toHaveLength(3)
-  const [saleFila, paymentFila, creditFila] = filas
-  if (saleFila === undefined || paymentFila === undefined || creditFila === undefined) {
-    throw new Error('expected three account rows')
+  expect(filas).toHaveLength(4)
+  const [saleFila, firstPaymentFila, secondPaymentFila, creditFila] = filas
+  if (
+    saleFila === undefined ||
+    firstPaymentFila === undefined ||
+    secondPaymentFila === undefined ||
+    creditFila === undefined
+  ) {
+    throw new Error('expected four account rows')
   }
   expect(saleFila.querySelector('.cuenta-cliente__monto')).toHaveTextContent('$ 11.000')
-  expect(saleFila.querySelector('.cuenta-cliente__saldo')).toHaveTextContent('$ 11.000')
-  // The payment row's own amount ($ 5.000, what it applied to the 14/09 sale)
+  expect(saleFila.querySelector('.cuenta-cliente__saldo')).toHaveTextContent('saldo $ 11.000')
+  // The first payment's own amount ($ 5.000, what it applied to the 14/09 sale)
   // differs from what it then left owing ($ 6.000) — exactly the figure the
   // review found missing.
-  expect(paymentFila.querySelector('.cuenta-cliente__monto')).toHaveTextContent('$ 5.000')
-  expect(paymentFila.querySelector('.cuenta-cliente__saldo')).toHaveTextContent('$ 6.000')
+  expect(firstPaymentFila.querySelector('.cuenta-cliente__monto')).toHaveTextContent('$ 5.000')
+  expect(firstPaymentFila.querySelector('.cuenta-cliente__saldo')).toHaveTextContent('saldo $ 6.000')
+  // The second payment (id 6, $ 8.000 in all) finishes off the 14/09 sale's
+  // remaining $ 6.000 — its own split row, before its leftover becomes the
+  // credit row below (plan, "Account": "a credit row ... right after that
+  // payment's splits"; review finding: this split row was missing from the
+  // fixture, leaving the credit jump from $ 6.000 straight to -$ 2.000 with no
+  // row accounting for the $ 6.000 in between).
+  expect(secondPaymentFila.querySelector('.cuenta-cliente__monto')).toHaveTextContent('$ 6.000')
+  expect(secondPaymentFila.querySelector('.cuenta-cliente__saldo')).toHaveTextContent('saldo $ 0')
   // The credit row's own leftover ($ 2.000) and the running balance it leaves
   // (also "A favor $ 2.000" here) both drop their sign, picked only by `kind`/
   // `standing`, never a comparison on the number itself.

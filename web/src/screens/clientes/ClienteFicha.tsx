@@ -79,7 +79,9 @@ function rowLabel(row: AccountRow): string {
 }
 
 function rowAmount(row: AccountRow): string {
-  return row.standing === 'credit' ? `A favor ${formatMoneyMagnitude(row.running_balance)}` : formatMoney(row.running_balance)
+  return row.standing === 'credit'
+    ? `A favor ${formatMoneyMagnitude(row.running_balance)}`
+    : `saldo ${formatMoney(row.running_balance)}`
 }
 
 /** The row's own figure (design, `ClienteFicha.dc.html`: each row shows its own

@@ -1,4 +1,4 @@
 {
   "applied_to": [{ "sale_id": 10, "sale_date": "2026-09-14", "amount": 5000 }],
-  "after": { "balance": 6000, "owing_since": "2026-09-20", "standing": "owes" }
+  "after": { "balance": 6000, "owing_since": "2026-09-14", "standing": "owes" }
 }

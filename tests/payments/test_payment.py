@@ -90,6 +90,35 @@ def test_settle_candidate_accepts_an_amount_exactly_at_the_balance() -> None:
     assert (split.sale_id, split.amount) == (1, 100)
 
 
+def test_settle_candidate_shares_paid_on_with_an_already_recorded_later_payment() -> None:
+    """Regression (payments-e2e found this live): the candidate's sort key is
+    `(paid_on, recorded_at, id)`. Comparing an aware `recorded_at` from a real row
+    against a naive one on the candidate raises `TypeError` the moment both share a
+    `paid_on` — this is the input the fix (`datetime.max.replace(tzinfo=UTC)`) must
+    reject, i.e. not crash on, not only the no-clash case every other test here uses."""
+    from datetime import UTC
+
+    shared_day = date(2026, 9, 20)
+    already_recorded = LaterPaymentEntry(
+        id=1,
+        paid_on=shared_day,
+        recorded_at=datetime(2026, 9, 20, 9, 0, tzinfo=UTC),
+        amount=20,
+        method=PaymentMethod.CASH,
+    )
+    ledger = Ledger(
+        (OwedSale(1, date(2026, 9, 1), AT, 100),),
+        (already_recorded,),
+    )
+    candidate = PaymentCandidate(paid_on=shared_day, amount=30)
+
+    result = settle_candidate(ledger, candidate, TODAY)
+
+    assert result.balance == 50
+    [split] = result.applied_to
+    assert (split.sale_id, split.amount) == (1, 30)
+
+
 def test_settle_candidate_answers_exactly_what_recording_it_would_settle() -> None:
     """Preview = stored (PRD metric): applying the same candidate as a real later
     payment and calling `settle()` again lands on the same splits and balance."""
