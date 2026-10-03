@@ -36,6 +36,7 @@ Success criteria:
 - **Dry run**: runs every check and writes nothing, whatever the outcome. It lists every problem in one pass.
 - **Real run**: loads everything or nothing. Any blocking problem leaves the business exactly as it was.
 - **Mismatches**: both runs recompute every derived figure and report every row whose recomputed total differs from the sheet's. A mismatch never blocks.
+  - The sheet's Ventas Total is compared with the app's sale total, shipping included. This interim rule stands until it is confirmed whether the sheet's Total includes shipping. A wrong guess can only add mismatches to the report; what is stored never changes.
 - **The report**, the same for a dry run and a successful real run:
   - counts per kind of record: varieties, price entries, catalog attributes, stock entries, expense categories, expenses, customers, sales and payments;
   - every blocking problem, with its sheet and row;
@@ -54,6 +55,11 @@ Success criteria:
   - the seeded expense categories, even if renamed or removed;
   - the seeded catalog header and footer.
 - The import overwrites the header and footer. It matches or adds categories, and never renames or removes one.
+
+### Reading the file
+
+- The Ventas, Entradas and Gastos columns are found by their header text. The exact headers and header rows are still to be confirmed against the real sheet.
+- A required column that can't be found blocks the run. The dry run lists every missing column at once.
 
 ### Sheet by sheet
 
@@ -87,7 +93,9 @@ Success criteria:
   - **"Efectivo" / "Transferencia"**: an on-the-spot payment equal to the recomputed total, with that method, on the row's date.
   - **Any other payment value** blocks.
   - **A row with a $0 total**: its payment value is ignored and nothing stays owed (sales.md).
-  - **Incomplete rows**: a row the sheet marks incomplete through its Revisar column is left out and listed. It never blocks.
+  - **Incomplete rows**: a row whose Revisar cell holds any non-blank saved value is incomplete. It is left out and listed, and never blocks. This interim rule stands until the sheet's exact marker is confirmed.
+  - **Revisar with no saved value**: a Revisar cell holding a formula with no saved value blocks the run. The report asks the operator to recalculate and save the file again. The import never guesses whether such a row is complete.
+  - Revisar is only read to decide which rows to leave out. Its value is never stored.
 
 ### Pricing rules
 
@@ -115,6 +123,7 @@ A row blocks if the product's own rules would refuse it if it were recorded toda
 
 Also blocking:
 
+- a required column that can't be found in Ventas, Entradas or Gastos;
 - an unknown variety name, or two Ajustes rows 7–16 that are the same name;
 - two price entries for one variety on one date;
 - an unknown origin or payment value;
@@ -124,7 +133,8 @@ Also blocking:
 - a mapped number that doesn't normalise;
 - "Pendiente" with no customer, or `"Amigo"` with no customer;
 - `"Regalo"` with a special total;
-- a special total that isn't a whole number above $0.
+- a special total that isn't a whole number above $0;
+- a Ventas Revisar cell with no saved value.
 
 Rows the sheet marked incomplete are the one exception: they are left out and listed, and never block.
 
@@ -159,7 +169,7 @@ From test fixtures, with no telemetry:
 - **Look before writing (criterion 1)**:
   - a dry run writes 0 rows in every table, whatever the outcome;
   - a refused real run writes 0 rows;
-  - the dry run lists every blocking problem of a fixture in one pass.
+  - the dry run lists every blocking problem of a fixture in one pass, every missing column included.
 - **Opens where the sheet left off (criterion 2)**: after importing a fixture, these equal its expected figures, with 0 unexplained differences:
   - each variety's current price;
   - the catalog text;
@@ -169,9 +179,9 @@ From test fixtures, with no telemetry:
   Ganancia and Caja are not compared with the sheet.
 - **Recording order (criterion 2)**: a fixture with same-date entries and sales, in unsorted dates, gets its lot order and settlement from date first, then sheet order. 100% passing.
 - **Nothing invented (criterion 3)**:
-  - a matrix of every blocking case passes 100%;
-  - incomplete rows are left out and listed without blocking;
-  - a reference set of total mismatches is reported and never blocks;
+  - a matrix of every blocking case passes 100%, including a missing column and a Revisar cell with no saved value;
+  - rows with a non-blank Revisar value are left out and listed without blocking;
+  - a reference set of total mismatches, with and without shipping, is reported and never blocks;
   - merged categories, merged spellings and unused mapping entries all appear in the report.
 - **One business, once (criterion 4)**:
   - an import into a business holding any one of the seven kinds of record is refused with 0 rows written, tested for each kind;
