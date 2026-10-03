@@ -1,18 +1,31 @@
 # Sales
 
-What a customer takes in one go, each line priced from the day's prices and that price kept on the line (ADR-0003). Sales are seen only by their business (ADR-0004). Reads current prices from varieties and customers (and their VIP status) from customers. Payments made later and balances (#4), and stock (#5), build on it.
+What a customer takes in one go, each line priced from the day's prices and that price kept on the line (ADR-0003). Sales are seen only by their business (ADR-0004). Reads current prices from varieties, and customers (with their VIP status) from customers. Payments made later and balances (#4), and stock (#5), build on it. This capability also covers the sales screens: Nueva venta, Ventas and a sale's detail.
 
 ## Jobs
 
 **When** I hand over an order (one or several varieties, maybe with shipping, paid on the spot or left owing), **I want** to record it in a few taps (varieties, grams, who took it, how they paid) with each line priced from that day's current prices and the price kept on the line, **so I** never price from memory, a later price change never rewrites what I charged, and nothing left owing is lost or lands on the wrong person.
 
-Success criteria:
+**When** a customer orders over Telegram or WhatsApp and I'm handing it over, **I want** to load the order on my phone in a few taps (varieties, grams, who takes it, how they paid) and watch each line's price, rule and total, and the sale's total, update as I type, **so I can** confirm the total to the customer in the chat, never price from memory, and never have to redo a sale after saving it.
+
+**When** I want to check what I sold today, this week or this month, **I want** to see that period's sales with their total and count, **so I can** tell how it's going between orders and find a particular sale to fix.
+
+Success criteria, recording (API):
 
 1. **Speed**: from the phone, a sale is recorded in under 60 s, from opening the form to saved. This holds with an existing customer, a new one, or none, and a sale without a customer is the fastest. It is one minute shared with customers.md's find-or-register budget, not a second minute on top.
 2. **One order is one sale**: an order is one sale however many varieties it has, with shipping charged once. Its total is the sum of its lines plus shipping. Counts and averages count sales, not lines.
 3. **Right price, kept**: each line is priced by the rules below, from the variety's current price on the sale's date, and stores its price per gram and pricing rule. Later changes never alter what an existing sale charged: price entries, a change to a customer's VIP status, or a customer assigned afterwards. A line whose variety has no price that day is refused, unless it has a special price.
 4. **No limbo, no lost debt**: a sale with missing or invalid data is refused whole. A sale left owing always has a customer. Only a sale where nothing stays owed may have none. A customer can be added to it later, once, and never swapped for another.
 5. **Businesses never mix** (ADR-0004): a sale references only its own business's customers and varieties. Another business's sale answers 404, and lists show none of it. The note never appears in error answers or logs (ADR-0005).
+
+Success criteria, on screen:
+
+6. **What I see is what I get**: if prices don't change between preview and save, every line's price per gram, rule and total, and the sale's total, match what the API stores, with 0 differences. After saving, the screen shows what the API answered, not the preview.
+7. **No surprises at save time**: Debiendo is disabled with "Para dejar debiendo elegí un cliente", and a line with no price that day shows "<variety> no tiene precio para esa fecha", both before saving. Any other refusal comes back with its code, shows in Spanish on its field, and everything typed stays. A refused sale never loses the order.
+8. **One order is one sale on screen**: one form, one total and shipping charged once.
+9. **Undo in one tap**: a sale saved by mistake is undone in one tap from the "Venta guardada" notice, and nothing of it remains: no lines, no on-the-spot payment, and it is in no list.
+10. **Glance between orders**: switching between Hoy, Semana (Monday to Sunday) and Mes, or picking Fechas, answers fast enough to glance at in the middle of a chat.
+11. **Find and fix**: any sale in the period can be found and opened. In its detail, a sale with no customer can be given one (once, never changed), and a wrong sale can be deleted. Fixing a sale means exactly these two things.
 
 ## Behaviour
 
@@ -65,7 +78,21 @@ Success criteria:
 - **Delete**:
   - A hard delete, lines and on-the-spot payment included; nothing remains to list or restore.
   - #4 and #5 define deletion's effect on later payments and stock.
-- **Refusals**: fixed messages that never repeat the input, the note, amounts or names (ADR-0005).
+- **Refusals** (ADR-0005, ADR-0008):
+  - They are fixed messages that never repeat the input, the note, amounts or names.
+  - Each one carries its own namespaced `code`, listed in `web/src/api/contract.json` and checked by `tests/test_refusal_codes.py`. The rules with a code:
+    - missing lines;
+    - invalid grams;
+    - gift with a special price;
+    - special price at or below $0;
+    - no price that day;
+    - negative shipping;
+    - future date;
+    - a total above $0 with no method and not left owing;
+    - left owing without a customer;
+    - note too long;
+    - assigning to a sale that already has a customer;
+    - another business's sale, customer or variety (gone).
 - **Isolation (ADR-0004)**:
   - The business comes from the session.
   - Every sales table carries `business_id`.
@@ -73,21 +100,128 @@ Success criteria:
   - Lists show none of another business's sales.
   - The routes are in `tests/test_business_isolation.py`.
 
+### On screen: Nueva venta (`NuevaVenta`, `NuevaVentaCompu`)
+
+- **Opening the form**:
+  - from the fixed "Nueva venta" button;
+  - or from "Nueva venta a <name>" on a customer's card, with that customer already chosen.
+- **Fields**:
+  - the date: today by default, shown as "Hoy 02/10", never a later day;
+  - the customer;
+  - one or more lines. Each line has a variety, grams, "Regalo", and "Precio especial" (the line's total);
+  - shipping charged;
+  - the note;
+  - how it was paid: Efectivo · Transferencia · Debiendo.
+- **The sale's total** shows with the grams sold and the grams gifted.
+- **Live preview**:
+  - Each line shows its price per gram, its rule badge (lista, por cantidad, VIP, regalo, especial) and its total. The sale's total updates as the seller types.
+  - It applies exactly the pricing, rounding and total rules above.
+  - Prices are loaded when the form opens and again when the date changes, which reprices every line from that day's current prices.
+  - Prices are never re-checked live while the seller types.
+- **Regalo and Precio especial exclude each other**: choosing one clears and disables the other, and turning it off frees the other. Precio especial doesn't accept $0. The domain's gift-plus-special refusal stays as an unreachable backstop.
+- **No price that day**: a line whose variety has no current price on the sale's date shows "<variety> no tiene precio para esa fecha". The name comes from the screen's own line.
+- **Customer and payment stay in step**, whichever changes last:
+  - Debiendo is available exactly when a customer is chosen. Otherwise it is disabled and shows "Para dejar debiendo elegí un cliente".
+  - Removing the customer or choosing "Sin cliente" while Debiendo is selected resets how it was paid to unselected. It never falls back to Efectivo on its own.
+  - A $0 sale needs no method.
+- **Saving**:
+  - On success, the app opens the sale's detail as the API answered it, with the "Venta guardada" notice.
+  - A refusal shows on its field in Spanish and keeps everything typed.
+  - A price deleted by a partner before saving: the save is refused, and the line shows the no-price message.
+  - A price changed before saving: the save goes through, and the detail shows what was stored.
+  - A customer or variety not found when saving shows the generic line and keeps the form.
+- **Leaving**:
+  - Back or close after a line, a customer, shipping or a note has been entered asks "¿Descartás la venta?", with "No, seguí cargando" and "Sí, descartala".
+  - An untouched form closes at once.
+  - There are no drafts or autosave.
+- **Elegir cliente** (`NuevaVentaCliente`):
+  - A sheet over the sale. It offers search by phone or part of the name, "Sin cliente", and "Nuevo cliente" (phone and name required, plus channel and VIP), which creates the customer and uses it.
+  - Closing the sheet only returns to the form.
+- **"Venta guardada"** (`Estados`):
+  - It is the only success notice with **Deshacer**. It carries no amount or name, is announced like a toast, and lasts a fixed few seconds.
+  - Deshacer deletes the sale with no confirmation, then shows "Venta eliminada" and returns to Ventas.
+  - If the sale is already gone, Deshacer shows "Eso ya no está. La lista ya está al día."
+  - After the notice is gone, the way to undo is "Borrar venta".
+
+### On screen: Ventas (`Ventas`, `VentasCompu`)
+
+- **Periods**: Hoy · Semana · Mes · Fechas, in Argentina time.
+  - Semana is the Monday-to-Sunday week containing today.
+  - Mes is the current calendar month.
+  - Fechas opens on the current month's first and last day. The start can't be set later than the end.
+- **The period's total and count**:
+  - the total is the sum of the sale totals shown, paid or not, shipping included;
+  - the count is of sales, not lines;
+  - the total is never presented as profit or cash.
+- **Each sale** shows:
+  - its date;
+  - its customer, or "Sin cliente" in grey;
+  - a VIP badge;
+  - its varieties and grams;
+  - its total.
+- **The VIP badge shows the customer's current VIP status**, not how the sale was priced. Each line's rule badge in the detail is the record of that. A customer who stops being VIP loses the badge on past sales, while their lines still read "VIP". That is not a reprice (ADR-0003).
+
+### On screen: Detalle de venta (`VentaDetalle`)
+
+- **Shows**:
+  - the total;
+  - each line's variety, grams, price per gram, rule badge and line total;
+  - shipping, the note, how it was paid, and the customer or "Sin cliente".
+- **Asignar cliente**:
+  - It shows only when the sale has none, and opens Elegir cliente without "Sin cliente".
+  - On success, the toast "Cliente asignado".
+  - If someone assigned one first, "Esta venta ya tiene cliente." and the detail refreshes.
+- **Borrar venta**:
+  - It is confirmed with `Antes de borrar`, naming the date and the amount, e.g. "¿Borrás la venta de $ 11.000 del 02/10?", with "No, dejala / Sí, borrala".
+  - Then the toast "Venta eliminada" and back to Ventas.
+  - The copy never mentions stock or debt until #4 and #5.
+- **A sale that is gone** follows accounts.md:
+  - opening it shows "Eso ya no está." with "Volver a Ventas";
+  - assigning, deleting or undoing shows "Eso ya no está. La lista ya está al día."
+- No names, notes or amounts go to the console or browser storage, and no business id appears in a URL.
+
 ## Metrics
 
 - **Pricing matrix**: each rule, the order they apply in, bulk per line, VIP without a bulk price, no price that day with and without a special price, and gift plus special refused. It also covers rounding: below .50, exactly .50 and above .50, and a multi-line sale whose total is the sum of the rounded lines. 100% passing. (Criterion 3)
 - **Stored price immutability**: after a price entry is added or deleted, VIP is toggled, or a customer is assigned, existing lines' price, rule and total are unchanged. 100% passing. (Criterion 3)
-- **One sale per order**: a multi-variety sale is one sale, with total = rounded lines + shipping once. (Criterion 2)
+- **One sale per order**: a multi-variety sale is one sale, with total = rounded lines + shipping once, through the API and the form. (Criteria 2, 8)
 - **Whole or nothing**: a refused sale leaves 0 new rows in sales, lines and payments. (Criterion 4)
 - **Owing without a customer**: 0 stored; the domain refuses it and a test covers it. (Criterion 4)
-- **Isolation coverage**: every sales route is in the sweep and answers 404 or empty from another business, including references to another business's customer or variety. (Criterion 5)
-- **No echo**: no refusal body or log line contains the note, a customer's name or a submitted amount. (Criterion 5)
-- **Record time**: once the form exists, a sale is recorded from a phone in under 60 s with an existing, new or no customer. Recording answers in under 300 ms with a few dozen varieties and customers. (Criterion 1)
+- **Isolation coverage**: every sales route is in the sweep and answers 404 or empty from another business, including references to another business's customer or variety. On screen, another business's sale opened by id shows "Eso ya no está." (Criterion 5)
+- **No echo**:
+  - no refusal body or log line contains the note, a customer's name or a submitted amount;
+  - after a full front run, the console and browser storage hold none of them.
+
+  (Criterion 5)
+- **Record time**: a sale is recorded through the front, from a phone viewport, in under 60 s with an existing, new or no customer. Recording answers in under 300 ms with a few dozen varieties and customers. (Criterion 1)
+- **Preview = stored**:
+  - the front preview passes the same pricing matrix as the domain;
+  - the end-to-end run compares the preview with the saved detail: 0 differences.
+
+  (Criterion 6)
+- **Caught before save**:
+  - Debiendo is disabled with no customer, and removing the customer resets the method;
+  - a no-price line shows its message before saving;
+  - a forced API refusal keeps every field typed;
+  - every sales refusal has a code in `contract.json`, checked by `tests/test_refusal_codes.py`.
+
+  (Criterion 7)
+- **Undo leaves nothing**: after Deshacer, 0 rows remain for that sale in sales, lines and payments, and it is in no list. (Criterion 9)
+- **Ventas**:
+  - each period's total and count equal the sum and number of the sales shown;
+  - the week runs Monday to Sunday;
+  - the list answers in under 300 ms with a few hundred sales.
+
+  (Criteria 10, 11)
+- **Fixing**: the end-to-end run assigns a customer to a sale that had none (Asignar cliente then disappears) and deletes a sale through its confirmation. (Criterion 11)
 
 ## Out of scope
 
-- Later and partial payments, balances, owing since: #4.
-- Stock movements and lot costs: #5.
+- Later and partial payments, balances, owing since, and the "te debe" mark: #4.
+- Stock movements, lot costs, and the "vuelven … al stock" copy: #5.
 - Editing a sale: delete and record it again.
 - Moving a sale between customers or removing its customer.
+- Drafts or autosave of a sale.
+- Profit and cash in Ventas: the results capability.
+- Live updates between partners while a form or list is open.
 - Importing sales from the spreadsheet.

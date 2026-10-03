@@ -112,8 +112,13 @@ Success criteria:
   - Opening `/invitation/{token}` while signed in logs out first, through the backend, then
     shows the invitation as if signed out. That includes the user's own business's join
     link.
-- **Shell**: the bottom bar on the phone and the side rail on a computer. They show only
-  Inicio, Clientes and Más.
+- **Shell**:
+  - The bottom bar on the phone and the side rail on a computer show only Inicio, Clientes,
+    Ventas and Más, in the design's order (Inicio, Clientes, Ventas, Más when the design
+    shows none).
+  - A fixed **"Nueva venta"** button, separate from the tabs, opens the sale form
+    directly (sales.md). It is not a tab.
+  - It shows on every signed-in screen except the sale form itself and its customer sheet.
 - **Inicio**: the business's name. When no variety has a current price today, it shows
   "Arrancá por las variedades". No figures.
 - **Más**: Gastos, Variedades, Negocio.
@@ -126,14 +131,19 @@ Success criteria:
 
 ### Feedback, on every screen
 
-- **Success toasts** are short, fixed and carry no data and no "Deshacer". This
-  capability's: "Negocio renombrado", and "Invitación lista" unless the link is shown on
-  the screen.
+- **Success toasts** are short, fixed and carry no data. This capability's: "Negocio
+  renombrado", and "Invitación lista" unless the link is shown on the screen.
+- **No "Deshacer" on success toasts, with one deliberate exception**: "Venta guardada"
+  (sales.md) carries Deshacer, because recording a sale is the fastest and most frequent
+  entry. It still carries no data. No other success notice gets one.
+- **Leaving a form** discards what was typed without asking, with one deliberate
+  exception: Nueva venta asks "¿Descartás la venta?" once anything has been entered
+  (sales.md).
 - **Refusals** show inline and keep what was typed.
 - **No network** shows "Sin conexión"; a server error shows a generic retry.
 - **A record that is gone** answers 404 whether it was deleted, never existed or belongs to
   another business (ADR-0004). The app never says who deleted it or that it once existed.
-  - **Saving an edit or confirming a delete** of a record that is gone:
+  - **Saving an edit, confirming a delete or undoing** on a record that is gone:
     - the form or dialog closes and what was typed is discarded;
     - the list it came from refreshes;
     - a fixed notice shows: "Eso ya no está. La lista ya está al día."
@@ -141,10 +151,10 @@ Success criteria:
     and it is announced like a toast.
   - Confirming the delete of a record already gone gives the same notice, not the delete's
     success toast.
-  - **Opening the detail of a record that is gone** (a variety, a customer or an expense)
-    shows "Eso ya no está." with one button back to its list: "Volver a Variedades",
-    "Volver a Clientes" or "Volver a Gastos" (the current month). It carries no id, name
-    or date.
+  - **Opening the detail of a record that is gone** (a variety, a customer, an expense or a
+    sale) shows "Eso ya no está." with one button back to its list: "Volver a
+    Variedades", "Volver a Clientes", "Volver a Gastos" (the current month) or "Volver a
+    Ventas". It carries no id, name or date.
 
 ## Metrics
 
@@ -165,7 +175,7 @@ Success criteria:
   - an offline check shows "Sin conexión";
   - no state is told by color alone.
 - **Nothing invented (criterion 7)**:
-  - the bar shows exactly Inicio, Clientes and Más;
+  - the bar shows exactly Inicio, Clientes, Ventas and Más, plus the "Nueva venta" button;
   - Más shows exactly Gastos, Variedades and Negocio;
   - Inicio shows no figures.
 
@@ -180,5 +190,4 @@ Success criteria:
   (ADR-0002), and with it the full Android install.
 - Live updates between partners: a list refreshes when it is opened or after a save, not
   when the other partner changes something.
-- Ventas, Stock, "Nueva venta", Análisis and Catálogo entries: they come with their own
-  tasks.
+- Stock, Análisis and Catálogo entries: they come with their own tasks.

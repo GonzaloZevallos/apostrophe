@@ -39,7 +39,9 @@ Success criteria:
 - **Channel**: optional; Telegram or WhatsApp when present. It can be set or cleared
   later. It is recorded only; nothing uses it yet.
 - **VIP**: yes or no, `false` by default. It can be edited. A change applies to sales
-  recorded from then on; sales already recorded keep their stored prices (ADR-0003).
+  recorded from then on; sales already recorded keep their stored prices (ADR-0003). In
+  the Ventas list, a sale's VIP badge shows the customer's current status, not how that
+  sale was priced (sales.md).
 - **Phone number**: required, unique within the business, stored in one international
   form.
   - **With `+` and a country code other than 54**: a foreign number. It is stored as `+`
@@ -80,10 +82,14 @@ Success criteria:
 ### On screen (Clientes)
 
 - **The list** (`Clientes`): search by part of the name or of the phone number.
-- **A customer's card** (`ClienteFicha`): phone, channel and VIP. No balance, account or
-  payment yet.
+- **A customer's card** (`ClienteFicha`):
+  - phone, channel and VIP, with no balance, account or payment yet;
+  - **"Nueva venta a <name>"**, which opens Nueva venta with that customer already
+    chosen (sales.md).
 - **Add and edit**: the "Nuevo cliente" form of `NuevaVentaCliente`. Name and phone are
   both marked required.
+  - The same form registers a customer from inside a sale, through the "Elegir cliente"
+    sheet, and that customer is used for the sale.
 - **On success**, the toast "Cliente guardado". It never carries a name or a number.
 - **Refusals** show inline on the field, with the domain's fixed string, and keep what was
   typed. They never repeat the number or the name.
@@ -99,15 +105,16 @@ Success criteria:
 - **Isolation coverage**: every customer route sits in the isolation sweep and answers 404
   or empty from another business. (Criterion 3)
 - **Find-or-register time**: registering a new customer from the phone takes under 60 s
-  through the front, and a search answers in under 300 ms with a few dozen customers.
-  Once the sales form exists, a sale with a new customer is recorded in under 60 s.
-  (Criterion 1)
-- **No curl**: the end-to-end front run adds, finds and edits a customer. (Criterion 4)
+  through the front, and a search answers in under 300 ms with a few dozen customers. A
+  sale with a new customer, registered from "Elegir cliente", is recorded in under 60 s
+  through the front. (Criterion 1)
+- **No curl**: the end-to-end front run adds, finds and edits a customer, and opens
+  "Nueva venta a <name>" with that customer chosen. (Criterion 4)
 
 ## Out of scope
 
 - Deleting a customer: they will have sales and payments.
 - Merging duplicates; importing from the spreadsheet.
 - A VIP filter.
-- Balance, owing since and "Registrar cobro": they come with sales and payments.
+- Balance, owing since and "Registrar cobro": they come with payments (#4).
 - Using the channel.
