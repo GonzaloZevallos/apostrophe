@@ -4,7 +4,7 @@ clarification on status order)."""
 
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 from app.shared.grams import Grams
 from app.stock.domain.lot_order import Draw, Lot, LotOrder
@@ -43,6 +43,12 @@ def test_low_when_stock_is_under_the_threshold() -> None:
     level = stock_level([_lot("10", TODAY)], [], Threshold.of(Grams.of("20")), TODAY)
 
     assert level.status == "low"
+
+
+def test_stock_equal_to_the_threshold_reads_ok_not_low() -> None:
+    level = stock_level([_lot("20", TODAY)], [], Threshold.of(Grams.of("20")), TODAY)
+
+    assert level.status == "ok"
 
 
 def test_ok_with_no_threshold_even_at_a_low_level() -> None:
@@ -149,4 +155,24 @@ def test_days_left_is_none_when_stock_is_at_or_below_zero() -> None:
 def test_days_left_is_none_with_nothing_out_in_the_last_30_days() -> None:
     level = stock_level([_lot("10", date(2026, 1, 1))], [], None, TODAY)
 
+    assert level.days_left is None
+
+
+def test_days_left_counts_a_draw_exactly_29_days_before_today() -> None:
+    edge_day = TODAY - timedelta(days=29)
+    level = stock_level(
+        [_lot("100", date(2026, 1, 1))], [_draw("10", edge_day)], None, TODAY
+    )
+
+    # Stock is 100 - 10 = 90; the edge draw counts: 90 * 30 // 10 = 270.
+    assert level.days_left == 270
+
+
+def test_days_left_excludes_a_draw_30_days_before_today() -> None:
+    edge_day = TODAY - timedelta(days=30)
+    level = stock_level(
+        [_lot("100", date(2026, 1, 1))], [_draw("10", edge_day)], None, TODAY
+    )
+
+    # The draw still reduces stock (90g) but falls outside the 30-day pace window.
     assert level.days_left is None

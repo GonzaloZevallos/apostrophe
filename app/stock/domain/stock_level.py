@@ -35,7 +35,7 @@ def stock_level(
 ) -> StockLevel:
     """`lots` and `draws` are one variety's own, in any order (only their day and
     their signed grams matter here). Status, in order, the first that fits:
-    no entries (nothing has ever moved), sold out (grams <= 0), low (under the
+    no entries (no lot and no draw at all), sold out (grams <= 0), low (under the
     threshold), ok."""
     if not lots and not draws:
         return StockLevel(Grams(0), "no_entries", None, None)
@@ -70,8 +70,8 @@ def stock_level(
 
 
 def _sold_out_since(days: list[date], balances: list[int]) -> date:
-    """The earliest movement day from which the end-of-day balance stays `<= 0`
-    every movement day after it, through the last one (already `<= 0`, or this
+    """The earliest day with a lot or a draw from which the end-of-day balance stays
+    `<= 0` on every such day after it, through the last one (already `<= 0`, or this
     would never have been called)."""
     index = len(days) - 1
     while index > 0 and balances[index - 1] <= 0:

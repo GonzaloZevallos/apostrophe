@@ -45,6 +45,10 @@ class Lot:
     grams: Grams
     total_cost: int | None
 
+    def __post_init__(self) -> None:
+        if not self.grams.is_positive:
+            raise ValueError("a lot's grams are always above zero")
+
 
 @dataclass(frozen=True)
 class Draw:
@@ -55,6 +59,10 @@ class Draw:
     order: LotOrder
     variety_id: int
     grams: Grams
+
+    def __post_init__(self) -> None:
+        if not self.grams.is_positive:
+            raise ValueError("a draw's grams are always above zero")
 
 
 @dataclass(frozen=True)
