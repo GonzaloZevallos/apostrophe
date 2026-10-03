@@ -11,7 +11,7 @@
  */
 
 import { defineConfig } from '@playwright/test'
-import { E2E_BASE_URL, E2E_DB_PATH, E2E_ENV } from './e2e/env'
+import { E2E_BASE_URL, E2E_DB_PATH, E2E_ENV } from './e2e/env.js'
 
 const envAssignments = Object.entries(E2E_ENV)
   .map(([key, value]) => `${key}=${value}`)

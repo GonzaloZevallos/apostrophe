@@ -12,7 +12,7 @@
  */
 
 import { expect, test } from '@playwright/test'
-import { newBusinessInvitationUrl } from './backend'
+import { newBusinessInvitationUrl } from './backend.js'
 
 const PASSWORD = 'correcthorsebattery'
 const PHONE = '+5491155550001'
@@ -37,7 +37,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.getByLabel('Email').fill(ownerEmail)
   await page.getByLabel('Contraseña').fill(PASSWORD)
   await page.getByRole('button', { name: 'Creá el negocio' }).click()
-  await expect(page.getByText(businessName)).toBeVisible()
+  await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // Add a customer.
   await page.goto('/clientes/nuevo')
@@ -96,16 +96,19 @@ test('a seller does everything the backend offers today, from the front alone', 
   await expect(page.getByText('Gasto eliminado')).toBeVisible()
   await expect(page.getByText('Flete al mercado central')).toHaveCount(0)
 
-  // Add and remove an expense category.
+  // Add and remove an expense category. "Insumos de cultivo", "Packaging",
+  // "Envíos y traslados" and "Otros" are the four the business starts with
+  // (`app/expenses/domain/category.py`'s `DEFAULT_CATEGORY_NAMES`), so this one
+  // uses a name of its own.
   await page.goto('/gastos/categorias')
-  await page.getByLabel('Nueva categoría').fill('Packaging')
+  await page.getByLabel('Nueva categoría').fill('Delivery en bici')
   await page.getByRole('button', { name: 'Agregar categoría' }).click()
   await expect(page.getByText('Categoría guardada')).toBeVisible()
-  const packagingRow = page.locator('.fila', { hasText: 'Packaging' })
-  await packagingRow.getByRole('button', { name: 'Eliminar' }).click()
+  const newRow = page.locator('.fila', { hasText: 'Delivery en bici' })
+  await newRow.getByRole('button', { name: 'Eliminar' }).click()
   await page.getByRole('button', { name: 'Sí, borrala' }).click()
   await expect(page.getByText('Categoría eliminada')).toBeVisible()
-  await expect(page.getByText('Packaging')).toHaveCount(0)
+  await expect(page.getByText('Delivery en bici')).toHaveCount(0)
 
   // Rename the business.
   await page.goto('/negocio')
@@ -126,11 +129,11 @@ test('a seller does everything the backend offers today, from the front alone', 
     consoleMessages.push(`${message.type()}: ${message.text()}`),
   )
   await partnerPage.goto(inviteUrl)
-  await expect(partnerPage.getByText(renamedTo)).toBeVisible()
+  await expect(partnerPage.locator('.invitacion__titulo')).toHaveText(renamedTo)
   await partnerPage.getByLabel('Email').fill(`socio-${Date.now()}@example.com`)
   await partnerPage.getByLabel('Contraseña').fill(PASSWORD)
   await partnerPage.getByRole('button', { name: `Sumate a ${renamedTo}` }).click()
-  await expect(partnerPage.getByText(renamedTo)).toBeVisible()
+  await expect(partnerPage.locator('.encabezado__negocio')).toHaveText(renamedTo)
   await partnerContext.close()
 
   expect(consoleMessages).toEqual([])

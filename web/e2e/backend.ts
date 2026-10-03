@@ -7,7 +7,7 @@
  */
 
 import { execFileSync } from 'node:child_process'
-import { E2E_ENV } from './env'
+import { E2E_ENV } from './env.js'
 
 export function newBusinessInvitationUrl(): string {
   const output = execFileSync(

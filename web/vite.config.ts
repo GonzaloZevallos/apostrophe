@@ -31,5 +31,9 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/test-setup.ts'],
+    // `web/e2e/` is Playwright's own suite (`playwright.config.ts`'s `testDir`),
+    // run by the `web-e2e` check; vitest's defaults would otherwise also try to
+    // run `flow.spec.ts` as a unit test and collide with Playwright's `test`.
+    exclude: ['**/node_modules/**', 'e2e/**'],
   },
 })
