@@ -166,7 +166,7 @@ test('editing a variety saves its attributes and shows the saved toast', async (
 })
 
 test('an invalid indica share keeps what was typed and shows the inline refusal', async () => {
-  const fetchMock = vi.fn((url: string, init?: RequestInit) => {
+  const fetchMock = vi.fn((_url: string, init?: RequestInit) => {
     if (init?.method === 'PUT') {
       return Promise.resolve(
         jsonResponse(422, { detail: 'invalid', code: 'catalog.indica_share_invalid' }),
@@ -187,7 +187,7 @@ test('an invalid indica share keeps what was typed and shows the inline refusal'
 })
 
 test('a gone variety shows "Eso ya no está." instead of a toast', async () => {
-  const fetchMock = vi.fn((url: string, init?: RequestInit) => {
+  const fetchMock = vi.fn((_url: string, init?: RequestInit) => {
     if (init?.method === 'PUT') {
       return Promise.resolve(
         jsonResponse(404, { detail: 'gone', code: 'catalog.variety_not_found' }),
