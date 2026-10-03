@@ -17,10 +17,6 @@ import { newBusinessInvitationUrl } from './backend.js'
 const PASSWORD = 'correcthorsebattery'
 const PHONE = '+5491155550001'
 
-function today(): string {
-  return new Date().toISOString().slice(0, 10)
-}
-
 test('a seller does everything the backend offers today, from the front alone', async ({
   page,
   browser,
@@ -56,13 +52,14 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.getByRole('link', { name: /Rosa/ }).click()
   await expect(page).toHaveURL(/\/variedades\/.+/)
 
-  // Add a price.
+  // Add a price. "Rige desde" already defaults to `me.today` — the business day
+  // the backend's clock reports, read through `GET /auth/me` — so it is left as
+  // is, never dated from the browser's own UTC clock (plan, "One clock").
   await page.getByRole('button', { name: 'Nuevo precio' }).click()
-  await page.getByLabel('Rige desde').fill(today())
   await page.getByLabel('Precio de lista').fill('9000')
   await page.getByRole('button', { name: 'Guardar precio' }).click()
   await expect(page.getByText('Precio guardado')).toBeVisible()
-  await expect(page.getByText('$ 9.000')).toBeVisible()
+  await expect(page.locator('.precio-panel__valor')).toHaveText('$ 9.000')
 
   // Delete the price entry (the only one): the variety is left with no price.
   await page.getByRole('button', { name: 'Borrar este precio' }).click();

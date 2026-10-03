@@ -756,16 +756,15 @@
   margin-top: var(--espacio-sm);
 }
 
-.boton--suave {
+/* Same pattern as `.confirmacion__acciones .boton`/`.negocio__acciones .boton`:
+ * side by side, evenly split — scoped to this container, never redefining the
+ * shared `.boton--suave`/`.boton--destructivo` (review finding, e2e: the merge
+ * had kept two `.boton--suave` rules, the later one winning everywhere and
+ * silently recoloring ConfirmDialog's and VariedadDetalle's buttons too). */
+.panel__botones .boton {
   flex: 1;
-  background: var(--papel);
-  color: var(--tinta);
-}
-
-.boton--destructivo {
-  flex: 1;
-  background: var(--critico);
-  color: var(--critico-texto);
+  height: var(--alto-tocable);
+  font-size: 15px;
 }
 
 .categoria-fila__nombre {
