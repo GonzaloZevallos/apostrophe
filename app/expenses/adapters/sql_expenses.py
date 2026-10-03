@@ -1,3 +1,5 @@
+from datetime import date
+
 from sqlalchemy import and_, select
 from sqlalchemy.orm import Session
 
@@ -76,6 +78,18 @@ class SqlExpenses:
             CategorizedExpense(_expense(row), name, name_key)
             for row, name, name_key in self._session.execute(statement)
         ]
+
+    def between(self, start: date, end: date) -> list[Expense]:
+        """Every expense of this business dated from `start` to `end`, inclusive of
+        both bounds: the one load `SqlPeriodExpenses.totals` sums per period, never a
+        query per period (results' `PeriodExpenses` port, plan: "one load over
+        min..max, then a sum per period")."""
+        statement = select(ExpenseRow).where(
+            ExpenseRow.business_id == self._business_id,
+            ExpenseRow.spent_on >= start,
+            ExpenseRow.spent_on <= end,
+        )
+        return [_expense(row) for row in self._session.scalars(statement)]
 
     def _row(self, expense_id: int) -> ExpenseRow | None:
         statement = select(ExpenseRow).where(

@@ -24,6 +24,7 @@ from app.customers.adapters.router import router as customers_router
 from app.db import make_engine
 from app.expenses.adapters.default_categories import ExpenseCategoriesOpening
 from app.expenses.adapters.router import router as expenses_router
+from app.expenses.adapters.sql_period_expenses import SqlPeriodExpenses
 from app.http_errors import Refused
 from app.migrations.runner import upgrade_to_head
 from app.payments.adapters.router import customers_router as payments_customers_router
@@ -128,6 +129,11 @@ def create_app(
     # business, the way `get_line_costs` already does for `line_costs`.
     app.state.balances = SqlBalances
     app.state.owing_sales = SqlOwingSales
+    # Another factory of the same shape: results reaches expenses only through its own
+    # `PeriodExpenses` port, never `app.expenses` directly (plan invariant). The panel
+    # route builds this over the request's own `Session` and business, the way
+    # `get_line_costs` already does for `line_costs`.
+    app.state.period_expenses = SqlPeriodExpenses
 
     @app.get("/health", tags=["health"])
     def health() -> dict[str, str]:
