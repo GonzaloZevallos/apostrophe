@@ -46,9 +46,14 @@ export default defineConfig({
     // A throwaway SQLite file, removed before every run; `cwd: '..'` so the paths
     // in `E2E_ENV` (repo-root-relative, matching `scripts/serve.sh`'s own) resolve
     // the same way. Never `scripts/serve.sh`: that one sources `.env`.
+    //
+    // `tests.e2e_app:create_e2e_app`, not `app.main:create_app` (GH-10, front
+    // subtask): the plan's own invariant — "the test app always injects
+    // FakeTelegram and upkeep_ticker=False" — holds for the e2e run too, so no
+    // spec here ever reaches a real Telegram token or the network.
     command:
       `mkdir -p "$(dirname '${E2E_DB_PATH}')" && rm -f '${E2E_DB_PATH}' && ` +
-      `${envAssignments} uv run --no-project uvicorn app.main:create_app --factory ` +
+      `${envAssignments} uv run --no-project uvicorn tests.e2e_app:create_e2e_app --factory ` +
       `--host 127.0.0.1 --port 8799 --no-access-log`,
     cwd: '..',
     url: E2E_BASE_URL,
