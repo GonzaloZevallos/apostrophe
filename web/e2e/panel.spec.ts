@@ -121,6 +121,15 @@ function detailFor(
   }
 }
 
+/** `web/src/stock/detail.ts`'s own `sideNoteFor`: the one place `days_left`
+ * itself shows, in `.fila-stock__insignia` — never in the detail line. */
+function sideNoteFor(variety: { status: Status; days_left: number | null }): string | null {
+  if (variety.status === 'sold_out') return 'agotada'
+  if (variety.status === 'no_entries') return 'sin entradas'
+  if (variety.days_left === null) return null
+  return `${variety.days_left} días`
+}
+
 /** `web/src/format/dates.ts`'s own `formatDate`: dd/mm, or dd/mm/yyyy when the
  * year differs from `todayIso`'s. */
 function formatDate(iso: string, todayIso: string): string {
@@ -317,7 +326,8 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await page.getByRole('button', { name: 'Hoy', exact: true }).click()
 
   // Lo que te queda: Rosa's own row, straight from the fetched answer — grams,
-  // status (shape and word) and the detail line (which carries days left).
+  // status (shape and word), the detail line, and the side badge, which is the
+  // one place days left itself shows (`sideNoteFor`, never the detail line).
   const rosa = panel.stock.find((row) => row.name === 'Rosa')
   if (rosa === undefined) throw new Error('Rosa missing from GET /panel stock')
   const rosaRow = page.locator('.fila-stock').filter({ hasText: 'Rosa' })
@@ -325,6 +335,12 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await expect(rosaRow.locator('.marca-estado')).toHaveClass(new RegExp(`marca-estado--${rosa.status}\\b`))
   await expect(rosaRow.locator('.marca-estado__palabra')).toHaveText(STATUS_WORD[rosa.status])
   await expect(rosaRow.locator('.fila-stock__detalle')).toHaveText(detailFor(rosa, todayIso))
+  const rosaSideNote = sideNoteFor(rosa)
+  if (rosaSideNote === null) {
+    await expect(rosaRow.locator('.fila-stock__insignia')).toHaveCount(0)
+  } else {
+    await expect(rosaRow.locator('.fila-stock__insignia')).toHaveText(rosaSideNote)
+  }
 
   // Te deben: the block shows the fetched total, count and oldest date, and the
   // teaser's own balance and "desde dd/mm" — all read, never computed here.
