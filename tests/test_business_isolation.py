@@ -164,6 +164,7 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
         "origin": "opening_stock",
         "grams": "20",
     },
+    ("PUT", "/stock/varieties/{variety_id}/threshold"): {"grams": "15"},
 }
 
 PUBLIC_PATHS = {"/health", "/auth/login", "/auth/logout"}

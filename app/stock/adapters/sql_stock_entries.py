@@ -1,3 +1,5 @@
+from collections.abc import Collection
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -52,6 +54,12 @@ class SqlStockEntries:
         assert row is not None, "remove takes an entry of this business"
         self._session.delete(row)
         self._session.flush()
+
+    def for_varieties(self, variety_ids: Collection[int] | None) -> list[StockEntry]:
+        statement = select(StockEntryRow).where(StockEntryRow.business_id == self._business_id)
+        if variety_ids is not None:
+            statement = statement.where(StockEntryRow.variety_id.in_(variety_ids))
+        return [_entry(row) for row in self._session.scalars(statement)]
 
     def _row(self, entry_id: int) -> StockEntryRow | None:
         statement = select(StockEntryRow).where(
