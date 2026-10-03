@@ -46,6 +46,8 @@ interface PanelPeriod {
   cash: number
 }
 
+type Status = 'no_entries' | 'sold_out' | 'low' | 'ok'
+
 interface PanelAnswer {
   periods: { today: PanelPeriod; week: PanelPeriod; month: PanelPeriod }
   debts: {
@@ -54,7 +56,15 @@ interface PanelAnswer {
     oldest: string | null
     teaser: { customer_id: number; name: string; balance: number; owing_since: string }[]
   }
-  stock: { variety_id: number; name: string; grams: number; status: string }[]
+  stock: {
+    variety_id: number
+    name: string
+    grams: number
+    status: Status
+    sold_out_since: string | null
+    threshold: number | null
+    days_left: number | null
+  }[]
 }
 
 function shortDate(iso: string): string {
@@ -73,6 +83,68 @@ function signedPesos(amount: number): string {
 
 function grams(value: number): string {
   return `${value.toLocaleString('es-AR', { maximumFractionDigits: 2 })} g`
+}
+
+function countLabel(count: number): string {
+  return `${count} ${count === 1 ? 'venta' : 'ventas'}`
+}
+
+// A local mirror of `web/src/components/MarcaEstado.tsx`'s own word table and
+// `web/src/stock/detail.ts`'s `detailFor` — this file never imports `web/src`
+// (every other e2e spec duplicates its own small formatters the same way), and
+// every value fed through it below comes from the one `GET /panel` answer this
+// run fetches, never invented.
+const STATUS_WORD: Record<Status, string> = {
+  no_entries: 'sin entradas',
+  sold_out: 'agotada',
+  low: 'baja',
+  ok: 'ok',
+}
+
+function detailFor(
+  variety: { status: Status; sold_out_since: string | null; threshold: number | null },
+  today: string,
+): string {
+  switch (variety.status) {
+    case 'no_entries':
+      return 'Cargale la primera entrada'
+    case 'sold_out':
+      return variety.sold_out_since === null
+        ? 'Sin gramos'
+        : `Sin gramos desde el ${formatDate(variety.sold_out_since, today)}`
+    case 'low':
+      return variety.threshold === null
+        ? 'Avisás por debajo del umbral'
+        : `Avisás abajo de ${grams(variety.threshold)}`
+    case 'ok':
+      return 'Al ritmo de los últimos 30 días'
+  }
+}
+
+/** `web/src/format/dates.ts`'s own `formatDate`: dd/mm, or dd/mm/yyyy when the
+ * year differs from `todayIso`'s. */
+function formatDate(iso: string, todayIso: string): string {
+  const [year] = iso.split('-')
+  const [todayYear] = todayIso.split('-')
+  return year === todayYear ? shortDate(iso) : `${shortDate(iso)}/${year}`
+}
+
+function parseIso(iso: string): { year: number; month: number; day: number } {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso)
+  if (match === null) throw new Error(`not an ISO date: ${iso}`)
+  const [, year, month, day] = match
+  return { year: Number(year ?? ''), month: Number(month ?? ''), day: Number(day ?? '') }
+}
+
+function addDays(iso: string, delta: number): string {
+  const { year, month, day } = parseIso(iso)
+  const shifted = new Date(Date.UTC(year, month - 1, day) + delta * 86_400_000)
+  return `${shifted.getUTCFullYear()}-${String(shifted.getUTCMonth() + 1).padStart(2, '0')}-${String(shifted.getUTCDate()).padStart(2, '0')}`
+}
+
+function weekdayOf(iso: string): number {
+  const { year, month, day } = parseIso(iso)
+  return new Date(Date.UTC(year, month - 1, day)).getUTCDay() // 0 = Sunday .. 6 = Saturday.
 }
 
 test('a seller sees the panel agree with GET /panel, across periods, from the front alone', async ({
@@ -100,6 +172,10 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await expect(page.getByText('Variedad guardada')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('button', { name: 'Nuevo precio' }).click()
+  // Backdated well before this run's own month (sales.spec.ts does the same for
+  // Jazmín): the extra, month-only sale seeded below needs a price that reaches
+  // back that far too.
+  await page.getByLabel('Rige desde').fill('2000-01-01')
   await page.getByLabel('Precio de lista').fill('1000')
   await page.getByRole('button', { name: 'Guardar precio' }).click()
   await expect(page.getByText('Precio guardado')).toBeVisible()
@@ -141,6 +217,35 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await page.getByRole('button', { name: 'Guardar venta' }).click()
   await expect(page.getByText('Venta guardada')).toBeVisible()
 
+  // One more sale, dated earlier in this month but outside this week, when such a
+  // day exists (never a future date) — so Mes differs from Semana and Hoy, and the
+  // tab switch below is proven by real figures, not only by the range label.
+  // Seeded directly, through the same session's own `page.request` (`sales.spec.ts`
+  // already seeds this way for its own period checks) — this is the panel's own
+  // seam, "the end-to-end front run", not a `curl` shortcut: same browser, same
+  // cookies, no second process.
+  const monthStartIso = `${todayIso.slice(0, 7)}-01`
+  const mondayOffset = weekdayOf(todayIso) === 0 ? -6 : 1 - weekdayOf(todayIso)
+  const mondayIso = addDays(todayIso, mondayOffset)
+  if (monthStartIso < mondayIso) {
+    const varietiesAnswer: { id: number; name: string }[] = await (
+      await page.request.get(`/varieties?on=${todayIso}`)
+    ).json()
+    const rosaId = varietiesAnswer.find((variety) => variety.name === 'Rosa')?.id
+    if (rosaId === undefined) throw new Error('Rosa missing from GET /varieties?on=')
+    const monthOnlyResponse = await page.request.post('/sales', {
+      data: {
+        date: monthStartIso,
+        customer_id: null,
+        shipping_charged: 0,
+        note: null,
+        payment: 'cash',
+        lines: [{ variety_id: rosaId, grams: '1', gift: false, special_price: null }],
+      },
+    })
+    expect(monthOnlyResponse.ok()).toBe(true)
+  }
+
   // An expense, in the business's own default "Otros" category.
   await page.goto('/gastos')
   await page.getByRole('button', { name: 'Nuevo gasto' }).click()
@@ -162,12 +267,12 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   async function assertPeriod(period: PanelPeriod, rangeText: string): Promise<void> {
     await expect(page.locator('.periodos .pie')).toContainText(rangeText)
     await expect(page.locator('.panel-ventas .cifra-xl')).toHaveText(pesos(period.sales))
-    await expect(page.locator('.panel-resultados__valor--acento')).toHaveText(
-      signedPesos(period.profit),
-    )
-    await expect(page.locator('.panel-resultados__celda').nth(1).locator('.panel-resultados__valor')).toHaveText(
-      signedPesos(period.cash),
-    )
+    await expect(
+      page.locator('.panel-resultados__celda').filter({ hasText: 'Ganancia' }).locator('.panel-resultados__valor--acento'),
+    ).toHaveText(signedPesos(period.profit))
+    await expect(
+      page.locator('.panel-resultados__celda').filter({ hasText: 'Caja' }).locator('.panel-resultados__valor'),
+    ).toHaveText(signedPesos(period.cash))
     await expect(
       page.locator('.panel-lista__fila').filter({ hasText: 'Costo de lo vendido' }).locator('.panel-lista__valor'),
     ).toHaveText(pesos(period.cost_of_goods))
@@ -180,6 +285,20 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
     await expect(
       page.locator('.panel-lista__fila').filter({ hasText: 'Compras de flores' }).locator('.panel-lista__valor'),
     ).toHaveText(pesos(period.purchases))
+
+    // "Vendiste ..."'s own subtitle: count, average (absent with no sales) and
+    // grams sold (`Inicio.tsx`'s own `salesSubtitle`).
+    const count = countLabel(period.sales_count)
+    const gramsSoldText = grams(period.grams_sold)
+    const subtitle =
+      period.average_sale === null
+        ? `${count} · ${gramsSoldText}`
+        : `${count} · promedio ${pesos(period.average_sale)} · ${gramsSoldText}`
+    await expect(page.locator('.panel-ventas .pie')).toHaveText(subtitle)
+
+    // "incluye costo pendiente", under both Costo de lo vendido and Ganancia only,
+    // never under Caja (plan, PRD: "Caja never carries it").
+    await expect(page.getByText('incluye costo pendiente')).toHaveCount(period.pending_cost ? 2 : 0)
   }
 
   // Hoy: the panel opens here (plan, "Front").
@@ -197,15 +316,34 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   // Back to Hoy for the rest of the run.
   await page.getByRole('button', { name: 'Hoy', exact: true }).click()
 
-  // Lo que te queda: Rosa's own row, straight from the fetched answer.
+  // Lo que te queda: Rosa's own row, straight from the fetched answer — grams,
+  // status (shape and word) and the detail line (which carries days left).
   const rosa = panel.stock.find((row) => row.name === 'Rosa')
   if (rosa === undefined) throw new Error('Rosa missing from GET /panel stock')
   const rosaRow = page.locator('.fila-stock').filter({ hasText: 'Rosa' })
   await expect(rosaRow.locator('.fila-stock__gramos')).toHaveText(grams(rosa.grams))
+  await expect(rosaRow.locator('.marca-estado')).toHaveClass(new RegExp(`marca-estado--${rosa.status}\\b`))
+  await expect(rosaRow.locator('.marca-estado__palabra')).toHaveText(STATUS_WORD[rosa.status])
+  await expect(rosaRow.locator('.fila-stock__detalle')).toHaveText(detailFor(rosa, todayIso))
 
-  // Te deben: the block shows the fetched total, then opens Te deben from its
-  // heading, then goes back to Inicio.
+  // Te deben: the block shows the fetched total, count and oldest date, and the
+  // teaser's own balance and "desde dd/mm" — all read, never computed here.
+  const debtsSubtitle =
+    panel.debts.oldest === null
+      ? countLabel(panel.debts.sales_owing_count)
+      : `${countLabel(panel.debts.sales_owing_count)} · desde ${shortDate(panel.debts.oldest)}`
   await expect(page.locator('.bloque-deben .cifra-xl')).toHaveText(pesos(panel.debts.total_owed))
+  // The direct child only: each teaser row below carries its own `.pie` too
+  // ("desde dd/mm"), nested inside its own `<Link>`, never a direct child here.
+  await expect(page.locator('.bloque-deben > .pie')).toHaveText(debtsSubtitle)
+
+  const [teaserRow] = panel.debts.teaser
+  if (teaserRow === undefined) throw new Error('empty teaser in GET /panel')
+  const teaserLink = page.locator('.bloque-deben__fila').filter({ hasText: teaserRow.name })
+  await expect(teaserLink).toContainText(pesos(teaserRow.balance))
+  await expect(teaserLink).toContainText(`desde ${shortDate(teaserRow.owing_since)}`)
+
+  // Opens Te deben from the block's own heading, then goes back to Inicio.
   await page.getByRole('link', { name: 'Te deben' }).click()
   await expect(page).toHaveURL(/\/clientes\/deben$/)
   await expect(page.locator('.ventas__resumen .cifra-xl')).toHaveText(pesos(panel.debts.total_owed))
@@ -214,8 +352,6 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await expect(page.locator('.encabezado__titulo')).toHaveText('Inicio')
 
   // The teaser: Carla's own row, opening her card.
-  const [teaserRow] = panel.debts.teaser
-  if (teaserRow === undefined) throw new Error('empty teaser in GET /panel')
   await page.getByRole('link', { name: teaserRow.name }).click()
   await expect(page).toHaveURL(new RegExp(`/clientes/${teaserRow.customer_id}$`))
   await expect(page.locator('.encabezado__titulo')).toHaveText(teaserRow.name)
