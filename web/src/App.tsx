@@ -24,6 +24,7 @@ import Clientes from './screens/clientes/Clientes'
 import ClientesLayout from './screens/clientes/ClientesLayout'
 import VariedadDetalle from './screens/VariedadDetalle'
 import Variedades from './screens/Variedades'
+import Negocio from './screens/Negocio'
 import GatedLayout from './shell/GatedLayout'
 import Shell from './shell/Shell'
 import { useOnline } from './useOnline'
@@ -71,6 +72,7 @@ export default function App() {
               <Route path="variedades/:id" element={<VariedadDetalle />} />
               <Route path="gastos" element={<Gastos />} />
               <Route path="gastos/categorias" element={<GastoCategorias />} />
+              <Route path="negocio" element={<Negocio />} />
             </Route>
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
