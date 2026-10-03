@@ -973,6 +973,95 @@
   color: var(--tinta2);
 }
 
+/* `Inicio`, now the panel (`results.md`): the "Vendiste..." figure, Ganancia/Caja
+ * side by side, the Costo de lo vendido/Gastos/Regalaste/Compras list and the Te
+ * deben block. Reuses `.periodos`, `.cifra-xl`, `.rotulo`, `.pie`, `.fila-stock` and
+ * `.lista-stock` from Ventas/Stock; these are the panel's own additions. */
+.panel-ventas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-xs);
+}
+
+.panel-resultados {
+  display: flex;
+  gap: var(--espacio-sm);
+}
+
+.panel-resultados__celda {
+  flex: 1;
+  background: var(--superficie);
+  border-radius: var(--radio-panel);
+  padding: var(--espacio-md) var(--espacio-lg) var(--espacio-lg);
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-resultados__valor {
+  font-size: 25px;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+}
+
+.panel-resultados__valor--acento {
+  color: var(--acento);
+}
+
+.panel-lista {
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-lista__fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-md);
+  padding: 13px 0;
+  border-bottom: 1px solid var(--linea);
+}
+
+.panel-lista__fila:last-child {
+  border-bottom: 0;
+}
+
+.panel-lista__valor {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.bloque-deben {
+  background: var(--deuda-fondo);
+  border-radius: var(--radio-panel-grande);
+  padding: var(--espacio-xl) var(--espacio-lg) var(--espacio-lg);
+  display: flex;
+  flex-direction: column;
+}
+
+.bloque-deben__titulo {
+  font-size: 14px;
+  color: var(--deuda2);
+  text-decoration: none;
+}
+
+.bloque-deben__fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-sm);
+  padding-top: var(--espacio-sm);
+  margin-top: var(--espacio-sm);
+  border-top: 1px solid var(--deuda-linea);
+  color: var(--deuda);
+  text-decoration: none;
+}
+
+.panel-dos-columnas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-xl);
+}
+
 .venta-detalle__total {
   font-weight: 600;
 }
@@ -1296,5 +1385,19 @@
 
   .boton-nueva-venta--escritorio {
     display: flex;
+  }
+
+  /* `InicioCompu`: Te deben and Lo que te queda sit side by side instead of
+   * stacked (plan, "Front": "the InicioCompu two-column layout"). */
+  .panel-dos-columnas {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: var(--espacio-xl);
+  }
+
+  .panel-dos-columnas > * {
+    flex: 1;
+    min-width: 0;
   }
 }
