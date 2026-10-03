@@ -101,6 +101,28 @@ def seed_sales(client: TestClient) -> dict[str, int]:
     return {"sale_id": without_customer["id"]}
 
 
+def seed_catalog(client: TestClient) -> dict[str, int]:
+    variety = client.post("/varieties", json={"name": f"{MARKER} catalog variety"}).json()
+    client.post(
+        f"/varieties/{variety['id']}/prices",
+        json={"effective_from": "2026-01-01", "list_price": 11_000},
+    )
+    client.post(
+        "/stock/entries",
+        json={
+            "variety_id": variety["id"],
+            "origin": "opening_stock",
+            "grams": "50",
+        },
+    )
+    client.put(
+        f"/catalog/varieties/{variety['id']}",
+        json={"shown": True, "emoji": None, "indica_share": None, "aroma": MARKER},
+    )
+    client.put("/catalog/header-footer", json={"header": MARKER, "footer": MARKER})
+    return {"variety_id": variety["id"]}
+
+
 def seed_stock(client: TestClient) -> dict[str, int]:
     variety = client.post("/varieties", json={"name": f"{MARKER} stock variety"}).json()
     entry = client.post(
@@ -122,6 +144,7 @@ SEEDERS: list[Callable[[TestClient], dict[str, int]]] = [
     seed_expenses,
     seed_sales,
     seed_stock,
+    seed_catalog,
 ]
 
 BODIES: dict[tuple[str, str], dict[str, Any]] = {
@@ -165,6 +188,13 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
         "grams": "20",
     },
     ("PUT", "/stock/varieties/{variety_id}/threshold"): {"grams": "15"},
+    ("PUT", "/catalog/varieties/{variety_id}"): {
+        "shown": True,
+        "emoji": None,
+        "indica_share": 50,
+        "aroma": "another aroma",
+    },
+    ("PUT", "/catalog/header-footer"): {"header": "another header", "footer": "another footer"},
 }
 
 PUBLIC_PATHS = {"/health", "/auth/login", "/auth/logout"}

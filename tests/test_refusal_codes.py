@@ -14,6 +14,7 @@ from pathlib import Path
 import pytest
 
 from app.accounts.adapters.router import as_http as accounts_as_http
+from app.catalog.adapters.router import as_http as catalog_as_http
 from app.customers.adapters.router import as_http as customers_as_http
 from app.expenses.adapters.router import as_http as expenses_as_http
 from app.http_errors import TranslateErrors
@@ -32,6 +33,7 @@ TRANSLATORS: list[TranslateErrors] = [
     expenses_as_http,
     sales_as_http,
     stock_as_http,
+    catalog_as_http,
 ]
 
 # Added by the app-wide 422 handler (ADR-0005), not by any `TranslateErrors`: still
