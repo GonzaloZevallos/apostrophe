@@ -9,6 +9,7 @@ day-change ticker and `sync_all.py`, neither built here.
 from __future__ import annotations
 
 from collections.abc import Sequence
+from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Literal, Protocol
 
@@ -38,46 +39,35 @@ class Telegram(Protocol):
     def pin(self, token: str, chat: str, message_id: int) -> None: ...
 
 
-class SettingsSnapshot(Protocol):
-    """The part of a business's bot settings a snapshot answers: never the raw token
-    itself (CODING_STANDARDS §9) — only its fingerprint, to compare against the pin."""
+@dataclass(frozen=True)
+class SettingsSnapshot:
+    """The part of a business's bot settings a snapshot answers. `token` is the
+    decrypted token for internal use (a Telegram call); no schema in `adapters/` ever
+    serializes it (CODING_STANDARDS §9) — only `token_saved_on` reaches a route."""
 
-    @property
-    def token(self) -> str | None: ...
-    @property
-    def token_fingerprint(self) -> str | None: ...
-    @property
-    def token_saved_on(self) -> date | None: ...
-    @property
-    def own_chat(self) -> str | None: ...
-    @property
-    def channel_chat(self) -> str | None: ...
+    token: str | None
+    token_fingerprint: str | None
+    token_saved_on: date | None
+    own_chat: str | None
+    channel_chat: str | None
 
 
-class PinFacts(Protocol):
-    @property
-    def message_id(self) -> int | None: ...
-    @property
-    def message_chat(self) -> str | None: ...
-    @property
-    def message_token_fingerprint(self) -> str | None: ...
-    @property
-    def last_published_text(self) -> str | None: ...
-    @property
-    def last_published_at(self) -> datetime | None: ...
-    @property
-    def last_failure(self) -> PinFailure | None: ...
-    @property
-    def last_checked_on(self) -> date | None: ...
+@dataclass(frozen=True)
+class PinFacts:
+    message_id: int | None
+    message_chat: str | None
+    message_token_fingerprint: str | None
+    last_published_text: str | None
+    last_published_at: datetime | None
+    last_failure: PinFailure | None
+    last_checked_on: date | None
 
 
-class PinSnapshot(Protocol):
-    @property
-    def settings(self) -> SettingsSnapshot: ...
-    @property
-    def pin(self) -> PinFacts: ...
-    @property
-    def text(self) -> str: ...
+@dataclass(frozen=True)
+class PinSnapshot:
+    settings: SettingsSnapshot
+    pin: PinFacts
+    text: str
 
 
 class PinSnapshots(Protocol):

@@ -10,8 +10,6 @@ removed), measured in UTF-16 code units, because that is how Telegram's own
 
 from __future__ import annotations
 
-from collections.abc import Sequence
-
 MESSAGE_LIMIT = 4096
 
 
@@ -43,8 +41,8 @@ def telegram_bold(text: str) -> tuple[str, list[tuple[int, int]]]:
     return plain, spans
 
 
-def fits_in_one_message(plain: str, spans: Sequence[tuple[int, int]] = ()) -> bool:
+def fits_in_one_message(plain: str) -> bool:
     """Telegram's 4096-character limit, checked on the plain text alone (spans mark
-    bold ranges; they add no character of their own)."""
-    del spans
+    bold ranges within it; they add no character of their own, so a caller never
+    passes them here)."""
     return utf16_length(plain) <= MESSAGE_LIMIT

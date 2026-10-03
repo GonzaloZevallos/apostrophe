@@ -60,8 +60,12 @@ class BotCannotPost(TelegramOutcomeFailure):
 
 
 class MessageGone(TelegramOutcomeFailure):
-    """Never answers an HTTP refusal on its own: Publicar catches it and posts a new
-    message; upkeep catches it and records `PinFailure.MESSAGE_GONE` instead."""
+    """Never registered in a router's `TranslateErrors`, so its `code` never answers an
+    HTTP refusal: Publicar catches it and posts a new message; upkeep catches it and
+    records `PinFailure.MESSAGE_GONE` instead. It still carries its own `code`, like
+    every error here, for whoever reaches it next."""
+
+    code: ClassVar[str] = "pinned_catalog.message_gone"
 
     def __init__(self) -> None:
         super().__init__("the pinned message no longer exists")
