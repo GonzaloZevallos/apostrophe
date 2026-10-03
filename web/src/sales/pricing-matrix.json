@@ -197,6 +197,39 @@
         "gramsHundredths": 155
       },
       "expect": { "rule": "list", "pricePerGram": 10001, "lineTotal": 15502 }
+    },
+    {
+      "name": "special rate rounding below .50 rounds down",
+      "input": {
+        "gift": false,
+        "specialPrice": 2,
+        "vip": false,
+        "quote": null,
+        "gramsHundredths": 500
+      },
+      "expect": { "rule": "special", "pricePerGram": 0, "lineTotal": 2 }
+    },
+    {
+      "name": "special rate rounding exactly .50 rounds up",
+      "input": {
+        "gift": false,
+        "specialPrice": 1,
+        "vip": false,
+        "quote": null,
+        "gramsHundredths": 200
+      },
+      "expect": { "rule": "special", "pricePerGram": 1, "lineTotal": 1 }
+    },
+    {
+      "name": "special rate rounding above .50 rounds up",
+      "input": {
+        "gift": false,
+        "specialPrice": 3,
+        "vip": false,
+        "quote": null,
+        "gramsHundredths": 500
+      },
+      "expect": { "rule": "special", "pricePerGram": 1, "lineTotal": 3 }
     }
   ],
   "totals": [
@@ -220,6 +253,28 @@
       ],
       "shippingCharged": 100,
       "expectTotal": 1350
+    },
+    {
+      "name": "bulk is measured per line: two lines below the minimum don't combine into bulk",
+      "lines": [
+        {
+          "gift": false,
+          "specialPrice": null,
+          "vip": false,
+          "quote": { "listPrice": 1000, "bulk": { "price": 700, "minimumHundredths": 1000 } },
+          "gramsHundredths": 600
+        },
+        {
+          "gift": false,
+          "specialPrice": null,
+          "vip": false,
+          "quote": { "listPrice": 1000, "bulk": { "price": 700, "minimumHundredths": 1000 } },
+          "gramsHundredths": 600
+        }
+      ],
+      "shippingCharged": 0,
+      "expectTotal": 12000,
+      "expectRules": ["list", "list"]
     }
   ]
 }

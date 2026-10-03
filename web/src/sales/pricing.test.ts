@@ -43,9 +43,12 @@ describe('priceLine, against the shared pricing matrix', () => {
 describe('saleTotals, against the shared pricing matrix', () => {
   for (const entry of matrix.totals) {
     test(entry.name, () => {
-      const priced = entry.lines.map((line) => {
-        const input = line as LineInput
-        const result = priceLine(input)
+      const results = entry.lines.map((line) => priceLine(line as LineInput))
+      if ('expectRules' in entry) {
+        expect(results.map((r) => r.rule)).toEqual(entry.expectRules)
+      }
+      const priced = results.map((result, i) => {
+        const input = entry.lines[i] as LineInput
         return { gift: input.gift, gramsHundredths: input.gramsHundredths, lineTotal: result.lineTotal }
       })
       const totals = saleTotals(priced, entry.shippingCharged)
@@ -79,6 +82,13 @@ describe('toHundredths', () => {
   ])('%s grams -> %i hundredths', (grams, expected) => {
     expect(toHundredths(grams)).toBe(expected)
   })
+
+  test.each(['abc', '3,5', '3.555', '-3', ''])(
+    'rejects %j, which parse.ts should never have let through',
+    (grams) => {
+      expect(() => toHundredths(grams)).toThrow()
+    },
+  )
 })
 
 describe('fromHundredths', () => {

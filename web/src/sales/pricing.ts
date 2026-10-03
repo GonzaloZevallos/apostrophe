@@ -150,11 +150,21 @@ export function saleTotals(lines: readonly LineForTotals[], shippingCharged: num
   }
 }
 
+// What `format/parse.ts`'s `parseGrams` already guarantees before a value reaches
+// here: digits, at most one dot, at most two decimals. Checked again at the door
+// rather than trusted silently, so a caller that skips `parse.ts` gets a thrown error
+// instead of a silent `NaN` that would slip past `priceLine`'s `gramsHundredths <= 0`
+// check (`NaN <= 0` is `false`).
+const VALID_GRAMS_RE = /^\d+(\.\d{1,2})?$/
+
 /** Converts grams already validated by `format/parse.ts` (`"3.5"`, `"3"`, at most two
  * decimals) into integer hundredths, working on the decimal string's digits — never by
  * multiplying a float gram value, the same way the backend's `Grams.of` works on a
  * `Decimal` rather than a float. */
 export function toHundredths(grams: string): number {
+  if (!VALID_GRAMS_RE.test(grams)) {
+    throw new Error('toHundredths expects grams already validated by parse.ts')
+  }
   const [whole = '0', fraction = ''] = grams.split('.')
   const hundredths = `${fraction}00`.slice(0, 2)
   return Number(whole) * 100 + Number(hundredths)

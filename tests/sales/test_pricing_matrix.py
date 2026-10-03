@@ -82,21 +82,25 @@ def test_price_line_matches_the_shared_matrix(case: dict[str, Any]) -> None:
 
 @pytest.mark.parametrize("case", MATRIX["totals"], ids=lambda c: c["name"])
 def test_totals_match_the_shared_matrix(case: dict[str, Any]) -> None:
-    total = sum((_price(line).line_total for line in case["lines"]), 0) + case["shippingCharged"]
+    priced = [_price(line) for line in case["lines"]]
+    if "expectRules" in case:
+        assert [p.rule.value for p in priced] == case["expectRules"]
+    total = sum((p.line_total for p in priced), 0) + case["shippingCharged"]
     assert total == case["expectTotal"]
 
 
-def test_the_matrix_rejects_a_case_a_rule_change_would_break() -> None:
-    """The matrix itself only proves something once it can fail: a line whose rule
-    doesn't match the domain's answer must raise, not pass silently."""
-    broken_case = {
-        "gift": False,
-        "specialPrice": None,
-        "vip": False,
-        "quote": {"listPrice": 1000, "bulk": None},
-        "gramsHundredths": 100,
-    }
-    priced = _price(broken_case)
-    assert priced.rule.value == "list"
+def test_a_wrong_expectation_in_the_matrix_would_fail_this_suite() -> None:
+    """Proves the comparison itself is load-bearing, not only the matrix's own
+    cases: the domain's real answer for a real matrix case, checked against a
+    deliberately wrong expectation, must fail — because it is `_price`'s genuine
+    output being compared, not two hard-coded literals."""
+    case = next(
+        c for c in MATRIX["lines"] if c["name"] == "list price applies when nothing else does"
+    )
+    priced = _price(case["input"])
+    assert priced.rule.value == case["expect"]["rule"]  # sanity: the real case passes
+
+    wrong_rule = "vip"
+    assert wrong_rule != case["expect"]["rule"]
     with pytest.raises(AssertionError):
-        assert priced.rule.value == "vip"
+        assert priced.rule.value == wrong_rule
