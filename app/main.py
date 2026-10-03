@@ -29,6 +29,7 @@ from app.migrations.runner import upgrade_to_head
 from app.payments.adapters.router import customers_router as payments_customers_router
 from app.payments.adapters.router import router as payments_router
 from app.payments.adapters.settlements import SqlBalances, SqlOwingSales
+from app.sales.adapters.period_sales import SqlPeriodSales
 from app.sales.adapters.router import router as sales_router
 from app.settings import Settings
 from app.static_spa import MissingBuiltFront, SpaStatic, api_segments
@@ -128,6 +129,12 @@ def create_app(
     # business, the way `get_line_costs` already does for `line_costs`.
     app.state.balances = SqlBalances
     app.state.owing_sales = SqlOwingSales
+    # Same shape again: results reaches sales' per-period figures only through its own
+    # `PeriodSales` port (`app/results/application/ports.py`), never `app.sales`
+    # directly. The route that builds one over the request's `Session` and business
+    # is added with the panel route; this is the one seam that subtask reaches it
+    # through.
+    app.state.period_sales = SqlPeriodSales
 
     @app.get("/health", tags=["health"])
     def health() -> dict[str, str]:
