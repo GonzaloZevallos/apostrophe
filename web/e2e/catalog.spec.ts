@@ -53,6 +53,7 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
   await page.goto('/mi-stock/nueva-entrada')
   await page.getByLabel('Gramos').fill('50')
   await page.getByLabel('Variedad').selectOption({ label: 'Rosa' })
+  await page.getByLabel('Costo total').fill('45000')
   await page.getByRole('button', { name: 'Guardá la entrada' }).click()
   await expect(page.getByText('Entrada guardada')).toBeVisible()
 
@@ -70,14 +71,19 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
   await expect(page.getByText('Catálogo guardado')).toBeVisible()
   await expect(page.getByText('30% índica · floral, dulce')).toBeVisible()
 
-  // Edit the header and footer.
+  // Edit the header and footer. Scoped to the read-only summary row, not a bare
+  // `getByText`: the same strings also sit inside the preview on purpose, and a
+  // substring match is case-insensitive, so an unscoped query is ambiguous by
+  // design, not by a bug.
   await page.getByRole('button', { name: 'Editar encabezado y pie' }).click()
   await page.getByLabel('Encabezado').fill('🌸 Catálogo de Flores del Catálogo 🌸')
   await page.getByLabel('Pie').fill('Pedidos por privado.')
   await page.getByRole('button', { name: 'Guardar' }).click()
   await expect(page.getByText('Catálogo guardado')).toBeVisible()
-  await expect(page.getByText('🌸 Catálogo de Flores del Catálogo 🌸')).toBeVisible()
-  await expect(page.getByText('Pedidos por privado.')).toBeVisible()
+  const headerFooterSummary = page.locator('.catalogo__encabezado-pie')
+  await expect(headerFooterSummary).toContainText('🌸 Catálogo de Flores del Catálogo 🌸')
+  await expect(headerFooterSummary).toContainText('Pedidos por privado.')
+  await expect(page.getByLabel('Pie')).toHaveCount(0)
 
   // The API's own text is what both the preview and the clipboard must match.
   const apiText = await page.evaluate(() =>
