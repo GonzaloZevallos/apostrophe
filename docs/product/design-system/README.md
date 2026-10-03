@@ -27,6 +27,11 @@ scripts/design/sample-app.sh --dir /tmp/muestra      # deja /tmp/muestra/sample.
 node scripts/design/comparisons.mjs --facts /tmp/muestra/sample.json --out /tmp/comparaciones
 ```
 
+`sample-app.sh` sirve hasta que lo cortás; `sample.json` aparece recién cuando terminó de
+cargar los datos, así que quien lo corre en segundo plano espera ese archivo. Es lo que el
+sistema agéntico pide declarar en el bloque `design` del stack (ADR-0040 de
+agentic-system, `docs/adr/` de ese repo).
+
 La app de muestra es la app construida sobre una base descartable con un negocio como el
 del diseño ("La Huerta"), cargado por la API y nunca por el front. Cada comparación es una
 PNG con el diseño a la izquierda y lo construido a la derecha, del mismo ancho; si un

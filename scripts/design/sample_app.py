@@ -6,6 +6,8 @@ screen comparisons (agentic-system ADR-0040).
 
 Builds nothing itself (the shell wrapper builds `web/` first), starts the server, seeds
 it through the API alone, prints the address and the user, and serves until stopped.
+`sample.json` in its directory is written only once the seeding is done: a caller that
+runs this in the background waits for that file, then reads the address and the ids.
 The data goes in over HTTP, never through the front: the front is what this app exists
 to compare, so a redesigned screen must never break the seeding. Never touches the
 human's own `apostrophe.db` or `.env`.
@@ -39,6 +41,13 @@ BUSINESS = "La Huerta"
 
 class Api(Protocol):
     def call(self, method: str, path: str, body: object | None = None) -> Any: ...
+
+
+@dataclass(frozen=True)
+class Line:
+    variety: int
+    grams: str
+    gift: bool = False
 
 
 @dataclass(frozen=True)
@@ -119,9 +128,9 @@ def seed(api: Api, today: date) -> Sample:
 
     def sale(
         when: str,
-        who: int | None,
+        customer_id: int | None,
         payment: str,
-        lines: list[tuple[int, str, bool]],
+        lines: list[Line],
         shipping: int = 0,
         note: str | None = None,
     ) -> int:
@@ -130,34 +139,39 @@ def seed(api: Api, today: date) -> Sample:
             "/sales",
             {
                 "date": when,
-                "customer_id": who,
+                "customer_id": customer_id,
                 "shipping_charged": shipping,
                 "note": note,
                 "payment": payment,
                 "lines": [
-                    {"variety_id": v, "grams": g, "gift": gift, "special_price": None}
-                    for v, g, gift in lines
+                    {
+                        "variety_id": line.variety,
+                        "grams": line.grams,
+                        "gift": line.gift,
+                        "special_price": None,
+                    }
+                    for line in lines
                 ],
             },
         )["id"]
         return made
 
-    owing = sale(ago(19), nico, "owing", [(gold, "2", False)], shipping=1_000)
-    sale(ago(19), nico, "cash", [(cookies, "1", False)])
-    sale(ago(12), tincho, "cash", [(cookies, "8", False)])
-    sale(ago(10), lu, "transfer", [(jack, "3", False)])
-    sale(ago(5), None, "cash", [(jack, "5", False)], note="Pasó por el local")
-    sale(ago(3), None, "cash", [(cookies, "9", False)])
-    sale(ago(1), tincho, "owing", [(jack, "1", False)], shipping=1_000)
+    owing = sale(ago(19), nico, "owing", [Line(gold, "2")], shipping=1_000)
+    sale(ago(19), nico, "cash", [Line(cookies, "1")])
+    sale(ago(12), tincho, "cash", [Line(cookies, "8")])
+    sale(ago(10), lu, "transfer", [Line(jack, "3")])
+    sale(ago(5), None, "cash", [Line(jack, "5")], note="Pasó por el local")
+    sale(ago(3), None, "cash", [Line(cookies, "9")])
+    sale(ago(1), tincho, "owing", [Line(jack, "1")], shipping=1_000)
     sale(
         ago(0),
         mica,
         "transfer",
-        [(gold, "10", False), (cookies, "2", False), (jack, "1", True)],
+        [Line(gold, "10"), Line(cookies, "2"), Line(jack, "1", gift=True)],
         shipping=6_000,
     )
-    sale(ago(0), None, "cash", [(gold, "3", False)])
-    sale(ago(0), lu, "cash", [(cookies, "2", False)])
+    sale(ago(0), None, "cash", [Line(gold, "3")])
+    sale(ago(0), lu, "cash", [Line(cookies, "2")])
 
     api.call(
         "POST",
@@ -231,9 +245,14 @@ class HttpApi:
         return json.loads(raw) if raw else None
 
 
+def token_from(url: str) -> str:
+    """An invitation's token: the last segment of the link the app prints or answers."""
+    return url.rstrip("/").rsplit("/", 1)[-1]
+
+
 def new_business_token(env: dict[str, str]) -> str:
     """A new-business invitation, issued the way `scripts/invite-business.sh` does."""
-    printed = subprocess.run(
+    first_line = subprocess.run(
         [
             "uv",
             "run",
@@ -249,7 +268,7 @@ def new_business_token(env: dict[str, str]) -> str:
         capture_output=True,
         text=True,
     ).stdout.split("\n")[0]
-    return printed.rstrip("/").rsplit("/", 1)[-1]
+    return token_from(first_line)
 
 
 def free_port() -> int:
@@ -282,7 +301,7 @@ def main(argv: list[str] | None = None) -> int:
     port = args.port or free_port()
     base = f"http://127.0.0.1:{port}"
     env = {
-        **os.environ,
+        **{k: v for k, v in os.environ.items() if not k.startswith("APOSTROPHE_")},
         "APOSTROPHE_SECRET_KEY": secrets.token_hex(16),
         "APOSTROPHE_DATABASE_URL": f"sqlite:///{workdir / 'sample.db'}",
         "APOSTROPHE_PUBLIC_URL": base,
@@ -330,7 +349,7 @@ def main(argv: list[str] | None = None) -> int:
             # Unused, so their screens can be compared: one opens a new business, the
             # other joins La Huerta.
             "new_business_token": new_business_token(env),
-            "join_token": api.call("POST", "/invitations")["url"].rstrip("/").rsplit("/", 1)[-1],
+            "join_token": token_from(api.call("POST", "/invitations")["url"]),
         }
     except BaseException:
         server.terminate()

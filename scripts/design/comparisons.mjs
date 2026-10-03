@@ -36,16 +36,19 @@ mkdirSync(out, { recursive: true })
 const PHONE = [390, 844]
 const TIMEOUT = 8000
 
-function route(template) {
+// `{name}` in a route or a step value: one of the sample's ids, or its user's email.
+const PLACEHOLDERS = { ...facts.ids, email: facts.email }
+
+function resolveFacts(template) {
   return template.replace(/\{(\w+)\}/g, (_, name) => {
-    if (!(name in facts.ids)) throw new Error(`no sample id named ${name}`)
-    return String(facts.ids[name])
+    if (!(name in PLACEHOLDERS)) throw new Error(`no sample fact named ${name}`)
+    return String(PLACEHOLDERS[name])
   })
 }
 
 async function run(page, step) {
   if (step.click) await page.getByText(step.click, { exact: true }).first().click()
-  else if (step.fill) await page.getByLabel(step.fill.label).first().fill(step.fill.value)
+  else if (step.fill) await page.getByLabel(step.fill.label).first().fill(resolveFacts(step.fill.value))
   else if (step.wait) await page.getByText(step.wait, { exact: true }).first().waitFor()
   else throw new Error(`unknown step ${JSON.stringify(step)}`)
 }
@@ -53,6 +56,65 @@ async function run(page, step) {
 async function settle(page) {
   await page.waitForLoadState('networkidle').catch(() => {})
   await page.evaluate(() => document.fonts.ready)
+}
+
+async function captureDesign(browser, s, options) {
+  const context = await browser.newContext(options)
+  const page = await context.newPage()
+  await page.goto(pathToFileURL(join(PROTOTYPE, `${s.screen}.dc.html`)).href)
+  await settle(page)
+  const png = await page.screenshot({ fullPage: true })
+  await context.close()
+  return png
+}
+
+// The built screen in the state its entry asks for; what could not be reached, or a page
+// wider than its viewport, goes into `notes`.
+async function captureBuilt(browser, s, options, notes) {
+  const context = await browser.newContext(options)
+  if (!s.signed_out) {
+    const login = await context.request.post('/auth/login', {
+      data: { email: facts.email, password: facts.password },
+    })
+    if (!login.ok()) throw new Error(`login failed: ${login.status()}`)
+  }
+  const page = await context.newPage()
+  page.setDefaultTimeout(TIMEOUT)
+  await page.goto(resolveFacts(s.route))
+  await settle(page)
+  for (const step of s.steps ?? []) {
+    try {
+      await run(page, step)
+      await settle(page)
+    } catch (error) {
+      notes.push(`estado no alcanzado en ${JSON.stringify(step)}: ${String(error).split('\n')[0]}`)
+      break
+    }
+  }
+  const width = options.viewport.width
+  const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth)
+  if (scrollWidth > width) notes.push(`desborda: ${scrollWidth}px de ancho en ${width}px`)
+  const png = await page.screenshot({ fullPage: true })
+  await context.close()
+  return png
+}
+
+async function composeSheet(browser, s, width, design, built, notes, file) {
+  const context = await browser.newContext({ viewport: { width: 1200, height: 800 }, deviceScaleFactor: 1 })
+  const page = await context.newPage()
+  const img = (png) => `data:image/png;base64,${png.toString('base64')}`
+  const column = (label, png) =>
+    `<figure><figcaption>${label}</figcaption>${png ? `<img src="${img(png)}">` : '<div class="none">—</div>'}</figure>`
+  await page.setContent(`<!doctype html><meta charset="utf-8"><style>
+    body{margin:0;padding:24px;font:14px system-ui,sans-serif;background:#e7e5e1;color:#231e18;display:inline-block}
+    h1{font-size:18px;margin:0 0 6px} p{margin:0 0 12px;color:#7a4a00;font-weight:600}
+    .row{display:flex;gap:24px;align-items:flex-start} figure{margin:0}
+    figcaption{font-weight:600;margin-bottom:8px} img{display:block;width:${width}px;border:1px solid #9a9085}
+    .none{width:${width}px;height:200px;border:1px dashed #9a9085;display:grid;place-items:center}
+    </style><h1>${s.screen}</h1>${notes.map((n) => `<p>${n}</p>`).join('')}
+    <div class="row">${column(`Diseño · ${s.screen}.dc.html`, design)}${column(`Construido · ${s.route ?? 'sin ruta'}`, built)}</div>`)
+  await page.locator('body').screenshot({ path: file })
+  await context.close()
 }
 
 const browser = await chromium.launch()
@@ -68,60 +130,12 @@ try {
       baseURL: facts.url,
     }
     const notes = []
-
-    const designContext = await browser.newContext(options)
-    const designPage = await designContext.newPage()
-    await designPage.goto(pathToFileURL(join(PROTOTYPE, `${s.screen}.dc.html`)).href)
-    await settle(designPage)
-    const design = await designPage.screenshot({ fullPage: true })
-    await designContext.close()
-
+    const design = await captureDesign(browser, s, options)
     let built = null
-    if (s.route === null) {
-      notes.push('todavía no existe en la app')
-    } else {
-      const context = await browser.newContext(options)
-      if (!s.signed_out) {
-        const login = await context.request.post('/auth/login', {
-          data: { email: facts.email, password: facts.password },
-        })
-        if (!login.ok()) throw new Error(`login failed: ${login.status()}`)
-      }
-      const page = await context.newPage()
-      page.setDefaultTimeout(TIMEOUT)
-      await page.goto(route(s.route))
-      await settle(page)
-      for (const step of s.steps ?? []) {
-        try {
-          await run(page, step)
-          await settle(page)
-        } catch (error) {
-          notes.push(`estado no alcanzado en ${JSON.stringify(step)}: ${String(error).split('\n')[0]}`)
-          break
-        }
-      }
-      const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth)
-      if (scrollWidth > width) notes.push(`desborda: ${scrollWidth}px de ancho en ${width}px`)
-      built = await page.screenshot({ fullPage: true })
-      await context.close()
-    }
-
-    const sheet = await browser.newContext({ viewport: { width: 1200, height: 800 }, deviceScaleFactor: 1 })
-    const composer = await sheet.newPage()
-    const img = (png) => `data:image/png;base64,${png.toString('base64')}`
-    const column = (label, png) =>
-      `<figure><figcaption>${label}</figcaption>${png ? `<img src="${img(png)}">` : '<div class="none">—</div>'}</figure>`
-    await composer.setContent(`<!doctype html><meta charset="utf-8"><style>
-      body{margin:0;padding:24px;font:14px system-ui,sans-serif;background:#e7e5e1;color:#231e18;display:inline-block}
-      h1{font-size:18px;margin:0 0 6px} p{margin:0 0 12px;color:#7a4a00;font-weight:600}
-      .row{display:flex;gap:24px;align-items:flex-start} figure{margin:0}
-      figcaption{font-weight:600;margin-bottom:8px} img{display:block;width:${width}px;border:1px solid #9a9085}
-      .none{width:${width}px;height:200px;border:1px dashed #9a9085;display:grid;place-items:center}
-      </style><h1>${s.screen}</h1>${notes.map((n) => `<p>${n}</p>`).join('')}
-      <div class="row">${column(`Diseño · ${s.screen}.dc.html`, design)}${column(`Construido · ${s.route ?? 'sin ruta'}`, built)}</div>`)
+    if (s.route === null) notes.push('todavía no existe en la app')
+    else built = await captureBuilt(browser, s, options, notes)
     const file = join(out, `${s.screen}.png`)
-    await composer.locator('body').screenshot({ path: file })
-    await sheet.close()
+    await composeSheet(browser, s, width, design, built, notes, file)
     results.push({ screen: s.screen, file, notes })
     console.log(`${s.screen}: ${notes.length ? notes.join('; ') : 'ok'}`)
   }

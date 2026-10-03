@@ -1,9 +1,9 @@
 {
-  "_": "Each design screen and how to reach the same state in the built app (agentic-system ADR-0040). Whoever rebuilds a screen keeps its entry true. route: null means the screen is not built yet. {name} placeholders come from the sample app's facts. Steps: click (exact text), fill (label + value), wait (text).",
+  "_": "Each design screen and how to reach the same state in the built app (agentic-system ADR-0040). Whoever rebuilds a screen keeps its entry true. route: null means the screen is not built yet. {name} placeholders come from the sample app's facts. Steps: click (exact text), fill (label + value, which takes {email} and the ids too), wait (text). Main and Componentes are the design system itself, not screens, so they have no entry.",
   "screens": [
     { "screen": "Entrar", "route": "/entrar", "signed_out": true,
       "steps": [
-        { "fill": { "label": "Email", "value": "vos@lahuerta.com" } },
+        { "fill": { "label": "Email", "value": "{email}" } },
         { "fill": { "label": "Contraseña", "value": "equivocada123" } },
         { "click": "Entrá" }
       ] },
