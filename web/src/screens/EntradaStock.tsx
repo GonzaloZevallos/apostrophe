@@ -11,9 +11,10 @@
 
 import { type FormEvent, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link, useNavigate, useParams } from 'react-router'
+import { Link, useNavigate, useOutletContext, useParams } from 'react-router'
 import { ApiError, NetworkError, UNKNOWN_CODE, get } from '../api/client'
 import { invalidateResource, keys } from '../api/keys'
+import type { Me } from '../api/me'
 import { GONE_NOTICE, isGone, resolveOverride, type RefusalCode } from '../api/refusals'
 import {
   type Origin,
@@ -21,6 +22,7 @@ import {
   deleteEntry,
   editEntry,
   getEntry,
+  readStock,
   recordEntry,
 } from '../api/stock'
 import { costPerGram, gramsToHundredths } from '../domain/costPerGram'
@@ -30,7 +32,7 @@ import GoneScreen from '../components/GoneScreen'
 import SinConexion from '../components/SinConexion'
 import { formatDate } from '../format/dates'
 import { formatGrams, formatMoney } from '../format/money'
-import { parseGrams, parseMoney } from '../format/parse'
+import { parseMoney, parseSignedGrams } from '../format/parse'
 import type { Variety } from './Variedades'
 
 export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
@@ -60,6 +62,7 @@ interface Props {
 }
 
 export default function EntradaStock({ mode }: Props) {
+  const me = useOutletContext<Me>()
   const { id } = useParams<{ id: string }>()
   const entryId = id ?? ''
 
@@ -69,7 +72,7 @@ export default function EntradaStock({ mode }: Props) {
     enabled: mode === 'editar',
   })
 
-  if (mode === 'nuevo') return <EntradaStockBody mode="nuevo" entryId={entryId} />
+  if (mode === 'nuevo') return <EntradaStockBody mode="nuevo" entryId={entryId} today={me.today} />
 
   if (existing.isError) {
     if (existing.error instanceof ApiError && isGone(existing.error.code)) {
@@ -95,16 +98,17 @@ export default function EntradaStock({ mode }: Props) {
 
   if (existing.data === undefined) return null
 
-  return <EntradaStockBody mode="editar" entryId={entryId} initial={existing.data} />
+  return <EntradaStockBody mode="editar" entryId={entryId} today={me.today} initial={existing.data} />
 }
 
 interface BodyProps {
   mode: 'nuevo' | 'editar'
   entryId: string
+  today: string
   initial?: StockEntry
 }
 
-function EntradaStockBody({ mode, entryId, initial }: BodyProps) {
+function EntradaStockBody({ mode, entryId, today, initial }: BodyProps) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
@@ -112,8 +116,9 @@ function EntradaStockBody({ mode, entryId, initial }: BodyProps) {
     queryKey: keys.varieties(),
     queryFn: () => get<Variety[]>('/varieties'),
   })
+  const stockQuery = useQuery({ queryKey: keys.stock(), queryFn: readStock })
 
-  const [date, setDate] = useState(initial?.date ?? '')
+  const [date, setDate] = useState(initial?.date ?? today)
   const [grams, setGrams] = useState(initial !== undefined ? String(initial.grams) : '')
   const [varietyId, setVarietyId] = useState(initial !== undefined ? String(initial.variety_id) : '')
   const [origin, setOrigin] = useState<Origin>(initial?.origin ?? 'purchase')
@@ -129,12 +134,21 @@ function EntradaStockBody({ mode, entryId, initial }: BodyProps) {
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
 
-  const previewGrams = parseGrams(grams)
+  const previewGrams = parseSignedGrams(grams)
   const previewCost = parseMoney(totalCost)
+  // A negative adjustment carries no cost (stock.md): the preview only ever shows for
+  // positive grams, the only case `cost_per_gram` (and its front mirror) accepts.
   const preview =
-    previewGrams.ok && previewCost.ok
+    previewGrams.ok && previewCost.ok && Number(previewGrams.value) > 0
       ? costPerGram(previewCost.value, gramsToHundredths(previewGrams.value))
       : null
+
+  const varietyGrams = (() => {
+    const variety = Number(varietyId)
+    if (varietyId === '' || !Number.isInteger(variety)) return null
+    const found = stockQuery.data?.varieties.find((row) => row.variety_id === variety)
+    return found?.grams ?? null
+  })()
 
   function buildBody(): { date: string; variety_id: number; origin: Origin; grams: string; total_cost?: number; note?: string } | null {
     if (!previewGrams.ok) return null
@@ -269,6 +283,9 @@ function EntradaStockBody({ mode, entryId, initial }: BodyProps) {
                 </option>
               ))}
             </select>
+            {varietyGrams !== null && (
+              <span className="campo__ayuda">Hoy tiene {formatGrams(varietyGrams)}</span>
+            )}
           </label>
           <fieldset className="campo">
             <legend className="campo__rotulo">Origen</legend>

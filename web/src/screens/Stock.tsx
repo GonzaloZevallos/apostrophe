@@ -113,7 +113,7 @@ export default function Stock() {
           <span className="pie">{formatGrams(stock.total)} en total</span>
         </div>
 
-        {stock.varieties.length === 0 ? (
+        {stock.entries.length === 0 ? (
           <div className="estado-vacio">
             <span className="estado-vacio__titulo">{EMPTY_STATE_TITLE}</span>
             <span className="estado-vacio__detalle">{EMPTY_STATE_DETAIL}</span>

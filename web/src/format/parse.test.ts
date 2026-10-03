@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { parseGrams, parseMoney } from './parse'
+import { parseGrams, parseMoney, parseSignedGrams } from './parse'
 
 describe('parseMoney', () => {
   test('reads whole pesos with a dot as the thousands separator', () => {
@@ -49,5 +49,27 @@ describe('parseGrams', () => {
     expect(parseGrams('0')).toEqual({ ok: false })
     expect(parseGrams('-3,5')).toEqual({ ok: false })
     expect(parseGrams('')).toEqual({ ok: false })
+  })
+})
+
+describe('parseSignedGrams', () => {
+  test('reads a negative amount, for an adjustment that corrects stock downward', () => {
+    expect(parseSignedGrams('-3,5')).toEqual({ ok: true, value: '-3.5' })
+    expect(parseSignedGrams('-10')).toEqual({ ok: true, value: '-10' })
+  })
+
+  test('still reads a positive amount, with a comma or a dot', () => {
+    expect(parseSignedGrams('3,5')).toEqual({ ok: true, value: '3.5' })
+    expect(parseSignedGrams('10.25')).toEqual({ ok: true, value: '10.25' })
+  })
+
+  test('rejects zero and empty input, negative or not', () => {
+    expect(parseSignedGrams('0')).toEqual({ ok: false })
+    expect(parseSignedGrams('-0')).toEqual({ ok: false })
+    expect(parseSignedGrams('')).toEqual({ ok: false })
+  })
+
+  test('rejects more than two decimals', () => {
+    expect(parseSignedGrams('-3,555')).toEqual({ ok: false })
   })
 })

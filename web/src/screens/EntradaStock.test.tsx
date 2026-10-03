@@ -1,16 +1,20 @@
 /**
  * `EntradaStock` at the screen seam (`stock.md`, "Nueva entrada" and "Editing an
- * entry"): records a new entry, refuses a purchase with no cost on its own field,
- * confirms before saving an edit, and confirms before deleting, naming the date,
- * variety and grams.
+ * entry"): records a new entry (with today filled in and "Hoy tiene N g" under the
+ * variety), lets an adjustment carry negative grams, refuses a purchase with no cost
+ * on its own field, confirms before saving an edit, and confirms before deleting,
+ * naming the date, variety and grams.
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
+import { MemoryRouter, Outlet, Route, Routes, useLocation } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
+import type { Me } from '../api/me'
 import EntradaStock from './EntradaStock'
+
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03' }
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -31,14 +35,20 @@ function ListStub() {
   )
 }
 
+function Provide() {
+  return <Outlet context={ME} />
+}
+
 function renderForm(initialPath: string) {
   render(
     <QueryClientProvider client={new QueryClient()}>
       <MemoryRouter initialEntries={[initialPath]}>
         <Routes>
-          <Route path="/mi-stock/nueva-entrada" element={<EntradaStock mode="nuevo" />} />
-          <Route path="/mi-stock/entradas/:id" element={<EntradaStock mode="editar" />} />
-          <Route path="/mi-stock" element={<ListStub />} />
+          <Route element={<Provide />}>
+            <Route path="/mi-stock/nueva-entrada" element={<EntradaStock mode="nuevo" />} />
+            <Route path="/mi-stock/entradas/:id" element={<EntradaStock mode="editar" />} />
+            <Route path="/mi-stock" element={<ListStub />} />
+          </Route>
         </Routes>
       </MemoryRouter>
     </QueryClientProvider>,
@@ -46,9 +56,43 @@ function renderForm(initialPath: string) {
 }
 
 const VARIETIES = [{ id: 3, name: 'Sir Jack', current_price: null }]
+const STOCK_VIEW = {
+  total: 18.5,
+  varieties: [
+    {
+      variety_id: 3,
+      grams: 18.5,
+      status: 'ok',
+      sold_out_since: null,
+      threshold: null,
+      days_left: 10,
+    },
+  ],
+  entries: [],
+}
 
 afterEach(() => {
   vi.unstubAllGlobals()
+})
+
+test('a new entry starts dated today and shows "Hoy tiene N g" once a variety is picked', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: string | URL | Request) => {
+      const url = typeof input === 'string' ? input : input.toString()
+      if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/stock') return Promise.resolve(jsonResponse(200, STOCK_VIEW))
+      return Promise.resolve(jsonResponse(500, {}))
+    }),
+  )
+  renderForm('/mi-stock/nueva-entrada')
+
+  expect(screen.getByLabelText('Fecha')).toHaveValue('2026-10-03')
+
+  await screen.findByRole('option', { name: 'Sir Jack' })
+  await userEvent.selectOptions(screen.getByLabelText('Variedad'), 'Sir Jack')
+
+  expect(await screen.findByText('Hoy tiene 18,5 g')).toBeInTheDocument()
 })
 
 test('records an entry and lands back on the list with the saved toast', async () => {
@@ -57,6 +101,7 @@ test('records an entry and lands back on the list with the saved toast', async (
     vi.fn((input: string | URL | Request) => {
       const url = typeof input === 'string' ? input : input.toString()
       if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/stock') return Promise.resolve(jsonResponse(200, STOCK_VIEW))
       return Promise.resolve(
         jsonResponse(201, {
           id: 10,
@@ -73,7 +118,6 @@ test('records an entry and lands back on the list with the saved toast', async (
   )
   renderForm('/mi-stock/nueva-entrada')
 
-  await userEvent.type(screen.getByLabelText('Fecha'), '2026-10-03')
   await userEvent.type(screen.getByLabelText('Gramos'), '30')
   await userEvent.selectOptions(await screen.findByLabelText('Variedad'), 'Sir Jack')
   await userEvent.click(screen.getByRole('button', { name: 'Guardá la entrada' }))
@@ -83,18 +127,51 @@ test('records an entry and lands back on the list with the saved toast', async (
   expect(fetch).toHaveBeenCalledWith('/stock/entries', expect.objectContaining({ method: 'POST' }))
 })
 
+test('an adjustment can carry negative grams, sent through to the API as typed', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: string | URL | Request, init?: RequestInit) => {
+      const url = typeof input === 'string' ? input : input.toString()
+      if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/stock') return Promise.resolve(jsonResponse(200, STOCK_VIEW))
+      expect(init?.body).toEqual(expect.stringContaining('"-4.5"'))
+      return Promise.resolve(
+        jsonResponse(201, {
+          id: 11,
+          date: '2026-10-03',
+          variety_id: 3,
+          origin: 'adjustment',
+          grams: -4.5,
+          total_cost: null,
+          cost_per_gram: null,
+          note: null,
+        }),
+      )
+    }),
+  )
+  renderForm('/mi-stock/nueva-entrada')
+
+  await userEvent.type(screen.getByLabelText('Gramos'), '-4,5')
+  await userEvent.selectOptions(await screen.findByLabelText('Variedad'), 'Sir Jack')
+  await userEvent.click(screen.getByRole('button', { name: 'Ajuste' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Guardá la entrada' }))
+
+  expect(await screen.findByText('la lista de stock')).toBeInTheDocument()
+  expect(fetch).toHaveBeenCalledWith('/stock/entries', expect.objectContaining({ method: 'POST' }))
+})
+
 test('a purchase refused for missing cost shows the refusal on its own field, keeping what was typed', async () => {
   vi.stubGlobal(
     'fetch',
     vi.fn((input: string | URL | Request) => {
       const url = typeof input === 'string' ? input : input.toString()
       if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/stock') return Promise.resolve(jsonResponse(200, STOCK_VIEW))
       return Promise.resolve(jsonResponse(422, { detail: 'needs a cost', code: 'stock.cost_required' }))
     }),
   )
   renderForm('/mi-stock/nueva-entrada')
 
-  await userEvent.type(screen.getByLabelText('Fecha'), '2026-10-03')
   await userEvent.type(screen.getByLabelText('Gramos'), '30')
   await userEvent.selectOptions(await screen.findByLabelText('Variedad'), 'Sir Jack')
   await userEvent.click(screen.getByRole('button', { name: 'Guardá la entrada' }))
@@ -109,6 +186,7 @@ test('editing an entry confirms before saving', async () => {
     vi.fn((input: string | URL | Request) => {
       const url = typeof input === 'string' ? input : input.toString()
       if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/stock') return Promise.resolve(jsonResponse(200, STOCK_VIEW))
       if (url === '/stock/entries/10') {
         return Promise.resolve(
           jsonResponse(200, {
@@ -159,6 +237,7 @@ test('deleting an entry confirms first, naming the date, variety and grams', asy
     vi.fn((input: string | URL | Request) => {
       const url = typeof input === 'string' ? input : input.toString()
       if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/stock') return Promise.resolve(jsonResponse(200, STOCK_VIEW))
       if (url === '/stock/entries/10') {
         return Promise.resolve(
           jsonResponse(200, {

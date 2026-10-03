@@ -1,8 +1,9 @@
 /**
  * `Stock` at the screen seam (`stock.md`, "On screen"): the total, each variety's own
- * status and detail exactly as `GET /stock` answers them, the empty state when there
- * are no varieties, and a link to record a new entry — nothing here is computed by the
- * front (plan, invariants).
+ * status and detail exactly as `GET /stock` answers them, the empty state when the
+ * business has recorded no entries at all (even if it already has varieties), and a
+ * link to record a new entry — nothing here is computed by the front (plan,
+ * invariants).
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -67,7 +68,18 @@ test('shows the total and each variety by shape, word and detail, never color al
             days_left: 6,
           },
         ],
-        entries: [],
+        entries: [
+          {
+            id: 9,
+            date: '2026-09-12',
+            variety_id: 2,
+            origin: 'purchase',
+            grams: 18.5,
+            total_cost: 157_250,
+            cost_per_gram: 8_500,
+            note: null,
+          },
+        ],
       })
     }
     return jsonResponse(200, [
@@ -85,7 +97,7 @@ test('shows the total and each variety by shape, word and detail, never color al
   expect(screen.getByText('6 días')).toBeInTheDocument()
 })
 
-test('an empty variety list shows the empty state, with a way to record the first entry', async () => {
+test('no entries at all shows the empty state, with a way to record the first entry', async () => {
   renderStock(async (url) => {
     if (url.startsWith('/stock')) return jsonResponse(200, { total: 0, varieties: [], entries: [] })
     return jsonResponse(200, [])
@@ -97,4 +109,29 @@ test('an empty variety list shows the empty state, with a way to record the firs
     'href',
     '/mi-stock/nueva-entrada',
   )
+})
+
+test('a business with varieties but no entries at all still shows the empty state', async () => {
+  renderStock(async (url) => {
+    if (url.startsWith('/stock')) {
+      return jsonResponse(200, {
+        total: 0,
+        varieties: [
+          {
+            variety_id: 1,
+            grams: 0,
+            status: 'no_entries',
+            sold_out_since: null,
+            threshold: null,
+            days_left: null,
+          },
+        ],
+        entries: [],
+      })
+    }
+    return jsonResponse(200, [{ id: 1, name: 'Sir Jack', current_price: null }])
+  })
+
+  expect(await screen.findByText('Sin entradas de stock')).toBeInTheDocument()
+  expect(screen.queryByText('Sir Jack')).not.toBeInTheDocument()
 })
