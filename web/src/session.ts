@@ -8,7 +8,7 @@
  */
 
 import type { QueryClient } from '@tanstack/react-query'
-import { post } from './api/client'
+import { get, post } from './api/client'
 
 export interface SessionActions {
   queryClient: QueryClient
@@ -44,6 +44,33 @@ export async function acceptInvitation(
 export async function logOut(actions: SessionActions): Promise<void> {
   await post('/auth/logout')
   boundary(actions, '/entrar')
+}
+
+export interface InvitationView {
+  kind: 'new_business' | 'join_business'
+  business_name: string | null
+  expires_at: string
+}
+
+/**
+ * Opening `/invitation/:token` must end any current session through the app's own
+ * log-out first — never just by clearing client state (plan, "Session"; PM round 1)
+ * — so acceptance always starts clean and the business the person ends up in is
+ * always the one the link names. A user who opens their own business's join link is
+ * logged out this same way, and logs in again.
+ *
+ * In that order: `POST /auth/logout` (drops the backend's cookie), then
+ * `queryClient.clear()`, then the invitation lookup. No navigation here: the
+ * invitation screen is already where the person is; it renders what this resolves
+ * to.
+ */
+export async function openInvitation(
+  actions: Pick<SessionActions, 'queryClient'>,
+  token: string,
+): Promise<InvitationView> {
+  await post('/auth/logout')
+  actions.queryClient.clear()
+  return get<InvitationView>(`/invitations/${token}`)
 }
 
 const PUBLIC_PATH_PREFIXES = ['/entrar', '/invitation/']
