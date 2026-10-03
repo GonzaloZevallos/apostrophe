@@ -307,7 +307,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   await page.getByRole('button', { name: 'Borrar venta' }).click()
   await expect(
     page.getByRole('alertdialog', {
-      name: `¿Borrás la venta de $ 1.000 del ${shortDate(todayIso)}?`,
+      name: `¿Borrás la venta de $ 1.000 del ${shortDate(todayIso)}? Vuelven 2 g al stock.`,
     }),
   ).toBeVisible()
   await page.getByRole('button', { name: 'Sí, borrala' }).click()
@@ -420,6 +420,10 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   // here is the isolation check just above (`GET /sales/<id>` from a business that
   // doesn't own it), which carries no id, name, note or amount — exactly what
   // ADR-0004's 404 is for. Anything else in the console still fails this assertion.
+  //
+  // `GET /customers/{id}/account` (`payments-front`) is wired by `payments-api` into
+  // `app/main.py` on this branch (`payments-e2e`, after every payments subtask is
+  // merged), so "Sale B"'s customer card above no longer 404s on its own account view.
   const RESOURCE_404 = 'error: Failed to load resource: the server responded with a status of 404 (Not Found)'
   expect(consoleMessages).toEqual([RESOURCE_404])
 })

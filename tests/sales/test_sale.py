@@ -199,6 +199,18 @@ def test_total_is_the_sum_of_the_rounded_lines_plus_shipping_once() -> None:
     assert sale.total == 1_000 + 7_000 + 500
 
 
+def test_total_grams_sums_every_line_gifts_included() -> None:
+    sale = _record(
+        lines=[
+            _line(variety_id=1, quote=LIST_ONLY, grams=Grams.of(2)),
+            _line(variety_id=2, quote=LIST_ONLY, grams=Grams.of("1.5"), gift=True),
+        ],
+        method=PaymentMethod.CASH,
+    )
+
+    assert sale.total_grams == Grams.of("3.5")
+
+
 def test_bulk_minimum_is_measured_per_line_never_summed() -> None:
     # Two lines of the same variety, each below the minimum on its own, together above it.
     sale = _record(

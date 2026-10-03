@@ -62,6 +62,13 @@
     "catalog.header_too_long": { "kind": "refusal" },
     "catalog.footer_too_long": { "kind": "refusal" },
     "catalog.variety_not_found": { "kind": "gone" },
+    "payment.above_balance": { "kind": "refusal" },
+    "payment.future_date": { "kind": "refusal" },
+    "payment.amount_invalid": { "kind": "refusal" },
+    "payment.method_required": { "kind": "refusal" },
+    "payment.on_the_spot": { "kind": "refusal" },
+    "payment.customer_not_found": { "kind": "gone" },
+    "payment.not_found": { "kind": "gone" },
     "RequestInvalid": { "kind": "refusal" }
   },
   "frontSegments": [

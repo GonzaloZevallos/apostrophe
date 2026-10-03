@@ -21,3 +21,12 @@ export function formatGrams(grams: number | string): string {
   const value = typeof grams === 'string' ? Number(grams) : grams
   return `${GRAMS_FMT.format(value)} g`
 }
+
+/** `-2000` → `"$ 2.000"`: the one place a signed balance's magnitude is shown
+ * (plan, "Front": "A negative amount is shown as its magnitude by one format
+ * helper ... the only place a sign is dropped, and it never decides a label").
+ * A caller still picks the "A favor" / "Te debe" wording itself, from
+ * `standing` or an account row's own `kind` — never from this function. */
+export function formatMoneyMagnitude(pesos: number): string {
+  return formatMoney(Math.abs(pesos))
+}

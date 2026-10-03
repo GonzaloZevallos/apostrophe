@@ -5,7 +5,7 @@ another business is, from here, a record that does not exist.
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Collection, Sequence
 from dataclasses import dataclass
 from datetime import date
 from typing import Protocol
@@ -104,6 +104,24 @@ class SaleViews(Protocol):
 
     def list_views(self, date_from: date | None, date_to: date | None) -> Sequence[SaleView]:
         """Same ordering and range semantics as `Sales.list`."""
+        ...
+
+
+class OwingSales(Protocol):
+    """Which of a business's sales settlement still shows as owed (CONTEXT.md: Sales
+    still owing), from the customers' own payments. Built for one business.
+
+    Sales never imports `app.payments` (CODING_STANDARDS section 1; the plan's
+    invariant): the one implementation,
+    `app.payments.adapters.settlements.SqlOwingSales`, is wired onto
+    `app.state.owing_sales` in `app/main.py` and reached from here only through this
+    port — the same shape `LineCosts` already uses for stock.
+    """
+
+    def still_owing(self, customer_ids: Collection[int]) -> frozenset[int]:
+        """The ids of sales of these customers that are not yet fully paid once
+        later payments are applied oldest debt first. A sale with no customer is
+        never in it: settlement never sees one."""
         ...
 
 

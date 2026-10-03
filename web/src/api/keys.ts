@@ -16,6 +16,7 @@ export type Resource =
   | 'sales'
   | 'stock'
   | 'catalog'
+  | 'payments'
 
 const PREFIX: Record<Resource, string> = {
   me: 'me',
@@ -27,6 +28,7 @@ const PREFIX: Record<Resource, string> = {
   sales: 'sales',
   stock: 'stock',
   catalog: 'catalog',
+  payments: 'payments',
 }
 
 export const keys = {
@@ -61,14 +63,27 @@ export const keys = {
   // same way `saleFormVarieties` is: a save's own answer replaces this key's data
   // directly through `setQueryData`, so this prefix is never invalidated either.
   catalog: () => [PREFIX.catalog] as const,
+  customerAccount: (id: string) => [PREFIX.payments, 'account', id] as const,
+  debtors: () => [PREFIX.payments, 'debtors'] as const,
+  // "Registrar cobro"'s own preview (plan, "keys.ts"): a dry-run of the settlement,
+  // never cached across calls (`gcTime: 0` at the call site) and outside the
+  // `Resource`/`PREFIX` invalidation system, the same way `saleFormVarieties` is —
+  // the last answer always wins, and no write anywhere ever needs to invalidate it.
+  paymentPreview: (customerId: string, paidOn: string, amount: number) =>
+    ['payment-form', 'preview', customerId, paidOn, amount] as const,
 }
 
 // A write on one resource that also stales another, beyond its own prefix (plan,
 // "Server state"): a category write touches the month view that lists them; a
-// business rename touches what `GET /auth/me` already cached.
+// business rename touches what `GET /auth/me` already cached; a payment touches the
+// customer's balance and the sale it settled; a sale touches its customer's balance
+// and, having left one owing or not, "Te deben"; a customer rename shows in it too.
 const CROSS_INVALIDATES: Partial<Record<Resource, Resource[]>> = {
   expenseCategories: ['expenses'],
   business: ['me'],
+  payments: ['customers', 'sales'],
+  sales: ['customers', 'payments'],
+  customers: ['payments'],
 }
 
 /** Invalidates the whole prefix a write belongs to, plus its cross rule if it has

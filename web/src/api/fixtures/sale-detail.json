@@ -1,0 +1,22 @@
+{
+  "id": 10,
+  "date": "2026-09-14",
+  "customer": { "id": 1, "name": "Ana Pérez", "vip": false },
+  "shipping_charged": 500,
+  "note": null,
+  "payment": "owing",
+  "total": 11000,
+  "lines": [
+    {
+      "variety_id": 2,
+      "variety_name": "Flor A",
+      "grams": 3.5,
+      "pricing_rule": "list",
+      "price_per_gram": 3000,
+      "line_total": 10500,
+      "cost": { "costed": 7000, "pending_grams": 0.0 }
+    }
+  ],
+  "still_owing": true,
+  "total_grams": 3.5
+}

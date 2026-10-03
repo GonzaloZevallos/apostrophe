@@ -16,7 +16,10 @@ import { Link, useLocation } from 'react-router'
 import { NetworkError } from '../../api/client'
 import { listCustomers } from '../../api/customers'
 import { keys } from '../../api/keys'
+import { getDebtors } from '../../api/payments'
 import { formatPhone } from '../../format/phone'
+import { formatDateShort } from '../../format/dates'
+import { formatMoney, formatMoneyMagnitude } from '../../format/money'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import { readFeedback } from '../../components/feedback'
 import Notice from '../../components/Notice'
@@ -45,6 +48,18 @@ export default function Clientes() {
     placeholderData: keepPreviousData,
   })
 
+  // The header's own count comes from the unfiltered list (plan, "Front": "N
+  // comes from the unfiltered list"), never from whatever the search box
+  // currently narrows the rows below down to.
+  const total = useQuery({
+    queryKey: keys.customers(''),
+    queryFn: () => listCustomers(''),
+  })
+  const debtors = useQuery({
+    queryKey: keys.debtors(),
+    queryFn: () => getDebtors(),
+  })
+
   const customers = data ?? []
 
   return (
@@ -52,6 +67,17 @@ export default function Clientes() {
       <div className="cuerpo">
         <div>
           <span className="encabezado__titulo">Clientes</span>
+        </div>
+        <div className="campo__rotulo">
+          <span>{`${total.data?.length ?? 0} clientes`}</span>
+          {debtors.data !== undefined && debtors.data.debtors.length > 0 && (
+            <>
+              {' · '}
+              <Link to="/clientes/deben">
+                {`${debtors.data.debtors.length} te deben ${formatMoney(debtors.data.total_owed)}`}
+              </Link>
+            </>
+          )}
         </div>
         {feedback !== null && <Notice kind={feedback.kind} message={feedback.message} />}
         <label className="campo">
@@ -90,6 +116,17 @@ export default function Clientes() {
                   {customer.vip && <span className="vip-insignia">VIP</span>}
                 </span>
                 <span className="lista-clientes__telefono">{formatPhone(customer.phone)}</span>
+                {customer.standing === 'owes' && customer.owing_since !== null && (
+                  <span className="lista-clientes__balance">
+                    <span className="monto-deuda">{formatMoney(customer.balance)}</span>
+                    <span className="monto-deuda">
+                      te debe desde {formatDateShort(customer.owing_since)}
+                    </span>
+                  </span>
+                )}
+                {customer.standing === 'credit' && (
+                  <span className="monto-credito">A favor {formatMoneyMagnitude(customer.balance)}</span>
+                )}
               </Link>
             ))}
           </div>

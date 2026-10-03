@@ -12,6 +12,7 @@
 
 import { act, render, screen, within } from '@testing-library/react'
 import { afterEach, expect, test, vi } from 'vitest'
+import SALE_DETAIL from './api/fixtures/sale-detail.json'
 import App from './App'
 import { queryClient } from './queryClient'
 import { router } from './router'
@@ -80,20 +81,7 @@ test('/ventas/:id renders VentaDetalle, from the API, under the gated shell', as
     vi.fn().mockImplementation((input: RequestInfo | URL) => {
       const path = String(input)
       if (path === '/sales/1') {
-        return Promise.resolve(
-          jsonResponse(200, {
-            id: 1,
-            date: '2026-10-02',
-            customer: null,
-            shipping_charged: 0,
-            note: null,
-            payment: 'none',
-            total: 1000,
-            lines: [
-              { variety_id: 1, variety_name: 'Blue Dream', grams: 1, pricing_rule: 'list', price_per_gram: 1000, line_total: 1000 },
-            ],
-          }),
-        )
+        return Promise.resolve(jsonResponse(200, { ...SALE_DETAIL, id: 1 }))
       }
       return Promise.resolve(
         jsonResponse(200, { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }),
@@ -105,5 +93,5 @@ test('/ventas/:id renders VentaDetalle, from the API, under the gated shell', as
   render(<App />)
 
   expect(await screen.findByText('Venta')).toBeInTheDocument()
-  expect(await screen.findByText('Blue Dream')).toBeInTheDocument()
+  expect(await screen.findByText('Flor A')).toBeInTheDocument()
 })

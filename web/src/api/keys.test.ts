@@ -24,6 +24,21 @@ describe('keys', () => {
     expect(keys.varietyPrices('v1')).toEqual(['varieties', 'v1', 'prices'])
     expect(keys.expenseCategories()).toEqual(['expense-categories'])
   })
+
+  test('a customer\'s account and the debtors list key under "payments"', () => {
+    expect(keys.customerAccount('1')).toEqual(['payments', 'account', '1'])
+    expect(keys.debtors()).toEqual(['payments', 'debtors'])
+  })
+
+  test('the Registrar cobro preview keys outside the payments resource, by its inputs', () => {
+    expect(keys.paymentPreview('1', '2026-10-02', 5000)).toEqual([
+      'payment-form',
+      'preview',
+      '1',
+      '2026-10-02',
+      5000,
+    ])
+  })
 })
 
 describe('invalidateResource', () => {
@@ -60,6 +75,35 @@ describe('invalidateResource', () => {
 
     expect(isInvalidated(queryClient, keys.expenses('2026-10'))).toBe(false)
     expect(isInvalidated(queryClient, keys.me())).toBe(false)
+  })
+
+  test('a payment also refreshes the customer it belongs to and the sale it settled', () => {
+    const queryClient = clientWithData()
+    queryClient.setQueryData(keys.sales('2026-10-01', '2026-10-31'), [])
+
+    invalidateResource(queryClient, 'payments')
+
+    expect(isInvalidated(queryClient, keys.customers('ana'))).toBe(true)
+    expect(isInvalidated(queryClient, keys.sales('2026-10-01', '2026-10-31'))).toBe(true)
+  })
+
+  test('a sale also refreshes its customer\'s balance and "Te deben"', () => {
+    const queryClient = clientWithData()
+    queryClient.setQueryData(keys.debtors(), { total_owed: 0 })
+
+    invalidateResource(queryClient, 'sales')
+
+    expect(isInvalidated(queryClient, keys.customers('ana'))).toBe(true)
+    expect(isInvalidated(queryClient, keys.debtors())).toBe(true)
+  })
+
+  test('a customer rename also refreshes "Te deben", where it shows', () => {
+    const queryClient = clientWithData()
+    queryClient.setQueryData(keys.debtors(), { total_owed: 0 })
+
+    invalidateResource(queryClient, 'customers')
+
+    expect(isInvalidated(queryClient, keys.debtors())).toBe(true)
   })
 })
 

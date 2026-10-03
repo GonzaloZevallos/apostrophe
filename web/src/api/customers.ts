@@ -2,9 +2,15 @@
  * The customer resource, over `api/client.ts` only (plan, invariants): no screen
  * calls `fetch` directly. Matches `app/customers/adapters/schemas.py` field for
  * field.
+ *
+ * `balance`, `owing_since` and `standing` ride on every answer (plan, "Contract":
+ * "CustomerOut, answered by every customer route, adds balance, owing_since,
+ * standing") — worked out by the payments domain, never here: this module only
+ * carries what the API answered.
  */
 
 import { get, patch, post } from './client'
+import type { Standing } from './payments'
 
 export type Channel = 'telegram' | 'whatsapp'
 
@@ -14,6 +20,9 @@ export interface Customer {
   phone: string
   channel: Channel | null
   vip: boolean
+  balance: number
+  owing_since: string | null
+  standing: Standing
 }
 
 export interface CustomerIn {

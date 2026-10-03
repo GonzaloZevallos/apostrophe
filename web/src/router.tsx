@@ -41,6 +41,7 @@ import ClienteFicha from './screens/clientes/ClienteFicha'
 import ClienteForm from './screens/clientes/ClienteForm'
 import Clientes from './screens/clientes/Clientes'
 import ClientesLayout from './screens/clientes/ClientesLayout'
+import TeDeben from './screens/clientes/TeDeben'
 import VariedadDetalle from './screens/VariedadDetalle'
 import Variedades from './screens/Variedades'
 import Negocio from './screens/Negocio'
@@ -70,6 +71,7 @@ export const router = createBrowserRouter([
                 children: [
                   { index: true, element: <Clientes /> },
                   { path: 'nuevo', element: <ClienteForm mode="nuevo" /> },
+                  { path: 'deben', element: <TeDeben /> },
                   { path: ':id', element: <ClienteFicha /> },
                   { path: ':id/editar', element: <ClienteForm mode="editar" /> },
                 ],
