@@ -71,3 +71,21 @@ test('a refusal that is not a 401 never triggers the session boundary', async ()
   expect(queryClient.getQueryData(['me'])).toEqual({ businessName: 'La Huerta' })
   expect(navigate).not.toHaveBeenCalled()
 })
+
+test('a 401 from a gated mutation (a screen\'s own save or delete) is the same boundary', async () => {
+  const navigate = vi.fn()
+  setCurrentPath('/clientes')
+  setNavigate(navigate)
+  queryClient.setQueryData(['me'], { businessName: 'La Huerta' })
+
+  await queryClient
+    .getMutationCache()
+    .build(queryClient, {
+      mutationFn: () => Promise.reject(new ApiError(401, 'unknown')),
+    })
+    .execute(undefined)
+    .catch(() => undefined)
+
+  expect(queryClient.getQueryData(['me'])).toBeUndefined()
+  expect(navigate).toHaveBeenCalledWith('/entrar')
+})

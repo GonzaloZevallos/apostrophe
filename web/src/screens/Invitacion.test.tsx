@@ -17,6 +17,7 @@ import Invitacion, {
   EMAIL_INVALID_MESSAGE,
   GENERIC_REFUSAL_MESSAGE,
   NOT_USABLE_TITLE,
+  RETRY_MESSAGE,
 } from './Invitacion'
 
 function jsonResponse(status: number, body: unknown): Response {
@@ -178,4 +179,49 @@ test('an unmapped refusal (RequestInvalid) shows the generic inline message, nev
   await userEvent.click(screen.getByRole('button', { name: 'Sumate a La Esquina' }))
 
   expect(await screen.findByRole('alert')).toHaveTextContent(GENERIC_REFUSAL_MESSAGE)
+})
+
+test('a server error on accepting shows the generic retry, never a refusal', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((url: string, init?: RequestInit) => {
+      if (url === '/auth/logout') return Promise.resolve(noContent())
+      if (url === '/invitations/tok123') {
+        return Promise.resolve(
+          jsonResponse(200, {
+            kind: 'join_business',
+            business_name: 'La Esquina',
+            expires_at: '2026-10-09T00:00:00Z',
+          }),
+        )
+      }
+      if (init?.method === 'POST') {
+        return Promise.resolve(new Response('internal error', { status: 500 }))
+      }
+      throw new Error(`unexpected request: ${url}`)
+    }),
+  )
+
+  renderInvitacion()
+
+  await userEvent.type(await screen.findByLabelText('Email'), 'ana@x.com')
+  await userEvent.type(screen.getByLabelText('Contraseña'), 'secreta123')
+  await userEvent.click(screen.getByRole('button', { name: 'Sumate a La Esquina' }))
+
+  expect(await screen.findByRole('alert')).toHaveTextContent(RETRY_MESSAGE)
+})
+
+test('a server error on the lookup itself shows the generic retry, not a refusal', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((url: string) => {
+      if (url === '/auth/logout') return Promise.resolve(noContent())
+      return Promise.resolve(new Response('internal error', { status: 500 }))
+    }),
+  )
+
+  renderInvitacion()
+
+  expect(await screen.findByText(RETRY_MESSAGE)).toBeInTheDocument()
+  expect(screen.queryByText(GENERIC_REFUSAL_MESSAGE)).not.toBeInTheDocument()
 })

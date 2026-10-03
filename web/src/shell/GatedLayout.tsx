@@ -1,18 +1,21 @@
 /**
  * The gated branch of the router (plan, "Session": "Only the gated layout runs
  * `me`"). While `me` is pending, nothing under it renders yet. A 401 is already
- * handled by `queryClient.ts`'s global boundary (it redirects before this renders
- * anything); a dropped network shows "Sin conexión" here instead of a blank page
- * that never recovers (`accounts.md`, "No network" — this does not depend on the
- * service worker).
+ * handled by `queryClient.ts`'s global boundary, which redirects before anything
+ * below needs to render; this layout renders nothing for it rather than flash a
+ * retry panel on top of that redirect. A dropped network shows "Sin conexión"
+ * (`accounts.md`, "No network" — this does not depend on the service worker); any
+ * other failure (a 500, above all) shows the generic retry instead of a blank page
+ * that never recovers.
  */
 
 import { useQuery } from '@tanstack/react-query'
 import { Outlet } from 'react-router'
 import { keys } from '../api/keys'
 import { getMe } from '../api/me'
-import { NetworkError } from '../api/client'
+import { ApiError, NetworkError } from '../api/client'
 import SinConexion from '../components/SinConexion'
+import ErrorGenerico from '../components/ErrorGenerico'
 
 export default function GatedLayout() {
   const { data, isPending, isError, error } = useQuery({ queryKey: keys.me(), queryFn: getMe })
@@ -28,7 +31,14 @@ export default function GatedLayout() {
         </main>
       )
     }
-    return null
+    if (error instanceof ApiError && error.status === 401) return null
+    return (
+      <main className="pantalla">
+        <div className="cuerpo">
+          <ErrorGenerico />
+        </div>
+      </main>
+    )
   }
   if (data === undefined) return null
   return <Outlet context={data} />

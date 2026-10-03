@@ -10,7 +10,9 @@
  * `tsc` here, not silently at runtime. An unknown, used or expired invitation
  * (`account.invitation_not_usable`, kind `gone`) shows the fixed "Esta invitación ya
  * no sirve" instead of the generic gone notice — it is not a record someone deleted,
- * it is the invitation itself.
+ * it is the invitation itself. A server error (`api/client.ts`'s `'unknown'`
+ * sentinel for a body with no recognised `code`, a 500 above all) shows the generic
+ * retry on both the lookup and accepting, never a refusal.
  */
 
 import { type FormEvent, useEffect, useState } from 'react'
@@ -20,12 +22,14 @@ import { ApiError, NetworkError } from '../api/client'
 import { kindOf, isGone, resolveOverride, type RefusalCode } from '../api/refusals'
 import { acceptInvitation, openInvitation, type InvitationView } from '../session'
 import SinConexion from '../components/SinConexion'
+import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import { formatDateShort } from '../format/dates'
 
 export const NOT_USABLE_TITLE = 'Esta invitación ya no sirve'
 export const NOT_USABLE_DETAIL =
   'Venció o alguien la usó antes. Pedile al negocio que te manden una nueva.'
 export const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
+export { ERROR_GENERICO_MENSAJE as RETRY_MESSAGE }
 export const EMAIL_TAKEN_MESSAGE = 'Ya hay una cuenta con ese email'
 export const WEAK_PASSWORD_MESSAGE = 'La contraseña tiene que tener al menos 10 caracteres'
 export const EMAIL_INVALID_MESSAGE = 'Ingresá un email válido'
@@ -99,15 +103,15 @@ export default function Invitacion() {
           setStatus('not_usable')
         } else if (action?.kind === 'inline') {
           setError(action.message)
-        } else if (kindOf(caught.code) === 'refusal') {
+        } else if (caught.code !== 'unknown' && kindOf(caught.code) === 'refusal') {
           setError(GENERIC_REFUSAL_MESSAGE)
         } else {
-          setStatus('not_usable')
+          setError(ERROR_GENERICO_MENSAJE)
         }
       } else if (caught instanceof NetworkError) {
         setStatus('offline')
       } else {
-        setError(GENERIC_REFUSAL_MESSAGE)
+        setError(ERROR_GENERICO_MENSAJE)
       }
     } finally {
       setSending(false)
@@ -143,9 +147,7 @@ export default function Invitacion() {
     return (
       <main className="pantalla">
         <div className="cuerpo">
-          <div className="aviso-ambar">
-            <span className="aviso-ambar__titulo">{GENERIC_REFUSAL_MESSAGE}</span>
-          </div>
+          <ErrorGenerico />
         </div>
       </main>
     )

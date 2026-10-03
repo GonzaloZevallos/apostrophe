@@ -36,4 +36,10 @@ function onError(error: unknown): void {
 export const queryClient: QueryClient = new QueryClient({
   queryCache: new QueryCache({ onError }),
   mutationCache: new MutationCache({ onError }),
+  // No silent background retry: the product's own retry is explicit — the offline
+  // banner's "reintentamos solos cuando vuelva" fires on the browser's own `online`
+  // event (`useOnline.ts`), not a hidden exponential backoff. Without this, a gated
+  // query's error state (`GatedLayout`'s "Sin conexión"/generic retry) would only
+  // appear after react-query's default few seconds of retries.
+  defaultOptions: { queries: { retry: false } },
 })

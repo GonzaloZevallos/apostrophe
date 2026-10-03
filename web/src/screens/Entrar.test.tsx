@@ -9,7 +9,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
-import Entrar, { BRAKE_MESSAGE, CREDENTIALS_WRONG, LOGIN_HINT } from './Entrar'
+import Entrar, { BRAKE_MESSAGE, CREDENTIALS_WRONG, LOGIN_HINT, RETRY_MESSAGE } from './Entrar'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -66,6 +66,17 @@ test('the lock shows the brake message in place of the fixed hint', async () => 
 
   expect(await screen.findByText(BRAKE_MESSAGE)).toBeInTheDocument()
   expect(screen.queryByText(LOGIN_HINT)).not.toBeInTheDocument()
+})
+
+test('a server error shows the generic retry, never a refusal that blames the input', async () => {
+  vi.mocked(fetch).mockResolvedValue(new Response('internal error', { status: 500 }))
+  renderEntrar(new QueryClient())
+
+  await userEvent.type(screen.getByLabelText('Email'), 'ana@x.com')
+  await userEvent.type(screen.getByLabelText('Contraseña'), 'secreta123')
+  await userEvent.click(screen.getByRole('button', { name: 'Entrá' }))
+
+  expect(await screen.findByRole('alert')).toHaveTextContent(RETRY_MESSAGE)
 })
 
 test('a successful login clears the whole cache before landing on Inicio', async () => {

@@ -17,7 +17,9 @@ test('shows exactly Gastos, Variedades and Negocio', () => {
 
   const nav = screen.getByRole('navigation', { name: 'Más' })
   expect(nav).toHaveTextContent('Gastos')
+  expect(nav).toHaveTextContent('Por mes y por categoría')
   expect(nav).toHaveTextContent('Variedades')
+  expect(nav).toHaveTextContent('Precios y avisos de stock bajo')
   expect(nav).toHaveTextContent('Negocio')
   expect(nav).not.toHaveTextContent('Análisis')
   expect(nav).not.toHaveTextContent('Catálogo')

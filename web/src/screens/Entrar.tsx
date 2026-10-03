@@ -6,7 +6,9 @@
  * answers plain 401 (no `code` of its own), shown inline without naming which one was
  * wrong. Every other refusal is dispatched through `refusals.ts` — never a raw
  * `caught.code === '…'` comparison — so a renamed or misspelt code fails `tsc` here,
- * not silently at runtime.
+ * not silently at runtime. A server error (`api/client.ts`'s `'unknown'` sentinel for
+ * a body with no recognised `code`, a 500 above all) shows the generic retry, never a
+ * refusal — a refusal would blame what the user typed.
  */
 
 import { type FormEvent, useState } from 'react'
@@ -16,11 +18,13 @@ import { ApiError, NetworkError } from '../api/client'
 import { kindOf, resolveOverride, type RefusalCode } from '../api/refusals'
 import { login } from '../session'
 import SinConexion from '../components/SinConexion'
+import { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 
 export const CREDENTIALS_WRONG = 'Email o contraseña incorrectos'
 export const BRAKE_MESSAGE = '5 intentos fallidos · probá de nuevo en 15 minutos'
 export const LOGIN_HINT = 'Después de 5 intentos fallidos, el email queda bloqueado 15 minutos'
 export const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
+export { ERROR_GENERICO_MENSAJE as RETRY_MESSAGE }
 
 const LOGIN_OVERRIDES: Partial<Record<RefusalCode, 'locked'>> = {
   'account.login_locked': 'locked',
@@ -49,12 +53,12 @@ export default function Entrar() {
         setError(CREDENTIALS_WRONG)
       } else if (caught instanceof ApiError && resolveOverride(LOGIN_OVERRIDES, caught.code) === 'locked') {
         setLocked(true)
-      } else if (caught instanceof ApiError && kindOf(caught.code) === 'refusal') {
+      } else if (caught instanceof ApiError && caught.code !== 'unknown' && kindOf(caught.code) === 'refusal') {
         setError(GENERIC_REFUSAL_MESSAGE)
       } else if (caught instanceof NetworkError) {
         setOffline(true)
       } else {
-        setError(GENERIC_REFUSAL_MESSAGE)
+        setError(ERROR_GENERICO_MENSAJE)
       }
     } finally {
       setSending(false)
