@@ -77,12 +77,32 @@ const CATALOG = {
   ],
 }
 
+// Every test but the ones that build `withPinnedCatalog` explicitly leaves the bot
+// section's own fetch (`GET /pinned-catalog`) unmocked: this fallback answers it with
+// "nothing saved yet" so the catalog-only tests above don't have to know the bot
+// section exists, the same way they never had to mock `/catalog/varieties` twice.
+const DEFAULT_PINNED_CATALOG = {
+  token_saved_on: null,
+  own_chat: null,
+  channel_chat: null,
+  can_publish: false,
+  status: null,
+}
+
+function defaultResponse(url: string): Response {
+  return jsonResponse(200, url === '/pinned-catalog' ? DEFAULT_PINNED_CATALOG : CATALOG)
+}
+
 test('Copiar is not rendered until the open fetch has resolved', async () => {
   let resolveFetch: (value: Response) => void = () => {}
   const pending = new Promise<Response>((resolve) => {
     resolveFetch = resolve
   })
-  renderCatalogo(vi.fn().mockReturnValue(pending))
+  renderCatalogo(
+    vi.fn((url: string) =>
+      url === '/pinned-catalog' ? Promise.resolve(jsonResponse(200, DEFAULT_PINNED_CATALOG)) : pending,
+    ),
+  )
 
   expect(screen.queryByRole('button', { name: 'Copiar' })).not.toBeInTheDocument()
 
@@ -91,7 +111,7 @@ test('Copiar is not rendered until the open fetch has resolved', async () => {
 })
 
 test('the preview reads bold where ** pairs sit, with the markers hidden', async () => {
-  renderCatalogo(vi.fn().mockResolvedValue(jsonResponse(200, CATALOG)))
+  renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
 
   await screen.findByRole('button', { name: 'Copiar' })
   const preview = document.querySelector('.catalogo__vista-previa') as HTMLElement
@@ -101,27 +121,38 @@ test('the preview reads bold where ** pairs sit, with the markers hidden', async
 })
 
 test('shows the empty state and no Copiar when nothing qualifies', async () => {
-  renderCatalogo(vi.fn().mockResolvedValue(jsonResponse(200, { ...CATALOG, text: null })))
+  renderCatalogo(
+    vi.fn((url: string) =>
+      Promise.resolve(
+        url === '/pinned-catalog'
+          ? jsonResponse(200, DEFAULT_PINNED_CATALOG)
+          : jsonResponse(200, { ...CATALOG, text: null }),
+      ),
+    ),
+  )
 
   expect(await screen.findByText('No hay nada en el catálogo hoy')).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Copiar' })).not.toBeInTheDocument()
 })
 
 test('every variety is told in or out by word, never only by color', async () => {
-  renderCatalogo(vi.fn().mockResolvedValue(jsonResponse(200, CATALOG)))
+  renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
 
   expect(await screen.findByText('Sale')).toBeInTheDocument()
   expect(await screen.findByText('Oculta')).toBeInTheDocument()
 })
 
+function catalogFetch(catalog: unknown): ReturnType<typeof vi.fn> {
+  return vi.fn((url: string) =>
+    Promise.resolve(
+      url === '/pinned-catalog' ? jsonResponse(200, DEFAULT_PINNED_CATALOG) : jsonResponse(200, catalog),
+    ),
+  )
+}
+
 test('a variety with no price today reads "No sale: sin precio hoy"', async () => {
   renderCatalogo(
-    vi.fn().mockResolvedValue(
-      jsonResponse(200, {
-        ...CATALOG,
-        varieties: [{ ...CATALOG.varieties[0], state: 'no_price' }],
-      }),
-    ),
+    catalogFetch({ ...CATALOG, varieties: [{ ...CATALOG.varieties[0], state: 'no_price' }] }),
   )
 
   expect(await screen.findByText('No sale: sin precio hoy')).toBeInTheDocument()
@@ -129,12 +160,7 @@ test('a variety with no price today reads "No sale: sin precio hoy"', async () =
 
 test('a sold-out variety reads "No sale: está agotada"', async () => {
   renderCatalogo(
-    vi.fn().mockResolvedValue(
-      jsonResponse(200, {
-        ...CATALOG,
-        varieties: [{ ...CATALOG.varieties[0], state: 'sold_out' }],
-      }),
-    ),
+    catalogFetch({ ...CATALOG, varieties: [{ ...CATALOG.varieties[0], state: 'sold_out' }] }),
   )
 
   expect(await screen.findByText('No sale: está agotada')).toBeInTheDocument()
@@ -142,19 +168,14 @@ test('a sold-out variety reads "No sale: está agotada"', async () => {
 
 test('a variety with no stock entries reads "No sale: sin entradas"', async () => {
   renderCatalogo(
-    vi.fn().mockResolvedValue(
-      jsonResponse(200, {
-        ...CATALOG,
-        varieties: [{ ...CATALOG.varieties[0], state: 'no_entries' }],
-      }),
-    ),
+    catalogFetch({ ...CATALOG, varieties: [{ ...CATALOG.varieties[0], state: 'no_entries' }] }),
   )
 
   expect(await screen.findByText('No sale: sin entradas')).toBeInTheDocument()
 })
 
 test('Copiar copies the raw API text through copyText and shows the toast', async () => {
-  renderCatalogo(vi.fn().mockResolvedValue(jsonResponse(200, CATALOG)))
+  renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
 
   await userEvent.click(await screen.findByRole('button', { name: 'Copiar' }))
 
@@ -164,7 +185,7 @@ test('Copiar copies the raw API text through copyText and shows the toast', asyn
 
 test('a failed copy shows the fixed message and no toast', async () => {
   vi.mocked(clipboard.copyText).mockResolvedValueOnce(false)
-  renderCatalogo(vi.fn().mockResolvedValue(jsonResponse(200, CATALOG)))
+  renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
 
   await userEvent.click(await screen.findByRole('button', { name: 'Copiar' }))
 
@@ -185,7 +206,7 @@ test('editing a variety saves its attributes and shows the saved toast', async (
         }),
       )
     }
-    return Promise.resolve(jsonResponse(200, CATALOG))
+    return Promise.resolve(defaultResponse(url))
   })
   renderCatalogo(fetchMock)
 
@@ -205,13 +226,13 @@ test('editing a variety saves its attributes and shows the saved toast', async (
 })
 
 test('an invalid indica share keeps what was typed and shows the inline refusal', async () => {
-  const fetchMock = vi.fn((_url: string, init?: RequestInit) => {
+  const fetchMock = vi.fn((url: string, init?: RequestInit) => {
     if (init?.method === 'PUT') {
       return Promise.resolve(
         jsonResponse(422, { detail: 'invalid', code: 'catalog.indica_share_invalid' }),
       )
     }
-    return Promise.resolve(jsonResponse(200, CATALOG))
+    return Promise.resolve(defaultResponse(url))
   })
   renderCatalogo(fetchMock)
 
@@ -226,13 +247,13 @@ test('an invalid indica share keeps what was typed and shows the inline refusal'
 })
 
 test('a gone variety shows "Eso ya no está." instead of a toast', async () => {
-  const fetchMock = vi.fn((_url: string, init?: RequestInit) => {
+  const fetchMock = vi.fn((url: string, init?: RequestInit) => {
     if (init?.method === 'PUT') {
       return Promise.resolve(
         jsonResponse(404, { detail: 'gone', code: 'catalog.variety_not_found' }),
       )
     }
-    return Promise.resolve(jsonResponse(200, CATALOG))
+    return Promise.resolve(defaultResponse(url))
   })
   renderCatalogo(fetchMock)
 
@@ -250,7 +271,7 @@ test('editing the header and footer saves and shows the new values', async () =>
         jsonResponse(200, { ...CATALOG, header: 'Nuevo encabezado', footer: 'Nuevo pie' }),
       )
     }
-    return Promise.resolve(jsonResponse(200, CATALOG))
+    return Promise.resolve(defaultResponse(url))
   })
   renderCatalogo(fetchMock)
 
@@ -268,8 +289,162 @@ test('editing the header and footer saves and shows the new values', async () =>
   expect(await screen.findByText('Nuevo pie')).toBeInTheDocument()
 })
 
+const PINNED_CATALOG = {
+  token_saved_on: '2026-08-12',
+  own_chat: '123456789',
+  channel_chat: '@mi_canal',
+  can_publish: true,
+  status: { state: 'up_to_date', reason: null, last_published_on: '2026-09-29' },
+}
+
+function withPinnedCatalog(
+  pinned: unknown,
+  overrides?: (url: string, init?: RequestInit) => Response | undefined,
+) {
+  return vi.fn((url: string, init?: RequestInit) => {
+    const override = overrides?.(url, init)
+    if (override !== undefined) return Promise.resolve(override)
+    if (url === '/pinned-catalog') return Promise.resolve(jsonResponse(200, pinned))
+    return Promise.resolve(defaultResponse(url))
+  })
+}
+
+test('the bot section shows the masked token and the saved chats', async () => {
+  renderCatalogo(withPinnedCatalog(PINNED_CATALOG))
+
+  expect(await screen.findByText('Guardado el 12/08 · no se muestra más')).toBeInTheDocument()
+  expect(screen.getByLabelText('Tu chat', { exact: false })).toHaveValue('123456789')
+  expect(screen.getByLabelText('Chat del canal', { exact: false })).toHaveValue('@mi_canal')
+  expect(await screen.findByText('Al día')).toBeInTheDocument()
+  expect(screen.getByText(/El último fue el 29\/09/)).toBeInTheDocument()
+})
+
+test('Desactualizado reads its fixed reason, never only by color', async () => {
+  renderCatalogo(
+    withPinnedCatalog({
+      ...PINNED_CATALOG,
+      status: { state: 'out_of_date', reason: 'telegram_unreachable', last_published_on: '2026-09-29' },
+    }),
+  )
+
+  expect(await screen.findByText('Desactualizado')).toBeInTheDocument()
+  expect(screen.getByText(/Telegram no respondió/)).toBeInTheDocument()
+})
+
+test('Cambiar opens an empty token field; the token is never prefilled', async () => {
+  renderCatalogo(withPinnedCatalog(PINNED_CATALOG))
+
+  await screen.findByText('Guardado el 12/08 · no se muestra más')
+  await userEvent.click(screen.getByRole('button', { name: 'Cambiar' }))
+
+  const tokenInput = screen.getByLabelText('Token')
+  expect(tokenInput).toHaveValue('')
+})
+
+test('Publicar is disabled with the fixed reason when can_publish is false', async () => {
+  renderCatalogo(withPinnedCatalog({ ...PINNED_CATALOG, can_publish: false, channel_chat: null }))
+
+  await screen.findByLabelText('Tu chat', { exact: false })
+  expect(screen.getByRole('button', { name: 'Publicar' })).toBeDisabled()
+  expect(screen.getByText('Probalo primero para ver cómo queda')).toBeInTheDocument()
+})
+
+test('editing a saved chat re-arms the gate and disables Publicar again', async () => {
+  renderCatalogo(withPinnedCatalog(PINNED_CATALOG))
+
+  const channelInput = await screen.findByLabelText('Chat del canal', { exact: false })
+  expect(screen.getByRole('button', { name: 'Publicar' })).not.toBeDisabled()
+
+  await userEvent.clear(channelInput)
+  await userEvent.type(channelInput, '@otro_canal')
+
+  expect(screen.getByRole('button', { name: 'Publicar' })).toBeDisabled()
+})
+
+test('Probarlo on success saves the typed values, shows the toast, re-enables Publicar', async () => {
+  const fetchMock = withPinnedCatalog(
+    { ...PINNED_CATALOG, can_publish: false, channel_chat: null },
+    (url, init) => {
+      if (url === '/pinned-catalog/test' && init?.method === 'POST') {
+        return jsonResponse(200, {
+          ...PINNED_CATALOG,
+          channel_chat: null,
+          can_publish: false,
+          status: null,
+          previous_pin_left: false,
+        })
+      }
+      return undefined
+    },
+  )
+  renderCatalogo(fetchMock)
+
+  await screen.findByLabelText('Tu chat', { exact: false })
+  await userEvent.click(screen.getByRole('button', { name: 'Probarlo' }))
+
+  expect(await screen.findByText('Prueba enviada')).toBeInTheDocument()
+  const call = fetchMock.mock.calls.find(([, init]) => init?.method === 'POST')
+  expect(JSON.parse(call?.[1]?.body as string)).toEqual({
+    token: null,
+    own_chat: '123456789',
+    channel_chat: null,
+  })
+})
+
+test('a failed Probarlo keeps everything typed and shows a fixed reason', async () => {
+  const fetchMock = withPinnedCatalog(PINNED_CATALOG, (url, init) => {
+    if (url === '/pinned-catalog/test' && init?.method === 'POST') {
+      return jsonResponse(422, { detail: 'refused', code: 'pinned_catalog.telegram_unreachable' })
+    }
+    return undefined
+  })
+  renderCatalogo(fetchMock)
+
+  const channelInput = await screen.findByLabelText('Chat del canal', { exact: false })
+  await userEvent.clear(channelInput)
+  await userEvent.type(channelInput, '@probando')
+  await userEvent.click(screen.getByRole('button', { name: 'Probarlo' }))
+
+  expect(await screen.findByRole('alert')).toHaveTextContent('Telegram no respondió')
+  expect(channelInput).toHaveValue('@probando')
+})
+
+test('previous_pin_left shows the fixed notice after a successful test', async () => {
+  const fetchMock = withPinnedCatalog(PINNED_CATALOG, (url, init) => {
+    if (url === '/pinned-catalog/test' && init?.method === 'POST') {
+      return jsonResponse(200, { ...PINNED_CATALOG, previous_pin_left: true })
+    }
+    return undefined
+  })
+  renderCatalogo(fetchMock)
+
+  await screen.findByLabelText('Tu chat', { exact: false })
+  await userEvent.click(screen.getByRole('button', { name: 'Probarlo' }))
+
+  expect(
+    await screen.findByText(
+      'El mensaje fijado anterior queda como está; desfijalo vos en Telegram.',
+    ),
+  ).toBeInTheDocument()
+})
+
+test('Publicar on success shows the toast and a failed Publicar shows its fixed reason', async () => {
+  const fetchMock = withPinnedCatalog(PINNED_CATALOG, (url, init) => {
+    if (url === '/pinned-catalog/publish' && init?.method === 'POST') {
+      return jsonResponse(422, { detail: 'refused', code: 'pinned_catalog.bot_cannot_post' })
+    }
+    return undefined
+  })
+  renderCatalogo(fetchMock)
+
+  await screen.findByLabelText('Tu chat', { exact: false })
+  await userEvent.click(screen.getByRole('button', { name: 'Publicar' }))
+
+  expect(await screen.findByRole('alert')).toHaveTextContent('El bot no puede publicar en el canal')
+})
+
 test('a catalog input never carries maxLength', async () => {
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(200, CATALOG)))
+  vi.stubGlobal('fetch', vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
   const queryClient = new QueryClient()
   const { container } = render(
     <QueryClientProvider client={queryClient}>

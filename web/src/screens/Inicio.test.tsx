@@ -9,7 +9,7 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import type { Me } from '../api/me'
-import Inicio, { EMPTY_TITLE } from './Inicio'
+import Inicio, { EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE } from './Inicio'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -24,8 +24,17 @@ function Provide() {
   return <Outlet context={ME} />
 }
 
-function renderInicio(varieties: Array<{ current_price: unknown }>) {
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(200, varieties)))
+function renderInicio(
+  varieties: Array<{ current_price: unknown }>,
+  pinnedCatalogStatus: unknown = { status: null },
+) {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((url: string) => {
+      if (url === '/pinned-catalog/status') return Promise.resolve(jsonResponse(200, pinnedCatalogStatus))
+      return Promise.resolve(jsonResponse(200, varieties))
+    }),
+  )
   render(
     <QueryClientProvider client={new QueryClient()}>
       <MemoryRouter initialEntries={['/']}>
@@ -66,4 +75,29 @@ test('does not show the empty state once a variety has a price today', async () 
 
   await screen.findByText('La Huerta')
   expect(screen.queryByText(EMPTY_TITLE)).not.toBeInTheDocument()
+})
+
+test('shows the fixed pinned-catalog notice while the pin is out of date', async () => {
+  renderInicio([{ current_price: { id: 1 } }], {
+    status: { state: 'out_of_date', reason: 'telegram_unreachable', last_published_on: '2026-09-29' },
+  })
+
+  const notice = await screen.findByText(PINNED_CATALOG_OUT_OF_DATE)
+  expect(notice.closest('a')).toHaveAttribute('href', '/catalogo')
+})
+
+test('shows no pinned-catalog line before the first Publicar', async () => {
+  renderInicio([{ current_price: { id: 1 } }], { status: null })
+
+  await screen.findByText('La Huerta')
+  expect(screen.queryByText(PINNED_CATALOG_OUT_OF_DATE)).not.toBeInTheDocument()
+})
+
+test('shows no pinned-catalog line while the pin is up to date', async () => {
+  renderInicio([{ current_price: { id: 1 } }], {
+    status: { state: 'up_to_date', reason: null, last_published_on: '2026-09-29' },
+  })
+
+  await screen.findByText('La Huerta')
+  expect(screen.queryByText(PINNED_CATALOG_OUT_OF_DATE)).not.toBeInTheDocument()
 })
