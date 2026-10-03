@@ -216,6 +216,16 @@ The catalog sent only to the user's own Telegram chat, using the bot settings ty
 _Avoid_: preview, draft
 _In the app_: Enviarme una prueba
 
+**Upkeep**:
+The automatic edit of the pinned catalog after a change that may affect its text, or at the start of a new Argentina day. It only ever edits; it never posts or pins. _In the app_: no word of its own.
+_Avoid_: sync, auto-publish, refresh
+_In the app_: no word of its own
+
+**Last published text**:
+The source text (markers included) last sent to the pinned message of the current bot and channel chat. _In the app_: no word of its own.
+_Avoid_: cache, last snapshot
+_In the app_: no word of its own
+
 ## Language
 
 **Stock status**:
