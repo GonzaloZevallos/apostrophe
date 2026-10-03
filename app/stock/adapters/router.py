@@ -9,10 +9,14 @@ from app.clock import Clock, get_clock, get_today
 from app.db import get_session
 from app.http_errors import TranslateErrors
 from app.shared.grams import Grams, InvalidGrams
-from app.stock.adapters.schemas import EntryIn, EntryOut
+from app.stock.adapters.schemas import EntryIn, EntryOut, StockOut, ThresholdIn, VarietyStockOut
+from app.stock.adapters.sql_draws import SqlDraws
 from app.stock.adapters.sql_stock_entries import SqlStockEntries
+from app.stock.adapters.sql_thresholds import SqlThresholds
 from app.stock.adapters.variety_catalog import SqlVarietyCatalog
 from app.stock.application import manage_entries
+from app.stock.application import read_stock as read_stock_uc
+from app.stock.application import set_threshold as set_threshold_uc
 from app.stock.application.errors import VarietyNotFound as _UnknownVariety
 from app.stock.domain.errors import (
     EntryCostInvalid,
@@ -28,6 +32,7 @@ from app.varieties.application.errors import VarietyNotFound
 
 router = APIRouter(prefix="/stock", tags=["stock"])
 entries_router = APIRouter(prefix="/entries")
+varieties_router = APIRouter(prefix="/varieties")
 
 SessionDep = Annotated[Session, Depends(get_session)]
 TodayDep = Annotated[date, Depends(get_today)]
@@ -42,8 +47,18 @@ def get_catalog(session: SessionDep, business_id: CurrentBusinessId) -> SqlVarie
     return SqlVarietyCatalog(session, business_id)
 
 
+def get_draws(session: SessionDep, business_id: CurrentBusinessId) -> SqlDraws:
+    return SqlDraws(session, business_id)
+
+
+def get_thresholds(session: SessionDep, business_id: CurrentBusinessId) -> SqlThresholds:
+    return SqlThresholds(session, business_id)
+
+
 EntriesDep = Annotated[SqlStockEntries, Depends(get_entries)]
 CatalogDep = Annotated[SqlVarietyCatalog, Depends(get_catalog)]
+DrawsDep = Annotated[SqlDraws, Depends(get_draws)]
+ThresholdsDep = Annotated[SqlThresholds, Depends(get_thresholds)]
 
 as_http = TranslateErrors(
     [
@@ -144,4 +159,39 @@ def delete_entry(stock_entry_id: int, entries: EntriesDep, session: SessionDep) 
         manage_entries.delete_entry(entries, session, stock_entry_id)
 
 
+@router.get("")
+def get_stock(
+    entries: EntriesDep,
+    draws: DrawsDep,
+    catalog: CatalogDep,
+    thresholds: ThresholdsDep,
+    today: TodayDep,
+) -> StockOut:
+    view = read_stock_uc.read_stock(entries, draws, catalog, thresholds, today)
+    return StockOut.of(view)
+
+
+@varieties_router.put("/{variety_id}/threshold")
+def set_threshold(
+    variety_id: int,
+    body: ThresholdIn,
+    entries: EntriesDep,
+    draws: DrawsDep,
+    catalog: CatalogDep,
+    thresholds: ThresholdsDep,
+    session: SessionDep,
+    today: TodayDep,
+) -> VarietyStockOut:
+    with as_http:
+        grams = Grams.of(body.grams) if body.grams is not None else None
+        try:
+            view = set_threshold_uc.set_threshold(
+                entries, draws, thresholds, catalog, session, variety_id, grams, today
+            )
+        except _UnknownVariety as exc:
+            raise _or_variety_not_found(exc, variety_id) from exc
+        return VarietyStockOut.of(view)
+
+
 router.include_router(entries_router)
+router.include_router(varieties_router)

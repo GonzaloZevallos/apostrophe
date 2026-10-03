@@ -10,6 +10,7 @@ from typing import Literal
 
 from pydantic import BaseModel
 
+from app.stock.application.read_stock import StockView, VarietyStock
 from app.stock.domain.costing import cost_per_gram
 from app.stock.domain.entry import Origin, StockEntry
 from app.varieties.adapters.schemas import GramsOut
@@ -83,6 +84,18 @@ class VarietyStockOut(BaseModel):
     threshold: GramsOut | None
     days_left: int | None
 
+    @classmethod
+    def of(cls, view: VarietyStock) -> "VarietyStockOut":
+        level = view.level
+        return cls(
+            variety_id=view.variety_id,
+            grams=level.grams.as_decimal(),
+            status=level.status,
+            sold_out_since=level.sold_out_since,
+            threshold=view.threshold.grams.as_decimal() if view.threshold is not None else None,
+            days_left=level.days_left,
+        )
+
 
 class StockOut(BaseModel):
     """`GET /stock`'s own shape: the business's total grams, every variety's own row,
@@ -91,3 +104,11 @@ class StockOut(BaseModel):
     total: GramsOut
     varieties: list[VarietyStockOut]
     entries: list[EntryOut]
+
+    @classmethod
+    def of(cls, view: StockView) -> "StockOut":
+        return cls(
+            total=view.total.as_decimal(),
+            varieties=[VarietyStockOut.of(variety) for variety in view.varieties],
+            entries=[EntryOut.of(entry) for entry in view.entries],
+        )
