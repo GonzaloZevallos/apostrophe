@@ -4,6 +4,12 @@
  * plan, invariants), never a preview; Deshacer only shows up right after a save,
  * through `feedback.ts`'s closed set, and clears itself from history state once
  * read (plan, invariants).
+ *
+ * The sale `GET /sales/{id}` answers with is `fixtures/sale-detail.json` itself
+ * (plan, "Fixtures": the front's `fetch` fakes import the same files the backend
+ * checks its real answers against), with per-test overrides only where a test's
+ * own point needs a field the fixture's one example does not carry (a note, a
+ * VIP customer, no customer at all).
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -11,6 +17,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
+import SALE from '../../api/fixtures/sale-detail.json'
 import { readFeedback, saleJustSaved } from '../../components/feedback'
 import VentaDetalle from './VentaDetalle'
 
@@ -35,36 +42,14 @@ function jsonResponse(status: number, body: unknown): Response {
   })
 }
 
-const SALE = {
-  id: 7,
-  date: '2026-10-03',
-  customer: { id: 5, name: 'Nico', vip: true },
-  shipping_charged: 500,
-  note: 'Entregar a la tarde',
-  payment: 'cash',
-  total: 6500,
-  lines: [
-    {
-      variety_id: 1,
-      variety_name: 'Blue Dream',
-      grams: 5,
-      pricing_rule: 'list',
-      price_per_gram: 1200,
-      line_total: 6000,
-      cost: { costed: 2500, pending_grams: 0 },
-    },
-  ],
-  total_grams: 5,
-}
-
 /** `DELETE /sales/{id}`'s own answer (ADR-0009): the grams the sale gave back. */
-const DELETED = { returned: [{ variety_id: 1, grams: 5 }] }
+const DELETED = { returned: [{ variety_id: 2, grams: 3.5 }] }
 
 function renderDetalle(initialState?: unknown) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[{ pathname: '/ventas/7', state: initialState }]}>
+      <MemoryRouter initialEntries={[{ pathname: '/ventas/10', state: initialState }]}>
         <Routes>
           <Route path="/ventas" element={<VentasProbe />} />
           <Route path="/ventas/:id" element={<VentaDetalle />} />
@@ -83,19 +68,30 @@ afterEach(() => {
 })
 
 test('shows the total, each line with its rule badge, shipping, note, payment and customer, all from the API', async () => {
-  vi.mocked(fetch).mockResolvedValue(jsonResponse(200, SALE))
+  // The fixture's one example owes and carries no note and no VIP customer: this
+  // test's own point is that every one of these fields renders, so it overrides
+  // just those three, keeping everything else — id, lines, total_grams — as the
+  // real answer's shape.
+  vi.mocked(fetch).mockResolvedValue(
+    jsonResponse(200, {
+      ...SALE,
+      note: 'Entregar a la tarde',
+      payment: 'cash',
+      customer: { ...SALE.customer, vip: true },
+    }),
+  )
   renderDetalle()
 
-  expect(await screen.findByText('$ 6.500')).toBeInTheDocument()
-  expect(screen.getByText('Blue Dream')).toBeInTheDocument()
+  expect(await screen.findByText('$ 11.000')).toBeInTheDocument()
+  expect(screen.getByText('Flor A')).toBeInTheDocument()
   expect(screen.getByText('Lista')).toBeInTheDocument()
-  expect(screen.getByText('5 g')).toBeInTheDocument()
-  expect(screen.getByText('$ 1.200/g')).toBeInTheDocument()
-  expect(screen.getByText('$ 6.000')).toBeInTheDocument()
+  expect(screen.getByText('3,5 g')).toBeInTheDocument()
+  expect(screen.getByText('$ 3.000/g')).toBeInTheDocument()
+  expect(screen.getByText('$ 10.500')).toBeInTheDocument()
   expect(screen.getByText('$ 500')).toBeInTheDocument()
   expect(screen.getByText('Entregar a la tarde')).toBeInTheDocument()
   expect(screen.getByText('Efectivo')).toBeInTheDocument()
-  expect(screen.getByText('Nico')).toBeInTheDocument()
+  expect(screen.getByText('Ana Pérez')).toBeInTheDocument()
   expect(screen.getByText('VIP')).toBeInTheDocument()
 })
 
@@ -117,59 +113,65 @@ test('a gone sale shows the plain gone-detail state, never the generic retry', a
   expect(screen.getByRole('link', { name: 'Volver a Ventas' })).toHaveAttribute('href', '/ventas')
 })
 
-test('Borrar venta asks "Antes de borrar" naming the date and the amount, then deletes and returns to Ventas', async () => {
+test('Borrar venta asks "Antes de borrar" naming the date, the amount and the grams, then deletes, returns to Ventas and names the grams again', async () => {
   vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(200, SALE))
   vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(200, DELETED))
   renderDetalle()
-  await screen.findByText('$ 6.500')
+  await screen.findByText('$ 11.000')
 
   await userEvent.click(screen.getByRole('button', { name: 'Borrar venta' }))
   expect(
-    screen.getByText('¿Borrás la venta de $ 6.500 del 03/10? Vuelven 5 g al stock.'),
+    screen.getByText('¿Borrás la venta de $ 11.000 del 14/09? Vuelven 3,5 g al stock.'),
   ).toBeInTheDocument()
 
   await userEvent.click(screen.getByRole('button', { name: 'Sí, borrala' }))
 
   await waitFor(() =>
-    expect(fetch).toHaveBeenCalledWith('/sales/7', expect.objectContaining({ method: 'DELETE' })),
+    expect(fetch).toHaveBeenCalledWith('/sales/10', expect.objectContaining({ method: 'DELETE' })),
   )
   expect(await screen.findByText('lista de ventas')).toBeInTheDocument()
+  expect(
+    screen.getByText('Venta eliminada · los gramos vuelven al stock'),
+  ).toBeInTheDocument()
 })
 
 test('cancelling the delete confirmation keeps the sale', async () => {
   vi.mocked(fetch).mockResolvedValue(jsonResponse(200, SALE))
   renderDetalle()
-  await screen.findByText('$ 6.500')
+  await screen.findByText('$ 11.000')
 
   await userEvent.click(screen.getByRole('button', { name: 'Borrar venta' }))
   await userEvent.click(screen.getByRole('button', { name: 'No, dejala' }))
 
   expect(
-    screen.queryByText('¿Borrás la venta de $ 6.500 del 03/10? Vuelven 5 g al stock.'),
+    screen.queryByText('¿Borrás la venta de $ 11.000 del 14/09? Vuelven 3,5 g al stock.'),
   ).not.toBeInTheDocument()
   expect(fetch).toHaveBeenCalledTimes(1)
 })
 
-test('right after a save, "Venta guardada" shows with Deshacer, which deletes the sale named by the route\'s own id with no confirmation', async () => {
+test('right after a save, "Venta guardada" shows with Deshacer, which deletes the sale named by the route\'s own id with no confirmation and names the grams back on arrival', async () => {
   vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(200, SALE))
   vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(200, DELETED))
   renderDetalle(saleJustSaved())
-  await screen.findByText('$ 6.500')
+  await screen.findByText('$ 11.000')
 
   expect(screen.getByText('Venta guardada')).toBeInTheDocument()
 
   await userEvent.click(screen.getByRole('button', { name: 'Deshacer' }))
 
   await waitFor(() =>
-    expect(fetch).toHaveBeenCalledWith('/sales/7', expect.objectContaining({ method: 'DELETE' })),
+    expect(fetch).toHaveBeenCalledWith('/sales/10', expect.objectContaining({ method: 'DELETE' })),
   )
   expect(await screen.findByText('lista de ventas')).toBeInTheDocument()
+  expect(
+    screen.getByText('Venta eliminada · los gramos vuelven al stock'),
+  ).toBeInTheDocument()
 })
 
 test('opening the detail without the just-saved marker never shows Deshacer', async () => {
   vi.mocked(fetch).mockResolvedValue(jsonResponse(200, SALE))
   renderDetalle()
-  await screen.findByText('$ 6.500')
+  await screen.findByText('$ 11.000')
 
   expect(screen.queryByText('Venta guardada')).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Deshacer' })).not.toBeInTheDocument()
@@ -179,7 +181,7 @@ test('a sale already gone when deleted shows the gone notice and returns to Vent
   vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(200, SALE))
   vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(404, { code: 'sale.not_found' }))
   renderDetalle()
-  await screen.findByText('$ 6.500')
+  await screen.findByText('$ 11.000')
 
   await userEvent.click(screen.getByRole('button', { name: 'Borrar venta' }))
   await userEvent.click(screen.getByRole('button', { name: 'Sí, borrala' }))
@@ -190,12 +192,13 @@ test('a sale already gone when deleted shows the gone notice and returns to Vent
 test('a sale with a customer already never shows Asignar cliente', async () => {
   vi.mocked(fetch).mockResolvedValue(jsonResponse(200, SALE))
   renderDetalle()
-  await screen.findByText('$ 6.500')
+  await screen.findByText('$ 11.000')
 
   expect(screen.queryByRole('button', { name: 'Asignar cliente' })).not.toBeInTheDocument()
 })
 
 const NICO_SEARCH_RESULT = { id: 5, name: 'Nico', phone: '1111', channel: 'whatsapp', vip: true }
+const NICO = { id: 5, name: 'Nico', vip: true }
 
 /** Dispatches on method and path instead of call order: the sheet's own search
  * fires on every mount and keystroke, interleaved with whatever this screen's own
@@ -217,15 +220,12 @@ test('Asignar cliente opens the "Elegir cliente" sheet without "Sin cliente"; ch
   let assigned = false
   vi.mocked(fetch).mockImplementation(
     dispatchFetch({
-      'GET /sales/7': () =>
-        jsonResponse(
-          200,
-          assigned ? { ...SALE, customer: { id: 5, name: 'Nico', vip: true } } : { ...SALE, customer: null, payment: 'none' },
-        ),
+      'GET /sales/10': () =>
+        jsonResponse(200, assigned ? { ...SALE, customer: NICO } : { ...SALE, customer: null, payment: 'none' }),
       'GET /customers?q=Nico': () => jsonResponse(200, [NICO_SEARCH_RESULT]),
-      'PUT /sales/7/customer': () => {
+      'PUT /sales/10/customer': () => {
         assigned = true
-        return jsonResponse(200, { ...SALE, customer: { id: 5, name: 'Nico', vip: true } })
+        return jsonResponse(200, { ...SALE, customer: NICO })
       },
     }),
   )
@@ -241,7 +241,7 @@ test('Asignar cliente opens the "Elegir cliente" sheet without "Sin cliente"; ch
 
   await waitFor(() =>
     expect(fetch).toHaveBeenCalledWith(
-      '/sales/7/customer',
+      '/sales/10/customer',
       expect.objectContaining({ method: 'PUT' }),
     ),
   )
@@ -253,10 +253,10 @@ test('assigning a customer to a sale someone already assigned shows the fixed me
   let assignedAlready = false
   vi.mocked(fetch).mockImplementation(
     dispatchFetch({
-      'GET /sales/7': () =>
+      'GET /sales/10': () =>
         jsonResponse(200, assignedAlready ? SALE : { ...SALE, customer: null, payment: 'none' }),
       'GET /customers?q=Nico': () => jsonResponse(200, [NICO_SEARCH_RESULT]),
-      'PUT /sales/7/customer': () => {
+      'PUT /sales/10/customer': () => {
         assignedAlready = true
         return jsonResponse(409, { code: 'sale.customer_already_assigned' })
       },
@@ -276,9 +276,9 @@ test('assigning a customer to a sale someone already assigned shows the fixed me
 test('assigning to a sale a partner deleted meanwhile shows the gone notice on Ventas', async () => {
   vi.mocked(fetch).mockImplementation(
     dispatchFetch({
-      'GET /sales/7': () => jsonResponse(200, { ...SALE, customer: null, payment: 'none' }),
+      'GET /sales/10': () => jsonResponse(200, { ...SALE, customer: null, payment: 'none' }),
       'GET /customers?q=Nico': () => jsonResponse(200, [NICO_SEARCH_RESULT]),
-      'PUT /sales/7/customer': () => jsonResponse(404, { code: 'sale.not_found' }),
+      'PUT /sales/10/customer': () => jsonResponse(404, { code: 'sale.not_found' }),
     }),
   )
   renderDetalle()
@@ -294,9 +294,9 @@ test('assigning to a sale a partner deleted meanwhile shows the gone notice on V
 test('assigning a customer a partner deleted meanwhile shows the gone notice on Ventas', async () => {
   vi.mocked(fetch).mockImplementation(
     dispatchFetch({
-      'GET /sales/7': () => jsonResponse(200, { ...SALE, customer: null, payment: 'none' }),
+      'GET /sales/10': () => jsonResponse(200, { ...SALE, customer: null, payment: 'none' }),
       'GET /customers?q=Nico': () => jsonResponse(200, [NICO_SEARCH_RESULT]),
-      'PUT /sales/7/customer': () => jsonResponse(404, { code: 'sale.customer_not_found' }),
+      'PUT /sales/10/customer': () => jsonResponse(404, { code: 'sale.customer_not_found' }),
     }),
   )
   renderDetalle()
