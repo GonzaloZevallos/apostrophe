@@ -644,6 +644,18 @@
   border-radius: var(--radio-pildora);
 }
 
+/* The line's pricing-rule badge (`sales.md`, "On screen: Nueva venta"): lista, por
+   cantidad, VIP, regalo, especial. Same pill shape as `.vip-insignia`, token colors
+   only (CODING_STANDARDS §10: no loose hex, no color alone telling a state). */
+.regla-insignia {
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--acento-suave);
+  color: var(--acento);
+  padding: 3px 9px;
+  border-radius: var(--radio-pildora);
+}
+
 .aviso-toast {
   background: var(--boton);
   color: var(--boton-texto);

@@ -177,6 +177,21 @@ export function fromHundredths(hundredths: number): number {
   return hundredths / 100
 }
 
+/** Turns a bulk minimum's grams as the API answers them (`GramsOut`: a JSON number
+ * the backend guarantees carries at most two decimals) into hundredths, for building
+ * the `BulkQuote` the live preview prices against. Goes through the decimal string
+ * `Number.prototype.toString()`'s own shortest-round-trip algorithm produces —
+ * which, for a value already guaranteed to have at most two decimals, reproduces
+ * those exact digits — and then `toHundredths`, the same string-digit arithmetic
+ * every other grams conversion here uses. Never `toFixed` (which rounds by scaling
+ * the float: exactly the imprecision this module exists to avoid) and never a float
+ * multiplication (plan, invariants). This is the only place in the front that may
+ * turn the API's grams into hundredths — a screen never calls `toFixed` on a grams
+ * value itself. */
+export function hundredthsOfApiGrams(apiGrams: number): number {
+  return toHundredths(String(apiGrams))
+}
+
 /** The two errors `validateSale` checks, each on its own field (plan: the only
  * screen-side checks before saving; every other refusal comes back from the API). */
 export type SaleError = { field: 'customer' | `line:${string}`; message: string }
