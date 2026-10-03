@@ -19,6 +19,7 @@ import userEvent from '@testing-library/user-event'
 import { Outlet, useLocation } from 'react-router'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
+import accountFixture from '../../api/fixtures/account.json'
 import type { Me } from '../../api/me'
 import { readNewSaleState } from '../../components/feedback'
 import ClienteFicha from './ClienteFicha'
@@ -201,6 +202,34 @@ test('a customer in credit shows "A favor", never "Te debe", and no Registrar co
   expect(await screen.findByText('A favor $ 2.000')).toBeInTheDocument()
   expect(screen.queryByText(/te debe/i)).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Registrar cobro' })).not.toBeInTheDocument()
+})
+
+test('the account labels a sale, a later payment\'s split and its leftover credit row only from kind/standing, never a sign on a number', async () => {
+  // `account.json` (plan, invariants: "used by the front's fetch fakes") is the
+  // one case on this branch with all three row kinds together: a sale left
+  // owing, a later payment's split, and the credit left over once every debt is
+  // settled. `CREDIT_CUSTOMER`'s own balance/standing match the fixture's
+  // overall balance, so the card and the account agree.
+  vi.mocked(fetch).mockImplementation(
+    dispatchFetch({
+      'GET /customers/2': () => jsonResponse(200, CREDIT_CUSTOMER),
+      'GET /customers/2/account': () => jsonResponse(200, accountFixture),
+    }),
+  )
+  renderFicha('2')
+
+  await screen.findByText('Quedó debiendo')
+  const account = document.querySelector('.cuenta-cliente')
+  expect(account).not.toBeNull()
+  const inAccount = within(account as HTMLElement)
+  expect(inAccount.getByText('Cobro · efectivo · A cuenta de la venta del 14/09')).toBeInTheDocument()
+  expect(inAccount.getByText('A favor')).toBeInTheDocument()
+  // The sale row's own running balance ($ 11.000, still owing) and the payment
+  // row's own running balance ($ 6.000, still owing) read as plain money; only
+  // the credit row, picked by its own `standing`, drops the sign.
+  expect(inAccount.getByText('$ 11.000')).toBeInTheDocument()
+  expect(inAccount.getByText('$ 6.000')).toBeInTheDocument()
+  expect(inAccount.getByText('A favor $ 2.000')).toBeInTheDocument()
 })
 
 test('Borrar cobro asks before deleting, then shows "Cobro eliminado" and refreshes the account', async () => {

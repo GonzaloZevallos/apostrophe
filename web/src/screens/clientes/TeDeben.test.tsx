@@ -9,6 +9,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
+import debtorsFixture from '../../api/fixtures/debtors.json'
 import TeDeben from './TeDeben'
 
 function jsonResponse(status: number, body: unknown): Response {
@@ -41,24 +42,26 @@ afterEach(() => {
 })
 
 test('heads with the total owed and the count of sales still owing, lists debtors in the API\'s own order', async () => {
+  // `debtors.json` (plan, invariants: "used by the front's fetch fakes") holds one
+  // debtor; a second is added here only to prove the API's own order is kept,
+  // never resorted by this screen.
   vi.mocked(fetch).mockResolvedValue(
     jsonResponse(200, {
-      total_owed: 37000,
-      sales_owing_count: 4,
+      ...debtorsFixture,
       debtors: [
-        { customer: { id: 1, name: 'Ana' }, balance: 15000, owing_since: '2026-09-14', standing: 'owes' },
+        ...debtorsFixture.debtors,
         { customer: { id: 2, name: 'Beto' }, balance: 22000, owing_since: '2026-09-20', standing: 'owes' },
       ],
     }),
   )
   renderTeDeben()
 
-  expect(await screen.findByText('$ 37.000')).toBeInTheDocument()
-  expect(screen.getByText('4 ventas debiendo')).toBeInTheDocument()
+  expect(await screen.findByText(`$ ${debtorsFixture.total_owed.toLocaleString('es-AR')}`)).toBeInTheDocument()
+  expect(screen.getByText(`${debtorsFixture.sales_owing_count} ventas debiendo`)).toBeInTheDocument()
 
   const rows = screen.getAllByRole('link').filter((link) => link.getAttribute('href')?.startsWith('/clientes/'))
   expect(rows.map((row) => row.textContent)).toEqual([
-    'Ana$ 15.000desde 14/09',
+    'Ana Pérez$ 15.000desde 14/09',
     'Beto$ 22.000desde 20/09',
   ])
 })

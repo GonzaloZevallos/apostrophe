@@ -17,6 +17,8 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
+import customerFixture from '../../api/fixtures/customer.json'
+import debtorsFixture from '../../api/fixtures/debtors.json'
 import Clientes from './Clientes'
 import ClientesLayout from './ClientesLayout'
 
@@ -170,25 +172,25 @@ test('a server error on the list shows the generic retry, never the empty-list t
 })
 
 test('the header reads "N clientes · M te deben $ X", and tapping the debt part opens Te deben', async () => {
+  // `customer.json` and `debtors.json` (plan, invariants: "used by the front's
+  // fetch fakes") drive this: the customer list carries the fixture's own owing
+  // entry plus a settled one, and the debt part reads straight off `debtors.json`.
   vi.mocked(fetch).mockImplementation(
     fetchStub(
       () =>
         jsonResponse(200, [
-          { id: 1, name: 'Ana', phone: '+5491100000001', channel: null, vip: false, balance: 15000, owing_since: '2026-09-14', standing: 'owes' },
+          customerFixture,
           { id: 2, name: 'Lu', phone: '+5491100000002', channel: null, vip: false, balance: 0, owing_since: null, standing: 'settled' },
         ]),
-      () =>
-        jsonResponse(200, {
-          total_owed: 15000,
-          sales_owing_count: 1,
-          debtors: [{ customer: { id: 1, name: 'Ana' }, balance: 15000, owing_since: '2026-09-14', standing: 'owes' }],
-        }),
+      () => jsonResponse(200, debtorsFixture),
     ),
   )
   renderClientes()
 
   expect(await screen.findByText('2 clientes')).toBeInTheDocument()
-  const link = screen.getByRole('link', { name: '1 te deben $ 15.000' })
+  const link = screen.getByRole('link', {
+    name: `${debtorsFixture.debtors.length} te deben $ ${debtorsFixture.total_owed.toLocaleString('es-AR')}`,
+  })
   expect(link).toHaveAttribute('href', '/clientes/deben')
 })
 
