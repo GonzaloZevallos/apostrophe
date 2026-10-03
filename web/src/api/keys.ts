@@ -13,6 +13,7 @@ export type Resource =
   | 'customers'
   | 'expenses'
   | 'expenseCategories'
+  | 'sales'
 
 const PREFIX: Record<Resource, string> = {
   me: 'me',
@@ -21,6 +22,7 @@ const PREFIX: Record<Resource, string> = {
   customers: 'customers',
   expenses: 'expenses',
   expenseCategories: 'expense-categories',
+  sales: 'sales',
 }
 
 export const keys = {
@@ -47,6 +49,8 @@ export const keys = {
   // same way — a result cached by an earlier mount, with a since-changed `vip`,
   // must never be the one a seller picks.
   saleFormCustomerSearch: (q: string) => ['sale-form', 'customer-search', q] as const,
+  sales: (dateFrom: string, dateTo: string) => [PREFIX.sales, { dateFrom, dateTo }] as const,
+  sale: (id: string) => [PREFIX.sales, id] as const,
 }
 
 // A write on one resource that also stales another, beyond its own prefix (plan,
