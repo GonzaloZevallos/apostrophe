@@ -82,6 +82,17 @@ function rowAmount(row: AccountRow): string {
   return row.standing === 'credit' ? `A favor ${formatMoneyMagnitude(row.running_balance)}` : formatMoney(row.running_balance)
 }
 
+/** The row's own figure (design, `ClienteFicha.dc.html`: each row shows its own
+ * amount — a sale's `total`, a payment's own `applied_to.amount`, a credit's own
+ * leftover `amount` — next to, never instead of, the running balance `rowAmount`
+ * reads below it. Which field to read comes only from `kind`, never a sign on a
+ * number (plan, invariants). */
+function rowOwnAmount(row: AccountRow): string {
+  if (row.kind === 'sale') return formatMoney(row.sale.total)
+  if (row.kind === 'payment') return formatMoney(row.applied_to.amount)
+  return formatMoneyMagnitude(row.amount)
+}
+
 export default function ClienteFicha() {
   const { id } = useParams<{ id: string }>()
   const customerId = id ?? ''
@@ -97,6 +108,8 @@ export default function ClienteFicha() {
     { id: number; amount: number; method: PaymentMethod; paid_on: string } | null
   >(null)
   const [accountGone, setAccountGone] = useState(false)
+  const [deletePaymentOffline, setDeletePaymentOffline] = useState(false)
+  const [deletePaymentFailed, setDeletePaymentFailed] = useState(false)
 
   const { data, error, isPending, isError } = useQuery({
     queryKey: keys.customer(customerId),
@@ -126,6 +139,8 @@ export default function ClienteFicha() {
     if (confirmingDelete === null) return
     const paymentId = confirmingDelete.id
     setConfirmingDelete(null)
+    setDeletePaymentOffline(false)
+    setDeletePaymentFailed(false)
     try {
       await removePayment.mutateAsync(paymentId)
       invalidateResource(queryClient, 'payments')
@@ -134,6 +149,14 @@ export default function ClienteFicha() {
       if (caught instanceof ApiError && caught.code === PAYMENT_NOT_FOUND) {
         setAccountGone(true)
         invalidateResource(queryClient, 'payments', { refetchType: 'none' })
+      } else if (caught instanceof NetworkError) {
+        setDeletePaymentOffline(true)
+      } else {
+        // Any other refusal (`payment.on_the_spot`, once `payments-api` answers
+        // it, included) or an unexpected status: the seller must still see that
+        // the payment was *not* deleted, never silence — `ErrorGenerico` is the
+        // same generic retry every other screen's delete falls back to.
+        setDeletePaymentFailed(true)
       }
     }
   }
@@ -184,6 +207,8 @@ export default function ClienteFicha() {
             <span className="toast__texto">Cobro eliminado</span>
           </div>
         )}
+        {deletePaymentOffline && <SinConexion />}
+        {deletePaymentFailed && <ErrorGenerico />}
 
         {data.standing === 'owes' && (
           <div className="campo">
@@ -230,7 +255,8 @@ export default function ClienteFicha() {
               <div key={index} className="cuenta-cliente__fila">
                 <span className="cuenta-cliente__fecha">{formatDateShort(row.date)}</span>
                 {label !== '' && <span>{label}</span>}
-                <span>{rowAmount(row)}</span>
+                <span className="cuenta-cliente__monto">{rowOwnAmount(row)}</span>
+                <span className="cuenta-cliente__saldo">{rowAmount(row)}</span>
                 {showDelete && (
                   <button
                     type="button"

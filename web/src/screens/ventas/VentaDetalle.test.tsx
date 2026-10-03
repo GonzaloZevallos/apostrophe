@@ -11,6 +11,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
+import saleDetailFixture from '../../api/fixtures/sale-detail.json'
 import { readFeedback, saleJustSaved } from '../../components/feedback'
 import VentaDetalle from './VentaDetalle'
 
@@ -35,7 +36,12 @@ function jsonResponse(status: number, body: unknown): Response {
   })
 }
 
+// Built from `sale-detail.json` (plan, invariants: "used by the front's fetch
+// fakes"), overridden field for field for this file's own scenario (a cash sale of
+// Blue Dream, not the fixture's own owing Flor A one) — so a field the fixture adds
+// later still reaches this fake, even where this scenario needs a different value.
 const SALE = {
+  ...saleDetailFixture,
   id: 7,
   date: '2026-10-03',
   customer: { id: 5, name: 'Nico', vip: true },

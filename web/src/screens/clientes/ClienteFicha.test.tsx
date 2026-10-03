@@ -20,6 +20,8 @@ import { Outlet, useLocation } from 'react-router'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import accountFixture from '../../api/fixtures/account.json'
+import paymentFixture from '../../api/fixtures/payment.json'
+import paymentPreviewFixture from '../../api/fixtures/payment-preview.json'
 import type { Me } from '../../api/me'
 import { readNewSaleState } from '../../components/feedback'
 import ClienteFicha from './ClienteFicha'
@@ -224,12 +226,31 @@ test('the account labels a sale, a later payment\'s split and its leftover credi
   const inAccount = within(account as HTMLElement)
   expect(inAccount.getByText('Cobro · efectivo · A cuenta de la venta del 14/09')).toBeInTheDocument()
   expect(inAccount.getByText('A favor')).toBeInTheDocument()
-  // The sale row's own running balance ($ 11.000, still owing) and the payment
-  // row's own running balance ($ 6.000, still owing) read as plain money; only
-  // the credit row, picked by its own `standing`, drops the sign.
-  expect(inAccount.getByText('$ 11.000')).toBeInTheDocument()
-  expect(inAccount.getByText('$ 6.000')).toBeInTheDocument()
-  expect(inAccount.getByText('A favor $ 2.000')).toBeInTheDocument()
+
+  // Each row shows its own figure (`.cuenta-cliente__monto`) next to the running
+  // balance it left (`.cuenta-cliente__saldo`) — plan, "On screen": "with the
+  // amount applied to that sale" — never only the running balance (review
+  // finding). The sale row's own total and its running balance happen to be the
+  // same figure here (nothing had been paid against it yet), so the two are read
+  // from their own class, not by text, to tell them apart.
+  const filas = Array.from(account?.querySelectorAll('.cuenta-cliente__fila') ?? [])
+  expect(filas).toHaveLength(3)
+  const [saleFila, paymentFila, creditFila] = filas
+  if (saleFila === undefined || paymentFila === undefined || creditFila === undefined) {
+    throw new Error('expected three account rows')
+  }
+  expect(saleFila.querySelector('.cuenta-cliente__monto')).toHaveTextContent('$ 11.000')
+  expect(saleFila.querySelector('.cuenta-cliente__saldo')).toHaveTextContent('$ 11.000')
+  // The payment row's own amount ($ 5.000, what it applied to the 14/09 sale)
+  // differs from what it then left owing ($ 6.000) — exactly the figure the
+  // review found missing.
+  expect(paymentFila.querySelector('.cuenta-cliente__monto')).toHaveTextContent('$ 5.000')
+  expect(paymentFila.querySelector('.cuenta-cliente__saldo')).toHaveTextContent('$ 6.000')
+  // The credit row's own leftover ($ 2.000) and the running balance it leaves
+  // (also "A favor $ 2.000" here) both drop their sign, picked only by `kind`/
+  // `standing`, never a comparison on the number itself.
+  expect(creditFila.querySelector('.cuenta-cliente__monto')).toHaveTextContent('$ 2.000')
+  expect(creditFila.querySelector('.cuenta-cliente__saldo')).toHaveTextContent('A favor $ 2.000')
 })
 
 test('Borrar cobro asks before deleting, then shows "Cobro eliminado" and refreshes the account', async () => {
@@ -286,12 +307,7 @@ test('registering a payment shows "Cobro guardado · queda debiendo $ X" when so
     dispatchFetch({
       'GET /customers/1': () => jsonResponse(200, OWING_CUSTOMER),
       'GET /customers/1/account': () => jsonResponse(200, OWING_ACCOUNT),
-      'POST /customers/1/payments': () =>
-        jsonResponse(201, {
-          payment: { id: 5, paid_on: '2026-10-03', amount: 5000, method: 'cash' },
-          applied_to: [{ sale_id: 10, sale_date: '2026-09-14', amount: 5000 }],
-          after: { balance: 6000, owing_since: '2026-09-14', standing: 'owes' },
-        }),
+      'POST /customers/1/payments': () => jsonResponse(201, paymentFixture),
     }),
   )
   renderFicha('1')
@@ -304,6 +320,8 @@ test('registering a payment shows "Cobro guardado · queda debiendo $ X" when so
   await userEvent.click(within(sheet as HTMLElement).getByLabelText('Efectivo'))
   await userEvent.click(within(sheet as HTMLElement).getByRole('button', { name: 'Guardar' }))
 
+  // `payment.json`'s own `after.balance` (plan, invariants: "used by the front's
+  // fetch fakes").
   expect(await screen.findByText('Cobro guardado · queda debiendo $ 6.000')).toBeInTheDocument()
 })
 
@@ -332,6 +350,30 @@ test('"Todo" fills the amount with the balance, and the debounced preview shows 
   expect(await within_.findByText('Se descuenta de la deuda más vieja')).toBeInTheDocument()
   expect(await within_.findByText('$ 11.000 a la venta del 14/09')).toBeInTheDocument()
   expect(within_.queryByText(/Le queda debiendo/)).not.toBeInTheDocument()
+})
+
+test('a partial amount\'s preview shows "Le queda debiendo $ X", from the preview\'s own after.balance', async () => {
+  vi.mocked(fetch).mockImplementation(
+    dispatchFetch({
+      'GET /customers/1': () => jsonResponse(200, OWING_CUSTOMER),
+      'GET /customers/1/account': () => jsonResponse(200, OWING_ACCOUNT),
+      // `payment-preview.json` (plan, invariants: "used by the front's fetch
+      // fakes"): a 5000 split off the 14/09 sale, 6000 left owing.
+      'POST /customers/1/payments/preview': () => jsonResponse(200, paymentPreviewFixture),
+    }),
+  )
+  renderFicha('1')
+
+  await userEvent.click(await screen.findByRole('button', { name: 'Registrar cobro' }))
+  const sheet = (await screen.findByRole('button', { name: 'Guardar' })).closest('.capa__contenido')
+  expect(sheet).not.toBeNull()
+  const within_ = within(sheet as HTMLElement)
+
+  await userEvent.clear(within_.getByLabelText('Monto'))
+  await userEvent.type(within_.getByLabelText('Monto'), '5000')
+
+  expect(await within_.findByText('$ 5.000 a la venta del 14/09')).toBeInTheDocument()
+  expect(await within_.findByText('Le queda debiendo $ 6.000')).toBeInTheDocument()
 })
 
 test('registering a payment that settles everything shows the plain "Cobro guardado" toast', async () => {

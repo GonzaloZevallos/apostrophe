@@ -10,6 +10,7 @@ import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
+import saleFixture from '../../api/fixtures/sale.json'
 import { GONE_NOTICE } from '../../api/refusals'
 import type { Me } from '../../api/me'
 import Ventas from './Ventas'
@@ -174,23 +175,9 @@ test('a sale with no customer shows "Sin cliente" and no VIP badge', async () =>
 })
 
 test('a sale still owing shows its total in amber with "te debe" under it, from the API', async () => {
-  vi.mocked(fetch).mockResolvedValue(
-    jsonResponse(200, [
-      {
-        id: 4,
-        date: '2026-10-03',
-        customer: { id: 1, name: 'Ana', vip: false },
-        shipping_charged: 0,
-        note: null,
-        payment: 'owing',
-        total: 11000,
-        lines: [
-          { variety_id: 1, variety_name: 'Blue Dream', grams: 5, pricing_rule: 'list', price_per_gram: 2200, line_total: 11000 },
-        ],
-        still_owing: true,
-      },
-    ]),
-  )
+  // `sale.json` (plan, invariants: "used by the front's fetch fakes"): `still_owing`
+  // true, `total` 11000.
+  vi.mocked(fetch).mockResolvedValue(jsonResponse(200, [saleFixture]))
   renderVentas()
 
   const row = await screen.findByRole('link')
@@ -200,21 +187,7 @@ test('a sale still owing shows its total in amber with "te debe" under it, from 
 
 test('a sale paid in full shows no "te debe" mark', async () => {
   vi.mocked(fetch).mockResolvedValue(
-    jsonResponse(200, [
-      {
-        id: 5,
-        date: '2026-10-03',
-        customer: { id: 1, name: 'Ana', vip: false },
-        shipping_charged: 0,
-        note: null,
-        payment: 'cash',
-        total: 11000,
-        lines: [
-          { variety_id: 1, variety_name: 'Blue Dream', grams: 5, pricing_rule: 'list', price_per_gram: 2200, line_total: 11000 },
-        ],
-        still_owing: false,
-      },
-    ]),
+    jsonResponse(200, [{ ...saleFixture, payment: 'cash', still_owing: false }]),
   )
   renderVentas()
 
