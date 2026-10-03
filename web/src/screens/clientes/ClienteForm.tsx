@@ -26,14 +26,14 @@ import {
   registerCustomer,
 } from '../../api/customers'
 import { invalidateResource, keys } from '../../api/keys'
-import { GONE_NOTICE, isGone, resolveOverride, type RefusalCode } from '../../api/refusals'
+import { isGone, resolveOverride, type RefusalCode } from '../../api/refusals'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
-import { TOAST_MESSAGES } from '../../components/feedback'
+import { gone, toast, type ToastMessage } from '../../components/feedback'
 import GoneScreen from '../../components/GoneScreen'
 import SinConexion from '../../components/SinConexion'
 import CustomerFields from './CustomerFields'
 
-export const SAVED_TOAST: (typeof TOAST_MESSAGES)[number] = 'Cliente guardado'
+export const SAVED_TOAST: ToastMessage = 'Cliente guardado'
 export const NAME_REQUIRED = 'Ponele un nombre'
 export const PHONE_INVALID = 'Eso no parece un teléfono con su código de área'
 export const PHONE_TAKEN = 'Ese teléfono ya es de otro cliente'
@@ -130,9 +130,9 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
       await save.mutateAsync({ name, phone, channel, vip })
       invalidateResource(queryClient, 'customers')
       if (mode === 'nuevo') {
-        navigate('/clientes', { state: { toast: SAVED_TOAST } })
+        navigate('/clientes', { state: toast(SAVED_TOAST) })
       } else {
-        navigate(`/clientes/${customerId}`, { state: { toast: SAVED_TOAST } })
+        navigate(`/clientes/${customerId}`, { state: toast(SAVED_TOAST) })
       }
     } catch (caught) {
       if (caught instanceof ApiError && caught.status === 401) {
@@ -143,7 +143,7 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
       }
       if (caught instanceof ApiError && mode === 'editar' && isGone(caught.code)) {
         invalidateResource(queryClient, 'customers')
-        navigate('/clientes', { state: { notice: GONE_NOTICE } })
+        navigate('/clientes', { state: gone() })
         return
       }
       if (caught instanceof ApiError) {

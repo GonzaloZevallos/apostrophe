@@ -28,10 +28,10 @@ import { ApiError, NetworkError } from '../../api/client'
 import type { Customer } from '../../api/customers'
 import { invalidateResource, keys } from '../../api/keys'
 import { assignCustomer, deleteSale, getSale, type Sale } from '../../api/sales'
-import { GONE_NOTICE, isGone, resolveOverride, type RefusalCode } from '../../api/refusals'
+import { isGone, resolveOverride, type RefusalCode } from '../../api/refusals'
 import AvisoExito from '../../components/AvisoExito'
 import ConfirmDialog from '../../components/ConfirmDialog'
-import { clearSaleJustSaved, readFeedback, SALE_SAVED } from '../../components/feedback'
+import { clearSaleJustSaved, gone, readFeedback, SALE_SAVED, toast } from '../../components/feedback'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import GoneScreen from '../../components/GoneScreen'
 import SinConexion from '../../components/SinConexion'
@@ -143,7 +143,7 @@ export default function VentaDetalle() {
         // still mounted for one more tick and would otherwise refetch into a 404
         // the browser logs on its own (keys.ts).
         invalidateResource(queryClient, 'sales', { refetchType: 'none' })
-        navigate('/ventas', { replace: true, state: { notice: GONE_NOTICE } })
+        navigate('/ventas', { replace: true, state: gone() })
       } else if (caught instanceof ApiError) {
         const override = resolveOverride(ASSIGN_OVERRIDES, caught.code)
         setAssignError(override?.message ?? GENERIC_REFUSAL)
@@ -169,11 +169,11 @@ export default function VentaDetalle() {
       // would only answer 404. Ventas still gets a fresh list on its next mount,
       // since the invalidated query is left stale.
       invalidateResource(queryClient, 'sales', { refetchType: 'none' })
-      navigate('/ventas', { replace: true, state: { toast: 'Venta eliminada' } })
+      navigate('/ventas', { replace: true, state: toast('Venta eliminada') })
     } catch (caught) {
       if (caught instanceof ApiError && isGone(caught.code)) {
         invalidateResource(queryClient, 'sales', { refetchType: 'none' })
-        navigate('/ventas', { replace: true, state: { notice: GONE_NOTICE } })
+        navigate('/ventas', { replace: true, state: gone() })
       } else if (caught instanceof NetworkError) {
         setDeleteOffline(true)
       } else {

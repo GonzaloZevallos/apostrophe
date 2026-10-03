@@ -7,9 +7,10 @@
  * screen's own `navigate(..., { state: {...} })`.
  *
  * Three kinds of marker live here:
- * - a success toast from `TOAST_MESSAGES`, or the gone notice (`GONE_NOTICE`,
- *   from `refusals.ts`) — both read back through `readFeedback` into a
- *   `Feedback` that `Notice` renders;
+ * - a success toast from `TOAST_MESSAGES`, written through `toast(message)`,
+ *   or the gone notice (`GONE_NOTICE`, from `refusals.ts`), written through
+ *   `gone()` — both read back through `readFeedback` into a `Feedback` that
+ *   `Notice` renders;
  * - the "just saved" marker (`saleJustSaved`/`clearSaleJustSaved`), also read
  *   through `readFeedback` (kind `'saved'`) — plan invariants: "Venta
  *   guardada" is the only success notice with Deshacer, so `VentaDetalle`
@@ -57,6 +58,22 @@ export function readFeedback(state: unknown): Feedback | null {
   if (record.notice === GONE_NOTICE) return { kind: 'notice', message: GONE_NOTICE }
   if (record.saleJustSaved === true) return { kind: 'saved', message: SALE_SAVED }
   return null
+}
+
+/** Writes a plain success toast into history state — the only way a screen
+ * hands one of `TOAST_MESSAGES` to `navigate`'s `state`, so a screen never
+ * builds `{ toast: ... }` by hand (plan, invariants: "feedback.ts" is the only
+ * reader and writer of navigation state"). Pair of `readFeedback`'s `'toast'`
+ * case. */
+export function toast(message: ToastMessage): { toast: ToastMessage } {
+  return { toast: message }
+}
+
+/** Writes the gone notice into history state — `toast`'s counterpart for
+ * `GONE_NOTICE`, so a screen that lands on a gone record after navigating
+ * away never builds `{ notice: GONE_NOTICE }` by hand either. */
+export function gone(): { notice: typeof GONE_NOTICE } {
+  return { notice: GONE_NOTICE }
 }
 
 /** Written once, by `NuevaVenta` on a successful save, alongside

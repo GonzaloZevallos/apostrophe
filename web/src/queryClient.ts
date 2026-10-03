@@ -8,7 +8,7 @@
  *
  * `handleUnauthorized` needs the current path and a navigate function; neither lives
  * outside the router, so `setCurrentPath`/`setNavigate` let the router keep them
- * current (`App.tsx`'s `RouterSync`). Before the router has mounted once, there is no
+ * current (`Root.tsx`'s `RouterSync`). Before the router has mounted once, there is no
  * navigate function yet and a 401 does nothing — the same as on a public route.
  */
 

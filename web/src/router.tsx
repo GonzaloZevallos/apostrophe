@@ -8,7 +8,7 @@
  * "`App.tsx` moves to a data router so `useBlocker` can catch Back") — `useBlocker`
  * only works under a data router, and `NuevaVenta`'s leave guard ("¿Descartás la
  * venta?") needs it to catch the browser's own Back button, not only an in-app
- * link. `Root` (`App.tsx`) carries `RouterSync` and the offline banner so they
+ * link. `Root` (`Root.tsx`) carries `RouterSync` and the offline banner so they
  * render once for every route, public or gated, exactly as they did before the
  * migration.
  *
@@ -18,7 +18,7 @@
  * route table; the modules it points at (`screens/ventas/*`) are stubs the screen
  * subtasks (`new-sale-screen`, `sales-list-and-detail`, `assign-customer`) fill in.
  *
- * Kept out of `App.tsx` itself, which otherwise would export both a non-component
+ * Kept out of `Root.tsx` itself, which otherwise would export both a non-component
  * value (`router`) and its default component — fast-refresh's own
  * `only-export-components` (oxlint) warns on exactly that mix. A test drives this
  * same singleton with `router.navigate(path)` before rendering `<App />`, rather
