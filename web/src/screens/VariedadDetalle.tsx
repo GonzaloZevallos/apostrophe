@@ -13,6 +13,7 @@ import { ApiError, NetworkError, UNKNOWN_CODE, del, get, patch, post } from '../
 import { invalidateResource, keys } from '../api/keys'
 import type { Me } from '../api/me'
 import { GONE_DETAIL, isGone, kindOf, resolveOverride, type RefusalCode } from '../api/refusals'
+import { readStock, setThreshold } from '../api/stock'
 import AvisoExito, { type SuccessToast } from '../components/AvisoExito'
 import ConfirmDialog from '../components/ConfirmDialog'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
@@ -21,6 +22,9 @@ import SinConexion from '../components/SinConexion'
 import { formatDateShort, sinceWhen } from '../format/dates'
 import { formatGrams, formatMoney } from '../format/money'
 import { parseGrams, parseMoney } from '../format/parse'
+
+export const THRESHOLD_SAVED = 'Aviso guardado'
+export const THRESHOLD_INVALID_MESSAGE = 'Revisá el umbral cargado'
 import { deleteNotice, type HistoryEntry } from './priceDeleteNotice'
 import {
   NAME_INVALID_MESSAGE,
@@ -52,6 +56,10 @@ const PRICE_OVERRIDES: Partial<Record<RefusalCode, string>> = {
   'grams.invalid': PRICE_INVALID_MESSAGE,
 }
 
+const THRESHOLD_OVERRIDES: Partial<Record<RefusalCode, string>> = {
+  'stock.threshold_invalid': THRESHOLD_INVALID_MESSAGE,
+}
+
 export default function VariedadDetalle() {
   const { id } = useParams<{ id: string }>()
   const variedadId = id ?? ''
@@ -66,6 +74,9 @@ export default function VariedadDetalle() {
     queryKey: keys.varietyPrices(variedadId),
     queryFn: () => get<FullHistoryEntry[]>(`/varieties/${variedadId}/prices`),
   })
+  const stockQuery = useQuery({ queryKey: keys.stock(), queryFn: readStock })
+  const currentThreshold =
+    stockQuery.data?.varieties.find((row) => String(row.variety_id) === variedadId)?.threshold ?? null
 
   const [toast, setToast] = useState<SuccessToast | null>(null)
   const [gone, setGone] = useState(false)
@@ -89,6 +100,11 @@ export default function VariedadDetalle() {
 
   const [deletingEntry, setDeletingEntry] = useState<FullHistoryEntry | null>(null)
   const [deleting, setDeleting] = useState(false)
+
+  const [thresholdInput, setThresholdInput] = useState('')
+  const [thresholdError, setThresholdError] = useState<string | null>(null)
+  const [thresholdOffline, setThresholdOffline] = useState(false)
+  const [savingThreshold, setSavingThreshold] = useState(false)
 
   useEffect(() => {
     if (toast === null) return
@@ -223,6 +239,47 @@ export default function VariedadDetalle() {
     } finally {
       setDeleting(false)
     }
+  }
+
+  async function saveThreshold(grams: number | null): Promise<void> {
+    setThresholdError(null)
+    setThresholdOffline(false)
+    setSavingThreshold(true)
+    try {
+      await setThreshold(Number(variedadId), grams)
+      invalidateResource(queryClient, 'stock')
+      setThresholdInput('')
+      setToast(THRESHOLD_SAVED)
+    } catch (caught) {
+      if (caught instanceof ApiError && isGone(caught.code)) {
+        invalidateResource(queryClient, 'stock')
+        setGone(true)
+      } else if (caught instanceof ApiError) {
+        const message = resolveOverride(THRESHOLD_OVERRIDES, caught.code)
+        if (message !== undefined) setThresholdError(message)
+        else if (caught.code !== UNKNOWN_CODE && kindOf(caught.code) === 'refusal') {
+          setThresholdError(GENERIC_REFUSAL_MESSAGE)
+        } else {
+          setThresholdError(ERROR_GENERICO_MENSAJE)
+        }
+      } else if (caught instanceof NetworkError) {
+        setThresholdOffline(true)
+      } else {
+        setThresholdError(ERROR_GENERICO_MENSAJE)
+      }
+    } finally {
+      setSavingThreshold(false)
+    }
+  }
+
+  function onSetThreshold(event: FormEvent<HTMLFormElement>): void {
+    event.preventDefault()
+    const parsed = parseGrams(thresholdInput)
+    if (!parsed.ok) {
+      setThresholdError(THRESHOLD_INVALID_MESSAGE)
+      return
+    }
+    void saveThreshold(Number(parsed.value))
   }
 
   if (varietyQuery.isError) {
@@ -392,6 +449,41 @@ export default function VariedadDetalle() {
             </button>
           </form>
         )}
+
+        <span className="campo__rotulo">Aviso de stock bajo</span>
+        <span className="variedad-item__aviso">
+          {currentThreshold === null ? 'Aviso apagado' : `Avisame abajo de ${formatGrams(currentThreshold)}`}
+        </span>
+        <form className="formulario" onSubmit={onSetThreshold}>
+          <label className="campo">
+            <span className="campo__rotulo">Umbral de aviso (g)</span>
+            <input
+              className="campo__input"
+              inputMode="decimal"
+              value={thresholdInput}
+              onChange={(event) => setThresholdInput(event.target.value)}
+            />
+          </label>
+          {thresholdError !== null && (
+            <span className="campo__error" role="alert">
+              {thresholdError}
+            </span>
+          )}
+          {thresholdOffline && <SinConexion />}
+          <button className="boton boton--suave" type="submit" disabled={savingThreshold}>
+            Guardar aviso
+          </button>
+          {currentThreshold !== null && (
+            <button
+              type="button"
+              className="boton--enlace"
+              disabled={savingThreshold}
+              onClick={() => void saveThreshold(null)}
+            >
+              Apagar aviso
+            </button>
+          )}
+        </form>
 
         <span className="campo__rotulo">Historial</span>
         <div className="historial">

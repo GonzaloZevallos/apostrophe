@@ -13,11 +13,13 @@ import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from
 import SinConexion from './components/SinConexion'
 import { queryClient, setCurrentPath, setNavigate } from './queryClient'
 import Entrar from './screens/Entrar'
+import EntradaStock from './screens/EntradaStock'
 import GastoCategorias from './screens/GastoCategorias'
 import Gastos from './screens/Gastos'
 import Inicio from './screens/Inicio'
 import Invitacion from './screens/Invitacion'
 import Mas from './screens/Mas'
+import Stock from './screens/Stock'
 import ClienteFicha from './screens/clientes/ClienteFicha'
 import ClienteForm from './screens/clientes/ClienteForm'
 import Clientes from './screens/clientes/Clientes'
@@ -72,6 +74,9 @@ export default function App() {
               <Route path="variedades/:id" element={<VariedadDetalle />} />
               <Route path="gastos" element={<Gastos />} />
               <Route path="gastos/categorias" element={<GastoCategorias />} />
+              <Route path="mi-stock" element={<Stock />} />
+              <Route path="mi-stock/nueva-entrada" element={<EntradaStock mode="nuevo" />} />
+              <Route path="mi-stock/entradas/:id" element={<EntradaStock mode="editar" />} />
               <Route path="negocio" element={<Negocio />} />
             </Route>
           </Route>

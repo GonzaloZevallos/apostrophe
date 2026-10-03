@@ -13,10 +13,21 @@ import { ApiError, NetworkError, UNKNOWN_CODE, get, post } from '../api/client'
 import { invalidateResource, keys } from '../api/keys'
 import type { Me } from '../api/me'
 import { kindOf, resolveOverride, type RefusalCode } from '../api/refusals'
+import { readStock, type VarietyStock } from '../api/stock'
 import AvisoExito, { type SuccessToast } from '../components/AvisoExito'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
+import MarcaEstado from '../components/MarcaEstado'
 import SinConexion from '../components/SinConexion'
 import { formatGrams, formatMoney } from '../format/money'
+
+/** The warning line next to a variety's status mark (`stock.md`, "On screen"): told
+ * from the same `GET /stock` row `MarcaEstado` already reads, never a figure the
+ * front works out itself. */
+function warningFor(row: VarietyStock): string {
+  if (row.threshold === null) return 'Aviso apagado'
+  if (row.status === 'low') return `Avisando: quedan ${formatGrams(row.grams)}`
+  return `Avisame abajo de ${formatGrams(row.threshold)}`
+}
 
 export const VARIETY_SAVED = 'Variedad guardada'
 export const NO_PRICE_TODAY = 'Sin precio: no se puede vender'
@@ -50,6 +61,9 @@ export default function Variedades() {
     queryKey: keys.varieties(),
     queryFn: () => get<Variety[]>('/varieties'),
   })
+  const stockQuery = useQuery({ queryKey: keys.stock(), queryFn: readStock })
+  const stockOf = (varietyId: number): VarietyStock | undefined =>
+    stockQuery.data?.varieties.find((row) => row.variety_id === varietyId)
   const [adding, setAdding] = useState(false)
   const [name, setName] = useState('')
   const [formError, setFormError] = useState<string | null>(null)
@@ -156,9 +170,17 @@ export default function Variedades() {
           </form>
         )}
         <div className="lista-variedades">
-          {(data ?? []).map((variety) => (
+          {(data ?? []).map((variety) => {
+            const stockRow = stockOf(variety.id)
+            return (
             <Link key={variety.id} to={`/variedades/${variety.id}`} className="variedad-item">
-              <span className="variedad-item__nombre">{variety.name}</span>
+              <div className="variedad-item__encabezado">
+                <span className="variedad-item__nombre">{variety.name}</span>
+                {stockRow !== undefined && <MarcaEstado estado={stockRow.status} />}
+              </div>
+              {stockRow !== undefined && (
+                <span className="variedad-item__aviso">{warningFor(stockRow)}</span>
+              )}
               {variety.current_price === null ? (
                 <span className="variedad-item__sin-precio">{NO_PRICE_TODAY}</span>
               ) : (
@@ -183,7 +205,8 @@ export default function Variedades() {
                 </div>
               )}
             </Link>
-          ))}
+            )
+          })}
         </div>
       </div>
     </main>

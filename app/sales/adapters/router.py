@@ -1,7 +1,8 @@
+from collections.abc import Callable
 from datetime import date
-from typing import Annotated
+from typing import Annotated, cast
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 
 from app.accounts.adapters.deps import CurrentBusinessId
@@ -10,12 +11,21 @@ from app.db import get_session
 from app.http_errors import TranslateErrors
 from app.sales.adapters.customer_facts import SqlCustomerFacts
 from app.sales.adapters.price_book import SqlPriceBook
-from app.sales.adapters.schemas import AssignCustomerIn, LineIn, SaleIn, SaleOut
+from app.sales.adapters.schemas import (
+    AssignCustomerIn,
+    DeleteSaleOut,
+    LineIn,
+    ReturnedGramsOut,
+    SaleDetailOut,
+    SaleIn,
+    SaleOut,
+)
 from app.sales.adapters.sql_sales import SqlSales
 from app.sales.application import view_sales
 from app.sales.application.assign_customer import assign_customer as assign_customer_use_case
 from app.sales.application.delete_sale import delete_sale as delete_sale_use_case
 from app.sales.application.errors import SaleNotFound
+from app.sales.application.ports import LineCosts
 from app.sales.application.record_sale import LineInput
 from app.sales.application.record_sale import record_sale as record_sale_use_case
 from app.sales.domain.pricing import SaleRuleBroken
@@ -42,9 +52,20 @@ def get_customer_facts(session: SessionDep, business_id: CurrentBusinessId) -> S
     return SqlCustomerFacts(session, business_id)
 
 
+def get_line_costs(
+    request: Request, session: SessionDep, business_id: CurrentBusinessId
+) -> LineCosts:
+    # Sales never imports `app.stock` (CODING_STANDARDS section 1): `app/main.py` hangs
+    # the real implementation (`SqlLineCosts`) on `app.state.line_costs` as a factory,
+    # the same shape `get_business_opening` uses for `business_opening`.
+    factory = cast(Callable[[Session, int], LineCosts], request.app.state.line_costs)
+    return factory(session, business_id)
+
+
 SalesDep = Annotated[SqlSales, Depends(get_sales)]
 PriceBookDep = Annotated[SqlPriceBook, Depends(get_price_book)]
 CustomerFactsDep = Annotated[SqlCustomerFacts, Depends(get_customer_facts)]
+LineCostsDep = Annotated[LineCosts, Depends(get_line_costs)]
 
 
 as_http = TranslateErrors(
@@ -103,9 +124,10 @@ def list_sales(
 
 
 @router.get("/{sale_id}")
-def get_sale(sale_id: int, sales: SalesDep) -> SaleOut:
+def get_sale(sale_id: int, sales: SalesDep, line_costs: LineCostsDep) -> SaleDetailOut:
     with as_http:
-        return SaleOut.of(view_sales.get_sale(sales, sale_id))
+        sale, costs = view_sales.get_sale_detail(sales, line_costs, sale_id)
+        return SaleDetailOut.of(sale, costs)
 
 
 @router.put("/{sale_id}/customer")
@@ -121,7 +143,13 @@ def assign_customer(
         return SaleOut.of(sale)
 
 
-@router.delete("/{sale_id}", status_code=204)
-def delete_sale(sale_id: int, sales: SalesDep, session: SessionDep) -> None:
+@router.delete("/{sale_id}", status_code=200)
+def delete_sale(sale_id: int, sales: SalesDep, session: SessionDep) -> DeleteSaleOut:
     with as_http:
-        delete_sale_use_case(sales, session, sale_id)
+        returned = delete_sale_use_case(sales, session, sale_id)
+        return DeleteSaleOut(
+            returned=[
+                ReturnedGramsOut(variety_id=r.variety_id, grams=r.grams.as_decimal())
+                for r in returned
+            ]
+        )

@@ -5,11 +5,13 @@ another business is, from here, a record that does not exist.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import date
 from typing import Protocol
 
 from app.sales.domain.pricing import VarietyPricing
 from app.sales.domain.sale import CustomerFact, Sale
+from app.shared.grams import Grams
 
 
 class PriceBook(Protocol):
@@ -57,4 +59,29 @@ class Sales(Protocol):
 
     def delete(self, sale_id: int) -> None:
         """A hard delete: the sale, its lines and its payment."""
+        ...
+
+
+@dataclass(frozen=True)
+class LineCost:
+    """One sale line's cost of goods (ADR-0009): `costed` is `None` exactly when none
+    of the line's grams is costed yet, never a $0 standing in for "not yet known".
+    `pending_grams` is the part of the line with no lot behind it."""
+
+    costed: int | None
+    pending_grams: Grams
+
+
+class LineCosts(Protocol):
+    """Cost of goods for the lines of one sale, allocated fresh on every read — never
+    frozen, never stored on the line itself (ADR-0009). Built for one business.
+
+    Sales never imports `app.stock` (CODING_STANDARDS section 1): the one
+    implementation, `app.stock.adapters.line_costs.SqlLineCosts`, is wired onto
+    `app.state.line_costs` in `app/main.py` and reached from here only through this
+    port.
+    """
+
+    def for_sale(self, sale: Sale) -> list[LineCost]:
+        """One `LineCost` per line of `sale`, in the same order as `sale.lines`."""
         ...

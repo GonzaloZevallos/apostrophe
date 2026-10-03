@@ -32,6 +32,14 @@
     "expense.amount_invalid": { "kind": "refusal" },
     "expense.detail_invalid": { "kind": "refusal" },
     "expense.month_invalid": { "kind": "refusal" },
+    "stock.entry_not_found": { "kind": "gone" },
+    "stock.grams_invalid": { "kind": "refusal" },
+    "stock.cost_required": { "kind": "refusal" },
+    "stock.cost_invalid": { "kind": "refusal" },
+    "stock.cost_on_negative_adjustment": { "kind": "refusal" },
+    "stock.date_in_future": { "kind": "refusal" },
+    "stock.note_too_long": { "kind": "refusal" },
+    "stock.threshold_invalid": { "kind": "refusal" },
     "RequestInvalid": { "kind": "refusal" }
   },
   "frontSegments": [
@@ -40,6 +48,7 @@
     "clientes",
     "variedades",
     "gastos",
+    "mi-stock",
     "mas",
     "negocio",
     "assets",
