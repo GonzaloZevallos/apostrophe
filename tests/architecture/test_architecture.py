@@ -85,20 +85,35 @@ TELEGRAM_HTTP = "app.pinned_catalog.adapters.telegram_http"
 TELEGRAM_HTTP_OWN_TEST = REPO_ROOT / "tests" / "pinned_catalog" / "test_telegram_http.py"
 
 
+def reaches_telegram_http(module: Path) -> bool:
+    """The enforcement artefact `test_no_test_but_telegram_http_s_own_reaches_the_real_
+    adapter` exercises below on a module that must be flagged, and on one that must
+    not — proven, not only trusted, the same way `scan_hexagon` is proven over
+    `fixtures/bad_hexagon` above."""
+    return any(
+        imported == TELEGRAM_HTTP or imported.startswith(TELEGRAM_HTTP + ".")
+        for imported in full_imports_of(module)
+    )
+
+
+def test_the_telegram_http_guard_flags_a_module_that_imports_it() -> None:
+    assert reaches_telegram_http(FIXTURES / "reaches_telegram_http.py") is True
+
+
+def test_the_telegram_http_guard_does_not_flag_an_unrelated_import() -> None:
+    assert reaches_telegram_http(FIXTURES / "does_not_reach_telegram_http.py") is False
+
+
 def test_no_test_but_telegram_http_s_own_reaches_the_real_adapter() -> None:
     """The plan's own invariant: no test constructs the real Telegram adapter except
     its own unit test, so every other test — the app fixture included — is proven to
     run over a fake, never the network."""
-    def _reaches_telegram_http(module: Path) -> bool:
-        return any(
-            imported == TELEGRAM_HTTP or imported.startswith(TELEGRAM_HTTP + ".")
-            for imported in full_imports_of(module)
-        )
-
     violators = [
         module
         for module in sorted((REPO_ROOT / "tests").rglob("*.py"))
-        if module != TELEGRAM_HTTP_OWN_TEST and _reaches_telegram_http(module)
+        if module != TELEGRAM_HTTP_OWN_TEST
+        and FIXTURES not in module.parents
+        and reaches_telegram_http(module)
     ]
 
     assert violators == []
