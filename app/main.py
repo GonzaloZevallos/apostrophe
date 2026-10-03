@@ -35,6 +35,7 @@ from app.settings import Settings
 from app.static_spa import MissingBuiltFront, SpaStatic, api_segments
 from app.stock.adapters.line_costs import SqlLineCosts
 from app.stock.adapters.router import router as stock_router
+from app.stock.adapters.stock_figures import SqlStockFigures
 from app.varieties.adapters.router import router as varieties_router
 
 
@@ -135,6 +136,11 @@ def create_app(
     # is added with the panel route; this is the one seam that subtask reaches it
     # through.
     app.state.period_sales = SqlPeriodSales
+    # Another factory of the same shape: results reaches stock's figures only through
+    # its own `StockFigures` port, never `app.stock` directly (ADR-0006). The panel
+    # route builds this over the request's own `Session` and business, the way
+    # `get_line_costs` already does for `line_costs`.
+    app.state.stock_figures = SqlStockFigures
 
     @app.get("/health", tags=["health"])
     def health() -> dict[str, str]:
