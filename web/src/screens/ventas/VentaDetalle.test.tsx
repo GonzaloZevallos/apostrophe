@@ -54,6 +54,8 @@ const SALE = {
       cost: { costed: 2500, pending_grams: 0 },
     },
   ],
+  still_owing: false,
+  total_grams: 5,
 }
 
 /** `DELETE /sales/{id}`'s own answer (ADR-0009): the grams the sale gave back. */
@@ -116,7 +118,7 @@ test('a gone sale shows the plain gone-detail state, never the generic retry', a
   expect(screen.getByRole('link', { name: 'Volver a Ventas' })).toHaveAttribute('href', '/ventas')
 })
 
-test('Borrar venta asks "Antes de borrar" naming the date and the amount, then deletes and returns to Ventas', async () => {
+test('Borrar venta asks "Antes de borrar" naming the date, the amount and the grams returning to stock, then deletes and returns to Ventas', async () => {
   vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(200, SALE))
   vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(200, DELETED))
   renderDetalle()
@@ -124,7 +126,7 @@ test('Borrar venta asks "Antes de borrar" naming the date and the amount, then d
 
   await userEvent.click(screen.getByRole('button', { name: 'Borrar venta' }))
   expect(
-    screen.getByText('¿Borrás la venta de $ 6.500 del 03/10?'),
+    screen.getByText('¿Borrás la venta de $ 6.500 del 03/10? Vuelven 5 g al stock.'),
   ).toBeInTheDocument()
 
   await userEvent.click(screen.getByRole('button', { name: 'Sí, borrala' }))
@@ -132,7 +134,7 @@ test('Borrar venta asks "Antes de borrar" naming the date and the amount, then d
   await waitFor(() =>
     expect(fetch).toHaveBeenCalledWith('/sales/7', expect.objectContaining({ method: 'DELETE' })),
   )
-  expect(await screen.findByText('lista de ventas')).toBeInTheDocument()
+  expect(await screen.findByText('Venta eliminada')).toBeInTheDocument()
 })
 
 test('cancelling the delete confirmation keeps the sale', async () => {
@@ -143,11 +145,13 @@ test('cancelling the delete confirmation keeps the sale', async () => {
   await userEvent.click(screen.getByRole('button', { name: 'Borrar venta' }))
   await userEvent.click(screen.getByRole('button', { name: 'No, dejala' }))
 
-  expect(screen.queryByText('¿Borrás la venta de $ 6.500 del 03/10?')).not.toBeInTheDocument()
+  expect(
+    screen.queryByText('¿Borrás la venta de $ 6.500 del 03/10? Vuelven 5 g al stock.'),
+  ).not.toBeInTheDocument()
   expect(fetch).toHaveBeenCalledTimes(1)
 })
 
-test('right after a save, "Venta guardada" shows with Deshacer, which deletes the sale named by the route\'s own id with no confirmation', async () => {
+test('right after a save, Deshacer deletes the sale with no confirmation and names the grams going back to stock', async () => {
   vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(200, SALE))
   vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(200, DELETED))
   renderDetalle(saleJustSaved())
@@ -160,7 +164,7 @@ test('right after a save, "Venta guardada" shows with Deshacer, which deletes th
   await waitFor(() =>
     expect(fetch).toHaveBeenCalledWith('/sales/7', expect.objectContaining({ method: 'DELETE' })),
   )
-  expect(await screen.findByText('lista de ventas')).toBeInTheDocument()
+  expect(await screen.findByText('Venta eliminada · los gramos vuelven al stock')).toBeInTheDocument()
 })
 
 test('opening the detail without the just-saved marker never shows Deshacer', async () => {

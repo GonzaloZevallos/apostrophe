@@ -6,7 +6,7 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
@@ -171,6 +171,55 @@ test('a sale with no customer shows "Sin cliente" and no VIP badge', async () =>
 
   expect(await screen.findByText('Sin cliente')).toBeInTheDocument()
   expect(screen.queryByText('VIP')).not.toBeInTheDocument()
+})
+
+test('a sale still owing shows its total in amber with "te debe" under it, from the API', async () => {
+  vi.mocked(fetch).mockResolvedValue(
+    jsonResponse(200, [
+      {
+        id: 4,
+        date: '2026-10-03',
+        customer: { id: 1, name: 'Ana', vip: false },
+        shipping_charged: 0,
+        note: null,
+        payment: 'owing',
+        total: 11000,
+        lines: [
+          { variety_id: 1, variety_name: 'Blue Dream', grams: 5, pricing_rule: 'list', price_per_gram: 2200, line_total: 11000 },
+        ],
+        still_owing: true,
+      },
+    ]),
+  )
+  renderVentas()
+
+  const row = await screen.findByRole('link')
+  expect(within(row).getByText('te debe')).toBeInTheDocument()
+  expect(within(row).getByText('$ 11.000')).toHaveClass('monto-deuda')
+})
+
+test('a sale paid in full shows no "te debe" mark', async () => {
+  vi.mocked(fetch).mockResolvedValue(
+    jsonResponse(200, [
+      {
+        id: 5,
+        date: '2026-10-03',
+        customer: { id: 1, name: 'Ana', vip: false },
+        shipping_charged: 0,
+        note: null,
+        payment: 'cash',
+        total: 11000,
+        lines: [
+          { variety_id: 1, variety_name: 'Blue Dream', grams: 5, pricing_rule: 'list', price_per_gram: 2200, line_total: 11000 },
+        ],
+        still_owing: false,
+      },
+    ]),
+  )
+  renderVentas()
+
+  const row = await screen.findByRole('link')
+  expect(within(row).queryByText('te debe')).not.toBeInTheDocument()
 })
 
 test('an empty period shows the empty-list text, not a blank list', async () => {

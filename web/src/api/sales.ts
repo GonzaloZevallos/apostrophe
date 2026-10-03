@@ -11,6 +11,11 @@
 import { del, get, put } from './client'
 import type { PricingRule } from '../sales/pricing'
 
+/** Whole grams the sale's lines hold, gifts included (plan, "Contract":
+ * `SaleDetailOut` adds `total_grams`) — read for the delete confirmation's
+ * "Vuelven N g al stock" (sales.md), never summed here from the lines. */
+export type GramsOut = number
+
 export type Payment = 'cash' | 'transfer' | 'owing' | 'none'
 
 export interface SaleCustomer {
@@ -37,6 +42,7 @@ export interface Sale {
   payment: Payment
   total: number
   lines: SaleLine[]
+  still_owing: boolean
 }
 
 export function listSales(dateFrom: string, dateTo: string): Promise<Sale[]> {
@@ -57,6 +63,7 @@ export interface SaleDetailLine extends SaleLine {
 
 export interface SaleDetail extends Omit<Sale, 'lines'> {
   lines: SaleDetailLine[]
+  total_grams: GramsOut
 }
 
 /** The grams a deleted sale gave back to one variety's stock. */

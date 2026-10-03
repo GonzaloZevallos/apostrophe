@@ -21,6 +21,7 @@ export type SuccessToast =
   | 'Invitación lista'
   | 'Cliente asignado'
   | 'Aviso guardado'
+  | 'Cobro eliminado'
 
 export default function AvisoExito({ texto }: { texto: SuccessToast }) {
   return (

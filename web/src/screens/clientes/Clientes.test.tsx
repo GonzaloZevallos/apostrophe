@@ -3,6 +3,13 @@
  * faked. Search lives in the `/clientes` layout's context, never the URL
  * (plan, invariants); a stale answer is only ever shown marked pending, never as
  * the answer to the query currently typed (`customers.md`, "List and search").
+ *
+ * The header's "M te deben $ X" and each row's amber/blue mark come from
+ * `GET /payments/debtors` and the customer's own `balance`/`owing_since`/
+ * `standing` (payments.md, "On screen") — `fetchStub` below dispatches on the
+ * request's own path and query, never on call order, since the header's two
+ * extra queries (the unfiltered count, the debtors total) now fire alongside the
+ * search list's own.
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -18,6 +25,24 @@ function jsonResponse(status: number, body: unknown): Response {
     status,
     headers: { 'Content-Type': 'application/json' },
   })
+}
+
+const EMPTY_DEBTORS = { total_owed: 0, sales_owing_count: 0, debtors: [] }
+
+/** Dispatches on the request's own path, not on call order (plan, invariants):
+ * `/payments/debtors` goes to `debtors`, `/customers` and `/customers?q=...` go
+ * to `customers` with the query string (`''` for no `q`) picked apart. */
+function fetchStub(
+  customers: (query: string) => Response | Promise<Response>,
+  debtors: () => Response | Promise<Response> = () => jsonResponse(200, EMPTY_DEBTORS),
+): (input: RequestInfo | URL, init?: RequestInit) => Promise<Response> {
+  return (input) => {
+    const url = typeof input === 'string' ? input : input.toString()
+    if (url === '/payments/debtors') return Promise.resolve(debtors())
+    const match = /^\/customers(?:\?q=(.*))?$/.exec(url)
+    const query = match?.[1] !== undefined ? decodeURIComponent(match[1]) : ''
+    return Promise.resolve(customers(query))
+  }
 }
 
 function renderClientes() {
@@ -44,7 +69,7 @@ afterEach(() => {
 })
 
 test('searching by part of the name calls the API with that query, never the URL', async () => {
-  vi.mocked(fetch).mockResolvedValue(jsonResponse(200, []))
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [])))
   renderClientes()
 
   await waitFor(() => expect(fetch).toHaveBeenCalledWith('/customers', expect.anything()))
@@ -57,7 +82,7 @@ test('searching by part of the name calls the API with that query, never the URL
 })
 
 test('searching by digits of the phone also never touches the URL', async () => {
-  vi.mocked(fetch).mockResolvedValue(jsonResponse(200, []))
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [])))
   renderClientes()
   await waitFor(() => expect(fetch).toHaveBeenCalledWith('/customers', expect.anything()))
 
@@ -69,48 +94,63 @@ test('searching by digits of the phone also never touches the URL', async () => 
 })
 
 test('a stale answer still in flight shows marked pending, never as the current result', async () => {
-  let resolveFirst: ((value: Response) => void) | undefined
-  const firstPromise = new Promise<Response>((resolve) => {
-    resolveFirst = resolve
-  })
-  vi.mocked(fetch).mockImplementationOnce(() => firstPromise)
-  vi.mocked(fetch).mockResolvedValueOnce(
-    jsonResponse(200, [{ id: 2, name: 'Nico Parra', phone: '+5491131785094', channel: null, vip: false }]),
+  let resolveEmpty: ((value: Response) => void) | undefined
+  vi.mocked(fetch).mockImplementation(
+    fetchStub((query) => {
+      if (query === '') {
+        return new Promise<Response>((resolve) => {
+          resolveEmpty = resolve
+        })
+      }
+      if (query === 'ni') {
+        return jsonResponse(200, [
+          { id: 2, name: 'Nico Parra', phone: '+5491131785094', channel: null, vip: false },
+        ])
+      }
+      return jsonResponse(200, [])
+    }),
   )
   renderClientes()
 
   const input = screen.getByLabelText('Buscar cliente')
   await userEvent.type(input, 'ni')
-  await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2))
 
   // The newer query ("ni") already answered while the first (empty query) is
   // still pending: the list must show the newer data, and never let the first
   // call's late answer replace it afterwards.
   await waitFor(() => expect(screen.getByText('Nico Parra')).toBeInTheDocument())
 
-  resolveFirst?.(jsonResponse(200, []))
+  resolveEmpty?.(jsonResponse(200, []))
   await new Promise((resolve) => setTimeout(resolve, 10))
   expect(screen.getByText('Nico Parra')).toBeInTheDocument()
 })
 
 test('a result still catching up to a newer keystroke is marked pending, not current', async () => {
-  let resolveSecond: ((value: Response) => void) | undefined
-  vi.mocked(fetch).mockResolvedValueOnce(
-    jsonResponse(200, [{ id: 1, name: 'Mica Solano', phone: '+5491160337725', channel: null, vip: false }]),
-  )
-  vi.mocked(fetch).mockImplementationOnce(
-    () => new Promise<Response>((resolve) => { resolveSecond = resolve }),
+  let resolveX: ((value: Response) => void) | undefined
+  vi.mocked(fetch).mockImplementation(
+    fetchStub((query) => {
+      if (query === '') {
+        return jsonResponse(200, [
+          { id: 1, name: 'Mica Solano', phone: '+5491160337725', channel: null, vip: false },
+        ])
+      }
+      if (query === 'x') {
+        return new Promise<Response>((resolve) => {
+          resolveX = resolve
+        })
+      }
+      return jsonResponse(200, [])
+    }),
   )
   renderClientes()
   await waitFor(() => expect(screen.getByText('Mica Solano')).toBeInTheDocument())
 
   await userEvent.type(screen.getByLabelText('Buscar cliente'), 'x')
-  await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2))
 
   await waitFor(() => expect(screen.getByText('Buscando…')).toBeInTheDocument())
   const list = screen.getByText('Buscando…').closest('.lista-clientes')
   expect(list).toHaveAttribute('aria-busy', 'true')
-  resolveSecond?.(jsonResponse(200, []))
+  resolveX?.(jsonResponse(200, []))
 })
 
 test('a dropped network on the list shows Sin conexión, never the empty-list text', async () => {
@@ -127,4 +167,50 @@ test('a server error on the list shows the generic retry, never the empty-list t
 
   expect(await screen.findByText('Algo falló. Probá de nuevo.')).toBeInTheDocument()
   expect(screen.queryByText('Todavía no agregaste ningún cliente.')).not.toBeInTheDocument()
+})
+
+test('the header reads "N clientes · M te deben $ X", and tapping the debt part opens Te deben', async () => {
+  vi.mocked(fetch).mockImplementation(
+    fetchStub(
+      () =>
+        jsonResponse(200, [
+          { id: 1, name: 'Ana', phone: '+5491100000001', channel: null, vip: false, balance: 15000, owing_since: '2026-09-14', standing: 'owes' },
+          { id: 2, name: 'Lu', phone: '+5491100000002', channel: null, vip: false, balance: 0, owing_since: null, standing: 'settled' },
+        ]),
+      () =>
+        jsonResponse(200, {
+          total_owed: 15000,
+          sales_owing_count: 1,
+          debtors: [{ customer: { id: 1, name: 'Ana' }, balance: 15000, owing_since: '2026-09-14', standing: 'owes' }],
+        }),
+    ),
+  )
+  renderClientes()
+
+  expect(await screen.findByText('2 clientes')).toBeInTheDocument()
+  const link = screen.getByRole('link', { name: '1 te deben $ 15.000' })
+  expect(link).toHaveAttribute('href', '/clientes/deben')
+})
+
+test('with no debtors, the header shows no debt part', async () => {
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [])))
+  renderClientes()
+
+  expect(await screen.findByText('0 clientes')).toBeInTheDocument()
+  expect(screen.queryByText(/te deben/)).not.toBeInTheDocument()
+})
+
+test('a customer who owes shows the amber mark; one in credit shows the blue "A favor"', async () => {
+  vi.mocked(fetch).mockImplementation(
+    fetchStub(() =>
+      jsonResponse(200, [
+        { id: 1, name: 'Ana', phone: '+5491100000001', channel: null, vip: false, balance: 15000, owing_since: '2026-09-14', standing: 'owes' },
+        { id: 2, name: 'Lu', phone: '+5491100000002', channel: null, vip: false, balance: -2000, owing_since: null, standing: 'credit' },
+      ]),
+    ),
+  )
+  renderClientes()
+
+  expect(await screen.findByText('te debe desde 14/09')).toBeInTheDocument()
+  expect(screen.getByText('A favor $ 2.000')).toBeInTheDocument()
 })
