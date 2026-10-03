@@ -12,8 +12,13 @@
  * so "Sin cliente" never shows here (PM round 4). On success the toast "Cliente
  * asignado" shows in place — no navigation, so it is a local `AvisoExito`, not a
  * history-state toast. If a partner assigned one first, `sale.customer_already_assigned`
- * shows its own fixed message and the detail is invalidated so it refreshes with
- * the customer now on it; lines are never repriced (PRD, "Detalle de venta").
+ * shows its own fixed message (through `RefusalCode`/`resolveOverride`, like every
+ * other screen's refusal handling) and the detail is invalidated so it refreshes
+ * with the customer now on it; lines are never repriced (PRD, "Detalle de venta").
+ * A gone answer on the assign itself — the sale or the chosen customer deleted
+ * meanwhile (`sale.not_found`, `sale.customer_not_found`) — follows the same gone
+ * path `removeSale` already takes: `GONE_NOTICE` on `Ventas` (PRD: "assigning a
+ * customer, deleting or undoing shows 'Eso ya no está. La lista ya está al día.'").
  */
 
 import { useEffect, useState } from 'react'
@@ -23,7 +28,7 @@ import { ApiError, NetworkError } from '../../api/client'
 import type { Customer } from '../../api/customers'
 import { invalidateResource, keys } from '../../api/keys'
 import { assignCustomer, deleteSale, getSale, type Sale } from '../../api/sales'
-import { GONE_NOTICE, isGone } from '../../api/refusals'
+import { GONE_NOTICE, isGone, resolveOverride, type RefusalCode } from '../../api/refusals'
 import AvisoExito from '../../components/AvisoExito'
 import ConfirmDialog from '../../components/ConfirmDialog'
 import { clearSaleJustSaved, readFeedback, SALE_SAVED } from '../../components/feedback'
@@ -38,6 +43,15 @@ import NuevaVentaCliente from './NuevaVentaCliente'
 
 export const CUSTOMER_ALREADY_ASSIGNED_MESSAGE = 'Esta venta ya tiene cliente.'
 const ASSIGN_TOAST_MS = 2500
+
+/** `PUT /sales/{id}/customer`'s own refusals, matched only through `RefusalCode`
+ * (plan, invariants: "screens reference codes only through RefusalCode"), never a
+ * bare string comparison. `refetch` is set only for the one code whose refusal
+ * means another customer is already on the sale: the detail must then show who,
+ * not the stale "no customer" this screen last rendered. */
+const ASSIGN_OVERRIDES: Partial<Record<RefusalCode, { message: string; refetch: boolean }>> = {
+  'sale.customer_already_assigned': { message: CUSTOMER_ALREADY_ASSIGNED_MESSAGE, refetch: true },
+}
 
 export const UNDO_WINDOW_MS = 5000
 
@@ -102,6 +116,12 @@ export default function VentaDetalle() {
     mutationFn: (customerId: number) => assignCustomer(saleId, customerId),
   })
 
+  useEffect(() => {
+    if (!assigned) return
+    const timer = setTimeout(() => setAssigned(false), ASSIGN_TOAST_MS)
+    return () => clearTimeout(timer)
+  }, [assigned])
+
   async function onCustomerChosen(customer: Customer | null): Promise<void> {
     if (customer === null) return // `allowNone={false}`: the sheet never offers it here.
     setShowAssignSheet(false)
@@ -115,13 +135,18 @@ export default function VentaDetalle() {
       queryClient.setQueryData(keys.sale(saleId), updated)
       invalidateResource(queryClient, 'sales')
       setAssigned(true)
-      setTimeout(() => setAssigned(false), ASSIGN_TOAST_MS)
     } catch (caught) {
-      if (caught instanceof ApiError && caught.code === 'sale.customer_already_assigned') {
-        setAssignError(CUSTOMER_ALREADY_ASSIGNED_MESSAGE)
-        // Someone else assigned one first: refetch so the detail shows who,
-        // rather than leaving this screen's stale "no customer" on view.
-        void queryClient.invalidateQueries({ queryKey: keys.sale(saleId) })
+      if (caught instanceof ApiError && isGone(caught.code)) {
+        // The sale, or the customer just chosen, is gone (a partner deleted
+        // either meanwhile): the same gone path `removeSale` takes below.
+        invalidateResource(queryClient, 'sales')
+        navigate('/ventas', { replace: true, state: { notice: GONE_NOTICE } })
+      } else if (caught instanceof ApiError) {
+        const override = resolveOverride(ASSIGN_OVERRIDES, caught.code)
+        setAssignError(override?.message ?? GENERIC_REFUSAL)
+        if (override?.refetch === true) {
+          void queryClient.invalidateQueries({ queryKey: keys.sale(saleId) })
+        }
       } else if (caught instanceof NetworkError) {
         setAssignOffline(true)
       } else {

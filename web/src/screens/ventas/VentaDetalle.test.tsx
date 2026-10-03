@@ -265,3 +265,39 @@ test('assigning a customer to a sale someone already assigned shows the fixed me
   expect(await screen.findByText('Esta venta ya tiene cliente.')).toBeInTheDocument()
   await waitFor(() => expect(screen.queryByRole('button', { name: 'Asignar cliente' })).not.toBeInTheDocument())
 })
+
+test('assigning to a sale a partner deleted meanwhile shows the gone notice on Ventas', async () => {
+  vi.mocked(fetch).mockImplementation(
+    dispatchFetch({
+      'GET /sales/7': () => jsonResponse(200, { ...SALE, customer: null, payment: 'none' }),
+      'GET /customers?q=Nico': () => jsonResponse(200, [NICO_SEARCH_RESULT]),
+      'PUT /sales/7/customer': () => jsonResponse(404, { code: 'sale.not_found' }),
+    }),
+  )
+  renderDetalle()
+  await screen.findByText('Sin cliente')
+
+  await userEvent.click(screen.getByRole('button', { name: 'Asignar cliente' }))
+  fireEvent.change(screen.getByPlaceholderText('Teléfono o nombre'), { target: { value: 'Nico' } })
+  await userEvent.click(await screen.findByText('Nico'))
+
+  expect(await screen.findByText('Eso ya no está. La lista ya está al día.')).toBeInTheDocument()
+})
+
+test('assigning a customer a partner deleted meanwhile shows the gone notice on Ventas', async () => {
+  vi.mocked(fetch).mockImplementation(
+    dispatchFetch({
+      'GET /sales/7': () => jsonResponse(200, { ...SALE, customer: null, payment: 'none' }),
+      'GET /customers?q=Nico': () => jsonResponse(200, [NICO_SEARCH_RESULT]),
+      'PUT /sales/7/customer': () => jsonResponse(404, { code: 'sale.customer_not_found' }),
+    }),
+  )
+  renderDetalle()
+  await screen.findByText('Sin cliente')
+
+  await userEvent.click(screen.getByRole('button', { name: 'Asignar cliente' }))
+  fireEvent.change(screen.getByPlaceholderText('Teléfono o nombre'), { target: { value: 'Nico' } })
+  await userEvent.click(await screen.findByText('Nico'))
+
+  expect(await screen.findByText('Eso ya no está. La lista ya está al día.')).toBeInTheDocument()
+})
