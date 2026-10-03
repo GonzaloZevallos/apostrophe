@@ -42,6 +42,7 @@ from app.payments.adapters.sql_payments import SqlPayments
 from app.payments.adapters.tables import PaymentRow
 from app.shared.transaction import Transaction
 from tests.conftest import SETTINGS, TEST_HASHER, MovableClock, open_business, signed_in
+from tests.fakes.telegram import FakeTelegram
 
 MARKER = "zz-isolation-marker"
 
@@ -268,7 +269,9 @@ PUBLIC_PATHS = {"/health", "/auth/login", "/auth/logout"}
 
 
 def _operations() -> list[tuple[str, str, bool]]:
-    document = create_app(SETTINGS, hasher=TEST_HASHER).openapi()
+    document = create_app(
+        SETTINGS, hasher=TEST_HASHER, telegram=FakeTelegram(), upkeep_ticker=False
+    ).openapi()
     return sorted(
         (method.upper(), path, "requestBody" in operation)
         for path, item in document["paths"].items()

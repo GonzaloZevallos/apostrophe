@@ -8,6 +8,7 @@ from app.db import make_engine
 from app.main import create_app
 from app.settings import Settings
 from tests.conftest import PASSWORD, TEST_HASHER
+from tests.fakes.telegram import FakeTelegram
 
 NEW_USER = {"email": "nueva@example.com", "password": PASSWORD, "business_name": "La Huerta"}
 
@@ -25,7 +26,13 @@ def test_the_command_prints_a_link_that_opens_a_business(
     link = capsys.readouterr().out.splitlines()[0]
     assert link.startswith("http://192.168.0.10:8000/invitation/")
     token = link.rsplit("/", 1)[-1]
-    app = create_app(Settings("cli-secret", url), engine=make_engine(url), hasher=TEST_HASHER)
+    app = create_app(
+        Settings("cli-secret", url),
+        engine=make_engine(url),
+        hasher=TEST_HASHER,
+        telegram=FakeTelegram(),
+        upkeep_ticker=False,
+    )
     with TestClient(app) as client:
         accepted = client.post(f"/invitations/{token}/accept", json=NEW_USER)
     assert accepted.status_code == 201

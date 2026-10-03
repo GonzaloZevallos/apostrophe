@@ -5,6 +5,7 @@ Each root must contribute modules: a checker pointed at the wrong path stays gre
 forever over zero files.
 """
 
+import ast
 from pathlib import Path
 
 import pytest
@@ -114,6 +115,61 @@ def test_no_test_but_telegram_http_s_own_reaches_the_real_adapter() -> None:
         if module != TELEGRAM_HTTP_OWN_TEST
         and FIXTURES not in module.parents
         and reaches_telegram_http(module)
+    ]
+
+    assert violators == []
+
+
+CREATE_APP_REQUIRED_KEYWORDS = frozenset({"telegram", "upkeep_ticker"})
+
+
+def create_app_calls_missing_keywords(module: Path) -> list[str]:
+    """Every `create_app(...)` call in `module` that omits `telegram` or
+    `upkeep_ticker`, named `module:line: missing [...]` — a static stand-in for "every
+    test app injects `FakeTelegram` and sets `upkeep_ticker=False`" (the plan's
+    invariant), proven below against a call that must be flagged and one that must
+    not, the same way `reaches_telegram_http` is proven above.
+
+    Presence of the keyword is all that is checked, not its value: `test_ticker.py`
+    legitimately passes `upkeep_ticker=True` to exercise the ticker itself, over its
+    own `FakeTelegram`. What this guard rules out is a call that forgets the keyword
+    entirely and so falls through to `create_app`'s production defaults — the real
+    `HttpTelegram` and the ticker on — inside a test.
+    """
+    tree = ast.parse(module.read_text(), filename=str(module))
+    return [
+        f"{module}:{node.lineno}: missing {sorted(CREATE_APP_REQUIRED_KEYWORDS - given)}"
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Call) and _calls_create_app(node.func)
+        for given in [{kw.arg for kw in node.keywords if kw.arg is not None}]
+        if not CREATE_APP_REQUIRED_KEYWORDS <= given
+    ]
+
+
+def _calls_create_app(func: ast.expr) -> bool:
+    return (isinstance(func, ast.Name) and func.id == "create_app") or (
+        isinstance(func, ast.Attribute) and func.attr == "create_app"
+    )
+
+
+def test_the_create_app_guard_flags_a_call_naming_neither_keyword() -> None:
+    assert create_app_calls_missing_keywords(FIXTURES / "unguarded_create_app.py") != []
+
+
+def test_the_create_app_guard_does_not_flag_a_call_naming_both_keywords() -> None:
+    assert create_app_calls_missing_keywords(FIXTURES / "guarded_create_app.py") == []
+
+
+def test_every_create_app_call_under_tests_names_telegram_and_upkeep_ticker() -> None:
+    """The plan's own invariant, over every call site rather than trusting each one:
+    a `create_app(...)` call under `tests/` that forgets `telegram` or `upkeep_ticker`
+    falls through to the real adapter and the live ticker (Tech Lead: review
+    integration, blocking)."""
+    violators = [
+        violation
+        for module in sorted((REPO_ROOT / "tests").rglob("*.py"))
+        if FIXTURES not in module.parents
+        for violation in create_app_calls_missing_keywords(module)
     ]
 
     assert violators == []

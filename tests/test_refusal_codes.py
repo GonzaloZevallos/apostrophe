@@ -25,6 +25,7 @@ from app.sales.adapters.router import as_http as sales_as_http
 from app.stock.adapters.router import as_http as stock_as_http
 from app.varieties.adapters.router import as_http as varieties_as_http
 from tests.conftest import SETTINGS, TEST_HASHER
+from tests.fakes.telegram import FakeTelegram
 
 CONTRACT_PATH = Path(__file__).resolve().parent.parent / "web" / "src" / "api" / "contract.json"
 
@@ -168,7 +169,9 @@ def test_no_api_path_segment_is_a_front_segment() -> None:
     contract = json.loads(CONTRACT_PATH.read_text())
     front_segments: set[str] = set(contract["frontSegments"])
 
-    document = create_app(SETTINGS, hasher=TEST_HASHER).openapi()
+    document = create_app(
+        SETTINGS, hasher=TEST_HASHER, telegram=FakeTelegram(), upkeep_ticker=False
+    ).openapi()
     api_first_segments = {
         path.strip("/").split("/", 1)[0] for path in document["paths"] if path != "/"
     }
