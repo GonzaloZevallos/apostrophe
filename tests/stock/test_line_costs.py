@@ -127,6 +127,20 @@ def test_a_line_past_every_lot_is_pending_never_a_zero_cost() -> None:
     assert costs == [LineCost(costed=None, pending_grams=Grams.of("10"))]
 
 
+def test_a_line_spanning_two_lots_is_split_between_costed_and_pending() -> None:
+    entries = FakeEntries(
+        [_entry(1, "5", 5_000, entry_id=1), _entry(1, "3", 6_000, entry_id=2)]
+    )
+    sale = _sale(7, (_line(1, "10"),))
+    draws = FakeDraws([_draw(1, 7, 0, "10")])
+
+    costs = costs_for_sale(entries, draws, sale)
+
+    # 8 g drawn across both lots, $5 000 + $6 000 = $11 000 exactly; the other 2 g of
+    # the 10 g line have no lot behind them, so they are pending, never a $0 cost.
+    assert costs == [LineCost(costed=11_000, pending_grams=Grams.of("2"))]
+
+
 def test_two_lines_of_different_varieties_are_matched_back_by_position() -> None:
     entries = FakeEntries(
         [_entry(1, "10", 10_000, entry_id=1), _entry(2, "10", 20_000, entry_id=2)]
