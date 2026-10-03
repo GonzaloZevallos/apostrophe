@@ -76,6 +76,22 @@ def test_inclusion_matrix(
     assert _state_of(client, variety_id) == expected
 
 
+def test_low_stock_still_qualifies_as_in(client: TestClient) -> None:
+    """The PRD's inclusion metric: 'a variety with low stock still appears'. Stock's own
+    `low` status (below its threshold, but still above zero) must still read as `in`,
+    never compared to grams by the catalog itself."""
+    variety_id = _variety(client, "Matrix low")
+    _price(client, variety_id)
+    _stock(client, variety_id, "5")
+    threshold = client.put(f"/stock/varieties/{variety_id}/threshold", json={"grams": "50"})
+    assert threshold.status_code == 200, threshold.text
+    assert threshold.json()["status"] == "low", threshold.text
+
+    assert _state_of(client, variety_id) == "in"
+    catalog = client.get("/catalog").json()
+    assert catalog["text"] is not None and "Matrix low" in catalog["text"]
+
+
 def test_sold_out_state_when_stock_was_drawn_down_to_zero(client: TestClient) -> None:
     variety_id = _variety(client, "Matrix sold out")
     _price(client, variety_id)
@@ -176,12 +192,18 @@ def test_setting_attributes_of_a_missing_variety_answers_404(client: TestClient)
     assert response.json()["code"] == "catalog.variety_not_found"
 
 
-def test_a_new_business_opens_with_its_default_header_and_footer(client: TestClient) -> None:
+def test_a_new_business_opens_with_both_openings_in_one_commit(client: TestClient) -> None:
+    """`CompositeOpening` (ADR-0006) must run `ExpenseCategoriesOpening` and
+    `CatalogHeaderFooterOpening` together, inside `accept_invitation`'s single commit:
+    a new business has its four default expense categories and its default catalog
+    header and footer already there, with no catalog attribute rows."""
     catalog = client.get("/catalog").json()
+    categories = client.get("/expense-categories").json()
 
     assert catalog["header"] == "\U0001f33f **CATÁLOGO** \U0001f33f"
     assert catalog["footer"] == "\U0001f4e9 Consultas y pedidos por privado."
     assert catalog["varieties"] == []
+    assert len(categories) == 4
 
 
 def test_a_business_only_ever_sees_its_own_catalog(
