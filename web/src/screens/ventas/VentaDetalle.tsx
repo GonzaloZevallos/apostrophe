@@ -139,7 +139,10 @@ export default function VentaDetalle() {
       if (caught instanceof ApiError && isGone(caught.code)) {
         // The sale, or the customer just chosen, is gone (a partner deleted
         // either meanwhile): the same gone path `removeSale` takes below.
-        invalidateResource(queryClient, 'sales')
+        // `refetchType: 'none'`: this screen's own `keys.sale(saleId)` query is
+        // still mounted for one more tick and would otherwise refetch into a 404
+        // the browser logs on its own (keys.ts).
+        invalidateResource(queryClient, 'sales', { refetchType: 'none' })
         navigate('/ventas', { replace: true, state: { notice: GONE_NOTICE } })
       } else if (caught instanceof ApiError) {
         const override = resolveOverride(ASSIGN_OVERRIDES, caught.code)
@@ -161,11 +164,15 @@ export default function VentaDetalle() {
     setDeleteFailed(false)
     try {
       await deleteSale(saleId)
-      invalidateResource(queryClient, 'sales')
+      // `refetchType: 'none'` (keys.ts): the sale just deleted is this screen's own
+      // `keys.sale(saleId)`, still mounted for one more tick — refetching it now
+      // would only answer 404. Ventas still gets a fresh list on its next mount,
+      // since the invalidated query is left stale.
+      invalidateResource(queryClient, 'sales', { refetchType: 'none' })
       navigate('/ventas', { replace: true, state: { toast: 'Venta eliminada' } })
     } catch (caught) {
       if (caught instanceof ApiError && isGone(caught.code)) {
-        invalidateResource(queryClient, 'sales')
+        invalidateResource(queryClient, 'sales', { refetchType: 'none' })
         navigate('/ventas', { replace: true, state: { notice: GONE_NOTICE } })
       } else if (caught instanceof NetworkError) {
         setDeleteOffline(true)

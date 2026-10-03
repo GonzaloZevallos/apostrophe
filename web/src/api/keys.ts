@@ -62,10 +62,30 @@ const CROSS_INVALIDATES: Partial<Record<Resource, Resource[]>> = {
 }
 
 /** Invalidates the whole prefix a write belongs to, plus its cross rule if it has
- * one. A mutation calls this instead of naming the query keys it affects by hand. */
-export function invalidateResource(queryClient: QueryClient, resource: Resource): void {
+ * one. A mutation calls this instead of naming the query keys it affects by hand.
+ *
+ * `refetchType: 'none'` (TanStack's own option, passed through) marks every
+ * matching query stale without refetching any of them now: a screen that is
+ * navigating away from a record it just deleted needs the *list* it is about to
+ * land on to refetch on its next mount, never the record's own still-mounted
+ * detail query — the bare prefix this invalidates also matches that detail key
+ * (`keys.sale(id)` starts with the same `'sales'` prefix `keys.sales(...)` does),
+ * and refetching a just-deleted record one tick before it unmounts answers 404,
+ * which a browser always surfaces to its own console (CODING_STANDARDS.md section
+ * 9: nothing of that kind belongs there, caught by the e2e run's own zero-message
+ * assertion). The default (`undefined`, TanStack's own 'active') is unchanged for
+ * every other call site, where the screen invalidating stays on the same page and
+ * wants its own query refetched right away. */
+export function invalidateResource(
+  queryClient: QueryClient,
+  resource: Resource,
+  options?: { refetchType?: 'active' | 'inactive' | 'all' | 'none' },
+): void {
   const resources = [resource, ...(CROSS_INVALIDATES[resource] ?? [])]
   for (const affected of resources) {
-    queryClient.invalidateQueries({ queryKey: [PREFIX[affected]] })
+    queryClient.invalidateQueries({
+      queryKey: [PREFIX[affected]],
+      refetchType: options?.refetchType,
+    })
   }
 }
