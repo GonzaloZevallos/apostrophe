@@ -1,11 +1,13 @@
 /**
  * `App`'s route table at the module seam (plan, "Session"; "Shape"; invariants):
  * the public branch never mounts a gated query ("/entrar" draws no `fetch` at
- * all), and the gated branch's new `/ventas` routes resolve to the stub screens
- * this subtask registers for the screen subtasks to fill in. `router.navigate`
- * drives the shared `router` singleton to the path under test, rather than
- * `window.history.pushState`, which would race this module's own import (the
- * router is built once, from whatever `window.location` is at that moment).
+ * all), and the gated branch's `/ventas` routes resolve to the screens behind
+ * them — `/ventas` and `/ventas/:id` now the real `Ventas`/`VentaDetalle`
+ * (`sales-list-and-detail`), `/ventas/nueva` still the stub `new-sale-screen`
+ * fills in next. `router.navigate` drives the shared `router` singleton to the
+ * path under test, rather than `window.history.pushState`, which would race this
+ * module's own import (the router is built once, from whatever `window.location`
+ * is at that moment).
  */
 
 import { act, render, screen } from '@testing-library/react'
@@ -66,16 +68,39 @@ test('/ventas/nueva renders the NuevaVenta stub under the gated shell', async ()
   expect(await screen.findByText('Nueva venta')).toBeInTheDocument()
 })
 
-test('/ventas/:id renders the VentaDetalle stub under the gated shell', async () => {
+test('/ventas/:id renders VentaDetalle, from the API, under the gated shell', async () => {
+  // A dedicated response per call (never one `Response` instance shared across
+  // `/auth/me` and `/sales/1`): `Response.json()` can only run once per instance,
+  // and this route now makes both calls, unlike the stub it replaces.
   vi.stubGlobal(
     'fetch',
-    vi.fn().mockResolvedValue(
-      jsonResponse(200, { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }),
-    ),
+    vi.fn().mockImplementation((input: RequestInfo | URL) => {
+      const path = String(input)
+      if (path === '/sales/1') {
+        return Promise.resolve(
+          jsonResponse(200, {
+            id: 1,
+            date: '2026-10-02',
+            customer: null,
+            shipping_charged: 0,
+            note: null,
+            payment: 'none',
+            total: 1000,
+            lines: [
+              { variety_id: 1, variety_name: 'Blue Dream', grams: 1, pricing_rule: 'list', price_per_gram: 1000, line_total: 1000 },
+            ],
+          }),
+        )
+      }
+      return Promise.resolve(
+        jsonResponse(200, { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }),
+      )
+    }),
   )
-  await act(() => router.navigate('/ventas/sale-1'))
+  await act(() => router.navigate('/ventas/1'))
 
   render(<App />)
 
   expect(await screen.findByText('Venta')).toBeInTheDocument()
+  expect(await screen.findByText('Blue Dream')).toBeInTheDocument()
 })

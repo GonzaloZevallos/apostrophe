@@ -816,6 +816,167 @@
   overflow-y: auto;
 }
 
+/* `Ventas`: the period tabs (Hoy/Semana/Mes/Fechas, `sales.md`), the list and each
+ * sale's row. `.fila-venta` mirrors `.fila-gasto`'s shape (a tappable row, same
+ * height and border), just with its own four columns. */
+.periodos {
+  display: flex;
+  gap: var(--espacio-sm);
+}
+
+.periodos__boton {
+  height: var(--alto-tocable);
+  padding: 0 var(--espacio-md);
+  border: 0;
+  border-radius: var(--radio-pildora);
+  background: var(--superficie);
+  color: var(--tinta);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.periodos__boton--activo {
+  background: var(--acento-suave);
+  color: var(--acento);
+  font-weight: 600;
+}
+
+.periodos__fechas {
+  display: flex;
+  gap: var(--espacio-md);
+}
+
+.ventas__resumen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-xs);
+}
+
+.lista-ventas {
+  display: flex;
+  flex-direction: column;
+}
+
+.fila-venta {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+  min-height: var(--alto-tocable);
+  padding: var(--espacio-sm) 0;
+  border-bottom: 1px solid var(--linea);
+  color: var(--tinta);
+  text-decoration: none;
+}
+
+.fila-venta:last-child {
+  border-bottom: 0;
+}
+
+.fila-venta__fecha {
+  width: 42px;
+  font-size: 13px;
+  color: var(--tinta2);
+}
+
+.fila-venta__cliente {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.fila-venta__sin-cliente {
+  color: var(--tinta2);
+  font-weight: 400;
+}
+
+.fila-venta__detalle {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  color: var(--tinta2);
+}
+
+.fila-venta__monto {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* `VentaDetalle`: each line's rule badge next to its variety, same pill shape as
+ * `.vip-insignia`, just its own neutral tone (a rule is not a status). */
+.venta-detalle__lineas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-sm);
+}
+
+.venta-detalle__linea {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-sm);
+  padding: var(--espacio-sm) 0;
+  border-bottom: 1px solid var(--linea);
+}
+
+.venta-detalle__variedad {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 600;
+}
+
+.venta-detalle__gramos,
+.venta-detalle__precio {
+  font-size: 13px;
+  color: var(--tinta2);
+}
+
+.venta-detalle__total {
+  font-weight: 600;
+}
+
+.regla-insignia {
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--superficie);
+  color: var(--tinta2);
+  padding: 3px 9px;
+  border-radius: var(--radio-pildora);
+}
+
+/* "Venta guardada" with Deshacer (`Estados`): the one success notice with an
+ * action, a deliberate exception (plan, invariants) — never the plain `.toast`/
+ * `Notice` shape, so Deshacer can sit right next to the text. */
+.venta-guardada {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-md);
+  background: var(--boton);
+  color: var(--boton-texto);
+  border-radius: var(--radio-panel);
+  padding: var(--espacio-md) var(--espacio-lg);
+}
+
+.venta-guardada__texto {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.venta-guardada__deshacer {
+  background: transparent;
+  border: 0;
+  color: var(--boton-texto);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 @media (min-width: 900px) {
   .bar-inferior {
     display: none;
