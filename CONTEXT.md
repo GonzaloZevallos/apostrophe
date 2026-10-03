@@ -287,5 +287,5 @@ A business's one Telegram bot token, stored encrypted and never shown again once
 _Avoid_: integration, connection, config
 
 **Out of date**:
-The pinned catalog's state after the last automatic update failed, or while changed bot settings are untested. It shows the last publish date and one fixed reason. Its only other state is up to date. _In the app_: Desactualizado / Al día.
+The pinned catalog's state when customers are not seeing today's catalog: the last automatic update failed (Telegram down, bot can't post, message deleted, text too long), or a new token or channel was tested but not yet published. It shows one fixed reason and, when the current chat has been published to, the last publish date. Its only other state is up to date. _In the app_: Desactualizado / Al día.
 _Avoid_: stale, pending, out of sync, error

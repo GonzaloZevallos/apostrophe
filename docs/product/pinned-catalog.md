@@ -31,29 +31,34 @@ Setup (token, chats, first Probarlo and Publicar) is judged by criteria 3, 5 and
   - shown in plain text and editable in place;
   - never sent to logs, the console or browser storage;
   - each field has a short fixed help line saying where to find it.
-- **Changing any of the three** re-arms the test gate.
+- **Saved only through Probarlo**: settings are saved only when a test of the typed values succeeds, so the saved settings have always been tested.
+- **Changing any of the three** re-arms the test gate. The successful Probarlo that saves the change satisfies it again.
+- **Changing only the own chat** leaves the channel and its pin as they were: upkeep goes on and the status doesn't change.
 
 ### Probarlo (test send)
 
 - It tests the values typed on the screen, not the saved ones.
 - It needs the token and the own chat. The channel chat may be blank.
 - **On success**: the typed values are saved, the test counts for the gate, and the toast "Prueba enviada" shows.
-- **On failure**: nothing is saved. A fixed inline reason shows that never repeats what was typed, and everything typed stays.
+- **On failure**: nothing is saved. A fixed inline reason shows that never repeats what was typed, and everything typed stays. A text over Telegram's limit fails with "Es demasiado largo para Telegram: acortá aromas u ocultá variedades."
 - It sends exactly what would be published, the empty-catalog case included.
 
 ### Publicar (publish and pin)
 
-- **What it needs**: a saved channel chat, and a successful Probarlo since the token or either chat last changed. Until then it shows as disabled with "Probalo primero para ver cómo queda".
+- **What it needs**: a saved channel chat, a successful Probarlo since the token or either chat last changed, and no unsaved edits typed in the settings. Until then it shows as disabled with "Probalo primero para ver cómo queda".
 - **Posting and editing**:
-  - The first Publicar to a channel chat posts and pins the message.
-  - Every later Publicar edits that same pinned message.
+  - The first Publicar to a channel chat posts the message and pins it.
+  - A later Publicar edits that same message and pins it again, so a message unpinned by hand is pinned back.
+  - If that message no longer exists (deleted by hand), Publicar posts and pins a new one in the same chat. Upkeep then edits the new one.
   - It always sends, whether or not the text changed.
   - On success it shows the toast "Catálogo publicado".
-- **Failure**: a wrong channel, or a bot that can't post or pin there, fails inline with a fixed reason that never repeats what was typed.
+- **Failure**:
+  - A wrong channel, or a bot that can't post or pin there, fails inline with a fixed reason that never repeats what was typed.
+  - A text over Telegram's limit fails inline with "Es demasiado largo para Telegram: acortá aromas u ocultá variedades." Nothing is sent.
 
 ### Upkeep (automatic sync)
 
-- It applies only after the first successful Publicar.
+- It applies to a channel chat only after the first successful Publicar to it.
 - **Triggers**:
   - price entries recorded or deleted;
   - catalog attributes, header or footer;
@@ -61,28 +66,33 @@ Setup (token, chats, first Probarlo and Publicar) is judged by criteria 3, 5 and
   - stock entries recorded, edited or deleted;
   - sales recorded or deleted, Deshacer included;
   - the start of a new day in Argentina time, for price entries that come into force that day.
-- **Rule**: the text is rebuilt on a trigger. The pin is edited only if the new text differs from the last text published. Topping up a variety already in the catalog sends nothing.
+- **Rule**: the text is rebuilt on a trigger. The pinned message is edited only if the new text differs from the last text published. Topping up a variety already in the catalog sends nothing.
+- **It only ever edits.** Upkeep never posts a new message, even when the old one was deleted by hand.
 - **The triggering save never waits for Telegram**:
   - it answers and shows its own toast on its own terms;
   - the sync happens after it;
   - its toast never mentions the sync;
   - a failed sync never fails, delays or rolls back that save.
-- **Paused**: if the settings changed and were not yet tested, upkeep attempts nothing until Probarlo and Publicar succeed again.
+- **Too long**: a change that makes the text exceed Telegram's limit is still saved. The edit is not sent, and the pin keeps its last text until a later change brings the text back under the limit.
+- **After a token or channel change**: nothing is attempted in the new chat until its first Publicar.
 
 ### Status
 
 - **Two states only**:
   - "Al día";
-  - "Desactualizado", with "El último fue el dd/mm" and one fixed reason that carries no data:
+  - "Desactualizado", with one fixed reason that carries no data:
     - "Telegram no respondió": retrying will do;
-    - "El bot no puede publicar en el canal": the bot was removed or isn't an admin;
-    - "Probalo primero para ver cómo queda": upkeep is paused after a settings change.
-- **What it reflects**: the result of the last attempt. There is no pending state: while a sync runs, the previous state stays.
-- **Before the first Publicar**: no status shows.
-- **Retrying**: a failed sync is retried on the next trigger, or by Publicar. There is no "Reintentar".
+    - "El bot no puede publicar en el canal": the bot was removed or isn't an admin, and the seller must fix it in Telegram;
+    - "El mensaje fijado ya no está: publicalo de nuevo": the message was deleted by hand;
+    - "Falta publicarlo con el bot o el canal nuevo": a token or channel change was tested and saved, but not yet published;
+    - "Es demasiado largo para Telegram: acortá aromas u ocultá variedades.": the text exceeds Telegram's limit.
+- **"El último fue el dd/mm"**: shows whenever the current channel chat has been published to. After a token or channel change, it is left out until the first Publicar there.
+- **What it reflects**: the result of the last attempt, or the unpublished token or channel change. There is no pending state: while a sync runs, the previous state stays.
+- **Before the first Publicar ever**: no status shows.
+- **Retrying**: a failed sync is retried automatically on the next trigger, or by Publicar. There is no "Reintentar".
 - **Where it shows**:
   - on Catálogo, under Probarlo and Publicar;
-  - on Inicio: while the pin is out of date, the fixed line "Tu catálogo en Telegram está desactualizado", which opens Catálogo. It is a notice, not a figure (accounts.md).
+  - on Inicio: while the status is "Desactualizado", the fixed line "Tu catálogo en Telegram está desactualizado", which opens Catálogo. It is a notice, not a figure (accounts.md).
 
 ### Nothing qualifies
 
@@ -94,7 +104,8 @@ Setup (token, chats, first Probarlo and Publicar) is judged by criteria 3, 5 and
 ### Changing the channel or the token
 
 - The app never edits, unpins or deletes the old pinned message again.
-- After a new successful test, the next Publicar posts and pins a new message, and "El último fue" restarts from it.
+- After the successful test that saves the change, the status reads "Desactualizado · Falta publicarlo con el bot o el canal nuevo".
+- The next Publicar posts and pins a new message, and "El último fue" restarts from it.
 - Changing either one shows: "El mensaje fijado anterior queda como está; desfijalo vos en Telegram."
 
 ### The text
@@ -102,6 +113,7 @@ Setup (token, chats, first Probarlo and Publicar) is judged by criteria 3, 5 and
 - Exactly the catalog text from the one author (ADR-0012, catalog).
 - `**` markers become real Telegram bold, paired left to right. A final unpaired `**` shows as typed.
 - The test copy and the published copy are identical for the same data.
+- **Length**: measured as Telegram measures it, on the message as sent. Over Telegram's limit it is never split or cut; it is refused, as above.
 
 ### Constraints
 
@@ -116,18 +128,24 @@ Setup (token, chats, first Probarlo and Publicar) is judged by criteria 3, 5 and
 
 - **Trigger matrix (criterion 1)**: for every trigger, the day change included, an edit is attempted exactly when the built text differs from the last one published. 100% passing.
 - **One message per chat (criterion 2)**:
-  - one post per channel chat, then edits only: 0 new posts after the first;
-  - a channel change gives exactly one new post, and 0 later calls against the old message.
+  - one post per channel chat, then edits only: 0 new posts while that message exists;
+  - a channel or token change gives exactly one new post, and 0 later calls against the old message;
+  - with the message deleted in the fake adapter, upkeep posts nothing and reports "El mensaje fijado ya no está: publicalo de nuevo"; the next Publicar posts and pins exactly one new message;
+  - every Publicar pins the message it edits.
 - **Text fidelity (criterion 3)**: across catalog.md's reference set plus the empty case, 0 differences:
   - the source text given to the port equals `GET /catalog`'s text, or the empty-catalog message;
   - the rendered message (markers paired, then removed) equals the in-app preview;
   - the test copy equals the published copy.
+- **Too long (criteria 3, 4)**: a text over Telegram's limit is never split or cut, and nothing is sent. Probarlo and Publicar refuse it inline. Upkeep leaves the pin as it was and reports the length reason. The triggering save succeeds. 100% passing.
 - **Resilience (criterion 4)**: with the fake adapter failing:
   - every triggering save succeeds and answers normally;
   - the status reads "Desactualizado" with the right reason, and Inicio shows its line;
   - the next successful trigger or Publicar clears it.
 
   100% passing.
+- **Settings changes (criteria 2, 4)**:
+  - changing only the own chat keeps upkeep running and the status unchanged;
+  - a tested token or channel change reads "Falta publicarlo con el bot o el canal nuevo", with no "El último fue", until Publicar.
 - **Secrecy and isolation (criterion 5)**:
   - the token is never in any answer, log line or browser storage across a full front run;
   - every route is in the sweep and answers 404 or empty from another business.
@@ -144,6 +162,8 @@ Setup (token, chats, first Probarlo and Publicar) is judged by criteria 3, 5 and
 - Taking orders through the bot.
 - More than one channel per business.
 - Unpinning or deleting old messages.
+- Splitting a long catalog across several messages, or cutting it short.
+- Upkeep posting a new message on its own.
 - A pending state, or a "Reintentar" control.
 - Checking chat formats.
 - Live updates while a screen is open.
