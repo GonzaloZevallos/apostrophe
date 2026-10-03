@@ -106,6 +106,60 @@
   cursor: default;
 }
 
+.boton--suave {
+  background: var(--superficie);
+  color: var(--tinta);
+}
+
+.boton--destructivo {
+  background: var(--critico);
+  color: var(--critico-texto);
+}
+
+.confirmacion {
+  background: var(--superficie);
+  border-radius: var(--radio-panel-grande);
+  padding: var(--espacio-lg) var(--espacio-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-sm);
+}
+
+.confirmacion__titulo {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.confirmacion__detalle {
+  font-size: 14px;
+  color: var(--tinta2);
+  line-height: 1.5;
+}
+
+.confirmacion__acciones {
+  display: flex;
+  gap: var(--espacio-sm);
+  margin-top: var(--espacio-sm);
+}
+
+.confirmacion__acciones .boton {
+  flex: 1;
+  height: var(--alto-tocable);
+  font-size: 15px;
+}
+
+.aviso-exito {
+  background: var(--acento-suave);
+  border-radius: var(--radio-panel-grande);
+  padding: 14px 18px;
+}
+
+.aviso-exito__texto {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--acento);
+}
+
 .ayuda-fija {
   font-size: 14px;
   color: var(--tinta2);
