@@ -133,7 +133,7 @@ _Avoid_: overdue date, due date
 ## Stock
 
 **Stock entry**:
-Grams of a variety coming in on a date, with one origin: purchase, harvest, opening stock or adjustment. A purchase carries its total cost; an adjustment may be negative.
+Grams of a variety coming in on a date, with one origin: purchase, harvest, opening stock or adjustment. A purchase carries its total cost; an adjustment may be negative. Unlike a price entry, any stock entry may be edited or deleted at any time, whatever it already fed: its date, grams, cost or origin (ADR-0009).
 _In the app_: Entrada
 _Avoid_: restock, delivery, intake
 
@@ -143,14 +143,19 @@ _In the app_: Compra
 _Avoid_: order, buy
 
 **Lot**:
-The grams of one stock entry together with their cost per gram. A harvest costs $0 unless a cost is recorded. Grams sold or gifted come out of the oldest lot of their variety first.
+The grams of one stock entry together with their cost per gram. A harvest costs $0 unless a cost is recorded. Grams sold or gifted come out of the oldest lot of their variety first, oldest by date; a stock entry recorded late or corrected takes its place by date and the lots after it are worked out again (ADR-0009).
 _In the app_: Lote
 _Avoid_: batch
 
 **Stock**:
-The grams of a variety on hand: everything that came in minus everything sold or gifted.
+The grams of a variety on hand: everything that came in minus everything sold or gifted. Can go negative when a sale or gift is recorded for grams not yet in: the figure still shows, never hidden.
 _In the app_: Stock
 _Avoid_: inventory, balance
+
+**Pending cost**:
+What grams sold or gifted beyond everything recorded as coming in cost: not yet known, and never shown as $0. A later stock entry of that variety, wherever its date falls in the lot order, settles it (ADR-0009).
+_In the app_: Costo pendiente
+_Avoid_: unknown cost, zero cost
 
 **Low-stock threshold**:
 Optional grams under which a variety's stock counts as low.
@@ -160,7 +165,7 @@ _Avoid_: reorder point, alert level
 ## Results
 
 **Cost of goods sold**:
-What the grams sold or gifted in a period cost, taken from the lots they came out of.
+What the grams sold or gifted in a period cost, taken from the lots they came out of as those lots stand today, oldest first; it is worked out again whenever an earlier stock entry changes, however far back (ADR-0009). Part of it may be pending cost.
 _In the app_: Costo de lo vendido
 _Avoid_: COGS, average cost, cost per gram
 
