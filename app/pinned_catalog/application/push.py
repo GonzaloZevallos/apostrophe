@@ -2,8 +2,10 @@
 call Telegram with no session open, then record in a new short transaction that writes
 only if the saved token fingerprint and channel chat are unchanged. This module is the
 only owner of the per-business lock (the plan's invariant), and `PinRecorder.record`'s
-only caller; `SettingsWriter.save` is called only from here, by `test_send`, and only
-after a successful send.
+only caller — `push` itself, `test_send`, and `record_unreachable` (the `upkeep`
+subtask's own fallback for an exception `push` never expected, still under the same
+lock and still a fresh read, never a stale one written from outside); `SettingsWriter.
+save` is called only from here, by `test_send`, and only after a successful send.
 """
 
 from __future__ import annotations
@@ -37,10 +39,11 @@ from app.pinned_catalog.domain.status import needs_send as domain_needs_send
 
 
 class BusinessLocks:
-    """One `threading.Lock` per business, created on first use: `push` and `test_send`
-    are the only code that takes it, so no two attempts for the same business ever
-    read, call Telegram and record at once (the plan's invariant). Correct only
-    in-process — `scripts/serve.sh` runs one uvicorn worker (the plan's own note)."""
+    """One `threading.Lock` per business, created on first use: `push`, `test_send` and
+    `record_unreachable` are the only code that takes it, so no two attempts for the
+    same business ever read, call Telegram and record at once (the plan's invariant).
+    Correct only in-process — `scripts/serve.sh` runs one uvicorn worker (the plan's
+    own note)."""
 
     def __init__(self) -> None:
         self._locks: dict[int, threading.Lock] = {}
@@ -75,6 +78,39 @@ def status_of(settings: SettingsSnapshot, facts: PinFacts) -> PinStatus | None:
             last_failure=facts.last_failure,
         ),
     )
+
+
+def record_unreachable(
+    snapshots: PinSnapshots,
+    recorder: PinRecorder,
+    locks: BusinessLocks,
+    business_id: int,
+    today: date,
+) -> None:
+    """Called only by `run_upkeep_safely`, when an exception `push` itself never
+    expected (not one of its own `TelegramOutcomeFailure`s) escapes an upkeep attempt,
+    so the pin shows `telegram_unreachable` rather than silently going stale.
+
+    Takes the same per-business lock `push` and `test_send` do (the plan's invariant:
+    only this module takes it), so it can never race a concurrent Publicar or upkeep
+    attempt into overwriting a fresher result — unlike reading and recording outside
+    the lock, every pin fact it writes (`message_id`, `last_published_text`, and so on)
+    is read fresh under that same lock, never stale.
+    """
+    with locks.for_business(business_id):
+        snap = snapshots.snapshot(business_id, today)
+        recorder.record(
+            business_id,
+            snap.settings.token_fingerprint,
+            snap.settings.channel_chat,
+            message_id=snap.pin.message_id,
+            message_chat=snap.pin.message_chat,
+            message_token_fingerprint=snap.pin.message_token_fingerprint,
+            last_published_text=snap.pin.last_published_text,
+            last_published_at=snap.pin.last_published_at,
+            last_failure=PinFailure.TELEGRAM_UNREACHABLE,
+            last_checked_on=snap.pin.last_checked_on,
+        )
 
 
 @dataclass(frozen=True)

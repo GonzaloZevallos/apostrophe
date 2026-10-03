@@ -36,16 +36,26 @@ def _status(client: TestClient) -> dict[str, Any] | None:
     return status
 
 
-def _register_qualifying_variety(client: TestClient, name: str) -> dict[str, Any]:
+def _register_priced_variety(client: TestClient, name: str) -> dict[str, Any]:
     variety: dict[str, Any] = client.post("/varieties", json={"name": name}).json()
     client.post(
         f"/varieties/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 9000},
     )
-    client.post(
+    return variety
+
+
+def _add_stock_entry(client: TestClient, variety_id: int, grams: str = "50") -> dict[str, Any]:
+    entry: dict[str, Any] = client.post(
         "/stock/entries",
-        json={"variety_id": variety["id"], "origin": "opening_stock", "grams": "50"},
-    )
+        json={"variety_id": variety_id, "origin": "opening_stock", "grams": grams},
+    ).json()
+    return entry
+
+
+def _register_qualifying_variety(client: TestClient, name: str) -> dict[str, Any]:
+    variety = _register_priced_variety(client, name)
+    _add_stock_entry(client, variety["id"])
     return variety
 
 
@@ -61,14 +71,25 @@ def test_nothing_is_attempted_before_the_first_publicar(
 def test_a_refused_write_calls_the_fake_zero_times(
     client: TestClient, telegram: FakeTelegram
 ) -> None:
-    _register_qualifying_variety(client, "V1")
+    """A refused write's background task must be dropped, not merely a no-op: leaving
+    the pin `telegram_unreachable` beforehand means `needs_send` is true regardless of
+    whether the text changed, so a task that actually ran would retry and succeed
+    (clearing the failure) — it doesn't, which is what tells a dropped task from a
+    no-op sync."""
+    variety = _register_qualifying_variety(client, "V1")
     _publish(client)
+    telegram.fail_next(TelegramUnreachable())
+    client.patch(f"/varieties/{variety['id']}", json={"name": "V1 Renamed"})
+    failed_status = _status(client)
+    assert failed_status is not None
+    assert failed_status["reason"] == "telegram_unreachable"
     telegram.calls.clear()
 
     refused = client.post("/varieties", json={"name": ""})
     assert refused.status_code >= 400
 
-    assert telegram.calls == []
+    assert telegram.calls == []  # a task that ran would have retried and succeeded
+    assert _status(client) == failed_status  # still failed: nothing was retried either
 
 
 def test_a_recorded_price_entry_triggers_an_edit(
@@ -200,8 +221,8 @@ def test_a_message_deleted_then_a_price_change_keeps_showing_message_gone(
     variety = _register_qualifying_variety(client, "V1")
     _publish(client)
 
-    messages = telegram._messages[(TOKEN, "@canal")]
-    stored_id = next(iter(messages))
+    stored_id = telegram.stored_message_id(TOKEN, "@canal")
+    assert stored_id is not None
     telegram.delete(TOKEN, "@canal", stored_id)
     telegram.calls.clear()
 
@@ -272,7 +293,8 @@ def test_too_long_text_is_not_sent_and_the_pin_keeps_its_text(
     status = _status(client)
     assert status is not None
     assert status["reason"] == "too_long"
-    stored_id = next(iter(telegram._messages[(TOKEN, "@canal")]))
+    stored_id = telegram.stored_message_id(TOKEN, "@canal")
+    assert stored_id is not None
     last_published_text = telegram.text_of(TOKEN, "@canal", stored_id)
     telegram.calls.clear()
 
@@ -284,7 +306,123 @@ def test_too_long_text_is_not_sent_and_the_pin_keeps_its_text(
     status_after = _status(client)
     assert status_after is not None
     assert status_after["reason"] == "too_long"
-    assert (
-        telegram.text_of(TOKEN, "@canal", next(iter(telegram._messages[(TOKEN, "@canal")])))
-        == last_published_text
+    stored_id_after = telegram.stored_message_id(TOKEN, "@canal")
+    assert stored_id_after is not None
+    assert telegram.text_of(TOKEN, "@canal", stored_id_after) == last_published_text
+
+
+def test_a_stock_entry_created_brings_a_variety_into_the_catalog(
+    client: TestClient, telegram: FakeTelegram
+) -> None:
+    """A variety priced but never stocked is `no_entries` — out of the text. Its first
+    stock entry (`POST /stock/entries`, not a top-up) brings it "in"."""
+    variety = _register_priced_variety(client, "V1")
+    _publish(client)
+    telegram.calls.clear()
+
+    created = client.post(
+        "/stock/entries",
+        json={"variety_id": variety["id"], "origin": "opening_stock", "grams": "50"},
     )
+    assert created.status_code == 201, created.text
+
+    assert len(_edits(telegram)) == 1
+
+
+def test_editing_a_stock_entry_triggers_an_edit(
+    client: TestClient, telegram: FakeTelegram
+) -> None:
+    """`PUT /stock/entries/{id}` (the brief's own "stock entries ... edited"): moving
+    the entry to a different variety sells the first one out and brings the second
+    one in, changing the text."""
+    sold = client.post("/varieties", json={"name": "WasStocked"}).json()
+    client.post(
+        f"/varieties/{sold['id']}/prices",
+        json={"effective_from": "2026-01-01", "list_price": 9000},
+    )
+    entry = _add_stock_entry(client, sold["id"])
+    gains = _register_priced_variety(client, "GainsStock")
+    _publish(client)
+    telegram.calls.clear()
+
+    edited = client.put(
+        f"/stock/entries/{entry['id']}",
+        json={"variety_id": gains["id"], "origin": "opening_stock", "grams": "50"},
+    )
+    assert edited.status_code == 200, edited.text
+
+    assert len(_edits(telegram)) == 1
+
+
+def test_deleting_a_stock_entry_triggers_an_edit(
+    client: TestClient, telegram: FakeTelegram
+) -> None:
+    """`DELETE /stock/entries/{id}`: the variety's only entry gone sells it out."""
+    variety = _register_priced_variety(client, "V1")
+    entry = _add_stock_entry(client, variety["id"])
+    _publish(client)
+    telegram.calls.clear()
+
+    deleted = client.delete(f"/stock/entries/{entry['id']}")
+    assert deleted.status_code == 204, deleted.text
+
+    assert len(_edits(telegram)) == 1
+
+
+def test_nothing_is_attempted_after_a_token_change_until_publicar(
+    client: TestClient, telegram: FakeTelegram
+) -> None:
+    """After a successful test that changes the token, the previous pin is left alone
+    and upkeep attempts nothing in the new chat until Publicar (plan, "Changing the
+    channel or the token")."""
+    variety = _register_qualifying_variety(client, "V1")
+    _publish(client)
+
+    changed = client.post(
+        "/pinned-catalog/test",
+        json={
+            "token": "987654321:a-different-bot-token",
+            "own_chat": "111",
+            "channel_chat": "@canal",
+        },
+    )
+    assert changed.status_code == 200, changed.text
+    assert changed.json()["previous_pin_left"] is True
+    telegram.calls.clear()
+
+    renamed = client.patch(f"/varieties/{variety['id']}", json={"name": "V1 Renamed"})
+    assert renamed.status_code == 200, renamed.text
+
+    assert telegram.calls == []
+    status = _status(client)
+    assert status == {
+        "state": "out_of_date",
+        "reason": "missing_publish",
+        "last_published_on": None,
+    }
+
+
+def test_nothing_is_attempted_after_a_channel_change_until_publicar(
+    client: TestClient, telegram: FakeTelegram
+) -> None:
+    variety = _register_qualifying_variety(client, "V1")
+    _publish(client)
+
+    changed = client.post(
+        "/pinned-catalog/test",
+        json={"token": TOKEN, "own_chat": "111", "channel_chat": "@otro-canal"},
+    )
+    assert changed.status_code == 200, changed.text
+    assert changed.json()["previous_pin_left"] is True
+    telegram.calls.clear()
+
+    renamed = client.patch(f"/varieties/{variety['id']}", json={"name": "V1 Renamed"})
+    assert renamed.status_code == 200, renamed.text
+
+    assert telegram.calls == []
+    status = _status(client)
+    assert status == {
+        "state": "out_of_date",
+        "reason": "missing_publish",
+        "last_published_on": None,
+    }

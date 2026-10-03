@@ -68,6 +68,13 @@ class FakeTelegram:
         message = self._messages.get((token, chat), {}).get(message_id)
         return None if message is None else message.plain
 
+    def stored_message_id(self, token: str, chat: str) -> int | None:
+        """The one message id posted to `chat` with `token`, if any — a public seam for
+        a test that needs it (`delete` already needed one), so no test reaches
+        `_messages` itself."""
+        messages = self._messages.get((token, chat), {})
+        return next(iter(messages), None)
+
     def _maybe_raise(self) -> None:
         if self._failure is not None:
             exc, self._failure = self._failure, None
