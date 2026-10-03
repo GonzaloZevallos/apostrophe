@@ -1,0 +1,91 @@
+/**
+ * `Entrar` at the screen seam (CODING_STANDARDS §10): Testing Library, the API faked
+ * at `fetch`. The hint under the button is fixed, never a count of attempts; a lock
+ * shows the brake message in its place.
+ */
+
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router'
+import { afterEach, beforeEach, expect, test, vi } from 'vitest'
+import Entrar, { BRAKE_MESSAGE, CREDENTIALS_WRONG, LOGIN_HINT } from './Entrar'
+
+function jsonResponse(status: number, body: unknown): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  })
+}
+
+function renderEntrar(queryClient: QueryClient) {
+  render(
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter initialEntries={['/entrar']}>
+        <Entrar />
+      </MemoryRouter>
+    </QueryClientProvider>,
+  )
+}
+
+beforeEach(() => {
+  vi.stubGlobal('fetch', vi.fn())
+})
+
+afterEach(() => {
+  vi.unstubAllGlobals()
+})
+
+test('shows the fixed hint under the button, never a count of attempts', () => {
+  renderEntrar(new QueryClient())
+
+  expect(screen.getByText(LOGIN_HINT)).toBeInTheDocument()
+  expect(screen.queryByText(/intentos? restantes?|te quedan/i)).not.toBeInTheDocument()
+})
+
+test('a wrong email or password shows the same inline refusal, naming neither', async () => {
+  vi.mocked(fetch).mockResolvedValue(jsonResponse(401, { detail: 'nope' }))
+  renderEntrar(new QueryClient())
+
+  await userEvent.type(screen.getByLabelText('Email'), 'ana@x.com')
+  await userEvent.type(screen.getByLabelText('Contraseña'), 'wrongpass1')
+  await userEvent.click(screen.getByRole('button', { name: 'Entrá' }))
+
+  expect(await screen.findByRole('alert')).toHaveTextContent(CREDENTIALS_WRONG)
+})
+
+test('the lock shows the brake message in place of the fixed hint', async () => {
+  vi.mocked(fetch).mockResolvedValue(
+    jsonResponse(429, { detail: 'too many failed attempts', code: 'account.login_locked' }),
+  )
+  renderEntrar(new QueryClient())
+
+  await userEvent.type(screen.getByLabelText('Email'), 'ana@x.com')
+  await userEvent.type(screen.getByLabelText('Contraseña'), 'wrongpass1')
+  await userEvent.click(screen.getByRole('button', { name: 'Entrá' }))
+
+  expect(await screen.findByText(BRAKE_MESSAGE)).toBeInTheDocument()
+  expect(screen.queryByText(LOGIN_HINT)).not.toBeInTheDocument()
+})
+
+test('a successful login clears the whole cache before landing on Inicio', async () => {
+  vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { token: 'tok' }))
+  const queryClient = new QueryClient()
+  queryClient.setQueryData(['me'], { businessName: 'stale' })
+  renderEntrar(queryClient)
+
+  await userEvent.type(screen.getByLabelText('Email'), 'ana@x.com')
+  await userEvent.type(screen.getByLabelText('Contraseña'), 'secreta123')
+  await userEvent.click(screen.getByRole('button', { name: 'Entrá' }))
+
+  await vi.waitFor(() => {
+    expect(queryClient.getQueryData(['me'])).toBeUndefined()
+  })
+  expect(fetch).toHaveBeenCalledWith(
+    '/auth/login',
+    expect.objectContaining({
+      method: 'POST',
+      body: JSON.stringify({ email: 'ana@x.com', password: 'secreta123' }),
+    }),
+  )
+})

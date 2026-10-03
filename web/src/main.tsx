@@ -3,6 +3,7 @@ import '@fontsource/plus-jakarta-sans/500.css'
 import '@fontsource/plus-jakarta-sans/600.css'
 import '@fontsource/plus-jakarta-sans/700.css'
 import './styles/tokens.css'
+import './styles/app.css'
 
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'

@@ -1,0 +1,251 @@
+/* The app's own layout: only the token variables, never a literal hex, rgb or hsl
+ * (plan, invariants). Mirrors the design screens' structure (Entrar, Estados,
+ * Inicio, BarraInferior/InicioCompu) without copying their inline styles verbatim. */
+
+.pantalla {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--papel);
+  color: var(--tinta);
+  font-family: var(--fuente);
+}
+
+.entrar__contenido {
+  flex: 1;
+  padding: 72px var(--margen-pantalla) 0;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.marca {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+
+.marca__apostrofe {
+  color: var(--acento);
+}
+
+.subtitulo {
+  font-size: 16px;
+  color: var(--tinta2);
+  line-height: 1.5;
+  margin: 10px 0 0;
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.campo__rotulo {
+  font-size: 14px;
+  color: var(--tinta2);
+}
+
+.campo__input {
+  height: var(--alto-boton);
+  box-sizing: border-box;
+  padding: 0 16px;
+  border-radius: var(--radio-campo);
+  border: 0;
+  background: var(--superficie);
+  color: var(--tinta);
+  font: inherit;
+  font-size: 17px;
+}
+
+.campo__error {
+  font-size: 13px;
+  color: var(--deuda);
+}
+
+.boton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  height: var(--alto-boton);
+  border-radius: var(--radio-pildora);
+  background: var(--boton);
+  color: var(--boton-texto);
+  border: 0;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.boton:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.ayuda-fija {
+  font-size: 14px;
+  color: var(--tinta2);
+  text-align: center;
+}
+
+.pie {
+  padding: 0 var(--margen-pantalla) 32px;
+  font-size: 13px;
+  color: var(--tenue);
+  text-align: center;
+}
+
+.aviso-ambar {
+  background: var(--deuda-fondo);
+  border-radius: var(--radio-panel-grande);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.aviso-ambar__titulo {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--deuda);
+}
+
+.aviso-ambar__detalle {
+  font-size: 14px;
+  color: var(--deuda2);
+  line-height: 1.5;
+}
+
+.estado-vacio {
+  background: var(--superficie);
+  border-radius: var(--radio-panel-grande);
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.estado-vacio__titulo {
+  font-size: 19px;
+  font-weight: 600;
+}
+
+.estado-vacio__detalle {
+  font-size: 15px;
+  color: var(--tinta2);
+  line-height: 1.5;
+  max-width: 250px;
+}
+
+.cuerpo {
+  flex: 1;
+  padding: var(--espacio-lg) var(--margen-pantalla);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-xl);
+}
+
+.encabezado__negocio {
+  display: block;
+  font-size: 14px;
+  color: var(--tinta2);
+}
+
+.encabezado__titulo {
+  display: block;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.disposicion {
+  display: flex;
+  flex: 1;
+  min-height: 100vh;
+}
+
+.bar-inferior {
+  display: flex;
+  padding: 14px 16px 20px;
+  border-top: 1px solid var(--linea);
+}
+
+.bar-inferior__item {
+  flex: 1;
+  min-height: var(--alto-tocable);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  text-decoration: none;
+  color: var(--nav-inactivo);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.bar-inferior__item--activo {
+  color: var(--tinta);
+}
+
+.riel-lateral {
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  padding: 26px 16px;
+  border-right: 1px solid var(--linea);
+  min-width: 212px;
+}
+
+.riel-lateral__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 46px;
+  padding: 0 14px;
+  border-radius: 14px;
+  color: var(--tinta2);
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.riel-lateral__item--activo {
+  background: var(--superficie);
+  color: var(--tinta);
+  font-weight: 600;
+}
+
+.columna-principal {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* The phone first; the side rail replaces the bottom bar on a computer (plan,
+ * "Shell"). A pure CSS switch: both markups exist, one is hidden either way, so a
+ * screen reader never finds the hidden one (ADR-independent — `display: none` drops
+ * it from the accessibility tree too). */
+@media (min-width: 900px) {
+  .bar-inferior {
+    display: none;
+  }
+
+  .riel-lateral {
+    display: flex;
+  }
+}
