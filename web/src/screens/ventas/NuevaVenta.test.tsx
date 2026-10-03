@@ -125,20 +125,25 @@ test('Debiendo is disabled with no customer, enables once one is chosen, and res
 
 test('a successful save opens the sale the API answered with, replacing history', async () => {
   const user = userEvent.setup()
+  const savedSale = {
+    id: 42,
+    date: '2026-10-02',
+    customer: null,
+    shipping_charged: 0,
+    note: null,
+    payment: 'cash',
+    total: 2000,
+    lines: [],
+  }
   await openForm({
     'GET /auth/me': () => jsonResponse(200, ME),
     'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
-    'POST /sales': () =>
-      jsonResponse(201, {
-        id: 42,
-        date: '2026-10-02',
-        customer: null,
-        shipping_charged: 0,
-        note: null,
-        payment: 'cash',
-        total: 2000,
-        lines: [],
-      }),
+    'POST /sales': () => jsonResponse(201, savedSale),
+    // `VentaDetalle` (sales-list-and-detail) renders what the API answered,
+    // never the preview, and shows "Venta guardada" once it reads the marker
+    // `NuevaVenta` navigated with — this is that detail fetch, not a second
+    // sale.
+    'GET /sales/42': () => jsonResponse(200, savedSale),
   })
 
   await user.selectOptions(screen.getByLabelText('Variedad línea 1'), '1')
@@ -147,7 +152,7 @@ test('a successful save opens the sale the API answered with, replacing history'
   await user.click(screen.getByRole('button', { name: 'Guardar venta' }))
 
   await waitFor(() => expect(router.state.location.pathname).toBe('/ventas/42'))
-  expect(router.state.location.state).toEqual({ saleJustSaved: true })
+  expect(await screen.findByText('Venta guardada')).toBeInTheDocument()
 })
 
 test('an untouched form closes at once; a touched one asks "¿Descartás la venta?" first', async () => {
@@ -155,10 +160,15 @@ test('an untouched form closes at once; a touched one asks "¿Descartás la vent
   await openForm({
     'GET /auth/me': () => jsonResponse(200, ME),
     'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
+    // Closing lands back on `Ventas` (sales-list-and-detail), whose own
+    // "Hoy" period fetches this range from `me.today`.
+    'GET /sales?date_from=2026-10-02&date_to=2026-10-02': () => jsonResponse(200, []),
   })
 
   await user.click(screen.getByRole('button', { name: 'Cerrar' }))
-  expect(await screen.findByText('Ventas')).toBeInTheDocument()
+  expect(
+    await screen.findByText('Ventas', { selector: '.encabezado__titulo' }),
+  ).toBeInTheDocument()
 
   await act(() => router.navigate('/ventas/nueva'))
   await screen.findByText('Nueva venta')
@@ -174,7 +184,9 @@ test('an untouched form closes at once; a touched one asks "¿Descartás la vent
   await user.click(screen.getByRole('button', { name: 'Cerrar' }))
   const dialogAgain = await screen.findByRole('alertdialog')
   await user.click(within(dialogAgain).getByRole('button', { name: 'Sí, descartala' }))
-  expect(await screen.findByText('Ventas')).toBeInTheDocument()
+  expect(
+    await screen.findByText('Ventas', { selector: '.encabezado__titulo' }),
+  ).toBeInTheDocument()
 })
 
 test('a refused save keeps everything typed, the message on its field', async () => {
@@ -279,6 +291,7 @@ test('nothing an earlier mount cached ever renders: a remount with a different p
     'GET /auth/me': () => jsonResponse(200, ME),
     'GET /varieties?on=2026-10-02': () =>
       jsonResponse(200, [{ ...ROSA, current_price: { ...ROSA.current_price, list_price: listPrice } }]),
+    'GET /sales?date_from=2026-10-02&date_to=2026-10-02': () => jsonResponse(200, []),
   })
 
   await user.selectOptions(screen.getByLabelText('Variedad línea 1'), '1')
@@ -290,7 +303,7 @@ test('nothing an earlier mount cached ever renders: a remount with a different p
   // meanwhile. The form is touched, so "Cerrar" asks first.
   await user.click(screen.getByRole('button', { name: 'Cerrar' }))
   await user.click(await screen.findByRole('button', { name: 'Sí, descartala' }))
-  await screen.findByText('Ventas')
+  await screen.findByText('Ventas', { selector: '.encabezado__titulo' })
   listPrice = 5000
 
   await act(() => router.navigate('/ventas/nueva'))
