@@ -1,0 +1,30 @@
+{
+  "balance": -2000,
+  "owing_since": null,
+  "standing": "credit",
+  "rows": [
+    {
+      "kind": "sale",
+      "date": "2026-09-14",
+      "running_balance": 11000,
+      "standing": "owes",
+      "sale": { "id": 10, "total": 11000, "how_paid": "owing" }
+    },
+    {
+      "kind": "payment",
+      "date": "2026-09-20",
+      "running_balance": 6000,
+      "standing": "owes",
+      "payment": { "id": 5, "paid_on": "2026-09-20", "amount": 5000, "method": "cash" },
+      "applied_to": { "sale_id": 10, "sale_date": "2026-09-14", "amount": 5000 }
+    },
+    {
+      "kind": "credit",
+      "date": "2026-09-25",
+      "running_balance": -2000,
+      "standing": "credit",
+      "payment": { "id": 6, "paid_on": "2026-09-25", "amount": 8000, "method": "transfer" },
+      "amount": 2000
+    }
+  ]
+}
