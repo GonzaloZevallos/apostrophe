@@ -13,7 +13,7 @@ import { ApiError, NetworkError, get, post } from '../api/client'
 import { invalidateResource, keys } from '../api/keys'
 import type { Me } from '../api/me'
 import { kindOf, resolveOverride, type RefusalCode } from '../api/refusals'
-import AvisoExito from '../components/AvisoExito'
+import AvisoExito, { type SuccessToast } from '../components/AvisoExito'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import SinConexion from '../components/SinConexion'
 import { formatGrams, formatMoney } from '../format/money'
@@ -53,8 +53,9 @@ export default function Variedades() {
   const [adding, setAdding] = useState(false)
   const [name, setName] = useState('')
   const [formError, setFormError] = useState<string | null>(null)
+  const [offline, setOffline] = useState(false)
   const [sending, setSending] = useState(false)
-  const [toast, setToast] = useState<string | null>(null)
+  const [toast, setToast] = useState<SuccessToast | null>(null)
 
   useEffect(() => {
     if (toast === null) return
@@ -67,6 +68,7 @@ export default function Variedades() {
   async function onSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault()
     setFormError(null)
+    setOffline(false)
     setSending(true)
     try {
       await post<Variety>('/varieties', { name })
@@ -84,7 +86,7 @@ export default function Variedades() {
           setFormError(ERROR_GENERICO_MENSAJE)
         }
       } else if (caught instanceof NetworkError) {
-        setFormError(null)
+        setOffline(true)
       } else {
         setFormError(ERROR_GENERICO_MENSAJE)
       }
@@ -147,6 +149,7 @@ export default function Variedades() {
                 </span>
               )}
             </label>
+            {offline && <SinConexion />}
             <button className="boton" type="submit" disabled={sending}>
               Guardar
             </button>

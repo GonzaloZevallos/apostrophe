@@ -10,9 +10,10 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import * as client from '../api/client'
-import { ApiError } from '../api/client'
+import { ApiError, NetworkError } from '../api/client'
 import type { Me } from '../api/me'
 import { GONE_DETAIL, GONE_NOTICE } from '../api/refusals'
+import { SIN_CONEXION_TITULO } from '../components/SinConexion'
 import VariedadDetalle from './VariedadDetalle'
 
 vi.mock('../api/client', async () => {
@@ -87,6 +88,23 @@ test('renaming saves and toasts "Variedad guardada"', async () => {
   expect(client.patch).toHaveBeenCalledWith('/varieties/1', { name: 'Oro 24K' })
 })
 
+test('a dropped network while renaming shows "Sin conexión", keeping what was typed', async () => {
+  const user = userEvent.setup()
+  mockGet()
+  vi.mocked(client.patch).mockRejectedValue(new NetworkError())
+  renderScreen()
+
+  await screen.findByText('24K Gold')
+  await user.click(screen.getByRole('button', { name: 'Editar' }))
+  const input = screen.getByRole('textbox')
+  await user.clear(input)
+  await user.type(input, 'Oro 24K')
+  await user.click(screen.getByRole('button', { name: 'Guardar' }))
+
+  expect(await screen.findByText(SIN_CONEXION_TITULO)).toBeInTheDocument()
+  expect(screen.getByRole('textbox')).toHaveValue('Oro 24K')
+})
+
 test('recording a new price entry saves and toasts "Precio guardado"', async () => {
   const user = userEvent.setup()
   mockGet()
@@ -116,7 +134,7 @@ describe('deleting an entry', () => {
     await user.click(deleteCurrent)
 
     expect(await screen.findByText('Vuelve a regir $ 10.500 x g desde el 01/09')).toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: 'Sí, borralo' }))
+    await user.click(screen.getByRole('button', { name: 'Sí, borrala' }))
 
     expect(await screen.findByText('Precio eliminado')).toBeInTheDocument()
     expect(client.del).toHaveBeenCalledWith('/varieties/1/prices/3')
@@ -132,7 +150,7 @@ describe('deleting an entry', () => {
     const deleteCurrent = buttons[0]
     if (deleteCurrent === undefined) throw new Error('expected at least one delete button')
     await user.click(deleteCurrent)
-    await user.click(screen.getByRole('button', { name: 'No, dejalo' }))
+    await user.click(screen.getByRole('button', { name: 'No, dejala' }))
 
     expect(client.del).not.toHaveBeenCalled()
   })
@@ -148,9 +166,26 @@ describe('deleting an entry', () => {
     const deleteCurrent = buttons[0]
     if (deleteCurrent === undefined) throw new Error('expected at least one delete button')
     await user.click(deleteCurrent)
-    await user.click(screen.getByRole('button', { name: 'Sí, borralo' }))
+    await user.click(screen.getByRole('button', { name: 'Sí, borrala' }))
 
     expect(await screen.findByText(GONE_NOTICE)).toBeInTheDocument()
+    expect(screen.queryByText('Precio eliminado')).not.toBeInTheDocument()
+  })
+
+  test('a dropped network shows "Sin conexión", never a success toast', async () => {
+    const user = userEvent.setup()
+    mockGet()
+    vi.mocked(client.del).mockRejectedValue(new NetworkError())
+    renderScreen()
+
+    await screen.findByText('24K Gold')
+    const buttons = screen.getAllByRole('button', { name: 'Borrar este precio' })
+    const deleteCurrent = buttons[0]
+    if (deleteCurrent === undefined) throw new Error('expected at least one delete button')
+    await user.click(deleteCurrent)
+    await user.click(screen.getByRole('button', { name: 'Sí, borrala' }))
+
+    expect(await screen.findByText(SIN_CONEXION_TITULO)).toBeInTheDocument()
     expect(screen.queryByText('Precio eliminado')).not.toBeInTheDocument()
   })
 })

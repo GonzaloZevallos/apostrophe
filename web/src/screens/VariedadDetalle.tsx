@@ -13,7 +13,7 @@ import { ApiError, NetworkError, del, get, patch, post } from '../api/client'
 import { invalidateResource, keys } from '../api/keys'
 import type { Me } from '../api/me'
 import { GONE_DETAIL, isGone, kindOf, resolveOverride, type RefusalCode } from '../api/refusals'
-import AvisoExito from '../components/AvisoExito'
+import AvisoExito, { type SuccessToast } from '../components/AvisoExito'
 import ConfirmDialog from '../components/ConfirmDialog'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import GoneNotice from '../components/GoneNotice'
@@ -22,7 +22,13 @@ import { formatDateShort, sinceWhen } from '../format/dates'
 import { formatGrams, formatMoney } from '../format/money'
 import { parseGrams, parseMoney } from '../format/parse'
 import { deleteNotice, type HistoryEntry } from './priceDeleteNotice'
-import { NAME_INVALID_MESSAGE, NAME_TAKEN_MESSAGE, NO_PRICE_TODAY, type Variety } from './Variedades'
+import {
+  NAME_INVALID_MESSAGE,
+  NAME_TAKEN_MESSAGE,
+  NO_PRICE_TODAY,
+  VARIETY_SAVED,
+  type Variety,
+} from './Variedades'
 
 export const PRICE_SAVED = 'Precio guardado'
 export const PRICE_DELETED = 'Precio eliminado'
@@ -61,13 +67,15 @@ export default function VariedadDetalle() {
     queryFn: () => get<FullHistoryEntry[]>(`/varieties/${variedadId}/prices`),
   })
 
-  const [toast, setToast] = useState<string | null>(null)
+  const [toast, setToast] = useState<SuccessToast | null>(null)
   const [gone, setGone] = useState(false)
   const [deleteFailed, setDeleteFailed] = useState(false)
+  const [deleteOffline, setDeleteOffline] = useState(false)
 
   const [renaming, setRenaming] = useState(false)
   const [name, setName] = useState('')
   const [renameError, setRenameError] = useState<string | null>(null)
+  const [renameOffline, setRenameOffline] = useState(false)
   const [savingRename, setSavingRename] = useState(false)
 
   const [addingPrice, setAddingPrice] = useState(false)
@@ -76,6 +84,7 @@ export default function VariedadDetalle() {
   const [bulkPrice, setBulkPrice] = useState('')
   const [bulkMinimum, setBulkMinimum] = useState('')
   const [priceError, setPriceError] = useState<string | null>(null)
+  const [priceOffline, setPriceOffline] = useState(false)
   const [savingPrice, setSavingPrice] = useState(false)
 
   const [deletingEntry, setDeletingEntry] = useState<FullHistoryEntry | null>(null)
@@ -107,12 +116,13 @@ export default function VariedadDetalle() {
   async function onRename(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault()
     setRenameError(null)
+    setRenameOffline(false)
     setSavingRename(true)
     try {
       await patch<Variety>(`/varieties/${variedadId}`, { name })
       refresh()
       setRenaming(false)
-      setToast('Variedad guardada')
+      setToast(VARIETY_SAVED)
     } catch (caught) {
       if (caught instanceof ApiError && isGone(caught.code)) {
         setRenaming(false)
@@ -126,7 +136,9 @@ export default function VariedadDetalle() {
         } else {
           setRenameError(ERROR_GENERICO_MENSAJE)
         }
-      } else if (!(caught instanceof NetworkError)) {
+      } else if (caught instanceof NetworkError) {
+        setRenameOffline(true)
+      } else {
         setRenameError(ERROR_GENERICO_MENSAJE)
       }
     } finally {
@@ -137,6 +149,7 @@ export default function VariedadDetalle() {
   async function onAddPrice(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault()
     setPriceError(null)
+    setPriceOffline(false)
     const money = parseMoney(listPrice)
     if (!money.ok) {
       setPriceError(PRICE_INVALID_MESSAGE)
@@ -179,7 +192,9 @@ export default function VariedadDetalle() {
         } else {
           setPriceError(ERROR_GENERICO_MENSAJE)
         }
-      } else if (!(caught instanceof NetworkError)) {
+      } else if (caught instanceof NetworkError) {
+        setPriceOffline(true)
+      } else {
         setPriceError(ERROR_GENERICO_MENSAJE)
       }
     } finally {
@@ -200,7 +215,9 @@ export default function VariedadDetalle() {
       if (caught instanceof ApiError && isGone(caught.code)) {
         refresh()
         setGone(true)
-      } else if (!(caught instanceof NetworkError)) {
+      } else if (caught instanceof NetworkError) {
+        setDeleteOffline(true)
+      } else {
         setDeleteFailed(true)
       }
     } finally {
@@ -249,6 +266,7 @@ export default function VariedadDetalle() {
       <div className="cuerpo">
         {gone && <GoneNotice />}
         {deleteFailed && <ErrorGenerico />}
+        {deleteOffline && <SinConexion />}
         {toast !== null && <AvisoExito texto={toast} />}
         <div className="encabezado-fila">
           <span className="encabezado__titulo">{variety?.name ?? ''}</span>
@@ -284,6 +302,7 @@ export default function VariedadDetalle() {
                 </span>
               )}
             </label>
+            {renameOffline && <SinConexion />}
             <button className="boton" type="submit" disabled={savingRename}>
               Guardar
             </button>
@@ -367,6 +386,7 @@ export default function VariedadDetalle() {
                 {priceError}
               </span>
             )}
+            {priceOffline && <SinConexion />}
             <button className="boton" type="submit" disabled={savingPrice}>
               Guardar precio
             </button>
@@ -401,8 +421,8 @@ export default function VariedadDetalle() {
         <ConfirmDialog
           title={`¿Borrás el precio desde el ${formatDateShort(deletingEntry.effective_from)}?`}
           detail={deleteNotice(history, deletingEntry.id)}
-          confirmText="Sí, borralo"
-          cancelText="No, dejalo"
+          confirmText="Sí, borrala"
+          cancelText="No, dejala"
           onConfirm={() => {
             if (!deleting) void onConfirmDelete()
           }}

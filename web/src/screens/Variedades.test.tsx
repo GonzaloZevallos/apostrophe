@@ -11,8 +11,9 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import * as client from '../api/client'
-import { ApiError } from '../api/client'
+import { ApiError, NetworkError } from '../api/client'
 import type { Me } from '../api/me'
+import { SIN_CONEXION_TITULO } from '../components/SinConexion'
 import Variedades, { NAME_TAKEN_MESSAGE, NO_PRICE_TODAY, VARIETY_SAVED } from './Variedades'
 
 vi.mock('../api/client', async () => {
@@ -101,5 +102,20 @@ describe('adding a variety', () => {
 
     expect(await screen.findByText(NAME_TAKEN_MESSAGE)).toBeInTheDocument()
     expect(screen.getByRole('textbox')).toHaveValue('24K Gold')
+  })
+
+  test('a dropped network shows "Sin conexión", keeping what was typed', async () => {
+    const user = userEvent.setup()
+    vi.mocked(client.get).mockResolvedValue([])
+    vi.mocked(client.post).mockRejectedValue(new NetworkError())
+
+    renderScreen()
+
+    await user.click(screen.getByRole('button', { name: 'Nueva variedad' }))
+    await user.type(screen.getByRole('textbox'), 'Golden Cookies')
+    await user.click(screen.getByRole('button', { name: 'Guardar' }))
+
+    expect(await screen.findByText(SIN_CONEXION_TITULO)).toBeInTheDocument()
+    expect(screen.getByRole('textbox')).toHaveValue('Golden Cookies')
   })
 })
