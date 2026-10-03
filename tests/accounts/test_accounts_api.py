@@ -30,6 +30,14 @@ def test_a_new_business_invitation_opens_a_business_and_signs_its_user_in(
     }
 
 
+def test_today_on_me_follows_the_moved_clock(client: TestClient, clock: MovableClock) -> None:
+    assert client.get("/auth/me").json()["today"] == "2026-10-02"
+
+    clock.set(NOW + timedelta(days=1))
+
+    assert client.get("/auth/me").json()["today"] == "2026-10-03"
+
+
 def test_an_invitation_works_once(
     anonymous_client: TestClient, engine: Engine, clock: MovableClock
 ) -> None:

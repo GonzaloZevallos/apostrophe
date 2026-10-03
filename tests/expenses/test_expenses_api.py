@@ -106,6 +106,21 @@ def test_editing_an_unknown_expense_is_not_found(client: TestClient) -> None:
     assert response.status_code == 404
 
 
+def test_editing_an_unknown_expense_with_an_also_unknown_category_answers_the_expenses_404(
+    client: TestClient,
+) -> None:
+    """`edit_expense` checks the expense before the category (`app/expenses/application
+    /manage_expenses.py`): when both are gone, the answer is the expense's 404, not the
+    category's — pinned so a reorder of those two checks would fail here."""
+    response = client.put(
+        "/expenses/999999",
+        json={"spent_on": TODAY, "category_id": 999999, "amount": 1, "detail": "x"},
+    )
+
+    assert response.status_code == 404
+    assert response.json()["code"] == "expense.not_found"
+
+
 def test_another_businesss_expense_id_is_not_found_on_edit_or_delete(
     client: TestClient, other_client: TestClient
 ) -> None:
