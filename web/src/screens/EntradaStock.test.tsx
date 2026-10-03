@@ -316,3 +316,51 @@ test('deleting an entry confirms first, naming the date, variety and grams', asy
   expect(screen.getByText('Entrada eliminada')).toBeInTheDocument()
   expect(fetch).toHaveBeenCalledWith('/stock/entries/10', expect.objectContaining({ method: 'DELETE' }))
 })
+
+test('deleting an entry never re-fetches the entry it just deleted', async () => {
+  // Enforcement seam: `invalidateResource(queryClient, 'stock')` refreshes every
+  // `'stock'`-prefixed query, including this very screen's own `stockEntry(10)`
+  // query — still mounted the instant delete succeeds, a heartbeat before
+  // `navigate` unmounts it. A plain invalidate (not `invalidateStockAfterDeleting`)
+  // would mark that query active again and the still-subscribed `useQuery` would
+  // issue a second `GET /stock/entries/10` for an entry that no longer exists —
+  // real browsers log that as a 404 (caught by the e2e run's "zero console
+  // messages" assertion). This input — a delete that succeeds while the entry's
+  // own query is still live — is exactly what a bare `invalidateResource` call
+  // must be rejected in favour of.
+  let getEntryCalls = 0
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: string | URL | Request, init?: RequestInit) => {
+      const url = typeof input === 'string' ? input : input.toString()
+      if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/stock') return Promise.resolve(jsonResponse(200, STOCK_VIEW))
+      if (url === '/stock/entries/10' && init?.method === 'DELETE') {
+        return Promise.resolve(new Response(null, { status: 204 }))
+      }
+      if (url === '/stock/entries/10') {
+        getEntryCalls += 1
+        return Promise.resolve(
+          jsonResponse(200, {
+            id: 10,
+            date: '2026-09-20',
+            variety_id: 3,
+            origin: 'harvest',
+            grams: 25,
+            total_cost: null,
+            cost_per_gram: null,
+            note: null,
+          }),
+        )
+      }
+      return Promise.resolve(new Response(null, { status: 404 }))
+    }),
+  )
+  renderForm('/mi-stock/entradas/10')
+
+  await userEvent.click(await screen.findByRole('button', { name: 'Borrar entrada' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Sí, borrala' }))
+
+  expect(await screen.findByText('la lista de stock')).toBeInTheDocument()
+  expect(getEntryCalls).toBe(1)
+})

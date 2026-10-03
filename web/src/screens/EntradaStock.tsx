@@ -10,7 +10,7 @@
  */
 
 import { type FormEvent, useState } from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { type QueryClient, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate, useOutletContext, useParams } from 'react-router'
 import { ApiError, NetworkError, UNKNOWN_CODE, get } from '../api/client'
 import { invalidateResource, keys } from '../api/keys'
@@ -47,6 +47,28 @@ const ORIGIN_OPTIONS: { value: Origin; label: string }[] = [
   { value: 'opening_stock', label: 'Stock inicial' },
   { value: 'adjustment', label: 'Ajuste' },
 ]
+
+/** A deleted (or already-gone) entry's own `stockEntry(entryId)` query shares the
+ * `'stock'` prefix `invalidateResource` refreshes for everything else — grams,
+ * status and days left all move when an entry goes. A plain `invalidateResource`
+ * would also mark that one query active again while this screen is still mounted
+ * (the moment before `navigate` unmounts it), so its still-subscribed `useQuery`
+ * (the `existing` query below) refetches an entry that is already gone and the
+ * browser logs the resulting 404 — caught by the e2e run's "zero console messages"
+ * assertion (plan, "Observability"). This marks that one query stale without
+ * refetching it, and refreshes every other `'stock'` query as usual. */
+function invalidateStockAfterDeleting(queryClient: QueryClient, entryId: string): void {
+  queryClient.invalidateQueries({
+    queryKey: keys.stockEntry(entryId),
+    exact: true,
+    refetchType: 'none',
+  })
+  queryClient.invalidateQueries({
+    predicate: (query) =>
+      query.queryKey[0] === 'stock' &&
+      !(query.queryKey[1] === 'entries' && query.queryKey[2] === entryId),
+  })
+}
 
 const FIELD_OVERRIDES: Partial<Record<RefusalCode, string>> = {
   'stock.cost_required': COST_REQUIRED,
@@ -185,7 +207,7 @@ function EntradaStockBody({ mode, entryId, today, initial }: BodyProps) {
       navigate('/mi-stock', { state: { toast: 'Entrada guardada' } })
     } catch (caught) {
       if (caught instanceof ApiError && mode === 'editar' && isGone(caught.code)) {
-        invalidateResource(queryClient, 'stock')
+        invalidateStockAfterDeleting(queryClient, entryId)
         navigate('/mi-stock', { state: { notice: GONE_NOTICE } })
         return
       }
@@ -217,12 +239,12 @@ function EntradaStockBody({ mode, entryId, today, initial }: BodyProps) {
     setDeleteError(null)
     try {
       await deleteEntry(entryId)
-      invalidateResource(queryClient, 'stock')
+      invalidateStockAfterDeleting(queryClient, entryId)
       navigate('/mi-stock', { state: { toast: 'Entrada eliminada' } })
     } catch (caught) {
       setConfirmingDelete(false)
       if (caught instanceof ApiError && isGone(caught.code)) {
-        invalidateResource(queryClient, 'stock')
+        invalidateStockAfterDeleting(queryClient, entryId)
         navigate('/mi-stock', { state: { notice: GONE_NOTICE } })
         return
       }

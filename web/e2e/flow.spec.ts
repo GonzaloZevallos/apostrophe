@@ -2,9 +2,11 @@
  * The end-to-end run (plan, "Shape"; PRD M1, "no `curl` at any point"): every step
  * a seller needs before the sales task lands, done through the built front alone,
  * against the real backend. One business, accepted from its invitation link, then
- * a customer, a variety and its price (added and deleted), an expense (recorded,
- * edited and deleted), an expense category (added and removed), the business
- * renamed, and a second user joining through a fresh invitation link.
+ * a customer, a variety and its price (added and deleted), a stock entry (recorded,
+ * edited and deleted) and a low-stock threshold (set and turned off — GH-5 PRD,
+ * "No curl (6)"), an expense (recorded, edited and deleted), an expense category
+ * (added and removed), the business renamed, and a second user joining through a
+ * fresh invitation link.
  *
  * `consoleMessages` is asserted empty at the end (plan, "Observability": "the e2e
  * run asserts zero console messages") — nothing personal or technical belongs in the
@@ -67,6 +69,54 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.getByRole('button', { name: 'Sí, borrala' }).click();
   await expect(page.getByText('Precio eliminado')).toBeVisible()
   await expect(page.getByText('Sin precio: no se puede vender')).toBeVisible()
+
+  // Record a stock entry for Rosa from the Stock tab (stock.md: "Nueva entrada").
+  await page.goto('/mi-stock')
+  await expect(page.getByText('Sin entradas de stock')).toBeVisible()
+  await page.getByRole('link', { name: 'Nueva entrada' }).click()
+  await expect(page).toHaveURL(/\/mi-stock\/nueva-entrada$/)
+  await page.getByLabel('Gramos').fill('50')
+  await page.getByLabel('Variedad').selectOption({ label: 'Rosa' })
+  await page.getByLabel('Costo total').fill('45000')
+  await expect(page.getByText('Te queda en $ 900 el gramo')).toBeVisible()
+  await page.getByRole('button', { name: 'Guardá la entrada' }).click()
+  await expect(page).toHaveURL(/\/mi-stock$/)
+  await expect(page.getByText('Entrada guardada')).toBeVisible()
+  await expect(page.getByText('Rosa · 50 g')).toBeVisible()
+
+  // Edit it: editing confirms before saving (stock.md).
+  await page.getByText('Rosa · 50 g').click()
+  await expect(page).toHaveURL(/\/mi-stock\/entradas\/.+/)
+  await expect(page.getByLabel('Gramos')).toHaveValue('50')
+  await page.getByLabel('Gramos').fill('60')
+  await page.getByRole('button', { name: 'Guardar' }).click()
+  await expect(page.getByText('¿Guardás los cambios?')).toBeVisible()
+  await page.getByRole('button', { name: 'Sí, guardar' }).click()
+  await expect(page).toHaveURL(/\/mi-stock$/)
+  await expect(page.getByText('Entrada guardada')).toBeVisible()
+  await expect(page.getByText('Rosa · 60 g')).toBeVisible()
+
+  // Delete it: confirmed first, naming the date, variety and grams ("Antes de borrar").
+  await page.getByText('Rosa · 60 g').click()
+  await page.getByRole('button', { name: 'Borrar entrada' }).click()
+  await expect(page.getByText('Antes de borrar')).toBeVisible()
+  await page.getByRole('button', { name: 'Sí, borrala' }).click()
+  await expect(page).toHaveURL(/\/mi-stock$/)
+  await expect(page.getByText('Entrada eliminada')).toBeVisible()
+  await expect(page.getByText('Rosa · 60 g')).toHaveCount(0)
+
+  // Set Rosa's low-stock threshold from Variedades, then turn it off (varieties.md:
+  // "set or turn off the threshold from the variety").
+  await page.goto('/variedades')
+  await expect(page.getByText('Aviso apagado')).toBeVisible()
+  await page.getByRole('link', { name: /Rosa/ }).click()
+  await page.getByLabel('Umbral de aviso (g)').fill('15')
+  await page.getByRole('button', { name: 'Guardar aviso' }).click()
+  await expect(page.getByText('Aviso guardado')).toBeVisible()
+  await expect(page.getByText('Avisame abajo de 15 g')).toBeVisible()
+  await page.getByRole('button', { name: 'Apagar aviso' }).click()
+  await expect(page.getByText('Aviso guardado')).toBeVisible()
+  await expect(page.getByText('Aviso apagado')).toBeVisible()
 
   // Record an expense, with a category created inline.
   await page.goto('/gastos')
