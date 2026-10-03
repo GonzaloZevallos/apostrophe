@@ -105,7 +105,11 @@ test('renaming a category that is already gone shows the gone notice', async () 
   await userEvent.click(screen.getByRole('button', { name: 'Renombrar' }))
   await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
 
-  expect(await screen.findByText(GONE_NOTICE)).toBeInTheDocument()
+  const notice = await screen.findByText(GONE_NOTICE)
+  expect(notice).toBeInTheDocument()
+  // Same floating slot the "Categoría guardada"/"Categoría eliminada" toast
+  // uses (`Aviso`; review finding e2e).
+  expect(notice.closest('.aviso-flotante')).not.toBeNull()
 })
 
 test('removing a category that is already gone shows the gone notice, not the refusal text', async () => {

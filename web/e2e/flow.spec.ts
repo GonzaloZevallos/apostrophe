@@ -13,6 +13,7 @@
 
 import { expect, test } from '@playwright/test'
 import { newBusinessInvitationUrl } from './backend.js'
+import { watchConsole } from './console.js'
 
 const PASSWORD = 'correcthorsebattery'
 const PHONE = '+5491155550001'
@@ -22,7 +23,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   browser,
 }) => {
   const consoleMessages: string[] = []
-  page.on('console', (message) => consoleMessages.push(`${message.type()}: ${message.text()}`))
+  watchConsole(page, consoleMessages)
 
   const ownerEmail = `duena-${Date.now()}@example.com`
   const businessName = `Flores del Centro ${Date.now()}`
@@ -122,9 +123,7 @@ test('a seller does everything the backend offers today, from the front alone', 
 
   const partnerContext = await browser.newContext()
   const partnerPage = await partnerContext.newPage()
-  partnerPage.on('console', (message) =>
-    consoleMessages.push(`${message.type()}: ${message.text()}`),
-  )
+  watchConsole(partnerPage, consoleMessages)
   await partnerPage.goto(inviteUrl)
   await expect(partnerPage.locator('.invitacion__titulo')).toHaveText(renamedTo)
   await partnerPage.getByLabel('Email').fill(`socio-${Date.now()}@example.com`)

@@ -239,7 +239,11 @@ export default function GastoCategorias() {
         </form>
       </div>
       {toast !== null && <Aviso texto={toast} />}
-      {goneNotice && <GoneNotice />}
+      {goneNotice && (
+        <div className="aviso-flotante">
+          <GoneNotice />
+        </div>
+      )}
     </main>
   )
 }

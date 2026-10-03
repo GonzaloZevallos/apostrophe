@@ -168,8 +168,14 @@ describe('deleting an entry', () => {
     await user.click(deleteCurrent)
     await user.click(screen.getByRole('button', { name: 'Sí, borrala' }))
 
-    expect(await screen.findByText(GONE_NOTICE)).toBeInTheDocument()
+    const notice = await screen.findByText(GONE_NOTICE)
+    expect(notice).toBeInTheDocument()
     expect(screen.queryByText('Precio eliminado')).not.toBeInTheDocument()
+    // This screen's own success toast (`AvisoExito`, "Precio guardado"/"Precio
+    // eliminado") renders inline in `.cuerpo`, never floating — the gone notice
+    // must match that, not Gastos/GastoCategorias's floating one (review
+    // finding, e2e: GoneNotice no longer hard-codes a placement of its own).
+    expect(notice.closest('.aviso-flotante')).toBeNull()
   })
 
   test('a dropped network shows "Sin conexión", never a success toast', async () => {

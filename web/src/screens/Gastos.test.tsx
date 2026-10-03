@@ -192,8 +192,13 @@ test('editing an expense that is already gone shows the gone notice and closes t
   await userEvent.click(screen.getByText('Bolsas'))
   await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
 
-  expect(await screen.findByText(GONE_NOTICE)).toBeInTheDocument()
+  const notice = await screen.findByText(GONE_NOTICE)
+  expect(notice).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Guardar' })).not.toBeInTheDocument()
+  // Same floating slot the "Gasto guardado"/"Gasto eliminado" toast uses
+  // (`Aviso`, review finding e2e: GoneNotice itself no longer hard-codes this,
+  // so a screen that forgets to wrap it would fail here).
+  expect(notice.closest('.aviso-flotante')).not.toBeNull()
 })
 
 test('deleting an expense that is already gone shows the gone notice', async () => {

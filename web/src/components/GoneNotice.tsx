@@ -5,21 +5,20 @@
  * carry no data") — it must never look like a save went through, so it keeps the
  * neutral `.aviso-neutro` tone, never the success or warning ones.
  *
- * Floats in `.aviso-flotante`, the same fixed slot `Aviso` (the expenses screens'
- * success toast) uses (PRD round 3: "It uses the same placement [as a toast]…").
- * review finding, e2e: the merge that brought the screen subtasks together had
- * dropped this wrapper, so the notice rendered inline at the bottom of the page
- * instead of in that slot.
+ * Renders bare, with no floating wrapper of its own: PRD round 3 asks for "the
+ * same placement" as that screen's own success toast, and screens disagree on
+ * what that placement is — Gastos/GastoCategorias's `Aviso` floats in
+ * `.aviso-flotante`, VariedadDetalle's `AvisoExito` stays inline in `.cuerpo`. So
+ * the screen wraps this component (or doesn't) to match its own toast, instead of
+ * `GoneNotice` hard-coding one placement for every screen (review finding, e2e).
  */
 
 import { GONE_NOTICE } from '../api/refusals'
 
 export default function GoneNotice() {
   return (
-    <div className="aviso-flotante">
-      <div className="aviso-neutro" role="status">
-        <span className="aviso-neutro__texto">{GONE_NOTICE}</span>
-      </div>
+    <div className="aviso-neutro" role="status">
+      <span className="aviso-neutro__texto">{GONE_NOTICE}</span>
     </div>
   )
 }

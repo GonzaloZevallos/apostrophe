@@ -1,16 +1,19 @@
 /**
- * Proves the collector `flow.spec.ts` trusts for its zero-console assertion
- * (plan, "Observability": "the e2e run asserts zero console messages") actually
- * records a message, on a page the real backend serves — not only on the input it
- * must accept (an app that never logs anything), which `flow.spec.ts` alone cannot
- * tell apart from a miswired or disconnected collector (review finding, e2e).
+ * Proves `watchConsole` — the collector `flow.spec.ts` attaches to both `page` and
+ * `partnerPage` and asserts empty at the end (plan, "Observability") — actually
+ * records a message, on a page the real backend serves. Runs the exact same
+ * function `flow.spec.ts` imports, not a separate copy: a miswired `watchConsole`
+ * (attached to the wrong page, or never called) now fails this canary too, which
+ * `flow.spec.ts` alone cannot tell apart from an app that simply never logs
+ * anything (review finding, e2e).
  */
 
 import { expect, test } from '@playwright/test'
+import { watchConsole } from './console.js'
 
-test('the console collector records a message it must later reject', async ({ page }) => {
+test('the shared console collector records a message it must later reject', async ({ page }) => {
   const consoleMessages: string[] = []
-  page.on('console', (message) => consoleMessages.push(`${message.type()}: ${message.text()}`))
+  watchConsole(page, consoleMessages)
 
   await page.goto('/entrar')
   await page.evaluate(() => {

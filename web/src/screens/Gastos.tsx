@@ -492,7 +492,11 @@ export default function Gastos() {
         />
       )}
       {toast !== null && <Aviso texto={toast} />}
-      {goneNotice && <GoneNotice />}
+      {goneNotice && (
+        <div className="aviso-flotante">
+          <GoneNotice />
+        </div>
+      )}
     </main>
   )
 }
