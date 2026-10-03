@@ -96,11 +96,16 @@ Success criteria:
 
 - **Stock** for a variety: the sum of its entries' grams, signed, minus the grams of its
   sale lines (gifts included). It can be negative, and is always shown as a figure.
-- **Status**:
-  - **no entries**: the variety has never had a stock entry;
-  - **sold out**: stock ≤ 0, with the date since which it has stayed there;
-  - **low**: stock > 0 and under the variety's low-stock threshold;
-  - **ok**: otherwise.
+- **Status**: checked in this order, and the first that fits applies.
+  1. **No entries**: nothing has moved for the variety, with no stock entry and no sale
+     or gift. Its stock is exactly 0.
+  2. **Sold out**: stock ≤ 0. This includes a variety with sales or gifts but no stock
+     entry, and one whose entries net to 0 (ADR-0009: overselling shows sold out at
+     once). It shows the date of the movement after which stock has stayed at or below 0
+     ("Sin gramos desde el 30/09"), and for a variety with no entries that is the day of
+     its first sale or gift.
+  3. **Low**: stock > 0 and under the variety's low-stock threshold.
+  4. **Ok**: otherwise.
 - **Low-stock threshold**: optional, per variety, above zero, up to two decimals. It is
   set or turned off from the variety. With none, a variety is never low, but it can still
   be sold out.
@@ -116,7 +121,7 @@ Success criteria:
   - the total grams;
   - per variety: its grams, its status mark and its detail ("Sin gramos desde el 30/09",
     "Avisás abajo de 20 g", "Al ritmo de los últimos 30 días", "Cargale la primera
-    entrada"), plus days left;
+    entrada" only for no entries), plus days left;
   - the entries with date, variety, origin, grams, total cost and cost per gram, newest
     date first, then most recently recorded first. Each can be edited or deleted.
 - **Status marks** (`MarcaEstado`): told by shape and word, never by color alone.
@@ -167,8 +172,9 @@ Success criteria:
   passing.
 - **Oversell (criterion 3)**: a sale beyond stock is recorded. Stock reads negative and
   the status reads sold out.
-- **Status (criterion 4)**: the matrix of no entries, sold out, low, ok and no threshold,
-  plus days left: 100%. No status is told by color alone.
+- **Status (criterion 4)**: the matrix of nothing moved (no entries), sales without
+  entries (sold out), entries netting to 0 (sold out), low, ok and no threshold, plus days
+  left: 100%. No status is told by color alone.
 - **Isolation**: every stock route sits in the sweep and answers 404 or empty from another
   business, including a reference to another business's variety.
 - **No echo**: no refusal or log contains the note, grams or amounts.

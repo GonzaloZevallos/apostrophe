@@ -157,6 +157,16 @@ What grams sold or gifted beyond everything recorded as coming in cost: not yet 
 _In the app_: Costo pendiente
 _Avoid_: unknown cost, zero cost
 
+**Draw**:
+Grams going out of a variety, taking from its lots oldest first: a sale line (gifts included) or a negative adjustment. It has a costed part and, beyond every lot, pending grams.
+_In the app_: no word of its own; on screen it is the line's "Costo de lo vendido".
+_Avoid_: outflow, consumption, movement, out
+
+**Lot order**:
+The one order a variety's lots and draws are taken in: by date, then by recording order.
+_In the app_: no word of its own.
+_Avoid_: chain, chain position, FIFO order
+
 **Low-stock threshold**:
 Optional grams under which a variety's stock counts as low.
 _In the app_: Avisar con menos de
@@ -209,7 +219,7 @@ _Avoid_: preview, draft
 ## Language
 
 **Stock status**:
-How a variety stands on stock: no entries (it has never had a stock entry), sold out (stock at or below zero), low (above zero and under its low-stock threshold) or ok. On screen it is told by shape and word, never by color alone. _In the app_: Sin entradas, agotada, baja, ok.
+How a variety stands on stock, the first that fits in this order: no entries (nothing has moved, with no stock entry and no sale or gift), sold out (stock at or below zero, including sales with no entry), low (above zero and under its low-stock threshold), ok. It is told by shape and word, never by color alone. _In the app_: Sin entradas, agotada, baja, ok.
 _Avoid_: stock level, alert, availability
 
 **Days left**:
