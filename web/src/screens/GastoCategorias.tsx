@@ -1,7 +1,9 @@
 /**
  * Expense categories: add, rename and remove (`docs/product/expenses.md`,
  * "Expense category"). Removing one still in use is refused with the fixed line;
- * there is no archive or restore.
+ * there is no archive or restore. Renaming or removing a category a partner
+ * already removed answers `expense_category.not_found` (kind `gone`): the row
+ * closes and the fixed gone notice shows, never the generic refusal text.
  */
 
 import { type FormEvent, useState } from 'react'
@@ -16,19 +18,31 @@ import {
   renameCategory,
 } from '../api/expenses'
 import { invalidateResource, keys } from '../api/keys'
+import { isGone, kindOf, resolveOverride, type RefusalCode } from '../api/refusals'
 import Aviso, { type SuccessToast } from '../components/Aviso'
-import ErrorGenerico from '../components/ErrorGenerico'
+import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
+import GoneNotice from '../components/GoneNotice'
 import SinConexion from '../components/SinConexion'
 
 export const CANNOT_REMOVE = 'No se puede borrar: todavía tiene gastos. Podés renombrarla.'
 export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
 
+const REMOVE_OVERRIDES: Partial<Record<RefusalCode, 'in-use'>> = {
+  'expense_category.in_use': 'in-use',
+}
+
+function isRefusal(caught: unknown): caught is ApiError {
+  return caught instanceof ApiError && caught.code !== 'unknown' && kindOf(caught.code) === 'refusal'
+}
+
 function CategoryRow({
   category,
   onDone,
+  onGone,
 }: {
   category: ExpenseCategory
   onDone: (toast: SuccessToast) => void
+  onGone: () => void
 }) {
   const queryClient = useQueryClient()
   const [editing, setEditing] = useState(false)
@@ -49,8 +63,17 @@ function CategoryRow({
       setEditing(false)
       onDone('Categoría guardada')
     } catch (caught) {
-      if (caught instanceof NetworkError) setOffline(true)
-      else setError(GENERIC_REFUSAL)
+      if (caught instanceof NetworkError) {
+        setOffline(true)
+      } else if (caught instanceof ApiError && isGone(caught.code)) {
+        invalidateResource(queryClient, 'expenseCategories')
+        setEditing(false)
+        onGone()
+      } else if (isRefusal(caught)) {
+        setError(GENERIC_REFUSAL)
+      } else {
+        setError(ERROR_GENERICO_MENSAJE)
+      }
     } finally {
       setSending(false)
     }
@@ -66,12 +89,16 @@ function CategoryRow({
     } catch (caught) {
       invalidateResource(queryClient, 'expenseCategories')
       setConfirming(false)
-      if (caught instanceof ApiError && caught.code === 'expense_category.in_use') {
+      if (caught instanceof ApiError && resolveOverride(REMOVE_OVERRIDES, caught.code) === 'in-use') {
         setError(CANNOT_REMOVE)
       } else if (caught instanceof NetworkError) {
         setOffline(true)
-      } else {
+      } else if (caught instanceof ApiError && isGone(caught.code)) {
+        onGone()
+      } else if (isRefusal(caught)) {
         setError(GENERIC_REFUSAL)
+      } else {
+        setError(ERROR_GENERICO_MENSAJE)
       }
     } finally {
       setSending(false)
@@ -96,7 +123,7 @@ function CategoryRow({
 
   return (
     <div className="fila">
-      <span style={{ flex: 1 }}>{category.name}</span>
+      <span className="categoria-fila__nombre">{category.name}</span>
       <button type="button" className="boton--enlace" onClick={() => setEditing(true)}>
         Renombrar
       </button>
@@ -138,11 +165,17 @@ export default function GastoCategorias() {
   const [error, setError] = useState<string | null>(null)
   const [offline, setOffline] = useState(false)
   const [toast, setToast] = useState<SuccessToast | null>(null)
+  const [goneNotice, setGoneNotice] = useState(false)
   const [sending, setSending] = useState(false)
 
   function flash(message: SuccessToast): void {
     setToast(message)
     setTimeout(() => setToast(null), 2500)
+  }
+
+  function flashGone(): void {
+    setGoneNotice(true)
+    setTimeout(() => setGoneNotice(false), 2500)
   }
 
   async function onAdd(event: FormEvent<HTMLFormElement>): Promise<void> {
@@ -157,7 +190,8 @@ export default function GastoCategorias() {
       flash('Categoría guardada')
     } catch (caught) {
       if (caught instanceof NetworkError) setOffline(true)
-      else setError(GENERIC_REFUSAL)
+      else if (isRefusal(caught)) setError(GENERIC_REFUSAL)
+      else setError(ERROR_GENERICO_MENSAJE)
     } finally {
       setSending(false)
     }
@@ -178,7 +212,7 @@ export default function GastoCategorias() {
         {categories.data !== undefined && (
           <div>
             {categories.data.map((category) => (
-              <CategoryRow key={category.id} category={category} onDone={flash} />
+              <CategoryRow key={category.id} category={category} onDone={flash} onGone={flashGone} />
             ))}
           </div>
         )}
@@ -192,12 +226,12 @@ export default function GastoCategorias() {
               onChange={(event) => setNewName(event.target.value)}
               required
             />
-            {error !== null && (
-              <span className="campo__error" role="alert">
-                {error}
-              </span>
-            )}
           </label>
+          {error !== null && (
+            <span className="campo__error" role="alert">
+              {error}
+            </span>
+          )}
           {offline && <SinConexion />}
           <button className="boton" type="submit" disabled={sending || newName.trim() === ''}>
             Agregar categoría
@@ -205,6 +239,7 @@ export default function GastoCategorias() {
         </form>
       </div>
       {toast !== null && <Aviso texto={toast} />}
+      {goneNotice && <GoneNotice />}
     </main>
   )
 }

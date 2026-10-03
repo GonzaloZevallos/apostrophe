@@ -434,6 +434,10 @@
   color: var(--critico-texto);
 }
 
+.categoria-fila__nombre {
+  flex: 1;
+}
+
 .boton--enlace {
   background: transparent;
   color: var(--acento);
@@ -443,10 +447,13 @@
   text-decoration: underline;
 }
 
+/* The dim backdrop is a pseudo-element, not the overlay's own background, so its
+ * reduced opacity never touches the sheet sitting on top of it (plan, invariants:
+ * only the token variables, no rgb/hsl literal — `opacity` alone, on a token
+ * color, stays inside that rule). */
 .capa {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -454,7 +461,16 @@
   z-index: 20;
 }
 
+.capa::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--tinta);
+  opacity: 0.4;
+}
+
 .capa__contenido {
+  position: relative;
   width: 100%;
   max-width: 420px;
   background: var(--papel);

@@ -9,6 +9,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
+import { GONE_NOTICE } from '../api/refusals'
 import GastoCategorias, { CANNOT_REMOVE } from './GastoCategorias'
 
 function jsonResponse(status: number, body: unknown): Response {
@@ -68,4 +69,59 @@ test('a blocked removal shows the fixed refusal, naming no data', async () => {
   await userEvent.click(screen.getByRole('button', { name: 'Sí, borrala' }))
 
   expect(await screen.findByText(CANNOT_REMOVE)).toBeInTheDocument()
+})
+
+test('renaming a category toasts "Categoría guardada"', async () => {
+  renderScreen(async (url, init) => {
+    const method = init?.method ?? 'GET'
+    if (url.toString() === '/expense-categories' && method === 'GET') return jsonResponse(200, CATEGORIES)
+    if (url.toString() === '/expense-categories/1' && method === 'PATCH') {
+      return jsonResponse(200, { id: 1, name: 'Empaque' })
+    }
+    throw new Error(`unexpected ${method} ${url}`)
+  })
+
+  await screen.findByText('Packaging')
+  await userEvent.click(screen.getByRole('button', { name: 'Renombrar' }))
+  const input = screen.getByLabelText('Nombre de Packaging')
+  await userEvent.clear(input)
+  await userEvent.type(input, 'Empaque')
+  await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+
+  expect(await screen.findByText('Categoría guardada')).toBeInTheDocument()
+})
+
+test('renaming a category that is already gone shows the gone notice', async () => {
+  renderScreen(async (url, init) => {
+    const method = init?.method ?? 'GET'
+    if (url.toString() === '/expense-categories' && method === 'GET') return jsonResponse(200, CATEGORIES)
+    if (url.toString() === '/expense-categories/1' && method === 'PATCH') {
+      return jsonResponse(404, { detail: 'no category', code: 'expense_category.not_found' })
+    }
+    throw new Error(`unexpected ${method} ${url}`)
+  })
+
+  await screen.findByText('Packaging')
+  await userEvent.click(screen.getByRole('button', { name: 'Renombrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+
+  expect(await screen.findByText(GONE_NOTICE)).toBeInTheDocument()
+})
+
+test('removing a category that is already gone shows the gone notice, not the refusal text', async () => {
+  renderScreen(async (url, init) => {
+    const method = init?.method ?? 'GET'
+    if (url.toString() === '/expense-categories' && method === 'GET') return jsonResponse(200, CATEGORIES)
+    if (url.toString() === '/expense-categories/1' && method === 'DELETE') {
+      return jsonResponse(404, { detail: 'no category', code: 'expense_category.not_found' })
+    }
+    throw new Error(`unexpected ${method} ${url}`)
+  })
+
+  await screen.findByText('Packaging')
+  await userEvent.click(screen.getByRole('button', { name: 'Eliminar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Sí, borrala' }))
+
+  expect(await screen.findByText(GONE_NOTICE)).toBeInTheDocument()
+  expect(screen.queryByText(CANNOT_REMOVE)).not.toBeInTheDocument()
 })

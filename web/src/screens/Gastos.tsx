@@ -16,6 +16,7 @@ import {
   type Expense,
   type ExpenseCategory,
   type ExpenseInput,
+  addCategory,
   deleteExpense,
   editExpense,
   listCategories,
@@ -27,9 +28,10 @@ import type { Me } from '../api/me'
 import { formatDate, formatMonthLong, shiftMonth } from '../format/dates'
 import { formatMoney } from '../format/money'
 import { parseMoney } from '../format/parse'
+import { isGone, kindOf, resolveOverride, type RefusalCode } from '../api/refusals'
 import Aviso, { type SuccessToast } from '../components/Aviso'
 import GoneNotice from '../components/GoneNotice'
-import ErrorGenerico from '../components/ErrorGenerico'
+import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import SinConexion from '../components/SinConexion'
 
 export const FLOWER_NOTICE = 'Las compras de flores no van acá: se cargan en Stock.'
@@ -37,6 +39,17 @@ export const CATEGORY_GONE = 'Esa categoría ya no está. Elegí otra.'
 export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
 export const NO_DISCARD_TITLE = 'No, dejala'
 export const YES_DELETE_TITLE = 'Sí, borrala'
+
+// `expense_category.not_found` is the one code the expense form handles on its
+// own field instead of the generic gone notice (PM round 3): the expense itself
+// still has somewhere to go, so nothing is discarded.
+const EXPENSE_FORM_OVERRIDES: Partial<Record<RefusalCode, 'category-gone'>> = {
+  'expense_category.not_found': 'category-gone',
+}
+
+function isRefusal(caught: unknown): caught is ApiError {
+  return caught instanceof ApiError && caught.code !== 'unknown' && kindOf(caught.code) === 'refusal'
+}
 
 type FormTarget = 'nuevo' | Expense
 
@@ -88,9 +101,40 @@ function ExpenseForm({
   const [formError, setFormError] = useState<string | null>(null)
   const [offline, setOffline] = useState(false)
   const [sending, setSending] = useState(false)
+  const [extraCategories, setExtraCategories] = useState<ExpenseCategory[]>([])
+  const [creatingCategory, setCreatingCategory] = useState(false)
+  const [newCategoryName, setNewCategoryName] = useState('')
+  const [newCategoryError, setNewCategoryError] = useState<string | null>(null)
+  const [newCategorySending, setNewCategorySending] = useState(false)
+
+  const allCategories = [
+    ...categories,
+    ...extraCategories.filter((extra) => !categories.some((category) => category.id === extra.id)),
+  ]
 
   const detailTrimmed = form.detail.trim()
   const canSubmit = form.category_id !== '' && detailTrimmed !== '' && !sending
+
+  async function onCreateCategory(): Promise<void> {
+    setNewCategoryError(null)
+    setOffline(false)
+    setNewCategorySending(true)
+    try {
+      const created = await addCategory(newCategoryName)
+      invalidateResource(queryClient, 'expenseCategories')
+      setExtraCategories((previous) => [...previous, created])
+      setForm((previous) => ({ ...previous, category_id: String(created.id) }))
+      setCategoryError(null)
+      setCreatingCategory(false)
+      setNewCategoryName('')
+    } catch (caught) {
+      if (caught instanceof NetworkError) setOffline(true)
+      else if (isRefusal(caught)) setNewCategoryError(GENERIC_REFUSAL)
+      else setFormError(ERROR_GENERICO_MENSAJE)
+    } finally {
+      setNewCategorySending(false)
+    }
+  }
 
   async function onSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault()
@@ -116,21 +160,21 @@ function ExpenseForm({
         await editExpense(target.id, body)
       }
       invalidateResource(queryClient, 'expenses')
-      onDone(target === 'nuevo' ? 'Gasto guardado' : 'Gasto guardado')
+      onDone('Gasto guardado')
     } catch (caught) {
-      if (caught instanceof ApiError && caught.code === 'expense_category.not_found') {
-        await queryClient.invalidateQueries({ queryKey: keys.expenseCategories() })
+      if (caught instanceof NetworkError) {
+        setOffline(true)
+      } else if (caught instanceof ApiError && resolveOverride(EXPENSE_FORM_OVERRIDES, caught.code) === 'category-gone') {
+        invalidateResource(queryClient, 'expenseCategories')
         setForm((previous) => ({ ...previous, category_id: '' }))
         setCategoryError(CATEGORY_GONE)
-      } else if (caught instanceof ApiError && caught.code === 'expense.not_found') {
+      } else if (caught instanceof ApiError && isGone(caught.code)) {
         invalidateResource(queryClient, 'expenses')
         onGone()
-      } else if (caught instanceof NetworkError) {
-        setOffline(true)
-      } else if (caught instanceof ApiError) {
+      } else if (isRefusal(caught)) {
         setFormError(GENERIC_REFUSAL)
       } else {
-        setFormError(GENERIC_REFUSAL)
+        setFormError(ERROR_GENERICO_MENSAJE)
       }
     } finally {
       setSending(false)
@@ -165,7 +209,7 @@ function ExpenseForm({
               required
             >
               <option value="">Elegí una categoría</option>
-              {categories.map((category) => (
+              {allCategories.map((category) => (
                 <option key={category.id} value={category.id}>
                   {category.name}
                 </option>
@@ -176,6 +220,35 @@ function ExpenseForm({
             <span className="campo__error" role="alert">
               {categoryError}
             </span>
+          )}
+          {creatingCategory ? (
+            <div className="campo">
+              <label className="campo">
+                <span className="campo__rotulo">Nombre de la categoría nueva</span>
+                <input
+                  className="campo__input"
+                  value={newCategoryName}
+                  onChange={(event) => setNewCategoryName(event.target.value)}
+                />
+              </label>
+              {newCategoryError !== null && (
+                <span className="campo__error" role="alert">
+                  {newCategoryError}
+                </span>
+              )}
+              <button
+                type="button"
+                className="boton"
+                disabled={newCategorySending || newCategoryName.trim() === ''}
+                onClick={onCreateCategory}
+              >
+                Crear categoría
+              </button>
+            </div>
+          ) : (
+            <button type="button" className="boton--enlace" onClick={() => setCreatingCategory(true)}>
+              Crear una categoría nueva
+            </button>
           )}
           <label className="campo">
             <span className="campo__rotulo">Monto</span>
@@ -238,18 +311,26 @@ function DeleteConfirm({
 }) {
   const queryClient = useQueryClient()
   const [sending, setSending] = useState(false)
+  const [offline, setOffline] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   async function confirm(): Promise<void> {
     setSending(true)
+    setOffline(false)
+    setError(null)
     try {
       await deleteExpense(expense.id)
       invalidateResource(queryClient, 'expenses')
       onDone()
-    } catch {
-      // The only error `DELETE /expenses/{id}` answers is `expense.not_found`
-      // (already gone): the list still needs a refresh either way.
-      invalidateResource(queryClient, 'expenses')
-      onGone()
+    } catch (caught) {
+      if (caught instanceof NetworkError) {
+        setOffline(true)
+      } else if (caught instanceof ApiError && isGone(caught.code)) {
+        invalidateResource(queryClient, 'expenses')
+        onGone()
+      } else {
+        setError(ERROR_GENERICO_MENSAJE)
+      }
     } finally {
       setSending(false)
     }
@@ -260,6 +341,12 @@ function DeleteConfirm({
       <div className="capa__contenido panel">
         <span className="panel__titulo">¿Borrás el gasto?</span>
         <span className="panel__detalle">{deleteQuestion(expense, categoryName, today)} Esto no se puede deshacer.</span>
+        {offline && <SinConexion />}
+        {error !== null && (
+          <span className="campo__error" role="alert">
+            {error}
+          </span>
+        )}
         <div className="panel__botones">
           <button type="button" className="boton boton--suave" onClick={onCancel}>
             {NO_DISCARD_TITLE}
