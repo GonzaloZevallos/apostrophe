@@ -27,6 +27,7 @@ from app.expenses.adapters.router import router as expenses_router
 from app.expenses.adapters.sql_period_expenses import SqlPeriodExpenses
 from app.http_errors import Refused
 from app.migrations.runner import upgrade_to_head
+from app.payments.adapters.results_ports import SqlDebtSummary, SqlPaymentsReceived
 from app.payments.adapters.router import customers_router as payments_customers_router
 from app.payments.adapters.router import router as payments_router
 from app.payments.adapters.settlements import SqlBalances, SqlOwingSales
@@ -147,6 +148,12 @@ def create_app(
     # route builds this over the request's own `Session` and business, the way
     # `get_line_costs` already does for `line_costs`.
     app.state.period_expenses = SqlPeriodExpenses
+    # Two more of results' own ports (plan: subtask "PaymentsReceived and DebtSummary in
+    # payments"), the same `(Session, business_id)` factory shape as `line_costs` and
+    # `balances` above; `app/results/adapters/` builds each over the request's own
+    # `Session` and business, never a second query against `app.payments` directly.
+    app.state.payments_received = SqlPaymentsReceived
+    app.state.debt_summary = SqlDebtSummary
 
     @app.get("/health", tags=["health"])
     def health() -> dict[str, str]:
