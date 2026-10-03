@@ -20,7 +20,7 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useOutletContext } from 'react-router'
-import { get } from '../api/client'
+import { get, NetworkError } from '../api/client'
 import { keys } from '../api/keys'
 import type { Me } from '../api/me'
 import {
@@ -30,7 +30,9 @@ import {
   type PanelPeriod,
   type PanelTab,
 } from '../api/panel'
+import ErrorGenerico from '../components/ErrorGenerico'
 import MarcaEstado from '../components/MarcaEstado'
+import SinConexion from '../components/SinConexion'
 import { formatDateShort } from '../format/dates'
 import { formatGrams, formatMoney, formatSignedMoney } from '../format/money'
 import { detailFor, sideNoteFor } from '../stock/detail'
@@ -101,6 +103,9 @@ export default function Inicio() {
             <span className="estado-vacio__detalle">{EMPTY_DETAIL}</span>
           </div>
         )}
+
+        {panelQuery.isError && panelQuery.error instanceof NetworkError && <SinConexion />}
+        {panelQuery.isError && !(panelQuery.error instanceof NetworkError) && <ErrorGenerico />}
 
         {panelQuery.data !== undefined && (
           <Panel panel={panelQuery.data} tab={tab} onTab={setTab} today={me.today} />
@@ -215,7 +220,10 @@ function Panel({
 }
 
 function TeDebenBlock({ debts }: { debts: PanelDebts }) {
-  if (debts.total_owed === 0) {
+  // `oldest` is a date-or-null, never an amount (review finding: deciding this from
+  // `total_owed === 0` compared an API amount inside a screen, which the plan
+  // invariant forbids) — the contract sets it to `null` exactly when nobody owes.
+  if (debts.oldest === null) {
     return (
       <div className="bloque-deben">
         <span className="rotulo">Te deben</span>

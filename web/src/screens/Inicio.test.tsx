@@ -43,7 +43,9 @@ function stubFetch(panel: PanelAnswer, varieties: Array<{ current_price: unknown
   )
 }
 
-function renderInicio(client: QueryClient = new QueryClient()) {
+function renderInicio(
+  client: QueryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+) {
   return render(
     <QueryClientProvider client={client}>
       <MemoryRouter initialEntries={['/']}>
@@ -205,4 +207,20 @@ test('a remount with a different answer never shows the first answer\'s figures'
   const scoped = within(second.container.querySelector<HTMLElement>('.panel-ventas')!)
   expect(scoped.getByText('$ 999')).toBeInTheDocument()
   expect(scoped.queryByText('$ 15.000')).not.toBeInTheDocument()
+})
+
+test('shows "Sin conexión" when the panel fetch fails, with no figures', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: RequestInfo | URL) => {
+      const url = String(input)
+      if (url.includes('/panel')) return Promise.reject(new Error('network error'))
+      if (url.includes('/varieties')) return Promise.resolve(jsonResponse(200, [{ current_price: { id: 1 } }]))
+      return Promise.reject(new Error(`unexpected fetch: ${url}`))
+    }),
+  )
+  renderInicio()
+
+  expect(await screen.findByText('Te quedaste sin internet')).toBeInTheDocument()
+  expect(screen.queryByText('Vendiste hoy')).not.toBeInTheDocument()
 })
