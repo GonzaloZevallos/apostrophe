@@ -71,6 +71,12 @@ export const keys = {
   // the last answer always wins, and no write anywhere ever needs to invalidate it.
   paymentPreview: (customerId: string, paidOn: string, amount: number) =>
     ['payment-form', 'preview', customerId, paidOn, amount] as const,
+  // Inicio's own panel (plan, "Front": "gcTime: 0, staleTime: Infinity and no
+  // refetch on focus or reconnect"), frozen at the call site the same way
+  // `catalog` is: nothing ever invalidates it, so it sits outside the
+  // `Resource`/`PREFIX` system — the current mount's own fetch is always the
+  // answer shown, never a write elsewhere in the app replaying a stale one.
+  panel: () => ['panel'] as const,
 }
 
 // A write on one resource that also stales another, beyond its own prefix (plan,
