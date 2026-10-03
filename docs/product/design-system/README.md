@@ -17,6 +17,23 @@ Las pantallas, como HTML estático para leer sin el lienzo, están en
 | `precios.ts` | Motor de precios, totales, validación de venta e imputación de cobros. |
 | `componentes.ts` | Props de cada componente del sistema. |
 
+## Comparar con lo construido
+
+Las pantallas mandan: lo construido tiene que verse igual a ojo (misma estructura,
+jerarquía, tipografía, colores, espaciado y componentes). Para mirarlo lado a lado:
+
+```sh
+scripts/design/sample-app.sh --dir /tmp/muestra      # deja /tmp/muestra/sample.json
+node scripts/design/comparisons.mjs --facts /tmp/muestra/sample.json --out /tmp/comparaciones
+```
+
+La app de muestra es la app construida sobre una base descartable con un negocio como el
+del diseño ("La Huerta"), cargado por la API y nunca por el front. Cada comparación es una
+PNG con el diseño a la izquierda y lo construido a la derecha, del mismo ancho; si un
+estado no se alcanza o la página desborda, lo dice arriba. Qué ruta y qué pasos llevan a
+cada pantalla está en `scripts/design/screens.json`: quien rehace una pantalla mantiene su
+entrada al día.
+
 ## Dirección de diseño
 
 Minimalista y fino, paleta **Papel y azul**: fondo cálido, tinta marrón-negra y

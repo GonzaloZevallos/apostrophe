@@ -109,3 +109,7 @@ React, Vite and TypeScript in `web/`, built from the design in `docs/product/des
 - **Tests at the seams**: screens and components with Testing Library, through what the
   user sees and does, with the API faked at `fetch`. Formats and previews with plain
   unit tests.
+- **A screen looks like its design**, by eye: the same structure, hierarchy, type, colors,
+  spacing and components as its file in `pantallas/`. Look at its comparison
+  (`scripts/design/comparisons.mjs`, design README) before delivering, and keep its entry
+  in `scripts/design/screens.json` true.
