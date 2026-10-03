@@ -296,6 +296,60 @@
  * "Shell"). A pure CSS switch: both markups exist, one is hidden either way, so a
  * screen reader never finds the hidden one (ADR-independent — `display: none` drops
  * it from the accessibility tree too). */
+.toast {
+  background: var(--boton);
+  border-radius: var(--radio-panel);
+  padding: 15px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toast__texto {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--boton-texto);
+}
+
+.lista-clientes {
+  display: flex;
+  flex-direction: column;
+}
+
+.lista-clientes__fila {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: var(--alto-tocable);
+  padding: var(--espacio-sm) 0;
+  border-bottom: 1px solid var(--linea);
+  color: var(--tinta);
+  text-decoration: none;
+}
+
+.lista-clientes__nombre {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.lista-clientes__telefono {
+  font-size: 13px;
+  color: var(--tinta2);
+}
+
+.vip-insignia {
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--acento-suave);
+  color: var(--acento);
+  padding: 3px 9px;
+  border-radius: var(--radio-pildora);
+}
+
 @media (min-width: 900px) {
   .bar-inferior {
     display: none;

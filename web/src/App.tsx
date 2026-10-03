@@ -16,6 +16,10 @@ import Entrar from './screens/Entrar'
 import Inicio from './screens/Inicio'
 import Invitacion from './screens/Invitacion'
 import Mas from './screens/Mas'
+import ClienteFicha from './screens/clientes/ClienteFicha'
+import ClienteForm from './screens/clientes/ClienteForm'
+import Clientes from './screens/clientes/Clientes'
+import ClientesLayout from './screens/clientes/ClientesLayout'
 import GatedLayout from './shell/GatedLayout'
 import Shell from './shell/Shell'
 import { useOnline } from './useOnline'
@@ -53,6 +57,12 @@ export default function App() {
             <Route element={<Shell />}>
               <Route index element={<Inicio />} />
               <Route path="mas" element={<Mas />} />
+              <Route path="clientes" element={<ClientesLayout />}>
+                <Route index element={<Clientes />} />
+                <Route path="nuevo" element={<ClienteForm mode="nuevo" />} />
+                <Route path=":id" element={<ClienteFicha />} />
+                <Route path=":id/editar" element={<ClienteForm mode="editar" />} />
+              </Route>
             </Route>
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
