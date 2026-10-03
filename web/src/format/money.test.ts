@@ -13,6 +13,14 @@ describe('formatMoney', () => {
   test('a small amount carries no thousands dot', () => {
     expect(formatMoney(500)).toBe('$ 500')
   })
+
+  test('a seven-figure amount gets two dots', () => {
+    expect(formatMoney(1234567)).toBe('$ 1.234.567')
+  })
+
+  test('zero', () => {
+    expect(formatMoney(0)).toBe('$ 0')
+  })
 })
 
 describe('formatGrams', () => {

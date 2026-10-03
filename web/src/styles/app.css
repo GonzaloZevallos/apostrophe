@@ -553,6 +553,193 @@
   border-radius: var(--radio-pildora);
 }
 
+.aviso-toast {
+  background: var(--boton);
+  color: var(--boton-texto);
+  border-radius: var(--radio-panel);
+  padding: 15px 18px;
+}
+
+.aviso-toast__texto {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.gastos__mes {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-sm);
+  height: 48px;
+  padding: 0 8px;
+  border-radius: var(--radio-pildora);
+  background: var(--superficie);
+}
+
+.gastos__mes-boton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: var(--radio-pildora);
+  background: transparent;
+  color: var(--tinta);
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.gastos__mes-etiqueta {
+  flex: 1;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.gastos__categoria {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-xs);
+}
+
+.gastos__categoria-cabecera {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--espacio-md);
+}
+
+.gastos__categoria-nombre {
+  font-size: 16px;
+}
+
+.gastos__categoria-subtotal {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.fila-gasto {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+  width: 100%;
+  padding: var(--espacio-md) 0;
+  border: 0;
+  border-bottom: 1px solid var(--linea);
+  background: transparent;
+  color: var(--tinta);
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+
+.fila-gasto:last-child {
+  border-bottom: 0;
+}
+
+.fila-gasto__fecha {
+  width: 42px;
+  font-size: 13px;
+  color: var(--tinta2);
+}
+
+.fila-gasto__texto {
+  flex: 1;
+  min-width: 0;
+}
+
+.fila-gasto__monto {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.panel {
+  background: var(--superficie);
+  border-radius: var(--radio-panel-grande);
+  padding: var(--espacio-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-md);
+}
+
+.panel__titulo {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.panel__detalle {
+  font-size: 15px;
+  color: var(--tinta2);
+  line-height: 1.5;
+}
+
+.panel__botones {
+  display: flex;
+  gap: 10px;
+  margin-top: var(--espacio-sm);
+}
+
+.boton--suave {
+  flex: 1;
+  background: var(--papel);
+  color: var(--tinta);
+}
+
+.boton--destructivo {
+  flex: 1;
+  background: var(--critico);
+  color: var(--critico-texto);
+}
+
+.categoria-fila__nombre {
+  flex: 1;
+}
+
+.boton--enlace {
+  background: transparent;
+  color: var(--acento);
+  height: auto;
+  padding: 0;
+  font-size: 15px;
+  text-decoration: underline;
+}
+
+/* The dim backdrop is a pseudo-element, not the overlay's own background, so its
+ * reduced opacity never touches the sheet sitting on top of it (plan, invariants:
+ * only the token variables, no rgb/hsl literal — `opacity` alone, on a token
+ * color, stays inside that rule). */
+.capa {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: var(--margen-pantalla);
+  z-index: 20;
+}
+
+.capa::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--tinta);
+  opacity: 0.4;
+}
+
+.capa__contenido {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  background: var(--papel);
+  border-radius: var(--radio-hoja);
+  padding: var(--espacio-xxl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-md);
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
 @media (min-width: 900px) {
   .bar-inferior {
     display: none;
