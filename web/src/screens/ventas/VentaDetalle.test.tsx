@@ -7,7 +7,7 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
@@ -178,4 +178,90 @@ test('a sale already gone when deleted shows the gone notice and returns to Vent
   await userEvent.click(screen.getByRole('button', { name: 'Sí, borrala' }))
 
   expect(await screen.findByText('Eso ya no está. La lista ya está al día.')).toBeInTheDocument()
+})
+
+test('a sale with a customer already never shows Asignar cliente', async () => {
+  vi.mocked(fetch).mockResolvedValue(jsonResponse(200, SALE))
+  renderDetalle()
+  await screen.findByText('$ 6.500')
+
+  expect(screen.queryByRole('button', { name: 'Asignar cliente' })).not.toBeInTheDocument()
+})
+
+const NICO_SEARCH_RESULT = { id: 5, name: 'Nico', phone: '1111', channel: 'whatsapp', vip: true }
+
+/** Dispatches on method and path instead of call order: the sheet's own search
+ * fires on every mount and keystroke, interleaved with whatever this screen's own
+ * mutation fires, so a plain FIFO queue of `mockResolvedValueOnce` cannot tell
+ * them apart reliably. */
+function dispatchFetch(
+  responses: Record<string, () => Response>,
+): (input: RequestInfo | URL, init?: RequestInit) => Promise<Response> {
+  return (input, init) => {
+    const url = typeof input === 'string' ? input : input.toString()
+    const method = init?.method ?? 'GET'
+    const key = `${method} ${url}`
+    const makeResponse = responses[key]
+    return Promise.resolve(makeResponse === undefined ? jsonResponse(200, []) : makeResponse())
+  }
+}
+
+test('Asignar cliente opens the "Elegir cliente" sheet without "Sin cliente"; choosing a customer assigns it and shows the toast', async () => {
+  let assigned = false
+  vi.mocked(fetch).mockImplementation(
+    dispatchFetch({
+      'GET /sales/7': () =>
+        jsonResponse(
+          200,
+          assigned ? { ...SALE, customer: { id: 5, name: 'Nico', vip: true } } : { ...SALE, customer: null, payment: 'none' },
+        ),
+      'GET /customers?q=Nico': () => jsonResponse(200, [NICO_SEARCH_RESULT]),
+      'PUT /sales/7/customer': () => {
+        assigned = true
+        return jsonResponse(200, { ...SALE, customer: { id: 5, name: 'Nico', vip: true } })
+      },
+    }),
+  )
+  renderDetalle()
+  await screen.findByText('Sin cliente')
+
+  await userEvent.click(screen.getByRole('button', { name: 'Asignar cliente' }))
+  expect(screen.getByText('Elegir cliente')).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Sin cliente' })).not.toBeInTheDocument()
+
+  fireEvent.change(screen.getByPlaceholderText('Teléfono o nombre'), { target: { value: 'Nico' } })
+  await userEvent.click(await screen.findByText('Nico'))
+
+  await waitFor(() =>
+    expect(fetch).toHaveBeenCalledWith(
+      '/sales/7/customer',
+      expect.objectContaining({ method: 'PUT' }),
+    ),
+  )
+  expect(await screen.findByText('Cliente asignado')).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Asignar cliente' })).not.toBeInTheDocument()
+})
+
+test('assigning a customer to a sale someone already assigned shows the fixed message and refreshes the detail', async () => {
+  let assignedAlready = false
+  vi.mocked(fetch).mockImplementation(
+    dispatchFetch({
+      'GET /sales/7': () =>
+        jsonResponse(200, assignedAlready ? SALE : { ...SALE, customer: null, payment: 'none' }),
+      'GET /customers?q=Nico': () => jsonResponse(200, [NICO_SEARCH_RESULT]),
+      'PUT /sales/7/customer': () => {
+        assignedAlready = true
+        return jsonResponse(409, { code: 'sale.customer_already_assigned' })
+      },
+    }),
+  )
+  renderDetalle()
+  await screen.findByText('Sin cliente')
+
+  await userEvent.click(screen.getByRole('button', { name: 'Asignar cliente' }))
+  fireEvent.change(screen.getByPlaceholderText('Teléfono o nombre'), { target: { value: 'Nico' } })
+  await userEvent.click(await screen.findByText('Nico'))
+
+  expect(await screen.findByText('Esta venta ya tiene cliente.')).toBeInTheDocument()
+  await waitFor(() => expect(screen.queryByRole('button', { name: 'Asignar cliente' })).not.toBeInTheDocument())
 })

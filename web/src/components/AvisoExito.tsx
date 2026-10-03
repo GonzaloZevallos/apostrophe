@@ -19,6 +19,7 @@ export type SuccessToast =
   | 'Categoría eliminada'
   | 'Negocio renombrado'
   | 'Invitación lista'
+  | 'Cliente asignado'
 
 export default function AvisoExito({ texto }: { texto: SuccessToast }) {
   return (

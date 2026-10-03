@@ -5,7 +5,7 @@
  * `sales/pricing.ts` is the preview, this module only carries what the API answered.
  */
 
-import { del, get } from './client'
+import { del, get, put } from './client'
 import type { PricingRule } from '../sales/pricing'
 
 export type Payment = 'cash' | 'transfer' | 'owing' | 'none'
@@ -47,4 +47,11 @@ export function getSale(id: string): Promise<Sale> {
 
 export function deleteSale(id: string): Promise<void> {
   return del<void>(`/sales/${encodeURIComponent(id)}`)
+}
+
+// `assign-customer` (`VentaDetalle`'s "Asignar cliente", only on a sale that has
+// none): the one write this subtask adds, over the existing `PUT /sales/{id}/customer`
+// (plan, "No new API routes are needed").
+export function assignCustomer(id: string, customerId: number): Promise<Sale> {
+  return put<Sale>(`/sales/${encodeURIComponent(id)}/customer`, { customer_id: customerId })
 }

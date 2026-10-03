@@ -6,17 +6,25 @@
  * with `Antes de borrar`, naming the date and the amount; "Venta guardada" with
  * Deshacer (`Estados`) is this screen's own banner, read once through
  * `readFeedback`/`clearSaleJustSaved` and cleared from history state so a refresh
- * or Back never resurrects it. `assign-customer` later adds "Asignar cliente" to
- * this same module, only for a sale that has none.
+ * or Back never resurrects it. "Asignar cliente" (`assign-customer`) shows only
+ * when `sale.customer` is `null`, never to change one: it opens the same "Elegir
+ * cliente" sheet `NuevaVenta` uses (`NuevaVentaCliente`), with `allowNone={false}`
+ * so "Sin cliente" never shows here (PM round 4). On success the toast "Cliente
+ * asignado" shows in place — no navigation, so it is a local `AvisoExito`, not a
+ * history-state toast. If a partner assigned one first, `sale.customer_already_assigned`
+ * shows its own fixed message and the detail is invalidated so it refreshes with
+ * the customer now on it; lines are never repriced (PRD, "Detalle de venta").
  */
 
 import { useEffect, useState } from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useLocation, useNavigate, useParams } from 'react-router'
 import { ApiError, NetworkError } from '../../api/client'
+import type { Customer } from '../../api/customers'
 import { invalidateResource, keys } from '../../api/keys'
-import { deleteSale, getSale, type Sale } from '../../api/sales'
+import { assignCustomer, deleteSale, getSale, type Sale } from '../../api/sales'
 import { GONE_NOTICE, isGone } from '../../api/refusals'
+import AvisoExito from '../../components/AvisoExito'
 import ConfirmDialog from '../../components/ConfirmDialog'
 import { clearSaleJustSaved, readFeedback, SALE_SAVED } from '../../components/feedback'
 import ErrorGenerico from '../../components/ErrorGenerico'
@@ -25,6 +33,11 @@ import SinConexion from '../../components/SinConexion'
 import { formatDateShort } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
 import type { PricingRule } from '../../sales/pricing'
+import { GENERIC_REFUSAL } from '../clientes/ClienteForm'
+import NuevaVentaCliente from './NuevaVentaCliente'
+
+export const CUSTOMER_ALREADY_ASSIGNED_MESSAGE = 'Esta venta ya tiene cliente.'
+const ASSIGN_TOAST_MS = 2500
 
 export const UNDO_WINDOW_MS = 5000
 
@@ -79,6 +92,43 @@ export default function VentaDetalle() {
   const [deleting, setDeleting] = useState(false)
   const [deleteOffline, setDeleteOffline] = useState(false)
   const [deleteFailed, setDeleteFailed] = useState(false)
+
+  const [showAssignSheet, setShowAssignSheet] = useState(false)
+  const [assignError, setAssignError] = useState<string | null>(null)
+  const [assignOffline, setAssignOffline] = useState(false)
+  const [assigned, setAssigned] = useState(false)
+
+  const assignMutation = useMutation({
+    mutationFn: (customerId: number) => assignCustomer(saleId, customerId),
+  })
+
+  async function onCustomerChosen(customer: Customer | null): Promise<void> {
+    if (customer === null) return // `allowNone={false}`: the sheet never offers it here.
+    setShowAssignSheet(false)
+    setAssignError(null)
+    setAssignOffline(false)
+    try {
+      const updated = await assignMutation.mutateAsync(customer.id)
+      // The PUT already answers the sale as it now stands (docs/adr/0009): this
+      // writes that answer straight into the cache instead of a second `GET`
+      // (plan, invariants: what is shown comes from the API's answer).
+      queryClient.setQueryData(keys.sale(saleId), updated)
+      invalidateResource(queryClient, 'sales')
+      setAssigned(true)
+      setTimeout(() => setAssigned(false), ASSIGN_TOAST_MS)
+    } catch (caught) {
+      if (caught instanceof ApiError && caught.code === 'sale.customer_already_assigned') {
+        setAssignError(CUSTOMER_ALREADY_ASSIGNED_MESSAGE)
+        // Someone else assigned one first: refetch so the detail shows who,
+        // rather than leaving this screen's stale "no customer" on view.
+        void queryClient.invalidateQueries({ queryKey: keys.sale(saleId) })
+      } else if (caught instanceof NetworkError) {
+        setAssignOffline(true)
+      } else {
+        setAssignError(GENERIC_REFUSAL)
+      }
+    }
+  }
 
   async function removeSale(): Promise<void> {
     setDeleting(true)
@@ -204,6 +254,24 @@ export default function VentaDetalle() {
           </span>
         </div>
 
+        {assigned && <AvisoExito texto="Cliente asignado" />}
+        {assignOffline && <SinConexion />}
+        {assignError !== null && (
+          <span className="campo__error" role="alert">
+            {assignError}
+          </span>
+        )}
+
+        {sale.customer === null && (
+          <button
+            type="button"
+            className="boton--enlace"
+            onClick={() => setShowAssignSheet(true)}
+          >
+            Asignar cliente
+          </button>
+        )}
+
         <button
           type="button"
           className="boton--enlace"
@@ -212,6 +280,14 @@ export default function VentaDetalle() {
           Borrar venta
         </button>
       </div>
+
+      {showAssignSheet && (
+        <NuevaVentaCliente
+          allowNone={false}
+          onChosen={(customer) => void onCustomerChosen(customer)}
+          onClose={() => setShowAssignSheet(false)}
+        />
+      )}
 
       {confirmingDelete && (
         <ConfirmDialog
