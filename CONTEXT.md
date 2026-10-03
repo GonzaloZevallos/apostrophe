@@ -202,9 +202,9 @@ _Avoid_: cash flow, balance, profit
 ## Telegram
 
 **Catalog**:
-The text that offers every shown variety with stock and a current price: name, emoji, indica share, aroma and prices, between a header and a footer.
-_In the app_: Catálogo
+The text that offers every shown variety with stock above zero and a current price today: its emoji, name, indica share, aroma and prices, between the business's header and footer. It keeps its **bold** markers and its own money format ($11.000). _In the app_: Catálogo.
 _Avoid_: menu, price list, flyer
+_In the app_: Catálogo
 
 **Pinned catalog**:
 The catalog message pinned in the business's Telegram chat, kept in step whenever a price changes or a variety sells out.
@@ -237,3 +237,23 @@ _Avoid_: crop, yield, production
 **Adjustment**:
 A stock entry recording the difference between a physical count and the stock the app shows, plus or minus. A negative adjustment carries no cost and takes its grams out of the oldest lots, as grams going out do. _In the app_: Ajuste.
 _Avoid_: correction, recount, shrinkage, write-off
+
+**Catalog attributes**:
+What a variety shows in the catalog: whether it is shown, its emoji, its indica share and its aroma. They never affect prices, stock or sales. _In the app_: edited from Qué sale en el catálogo.
+_Avoid_: catalog settings, metadata, tags
+
+**Hidden variety**:
+A variety the seller chose to leave out of the catalog, whatever its price or stock. Hidden means only that; a variety out for lack of price or stock is not hidden. _In the app_: Oculta.
+_Avoid_: inactive, archived, disabled
+
+**Indica share**:
+A variety's indica percentage, a whole number from 0 to 100; sativa is the rest. Optional; unknown means the catalog leaves its line out. _In the app_: % índica.
+_Avoid_: genetics, ratio, type
+
+**Aroma**:
+One line of free text describing a variety's aroma and flavour for the catalog, up to 200 characters. _In the app_: Aroma/sabor.
+_Avoid_: description, notes, flavor profile
+
+**Catalog header and footer**:
+A business's own text opening and closing the catalog, multi-line and up to 500 characters each. Either may be blank, and is then left out. They start as "🌿 **CATÁLOGO** 🌿" and "📩 Consultas y pedidos por privado.". _In the app_: Encabezado, Pie.
+_Avoid_: title, signature, intro, outro

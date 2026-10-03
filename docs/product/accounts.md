@@ -103,7 +103,8 @@ Success criteria:
   "Sin conexión" on any origin. This does not rely on the service worker.
 - **Theme**: light and dark follow the phone. The font is self-hosted.
 - **Language and formats**: every word on screen in Rioplatense Spanish with vos. Money
-  `$ 11.000`, grams `3,5 g`, dates `dd/mm`.
+  `$ 11.000`, grams `3,5 g`, dates `dd/mm`. The catalog text keeps its own Telegram
+  format (`$11.000`, catalog.md).
 - **Getting in** (`Entrar`, `NegocioNuevo`, `Invitacion`):
   - Login shows a fixed hint under the button that five failed attempts lock the email for
     15 minutes. It shows no count of attempts left. The lock shows the brake message.
@@ -120,7 +121,8 @@ Success criteria:
   - It shows on every signed-in screen except the sale form itself and its customer sheet.
 - **Inicio**: the business's name. When no variety has a current price today, it shows
   "Arrancá por las variedades". No figures.
-- **Más**: Gastos, Variedades, Negocio.
+- **Más**: Gastos, Variedades, Catálogo ("Catálogo · El mensaje de hoy, listo para
+  copiar", catalog.md), Negocio.
 - **Negocio**:
   - rename the business;
   - the users by email, the signed-in one marked "vos";
@@ -176,7 +178,7 @@ Success criteria:
 - **Nothing invented (criterion 7)**:
   - the bar shows exactly Inicio, Ventas, Clientes, Stock and Más, plus the "Nueva venta"
     button;
-  - Más shows exactly Gastos, Variedades and Negocio;
+  - Más shows exactly Gastos, Variedades, Catálogo and Negocio;
   - Inicio shows no figures.
 
 ## Out of scope
@@ -190,4 +192,4 @@ Success criteria:
   (ADR-0002), and with it the full Android install.
 - Live updates between partners: a list refreshes when it is opened or after a save, not
   when the other partner changes something.
-- Análisis and Catálogo entries: they come with their own tasks.
+- The Análisis entry: it comes with its own task.
