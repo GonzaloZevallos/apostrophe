@@ -46,4 +46,24 @@ describe('findForbiddenUsages', () => {
 
     expect(violations).toEqual([])
   })
+
+  test('flags a module other than clipboard.ts naming navigator.clipboard or execCommand', () => {
+    const violations = findForbiddenUsages([
+      { path: 'src/screens/Negocio.tsx', content: 'await navigator.clipboard.writeText(url)' },
+      { path: 'src/screens/Catalogo.tsx', content: "document.execCommand('copy')" },
+    ])
+
+    expect(violations.map((v) => v.rule).sort()).toEqual(['execCommand', 'navigatorClipboard'])
+  })
+
+  test('allows navigator.clipboard and execCommand only inside clipboard.ts', () => {
+    const violations = findForbiddenUsages([
+      {
+        path: 'src/clipboard.ts',
+        content: "navigator.clipboard.writeText(text); document.execCommand('copy')",
+      },
+    ])
+
+    expect(violations).toEqual([])
+  })
 })

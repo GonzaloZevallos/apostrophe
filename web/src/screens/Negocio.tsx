@@ -28,6 +28,7 @@ import SinConexion from '../components/SinConexion'
 import { invalidateResource, keys } from '../api/keys'
 import type { Me } from '../api/me'
 import { kindOf, resolveOverride, type RefusalCode } from '../api/refusals'
+import { copyText } from '../clipboard'
 import { formatDateShort } from '../format/dates'
 import { logOut } from '../session'
 
@@ -149,12 +150,9 @@ export default function Negocio() {
 
   async function onCopy(): Promise<void> {
     if (invite === null) return
-    try {
-      await navigator.clipboard.writeText(invite.url)
-    } catch {
-      // The link is already readable right on the screen; there is nothing more
-      // to show for a refused clipboard permission.
-    }
+    // A failed copy (or the home network's plain http, ADR-0002) stays silent
+    // here: the link is already readable right on the screen.
+    await copyText(invite.url)
   }
 
   async function onShare(): Promise<void> {
