@@ -2,20 +2,23 @@
 this module reads nothing from the environment; tests build the app with their own
 settings, engine and clock."""
 
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Callable, Sequence
 from contextlib import asynccontextmanager
-from typing import cast
+from typing import Protocol, cast
 
 from fastapi import Depends, FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy.engine import Engine
+from sqlalchemy.orm import Session
 
 from app.accounts.adapters.deps import require_session
 from app.accounts.adapters.router import public_router as accounts_public_router
 from app.accounts.adapters.router import router as accounts_router
 from app.accounts.domain.password import PasswordHasher
 from app.accounts.domain.session_token import SessionSigner
+from app.catalog.adapters.opening import CatalogHeaderFooterOpening
+from app.catalog.adapters.router import router as catalog_router
 from app.clock import Clock, system_clock
 from app.customers.adapters.router import router as customers_router
 from app.db import make_engine
@@ -32,6 +35,34 @@ from app.static_spa import MissingBuiltFront, SpaStatic, api_segments
 from app.stock.adapters.line_costs import SqlLineCosts
 from app.stock.adapters.router import router as stock_router
 from app.varieties.adapters.router import router as varieties_router
+
+
+class _Opening(Protocol):
+    def opened(self, business_id: int) -> None: ...
+
+
+class _BoundComposite:
+    def __init__(self, openings: Sequence[_Opening]) -> None:
+        self._openings = openings
+
+    def opened(self, business_id: int) -> None:
+        for opening in self._openings:
+            opening.opened(business_id)
+
+
+class CompositeOpening:
+    """Combines several capabilities' own opening factories into the one
+    `app.state.business_opening` (docs/adr/0006): each is shaped like a lone factory
+    already was (`Callable[[Session], _Opening]`); this composes any number of them,
+    called once per request with that request's `Session`, so a new capability that
+    seeds something at opening joins the tuple below, not a new keyword on
+    `accept_invitation`."""
+
+    def __init__(self, *factories: Callable[[Session], _Opening]) -> None:
+        self._factories = factories
+
+    def __call__(self, session: Session) -> _BoundComposite:
+        return _BoundComposite([factory(session) for factory in self._factories])
 
 
 async def _without_request_data(request: Request, exc: Exception) -> JSONResponse:
@@ -77,9 +108,12 @@ def create_app(
     app.add_exception_handler(RequestValidationError, _without_request_data)
     app.add_exception_handler(Refused, _refused)
     # A factory, not an instance: `get_business_opening` builds it over the request's
-    # own `Session`. The next capability that seeds at opening turns this into a
-    # composite, not a second keyword argument on `accept_invitation` (docs/adr/0006).
-    app.state.business_opening = ExpenseCategoriesOpening
+    # own `Session`. `CompositeOpening` composes every capability that seeds something
+    # at opening, so a new one joins here, not as a second keyword argument on
+    # `accept_invitation` (docs/adr/0006).
+    app.state.business_opening = CompositeOpening(
+        ExpenseCategoriesOpening, CatalogHeaderFooterOpening
+    )
     # A factory, not an instance (the same shape as `business_opening` above): sales
     # reaches line cost only through its own `LineCosts` port, never `app.stock`
     # directly (CODING_STANDARDS section 1). A dependency under `app/sales/adapters/`
@@ -109,6 +143,7 @@ def create_app(
     app.include_router(expenses_router, dependencies=gated)
     app.include_router(sales_router, dependencies=gated)
     app.include_router(stock_router, dependencies=gated)
+    app.include_router(catalog_router, dependencies=gated)
     app.include_router(payments_router, dependencies=gated)
     app.include_router(payments_customers_router, dependencies=gated)
 

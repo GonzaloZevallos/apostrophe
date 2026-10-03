@@ -35,6 +35,7 @@ import Gastos from './screens/Gastos'
 import Inicio from './screens/Inicio'
 import Invitacion from './screens/Invitacion'
 import Mas from './screens/Mas'
+import Catalogo from './screens/Catalogo'
 import Stock from './screens/Stock'
 import ClienteFicha from './screens/clientes/ClienteFicha'
 import ClienteForm from './screens/clientes/ClienteForm'
@@ -83,6 +84,7 @@ export const router = createBrowserRouter([
               { path: 'mi-stock/nueva-entrada', element: <EntradaStock mode="nuevo" /> },
               { path: 'mi-stock/entradas/:id', element: <EntradaStock mode="editar" /> },
               { path: 'negocio', element: <Negocio /> },
+              { path: 'catalogo', element: <Catalogo /> },
               {
                 path: 'ventas',
                 children: [

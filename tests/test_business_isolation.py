@@ -107,6 +107,32 @@ def seed_sales(client: TestClient) -> dict[str, int]:
     return {"sale_id": without_customer["id"]}
 
 
+def seed_catalog(client: TestClient) -> dict[str, int]:
+    variety = client.post("/varieties", json={"name": f"{MARKER} catalog variety"}).json()
+    price = client.post(
+        f"/varieties/{variety['id']}/prices",
+        json={"effective_from": "2026-01-01", "list_price": 11_000},
+    )
+    assert price.status_code == 201, price.text
+    entry = client.post(
+        "/stock/entries",
+        json={
+            "variety_id": variety["id"],
+            "origin": "opening_stock",
+            "grams": "50",
+        },
+    )
+    assert entry.status_code == 201, entry.text
+    attributes = client.put(
+        f"/catalog/varieties/{variety['id']}",
+        json={"shown": True, "emoji": None, "indica_share": None, "aroma": MARKER},
+    )
+    assert attributes.status_code == 200, attributes.text
+    header_footer = client.put("/catalog/header-footer", json={"header": MARKER, "footer": MARKER})
+    assert header_footer.status_code == 200, header_footer.text
+    return {"variety_id": variety["id"]}
+
+
 def seed_stock(client: TestClient) -> dict[str, int]:
     variety = client.post("/varieties", json={"name": f"{MARKER} stock variety"}).json()
     entry = client.post(
@@ -154,6 +180,7 @@ SEEDERS: list[Callable[[TestClient], dict[str, int]]] = [
     seed_expenses,
     seed_sales,
     seed_stock,
+    seed_catalog,
     seed_payments,
 ]
 
@@ -198,6 +225,13 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
         "grams": "20",
     },
     ("PUT", "/stock/varieties/{variety_id}/threshold"): {"grams": "15"},
+    ("PUT", "/catalog/varieties/{variety_id}"): {
+        "shown": True,
+        "emoji": None,
+        "indica_share": 50,
+        "aroma": "another aroma",
+    },
+    ("PUT", "/catalog/header-footer"): {"header": "another header", "footer": "another footer"},
     ("POST", "/customers/{customer_id}/payments/preview"): {
         "paid_on": "2026-10-02",
         "amount": 100,
@@ -450,6 +484,25 @@ def test_another_business_lists_none_of_its_records(
 
     assert response.status_code == 200
     assert MARKER not in response.text
+
+
+def test_business_a_sees_its_own_catalog_seed(
+    business_a: TestClient, seeded: dict[str, int]
+) -> None:
+    """The negative check above (`MARKER not in response.text`) only proves something
+    if the seed actually qualifies for business A's own catalog: a seed that silently
+    failed to show, price or stock its variety would pass that check too, over empty
+    data. This is the positive half: business A must see `MARKER` in its own `text`,
+    `header` and a variety name."""
+    catalog = business_a.get("/catalog").json()
+
+    assert catalog["header"] == MARKER
+    assert catalog["text"] is not None and MARKER in catalog["text"]
+    assert any(variety["name"] == f"{MARKER} catalog variety" for variety in catalog["varieties"])
+    assert any(
+        variety["name"] == f"{MARKER} catalog variety" and variety["state"] == "in"
+        for variety in catalog["varieties"]
+    )
 
 
 def test_the_list_check_catches_a_write_that_a_bare_404_check_would_miss(

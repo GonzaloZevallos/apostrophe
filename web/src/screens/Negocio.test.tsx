@@ -12,7 +12,10 @@ import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import type { Me } from '../api/me'
 import { SIN_CONEXION_TITULO } from '../components/SinConexion'
+import * as clipboard from '../clipboard'
 import Negocio, { BUSINESS_NAME_INVALID_MESSAGE, RENAME_SUCCESS, RETRY_MESSAGE } from './Negocio'
+
+vi.mock('../clipboard', () => ({ copyText: vi.fn().mockResolvedValue(true) }))
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -126,6 +129,26 @@ test('"Invitá a un socio" shows the fresh link on screen instead of a toast', a
   expect(await screen.findByText('https://apostrophe.app/invitation/abc123')).toBeInTheDocument()
   expect(await screen.findByText('Un link de un solo uso, vence el 09/10')).toBeInTheDocument()
   expect(screen.queryByText('Invitación lista')).not.toBeInTheDocument()
+})
+
+test('"Copiar" copies the invite link through copyText, the only clipboard path', async () => {
+  const fetchMock = vi.fn((url: string, init?: RequestInit) => {
+    if (init?.method === 'POST' && url === '/invitations') {
+      return Promise.resolve(
+        jsonResponse(201, {
+          url: 'https://apostrophe.app/invitation/abc123',
+          expires_at: '2026-10-09T00:00:00Z',
+        }),
+      )
+    }
+    return Promise.resolve(jsonResponse(200, BUSINESS))
+  })
+  renderNegocio(fetchMock)
+
+  await userEvent.click(await screen.findByRole('button', { name: 'Invitá a un socio' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Copiar' }))
+
+  expect(clipboard.copyText).toHaveBeenCalledWith('https://apostrophe.app/invitation/abc123')
 })
 
 test('a dropped network while renaming shows "Sin conexión", never the generic retry', async () => {
