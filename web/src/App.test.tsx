@@ -8,7 +8,7 @@
  * router is built once, from whatever `window.location` is at that moment).
  */
 
-import { act, render, screen } from '@testing-library/react'
+import { act, render, screen, within } from '@testing-library/react'
 import { afterEach, expect, test, vi } from 'vitest'
 import App from './App'
 import { queryClient } from './queryClient'
@@ -49,7 +49,10 @@ test('/ventas renders the Ventas stub under the gated shell', async () => {
 
   render(<App />)
 
-  expect(await screen.findByText('Ventas')).toBeInTheDocument()
+  // Scoped to `main` (shell-entries, GH-20): the gated shell now has its own
+  // "Ventas" tab and fixed "Nueva venta" button alongside it, so an unscoped
+  // query would match more than the stub screen's own heading.
+  expect(await within(await screen.findByRole('main')).findByText('Ventas')).toBeInTheDocument()
 })
 
 test('/ventas/nueva renders the NuevaVenta stub under the gated shell', async () => {
