@@ -20,6 +20,8 @@ import ClienteFicha from './screens/clientes/ClienteFicha'
 import ClienteForm from './screens/clientes/ClienteForm'
 import Clientes from './screens/clientes/Clientes'
 import ClientesLayout from './screens/clientes/ClientesLayout'
+import VariedadDetalle from './screens/VariedadDetalle'
+import Variedades from './screens/Variedades'
 import GatedLayout from './shell/GatedLayout'
 import Shell from './shell/Shell'
 import { useOnline } from './useOnline'
@@ -63,6 +65,8 @@ export default function App() {
                 <Route path=":id" element={<ClienteFicha />} />
                 <Route path=":id/editar" element={<ClienteForm mode="editar" />} />
               </Route>
+              <Route path="variedades" element={<Variedades />} />
+              <Route path="variedades/:id" element={<VariedadDetalle />} />
             </Route>
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
