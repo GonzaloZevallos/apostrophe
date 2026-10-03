@@ -10,7 +10,8 @@ from sqlalchemy import func, select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
-from app.sales.adapters.tables import PaymentRow, SaleLineRow, SaleRow
+from app.payments.adapters.tables import PaymentRow
+from app.sales.adapters.tables import SaleLineRow, SaleRow
 from tests.conftest import TODAY
 
 

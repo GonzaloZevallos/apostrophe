@@ -9,7 +9,18 @@ type and message, so the wording stays the capability's to choose.
 
 from __future__ import annotations
 
+import unicodedata
 from enum import Enum, auto
+
+
+def fold(text: str) -> str:
+    """NFKD, combining marks dropped, casefolded, whitespace collapsed to single
+    spaces and trimmed. The one way names are compared for search and sort (the
+    plan's invariant): every ordering of customers by name uses this, in Python,
+    never an SQL `ORDER BY` on the name."""
+    decomposed = unicodedata.normalize("NFKD", text)
+    without_marks = "".join(c for c in decomposed if not unicodedata.combining(c))
+    return " ".join(without_marks.casefold().split())
 
 
 class NameProblem(Enum):

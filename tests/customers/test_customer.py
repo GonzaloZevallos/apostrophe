@@ -10,8 +10,8 @@ from app.customers.domain.customer import (
     InvalidPhoneNumber,
     MissingCustomerName,
     PhoneNumber,
-    fold,
 )
+from app.shared.names import fold
 
 # -- fold ---------------------------------------------------------------------------
 

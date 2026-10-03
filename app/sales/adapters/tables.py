@@ -1,8 +1,10 @@
-"""The sales tables (CONTEXT.md: Sale, Sale line, Payment; docs/adr/0007).
+"""The sales tables (CONTEXT.md: Sale, Sale line; docs/adr/0007).
 
-`payment` is written here until #4's payments hexagon moves it, with no migration
-(ADR-0007): its name and columns are that capability's contract. Every table carries
-`business_id`, not null, pointing at `business` (CODING_STANDARDS section 9).
+`payment` now lives in `app/payments/adapters/tables.py` (#4's payments hexagon),
+moved there with no migration: its name and columns are unchanged. `SqlSales` still
+writes and deletes on-the-spot rows there, adapter-to-adapter, the same way it already
+reads `CustomerRow` and `VarietyRow`. Every table carries `business_id`, not null,
+pointing at `business` (CODING_STANDARDS section 9).
 """
 
 from __future__ import annotations
@@ -16,7 +18,6 @@ from app.db import Base, UtcDateTime
 from app.sales.domain.sale import NOTE_MAX_LENGTH
 
 PRICING_RULE_MAX_LENGTH = 10
-PAYMENT_METHOD_MAX_LENGTH = 10
 
 
 class SaleRow(Base):
@@ -43,16 +44,3 @@ class SaleLineRow(Base):
     price_per_gram: Mapped[int]
     line_total: Mapped[int]
     position: Mapped[int]
-
-
-class PaymentRow(Base):
-    __tablename__ = "payment"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    business_id: Mapped[int] = mapped_column(ForeignKey("business.id"))
-    paid_on: Mapped[date]
-    amount: Mapped[int]
-    method: Mapped[str] = mapped_column(String(PAYMENT_METHOD_MAX_LENGTH))
-    customer_id: Mapped[int | None] = mapped_column(ForeignKey("customer.id"))
-    sale_id: Mapped[int | None] = mapped_column(ForeignKey("sale.id"))
-    recorded_at: Mapped[datetime] = mapped_column(UtcDateTime)
