@@ -8,6 +8,7 @@ no migration knows about, and the schema test fails.
 from sqlalchemy import MetaData
 
 from app.accounts.adapters import tables as accounts_tables
+from app.catalog.adapters import tables as catalog_tables
 from app.customers.adapters import tables as customers_tables
 from app.db import Base
 from app.expenses.adapters import tables as expenses_tables
@@ -20,6 +21,7 @@ TABLE_MODULES = (
     customers_tables,
     expenses_tables,
     sales_tables,
+    catalog_tables,
 )
 
 metadata: MetaData = Base.metadata

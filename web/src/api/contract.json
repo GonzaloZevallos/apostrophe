@@ -56,6 +56,12 @@
     "stock.date_in_future": { "kind": "refusal" },
     "stock.note_too_long": { "kind": "refusal" },
     "stock.threshold_invalid": { "kind": "refusal" },
+    "catalog.emoji_invalid": { "kind": "refusal" },
+    "catalog.indica_share_invalid": { "kind": "refusal" },
+    "catalog.aroma_too_long": { "kind": "refusal" },
+    "catalog.header_too_long": { "kind": "refusal" },
+    "catalog.footer_too_long": { "kind": "refusal" },
+    "catalog.variety_not_found": { "kind": "gone" },
     "RequestInvalid": { "kind": "refusal" }
   },
   "frontSegments": [
