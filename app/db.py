@@ -55,7 +55,11 @@ def make_engine(url: str) -> Engine:
     # each thread its own empty database.
     if url in ("sqlite://", "sqlite:///:memory:"):
         kwargs["poolclass"] = StaticPool
-    engine = create_engine(url, **kwargs)
+    # Never shown in SQL error output: a catalog or pinned-catalog statement can carry
+    # a seller's own text as a bound parameter (CODING_STANDARDS §9, the plan's
+    # invariant). Nothing reads this today; it changes SQL error output for every
+    # capability.
+    engine = create_engine(url, hide_parameters=True, **kwargs)
     if url.startswith("sqlite"):
         event.listen(engine, "connect", _enable_sqlite_foreign_keys)
     return engine

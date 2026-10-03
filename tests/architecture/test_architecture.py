@@ -9,7 +9,14 @@ from pathlib import Path
 
 import pytest
 
-from tests.architecture.hexagon import REPO_ROOT, dotted, imports_of, is_stdlib, scan_hexagon
+from tests.architecture.hexagon import (
+    REPO_ROOT,
+    dotted,
+    full_imports_of,
+    imports_of,
+    is_stdlib,
+    scan_hexagon,
+)
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 HEXAGON_ROOTS = (
@@ -72,3 +79,26 @@ def test_each_hexagon_keeps_its_import_rules(root: Path) -> None:
 )
 def test_the_shared_kernel_imports_only_the_standard_library(module: Path) -> None:
     assert [name for name in imports_of(module) if not is_stdlib(name)] == []
+
+
+TELEGRAM_HTTP = "app.pinned_catalog.adapters.telegram_http"
+TELEGRAM_HTTP_OWN_TEST = REPO_ROOT / "tests" / "pinned_catalog" / "test_telegram_http.py"
+
+
+def test_no_test_but_telegram_http_s_own_reaches_the_real_adapter() -> None:
+    """The plan's own invariant: no test constructs the real Telegram adapter except
+    its own unit test, so every other test — the app fixture included — is proven to
+    run over a fake, never the network."""
+    def _reaches_telegram_http(module: Path) -> bool:
+        return any(
+            imported == TELEGRAM_HTTP or imported.startswith(TELEGRAM_HTTP + ".")
+            for imported in full_imports_of(module)
+        )
+
+    violators = [
+        module
+        for module in sorted((REPO_ROOT / "tests").rglob("*.py"))
+        if module != TELEGRAM_HTTP_OWN_TEST and _reaches_telegram_http(module)
+    ]
+
+    assert violators == []

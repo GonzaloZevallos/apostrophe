@@ -148,6 +148,21 @@ def seed_stock(client: TestClient) -> dict[str, int]:
     return {"stock_entry_id": entry.json()["id"]}
 
 
+def seed_pinned_catalog(client: TestClient) -> dict[str, int]:
+    tested = client.post(
+        "/pinned-catalog/test",
+        json={
+            "token": f"{MARKER}:bot-token",
+            "own_chat": f"{MARKER} own chat",
+            "channel_chat": f"{MARKER} channel",
+        },
+    )
+    assert tested.status_code == 200, tested.text
+    published = client.post("/pinned-catalog/publish")
+    assert published.status_code == 200, published.text
+    return {}
+
+
 def seed_payments(client: TestClient) -> dict[str, int]:
     variety = client.post("/varieties", json={"name": f"{MARKER} payments variety"}).json()
     client.post(
@@ -181,6 +196,7 @@ SEEDERS: list[Callable[[TestClient], dict[str, int]]] = [
     seed_sales,
     seed_stock,
     seed_catalog,
+    seed_pinned_catalog,
     seed_payments,
 ]
 
@@ -232,6 +248,11 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
         "aroma": "another aroma",
     },
     ("PUT", "/catalog/header-footer"): {"header": "another header", "footer": "another footer"},
+    ("POST", "/pinned-catalog/test"): {
+        "token": "999999:another-token",
+        "own_chat": "another own chat",
+        "channel_chat": None,
+    },
     ("POST", "/customers/{customer_id}/payments/preview"): {
         "paid_on": "2026-10-02",
         "amount": 100,

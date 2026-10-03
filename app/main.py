@@ -29,6 +29,11 @@ from app.migrations.runner import upgrade_to_head
 from app.payments.adapters.router import customers_router as payments_customers_router
 from app.payments.adapters.router import router as payments_router
 from app.payments.adapters.settlements import SqlBalances, SqlOwingSales
+from app.pinned_catalog.adapters.router import router as pinned_catalog_router
+from app.pinned_catalog.adapters.telegram_http import HttpTelegram
+from app.pinned_catalog.adapters.token_cipher import TokenCipher
+from app.pinned_catalog.application.ports import Telegram
+from app.pinned_catalog.application.push import BusinessLocks
 from app.sales.adapters.router import router as sales_router
 from app.settings import Settings
 from app.static_spa import MissingBuiltFront, SpaStatic, api_segments
@@ -97,6 +102,8 @@ def create_app(
     engine: Engine | None = None,
     clock: Clock = system_clock,
     hasher: PasswordHasher | None = None,
+    telegram: Telegram | None = None,
+    upkeep_ticker: bool = True,
 ) -> FastAPI:
     settings = settings or Settings.from_env()
     app = FastAPI(title="apostrophe", lifespan=lifespan)
@@ -105,6 +112,14 @@ def create_app(
     app.state.signer = SessionSigner(settings.secret_key)
     app.state.hasher = hasher or PasswordHasher()
     app.state.public_url = settings.public_url
+    # `telegram=None` means the real adapter; every test but `telegram_http`'s own
+    # injects a fake through this same keyword (the plan's invariant). The ticker
+    # itself and the trigger dependency are the `upkeep` subtask's: this flag is only
+    # stored here for it to read.
+    app.state.pinned_catalog_telegram = telegram or HttpTelegram()
+    app.state.pinned_catalog_locks = BusinessLocks()
+    app.state.pinned_catalog_cipher = TokenCipher(settings.secret_key)
+    app.state.pinned_catalog_upkeep_ticker = upkeep_ticker
     app.add_exception_handler(RequestValidationError, _without_request_data)
     app.add_exception_handler(Refused, _refused)
     # A factory, not an instance: `get_business_opening` builds it over the request's
@@ -146,6 +161,7 @@ def create_app(
     app.include_router(catalog_router, dependencies=gated)
     app.include_router(payments_router, dependencies=gated)
     app.include_router(payments_customers_router, dependencies=gated)
+    app.include_router(pinned_catalog_router, dependencies=gated)
 
     if settings.web_dist is not None:
         if not (settings.web_dist / "index.html").is_file():
