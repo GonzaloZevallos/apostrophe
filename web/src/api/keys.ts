@@ -13,6 +13,7 @@ export type Resource =
   | 'customers'
   | 'expenses'
   | 'expenseCategories'
+  | 'stock'
 
 const PREFIX: Record<Resource, string> = {
   me: 'me',
@@ -21,6 +22,7 @@ const PREFIX: Record<Resource, string> = {
   customers: 'customers',
   expenses: 'expenses',
   expenseCategories: 'expense-categories',
+  stock: 'stock',
 }
 
 export const keys = {
@@ -33,6 +35,8 @@ export const keys = {
   customer: (id: string) => [PREFIX.customers, id] as const,
   expenses: (month: string) => [PREFIX.expenses, month] as const,
   expenseCategories: () => [PREFIX.expenseCategories] as const,
+  stock: () => [PREFIX.stock] as const,
+  stockEntry: (id: string) => [PREFIX.stock, 'entries', id] as const,
 }
 
 // A write on one resource that also stales another, beyond its own prefix (plan,

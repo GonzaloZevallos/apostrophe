@@ -14,7 +14,7 @@
 import { GONE_NOTICE } from '../api/refusals'
 
 /** Every success toast this subtask's screens can show (PRD, "Feedback"). */
-export const TOAST_MESSAGES = ['Cliente guardado'] as const
+export const TOAST_MESSAGES = ['Cliente guardado', 'Entrada guardada', 'Entrada eliminada'] as const
 
 export type ToastMessage = (typeof TOAST_MESSAGES)[number]
 
