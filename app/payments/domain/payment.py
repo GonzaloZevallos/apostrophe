@@ -12,7 +12,7 @@ insert).
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from typing import ClassVar
 
 from app.payments.domain.settlement import (
@@ -121,7 +121,11 @@ def settle_candidate(
     candidate_entry = LaterPaymentEntry(
         id=_CANDIDATE_ID,
         paid_on=candidate.paid_on,
-        recorded_at=datetime.max,
+        # Timezone-aware (`UTC`), never naive: every real `recorded_at` comes back
+        # aware from `UtcDateTime` (app/db.py), and `settle()`'s sort key compares
+        # them directly — a naive `datetime.max` here raises `TypeError` the moment
+        # the candidate shares `paid_on` with an already-recorded later payment.
+        recorded_at=datetime.max.replace(tzinfo=UTC),
         amount=candidate.amount,
     )
     after = settle(Ledger(ledger.sales, (*ledger.payments, candidate_entry)))
