@@ -12,6 +12,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass, replace
 from datetime import date, datetime
 from enum import StrEnum
+from typing import ClassVar
 
 from app.sales.domain.pricing import PriceQuote, PricingRule, SaleRuleBroken, price_line
 from app.shared.grams import Grams
@@ -25,46 +26,70 @@ SaleDate = date
 
 
 class NoLines(SaleRuleBroken):
+    code: ClassVar[str] = "sale.lines_missing"
+
     def __init__(self) -> None:
         super().__init__("a sale needs at least one line")
 
 
 class SaleDateInFuture(SaleRuleBroken):
+    code: ClassVar[str] = "sale.date_in_future"
+
     def __init__(self) -> None:
         super().__init__("a sale cannot be dated in the future")
 
 
 class NegativeShipping(SaleRuleBroken):
+    code: ClassVar[str] = "sale.shipping_negative"
+
     def __init__(self) -> None:
         super().__init__("shipping charged cannot be negative")
 
 
 class NoteTooLong(SaleRuleBroken):
+    code: ClassVar[str] = "sale.note_too_long"
+
     def __init__(self) -> None:
         super().__init__(f"a note has at most {NOTE_MAX_LENGTH} characters")
 
 
 class PaymentRequired(SaleRuleBroken):
+    code: ClassVar[str] = "sale.payment_required"
+
     def __init__(self) -> None:
         super().__init__("a sale needs a payment method, or to be left owing")
 
 
 class OwingWithoutCustomer(SaleRuleBroken):
+    code: ClassVar[str] = "sale.owing_without_customer"
+
     def __init__(self) -> None:
         super().__init__("a sale left owing needs a customer")
 
 
-class UnknownVariety(SaleRuleBroken):
+class UnknownVariety(LookupError):
+    """Missing and foreign stay indistinguishable (docs/adr/0009): a variety that does
+    not exist in this business, registered under 404 like `SaleNotFound`."""
+
+    code: ClassVar[str] = "sale.variety_not_found"
+
     def __init__(self) -> None:
         super().__init__("the variety does not exist")
 
 
-class UnknownCustomer(SaleRuleBroken):
+class UnknownCustomer(LookupError):
+    """Missing and foreign stay indistinguishable (docs/adr/0009): a customer that
+    does not exist in this business, registered under 404 like `SaleNotFound`."""
+
+    code: ClassVar[str] = "sale.customer_not_found"
+
     def __init__(self) -> None:
         super().__init__("the customer does not exist")
 
 
 class CustomerAlreadyAssigned(SaleRuleBroken):
+    code: ClassVar[str] = "sale.customer_already_assigned"
+
     def __init__(self) -> None:
         super().__init__("the sale already has a customer")
 

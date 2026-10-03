@@ -64,12 +64,13 @@ def test_record_sale_without_a_customer_paid_cash(client: TestClient) -> None:
 
     assert response.status_code == 201, response.text
     body = response.json()
-    assert body["customer_id"] is None
+    assert body["customer"] is None
     assert body["payment"] == "cash"
     assert body["total"] == 100_000
     assert body["lines"] == [
         {
             "variety_id": variety_id,
+            "variety_name": "Lavanda",
             "grams": 10.0,
             "pricing_rule": "list",
             "price_per_gram": 10_000,
@@ -90,12 +91,13 @@ def test_record_sale_left_owing_without_a_customer_is_refused(client: TestClient
 
 
 def test_record_sale_with_an_unknown_variety_is_refused(client: TestClient) -> None:
+    # Missing and foreign stay indistinguishable: gone, not a refusal (docs/adr/0009).
     response = client.post(
         "/sales", json={"payment": "cash", "lines": [{"variety_id": 999_999, "grams": "10"}]}
     )
 
-    assert response.status_code == 422, response.text
-    assert response.json()["detail"] == "the variety does not exist"
+    assert response.status_code == 404, response.text
+    assert response.json()["code"] == "sale.variety_not_found"
 
 
 def test_record_sale_with_an_unknown_customer_is_refused(client: TestClient) -> None:
@@ -110,8 +112,38 @@ def test_record_sale_with_an_unknown_customer_is_refused(client: TestClient) -> 
         },
     )
 
+    assert response.status_code == 404, response.text
+    assert response.json()["code"] == "sale.customer_not_found"
+
+
+def test_record_sale_with_no_payment_field_and_a_positive_total_needs_a_method(
+    client: TestClient,
+) -> None:
+    # `payment` optional (docs/adr/0009): omitted means no method and not left owing,
+    # so a sale above $0 reaches `sale.payment_required` instead of a 422 for a
+    # missing required field.
+    variety_id = _variety(client)
+
+    response = client.post(
+        "/sales", json={"lines": [{"variety_id": variety_id, "grams": "10"}]}
+    )
+
     assert response.status_code == 422, response.text
-    assert response.json()["detail"] == "the customer does not exist"
+    assert response.json()["code"] == "sale.payment_required"
+
+
+def test_record_sale_with_no_payment_field_and_a_zero_total_is_accepted(
+    client: TestClient,
+) -> None:
+    variety_id = _variety(client)
+
+    response = client.post(
+        "/sales",
+        json={"lines": [{"variety_id": variety_id, "grams": "10", "gift": True}]},
+    )
+
+    assert response.status_code == 201, response.text
+    assert response.json()["payment"] == "none"
 
 
 def test_get_and_list_a_recorded_sale(client: TestClient) -> None:
@@ -154,7 +186,7 @@ def test_assign_customer_to_a_sale_with_none(client: TestClient) -> None:
     response = client.put(f"/sales/{sale_id}/customer", json={"customer_id": customer_id})
 
     assert response.status_code == 200, response.text
-    assert response.json()["customer_id"] == customer_id
+    assert response.json()["customer"]["id"] == customer_id
 
 
 def test_assign_customer_refusal_order_missing_sale_answers_404_even_with_a_bad_customer(
@@ -165,7 +197,7 @@ def test_assign_customer_refusal_order_missing_sale_answers_404_even_with_a_bad_
     assert response.status_code == 404, response.text
 
 
-def test_assign_customer_refusal_order_unknown_customer_answers_422(
+def test_assign_customer_refusal_order_unknown_customer_answers_404(
     client: TestClient,
 ) -> None:
     variety_id = _variety(client)
@@ -176,7 +208,8 @@ def test_assign_customer_refusal_order_unknown_customer_answers_422(
 
     response = client.put(f"/sales/{sale_id}/customer", json={"customer_id": 999_999})
 
-    assert response.status_code == 422, response.text
+    assert response.status_code == 404, response.text
+    assert response.json()["code"] == "sale.customer_not_found"
 
 
 def test_assign_customer_already_assigned_answers_409(client: TestClient) -> None:
@@ -317,6 +350,29 @@ def test_list_sales_with_an_inverted_range_answers_an_empty_list(client: TestCli
     assert response.json() == []
 
 
+def test_get_and_list_label_the_sale_with_the_customer_s_current_name_and_vip_flag(
+    client: TestClient,
+) -> None:
+    variety_id = _variety(client)
+    customer_id = _customer(client)
+    sale_id = client.post(
+        "/sales",
+        json={
+            "payment": "owing",
+            "customer_id": customer_id,
+            "lines": [{"variety_id": variety_id, "grams": "10"}],
+        },
+    ).json()["id"]
+
+    client.patch(f"/customers/{customer_id}", json={"vip": True})
+
+    got = client.get(f"/sales/{sale_id}").json()
+    assert got["customer"] == {"id": customer_id, "name": "Juana", "vip": True}
+
+    listed = client.get("/sales").json()
+    assert listed[0]["customer"] == {"id": customer_id, "name": "Juana", "vip": True}
+
+
 def test_assigning_a_vip_customer_later_does_not_reprice_the_sale(client: TestClient) -> None:
     # The variety carries a bulk price, so a repricing bug would visibly change the
     # line's rule (list -> vip) and its price_per_gram; grams stay below the bulk
@@ -341,7 +397,12 @@ def test_assigning_a_vip_customer_later_does_not_reprice_the_sale(client: TestCl
     assert response.json()["total"] == before["total"]
 
 
-def test_toggling_a_customers_vip_after_the_sale_does_not_reprice_it(client: TestClient) -> None:
+def test_toggling_a_customers_vip_after_the_sale_changes_only_its_vip_badge(
+    client: TestClient,
+) -> None:
+    # The badge is the customer's current flag, not how the sale was priced
+    # (docs/adr/0009): it is free to change on an unchanged sale, while every line
+    # stays exactly as recorded.
     variety_id = _variety_with_bulk(client, list_price=10_000, bulk_price=8_000, bulk_minimum="50")
     customer_id = _customer(client)
     sale_id = client.post(
@@ -355,11 +416,14 @@ def test_toggling_a_customers_vip_after_the_sale_does_not_reprice_it(client: Tes
     before = client.get(f"/sales/{sale_id}").json()
     assert before["lines"][0]["pricing_rule"] == "list"
     assert before["lines"][0]["price_per_gram"] == 10_000
+    assert before["customer"]["vip"] is False
 
     client.patch(f"/customers/{customer_id}", json={"vip": True})
 
     after = client.get(f"/sales/{sale_id}").json()
-    assert after == before
+    assert after["customer"]["vip"] is True
+    assert after["lines"] == before["lines"]
+    assert after["total"] == before["total"]
 
 
 def test_adding_a_price_entry_after_the_sale_does_not_reprice_it(client: TestClient) -> None:
