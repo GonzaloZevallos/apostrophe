@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
+from typing import ClassVar
 
 HUNDREDTHS_PER_GRAM = 100
 
@@ -16,6 +17,8 @@ HUNDREDTHS_PER_GRAM = 100
 class InvalidGrams(ValueError):
     """Grams were invalid. The message is a fixed literal, built from no constructor
     argument, so it never repeats what was submitted (CODING_STANDARDS.md section 9)."""
+
+    code: ClassVar[str] = "grams.invalid"
 
 
 @dataclass(frozen=True, order=True)

@@ -15,6 +15,10 @@ me.
 VIP and fixing a customer's details serve the same job. A customer marked VIP once gets the
 bulk price on every sale, so the seller never has to remember who is a friend.
 
+**When** I run my business from my phone, **I want to** keep my customers up to date from
+the phone, **so I can** stop keeping them in the spreadsheet and have real data in place
+when sales arrive.
+
 Success criteria:
 
 1. From the phone, a seller finds an existing customer by part of the name or part of the
@@ -26,6 +30,7 @@ Success criteria:
 3. A business's customers are visible only to that business. By id from another business
    they answer 404. Lists and searches from another business show none of them. The same
    number can be a customer in two businesses without either business knowing.
+4. Everything here is done from the phone, with no API call by hand.
 
 ## Behaviour
 
@@ -72,24 +77,37 @@ Success criteria:
   - Lists and searches show none of another business's customers.
   - The customer routes are in `tests/test_business_isolation.py`.
 
+### On screen (Clientes)
+
+- **The list** (`Clientes`): search by part of the name or of the phone number.
+- **A customer's card** (`ClienteFicha`): phone, channel and VIP. No balance, account or
+  payment yet.
+- **Add and edit**: the "Nuevo cliente" form of `NuevaVentaCliente`. Name and phone are
+  both marked required.
+- **On success**, the toast "Cliente guardado". It never carries a name or a number.
+- **Refusals** show inline on the field, with the domain's fixed string, and keep what was
+  typed. They never repeat the number or the name.
+
 ## Metrics
 
 - **Duplicate numbers**: customers sharing one stored number within a business, 0. A
   database constraint enforces it and a test covers it. (Criterion 2)
 - **Normalisation matrix**: every equivalent form resolves to one number, and every invalid
   form is refused. 100% passing. (Criterion 2)
-- **No echo**: no refusal body contains the submitted number, any of its digit runs, or a
-  customer's name. (Criterion 2)
+- **No echo**: no refusal body or toast contains the submitted number, any of its digit
+  runs, or a customer's name. (Criterion 2)
 - **Isolation coverage**: every customer route sits in the isolation sweep and answers 404
   or empty from another business. (Criterion 3)
-- **Find-or-register time**: once the sales form exists, a sale with a new customer is
-  recorded from a phone in under 60 s, and a search answers in under 300 ms with a few
-  dozen customers. (Criterion 1)
+- **Find-or-register time**: registering a new customer from the phone takes under 60 s
+  through the front, and a search answers in under 300 ms with a few dozen customers.
+  Once the sales form exists, a sale with a new customer is recorded in under 60 s.
+  (Criterion 1)
+- **No curl**: the end-to-end front run adds, finds and edits a customer. (Criterion 4)
 
 ## Out of scope
 
 - Deleting a customer: they will have sales and payments.
 - Merging duplicates; importing from the spreadsheet.
 - A VIP filter.
-- Balance and owing since: they come with sales and payments.
+- Balance, owing since and "Registrar cobro": they come with sales and payments.
 - Using the channel.

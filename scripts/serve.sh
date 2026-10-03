@@ -7,5 +7,6 @@ if [ -f .env ]; then
   . ./.env
   set +a
 fi
+export APOSTROPHE_WEB_DIST="${APOSTROPHE_WEB_DIST:-web/dist}"
 exec uv run --no-project uvicorn app.main:create_app --factory \
   --host 0.0.0.0 --port "${APOSTROPHE_PORT:-8000}" --no-access-log

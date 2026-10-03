@@ -181,7 +181,6 @@ export interface StockVariedad {
 export interface CategoriaGasto extends DelNegocio {
   id: Id;
   nombre: string;
-  archivada: boolean;
 }
 
 /** Ojo: las compras de flores NO son gastos, son entradas de stock. */
@@ -190,7 +189,8 @@ export interface Gasto extends DelNegocio {
   fecha: Date;
   categoriaId: Id;
   monto: number;
-  detalle: string | null;
+  /** Obligatorio: hasta 200 caracteres, sin espacios de más. */
+  detalle: string;
 }
 
 export const CATEGORIAS_POR_DEFECTO = [

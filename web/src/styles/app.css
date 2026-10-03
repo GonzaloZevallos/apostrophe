@@ -1,0 +1,827 @@
+/* The app's own layout: only the token variables, never a literal hex, rgb or hsl
+ * (plan, invariants). Mirrors the design screens' structure (Entrar, Estados,
+ * Inicio, BarraInferior/InicioCompu) without copying their inline styles verbatim. */
+
+/* Visible to a screen reader only — the design's own technique for a label a
+ * placeholder already shows visibly (`Clientes.dc.html`'s "Buscar cliente"). */
+.visualmente-oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.pantalla {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--papel);
+  color: var(--tinta);
+  font-family: var(--fuente);
+}
+
+.entrar__contenido {
+  flex: 1;
+  padding: 72px var(--margen-pantalla) 0;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.marca {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+
+.marca__apostrofe {
+  color: var(--acento);
+}
+
+.subtitulo {
+  font-size: 16px;
+  color: var(--tinta2);
+  line-height: 1.5;
+  margin: 10px 0 0;
+}
+
+.invitacion__pastilla {
+  display: block;
+  font-size: 14px;
+  color: var(--acento);
+}
+
+.invitacion__titulo {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  margin: 4px 0 0;
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.campo__rotulo {
+  font-size: 14px;
+  color: var(--tinta2);
+}
+
+.campo__input {
+  height: var(--alto-boton);
+  box-sizing: border-box;
+  padding: 0 16px;
+  border-radius: var(--radio-campo);
+  border: 0;
+  background: var(--superficie);
+  color: var(--tinta);
+  font: inherit;
+  font-size: 17px;
+}
+
+.campo__error {
+  font-size: 13px;
+  color: var(--deuda);
+}
+
+.boton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  height: var(--alto-boton);
+  border-radius: var(--radio-pildora);
+  background: var(--boton);
+  color: var(--boton-texto);
+  border: 0;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.boton:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.boton--suave {
+  background: var(--superficie);
+  color: var(--tinta);
+}
+
+.boton-enlace {
+  background: none;
+  border: 0;
+  color: var(--acento);
+  font-size: 15px;
+  cursor: pointer;
+  min-height: var(--alto-tocable);
+}
+
+.boton--destructivo {
+  background: var(--critico);
+  color: var(--critico-texto);
+}
+
+.confirmacion {
+  background: var(--superficie);
+  border-radius: var(--radio-panel-grande);
+  padding: var(--espacio-lg) var(--espacio-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-sm);
+}
+
+.confirmacion__titulo {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.confirmacion__detalle {
+  font-size: 14px;
+  color: var(--tinta2);
+  line-height: 1.5;
+}
+
+.confirmacion__acciones {
+  display: flex;
+  gap: var(--espacio-sm);
+  margin-top: var(--espacio-sm);
+}
+
+.confirmacion__acciones .boton {
+  flex: 1;
+  height: var(--alto-tocable);
+  font-size: 15px;
+}
+
+.aviso-neutro {
+  background: var(--superficie);
+  border-radius: var(--radio-panel-grande);
+  padding: 14px 18px;
+}
+
+.aviso-neutro__texto {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--tinta2);
+}
+
+.aviso-exito {
+  background: var(--acento-suave);
+  border-radius: var(--radio-panel-grande);
+  padding: 14px 18px;
+}
+
+.aviso-exito__texto {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--acento);
+}
+
+.ayuda-fija {
+  font-size: 14px;
+  color: var(--tinta2);
+  text-align: center;
+}
+
+.pie {
+  padding: 0 var(--margen-pantalla) 32px;
+  font-size: 13px;
+  color: var(--tenue);
+  text-align: center;
+}
+
+.aviso-ambar {
+  background: var(--deuda-fondo);
+  border-radius: var(--radio-panel-grande);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.aviso-ambar__titulo {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--deuda);
+}
+
+.aviso-ambar__detalle {
+  font-size: 14px;
+  color: var(--deuda2);
+  line-height: 1.5;
+}
+
+.estado-vacio {
+  background: var(--superficie);
+  border-radius: var(--radio-panel-grande);
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.estado-vacio__titulo {
+  font-size: 19px;
+  font-weight: 600;
+}
+
+.estado-vacio__detalle {
+  font-size: 15px;
+  color: var(--tinta2);
+  line-height: 1.5;
+  max-width: 250px;
+}
+
+.aviso-flotante {
+  position: fixed;
+  top: var(--espacio-md);
+  left: var(--espacio-md);
+  right: var(--espacio-md);
+  z-index: 10;
+}
+
+.cuerpo {
+  flex: 1;
+  padding: var(--espacio-lg) var(--margen-pantalla);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-xl);
+}
+
+.encabezado__negocio {
+  display: block;
+  font-size: 14px;
+  color: var(--tinta2);
+}
+
+.encabezado__titulo {
+  display: block;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.disposicion {
+  display: flex;
+  flex: 1;
+  min-height: 100vh;
+}
+
+.bar-inferior {
+  display: flex;
+  padding: 14px 16px 20px;
+  border-top: 1px solid var(--linea);
+}
+
+.bar-inferior__item {
+  flex: 1;
+  min-height: var(--alto-tocable);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  text-decoration: none;
+  color: var(--nav-inactivo);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* Not color alone (README, accessibility rule 2): the active item is also bold,
+ * same as the design's own bottom bar (`Inicio.dc.html`: `font-weight: 600` on the
+ * active label, the default weight on the rest). */
+.bar-inferior__item--activo {
+  color: var(--tinta);
+  font-weight: 700;
+}
+
+.riel-lateral {
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  padding: 26px 16px;
+  border-right: 1px solid var(--linea);
+  min-width: 212px;
+}
+
+.riel-lateral__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 46px;
+  padding: 0 14px;
+  border-radius: 14px;
+  color: var(--tinta2);
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.riel-lateral__item--activo {
+  background: var(--superficie);
+  color: var(--tinta);
+  font-weight: 600;
+}
+
+.mas__lista {
+  display: flex;
+  flex-direction: column;
+}
+
+.mas__item {
+  display: flex;
+  align-items: center;
+  min-height: var(--alto-tocable);
+  padding: var(--espacio-sm) 0;
+  border-bottom: 1px solid var(--linea);
+  color: var(--tinta);
+  text-decoration: none;
+}
+
+.mas__item-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mas__item-rotulo {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.mas__item-detalle {
+  font-size: 13px;
+  color: var(--tinta2);
+}
+
+.columna-principal {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.encabezado-fila {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+}
+
+.encabezado-fila .encabezado__titulo {
+  flex: 1;
+}
+
+.boton-icono {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--alto-tocable);
+  height: var(--alto-tocable);
+  border-radius: var(--radio-pildora);
+  background: var(--superficie);
+  color: var(--tinta);
+  border: 0;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.lista-variedades,
+.historial {
+  display: flex;
+  flex-direction: column;
+}
+
+.variedad-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-sm);
+  padding: var(--espacio-lg) 0;
+  border-bottom: 1px solid var(--linea);
+  text-decoration: none;
+  color: var(--tinta);
+}
+
+.variedad-item__nombre {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.variedad-item__sin-precio {
+  font-size: 14px;
+  color: var(--tinta2);
+}
+
+.variedad-item__precios {
+  display: flex;
+  gap: var(--espacio-sm);
+}
+
+.precio-panel {
+  flex: 1;
+  background: var(--superficie);
+  border-radius: var(--radio-campo);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.precio-panel__rotulo {
+  font-size: 13px;
+  color: var(--tinta2);
+}
+
+.precio-panel__valor {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.historial-fila {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+  padding: 13px 0;
+  border-bottom: 1px solid var(--linea);
+}
+
+.historial-fila__fecha {
+  flex: 1;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.historial-fila__vigente {
+  display: block;
+  font-size: 13px;
+  color: var(--acento);
+}
+
+.historial-fila__precio {
+  font-size: 17px;
+  font-weight: 600;
+  text-align: right;
+}
+
+.historial-fila__detalle {
+  display: block;
+  font-size: 12px;
+  color: var(--tinta2);
+  text-align: right;
+}
+
+.historial-fila__borrar {
+  background: none;
+  border: 0;
+  color: var(--tinta2);
+  min-width: var(--alto-tocable);
+  min-height: var(--alto-tocable);
+  cursor: pointer;
+}
+
+.encabezado__fila {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-sm);
+}
+
+.encabezado__volver {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--alto-tocable);
+  height: var(--alto-tocable);
+  margin-left: calc(-1 * var(--espacio-sm));
+  border-radius: var(--radio-pildora);
+  color: var(--tinta);
+  text-decoration: none;
+  font-size: 20px;
+}
+
+.negocio__lista {
+  list-style: none;
+  margin: var(--espacio-sm) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.negocio__usuario {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-md);
+  min-height: var(--alto-tocable);
+  padding: var(--espacio-sm) 0;
+  border-bottom: 1px solid var(--linea);
+  font-size: 15px;
+}
+
+/* Not color alone: "vos" is a labelled pill, not a tint on the row. */
+.negocio__vos {
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--superficie);
+  color: var(--tinta2);
+  padding: 3px 9px;
+  border-radius: var(--radio-pildora);
+}
+
+.negocio__invitar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-sm);
+  background: var(--superficie);
+  border-radius: var(--radio-panel-grande);
+  padding: var(--espacio-lg);
+}
+
+.negocio__link {
+  background: var(--papel);
+  border-radius: var(--radio-campo);
+  padding: var(--espacio-sm) var(--espacio-md);
+  font-size: 14px;
+  color: var(--tinta2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.negocio__acciones {
+  display: flex;
+  gap: var(--espacio-sm);
+}
+
+.negocio__acciones .boton {
+  flex: 1;
+}
+
+/* The phone first; the side rail replaces the bottom bar on a computer (plan,
+ * "Shell"). A pure CSS switch: both markups exist, one is hidden either way, so a
+ * screen reader never finds the hidden one (ADR-independent — `display: none` drops
+ * it from the accessibility tree too). */
+.toast {
+  background: var(--boton);
+  border-radius: var(--radio-panel);
+  padding: 15px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toast__texto {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--boton-texto);
+}
+
+.lista-clientes {
+  display: flex;
+  flex-direction: column;
+}
+
+.lista-clientes__fila {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: var(--alto-tocable);
+  padding: var(--espacio-sm) 0;
+  border-bottom: 1px solid var(--linea);
+  color: var(--tinta);
+  text-decoration: none;
+}
+
+.lista-clientes__nombre {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.lista-clientes__telefono {
+  font-size: 13px;
+  color: var(--tinta2);
+}
+
+.vip-insignia {
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--acento-suave);
+  color: var(--acento);
+  padding: 3px 9px;
+  border-radius: var(--radio-pildora);
+}
+
+.aviso-toast {
+  background: var(--boton);
+  color: var(--boton-texto);
+  border-radius: var(--radio-panel);
+  padding: 15px 18px;
+}
+
+.aviso-toast__texto {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.gastos__mes {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-sm);
+  height: 48px;
+  padding: 0 8px;
+  border-radius: var(--radio-pildora);
+  background: var(--superficie);
+}
+
+.gastos__mes-boton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: var(--radio-pildora);
+  background: transparent;
+  color: var(--tinta);
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.gastos__mes-etiqueta {
+  flex: 1;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.gastos__categoria {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-xs);
+}
+
+.gastos__categoria-cabecera {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--espacio-md);
+}
+
+.gastos__categoria-nombre {
+  font-size: 16px;
+}
+
+.gastos__categoria-subtotal {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.fila-gasto {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+  width: 100%;
+  padding: var(--espacio-md) 0;
+  border: 0;
+  border-bottom: 1px solid var(--linea);
+  background: transparent;
+  color: var(--tinta);
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+
+.fila-gasto:last-child {
+  border-bottom: 0;
+}
+
+.fila-gasto__fecha {
+  width: 42px;
+  font-size: 13px;
+  color: var(--tinta2);
+}
+
+.fila-gasto__texto {
+  flex: 1;
+  min-width: 0;
+}
+
+.fila-gasto__monto {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.panel {
+  background: var(--superficie);
+  border-radius: var(--radio-panel-grande);
+  padding: var(--espacio-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-md);
+}
+
+.panel__titulo {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.panel__detalle {
+  font-size: 15px;
+  color: var(--tinta2);
+  line-height: 1.5;
+}
+
+.panel__botones {
+  display: flex;
+  gap: 10px;
+  margin-top: var(--espacio-sm);
+}
+
+/* Same pattern as `.confirmacion__acciones .boton`/`.negocio__acciones .boton`:
+ * side by side, evenly split — scoped to this container, never redefining the
+ * shared `.boton--suave`/`.boton--destructivo` (review finding, e2e: the merge
+ * had kept two `.boton--suave` rules, the later one winning everywhere and
+ * silently recoloring ConfirmDialog's and VariedadDetalle's buttons too). */
+.panel__botones .boton {
+  flex: 1;
+  height: var(--alto-tocable);
+  font-size: 15px;
+}
+
+.categoria-fila__nombre {
+  flex: 1;
+}
+
+.boton--enlace {
+  background: transparent;
+  color: var(--acento);
+  height: auto;
+  padding: 0;
+  font-size: 15px;
+  text-decoration: underline;
+}
+
+/* The dim backdrop is a pseudo-element, not the overlay's own background, so its
+ * reduced opacity never touches the sheet sitting on top of it (plan, invariants:
+ * only the token variables, no rgb/hsl literal — `opacity` alone, on a token
+ * color, stays inside that rule). */
+.capa {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: var(--margen-pantalla);
+  z-index: 20;
+}
+
+.capa::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--tinta);
+  opacity: 0.4;
+}
+
+.capa__contenido {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  background: var(--papel);
+  border-radius: var(--radio-hoja);
+  padding: var(--espacio-xxl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-md);
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+@media (min-width: 900px) {
+  .bar-inferior {
+    display: none;
+  }
+
+  .riel-lateral {
+    display: flex;
+  }
+}

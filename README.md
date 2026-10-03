@@ -19,8 +19,13 @@ Needs [uv](https://docs.astral.sh/uv/) 0.12, and Node 24 for the front in `web/`
 cp .env.example .env          # then set APOSTROPHE_SECRET_KEY
 uv venv --python 3.13
 uv sync --locked --extra dev
+npm --prefix web ci
+npm --prefix web run build    # the front, served by the backend from web/dist
 scripts/serve.sh              # http://localhost:8000, and every device on the network
 ```
+
+Rebuild the front after pulling changes to `web/`. `scripts/serve.sh` refuses to start
+without a build; `APOSTROPHE_WEB_DIST` points it elsewhere.
 
 The database is created and migrated on startup (`apostrophe.db` by default). To reach it
 from a phone, set `APOSTROPHE_PUBLIC_URL` to the computer's address on the network, for
@@ -32,12 +37,9 @@ Open the first business:
 scripts/invite-business.sh    # prints a link, valid once for 7 days
 ```
 
-Until the front exists, accept it with the token at the end of the link:
-
-```sh
-curl -X POST localhost:8000/invitations/<token>/accept -H 'content-type: application/json' \
-  -d '{"business_name": "Mi negocio", "email": "yo@example.com", "password": "at least 10 chars"}'
-```
+Open the link on the phone or the computer: it asks for the business's name, an email
+and a password, and signs you in. From there, "Invitá a un socio" in Negocio makes a
+link for a partner.
 
 The API is described at `http://localhost:8000/docs`.
 
@@ -55,6 +57,8 @@ The front, from `web/` (`npm ci` first):
 npm --prefix web run typecheck
 npm --prefix web run lint
 npm --prefix web test
+npx --prefix web playwright install chromium   # once
+npm --prefix web run e2e                       # the browser against the real backend
 ```
 
 All of them run in CI and are what the agentic system runs (`.agentic/stack.yaml`). The guards worth knowing before adding a route or a table:

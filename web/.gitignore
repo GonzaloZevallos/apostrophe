@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# Playwright (e2e): its throwaway report, trace and the backend's own SQLite file.
+playwright-report
+test-results
+e2e/.tmp
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

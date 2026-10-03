@@ -27,6 +27,8 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy.engine import Engine
 
+from app.accounts.application import manage_business
+from app.accounts.application.ports import Accounts
 from app.expenses.adapters.sql_expense_categories import SqlExpenseCategories
 from app.expenses.adapters.tables import ExpenseCategoryRow
 from app.expenses.application import manage_categories
@@ -129,6 +131,7 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
         "amount": 999,
         "detail": "edited expense",
     },
+    ("PATCH", "/business"): {"name": "Renamed by B"},
     ("POST", "/sales"): {
         "payment": "owing",
         "customer_id": 1,
@@ -153,6 +156,11 @@ def _operations() -> list[tuple[str, str, bool]]:
 OPERATIONS = _operations()
 BY_ID = [(m, p) for m, p, _ in OPERATIONS if "{" in p]
 LISTS = [p for m, p, _ in OPERATIONS if m == "GET" and "{" not in p]
+# A non-GET route with no `{` in its path never names a record: the business it acts on
+# can only come from the session. B calling one must never move anything A can see
+# through `LISTS` (a `GET /business` with no path parameter is itself one of `LISTS`,
+# which is how a route like `PATCH /business` gets checked at all).
+SINGLETON_WRITES = [(m, p) for m, p, _ in OPERATIONS if m != "GET" and "{" not in p]
 
 
 @pytest.fixture
@@ -195,6 +203,15 @@ def test_there_are_routes_that_name_a_record() -> None:
     assert len(BY_ID) > 0 and len(LISTS) > 0
 
 
+def _lists_snapshot(business_a: TestClient) -> dict[str, Any]:
+    return {list_path: business_a.get(list_path).json() for list_path in LISTS}
+
+
+def _assert_a_lists_unchanged(business_a: TestClient, before: dict[str, Any]) -> None:
+    for list_path in LISTS:
+        assert business_a.get(list_path).json() == before[list_path]
+
+
 def _assert_another_business_cannot_reach_a_record(
     business_a: TestClient,
     business_b: TestClient,
@@ -204,7 +221,7 @@ def _assert_another_business_cannot_reach_a_record(
 ) -> None:
     """The sweep's own check, factored out so the proof below can run this exact
     comparison against a deliberately broken route, instead of a copy of it."""
-    before = {list_path: business_a.get(list_path).json() for list_path in LISTS}
+    before = _lists_snapshot(business_a)
 
     response = business_b.request(
         method, _concrete(path, seeded), json=BODIES.get((method, path))
@@ -213,8 +230,22 @@ def _assert_another_business_cannot_reach_a_record(
     assert response.status_code == 404, response.text
     for read in [p for m, p in BY_ID if m == "GET"]:
         assert business_a.get(_concrete(read, seeded)).status_code == 200
-    for list_path in LISTS:
-        assert business_a.get(list_path).json() == before[list_path]
+    _assert_a_lists_unchanged(business_a, before)
+
+
+def _assert_a_business_s_write_touches_only_its_own_business(
+    business_a: TestClient, business_b: TestClient, method: str, path: str
+) -> None:
+    """A singleton write (no `{` in its path) can only act on the caller's own
+    business, taken from the session (CODING_STANDARDS §9). Whatever B does, every
+    list A can see — `GET /business` among them — must read the same before and
+    after."""
+    before = _lists_snapshot(business_a)
+
+    response = business_b.request(method, path, json=BODIES.get((method, path)))
+
+    assert response.status_code < 500, response.text
+    _assert_a_lists_unchanged(business_a, before)
 
 
 @pytest.mark.parametrize(("method", "path"), BY_ID, ids=[f"{m} {p}" for m, p in BY_ID])
@@ -391,4 +422,46 @@ def test_the_list_check_catches_a_write_that_a_bare_404_check_would_miss(
             seeded,
             "DELETE",
             "/expense-categories/{category_id}",
+        )
+
+
+@pytest.mark.parametrize(
+    ("method", "path"), SINGLETON_WRITES, ids=[f"{m} {p}" for m, p in SINGLETON_WRITES]
+)
+def test_a_singleton_write_from_b_never_touches_a(
+    business_a: TestClient,
+    business_b: TestClient,
+    seeded: dict[str, int],
+    method: str,
+    path: str,
+) -> None:
+    _assert_a_business_s_write_touches_only_its_own_business(business_a, business_b, method, path)
+
+
+def test_the_singleton_check_catches_a_write_that_always_touches_business_1(
+    business_a: TestClient,
+    business_b: TestClient,
+    seeded: dict[str, int],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Proven negative (CODING_STANDARDS §5), modelled on the proof above for
+    `_assert_another_business_cannot_reach_a_record`: a singleton route (no `{` in its
+    path, so a record id cannot anchor the check) that ignores the session and always
+    renames business 1 — `business_a`'s, since it opens first — must fail the
+    singleton check when B calls it."""
+
+    original_rename_business = manage_business.rename_business
+
+    def renames_business_one_no_matter_who_asks(
+        accounts: Accounts, transaction: Transaction, business_id: int, raw_name: str
+    ) -> manage_business.BusinessProfile:
+        return original_rename_business(accounts, transaction, 1, raw_name)
+
+    monkeypatch.setattr(
+        manage_business, "rename_business", renames_business_one_no_matter_who_asks
+    )
+
+    with pytest.raises(AssertionError):
+        _assert_a_business_s_write_touches_only_its_own_business(
+            business_a, business_b, "PATCH", "/business"
         )

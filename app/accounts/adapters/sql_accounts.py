@@ -23,6 +23,12 @@ class SqlAccounts:
         row = self._session.get(BusinessRow, business_id)
         return None if row is None else Business(BusinessName(row.name), row.id)
 
+    def save_business(self, business: Business) -> None:
+        assert business.id is not None
+        row = self._session.get_one(BusinessRow, business.id)
+        row.name = business.name.value
+        self._session.flush()
+
     def add_user(self, user: User) -> User:
         row = UserRow(
             business_id=user.business_id, email=user.email.value, password_hash=user.password_hash
@@ -30,6 +36,12 @@ class SqlAccounts:
         self._session.add(row)
         self._session.flush()
         return _user(row)
+
+    def users_of_business(self, business_id: int) -> list[User]:
+        statement = (
+            select(UserRow).where(UserRow.business_id == business_id).order_by(UserRow.email)
+        )
+        return [_user(row) for row in self._session.scalars(statement)]
 
     def user(self, user_id: int) -> User | None:
         row = self._session.get(UserRow, user_id)

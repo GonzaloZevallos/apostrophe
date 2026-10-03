@@ -11,6 +11,10 @@ supplies, anything else), **I want** to note it from my phone with its date, cat
 amount and a short detail, and fix or delete it if I got it wrong, **so I can** see how
 much I spend each month and on what, and have my profit and cash count it.
 
+**When** I run my business from my phone, **I want to** keep my expenses up to date from
+the phone, **so I can** stop keeping them in the spreadsheet and have real data in place
+when sales arrive.
+
 Success criteria:
 
 1. An expense is recorded from the phone in under a minute. The date is already set to
@@ -21,6 +25,7 @@ Success criteria:
 3. Flower is never an expense. Nothing here records grams or a variety, and a purchase
    never appears in the expense lists. That way results can count expenses and purchases
    separately without counting anything twice.
+4. Everything here is done from the phone with no API call by hand.
 
 ## Behaviour
 
@@ -40,7 +45,8 @@ Success criteria:
 - **Add**: a duplicate name is refused, with the reason.
 - **Rename**: the category's expenses stay under the new name. Renaming to a name another
   category of the business already has is refused.
-- **Remove**: refused while any expense, of any month, is filed under the category.
+- **Remove**: permanent; there is no archive or restore. Refused while any expense, of any
+  month, is filed under the category.
   - The refusal says only that it still has expenses and suggests renaming it instead:
     "No se puede borrar: todavía tiene gastos. Podés renombrarla." No breakdown of where
     it is used is shown.
@@ -78,27 +84,57 @@ Success criteria:
 - A month with no expenses shows a total of $0 and no categories.
 - This view is how a user finds a mistaken expense to fix or delete.
 
+### On screen (Gastos)
+
+- **The monthly view** (`Gastos`):
+  - move between months;
+  - a fixed line: "Las compras de flores no van acá: se cargan en Stock."
+- **The expense form**:
+  - "Categoría", "Monto" and "Detalle" are marked required;
+  - submit is blocked while the detail is blank;
+  - the date comes filled with today.
+- **A category gone while the expense form is open** (a partner removed it):
+  - saving keeps the form open and everything typed;
+  - the category list refreshes and "Categoría" is left empty;
+  - the field shows "Esa categoría ya no está. Elegí otra."
+- **Deleting an expense**, from the expense reached in the monthly view:
+  - it is confirmed with "Antes de borrar", naming the date, category and amount, e.g.
+    "¿Borrás el gasto de $ 4.500 en Packaging del 28/09?";
+  - there is no undo;
+  - the total and the subtotal update at once, and a category left with no expenses that
+    month disappears.
+- **Categories**: add, rename and "Eliminar". A blocked removal shows the fixed refusal
+  above.
+- **An expense or category that is gone** when it is saved, deleted or opened follows the
+  app's rule in `accounts.md`: "Eso ya no está." Opening one offers "Volver a Gastos" on
+  the current month.
+- **Toasts**: "Gasto guardado", "Gasto eliminado", "Categoría guardada" and "Categoría
+  eliminada", with no amounts in them.
+- **Refusals** show inline and keep what was typed.
+
 ### Constraints
 
 - Categories and expenses carry `business_id`, and their routes join the isolation sweep
   (ADR-0004).
-- No amounts or details are written to logs.
+- No amounts or details are written to logs, the browser console or browser storage.
 
 ## Metrics
 
 Read from the data; there is no telemetry.
 
 - **M1, recorded on the spot (criterion 1)**: the share of expenses whose date equals the
-  Argentina day they were recorded. Target: a majority once the front is in use. Time on
-  the form can only be measured once the front exists. Until then, the API must accept an
-  expense in a single request that carries every field.
+  Argentina day they were recorded. Target: a majority once the front is in use. Through
+  the front, recording an expense from the phone takes under 60 s.
 - **M2, totals hold (criterion 2)**: totals that differ from the sum of the expenses shown
-  must be 0. This is checked by tests after create, edit and delete.
+  must be 0. This is checked by tests after create, edit and delete, in the API and on
+  screen.
 - **M3, "on what" (criterion 2)**: the share of each month's spend filed under "Otros".
   If it stays high, the categories are not helping the user see where the money goes.
 - **M4, use**: businesses with at least one expense in a month, out of active businesses.
 - **M5, flower kept out (criterion 3)**: purchases that appear in the expense lists must be
   0, by construction. An expense has no field that could hold grams or a variety.
+- **M6, no curl (criterion 4)**: the end-to-end front run records, edits and deletes an
+  expense, and adds, renames and removes a category, including a refused removal.
 
 ## Out of scope
 
@@ -108,3 +144,4 @@ Read from the data; there is no telemetry.
 - Edit history of an expense.
 - An all-time list of expenses per category.
 - A chronological list of expenses.
+- Archiving a category.

@@ -11,6 +11,7 @@ from __future__ import annotations
 import unicodedata
 from dataclasses import dataclass
 from enum import StrEnum
+from typing import ClassVar
 
 NAME_MAX_LENGTH = 60
 
@@ -20,18 +21,26 @@ _SEPARATORS = " -.()"
 class CustomerRuleBroken(ValueError):
     """A rule of customers was broken; the message says which, never the data."""
 
+    code: ClassVar[str] = "customer.rule_broken"
+
 
 class InvalidPhoneNumber(CustomerRuleBroken):
+    code: ClassVar[str] = "customer.phone_invalid"
+
     def __init__(self) -> None:
         super().__init__("that doesn't look like a phone number with its area code")
 
 
 class MissingCustomerName(CustomerRuleBroken):
+    code: ClassVar[str] = "customer.name_missing"
+
     def __init__(self) -> None:
         super().__init__("a customer needs a name")
 
 
 class CustomerNameTooLong(CustomerRuleBroken):
+    code: ClassVar[str] = "customer.name_too_long"
+
     def __init__(self) -> None:
         super().__init__(f"a customer name has at most {NAME_MAX_LENGTH} characters")
 

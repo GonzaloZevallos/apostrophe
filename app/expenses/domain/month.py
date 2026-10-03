@@ -9,6 +9,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from datetime import date
+from typing import ClassVar
 
 from app.expenses.domain.category import ExpenseRuleBroken
 
@@ -16,6 +17,8 @@ _PATTERN = re.compile(r"^(\d{4})-(0[1-9]|1[0-2])$")
 
 
 class InvalidMonth(ExpenseRuleBroken):
+    code: ClassVar[str] = "expense.month_invalid"
+
     def __init__(self) -> None:
         super().__init__("a month is written YYYY-MM")
 

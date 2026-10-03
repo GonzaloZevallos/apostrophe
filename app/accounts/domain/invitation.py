@@ -12,6 +12,7 @@ import secrets
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import StrEnum
+from typing import ClassVar
 
 INVITATION_LIFETIME = timedelta(days=7)
 TOKEN_BYTES = 32
@@ -24,6 +25,8 @@ class InvitationKind(StrEnum):
 
 class InvitationNotUsable(Exception):
     """Unknown, used or expired: the three look the same from outside on purpose."""
+
+    code: ClassVar[str] = "account.invitation_not_usable"
 
     def __init__(self) -> None:
         super().__init__("this invitation does not exist, was used or expired")

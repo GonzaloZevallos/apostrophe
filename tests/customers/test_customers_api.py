@@ -64,6 +64,7 @@ def test_an_invalid_phone_number_is_refused_without_repeating_it(client: TestCli
 
     assert response.status_code == 422
     assert response.json()["detail"] == "that doesn't look like a phone number with its area code"
+    assert response.json()["code"] == "customer.phone_invalid"
     assert "2345" not in response.text
 
 

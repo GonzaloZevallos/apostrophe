@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
+from typing import ClassVar
 
 from app.accounts.application.ports import Accounts, BusinessOpening
 from app.accounts.domain.account import (
@@ -22,6 +23,8 @@ from app.shared.transaction import Transaction
 
 
 class EmailTaken(ValueError):
+    code: ClassVar[str] = "account.email_taken"
+
     def __init__(self) -> None:
         super().__init__("that email already has a user")
 
