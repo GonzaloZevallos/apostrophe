@@ -1,28 +1,37 @@
 /**
  * `Entrar`: email and password sign a person in (plan, "Getting in"; `accounts.md`).
  * The hint under the button is fixed and never counts attempts — the backend does not
- * say how many are left, on purpose — and a lock (`account.login_locked`, 429) shows
- * the brake message in its place, not the usual inline refusal. A wrong email or
- * password answers plain 401, shown inline without naming which one was wrong.
+ * say how many are left, on purpose — and a lock (`account.login_locked`) shows the
+ * brake message in its place, not the usual inline refusal. A wrong email or password
+ * answers plain 401 (no `code` of its own), shown inline without naming which one was
+ * wrong. Every other refusal is dispatched through `refusals.ts` — never a raw
+ * `caught.code === '…'` comparison — so a renamed or misspelt code fails `tsc` here,
+ * not silently at runtime.
  */
 
 import { type FormEvent, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router'
 import { ApiError, NetworkError } from '../api/client'
+import { kindOf, resolveOverride, type RefusalCode } from '../api/refusals'
 import { login } from '../session'
+import SinConexion from '../components/SinConexion'
 
 export const CREDENTIALS_WRONG = 'Email o contraseña incorrectos'
 export const BRAKE_MESSAGE = '5 intentos fallidos · probá de nuevo en 15 minutos'
 export const LOGIN_HINT = 'Después de 5 intentos fallidos, el email queda bloqueado 15 minutos'
-export const OFFLINE_MESSAGE = 'Te quedaste sin internet'
-export const RETRY_MESSAGE = 'Algo falló. Probá de nuevo.'
+export const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
+
+const LOGIN_OVERRIDES: Partial<Record<RefusalCode, 'locked'>> = {
+  'account.login_locked': 'locked',
+}
 
 export default function Entrar() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [locked, setLocked] = useState(false)
+  const [offline, setOffline] = useState(false)
   const [sending, setSending] = useState(false)
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -31,18 +40,21 @@ export default function Entrar() {
     event.preventDefault()
     setError(null)
     setLocked(false)
+    setOffline(false)
     setSending(true)
     try {
       await login({ queryClient, navigate }, email, password)
     } catch (caught) {
-      if (caught instanceof ApiError && caught.code === 'account.login_locked') {
-        setLocked(true)
-      } else if (caught instanceof ApiError && caught.status === 401) {
+      if (caught instanceof ApiError && caught.status === 401) {
         setError(CREDENTIALS_WRONG)
+      } else if (caught instanceof ApiError && resolveOverride(LOGIN_OVERRIDES, caught.code) === 'locked') {
+        setLocked(true)
+      } else if (caught instanceof ApiError && kindOf(caught.code) === 'refusal') {
+        setError(GENERIC_REFUSAL_MESSAGE)
       } else if (caught instanceof NetworkError) {
-        setError(OFFLINE_MESSAGE)
+        setOffline(true)
       } else {
-        setError(RETRY_MESSAGE)
+        setError(GENERIC_REFUSAL_MESSAGE)
       }
     } finally {
       setSending(false)
@@ -94,6 +106,7 @@ export default function Entrar() {
           ) : (
             <span className="ayuda-fija">{LOGIN_HINT}</span>
           )}
+          {offline && <SinConexion />}
         </form>
       </div>
       <div className="pie">Para usar apostrophe te tiene que invitar un negocio.</div>

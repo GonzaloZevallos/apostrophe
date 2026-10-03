@@ -1,9 +1,10 @@
 /**
  * The single `QueryClient` the app renders with (plan, "Server state"). A 401 from
- * any gated query is a session boundary (plan, "Session"; invariants): it clears the
- * cache and sends the person back to Entrar, through the same `handleUnauthorized`
- * every other boundary uses — not a per-screen concern, so a screen subtask gets it
- * for free from mounting under the gated layout.
+ * any gated query or mutation is a session boundary (plan, "Session"; invariants): it
+ * clears the cache and sends the person back to Entrar, through the same
+ * `handleUnauthorized` every other boundary uses — not a per-screen concern, so a
+ * screen subtask's own saves and deletes get it for free from mounting under the
+ * gated layout, without wiring a 401 check into every mutation.
  *
  * `handleUnauthorized` needs the current path and a navigate function; neither lives
  * outside the router, so `setCurrentPath`/`setNavigate` let the router keep them
@@ -11,7 +12,7 @@
  * navigate function yet and a 401 does nothing — the same as on a public route.
  */
 
-import { QueryCache, QueryClient } from '@tanstack/react-query'
+import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query'
 import { ApiError } from './api/client'
 import { handleUnauthorized } from './session'
 
@@ -26,12 +27,13 @@ export function setNavigate(fn: (path: string) => void): void {
   navigateRef = fn
 }
 
+function onError(error: unknown): void {
+  if (error instanceof ApiError && error.status === 401 && navigateRef !== null) {
+    handleUnauthorized({ queryClient, navigate: navigateRef }, currentPath)
+  }
+}
+
 export const queryClient: QueryClient = new QueryClient({
-  queryCache: new QueryCache({
-    onError(error) {
-      if (error instanceof ApiError && error.status === 401 && navigateRef !== null) {
-        handleUnauthorized({ queryClient, navigate: navigateRef }, currentPath)
-      }
-    },
-  }),
+  queryCache: new QueryCache({ onError }),
+  mutationCache: new MutationCache({ onError }),
 })

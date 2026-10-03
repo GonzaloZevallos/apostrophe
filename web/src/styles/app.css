@@ -39,6 +39,19 @@
   margin: 10px 0 0;
 }
 
+.invitacion__pastilla {
+  display: block;
+  font-size: 14px;
+  color: var(--acento);
+}
+
+.invitacion__titulo {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  margin: 4px 0 0;
+}
+
 .formulario {
   display: flex;
   flex-direction: column;
@@ -150,6 +163,14 @@
   max-width: 250px;
 }
 
+.aviso-flotante {
+  position: fixed;
+  top: var(--espacio-md);
+  left: var(--espacio-md);
+  right: var(--espacio-md);
+  z-index: 10;
+}
+
 .cuerpo {
   flex: 1;
   padding: var(--espacio-lg) var(--margen-pantalla);
@@ -194,11 +215,15 @@
   text-decoration: none;
   color: var(--nav-inactivo);
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 500;
 }
 
+/* Not color alone (README, accessibility rule 2): the active item is also bold,
+ * same as the design's own bottom bar (`Inicio.dc.html`: `font-weight: 600` on the
+ * active label, the default weight on the rest). */
 .bar-inferior__item--activo {
   color: var(--tinta);
+  font-weight: 700;
 }
 
 .riel-lateral {
@@ -227,6 +252,22 @@
   background: var(--superficie);
   color: var(--tinta);
   font-weight: 600;
+}
+
+.mas__lista {
+  display: flex;
+  flex-direction: column;
+}
+
+.mas__item {
+  display: flex;
+  align-items: center;
+  min-height: var(--alto-tocable);
+  padding: 0 var(--espacio-sm);
+  border-bottom: 1px solid var(--linea);
+  color: var(--tinta);
+  text-decoration: none;
+  font-size: 16px;
 }
 
 .columna-principal {

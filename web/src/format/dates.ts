@@ -33,6 +33,14 @@ export function formatDate(iso: string, todayIso: string): string {
   return year === parseDate(todayIso).year ? base : `${base}/${year}`
 }
 
+/** `"2026-10-09"` → `"09/10"`, with no "today" to compare against: for a footer
+ * written while signed out (an invitation link), where there is no session to read
+ * one from. */
+export function formatDateShort(iso: string): string {
+  const { day, month } = parseDate(iso)
+  return `${day}/${month}`
+}
+
 /** Always with the year: for a card or a detail with no "today" to compare against. */
 export function formatDateLong(iso: string): string {
   const { year, month, day } = parseDate(iso)

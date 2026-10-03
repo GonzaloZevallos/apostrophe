@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { formatDate, formatDateLong, formatMonthLong, shiftMonth, sinceWhen } from './dates'
+import { formatDate, formatDateLong, formatDateShort, formatMonthLong, shiftMonth, sinceWhen } from './dates'
 
 describe('formatDate', () => {
   test('drops the year when it matches today\'s', () => {
@@ -12,6 +12,16 @@ describe('formatDate', () => {
 
   test('rejects a string that is not an API date', () => {
     expect(() => formatDate('02/10/2026', '2026-10-02')).toThrow()
+  })
+})
+
+describe('formatDateShort', () => {
+  test('always drops the year, with no "today" to compare against', () => {
+    expect(formatDateShort('2026-10-09')).toBe('09/10')
+  })
+
+  test('rejects a string that is not an API date', () => {
+    expect(() => formatDateShort('2026-10-09T00:00:00Z')).toThrow()
   })
 })
 

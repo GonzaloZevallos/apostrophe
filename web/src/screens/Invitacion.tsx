@@ -5,25 +5,41 @@
  * logs out first, through the backend (`session.openInvitation`), so acceptance
  * always starts clean; that includes a user opening their own business's link.
  *
- * An unknown, used or expired invitation (`account.invitation_not_usable`) shows the
- * fixed "Esta invitación ya no sirve" (plan, "Gone records": the override for this
- * code) instead of the generic gone notice — it is not a record someone deleted, it
- * is the invitation itself.
+ * Every refusal is dispatched through `refusals.ts` (`kindOf`/`resolveOverride`),
+ * never a raw `caught.code === '…'` comparison: a renamed or misspelt code fails
+ * `tsc` here, not silently at runtime. An unknown, used or expired invitation
+ * (`account.invitation_not_usable`, kind `gone`) shows the fixed "Esta invitación ya
+ * no sirve" instead of the generic gone notice — it is not a record someone deleted,
+ * it is the invitation itself.
  */
 
 import { type FormEvent, useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate, useParams } from 'react-router'
 import { ApiError, NetworkError } from '../api/client'
+import { kindOf, isGone, resolveOverride, type RefusalCode } from '../api/refusals'
 import { acceptInvitation, openInvitation, type InvitationView } from '../session'
+import SinConexion from '../components/SinConexion'
+import { formatDateShort } from '../format/dates'
 
 export const NOT_USABLE_TITLE = 'Esta invitación ya no sirve'
 export const NOT_USABLE_DETAIL =
   'Venció o alguien la usó antes. Pedile al negocio que te manden una nueva.'
-export const OFFLINE_MESSAGE = 'Te quedaste sin internet'
-export const RETRY_MESSAGE = 'Algo falló. Probá de nuevo.'
+export const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
 export const EMAIL_TAKEN_MESSAGE = 'Ya hay una cuenta con ese email'
 export const WEAK_PASSWORD_MESSAGE = 'La contraseña tiene que tener al menos 10 caracteres'
+export const EMAIL_INVALID_MESSAGE = 'Ingresá un email válido'
+export const BUSINESS_NAME_INVALID_MESSAGE = 'Ponele un nombre al negocio, sin espacios de más'
+
+type AcceptAction = { kind: 'inline'; message: string } | { kind: 'not_usable' }
+
+const ACCEPT_OVERRIDES: Partial<Record<RefusalCode, AcceptAction>> = {
+  'account.invitation_not_usable': { kind: 'not_usable' },
+  'account.email_taken': { kind: 'inline', message: EMAIL_TAKEN_MESSAGE },
+  'account.password_weak': { kind: 'inline', message: WEAK_PASSWORD_MESSAGE },
+  'account.email_invalid': { kind: 'inline', message: EMAIL_INVALID_MESSAGE },
+  'account.business_name_invalid': { kind: 'inline', message: BUSINESS_NAME_INVALID_MESSAGE },
+}
 
 type Status = 'loading' | 'not_usable' | 'offline' | 'error' | 'ready'
 
@@ -50,7 +66,7 @@ export default function Invitacion() {
       })
       .catch((caught: unknown) => {
         if (cancelled) return
-        if (caught instanceof ApiError && caught.code === 'account.invitation_not_usable') {
+        if (caught instanceof ApiError && isGone(caught.code)) {
           setStatus('not_usable')
         } else if (caught instanceof NetworkError) {
           setStatus('offline')
@@ -77,16 +93,21 @@ export default function Invitacion() {
           : { email, password },
       )
     } catch (caught) {
-      if (caught instanceof ApiError && caught.code === 'account.invitation_not_usable') {
-        setStatus('not_usable')
-      } else if (caught instanceof ApiError && caught.code === 'account.email_taken') {
-        setError(EMAIL_TAKEN_MESSAGE)
-      } else if (caught instanceof ApiError && caught.code === 'account.password_weak') {
-        setError(WEAK_PASSWORD_MESSAGE)
+      if (caught instanceof ApiError) {
+        const action = resolveOverride(ACCEPT_OVERRIDES, caught.code)
+        if (action?.kind === 'not_usable') {
+          setStatus('not_usable')
+        } else if (action?.kind === 'inline') {
+          setError(action.message)
+        } else if (kindOf(caught.code) === 'refusal') {
+          setError(GENERIC_REFUSAL_MESSAGE)
+        } else {
+          setStatus('not_usable')
+        }
       } else if (caught instanceof NetworkError) {
-        setError(OFFLINE_MESSAGE)
+        setStatus('offline')
       } else {
-        setError(RETRY_MESSAGE)
+        setError(GENERIC_REFUSAL_MESSAGE)
       }
     } finally {
       setSending(false)
@@ -108,31 +129,49 @@ export default function Invitacion() {
     )
   }
 
-  if (status === 'offline' || status === 'error') {
+  if (status === 'offline') {
+    return (
+      <main className="pantalla">
+        <div className="cuerpo">
+          <SinConexion />
+        </div>
+      </main>
+    )
+  }
+
+  if (status === 'error') {
     return (
       <main className="pantalla">
         <div className="cuerpo">
           <div className="aviso-ambar">
-            <span className="aviso-ambar__titulo">
-              {status === 'offline' ? OFFLINE_MESSAGE : RETRY_MESSAGE}
-            </span>
+            <span className="aviso-ambar__titulo">{GENERIC_REFUSAL_MESSAGE}</span>
           </div>
         </div>
       </main>
     )
   }
 
-  const isNewBusiness = view?.kind === 'new_business'
+  if (view === null) return <main className="pantalla" />
+
+  const isNewBusiness = view.kind === 'new_business'
+  const expiry = formatDateShort(view.expires_at.slice(0, 10))
 
   return (
     <main className="pantalla">
       <div className="entrar__contenido">
         <div>
-          <span className="marca">
-            apostrophe<span className="marca__apostrofe">’</span>
+          <span className="invitacion__pastilla">
+            {isNewBusiness ? 'Invitación válida' : 'Te invitaron a'}
           </span>
+          {isNewBusiness ? (
+            <p className="invitacion__titulo">Armá tu negocio</p>
+          ) : (
+            <p className="invitacion__titulo">{view.business_name}</p>
+          )}
           <p className="subtitulo">
-            {isNewBusiness ? 'Creá tu negocio en apostrophe.' : `${view?.business_name} te invitó a sumarte.`}
+            {isNewBusiness
+              ? 'Ponele un nombre y creá tu usuario. Después podés invitar a un socio.'
+              : 'Creá tu usuario y vas a ver las ventas, el stock y los clientes de este negocio. Sólo de este.'}
           </p>
         </div>
         <form className="formulario" onSubmit={onSubmit}>
@@ -174,9 +213,14 @@ export default function Invitacion() {
             )}
           </label>
           <button className="boton" type="submit" disabled={sending}>
-            {isNewBusiness ? 'Crear negocio' : 'Sumarme'}
+            {isNewBusiness ? 'Creá el negocio' : `Sumate a ${view.business_name}`}
           </button>
         </form>
+      </div>
+      <div className="pie">
+        {isNewBusiness
+          ? `La invitación se usa una sola vez y vence el ${expiry}.`
+          : `Esta invitación vence el ${expiry} y se usa una sola vez.`}
       </div>
     </main>
   )

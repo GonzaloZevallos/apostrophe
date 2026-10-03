@@ -10,12 +10,15 @@
 import { QueryClientProvider } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router'
+import SinConexion from './components/SinConexion'
 import { queryClient, setCurrentPath, setNavigate } from './queryClient'
 import Entrar from './screens/Entrar'
 import Inicio from './screens/Inicio'
 import Invitacion from './screens/Invitacion'
+import Mas from './screens/Mas'
 import GatedLayout from './shell/GatedLayout'
 import Shell from './shell/Shell'
+import { useOnline } from './useOnline'
 
 function RouterSync() {
   const location = useLocation()
@@ -27,17 +30,29 @@ function RouterSync() {
   return null
 }
 
+function OfflineBanner() {
+  const online = useOnline()
+  if (online) return null
+  return (
+    <div className="aviso-flotante">
+      <SinConexion />
+    </div>
+  )
+}
+
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <RouterSync />
+        <OfflineBanner />
         <Routes>
           <Route path="/entrar" element={<Entrar />} />
           <Route path="/invitation/:token" element={<Invitacion />} />
           <Route element={<GatedLayout />}>
             <Route element={<Shell />}>
               <Route index element={<Inicio />} />
+              <Route path="mas" element={<Mas />} />
             </Route>
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
