@@ -2,6 +2,16 @@
  * (plan, invariants). Mirrors the design screens' structure (Entrar, Estados,
  * Inicio, BarraInferior/InicioCompu) without copying their inline styles verbatim. */
 
+/* Visible to a screen reader only — the design's own technique for a label a
+ * placeholder already shows visibly (`Clientes.dc.html`'s "Buscar cliente"). */
+.visualmente-oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
 .pantalla {
   min-height: 100vh;
   display: flex;

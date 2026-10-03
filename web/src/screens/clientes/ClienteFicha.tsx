@@ -8,16 +8,17 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link, useLocation, useParams } from 'react-router'
 import { ApiError, NetworkError } from '../../api/client'
-import { getCustomer } from '../../api/customers'
+import { type Channel, getCustomer } from '../../api/customers'
 import { keys } from '../../api/keys'
 import { isGone } from '../../api/refusals'
 import { formatPhone } from '../../format/phone'
 import ErrorGenerico from '../../components/ErrorGenerico'
+import { readFeedback } from '../../components/feedback'
 import GoneScreen from '../../components/GoneScreen'
 import Notice from '../../components/Notice'
 import SinConexion from '../../components/SinConexion'
 
-const CHANNEL_LABEL: Record<string, string> = {
+const CHANNEL_LABEL: Record<Channel, string> = {
   telegram: 'Telegram',
   whatsapp: 'WhatsApp',
 }
@@ -26,7 +27,7 @@ export default function ClienteFicha() {
   const { id } = useParams<{ id: string }>()
   const customerId = id ?? ''
   const location = useLocation()
-  const toast = (location.state as { toast?: string } | null)?.toast
+  const feedback = readFeedback(location.state)
 
   const { data, error, isPending, isError } = useQuery({
     queryKey: keys.customer(customerId),
@@ -65,7 +66,7 @@ export default function ClienteFicha() {
           <span className="encabezado__titulo">{data.name}</span>
           <Link to={`/clientes/${customerId}/editar`}>Editar</Link>
         </div>
-        {toast !== undefined && <Notice kind="toast" message={toast} />}
+        {feedback !== null && <Notice kind={feedback.kind} message={feedback.message} />}
         <div className="formulario">
           <div className="campo">
             <span className="campo__rotulo">Teléfono</span>

@@ -10,6 +10,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
+import { queryClient, setCurrentPath, setNavigate } from '../../queryClient'
 import ClienteForm from './ClienteForm'
 
 function ListStub() {
@@ -132,4 +133,30 @@ test('saving an edit on a customer that is gone shows the gone notice, not the t
   await waitFor(() => expect(screen.getByText('la lista')).toBeInTheDocument())
   expect(screen.getByText('Eso ya no está. La lista ya está al día.')).toBeInTheDocument()
   expect(screen.queryByText('Cliente guardado')).not.toBeInTheDocument()
+})
+
+test('a 401 on save clears the cache and goes to Entrar, through the session boundary', async () => {
+  vi.mocked(fetch).mockResolvedValue(jsonResponse(401, { detail: 'not signed in' }))
+  queryClient.setQueryData(['me'], { businessName: 'stale' })
+  const navigate = vi.fn()
+  setNavigate(navigate)
+  setCurrentPath('/clientes/nuevo')
+
+  render(
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter initialEntries={['/clientes/nuevo']}>
+        <Routes>
+          <Route path="/clientes/nuevo" element={<ClienteForm mode="nuevo" />} />
+        </Routes>
+      </MemoryRouter>
+    </QueryClientProvider>,
+  )
+
+  await userEvent.type(screen.getByLabelText('Teléfono'), '+5491131785094')
+  await userEvent.type(screen.getByLabelText('Nombre'), 'Nico')
+  await userEvent.click(screen.getByRole('button', { name: 'Guardá y usá' }))
+
+  await waitFor(() => expect(navigate).toHaveBeenCalledWith('/entrar'))
+  expect(queryClient.getQueryData(['me'])).toBeUndefined()
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument()
 })

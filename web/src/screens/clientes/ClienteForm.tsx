@@ -13,13 +13,14 @@
  * `set-state-in-effect`).
  */
 
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { type FormEvent, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
-import { ApiError, NetworkError } from '../../api/client'
+import { ApiError, NetworkError, UNKNOWN_CODE } from '../../api/client'
 import {
   type Channel,
   type Customer,
+  type CustomerIn,
   editCustomer,
   getCustomer,
   registerCustomer,
@@ -27,10 +28,11 @@ import {
 import { invalidateResource, keys } from '../../api/keys'
 import { GONE_NOTICE, isGone, resolveOverride, type RefusalCode } from '../../api/refusals'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
+import { TOAST_MESSAGES } from '../../components/feedback'
 import GoneScreen from '../../components/GoneScreen'
 import SinConexion from '../../components/SinConexion'
 
-export const SAVED_TOAST = 'Cliente guardado'
+export const SAVED_TOAST: (typeof TOAST_MESSAGES)[number] = 'Cliente guardado'
 export const NAME_REQUIRED = 'Ponele un nombre'
 export const PHONE_INVALID = 'Eso no parece un teléfono con su código de área'
 export const PHONE_TAKEN = 'Ese teléfono ya es de otro cliente'
@@ -106,7 +108,16 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
   const [phoneError, setPhoneError] = useState<string | null>(null)
   const [formError, setFormError] = useState<string | null>(null)
   const [offline, setOffline] = useState(false)
-  const [sending, setSending] = useState(false)
+
+  // A plain `useMutation`, so a 401 reaches the shared `MutationCache`'s
+  // `onError` (`queryClient.ts`) and triggers the session boundary — clearing
+  // the cache and navigating to Entrar — before this component's own `catch`
+  // ever sees it. Saving directly with `await registerCustomer(...)` would
+  // bypass that cache entirely (open review finding).
+  const save = useMutation({
+    mutationFn: (body: CustomerIn) =>
+      mode === 'nuevo' ? registerCustomer(body) : editCustomer(customerId, body),
+  })
 
   async function onSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault()
@@ -114,19 +125,21 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
     setPhoneError(null)
     setFormError(null)
     setOffline(false)
-    setSending(true)
     try {
-      const body = { name, phone, channel, vip }
+      await save.mutateAsync({ name, phone, channel, vip })
+      invalidateResource(queryClient, 'customers')
       if (mode === 'nuevo') {
-        await registerCustomer(body)
-        invalidateResource(queryClient, 'customers')
         navigate('/clientes', { state: { toast: SAVED_TOAST } })
       } else {
-        await editCustomer(customerId, body)
-        invalidateResource(queryClient, 'customers')
         navigate(`/clientes/${customerId}`, { state: { toast: SAVED_TOAST } })
       }
     } catch (caught) {
+      if (caught instanceof ApiError && caught.status === 401) {
+        // The session boundary already cleared the cache and is navigating
+        // to Entrar (queryClient.ts's MutationCache.onError); nothing left
+        // for this form to show.
+        return
+      }
       if (caught instanceof ApiError && mode === 'editar' && isGone(caught.code)) {
         invalidateResource(queryClient, 'customers')
         navigate('/clientes', { state: { notice: GONE_NOTICE } })
@@ -138,7 +151,7 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
           if (override.field === 'name') setNameError(override.message)
           else if (override.field === 'phone') setPhoneError(override.message)
           else setFormError(override.message)
-        } else if (caught.code !== 'unknown') {
+        } else if (caught.code !== UNKNOWN_CODE) {
           setFormError(GENERIC_REFUSAL)
         } else {
           setFormError(ERROR_GENERICO_MENSAJE)
@@ -148,8 +161,6 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
       } else {
         setFormError(ERROR_GENERICO_MENSAJE)
       }
-    } finally {
-      setSending(false)
     }
   }
 
@@ -238,7 +249,7 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
             </span>
           )}
           {offline && <SinConexion />}
-          <button className="boton" type="submit" disabled={sending}>
+          <button className="boton" type="submit" disabled={save.isPending}>
             Guardá y usá
           </button>
         </form>

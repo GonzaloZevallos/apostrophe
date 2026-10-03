@@ -31,7 +31,7 @@ export function listCustomers(q: string): Promise<Customer[]> {
 }
 
 export function getCustomer(id: string): Promise<Customer> {
-  return get<Customer>(`/customers/${id}`)
+  return get<Customer>(`/customers/${encodeURIComponent(id)}`)
 }
 
 export function registerCustomer(body: CustomerIn): Promise<Customer> {
@@ -39,5 +39,5 @@ export function registerCustomer(body: CustomerIn): Promise<Customer> {
 }
 
 export function editCustomer(id: string, body: CustomerPatchIn): Promise<Customer> {
-  return patch<Customer>(`/customers/${id}`, body)
+  return patch<Customer>(`/customers/${encodeURIComponent(id)}`, body)
 }

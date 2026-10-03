@@ -21,7 +21,7 @@ function jsonResponse(status: number, body: unknown): Response {
 }
 
 function renderClientes() {
-  const queryClient = new QueryClient()
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={queryClient}>
       <MemoryRouter initialEntries={['/clientes']}>
@@ -49,7 +49,7 @@ test('searching by part of the name calls the API with that query, never the URL
 
   await waitFor(() => expect(fetch).toHaveBeenCalledWith('/customers', expect.anything()))
 
-  await userEvent.type(screen.getByLabelText('Buscar por teléfono o nombre'), 'nico')
+  await userEvent.type(screen.getByLabelText('Buscar cliente'), 'nico')
 
   await waitFor(() =>
     expect(fetch).toHaveBeenCalledWith('/customers?q=nico', expect.anything()),
@@ -61,7 +61,7 @@ test('searching by digits of the phone also never touches the URL', async () => 
   renderClientes()
   await waitFor(() => expect(fetch).toHaveBeenCalledWith('/customers', expect.anything()))
 
-  await userEvent.type(screen.getByLabelText('Buscar por teléfono o nombre'), '6033')
+  await userEvent.type(screen.getByLabelText('Buscar cliente'), '6033')
 
   await waitFor(() =>
     expect(fetch).toHaveBeenCalledWith('/customers?q=6033', expect.anything()),
@@ -79,7 +79,7 @@ test('a stale answer still in flight shows marked pending, never as the current 
   )
   renderClientes()
 
-  const input = screen.getByLabelText('Buscar por teléfono o nombre')
+  const input = screen.getByLabelText('Buscar cliente')
   await userEvent.type(input, 'ni')
   await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2))
 
@@ -104,11 +104,27 @@ test('a result still catching up to a newer keystroke is marked pending, not cur
   renderClientes()
   await waitFor(() => expect(screen.getByText('Mica Solano')).toBeInTheDocument())
 
-  await userEvent.type(screen.getByLabelText('Buscar por teléfono o nombre'), 'x')
+  await userEvent.type(screen.getByLabelText('Buscar cliente'), 'x')
   await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2))
 
   await waitFor(() => expect(screen.getByText('Buscando…')).toBeInTheDocument())
   const list = screen.getByText('Buscando…').closest('.lista-clientes')
   expect(list).toHaveAttribute('aria-busy', 'true')
   resolveSecond?.(jsonResponse(200, []))
+})
+
+test('a dropped network on the list shows Sin conexión, never the empty-list text', async () => {
+  vi.mocked(fetch).mockRejectedValue(new TypeError('network error'))
+  renderClientes()
+
+  expect(await screen.findByText('Te quedaste sin internet')).toBeInTheDocument()
+  expect(screen.queryByText('Todavía no agregaste ningún cliente.')).not.toBeInTheDocument()
+})
+
+test('a server error on the list shows the generic retry, never the empty-list text', async () => {
+  vi.mocked(fetch).mockResolvedValue(new Response('boom', { status: 500 }))
+  renderClientes()
+
+  expect(await screen.findByText('Algo falló. Probá de nuevo.')).toBeInTheDocument()
+  expect(screen.queryByText('Todavía no agregaste ningún cliente.')).not.toBeInTheDocument()
 })
