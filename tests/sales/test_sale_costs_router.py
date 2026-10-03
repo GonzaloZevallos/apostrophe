@@ -8,6 +8,8 @@ from typing import Any
 
 from fastapi.testclient import TestClient
 
+from tests.contract_shapes import assert_matches_fixture
+
 
 def _variety(client: TestClient, list_price: int = 10_000) -> int:
     variety = client.post("/varieties", json={"name": "Lavanda"}).json()
@@ -87,6 +89,33 @@ def test_list_sales_never_carries_a_cost_field(client: TestClient) -> None:
     assert "cost" not in listed.json()[0]["lines"][0]
 
 
+def test_sale_detail_answers_total_grams_summed_over_every_line_gifts_included(
+    client: TestClient,
+) -> None:
+    """Left over from #20 (sales.md): the delete confirmation and Deshacer name the
+    grams returning to stock, from this field — never added up in the browser."""
+    variety_id = _variety(client)
+    _entry(client, variety_id, grams="20", total_cost=5_000)
+
+    response = client.post(
+        "/sales",
+        json={
+            "payment": "cash",
+            "lines": [
+                {"variety_id": variety_id, "grams": "10"},
+                {"variety_id": variety_id, "grams": "4", "gift": True},
+            ],
+        },
+    )
+    assert response.status_code == 201, response.text
+    sale_id = response.json()["id"]
+
+    detail = client.get(f"/sales/{sale_id}")
+
+    assert detail.status_code == 200, detail.text
+    assert detail.json()["total_grams"] == 14.0
+
+
 def test_recording_a_later_entry_moves_the_cost_the_next_time_it_is_read(
     client: TestClient,
 ) -> None:
@@ -104,3 +133,37 @@ def test_recording_a_later_entry_moves_the_cost_the_next_time_it_is_read(
     assert after["lines"][0]["cost"] == {"costed": 4_000, "pending_grams": 0.0}
     assert after["total"] == before["total"]
     assert after["lines"][0]["price_per_gram"] == before["lines"][0]["price_per_gram"]
+
+
+def test_a_sale_detail_carries_still_owing_from_settlement(client: TestClient) -> None:
+    """`GET /sales/{id}` answers `still_owing` the same way the list route does (the
+    plan's `balances-wiring` brief): both read it from `OwingSales`, never a local
+    comparison. `total_grams` (`sale-grams`) and `still_owing` (`balances-wiring`) land
+    on separate subtask branches, so neither alone can run `assert_matches_fixture(…,
+    "sale-detail")`: integration (`payments-e2e`) runs it here, now that both fields are
+    on this merged branch (Tech Lead finding, plan scope, `test_sale_costs_router.py:90`
+    and `:109`)."""
+    variety_id = _variety(client)
+    customer = client.post(
+        "/customers", json={"name": "Juana", "phone": "11 2345-6789"}
+    ).json()
+
+    owing = client.post(
+        "/sales",
+        json={
+            "customer_id": customer["id"],
+            "payment": "owing",
+            "lines": [{"variety_id": variety_id, "grams": "1"}],
+        },
+    ).json()
+    paid = client.post(
+        "/sales",
+        json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": "1"}]},
+    ).json()
+
+    owing_detail = client.get(f"/sales/{owing['id']}").json()
+    paid_detail = client.get(f"/sales/{paid['id']}").json()
+    assert owing_detail["still_owing"] is True
+    assert paid_detail["still_owing"] is False
+    assert_matches_fixture(owing_detail, "sale-detail")
+    assert_matches_fixture(paid_detail, "sale-detail")

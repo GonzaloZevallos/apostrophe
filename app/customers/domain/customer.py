@@ -8,10 +8,11 @@ search or sort; the table that stores customers keeps no folded copy.
 
 from __future__ import annotations
 
-import unicodedata
 from dataclasses import dataclass
 from enum import StrEnum
 from typing import ClassVar
+
+from app.shared.names import fold
 
 NAME_MAX_LENGTH = 60
 
@@ -43,14 +44,6 @@ class CustomerNameTooLong(CustomerRuleBroken):
 
     def __init__(self) -> None:
         super().__init__(f"a customer name has at most {NAME_MAX_LENGTH} characters")
-
-
-def fold(text: str) -> str:
-    """NFKD, combining marks dropped, casefolded, whitespace collapsed to single
-    spaces and trimmed. The one way names are compared for search and sort."""
-    decomposed = unicodedata.normalize("NFKD", text)
-    without_marks = "".join(c for c in decomposed if not unicodedata.combining(c))
-    return " ".join(without_marks.casefold().split())
 
 
 @dataclass(frozen=True)

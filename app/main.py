@@ -23,6 +23,9 @@ from app.expenses.adapters.default_categories import ExpenseCategoriesOpening
 from app.expenses.adapters.router import router as expenses_router
 from app.http_errors import Refused
 from app.migrations.runner import upgrade_to_head
+from app.payments.adapters.router import customers_router as payments_customers_router
+from app.payments.adapters.router import router as payments_router
+from app.payments.adapters.settlements import SqlBalances, SqlOwingSales
 from app.sales.adapters.router import router as sales_router
 from app.settings import Settings
 from app.static_spa import MissingBuiltFront, SpaStatic, api_segments
@@ -84,6 +87,13 @@ def create_app(
     # `get_business_opening` already does for `business_opening` — not added here, so
     # this line is the one seam the sales-costs subtask reaches it through.
     app.state.line_costs = SqlLineCosts
+    # Two more factories of the same shape: customers reaches a balance, and sales a
+    # "still owing" mark, only through `Balances`/`OwingSales`, never `app.payments`
+    # directly (the plan's invariant). `app/customers/adapters/router.py` and
+    # `app/sales/adapters/router.py` build these over the request's own `Session` and
+    # business, the way `get_line_costs` already does for `line_costs`.
+    app.state.balances = SqlBalances
+    app.state.owing_sales = SqlOwingSales
 
     @app.get("/health", tags=["health"])
     def health() -> dict[str, str]:
@@ -99,6 +109,8 @@ def create_app(
     app.include_router(expenses_router, dependencies=gated)
     app.include_router(sales_router, dependencies=gated)
     app.include_router(stock_router, dependencies=gated)
+    app.include_router(payments_router, dependencies=gated)
+    app.include_router(payments_customers_router, dependencies=gated)
 
     if settings.web_dist is not None:
         if not (settings.web_dist / "index.html").is_file():

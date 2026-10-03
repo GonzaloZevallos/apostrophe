@@ -19,7 +19,8 @@ from sqlalchemy.engine import CursorResult
 from sqlalchemy.orm import Session
 
 from app.customers.adapters.tables import CustomerRow
-from app.sales.adapters.tables import PaymentRow, SaleLineRow, SaleRow
+from app.payments.adapters.tables import PaymentRow
+from app.sales.adapters.tables import SaleLineRow, SaleRow
 from app.sales.application.ports import SaleView, SaleViewCustomer, SaleViewLine
 from app.sales.domain.pricing import PricingRule
 from app.sales.domain.sale import (

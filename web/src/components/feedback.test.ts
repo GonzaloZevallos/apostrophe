@@ -22,10 +22,10 @@ test('accepts a toast from the closed set', () => {
   })
 })
 
-test('accepts "Venta eliminada", added to the closed set for Borrar venta and Deshacer', () => {
-  expect(readFeedback({ toast: 'Venta eliminada' })).toEqual({
+test('accepts "Venta eliminada · los gramos vuelven al stock", added to the closed set for Borrar venta and Deshacer', () => {
+  expect(readFeedback({ toast: 'Venta eliminada · los gramos vuelven al stock' })).toEqual({
     kind: 'toast',
-    message: 'Venta eliminada',
+    message: 'Venta eliminada · los gramos vuelven al stock',
   })
 })
 

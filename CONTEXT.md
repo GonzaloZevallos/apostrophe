@@ -116,14 +116,14 @@ _In the app_: Nota
 _Avoid_: comment, description, memo
 
 **Payment**:
-Money a customer hands over on a date, in cash or by transfer.
+Money a customer hands over on a date, in cash or by transfer, with no note. Either an on-the-spot payment recorded with its sale, or a later payment recorded through Registrar cobro. Its date, amount and method never change; it is deleted and recorded again, never edited.
+_Avoid_: collection, settlement, receipt, abono
 _In the app_: Cobro
-_Avoid_: collection, settlement, receipt
 
 **Balance**:
-What a customer owes: what they bought and did not pay, minus their payments. A payment always settles the oldest debt first.
+What a customer owes: what they bought and did not pay, minus their payments, worked out live. A later payment always settles the oldest debt first. Below zero it is a credit. _In the app_: Te debe.
+_Avoid_: debt account, tab, cuenta corriente
 _In the app_: Cuenta corriente / Debe
-_Avoid_: debt account, tab, credit
 
 **Owing since**:
 The date of a customer's oldest sale that is not fully paid.
@@ -237,3 +237,23 @@ _Avoid_: crop, yield, production
 **Adjustment**:
 A stock entry recording the difference between a physical count and the stock the app shows, plus or minus. A negative adjustment carries no cost and takes its grams out of the oldest lots, as grams going out do. _In the app_: Ajuste.
 _Avoid_: correction, recount, shrinkage, write-off
+
+**On-the-spot payment**:
+The payment recorded together with a sale paid in full in cash or by transfer. It settles that sale alone, never an older debt, and is deleted only with its sale. _In the app_: Pagada por efectivo / Pagada por transferencia.
+_Avoid_: cash sale, immediate payment
+
+**Settlement**:
+Which sales a later payment covers: the customer's oldest debt first (sales by date, then recording order; payments by date, then recording order), whatever the payment's own date. It is worked out live from the sales and payments as they stand now, and never stored. _In the app_: A cuenta de la venta del dd/mm.
+_Avoid_: allocation, application, imputación
+
+**Credit**:
+A balance below zero, left only when a sale that payments had settled is deleted; recording never creates one. It applies automatically to the customer's next sales left owing and counts in no debt figure. _In the app_: A favor.
+_Avoid_: refund, saldo a favor, overpayment
+
+**Sales still owing**:
+Every sale of a business that is not fully paid once settlement is applied, partially paid ones included, each counted once. _In the app_: te debe (in Ventas) and the count in Te deben.
+_Avoid_: unpaid orders, pending sales, open invoices
+
+**Total owed**:
+The sum of every customer's balance above $0 in a business; credits never subtract from it. _In the app_: the total heading Te deben and in Clientes' header.
+_Avoid_: receivables, outstanding

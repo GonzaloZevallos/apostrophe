@@ -17,6 +17,7 @@ HEXAGON_ROOTS = (
     REPO_ROOT / "app" / "varieties",
     REPO_ROOT / "app" / "customers",
     REPO_ROOT / "app" / "expenses",
+    REPO_ROOT / "app" / "payments",
     REPO_ROOT / "app" / "sales",
     REPO_ROOT / "app" / "stock",
 )

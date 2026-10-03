@@ -36,6 +36,7 @@ import { GONE_NOTICE } from '../api/refusals'
 export const TOAST_MESSAGES = [
   'Cliente guardado',
   'Venta eliminada',
+  'Venta eliminada · los gramos vuelven al stock',
   'Entrada guardada',
   'Entrada eliminada',
 ] as const

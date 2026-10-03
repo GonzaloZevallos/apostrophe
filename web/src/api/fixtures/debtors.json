@@ -1,0 +1,12 @@
+{
+  "total_owed": 37000,
+  "sales_owing_count": 4,
+  "debtors": [
+    {
+      "customer": { "id": 1, "name": "Ana Pérez" },
+      "balance": 15000,
+      "owing_since": "2026-09-14",
+      "standing": "owes"
+    }
+  ]
+}
