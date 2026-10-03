@@ -79,7 +79,9 @@ def test_draws_take_from_the_oldest_lot_first() -> None:
     assert refs == [1, 2]
 
 
-def test_a_later_lot_covers_grams_pending_from_an_earlier_draw() -> None:
+def test_grams_past_every_lot_stay_pending_through_further_draws() -> None:
+    """With no further lot recorded, a draw past the lots' own grams and every draw
+    after it both stay pending — `allocate` never invents a lot to cover them."""
     draws = [_draw(1, "10"), _draw(2, "5")]
     lots = [_lot(1, "8", 800, day=DAY)]
 
@@ -89,6 +91,22 @@ def test_a_later_lot_covers_grams_pending_from_an_earlier_draw() -> None:
     assert first.pending == Grams.of("2")
     assert second.costed is None
     assert second.pending == Grams.of("5")
+
+
+def test_a_later_dated_lot_still_covers_an_earlier_draws_pending_grams() -> None:
+    """A lot's own date does not have to come before a draw it covers: `allocate`
+    draws from lots strictly in lot order, never comparing a lot's date to a draw's
+    own (PRD: "A later entry of any origin covers them in date order, wherever its
+    date falls")."""
+    lots = [_lot(1, "8", 800, day=DAY), _lot(2, "5", 500, day=date(2026, 9, 5))]
+    draws = [_draw(1, "10", day=date(2026, 9, 2))]
+
+    [result] = allocate(lots, draws)
+
+    # 8g from lot 1 (its whole 800) + 2g from lot 2 (2/5 of 500 = 200): 1000, none
+    # pending, even though lot 2 is dated after the draw.
+    assert result.costed == 1_000
+    assert result.pending == Grams.of("0")
 
 
 def test_a_used_up_lot_sums_to_exactly_its_cost_over_several_draws() -> None:
@@ -101,7 +119,20 @@ def test_a_used_up_lot_sums_to_exactly_its_cost_over_several_draws() -> None:
     assert sum(result.costed or 0 for result in results) == 1_000
 
 
-def test_negative_adjustment_draws_consume_lots_the_same_way() -> None:
+def test_a_single_draw_spanning_two_lots_is_rounded_once_not_lot_by_lot() -> None:
+    """10/3 does not divide evenly. Rounding each lot's own share separately (lot 1's
+    full 3g at a rounded $3/g = 9, plus lot 2's 1g at the same rounded rate = 3) would
+    answer 12; the correct exact-until-the-end accounting answers 13."""
+    lots = [_lot(1, "3", 10), _lot(2, "3", 10)]
+    draws = [_draw(1, "4")]
+
+    [result] = allocate(lots, draws)
+
+    assert result.costed == 13
+    assert result.pending == Grams.of("0")
+
+
+def test_a_negative_adjustment_draw_is_costed_like_a_sale_line() -> None:
     # A negative adjustment is just a `Draw`, like a sale line.
     lots = [_lot(1, "10", 1_000)]
     draws = [_draw(1, "3")]
@@ -141,6 +172,7 @@ def test_allocation_conserves_every_lot_over_many_random_sequences() -> None:
         _assert_lot_conservation(lots, results)
         _assert_pending_is_never_a_zero_cost(results)
         _assert_draw_grams_are_fully_accounted_for(draws, results)
+        _assert_the_rounded_total_conserves_the_lots_cost(lots, draws, results)
 
 
 def _assert_lot_conservation(lots: list[Lot], results: list[DrawCost]) -> None:
@@ -177,3 +209,19 @@ def _assert_draw_grams_are_fully_accounted_for(draws: list[Draw], results: list[
     for draw, result in zip(draws, results, strict=True):
         taken = sum(lot_draw.grams.hundredths for lot_draw in result.lot_draws)
         assert taken + result.pending.hundredths == draw.grams.hundredths
+
+
+def _assert_the_rounded_total_conserves_the_lots_cost(
+    lots: list[Lot], draws: list[Draw], results: list[DrawCost]
+) -> None:
+    """The field production actually reads (`DrawCost.costed`, rounded), not just the
+    test-only exact `LotDraw.cost` fractions: summed over every draw, it never exceeds
+    what the lots carry, and lands on exactly that total once every lot is drawn."""
+    costed_total = sum(result.costed or 0 for result in results)
+    priced_total = sum(lot.total_cost for lot in lots if lot.total_cost is not None)
+    assert costed_total <= priced_total
+
+    total_lot_grams = sum(lot.grams.hundredths for lot in lots)
+    total_draw_grams = sum(draw.grams.hundredths for draw in draws)
+    if total_draw_grams >= total_lot_grams:
+        assert costed_total == priced_total
