@@ -66,4 +66,28 @@ describe('findForbiddenUsages', () => {
 
     expect(violations).toEqual([])
   })
+
+  test('flags optional-chained and bracket-notation navigator.clipboard too', () => {
+    const violations = findForbiddenUsages([
+      { path: 'src/screens/Catalogo.tsx', content: 'navigator?.clipboard?.writeText(text)' },
+      { path: 'src/screens/Negocio.tsx', content: 'navigator["clipboard"].writeText(text)' },
+    ])
+
+    expect(violations.map((v) => v.path)).toEqual([
+      'src/screens/Catalogo.tsx',
+      'src/screens/Negocio.tsx',
+    ])
+    expect(violations.every((v) => v.rule === 'navigatorClipboard')).toBe(true)
+  })
+
+  test('a file merely named clipboard.ts elsewhere than src/clipboard.ts is not exempt', () => {
+    const violations = findForbiddenUsages([
+      {
+        path: 'src/screens/clipboard.ts',
+        content: "navigator.clipboard.writeText(text); document.execCommand('copy')",
+      },
+    ])
+
+    expect(violations.map((v) => v.rule).sort()).toEqual(['execCommand', 'navigatorClipboard'])
+  })
 })

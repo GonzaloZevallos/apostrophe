@@ -18,6 +18,10 @@ afterEach(() => {
   vi.unstubAllGlobals()
   Reflect.deleteProperty(window, 'isSecureContext')
   Reflect.deleteProperty(navigator, 'clipboard')
+  // Each `execCommand` test assigns its own stub as an own property of `document`;
+  // deleting it afterwards uncovers jsdom's own `execCommand` again, instead of
+  // leaving the last test's stub in place for every file after this one.
+  Reflect.deleteProperty(document, 'execCommand')
 })
 
 test('a secure context with the Clipboard API writes through it and resolves true', async () => {

@@ -39,13 +39,13 @@ const RULES: Rule[] = [
   { name: 'fetchHandler', pattern: /addEventListener\(\s*['"]fetch['"]/ },
   {
     name: 'navigatorClipboard',
-    pattern: /\bnavigator\.clipboard\b/,
-    allow: (path) => path.endsWith('clipboard.ts'),
+    pattern: /\bnavigator\s*\??\.\s*clipboard\b|\bnavigator\s*\[\s*(['"])clipboard\1\s*\]/,
+    allow: (path) => path === 'src/clipboard.ts',
   },
   {
     name: 'execCommand',
     pattern: /\bexecCommand\s*\(/,
-    allow: (path) => path.endsWith('clipboard.ts'),
+    allow: (path) => path === 'src/clipboard.ts',
   },
 ]
 
