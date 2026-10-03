@@ -34,6 +34,7 @@ Success criteria:
   - It is trimmed, and every run of whitespace, line breaks included, collapses to one space.
   - It holds up to 200 characters.
   - Empty means none, and the line is left out.
+  - `*` is allowed (see Bold markers).
 - **Shown**: yes or no.
   - Yes by default for a new variety.
   - Yes for every variety that existed when the catalog shipped.
@@ -65,11 +66,20 @@ Success criteria:
 - **Freshness**: the text is computed on every open from the data as it stands. Nothing is stored, and the screen does not update itself while open.
 - **Nothing qualifies**: there is no text, and the screen says nothing is in the catalog today.
 
+### Bold markers
+
+- **Allowed everywhere**: a seller may type `**` in the header, the footer, the aroma and the variety name. No field refuses `*`.
+- **Kept as typed**: the text keeps every marker exactly as typed. Nothing is escaped or stripped, including when a name that contains `**` is wrapped in the app's own `**`.
+- **Pairing rule**: whatever renders the text reads `**` markers left to right and pairs them in order.
+  - The text between each pair is bold, and that pair's markers are hidden.
+  - A final unpaired `**` shows as typed.
+  - This holds for the preview here and for the Telegram bot (#10).
+
 ### On screen (Catálogo)
 
 - **Más entry**: "Catálogo · El mensaje de hoy, listo para copiar".
 - **"Cómo se ve en Telegram"**: the text as a customer reads it.
-  - What sits between `**…**` is bold, and the markers are hidden.
+  - Bold follows the pairing rule above.
   - Every other line, break, emoji and price is identical to the copied text.
   - It shows the empty state when nothing qualifies.
 - **Copiar**:
@@ -104,12 +114,14 @@ Success criteria:
   - aroma or none;
   - bulk or none, with a whole and a fractional bulk minimum;
   - amounts with thousands;
-  - a blank header and a blank footer.
+  - a blank header and a blank footer;
+  - a seller's own `**` in the header, the aroma and a name, including an unpaired one.
 
   0 mismatches.
+- **Bold pairing**: the preview, with markers removed, equals the copied text. Bold falls between pairs read left to right, and an unpaired final `**` shows as typed. 100% passing.
 - **Inclusion (criterion 2)**: a matrix of shown/hidden × price/no price today × no entries, sold out, low and ok. Only shown + priced + stock above 0 appears. 100% passing.
 - **Reasons (criterion 4)**: exactly one reason per out variety, in priority order, told by word. 100% passing.
-- **No curl (criterion 3)**: the end-to-end front run opens Más → Catálogo, edits attributes, header and footer, then taps Copiar. The clipboard equals the API's text, and the preview with markers removed equals it too.
+- **No curl (criterion 3)**: the end-to-end front run opens Más → Catálogo, edits attributes, header and footer, then taps Copiar. The clipboard equals the API's text.
 - **Speed (criterion 3)**: the screen answers in under 300 ms with a few dozen varieties.
 - **Isolation (criterion 5)**: every catalog route is in the sweep and answers 404 or empty from another business.
 - **No echo**: no refusal or log line contains the header, footer, aroma or emoji typed.
@@ -120,5 +132,6 @@ Success criteria:
 - A custom variety order.
 - Restoring the default header or footer.
 - Stock figures in the text.
+- Escaping or refusing a seller's own `**` markers.
 - Live updates between partners while the screen is open.
 - Editing catalog attributes from Variedad detail.
