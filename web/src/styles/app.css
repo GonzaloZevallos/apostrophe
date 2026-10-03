@@ -292,10 +292,42 @@
   min-width: 0;
 }
 
-/* The phone first; the side rail replaces the bottom bar on a computer (plan,
- * "Shell"). A pure CSS switch: both markups exist, one is hidden either way, so a
- * screen reader never finds the hidden one (ADR-independent — `display: none` drops
- * it from the accessibility tree too). */
+.encabezado__fila {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-sm);
+}
+
+.encabezado__volver {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--alto-tocable);
+  height: var(--alto-tocable);
+  margin-left: calc(-1 * var(--espacio-sm));
+  border-radius: var(--radio-pildora);
+  color: var(--tinta);
+  text-decoration: none;
+  font-size: 20px;
+}
+
+/* The design's own toast colours (`Estados.dc.html`, "Avisos al guardar"): the
+ * same ink/paper pair the primary button uses, never the amber warning tone
+ * `SinConexion`/`ErrorGenerico` carry — a success must not read as a warning. */
+.aviso-exito {
+  background: var(--boton);
+  color: var(--boton-texto);
+  border-radius: var(--radio-campo);
+  padding: var(--espacio-md) var(--espacio-lg);
+  display: flex;
+  align-items: center;
+}
+
+.aviso-exito__texto {
+  font-size: 15px;
+  font-weight: 500;
+}
+
 .negocio__lista {
   list-style: none;
   margin: var(--espacio-sm) 0 0;
@@ -354,6 +386,10 @@
   flex: 1;
 }
 
+/* The phone first; the side rail replaces the bottom bar on a computer (plan,
+ * "Shell"). A pure CSS switch: both markups exist, one is hidden either way, so a
+ * screen reader never finds the hidden one (ADR-independent — `display: none` drops
+ * it from the accessibility tree too). */
 @media (min-width: 900px) {
   .bar-inferior {
     display: none;

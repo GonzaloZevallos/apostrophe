@@ -27,6 +27,12 @@ interface ErrorBody {
   code?: unknown
 }
 
+/** The sentinel `ApiError.code` carries when a refused response's body has no
+ * recognised `code` of its own — a 500, above all. Exported so a screen can name
+ * it instead of repeating the bare string literal (review finding, business-screen:
+ * nothing held it, so a rename here would have silently gone unnoticed). */
+export const UNKNOWN_CODE = 'unknown'
+
 async function send<T>(method: string, path: string, body?: unknown): Promise<T> {
   let response: Response
   try {
@@ -41,7 +47,7 @@ async function send<T>(method: string, path: string, body?: unknown): Promise<T>
   }
   if (!response.ok) {
     const parsed: ErrorBody = await response.json().catch(() => ({}) as ErrorBody)
-    const code = typeof parsed.code === 'string' ? parsed.code : 'unknown'
+    const code = typeof parsed.code === 'string' ? parsed.code : UNKNOWN_CODE
     throw new ApiError(response.status, code)
   }
   if (response.status === 204) return undefined as T

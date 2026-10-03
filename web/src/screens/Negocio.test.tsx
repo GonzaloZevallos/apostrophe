@@ -11,7 +11,8 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import type { Me } from '../api/me'
-import Negocio, { BUSINESS_NAME_INVALID_MESSAGE, RENAME_SUCCESS } from './Negocio'
+import { SIN_CONEXION_TITULO } from '../components/SinConexion'
+import Negocio, { BUSINESS_NAME_INVALID_MESSAGE, RENAME_SUCCESS, RETRY_MESSAGE } from './Negocio'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -30,19 +31,22 @@ function Provide() {
   return <Outlet context={ME} />
 }
 
-function renderNegocio(fetchMock: ReturnType<typeof vi.fn>) {
+function renderNegocio(fetchMock: ReturnType<typeof vi.fn>): QueryClient {
   vi.stubGlobal('fetch', fetchMock)
+  const queryClient = new QueryClient()
   render(
-    <QueryClientProvider client={new QueryClient()}>
+    <QueryClientProvider client={queryClient}>
       <MemoryRouter initialEntries={['/negocio']}>
         <Routes>
           <Route element={<Provide />}>
             <Route path="/negocio" element={<Negocio />} />
           </Route>
+          <Route path="/entrar" element={<div>Pantalla de entrada</div>} />
         </Routes>
       </MemoryRouter>
     </QueryClientProvider>,
   )
+  return queryClient
 }
 
 afterEach(() => {
@@ -120,19 +124,70 @@ test('"Invitá a un socio" shows the fresh link on screen instead of a toast', a
   await userEvent.click(await screen.findByRole('button', { name: 'Invitá a un socio' }))
 
   expect(await screen.findByText('https://apostrophe.app/invitation/abc123')).toBeInTheDocument()
+  expect(await screen.findByText('Un link de un solo uso, vence el 09/10')).toBeInTheDocument()
   expect(screen.queryByText('Invitación lista')).not.toBeInTheDocument()
 })
 
-test('logging out posts to /auth/logout and clears the cache before navigating', async () => {
+test('a dropped network while renaming shows "Sin conexión", never the generic retry', async () => {
+  const fetchMock = vi.fn((_url: string, init?: RequestInit) => {
+    if (init?.method === 'PATCH') return Promise.reject(new TypeError('network error'))
+    return Promise.resolve(jsonResponse(200, BUSINESS))
+  })
+  renderNegocio(fetchMock)
+
+  const input = await screen.findByLabelText('Nombre del negocio')
+  await userEvent.clear(input)
+  await userEvent.type(input, 'La Huerta Nueva')
+  await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+
+  expect(await screen.findByText(SIN_CONEXION_TITULO)).toBeInTheDocument()
+  expect(screen.queryByText(RETRY_MESSAGE)).not.toBeInTheDocument()
+  expect(screen.queryByText(RENAME_SUCCESS)).not.toBeInTheDocument()
+})
+
+test('a dropped network while inviting shows "Sin conexión", never the generic retry', async () => {
+  const fetchMock = vi.fn((url: string, init?: RequestInit) => {
+    if (init?.method === 'POST' && url === '/invitations') {
+      return Promise.reject(new TypeError('network error'))
+    }
+    return Promise.resolve(jsonResponse(200, BUSINESS))
+  })
+  renderNegocio(fetchMock)
+
+  await userEvent.click(await screen.findByRole('button', { name: 'Invitá a un socio' }))
+
+  expect(await screen.findByText(SIN_CONEXION_TITULO)).toBeInTheDocument()
+  expect(screen.queryByText(RETRY_MESSAGE)).not.toBeInTheDocument()
+})
+
+test('logging out posts to /auth/logout, clears the query cache and navigates to Entrar', async () => {
   const calls: string[] = []
   const fetchMock = vi.fn((url: string, init?: RequestInit) => {
     calls.push(`${init?.method ?? 'GET'} ${url}`)
     if (url === '/auth/logout') return Promise.resolve(noContent())
     return Promise.resolve(jsonResponse(200, BUSINESS))
   })
-  renderNegocio(fetchMock)
+  const queryClient = renderNegocio(fetchMock)
+  await screen.findByDisplayValue('La Huerta')
+  queryClient.setQueryData(['something-else'], { stale: true })
 
   await userEvent.click(await screen.findByRole('button', { name: 'Cerrar sesión' }))
 
+  expect(await screen.findByText('Pantalla de entrada')).toBeInTheDocument()
   expect(calls).toContain('POST /auth/logout')
+  expect(queryClient.getQueryData(['something-else'])).toBeUndefined()
+})
+
+test('a dropped network while logging out shows "Sin conexión" and re-enables the button', async () => {
+  const fetchMock = vi.fn((url: string) => {
+    if (url === '/auth/logout') return Promise.reject(new TypeError('network error'))
+    return Promise.resolve(jsonResponse(200, BUSINESS))
+  })
+  renderNegocio(fetchMock)
+
+  const button = await screen.findByRole('button', { name: 'Cerrar sesión' })
+  await userEvent.click(button)
+
+  expect(await screen.findByText(SIN_CONEXION_TITULO)).toBeInTheDocument()
+  expect(button).not.toBeDisabled()
 })

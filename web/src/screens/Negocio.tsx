@@ -8,8 +8,11 @@
  * (`accounts.md`, "Feedback") with no name or id in it — the toast is a constant
  * string, never built from the response. A rejected name (`account.business_name_
  * invalid`) shows inline and keeps what was typed, dispatched through `refusals.ts`
- * (`resolveOverride`/`kindOf`), never a raw `caught.code === '…'` comparison.
- * "Invitá a un socio" shows the fresh link right on the screen, which is why it
+ * (`resolveOverride`/`kindOf`), never a raw `caught.code === '…'` comparison. A
+ * dropped network on either action shows "Sin conexión" (`accounts.md`, "No
+ * network"), never the generic retry, which would wrongly blame the server.
+ * "Invitá a un socio" shows the fresh link right on the screen, in the design's own
+ * words ("Un link de un solo uso, vence el …" — `Negocio.dc.html`), which is why it
  * gets no toast of its own ("Invitación lista", unless the link is shown on the
  * screen, which already confirms it — `accounts.md`). Logging out reuses
  * `session.logOut`, the one place every session boundary clears the query cache
@@ -18,8 +21,8 @@
 
 import { type FormEvent, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useNavigate, useOutletContext } from 'react-router'
-import { ApiError, NetworkError, get, patch, post } from '../api/client'
+import { Link, useNavigate, useOutletContext } from 'react-router'
+import { ApiError, NetworkError, UNKNOWN_CODE, get, patch, post } from '../api/client'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import SinConexion from '../components/SinConexion'
 import { invalidateResource, keys } from '../api/keys'
@@ -62,14 +65,17 @@ export default function Negocio() {
 
   const [name, setName] = useState<string | null>(null)
   const [nameError, setNameError] = useState<string | null>(null)
+  const [nameOffline, setNameOffline] = useState(false)
   const [savingName, setSavingName] = useState(false)
   const [renamed, setRenamed] = useState(false)
 
   const [invite, setInvite] = useState<Invite | null>(null)
   const [invitePending, setInvitePending] = useState(false)
   const [inviteError, setInviteError] = useState(false)
+  const [inviteOffline, setInviteOffline] = useState(false)
 
   const [loggingOut, setLoggingOut] = useState(false)
+  const [logoutOffline, setLogoutOffline] = useState(false)
 
   if (isPending) return <main className="pantalla" />
 
@@ -88,12 +94,14 @@ export default function Negocio() {
   function onNameChange(value: string): void {
     setName(value)
     setNameError(null)
+    setNameOffline(false)
     setRenamed(false)
   }
 
   async function onRename(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault()
     setNameError(null)
+    setNameOffline(false)
     setRenamed(false)
     setSavingName(true)
     try {
@@ -102,11 +110,13 @@ export default function Negocio() {
       setName(updated.name)
       setRenamed(true)
     } catch (caught) {
-      if (caught instanceof ApiError) {
+      if (caught instanceof NetworkError) {
+        setNameOffline(true)
+      } else if (caught instanceof ApiError) {
         const message = resolveOverride(RENAME_OVERRIDES, caught.code)
         if (message !== undefined) {
           setNameError(message)
-        } else if (caught.code !== 'unknown' && kindOf(caught.code) === 'refusal') {
+        } else if (caught.code !== UNKNOWN_CODE && kindOf(caught.code) === 'refusal') {
           setNameError(GENERIC_REFUSAL_MESSAGE)
         } else {
           setNameError(ERROR_GENERICO_MENSAJE)
@@ -121,12 +131,17 @@ export default function Negocio() {
 
   async function onInvite(): Promise<void> {
     setInviteError(false)
+    setInviteOffline(false)
     setInvitePending(true)
     try {
       const issued = await post<Invite>('/invitations')
       setInvite(issued)
-    } catch {
-      setInviteError(true)
+    } catch (caught) {
+      if (caught instanceof NetworkError) {
+        setInviteOffline(true)
+      } else {
+        setInviteError(true)
+      }
     } finally {
       setInvitePending(false)
     }
@@ -134,27 +149,51 @@ export default function Negocio() {
 
   async function onCopy(): Promise<void> {
     if (invite === null) return
-    await navigator.clipboard.writeText(invite.url)
+    try {
+      await navigator.clipboard.writeText(invite.url)
+    } catch {
+      // The link is already readable right on the screen; there is nothing more
+      // to show for a refused clipboard permission.
+    }
   }
 
   async function onShare(): Promise<void> {
     if (invite === null || typeof navigator.share !== 'function') return
-    await navigator.share({ url: invite.url })
+    try {
+      await navigator.share({ url: invite.url })
+    } catch {
+      // Cancelling the phone's share sheet rejects the promise; that is not a
+      // failure worth a message of its own.
+    }
   }
 
   async function onLogOut(): Promise<void> {
     setLoggingOut(true)
-    await logOut({ queryClient, navigate })
+    setLogoutOffline(false)
+    try {
+      await logOut({ queryClient, navigate })
+    } catch (caught) {
+      if (caught instanceof NetworkError) setLogoutOffline(true)
+    } finally {
+      setLoggingOut(false)
+    }
   }
 
   return (
     <main className="pantalla">
       <div className="cuerpo">
-        <span className="encabezado__titulo">Negocio</span>
+        <div className="encabezado__fila">
+          <Link to="/mas" aria-label="Volver" className="encabezado__volver">
+            ‹
+          </Link>
+          <span className="encabezado__titulo">Negocio</span>
+        </div>
 
         {renamed && (
           <div className="aviso-flotante" role="status">
-            <span className="aviso-ambar__titulo">{RENAME_SUCCESS}</span>
+            <div className="aviso-exito">
+              <span className="aviso-exito__texto">{RENAME_SUCCESS}</span>
+            </div>
           </div>
         )}
 
@@ -177,6 +216,7 @@ export default function Negocio() {
           <button className="boton" type="submit" disabled={savingName}>
             Guardar
           </button>
+          {nameOffline && <SinConexion />}
         </form>
 
         <div className="negocio__usuarios">
@@ -208,16 +248,18 @@ export default function Negocio() {
                 </button>
               </div>
               <span className="campo__rotulo">
-                Vence el {formatDateShort(invite.expires_at.slice(0, 10))}
+                Un link de un solo uso, vence el {formatDateShort(invite.expires_at.slice(0, 10))}
               </span>
             </>
           )}
+          {inviteOffline && <SinConexion />}
           {inviteError && <ErrorGenerico />}
         </div>
 
         <button className="boton" type="button" onClick={onLogOut} disabled={loggingOut}>
           Cerrar sesión
         </button>
+        {logoutOffline && <SinConexion />}
       </div>
     </main>
   )
