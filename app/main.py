@@ -31,6 +31,7 @@ from app.payments.adapters.results_ports import SqlDebtSummary, SqlPaymentsRecei
 from app.payments.adapters.router import customers_router as payments_customers_router
 from app.payments.adapters.router import router as payments_router
 from app.payments.adapters.settlements import SqlBalances, SqlOwingSales
+from app.results.adapters.router import router as results_router
 from app.sales.adapters.period_sales import SqlPeriodSales
 from app.sales.adapters.router import router as sales_router
 from app.settings import Settings
@@ -172,6 +173,7 @@ def create_app(
     app.include_router(catalog_router, dependencies=gated)
     app.include_router(payments_router, dependencies=gated)
     app.include_router(payments_customers_router, dependencies=gated)
+    app.include_router(results_router, dependencies=gated)
 
     if settings.web_dist is not None:
         if not (settings.web_dist / "index.html").is_file():
