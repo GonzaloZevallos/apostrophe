@@ -113,7 +113,7 @@ test('a gone sale shows the plain gone-detail state, never the generic retry', a
   expect(screen.getByRole('link', { name: 'Volver a Ventas' })).toHaveAttribute('href', '/ventas')
 })
 
-test('Borrar venta asks "Antes de borrar" naming the date, the amount and the grams, then deletes, returns to Ventas and names the grams again', async () => {
+test('Borrar venta asks "Antes de borrar" naming the date, the amount and the grams returning to stock, then deletes and returns to Ventas with the plain toast', async () => {
   vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(200, SALE))
   vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(200, DELETED))
   renderDetalle()
@@ -130,9 +130,7 @@ test('Borrar venta asks "Antes de borrar" naming the date, the amount and the gr
     expect(fetch).toHaveBeenCalledWith('/sales/10', expect.objectContaining({ method: 'DELETE' })),
   )
   expect(await screen.findByText('lista de ventas')).toBeInTheDocument()
-  expect(
-    screen.getByText('Venta eliminada · los gramos vuelven al stock'),
-  ).toBeInTheDocument()
+  expect(await screen.findByText('Venta eliminada')).toBeInTheDocument()
 })
 
 test('cancelling the delete confirmation keeps the sale', async () => {
@@ -149,7 +147,7 @@ test('cancelling the delete confirmation keeps the sale', async () => {
   expect(fetch).toHaveBeenCalledTimes(1)
 })
 
-test('right after a save, "Venta guardada" shows with Deshacer, which deletes the sale named by the route\'s own id with no confirmation and names the grams back on arrival', async () => {
+test('right after a save, Deshacer deletes the sale with no confirmation and names the grams going back to stock', async () => {
   vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(200, SALE))
   vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(200, DELETED))
   renderDetalle(saleJustSaved())

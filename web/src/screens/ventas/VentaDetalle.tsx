@@ -76,6 +76,9 @@ function deleteTitle(sale: SaleDetail): string {
   return `¿Borrás la venta de ${money} del ${day}? Vuelven ${grams} al stock.`
 }
 
+const DELETE_TOAST = 'Venta eliminada'
+const UNDO_TOAST = 'Venta eliminada · los gramos vuelven al stock'
+
 export default function VentaDetalle() {
   const { id } = useParams<{ id: string }>()
   const saleId = id ?? ''
@@ -168,7 +171,7 @@ export default function VentaDetalle() {
     }
   }
 
-  async function removeSale(): Promise<void> {
+  async function removeSale(reason: 'borrar' | 'deshacer'): Promise<void> {
     setDeleting(true)
     setDeleteOffline(false)
     setDeleteFailed(false)
@@ -179,9 +182,12 @@ export default function VentaDetalle() {
       // would only answer 404. Ventas still gets a fresh list on its next mount,
       // since the invalidated query is left stale.
       invalidateResource(queryClient, 'sales', { refetchType: 'none' })
+      // Deshacer's own toast names the grams going back to stock (sales.md, PM
+      // adjustment 4); the explicit "Borrar venta" confirmation already named them
+      // in its question, so its toast stays the plain, existing one.
       navigate('/ventas', {
         replace: true,
-        state: toast('Venta eliminada · los gramos vuelven al stock'),
+        state: toast(reason === 'deshacer' ? UNDO_TOAST : DELETE_TOAST),
       })
     } catch (caught) {
       if (caught instanceof ApiError && isGone(caught.code)) {
@@ -238,7 +244,7 @@ export default function VentaDetalle() {
               type="button"
               className="venta-guardada__deshacer"
               disabled={deleting}
-              onClick={() => void removeSale()}
+              onClick={() => void removeSale('deshacer')}
             >
               Deshacer
             </button>
@@ -341,7 +347,7 @@ export default function VentaDetalle() {
           confirmText="Sí, borrala"
           cancelText="No, dejala"
           onConfirm={() => {
-            if (!deleting) void removeSale()
+            if (!deleting) void removeSale('borrar')
           }}
           onCancel={() => setConfirmingDelete(false)}
         />

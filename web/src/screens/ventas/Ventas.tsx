@@ -145,7 +145,12 @@ export default function Ventas() {
                     )}
                   </span>
                   <span className="fila-venta__detalle">{varietiesSummary(sale.lines)}</span>
-                  <span className="fila-venta__monto">{formatMoney(sale.total)}</span>
+                  <span className="fila-venta__monto">
+                    <span className={sale.still_owing ? 'monto-deuda' : undefined}>
+                      {formatMoney(sale.total)}
+                    </span>
+                    {sale.still_owing && <span className="rotulo">te debe</span>}
+                  </span>
                 </Link>
               ))}
             </div>
