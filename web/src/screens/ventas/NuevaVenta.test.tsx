@@ -11,6 +11,7 @@
 import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
+import SALE_DETAIL from '../../api/fixtures/sale-detail.json'
 import App from '../../App'
 import { queryClient } from '../../queryClient'
 import { router } from '../../router'
@@ -125,16 +126,9 @@ test('Debiendo is disabled with no customer, enables once one is chosen, and res
 
 test('a successful save opens the sale the API answered with, replacing history', async () => {
   const user = userEvent.setup()
-  const savedSale = {
-    id: 42,
-    date: '2026-10-02',
-    customer: null,
-    shipping_charged: 0,
-    note: null,
-    payment: 'cash',
-    total: 2000,
-    lines: [],
-  }
+  // The API's own detail shape (`sale-detail.json`), not a hand-written stand-in:
+  // `VentaDetalle` renders `GET /sales/42`'s own answer, `total_grams` included.
+  const savedSale = { ...SALE_DETAIL, id: 42 }
   await openForm({
     'GET /auth/me': () => jsonResponse(200, ME),
     'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),

@@ -164,6 +164,7 @@ class SaleDetailOut(BaseModel):
     payment: PaymentOut
     total: int
     lines: list[SaleLineDetailOut]
+    total_grams: GramsOut
 
     @classmethod
     def of(cls, view: SaleView, costs: Sequence[LineCost]) -> "SaleDetailOut":
@@ -182,6 +183,7 @@ class SaleDetailOut(BaseModel):
                 SaleLineDetailOut.of(line, cost)
                 for line, cost in zip(view.lines, costs, strict=True)
             ],
+            total_grams=sale.total_grams.as_decimal(),
         )
 
 

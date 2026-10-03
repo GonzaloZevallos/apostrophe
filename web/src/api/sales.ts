@@ -57,6 +57,9 @@ export interface SaleDetailLine extends SaleLine {
 
 export interface SaleDetail extends Omit<Sale, 'lines'> {
   lines: SaleDetailLine[]
+  /** Every line's grams summed, gifts included (sales.md: named in the delete
+   * confirmation, "Vuelven N g al stock" — the front never adds this up itself). */
+  total_grams: number
 }
 
 /** The grams a deleted sale gave back to one variety's stock. */

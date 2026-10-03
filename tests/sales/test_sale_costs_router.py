@@ -87,6 +87,33 @@ def test_list_sales_never_carries_a_cost_field(client: TestClient) -> None:
     assert "cost" not in listed.json()[0]["lines"][0]
 
 
+def test_sale_detail_answers_total_grams_summed_over_every_line_gifts_included(
+    client: TestClient,
+) -> None:
+    """Left over from #20 (sales.md): the delete confirmation and Deshacer name the
+    grams returning to stock, from this field — never added up in the browser."""
+    variety_id = _variety(client)
+    _entry(client, variety_id, grams="20", total_cost=5_000)
+
+    response = client.post(
+        "/sales",
+        json={
+            "payment": "cash",
+            "lines": [
+                {"variety_id": variety_id, "grams": "10"},
+                {"variety_id": variety_id, "grams": "4", "gift": True},
+            ],
+        },
+    )
+    assert response.status_code == 201, response.text
+    sale_id = response.json()["id"]
+
+    detail = client.get(f"/sales/{sale_id}")
+
+    assert detail.status_code == 200, detail.text
+    assert detail.json()["total_grams"] == 14.0
+
+
 def test_recording_a_later_entry_moves_the_cost_the_next_time_it_is_read(
     client: TestClient,
 ) -> None:

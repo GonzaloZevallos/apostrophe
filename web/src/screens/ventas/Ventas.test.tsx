@@ -190,11 +190,13 @@ test('a dropped network shows Sin conexión, never the empty-list text', async (
   ).not.toBeInTheDocument()
 })
 
-test('arriving back from Borrar venta or Deshacer shows "Venta eliminada"', async () => {
+test('arriving back from Borrar venta or Deshacer shows "Venta eliminada · los gramos vuelven al stock"', async () => {
   vi.mocked(fetch).mockResolvedValue(jsonResponse(200, []))
-  renderVentas({ toast: 'Venta eliminada' })
+  renderVentas({ toast: 'Venta eliminada · los gramos vuelven al stock' })
 
-  expect(await screen.findByText('Venta eliminada')).toBeInTheDocument()
+  expect(
+    await screen.findByText('Venta eliminada · los gramos vuelven al stock'),
+  ).toBeInTheDocument()
 })
 
 test('arriving back after deleting an already-gone sale shows the gone notice', async () => {

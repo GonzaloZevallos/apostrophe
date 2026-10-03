@@ -69,8 +69,11 @@ const PAYMENT_LABEL: Record<Exclude<Sale['payment'], 'none'>, string> = {
   owing: 'Debiendo',
 }
 
-function deleteTitle(sale: Sale): string {
-  return `¿Borrás la venta de ${formatMoney(sale.total)} del ${formatDateShort(sale.date)}?`
+function deleteTitle(sale: SaleDetail): string {
+  const money = formatMoney(sale.total)
+  const day = formatDateShort(sale.date)
+  const grams = formatGrams(sale.total_grams)
+  return `¿Borrás la venta de ${money} del ${day}? Vuelven ${grams} al stock.`
 }
 
 export default function VentaDetalle() {
@@ -136,7 +139,9 @@ export default function VentaDetalle() {
       // one), so each line keeps the cost the detail already read: assigning a
       // customer never touches a line.
       queryClient.setQueryData<SaleDetail>(keys.sale(saleId), (current) =>
-        current === undefined ? current : { ...updated, lines: current.lines },
+        current === undefined
+          ? current
+          : { ...updated, lines: current.lines, total_grams: current.total_grams },
       )
       invalidateResource(queryClient, 'sales')
       setAssigned(true)
@@ -174,7 +179,10 @@ export default function VentaDetalle() {
       // would only answer 404. Ventas still gets a fresh list on its next mount,
       // since the invalidated query is left stale.
       invalidateResource(queryClient, 'sales', { refetchType: 'none' })
-      navigate('/ventas', { replace: true, state: toast('Venta eliminada') })
+      navigate('/ventas', {
+        replace: true,
+        state: toast('Venta eliminada · los gramos vuelven al stock'),
+      })
     } catch (caught) {
       if (caught instanceof ApiError && isGone(caught.code)) {
         invalidateResource(queryClient, 'sales', { refetchType: 'none' })
