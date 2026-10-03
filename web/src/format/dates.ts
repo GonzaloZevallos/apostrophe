@@ -72,3 +72,98 @@ export function shiftMonth(month: string, delta: number): string {
   const shiftedMonth = ((total % 12) + 12) % 12
   return `${String(shiftedYear).padStart(4, '0')}-${String(shiftedMonth + 1).padStart(2, '0')}`
 }
+
+/* ------------------------------------------------------------------ */
+/* Periods (plan, invariants): Hoy, Semana, Mes, Fechas' defaults and the form's max   */
+/* date are all computed here, on an API date's digits alone, from `me.today`, never  */
+/* `new Date()` or `Date.parse`. The day-count conversion below is Howard Hinnant's    */
+/* "days from/to civil" algorithm (proleptic Gregorian, integer arithmetic only), the  */
+/* same shape used to implement `Date` itself, just without constructing one.         */
+/* ------------------------------------------------------------------ */
+
+export interface DateRange {
+  start: string
+  end: string
+}
+
+function pad(n: number, width: number): string {
+  return String(n).padStart(width, '0')
+}
+
+function formatIso(year: number, month: number, day: number): string {
+  return `${pad(year, 4)}-${pad(month, 2)}-${pad(day, 2)}`
+}
+
+/** Days since 1970-01-01, proleptic Gregorian, for a `year`/`month`(1-12)/`day`. */
+function daysFromCivil(year: number, month: number, day: number): number {
+  const y = month <= 2 ? year - 1 : year
+  const era = Math.floor((y >= 0 ? y : y - 399) / 400)
+  const yoe = y - era * 400 // [0, 399]
+  const mp = (month + 9) % 12 // [0, 11]: Mar=0 .. Feb=11
+  const doy = Math.floor((153 * mp + 2) / 5) + day - 1 // [0, 365]
+  const doe = yoe * 365 + Math.floor(yoe / 4) - Math.floor(yoe / 100) + doy // [0, 146096]
+  return era * 146097 + doe - 719468
+}
+
+/** The inverse of `daysFromCivil`. */
+function civilFromDays(z: number): { year: number; month: number; day: number } {
+  const zAdj = z + 719468
+  const era = Math.floor((zAdj >= 0 ? zAdj : zAdj - 146096) / 146097)
+  const doe = zAdj - era * 146097 // [0, 146096]
+  const yoe =
+    Math.floor((doe - Math.floor(doe / 1460) + Math.floor(doe / 36524) - Math.floor(doe / 146096)) / 365) // [0, 399]
+  const y = yoe + era * 400
+  const doy = doe - (365 * yoe + Math.floor(yoe / 4) - Math.floor(yoe / 100)) // [0, 365]
+  const mp = Math.floor((5 * doy + 2) / 153) // [0, 11]
+  const day = doy - Math.floor((153 * mp + 2) / 5) + 1 // [1, 31]
+  const month = mp < 10 ? mp + 3 : mp - 9 // [1, 12]
+  const year = month <= 2 ? y + 1 : y
+  return { year, month, day }
+}
+
+function addDays(iso: string, delta: number): string {
+  const { year, month, day } = parseDate(iso)
+  const days = daysFromCivil(Number(year), Number(month), Number(day)) + delta
+  const civil = civilFromDays(days)
+  return formatIso(civil.year, civil.month, civil.day)
+}
+
+/** Monday = 0 .. Sunday = 6, from an API date's digits, with no `Date`. */
+function weekday(iso: string): number {
+  const { year, month, day } = parseDate(iso)
+  const days = daysFromCivil(Number(year), Number(month), Number(day))
+  // 1970-01-01 (days = 0) was a Thursday, index 3 in a Monday-first week.
+  return (((days + 3) % 7) + 7) % 7
+}
+
+/** "Hoy": today to today. */
+export function todayRange(todayIso: string): DateRange {
+  return { start: todayIso, end: todayIso }
+}
+
+/** "Semana": the Monday-to-Sunday week containing `todayIso`. */
+export function weekRange(todayIso: string): DateRange {
+  const start = addDays(todayIso, -weekday(todayIso))
+  const end = addDays(start, 6)
+  return { start, end }
+}
+
+/** "Mes", and the range Fechas opens with: the calendar month containing `todayIso`,
+ * first day to last. */
+export function monthRange(todayIso: string): DateRange {
+  const { year, month } = parseDate(todayIso)
+  const y = Number(year)
+  const m = Number(month)
+  const start = formatIso(y, m, 1)
+  // The day before the first of next month is always this month's last day.
+  const nextMonthFirst = m === 12 ? daysFromCivil(y + 1, 1, 1) : daysFromCivil(y, m + 1, 1)
+  const lastDay = civilFromDays(nextMonthFirst - 1)
+  const end = formatIso(lastDay.year, lastDay.month, lastDay.day)
+  return { start, end }
+}
+
+/** The form's own date field can never be later than today (sales.md: a sale cannot
+ * be dated in the future). */
+export function maxSaleDate(todayIso: string): string {
+  return todayIso
+}

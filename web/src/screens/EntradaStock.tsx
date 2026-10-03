@@ -15,7 +15,7 @@ import { Link, useNavigate, useOutletContext, useParams } from 'react-router'
 import { ApiError, NetworkError, UNKNOWN_CODE, get } from '../api/client'
 import { invalidateResource, keys } from '../api/keys'
 import type { Me } from '../api/me'
-import { GONE_NOTICE, isGone, resolveOverride, type RefusalCode } from '../api/refusals'
+import { isGone, resolveOverride, type RefusalCode } from '../api/refusals'
 import {
   type Origin,
   type StockEntry,
@@ -27,6 +27,7 @@ import {
 } from '../api/stock'
 import { costPerGram, gramsToHundredths } from '../domain/costPerGram'
 import ConfirmDialog from '../components/ConfirmDialog'
+import { gone, toast } from '../components/feedback'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import GoneScreen from '../components/GoneScreen'
 import SinConexion from '../components/SinConexion'
@@ -204,11 +205,11 @@ function EntradaStockBody({ mode, entryId, today, initial }: BodyProps) {
         await editEntry(entryId, body)
       }
       invalidateResource(queryClient, 'stock')
-      navigate('/mi-stock', { state: { toast: 'Entrada guardada' } })
+      navigate('/mi-stock', { state: toast('Entrada guardada') })
     } catch (caught) {
       if (caught instanceof ApiError && mode === 'editar' && isGone(caught.code)) {
         invalidateStockAfterDeleting(queryClient, entryId)
-        navigate('/mi-stock', { state: { notice: GONE_NOTICE } })
+        navigate('/mi-stock', { state: gone() })
         return
       }
       if (caught instanceof ApiError) {
@@ -240,12 +241,12 @@ function EntradaStockBody({ mode, entryId, today, initial }: BodyProps) {
     try {
       await deleteEntry(entryId)
       invalidateStockAfterDeleting(queryClient, entryId)
-      navigate('/mi-stock', { state: { toast: 'Entrada eliminada' } })
+      navigate('/mi-stock', { state: toast('Entrada eliminada') })
     } catch (caught) {
       setConfirmingDelete(false)
       if (caught instanceof ApiError && isGone(caught.code)) {
         invalidateStockAfterDeleting(queryClient, entryId)
-        navigate('/mi-stock', { state: { notice: GONE_NOTICE } })
+        navigate('/mi-stock', { state: gone() })
         return
       }
       if (caught instanceof NetworkError) setOffline(true)

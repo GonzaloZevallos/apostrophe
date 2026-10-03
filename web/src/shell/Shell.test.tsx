@@ -1,34 +1,78 @@
 /**
  * `Shell` at the screen seam: only destinations that exist show (PRD, "Nada
- * inventado"; metric M5) — Inicio, Clientes, Stock and Más, never Ventas, which
- * comes with its own screen task.
+ * inventado"; metric M5) — Inicio, Ventas, Clientes, Stock and Más, in the
+ * design's own order (`Inicio.dc.html`, `InicioCompu.dc.html`). The fixed "Nueva venta" button, separate from the tabs, shows on
+ * every signed-in screen except the sale form itself (accounts.md: "It shows on
+ * every signed-in screen except the sale form itself and its customer sheet" —
+ * the sheet shares `NuevaVenta`'s own route, so hiding on that one path covers
+ * both).
  */
 
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { expect, test } from 'vitest'
 import Shell from './Shell'
 
-test('shows exactly Inicio, Clientes, Stock and Más in both navs', () => {
+/** The tabs only, in the order they render — drops the fixed "Nueva venta"
+ * button, which shares the rail's `link` role but is not one of the tabs. */
+function tabNames(nav: HTMLElement): string[] {
+  return within(nav)
+    .getAllByRole('link')
+    .map((link) => link.textContent)
+    .filter((name): name is string => name !== 'Nueva venta')
+}
+
+function renderShell(initialPath: string) {
   render(
-    <MemoryRouter initialEntries={['/']}>
+    <MemoryRouter initialEntries={[initialPath]}>
       <Routes>
         <Route element={<Shell />}>
           <Route index element={<div>contenido</div>} />
+          <Route path="ventas/nueva" element={<div>Nueva venta</div>} />
         </Route>
       </Routes>
     </MemoryRouter>,
   )
+}
+
+test('shows exactly Inicio, Ventas, Clientes, Stock and Más in both navs', () => {
+  renderShell('/')
 
   const navs = screen.getAllByRole('navigation')
   expect(navs).toHaveLength(2)
   for (const nav of navs) {
     expect(nav).toHaveTextContent('Inicio')
     expect(nav).toHaveTextContent('Clientes')
+    expect(nav).toHaveTextContent('Ventas')
     expect(nav).toHaveTextContent('Stock')
     expect(nav).toHaveTextContent('Más')
-    expect(nav).not.toHaveTextContent('Ventas')
   }
+})
+
+test('orders the tabs Inicio, Ventas, Clientes, Stock, Más — the design\'s own order', () => {
+  renderShell('/')
+
+  const navs = screen.getAllByRole('navigation')
+  expect(navs).toHaveLength(2)
+  for (const nav of navs) {
+    expect(tabNames(nav)).toEqual(['Inicio', 'Ventas', 'Clientes', 'Stock', 'Más'])
+  }
+})
+
+test('the fixed "Nueva venta" button shows outside the sale form, once per nav rail', () => {
+  renderShell('/')
+
+  const links = screen.getAllByRole('link', { name: 'Nueva venta' })
+  expect(links).toHaveLength(2)
+  for (const link of links) {
+    expect(link).toHaveAttribute('href', '/ventas/nueva')
+  }
+})
+
+test('the fixed "Nueva venta" button is gone on the sale form itself', () => {
+  renderShell('/ventas/nueva')
+
+  expect(screen.queryByRole('link', { name: 'Nueva venta' })).not.toBeInTheDocument()
 })
 
 test('marks the active item by more than color: a distinct class the other items do not get', () => {

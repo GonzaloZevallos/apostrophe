@@ -43,13 +43,14 @@ class PriceEntryOut(BaseModel):
 class VarietyOut(BaseModel):
     id: int
     name: str
-    # The current price today; `null` when the variety has none yet.
+    # The price in force on the day asked for (today, unless the caller asked for
+    # another day, docs/adr/0011); `null` when the variety has none that day.
     current_price: PriceEntryOut | None
 
     @classmethod
-    def of(cls, variety: Variety, today: date) -> "VarietyOut":
+    def of(cls, variety: Variety, day: date) -> "VarietyOut":
         assert variety.id is not None, "only stored varieties go out"
-        price = variety.current_price(today)
+        price = variety.current_price(day)
         return cls(
             id=variety.id,
             name=variety.name.value,

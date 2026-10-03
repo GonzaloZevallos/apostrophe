@@ -13,6 +13,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import StrEnum
+from typing import ClassVar
 
 from app.shared.grams import Grams
 
@@ -20,28 +21,42 @@ from app.shared.grams import Grams
 class SaleRuleBroken(ValueError):
     """A rule of sales was broken; the message says which, never the data."""
 
+    code: ClassVar[str] = "sale.rule_broken"
+
 
 class InvalidPriceQuote(SaleRuleBroken):
+    code: ClassVar[str] = "sale.price_quote_invalid"
+
     def __init__(self) -> None:
         super().__init__("that is not a valid price quote")
 
 
 class NonPositiveGrams(SaleRuleBroken):
+    # Distinct from the shared `grams.invalid` (not a number, or more than two
+    # decimals): this is a sale rule, grams that parsed fine but are not above zero.
+    code: ClassVar[str] = "sale.grams_invalid"
+
     def __init__(self) -> None:
         super().__init__("a line needs grams above zero")
 
 
 class GiftWithSpecialPrice(SaleRuleBroken):
+    code: ClassVar[str] = "sale.gift_with_special_price"
+
     def __init__(self) -> None:
         super().__init__("a line cannot be both a gift and have a special price")
 
 
 class InvalidSpecialPrice(SaleRuleBroken):
+    code: ClassVar[str] = "sale.special_price_invalid"
+
     def __init__(self) -> None:
         super().__init__("a special price must be above zero")
 
 
 class NoPriceThatDay(SaleRuleBroken):
+    code: ClassVar[str] = "sale.no_price_that_day"
+
     def __init__(self) -> None:
         super().__init__("the variety has no price on the sale's date")
 

@@ -5,12 +5,13 @@ another business is, from here, a record that does not exist.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date
 from typing import Protocol
 
 from app.sales.domain.pricing import VarietyPricing
-from app.sales.domain.sale import CustomerFact, Sale
+from app.sales.domain.sale import CustomerFact, Sale, SaleLine
 from app.shared.grams import Grams
 
 
@@ -59,6 +60,50 @@ class Sales(Protocol):
 
     def delete(self, sale_id: int) -> None:
         """A hard delete: the sale, its lines and its payment."""
+        ...
+
+
+@dataclass(frozen=True)
+class SaleViewCustomer:
+    """A sale's customer as a screen needs it (docs/adr/0011): the current name and
+    VIP flag, read fresh — not as they were at recording time (ADR-0003)."""
+
+    id: int
+    name: str
+    vip: bool
+
+
+@dataclass(frozen=True)
+class SaleViewLine:
+    """One stored `SaleLine`, with its variety's current name attached."""
+
+    line: SaleLine
+    variety_name: str
+
+
+@dataclass(frozen=True)
+class SaleView:
+    """A sale labelled with what a screen needs to show it (docs/adr/0011): the
+    stored `Sale` itself, its customer's current name and VIP flag (`None` for a
+    sale without one), and each line's variety name. Read-only: nothing here is
+    ever written back."""
+
+    sale: Sale
+    customer: SaleViewCustomer | None
+    lines: tuple[SaleViewLine, ...]
+
+
+class SaleViews(Protocol):
+    """Sales joined with the names a screen needs (docs/adr/0011), for one business.
+    A read port, like `CustomerFacts`: `SqlSales` answers it directly, over the same
+    rows `Sales` writes, never a second store."""
+
+    def get_view(self, sale_id: int) -> SaleView | None:
+        """`None` when the sale does not exist in this business."""
+        ...
+
+    def list_views(self, date_from: date | None, date_to: date | None) -> Sequence[SaleView]:
+        """Same ordering and range semantics as `Sales.list`."""
         ...
 
 

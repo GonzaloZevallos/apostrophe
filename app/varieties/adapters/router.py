@@ -43,8 +43,13 @@ as_http = TranslateErrors(
 
 
 @router.get("")
-def list_varieties(varieties: VarietiesDep, today: TodayDep) -> list[VarietyOut]:
-    return [VarietyOut.of(v, today) for v in manage_varieties.list_varieties(varieties)]
+def list_varieties(
+    varieties: VarietiesDep, today: TodayDep, on: date | None = None
+) -> list[VarietyOut]:
+    """Each variety's current price as of `on` (today when omitted, docs/adr/0011),
+    inside the session's own business."""
+    day = on or today
+    return [VarietyOut.of(v, day) for v in manage_varieties.list_varieties(varieties)]
 
 
 @router.post("", status_code=201)

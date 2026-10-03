@@ -120,6 +120,25 @@ def test_the_current_price_follows_the_day_asked_for(client: TestClient) -> None
     assert today["list_price"] == 11_000
 
 
+def test_listing_varieties_follows_the_day_asked_for(client: TestClient) -> None:
+    # docs/adr/0011: `GET /varieties?on=` is for Nueva venta's date changes, so a
+    # variety's `current_price` in the list answer follows that day, not today.
+    variety_id = _register(client)["id"]
+    _price(client, variety_id, **GOLD_JANUARY)
+    _price(client, variety_id, effective_from="2026-11-01", list_price=12_000)
+
+    def listed_price(**params: str) -> Any:
+        body = client.get("/varieties", params=params).json()
+        return body[0]["current_price"]
+
+    assert listed_price(on="2025-12-31") is None
+    assert listed_price(on="2026-01-01")["list_price"] == 11_000
+    assert listed_price(on="2026-10-31")["list_price"] == 11_000
+    assert listed_price(on="2026-11-01")["list_price"] == 12_000
+    # Without `on`, today: 2026-10-02 (tests/conftest.py's clock).
+    assert listed_price()["list_price"] == 11_000
+
+
 def test_today_is_the_business_day_in_argentina(client: TestClient, clock: MovableClock) -> None:
     variety_id = _register(client)["id"]
     _price(client, variety_id, effective_from="2026-10-03", list_price=12_000)

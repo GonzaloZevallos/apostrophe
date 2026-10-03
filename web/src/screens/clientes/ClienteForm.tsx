@@ -26,13 +26,14 @@ import {
   registerCustomer,
 } from '../../api/customers'
 import { invalidateResource, keys } from '../../api/keys'
-import { GONE_NOTICE, isGone, resolveOverride, type RefusalCode } from '../../api/refusals'
+import { isGone, resolveOverride, type RefusalCode } from '../../api/refusals'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
-import { TOAST_MESSAGES } from '../../components/feedback'
+import { gone, toast, type ToastMessage } from '../../components/feedback'
 import GoneScreen from '../../components/GoneScreen'
 import SinConexion from '../../components/SinConexion'
+import CustomerFields from './CustomerFields'
 
-export const SAVED_TOAST: (typeof TOAST_MESSAGES)[number] = 'Cliente guardado'
+export const SAVED_TOAST: ToastMessage = 'Cliente guardado'
 export const NAME_REQUIRED = 'Ponele un nombre'
 export const PHONE_INVALID = 'Eso no parece un teléfono con su código de área'
 export const PHONE_TAKEN = 'Ese teléfono ya es de otro cliente'
@@ -129,9 +130,9 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
       await save.mutateAsync({ name, phone, channel, vip })
       invalidateResource(queryClient, 'customers')
       if (mode === 'nuevo') {
-        navigate('/clientes', { state: { toast: SAVED_TOAST } })
+        navigate('/clientes', { state: toast(SAVED_TOAST) })
       } else {
-        navigate(`/clientes/${customerId}`, { state: { toast: SAVED_TOAST } })
+        navigate(`/clientes/${customerId}`, { state: toast(SAVED_TOAST) })
       }
     } catch (caught) {
       if (caught instanceof ApiError && caught.status === 401) {
@@ -142,7 +143,7 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
       }
       if (caught instanceof ApiError && mode === 'editar' && isGone(caught.code)) {
         invalidateResource(queryClient, 'customers')
-        navigate('/clientes', { state: { notice: GONE_NOTICE } })
+        navigate('/clientes', { state: gone() })
         return
       }
       if (caught instanceof ApiError) {
@@ -171,78 +172,17 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
           {mode === 'nuevo' ? 'Nuevo cliente' : 'Editar cliente'}
         </span>
         <form className="formulario" onSubmit={onSubmit}>
-          <div className="campo">
-            <label className="campo">
-              <span className="campo__rotulo">Teléfono</span>
-              <input
-                className="campo__input"
-                type="tel"
-                value={phone}
-                onChange={(event) => setPhone(event.target.value)}
-                required
-              />
-            </label>
-            {phoneError !== null && (
-              <span className="campo__error" role="alert">
-                {phoneError}
-              </span>
-            )}
-          </div>
-          <div className="campo">
-            <label className="campo">
-              <span className="campo__rotulo">Nombre</span>
-              <input
-                className="campo__input"
-                type="text"
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-                required
-              />
-            </label>
-            {nameError !== null && (
-              <span className="campo__error" role="alert">
-                {nameError}
-              </span>
-            )}
-          </div>
-          <fieldset className="campo">
-            <legend className="campo__rotulo">Canal</legend>
-            <label>
-              <input
-                type="radio"
-                name="channel"
-                checked={channel === null}
-                onChange={() => setChannel(null)}
-              />
-              Ninguno
-            </label>
-            <label>
-              <input
-                type="radio"
-                name="channel"
-                checked={channel === 'whatsapp'}
-                onChange={() => setChannel('whatsapp')}
-              />
-              WhatsApp
-            </label>
-            <label>
-              <input
-                type="radio"
-                name="channel"
-                checked={channel === 'telegram'}
-                onChange={() => setChannel('telegram')}
-              />
-              Telegram
-            </label>
-          </fieldset>
-          <label className="campo">
-            <span className="campo__rotulo">VIP</span>
-            <input
-              type="checkbox"
-              checked={vip}
-              onChange={(event) => setVip(event.target.checked)}
-            />
-          </label>
+          <CustomerFields
+            value={{ name, phone, channel, vip }}
+            onChange={(next) => {
+              setName(next.name)
+              setPhone(next.phone)
+              setChannel(next.channel)
+              setVip(next.vip)
+            }}
+            nameError={nameError}
+            phoneError={phoneError}
+          />
           {formError !== null && (
             <span className="campo__error" role="alert">
               {formError}

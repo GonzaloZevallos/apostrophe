@@ -1,30 +1,109 @@
 /**
- * `App`'s router split (plan, "Session"; invariants): the public branch never mounts
- * a gated query. `/entrar` is the seam this pins — no `fetch` at all until the person
- * submits the form.
+ * `App`'s route table at the module seam (plan, "Session"; "Shape"; invariants):
+ * the public branch never mounts a gated query ("/entrar" draws no `fetch` at
+ * all), and the gated branch's `/ventas` routes resolve to the screens behind
+ * them — `/ventas` and `/ventas/:id` now the real `Ventas`/`VentaDetalle`
+ * (`sales-list-and-detail`), `/ventas/nueva` still the stub `new-sale-screen`
+ * fills in next. `router.navigate` drives the shared `router` singleton to the
+ * path under test, rather than `window.history.pushState`, which would race this
+ * module's own import (the router is built once, from whatever `window.location`
+ * is at that moment).
  */
 
-import { render, screen } from '@testing-library/react'
-import { afterEach, beforeEach, expect, test, vi } from 'vitest'
+import { act, render, screen, within } from '@testing-library/react'
+import { afterEach, expect, test, vi } from 'vitest'
 import App from './App'
 import { queryClient } from './queryClient'
+import { router } from './router'
 
-beforeEach(() => {
-  window.history.pushState({}, '', '/entrar')
-})
+function jsonResponse(status: number, body: unknown): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  })
+}
 
-afterEach(() => {
+afterEach(async () => {
   vi.unstubAllGlobals()
   queryClient.clear()
-  window.history.pushState({}, '', '/')
+  await act(() => router.navigate('/'))
 })
 
-test('the public /entrar route renders Entrar without running a gated query', () => {
+test('the public /entrar route renders Entrar without running a gated query', async () => {
   const fetchMock = vi.fn()
   vi.stubGlobal('fetch', fetchMock)
+  await act(() => router.navigate('/entrar'))
 
   render(<App />)
 
-  expect(screen.getByRole('main')).toHaveTextContent('apostrophe')
+  expect(await screen.findByRole('main')).toHaveTextContent('apostrophe')
   expect(fetchMock).not.toHaveBeenCalled()
+})
+
+test('/ventas renders the Ventas stub under the gated shell', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockResolvedValue(
+      jsonResponse(200, { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }),
+    ),
+  )
+  await act(() => router.navigate('/ventas'))
+
+  render(<App />)
+
+  // Scoped to `main` (shell-entries, GH-20): the gated shell now has its own
+  // "Ventas" tab and fixed "Nueva venta" button alongside it, so an unscoped
+  // query would match more than the stub screen's own heading.
+  expect(await within(await screen.findByRole('main')).findByText('Ventas')).toBeInTheDocument()
+})
+
+test('/ventas/nueva renders the NuevaVenta stub under the gated shell', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockResolvedValue(
+      jsonResponse(200, { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }),
+    ),
+  )
+  await act(() => router.navigate('/ventas/nueva'))
+
+  render(<App />)
+
+  expect(await screen.findByText('Nueva venta')).toBeInTheDocument()
+})
+
+test('/ventas/:id renders VentaDetalle, from the API, under the gated shell', async () => {
+  // A dedicated response per call (never one `Response` instance shared across
+  // `/auth/me` and `/sales/1`): `Response.json()` can only run once per instance,
+  // and this route now makes both calls, unlike the stub it replaces.
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockImplementation((input: RequestInfo | URL) => {
+      const path = String(input)
+      if (path === '/sales/1') {
+        return Promise.resolve(
+          jsonResponse(200, {
+            id: 1,
+            date: '2026-10-02',
+            customer: null,
+            shipping_charged: 0,
+            note: null,
+            payment: 'none',
+            total: 1000,
+            lines: [
+              { variety_id: 1, variety_name: 'Blue Dream', grams: 1, pricing_rule: 'list', price_per_gram: 1000, line_total: 1000 },
+            ],
+          }),
+        )
+      }
+      return Promise.resolve(
+        jsonResponse(200, { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }),
+      )
+    }),
+  )
+  await act(() => router.navigate('/ventas/1'))
+
+  render(<App />)
+
+  expect(await screen.findByText('Venta')).toBeInTheDocument()
+  expect(await screen.findByText('Blue Dream')).toBeInTheDocument()
 })

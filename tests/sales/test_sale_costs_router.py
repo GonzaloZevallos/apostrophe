@@ -48,6 +48,7 @@ def test_a_fully_costed_line_answers_its_cost_and_no_pending_grams(
     assert response.json()["lines"] == [
         {
             "variety_id": variety_id,
+            "variety_name": "Lavanda",
             "grams": 10.0,
             "pricing_rule": "list",
             "price_per_gram": 10_000,

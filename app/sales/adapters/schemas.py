@@ -9,7 +9,7 @@ from typing import Literal
 
 from pydantic import BaseModel
 
-from app.sales.application.ports import LineCost
+from app.sales.application.ports import LineCost, SaleView, SaleViewCustomer, SaleViewLine
 from app.sales.domain.pricing import PricingRule
 from app.sales.domain.sale import PaymentMethod, Sale
 from app.varieties.adapters.schemas import GramsOut
@@ -38,7 +38,10 @@ class SaleIn(BaseModel):
     customer_id: int | None = None
     shipping_charged: int = 0
     note: str | None = None
-    payment: PaymentIn
+    # Optional (docs/adr/0011): omitted means no method and not left owing, so a $0
+    # sale can be sent with no payment at all and `sale.payment_required` is
+    # reachable. `"owing"` keeps its own meaning.
+    payment: PaymentIn | None = None
     lines: list[LineIn]
 
 
@@ -46,18 +49,41 @@ class AssignCustomerIn(BaseModel):
     customer_id: int
 
 
+class SaleCustomerOut(BaseModel):
+    id: int
+    name: str
+    vip: bool
+
+    @classmethod
+    def of(cls, customer: SaleViewCustomer) -> "SaleCustomerOut":
+        return cls(id=customer.id, name=customer.name, vip=customer.vip)
+
+
 class SaleLineOut(BaseModel):
     variety_id: int
+    variety_name: str
     grams: GramsOut
     pricing_rule: PricingRule
     price_per_gram: int
     line_total: int
 
+    @classmethod
+    def of(cls, view_line: SaleViewLine) -> "SaleLineOut":
+        line = view_line.line
+        return cls(
+            variety_id=line.variety_id,
+            variety_name=view_line.variety_name,
+            grams=line.grams.as_decimal(),
+            pricing_rule=line.pricing_rule,
+            price_per_gram=line.price_per_gram,
+            line_total=line.line_total,
+        )
+
 
 class SaleOut(BaseModel):
     id: int
     date: SaleDate
-    customer_id: int | None
+    customer: SaleCustomerOut | None
     shipping_charged: int
     note: str | None
     payment: PaymentOut
@@ -65,26 +91,18 @@ class SaleOut(BaseModel):
     lines: list[SaleLineOut]
 
     @classmethod
-    def of(cls, sale: Sale) -> "SaleOut":
+    def of(cls, view: SaleView) -> "SaleOut":
+        sale = view.sale
         assert sale.id is not None, "only stored sales go out"
         return cls(
             id=sale.id,
             date=sale.date,
-            customer_id=sale.customer_id,
+            customer=None if view.customer is None else SaleCustomerOut.of(view.customer),
             shipping_charged=sale.shipping_charged,
             note=sale.note,
             payment=_payment_out(sale),
             total=sale.total,
-            lines=[
-                SaleLineOut(
-                    variety_id=line.variety_id,
-                    grams=line.grams.as_decimal(),
-                    pricing_rule=line.pricing_rule,
-                    price_per_gram=line.price_per_gram,
-                    line_total=line.line_total,
-                )
-                for line in sale.lines
-            ],
+            lines=[SaleLineOut.of(line) for line in view.lines],
         )
 
 
@@ -108,22 +126,39 @@ class LineCostOut(BaseModel):
 
 
 class SaleLineDetailOut(BaseModel):
+    """`SaleLineOut`'s fields plus the line's cost of goods (ADR-0009)."""
+
     variety_id: int
+    variety_name: str
     grams: GramsOut
     pricing_rule: PricingRule
     price_per_gram: int
     line_total: int
     cost: LineCostOut
 
+    @classmethod
+    def of(cls, view_line: SaleViewLine, cost: LineCost) -> "SaleLineDetailOut":
+        line = view_line.line
+        return cls(
+            variety_id=line.variety_id,
+            variety_name=view_line.variety_name,
+            grams=line.grams.as_decimal(),
+            pricing_rule=line.pricing_rule,
+            price_per_gram=line.price_per_gram,
+            line_total=line.line_total,
+            cost=LineCostOut.of(cost),
+        )
+
 
 class SaleDetailOut(BaseModel):
-    """`GET /sales/{id}`'s own shape, never the list's: each line's cost of goods is
-    allocated fresh on this one read (ADR-0009), so `SaleOut` — used by the list and by
-    `PUT .../customer` — never allocates and stays unchanged."""
+    """`GET /sales/{id}`'s own shape, never the list's: the same labelled read shape as
+    `SaleOut` (docs/adr/0011), plus each line's cost of goods, allocated fresh on this
+    one read (ADR-0009), so `SaleOut` — used by the list and by every write — never
+    allocates."""
 
     id: int
     date: SaleDate
-    customer_id: int | None
+    customer: SaleCustomerOut | None
     shipping_charged: int
     note: str | None
     payment: PaymentOut
@@ -131,27 +166,21 @@ class SaleDetailOut(BaseModel):
     lines: list[SaleLineDetailOut]
 
     @classmethod
-    def of(cls, sale: Sale, costs: Sequence[LineCost]) -> "SaleDetailOut":
+    def of(cls, view: SaleView, costs: Sequence[LineCost]) -> "SaleDetailOut":
+        sale = view.sale
         assert sale.id is not None, "only stored sales go out"
-        assert len(costs) == len(sale.lines), "one LineCost per line, in the same order"
+        assert len(costs) == len(view.lines), "one LineCost per line, in the same order"
         return cls(
             id=sale.id,
             date=sale.date,
-            customer_id=sale.customer_id,
+            customer=None if view.customer is None else SaleCustomerOut.of(view.customer),
             shipping_charged=sale.shipping_charged,
             note=sale.note,
             payment=_payment_out(sale),
             total=sale.total,
             lines=[
-                SaleLineDetailOut(
-                    variety_id=line.variety_id,
-                    grams=line.grams.as_decimal(),
-                    pricing_rule=line.pricing_rule,
-                    price_per_gram=line.price_per_gram,
-                    line_total=line.line_total,
-                    cost=LineCostOut.of(cost),
-                )
-                for line, cost in zip(sale.lines, costs, strict=True)
+                SaleLineDetailOut.of(line, cost)
+                for line, cost in zip(view.lines, costs, strict=True)
             ],
         )
 

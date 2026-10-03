@@ -18,7 +18,9 @@ from sqlalchemy import select, update
 from sqlalchemy.engine import CursorResult
 from sqlalchemy.orm import Session
 
+from app.customers.adapters.tables import CustomerRow
 from app.sales.adapters.tables import PaymentRow, SaleLineRow, SaleRow
+from app.sales.application.ports import SaleView, SaleViewCustomer, SaleViewLine
 from app.sales.domain.pricing import PricingRule
 from app.sales.domain.sale import (
     CustomerAlreadyAssigned,
@@ -28,6 +30,7 @@ from app.sales.domain.sale import (
     SaleLine,
 )
 from app.shared.grams import Grams
+from app.varieties.adapters.tables import VarietyRow
 
 
 class SqlSales:
@@ -114,6 +117,118 @@ class SqlSales:
             )
         )
         self._session.flush()
+
+    def get_view(self, sale_id: int) -> SaleView | None:
+        views = self._views(sale_ids=[sale_id])
+        return views[0] if views else None
+
+    def list_views(self, date_from: date | None, date_to: date | None) -> Sequence[SaleView]:
+        return self._views(date_from=date_from, date_to=date_to)
+
+    def _views(
+        self,
+        *,
+        sale_ids: Sequence[int] | None = None,
+        date_from: date | None = None,
+        date_to: date | None = None,
+    ) -> Sequence[SaleView]:
+        """`SaleViews` (docs/adr/0011): two statements whatever the number of sales.
+        The first joins the sale to its customer and its payment, both filtered on
+        this business in their `ON` clause as well as the sale's own `WHERE`; the
+        second joins every listed sale's lines to their variety, the same way."""
+        statement = (
+            select(
+                SaleRow,
+                CustomerRow.id,
+                CustomerRow.name,
+                CustomerRow.vip,
+                PaymentRow.id,
+                PaymentRow.paid_on,
+                PaymentRow.amount,
+                PaymentRow.method,
+                PaymentRow.customer_id,
+            )
+            .outerjoin(
+                CustomerRow,
+                (CustomerRow.id == SaleRow.customer_id)
+                & (CustomerRow.business_id == self._business_id),
+            )
+            .outerjoin(
+                PaymentRow,
+                (PaymentRow.sale_id == SaleRow.id)
+                & (PaymentRow.business_id == self._business_id),
+            )
+            .where(SaleRow.business_id == self._business_id)
+        )
+        if sale_ids is not None:
+            statement = statement.where(SaleRow.id.in_(sale_ids))
+        if date_from is not None:
+            statement = statement.where(SaleRow.sale_date >= date_from)
+        if date_to is not None:
+            statement = statement.where(SaleRow.sale_date <= date_to)
+        statement = statement.order_by(SaleRow.sale_date.desc(), SaleRow.id.desc())
+
+        rows = self._session.execute(statement).all()
+        ids = [row[0].id for row in rows]
+        lines_by_sale = self._line_views_by_sale(ids)
+
+        views = []
+        for row in rows:
+            sale_row = row[0]
+            customer_id, customer_name, customer_vip = row[1], row[2], row[3]
+            payment_id, paid_on, amount, method, payment_customer_id = row[4:9]
+            customer = (
+                None
+                if customer_id is None
+                else SaleViewCustomer(id=customer_id, name=customer_name, vip=customer_vip)
+            )
+            payment = (
+                None
+                if payment_id is None
+                else OnTheSpotPayment(
+                    paid_on=paid_on,
+                    amount=amount,
+                    method=PaymentMethod(method),
+                    customer_id=payment_customer_id,
+                    id=payment_id,
+                )
+            )
+            lines = lines_by_sale.get(sale_row.id, ())
+            sale = Sale(
+                date=sale_row.sale_date,
+                customer_id=sale_row.customer_id,
+                shipping_charged=sale_row.shipping_charged,
+                note=sale_row.note,
+                lines=tuple(view_line.line for view_line in lines),
+                payment=payment,
+                recorded_at=sale_row.recorded_at,
+                id=sale_row.id,
+            )
+            views.append(SaleView(sale=sale, customer=customer, lines=lines))
+        return views
+
+    def _line_views_by_sale(self, sale_ids: Sequence[int]) -> dict[int, tuple[SaleViewLine, ...]]:
+        if not sale_ids:
+            return {}
+        statement = (
+            select(SaleLineRow, VarietyRow.name)
+            .join(
+                VarietyRow,
+                (VarietyRow.id == SaleLineRow.variety_id)
+                & (VarietyRow.business_id == self._business_id),
+            )
+            .where(
+                SaleLineRow.business_id == self._business_id,
+                SaleLineRow.sale_id.in_(sale_ids),
+            )
+            .order_by(SaleLineRow.sale_id, SaleLineRow.position)
+        )
+        grouped: dict[int, list[SaleViewLine]] = {}
+        for line_row, variety_name in self._session.execute(statement).all():
+            grouped.setdefault(line_row.sale_id, []).append(
+                SaleViewLine(line=_sale_line(line_row), variety_name=variety_name)
+            )
+        return {sale_id: tuple(lines) for sale_id, lines in grouped.items()}
 
     def _row(self, sale_id: int) -> SaleRow | None:
         statement = select(SaleRow).where(

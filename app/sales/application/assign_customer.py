@@ -1,9 +1,10 @@
 """Assign a customer to a sale that has none (CONTEXT.md: Sale without a customer).
 
 Refusal order: the sale in the path first (404, `SaleNotFound`), then the customer in
-the body (422, `UnknownCustomer`), then already-assigned (409,
-`CustomerAlreadyAssigned`, raised in-memory by `Sale.assign_customer` and again, as
-the authority, by `Sales.assign_customer`'s guarded update)."""
+the body (404, `UnknownCustomer` — missing and foreign stay indistinguishable,
+docs/adr/0011), then already-assigned (409, `CustomerAlreadyAssigned`, raised
+in-memory by `Sale.assign_customer` and again, as the authority, by
+`Sales.assign_customer`'s guarded update)."""
 
 from app.sales.application.errors import SaleNotFound
 from app.sales.application.ports import CustomerFacts, Sales
