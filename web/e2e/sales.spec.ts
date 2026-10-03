@@ -416,18 +416,14 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   expect(storage).toEqual({ local: 0, session: 0 })
 
   // Every browser logs a generic "Failed to load resource: 404" line for any fetch
-  // that comes back non-2xx, app code notwithstanding: one unavoidable message here
-  // is the isolation check just above (`GET /sales/<id>` from a business that
+  // that comes back non-2xx, app code notwithstanding: the one unavoidable message
+  // here is the isolation check just above (`GET /sales/<id>` from a business that
   // doesn't own it), which carries no id, name, note or amount — exactly what
   // ADR-0004's 404 is for. Anything else in the console still fails this assertion.
   //
-  // The other is temporary, not this task's own: "Sale B" above opens Carla Pérez's
-  // card (`ClienteFicha`) on the way to "Nueva venta a <name>", and that screen's
-  // own account view (`payments-front`, `GET /customers/{id}/account`) 404s on this
-  // branch because `payments-api` — which wires that route into `app/main.py` — has
-  // not merged here yet (the two land on separate subtask branches, by plan). Drop
-  // this second entry once this test runs against a backend with that route, which
-  // `payments-e2e`'s own run (after every payments subtask is merged) already does.
+  // `GET /customers/{id}/account` (`payments-front`) is wired by `payments-api` into
+  // `app/main.py` on this branch (`payments-e2e`, after every payments subtask is
+  // merged), so "Sale B"'s customer card above no longer 404s on its own account view.
   const RESOURCE_404 = 'error: Failed to load resource: the server responded with a status of 404 (Not Found)'
-  expect(consoleMessages).toEqual([RESOURCE_404, RESOURCE_404])
+  expect(consoleMessages).toEqual([RESOURCE_404])
 })
