@@ -153,10 +153,15 @@ export default function Catalogo() {
     if (editingVarietyId === null) return
     setAttrError(null)
     setAttrOffline(false)
+    // Only a shape check (whole digits, so it is representable as the `int` the API
+    // takes): the 0–100 range itself is the domain's `IndicaShare` rule alone (plan,
+    // invariants; CODING_STANDARDS §10, "the backend decides") — a value that is
+    // shaped like an integer but out of range (e.g. "150") must reach the server and
+    // come back as `catalog.indica_share_invalid`, not be refused here first.
     const trimmedShare = attrIndicaShare.trim()
     let indicaShare: number | null = null
     if (trimmedShare !== '') {
-      if (!/^\d{1,3}$/.test(trimmedShare) || Number(trimmedShare) > 100) {
+      if (!/^\d+$/.test(trimmedShare)) {
         setAttrError(INDICA_SHARE_INVALID_MESSAGE)
         return
       }

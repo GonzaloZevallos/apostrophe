@@ -114,6 +114,45 @@ test('every variety is told in or out by word, never only by color', async () =>
   expect(await screen.findByText('Oculta')).toBeInTheDocument()
 })
 
+test('a variety with no price today reads "No sale: sin precio hoy"', async () => {
+  renderCatalogo(
+    vi.fn().mockResolvedValue(
+      jsonResponse(200, {
+        ...CATALOG,
+        varieties: [{ ...CATALOG.varieties[0], state: 'no_price' }],
+      }),
+    ),
+  )
+
+  expect(await screen.findByText('No sale: sin precio hoy')).toBeInTheDocument()
+})
+
+test('a sold-out variety reads "No sale: está agotada"', async () => {
+  renderCatalogo(
+    vi.fn().mockResolvedValue(
+      jsonResponse(200, {
+        ...CATALOG,
+        varieties: [{ ...CATALOG.varieties[0], state: 'sold_out' }],
+      }),
+    ),
+  )
+
+  expect(await screen.findByText('No sale: está agotada')).toBeInTheDocument()
+})
+
+test('a variety with no stock entries reads "No sale: sin entradas"', async () => {
+  renderCatalogo(
+    vi.fn().mockResolvedValue(
+      jsonResponse(200, {
+        ...CATALOG,
+        varieties: [{ ...CATALOG.varieties[0], state: 'no_entries' }],
+      }),
+    ),
+  )
+
+  expect(await screen.findByText('No sale: sin entradas')).toBeInTheDocument()
+})
+
 test('Copiar copies the raw API text through copyText and shows the toast', async () => {
   renderCatalogo(vi.fn().mockResolvedValue(jsonResponse(200, CATALOG)))
 
