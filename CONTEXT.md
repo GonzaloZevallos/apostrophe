@@ -285,3 +285,7 @@ _Avoid_: dashboard, overview, home, summary, Análisis
 **Average sale**:
 A period's sales total, shipping included, divided by its number of sales (not lines), rounded half up to the whole peso. Not shown when the period has no sales.
 _Avoid_: average ticket, mean order, ticket promedio
+
+**Spreadsheet import**:
+The one-time load of a business's history from the `Control_de_ventas_y_gastos` spreadsheet into that business. The installation's operator runs it on switch day, and only into a business with no records yet. It never appears in the app; on screen, imported data is the same as data entered by hand.
+_Avoid_: migration, sync, upload, restore
