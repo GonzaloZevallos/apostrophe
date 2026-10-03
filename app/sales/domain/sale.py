@@ -180,6 +180,15 @@ class Sale:
     def total(self) -> int:
         return sum((line.line_total for line in self.lines), 0) + self.shipping_charged
 
+    @property
+    def total_grams(self) -> Grams:
+        """Every line's grams summed, gifts included (sales.md: a sale's delete
+        confirmation and its Deshacer name the grams returning to stock)."""
+        total = Grams(0)
+        for line in self.lines:
+            total = total + line.grams
+        return total
+
     def assign_customer(self, customer_id: int) -> None:
         """Only on a sale that has none (CONTEXT.md: Sale without a customer): a
         sale's customer is never replaced, and its payment's customer always follows."""

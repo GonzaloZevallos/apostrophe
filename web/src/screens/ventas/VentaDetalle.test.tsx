@@ -54,6 +54,7 @@ const SALE = {
       cost: { costed: 2500, pending_grams: 0 },
     },
   ],
+  total_grams: 5,
 }
 
 /** `DELETE /sales/{id}`'s own answer (ADR-0009): the grams the sale gave back. */
@@ -124,7 +125,7 @@ test('Borrar venta asks "Antes de borrar" naming the date and the amount, then d
 
   await userEvent.click(screen.getByRole('button', { name: 'Borrar venta' }))
   expect(
-    screen.getByText('¿Borrás la venta de $ 6.500 del 03/10?'),
+    screen.getByText('¿Borrás la venta de $ 6.500 del 03/10? Vuelven 5 g al stock.'),
   ).toBeInTheDocument()
 
   await userEvent.click(screen.getByRole('button', { name: 'Sí, borrala' }))
@@ -143,7 +144,9 @@ test('cancelling the delete confirmation keeps the sale', async () => {
   await userEvent.click(screen.getByRole('button', { name: 'Borrar venta' }))
   await userEvent.click(screen.getByRole('button', { name: 'No, dejala' }))
 
-  expect(screen.queryByText('¿Borrás la venta de $ 6.500 del 03/10?')).not.toBeInTheDocument()
+  expect(
+    screen.queryByText('¿Borrás la venta de $ 6.500 del 03/10? Vuelven 5 g al stock.'),
+  ).not.toBeInTheDocument()
   expect(fetch).toHaveBeenCalledTimes(1)
 })
 
