@@ -24,16 +24,21 @@ from app.customers.adapters.router import router as customers_router
 from app.db import make_engine
 from app.expenses.adapters.default_categories import ExpenseCategoriesOpening
 from app.expenses.adapters.router import router as expenses_router
+from app.expenses.adapters.sql_period_expenses import SqlPeriodExpenses
 from app.http_errors import Refused
 from app.migrations.runner import upgrade_to_head
+from app.payments.adapters.results_ports import SqlDebtSummary, SqlPaymentsReceived
 from app.payments.adapters.router import customers_router as payments_customers_router
 from app.payments.adapters.router import router as payments_router
 from app.payments.adapters.settlements import SqlBalances, SqlOwingSales
+from app.results.adapters.router import router as results_router
+from app.sales.adapters.period_sales import SqlPeriodSales
 from app.sales.adapters.router import router as sales_router
 from app.settings import Settings
 from app.static_spa import MissingBuiltFront, SpaStatic, api_segments
 from app.stock.adapters.line_costs import SqlLineCosts
 from app.stock.adapters.router import router as stock_router
+from app.stock.adapters.stock_figures import SqlStockFigures
 from app.varieties.adapters.router import router as varieties_router
 
 
@@ -128,6 +133,28 @@ def create_app(
     # business, the way `get_line_costs` already does for `line_costs`.
     app.state.balances = SqlBalances
     app.state.owing_sales = SqlOwingSales
+    # Same shape again: results reaches sales' per-period figures only through its own
+    # `PeriodSales` port (`app/results/application/ports.py`), never `app.sales`
+    # directly. The route that builds one over the request's `Session` and business
+    # is added with the panel route; this is the one seam that subtask reaches it
+    # through.
+    app.state.period_sales = SqlPeriodSales
+    # Another factory of the same shape: results reaches stock's figures only through
+    # its own `StockFigures` port, never `app.stock` directly (ADR-0006). The panel
+    # route builds this over the request's own `Session` and business, the way
+    # `get_line_costs` already does for `line_costs`.
+    app.state.stock_figures = SqlStockFigures
+    # Another factory of the same shape: results reaches expenses only through its own
+    # `PeriodExpenses` port, never `app.expenses` directly (plan invariant). The panel
+    # route builds this over the request's own `Session` and business, the way
+    # `get_line_costs` already does for `line_costs`.
+    app.state.period_expenses = SqlPeriodExpenses
+    # Two more of results' own ports (plan: subtask "PaymentsReceived and DebtSummary in
+    # payments"), the same `(Session, business_id)` factory shape as `line_costs` and
+    # `balances` above; `app/results/adapters/` builds each over the request's own
+    # `Session` and business, never a second query against `app.payments` directly.
+    app.state.payments_received = SqlPaymentsReceived
+    app.state.debt_summary = SqlDebtSummary
 
     @app.get("/health", tags=["health"])
     def health() -> dict[str, str]:
@@ -146,6 +173,7 @@ def create_app(
     app.include_router(catalog_router, dependencies=gated)
     app.include_router(payments_router, dependencies=gated)
     app.include_router(payments_customers_router, dependencies=gated)
+    app.include_router(results_router, dependencies=gated)
 
     if settings.web_dist is not None:
         if not (settings.web_dist / "index.html").is_file():

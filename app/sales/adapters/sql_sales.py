@@ -16,7 +16,8 @@ from typing import cast
 from sqlalchemy import delete as sa_delete
 from sqlalchemy import select, update
 from sqlalchemy.engine import CursorResult
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import InstrumentedAttribute, Session
+from sqlalchemy.sql.elements import ColumnElement
 
 from app.customers.adapters.tables import CustomerRow
 from app.payments.adapters.tables import PaymentRow
@@ -119,6 +120,67 @@ class SqlSales:
         )
         self._session.flush()
 
+    def between(self, start: date, end: date) -> Sequence[Sale]:
+        """Sales dated within `[start, end]`, inclusive, in exactly two statements
+        (results' `PeriodSales` port, `app/results/application/ports.py`; plan
+        invariant: a fixed number of statements whatever the number of sales) — the
+        sale rows, then their lines over the listed ids, both filtered on this
+        business. Answers a plain `list` at runtime; the annotation reads `Sequence`
+        because, under `from __future__ import annotations`, a bare `list[Sale]`
+        would resolve `list` to `SqlSales.list` instead of the builtin (the same
+        shadowing `_line_rows` already sidesteps).
+
+        Built WITHOUT the on-the-spot payment (`payment=None`): `Sale.total` and
+        `Sale.total_grams`, the only things `period_summary` reads, never depend on
+        it. These `Sale`s must never leave `app/sales/adapters/period_sales.py`
+        (results' `PeriodSales` implementation) or reach a writer — `SqlSales.add`,
+        `assign_customer` and `delete` are the only places a payment is written, and
+        none of them is reachable from here.
+        """
+        statement = (
+            select(SaleRow)
+            .where(
+                SaleRow.business_id == self._business_id,
+                *_dated_conditions(SaleRow.sale_date, start, end),
+            )
+            .order_by(SaleRow.sale_date.asc(), SaleRow.id.asc())
+        )
+        rows = list(self._session.scalars(statement))
+        ids = [row.id for row in rows]
+        lines_by_sale = self._raw_lines_by_sale(ids)
+        return [
+            Sale(
+                date=row.sale_date,
+                customer_id=row.customer_id,
+                shipping_charged=row.shipping_charged,
+                note=row.note,
+                lines=lines_by_sale.get(row.id, ()),
+                payment=None,
+                recorded_at=row.recorded_at,
+                id=row.id,
+            )
+            for row in rows
+        ]
+
+    def _raw_lines_by_sale(self, sale_ids: Sequence[int]) -> dict[int, tuple[SaleLine, ...]]:
+        """The lines of the listed sales, with no variety join: `between`'s callers
+        need grams and pricing rule only, never a name (unlike `_line_views_by_sale`,
+        which labels sales for a screen)."""
+        if not sale_ids:
+            return {}
+        statement = (
+            select(SaleLineRow)
+            .where(
+                SaleLineRow.business_id == self._business_id,
+                SaleLineRow.sale_id.in_(sale_ids),
+            )
+            .order_by(SaleLineRow.sale_id, SaleLineRow.position)
+        )
+        grouped: dict[int, list[SaleLine]] = {}
+        for row in self._session.scalars(statement):
+            grouped.setdefault(row.sale_id, []).append(_sale_line(row))
+        return {sale_id: tuple(lines) for sale_id, lines in grouped.items()}
+
     def get_view(self, sale_id: int) -> SaleView | None:
         views = self._views(sale_ids=[sale_id])
         return views[0] if views else None
@@ -163,10 +225,9 @@ class SqlSales:
         )
         if sale_ids is not None:
             statement = statement.where(SaleRow.id.in_(sale_ids))
-        if date_from is not None:
-            statement = statement.where(SaleRow.sale_date >= date_from)
-        if date_to is not None:
-            statement = statement.where(SaleRow.sale_date <= date_to)
+        statement = statement.where(
+            *_dated_conditions(SaleRow.sale_date, date_from, date_to)
+        )
         statement = statement.order_by(SaleRow.sale_date.desc(), SaleRow.id.desc())
 
         rows = self._session.execute(statement).all()
@@ -293,6 +354,22 @@ class SqlSales:
             recorded_at=row.recorded_at,
             id=row.id,
         )
+
+
+def _dated_conditions(
+    column: InstrumentedAttribute[date], date_from: date | None, date_to: date | None
+) -> tuple[ColumnElement[bool], ...]:
+    """The inclusive date range `_views` and `between` both filter on (plan:
+    "Extract the date predicate into one private helper shared with `_views`"), as
+    conditions rather than a rebuilt statement — `Select`'s row-shape generic would
+    otherwise collapse under a function boundary. `SqlSales.list` keeps its own copy
+    untouched (plan: "Do not touch `SqlSales.list`")."""
+    conditions: list[ColumnElement[bool]] = []
+    if date_from is not None:
+        conditions.append(column >= date_from)
+    if date_to is not None:
+        conditions.append(column <= date_to)
+    return tuple(conditions)
 
 
 def _sale_line(row: SaleLineRow) -> SaleLine:

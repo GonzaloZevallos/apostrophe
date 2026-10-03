@@ -1,6 +1,6 @@
 # Accounts
 
-Businesses, their users, and the only ways in: an invitation and a login. Every other capability reads one thing from here, the business of the user asking, and serves that business alone (ADR-0004). It also holds the app as a whole: how it is served, installed and navigated, the feedback rules every screen follows, and the Negocio screen.
+Businesses, their users, and the only ways in: an invitation and a login. Every other capability reads one thing from here, the business of the user asking, and serves that business alone (ADR-0004). It also holds the app as a whole: how it is served, installed and navigated, the feedback rules every screen follows, and the Negocio screen. Inicio, where the app opens, is the panel defined in results.md.
 
 ## Jobs
 
@@ -69,7 +69,7 @@ Success criteria:
 - **Install once published with TLS**: Android's own install prompt is offered when the browser makes it available. The manifest and service worker already in place need no further work for it.
 - **No network**: when a request fails because the network dropped, the open app shows "Sin conexión" on any origin. This does not rely on the service worker.
 - **Theme**: light and dark follow the phone. The font is self-hosted.
-- **Language and formats**: every word on screen in Rioplatense Spanish with vos. Money `$ 11.000`, grams `3,5 g`, dates `dd/mm`. The catalog text keeps its own Telegram format (`$11.000`, catalog.md).
+- **Language and formats**: every word on screen in Rioplatense Spanish with vos. Money `$ 11.000`, a negative amount `−$ 4.500`, grams `3,5 g`, dates `dd/mm`. The catalog text keeps its own Telegram format (`$11.000`, catalog.md).
 - **Getting in** (`Entrar`, `NegocioNuevo`, `Invitacion`):
   - Login shows a fixed hint under the button that five failed attempts lock the email for 15 minutes. It shows no count of attempts left. The lock shows the brake message.
   - A request answered 401 goes to login.
@@ -79,7 +79,9 @@ Success criteria:
   - The bottom bar on the phone and the side rail on a computer show only Inicio, Ventas, Clientes, Stock and Más, in that order (the design's).
   - A fixed **"Nueva venta"** button, separate from the tabs, opens the sale form directly (sales.md). It is not a tab.
   - It shows on every signed-in screen except the sale form itself and its customer sheet.
-- **Inicio**: the business's name. When no variety has a current price today, it shows "Arrancá por las variedades". No figures.
+- **Inicio**: the panel (results.md).
+  - Hoy · Semana · Mes, with sales, Ganancia, Caja, money owed and stock per variety.
+  - When no variety has a current price today, "Arrancá por las variedades" shows above the panel, and the panel still shows its real figures.
 - **Más**: Gastos, Variedades, Catálogo ("Catálogo · El mensaje de hoy, listo para copiar", catalog.md), Negocio.
 - **Negocio**:
   - rename the business;
@@ -123,7 +125,7 @@ Success criteria:
 - **Nothing invented (criterion 7)**:
   - the bar shows exactly Inicio, Ventas, Clientes, Stock and Más, plus the "Nueva venta" button;
   - Más shows exactly Gastos, Variedades, Catálogo and Negocio;
-  - Inicio shows no figures.
+  - every figure on Inicio equals the API's answer, with real zeros for a period with no activity (results.md).
 
 ## Out of scope
 

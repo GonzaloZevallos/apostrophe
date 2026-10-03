@@ -190,9 +190,9 @@ _In the app_: Categoría
 _Avoid_: type, tag, label, account, cost center
 
 **Profit**:
-Sales minus cost of goods sold minus expenses, over a period. A sale counts on its own date, paid or not.
-_In the app_: Ganancia
+Sales (shipping included, paid or not) minus cost of goods sold minus expenses, over a period, each counted on its own date. Purchases never enter it. It may be negative, and is then shown with a minus sign, never hidden. _In the app_: Ganancia.
 _Avoid_: margin, earnings, net
+_In the app_: Ganancia
 
 **Cash**:
 Payments received minus expenses minus purchases, over a period: the money that actually moved.
@@ -277,3 +277,11 @@ _Avoid_: unpaid orders, pending sales, open invoices
 **Total owed**:
 The sum of every customer's balance above $0 in a business; credits never subtract from it. _In the app_: the total heading Te deben and in Clientes' header.
 _Avoid_: receivables, outstanding
+
+**Panel**:
+Inicio's one-screen view of a business for today, this week (Monday to Sunday) or this month in Argentina time: sales, cost of goods sold, expenses, purchases, profit and cash, then money owed and stock per variety. Read only; every figure comes from the server. _In the app_: Inicio (tabs Hoy · Semana · Mes).
+_Avoid_: dashboard, overview, home, summary, Análisis
+
+**Average sale**:
+A period's sales total, shipping included, divided by its number of sales (not lines), rounded half up to the whole peso. Not shown when the period has no sales.
+_Avoid_: average ticket, mean order, ticket promedio

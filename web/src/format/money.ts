@@ -30,3 +30,12 @@ export function formatGrams(grams: number | string): string {
 export function formatMoneyMagnitude(pesos: number): string {
   return formatMoney(Math.abs(pesos))
 }
+
+/** `-4500` → `"− $ 4.500"` with U+2212 (minus sign, not a hyphen): the only way
+ * Ganancia and Caja show a negative figure (plan, invariants: "Ganancia and Caja
+ * render through formatSignedMoney") — never hidden, floored or shown as a plain
+ * hyphen. A non-negative amount formats exactly as `formatMoney`. */
+export function formatSignedMoney(pesos: number): string {
+  const rounded = Math.round(pesos)
+  return rounded < 0 ? `−${formatMoney(Math.abs(rounded))}` : formatMoney(rounded)
+}

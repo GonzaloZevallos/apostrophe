@@ -1,0 +1,68 @@
+{
+  "periods": {
+    "today": {
+      "start": "2026-10-03",
+      "end": "2026-10-03",
+      "sales": 15000,
+      "sales_count": 2,
+      "average_sale": 7500,
+      "grams_sold": 10,
+      "grams_gifted": 0,
+      "cost_of_goods": 6000,
+      "pending_cost": false,
+      "expenses": 0,
+      "purchases": 0,
+      "profit": 9000,
+      "cash": 15000
+    },
+    "week": {
+      "start": "2026-09-28",
+      "end": "2026-10-04",
+      "sales": 42000,
+      "sales_count": 5,
+      "average_sale": 8400,
+      "grams_sold": 28,
+      "grams_gifted": 2,
+      "cost_of_goods": 18000,
+      "pending_cost": true,
+      "expenses": 12000,
+      "purchases": 30000,
+      "profit": 12000,
+      "cash": -12000
+    },
+    "month": {
+      "start": "2026-10-01",
+      "end": "2026-10-31",
+      "sales": 23000,
+      "sales_count": 3,
+      "average_sale": 7667,
+      "grams_sold": 14,
+      "grams_gifted": 0,
+      "cost_of_goods": 9000,
+      "pending_cost": false,
+      "expenses": 5000,
+      "purchases": 0,
+      "profit": 9000,
+      "cash": 15000
+    }
+  },
+  "debts": {
+    "total_owed": 37000,
+    "sales_owing_count": 4,
+    "oldest": "2026-09-14",
+    "teaser": [
+      { "customer_id": 1, "name": "Ana Pérez", "balance": 15000, "owing_since": "2026-09-14" }
+    ]
+  },
+  "stock": [
+    {
+      "variety_id": 1,
+      "name": "Criolla",
+      "grams": 18,
+      "status": "low",
+      "sold_out_since": null,
+      "threshold": 20,
+      "days_left": 6
+    }
+  ]
+}
