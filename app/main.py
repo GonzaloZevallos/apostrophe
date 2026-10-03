@@ -26,6 +26,7 @@ from app.migrations.runner import upgrade_to_head
 from app.sales.adapters.router import router as sales_router
 from app.settings import Settings
 from app.static_spa import MissingBuiltFront, SpaStatic, api_segments
+from app.stock.adapters.router import router as stock_router
 from app.varieties.adapters.router import router as varieties_router
 
 
@@ -89,6 +90,7 @@ def create_app(
     app.include_router(customers_router, dependencies=gated)
     app.include_router(expenses_router, dependencies=gated)
     app.include_router(sales_router, dependencies=gated)
+    app.include_router(stock_router, dependencies=gated)
 
     if settings.web_dist is not None:
         if not (settings.web_dist / "index.html").is_file():
