@@ -107,8 +107,32 @@ test('the pending-cost note shows under both Costo de lo vendido and Ganancia, o
   expect(screen.queryByText('incluye costo pendiente')).not.toBeInTheDocument()
 })
 
-test('no sales shows no average, and the range reads with no year across a year boundary', async () => {
-  stubFetch(PANEL)
+test('no sales shows no average, and the range reads with no year', async () => {
+  // A dedicated override, not the shared fixture: a period with no sales must still
+  // be a period that could really exist (the shared fixture's month contains today,
+  // which has sales, so it can never itself read 0 sales).
+  const noSalesThisMonth: PanelAnswer = {
+    ...PANEL,
+    periods: {
+      ...PANEL.periods,
+      month: {
+        start: '2026-10-01',
+        end: '2026-10-31',
+        sales: 0,
+        sales_count: 0,
+        average_sale: null,
+        grams_sold: 0,
+        grams_gifted: 0,
+        cost_of_goods: 0,
+        pending_cost: false,
+        expenses: 5000,
+        purchases: 0,
+        profit: -5000,
+        cash: -5000,
+      },
+    },
+  }
+  stubFetch(noSalesThisMonth)
   const { container } = renderInicio()
   await screen.findByText('Vendiste hoy')
 

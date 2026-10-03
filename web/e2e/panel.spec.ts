@@ -226,9 +226,17 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await page.getByRole('button', { name: 'Guardar venta' }).click()
   await expect(page.getByText('Venta guardada')).toBeVisible()
 
-  // One more sale, dated earlier in this month but outside this week, when such a
-  // day exists (never a future date) — so Mes differs from Semana and Hoy, and the
-  // tab switch below is proven by real figures, not only by the range label.
+  // Two more sales, dated at the start of this week and the start of this month —
+  // so Hoy, Semana and Mes can differ by more than their range label, whatever day
+  // this run happens to land on. `mondayIso` and `monthStartIso` are each today or
+  // earlier, never future (a week's or a month's start never comes after the today
+  // it contains), so both are always safe to seed; deduplicated against `todayIso`
+  // and each other, so a day that already carries a sale (today being Monday, or
+  // the 1st of the month) is never seeded twice. Whichever of the two falls outside
+  // the current month (when the week crosses a month boundary, as it does whenever
+  // today is early in the month) widens Semana past Mes; whichever falls outside
+  // the current week widens Mes past Semana — between the two, at least one real
+  // difference from Hoy's own figures is guaranteed.
   // Seeded directly, through the same session's own `page.request` (`sales.spec.ts`
   // already seeds this way for its own period checks) — this is the panel's own
   // seam, "the end-to-end front run", not a `curl` shortcut: same browser, same
@@ -236,23 +244,26 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   const monthStartIso = `${todayIso.slice(0, 7)}-01`
   const mondayOffset = weekdayOf(todayIso) === 0 ? -6 : 1 - weekdayOf(todayIso)
   const mondayIso = addDays(todayIso, mondayOffset)
-  if (monthStartIso < mondayIso) {
+  const extraDatesIso = [...new Set([mondayIso, monthStartIso])].filter((iso) => iso !== todayIso)
+  if (extraDatesIso.length > 0) {
     const varietiesAnswer: { id: number; name: string }[] = await (
       await page.request.get(`/varieties?on=${todayIso}`)
     ).json()
     const rosaId = varietiesAnswer.find((variety) => variety.name === 'Rosa')?.id
     if (rosaId === undefined) throw new Error('Rosa missing from GET /varieties?on=')
-    const monthOnlyResponse = await page.request.post('/sales', {
-      data: {
-        date: monthStartIso,
-        customer_id: null,
-        shipping_charged: 0,
-        note: null,
-        payment: 'cash',
-        lines: [{ variety_id: rosaId, grams: '1', gift: false, special_price: null }],
-      },
-    })
-    expect(monthOnlyResponse.ok()).toBe(true)
+    for (const dateIso of extraDatesIso) {
+      const extraResponse = await page.request.post('/sales', {
+        data: {
+          date: dateIso,
+          customer_id: null,
+          shipping_charged: 0,
+          note: null,
+          payment: 'cash',
+          lines: [{ variety_id: rosaId, grams: '1', gift: false, special_price: null }],
+        },
+      })
+      expect(extraResponse.ok()).toBe(true)
+    }
   }
 
   // An expense, in the business's own default "Otros" category.

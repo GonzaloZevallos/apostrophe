@@ -33,17 +33,17 @@
     "month": {
       "start": "2026-10-01",
       "end": "2026-10-31",
-      "sales": 0,
-      "sales_count": 0,
-      "average_sale": null,
-      "grams_sold": 0,
+      "sales": 23000,
+      "sales_count": 3,
+      "average_sale": 7667,
+      "grams_sold": 14,
       "grams_gifted": 0,
-      "cost_of_goods": 0,
+      "cost_of_goods": 9000,
       "pending_cost": false,
       "expenses": 5000,
       "purchases": 0,
-      "profit": -5000,
-      "cash": -5000
+      "profit": 9000,
+      "cash": 15000
     }
   },
   "debts": {

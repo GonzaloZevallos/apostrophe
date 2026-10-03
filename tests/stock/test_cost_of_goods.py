@@ -95,6 +95,21 @@ def test_the_pending_flag_is_true_only_when_a_sale_line_in_the_period_has_pendin
     assert outside == CostOfGoods(0, False)
 
 
+def test_a_negative_adjustment_with_pending_grams_in_the_period_never_sets_pending() -> None:
+    """The adjustment draws more than the lot holds, so `allocate` answers it with its
+    own pending grams — but it is a stock entry, not a sale line, so neither its cost
+    nor its pending grams ever reach the period's answer, even though its date falls
+    inside the window. Moving the rank check after the pending check (reading
+    `result.pending` before `continue`) would flip this to `True`."""
+    lots = [_lot(1, "2", 200, date(2026, 9, 1))]  # only 2g on hand
+    draws = [_adjustment(1, "5", date(2026, 9, 5))]  # 2g costed, 3g pending — on the adjustment
+    grouped = {1: (lots, draws)}
+
+    answer = cost_of_goods(grouped, date(2026, 9, 5), date(2026, 9, 5))
+
+    assert answer == CostOfGoods(0, False)
+
+
 def test_an_empty_business_gives_zero_and_no_pending() -> None:
     answer = cost_of_goods({}, date(2026, 9, 1), date(2026, 9, 30))
 

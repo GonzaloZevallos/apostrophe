@@ -96,9 +96,9 @@ class DebtorRow:
 
 @dataclass(frozen=True)
 class Debts:
-    """`debtors` arrives in `debtors()` order (payments-domain): by balance, then
-    owing since, then name. The panel's own teaser re-sorts and cuts this; it never
-    re-queries for it."""
+    """`debtors` arrives in `debtors()` order (payments-domain): oldest debt first,
+    ties broken by `fold`ed name then id. The panel's own teaser re-sorts (by balance,
+    then owing since, then name) and cuts this; it never re-queries for it."""
 
     total_owed: int
     sales_owing_count: int

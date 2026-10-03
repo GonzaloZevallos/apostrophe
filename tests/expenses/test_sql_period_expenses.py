@@ -52,6 +52,23 @@ def test_totals_sums_each_period_from_the_one_load(client: TestClient, engine: E
     assert totals == {TODAY: 1_000, WEEK: 2_200, MONTH: 1_700}
 
 
+def test_totals_excludes_an_expense_dated_just_after_a_narrower_periods_end(
+    client: TestClient, engine: Engine
+) -> None:
+    """A narrow period ending before today, so an expense dated the day after its
+    own end is still a valid (not-in-the-future) expense to record — unlike
+    `TODAY`/`WEEK`/`MONTH` above, whose ends all sit on or after the clock's own
+    today. Pins the upper bound at the `totals` seam, not only at `between`'s."""
+    narrow = Period(date(2026, 9, 10), date(2026, 9, 20))
+    _record(client, "2026-09-20", 1_000)  # the end bound: included
+    _record(client, "2026-09-21", 500)  # one day after the end: excluded
+
+    with Session(engine) as session:
+        totals = SqlPeriodExpenses(session, BUSINESS_ID).totals([narrow])
+
+    assert totals == {narrow: 1_000}
+
+
 def test_totals_excludes_another_businesss_expenses(
     client: TestClient, other_client: TestClient, engine: Engine
 ) -> None:

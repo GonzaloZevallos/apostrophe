@@ -50,6 +50,18 @@ def test_between_includes_both_bounds_and_excludes_just_outside_them(
     ]
 
 
+def test_between_excludes_just_after_the_end_bound(client: TestClient, engine: Engine) -> None:
+    # The queried end (09-30) sits before the fixed clock's own today (2026-10-02,
+    # tests/conftest.py), so both dates below are valid, not-in-the-future expenses.
+    _record(client, "2026-09-30")  # the end bound: included
+    _record(client, "2026-10-01")  # one day after the end: excluded
+
+    with Session(engine) as session:
+        expenses = SqlExpenses(session, BUSINESS_ID).between(date(2026, 9, 28), date(2026, 9, 30))
+
+    assert [expense.spent_on for expense in expenses] == [date(2026, 9, 30)]
+
+
 def test_between_spans_a_month_boundary(client: TestClient, engine: Engine) -> None:
     _record(client, "2026-09-28")
     _record(client, "2026-10-02")
