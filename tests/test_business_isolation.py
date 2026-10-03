@@ -25,7 +25,10 @@ from typing import Any
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+from sqlalchemy import delete as sa_delete
+from sqlalchemy import select
 from sqlalchemy.engine import Engine
+from sqlalchemy.orm import Session
 
 from app.accounts.application import manage_business
 from app.accounts.application.ports import Accounts
@@ -34,6 +37,9 @@ from app.expenses.adapters.tables import ExpenseCategoryRow
 from app.expenses.application import manage_categories
 from app.expenses.domain.category import CategoryNotFound
 from app.main import create_app
+from app.payments.adapters import router as payments_router_module
+from app.payments.adapters.sql_payments import SqlPayments
+from app.payments.adapters.tables import PaymentRow
 from app.shared.transaction import Transaction
 from tests.conftest import SETTINGS, TEST_HASHER, MovableClock, open_business, signed_in
 
@@ -116,12 +122,39 @@ def seed_stock(client: TestClient) -> dict[str, int]:
     return {"stock_entry_id": entry.json()["id"]}
 
 
+def seed_payments(client: TestClient) -> dict[str, int]:
+    variety = client.post("/varieties", json={"name": f"{MARKER} payments variety"}).json()
+    client.post(
+        f"/varieties/{variety['id']}/prices",
+        json={"effective_from": "2026-01-01", "list_price": 11_000},
+    )
+    customer = client.post(
+        "/customers", json={"name": f"{MARKER} payments customer", "phone": "11 4444-3333"}
+    ).json()
+    customer_id = customer["id"]
+    client.post(
+        "/sales",
+        json={
+            "payment": "owing",
+            "customer_id": customer_id,
+            "lines": [{"variety_id": variety["id"], "grams": "10"}],
+        },
+    )
+    payment = client.post(
+        f"/customers/{customer_id}/payments",
+        json={"paid_on": "2026-09-20", "amount": 1_000, "method": "cash"},
+    )
+    assert payment.status_code == 201, payment.text
+    return {"customer_id": customer_id, "payment_id": payment.json()["payment"]["id"]}
+
+
 SEEDERS: list[Callable[[TestClient], dict[str, int]]] = [
     seed_varieties,
     seed_customers,
     seed_expenses,
     seed_sales,
     seed_stock,
+    seed_payments,
 ]
 
 BODIES: dict[tuple[str, str], dict[str, Any]] = {
@@ -165,6 +198,15 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
         "grams": "20",
     },
     ("PUT", "/stock/varieties/{variety_id}/threshold"): {"grams": "15"},
+    ("POST", "/customers/{customer_id}/payments/preview"): {
+        "paid_on": "2026-10-02",
+        "amount": 100,
+    },
+    ("POST", "/customers/{customer_id}/payments"): {
+        "paid_on": "2026-10-02",
+        "amount": 100,
+        "method": "cash",
+    },
 }
 
 PUBLIC_PATHS = {"/health", "/auth/login", "/auth/logout"}
@@ -491,4 +533,65 @@ def test_the_singleton_check_catches_a_write_that_always_touches_business_1(
     with pytest.raises(AssertionError):
         _assert_a_business_s_write_touches_only_its_own_business(
             business_a, business_b, "PATCH", "/business"
+        )
+
+
+def test_another_business_reads_debtors_as_zero_while_a_has_debt(
+    business_a: TestClient, business_b: TestClient, seeded: dict[str, int]
+) -> None:
+    a_debtors = business_a.get("/payments/debtors").json()
+    assert a_debtors["total_owed"] > 0
+    assert a_debtors["sales_owing_count"] > 0
+    assert a_debtors["debtors"] != []
+
+    b_debtors = business_b.get("/payments/debtors").json()
+    assert b_debtors == {"total_owed": 0, "sales_owing_count": 0, "debtors": []}
+
+
+def test_another_business_gets_404_deleting_an_on_the_spot_payment(
+    business_a: TestClient, business_b: TestClient, engine: Engine, seeded: dict[str, int]
+) -> None:
+    """`seed_sales`'s own cash sale (`seeded["sale_id"]`) carries an on-the-spot
+    payment: its id is read straight from the test engine (CODING_STANDARDS §5), the
+    way a repository-level test already does for `business_id`), since no route
+    answers a payment's own id for an on-the-spot sale."""
+    with Session(engine) as session:
+        on_the_spot = session.scalar(
+            select(PaymentRow).where(PaymentRow.sale_id == seeded["sale_id"])
+        )
+    assert on_the_spot is not None
+
+    response = business_b.delete(f"/payments/{on_the_spot.id}")
+
+    assert response.status_code == 404, response.text
+    assert business_a.get(f"/sales/{seeded['sale_id']}").status_code == 200
+
+
+def test_the_delete_check_catches_a_payment_delete_that_ignores_business(
+    business_a: TestClient,
+    business_b: TestClient,
+    seeded: dict[str, int],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Proven negative (CODING_STANDARDS §5), modelled on the expense-category proof
+    above: a delete that finds a payment by id alone, ignoring the business, and
+    always succeeds must make the sweep's own check fail when B deletes A's id —
+    otherwise `SqlPayments.get` filtering on `business_id` would never be proven to
+    matter."""
+
+    def deletes_by_id_alone_and_always_succeeds(
+        payments: SqlPayments, transaction: Transaction, payment_id: int
+    ) -> None:
+        payments._session.execute(sa_delete(PaymentRow).where(PaymentRow.id == payment_id))
+        transaction.commit()
+
+    monkeypatch.setattr(
+        payments_router_module,
+        "delete_payment_use_case",
+        deletes_by_id_alone_and_always_succeeds,
+    )
+
+    with pytest.raises(AssertionError):
+        _assert_another_business_cannot_reach_a_record(
+            business_a, business_b, seeded, "DELETE", "/payments/{payment_id}"
         )
