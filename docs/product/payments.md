@@ -33,7 +33,9 @@ Success criteria:
 - **Fields**: a customer of the same business, a date, an amount in whole pesos above $0, and a method (cash or transfer). There is no note.
 - **Date**: defaults to today, the business day in Argentina time. Earlier days are allowed; a future date is refused.
 - **Customer**: required. Another business's customer is gone (404).
-- **Above the balance**: a payment above the customer's current balance is refused, so recording never creates a credit. A customer whose balance is $0 or a credit cannot be given a payment.
+- **Above the balance**: a payment above the customer's current balance is refused, so recording never creates a credit.
+  - The current balance counts all the customer's sales, whatever the payment's date.
+  - A customer whose balance is $0 or a credit cannot be given a payment.
 - **No edit**: a payment cannot be edited. A mistaken one is deleted and recorded again.
 - **Delete**: a hard delete, confirmed first. Only a later payment can be deleted this way.
 
@@ -46,6 +48,7 @@ Success criteria:
   - Sales are taken by date, then by recording order.
   - Later payments are applied by date, then by recording order.
   - A payment that reaches past one sale goes on to the next.
+  - **A payment's own date never limits what it settles.** A payment dated before the customer's oldest owed sale still settles that sale. Its date says when the money came in (criterion 6), not which debt it may pay.
 - **Nothing about a settlement is stored.** Which sale a payment covers, the balance and owing since are worked out live from the customer's sales and payments as they stand now.
   - A sale or payment recorded late takes its place by its own date.
   - Deleting either one makes everything after it work out again.
@@ -88,6 +91,9 @@ Success criteria:
   - a sale left owing: "Quedó debiendo";
   - a later payment: one row per sale it reaches, "Cobro · <método> · A cuenta de la venta del dd/mm", with the amount applied to that sale;
   - any part beyond every debt: "A favor".
+- **Running balance below zero**: between a payment and a later-dated sale it settles, the running balance goes below zero and that row reads "A favor $ X".
+  - It is the running figure only, not a credit, and counts in no figure.
+  - The card's own balance reads "A favor" only when the balance today is below zero.
 - **"Borrar cobro"** exists only on later payments.
   - It is confirmed with "¿Borrás el cobro de $ 15.000 (transferencia) del 20/09?", "No, dejalo / Sí, borralo". The confirmation names the payment, never the sales it covered.
   - Then the toast "Cobro eliminado", with no data, and the account and balance refresh from the API.
@@ -133,6 +139,7 @@ Success criteria:
   - oldest first;
   - a partial payment;
   - a payment spanning several sales;
+  - a payment dated before the sale it settles;
   - an on-the-spot payment staying with its sale;
   - independence from recording order;
   - working out again after a late record or a delete of a sale or a payment.

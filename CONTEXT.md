@@ -243,7 +243,7 @@ The payment recorded together with a sale paid in full in cash or by transfer. I
 _Avoid_: cash sale, immediate payment
 
 **Settlement**:
-Which sales a later payment covers: the customer's oldest debt first (sales by date, then recording order; payments by date, then recording order). It is worked out live from the sales and payments as they stand now, and never stored. _In the app_: A cuenta de la venta del dd/mm.
+Which sales a later payment covers: the customer's oldest debt first (sales by date, then recording order; payments by date, then recording order), whatever the payment's own date. It is worked out live from the sales and payments as they stand now, and never stored. _In the app_: A cuenta de la venta del dd/mm.
 _Avoid_: allocation, application, imputación
 
 **Credit**:
