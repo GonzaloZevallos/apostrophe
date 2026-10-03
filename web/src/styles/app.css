@@ -350,7 +350,7 @@
 
 .boton-nueva-venta--escritorio {
   display: none;
-  margin-bottom: 16px;
+  margin-bottom: var(--espacio-lg);
 }
 
 .mas__lista {

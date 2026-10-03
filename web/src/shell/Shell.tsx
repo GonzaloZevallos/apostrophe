@@ -2,10 +2,10 @@
  * The bottom bar on the phone, the side rail on a computer (plan, "Shell";
  * `componentes.ts`'s `Destino`); CSS alone switches between them (`styles/app.css`).
  * Only destinations that exist show (PRD, "Nada inventado"; metric M5): Inicio,
- * Clientes, Ventas and Más, in that order (accounts.md, "Shell" — the design's own
- * markup also lists Stock, which has no screen yet, so this keeps the four that
- * exist in the order accounts.md spells out rather than the design's literal,
- * Stock-inclusive one). `useOutletContext` passes `me` on to whatever the active
+ * Ventas, Clientes and Más, in the design's own order (`Inicio.dc.html`,
+ * `InicioCompu.dc.html`: Inicio, Ventas, Clientes, Stock, Más on both bars) with
+ * Stock dropped, since it has no screen yet (PRD, "the design wins" on tab order).
+ * `useOutletContext` passes `me` on to whatever the active
  * route renders (`Inicio` first; the screen subtasks' routes next), so none of them
  * has to re-run `GET /auth/me`.
  *
@@ -27,8 +27,8 @@ interface Item {
 
 const ITEMS: Item[] = [
   { to: '/', label: 'Inicio' },
-  { to: '/clientes', label: 'Clientes' },
   { to: '/ventas', label: 'Ventas' },
+  { to: '/clientes', label: 'Clientes' },
   { to: '/mas', label: 'Más' },
 ]
 

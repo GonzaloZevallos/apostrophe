@@ -1,17 +1,27 @@
 /**
  * `Shell` at the screen seam: only destinations that exist show (PRD, "Nada
- * inventado"; metric M5) — Inicio, Clientes, Ventas and Más, never Stock, which
- * comes with its own task (accounts.md, "Shell"). The fixed "Nueva venta" button,
- * separate from the tabs, shows on every signed-in screen except the sale form
- * itself (accounts.md: "It shows on every signed-in screen except the sale form
- * itself and its customer sheet" — the sheet shares `NuevaVenta`'s own route, so
- * hiding on that one path covers both).
+ * inventado"; metric M5) — Inicio, Ventas, Clientes and Más, in the design's own
+ * order (`Inicio.dc.html`, `InicioCompu.dc.html`), never Stock, which comes with
+ * its own task. The fixed "Nueva venta" button, separate from the tabs, shows on
+ * every signed-in screen except the sale form itself (accounts.md: "It shows on
+ * every signed-in screen except the sale form itself and its customer sheet" —
+ * the sheet shares `NuevaVenta`'s own route, so hiding on that one path covers
+ * both).
  */
 
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { expect, test } from 'vitest'
 import Shell from './Shell'
+
+/** The tabs only, in the order they render — drops the fixed "Nueva venta"
+ * button, which shares the rail's `link` role but is not one of the tabs. */
+function tabNames(nav: HTMLElement): string[] {
+  return within(nav)
+    .getAllByRole('link')
+    .map((link) => link.textContent)
+    .filter((name): name is string => name !== 'Nueva venta')
+}
 
 function renderShell(initialPath: string) {
   render(
@@ -37,6 +47,16 @@ test('shows exactly Inicio, Clientes, Ventas and Más in both navs', () => {
     expect(nav).toHaveTextContent('Ventas')
     expect(nav).toHaveTextContent('Más')
     expect(nav).not.toHaveTextContent('Stock')
+  }
+})
+
+test('orders the tabs Inicio, Ventas, Clientes, Más — the design\'s own order with Stock dropped', () => {
+  renderShell('/')
+
+  const navs = screen.getAllByRole('navigation')
+  expect(navs).toHaveLength(2)
+  for (const nav of navs) {
+    expect(tabNames(nav)).toEqual(['Inicio', 'Ventas', 'Clientes', 'Más'])
   }
 })
 
