@@ -27,6 +27,21 @@ export default defineConfig({
   use: {
     baseURL: E2E_BASE_URL,
   },
+  // `catalogInsecureOrigin.spec.ts` (review finding, carried from the clipboard
+  // subtask: the `execCommand` fallback was only proven in jsdom) needs a base URL
+  // that is neither `https` nor `localhost`/`127.0.0.1` — the one combination
+  // Chromium's own secure-context rule still treats as insecure — so it gets its
+  // own project with its own `baseURL`, instead of running under the default one
+  // every other spec shares. It needs no real DNS entry: the spec itself proxies
+  // every request for that host to the one real server this config starts below.
+  projects: [
+    { name: 'secure-origin', testIgnore: /catalogInsecureOrigin\.spec\.ts/ },
+    {
+      name: 'insecure-origin',
+      testMatch: /catalogInsecureOrigin\.spec\.ts/,
+      use: { baseURL: 'http://apostrophe.test' },
+    },
+  ],
   webServer: {
     // A throwaway SQLite file, removed before every run; `cwd: '..'` so the paths
     // in `E2E_ENV` (repo-root-relative, matching `scripts/serve.sh`'s own) resolve
