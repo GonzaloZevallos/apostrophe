@@ -16,6 +16,8 @@ import Entrar from './screens/Entrar'
 import Inicio from './screens/Inicio'
 import Invitacion from './screens/Invitacion'
 import Mas from './screens/Mas'
+import VariedadDetalle from './screens/VariedadDetalle'
+import Variedades from './screens/Variedades'
 import GatedLayout from './shell/GatedLayout'
 import Shell from './shell/Shell'
 import { useOnline } from './useOnline'
@@ -53,6 +55,8 @@ export default function App() {
             <Route element={<Shell />}>
               <Route index element={<Inicio />} />
               <Route path="mas" element={<Mas />} />
+              <Route path="variedades" element={<Variedades />} />
+              <Route path="variedades/:id" element={<VariedadDetalle />} />
             </Route>
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />

@@ -111,6 +111,15 @@
   color: var(--tinta);
 }
 
+.boton-enlace {
+  background: none;
+  border: 0;
+  color: var(--acento);
+  font-size: 15px;
+  cursor: pointer;
+  min-height: var(--alto-tocable);
+}
+
 .boton--destructivo {
   background: var(--critico);
   color: var(--critico-texto);
@@ -146,6 +155,18 @@
   flex: 1;
   height: var(--alto-tocable);
   font-size: 15px;
+}
+
+.aviso-neutro {
+  background: var(--superficie);
+  border-radius: var(--radio-panel-grande);
+  padding: 14px 18px;
+}
+
+.aviso-neutro__texto {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--tinta2);
 }
 
 .aviso-exito {
