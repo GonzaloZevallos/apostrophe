@@ -1,7 +1,7 @@
 /**
  * `Shell` at the screen seam: only destinations that exist show (PRD, "Nada
- * inventado"; metric M5) — Inicio, Clientes and Más, never Ventas or Stock, which
- * come with their own tasks.
+ * inventado"; metric M5) — Inicio, Clientes, Stock and Más, never Ventas, which
+ * comes with its own screen task.
  */
 
 import { render, screen } from '@testing-library/react'
@@ -9,7 +9,7 @@ import { MemoryRouter, Route, Routes } from 'react-router'
 import { expect, test } from 'vitest'
 import Shell from './Shell'
 
-test('shows exactly Inicio, Clientes and Más in both navs', () => {
+test('shows exactly Inicio, Clientes, Stock and Más in both navs', () => {
   render(
     <MemoryRouter initialEntries={['/']}>
       <Routes>
@@ -25,9 +25,9 @@ test('shows exactly Inicio, Clientes and Más in both navs', () => {
   for (const nav of navs) {
     expect(nav).toHaveTextContent('Inicio')
     expect(nav).toHaveTextContent('Clientes')
+    expect(nav).toHaveTextContent('Stock')
     expect(nav).toHaveTextContent('Más')
     expect(nav).not.toHaveTextContent('Ventas')
-    expect(nav).not.toHaveTextContent('Stock')
   }
 })
 

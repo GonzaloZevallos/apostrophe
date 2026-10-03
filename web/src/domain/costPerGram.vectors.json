@@ -1,0 +1,6 @@
+[
+  { "totalCost": 10000, "grams": "10", "expected": 1000 },
+  { "totalCost": 1000, "grams": "3", "expected": 333 },
+  { "totalCost": 85000, "grams": "11.5", "expected": 7391 },
+  { "totalCost": 5, "grams": "2", "expected": 3 }
+]
