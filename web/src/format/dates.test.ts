@@ -1,5 +1,16 @@
 import { describe, expect, test } from 'vitest'
-import { formatDate, formatDateLong, formatDateShort, formatMonthLong, shiftMonth, sinceWhen } from './dates'
+import {
+  formatDate,
+  formatDateLong,
+  formatDateShort,
+  formatMonthLong,
+  maxSaleDate,
+  monthRange,
+  shiftMonth,
+  sinceWhen,
+  todayRange,
+  weekRange,
+} from './dates'
 
 describe('formatDate', () => {
   test('drops the year when it matches today\'s', () => {
@@ -54,5 +65,61 @@ describe('shiftMonth', () => {
 
   test('moves backward across a year boundary', () => {
     expect(shiftMonth('2026-01', -1)).toBe('2025-12')
+  })
+})
+
+describe('todayRange', () => {
+  test('is today to today, for "Hoy"', () => {
+    expect(todayRange('2026-10-03')).toEqual({ start: '2026-10-03', end: '2026-10-03' })
+  })
+})
+
+describe('weekRange', () => {
+  test('a Sunday closes the week begun on the Monday before it, across a month', () => {
+    // 2026-10-04 is a Sunday; its week starts Monday 2026-09-28.
+    expect(weekRange('2026-10-04')).toEqual({ start: '2026-09-28', end: '2026-10-04' })
+  })
+
+  test('a Monday opens the week it is in', () => {
+    // 2026-10-05 is a Monday.
+    expect(weekRange('2026-10-05')).toEqual({ start: '2026-10-05', end: '2026-10-11' })
+  })
+
+  test('a week can cross a year boundary', () => {
+    // 2026-12-28 is a Monday; its Sunday is 2027-01-03.
+    expect(weekRange('2026-12-28')).toEqual({ start: '2026-12-28', end: '2027-01-03' })
+  })
+
+  test('a midweek day falls between its Monday and Sunday', () => {
+    // 2026-10-03 is a Saturday, in the week of 2026-09-28 to 2026-10-04.
+    expect(weekRange('2026-10-03')).toEqual({ start: '2026-09-28', end: '2026-10-04' })
+  })
+})
+
+describe('monthRange', () => {
+  test('a 31-day month', () => {
+    expect(monthRange('2026-10-02')).toEqual({ start: '2026-10-01', end: '2026-10-31' })
+  })
+
+  test('a 30-day month', () => {
+    expect(monthRange('2026-04-15')).toEqual({ start: '2026-04-01', end: '2026-04-30' })
+  })
+
+  test('February in a leap year', () => {
+    expect(monthRange('2024-02-29')).toEqual({ start: '2024-02-01', end: '2024-02-29' })
+  })
+
+  test('February in a non-leap year', () => {
+    expect(monthRange('2025-02-14')).toEqual({ start: '2025-02-01', end: '2025-02-28' })
+  })
+
+  test('also serves as Fechas\' opening range: the current month\'s first and last day', () => {
+    expect(monthRange('2026-01-20')).toEqual({ start: '2026-01-01', end: '2026-01-31' })
+  })
+})
+
+describe('maxSaleDate', () => {
+  test('a sale cannot be dated later than today', () => {
+    expect(maxSaleDate('2026-10-03')).toBe('2026-10-03')
   })
 })
