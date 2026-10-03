@@ -52,10 +52,12 @@ def test_a_line_spanning_two_lots_is_split_between_costed_and_pending(
     _entry(client, variety_id, grams="5", total_cost=5_000)
     _entry(client, variety_id, grams="3", total_cost=6_000)
 
-    sale = client.post(
+    sale_response = client.post(
         "/sales",
         json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": "10"}]},
-    ).json()
+    )
+    assert sale_response.status_code == 201, sale_response.text
+    sale = sale_response.json()
 
     business_id = _business_id_of_variety(engine, variety_id)
     with Session(engine) as session:

@@ -25,16 +25,22 @@ def _entry(client: TestClient, variety_id: int, **overrides: Any) -> None:
     assert response.status_code == 201, response.text
 
 
+def _sale(client: TestClient, variety_id: int, grams: str = "10") -> int:
+    response = client.post(
+        "/sales",
+        json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": grams}]},
+    )
+    assert response.status_code == 201, response.text
+    return int(response.json()["id"])
+
+
 def test_a_fully_costed_line_answers_its_cost_and_no_pending_grams(
     client: TestClient,
 ) -> None:
     variety_id = _variety(client)
     _entry(client, variety_id, grams="10", total_cost=5_000)
 
-    sale_id = client.post(
-        "/sales",
-        json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": "10"}]},
-    ).json()["id"]
+    sale_id = _sale(client, variety_id)
 
     response = client.get(f"/sales/{sale_id}")
 
@@ -58,10 +64,7 @@ def test_a_line_with_no_lot_behind_it_is_entirely_pending_never_a_zero_cost(
     the draw is costed (a stock invariant this route must not paper over)."""
     variety_id = _variety(client)
 
-    sale_id = client.post(
-        "/sales",
-        json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": "10"}]},
-    ).json()["id"]
+    sale_id = _sale(client, variety_id)
 
     response = client.get(f"/sales/{sale_id}")
 
@@ -90,10 +93,7 @@ def test_recording_a_later_entry_moves_the_cost_the_next_time_it_is_read(
     then again after a lot is recorded, and the second read reflects it without
     touching the sale's own price, total or payment."""
     variety_id = _variety(client)
-    sale_id = client.post(
-        "/sales",
-        json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": "10"}]},
-    ).json()["id"]
+    sale_id = _sale(client, variety_id)
     before = client.get(f"/sales/{sale_id}").json()
     assert before["lines"][0]["cost"] == {"costed": None, "pending_grams": 10.0}
 

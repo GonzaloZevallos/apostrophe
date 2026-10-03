@@ -422,6 +422,18 @@
   font-weight: 600;
 }
 
+.variedad-item__encabezado {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-sm);
+}
+
+.variedad-item__aviso {
+  font-size: 14px;
+  color: var(--tinta2);
+}
+
 .variedad-item__sin-precio {
   font-size: 14px;
   color: var(--tinta2);

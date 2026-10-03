@@ -123,10 +123,14 @@ def test_draws_are_sorted_too_oldest_first() -> None:
 def test_a_negative_adjustment_and_a_sale_line_on_the_same_moment_break_the_tie_by_rank() -> None:
     """Draw order decides which draw takes which lot's cost: a stock-entry draw and a
     sale-line draw on the exact same day and the exact same recorded moment must still
-    resolve the same way every time, by `rank` (stock entry first, sale line second)."""
+    resolve the same way every time, by `rank` (stock entry first, sale line second) —
+    never by `ref_id` or insertion order. The adjustment's `ref_id` (9) is deliberately
+    larger than the sale's (1), and `lots_and_draws` always appends entry-draws before
+    sale draws internally, so a `LotOrder` that dropped `rank` and fell back to
+    `ref_id` — or to the stable sort's insertion order — would read this backwards."""
     adjustment = _entry(id=9, grams="-2", origin=Origin.ADJUSTMENT, entry_date=DAY, recorded_at=AT)
     sale_draw = SaleLineDraw(
-        variety_id=1, day=DAY, recorded_at=AT, sale_id=9, position=0, grams=Grams.of("3")
+        variety_id=1, day=DAY, recorded_at=AT, sale_id=1, position=0, grams=Grams.of("3")
     )
 
     _, draws = lots_and_draws([adjustment], [sale_draw])[1]
