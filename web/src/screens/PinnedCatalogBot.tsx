@@ -16,21 +16,25 @@ import { type FormEvent, useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ApiError, NetworkError, post, get } from '../api/client'
 import { invalidateResource, keys } from '../api/keys'
-import { resolveOverride, type RefusalCode } from '../api/refusals'
+import {
+  PINNED_CATALOG_NOT_READY_REASON,
+  PINNED_CATALOG_REASON_LABEL,
+  PINNED_CATALOG_REFUSAL_OVERRIDES,
+  resolveOverride,
+  type PinReason,
+} from '../api/refusals'
 import AvisoExito, { type SuccessToast } from '../components/AvisoExito'
 import SinConexion from '../components/SinConexion'
 
 const TEST_SENT_TOAST: SuccessToast = 'Prueba enviada'
 const PUBLISHED_TOAST: SuccessToast = 'Catálogo publicado'
-const PUBLISH_GATE_REASON = 'Probalo primero para ver cómo queda'
+const PUBLISH_GATE_REASON = PINNED_CATALOG_NOT_READY_REASON
 const PREVIOUS_PIN_NOTICE =
   'El mensaje fijado anterior queda como está; desfijalo vos en Telegram.'
 const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
 const OWN_CHAT_HELP =
   'Escribile /start a tu bot y poné acá tu número de chat (te lo da @userinfobot).'
 const CHANNEL_CHAT_HELP = 'El @usuario del canal o su número. Tu bot tiene que ser admin.'
-
-type PinReason = 'telegram_unreachable' | 'bot_cannot_post' | 'message_gone' | 'missing_publish' | 'too_long'
 
 interface PinStatus {
   state: 'up_to_date' | 'out_of_date'
@@ -50,21 +54,6 @@ interface PinnedCatalogTestResult extends PinnedCatalog {
   previous_pin_left: boolean
 }
 
-const REASON_LABEL: Record<PinReason, string> = {
-  telegram_unreachable: 'Telegram no respondió',
-  bot_cannot_post: 'El bot no puede publicar en el canal',
-  message_gone: 'El mensaje fijado ya no está: publicalo de nuevo',
-  missing_publish: 'Falta publicarlo con el bot o el canal nuevo',
-  too_long: 'Es demasiado largo para Telegram: acortá aromas u ocultá variedades.',
-}
-
-const REFUSAL_OVERRIDES: Partial<Record<RefusalCode, string>> = {
-  'pinned_catalog.not_ready': PUBLISH_GATE_REASON,
-  'pinned_catalog.too_long': REASON_LABEL.too_long,
-  'pinned_catalog.telegram_unreachable': REASON_LABEL.telegram_unreachable,
-  'pinned_catalog.bot_cannot_post': REASON_LABEL.bot_cannot_post,
-}
-
 function formatDate(iso: string): string {
   const [, month, day] = iso.split('-')
   return `${day}/${month}`
@@ -76,7 +65,7 @@ function StatusLine({ status }: { status: PinStatus | null }) {
     <div>
       <span>{status.state === 'up_to_date' ? 'Al día' : 'Desactualizado'}</span>
       {status.state === 'out_of_date' && status.reason !== null && (
-        <span> · {REASON_LABEL[status.reason]}</span>
+        <span> · {PINNED_CATALOG_REASON_LABEL[status.reason]}</span>
       )}
       {status.last_published_on !== null && (
         <span> · El último fue el {formatDate(status.last_published_on)}</span>
@@ -127,11 +116,6 @@ export default function PinnedCatalogBot() {
     tokenFieldOpen || ownChatValue !== (data.own_chat ?? '') || channelChatValue !== (data.channel_chat ?? '')
   const publishDisabled = !data.can_publish || typedDiffersFromSaved
 
-  function applyResult(result: PinnedCatalog): void {
-    queryClient.setQueryData(keys.pinnedCatalog(), result)
-    invalidateResource(queryClient, 'pinnedCatalog', { refetchType: 'none' })
-  }
-
   async function onProbarlo(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault()
     setTestError(null)
@@ -144,7 +128,6 @@ export default function PinnedCatalogBot() {
         own_chat: ownChatValue,
         channel_chat: channelChatValue.trim() === '' ? null : channelChatValue,
       })
-      applyResult(result)
       setTokenChanging(false)
       setTokenInput('')
       setOwnChatInput(result.own_chat ?? '')
@@ -153,7 +136,8 @@ export default function PinnedCatalogBot() {
       setToast(TEST_SENT_TOAST)
     } catch (caught) {
       if (caught instanceof ApiError) {
-        const message = resolveOverride(REFUSAL_OVERRIDES, caught.code) ?? GENERIC_REFUSAL_MESSAGE
+        const message =
+          resolveOverride(PINNED_CATALOG_REFUSAL_OVERRIDES, caught.code) ?? GENERIC_REFUSAL_MESSAGE
         setTestError(message)
       } else if (caught instanceof NetworkError) {
         setTestOffline(true)
@@ -162,7 +146,12 @@ export default function PinnedCatalogBot() {
       }
     } finally {
       setTesting(false)
-      invalidateResource(queryClient, 'pinnedCatalog', { refetchType: 'none' })
+      // Default `refetchType` ('active'): Catálogo's own settings query is mounted
+      // right here, and a failed attempt records its outcome server-side too (the
+      // plan: "A failed Publicar also records its failure, so the status follows the
+      // last attempt") — `'none'` would leave the status line showing the previous
+      // state until an unrelated remount or refocus.
+      invalidateResource(queryClient, 'pinnedCatalog')
     }
   }
 
@@ -171,12 +160,12 @@ export default function PinnedCatalogBot() {
     setPublishOffline(false)
     setPublishing(true)
     try {
-      const result = await post<PinnedCatalog>('/pinned-catalog/publish')
-      applyResult(result)
+      await post<PinnedCatalog>('/pinned-catalog/publish')
       setToast(PUBLISHED_TOAST)
     } catch (caught) {
       if (caught instanceof ApiError) {
-        const message = resolveOverride(REFUSAL_OVERRIDES, caught.code) ?? GENERIC_REFUSAL_MESSAGE
+        const message =
+          resolveOverride(PINNED_CATALOG_REFUSAL_OVERRIDES, caught.code) ?? GENERIC_REFUSAL_MESSAGE
         setPublishError(message)
       } else if (caught instanceof NetworkError) {
         setPublishOffline(true)
@@ -185,7 +174,7 @@ export default function PinnedCatalogBot() {
       }
     } finally {
       setPublishing(false)
-      invalidateResource(queryClient, 'pinnedCatalog', { refetchType: 'none' })
+      invalidateResource(queryClient, 'pinnedCatalog')
     }
   }
 

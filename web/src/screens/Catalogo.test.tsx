@@ -319,16 +319,35 @@ test('the bot section shows the masked token and the saved chats', async () => {
   expect(screen.getByText(/El último fue el 29\/09/)).toBeInTheDocument()
 })
 
-test('Desactualizado reads its fixed reason, never only by color', async () => {
+test.each([
+  ['telegram_unreachable', 'Telegram no respondió'],
+  ['bot_cannot_post', 'El bot no puede publicar en el canal'],
+  ['message_gone', 'El mensaje fijado ya no está: publicalo de nuevo'],
+  ['missing_publish', 'Falta publicarlo con el bot o el canal nuevo'],
+  ['too_long', 'Es demasiado largo para Telegram: acortá aromas u ocultá variedades.'],
+] as const)('Desactualizado reads its fixed reason for %s, never only by color', async (reason, text) => {
   renderCatalogo(
     withPinnedCatalog({
       ...PINNED_CATALOG,
-      status: { state: 'out_of_date', reason: 'telegram_unreachable', last_published_on: '2026-09-29' },
+      status: { state: 'out_of_date', reason, last_published_on: '2026-09-29' },
     }),
   )
 
   expect(await screen.findByText('Desactualizado')).toBeInTheDocument()
-  expect(screen.getByText(/Telegram no respondió/)).toBeInTheDocument()
+  expect(screen.getByText(new RegExp(text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))).toBeInTheDocument()
+})
+
+test('missing_publish shows no "El último fue" line: that history restarts with the new chat', async () => {
+  renderCatalogo(
+    withPinnedCatalog({
+      ...PINNED_CATALOG,
+      status: { state: 'out_of_date', reason: 'missing_publish', last_published_on: null },
+    }),
+  )
+
+  expect(await screen.findByText('Desactualizado')).toBeInTheDocument()
+  expect(screen.getByText(/Falta publicarlo con el bot o el canal nuevo/)).toBeInTheDocument()
+  expect(screen.queryByText(/El último fue/)).not.toBeInTheDocument()
 })
 
 test('Cambiar opens an empty token field; the token is never prefilled', async () => {
@@ -362,24 +381,25 @@ test('editing a saved chat re-arms the gate and disables Publicar again', async 
 })
 
 test('Probarlo on success saves the typed values, shows the toast, re-enables Publicar', async () => {
-  const fetchMock = withPinnedCatalog(
-    { ...PINNED_CATALOG, can_publish: false, channel_chat: null },
-    (url, init) => {
-      if (url === '/pinned-catalog/test' && init?.method === 'POST') {
-        return jsonResponse(200, {
-          ...PINNED_CATALOG,
-          channel_chat: null,
-          can_publish: false,
-          status: null,
-          previous_pin_left: false,
-        })
-      }
-      return undefined
-    },
-  )
+  // `can_publish` starts false (no channel saved yet); the POST answers it saved and
+  // tested, and — since Probarlo's success no longer writes the query cache directly
+  // (review finding: a failed attempt must refetch too, so both paths now share the
+  // same `invalidateResource` call) — the settings query must actually refetch this
+  // updated snapshot for Publicar to read `can_publish: true` off it.
+  let saved: Record<string, unknown> = { ...PINNED_CATALOG, can_publish: false, channel_chat: null }
+  const fetchMock = vi.fn((url: string, init?: RequestInit) => {
+    if (url === '/pinned-catalog/test' && init?.method === 'POST') {
+      saved = { ...PINNED_CATALOG, can_publish: true, channel_chat: null }
+      return Promise.resolve(jsonResponse(200, { ...saved, previous_pin_left: false }))
+    }
+    if (url === '/pinned-catalog') return Promise.resolve(jsonResponse(200, saved))
+    return Promise.resolve(defaultResponse(url))
+  })
   renderCatalogo(fetchMock)
 
   await screen.findByLabelText('Tu chat', { exact: false })
+  expect(screen.getByRole('button', { name: 'Publicar' })).toBeDisabled()
+
   await userEvent.click(screen.getByRole('button', { name: 'Probarlo' }))
 
   expect(await screen.findByText('Prueba enviada')).toBeInTheDocument()
@@ -389,6 +409,7 @@ test('Probarlo on success saves the typed values, shows the toast, re-enables Pu
     own_chat: '123456789',
     channel_chat: null,
   })
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Publicar' })).not.toBeDisabled())
 })
 
 test('a failed Probarlo keeps everything typed and shows a fixed reason', async () => {
@@ -428,7 +449,25 @@ test('previous_pin_left shows the fixed notice after a successful test', async (
   ).toBeInTheDocument()
 })
 
-test('Publicar on success shows the toast and a failed Publicar shows its fixed reason', async () => {
+test('Publicar on success shows the toast "Catálogo publicado"', async () => {
+  const fetchMock = withPinnedCatalog(PINNED_CATALOG, (url, init) => {
+    if (url === '/pinned-catalog/publish' && init?.method === 'POST') {
+      return jsonResponse(200, {
+        ...PINNED_CATALOG,
+        status: { state: 'up_to_date', reason: null, last_published_on: '2026-10-03' },
+      })
+    }
+    return undefined
+  })
+  renderCatalogo(fetchMock)
+
+  await screen.findByLabelText('Tu chat', { exact: false })
+  await userEvent.click(screen.getByRole('button', { name: 'Publicar' }))
+
+  expect(await screen.findByText('Catálogo publicado')).toBeInTheDocument()
+})
+
+test('a failed Publicar shows its fixed reason', async () => {
   const fetchMock = withPinnedCatalog(PINNED_CATALOG, (url, init) => {
     if (url === '/pinned-catalog/publish' && init?.method === 'POST') {
       return jsonResponse(422, { detail: 'refused', code: 'pinned_catalog.bot_cannot_post' })
