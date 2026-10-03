@@ -6,12 +6,26 @@
 
 import { expect, test } from 'vitest'
 import { GONE_NOTICE } from '../api/refusals'
-import { readFeedback } from './feedback'
+import {
+  clearSaleJustSaved,
+  newSaleFor,
+  readFeedback,
+  readNewSaleState,
+  SALE_SAVED,
+  saleJustSaved,
+} from './feedback'
 
 test('accepts a toast from the closed set', () => {
   expect(readFeedback({ toast: 'Cliente guardado' })).toEqual({
     kind: 'toast',
     message: 'Cliente guardado',
+  })
+})
+
+test('accepts "Venta eliminada", added to the closed set for Borrar venta and Deshacer', () => {
+  expect(readFeedback({ toast: 'Venta eliminada' })).toEqual({
+    kind: 'toast',
+    message: 'Venta eliminada',
   })
 })
 
@@ -31,4 +45,31 @@ test('rejects a state with neither key, and a non-object state', () => {
   expect(readFeedback({})).toBeNull()
   expect(readFeedback(null)).toBeNull()
   expect(readFeedback('Cliente guardado')).toBeNull()
+})
+
+test('saleJustSaved writes a marker readFeedback turns into the "saved" kind', () => {
+  expect(readFeedback(saleJustSaved())).toEqual({ kind: 'saved', message: SALE_SAVED })
+})
+
+test('rejects a falsy or wrongly-typed "just saved" marker — never shows Deshacer from a guess', () => {
+  expect(readFeedback({ saleJustSaved: false })).toBeNull()
+  expect(readFeedback({ saleJustSaved: 'true' })).toBeNull()
+})
+
+test('clearSaleJustSaved is state readFeedback no longer recognises', () => {
+  expect(readFeedback(clearSaleJustSaved())).toBeNull()
+})
+
+test('newSaleFor carries only the customer id, which readNewSaleState reads back', () => {
+  const state = newSaleFor('cust-1')
+  expect(state).toEqual({ customerId: 'cust-1' })
+  expect(readNewSaleState(state)).toBe('cust-1')
+})
+
+test('readNewSaleState rejects a missing, empty, non-string or absent-object id', () => {
+  expect(readNewSaleState({})).toBeNull()
+  expect(readNewSaleState({ customerId: '' })).toBeNull()
+  expect(readNewSaleState({ customerId: 42 })).toBeNull()
+  expect(readNewSaleState(null)).toBeNull()
+  expect(readNewSaleState('cust-1')).toBeNull()
 })
