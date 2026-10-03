@@ -9,7 +9,7 @@
 import { type FormEvent, useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useOutletContext, useParams } from 'react-router'
-import { ApiError, NetworkError, del, get, patch, post } from '../api/client'
+import { ApiError, NetworkError, UNKNOWN_CODE, del, get, patch, post } from '../api/client'
 import { invalidateResource, keys } from '../api/keys'
 import type { Me } from '../api/me'
 import { GONE_DETAIL, isGone, kindOf, resolveOverride, type RefusalCode } from '../api/refusals'
@@ -131,7 +131,7 @@ export default function VariedadDetalle() {
       } else if (caught instanceof ApiError) {
         const message = resolveOverride(RENAME_OVERRIDES, caught.code)
         if (message !== undefined) setRenameError(message)
-        else if (caught.code !== 'unknown' && kindOf(caught.code) === 'refusal') {
+        else if (caught.code !== UNKNOWN_CODE && kindOf(caught.code) === 'refusal') {
           setRenameError(GENERIC_REFUSAL_MESSAGE)
         } else {
           setRenameError(ERROR_GENERICO_MENSAJE)
@@ -187,7 +187,7 @@ export default function VariedadDetalle() {
       } else if (caught instanceof ApiError) {
         const message = resolveOverride(PRICE_OVERRIDES, caught.code)
         if (message !== undefined) setPriceError(message)
-        else if (caught.code !== 'unknown' && kindOf(caught.code) === 'refusal') {
+        else if (caught.code !== UNKNOWN_CODE && kindOf(caught.code) === 'refusal') {
           setPriceError(GENERIC_REFUSAL_MESSAGE)
         } else {
           setPriceError(ERROR_GENERICO_MENSAJE)

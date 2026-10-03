@@ -18,7 +18,7 @@
 import { type FormEvent, useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate, useParams } from 'react-router'
-import { ApiError, NetworkError } from '../api/client'
+import { ApiError, NetworkError, UNKNOWN_CODE } from '../api/client'
 import { kindOf, isGone, resolveOverride, type RefusalCode } from '../api/refusals'
 import { acceptInvitation, openInvitation, type InvitationView } from '../session'
 import SinConexion from '../components/SinConexion'
@@ -103,7 +103,7 @@ export default function Invitacion() {
           setStatus('not_usable')
         } else if (action?.kind === 'inline') {
           setError(action.message)
-        } else if (caught.code !== 'unknown' && kindOf(caught.code) === 'refusal') {
+        } else if (caught.code !== UNKNOWN_CODE && kindOf(caught.code) === 'refusal') {
           setError(GENERIC_REFUSAL_MESSAGE)
         } else {
           setError(ERROR_GENERICO_MENSAJE)

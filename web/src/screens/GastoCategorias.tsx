@@ -9,7 +9,7 @@
 import { type FormEvent, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router'
-import { ApiError, NetworkError } from '../api/client'
+import { ApiError, NetworkError, UNKNOWN_CODE } from '../api/client'
 import {
   type ExpenseCategory,
   addCategory,
@@ -32,7 +32,7 @@ const REMOVE_OVERRIDES: Partial<Record<RefusalCode, 'in-use'>> = {
 }
 
 function isRefusal(caught: unknown): caught is ApiError {
-  return caught instanceof ApiError && caught.code !== 'unknown' && kindOf(caught.code) === 'refusal'
+  return caught instanceof ApiError && caught.code !== UNKNOWN_CODE && kindOf(caught.code) === 'refusal'
 }
 
 function CategoryRow({

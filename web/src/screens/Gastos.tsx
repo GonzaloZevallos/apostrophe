@@ -11,7 +11,7 @@
 import { type FormEvent, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useOutletContext } from 'react-router'
-import { ApiError, NetworkError } from '../api/client'
+import { ApiError, NetworkError, UNKNOWN_CODE } from '../api/client'
 import {
   type Expense,
   type ExpenseCategory,
@@ -48,7 +48,7 @@ const EXPENSE_FORM_OVERRIDES: Partial<Record<RefusalCode, 'category-gone'>> = {
 }
 
 function isRefusal(caught: unknown): caught is ApiError {
-  return caught instanceof ApiError && caught.code !== 'unknown' && kindOf(caught.code) === 'refusal'
+  return caught instanceof ApiError && caught.code !== UNKNOWN_CODE && kindOf(caught.code) === 'refusal'
 }
 
 type FormTarget = 'nuevo' | Expense

@@ -9,7 +9,7 @@
 import { type FormEvent, useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useOutletContext } from 'react-router'
-import { ApiError, NetworkError, get, post } from '../api/client'
+import { ApiError, NetworkError, UNKNOWN_CODE, get, post } from '../api/client'
 import { invalidateResource, keys } from '../api/keys'
 import type { Me } from '../api/me'
 import { kindOf, resolveOverride, type RefusalCode } from '../api/refusals'
@@ -80,7 +80,7 @@ export default function Variedades() {
       if (caught instanceof ApiError) {
         const message = resolveOverride(SAVE_OVERRIDES, caught.code)
         if (message !== undefined) setFormError(message)
-        else if (caught.code !== 'unknown' && kindOf(caught.code) === 'refusal') {
+        else if (caught.code !== UNKNOWN_CODE && kindOf(caught.code) === 'refusal') {
           setFormError(GENERIC_REFUSAL_MESSAGE)
         } else {
           setFormError(ERROR_GENERICO_MENSAJE)

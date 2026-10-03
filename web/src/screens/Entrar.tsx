@@ -14,7 +14,7 @@
 import { type FormEvent, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router'
-import { ApiError, NetworkError } from '../api/client'
+import { ApiError, NetworkError, UNKNOWN_CODE } from '../api/client'
 import { kindOf, resolveOverride, type RefusalCode } from '../api/refusals'
 import { login } from '../session'
 import SinConexion from '../components/SinConexion'
@@ -53,7 +53,7 @@ export default function Entrar() {
         setError(CREDENTIALS_WRONG)
       } else if (caught instanceof ApiError && resolveOverride(LOGIN_OVERRIDES, caught.code) === 'locked') {
         setLocked(true)
-      } else if (caught instanceof ApiError && caught.code !== 'unknown' && kindOf(caught.code) === 'refusal') {
+      } else if (caught instanceof ApiError && caught.code !== UNKNOWN_CODE && kindOf(caught.code) === 'refusal') {
         setError(GENERIC_REFUSAL_MESSAGE)
       } else if (caught instanceof NetworkError) {
         setOffline(true)
