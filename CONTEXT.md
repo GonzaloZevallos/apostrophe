@@ -190,9 +190,9 @@ _In the app_: Categoría
 _Avoid_: type, tag, label, account, cost center
 
 **Profit**:
-Sales minus cost of goods sold minus expenses, over a period. A sale counts on its own date, paid or not.
-_In the app_: Ganancia
+Sales (shipping included, paid or not) minus cost of goods sold minus expenses, over a period, each counted on its own date. Purchases never enter it. It may be negative, and is then shown with a minus sign, never hidden. _In the app_: Ganancia.
 _Avoid_: margin, earnings, net
+_In the app_: Ganancia
 
 **Cash**:
 Payments received minus expenses minus purchases, over a period: the money that actually moved.
@@ -299,3 +299,11 @@ _Avoid_: integration, connection, config
 **Out of date**:
 The pinned catalog's state when customers are not seeing today's catalog: the last automatic update failed (Telegram down, bot can't post, message deleted, text too long), or a new token or channel was tested but not yet published. It shows one fixed reason and, when the current chat has been published to, the last publish date. Its only other state is up to date. _In the app_: Desactualizado / Al día.
 _Avoid_: stale, pending, out of sync, error
+
+**Panel**:
+Inicio's one-screen view of a business for today, this week (Monday to Sunday) or this month in Argentina time: sales, cost of goods sold, expenses, purchases, profit and cash, then money owed and stock per variety. Read only; every figure comes from the server. _In the app_: Inicio (tabs Hoy · Semana · Mes).
+_Avoid_: dashboard, overview, home, summary, Análisis
+
+**Average sale**:
+A period's sales total, shipping included, divided by its number of sales (not lines), rounded half up to the whole peso. Not shown when the period has no sales.
+_Avoid_: average ticket, mean order, ticket promedio

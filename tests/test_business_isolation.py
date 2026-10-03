@@ -625,6 +625,105 @@ def test_another_business_reads_debtors_as_zero_while_a_has_debt(
     assert b_debtors == {"total_owed": 0, "sales_owing_count": 0, "debtors": []}
 
 
+def test_another_business_reads_the_panel_as_zero_while_a_has_every_figure(
+    business_a: TestClient, business_b: TestClient, clock: MovableClock
+) -> None:
+    """The panel route joins the isolation sweep (plan invariant, subtask brief): A
+    seeds a sale with a gift line, a sale left owing, a later payment, an expense and
+    a purchase, all dated today; B's panel must equal a freshly opened business's."""
+    today = clock().date().isoformat()
+    variety = business_a.post("/varieties", json={"name": f"{MARKER} panel variety"}).json()
+    business_a.post(
+        f"/varieties/{variety['id']}/prices",
+        json={"effective_from": "2026-01-01", "list_price": 10_000},
+    )
+    customer = business_a.post(
+        "/customers", json={"name": f"{MARKER} panel customer", "phone": "11 7777-8888"}
+    ).json()
+    gifted = business_a.post(
+        "/sales",
+        json={
+            "date": today,
+            "payment": "cash",
+            "lines": [{"variety_id": variety["id"], "grams": "3", "gift": True}],
+        },
+    )
+    assert gifted.status_code == 201, gifted.text
+    owing = business_a.post(
+        "/sales",
+        json={
+            "date": today,
+            "customer_id": customer["id"],
+            "payment": "owing",
+            "lines": [{"variety_id": variety["id"], "grams": "2"}],
+        },
+    )
+    assert owing.status_code == 201, owing.text
+    payment = business_a.post(
+        f"/customers/{customer['id']}/payments",
+        json={"paid_on": today, "amount": 1_000, "method": "cash"},
+    )
+    assert payment.status_code == 201, payment.text
+    category = business_a.post(
+        "/expense-categories", json={"name": f"{MARKER} panel category"}
+    ).json()
+    expense = business_a.post(
+        "/expenses",
+        json={
+            "spent_on": today,
+            "category_id": category["id"],
+            "amount": 500,
+            "detail": f"{MARKER} panel expense",
+        },
+    )
+    assert expense.status_code == 201, expense.text
+    purchase = business_a.post(
+        "/stock/entries",
+        json={
+            "variety_id": variety["id"],
+            "origin": "purchase",
+            "grams": "50",
+            "total_cost": 2_000,
+            "date": today,
+        },
+    )
+    assert purchase.status_code == 201, purchase.text
+
+    a_panel = business_a.get("/panel").json()
+    today_figures = a_panel["periods"]["today"]
+    assert today_figures["sales"] > 0
+    assert today_figures["grams_gifted"] > 0
+    assert today_figures["expenses"] > 0
+    assert today_figures["purchases"] > 0
+    assert a_panel["debts"]["total_owed"] > 0
+    assert a_panel["stock"] != []
+
+    b_panel = business_b.get("/panel").json()
+    fresh = {
+        "start": today,
+        "end": today,
+        "sales": 0,
+        "sales_count": 0,
+        "average_sale": None,
+        "grams_sold": 0,
+        "grams_gifted": 0,
+        "cost_of_goods": 0,
+        "pending_cost": False,
+        "expenses": 0,
+        "purchases": 0,
+        "profit": 0,
+        "cash": 0,
+    }
+    assert b_panel["periods"]["today"] == fresh
+    assert b_panel["debts"] == {
+        "total_owed": 0,
+        "sales_owing_count": 0,
+        "oldest": None,
+        "teaser": [],
+    }
+    assert b_panel["stock"] == []
+
+
 def test_another_business_gets_404_deleting_an_on_the_spot_payment(
     business_a: TestClient, business_b: TestClient, engine: Engine, seeded: dict[str, int]
 ) -> None:

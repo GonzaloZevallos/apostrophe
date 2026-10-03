@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { formatGrams, formatMoney, formatMoneyMagnitude } from './money'
+import { formatGrams, formatMoney, formatMoneyMagnitude, formatSignedMoney } from './money'
 
 describe('formatMoney', () => {
   test('whole pesos with a dot as the thousands separator', () => {
@@ -30,6 +30,24 @@ describe('formatMoneyMagnitude', () => {
 
   test('a positive balance formats the same as formatMoney', () => {
     expect(formatMoneyMagnitude(15000)).toBe('$ 15.000')
+  })
+})
+
+describe('formatSignedMoney', () => {
+  test('a negative amount gives U+2212 and its magnitude', () => {
+    expect(formatSignedMoney(-4500)).toBe('−$ 4.500')
+  })
+
+  test('zero carries no sign', () => {
+    expect(formatSignedMoney(0)).toBe('$ 0')
+  })
+
+  test('a positive amount formats the same as formatMoney', () => {
+    expect(formatSignedMoney(4500)).toBe('$ 4.500')
+  })
+
+  test('a negative single peso still carries the sign', () => {
+    expect(formatSignedMoney(-1)).toBe('−$ 1')
   })
 })
 

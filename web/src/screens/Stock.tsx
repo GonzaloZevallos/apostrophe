@@ -18,7 +18,7 @@ import { Link, useLocation, useOutletContext } from 'react-router'
 import { NetworkError } from '../api/client'
 import { keys } from '../api/keys'
 import type { Me } from '../api/me'
-import { type Status, type StockEntry, type VarietyStock, readStock } from '../api/stock'
+import { type Status, type StockEntry, readStock } from '../api/stock'
 import ErrorGenerico from '../components/ErrorGenerico'
 import { readFeedback } from '../components/feedback'
 import MarcaEstado from '../components/MarcaEstado'
@@ -26,6 +26,7 @@ import Notice from '../components/Notice'
 import SinConexion from '../components/SinConexion'
 import { formatDate } from '../format/dates'
 import { formatGrams, formatMoney } from '../format/money'
+import { detailFor, sideNoteFor } from '../stock/detail'
 import type { Variety } from './Variedades'
 import { get } from '../api/client'
 
@@ -37,33 +38,6 @@ const ORIGIN_LABEL: Record<StockEntry['origin'], string> = {
   harvest: 'Cosecha',
   opening_stock: 'Stock inicial',
   adjustment: 'Ajuste',
-}
-
-function detailFor(variety: VarietyStock, today: string): string {
-  switch (variety.status) {
-    case 'no_entries':
-      return 'Cargale la primera entrada'
-    case 'sold_out':
-      return variety.sold_out_since === null
-        ? 'Sin gramos'
-        : `Sin gramos desde el ${formatDate(variety.sold_out_since, today)}`
-    case 'low':
-      return variety.threshold === null
-        ? 'Avisás por debajo del umbral'
-        : `Avisás abajo de ${formatGrams(variety.threshold)}`
-    case 'ok':
-      return 'Al ritmo de los últimos 30 días'
-  }
-}
-
-function sideNoteFor(variety: VarietyStock): string | null {
-  // "agotada" is a visible word on its own right here (PRD: "the inverted chip, not
-  // red"), not only the one MarcaEstado keeps for screen readers — a sold-out variety
-  // never has a `days_left` to fall back on, so it must be checked before that.
-  if (variety.status === 'sold_out') return 'agotada'
-  if (variety.status === 'no_entries') return 'sin entradas'
-  if (variety.days_left === null) return null
-  return `${variety.days_left} días`
 }
 
 function statusClass(status: Status): string {
