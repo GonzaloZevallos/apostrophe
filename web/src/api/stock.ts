@@ -12,6 +12,13 @@
 
 import { del, get, post, put } from './client'
 
+/**
+ * `PUT /stock/varieties/{variety_id}/threshold`'s body is `{grams: number | null}`
+ * (plan, API contract) — the one grams value in this hexagon that travels as a plain
+ * number rather than `Grams.of`'s decimal string, since a threshold is never summed
+ * or allocated, only compared. `null` turns the threshold off.
+ */
+
 export type Origin = 'purchase' | 'harvest' | 'opening_stock' | 'adjustment'
 export type Status = 'no_entries' | 'sold_out' | 'low' | 'ok'
 
@@ -68,4 +75,8 @@ export function editEntry(id: string, body: StockEntryInput): Promise<StockEntry
 
 export function deleteEntry(id: string): Promise<void> {
   return del<void>(`/stock/entries/${id}`)
+}
+
+export function setThreshold(varietyId: number, grams: number | null): Promise<VarietyStock> {
+  return put<VarietyStock>(`/stock/varieties/${varietyId}/threshold`, { grams })
 }

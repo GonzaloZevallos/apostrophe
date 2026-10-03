@@ -18,7 +18,7 @@ import VariedadDetalle from './VariedadDetalle'
 
 vi.mock('../api/client', async () => {
   const actual = await vi.importActual<typeof client>('../api/client')
-  return { ...actual, get: vi.fn(), post: vi.fn(), patch: vi.fn(), del: vi.fn() }
+  return { ...actual, get: vi.fn(), post: vi.fn(), patch: vi.fn(), del: vi.fn(), put: vi.fn() }
 })
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
@@ -47,10 +47,13 @@ function renderScreen() {
   )
 }
 
-function mockGet() {
+const EMPTY_STOCK = { total: 0, varieties: [], entries: [] }
+
+function mockGet(stock: unknown = EMPTY_STOCK) {
   vi.mocked(client.get).mockImplementation((path: string) => {
     if (path === '/varieties/1') return Promise.resolve(VARIETY)
     if (path === '/varieties/1/prices') return Promise.resolve(HISTORY)
+    if (path === '/stock') return Promise.resolve(stock)
     return Promise.reject(new Error(`unexpected path: ${path}`))
   })
 }
@@ -60,6 +63,7 @@ beforeEach(() => {
   vi.mocked(client.post).mockReset()
   vi.mocked(client.patch).mockReset()
   vi.mocked(client.del).mockReset()
+  vi.mocked(client.put).mockReset()
 })
 
 test('shows the history, newest first, with "Rige desde" and "Vigente hoy" on the current one', async () => {
@@ -79,7 +83,7 @@ test('renaming saves and toasts "Variedad guardada"', async () => {
 
   await screen.findByText('24K Gold')
   await user.click(screen.getByRole('button', { name: 'Editar' }))
-  const input = screen.getByRole('textbox')
+  const input = screen.getByLabelText('Nombre')
   await user.clear(input)
   await user.type(input, 'Oro 24K')
   await user.click(screen.getByRole('button', { name: 'Guardar' }))
@@ -96,13 +100,13 @@ test('a dropped network while renaming shows "Sin conexión", keeping what was t
 
   await screen.findByText('24K Gold')
   await user.click(screen.getByRole('button', { name: 'Editar' }))
-  const input = screen.getByRole('textbox')
+  const input = screen.getByLabelText('Nombre')
   await user.clear(input)
   await user.type(input, 'Oro 24K')
   await user.click(screen.getByRole('button', { name: 'Guardar' }))
 
   expect(await screen.findByText(SIN_CONEXION_TITULO)).toBeInTheDocument()
-  expect(screen.getByRole('textbox')).toHaveValue('Oro 24K')
+  expect(screen.getByLabelText('Nombre')).toHaveValue('Oro 24K')
 })
 
 test('recording a new price entry saves and toasts "Precio guardado"', async () => {
@@ -193,6 +197,93 @@ describe('deleting an entry', () => {
 
     expect(await screen.findByText(SIN_CONEXION_TITULO)).toBeInTheDocument()
     expect(screen.queryByText('Precio eliminado')).not.toBeInTheDocument()
+  })
+})
+
+describe('low-stock threshold', () => {
+  test('setting it calls the threshold route and toasts "Aviso guardado"', async () => {
+    const user = userEvent.setup()
+    mockGet({
+      total: 0,
+      varieties: [{ variety_id: 1, grams: 0, status: 'no_entries', sold_out_since: null, threshold: null, days_left: null }],
+      entries: [],
+    })
+    vi.mocked(client.put).mockResolvedValue({
+      variety_id: 1,
+      grams: 0,
+      status: 'no_entries',
+      sold_out_since: null,
+      threshold: 15,
+      days_left: null,
+    })
+    renderScreen()
+
+    await screen.findByText('24K Gold')
+    expect(await screen.findByText('Aviso apagado')).toBeInTheDocument()
+    await user.type(screen.getByLabelText('Umbral de aviso (g)'), '15')
+    await user.click(screen.getByRole('button', { name: 'Guardar aviso' }))
+
+    expect(await screen.findByText('Aviso guardado')).toBeInTheDocument()
+    expect(client.put).toHaveBeenCalledWith('/stock/varieties/1/threshold', { grams: 15 })
+  })
+
+  test('turning it off calls the threshold route with null and toasts "Aviso guardado"', async () => {
+    const user = userEvent.setup()
+    mockGet({
+      total: 0,
+      varieties: [{ variety_id: 1, grams: 20, status: 'ok', sold_out_since: null, threshold: 15, days_left: null }],
+      entries: [],
+    })
+    vi.mocked(client.put).mockResolvedValue({
+      variety_id: 1,
+      grams: 20,
+      status: 'ok',
+      sold_out_since: null,
+      threshold: null,
+      days_left: null,
+    })
+    renderScreen()
+
+    await screen.findByText('24K Gold')
+    expect(await screen.findByText('Avisame abajo de 15 g')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Apagar aviso' }))
+
+    expect(await screen.findByText('Aviso guardado')).toBeInTheDocument()
+    expect(client.put).toHaveBeenCalledWith('/stock/varieties/1/threshold', { grams: null })
+  })
+
+  test('an invalid threshold is refused inline, keeping what was typed', async () => {
+    const user = userEvent.setup()
+    mockGet({
+      total: 0,
+      varieties: [{ variety_id: 1, grams: 0, status: 'no_entries', sold_out_since: null, threshold: null, days_left: null }],
+      entries: [],
+    })
+    renderScreen()
+
+    await screen.findByText('24K Gold')
+    await user.type(screen.getByLabelText('Umbral de aviso (g)'), '0')
+    await user.click(screen.getByRole('button', { name: 'Guardar aviso' }))
+
+    expect(client.put).not.toHaveBeenCalled()
+    expect(screen.getByLabelText('Umbral de aviso (g)')).toHaveValue('0')
+  })
+
+  test('a gone variety on save shows the gone notice', async () => {
+    const user = userEvent.setup()
+    mockGet({
+      total: 0,
+      varieties: [{ variety_id: 1, grams: 0, status: 'no_entries', sold_out_since: null, threshold: null, days_left: null }],
+      entries: [],
+    })
+    vi.mocked(client.put).mockRejectedValue(new ApiError(404, 'variety.not_found'))
+    renderScreen()
+
+    await screen.findByText('24K Gold')
+    await user.type(screen.getByLabelText('Umbral de aviso (g)'), '15')
+    await user.click(screen.getByRole('button', { name: 'Guardar aviso' }))
+
+    expect(await screen.findByText(GONE_NOTICE)).toBeInTheDocument()
   })
 })
 
