@@ -7,8 +7,10 @@
  *
  * The browser computes nothing (plan, invariants: "the front never adds grams or
  * amounts"): before saving, `POST .../payments/preview` is the one source for
- * which sales the payment settles and what is left, re-fetched on every change to
- * the amount or the date through `keys.paymentPreview`, a form-only key
+ * which sales the payment settles and what is left. Debounced 150 ms after the
+ * amount or the date changes (the same delay `Clientes`' own search box uses)
+ * before it becomes `keys.paymentPreview`'s key, so a seller still typing a
+ * figure does not fire one request per keystroke. The key is a form-only one
  * (`keys.ts`) frozen with `gcTime: 0` so an old preview never lingers in the
  * cache once the sheet closes. The last answer tanstack query holds for the
  * *current* key is always the one shown — an in-flight call for an amount the
@@ -23,7 +25,7 @@
  * move onto `resolveOverride`/`isGone` like every other screen's refusals.
  */
 
-import { type FormEvent, useState } from 'react'
+import { type FormEvent, useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ApiError, NetworkError } from '../../api/client'
 import { invalidateResource, keys } from '../../api/keys'
@@ -95,10 +97,23 @@ export default function Cobro({ customerId, balance, today, onClose, onSaved, on
 
   const previewAmount = parsedAmount.ok ? parsedAmount.value : null
 
+  // Debounced 150 ms behind the amount/date the seller is typing (same delay as
+  // `Clientes`' search box): the preview's own query key only moves once typing
+  // pauses, so a figure typed digit by digit fires one request, not one per key.
+  const [debouncedAmount, setDebouncedAmount] = useState(previewAmount)
+  const [debouncedDate, setDebouncedDate] = useState(date)
+  useEffect(() => {
+    const id = setTimeout(() => {
+      setDebouncedAmount(previewAmount)
+      setDebouncedDate(date)
+    }, 150)
+    return () => clearTimeout(id)
+  }, [previewAmount, date])
+
   const preview = useQuery({
-    queryKey: keys.paymentPreview(customerId, date, previewAmount ?? 0),
-    queryFn: () => previewPayment(customerId, { paid_on: date, amount: previewAmount ?? 0 }),
-    enabled: previewAmount !== null,
+    queryKey: keys.paymentPreview(customerId, debouncedDate, debouncedAmount ?? 0),
+    queryFn: () => previewPayment(customerId, { paid_on: debouncedDate, amount: debouncedAmount ?? 0 }),
+    enabled: debouncedAmount !== null,
     gcTime: 0,
     retry: false,
   })

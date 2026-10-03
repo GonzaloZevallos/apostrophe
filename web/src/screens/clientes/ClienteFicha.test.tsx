@@ -307,6 +307,92 @@ test('registering a payment shows "Cobro guardado · queda debiendo $ X" when so
   expect(await screen.findByText('Cobro guardado · queda debiendo $ 6.000')).toBeInTheDocument()
 })
 
+test('"Todo" fills the amount with the balance, and the debounced preview shows the splits and what is left', async () => {
+  vi.mocked(fetch).mockImplementation(
+    dispatchFetch({
+      'GET /customers/1': () => jsonResponse(200, OWING_CUSTOMER),
+      'GET /customers/1/account': () => jsonResponse(200, OWING_ACCOUNT),
+      'POST /customers/1/payments/preview': () =>
+        jsonResponse(200, {
+          applied_to: [{ sale_id: 10, sale_date: '2026-09-14', amount: 11000 }],
+          after: { balance: 0, owing_since: null, standing: 'settled' },
+        }),
+    }),
+  )
+  renderFicha('1')
+
+  await userEvent.click(await screen.findByRole('button', { name: 'Registrar cobro' }))
+  const sheet = (await screen.findByRole('button', { name: 'Guardar' })).closest('.capa__contenido')
+  expect(sheet).not.toBeNull()
+  const within_ = within(sheet as HTMLElement)
+
+  await userEvent.click(within_.getByRole('button', { name: 'Todo: $ 11.000' }))
+  expect(within_.getByLabelText('Monto')).toHaveValue('11000')
+
+  expect(await within_.findByText('Se descuenta de la deuda más vieja')).toBeInTheDocument()
+  expect(await within_.findByText('$ 11.000 a la venta del 14/09')).toBeInTheDocument()
+  expect(within_.queryByText(/Le queda debiendo/)).not.toBeInTheDocument()
+})
+
+test('registering a payment that settles everything shows the plain "Cobro guardado" toast', async () => {
+  vi.mocked(fetch).mockImplementation(
+    dispatchFetch({
+      'GET /customers/1': () => jsonResponse(200, OWING_CUSTOMER),
+      'GET /customers/1/account': () => jsonResponse(200, OWING_ACCOUNT),
+      'POST /customers/1/payments': () =>
+        jsonResponse(201, {
+          payment: { id: 5, paid_on: '2026-10-03', amount: 11000, method: 'cash' },
+          applied_to: [{ sale_id: 10, sale_date: '2026-09-14', amount: 11000 }],
+          after: { balance: 0, owing_since: null, standing: 'settled' },
+        }),
+    }),
+  )
+  renderFicha('1')
+
+  await userEvent.click(await screen.findByRole('button', { name: 'Registrar cobro' }))
+  const sheet = (await screen.findByRole('button', { name: 'Guardar' })).closest('.capa__contenido')
+  expect(sheet).not.toBeNull()
+  await userEvent.click(within(sheet as HTMLElement).getByRole('button', { name: 'Todo: $ 11.000' }))
+  await userEvent.click(within(sheet as HTMLElement).getByLabelText('Efectivo'))
+  await userEvent.click(within(sheet as HTMLElement).getByRole('button', { name: 'Guardar' }))
+
+  expect(await screen.findByText('Cobro guardado')).toBeInTheDocument()
+  expect(screen.queryByText(/queda debiendo/)).not.toBeInTheDocument()
+})
+
+test('a payment deleted by a partner meanwhile shows the gone notice, never the generic retry', async () => {
+  vi.mocked(fetch).mockImplementation(
+    dispatchFetch({
+      'GET /customers/1': () => jsonResponse(200, OWING_CUSTOMER),
+      'GET /customers/1/account': () =>
+        jsonResponse(200, {
+          balance: 6000,
+          owing_since: '2026-09-14',
+          standing: 'owes',
+          rows: [
+            {
+              kind: 'payment',
+              date: '2026-09-20',
+              running_balance: 6000,
+              standing: 'owes',
+              payment: { id: 5, paid_on: '2026-09-20', amount: 5000, method: 'cash' },
+              applied_to: { sale_id: 10, sale_date: '2026-09-14', amount: 5000 },
+            },
+          ],
+        }),
+      'DELETE /payments/5': () => jsonResponse(404, { code: 'payment.not_found' }),
+    }),
+  )
+  renderFicha('1')
+
+  const borrar = await screen.findByRole('button', { name: 'Borrar cobro' })
+  await userEvent.click(borrar)
+  await userEvent.click(screen.getByRole('button', { name: 'Sí, borralo' }))
+
+  expect(await screen.findByText('Eso ya no está. La lista ya está al día.')).toBeInTheDocument()
+  expect(screen.queryByText('Cobro eliminado')).not.toBeInTheDocument()
+})
+
 test('a payment above the balance shows the fixed refusal inline and keeps what was typed', async () => {
   vi.mocked(fetch).mockImplementation(
     dispatchFetch({
