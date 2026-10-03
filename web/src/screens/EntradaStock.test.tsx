@@ -160,6 +160,52 @@ test('an adjustment can carry negative grams, sent through to the API as typed',
   expect(fetch).toHaveBeenCalledWith('/stock/entries', expect.objectContaining({ method: 'POST' }))
 })
 
+test('re-saving an existing negative adjustment keeps its negative grams through PUT', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: string | URL | Request, init?: RequestInit) => {
+      const url = typeof input === 'string' ? input : input.toString()
+      if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/stock') return Promise.resolve(jsonResponse(200, STOCK_VIEW))
+      if (init?.method === 'GET') {
+        return Promise.resolve(
+          jsonResponse(200, {
+            id: 12,
+            date: '2026-09-15',
+            variety_id: 3,
+            origin: 'adjustment',
+            grams: -4.5,
+            total_cost: null,
+            cost_per_gram: null,
+            note: null,
+          }),
+        )
+      }
+      expect(init?.body).toEqual(expect.stringContaining('"-4.5"'))
+      return Promise.resolve(
+        jsonResponse(200, {
+          id: 12,
+          date: '2026-09-15',
+          variety_id: 3,
+          origin: 'adjustment',
+          grams: -4.5,
+          total_cost: null,
+          cost_per_gram: null,
+          note: null,
+        }),
+      )
+    }),
+  )
+  renderForm('/mi-stock/entradas/12')
+
+  expect(await screen.findByLabelText('Gramos')).toHaveValue('-4.5')
+  await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Sí, guardar' }))
+
+  expect(await screen.findByText('la lista de stock')).toBeInTheDocument()
+  expect(fetch).toHaveBeenCalledWith('/stock/entries/12', expect.objectContaining({ method: 'PUT' }))
+})
+
 test('a purchase refused for missing cost shows the refusal on its own field, keeping what was typed', async () => {
   vi.stubGlobal(
     'fetch',

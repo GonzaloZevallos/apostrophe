@@ -57,6 +57,10 @@ function detailFor(variety: VarietyStock, today: string): string {
 }
 
 function sideNoteFor(variety: VarietyStock): string | null {
+  // "agotada" is a visible word on its own right here (PRD: "the inverted chip, not
+  // red"), not only the one MarcaEstado keeps for screen readers — a sold-out variety
+  // never has a `days_left` to fall back on, so it must be checked before that.
+  if (variety.status === 'sold_out') return 'agotada'
   if (variety.status === 'no_entries') return 'sin entradas'
   if (variety.days_left === null) return null
   return `${variety.days_left} días`
@@ -103,6 +107,11 @@ export default function Stock() {
     const found = (varietiesQuery.data ?? []).find((variety) => variety.id === varietyId)
     return found?.name ?? ''
   }
+  // Nothing has moved: every variety reads `no_entries` (vacuously true with no
+  // varieties at all, a fresh business). A variety with sales but no stock entry
+  // reads `sold_out`, not `no_entries` (PM round 1), so it keeps its own row instead
+  // of being hidden behind this empty state.
+  const nothingHasMoved = stock.varieties.every((variety) => variety.status === 'no_entries')
 
   return (
     <main className="pantalla">
@@ -113,7 +122,7 @@ export default function Stock() {
           <span className="pie">{formatGrams(stock.total)} en total</span>
         </div>
 
-        {stock.entries.length === 0 ? (
+        {nothingHasMoved ? (
           <div className="estado-vacio">
             <span className="estado-vacio__titulo">{EMPTY_STATE_TITLE}</span>
             <span className="estado-vacio__detalle">{EMPTY_STATE_DETAIL}</span>
