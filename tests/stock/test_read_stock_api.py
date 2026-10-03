@@ -189,7 +189,7 @@ def test_a_sale_draws_down_stock_and_deleting_it_restores_the_grams(client: Test
     assert _variety_row(after_sale, variety_id)["grams"] == 40.0
 
     deleted = client.delete(f"/sales/{sale['id']}")
-    assert deleted.status_code in (200, 204), deleted.text
+    assert deleted.status_code == 200, deleted.text
 
     after_delete = client.get("/stock").json()
     assert _variety_row(after_delete, variety_id)["grams"] == 50.0

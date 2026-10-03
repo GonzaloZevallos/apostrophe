@@ -138,9 +138,43 @@ def test_delete_sale_removes_it(client: TestClient) -> None:
     ).json()["id"]
 
     deleted = client.delete(f"/sales/{sale_id}")
-    assert deleted.status_code == 204
+    assert deleted.status_code == 200, deleted.text
+    assert deleted.json() == {"returned": [{"variety_id": variety_id, "grams": 10.0}]}
 
     assert client.get(f"/sales/{sale_id}").status_code == 404
+
+
+def test_deleting_a_sale_sums_returned_grams_per_variety_sorted_by_variety_id(
+    client: TestClient,
+) -> None:
+    # Created in this order, so `first_variety < second_variety`; the line order below
+    # (second variety first) proves the response is sorted by `variety_id`, not by the
+    # order the lines were recorded in.
+    first_variety = _variety(client)
+    second_variety = client.post("/varieties", json={"name": "Sativa"}).json()["id"]
+    client.post(
+        f"/varieties/{second_variety}/prices",
+        json={"effective_from": "2026-01-01", "list_price": 10_000},
+    )
+    sale_id = client.post(
+        "/sales",
+        json={
+            "payment": "cash",
+            "lines": [
+                {"variety_id": second_variety, "grams": "3"},
+                {"variety_id": first_variety, "grams": "4"},
+                {"variety_id": second_variety, "grams": "2", "gift": True},
+            ],
+        },
+    ).json()["id"]
+
+    deleted = client.delete(f"/sales/{sale_id}")
+
+    assert deleted.status_code == 200, deleted.text
+    assert deleted.json()["returned"] == [
+        {"variety_id": first_variety, "grams": 4.0},
+        {"variety_id": second_variety, "grams": 5.0},
+    ]
 
 
 def test_assign_customer_to_a_sale_with_none(client: TestClient) -> None:
