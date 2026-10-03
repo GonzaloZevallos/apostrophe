@@ -346,6 +346,124 @@
   min-width: 0;
 }
 
+.encabezado-fila {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+}
+
+.encabezado-fila .encabezado__titulo {
+  flex: 1;
+}
+
+.boton-icono {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--alto-tocable);
+  height: var(--alto-tocable);
+  border-radius: var(--radio-pildora);
+  background: var(--superficie);
+  color: var(--tinta);
+  border: 0;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.lista-variedades,
+.historial {
+  display: flex;
+  flex-direction: column;
+}
+
+.variedad-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-sm);
+  padding: var(--espacio-lg) 0;
+  border-bottom: 1px solid var(--linea);
+  text-decoration: none;
+  color: var(--tinta);
+}
+
+.variedad-item__nombre {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.variedad-item__sin-precio {
+  font-size: 14px;
+  color: var(--tinta2);
+}
+
+.variedad-item__precios {
+  display: flex;
+  gap: var(--espacio-sm);
+}
+
+.precio-panel {
+  flex: 1;
+  background: var(--superficie);
+  border-radius: var(--radio-campo);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.precio-panel__rotulo {
+  font-size: 13px;
+  color: var(--tinta2);
+}
+
+.precio-panel__valor {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.historial-fila {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+  padding: 13px 0;
+  border-bottom: 1px solid var(--linea);
+}
+
+.historial-fila__fecha {
+  flex: 1;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.historial-fila__vigente {
+  display: block;
+  font-size: 13px;
+  color: var(--acento);
+}
+
+.historial-fila__precio {
+  font-size: 17px;
+  font-weight: 600;
+  text-align: right;
+}
+
+.historial-fila__detalle {
+  display: block;
+  font-size: 12px;
+  color: var(--tinta2);
+  text-align: right;
+}
+
+.historial-fila__borrar {
+  background: none;
+  border: 0;
+  color: var(--tinta2);
+  min-width: var(--alto-tocable);
+  min-height: var(--alto-tocable);
+  cursor: pointer;
+}
+
 /* The phone first; the side rail replaces the bottom bar on a computer (plan,
  * "Shell"). A pure CSS switch: both markups exist, one is hidden either way, so a
  * screen reader never finds the hidden one (ADR-independent — `display: none` drops
