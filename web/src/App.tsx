@@ -13,6 +13,8 @@ import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from
 import SinConexion from './components/SinConexion'
 import { queryClient, setCurrentPath, setNavigate } from './queryClient'
 import Entrar from './screens/Entrar'
+import GastoCategorias from './screens/GastoCategorias'
+import Gastos from './screens/Gastos'
 import Inicio from './screens/Inicio'
 import Invitacion from './screens/Invitacion'
 import Mas from './screens/Mas'
@@ -53,6 +55,8 @@ export default function App() {
             <Route element={<Shell />}>
               <Route index element={<Inicio />} />
               <Route path="mas" element={<Mas />} />
+              <Route path="gastos" element={<Gastos />} />
+              <Route path="gastos/categorias" element={<GastoCategorias />} />
             </Route>
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />

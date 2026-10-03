@@ -60,6 +60,10 @@ export function patch<T>(path: string, body: unknown): Promise<T> {
   return send<T>('PATCH', path, body)
 }
 
+export function put<T>(path: string, body: unknown): Promise<T> {
+  return send<T>('PUT', path, body)
+}
+
 export function del<T>(path: string): Promise<T> {
   return send<T>('DELETE', path)
 }
