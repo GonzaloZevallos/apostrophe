@@ -7,18 +7,16 @@
 
 import { expect, test } from 'vitest'
 import saleDetailFixture from '../api/fixtures/sale-detail.json'
+import saleDetailGiftFixture from '../api/fixtures/sale-detail-gift.json'
 import { saleGrams } from './grams'
 
 test('equals the API detail fixture\'s total_grams on its one line', () => {
   expect(saleGrams(saleDetailFixture.lines)).toBe(saleDetailFixture.total_grams)
 })
 
-test('sums every line, a gift included, and a variety repeated across two lines counted twice', () => {
-  const lines = [
-    { variety_id: 1, variety_name: 'Blue Dream', grams: 2, pricing_rule: 'list' as const, price_per_gram: 1000, line_total: 2000 },
-    { variety_id: 1, variety_name: 'Blue Dream', grams: 1.5, pricing_rule: 'list' as const, price_per_gram: 1000, line_total: 1500 },
-    { variety_id: 2, variety_name: 'OG Kush', grams: 1, pricing_rule: 'gift' as const, price_per_gram: 0, line_total: 0 },
-  ]
-
-  expect(saleGrams(lines)).toBe(4.5)
+test('equals the API detail fixture\'s total_grams with a gift line and a variety repeated across two lines', () => {
+  // `sale-detail-gift.json`: Blue Dream twice (2 g, 1.5 g) plus a 1 g OG Kush
+  // gift — the API's own `total_grams` is 4.5, summed server-side the same way
+  // `line_total`/`total` already are; this only checks the two never drift.
+  expect(saleGrams(saleDetailGiftFixture.lines)).toBe(saleDetailGiftFixture.total_grams)
 })

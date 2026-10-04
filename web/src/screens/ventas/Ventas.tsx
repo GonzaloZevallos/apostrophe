@@ -9,10 +9,15 @@
  * Rebuilt to `Ventas.dc.html`/`VentasCompu.dc.html` (plan, subtask "sales-list"):
  * the range sits next to the total instead of a standalone oversized figure, and
  * each row is the design's stacked shape — date, name/VIP, distinct variety names
- * with their grams, and the amount with "te debe" under it only when the API's
- * `still_owing` says so. Grams come only from `saleGrams` (plan, invariants: "on
- * Ventas rows from `saleGrams`"), never a row's own sum. "7 ventas más abajo" (no
- * API field answers it) is left out, same as `NuevaVenta`'s own left-out list.
+ * with their grams, a row chevron, and the amount with "te debe" under it only
+ * when the API's `still_owing` says so. Grams come only from `saleGrams` (plan,
+ * invariants: "on Ventas rows from `saleGrams`"), never a row's own sum. On the
+ * computer (`min-width: 900px`, `app.css`) the grams move into their own
+ * right-aligned column, same as `VentasCompu.dc.html` — the phone's merged
+ * "names · N g" text and the compu's name-only/grams-column pair are both always
+ * in the DOM, one of the pair hidden by the breakpoint, never recomputed. "7
+ * ventas más abajo" (no API field answers it) is left out, same as `NuevaVenta`'s
+ * own left-out list.
  */
 
 import { useState } from 'react'
@@ -24,8 +29,10 @@ import type { Me } from '../../api/me'
 import { listSales, type Sale } from '../../api/sales'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import { readFeedback } from '../../components/feedback'
+import Icono from '../../components/Icono'
 import Insignia from '../../components/Insignia'
 import Notice from '../../components/Notice'
+import Pestanas from '../../components/Pestanas'
 import SinConexion from '../../components/SinConexion'
 import { type DateRange, formatDate, monthRange, todayRange, weekRange } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
@@ -43,6 +50,8 @@ const PERIOD_LABEL: Record<Period, string> = {
 }
 
 const PERIODS: Period[] = ['hoy', 'semana', 'mes', 'fechas']
+
+const PESTANA_ITEMS = PERIODS.map((item) => ({ value: item, label: PERIOD_LABEL[item] }))
 
 function rangeFor(period: Period, today: string, custom: DateRange): DateRange {
   if (period === 'hoy') return todayRange(today)
@@ -101,19 +110,7 @@ export default function Ventas() {
         <div className="ventas__cabecera">
           <span className="encabezado__titulo">Ventas</span>
 
-          <div className="periodos" role="group" aria-label="Período">
-            {PERIODS.map((item) => (
-              <button
-                key={item}
-                type="button"
-                className={period === item ? 'periodos__pestana periodos__pestana--activa' : 'periodos__pestana'}
-                aria-pressed={period === item}
-                onClick={() => setPeriod(item)}
-              >
-                {PERIOD_LABEL[item]}
-              </button>
-            ))}
-          </div>
+          <Pestanas items={PESTANA_ITEMS} value={period} onChange={setPeriod} ariaLabel="Período" />
 
           {!isError && !isPending && (
             <div className="ventas__resumen">
@@ -164,32 +161,42 @@ export default function Ventas() {
             {sales.length === 0 && <span className="campo__rotulo">{EMPTY_LIST}</span>}
 
             <div className="lista-ventas">
-              {sales.map((sale) => (
-                <Link key={sale.id} to={`/ventas/${sale.id}`} className="fila-venta">
-                  <span className="fila-venta__fecha">{formatDate(sale.date, me.today)}</span>
-                  <span className="fila-venta__cuerpo">
-                    <span className="fila-venta__nombre">
-                      {sale.customer === null ? (
-                        <span className="fila-venta__sin-cliente">Sin cliente</span>
-                      ) : (
-                        <>
-                          {sale.customer.name}
-                          {sale.customer.vip && <Insignia tono="acento">VIP</Insignia>}
-                        </>
-                      )}
+              {sales.map((sale) => {
+                const names = varietyNames(sale.lines)
+                const gramos = formatGrams(saleGrams(sale.lines))
+                return (
+                  <Link key={sale.id} to={`/ventas/${sale.id}`} className="fila-venta">
+                    <span className="fila-venta__fecha">{formatDate(sale.date, me.today)}</span>
+                    <span className="fila-venta__cuerpo">
+                      <span className="fila-venta__nombre">
+                        {sale.customer === null ? (
+                          <span className="fila-venta__sin-cliente">Sin cliente</span>
+                        ) : (
+                          <>
+                            {sale.customer.name}
+                            {sale.customer.vip && <Insignia tono="acento">VIP</Insignia>}
+                          </>
+                        )}
+                      </span>
+                      {/* Phone: name and grams in one line (`Ventas.dc.html`). */}
+                      <span className="fila-venta__detalle fila-venta__detalle--combinada">
+                        {`${names} · ${gramos}`}
+                      </span>
+                      {/* Computer: grams move into their own column below
+                          (`VentasCompu.dc.html`), so this line is names only. */}
+                      <span className="fila-venta__detalle fila-venta__detalle--nombre">{names}</span>
                     </span>
-                    <span className="fila-venta__detalle">
-                      {`${varietyNames(sale.lines)} · ${formatGrams(saleGrams(sale.lines))}`}
+                    <span className="fila-venta__gramos">{gramos}</span>
+                    <span className="fila-venta__monto">
+                      <span className={sale.still_owing ? 'fila-venta__cifra monto-deuda' : 'fila-venta__cifra'}>
+                        {formatMoney(sale.total)}
+                      </span>
+                      {sale.still_owing && <span className="fila-venta__te-debe monto-deuda">te debe</span>}
                     </span>
-                  </span>
-                  <span className="fila-venta__monto">
-                    <span className={sale.still_owing ? 'fila-venta__cifra monto-deuda' : 'fila-venta__cifra'}>
-                      {formatMoney(sale.total)}
-                    </span>
-                    {sale.still_owing && <span className="fila-venta__te-debe monto-deuda">te debe</span>}
-                  </span>
-                </Link>
-              ))}
+                    <Icono nombre="chevron" size={18} />
+                  </Link>
+                )
+              })}
             </div>
           </>
         )}

@@ -943,20 +943,23 @@ button {
 }
 
 /* `Ventas` (`Ventas.dc.html`/`VentasCompu.dc.html`, plan "sales-list"): the
- * header's title/tabs/range-and-total, and each sale's stacked row.
- * `.periodos__pestana` is a plain text tab (an underline via `box-shadow` when
- * active, no pill), not one of `Boton`'s variants — the design draws a tab list,
- * not a button, the same shape `SelectorPago`'s segmented control already departs
- * from `Boton` for (plan review, foundation findings). `.fila-venta` is a tappable
- * row: date, name/VIP/varieties, and the amount with "te debe" under it only when
- * the API's `still_owing` says so (never derived here). */
+ * header's title/tabs/range-and-total, and each sale's stacked row. `.fila-venta`
+ * is a tappable row: date, name/VIP/varieties, a chevron (`Icono`), and the
+ * amount with "te debe" under it only when the API's `still_owing` says so
+ * (never derived here). */
 .ventas__cabecera {
   display: flex;
   flex-direction: column;
   gap: var(--espacio-md);
 }
 
-.periodos {
+/* `Pestanas` (plan "Components"): a plain text tab list, an underline via
+ * `box-shadow` on the active one, no pill — `Boton`'s five variants don't draw
+ * this shape (the active tab is black and bold, never the link variant's accent),
+ * so this component owns the one button reset itself, the same way
+ * `SelectorPago`'s segmented control already does (plan review, foundation
+ * findings) — never a screen's own bare `<button>`. */
+.pestanas {
   display: flex;
   align-items: baseline;
   gap: var(--espacio-xl);
@@ -964,14 +967,14 @@ button {
   color: var(--tinta2);
 }
 
-.periodos__pestana {
+.pestanas__opcion {
   border: 0;
   background: transparent;
   padding: 0 0 3px;
   cursor: pointer;
 }
 
-.periodos__pestana--activa {
+.pestanas__opcion--activa {
   color: var(--tinta);
   font-weight: 600;
   box-shadow: 0 2px 0 var(--tinta);
@@ -1052,6 +1055,18 @@ button {
   color: var(--tinta2);
 }
 
+/* Phone (`Ventas.dc.html`): name and grams share one line. Computer
+ * (`VentasCompu.dc.html`, 900px+ below): grams move into their own column, so
+ * this line becomes names only — both text nodes stay in the DOM; only the
+ * breakpoint decides which one shows, never a second grams sum. */
+.fila-venta__detalle--nombre {
+  display: none;
+}
+
+.fila-venta__gramos {
+  display: none;
+}
+
 .fila-venta__monto {
   display: flex;
   flex-direction: column;
@@ -1066,6 +1081,11 @@ button {
 
 .fila-venta__te-debe {
   font-size: 12px;
+}
+
+.fila-venta > svg {
+  flex-shrink: 0;
+  color: var(--tenue);
 }
 
 /* `VentaDetalle`: each line's rule badge next to its variety, same pill shape as
@@ -1546,7 +1566,7 @@ button {
     gap: var(--espacio-lg);
   }
 
-  .ventas__cabecera .periodos {
+  .ventas__cabecera .pestanas {
     order: 3;
     gap: var(--espacio-lg);
     margin-left: auto;
@@ -1555,5 +1575,23 @@ button {
   .ventas__total {
     font-size: 26px;
     letter-spacing: -0.035em;
+  }
+
+  /* `VentasCompu.dc.html`'s row: grams in their own right-aligned column,
+   * the variety-names line without them. */
+  .fila-venta__detalle--combinada {
+    display: none;
+  }
+
+  .fila-venta__detalle--nombre {
+    display: block;
+  }
+
+  .fila-venta__gramos {
+    display: block;
+    width: 56px;
+    text-align: right;
+    font-size: 15px;
+    color: var(--tinta2);
   }
 }

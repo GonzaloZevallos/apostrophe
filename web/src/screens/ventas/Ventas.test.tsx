@@ -158,8 +158,23 @@ test('the header shows the range next to the total, dd/mm, collapsed to one date
   expect(await screen.findByText('03/10 · 0 ventas')).toBeInTheDocument()
 
   await userEvent.click(screen.getByRole('button', { name: 'Semana' }))
-
   expect(await screen.findByText('28/09 – 04/10 · 0 ventas')).toBeInTheDocument()
+
+  await userEvent.click(screen.getByRole('button', { name: 'Mes' }))
+  expect(await screen.findByText('01/10 – 31/10 · 0 ventas')).toBeInTheDocument()
+
+  await userEvent.click(screen.getByRole('button', { name: 'Fechas' }))
+  // Fechas opens on the current month's own range too (`custom` starts as
+  // `monthRange(me.today)`), so it reads exactly like Mes here.
+  expect(await screen.findByText('01/10 – 31/10 · 0 ventas')).toBeInTheDocument()
+})
+
+test('each row carries the chevron icon', async () => {
+  vi.mocked(fetch).mockResolvedValue(jsonResponse(200, [saleFixture]))
+  renderVentas()
+
+  const row = await screen.findByRole('link')
+  expect(row.querySelector('svg')).not.toBeNull()
 })
 
 test('a sale with no customer shows "Sin cliente" and no VIP badge', async () => {
