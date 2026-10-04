@@ -1,4 +1,4 @@
-"""The libSQL dialect (ADR-0014, plan "Connect to Turso over sqlite+libsql"):
+"""The libSQL dialect (ADR-0016, plan "Connect to Turso over sqlite+libsql"):
 `make_engine` branches on the driver name, never `url.startswith` (plan invariant),
 and the paths the app already relies on — migrations, the payments guard, an atomic
 upsert with `RETURNING` — work unchanged on it.
@@ -32,6 +32,7 @@ from app.payments.domain.settlement import PaymentMethod
 from app.settings import Settings
 from app.tables import metadata
 from tests.conftest import NOW, TEST_HASHER, MovableClock, open_business, signed_in
+from tests.fakes.telegram import FakeTelegram
 
 
 def _libsql_url(tmp_path: Path) -> str:
@@ -57,6 +58,8 @@ def app(engine: Engine) -> FastAPI:
         engine=engine,
         clock=MovableClock(NOW),
         hasher=TEST_HASHER,
+        telegram=FakeTelegram(),
+        upkeep_ticker=False,
     )
 
 

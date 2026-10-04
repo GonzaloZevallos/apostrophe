@@ -15,6 +15,11 @@
  * "Arrancá por las variedades" sits above the panel instead of replacing it (PM,
  * adjustment 5): a business can have history and no price today, and its figures
  * are real.
+ *
+ * The pinned-catalog notice (plan, "Front"; accounts.md's Inicio rule): a fixed
+ * line, never a figure, while `GET /pinned-catalog/status` reads `out_of_date` —
+ * before the first Publicar `status` is `null` and nothing shows (PRD, "Before the
+ * first Publicar").
  */
 
 import { useState } from 'react'
@@ -40,6 +45,7 @@ import { detailFor, sideNoteFor } from '../stock/detail'
 export const EMPTY_TITLE = 'Arrancá por las variedades'
 export const EMPTY_DETAIL =
   'Cargá tu primera variedad con su precio. Sin precio no se puede cargar una venta.'
+export const PINNED_CATALOG_OUT_OF_DATE = 'Tu catálogo en Telegram está desactualizado'
 
 const PENDING_NOTE = 'incluye costo pendiente'
 
@@ -53,6 +59,10 @@ const SALES_HEADING: Record<PanelTab, string> = {
 
 interface VarietySummary {
   current_price: unknown
+}
+
+interface PinnedCatalogStatus {
+  status: { state: 'up_to_date' | 'out_of_date' } | null
 }
 
 function rangeLabel(tab: PanelTab, period: PanelPeriod): string {
@@ -89,6 +99,12 @@ export default function Inicio() {
     refetchOnReconnect: false,
   })
 
+  const pinnedCatalog = useQuery({
+    queryKey: keys.pinnedCatalogStatus(),
+    queryFn: () => get<PinnedCatalogStatus>('/pinned-catalog/status'),
+  })
+  const pinOutOfDate = pinnedCatalog.data?.status?.state === 'out_of_date'
+
   return (
     <main className="pantalla">
       <div className="cuerpo">
@@ -97,6 +113,11 @@ export default function Inicio() {
           <span className="encabezado__titulo">Inicio</span>
         </div>
 
+        {pinOutOfDate && (
+          <Link to="/catalogo" className="aviso-ambar" role="status">
+            <span className="aviso-ambar__titulo">{PINNED_CATALOG_OUT_OF_DATE}</span>
+          </Link>
+        )}
         {varietiesQuery.data !== undefined && !hasPricedVariety && (
           <div className="estado-vacio">
             <span className="estado-vacio__titulo">{EMPTY_TITLE}</span>

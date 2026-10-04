@@ -50,9 +50,16 @@ class Invitation:
     id: int | None = None
 
     def __post_init__(self) -> None:
-        joins = self.kind is InvitationKind.JOIN_BUSINESS
-        if joins != (self.business_id is not None):
-            raise ValueError("a join invitation names its business; a new-business one does not")
+        if self.kind is InvitationKind.JOIN_BUSINESS:
+            if self.business_id is None:
+                raise ValueError("a join invitation names its business")
+        else:
+            # A new-business invitation names no business until it is used: `use`
+            # records the business it opened, never before.
+            if (self.business_id is not None) != (self.used_at is not None):
+                raise ValueError(
+                    "a new-business invitation names its business only once it is used"
+                )
 
     @property
     def expires_at(self) -> datetime:
@@ -61,7 +68,15 @@ class Invitation:
     def is_usable(self, now: datetime) -> bool:
         return self.used_at is None and now < self.expires_at
 
-    def use(self, now: datetime) -> None:
+    def use(self, now: datetime, opened_business_id: int | None = None) -> None:
+        """Spends the invitation. A new-business invitation records the business it
+        opened; a join invitation already names its business and takes no id here."""
         if not self.is_usable(now):
             raise InvitationNotUsable()
+        if self.kind is InvitationKind.NEW_BUSINESS:
+            if opened_business_id is None:
+                raise ValueError("a new-business invitation must record the business it opened")
+            self.business_id = opened_business_id
+        elif opened_business_id is not None:
+            raise ValueError("a join invitation already names its business")
         self.used_at = now

@@ -1,9 +1,9 @@
 # Accounts
 
-Businesses, their users, and the only ways in: an invitation and a login. Every other capability reads one thing from here, the business of the user asking, and serves that business alone (ADR-0004). It also holds the app as a whole:
+Businesses, their users, the only way in (an invitation and a login), and the only way out (an operator's command that exports a business and removes it). Every other capability reads one thing from here, the business of the user asking, and serves that business alone (ADR-0004). It also holds the app as a whole:
 
 - how it is served, installed and navigated;
-- how the installation is published on the internet and backed up (ADR-0014);
+- how the installation is published on the internet and backed up (ADR-0016);
 - the feedback rules every screen follows;
 - the Negocio screen.
 
@@ -18,6 +18,8 @@ Inicio, where the app opens, is the panel defined in results.md.
 **When** I open the app on my phone, **I want** to log in once and stay in, **so I can** record a sale in seconds, while nobody else on the network or who guesses at passwords gets in.
 
 **When** I run my business from my phone (handing over an order, answering a customer on Telegram, paying for something, or catching up at the end of the day), **I want to** get in with the link I was sent and keep my customers, my prices, my stock and my expenses up to date from the phone, **so I can** stop keeping them in the spreadsheet and have real data in place when sales arrive. The computer is the same job on a bigger screen.
+
+**When** a friend stops using the app, or asks to be taken out of it, **I want** to hand them everything the app holds of their business in one file and then remove that business from the installation completely, **so that** they keep their books and their customers' names, phone numbers and balances are no longer held by me or by anyone else on the installation. A business opened by mistake is covered by the same command. The business goes as a whole, every user included. The operator has agreed with every user of the business beforehand; the command does not check it.
 
 **When** a seller needs the app away from my home network, **I want** the installation published on the internet over HTTPS, with every business's data copied off the server continuously, encrypted, and proven restorable, **so I can** let sellers work from anywhere without one lost server, disk or leaked backup costing anyone their books or exposing their customers.
 
@@ -41,22 +43,31 @@ Success criteria:
    - The session lives only in the backend's cookie.
    - Serving the front reaches nothing outside the built app.
 7. Nothing invented: no placeholder figures, and no navigation entry for something that does not exist yet.
-8. **Nothing weakens on the internet.**
+14. **Nothing weakens on the internet.**
    - A seller logs in and works from any network with the same guarantees as on the home network: ADR-0002, ADR-0004 and ADR-0005.
    - Over HTTPS the session cookie is `Secure`. This is set in configuration, never guessed from the request.
    - Plain http on the home network keeps working unchanged.
-9. **Guessing is braked by email and by address.**
+15. **Guessing is braked by email and by address.**
    - One address trying many emails is locked out.
    - One email tried from many addresses is locked out.
    - Both locks answer the same, with the same timing.
    - No client address goes to a log.
-10. **Losing the server is recoverable.**
+16. **Losing the server is recoverable.**
     - At worst, under 1 minute of recent work (sales, payments, stock entries) is lost, from Turso's 24-hour write log.
     - Beyond those 24 hours, the daily encrypted copy is the fallback, and its loss bound is one day.
     - A drill restores the backup into a scratch target and proves it intact (integrity, row counts, recency), with no effect on the running app.
-11. **Rebuildable from the repository.**
+17. **Rebuildable from the repository.**
     - `deploy/README.md` documents every step to stand the installation up from zero.
     - No secret is in the repository.
+
+Success criteria, removing a business:
+
+8. **The file is their books and stands on its own**: one JSON file holds every recorded fact of the business, opens without the app, identifies the business by its name, and names what each record refers to as well as its id. It holds no password hash, no stored secret and no invitation.
+9. **Named back before anything is lost**: the dry run names the business and counts by kind what would go, writing nothing. The real run asks for the business name typed exactly before it touches anything.
+10. **Nothing deleted until the export is safe**: the delete runs only after the file was written and read back in the same run, and the exported counts equal the deleted counts. Any failure or mismatch deletes nothing.
+11. **Nothing survives**: no row carrying the business's id is left in any table, including tables added later. Its invitations of every status and its users' login-attempt history go too. The export is built from the same tables as the delete; invitations are deleted, never exported.
+12. **Every other business is untouched**: their record counts are the same before and after, and they keep working, are never slowed on purpose and are never told anything.
+13. **No personal data outside the file, and a clean slate**: the terminal and logs show only the business name, the file's path and counts. Afterwards the same email can open a new business with nothing carried over.
 
 ## Behaviour
 
@@ -81,7 +92,7 @@ Success criteria:
     - Nothing reveals a count, the address or which brake fired.
   - **Address source**:
     - By default it is the connection's address.
-    - It is taken from the forwarded-address header only when the request comes from the trusted proxy (Render's, ADR-0014).
+    - It is taken from the forwarded-address header only when the request comes from the trusted proxy (Render's, ADR-0016).
     - The trusted proxy is set in configuration, never guessed.
     - The same rule holds on the home network and on the published installation.
   - **Logs**: no client address, email or token is logged.
@@ -96,6 +107,35 @@ Success criteria:
   - The name is trimmed, inner spaces are collapsed, it is up to 60 characters and it cannot be blank.
   - There is no uniqueness check across the installation, since a refusal would reveal another business.
 - Both routes take the business only from the session. They are in `tests/test_gated_routes.py` and the isolation sweep.
+
+### Removing a business (operator command)
+
+- **The command**: a server command run by the operator, like `scripts/invite-business.sh`. No administrator and no entry for it in the app (ADR-0002).
+  - It names the business by the email of any of its users, trimmed and lowercased as at login.
+  - An email matching no user prints a plain "no business for that email" and does nothing, in either mode.
+- **Dry run**:
+  - names the business found;
+  - prints counts by kind: users, customers, varieties, price entries, stock entries, sales, sale lines, payments, expenses, expense categories, catalog settings, and invitations (deleted only);
+  - writes no file, changes no row, never asks for confirmation.
+- **Real run**:
+  1. Names the business and asks the operator to type its name exactly; it cannot skip this. A wrong name, a cancel or no answer writes nothing and deletes nothing.
+  2. Writes the export file, then reads it back.
+  3. In one transaction, deletes every row of the business across every table discovered from the schema (not a hand-kept list): the business, its users, every invitation whatever its status, and the removed users' emails' login-attempt history.
+  4. Commits and reports success only if the exported counts equal the deleted counts for every exported kind.
+  5. Reports the business name, the file's path, and the counts exported and deleted.
+- **Any failure before the commit** deletes nothing: writing or reading back the file, a count mismatch, or a database busy with other businesses' writes. The operator runs it again. A record created by the leaving business's own users between export and delete makes the counts differ, and the delete is blocked rather than losing it.
+- **Other businesses** keep using the app during the run, are never slowed on purpose and are never told anything.
+- **The export file**:
+  - one JSON file per real run, owner-only permissions, written to the server's file system and never anywhere the app serves;
+  - its name carries the business name (slugified) and the run's date and time; an existing file is never overwritten;
+  - plain values: ISO 8601 dates, whole pesos, grams as decimals with up to two places;
+  - each record names what it refers to (customer, variety, category) as well as its id;
+  - it holds every recorded fact as stored: the business name; users (email and joining date); customers (name, phone number, channel, VIP); varieties with their low-stock threshold and catalog attributes; price entries; stock entries (date, variety, grams, origin, total cost, note; a lot is its stock entry, not a separate record); sales (date, customer, shipping charged, note, how it was paid); sale lines (variety, grams, stored price per gram, pricing rule, line total); payments (date, amount, method, customer, and their sale for an on-the-spot payment); expense categories and expenses; the catalog header and footer;
+  - it leaves out computed figures (balances, owing since, settlement, stock, cost per gram, cost of goods), password hashes, any stored secret (such as a future Telegram bot token), invitations and login-attempt history.
+- **After removal**:
+  - a session left open by a removed user gets 401 and goes to login;
+  - a new invitation to the same email opens a new business like any other, with a clean login-attempt count and nothing of the old business.
+- **Privacy** (ADR-0005): nothing personal is printed or logged (no emails, names, phone numbers, amounts or file contents). The business name is not personal data and may be printed.
 
 ### The app
 
@@ -127,6 +167,7 @@ Success criteria:
 - **Inicio**: the panel (results.md).
   - Hoy · Semana · Mes, with sales, Ganancia, Caja, money owed and stock per variety.
   - When no variety has a current price today, "Arrancá por las variedades" shows above the panel, and the panel still shows its real figures.
+  - "Tu catálogo en Telegram está desactualizado", a fixed notice while the pinned catalog is out of date (pinned-catalog.md). It opens Catálogo.
 - **Más**: Gastos, Variedades, Catálogo ("Catálogo · El mensaje de hoy, listo para copiar", catalog.md), Negocio.
 - **Negocio**:
   - rename the business;
@@ -134,7 +175,7 @@ Success criteria:
   - "Invitá a un socio": each tap creates one fresh join link, to copy or share with the phone's share sheet;
   - log out.
 
-### The published installation (ADR-0014)
+### The published installation (ADR-0016)
 
 - **Hosting**:
   - Render hosts the app and deploys automatically on every merge to `master`.
@@ -151,7 +192,7 @@ Success criteria:
   - Each run reports the integrity check result, row counts and the time of the restored copy's latest change.
   - Its cadence is set in `deploy/README.md`: once before going live, after any change to how the app or its backup are configured, and monthly.
 - **Publishing is a gate**:
-  - Nobody is given the public address until criteria 8–11 hold.
+  - Nobody is given the public address until criteria 14–17 hold.
   - Sellers may still be invited on the home network meanwhile.
   - Publishing belongs to the installation as a whole: every business becomes reachable at once, kept apart only by session isolation (ADR-0004).
 - **No admin surface** (ADR-0002):
@@ -194,32 +235,41 @@ Success criteria:
 - **Nothing invented (criterion 7)**:
   - the bar shows exactly Inicio, Ventas, Clientes, Stock and Más, plus the "Nueva venta" button;
   - Más shows exactly Gastos, Variedades, Catálogo and Negocio;
-  - every figure on Inicio equals the API's answer, with real zeros for a period with no activity (results.md).
-- **Publishing (criteria 8–11)**: no test reaches the network, Render, Turso or GitHub.
-  - **Brakes (criteria 3, 9)**: tested at the HTTP seam with a fake clock, 100% passing. They cover:
+  - every figure on Inicio equals the API's answer, with real zeros for a period with no activity (results.md);
+  - Inicio shows no notices other than "Arrancá por las variedades" and the pinned catalog's.
+- **Nothing survives (criterion 11)**: after a real run on one of two seeded businesses with one of everything, 0 rows carry its id in any table discovered from the schema; pending, used and expired invitations all go; `login_guard` holds nothing for the removed emails; a table added to the schema later is covered without changing the command, proven by a test.
+- **Export = delete (criteria 8, 11)**: for every exported kind, the count in the file equals the count deleted; every stored field listed above is present and every reference carries a name and an id; no password hash, invitation digest or secret is in the file.
+- **Others untouched (criterion 12)**: every table's row count for the other business is identical before and after, and it reads all its data afterwards.
+- **Guards (criteria 9, 10)**: 0 rows changed after each of: a dry run (and no file), an unknown email, a wrong name, a cancel or no answer at the prompt (and no file), and a forced failure writing the file, reading it back, at the count check, or during the delete.
+- **File (criterion 8)**: owner-only permissions; an existing file of the same name is never overwritten; the name carries the business name, date and time.
+- **No echo (criterion 13)**: the captured terminal output and logs of both modes hold no email, customer name, phone number or amount, only the business name, the path and counts.
+- **Clean slate (criterion 13)**: after removal, a removed user's token answers 401, and a new-business invitation accepted with the same email opens an empty business with a clean brake count.
+- Removal metrics run as fast, self-contained tests.
+- **Publishing (criteria 14–17)**: no test reaches the network, Render, Turso or GitHub.
+  - **Brakes (criteria 3, 15)**: tested at the HTTP seam with a fake clock, 100% passing. They cover:
     - the email brake (5 in a row, 15 minutes);
     - the address brake (20 within 15 minutes, 15 minutes);
     - cross-counting, lock refusals included;
     - a success resetting only the email's count;
     - the same 429 answer and timing from both locks, disclosing nothing.
-  - **Address source (criterion 9)**: the forwarded header is used only from the configured trusted proxy and ignored from anywhere else.
-  - **Cookie (criterion 8)**: `Secure` is present when HTTPS is configured and absent otherwise.
-  - **No leakage (criteria 8, 9)**:
+  - **Address source (criterion 15)**: the forwarded header is used only from the configured trusted proxy and ignored from anywhere else.
+  - **Cookie (criterion 14)**: `Secure` is present when HTTPS is configured and absent otherwise.
+  - **No leakage (criteria 14, 15)**:
     - no log line from the login path contains a client address, email or token;
     - the health endpoint answers no business name, id or count.
-  - **Rebuildable (criterion 11)**: a check that the repository holds no Turso credential, `age` identity or other secret.
-  - **Drill (criterion 10)**:
+  - **Rebuildable (criterion 17)**: a check that the repository holds no Turso credential, `age` identity or other secret.
+  - **Drill (criterion 16)**:
     - Automated: against a local scratch copy, the drill produces integrity, row counts and the latest change.
     - By hand: the run before going live shows, from the recency field, that the restore is within the under-1-minute bound.
 
 ## Out of scope
 
-- Changing or resetting a password from the app; removing a user.
+- Changing or resetting a password from the app; removing one user while the business stays.
 - Listing past or pending invitations; revoking an invitation.
-- Exporting or deleting a business.
+- Exporting a business without removing it (a backup of an active one); importing an export back; removing a business from the app; checking that every user agreed; removing the export file from the server after handing it over.
 - Roles within a business.
 - Offline use; an install walkthrough on iOS or Android.
-- TLS on the home network, including local certificates: the published installation gets TLS from Render (ADR-0014).
+- TLS on the home network, including local certificates: the published installation gets TLS from Render (ADR-0016).
 - Live updates between partners: a list refreshes when it is opened or after a save, not when the other partner changes something.
 - The Análisis entry: it comes with its own task.
 - Stopping a guessing run spread across many addresses and many emails at once.

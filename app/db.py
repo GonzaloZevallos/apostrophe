@@ -73,7 +73,11 @@ def make_engine(url: str, auth_token: str | None = None) -> Engine:
         connect_args["auth_token"] = auth_token
     if connect_args:
         kwargs["connect_args"] = connect_args
-    engine = create_engine(url, **kwargs)
+    # Never shown in SQL error output: a catalog or pinned-catalog statement can carry
+    # a seller's own text as a bound parameter (CODING_STANDARDS §9, the plan's
+    # invariant). Nothing reads this today; it changes SQL error output for every
+    # capability.
+    engine = create_engine(url, hide_parameters=True, **kwargs)
     if make_url(url).get_backend_name() == "sqlite":
         event.listen(engine, "connect", _enable_sqlite_foreign_keys)
     return engine

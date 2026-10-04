@@ -12,6 +12,9 @@ from pathlib import Path
 
 DEFAULT_DATABASE_URL = "sqlite:///./apostrophe.db"
 DEFAULT_PUBLIC_URL = "http://localhost:8000"
+# Where a removed business's export file is written (app/business_removal); never
+# served, never inside the repository.
+DEFAULT_EXPORT_DIR = "~/apostrophe-exports"
 
 
 class MissingSetting(RuntimeError):
@@ -39,6 +42,9 @@ class Settings:
     # API (`scripts/serve.sh`). `None` means no front is served; tests leave it `None`
     # so pytest never needs a build.
     web_dist: Path | None = None
+    # Read by `app.business_removal`, never by the app itself: a run's operator can
+    # point it anywhere outside the repository.
+    export_dir: Path = Path(DEFAULT_EXPORT_DIR)
     # Comma-separated CIDRs (APOSTROPHE_TRUSTED_PROXIES): the reverse proxy hops whose
     # `X-Forwarded-For` entry `ClientAddress` (app/accounts/adapters/deps.py) may trust.
     # Kept as text, like `database_url` and `public_url` above; parsed once by
@@ -78,6 +84,7 @@ class Settings:
             public_url=os.environ.get("APOSTROPHE_PUBLIC_URL", DEFAULT_PUBLIC_URL).rstrip("/"),
             web_dist=Path(web_dist) if web_dist else None,
             trusted_proxies=trusted_proxies,
+            export_dir=Path(os.environ.get("APOSTROPHE_EXPORT_DIR", DEFAULT_EXPORT_DIR)),
         )
 
 

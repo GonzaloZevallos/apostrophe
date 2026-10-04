@@ -17,6 +17,7 @@ export type Resource =
   | 'stock'
   | 'catalog'
   | 'payments'
+  | 'pinnedCatalog'
 
 const PREFIX: Record<Resource, string> = {
   me: 'me',
@@ -29,6 +30,7 @@ const PREFIX: Record<Resource, string> = {
   stock: 'stock',
   catalog: 'catalog',
   payments: 'payments',
+  pinnedCatalog: 'pinned-catalog',
 }
 
 export const keys = {
@@ -63,6 +65,12 @@ export const keys = {
   // same way `saleFormVarieties` is: a save's own answer replaces this key's data
   // directly through `setQueryData`, so this prefix is never invalidated either.
   catalog: () => [PREFIX.catalog] as const,
+  // Both share `pinned-catalog`'s own prefix (plan, "Front": "invalidate the
+  // pinned-catalog and status queries"), so invalidating the bare prefix through
+  // `invalidateResource` reaches Catálogo's own settings query and Inicio's status
+  // query in one call.
+  pinnedCatalog: () => [PREFIX.pinnedCatalog] as const,
+  pinnedCatalogStatus: () => [PREFIX.pinnedCatalog, 'status'] as const,
   customerAccount: (id: string) => [PREFIX.payments, 'account', id] as const,
   debtors: () => [PREFIX.payments, 'debtors'] as const,
   // "Registrar cobro"'s own preview (plan, "keys.ts"): a dry-run of the settlement,

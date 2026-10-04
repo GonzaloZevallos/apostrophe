@@ -50,7 +50,7 @@ class SqlPayments:
 
         The new id comes from the statement's own `RETURNING`, never
         `CursorResult.lastrowid`: that DBAPI-specific accessor comes back `None` for a
-        result-less `INSERT … SELECT` on the libsql driver (ADR-0014), though the
+        result-less `INSERT … SELECT` on the libsql driver (ADR-0016), though the
         statement itself inserts the row correctly; `RETURNING` works the same way on
         both drivers.
         """

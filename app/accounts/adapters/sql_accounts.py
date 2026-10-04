@@ -40,7 +40,10 @@ class SqlAccounts:
 
     def add_user(self, user: User) -> User:
         row = UserRow(
-            business_id=user.business_id, email=user.email.value, password_hash=user.password_hash
+            business_id=user.business_id,
+            email=user.email.value,
+            password_hash=user.password_hash,
+            joined_at=user.joined_at,
         )
         self._session.add(row)
         self._session.flush()
@@ -81,6 +84,7 @@ class SqlAccounts:
         assert invitation.id is not None
         row = self._session.get_one(InvitationRow, invitation.id)
         row.used_at = invitation.used_at
+        row.business_id = invitation.business_id
         self._session.flush()
 
     def login_locks(self, email: Email | None, address_digest: str) -> LoginLocks:
@@ -171,7 +175,7 @@ class SqlAccounts:
 
 
 def _user(row: UserRow) -> User:
-    return User(row.business_id, Email(row.email), row.password_hash, row.id)
+    return User(row.business_id, Email(row.email), row.password_hash, row.id, row.joined_at)
 
 
 def _invitation(row: InvitationRow) -> Invitation:

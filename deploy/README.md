@@ -1,4 +1,4 @@
-# Deploy, from zero (docs/adr/0014, docs/adr/0015)
+# Deploy, from zero (docs/adr/0016, docs/adr/0017)
 
 Render hosts the app, Turso hosts the database, UptimeRobot watches `/health`, and a
 GitHub Actions workflow takes a daily encrypted copy. No secret of any kind lives in
@@ -26,7 +26,7 @@ this repository: everything below with a value is set by hand, outside git.
      copies every table over the same client protocol the app itself uses, with the
      read-only token as a connect argument, never in the URL.
 5. Turso's own continuous write log gives point-in-time restore for the last 24 hours
-   (the human's loss bound, ADR-0014) — nothing to configure for that; it is the
+   (the human's loss bound, ADR-0016) — nothing to configure for that; it is the
    product's default.
 
 ## 2. Render

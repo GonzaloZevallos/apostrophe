@@ -72,7 +72,7 @@ Several businesses share one installation and must never see each other
   so its existence is not revealed.
 - **Every table carries `business_id`**, not null, pointing at `business`, child tables
   included. Only the platform tables (`business`, `invitation`, `login_guard`,
-  `login_address_guard`) are exempt; `login_address_guard` (docs/adr/0015) brakes a
+  `login_address_guard`) are exempt; `login_address_guard` (docs/adr/0017) brakes a
   client address before any business is known, the same reason `login_guard` is
   exempt. `tests/migrations/test_business_ownership.py` enforces it.
 - **Every new route joins the isolation sweep** in `tests/test_business_isolation.py`:

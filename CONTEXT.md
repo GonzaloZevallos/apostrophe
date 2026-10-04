@@ -207,14 +207,24 @@ _Avoid_: menu, price list, flyer
 _In the app_: Catálogo
 
 **Pinned catalog**:
-The catalog message pinned in the business's Telegram chat, kept in step whenever a price changes or a variety sells out.
-_In the app_: Mensaje fijado
+The catalog message pinned in the business's Telegram channel chat by its own bot. Once first published, it is edited in place whenever the catalog text changes, and it is never posted again in that chat. When nothing qualifies, it shows the header, "Por ahora no tenemos nada para ofrecer." and the footer. _In the app_: Mensaje fijado.
 _Avoid_: post, broadcast
+_In the app_: Mensaje fijado
 
 **Test send**:
-The catalog sent only to the user's own Telegram chat, to see how it looks before publishing.
-_In the app_: Enviarme una prueba
+The catalog sent only to the user's own Telegram chat, using the bot settings typed on the screen. They are saved only if it succeeds. A successful test since the settings last changed is required before Publicar. _In the app_: Probarlo.
 _Avoid_: preview, draft
+_In the app_: Enviarme una prueba
+
+**Upkeep**:
+The automatic edit of the pinned catalog after a change that may affect its text, or at the start of a new Argentina day. It only ever edits; it never posts or pins. _In the app_: no word of its own.
+_Avoid_: sync, auto-publish, refresh
+_In the app_: no word of its own
+
+**Last published text**:
+The source text (markers included) last sent to the pinned message of the current bot and channel chat. _In the app_: no word of its own.
+_Avoid_: cache, last snapshot
+_In the app_: no word of its own
 
 ## Language
 
@@ -278,6 +288,18 @@ _Avoid_: unpaid orders, pending sales, open invoices
 The sum of every customer's balance above $0 in a business; credits never subtract from it. _In the app_: the total heading Te deben and in Clientes' header.
 _Avoid_: receivables, outstanding
 
+**Publish**:
+Posting and pinning the catalog in the business's channel chat, or editing the already pinned message there. It always sends, even when the text has not changed. _In the app_: Publicar.
+_Avoid_: broadcast, push, sync
+
+**Bot settings**:
+A business's one Telegram bot token, stored encrypted and never shown again once saved, plus its channel chat and the user's own chat. Changing any of them requires a new test send before publishing. _In the app_: El bot de Telegram.
+_Avoid_: integration, connection, config
+
+**Out of date**:
+The pinned catalog's state when customers are not seeing today's catalog: the last automatic update failed (Telegram down, bot can't post, message deleted, text too long), or a new token or channel was tested but not yet published. It shows one fixed reason and, when the current chat has been published to, the last publish date. Its only other state is up to date. _In the app_: Desactualizado / Al día.
+_Avoid_: stale, pending, out of sync, error
+
 **Panel**:
 Inicio's one-screen view of a business for today, this week (Monday to Sunday) or this month in Argentina time: sales, cost of goods sold, expenses, purchases, profit and cash, then money owed and stock per variety. Read only; every figure comes from the server. _In the app_: Inicio (tabs Hoy · Semana · Mes).
 _Avoid_: dashboard, overview, home, summary, Análisis
@@ -287,8 +309,17 @@ A period's sales total, shipping included, divided by its number of sales (not l
 _Avoid_: average ticket, mean order, ticket promedio
 
 **Operator**:
-Whoever runs the installation from outside the app: runs scripts/invite-business.sh, deploys, keeps the backups and runs the restore drill. A role, never a user in the app; nothing they do happens from a signed-in session.
+The person who runs the installation from outside the app: runs scripts/invite-business.sh and the business removal, deploys, keeps the backups and runs the restore drill. Not a user of any business; nothing they do happens from a signed-in session.
 _Avoid_: admin, administrator, superuser, owner, PM
+
+**Business export**:
+One JSON file holding every recorded fact of a business as stored, each record naming what it refers to, with no computed figure, password hash, secret or invitation. It is written only as the first step of removing the business.
+_Avoid_: backup, dump, archive
+
+**Business removal**:
+The operator's command that exports a business and then deletes every row of it, users and invitations included, along with its users' login-attempt history, in one transaction. Nothing is deleted unless the export was written, read back, and its counts match what is deleted.
+_Avoid_: offboarding, account deletion, purge, wipe
+
 
 **Login brake**:
 What stops password guessing at login: an email is locked after 5 failures in a row, and a client address after 20 failed logins within 15 minutes, each for 15 minutes. Every refused attempt counts for both, a success resets only the email's count, and both answer the same. _In the app_: the brake message under Entrar.

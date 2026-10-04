@@ -5,7 +5,7 @@ date: 2026-10-04
 
 # Deploying: Render, Turso, the daily encrypted backup and the restore drill
 
-Part of #12, #27. ADR-0014 picked Render, Turso and UptimeRobot over the earlier
+Part of #12, #27. ADR-0016 picked Render, Turso and UptimeRobot over the earlier
 Oracle/Caddy/Litestream plan. This records the shape the deploy files, the backup and
 the restore drill actually take (deploy-and-backups subtask).
 

@@ -69,6 +69,12 @@
     "payment.on_the_spot": { "kind": "refusal" },
     "payment.customer_not_found": { "kind": "gone" },
     "payment.not_found": { "kind": "gone" },
+    "pinned_catalog.token_required": { "kind": "refusal" },
+    "pinned_catalog.own_chat_required": { "kind": "refusal" },
+    "pinned_catalog.not_ready": { "kind": "refusal" },
+    "pinned_catalog.too_long": { "kind": "refusal" },
+    "pinned_catalog.telegram_unreachable": { "kind": "refusal" },
+    "pinned_catalog.bot_cannot_post": { "kind": "refusal" },
     "RequestInvalid": { "kind": "refusal" }
   },
   "frontSegments": [

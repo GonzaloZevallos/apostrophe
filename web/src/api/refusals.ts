@@ -59,3 +59,49 @@ export function resolveOverride<T>(
 ): T | undefined {
   return isRefusalCode(code) ? overrides[code] : undefined
 }
+
+/** The pinned catalog's own closed set of status reasons (plan, "Status"): the same
+ * five codes `PinStatusOut.reason` answers, so the front's `PinReason` type and this
+ * table are the one place their fixed Spanish text is spelled out — the status line
+ * and a refused Probarlo/Publicar (`PINNED_CATALOG_REFUSAL_OVERRIDES` below) share it
+ * for the reasons they have in common, rather than each screen inventing its own
+ * copy of "Telegram no respondió" or "El bot no puede publicar en el canal". */
+export type PinReason =
+  | 'telegram_unreachable'
+  | 'bot_cannot_post'
+  | 'message_gone'
+  | 'missing_publish'
+  | 'too_long'
+
+export const PINNED_CATALOG_REASON_LABEL: Record<PinReason, string> = {
+  telegram_unreachable: 'Telegram no respondió',
+  bot_cannot_post: 'El bot no puede publicar en el canal',
+  message_gone: 'El mensaje fijado ya no está: publicalo de nuevo',
+  missing_publish: 'Falta publicarlo con el bot o el canal nuevo',
+  too_long: 'Es demasiado largo para Telegram: acortá aromas u ocultá variedades.',
+}
+
+const PINNED_CATALOG_GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
+export const PINNED_CATALOG_NOT_READY_REASON = 'Probalo primero para ver cómo queda'
+
+/** Every `pinned_catalog.*` code `contract.json` lists, mapped here exhaustively
+ * (plan, "Front": "Map every `pinned_catalog.*` code in `web/src/api/refusals.ts`;
+ * `too_long` uses the same text as the status") — `PinnedCatalogBot.tsx` reads this
+ * instead of building its own override table, so a sixth code added to the contract
+ * later has one place to be named, not two. */
+export const PINNED_CATALOG_REFUSAL_OVERRIDES: Record<
+  | 'pinned_catalog.token_required'
+  | 'pinned_catalog.own_chat_required'
+  | 'pinned_catalog.not_ready'
+  | 'pinned_catalog.too_long'
+  | 'pinned_catalog.telegram_unreachable'
+  | 'pinned_catalog.bot_cannot_post',
+  string
+> = {
+  'pinned_catalog.token_required': PINNED_CATALOG_GENERIC_REFUSAL,
+  'pinned_catalog.own_chat_required': PINNED_CATALOG_GENERIC_REFUSAL,
+  'pinned_catalog.not_ready': PINNED_CATALOG_NOT_READY_REASON,
+  'pinned_catalog.too_long': PINNED_CATALOG_REASON_LABEL.too_long,
+  'pinned_catalog.telegram_unreachable': PINNED_CATALOG_REASON_LABEL.telegram_unreachable,
+  'pinned_catalog.bot_cannot_post': PINNED_CATALOG_REASON_LABEL.bot_cannot_post,
+}

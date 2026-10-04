@@ -104,8 +104,8 @@ def accept_invitation(
         business_id = invitation.business_id
     assert business_id is not None
     password_hash = hasher.hash(password)
-    user = accounts.add_user(User(business_id, email, password_hash))
-    invitation.use(now)
+    user = accounts.add_user(User(business_id, email, password_hash, joined_at=now))
+    invitation.use(now, business_id if opens_business else None)
     accounts.save_invitation(invitation)
     transaction.commit()
     assert user.id is not None

@@ -1,4 +1,4 @@
-"""`Secure` on the session cookie (docs/adr/0002, ADR-0015): decided only from
+"""`Secure` on the session cookie (docs/adr/0002, ADR-0017): decided only from
 `Settings.secure_cookie`, over the same login and logout requests under two
 `Settings` — one http, one https with a trusted proxy configured."""
 
@@ -12,6 +12,7 @@ from app.db import make_engine
 from app.main import create_app
 from app.settings import Settings
 from tests.conftest import NOW, PASSWORD, TEST_HASHER, MovableClock, invite
+from tests.fakes.telegram import FakeTelegram
 
 HTTP_SETTINGS = Settings(secret_key="k", database_url="sqlite://", public_url="http://example.com")
 HTTPS_SETTINGS = Settings(
@@ -38,7 +39,10 @@ def _open_business(settings: Settings, engine: Engine, client: TestClient) -> No
 
 def _login_set_cookie(settings: Settings) -> str:
     engine = make_engine(settings.database_url)
-    with TestClient(create_app(settings, engine=engine, hasher=TEST_HASHER)) as client:
+    app = create_app(
+        settings, engine=engine, hasher=TEST_HASHER, telegram=FakeTelegram(), upkeep_ticker=False
+    )
+    with TestClient(app) as client:
         _open_business(settings, engine, client)
         # A fresh request, with no cookie carried over from accepting the invitation:
         # the declared seam is `POST /auth/login`'s own `Set-Cookie`, not the one that
@@ -54,7 +58,10 @@ def _login_set_cookie(settings: Settings) -> str:
 
 def _logout_set_cookie(settings: Settings) -> str:
     engine = make_engine(settings.database_url)
-    with TestClient(create_app(settings, engine=engine, hasher=TEST_HASHER)) as client:
+    app = create_app(
+        settings, engine=engine, hasher=TEST_HASHER, telegram=FakeTelegram(), upkeep_ticker=False
+    )
+    with TestClient(app) as client:
         _open_business(settings, engine, client)
         response = client.post("/auth/logout")
     assert response.status_code == 204, response.text

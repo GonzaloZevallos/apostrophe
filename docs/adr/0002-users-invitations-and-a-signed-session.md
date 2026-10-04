@@ -28,7 +28,7 @@ on the internet from the start.
   even with the right password (429). A success resets the count. Unknown emails are
   braked and timed like known ones (a dummy hash is computed), so neither the answer nor
   its timing tells which emails exist.
-  - **Per-address brake** (ADR-0015, published install): on top of the per-email
+  - **Per-address brake** (ADR-0017, published install): on top of the per-email
     brake, 20 failed logins from one client address within 15 minutes lock that
     address's logins for 15 minutes too, with the same 429 and the same timing.
     Every refused login counts for both brakes at once, lock refusals included; a
@@ -48,7 +48,7 @@ on the internet from the start.
   resets one by hand until a task adds them. The app sends no email.
 - `Secure` on the session cookie is decided only by configuration
   (`Settings.secure_cookie`, derived from `public_url`), never guessed from the
-  request (docs/adr/0015). Plain http on the home network keeps the cookie without
+  request (docs/adr/0017). Plain http on the home network keeps the cookie without
   `Secure`, unchanged; the published install's `APOSTROPHE_PUBLIC_URL=https://…` turns
   it on.
 - One session cannot be closed alone; a password change closes them all.

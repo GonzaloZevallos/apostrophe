@@ -23,7 +23,7 @@ easiest one to introduce by accident: one query without a filter in any future t
   included, even where a parent already implies it, so any row can be checked on its
   own. Only `business`, `invitation`, `login_guard` and `login_address_guard` are
   exempt: they decide which business a request is for, or (`login_address_guard`,
-  docs/adr/0015) brake a client address across every business at once, before any
+  docs/adr/0017) brake a client address across every business at once, before any
   business is known.
 - **Three tests guard it**, and each new capability has to join them:
   - `tests/test_business_isolation.py` records one of everything in a business, then

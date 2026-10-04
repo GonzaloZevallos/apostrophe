@@ -1,4 +1,4 @@
-# Render's Blueprint for the app (docs/adr/0014, docs/adr/0015). Render's own network
+# Render's Blueprint for the app (docs/adr/0016, docs/adr/0017). Render's own network
 # boundary and TLS replace binding to 127.0.0.1 behind a reverse proxy: uvicorn still
 # binds 0.0.0.0 (scripts/serve.sh), reachable only through Render's edge.
 #

@@ -4,8 +4,12 @@ from datetime import timedelta
 
 from fastapi.testclient import TestClient
 from sqlalchemy.engine import Engine
+from sqlalchemy.orm import Session
 
 from app.accounts.adapters.deps import SESSION_COOKIE
+from app.accounts.adapters.sql_accounts import SqlAccounts
+from app.accounts.domain.account import Email
+from app.accounts.domain.invitation import token_digest
 from tests.conftest import NOW, PASSWORD, MovableClock, invite
 
 NEW_USER = {"email": "nueva@example.com", "password": PASSWORD, "business_name": "La Huerta"}
@@ -28,6 +32,46 @@ def test_a_new_business_invitation_opens_a_business_and_signs_its_user_in(
         "business_name": "La Huerta",
         "today": "2026-10-02",
     }
+
+
+def test_accepting_a_new_business_invitation_links_it_and_stamps_joined_at(
+    anonymous_client: TestClient, engine: Engine, clock: MovableClock
+) -> None:
+    token = invite(engine, clock())
+
+    accepted = anonymous_client.post(f"/invitations/{token}/accept", json=NEW_USER)
+    assert accepted.status_code == 201
+
+    with Session(engine) as session:
+        accounts = SqlAccounts(session)
+        invitation = accounts.invitation_by_digest(token_digest(token))
+        user = accounts.user_by_email(Email.of(NEW_USER["email"]))
+        assert invitation is not None and invitation.business_id is not None
+        assert user is not None
+        assert user.business_id == invitation.business_id
+        assert user.joined_at == clock()
+
+
+def test_a_partner_invitation_still_names_its_business_before_and_after_use(
+    client: TestClient, anonymous_client: TestClient, clock: MovableClock, engine: Engine
+) -> None:
+    issued = client.post("/invitations")
+    token = issued.json()["url"].rsplit("/", 1)[-1]
+    with Session(engine) as session:
+        before = SqlAccounts(session).invitation_by_digest(token_digest(token))
+    assert before is not None and before.business_id is not None
+    business_id_before = before.business_id
+
+    partner = {**NEW_USER, "email": "socio@example.com", "business_name": "Ignored"}
+    accepted = anonymous_client.post(f"/invitations/{token}/accept", json=partner)
+    assert accepted.status_code == 201
+
+    with Session(engine) as session:
+        accounts = SqlAccounts(session)
+        after = accounts.invitation_by_digest(token_digest(token))
+        user = accounts.user_by_email(Email.of("socio@example.com"))
+        assert after is not None and after.business_id == business_id_before
+        assert user is not None and user.joined_at == clock()
 
 
 def test_today_on_me_follows_the_moved_clock(client: TestClient, clock: MovableClock) -> None:

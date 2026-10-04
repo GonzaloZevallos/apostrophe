@@ -26,6 +26,7 @@ class UserRow(Base):
     business_id: Mapped[int] = mapped_column(ForeignKey("business.id"))
     email: Mapped[str] = mapped_column(String(EMAIL_MAX_LENGTH), unique=True)
     password_hash: Mapped[str] = mapped_column(String(255))
+    joined_at: Mapped[datetime | None] = mapped_column(UtcDateTime)
 
 
 class InvitationRow(Base):
