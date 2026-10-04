@@ -1,8 +1,10 @@
 # Deploy, from zero (docs/adr/0016, docs/adr/0017)
 
 Render hosts the app, Turso hosts the database, UptimeRobot watches `/health`, and a
-GitHub Actions workflow takes a daily encrypted copy. No secret of any kind lives in
-this repository: everything below with a value is set by hand, outside git.
+GitHub Actions workflow takes a daily encrypted copy, kept as that workflow's own run
+artifact in this private repository (docs/adr/0017's amendment: Cloudflare R2 needed a
+credit card even on its free tier). No secret of any kind lives in this repository:
+everything below with a value is set by hand, outside git.
 
 ## 1. Turso
 
@@ -71,7 +73,7 @@ this repository: everything below with a value is set by hand, outside git.
      already proves for one such range (`10.0.0.0/8`); it does not, and cannot, prove
      Render's edge actually connects from inside these ranges — that is confirmed on
      this deployment specifically only by the go-live checklist's two-network check
-     (section 9), by hand. If Render ever documents its own load balancer's range,
+     (section 8), by hand. If Render ever documents its own load balancer's range,
      prefer that over this private-range convention.
 3. Auto-deploy is on (`autoDeploy: true`): every merge to `master` deploys. There is no
    pre-deploy command: the schema is migrated only by `upgrade_to_head`, inside
@@ -80,28 +82,7 @@ this repository: everything below with a value is set by hand, outside git.
    nothing here binds to a public interface of its own (`scripts/serve.sh` still binds
    `0.0.0.0`, because Render's edge is what sits in front of it, not a VM's NIC).
 
-## 3. R2 (the daily backup's destination)
-
-1. Create one bucket, used for nothing else.
-2. Create an API token scoped to **that bucket only**, **Object Read & Write**
-   permission ("Workers R2 Storage Bucket Item Write" in Cloudflare's own naming).
-   Cloudflare's documented R2 permission groups are exactly: account-wide write
-   (create/delete/list buckets, read/write/list objects), account-wide read, per-bucket
-   write (read/write/list objects in that bucket) and per-bucket read
-   (`developers.cloudflare.com/r2/api/tokens/`, checked 2026-10-04) — none separates
-   writing a new object from deleting an existing one. Because the token itself
-   cannot be denied delete, this plan relies on **Object Lock** instead: turn on
-   Object Lock for the bucket with a 90-day **compliance** retention period on every
-   object written. That lock, not the token's scope, is what actually holds a written
-   backup for 90 days, even against the account that owns the token.
-3. A 90-day **lifecycle** rule expires objects after 90 days regardless, so the bucket
-   does not grow forever; the lock is what protects a copy for its first 90 days, the
-   lifecycle rule is what removes it afterwards.
-4. Note the bucket name, the S3-compatible endpoint, the access key id and the secret
-   access key: `R2_BUCKET`, `R2_ENDPOINT`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`,
-   below.
-
-## 4. The `age` identity and recipient
+## 3. The `age` identity and recipient
 
 1. Generate one keypair on a machine that is **not** Render, Turso or GitHub, e.g. your
    own laptop: `age-keygen -o identity.txt`.
@@ -114,33 +95,31 @@ this repository: everything below with a value is set by hand, outside git.
    GitHub, and never committed: `tests/test_no_secrets.py` fails the build if it ever
    is.
 
-## 5. GitHub secrets (`.github/workflows/backup.yml`)
+## 4. GitHub secrets (`.github/workflows/backup.yml`)
 
 Add, under the repository's Settings → Secrets and variables → Actions:
 
 - `TURSO_DATABASE_URL` — the same URL as `APOSTROPHE_DATABASE_URL` (step 1.2).
 - `TURSO_READONLY_TOKEN` — the read-only token (step 1.4), never the full-access one.
-- `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`, `R2_ENDPOINT` (step 3.4).
 
 No secret here can create, delete or overwrite a Turso database (the token is scoped
-to one database, read-only), and none can delete an R2 copy younger than 90 days (the
-bucket's own Object Lock holds that, not the token).
+to one database, read-only). The daily copy itself carries this plan's accepted
+guarantee: copies are deletable by anyone with write access to the repository, or by
+any workflow given `actions: write`, and expire after 30 days, the same as the monthly
+drill cadence (section 6). Nothing replaces Object Lock.
 
-### GitHub's 60-day schedule disable
+The only trip-wire between drills is GitHub's own default failed-run email, sent to
+whoever last changed the workflow's cron. Check that your own GitHub notification
+settings keep failed-run email on for this repository (Settings → Notifications →
+Actions), so that email actually reaches you.
 
-GitHub disables a scheduled workflow after 60 days with no push to the repository's
-default branch. If `master` goes 60 days without a merge, re-enable the workflow by
-hand (Actions tab → the workflow → "Enable workflow") or push any commit before then.
-The monthly drill (section 7) is a natural trip-wire: if a drill run notices the
-workflow's last scheduled run is stale, this is why.
-
-## 6. UptimeRobot
+## 5. UptimeRobot
 
 Create an HTTP(s) monitor on `https://<the public URL>/health`, interval 5 minutes.
 The endpoint answers `{"status": "ok"}` only — no business name, id or count, so the
 monitor (outside any session) learns nothing about who uses the installation.
 
-## 7. The restore drill (`scripts/drill.py`)
+## 6. The restore drill (`scripts/drill.py`)
 
 Run by hand — there is no timer and no notification channel (PRD: no new admin
 surface). Each run reports three things: the integrity check, row counts (compared
@@ -155,52 +134,80 @@ The script refuses a scratch path equal to `APOSTROPHE_DATABASE_URL`'s own file 
 is read from the environment the drill runs in, so run it with the same `.env` the app
 would use, pointed at a path that is plainly not that file.
 
-Restore the two sources this plan actually has:
+Every command below runs from the repository root and stays out of its working tree:
+start with `umask 077; d="$(mktemp -d)"`, and finish with `rm -rf "$d"` once you have
+read the report. If a run is interrupted before that last command, `$d` is left behind
+with decrypted data in it — find it and remove it by hand.
 
-- **Turso's point-in-time restore**, for anything inside the last 24 hours (its
-  console or CLI restores to a new database; export that into a local file with
-  `scripts/backup_copy.py` the same way the daily backup does, then run the drill
-  against the local file).
-- **The daily `age`-encrypted copy**, decrypted first with the identity kept outside
-  every provider (section 4): `age -d -i identity.txt -o restored.db backup-….db.age`.
+**The daily `age`-encrypted copy** (an artifact of the backup workflow's own run,
+named `backup-<UTC %Y%m%dT%H%M%SZ>-<run_id>.db.age` — the one format the workflow,
+this README and `scripts/newest_backup.py`'s own filter all share):
+
+```
+umask 077; d="$(mktemp -d)"
+gh api "repos/{owner}/{repo}/actions/artifacts?per_page=100" \
+  | uv run --no-project python scripts/newest_backup.py
+# read that command's `name:` and `run_id:` lines, then:
+gh run download <run_id> -n <name> -D "$d"
+age -d -i identity.txt -o "$d/restored.db" "$d/<name>"
+uv run --no-project python scripts/drill.py "$d/restored.db" "$d/scratch.db"
+rm -rf "$d"
+```
+
+`scripts/newest_backup.py` is the only way to choose which copy is newest — never
+`gh run list`, which orders runs, not artifacts, and says nothing about an artifact's
+own expiry.
+
+**Turso's point-in-time restore**, for anything inside the last 24 hours:
+
+```
+umask 077; d="$(mktemp -d)"
+uv run --no-project python scripts/backup_copy.py "$d/restored.db"
+uv run --no-project python scripts/drill.py "$d/restored.db" "$d/scratch.db"
+rm -rf "$d"
+```
 
 **Cadence**: once before going live (the go-live gate, section 8), after any change to
-how the app or its backup is configured, and monthly thereafter.
+how the app or its backup is configured, and monthly thereafter — the same cadence the
+daily copy's own 30-day retention is sized against.
 
-## 8. Cut-over — "Pasar los datos de casa a Turso"
+## 7. Cut-over — "Pasar los datos de casa a Turso"
 
 1. Stop the home app (`scripts/serve.sh`'s process).
-2. Copy `apostrophe.db` (the home file) aside.
-3. Run `PRAGMA integrity_check` on the copy (or `scripts/drill.py`'s `integrity`
-   function directly) — it must report `ok` before anything below.
-4. Import into Turso with `turso db import ~/path/to/the/copy.db`
+2. `umask 077; d="$(mktemp -d)"`, then copy `apostrophe.db` (the home file) to
+   `"$d/the-copy.db"`.
+3. Run `PRAGMA integrity_check` on `"$d/the-copy.db"` (or `scripts/drill.py`'s
+   `integrity` function directly) — it must report `ok` before anything below.
+4. Import into Turso with `turso db import "$d/the-copy.db"`
    (`docs.turso.tech/cli/db/import`, checked 2026-10-04). That command's own docs
    require the source file to be in WAL journal mode first
    (`docs.turso.tech/cloud/migrate-to-turso`, same date):
    ```
-   sqlite3 the-copy.db "PRAGMA journal_mode='wal'; PRAGMA wal_checkpoint(truncate);"
+   sqlite3 "$d/the-copy.db" "PRAGMA journal_mode='wal'; PRAGMA wal_checkpoint(truncate);"
    ```
    Run this on **the copy only**, never on the home app's own file — the home app
    keeps using its file in whatever journal mode it was in, and is never restarted
    against it again after this section's step 8.
 5. Point `scripts/drill.py` at the imported database (through
    `APOSTROPHE_DATABASE_URL`/`APOSTROPHE_DATABASE_AUTH_TOKEN`, exported via
-   `scripts/backup_copy.py` into a local file first) and run the three checks.
-6. Run `compare_counts` between the home copy's row counts and the imported copy's —
-   it must come back empty, `alembic_version` included.
+   `scripts/backup_copy.py "$d/imported.db"` first) and run the three checks.
+6. Run `compare_counts` between `"$d/the-copy.db"`'s row counts and `"$d/imported.db"`'s
+   — it must come back empty, `alembic_version` included.
 7. Only once 3, 5 and 6 all hold: start the Render service and hand out the public
    URL.
 8. Never restart the home app against the old file afterwards — Turso is the one
    database from this point on.
+9. `rm -rf "$d"`.
 
-## 9. Go-live gate checklist (PRD: publishing is a gate for the whole installation)
+## 8. Go-live gate checklist (PRD: publishing is a gate for the whole installation)
 
-- [ ] The restore drill (section 7) passes against a real restored copy.
+- [ ] The restore drill (section 6) passes against a real restored copy.
 - [ ] A sale recorded on the published app is still there after a Turso point-in-time
       restore to a scratch target.
-- [ ] The newest daily copy in R2 is under 2 days old (`scripts/drill.py`'s
-      `copy_age_warning` says nothing).
-- [ ] The backup workflow's last run (Actions tab) is green.
+- [ ] The newest artifact's `created_at` (`scripts/newest_backup.py`'s own output) is
+      under 2 days old.
+- [ ] The backup workflow's last run (Actions tab) is green, and the failed-run email
+      (section 4) is confirmed on.
 - [ ] Two-network check: from network A, 20 failed logins lock network A's address;
       from network B, a correct login still succeeds.
 

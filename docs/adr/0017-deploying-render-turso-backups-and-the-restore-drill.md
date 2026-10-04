@@ -1,9 +1,13 @@
 ---
 status: accepted
 date: 2026-10-04
+amended: 2026-10-04
 ---
 
 # Deploying: Render, Turso, the daily encrypted backup and the restore drill
+
+Amended 2026-10-04: the backup destination and the R2 secret-scan pattern are
+superseded; see *Amendment* below.
 
 Part of #12, #27. ADR-0016 picked Render, Turso and UptimeRobot over the earlier
 Oracle/Caddy/Litestream plan. This records the shape the deploy files, the backup and
@@ -67,3 +71,54 @@ the restore drill actually take (deploy-and-backups subtask).
   `turso` CLI logged in at the account level, not a per-database token — exactly the
   credential this plan avoids putting in GitHub secrets (a leaked account login could
   create or delete a database; a leaked read-only database token cannot).
+
+## Amendment (2026-10-04): the daily copy is a GitHub Actions artifact
+
+**Supersedes**: the Backup destination bullet above (Cloudflare R2, its Object Lock
+and its 90-day lifecycle rule); the "Cloudflare/R2 key" item of the Secret scan
+bullet above; and the Consequence above that R2's Object Lock, not a token
+permission, protects a backup from early deletion.
+
+### Decision
+
+- The daily encrypted copy is kept as an artifact of the backup workflow's own run,
+  in this private repository, named `backup-<UTC %Y%m%dT%H%M%SZ>-<run_id>.db.age`.
+- Retention is 30 days; the workflow carries `permissions: contents: read`.
+- Only the ciphertext is uploaded — the plaintext dump (`backup.db`) is removed in
+  the job right after encryption.
+- No secret is ever inlined into a `run:` step; a secret reaches a step only through
+  its own `env:`.
+- The newest copy is chosen only by `scripts/newest_backup.py`, reading the artifact
+  listing; no doc or script chooses a copy with `gh run list`.
+
+### Why R2 was dropped
+
+Cloudflare R2 requires a credit card to enable, even on its free tier (a payment
+method and a $5 authorization hold), against the human's 2026-10-04 rule that
+publishing this product must be 100% free, with no card.
+
+### Consequences
+
+- Copies are deletable by anyone with write access to the repository, or by any
+  workflow given `actions: write`, and expire after 30 days, the same as the monthly
+  drill cadence. Nothing replaces Object Lock.
+- The one-day loss bound past Turso's 24-hour point-in-time restore is unchanged.
+- The artifact storage quota is shared with every workflow in this repository; when
+  it is full, the upload fails, and the only trip-wire between drills is GitHub's own
+  failed-run email, sent to whoever last changed the workflow's cron, and only while
+  their notification settings allow it.
+- `scripts/drill.py`'s `copy_age_warning` still measures how recent the restored
+  data is, not how old the copy itself is — a known limitation, kept on purpose,
+  because changing it would change what the operator sees.
+- The restore path runs inside a directory made by `mktemp -d` under `umask 077`,
+  removed at the end; a decrypted copy or a downloaded artifact never sits in the
+  repository's own working tree.
+
+### Note on this ADR's own section references
+
+The Decision and Consequences text above, written before this amendment, cites
+`deploy/README.md` by section number as that file was numbered at the time:
+section 3 was Cloudflare R2 (gone — folded into *Why R2 was dropped* above),
+section 4 was the `age` identity (now section 3), and section 9 was the go-live
+checklist (now section 8). The text above is not reworded to match, to keep this
+amendment append-only; read those numbers with this shift in mind.

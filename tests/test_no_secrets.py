@@ -1,10 +1,17 @@
-"""No Turso token, `age` identity, R2/Cloudflare key or Render key ever reaches a
-tracked file (the plan's invariant). Only the `age1…` recipient, public by design, may
-be committed (`deploy/age-recipient.txt`).
+"""No Turso token, `age` identity or Render key ever reaches a tracked file (the
+plan's invariant). Only the `age1…` recipient, public by design, may be committed
+(`deploy/age-recipient.txt`).
 
-Proven negative first (`tests/architecture/test_architecture.py`'s own pattern): the
-scanner must be seen to flag each deliberately bad shape before it is trusted to pass
-over every file this repository tracks.
+A second, separate checker, `find_object_storage_names`, proves that no R2/S3
+credential name is left in any file that runs, now that the daily backup is kept as
+a GitHub Actions artifact instead of an object-storage bucket (docs/adr/0017's
+amendment): the backup destination changed, so every setting and secret name that
+destination used must be gone from the files that actually execute, not just from
+prose that still explains why it was dropped.
+
+Proven negative first (`tests/architecture/test_architecture.py`'s own pattern): each
+scanner must be seen to flag a deliberately bad shape before it is trusted to pass
+over every file it covers.
 """
 
 from __future__ import annotations
@@ -21,9 +28,6 @@ _PATTERNS = {
         r"eyJ[A-Za-z0-9_-]{8,}\.eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{10,}"
     ),
     "render api key": re.compile(r"\brnd_[A-Za-z0-9]{20,}\b"),
-    "cloudflare or r2 key": re.compile(
-        r"(?i)\b(CLOUDFLARE|R2)_[A-Z0-9_]*(KEY|TOKEN|SECRET)\s*[=:]\s*['\"]?[A-Za-z0-9/+_.-]{20,}"
-    ),
     # A generic env-style assignment with a real-looking value.
     "generic token or secret assignment": re.compile(
         r"(?i)\b[A-Z0-9_]*_(TOKEN|SECRET)\s*=\s*\S{6,}"
@@ -59,11 +63,47 @@ def find_secrets(text: str, *, filename: str = "") -> list[str]:
     return found
 
 
+# Names, not values: an R2/S3 credential or CLI flag the daily backup no longer
+# needs, now that it is a GitHub Actions artifact (docs/adr/0017's amendment). Matched
+# case-sensitively, as these always appear: ordinary prose naming "Cloudflare R2" (the
+# ADR, the README's pointer to it) never contains any of these literal substrings.
+_OBJECT_STORAGE_NAMES = (
+    "R2_",
+    "AWS_ACCESS_KEY_ID",
+    "AWS_SECRET_ACCESS_KEY",
+    "aws s3",
+    "--endpoint-url",
+    "S3_",
+)
+
+# Only the files that actually run: workflows, the deploy operator's own doc and
+# scripts, and Render's own blueprint. Docs and ADRs are not scanned -- the ADR's
+# prose explains, on purpose, why R2 was dropped, including its old setting names.
+_RUNNING_FILE_ROOTS = (".github/workflows", "deploy", "scripts")
+_RUNNING_FILE_EXTRAS = ("render.yaml",)
+
+
+def find_object_storage_names(text: str) -> list[str]:
+    """Each object-storage name found in `text`, literally, not by value."""
+    return [name for name in _OBJECT_STORAGE_NAMES if name in text]
+
+
 def _tracked_files() -> list[Path]:
     output = subprocess.run(
         ["git", "ls-files"], cwd=REPO_ROOT, capture_output=True, check=True, text=True
     ).stdout
     return [REPO_ROOT / line for line in output.splitlines() if line]
+
+
+def _tracked_running_files() -> list[Path]:
+    running = []
+    for path in _tracked_files():
+        relative = path.relative_to(REPO_ROOT).as_posix()
+        if relative in _RUNNING_FILE_EXTRAS or any(
+            relative == root or relative.startswith(root + "/") for root in _RUNNING_FILE_ROOTS
+        ):
+            running.append(path)
+    return running
 
 
 def test_the_scanner_flags_an_age_identity() -> None:
@@ -88,13 +128,6 @@ def test_the_scanner_flags_a_render_api_key() -> None:
     bad = "RENDER_API_KEY=rnd_" "abcdefghijklmnopqrstuvwxyz0123456789"
 
     assert "render api key" in find_secrets(bad)
-
-
-def test_the_scanner_flags_a_cloudflare_or_r2_key() -> None:
-    # Split for the same reason as the age identity example above.
-    bad = "R2_SECRET_ACCESS_KEY=" "0123456789abcdef0123456789abcdef0123456789abcdef"
-
-    assert "cloudflare or r2 key" in find_secrets(bad)
 
 
 def test_the_scanner_flags_a_generic_token_assignment_outside_python() -> None:
@@ -135,6 +168,69 @@ def test_the_age_recipient_is_allowed() -> None:
     recipient = Path(REPO_ROOT / "deploy" / "age-recipient.txt").read_text().strip()
 
     assert find_secrets(recipient) == []
+
+
+def test_the_object_storage_scanner_flags_an_r2_env_var_name() -> None:
+    assert find_object_storage_names("R2_ACCESS_KEY_ID") == ["R2_"]
+
+
+def test_the_object_storage_scanner_flags_an_aws_access_key_id_name() -> None:
+    assert "AWS_ACCESS_KEY_ID" in find_object_storage_names("export AWS_ACCESS_KEY_ID=x")
+
+
+def test_the_object_storage_scanner_flags_an_aws_secret_access_key_name() -> None:
+    assert "AWS_SECRET_ACCESS_KEY" in find_object_storage_names(
+        "export AWS_SECRET_ACCESS_KEY=x"
+    )
+
+
+def test_the_object_storage_scanner_flags_an_aws_s3_command() -> None:
+    assert "aws s3" in find_object_storage_names("aws s3 cp backup.db.age s3://bucket/")
+
+
+def test_the_object_storage_scanner_flags_an_endpoint_url_flag() -> None:
+    assert "--endpoint-url" in find_object_storage_names(
+        "aws s3 --endpoint-url https://example.r2.cloudflarestorage.com cp a b"
+    )
+
+
+def test_the_object_storage_scanner_flags_an_s3_env_var_name() -> None:
+    assert "S3_" in find_object_storage_names("S3_BUCKET=my-bucket")
+
+
+def test_the_object_storage_scanner_lets_r2_prose_through() -> None:
+    fine = (
+        "Cloudflare R2 requires a credit card to enable, even on its free tier; see "
+        "docs/adr/0017's amendment."
+    )
+
+    assert find_object_storage_names(fine) == []
+
+
+def test_tracked_running_files_selects_the_backup_workflow_and_excludes_app() -> None:
+    # Proof the selection itself is not empty, and not everything: an empty selection
+    # would let the scan below pass with nothing actually scanned.
+    relative = {str(path.relative_to(REPO_ROOT)) for path in _tracked_running_files()}
+
+    assert ".github/workflows/backup.yml" in relative
+    assert "deploy/README.md" in relative
+    assert "render.yaml" in relative
+    assert not any(path.startswith("app/") for path in relative)
+
+
+def test_no_tracked_running_file_references_an_object_storage_name() -> None:
+    violations: list[tuple[str, str]] = []
+    for path in _tracked_running_files():
+        if not path.is_file():
+            continue
+        try:
+            text = path.read_text()
+        except (UnicodeDecodeError, OSError):
+            continue
+        relative = str(path.relative_to(REPO_ROOT))
+        violations.extend((relative, name) for name in find_object_storage_names(text))
+
+    assert violations == []
 
 
 def test_no_tracked_file_contains_a_secret() -> None:
