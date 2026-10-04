@@ -525,6 +525,7 @@ export default function NuevaVenta() {
   return (
     <main className="pantalla">
       <form className="nueva-venta" onSubmit={onSubmit}>
+        <div className="nueva-venta__disposicion">
         <div className="nueva-venta__cuerpo">
           <div className="encabezado-fila">
             <Boton variant="icon" ariaLabel="Volver" icon="atras" onClick={goBack} />
@@ -734,6 +735,15 @@ export default function NuevaVenta() {
             </span>
           )}
 
+          {formError !== null && (
+            <span className="campo__error" role="alert">
+              {formError}
+            </span>
+          )}
+          {offline && <SinConexion />}
+        </div>
+
+        <div className="nueva-venta__resumen">
           <div className="nueva-venta__pago">
             <SelectorPago
               value={method}
@@ -748,25 +758,19 @@ export default function NuevaVenta() {
             )}
           </div>
 
-          {formError !== null && (
-            <span className="campo__error" role="alert">
-              {formError}
+          <div className="nueva-venta__pie">
+            <span className="rotulo">Total</span>
+            <span className="cifra-xl">{formatMoney(totals.total)}</span>
+            <span className="rotulo">
+              {formatGrams(fromHundredths(totals.gramsSoldHundredths))} vendidos
+              {totals.gramsGiftedHundredths > 0 &&
+                ` · ${formatGrams(fromHundredths(totals.gramsGiftedHundredths))} de regalo`}
             </span>
-          )}
-          {offline && <SinConexion />}
+            <Boton type="submit" disabled={save.isPending || varietiesQuery.isFetching}>
+              Guardá la venta
+            </Boton>
+          </div>
         </div>
-
-        <div className="nueva-venta__pie">
-          <span className="rotulo">Total</span>
-          <span className="cifra-xl">{formatMoney(totals.total)}</span>
-          <span className="rotulo">
-            {formatGrams(fromHundredths(totals.gramsSoldHundredths))} vendidos
-            {totals.gramsGiftedHundredths > 0 &&
-              ` · ${formatGrams(fromHundredths(totals.gramsGiftedHundredths))} de regalo`}
-          </span>
-          <Boton type="submit" disabled={save.isPending || varietiesQuery.isFetching}>
-            Guardá la venta
-          </Boton>
         </div>
       </form>
 

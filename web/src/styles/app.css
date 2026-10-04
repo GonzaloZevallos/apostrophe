@@ -1196,10 +1196,24 @@ button {
 }
 
 /* `NuevaVenta` (plan, "Phone layout"): a flex column of `min-height: 100dvh`; the
- * body scrolls, the footer (total + save button) is the last child, never fixed
- * or sticky. */
+ * body scrolls, the footer (total + save button, grouped here with Pago as
+ * `.nueva-venta__resumen`) is the last child, never fixed or sticky.
+ *
+ * `NuevaVentaCompu` (plan, "Computer"): at `min-width: 900px`,
+ * `.nueva-venta__disposicion` turns into the design's own row —
+ * `NuevaVentaCompu.dc.html`'s lines on the left, Total/Pago/"Guardá la venta"
+ * in a right-hand aside — the same `flex-wrap` switch `Inicio`'s own
+ * `.panel-dos-columnas` already makes, not a pathname check or a second
+ * component. */
 .nueva-venta {
   min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.nueva-venta__disposicion {
+  flex: 1 1 auto;
+  min-height: 0;
   display: flex;
   flex-direction: column;
 }
@@ -1214,6 +1228,12 @@ button {
   min-width: 0;
 }
 
+.nueva-venta__resumen {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
 .nueva-venta__pie {
   flex: 0 0 auto;
   padding: var(--espacio-lg) var(--margen-pantalla) var(--espacio-xxl);
@@ -1225,6 +1245,38 @@ button {
 
 .nueva-venta__pie .boton {
   margin-top: var(--espacio-md);
+}
+
+@media (min-width: 900px) {
+  .nueva-venta__disposicion {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: var(--espacio-xl);
+    padding: var(--espacio-xl) var(--espacio-xxl);
+  }
+
+  .nueva-venta__cuerpo {
+    flex: 999 1 460px;
+    overflow-y: visible;
+    padding: 0;
+  }
+
+  .nueva-venta__resumen {
+    flex: 1 1 290px;
+    max-width: 360px;
+    position: sticky;
+    top: var(--espacio-xl);
+    background: var(--superficie);
+    border-radius: var(--radio-panel-grande);
+    padding: var(--espacio-xl);
+    gap: var(--espacio-lg);
+  }
+
+  .nueva-venta__pie {
+    padding: 0;
+    border-top: 1px solid var(--linea);
+    padding-top: var(--espacio-lg);
+  }
 }
 
 .fecha-pildora {
