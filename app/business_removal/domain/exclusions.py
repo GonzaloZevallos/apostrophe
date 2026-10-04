@@ -20,8 +20,10 @@ PINNED_CATALOG_TABLE = "pinned_catalog"
 # row delete reaches by a column other than `business_id`.
 PLATFORM_TABLES: frozenset[str] = frozenset({BUSINESS_TABLE, INVITATION_TABLE, LOGIN_GUARD_TABLE})
 
-# Alembic's own bookkeeping table: never a business's data, never touched.
-SKIPPED_TABLES: frozenset[str] = frozenset({"alembic_version"})
+# Never a business's data, never touched: Alembic's own bookkeeping, and the
+# per-address login brake (docs/adr/0017), keyed by an address digest that no
+# business owns and shared by every business on the installation.
+SKIPPED_TABLES: frozenset[str] = frozenset({"alembic_version", "login_address_guard"})
 
 # Deleted along with the business, but never written to the export file.
 WITHHELD_TABLES: frozenset[str] = frozenset({INVITATION_TABLE, LOGIN_GUARD_TABLE})

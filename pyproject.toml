@@ -11,6 +11,7 @@ dependencies = [
     "pydantic>=2.11",
     "tzdata",
     "cryptography>=50.0.2",
+    "sqlalchemy-libsql>=0.2.0",
 ]
 
 [project.optional-dependencies]

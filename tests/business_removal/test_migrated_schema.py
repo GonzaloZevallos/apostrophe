@@ -50,6 +50,7 @@ def test_the_raw_secret_pattern_matches_exactly_the_known_secrets() -> None:
     assert matches == {
         ("app_user", "password_hash"),
         ("invitation", "token_digest"),
+        ("login_address_guard", "address_digest"),
         ("pinned_catalog", "token_ciphertext"),
         ("pinned_catalog", "token_fingerprint"),
         ("pinned_catalog", "message_token_fingerprint"),

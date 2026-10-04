@@ -28,6 +28,13 @@ on the internet from the start.
   even with the right password (429). A success resets the count. Unknown emails are
   braked and timed like known ones (a dummy hash is computed), so neither the answer nor
   its timing tells which emails exist.
+  - **Per-address brake** (ADR-0017, published install): on top of the per-email
+    brake, 20 failed logins from one client address within 15 minutes lock that
+    address's logins for 15 minutes too, with the same 429 and the same timing.
+    Every refused login counts for both brakes at once, lock refusals included; a
+    success resets only the email's count, never the address's. The address itself is
+    never stored — only its HMAC, under `APOSTROPHE_SECRET_KEY` — and its state lives
+    in `login_address_guard`, a platform table (docs/adr/0004, CODING_STANDARDS §9).
 - **Session**: a stateless token (user id, opening time, a keyed fingerprint of the
   password hash), HMAC-SHA256 under `APOSTROPHE_SECRET_KEY`, valid **30 days**, sent as
   an `HttpOnly`, `SameSite=Lax` cookie and accepted as a bearer header. A changed
@@ -39,8 +46,11 @@ on the internet from the start.
 
 - Password reset and password change do not exist yet; the operator of the installation
   resets one by hand until a task adds them. The app sends no email.
-- The cookie is not `Secure` while the app is served over plain http on the home
-  network. Publishing it brings TLS first, then `Secure`.
+- `Secure` on the session cookie is decided only by configuration
+  (`Settings.secure_cookie`, derived from `public_url`), never guessed from the
+  request (docs/adr/0017). Plain http on the home network keeps the cookie without
+  `Secure`, unchanged; the published install's `APOSTROPHE_PUBLIC_URL=https://…` turns
+  it on.
 - One session cannot be closed alone; a password change closes them all.
 
 ## Considered and rejected

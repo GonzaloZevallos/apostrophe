@@ -1,6 +1,13 @@
 # Accounts
 
-Businesses, their users, the only way in (an invitation and a login), and the only way out (an operator's command that exports a business and removes it). Every other capability reads one thing from here, the business of the user asking, and serves that business alone (ADR-0004). It also holds the app as a whole: how it is served, installed and navigated, the feedback rules every screen follows, and the Negocio screen. Inicio, where the app opens, is the panel defined in results.md.
+Businesses, their users, the only way in (an invitation and a login), and the only way out (an operator's command that exports a business and removes it). Every other capability reads one thing from here, the business of the user asking, and serves that business alone (ADR-0004). It also holds the app as a whole:
+
+- how it is served, installed and navigated;
+- how the installation is published on the internet and backed up (ADR-0016);
+- the feedback rules every screen follows;
+- the Negocio screen.
+
+Inicio, where the app opens, is the panel defined in results.md.
 
 ## Jobs
 
@@ -14,6 +21,11 @@ Businesses, their users, the only way in (an invitation and a login), and the on
 
 **When** a friend stops using the app, or asks to be taken out of it, **I want** to hand them everything the app holds of their business in one file and then remove that business from the installation completely, **so that** they keep their books and their customers' names, phone numbers and balances are no longer held by me or by anyone else on the installation. A business opened by mistake is covered by the same command. The business goes as a whole, every user included. The operator has agreed with every user of the business beforehand; the command does not check it.
 
+**When** a seller needs the app away from my home network, **I want** the installation published on the internet over HTTPS, with every business's data copied off the server continuously, encrypted, and proven restorable, **so I can** let sellers work from anywhere without one lost server, disk or leaked backup costing anyone their books or exposing their customers.
+
+- The protagonist of this last job is the operator of the installation, not a user in the app.
+- For a seller, only two things change: where they can reach the app from, and that it is on HTTPS.
+
 Success criteria:
 
 1. Nothing of one business is reachable from another, through any route: by id it does not exist (404), in a list it is absent.
@@ -21,7 +33,7 @@ Success criteria:
 3. Repeated wrong passwords stop working for a while, and nothing in the answers tells which emails have a user.
 4. No `curl` at any point. From the phone alone, a seller can do everything the backend does, starting with opening or joining a business from the invitation link.
 5. It feels like a phone app.
-   - It sits on the home screen with its own name and icon. On iOS it installs over the home network. On Android it is a home-screen shortcut there, and a full install once the app is published with TLS.
+   - It sits on the home screen with its own name and icon. On iOS it installs over the home network. On Android it is a home-screen shortcut there, and a full install on the published installation with TLS.
    - It follows the phone's light or dark setting.
    - It says "Sin conexión" when the network drops.
    - No state is told by color alone (blue ↔ amber, never green ↔ red).
@@ -31,6 +43,22 @@ Success criteria:
    - The session lives only in the backend's cookie.
    - Serving the front reaches nothing outside the built app.
 7. Nothing invented: no placeholder figures, and no navigation entry for something that does not exist yet.
+14. **Nothing weakens on the internet.**
+   - A seller logs in and works from any network with the same guarantees as on the home network: ADR-0002, ADR-0004 and ADR-0005.
+   - Over HTTPS the session cookie is `Secure`. This is set in configuration, never guessed from the request.
+   - Plain http on the home network keeps working unchanged.
+15. **Guessing is braked by email and by address.**
+   - One address trying many emails is locked out.
+   - One email tried from many addresses is locked out.
+   - Both locks answer the same, with the same timing.
+   - No client address goes to a log.
+16. **Losing the server is recoverable.**
+    - At worst, under 1 minute of recent work (sales, payments, stock entries) is lost, from Turso's 24-hour write log.
+    - Beyond those 24 hours, the daily encrypted copy is the fallback, and its loss bound is one day.
+    - A drill restores the backup into a scratch target and proves it intact (integrity, row counts, recency), with no effect on the running app.
+17. **Rebuildable from the repository.**
+    - `deploy/README.md` documents every step to stand the installation up from zero.
+    - No secret is in the repository.
 
 Success criteria, removing a business:
 
@@ -52,7 +80,23 @@ Success criteria, removing a business:
 - **Email**: trimmed and lowercased; one user per email across the whole installation.
 - **Password**: at least 10 characters; stored only as a hash.
 - **Login**: email and password answer a session that lasts 30 days, as a cookie and a token. A wrong password and an unknown email get the same answer.
-- **Brake**: five failures in a row for an email lock it for 15 minutes, even for the right password; a success resets the count.
+- **Session cookie**:
+  - It is `Secure` only when HTTPS is configured for the deployment, and never inferred from the request's scheme or headers.
+  - On the home network's plain http it is not `Secure`, as before.
+- **Login brakes**: two, both on `/auth/login` only. The invitation routes have none.
+  - **Per email**: five failures in a row for an email lock it for 15 minutes, even for the right password. A success resets that email's count.
+  - **Per address**: 20 failed logins from one client address within 15 minutes lock that address's logins for 15 minutes. A success never resets this count.
+  - **Cross-counting**: every refused attempt counts for both the email and the address, whatever lock is already active. That includes the right password refused under a lock.
+  - **Same answer**:
+    - Both locks answer 429 with the same timing, and the screen shows the same brake message.
+    - Nothing reveals a count, the address or which brake fired.
+  - **Address source**:
+    - By default it is the connection's address.
+    - It is taken from the forwarded-address header only when the request comes from the trusted proxy (Render's, ADR-0016).
+    - The trusted proxy is set in configuration, never guessed.
+    - The same rule holds on the home network and on the published installation.
+  - **Logs**: no client address, email or token is logged.
+  - **Shared addresses**: people sharing one address can together trip the address lock. This is accepted at 20 failures in 15 minutes.
 - `GET /auth/me` answers the user's email and their business's name.
 - Logging out drops the cookie.
 
@@ -106,12 +150,13 @@ Success criteria, removing a business:
   - iOS installs through "Agregar a inicio", with no walkthrough;
   - Android gets a home-screen shortcut, since browsers allow a service worker and the install prompt only on a secure origin;
   - the app shows no banner or explanation of the difference.
-- **Install once published with TLS**: Android's own install prompt is offered when the browser makes it available. The manifest and service worker already in place need no further work for it.
+- **Install on the published installation**, over Render's TLS: Android's own install prompt is offered when the browser makes it available. The manifest and service worker already in place need no further work for it.
 - **No network**: when a request fails because the network dropped, the open app shows "Sin conexión" on any origin. This does not rely on the service worker.
 - **Theme**: light and dark follow the phone. The font is self-hosted.
 - **Language and formats**: every word on screen in Rioplatense Spanish with vos. Money `$ 11.000`, a negative amount `−$ 4.500`, grams `3,5 g`, dates `dd/mm`. The catalog text keeps its own Telegram format (`$11.000`, catalog.md).
 - **Getting in** (`Entrar`, `NegocioNuevo`, `Invitacion`):
-  - Login shows a fixed hint under the button that five failed attempts lock the email for 15 minutes. It shows no count of attempts left. The lock shows the brake message.
+  - Login shows a fixed hint under the button that five failed attempts lock the email for 15 minutes. It shows no count of attempts left.
+  - Either lock shows the brake message. No copy names the address brake.
   - A request answered 401 goes to login.
   - An unknown, used or expired invitation shows "Esta invitación ya no sirve".
   - Opening `/invitation/{token}` while signed in logs out first, through the backend, then shows the invitation as if signed out. That includes the user's own business's join link.
@@ -129,6 +174,30 @@ Success criteria, removing a business:
   - the users by email, the signed-in one marked "vos";
   - "Invitá a un socio": each tap creates one fresh join link, to copy or share with the phone's share sheet;
   - log out.
+
+### The published installation (ADR-0016)
+
+- **Hosting**:
+  - Render hosts the app and deploys automatically on every merge to `master`.
+  - Turso (libSQL, `aws-us-east-1`) holds the database, with point-in-time restore over the last 24 hours. ADR-0001's SQLite stands.
+- **Uptime**: UptimeRobot pings the health endpoint every 5 minutes. The health endpoint answers nothing about any business, not even that one exists: no name, id or count.
+- **Daily backup**: a GitHub Actions workflow copies the database every day and encrypts the copy with `age`.
+  - The copy is stored outside Render and Turso.
+  - The decrypting identity is kept outside the repository and both providers.
+- **Secrets**: none in the repository.
+- **`deploy/README.md`** gives every step from zero: Render's service, Turso's setup, the backup workflow and UptimeRobot's monitor.
+  - Render's network boundary and TLS replace binding to `127.0.0.1` behind a reverse proxy.
+- **Restore drill**: a script the operator runs by hand, with no timer and no notification channel.
+  - It restores from Turso's point-in-time restore and from the daily encrypted copy into a scratch target, with no effect on the running app.
+  - Each run reports the integrity check result, row counts and the time of the restored copy's latest change.
+  - Its cadence is set in `deploy/README.md`: once before going live, after any change to how the app or its backup are configured, and monthly.
+- **Publishing is a gate**:
+  - Nobody is given the public address until criteria 14–17 hold.
+  - Sellers may still be invited on the home network meanwhile.
+  - Publishing belongs to the installation as a whole: every business becomes reachable at once, kept apart only by session isolation (ADR-0004).
+- **No admin surface** (ADR-0002):
+  - Brake state, backup health and drill results are read from outside the app: logs, the drill's output and the GitHub Actions run.
+  - Nothing is seen or done from a signed-in session, and the app gains no screen, route or navigation entry for it.
 
 ### Feedback, on every screen
 
@@ -159,7 +228,7 @@ Success criteria, removing a business:
   - a record of another business, opened by id, shows the same "Eso ya no está." as a deleted one.
 - **Phone app (criterion 5)**:
   - the manifest passes the browser's installability check, run on `localhost`;
-  - installing on a phone over the home network is not checked automatically;
+  - installing on a phone is not checked automatically;
   - both themes render from the tokens;
   - an offline check shows "Sin conexión";
   - no state is told by color alone.
@@ -176,6 +245,22 @@ Success criteria, removing a business:
 - **No echo (criterion 13)**: the captured terminal output and logs of both modes hold no email, customer name, phone number or amount, only the business name, the path and counts.
 - **Clean slate (criterion 13)**: after removal, a removed user's token answers 401, and a new-business invitation accepted with the same email opens an empty business with a clean brake count.
 - Removal metrics run as fast, self-contained tests.
+- **Publishing (criteria 14–17)**: no test reaches the network, Render, Turso or GitHub.
+  - **Brakes (criteria 3, 15)**: tested at the HTTP seam with a fake clock, 100% passing. They cover:
+    - the email brake (5 in a row, 15 minutes);
+    - the address brake (20 within 15 minutes, 15 minutes);
+    - cross-counting, lock refusals included;
+    - a success resetting only the email's count;
+    - the same 429 answer and timing from both locks, disclosing nothing.
+  - **Address source (criterion 15)**: the forwarded header is used only from the configured trusted proxy and ignored from anywhere else.
+  - **Cookie (criterion 14)**: `Secure` is present when HTTPS is configured and absent otherwise.
+  - **No leakage (criteria 14, 15)**:
+    - no log line from the login path contains a client address, email or token;
+    - the health endpoint answers no business name, id or count.
+  - **Rebuildable (criterion 17)**: a check that the repository holds no Turso credential, `age` identity or other secret.
+  - **Drill (criterion 16)**:
+    - Automated: against a local scratch copy, the drill produces integrity, row counts and the latest change.
+    - By hand: the run before going live shows, from the recency field, that the restore is within the under-1-minute bound.
 
 ## Out of scope
 
@@ -184,6 +269,11 @@ Success criteria, removing a business:
 - Exporting a business without removing it (a backup of an active one); importing an export back; removing a business from the app; checking that every user agreed; removing the export file from the server after handing it over.
 - Roles within a business.
 - Offline use; an install walkthrough on iOS or Android.
-- TLS on the home network, including local certificates: it comes with publishing the app (ADR-0002), and with it the full Android install.
+- TLS on the home network, including local certificates: the published installation gets TLS from Render (ADR-0016).
 - Live updates between partners: a list refreshes when it is opened or after a save, not when the other partner changes something.
 - The Análisis entry: it comes with its own task.
+- Stopping a guessing run spread across many addresses and many emails at once.
+- Braking the invitation routes.
+- A scheduled restore drill; any notification channel to the operator.
+- An admin screen, route or navigation entry, or anything operated from a signed-in session.
+- A per-business publishing flag or staged rollout.

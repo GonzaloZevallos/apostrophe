@@ -17,7 +17,7 @@ jobs:
       - run: uv sync --locked --extra dev
       - run: uv run --no-project pytest
       - run: uv run --no-project ruff check .
-      - run: uv run --no-project mypy app tests
+      - run: uv run --no-project mypy app tests scripts
   web:
     runs-on: ubuntu-latest
     steps:

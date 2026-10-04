@@ -129,11 +129,14 @@ def create_app(
 ) -> FastAPI:
     settings = settings or Settings.from_env()
     app = FastAPI(title="apostrophe", lifespan=lifespan)
-    app.state.engine = engine or make_engine(settings.database_url)
+    app.state.engine = engine or make_engine(
+        settings.database_url, auth_token=settings.database_auth_token
+    )
     app.state.clock = clock
     app.state.signer = SessionSigner(settings.secret_key)
     app.state.hasher = hasher or PasswordHasher()
     app.state.public_url = settings.public_url
+    app.state.settings = settings
     # `telegram=None` means the real adapter; every test but `telegram_http`'s own
     # injects a fake through this same keyword (the plan's invariant). The ticker
     # itself and the trigger dependency are the `upkeep` subtask's: this flag is only
