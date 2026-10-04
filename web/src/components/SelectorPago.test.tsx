@@ -6,6 +6,7 @@
  */
 
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { expect, test, vi } from 'vitest'
 import SelectorPago from './SelectorPago'
 
@@ -41,7 +42,7 @@ test('a disabled Debiendo carries the caller\'s description as its accessible de
     />,
   )
   const owing = screen.getByRole('radio', { name: 'Debiendo' })
-  expect(owing).toHaveAttribute('aria-disabled', 'true')
+  expect(owing).toBeDisabled()
   expect(screen.getByText('Para dejar debiendo elegí un cliente')).toBeInTheDocument()
   const describedBy = owing.getAttribute('aria-describedby')
   expect(describedBy).not.toBeNull()
@@ -55,4 +56,12 @@ test('a disabled Debiendo never fires onChange', async () => {
   render(<SelectorPago value={null} onChange={onChange} owingDisabled owingDescription="x" />)
   screen.getByRole('radio', { name: 'Debiendo' }).click()
   expect(onChange).not.toHaveBeenCalled()
+})
+
+test('clicking an enabled option fires onChange with its value', async () => {
+  const user = userEvent.setup()
+  const onChange = vi.fn()
+  render(<SelectorPago value={null} onChange={onChange} />)
+  await user.click(screen.getByRole('radio', { name: 'Transferencia' }))
+  expect(onChange).toHaveBeenCalledWith('transfer')
 })

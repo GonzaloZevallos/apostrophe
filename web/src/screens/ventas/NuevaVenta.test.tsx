@@ -110,14 +110,14 @@ test('Debiendo is disabled with no customer, enables once one is chosen, and res
     'GET /customers': () => jsonResponse(200, [ANA]),
   })
 
-  expect(screen.getByRole('radio', { name: 'Debiendo' })).toHaveAttribute('aria-disabled', 'true')
+  expect(screen.getByRole('radio', { name: 'Debiendo' })).toBeDisabled()
   expect(screen.getByText('Para dejar debiendo elegí un cliente')).toBeInTheDocument()
 
   await user.click(screen.getByRole('button', { name: 'Elegir cliente' }))
   await user.click(await screen.findByRole('button', { name: /Ana/ }))
 
   expect(await screen.findByText('Ana')).toBeInTheDocument()
-  expect(screen.getByRole('radio', { name: 'Debiendo' })).toHaveAttribute('aria-disabled', 'false')
+  expect(screen.getByRole('radio', { name: 'Debiendo' })).toBeEnabled()
   await user.click(screen.getByRole('radio', { name: 'Debiendo' }))
   expect(screen.getByRole('radio', { name: 'Debiendo' })).toBeChecked()
 
@@ -127,7 +127,7 @@ test('Debiendo is disabled with no customer, enables once one is chosen, and res
   await user.click(screen.getByRole('button', { name: /Cambiar/ }))
   await user.click(await screen.findByRole('button', { name: 'Sin cliente' }))
 
-  expect(screen.getByRole('radio', { name: 'Debiendo' })).toHaveAttribute('aria-disabled', 'true')
+  expect(screen.getByRole('radio', { name: 'Debiendo' })).toBeDisabled()
   expect(screen.getByRole('radio', { name: 'Debiendo' })).not.toBeChecked()
 })
 

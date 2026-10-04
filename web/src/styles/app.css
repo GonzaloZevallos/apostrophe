@@ -955,9 +955,47 @@ button {
   overflow-y: auto;
 }
 
-/* `Ventas`: the period tabs (Hoy/Semana/Mes/Fechas, `sales.md`), the list and each
- * sale's row. `.fila-venta` mirrors `.fila-gasto`'s shape (a tappable row, same
- * height and border), just with its own four columns. */
+/* `Ventas` (`Ventas.dc.html`/`VentasCompu.dc.html`, plan "sales-list"): the
+ * header's title/tabs/range-and-total, and each sale's stacked row. `.fila-venta`
+ * is a tappable row: date, name/VIP/varieties, a chevron (`Icono`), and the
+ * amount with "te debe" under it only when the API's `still_owing` says so
+ * (never derived here). */
+.ventas__cabecera {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-md);
+}
+
+/* `Pestanas` (plan "Components"): a plain text tab list, an underline via
+ * `box-shadow` on the active one, no pill. Each tab is `.boton--enlace` (`Boton`'s
+ * own class, which already resets `border`/`background`) — `.pestanas__opcion`
+ * only overrides colour/`text-decoration`/weight/`box-shadow`, never a reset of
+ * its own (review finding: `border`/`background` may be reset only by `Boton`'s
+ * classes). */
+.pestanas {
+  display: flex;
+  align-items: baseline;
+  gap: var(--espacio-xl);
+  font-size: 15px;
+}
+
+.pestanas__opcion {
+  color: var(--tinta2);
+  text-decoration: none;
+  font-weight: 400;
+  box-shadow: none;
+}
+
+.pestanas__opcion--activa {
+  color: var(--tinta);
+  font-weight: 600;
+  box-shadow: 0 2px 0 var(--tinta);
+}
+
+/* `Inicio`'s own period tabs (`panel.ts`'s `Hoy/Semana/Mes`), unrelated to
+ * `Ventas`' `Pestanas` above and out of this subtask's scope — restored after
+ * this branch had accidentally renamed/deleted them out from under `Inicio.tsx`,
+ * which still renders them (review finding, spec-scope). */
 .periodos {
   display: flex;
   gap: var(--espacio-sm);
@@ -988,8 +1026,20 @@ button {
 
 .ventas__resumen {
   display: flex;
-  flex-direction: column;
-  gap: var(--espacio-xs);
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--espacio-md);
+}
+
+.ventas__rango {
+  font-size: 15px;
+  color: var(--tinta2);
+}
+
+.ventas__total {
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.04em;
 }
 
 .lista-ventas {
@@ -1018,11 +1068,19 @@ button {
   color: var(--tinta2);
 }
 
-.fila-venta__cliente {
+.fila-venta__cuerpo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fila-venta__nombre {
   display: flex;
   align-items: center;
   gap: 7px;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
 }
 
@@ -1032,15 +1090,41 @@ button {
 }
 
 .fila-venta__detalle {
-  flex: 1;
-  min-width: 0;
   font-size: 13px;
   color: var(--tinta2);
 }
 
+/* Phone (`Ventas.dc.html`): name and grams share one line. Computer
+ * (`VentasCompu.dc.html`, 900px+ below): grams move into their own column, so
+ * this line becomes names only — both text nodes stay in the DOM; only the
+ * breakpoint decides which one shows, never a second grams sum. */
+.fila-venta__detalle--nombre {
+  display: none;
+}
+
+.fila-venta__gramos {
+  display: none;
+}
+
 .fila-venta__monto {
-  font-size: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+}
+
+.fila-venta__cifra {
+  font-size: 17px;
   font-weight: 600;
+}
+
+.fila-venta__te-debe {
+  font-size: 12px;
+}
+
+.fila-venta > svg {
+  flex-shrink: 0;
+  color: var(--tenue);
 }
 
 /* `VentaDetalle` (`VentaDetalle.dc.html`): the total's own label and the summary
@@ -1063,6 +1147,8 @@ button {
   margin-bottom: var(--espacio-xs);
 }
 
+/* `VentaDetalle`: each line's rule badge next to its variety, same pill shape as
+ * `.vip-insignia`, just its own neutral tone (a rule is not a status). */
 .venta-detalle__lineas {
   display: flex;
   flex-direction: column;
@@ -1866,5 +1952,53 @@ button {
   .panel-dos-columnas > * {
     flex: 1;
     min-width: 0;
+  }
+
+  /* `VentasCompu`: title, range and total sit together on one row, the tabs
+   * pushed to its far end (plan, subtask "sales-list" — "Header"). */
+  .ventas__cabecera {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: flex-start;
+    gap: var(--espacio-lg);
+  }
+
+  .ventas__cabecera .encabezado__titulo {
+    order: 1;
+  }
+
+  .ventas__cabecera .ventas__resumen {
+    order: 2;
+    gap: var(--espacio-lg);
+  }
+
+  .ventas__cabecera .pestanas {
+    order: 3;
+    gap: var(--espacio-lg);
+    margin-left: auto;
+  }
+
+  .ventas__total {
+    font-size: 26px;
+    letter-spacing: -0.035em;
+  }
+
+  /* `VentasCompu.dc.html`'s row: grams in their own right-aligned column,
+   * the variety-names line without them. */
+  .fila-venta__detalle--combinada {
+    display: none;
+  }
+
+  .fila-venta__detalle--nombre {
+    display: block;
+  }
+
+  .fila-venta__gramos {
+    display: block;
+    width: 56px;
+    text-align: right;
+    font-size: 15px;
+    color: var(--tinta2);
   }
 }
