@@ -16,6 +16,12 @@
  * `contract.json` the backend does not yet answer). `account.password_weak` and
  * `account.login_locked` already exist there, so they keep going through
  * `resolveOverride`.
+ *
+ * No design file exists for this sheet: checked by eye before delivery against
+ * `Negocio`'s own comparison (`scripts/design/compare.sh`) with the sheet open
+ * — same `.capa`/`.capa__contenido` dim-backdrop bottom sheet `Cobro`'s
+ * "Registrar cobro" uses, the same `panel__titulo` heading and `.formulario`/
+ * `.campo` field rhythm.
  */
 
 import { type FormEvent, useState } from 'react'

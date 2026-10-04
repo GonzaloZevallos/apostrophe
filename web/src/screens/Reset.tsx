@@ -16,6 +16,13 @@
  * `contract.json` in the same diff as the `backend` subtask, still open as this
  * one ships (`tests/test_refusal_codes.py` refuses a code in `contract.json` the
  * backend does not yet answer).
+ *
+ * No design file exists for this screen: checked by eye before delivery against
+ * `Invitacion`'s own comparison (`scripts/design/compare.sh`) — same
+ * `.entrar__contenido` top padding, the same `.invitacion__titulo` type for the
+ * heading, the same `.formulario`/`.campo` field rhythm and pill button. It is
+ * shorter than Invitacion's own form only because this screen's copy has no
+ * badge, subtitle or footer line, not because of a missed spacing rule.
  */
 
 import { type FormEvent, useEffect, useState } from 'react'
