@@ -648,3 +648,28 @@ def test_the_delete_check_catches_a_payment_delete_that_ignores_business(
         _assert_another_business_cannot_reach_a_record(
             business_a, business_b, seeded, "DELETE", "/payments/{payment_id}"
         )
+
+
+def test_another_business_s_analysis_is_exactly_the_empty_shape(
+    business_a: TestClient, business_b: TestClient
+) -> None:
+    """`GET /analysis` has no path parameter, so it is only ever exercised as one of
+    `LISTS` by the sweep above. This is the plan's own extra proof (ADR-0013,
+    CODING_STANDARDS section 9): B, with no records of its own, must answer exactly
+    the fixed empty shape, while A's answer carries real sales and the `MARKER`
+    variety — nothing of A's ever reaches B's figures."""
+    seed_sales(business_a)
+
+    a_analysis = business_a.get("/analysis").json()
+    b_analysis = business_b.get("/analysis").json()
+
+    assert a_analysis["first_record"] is not None
+    assert a_analysis["month"]["sales"] > 0
+    assert any(MARKER in variety["name"] for variety in a_analysis["month"]["varieties"])
+
+    assert b_analysis["first_record"] is None
+    assert b_analysis["weeks"] == []
+    assert b_analysis["months"] == []
+    assert b_analysis["since_first_record"] is None
+    assert b_analysis["month"]["varieties"] == []
+    assert all(not weekday["best"] for weekday in b_analysis["weekdays"])
