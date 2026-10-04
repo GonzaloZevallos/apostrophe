@@ -113,3 +113,12 @@ publishing this product must be 100% free, with no card.
 - The restore path runs inside a directory made by `mktemp -d` under `umask 077`,
   removed at the end; a decrypted copy or a downloaded artifact never sits in the
   repository's own working tree.
+
+### Note on this ADR's own section references
+
+The Decision and Consequences text above, written before this amendment, cites
+`deploy/README.md` by section number as that file was numbered at the time:
+section 3 was Cloudflare R2 (gone — folded into *Why R2 was dropped* above),
+section 4 was the `age` identity (now section 3), and section 9 was the go-live
+checklist (now section 8). The text above is not reworded to match, to keep this
+amendment append-only; read those numbers with this shift in mind.

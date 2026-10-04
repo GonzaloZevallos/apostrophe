@@ -40,10 +40,10 @@ def check_permissions(permissions: object) -> list[str]:
 
 
 def check_upload_step(steps: list[dict[str, Any]]) -> list[str]:
-    """Exactly one `actions/upload-artifact@` step, uploading nothing but
+    """Exactly one `actions/upload-artifact@` step, named and uploading nothing but
     `${{ env.BACKUP_FILE }}` (no wildcard, no directory, not `backup.db`), kept for
-    exactly 30 days, and erroring instead of silently skipping when the file is
-    missing."""
+    exactly 30 days, stored without recompression, and erroring instead of silently
+    skipping when the file is missing."""
     violations: list[str] = []
     uploads = [
         step for step in steps if str(step.get("uses", "")).startswith("actions/upload-artifact@")
@@ -55,11 +55,18 @@ def check_upload_step(steps: list[dict[str, Any]]) -> list[str]:
     with_block = upload.get("with", {})
     if not isinstance(with_block, dict):
         with_block = {}
+    name = with_block.get("name")
+    if name != "${{ env.BACKUP_FILE }}":
+        violations.append(f"upload name must be exactly '${{ env.BACKUP_FILE }}', got {name!r}")
     path = with_block.get("path")
     if path != "${{ env.BACKUP_FILE }}":
         violations.append(f"upload path must be exactly '${{ env.BACKUP_FILE }}', got {path!r}")
     if with_block.get("retention-days") != 30:
         violations.append(f"retention-days must be 30, got {with_block.get('retention-days')!r}")
+    if with_block.get("compression-level") != 0:
+        violations.append(
+            f"compression-level must be 0, got {with_block.get('compression-level')!r}"
+        )
     if with_block.get("if-no-files-found") != "error":
         violations.append(
             f"if-no-files-found must be 'error', got {with_block.get('if-no-files-found')!r}"
@@ -199,6 +206,31 @@ def test_the_upload_checker_flags_two_upload_steps() -> None:
 def test_the_upload_checker_flags_missing_retention() -> None:
     with_block = {k: v for k, v in _GOOD_STEPS[2]["with"].items() if k != "retention-days"}
     bad = [{**_GOOD_STEPS[2], "with": with_block}]
+
+    assert check_upload_step(bad) != []
+
+
+def test_the_upload_checker_flags_backup_db_as_the_name() -> None:
+    bad = [{**_GOOD_STEPS[2], "with": {**_GOOD_STEPS[2]["with"], "name": "backup.db"}}]
+
+    assert check_upload_step(bad) != []
+
+
+def test_the_upload_checker_flags_a_missing_compression_level() -> None:
+    with_block = {k: v for k, v in _GOOD_STEPS[2]["with"].items() if k != "compression-level"}
+    bad = [{**_GOOD_STEPS[2], "with": with_block}]
+
+    assert check_upload_step(bad) != []
+
+
+def test_the_upload_checker_flags_a_nonzero_compression_level() -> None:
+    bad = [{**_GOOD_STEPS[2], "with": {**_GOOD_STEPS[2]["with"], "compression-level": 6}}]
+
+    assert check_upload_step(bad) != []
+
+
+def test_the_upload_checker_flags_a_wrong_if_no_files_found() -> None:
+    bad = [{**_GOOD_STEPS[2], "with": {**_GOOD_STEPS[2]["with"], "if-no-files-found": "warn"}}]
 
     assert check_upload_step(bad) != []
 
