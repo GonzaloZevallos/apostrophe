@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import io
 import json
+import re
 import sqlite3
 import stat
 import unicodedata
@@ -19,13 +20,10 @@ from typing import TextIO, cast
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.engine import Engine
-from sqlalchemy.exc import OperationalError
 
-from app.business_removal.adapters.cli import _BusyTranslatingSchemaRows, _looks_locked, main
-from app.business_removal.application.remove_business import StorageBusy
-from app.business_removal.application.schema_rows import DeletedIds
-from app.business_removal.domain.business_ref import BusinessRef
-from app.business_removal.domain.schema import Schema
+from app.business_removal.adapters.cli import main
+from app.business_removal.application.remove_business import BUSY_MESSAGE
+from app.clock import business_day, system_clock
 from app.db import make_engine
 from app.main import create_app
 from app.settings import Settings
@@ -153,6 +151,9 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
     assert stock_entry["origin"] == "purchase"
     assert stock_entry["total_cost"] == 300000
     assert stock_entry["note"] == "stock seed"
+    # `seed()` never passes a `date`, so the entry is recorded on the business day
+    # the entry was made -- the same one `main`'s own real clock sees now.
+    assert stock_entry["entry_date"] == business_day(system_clock()).isoformat()
 
     price_entry = kinds["price_entry"][0]
     assert price_entry["variety_id"] == variety_ref
@@ -191,6 +192,8 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
     assert expense["detail"] == EXPENSE_DETAIL
     assert expense["category_id"] == {"id": categories["Servicios"]["id"], "name": "Servicios"}
 
+    sale_line_total = sale_line["line_total"]
+
     dumped = json.dumps(document)
     assert "password_hash" not in dumped
     assert "token_digest" not in dumped
@@ -216,13 +219,32 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
         PHONE,
         SALE_NOTE,
         EXPENSE_DETAIL,
-        str(PAYMENT_AMOUNT),
-        str(EXPENSE_AMOUNT),
-        str(SHIPPING_CHARGED),
     ):
         assert secret not in output
         assert secret not in captured.out
         assert secret not in captured.err
+
+    # The export path (under `tmp_path`) can itself hold digits that would spoil a
+    # whole-number match below; it is not a secret amount, so it is scrubbed first,
+    # along with the raw `tmp_path` prefix.
+    export_path = str(files[0])
+    scrubbed_output = output.replace(export_path, "").replace(str(tmp_path), "")
+    scrubbed_out = captured.out.replace(export_path, "").replace(str(tmp_path), "")
+    scrubbed_err = captured.err.replace(export_path, "").replace(str(tmp_path), "")
+    for amount in (
+        PAYMENT_AMOUNT,
+        EXPENSE_AMOUNT,
+        SHIPPING_CHARGED,
+        5000,
+        300000,
+        6000,
+        sale_line_total,
+    ):
+        plain = re.compile(rf"(?<!\d){amount}(?!\d)")
+        grouped = re.compile(rf"(?<!\d){amount:,}(?!\d)".replace(",", r"\."))
+        for text in (scrubbed_output, scrubbed_out, scrubbed_err):
+            assert plain.search(text) is None
+            assert grouped.search(text) is None
 
 
 def test_the_other_business_still_reads_its_own_data_after_the_run(
@@ -589,42 +611,60 @@ def test_a_broken_pipe_on_the_report_keeps_the_commit_through_main(
     json.loads(files[0].read_text())  # the export file still parses
 
 
-class _RaisingInner:
-    """A `SchemaRows` whose `schema()` raises whatever it is built with; every
-    other method is unreachable in these tests, so it stays unimplemented."""
+class _LocksWhileConfirming:
+    """`stdin`, as `main` sees it, for the one moment it calls `readline()` to read
+    the operator's typed name. At that moment this opens a second, independent
+    `sqlite3` connection on the same file and takes `BEGIN EXCLUSIVE`, so the
+    primary connection's next statement blocks until `busy_timeout` (5 s) gives up
+    with SQLite's own "database is locked" -- the real condition
+    `_BusyTranslatingSchemaRows`/`_looks_locked` (both private to `cli.py`, so this
+    test only ever calls `main`) turn into `StorageBusy`. The lock is released in
+    `finally`, from the test, however `main` ends."""
 
-    def __init__(self, exc: Exception) -> None:
-        self._exc = exc
+    def __init__(self, db_path: Path) -> None:
+        self._db_path = db_path
+        self.locker: sqlite3.Connection | None = None
 
-    def schema(self) -> Schema:
-        raise self._exc
+    def readline(self) -> str:
+        self.locker = sqlite3.connect(self._db_path)
+        self.locker.execute("BEGIN EXCLUSIVE")
+        return "La Huerta\n"
 
-    def business_of(self, email: str) -> BusinessRef | None:
-        raise NotImplementedError
-
-    def rows(self, table: str, business_id: int) -> list[dict[str, object]]:
-        raise NotImplementedError
-
-    def invitation_count(self, business_id: int) -> int:
-        raise NotImplementedError
-
-    def delete_business(self, business_id: int, order: tuple[str, ...]) -> DeletedIds:
-        raise NotImplementedError
+    def release(self) -> None:
+        if self.locker is not None:
+            self.locker.rollback()
+            self.locker.close()
+            self.locker = None
 
 
-def test_busy_translating_schema_rows_turns_a_locked_database_into_storage_busy() -> None:
-    # Closes the long-open row that `StorageBusy` is never raised by a real port:
-    # this wrapper is what makes a real SQLite "database is locked" reach the use
-    # case as `StorageBusy`, not a generic failure -- and leaves any other
-    # `OperationalError` alone.
-    locked = OperationalError("SELECT 1", {}, Exception("database is locked"))
-    with pytest.raises(StorageBusy):
-        _BusyTranslatingSchemaRows(_RaisingInner(locked)).schema()
+def test_a_locked_database_ends_on_the_busy_line_through_main(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Slow on purpose: a real "database is locked" only surfaces once SQLite's own
+    # 5 s `busy_timeout` gives up. No hook, no setting shortens it (the brief).
+    db_path = tmp_path / "apostrophe.db"
+    export_dir = tmp_path / "exports"
+    seed(db_path)
+    set_env(monkeypatch, db_path, export_dir)
+    with sqlite3.connect(db_path) as connection:
+        leaving_id = connection.execute(
+            "SELECT id FROM business WHERE name = 'La Huerta'"
+        ).fetchone()[0]
+        staying_id = connection.execute(
+            "SELECT id FROM business WHERE name = 'Otro Negocio'"
+        ).fetchone()[0]
+    stdin = _LocksWhileConfirming(db_path)
+    stdout = io.StringIO()
 
-    other = OperationalError("SELECT 1", {}, Exception("no such table: ghost"))
-    with pytest.raises(OperationalError):
-        _BusyTranslatingSchemaRows(_RaisingInner(other)).schema()
+    try:
+        result = main([EMAIL_LEAVING], stdin=cast(TextIO, stdin), stdout=stdout)
+    finally:
+        stdin.release()
 
-    assert _looks_locked(OperationalError("x", {}, Exception("database is locked")))
-    assert _looks_locked(OperationalError("x", {}, Exception("database table is busy")))
-    assert not _looks_locked(OperationalError("x", {}, Exception("no such table: ghost")))
+    # In WAL mode a plain read need not block on an exclusive writer; whichever way
+    # the lock bites, the run still ends on the one fixed busy line, through `main`.
+    assert result == 1
+    assert stdout.getvalue().endswith(BUSY_MESSAGE + "\n")
+    assert row_counts(db_path, "customer", leaving_id) == 1
+    assert row_counts(db_path, "customer", staying_id) == 1
+    assert not export_dir.exists() or list(export_dir.glob("*")) == []
