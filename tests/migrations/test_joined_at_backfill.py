@@ -120,7 +120,9 @@ def test_a_count_mismatch_leaves_joined_at_and_the_business_link_null() -> None:
     upgrade_to_head(engine)
 
     with Session(engine) as session:
-        assert session.get(UserRow, 1) is not None and session.get(UserRow, 1).joined_at is None
-        assert session.get(UserRow, 2) is not None and session.get(UserRow, 2).joined_at is None
+        user1 = session.get(UserRow, 1)
+        user2 = session.get(UserRow, 2)
         invitation = session.get(InvitationRow, 1)
+        assert user1 is not None and user1.joined_at is None
+        assert user2 is not None and user2.joined_at is None
         assert invitation is not None and invitation.business_id is None
