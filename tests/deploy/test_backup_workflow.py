@@ -230,39 +230,51 @@ def test_the_step_order_checker_passes_the_good_fixture() -> None:
 
 
 def test_the_forbidden_shell_checker_flags_echo() -> None:
+    # Isolated to `echo` alone: no `cat`, `printf`, `tee`, `print(` or `secrets.`
+    # anywhere in the line, so only the `echo` branch can be making this pass.
     bad = [{"run": 'echo "BACKUP_FILE=x" >> "$GITHUB_ENV"'}]
 
-    assert check_forbidden_shell(bad) != []
+    assert check_forbidden_shell(bad) == ["step 0: forbidden shell word 'echo'"]
 
 
 def test_the_forbidden_shell_checker_flags_cat() -> None:
+    # Isolated to `cat` alone: no `echo` in this line.
     bad = [{"run": 'age -r "$(cat deploy/age-recipient.txt)" -o out backup.db'}]
 
-    assert check_forbidden_shell(bad) != []
+    assert check_forbidden_shell(bad) == ["step 0: forbidden shell word 'cat'"]
 
 
 def test_the_forbidden_shell_checker_flags_printf() -> None:
+    # Isolated to `printf` alone: no `echo`, `cat` or `tee`.
     bad = [{"run": 'printf "%s" "$BACKUP_FILE"'}]
 
-    assert check_forbidden_shell(bad) != []
+    assert check_forbidden_shell(bad) == ["step 0: forbidden shell word 'printf'"]
 
 
 def test_the_forbidden_shell_checker_flags_tee() -> None:
-    bad = [{"run": "echo nothing | tee out.log"}]
+    # Isolated to `tee` alone: no `echo` this time, unlike a shape such as
+    # `echo nothing | tee out.log`, which the `echo` branch alone would already
+    # flag, leaving the `tee` branch untested against an input only it rejects.
+    bad = [{"run": "ls | tee out.log"}]
 
-    assert check_forbidden_shell(bad) != []
+    assert check_forbidden_shell(bad) == ["step 0: forbidden shell word 'tee'"]
 
 
 def test_the_forbidden_shell_checker_flags_print_call() -> None:
+    # Isolated to `print(` alone: `print` is not itself a forbidden shell word, and
+    # `printf` never matches `print(`'s literal parenthesis.
     bad = [{"run": 'python -c "print(\'x\')"'}]
 
-    assert check_forbidden_shell(bad) != []
+    assert check_forbidden_shell(bad) == ["step 0: forbidden text 'print('"]
 
 
 def test_the_forbidden_shell_checker_flags_an_inline_secret() -> None:
-    bad = [{"run": 'echo "${{ secrets.R2_BUCKET }}"'}]
+    # Isolated to `secrets.` alone: no `echo`, unlike `echo "${{ secrets.X }}"`,
+    # which the `echo` branch alone would already flag, leaving the `secrets.`
+    # branch untested against an input only it rejects.
+    bad = [{"run": 'curl -H "x: ${{ secrets.TOKEN }}"'}]
 
-    assert check_forbidden_shell(bad) != []
+    assert check_forbidden_shell(bad) == ["step 0: forbidden text 'secrets.'"]
 
 
 def test_the_forbidden_shell_checker_lets_a_word_shaped_substring_through() -> None:
