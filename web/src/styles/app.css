@@ -1285,6 +1285,20 @@
    dc.html`, `AnalisisCompu.dc.html`). Every bar below carries its own figure as
    text next to it (CODING_STANDARDS §10: "nothing read from color alone"); the
    fill itself is the accent token, never a loose hex value. */
+.analisis__columnas {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.analisis__principal,
+.analisis__aside {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  min-width: 0;
+}
+
 .analisis__variedades,
 .analisis__semanas,
 .analisis__meses,
@@ -1375,5 +1389,24 @@
 
   .boton-nueva-venta--escritorio {
     display: flex;
+  }
+
+  /* `AnalisisCompu.dc.html`: the main column (variety table, weeks, months) and
+     the aside (weekdays, since the first record, expense breakdowns) sit side by
+     side and wrap, the same proportions as the design. */
+  .analisis__columnas {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 28px;
+  }
+
+  .analisis__principal {
+    flex: 999 1 420px;
+  }
+
+  .analisis__aside {
+    flex: 1 1 300px;
+    max-width: 380px;
   }
 }

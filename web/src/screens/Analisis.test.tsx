@@ -133,3 +133,16 @@ test('month navigation requests the previous month and disables at the bounds', 
   await user.click(screen.getByRole('button', { name: 'Mes anterior' }))
   expect(requested).toContain('/analysis?month=2026-09')
 })
+
+test('month navigation disables "Mes anterior" when there is no earlier month', async () => {
+  // The chosen month is already the first record's own month: `previous` is null,
+  // same shape `GET /analysis` would answer for a business that far back.
+  const firstMonthFixture = {
+    ...analysisFixture,
+    month: { ...analysisFixture.month, previous: null },
+  }
+  renderAnalisis(async () => jsonResponse(200, firstMonthFixture))
+
+  await screen.findByText('Octubre 2026', { selector: '.gastos__mes-etiqueta' })
+  expect(screen.getByRole('button', { name: 'Mes anterior' })).toBeDisabled()
+})

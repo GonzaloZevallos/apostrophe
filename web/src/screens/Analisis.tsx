@@ -158,7 +158,7 @@ function AnalisisContenido({
         <span className="rotulo">Vendiste en el mes</span>
         <span className="cifra-xl">{formatMoney(m.sales)}</span>
         <span className="pie">
-          {formatGrams(m.grams_sold + m.grams_gifted)}
+          {formatGrams(m.grams_sold)} vendidos · {formatGrams(m.grams_gifted)} regalados
           {m.average_margin.percent !== null &&
             ` · margen promedio ${m.average_margin.percent}%${pendingSuffix(m.average_margin.pending_grams)}`}
           {m.average_margin.percent === null &&
@@ -174,112 +174,125 @@ function AnalisisContenido({
       </div>
 
       <span className="pie">{VARIETY_TOTAL_NOTE}</span>
-      <span className="pie">Por variedad</span>
 
-      {m.varieties.length === 0 ? (
-        <span className="pie">{EMPTY_MONTH_LINE}</span>
-      ) : (
-        <div className="analisis__variedades">
-          {m.varieties.map((variety) => (
-            <div key={variety.variety_id} className="analisis__variedad">
-              <div className="analisis__variedad-cabecera">
-                <span className="analisis__variedad-nombre">{variety.name}</span>
-                <span className="analisis__variedad-ventas">
-                  {formatMoney(variety.sales_without_shipping)}
-                </span>
-              </div>
-              <div className="analisis__variedad-detalle">
-                {variety.share_percent !== null && <span>{variety.share_percent}% del mes</span>}
-                <span>{formatGrams(variety.grams_sold)} vendidos</span>
-                <span>{formatGrams(variety.grams_gifted)} regalados</span>
-                <span>
-                  costo {formatMoney(variety.cost.costed)}
-                  {pendingSuffix(variety.cost.pending_grams)}
-                </span>
-                <span className="analisis__variedad-margen">
-                  margen {formatMoney(variety.margin.amount)}
-                  {variety.margin.percent !== null && ` (${variety.margin.percent}%)`}
-                  {pendingSuffix(variety.margin.pending_grams)}
-                </span>
-              </div>
+      {/* `AnalisisCompu.dc.html`: a main column (variety table, weeks, months) next
+         to an aside (weekdays, since the first record, both expense breakdowns),
+         wrapping side by side at computer width (`.analisis__columnas` in
+         `app.css`) and stacking on the phone — CSS alone switches the layout, the
+         same way `Shell`'s own side rail/bottom bar already does. */}
+      <div className="analisis__columnas">
+        <div className="analisis__principal">
+          <span className="pie">Por variedad</span>
+          {m.varieties.length === 0 ? (
+            <span className="pie">{EMPTY_MONTH_LINE}</span>
+          ) : (
+            <div className="analisis__variedades">
+              {m.varieties.map((variety) => (
+                <div key={variety.variety_id} className="analisis__variedad">
+                  <div className="analisis__variedad-cabecera">
+                    <span className="analisis__variedad-nombre">{variety.name}</span>
+                    <span className="analisis__variedad-ventas">
+                      {formatMoney(variety.sales_without_shipping)}
+                    </span>
+                  </div>
+                  <div className="analisis__variedad-detalle">
+                    {variety.share_percent !== null && (
+                      <span>{variety.share_percent}% del mes</span>
+                    )}
+                    <span>{formatGrams(variety.grams_sold)} vendidos</span>
+                    <span>{formatGrams(variety.grams_gifted)} regalados</span>
+                    <span>
+                      costo {formatMoney(variety.cost.costed)}
+                      {pendingSuffix(variety.cost.pending_grams)}
+                    </span>
+                    <span className="analisis__variedad-margen">
+                      margen {formatMoney(variety.margin.amount)}
+                      {variety.margin.percent !== null && ` (${variety.margin.percent}%)`}
+                      {pendingSuffix(variety.margin.pending_grams)}
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      )}
-
-      <span className="pie">Semana a semana · últimas 8</span>
-      <div className="analisis__semanas">
-        {data.weeks.map((week) => (
-          <div key={week.first_day} className="analisis__semana">
-            <span>{formatDateShort(week.first_day)}</span>
-            <Bar value={week.sales} max={maxWeekSales} />
-            <span>{formatMoney(week.sales)}</span>
-            <span>{formatGrams(week.grams)}</span>
-            <span>gastos {formatMoney(week.expenses)}</span>
-            <span>
-              ganancia {formatMoney(week.profit.amount)}
-              {pendingSuffix(week.profit.pending_grams)}
-            </span>
-            <span>caja {formatMoney(week.cash)}</span>
-            {week.best && <span className="analisis__marca-mejor">{BEST_WEEK_MARK}</span>}
-          </div>
-        ))}
-      </div>
-
-      <span className="pie">Mes a mes · últimos 12</span>
-      <div className="analisis__meses">
-        {data.months.map((row) => (
-          <div key={row.month} className="analisis__mes-fila">
-            <span>{formatMonthLong(row.month)}</span>
-            <span>{formatMoney(row.sales)}</span>
-            <span>{formatGrams(row.grams)}</span>
-            <span>gastos {formatMoney(row.expenses)}</span>
-            <span>
-              ganancia {formatMoney(row.profit.amount)}
-              {pendingSuffix(row.profit.pending_grams)}
-            </span>
-            <span>caja {formatMoney(row.cash)}</span>
-          </div>
-        ))}
-      </div>
-
-      <span className="pie">Por día de la semana</span>
-      <div className="analisis__dias">
-        {data.weekdays.map((day) => (
-          <div key={day.weekday} className="analisis__dia">
-            <span>{WEEKDAY_LABEL[day.weekday]}</span>
-            <Bar value={day.sales} max={maxWeekdaySales} />
-            <span>{formatMoney(day.sales)}</span>
-            <span>{day.count} ventas</span>
-            {day.best && <span className="analisis__marca-mejor">{BEST_WEEKDAY_MARK}</span>}
-          </div>
-        ))}
-      </div>
-
-      {data.since_first_record !== null && (
-        <div className="analisis__historico">
-          <span className="pie">{SINCE_FIRST_RECORD_LABEL}</span>
-          <span>{formatMoney(data.since_first_record.sales)}</span>
-          <span>gastos {formatMoney(data.since_first_record.expenses)}</span>
-          <span>
-            ganancia {formatMoney(data.since_first_record.profit.amount)}
-            {pendingSuffix(data.since_first_record.profit.pending_grams)}
-          </span>
-          <span>caja {formatMoney(data.since_first_record.cash)}</span>
-          {data.since_first_record.shortfall !== null && (
-            <span>
-              Faltante de stock {formatMoney(data.since_first_record.shortfall.amount)}
-              {pendingSuffix(data.since_first_record.shortfall.pending_grams)}
-            </span>
           )}
-        </div>
-      )}
 
-      <ExpenseBreakdownView title="Gastos del mes" breakdown={data.month_expenses} />
-      <ExpenseBreakdownView
-        title="Gastos desde el primer registro"
-        breakdown={data.since_first_record_expenses}
-      />
+          <span className="pie">Semana a semana · últimas 8</span>
+          <div className="analisis__semanas">
+            {data.weeks.map((week) => (
+              <div key={week.first_day} className="analisis__semana">
+                <span>{formatDateShort(week.first_day)}</span>
+                <Bar value={week.sales} max={maxWeekSales} />
+                <span>{formatMoney(week.sales)}</span>
+                <span>{formatGrams(week.grams)}</span>
+                <span>gastos {formatMoney(week.expenses)}</span>
+                <span>
+                  ganancia {formatMoney(week.profit.amount)}
+                  {pendingSuffix(week.profit.pending_grams)}
+                </span>
+                <span>caja {formatMoney(week.cash)}</span>
+                {week.best && <span className="analisis__marca-mejor">{BEST_WEEK_MARK}</span>}
+              </div>
+            ))}
+          </div>
+
+          <span className="pie">Mes a mes · últimos 12</span>
+          <div className="analisis__meses">
+            {data.months.map((row) => (
+              <div key={row.month} className="analisis__mes-fila">
+                <span>{formatMonthLong(row.month)}</span>
+                <span>{formatMoney(row.sales)}</span>
+                <span>{formatGrams(row.grams)}</span>
+                <span>gastos {formatMoney(row.expenses)}</span>
+                <span>
+                  ganancia {formatMoney(row.profit.amount)}
+                  {pendingSuffix(row.profit.pending_grams)}
+                </span>
+                <span>caja {formatMoney(row.cash)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <aside className="analisis__aside">
+          <span className="pie">Por día de la semana</span>
+          <div className="analisis__dias">
+            {data.weekdays.map((day) => (
+              <div key={day.weekday} className="analisis__dia">
+                <span>{WEEKDAY_LABEL[day.weekday]}</span>
+                <Bar value={day.sales} max={maxWeekdaySales} />
+                <span>{formatMoney(day.sales)}</span>
+                <span>{day.count} ventas</span>
+                {day.best && <span className="analisis__marca-mejor">{BEST_WEEKDAY_MARK}</span>}
+              </div>
+            ))}
+          </div>
+
+          {data.since_first_record !== null && (
+            <div className="analisis__historico">
+              <span className="pie">{SINCE_FIRST_RECORD_LABEL}</span>
+              <span>{formatMoney(data.since_first_record.sales)}</span>
+              <span>gastos {formatMoney(data.since_first_record.expenses)}</span>
+              <span>
+                ganancia {formatMoney(data.since_first_record.profit.amount)}
+                {pendingSuffix(data.since_first_record.profit.pending_grams)}
+              </span>
+              <span>caja {formatMoney(data.since_first_record.cash)}</span>
+              {data.since_first_record.shortfall !== null && (
+                <span>
+                  Faltante de stock {formatMoney(data.since_first_record.shortfall.amount)}
+                  {pendingSuffix(data.since_first_record.shortfall.pending_grams)}
+                </span>
+              )}
+            </div>
+          )}
+
+          <ExpenseBreakdownView title="Gastos del mes" breakdown={data.month_expenses} />
+          <ExpenseBreakdownView
+            title="Gastos desde el primer registro"
+            breakdown={data.since_first_record_expenses}
+          />
+        </aside>
+      </div>
     </>
   )
 }
