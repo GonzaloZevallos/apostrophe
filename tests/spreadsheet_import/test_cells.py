@@ -185,6 +185,35 @@ def test_a_duplicated_title_is_reported_and_the_sheet_yields_no_rows(tmp_path: P
     assert parsed.ventas == ()
 
 
+def test_a_missing_entradas_title_is_reported_and_the_sheet_yields_no_rows(tmp_path: Path) -> None:
+    workbook = _blank_workbook()
+    _titles(workbook[layout.VENTAS_SHEET], VENTAS_TITLES)
+    _titles(workbook[layout.GASTOS_SHEET], GASTOS_TITLES)
+    entradas = workbook[layout.ENTRADAS_SHEET]
+    _titles(entradas, tuple(t for t in ENTRADAS_TITLES if t not in ("Origen", "Revisar")))
+    _row(entradas, 2, (date(2026, 1, 5), "Jack Herer", 1, 1000, ""))
+
+    parsed = read_workbook(_save(workbook, tmp_path))
+
+    missing = {p.column for p in parsed.problems if p.kind == "column_missing"}
+    assert missing == {"Origen", "Revisar"}
+    assert parsed.entradas == ()
+
+
+def test_a_duplicated_gastos_title_is_reported_and_the_sheet_yields_no_rows(tmp_path: Path) -> None:
+    workbook = _blank_workbook()
+    _titles(workbook[layout.VENTAS_SHEET], VENTAS_TITLES)
+    _titles(workbook[layout.ENTRADAS_SHEET], ENTRADAS_TITLES)
+    gastos = workbook[layout.GASTOS_SHEET]
+    _titles(gastos, GASTOS_TITLES + ("Monto",))
+
+    parsed = read_workbook(_save(workbook, tmp_path))
+
+    duplicated = [p for p in parsed.problems if p.kind == "column_duplicate"]
+    assert [p.column for p in duplicated] == ["Monto"]
+    assert parsed.gastos == ()
+
+
 def test_trailing_formula_only_rows_do_not_appear(tmp_path: Path) -> None:
     workbook = _blank_workbook()
     ventas = workbook[layout.VENTAS_SHEET]
@@ -217,8 +246,11 @@ def test_a_ventas_total_with_no_cached_value_blocks_once(tmp_path: Path) -> None
     _row(
         ventas, 3, (date(2026, 1, 6), "Jack Herer", 1, "Efectivo", None, "Ana", "Lista", 0, "", "")
     )
-    for row, value in ((2, None), (3, None)):
-        ventas.cell(row=row, column=total_column, value=value)
+    # A real formula, exactly as the sheet's own Total column holds one. openpyxl
+    # never evaluates it, so re-reading it with `data_only=True` gives `None`: a
+    # formula with no cached value, not a cell deliberately left blank.
+    for row in (2, 3):
+        ventas.cell(row=row, column=total_column, value="=C2*2")
     _titles(workbook[layout.ENTRADAS_SHEET], ENTRADAS_TITLES)
     _titles(workbook[layout.GASTOS_SHEET], GASTOS_TITLES)
 

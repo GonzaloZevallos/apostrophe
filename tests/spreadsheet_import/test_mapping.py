@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import csv
 from pathlib import Path
 
 from app.spreadsheet_import.adapters.mapping import read_mapping
@@ -37,17 +38,39 @@ def test_a_bad_header_is_a_problem_located_by_line_only(tmp_path: Path) -> None:
 
 
 def test_a_wrong_column_count_is_a_problem_with_no_file_content(tmp_path: Path) -> None:
-    path = _write(tmp_path, "name,phone\nAna,11-2345-6789,extra\nBeto\n")
+    phone = "11-2345-6789"
+    path = _write(tmp_path, f"name,phone\nAna,{phone},extra\nBeto\n")
 
     parsed = read_mapping(path)
 
     assert parsed.entries == ()
     kinds_and_lines = [(p.kind, p.ref.row) for p in parsed.problems]
     assert kinds_and_lines == [("mapping_columns_invalid", 2), ("mapping_columns_invalid", 3)]
-    full_text = "11-2345-6789 Ana Beto extra"
     for problem in parsed.problems:
-        assert problem.column not in full_text
-        assert problem.kind not in full_text
+        text = repr(problem)
+        assert phone not in text
+        assert "Ana" not in text
+        assert "Beto" not in text
+        assert "extra" not in text
+
+
+def test_a_malformed_row_is_a_problem_with_no_file_content(tmp_path: Path) -> None:
+    phone_digits = "9" * 50
+    path = _write(tmp_path, f"name,phone\nAna,{phone_digits}\n")
+    default_limit = csv.field_size_limit()
+    csv.field_size_limit(10)
+    try:
+        parsed = read_mapping(path)
+    finally:
+        csv.field_size_limit(default_limit)
+
+    assert parsed.entries == ()
+    [problem] = parsed.problems
+    assert problem.kind == "mapping_malformed_row"
+    assert problem.ref.row == 2
+    text = repr(problem)
+    assert phone_digits not in text
+    assert "Ana" not in text
 
 
 def test_a_duplicate_name_is_a_problem_located_by_line_only(tmp_path: Path) -> None:

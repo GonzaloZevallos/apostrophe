@@ -38,9 +38,6 @@ from app.spreadsheet_import.domain.rows import (
     VentaRow,
 )
 
-# `SheetRef` needs a row; `not_recalculated` is workbook-wide, not one row's problem.
-_NO_ROW = 0
-
 
 class _CellError(Exception):
     """A single cell broke a reading rule. Carries only a fixed `kind` slug (the
@@ -95,9 +92,12 @@ def _to_pesos(value: _CellGetValue) -> int | None:
     if isinstance(value, int):
         return value
     if isinstance(value, float):
-        if value.is_integer():
-            return int(value)
-        raise _CellError("pesos_not_integer")
+        # Never `int(value)` on the float itself: go through `Decimal` first, the
+        # way `Grams.of` does, and cast only the `Decimal` once it is proven whole.
+        amount = Decimal(repr(value))
+        if amount != amount.to_integral_value():
+            raise _CellError("pesos_not_integer")
+        return int(amount)
     raise _CellError("pesos_not_integer")
 
 
@@ -187,8 +187,10 @@ def _read_varieties(ws: Worksheet, problems: list[CellProblem]) -> tuple[Variety
             continue
         ref = SheetRef(layout.AJUSTES_SHEET, row_number)
         row_problems: list[CellProblem] = []
-        name = _field(row_problems, ref, "Variedad", _require_text, raw_name)
-        threshold = _field(row_problems, ref, "F", _to_grams, raw_threshold)
+        name = _field(row_problems, ref, layout.VARIETY_NAME_LABEL, _require_text, raw_name)
+        threshold = _field(
+            row_problems, ref, layout.VARIETY_THRESHOLD_LABEL, _to_grams, raw_threshold
+        )
         problems.extend(row_problems)
         if name is None:
             continue
@@ -204,7 +206,7 @@ def _read_categories(ws: Worksheet, problems: list[CellProblem]) -> tuple[Catego
             continue
         ref = SheetRef(layout.AJUSTES_SHEET, row_number)
         row_problems: list[CellProblem] = []
-        name = _field(row_problems, ref, "Categoría", _require_text, raw_name)
+        name = _field(row_problems, ref, layout.CATEGORY_NAME_LABEL, _require_text, raw_name)
         problems.extend(row_problems)
         if name is None:
             continue
@@ -234,11 +236,21 @@ def _read_price_history(ws: Worksheet, problems: list[CellProblem]) -> tuple[Pri
             continue
         ref = SheetRef(layout.AJUSTES_SHEET, row_number)
         row_problems: list[CellProblem] = []
-        variety = _field(row_problems, ref, "Variedad", _require_text, raw_variety)
-        effective = _field(row_problems, ref, "Rige desde", _require_date, raw_effective)
-        list_price = _field(row_problems, ref, "Precio lista", _require_pesos, raw_list_price)
-        bulk_price = _field(row_problems, ref, "Precio por cantidad", _to_pesos, raw_bulk_price)
-        bulk_minimum = _field(row_problems, ref, "Cantidad mínima", _to_grams, raw_bulk_minimum)
+        variety = _field(
+            row_problems, ref, layout.PRICE_HISTORY_VARIETY_LABEL, _require_text, raw_variety
+        )
+        effective = _field(
+            row_problems, ref, layout.PRICE_HISTORY_EFFECTIVE_LABEL, _require_date, raw_effective
+        )
+        list_price = _field(
+            row_problems, ref, layout.PRICE_HISTORY_LIST_PRICE_LABEL, _require_pesos, raw_list_price
+        )
+        bulk_price = _field(
+            row_problems, ref, layout.PRICE_HISTORY_BULK_PRICE_LABEL, _to_pesos, raw_bulk_price
+        )
+        bulk_minimum = _field(
+            row_problems, ref, layout.PRICE_HISTORY_BULK_MINIMUM_LABEL, _to_grams, raw_bulk_minimum
+        )
         problems.extend(row_problems)
         if variety is None or effective is None or list_price is None:
             continue
@@ -258,11 +270,13 @@ def _read_catalog(ws: Worksheet, problems: list[CellProblem]) -> tuple[CatalogRo
             continue
         ref = SheetRef(layout.CATALOGO_SHEET, row_number)
         row_problems: list[CellProblem] = []
-        variety = _field(row_problems, ref, "Variedad", _require_text, raw_variety)
-        shown = _field(row_problems, ref, "Mostrado", _require_text, raw_shown)
-        emoji = _field(row_problems, ref, "Emoji", _to_text, raw_emoji)
-        indica = _field(row_problems, ref, "% índica", _to_indica, raw_indica)
-        aroma = _field(row_problems, ref, "Aroma", _to_text, raw_aroma)
+        variety = _field(
+            row_problems, ref, layout.CATALOG_VARIETY_LABEL, _require_text, raw_variety
+        )
+        shown = _field(row_problems, ref, layout.CATALOG_SHOWN_LABEL, _require_text, raw_shown)
+        emoji = _field(row_problems, ref, layout.CATALOG_EMOJI_LABEL, _to_text, raw_emoji)
+        indica = _field(row_problems, ref, layout.CATALOG_INDICA_LABEL, _to_indica, raw_indica)
+        aroma = _field(row_problems, ref, layout.CATALOG_AROMA_LABEL, _to_text, raw_aroma)
         problems.extend(row_problems)
         if variety is None or shown is None:
             continue
@@ -275,8 +289,8 @@ def _read_header_footer(ws: Worksheet, problems: list[CellProblem]) -> HeaderFoo
     footer_ref = SheetRef(layout.CATALOGO_SHEET, layout.FOOTER_ROW)
     header_value = ws.cell(row=layout.HEADER_ROW, column=layout.HEADER_FOOTER_COLUMN).value
     footer_value = ws.cell(row=layout.FOOTER_ROW, column=layout.HEADER_FOOTER_COLUMN).value
-    header = _field(problems, header_ref, "B18", _to_text, header_value) or ""
-    footer = _field(problems, footer_ref, "B19", _to_text, footer_value) or ""
+    header = _field(problems, header_ref, layout.HEADER_LABEL, _to_text, header_value) or ""
+    footer = _field(problems, footer_ref, layout.FOOTER_LABEL, _to_text, footer_value) or ""
     return HeaderFooterCells(header, footer)
 
 
@@ -297,21 +311,35 @@ def _read_ventas(ws: Worksheet, problems: list[CellProblem]) -> tuple[VentaRow, 
         if all(_is_blank(v) for v in typed_raw.values()):
             continue
         ref = SheetRef(layout.VENTAS_SHEET, row_number)
-        sale_date = _field(problems, ref, "Fecha", _to_date, typed_raw["Fecha"])
-        variety = _field(problems, ref, "Variedad", _to_text, typed_raw["Variedad"])
-        grams = _field(problems, ref, "Gramos", _to_grams, typed_raw["Gramos"])
-        payment = _field(problems, ref, "Pago", _to_text, typed_raw["Pago"])
-        customer = _field(problems, ref, "Cliente", _to_text, typed_raw["Cliente"])
-        kind = _field(problems, ref, "Tipo", _to_text, typed_raw["Tipo"])
-        shipping = _field(problems, ref, "Envío cobrado", _to_pesos, typed_raw["Envío cobrado"])
+        sale_date = _field(
+            problems, ref, layout.VENTAS_FECHA, _to_date, typed_raw[layout.VENTAS_FECHA]
+        )
+        variety = _field(
+            problems, ref, layout.VENTAS_VARIEDAD, _to_text, typed_raw[layout.VENTAS_VARIEDAD]
+        )
+        grams = _field(
+            problems, ref, layout.VENTAS_GRAMOS, _to_grams, typed_raw[layout.VENTAS_GRAMOS]
+        )
+        payment = _field(problems, ref, layout.VENTAS_PAGO, _to_text, typed_raw[layout.VENTAS_PAGO])
+        customer = _field(
+            problems, ref, layout.VENTAS_CLIENTE, _to_text, typed_raw[layout.VENTAS_CLIENTE]
+        )
+        kind = _field(problems, ref, layout.VENTAS_TIPO, _to_text, typed_raw[layout.VENTAS_TIPO])
+        shipping = _field(
+            problems,
+            ref,
+            layout.VENTAS_ENVIO_COBRADO,
+            _to_pesos,
+            typed_raw[layout.VENTAS_ENVIO_COBRADO],
+        )
         special_total = _field(
             problems,
             ref,
-            "Precio especial (total)",
+            layout.VENTAS_PRECIO_ESPECIAL,
             _to_pesos,
-            typed_raw["Precio especial (total)"],
+            typed_raw[layout.VENTAS_PRECIO_ESPECIAL],
         )
-        note = _field(problems, ref, "Nota", _to_text, typed_raw["Nota"])
+        note = _field(problems, ref, layout.VENTAS_NOTA, _to_text, typed_raw[layout.VENTAS_NOTA])
         total_value = ws.cell(row=row_number, column=columns[layout.VENTAS_TOTAL_TITLE]).value
         total = _read_total(total_value)
         if total is None:
@@ -334,7 +362,7 @@ def _read_ventas(ws: Worksheet, problems: list[CellProblem]) -> tuple[VentaRow, 
     if not_recalculated:
         problems.append(
             CellProblem(
-                SheetRef(layout.VENTAS_SHEET, _NO_ROW),
+                SheetRef(layout.VENTAS_SHEET, layout.NO_ROW),
                 layout.VENTAS_TOTAL_TITLE,
                 "not_recalculated",
             )
@@ -350,7 +378,9 @@ def _read_total(value: _CellGetValue) -> int | str | None:
     if isinstance(value, int):
         return value
     if isinstance(value, float):
-        return int(value) if value.is_integer() else str(value)
+        # As in `_to_pesos`: cast the `Decimal`, never the float itself.
+        amount = Decimal(repr(value))
+        return int(amount) if amount == amount.to_integral_value() else str(value)
     if isinstance(value, str):
         trimmed = value.strip()
         return trimmed or None
@@ -373,14 +403,30 @@ def _read_entradas(ws: Worksheet, problems: list[CellProblem]) -> tuple[EntradaR
         if all(_is_blank(v) for v in typed_raw.values()):
             continue
         ref = SheetRef(layout.ENTRADAS_SHEET, row_number)
-        entry_date = _field(problems, ref, "Fecha", _to_date, typed_raw["Fecha"])
-        variety = _field(problems, ref, "Variedad", _to_text, typed_raw["Variedad"])
-        grams = _field(problems, ref, "Gramos", _to_grams, typed_raw["Gramos"])
-        origin = _field(problems, ref, "Origen", _to_text, typed_raw["Origen"])
-        total_cost = _field(problems, ref, "Costo total", _to_pesos, typed_raw["Costo total"])
-        note = _field(problems, ref, "Nota", _to_text, typed_raw["Nota"])
+        entry_date = _field(
+            problems, ref, layout.ENTRADAS_FECHA, _to_date, typed_raw[layout.ENTRADAS_FECHA]
+        )
+        variety = _field(
+            problems, ref, layout.ENTRADAS_VARIEDAD, _to_text, typed_raw[layout.ENTRADAS_VARIEDAD]
+        )
+        grams = _field(
+            problems, ref, layout.ENTRADAS_GRAMOS, _to_grams, typed_raw[layout.ENTRADAS_GRAMOS]
+        )
+        origin = _field(
+            problems, ref, layout.ENTRADAS_ORIGEN, _to_text, typed_raw[layout.ENTRADAS_ORIGEN]
+        )
+        total_cost = _field(
+            problems,
+            ref,
+            layout.ENTRADAS_COSTO_TOTAL,
+            _to_pesos,
+            typed_raw[layout.ENTRADAS_COSTO_TOTAL],
+        )
+        note = _field(
+            problems, ref, layout.ENTRADAS_NOTA, _to_text, typed_raw[layout.ENTRADAS_NOTA]
+        )
         revisar_value = ws.cell(row=row_number, column=columns[layout.ENTRADAS_REVISAR_TITLE]).value
-        revisar = _field(problems, ref, "Revisar", _to_text, revisar_value)
+        revisar = _field(problems, ref, layout.ENTRADAS_REVISAR_TITLE, _to_text, revisar_value)
         rows.append(EntradaRow(ref, entry_date, variety, grams, origin, total_cost, note, revisar))
     return tuple(rows)
 
@@ -401,12 +447,20 @@ def _read_gastos(ws: Worksheet, problems: list[CellProblem]) -> tuple[GastoRow, 
         if all(_is_blank(v) for v in typed_raw.values()):
             continue
         ref = SheetRef(layout.GASTOS_SHEET, row_number)
-        spent_on = _field(problems, ref, "Fecha", _to_date, typed_raw["Fecha"])
-        category = _field(problems, ref, "Categoría", _to_text, typed_raw["Categoría"])
-        amount = _field(problems, ref, "Monto", _to_pesos, typed_raw["Monto"])
-        detail = _field(problems, ref, "Detalle", _to_text, typed_raw["Detalle"])
+        spent_on = _field(
+            problems, ref, layout.GASTOS_FECHA, _to_date, typed_raw[layout.GASTOS_FECHA]
+        )
+        category = _field(
+            problems, ref, layout.GASTOS_CATEGORIA, _to_text, typed_raw[layout.GASTOS_CATEGORIA]
+        )
+        amount = _field(
+            problems, ref, layout.GASTOS_MONTO, _to_pesos, typed_raw[layout.GASTOS_MONTO]
+        )
+        detail = _field(
+            problems, ref, layout.GASTOS_DETALLE, _to_text, typed_raw[layout.GASTOS_DETALLE]
+        )
         revisar_value = ws.cell(row=row_number, column=columns[layout.GASTOS_REVISAR_TITLE]).value
-        revisar = _field(problems, ref, "Revisar", _to_text, revisar_value)
+        revisar = _field(problems, ref, layout.GASTOS_REVISAR_TITLE, _to_text, revisar_value)
         rows.append(GastoRow(ref, spent_on, category, amount, detail, revisar))
     return tuple(rows)
 

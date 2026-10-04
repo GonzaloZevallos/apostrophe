@@ -29,7 +29,9 @@ def read_mapping(path: Path) -> ParsedMapping:
                 (),
                 (
                     CellProblem(
-                        SheetRef(layout.MAPPING_FILE, 1), "header", "mapping_header_invalid"
+                        SheetRef(layout.MAPPING_FILE, layout.TITLE_ROW),
+                        layout.MAPPING_HEADER_LABEL,
+                        "mapping_header_invalid",
                     ),
                 ),
             )
@@ -43,7 +45,7 @@ def read_mapping(path: Path) -> ParsedMapping:
                 problems.append(
                     CellProblem(
                         SheetRef(layout.MAPPING_FILE, reader.line_num),
-                        "row",
+                        layout.MAPPING_ROW_LABEL,
                         "mapping_malformed_row",
                     )
                 )
@@ -53,7 +55,9 @@ def read_mapping(path: Path) -> ParsedMapping:
             if len(row) != 2:
                 problems.append(
                     CellProblem(
-                        SheetRef(layout.MAPPING_FILE, line_number), "row", "mapping_columns_invalid"
+                        SheetRef(layout.MAPPING_FILE, line_number),
+                        layout.MAPPING_ROW_LABEL,
+                        "mapping_columns_invalid",
                     )
                 )
                 continue
@@ -63,7 +67,9 @@ def read_mapping(path: Path) -> ParsedMapping:
             if name in seen:
                 problems.append(
                     CellProblem(
-                        SheetRef(layout.MAPPING_FILE, line_number), "name", "mapping_duplicate_name"
+                        SheetRef(layout.MAPPING_FILE, line_number),
+                        layout.MAPPING_NAME_LABEL,
+                        "mapping_duplicate_name",
                     )
                 )
                 continue
