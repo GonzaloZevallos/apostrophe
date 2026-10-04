@@ -2,7 +2,8 @@
 margin matrix, best-and-ties, profit's pending N, sparse/empty history and the
 variety-identity (docs/product/analysis.md's metrics)."""
 
-from datetime import date
+import time
+from datetime import date, timedelta
 
 import pytest
 
@@ -341,3 +342,57 @@ def test_a_business_with_no_records_answers_the_empty_shape() -> None:
     assert figures.since_first_record is None
     assert figures.month.varieties == ()
     assert all(w.sales == 0 for w in figures.weekdays)
+
+
+# --- Time guard (docs/product/analysis.md: Speed) ---
+
+
+def test_the_domain_time_guard_runs_a_year_of_history_in_under_a_second() -> None:
+    draws: list[DrawRow] = []
+    sales: list[SaleRecord] = []
+    for i in range(300):
+        day = TODAY - timedelta(days=i % 400)
+        variety_id = i % 30
+        draws.append(
+            _sold(
+                day=day,
+                variety_id=variety_id,
+                name=f"Variedad {variety_id}",
+                sale_id=i,
+                line_total=1_000,
+                grams="1",
+                costed=800,
+                pending="0",
+            )
+        )
+        sales.append(SaleRecord(sale_id=i, day=day, shipping=0, total=1_000))
+    for i in range(100):
+        day = TODAY - timedelta(days=i % 400)
+        draws.append(_shortfall(day=day, costed=10, pending="0"))
+    payments = [
+        PaymentRecord(day=TODAY - timedelta(days=i % 400), amount=500) for i in range(100)
+    ]
+    expenses = [
+        ExpenseRecord(
+            day=TODAY - timedelta(days=i % 400),
+            amount=50,
+            category_id=i % 5,
+            name=f"Categoria {i % 5}",
+            name_key=f"categoria {i % 5}",
+        )
+        for i in range(100)
+    ]
+
+    started = time.monotonic()
+    figures = _figures(
+        draws=draws,
+        sales=sales,
+        payments=payments,
+        expenses=expenses,
+        earliest_entry_day=TODAY - timedelta(days=399),
+    )
+    elapsed = time.monotonic() - started
+
+    assert elapsed < 1.0, elapsed
+    assert len(figures.month.varieties) > 0
+    assert figures.since_first_record is not None
