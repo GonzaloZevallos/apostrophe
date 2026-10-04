@@ -354,26 +354,30 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
     return { count: included.length, total: included.reduce((sum, sale) => sum + sale.total, 0) }
   }
 
+  // The header's range text carries the count next to it now ("28/09 – 04/10 ·
+  // N ventas", `Ventas.tsx`'s `ventas__rango`), not a standalone node — checked by
+  // substring (`toContainText`), and the total through its own `ventas__total`
+  // class, which replaced the oversized shared `.cifra-xl`.
   await page.goto('/ventas')
   const hoy = expectedFor(todayIso, todayIso)
-  await expect(page.getByText(countLabel(hoy.count), { exact: true })).toBeVisible()
-  await expect(page.locator('.cifra-xl')).toHaveText(pesos(hoy.total))
+  await expect(page.locator('.ventas__rango')).toContainText(countLabel(hoy.count))
+  await expect(page.locator('.ventas__total')).toHaveText(pesos(hoy.total))
 
   await page.getByRole('button', { name: 'Semana' }).click()
   const semana = expectedFor(mondayIso, sundayEndIso)
-  await expect(page.getByText(countLabel(semana.count), { exact: true })).toBeVisible()
-  await expect(page.locator('.cifra-xl')).toHaveText(pesos(semana.total))
+  await expect(page.locator('.ventas__rango')).toContainText(countLabel(semana.count))
+  await expect(page.locator('.ventas__total')).toHaveText(pesos(semana.total))
 
   await page.getByRole('button', { name: 'Mes' }).click()
   const mes = expectedFor(monthStartIso, monthEndIso)
-  await expect(page.getByText(countLabel(mes.count), { exact: true })).toBeVisible()
-  await expect(page.locator('.cifra-xl')).toHaveText(pesos(mes.total))
+  await expect(page.locator('.ventas__rango')).toContainText(countLabel(mes.count))
+  await expect(page.locator('.ventas__total')).toHaveText(pesos(mes.total))
 
   await page.getByRole('button', { name: 'Fechas' }).click()
   // Fechas opens on the current month's own range too (Ventas.tsx: its `custom`
   // state starts as `monthRange(me.today)`), so it answers exactly like Mes here.
-  await expect(page.getByText(countLabel(mes.count), { exact: true })).toBeVisible()
-  await expect(page.locator('.cifra-xl')).toHaveText(pesos(mes.total))
+  await expect(page.locator('.ventas__rango')).toContainText(countLabel(mes.count))
+  await expect(page.locator('.ventas__total')).toHaveText(pesos(mes.total))
 
   // --- The list still answers fast with a few hundred sales (PRD metric 6): seeded
   // directly, then timed on the exact request `listSales` makes. ---
