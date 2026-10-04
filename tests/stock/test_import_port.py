@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from datetime import UTC, date, datetime
 
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
@@ -201,3 +202,32 @@ def test_has_records_is_true_after_one_entry(engine: Engine, client: TestClient)
         )
         session.commit()
         assert port.has_records() is True
+
+
+# -- write_entry refuses an unchecked row, rather than writing it --------------------
+
+
+@pytest.mark.parametrize(
+    "unchecked_row",
+    [_row(entry_date=None), _row(grams=None), _row(origin=None)],
+    ids=["no_date", "no_grams", "no_origin"],
+)
+def test_write_entry_rejects_a_row_that_was_never_checked(
+    engine: Engine, client: TestClient, unchecked_row: EntradaRow
+) -> None:
+    """`write_entry` takes a row `check_entry` already passed. A row still missing its
+    date, grams or origin never reached that check, so `write_entry` must reject it
+    outright rather than silently write around the gap."""
+    variety_id = _variety_id(client)
+    with Session(engine) as session:
+        port = SqlStockImport(session, BUSINESS_ID)
+        with pytest.raises(AssertionError):
+            port.write_entry(
+                variety_id,
+                unchecked_row,
+                datetime(2026, 10, 2, 12, 0, tzinfo=UTC),
+                TODAY,
+                NoCommit(),
+            )
+        session.commit()
+        assert port.has_records() is False
