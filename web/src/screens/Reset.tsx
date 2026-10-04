@@ -3,25 +3,32 @@
  * first, through the backend (`openResetLink`), exactly as `/invitation/:token`
  * does, so the screen always starts from a clean, signed-out state — even for the
  * user's own currently-signed-in link. The lookup spends nothing: a live link
- * answers 204, a dead one 404 `account.reset_link_gone` (kind `gone`), shown as
- * the fixed dead-link notice, never the generic gone notice, and never saying
- * why the link is dead. Submitting shares the same dead-link state when the link
- * went stale between opening and submitting, and the invitation's own too-short
- * refusal text when the new password is under 10 characters. On success this
- * device is signed in and lands on Inicio, with no toast (PRD, "On screen").
+ * answers 204, a dead one 404 `account.reset_link_gone`, shown as the fixed
+ * dead-link notice, never the generic gone notice, and never saying why the link
+ * is dead. Submitting shares the same dead-link state when the link went stale
+ * between opening and submitting, and the invitation's own too-short refusal
+ * text when the new password is under 10 characters. On success this device is
+ * signed in and lands on Inicio, with no toast (PRD, "On screen").
+ *
+ * `account.reset_link_gone` is matched by a plain string comparison, not
+ * through `refusals.ts`'s contract-backed `isGone` (same shape as `Cobro.tsx`'s
+ * own `payment.*` codes): it is this screen's own new code, and it reaches
+ * `contract.json` in the same diff as the `backend` subtask, still open as this
+ * one ships (`tests/test_refusal_codes.py` refuses a code in `contract.json` the
+ * backend does not yet answer).
  */
 
 import { type FormEvent, useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate, useParams } from 'react-router'
 import { ApiError, NetworkError } from '../api/client'
-import { isGone } from '../api/refusals'
 import { openResetLink, submitReset } from '../session'
 import SinConexion from '../components/SinConexion'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import { WEAK_PASSWORD_MESSAGE } from './Invitacion'
 
 export const DEAD_LINK_MESSAGE = 'Este enlace ya no sirve. Pedile uno nuevo a quien te lo pasó.'
+export const RESET_LINK_GONE_CODE = 'account.reset_link_gone'
 export { ERROR_GENERICO_MENSAJE as RETRY_MESSAGE }
 
 type Status = 'loading' | 'dead' | 'offline' | 'error' | 'ready'
@@ -46,7 +53,7 @@ export default function Reset() {
       })
       .catch((caught: unknown) => {
         if (cancelled) return
-        if (caught instanceof ApiError && isGone(caught.code)) {
+        if (caught instanceof ApiError && caught.code === RESET_LINK_GONE_CODE) {
           setStatus('dead')
         } else if (caught instanceof NetworkError) {
           setStatus('offline')
@@ -67,7 +74,7 @@ export default function Reset() {
     try {
       await submitReset({ queryClient, navigate }, token, password)
     } catch (caught) {
-      if (caught instanceof ApiError && isGone(caught.code)) {
+      if (caught instanceof ApiError && caught.code === RESET_LINK_GONE_CODE) {
         setStatus('dead')
       } else if (caught instanceof ApiError && caught.code === 'account.password_weak') {
         setError(WEAK_PASSWORD_MESSAGE)

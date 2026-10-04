@@ -1,12 +1,21 @@
 /**
  * "Cambiar contraseña", a sheet over `Negocio` (plan, "Negocio"; `accounts.md`),
  * the same `.capa`/`.capa__contenido` layer `Cobro` uses. A wrong current
- * password (`account.current_password_wrong`) clears "Contraseña actual" and
- * keeps "Contraseña nueva" — a deliberate exception to "refusals keep what was
- * typed" (PM round 2). A short new password shows the invitation's own too-short
- * text; a lock shows the login brake's own message (`Entrar`'s `BRAKE_MESSAGE`),
- * both keeping everything typed. Neither a 422 nor a 429 ever sends the user to
- * login: they are handled here, inline, never through `handleUnauthorized`.
+ * password clears "Contraseña actual" and keeps "Contraseña nueva" — a
+ * deliberate exception to "refusals keep what was typed" (PM round 2). A short
+ * new password shows the invitation's own too-short text; a lock shows the
+ * login brake's own message (`Entrar`'s `BRAKE_MESSAGE`), both keeping
+ * everything typed. Neither a 422 nor a 429 ever sends the user to login: they
+ * are handled here, inline, never through `handleUnauthorized`.
+ *
+ * `account.current_password_wrong` is matched by a plain string comparison here,
+ * not through `refusals.ts`'s contract-backed `RefusalCode` (same shape as
+ * `Cobro.tsx`'s own `payment.*` codes): it is this screen's own new code, and it
+ * reaches `contract.json` in the same diff as the `backend` subtask, still open
+ * as this one ships (`tests/test_refusal_codes.py` refuses a code in
+ * `contract.json` the backend does not yet answer). `account.password_weak` and
+ * `account.login_locked` already exist there, so they keep going through
+ * `resolveOverride`.
  */
 
 import { type FormEvent, useState } from 'react'
@@ -20,18 +29,16 @@ import { WEAK_PASSWORD_MESSAGE } from './Invitacion'
 
 export const WRONG_CURRENT_PASSWORD_MESSAGE = 'La contraseña actual no es esa.'
 export const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
+export const CURRENT_PASSWORD_WRONG_CODE = 'account.current_password_wrong'
 
 export interface CambiarContrasenaProps {
   onClose: () => void
   onSaved: () => void
 }
 
-type FieldError = { field: 'current' | 'new'; message: string } | { field: 'form'; message: string }
-
-const OVERRIDES: Partial<Record<RefusalCode, FieldError>> = {
-  'account.current_password_wrong': { field: 'current', message: WRONG_CURRENT_PASSWORD_MESSAGE },
-  'account.password_weak': { field: 'new', message: WEAK_PASSWORD_MESSAGE },
-  'account.login_locked': { field: 'form', message: BRAKE_MESSAGE },
+const OVERRIDES: Partial<Record<RefusalCode, string>> = {
+  'account.password_weak': WEAK_PASSWORD_MESSAGE,
+  'account.login_locked': BRAKE_MESSAGE,
 }
 
 export default function CambiarContrasena({ onClose, onSaved }: CambiarContrasenaProps) {
@@ -57,15 +64,15 @@ export default function CambiarContrasena({ onClose, onSaved }: CambiarContrasen
     } catch (caught) {
       if (caught instanceof NetworkError) {
         setOffline(true)
+      } else if (caught instanceof ApiError && caught.code === CURRENT_PASSWORD_WRONG_CODE) {
+        setCurrentPassword('')
+        setCurrentError(WRONG_CURRENT_PASSWORD_MESSAGE)
+      } else if (caught instanceof ApiError && caught.code === 'account.password_weak') {
+        setNewError(OVERRIDES['account.password_weak'] ?? GENERIC_REFUSAL_MESSAGE)
       } else if (caught instanceof ApiError) {
-        const outcome = resolveOverride(OVERRIDES, caught.code)
-        if (outcome?.field === 'current') {
-          setCurrentPassword('')
-          setCurrentError(outcome.message)
-        } else if (outcome?.field === 'new') {
-          setNewError(outcome.message)
-        } else if (outcome?.field === 'form') {
-          setFormError(outcome.message)
+        const message = resolveOverride(OVERRIDES, caught.code)
+        if (message !== undefined) {
+          setFormError(message)
         } else if (caught.code !== UNKNOWN_CODE && kindOf(caught.code) === 'refusal') {
           setFormError(GENERIC_REFUSAL_MESSAGE)
         } else {
