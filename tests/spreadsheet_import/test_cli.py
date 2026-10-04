@@ -305,6 +305,40 @@ def test_a_malformed_mapping_on_a_real_run_is_refused_with_no_echo(
     assert client.get("/customers").json() == []
 
 
+def test_a_mapping_entry_with_a_blank_phone_is_filed_as_a_problem_not_a_crash(
+    client: TestClient,
+    engine: Engine,
+    clock: MovableClock,
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    # The mapping still requires a phone for every entry today (the `import`
+    # subtask's own rework makes it optional): a blank one must still be filed as a
+    # problem, not accepted as a no-phone customer and not an AssertionError.
+    business_id = _business_id(engine)
+    xlsx = _save_workbook(_workbook(), tmp_path)
+    mapping_path = tmp_path / "mapping.csv"
+    mapping_path.write_text(f"name,phone\n{CUSTOMER},\n", encoding="utf-8")
+    out, err = io.StringIO(), io.StringIO()
+
+    with caplog.at_level(logging.DEBUG):
+        code = run(
+            [str(business_id), str(xlsx), str(mapping_path)],
+            engine=engine,
+            clock=clock,
+            out=out,
+            err=err,
+        )
+
+    assert code == 1, out.getvalue()
+    report = out.getvalue()
+    assert "import.mapping_phone_missing" in report
+    assert not _DIGIT_RUN.search(report)
+    assert not _DIGIT_RUN.search(err.getvalue())
+    assert caplog.records == []
+    assert client.get("/customers").json() == []
+
+
 def test_the_last_writer_forced_to_raise_leaves_nothing_written(
     client: TestClient,
     engine: Engine,

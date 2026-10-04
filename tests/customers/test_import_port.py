@@ -7,6 +7,7 @@ port call under test goes straight to the adapter, the way `test_sql_customers.p
 goes straight to `SqlCustomers`.
 """
 
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import select
 from sqlalchemy.engine import Engine
@@ -131,6 +132,27 @@ def test_an_invalid_name_with_no_phone_is_refused_under_its_own_field(
     assert isinstance(result, CustomerRefusals)
     assert result.name_code == "customer.name_missing"
     assert result.phone_code is None
+
+
+def test_a_broken_name_and_a_malformed_phone_are_both_filed(
+    client: TestClient, engine: Engine
+) -> None:
+    business_id = _business_id_of_email(engine, "uno@example.com")
+    port = CustomersImport(Session(engine), business_id)
+
+    result = port.check_customer("   ", "abc")
+
+    assert isinstance(result, CustomerRefusals)
+    assert result.name_code == "customer.name_missing"
+    assert result.phone_code == "customer.phone_invalid"
+
+
+# -- CustomerRefusals: at least one field must be set --------------------------------
+
+
+def test_customer_refusals_with_neither_field_set_is_rejected() -> None:
+    with pytest.raises(ValueError, match="name_code"):
+        CustomerRefusals(name_code=None, phone_code=None)
 
 
 # -- write_customer ---------------------------------------------------------------------

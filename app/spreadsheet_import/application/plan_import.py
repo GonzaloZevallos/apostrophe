@@ -180,16 +180,21 @@ def _variety_key_or_refusal(
 def _customer_key_or_refusal(
     result: ports.CustomerKey | ports.CustomerRefusals,
 ) -> domain_plan.CustomerKey | domain_plan.Refusal:
-    """The mapping still supplies a phone for every entry (this subtask's own bound:
-    the mapping becoming optional, and the name becoming a planned customer's key when
-    there is no phone, is the `import` subtask's rework) — so a `CustomerKey` from the
-    port always carries one, and a `CustomerRefusals` is filed under whichever field
-    today's single `Refusal` already reported first: the name, then the phone."""
+    """A `CustomerRefusals` is filed under whichever field today's single `Refusal`
+    already reported first: the name, then the phone. The mapping still supplies a
+    phone for every entry (this subtask's own bound: the mapping becoming optional,
+    and the name becoming a planned customer's key when there is no phone, is the
+    `import` subtask's rework) — so a mapping line left with no usable phone (blank
+    after trimming) is filed as its own problem, `import.mapping_phone_missing`,
+    rather than crashing or silently becoming a customer with no phone."""
     if isinstance(result, ports.CustomerRefusals):
-        code = result.name_code if result.name_code is not None else result.phone_code
-        assert code is not None
-        return domain_plan.Refusal(code=code)
-    assert result.phone_key is not None
+        if result.name_code is not None:
+            return domain_plan.Refusal(code=result.name_code)
+        if result.phone_code is not None:
+            return domain_plan.Refusal(code=result.phone_code)
+        raise AssertionError("CustomerRefusals built with neither code set")
+    if result.phone_key is None:
+        return domain_plan.Refusal(code="import.mapping_phone_missing")
     return domain_plan.CustomerKey(phone_key=result.phone_key)
 
 

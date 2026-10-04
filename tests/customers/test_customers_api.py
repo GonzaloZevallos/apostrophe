@@ -2,6 +2,7 @@
 
 from typing import Any
 
+import pytest
 from fastapi.testclient import TestClient
 
 from tests.conftest import TODAY
@@ -257,8 +258,9 @@ def test_clearing_the_phone_with_an_empty_string_is_allowed(client: TestClient) 
     assert response.json()["phone"] is None
 
 
+@pytest.mark.parametrize("cleared_with", [None, ""])
 def test_clearing_the_phone_keeps_the_customers_sales_payments_and_balance(
-    client: TestClient,
+    client: TestClient, cleared_with: str | None
 ) -> None:
     customer = _register(client)
     variety = client.post("/varieties", json={"name": "Lavanda"}).json()
@@ -266,24 +268,35 @@ def test_clearing_the_phone_keeps_the_customers_sales_payments_and_balance(
         f"/varieties/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 10_000},
     )
-    client.post(
+    sale = client.post(
         "/sales",
         json={
             "customer_id": customer["id"],
             "payment": "owing",
             "lines": [{"variety_id": variety["id"], "grams": "1"}],
         },
-    )
+    ).json()
+    payment = client.post(
+        f"/customers/{customer['id']}/payments",
+        json={"paid_on": TODAY.isoformat(), "amount": 4_000, "method": "cash"},
+    ).json()
 
-    cleared = client.patch(f"/customers/{customer['id']}", json={"phone": None})
+    cleared = client.patch(f"/customers/{customer['id']}", json={"phone": cleared_with})
 
     assert cleared.status_code == 200
     assert cleared.json()["phone"] is None
-    assert cleared.json()["balance"] == 10_000
+    assert cleared.json()["balance"] == 6_000
     sales_after = client.get("/sales").json()
     assert any(
         s["customer"] is not None and s["customer"]["id"] == customer["id"]
         for s in sales_after
+    )
+    sale_after = next(s for s in sales_after if s["id"] == sale["id"])
+    assert sale_after["still_owing"] is True
+    account_after = client.get(f"/customers/{customer['id']}/account").json()
+    assert any(
+        "payment" in row and row["payment"]["id"] == payment["payment"]["id"]
+        for row in account_after["rows"]
     )
 
 

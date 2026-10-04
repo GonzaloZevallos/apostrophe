@@ -70,7 +70,8 @@ class CustomerRefusals:
     phone_code: str | None
 
     def __post_init__(self) -> None:
-        assert self.name_code is not None or self.phone_code is not None
+        if self.name_code is None and self.phone_code is None:
+            raise ValueError("CustomerRefusals needs name_code, phone_code or both set")
 
 
 @dataclass(frozen=True)
