@@ -68,3 +68,23 @@ def test_delete_order_covers_every_owned_table() -> None:
 
     assert set(order) >= {table.name for table in owned_tables(schema)}
     assert order[-1] == "business"
+
+
+def test_expense_to_expense_category_fk_reflects_as_one_composite_key() -> None:
+    """`expense`'s migration (0003) declares a two-column `ForeignKeyConstraint` on
+    `(business_id, category_id)` targeting `expense_category`'s `(business_id, id)`,
+    alongside its separate single-column key to `business`. Reflection must keep the
+    composite key as one `ForeignKey` with two columns, never split it into two
+    single-column ones, or `delete_order` could place `expense` wrongly."""
+    schema = _schema_rows().schema()
+
+    expense = schema.table("expense")
+    to_category = [fk for fk in expense.foreign_keys if fk.target_table == "expense_category"]
+
+    assert len(to_category) == 1
+    foreign_key = to_category[0]
+    assert len(foreign_key.columns) == 2
+    assert set(zip(foreign_key.columns, foreign_key.target_columns, strict=True)) == {
+        ("business_id", "business_id"),
+        ("category_id", "id"),
+    }
