@@ -2,16 +2,19 @@
 which tables are a business's own, which aren't and must make the run refuse, which
 columns look like a secret, and the order rows must be deleted in.
 
-Nothing here names a business-owned table or column by hand: only
-`app/business_removal/domain/exclusions.py` does, for the platform, skipped and
-withheld tables and the excluded columns. Everything else is read off the `Schema`
-passed in, built elsewhere by reflecting the live database.
+Nothing here names a business-owned table or column by hand: every table and column
+name used is imported from `app/business_removal/domain/exclusions.py`, the one place
+that spells out the platform, skipped and withheld tables and the excluded columns.
+Everything else is read off the `Schema` passed in, built elsewhere by reflecting the
+live database.
 """
 
 from __future__ import annotations
 
 from app.business_removal.domain.exclusions import (
+    BUSINESS_TABLE,
     EXCLUDED_COLUMNS,
+    INVITATION_TABLE,
     PLATFORM_TABLES,
     SKIPPED_TABLES,
     WITHHELD_TABLES,
@@ -19,8 +22,6 @@ from app.business_removal.domain.exclusions import (
 from app.business_removal.domain.schema import Schema, Table
 
 BUSINESS_ID_COLUMN = "business_id"
-BUSINESS_TABLE = "business"
-INVITATION_TABLE = "invitation"
 
 # Underscore-separated segments that make a column look like it holds a secret.
 SECRET_SEGMENTS = frozenset(

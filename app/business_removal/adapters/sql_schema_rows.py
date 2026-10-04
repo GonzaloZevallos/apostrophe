@@ -1,6 +1,10 @@
 """The `SchemaRows` port over SQLAlchemy: reflects the live database rather than
 `app.tables.metadata` (the plan's invariant), so a table another hexagon adds is seen
-here without this module changing.
+here without this module changing. The handful of table names this adapter must name
+to reach them by a column other than `business_id` (`business` itself, `app_user`'s
+email for the `login_guard` delete, `invitation`'s count) are never spelled out here:
+they are imported from `app.business_removal.domain.exclusions`, the one place in this
+hexagon that names a business-owned table or column by hand.
 """
 
 from __future__ import annotations
@@ -14,12 +18,14 @@ from sqlalchemy.orm import Session
 
 from app.business_removal.application.schema_rows import DeletedIds
 from app.business_removal.domain.business_ref import BusinessRef
+from app.business_removal.domain.exclusions import (
+    APP_USER_TABLE,
+    BUSINESS_TABLE,
+    INVITATION_TABLE,
+    LOGIN_GUARD_TABLE,
+)
 from app.business_removal.domain.schema import Column, ColumnType, ForeignKey, Schema
 from app.business_removal.domain.schema import Table as DomainTable
-
-BUSINESS_TABLE = "business"
-APP_USER_TABLE = "app_user"
-LOGIN_GUARD_TABLE = "login_guard"
 
 
 def _column_type(sa_type: sa_types.TypeEngine[Any]) -> ColumnType:
@@ -89,7 +95,7 @@ class SqlSchemaRows:
         return [dict(row._mapping) for row in self._session.execute(statement)]
 
     def invitation_count(self, business_id: int) -> int:
-        invitation = self._table("invitation")
+        invitation = self._table(INVITATION_TABLE)
         statement = (
             select(func.count())
             .select_from(invitation)
@@ -118,7 +124,7 @@ class SqlSchemaRows:
                     delete(sa_table).where(filter_column == business_id).returning(sa_table.c.id)
                 )
                 ids = frozenset(self._session.scalars(statement).all())
-            if name == "invitation":
+            if name == INVITATION_TABLE:
                 invitation_count = len(ids)
             else:
                 tables[name] = ids

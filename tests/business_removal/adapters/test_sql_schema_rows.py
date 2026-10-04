@@ -6,6 +6,7 @@ proven to reach every table the schema holds and nothing of the other business.
 
 from __future__ import annotations
 
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, cast
 
@@ -23,15 +24,17 @@ from app.business_removal.domain.classification import delete_order, owned_table
 from app.db import make_engine
 from app.main import create_app
 from app.settings import Settings
-from tests.conftest import NOW, TEST_HASHER, MovableClock, open_business, signed_in
+from tests.conftest import NOW, PASSWORD, TEST_HASHER, MovableClock, open_business, signed_in
 
 SETTINGS = Settings(secret_key="removal-test-secret", database_url="sqlite://")
 
 
 def _seed_everything(client: TestClient, owner_email: str) -> dict[str, int]:
     """One of every record kind a business can hold (mirrors
-    `tests/test_business_isolation.py`'s seeders), plus a pending, a used and a
-    forced-expired invitation, and a failed login attempt."""
+    `tests/test_business_isolation.py`'s seeders), plus a failed login attempt. The
+    leaving business's pending, used and expired join invitations are seeded
+    separately, by `_seed_join_invitations`, since they need the business id and a
+    session rather than the signed-in client alone."""
     variety = client.post("/varieties", json={"name": "Removal variety"}).json()
     client.post(
         f"/varieties/{variety['id']}/prices",
@@ -107,6 +110,35 @@ def staying_token(app: FastAPI, file_engine: Engine, leaving_token: str) -> str:
         return open_business(client, file_engine, clock, "Staying Business", "staying@example.com")
 
 
+def _issue_join_invitation(engine: Engine, business_id: int, now: datetime) -> str:
+    """Issues a join invitation the way `POST /invitations` does, but lets the test
+    pick `now` directly so an expired one needs no clock to move."""
+    with Session(engine) as session:
+        issued = invite_partner(
+            SqlAccounts(session), session, business_id=business_id, now=now
+        )
+        session.commit()
+    return issued.token
+
+
+def _seed_join_invitations(client: TestClient, engine: Engine, business_id: int) -> None:
+    """A pending, a used and an expired join invitation for one business (round-3
+    Q1's three statuses), so the delete is proven to sweep all of them, whatever their
+    status."""
+    _issue_join_invitation(engine, business_id, NOW)  # left pending, never accepted.
+
+    used_token = _issue_join_invitation(engine, business_id, NOW)
+    accepted = client.post(
+        f"/invitations/{used_token}/accept",
+        json={"email": "partner@example.com", "password": PASSWORD},
+    )
+    assert accepted.status_code == 201, accepted.text
+
+    # Issued well before its 7-day lifetime, so it is already expired as of NOW,
+    # without moving any clock.
+    _issue_join_invitation(engine, business_id, NOW - timedelta(days=30))
+
+
 @pytest.fixture
 def seeded(
     app: FastAPI, file_engine: Engine, leaving_token: str, staying_token: str
@@ -114,22 +146,19 @@ def seeded(
     with TestClient(app) as client:
         leaving = signed_in(client, leaving_token)
         leaving_records = _seed_everything(leaving, "leaving@example.com")
-        # A pending join invitation for the leaving business.
-        with Session(file_engine) as session:
-            invite_partner(
-                SqlAccounts(session), session, business_id=_business_id(session), now=NOW
-            )
-            session.commit()
+        leaving_business_id = _business_id(file_engine, "leaving@example.com")
+        _seed_join_invitations(leaving, file_engine, leaving_business_id)
 
         staying = signed_in(client, staying_token)
         staying_records = _seed_everything(staying, "staying@example.com")
     return {"leaving": leaving_records, "staying": staying_records}
 
 
-def _business_id(session: Session) -> int:
-    row = session.execute(
-        text("SELECT business_id FROM app_user WHERE email = 'leaving@example.com'")
-    ).first()
+def _business_id(engine: Engine, email: str) -> int:
+    with Session(engine) as session:
+        row = session.execute(
+            text("SELECT business_id FROM app_user WHERE email = :email"), {"email": email}
+        ).first()
     assert row is not None
     return int(row[0])
 
@@ -159,9 +188,24 @@ def test_business_of_answers_none_for_an_unknown_email(
         assert SqlSchemaRows(session).business_of("nobody@example.com") is None
 
 
+def _counts_for_business(
+    engine: Engine, table_names: list[str], business_id: int
+) -> dict[str, int]:
+    with engine.connect() as connection:
+        counts = {}
+        for name in table_names:
+            filter_sql = "id" if name == "business" else "business_id"
+            counts[name] = connection.execute(
+                text(f"SELECT COUNT(*) FROM {name} WHERE {filter_sql} = :bid"),
+                {"bid": business_id},
+            ).scalar_one()
+        return counts
+
+
 def test_delete_business_empties_every_owned_table_and_leaves_the_other_business_whole(
-    file_engine: Engine, seeded: dict[str, Any]
+    app: FastAPI, file_engine: Engine, staying_token: str, seeded: dict[str, Any]
 ) -> None:
+    staying_id = _business_id(file_engine, "staying@example.com")
     with Session(file_engine) as session:
         rows = SqlSchemaRows(session)
         schema = rows.schema()
@@ -173,6 +217,7 @@ def test_delete_business_empties_every_owned_table_and_leaves_the_other_business
         )
 
         before = _table_counts(file_engine, [*exported_table_names, "invitation", "login_guard"])
+        staying_before = _counts_for_business(file_engine, exported_table_names, staying_id)
 
         deleted = rows.delete_business(business.id, order)
         session.commit()
@@ -183,6 +228,7 @@ def test_delete_business_empties_every_owned_table_and_leaves_the_other_business
         assert deleted.tables[name] or name == "business"
 
     after = _table_counts(file_engine, [*exported_table_names, "invitation", "login_guard"])
+    staying_after = _counts_for_business(file_engine, exported_table_names, staying_id)
 
     for name in exported_table_names:
         # Every row deleted belonged to the leaving business; the staying business's
@@ -190,6 +236,9 @@ def test_delete_business_empties_every_owned_table_and_leaves_the_other_business
         assert before[name] - after[name] == len(deleted.tables[name])
     assert before["invitation"] - after["invitation"] == deleted.invitation_count
     assert before["login_guard"] - after["login_guard"] == deleted.login_guard_count
+    # The staying business's own rows, counted by its own id, are untouched exactly.
+    assert staying_before == staying_after
+    assert staying_after["app_user"] >= 1
     # And none of what's left still carries the removed business's id.
     with file_engine.connect() as connection:
         for name in exported_table_names:
@@ -204,11 +253,32 @@ def test_delete_business_empties_every_owned_table_and_leaves_the_other_business
             {"bid": business.id},
         ).scalar_one()
         assert invitations_left == 0
-        guard_left = connection.execute(
+        # The removed business's own failed-login row is gone; the staying
+        # business's own failed-login row, keyed by a different email, is not.
+        leaving_guard_left = connection.execute(
             text("SELECT COUNT(*) FROM login_guard WHERE email = :email"),
-            {"email": "wrong@removal.example.com"},
+            {"email": "leaving@example.com"},
         ).scalar_one()
-        assert guard_left == 0
+        assert leaving_guard_left == 0
+        staying_guard_left = connection.execute(
+            text("SELECT COUNT(*) FROM login_guard WHERE email = :email"),
+            {"email": "staying@example.com"},
+        ).scalar_one()
+        assert staying_guard_left == 1
+
+    # The staying business still reads all of its own data through the API
+    # (criterion 6: "keep working during the run").
+    with TestClient(app) as client:
+        staying = signed_in(client, staying_token)
+        varieties = staying.get("/varieties")
+        assert varieties.status_code == 200
+        assert [v["name"] for v in varieties.json()] == ["Removal variety"]
+        customers = staying.get("/customers")
+        assert customers.status_code == 200
+        assert [c["name"] for c in customers.json()] == ["Removal customer"]
+        sales = staying.get("/sales")
+        assert sales.status_code == 200
+        assert len(sales.json()) == 2
 
 
 def test_rows_reads_every_recorded_field_sorted_by_id(

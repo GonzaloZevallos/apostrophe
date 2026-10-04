@@ -7,16 +7,24 @@ schema (`app/business_removal/domain/schema.py`), never listed here."""
 
 from __future__ import annotations
 
+# The one place every table name the removal writes by hand is spelled out. Every
+# other table it touches is read off the reflected schema, never named here or
+# anywhere else in `app/business_removal/`.
+BUSINESS_TABLE = "business"
+APP_USER_TABLE = "app_user"
+INVITATION_TABLE = "invitation"
+LOGIN_GUARD_TABLE = "login_guard"
+
 # Tables with no `business_id` of their own (docs/adr/0004); the only tables a business
 # row delete reaches by a column other than `business_id`.
-PLATFORM_TABLES: frozenset[str] = frozenset({"business", "invitation", "login_guard"})
+PLATFORM_TABLES: frozenset[str] = frozenset({BUSINESS_TABLE, INVITATION_TABLE, LOGIN_GUARD_TABLE})
 
 # Alembic's own bookkeeping table: never a business's data, never touched.
 SKIPPED_TABLES: frozenset[str] = frozenset({"alembic_version"})
 
 # Deleted along with the business, but never written to the export file.
-WITHHELD_TABLES: frozenset[str] = frozenset({"invitation", "login_guard"})
+WITHHELD_TABLES: frozenset[str] = frozenset({INVITATION_TABLE, LOGIN_GUARD_TABLE})
 
 # (table, column) pairs dropped from every exported row, even though their table is
 # exported. Each future secret column joins this set in the diff that adds it.
-EXCLUDED_COLUMNS: frozenset[tuple[str, str]] = frozenset({("app_user", "password_hash")})
+EXCLUDED_COLUMNS: frozenset[tuple[str, str]] = frozenset({(APP_USER_TABLE, "password_hash")})
