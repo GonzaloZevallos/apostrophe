@@ -5,6 +5,7 @@ list (the plan's invariant).
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Protocol
 
@@ -16,11 +17,15 @@ from app.business_removal.domain.schema import Schema
 class DeletedIds:
     """What one delete pass removed. `tables` holds the deleted id set for every
     exported table (`business` included), the only ones later compared against the
-    export file read back from disk. `invitation` and `login_guard` are never
-    exported, so they are counted here, not kept as id sets."""
+    export file read back from disk. `withheld_counts` holds, for every withheld
+    table with its own `business_id` (`invitation`, `reset_link`), how many rows were
+    deleted -- never exported, so counted rather than kept as an id set.
+    `login_guard_count` stays its own field: `login_guard` is withheld too but has no
+    `business_id` of its own, so it is deleted and counted by email, not by this
+    pass's `business_id` at all."""
 
     tables: dict[str, frozenset[int]]
-    invitation_count: int
+    withheld_counts: Mapping[str, int]
     login_guard_count: int
 
 
@@ -45,7 +50,11 @@ class SchemaRows(Protocol):
         `date`, naive-UTC `datetime` or `None`."""
         ...
 
-    def invitation_count(self, business_id: int) -> int: ...
+    def withheld_count(self, table: str, business_id: int) -> int:
+        """How many rows of `table` -- a withheld table with its own `business_id`
+        (`invitation`, `reset_link`) -- belong to `business_id`, for the dry run's
+        own "deleted only" line. Read-only; never deletes anything."""
+        ...
 
     def delete_business(self, business_id: int, order: tuple[str, ...]) -> DeletedIds:
         """Deletes every row of `business_id` from the tables in `order`

@@ -7,7 +7,12 @@ these three maps or `unlabelled_tables` refuses it.
 
 from __future__ import annotations
 
-from app.business_removal.domain.exclusions import PLATFORM_TABLES, SKIPPED_TABLES
+from app.business_removal.domain.exclusions import (
+    BUSINESS_TABLE,
+    PLATFORM_TABLES,
+    SKIPPED_TABLES,
+    WITHHELD_TABLES,
+)
 from app.business_removal.domain.schema import Schema
 
 # table -> one of its own columns, used as the label when the table has no `name`.
@@ -34,7 +39,8 @@ LABEL_AS_BUSINESS: frozenset[str] = frozenset({"catalog_header_footer", "pinned_
 
 def owned_tables(schema: Schema) -> tuple[str, ...]:
     """Every table in `schema` except the platform and skipped tables: the ones the
-    removal exports and deletes by `business_id`."""
+    removal deletes by `business_id` (`WITHHELD_TABLES` included -- a withheld table
+    is still deleted, just never exported; see `exported_tables`)."""
     return tuple(
         table.name
         for table in schema.tables
@@ -42,11 +48,27 @@ def owned_tables(schema: Schema) -> tuple[str, ...]:
     )
 
 
+def exported_tables(schema: Schema) -> tuple[str, ...]:
+    """`owned_tables` minus `WITHHELD_TABLES` (docs/adr/0019): the ones the export,
+    the dry run's exported lines, reconciliation, `unlabelled_tables` and the
+    reference index all iterate -- never a withheld table, deleted but never written
+    to the export file."""
+    return tuple(name for name in owned_tables(schema) if name not in WITHHELD_TABLES)
+
+
+def tables_written(schema: Schema) -> tuple[str, ...]:
+    """Every table whose rows actually land in the export file: `exported_tables`
+    plus `business` itself, which the document carries as its own header rather than
+    as a "kind" (docs/adr/0019). `secret_columns` checks exactly this set."""
+    return (*exported_tables(schema), BUSINESS_TABLE)
+
+
 def unlabelled_tables(schema: Schema) -> frozenset[str]:
-    """Owned tables with neither a `name` column nor a declared label. Any result
-    means the removal must refuse rather than export a row nothing can name."""
+    """Exported tables with neither a `name` column nor a declared label. Any result
+    means the removal must refuse rather than export a row nothing can name -- a
+    withheld table never needs a label, since it is never exported."""
     unlabelled = set()
-    for name in owned_tables(schema):
+    for name in exported_tables(schema):
         table = schema.table(name)
         has_name_column = any(column.name == "name" for column in table.columns)
         is_declared = name in LABEL_COLUMN or name in LABEL_VIA or name in LABEL_AS_BUSINESS

@@ -740,7 +740,7 @@ class _RaisingInner:
     def rows(self, table: str, business_id: int) -> list[dict[str, object]]:
         raise NotImplementedError
 
-    def invitation_count(self, business_id: int) -> int:
+    def withheld_count(self, table: str, business_id: int) -> int:
         raise NotImplementedError
 
     def delete_business(self, business_id: int, order: tuple[str, ...]) -> DeletedIds:

@@ -46,7 +46,15 @@ def _schema() -> Schema:
         (_pk(), _col("business_id"), _col("name", ColumnType.TEXT)),
         (ForeignKey(("business_id",), "business", ("id",)),),
     )
-    return Schema((business, customer))
+    # Withheld but owns its own `business_id` (docs/adr/0019): deleted and counted,
+    # never exported -- the fake schema needs one so the "deleted only" line this
+    # module's tests check for has something real to report.
+    invitation = Table(
+        "invitation",
+        (_pk(), _col("business_id")),
+        (ForeignKey(("business_id",), "business", ("id",)),),
+    )
+    return Schema((business, customer, invitation))
 
 
 def _unowned_schema() -> Schema:
@@ -86,7 +94,7 @@ class FakeSchemaRows:
     def rows(self, table: str, business_id: int) -> list[dict[str, Any]]:
         return self._table_rows.get(table, [])
 
-    def invitation_count(self, business_id: int) -> int:
+    def withheld_count(self, table: str, business_id: int) -> int:
         return self._invitation_count
 
     def delete_business(self, business_id: int, order: tuple[str, ...]) -> DeletedIds:
@@ -102,7 +110,9 @@ class FakeSchemaRows:
                 ids = frozenset()
             tables[name] = ids
         return DeletedIds(
-            tables=tables, invitation_count=self._invitation_count, login_guard_count=1
+            tables=tables,
+            withheld_counts={"invitation": self._invitation_count},
+            login_guard_count=1,
         )
 
 

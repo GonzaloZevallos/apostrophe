@@ -21,8 +21,8 @@ from app.business_removal.domain.business_ref import BusinessRef
 from app.business_removal.domain.exclusions import (
     APP_USER_TABLE,
     BUSINESS_TABLE,
-    INVITATION_TABLE,
     LOGIN_GUARD_TABLE,
+    WITHHELD_TABLES,
 )
 from app.business_removal.domain.schema import Column, ColumnType, ForeignKey, Schema
 from app.business_removal.domain.schema import Table as DomainTable
@@ -94,18 +94,16 @@ class SqlSchemaRows:
         statement = select(sa_table).where(filter_column == business_id).order_by(sa_table.c.id)
         return [dict(row._mapping) for row in self._session.execute(statement)]
 
-    def invitation_count(self, business_id: int) -> int:
-        invitation = self._table(INVITATION_TABLE)
+    def withheld_count(self, table: str, business_id: int) -> int:
+        sa_table = self._table(table)
         statement = (
-            select(func.count())
-            .select_from(invitation)
-            .where(invitation.c.business_id == business_id)
+            select(func.count()).select_from(sa_table).where(sa_table.c.business_id == business_id)
         )
         return self._session.execute(statement).scalar_one()
 
     def delete_business(self, business_id: int, order: tuple[str, ...]) -> DeletedIds:
         tables: dict[str, frozenset[int]] = {}
-        invitation_count = 0
+        withheld_counts: dict[str, int] = {}
         emails: tuple[str, ...] = ()
         for name in order:
             sa_table = self._table(name)
@@ -124,8 +122,12 @@ class SqlSchemaRows:
                     delete(sa_table).where(filter_column == business_id).returning(sa_table.c.id)
                 )
                 ids = frozenset(self._session.scalars(statement).all())
-            if name == INVITATION_TABLE:
-                invitation_count = len(ids)
+            # A withheld table with its own `business_id` (`invitation`, `reset_link`)
+            # is counted, never kept as an exported id set (docs/adr/0019);
+            # `login_guard`, the only withheld table with no `business_id`, is never
+            # reached here at all -- its own delete, by email, follows below.
+            if name in WITHHELD_TABLES:
+                withheld_counts[name] = len(ids)
             else:
                 tables[name] = ids
 
@@ -142,7 +144,7 @@ class SqlSchemaRows:
 
         return DeletedIds(
             tables=tables,
-            invitation_count=invitation_count,
+            withheld_counts=withheld_counts,
             login_guard_count=login_guard_count,
         )
 
