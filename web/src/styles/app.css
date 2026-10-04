@@ -1182,6 +1182,156 @@ button {
   font-weight: 500;
 }
 
+/* `NuevaVenta` (plan, "Phone layout"): a flex column of `min-height: 100dvh`; the
+ * body scrolls, the footer (total + save button) is the last child, never fixed
+ * or sticky. */
+.nueva-venta {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.nueva-venta__cuerpo {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: var(--espacio-lg) var(--margen-pantalla);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-lg);
+  min-width: 0;
+}
+
+.nueva-venta__pie {
+  flex: 0 0 auto;
+  padding: var(--espacio-lg) var(--margen-pantalla) var(--espacio-xxl);
+  border-top: 1px solid var(--linea);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-xs);
+}
+
+.nueva-venta__pie .boton {
+  margin-top: var(--espacio-md);
+}
+
+.fecha-pildora {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.fecha-pildora__input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.fecha-pildora__texto {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 15px;
+  color: var(--tinta2);
+  pointer-events: none;
+}
+
+.nueva-venta__cliente {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+  min-height: var(--alto-tocable);
+}
+
+.nueva-venta__cliente .lista-clientes__nombre {
+  flex: 1;
+}
+
+.nueva-venta__lineas {
+  display: flex;
+  flex-direction: column;
+}
+
+.nueva-venta__linea {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-sm);
+  padding: var(--espacio-lg) 0;
+  border-bottom: 1px solid var(--linea);
+}
+
+.nueva-venta__linea-fila {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-xs);
+  width: 100%;
+  padding: var(--espacio-lg) 0;
+  border: 0;
+  border-bottom: 1px solid var(--linea);
+  background: none;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.nueva-venta__linea-encabezado {
+  display: flex;
+  align-items: baseline;
+  gap: var(--espacio-md);
+}
+
+.nueva-venta__linea-nombre {
+  flex: 1;
+  min-width: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.nueva-venta__linea-gramos {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+}
+
+.nueva-venta__linea-detalle {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-sm);
+}
+
+.nueva-venta__linea-preciogramo {
+  font-size: 14px;
+  color: var(--tinta2);
+}
+
+.nueva-venta__linea-total {
+  margin-left: auto;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.nueva-venta__linea-opciones {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+}
+
+.nueva-venta__fila-dato {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-md);
+  padding: var(--espacio-sm) 0;
+  border-bottom: 1px solid var(--linea);
+}
+
+.nueva-venta__pago {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-sm);
+}
+
 .venta-guardada__deshacer {
   background: transparent;
   border: 0;
