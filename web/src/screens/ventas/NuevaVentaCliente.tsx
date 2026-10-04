@@ -25,6 +25,7 @@ import { type Customer, type CustomerIn, listCustomers, registerCustomer } from 
 import { keys } from '../../api/keys'
 import { resolveOverride, type RefusalCode } from '../../api/refusals'
 import Boton from '../../components/Boton'
+import Icono from '../../components/Icono'
 import SinConexion from '../../components/SinConexion'
 import CustomerFields, { type CustomerFieldsValue } from '../clientes/CustomerFields'
 import {
@@ -112,13 +113,22 @@ export default function NuevaVentaCliente({ allowNone, onChosen, onClose }: Nuev
   }
 
   return (
-    <div className="capa" role="presentation">
-      <div className="capa__contenido">
-        <span className="panel__titulo">Elegir cliente</span>
-        <label className="campo">
-          <span className="campo__rotulo">Buscar</span>
+    <div className="cliente-sheet" role="presentation">
+      <div className="cliente-sheet__contenido">
+        <span className="cliente-sheet__manija" aria-hidden="true" />
+        <div className="cliente-sheet__encabezado">
+          <span className="panel__titulo">Elegir cliente</span>
+          <Boton variant="link" onClick={onClose}>
+            Cerrar
+          </Boton>
+        </div>
+        <label className="campo campo--buscar">
+          <span className="campo__rotulo visualmente-oculto">Buscar</span>
+          <span className="campo--buscar__icono">
+            <Icono nombre="buscar" size={18} strokeWidth={1.8} />
+          </span>
           <input
-            className="campo__input"
+            className="campo__input campo--buscar__input"
             type="text"
             placeholder="Teléfono o nombre"
             value={query}
@@ -178,9 +188,6 @@ export default function NuevaVentaCliente({ allowNone, onChosen, onClose }: Nuev
             </Boton>
           </form>
         )}
-        <Boton variant="link" onClick={onClose}>
-          Cerrar
-        </Boton>
       </div>
     </div>
   )

@@ -1332,6 +1332,75 @@ button {
   gap: var(--espacio-sm);
 }
 
+/* "Elegí el cliente" (`NuevaVentaCliente.dc.html`): a full-bleed bottom sheet,
+ * rounded only at the top, with its own drag handle — unlike `.capa__contenido`
+ * (`Gastos.tsx`'s own sheet), which stays a centered, fully-rounded card. Scoped
+ * to this screen alone, so `Gastos`' sheet keeps its own shape (plan, invariants:
+ * "no sales screen imports... from a screen outside ventas/" cuts both ways —
+ * this doesn't reach back into Gastos' either). */
+.cliente-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.cliente-sheet::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--tinta);
+  opacity: 0.4;
+}
+
+.cliente-sheet__contenido {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  max-height: 88vh;
+  overflow-y: auto;
+  background: var(--papel);
+  border-radius: var(--radio-hoja) var(--radio-hoja) 0 0;
+  padding: var(--espacio-lg) var(--margen-pantalla) var(--espacio-xxl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-md);
+}
+
+.cliente-sheet__manija {
+  align-self: center;
+  width: 40px;
+  height: 4px;
+  border-radius: var(--radio-pildora);
+  background: var(--linea);
+}
+
+.cliente-sheet__encabezado {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-md);
+}
+
+.campo--buscar {
+  position: relative;
+}
+
+.campo--buscar__icono {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  display: flex;
+  color: var(--tinta2);
+  pointer-events: none;
+}
+
+.campo--buscar__input {
+  padding-left: 42px;
+}
+
 .venta-guardada__deshacer {
   background: transparent;
   border: 0;
