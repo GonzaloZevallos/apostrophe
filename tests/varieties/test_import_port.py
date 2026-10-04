@@ -130,6 +130,53 @@ def test_check_price_history_flags_a_bulk_price_not_below_the_list_price(
     assert results[0].code == "variety.price_entry_invalid"
 
 
+def test_check_price_history_flags_a_bulk_price_with_no_bulk_minimum(
+    client: TestClient, engine: Engine
+) -> None:
+    business_id = _business_id(engine, "uno@example.com")
+    rows = [_price_row(row=37, list_price=1_000, bulk_price=800, bulk_minimum=None)]
+    keys = {"Blue Dream": "blue dream"}
+    with Session(engine) as session:
+        imports = VarietiesImport(session, business_id)
+        results = imports.check_price_history(rows, keys)
+
+    assert len(results) == 1
+    assert isinstance(results[0], Refusal)
+    assert results[0].code == "variety.price_entry_invalid"
+
+
+def test_check_price_history_flags_a_bulk_minimum_with_no_bulk_price(
+    client: TestClient, engine: Engine
+) -> None:
+    business_id = _business_id(engine, "uno@example.com")
+    rows = [
+        _price_row(row=37, list_price=1_000, bulk_price=None, bulk_minimum=Grams.of(10))
+    ]
+    keys = {"Blue Dream": "blue dream"}
+    with Session(engine) as session:
+        imports = VarietiesImport(session, business_id)
+        results = imports.check_price_history(rows, keys)
+
+    assert len(results) == 1
+    assert isinstance(results[0], Refusal)
+    assert results[0].code == "variety.price_entry_invalid"
+
+
+def test_check_price_history_flags_a_list_price_at_or_below_zero(
+    client: TestClient, engine: Engine
+) -> None:
+    business_id = _business_id(engine, "uno@example.com")
+    rows = [_price_row(row=37, list_price=0)]
+    keys = {"Blue Dream": "blue dream"}
+    with Session(engine) as session:
+        imports = VarietiesImport(session, business_id)
+        results = imports.check_price_history(rows, keys)
+
+    assert len(results) == 1
+    assert isinstance(results[0], Refusal)
+    assert results[0].code == "variety.price_entry_invalid"
+
+
 def test_write_variety_then_write_price_entry_round_trips_through_a_real_session(
     client: TestClient, engine: Engine
 ) -> None:
