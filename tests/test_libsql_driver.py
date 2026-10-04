@@ -142,20 +142,6 @@ def _seed_customer_owing(client: TestClient) -> int:
     return customer_id
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "sqlalchemy-libsql 0.2.0: CursorResult.lastrowid comes back None after a "
-        "result-less `INSERT ... SELECT` on the libsql driver, though the DBAPI "
-        "cursor's own .lastrowid is set correctly right after execution (confirmed "
-        "directly against libsql_experimental, bypassing SQLAlchemy). "
-        "SqlPayments.insert_later reads CursorResult.lastrowid and raises its own "
-        "assertion as a result. This is a dialect limitation, not a bug in "
-        "insert_later; reported to the Tech Lead (see 'For the Tech Lead') rather "
-        "than worked around here, per the subtask's own instruction to stop and "
-        "report when the dialect itself fails a declared seam."
-    ),
-)
 def test_the_guarded_payment_insert_accepts_exactly_the_balance_on_libsql(
     client: TestClient, engine: Engine
 ) -> None:

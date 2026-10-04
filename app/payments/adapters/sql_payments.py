@@ -44,10 +44,16 @@ class SqlPayments:
         is shipping summed over `sale` plus line totals summed over `sale_line`, in
         separate scalar subqueries, never one sum over their join; paid is every
         payment of the customer. Every subquery filters on `business_id` and
-        `customer_id`. A `rowcount` of 0 — the row the guard would read having
-        changed since the domain's own check, or simply wrong — raises
-        `PaymentAboveBalance` and leaves no row behind: never a read followed by an
-        unconditional insert."""
+        `customer_id`. No returned row — the row the guard would read having changed
+        since the domain's own check, or simply wrong — raises `PaymentAboveBalance`
+        and leaves no row behind: never a read followed by an unconditional insert.
+
+        The new id comes from the statement's own `RETURNING`, never
+        `CursorResult.lastrowid`: that DBAPI-specific accessor comes back `None` for a
+        result-less `INSERT … SELECT` on the libsql driver (ADR-0014), though the
+        statement itself inserts the row correctly; `RETURNING` works the same way on
+        both drivers.
+        """
         shipping = (
             select(func.coalesce(func.sum(SaleRow.shipping_charged), 0))
             .where(
@@ -85,25 +91,27 @@ class SqlPayments:
             literal(recorded_at),
         ).where(literal(amount) <= (shipping + line_totals) - paid)
 
-        statement = insert(PaymentRow).from_select(
-            [
-                "business_id",
-                "customer_id",
-                "sale_id",
-                "paid_on",
-                "amount",
-                "method",
-                "recorded_at",
-            ],
-            guarded_select,
+        statement = (
+            insert(PaymentRow)
+            .from_select(
+                [
+                    "business_id",
+                    "customer_id",
+                    "sale_id",
+                    "paid_on",
+                    "amount",
+                    "method",
+                    "recorded_at",
+                ],
+                guarded_select,
+            )
+            .returning(PaymentRow.id)
         )
-        result = cast(CursorResult[tuple[object, ...]], self._session.execute(statement))
-        if result.rowcount == 0:
+        row = self._session.execute(statement).first()
+        if row is None:
             raise PaymentAboveBalance()
         self._session.flush()
-        new_id = result.lastrowid
-        assert new_id is not None, "a successful insert always has a row id"
-        return new_id
+        return int(row.id)
 
     def delete_later(self, payment_id: int) -> int:
         result = cast(
