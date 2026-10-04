@@ -21,3 +21,19 @@ export function newBusinessInvitationUrl(): string {
   }
   return firstLine
 }
+
+/** Prints a fresh reset link for `email`, the same way `scripts/reset-password.sh`
+ * does for a seller who forgot their password — a CLI command, never `curl`
+ * (PRD, "No curl"). */
+export function resetLink(email: string): string {
+  const output = execFileSync(
+    'uv',
+    ['run', '--no-project', 'python', '-m', 'app.accounts.adapters.cli', 'reset-password', email],
+    { cwd: '..', env: { ...process.env, ...E2E_ENV }, encoding: 'utf-8' },
+  )
+  const firstLine = output.split('\n')[0]
+  if (firstLine === undefined || !firstLine.startsWith('http')) {
+    throw new Error(`reset-password printed no link: ${output}`)
+  }
+  return firstLine
+}

@@ -1,0 +1,158 @@
+/**
+ * `/reset/:token` at the screen seam (plan, "Reset"): every mount logs out first,
+ * through the backend, before the lookup — exactly like `Invitacion`. A live link
+ * shows the one-field form; a dead link (open or submit) shows the fixed
+ * dead-link notice, never the generic gone notice, and keeps nothing typed. The
+ * API is faked at `fetch`.
+ */
+
+import { QueryClientProvider, QueryClient } from '@tanstack/react-query'
+import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { MemoryRouter, Route, Routes } from 'react-router'
+import { afterEach, expect, test, vi } from 'vitest'
+import Reset, { DEAD_LINK_MESSAGE } from './Reset'
+import { WEAK_PASSWORD_MESSAGE } from './Invitacion'
+
+function jsonResponse(status: number, body: unknown): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  })
+}
+
+function noContent(): Response {
+  return new Response(null, { status: 204 })
+}
+
+function renderReset(token = 'tok123') {
+  render(
+    <QueryClientProvider client={new QueryClient()}>
+      <MemoryRouter initialEntries={[`/reset/${token}`]}>
+        <Routes>
+          <Route path="/reset/:token" element={<Reset />} />
+          <Route path="/" element={<div>Pantalla de inicio</div>} />
+        </Routes>
+      </MemoryRouter>
+    </QueryClientProvider>,
+  )
+}
+
+afterEach(() => {
+  vi.unstubAllGlobals()
+})
+
+test('logs out before looking the link up, then shows the one-field form', async () => {
+  const calls: string[] = []
+  const fetchMock = vi.fn((url: string) => {
+    calls.push(String(url))
+    if (url === '/auth/logout') return Promise.resolve(noContent())
+    return Promise.resolve(noContent())
+  })
+  vi.stubGlobal('fetch', fetchMock)
+
+  renderReset()
+
+  expect(await screen.findByText('Elegí tu contraseña nueva')).toBeInTheDocument()
+  expect(calls).toEqual(['/auth/logout', '/reset-links/tok123'])
+  expect(screen.getByRole('button', { name: 'Guardar y entrar' })).toBeInTheDocument()
+})
+
+test('a dead link on open shows the fixed notice, never the form', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((url: string) => {
+      if (url === '/auth/logout') return Promise.resolve(noContent())
+      return Promise.resolve(jsonResponse(404, { detail: 'gone', code: 'account.reset_link_gone' }))
+    }),
+  )
+
+  renderReset()
+
+  expect(await screen.findByText(DEAD_LINK_MESSAGE)).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Guardar y entrar' })).not.toBeInTheDocument()
+})
+
+test('submitting a live link signs the device in and lands on Inicio, with no toast', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((url: string, init?: RequestInit) => {
+      if (url === '/auth/logout') return Promise.resolve(noContent())
+      if (url === '/reset-links/tok123' && init?.method === 'GET') return Promise.resolve(noContent())
+      if (url === '/reset-links/tok123' && init?.method === 'POST') {
+        return Promise.resolve(jsonResponse(200, { token: 'tok' }))
+      }
+      throw new Error(`unexpected request: ${url}`)
+    }),
+  )
+
+  renderReset()
+
+  await userEvent.type(await screen.findByLabelText('Contraseña nueva'), 'nuevaclave123')
+  await userEvent.click(screen.getByRole('button', { name: 'Guardar y entrar' }))
+
+  expect(await screen.findByText('Pantalla de inicio')).toBeInTheDocument()
+  expect(screen.queryByRole('status')).not.toBeInTheDocument()
+})
+
+test('a short new password shows the invitation\'s own too-short text, keeping it typed', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((url: string, init?: RequestInit) => {
+      if (url === '/auth/logout') return Promise.resolve(noContent())
+      if (init?.method === 'POST') {
+        return Promise.resolve(jsonResponse(422, { detail: 'short', code: 'account.password_weak' }))
+      }
+      return Promise.resolve(noContent())
+    }),
+  )
+
+  renderReset()
+
+  const field = await screen.findByLabelText('Contraseña nueva')
+  await userEvent.type(field, 'corta')
+  await userEvent.click(screen.getByRole('button', { name: 'Guardar y entrar' }))
+
+  expect(await screen.findByRole('alert')).toHaveTextContent(WEAK_PASSWORD_MESSAGE)
+  expect(field).toHaveValue('corta')
+})
+
+test('a link that goes stale between opening and submitting answers the same dead-link state', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((url: string, init?: RequestInit) => {
+      if (url === '/auth/logout') return Promise.resolve(noContent())
+      if (init?.method === 'POST') {
+        return Promise.resolve(
+          jsonResponse(404, { detail: 'gone', code: 'account.reset_link_gone' }),
+        )
+      }
+      return Promise.resolve(noContent())
+    }),
+  )
+
+  renderReset()
+
+  await userEvent.type(await screen.findByLabelText('Contraseña nueva'), 'nuevaclave123')
+  await userEvent.click(screen.getByRole('button', { name: 'Guardar y entrar' }))
+
+  expect(await screen.findByText(DEAD_LINK_MESSAGE)).toBeInTheDocument()
+})
+
+test('the reveal control toggles the field between hidden and shown', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((url: string) => {
+      if (url === '/auth/logout') return Promise.resolve(noContent())
+      return Promise.resolve(noContent())
+    }),
+  )
+
+  renderReset()
+
+  const field = await screen.findByLabelText('Contraseña nueva')
+  expect(field).toHaveAttribute('type', 'password')
+
+  await userEvent.click(screen.getByRole('button', { name: 'Mostrar' }))
+  expect(field).toHaveAttribute('type', 'text')
+})
