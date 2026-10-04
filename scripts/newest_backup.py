@@ -1,5 +1,5 @@
 """Chooses the newest daily backup copy from a GitHub Actions artifact listing, so
-every restore path (`deploy/README.md` section 7) and the go-live gate (section 9)
+every restore path (`deploy/README.md` section 6) and the go-live gate (section 8)
 pick the same copy -- never `gh run list` (the plan's invariant: the newest copy is
 chosen only here).
 
@@ -17,11 +17,18 @@ import sys
 from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import TextIO
+from typing import Protocol
 
 # `backup-<UTC %Y%m%dT%H%M%SZ>-<run_id>.db.age` -- the one format the workflow, the
 # README and this filter all share (the plan's invariant).
 _NAME_PATTERN = re.compile(r"^backup-\d{8}T\d{6}Z-\d+\.db\.age$")
+
+
+class _Readable(Protocol):
+    """Everything `main` needs from `stdin`: `sys.stdin` satisfies it, and so does a
+    plain `io.StringIO` in a test -- no test needs a real file or terminal."""
+
+    def read(self) -> str: ...
 
 _BAD_LISTING = "error: the artifact listing is not a JSON object with an 'artifacts' list"
 _NO_VALID_ARTIFACT = "error: no valid backup artifact found in the listing"
@@ -98,13 +105,18 @@ def newest_artifact(listing: Mapping[str, object]) -> NewestArtifact | None:
     return NewestArtifact(name=name, run_id=run_id, created_at=created_at)
 
 
-def main(argv: list[str], stdin: TextIO) -> int:
+def main(argv: list[str], stdin: _Readable) -> int:
     """Reads exactly one JSON document from `stdin` and prints the newest artifact's
     `name`, `run_id` and `created_at`. `argv` takes no arguments; it is kept only so
     this CLI has the same shape as `scripts/drill.py`'s."""
     del argv
     try:
-        document = json.loads(stdin.read())
+        raw = stdin.read()
+    except UnicodeDecodeError:
+        print(_BAD_LISTING, file=sys.stderr)
+        return 2
+    try:
+        document = json.loads(raw)
     except json.JSONDecodeError:
         print(_BAD_LISTING, file=sys.stderr)
         return 2

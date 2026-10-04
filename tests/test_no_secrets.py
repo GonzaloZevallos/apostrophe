@@ -207,6 +207,17 @@ def test_the_object_storage_scanner_lets_r2_prose_through() -> None:
     assert find_object_storage_names(fine) == []
 
 
+def test_tracked_running_files_selects_the_backup_workflow_and_excludes_app() -> None:
+    # Proof the selection itself is not empty, and not everything: an empty selection
+    # would let the scan below pass with nothing actually scanned.
+    relative = {str(path.relative_to(REPO_ROOT)) for path in _tracked_running_files()}
+
+    assert ".github/workflows/backup.yml" in relative
+    assert "deploy/README.md" in relative
+    assert "render.yaml" in relative
+    assert not any(path.startswith("app/") for path in relative)
+
+
 def test_no_tracked_running_file_references_an_object_storage_name() -> None:
     violations: list[tuple[str, str]] = []
     for path in _tracked_running_files():

@@ -73,7 +73,7 @@ everything below with a value is set by hand, outside git.
      already proves for one such range (`10.0.0.0/8`); it does not, and cannot, prove
      Render's edge actually connects from inside these ranges — that is confirmed on
      this deployment specifically only by the go-live checklist's two-network check
-     (section 9), by hand. If Render ever documents its own load balancer's range,
+     (section 8), by hand. If Render ever documents its own load balancer's range,
      prefer that over this private-range convention.
 3. Auto-deploy is on (`autoDeploy: true`): every merge to `master` deploys. There is no
    pre-deploy command: the schema is migrated only by `upgrade_to_head`, inside
@@ -139,7 +139,9 @@ start with `umask 077; d="$(mktemp -d)"`, and finish with `rm -rf "$d"` once you
 read the report. If a run is interrupted before that last command, `$d` is left behind
 with decrypted data in it — find it and remove it by hand.
 
-**The daily `age`-encrypted copy** (an artifact of the backup workflow's own run):
+**The daily `age`-encrypted copy** (an artifact of the backup workflow's own run,
+named `backup-<UTC %Y%m%dT%H%M%SZ>-<run_id>.db.age` — the one format the workflow,
+this README and `scripts/newest_backup.py`'s own filter all share):
 
 ```
 umask 077; d="$(mktemp -d)"

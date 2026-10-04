@@ -12,7 +12,14 @@ import io
 import json
 from datetime import UTC, datetime
 
-from scripts.newest_backup import InvalidArtifactListing, NewestArtifact, main, newest_artifact
+from scripts.newest_backup import (
+    _BAD_LISTING,
+    _NO_VALID_ARTIFACT,
+    InvalidArtifactListing,
+    NewestArtifact,
+    main,
+    newest_artifact,
+)
 
 VALID_A = {
     "id": 101,
@@ -109,8 +116,29 @@ def test_picks_the_newer_of_two_valid_artifacts() -> None:
     )
 
 
+def test_picks_the_newer_artifact_even_when_it_is_listed_first() -> None:
+    # The listing's own order is not a seam (the plan's invariant): the newer entry
+    # here comes *before* the older one, the opposite order of the test above.
+    found = newest_artifact({"artifacts": [VALID_B, VALID_A]})
+
+    assert found == NewestArtifact(
+        name="backup-20261002T040000Z-556.db.age",
+        run_id=556,
+        created_at=datetime(2026, 10, 2, 4, 5, tzinfo=UTC),
+    )
+
+
 def test_a_tie_on_created_at_is_broken_by_the_greater_id() -> None:
     found = newest_artifact({"artifacts": [TIE_LOWER_ID, TIE_HIGHER_ID]})
+
+    assert found is not None
+    assert found.run_id == 999
+    assert found.name == "backup-20261002T040000Z-999.db.age"
+
+
+def test_a_tie_on_created_at_is_broken_by_the_greater_id_regardless_of_order() -> None:
+    # Same tie as above, with the higher-id entry listed first.
+    found = newest_artifact({"artifacts": [TIE_HIGHER_ID, TIE_LOWER_ID]})
 
     assert found is not None
     assert found.run_id == 999
@@ -235,7 +263,7 @@ def test_cli_exits_one_when_no_valid_artifact_is_found() -> None:
     exit_code, out, err = _run({"artifacts": [EXPIRED]})
 
     assert exit_code == 1
-    assert err.strip() != ""
+    assert err.strip() == _NO_VALID_ARTIFACT
     assert "Traceback" not in err
 
 
@@ -244,7 +272,7 @@ def test_cli_exits_two_on_two_concatenated_json_documents() -> None:
     exit_code, out, err = _run(raw)
 
     assert exit_code == 2
-    assert err.strip() != ""
+    assert err.strip() == _BAD_LISTING
     assert "Traceback" not in err
 
 
@@ -252,7 +280,7 @@ def test_cli_exits_two_on_a_top_level_list() -> None:
     exit_code, out, err = _run([VALID_A])
 
     assert exit_code == 2
-    assert err.strip() != ""
+    assert err.strip() == _BAD_LISTING
     assert "Traceback" not in err
 
 
@@ -260,5 +288,26 @@ def test_cli_exits_two_when_artifacts_is_missing() -> None:
     exit_code, out, err = _run({"total_count": 0})
 
     assert exit_code == 2
-    assert err.strip() != ""
+    assert err.strip() == _BAD_LISTING
     assert "Traceback" not in err
+
+
+class _UndecodableStdin:
+    """Mimics stdin reading bytes `gh` cannot have produced as valid text -- the
+    stdlib's own `io.TextIOWrapper` raises `UnicodeDecodeError` from `.read()` in
+    exactly this shape when the underlying stream is not the declared encoding."""
+
+    def read(self) -> str:
+        raise UnicodeDecodeError("utf-8", b"\xff", 0, 1, "invalid start byte")
+
+
+def test_cli_exits_two_on_undecodable_stdin_with_no_traceback() -> None:
+    stdout = io.StringIO()
+    stderr = io.StringIO()
+
+    with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+        exit_code = main([], _UndecodableStdin())
+
+    assert exit_code == 2
+    assert stderr.getvalue().strip() == _BAD_LISTING
+    assert "Traceback" not in stderr.getvalue()
