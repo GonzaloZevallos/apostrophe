@@ -137,21 +137,22 @@ export default function NuevaVentaCliente({ allowNone, onChosen, onClose }: Nuev
         </label>
         <div className="lista-clientes">
           {(results.data ?? []).map((customer) => (
-            <button
+            <Boton
               key={customer.id}
-              type="button"
-              className="lista-clientes__fila"
+              variant="row"
               onClick={() => {
                 onChosen(customer)
                 onClose()
               }}
             >
-              <span className="lista-clientes__nombre">
-                {customer.name}
-                {customer.vip && <span className="vip-insignia">VIP</span>}
+              <span className="lista-clientes__fila-contenido">
+                <span className="lista-clientes__nombre">
+                  {customer.name}
+                  {customer.vip && <span className="vip-insignia">VIP</span>}
+                </span>
+                <span className="lista-clientes__telefono">{customer.phone}</span>
               </span>
-              <span className="lista-clientes__telefono">{customer.phone}</span>
-            </button>
+            </Boton>
           ))}
         </div>
         {allowNone && (

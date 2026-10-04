@@ -473,10 +473,24 @@ export default function NuevaVenta() {
       }
       if (caught instanceof ApiError && caught.code === 'sale.no_price_that_day') {
         // The one other refetch (plan, invariants): a partner may have deleted the
-        // price between this form's own fetch and now. Refetching makes that
-        // line's quote `null` again, so the live preview's own `NoPriceThatDay`
-        // message appears on it, naming the variety from this screen's own line.
-        void queryClient.invalidateQueries({ queryKey: keys.saleFormVarieties(date) })
+        // price between this form's own fetch and now. Awaited, so the cache
+        // already carries the fresh answer below — reading it straight from the
+        // cache rather than `varieties` (this closure's own, from the render that
+        // started this submit) is what lets the line that lost its price open and
+        // focus right away, instead of waiting for a render this handler doesn't
+        // itself cause.
+        await queryClient.invalidateQueries({ queryKey: keys.saleFormVarieties(date) })
+        const freshVarieties = queryClient.getQueryData<Variety[]>(keys.saleFormVarieties(date)) ?? []
+        const flagged = lines.find((line) => {
+          if (line.varietyId === '' || line.gift || specialPriceOf(line) !== null) return false
+          const variety = freshVarieties.find((item) => String(item.id) === line.varietyId)
+          return variety === undefined || quoteOf(variety) === null
+        })
+        if (flagged !== undefined) {
+          openLine(flagged.key)
+          focusNonceRef.current += 1
+          setFocusRequest({ field: 'variety', nonce: focusNonceRef.current })
+        }
         return
       }
       if (caught instanceof ApiError) {
@@ -557,12 +571,11 @@ export default function NuevaVenta() {
                 const displayName = variety?.name ?? 'Sin variedad'
                 const messageId = `linea-mensaje-${line.key}`
                 return (
-                  <button
+                  <Boton
                     key={line.key}
-                    type="button"
-                    className="nueva-venta__linea-fila"
-                    aria-label={`Línea ${n}: ${displayName}`}
-                    aria-describedby={lineError !== null ? messageId : undefined}
+                    variant="row"
+                    ariaLabel={`Línea ${n}: ${displayName}`}
+                    ariaDescribedBy={lineError !== null ? messageId : undefined}
                     onClick={() => openLine(line.key)}
                   >
                     <div className="nueva-venta__linea-encabezado">
@@ -589,7 +602,7 @@ export default function NuevaVenta() {
                         {lineError}
                       </span>
                     )}
-                  </button>
+                  </Boton>
                 )
               }
 

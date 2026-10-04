@@ -253,6 +253,47 @@ test('sale.no_price_that_day refetches prices, and the line then shows its own m
   expect(varietiesCalls).toBe(2)
 })
 
+test('sale.no_price_that_day opens the flagged line even when it was closed', async () => {
+  const user = userEvent.setup()
+  let varietiesCalls = 0
+  const CLAVEL = {
+    id: 3,
+    name: 'Clavel',
+    current_price: { id: 10, effective_from: '2026-09-01', list_price: 500, bulk_price: null, bulk_minimum: null },
+  }
+  await openForm({
+    'GET /auth/me': () => jsonResponse(200, ME),
+    'GET /varieties?on=2026-10-02': () => {
+      varietiesCalls += 1
+      // Same partner-deletes-the-price race as the test above, but Rosa's own
+      // line is no longer the one open when the refusal lands — Clavel's is,
+      // since "Agregar otra variedad" closes whatever was open.
+      const rosa = varietiesCalls === 1 ? ROSA : { ...ROSA, current_price: null }
+      return jsonResponse(200, [rosa, CLAVEL])
+    },
+    'POST /sales': () => jsonResponse(422, { detail: 'no price', code: 'sale.no_price_that_day' }),
+  })
+
+  await user.selectOptions(screen.getByLabelText('Variedad línea 1'), '1')
+  await user.type(screen.getByLabelText('Gramos línea 1'), '2')
+  await user.click(screen.getByRole('button', { name: 'Agregar otra variedad' }))
+  await user.selectOptions(screen.getByLabelText('Variedad línea 2'), '3')
+  await user.type(screen.getByLabelText('Gramos línea 2'), '1')
+  await user.click(screen.getByRole('radio', { name: 'Efectivo' }))
+
+  // Line 1 (Rosa) is closed now; line 2 (Clavel) is the open one.
+  expect(screen.queryByLabelText('Variedad línea 1')).not.toBeInTheDocument()
+
+  await user.click(screen.getByRole('button', { name: 'Guardá la venta' }))
+
+  // The refusal names Rosa — line 1 must open back up, its own fields on
+  // screen again, not just its message floating somewhere on the page.
+  expect(await screen.findByText('Rosa no tiene precio para esa fecha')).toBeInTheDocument()
+  expect(screen.getByLabelText('Variedad línea 1')).toBeInTheDocument()
+  expect(screen.getByLabelText('Gramos línea 1')).toHaveValue('2')
+  expect(varietiesCalls).toBe(2)
+})
+
 test('sale.customer_not_found and sale.variety_not_found keep the form open with the generic line', async () => {
   const user = userEvent.setup()
   const codes = ['sale.customer_not_found', 'sale.variety_not_found']

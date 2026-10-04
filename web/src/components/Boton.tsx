@@ -1,8 +1,11 @@
 /**
  * `Boton` (`componentes.ts`'s `BotonProps`, plan "Components"): the one button
  * shape the app draws — primary (tinta llena), secondary (superficie, "suave"),
- * link (underlined, `boton--enlace`) and destructive (critical fill), plus an
- * icon-only mode with no visible text. No screen writes its own button base
+ * link (underlined, `boton--enlace`) and destructive (critical fill), an
+ * icon-only mode with no visible text, and `row`: a full-width, left-aligned,
+ * stacked-content button for a tappable list row (a closed sale line, say) —
+ * still reset only through its own `styles/app.css` class (`boton--fila`), never
+ * a one-off class a screen writes itself. No screen writes its own button base
  * styles (plan, invariants): every variant below is one of `styles/app.css`'s own
  * classes, never an inline style or a one-off class.
  *
@@ -14,13 +17,15 @@
  *
  * Icon-only needs a name a screen reader can say: `children` is optional, but a
  * caller that omits it must pass `ariaLabel`, so the button never ships with no
- * accessible name at all.
+ * accessible name at all. `ariaDescribedBy` is for a row whose own message sits
+ * just below it (a line's `combinedLineError`, say): the row names the message,
+ * never the other way around.
  */
 
 import type { ReactNode } from 'react'
 import Icono, { type NombreIcono } from './Icono'
 
-export type BotonVariant = 'primary' | 'secondary' | 'link' | 'destructive' | 'icon'
+export type BotonVariant = 'primary' | 'secondary' | 'link' | 'destructive' | 'icon' | 'row'
 
 interface BotonPropsBase {
   variant?: BotonVariant
@@ -28,6 +33,7 @@ interface BotonPropsBase {
   onClick?: () => void
   disabled?: boolean
   type?: 'button' | 'submit'
+  ariaDescribedBy?: string
 }
 
 interface BotonPropsWithChildren extends BotonPropsBase {
@@ -48,6 +54,7 @@ const CLASS: Record<BotonVariant, string> = {
   link: 'boton--enlace',
   destructive: 'boton boton--destructivo',
   icon: 'boton-icono',
+  row: 'boton--fila',
 }
 
 export default function Boton({
@@ -55,6 +62,7 @@ export default function Boton({
   variant = 'primary',
   icon,
   ariaLabel,
+  ariaDescribedBy,
   onClick,
   disabled = false,
   type = 'button',
@@ -66,6 +74,7 @@ export default function Boton({
       onClick={onClick}
       disabled={disabled}
       aria-label={ariaLabel}
+      aria-describedby={ariaDescribedBy}
     >
       {icon !== undefined && <Icono nombre={icon} />}
       {children}

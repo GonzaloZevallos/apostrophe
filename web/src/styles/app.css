@@ -646,6 +646,19 @@ button {
   text-decoration: none;
 }
 
+/* The customer search result's own inner layout (`NuevaVentaCliente.tsx`):
+ * `Boton`'s `row` variant supplies the border-bottom, padding and button reset;
+ * this just lays its one line of content out horizontally, the same shape
+ * `.lista-clientes__fila` draws for the `Link`-based rows elsewhere, without
+ * doubling that padding/border on a `<button>`. */
+.lista-clientes__fila-contenido {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: var(--alto-tocable);
+}
+
 .lista-clientes__nombre {
   display: flex;
   align-items: center;
@@ -1260,7 +1273,11 @@ button {
   border-bottom: 1px solid var(--linea);
 }
 
-.nueva-venta__linea-fila {
+/* `Boton`'s `row` variant (plan "Components"): a full-width, left-aligned,
+ * stacked-content tappable row — a closed sale line here, any future tappable
+ * list row elsewhere. The one place that resets a row-shaped button's border,
+ * background and appearance (invariants: "only `Boton`'s classes"). */
+.boton--fila {
   display: flex;
   flex-direction: column;
   gap: var(--espacio-xs);
