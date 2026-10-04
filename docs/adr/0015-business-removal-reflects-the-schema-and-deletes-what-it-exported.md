@@ -105,3 +105,80 @@ of tables, even an implicit one, had shown it fails silently.
   written, which slows other businesses.
 - **A subcommand of accounts' CLI**: it puts every hexagon's tables in accounts'
   adapters.
+
+## Amendment (GH-36): the file never stays half-written, and an unknown commit keeps it
+
+The write that creates the export file could fail after `O_CREAT|O_EXCL` opened it --
+the dump, the flush, either fsync -- and the clean-up that should have removed the
+partial file never ran, because it only knew the path once `write_durably` returned.
+A business's personal data could stay on disk. Separately, `remove(path)` after a
+failed commit could delete the only copy of a business whose rows were, in fact,
+already gone. This amendment (PM's round-3 ruling on accounts.md, "Removing a
+business") fixes both.
+
+- **Ownership moves into the adapter.** `FileExportFile` records `_created` itself,
+  right after `os.open` succeeds, never after the write. `ExportFile.remove(path)` is
+  gone; the port is `discard()` and `keep()` instead.
+  - `discard()` removes only the file this instance created, is idempotent, and does
+    nothing once `keep()` has been called -- it never touches a file it did not create.
+  - `keep()` says the commit is being attempted; the file may be the only copy of the
+    business's books from here on.
+  - `write_durably` wraps the dump, the flush and both fsyncs in one `try`; any
+    `BaseException` there calls `discard()` (its own failure suppressed) and
+    re-raises the original exception. The caller never sees one raised by the
+    clean-up itself.
+- **One signal-mask helper, three masked regions.** `app.business_removal.application
+  .signals.blocked_signals()` is the only caller of `pthread_sigmask` anywhere in this
+  hexagon. It blocks SIGINT, SIGHUP and SIGTERM, and restores the previous mask with
+  `SIG_SETMASK` in a `finally` -- never `SIG_UNBLOCK`, which would unblock a signal a
+  caller above it had already blocked. It wraps:
+  1. `FileExportFile`'s `os.open` and the assignment of `_created` (the
+     `FileExistsError` path restores the mask too);
+  2. `remove_business`'s pre-commit clean-up, around `export_file.discard()` alone --
+     `rollback()` runs afterwards, unmasked, with its own exceptions suppressed
+     (except `SystemExit`);
+  3. `remove_business`'s commit region: `keep()`, then `commit_attempted = True`, then
+     `commit()`, then `committed = True`.
+- **Three outcomes after the try, not two.** `committed` is unchanged (never touch the
+  file, never say "nothing deleted"). A new `commit_attempted` flag, true once the
+  masked commit region was entered:
+  - `commit()` raised with `commit_attempted` set: the outcome is unknown. The command
+    prints the business name, the counts exported (never deleted, never "nothing
+    deleted"), then the fixed line `Commit outcome unknown; export kept at <path>. Run
+    with --dry-run and the same email before anything else.`, and exits 1. The file is
+    kept -- it may be the business's last copy.
+  - neither flag set: the ordinary pre-commit failure, now `discard()` (masked) then
+    `rollback()` (unmasked, suppressed) then the fixed `failure_message`.
+- **`main` is the backstop.** `app/business_removal/adapters/cli.py` builds
+  `FileExportFile` before the inner `try`, so a signal that lands on the way into
+  `remove_business`'s own `except` -- after a file was created but before that
+  `except` runs `discard()` -- still has an instance for the outer handler to call
+  `discard()` on (errors suppressed) before reporting.
+- **`ColumnType.OTHER` is refused.** `other_type_columns` (next to `secret_columns` in
+  `domain/classification.py`) refuses any `OTHER`-typed column outside
+  `EXCLUDED_COLUMNS`, checked in `_schema_refusal` right after the secret check. Today
+  this excludes only `pinned_catalog.token_ciphertext` (already excluded as a secret).
+  A twin test (`tests/business_removal/domain/test_classification.py`, and
+  `test_migrated_schema_types.py` over the real migrated schema) covers it, alongside
+  `tests/business_removal/adapters/test_cli_failed_write.py`'s proof through `main`: a
+  raw-DDL `INTEGER` column holding bytes passes every schema check and still makes
+  `json.dump` fail, which is the case this amendment exists for.
+- **libSQL evidence.** `sqlalchemy_libsql/libsql.py`'s `SQLiteDialect_libsql`
+  subclasses `SQLiteDialect_pysqlite` and overrides neither `ischema_names` nor
+  reflection, so Turso reflects the same types as SQLite here. A `sqlalchemy-libsql`
+  upgrade is the trigger to add a pure `ischema_names` test, since a future version
+  could change that.
+
+### Known risks
+
+- A `commit()` that hangs over Turso hangs with SIGINT, SIGHUP and SIGTERM blocked;
+  only SIGKILL gets the operator out.
+- A commit refused for certain before being applied (a local SQLite "locked" at
+  `COMMIT`, for one) is still reported as unknown: a file with personal data is left
+  for the operator to check with `--dry-run` and delete by hand. Accepted under PM's
+  ruling -- the alternative risks deleting the only copy of a business that is, in
+  fact, already gone.
+- No test forces an `fsync` failure on its own; those failures share the dump's
+  clean-up branch only by construction, not by a test that isolates them.
+- A hard kill (SIGKILL) or a power loss between `os.open` and the `_created` record
+  can still leave an orphan file, as already written above.

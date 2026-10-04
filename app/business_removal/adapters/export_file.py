@@ -12,6 +12,7 @@ import stat
 from pathlib import Path
 from typing import Any
 
+from app.business_removal.application.signals import blocked_signals
 from app.business_removal.domain.naming import is_inside
 
 # `.../app/business_removal/adapters/export_file.py` -> repo root, four parents up.
@@ -33,6 +34,8 @@ class FileExportFile:
     def __init__(self, export_dir: Path) -> None:
         self._export_dir = export_dir
         self._resolved: Path | None = None
+        self._created: Path | None = None
+        self._kept = False
 
     def prepare(self) -> Path:
         resolved = self._export_dir.expanduser().resolve()
@@ -55,19 +58,28 @@ class FileExportFile:
         if self._resolved is None:
             raise ExportDirectoryRefused("the export directory was never prepared")
         path = self._resolved / name
+        with blocked_signals():
+            try:
+                descriptor = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+            except FileExistsError as exc:
+                raise ExportFileAlreadyExists("the export file already exists") from exc
+            self._created = path
         try:
-            descriptor = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
-        except FileExistsError as exc:
-            raise ExportFileAlreadyExists("the export file already exists") from exc
-        with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
-            json.dump(document, handle, ensure_ascii=False, indent=2)
-            handle.flush()
-            os.fsync(handle.fileno())
-        directory_descriptor = os.open(self._resolved, os.O_RDONLY)
-        try:
-            os.fsync(directory_descriptor)
-        finally:
-            os.close(directory_descriptor)
+            with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+                json.dump(document, handle, ensure_ascii=False, indent=2)
+                handle.flush()
+                os.fsync(handle.fileno())
+            directory_descriptor = os.open(self._resolved, os.O_RDONLY)
+            try:
+                os.fsync(directory_descriptor)
+            finally:
+                os.close(directory_descriptor)
+        except BaseException:
+            try:
+                self.discard()
+            except BaseException:
+                pass
+            raise
         return path
 
     def read_back(self, path: Path) -> dict[str, Any]:
@@ -76,5 +88,12 @@ class FileExportFile:
             document: dict[str, Any] = json.load(handle)
         return document
 
-    def remove(self, path: Path) -> None:
-        path.unlink(missing_ok=True)
+    def discard(self) -> None:
+        if self._kept or self._created is None:
+            return
+        created = self._created
+        self._created = None
+        created.unlink(missing_ok=True)
+
+    def keep(self) -> None:
+        self._kept = True

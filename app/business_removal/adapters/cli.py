@@ -151,6 +151,11 @@ def main(
 
     previous_sighup = signal.signal(signal.SIGHUP, _raise_interrupted)
     previous_sigterm = signal.signal(signal.SIGTERM, _raise_interrupted)
+    # Built before the inner `try`, so a signal that lands on the way into
+    # `remove_business`'s own `except` -- after `write_durably` created a file but
+    # before the use case's handler can discard it -- still has something to call
+    # `discard()` on here, in the outer handler (the plan's backstop).
+    export_file = FileExportFile(settings.export_dir)
     try:
         try:
             engine = _make_engine(settings.database_url)
@@ -160,7 +165,6 @@ def main(
                 if args.dry_run:
                     return dry_run(schema_rows, output, args.email)
                 confirm = _StdinConfirm(stdin, stdout)
-                export_file = FileExportFile(settings.export_dir)
                 return remove_business(
                     schema_rows, export_file, confirm, session, output, system_clock, args.email
                 )
@@ -170,6 +174,10 @@ def main(
             # `dry_run`/`remove_business` already catch everything that can happen
             # once they are called; this guards engine setup and the migration run,
             # which happen before either does -- nothing escapes as a traceback.
+            try:
+                export_file.discard()
+            except BaseException:
+                pass
             return _report(output, exc)
     finally:
         signal.signal(signal.SIGHUP, previous_sighup)
