@@ -26,6 +26,11 @@ from app.business_removal.domain.classification import (
     unowned_tables,
 )
 from app.business_removal.domain.confirmation import name_matches
+from app.business_removal.domain.exclusions import (
+    BUSINESS_TABLE,
+    INVITATION_TABLE,
+    LOGIN_GUARD_TABLE,
+)
 from app.business_removal.domain.export_document import Business, build_document, id_sets
 from app.business_removal.domain.labels import owned_tables, unlabelled_tables
 from app.business_removal.domain.naming import file_name, terminal_name
@@ -81,23 +86,32 @@ class RecordsChanged(Exception):
 
 def dry_run(schema_rows: SchemaRows, output: Output, email: str) -> int:
     """Names the business found from `email` and counts, by table, what a real run
-    would export and delete. Writes nothing, asks nothing."""
-    schema = schema_rows.schema()
-    refusal = _schema_refusal(schema)
-    if refusal is not None:
-        output.line(refusal)
-        return 1
-    business = schema_rows.business_of(email)
-    if business is None:
-        output.line(NO_BUSINESS_MESSAGE)
-        return 1
+    would export and delete. Writes nothing, asks nothing. Nothing this function
+    does can leave a traceback on the way out: every exception, including one
+    raised by a port, ends in one fixed message and `1` (the plan's invariant)."""
+    try:
+        schema = schema_rows.schema()
+        refusal = _schema_refusal(schema)
+        if refusal is not None:
+            output.line(refusal)
+            return 1
+        business = schema_rows.business_of(email)
+        if business is None:
+            output.line(NO_BUSINESS_MESSAGE)
+            return 1
 
-    output.line(terminal_name(business.name))
-    for table_name in owned_tables(schema):
-        count = len(schema_rows.rows(table_name, business.id))
-        output.line(f"{table_name}: {count}")
-    output.line(f"invitation: {schema_rows.invitation_count(business.id)} (deleted only)")
-    return 0
+        output.line(terminal_name(business.name))
+        for table_name in owned_tables(schema):
+            count = len(schema_rows.rows(table_name, business.id))
+            output.line(f"{table_name}: {count}")
+        count = schema_rows.invitation_count(business.id)
+        output.line(f"{INVITATION_TABLE}: {count} (deleted only)")
+        return 0
+    except SystemExit:
+        raise
+    except BaseException as exc:
+        output.line(failure_message(exc))
+        return 1
 
 
 def remove_business(
@@ -114,24 +128,26 @@ def remove_business(
     written, fsynced and read back, and only if what was read back names exactly the
     ids the delete returns. Any failure before the commit leaves the business whole
     and removes whatever file this run created; nothing after the commit ever
-    touches that file again."""
-    schema = schema_rows.schema()
-    refusal = _schema_refusal(schema)
-    if refusal is not None:
-        output.line(refusal)
-        return 1
-    business = schema_rows.business_of(email)
-    if business is None:
-        output.line(NO_BUSINESS_MESSAGE)
-        return 1
-
-    order = delete_order(schema)
-    owned = owned_tables(schema)
-    export_file.prepare()
-
+    touches that file again. Everything, from the first read of the schema onward,
+    runs inside the one try below: no exception, from any port, leaves a traceback
+    on the way out (the plan's invariant)."""
     committed = False
     path: Path | None = None
     try:
+        schema = schema_rows.schema()
+        refusal = _schema_refusal(schema)
+        if refusal is not None:
+            output.line(refusal)
+            return 1
+        business = schema_rows.business_of(email)
+        if business is None:
+            output.line(NO_BUSINESS_MESSAGE)
+            return 1
+
+        order = delete_order(schema)
+        owned = owned_tables(schema)
+        export_file.prepare()
+
         prompt = f"Type the business name ({terminal_name(business.name)}) to remove it: "
         typed = confirm.ask(prompt)
         if typed is None or not name_matches(typed, business.name):
@@ -150,7 +166,7 @@ def remove_business(
         # itself, which the document carries as a header, not a list); the business
         # row is still one exported id, read back from the same file.
         exported_ids = id_sets(read_back)
-        exported_ids["business"] = frozenset({read_back["business"]["id"]})
+        exported_ids[BUSINESS_TABLE] = frozenset({read_back[BUSINESS_TABLE]["id"]})
         deleted = schema_rows.delete_business(business.id, order)
         mismatches = reconcile(exported_ids, deleted.tables)
         if mismatches:
@@ -168,8 +184,8 @@ def remove_business(
             exported_count = len(exported_ids.get(table_name, frozenset()))
             deleted_count = len(deleted.tables.get(table_name, frozenset()))
             output.line(f"{table_name}: exported {exported_count}, deleted {deleted_count}")
-        output.line(f"invitation: deleted {deleted.invitation_count}")
-        output.line(f"login_guard: deleted {deleted.login_guard_count}")
+        output.line(f"{INVITATION_TABLE}: deleted {deleted.invitation_count}")
+        output.line(f"{LOGIN_GUARD_TABLE}: deleted {deleted.login_guard_count}")
         output.line(f"Business removed; export kept at {path}.")
         return 0
     except SystemExit:
@@ -184,7 +200,7 @@ def remove_business(
         transaction.rollback()
         if path is not None:
             export_file.remove(path)
-        output.line(_failure_message(exc))
+        output.line(failure_message(exc))
         return 1
 
 
@@ -206,7 +222,12 @@ def _schema_refusal(schema: Schema) -> str | None:
     return None
 
 
-def _failure_message(exc: BaseException) -> str:
+def failure_message(exc: BaseException) -> str:
+    """The one fixed line a failure before the commit is reported as -- never the
+    exception's own text, which might repeat a path or a row (the plan's
+    invariant). Public so the CLI's own top-level handler classifies the same way
+    for whatever happens outside `dry_run`/`remove_business` themselves (engine
+    setup, migrations)."""
     if isinstance(exc, RecordsChanged):
         return str(exc)
     if isinstance(exc, (Interrupted, KeyboardInterrupt)):

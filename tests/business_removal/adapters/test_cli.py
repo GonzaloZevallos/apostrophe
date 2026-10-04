@@ -349,3 +349,26 @@ def test_a_clean_slate_lets_the_same_email_open_a_new_business(
         assert listed.status_code == 200
         assert listed.json() == []
     engine.dispose()
+
+
+def test_a_refused_export_directory_ends_in_a_fixed_message_with_no_traceback(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    # `prepare()` runs before the use case's own try in earlier revisions of this
+    # module; a directory open to group or other must still end in one fixed line,
+    # never a traceback on the real stderr `capsys` observes.
+    db_path = tmp_path / "apostrophe.db"
+    export_dir = tmp_path / "exports"
+    export_dir.mkdir(mode=0o755)
+    _seed(db_path)
+    _env(monkeypatch, db_path, export_dir)
+    stdout = io.StringIO()
+
+    result = main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=stdout)
+
+    assert result == 1
+    assert stdout.getvalue() == "Failed: nothing deleted.\n"
+    captured = capsys.readouterr()
+    assert captured.err == ""
+    assert captured.out == ""
+    assert list(export_dir.glob("*.json")) == []

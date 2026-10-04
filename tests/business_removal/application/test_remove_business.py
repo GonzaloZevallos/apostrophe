@@ -72,12 +72,15 @@ class FakeSchemaRows:
     _invitation_count: int = 2
     _mismatch: bool = False
     _delete_fails: BaseException | None = None
+    _business_of_fails: BaseException | None = None
     delete_calls: list[tuple[str, ...]] = field(default_factory=list)
 
     def schema(self) -> Schema:
         return self._schema
 
     def business_of(self, email: str) -> BusinessRef | None:
+        if self._business_of_fails is not None:
+            raise self._business_of_fails
         return self._business if email == EMAIL else None
 
     def rows(self, table: str, business_id: int) -> list[dict[str, Any]]:
@@ -243,6 +246,20 @@ def test_dry_run_refuses_a_schema_with_a_table_that_has_no_business_id() -> None
     assert "mystery" in output.lines[0]
 
 
+def test_dry_run_ends_in_a_fixed_message_when_a_port_raises() -> None:
+    # `business_of` can hit a database error whose own text might carry the email
+    # it was given; the use case must never let that text, or a traceback, out.
+    schema_rows = FakeSchemaRows(
+        _schema(), BUSINESS, _rows(), _business_of_fails=RuntimeError(EMAIL)
+    )
+    output = FakeOutput()
+
+    result = dry_run(schema_rows, output, EMAIL)
+
+    assert result == 1
+    assert output.lines == [FAILED_MESSAGE]
+
+
 def test_remove_business_succeeds_end_to_end() -> None:
     schema_rows = FakeSchemaRows(_schema(), BUSINESS, _rows())
 
@@ -264,6 +281,20 @@ def test_remove_business_refuses_a_schema_with_a_table_that_has_no_business_id()
     assert result == 1
     assert export_file.prepared is False
     assert transaction.committed is False
+
+
+def test_remove_business_ends_in_a_fixed_message_when_business_of_raises() -> None:
+    schema_rows = FakeSchemaRows(
+        _schema(), BUSINESS, _rows(), _business_of_fails=RuntimeError(EMAIL)
+    )
+
+    result, export_file, transaction, output = _remove(schema_rows)
+
+    assert result == 1
+    assert output.lines == [FAILED_MESSAGE]
+    assert export_file.prepared is False
+    assert transaction.committed is False
+    assert transaction.rolled_back is True
 
 
 def test_remove_business_reports_an_unknown_email_and_touches_nothing() -> None:
