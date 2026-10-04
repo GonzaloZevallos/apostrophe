@@ -189,14 +189,21 @@ def mapping(
 
 _SHEET_XML_NAME = re.compile(r"xl/worksheets/sheet\d+\.xml")
 _DIMENSION = re.compile(r"<dimension[^/]*/>")
-_CELL = re.compile(r"<c\b([^>]*)>(.*?)</c>", re.DOTALL)
 _T_ATTRIBUTE = re.compile(r'\bt="([^"]*)"')
 _INTEGER_VALUE = re.compile(r"(<v>)(-?\d+)(</v>)")
+# A self-closing `<c .../>` (an empty cell, e.g. an inline string with nothing in
+# it) is tried first: without it, the lazy `(.*?)</c>` below would cross straight
+# over it looking for the next `</c>`, swallowing the following cell's own content
+# along with it and leaving a numeric cell right after an empty one untouched.
+_CELL = re.compile(r"<c\b[^>]*/>|<c\b(?P<attrs>[^>]*)>(?P<inner>.*?)</c>", re.DOTALL)
 
 
 def _floatify_numeric_cells(xml: str) -> str:
     def cell(match: Match[str]) -> str:
-        attributes, inner = match.group(1), match.group(2)
+        attributes = match.group("attrs")
+        if attributes is None:
+            return match.group(0)  # a self-closing, empty cell: nothing to floatify
+        inner = match.group("inner")
         type_match = _T_ATTRIBUTE.search(attributes)
         # No `t` attribute at all means numeric too (the OOXML default).
         cell_type = type_match.group(1) if type_match else "n"

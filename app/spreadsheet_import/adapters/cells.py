@@ -178,11 +178,13 @@ def _to_indica(value: _CellGetValue) -> int | str | None:
     """`% índica` is neither Grams, pesos, a date nor text, so it is read as the
     plain value it is: a true `int` or a whole float stays the whole number;
     anything else present becomes its own text, left for the owner's check to
-    refuse (CatalogRow's own type, fixed by `contract`)."""
+    refuse (CatalogRow's own type, fixed by `contract`). A `bool`, like in every
+    other reader, never becomes a number or text: it raises instead, so it is a
+    reader cell-problem, never `catalog.indica_share_invalid`."""
     if _is_blank(value):
         return None
     if isinstance(value, bool):
-        return str(value)
+        raise _CellError("indica_not_numeric")
     if isinstance(value, (int, float)):
         whole = _whole_or_none(value)
         if whole is not None:
@@ -195,8 +197,8 @@ def _to_text_or_number(value: _CellGetValue) -> str | None:
     category names, `Detalle`, `Nota`, `Aroma`, the header and footer, `Origen`,
     `Pago`, `Tipo` and Catálogo's shown column. A number reads back as the text a
     seller would have typed (`_number_text`, never an exponent or a `.0`); a `bool`
-    and a date/datetime/time follow `_to_text`'s own rules (the check order the
-    plan fixes: bool, then date/time, then number, then text)."""
+    is checked first and always raises (never text); anything else — a
+    date/datetime/time included — follows `_to_text`'s own rules."""
     if isinstance(value, bool):
         raise _CellError("text_invalid")
     if isinstance(value, (int, float)):
@@ -259,9 +261,12 @@ def _last_row(grid: _Grid) -> int:
 def _locate_columns(
     grid: _Grid, sheet: str, titles: tuple[str, ...]
 ) -> tuple[dict[str, int], list[CellProblem]]:
-    title_row = grid[layout.TITLE_ROW - 1] if 0 < layout.TITLE_ROW <= len(grid) else ()
+    # `_at` is the only code that reads a cell's value out of `grid`; this only
+    # measures how far a row can possibly reach, the same kind of structural look
+    # `_last_row` takes, never a cell's value.
+    width = max((len(row) for row in grid), default=0)
     present: list[str] = []
-    for column in range(1, len(title_row) + 1):
+    for column in range(1, width + 1):
         value = _at(grid, layout.TITLE_ROW, column)
         text = _to_text(value) if isinstance(value, str) or value is None else str(value)
         present.append(text or "")
@@ -494,7 +499,10 @@ def _read_total(value: _CellGetValue) -> int | Decimal | str | None:
     if value is None:
         return None
     if isinstance(value, bool):
-        return str(value)
+        # Never a number or text (the plan's invariant, every reader): a cached
+        # Total can't sensibly be a bool either way, so it is treated the same as a
+        # formula with nothing cached — `not_recalculated`, never a value.
+        return None
     if isinstance(value, int):
         return value
     if isinstance(value, float):
