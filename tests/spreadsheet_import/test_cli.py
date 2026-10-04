@@ -166,23 +166,31 @@ def test_dry_run_writes_nothing_and_reports_the_counts(
 
 
 def test_real_run_imports_and_the_figures_match(
-    client: TestClient, engine: Engine, clock: MovableClock, tmp_path: Path
+    client: TestClient,
+    engine: Engine,
+    clock: MovableClock,
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
 ) -> None:
     business_id = _business_id(engine)
     xlsx = _save_workbook(_workbook(), tmp_path)
     mapping = _save_mapping(tmp_path, ((CUSTOMER, PHONE),))
     out, err = io.StringIO(), io.StringIO()
 
-    code = run(
-        [str(business_id), str(xlsx), str(mapping)],
-        engine=engine,
-        clock=clock,
-        out=out,
-        err=err,
-    )
+    with caplog.at_level(logging.DEBUG):
+        code = run(
+            [str(business_id), str(xlsx), str(mapping)],
+            engine=engine,
+            clock=clock,
+            out=out,
+            err=err,
+        )
 
     assert code == 0, err.getvalue()
     assert err.getvalue() == ""
+    assert caplog.records == []
+    assert PHONE not in out.getvalue()
+    assert not _DIGIT_RUN.search(out.getvalue())
 
     varieties = client.get("/varieties").json()
     assert len(varieties) == 1
@@ -563,11 +571,13 @@ def test_a_business_with_only_renamed_or_removed_seeded_categories_is_accepted(
 def test_recording_order_follows_date_then_sheet_row(
     client: TestClient, engine: Engine, clock: MovableClock, tmp_path: Path
 ) -> None:
-    """Two Entradas share a date but are costed differently, listed in the sheet in
-    the order they should be *recorded* in; two Ventas rows of one customer share a
-    date too; and a negative `Ajuste` lands on the sale's own date. If recording order
-    ignored sheet order (or used it instead of date first), the costs and the account
-    below would come out differently."""
+    """Both Entradas and Ventas list a later date above an earlier one in the sheet:
+    only sorting by date first, never by sheet order, gets the lots and the account
+    right. A negative `Ajuste`, dated the same day as the earlier sale, is recorded
+    before every sale (ADR-0009's lot order ranks a stock entry ahead of a sale line on
+    a tied day) and is sized to drain enough of the cheaper lot that the earlier sale
+    spans both lots — a line cost that would come out differently had sheet order,
+    rather than date, decided what got recorded first."""
     workbook = Workbook()
     active = workbook.active
     assert active is not None
@@ -583,21 +593,24 @@ def test_recording_order_follows_date_then_sheet_row(
 
     entradas = workbook.create_sheet(layout.ENTRADAS_SHEET)
     _titles(entradas, ENTRADAS_TITLES)
-    # Same date, different cost per gram: sheet row decides which lot is "older".
-    entradas.cell(row=2, column=1, value=date(2026, 1, 5))
+    # Row 2: the LATER-dated, costlier lot, listed FIRST in the sheet.
+    entradas.cell(row=2, column=1, value=date(2026, 1, 10))
     entradas.cell(row=2, column=2, value=VARIETY)
     entradas.cell(row=2, column=3, value=10)
     entradas.cell(row=2, column=4, value="Compra")
-    entradas.cell(row=2, column=5, value=1000)  # 100/g, row 2: recorded first
-    entradas.cell(row=3, column=1, value=date(2026, 1, 5))
+    entradas.cell(row=2, column=5, value=1000)  # 100/g
+    # Row 3: the EARLIER-dated, cheaper lot, listed SECOND — date must still win.
+    entradas.cell(row=3, column=1, value=date(2026, 1, 1))
     entradas.cell(row=3, column=2, value=VARIETY)
     entradas.cell(row=3, column=3, value=10)
     entradas.cell(row=3, column=4, value="Compra")
-    entradas.cell(row=3, column=5, value=500)  # 50/g, row 3: recorded second
-    # A negative adjustment on the sale's own date.
-    entradas.cell(row=4, column=1, value=date(2026, 1, 10))
+    entradas.cell(row=3, column=5, value=500)  # 50/g
+    # Row 4: a negative adjustment on the earlier sale's own date, draining 8 g of the
+    # cheap lot. Entradas write before any Ventas, and a tied-day stock entry ranks
+    # ahead of a sale line, so this is always recorded before that sale draws stock.
+    entradas.cell(row=4, column=1, value=date(2026, 1, 15))
     entradas.cell(row=4, column=2, value=VARIETY)
-    entradas.cell(row=4, column=3, value=-2)
+    entradas.cell(row=4, column=3, value=-8)
     entradas.cell(row=4, column=4, value="Ajuste")
 
     gastos = workbook.create_sheet(layout.GASTOS_SHEET)
@@ -605,14 +618,17 @@ def test_recording_order_follows_date_then_sheet_row(
 
     ventas = workbook.create_sheet(layout.VENTAS_SHEET)
     _titles(ventas, VENTAS_TITLES)
-    ventas.cell(row=2, column=1, value=date(2026, 1, 10))
+    # Row 2: the LATER-dated sale, listed FIRST in the sheet.
+    ventas.cell(row=2, column=1, value=date(2026, 1, 20))
     ventas.cell(row=2, column=2, value=VARIETY)
     ventas.cell(row=2, column=3, value=5)
     ventas.cell(row=2, column=4, value="Pendiente")
     ventas.cell(row=2, column=5, value=5000)
     ventas.cell(row=2, column=6, value=CUSTOMER)
     ventas.cell(row=2, column=7, value="")
-    ventas.cell(row=3, column=1, value=date(2026, 1, 10))
+    # Row 3: the EARLIER-dated sale, listed SECOND — date must still win. It shares
+    # the adjustment's own date, so the adjustment lands before it.
+    ventas.cell(row=3, column=1, value=date(2026, 1, 15))
     ventas.cell(row=3, column=2, value=VARIETY)
     ventas.cell(row=3, column=3, value=3)
     ventas.cell(row=3, column=4, value="Pendiente")
@@ -630,24 +646,33 @@ def test_recording_order_follows_date_then_sheet_row(
     )
     assert code == 0, err.getvalue()
 
-    # 20 g bought in, 2 g adjusted out, 8 g sold: 10 g left.
+    # 20 g bought in, 8 g adjusted out, 3 g + 5 g sold: 4 g left, all in the 100/g lot.
     stock = client.get("/stock").json()
-    assert stock["varieties"][0]["grams"] == 10.0
+    assert stock["varieties"][0]["grams"] == 4.0
 
     customers = client.get("/customers").json()
     assert len(customers) == 1
     customer_id = customers[0]["id"]
     assert customers[0]["balance"] == 8000
+    # The earliest unpaid sale is the 01-15 one (row 3), not row 2's 01-20, whatever
+    # the sheet's own order was.
+    assert customers[0]["owing_since"] == "2026-01-15"
 
     account = client.get(f"/customers/{customer_id}/account").json()
     sale_rows = [row for row in account["rows"] if row["kind"] == "sale"]
-    assert [row["sale"]["total"] for row in sale_rows] == [5000, 3000]
-    assert [row["running_balance"] for row in sale_rows] == [5000, 8000]
+    # The earlier-dated sale (3000, row 3) settles first, even though row 2 (5000)
+    # comes first in the sheet.
+    assert [row["sale"]["total"] for row in sale_rows] == [3000, 5000]
+    assert [row["running_balance"] for row in sale_rows] == [3000, 8000]
 
     sale_ids = [row["sale"]["id"] for row in sale_rows]
-    first_detail = client.get(f"/sales/{sale_ids[0]}").json()
-    second_detail = client.get(f"/sales/{sale_ids[1]}").json()
-    # Both lines draw from the 100/g lot (row 2, recorded first on the tied date):
-    # 5 g then 3 g, exactly the 8 g left in it after the -2 g adjustment.
-    assert first_detail["lines"][0]["cost"]["costed"] == 500
-    assert second_detail["lines"][0]["cost"]["costed"] == 300
+    earliest_detail = client.get(f"/sales/{sale_ids[0]}").json()
+    latest_detail = client.get(f"/sales/{sale_ids[1]}").json()
+    # The adjustment drains 8 g of the 10 g, 50/g lot first (it is recorded before
+    # every sale and ranks ahead of the earliest one on their shared day), leaving it
+    # only 2 g: the earliest sale's 3 g spans both lots (2 g @ 50 + 1 g @ 100 = 200),
+    # and the latest sale's 5 g comes entirely from the 100/g lot (500). Had sheet
+    # order, rather than date, decided which lot came first, or had the adjustment
+    # landed anywhere else, both figures would come out differently.
+    assert earliest_detail["lines"][0]["cost"]["costed"] == 200
+    assert latest_detail["lines"][0]["cost"]["costed"] == 500
