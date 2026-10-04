@@ -97,16 +97,30 @@ def test_an_invitation_works_once_within_seven_days() -> None:
     invitation = Invitation(InvitationKind.NEW_BUSINESS, token_digest("t"), NOW)
 
     assert not invitation.is_usable(NOW + timedelta(days=7))
-    invitation.use(NOW + timedelta(days=6))
+    invitation.use(NOW + timedelta(days=6), opened_business_id=1)
     with pytest.raises(InvitationNotUsable):
-        invitation.use(NOW + timedelta(days=6))
+        invitation.use(NOW + timedelta(days=6), opened_business_id=1)
 
 
-def test_a_join_invitation_names_its_business_and_a_new_business_one_does_not() -> None:
+def test_a_join_invitation_names_its_business_and_a_new_business_one_does_not_until_used() -> None:
     with pytest.raises(ValueError):
         Invitation(InvitationKind.JOIN_BUSINESS, token_digest("t"), NOW)
     with pytest.raises(ValueError):
         Invitation(InvitationKind.NEW_BUSINESS, token_digest("t"), NOW, business_id=1)
+    # Valid once used: a spent new-business invitation does name its business.
+    Invitation(InvitationKind.NEW_BUSINESS, token_digest("t"), NOW, business_id=1, used_at=NOW)
+
+
+def test_use_records_the_opened_business_only_for_a_new_business_invitation() -> None:
+    opening = Invitation(InvitationKind.NEW_BUSINESS, token_digest("t"), NOW)
+    with pytest.raises(ValueError):
+        opening.use(NOW)  # a new-business invitation must say which business it opened
+
+    joining = Invitation(InvitationKind.JOIN_BUSINESS, token_digest("t2"), NOW, business_id=1)
+    with pytest.raises(ValueError):
+        joining.use(NOW, opened_business_id=2)  # it already names its business
+    joining.use(NOW)
+    assert joining.business_id == 1
 
 
 def test_five_failures_in_a_row_lock_for_fifteen_minutes() -> None:

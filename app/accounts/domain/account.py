@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime
 from typing import ClassVar
 
 BUSINESS_NAME_MAX_LENGTH = 60
@@ -90,3 +91,4 @@ class User:
     email: Email
     password_hash: str
     id: int | None = None
+    joined_at: datetime | None = None
