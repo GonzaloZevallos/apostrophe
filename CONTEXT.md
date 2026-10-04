@@ -285,3 +285,15 @@ _Avoid_: dashboard, overview, home, summary, Análisis
 **Average sale**:
 A period's sales total, shipping included, divided by its number of sales (not lines), rounded half up to the whole peso. Not shown when the period has no sales.
 _Avoid_: average ticket, mean order, ticket promedio
+
+**Operator**:
+Whoever runs the installation from outside the app: runs scripts/invite-business.sh, deploys, keeps the backups and runs the restore drill. A role, never a user in the app; nothing they do happens from a signed-in session.
+_Avoid_: admin, administrator, superuser, owner, PM
+
+**Login brake**:
+What stops password guessing at login: an email is locked after 5 failures in a row, and a client address after 20 failed logins within 15 minutes, each for 15 minutes. Every refused attempt counts for both, a success resets only the email's count, and both answer the same. _In the app_: the brake message under Entrar.
+_Avoid_: rate limit, throttle, ban, captcha
+
+**Restore drill**:
+A script the operator runs by hand to restore the backup into a scratch target, never the running app. It reports the integrity check, row counts and the time of the restored copy's latest change.
+_Avoid_: backup test, recovery check, DR test
