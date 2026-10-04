@@ -23,7 +23,9 @@ import accountFixture from '../../api/fixtures/account.json'
 import paymentFixture from '../../api/fixtures/payment.json'
 import paymentPreviewFixture from '../../api/fixtures/payment-preview.json'
 import type { Me } from '../../api/me'
+import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import { readNewSaleState } from '../../components/feedback'
+import { SIN_CONEXION_TITULO } from '../../components/SinConexion'
 import ClienteFicha from './ClienteFicha'
 
 const ME: Me = { email: 'a@b.com', business_name: 'Negocio', today: '2026-10-03' }
@@ -446,6 +448,69 @@ test('a payment deleted by a partner meanwhile shows the gone notice, never the 
 
   expect(await screen.findByText('Eso ya no está. La lista ya está al día.')).toBeInTheDocument()
   expect(screen.queryByText('Cobro eliminado')).not.toBeInTheDocument()
+})
+
+const ACCOUNT_WITH_ONE_PAYMENT = {
+  balance: 6000,
+  owing_since: '2026-09-14',
+  standing: 'owes',
+  rows: [
+    {
+      kind: 'payment',
+      date: '2026-09-20',
+      running_balance: 6000,
+      standing: 'owes',
+      payment: { id: 5, paid_on: '2026-09-20', amount: 5000, method: 'cash' },
+      applied_to: { sale_id: 10, sale_date: '2026-09-14', amount: 5000 },
+    },
+  ],
+}
+
+test('Borrar cobro when the connection drops shows "Sin conexión", never the generic retry or the gone notice', async () => {
+  const base = dispatchFetch({
+    'GET /customers/1': () => jsonResponse(200, OWING_CUSTOMER),
+    'GET /customers/1/account': () => jsonResponse(200, ACCOUNT_WITH_ONE_PAYMENT),
+  })
+  // Same mechanism `client.test.ts` uses to turn a dropped connection into a
+  // `NetworkError`: the fetch mock rejects, never resolves with a response.
+  vi.mocked(fetch).mockImplementation((input, init) => {
+    const method = init?.method ?? 'GET'
+    if (method === 'DELETE') return Promise.reject(new TypeError('Failed to fetch'))
+    return base(input, init)
+  })
+  renderFicha('1')
+
+  const borrar = await screen.findByRole('button', { name: 'Borrar cobro' })
+  await userEvent.click(borrar)
+  await userEvent.click(screen.getByRole('button', { name: 'Sí, borralo' }))
+
+  expect(await screen.findByText(SIN_CONEXION_TITULO)).toBeInTheDocument()
+  expect(screen.queryByText(ERROR_GENERICO_MENSAJE)).not.toBeInTheDocument()
+  expect(screen.queryByText('Eso ya no está. La lista ya está al día.')).not.toBeInTheDocument()
+  expect(screen.queryByText('Cobro eliminado')).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Borrar cobro' })).toBeInTheDocument()
+})
+
+test('Borrar cobro refused for a reason other than "gone" shows the generic retry, never "Sin conexión" or the gone notice', async () => {
+  vi.mocked(fetch).mockImplementation(
+    dispatchFetch({
+      'GET /customers/1': () => jsonResponse(200, OWING_CUSTOMER),
+      'GET /customers/1/account': () => jsonResponse(200, ACCOUNT_WITH_ONE_PAYMENT),
+      'DELETE /payments/5': () =>
+        jsonResponse(409, { detail: 'ya se cobró al momento', code: 'payment.on_the_spot' }),
+    }),
+  )
+  renderFicha('1')
+
+  const borrar = await screen.findByRole('button', { name: 'Borrar cobro' })
+  await userEvent.click(borrar)
+  await userEvent.click(screen.getByRole('button', { name: 'Sí, borralo' }))
+
+  expect(await screen.findByText(ERROR_GENERICO_MENSAJE)).toBeInTheDocument()
+  expect(screen.queryByText(SIN_CONEXION_TITULO)).not.toBeInTheDocument()
+  expect(screen.queryByText('Eso ya no está. La lista ya está al día.')).not.toBeInTheDocument()
+  expect(screen.queryByText('Cobro eliminado')).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Borrar cobro' })).toBeInTheDocument()
 })
 
 test('a payment above the balance shows the fixed refusal inline and keeps what was typed', async () => {
