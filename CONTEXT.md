@@ -309,7 +309,7 @@ A period's sales total, shipping included, divided by its number of sales (not l
 _Avoid_: average ticket, mean order, ticket promedio
 
 **Operator**:
-The person who runs the installation from outside the app: runs scripts/invite-business.sh and the business removal, deploys, keeps the backups and runs the restore drill. Not a user of any business; nothing they do happens from a signed-in session.
+The person who runs the installation from outside the app. They run scripts/invite-business.sh, scripts/reset-password.sh and the business removal, deploy, keep the backups and run the restore drill. Not a user of any business; nothing they do happens from a signed-in session, and they never see or choose a user's password.
 _Avoid_: admin, administrator, superuser, owner, PM
 
 **Business export**:
@@ -322,7 +322,7 @@ _Avoid_: offboarding, account deletion, purge, wipe
 
 
 **Login brake**:
-What stops password guessing at login: an email is locked after 5 failures in a row, and a client address after 20 failed logins within 15 minutes, each for 15 minutes. Every refused attempt counts for both, a success resets only the email's count, and both answer the same. _In the app_: the brake message under Entrar.
+What stops password guessing at login and at a password change. An email is locked after 5 failures in a row, and a client address after 20 failed logins within 15 minutes, each for 15 minutes. Every refused attempt counts for both, a wrong current password on a password change included. A successful login, password change or reset resets only the email's count, and both locks answer the same. _In the app_: the brake message under Entrar and in Cambiar contraseña.
 _Avoid_: rate limit, throttle, ban, captcha
 
 **Restore drill**:
@@ -337,3 +337,15 @@ _Avoid_: migration, sync, upload, restore
 A row of Ventas, Entradas or Gastos that the spreadsheet import leaves out because the sheet itself marks it not ready: Ventas by text instead of a number in its Total formula, Entradas and Gastos by a non-blank Revisar. It is listed in the import's report with the sheet's own text, creates no customer, no VIP and no kept spelling, and never blocks the import.
 _Avoid_: incomplete row, invalid row, skipped row
 _In the app_: (operator terminal only; never shown on screen)
+
+**Session**:
+A signed-in device of one user, lasting 30 days as a cookie and a token. A change of that user's password closes every session of theirs, except the device that changed it by Change, which gets a fresh one. _In the app_: Sesión (Cerrar sesión).
+_Avoid_: login, device, token, connection
+
+**Password change**:
+A user setting a new password from Negocio with their current one. The only rule is at least 10 characters, and the same password is accepted. It closes every other session of that user and retires their unused reset links, while the device that made the change stays signed in. _In the app_: Cambiar contraseña.
+_Avoid_: password update, rotation, edit password
+
+**Reset link**:
+A link the operator prints with scripts/reset-password.sh that lets one user choose a new password themselves, once, within 24 hours, without the current one. A user has at most one live link: a newer link or any password change retires it. A retired, used, expired or unknown link answers the same 404. _In the app_: enlace ("Este enlace ya no sirve").
+_Avoid_: recovery code, reset token, magic link, forgot-password email
