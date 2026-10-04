@@ -1043,35 +1043,106 @@ button {
   font-weight: 600;
 }
 
-/* `VentaDetalle`: each line's rule badge next to its variety, same pill shape as
- * `.vip-insignia`, just its own neutral tone (a rule is not a status). */
+/* `VentaDetalle` (`VentaDetalle.dc.html`): the total's own label and the summary
+ * line of grams · customer · payment underneath it. */
+.venta-detalle__resumen {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.venta-detalle__subtitulo {
+  font-size: 14px;
+  color: var(--tinta2);
+}
+
+.venta-detalle__encabezado-lineas {
+  display: block;
+  font-size: 14px;
+  color: var(--tinta2);
+  margin-bottom: var(--espacio-xs);
+}
+
 .venta-detalle__lineas {
   display: flex;
   flex-direction: column;
-  gap: var(--espacio-sm);
 }
 
+/* Each line is two rows (`VentaDetalle.dc.html`): the name and its grams as a
+ * large figure, then its price per gram, `ReglaInsignia` and the line total. */
 .venta-detalle__linea {
   display: flex;
-  align-items: center;
-  gap: var(--espacio-sm);
+  flex-direction: column;
+  gap: 7px;
   padding: var(--espacio-sm) 0;
   border-bottom: 1px solid var(--linea);
+}
+
+.venta-detalle__linea-superior {
+  display: flex;
+  align-items: baseline;
+  gap: var(--espacio-sm);
 }
 
 .venta-detalle__variedad {
   flex: 1;
   min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 7px;
+  font-size: 18px;
   font-weight: 600;
 }
 
-.venta-detalle__gramos,
+.venta-detalle__gramos {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+}
+
+.venta-detalle__linea-inferior {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-xs);
+}
+
 .venta-detalle__precio {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--tinta2);
+}
+
+/* The shipping row and the final Total row, right under the lines, same border
+ * rhythm; the last row (the Total) carries no bottom border. */
+.venta-detalle__renglon {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-sm);
+  padding: 13px 0;
+  border-bottom: 1px solid var(--linea);
+  font-size: 16px;
+}
+
+.venta-detalle__renglon--total {
+  border-bottom: 0;
+}
+
+.venta-detalle__renglon-monto {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.venta-detalle__renglon--total .venta-detalle__renglon-monto {
+  font-size: 20px;
+}
+
+.venta-detalle__nota {
+  display: block;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.venta-detalle__acciones {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 /* `Inicio`, now the panel (`results.md`): the "Vendiste..." figure, Ganancia/Caja
@@ -1164,6 +1235,8 @@ button {
 }
 
 .venta-detalle__total {
+  margin-left: auto;
+  font-size: 18px;
   font-weight: 600;
 }
 
