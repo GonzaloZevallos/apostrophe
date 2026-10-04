@@ -191,6 +191,7 @@ export default function NuevaVenta() {
   const [paymentError, setPaymentError] = useState<string | null>(null)
   const [offline, setOffline] = useState(false)
   const [focusRequest, setFocusRequest] = useState<{
+    lineKey: string
     field: 'variety' | 'grams' | 'specialPrice'
     nonce: number
   } | null>(null)
@@ -392,9 +393,12 @@ export default function NuevaVenta() {
   // request's own `nonce` (never reset) is what re-triggers the effect on a
   // second save with the same field at fault — a plain `setState` inside the
   // effect would only start another, unnecessary render (oxlint's own
-  // `set-state-in-effect`).
+  // `set-state-in-effect`). Guarded on `openKey === focusRequest.lineKey`, so a
+  // stale request from an earlier save never steals focus back from a line the
+  // seller opened by hand afterwards — only the field this same request named,
+  // on the line it named, is ever focused.
   useEffect(() => {
-    if (focusRequest === null) return
+    if (focusRequest === null || focusRequest.lineKey !== openKey) return
     const ref =
       focusRequest.field === 'grams'
         ? gramsFieldRef
@@ -429,7 +433,11 @@ export default function NuevaVenta() {
     if (firstInError !== undefined) {
       openLine(firstInError.key)
       focusNonceRef.current += 1
-      setFocusRequest({ field: fieldForError(firstInError), nonce: focusNonceRef.current })
+      setFocusRequest({
+        lineKey: firstInError.key,
+        field: fieldForError(firstInError),
+        nonce: focusNonceRef.current,
+      })
       return
     }
 
@@ -489,7 +497,7 @@ export default function NuevaVenta() {
         if (flagged !== undefined) {
           openLine(flagged.key)
           focusNonceRef.current += 1
-          setFocusRequest({ field: 'variety', nonce: focusNonceRef.current })
+          setFocusRequest({ lineKey: flagged.key, field: 'variety', nonce: focusNonceRef.current })
         }
         return
       }
