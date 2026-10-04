@@ -27,10 +27,11 @@ Three functions:
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date
 
 from app.shared.grams import Grams
+from app.shared.names import collapse_spaces
 from app.spreadsheet_import.domain.rows import (
     CatalogRow,
     CategoryRow,
@@ -38,6 +39,8 @@ from app.spreadsheet_import.domain.rows import (
     EntradaRow,
     GastoRow,
     HeaderFooterCells,
+    MappingEntry,
+    ParsedMapping,
     ParsedWorkbook,
     PriceHistoryRow,
     SheetRef,
@@ -66,9 +69,12 @@ class VarietyKey:
 
 @dataclass(frozen=True)
 class CustomerKey:
-    """Mirrors `application.ports.CustomerKey`. Never printed."""
+    """Mirrors `application.ports.CustomerKey`. Never printed: `repr=False` so an
+    assertion message or a traceback involving this value never shows it either (the
+    plan's invariant: no phone number appears in any report line, exception message,
+    stdout or stderr)."""
 
-    phone_key: str
+    phone_key: str = field(repr=False)
 
 
 @dataclass(frozen=True)
@@ -238,3 +244,340 @@ def sale_inputs(
             )
         )
     return results
+
+
+# -- build_plan --------------------------------------------------------------------------
+
+_MAPPING_SHEET = "Mapeo"
+
+
+@dataclass(frozen=True)
+class Checks:
+    """Every owner check's result, gathered by `application/plan_import.py` (not this
+    module's job: domain never calls a port) and handed to `build_plan` in one bundle.
+    Row-shaped results are keyed by `SheetRef`; name-shaped results by the raw text the
+    owner was asked to check — both kept as plain mappings so a test builds only the
+    entries its scenario needs."""
+
+    variety_names: Mapping[str, VarietyKey | Refusal] = field(default_factory=dict)
+    thresholds: Mapping[SheetRef, Refusal | None] = field(default_factory=dict)
+    price_history: Mapping[SheetRef, Refusal | None] = field(default_factory=dict)
+    catalog_attributes: Mapping[SheetRef, Refusal | None] = field(default_factory=dict)
+    header_footer: Refusal | None = None
+    category_names: Mapping[str, str | Refusal] = field(default_factory=dict)
+    expenses: Mapping[SheetRef, Refusal | None] = field(default_factory=dict)
+    entradas: Mapping[SheetRef, Refusal | None] = field(default_factory=dict)
+    customers: Mapping[str, CustomerKey | Refusal] = field(default_factory=dict)
+    sales: Mapping[SheetRef, SaleCheck] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class Mismatch:
+    """One finished Ventas row whose sheet `Total` (shipping included) differs from
+    the recomputed total. Never blocks."""
+
+    ref: SheetRef
+    sheet_total: int
+    recomputed_total: int
+
+
+@dataclass(frozen=True)
+class MergedCategory:
+    """Two or more Ajustes A21:A28 names that match under expenses.md's rule, become
+    one category."""
+
+    key: str
+    names: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class PlannedCustomer:
+    """One customer this import would write: one or more spellings sharing a phone
+    number, named after the spelling on the most recent finished Ventas row (ties: the
+    lowest row in the sheet, i.e. the one furthest down, wins), VIP when any of those
+    rows is a finished `Amigo` row. `phone_key` never appears in its own `repr`."""
+
+    kept_name: str
+    spellings: tuple[str, ...]
+    vip: bool
+    phone_key: str = field(repr=False)
+
+
+@dataclass(frozen=True)
+class Counts:
+    """Counts per kind of record, for the report."""
+
+    varieties: int
+    price_entries: int
+    catalog_attributes: int
+    stock_entries: int
+    expense_categories: int
+    expenses: int
+    customers: int
+    sales: int
+    payments: int
+
+
+@dataclass(frozen=True)
+class ImportPlan:
+    """Every rule this import's domain owns, collected in one pass. Writable only
+    when it has no problems."""
+
+    problems: tuple[CellProblem, ...]
+    unfinished: tuple[UnfinishedRow, ...]
+    mismatches: tuple[Mismatch, ...]
+    customers: tuple[PlannedCustomer, ...]
+    merged_categories: tuple[MergedCategory, ...]
+    unused_mapping_entries: tuple[str, ...]
+    counts: Counts
+    entrada_order: tuple[EntradaRow, ...]
+    venta_order: tuple[VentaRow, ...]
+
+    @property
+    def writable(self) -> bool:
+        return not self.problems
+
+    @property
+    def merged_customers(self) -> tuple[PlannedCustomer, ...]:
+        return tuple(customer for customer in self.customers if len(customer.spellings) > 1)
+
+
+def _entrada_sort_key(row: EntradaRow) -> tuple[date, int]:
+    assert row.entry_date is not None
+    return (row.entry_date, row.ref.row)
+
+
+def _venta_sort_key(row: VentaRow) -> tuple[date, int]:
+    assert row.sale_date is not None
+    return (row.sale_date, row.ref.row)
+
+
+def _check_variety_mention(
+    ref: SheetRef,
+    raw: str | None,
+    column: str,
+    variety_names: Mapping[str, VarietyKey | Refusal],
+    valid_keys: set[str],
+    problems: list[CellProblem],
+) -> None:
+    if raw is None:
+        return
+    result = variety_names.get(raw)
+    if isinstance(result, Refusal):
+        problems.append(CellProblem(ref, column, result.code))
+        return
+    if result is None:
+        return
+    if result.key not in valid_keys:
+        problems.append(CellProblem(ref, column, "import.unknown_variety"))
+
+
+def build_plan(split: Split, mapping: ParsedMapping, checks: Checks) -> ImportPlan:
+    problems: list[CellProblem] = [*split.problems, *mapping.problems]
+    mismatches: list[Mismatch] = []
+
+    # -- Varieties: resolve keys, block duplicates, build the valid-key set. ---------
+    valid_variety_keys: set[str] = set()
+    seen_variety_keys: set[str] = set()
+    for row in split.varieties:
+        result = checks.variety_names.get(row.raw_name)
+        if isinstance(result, Refusal):
+            problems.append(CellProblem(row.ref, "Variedad", result.code))
+            continue
+        if result is None:
+            continue
+        if result.key in seen_variety_keys:
+            problems.append(CellProblem(row.ref, "Variedad", "import.duplicate_variety"))
+            continue
+        seen_variety_keys.add(result.key)
+        valid_variety_keys.add(result.key)
+        threshold_refusal = checks.thresholds.get(row.ref)
+        if threshold_refusal is not None:
+            problems.append(CellProblem(row.ref, "Umbral", threshold_refusal.code))
+
+    for history_row in split.price_history:
+        _check_variety_mention(
+            history_row.ref,
+            history_row.variety,
+            "Variedad",
+            checks.variety_names,
+            valid_variety_keys,
+            problems,
+        )
+        refusal = checks.price_history.get(history_row.ref)
+        if refusal is not None:
+            problems.append(CellProblem(history_row.ref, "Precio", refusal.code))
+
+    for catalog_entry in split.catalog:
+        _check_variety_mention(
+            catalog_entry.ref,
+            catalog_entry.variety,
+            "Variedad",
+            checks.variety_names,
+            valid_variety_keys,
+            problems,
+        )
+        refusal = checks.catalog_attributes.get(catalog_entry.ref)
+        if refusal is not None:
+            problems.append(CellProblem(catalog_entry.ref, "Catálogo", refusal.code))
+
+    if checks.header_footer is not None:
+        problems.append(
+            CellProblem(SheetRef("Catálogo", 18), "Encabezado", checks.header_footer.code)
+        )
+
+    for entrada in split.entradas:
+        _check_variety_mention(
+            entrada.ref,
+            entrada.variety,
+            "Variedad",
+            checks.variety_names,
+            valid_variety_keys,
+            problems,
+        )
+        refusal = checks.entradas.get(entrada.ref)
+        if refusal is not None:
+            problems.append(CellProblem(entrada.ref, "Entradas", refusal.code))
+
+    # -- Categories: match or merge Ajustes A21:A28, block an outside category. ------
+    category_groups: dict[str, list[str]] = {}
+    valid_category_keys: set[str] = set()
+    for category_entry in split.categories:
+        category_result = checks.category_names.get(category_entry.raw_name)
+        if isinstance(category_result, Refusal):
+            problems.append(CellProblem(category_entry.ref, "Categoría", category_result.code))
+            continue
+        if category_result is None:
+            continue
+        valid_category_keys.add(category_result)
+        names = category_groups.setdefault(category_result, [])
+        if category_entry.raw_name not in names:
+            names.append(category_entry.raw_name)
+
+    merged_categories = tuple(
+        MergedCategory(key=key, names=tuple(names))
+        for key, names in category_groups.items()
+        if len(names) > 1
+    )
+
+    for gasto in split.gastos:
+        refusal = checks.expenses.get(gasto.ref)
+        if refusal is not None:
+            problems.append(CellProblem(gasto.ref, "Gastos", refusal.code))
+        if gasto.category is None:
+            continue
+        category_result = checks.category_names.get(gasto.category)
+        if isinstance(category_result, Refusal):
+            problems.append(CellProblem(gasto.ref, "Categoría", category_result.code))
+        elif category_result is not None and category_result not in valid_category_keys:
+            problems.append(CellProblem(gasto.ref, "Categoría", "import.category_outside_list"))
+
+    # -- Customers: match the mapping, merge spellings, decide VIP and kept name. ----
+    mapping_by_name: dict[str, MappingEntry] = {}
+    for entry in mapping.entries:
+        mapping_by_name.setdefault(collapse_spaces(entry.name), entry)
+
+    entry_phone_key: dict[str, str] = {}
+    for collapsed, entry in mapping_by_name.items():
+        customer_result = checks.customers.get(entry.name)
+        if isinstance(customer_result, Refusal):
+            problems.append(
+                CellProblem(SheetRef(_MAPPING_SHEET, entry.line), "Teléfono", customer_result.code)
+            )
+        elif customer_result is not None:
+            entry_phone_key[collapsed] = customer_result.phone_key
+
+    rows_by_customer_name: dict[str, list[VentaRow]] = {}
+    for venta in split.ventas:
+        if venta.customer is None:
+            continue
+        rows_by_customer_name.setdefault(collapse_spaces(venta.customer), []).append(venta)
+
+    for collapsed in sorted(rows_by_customer_name):
+        if collapsed not in mapping_by_name:
+            first_row = min(rows_by_customer_name[collapsed], key=lambda r: r.ref.row)
+            problems.append(
+                CellProblem(first_row.ref, "Cliente", "import.customer_not_in_mapping")
+            )
+
+    unused_mapping_entries = tuple(
+        entry.name
+        for collapsed, entry in mapping_by_name.items()
+        if collapsed not in rows_by_customer_name
+    )
+
+    phone_to_names: dict[str, set[str]] = {}
+    for collapsed in rows_by_customer_name:
+        phone_key = entry_phone_key.get(collapsed)
+        if phone_key is None:
+            continue
+        phone_to_names.setdefault(phone_key, set()).add(collapsed)
+
+    customers: list[PlannedCustomer] = []
+    for phone_key, collapsed_names in phone_to_names.items():
+        rows_for_group = [row for name in collapsed_names for row in rows_by_customer_name[name]]
+        kept_row = max(rows_for_group, key=_venta_sort_key)
+        assert kept_row.customer is not None
+        vip = any(row.kind == "Amigo" for row in rows_for_group)
+        customers.append(
+            PlannedCustomer(
+                kept_name=kept_row.customer,
+                spellings=tuple(sorted(collapsed_names)),
+                vip=vip,
+                phone_key=phone_key,
+            )
+        )
+
+    # -- Sales: sale_inputs' own problems, owner refusals, Pendiente-without-customer,
+    # -- mismatches and counts. -------------------------------------------------------
+    sale_results = sale_inputs(split.ventas, checks.variety_names)
+    sale_count = 0
+    payment_count = 0
+    for venta, sale_result in zip(split.ventas, sale_results, strict=True):
+        if isinstance(sale_result, CellProblem):
+            problems.append(sale_result)
+            continue
+        check = checks.sales.get(venta.ref)
+        if check is None:
+            continue
+        if check.refusal is not None:
+            problems.append(CellProblem(venta.ref, "Ventas", check.refusal.code))
+            continue
+        assert check.total is not None
+        if sale_result.left_owing and not sale_result.has_customer and check.total > 0:
+            problems.append(
+                CellProblem(venta.ref, "Cliente", "import.pendiente_without_customer")
+            )
+            continue
+        assert isinstance(venta.total, int)
+        if venta.total != check.total:
+            mismatches.append(
+                Mismatch(venta.ref, sheet_total=venta.total, recomputed_total=check.total)
+            )
+        sale_count += 1
+        if not sale_result.left_owing and check.total > 0:
+            payment_count += 1
+
+    counts = Counts(
+        varieties=len(valid_variety_keys),
+        price_entries=len(split.price_history),
+        catalog_attributes=len(split.catalog),
+        stock_entries=len(split.entradas),
+        expense_categories=len(category_groups),
+        expenses=len(split.gastos),
+        customers=len(customers),
+        sales=sale_count,
+        payments=payment_count,
+    )
+
+    return ImportPlan(
+        problems=tuple(problems),
+        unfinished=split.unfinished,
+        mismatches=tuple(mismatches),
+        customers=tuple(customers),
+        merged_categories=merged_categories,
+        unused_mapping_entries=unused_mapping_entries,
+        counts=counts,
+        entrada_order=tuple(sorted(split.entradas, key=_entrada_sort_key)),
+        venta_order=tuple(sorted(split.ventas, key=_venta_sort_key)),
+    )
