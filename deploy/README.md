@@ -16,9 +16,15 @@ this repository: everything below with a value is set by hand, outside git.
    daily backup — `TURSO_READONLY_TOKEN`, a GitHub secret, below.
    - A per-database token (read-only or not) authenticates libSQL's own client
      protocol; it does **not** carry the `turso` CLI's own login, so `turso db shell
-     <db> .dump` refuses it. `scripts/backup_copy.py` is the fallback this plan takes
-     instead: it copies every table over the same client protocol the app itself
-     uses, with the read-only token as a connect argument, never in the URL.
+     <db> .dump` and `turso db export` refuse it — both read the CLI's own
+     account-level session (`turso auth login`/`auth api-tokens`), not a per-database
+     token (Turso CLI docs: "Authentication", `docs.turso.tech/cli/authentication`,
+     checked 2026-10-04). That account-level credential can create and delete
+     databases, exactly what this plan's GitHub secrets must never carry. The
+     read-only, per-database token (`docs.turso.tech/cli/db/tokens/create`, same date)
+     cannot. `scripts/backup_copy.py` is the fallback this plan takes instead: it
+     copies every table over the same client protocol the app itself uses, with the
+     read-only token as a connect argument, never in the URL.
 5. Turso's own continuous write log gives point-in-time restore for the last 24 hours
    (the human's loss bound, ADR-0014) — nothing to configure for that; it is the
    product's default.
@@ -34,12 +40,18 @@ this repository: everything below with a value is set by hand, outside git.
    - `APOSTROPHE_DATABASE_URL` — Turso's `libsql://…` URL, from step 1.2.
    - `APOSTROPHE_DATABASE_AUTH_TOKEN` — the full-access token, from step 1.3.
    - `APOSTROPHE_PUBLIC_URL` — `https://<the Render subdomain, or the custom domain>`.
-   - `APOSTROPHE_TRUSTED_PROXIES` — the CIDR(s) of the hop(s) in front of the app.
-     Render's own docs on request headers name the proxy as the single internal hop
-     that terminates TLS before the app; cite the exact range from Render's current
-     networking docs at setup time, since Render does not publish a fixed, versioned
-     CIDR block the way a cloud provider's own address ranges page does. Record here,
-     once confirmed, which range was used and the date it was checked.
+   - `APOSTROPHE_TRUSTED_PROXIES=0.0.0.0/0` — every peer is trusted, and this is safe
+     only because of how Render's edge is documented to work: a web service is "not
+     *directly* reachable via the public internet" (`render.com/docs/web-services`,
+     checked 2026-10-04) — only Render's own load balancer, which "terminates SSL for
+     inbound HTTPS requests, then forwards those requests to your web service over
+     HTTP" (same page), can ever reach the port `scripts/serve.sh` binds. Render
+     publishes no fixed, versioned CIDR for that load balancer the way a cloud
+     provider's own address-ranges page does, so there is no narrower range to pin to;
+     Render's own default Python environment reaches the same conclusion by setting
+     `FORWARDED_ALLOW_IPS=*` for exactly this reason
+     (`render.com/docs/environment-variables`, same date). If Render ever documents a
+     narrower range, tighten this value then.
 3. Auto-deploy is on (`autoDeploy: true`): every merge to `master` deploys. There is no
    pre-deploy command: the schema is migrated only by `upgrade_to_head`, inside
    `app.main`'s `lifespan`, once, at startup.
@@ -51,13 +63,16 @@ this repository: everything below with a value is set by hand, outside git.
 
 1. Create one bucket, used for nothing else.
 2. Create an API token scoped to **that bucket only**, **Object Read & Write**
-   permission. Cloudflare's R2 token permission groups are coarse (read, write, or
-   admin over a bucket); there is no narrower grant that allows writing a new object
-   but denies deleting an existing one. Because the token itself cannot be denied
-   delete, this plan relies on **Object Lock** instead: turn on Object Lock for the
-   bucket with a 90-day **compliance** retention period on every object written. That
-   lock, not the token's scope, is what actually holds a written backup for 90 days,
-   even against the account that owns the token.
+   permission ("Workers R2 Storage Bucket Item Write" in Cloudflare's own naming).
+   Cloudflare's documented R2 permission groups are exactly: account-wide write
+   (create/delete/list buckets, read/write/list objects), account-wide read, per-bucket
+   write (read/write/list objects in that bucket) and per-bucket read
+   (`developers.cloudflare.com/r2/api/tokens/`, checked 2026-10-04) — none separates
+   writing a new object from deleting an existing one. Because the token itself
+   cannot be denied delete, this plan relies on **Object Lock** instead: turn on
+   Object Lock for the bucket with a 90-day **compliance** retention period on every
+   object written. That lock, not the token's scope, is what actually holds a written
+   backup for 90 days, even against the account that owns the token.
 3. A 90-day **lifecycle** rule expires objects after 90 days regardless, so the bucket
    does not grow forever; the lock is what protects a copy for its first 90 days, the
    lifecycle rule is what removes it afterwards.
@@ -137,10 +152,16 @@ how the app or its backup is configured, and monthly thereafter.
 2. Copy `apostrophe.db` (the home file) aside.
 3. Run `PRAGMA integrity_check` on the copy (or `scripts/drill.py`'s `integrity`
    function directly) — it must report `ok` before anything below.
-4. Import into Turso: the Turso docs' own SQLite import path for a database created
-   fresh and empty. Confirm from Turso's current docs at migration time whether the
-   source file needs `PRAGMA journal_mode=WAL` set before the import, and set it on
-   the copy only, never on the home app's own file, if so.
+4. Import into Turso with `turso db import ~/path/to/the/copy.db`
+   (`docs.turso.tech/cli/db/import`, checked 2026-10-04). That command's own docs
+   require the source file to be in WAL journal mode first
+   (`docs.turso.tech/cloud/migrate-to-turso`, same date):
+   ```
+   sqlite3 the-copy.db "PRAGMA journal_mode='wal'; PRAGMA wal_checkpoint(truncate);"
+   ```
+   Run this on **the copy only**, never on the home app's own file — the home app
+   keeps using its file in whatever journal mode it was in, and is never restarted
+   against it again after this section's step 8.
 5. Point `scripts/drill.py` at the imported database (through
    `APOSTROPHE_DATABASE_URL`/`APOSTROPHE_DATABASE_AUTH_TOKEN`, exported via
    `scripts/backup_copy.py` into a local file first) and run the three checks.
