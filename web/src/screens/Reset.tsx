@@ -10,12 +10,10 @@
  * text when the new password is under 10 characters. On success this device is
  * signed in and lands on Inicio, with no toast (PRD, "On screen").
  *
- * `account.reset_link_gone` is matched by a plain string comparison, not
- * through `refusals.ts`'s contract-backed `isGone` (same shape as `Cobro.tsx`'s
- * own `payment.*` codes): it is this screen's own new code, and it reaches
- * `contract.json` in the same diff as the `backend` subtask, still open as this
- * one ships (`tests/test_refusal_codes.py` refuses a code in `contract.json` the
- * backend does not yet answer).
+ * `account.reset_link_gone` is dispatched through `refusals.ts`'s contract-backed
+ * `isGone`, like every other screen's gone records (`GastoCategorias.tsx`,
+ * `Invitacion.tsx`): the code is in `contract.json` with `kind: "gone"`, so a
+ * rename on the backend side fails `tsc` here instead of silently falling through.
  *
  * No design file exists for this screen: checked by eye before delivery against
  * `Invitacion`'s own comparison (`scripts/design/compare.sh`) — same
@@ -32,11 +30,15 @@ import { ApiError, NetworkError } from '../api/client'
 import { openResetLink, submitReset } from '../session'
 import SinConexion from '../components/SinConexion'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
+import { isGone, resolveOverride, type RefusalCode } from '../api/refusals'
 import { WEAK_PASSWORD_MESSAGE } from './Invitacion'
 
 export const DEAD_LINK_MESSAGE = 'Este enlace ya no sirve. Pedile uno nuevo a quien te lo pasó.'
-export const RESET_LINK_GONE_CODE = 'account.reset_link_gone'
 export { ERROR_GENERICO_MENSAJE as RETRY_MESSAGE }
+
+const SUBMIT_OVERRIDES: Partial<Record<RefusalCode, string>> = {
+  'account.password_weak': WEAK_PASSWORD_MESSAGE,
+}
 
 type Status = 'loading' | 'dead' | 'offline' | 'error' | 'ready'
 
@@ -60,7 +62,7 @@ export default function Reset() {
       })
       .catch((caught: unknown) => {
         if (cancelled) return
-        if (caught instanceof ApiError && caught.code === RESET_LINK_GONE_CODE) {
+        if (caught instanceof ApiError && isGone(caught.code)) {
           setStatus('dead')
         } else if (caught instanceof NetworkError) {
           setStatus('offline')
@@ -81,10 +83,11 @@ export default function Reset() {
     try {
       await submitReset({ queryClient, navigate }, token, password)
     } catch (caught) {
-      if (caught instanceof ApiError && caught.code === RESET_LINK_GONE_CODE) {
+      if (caught instanceof ApiError && isGone(caught.code)) {
         setStatus('dead')
-      } else if (caught instanceof ApiError && caught.code === 'account.password_weak') {
-        setError(WEAK_PASSWORD_MESSAGE)
+      } else if (caught instanceof ApiError) {
+        const message = resolveOverride(SUBMIT_OVERRIDES, caught.code)
+        setError(message ?? ERROR_GENERICO_MENSAJE)
       } else if (caught instanceof NetworkError) {
         setStatus('offline')
       } else {

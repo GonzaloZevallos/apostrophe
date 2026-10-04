@@ -8,14 +8,11 @@
  * everything typed. Neither a 422 nor a 429 ever sends the user to login: they
  * are handled here, inline, never through `handleUnauthorized`.
  *
- * `account.current_password_wrong` is matched by a plain string comparison here,
- * not through `refusals.ts`'s contract-backed `RefusalCode` (same shape as
- * `Cobro.tsx`'s own `payment.*` codes): it is this screen's own new code, and it
- * reaches `contract.json` in the same diff as the `backend` subtask, still open
- * as this one ships (`tests/test_refusal_codes.py` refuses a code in
- * `contract.json` the backend does not yet answer). `account.password_weak` and
- * `account.login_locked` already exist there, so they keep going through
- * `resolveOverride`.
+ * `account.current_password_wrong` is typed as a `RefusalCode` from
+ * `refusals.ts`'s contract-backed set, like `account.password_weak` and
+ * `account.login_locked`: a rename on the backend side fails `tsc` here instead
+ * of silently falling through. It is checked separately from `OVERRIDES` because
+ * its handling clears a different field than the one that held the refusal.
  *
  * No design file exists for this sheet: checked by eye before delivery against
  * `Negocio`'s own comparison (`scripts/design/compare.sh`) with the sheet open
@@ -35,7 +32,7 @@ import { WEAK_PASSWORD_MESSAGE } from './Invitacion'
 
 export const WRONG_CURRENT_PASSWORD_MESSAGE = 'La contraseña actual no es esa.'
 export const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
-export const CURRENT_PASSWORD_WRONG_CODE = 'account.current_password_wrong'
+const CURRENT_PASSWORD_WRONG_CODE: RefusalCode = 'account.current_password_wrong'
 
 export interface CambiarContrasenaProps {
   onClose: () => void
@@ -74,7 +71,7 @@ export default function CambiarContrasena({ onClose, onSaved }: CambiarContrasen
         setCurrentPassword('')
         setCurrentError(WRONG_CURRENT_PASSWORD_MESSAGE)
       } else if (caught instanceof ApiError && caught.code === 'account.password_weak') {
-        setNewError(OVERRIDES['account.password_weak'] ?? GENERIC_REFUSAL_MESSAGE)
+        setNewError(WEAK_PASSWORD_MESSAGE)
       } else if (caught instanceof ApiError) {
         const message = resolveOverride(OVERRIDES, caught.code)
         if (message !== undefined) {

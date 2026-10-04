@@ -71,11 +71,19 @@ test('changes a password from Negocio in under a minute, signing an older device
 
   expect(Date.now() - startedAt).toBeLessThan(60_000)
 
-  // This device stays signed in.
-  await page.reload()
+  // This device stays signed in: `.encabezado__negocio` only renders on Inicio
+  // (`Inicio.tsx`), never on `Negocio` itself, so the check navigates home rather
+  // than reloading the settings screen it was already on.
+  await page.goto('/')
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
-  // The older device is signed out.
+  // The older device is signed out: its gated calls now answer 401, which is
+  // exactly the point of this check, and Chromium logs every failed resource
+  // load on its own, including a `fetch`'s. That line carries no password,
+  // token, digest or email, so it is excluded by exact text below rather than
+  // relaxing the "no console output at all" check generally.
+  const EXPECTED_SIGNED_OUT_NETWORK_LOG =
+    'error: Failed to load resource: the server responded with a status of 401 (Unauthorized)'
   await otherPage.reload()
   await expect(otherPage).toHaveURL(/\/entrar$/)
   await otherContext.close()
@@ -85,7 +93,7 @@ test('changes a password from Negocio in under a minute, signing an older device
     session: Object.keys(sessionStorage).length,
   }))
   expect(storage).toEqual({ local: 0, session: 0 })
-  expect(consoleMessages).toEqual([])
+  expect(consoleMessages.filter((message) => message !== EXPECTED_SIGNED_OUT_NETWORK_LOG)).toEqual([])
 })
 
 test('resets a forgotten password from a printed link through to Inicio, then shows the dead-link state once used', async ({
@@ -117,7 +125,14 @@ test('resets a forgotten password from a printed link through to Inicio, then sh
   await page.getByRole('button', { name: 'Guardar y entrar' }).click()
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
-  // The same link, spent, now shows the dead-link state.
+  // The same link, spent, now shows the dead-link state. The lookup itself
+  // answers 404 account.reset_link_gone — expected, not a leak — and Chromium
+  // logs every failed resource load to the console on its own, including a
+  // `fetch`'s; this is the one console line the dead-link path cannot avoid, and
+  // it carries no password, token, digest or email, so it is excluded by exact
+  // text rather than relaxing the "no console output at all" check generally.
+  const EXPECTED_DEAD_LINK_NETWORK_LOG =
+    'error: Failed to load resource: the server responded with a status of 404 (Not Found)'
   await page.goto(link)
   await expect(
     page.getByText('Este enlace ya no sirve. Pedile uno nuevo a quien te lo pasó.'),
@@ -128,5 +143,5 @@ test('resets a forgotten password from a printed link through to Inicio, then sh
     session: Object.keys(sessionStorage).length,
   }))
   expect(storage).toEqual({ local: 0, session: 0 })
-  expect(consoleMessages).toEqual([])
+  expect(consoleMessages.filter((message) => message !== EXPECTED_DEAD_LINK_NETWORK_LOG)).toEqual([])
 })
