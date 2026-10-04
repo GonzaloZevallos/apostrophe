@@ -41,6 +41,19 @@ class InvitationRow(Base):
     used_at: Mapped[datetime | None] = mapped_column(UtcDateTime)
 
 
+class ResetLinkRow(Base):
+    __tablename__ = "reset_link"
+
+    # A row exists only while its link could still work (docs/adr/0019): a use, a
+    # newer link or any password change deletes it. One live link per user is this
+    # UNIQUE, not a rule in code.
+    id: Mapped[int] = mapped_column(primary_key=True)
+    business_id: Mapped[int] = mapped_column(ForeignKey("business.id"))
+    user_id: Mapped[int] = mapped_column(ForeignKey("app_user.id"), unique=True)
+    token_digest: Mapped[str] = mapped_column(String(64), unique=True)
+    created_at: Mapped[datetime] = mapped_column(UtcDateTime)
+
+
 class LoginGuardRow(Base):
     __tablename__ = "login_guard"
 

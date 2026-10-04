@@ -3,9 +3,16 @@ from datetime import datetime
 from typing import ClassVar
 
 from app.accounts.application.ports import Accounts
-from app.accounts.domain.account import Business, Email, InvalidEmail, User
+from app.accounts.domain.account import (
+    Business,
+    Email,
+    InvalidEmail,
+    User,
+    check_password_strength,
+)
 from app.accounts.domain.login_guard import MAX_FAILURES, AddressGuard, LoginGuard
 from app.accounts.domain.password import PasswordHasher
+from app.accounts.domain.reset_link import CurrentPasswordWrong
 from app.accounts.domain.session_token import SessionSigner
 from app.shared.transaction import Transaction
 
@@ -15,6 +22,35 @@ class LoginLocked(Exception):
 
     def __init__(self) -> None:
         super().__init__("too many failed attempts; try again in a few minutes")
+
+
+def refuse_attempt(
+    accounts: Accounts,
+    transaction: Transaction,
+    email: Email,
+    address_digest: str,
+    now: datetime,
+    cutoff: datetime,
+) -> None:
+    """The brake's only counting sequence (docs/adr/0019): counts both brakes and
+    commits before returning. When neither brake was already locked at the moment of
+    the attempt, it locks whichever one the count just reached; while either is
+    already active, it only counts -- it never sets a lock a future, no-longer-locked
+    request would set on its own (the plan invariant: counting never moves an active
+    lock). `log_in` and `change_password` are its only two callers; neither calls
+    `count_email_failure` or `count_address_failure` itself."""
+    locks = accounts.login_locks(email, address_digest)
+    email_guard = LoginGuard(locks.email_locked_until)
+    address_guard = AddressGuard(locks.address_locked_until)
+    already_locked = email_guard.is_locked(now) or address_guard.is_locked(now)
+    email_failures = accounts.count_email_failure(email, now)
+    address_failures = accounts.count_address_failure(address_digest, now, cutoff)
+    if not already_locked:
+        if email_guard.reached(email_failures):
+            accounts.lock_email(email, now, email_guard.lock_until(now), MAX_FAILURES)
+        if address_guard.reached(address_failures):
+            accounts.lock_address(address_digest, now, address_guard.lock_until(now))
+    transaction.commit()
 
 
 @dataclass(frozen=True)
@@ -67,29 +103,61 @@ def log_in(
     email_guard = LoginGuard(locks.email_locked_until)
     address_guard = AddressGuard(locks.address_locked_until)
     if email_guard.is_locked(now) or address_guard.is_locked(now):
-        # Counting never moves an active lock (plan invariant): no lock_* call here.
-        accounts.count_email_failure(email, now)
-        accounts.count_address_failure(address_digest, now, cutoff)
-        transaction.commit()
+        refuse_attempt(accounts, transaction, email, address_digest, now, cutoff)
         raise LoginLocked()
 
     user = accounts.user_by_email(email)
     if user is None:
         hasher.burn(password)
     if user is None or not hasher.verify(password, user.password_hash):
-        email_failures = accounts.count_email_failure(email, now)
-        address_failures = accounts.count_address_failure(address_digest, now, cutoff)
-        if email_guard.reached(email_failures):
-            accounts.lock_email(email, now, email_guard.lock_until(now), MAX_FAILURES)
-        if address_guard.reached(address_failures):
-            accounts.lock_address(address_digest, now, address_guard.lock_until(now))
-        transaction.commit()
+        refuse_attempt(accounts, transaction, email, address_digest, now, cutoff)
         return None
 
     accounts.clear_email(email, now)
     transaction.commit()
     assert user.id is not None
     return signer.issue(user.id, user.password_hash, now)
+
+
+def change_password(
+    accounts: Accounts,
+    transaction: Transaction,
+    hasher: PasswordHasher,
+    signer: SessionSigner,
+    user: User,
+    current: str,
+    new: str,
+    address_digest: str,
+    now: datetime,
+) -> str:
+    """Sets `user`'s password to `new` and answers a fresh session token for the
+    acting device (docs/adr/0019). The checks run in a fixed order: the brake first
+    (429, no scrypt), then the new password's length (422, counting nothing), then the
+    current password (422 on a mismatch, counted for both brakes). On success the
+    password is always rehashed, even when `new` equals the old one, so every other
+    session of `user` fails its fingerprint check; the user's reset links are deleted
+    and the email's brake cleared, in the one commit that closes this use case."""
+    cutoff = AddressGuard().window_cutoff(now)
+    locks = accounts.login_locks(user.email, address_digest)
+    email_guard = LoginGuard(locks.email_locked_until)
+    address_guard = AddressGuard(locks.address_locked_until)
+    if email_guard.is_locked(now) or address_guard.is_locked(now):
+        refuse_attempt(accounts, transaction, user.email, address_digest, now, cutoff)
+        raise LoginLocked()
+
+    check_password_strength(new)
+
+    if not hasher.verify(current, user.password_hash):
+        refuse_attempt(accounts, transaction, user.email, address_digest, now, cutoff)
+        raise CurrentPasswordWrong()
+
+    assert user.id is not None
+    password_hash = hasher.hash(new)
+    accounts.set_password_hash(user.id, password_hash)
+    accounts.delete_reset_links_of(user.id)
+    accounts.clear_email(user.email, now)
+    transaction.commit()
+    return signer.issue(user.id, password_hash, now)
 
 
 def open_session(
