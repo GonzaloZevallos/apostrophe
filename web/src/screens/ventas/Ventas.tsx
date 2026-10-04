@@ -5,6 +5,14 @@
  * total and count are the sum and the number of the sales the list itself shows,
  * never a separate figure. Each row's VIP badge is the customer's *current* flag,
  * read straight from the API's answer (docs/adr/0011), not how the sale was priced.
+ *
+ * Rebuilt to `Ventas.dc.html`/`VentasCompu.dc.html` (plan, subtask "sales-list"):
+ * the range sits next to the total instead of a standalone oversized figure, and
+ * each row is the design's stacked shape — date, name/VIP, distinct variety names
+ * with their grams, and the amount with "te debe" under it only when the API's
+ * `still_owing` says so. Grams come only from `saleGrams` (plan, invariants: "on
+ * Ventas rows from `saleGrams`"), never a row's own sum. "7 ventas más abajo" (no
+ * API field answers it) is left out, same as `NuevaVenta`'s own left-out list.
  */
 
 import { useState } from 'react'
@@ -16,10 +24,12 @@ import type { Me } from '../../api/me'
 import { listSales, type Sale } from '../../api/sales'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import { readFeedback } from '../../components/feedback'
+import Insignia from '../../components/Insignia'
 import Notice from '../../components/Notice'
 import SinConexion from '../../components/SinConexion'
 import { type DateRange, formatDate, monthRange, todayRange, weekRange } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
+import { saleGrams } from '../../sales/grams'
 
 export type Period = 'hoy' | 'semana' | 'mes' | 'fechas'
 
@@ -41,12 +51,31 @@ function rangeFor(period: Period, today: string, custom: DateRange): DateRange {
   return custom
 }
 
-function varietiesSummary(lines: Sale['lines']): string {
-  return lines.map((line) => `${line.variety_name} ${formatGrams(line.grams)}`).join(' · ')
+/** `"28/09 – 04/10"`, or the single date when the range is one day (Hoy): the
+ * design's own example (`Ventas.dc.html`) only draws a multi-day range, so a
+ * same-day range collapsing to one date, rather than repeating it, is this
+ * subtask's own call (see "Decisions and assumptions"). */
+function rangeLabel(range: DateRange, today: string): string {
+  const start = formatDate(range.start, today)
+  if (range.start === range.end) return start
+  return `${start} – ${formatDate(range.end, today)}`
 }
 
 function countLabel(count: number): string {
   return `${count} ${count === 1 ? 'venta' : 'ventas'}`
+}
+
+/** Distinct variety names, in the order each first appears (plan, "Rows"). */
+function varietyNames(lines: Sale['lines']): string {
+  const seen = new Set<string>()
+  const names: string[] = []
+  for (const line of lines) {
+    if (!seen.has(line.variety_name)) {
+      seen.add(line.variety_name)
+      names.push(line.variety_name)
+    }
+  }
+  return names.join(', ')
 }
 
 export default function Ventas() {
@@ -69,23 +98,32 @@ export default function Ventas() {
   return (
     <main className="pantalla">
       <div className="cuerpo">
-        <span className="encabezado__titulo">Ventas</span>
+        <div className="ventas__cabecera">
+          <span className="encabezado__titulo">Ventas</span>
+
+          <div className="periodos" role="group" aria-label="Período">
+            {PERIODS.map((item) => (
+              <button
+                key={item}
+                type="button"
+                className={period === item ? 'periodos__pestana periodos__pestana--activa' : 'periodos__pestana'}
+                aria-pressed={period === item}
+                onClick={() => setPeriod(item)}
+              >
+                {PERIOD_LABEL[item]}
+              </button>
+            ))}
+          </div>
+
+          {!isError && !isPending && (
+            <div className="ventas__resumen">
+              <span className="ventas__rango">{`${rangeLabel(range, me.today)} · ${countLabel(sales.length)}`}</span>
+              <span className="ventas__total">{formatMoney(total)}</span>
+            </div>
+          )}
+        </div>
 
         {feedback !== null && <Notice kind={feedback.kind} message={feedback.message} />}
-
-        <div className="periodos" role="group" aria-label="Período">
-          {PERIODS.map((item) => (
-            <button
-              key={item}
-              type="button"
-              className={period === item ? 'periodos__boton periodos__boton--activo' : 'periodos__boton'}
-              aria-pressed={period === item}
-              onClick={() => setPeriod(item)}
-            >
-              {PERIOD_LABEL[item]}
-            </button>
-          ))}
-        </div>
 
         {period === 'fechas' && (
           <div className="periodos__fechas">
@@ -123,33 +161,32 @@ export default function Ventas() {
 
         {!isError && !isPending && (
           <>
-            <div className="ventas__resumen">
-              <span className="cifra-xl">{formatMoney(total)}</span>
-              <span className="rotulo">{countLabel(sales.length)}</span>
-            </div>
-
             {sales.length === 0 && <span className="campo__rotulo">{EMPTY_LIST}</span>}
 
             <div className="lista-ventas">
               {sales.map((sale) => (
                 <Link key={sale.id} to={`/ventas/${sale.id}`} className="fila-venta">
                   <span className="fila-venta__fecha">{formatDate(sale.date, me.today)}</span>
-                  <span className="fila-venta__cliente">
-                    {sale.customer === null ? (
-                      <span className="fila-venta__sin-cliente">Sin cliente</span>
-                    ) : (
-                      <>
-                        {sale.customer.name}
-                        {sale.customer.vip && <span className="vip-insignia">VIP</span>}
-                      </>
-                    )}
+                  <span className="fila-venta__cuerpo">
+                    <span className="fila-venta__nombre">
+                      {sale.customer === null ? (
+                        <span className="fila-venta__sin-cliente">Sin cliente</span>
+                      ) : (
+                        <>
+                          {sale.customer.name}
+                          {sale.customer.vip && <Insignia tono="acento">VIP</Insignia>}
+                        </>
+                      )}
+                    </span>
+                    <span className="fila-venta__detalle">
+                      {`${varietyNames(sale.lines)} · ${formatGrams(saleGrams(sale.lines))}`}
+                    </span>
                   </span>
-                  <span className="fila-venta__detalle">{varietiesSummary(sale.lines)}</span>
                   <span className="fila-venta__monto">
-                    <span className={sale.still_owing ? 'monto-deuda' : undefined}>
+                    <span className={sale.still_owing ? 'fila-venta__cifra monto-deuda' : 'fila-venta__cifra'}>
                       {formatMoney(sale.total)}
                     </span>
-                    {sale.still_owing && <span className="rotulo">te debe</span>}
+                    {sale.still_owing && <span className="fila-venta__te-debe monto-deuda">te debe</span>}
                   </span>
                 </Link>
               ))}

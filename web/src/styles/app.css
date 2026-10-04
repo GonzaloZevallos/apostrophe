@@ -942,30 +942,39 @@ button {
   overflow-y: auto;
 }
 
-/* `Ventas`: the period tabs (Hoy/Semana/Mes/Fechas, `sales.md`), the list and each
- * sale's row. `.fila-venta` mirrors `.fila-gasto`'s shape (a tappable row, same
- * height and border), just with its own four columns. */
-.periodos {
+/* `Ventas` (`Ventas.dc.html`/`VentasCompu.dc.html`, plan "sales-list"): the
+ * header's title/tabs/range-and-total, and each sale's stacked row.
+ * `.periodos__pestana` is a plain text tab (an underline via `box-shadow` when
+ * active, no pill), not one of `Boton`'s variants — the design draws a tab list,
+ * not a button, the same shape `SelectorPago`'s segmented control already departs
+ * from `Boton` for (plan review, foundation findings). `.fila-venta` is a tappable
+ * row: date, name/VIP/varieties, and the amount with "te debe" under it only when
+ * the API's `still_owing` says so (never derived here). */
+.ventas__cabecera {
   display: flex;
-  gap: var(--espacio-sm);
+  flex-direction: column;
+  gap: var(--espacio-md);
 }
 
-.periodos__boton {
-  height: var(--alto-tocable);
-  padding: 0 var(--espacio-md);
+.periodos {
+  display: flex;
+  align-items: baseline;
+  gap: var(--espacio-xl);
+  font-size: 15px;
+  color: var(--tinta2);
+}
+
+.periodos__pestana {
   border: 0;
-  border-radius: var(--radio-pildora);
-  background: var(--superficie);
-  color: var(--tinta);
-  font-size: 14px;
-  font-weight: 500;
+  background: transparent;
+  padding: 0 0 3px;
   cursor: pointer;
 }
 
-.periodos__boton--activo {
-  background: var(--acento-suave);
-  color: var(--acento);
+.periodos__pestana--activa {
+  color: var(--tinta);
   font-weight: 600;
+  box-shadow: 0 2px 0 var(--tinta);
 }
 
 .periodos__fechas {
@@ -975,8 +984,20 @@ button {
 
 .ventas__resumen {
   display: flex;
-  flex-direction: column;
-  gap: var(--espacio-xs);
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--espacio-md);
+}
+
+.ventas__rango {
+  font-size: 15px;
+  color: var(--tinta2);
+}
+
+.ventas__total {
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.04em;
 }
 
 .lista-ventas {
@@ -1005,11 +1026,19 @@ button {
   color: var(--tinta2);
 }
 
-.fila-venta__cliente {
+.fila-venta__cuerpo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fila-venta__nombre {
   display: flex;
   align-items: center;
   gap: 7px;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
 }
 
@@ -1019,15 +1048,24 @@ button {
 }
 
 .fila-venta__detalle {
-  flex: 1;
-  min-width: 0;
   font-size: 13px;
   color: var(--tinta2);
 }
 
 .fila-venta__monto {
-  font-size: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+}
+
+.fila-venta__cifra {
+  font-size: 17px;
   font-weight: 600;
+}
+
+.fila-venta__te-debe {
+  font-size: 12px;
 }
 
 /* `VentaDetalle`: each line's rule badge next to its variety, same pill shape as
@@ -1487,5 +1525,35 @@ button {
   .panel-dos-columnas > * {
     flex: 1;
     min-width: 0;
+  }
+
+  /* `VentasCompu`: title, range and total sit together on one row, the tabs
+   * pushed to its far end (plan, subtask "sales-list" — "Header"). */
+  .ventas__cabecera {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: flex-start;
+    gap: var(--espacio-lg);
+  }
+
+  .ventas__cabecera .encabezado__titulo {
+    order: 1;
+  }
+
+  .ventas__cabecera .ventas__resumen {
+    order: 2;
+    gap: var(--espacio-lg);
+  }
+
+  .ventas__cabecera .periodos {
+    order: 3;
+    gap: var(--espacio-lg);
+    margin-left: auto;
+  }
+
+  .ventas__total {
+    font-size: 26px;
+    letter-spacing: -0.035em;
   }
 }
