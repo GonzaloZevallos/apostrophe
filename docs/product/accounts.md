@@ -80,7 +80,7 @@ Success criteria:
   - A fixed **"Nueva venta"** button, separate from the tabs, opens the sale form directly (sales.md). It is not a tab.
   - It shows on every signed-in screen except the sale form itself and its customer sheet.
 - **Inicio**: the business's name. When no variety has a current price today, it shows "Arrancá por las variedades". No figures.
-- **Más**: Gastos, Variedades, Catálogo ("Catálogo · El mensaje de hoy, listo para copiar", catalog.md), Negocio.
+- **Más**: Gastos, Variedades, Catálogo ("Catálogo · El mensaje de hoy, listo para copiar", catalog.md), Análisis ("Análisis · Variedades, semanas, meses y días", analysis.md), Negocio.
 - **Negocio**:
   - rename the business;
   - the users by email, the signed-in one marked "vos";
@@ -122,7 +122,7 @@ Success criteria:
   - no state is told by color alone.
 - **Nothing invented (criterion 7)**:
   - the bar shows exactly Inicio, Ventas, Clientes, Stock and Más, plus the "Nueva venta" button;
-  - Más shows exactly Gastos, Variedades, Catálogo and Negocio;
+  - Más shows exactly Gastos, Variedades, Catálogo, Análisis and Negocio;
   - Inicio shows no figures.
 
 ## Out of scope
@@ -134,4 +134,3 @@ Success criteria:
 - Offline use; an install walkthrough on iOS or Android.
 - TLS on the home network, including local certificates: it comes with publishing the app (ADR-0002), and with it the full Android install.
 - Live updates between partners: a list refreshes when it is opened or after a save, not when the other partner changes something.
-- The Análisis entry: it comes with its own task.

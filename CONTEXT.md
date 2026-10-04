@@ -277,3 +277,27 @@ _Avoid_: unpaid orders, pending sales, open invoices
 **Total owed**:
 The sum of every customer's balance above $0 in a business; credits never subtract from it. _In the app_: the total heading Te deben and in Clientes' header.
 _Avoid_: receivables, outstanding
+
+**Margin**:
+A variety's sales without shipping in a period minus the cost of goods sold of its grams sold or gifted, in pesos; gifts add their cost and $0 of sales, so it can be negative. With pending cost it is worked out over the costed part and marked "y N g sin costo". In the app: Margen.
+_Avoid_: profit, earnings, markup, ganancia
+
+**Margin percentage**:
+A variety's margin over its own sales without shipping in the period. There is none when those sales are $0, as for a variety that was only gifted. In the app: Margen %.
+_Avoid_: markup, rentabilidad, return
+
+**Average margin**:
+A month's total margin across its varieties over the month's sales without shipping, marked when any variety carries pending grams. In the app: Margen promedio.
+_Avoid_: average profit, mean margin
+
+**First record**:
+The earliest sale, stock entry, payment or expense a business recorded in the app. Análisis's history and its since-the-start totals begin there. In the app: Desde el primer registro.
+_Avoid_: start date, opening date, inception
+
+**Best week**:
+Of the last 8 Monday-to-Sunday weeks, the one with the highest sales, shipping included; on a tie the most recent wins, and none is marked when all are $0. In the app: Mejor semana.
+_Avoid_: top week, record week
+
+**Best weekday**:
+Since the first record, the weekday with the highest sales total; on a tie the earlier day from Monday to Sunday wins, and none is marked when all are $0. In the app: Mejor día.
+_Avoid_: peak day, top day
