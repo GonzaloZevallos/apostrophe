@@ -2,6 +2,8 @@
 `Settings.secure_cookie`, over the same login and logout requests under two
 `Settings` — one http, one https with a trusted proxy configured."""
 
+from http.cookies import SimpleCookie
+
 from fastapi.testclient import TestClient
 from sqlalchemy.engine import Engine
 
@@ -21,37 +23,66 @@ HTTPS_SETTINGS = Settings(
 NEW_USER = {"email": "nueva@example.com", "password": PASSWORD, "business_name": "La Huerta"}
 
 
-def _accept_invitation(settings: Settings, engine: Engine, client: TestClient) -> str:
+def _attributes(set_cookie_header: str) -> SimpleCookie:
+    jar = SimpleCookie()
+    jar.load(set_cookie_header)
+    return jar
+
+
+def _open_business(settings: Settings, engine: Engine, client: TestClient) -> None:
     clock = MovableClock(NOW)
     token = invite(engine, clock())
     response = client.post(f"/invitations/{token}/accept", json=NEW_USER)
     assert response.status_code == 201, response.text
+
+
+def _login_set_cookie(settings: Settings) -> str:
+    engine = make_engine(settings.database_url)
+    with TestClient(create_app(settings, engine=engine, hasher=TEST_HASHER)) as client:
+        _open_business(settings, engine, client)
+        # A fresh request, with no cookie carried over from accepting the invitation:
+        # the declared seam is `POST /auth/login`'s own `Set-Cookie`, not the one that
+        # opening a business happens to also set.
+        client.cookies.clear()
+        response = client.post(
+            "/auth/login", json={"email": NEW_USER["email"], "password": NEW_USER["password"]}
+        )
+    assert response.status_code == 200, response.text
     set_cookie: str = response.headers["set-cookie"]
     return set_cookie
 
 
-def test_set_cookie_carries_secure_only_under_https() -> None:
-    http_engine = make_engine(HTTP_SETTINGS.database_url)
-    with TestClient(create_app(HTTP_SETTINGS, engine=http_engine, hasher=TEST_HASHER)) as client:
-        http_set_cookie = _accept_invitation(HTTP_SETTINGS, http_engine, client)
-    https_engine = make_engine(HTTPS_SETTINGS.database_url)
-    with TestClient(create_app(HTTPS_SETTINGS, engine=https_engine, hasher=TEST_HASHER)) as client:
-        https_set_cookie = _accept_invitation(HTTPS_SETTINGS, https_engine, client)
+def _logout_set_cookie(settings: Settings) -> str:
+    engine = make_engine(settings.database_url)
+    with TestClient(create_app(settings, engine=engine, hasher=TEST_HASHER)) as client:
+        _open_business(settings, engine, client)
+        response = client.post("/auth/logout")
+    assert response.status_code == 204, response.text
+    set_cookie: str = response.headers["set-cookie"]
+    return set_cookie
 
-    assert SESSION_COOKIE in http_set_cookie
-    assert "secure" not in http_set_cookie.lower()
-    assert "secure" in https_set_cookie.lower()
+
+def test_login_set_cookie_carries_secure_only_under_https() -> None:
+    http_cookie = _login_set_cookie(HTTP_SETTINGS)
+    https_cookie = _login_set_cookie(HTTPS_SETTINGS)
+
+    http_morsel = _attributes(http_cookie)[SESSION_COOKIE]
+    https_morsel = _attributes(https_cookie)[SESSION_COOKIE]
+    assert http_morsel["secure"] == ""
+    assert https_morsel["secure"] != ""
 
 
 def test_logout_clears_the_cookie_with_matching_attributes() -> None:
-    http_engine = make_engine(HTTP_SETTINGS.database_url)
-    with TestClient(create_app(HTTP_SETTINGS, engine=http_engine, hasher=TEST_HASHER)) as client:
-        _accept_invitation(HTTP_SETTINGS, http_engine, client)
-        http_logout_cookie = client.post("/auth/logout").headers["set-cookie"]
-    https_engine = make_engine(HTTPS_SETTINGS.database_url)
-    with TestClient(create_app(HTTPS_SETTINGS, engine=https_engine, hasher=TEST_HASHER)) as client:
-        _accept_invitation(HTTPS_SETTINGS, https_engine, client)
-        https_logout_cookie = client.post("/auth/logout").headers["set-cookie"]
+    http_cookie = _logout_set_cookie(HTTP_SETTINGS)
+    https_cookie = _logout_set_cookie(HTTPS_SETTINGS)
 
-    assert "secure" not in http_logout_cookie.lower()
-    assert "secure" in https_logout_cookie.lower()
+    http_morsel = _attributes(http_cookie)[SESSION_COOKIE]
+    https_morsel = _attributes(https_cookie)[SESSION_COOKIE]
+    # `Secure` follows `Settings.secure_cookie`, exactly as `set_cookie` does; every
+    # other attribute is the same builder's constant, so it matches regardless.
+    assert http_morsel["secure"] == ""
+    assert https_morsel["secure"] != ""
+    for morsel in (http_morsel, https_morsel):
+        assert morsel["httponly"] is True
+        assert morsel["samesite"] == "lax"
+        assert morsel["path"] == "/"

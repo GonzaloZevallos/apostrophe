@@ -46,3 +46,29 @@ def test_secure_cookie_is_true_only_under_https() -> None:
         ).secure_cookie
         is True
     )
+
+
+def test_from_env_splits_and_strips_trusted_proxies_and_reads_the_auth_token(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("APOSTROPHE_SECRET_KEY", "k")
+    monkeypatch.setenv("APOSTROPHE_TRUSTED_PROXIES", " 10.0.0.0/8 , 172.16.0.0/12,,")
+    monkeypatch.setenv("APOSTROPHE_DATABASE_AUTH_TOKEN", "a-token")
+
+    settings = Settings.from_env()
+
+    assert settings.trusted_proxies == ("10.0.0.0/8", "172.16.0.0/12")
+    assert settings.database_auth_token == "a-token"
+
+
+def test_from_env_leaves_trusted_proxies_empty_and_the_auth_token_none_when_unset(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("APOSTROPHE_SECRET_KEY", "k")
+    monkeypatch.delenv("APOSTROPHE_TRUSTED_PROXIES", raising=False)
+    monkeypatch.delenv("APOSTROPHE_DATABASE_AUTH_TOKEN", raising=False)
+
+    settings = Settings.from_env()
+
+    assert settings.trusted_proxies == ()
+    assert settings.database_auth_token is None

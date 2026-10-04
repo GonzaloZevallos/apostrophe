@@ -39,15 +39,19 @@ def test_one_trusted_hop_is_read_from_the_header() -> None:
 
 
 def test_two_trusted_hops_plus_a_spoofed_leftmost_entry_take_the_real_client() -> None:
-    header = "198.51.100.7, 10.0.0.2, 10.0.0.1"
-    spoofed_leftmost = "6.6.6.6, 10.0.0.2, 10.0.0.1"
+    # The rightmost entry (10.0.0.2) is a trusted hop, skipped; the walk then stops at
+    # the first untrusted entry (198.51.100.7), before it ever reaches the leftmost
+    # one. Two different spoofed leftmost entries must therefore give the same, real,
+    # address -- a reader that instead looked at the leftmost entry would tell them
+    # apart.
+    header_a = "6.6.6.6, 198.51.100.7, 10.0.0.2"
+    header_b = "7.7.7.7, 198.51.100.7, 10.0.0.2"
 
-    real_client = _address(TRUSTED, "10.0.0.1", {"X-Forwarded-For": header})
-    with_spoofed_leftmost = _address(TRUSTED, "10.0.0.1", {"X-Forwarded-For": spoofed_leftmost})
+    with_spoofed_a = _address(TRUSTED, "10.0.0.1", {"X-Forwarded-For": header_a})
+    with_spoofed_b = _address(TRUSTED, "10.0.0.1", {"X-Forwarded-For": header_b})
+    direct_untrusted_peer = _address(TRUSTED, "198.51.100.7")
 
-    # The leftmost entry is attacker-controlled and never trusted; only the first
-    # untrusted entry counted from the right (198.51.100.7) decides the address.
-    assert real_client != with_spoofed_leftmost
+    assert with_spoofed_a == with_spoofed_b == direct_untrusted_peer
 
 
 def test_an_untrusted_peer_with_the_header_present_is_ignored() -> None:
@@ -65,7 +69,15 @@ def test_an_unparsable_entry_falls_back_to_the_peer() -> None:
 
 
 def test_a_missing_header_falls_back_to_the_peer() -> None:
-    from_peer = _address(TRUSTED, "10.0.0.1")
-    without_header = _address(TRUSTED, "10.0.0.1")
+    # A header present but entirely trusted hops must fall back to the very same
+    # address as no header at all -- and that fallback must be the peer's own
+    # address, not some other constant: it differs from a real forwarded client.
+    all_trusted_header = "10.0.0.3, 10.0.0.2"
+    forwarded_header = "198.51.100.7, 10.0.0.2"
 
-    assert from_peer == without_header
+    without_header = _address(TRUSTED, "10.0.0.1")
+    with_all_trusted_header = _address(TRUSTED, "10.0.0.1", {"X-Forwarded-For": all_trusted_header})
+    forwarded = _address(TRUSTED, "10.0.0.1", {"X-Forwarded-For": forwarded_header})
+
+    assert without_header == with_all_trusted_header
+    assert without_header != forwarded
