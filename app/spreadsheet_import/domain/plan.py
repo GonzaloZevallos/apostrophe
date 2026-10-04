@@ -189,7 +189,11 @@ def sale_inputs(
     blocks it before any owner is asked. A finished row always has a date, a variety
     and grams (any of them missing would have made the sheet's own `Total` text,
     leaving the row unfinished), so only payment, kind, variety and the gift/special
-    combination are checked here."""
+    combination are checked here. A blank `Pago` is accepted provisionally (left not
+    owing, no method): the sheet's own formula never requires one for a `Regalo` row,
+    and `build_plan` applies the $0 rule (no method, nothing owed) once the checked
+    total is known; a non-gift, non-$0 sale with no method is still refused, by the
+    owner's own rule, not restated here."""
     results: list[SaleCheckInput | CellProblem] = []
     for row in finished_ventas:
         assert row.sale_date is not None
@@ -224,6 +228,13 @@ def sale_inputs(
         elif row.payment in _KNOWN_PAYMENTS:
             left_owing = False
             method = row.payment
+        elif row.payment is None:
+            # Only a `Regalo` row's `Pago` can be blank on a finished row (the sheet's
+            # own formula never requires it for a gift): left not owing, no method,
+            # provisionally. The owner's own rule ("a total above $0 needs a payment
+            # method") still applies through `check_sales` if this is not a $0 sale.
+            left_owing = False
+            method = None
         else:
             results.append(CellProblem(row.ref, "Pago", "import.payment_unknown"))
             continue
@@ -248,7 +259,16 @@ def sale_inputs(
 
 # -- build_plan --------------------------------------------------------------------------
 
-_MAPPING_SHEET = "Mapeo"
+
+@dataclass(frozen=True)
+class HeaderFooterCheck:
+    """The header/footer refusal, paired with the `ref` the caller used to ask for it.
+    Domain never names a cell (the plan's invariant: only `adapters/layout.py` names a
+    sheet, a cell or a row number): `ref` comes from the caller, which gets it from
+    `layout.py`."""
+
+    ref: SheetRef
+    refusal: Refusal
 
 
 @dataclass(frozen=True)
@@ -257,18 +277,20 @@ class Checks:
     module's job: domain never calls a port) and handed to `build_plan` in one bundle.
     Row-shaped results are keyed by `SheetRef`; name-shaped results by the raw text the
     owner was asked to check — both kept as plain mappings so a test builds only the
-    entries its scenario needs."""
+    entries its scenario needs. `mapping_sheet` is the fixed label the caller uses for
+    the mapping file's own `SheetRef`s (again from `layout.py`, never invented here)."""
 
     variety_names: Mapping[str, VarietyKey | Refusal] = field(default_factory=dict)
     thresholds: Mapping[SheetRef, Refusal | None] = field(default_factory=dict)
     price_history: Mapping[SheetRef, Refusal | None] = field(default_factory=dict)
     catalog_attributes: Mapping[SheetRef, Refusal | None] = field(default_factory=dict)
-    header_footer: Refusal | None = None
+    header_footer: HeaderFooterCheck | None = None
     category_names: Mapping[str, str | Refusal] = field(default_factory=dict)
     expenses: Mapping[SheetRef, Refusal | None] = field(default_factory=dict)
     entradas: Mapping[SheetRef, Refusal | None] = field(default_factory=dict)
     customers: Mapping[str, CustomerKey | Refusal] = field(default_factory=dict)
     sales: Mapping[SheetRef, SaleCheck] = field(default_factory=dict)
+    mapping_sheet: str = ""
 
 
 @dataclass(frozen=True)
@@ -304,6 +326,25 @@ class PlannedCustomer:
 
 
 @dataclass(frozen=True)
+class PlannedSale:
+    """One sale this import would write, paired with its final interpreted input.
+    `method` and `left_owing` already apply the $0 rule (sales.md): once `total` is
+    known to be $0, there is no method and nothing is owed, whatever the sheet's
+    `Pago` column said."""
+
+    ref: SheetRef
+    variety_key: str
+    customer_phone_key: str | None
+    vip: bool
+    gift: bool
+    method: str | None
+    left_owing: bool
+    total: int
+    sale_date: date
+    note: str | None
+
+
+@dataclass(frozen=True)
 class Counts:
     """Counts per kind of record, for the report."""
 
@@ -332,6 +373,7 @@ class ImportPlan:
     counts: Counts
     entrada_order: tuple[EntradaRow, ...]
     venta_order: tuple[VentaRow, ...]
+    sales: tuple[PlannedSale, ...]
 
     @property
     def writable(self) -> bool:
@@ -423,7 +465,9 @@ def build_plan(split: Split, mapping: ParsedMapping, checks: Checks) -> ImportPl
 
     if checks.header_footer is not None:
         problems.append(
-            CellProblem(SheetRef("Catálogo", 18), "Encabezado", checks.header_footer.code)
+            CellProblem(
+                checks.header_footer.ref, "header_footer", checks.header_footer.refusal.code
+            )
         )
 
     for entrada in split.entradas:
@@ -482,7 +526,9 @@ def build_plan(split: Split, mapping: ParsedMapping, checks: Checks) -> ImportPl
         customer_result = checks.customers.get(entry.name)
         if isinstance(customer_result, Refusal):
             problems.append(
-                CellProblem(SheetRef(_MAPPING_SHEET, entry.line), "Teléfono", customer_result.code)
+                CellProblem(
+                    SheetRef(checks.mapping_sheet, entry.line), "phone", customer_result.code
+                )
             )
         elif customer_result is not None:
             entry_phone_key[collapsed] = customer_result.phone_key
@@ -528,11 +574,18 @@ def build_plan(split: Split, mapping: ParsedMapping, checks: Checks) -> ImportPl
             )
         )
 
+    # -- Ventas variety mentions against the Ajustes list (like every other sheet). --
+    for venta in split.ventas:
+        _check_variety_mention(
+            venta.ref, venta.variety, "Variedad", checks.variety_names, valid_variety_keys, problems
+        )
+
     # -- Sales: sale_inputs' own problems, owner refusals, Pendiente-without-customer,
-    # -- mismatches and counts. -------------------------------------------------------
+    # -- the $0 rule, mismatches and counts. -------------------------------------------
     sale_results = sale_inputs(split.ventas, checks.variety_names)
     sale_count = 0
     payment_count = 0
+    planned_sales: list[PlannedSale] = []
     for venta, sale_result in zip(split.ventas, sale_results, strict=True):
         if isinstance(sale_result, CellProblem):
             problems.append(sale_result)
@@ -555,8 +608,37 @@ def build_plan(split: Split, mapping: ParsedMapping, checks: Checks) -> ImportPl
                 Mismatch(venta.ref, sheet_total=venta.total, recomputed_total=check.total)
             )
         sale_count += 1
-        if not sale_result.left_owing and check.total > 0:
+
+        # The $0 rule (sales.md): once the checked total is $0, nothing is owed and
+        # there is no method, whatever the sheet's Pago column said.
+        if check.total > 0:
+            method = sale_result.method
+            left_owing = sale_result.left_owing
+        else:
+            method = None
+            left_owing = False
+        if not left_owing and method is not None:
             payment_count += 1
+
+        customer_phone_key = (
+            entry_phone_key.get(collapse_spaces(venta.customer))
+            if venta.customer is not None
+            else None
+        )
+        planned_sales.append(
+            PlannedSale(
+                ref=venta.ref,
+                variety_key=sale_result.variety_key,
+                customer_phone_key=customer_phone_key,
+                vip=sale_result.vip,
+                gift=sale_result.gift,
+                method=method,
+                left_owing=left_owing,
+                total=check.total,
+                sale_date=sale_result.sale_date,
+                note=sale_result.note,
+            )
+        )
 
     counts = Counts(
         varieties=len(valid_variety_keys),
@@ -580,4 +662,5 @@ def build_plan(split: Split, mapping: ParsedMapping, checks: Checks) -> ImportPl
         counts=counts,
         entrada_order=tuple(sorted(split.entradas, key=_entrada_sort_key)),
         venta_order=tuple(sorted(split.ventas, key=_venta_sort_key)),
+        sales=tuple(sorted(planned_sales, key=lambda sale: (sale.sale_date, sale.ref.row))),
     )

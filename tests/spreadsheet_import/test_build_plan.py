@@ -9,9 +9,11 @@ from __future__ import annotations
 
 from datetime import date
 
+from app.shared.grams import Grams
 from app.spreadsheet_import.domain.plan import (
     Checks,
     CustomerKey,
+    HeaderFooterCheck,
     Refusal,
     SaleCheck,
     Split,
@@ -567,3 +569,216 @@ def test_counts_cover_every_kind_of_record() -> None:
     assert plan.counts.expenses == 1
     assert plan.counts.sales == 1
     assert plan.counts.payments == 1
+
+
+# -- A Ventas row's variety must also match the Ajustes list ---------------------------
+
+
+def test_a_ventas_row_naming_a_well_formed_but_unknown_variety_blocks() -> None:
+    split = _split(
+        varieties=(variety_row(7, "Variedad A"),),
+        ventas=(venta_row(2, variety="Variedad B", payment="Efectivo", total=1000),),
+    )
+    checks = Checks(
+        variety_names={"Variedad A": VARIEDAD_A, "Variedad B": VARIEDAD_B},
+        sales={SheetRef("Ventas", 2): _ok_sale(SheetRef("Ventas", 2), 1000)},
+    )
+
+    plan = build_plan(split, mapping(), checks)
+
+    assert not plan.writable
+    assert any(p.kind == "import.unknown_variety" for p in plan.problems)
+
+
+# -- The $0 rule: no method and nothing owed once the checked total is $0 -------------
+
+
+def test_a_zero_total_efectivo_row_ends_up_with_no_method_and_nothing_owed() -> None:
+    split = _split(
+        varieties=(variety_row(7, "Variedad A"),),
+        ventas=(venta_row(2, kind="Regalo", payment="Efectivo", total=0),),
+    )
+    checks = Checks(
+        variety_names={"Variedad A": VARIEDAD_A},
+        sales={SheetRef("Ventas", 2): _ok_sale(SheetRef("Ventas", 2), 0)},
+    )
+
+    plan = build_plan(split, mapping(), checks)
+
+    assert plan.problems == ()
+    [sale] = plan.sales
+    assert sale.method is None
+    assert sale.left_owing is False
+    assert plan.counts.payments == 0
+
+
+def test_a_zero_total_pendiente_row_ends_up_with_no_method_and_nothing_owed() -> None:
+    split = _split(
+        varieties=(variety_row(7, "Variedad A"),),
+        ventas=(venta_row(2, kind="Regalo", payment="Pendiente", customer=None, total=0),),
+    )
+    checks = Checks(
+        variety_names={"Variedad A": VARIEDAD_A},
+        sales={SheetRef("Ventas", 2): _ok_sale(SheetRef("Ventas", 2), 0)},
+    )
+
+    plan = build_plan(split, mapping(), checks)
+
+    assert plan.problems == ()
+    [sale] = plan.sales
+    assert sale.method is None
+    assert sale.left_owing is False
+
+
+def test_a_nonzero_total_keeps_its_method_and_owing() -> None:
+    split = _split(
+        varieties=(variety_row(7, "Variedad A"),),
+        ventas=(venta_row(2, payment="Efectivo", total=1000),),
+    )
+    checks = Checks(
+        variety_names={"Variedad A": VARIEDAD_A},
+        sales={SheetRef("Ventas", 2): _ok_sale(SheetRef("Ventas", 2), 1000)},
+    )
+
+    plan = build_plan(split, mapping(), checks)
+
+    [sale] = plan.sales
+    assert sale.method == "Efectivo"
+    assert sale.left_owing is False
+    assert plan.counts.payments == 1
+
+
+# -- A finished $0 Regalo row with a blank Pago never blocks --------------------------
+
+
+def test_a_regalo_row_with_a_blank_payment_does_not_block() -> None:
+    split = _split(
+        varieties=(variety_row(7, "Variedad A"),),
+        ventas=(venta_row(2, kind="Regalo", payment=None, customer=None, total=0),),
+    )
+    checks = Checks(
+        variety_names={"Variedad A": VARIEDAD_A},
+        sales={SheetRef("Ventas", 2): _ok_sale(SheetRef("Ventas", 2), 0)},
+    )
+
+    plan = build_plan(split, mapping(), checks)
+
+    assert plan.problems == ()
+    assert plan.counts.sales == 1
+    assert plan.counts.payments == 0
+
+
+# -- Owner-named refs reach the header/footer refusal, never invented by domain ------
+
+
+def test_a_header_footer_refusal_blocks_with_the_caller_given_ref() -> None:
+    split = _split()
+    ref = SheetRef("Catálogo", 18)
+    checks = Checks(
+        header_footer=HeaderFooterCheck(ref=ref, refusal=Refusal("catalog.text_too_long"))
+    )
+
+    plan = build_plan(split, mapping(), checks)
+
+    assert not plan.writable
+    [problem] = plan.problems
+    assert problem.ref == ref
+    assert problem.kind == "catalog.text_too_long"
+
+
+def test_a_mapping_phone_refusal_uses_the_caller_given_mapping_sheet_label() -> None:
+    split = _split()
+    checks = Checks(
+        customers={"Juana": Refusal("customers.phone_invalid")}, mapping_sheet="Mapeo"
+    )
+
+    plan = build_plan(
+        split, mapping(entries=(MappingEntry(5, "Juana", "123"),)), checks
+    )
+
+    assert not plan.writable
+    [problem] = plan.problems
+    assert problem.ref == SheetRef("Mapeo", 5)
+    assert problem.kind == "customers.phone_invalid"
+
+
+# -- Every other owner refusal build_plan surfaces --------------------------------------
+
+
+def test_a_threshold_refusal_blocks_with_its_code() -> None:
+    split = _split(varieties=(variety_row(7, "Variedad A", threshold=Grams.of("-1")),))
+    checks = Checks(
+        variety_names={"Variedad A": VARIEDAD_A},
+        thresholds={SheetRef("Ajustes", 7): Refusal("stock.threshold_not_positive")},
+    )
+
+    plan = build_plan(split, mapping(), checks)
+
+    assert not plan.writable
+    assert any(p.kind == "stock.threshold_not_positive" for p in plan.problems)
+
+
+def test_a_catalog_attributes_refusal_blocks_with_its_code() -> None:
+    split = _split(
+        varieties=(variety_row(7, "Variedad A"),),
+        catalog=(catalog_row(6, "Variedad A", shown="Tal vez"),),
+    )
+    checks = Checks(
+        variety_names={"Variedad A": VARIEDAD_A},
+        catalog_attributes={SheetRef("Catálogo", 6): Refusal("catalog.shown_unknown")},
+    )
+
+    plan = build_plan(split, mapping(), checks)
+
+    assert not plan.writable
+    assert any(p.kind == "catalog.shown_unknown" for p in plan.problems)
+
+
+def test_an_entrada_refusal_blocks_with_its_code() -> None:
+    split = _split(
+        varieties=(variety_row(7, "Variedad A"),),
+        entradas=(entrada_row(2, variety="Variedad A"),),
+    )
+    checks = Checks(
+        variety_names={"Variedad A": VARIEDAD_A},
+        entradas={SheetRef("Entradas", 2): Refusal("stock.cost_missing")},
+    )
+
+    plan = build_plan(split, mapping(), checks)
+
+    assert not plan.writable
+    assert any(p.kind == "stock.cost_missing" for p in plan.problems)
+
+
+def test_an_expense_refusal_blocks_with_its_code() -> None:
+    split = _split(
+        categories=(category_row(21, "Insumos"),),
+        gastos=(gasto_row(2, category="Insumos"),),
+    )
+    checks = Checks(
+        category_names={"Insumos": "insumos"},
+        expenses={SheetRef("Gastos", 2): Refusal("expenses.amount_not_positive")},
+    )
+
+    plan = build_plan(split, mapping(), checks)
+
+    assert not plan.writable
+    assert any(p.kind == "expenses.amount_not_positive" for p in plan.problems)
+
+
+def test_a_sale_refusal_blocks_with_its_code() -> None:
+    split = _split(
+        varieties=(variety_row(7, "Variedad A"),),
+        ventas=(venta_row(2, payment="Efectivo", total=1000),),
+    )
+    checks = Checks(
+        variety_names={"Variedad A": VARIEDAD_A},
+        sales={
+            SheetRef("Ventas", 2): SaleCheck(total=None, refusal=Refusal("sale.no_price_that_day"))
+        },
+    )
+
+    plan = build_plan(split, mapping(), checks)
+
+    assert not plan.writable
+    assert any(p.kind == "sale.no_price_that_day" for p in plan.problems)
