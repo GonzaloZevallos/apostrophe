@@ -1,8 +1,18 @@
 /**
- * `VentaDetalle` (`sales.md`, "On screen: Detalle de venta"): the total, each line
- * with its price per gram and rule badge, shipping, the note, how it was paid, and
- * the customer or "Sin cliente" — all from the API's own answer (docs/adr/0011;
- * plan, invariants: nothing here is the preview). "Borrás la venta" is confirmed
+ * `VentaDetalle` (`sales.md`, "On screen: Detalle de venta"; `VentaDetalle.dc.html`):
+ * the title with the sale's date, the total, a summary line of grams (the API's
+ * `total_grams`, never summed here) · the customer or "Sin cliente" · how it was
+ * paid (`paymentSummary`, dropping `payment: 'none'`'s part), each line with its
+ * price per gram, `ReglaInsignia` and line total, shipping, a final Total row and
+ * the note — all from the API's own answer (docs/adr/0011; plan, invariants:
+ * nothing here is the preview). A line's cost of goods and pending cost
+ * (`SaleDetailLine.cost`) answer in the API but are left out here, as they were
+ * before this rebuild: neither `VentaDetalle.dc.html` nor sales.md's "Shows" list
+ * names them. The VIP mark this screen once showed next to the customer's name is
+ * dropped too: the design's summary is one flat text line, and sales.md's "Shows"
+ * names only "the customer or Sin cliente" (plan, invariants: no figure or text the
+ * API does not answer, and no behaviour sales.md lacks, appears on screen). "Borrás
+ * la venta" is confirmed
  * with `Antes de borrar`, naming the date and the amount; "Venta guardada" with
  * Deshacer (`Estados`) is this screen's own banner, read once through
  * `readFeedback`/`clearSaleJustSaved` and cleared from history state so a refresh
@@ -23,21 +33,22 @@
 
 import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link, useLocation, useNavigate, useParams } from 'react-router'
+import { useLocation, useNavigate, useParams } from 'react-router'
 import { ApiError, NetworkError } from '../../api/client'
 import type { Customer } from '../../api/customers'
 import { invalidateResource, keys } from '../../api/keys'
 import { assignCustomer, deleteSale, getSale, type Sale, type SaleDetail } from '../../api/sales'
 import { isGone, resolveOverride, type RefusalCode } from '../../api/refusals'
 import AvisoExito from '../../components/AvisoExito'
+import Boton from '../../components/Boton'
 import ConfirmDialog from '../../components/ConfirmDialog'
 import { clearSaleJustSaved, gone, readFeedback, SALE_SAVED, toast } from '../../components/feedback'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import GoneScreen from '../../components/GoneScreen'
+import ReglaInsignia from '../../components/ReglaInsignia'
 import SinConexion from '../../components/SinConexion'
 import { formatDateShort } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
-import type { PricingRule } from '../../sales/pricing'
 import { GENERIC_REFUSAL } from '../clientes/ClienteForm'
 import NuevaVentaCliente from './NuevaVentaCliente'
 
@@ -55,18 +66,33 @@ const ASSIGN_OVERRIDES: Partial<Record<RefusalCode, { message: string; refetch: 
 
 export const UNDO_WINDOW_MS = 5000
 
-const RULE_LABEL: Record<PricingRule, string> = {
-  list: 'Lista',
-  bulk: 'Por cantidad',
-  vip: 'VIP',
-  gift: 'Regalo',
-  special: 'Especial',
+/** How the sale was paid, read only from `payment` (plan, invariants: "how it was
+ * paid on the detail comes only from `payment` through `paymentSummary`") — never
+ * derived from `still_owing` or an amount. `none` drops its part of the summary
+ * line entirely, replacing `PAYMENT_LABEL` and its own row (plan, "sale-detail"). */
+function paymentSummary(payment: Sale['payment']): string {
+  switch (payment) {
+    case 'cash':
+      return 'pagada en efectivo'
+    case 'transfer':
+      return 'pagada por transferencia'
+    case 'owing':
+      return 'quedó debiendo'
+    case 'none':
+      return ''
+  }
 }
 
-const PAYMENT_LABEL: Record<Exclude<Sale['payment'], 'none'>, string> = {
-  cash: 'Efectivo',
-  transfer: 'Transferencia',
-  owing: 'Debiendo',
+/** The design's one summary line under the total (`VentaDetalle.dc.html`):
+ * grams · customer or "Sin cliente" · how it was paid, each part from the API's
+ * own answer, joined by " · " with `payment: 'none'`'s empty part dropped. */
+function summaryLine(sale: SaleDetail): string {
+  const parts = [
+    formatGrams(sale.total_grams),
+    sale.customer === null ? 'Sin cliente' : sale.customer.name,
+    paymentSummary(sale.payment),
+  ]
+  return parts.filter((part) => part !== '').join(' · ')
 }
 
 function deleteTitle(sale: SaleDetail): string {
@@ -229,12 +255,22 @@ export default function VentaDetalle() {
   if (isPending || data === undefined) return null
   const sale = data
 
+  function goBack(): void {
+    // No history to go back into (a direct open, a refresh): `/ventas` is the
+    // only sure place back from here (plan, "Navigation").
+    if (location.key === 'default') {
+      navigate('/ventas')
+    } else {
+      navigate(-1)
+    }
+  }
+
   return (
     <main className="pantalla">
       <div className="cuerpo">
-        <div>
-          <Link to="/ventas">Volver</Link>
-          <span className="encabezado__titulo">Venta</span>
+        <div className="encabezado__fila">
+          <Boton variant="icon" icon="atras" ariaLabel="Volver" onClick={goBack} />
+          <span className="encabezado__titulo">{`Venta del ${formatDateShort(sale.date)}`}</span>
         </div>
 
         {undoAvailable && (
@@ -253,57 +289,53 @@ export default function VentaDetalle() {
         {deleteOffline && <SinConexion />}
         {deleteFailed && <ErrorGenerico />}
 
-        <span className="cifra-xl">{formatMoney(sale.total)}</span>
-
-        <div className="venta-detalle__lineas">
-          {sale.lines.map((line, index) => (
-            // A sale can have two lines of the same variety (a gift line and a paid
-            // one, say): `SaleIn` sets no uniqueness rule on `variety_id`, so the
-            // line's position — fixed and unique within one sale — joins it in the key.
-            <div key={`${line.variety_id}-${index}`} className="venta-detalle__linea">
-              <span className="venta-detalle__variedad">
-                {line.variety_name}
-                <span className="regla-insignia">{RULE_LABEL[line.pricing_rule]}</span>
-              </span>
-              <span className="venta-detalle__gramos">{formatGrams(line.grams)}</span>
-              <span className="venta-detalle__precio">{formatMoney(line.price_per_gram)}/g</span>
-              <span className="venta-detalle__total">{formatMoney(line.line_total)}</span>
-            </div>
-          ))}
+        <div className="venta-detalle__resumen">
+          <span className="campo__rotulo">Total</span>
+          <span className="cifra-xl">{formatMoney(sale.total)}</span>
+          <span className="venta-detalle__subtitulo">{summaryLine(sale)}</span>
         </div>
 
-        <div className="campo">
-          <span className="campo__rotulo">Envío cobrado</span>
-          <span>{formatMoney(sale.shipping_charged)}</span>
+        <div>
+          <span className="venta-detalle__encabezado-lineas">Líneas</span>
+          <div className="venta-detalle__lineas">
+            {sale.lines.map((line, index) => (
+              // A sale can have two lines of the same variety (a gift line and a
+              // paid one, say): `SaleIn` sets no uniqueness rule on `variety_id`,
+              // so the line's position — fixed and unique within one sale —
+              // joins it in the key.
+              <div key={`${line.variety_id}-${index}`} className="venta-detalle__linea">
+                <div className="venta-detalle__linea-superior">
+                  <span className="venta-detalle__variedad">{line.variety_name}</span>
+                  <span className="venta-detalle__gramos">{formatGrams(line.grams)}</span>
+                </div>
+                <div className="venta-detalle__linea-inferior">
+                  <span className="venta-detalle__precio">
+                    {formatMoney(line.price_per_gram)} por gramo
+                  </span>
+                  <ReglaInsignia rule={line.pricing_rule} />
+                  <span className="venta-detalle__total">{formatMoney(line.line_total)}</span>
+                </div>
+              </div>
+            ))}
+            <div className="venta-detalle__renglon">
+              <span>Envío cobrado</span>
+              <span className="venta-detalle__renglon-monto">
+                {formatMoney(sale.shipping_charged)}
+              </span>
+            </div>
+            <div className="venta-detalle__renglon venta-detalle__renglon--total">
+              <span>Total</span>
+              <span className="venta-detalle__renglon-monto">{formatMoney(sale.total)}</span>
+            </div>
+          </div>
         </div>
 
         {sale.note !== null && sale.note !== '' && (
           <div className="campo">
             <span className="campo__rotulo">Nota</span>
-            <span>{sale.note}</span>
+            <span className="venta-detalle__nota">{sale.note}</span>
           </div>
         )}
-
-        {sale.payment !== 'none' && (
-          <div className="campo">
-            <span className="campo__rotulo">Cómo se pagó</span>
-            <span>{PAYMENT_LABEL[sale.payment]}</span>
-          </div>
-        )}
-
-        <div className="campo">
-          <span className="campo__rotulo">Cliente</span>
-          <span>
-            {sale.customer === null ? (
-              <span className="fila-venta__sin-cliente">Sin cliente</span>
-            ) : (
-              <>
-                {sale.customer.name}
-                {sale.customer.vip && <span className="vip-insignia">VIP</span>}
-              </>
-            )}
-          </span>
-        </div>
 
         {assigned && <AvisoExito texto="Cliente asignado" />}
         {assignOffline && <SinConexion />}
@@ -313,23 +345,17 @@ export default function VentaDetalle() {
           </span>
         )}
 
-        {sale.customer === null && (
-          <button
-            type="button"
-            className="boton--enlace"
-            onClick={() => setShowAssignSheet(true)}
-          >
-            Asignar cliente
-          </button>
-        )}
+        <div className="venta-detalle__acciones">
+          {sale.customer === null && (
+            <Boton variant="secondary" icon="personaMas" onClick={() => setShowAssignSheet(true)}>
+              Asignar cliente
+            </Boton>
+          )}
 
-        <button
-          type="button"
-          className="boton--enlace"
-          onClick={() => setConfirmingDelete(true)}
-        >
-          Borrar venta
-        </button>
+          <Boton variant="link" icon="tacho" onClick={() => setConfirmingDelete(true)}>
+            Borrar venta
+          </Boton>
+        </div>
       </div>
 
       {showAssignSheet && (
