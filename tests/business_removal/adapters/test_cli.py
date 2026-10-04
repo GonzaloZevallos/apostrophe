@@ -19,8 +19,13 @@ from typing import TextIO, cast
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.engine import Engine
+from sqlalchemy.exc import OperationalError
 
-from app.business_removal.adapters.cli import main
+from app.business_removal.adapters.cli import _BusyTranslatingSchemaRows, _looks_locked, main
+from app.business_removal.application.remove_business import StorageBusy
+from app.business_removal.application.schema_rows import DeletedIds
+from app.business_removal.domain.business_ref import BusinessRef
+from app.business_removal.domain.schema import Schema
 from app.db import make_engine
 from app.main import create_app
 from app.settings import Settings
@@ -37,14 +42,19 @@ EXPENSE_AMOUNT = 112233
 SHIPPING_CHARGED = 98765
 NOW = datetime(2026, 10, 3, 12, 0, tzinfo=UTC)
 
-# Every kind the export holds, as the brief lists it; `business` and `app_user` are
-# checked on their own since the document carries them outside `kinds`/by a fixed
-# shape.
+LOW_STOCK_THRESHOLD = 15
+CATALOG_HEADER = "Catalogo de La Huerta"
+CATALOG_FOOTER = "Gracias por tu compra"
+
+# Every kind the export holds, as the brief lists it. `business` is checked on its
+# own since the document carries it outside `kinds`, by a fixed shape.
 EXPORTED_KINDS = (
+    "app_user",
     "customer",
     "variety",
     "price_entry",
     "stock_entry",
+    "stock_threshold",
     "sale",
     "sale_line",
     "payment",
@@ -151,7 +161,8 @@ def _seed(db_path: Path) -> tuple[str, str]:
         assert expense.status_code == 201, expense.text
 
         header_footer = client.put(
-            "/catalog/header-footer", json={"header": "Catalogo", "footer": "Gracias"}
+            "/catalog/header-footer",
+            json={"header": CATALOG_HEADER, "footer": CATALOG_FOOTER},
         )
         assert header_footer.status_code == 200, header_footer.text
 
@@ -160,6 +171,11 @@ def _seed(db_path: Path) -> tuple[str, str]:
             json={"shown": True, "emoji": "\U0001f33f", "indica_share": 50, "aroma": "floral"},
         )
         assert attributes.status_code == 200, attributes.text
+
+        threshold = client.put(
+            f"/stock/varieties/{variety_id}/threshold", json={"grams": LOW_STOCK_THRESHOLD}
+        )
+        assert threshold.status_code == 200, threshold.text
 
         failed_login = client.post(
             "/auth/login", json={"email": EMAIL_LEAVING, "password": "wrong password"}
@@ -211,7 +227,7 @@ def _has_business_id(connection: sqlite3.Connection, table: str) -> bool:
 
 
 def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     db_path = tmp_path / "apostrophe.db"
     export_dir = tmp_path / "exports"
@@ -248,11 +264,42 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
         assert kind in kinds, f"{kind} is missing from the export"
         assert len(kinds[kind]) >= 1, f"{kind} was not seeded"
 
+    user = next(record for record in kinds["app_user"] if record["email"] == EMAIL_LEAVING)
+    assert "password_hash" not in user
+    assert user["joined_at"]  # stamped at acceptance; never null for a fresh business
+
     customers = {record["name"]: record for record in kinds["customer"]}
     assert customers[CUSTOMER_NAME]["phone"] == PHONE
 
     varieties = {record["name"]: record for record in kinds["variety"]}
     variety_id = varieties["Lavanda"]["id"]
+    variety_ref = {"id": variety_id, "name": "Lavanda"}
+
+    stock_entry = kinds["stock_entry"][0]
+    assert stock_entry["variety_id"] == variety_ref
+    assert stock_entry["grams"] == "100.00"
+    assert stock_entry["origin"] == "purchase"
+    assert stock_entry["total_cost"] == 300000
+    assert stock_entry["note"] == "stock seed"
+
+    price_entry = kinds["price_entry"][0]
+    assert price_entry["variety_id"] == variety_ref
+    assert price_entry["effective_from"] == "2026-01-01"
+    assert price_entry["list_price"] == 5000
+
+    threshold = kinds["stock_threshold"][0]
+    assert threshold["variety_id"] == variety_ref
+    assert threshold["threshold"] == f"{LOW_STOCK_THRESHOLD}.00"
+
+    header_footer = kinds["catalog_header_footer"][0]
+    assert header_footer["header"] == CATALOG_HEADER
+    assert header_footer["footer"] == CATALOG_FOOTER
+
+    attributes = kinds["catalog_attributes"][0]
+    assert attributes["variety_id"] == variety_ref
+    assert attributes["shown"] is True
+    assert attributes["aroma"] == "floral"
+    assert attributes["indica_share"] == 50
 
     sale = kinds["sale"][0]
     assert sale["note"] == SALE_NOTE
@@ -289,6 +336,7 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
     assert other_after == other_before
 
     output = stdout.getvalue()
+    captured = capsys.readouterr()
     for secret in (
         EMAIL_LEAVING,
         EMAIL_STAYING,
@@ -301,6 +349,8 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
         str(SHIPPING_CHARGED),
     ):
         assert secret not in output
+        assert secret not in captured.out
+        assert secret not in captured.err
 
 
 def test_the_other_business_still_reads_its_own_data_after_the_run(
@@ -327,7 +377,7 @@ def test_the_other_business_still_reads_its_own_data_after_the_run(
 
 
 def test_a_dry_run_writes_no_file_and_deletes_nothing(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     db_path = tmp_path / "apostrophe.db"
     export_dir = tmp_path / "exports"
@@ -345,10 +395,23 @@ def test_a_dry_run_writes_no_file_and_deletes_nothing(
         ).fetchone()[0]
     assert _row_counts(db_path, "customer", business_id) == 1
     output = stdout.getvalue()
+    captured = capsys.readouterr()
     assert "La Huerta" in output
     assert "customer: 1" in output
-    assert CUSTOMER_NAME not in output
-    assert PHONE not in output
+    for secret in (
+        EMAIL_LEAVING,
+        EMAIL_STAYING,
+        CUSTOMER_NAME,
+        PHONE,
+        SALE_NOTE,
+        EXPENSE_DETAIL,
+        str(PAYMENT_AMOUNT),
+        str(EXPENSE_AMOUNT),
+        str(SHIPPING_CHARGED),
+    ):
+        assert secret not in output
+        assert secret not in captured.out
+        assert secret not in captured.err
 
 
 def test_an_unknown_email_changes_nothing(
@@ -634,3 +697,44 @@ def test_a_broken_pipe_on_the_report_keeps_the_commit_through_main(
     files = list(export_dir.glob("*.json"))
     assert len(files) == 1
     json.loads(files[0].read_text())  # the export file still parses
+
+
+class _RaisingInner:
+    """A `SchemaRows` whose `schema()` raises whatever it is built with; every
+    other method is unreachable in these tests, so it stays unimplemented."""
+
+    def __init__(self, exc: Exception) -> None:
+        self._exc = exc
+
+    def schema(self) -> Schema:
+        raise self._exc
+
+    def business_of(self, email: str) -> BusinessRef | None:
+        raise NotImplementedError
+
+    def rows(self, table: str, business_id: int) -> list[dict[str, object]]:
+        raise NotImplementedError
+
+    def invitation_count(self, business_id: int) -> int:
+        raise NotImplementedError
+
+    def delete_business(self, business_id: int, order: tuple[str, ...]) -> DeletedIds:
+        raise NotImplementedError
+
+
+def test_busy_translating_schema_rows_turns_a_locked_database_into_storage_busy() -> None:
+    # Closes the long-open row that `StorageBusy` is never raised by a real port:
+    # this wrapper is what makes a real SQLite "database is locked" reach the use
+    # case as `StorageBusy`, not a generic failure -- and leaves any other
+    # `OperationalError` alone.
+    locked = OperationalError("SELECT 1", {}, Exception("database is locked"))
+    with pytest.raises(StorageBusy):
+        _BusyTranslatingSchemaRows(_RaisingInner(locked)).schema()
+
+    other = OperationalError("SELECT 1", {}, Exception("no such table: ghost"))
+    with pytest.raises(OperationalError):
+        _BusyTranslatingSchemaRows(_RaisingInner(other)).schema()
+
+    assert _looks_locked(OperationalError("x", {}, Exception("database is locked")))
+    assert _looks_locked(OperationalError("x", {}, Exception("database table is busy")))
+    assert not _looks_locked(OperationalError("x", {}, Exception("no such table: ghost")))

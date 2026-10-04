@@ -192,9 +192,15 @@ def remove_business(
         raise
     except BaseException as exc:
         if committed:
+            # Once committed, nothing is ever reported as "nothing deleted": a
+            # second failure here (a broken pipe or anything else) is swallowed,
+            # not let through to a caller that does not know the delete already
+            # happened (the plan's invariant).
             try:
                 output.line(f"Business removed; export kept at {path}.")
-            except BrokenPipeError:
+            except SystemExit:
+                raise
+            except BaseException:
                 pass
             return 1
         transaction.rollback()
