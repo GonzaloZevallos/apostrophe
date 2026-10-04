@@ -10,6 +10,7 @@ dependencies = [
     "alembic>=1.13",
     "pydantic>=2.11",
     "tzdata",
+    "openpyxl",
 ]
 
 [project.optional-dependencies]
@@ -18,6 +19,7 @@ dev = [
     "httpx2",
     "ruff",
     "mypy",
+    "types-openpyxl",
 ]
 
 [tool.pytest.ini_options]
