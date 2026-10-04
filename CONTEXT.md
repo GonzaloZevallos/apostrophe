@@ -57,12 +57,12 @@ _Avoid_: threshold, minimum order
 
 **Customer**:
 A person a business sells to, identified within that business by their own record. The name is how a user recognises them; the phone number, when there is one, is optional contact data and never required to register or keep selling to someone. The same person buying from two businesses is a different customer in each.
-_In the app_: Cliente
 _Avoid_: client, buyer, contact, user
+_In the app_: Cliente
 
 **Phone number**:
-Optional contact data for a customer, in international form: an Argentine number always as a mobile (+54 9 and 10 digits with area code), a foreign one as + and its country code and digits. The same number typed with or without spaces, dashes, a leading 0, the 15, the country code or the mobile 9 is the same number. Two customers of a business never share one when both have one; two customers with none never collide.
-_Avoid_: contact, handle, username
+Optional contact data for a customer, in international form: an Argentine number always as a mobile (+54 9 and 10 digits with area code), a foreign one as + and its country code and digits. A blank value means none. Two customers of a business never share one when both have one; any number of customers may have none.
+_Avoid_: contact, handle, username, identifier
 _In the app_: Teléfono
 
 **Channel**:
