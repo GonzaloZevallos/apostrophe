@@ -167,3 +167,74 @@ def split(parsed: ParsedWorkbook) -> Split:
         unfinished=tuple(unfinished),
         problems=tuple(problems),
     )
+
+
+# -- sale_inputs -------------------------------------------------------------------------
+
+_KNOWN_PAYMENTS = ("Efectivo", "Transferencia")
+_KNOWN_KINDS = ("", "Lista", "Amigo", "Regalo")
+
+
+def sale_inputs(
+    finished_ventas: Sequence[VentaRow],
+    variety_names: Mapping[str, VarietyKey | Refusal],
+) -> Sequence[SaleCheckInput | CellProblem]:
+    """One `SaleCheckInput` per row, ready for sales' port, or the `CellProblem` that
+    blocks it before any owner is asked. A finished row always has a date, a variety
+    and grams (any of them missing would have made the sheet's own `Total` text,
+    leaving the row unfinished), so only payment, kind, variety and the gift/special
+    combination are checked here."""
+    results: list[SaleCheckInput | CellProblem] = []
+    for row in finished_ventas:
+        assert row.sale_date is not None
+        assert row.grams is not None
+
+        variety_result = variety_names.get(row.variety or "")
+        if variety_result is None or isinstance(variety_result, Refusal):
+            results.append(CellProblem(row.ref, "Variedad", "import.unknown_variety"))
+            continue
+
+        kind = row.kind or ""
+        if kind not in _KNOWN_KINDS:
+            results.append(CellProblem(row.ref, "Tipo", "import.kind_unknown"))
+            continue
+        vip = kind == "Amigo"
+        gift = kind == "Regalo"
+
+        if gift and row.special_total is not None:
+            results.append(
+                CellProblem(row.ref, "Precio especial (total)", "import.gift_with_special_total")
+            )
+            continue
+
+        has_customer = row.customer is not None
+        if vip and not has_customer:
+            results.append(CellProblem(row.ref, "Cliente", "import.amigo_without_customer"))
+            continue
+
+        if row.payment == "Pendiente":
+            left_owing = True
+            method = None
+        elif row.payment in _KNOWN_PAYMENTS:
+            left_owing = False
+            method = row.payment
+        else:
+            results.append(CellProblem(row.ref, "Pago", "import.payment_unknown"))
+            continue
+
+        results.append(
+            SaleCheckInput(
+                variety_key=variety_result.key,
+                grams=row.grams,
+                has_customer=has_customer,
+                vip=vip,
+                gift=gift,
+                special_total=row.special_total,
+                shipping=row.shipping if row.shipping is not None else 0,
+                method=method,
+                left_owing=left_owing,
+                sale_date=row.sale_date,
+                note=row.note,
+            )
+        )
+    return results
