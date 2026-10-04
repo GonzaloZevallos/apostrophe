@@ -168,14 +168,38 @@ def test_resolve_live_database_url_reads_the_dotenv_file_when_the_variable_is_un
     assert resolve_live_database_url({}, dotenv) == "sqlite:///from_dotenv.db"
 
 
-def test_resolve_live_database_url_prefers_the_real_environment_over_the_dotenv_file(
+def test_resolve_live_database_url_prefers_the_dotenv_file_over_the_real_environment(
     tmp_path: Path,
 ) -> None:
+    # scripts/serve.sh sources .env *after* inheriting the shell's own environment
+    # (`set -a; . ./.env; set +a`), so a .env assignment always overwrites a
+    # pre-existing export of the same name — .env is what the app actually runs on.
     dotenv = tmp_path / ".env"
     dotenv.write_text("APOSTROPHE_DATABASE_URL=sqlite:///from_dotenv.db\n")
     env = {"APOSTROPHE_DATABASE_URL": "sqlite:///from_env.db"}
 
+    assert resolve_live_database_url(env, dotenv) == "sqlite:///from_dotenv.db"
+
+
+def test_resolve_live_database_url_falls_back_to_the_environment_when_dotenv_is_silent(
+    tmp_path: Path,
+) -> None:
+    dotenv = tmp_path / ".env"
+    dotenv.write_text("SOME_OTHER_SETTING=1\n")
+    env = {"APOSTROPHE_DATABASE_URL": "sqlite:///from_env.db"}
+
     assert resolve_live_database_url(env, dotenv) == "sqlite:///from_env.db"
+
+
+def test_resolve_live_database_url_reads_an_exported_quoted_dotenv_assignment(
+    tmp_path: Path,
+) -> None:
+    # A .env written the way a human reaches for first (`export NAME="value"`) must
+    # not be read as silent — that would fall back to the default and fail open.
+    dotenv = tmp_path / ".env"
+    dotenv.write_text('export APOSTROPHE_DATABASE_URL="sqlite:///from_dotenv.db"\n')
+
+    assert resolve_live_database_url({}, dotenv) == "sqlite:///from_dotenv.db"
 
 
 def test_restoring_into_the_default_database_is_refused_when_the_variable_is_unset(
@@ -201,6 +225,24 @@ def test_restoring_into_the_live_database_named_only_in_dotenv_is_refused(
     dotenv.write_text("APOSTROPHE_DATABASE_URL=sqlite:///from_dotenv.db\n")
     live = app_root / "from_dotenv.db"
     resolved = resolve_live_database_url({}, dotenv)
+
+    with pytest.raises(RestoreTargetIsTheLiveDatabase):
+        restore_and_check(source, live, resolved, app_root=app_root)
+
+
+def test_restoring_into_the_dotenv_database_is_refused_though_the_environment_names_another(
+    source: Path, tmp_path: Path
+) -> None:
+    # The case the previous review found failing open: the shell's own
+    # APOSTROPHE_DATABASE_URL and .env's disagree, and .env is the one the running
+    # app actually ends up on (serve.sh sources .env last). A drill that trusted the
+    # shell's value here would accept a target that is, in fact, the live database.
+    app_root = tmp_path
+    dotenv = app_root / ".env"
+    dotenv.write_text("APOSTROPHE_DATABASE_URL=sqlite:///from_dotenv.db\n")
+    env = {"APOSTROPHE_DATABASE_URL": "sqlite:///from_env.db"}
+    live = app_root / "from_dotenv.db"
+    resolved = resolve_live_database_url(env, dotenv)
 
     with pytest.raises(RestoreTargetIsTheLiveDatabase):
         restore_and_check(source, live, resolved, app_root=app_root)

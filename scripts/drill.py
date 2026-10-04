@@ -132,8 +132,9 @@ def _sqlite_path(database_url: str, base_dir: Path) -> Path | None:
 
 def _load_dotenv(path: Path) -> dict[str, str]:
     """A minimal `.env` reader, the same shape `scripts/serve.sh` sources (`set -a; .
-    ./.env; set +a`): `KEY=VALUE` lines, blank lines and `#` comments skipped. The
-    `.env` files this plan writes quote nothing, so values are taken as-is."""
+    ./.env; set +a`): `KEY=VALUE` lines, an optional leading `export `, blank lines
+    and `#` comments skipped. A value wrapped in matching single or double quotes has
+    them stripped, the same as the shell would; an unwrapped value is taken as-is."""
     if not path.is_file():
         return {}
     values: dict[str, str] = {}
@@ -141,8 +142,13 @@ def _load_dotenv(path: Path) -> dict[str, str]:
         stripped = line.strip()
         if not stripped or stripped.startswith("#") or "=" not in stripped:
             continue
+        if stripped.startswith("export "):
+            stripped = stripped[len("export ") :]
         key, _, value = stripped.partition("=")
-        values[key.strip()] = value.strip()
+        value = value.strip()
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in ("'", '"'):
+            value = value[1:-1]
+        values[key.strip()] = value
     return values
 
 
@@ -150,17 +156,19 @@ def resolve_live_database_url(
     env: Mapping[str, str], dotenv_path: Path
 ) -> str:
     """The database URL the running app would actually use, in the same order
-    `scripts/serve.sh` and `Settings.from_env` give it precedence: the real
-    environment first, then `.env` at the repository root, then `Settings`' own
-    default (`app/settings.py`'s `DEFAULT_DATABASE_URL`). Unset or empty counts the
-    same as absent — the app falls back to the default either way, and so must the
-    drill's refusal, or it fails open exactly there (the case this function closes)."""
-    from_env = env.get("APOSTROPHE_DATABASE_URL", "")
-    if from_env:
-        return from_env
+    `scripts/serve.sh` gives it precedence: `.env` first — sourcing it with `set -a;
+    . ./.env; set +a` makes any assignment there overwrite a pre-existing export of
+    the same name — then the real environment (whatever `.env` left untouched), then
+    `Settings`' own default (`app/settings.py`'s `DEFAULT_DATABASE_URL`). Unset or
+    empty counts the same as absent — the app falls back to the default either way,
+    and so must the drill's refusal, or it fails open exactly there (the case this
+    function closes)."""
     from_dotenv = _load_dotenv(dotenv_path).get("APOSTROPHE_DATABASE_URL", "")
     if from_dotenv:
         return from_dotenv
+    from_env = env.get("APOSTROPHE_DATABASE_URL", "")
+    if from_env:
+        return from_env
     return DEFAULT_DATABASE_URL
 
 
