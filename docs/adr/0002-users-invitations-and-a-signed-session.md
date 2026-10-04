@@ -60,3 +60,14 @@ on the internet from the start.
 - **Open registration**: strangers in the day the app is published.
 - **An administrator user in the app**: a key that crosses businesses (docs/adr/0004).
 - **A sessions table**: per-device revocation nobody asked for, a lookup per request.
+
+## Amendment (2026-10-04): password change and reset exist
+
+**Supersedes** the Consequence "Password reset and password change do not exist yet;
+the operator of the installation resets one by hand until a task adds them."
+
+- A user changes their own password from Negocio (`POST /auth/password`), and the
+  operator issues a reset link with `scripts/reset-password.sh <email>`; nobody edits
+  the database by hand (docs/adr/0019).
+- The session mechanism is unchanged: a changed password hash closes every session of
+  that user. A Change hands the acting device a fresh session in the same answer.
