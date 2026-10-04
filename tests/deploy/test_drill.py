@@ -16,12 +16,15 @@ from app.db import make_engine
 from app.expenses.adapters.tables import ExpenseCategoryRow, ExpenseRow
 from app.migrations.runner import upgrade_to_head
 from app.payments.adapters.tables import PaymentRow
+from app.settings import DEFAULT_DATABASE_URL as APP_DEFAULT_DATABASE_URL
 from scripts.drill import (
+    DEFAULT_DATABASE_URL,
     RestoreTargetIsTheLiveDatabase,
     compare_counts,
     copy_age_warning,
     integrity,
     latest_change,
+    resolve_live_database_url,
     restore_and_check,
     row_counts,
 )
@@ -134,8 +137,83 @@ def test_restoring_into_a_genuine_scratch_path_reports_the_three_fields(
 ) -> None:
     scratch = tmp_path / "scratch.db"
 
-    report = restore_and_check(source, scratch, "sqlite:///./apostrophe.db")
+    report = restore_and_check(source, scratch, "sqlite:///does-not-exist.db")
 
     assert report.integrity == "ok"
     assert report.row_counts["payment"] == 1
     assert report.latest_change == NOW
+
+
+def test_drills_own_default_matches_the_apps_default_database_url() -> None:
+    # The two are duplicated on purpose (scripts/drill.py stays importable with no
+    # `app` package on `sys.path`); this is the guard against the one drifting from
+    # the other unnoticed.
+    assert DEFAULT_DATABASE_URL == APP_DEFAULT_DATABASE_URL
+
+
+def test_resolve_live_database_url_falls_back_to_the_apps_default_when_wholly_unset(
+    tmp_path: Path,
+) -> None:
+    missing_dotenv = tmp_path / ".env"  # never written
+
+    assert resolve_live_database_url({}, missing_dotenv) == DEFAULT_DATABASE_URL
+
+
+def test_resolve_live_database_url_reads_the_dotenv_file_when_the_variable_is_unset(
+    tmp_path: Path,
+) -> None:
+    dotenv = tmp_path / ".env"
+    dotenv.write_text("APOSTROPHE_DATABASE_URL=sqlite:///from_dotenv.db\n")
+
+    assert resolve_live_database_url({}, dotenv) == "sqlite:///from_dotenv.db"
+
+
+def test_resolve_live_database_url_prefers_the_real_environment_over_the_dotenv_file(
+    tmp_path: Path,
+) -> None:
+    dotenv = tmp_path / ".env"
+    dotenv.write_text("APOSTROPHE_DATABASE_URL=sqlite:///from_dotenv.db\n")
+    env = {"APOSTROPHE_DATABASE_URL": "sqlite:///from_env.db"}
+
+    assert resolve_live_database_url(env, dotenv) == "sqlite:///from_env.db"
+
+
+def test_restoring_into_the_default_database_is_refused_when_the_variable_is_unset(
+    source: Path, tmp_path: Path
+) -> None:
+    # The blocking case the previous review found: `APOSTROPHE_DATABASE_URL` unset
+    # in the drill's own shell is exactly the shell the app itself runs in when
+    # nobody set it — it then falls back to `Settings`' own default, a *relative*
+    # path, resolved against the app's own working directory (`app_root` here).
+    app_root = tmp_path
+    live = app_root / "apostrophe.db"
+    resolved = resolve_live_database_url({}, app_root / ".env")
+
+    with pytest.raises(RestoreTargetIsTheLiveDatabase):
+        restore_and_check(source, live, resolved, app_root=app_root)
+
+
+def test_restoring_into_the_live_database_named_only_in_dotenv_is_refused(
+    source: Path, tmp_path: Path
+) -> None:
+    app_root = tmp_path
+    dotenv = app_root / ".env"
+    dotenv.write_text("APOSTROPHE_DATABASE_URL=sqlite:///from_dotenv.db\n")
+    live = app_root / "from_dotenv.db"
+    resolved = resolve_live_database_url({}, dotenv)
+
+    with pytest.raises(RestoreTargetIsTheLiveDatabase):
+        restore_and_check(source, live, resolved, app_root=app_root)
+
+
+def test_a_scratch_path_elsewhere_is_still_accepted_once_the_variable_is_unset(
+    source: Path, tmp_path: Path
+) -> None:
+    app_root = tmp_path / "repo"
+    app_root.mkdir()
+    scratch = tmp_path / "scratch.db"
+    resolved = resolve_live_database_url({}, app_root / ".env")
+
+    report = restore_and_check(source, scratch, resolved, app_root=app_root)
+
+    assert report.integrity == "ok"
