@@ -54,7 +54,9 @@ def _tracked_files() -> list[Path]:
 
 
 def test_the_scanner_flags_an_age_identity() -> None:
-    bad = "AGE-SECRET-KEY-1QGFVZLHMFCSK6K3WX2FJ9VPXZQJ3P5K8VY6WY8WFVZ8L0X3MQZQS8RJ9NF"
+    # Split so this deliberately bad example never reads, in the tracked file itself,
+    # as the very shape it exists to catch (see test_no_tracked_file_contains_a_secret).
+    bad = "AGE-SECRET-KEY-1" "QGFVZLHMFCSK6K3WX2FJ9VPXZQJ3P5K8VY6WY8WFVZ8L0X3MQZQS8RJ9NF"
 
     assert "age identity" in find_secrets(bad)
 
@@ -69,13 +71,15 @@ def test_the_scanner_flags_a_jwt_shaped_token() -> None:
 
 
 def test_the_scanner_flags_a_render_api_key() -> None:
-    bad = "RENDER_API_KEY=rnd_abcdefghijklmnopqrstuvwxyz0123456789"
+    # Split for the same reason as the age identity example above.
+    bad = "RENDER_API_KEY=rnd_" "abcdefghijklmnopqrstuvwxyz0123456789"
 
     assert "render api key" in find_secrets(bad)
 
 
 def test_the_scanner_flags_a_cloudflare_or_r2_key() -> None:
-    bad = "R2_SECRET_ACCESS_KEY=0123456789abcdef0123456789abcdef0123456789abcdef"
+    # Split for the same reason as the age identity example above.
+    bad = "R2_SECRET_ACCESS_KEY=" "0123456789abcdef0123456789abcdef0123456789abcdef"
 
     assert "cloudflare or r2 key" in find_secrets(bad)
 

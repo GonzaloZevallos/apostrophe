@@ -42,10 +42,10 @@ the restore drill actually take (deploy-and-backups subtask).
   the app's own configured database, so a drill run never touches the running app.
 - **Secret scan** (`tests/test_no_secrets.py`): every tracked file, checked for an
   `age` identity, a JWT-shaped token, a Render API key, a Cloudflare/R2 key and a
-  generic `*_TOKEN=`/`*_SECRET=` assignment with a real-looking value. The generic
-  check is skipped for `.py` files: a connect-argument reference such as
-  `auth_token=settings.database_auth_token` is a variable name, not a literal secret,
-  and would otherwise false-positive on every future caller of that port. The `age1…`
+  generic `TOKEN`/`SECRET` env-style assignment with a real-looking value. The generic
+  check is skipped for `.py` files: passing `database_auth_token` as the `auth_token`
+  connect argument is a variable reference, not a literal secret, and would otherwise
+  false-positive on every future caller of that port. The `age1…`
   recipient is the one secret-shaped string this repository commits on purpose.
 
 ## Consequences
