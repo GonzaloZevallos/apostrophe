@@ -7,11 +7,14 @@ Never by building rows by hand (the plan's seam for this subtask).
 from __future__ import annotations
 
 import io
+import logging
+import re
 from datetime import date
 from pathlib import Path
 from typing import Any
 
 import pytest
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from openpyxl import Workbook
 from openpyxl.worksheet.worksheet import Worksheet
@@ -20,10 +23,18 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app.accounts.adapters.tables import BusinessRow
+from app.customers.adapters.import_port import CustomersImport
+from app.customers.adapters.tables import CustomerRow
 from app.migrations.runner import upgrade_to_head
+from app.sales.adapters.import_port import SalesImport
+from app.shared.transaction import Transaction
 from app.spreadsheet_import.adapters import layout
 from app.spreadsheet_import.adapters.cli import run
-from tests.conftest import MovableClock
+from tests.conftest import MovableClock, open_business, signed_in
+
+# No report line, exception message or log line ever carries a phone number, not even
+# a run of 4 or more of its digits (the plan's invariant).
+_DIGIT_RUN = re.compile(r"\d{4,}")
 
 VENTAS_TITLES = (
     "Fecha",
@@ -252,8 +263,12 @@ def test_imported_records_are_invisible_from_another_business(
     assert other_client.get("/stock").json()["varieties"] == []
 
 
-def test_a_malformed_mapping_is_reported_with_no_phone_or_name(
-    client: TestClient, engine: Engine, clock: MovableClock, tmp_path: Path
+def test_a_malformed_mapping_on_a_real_run_is_refused_with_no_echo(
+    client: TestClient,
+    engine: Engine,
+    clock: MovableClock,
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
 ) -> None:
     business_id = _business_id(engine)
     xlsx = _save_workbook(_workbook(), tmp_path)
@@ -263,34 +278,40 @@ def test_a_malformed_mapping_is_reported_with_no_phone_or_name(
     mapping_path.write_text(f"nombre,telefono\n{CUSTOMER},{PHONE}\n", encoding="utf-8")
     out, err = io.StringIO(), io.StringIO()
 
-    code = run(
-        [str(business_id), str(xlsx), str(mapping_path), "--dry-run"],
-        engine=engine,
-        clock=clock,
-        out=out,
-        err=err,
-    )
+    with caplog.at_level(logging.DEBUG):
+        code = run(
+            [str(business_id), str(xlsx), str(mapping_path)],
+            engine=engine,
+            clock=clock,
+            out=out,
+            err=err,
+        )
 
-    assert code == 0
+    assert code == 1
     report = out.getvalue()
     assert PHONE not in report
     assert CUSTOMER not in report
-    assert err.getvalue() == ""
+    assert not _DIGIT_RUN.search(report)
+    assert not _DIGIT_RUN.search(err.getvalue())
+    assert caplog.records == []
+    assert client.get("/customers").json() == []
 
 
-def test_a_write_failure_is_refused_by_class_name_with_no_echo(
+def test_the_last_writer_forced_to_raise_leaves_nothing_written(
     client: TestClient,
     engine: Engine,
     clock: MovableClock,
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    import app.spreadsheet_import.application.write_import as write_import_module
+    # Ventas is the last kind written (varieties -> ... -> Entradas -> Gastos ->
+    # Ventas): forcing the real `SalesImport.write_sale` port method to raise proves
+    # everything staged before it (varieties, stock, catalog, categories, customers)
+    # is rolled back too, not just skipped from this point on.
+    def _boom(*_args: Any, **_kwargs: Any) -> int:
+        raise RuntimeError(f"forced failure, phone {PHONE}")
 
-    def _boom(*_args: Any, **_kwargs: Any) -> dict[str, int]:
-        raise RuntimeError(f"duplicate phone {PHONE}")
-
-    monkeypatch.setattr(write_import_module, "_write_customers", _boom)
+    monkeypatch.setattr(SalesImport, "write_sale", _boom)
 
     business_id = _business_id(engine)
     xlsx = _save_workbook(_workbook(), tmp_path)
@@ -305,5 +326,328 @@ def test_a_write_failure_is_refused_by_class_name_with_no_echo(
     assert err.getvalue() == "refused: RuntimeError\n"
     assert PHONE not in out.getvalue()
     assert PHONE not in err.getvalue()
+    assert not _DIGIT_RUN.search(out.getvalue())
+    assert not _DIGIT_RUN.search(err.getvalue())
     assert client.get("/varieties").json() == []
     assert client.get("/customers").json() == []
+    assert client.get("/stock").json()["varieties"] == []
+    # Only the 4 seeded categories remain: the fixture's own "Insumos" never landed.
+    assert len(client.get("/expense-categories").json()) == 4
+    assert client.get("/catalog").json()["header"] != "Catálogo de la casa"
+
+
+def test_a_dry_run_and_a_refused_real_run_over_a_blocking_fixture_write_nothing(
+    client: TestClient, engine: Engine, clock: MovableClock, tmp_path: Path
+) -> None:
+    # An unknown Entradas origin blocks the whole plan; nothing else about the
+    # fixture is invalid, so every other row would otherwise be written fine.
+    workbook = _workbook()
+    workbook[layout.ENTRADAS_SHEET].cell(row=2, column=4, value="Robo")
+    xlsx = _save_workbook(workbook, tmp_path)
+    mapping = _save_mapping(tmp_path, ((CUSTOMER, PHONE),))
+    business_id = _business_id(engine)
+
+    for argv_tail in (["--dry-run"], []):
+        out, err = io.StringIO(), io.StringIO()
+        code = run(
+            [str(business_id), str(xlsx), str(mapping), *argv_tail],
+            engine=engine,
+            clock=clock,
+            out=out,
+            err=err,
+        )
+        assert code in (0, 1)
+        assert err.getvalue() == ""
+        assert "Writable: no" in out.getvalue()
+        assert "import.origin_unknown" in out.getvalue()
+        assert client.get("/varieties").json() == []
+        assert client.get("/customers").json() == []
+        assert client.get("/stock").json()["varieties"] == []
+        assert client.get("/catalog").json()["header"] != "Catálogo de la casa"
+
+
+def test_a_real_duplicate_phone_is_refused_by_its_own_clean_code(
+    client: TestClient,
+    engine: Engine,
+    clock: MovableClock,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A second writer lands a customer with the same phone number into this business
+    *during* the write — the known, accepted race of concurrent writes (ADR-0014's
+    "Known risks") — rather than before it starts, which eligibility would simply
+    refuse up front instead. The real `CustomersImport.write_customer` is made to
+    insert that racing row, through a second session, right before it does its own
+    real work. The collision is real: SQLite's own unique constraint on
+    `(business_id, phone)` fires on flush, and `SqlCustomers`
+    (app/customers/adapters/sql_customers.py) always turns that `IntegrityError` into
+    the clean `PhoneTaken` before it leaves the adapter, so what reaches `cli.run`
+    already carries only a fixed code, never the driver's own message — which, with a
+    real phone number bound, is exactly what `hide_parameters=True` on `make_engine`
+    would have kept out of a log line too, had this been logged."""
+    business_id = _business_id(engine)
+    original = CustomersImport.write_customer
+    raced = False
+
+    def _racing_write_customer(
+        self: CustomersImport, name: str, phone_key: str, vip: bool, transaction: Transaction
+    ) -> int:
+        nonlocal raced
+        if not raced:
+            raced = True
+            with Session(engine) as racer:
+                racer.add(CustomerRow(business_id=business_id, name="Otro", phone=phone_key))
+                racer.commit()
+        return original(self, name, phone_key, vip, transaction)
+
+    monkeypatch.setattr(CustomersImport, "write_customer", _racing_write_customer)
+    xlsx = _save_workbook(_workbook(), tmp_path)
+    mapping = _save_mapping(tmp_path, ((CUSTOMER, PHONE),))
+    out, err = io.StringIO(), io.StringIO()
+
+    code = run(
+        [str(business_id), str(xlsx), str(mapping)], engine=engine, clock=clock, out=out, err=err
+    )
+
+    assert code == 1
+    assert err.getvalue() == "refused: customer.phone_taken\n"
+    assert PHONE not in out.getvalue()
+    assert CUSTOMER not in out.getvalue()
+    assert not _DIGIT_RUN.search(out.getvalue())
+    assert not _DIGIT_RUN.search(err.getvalue())
+
+
+def _seed_variety(seed_client: TestClient) -> int:
+    body = seed_client.post("/varieties", json={"name": "Existente"})
+    assert body.status_code == 201, body.text
+    return int(body.json()["id"])
+
+
+def _seed_variety_with_price(seed_client: TestClient) -> None:
+    variety_id = _seed_variety(seed_client)
+    body = seed_client.post(
+        f"/varieties/{variety_id}/prices",
+        json={"effective_from": "2026-01-01", "list_price": 1000},
+    )
+    assert body.status_code == 201, body.text
+
+
+def _seed_stock_entry(seed_client: TestClient) -> None:
+    variety_id = _seed_variety(seed_client)
+    body = seed_client.post(
+        "/stock/entries",
+        json={"variety_id": variety_id, "origin": "purchase", "grams": 5, "total_cost": 500},
+    )
+    assert body.status_code == 201, body.text
+
+
+def _seed_customer(seed_client: TestClient) -> None:
+    body = seed_client.post(
+        "/customers", json={"name": "Existente", "phone": "+5491199999999", "vip": False}
+    )
+    assert body.status_code == 201, body.text
+
+
+def _seed_sale(seed_client: TestClient) -> None:
+    variety_id = _seed_variety(seed_client)
+    body = seed_client.post(
+        "/sales",
+        json={
+            "date": "2026-01-01",
+            "lines": [{"variety_id": variety_id, "grams": 1, "gift": True}],
+        },
+    )
+    assert body.status_code == 201, body.text
+
+
+def _seed_payment(seed_client: TestClient) -> None:
+    customer_body = seed_client.post(
+        "/customers", json={"name": "Existente", "phone": "+5491199999998", "vip": False}
+    )
+    customer_id = customer_body.json()["id"]
+    variety_id = _seed_variety(seed_client)
+    sale_body = seed_client.post(
+        "/sales",
+        json={
+            "date": "2026-01-01",
+            "customer_id": customer_id,
+            "lines": [{"variety_id": variety_id, "grams": 1, "special_price": 1000}],
+            "payment": "owing",
+        },
+    )
+    assert sale_body.status_code == 201, sale_body.text
+    payment_body = seed_client.post(
+        f"/customers/{customer_id}/payments",
+        json={"paid_on": "2026-01-01", "amount": 1000, "method": "cash"},
+    )
+    assert payment_body.status_code == 201, payment_body.text
+
+
+def _seed_expense(seed_client: TestClient) -> None:
+    category_body = seed_client.post("/expense-categories", json={"name": "Varios"})
+    category_id = category_body.json()["id"]
+    body = seed_client.post(
+        "/expenses",
+        json={
+            "spent_on": "2026-01-01",
+            "category_id": category_id,
+            "amount": 100,
+            "detail": "algo",
+        },
+    )
+    assert body.status_code == 201, body.text
+
+
+# Price entry is not independently seedable: a price entry can never outlive its
+# variety (a foreign key), so varieties.has_records() already covers both at once;
+# `_seed_variety_with_price` seeds them together rather than pretending they split.
+_ELIGIBILITY_SEEDS = (
+    _seed_variety,
+    _seed_variety_with_price,
+    _seed_stock_entry,
+    _seed_customer,
+    _seed_sale,
+    _seed_payment,
+    _seed_expense,
+)
+
+
+def test_eligibility_refuses_each_of_the_seven_kinds(
+    app: FastAPI, engine: Engine, clock: MovableClock, tmp_path: Path
+) -> None:
+    for index, seed in enumerate(_ELIGIBILITY_SEEDS):
+        name = f"Negocio {index}"
+        with TestClient(app) as seed_client:
+            token = open_business(seed_client, engine, clock, name, f"u{index}@example.com")
+            signed_in(seed_client, token)
+            seed(seed_client)
+
+        business_id = _business_id(engine, name=name)
+        xlsx = _save_workbook(_workbook(), tmp_path)
+        mapping = _save_mapping(tmp_path, ((CUSTOMER, PHONE),), name=f"mapping-{index}.csv")
+        out, err = io.StringIO(), io.StringIO()
+
+        code = run(
+            [str(business_id), str(xlsx), str(mapping)],
+            engine=engine,
+            clock=clock,
+            out=out,
+            err=err,
+        )
+
+        assert code == 1, f"{seed.__name__}: {out.getvalue()}"
+        assert "import.business_has_records" in out.getvalue()
+
+
+def test_a_business_with_only_renamed_or_removed_seeded_categories_is_accepted(
+    client: TestClient, engine: Engine, clock: MovableClock, tmp_path: Path
+) -> None:
+    categories = client.get("/expense-categories").json()
+    by_name = {c["name"]: c["id"] for c in categories}
+    client.patch(f"/expense-categories/{by_name['Otros']}", json={"name": "Varios"})
+    client.delete(f"/expense-categories/{by_name['Packaging']}")
+
+    business_id = _business_id(engine)
+    xlsx = _save_workbook(_workbook(), tmp_path)
+    mapping = _save_mapping(tmp_path, ((CUSTOMER, PHONE),))
+    out, err = io.StringIO(), io.StringIO()
+
+    code = run(
+        [str(business_id), str(xlsx), str(mapping)], engine=engine, clock=clock, out=out, err=err
+    )
+
+    assert code == 0, err.getvalue()
+    assert len(client.get("/varieties").json()) == 1
+
+
+def test_recording_order_follows_date_then_sheet_row(
+    client: TestClient, engine: Engine, clock: MovableClock, tmp_path: Path
+) -> None:
+    """Two Entradas share a date but are costed differently, listed in the sheet in
+    the order they should be *recorded* in; two Ventas rows of one customer share a
+    date too; and a negative `Ajuste` lands on the sale's own date. If recording order
+    ignored sheet order (or used it instead of date first), the costs and the account
+    below would come out differently."""
+    workbook = Workbook()
+    active = workbook.active
+    assert active is not None
+    workbook.remove(active)
+
+    ajustes = workbook.create_sheet(layout.AJUSTES_SHEET)
+    ajustes.cell(row=7, column=1, value=VARIETY)
+    ajustes.cell(row=37, column=1, value=VARIETY)
+    ajustes.cell(row=37, column=2, value=date(2026, 1, 1))
+    ajustes.cell(row=37, column=3, value=1000)
+
+    workbook.create_sheet(layout.CATALOGO_SHEET)
+
+    entradas = workbook.create_sheet(layout.ENTRADAS_SHEET)
+    _titles(entradas, ENTRADAS_TITLES)
+    # Same date, different cost per gram: sheet row decides which lot is "older".
+    entradas.cell(row=2, column=1, value=date(2026, 1, 5))
+    entradas.cell(row=2, column=2, value=VARIETY)
+    entradas.cell(row=2, column=3, value=10)
+    entradas.cell(row=2, column=4, value="Compra")
+    entradas.cell(row=2, column=5, value=1000)  # 100/g, row 2: recorded first
+    entradas.cell(row=3, column=1, value=date(2026, 1, 5))
+    entradas.cell(row=3, column=2, value=VARIETY)
+    entradas.cell(row=3, column=3, value=10)
+    entradas.cell(row=3, column=4, value="Compra")
+    entradas.cell(row=3, column=5, value=500)  # 50/g, row 3: recorded second
+    # A negative adjustment on the sale's own date.
+    entradas.cell(row=4, column=1, value=date(2026, 1, 10))
+    entradas.cell(row=4, column=2, value=VARIETY)
+    entradas.cell(row=4, column=3, value=-2)
+    entradas.cell(row=4, column=4, value="Ajuste")
+
+    gastos = workbook.create_sheet(layout.GASTOS_SHEET)
+    _titles(gastos, GASTOS_TITLES)
+
+    ventas = workbook.create_sheet(layout.VENTAS_SHEET)
+    _titles(ventas, VENTAS_TITLES)
+    ventas.cell(row=2, column=1, value=date(2026, 1, 10))
+    ventas.cell(row=2, column=2, value=VARIETY)
+    ventas.cell(row=2, column=3, value=5)
+    ventas.cell(row=2, column=4, value="Pendiente")
+    ventas.cell(row=2, column=5, value=5000)
+    ventas.cell(row=2, column=6, value=CUSTOMER)
+    ventas.cell(row=2, column=7, value="")
+    ventas.cell(row=3, column=1, value=date(2026, 1, 10))
+    ventas.cell(row=3, column=2, value=VARIETY)
+    ventas.cell(row=3, column=3, value=3)
+    ventas.cell(row=3, column=4, value="Pendiente")
+    ventas.cell(row=3, column=5, value=3000)
+    ventas.cell(row=3, column=6, value=CUSTOMER)
+    ventas.cell(row=3, column=7, value="")
+
+    xlsx = _save_workbook(workbook, tmp_path, name="order.xlsx")
+    mapping = _save_mapping(tmp_path, ((CUSTOMER, PHONE),), name="order-mapping.csv")
+    business_id = _business_id(engine)
+    out, err = io.StringIO(), io.StringIO()
+
+    code = run(
+        [str(business_id), str(xlsx), str(mapping)], engine=engine, clock=clock, out=out, err=err
+    )
+    assert code == 0, err.getvalue()
+
+    # 20 g bought in, 2 g adjusted out, 8 g sold: 10 g left.
+    stock = client.get("/stock").json()
+    assert stock["varieties"][0]["grams"] == 10.0
+
+    customers = client.get("/customers").json()
+    assert len(customers) == 1
+    customer_id = customers[0]["id"]
+    assert customers[0]["balance"] == 8000
+
+    account = client.get(f"/customers/{customer_id}/account").json()
+    sale_rows = [row for row in account["rows"] if row["kind"] == "sale"]
+    assert [row["sale"]["total"] for row in sale_rows] == [5000, 3000]
+    assert [row["running_balance"] for row in sale_rows] == [5000, 8000]
+
+    sale_ids = [row["sale"]["id"] for row in sale_rows]
+    first_detail = client.get(f"/sales/{sale_ids[0]}").json()
+    second_detail = client.get(f"/sales/{sale_ids[1]}").json()
+    # Both lines draw from the 100/g lot (row 2, recorded first on the tied date):
+    # 5 g then 3 g, exactly the 8 g left in it after the -2 g adjustment.
+    assert first_detail["lines"][0]["cost"]["costed"] == 500
+    assert second_detail["lines"][0]["cost"]["costed"] == 300

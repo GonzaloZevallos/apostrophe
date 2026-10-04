@@ -39,15 +39,39 @@ from app.spreadsheet_import.adapters import layout
 from app.spreadsheet_import.adapters.cells import read_workbook
 from app.spreadsheet_import.adapters.mapping import read_mapping
 from app.spreadsheet_import.adapters.report import print_report
-from app.spreadsheet_import.application.plan_import import plan_import
+from app.spreadsheet_import.application.plan_import import has_any_records, plan_import
 from app.spreadsheet_import.application.write_import import write_import
-from app.spreadsheet_import.domain.rows import SheetRef
+from app.spreadsheet_import.domain.rows import (
+    HeaderFooterCells,
+    ParsedMapping,
+    ParsedWorkbook,
+    SheetRef,
+)
 from app.stock.adapters.import_port import SqlStockImport
 from app.varieties.adapters.import_port import VarietiesImport as SqlVarietiesImport
 
 
 class _BusinessUnknown(Exception):
     code = "import.business_unknown"
+
+
+# Eligibility (PRD "the refusal comes before any sheet check") is decided before the
+# workbook or the mapping is even opened, so a business that already has records is
+# refused the same way whatever state the file is in — never `refused: BadZipFile` or
+# `refused: FileNotFoundError` in its place. `plan_import` re-checks eligibility first
+# itself either way; these stand in for an unopened file only on that one path.
+_EMPTY_WORKBOOK = ParsedWorkbook(
+    varieties=(),
+    price_history=(),
+    catalog=(),
+    header_footer=HeaderFooterCells(header="", footer=""),
+    categories=(),
+    entradas=(),
+    gastos=(),
+    ventas=(),
+    problems=(),
+)
+_EMPTY_MAPPING = ParsedMapping(entries=(), problems=())
 
 
 def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
@@ -89,8 +113,12 @@ def _run(args: argparse.Namespace, engine: Engine, clock: Clock, out: TextIO) ->
         sales = SalesImport(session, args.business_id)
         payments = PaymentsImport(session, args.business_id)
 
-        parsed = read_workbook(args.xlsx_path)
-        mapping = read_mapping(args.mapping_path)
+        ineligible = has_any_records(varieties, stock, expenses, customers, sales, payments)
+        if ineligible:
+            parsed, mapping = _EMPTY_WORKBOOK, _EMPTY_MAPPING
+        else:
+            parsed = read_workbook(args.xlsx_path)
+            mapping = read_mapping(args.mapping_path)
 
         plan = plan_import(
             parsed,
