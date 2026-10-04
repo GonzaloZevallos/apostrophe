@@ -18,6 +18,8 @@ PUBLIC = {
     ("POST", "/auth/logout"),
     ("GET", "/invitations/{token}"),
     ("POST", "/invitations/{token}/accept"),
+    ("GET", "/reset-links/{token}"),
+    ("POST", "/reset-links/{token}"),
 }
 
 

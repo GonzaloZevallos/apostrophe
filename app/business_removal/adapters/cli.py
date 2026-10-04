@@ -90,8 +90,8 @@ class _BusyTranslatingSchemaRows:
     def rows(self, table: str, business_id: int) -> list[dict[str, object]]:
         return self._call(lambda: self._inner.rows(table, business_id))
 
-    def invitation_count(self, business_id: int) -> int:
-        return self._call(lambda: self._inner.invitation_count(business_id))
+    def withheld_count(self, table: str, business_id: int) -> int:
+        return self._call(lambda: self._inner.withheld_count(table, business_id))
 
     def delete_business(self, business_id: int, order: tuple[str, ...]) -> DeletedIds:
         return self._call(lambda: self._inner.delete_business(business_id, order))

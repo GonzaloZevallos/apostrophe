@@ -263,6 +263,10 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
         "amount": 100,
         "method": "cash",
     },
+    ("POST", "/auth/password"): {
+        "current_password": "the wrong current password",
+        "new_password": "a new password of some length",
+    },
 }
 
 PUBLIC_PATHS = {"/health", "/auth/login", "/auth/logout"}
@@ -276,7 +280,9 @@ def _operations() -> list[tuple[str, str, bool]]:
         (method.upper(), path, "requestBody" in operation)
         for path, item in document["paths"].items()
         for method, operation in item.items()
-        if path not in PUBLIC_PATHS and not path.startswith("/invitations/{token}")
+        if path not in PUBLIC_PATHS
+        and not path.startswith("/invitations/{token}")
+        and not path.startswith("/reset-links/{token}")
     )
 
 

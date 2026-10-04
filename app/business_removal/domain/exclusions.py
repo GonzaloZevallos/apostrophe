@@ -14,6 +14,7 @@ BUSINESS_TABLE = "business"
 APP_USER_TABLE = "app_user"
 INVITATION_TABLE = "invitation"
 LOGIN_GUARD_TABLE = "login_guard"
+RESET_LINK_TABLE = "reset_link"
 PINNED_CATALOG_TABLE = "pinned_catalog"
 
 # Tables with no `business_id` of their own (docs/adr/0004); the only tables a business
@@ -25,8 +26,13 @@ PLATFORM_TABLES: frozenset[str] = frozenset({BUSINESS_TABLE, INVITATION_TABLE, L
 # business owns and shared by every business on the installation.
 SKIPPED_TABLES: frozenset[str] = frozenset({"alembic_version", "login_address_guard"})
 
-# Deleted along with the business, but never written to the export file.
-WITHHELD_TABLES: frozenset[str] = frozenset({INVITATION_TABLE, LOGIN_GUARD_TABLE})
+# Deleted along with the business, but never written to the export file (docs/adr/0019).
+# `reset_link` carries its own `business_id` (unlike `invitation` and `login_guard`,
+# both platform tables) and is withheld whole rather than exported: a reset link holds
+# nothing a business export is for.
+WITHHELD_TABLES: frozenset[str] = frozenset(
+    {INVITATION_TABLE, LOGIN_GUARD_TABLE, RESET_LINK_TABLE}
+)
 
 # (table, column) pairs dropped from every exported row, even though their table is
 # exported. Each future secret column joins this set in the diff that adds it.

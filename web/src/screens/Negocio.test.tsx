@@ -6,14 +6,22 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import type { Me } from '../api/me'
 import { SIN_CONEXION_TITULO } from '../components/SinConexion'
 import * as clipboard from '../clipboard'
-import Negocio, { BUSINESS_NAME_INVALID_MESSAGE, RENAME_SUCCESS, RETRY_MESSAGE } from './Negocio'
+import Negocio, {
+  BUSINESS_NAME_INVALID_MESSAGE,
+  PASSWORD_CHANGED_SUCCESS,
+  RENAME_SUCCESS,
+  RETRY_MESSAGE,
+} from './Negocio'
+import { WRONG_CURRENT_PASSWORD_MESSAGE } from './CambiarContrasena'
+import { WEAK_PASSWORD_MESSAGE } from './Invitacion'
+import { BRAKE_MESSAGE } from './Entrar'
 
 vi.mock('../clipboard', () => ({ copyText: vi.fn().mockResolvedValue(true) }))
 
@@ -199,6 +207,99 @@ test('logging out posts to /auth/logout, clears the query cache and navigates to
   expect(await screen.findByText('Pantalla de entrada')).toBeInTheDocument()
   expect(calls).toContain('POST /auth/logout')
   expect(queryClient.getQueryData(['something-else'])).toBeUndefined()
+})
+
+test('changing the password shows the fixed toast and closes the sheet, with no data', async () => {
+  const fetchMock = vi.fn((url: string) => {
+    if (url === '/auth/password') {
+      return Promise.resolve(jsonResponse(200, { token: 'tok' }))
+    }
+    return Promise.resolve(jsonResponse(200, BUSINESS))
+  })
+  renderNegocio(fetchMock)
+
+  await userEvent.click(await screen.findByRole('button', { name: 'Cambiar contraseña' }))
+  const sheet = within(screen.getByRole('presentation'))
+  await userEvent.type(screen.getByLabelText('Contraseña actual'), 'viejaclave123')
+  await userEvent.type(screen.getByLabelText('Contraseña nueva'), 'nuevaclave123')
+  await userEvent.click(sheet.getByRole('button', { name: 'Guardar' }))
+
+  expect(await screen.findByText(PASSWORD_CHANGED_SUCCESS)).toBeInTheDocument()
+  expect(screen.queryByLabelText('Contraseña actual')).not.toBeInTheDocument()
+})
+
+test('a wrong current password clears it inline and keeps the new one, never navigating to Entrar', async () => {
+  const fetchMock = vi.fn((url: string) => {
+    if (url === '/auth/password') {
+      return Promise.resolve(
+        jsonResponse(422, { detail: 'wrong', code: 'account.current_password_wrong' }),
+      )
+    }
+    return Promise.resolve(jsonResponse(200, BUSINESS))
+  })
+  renderNegocio(fetchMock)
+
+  await userEvent.click(await screen.findByRole('button', { name: 'Cambiar contraseña' }))
+  const sheet = within(screen.getByRole('presentation'))
+  const currentField = screen.getByLabelText('Contraseña actual')
+  const newField = screen.getByLabelText('Contraseña nueva')
+  await userEvent.type(currentField, 'viejaequivocada')
+  await userEvent.type(newField, 'nuevaclave123')
+  await userEvent.click(sheet.getByRole('button', { name: 'Guardar' }))
+
+  expect(await screen.findByText(WRONG_CURRENT_PASSWORD_MESSAGE)).toBeInTheDocument()
+  expect(currentField).toHaveValue('')
+  expect(newField).toHaveValue('nuevaclave123')
+  expect(screen.queryByText('Pantalla de entrada')).not.toBeInTheDocument()
+})
+
+test('a short new password shows the invitation\'s own too-short text, keeping everything typed', async () => {
+  const fetchMock = vi.fn((url: string) => {
+    if (url === '/auth/password') {
+      return Promise.resolve(jsonResponse(422, { detail: 'short', code: 'account.password_weak' }))
+    }
+    return Promise.resolve(jsonResponse(200, BUSINESS))
+  })
+  renderNegocio(fetchMock)
+
+  await userEvent.click(await screen.findByRole('button', { name: 'Cambiar contraseña' }))
+  const sheet = within(screen.getByRole('presentation'))
+  await userEvent.type(screen.getByLabelText('Contraseña actual'), 'viejaclave123')
+  await userEvent.type(screen.getByLabelText('Contraseña nueva'), 'corta')
+  await userEvent.click(sheet.getByRole('button', { name: 'Guardar' }))
+
+  expect(await screen.findByText(WEAK_PASSWORD_MESSAGE)).toBeInTheDocument()
+  expect(screen.getByLabelText('Contraseña actual')).toHaveValue('viejaclave123')
+})
+
+test('a lock shows the login brake\'s own message, keeping everything typed', async () => {
+  const fetchMock = vi.fn((url: string) => {
+    if (url === '/auth/password') {
+      return Promise.resolve(jsonResponse(429, { detail: 'locked', code: 'account.login_locked' }))
+    }
+    return Promise.resolve(jsonResponse(200, BUSINESS))
+  })
+  renderNegocio(fetchMock)
+
+  await userEvent.click(await screen.findByRole('button', { name: 'Cambiar contraseña' }))
+  const sheet = within(screen.getByRole('presentation'))
+  await userEvent.type(screen.getByLabelText('Contraseña actual'), 'viejaclave123')
+  await userEvent.type(screen.getByLabelText('Contraseña nueva'), 'nuevaclave123')
+  await userEvent.click(sheet.getByRole('button', { name: 'Guardar' }))
+
+  expect(await screen.findByText(BRAKE_MESSAGE)).toBeInTheDocument()
+  expect(screen.getByLabelText('Contraseña nueva')).toHaveValue('nuevaclave123')
+})
+
+test('the reveal control toggles the new-password field between hidden and shown', async () => {
+  renderNegocio(vi.fn().mockResolvedValue(jsonResponse(200, BUSINESS)))
+
+  await userEvent.click(await screen.findByRole('button', { name: 'Cambiar contraseña' }))
+  const field = screen.getByLabelText('Contraseña nueva')
+  expect(field).toHaveAttribute('type', 'password')
+
+  await userEvent.click(screen.getByRole('button', { name: 'Mostrar' }))
+  expect(field).toHaveAttribute('type', 'text')
 })
 
 test('a dropped network while logging out shows "Sin conexión" and re-enables the button', async () => {
