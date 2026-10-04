@@ -55,14 +55,28 @@ domain (ADR-0006).
   `adapters/cells.py` is the only place a cell becomes `Grams`, pesos, `date` or text,
   and `adapters/layout.py` the only place a sheet, cell or header text is named. Columns
   of Ventas, Entradas and Gastos are found by exact header text after trimming.
+  `layout.py` names each sheet's typed and formula columns: a row whose typed columns
+  are all blank is skipped in `cells.py` before any formula cell of it is read, and
+  never reaches the report.
+- **Unfinished rows add nothing.** The import's domain decides them from Ventas Total
+  (text) and Entradas/Gastos Revisar (non-blank) before any owner `check_*` runs; they
+  are listed with the sheet's own text, never reach an owner port, and create no
+  customer, make no one VIP and choose no kept spelling. Whether the file was
+  recalculated is checked once per workbook, on Ventas: a typed row whose Total has no
+  value is one blocking problem. In Entradas and Gastos a blank Revisar means finished;
+  every text it can show is also an owner refusal, so an unrecalculated unfinished row
+  still blocks.
 
 ## Consequences
 
 - Every owner gains an import adapter and its tests; an owner rule changed later
   changes the import with it, because the import never restates one.
-- Unconfirmed facts about the real sheet (the Revisar marker, whether Total includes
-  shipping, the header texts) live as constants in `cells.py` and `layout.py`; a wrong
-  guess shows on the operator's dry run before anything is written.
+- The facts about the real sheet, confirmed by the human from the sheet itself
+  (2026-10-04), live as constants in `cells.py` and `layout.py`: titles on row 1 of
+  Ventas, Entradas and Gastos, data from row 2; a Ventas row is unfinished when its
+  Total (a formula) holds text instead of a number, and Ventas has no Revisar; an
+  Entradas or Gastos row is unfinished when its Revisar is non-blank; the sheet's Total
+  includes shipping, so it is compared with `Sale.total`.
 - A seller writing at the very instant of the real run is not fully guarded (SQLite
   legacy mode, ADR-0012); accepted for a script run once before the seller starts.
 
