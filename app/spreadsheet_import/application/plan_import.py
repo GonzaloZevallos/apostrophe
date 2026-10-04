@@ -1,4 +1,4 @@
-"""Runs the owner checks on finished rows and builds the `ImportPlan` (ADR-0014).
+"""Runs the owner checks on finished rows and builds the `ImportPlan` (ADR-0018).
 
 This is the one place that translates between `application/ports.py`'s shapes (what an
 owner's adapter returns) and `domain/plan.py`'s mirrors of them (what the pure plan

@@ -18,7 +18,7 @@ from app.accounts.domain.invitation import (
     InvitationNotUsable,
     token_digest,
 )
-from app.accounts.domain.login_guard import LoginGuard
+from app.accounts.domain.login_guard import AddressGuard, LoginGuard
 from app.accounts.domain.password import PasswordHasher, ScryptParams
 from app.accounts.domain.session_token import SessionSigner
 
@@ -97,36 +97,65 @@ def test_an_invitation_works_once_within_seven_days() -> None:
     invitation = Invitation(InvitationKind.NEW_BUSINESS, token_digest("t"), NOW)
 
     assert not invitation.is_usable(NOW + timedelta(days=7))
-    invitation.use(NOW + timedelta(days=6))
+    invitation.use(NOW + timedelta(days=6), opened_business_id=1)
     with pytest.raises(InvitationNotUsable):
-        invitation.use(NOW + timedelta(days=6))
+        invitation.use(NOW + timedelta(days=6), opened_business_id=1)
 
 
-def test_a_join_invitation_names_its_business_and_a_new_business_one_does_not() -> None:
+def test_a_join_invitation_names_its_business_and_a_new_business_one_does_not_until_used() -> None:
     with pytest.raises(ValueError):
         Invitation(InvitationKind.JOIN_BUSINESS, token_digest("t"), NOW)
     with pytest.raises(ValueError):
         Invitation(InvitationKind.NEW_BUSINESS, token_digest("t"), NOW, business_id=1)
+    # Valid once used: a spent new-business invitation does name its business.
+    Invitation(InvitationKind.NEW_BUSINESS, token_digest("t"), NOW, business_id=1, used_at=NOW)
 
 
-def test_five_failures_in_a_row_lock_for_fifteen_minutes() -> None:
+def test_use_records_the_opened_business_only_for_a_new_business_invitation() -> None:
+    opening = Invitation(InvitationKind.NEW_BUSINESS, token_digest("t"), NOW)
+    with pytest.raises(ValueError):
+        opening.use(NOW)  # a new-business invitation must say which business it opened
+
+    joining = Invitation(InvitationKind.JOIN_BUSINESS, token_digest("t2"), NOW, business_id=1)
+    with pytest.raises(ValueError):
+        joining.use(NOW, opened_business_id=2)  # it already names its business
+    joining.use(NOW)
+    assert joining.business_id == 1
+
+
+def test_a_login_guard_locks_once_its_threshold_is_reached() -> None:
     guard = LoginGuard()
-    for _ in range(4):
-        guard.record_failure(NOW)
-    assert not guard.is_locked(NOW)
 
-    guard.record_failure(NOW)
+    assert not guard.reached(4)
+    assert guard.reached(5)
+
+
+def test_a_login_guard_s_lock_lasts_fifteen_minutes() -> None:
+    guard = LoginGuard(locked_until=LoginGuard().lock_until(NOW))
 
     assert guard.is_locked(NOW + timedelta(minutes=14, seconds=59))
     assert not guard.is_locked(NOW + timedelta(minutes=15))
 
 
-def test_a_success_resets_the_count() -> None:
-    guard = LoginGuard()
-    for _ in range(4):
-        guard.record_failure(NOW)
+def test_an_unlocked_login_guard_is_never_locked() -> None:
+    assert not LoginGuard().is_locked(NOW)
 
-    guard.record_success()
-    guard.record_failure(NOW)
 
-    assert not guard.is_locked(NOW)
+def test_an_address_guard_locks_at_twenty_failures_not_before() -> None:
+    guard = AddressGuard()
+
+    assert not guard.reached(19)
+    assert guard.reached(20)
+
+
+def test_an_address_guard_s_lock_lasts_fifteen_minutes() -> None:
+    guard = AddressGuard(locked_until=AddressGuard().lock_until(NOW))
+
+    assert guard.is_locked(NOW + timedelta(minutes=14, seconds=59))
+    assert not guard.is_locked(NOW + timedelta(minutes=15))
+
+
+def test_an_address_guard_s_window_cutoff_is_fifteen_minutes_back() -> None:
+    guard = AddressGuard()
+
+    assert guard.window_cutoff(NOW) == NOW - timedelta(minutes=15)

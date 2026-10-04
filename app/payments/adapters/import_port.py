@@ -1,7 +1,7 @@
 """Payments' half of the spreadsheet import's `PaymentsImport` port
 (`app/spreadsheet_import/application/ports.py`): eligibility only. A payment is
 written through `SalesImport.write_sale` (the sales adapter), never through this one —
-`has_records` is the only method this port needs (ADR-0014).
+`has_records` is the only method this port needs (ADR-0018).
 """
 
 from __future__ import annotations

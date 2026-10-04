@@ -1,4 +1,4 @@
-"""The import's report, printed to the operator's terminal (ADR-0014; PRD "What the
+"""The import's report, printed to the operator's terminal (ADR-0018; PRD "What the
 report may show"). It may name customers and show amounts; it never shows a phone
 number, because nothing here ever reads `PlannedCustomer.phone_key` or any other
 `phone_key` field. It is never logged: `adapters/cli.py` writes it only to `out`.

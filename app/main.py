@@ -2,6 +2,8 @@
 this module reads nothing from the environment; tests build the app with their own
 settings, engine and clock."""
 
+import asyncio
+import contextlib
 from collections.abc import AsyncIterator, Callable, Sequence
 from contextlib import asynccontextmanager
 from typing import Protocol, cast
@@ -31,6 +33,13 @@ from app.payments.adapters.results_ports import SqlDebtSummary, SqlPaymentsRecei
 from app.payments.adapters.router import customers_router as payments_customers_router
 from app.payments.adapters.router import router as payments_router
 from app.payments.adapters.settlements import SqlBalances, SqlOwingSales
+from app.pinned_catalog.adapters.router import router as pinned_catalog_router
+from app.pinned_catalog.adapters.telegram_http import HttpTelegram
+from app.pinned_catalog.adapters.ticker import run_ticker
+from app.pinned_catalog.adapters.token_cipher import TokenCipher
+from app.pinned_catalog.adapters.upkeep_trigger import schedule_upkeep
+from app.pinned_catalog.application.ports import Telegram
+from app.pinned_catalog.application.push import BusinessLocks
 from app.results.adapters.router import router as results_router
 from app.sales.adapters.period_sales import SqlPeriodSales
 from app.sales.adapters.router import router as sales_router
@@ -94,7 +103,20 @@ async def _refused(request: Request, exc: Exception) -> JSONResponse:
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     # Starlette's `State` is untyped; `create_app` always assigns an `Engine`.
     upgrade_to_head(cast(Engine, app.state.engine))
-    yield
+    # The day-change ticker (ADR-0014): started only when asked, so the test app
+    # (`upkeep_ticker=False`) never races a background sync against its own
+    # assertions. Exposed on `app.state` so a test can prove it stops on shutdown.
+    ticker_task: asyncio.Task[None] | None = None
+    if cast(bool, app.state.pinned_catalog_upkeep_ticker):
+        ticker_task = asyncio.create_task(run_ticker(app.state))
+    app.state.pinned_catalog_ticker_task = ticker_task
+    try:
+        yield
+    finally:
+        if ticker_task is not None:
+            ticker_task.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await ticker_task
 
 
 def create_app(
@@ -102,14 +124,27 @@ def create_app(
     engine: Engine | None = None,
     clock: Clock = system_clock,
     hasher: PasswordHasher | None = None,
+    telegram: Telegram | None = None,
+    upkeep_ticker: bool = True,
 ) -> FastAPI:
     settings = settings or Settings.from_env()
     app = FastAPI(title="apostrophe", lifespan=lifespan)
-    app.state.engine = engine or make_engine(settings.database_url)
+    app.state.engine = engine or make_engine(
+        settings.database_url, auth_token=settings.database_auth_token
+    )
     app.state.clock = clock
     app.state.signer = SessionSigner(settings.secret_key)
     app.state.hasher = hasher or PasswordHasher()
     app.state.public_url = settings.public_url
+    app.state.settings = settings
+    # `telegram=None` means the real adapter; every test but `telegram_http`'s own
+    # injects a fake through this same keyword (the plan's invariant). The ticker
+    # itself and the trigger dependency are the `upkeep` subtask's: this flag is only
+    # stored here for it to read.
+    app.state.pinned_catalog_telegram = telegram or HttpTelegram()
+    app.state.pinned_catalog_locks = BusinessLocks()
+    app.state.pinned_catalog_cipher = TokenCipher(settings.secret_key)
+    app.state.pinned_catalog_upkeep_ticker = upkeep_ticker
     app.add_exception_handler(RequestValidationError, _without_request_data)
     app.add_exception_handler(Refused, _refused)
     # A factory, not an instance: `get_business_opening` builds it over the request's
@@ -164,15 +199,19 @@ def create_app(
     # Every other router goes behind the session gate (docs/adr/0002); each endpoint
     # then takes its business from the session (docs/adr/0004).
     gated = [Depends(require_session)]
+    # Exactly these four (ADR-0014): a write here may change what the pinned catalog
+    # says, so it also schedules upkeep's own post-commit, off-session sync.
+    upkeep_gated = [*gated, Depends(schedule_upkeep)]
     app.include_router(accounts_router, dependencies=gated)
-    app.include_router(varieties_router, dependencies=gated)
+    app.include_router(varieties_router, dependencies=upkeep_gated)
     app.include_router(customers_router, dependencies=gated)
     app.include_router(expenses_router, dependencies=gated)
-    app.include_router(sales_router, dependencies=gated)
-    app.include_router(stock_router, dependencies=gated)
-    app.include_router(catalog_router, dependencies=gated)
+    app.include_router(sales_router, dependencies=upkeep_gated)
+    app.include_router(stock_router, dependencies=upkeep_gated)
+    app.include_router(catalog_router, dependencies=upkeep_gated)
     app.include_router(payments_router, dependencies=gated)
     app.include_router(payments_customers_router, dependencies=gated)
+    app.include_router(pinned_catalog_router, dependencies=gated)
     app.include_router(results_router, dependencies=gated)
 
     if settings.web_dist is not None:

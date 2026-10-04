@@ -1,5 +1,5 @@
 """Writes a writable `ImportPlan` into one business, in the fixed order the plan sets
-(ADR-0014; the plan's invariant on write order and `recorded_at`).
+(ADR-0018; the plan's invariant on write order and `recorded_at`).
 
 Runs only on a writable plan, and checks eligibility again first: the first check, in
 `plan_import.py`, and this one, bracket the whole run so a record written by someone

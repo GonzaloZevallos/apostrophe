@@ -16,6 +16,7 @@ from app.accounts.domain.password import PasswordHasher, ScryptParams
 from app.db import make_engine
 from app.main import create_app
 from app.settings import Settings
+from tests.fakes.telegram import FakeTelegram
 
 # 2026-10-02 15:00 in Buenos Aires (UTC-3). Tests reason about "today" from here.
 NOW = datetime(2026, 10, 2, 18, 0, tzinfo=UTC)
@@ -75,8 +76,22 @@ def engine() -> Iterator[Engine]:
 
 
 @pytest.fixture
-def app(engine: Engine, clock: MovableClock) -> FastAPI:
-    return create_app(SETTINGS, engine=engine, clock=clock, hasher=TEST_HASHER)
+def telegram() -> FakeTelegram:
+    """The one `Telegram` the test app wires in (the plan's invariant): no test but
+    `tests/pinned_catalog/test_telegram_http.py` ever constructs the real adapter."""
+    return FakeTelegram()
+
+
+@pytest.fixture
+def app(engine: Engine, clock: MovableClock, telegram: FakeTelegram) -> FastAPI:
+    return create_app(
+        SETTINGS,
+        engine=engine,
+        clock=clock,
+        hasher=TEST_HASHER,
+        telegram=telegram,
+        upkeep_ticker=False,
+    )
 
 
 @pytest.fixture

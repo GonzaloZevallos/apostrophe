@@ -1,4 +1,4 @@
-"""The composition root for the spreadsheet import (ADR-0014).
+"""The composition root for the spreadsheet import (ADR-0018).
 
     scripts/import-spreadsheet.sh <business-id> <file.xlsx> <mapping.csv> [--dry-run]
 

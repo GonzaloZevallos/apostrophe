@@ -16,3 +16,9 @@ class NoCommit:
 
     def commit(self) -> None:
         pass
+
+    def rollback(self) -> None:
+        # `Transaction` gained `rollback` for business removal (docs/adr/0015). No owner
+        # write method may undo the import half-way: only `cli.run` owns the real
+        # session, so a rollback through here is a bug, never a silent no-op.
+        raise RuntimeError("an owner write method must not roll back the import")

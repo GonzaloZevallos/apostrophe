@@ -139,6 +139,6 @@ MAPPING_HEADER_LABEL = "header"
 MAPPING_ROW_LABEL = "row"
 MAPPING_NAME_LABEL = "name"
 
-# Eligibility (ADR-0014): the one problem that precedes any sheet read. Not a real
+# Eligibility (ADR-0018): the one problem that precedes any sheet read. Not a real
 # sheet either, but the same `SheetRef` shape, located by this fixed label alone.
 BUSINESS_SHEET = "Negocio"

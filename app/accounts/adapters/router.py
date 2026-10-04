@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from typing import Annotated
+from typing import Annotated, Literal, TypedDict
 
 from fastapi import APIRouter, Depends, Response
 from pydantic import BaseModel
@@ -7,12 +7,14 @@ from sqlalchemy.orm import Session
 
 from app.accounts.adapters.deps import (
     SESSION_COOKIE,
+    ClientAddressDep,
     CurrentBusinessId,
     CurrentSession,
     get_accounts,
     get_business_opening,
     get_hasher,
     get_public_url,
+    get_settings,
     get_signer,
     raise_unauthenticated,
 )
@@ -28,6 +30,7 @@ from app.accounts.domain.session_token import SESSION_LIFETIME, SessionSigner
 from app.clock import Clock, get_clock, get_today
 from app.db import get_session
 from app.http_errors import TranslateErrors
+from app.settings import Settings
 
 # Public: how a user gets a session. Every other accounts route is gated in `app.main`.
 public_router = APIRouter(tags=["accounts"])
@@ -39,6 +42,7 @@ HasherDep = Annotated[PasswordHasher, Depends(get_hasher)]
 SignerDep = Annotated[SessionSigner, Depends(get_signer)]
 ClockDep = Annotated[Clock, Depends(get_clock)]
 TodayDep = Annotated[date, Depends(get_today)]
+SettingsDep = Annotated[Settings, Depends(get_settings)]
 
 as_http = TranslateErrors(
     [
@@ -102,15 +106,27 @@ def invitation_url(public_url: str, token: str) -> str:
     return f"{public_url}/invitation/{token}"
 
 
-def _open(response: Response, token: str) -> SessionOut:
-    # Not `secure`: served over plain http on the home network until it is published
-    # (docs/adr/0002).
+class _CookieAttributes(TypedDict):
+    httponly: bool
+    samesite: Literal["lax"]
+    secure: bool
+    path: str
+
+
+def _cookie_attributes(settings: Settings) -> _CookieAttributes:
+    # `secure` comes only from `Settings.secure_cookie` (derived from `public_url`),
+    # never guessed from the request (docs/adr/0002, plan invariant). The one builder
+    # serves both `set_cookie` (`_open`) and `delete_cookie` (`logout`), so they can
+    # never drift apart.
+    return {"httponly": True, "samesite": "lax", "secure": settings.secure_cookie, "path": "/"}
+
+
+def _open(response: Response, token: str, settings: Settings) -> SessionOut:
     response.set_cookie(
         SESSION_COOKIE,
         token,
         max_age=int(SESSION_LIFETIME.total_seconds()),
-        httponly=True,
-        samesite="lax",
+        **_cookie_attributes(settings),
     )
     return SessionOut(token=token)
 
@@ -124,17 +140,21 @@ def login(
     hasher: HasherDep,
     signer: SignerDep,
     clock: ClockDep,
+    settings: SettingsDep,
+    address: ClientAddressDep,
 ) -> SessionOut:
     with as_http:
-        token = log_in(accounts, session, hasher, signer, body.email, body.password, clock())
+        token = log_in(
+            accounts, session, hasher, signer, body.email, body.password, address, clock()
+        )
     if token is None:
         raise_unauthenticated()
-    return _open(response, token)
+    return _open(response, token, settings)
 
 
 @public_router.post("/auth/logout", status_code=204)
-def logout(response: Response) -> None:
-    response.delete_cookie(SESSION_COOKIE)
+def logout(response: Response, settings: SettingsDep) -> None:
+    response.delete_cookie(SESSION_COOKIE, **_cookie_attributes(settings))
 
 
 @public_router.get("/invitations/{token}")
@@ -156,6 +176,7 @@ def accept_invitation(
     hasher: HasherDep,
     signer: SignerDep,
     clock: ClockDep,
+    settings: SettingsDep,
     opening: Annotated[BusinessOpening, Depends(get_business_opening)],
 ) -> SessionOut:
     with as_http:
@@ -171,7 +192,7 @@ def accept_invitation(
             clock(),
             opening=opening,
         )
-    return _open(response, session_token)
+    return _open(response, session_token, settings)
 
 
 @router.get("/auth/me")

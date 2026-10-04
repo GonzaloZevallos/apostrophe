@@ -1,4 +1,4 @@
-"""The pure import plan (ADR-0014; the plan's invariants).
+"""The pure import plan (ADR-0018; the plan's invariants).
 
 Pure over `domain/rows.py`'s parsed values and the owners' check results. This module
 never imports `application`: the check results it needs are mirrored here as plain

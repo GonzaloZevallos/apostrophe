@@ -382,7 +382,7 @@ def test_a_real_duplicate_phone_is_refused_by_its_own_clean_code(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """A second writer lands a customer with the same phone number into this business
-    *during* the write — the known, accepted race of concurrent writes (ADR-0014's
+    *during* the write — the known, accepted race of concurrent writes (ADR-0018's
     "Known risks") — rather than before it starts, which eligibility would simply
     refuse up front instead. The real `CustomersImport.write_customer` is made to
     insert that racing row, through a second session, right before it does its own

@@ -5,7 +5,7 @@ footer, seller `**` markers, two or more blocks), plus `None` with no entries.""
 
 from app.catalog.domain.attributes import CatalogAttributes
 from app.catalog.domain.header_footer import DEFAULT_FOOTER, DEFAULT_HEADER
-from app.catalog.domain.text import CatalogEntry, catalog_text
+from app.catalog.domain.text import CatalogEntry, catalog_text, pinned_catalog_text
 from app.catalog.domain.variety import CatalogPrice
 from app.shared.grams import Grams
 
@@ -238,6 +238,28 @@ def test_two_blocks_between_a_header_and_a_footer_are_each_blank_line_separated(
         "• 40% índica / 60% sativa\n"
         "• Precio x gramo: $9.000\n\n"
         "\U0001f4e9 Consultas y pedidos por privado."
+    )
+
+
+def test_pinned_catalog_text_with_no_entries_shows_the_nothing_to_offer_line() -> None:
+    text = pinned_catalog_text(DEFAULT_HEADER, DEFAULT_FOOTER, [])
+
+    assert text == (
+        "\U0001f33f **CATÁLOGO** \U0001f33f\n\n"
+        "Por ahora no tenemos nada para ofrecer.\n\n"
+        "\U0001f4e9 Consultas y pedidos por privado."
+    )
+
+
+def test_pinned_catalog_text_with_no_entries_and_a_blank_header_and_footer() -> None:
+    assert pinned_catalog_text("", "", []) == "Por ahora no tenemos nada para ofrecer."
+
+
+def test_pinned_catalog_text_with_entries_matches_catalog_text() -> None:
+    entry = _entry("A", list_price=1000)
+
+    assert pinned_catalog_text(DEFAULT_HEADER, DEFAULT_FOOTER, [entry]) == catalog_text(
+        DEFAULT_HEADER, DEFAULT_FOOTER, [entry]
     )
 
 

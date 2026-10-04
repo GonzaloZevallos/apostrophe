@@ -1,0 +1,47 @@
+name: Daily encrypted backup
+
+# Daily, plus a manual trigger for the go-live gate and after any configuration
+# change (deploy/README.md's drill cadence). No credential here can create, delete or
+# overwrite a Turso database — the Turso token is read-only. The daily copy is kept
+# as this workflow's own run artifact, in this private repository: copies are
+# deletable by anyone with write access to the repository, or by any workflow given
+# `actions: write`, and expire after 30 days, the same as the monthly drill cadence.
+on:
+  schedule:
+    - cron: "0 7 * * *" # 04:00 in Buenos Aires (UTC-3), outside business hours
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.12.13"
+      - run: uv venv --python 3.13
+      - run: uv sync --locked
+      - name: Install age
+        run: sudo apt-get update && sudo apt-get install -y age
+      - name: Compute this run's file name
+        run: date -u +"BACKUP_FILE=backup-%Y%m%dT%H%M%SZ-${{ github.run_id }}.db.age" >> "$GITHUB_ENV"
+      - name: Copy every table from Turso into a local SQLite file
+        env:
+          APOSTROPHE_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          APOSTROPHE_DATABASE_AUTH_TOKEN: ${{ secrets.TURSO_READONLY_TOKEN }}
+        run: uv run --no-project python scripts/backup_copy.py backup.db
+      - name: Encrypt the copy for the committed age recipient
+        run: age -R deploy/age-recipient.txt -o "$BACKUP_FILE" backup.db
+      - name: Remove the plaintext copy
+        run: rm backup.db
+      - name: Upload the ciphertext as this run's artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.BACKUP_FILE }}
+          path: ${{ env.BACKUP_FILE }}
+          if-no-files-found: error
+          retention-days: 30
+          compression-level: 0

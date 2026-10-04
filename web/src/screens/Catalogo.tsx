@@ -28,6 +28,7 @@ import { copyText } from '../clipboard'
 import AvisoExito, { type SuccessToast } from '../components/AvisoExito'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import SinConexion from '../components/SinConexion'
+import PinnedCatalogBot from './PinnedCatalogBot'
 import { telegramPreview } from './telegramPreview'
 
 export const CATALOG_SAVED = 'Catálogo guardado'
@@ -456,6 +457,8 @@ export default function Catalogo() {
                 </button>
               </form>
             )}
+
+            <PinnedCatalogBot />
           </>
         )}
       </div>

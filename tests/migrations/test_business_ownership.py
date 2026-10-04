@@ -4,7 +4,9 @@ who a request belongs to. A new table without it fails here before it holds a ro
 
 from app.tables import metadata
 
-PLATFORM_TABLES = {"business", "invitation", "login_guard"}
+# login_address_guard: keyed by an address digest, not a business — it decides
+# whether a request is let in at all, before any business is known (docs/adr/0004).
+PLATFORM_TABLES = {"business", "invitation", "login_guard", "login_address_guard"}
 
 
 def test_the_platform_tables_exist() -> None:
