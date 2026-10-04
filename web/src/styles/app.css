@@ -2,6 +2,18 @@
  * (plan, invariants). Mirrors the design screens' structure (Entrar, Estados,
  * Inicio, BarraInferior/InicioCompu) without copying their inline styles verbatim. */
 
+/* Font and colour only (plan, invariants: "The base `button` rule in
+ * `styles/app.css` sets only font and colour; border, background and appearance
+ * are reset only by `Boton`'s classes") — a `<button>` doesn't inherit `font-family`
+ * from `html`/`body` on its own (the Arial bug PM's adjustment reported on every
+ * sales screen), and this is the one rule that fixes it everywhere, not only on
+ * the screens this task rebuilds. Border, background and `appearance` stay the
+ * browser's own until a `.boton*` class resets them. */
+button {
+  font: inherit;
+  color: inherit;
+}
+
 /* Visible to a screen reader only — the design's own technique for a label a
  * placeholder already shows visibly (`Clientes.dc.html`'s "Buscar cliente"). */
 .visualmente-oculto {
@@ -809,13 +821,89 @@
   flex: 1;
 }
 
+/* The design's link look (`Componentes.dc.html`'s "Agregar otra variedad"): an
+ * underline drawn as a 1 px `box-shadow`, never `text-decoration`, which the
+ * design never uses on a link-shaped button — scoped to this class alone, never
+ * every `<a>` (plan, "CSS"). */
 .boton--enlace {
   background: transparent;
+  border: 0;
   color: var(--acento);
   height: auto;
   padding: 0;
   font-size: 15px;
-  text-decoration: underline;
+  text-decoration: none;
+  box-shadow: 0 1px 0 var(--acento);
+  cursor: pointer;
+}
+
+/* `Insignia` (plan "Components"): the one pill for a short, lowercase label.
+ * `neutro` is the superficie tone; every other tone is the single accent, never
+ * a state color of its own (README, accessibility rule 1). */
+.insignia {
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--superficie);
+  color: var(--tinta2);
+  padding: 3px 9px;
+  border-radius: var(--radio-pildora);
+}
+
+.insignia--acento {
+  background: var(--acento-suave);
+  color: var(--acento);
+}
+
+.insignia--deuda {
+  background: var(--deuda-fondo);
+  color: var(--deuda);
+}
+
+.insignia--critico {
+  background: var(--critico);
+  color: var(--critico-texto);
+}
+
+/* `SelectorPago` (plan "Components"; `Componentes.dc.html`'s own demo): the
+ * segmented control that replaces the native payment radio fieldset. */
+.selector-pago {
+  display: flex;
+  gap: 5px;
+  background: var(--papel);
+  border-radius: var(--radio-pildora);
+  padding: 4px;
+}
+
+.selector-pago__opcion {
+  flex: 1;
+  text-align: center;
+  padding: 11px 0;
+  border: 0;
+  border-radius: var(--radio-pildora);
+  background: transparent;
+  color: var(--tinta2);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.selector-pago__opcion--activa {
+  background: var(--superficie);
+  color: var(--tinta);
+  font-weight: 600;
+}
+
+.selector-pago__opcion[aria-disabled='true'] {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.selector-pago__ayuda {
+  display: block;
+  font-size: 13px;
+  color: var(--deuda);
+  margin-top: 12px;
 }
 
 /* The dim backdrop is a pseudo-element, not the overlay's own background, so its

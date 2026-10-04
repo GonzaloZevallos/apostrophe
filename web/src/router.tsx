@@ -89,8 +89,8 @@ export const router = createBrowserRouter([
                 path: 'ventas',
                 children: [
                   { index: true, element: <Ventas /> },
-                  { path: 'nueva', element: <NuevaVenta /> },
-                  { path: ':id', element: <VentaDetalle /> },
+                  { path: 'nueva', element: <NuevaVenta />, handle: { chrome: 'none' } },
+                  { path: ':id', element: <VentaDetalle />, handle: { chrome: 'none' } },
                 ],
               },
             ],
