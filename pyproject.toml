@@ -20,6 +20,8 @@ dev = [
     "httpx2",
     "ruff",
     "mypy",
+    "pyyaml",
+    "types-PyYAML",
 ]
 
 [tool.pytest.ini_options]
