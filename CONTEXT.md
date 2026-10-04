@@ -307,3 +307,15 @@ _Avoid_: dashboard, overview, home, summary, Análisis
 **Average sale**:
 A period's sales total, shipping included, divided by its number of sales (not lines), rounded half up to the whole peso. Not shown when the period has no sales.
 _Avoid_: average ticket, mean order, ticket promedio
+
+**Operator**:
+The person who runs the installation and its server commands (inviting a new business, removing one). Not a user of any business, and never acting from inside the app.
+_Avoid_: admin, administrator, superuser
+
+**Business export**:
+One JSON file holding every recorded fact of a business as stored, each record naming what it refers to, with no computed figure, password hash, secret or invitation. It is written only as the first step of removing the business.
+_Avoid_: backup, dump, archive
+
+**Business removal**:
+The operator's command that exports a business and then deletes every row of it, users and invitations included, along with its users' login-attempt history, in one transaction. Nothing is deleted unless the export was written, read back, and its counts match what is deleted.
+_Avoid_: offboarding, account deletion, purge, wipe
