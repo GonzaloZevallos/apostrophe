@@ -32,8 +32,9 @@ change once links exist in the database.
   spend share that predicate. A submit with no live link computes no scrypt. The new
   hash, the deletion of the user's other links and `unlock_email` land in one commit.
 - **The brake has one sequence.** `refuse_attempt(accounts, transaction, email,
-  address_digest, now)` in `sign_in.py` counts both brakes, locks when a threshold is
-  reached and commits before it raises or returns a refusal. `log_in` and
+  address_digest, now, cutoff)` in `sign_in.py` counts both brakes, locks when a
+  threshold is reached and commits before it raises or returns a refusal. `email` is
+  `None` for a malformed one, so only the address counts. `log_in` and
   `change_password` call it; no other module calls `count_email_failure` or
   `count_address_failure`. `clear_email` keeps its guard and is what Change calls on
   success. Only the Reset submit lifts an active lock, through `unlock_email`.

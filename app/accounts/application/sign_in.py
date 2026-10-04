@@ -27,7 +27,7 @@ class LoginLocked(Exception):
 def refuse_attempt(
     accounts: Accounts,
     transaction: Transaction,
-    email: Email,
+    email: Email | None,
     address_digest: str,
     now: datetime,
     cutoff: datetime,
@@ -38,15 +38,21 @@ def refuse_attempt(
     already active, it only counts -- it never sets a lock a future, no-longer-locked
     request would set on its own (the plan invariant: counting never moves an active
     lock). `log_in` and `change_password` are its only two callers; neither calls
-    `count_email_failure` or `count_address_failure` itself."""
+    `count_email_failure` or `count_address_failure` itself.
+
+    `email` is `None` for a malformed email (`log_in`'s own branch): no email-keyed
+    row is read or written then, only the address counts, exactly as before this
+    function existed."""
     locks = accounts.login_locks(email, address_digest)
     email_guard = LoginGuard(locks.email_locked_until)
     address_guard = AddressGuard(locks.address_locked_until)
     already_locked = email_guard.is_locked(now) or address_guard.is_locked(now)
-    email_failures = accounts.count_email_failure(email, now)
     address_failures = accounts.count_address_failure(address_digest, now, cutoff)
+    email_failures = accounts.count_email_failure(email, now) if email is not None else None
     if not already_locked:
-        if email_guard.reached(email_failures):
+        if email is not None and email_failures is not None and email_guard.reached(
+            email_failures
+        ):
             accounts.lock_email(email, now, email_guard.lock_until(now), MAX_FAILURES)
         if address_guard.reached(address_failures):
             accounts.lock_address(address_digest, now, address_guard.lock_until(now))
@@ -86,15 +92,14 @@ def log_in(
         email = Email.of(raw_email)
     except InvalidEmail:
         # A malformed email is never stored (plan invariant): no email-keyed row is
-        # read or written, only the address counts.
+        # read or written, only the address counts. `refuse_attempt` is still the
+        # only caller of `count_address_failure` (the plan invariant): it is told
+        # `email=None` rather than being bypassed.
         hasher.burn(password)
         locks = accounts.login_locks(None, address_digest)
         address_guard = AddressGuard(locks.address_locked_until)
         already_locked = address_guard.is_locked(now)
-        address_failures = accounts.count_address_failure(address_digest, now, cutoff)
-        if not already_locked and address_guard.reached(address_failures):
-            accounts.lock_address(address_digest, now, address_guard.lock_until(now))
-        transaction.commit()
+        refuse_attempt(accounts, transaction, None, address_digest, now, cutoff)
         if already_locked:
             raise LoginLocked() from None
         return None

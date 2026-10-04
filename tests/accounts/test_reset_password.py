@@ -136,14 +136,32 @@ def test_unknown_used_expired_and_retired_links_give_the_same_404_body(
     retired_token = issue(engine, clock())
     issue(engine, clock())  # retires `retired_token`
 
-    bodies = {
+    get_bodies = {
         "unknown": anonymous_client.get("/reset-links/not-a-real-token").json(),
         "used": anonymous_client.get(f"/reset-links/{used_token}").json(),
         "expired": anonymous_client.get(f"/reset-links/{expired_token}").json(),
         "retired": anonymous_client.get(f"/reset-links/{retired_token}").json(),
     }
+    # The submit answers the identical body too, whatever killed the link -- a POST
+    # never leaks more than the GET already does (docs/adr/0019).
+    post_bodies = {
+        "unknown": anonymous_client.post(
+            "/reset-links/not-a-real-token", json={"new_password": NEW_PASSWORD}
+        ).json(),
+        "used": anonymous_client.post(
+            f"/reset-links/{used_token}", json={"new_password": NEW_PASSWORD}
+        ).json(),
+        "expired": anonymous_client.post(
+            f"/reset-links/{expired_token}", json={"new_password": NEW_PASSWORD}
+        ).json(),
+        "retired": anonymous_client.post(
+            f"/reset-links/{retired_token}", json={"new_password": NEW_PASSWORD}
+        ).json(),
+    }
 
-    assert len({str(body) for body in bodies.values()}) == 1
+    assert len({str(body) for body in get_bodies.values()}) == 1
+    assert len({str(body) for body in post_bodies.values()}) == 1
+    assert next(iter(get_bodies.values())) == next(iter(post_bodies.values()))
 
 
 def test_success_closes_every_earlier_session_and_signs_this_device_in(

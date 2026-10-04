@@ -38,8 +38,8 @@ def main(argv: list[str] | None = None) -> int:
     reset_parser.add_argument("email")
     args = parser.parse_args(argv)
 
-    settings = Settings.from_env()
     try:
+        settings = Settings.from_env()
         engine = make_engine(settings.database_url, auth_token=settings.database_auth_token)
         upgrade_to_head(engine)
         with Session(engine) as session:

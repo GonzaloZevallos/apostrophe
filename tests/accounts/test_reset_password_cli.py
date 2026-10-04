@@ -148,3 +148,16 @@ def test_no_log_record_from_the_command_carries_an_email_a_digest_or_a_token(
         message = record.getMessage()
         assert NEW_USER["email"] not in message
         assert token not in message
+
+
+def test_make_engine_keeps_hide_parameters_true_through_the_command(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A bound parameter -- an email, a digest, a token -- must never reach a SQL
+    error's text (CODING_STANDARDS §9): proven on the exact URL the command itself
+    builds its engine from, not a hand-built one elsewhere."""
+    url = _set_up(tmp_path, monkeypatch)
+
+    engine = make_engine(url)
+
+    assert engine.hide_parameters is True
