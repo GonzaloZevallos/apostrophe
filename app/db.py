@@ -55,7 +55,10 @@ def make_engine(url: str) -> Engine:
     # each thread its own empty database.
     if url in ("sqlite://", "sqlite:///:memory:"):
         kwargs["poolclass"] = StaticPool
-    engine = create_engine(url, **kwargs)
+    # Never log a bound parameter: the spreadsheet import, among others, passes
+    # customer names and phone numbers as parameters, and a logged statement would
+    # echo them (CODING_STANDARDS.md section 9: no personal data in logs).
+    engine = create_engine(url, hide_parameters=True, **kwargs)
     if url.startswith("sqlite"):
         event.listen(engine, "connect", _enable_sqlite_foreign_keys)
     return engine
