@@ -56,18 +56,33 @@ SCHEMA = Schema(
         ),
         Table(
             "expense_category",
-            (_col("id", primary_key=True), _col("name")),
+            (_col("id", primary_key=True), _col("business_id"), _col("name")),
             (),
         ),
         Table(
             "expense",
             (
                 _col("id", primary_key=True),
+                _col("business_id"),
                 _col("category_id"),
                 _col("spent_on"),
                 _col("amount"),
             ),
-            (ForeignKey(("category_id",), "expense_category", ("id",)),),
+            (
+                ForeignKey(
+                    ("business_id", "category_id"), "expense_category", ("business_id", "id")
+                ),
+            ),
+        ),
+        Table(
+            "invitation",
+            (_col("id", primary_key=True), _col("business_id"), _col("token_digest")),
+            (),
+        ),
+        Table(
+            "login_guard",
+            (_col("email", primary_key=True), _col("attempts")),
+            (),
         ),
     )
 )
@@ -160,15 +175,21 @@ def test_a_foreign_key_becomes_an_id_and_name_reference() -> None:
 
 
 def test_the_composite_expense_foreign_key_references_the_category_by_id_alone() -> None:
-    rows = {
+    rows: dict[str, list[dict[str, Any]]] = {
         "app_user": [],
         "customer": [],
         "variety": [],
         "sale": [],
         "sale_line": [],
-        "expense_category": [{"id": 1, "name": "Insumos de cultivo"}],
+        "expense_category": [{"id": 1, "business_id": 1, "name": "Insumos de cultivo"}],
         "expense": [
-            {"id": 1, "category_id": 1, "spent_on": date(2026, 1, 1), "amount": 500},
+            {
+                "id": 1,
+                "business_id": 1,
+                "category_id": 1,
+                "spent_on": date(2026, 1, 1),
+                "amount": 500,
+            },
         ],
     }
 
@@ -176,6 +197,9 @@ def test_the_composite_expense_foreign_key_references_the_category_by_id_alone()
 
     expense = document["kinds"]["expense"][0]
     assert expense["category_id"] == {"id": 1, "name": "Insumos de cultivo"}
+    assert "business_id" not in expense
+    category = document["kinds"]["expense_category"][0]
+    assert "business_id" not in category
 
 
 def test_a_table_with_no_name_column_is_labelled_by_its_variety() -> None:
@@ -242,7 +266,7 @@ def test_id_sets_collects_ids_per_kind() -> None:
 
 
 def test_no_password_hash_or_withheld_table_ever_reaches_the_document() -> None:
-    rows = {
+    rows: dict[str, list[dict[str, Any]]] = {
         "app_user": [
             {"id": 1, "email": "a@b.com", "joined_at": None, "password_hash": "scrypt$..."}
         ],
@@ -252,6 +276,8 @@ def test_no_password_hash_or_withheld_table_ever_reaches_the_document() -> None:
         "sale_line": [],
         "expense_category": [],
         "expense": [],
+        "invitation": [{"id": 1, "business_id": 1, "token_digest": "deadbeef"}],
+        "login_guard": [{"email": "a@b.com", "attempts": 3}],
     }
 
     document = build_document(BUSINESS, SCHEMA, rows, EXPORTED_AT)

@@ -54,12 +54,18 @@ def build_document(
     Every owned table in `schema` becomes a kind, its records sorted by id, with
     `EXCLUDED_COLUMNS` dropped, `business_id` never repeated, foreign keys turned
     into `{"id", "name"}` references and `*_hundredths` integers into two-place
-    decimal strings under the key without the suffix."""
+    decimal strings under the key without the suffix.
+
+    `rows` may also carry withheld tables (`invitation`, `login_guard`) the caller
+    read for the delete but that never reach the document; those are never indexed
+    here, since no owned table's foreign key ever targets one, and `login_guard` has
+    no `id` column to index by."""
+    owned = owned_tables(schema)
     rows_by_table: dict[str, dict[Any, Mapping[str, Any]]] = {
-        name: {row["id"]: row for row in table_rows} for name, table_rows in rows.items()
+        name: {row["id"]: row for row in rows[name]} for name in owned if name in rows
     }
     kinds: dict[str, list[dict[str, Any]]] = {}
-    for table_name in owned_tables(schema):
+    for table_name in owned:
         table = schema.table(table_name)
         records = [
             _record(table, row, schema, rows_by_table, business.name)
