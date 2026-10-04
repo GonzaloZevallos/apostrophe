@@ -289,3 +289,8 @@ _Avoid_: average ticket, mean order, ticket promedio
 **Spreadsheet import**:
 The one-time load of a business's history from the `Control_de_ventas_y_gastos` spreadsheet into that business. The installation's operator runs it on switch day, and only into a business with no records yet. It never appears in the app; on screen, imported data is the same as data entered by hand.
 _Avoid_: migration, sync, upload, restore
+
+**Unfinished row**:
+A row of Ventas, Entradas or Gastos that the spreadsheet import leaves out because the sheet itself marks it not ready: Ventas by text instead of a number in its Total formula, Entradas and Gastos by a non-blank Revisar. It is listed in the import's report with the sheet's own text, creates no customer, no VIP and no kept spelling, and never blocks the import.
+_Avoid_: incomplete row, invalid row, skipped row
+_In the app_: (operator terminal only; never shown on screen)
