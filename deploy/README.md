@@ -40,18 +40,39 @@ this repository: everything below with a value is set by hand, outside git.
    - `APOSTROPHE_DATABASE_URL` — Turso's `libsql://…` URL, from step 1.2.
    - `APOSTROPHE_DATABASE_AUTH_TOKEN` — the full-access token, from step 1.3.
    - `APOSTROPHE_PUBLIC_URL` — `https://<the Render subdomain, or the custom domain>`.
-   - `APOSTROPHE_TRUSTED_PROXIES=0.0.0.0/0` — every peer is trusted, and this is safe
-     only because of how Render's edge is documented to work: a web service is "not
-     *directly* reachable via the public internet" (`render.com/docs/web-services`,
-     checked 2026-10-04) — only Render's own load balancer, which "terminates SSL for
-     inbound HTTPS requests, then forwards those requests to your web service over
-     HTTP" (same page), can ever reach the port `scripts/serve.sh` binds. Render
-     publishes no fixed, versioned CIDR for that load balancer the way a cloud
-     provider's own address-ranges page does, so there is no narrower range to pin to;
-     Render's own default Python environment reaches the same conclusion by setting
-     `FORWARDED_ALLOW_IPS=*` for exactly this reason
-     (`render.com/docs/environment-variables`, same date). If Render ever documents a
-     narrower range, tighten this value then.
+   - `APOSTROPHE_TRUSTED_PROXIES=10.0.0.0/8,172.16.0.0/12,192.168.0.0/16` — the three
+     RFC 1918 private ranges, **not** `0.0.0.0/0`. A web service is "not *directly*
+     reachable via the public internet" (`render.com/docs/web-services`, checked
+     2026-10-04) — only Render's own load balancer, which "terminates SSL for inbound
+     HTTPS requests, then forwards those requests to your web service over HTTP" (same
+     page), can ever reach the port `scripts/serve.sh` binds — but that fact alone does
+     **not** make `0.0.0.0/0` a safe value for this setting: `ClientAddress`
+     (`app/accounts/adapters/deps.py`) walks `X-Forwarded-For` from the right only
+     past entries that match `trusted_proxies`, so a value that matches *every*
+     address makes every entry in the header "trusted", including one the client
+     typed — the walk then finds no untrusted entry at all and falls back to the
+     peer, which is Render's own load balancer on every single request. Every seller
+     then shares that one address, and 20 failed logins from anyone lock logins out
+     for everyone for 15 minutes (confirmed directly against `_forwarded_client`: with
+     `networks=(0.0.0.0/0,)`, it returns `None` — "fall back to the peer" — for every
+     header, forged or genuine).
+
+     Render publishes no fixed, versioned CIDR for its load balancer the way a cloud
+     provider's own address-ranges page does (its own default Python buildpack sets
+     `FORWARDED_ALLOW_IPS=*` for exactly that reason,
+     `render.com/docs/environment-variables`, same date), so this value cannot be
+     Render's own confirmed range either. What it must do instead is tell a genuine
+     client's address apart from an internal hop without needing Render's range at
+     all: a real client's address is, by definition, never inside RFC 1918 private
+     space, so the walk still finds it and stops there — the first public address in
+     the header — whether or not Render's own hop happens to be one of these ranges
+     too. This is the same shape `tests/accounts/test_client_address.py`'s
+     `test_two_trusted_hops_plus_a_spoofed_leftmost_entry_take_the_real_client`
+     already proves for one such range (`10.0.0.0/8`); it does not, and cannot, prove
+     Render's edge actually connects from inside these ranges — that is confirmed on
+     this deployment specifically only by the go-live checklist's two-network check
+     (section 9), by hand. If Render ever documents its own load balancer's range,
+     prefer that over this private-range convention.
 3. Auto-deploy is on (`autoDeploy: true`): every merge to `master` deploys. There is no
    pre-deploy command: the schema is migrated only by `upgrade_to_head`, inside
    `app.main`'s `lifespan`, once, at startup.
