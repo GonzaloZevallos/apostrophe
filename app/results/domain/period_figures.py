@@ -89,6 +89,11 @@ class _Buckets:
     weekday_counts: dict[int, int] = field(default_factory=dict)
     payments_by_day: dict[date, int] = field(default_factory=dict)
     expenses_by_day: dict[date, int] = field(default_factory=dict)
+    # (name, name_key, amount) per category, per day: built in the one pass over
+    # `expenses` below; both breakdowns read it by day range, never the raw list.
+    expenses_by_day_category: dict[date, dict[int, tuple[str, str, int]]] = field(
+        default_factory=dict
+    )
     purchases_by_day: dict[date, int] = field(default_factory=dict)
 
     def sales(self, start: date, end: date) -> int:
@@ -170,6 +175,21 @@ class _Buckets:
     def cash(self, start: date, end: date) -> int:
         return self.payments(start, end) - self.expenses(start, end) - self.purchases(start, end)
 
+    def expense_categories(self, start: date, end: date) -> dict[int, tuple[str, str, int]]:
+        """Every category with an expense in `[start, end]`, summed from the day ×
+        category buckets — never a fresh pass over the raw expense list."""
+        totals: dict[int, tuple[str, str, int]] = {}
+        for d in _days(start, end):
+            day_categories = self.expenses_by_day_category.get(d)
+            if day_categories is None:
+                continue
+            for category_id, (name, name_key, amount) in day_categories.items():
+                existing_name, existing_key, existing_total = totals.get(
+                    category_id, (name, name_key, 0)
+                )
+                totals[category_id] = (existing_name, existing_key, existing_total + amount)
+        return totals
+
 
 def _build_buckets(
     draws: Sequence[DrawRow],
@@ -177,8 +197,14 @@ def _build_buckets(
     payments: Sequence[PaymentRecord],
     expenses: Sequence[ExpenseRecord],
     purchases: Sequence[PurchaseRecord],
-) -> _Buckets:
+    earliest_entry_day: date | None,
+) -> tuple[_Buckets, date | None]:
+    """Scans every ledger exactly once: each loop below both fills its own buckets
+    and folds its own days into `first_record` — the minimum date across sales,
+    stock entries, payments and expenses (ADR-0013) — so nothing is scanned a second
+    time just to find it."""
     buckets = _Buckets()
+    first_record = earliest_entry_day
 
     for row in draws:
         if row.kind == "shortfall":
@@ -187,7 +213,8 @@ def _build_buckets(
             agg.pending_grams = agg.pending_grams + row.pending
             continue
 
-        assert row.variety_id is not None and row.line_total is not None
+        if row.variety_id is None or row.line_total is None:
+            raise ValueError("a sale-line draw row always carries its variety and line total")
         if row.variety_name is not None:
             buckets.variety_names[row.variety_id] = row.variety_name
         sold_amount = costed_sales(row.line_total, row.grams, row.pending)
@@ -214,37 +241,36 @@ def _build_buckets(
         weekday = sale.day.isoweekday()
         buckets.weekday_sales[weekday] = buckets.weekday_sales.get(weekday, 0) + sale.total
         buckets.weekday_counts[weekday] = buckets.weekday_counts.get(weekday, 0) + 1
+        if first_record is None or sale.day < first_record:
+            first_record = sale.day
 
     for payment in payments:
         previous_amount = buckets.payments_by_day.get(payment.day, 0)
         buckets.payments_by_day[payment.day] = previous_amount + payment.amount
+        if first_record is None or payment.day < first_record:
+            first_record = payment.day
 
     for expense in expenses:
         previous_expense = buckets.expenses_by_day.get(expense.day, 0)
         buckets.expenses_by_day[expense.day] = previous_expense + expense.amount
+        day_categories = buckets.expenses_by_day_category.setdefault(expense.day, {})
+        existing_name, existing_key, existing_total = day_categories.get(
+            expense.category_id, (expense.name, expense.name_key, 0)
+        )
+        day_categories[expense.category_id] = (
+            existing_name,
+            existing_key,
+            existing_total + expense.amount,
+        )
+        if first_record is None or expense.day < first_record:
+            first_record = expense.day
 
     for purchase in purchases:
         buckets.purchases_by_day[purchase.day] = (
             buckets.purchases_by_day.get(purchase.day, 0) + purchase.total_cost
         )
 
-    return buckets
-
-
-def _first_record(
-    sales: Sequence[SaleRecord],
-    payments: Sequence[PaymentRecord],
-    expenses: Sequence[ExpenseRecord],
-    earliest_entry_day: date | None,
-) -> date | None:
-    candidates = [d for d in (earliest_entry_day,) if d is not None]
-    if sales:
-        candidates.append(min(sale.day for sale in sales))
-    if payments:
-        candidates.append(min(payment.day for payment in payments))
-    if expenses:
-        candidates.append(min(expense.day for expense in expenses))
-    return min(candidates) if candidates else None
+    return buckets, first_record
 
 
 def _variety_rows(buckets: _Buckets, month: Month) -> tuple[VarietyRow, ...]:
@@ -423,27 +449,17 @@ def _best_earliest_on_tie(values: list[int]) -> int | None:
     return values.index(best)
 
 
-def _expense_breakdown(
-    expenses: Sequence[ExpenseRecord],
-    purchases: Sequence[PurchaseRecord],
-    start: date,
-    end_inclusive: date,
-) -> ExpenseBreakdown:
-    in_range = [e for e in expenses if start <= e.day <= end_inclusive]
-    totals: dict[int, tuple[str, str, int]] = {}
-    for expense in in_range:
-        name, name_key, total = totals.get(expense.category_id, (expense.name, expense.name_key, 0))
-        totals[expense.category_id] = (name, name_key, total + expense.amount)
+def _expense_breakdown(buckets: _Buckets, start: date, end_inclusive: date) -> ExpenseBreakdown:
+    totals = buckets.expense_categories(start, end_inclusive)
     ordered = sorted(totals.items(), key=lambda item: item[1][1])
     categories = tuple(
         ExpenseCategoryTotal(category_id=category_id, name=name, total=total)
         for category_id, (name, name_key, total) in ordered
     )
-    purchases_total = sum(p.total_cost for p in purchases if start <= p.day <= end_inclusive)
     return ExpenseBreakdown(
         categories=categories,
         total=sum(c.total for c in categories),
-        purchases=purchases_total,
+        purchases=buckets.purchases(start, end_inclusive),
     )
 
 
@@ -458,8 +474,9 @@ def period_figures(
     purchases: Sequence[PurchaseRecord],
     earliest_entry_day: date | None,
 ) -> AnalysisFigures:
-    first_record = _first_record(sales, payments, expenses, earliest_entry_day)
-    buckets = _build_buckets(draws, sales, payments, expenses, purchases)
+    buckets, first_record = _build_buckets(
+        draws, sales, payments, expenses, purchases, earliest_entry_day
+    )
 
     first_month = None if first_record is None else Month.containing(first_record)
     current_month = Month.containing(today)
@@ -479,9 +496,9 @@ def period_figures(
             cash=buckets.cash(first_record, today),
             shortfall=buckets.shortfall(first_record, today),
         )
-        since_first_record_expenses = _expense_breakdown(expenses, purchases, first_record, today)
+        since_first_record_expenses = _expense_breakdown(buckets, first_record, today)
 
-    month_expenses = _expense_breakdown(expenses, purchases, month.first_day, month.last_day)
+    month_expenses = _expense_breakdown(buckets, month.first_day, month.last_day)
 
     return AnalysisFigures(
         first_record=first_record,

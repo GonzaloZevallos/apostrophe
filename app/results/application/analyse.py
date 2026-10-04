@@ -52,33 +52,25 @@ def analyse(
     except ValueError:
         raise MonthInvalid() from None
 
+    # One read of every ledger, one pass over each inside `period_figures` — which
+    # works out `first_record` itself, in that same pass. The month is validated
+    # against its answer below, never by a second scan of the same ledgers here.
+    figures = period_figures(
+        today=today,
+        month=requested,
+        draws=draw_costs.rows(),
+        sales=sales.all(),
+        payments=payments.all(),
+        expenses=expenses.all(),
+        purchases=purchases.purchases(),
+        earliest_entry_day=purchases.earliest_entry_day(),
+    )
+
     current_month = Month.containing(today)
-    earliest_entry_day = purchases.earliest_entry_day()
-    sale_records = sales.all()
-    payment_records = payments.all()
-    expense_records = expenses.all()
-
-    candidates = [d for d in (earliest_entry_day,) if d is not None]
-    if sale_records:
-        candidates.append(min(r.day for r in sale_records))
-    if payment_records:
-        candidates.append(min(r.day for r in payment_records))
-    if expense_records:
-        candidates.append(min(r.day for r in expense_records))
-    first_record = min(candidates) if candidates else None
+    first_record = figures.first_record
     first_month = None if first_record is None else Month.containing(first_record)
-
     lower_bound = first_month if first_month is not None else current_month
     if requested < lower_bound or requested > current_month:
         raise MonthOutOfRange()
 
-    return period_figures(
-        today=today,
-        month=requested,
-        draws=draw_costs.rows(),
-        sales=sale_records,
-        payments=payment_records,
-        expenses=expense_records,
-        purchases=purchases.purchases(),
-        earliest_entry_day=earliest_entry_day,
-    )
+    return figures
