@@ -24,23 +24,36 @@ _PATTERNS = {
     "cloudflare or r2 key": re.compile(
         r"(?i)\b(CLOUDFLARE|R2)_[A-Z0-9_]*(KEY|TOKEN|SECRET)\s*[=:]\s*['\"]?[A-Za-z0-9/+_.-]{20,}"
     ),
-    # A generic env-style assignment with a real-looking value. Python source is
-    # exempt: a kwarg such as `auth_token=settings.database_auth_token` is a reference,
-    # not a literal, and would otherwise false-positive on every future caller of a
-    # `connect_args={"auth_token": ...}` port (the plan's invariant for that value).
+    # A generic env-style assignment with a real-looking value.
     "generic token or secret assignment": re.compile(
         r"(?i)\b[A-Z0-9_]*_(TOKEN|SECRET)\s*=\s*\S{6,}"
     ),
 }
 
+# Python source is different: a Python string literal is always quoted, so a bare,
+# unquoted right-hand side there (`auth_token=settings.database_auth_token`) is a
+# reference or an expression, never a secret's own value -- exactly the shape the
+# generic pattern above would false-positive on for every future caller of a
+# `connect_args={"auth_token": ...}` port (the plan's invariant for that value). A
+# *quoted* literal such as `TURSO_AUTH_TOKEN = "<a real token>"` is still a secret in
+# Python source too, so `.py` files get this narrower pattern instead of a blanket
+# exemption. The value itself is restricted to token-shaped characters (no spaces or
+# hyphens): a hyphenated, readable placeholder such as `"not-a-real-token"` (a test
+# fixture, `tests/test_libsql_driver.py`) is exactly what a real token never looks
+# like, and must read as fine, not as a finding.
+_PYTHON_TOKEN_PATTERN = re.compile(
+    r"(?i)\b[A-Z0-9_]*_(TOKEN|SECRET)\s*=\s*[\"'][A-Za-z0-9+/=_.]{6,}[\"']"
+)
+
 
 def find_secrets(text: str, *, filename: str = "") -> list[str]:
-    """Names each secret-shaped pattern found in `text`. `generic token or secret
-    assignment` is skipped for `.py` files (see the comment on the pattern above)."""
+    """Names each secret-shaped pattern found in `text`. For `.py` files, `generic
+    token or secret assignment` is checked with the narrower, quote-requiring pattern
+    (see the comment above) instead of the generic one."""
     found = []
     for name, pattern in _PATTERNS.items():
         if name == "generic token or secret assignment" and filename.endswith(".py"):
-            continue
+            pattern = _PYTHON_TOKEN_PATTERN
         if pattern.search(text):
             found.append(name)
     return found
@@ -96,6 +109,26 @@ def test_the_scanner_lets_a_python_reference_through() -> None:
     fine = 'create_engine(url, connect_args={"auth_token": settings.database_auth_token})'
 
     assert find_secrets(fine, filename="app/db.py") == []
+
+
+def test_the_scanner_lets_a_hyphenated_placeholder_token_through() -> None:
+    # A fixture value that reads like words joined by hyphens, not like a real
+    # token's own alphabet, must stay fine -- `tests/test_libsql_driver.py` passes
+    # exactly this kind of value as `auth_token="not-a-real-token"`.
+    fine = 'make_engine(url, auth_token="not-a-real-token")'
+
+    assert find_secrets(fine, filename="tests/test_libsql_driver.py") == []
+
+
+def test_the_scanner_still_flags_a_quoted_literal_secret_in_python() -> None:
+    # The gap a previous review found: exempting every `.py` file outright from the
+    # generic pattern let an actual, quoted literal token through too. A real secret
+    # in Python source is always quoted (a bare right-hand side is a reference, never
+    # a string value), so this shape must still be caught.
+    # Split for the same reason as the age identity example above.
+    bad = "TURSO_AUTH_TOKEN = " '"' "abcdefghijklmnopqrstuvwxyz" '"'
+
+    assert "generic token or secret assignment" in find_secrets(bad, filename="scripts/x.py")
 
 
 def test_the_age_recipient_is_allowed() -> None:

@@ -60,6 +60,11 @@ def test_clear_email_leaves_an_active_lock_in_place(file_engine: Engine) -> None
         for _ in range(5):
             accounts.count_email_failure(email, NOW)
         accounts.lock_email(email, NOW, until, max_failures=5)
+        # A further refusal under the now-active lock (plan invariant: every refused
+        # login counts, lock included) leaves `failures` at 1, not 0 -- so the
+        # assertion below actually exercises `clear_email`'s guard instead of
+        # trivially holding from `lock_email`'s own subtraction.
+        accounts.count_email_failure(email, NOW)
         session.commit()
 
     with Session(file_engine) as session:
@@ -70,7 +75,9 @@ def test_clear_email_leaves_an_active_lock_in_place(file_engine: Engine) -> None
         row = session.get(LoginGuardRow, email.value)
         assert row is not None
         assert row.locked_until == until
-        assert row.failures == 0
+        # If `clear_email`'s guard failed to hold, it would have zeroed this count;
+        # proving it is still 1 is what tells the guard apart from a no-op update.
+        assert row.failures == 1
 
 
 def test_n_concurrent_address_failures_give_a_count_of_n(file_engine: Engine) -> None:
