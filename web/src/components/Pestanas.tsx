@@ -1,12 +1,12 @@
 /**
  * `Pestanas`: a plain text tab list — the design's period switch (`Ventas.dc.html`,
  * `VentasCompu.dc.html`), an underline (`box-shadow`) on the active tab, never a
- * pill. None of `Boton`'s five variants draw this shape (the active tab is black
- * and bold, never the link variant's blue accent), so — same as `SelectorPago`'s
- * own segmented control already does for payment — this component owns its one
- * button reset itself, in its own class, rather than a screen reaching for a bare
- * `<button>` (plan, invariants: "buttons from `Boton`"; review guidance: "render
- * through `Boton` or another foundation component").
+ * pill. Every tab renders over `.boton--enlace`, one of `Boton`'s own five
+ * classes, which is where `border`/`background` are reset (plan, invariants:
+ * "border, background and appearance are reset only by `Boton`'s classes") —
+ * `pestanas__opcion`/`--activa` only add colour, `text-decoration`, weight and the
+ * active underline on top, never a reset of their own (review finding: the
+ * earlier version re-reset `border`/`background` in its own class).
  */
 
 import type { ReactNode } from 'react'
@@ -36,7 +36,9 @@ export default function Pestanas<T extends string>({
           key={item.value}
           type="button"
           className={
-            item.value === value ? 'pestanas__opcion pestanas__opcion--activa' : 'pestanas__opcion'
+            item.value === value
+              ? 'boton--enlace pestanas__opcion pestanas__opcion--activa'
+              : 'boton--enlace pestanas__opcion'
           }
           aria-pressed={item.value === value}
           onClick={() => onChange(item.value)}

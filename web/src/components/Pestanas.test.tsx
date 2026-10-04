@@ -30,3 +30,13 @@ test('clicking a tab reports its own value', async () => {
 
   expect(onChange).toHaveBeenCalledWith('hoy')
 })
+
+test('every tab carries boton--enlace, Boton\'s own border/background reset, never its own', () => {
+  // Review finding (blocking): "no class outside Boton's own may set border or
+  // background." `Pestanas` draws its tab shape over `.boton--enlace` (one of
+  // `Boton`'s five classes) and only adds colour/weight/underline on top.
+  render(<Pestanas items={ITEMS} value="semana" onChange={() => {}} ariaLabel="Período" />)
+  for (const button of screen.getAllByRole('button')) {
+    expect(button.className.split(' ')).toContain('boton--enlace')
+  }
+})

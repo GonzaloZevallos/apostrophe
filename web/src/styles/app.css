@@ -954,30 +954,56 @@ button {
 }
 
 /* `Pestanas` (plan "Components"): a plain text tab list, an underline via
- * `box-shadow` on the active one, no pill — `Boton`'s five variants don't draw
- * this shape (the active tab is black and bold, never the link variant's accent),
- * so this component owns the one button reset itself, the same way
- * `SelectorPago`'s segmented control already does (plan review, foundation
- * findings) — never a screen's own bare `<button>`. */
+ * `box-shadow` on the active one, no pill. Each tab is `.boton--enlace` (`Boton`'s
+ * own class, which already resets `border`/`background`) — `.pestanas__opcion`
+ * only overrides colour/`text-decoration`/weight/`box-shadow`, never a reset of
+ * its own (review finding: `border`/`background` may be reset only by `Boton`'s
+ * classes). */
 .pestanas {
   display: flex;
   align-items: baseline;
   gap: var(--espacio-xl);
   font-size: 15px;
-  color: var(--tinta2);
 }
 
 .pestanas__opcion {
-  border: 0;
-  background: transparent;
-  padding: 0 0 3px;
-  cursor: pointer;
+  color: var(--tinta2);
+  text-decoration: none;
+  font-weight: 400;
+  box-shadow: none;
 }
 
 .pestanas__opcion--activa {
   color: var(--tinta);
   font-weight: 600;
   box-shadow: 0 2px 0 var(--tinta);
+}
+
+/* `Inicio`'s own period tabs (`panel.ts`'s `Hoy/Semana/Mes`), unrelated to
+ * `Ventas`' `Pestanas` above and out of this subtask's scope — restored after
+ * this branch had accidentally renamed/deleted them out from under `Inicio.tsx`,
+ * which still renders them (review finding, spec-scope). */
+.periodos {
+  display: flex;
+  gap: var(--espacio-sm);
+}
+
+.periodos__boton {
+  height: var(--alto-tocable);
+  padding: 0 var(--espacio-md);
+  border: 0;
+  border-radius: var(--radio-pildora);
+  background: var(--superficie);
+  color: var(--tinta);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.periodos__boton--activo {
+  background: var(--acento-suave);
+  color: var(--acento);
+  font-weight: 600;
 }
 
 .periodos__fechas {
