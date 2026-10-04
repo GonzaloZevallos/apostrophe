@@ -24,6 +24,7 @@ import { ApiError, NetworkError } from '../../api/client'
 import { type Customer, type CustomerIn, listCustomers, registerCustomer } from '../../api/customers'
 import { keys } from '../../api/keys'
 import { resolveOverride, type RefusalCode } from '../../api/refusals'
+import Boton from '../../components/Boton'
 import SinConexion from '../../components/SinConexion'
 import CustomerFields, { type CustomerFieldsValue } from '../clientes/CustomerFields'
 import {
@@ -144,21 +145,20 @@ export default function NuevaVentaCliente({ allowNone, onChosen, onClose }: Nuev
           ))}
         </div>
         {allowNone && (
-          <button
-            type="button"
-            className="boton boton--suave"
+          <Boton
+            variant="secondary"
             onClick={() => {
               onChosen(null)
               onClose()
             }}
           >
             Sin cliente
-          </button>
+          </Boton>
         )}
         {!showCreate ? (
-          <button type="button" className="boton-enlace" onClick={() => setShowCreate(true)}>
+          <Boton variant="link" onClick={() => setShowCreate(true)}>
             Nuevo cliente
-          </button>
+          </Boton>
         ) : (
           <form className="formulario" onSubmit={onCreate}>
             <CustomerFields
@@ -173,14 +173,14 @@ export default function NuevaVentaCliente({ allowNone, onChosen, onClose }: Nuev
               </span>
             )}
             {offline && <SinConexion />}
-            <button className="boton" type="submit" disabled={create.isPending}>
+            <Boton type="submit" disabled={create.isPending}>
               Crear cliente
-            </button>
+            </Boton>
           </form>
         )}
-        <button type="button" className="boton-enlace" onClick={onClose}>
+        <Boton variant="link" onClick={onClose}>
           Cerrar
-        </button>
+        </Boton>
       </div>
     </div>
   )
