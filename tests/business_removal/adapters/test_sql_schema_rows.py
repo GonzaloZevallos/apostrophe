@@ -6,7 +6,7 @@ proven to reach every table the schema holds and nothing of the other business.
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any, cast
 
@@ -353,3 +353,59 @@ def test_a_table_added_after_migrating_is_found_ordered_and_emptied(
             text("SELECT COUNT(*) FROM later_table")
         ).scalar_one()
     assert remaining == 0
+
+
+def test_rows_parses_bool_date_and_naive_datetime_columns(tmp_path: Path) -> None:
+    """`rows()` reflects the live schema rather than any app-side `TypeDecorator`
+    (`SqlSchemaRows`'s own module docstring), so a boolean column must come back as a
+    Python `bool`, a date column as a `datetime.date`, and an instant column as a naive
+    `datetime` (`tzinfo is None`) — the offset `UtcDateTime` drops on the way in
+    (`app/db.py`) never resurfaces through plain reflection. A frozen clock on a fresh
+    app gives exact, known values instead of "whatever today happens to be"."""
+    engine = make_engine(f"sqlite:///{tmp_path / 'types.db'}")
+    app = create_app(
+        SETTINGS,
+        engine=engine,
+        clock=MovableClock(NOW),
+        hasher=TEST_HASHER,
+        telegram=FakeTelegram(),
+        upkeep_ticker=False,
+    )
+    with TestClient(app) as client:
+        token = open_business(
+            client, engine, MovableClock(NOW), "Types Business", "types@example.com"
+        )
+        signed = signed_in(client, token)
+        customer = signed.post(
+            "/customers", json={"name": "Vip customer", "phone": "11 2345-6789", "vip": True}
+        ).json()
+        variety = signed.post("/varieties", json={"name": "Types variety"}).json()
+        entry = signed.post(
+            "/stock/entries",
+            json={
+                "date": "2026-01-01",
+                "variety_id": variety["id"],
+                "origin": "opening_stock",
+                "grams": "50",
+            },
+        ).json()
+
+    with Session(engine) as session:
+        rows = SqlSchemaRows(session)
+        business = rows.business_of("types@example.com")
+        assert business is not None
+
+        [customer_row] = rows.rows("customer", business.id)
+        assert customer_row["id"] == customer["id"]
+        assert type(customer_row["vip"]) is bool
+        assert customer_row["vip"] is True
+
+        [entry_row] = rows.rows("stock_entry", business.id)
+        assert entry_row["id"] == entry["id"]
+        assert type(entry_row["entry_date"]) is date
+        assert entry_row["entry_date"] == date(2026, 1, 1)
+
+        recorded_at = entry_row["recorded_at"]
+        assert type(recorded_at) is datetime
+        assert recorded_at.tzinfo is None
+        assert recorded_at == NOW.replace(tzinfo=None)
