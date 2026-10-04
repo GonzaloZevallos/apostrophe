@@ -53,7 +53,7 @@ of tables, even an implicit one, had shown it fails silently.
   RETURNING id`, inside one write transaction. For every exported kind, the returned
   id sets are compared with the id sets parsed from the file read back from disk. Any
   difference rolls back. There is one commit, at the end.
-- **Schema prerequisites (migration 0007).**
+- **Schema prerequisites (migration 0008).**
   - `app_user.joined_at`, set by `accept_invitation`.
   - A new-business invitation records the business it opened when it is used.
   - Existing rows are backfilled by pairing used invitations with businesses and users

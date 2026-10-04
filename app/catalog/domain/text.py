@@ -20,16 +20,36 @@ class CatalogEntry:
     price: CatalogPrice
 
 
+NOTHING_TO_OFFER = "Por ahora no tenemos nada para ofrecer."
+
+
 def catalog_text(header: str, footer: str, entries: Sequence[CatalogEntry]) -> str | None:
     """`None` with no entries, even if the header or footer is not blank. Otherwise the
     header (if not `""`), one block per entry in the order given, the footer (if not
     `""`), every section joined by exactly one blank line."""
     if not entries:
         return None
+    return _join(header, [_block(entry) for entry in entries], footer)
+
+
+def pinned_catalog_text(header: str, footer: str, entries: Sequence[CatalogEntry]) -> str:
+    """What Telegram needs (#10): `catalog_text`'s text, or — when nothing qualifies —
+    the header, "Por ahora no tenemos nada para ofrecer." and the footer, so the pin
+    always has something to show. `GET /catalog` and Copiar keep `catalog_text`'s own
+    `None` and their own empty state; this is the only other caller of `_join`."""
+    text = catalog_text(header, footer, entries)
+    if text is not None:
+        return text
+    return _join(header, [NOTHING_TO_OFFER], footer)
+
+
+def _join(header: str, blocks: Sequence[str], footer: str) -> str:
+    """The one place that lays out header, blocks and footer (the plan's invariant):
+    every section blank-line separated, a blank header or footer left out."""
     sections: list[str] = []
     if header != "":
         sections.append(header)
-    sections.extend(_block(entry) for entry in entries)
+    sections.extend(blocks)
     if footer != "":
         sections.append(footer)
     return "\n\n".join(sections)

@@ -1,7 +1,7 @@
 """`app_user.joined_at` and the opened-business link.
 
-Revision ID: 0007
-Revises: 0006
+Revision ID: 0008
+Revises: 0007
 
 Backfills from two facts that hold until this task ships: ids only grow, and every
 business and every user came from accepting an invitation.
@@ -22,8 +22,8 @@ from collections.abc import Sequence
 import sqlalchemy as sa
 from alembic import op
 
-revision: str = "0007"
-down_revision: str | None = "0006"
+revision: str = "0008"
+down_revision: str | None = "0007"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 

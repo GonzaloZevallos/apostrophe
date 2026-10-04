@@ -14,6 +14,7 @@ BUSINESS_TABLE = "business"
 APP_USER_TABLE = "app_user"
 INVITATION_TABLE = "invitation"
 LOGIN_GUARD_TABLE = "login_guard"
+PINNED_CATALOG_TABLE = "pinned_catalog"
 
 # Tables with no `business_id` of their own (docs/adr/0004); the only tables a business
 # row delete reaches by a column other than `business_id`.
@@ -27,4 +28,14 @@ WITHHELD_TABLES: frozenset[str] = frozenset({INVITATION_TABLE, LOGIN_GUARD_TABLE
 
 # (table, column) pairs dropped from every exported row, even though their table is
 # exported. Each future secret column joins this set in the diff that adds it.
-EXCLUDED_COLUMNS: frozenset[tuple[str, str]] = frozenset({(APP_USER_TABLE, "password_hash")})
+# The pinned catalog's bot token never leaves the server once saved (pinned-catalog.md):
+# its ciphertext, the fingerprints derived from it, and the date it was saved on.
+EXCLUDED_COLUMNS: frozenset[tuple[str, str]] = frozenset(
+    {
+        (APP_USER_TABLE, "password_hash"),
+        (PINNED_CATALOG_TABLE, "token_ciphertext"),
+        (PINNED_CATALOG_TABLE, "token_fingerprint"),
+        (PINNED_CATALOG_TABLE, "message_token_fingerprint"),
+        (PINNED_CATALOG_TABLE, "token_saved_on"),
+    }
+)

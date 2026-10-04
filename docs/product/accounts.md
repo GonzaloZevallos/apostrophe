@@ -122,6 +122,7 @@ Success criteria, removing a business:
 - **Inicio**: the panel (results.md).
   - Hoy · Semana · Mes, with sales, Ganancia, Caja, money owed and stock per variety.
   - When no variety has a current price today, "Arrancá por las variedades" shows above the panel, and the panel still shows its real figures.
+  - "Tu catálogo en Telegram está desactualizado", a fixed notice while the pinned catalog is out of date (pinned-catalog.md). It opens Catálogo.
 - **Más**: Gastos, Variedades, Catálogo ("Catálogo · El mensaje de hoy, listo para copiar", catalog.md), Negocio.
 - **Negocio**:
   - rename the business;
@@ -165,7 +166,8 @@ Success criteria, removing a business:
 - **Nothing invented (criterion 7)**:
   - the bar shows exactly Inicio, Ventas, Clientes, Stock and Más, plus the "Nueva venta" button;
   - Más shows exactly Gastos, Variedades, Catálogo and Negocio;
-  - every figure on Inicio equals the API's answer, with real zeros for a period with no activity (results.md).
+  - every figure on Inicio equals the API's answer, with real zeros for a period with no activity (results.md);
+  - Inicio shows no notices other than "Arrancá por las variedades" and the pinned catalog's.
 - **Nothing survives (criterion 11)**: after a real run on one of two seeded businesses with one of everything, 0 rows carry its id in any table discovered from the schema; pending, used and expired invitations all go; `login_guard` holds nothing for the removed emails; a table added to the schema later is covered without changing the command, proven by a test.
 - **Export = delete (criteria 8, 11)**: for every exported kind, the count in the file equals the count deleted; every stored field listed above is present and every reference carries a name and an id; no password hash, invitation digest or secret is in the file.
 - **Others untouched (criterion 12)**: every table's row count for the other business is identical before and after, and it reads all its data afterwards.

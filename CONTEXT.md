@@ -207,14 +207,24 @@ _Avoid_: menu, price list, flyer
 _In the app_: Catálogo
 
 **Pinned catalog**:
-The catalog message pinned in the business's Telegram chat, kept in step whenever a price changes or a variety sells out.
-_In the app_: Mensaje fijado
+The catalog message pinned in the business's Telegram channel chat by its own bot. Once first published, it is edited in place whenever the catalog text changes, and it is never posted again in that chat. When nothing qualifies, it shows the header, "Por ahora no tenemos nada para ofrecer." and the footer. _In the app_: Mensaje fijado.
 _Avoid_: post, broadcast
+_In the app_: Mensaje fijado
 
 **Test send**:
-The catalog sent only to the user's own Telegram chat, to see how it looks before publishing.
-_In the app_: Enviarme una prueba
+The catalog sent only to the user's own Telegram chat, using the bot settings typed on the screen. They are saved only if it succeeds. A successful test since the settings last changed is required before Publicar. _In the app_: Probarlo.
 _Avoid_: preview, draft
+_In the app_: Enviarme una prueba
+
+**Upkeep**:
+The automatic edit of the pinned catalog after a change that may affect its text, or at the start of a new Argentina day. It only ever edits; it never posts or pins. _In the app_: no word of its own.
+_Avoid_: sync, auto-publish, refresh
+_In the app_: no word of its own
+
+**Last published text**:
+The source text (markers included) last sent to the pinned message of the current bot and channel chat. _In the app_: no word of its own.
+_Avoid_: cache, last snapshot
+_In the app_: no word of its own
 
 ## Language
 
@@ -277,6 +287,18 @@ _Avoid_: unpaid orders, pending sales, open invoices
 **Total owed**:
 The sum of every customer's balance above $0 in a business; credits never subtract from it. _In the app_: the total heading Te deben and in Clientes' header.
 _Avoid_: receivables, outstanding
+
+**Publish**:
+Posting and pinning the catalog in the business's channel chat, or editing the already pinned message there. It always sends, even when the text has not changed. _In the app_: Publicar.
+_Avoid_: broadcast, push, sync
+
+**Bot settings**:
+A business's one Telegram bot token, stored encrypted and never shown again once saved, plus its channel chat and the user's own chat. Changing any of them requires a new test send before publishing. _In the app_: El bot de Telegram.
+_Avoid_: integration, connection, config
+
+**Out of date**:
+The pinned catalog's state when customers are not seeing today's catalog: the last automatic update failed (Telegram down, bot can't post, message deleted, text too long), or a new token or channel was tested but not yet published. It shows one fixed reason and, when the current chat has been published to, the last publish date. Its only other state is up to date. _In the app_: Desactualizado / Al día.
+_Avoid_: stale, pending, out of sync, error
 
 **Panel**:
 Inicio's one-screen view of a business for today, this week (Monday to Sunday) or this month in Argentina time: sales, cost of goods sold, expenses, purchases, profit and cash, then money owed and stock per variety. Read only; every figure comes from the server. _In the app_: Inicio (tabs Hoy · Semana · Mes).

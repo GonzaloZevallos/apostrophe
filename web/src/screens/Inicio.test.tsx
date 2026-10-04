@@ -14,7 +14,7 @@ import { afterEach, expect, test, vi } from 'vitest'
 import panelFixture from '../api/fixtures/panel.json'
 import type { PanelAnswer } from '../api/panel'
 import type { Me } from '../api/me'
-import Inicio, { EMPTY_TITLE } from './Inicio'
+import Inicio, { EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE } from './Inicio'
 
 const PANEL: PanelAnswer = panelFixture as PanelAnswer
 
@@ -31,11 +31,16 @@ function Provide() {
   return <Outlet context={ME} />
 }
 
-function stubFetch(panel: PanelAnswer, varieties: Array<{ current_price: unknown }> = [{ current_price: { id: 1 } }]) {
+function stubFetch(
+  panel: PanelAnswer,
+  varieties: Array<{ current_price: unknown }> = [{ current_price: { id: 1 } }],
+  pinnedCatalogStatus: unknown = { status: null },
+) {
   vi.stubGlobal(
     'fetch',
     vi.fn((input: RequestInfo | URL) => {
       const url = String(input)
+      if (url.includes('/pinned-catalog/status')) return Promise.resolve(jsonResponse(200, pinnedCatalogStatus))
       if (url.includes('/panel')) return Promise.resolve(jsonResponse(200, panel))
       if (url.includes('/varieties')) return Promise.resolve(jsonResponse(200, varieties))
       return Promise.reject(new Error(`unexpected fetch: ${url}`))
@@ -247,4 +252,14 @@ test('shows "Sin conexión" when the panel fetch fails, with no figures', async 
 
   expect(await screen.findByText('Te quedaste sin internet')).toBeInTheDocument()
   expect(screen.queryByText('Vendiste hoy')).not.toBeInTheDocument()
+})
+
+test('shows the fixed pinned-catalog notice while the pin is out of date', async () => {
+  stubFetch(PANEL, [{ current_price: { id: 1 } }], {
+    status: { state: 'out_of_date', reason: 'telegram_unreachable', last_published_on: '2026-09-29' },
+  })
+  renderInicio()
+
+  const notice = await screen.findByText(PINNED_CATALOG_OUT_OF_DATE)
+  expect(notice.closest('a')).toHaveAttribute('href', '/catalogo')
 })

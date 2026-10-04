@@ -30,6 +30,7 @@ from app.db import make_engine
 from app.main import create_app
 from app.settings import Settings
 from tests.conftest import PASSWORD, TEST_HASHER, invite
+from tests.fakes.telegram import FakeTelegram
 
 EMAIL_LEAVING = "closing@example.com"
 EMAIL_STAYING = "staying@example.com"
@@ -86,7 +87,13 @@ def _seed(db_path: Path) -> tuple[str, str]:
     url = f"sqlite:///{db_path}"
     engine = make_engine(url)
     settings = Settings(secret_key="test-secret", database_url=url)
-    app = create_app(settings, engine=engine, hasher=TEST_HASHER)
+    app = create_app(
+        settings,
+        engine=engine,
+        hasher=TEST_HASHER,
+        telegram=FakeTelegram(),
+        upkeep_ticker=False,
+    )
     with TestClient(app) as client:
         token_b = _accept(client, engine, "Otro Negocio", EMAIL_STAYING)
         client.headers["Authorization"] = f"Bearer {token_b}"
@@ -366,7 +373,13 @@ def test_the_other_business_still_reads_its_own_data_after_the_run(
     url = f"sqlite:///{db_path}"
     engine = make_engine(url)
     settings = Settings(secret_key="test-secret", database_url=url)
-    app = create_app(settings, engine=engine, hasher=TEST_HASHER)
+    app = create_app(
+        settings,
+        engine=engine,
+        hasher=TEST_HASHER,
+        telegram=FakeTelegram(),
+        upkeep_ticker=False,
+    )
     with TestClient(app) as client:
         client.headers["Authorization"] = f"Bearer {token_b}"
         listed = client.get("/customers")
@@ -592,7 +605,13 @@ def test_a_clean_slate_lets_the_same_email_open_a_new_business(
     url = f"sqlite:///{db_path}"
     engine = make_engine(url)
     settings = Settings(secret_key="test-secret", database_url=url)
-    app = create_app(settings, engine=engine, hasher=TEST_HASHER)
+    app = create_app(
+        settings,
+        engine=engine,
+        hasher=TEST_HASHER,
+        telegram=FakeTelegram(),
+        upkeep_ticker=False,
+    )
     with TestClient(app) as client:
         client.headers["Authorization"] = f"Bearer {token_a}"
         rejected = client.get("/customers")
@@ -644,7 +663,13 @@ def test_an_nfd_typed_name_matches_through_main(
     url = f"sqlite:///{db_path}"
     engine = make_engine(url)
     settings = Settings(secret_key="test-secret", database_url=url)
-    app = create_app(settings, engine=engine, hasher=TEST_HASHER)
+    app = create_app(
+        settings,
+        engine=engine,
+        hasher=TEST_HASHER,
+        telegram=FakeTelegram(),
+        upkeep_ticker=False,
+    )
     stored_name = "Café Central"
     with TestClient(app) as client:
         _accept(client, engine, stored_name, "cafe@example.com")

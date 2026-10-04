@@ -37,7 +37,7 @@ def test_no_secret_like_column_is_left_unexcluded() -> None:
     assert secret_columns(schema) == ()
 
 
-def test_the_raw_secret_pattern_matches_exactly_the_two_known_secrets() -> None:
+def test_the_raw_secret_pattern_matches_exactly_the_known_secrets() -> None:
     schema = _schema_rows().schema()
 
     matches = {
@@ -47,7 +47,14 @@ def test_the_raw_secret_pattern_matches_exactly_the_two_known_secrets() -> None:
         if looks_secret(column.name)
     }
 
-    assert matches == {("app_user", "password_hash"), ("invitation", "token_digest")}
+    assert matches == {
+        ("app_user", "password_hash"),
+        ("invitation", "token_digest"),
+        ("pinned_catalog", "token_ciphertext"),
+        ("pinned_catalog", "token_fingerprint"),
+        ("pinned_catalog", "message_token_fingerprint"),
+        ("pinned_catalog", "token_saved_on"),
+    }
     # The pattern test's own reason to exist: a bare "key" segment would also catch
     # these, and the removal would then refuse every run.
     assert not looks_secret("name_key")

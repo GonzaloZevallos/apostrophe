@@ -25,6 +25,7 @@ from app.db import make_engine
 from app.main import create_app
 from app.settings import Settings
 from tests.conftest import NOW, PASSWORD, TEST_HASHER, MovableClock, open_business, signed_in
+from tests.fakes.telegram import FakeTelegram
 
 SETTINGS = Settings(secret_key="removal-test-secret", database_url="sqlite://")
 
@@ -93,7 +94,13 @@ def file_engine(tmp_path: Path) -> Engine:
 
 @pytest.fixture
 def app(file_engine: Engine) -> FastAPI:
-    return create_app(SETTINGS, engine=file_engine, hasher=TEST_HASHER)
+    return create_app(
+        SETTINGS,
+        engine=file_engine,
+        hasher=TEST_HASHER,
+        telegram=FakeTelegram(),
+        upkeep_ticker=False,
+    )
 
 
 @pytest.fixture

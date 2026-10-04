@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Exports one business's data, then deletes it (docs/adr/0014).
+# Exports one business's data, then deletes it (docs/adr/0015).
 set -euo pipefail
 cd "$(dirname "$0")/.."
 if [ -f .env ]; then

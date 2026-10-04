@@ -1,4 +1,4 @@
-"""Migration 0007 backfills `app_user.joined_at` and the opened-business link from
+"""Migration 0008 backfills `app_user.joined_at` and the opened-business link from
 spent invitations, pairing by count, never by guesswork (the plan's migration spec):
 a matched opening invitation stamps the business and its first user; a count mismatch
 leaves the rows NULL."""
@@ -75,7 +75,7 @@ def _insert_invitation(
 
 def test_a_matched_opening_invitation_stamps_the_business_and_its_first_user() -> None:
     engine = make_engine("sqlite://")
-    _upgrade_to(engine, "0006")
+    _upgrade_to(engine, "0007")
     _insert_business(engine, 1, "Sola")
     _insert_user(engine, 1, 1, "uno@example.com")
     _insert_invitation(engine, 1, "new_business", "digest-1", None, OPENED_AT)
@@ -91,7 +91,7 @@ def test_a_matched_opening_invitation_stamps_the_business_and_its_first_user() -
 
 def test_a_matched_join_invitation_stamps_the_remaining_user_within_its_business() -> None:
     engine = make_engine("sqlite://")
-    _upgrade_to(engine, "0006")
+    _upgrade_to(engine, "0007")
     _insert_business(engine, 1, "Sola")
     _insert_user(engine, 1, 1, "uno@example.com")
     _insert_user(engine, 2, 1, "socia@example.com")
@@ -109,7 +109,7 @@ def test_a_matched_join_invitation_stamps_the_remaining_user_within_its_business
 
 def test_a_count_mismatch_leaves_joined_at_and_the_business_link_null() -> None:
     engine = make_engine("sqlite://")
-    _upgrade_to(engine, "0006")
+    _upgrade_to(engine, "0007")
     _insert_business(engine, 1, "Sola")
     _insert_business(engine, 2, "Otra")
     _insert_user(engine, 1, 1, "uno@example.com")

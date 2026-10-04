@@ -10,6 +10,7 @@ from fastapi.testclient import TestClient
 
 from app.main import create_app
 from tests.conftest import SETTINGS, TEST_HASHER
+from tests.fakes.telegram import FakeTelegram
 
 PUBLIC = {
     ("GET", "/health"),
@@ -27,7 +28,9 @@ def _routes(app: FastAPI) -> list[tuple[str, str]]:
     return sorted((method.upper(), path) for path, item in paths.items() for method in item)
 
 
-ROUTES = _routes(create_app(SETTINGS, hasher=TEST_HASHER))
+ROUTES = _routes(
+    create_app(SETTINGS, hasher=TEST_HASHER, telegram=FakeTelegram(), upkeep_ticker=False)
+)
 GATED = [route for route in ROUTES if route not in PUBLIC]
 
 

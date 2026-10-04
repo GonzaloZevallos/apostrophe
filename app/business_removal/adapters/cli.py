@@ -1,5 +1,5 @@
 """The operator's command: exports one business's data, then deletes it
-(docs/adr/0014, docs/product/accounts.md "Removing a business"). Run as:
+(docs/adr/0015, docs/product/accounts.md "Removing a business"). Run as:
 
     scripts/remove-business.sh <email> [--dry-run]
 

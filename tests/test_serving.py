@@ -18,6 +18,7 @@ from app.main import create_app
 from app.settings import Settings
 from app.static_spa import MissingBuiltFront
 from tests.conftest import SETTINGS, TEST_HASHER
+from tests.fakes.telegram import FakeTelegram
 
 SECRET = "sv-secret-only-outside-dist"
 
@@ -41,7 +42,9 @@ def served_app(dist: Path, engine: Engine) -> FastAPI:
     settings = Settings(
         secret_key=SETTINGS.secret_key, database_url=SETTINGS.database_url, web_dist=dist
     )
-    return create_app(settings, engine=engine, hasher=TEST_HASHER)
+    return create_app(
+        settings, engine=engine, hasher=TEST_HASHER, telegram=FakeTelegram(), upkeep_ticker=False
+    )
 
 
 @pytest.fixture
@@ -91,7 +94,9 @@ def test_a_missing_asset_is_a_plain_404_not_the_app_shell(served_client: TestCli
 def test_static_serving_adds_no_path_to_the_openapi_document(
     served_app: FastAPI, engine: Engine
 ) -> None:
-    unserved = create_app(SETTINGS, engine=engine, hasher=TEST_HASHER)
+    unserved = create_app(
+        SETTINGS, engine=engine, hasher=TEST_HASHER, telegram=FakeTelegram(), upkeep_ticker=False
+    )
 
     assert served_app.openapi()["paths"] == unserved.openapi()["paths"]
 
@@ -117,4 +122,10 @@ def test_startup_fails_without_an_index_html(tmp_path: Path, engine: Engine) -> 
     )
 
     with pytest.raises(MissingBuiltFront):
-        create_app(settings, engine=engine, hasher=TEST_HASHER)
+        create_app(
+            settings,
+            engine=engine,
+            hasher=TEST_HASHER,
+            telegram=FakeTelegram(),
+            upkeep_ticker=False,
+        )
