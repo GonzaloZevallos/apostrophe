@@ -82,17 +82,26 @@ def test_twenty_failures_from_one_peer_across_many_emails_lock_the_address(
 def test_failures_spread_beyond_the_window_do_not_lock_the_address(
     app: FastAPI, clock: MovableClock
 ) -> None:
+    """19 failures, then the clock past the window, then *two* more: if the window
+    had not reset, the first of those two would already be the 20th failure overall
+    (still answering 401, reaching-threshold's own request always does) and the
+    second would find the address locked (429). Both answering 401 is only possible
+    if the window reset and restarted the count near zero."""
     with peer(app, "198.51.100.10") as test_client:
         for n in range(19):
             body = {"email": f"nadie{n}@example.com", "password": "x"}
             assert test_client.post("/auth/login", json=body).status_code == 401
 
         clock.set(NOW + timedelta(minutes=16))
-        after_the_window = test_client.post(
+        first_after_the_window = test_client.post(
             "/auth/login", json={"email": "nadie19@example.com", "password": "x"}
         )
+        second_after_the_window = test_client.post(
+            "/auth/login", json={"email": "nadie20@example.com", "password": "x"}
+        )
 
-    assert after_the_window.status_code == 401
+    assert first_after_the_window.status_code == 401
+    assert second_after_the_window.status_code == 401
 
 
 def test_cross_counting_includes_refusals_under_an_active_lock(app: FastAPI) -> None:

@@ -48,6 +48,31 @@ def _count_email_failure(engine: Engine, email: Email, now: datetime) -> int:
         return failures
 
 
+def test_clear_email_leaves_an_active_lock_in_place(file_engine: Engine) -> None:
+    """A success's `clear_email` must not lift a lock that was set after its own read
+    of the guard (plan invariant: `locked_until` is written only by an `UPDATE`
+    guarded on `locked_until IS NULL OR locked_until <= :now`) — proven directly at
+    this seam, without relying on the race actually happening."""
+    email = Email.of("raced@example.com")
+    until = NOW + timedelta(minutes=15)
+    with Session(file_engine) as session:
+        accounts = SqlAccounts(session)
+        for _ in range(5):
+            accounts.count_email_failure(email, NOW)
+        accounts.lock_email(email, NOW, until, max_failures=5)
+        session.commit()
+
+    with Session(file_engine) as session:
+        SqlAccounts(session).clear_email(email, NOW)
+        session.commit()
+
+    with Session(file_engine) as session:
+        row = session.get(LoginGuardRow, email.value)
+        assert row is not None
+        assert row.locked_until == until
+        assert row.failures == 0
+
+
 def test_n_concurrent_address_failures_give_a_count_of_n(file_engine: Engine) -> None:
     digest = "address-under-contention"
     cutoff = AddressGuard().window_cutoff(NOW)

@@ -86,7 +86,7 @@ def log_in(
         transaction.commit()
         return None
 
-    accounts.clear_email(email)
+    accounts.clear_email(email, now)
     transaction.commit()
     assert user.id is not None
     return signer.issue(user.id, user.password_hash, now)

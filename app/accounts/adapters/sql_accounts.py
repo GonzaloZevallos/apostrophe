@@ -153,10 +153,17 @@ class SqlAccounts:
         self._session.execute(statement)
         self._session.flush()
 
-    def clear_email(self, email: Email) -> None:
+    def clear_email(self, email: Email, now: datetime) -> None:
+        # Guarded the same way a lock is set (plan invariant): a lock already active
+        # — set by a request that raced ahead of the one now succeeding — must not be
+        # lifted, nor its count zeroed, by a read that is stale by the time this
+        # writes.
         statement = (
             update(LoginGuardRow)
-            .where(LoginGuardRow.email == email.value)
+            .where(
+                LoginGuardRow.email == email.value,
+                (LoginGuardRow.locked_until.is_(None)) | (LoginGuardRow.locked_until <= now),
+            )
             .values(failures=0, locked_until=None)
         )
         self._session.execute(statement)
