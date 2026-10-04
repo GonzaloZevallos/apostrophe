@@ -3,14 +3,10 @@
  * number is a normal customer, proven against the real backend, through the built
  * front alone — never a mock of either side.
  *
- * Depends on `customers-backend`: this spec only goes green once that subtask's
- * optional-phone domain, API and migration are in place (plan, "Order": "Merge only
- * after `customers-backend` is approved: rebase onto it, with the end-to-end spec
- * below green against the real backend"). Run against this worktree's own backend
- * today, it fails at the very first save: `POST /customers` still refuses an empty
- * phone, because `customers-backend` has not landed here yet. `test.fixme` below
- * is that known, plan-declared gap, not a weakened assertion — drop it the moment
- * this branch is rebased onto `customers-backend`.
+ * Depends on `customers-backend`: this branch is rebased onto it (plan, "Order":
+ * "Merge only after `customers-backend` is approved: rebase onto it, with the
+ * end-to-end spec below green against the real backend"), so this spec runs
+ * against the real optional-phone domain, API and migration.
  *
  * Covers the PRD's own lifecycle for a customer with no number: registered, edited,
  * found by name, chosen for a sale left owing, paid through Registrar cobro, and
@@ -26,9 +22,9 @@ import { fillSaleLine } from './helpers/sale.js'
 
 const PASSWORD = 'correcthorsebattery'
 
-test.fixme(
-  'a customer with no phone number is registered, edited, sold to, paid and shown in Te deben',
-  async ({ page }) => {
+test('a customer with no phone number is registered, edited, sold to, paid and shown in Te deben', async ({
+  page,
+}) => {
   const consoleMessages: string[] = []
   watchConsole(page, consoleMessages)
 
@@ -123,10 +119,15 @@ test.fixme(
   await expect(page.getByText('Venta guardada')).toBeVisible()
   expect(Date.now() - sheetStart).toBeLessThan(60_000)
 
-  // Te deben lists the first customer's settled debt as gone, with nothing left
-  // owing — the second customer's own fresh debt is the only one left.
+  // Te deben lists the second, no-number customer's own fresh debt — the first
+  // customer's debt is already settled, so she never named here.
   await page.goto('/clientes')
-  await expect(page.getByRole('link', { name: /te deben/ })).toBeVisible()
+  await page.getByRole('link', { name: /te deben \$ 2\.000/ }).click()
+  await expect(page).toHaveURL(/\/clientes\/deben$/)
+  const debtorRow = page.getByRole('link', { name: 'Sol Sinnumero' })
+  await expect(debtorRow).toBeVisible()
+  await expect(debtorRow).toContainText('$ 2.000')
+  await expect(page.getByRole('link', { name: 'Noe Sinnumero' })).toHaveCount(0)
 
   // Nothing personal or technical reaches the console or the browser's own storage.
   const storage = await page.evaluate(() => ({
@@ -135,5 +136,4 @@ test.fixme(
   }))
   expect(storage).toEqual({ local: 0, session: 0 })
   expect(consoleMessages).toEqual([])
-  },
-)
+})

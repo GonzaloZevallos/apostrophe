@@ -25,6 +25,18 @@ function ListStub() {
   )
 }
 
+function FichaStub() {
+  const location = useLocation()
+  const state = location.state as { toast?: string; notice?: string } | null
+  return (
+    <div>
+      <span>la ficha</span>
+      {state?.toast !== undefined && <span>{state.toast}</span>}
+      {state?.notice !== undefined && <span>{state.notice}</span>}
+    </div>
+  )
+}
+
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
     status,
@@ -40,7 +52,7 @@ function renderForm(initialPath: string) {
           <Route path="/clientes/nuevo" element={<ClienteForm mode="nuevo" />} />
           <Route path="/clientes/:id/editar" element={<ClienteForm mode="editar" />} />
           <Route path="/clientes" element={<ListStub />} />
-          <Route path="/clientes/:id" element={<span>la ficha</span>} />
+          <Route path="/clientes/:id" element={<FichaStub />} />
         </Routes>
       </MemoryRouter>
     </QueryClientProvider>,
@@ -109,6 +121,7 @@ test('clearing a phone when editing sends it and shows the saved toast', async (
   await userEvent.click(screen.getByRole('button', { name: 'Guardá y usá' }))
 
   expect(await screen.findByText('la ficha')).toBeInTheDocument()
+  expect(screen.getByText('Cliente guardado')).toBeInTheDocument()
   expect(fetch).toHaveBeenCalledWith(
     '/customers/7',
     expect.objectContaining({ method: 'PATCH', body: JSON.stringify({ name: 'Tincho', phone: '', channel: null, vip: false }) }),
