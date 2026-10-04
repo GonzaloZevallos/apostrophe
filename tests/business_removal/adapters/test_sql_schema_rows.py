@@ -1,0 +1,278 @@
+"""`SqlSchemaRows`, the `SchemaRows` port over SQLAlchemy, over a file-backed SQLite
+database with two businesses seeded through the real API: one of everything for the
+business being removed, so the delete this subtask builds (no file, no CLI yet) can be
+proven to reach every table the schema holds and nothing of the other business.
+"""
+
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Any, cast
+
+import pytest
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
+from sqlalchemy import text
+from sqlalchemy.engine import Engine
+from sqlalchemy.orm import Session
+
+from app.accounts.adapters.sql_accounts import SqlAccounts
+from app.accounts.application.invitations import invite_partner
+from app.business_removal.adapters.sql_schema_rows import SqlSchemaRows
+from app.business_removal.domain.classification import delete_order, owned_tables
+from app.db import make_engine
+from app.main import create_app
+from app.settings import Settings
+from tests.conftest import NOW, TEST_HASHER, MovableClock, open_business, signed_in
+
+SETTINGS = Settings(secret_key="removal-test-secret", database_url="sqlite://")
+
+
+def _seed_everything(client: TestClient, owner_email: str) -> dict[str, int]:
+    """One of every record kind a business can hold (mirrors
+    `tests/test_business_isolation.py`'s seeders), plus a pending, a used and a
+    forced-expired invitation, and a failed login attempt."""
+    variety = client.post("/varieties", json={"name": "Removal variety"}).json()
+    client.post(
+        f"/varieties/{variety['id']}/prices",
+        json={"effective_from": "2026-01-01", "list_price": 11_000},
+    )
+    customer = client.post(
+        "/customers", json={"name": "Removal customer", "phone": "11 2345-6789"}
+    ).json()
+    category = client.post("/expense-categories", json={"name": "Removal category"}).json()
+    client.post(
+        "/expenses",
+        json={
+            "spent_on": "2026-10-02",
+            "category_id": category["id"],
+            "amount": 1_000,
+            "detail": "Removal expense",
+        },
+    )
+    entry = client.post(
+        "/stock/entries",
+        json={"variety_id": variety["id"], "origin": "opening_stock", "grams": "50"},
+    ).json()
+    client.put(f"/stock/varieties/{variety['id']}/threshold", json={"grams": "5"})
+    client.put(
+        f"/catalog/varieties/{variety['id']}",
+        json={"shown": True, "emoji": None, "indica_share": None, "aroma": "removal"},
+    )
+    client.put("/catalog/header-footer", json={"header": "removal", "footer": "removal"})
+    cash_sale = client.post(
+        "/sales",
+        json={"payment": "cash", "lines": [{"variety_id": variety["id"], "grams": "5"}]},
+    ).json()
+    client.post(
+        "/sales",
+        json={
+            "payment": "owing",
+            "customer_id": customer["id"],
+            "lines": [{"variety_id": variety["id"], "grams": "5"}],
+        },
+    )
+    client.post(
+        f"/customers/{customer['id']}/payments",
+        json={"paid_on": "2026-09-20", "amount": 1_000, "method": "cash"},
+    )
+    # A failed login against the business's own user: `login_guard` is keyed by email,
+    # so this is the row the removal must take along with that user (round-3 Q3's
+    # "the removed users' emails' login-attempt history").
+    client.post("/auth/login", json={"email": owner_email, "password": "wrong password"})
+    return {"variety_id": variety["id"], "stock_entry_id": entry["id"], "sale_id": cash_sale["id"]}
+
+
+@pytest.fixture
+def file_engine(tmp_path: Path) -> Engine:
+    return make_engine(f"sqlite:///{tmp_path / 'removal.db'}")
+
+
+@pytest.fixture
+def app(file_engine: Engine) -> FastAPI:
+    return create_app(SETTINGS, engine=file_engine, hasher=TEST_HASHER)
+
+
+@pytest.fixture
+def leaving_token(app: FastAPI, file_engine: Engine) -> str:
+    clock = MovableClock(NOW)
+    with TestClient(app) as client:
+        return open_business(client, file_engine, clock, "Leaving Business", "leaving@example.com")
+
+
+@pytest.fixture
+def staying_token(app: FastAPI, file_engine: Engine, leaving_token: str) -> str:
+    clock = MovableClock(NOW)
+    with TestClient(app) as client:
+        return open_business(client, file_engine, clock, "Staying Business", "staying@example.com")
+
+
+@pytest.fixture
+def seeded(
+    app: FastAPI, file_engine: Engine, leaving_token: str, staying_token: str
+) -> dict[str, Any]:
+    with TestClient(app) as client:
+        leaving = signed_in(client, leaving_token)
+        leaving_records = _seed_everything(leaving, "leaving@example.com")
+        # A pending join invitation for the leaving business.
+        with Session(file_engine) as session:
+            invite_partner(
+                SqlAccounts(session), session, business_id=_business_id(session), now=NOW
+            )
+            session.commit()
+
+        staying = signed_in(client, staying_token)
+        staying_records = _seed_everything(staying, "staying@example.com")
+    return {"leaving": leaving_records, "staying": staying_records}
+
+
+def _business_id(session: Session) -> int:
+    row = session.execute(
+        text("SELECT business_id FROM app_user WHERE email = 'leaving@example.com'")
+    ).first()
+    assert row is not None
+    return int(row[0])
+
+
+def _table_counts(engine: Engine, table_names: list[str]) -> dict[str, int]:
+    with engine.connect() as connection:
+        return {
+            name: connection.execute(text(f"SELECT COUNT(*) FROM {name}")).scalar_one()
+            for name in table_names
+        }
+
+
+def test_business_of_finds_the_business_from_any_of_its_users_emails(
+    file_engine: Engine, leaving_token: str
+) -> None:
+    with Session(file_engine) as session:
+        ref = SqlSchemaRows(session).business_of("  LEAVING@Example.com  ")
+
+    assert ref is not None
+    assert ref.name == "Leaving Business"
+
+
+def test_business_of_answers_none_for_an_unknown_email(
+    file_engine: Engine, leaving_token: str
+) -> None:
+    with Session(file_engine) as session:
+        assert SqlSchemaRows(session).business_of("nobody@example.com") is None
+
+
+def test_delete_business_empties_every_owned_table_and_leaves_the_other_business_whole(
+    file_engine: Engine, seeded: dict[str, Any]
+) -> None:
+    with Session(file_engine) as session:
+        rows = SqlSchemaRows(session)
+        schema = rows.schema()
+        business = rows.business_of("leaving@example.com")
+        assert business is not None
+        order = delete_order(schema)
+        exported_table_names = sorted(
+            table.name for table in owned_tables(schema) if table.name != "invitation"
+        )
+
+        before = _table_counts(file_engine, [*exported_table_names, "invitation", "login_guard"])
+
+        deleted = rows.delete_business(business.id, order)
+        session.commit()
+
+    assert deleted.invitation_count >= 1
+    assert deleted.login_guard_count == 1
+    for name in exported_table_names:
+        assert deleted.tables[name] or name == "business"
+
+    after = _table_counts(file_engine, [*exported_table_names, "invitation", "login_guard"])
+
+    for name in exported_table_names:
+        # Every row deleted belonged to the leaving business; the staying business's
+        # rows of the same table are exactly what is left (criterion 6: untouched).
+        assert before[name] - after[name] == len(deleted.tables[name])
+    assert before["invitation"] - after["invitation"] == deleted.invitation_count
+    assert before["login_guard"] - after["login_guard"] == deleted.login_guard_count
+    # And none of what's left still carries the removed business's id.
+    with file_engine.connect() as connection:
+        for name in exported_table_names:
+            filter_sql = "id" if name == "business" else "business_id"
+            remaining = connection.execute(
+                text(f"SELECT COUNT(*) FROM {name} WHERE {filter_sql} = :bid"),
+                {"bid": business.id},
+            ).scalar_one()
+            assert remaining == 0, f"{name} still has rows of the removed business"
+        invitations_left = connection.execute(
+            text("SELECT COUNT(*) FROM invitation WHERE business_id = :bid"),
+            {"bid": business.id},
+        ).scalar_one()
+        assert invitations_left == 0
+        guard_left = connection.execute(
+            text("SELECT COUNT(*) FROM login_guard WHERE email = :email"),
+            {"email": "wrong@removal.example.com"},
+        ).scalar_one()
+        assert guard_left == 0
+
+
+def test_rows_reads_every_recorded_field_sorted_by_id(
+    file_engine: Engine, seeded: dict[str, Any]
+) -> None:
+    with Session(file_engine) as session:
+        rows = SqlSchemaRows(session)
+        business = rows.business_of("leaving@example.com")
+        assert business is not None
+        varieties = rows.rows("variety", business.id)
+
+    assert len(varieties) == 1
+    assert varieties[0]["name"] == "Removal variety"
+    ids = [cast(int, row["id"]) for row in varieties]
+    assert ids == sorted(ids)
+
+
+def test_a_table_added_after_migrating_is_found_ordered_and_emptied(
+    file_engine: Engine, seeded: dict[str, Any]
+) -> None:
+    with file_engine.begin() as connection:
+        connection.execute(
+            text(
+                "CREATE TABLE later_table ("
+                "id INTEGER PRIMARY KEY, "
+                "business_id INTEGER NOT NULL REFERENCES business(id), "
+                "variety_id INTEGER NOT NULL REFERENCES variety(id), "
+                "note TEXT NOT NULL)"
+            )
+        )
+
+    with Session(file_engine) as session:
+        rows = SqlSchemaRows(session)
+        business = rows.business_of("leaving@example.com")
+        assert business is not None
+        variety_id = rows.rows("variety", business.id)[0]["id"]
+        session.execute(
+            text(
+                "INSERT INTO later_table (business_id, variety_id, note) "
+                "VALUES (:business_id, :variety_id, 'later')"
+            ),
+            {"business_id": business.id, "variety_id": variety_id},
+        )
+        session.commit()
+
+    with Session(file_engine) as session:
+        rows = SqlSchemaRows(session)
+        schema = rows.schema()
+        business = rows.business_of("leaving@example.com")
+        assert business is not None
+        order = delete_order(schema)
+
+        assert "later_table" in order
+        assert order.index("later_table") < order.index("variety")
+
+        later_rows = rows.rows("later_table", business.id)
+        assert len(later_rows) == 1
+
+        deleted = rows.delete_business(business.id, order)
+        session.commit()
+
+    assert deleted.tables["later_table"] == {later_rows[0]["id"]}
+    with file_engine.connect() as connection:
+        remaining = connection.execute(
+            text("SELECT COUNT(*) FROM later_table")
+        ).scalar_one()
+    assert remaining == 0
