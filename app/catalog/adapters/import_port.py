@@ -86,7 +86,11 @@ class CatalogImport:
         self, variety_id: int, row: CatalogRow, today: date, transaction: Transaction
     ) -> None:
         indica = row.indica
-        assert not isinstance(indica, str), "check_attributes already refused this row"
+        if isinstance(indica, str):
+            # `check_attributes` already refuses this row; an explicit raise (not an
+            # `assert`, which `python -O` would strip) keeps the guard live if
+            # `write_import` is ever called out of order.
+            raise IndicaShareInvalid()
         set_variety_attributes(
             self._varieties,
             self._stock,

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from datetime import date
 
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
@@ -21,6 +22,7 @@ from app.catalog.adapters.sql_catalog_varieties import SqlCatalogVarieties
 from app.catalog.adapters.sql_header_footer import SqlCatalogHeaderFooter
 from app.catalog.adapters.stock_status import StockStatusesFromStock
 from app.catalog.application.read_catalog import read_catalog
+from app.catalog.domain.errors import IndicaShareInvalid
 from app.spreadsheet_import.application.no_commit import NoCommit
 from app.spreadsheet_import.domain.rows import CatalogRow, HeaderFooterCells, SheetRef
 
@@ -178,6 +180,25 @@ def test_write_attributes_with_a_blank_cell_writes_no_emoji_share_or_aroma(
         assert attributes.emoji is None
         assert attributes.indica_share is None
         assert attributes.aroma is None
+
+
+def test_write_attributes_refuses_an_indica_share_that_is_not_a_number_and_writes_nothing(
+    client: TestClient, engine: Engine
+) -> None:
+    """`check_attributes` already refuses a text indica cell (tested above); this
+    proves `write_attributes` itself never trusts an unchecked caller either, raising
+    the same `IndicaShareInvalid` catalog's own domain object would, and leaving no
+    row behind rather than writing it as `IndicaShareInvalid`-but-stored."""
+    variety_id = _variety_id(client)
+
+    with Session(engine) as session:
+        port = CatalogImport(session, business_id=1)
+        with pytest.raises(IndicaShareInvalid):
+            port.write_attributes(variety_id, _row(indica="mitad"), TODAY, NoCommit())
+        session.commit()
+
+    with Session(engine) as session:
+        assert variety_id not in SqlCatalogAttributes(session, business_id=1).all()
 
 
 def test_write_header_footer_writes_through_no_commit_and_reads_back(
