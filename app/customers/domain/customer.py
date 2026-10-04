@@ -1,9 +1,13 @@
-"""A business's customers, identified by phone number (CONTEXT.md: Customer, Phone
-number, Channel, VIP customer).
+"""A business's customers, identified by their own record, not by their phone
+(ADR-0019; CONTEXT.md: Customer, Phone number, Channel, VIP customer). The phone is
+optional contact data: a customer can have none.
 
 `PhoneNumber.of` is the only place a phone number is normalised; nothing else in the
-product reimplements any part of it. `fold` is the only place a name is folded for
-search or sort; the table that stores customers keeps no folded copy.
+product reimplements any part of it. `PhoneNumber.optional` is the only place a blank
+or missing phone becomes "no number" (the plan's invariant): nothing else in the
+product tests a phone for emptiness or rewrites it to `None`. `fold` is the only place
+a name is folded for search or sort; the table that stores customers keeps no folded
+copy.
 """
 
 from __future__ import annotations
@@ -77,6 +81,15 @@ class PhoneNumber:
         if value.startswith("+54"):
             return value.startswith("+549") and len(digits) == 13
         return True
+
+    @classmethod
+    def optional(cls, raw: str | None) -> PhoneNumber | None:
+        """`None` for a missing phone, or one blank after trimming; otherwise `of`.
+        The only place in the product a phone is tested for emptiness (the plan's
+        invariant)."""
+        if raw is None or not raw.strip():
+            return None
+        return cls.of(raw)
 
     @classmethod
     def of(cls, raw: str) -> PhoneNumber:
@@ -158,7 +171,7 @@ class Customer:
     VIP, and nothing else in this feature (PRD)."""
 
     name: CustomerName
-    phone: PhoneNumber
+    phone: PhoneNumber | None
     channel: Channel | None = None
     vip: bool = False
     id: int | None = None
@@ -169,6 +182,8 @@ class Customer:
             return True
         if fold(stripped) in fold(self.name.value):
             return True
+        if self.phone is None:
+            return False
         digits = "".join(c for c in stripped if c.isdigit())
         if digits.startswith("0"):
             digits = digits[1:]

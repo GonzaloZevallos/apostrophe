@@ -105,6 +105,27 @@ def test_phone_number_digits_drops_the_plus() -> None:
     assert PhoneNumber.of("11 2345-6789").digits == "5491123456789"
 
 
+# -- PhoneNumber.optional -------------------------------------------------------------
+
+
+def test_optional_is_none_for_a_missing_phone() -> None:
+    assert PhoneNumber.optional(None) is None
+
+
+@pytest.mark.parametrize("raw", ["", "   "])
+def test_optional_is_none_for_a_blank_phone(raw: str) -> None:
+    assert PhoneNumber.optional(raw) is None
+
+
+def test_optional_normalises_a_real_phone_the_same_as_of() -> None:
+    assert PhoneNumber.optional("11 2345-6789") == PhoneNumber.of("11 2345-6789")
+
+
+def test_optional_still_refuses_a_malformed_non_blank_phone() -> None:
+    with pytest.raises(InvalidPhoneNumber):
+        PhoneNumber.optional("2345-6789")
+
+
 # -- CustomerName.of ------------------------------------------------------------------
 
 
@@ -187,6 +208,23 @@ def test_a_query_matches_when_its_characters_appear_in_a_name_with_a_dash() -> N
 # -- Customer.sort_key -----------------------------------------------------------------
 
 
+def _sin_numero(customer_id: int | None = None) -> Customer:
+    return Customer(name=CustomerName.of("Sin Numero"), phone=None, id=customer_id)
+
+
+def test_a_customer_with_no_phone_still_matches_by_name() -> None:
+    assert _sin_numero().matches("Sin")
+
+
+def test_a_customer_with_no_phone_never_matches_on_the_number_branch() -> None:
+    assert not _sin_numero().matches("2345")
+
+
+def test_two_customers_with_no_phone_both_match_an_empty_query() -> None:
+    assert _sin_numero(1).matches("")
+    assert _sin_numero(2).matches("")
+
+
 def test_sort_key_orders_by_folded_name() -> None:
     customers = [_zoe(), _alvaro()]
 
@@ -201,4 +239,8 @@ def test_sort_key_breaks_ties_between_equal_names_by_id() -> None:
 
     ordered = sorted([first, second], key=lambda c: c.sort_key)
 
-    assert [c.phone.value for c in ordered] == [second.phone.value, first.phone.value]
+    assert first.phone is not None and second.phone is not None
+    assert [c.phone.value for c in ordered if c.phone is not None] == [
+        second.phone.value,
+        first.phone.value,
+    ]

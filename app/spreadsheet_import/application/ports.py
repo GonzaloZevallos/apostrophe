@@ -51,10 +51,26 @@ class VarietyKey:
 @dataclass(frozen=True)
 class CustomerKey:
     """The normalised phone number two spellings are matched by, opaque outside
-    customers' own adapter. Never printed (the plan's invariant: no phone number
-    appears in any report line, exception message, stdout or stderr)."""
+    customers' own adapter, or `None` for a customer with no phone at all (ADR-0019).
+    Never printed (the plan's invariant: no phone number appears in any report line,
+    exception message, stdout or stderr)."""
 
-    phone_key: str
+    phone_key: str | None
+
+
+@dataclass(frozen=True)
+class CustomerRefusals:
+    """Every broken rule `check_customer` found, filed by the field the port answers
+    it in: `name_code` for the customer's name, `phone_code` for the mapping's phone.
+    At least one is set. Kept apart from the generic `Refusal` because customers is
+    the only owner with two kinds of key to check independently (the plan's
+    invariant)."""
+
+    name_code: str | None
+    phone_code: str | None
+
+    def __post_init__(self) -> None:
+        assert self.name_code is not None or self.phone_code is not None
 
 
 @dataclass(frozen=True)
@@ -189,20 +205,21 @@ class ExpensesImport(Protocol):
 
 
 class CustomersImport(Protocol):
-    """Customers, identified by phone number."""
+    """Customers, identified by their own record; the phone is optional (ADR-0019)."""
 
     def has_records(self) -> bool:
         """Whether this business already has a customer."""
         ...
 
-    def check_customer(self, name: str, phone: str) -> CustomerKey | Refusal:
-        """`name` under customers.md's name rule and `phone` under its
-        normalisation; `phone` reaches no further than this call and the key it
-        returns."""
+    def check_customer(self, name: str, phone: str | None) -> CustomerKey | CustomerRefusals:
+        """`name` under customers.md's name rule and, when `phone` is given, its
+        normalisation — checked independently, so a broken name and a broken phone are
+        each filed under their own field. `phone` reaches no further than this call and
+        the key it returns."""
         ...
 
     def write_customer(
-        self, name: str, phone_key: str, vip: bool, transaction: Transaction
+        self, name: str, phone_key: str | None, vip: bool, transaction: Transaction
     ) -> int: ...
 
 

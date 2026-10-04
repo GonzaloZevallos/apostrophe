@@ -35,6 +35,8 @@ EMAIL_LEAVING = "closing@example.com"
 EMAIL_STAYING = "staying@example.com"
 PHONE = "+5491122334455"
 CUSTOMER_NAME = "Marta Gimenez"
+NO_PHONE_CUSTOMER_NAME = "Sin Numero"  # exported only in the export test; not counted
+# elsewhere, so the shared `seed()`'s own row counts stay untouched.
 SALE_NOTE = "Entrega el sabado por la tarde"
 EXPENSE_DETAIL = "Factura de electricidad de septiembre"
 PAYMENT_AMOUNT = 54321
@@ -101,8 +103,25 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
 ) -> None:
     db_path = tmp_path / "apostrophe.db"
     export_dir = tmp_path / "exports"
-    seed(db_path)
+    token_a, _token_b = seed(db_path)
     set_env(monkeypatch, db_path, export_dir)
+
+    # One customer with no phone (ADR-0019), added only to this test: the shared
+    # `seed()` keeps its row counts, which other tests in this module pin at exactly
+    # one customer. `leaving_before`, captured below, counts it dynamically.
+    engine = make_engine(f"sqlite:///{db_path}")
+    app = create_app(
+        Settings(secret_key="test-secret", database_url=f"sqlite:///{db_path}"),
+        engine=engine,
+        hasher=TEST_HASHER,
+        telegram=FakeTelegram(),
+        upkeep_ticker=False,
+    )
+    with TestClient(app) as extra_client:
+        extra_client.headers["Authorization"] = f"Bearer {token_a}"
+        no_phone = extra_client.post("/customers", json={"name": NO_PHONE_CUSTOMER_NAME})
+        assert no_phone.status_code == 201, no_phone.text
+    engine.dispose()
 
     with sqlite3.connect(db_path) as connection:
         connection.row_factory = sqlite3.Row
@@ -140,6 +159,8 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
 
     customers = {record["name"]: record for record in kinds["customer"]}
     assert customers[CUSTOMER_NAME]["phone"] == PHONE
+    assert customers[NO_PHONE_CUSTOMER_NAME]["phone"] is None
+    assert customers[NO_PHONE_CUSTOMER_NAME]["phone"] is None
 
     varieties = {record["name"]: record for record in kinds["variety"]}
     variety_id = varieties["Lavanda"]["id"]

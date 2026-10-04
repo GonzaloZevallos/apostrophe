@@ -178,10 +178,18 @@ def _variety_key_or_refusal(
 
 
 def _customer_key_or_refusal(
-    result: ports.CustomerKey | ports.Refusal,
+    result: ports.CustomerKey | ports.CustomerRefusals,
 ) -> domain_plan.CustomerKey | domain_plan.Refusal:
-    if isinstance(result, ports.Refusal):
-        return _to_domain_refusal(result)
+    """The mapping still supplies a phone for every entry (this subtask's own bound:
+    the mapping becoming optional, and the name becoming a planned customer's key when
+    there is no phone, is the `import` subtask's rework) — so a `CustomerKey` from the
+    port always carries one, and a `CustomerRefusals` is filed under whichever field
+    today's single `Refusal` already reported first: the name, then the phone."""
+    if isinstance(result, ports.CustomerRefusals):
+        code = result.name_code if result.name_code is not None else result.phone_code
+        assert code is not None
+        return domain_plan.Refusal(code=code)
+    assert result.phone_key is not None
     return domain_plan.CustomerKey(phone_key=result.phone_key)
 
 

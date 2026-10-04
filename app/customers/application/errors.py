@@ -25,5 +25,5 @@ class RequiredFieldCleared(ValueError):
 
     code: ClassVar[str] = "customer.required_field_cleared"
 
-    def __init__(self, field: Literal["name", "phone", "vip"]) -> None:
+    def __init__(self, field: Literal["name", "vip"]) -> None:
         super().__init__(f"{field} cannot be cleared")

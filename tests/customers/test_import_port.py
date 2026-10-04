@@ -16,7 +16,7 @@ from app.accounts.adapters.tables import UserRow
 from app.customers.adapters.import_port import CustomersImport
 from app.customers.adapters.sql_customers import SqlCustomers
 from app.spreadsheet_import.application.no_commit import NoCommit
-from app.spreadsheet_import.application.ports import CustomerKey, Refusal
+from app.spreadsheet_import.application.ports import CustomerKey, CustomerRefusals
 
 
 def _business_id_of_email(engine: Engine, email: str) -> int:
@@ -64,6 +64,7 @@ def test_the_normalisation_matrix_all_give_one_key(client: TestClient, engine: E
     for raw in raws:
         result = port.check_customer("Fran Araujo", raw)
         assert isinstance(result, CustomerKey)
+        assert result.phone_key is not None
         keys.add(result.phone_key)
 
     assert keys == {"+5491123456789"}
@@ -80,8 +81,9 @@ def test_an_invalid_number_is_refused_with_its_own_code(
 
     result = port.check_customer("Fran Araujo", "abc")
 
-    assert isinstance(result, Refusal)
-    assert result.code == "customer.phone_invalid"
+    assert isinstance(result, CustomerRefusals)
+    assert result.phone_code == "customer.phone_invalid"
+    assert result.name_code is None
 
 
 def test_a_phone_refusal_never_carries_a_digit_of_what_was_typed(
@@ -92,8 +94,43 @@ def test_a_phone_refusal_never_carries_a_digit_of_what_was_typed(
 
     result = port.check_customer("Fran Araujo", "11 2345 678")
 
-    assert isinstance(result, Refusal)
-    assert not any(c.isdigit() for c in result.code)
+    assert isinstance(result, CustomerRefusals)
+    assert result.phone_code is not None
+    assert not any(c.isdigit() for c in result.phone_code)
+
+
+# -- check_customer: no phone at all -------------------------------------------------
+
+
+def test_a_missing_phone_gives_a_key_with_no_phone(client: TestClient, engine: Engine) -> None:
+    business_id = _business_id_of_email(engine, "uno@example.com")
+    port = CustomersImport(Session(engine), business_id)
+
+    result = port.check_customer("Fran Araujo", None)
+
+    assert result == CustomerKey(phone_key=None)
+
+
+def test_a_blank_phone_gives_a_key_with_no_phone(client: TestClient, engine: Engine) -> None:
+    business_id = _business_id_of_email(engine, "uno@example.com")
+    port = CustomersImport(Session(engine), business_id)
+
+    result = port.check_customer("Fran Araujo", "   ")
+
+    assert result == CustomerKey(phone_key=None)
+
+
+def test_an_invalid_name_with_no_phone_is_refused_under_its_own_field(
+    client: TestClient, engine: Engine
+) -> None:
+    business_id = _business_id_of_email(engine, "uno@example.com")
+    port = CustomersImport(Session(engine), business_id)
+
+    result = port.check_customer("   ", None)
+
+    assert isinstance(result, CustomerRefusals)
+    assert result.name_code == "customer.name_missing"
+    assert result.phone_code is None
 
 
 # -- write_customer ---------------------------------------------------------------------
@@ -110,6 +147,7 @@ def test_write_customer_stores_the_vip_flag(client: TestClient, engine: Engine) 
     assert stored is not None
     assert stored.vip is True
     assert stored.name.value == "Fran Araujo"
+    assert stored.phone is not None
     assert stored.phone.value == "+5491123456789"
 
 
@@ -123,3 +161,17 @@ def test_write_customer_without_vip_stores_it_false(client: TestClient, engine: 
     stored = SqlCustomers(session, business_id).get(customer_id)
     assert stored is not None
     assert stored.vip is False
+
+
+def test_write_customer_with_no_phone_key_stores_no_phone(
+    client: TestClient, engine: Engine
+) -> None:
+    business_id = _business_id_of_email(engine, "uno@example.com")
+    session = Session(engine)
+    port = CustomersImport(session, business_id)
+
+    customer_id = port.write_customer("Sin Numero", None, False, NoCommit())
+
+    stored = SqlCustomers(session, business_id).get(customer_id)
+    assert stored is not None
+    assert stored.phone is None

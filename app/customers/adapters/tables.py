@@ -21,6 +21,8 @@ class CustomerRow(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     business_id: Mapped[int] = mapped_column(ForeignKey("business.id"))
     name: Mapped[str] = mapped_column(String(NAME_MAX_LENGTH))
-    phone: Mapped[str] = mapped_column(String(PHONE_MAX_LENGTH))
+    # Nullable: a customer may have no phone (ADR-0019). `uq_customer_business_phone`
+    # still applies only among non-null values; SQLite never treats two NULLs as equal.
+    phone: Mapped[str | None] = mapped_column(String(PHONE_MAX_LENGTH))
     channel: Mapped[str | None] = mapped_column(String(CHANNEL_MAX_LENGTH))
     vip: Mapped[bool] = mapped_column(default=False)

@@ -398,7 +398,7 @@ def test_a_real_duplicate_phone_is_refused_by_its_own_clean_code(
     raced = False
 
     def _racing_write_customer(
-        self: CustomersImport, name: str, phone_key: str, vip: bool, transaction: Transaction
+        self: CustomersImport, name: str, phone_key: str | None, vip: bool, transaction: Transaction
     ) -> int:
         nonlocal raced
         if not raced:

@@ -60,6 +60,9 @@ def seed_customers(client: TestClient) -> dict[str, int]:
     customer = client.post(
         "/customers", json={"name": f"{MARKER} customer", "phone": "11 2345-6789"}
     ).json()
+    # A customer with no phone (ADR-0019) is isolated the same way; it carries no id
+    # a gated route needs, so it is checked only through the list comparison.
+    client.post("/customers", json={"name": f"{MARKER} no-phone customer"})
     return {"customer_id": customer["id"]}
 
 
