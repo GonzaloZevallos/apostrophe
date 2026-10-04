@@ -557,15 +557,18 @@ export default function NuevaVenta() {
               Elegir cliente
             </Boton>
           ) : (
-            <div className="nueva-venta__cliente">
-              <span className="lista-clientes__nombre">
-                {customer.name}
-                {customer.vip && <span className="vip-insignia">VIP</span>}
-              </span>
-              <Boton variant="link" onClick={() => setShowCustomerSheet(true)}>
-                Cambiar
-              </Boton>
-            </div>
+            <Boton variant="row" onClick={() => setShowCustomerSheet(true)}>
+              <div className="nueva-venta__cliente">
+                <div className="nueva-venta__cliente-texto">
+                  <span className="lista-clientes__nombre">
+                    {customer.name}
+                    {customer.vip && <span className="vip-insignia">VIP</span>}
+                  </span>
+                  <span className="nueva-venta__cliente-telefono">{customer.phone}</span>
+                </div>
+                <span className="nueva-venta__cliente-cambiar">Cambiar</span>
+              </div>
+            </Boton>
           )}
 
           <div className="nueva-venta__lineas">

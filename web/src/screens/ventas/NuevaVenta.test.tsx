@@ -121,7 +121,10 @@ test('Debiendo is disabled with no customer, enables once one is chosen, and res
   await user.click(screen.getByRole('radio', { name: 'Debiendo' }))
   expect(screen.getByRole('radio', { name: 'Debiendo' })).toBeChecked()
 
-  await user.click(screen.getByRole('button', { name: 'Cambiar' }))
+  // The whole customer row is one tappable `Boton` now (name, phone, "Cambiar"),
+  // not a dead name next to a separate link — its accessible name is the row's
+  // full text, "Cambiar" only a part of it.
+  await user.click(screen.getByRole('button', { name: /Cambiar/ }))
   await user.click(await screen.findByRole('button', { name: 'Sin cliente' }))
 
   expect(screen.getByRole('radio', { name: 'Debiendo' })).toHaveAttribute('aria-disabled', 'true')

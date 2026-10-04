@@ -1301,15 +1301,33 @@ button {
   pointer-events: none;
 }
 
+/* The customer row (`NuevaVenta.dc.html:19-27`): the whole row is one tappable
+ * `Boton` row (name, phone, "Cambiar") — not a dead name next to a separate
+ * link, which is what this screen drew before this diff. */
 .nueva-venta__cliente {
   display: flex;
   align-items: center;
   gap: var(--espacio-md);
   min-height: var(--alto-tocable);
+  width: 100%;
 }
 
-.nueva-venta__cliente .lista-clientes__nombre {
+.nueva-venta__cliente-texto {
   flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.nueva-venta__cliente-telefono {
+  font-size: 14px;
+  color: var(--tinta2);
+}
+
+.nueva-venta__cliente-cambiar {
+  font-size: 15px;
+  color: var(--acento);
+  box-shadow: 0 1px 0 var(--acento);
 }
 
 .nueva-venta__lineas {
