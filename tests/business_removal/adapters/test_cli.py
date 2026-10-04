@@ -160,7 +160,6 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
     customers = {record["name"]: record for record in kinds["customer"]}
     assert customers[CUSTOMER_NAME]["phone"] == PHONE
     assert customers[NO_PHONE_CUSTOMER_NAME]["phone"] is None
-    assert customers[NO_PHONE_CUSTOMER_NAME]["phone"] is None
 
     varieties = {record["name"]: record for record in kinds["variety"]}
     variety_id = varieties["Lavanda"]["id"]
