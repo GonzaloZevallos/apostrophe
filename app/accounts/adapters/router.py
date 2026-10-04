@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.accounts.adapters.deps import (
     SESSION_COOKIE,
+    ClientAddressDep,
     CurrentBusinessId,
     CurrentSession,
     get_accounts,
@@ -140,9 +141,12 @@ def login(
     signer: SignerDep,
     clock: ClockDep,
     settings: SettingsDep,
+    address: ClientAddressDep,
 ) -> SessionOut:
     with as_http:
-        token = log_in(accounts, session, hasher, signer, body.email, body.password, clock())
+        token = log_in(
+            accounts, session, hasher, signer, body.email, body.password, address, clock()
+        )
     if token is None:
         raise_unauthenticated()
     return _open(response, token, settings)

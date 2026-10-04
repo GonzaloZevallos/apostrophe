@@ -1,10 +1,19 @@
-from sqlalchemy import select
+from datetime import datetime
+
+from sqlalchemy import case, select, update
+from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.orm import Session
 
-from app.accounts.adapters.tables import BusinessRow, InvitationRow, LoginGuardRow, UserRow
+from app.accounts.adapters.tables import (
+    BusinessRow,
+    InvitationRow,
+    LoginAddressGuardRow,
+    LoginGuardRow,
+    UserRow,
+)
+from app.accounts.application.ports import LoginLocks
 from app.accounts.domain.account import Business, BusinessName, Email, User
 from app.accounts.domain.invitation import Invitation, InvitationKind
-from app.accounts.domain.login_guard import LoginGuard
 
 
 class SqlAccounts:
@@ -74,17 +83,90 @@ class SqlAccounts:
         row.used_at = invitation.used_at
         self._session.flush()
 
-    def login_guard(self, email: Email) -> LoginGuard:
-        row = self._session.get(LoginGuardRow, email.value)
-        return LoginGuard() if row is None else LoginGuard(row.failures, row.locked_until)
+    def login_locks(self, email: Email | None, address_digest: str) -> LoginLocks:
+        email_locked_until = None
+        if email is not None:
+            email_row = self._session.get(LoginGuardRow, email.value)
+            email_locked_until = None if email_row is None else email_row.locked_until
+        address_row = self._session.get(LoginAddressGuardRow, address_digest)
+        address_locked_until = None if address_row is None else address_row.locked_until
+        return LoginLocks(email_locked_until, address_locked_until)
 
-    def save_login_guard(self, email: Email, guard: LoginGuard) -> None:
-        row = self._session.get(LoginGuardRow, email.value)
-        if row is None:
-            row = LoginGuardRow(email=email.value)
-            self._session.add(row)
-        row.failures = guard.failures
-        row.locked_until = guard.locked_until
+    def count_email_failure(self, email: Email, now: datetime) -> int:
+        # One atomic upsert with RETURNING (plan invariant): never a read followed by
+        # a save, so two failures that arrive together are both counted.
+        insert_statement = sqlite_insert(LoginGuardRow).values(email=email.value, failures=1)
+        statement = insert_statement.on_conflict_do_update(
+            index_elements=["email"],
+            set_={"failures": LoginGuardRow.failures + 1},
+        ).returning(LoginGuardRow.failures)
+        failures = self._session.execute(statement).scalar_one()
+        self._session.flush()
+        return failures
+
+    def count_address_failure(self, address_digest: str, now: datetime, cutoff: datetime) -> int:
+        # The address window resets inside the same statement (plan invariant): a
+        # window that started at or before `cutoff` has expired, so this failure
+        # starts a fresh one instead of extending the old count.
+        expired = LoginAddressGuardRow.window_start <= cutoff
+        insert_statement = sqlite_insert(LoginAddressGuardRow).values(
+            address_digest=address_digest, failures=1, window_start=now
+        )
+        statement = insert_statement.on_conflict_do_update(
+            index_elements=["address_digest"],
+            set_={
+                "failures": case((expired, 1), else_=LoginAddressGuardRow.failures + 1),
+                "window_start": case((expired, now), else_=LoginAddressGuardRow.window_start),
+            },
+        ).returning(LoginAddressGuardRow.failures)
+        failures = self._session.execute(statement).scalar_one()
+        self._session.flush()
+        return failures
+
+    def lock_email(self, email: Email, now: datetime, until: datetime, max_failures: int) -> None:
+        # Guarded on (locked_until IS NULL OR locked_until <= now) (plan invariant):
+        # two requests that both reach the threshold set the lock only once, and
+        # counting during an active lock never stretches it. Subtracts the threshold
+        # rather than setting a constant, so failures counted during the lock stay in
+        # force once it opens.
+        statement = (
+            update(LoginGuardRow)
+            .where(
+                LoginGuardRow.email == email.value,
+                (LoginGuardRow.locked_until.is_(None)) | (LoginGuardRow.locked_until <= now),
+            )
+            .values(locked_until=until, failures=LoginGuardRow.failures - max_failures)
+        )
+        self._session.execute(statement)
+        self._session.flush()
+
+    def lock_address(self, address_digest: str, now: datetime, until: datetime) -> None:
+        statement = (
+            update(LoginAddressGuardRow)
+            .where(
+                LoginAddressGuardRow.address_digest == address_digest,
+                (LoginAddressGuardRow.locked_until.is_(None))
+                | (LoginAddressGuardRow.locked_until <= now),
+            )
+            .values(locked_until=until)
+        )
+        self._session.execute(statement)
+        self._session.flush()
+
+    def clear_email(self, email: Email, now: datetime) -> None:
+        # Guarded the same way a lock is set (plan invariant): a lock already active
+        # — set by a request that raced ahead of the one now succeeding — must not be
+        # lifted, nor its count zeroed, by a read that is stale by the time this
+        # writes.
+        statement = (
+            update(LoginGuardRow)
+            .where(
+                LoginGuardRow.email == email.value,
+                (LoginGuardRow.locked_until.is_(None)) | (LoginGuardRow.locked_until <= now),
+            )
+            .values(failures=0, locked_until=None)
+        )
+        self._session.execute(statement)
         self._session.flush()
 
 
