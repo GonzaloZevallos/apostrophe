@@ -38,6 +38,7 @@ import {
 import ErrorGenerico from '../components/ErrorGenerico'
 import MarcaEstado from '../components/MarcaEstado'
 import SinConexion from '../components/SinConexion'
+import { salesCount } from '../format/counts'
 import { formatDateShort } from '../format/dates'
 import { formatGrams, formatMoney, formatSignedMoney } from '../format/money'
 import { detailFor, sideNoteFor } from '../stock/detail'
@@ -71,7 +72,7 @@ function rangeLabel(tab: PanelTab, period: PanelPeriod): string {
 }
 
 function salesSubtitle(period: PanelPeriod): string {
-  const count = `${period.sales_count} ${period.sales_count === 1 ? 'venta' : 'ventas'}`
+  const count = salesCount(period.sales_count)
   const grams = formatGrams(period.grams_sold)
   return period.average_sale === null
     ? `${count} · ${grams}`
@@ -260,7 +261,7 @@ function TeDebenBlock({ debts }: { debts: PanelDebts }) {
       </Link>
       <span className="cifra-xl">{formatMoney(debts.total_owed)}</span>
       <span className="pie">
-        {`${debts.sales_owing_count} ${debts.sales_owing_count === 1 ? 'venta' : 'ventas'}`}
+        {salesCount(debts.sales_owing_count)}
         {debts.oldest !== null && ` · desde ${formatDateShort(debts.oldest)}`}
       </span>
       {debts.teaser.map((row) => (

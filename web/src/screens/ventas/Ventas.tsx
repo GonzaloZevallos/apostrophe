@@ -34,6 +34,7 @@ import Insignia from '../../components/Insignia'
 import Notice from '../../components/Notice'
 import Pestanas from '../../components/Pestanas'
 import SinConexion from '../../components/SinConexion'
+import { salesCount } from '../../format/counts'
 import { type DateRange, formatDate, monthRange, todayRange, weekRange } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
 import { saleGrams } from '../../sales/grams'
@@ -68,10 +69,6 @@ function rangeLabel(range: DateRange, today: string): string {
   const start = formatDate(range.start, today)
   if (range.start === range.end) return start
   return `${start} – ${formatDate(range.end, today)}`
-}
-
-function countLabel(count: number): string {
-  return `${count} ${count === 1 ? 'venta' : 'ventas'}`
 }
 
 /** Distinct variety names, in the order each first appears (plan, "Rows"). */
@@ -114,7 +111,7 @@ export default function Ventas() {
 
           {!isError && !isPending && (
             <div className="ventas__resumen">
-              <span className="ventas__rango">{`${rangeLabel(range, me.today)} · ${countLabel(sales.length)}`}</span>
+              <span className="ventas__rango">{`${rangeLabel(range, me.today)} · ${salesCount(sales.length)}`}</span>
               <span className="ventas__total">{formatMoney(total)}</span>
             </div>
           )}
