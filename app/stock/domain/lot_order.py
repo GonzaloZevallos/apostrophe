@@ -70,7 +70,14 @@ class SaleLineDraw:
     """One sale line's draw on its variety's stock (gifts included): the shape the
     `Draws` port (read from `sale_line ⨝ sale`) answers, so this module — and every
     other one under `app/stock/domain/` — never imports `app.sales`
-    (CODING_STANDARDS section 1)."""
+    (CODING_STANDARDS section 1).
+
+    `variety_name`, `line_total` and `pricing_rule` (the stored value, a plain `str`
+    so this stays free of `app.sales.domain.pricing.PricingRule`) ride along on the
+    same row `Draws` already reads (`sale_line ⨝ sale ⨝ variety`): results' own
+    `DrawCosts` (ADR-0013) needs them matched to this exact draw, never joined back by
+    `(sale_id, position)` afterwards. They default so the fixtures already built for
+    `lots_and_draws` and `costs_for_sale` — which never read them — need no change."""
 
     variety_id: int
     day: date
@@ -78,6 +85,9 @@ class SaleLineDraw:
     sale_id: int
     position: int
     grams: Grams
+    variety_name: str = ""
+    line_total: int = 0
+    pricing_rule: str = "list"
 
 
 def _entry_order(entry: StockEntry) -> LotOrder:

@@ -1,7 +1,13 @@
-"""The `Draws` port over `sale_line ⨝ sale` (CODING_STANDARDS section 1: stock
-adapters may import sales' adapters; nothing under `app/sales/` ever imports back).
-Read only: a sale's own repository owns the write, this is stock reading what already
-left (ADR-0009). Built for one business; every statement filters on it.
+"""The `Draws` port over `sale_line ⨝ sale ⨝ variety` (CODING_STANDARDS section 1:
+stock adapters may import sales' and varieties' adapters; nothing under `app/sales/`
+or `app/varieties/` ever imports back). Read only: a sale's own repository owns the
+write, this is stock reading what already left (ADR-0009). Built for one business;
+every statement — and every join's ON clause — filters on it (CODING_STANDARDS
+section 9).
+
+`variety_name`, `line_total` and `pricing_rule` ride along on the same row (ADR-0013):
+results' `DrawCosts` needs them attached to this exact draw, never looked up again by
+`(sale_id, position)` afterwards.
 """
 
 from __future__ import annotations
@@ -14,6 +20,7 @@ from sqlalchemy.orm import Session
 from app.sales.adapters.tables import SaleLineRow, SaleRow
 from app.shared.grams import Grams
 from app.stock.domain.lot_order import SaleLineDraw
+from app.varieties.adapters.tables import VarietyRow
 
 
 class SqlDraws:
@@ -23,8 +30,17 @@ class SqlDraws:
 
     def for_varieties(self, variety_ids: Collection[int] | None) -> list[SaleLineDraw]:
         statement = (
-            select(SaleLineRow, SaleRow)
-            .join(SaleRow, SaleRow.id == SaleLineRow.sale_id)
+            select(SaleLineRow, SaleRow, VarietyRow.name)
+            .join(
+                SaleRow,
+                (SaleRow.id == SaleLineRow.sale_id)
+                & (SaleRow.business_id == self._business_id),
+            )
+            .join(
+                VarietyRow,
+                (VarietyRow.id == SaleLineRow.variety_id)
+                & (VarietyRow.business_id == self._business_id),
+            )
             .where(SaleLineRow.business_id == self._business_id)
         )
         if variety_ids is not None:
@@ -38,6 +54,9 @@ class SqlDraws:
                 sale_id=sale.id,
                 position=line.position,
                 grams=Grams(line.grams_hundredths),
+                variety_name=variety_name,
+                line_total=line.line_total,
+                pricing_rule=line.pricing_rule,
             )
-            for line, sale in rows
+            for line, sale, variety_name in rows
         ]

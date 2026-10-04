@@ -69,6 +69,9 @@
     "payment.on_the_spot": { "kind": "refusal" },
     "payment.customer_not_found": { "kind": "gone" },
     "payment.not_found": { "kind": "gone" },
+    "analysis.rule_broken": { "kind": "refusal" },
+    "analysis.month_invalid": { "kind": "refusal" },
+    "analysis.month_out_of_range": { "kind": "refusal" },
     "RequestInvalid": { "kind": "refusal" }
   },
   "frontSegments": [
