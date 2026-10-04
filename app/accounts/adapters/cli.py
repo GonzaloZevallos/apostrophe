@@ -26,7 +26,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.parse_args(argv)
 
     settings = Settings.from_env()
-    engine = make_engine(settings.database_url)
+    engine = make_engine(settings.database_url, auth_token=settings.database_auth_token)
     upgrade_to_head(engine)
     with Session(engine) as session:
         issued = invite_new_business(SqlAccounts(session), session, system_clock())

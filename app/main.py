@@ -105,7 +105,9 @@ def create_app(
 ) -> FastAPI:
     settings = settings or Settings.from_env()
     app = FastAPI(title="apostrophe", lifespan=lifespan)
-    app.state.engine = engine or make_engine(settings.database_url)
+    app.state.engine = engine or make_engine(
+        settings.database_url, auth_token=settings.database_auth_token
+    )
     app.state.clock = clock
     app.state.signer = SessionSigner(settings.secret_key)
     app.state.hasher = hasher or PasswordHasher()
