@@ -110,6 +110,7 @@ def create_app(
     app.state.signer = SessionSigner(settings.secret_key)
     app.state.hasher = hasher or PasswordHasher()
     app.state.public_url = settings.public_url
+    app.state.settings = settings
     app.add_exception_handler(RequestValidationError, _without_request_data)
     app.add_exception_handler(Refused, _refused)
     # A factory, not an instance: `get_business_opening` builds it over the request's
