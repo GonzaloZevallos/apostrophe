@@ -324,7 +324,11 @@ def _month_figures(
     for v in varieties:
         pending_sold_gifted = pending_sold_gifted + v.margin.pending_grams
 
-    previous = month.previous if first_month is None or month.previous >= first_month else None
+    previous = (
+        None
+        if first_month is None
+        else (month.previous if month.previous >= first_month else None)
+    )
     following = month.next if month.next <= current_month else None
 
     return MonthFigures(

@@ -40,8 +40,9 @@ from app.main import create_app
 from app.payments.adapters import router as payments_router_module
 from app.payments.adapters.sql_payments import SqlPayments
 from app.payments.adapters.tables import PaymentRow
+from app.shared.calendar import Month
 from app.shared.transaction import Transaction
-from tests.conftest import SETTINGS, TEST_HASHER, MovableClock, open_business, signed_in
+from tests.conftest import SETTINGS, TEST_HASHER, TODAY, MovableClock, open_business, signed_in
 
 MARKER = "zz-isolation-marker"
 
@@ -656,8 +657,8 @@ def test_another_business_s_analysis_is_exactly_the_empty_shape(
     """`GET /analysis` has no path parameter, so it is only ever exercised as one of
     `LISTS` by the sweep above. This is the plan's own extra proof (ADR-0013,
     CODING_STANDARDS section 9): B, with no records of its own, must answer exactly
-    the fixed empty shape, while A's answer carries real sales and the `MARKER`
-    variety — nothing of A's ever reaches B's figures."""
+    the fixed empty shape — every field of it, not a sample — while A's answer
+    carries real sales and the `MARKER` variety. Nothing of A's ever reaches B."""
     seed_sales(business_a)
 
     a_analysis = business_a.get("/analysis").json()
@@ -667,9 +668,29 @@ def test_another_business_s_analysis_is_exactly_the_empty_shape(
     assert a_analysis["month"]["sales"] > 0
     assert any(MARKER in variety["name"] for variety in a_analysis["month"]["varieties"])
 
-    assert b_analysis["first_record"] is None
-    assert b_analysis["weeks"] == []
-    assert b_analysis["months"] == []
-    assert b_analysis["since_first_record"] is None
-    assert b_analysis["month"]["varieties"] == []
-    assert all(not weekday["best"] for weekday in b_analysis["weekdays"])
+    current_month = str(Month.containing(TODAY))
+    assert b_analysis == {
+        "today": TODAY.isoformat(),
+        "first_record": None,
+        "month": {
+            "month": current_month,
+            "previous": None,
+            "next": None,
+            "sales": 0,
+            "sales_without_shipping": 0,
+            "grams_sold": 0.0,
+            "grams_gifted": 0.0,
+            "average_margin": {"amount": 0, "percent": None, "pending_grams": 0.0},
+            "shortfall": None,
+            "varieties": [],
+        },
+        "weeks": [],
+        "months": [],
+        "weekdays": [
+            {"weekday": weekday, "sales": 0, "count": 0, "best": False}
+            for weekday in range(1, 8)
+        ],
+        "since_first_record": None,
+        "month_expenses": {"categories": [], "total": 0, "purchases": 0},
+        "since_first_record_expenses": {"categories": [], "total": 0, "purchases": 0},
+    }
