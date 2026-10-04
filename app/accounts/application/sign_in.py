@@ -4,6 +4,7 @@ from typing import ClassVar
 
 from app.accounts.application.ports import Accounts
 from app.accounts.domain.account import Business, Email, InvalidEmail, User
+from app.accounts.domain.login_guard import MAX_FAILURES, AddressGuard, LoginGuard
 from app.accounts.domain.password import PasswordHasher
 from app.accounts.domain.session_token import SessionSigner
 from app.shared.transaction import Transaction
@@ -36,28 +37,56 @@ def log_in(
     signer: SessionSigner,
     raw_email: str,
     password: str,
+    address_digest: str,
     now: datetime,
 ) -> str | None:
     """A session token for the right email and password, `None` otherwise. Raises
-    `LoginLocked` while the email is braked, whatever the password."""
+    `LoginLocked` while the email or the address is braked, whatever the password
+    (docs/adr/0002). Every refusal counts against the address; a refusal with a
+    parseable email counts against that email too, including one refused under an
+    active lock. A success resets only the email's count."""
+    cutoff = AddressGuard().window_cutoff(now)
     try:
         email = Email.of(raw_email)
     except InvalidEmail:
+        # A malformed email is never stored (plan invariant): no email-keyed row is
+        # read or written, only the address counts.
         hasher.burn(password)
+        locks = accounts.login_locks(None, address_digest)
+        address_guard = AddressGuard(locks.address_locked_until)
+        already_locked = address_guard.is_locked(now)
+        address_failures = accounts.count_address_failure(address_digest, now, cutoff)
+        if not already_locked and address_guard.reached(address_failures):
+            accounts.lock_address(address_digest, now, address_guard.lock_until(now))
+        transaction.commit()
+        if already_locked:
+            raise LoginLocked() from None
         return None
-    guard = accounts.login_guard(email)
-    if guard.is_locked(now):
+
+    locks = accounts.login_locks(email, address_digest)
+    email_guard = LoginGuard(locks.email_locked_until)
+    address_guard = AddressGuard(locks.address_locked_until)
+    if email_guard.is_locked(now) or address_guard.is_locked(now):
+        # Counting never moves an active lock (plan invariant): no lock_* call here.
+        accounts.count_email_failure(email, now)
+        accounts.count_address_failure(address_digest, now, cutoff)
+        transaction.commit()
         raise LoginLocked()
+
     user = accounts.user_by_email(email)
     if user is None:
         hasher.burn(password)
     if user is None or not hasher.verify(password, user.password_hash):
-        guard.record_failure(now)
-        accounts.save_login_guard(email, guard)
+        email_failures = accounts.count_email_failure(email, now)
+        address_failures = accounts.count_address_failure(address_digest, now, cutoff)
+        if email_guard.reached(email_failures):
+            accounts.lock_email(email, now, email_guard.lock_until(now), MAX_FAILURES)
+        if address_guard.reached(address_failures):
+            accounts.lock_address(address_digest, now, address_guard.lock_until(now))
         transaction.commit()
         return None
-    guard.record_success()
-    accounts.save_login_guard(email, guard)
+
+    accounts.clear_email(email)
     transaction.commit()
     assert user.id is not None
     return signer.issue(user.id, user.password_hash, now)

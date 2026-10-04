@@ -47,3 +47,16 @@ class LoginGuardRow(Base):
     email: Mapped[str] = mapped_column(String(EMAIL_MAX_LENGTH), primary_key=True)
     failures: Mapped[int]
     locked_until: Mapped[datetime | None] = mapped_column(UtcDateTime)
+
+
+class LoginAddressGuardRow(Base):
+    __tablename__ = "login_address_guard"
+
+    # Keyed by the HMAC digest of the client address (app/accounts/adapters/deps.py),
+    # never the raw IP: the brake only ever needs to tell two addresses apart. Like
+    # `login_guard`, it decides who is let in rather than belonging to a business, so
+    # it carries no `business_id` (tests/migrations/test_business_ownership.py).
+    address_digest: Mapped[str] = mapped_column(String(64), primary_key=True)
+    failures: Mapped[int]
+    window_start: Mapped[datetime] = mapped_column(UtcDateTime)
+    locked_until: Mapped[datetime | None] = mapped_column(UtcDateTime)
