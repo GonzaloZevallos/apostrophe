@@ -49,7 +49,7 @@ import ReglaInsignia from '../../components/ReglaInsignia'
 import SinConexion from '../../components/SinConexion'
 import { formatDateShort } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
-import { GENERIC_REFUSAL } from '../clientes/ClienteForm'
+import { GENERIC_REFUSAL } from './NuevaVenta'
 import NuevaVentaCliente from './NuevaVentaCliente'
 
 export const CUSTOMER_ALREADY_ASSIGNED_MESSAGE = 'Esta venta ya tiene cliente.'
