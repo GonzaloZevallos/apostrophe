@@ -72,6 +72,49 @@ test('registers a customer and lands back on the list', async () => {
   )
 })
 
+test('only Nombre is marked required; Teléfono stays optional', () => {
+  renderForm('/clientes/nuevo')
+
+  expect(screen.getByLabelText('Nombre')).toBeRequired()
+  expect(screen.getByLabelText('Teléfono')).not.toBeRequired()
+})
+
+test('registering with no phone sends the request and shows the saved toast', async () => {
+  vi.mocked(fetch).mockResolvedValue(
+    jsonResponse(201, { id: 10, name: 'Sol', phone: null, channel: null, vip: false }),
+  )
+  renderForm('/clientes/nuevo')
+
+  await userEvent.type(screen.getByLabelText('Nombre'), 'Sol')
+  await userEvent.click(screen.getByRole('button', { name: 'Guardá y usá' }))
+
+  expect(await screen.findByText('Cliente guardado')).toBeInTheDocument()
+  expect(fetch).toHaveBeenCalledWith(
+    '/customers',
+    expect.objectContaining({ method: 'POST', body: JSON.stringify({ name: 'Sol', phone: '', channel: null, vip: false }) }),
+  )
+})
+
+test('clearing a phone when editing sends it and shows the saved toast', async () => {
+  vi.mocked(fetch).mockResolvedValueOnce(
+    jsonResponse(200, { id: 7, name: 'Tincho', phone: '+5491144861258', channel: null, vip: false }),
+  )
+  vi.mocked(fetch).mockResolvedValueOnce(
+    jsonResponse(200, { id: 7, name: 'Tincho', phone: null, channel: null, vip: false }),
+  )
+  renderForm('/clientes/7/editar')
+
+  expect(await screen.findByLabelText('Teléfono')).toHaveValue('+5491144861258')
+  await userEvent.clear(screen.getByLabelText('Teléfono'))
+  await userEvent.click(screen.getByRole('button', { name: 'Guardá y usá' }))
+
+  expect(await screen.findByText('la ficha')).toBeInTheDocument()
+  expect(fetch).toHaveBeenCalledWith(
+    '/customers/7',
+    expect.objectContaining({ method: 'PATCH', body: JSON.stringify({ name: 'Tincho', phone: '', channel: null, vip: false }) }),
+  )
+})
+
 test('a duplicate phone is refused on the phone field, keeping what was typed', async () => {
   vi.mocked(fetch).mockResolvedValue(
     jsonResponse(409, { detail: 'taken', code: 'customer.phone_taken' }),

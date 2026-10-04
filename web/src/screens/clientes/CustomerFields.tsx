@@ -44,7 +44,6 @@ export default function CustomerFields({
             type="tel"
             value={value.phone}
             onChange={(event) => onChange({ ...value, phone: event.target.value })}
-            required
           />
         </label>
         {phoneError !== null && (
