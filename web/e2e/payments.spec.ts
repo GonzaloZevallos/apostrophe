@@ -25,6 +25,7 @@
 import { expect, test } from '@playwright/test'
 import { newBusinessInvitationUrl } from './backend.js'
 import { watchConsole } from './console.js'
+import { fillSaleLine } from './helpers/sale.js'
 
 const PASSWORD = 'correcthorsebattery'
 
@@ -78,10 +79,9 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expect(page).toHaveURL(/\/ventas\/nueva$/)
   const todayIso = await page.getByLabel('Fecha').inputValue()
   const today = shortDate(todayIso)
-  await page.getByLabel('Variedad línea 1').selectOption({ label: 'Rosa' })
-  await page.getByLabel('Gramos línea 1').fill('5')
+  await fillSaleLine(page, 1, { variety: 'Rosa', grams: '5' })
   await page.getByRole('radio', { name: 'Debiendo' }).check()
-  await page.getByRole('button', { name: 'Guardar venta' }).click()
+  await page.getByRole('button', { name: 'Guardá la venta' }).click()
   await expect(page).toHaveURL(/\/ventas\/\d+$/)
   await expect(page.getByText('Venta guardada')).toBeVisible()
 
@@ -114,10 +114,9 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   // Sale 2: 8 g of Rosa, also left owing — $8.000.
   await page.getByRole('link', { name: 'Nueva venta a Carla Pérez' }).click()
   await expect(page).toHaveURL(/\/ventas\/nueva$/)
-  await page.getByLabel('Variedad línea 1').selectOption({ label: 'Rosa' })
-  await page.getByLabel('Gramos línea 1').fill('8')
+  await fillSaleLine(page, 1, { variety: 'Rosa', grams: '8' })
   await page.getByRole('radio', { name: 'Debiendo' }).check()
-  await page.getByRole('button', { name: 'Guardar venta' }).click()
+  await page.getByRole('button', { name: 'Guardá la venta' }).click()
   await expect(page).toHaveURL(/\/ventas\/\d+$/)
   await expect(page.getByText('Venta guardada')).toBeVisible()
 

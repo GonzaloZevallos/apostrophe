@@ -1,15 +1,21 @@
 /**
- * `Shell` at the screen seam: only destinations that exist show (PRD, "Nada
- * inventado"; metric M5) — Inicio, Ventas, Clientes, Stock and Más, in the
- * design's own order (`Inicio.dc.html`, `InicioCompu.dc.html`). The fixed "Nueva venta" button, separate from the tabs, shows on
- * every signed-in screen except the sale form itself (accounts.md: "It shows on
- * every signed-in screen except the sale form itself and its customer sheet" —
- * the sheet shares `NuevaVenta`'s own route, so hiding on that one path covers
- * both).
+ * `Shell` at the screen seam, under a memory *data* router (plan, seams: "`Shell`
+ * rendered under a memory data router with route handles") — `useMatches()` only
+ * works inside a data router's context, unlike the plain `<MemoryRouter>` this
+ * file used before chrome moved to `handle` (plan, invariants: "no pathname
+ * comparison decides it").
+ *
+ * Only destinations that exist show (PRD, "Nada inventado"; metric M5) — Inicio,
+ * Ventas, Clientes, Stock and Más, in the design's own order. The fixed "Nueva
+ * venta" button, separate from the tabs, shows on every signed-in screen except
+ * where its route's `handle.chrome` is `'none'` (`NuevaVenta`'s own
+ * `/ventas/nueva`, `VentaDetalle`'s `/ventas/:id`) — phone and computer differ
+ * only in which markup the CSS shows; this suite checks both pieces of markup
+ * directly rather than real viewport widths, which jsdom doesn't lay out.
  */
 
 import { render, screen, within } from '@testing-library/react'
-import { MemoryRouter, Route, Routes } from 'react-router'
+import { createMemoryRouter, RouterProvider } from 'react-router'
 import { expect, test } from 'vitest'
 import Shell from './Shell'
 
@@ -19,37 +25,27 @@ function tabNames(nav: HTMLElement): string[] {
   return within(nav)
     .getAllByRole('link')
     .map((link) => link.textContent)
-    .filter((name): name is string => name !== 'Nueva venta')
+    .filter((name): name is string => name !== null && !name.startsWith('Nueva venta'))
 }
 
 function renderShell(initialPath: string) {
-  render(
-    <MemoryRouter initialEntries={[initialPath]}>
-      <Routes>
-        <Route element={<Shell />}>
-          <Route index element={<div>contenido</div>} />
-          <Route path="ventas/nueva" element={<div>Nueva venta</div>} />
-        </Route>
-      </Routes>
-    </MemoryRouter>,
+  const router = createMemoryRouter(
+    [
+      {
+        element: <Shell />,
+        children: [
+          { index: true, element: <div>contenido</div> },
+          { path: 'ventas/nueva', element: <div>Nueva venta</div>, handle: { chrome: 'none' } },
+          { path: 'ventas/:id', element: <div>detalle</div>, handle: { chrome: 'none' } },
+        ],
+      },
+    ],
+    { initialEntries: [initialPath] },
   )
+  render(<RouterProvider router={router} />)
 }
 
-test('shows exactly Inicio, Ventas, Clientes, Stock and Más in both navs', () => {
-  renderShell('/')
-
-  const navs = screen.getAllByRole('navigation')
-  expect(navs).toHaveLength(2)
-  for (const nav of navs) {
-    expect(nav).toHaveTextContent('Inicio')
-    expect(nav).toHaveTextContent('Clientes')
-    expect(nav).toHaveTextContent('Ventas')
-    expect(nav).toHaveTextContent('Stock')
-    expect(nav).toHaveTextContent('Más')
-  }
-})
-
-test('orders the tabs Inicio, Ventas, Clientes, Stock, Más — the design\'s own order', () => {
+test('shows exactly Inicio, Ventas, Clientes, Stock and Más in both navs, no handle on the route', () => {
   renderShell('/')
 
   const navs = screen.getAllByRole('navigation')
@@ -59,32 +55,55 @@ test('orders the tabs Inicio, Ventas, Clientes, Stock, Más — the design\'s ow
   }
 })
 
-test('the fixed "Nueva venta" button shows outside the sale form, once per nav rail', () => {
+test('the fixed "Nueva venta" button shows outside a chrome route, once per nav rail', () => {
   renderShell('/')
 
-  const links = screen.getAllByRole('link', { name: 'Nueva venta' })
+  const links = screen.getAllByRole('link', { name: /Nueva venta/ })
   expect(links).toHaveLength(2)
   for (const link of links) {
     expect(link).toHaveAttribute('href', '/ventas/nueva')
   }
 })
 
-test('the fixed "Nueva venta" button is gone on the sale form itself', () => {
+test('chrome: none hides the fixed "Nueva venta" button everywhere, phone and computer alike', () => {
   renderShell('/ventas/nueva')
 
-  expect(screen.queryByRole('link', { name: 'Nueva venta' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: /Nueva venta/ })).not.toBeInTheDocument()
 })
 
-test('marks the active item by more than color: a distinct class the other items do not get', () => {
-  render(
-    <MemoryRouter initialEntries={['/']}>
-      <Routes>
-        <Route element={<Shell />}>
-          <Route index element={<div>contenido</div>} />
-        </Route>
-      </Routes>
-    </MemoryRouter>,
+test('chrome: none drops the bottom bar outright — the phone case', () => {
+  const { container } = renderShellWithContainer('/ventas/nueva')
+
+  expect(container.querySelector('.bar-inferior')).toBeNull()
+})
+
+test('chrome: none keeps the rail and its tabs — the computer case, only the button is gone', () => {
+  const { container } = renderShellWithContainer('/ventas/:id'.replace(':id', '7'))
+
+  const rail = container.querySelector('.riel-lateral')
+  expect(rail).not.toBeNull()
+  expect(tabNames(rail as HTMLElement)).toEqual(['Inicio', 'Ventas', 'Clientes', 'Stock', 'Más'])
+})
+
+function renderShellWithContainer(initialPath: string) {
+  const router = createMemoryRouter(
+    [
+      {
+        element: <Shell />,
+        children: [
+          { index: true, element: <div>contenido</div> },
+          { path: 'ventas/nueva', element: <div>Nueva venta</div>, handle: { chrome: 'none' } },
+          { path: 'ventas/:id', element: <div>detalle</div>, handle: { chrome: 'none' } },
+        ],
+      },
+    ],
+    { initialEntries: [initialPath] },
   )
+  return render(<RouterProvider router={router} />)
+}
+
+test('marks the active item by more than color: a distinct class the other items do not get', () => {
+  renderShell('/')
 
   const inicioLinks = screen.getAllByRole('link', { name: 'Inicio' })
   const clientesLinks = screen.getAllByRole('link', { name: 'Clientes' })
