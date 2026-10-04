@@ -55,6 +55,7 @@ def test_the_raw_secret_pattern_matches_exactly_the_known_secrets() -> None:
         ("pinned_catalog", "token_fingerprint"),
         ("pinned_catalog", "message_token_fingerprint"),
         ("pinned_catalog", "token_saved_on"),
+        ("reset_link", "token_digest"),
     }
     # The pattern test's own reason to exist: a bare "key" segment would also catch
     # these, and the removal would then refuse every run.

@@ -20,7 +20,11 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import OperationalError
+from sqlalchemy.orm import Session
 
+from app.accounts.adapters.sql_accounts import SqlAccounts
+from app.accounts.application.reset_password import issue_reset_link
+from app.accounts.domain.invitation import token_digest
 from app.business_removal.adapters.cli import _BusyTranslatingSchemaRows, _looks_locked, main
 from app.business_removal.application.remove_business import StorageBusy
 from app.business_removal.application.schema_rows import DeletedIds
@@ -389,6 +393,55 @@ def test_the_other_business_still_reads_its_own_data_after_the_run(
     engine.dispose()
 
 
+def test_removal_withholds_a_live_reset_link(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A business holding a live reset link (docs/adr/0019): the dry run counts it
+    as "deleted only", the real export never carries its digest or a `reset_link`
+    key, reconciliation still passes (the real run would otherwise refuse), every
+    row of the leaving business's link is gone afterwards, and the other business's
+    own link is untouched."""
+    db_path = tmp_path / "apostrophe.db"
+    export_dir = tmp_path / "exports"
+    _seed(db_path)
+    _env(monkeypatch, db_path, export_dir)
+    url = f"sqlite:///{db_path}"
+
+    with Session(make_engine(url)) as session:
+        accounts = SqlAccounts(session)
+        leaving_issued = issue_reset_link(accounts, session, EMAIL_LEAVING, NOW)
+        staying_issued = issue_reset_link(accounts, session, EMAIL_STAYING, NOW)
+    assert leaving_issued is not None and staying_issued is not None
+    leaving_digest = token_digest(leaving_issued.token)
+
+    dry_stdout = io.StringIO()
+    dry_result = main([EMAIL_LEAVING, "--dry-run"], stdin=io.StringIO(""), stdout=dry_stdout)
+    assert dry_result == 0
+    assert "reset_link: 1 (deleted only)" in dry_stdout.getvalue()
+
+    with sqlite3.connect(db_path) as connection:
+        other_business_id = connection.execute(
+            "SELECT id FROM business WHERE name = 'Otro Negocio'"
+        ).fetchone()[0]
+
+    real_result = main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=io.StringIO())
+    assert real_result == 0
+
+    files = list(export_dir.glob("*.json"))
+    assert len(files) == 1
+    dumped = files[0].read_text()
+    document = json.loads(dumped)
+    assert "reset_link" not in document["kinds"]
+    assert leaving_digest not in dumped
+    assert not any(
+        len(word) == 64 and all(character in "0123456789abcdef" for character in word)
+        for word in dumped.replace('"', " ").split()
+    )
+
+    assert _row_counts(db_path, "reset_link", document["business"]["id"]) == 0
+    assert _row_counts(db_path, "reset_link", other_business_id) == 1
+
+
 def test_a_dry_run_writes_no_file_and_deletes_nothing(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -740,7 +793,7 @@ class _RaisingInner:
     def rows(self, table: str, business_id: int) -> list[dict[str, object]]:
         raise NotImplementedError
 
-    def invitation_count(self, business_id: int) -> int:
+    def withheld_count(self, table: str, business_id: int) -> int:
         raise NotImplementedError
 
     def delete_business(self, business_id: int, order: tuple[str, ...]) -> DeletedIds:

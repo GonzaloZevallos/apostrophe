@@ -66,3 +66,28 @@ class Accounts(Protocol):
     def lock_address(self, address_digest: str, now: datetime, until: datetime) -> None: ...
 
     def clear_email(self, email: Email, now: datetime) -> None: ...
+
+    def unlock_email(self, email: Email) -> None:
+        """Unguarded (docs/adr/0019): sets `failures = 0, locked_until = NULL`
+        whatever the lock's state. Only a completed Reset calls it."""
+        ...
+
+    def set_password_hash(self, user_id: int, password_hash: str) -> None: ...
+
+    def issue_reset_link(self, user_id: int, token_digest: str, created_at: datetime) -> None:
+        """One upsert whose `business_id` comes from `user_id`'s own `app_user` row
+        (docs/adr/0019): this port takes no `business_id`. Raises a fixed error if
+        `user_id` names no user."""
+        ...
+
+    def reset_link_is_live(self, token_digest: str, cutoff: datetime) -> bool:
+        """Read-only, over `token_digest = :d AND created_at > :cutoff` -- the same
+        predicate `spend_reset_link` deletes by."""
+        ...
+
+    def spend_reset_link(self, token_digest: str, cutoff: datetime) -> int | None:
+        """`DELETE … WHERE token_digest = :d AND created_at > :cutoff RETURNING
+        user_id`; `None` when no row matched."""
+        ...
+
+    def delete_reset_links_of(self, user_id: int) -> None: ...

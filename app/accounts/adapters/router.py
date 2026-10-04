@@ -19,13 +19,14 @@ from app.accounts.adapters.deps import (
     raise_unauthenticated,
 )
 from app.accounts.adapters.sql_accounts import SqlAccounts
-from app.accounts.application import invitations, manage_business
+from app.accounts.application import invitations, manage_business, reset_password
 from app.accounts.application.invitations import EmailTaken
 from app.accounts.application.ports import BusinessOpening
-from app.accounts.application.sign_in import LoginLocked, log_in
+from app.accounts.application.sign_in import LoginLocked, change_password, log_in
 from app.accounts.domain.account import AccountRuleBroken
 from app.accounts.domain.invitation import InvitationKind, InvitationNotUsable
 from app.accounts.domain.password import PasswordHasher
+from app.accounts.domain.reset_link import CurrentPasswordWrong, ResetLinkGone
 from app.accounts.domain.session_token import SESSION_LIFETIME, SessionSigner
 from app.clock import Clock, get_clock, get_today
 from app.db import get_session
@@ -46,9 +47,9 @@ SettingsDep = Annotated[Settings, Depends(get_settings)]
 
 as_http = TranslateErrors(
     [
-        (404, (InvitationNotUsable,)),
+        (404, (InvitationNotUsable, ResetLinkGone)),
         (409, (EmailTaken,)),
-        (422, (AccountRuleBroken,)),
+        (422, (AccountRuleBroken, CurrentPasswordWrong)),
         (429, (LoginLocked,)),
     ]
 )
@@ -102,8 +103,21 @@ class AcceptIn(BaseModel):
     business_name: str | None = None
 
 
+class ChangePasswordIn(BaseModel):
+    current_password: str
+    new_password: str
+
+
+class ResetSubmitIn(BaseModel):
+    new_password: str
+
+
 def invitation_url(public_url: str, token: str) -> str:
     return f"{public_url}/invitation/{token}"
+
+
+def reset_url(public_url: str, token: str) -> str:
+    return f"{public_url}/reset/{token}"
 
 
 class _CookieAttributes(TypedDict):
@@ -233,3 +247,58 @@ def invite_partner(
     """A link that adds one more user to the caller's own business."""
     issued = invitations.invite_partner(accounts, session, signed_in.business_id, clock())
     return InvitationOut(url=invitation_url(public_url, issued.token), expires_at=issued.expires_at)
+
+
+@router.post("/auth/password")
+def change_password_route(
+    body: ChangePasswordIn,
+    response: Response,
+    signed_in: CurrentSession,
+    accounts: AccountsDep,
+    session: SessionDep,
+    hasher: HasherDep,
+    signer: SignerDep,
+    clock: ClockDep,
+    settings: SettingsDep,
+    address: ClientAddressDep,
+) -> SessionOut:
+    """Only a missing or invalid session answers 401 here (docs/adr/0019): a wrong
+    current password is a 422, never a 401."""
+    with as_http:
+        token = change_password(
+            accounts,
+            session,
+            hasher,
+            signer,
+            signed_in.user,
+            body.current_password,
+            body.new_password,
+            address,
+            clock(),
+        )
+    return _open(response, token, settings)
+
+
+@public_router.get("/reset-links/{token}", status_code=204)
+def look_up_reset_link(token: str, accounts: AccountsDep, clock: ClockDep) -> None:
+    with as_http:
+        reset_password.look_up_reset_link(accounts, token, clock())
+
+
+@public_router.post("/reset-links/{token}")
+def submit_reset_link(
+    token: str,
+    body: ResetSubmitIn,
+    response: Response,
+    accounts: AccountsDep,
+    session: SessionDep,
+    hasher: HasherDep,
+    signer: SignerDep,
+    clock: ClockDep,
+    settings: SettingsDep,
+) -> SessionOut:
+    with as_http:
+        token_out = reset_password.reset_password(
+            accounts, session, hasher, signer, token, body.new_password, clock()
+        )
+    return _open(response, token_out, settings)

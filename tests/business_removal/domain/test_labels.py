@@ -3,7 +3,12 @@ declared label must be refused, over a hand-built schema that proves the rejecti
 and over the real migrated schema, which must hold none."""
 
 from app.business_removal.domain.exclusions import PLATFORM_TABLES, SKIPPED_TABLES
-from app.business_removal.domain.labels import owned_tables, unlabelled_tables
+from app.business_removal.domain.labels import (
+    exported_tables,
+    owned_tables,
+    tables_written,
+    unlabelled_tables,
+)
 from app.business_removal.domain.schema import Column, ColumnType, ForeignKey, Schema, Table
 from app.db import make_engine
 from app.migrations.runner import upgrade_to_head
@@ -43,6 +48,41 @@ def test_platform_and_skipped_tables_are_never_reported() -> None:
 
     assert unlabelled_tables(schema) == frozenset()
     assert owned_tables(schema) == ()
+
+
+def test_exported_tables_excludes_a_withheld_table_but_keeps_an_ordinary_owned_one() -> None:
+    """`exported_tables` (docs/adr/0019): owned tables minus `WITHHELD_TABLES`, proven
+    over a synthetic schema with one of each -- `reset_link` (withheld, its own
+    `business_id`) must be excluded, `customer` (an ordinary owned table) kept, and
+    `business` itself (a platform table) is never in `owned_tables` to begin with."""
+    schema = Schema(
+        (
+            Table("business", (_column("id"),), ()),
+            Table("customer", (_column("id"), _column("business_id")), ()),
+            Table("reset_link", (_column("id"), _column("business_id")), ()),
+        )
+    )
+
+    assert exported_tables(schema) == ("customer",)
+
+
+def test_tables_written_is_exported_tables_plus_business_only() -> None:
+    """`tables_written` (docs/adr/0019): `exported_tables` plus `business`, nothing
+    else -- a withheld table must still be left out, and `business` appears exactly
+    once, appended rather than duplicated."""
+    schema = Schema(
+        (
+            Table("business", (_column("id"),), ()),
+            Table("customer", (_column("id"), _column("business_id")), ()),
+            Table("reset_link", (_column("id"), _column("business_id")), ()),
+        )
+    )
+
+    written = tables_written(schema)
+
+    assert written == ("customer", "business")
+    assert written.count("business") == 1
+    assert "reset_link" not in written
 
 
 def _reflect(engine: object) -> Schema:

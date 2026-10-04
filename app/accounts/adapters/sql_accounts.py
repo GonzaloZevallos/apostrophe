@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import case, select, update
+from sqlalchemy import case, delete, literal, select, update
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.orm import Session
 
@@ -9,6 +9,7 @@ from app.accounts.adapters.tables import (
     InvitationRow,
     LoginAddressGuardRow,
     LoginGuardRow,
+    ResetLinkRow,
     UserRow,
 )
 from app.accounts.application.ports import LoginLocks
@@ -172,6 +173,75 @@ class SqlAccounts:
         )
         self._session.execute(statement)
         self._session.flush()
+
+    def unlock_email(self, email: Email) -> None:
+        # Unguarded (docs/adr/0019): only a completed Reset calls this, and it must
+        # lift an active lock, not merely fail to stretch one.
+        statement = (
+            update(LoginGuardRow)
+            .where(LoginGuardRow.email == email.value)
+            .values(failures=0, locked_until=None)
+        )
+        self._session.execute(statement)
+        self._session.flush()
+
+    def set_password_hash(self, user_id: int, password_hash: str) -> None:
+        statement = (
+            update(UserRow).where(UserRow.id == user_id).values(password_hash=password_hash)
+        )
+        self._session.execute(statement)
+        self._session.flush()
+
+    def issue_reset_link(self, user_id: int, token_digest: str, created_at: datetime) -> None:
+        # One upsert whose business comes from the user's own row (docs/adr/0019):
+        # this port takes no `business_id` of its own.
+        select_statement = select(
+            UserRow.business_id, UserRow.id, literal(token_digest), literal(created_at)
+        ).where(UserRow.id == user_id)
+        insert_statement = sqlite_insert(ResetLinkRow).from_select(
+            ["business_id", "user_id", "token_digest", "created_at"], select_statement
+        )
+        statement = insert_statement.on_conflict_do_update(
+            index_elements=["user_id"],
+            set_={
+                "token_digest": insert_statement.excluded.token_digest,
+                "created_at": insert_statement.excluded.created_at,
+            },
+        ).returning(ResetLinkRow.id)
+        row = self._session.execute(statement).first()
+        self._session.flush()
+        if row is None:
+            raise UnknownUser(user_id)
+
+    def reset_link_is_live(self, token_digest: str, cutoff: datetime) -> bool:
+        statement = select(ResetLinkRow.id).where(
+            ResetLinkRow.token_digest == token_digest, ResetLinkRow.created_at > cutoff
+        )
+        return self._session.scalar(statement) is not None
+
+    def spend_reset_link(self, token_digest: str, cutoff: datetime) -> int | None:
+        statement = (
+            delete(ResetLinkRow)
+            .where(ResetLinkRow.token_digest == token_digest, ResetLinkRow.created_at > cutoff)
+            .returning(ResetLinkRow.user_id)
+        )
+        row = self._session.execute(statement).first()
+        self._session.flush()
+        return None if row is None else int(row[0])
+
+    def delete_reset_links_of(self, user_id: int) -> None:
+        statement = delete(ResetLinkRow).where(ResetLinkRow.user_id == user_id)
+        self._session.execute(statement)
+        self._session.flush()
+
+
+class UnknownUser(Exception):
+    """`issue_reset_link` was asked for a user id that names no `app_user` row. The
+    application layer only ever calls it with the id of a user it just looked up, so
+    reaching this is a bug, not a request a caller can trigger."""
+
+    def __init__(self, user_id: int) -> None:
+        super().__init__(f"no user with id {user_id}")
 
 
 def _user(row: UserRow) -> User:

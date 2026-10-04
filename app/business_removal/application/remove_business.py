@@ -22,17 +22,18 @@ from app.business_removal.application.export_file import ExportFile
 from app.business_removal.application.schema_rows import SchemaRows
 from app.business_removal.domain.classification import (
     delete_order,
+    has_business_id,
     secret_columns,
     unowned_tables,
 )
 from app.business_removal.domain.confirmation import name_matches
 from app.business_removal.domain.exclusions import (
     BUSINESS_TABLE,
-    INVITATION_TABLE,
     LOGIN_GUARD_TABLE,
+    WITHHELD_TABLES,
 )
 from app.business_removal.domain.export_document import Business, build_document, id_sets
-from app.business_removal.domain.labels import owned_tables, unlabelled_tables
+from app.business_removal.domain.labels import exported_tables, unlabelled_tables
 from app.business_removal.domain.naming import file_name, terminal_name
 from app.business_removal.domain.reconciliation import reconcile
 from app.business_removal.domain.schema import Schema
@@ -43,6 +44,20 @@ Clock = Callable[[], datetime]
 # Blocked around the single `commit()` call, so a signal cannot land between the
 # write and the flag that says it happened (the plan's invariant).
 _BLOCKED_SIGNALS = {signal.SIGINT, signal.SIGHUP, signal.SIGTERM}
+
+def withheld_business_tables(schema: Schema) -> tuple[str, ...]:
+    """`WITHHELD_TABLES` that carry their own `business_id`, sorted (docs/adr/0019):
+    `invitation` and `reset_link`, never `login_guard`, which is withheld too but has
+    no `business_id` of its own and is deleted and counted by email instead."""
+    present = {table.name for table in schema.tables}
+    return tuple(
+        sorted(
+            name
+            for name in WITHHELD_TABLES
+            if name in present and has_business_id(schema.table(name))
+        )
+    )
+
 
 NO_BUSINESS_MESSAGE = "No business for that email."
 CONFIRMATION_FAILED_MESSAGE = "Nothing deleted: the typed name did not match."
@@ -101,11 +116,12 @@ def dry_run(schema_rows: SchemaRows, output: Output, email: str) -> int:
             return 1
 
         output.line(terminal_name(business.name))
-        for table_name in owned_tables(schema):
+        for table_name in exported_tables(schema):
             count = len(schema_rows.rows(table_name, business.id))
             output.line(f"{table_name}: {count}")
-        count = schema_rows.invitation_count(business.id)
-        output.line(f"{INVITATION_TABLE}: {count} (deleted only)")
+        for table_name in withheld_business_tables(schema):
+            count = schema_rows.withheld_count(table_name, business.id)
+            output.line(f"{table_name}: {count} (deleted only)")
         return 0
     except SystemExit:
         raise
@@ -145,7 +161,7 @@ def remove_business(
             return 1
 
         order = delete_order(schema)
-        owned = owned_tables(schema)
+        owned = exported_tables(schema)
         export_file.prepare()
 
         prompt = f"Type the business name ({terminal_name(business.name)}) to remove it: "
@@ -184,7 +200,8 @@ def remove_business(
             exported_count = len(exported_ids.get(table_name, frozenset()))
             deleted_count = len(deleted.tables.get(table_name, frozenset()))
             output.line(f"{table_name}: exported {exported_count}, deleted {deleted_count}")
-        output.line(f"{INVITATION_TABLE}: deleted {deleted.invitation_count}")
+        for table_name in sorted(deleted.withheld_counts):
+            output.line(f"{table_name}: deleted {deleted.withheld_counts[table_name]}")
         output.line(f"{LOGIN_GUARD_TABLE}: deleted {deleted.login_guard_count}")
         output.line(f"Business removed; export kept at {path}.")
         return 0
