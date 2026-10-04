@@ -82,6 +82,7 @@ Success criteria:
 - **Inicio**: the panel (results.md).
   - Hoy · Semana · Mes, with sales, Ganancia, Caja, money owed and stock per variety.
   - When no variety has a current price today, "Arrancá por las variedades" shows above the panel, and the panel still shows its real figures.
+  - "Tu catálogo en Telegram está desactualizado", a fixed notice while the pinned catalog is out of date (pinned-catalog.md). It opens Catálogo.
 - **Más**: Gastos, Variedades, Catálogo ("Catálogo · El mensaje de hoy, listo para copiar", catalog.md), Negocio.
 - **Negocio**:
   - rename the business;
@@ -125,7 +126,8 @@ Success criteria:
 - **Nothing invented (criterion 7)**:
   - the bar shows exactly Inicio, Ventas, Clientes, Stock and Más, plus the "Nueva venta" button;
   - Más shows exactly Gastos, Variedades, Catálogo and Negocio;
-  - every figure on Inicio equals the API's answer, with real zeros for a period with no activity (results.md).
+  - every figure on Inicio equals the API's answer, with real zeros for a period with no activity (results.md);
+  - Inicio shows no notices other than "Arrancá por las variedades" and the pinned catalog's.
 
 ## Out of scope
 

@@ -15,7 +15,7 @@ from app.catalog.application.ports import (
     CatalogVarieties,
 )
 from app.catalog.domain.attributes import CatalogAttributes
-from app.catalog.domain.text import CatalogEntry, catalog_text
+from app.catalog.domain.text import CatalogEntry, catalog_text, pinned_catalog_text
 from app.catalog.domain.variety import CatalogState, catalog_state
 
 
@@ -38,17 +38,18 @@ class CatalogView:
     varieties: list[CatalogVarietyView]
 
 
-def read_catalog(
+def _qualify(
     varieties: CatalogVarieties,
     stock: CatalogStock,
     attributes_repo: CatalogAttributesRepository,
-    header_footer_repo: CatalogHeaderFooterRepository,
     today: date,
-) -> CatalogView:
+) -> tuple[list[CatalogVarietyView], list[CatalogEntry]]:
+    """Every variety with its catalog state, and the entries of the ones "in" — the one
+    loop `read_catalog` and `read_publishable_text` both run, so a variety that
+    qualifies for one always qualifies for the other."""
     all_varieties = varieties.on(today)
     attributes_by_id = attributes_repo.all()
     statuses = stock.statuses(today)
-    header_footer = header_footer_repo.get()
 
     views: list[CatalogVarietyView] = []
     entries: list[CatalogEntry] = []
@@ -76,8 +77,33 @@ def read_catalog(
             entries.append(
                 CatalogEntry(name=variety.name, attributes=attributes, price=variety.price)
             )
+    return views, entries
 
+
+def read_catalog(
+    varieties: CatalogVarieties,
+    stock: CatalogStock,
+    attributes_repo: CatalogAttributesRepository,
+    header_footer_repo: CatalogHeaderFooterRepository,
+    today: date,
+) -> CatalogView:
+    views, entries = _qualify(varieties, stock, attributes_repo, today)
+    header_footer = header_footer_repo.get()
     text = catalog_text(header_footer.header, header_footer.footer, entries)
     return CatalogView(
         text=text, header=header_footer.header, footer=header_footer.footer, varieties=views
     )
+
+
+def read_publishable_text(
+    varieties: CatalogVarieties,
+    stock: CatalogStock,
+    attributes_repo: CatalogAttributesRepository,
+    header_footer_repo: CatalogHeaderFooterRepository,
+    today: date,
+) -> str:
+    """What Telegram needs (#10): `pinned_catalog_text` over the same qualification
+    `read_catalog` uses, so a variety that counts for one always counts for the other."""
+    _, entries = _qualify(varieties, stock, attributes_repo, today)
+    header_footer = header_footer_repo.get()
+    return pinned_catalog_text(header_footer.header, header_footer.footer, entries)

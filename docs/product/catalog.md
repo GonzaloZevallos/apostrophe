@@ -1,12 +1,12 @@
 # Catalog
 
-The text that offers today's sellable varieties to a business's customers. It is built from each variety's catalog attributes, its current price today (varieties.md) and its stock status right now (stock.md), between the business's own header and footer. It is seen only by its business (ADR-0004). The Telegram bot (#10) will send exactly this text; until then, the seller copies it by hand.
+The text that offers today's sellable varieties to a business's customers. It is built from each variety's catalog attributes, its current price today (varieties.md) and its stock status right now (stock.md), between the business's own header and footer. It is seen only by its business (ADR-0004). The pinned catalog (pinned-catalog.md) sends exactly this text through the business's own Telegram bot and keeps it current. Copiar stays for pasting it by hand.
 
 ## Jobs
 
 **When** a price changes, a variety sells out or I start offering one, **I want to** open the catalog text the app has already built from today's current prices and stock, check it, and copy it in one tap, **so I can** paste it into my Telegram chat myself without retyping a price or a variety name, and my customers never see a stale price or a variety I can't sell.
 
-Setting the catalog attributes and the header and footer is the setup step of this same job. Keeping the pinned catalog current on its own (test send, publishing, pinning) is BRIEF.md's Telegram job, served by #10, which reuses this text as it is.
+Setting the catalog attributes and the header and footer is the setup step of this same job. Keeping the pinned catalog current on its own (test send, publishing, pinning) is BRIEF.md's Telegram job, served by pinned-catalog.md, which reuses this text as it is.
 
 Success criteria:
 
@@ -64,7 +64,7 @@ Success criteria:
 - **Money**: `$` directly followed by the amount, with a dot for thousands (`$11.000`). This is the catalog's own format, not the app's `$ 11.000`.
 - **Stock in the text**: none. It never mentions grams, stock or low stock.
 - **Freshness**: the text is computed on every open from the data as it stands. Nothing is stored, and the screen does not update itself while open.
-- **Nothing qualifies**: there is no text, and the screen says nothing is in the catalog today.
+- **Nothing qualifies**: there is no text, and the screen says nothing is in the catalog today. The pinned catalog sends its own empty message instead (pinned-catalog.md).
 
 ### Bold markers
 
@@ -73,7 +73,7 @@ Success criteria:
 - **Pairing rule**: whatever renders the text reads `**` markers left to right and pairs them in order.
   - The text between each pair is bold, and that pair's markers are hidden.
   - A final unpaired `**` shows as typed.
-  - This holds for the preview here and for the Telegram bot (#10).
+  - This holds for the preview here and for the Telegram bot (pinned-catalog.md).
 
 ### On screen (Catálogo)
 
@@ -83,7 +83,7 @@ Success criteria:
   - Every other line, break, emoji and price is identical to the copied text.
   - It shows the empty state when nothing qualifies.
 - **Copiar**:
-  - It copies the raw text with its `**` markers, the same text #10 will send.
+  - It copies the raw text with its `**` markers, the same text the pinned catalog sends.
   - On success it shows the toast "Catálogo copiado".
   - It works from the phone over the home network's plain http.
   - A failure shows a fixed "No se pudo copiar." and no toast.
@@ -97,6 +97,7 @@ Success criteria:
 - **Editing**: a variety's attributes from its row, and the header and footer, on the same screen.
   - Saving shows the new text and reasons at once, with the toast "Catálogo guardado".
   - Toasts carry no data.
+- **"El bot de Telegram"**: the lower part of the screen, defined in pinned-catalog.md.
 - **Refusals** show inline and keep what was typed. Each carries a code from `contract.json` (ADR-0008) and never repeats the input (ADR-0005).
 - **A variety that is gone** follows accounts.md's "Eso ya no está." rule.
 
@@ -128,7 +129,7 @@ Success criteria:
 
 ## Out of scope
 
-- The Telegram bot: test send, publishing, pinning, token and chats (#10).
+- The Telegram bot (test send, publishing, pinning, token and chats): pinned-catalog.md.
 - A custom variety order.
 - Restoring the default header or footer.
 - Stock figures in the text.
