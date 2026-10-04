@@ -49,6 +49,7 @@
 import { expect, test } from '@playwright/test'
 import { newBusinessInvitationUrl } from './backend.js'
 import { watchConsole } from './console.js'
+import { fillSaleLine } from './helpers/sale.js'
 
 test.use({ viewport: { width: 390, height: 844 } }) // a phone (PRD metric 1).
 
@@ -184,16 +185,12 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   await expect(page.getByText('Para dejar debiendo elegí un cliente')).toBeVisible()
 
   // A variety with no price that day is caught on its own line, before saving.
-  await page.getByLabel('Variedad línea 1').selectOption({ label: 'Mimosa' })
-  await page.getByLabel('Gramos línea 1').fill('5')
+  await fillSaleLine(page, 1, { variety: 'Mimosa', grams: '5' })
   await expect(page.getByText('Mimosa no tiene precio para esa fecha')).toBeVisible()
 
   // Swap it for a priced variety and add a second line.
-  await page.getByLabel('Variedad línea 1').selectOption({ label: 'Jazmín' })
-  await page.getByLabel('Gramos línea 1').fill('10')
-  await page.getByRole('button', { name: 'Agregar variedad' }).click()
-  await page.getByLabel('Variedad línea 2').selectOption({ label: 'Lirio' })
-  await page.getByLabel('Gramos línea 2').fill('20')
+  await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '10' })
+  await fillSaleLine(page, 2, { variety: 'Lirio', grams: '20' })
   await page.getByLabel('Envío').fill('1000')
   await page.getByLabel('Nota').fill('Pedido para el grupo')
 
@@ -212,20 +209,23 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
 
   // The live preview, before saving — every line, not only the sale's own total:
   // PRD metric 2, "0 differences" against what the detail shows after saving.
-  const previewJazmin = page.locator('.fila').filter({ has: page.getByLabel('Variedad línea 1') })
-  await expect(previewJazmin.locator('.regla-insignia')).toHaveText('Lista')
+  // Line 1 (Jazmín) is now the closed row — "Agregar otra variedad" closed it
+  // when line 2 opened (plan, "Line editor": one open line at a time); line 2
+  // (Lirio) is still the open editor.
+  const previewJazmin = page.getByRole('button', { name: /^Línea 1: Jazmín/ })
+  await expect(previewJazmin.locator('.insignia')).toHaveText('lista')
   await expect(previewJazmin.getByText('$ 500 x g', { exact: true })).toBeVisible()
   await expect(previewJazmin.getByText('$ 5.000', { exact: true })).toBeVisible()
 
-  const previewLirio = page.locator('.fila').filter({ has: page.getByLabel('Variedad línea 2') })
-  await expect(previewLirio.locator('.regla-insignia')).toHaveText('Lista')
+  const previewLirio = page.locator('.nueva-venta__linea--abierta').filter({ has: page.getByLabel('Variedad línea 2') })
+  await expect(previewLirio.locator('.insignia')).toHaveText('lista')
   await expect(previewLirio.getByText('$ 300 x g', { exact: true })).toBeVisible()
   await expect(previewLirio.getByText('$ 6.000', { exact: true })).toBeVisible()
 
-  await expect(page.locator('.cifra-m')).toHaveText('$ 12.000') // 5.000 + 6.000 + 1.000 shipping.
+  await expect(page.locator('.cifra-xl')).toHaveText('$ 12.000') // 5.000 + 6.000 + 1.000 shipping.
   await expect(page.getByText('30 g vendidos')).toBeVisible()
 
-  await page.getByRole('button', { name: 'Guardar venta' }).click()
+  await page.getByRole('button', { name: 'Guardá la venta' }).click()
   await expect(page).toHaveURL(/\/ventas\/\d+$/)
   await expect(page.getByText('Venta guardada')).toBeVisible()
   expect(Date.now() - saleAStart).toBeLessThan(RECORD_BUDGET_MS) // a new customer.
@@ -263,16 +263,14 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   // carried along in history state (plan, invariants).
   await expect(page.locator('.lista-clientes__nombre')).toHaveText('Carla Pérez')
 
-  await page.getByLabel('Variedad línea 1').selectOption({ label: 'Jazmín' })
-  await page.getByLabel('Gramos línea 1').fill('4')
-  await page.getByLabel('Regalo línea 1').check()
+  await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '4', gift: true })
   await expect(page.getByLabel('Precio especial línea 1')).toBeDisabled()
 
   // A $0 sale — a gift line marked by hand on a variety that does have a price
   // (Jazmín): saving is never blocked for a missing payment method when the total
   // is $0.
-  await expect(page.locator('.cifra-m')).toHaveText('$ 0')
-  const saveButtonB = page.getByRole('button', { name: 'Guardar venta' })
+  await expect(page.locator('.cifra-xl')).toHaveText('$ 0')
+  const saveButtonB = page.getByRole('button', { name: 'Guardá la venta' })
   await expect(saveButtonB).toBeEnabled()
   await saveButtonB.click()
   await expect(page).toHaveURL(/\/ventas\/\d+$/)
@@ -286,10 +284,9 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   await page.goto('/ventas')
   await page.getByRole('link', { name: 'Nueva venta' }).last().click()
   const saleCStart = Date.now()
-  await page.getByLabel('Variedad línea 1').selectOption({ label: 'Jazmín' })
-  await page.getByLabel('Gramos línea 1').fill('2')
+  await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '2' })
   await page.getByRole('radio', { name: 'Efectivo' }).check()
-  await page.getByRole('button', { name: 'Guardar venta' }).click()
+  await page.getByRole('button', { name: 'Guardá la venta' }).click()
   await expect(page).toHaveURL(/\/ventas\/\d+$/)
   await expect(page.getByText('Venta guardada')).toBeVisible()
   expect(Date.now() - saleCStart).toBeLessThan(RECORD_BUDGET_MS) // no customer: the fastest.

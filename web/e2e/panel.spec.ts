@@ -27,6 +27,7 @@
 import { expect, test } from '@playwright/test'
 import { newBusinessInvitationUrl } from './backend.js'
 import { watchConsole } from './console.js'
+import { fillSaleLine } from './helpers/sale.js'
 
 const PASSWORD = 'correcthorsebattery'
 
@@ -211,19 +212,17 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await page.getByRole('link', { name: 'Nueva venta a Carla Pérez' }).click()
   await expect(page).toHaveURL(/\/ventas\/nueva$/)
   const todayIso = await page.getByLabel('Fecha').inputValue()
-  await page.getByLabel('Variedad línea 1').selectOption({ label: 'Rosa' })
-  await page.getByLabel('Gramos línea 1').fill('5')
+  await fillSaleLine(page, 1, { variety: 'Rosa', grams: '5' })
   await page.getByRole('radio', { name: 'Debiendo' }).check()
-  await page.getByRole('button', { name: 'Guardar venta' }).click()
+  await page.getByRole('button', { name: 'Guardá la venta' }).click()
   await expect(page.getByText('Venta guardada')).toBeVisible()
 
   // A sale paid on the spot, no customer.
   await page.goto('/ventas')
   await page.getByRole('link', { name: 'Nueva venta' }).click()
-  await page.getByLabel('Variedad línea 1').selectOption({ label: 'Rosa' })
-  await page.getByLabel('Gramos línea 1').fill('3')
+  await fillSaleLine(page, 1, { variety: 'Rosa', grams: '3' })
   await page.getByRole('radio', { name: 'Efectivo' }).check()
-  await page.getByRole('button', { name: 'Guardar venta' }).click()
+  await page.getByRole('button', { name: 'Guardá la venta' }).click()
   await expect(page.getByText('Venta guardada')).toBeVisible()
 
   // Two more sales, dated at the start of this week and the start of this month —
