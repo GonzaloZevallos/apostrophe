@@ -8,6 +8,7 @@ rejecting one.
 from __future__ import annotations
 
 from datetime import date
+from decimal import Decimal
 
 from app.shared.grams import Grams
 from app.spreadsheet_import.domain.plan import (
@@ -490,6 +491,26 @@ def test_a_regalo_with_shipping_mismatch_is_reported() -> None:
     [mismatch] = plan.mismatches
     assert mismatch.sheet_total == 400
     assert mismatch.recomputed_total == 500
+
+
+def test_a_non_whole_sheet_total_is_an_exact_decimal_mismatch() -> None:
+    # GH-55: a Google Sheets float Total (e.g. 15501.55) is read as a `Decimal`, and
+    # the comparison against the recomputed `int` total is exact, never rounded.
+    split = _split(
+        varieties=(variety_row(7, "Variedad A"),),
+        ventas=(venta_row(2, payment="Efectivo", total=Decimal("15501.55")),),
+    )
+    checks = Checks(
+        variety_names={"Variedad A": VARIEDAD_A},
+        sales={SheetRef("Ventas", 2): _ok_sale(SheetRef("Ventas", 2), 15502)},
+    )
+
+    plan = build_plan(split, mapping(), checks)
+
+    assert plan.problems == ()
+    [mismatch] = plan.mismatches
+    assert mismatch.sheet_total == Decimal("15501.55")
+    assert mismatch.recomputed_total == 15502
 
 
 def test_a_matching_total_is_not_a_mismatch() -> None:
