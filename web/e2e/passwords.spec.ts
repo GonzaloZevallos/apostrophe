@@ -7,15 +7,19 @@
  *
  * This spec first goes green once this branch is rebased onto the merged
  * `backend` subtask (`/auth/password`, `/reset-links/{token}`, the
- * `reset-password` CLI command): it type-checks and lints here, and integration
- * runs it for real.
+ * `reset-password` CLI command). Until then, each test probes
+ * `supportsPasswordReset()` first and skips, named, rather than fail — the
+ * backend's own `reset-password` subcommand does not exist yet on this branch,
+ * and there is no front-only way to make it exist. The probe itself needs no
+ * edit once the backend lands: it starts finding the real command and the
+ * skip stops firing on its own.
  *
  * A phone viewport (PRD metric 1: "from the phone... in under a minute"), the
  * same breakpoint `sales.spec.ts` uses.
  */
 
 import { expect, test } from '@playwright/test'
-import { newBusinessInvitationUrl, resetLink } from './backend.js'
+import { newBusinessInvitationUrl, resetLink, supportsPasswordReset } from './backend.js'
 import { watchConsole } from './console.js'
 
 const PASSWORD = 'correcthorsebattery'
@@ -27,6 +31,11 @@ test('changes a password from Negocio in under a minute, signing an older device
   page,
   browser,
 }) => {
+  test.skip(
+    !supportsPasswordReset(),
+    "needs the backend subtask's /auth/password and reset-password CLI, not yet merged onto this branch",
+  )
+
   const consoleMessages: string[] = []
   watchConsole(page, consoleMessages)
 
@@ -54,9 +63,10 @@ test('changes a password from Negocio in under a minute, signing an older device
 
   await page.goto('/negocio')
   await page.getByRole('button', { name: 'Cambiar contraseña' }).click()
-  await page.getByLabel('Contraseña actual').fill(PASSWORD)
-  await page.getByLabel('Contraseña nueva').fill(NEW_PASSWORD)
-  await page.getByRole('button', { name: 'Guardar' }).click()
+  const sheet = page.locator('.capa')
+  await sheet.getByLabel('Contraseña actual').fill(PASSWORD)
+  await sheet.getByLabel('Contraseña nueva').fill(NEW_PASSWORD)
+  await sheet.getByRole('button', { name: 'Guardar' }).click()
   await expect(page.getByText('Contraseña cambiada · cerramos tus otras sesiones')).toBeVisible()
 
   expect(Date.now() - startedAt).toBeLessThan(60_000)
@@ -81,6 +91,11 @@ test('changes a password from Negocio in under a minute, signing an older device
 test('resets a forgotten password from a printed link through to Inicio, then shows the dead-link state once used', async ({
   page,
 }) => {
+  test.skip(
+    !supportsPasswordReset(),
+    "needs the backend subtask's reset-password CLI and /reset-links/{token}, not yet merged onto this branch",
+  )
+
   const consoleMessages: string[] = []
   watchConsole(page, consoleMessages)
 
