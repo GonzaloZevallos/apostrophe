@@ -71,6 +71,10 @@ export const keys = {
   // the last answer always wins, and no write anywhere ever needs to invalidate it.
   paymentPreview: (customerId: string, paidOn: string, amount: number) =>
     ['payment-form', 'preview', customerId, paidOn, amount] as const,
+  // `Analisis`'s own read (plan, "API client"): frozen the same way `catalog` is
+  // (`gcTime: 0`, `staleTime: Infinity` at the call site) — the screen always
+  // fetches on open, so this key is never invalidated by a write elsewhere either.
+  analysis: (month: string) => ['analysis', month] as const,
 }
 
 // A write on one resource that also stales another, beyond its own prefix (plan,

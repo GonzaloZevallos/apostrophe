@@ -28,6 +28,7 @@
 
 import { createBrowserRouter, Navigate } from 'react-router'
 import Root from './Root'
+import Analisis from './screens/Analisis'
 import Entrar from './screens/Entrar'
 import EntradaStock from './screens/EntradaStock'
 import GastoCategorias from './screens/GastoCategorias'
@@ -84,6 +85,7 @@ export const router = createBrowserRouter([
               { path: 'mi-stock/nueva-entrada', element: <EntradaStock mode="nuevo" /> },
               { path: 'mi-stock/entradas/:id', element: <EntradaStock mode="editar" /> },
               { path: 'negocio', element: <Negocio /> },
+              { path: 'analisis', element: <Analisis /> },
               { path: 'catalogo', element: <Catalogo /> },
               {
                 path: 'ventas',
