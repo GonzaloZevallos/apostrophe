@@ -19,6 +19,14 @@
  * blocks Back/close once something has been typed, and never blocks the
  * replace-navigation a successful save performs — `savedRef` short-circuits the
  * blocker's predicate once `onSubmit` has already saved.
+ *
+ * The line editor (plan, "Binding UX decision: the line editor" — no design file
+ * draws it): one open line at a time, in place. `openKey` names which line is
+ * open; every other line renders as the design's closed row (name, grams as a
+ * large figure, price per gram, `ReglaInsignia` and the line total) or, when it
+ * carries a message with no valid preview, as an incomplete row (the variety name
+ * or "Sin variedad" plus that message, never figures). `combinedLineError` is the
+ * one source of a line's message, in the plan's priority order.
  */
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -29,9 +37,13 @@ import type { Customer } from '../../api/customers'
 import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
 import { resolveOverride, type RefusalCode } from '../../api/refusals'
+import Boton from '../../components/Boton'
 import ConfirmDialog from '../../components/ConfirmDialog'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import { readNewSaleState, saleJustSaved } from '../../components/feedback'
+import Icono from '../../components/Icono'
+import ReglaInsignia from '../../components/ReglaInsignia'
+import SelectorPago from '../../components/SelectorPago'
 import SinConexion from '../../components/SinConexion'
 import { formatDateLong, formatDateShort, maxSaleDate } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
@@ -40,7 +52,6 @@ import {
   type LineValidation,
   type PaymentChoice,
   type PriceQuote,
-  type PricingRule,
   fromHundredths,
   hundredthsOfApiGrams,
   priceLine,
@@ -56,14 +67,8 @@ export const NO_LINES_MESSAGE = 'Cargá al menos una variedad.'
 export const OWING_HINT = 'Para dejar debiendo elegí un cliente'
 export const PAYMENT_REQUIRED_MESSAGE = 'Elegí cómo se pagó, o dejá la venta debiendo'
 export const SPECIAL_PRICE_INVALID_MESSAGE = 'El precio especial tiene que ser mayor a $0'
-
-const RULE_LABEL: Record<PricingRule, string> = {
-  list: 'Lista',
-  bulk: 'Por cantidad',
-  vip: 'VIP',
-  gift: 'Regalo',
-  special: 'Especial',
-}
+export const LINE_GRAMS_INVALID = 'Cargá los gramos: coma, hasta dos decimales'
+export const LINE_VARIETY_MISSING = 'Elegí una variedad'
 
 interface LineState {
   key: string
@@ -81,6 +86,10 @@ function emptyLine(): LineState {
     gift: false,
     specialPrice: '',
   }
+}
+
+function isBlank(line: LineState): boolean {
+  return line.varietyId === '' && line.grams.trim() === '' && !line.gift && line.specialPrice.trim() === ''
 }
 
 function quoteOf(variety: Variety): PriceQuote | null {
@@ -102,8 +111,17 @@ function parseShipping(input: string): number | null {
   return Number.isSafeInteger(value) && value >= 0 ? value : null
 }
 
+/** `scrollIntoView` doesn't exist in the jsdom the component's own tests render
+ * under; guarded so an open field's focus handler is a no-op there instead of a
+ * thrown error, and still scrolls a real phone's viewport into place (plan,
+ * "Phone layout": "Open fields call `scrollIntoView({block: 'nearest'})` on
+ * focus"). */
+function scrollFieldIntoView(element: HTMLElement): void {
+  if (typeof element.scrollIntoView === 'function') element.scrollIntoView({ block: 'nearest' })
+}
+
 interface LinePreview {
-  rule: PricingRule
+  rule: ReturnType<typeof priceLine>['rule']
   pricePerGram: number
   lineTotal: number
   gramsHundredths: number
@@ -160,7 +178,8 @@ export default function NuevaVenta() {
 
   const [date, setDate] = useState(me.today)
   const [customerOverride, setCustomerOverride] = useState<Customer | null | undefined>(undefined)
-  const [lines, setLines] = useState<LineState[]>([emptyLine()])
+  const [lines, setLines] = useState<LineState[]>(() => [emptyLine()])
+  const [openKey, setOpenKey] = useState<string>(() => lines[0]?.key ?? '')
   const [shipping, setShipping] = useState('0')
   const [note, setNote] = useState('')
   const [method, setMethod] = useState<PaymentChoice | null>(null)
@@ -171,8 +190,17 @@ export default function NuevaVenta() {
   const [dateError, setDateError] = useState<string | null>(null)
   const [paymentError, setPaymentError] = useState<string | null>(null)
   const [offline, setOffline] = useState(false)
+  const [focusRequest, setFocusRequest] = useState<{
+    lineKey: string
+    field: 'variety' | 'grams' | 'specialPrice'
+    nonce: number
+  } | null>(null)
+  const focusNonceRef = useRef(0)
 
   const savedRef = useRef(false)
+  const varietyFieldRef = useRef<HTMLSelectElement | null>(null)
+  const gramsFieldRef = useRef<HTMLInputElement | null>(null)
+  const specialPriceFieldRef = useRef<HTMLInputElement | null>(null)
 
   const varietiesQuery = useQuery({
     queryKey: keys.saleFormVarieties(date),
@@ -206,12 +234,42 @@ export default function NuevaVenta() {
     setLines((previous) => previous.map((line) => (line.key === key ? { ...line, ...patch } : line)))
   }
 
-  function addLine(): void {
-    setLines((previous) => [...previous, emptyLine()])
+  /** Opens `targetKey` in place, closing whatever was open — removing it first if
+   * it was left blank and the sale has more than one line (plan: "a line closed
+   * with nothing typed is removed, unless it is the sale's only line"). */
+  function openLine(targetKey: string): void {
+    if (targetKey === openKey) return
+    setLines((previous) => {
+      const current = previous.find((line) => line.key === openKey)
+      if (current !== undefined && isBlank(current) && previous.length > 1) {
+        return previous.filter((line) => line.key !== current.key)
+      }
+      return previous
+    })
+    setOpenKey(targetKey)
   }
 
+  /** "Agregar otra variedad": always ends with exactly one more open line than
+   * before, dropping the just-open line first if it was left blank. */
+  function addLine(): void {
+    const created = emptyLine()
+    setLines((previous) => {
+      const withoutBlankOpen = previous.filter((line) => !(line.key === openKey && isBlank(line)))
+      return [...withoutBlankOpen, created]
+    })
+    setOpenKey(created.key)
+  }
+
+  /** "Quitar", only offered on the open line when the sale has more than one —
+   * the next open line is whichever remains first. */
   function removeLine(key: string): void {
-    setLines((previous) => (previous.length > 1 ? previous.filter((line) => line.key !== key) : previous))
+    setLines((previous) => {
+      if (previous.length <= 1) return previous
+      const next = previous.filter((line) => line.key !== key)
+      const nextFirst = next[0]
+      if (key === openKey && nextFirst !== undefined) setOpenKey(nextFirst.key)
+      return next
+    })
   }
 
   function varietyOf(id: string): Variety | undefined {
@@ -254,15 +312,25 @@ export default function NuevaVenta() {
     lines: lineValidations,
   })
 
-  function lineErrorFor(key: string): string | null {
+  function noPriceErrorFor(key: string): string | null {
     return errors.find((error) => error.field === `line:${key}`)?.message ?? null
   }
 
-  /** The one message a line shows, in priority order: an invalid typed special
-   * price first (it is why the line isn't pricing at all), then `validateSale`'s
-   * own "no price that day". */
+  /** The one message a line shows, in the plan's priority order: an invalid typed
+   * special price; `validateSale`'s "no price that day"; bad grams; a missing
+   * variety when something else was typed. A fully blank line never reaches here
+   * closed (it is removed instead), so returning `null` here only ever means a
+   * line that prices cleanly. */
   function combinedLineError(line: LineState): string | null {
-    return specialPriceErrorFor(line) ?? lineErrorFor(line.key)
+    const special = specialPriceErrorFor(line)
+    if (special !== null) return special
+    const noPrice = noPriceErrorFor(line.key)
+    if (noPrice !== null) return noPrice
+    const gramsTyped = line.grams.trim() !== ''
+    const somethingTyped = line.varietyId !== '' || gramsTyped || line.gift || line.specialPrice.trim() !== ''
+    if (!parseGrams(line.grams).ok && somethingTyped) return LINE_GRAMS_INVALID
+    if (line.varietyId === '' && somethingTyped) return LINE_VARIETY_MISSING
+    return null
   }
 
   function previewOf(line: LineState): LinePreview | null {
@@ -306,9 +374,7 @@ export default function NuevaVenta() {
     customer !== null ||
     note.trim() !== '' ||
     shipping !== '0' ||
-    lines.some(
-      (line) => line.varietyId !== '' || line.grams !== '' || line.gift || line.specialPrice !== '',
-    )
+    lines.some((line) => !isBlank(line))
   const touchedRef = useRef(touched)
   useEffect(() => {
     touchedRef.current = touched
@@ -320,6 +386,40 @@ export default function NuevaVenta() {
     mutationFn: (body: SaleBody) => post<SavedSale>('/sales', body),
   })
 
+  // Saving with a line in error opens and focuses that field (plan, "Saving"):
+  // `openLine` may or may not change `openKey` (the line could already be open),
+  // so the actual `.focus()` call waits for this effect, which re-runs once a
+  // fresh `focusRequest` lands, after the line's own fields are on the page. The
+  // request's own `nonce` (never reset) is what re-triggers the effect on a
+  // second save with the same field at fault — a plain `setState` inside the
+  // effect would only start another, unnecessary render (oxlint's own
+  // `set-state-in-effect`). Guarded on `openKey === focusRequest.lineKey`, so a
+  // stale request from an earlier save never steals focus back from a line the
+  // seller opened by hand afterwards — only the field this same request named,
+  // on the line it named, is ever focused.
+  useEffect(() => {
+    if (focusRequest === null || focusRequest.lineKey !== openKey) return
+    const ref =
+      focusRequest.field === 'grams'
+        ? gramsFieldRef
+        : focusRequest.field === 'specialPrice'
+          ? specialPriceFieldRef
+          : varietyFieldRef
+    ref.current?.focus()
+  }, [focusRequest, openKey])
+
+  function fieldForError(line: LineState): 'variety' | 'grams' | 'specialPrice' {
+    if (specialPriceErrorFor(line) !== null) return 'specialPrice'
+    if (noPriceErrorFor(line.key) !== null) return 'variety'
+    if (!parseGrams(line.grams).ok) return 'grams'
+    return 'variety'
+  }
+
+  function goBack(): void {
+    if (location.key === 'default') navigate('/ventas')
+    else navigate(-1)
+  }
+
   async function onSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault()
     setFormError(null)
@@ -329,8 +429,17 @@ export default function NuevaVenta() {
     setPaymentError(null)
     setOffline(false)
 
-    if (errors.length > 0) return
-    if (lines.some((line) => specialPriceErrorFor(line) !== null)) return
+    const firstInError = lines.find((line) => combinedLineError(line) !== null)
+    if (firstInError !== undefined) {
+      openLine(firstInError.key)
+      focusNonceRef.current += 1
+      setFocusRequest({
+        lineKey: firstInError.key,
+        field: fieldForError(firstInError),
+        nonce: focusNonceRef.current,
+      })
+      return
+    }
 
     const filled = lines.filter((line) => line.varietyId !== '')
     if (filled.length === 0) {
@@ -372,10 +481,24 @@ export default function NuevaVenta() {
       }
       if (caught instanceof ApiError && caught.code === 'sale.no_price_that_day') {
         // The one other refetch (plan, invariants): a partner may have deleted the
-        // price between this form's own fetch and now. Refetching makes that
-        // line's quote `null` again, so the live preview's own `NoPriceThatDay`
-        // message appears on it, naming the variety from this screen's own line.
-        void queryClient.invalidateQueries({ queryKey: keys.saleFormVarieties(date) })
+        // price between this form's own fetch and now. Awaited, so the cache
+        // already carries the fresh answer below — reading it straight from the
+        // cache rather than `varieties` (this closure's own, from the render that
+        // started this submit) is what lets the line that lost its price open and
+        // focus right away, instead of waiting for a render this handler doesn't
+        // itself cause.
+        await queryClient.invalidateQueries({ queryKey: keys.saleFormVarieties(date) })
+        const freshVarieties = queryClient.getQueryData<Variety[]>(keys.saleFormVarieties(date)) ?? []
+        const flagged = lines.find((line) => {
+          if (line.varietyId === '' || line.gift || specialPriceOf(line) !== null) return false
+          const variety = freshVarieties.find((item) => String(item.id) === line.varietyId)
+          return variety === undefined || quoteOf(variety) === null
+        })
+        if (flagged !== undefined) {
+          openLine(flagged.key)
+          focusNonceRef.current += 1
+          setFocusRequest({ lineKey: flagged.key, field: 'variety', nonce: focusNonceRef.current })
+        }
         return
       }
       if (caught instanceof ApiError) {
@@ -401,224 +524,219 @@ export default function NuevaVenta() {
 
   return (
     <main className="pantalla">
-      <div className="cuerpo">
-        <div className="encabezado-fila">
-          <span className="encabezado__titulo">Nueva venta</span>
-          <button
-            type="button"
-            className="boton-icono"
-            aria-label="Cerrar"
-            onClick={() => navigate('/ventas')}
-          >
-            ×
-          </button>
-        </div>
-
-        <form className="formulario" onSubmit={onSubmit}>
-          <label className="campo">
-            <span className="campo__rotulo">Fecha</span>
-            <input
-              className="campo__input"
-              type="date"
-              value={date}
-              max={maxSaleDate(me.today)}
-              onChange={(event) => setDate(event.target.value)}
-              required
-            />
-          </label>
-          <span className="rotulo">
-            {date === me.today ? `Hoy ${formatDateShort(date)}` : formatDateLong(date)}
-          </span>
+      <form className="nueva-venta" onSubmit={onSubmit}>
+        <div className="nueva-venta__disposicion">
+        <div className="nueva-venta__cuerpo">
+          <div className="encabezado-fila">
+            <Boton variant="icon" ariaLabel="Volver" icon="atras" onClick={goBack} />
+            <span className="encabezado__titulo">Nueva venta</span>
+            <span className="fecha-pildora">
+              <input
+                className="fecha-pildora__input"
+                type="date"
+                aria-label="Fecha"
+                value={date}
+                max={maxSaleDate(me.today)}
+                onChange={(event) => setDate(event.target.value)}
+                required
+              />
+              <span className="fecha-pildora__texto" aria-hidden="true">
+                {date === me.today ? `Hoy ${formatDateShort(date)}` : formatDateLong(date)}
+                <Icono nombre="abajo" size={15} strokeWidth={1.8} />
+              </span>
+            </span>
+          </div>
           {dateError !== null && (
             <span className="campo__error" role="alert">
               {dateError}
             </span>
           )}
 
-          <div className="campo">
-            <span className="campo__rotulo">Cliente</span>
-            {customer === null ? (
-              <button
-                type="button"
-                className="boton boton--suave"
-                onClick={() => setShowCustomerSheet(true)}
-              >
-                Elegir cliente
-              </button>
-            ) : (
-              <div className="fila">
-                <span className="lista-clientes__nombre">
-                  {customer.name}
-                  {customer.vip && <span className="vip-insignia">VIP</span>}
-                </span>
-                <button
-                  type="button"
-                  className="boton-enlace"
-                  onClick={() => setShowCustomerSheet(true)}
-                >
-                  Cambiar
-                </button>
-              </div>
-            )}
-          </div>
-
-          {lines.map((line, index) => {
-            const preview = previews[index] ?? null
-            const lineError = combinedLineError(line)
-            return (
-              <div key={line.key} className="fila">
-                <select
-                  className="campo__input"
-                  aria-label={`Variedad línea ${index + 1}`}
-                  value={line.varietyId}
-                  onChange={(event) => updateLine(line.key, { varietyId: event.target.value })}
-                  required
-                >
-                  <option value="">Elegí una variedad</option>
-                  {varieties.map((variety) => (
-                    <option key={variety.id} value={variety.id}>
-                      {variety.name}
-                    </option>
-                  ))}
-                </select>
-                <input
-                  className="campo__input"
-                  aria-label={`Gramos línea ${index + 1}`}
-                  type="text"
-                  inputMode="decimal"
-                  value={line.grams}
-                  onChange={(event) => updateLine(line.key, { grams: event.target.value })}
-                  required
-                />
-                <label>
-                  <input
-                    type="checkbox"
-                    aria-label={`Regalo línea ${index + 1}`}
-                    checked={line.gift}
-                    disabled={line.specialPrice.trim() !== ''}
-                    onChange={(event) => updateLine(line.key, { gift: event.target.checked })}
-                  />
-                  Regalo
-                </label>
-                <input
-                  className="campo__input"
-                  aria-label={`Precio especial línea ${index + 1}`}
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="Precio especial"
-                  value={line.specialPrice}
-                  disabled={line.gift}
-                  onChange={(event) => updateLine(line.key, { specialPrice: event.target.value })}
-                />
-                {lineError !== null && (
-                  <span className="campo__error" role="alert">
-                    {lineError}
+          {customer === null ? (
+            <Boton variant="secondary" onClick={() => setShowCustomerSheet(true)}>
+              Elegir cliente
+            </Boton>
+          ) : (
+            <Boton variant="row" onClick={() => setShowCustomerSheet(true)}>
+              <div className="nueva-venta__cliente">
+                <div className="nueva-venta__cliente-texto">
+                  <span className="lista-clientes__nombre">
+                    {customer.name}
+                    {customer.vip && <span className="vip-insignia">VIP</span>}
                   </span>
-                )}
-                {lineError === null && preview !== null && (
-                  <div className="fila">
-                    <span className="regla-insignia">{RULE_LABEL[preview.rule]}</span>
-                    <span>{formatMoney(preview.pricePerGram)} x g</span>
-                    <span>{formatMoney(preview.lineTotal)}</span>
-                  </div>
-                )}
-                {lines.length > 1 && (
-                  <button
-                    type="button"
-                    aria-label={`Quitar línea ${index + 1}`}
-                    onClick={() => removeLine(line.key)}
-                  >
-                    ×
-                  </button>
-                )}
+                  <span className="nueva-venta__cliente-telefono">{customer.phone}</span>
+                </div>
+                <span className="nueva-venta__cliente-cambiar">Cambiar</span>
               </div>
-            )
-          })}
-          <button type="button" className="boton boton--suave" onClick={addLine}>
-            Agregar variedad
-          </button>
+            </Boton>
+          )}
 
-          <label className="campo">
-            <span className="campo__rotulo">Envío</span>
+          <div className="nueva-venta__lineas">
+            {lines.map((line, index) => {
+              const n = index + 1
+              const preview = previews[index] ?? null
+              const lineError = combinedLineError(line)
+              const variety = varietyOf(line.varietyId)
+              const isOpen = line.key === openKey
+
+              if (!isOpen) {
+                const displayName = variety?.name ?? 'Sin variedad'
+                const messageId = `linea-mensaje-${line.key}`
+                return (
+                  <Boton
+                    key={line.key}
+                    variant="row"
+                    ariaLabel={`Línea ${n}: ${displayName}`}
+                    ariaDescribedBy={lineError !== null ? messageId : undefined}
+                    onClick={() => openLine(line.key)}
+                  >
+                    <div className="nueva-venta__linea-encabezado">
+                      <span className="nueva-venta__linea-nombre">{displayName}</span>
+                      {preview !== null && (
+                        <span className="nueva-venta__linea-gramos">
+                          {formatGrams(fromHundredths(preview.gramsHundredths))} g
+                        </span>
+                      )}
+                    </div>
+                    {preview !== null && (
+                      <div className="nueva-venta__linea-detalle">
+                        {preview.rule !== 'gift' && (
+                          <span className="nueva-venta__linea-preciogramo">
+                            {formatMoney(preview.pricePerGram)} x g
+                          </span>
+                        )}
+                        <ReglaInsignia rule={preview.rule} />
+                        <span className="nueva-venta__linea-total">{formatMoney(preview.lineTotal)}</span>
+                      </div>
+                    )}
+                    {lineError !== null && (
+                      <span id={messageId} className="campo__error" role="alert">
+                        {lineError}
+                      </span>
+                    )}
+                  </Boton>
+                )
+              }
+
+              return (
+                <div key={line.key} className="nueva-venta__linea nueva-venta__linea--abierta">
+                  <label className="campo">
+                    <span className="campo__rotulo">Variedad</span>
+                    <select
+                      className="campo__input"
+                      aria-label={`Variedad línea ${n}`}
+                      value={line.varietyId}
+                      ref={varietyFieldRef}
+                      onFocus={(event) => scrollFieldIntoView(event.currentTarget)}
+                      onChange={(event) => updateLine(line.key, { varietyId: event.target.value })}
+                    >
+                      <option value="">Elegí una variedad</option>
+                      {varieties.map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {item.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="campo">
+                    <span className="campo__rotulo">Gramos</span>
+                    <input
+                      className="campo__input"
+                      aria-label={`Gramos línea ${n}`}
+                      type="text"
+                      inputMode="decimal"
+                      value={line.grams}
+                      ref={gramsFieldRef}
+                      onFocus={(event) => scrollFieldIntoView(event.currentTarget)}
+                      onChange={(event) => updateLine(line.key, { grams: event.target.value })}
+                    />
+                    <span className="campo__ayuda">Coma, hasta dos decimales</span>
+                  </label>
+                  <div className="nueva-venta__linea-opciones">
+                    <label>
+                      <input
+                        type="checkbox"
+                        aria-label={`Regalo línea ${n}`}
+                        checked={line.gift}
+                        disabled={line.specialPrice.trim() !== ''}
+                        onFocus={(event) => scrollFieldIntoView(event.currentTarget)}
+                        onChange={(event) => updateLine(line.key, { gift: event.target.checked })}
+                      />
+                      Regalo
+                    </label>
+                    <input
+                      className="campo__input"
+                      aria-label={`Precio especial línea ${n}`}
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="Precio especial"
+                      value={line.specialPrice}
+                      disabled={line.gift}
+                      ref={specialPriceFieldRef}
+                      onFocus={(event) => scrollFieldIntoView(event.currentTarget)}
+                      onChange={(event) => updateLine(line.key, { specialPrice: event.target.value })}
+                    />
+                  </div>
+                  {lineError !== null && (
+                    <span className="campo__error" role="alert">
+                      {lineError}
+                    </span>
+                  )}
+                  {lineError === null && preview !== null && (
+                    <div className="nueva-venta__linea-detalle">
+                      {preview.rule !== 'gift' && (
+                        <span className="nueva-venta__linea-preciogramo">
+                          {formatMoney(preview.pricePerGram)} x g
+                        </span>
+                      )}
+                      <ReglaInsignia rule={preview.rule} />
+                      <span className="nueva-venta__linea-total">{formatMoney(preview.lineTotal)}</span>
+                    </div>
+                  )}
+                  {lines.length > 1 && (
+                    <Boton variant="link" ariaLabel={`Quitar línea ${n}`} onClick={() => removeLine(line.key)}>
+                      Quitar
+                    </Boton>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+          <Boton variant="link" onClick={addLine}>
+            Agregar otra variedad
+          </Boton>
+
+          <div className="nueva-venta__fila-dato">
+            <span>Envío cobrado</span>
             <input
               className="campo__input"
+              aria-label="Envío"
               type="text"
               inputMode="numeric"
               value={shipping}
               onChange={(event) => setShipping(event.target.value)}
             />
-          </label>
+          </div>
           {shippingError !== null && (
             <span className="campo__error" role="alert">
               {shippingError}
             </span>
           )}
 
-          <label className="campo">
-            <span className="campo__rotulo">Nota</span>
+          <div className="nueva-venta__fila-dato">
+            <span>Nota</span>
             <textarea
               className="campo__input"
+              aria-label="Nota"
               value={note}
               onChange={(event) => setNote(event.target.value)}
             />
-          </label>
+          </div>
           {noteError !== null && (
             <span className="campo__error" role="alert">
               {noteError}
             </span>
           )}
-
-          <fieldset className="campo">
-            <legend className="campo__rotulo">Cómo se pagó</legend>
-            <label>
-              <input
-                type="radio"
-                name="payment"
-                checked={method === 'cash'}
-                onChange={() => setMethod('cash')}
-              />
-              Efectivo
-            </label>
-            <label>
-              <input
-                type="radio"
-                name="payment"
-                checked={method === 'transfer'}
-                onChange={() => setMethod('transfer')}
-              />
-              Transferencia
-            </label>
-            <label>
-              <input
-                type="radio"
-                name="payment"
-                checked={method === 'owing'}
-                disabled={customer === null}
-                onChange={() => setMethod('owing')}
-              />
-              Debiendo
-            </label>
-            {customer === null && (
-              <span className="campo__error" role="alert">
-                {OWING_HINT}
-              </span>
-            )}
-            {paymentError !== null && (
-              <span className="campo__error" role="alert">
-                {paymentError}
-              </span>
-            )}
-          </fieldset>
-
-          <div className="fila">
-            <span className="cifra-m">{formatMoney(totals.total)}</span>
-            <span className="rotulo">{formatGrams(fromHundredths(totals.gramsSoldHundredths))} vendidos</span>
-            {totals.gramsGiftedHundredths > 0 && (
-              <span className="rotulo">
-                {formatGrams(fromHundredths(totals.gramsGiftedHundredths))} regalados
-              </span>
-            )}
-          </div>
 
           {formError !== null && (
             <span className="campo__error" role="alert">
@@ -626,16 +744,38 @@ export default function NuevaVenta() {
             </span>
           )}
           {offline && <SinConexion />}
+        </div>
 
-          <button
-            className="boton"
-            type="submit"
-            disabled={save.isPending || varietiesQuery.isFetching}
-          >
-            Guardar venta
-          </button>
-        </form>
-      </div>
+        <div className="nueva-venta__resumen">
+          <div className="nueva-venta__pago">
+            <SelectorPago
+              value={method}
+              onChange={setMethod}
+              owingDisabled={customer === null}
+              owingDescription={OWING_HINT}
+            />
+            {paymentError !== null && (
+              <span className="campo__error" role="alert">
+                {paymentError}
+              </span>
+            )}
+          </div>
+
+          <div className="nueva-venta__pie">
+            <span className="rotulo">Total</span>
+            <span className="cifra-xl">{formatMoney(totals.total)}</span>
+            <span className="rotulo">
+              {formatGrams(fromHundredths(totals.gramsSoldHundredths))} vendidos
+              {totals.gramsGiftedHundredths > 0 &&
+                ` · ${formatGrams(fromHundredths(totals.gramsGiftedHundredths))} de regalo`}
+            </span>
+            <Boton type="submit" disabled={save.isPending || varietiesQuery.isFetching}>
+              Guardá la venta
+            </Boton>
+          </div>
+        </div>
+        </div>
+      </form>
 
       {showCustomerSheet && (
         <NuevaVentaCliente

@@ -12,6 +12,7 @@ import pytest
 from app.business_removal.domain.classification import (
     delete_order,
     looks_secret,
+    other_type_columns,
     owned_tables,
     secret_columns,
     unowned_tables,
@@ -180,6 +181,30 @@ def test_delete_order_refuses_a_cycle_and_names_the_tables_in_it() -> None:
 
     with pytest.raises(ValueError, match="a, b|b, a"):
         delete_order(schema)
+
+
+def test_other_type_columns_reports_an_unexcluded_other_typed_column() -> None:
+    business = Table("business", (_pk(),), ())
+    oddity = Table(
+        "oddity",
+        (_pk(), _col("business_id"), _col("blob", ColumnType.OTHER)),
+        (ForeignKey(("business_id",), "business", ("id",)),),
+    )
+    schema = Schema((business, oddity))
+
+    assert other_type_columns(schema) == (("oddity", "blob"),)
+
+
+def test_other_type_columns_excludes_the_pinned_catalog_token_ciphertext() -> None:
+    business = Table("business", (_pk(),), ())
+    pinned_catalog = Table(
+        "pinned_catalog",
+        (_pk(), _col("business_id"), _col("token_ciphertext", ColumnType.OTHER)),
+        (ForeignKey(("business_id",), "business", ("id",)),),
+    )
+    schema = Schema((business, pinned_catalog))
+
+    assert other_type_columns(schema) == ()
 
 
 def test_delete_order_includes_invitation_even_though_its_business_id_is_nullable() -> None:

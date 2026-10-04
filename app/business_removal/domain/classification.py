@@ -17,9 +17,10 @@ from app.business_removal.domain.exclusions import (
     INVITATION_TABLE,
     PLATFORM_TABLES,
     SKIPPED_TABLES,
+    WITHHELD_TABLES,
 )
 from app.business_removal.domain.labels import tables_written
-from app.business_removal.domain.schema import Schema, Table
+from app.business_removal.domain.schema import ColumnType, Schema, Table
 
 BUSINESS_ID_COLUMN = "business_id"
 
@@ -99,6 +100,21 @@ def secret_columns(schema: Schema) -> tuple[tuple[str, str], ...]:
         for name in written
         for column in schema.table(name).columns
         if looks_secret(column.name) and (name, column.name) not in EXCLUDED_COLUMNS
+    ]
+    return tuple(sorted(found))
+
+
+def other_type_columns(schema: Schema) -> tuple[tuple[str, str], ...]:
+    """Columns of a type the export cannot write (`ColumnType.OTHER`), outside
+    `EXCLUDED_COLUMNS` and outside a skipped or withheld table. A non-empty result
+    means the command must refuse: a column of an unwritable type needs its own
+    exclusion, named by hand, before the removal can run again."""
+    found = [
+        (table.name, column.name)
+        for table in schema.tables
+        if table.name not in SKIPPED_TABLES and table.name not in WITHHELD_TABLES
+        for column in table.columns
+        if column.type is ColumnType.OTHER and (table.name, column.name) not in EXCLUDED_COLUMNS
     ]
     return tuple(sorted(found))
 

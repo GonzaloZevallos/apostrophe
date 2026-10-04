@@ -2,6 +2,18 @@
  * (plan, invariants). Mirrors the design screens' structure (Entrar, Estados,
  * Inicio, BarraInferior/InicioCompu) without copying their inline styles verbatim. */
 
+/* Font and colour only (plan, invariants: "The base `button` rule in
+ * `styles/app.css` sets only font and colour; border, background and appearance
+ * are reset only by `Boton`'s classes") — a `<button>` doesn't inherit `font-family`
+ * from `html`/`body` on its own (the Arial bug PM's adjustment reported on every
+ * sales screen), and this is the one rule that fixes it everywhere, not only on
+ * the screens this task rebuilds. Border, background and `appearance` stay the
+ * browser's own until a `.boton*` class resets them. */
+button {
+  font: inherit;
+  color: inherit;
+}
+
 /* Visible to a screen reader only — the design's own technique for a label a
  * placeholder already shows visibly (`Clientes.dc.html`'s "Buscar cliente"). */
 .visualmente-oculto {
@@ -634,6 +646,19 @@
   text-decoration: none;
 }
 
+/* The customer search result's own inner layout (`NuevaVentaCliente.tsx`):
+ * `Boton`'s `row` variant supplies the border-bottom, padding and button reset;
+ * this just lays its one line of content out horizontally, the same shape
+ * `.lista-clientes__fila` draws for the `Link`-based rows elsewhere, without
+ * doubling that padding/border on a `<button>`. */
+.lista-clientes__fila-contenido {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: var(--alto-tocable);
+}
+
 .lista-clientes__nombre {
   display: flex;
   align-items: center;
@@ -809,13 +834,89 @@
   flex: 1;
 }
 
+/* The design's link look (`Componentes.dc.html`'s "Agregar otra variedad"): an
+ * underline drawn as a 1 px `box-shadow`, never `text-decoration`, which the
+ * design never uses on a link-shaped button — scoped to this class alone, never
+ * every `<a>` (plan, "CSS"). */
 .boton--enlace {
   background: transparent;
+  border: 0;
   color: var(--acento);
   height: auto;
   padding: 0;
   font-size: 15px;
-  text-decoration: underline;
+  text-decoration: none;
+  box-shadow: 0 1px 0 var(--acento);
+  cursor: pointer;
+}
+
+/* `Insignia` (plan "Components"): the one pill for a short, lowercase label.
+ * `neutro` is the superficie tone; every other tone is the single accent, never
+ * a state color of its own (README, accessibility rule 1). */
+.insignia {
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--superficie);
+  color: var(--tinta2);
+  padding: 3px 9px;
+  border-radius: var(--radio-pildora);
+}
+
+.insignia--acento {
+  background: var(--acento-suave);
+  color: var(--acento);
+}
+
+.insignia--deuda {
+  background: var(--deuda-fondo);
+  color: var(--deuda);
+}
+
+.insignia--critico {
+  background: var(--critico);
+  color: var(--critico-texto);
+}
+
+/* `SelectorPago` (plan "Components"; `Componentes.dc.html`'s own demo): the
+ * segmented control that replaces the native payment radio fieldset. */
+.selector-pago {
+  display: flex;
+  gap: 5px;
+  background: var(--papel);
+  border-radius: var(--radio-pildora);
+  padding: 4px;
+}
+
+.selector-pago__opcion {
+  flex: 1;
+  text-align: center;
+  padding: 11px 0;
+  border: 0;
+  border-radius: var(--radio-pildora);
+  background: transparent;
+  color: var(--tinta2);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.selector-pago__opcion--activa {
+  background: var(--superficie);
+  color: var(--tinta);
+  font-weight: 600;
+}
+
+.selector-pago__opcion[aria-disabled='true'] {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.selector-pago__ayuda {
+  display: block;
+  font-size: 13px;
+  color: var(--deuda);
+  margin-top: 12px;
 }
 
 /* The dim backdrop is a pseudo-element, not the overlay's own background, so its
@@ -854,9 +955,47 @@
   overflow-y: auto;
 }
 
-/* `Ventas`: the period tabs (Hoy/Semana/Mes/Fechas, `sales.md`), the list and each
- * sale's row. `.fila-venta` mirrors `.fila-gasto`'s shape (a tappable row, same
- * height and border), just with its own four columns. */
+/* `Ventas` (`Ventas.dc.html`/`VentasCompu.dc.html`, plan "sales-list"): the
+ * header's title/tabs/range-and-total, and each sale's stacked row. `.fila-venta`
+ * is a tappable row: date, name/VIP/varieties, a chevron (`Icono`), and the
+ * amount with "te debe" under it only when the API's `still_owing` says so
+ * (never derived here). */
+.ventas__cabecera {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-md);
+}
+
+/* `Pestanas` (plan "Components"): a plain text tab list, an underline via
+ * `box-shadow` on the active one, no pill. Each tab is `.boton--enlace` (`Boton`'s
+ * own class, which already resets `border`/`background`) — `.pestanas__opcion`
+ * only overrides colour/`text-decoration`/weight/`box-shadow`, never a reset of
+ * its own (review finding: `border`/`background` may be reset only by `Boton`'s
+ * classes). */
+.pestanas {
+  display: flex;
+  align-items: baseline;
+  gap: var(--espacio-xl);
+  font-size: 15px;
+}
+
+.pestanas__opcion {
+  color: var(--tinta2);
+  text-decoration: none;
+  font-weight: 400;
+  box-shadow: none;
+}
+
+.pestanas__opcion--activa {
+  color: var(--tinta);
+  font-weight: 600;
+  box-shadow: 0 2px 0 var(--tinta);
+}
+
+/* `Inicio`'s own period tabs (`panel.ts`'s `Hoy/Semana/Mes`), unrelated to
+ * `Ventas`' `Pestanas` above and out of this subtask's scope — restored after
+ * this branch had accidentally renamed/deleted them out from under `Inicio.tsx`,
+ * which still renders them (review finding, spec-scope). */
 .periodos {
   display: flex;
   gap: var(--espacio-sm);
@@ -887,8 +1026,20 @@
 
 .ventas__resumen {
   display: flex;
-  flex-direction: column;
-  gap: var(--espacio-xs);
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--espacio-md);
+}
+
+.ventas__rango {
+  font-size: 15px;
+  color: var(--tinta2);
+}
+
+.ventas__total {
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.04em;
 }
 
 .lista-ventas {
@@ -917,11 +1068,19 @@
   color: var(--tinta2);
 }
 
-.fila-venta__cliente {
+.fila-venta__cuerpo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fila-venta__nombre {
   display: flex;
   align-items: center;
   gap: 7px;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
 }
 
@@ -931,15 +1090,61 @@
 }
 
 .fila-venta__detalle {
-  flex: 1;
-  min-width: 0;
   font-size: 13px;
   color: var(--tinta2);
 }
 
+/* Phone (`Ventas.dc.html`): name and grams share one line. Computer
+ * (`VentasCompu.dc.html`, 900px+ below): grams move into their own column, so
+ * this line becomes names only — both text nodes stay in the DOM; only the
+ * breakpoint decides which one shows, never a second grams sum. */
+.fila-venta__detalle--nombre {
+  display: none;
+}
+
+.fila-venta__gramos {
+  display: none;
+}
+
 .fila-venta__monto {
-  font-size: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+}
+
+.fila-venta__cifra {
+  font-size: 17px;
   font-weight: 600;
+}
+
+.fila-venta__te-debe {
+  font-size: 12px;
+}
+
+.fila-venta > svg {
+  flex-shrink: 0;
+  color: var(--tenue);
+}
+
+/* `VentaDetalle` (`VentaDetalle.dc.html`): the total's own label and the summary
+ * line of grams · customer · payment underneath it. */
+.venta-detalle__resumen {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.venta-detalle__subtitulo {
+  font-size: 14px;
+  color: var(--tinta2);
+}
+
+.venta-detalle__encabezado-lineas {
+  display: block;
+  font-size: 14px;
+  color: var(--tinta2);
+  margin-bottom: var(--espacio-xs);
 }
 
 /* `VentaDetalle`: each line's rule badge next to its variety, same pill shape as
@@ -947,30 +1152,83 @@
 .venta-detalle__lineas {
   display: flex;
   flex-direction: column;
-  gap: var(--espacio-sm);
 }
 
+/* Each line is two rows (`VentaDetalle.dc.html`): the name and its grams as a
+ * large figure, then its price per gram, `ReglaInsignia` and the line total. */
 .venta-detalle__linea {
   display: flex;
-  align-items: center;
-  gap: var(--espacio-sm);
+  flex-direction: column;
+  gap: 7px;
   padding: var(--espacio-sm) 0;
   border-bottom: 1px solid var(--linea);
+}
+
+.venta-detalle__linea-superior {
+  display: flex;
+  align-items: baseline;
+  gap: var(--espacio-sm);
 }
 
 .venta-detalle__variedad {
   flex: 1;
   min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 7px;
+  font-size: 18px;
   font-weight: 600;
 }
 
-.venta-detalle__gramos,
+.venta-detalle__gramos {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+}
+
+.venta-detalle__linea-inferior {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-xs);
+}
+
 .venta-detalle__precio {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--tinta2);
+}
+
+/* The shipping row and the final Total row, right under the lines, same border
+ * rhythm; the last row (the Total) carries no bottom border. */
+.venta-detalle__renglon {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-sm);
+  padding: 13px 0;
+  border-bottom: 1px solid var(--linea);
+  font-size: 16px;
+}
+
+.venta-detalle__renglon--total {
+  border-bottom: 0;
+}
+
+.venta-detalle__renglon-monto {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.venta-detalle__renglon--total .venta-detalle__renglon-monto {
+  font-size: 20px;
+}
+
+.venta-detalle__nota {
+  display: block;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.venta-detalle__acciones {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 /* `Inicio`, now the panel (`results.md`): the "Vendiste..." figure, Ganancia/Caja
@@ -1063,6 +1321,8 @@
 }
 
 .venta-detalle__total {
+  margin-left: auto;
+  font-size: 18px;
   font-weight: 600;
 }
 
@@ -1092,6 +1352,299 @@
 .venta-guardada__texto {
   font-size: 15px;
   font-weight: 500;
+}
+
+/* `NuevaVenta` (plan, "Phone layout"): a flex column of `min-height: 100dvh`; the
+ * body scrolls, the footer (total + save button, grouped here with Pago as
+ * `.nueva-venta__resumen`) is the last child, never fixed or sticky.
+ *
+ * `NuevaVentaCompu` (plan, "Computer"): at `min-width: 900px`,
+ * `.nueva-venta__disposicion` turns into the design's own row —
+ * `NuevaVentaCompu.dc.html`'s lines on the left, Total/Pago/"Guardá la venta"
+ * in a right-hand aside — the same `flex-wrap` switch `Inicio`'s own
+ * `.panel-dos-columnas` already makes, not a pathname check or a second
+ * component. */
+.nueva-venta {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.nueva-venta__disposicion {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.nueva-venta__cuerpo {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: var(--espacio-lg) var(--margen-pantalla);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-lg);
+  min-width: 0;
+}
+
+.nueva-venta__resumen {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.nueva-venta__pie {
+  flex: 0 0 auto;
+  padding: var(--espacio-lg) var(--margen-pantalla) var(--espacio-xxl);
+  border-top: 1px solid var(--linea);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-xs);
+}
+
+.nueva-venta__pie .boton {
+  margin-top: var(--espacio-md);
+}
+
+@media (min-width: 900px) {
+  .nueva-venta__disposicion {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: var(--espacio-xl);
+    padding: var(--espacio-xl) var(--espacio-xxl);
+  }
+
+  .nueva-venta__cuerpo {
+    flex: 999 1 460px;
+    overflow-y: visible;
+    padding: 0;
+  }
+
+  .nueva-venta__resumen {
+    flex: 1 1 290px;
+    max-width: 360px;
+    position: sticky;
+    top: var(--espacio-xl);
+    background: var(--superficie);
+    border-radius: var(--radio-panel-grande);
+    padding: var(--espacio-xl);
+    gap: var(--espacio-lg);
+  }
+
+  .nueva-venta__pie {
+    padding: 0;
+    border-top: 1px solid var(--linea);
+    padding-top: var(--espacio-lg);
+  }
+}
+
+.fecha-pildora {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.fecha-pildora__input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.fecha-pildora__texto {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 15px;
+  color: var(--tinta2);
+  pointer-events: none;
+}
+
+/* The customer row (`NuevaVenta.dc.html:19-27`): the whole row is one tappable
+ * `Boton` row (name, phone, "Cambiar") — not a dead name next to a separate
+ * link, which is what this screen drew before this diff. */
+.nueva-venta__cliente {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+  min-height: var(--alto-tocable);
+  width: 100%;
+}
+
+.nueva-venta__cliente-texto {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.nueva-venta__cliente-telefono {
+  font-size: 14px;
+  color: var(--tinta2);
+}
+
+.nueva-venta__cliente-cambiar {
+  font-size: 15px;
+  color: var(--acento);
+  box-shadow: 0 1px 0 var(--acento);
+}
+
+.nueva-venta__lineas {
+  display: flex;
+  flex-direction: column;
+}
+
+.nueva-venta__linea {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-sm);
+  padding: var(--espacio-lg) 0;
+  border-bottom: 1px solid var(--linea);
+}
+
+/* `Boton`'s `row` variant (plan "Components"): a full-width, left-aligned,
+ * stacked-content tappable row — a closed sale line here, any future tappable
+ * list row elsewhere. The one place that resets a row-shaped button's border,
+ * background and appearance (invariants: "only `Boton`'s classes"). */
+.boton--fila {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-xs);
+  width: 100%;
+  padding: var(--espacio-lg) 0;
+  border: 0;
+  border-bottom: 1px solid var(--linea);
+  background: none;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.nueva-venta__linea-encabezado {
+  display: flex;
+  align-items: baseline;
+  gap: var(--espacio-md);
+}
+
+.nueva-venta__linea-nombre {
+  flex: 1;
+  min-width: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.nueva-venta__linea-gramos {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+}
+
+.nueva-venta__linea-detalle {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-sm);
+}
+
+.nueva-venta__linea-preciogramo {
+  font-size: 14px;
+  color: var(--tinta2);
+}
+
+.nueva-venta__linea-total {
+  margin-left: auto;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.nueva-venta__linea-opciones {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+}
+
+.nueva-venta__fila-dato {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-md);
+  padding: var(--espacio-sm) 0;
+  border-bottom: 1px solid var(--linea);
+}
+
+.nueva-venta__pago {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-sm);
+}
+
+/* "Elegí el cliente" (`NuevaVentaCliente.dc.html`): a full-bleed bottom sheet,
+ * rounded only at the top, with its own drag handle — unlike `.capa__contenido`
+ * (`Gastos.tsx`'s own sheet), which stays a centered, fully-rounded card. Scoped
+ * to this screen alone, so `Gastos`' sheet keeps its own shape (plan, invariants:
+ * "no sales screen imports... from a screen outside ventas/" cuts both ways —
+ * this doesn't reach back into Gastos' either). */
+.cliente-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.cliente-sheet::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--tinta);
+  opacity: 0.4;
+}
+
+.cliente-sheet__contenido {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  max-height: 88vh;
+  overflow-y: auto;
+  background: var(--papel);
+  border-radius: var(--radio-hoja) var(--radio-hoja) 0 0;
+  padding: var(--espacio-lg) var(--margen-pantalla) var(--espacio-xxl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-md);
+}
+
+.cliente-sheet__manija {
+  align-self: center;
+  width: 40px;
+  height: 4px;
+  border-radius: var(--radio-pildora);
+  background: var(--linea);
+}
+
+.cliente-sheet__encabezado {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-md);
+}
+
+.campo--buscar {
+  position: relative;
+}
+
+.campo--buscar__icono {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  display: flex;
+  color: var(--tinta2);
+  pointer-events: none;
+}
+
+.campo--buscar__input {
+  padding-left: 42px;
 }
 
 .venta-guardada__deshacer {
@@ -1399,5 +1952,53 @@
   .panel-dos-columnas > * {
     flex: 1;
     min-width: 0;
+  }
+
+  /* `VentasCompu`: title, range and total sit together on one row, the tabs
+   * pushed to its far end (plan, subtask "sales-list" — "Header"). */
+  .ventas__cabecera {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: flex-start;
+    gap: var(--espacio-lg);
+  }
+
+  .ventas__cabecera .encabezado__titulo {
+    order: 1;
+  }
+
+  .ventas__cabecera .ventas__resumen {
+    order: 2;
+    gap: var(--espacio-lg);
+  }
+
+  .ventas__cabecera .pestanas {
+    order: 3;
+    gap: var(--espacio-lg);
+    margin-left: auto;
+  }
+
+  .ventas__total {
+    font-size: 26px;
+    letter-spacing: -0.035em;
+  }
+
+  /* `VentasCompu.dc.html`'s row: grams in their own right-aligned column,
+   * the variety-names line without them. */
+  .fila-venta__detalle--combinada {
+    display: none;
+  }
+
+  .fila-venta__detalle--nombre {
+    display: block;
+  }
+
+  .fila-venta__gramos {
+    display: block;
+    width: 56px;
+    text-align: right;
+    font-size: 15px;
+    color: var(--tinta2);
   }
 }

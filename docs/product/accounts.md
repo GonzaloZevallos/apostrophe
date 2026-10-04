@@ -195,7 +195,16 @@ Success criteria, removing a business:
      - the removed users' emails' login-attempt history.
   4. Commits and reports success only if the exported counts equal the deleted counts for every exported kind.
   5. Reports the business name, the file's path, and the counts exported and deleted.
-- **Any failure before the commit** deletes nothing: writing or reading back the file, a count mismatch, or a database busy with other businesses' writes. The operator runs it again. A record created by the leaving business's own users between export and delete makes the counts differ, and the delete is blocked rather than losing it.
+- **Any failure before the commit** deletes nothing: writing or reading back the file, a count mismatch, or a database busy with other businesses' writes. The operator runs it again.
+  - It also removes the export file the run created, whether it was written fully or only partly, so no file is left behind (ADR-0015). This includes a write that fails after the file was already created on disk, and an interrupted run.
+  - A record created by the leaving business's own users between export and delete makes the counts differ, and the delete is blocked rather than losing it.
+- **Commit outcome unknown**: the commit itself fails in a way that leaves it unknown whether it was applied (for example, the connection to the database drops during the commit).
+  - The commit is one transaction: either every row of the business is gone or every row is still there. There is no partial removal.
+  - The command keeps the export file, since it may be the only copy left of the business's books. It never says "nothing deleted" and never reports success. It exits with a failure status.
+  - It prints: "Commit outcome unknown; export kept at <path>. Run with --dry-run and the same email before anything else." With it: the business name and the counts exported, never counts deleted.
+  - **Checking, then running again**: a rerun is allowed, with no lock or stored marker. The dry run with the same email tells which way it went:
+    - "no business for that email": the removal happened. The kept file is the export to hand over.
+    - The business is named with its counts: nothing was deleted. A real run is then an ordinary run. It writes a new file under a new name, never overwriting the kept one. Only the newest file is handed over. The operator deletes the kept, out-of-date file by hand, since it holds personal data; the command never touches a file it did not create in the same run.
 - **Other businesses** keep using the app during the run, are never slowed on purpose and are never told anything.
 - **The export file**:
   - one JSON file per real run, owner-only permissions, written to the server's file system and never anywhere the app serves;
@@ -395,6 +404,8 @@ Success criteria, removing a business:
   - an unknown email;
   - a wrong name, a cancel or no answer at the prompt (and no file);
   - a forced failure writing the file, reading it back, at the count check, or during the delete.
+  - After every forced failure before the commit, no export file is left in the export directory. This includes a failure of the real file adapter after the file was created on disk, partway through writing or syncing it.
+- **Commit outcome unknown**: a forced commit failure whose outcome is unknown keeps the export file, prints the fixed "Commit outcome unknown" line with the path, never prints "nothing deleted" or success, and exits with a failure status. A dry run afterwards answers "no business for that email" when the commit was applied, and names the business with unchanged counts when it was not.
 - **File (criterion 8)**: owner-only permissions; an existing file of the same name is never overwritten; the name carries the business name, date and time.
 - **No echo (criterion 13)**: the captured terminal output and logs of both modes hold no email, customer name, phone number or amount, only the business name, the path and counts.
 - **Clean slate (criterion 13)**: after removal, a removed user's token answers 401, and a new-business invitation accepted with the same email opens an empty business with a clean brake count.
@@ -432,6 +443,7 @@ Success criteria, removing a business:
 - Removing a business from the app.
 - Checking that every user agreed to the removal.
 - Removing the export file from the server after handing it over.
+- Blocking or marking a rerun after a commit whose outcome is unknown; the dry run is the check.
 - Roles within a business.
 - Offline use; an install walkthrough on iOS or Android.
 - TLS on the home network, including local certificates: the published installation gets TLS from Render (ADR-0016).

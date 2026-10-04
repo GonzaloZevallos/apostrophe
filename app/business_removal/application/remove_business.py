@@ -12,7 +12,6 @@ its own.
 
 from __future__ import annotations
 
-import signal
 from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
@@ -20,9 +19,11 @@ from typing import Protocol
 
 from app.business_removal.application.export_file import ExportFile
 from app.business_removal.application.schema_rows import SchemaRows
+from app.business_removal.application.signals import blocked_signals
 from app.business_removal.domain.classification import (
     delete_order,
     has_business_id,
+    other_type_columns,
     secret_columns,
     unowned_tables,
 )
@@ -41,9 +42,6 @@ from app.shared.transaction import Transaction
 
 Clock = Callable[[], datetime]
 
-# Blocked around the single `commit()` call, so a signal cannot land between the
-# write and the flag that says it happened (the plan's invariant).
-_BLOCKED_SIGNALS = {signal.SIGINT, signal.SIGHUP, signal.SIGTERM}
 
 def withheld_business_tables(schema: Schema) -> tuple[str, ...]:
     """`WITHHELD_TABLES` that carry their own `business_id`, sorted (docs/adr/0019):
@@ -64,6 +62,10 @@ CONFIRMATION_FAILED_MESSAGE = "Nothing deleted: the typed name did not match."
 INTERRUPTED_MESSAGE = "Interrupted: nothing deleted."
 BUSY_MESSAGE = "Database busy: nothing deleted. Run it again."
 FAILED_MESSAGE = "Failed: nothing deleted."
+UNKNOWN_OUTCOME_MESSAGE = (
+    "Commit outcome unknown; export kept at {path}. "
+    "Run with --dry-run and the same email before anything else."
+)
 
 
 class Confirm(Protocol):
@@ -148,7 +150,11 @@ def remove_business(
     runs inside the one try below: no exception, from any port, leaves a traceback
     on the way out (the plan's invariant)."""
     committed = False
+    commit_attempted = False
     path: Path | None = None
+    business = None
+    exported_ids: dict[str, frozenset[int]] = {}
+    owned: tuple[str, ...] = ()
     try:
         schema = schema_rows.schema()
         refusal = _schema_refusal(schema)
@@ -188,12 +194,11 @@ def remove_business(
         if mismatches:
             raise RecordsChanged()
 
-        signal.pthread_sigmask(signal.SIG_BLOCK, _BLOCKED_SIGNALS)
-        try:
+        with blocked_signals():
+            export_file.keep()
+            commit_attempted = True
             transaction.commit()
             committed = True
-        finally:
-            signal.pthread_sigmask(signal.SIG_UNBLOCK, _BLOCKED_SIGNALS)
 
         output.line(terminal_name(business.name))
         for table_name in owned:
@@ -220,9 +225,33 @@ def remove_business(
             except BaseException:
                 pass
             return 1
-        transaction.rollback()
-        if path is not None:
-            export_file.remove(path)
+        if commit_attempted:
+            # The commit itself raised: whether it was applied is unknown, so
+            # nothing here may say "nothing deleted" or report success (PM's
+            # ruling). The file is kept -- it may be the only copy left.
+            try:
+                if business is not None:
+                    output.line(terminal_name(business.name))
+                for table_name in owned:
+                    exported_count = len(exported_ids.get(table_name, frozenset()))
+                    output.line(f"{table_name}: exported {exported_count}")
+                output.line(UNKNOWN_OUTCOME_MESSAGE.format(path=path))
+            except SystemExit:
+                raise
+            except BaseException:
+                pass
+            return 1
+        with blocked_signals():
+            try:
+                export_file.discard()
+            except BaseException:
+                pass
+        try:
+            transaction.rollback()
+        except SystemExit:
+            raise
+        except BaseException:
+            pass
         output.line(failure_message(exc))
         return 1
 
@@ -235,6 +264,10 @@ def _schema_refusal(schema: Schema) -> str | None:
     if secrets:
         names = ", ".join(f"{table}.{column}" for table, column in secrets)
         return f"Refusing: column(s) that look like a secret: {names}"
+    other_types = other_type_columns(schema)
+    if other_types:
+        names = ", ".join(f"{table}.{column}" for table, column in other_types)
+        return f"Refusing: column(s) of a type the export cannot write: {names}"
     unlabelled = unlabelled_tables(schema)
     if unlabelled:
         return f"Refusing: table(s) with no name or declared label: {', '.join(sorted(unlabelled))}"

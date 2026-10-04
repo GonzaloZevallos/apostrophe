@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import io
 import json
+import re
 import sqlite3
 import stat
 import unicodedata
@@ -19,20 +20,18 @@ from typing import TextIO, cast
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.engine import Engine
-from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
 from app.accounts.adapters.sql_accounts import SqlAccounts
 from app.accounts.application.reset_password import issue_reset_link
 from app.accounts.domain.invitation import token_digest
-from app.business_removal.adapters.cli import _BusyTranslatingSchemaRows, _looks_locked, main
-from app.business_removal.application.remove_business import StorageBusy
-from app.business_removal.application.schema_rows import DeletedIds
-from app.business_removal.domain.business_ref import BusinessRef
-from app.business_removal.domain.schema import Schema
+from app.business_removal.adapters.cli import main
+from app.business_removal.application.remove_business import BUSY_MESSAGE
+from app.clock import business_day, system_clock
 from app.db import make_engine
 from app.main import create_app
 from app.settings import Settings
+from tests.business_removal.adapters.seed import row_counts, seed, set_env
 from tests.conftest import PASSWORD, TEST_HASHER, invite
 from tests.fakes.telegram import FakeTelegram
 
@@ -81,142 +80,6 @@ def _accept(client: TestClient, engine: Engine, name: str, email: str) -> str:
     return token
 
 
-def _seed(db_path: Path) -> tuple[str, str]:
-    """Business B (staying) opened first, with a customer of its own; business A
-    (leaving, the newest) opened second, with one of everything the export holds:
-    a customer, a variety, a price entry, a stock entry, a sale with a line and a
-    note, a payment, an expense category and expense, and catalog settings. One
-    failed login for the leaving business's email leaves a `login_guard` row, so
-    the clean slate can be checked afterwards. Returns both session tokens."""
-    url = f"sqlite:///{db_path}"
-    engine = make_engine(url)
-    settings = Settings(secret_key="test-secret", database_url=url)
-    app = create_app(
-        settings,
-        engine=engine,
-        hasher=TEST_HASHER,
-        telegram=FakeTelegram(),
-        upkeep_ticker=False,
-    )
-    with TestClient(app) as client:
-        token_b = _accept(client, engine, "Otro Negocio", EMAIL_STAYING)
-        client.headers["Authorization"] = f"Bearer {token_b}"
-        other_customer = client.post(
-            "/customers", json={"name": "Cliente de Otro Negocio", "phone": "+5491100000000"}
-        )
-        assert other_customer.status_code == 201, other_customer.text
-        del client.headers["Authorization"]
-
-        token_a = _accept(client, engine, "La Huerta", EMAIL_LEAVING)
-        client.headers["Authorization"] = f"Bearer {token_a}"
-
-        customer = client.post(
-            "/customers", json={"name": CUSTOMER_NAME, "phone": PHONE, "vip": False}
-        )
-        assert customer.status_code == 201, customer.text
-        customer_id = customer.json()["id"]
-
-        variety = client.post("/varieties", json={"name": "Lavanda"})
-        assert variety.status_code == 201, variety.text
-        variety_id = variety.json()["id"]
-
-        price = client.post(
-            f"/varieties/{variety_id}/prices",
-            json={"effective_from": "2026-01-01", "list_price": 5000},
-        )
-        assert price.status_code == 201, price.text
-
-        entry = client.post(
-            "/stock/entries",
-            json={
-                "variety_id": variety_id,
-                "origin": "purchase",
-                "grams": 100,
-                "total_cost": 300000,
-                "note": "stock seed",
-            },
-        )
-        assert entry.status_code == 201, entry.text
-
-        sale = client.post(
-            "/sales",
-            json={
-                "customer_id": customer_id,
-                "shipping_charged": SHIPPING_CHARGED,
-                "note": SALE_NOTE,
-                "payment": "owing",
-                "lines": [{"variety_id": variety_id, "grams": 10, "special_price": 6000}],
-            },
-        )
-        assert sale.status_code == 201, sale.text
-
-        payment = client.post(
-            f"/customers/{customer_id}/payments",
-            json={"paid_on": "2026-10-01", "amount": PAYMENT_AMOUNT, "method": "cash"},
-        )
-        assert payment.status_code == 201, payment.text
-
-        category = client.post("/expense-categories", json={"name": "Servicios"})
-        assert category.status_code == 201, category.text
-        category_id = category.json()["id"]
-
-        expense = client.post(
-            "/expenses",
-            json={
-                "spent_on": "2026-10-02",
-                "category_id": category_id,
-                "amount": EXPENSE_AMOUNT,
-                "detail": EXPENSE_DETAIL,
-            },
-        )
-        assert expense.status_code == 201, expense.text
-
-        header_footer = client.put(
-            "/catalog/header-footer",
-            json={"header": CATALOG_HEADER, "footer": CATALOG_FOOTER},
-        )
-        assert header_footer.status_code == 200, header_footer.text
-
-        attributes = client.put(
-            f"/catalog/varieties/{variety_id}",
-            json={"shown": True, "emoji": "\U0001f33f", "indica_share": 50, "aroma": "floral"},
-        )
-        assert attributes.status_code == 200, attributes.text
-
-        threshold = client.put(
-            f"/stock/varieties/{variety_id}/threshold", json={"grams": LOW_STOCK_THRESHOLD}
-        )
-        assert threshold.status_code == 200, threshold.text
-
-        failed_login = client.post(
-            "/auth/login", json={"email": EMAIL_LEAVING, "password": "wrong password"}
-        )
-        assert failed_login.status_code == 401, failed_login.text
-
-        del client.headers["Authorization"]
-    engine.dispose()
-    return token_a, token_b
-
-
-def _env(
-    monkeypatch: pytest.MonkeyPatch, db_path: Path, export_dir: Path
-) -> None:
-    monkeypatch.setenv("APOSTROPHE_SECRET_KEY", "cli-secret")
-    monkeypatch.setenv("APOSTROPHE_DATABASE_URL", f"sqlite:///{db_path}")
-    monkeypatch.setenv("APOSTROPHE_EXPORT_DIR", str(export_dir))
-
-
-def _row_counts(db_path: Path, table: str, business_id: int) -> int:
-    connection = sqlite3.connect(db_path)
-    try:
-        column = "id" if table == "business" else "business_id"
-        query = f"SELECT COUNT(*) FROM {table} WHERE {column} = ?"
-        cursor = connection.execute(query, (business_id,))
-        return int(cursor.fetchone()[0])
-    finally:
-        connection.close()
-
-
 def _all_table_names(db_path: Path) -> list[str]:
     """Every table with its own `business_id` column (`business` itself is checked
     separately, by `id`; `invitation` and `login_guard` have no `business_id` of
@@ -242,8 +105,8 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
 ) -> None:
     db_path = tmp_path / "apostrophe.db"
     export_dir = tmp_path / "exports"
-    _seed(db_path)
-    _env(monkeypatch, db_path, export_dir)
+    seed(db_path)
+    set_env(monkeypatch, db_path, export_dir)
 
     with sqlite3.connect(db_path) as connection:
         connection.row_factory = sqlite3.Row
@@ -254,9 +117,9 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
             "SELECT id FROM business WHERE name = 'La Huerta'"
         ).fetchone()["id"]
     all_tables = _all_table_names(db_path)
-    other_before = {name: _row_counts(db_path, name, other_business_id) for name in all_tables}
+    other_before = {name: row_counts(db_path, name, other_business_id) for name in all_tables}
     leaving_before = {
-        name: _row_counts(db_path, name, leaving_business_id) for name in all_tables
+        name: row_counts(db_path, name, leaving_business_id) for name in all_tables
     }
     assert other_before["customer"] == 1  # the other business's own seed
 
@@ -292,6 +155,9 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
     assert stock_entry["origin"] == "purchase"
     assert stock_entry["total_cost"] == 300000
     assert stock_entry["note"] == "stock seed"
+    # `seed()` never passes a `date`, so the entry is recorded on the business day
+    # the entry was made -- the same one `main`'s own real clock sees now.
+    assert stock_entry["entry_date"] == business_day(system_clock()).isoformat()
 
     price_entry = kinds["price_entry"][0]
     assert price_entry["variety_id"] == variety_ref
@@ -330,6 +196,8 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
     assert expense["detail"] == EXPENSE_DETAIL
     assert expense["category_id"] == {"id": categories["Servicios"]["id"], "name": "Servicios"}
 
+    sale_line_total = sale_line["line_total"]
+
     dumped = json.dumps(document)
     assert "password_hash" not in dumped
     assert "token_digest" not in dumped
@@ -340,10 +208,10 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
     # business was exported, nothing more and nothing less), and 0 rows remain.
     for kind, records in kinds.items():
         assert len(records) == leaving_before.get(kind, 0)
-        assert _row_counts(db_path, kind, business_id) == 0
+        assert row_counts(db_path, kind, business_id) == 0
 
     # the other business's rows, in every table, are exactly as they were
-    other_after = {name: _row_counts(db_path, name, other_business_id) for name in all_tables}
+    other_after = {name: row_counts(db_path, name, other_business_id) for name in all_tables}
     assert other_after == other_before
 
     output = stdout.getvalue()
@@ -355,13 +223,32 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
         PHONE,
         SALE_NOTE,
         EXPENSE_DETAIL,
-        str(PAYMENT_AMOUNT),
-        str(EXPENSE_AMOUNT),
-        str(SHIPPING_CHARGED),
     ):
         assert secret not in output
         assert secret not in captured.out
         assert secret not in captured.err
+
+    # The export path (under `tmp_path`) can itself hold digits that would spoil a
+    # whole-number match below; it is not a secret amount, so it is scrubbed first,
+    # along with the raw `tmp_path` prefix.
+    export_path = str(files[0])
+    scrubbed_output = output.replace(export_path, "").replace(str(tmp_path), "")
+    scrubbed_out = captured.out.replace(export_path, "").replace(str(tmp_path), "")
+    scrubbed_err = captured.err.replace(export_path, "").replace(str(tmp_path), "")
+    for amount in (
+        PAYMENT_AMOUNT,
+        EXPENSE_AMOUNT,
+        SHIPPING_CHARGED,
+        5000,
+        300000,
+        6000,
+        sale_line_total,
+    ):
+        plain = re.compile(rf"(?<!\d){amount}(?!\d)")
+        grouped = re.compile(rf"(?<!\d){amount:,}(?!\d)".replace(",", r"\."))
+        for text in (scrubbed_output, scrubbed_out, scrubbed_err):
+            assert plain.search(text) is None
+            assert grouped.search(text) is None
 
 
 def test_the_other_business_still_reads_its_own_data_after_the_run(
@@ -369,8 +256,8 @@ def test_the_other_business_still_reads_its_own_data_after_the_run(
 ) -> None:
     db_path = tmp_path / "apostrophe.db"
     export_dir = tmp_path / "exports"
-    _token_a, token_b = _seed(db_path)
-    _env(monkeypatch, db_path, export_dir)
+    _token_a, token_b = seed(db_path)
+    set_env(monkeypatch, db_path, export_dir)
 
     assert main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=io.StringIO()) == 0
 
@@ -403,8 +290,8 @@ def test_removal_withholds_a_live_reset_link(
     own link is untouched."""
     db_path = tmp_path / "apostrophe.db"
     export_dir = tmp_path / "exports"
-    _seed(db_path)
-    _env(monkeypatch, db_path, export_dir)
+    seed(db_path)
+    set_env(monkeypatch, db_path, export_dir)
     url = f"sqlite:///{db_path}"
 
     with Session(make_engine(url)) as session:
@@ -438,8 +325,8 @@ def test_removal_withholds_a_live_reset_link(
         for word in dumped.replace('"', " ").split()
     )
 
-    assert _row_counts(db_path, "reset_link", document["business"]["id"]) == 0
-    assert _row_counts(db_path, "reset_link", other_business_id) == 1
+    assert row_counts(db_path, "reset_link", document["business"]["id"]) == 0
+    assert row_counts(db_path, "reset_link", other_business_id) == 1
 
 
 def test_a_dry_run_writes_no_file_and_deletes_nothing(
@@ -447,8 +334,8 @@ def test_a_dry_run_writes_no_file_and_deletes_nothing(
 ) -> None:
     db_path = tmp_path / "apostrophe.db"
     export_dir = tmp_path / "exports"
-    _seed(db_path)
-    _env(monkeypatch, db_path, export_dir)
+    seed(db_path)
+    set_env(monkeypatch, db_path, export_dir)
     stdout = io.StringIO()
 
     result = main([EMAIL_LEAVING, "--dry-run"], stdin=io.StringIO(""), stdout=stdout)
@@ -459,7 +346,7 @@ def test_a_dry_run_writes_no_file_and_deletes_nothing(
         business_id = connection.execute(
             "SELECT id FROM business WHERE name = 'La Huerta'"
         ).fetchone()[0]
-    assert _row_counts(db_path, "customer", business_id) == 1
+    assert row_counts(db_path, "customer", business_id) == 1
     output = stdout.getvalue()
     captured = capsys.readouterr()
     assert "La Huerta" in output
@@ -485,8 +372,8 @@ def test_an_unknown_email_changes_nothing(
 ) -> None:
     db_path = tmp_path / "apostrophe.db"
     export_dir = tmp_path / "exports"
-    _seed(db_path)
-    _env(monkeypatch, db_path, export_dir)
+    seed(db_path)
+    set_env(monkeypatch, db_path, export_dir)
 
     result = main(["nobody@example.com"], stdin=io.StringIO(""), stdout=io.StringIO())
 
@@ -499,8 +386,8 @@ def test_a_wrong_name_at_the_prompt_writes_no_file(
 ) -> None:
     db_path = tmp_path / "apostrophe.db"
     export_dir = tmp_path / "exports"
-    _seed(db_path)
-    _env(monkeypatch, db_path, export_dir)
+    seed(db_path)
+    set_env(monkeypatch, db_path, export_dir)
 
     result = main([EMAIL_LEAVING], stdin=io.StringIO("Not The Name\n"), stdout=io.StringIO())
 
@@ -510,7 +397,7 @@ def test_a_wrong_name_at_the_prompt_writes_no_file(
         business_id = connection.execute(
             "SELECT id FROM business WHERE name = 'La Huerta'"
         ).fetchone()[0]
-    assert _row_counts(db_path, "customer", business_id) == 1
+    assert row_counts(db_path, "customer", business_id) == 1
 
 
 def test_eof_at_the_prompt_writes_no_file(
@@ -518,8 +405,8 @@ def test_eof_at_the_prompt_writes_no_file(
 ) -> None:
     db_path = tmp_path / "apostrophe.db"
     export_dir = tmp_path / "exports"
-    _seed(db_path)
-    _env(monkeypatch, db_path, export_dir)
+    seed(db_path)
+    set_env(monkeypatch, db_path, export_dir)
 
     result = main([EMAIL_LEAVING], stdin=io.StringIO(""), stdout=io.StringIO())
 
@@ -532,8 +419,8 @@ def test_secure_delete_scrubs_the_removed_customers_bytes_from_the_database_file
 ) -> None:
     db_path = tmp_path / "apostrophe.db"
     export_dir = tmp_path / "exports"
-    _seed(db_path)
-    _env(monkeypatch, db_path, export_dir)
+    seed(db_path)
+    set_env(monkeypatch, db_path, export_dir)
 
     assert main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=io.StringIO()) == 0
 
@@ -548,8 +435,8 @@ def test_the_export_file_is_owner_only(
 ) -> None:
     db_path = tmp_path / "apostrophe.db"
     export_dir = tmp_path / "exports"
-    _seed(db_path)
-    _env(monkeypatch, db_path, export_dir)
+    seed(db_path)
+    set_env(monkeypatch, db_path, export_dir)
 
     assert main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=io.StringIO()) == 0
 
@@ -563,7 +450,7 @@ def test_a_table_added_later_by_raw_ddl_is_exported_with_a_name_reference_and_em
 ) -> None:
     db_path = tmp_path / "apostrophe.db"
     export_dir = tmp_path / "exports"
-    _seed(db_path)
+    seed(db_path)
     with sqlite3.connect(db_path) as connection:
         # A table added later needs its own `name` (or a declared label) like every
         # owned table does: that is `unlabelled_tables`'s own guard, proven over the
@@ -587,7 +474,7 @@ def test_a_table_added_later_by_raw_ddl_is_exported_with_a_name_reference_and_em
             (business_id, variety_id, "Puntos de Lavanda", 10),
         )
         connection.commit()
-    _env(monkeypatch, db_path, export_dir)
+    set_env(monkeypatch, db_path, export_dir)
     stdout = io.StringIO()
 
     dry = main([EMAIL_LEAVING, "--dry-run"], stdin=io.StringIO(""), stdout=stdout)
@@ -602,7 +489,7 @@ def test_a_table_added_later_by_raw_ddl_is_exported_with_a_name_reference_and_em
     loyalty = document["kinds"]["loyalty_point"]
     assert len(loyalty) == 1
     assert loyalty[0]["variety_id"] == {"id": variety_id, "name": "Lavanda"}
-    assert _row_counts(db_path, "loyalty_point", business_id) == 0
+    assert row_counts(db_path, "loyalty_point", business_id) == 0
 
 
 def test_a_secret_like_column_added_later_by_raw_ddl_refuses_both_modes(
@@ -610,11 +497,11 @@ def test_a_secret_like_column_added_later_by_raw_ddl_refuses_both_modes(
 ) -> None:
     db_path = tmp_path / "apostrophe.db"
     export_dir = tmp_path / "exports"
-    _seed(db_path)
+    seed(db_path)
     with sqlite3.connect(db_path) as connection:
         connection.execute("ALTER TABLE app_user ADD COLUMN bot_token_encrypted TEXT")
         connection.commit()
-    _env(monkeypatch, db_path, export_dir)
+    set_env(monkeypatch, db_path, export_dir)
     dry_stdout = io.StringIO()
     real_stdout = io.StringIO()
 
@@ -635,8 +522,8 @@ def test_a_clean_slate_lets_the_same_email_open_a_new_business(
     # removes (EMAIL_LEAVING) is the newest, as the brief's clean-slate scenario asks.
     db_path = tmp_path / "apostrophe.db"
     export_dir = tmp_path / "exports"
-    token_a, _token_b = _seed(db_path)
-    _env(monkeypatch, db_path, export_dir)
+    token_a, _token_b = seed(db_path)
+    set_env(monkeypatch, db_path, export_dir)
 
     with sqlite3.connect(db_path) as connection:
         old_user_id = connection.execute(
@@ -694,8 +581,8 @@ def test_a_refused_export_directory_ends_in_a_fixed_message_with_no_traceback(
     db_path = tmp_path / "apostrophe.db"
     export_dir = tmp_path / "exports"
     export_dir.mkdir(mode=0o755)
-    _seed(db_path)
-    _env(monkeypatch, db_path, export_dir)
+    seed(db_path)
+    set_env(monkeypatch, db_path, export_dir)
     stdout = io.StringIO()
 
     result = main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=stdout)
@@ -727,7 +614,7 @@ def test_an_nfd_typed_name_matches_through_main(
     with TestClient(app) as client:
         _accept(client, engine, stored_name, "cafe@example.com")
     engine.dispose()
-    _env(monkeypatch, db_path, export_dir)
+    set_env(monkeypatch, db_path, export_dir)
     typed_nfd = unicodedata.normalize("NFD", stored_name) + "\n"
 
     result = main(["cafe@example.com"], stdin=io.StringIO(typed_nfd), stdout=io.StringIO())
@@ -757,8 +644,8 @@ def test_a_broken_pipe_on_the_report_keeps_the_commit_through_main(
 
     db_path = tmp_path / "apostrophe.db"
     export_dir = tmp_path / "exports"
-    _seed(db_path)
-    _env(monkeypatch, db_path, export_dir)
+    seed(db_path)
+    set_env(monkeypatch, db_path, export_dir)
     with sqlite3.connect(db_path) as connection:
         business_id = connection.execute(
             "SELECT id FROM business WHERE name = 'La Huerta'"
@@ -771,48 +658,66 @@ def test_a_broken_pipe_on_the_report_keeps_the_commit_through_main(
 
     assert result == 1
     assert "nothing deleted" not in stdout.text.lower()
-    assert _row_counts(db_path, "customer", business_id) == 0  # the delete still committed
+    assert row_counts(db_path, "customer", business_id) == 0  # the delete still committed
     files = list(export_dir.glob("*.json"))
     assert len(files) == 1
     json.loads(files[0].read_text())  # the export file still parses
 
 
-class _RaisingInner:
-    """A `SchemaRows` whose `schema()` raises whatever it is built with; every
-    other method is unreachable in these tests, so it stays unimplemented."""
+class _LocksWhileConfirming:
+    """`stdin`, as `main` sees it, for the one moment it calls `readline()` to read
+    the operator's typed name. At that moment this opens a second, independent
+    `sqlite3` connection on the same file and takes `BEGIN EXCLUSIVE`, so the
+    primary connection's next statement blocks until `busy_timeout` (5 s) gives up
+    with SQLite's own "database is locked" -- the real condition
+    `_BusyTranslatingSchemaRows`/`_looks_locked` (both private to `cli.py`, so this
+    test only ever calls `main`) turn into `StorageBusy`. The lock is released in
+    `finally`, from the test, however `main` ends."""
 
-    def __init__(self, exc: Exception) -> None:
-        self._exc = exc
+    def __init__(self, db_path: Path) -> None:
+        self._db_path = db_path
+        self.locker: sqlite3.Connection | None = None
 
-    def schema(self) -> Schema:
-        raise self._exc
+    def readline(self) -> str:
+        self.locker = sqlite3.connect(self._db_path)
+        self.locker.execute("BEGIN EXCLUSIVE")
+        return "La Huerta\n"
 
-    def business_of(self, email: str) -> BusinessRef | None:
-        raise NotImplementedError
-
-    def rows(self, table: str, business_id: int) -> list[dict[str, object]]:
-        raise NotImplementedError
-
-    def withheld_count(self, table: str, business_id: int) -> int:
-        raise NotImplementedError
-
-    def delete_business(self, business_id: int, order: tuple[str, ...]) -> DeletedIds:
-        raise NotImplementedError
+    def release(self) -> None:
+        if self.locker is not None:
+            self.locker.rollback()
+            self.locker.close()
+            self.locker = None
 
 
-def test_busy_translating_schema_rows_turns_a_locked_database_into_storage_busy() -> None:
-    # Closes the long-open row that `StorageBusy` is never raised by a real port:
-    # this wrapper is what makes a real SQLite "database is locked" reach the use
-    # case as `StorageBusy`, not a generic failure -- and leaves any other
-    # `OperationalError` alone.
-    locked = OperationalError("SELECT 1", {}, Exception("database is locked"))
-    with pytest.raises(StorageBusy):
-        _BusyTranslatingSchemaRows(_RaisingInner(locked)).schema()
+def test_a_locked_database_ends_on_the_busy_line_through_main(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Slow on purpose: a real "database is locked" only surfaces once SQLite's own
+    # 5 s `busy_timeout` gives up. No hook, no setting shortens it (the brief).
+    db_path = tmp_path / "apostrophe.db"
+    export_dir = tmp_path / "exports"
+    seed(db_path)
+    set_env(monkeypatch, db_path, export_dir)
+    with sqlite3.connect(db_path) as connection:
+        leaving_id = connection.execute(
+            "SELECT id FROM business WHERE name = 'La Huerta'"
+        ).fetchone()[0]
+        staying_id = connection.execute(
+            "SELECT id FROM business WHERE name = 'Otro Negocio'"
+        ).fetchone()[0]
+    stdin = _LocksWhileConfirming(db_path)
+    stdout = io.StringIO()
 
-    other = OperationalError("SELECT 1", {}, Exception("no such table: ghost"))
-    with pytest.raises(OperationalError):
-        _BusyTranslatingSchemaRows(_RaisingInner(other)).schema()
+    try:
+        result = main([EMAIL_LEAVING], stdin=cast(TextIO, stdin), stdout=stdout)
+    finally:
+        stdin.release()
 
-    assert _looks_locked(OperationalError("x", {}, Exception("database is locked")))
-    assert _looks_locked(OperationalError("x", {}, Exception("database table is busy")))
-    assert not _looks_locked(OperationalError("x", {}, Exception("no such table: ghost")))
+    # In WAL mode a plain read need not block on an exclusive writer; whichever way
+    # the lock bites, the run still ends on the one fixed busy line, through `main`.
+    assert result == 1
+    assert stdout.getvalue().endswith(BUSY_MESSAGE + "\n")
+    assert row_counts(db_path, "customer", leaving_id) == 1
+    assert row_counts(db_path, "customer", staying_id) == 1
+    assert not export_dir.exists() or list(export_dir.glob("*")) == []

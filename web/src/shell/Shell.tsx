@@ -4,36 +4,63 @@
  * Only destinations that exist show (PRD, "Nada inventado"; metric M5): Inicio,
  * Ventas, Clientes, Stock and Más, in the design's own order (`Inicio.dc.html`,
  * `InicioCompu.dc.html`: Inicio, Ventas, Clientes, Stock, Más on both bars; PRD,
- * "the design wins" on tab order).
+ * "the design wins" on tab order) — no Análisis and no extra rail entries, even
+ * though `InicioCompu.dc.html` itself draws Gastos/Análisis/Catálogo/Variedades/
+ * Negocio below a divider (plan, invariants: "the rail always list exactly
+ * Inicio, Ventas, Clientes, Stock and Más").
  * `useOutletContext` passes `me` on to whatever the active
  * route renders (`Inicio` first; the screen subtasks' routes next), so none of them
  * has to re-run `GET /auth/me`.
  *
- * The fixed "Nueva venta" button (accounts.md, "Shell") is separate from the tabs —
- * it never gets the active-item treatment and isn't one of `ITEMS` — and shows on
- * every signed-in screen except the sale form itself and its customer sheet. The
- * sheet (`NuevaVentaCliente`) is never a route of its own (`router.tsx`): it opens
- * over `NuevaVenta`'s own `/ventas/nueva`, so hiding the button on that one
- * pathname covers both without this component needing to know the sheet exists.
+ * Chrome comes only from the route (plan, invariants: "Only `Shell.tsx` decides
+ * whether the bottom bar and the 'Nueva venta' button render, from route
+ * `handle.chrome` read with `useMatches()`; no pathname comparison decides it").
+ * `useMatches()` returns the whole match chain root to leaf; the deepest one that
+ * declares `handle.chrome` wins, so a parent's absence of a handle never
+ * overrides a child's. `'none'` hides the fixed "Nueva venta" button everywhere,
+ * and on the phone also drops the bottom bar outright — `NuevaVenta`'s own
+ * `/ventas/nueva` and `VentaDetalle`'s `/ventas/:id` are the two routes that set
+ * it (`router.tsx`). The side rail's destinations never disappear on the
+ * computer: only its button does (plan, "Chrome").
  */
 
-import { Link, NavLink, Outlet, useLocation, useOutletContext } from 'react-router'
+import { Link, NavLink, Outlet, useMatches, useOutletContext } from 'react-router'
 import type { Me } from '../api/me'
+import Icono, { type NombreIcono } from '../components/Icono'
 
 interface Item {
   to: string
   label: string
+  icono: NombreIcono
 }
 
 const ITEMS: Item[] = [
-  { to: '/', label: 'Inicio' },
-  { to: '/ventas', label: 'Ventas' },
-  { to: '/clientes', label: 'Clientes' },
-  { to: '/mi-stock', label: 'Stock' },
-  { to: '/mas', label: 'Más' },
+  { to: '/', label: 'Inicio', icono: 'inicio' },
+  { to: '/ventas', label: 'Ventas', icono: 'ventas' },
+  { to: '/clientes', label: 'Clientes', icono: 'clientes' },
+  { to: '/mi-stock', label: 'Stock', icono: 'stock' },
+  { to: '/mas', label: 'Más', icono: 'mas' },
 ]
 
 const NUEVA_VENTA_PATH = '/ventas/nueva'
+
+type Chrome = 'none'
+
+function hasChrome(handle: unknown): handle is { chrome: Chrome } {
+  return (
+    typeof handle === 'object' &&
+    handle !== null &&
+    'chrome' in handle &&
+    (handle as { chrome: unknown }).chrome === 'none'
+  )
+}
+
+/** The deepest match that declares `handle.chrome` wins — walk from the leaf
+ * backwards and stop at the first one that has it. */
+function chromeFromMatches(matches: readonly { handle: unknown }[]): Chrome | undefined {
+  const deepest = [...matches].reverse().find((match) => hasChrome(match.handle))
+  return deepest === undefined ? undefined : 'none'
+}
 
 function className(base: string): (state: { isActive: boolean }) => string {
   return ({ isActive }) => (isActive ? `${base} ${base}--activo` : base)
@@ -41,14 +68,16 @@ function className(base: string): (state: { isActive: boolean }) => string {
 
 export default function Shell() {
   const me = useOutletContext<Me>()
-  const location = useLocation()
-  const showNuevaVenta = location.pathname !== NUEVA_VENTA_PATH
+  const matches = useMatches()
+  const chrome = chromeFromMatches(matches)
+  const showNuevaVenta = chrome !== 'none'
 
   return (
     <div className="disposicion">
       <nav className="riel-lateral" aria-label="Navegación">
         {showNuevaVenta && (
           <Link to={NUEVA_VENTA_PATH} className="boton boton-nueva-venta--escritorio">
+            <Icono nombre="agregar" size={19} strokeWidth={2} />
             Nueva venta
           </Link>
         )}
@@ -59,6 +88,7 @@ export default function Shell() {
             end={item.to === '/'}
             className={className('riel-lateral__item')}
           >
+            <Icono nombre={item.icono} />
             {item.label}
           </NavLink>
         ))}
@@ -67,21 +97,25 @@ export default function Shell() {
         <Outlet context={me} />
         {showNuevaVenta && (
           <Link to={NUEVA_VENTA_PATH} className="boton boton-nueva-venta">
+            <Icono nombre="agregar" size={19} strokeWidth={2} />
             Nueva venta
           </Link>
         )}
-        <nav className="bar-inferior" aria-label="Navegación">
-          {ITEMS.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to === '/'}
-              className={className('bar-inferior__item')}
-            >
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
+        {chrome !== 'none' && (
+          <nav className="bar-inferior" aria-label="Navegación">
+            {ITEMS.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.to === '/'}
+                className={className('bar-inferior__item')}
+              >
+                <Icono nombre={item.icono} />
+                <span>{item.label}</span>
+              </NavLink>
+            ))}
+          </nav>
+        )}
       </div>
     </div>
   )
