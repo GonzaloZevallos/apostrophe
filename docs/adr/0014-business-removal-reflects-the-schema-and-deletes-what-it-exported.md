@@ -34,8 +34,13 @@ of tables, even an implicit one, had shown it fails silently.
   not by `info` on each mapped table. A table created by raw DDL carries no `info`.
   - Every column is exported except `app_user.password_hash`. `invitation` and
     `login_guard` are withheld whole.
-  - A column whose name matches `secret|token|hash|digest|password|key` and is not
-    excluded makes the command refuse.
+  - A column is flagged by its underscore-separated name segments, not a substring:
+    any segment in `{secret, secrets, token, tokens, hash, digest, password,
+    passwords, credential, credentials, encrypted, ciphertext}`, or the whole name
+    ending in `api_key`, `private_key` or `secret_key`. A bare `key` segment is not
+    enough on its own: `variety.name_key` and `expense_category.name_key` are real
+    columns this pattern must not catch. A flagged column that is not excluded makes
+    the command refuse.
   - A reference is written as `{id, name}`. The name comes from the target's `name`
     column, or from a label declared in the domain for each business-owned table that
     has none.
