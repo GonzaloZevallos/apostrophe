@@ -20,13 +20,24 @@ class ExportFile(Protocol):
     def write_durably(self, name: str, document: dict[str, Any]) -> Path:
         """Creates `name` inside the prepared directory with `O_CREAT|O_EXCL` and
         mode `0o600`, writes `document` as UTF-8 JSON, fsyncs the file and the
-        directory, then returns its path. Never overwrites an existing file."""
+        directory, then returns its path. Never overwrites an existing file. On any
+        failure after the file was created -- the dump, the flush, the file fsync or
+        the directory fsync -- it leaves no file at that path, and the exception the
+        caller sees is always the original one, never one raised by that clean-up.
+        It never touches a file it did not itself create."""
         ...
 
     def read_back(self, path: Path) -> dict[str, Any]:
         """Parses `path` from a freshly opened descriptor."""
         ...
 
-    def remove(self, path: Path) -> None:
-        """Removes `path`. Called only before a commit (the plan's invariant)."""
+    def discard(self) -> None:
+        """Removes the file this instance created with `write_durably`, if any.
+        Idempotent, never touches a file it did not create, and does nothing once
+        `keep()` has been called."""
+        ...
+
+    def keep(self) -> None:
+        """Marks the file this instance created as kept: the commit is being
+        attempted, and from now on `discard()` does nothing."""
         ...

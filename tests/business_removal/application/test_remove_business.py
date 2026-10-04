@@ -1,7 +1,8 @@
 """`dry_run` and `remove_business` over fake ports (fault injection), the declared
 seam for this subtask: every guard that must leave the business whole, and the
-boundary the `committed` flag draws between "roll back and clean up" and "never
-touch the file again" (the plan's invariants)."""
+boundary the `committed`/`commit_attempted` flags draw between "roll back and clean
+up", "commit outcome unknown, keep the file" and "never touch the file again" (the
+plan's invariants)."""
 
 from __future__ import annotations
 
@@ -10,21 +11,25 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from app.business_removal.application.export_file import ExportFile
 from app.business_removal.application.remove_business import (
     BUSY_MESSAGE,
     CONFIRMATION_FAILED_MESSAGE,
     FAILED_MESSAGE,
     INTERRUPTED_MESSAGE,
     NO_BUSINESS_MESSAGE,
+    Confirm,
     Interrupted,
+    Output,
     RecordsChanged,
     StorageBusy,
     dry_run,
     remove_business,
 )
-from app.business_removal.application.schema_rows import DeletedIds
+from app.business_removal.application.schema_rows import DeletedIds, SchemaRows
 from app.business_removal.domain.business_ref import BusinessRef
 from app.business_removal.domain.schema import Column, ColumnType, ForeignKey, Schema, Table
+from app.shared.transaction import Transaction
 
 NOW = datetime(2026, 10, 2, 18, 0, tzinfo=UTC)
 EMAIL = "owner@example.com"
@@ -107,10 +112,16 @@ class FakeSchemaRows:
 
 
 class FakeExportFile:
+    """Mirrors `FileExportFile`'s own `discard`/`keep` semantics: `discard()` removes
+    only a file this instance "created" (tracked by `exists`), is idempotent, and
+    does nothing once `keep()` was called."""
+
     def __init__(self, fail_on: str | None = None) -> None:
         self.prepared = False
         self.written: tuple[str, dict[str, Any]] | None = None
-        self.removed: list[Path] = []
+        self.exists = False
+        self.kept = False
+        self.discard_calls = 0
         self.fail_on = fail_on
 
     def prepare(self) -> Path:
@@ -121,6 +132,7 @@ class FakeExportFile:
         if self.fail_on == "write":
             raise RuntimeError("disk full")
         self.written = (name, document)
+        self.exists = True
         return Path("/fake-export-dir") / name
 
     def read_back(self, path: Path) -> dict[str, Any]:
@@ -129,8 +141,14 @@ class FakeExportFile:
         assert self.written is not None
         return self.written[1]
 
-    def remove(self, path: Path) -> None:
-        self.removed.append(path)
+    def discard(self) -> None:
+        self.discard_calls += 1
+        if self.kept:
+            return
+        self.exists = False
+
+    def keep(self) -> None:
+        self.kept = True
 
 
 class FakeConfirm:
@@ -150,6 +168,21 @@ class FakeTransaction:
 
     def commit(self) -> None:
         self.committed = True
+
+    def rollback(self) -> None:
+        self.rolled_back = True
+
+
+class FakeTransactionThatFailsToCommit:
+    """`commit()` raises, as a dropped connection might: `rollback()` is tracked so
+    a test can show it is never called once the commit was attempted (the plan's
+    invariant -- the outcome is unknown, not "rolled back")."""
+
+    def __init__(self) -> None:
+        self.rolled_back = False
+
+    def commit(self) -> None:
+        raise RuntimeError("connection dropped")
 
     def rollback(self) -> None:
         self.rolled_back = True
@@ -199,19 +232,27 @@ def _clock() -> datetime:
 
 
 def _remove(
-    schema_rows: Any,
-    export_file: Any = None,
-    confirm: Any = None,
-    transaction: Any = None,
-    output: Any = None,
+    schema_rows: SchemaRows,
+    export_file: ExportFile | None = None,
+    confirm: Confirm | None = None,
+    transaction: Transaction | None = None,
+    output: Output | None = None,
     email: str = EMAIL,
-) -> tuple[int, Any, Any, Any]:
-    export_file = export_file or FakeExportFile()
-    confirm = confirm if confirm is not None else FakeConfirm("La Huerta\n")
-    transaction = transaction or FakeTransaction()
-    output = output or FakeOutput()
-    result = remove_business(schema_rows, export_file, confirm, transaction, output, _clock, email)
-    return result, export_file, transaction, output
+) -> int:
+    """Runs `remove_business` over whichever fakes the caller passes, defaulting
+    each to a fresh, unremarkable fake. Only `int` comes back (`remove_business`'s
+    own return type): a caller that wants to inspect a fake afterwards keeps its own
+    reference to the concrete instance it built, never one narrowed to a Protocol
+    (CODING_STANDARDS section 6; the plan's invariant -- no `Any` for a port)."""
+    return remove_business(
+        schema_rows,
+        export_file if export_file is not None else FakeExportFile(),
+        confirm if confirm is not None else FakeConfirm("La Huerta\n"),
+        transaction if transaction is not None else FakeTransaction(),
+        output if output is not None else FakeOutput(),
+        _clock,
+        email,
+    )
 
 
 def test_dry_run_names_the_business_and_counts_by_table_writing_nothing() -> None:
@@ -262,12 +303,15 @@ def test_dry_run_ends_in_a_fixed_message_when_a_port_raises() -> None:
 
 def test_remove_business_succeeds_end_to_end() -> None:
     schema_rows = FakeSchemaRows(_schema(), BUSINESS, _rows())
+    export_file = FakeExportFile()
+    transaction = FakeTransaction()
+    output = FakeOutput()
 
-    result, export_file, transaction, output = _remove(schema_rows)
+    result = _remove(schema_rows, export_file=export_file, transaction=transaction, output=output)
 
     assert result == 0
     assert transaction.committed is True
-    assert export_file.removed == []
+    assert export_file.exists is True
     assert any(line.startswith("Export written:") for line in output.lines)
     assert output.lines[-1].startswith("Business removed; export kept at")
     assert not any("nothing deleted" in line.lower() for line in output.lines)
@@ -275,8 +319,10 @@ def test_remove_business_succeeds_end_to_end() -> None:
 
 def test_remove_business_refuses_a_schema_with_a_table_that_has_no_business_id() -> None:
     schema_rows = FakeSchemaRows(_unowned_schema(), BUSINESS, _rows())
+    export_file = FakeExportFile()
+    transaction = FakeTransaction()
 
-    result, export_file, transaction, _output = _remove(schema_rows)
+    result = _remove(schema_rows, export_file=export_file, transaction=transaction)
 
     assert result == 1
     assert export_file.prepared is False
@@ -287,8 +333,11 @@ def test_remove_business_ends_in_a_fixed_message_when_business_of_raises() -> No
     schema_rows = FakeSchemaRows(
         _schema(), BUSINESS, _rows(), _business_of_fails=RuntimeError(EMAIL)
     )
+    export_file = FakeExportFile()
+    transaction = FakeTransaction()
+    output = FakeOutput()
 
-    result, export_file, transaction, output = _remove(schema_rows)
+    result = _remove(schema_rows, export_file=export_file, transaction=transaction, output=output)
 
     assert result == 1
     assert output.lines == [FAILED_MESSAGE]
@@ -299,8 +348,17 @@ def test_remove_business_ends_in_a_fixed_message_when_business_of_raises() -> No
 
 def test_remove_business_reports_an_unknown_email_and_touches_nothing() -> None:
     schema_rows = FakeSchemaRows(_schema(), None, {})
+    export_file = FakeExportFile()
+    transaction = FakeTransaction()
+    output = FakeOutput()
 
-    result, export_file, transaction, output = _remove(schema_rows, email="nobody@example.com")
+    result = _remove(
+        schema_rows,
+        export_file=export_file,
+        transaction=transaction,
+        output=output,
+        email="nobody@example.com",
+    )
 
     assert result == 1
     assert output.lines == [NO_BUSINESS_MESSAGE]
@@ -310,9 +368,16 @@ def test_remove_business_reports_an_unknown_email_and_touches_nothing() -> None:
 
 def test_a_wrong_name_leaves_everything_and_writes_no_file() -> None:
     schema_rows = FakeSchemaRows(_schema(), BUSINESS, _rows())
+    export_file = FakeExportFile()
+    transaction = FakeTransaction()
+    output = FakeOutput()
 
-    result, export_file, transaction, output = _remove(
-        schema_rows, confirm=FakeConfirm("Wrong Name\n")
+    result = _remove(
+        schema_rows,
+        export_file=export_file,
+        confirm=FakeConfirm("Wrong Name\n"),
+        transaction=transaction,
+        output=output,
     )
 
     assert result == 1
@@ -323,8 +388,17 @@ def test_a_wrong_name_leaves_everything_and_writes_no_file() -> None:
 
 def test_eof_at_the_prompt_leaves_everything_and_writes_no_file() -> None:
     schema_rows = FakeSchemaRows(_schema(), BUSINESS, _rows())
+    export_file = FakeExportFile()
+    transaction = FakeTransaction()
+    output = FakeOutput()
 
-    result, export_file, transaction, output = _remove(schema_rows, confirm=FakeConfirm(None))
+    result = _remove(
+        schema_rows,
+        export_file=export_file,
+        confirm=FakeConfirm(None),
+        transaction=transaction,
+        output=output,
+    )
 
     assert result == 1
     assert output.lines[-1] == CONFIRMATION_FAILED_MESSAGE
@@ -334,9 +408,16 @@ def test_eof_at_the_prompt_leaves_everything_and_writes_no_file() -> None:
 
 def test_keyboard_interrupt_at_the_prompt_leaves_everything_and_writes_no_file() -> None:
     schema_rows = FakeSchemaRows(_schema(), BUSINESS, _rows())
+    export_file = FakeExportFile()
+    transaction = FakeTransaction()
+    output = FakeOutput()
 
-    result, export_file, transaction, output = _remove(
-        schema_rows, confirm=FakeConfirm(KeyboardInterrupt())
+    result = _remove(
+        schema_rows,
+        export_file=export_file,
+        confirm=FakeConfirm(KeyboardInterrupt()),
+        transaction=transaction,
+        output=output,
     )
 
     assert result == 1
@@ -348,41 +429,46 @@ def test_keyboard_interrupt_at_the_prompt_leaves_everything_and_writes_no_file()
 
 def test_a_failed_write_rolls_back_and_leaves_no_file() -> None:
     schema_rows = FakeSchemaRows(_schema(), BUSINESS, _rows())
+    export_file = FakeExportFile(fail_on="write")
+    transaction = FakeTransaction()
+    output = FakeOutput()
 
-    result, export_file, transaction, output = _remove(
-        schema_rows, export_file=FakeExportFile(fail_on="write")
-    )
+    result = _remove(schema_rows, export_file=export_file, transaction=transaction, output=output)
 
     assert result == 1
     assert transaction.rolled_back is True
     assert transaction.committed is False
-    assert export_file.removed == []
+    assert export_file.exists is False
     assert output.lines[-1] == FAILED_MESSAGE
 
 
 def test_a_failed_read_back_rolls_back_and_removes_the_file_this_run_wrote() -> None:
     schema_rows = FakeSchemaRows(_schema(), BUSINESS, _rows())
+    export_file = FakeExportFile(fail_on="read_back")
+    transaction = FakeTransaction()
+    output = FakeOutput()
 
-    result, export_file, transaction, output = _remove(
-        schema_rows, export_file=FakeExportFile(fail_on="read_back")
-    )
+    result = _remove(schema_rows, export_file=export_file, transaction=transaction, output=output)
 
     assert result == 1
     assert transaction.rolled_back is True
     assert transaction.committed is False
-    assert export_file.removed != []
+    assert export_file.exists is False
     assert output.lines[-1] == FAILED_MESSAGE
 
 
 def test_a_mismatch_between_exported_and_deleted_ids_rolls_back_and_removes_the_file() -> None:
     schema_rows = FakeSchemaRows(_schema(), BUSINESS, _rows(), _mismatch=True)
+    export_file = FakeExportFile()
+    transaction = FakeTransaction()
+    output = FakeOutput()
 
-    result, export_file, transaction, output = _remove(schema_rows)
+    result = _remove(schema_rows, export_file=export_file, transaction=transaction, output=output)
 
     assert result == 1
     assert transaction.rolled_back is True
     assert transaction.committed is False
-    assert export_file.removed != []
+    assert export_file.exists is False
     assert output.lines[-1] == str(RecordsChanged())
 
 
@@ -390,45 +476,77 @@ def test_a_failure_during_the_delete_rolls_back_and_removes_the_file() -> None:
     schema_rows = FakeSchemaRows(
         _schema(), BUSINESS, _rows(), _delete_fails=StorageBusy("locked")
     )
+    export_file = FakeExportFile()
+    transaction = FakeTransaction()
+    output = FakeOutput()
 
-    result, export_file, transaction, output = _remove(schema_rows)
+    result = _remove(schema_rows, export_file=export_file, transaction=transaction, output=output)
 
     assert result == 1
     assert transaction.rolled_back is True
-    assert export_file.removed != []
+    assert export_file.exists is False
     assert output.lines[-1] == BUSY_MESSAGE
 
 
 def test_sigterm_mid_delete_rolls_back_and_removes_the_file() -> None:
     schema_rows = FakeSchemaRows(_schema(), BUSINESS, _rows(), _delete_fails=Interrupted())
+    export_file = FakeExportFile()
+    transaction = FakeTransaction()
+    output = FakeOutput()
 
-    result, export_file, transaction, output = _remove(schema_rows)
+    result = _remove(schema_rows, export_file=export_file, transaction=transaction, output=output)
 
     assert result == 1
     assert transaction.rolled_back is True
-    assert export_file.removed != []
+    assert export_file.exists is False
     assert output.lines[-1] == INTERRUPTED_MESSAGE
 
 
 def test_a_port_failure_right_after_commit_keeps_the_file_and_never_says_nothing_deleted() -> None:
     schema_rows = FakeSchemaRows(_schema(), BUSINESS, _rows())
+    export_file = FakeExportFile()
+    transaction = FakeTransaction()
     output = OutputFailsOnce(fail_after=1, exc=RuntimeError("terminal gone"))
 
-    result, export_file, transaction, output = _remove(schema_rows, output=output)
+    result = _remove(schema_rows, export_file=export_file, transaction=transaction, output=output)
 
     assert result == 1
     assert transaction.committed is True
-    assert export_file.removed == []
+    assert export_file.exists is True
     assert not any("nothing deleted" in line.lower() for line in output.lines)
     assert output.lines[-1].startswith("Business removed; export kept at")
 
 
 def test_a_broken_pipe_on_the_report_is_swallowed_after_commit() -> None:
     schema_rows = FakeSchemaRows(_schema(), BUSINESS, _rows())
+    export_file = FakeExportFile()
+    transaction = FakeTransaction()
     output = BrokenPipeAfter(fail_after=1)
 
-    result, export_file, transaction, _output = _remove(schema_rows, output=output)
+    result = _remove(schema_rows, export_file=export_file, transaction=transaction, output=output)
 
     assert result == 1
     assert transaction.committed is True
-    assert export_file.removed == []
+    assert export_file.exists is True
+
+
+def test_a_commit_that_raises_keeps_the_file_and_reports_unknown_outcome() -> None:
+    # The commit itself raised: whether it landed is unknown, so the file stays --
+    # it may be the only copy left of the business's books (PM's ruling) -- and
+    # the report never says "deleted" or "nothing deleted", only the business name,
+    # the path and the counts exported.
+    schema_rows = FakeSchemaRows(_schema(), BUSINESS, _rows())
+    export_file = FakeExportFile()
+    transaction = FakeTransactionThatFailsToCommit()
+    output = FakeOutput()
+
+    result = _remove(schema_rows, export_file=export_file, transaction=transaction, output=output)
+
+    assert result == 1
+    assert export_file.kept is True
+    assert export_file.exists is True
+    assert transaction.rolled_back is False
+    assert any(line.startswith("Commit outcome unknown; export kept at") for line in output.lines)
+    assert any(line == "La Huerta" for line in output.lines)
+    assert any(line.startswith("customer: exported") for line in output.lines)
+    assert not any("deleted" in line.lower() for line in output.lines)
