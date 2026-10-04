@@ -444,6 +444,45 @@ def test_a_non_whole_float_share_is_refused_by_the_catalog_owner_not_the_reader(
     assert parsed.problems == ()
 
 
+def test_a_boolean_share_is_a_reader_problem_never_text(tmp_path: Path) -> None:
+    # GH-55: a bool never becomes a number or text in any reader, `_to_indica`
+    # included — it is its own reader cell-problem, never the owner's
+    # `catalog.indica_share_invalid` (that refusal is for a non-whole number only).
+    workbook, _ = _default(tmp_path)
+    catalogo = workbook[layout.CATALOGO_SHEET]
+    _row(catalogo, 6, ("Jack Herer", "Sí", "🌿", True, "Tierra"))
+
+    parsed = read_workbook(_save(workbook, tmp_path))
+
+    [catalog_row] = parsed.catalog
+    assert catalog_row.indica is None
+    assert len(parsed.problems) == 1
+    assert parsed.problems[0].kind == "indica_not_numeric"
+    assert parsed.problems[0].column == "% índica"
+
+
+def test_a_boolean_ventas_total_blocks_as_not_recalculated(tmp_path: Path) -> None:
+    # GH-55: a bool Total is never text either — treated as no cached value at all,
+    # the same `not_recalculated` problem a formula with nothing cached gives.
+    workbook = _blank_workbook()
+    _titles(workbook[layout.ENTRADAS_SHEET], ENTRADAS_TITLES)
+    _titles(workbook[layout.GASTOS_SHEET], GASTOS_TITLES)
+    ventas = workbook[layout.VENTAS_SHEET]
+    _titles(ventas, VENTAS_TITLES)
+    _row(
+        ventas,
+        2,
+        (date(2026, 1, 5), "Jack Herer", 1, "Efectivo", True, "Ana", "Lista", 0, "", ""),
+    )
+
+    parsed = read_workbook(_save(workbook, tmp_path))
+
+    [row] = parsed.ventas
+    assert row.total is None
+    not_recalculated = [p for p in parsed.problems if p.kind == "not_recalculated"]
+    assert len(not_recalculated) == 1
+
+
 def test_a_ventas_total_non_whole_float_is_kept_as_an_exact_decimal(tmp_path: Path) -> None:
     workbook = _blank_workbook()
     _titles(workbook[layout.ENTRADAS_SHEET], ENTRADAS_TITLES)

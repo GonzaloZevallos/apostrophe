@@ -14,6 +14,7 @@ import io
 from datetime import date, time
 from pathlib import Path
 
+import pytest
 from fastapi.testclient import TestClient
 from openpyxl import Workbook, load_workbook
 from openpyxl.worksheet.worksheet import Worksheet
@@ -231,14 +232,25 @@ def _cell_value(workbook: Workbook, sheet: str, row: int, column: int) -> object
     return values[column - 1]
 
 
+_ALL_SHEETS = (
+    layout.AJUSTES_SHEET,
+    layout.CATALOGO_SHEET,
+    layout.VENTAS_SHEET,
+    layout.ENTRADAS_SHEET,
+    layout.GASTOS_SHEET,
+)
+
+
 def _assert_fixture_shape(path: Path, *, a1_dimension: bool) -> None:
     """The proof the plan asks for, before anything about the import is asserted:
-    no usable `<dimension>`, and every named numeric cell reads back as a `float`
-    (GH-55's reproduction, over the mechanism itself, not just read from the code)."""
+    no usable `<dimension>` on any of the five sheets the factory rewrites, and
+    every named numeric cell reads back as a `float` (GH-55's reproduction, over
+    the mechanism itself, not just read from the code). Raises `AssertionError`
+    on a fixture that isn't Google-shaped, the same as any other assertion."""
     workbook = load_workbook(path, read_only=True, data_only=True)
     try:
-        ventas = workbook[layout.VENTAS_SHEET]
-        assert ventas.max_column == (1 if a1_dimension else None)
+        for sheet in _ALL_SHEETS:
+            assert workbook[sheet].max_column == (1 if a1_dimension else None), sheet
         for sheet, row, column in _FLOAT_CELLS:
             value = _cell_value(workbook, sheet, row, column)
             assert isinstance(value, float), (sheet, row, column, value)
@@ -277,6 +289,20 @@ def test_the_problem_fixture_also_has_no_usable_dimension_and_its_numbers_are_fl
         workbook.close()
 
 
+def test_assert_fixture_shape_rejects_a_fixture_that_is_not_google_shaped(
+    tmp_path: Path,
+) -> None:
+    """`_assert_fixture_shape` is itself a check the fixture-building tests lean on
+    (an enforcement artefact): it must fail, not pass by accident, on a workbook
+    that was never put through `as_google_export` and so keeps its real dimension
+    and its `int` cells — the opposite of what every other test here saves."""
+    path = tmp_path / "sheet.xlsx"
+    _clean_workbook().save(path)  # saved plain, deliberately skipping as_google_export
+
+    with pytest.raises(AssertionError):
+        _assert_fixture_shape(path, a1_dimension=False)
+
+
 # -- `read_workbook`: columns found, rows read to the last one, floats read right -----
 
 
@@ -306,6 +332,9 @@ def _assert_clean_parse(parsed: ParsedWorkbook) -> None:
     assert parsed.header_footer.footer == "Gracias por su compra"
     [category] = parsed.categories
     assert category.raw_name == "100"
+    [first_venta] = [v for v in parsed.ventas if v.ref.row == 2]
+    assert first_venta.special_total == 500
+    assert isinstance(first_venta.special_total, int)
     first_entrada = next(e for e in parsed.entradas if e.ref.row == 2)
     assert first_entrada.grams == Grams.of("3.5")
     assert first_entrada.total_cost == 20_000
@@ -334,6 +363,7 @@ def test_read_workbook_matches_the_numeric_variety_and_customer_across_sheets(
     tmp_path: Path,
 ) -> None:
     path = _save(_clean_workbook(), tmp_path, name="sheet.xlsx", a1_dimension=False)
+    _assert_fixture_shape(path, a1_dimension=False)
 
     parsed = read_workbook(path)
 
