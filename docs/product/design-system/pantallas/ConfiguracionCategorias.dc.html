@@ -14,16 +14,25 @@ a { color: #1B4FA8 } a:hover { color: #231E18 }
 </style>
 </helmet>
 
-<div style="width: 390px; height: 900px; box-sizing: border-box; background: #FCFBF8; color: #231E18; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden">
+<div style="width: 390px; height: 1060px; box-sizing: border-box; background: #FCFBF8; color: #231E18; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden">
   <div style="padding: 20px 20px 16px; display: flex; align-items: center; gap: 10px"><span style="flex: 1; font-size: 20px; font-weight: 600; letter-spacing: -0.02em">Categorías de gastos</span><span style="font-size: 15px; font-weight: 600; color: #7A7065">Cerrar</span></div>
   <div style="padding: 16px 24px 24px; display: flex; flex-direction: column; gap: 14px; overflow-y: auto">
-    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 0; border-bottom: 1px solid #EBE5DA; "><span style="flex: 1; font-size: 16px">Insumos de cultivo</span><span style="font-size: 14px; font-weight: 600; color: #1B4FA8; margin-right: 14px">Renombrar</span><span style="font-size: 14px; font-weight: 600; color: #7A4A00">Eliminar</span></div>
-    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 0; border-bottom: 1px solid #EBE5DA; "><span style="flex: 1; font-size: 16px">Packaging</span><span style="font-size: 14px; font-weight: 600; color: #1B4FA8; margin-right: 14px">Renombrar</span><span style="font-size: 14px; font-weight: 600; color: #7A4A00">Eliminar</span></div>
     <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 0; border-bottom: 1px solid #EBE5DA; "><span style="flex: 1; font-size: 16px">Envíos y traslados</span><span style="font-size: 14px; font-weight: 600; color: #1B4FA8; margin-right: 14px">Renombrar</span><span style="font-size: 14px; font-weight: 600; color: #7A4A00">Eliminar</span></div>
-    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 0; "><span style="flex: 1; font-size: 16px">Otros</span><span style="font-size: 14px; font-weight: 600; color: #1B4FA8; margin-right: 14px">Renombrar</span><span style="font-size: 14px; font-weight: 600; color: #7A4A00">Eliminar</span></div>
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 0; border-bottom: 1px solid #EBE5DA; "><span style="flex: 1; font-size: 16px">Insumos de cultivo</span><span style="font-size: 14px; font-weight: 600; color: #1B4FA8; margin-right: 14px">Renombrar</span><span style="font-size: 14px; font-weight: 600; color: #7A4A00">Eliminar</span></div>
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 0; border-bottom: 1px solid #EBE5DA; "><span style="flex: 1; font-size: 16px">Otros</span><span style="font-size: 14px; font-weight: 600; color: #1B4FA8; margin-right: 14px">Renombrar</span><span style="font-size: 14px; font-weight: 600; color: #7A4A00">Eliminar</span></div>
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 0; "><span style="flex: 1; font-size: 16px">Packaging</span><span style="font-size: 14px; font-weight: 600; color: #1B4FA8; margin-right: 14px">Renombrar</span><span style="font-size: 14px; font-weight: 600; color: #7A4A00">Eliminar</span></div>
   <span style="display: flex; align-items: center; justify-content: center; height: 50px; border-radius: 999px; background: #F2EEE6; color: #231E18; font-size: 15px; font-weight: 600">+ Categoría</span>
   <span style="display: block; font-size: 13px; color: #7A7065; margin: 20px 24px 6px">Si tiene gastos cargados</span>
     <div style="background: #F3E6CB; border-radius: 18px; padding: 14px 16px"><span style="font-size: 14px; color: #8A6530; line-height: 1.5">No se puede borrar: todavía tiene gastos. Podés renombrarla.</span></div>
+  <span style="display: block; font-size: 13px; color: #7A7065; margin: 20px 24px 6px">Al cerrar con cambios sin guardar</span>
+  <div style="background: #F2EEE6; border-radius: 24px; padding: 20px">
+    <span style="display: block; font-size: 18px; font-weight: 600">¿Descartás la categoría?</span>
+    <span style="display: block; font-size: 15px; color: #7A7065; line-height: 1.5; margin-top: 6px">Se pierde lo que cargaste: todavía no se guardó nada.</span>
+    <div style="display: flex; gap: 10px; margin-top: 16px">
+      <span style="flex: 1; display: flex; align-items: center; justify-content: center; height: 50px; border-radius: 999px; background: #FCFBF8; font-size: 15px; font-weight: 600">No, seguí editando</span>
+      <span style="flex: 1; display: flex; align-items: center; justify-content: center; height: 50px; border-radius: 999px; background: #33281A; color: #F7EFE0; font-size: 15px; font-weight: 600">Sí, descartala</span>
+    </div>
+  </div>
   </div>
 </div>
 
