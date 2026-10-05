@@ -22,6 +22,7 @@ from app.sales.domain.pricing import price_line
 from app.shared.grams import Grams
 from app.spreadsheet_import.application.no_commit import NoCommit
 from app.spreadsheet_import.application.ports import Refusal, SaleCheck, SaleCheckInput
+from app.spreadsheet_import.domain.plan import OnTheSpotMethod
 from app.spreadsheet_import.domain.rows import PriceHistoryRow, SheetRef
 from app.varieties.adapters.import_port import VarietiesImport
 
@@ -70,7 +71,7 @@ def _sale_input(
     gift: bool = False,
     special_total: int | None = None,
     shipping: int = 0,
-    method: str | None = "cash",
+    method: OnTheSpotMethod | None = "cash",
     left_owing: bool = False,
     sale_date: date = TODAY,
 ) -> SaleCheckInput:

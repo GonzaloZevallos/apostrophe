@@ -1,0 +1,22 @@
+{
+  "today": "2026-10-04",
+  "first_record": null,
+  "month": {
+    "month": "2026-10",
+    "previous": null,
+    "next": null,
+    "sales": 0,
+    "sales_without_shipping": 0,
+    "grams_sold": 0.0,
+    "grams_gifted": 0.0,
+    "average_margin": { "amount": 0, "percent": null, "pending_grams": 0.0 },
+    "shortfall": null,
+    "varieties": []
+  },
+  "weeks": [],
+  "months": [],
+  "weekdays": [],
+  "since_first_record": null,
+  "month_expenses": { "categories": [], "total": 0, "purchases": 0 },
+  "since_first_record_expenses": { "categories": [], "total": 0, "purchases": 0 }
+}

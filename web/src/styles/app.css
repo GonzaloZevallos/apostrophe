@@ -1923,6 +1923,165 @@ button {
   color: var(--tinta2);
 }
 
+/* `Analisis`: by variety, week by week, month by month, by weekday (`Analisis.
+   dc.html`, `AnalisisCompu.dc.html`). Every bar below carries its own figure as
+   text next to it (CODING_STANDARDS §10: "nothing read from color alone"); the
+   fill itself is the accent token, never a loose hex value. */
+.analisis__columnas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-xl);
+}
+
+.analisis__principal,
+.analisis__aside {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-xl);
+  min-width: 0;
+}
+
+.analisis__variedades,
+.analisis__semanas,
+.analisis__meses,
+.analisis__dias {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-md);
+}
+
+.analisis__variedad {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-xs);
+  padding: var(--espacio-sm) 0;
+  border-bottom: 1px solid var(--linea);
+}
+
+.analisis__variedad-cabecera {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-weight: 600;
+}
+
+.analisis__variedad-detalle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--tinta2);
+}
+
+.analisis__variedad-margen {
+  margin-left: auto;
+  color: var(--acento);
+  font-weight: 600;
+}
+
+.analisis__semana,
+.analisis__mes-fila,
+.analisis__dia {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-sm);
+  font-size: 14px;
+}
+
+.analisis__barra-pista {
+  display: block;
+  flex: 1;
+  min-width: 48px;
+  height: 10px;
+  border-radius: var(--radio-pildora);
+  background: var(--linea);
+}
+
+.analisis__barra-llena {
+  display: block;
+  height: 10px;
+  border-radius: var(--radio-pildora);
+  background: var(--acento);
+}
+
+.analisis__marca-mejor {
+  font-weight: 600;
+  color: var(--acento);
+}
+
+.analisis__gastos {
+  display: flex;
+  flex-direction: column;
+}
+
+/* `AnalisisCompu.dc.html`'s own tables (variety, week and month): hidden below
+   900px, where the cards above carry the same rows instead — only one of the two
+   is ever on screen, the same switch `.bar-inferior`/`.riel-lateral` already make,
+   never both at once (PM: "the computer gets the phone's cards" was the bug). */
+.analisis__tabla-contenedor {
+  display: none;
+}
+
+.analisis__tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+
+.analisis__tabla th,
+.analisis__tabla td {
+  padding: var(--espacio-sm) 0;
+  border-bottom: 1px solid var(--linea);
+  text-align: left;
+  font-weight: 400;
+}
+
+.analisis__tabla th {
+  color: var(--tinta2);
+  font-size: 13px;
+}
+
+.analisis__tabla td {
+  color: var(--tinta2);
+}
+
+.analisis__tabla td:first-child {
+  color: inherit;
+  font-weight: 600;
+}
+
+.analisis__num {
+  text-align: right;
+}
+
+/* The current week — always the table's last row, `weeks[]` being "oldest first,
+   at most 8", the current week included (plan): no date math here, just a position
+   in the array the API already ordered. A row can carry this shading and the
+   "mejor" tag at once. */
+.analisis__fila-actual {
+  background: var(--superficie);
+}
+
+.analisis__celda-margen {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.analisis__celda-margen span:first-child {
+  font-weight: 600;
+  color: var(--acento);
+}
+
+.analisis__etiqueta-mejor {
+  margin-left: var(--espacio-xs);
+  font-weight: 600;
+  color: var(--acento);
+}
+
 @media (min-width: 900px) {
   .bar-inferior {
     display: none;
@@ -1938,6 +2097,35 @@ button {
 
   .boton-nueva-venta--escritorio {
     display: flex;
+  }
+
+  /* `AnalisisCompu.dc.html`: the main column (variety table, weeks, months) and
+     the aside (weekdays, since the first record, expense breakdowns) sit side by
+     side and wrap, the same proportions as the design. */
+  .analisis__columnas {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: var(--espacio-xl);
+  }
+
+  .analisis__principal {
+    flex: 999 1 420px;
+  }
+
+  .analisis__aside {
+    flex: 1 1 300px;
+    max-width: 380px;
+  }
+
+  .analisis__variedades,
+  .analisis__semanas,
+  .analisis__meses {
+    display: none;
+  }
+
+  .analisis__tabla-contenedor {
+    display: block;
   }
 
   /* `InicioCompu`: Te deben and Lo que te queda sit side by side instead of

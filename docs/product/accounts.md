@@ -286,7 +286,7 @@ Success criteria, removing a business:
   - Hoy · Semana · Mes, with sales, Ganancia, Caja, money owed and stock per variety.
   - When no variety has a current price today, "Arrancá por las variedades" shows above the panel, and the panel still shows its real figures.
   - "Tu catálogo en Telegram está desactualizado", a fixed notice while the pinned catalog is out of date (pinned-catalog.md). It opens Catálogo.
-- **Más**: Gastos, Variedades, Catálogo ("Catálogo · El mensaje de hoy, listo para copiar", catalog.md), Negocio.
+- **Más**: Gastos, Variedades, Catálogo ("Catálogo · El mensaje de hoy, listo para copiar", catalog.md), Análisis ("Análisis · Variedades, semanas, meses y días", analysis.md), Negocio.
 - **Negocio**:
   - rename the business;
   - the users by email, the signed-in one marked "vos";
@@ -379,7 +379,7 @@ Success criteria, removing a business:
   - the four places that state the rule say the same, and none names `claro`.
 - **Nothing invented (criterion 7)**:
   - the bar shows exactly Inicio, Ventas, Clientes, Stock and Más, plus the "Nueva venta" button;
-  - Más shows exactly Gastos, Variedades, Catálogo and Negocio;
+  - Más shows exactly Gastos, Variedades, Catálogo, Análisis and Negocio;
   - every figure on Inicio equals the API's answer, with real zeros for a period with no activity (results.md);
   - Inicio shows no notices other than "Arrancá por las variedades" and the pinned catalog's.
 - **Password change (criterion 18)**:
@@ -470,7 +470,6 @@ Success criteria, removing a business:
 - A control to choose the theme, or a "follow the system" option: they come with Más and Negocio's screens (#49).
 - TLS on the home network, including local certificates: the published installation gets TLS from Render (ADR-0016).
 - Live updates between partners: a list refreshes when it is opened or after a save, not when the other partner changes something.
-- The Análisis entry: it comes with its own task.
 - Stopping a guessing run spread across many addresses and many emails at once.
 - A scheduled restore drill; any notification channel to the operator.
 - An admin screen, route or navigation entry, or anything operated from a signed-in session.

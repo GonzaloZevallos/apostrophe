@@ -29,9 +29,19 @@ def test_efectivo_and_transferencia_are_on_the_spot_methods() -> None:
 
     assert not isinstance(efectivo, CellProblem)
     assert efectivo.left_owing is False
-    assert efectivo.method == "Efectivo"
+    assert efectivo.method == "cash"
     assert not isinstance(transferencia, CellProblem)
-    assert transferencia.method == "Transferencia"
+    assert transferencia.left_owing is False
+    assert transferencia.method == "transfer"
+
+
+def test_a_blank_pago_is_not_owing_and_has_no_method() -> None:
+    row = venta_row(2, payment=None, kind="Regalo")
+    [result] = sale_inputs((row,), VARIETY_NAMES)
+
+    assert not isinstance(result, CellProblem)
+    assert result.left_owing is False
+    assert result.method is None
 
 
 def test_an_unknown_payment_value_is_the_problem_import_payment_unknown() -> None:

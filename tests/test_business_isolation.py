@@ -40,8 +40,9 @@ from app.main import create_app
 from app.payments.adapters import router as payments_router_module
 from app.payments.adapters.sql_payments import SqlPayments
 from app.payments.adapters.tables import PaymentRow
+from app.shared.calendar import Month
 from app.shared.transaction import Transaction
-from tests.conftest import SETTINGS, TEST_HASHER, MovableClock, open_business, signed_in
+from tests.conftest import SETTINGS, TEST_HASHER, TODAY, MovableClock, open_business, signed_in
 from tests.fakes.telegram import FakeTelegram
 
 MARKER = "zz-isolation-marker"
@@ -777,3 +778,48 @@ def test_the_delete_check_catches_a_payment_delete_that_ignores_business(
         _assert_another_business_cannot_reach_a_record(
             business_a, business_b, seeded, "DELETE", "/payments/{payment_id}"
         )
+
+
+def test_another_business_s_analysis_is_exactly_the_empty_shape(
+    business_a: TestClient, business_b: TestClient
+) -> None:
+    """`GET /analysis` has no path parameter, so it is only ever exercised as one of
+    `LISTS` by the sweep above. This is the plan's own extra proof (ADR-0020,
+    CODING_STANDARDS section 9): B, with no records of its own, must answer exactly
+    the fixed empty shape — every field of it, not a sample — while A's answer
+    carries real sales and the `MARKER` variety. Nothing of A's ever reaches B."""
+    seed_sales(business_a)
+
+    a_analysis = business_a.get("/analysis").json()
+    b_analysis = business_b.get("/analysis").json()
+
+    assert a_analysis["first_record"] is not None
+    assert a_analysis["month"]["sales"] > 0
+    assert any(MARKER in variety["name"] for variety in a_analysis["month"]["varieties"])
+
+    current_month = str(Month.containing(TODAY))
+    assert b_analysis == {
+        "today": TODAY.isoformat(),
+        "first_record": None,
+        "month": {
+            "month": current_month,
+            "previous": None,
+            "next": None,
+            "sales": 0,
+            "sales_without_shipping": 0,
+            "grams_sold": 0.0,
+            "grams_gifted": 0.0,
+            "average_margin": {"amount": 0, "percent": None, "pending_grams": 0.0},
+            "shortfall": None,
+            "varieties": [],
+        },
+        "weeks": [],
+        "months": [],
+        "weekdays": [
+            {"weekday": weekday, "sales": 0, "count": 0, "best": False}
+            for weekday in range(1, 8)
+        ],
+        "since_first_record": None,
+        "month_expenses": {"categories": [], "total": 0, "purchases": 0},
+        "since_first_record_expenses": {"categories": [], "total": 0, "purchases": 0},
+    }

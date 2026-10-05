@@ -38,6 +38,30 @@ NULLABLE: Mapping[str, Mapping[str, JsonType | ShapeOf]] = {
     "account": {
         "owing_since": "string",
     },
+    "analysis": {
+        "first_record": "string",
+        "month.previous": "string",
+        "month.next": "string",
+        "month.average_margin.percent": "integer",
+        "month.shortfall": ShapeOf("analysis", "month.shortfall"),
+        "month.varieties[].share_percent": "integer",
+        "month.varieties[].margin.percent": "integer",
+        "since_first_record": ShapeOf("analysis", "since_first_record"),
+        "since_first_record.shortfall": ShapeOf("analysis", "since_first_record.shortfall"),
+    },
+    "analysis-empty": {
+        # `analysis-empty.json` is a business with no record at all: every nullable
+        # object is `null` there, so the sibling fixture `analysis` shows each non-null.
+        "first_record": "string",
+        "month.previous": "string",
+        "month.next": "string",
+        "month.average_margin.percent": "integer",
+        "month.shortfall": ShapeOf("analysis", "month.shortfall"),
+        "month.varieties[].share_percent": "integer",
+        "month.varieties[].margin.percent": "integer",
+        "since_first_record": ShapeOf("analysis", "since_first_record"),
+        "since_first_record.shortfall": ShapeOf("analysis", "since_first_record.shortfall"),
+    },
     "customer": {
         "channel": "string",
         "owing_since": "string",
