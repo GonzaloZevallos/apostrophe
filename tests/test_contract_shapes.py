@@ -12,6 +12,7 @@ describes, and only those, is declared."""
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -223,7 +224,7 @@ class RouteShape:
     item: bool = False
 
 
-FIXTURE_ROUTES: dict[str, tuple[RouteShape, ...]] = {
+FIXTURE_ROUTES: Mapping[str, tuple[RouteShape, ...]] = {
     "account": (RouteShape("GET", "/customers/{customer_id}/account"),),
     "customer": (
         RouteShape("POST", "/customers"),
@@ -359,3 +360,83 @@ def test_every_fixture_routes_nullable_fields_match_openapi(app: FastAPI) -> Non
             found: dict[str, JsonType] = {}
             _walk(_response_schema(spec, route), components, "", found)
             assert found == declared, f"{name} {route}: openapi={found} NULLABLE={declared}"
+
+
+# -- the walker itself, proven on schemas a wrong NULLABLE must disagree with --------
+
+
+def _walked(schema: dict[str, Any]) -> dict[str, JsonType]:
+    found: dict[str, JsonType] = {}
+    _walk(schema, {}, "", found)
+    return found
+
+
+def _assert_declared_matches_schema(schema: dict[str, Any], declared: dict[str, JsonType]) -> None:
+    """The same comparison `test_every_fixture_routes_nullable_fields_match_openapi`
+    makes for a real route, isolated so a wrong `declared` can be shown to fail it
+    over a small inline schema, never only the real ones that already agree."""
+    assert _walked(schema) == declared
+
+
+_NULLABLE_STRING_FIELD = {
+    "type": "object",
+    "properties": {"foo": {"anyOf": [{"type": "string"}, {"type": "null"}]}},
+}
+
+# A `kind`-discriminated array, the same shape `AccountRowOut`'s three variants take:
+# only the "sale" kind carries a nullable field, at "note".
+_KIND_DISCRIMINATED_ROWS = {
+    "type": "object",
+    "properties": {
+        "rows": {
+            "type": "array",
+            "items": {
+                "anyOf": [
+                    {
+                        "type": "object",
+                        "properties": {
+                            "kind": {"type": "string", "const": "sale"},
+                            "note": {"anyOf": [{"type": "string"}, {"type": "null"}]},
+                        },
+                    },
+                    {
+                        "type": "object",
+                        "properties": {"kind": {"type": "string", "const": "payment"}},
+                    },
+                ]
+            },
+        }
+    },
+}
+
+
+def test_the_walker_finds_a_nullable_field_behind_any_of_null() -> None:
+    assert _walked(_NULLABLE_STRING_FIELD) == {"foo": "string"}
+
+
+def test_a_nullable_path_missing_from_the_declaration_fails_the_equality_check() -> None:
+    with pytest.raises(AssertionError):
+        _assert_declared_matches_schema(_NULLABLE_STRING_FIELD, {})
+
+
+def test_an_extra_declared_path_the_schema_never_shows_fails_the_equality_check() -> None:
+    not_nullable = {"type": "object", "properties": {"foo": {"type": "string"}}}
+
+    with pytest.raises(AssertionError):
+        _assert_declared_matches_schema(not_nullable, {"foo": "string"})
+
+
+def test_the_walker_finds_a_nullable_field_inside_its_own_kind_discriminated_item() -> None:
+    assert _walked(_KIND_DISCRIMINATED_ROWS) == {"rows[sale].note": "string"}
+
+
+def test_a_nullable_field_inside_a_kind_item_missing_from_the_declaration_fails() -> None:
+    with pytest.raises(AssertionError):
+        _assert_declared_matches_schema(_KIND_DISCRIMINATED_ROWS, {})
+
+
+def test_a_kind_item_s_nullable_field_declared_under_the_wrong_kind_fails() -> None:
+    # "payment" carries no nullable field at all; the walker must not confuse the
+    # two variants' own paths with each other.
+    with pytest.raises(AssertionError):
+        _assert_declared_matches_schema(_KIND_DISCRIMINATED_ROWS, {"rows[payment].note": "string"})
