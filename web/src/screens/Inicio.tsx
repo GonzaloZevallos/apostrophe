@@ -180,7 +180,7 @@ function Panel({
           <span className="panel-resultados__valor panel-resultados__valor--acento">
             {formatSignedMoney(period.profit)}
           </span>
-          {period.pending_cost && <span className="pie">{PENDING_NOTE}</span>}
+          {period.profit_pending && <span className="pie">{PENDING_NOTE}</span>}
         </div>
         <div className="panel-resultados__celda">
           <span className="rotulo">Caja</span>
@@ -194,6 +194,15 @@ function Panel({
           <span className="panel-lista__valor">{formatMoney(period.cost_of_goods)}</span>
         </div>
         {period.pending_cost && <span className="pie">{PENDING_NOTE}</span>}
+        {period.shortfall !== null && (
+          <>
+            <div className="panel-lista__fila">
+              <span>Faltante de stock</span>
+              <span className="panel-lista__valor">{formatMoney(period.shortfall.amount)}</span>
+            </div>
+            {period.shortfall.pending && <span className="pie">{PENDING_NOTE}</span>}
+          </>
+        )}
         <div className="panel-lista__fila">
           <span>Gastos</span>
           <span className="panel-lista__valor">{formatMoney(period.expenses)}</span>

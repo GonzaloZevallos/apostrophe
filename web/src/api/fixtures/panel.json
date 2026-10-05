@@ -26,11 +26,11 @@
       "grams_sold": 28.0,
       "grams_gifted": 2.0,
       "cost_of_goods": 18000,
-      "pending_cost": true,
+      "pending_cost": false,
       "shortfall": { "amount": 3000, "pending": true },
       "expenses": 12000,
       "purchases": 30000,
-      "profit": 12000,
+      "profit": 9000,
       "profit_pending": true,
       "cash": -12000
     },
@@ -43,12 +43,12 @@
       "grams_sold": 14.0,
       "grams_gifted": 0.0,
       "cost_of_goods": 9000,
-      "pending_cost": false,
+      "pending_cost": true,
       "shortfall": null,
       "expenses": 5000,
       "purchases": 0,
       "profit": 9000,
-      "profit_pending": false,
+      "profit_pending": true,
       "cash": 15000
     }
   },
