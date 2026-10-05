@@ -1,11 +1,11 @@
 /**
- * `Mas`: Gastos, Variedades, Catálogo and Negocio — Análisis is not shown yet (PRD,
- * "Nada inventado"; it comes with its own task). Each entry links to where its own
- * screen subtask mounts its route (`/gastos`, `/variedades`, `/catalogo`,
- * `/negocio`), already reserved in `contract.json`'s `frontSegments`. The fixed
- * subtitles are the design's own words (`Mas.dc.html`); Negocio's is left out since
- * its design subtitle ("La Huerta · 2 usuarios") is data this subtask has no route
- * to fetch.
+ * `Mas`: Gastos, Variedades, Catálogo, Análisis and Negocio. Each entry links to
+ * where its own screen subtask mounts its route (`/gastos`, `/variedades`,
+ * `/catalogo`, `/analisis`, `/negocio`), already reserved in `contract.json`'s
+ * `frontSegments`. The fixed subtitles are the design's own words (`Mas.dc.html`);
+ * Análisis's is the plan's own line ("Análisis · Variedades, semanas, meses y
+ * días"); Negocio's is left out since its design subtitle ("La Huerta · 2 usuarios")
+ * is data this subtask has no route to fetch.
  */
 
 import { Link } from 'react-router'
@@ -20,6 +20,7 @@ const ITEMS: Item[] = [
   { to: '/gastos', label: 'Gastos', detail: 'Por mes y por categoría' },
   { to: '/variedades', label: 'Variedades', detail: 'Precios y avisos de stock bajo' },
   { to: '/catalogo', label: 'Catálogo', detail: 'El mensaje de hoy, listo para copiar' },
+  { to: '/analisis', label: 'Análisis', detail: 'Variedades, semanas, meses y días' },
   { to: '/negocio', label: 'Negocio' },
 ]
 

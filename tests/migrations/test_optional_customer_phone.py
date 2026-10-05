@@ -1,5 +1,5 @@
-"""Migration 0010 makes `customer.phone` nullable (ADR-0019): every existing phone
-survives the real `upgrade_to_head` from 0009 unchanged, over both the plain sqlite
+"""Migration 0011 makes `customer.phone` nullable (ADR-0021): every existing phone
+survives the real `upgrade_to_head` from 0010 unchanged, over both the plain sqlite
 driver and sqlite+libsql (ADR-0016), and no foreign key is left dangling."""
 
 from pathlib import Path
@@ -130,7 +130,7 @@ def _assert_migrated_whole(engine: Engine) -> None:
 
 def test_existing_phones_survive_the_upgrade_on_plain_sqlite(tmp_path: Path) -> None:
     engine = make_engine(f"sqlite:///{tmp_path / 'apostrophe.db'}")
-    _upgrade_to(engine, "0009")
+    _upgrade_to(engine, "0010")
     _seed(engine)
 
     upgrade_to_head(engine)
@@ -142,7 +142,7 @@ def test_existing_phones_survive_the_upgrade_on_plain_sqlite(tmp_path: Path) -> 
 def test_existing_phones_survive_the_upgrade_on_libsql(tmp_path: Path) -> None:
     pytest.importorskip("sqlalchemy_libsql")
     engine = make_engine(f"sqlite+libsql:///{tmp_path / 'apostrophe.db'}")
-    _upgrade_to(engine, "0009")
+    _upgrade_to(engine, "0010")
     _seed(engine)
 
     upgrade_to_head(engine)
@@ -207,5 +207,5 @@ def test_downgrade_fails_loudly_on_a_null_phone(tmp_path: Path) -> None:
         config.attributes["connection"] = connection
         with pytest.raises(RuntimeError):
             with connection.begin():
-                command.downgrade(config, "0009")
+                command.downgrade(config, "0010")
     engine.dispose()

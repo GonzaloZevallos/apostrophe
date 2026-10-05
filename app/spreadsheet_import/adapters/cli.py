@@ -2,7 +2,7 @@
 
     scripts/import-spreadsheet.sh <business-id> <file.xlsx> [--mapping PATH] [--dry-run]
 
-The mapping is optional (ADR-0019; ADR-0018's amendment): leaving it out behaves
+The mapping is optional (ADR-0021; ADR-0018's amendment): leaving it out behaves
 exactly like giving an empty one, `ParsedMapping((), ())`.
 
 `run` is the tested seam: it takes the engine, the clock and the streams, so a test

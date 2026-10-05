@@ -90,9 +90,9 @@ domain (ADR-0006).
   and any reader sorting on `(date, recorded_at)` would scramble it.
 - **A pure plan that restates the owners' rules**: a second author of every rule.
 
-## Amendment (GH-54; ADR-0019): the mapping becomes an optional `--mapping` flag
+## Amendment (GH-54; ADR-0021): the mapping becomes an optional `--mapping` flag
 
-Zeta's real sheet has no phone numbers. ADR-0019 makes a customer's phone optional and
+Zeta's real sheet has no phone numbers. ADR-0021 makes a customer's phone optional and
 the import's mapping file optional with it.
 
 - The command line becomes `scripts/import-spreadsheet.sh <business-id> <file.xlsx>

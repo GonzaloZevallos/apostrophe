@@ -1,5 +1,5 @@
 """A business's customers, identified by their own record, not by their phone
-(ADR-0019; CONTEXT.md: Customer, Phone number, Channel, VIP customer). The phone is
+(ADR-0021; CONTEXT.md: Customer, Phone number, Channel, VIP customer). The phone is
 optional contact data: a customer can have none.
 
 `PhoneNumber.of` is the only place a phone number is normalised; nothing else in the

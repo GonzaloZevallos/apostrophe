@@ -54,11 +54,22 @@ class Lot:
 class Draw:
     """Grams going out of a variety: a sale line (gifts included) or a negative
     adjustment, always carried as a positive magnitude — the direction is already
-    `Draw` itself, never a signed `Grams`."""
+    `Draw` itself, never a signed `Grams`.
+
+    `sale_id`, `line_total`, `pricing_rule` and `variety_name` ride along from the
+    `SaleLineDraw` a sale-line draw was built from (a negative-adjustment draw leaves
+    them at their defaults), so results' own `DrawCosts` (ADR-0020) reads them off
+    this exact draw once `allocate` has costed it, never by joining a line to its
+    cost through `(sale_id, position)` afterwards. `allocate` and `stock_level` never
+    read them."""
 
     order: LotOrder
     variety_id: int
     grams: Grams
+    sale_id: int | None = None
+    line_total: int | None = None
+    pricing_rule: str | None = None
+    variety_name: str | None = None
 
     def __post_init__(self) -> None:
         if not self.grams.is_positive:
@@ -70,7 +81,14 @@ class SaleLineDraw:
     """One sale line's draw on its variety's stock (gifts included): the shape the
     `Draws` port (read from `sale_line ⨝ sale`) answers, so this module — and every
     other one under `app/stock/domain/` — never imports `app.sales`
-    (CODING_STANDARDS section 1)."""
+    (CODING_STANDARDS section 1).
+
+    `variety_name`, `line_total` and `pricing_rule` (the stored value, a plain `str`
+    so this stays free of `app.sales.domain.pricing.PricingRule`) ride along on the
+    same row `Draws` already reads (`sale_line ⨝ sale ⨝ variety`): results' own
+    `DrawCosts` (ADR-0020) needs them matched to this exact draw, never joined back by
+    `(sale_id, position)` afterwards. They default so the fixtures already built for
+    `lots_and_draws` and `costs_for_sale` — which never read them — need no change."""
 
     variety_id: int
     day: date
@@ -78,6 +96,9 @@ class SaleLineDraw:
     sale_id: int
     position: int
     grams: Grams
+    variety_name: str = ""
+    line_total: int = 0
+    pricing_rule: str = "list"
 
 
 def _entry_order(entry: StockEntry) -> LotOrder:
@@ -108,7 +129,15 @@ def lots_and_draws(
             )
     for sale_draw in sale_draws:
         draws.setdefault(sale_draw.variety_id, []).append(
-            Draw(_sale_draw_order(sale_draw), sale_draw.variety_id, sale_draw.grams)
+            Draw(
+                _sale_draw_order(sale_draw),
+                sale_draw.variety_id,
+                sale_draw.grams,
+                sale_id=sale_draw.sale_id,
+                line_total=sale_draw.line_total,
+                pricing_rule=sale_draw.pricing_rule,
+                variety_name=sale_draw.variety_name,
+            )
         )
     varieties = set(lots) | set(draws)
     return {

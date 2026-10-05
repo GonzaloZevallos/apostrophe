@@ -23,6 +23,7 @@ from typing import Protocol
 
 from app.shared.grams import Grams
 from app.shared.transaction import Transaction
+from app.spreadsheet_import.domain.plan import OnTheSpotMethod
 from app.spreadsheet_import.domain.rows import (
     CatalogRow,
     EntradaRow,
@@ -51,7 +52,7 @@ class VarietyKey:
 @dataclass(frozen=True)
 class CustomerKey:
     """The normalised phone number two spellings are matched by, opaque outside
-    customers' own adapter, or `None` for a customer with no phone at all (ADR-0019).
+    customers' own adapter, or `None` for a customer with no phone at all (ADR-0021).
     Never printed (the plan's invariant: no phone number appears in any report line,
     exception message, stdout or stderr)."""
 
@@ -87,7 +88,7 @@ class SaleCheckInput:
     gift: bool
     special_total: int | None
     shipping: int
-    method: str | None
+    method: OnTheSpotMethod | None
     left_owing: bool
     sale_date: date
     note: str | None
@@ -206,7 +207,7 @@ class ExpensesImport(Protocol):
 
 
 class CustomersImport(Protocol):
-    """Customers, identified by their own record; the phone is optional (ADR-0019)."""
+    """Customers, identified by their own record; the phone is optional (ADR-0021)."""
 
     def has_records(self) -> bool:
         """Whether this business already has a customer."""

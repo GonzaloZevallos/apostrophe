@@ -61,6 +61,22 @@ Success criteria:
 
 ### Reading the file
 
+- **Any export**: an `.xlsx` saved by Excel or exported by Google Sheets reads the same.
+  - Titles on row 1 are found whatever size the file declares, including none.
+  - Data rows are read to the last row with data, in Ventas, Entradas, Gastos and the Ajustes price history.
+  - Fixed cells and ranges (Ajustes, Catálogo) are read at their address whatever size the file declares.
+- **Numbers where a whole number or grams are expected**: how the cell stores a number never matters, only its value.
+  - In a whole-number field (`% índica`, list and bulk price, `Costo total`, `Monto`, `Envío cobrado`, `Precio especial (total)`), a number with no fractional part is that whole number: `60.0` is 60. A fractional value is still refused by the owner's rule (`60.5` is not a share).
+  - Grams, bulk minimums and low-stock thresholds keep their exact value to the hundredth (`3.5` is 3,5 g).
+- **Numbers where text is expected**: a number in a text cell is read as its text, and then follows that field's rules like any text. This applies to the names of varieties, customers and categories, `Detalle`, `Nota`, `Aroma`, the header and footer, and the cells with a fixed set of values (`Origen`, `Pago`, `Tipo`, Catálogo's shown).
+  - A whole number reads as its digits, with no decimals and no thousands separator: `100`, `2024`, `1000`.
+  - A non-whole number reads with a decimal comma and the fewest decimals that give its exact value, with no thousands separator: `3,5`, `0,25`.
+  - A number is never refused only for being a number where text is expected. A numeric value outside a fixed set (e.g. an `Origen` of `3`) still blocks as unknown.
+- **Dates where text is expected**: a date in any of those text cells (e.g. a `Nota` typed as `12/10` that the sheet turned into a date) is never read as text, because the file no longer holds what was typed: the day and month may be swapped by the sheet's locale and a year was added.
+  - It blocks, listed with its sheet and row, as a date where text is expected.
+  - The problem tells the operator to re-type the cell as text in the sheet (in Google Sheets, starting it with an apostrophe) and run again.
+  - The dry run lists every such cell in one pass.
+  - Dates in date columns (`Fecha`, the effective date) are read as dates, as always.
 - **Ventas, Entradas and Gastos**: column titles are on row 1 and data starts on row 2. Columns are found by their title.
   - **Ventas** reads `Fecha`, `Variedad`, `Gramos`, `Pago`, `Cliente`, `Tipo`, `Envío cobrado`, `Precio especial (total)` and `Nota`. It also reads `Total`, only to tell whether a row is finished and to report mismatches.
   - **Entradas** reads `Fecha`, `Variedad`, `Gramos`, `Origen`, `Costo total` and `Nota`, plus `Revisar` to tell whether a row is finished.
@@ -136,6 +152,7 @@ Also blocking:
 
 - a required column that can't be found in Ventas, Entradas or Gastos;
 - a filled-in Ventas row whose `Total` is empty (the file wasn't recalculated);
+- a date in a text cell (see Reading the file);
 - an unknown variety name, or two Ajustes rows 7–16 that are the same name;
 - two price entries for one variety on one date;
 - an unknown origin or payment value;
@@ -146,7 +163,7 @@ Also blocking:
 - `"Regalo"` with a special total;
 - a special total that isn't a whole number above $0.
 
-Rows the sheet marks unfinished are the one exception: they are left out and listed, and never block. A customer name missing from the mapping never blocks: that customer is imported without a number.
+Rows the sheet marks unfinished are the one exception: they are left out and listed, and never block. A customer name missing from the mapping never blocks: that customer is imported without a number. How the file stores a cell never blocks on its own, with one exception: a date in a text cell, because what was typed can no longer be told.
 
 ### Customers
 
@@ -182,6 +199,13 @@ From test fixtures, with no telemetry:
   - a dry run writes 0 rows in every table, whatever the outcome;
   - a refused real run writes 0 rows;
   - the dry run lists every blocking problem of a fixture in one pass, every missing column included.
+- **Any export (criteria 1, 3)**: a fixture laid out like a Google Sheets export, with no declared size in any worksheet and every number stored as a float, is read in full by the dry run. 100% passing. It holds:
+  - whole numbers in `% índica`, prices, costs, amounts, shipping and a special total, all read as whole numbers;
+  - decimal grams and a decimal threshold, read to the hundredth;
+  - numbers in text cells (a Detalle, a Nota, a variety, customer and category name made of digits, one of them non-whole), read as `100`-style digits or with a decimal comma.
+
+  Every column and every row is found, and none of these is reported as a problem. A `60.5` share is still refused.
+- **Dates in text cells (criteria 1, 3)**: the same fixture with a date in a Nota, a Detalle and a name cell reports each one, with its sheet and row, as a date where text is expected, with the fix to re-type it as text. Nothing is read from them, and a real run over that file writes 0 rows. 100% passing.
 - **Opens where the sheet left off (criterion 2)**: after importing a fixture, these equal its expected figures, with 0 unexplained differences:
   - each variety's current price;
   - the catalog text;
@@ -216,5 +240,7 @@ From test fixtures, with no telemetry:
 - Importing rows the sheet marks unfinished, or anything they name.
 - Inventing customers, phone numbers, categories or varieties to get an import through.
 - Merging differently spelled customer names that have no mapped number.
+- Reading back as text a date the sheet made out of what was typed into a text cell.
 - Grouping several rows into one sale with several lines.
 - Undoing an import once it is done.
+- How a phone number stored as a number in the mapping is read (#54).

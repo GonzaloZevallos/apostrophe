@@ -15,7 +15,7 @@ from app.business_removal.domain.labels import (
     LABEL_AS_BUSINESS,
     LABEL_COLUMN,
     LABEL_VIA,
-    owned_tables,
+    exported_tables,
 )
 from app.business_removal.domain.schema import Schema, Table
 
@@ -56,11 +56,11 @@ def build_document(
     into `{"id", "name"}` references and `*_hundredths` integers into two-place
     decimal strings under the key without the suffix.
 
-    `rows` may also carry withheld tables (`invitation`, `login_guard`) the caller
-    read for the delete but that never reach the document; those are never indexed
-    here, since no owned table's foreign key ever targets one, and `login_guard` has
-    no `id` column to index by."""
-    owned = owned_tables(schema)
+    `rows` may also carry withheld tables (`invitation`, `login_guard`, `reset_link`)
+    the caller read for the delete but that never reach the document; those are never
+    indexed here, since no exported table's foreign key ever targets one, and
+    `login_guard` has no `id` column to index by."""
+    owned = exported_tables(schema)
     rows_by_table: dict[str, dict[Any, Mapping[str, Any]]] = {
         name: {row["id"]: row for row in rows[name]} for name in owned if name in rows
     }

@@ -28,6 +28,7 @@
 
 import { createBrowserRouter, Navigate } from 'react-router'
 import Root from './Root'
+import Analisis from './screens/Analisis'
 import Entrar from './screens/Entrar'
 import EntradaStock from './screens/EntradaStock'
 import GastoCategorias from './screens/GastoCategorias'
@@ -45,6 +46,7 @@ import TeDeben from './screens/clientes/TeDeben'
 import VariedadDetalle from './screens/VariedadDetalle'
 import Variedades from './screens/Variedades'
 import Negocio from './screens/Negocio'
+import Reset from './screens/Reset'
 import NuevaVenta from './screens/ventas/NuevaVenta'
 import VentaDetalle from './screens/ventas/VentaDetalle'
 import Ventas from './screens/ventas/Ventas'
@@ -57,6 +59,7 @@ export const router = createBrowserRouter([
     children: [
       { path: '/entrar', element: <Entrar /> },
       { path: '/invitation/:token', element: <Invitacion /> },
+      { path: '/reset/:token', element: <Reset /> },
       {
         element: <GatedLayout />,
         children: [
@@ -84,6 +87,7 @@ export const router = createBrowserRouter([
               { path: 'mi-stock/nueva-entrada', element: <EntradaStock mode="nuevo" /> },
               { path: 'mi-stock/entradas/:id', element: <EntradaStock mode="editar" /> },
               { path: 'negocio', element: <Negocio /> },
+              { path: 'analisis', element: <Analisis /> },
               { path: 'catalogo', element: <Catalogo /> },
               {
                 path: 'ventas',

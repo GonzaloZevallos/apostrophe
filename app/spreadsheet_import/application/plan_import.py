@@ -184,7 +184,7 @@ def _customer_check_result(
 ) -> domain_plan.CustomerKey | domain_plan.CustomerRefusal:
     """A straight field-for-field mirror: `build_plan` files `name_code` and
     `phone_code` independently, each at its own site, so both reach the report when
-    both are broken (ADR-0019: the import never reads a customer code string to
+    both are broken (ADR-0021: the import never reads a customer code string to
     decide where it goes)."""
     if isinstance(result, ports.CustomerRefusals):
         return domain_plan.CustomerRefusal(

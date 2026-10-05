@@ -10,6 +10,21 @@ from typing import TextIO
 
 from app.spreadsheet_import.domain.plan import ImportPlan
 
+# A fixed hint for a problem kind whose cause isn't the cell's value but how the file
+# stores it (GH-55; import.md "What blocks"): never the cell's own value, so this
+# stays a lookup on `kind` alone.
+_HINTS: dict[str, str] = {
+    "text_is_date": (
+        "a date where text is expected; re-type the cell as text (in Google Sheets, "
+        "start it with an apostrophe) and run again"
+    ),
+}
+
+
+def _problem_message(kind: str) -> str:
+    hint = _HINTS.get(kind)
+    return f"{kind}: {hint}" if hint else kind
+
 
 def print_report(plan: ImportPlan, *, business_name: str, dry_run: bool, out: TextIO) -> None:
     kind = "Dry run" if dry_run else "Import"
@@ -33,7 +48,7 @@ def print_report(plan: ImportPlan, *, business_name: str, dry_run: bool, out: Te
         for problem in plan.problems:
             out.write(
                 f"  {problem.ref.sheet} row {problem.ref.row} "
-                f"[{problem.column}]: {problem.kind}\n"
+                f"[{problem.column}]: {_problem_message(problem.kind)}\n"
             )
 
     if plan.unfinished:

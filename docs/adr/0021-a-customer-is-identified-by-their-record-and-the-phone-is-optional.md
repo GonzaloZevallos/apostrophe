@@ -14,7 +14,7 @@ out of scope.
 
 ## Decision
 
-- **`customer.phone` becomes nullable** in migration 0010, revising 0009, with
+- **`customer.phone` becomes nullable** in migration 0011, revising 0010, with
   `op.batch_alter_table("customer", recreate="always")` — the first table rebuild in the
   chain. The constraint keeps its name, `uq_customer_business_phone`; no partial index
   is added, because SQLite's UNIQUE already treats NULLs as distinct. Its test stops at
@@ -47,7 +47,7 @@ out of scope.
 
 - Once a customer without a phone is stored, the column can't go back to `NOT NULL`
   without inventing numbers; a new unique key for customers is a later decision.
-- A deploy rolled back to code from before 0010 crashes on any customer read once a
+- A deploy rolled back to code from before 0011 crashes on any customer read once a
   customer without a phone exists (`PhoneNumber(None)`); rolling back past this
   change means restoring data, not redeploying.
 - Whether Turso's remote protocol honours `PRAGMA foreign_keys=OFF` on the raw

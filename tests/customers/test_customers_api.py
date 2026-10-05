@@ -350,7 +350,7 @@ def test_a_validation_error_body_carries_no_input_ctx_or_url(client: TestClient)
     assert "12345" not in response.text
 
 
-# -- A phone is optional (ADR-0019) ----------------------------------------------------
+# -- A phone is optional (ADR-0021) ----------------------------------------------------
 
 
 def test_registering_with_no_phone_field_answers_phone_null(client: TestClient) -> None:

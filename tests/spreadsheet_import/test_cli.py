@@ -326,7 +326,7 @@ def test_a_mapping_entry_with_a_blank_phone_imports_the_customer_without_one(
     tmp_path: Path,
     caplog: pytest.LogCaptureFixture,
 ) -> None:
-    # A blank phone cell means no number (ADR-0019): it is not a problem, and the
+    # A blank phone cell means no number (ADR-0021): it is not a problem, and the
     # customer is imported under their name alone.
     business_id = _business_id(engine)
     xlsx = _save_workbook(_workbook(), tmp_path)
