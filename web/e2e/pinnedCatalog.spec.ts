@@ -11,6 +11,7 @@
 import { expect, test } from '@playwright/test'
 import { newBusinessInvitationUrl } from './backend.js'
 import { watchConsole } from './console.js'
+import { openMas } from './helpers/openMas.js'
 
 const PASSWORD = 'correcthorsebattery'
 
@@ -42,7 +43,7 @@ test('a seller sets up the bot, tests it, then publishes, from the front alone',
   await page.getByRole('button', { name: 'Guardar precio' }).click()
   await expect(page.getByText('Precio guardado')).toBeVisible()
 
-  await page.goto('/mas')
+  await openMas(page)
   await page.getByRole('link', { name: /Catálogo/ }).click()
   await expect(page).toHaveURL(/\/catalogo$/)
 

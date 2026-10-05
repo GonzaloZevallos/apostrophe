@@ -27,6 +27,7 @@
 import { expect, test } from '@playwright/test'
 import { newBusinessInvitationUrl } from './backend.js'
 import { watchConsole } from './console.js'
+import { openGastos } from './helpers/openMas.js'
 import { fillSaleLine } from './helpers/sale.js'
 
 const PASSWORD = 'correcthorsebattery'
@@ -266,7 +267,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   }
 
   // An expense, in the business's own default "Otros" category.
-  await page.goto('/gastos')
+  await openGastos(page)
   await page.getByRole('button', { name: 'Nuevo gasto' }).click()
   await page.getByLabel('Categoría').selectOption({ label: 'Otros' })
   await page.getByLabel('Monto').fill('1500')

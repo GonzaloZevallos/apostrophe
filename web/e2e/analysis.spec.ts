@@ -13,6 +13,7 @@
 import { expect, test } from '@playwright/test'
 import { newBusinessInvitationUrl } from './backend.js'
 import { watchConsole } from './console.js'
+import { openGastos, openMas } from './helpers/openMas.js'
 import { fillSaleLine } from './helpers/sale.js'
 
 const PASSWORD = 'correcthorsebattery'
@@ -67,7 +68,7 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   await expect(page.getByText('Venta guardada')).toBeVisible()
 
   // An expense, today, with a category created inline.
-  await page.goto('/gastos')
+  await openGastos(page)
   await page.getByRole('button', { name: 'Nuevo gasto' }).click()
   await page.getByRole('button', { name: 'Crear una categoría nueva' }).click()
   await page.getByLabel('Nombre de la categoría nueva').fill('Flete')
@@ -78,7 +79,7 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   await expect(page.getByText('Gasto guardado')).toBeVisible()
 
   // Más → Análisis.
-  await page.goto('/mas')
+  await openMas(page)
   await page.getByRole('link', { name: /Análisis/ }).click()
   await expect(page).toHaveURL(/\/analisis$/)
 

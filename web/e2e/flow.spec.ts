@@ -16,6 +16,7 @@
 import { expect, test } from '@playwright/test'
 import { newBusinessInvitationUrl } from './backend.js'
 import { watchConsole } from './console.js'
+import { openGastos } from './helpers/openMas.js'
 
 const PASSWORD = 'correcthorsebattery'
 const PHONE = '+5491155550001'
@@ -119,7 +120,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await expect(page.getByText('Aviso apagado')).toBeVisible()
 
   // Record an expense, with a category created inline.
-  await page.goto('/gastos')
+  await openGastos(page)
   await page.getByRole('button', { name: 'Nuevo gasto' }).click()
   await page.getByRole('button', { name: 'Crear una categoría nueva' }).click()
   await page.getByLabel('Nombre de la categoría nueva').fill('Flete')
