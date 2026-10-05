@@ -57,8 +57,17 @@ decided it (stock shortfall, CONTEXT.md).
   O(entries + draws + sales + payments + expenses). `period_figures` scans each ledger
   once into day buckets and every window reads the buckets; `GET /analysis` runs the same
   number of SQL statements on a nearly empty business as on a year of history, which a
-  test asserts. The 300 ms is measured once on a seeded year and recorded here, never
-  asserted in CI; we revisit if it misses.
+  test asserts. **Measured** (integration pass, `_seed_bigger_history`'s seeded year —
+  8 varieties, 120 sales and 120 expenses spread over 360 days — against an in-memory
+  SQLite `GET /analysis`): **40–50 ms**, three runs, well inside the 300 ms budget; never
+  asserted in CI, since a different machine's absolute number means nothing — we revisit
+  if it misses.
+  - **Isolation proof run once, by hand, this pass**: `SqlSalesLedger.all()`'s
+    `.where(SaleRow.business_id == self._business_id)` was removed; immediately
+    `tests/test_business_isolation.py::test_another_business_s_analysis_is_exactly_the_empty_shape`
+    failed (the other business's `weeks`/`weekdays` picked up the seeded business's own
+    activity); the filter was restored and the test passed again. The sweep does catch a
+    missing filter, at least for the ledger that carries it.
 - Expense breakdowns group by `category_id` and order by the stored `name_key`, as Gastos
   does; a behaviour test ties Análisis's month breakdown to `GET /expenses?month=`.
 - #7 inherits the period function, the shortfall rule and the costed-sales rule; its
