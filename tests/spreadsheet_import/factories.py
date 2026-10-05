@@ -1,10 +1,19 @@
 """Small builders for `domain/rows.py` values, so each test states only the fields it
-cares about (CODING_STANDARDS.md section 5: no infrastructure, no real workbook).
+cares about (CODING_STANDARDS.md section 5: no infrastructure, no real workbook), plus
+`as_google_export`, which rewrites an already-saved `.xlsx`'s zip in place so it reads
+the way a Google Sheets export does (GH-55): no worksheet keeps a real `<dimension>`
+element and every numeric cell is stored as a float. The test that calls it still
+builds the workbook itself with openpyxl; nothing here saves a real sheet.
 """
 
 from __future__ import annotations
 
+import re
+import zipfile
 from datetime import date
+from decimal import Decimal
+from pathlib import Path
+from re import Match
 
 from app.shared.grams import Grams
 from app.spreadsheet_import.domain.rows import (
@@ -128,7 +137,7 @@ def venta_row(
     shipping: int | None = None,
     special_total: int | None = None,
     note: str | None = None,
-    total: int | str | None = 1000,
+    total: int | Decimal | str | None = 1000,
 ) -> VentaRow:
     return VentaRow(
         ref=ref("Ventas", row),
@@ -174,3 +183,59 @@ def mapping(
     *, entries: tuple[MappingEntry, ...] = (), problems: tuple[CellProblem, ...] = ()
 ) -> ParsedMapping:
     return ParsedMapping(entries=entries, problems=problems)
+
+
+# -- The Google Sheets export shape (GH-55) -------------------------------------------
+
+_SHEET_XML_NAME = re.compile(r"xl/worksheets/sheet\d+\.xml")
+_DIMENSION = re.compile(r"<dimension[^/]*/>")
+_T_ATTRIBUTE = re.compile(r'\bt="([^"]*)"')
+_INTEGER_VALUE = re.compile(r"(<v>)(-?\d+)(</v>)")
+# A self-closing `<c .../>` (an empty cell, e.g. an inline string with nothing in
+# it) is tried first: without it, the lazy `(.*?)</c>` below would cross straight
+# over it looking for the next `</c>`, swallowing the following cell's own content
+# along with it and leaving a numeric cell right after an empty one untouched.
+_CELL = re.compile(r"<c\b[^>]*/>|<c\b(?P<attrs>[^>]*)>(?P<inner>.*?)</c>", re.DOTALL)
+
+
+def _floatify_numeric_cells(xml: str) -> str:
+    def cell(match: Match[str]) -> str:
+        attributes = match.group("attrs")
+        if attributes is None:
+            return match.group(0)  # a self-closing, empty cell: nothing to floatify
+        inner = match.group("inner")
+        type_match = _T_ATTRIBUTE.search(attributes)
+        # No `t` attribute at all means numeric too (the OOXML default).
+        cell_type = type_match.group(1) if type_match else "n"
+        if cell_type != "n":
+            return match.group(0)
+        new_inner = _INTEGER_VALUE.sub(
+            lambda m: f"{m.group(1)}{m.group(2)}.0{m.group(3)}", inner
+        )
+        return f"<c{attributes}>{new_inner}</c>"
+
+    return _CELL.sub(cell, xml)
+
+
+def as_google_export(path: Path, *, a1_dimension: bool = False) -> None:
+    """Rewrites `path`'s zip in place so it reads the way a Google Sheets `.xlsx`
+    export does (GH-55's reproduction, proven against the mechanism, not just read
+    from the code): every worksheet loses its `<dimension>` element — blank by
+    default, `ref="A1"` when `a1_dimension` is set, the other shape Sheets is seen to
+    write — and every numeric cell (no `t` attribute, or `t="n"`) carries a decimal
+    point, never a bare integer. A boolean or shared/inline-string cell (`t="b"`,
+    `t="s"`, `t="inlineStr"`) is untouched."""
+    with zipfile.ZipFile(path) as source:
+        names = source.namelist()
+        contents = {name: source.read(name) for name in names}
+    dimension_replacement = '<dimension ref="A1" />' if a1_dimension else ""
+    for name in names:
+        if not _SHEET_XML_NAME.fullmatch(name):
+            continue
+        xml = contents[name].decode("utf-8")
+        xml = _DIMENSION.sub(dimension_replacement, xml)
+        xml = _floatify_numeric_cells(xml)
+        contents[name] = xml.encode("utf-8")
+    with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as out:
+        for name in names:
+            out.writestr(name, contents[name])

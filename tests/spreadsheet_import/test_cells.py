@@ -5,7 +5,8 @@ openpyxl; the real sheet and real customer data never enter the repository.
 
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date, datetime, time
+from decimal import Decimal
 from pathlib import Path
 
 from openpyxl import Workbook
@@ -16,7 +17,7 @@ from app.spreadsheet_import.adapters import layout
 from app.spreadsheet_import.adapters.cells import read_workbook
 from app.spreadsheet_import.domain.rows import ParsedWorkbook
 
-type _CellValue = int | float | str | date | datetime | None
+type _CellValue = int | float | str | date | datetime | time | None
 
 VENTAS_TITLES = (
     "Fecha",
@@ -407,3 +408,173 @@ def test_read_workbook_returns_a_parsed_workbook(tmp_path: Path) -> None:
     parsed = read_workbook(_save(workbook, tmp_path))
 
     assert isinstance(parsed, ParsedWorkbook)
+
+
+# -- GH-55: whole-number floats, numbers and dates in text cells ----------------------
+
+
+def test_a_whole_float_share_and_whole_float_pesos_are_accepted(tmp_path: Path) -> None:
+    workbook, _ = _default(tmp_path)
+    catalogo = workbook[layout.CATALOGO_SHEET]
+    _row(catalogo, 6, ("Jack Herer", "Sí", "🌿", 60.0, "Tierra"))
+    gastos = workbook[layout.GASTOS_SHEET]
+    _row(gastos, 2, (date(2026, 1, 5), "Insumos", 500.0, "Bolsas", ""))
+
+    parsed = read_workbook(_save(workbook, tmp_path))
+
+    [catalog_row] = parsed.catalog
+    assert catalog_row.indica == 60
+    assert isinstance(catalog_row.indica, int)
+    assert parsed.gastos[0].amount == 500
+    assert isinstance(parsed.gastos[0].amount, int)
+    assert parsed.problems == ()
+
+
+def test_a_non_whole_float_share_is_refused_by_the_catalog_owner_not_the_reader(
+    tmp_path: Path,
+) -> None:
+    workbook, _ = _default(tmp_path)
+    catalogo = workbook[layout.CATALOGO_SHEET]
+    _row(catalogo, 6, ("Jack Herer", "Sí", "🌿", 60.5, "Tierra"))
+
+    parsed = read_workbook(_save(workbook, tmp_path))
+
+    [catalog_row] = parsed.catalog
+    assert catalog_row.indica == "60.5"
+    assert parsed.problems == ()
+
+
+def test_a_boolean_share_is_a_reader_problem_never_text(tmp_path: Path) -> None:
+    # GH-55: a bool never becomes a number or text in any reader, `_to_indica`
+    # included — it is its own reader cell-problem, never the owner's
+    # `catalog.indica_share_invalid` (that refusal is for a non-whole number only).
+    workbook, _ = _default(tmp_path)
+    catalogo = workbook[layout.CATALOGO_SHEET]
+    _row(catalogo, 6, ("Jack Herer", "Sí", "🌿", True, "Tierra"))
+
+    parsed = read_workbook(_save(workbook, tmp_path))
+
+    [catalog_row] = parsed.catalog
+    assert catalog_row.indica is None
+    assert len(parsed.problems) == 1
+    assert parsed.problems[0].kind == "indica_not_numeric"
+    assert parsed.problems[0].column == "% índica"
+
+
+def test_a_boolean_ventas_total_blocks_as_not_recalculated(tmp_path: Path) -> None:
+    # GH-55: a bool Total is never text either — treated as no cached value at all,
+    # the same `not_recalculated` problem a formula with nothing cached gives.
+    workbook = _blank_workbook()
+    _titles(workbook[layout.ENTRADAS_SHEET], ENTRADAS_TITLES)
+    _titles(workbook[layout.GASTOS_SHEET], GASTOS_TITLES)
+    ventas = workbook[layout.VENTAS_SHEET]
+    _titles(ventas, VENTAS_TITLES)
+    _row(
+        ventas,
+        2,
+        (date(2026, 1, 5), "Jack Herer", 1, "Efectivo", True, "Ana", "Lista", 0, "", ""),
+    )
+
+    parsed = read_workbook(_save(workbook, tmp_path))
+
+    [row] = parsed.ventas
+    assert row.total is None
+    not_recalculated = [p for p in parsed.problems if p.kind == "not_recalculated"]
+    assert len(not_recalculated) == 1
+
+
+def test_a_ventas_total_non_whole_float_is_kept_as_an_exact_decimal(tmp_path: Path) -> None:
+    workbook = _blank_workbook()
+    _titles(workbook[layout.ENTRADAS_SHEET], ENTRADAS_TITLES)
+    _titles(workbook[layout.GASTOS_SHEET], GASTOS_TITLES)
+    ventas = workbook[layout.VENTAS_SHEET]
+    _titles(ventas, VENTAS_TITLES)
+    _row(
+        ventas,
+        2,
+        (date(2026, 1, 5), "Jack Herer", 1, "Efectivo", 15501.55, "Ana", "Lista", 0, "", ""),
+    )
+
+    parsed = read_workbook(_save(workbook, tmp_path))
+
+    [row] = parsed.ventas
+    assert row.total == Decimal("15501.55")
+    assert parsed.problems == ()
+
+
+def test_a_number_in_a_text_column_reads_back_as_its_own_text(tmp_path: Path) -> None:
+    workbook = _blank_workbook()
+    _titles(workbook[layout.GASTOS_SHEET], GASTOS_TITLES)
+    _titles(workbook[layout.VENTAS_SHEET], VENTAS_TITLES)
+    entradas = workbook[layout.ENTRADAS_SHEET]
+    _titles(entradas, ENTRADAS_TITLES)
+    _row(entradas, 2, (date(2026, 1, 5), 420, 1, "Compra", 10, 100.0, ""))
+    _row(entradas, 3, (date(2026, 1, 6), "Jack Herer", 1, "Compra", 10, 0.25, ""))
+    _row(entradas, 4, (date(2026, 1, 7), "Jack Herer", 1, "Compra", 10, 1e16, ""))
+
+    parsed = read_workbook(_save(workbook, tmp_path))
+
+    assert [e.variety for e in parsed.entradas] == ["420", "Jack Herer", "Jack Herer"]
+    assert [e.note for e in parsed.entradas] == ["100", "0,25", "10000000000000000"]
+    assert parsed.problems == ()
+
+
+def test_a_boolean_in_a_text_column_is_still_text_invalid(tmp_path: Path) -> None:
+    workbook = _blank_workbook()
+    _titles(workbook[layout.VENTAS_SHEET], VENTAS_TITLES)
+    _titles(workbook[layout.GASTOS_SHEET], GASTOS_TITLES)
+    entradas = workbook[layout.ENTRADAS_SHEET]
+    _titles(entradas, ENTRADAS_TITLES)
+    _row(entradas, 2, (date(2026, 1, 5), "Jack Herer", 1, "Compra", 10, True, ""))
+
+    parsed = read_workbook(_save(workbook, tmp_path))
+
+    assert parsed.entradas[0].note is None
+    assert len(parsed.problems) == 1
+    assert parsed.problems[0].kind == "text_invalid"
+    assert parsed.problems[0].column == "Nota"
+
+
+def test_a_date_in_a_text_column_is_text_is_date_not_text_invalid(tmp_path: Path) -> None:
+    workbook = _blank_workbook()
+    _titles(workbook[layout.VENTAS_SHEET], VENTAS_TITLES)
+    _titles(workbook[layout.GASTOS_SHEET], GASTOS_TITLES)
+    entradas = workbook[layout.ENTRADAS_SHEET]
+    _titles(entradas, ENTRADAS_TITLES)
+    _row(entradas, 2, (date(2026, 1, 5), "Jack Herer", 1, "Compra", 10, date(2026, 10, 12), ""))
+
+    parsed = read_workbook(_save(workbook, tmp_path))
+
+    assert parsed.entradas[0].note is None
+    assert len(parsed.problems) == 1
+    assert parsed.problems[0].kind == "text_is_date"
+    assert parsed.problems[0].column == "Nota"
+
+
+def test_a_time_in_a_text_column_is_also_text_is_date(tmp_path: Path) -> None:
+    workbook = _blank_workbook()
+    _titles(workbook[layout.VENTAS_SHEET], VENTAS_TITLES)
+    _titles(workbook[layout.GASTOS_SHEET], GASTOS_TITLES)
+    entradas = workbook[layout.ENTRADAS_SHEET]
+    _titles(entradas, ENTRADAS_TITLES)
+    _row(entradas, 2, (date(2026, 1, 5), "Jack Herer", 1, "Compra", 10, time(12, 30), ""))
+
+    parsed = read_workbook(_save(workbook, tmp_path))
+
+    assert parsed.entradas[0].note is None
+    assert len(parsed.problems) == 1
+    assert parsed.problems[0].kind == "text_is_date"
+
+
+def test_a_date_in_fecha_is_unaffected_by_the_text_is_date_rule(tmp_path: Path) -> None:
+    workbook = _blank_workbook()
+    _titles(workbook[layout.VENTAS_SHEET], VENTAS_TITLES)
+    _titles(workbook[layout.GASTOS_SHEET], GASTOS_TITLES)
+    entradas = workbook[layout.ENTRADAS_SHEET]
+    _titles(entradas, ENTRADAS_TITLES)
+    _row(entradas, 2, (date(2026, 1, 5), "Jack Herer", 1, "Compra", 10, "", ""))
+
+    parsed = read_workbook(_save(workbook, tmp_path))
+
+    assert parsed.entradas[0].entry_date == date(2026, 1, 5)
+    assert parsed.problems == ()
