@@ -13,6 +13,7 @@
 import { expect, test } from '@playwright/test'
 import { newBusinessInvitationUrl } from './backend.js'
 import { watchConsole } from './console.js'
+import { openGastos, openMas } from './helpers/openMas.js'
 import { fillSaleLine } from './helpers/sale.js'
 
 const PASSWORD = 'correcthorsebattery'
@@ -67,19 +68,19 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   await expect(page.getByText('Venta guardada')).toBeVisible()
 
   // An expense, today, with a category created inline.
-  await page.goto('/gastos')
-  await page.getByRole('button', { name: 'Nuevo gasto' }).click()
+  await openGastos(page)
+  await page.getByRole('link', { name: 'Cargar gasto' }).click()
   await page.getByRole('button', { name: 'Crear una categoría nueva' }).click()
   await page.getByLabel('Nombre de la categoría nueva').fill('Flete')
   await page.getByRole('button', { name: 'Crear categoría' }).click()
   await page.getByLabel('Monto').fill('1500')
   await page.getByLabel('Detalle').fill('Flete al mercado')
-  await page.getByRole('button', { name: 'Guardar' }).click()
+  await page.getByRole('button', { name: 'Guardá el gasto' }).click()
   await expect(page.getByText('Gasto guardado')).toBeVisible()
 
   // Más → Análisis.
-  await page.goto('/mas')
-  await page.getByRole('link', { name: /Análisis/ }).click()
+  await openMas(page)
+  await page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /^Análisis/ }).click()
   await expect(page).toHaveURL(/\/analisis$/)
 
   // The current month: the variety row, week by week, by weekday and both expense

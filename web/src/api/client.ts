@@ -39,7 +39,12 @@ async function send<T>(method: string, path: string, body?: unknown): Promise<T>
     response = await fetch(path, {
       method,
       credentials: 'include',
-      headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },
+      // Always JSON: the server serves the app shell on a few paths it shares with the
+      // API only to a request that accepts text/html (docs/adr/0024).
+      headers:
+        body === undefined
+          ? { Accept: 'application/json' }
+          : { Accept: 'application/json', 'Content-Type': 'application/json' },
       body: body === undefined ? undefined : JSON.stringify(body),
     })
   } catch {

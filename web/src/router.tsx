@@ -31,6 +31,7 @@ import Root from './Root'
 import Analisis from './screens/Analisis'
 import Entrar from './screens/Entrar'
 import EntradaStock from './screens/EntradaStock'
+import ExpenseNewRoute from './screens/expenses/ExpenseNewRoute'
 import GastoCategorias from './screens/GastoCategorias'
 import Gastos from './screens/Gastos'
 import Inicio from './screens/Inicio'
@@ -52,6 +53,7 @@ import VentaDetalle from './screens/ventas/VentaDetalle'
 import Ventas from './screens/ventas/Ventas'
 import GatedLayout from './shell/GatedLayout'
 import Shell from './shell/Shell'
+import { ANALYSIS, EXPENSE_CATEGORIES, EXPENSE_NEW, EXPENSES, MORE, relative } from './routes'
 
 export const router = createBrowserRouter([
   {
@@ -67,7 +69,7 @@ export const router = createBrowserRouter([
             element: <Shell />,
             children: [
               { index: true, element: <Inicio /> },
-              { path: 'mas', element: <Mas /> },
+              { path: relative(MORE), element: <Mas /> },
               {
                 path: 'clientes',
                 element: <ClientesLayout />,
@@ -81,13 +83,18 @@ export const router = createBrowserRouter([
               },
               { path: 'variedades', element: <Variedades /> },
               { path: 'variedades/:id', element: <VariedadDetalle /> },
-              { path: 'gastos', element: <Gastos /> },
-              { path: 'gastos/categorias', element: <GastoCategorias /> },
+              { path: relative(EXPENSES), element: <Gastos />, handle: { tab: 'more' } },
+              {
+                path: relative(EXPENSE_NEW),
+                element: <ExpenseNewRoute />,
+                handle: { chrome: 'none', tab: 'more' },
+              },
+              { path: relative(EXPENSE_CATEGORIES), element: <GastoCategorias /> },
               { path: 'mi-stock', element: <Stock /> },
               { path: 'mi-stock/nueva-entrada', element: <EntradaStock mode="nuevo" /> },
               { path: 'mi-stock/entradas/:id', element: <EntradaStock mode="editar" /> },
               { path: 'negocio', element: <Negocio /> },
-              { path: 'analisis', element: <Analisis /> },
+              { path: relative(ANALYSIS), element: <Analisis />, handle: { tab: 'more' } },
               { path: 'catalogo', element: <Catalogo /> },
               {
                 path: 'ventas',
