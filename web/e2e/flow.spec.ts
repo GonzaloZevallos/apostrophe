@@ -121,20 +121,20 @@ test('a seller does everything the backend offers today, from the front alone', 
 
   // Record an expense, with a category created inline.
   await openGastos(page)
-  await page.getByRole('button', { name: 'Nuevo gasto' }).click()
+  await page.getByRole('link', { name: 'Cargar gasto' }).click()
   await page.getByRole('button', { name: 'Crear una categoría nueva' }).click()
   await page.getByLabel('Nombre de la categoría nueva').fill('Flete')
   await page.getByRole('button', { name: 'Crear categoría' }).click()
   await page.getByLabel('Monto').fill('4500')
   await page.getByLabel('Detalle').fill('Flete al mercado')
-  await page.getByRole('button', { name: 'Guardar' }).click()
+  await page.getByRole('button', { name: 'Guardá el gasto' }).click()
   await expect(page.getByText('Gasto guardado')).toBeVisible()
   await expect(page.getByText('Flete al mercado')).toBeVisible()
 
   // Edit it.
   await page.getByText('Flete al mercado').click()
   await page.getByLabel('Detalle').fill('Flete al mercado central')
-  await page.getByRole('button', { name: 'Guardar' }).click()
+  await page.getByRole('button', { name: 'Guardá el gasto' }).click()
   await expect(page.getByText('Gasto guardado')).toBeVisible()
   await expect(page.getByText('Flete al mercado central')).toBeVisible()
 
@@ -144,6 +144,12 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.getByRole('button', { name: 'Sí, borrala' }).click()
   await expect(page.getByText('Gasto eliminado')).toBeVisible()
   await expect(page.getByText('Flete al mercado central')).toHaveCount(0)
+
+  // Move between months: the month lives in the URL, one step back and one forward.
+  await page.getByRole('button', { name: 'Mes anterior' }).click()
+  await expect(page).toHaveURL(/\/expenses\?month=\d{4}-\d{2}$/)
+  await page.getByRole('button', { name: 'Mes siguiente' }).click()
+  await expect(page.getByText(/Las compras de flores no van acá/)).toBeVisible()
 
   // The Spanish paths stay on purpose here: the server answers them with a 308 and the
   // app shows the English screen (the one `goto('/gastos')` and one `goto('/mas')` of

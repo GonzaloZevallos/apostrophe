@@ -4,10 +4,10 @@ import { router } from './router'
 import * as routes from './routes'
 
 describe('routes.ts against the route table', () => {
-  // EXPENSE_NEW is a placeholder until `routes-flip` mounts its route.
   const mounted = {
     MORE: routes.MORE,
     EXPENSES: routes.EXPENSES,
+    EXPENSE_NEW: routes.EXPENSE_NEW,
     EXPENSE_CATEGORIES: routes.EXPENSE_CATEGORIES,
     ANALYSIS: routes.ANALYSIS,
   }

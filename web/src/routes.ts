@@ -11,7 +11,6 @@ export const MORE = '/more'
 export const EXPENSES = '/expenses'
 export const EXPENSE_CATEGORIES = '/gastos/categorias'
 export const ANALYSIS = '/analisis'
-// Its route is mounted by the expense form's own subtask.
 export const EXPENSE_NEW = '/expenses/new'
 
 /** The path as a route-table segment (`'/more'` → `'more'`), for children of the root route. */

@@ -268,11 +268,11 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
 
   // An expense, in the business's own default "Otros" category.
   await openGastos(page)
-  await page.getByRole('button', { name: 'Nuevo gasto' }).click()
+  await page.getByRole('link', { name: 'Cargar gasto' }).click()
   await page.getByLabel('Categoría').selectOption({ label: 'Otros' })
   await page.getByLabel('Monto').fill('1500')
   await page.getByLabel('Detalle').fill('Bolsas de regalo')
-  await page.getByRole('button', { name: 'Guardar' }).click()
+  await page.getByRole('button', { name: 'Guardá el gasto' }).click()
   await expect(page.getByText('Gasto guardado')).toBeVisible()
 
   // `GET /panel`, read in this same run: the one answer Inicio must agree with,
