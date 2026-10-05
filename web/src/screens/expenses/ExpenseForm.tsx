@@ -188,19 +188,30 @@ export default function ExpenseForm({
     }
   }
 
+  // The header, with "Cerrar", shows whatever the categories do, so the seller can
+  // always leave.
+  const header = (
+    <div className="gasto-form__cabecera">
+      <span className="gasto-form__titulo">{target === 'nuevo' ? 'Cargar gasto' : 'Editar gasto'}</span>
+      <button type="button" className="boton--enlace gasto-form__cerrar" onClick={onCancel}>
+        Cerrar
+      </button>
+    </div>
+  )
+
   if (categoriesQuery.isError) {
-    return categoriesQuery.error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />
+    return (
+      <div className="gasto-form">
+        {header}
+        {categoriesQuery.error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />}
+      </div>
+    )
   }
-  if (categoriesQuery.data === undefined) return null
+  if (categoriesQuery.data === undefined) return <div className="gasto-form">{header}</div>
 
   return (
     <div className="gasto-form">
-      <div className="gasto-form__cabecera">
-        <span className="gasto-form__titulo">{target === 'nuevo' ? 'Cargar gasto' : 'Editar gasto'}</span>
-        <button type="button" className="boton--enlace gasto-form__cerrar" onClick={onCancel}>
-          Cerrar
-        </button>
-      </div>
+      {header}
       <form className="formulario" onSubmit={onSubmit}>
         <label className="campo">
           <span className="campo__rotulo">Fecha</span>

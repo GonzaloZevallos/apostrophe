@@ -115,6 +115,32 @@ async function fillAndSave(detail: string, amount: string): Promise<void> {
   await userEvent.click(screen.getByRole('button', { name: 'Guardá el gasto' }))
 }
 
+function subtotalOf(category: string): string {
+  const name = screen.getByText(category, { selector: '.gastos__categoria-nombre' })
+  return name.nextElementSibling?.textContent ?? ''
+}
+
+function subtotalsShown(): number[] {
+  return screen
+    .getAllByText(/^\$ /, { selector: '.gastos__categoria-subtotal' })
+    .map((node) => Number((node.textContent ?? '').replace(/\D/g, '')))
+}
+
+function totalNumber(): number {
+  return Number(totalShown().replace(/\D/g, ''))
+}
+
+/** October, two expenses in Packaging and one in Otros, so a subtotal is not the total. */
+const MULTI: Row[] = [
+  { id: 1, spent_on: '2026-10-01', category_id: 1, amount: 4500, detail: 'Bolsas' },
+  { id: 2, spent_on: '2026-10-02', category_id: 1, amount: 1500, detail: 'Cinta' },
+  { id: 3, spent_on: '2026-10-02', category_id: 2, amount: 700, detail: 'Varios' },
+]
+
+function expectTotalIsSumOfSubtotals(): void {
+  expect(totalNumber()).toBe(subtotalsShown().reduce((sum, value) => sum + value, 0))
+}
+
 function totalShown(): string {
   const label = screen.getByText('Gastaste en el mes')
   return label.nextElementSibling?.textContent ?? ''
@@ -130,6 +156,7 @@ test('shows the month, its total, each category with its subtotal, the expenses 
   expect(await screen.findByText('Octubre 2026')).toBeInTheDocument()
   expect(await screen.findByText('$ 4.500', { selector: '.cifra-xl' })).toBeInTheDocument()
   expect(screen.getByText('1 gasto en 1 categoría')).toBeInTheDocument()
+  expect(subtotalOf('Packaging')).toBe('$ 4.500')
   expect(screen.getByText('Bolsas')).toBeInTheDocument()
   // The September expense is not in October's view.
   expect(screen.queryByText('Cinta vieja')).not.toBeInTheDocument()
@@ -374,4 +401,86 @@ test('keeps its link to the categories screen and renders no link to Configuraci
     expect(link.getAttribute('href') ?? '').not.toMatch(/^\/settings/)
   }
   expect(screen.queryByRole('link', { name: /Configuración/ })).not.toBeInTheDocument()
+})
+
+test('subtotals and the total stay equal to the sum shown after create, edit and delete', async () => {
+  renderExpenses([EXPENSES], store([...MULTI]))
+
+  await screen.findByText('Bolsas')
+  expect(subtotalOf('Packaging')).toBe('$ 6.000')
+  expect(subtotalOf('Otros')).toBe('$ 700')
+  expect(totalShown()).toBe('$ 6.700')
+  expectTotalIsSumOfSubtotals()
+
+  // Create: another Packaging expense.
+  await userEvent.click(screen.getByRole('link', { name: 'Cargar gasto' }))
+  await fillAndSave('Etiquetas', '300')
+  await screen.findByText('Etiquetas')
+  await vi.waitFor(() => expect(subtotalOf('Packaging')).toBe('$ 6.300'))
+  expect(subtotalOf('Otros')).toBe('$ 700')
+  expect(totalShown()).toBe('$ 7.000')
+  expectTotalIsSumOfSubtotals()
+
+  // Edit: Bolsas goes from 4.500 to 5.000.
+  await userEvent.click(screen.getByText('Bolsas'))
+  const amount = await screen.findByLabelText('Monto')
+  await userEvent.clear(amount)
+  await userEvent.type(amount, '5000')
+  await userEvent.click(screen.getByRole('button', { name: 'Guardá el gasto' }))
+  await vi.waitFor(() => expect(subtotalOf('Packaging')).toBe('$ 6.800'))
+  expect(subtotalOf('Otros')).toBe('$ 700')
+  expect(totalShown()).toBe('$ 7.500')
+  expectTotalIsSumOfSubtotals()
+
+  // Delete: the Otros expense, so its category disappears and Packaging is unchanged.
+  await userEvent.click(screen.getByText('Varios'))
+  await userEvent.click(await screen.findByRole('button', { name: 'Borrar gasto' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Sí, borrala' }))
+  await vi.waitFor(() => expect(screen.queryByText('Varios')).not.toBeInTheDocument())
+  expect(screen.queryByText('Otros', { selector: '.gastos__categoria-nombre' })).not.toBeInTheDocument()
+  expect(subtotalOf('Packaging')).toBe('$ 6.800')
+  expect(totalShown()).toBe('$ 6.800')
+  expectTotalIsSumOfSubtotals()
+})
+
+test('a duplicate category name inside the form is refused, keeping what was typed', async () => {
+  renderExpenses(
+    [EXPENSES],
+    store(
+      [...SEED],
+      failing(
+        (url, method) => url === '/expense-categories' && method === 'POST',
+        () => jsonResponse(409, { detail: 'taken', code: 'expense_category.name_taken' }),
+      ),
+    ),
+  )
+
+  await userEvent.click(await screen.findByRole('link', { name: 'Cargar gasto' }))
+  await userEvent.type(await screen.findByLabelText('Detalle'), 'Sustrato nuevo')
+  await userEvent.click(screen.getByRole('button', { name: 'Crear una categoría nueva' }))
+  await userEvent.type(screen.getByLabelText('Nombre de la categoría nueva'), 'Packaging')
+  await userEvent.click(screen.getByRole('button', { name: 'Crear categoría' }))
+
+  expect(await screen.findByText('Revisá los datos e intentá de nuevo.')).toBeInTheDocument()
+  expect(screen.getByLabelText('Nombre de la categoría nueva')).toHaveValue('Packaging')
+  expect(screen.getByLabelText('Detalle')).toHaveValue('Sustrato nuevo')
+  expect(screen.getByLabelText('Categoría')).toHaveValue('')
+})
+
+test('if the categories cannot load, the edit overlay still has "Cerrar"', async () => {
+  renderExpenses(
+    [EXPENSES],
+    store(
+      [...SEED],
+      failing(
+        (url, method) => url === '/expense-categories' && method === 'GET',
+        () => new Response('boom', { status: 500 }),
+      ),
+    ),
+  )
+
+  await userEvent.click(await screen.findByText('Bolsas'))
+  await userEvent.click(await screen.findByRole('button', { name: 'Cerrar' }))
+
+  expect(screen.queryByRole('button', { name: 'Cerrar' })).not.toBeInTheDocument()
 })
