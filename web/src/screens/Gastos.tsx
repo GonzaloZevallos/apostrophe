@@ -33,6 +33,7 @@ import Aviso, { type SuccessToast } from '../components/Aviso'
 import GoneNotice from '../components/GoneNotice'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import SinConexion from '../components/SinConexion'
+import { EXPENSE_CATEGORIES } from '../routes'
 
 export const FLOWER_NOTICE = 'Las compras de flores no van acá: se cargan en Stock.'
 export const CATEGORY_GONE = 'Esa categoría ya no está. Elegí otra.'
@@ -446,7 +447,7 @@ export default function Gastos() {
         )}
 
         <span className="pie">{FLOWER_NOTICE}</span>
-        <Link to="/gastos/categorias" className="boton--enlace">
+        <Link to={EXPENSE_CATEGORIES} className="boton--enlace">
           Categorías
         </Link>
         <button type="button" className="boton" onClick={() => setFormTarget('nuevo')}>

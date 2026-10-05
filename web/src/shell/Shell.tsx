@@ -27,6 +27,7 @@
 import { Link, NavLink, Outlet, useMatches, useOutletContext } from 'react-router'
 import type { Me } from '../api/me'
 import Icono, { type NombreIcono } from '../components/Icono'
+import { MORE } from '../routes'
 
 interface Item {
   to: string
@@ -39,7 +40,7 @@ const ITEMS: Item[] = [
   { to: '/ventas', label: 'Ventas', icono: 'ventas' },
   { to: '/clientes', label: 'Clientes', icono: 'clientes' },
   { to: '/mi-stock', label: 'Stock', icono: 'stock' },
-  { to: '/mas', label: 'Más', icono: 'mas' },
+  { to: MORE, label: 'Más', icono: 'mas' },
 ]
 
 const NUEVA_VENTA_PATH = '/ventas/nueva'
