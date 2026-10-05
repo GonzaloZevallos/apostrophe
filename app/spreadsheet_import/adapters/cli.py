@@ -1,6 +1,9 @@
 """The composition root for the spreadsheet import (ADR-0018).
 
-    scripts/import-spreadsheet.sh <business-id> <file.xlsx> <mapping.csv> [--dry-run]
+    scripts/import-spreadsheet.sh <business-id> <file.xlsx> [--mapping PATH] [--dry-run]
+
+The mapping is optional (ADR-0019; ADR-0018's amendment): leaving it out behaves
+exactly like giving an empty one, `ParsedMapping((), ())`.
 
 `run` is the tested seam: it takes the engine, the clock and the streams, so a test
 runs it over an in-memory database and a movable clock, and reads the figures back
@@ -78,7 +81,7 @@ def _parse_args(argv: Sequence[str]) -> argparse.Namespace:
     parser = argparse.ArgumentParser(prog="import-spreadsheet")
     parser.add_argument("business_id", type=int)
     parser.add_argument("xlsx_path", type=Path)
-    parser.add_argument("mapping_path", type=Path)
+    parser.add_argument("--mapping", dest="mapping_path", type=Path, default=None)
     parser.add_argument("--dry-run", action="store_true")
     return parser.parse_args(argv)
 
@@ -118,7 +121,9 @@ def _run(args: argparse.Namespace, engine: Engine, clock: Clock, out: TextIO) ->
             parsed, mapping = _EMPTY_WORKBOOK, _EMPTY_MAPPING
         else:
             parsed = read_workbook(args.xlsx_path)
-            mapping = read_mapping(args.mapping_path)
+            mapping = (
+                read_mapping(args.mapping_path) if args.mapping_path is not None else _EMPTY_MAPPING
+            )
 
         plan = plan_import(
             parsed,

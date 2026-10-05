@@ -24,6 +24,7 @@ def print_report(plan: ImportPlan, *, business_name: str, dry_run: bool, out: Te
     out.write(f"  Expense categories: {counts.expense_categories}\n")
     out.write(f"  Expenses: {counts.expenses}\n")
     out.write(f"  Customers: {counts.customers}\n")
+    out.write(f"  Customers without a phone number: {counts.customers_without_phone}\n")
     out.write(f"  Sales: {counts.sales}\n")
     out.write(f"  Payments: {counts.payments}\n")
 

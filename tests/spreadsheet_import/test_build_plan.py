@@ -11,8 +11,10 @@ from datetime import date
 
 from app.shared.grams import Grams
 from app.spreadsheet_import.domain.plan import (
+    ByName,
     Checks,
     CustomerKey,
+    CustomerRefusal,
     HeaderFooterCheck,
     Refusal,
     SaleCheck,
@@ -193,23 +195,178 @@ def test_no_owner_refusal_means_no_problem_for_that_row() -> None:
     assert plan.problems == ()
 
 
-# -- Customers missing from the mapping ------------------------------------------------
+# -- Customers missing from the mapping import without a phone number ----------------
 
 
-def test_a_customer_name_missing_from_the_mapping_blocks() -> None:
+def test_a_customer_name_missing_from_the_mapping_is_imported_without_a_phone() -> None:
     split = _split(
         varieties=(variety_row(7, "Variedad A"),),
         ventas=(venta_row(2, customer="Juana", total=1000),),
     )
     checks = Checks(
         variety_names={"Variedad A": VARIEDAD_A},
+        customers={"Juana": CustomerKey(None)},
+        sales={SheetRef("Ventas", 2): _ok_sale(SheetRef("Ventas", 2), 1000)},
+    )
+
+    plan = build_plan(split, mapping(), checks)
+
+    assert plan.problems == ()
+    [customer] = plan.customers
+    assert customer.kept_name == "Juana"
+    assert customer.identity == ByName("Juana")
+    assert plan.counts.customers_without_phone == 1
+
+
+def test_an_unmapped_long_name_gives_one_problem_at_the_ventas_row() -> None:
+    split = _split(
+        varieties=(variety_row(7, "Variedad A"),),
+        ventas=(venta_row(2, customer="Juana", total=1000),),
+    )
+    checks = Checks(
+        variety_names={"Variedad A": VARIEDAD_A},
+        customers={"Juana": CustomerRefusal(name_code="customer.name_too_long", phone_code=None)},
         sales={SheetRef("Ventas", 2): _ok_sale(SheetRef("Ventas", 2), 1000)},
     )
 
     plan = build_plan(split, mapping(), checks)
 
     assert not plan.writable
-    assert any(p.kind == "import.customer_not_in_mapping" for p in plan.problems)
+    [problem] = plan.problems
+    assert problem.ref == SheetRef("Ventas", 2)
+    assert problem.column == "Cliente"
+    assert problem.kind == "customer.name_too_long"
+
+
+def test_a_mapped_long_name_gives_one_problem_only_at_the_ventas_row() -> None:
+    split = _split(
+        varieties=(variety_row(7, "Variedad A"),),
+        ventas=(venta_row(2, customer="Juana", total=1000),),
+    )
+    checks = Checks(
+        variety_names={"Variedad A": VARIEDAD_A},
+        customers={"Juana": CustomerRefusal(name_code="customer.name_too_long", phone_code=None)},
+        sales={SheetRef("Ventas", 2): _ok_sale(SheetRef("Ventas", 2), 1000)},
+    )
+
+    plan = build_plan(
+        split, mapping(entries=(MappingEntry(5, "Juana", "11-2345-6789"),)), checks
+    )
+
+    assert not plan.writable
+    [problem] = plan.problems
+    assert problem.ref == SheetRef("Ventas", 2)
+    assert problem.column == "Cliente"
+    assert problem.kind == "customer.name_too_long"
+
+
+def test_a_malformed_mapped_number_gives_one_problem_at_the_mapping_line() -> None:
+    split = _split(
+        varieties=(variety_row(7, "Variedad A"),),
+        ventas=(venta_row(2, customer="Juana", total=1000),),
+    )
+    checks = Checks(
+        variety_names={"Variedad A": VARIEDAD_A},
+        customers={"Juana": CustomerRefusal(name_code=None, phone_code="customer.phone_invalid")},
+        sales={SheetRef("Ventas", 2): _ok_sale(SheetRef("Ventas", 2), 1000)},
+    )
+
+    plan = build_plan(
+        split, mapping(entries=(MappingEntry(5, "Juana", "123"),)), checks
+    )
+
+    assert not plan.writable
+    [problem] = plan.problems
+    assert problem.ref == SheetRef("", 5)
+    assert problem.column == "phone"
+    assert problem.kind == "customer.phone_invalid"
+
+
+def test_a_mapped_name_with_both_a_long_name_and_a_bad_phone_gives_two_problems() -> None:
+    split = _split(
+        varieties=(variety_row(7, "Variedad A"),),
+        ventas=(venta_row(2, customer="Juana", total=1000),),
+    )
+    checks = Checks(
+        variety_names={"Variedad A": VARIEDAD_A},
+        customers={
+            "Juana": CustomerRefusal(
+                name_code="customer.name_too_long", phone_code="customer.phone_invalid"
+            )
+        },
+        sales={SheetRef("Ventas", 2): _ok_sale(SheetRef("Ventas", 2), 1000)},
+    )
+
+    plan = build_plan(
+        split, mapping(entries=(MappingEntry(5, "Juana", "123"),)), checks
+    )
+
+    assert not plan.writable
+    assert len(plan.problems) == 2
+    kinds = {(p.ref, p.column, p.kind) for p in plan.problems}
+    assert (SheetRef("Ventas", 2), "Cliente", "customer.name_too_long") in kinds
+    assert (SheetRef("", 5), "phone", "customer.phone_invalid") in kinds
+
+
+def test_an_unused_entry_with_a_long_name_gives_no_name_problem_and_is_still_unused() -> None:
+    split = _split()
+    checks = Checks(
+        customers={"Juana": CustomerRefusal(name_code="customer.name_too_long", phone_code=None)}
+    )
+
+    plan = build_plan(split, mapping(entries=(MappingEntry(5, "Juana", ""),)), checks)
+
+    assert plan.problems == ()
+    assert plan.unused_mapping_entries == ("Juana",)
+
+
+def test_unmapped_names_equal_after_collapsing_spaces_are_one_customer() -> None:
+    split = _split(
+        varieties=(variety_row(7, "Variedad A"),),
+        ventas=(
+            venta_row(2, customer="Juana  Perez", kind="Lista", payment="Efectivo", total=1000),
+            venta_row(3, customer="Juana Perez", total=1000),
+        ),
+    )
+    checks = Checks(
+        variety_names={"Variedad A": VARIEDAD_A},
+        customers={"Juana Perez": CustomerKey(None)},
+        sales={
+            SheetRef("Ventas", 2): _ok_sale(SheetRef("Ventas", 2), 1000),
+            SheetRef("Ventas", 3): _ok_sale(SheetRef("Ventas", 3), 1000),
+        },
+    )
+
+    plan = build_plan(split, mapping(), checks)
+
+    assert plan.problems == ()
+    assert len(plan.customers) == 1
+
+
+def test_unmapped_names_differing_by_case_are_two_customers() -> None:
+    split = _split(
+        varieties=(variety_row(7, "Variedad A"),),
+        ventas=(
+            venta_row(2, customer="juana perez", kind="Lista", payment="Efectivo", total=1000),
+            venta_row(3, customer="Juana Perez", total=1000),
+        ),
+    )
+    checks = Checks(
+        variety_names={"Variedad A": VARIEDAD_A},
+        customers={
+            "juana perez": CustomerKey(None),
+            "Juana Perez": CustomerKey(None),
+        },
+        sales={
+            SheetRef("Ventas", 2): _ok_sale(SheetRef("Ventas", 2), 1000),
+            SheetRef("Ventas", 3): _ok_sale(SheetRef("Ventas", 3), 1000),
+        },
+    )
+
+    plan = build_plan(split, mapping(), checks)
+
+    assert plan.problems == ()
+    assert len(plan.customers) == 2
 
 
 def test_a_customer_name_present_in_the_mapping_is_fine() -> None:
@@ -689,7 +846,8 @@ def test_a_header_footer_refusal_blocks_with_the_caller_given_ref() -> None:
 def test_a_mapping_phone_refusal_uses_the_caller_given_mapping_sheet_label() -> None:
     split = _split()
     checks = Checks(
-        customers={"Juana": Refusal("customers.phone_invalid")}, mapping_sheet="Mapeo"
+        customers={"Juana": CustomerRefusal(name_code=None, phone_code="customers.phone_invalid")},
+        mapping_sheet="Mapeo",
     )
 
     plan = build_plan(

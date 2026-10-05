@@ -149,7 +149,7 @@ def test_dry_run_writes_nothing_and_reports_the_counts(
     out, err = io.StringIO(), io.StringIO()
 
     code = run(
-        [str(business_id), str(xlsx), str(mapping), "--dry-run"],
+        [str(business_id), str(xlsx), "--mapping", str(mapping), "--dry-run"],
         engine=engine,
         clock=clock,
         out=out,
@@ -179,7 +179,7 @@ def test_real_run_imports_and_the_figures_match(
 
     with caplog.at_level(logging.DEBUG):
         code = run(
-            [str(business_id), str(xlsx), str(mapping)],
+            [str(business_id), str(xlsx), "--mapping", str(mapping)],
             engine=engine,
             clock=clock,
             out=out,
@@ -222,7 +222,13 @@ def test_an_unknown_business_is_refused_with_no_echo(
     mapping = _save_mapping(tmp_path, ((CUSTOMER, PHONE),))
     out, err = io.StringIO(), io.StringIO()
 
-    code = run(["999999", str(xlsx), str(mapping)], engine=engine, clock=clock, out=out, err=err)
+    code = run(
+        ["999999", str(xlsx), "--mapping", str(mapping)],
+        engine=engine,
+        clock=clock,
+        out=out,
+        err=err,
+    )
 
     assert code == 1
     assert err.getvalue() == "refused: import.business_unknown\n"
@@ -239,7 +245,11 @@ def test_a_business_with_records_is_refused_with_nothing_written(
     out, err = io.StringIO(), io.StringIO()
 
     code = run(
-        [str(business_id), str(xlsx), str(mapping)], engine=engine, clock=clock, out=out, err=err
+        [str(business_id), str(xlsx), "--mapping", str(mapping)],
+        engine=engine,
+        clock=clock,
+        out=out,
+        err=err,
     )
 
     assert code == 1
@@ -262,7 +272,11 @@ def test_imported_records_are_invisible_from_another_business(
     out, err = io.StringIO(), io.StringIO()
 
     code = run(
-        [str(business_id), str(xlsx), str(mapping)], engine=engine, clock=clock, out=out, err=err
+        [str(business_id), str(xlsx), "--mapping", str(mapping)],
+        engine=engine,
+        clock=clock,
+        out=out,
+        err=err,
     )
 
     assert code == 0, err.getvalue()
@@ -288,7 +302,7 @@ def test_a_malformed_mapping_on_a_real_run_is_refused_with_no_echo(
 
     with caplog.at_level(logging.DEBUG):
         code = run(
-            [str(business_id), str(xlsx), str(mapping_path)],
+            [str(business_id), str(xlsx), "--mapping", str(mapping_path)],
             engine=engine,
             clock=clock,
             out=out,
@@ -305,16 +319,15 @@ def test_a_malformed_mapping_on_a_real_run_is_refused_with_no_echo(
     assert client.get("/customers").json() == []
 
 
-def test_a_mapping_entry_with_a_blank_phone_is_filed_as_a_problem_not_a_crash(
+def test_a_mapping_entry_with_a_blank_phone_imports_the_customer_without_one(
     client: TestClient,
     engine: Engine,
     clock: MovableClock,
     tmp_path: Path,
     caplog: pytest.LogCaptureFixture,
 ) -> None:
-    # The mapping still requires a phone for every entry today (the `import`
-    # subtask's own rework makes it optional): a blank one must still be filed as a
-    # problem, not accepted as a no-phone customer and not an AssertionError.
+    # A blank phone cell means no number (ADR-0019): it is not a problem, and the
+    # customer is imported under their name alone.
     business_id = _business_id(engine)
     xlsx = _save_workbook(_workbook(), tmp_path)
     mapping_path = tmp_path / "mapping.csv"
@@ -323,20 +336,156 @@ def test_a_mapping_entry_with_a_blank_phone_is_filed_as_a_problem_not_a_crash(
 
     with caplog.at_level(logging.DEBUG):
         code = run(
-            [str(business_id), str(xlsx), str(mapping_path)],
+            [str(business_id), str(xlsx), "--mapping", str(mapping_path)],
             engine=engine,
             clock=clock,
             out=out,
             err=err,
         )
 
-    assert code == 1, out.getvalue()
+    assert code == 0, out.getvalue()
     report = out.getvalue()
-    assert "import.mapping_phone_missing" in report
+    assert "Customers without a phone number: 1" in report
+    assert not _DIGIT_RUN.search(report)
+    assert not _DIGIT_RUN.search(err.getvalue())
+    assert caplog.records == []
+    customers = client.get("/customers").json()
+    assert len(customers) == 1
+    assert customers[0]["phone"] is None
+
+
+def test_no_mapping_flag_imports_every_customer_without_a_phone(
+    client: TestClient, engine: Engine, clock: MovableClock, tmp_path: Path
+) -> None:
+    business_id = _business_id(engine)
+    xlsx = _save_workbook(_workbook(), tmp_path)
+    out, err = io.StringIO(), io.StringIO()
+
+    code = run([str(business_id), str(xlsx)], engine=engine, clock=clock, out=out, err=err)
+
+    assert code == 0, err.getvalue()
+    report = out.getvalue()
+    assert "Customers without a phone number: 1" in report
+    customers = client.get("/customers").json()
+    assert len(customers) == 1
+    assert customers[0]["name"] == CUSTOMER
+    assert customers[0]["phone"] is None
+
+
+def test_a_partial_mapping_imports_unmapped_names_without_a_phone(
+    client: TestClient, engine: Engine, clock: MovableClock, tmp_path: Path
+) -> None:
+    workbook = _workbook()
+    ventas = workbook[layout.VENTAS_SHEET]
+    ventas.cell(row=3, column=1, value=date(2026, 1, 11))
+    ventas.cell(row=3, column=2, value=VARIETY)
+    ventas.cell(row=3, column=3, value=5)
+    ventas.cell(row=3, column=4, value="Pendiente")
+    ventas.cell(row=3, column=5, value=5000)
+    ventas.cell(row=3, column=6, value=CUSTOMER2)
+    ventas.cell(row=3, column=7, value="")
+    xlsx = _save_workbook(workbook, tmp_path)
+    mapping = _save_mapping(tmp_path, ((CUSTOMER, PHONE),))
+    business_id = _business_id(engine)
+    out, err = io.StringIO(), io.StringIO()
+
+    code = run(
+        [str(business_id), str(xlsx), "--mapping", str(mapping)],
+        engine=engine,
+        clock=clock,
+        out=out,
+        err=err,
+    )
+
+    assert code == 0, err.getvalue()
+    report = out.getvalue()
+    assert "Customers without a phone number: 1" in report
+    customers = {c["name"]: c for c in client.get("/customers").json()}
+    assert customers[CUSTOMER]["phone"] is not None
+    assert customers[CUSTOMER2]["phone"] is None
+
+
+def test_a_well_formed_mapping_row_with_a_malformed_phone_blocks_with_no_echo(
+    client: TestClient,
+    engine: Engine,
+    clock: MovableClock,
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    # The row itself is well formed (one name, one non-blank phone cell): the
+    # phone text just doesn't normalise. check_customer's own phone_code must
+    # still block the run, filed at the mapping line, never at the Ventas row.
+    business_id = _business_id(engine)
+    xlsx = _save_workbook(_workbook(), tmp_path)
+    mapping = _save_mapping(tmp_path, ((CUSTOMER, "abc"),))
+    out, err = io.StringIO(), io.StringIO()
+
+    with caplog.at_level(logging.DEBUG):
+        code = run(
+            [str(business_id), str(xlsx), "--mapping", str(mapping)],
+            engine=engine,
+            clock=clock,
+            out=out,
+            err=err,
+        )
+
+    assert code == 1
+    report = out.getvalue()
+    assert "customer.phone_invalid" in report
+    assert "Mapping row 2 [phone]: customer.phone_invalid" in report
+    assert "Cliente]" not in report
+    assert CUSTOMER not in report
     assert not _DIGIT_RUN.search(report)
     assert not _DIGIT_RUN.search(err.getvalue())
     assert caplog.records == []
     assert client.get("/customers").json() == []
+    assert client.get("/varieties").json() == []
+    assert client.get("/stock").json()["varieties"] == []
+
+
+def test_the_dry_run_count_of_customers_without_a_phone_matches_the_real_run(
+    client: TestClient, engine: Engine, clock: MovableClock, tmp_path: Path
+) -> None:
+    workbook = _workbook()
+    ventas = workbook[layout.VENTAS_SHEET]
+    ventas.cell(row=3, column=1, value=date(2026, 1, 11))
+    ventas.cell(row=3, column=2, value=VARIETY)
+    ventas.cell(row=3, column=3, value=5)
+    ventas.cell(row=3, column=4, value="Pendiente")
+    ventas.cell(row=3, column=5, value=5000)
+    ventas.cell(row=3, column=6, value=CUSTOMER2)
+    ventas.cell(row=3, column=7, value="")
+    xlsx = _save_workbook(workbook, tmp_path)
+    mapping = _save_mapping(tmp_path, ((CUSTOMER, PHONE),))
+    business_id = _business_id(engine)
+
+    dry_out, dry_err = io.StringIO(), io.StringIO()
+    dry_code = run(
+        [str(business_id), str(xlsx), "--mapping", str(mapping), "--dry-run"],
+        engine=engine,
+        clock=clock,
+        out=dry_out,
+        err=dry_err,
+    )
+
+    assert dry_code == 0, dry_err.getvalue()
+    assert "Customers without a phone number: 1" in dry_out.getvalue()
+    assert client.get("/customers").json() == []
+
+    real_out, real_err = io.StringIO(), io.StringIO()
+    real_code = run(
+        [str(business_id), str(xlsx), "--mapping", str(mapping)],
+        engine=engine,
+        clock=clock,
+        out=real_out,
+        err=real_err,
+    )
+
+    assert real_code == 0, real_err.getvalue()
+    assert "Customers without a phone number: 1" in real_out.getvalue()
+    customers = client.get("/customers").json()
+    without_phone = [c for c in customers if c["phone"] is None]
+    assert len(without_phone) == 1
 
 
 def test_the_last_writer_forced_to_raise_leaves_nothing_written(
@@ -361,7 +510,11 @@ def test_the_last_writer_forced_to_raise_leaves_nothing_written(
     out, err = io.StringIO(), io.StringIO()
 
     code = run(
-        [str(business_id), str(xlsx), str(mapping)], engine=engine, clock=clock, out=out, err=err
+        [str(business_id), str(xlsx), "--mapping", str(mapping)],
+        engine=engine,
+        clock=clock,
+        out=out,
+        err=err,
     )
 
     assert code == 1
@@ -392,7 +545,7 @@ def test_a_dry_run_and_a_refused_real_run_over_a_blocking_fixture_write_nothing(
     for argv_tail in (["--dry-run"], []):
         out, err = io.StringIO(), io.StringIO()
         code = run(
-            [str(business_id), str(xlsx), str(mapping), *argv_tail],
+            [str(business_id), str(xlsx), "--mapping", str(mapping), *argv_tail],
             engine=engine,
             clock=clock,
             out=out,
@@ -448,7 +601,11 @@ def test_a_real_duplicate_phone_is_refused_by_its_own_clean_code(
     out, err = io.StringIO(), io.StringIO()
 
     code = run(
-        [str(business_id), str(xlsx), str(mapping)], engine=engine, clock=clock, out=out, err=err
+        [str(business_id), str(xlsx), "--mapping", str(mapping)],
+        engine=engine,
+        clock=clock,
+        out=out,
+        err=err,
     )
 
     assert code == 1
@@ -570,7 +727,7 @@ def test_eligibility_refuses_each_of_the_seven_kinds(
         out, err = io.StringIO(), io.StringIO()
 
         code = run(
-            [str(business_id), str(xlsx), str(mapping)],
+            [str(business_id), str(xlsx), "--mapping", str(mapping)],
             engine=engine,
             clock=clock,
             out=out,
@@ -595,7 +752,11 @@ def test_a_business_with_only_renamed_or_removed_seeded_categories_is_accepted(
     out, err = io.StringIO(), io.StringIO()
 
     code = run(
-        [str(business_id), str(xlsx), str(mapping)], engine=engine, clock=clock, out=out, err=err
+        [str(business_id), str(xlsx), "--mapping", str(mapping)],
+        engine=engine,
+        clock=clock,
+        out=out,
+        err=err,
     )
 
     assert code == 0, err.getvalue()
@@ -727,7 +888,11 @@ def test_recording_order_follows_date_then_sheet_row(
     out, err = io.StringIO(), io.StringIO()
 
     code = run(
-        [str(business_id), str(xlsx), str(mapping)], engine=engine, clock=clock, out=out, err=err
+        [str(business_id), str(xlsx), "--mapping", str(mapping)],
+        engine=engine,
+        clock=clock,
+        out=out,
+        err=err,
     )
     assert code == 0, err.getvalue()
 
