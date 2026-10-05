@@ -1,12 +1,14 @@
 # Analysis
 
-Where a business makes and loses money, across periods and down to each variety: margins per variety for a chosen month, sales, profit and cash over the last 8 weeks and 12 months, the weekday pattern, totals since the first record, and expenses by category. Read only and seen only by its business (ADR-0004). Every figure it shares with Results (#7) comes from #7's computation; cost of goods and stock shortfall follow the lots as they stand today (ADR-0009, ADR-0010). Reads sales, stock, payments and expenses.
+Where a business makes and loses money, across periods and down to each variety: margins per variety for a chosen month, sales, profit and cash over the last 8 weeks and 12 months, the weekday pattern, totals since the first record, and expenses by category. Read only and seen only by its business (ADR-0004). Every figure it shares with Results (#7) comes from #7's computation; cost of goods and stock shortfall follow the lots as they stand today (ADR-0009, ADR-0010). Reads sales, stock, payments and expenses. Reached from Más on the phone and from the sidebar on a computer (navigation.md).
 
 ## Jobs
 
 **When** I close out a week or a month, or want to know why a period went well or badly, **I want to** see from my phone which varieties earn me money and how much, how sales, profit and cash moved over recent weeks and months, which weekday sells best, and where my expense money goes, **so I can** decide what to restock, reprice, push or stop spending on, without the spreadsheet's Análisis tab and with margins from the real cost of each lot.
 
 This serves the brief's results job ("When I look at a day, a week or a month, I want sales, profit and cash side by side, so I can tell whether I make money and how much I actually have") across periods and by variety, and feeds the stock job. The daily check of cash stays with Results (#7).
+
+**When** I run my business from my phone between orders or mid-chat with a customer, several times a day, **I want** the app laid out around what I actually do and how often, with analysis within reach for the weekly or monthly look, **so I can** get back to the customer instead of hunting through menus. (The navigation job, navigation.md.)
 
 Success criteria:
 
@@ -83,7 +85,7 @@ Success criteria:
 
 ### On screen (`Analisis`, `AnalisisCompu`)
 
-- **Más entry**: "Análisis · Variedades, semanas, meses y días".
+- **Where**: a tab root (navigation.md). On the phone, the Más entry "Análisis · Variedades, semanas, meses y días"; on a computer, "Análisis" in the sidebar, under the divider.
 - **Computer**: the `AnalisisCompu` layout.
 - **Charts**: the accent and the tokens only; every bar carries its figure. Best marks, pending marks and negatives are told by word or shape, never by color alone.
 - **Language and formats**: Rioplatense Spanish with vos; money `$ 11.000`, grams `3,5 g`, dates `dd/mm`.
@@ -121,7 +123,7 @@ Success criteria:
 - **Isolation (criterion 5)**: every analysis route is in the sweep and answers only its own business's figures, never the seeded other business's data.
 - **No echo**: after a full front run, the console and browser storage hold no amounts or names.
 - **Speed**: the screen answers in under 300 ms with a year of a few hundred sales and a few dozen varieties (ADR-0010's revisit trigger).
-- **No curl**: the end-to-end front run opens Más → Análisis, moves back a month and reads each section.
+- **No curl**: the end-to-end front run opens Más → Análisis on the phone (and the sidebar entry on a computer), moves back a month and reads each section.
 
 ## Out of scope
 

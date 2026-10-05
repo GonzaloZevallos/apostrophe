@@ -8,7 +8,6 @@
 
 import type { ReactNode } from 'react';
 import type {
-  Canal,
   Cliente,
   EstadoStock,
   FormaPago,
@@ -97,10 +96,9 @@ export interface SelectorClienteProps {
 }
 
 export interface NuevoCliente {
-  /** Los dos obligatorios. */
-  telefono: string;
+  /** El único obligatorio. */
   nombre: string;
-  canal?: Canal;
+  telefono?: string;
   vip?: boolean;
 }
 
@@ -178,11 +176,24 @@ export interface FilaVentaProps {
 export interface FilaClienteProps {
   iniciales: string;
   nombre: string;
-  telefono: string;
-  canal?: Canal;
+  /** Opcional (customers.md): sin número, la fila no muestra nada en su lugar. */
+  telefono?: string;
   vip?: boolean;
   /** Si debe: monto en ámbar y "te debe desde 14/09". */
   saldo?: { monto: string; desde: string };
+  onClick?: () => void;
+}
+
+/** La fila de "Te deben" (Clientes, Inicio): además del monto y el "desde", el
+ *  botón Cobrar. El nombre accesible del botón es "Cobrar a <nombre>". */
+export interface FilaTeDebeProps {
+  iniciales: string;
+  nombre: string;
+  /** Opcional (customers.md): sin número, la fila no muestra nada en su lugar. */
+  telefono?: string;
+  monto: string;
+  desde: string;
+  onCobrar: () => void;
   onClick?: () => void;
 }
 
@@ -199,7 +210,7 @@ export interface FilaStockProps {
 /* Chrome                                                              */
 /* ------------------------------------------------------------------ */
 
-export type Destino = 'inicio' | 'ventas' | 'clientes' | 'stock' | 'mas';
+export type Destino = 'inicio' | 'ventas' | 'clientes' | 'variedades' | 'mas';
 
 export interface BarraInferiorProps {
   activo: Destino;
@@ -207,7 +218,7 @@ export interface BarraInferiorProps {
 }
 
 export interface RielLateralProps {
-  activo: Destino | 'gastos' | 'analisis' | 'catalogo' | 'variedades' | 'negocio';
+  activo: Destino | 'gastos' | 'analisis' | 'configuracion';
   onIr: (destino: string) => void;
   onNuevaVenta: () => void;
 }
@@ -252,15 +263,13 @@ export type NombreIcono =
   | 'inicio'
   | 'ventas'
   | 'clientes'
-  | 'stock'
+  | 'variedades'
   | 'mas'
   | 'atras'
   | 'chevron'
   | 'abajo'
   | 'buscar'
   | 'calendario'
-  | 'whatsapp'
-  | 'telegram'
   | 'tacho'
   | 'cobro'
   | 'personaMas';

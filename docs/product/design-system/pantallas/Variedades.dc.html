@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<title>Variedades y precios de hoy</title>
+<title>Variedades: lista, estado de stock y precio de hoy</title>
 </head>
 <body>
 <x-dc>
@@ -14,95 +14,118 @@ a { color: #1B4FA8 } a:hover { color: #231E18 }
 </style>
 </helmet>
 
-<div style="width: 390px; height: 900px; box-sizing: border-box; background: #FCFBF8; color: #231E18; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden">
-  <div style="padding: 24px 24px 0; display: flex; align-items: center; gap: 12px"><a href="Mas.dc.html" aria-label="Volver" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; margin-left: -8px; border-radius: 999px; color: #231E18; text-decoration: none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg></a><span style="flex: 1; font-size: 20px; font-weight: 600; letter-spacing: -0.02em">Variedades</span><a href="#nueva" aria-label="Nueva variedad" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 999px; background: #F2EEE6; color: #231E18; text-decoration: none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg></a></div>
-  <div style="padding: 18px 24px 6px; font-size: 14px; color: #7A7065">Precios de hoy · 02/10</div>
-  <div style="padding: 0 24px; display: flex; flex-direction: column">
-    <a href="VariedadDetalle.dc.html" style="display: flex; flex-direction: column; gap: 10px; padding: 16px 0; border-bottom: 1px solid #EBE5DA; text-decoration: none; color: #231E18">
+<div style="display: flex; flex-direction: column; gap: 28px; background: #EBE5DA; padding: 24px; font-family: 'Plus Jakarta Sans', system-ui, sans-serif">
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 13px; color: #7A7065">La Huerta · pestaña activa</span>
+<div style="width: 390px; min-height: 1220px; box-sizing: border-box; background: #FCFBF8; color: #231E18; display: flex; flex-direction: column">
+  <div style="padding: 24px 24px 0; display: flex; align-items: center; gap: 12px"><span style="flex: 1; font-size: 20px; font-weight: 600; letter-spacing: -0.02em">Variedades</span></div>
+  <div style="padding: 16px 24px 0; font-size: 14px; color: #7A7065">1 sin entradas · 1 agotada · 1 baja</div>
+
+  <div style="padding: 16px 24px 0"><a href="Catalogo.dc.html" style="display: flex; align-items: center; justify-content: center; gap: 9px; height: 56px; border-radius: 999px; background: #231E18; color: #FCFBF8; text-decoration: none; font-size: 17px; font-weight: 600">Mandar catálogo</a></div>
+  <div style="padding: 10px 24px 0"><a href="EntradaStock.dc.html" style="display: flex; align-items: center; justify-content: center; gap: 9px; height: 52px; border-radius: 999px; background: #F2EEE6; color: #231E18; text-decoration: none; font-size: 16px; font-weight: 600"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>Entrada de stock</a></div>
+  <div style="padding: 14px 24px 0"><a href="VariedadNueva.dc.html" style="font-size: 15px; color: #1B4FA8; text-decoration: none; box-shadow: 0 1px 0 #1B4FA8; padding-bottom: 1px">Nueva variedad</a></div>
+
+  <div style="padding: 20px 24px 0; display: flex; flex-direction: column">
+    <a href="VariedadDetalle.dc.html" style="display: flex; flex-direction: column; gap: 8px; padding: 14px 0; border-bottom: 1px solid #EBE5DA; text-decoration: none; color: #231E18">
       <div style="display: flex; align-items: center; gap: 10px">
+        <span aria-hidden="true" style="width: 11px; height: 11px; border-radius: 999px; border: 2px solid #7A7065; box-sizing: border-box"></span>
         <span style="flex: 1; font-size: 17px; font-weight: 600">24K Gold</span>
-        <span style="color: #9A9085"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></span>
+        <span style="font-size: 13px; font-weight: 600; color: #7A7065">ok</span>
       </div>
-      <div style="display: flex; gap: 10px">
-        <span style="flex: 1; background: #F2EEE6; border-radius: 16px; padding: 10px 12px; display: flex; flex-direction: column; gap: 1px">
-          <span style="font-size: 13px; color: #7A7065">Lista</span>
-          <span style="font-size: 20px; font-weight: 600; letter-spacing: -0.03em">$ 11.000</span>
-        </span>
-        <span style="flex: 1; background: #F2EEE6; border-radius: 16px; padding: 10px 12px; display: flex; flex-direction: column; gap: 1px">
-          <span style="font-size: 13px; color: #7A7065">Desde 10 g</span>
-          <span style="font-size: 20px; font-weight: 600; letter-spacing: -0.03em">$ 10.000</span>
-        </span>
-      </div>
-      <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px">
-        <span style="font-size: 14px; color: #7A7065">Avisame abajo de 15 g</span><span style="width: 44px; height: 26px; border-radius: 999px; background: #231E18; display: flex; align-items: center; padding: 3px; box-sizing: border-box; justify-content: flex-end"><span style="width: 20px; height: 20px; border-radius: 999px; background: #FCFBF8"></span></span>
+      <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding-left: 21px">
+        <span style="font-size: 14px; color: #7A7065">135 g · 270 días</span>
+        <span style="font-size: 16px; font-weight: 600">$ 12.000 x g</span>
       </div>
     </a>
-    <a href="VariedadDetalle.dc.html" style="display: flex; flex-direction: column; gap: 10px; padding: 16px 0; border-bottom: 1px solid #EBE5DA; text-decoration: none; color: #231E18">
+    <a href="VariedadDetalle.dc.html" style="display: flex; flex-direction: column; gap: 8px; padding: 14px 0; border-bottom: 1px solid #EBE5DA; text-decoration: none; color: #231E18">
       <div style="display: flex; align-items: center; gap: 10px">
-        <span style="flex: 1; font-size: 17px; font-weight: 600">Golden Cookies</span><span style="font-size: 12px; font-weight: 600; background: #F3E6CB; color: #7A4A00; padding: 3px 9px; border-radius: 999px">stock bajo</span>
-        <span style="color: #9A9085"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></span>
+        <span aria-hidden="true" style="width: 11px; height: 11px; border-radius: 999px; background: #7A4A00"></span>
+        <span style="flex: 1; font-size: 17px; font-weight: 600">Golden Cookies</span>
+        <span style="font-size: 12px; font-weight: 600; background: #F3E6CB; color: #7A4A00; padding: 3px 9px; border-radius: 999px">baja</span>
       </div>
-      <div style="display: flex; gap: 10px">
-        <span style="flex: 1; background: #F2EEE6; border-radius: 16px; padding: 10px 12px; display: flex; flex-direction: column; gap: 1px">
-          <span style="font-size: 13px; color: #7A7065">Lista</span>
-          <span style="font-size: 20px; font-weight: 600; letter-spacing: -0.03em">$ 14.000</span>
-        </span>
-        <span style="flex: 1; background: #F2EEE6; border-radius: 16px; padding: 10px 12px; display: flex; flex-direction: column; gap: 1px">
-          <span style="font-size: 13px; color: #7A7065">Desde 10 g</span>
-          <span style="font-size: 20px; font-weight: 600; letter-spacing: -0.03em">$ 13.000</span>
-        </span>
-      </div>
-      <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px">
-        <span style="font-size: 14px; color: #7A4A00">Avisando: quedan 18,5 g</span><span style="width: 44px; height: 26px; border-radius: 999px; background: #231E18; display: flex; align-items: center; padding: 3px; box-sizing: border-box; justify-content: flex-end"><span style="width: 20px; height: 20px; border-radius: 999px; background: #FCFBF8"></span></span>
+      <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding-left: 21px">
+        <span style="font-size: 14px; color: #7A4A00">18 g · 24 días</span>
+        <span style="font-size: 16px; font-weight: 600">$ 14.000 x g</span>
       </div>
     </a>
-    <a href="VariedadDetalle.dc.html" style="display: flex; flex-direction: column; gap: 10px; padding: 16px 0; border-bottom: 1px solid #EBE5DA; text-decoration: none; color: #231E18">
+    <a href="VariedadDetalle.dc.html" style="display: flex; flex-direction: column; gap: 8px; padding: 14px 0; border-bottom: 1px solid #EBE5DA; text-decoration: none; color: #231E18">
       <div style="display: flex; align-items: center; gap: 10px">
-        <span style="flex: 1; font-size: 17px; font-weight: 600">Sir Jack</span><span style="font-size: 12px; font-weight: 600; background: #33281A; color: #F7EFE0; padding: 3px 9px; border-radius: 999px">agotada</span>
-        <span style="color: #9A9085"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></span>
-      </div>
-      <div style="display: flex; gap: 10px">
-        <span style="flex: 1; background: #F2EEE6; border-radius: 16px; padding: 10px 12px; display: flex; flex-direction: column; gap: 1px">
-          <span style="font-size: 13px; color: #7A7065">Lista</span>
-          <span style="font-size: 20px; font-weight: 600; letter-spacing: -0.03em">$ 14.000</span>
-        </span>
-        <span style="flex: 1; background: #F2EEE6; border-radius: 16px; padding: 10px 12px; display: flex; flex-direction: column; gap: 1px">
-          <span style="font-size: 13px; color: #7A7065">Desde 10 g</span>
-          <span style="font-size: 20px; font-weight: 600; letter-spacing: -0.03em">$ 13.000</span>
-        </span>
-      </div>
-      <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px">
-        <span style="font-size: 14px; color: #7A7065">Aviso apagado</span><span style="width: 44px; height: 26px; border-radius: 999px; background: #EBE5DA; display: flex; align-items: center; padding: 3px; box-sizing: border-box; justify-content: flex-start"><span style="width: 20px; height: 20px; border-radius: 999px; background: #FCFBF8"></span></span>
-      </div>
-    </a>
-    <a href="VariedadDetalle.dc.html" style="display: flex; flex-direction: column; gap: 10px; padding: 16px 0; text-decoration: none; color: #231E18">
-      <div style="display: flex; align-items: center; gap: 10px">
+        <span aria-hidden="true" style="width: 11px; height: 11px; border-radius: 3px; border: 2px solid #7A7065; box-sizing: border-box"></span>
         <span style="flex: 1; font-size: 17px; font-weight: 600">Mango Bomb</span>
-        <span style="color: #9A9085"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></span>
+        <span style="font-size: 12px; font-weight: 600; background: #F2EEE6; color: #7A7065; padding: 3px 9px; border-radius: 999px">sin entradas</span>
       </div>
-      <div style="display: flex; gap: 10px">
-        <span style="flex: 1; background: #F2EEE6; border-radius: 16px; padding: 10px 12px; display: flex; flex-direction: column; gap: 1px">
-          <span style="font-size: 13px; color: #7A7065">Lista</span>
-          <span style="font-size: 20px; font-weight: 600; letter-spacing: -0.03em">—</span>
-        </span>
-        <span style="flex: 1; background: #F2EEE6; border-radius: 16px; padding: 10px 12px; display: flex; flex-direction: column; gap: 1px">
-          <span style="font-size: 13px; color: #7A7065">Desde 10 g</span>
-          <span style="font-size: 20px; font-weight: 600; letter-spacing: -0.03em">—</span>
-        </span>
+      <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding-left: 21px">
+        <span style="font-size: 14px; color: #7A7065">0 g · Cargale la primera entrada</span>
+        <span style="font-size: 16px; font-weight: 600">$ 15.000 x g</span>
       </div>
-      <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px">
-        <span style="font-size: 14px; color: #7A7065">Sin precio: no se puede vender</span><span style="width: 44px; height: 26px; border-radius: 999px; background: #EBE5DA; display: flex; align-items: center; padding: 3px; box-sizing: border-box; justify-content: flex-start"><span style="width: 20px; height: 20px; border-radius: 999px; background: #FCFBF8"></span></span>
+    </a>
+    <a href="VariedadDetalle.dc.html" style="display: flex; flex-direction: column; gap: 8px; padding: 14px 0; text-decoration: none; color: #231E18">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <span aria-hidden="true" style="width: 11px; height: 11px; border-radius: 3px; background: #33281A"></span>
+        <span style="flex: 1; font-size: 17px; font-weight: 600">Sir Jack</span>
+        <span style="font-size: 12px; font-weight: 600; background: #33281A; color: #F7EFE0; padding: 3px 9px; border-radius: 999px">agotada</span>
+      </div>
+      <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding-left: 21px">
+        <span style="font-size: 14px; color: #7A7065">0 g · Sin gramos desde el 05/10</span>
+        <span style="font-size: 16px; font-weight: 600">$ 11.000 x g</span>
       </div>
     </a>
   </div>
+
+  <a href="TodasLasEntradas.dc.html" style="margin-top: 8px; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-top: 1px solid #EBE5DA; text-decoration: none; color: #231E18">
+    <span style="font-size: 16px; font-weight: 600">Todas las entradas</span>
+    <span style="color: #9A9085" aria-hidden="true">›</span>
+  </a>
+
   <div style="margin-top: auto; padding: 16px 24px 0"><a href="NuevaVenta.dc.html" style="display: flex; align-items: center; justify-content: center; gap: 9px; height: 56px; border-radius: 999px; background: #231E18; color: #FCFBF8; text-decoration: none; font-size: 17px; font-weight: 600"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>Nueva venta</a></div>
+
   <nav style="display: flex; padding: 14px 16px 20px">
     <a href="Inicio.dc.html" style="flex: 1; min-height: 44px; display: flex; flex-direction: column; align-items: center; gap: 5px; text-decoration: none; color: #A79C8D"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.6 12 3.4l9 7.2"/><path d="M5.4 9.6V20h13.2V9.6"/></svg><span style="font-size: 11px; ">Inicio</span></a>
     <a href="Ventas.dc.html" style="flex: 1; min-height: 44px; display: flex; flex-direction: column; align-items: center; gap: 5px; text-decoration: none; color: #A79C8D"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9.5 8.5h5"/><path d="M9.5 12.5h5"/></svg><span style="font-size: 11px; ">Ventas</span></a>
     <a href="Clientes.dc.html" style="flex: 1; min-height: 44px; display: flex; flex-direction: column; align-items: center; gap: 5px; text-decoration: none; color: #A79C8D"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19.5c0-3 2.5-5.2 5.5-5.2s5.5 2.2 5.5 5.2"/><path d="M16 6.4a3 3 0 0 1 0 5.4"/></svg><span style="font-size: 11px; ">Clientes</span></a>
-    <a href="Stock.dc.html" style="flex: 1; min-height: 44px; display: flex; flex-direction: column; align-items: center; gap: 5px; text-decoration: none; color: #A79C8D"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5 12 4l8 4.5v7L12 20l-8-4.5z"/><path d="M4 8.5 12 13l8-4.5"/><path d="M12 13v7"/></svg><span style="font-size: 11px; ">Stock</span></a>
-    <a href="Mas.dc.html" style="flex: 1; min-height: 44px; display: flex; flex-direction: column; align-items: center; gap: 5px; text-decoration: none; color: #231E18"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="none" aria-hidden="true"><circle cx="5" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="19" cy="12" r="1.5" fill="currentColor"/></svg><span style="font-size: 11px; font-weight: 600; ">Más</span></a>
+    <a href="Variedades.dc.html" aria-current="page" style="flex: 1; min-height: 44px; display: flex; flex-direction: column; align-items: center; gap: 5px; text-decoration: none; color: #231E18"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M4 8.5 12 4l8 4.5v7L12 20l-8-4.5z"/></svg><span style="font-size: 11px; font-weight: 600; box-shadow: 0 2px 0 #231E18; padding-bottom: 2px">Variedades</span></a>
+    <a href="Mas.dc.html" style="flex: 1; min-height: 44px; display: flex; flex-direction: column; align-items: center; gap: 5px; text-decoration: none; color: #A79C8D"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="none" aria-hidden="true"><circle cx="5" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="19" cy="12" r="1.5" fill="currentColor"/></svg><span style="font-size: 11px; ">Más</span></a>
   </nav>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="font-size: 13px; color: #7A7065">Negocio recién creado · sin variedades todavía, "Mandar catálogo" deshabilitado, "+ Nueva venta" visible y diciendo qué falta (tab root: nunca sin ese botón)</span>
+<div style="width: 390px; min-height: 860px; box-sizing: border-box; background: #FCFBF8; color: #231E18; display: flex; flex-direction: column">
+  <div style="padding: 24px 24px 0; display: flex; align-items: center; gap: 12px"><span style="flex: 1; font-size: 20px; font-weight: 600; letter-spacing: -0.02em">Variedades</span></div>
+
+  <div style="padding: 16px 24px 0">
+    <span aria-disabled="true" style="display: flex; align-items: center; justify-content: center; height: 56px; border-radius: 999px; background: #F2EEE6; color: #9A9085; font-size: 17px; font-weight: 600">Mandar catálogo</span>
+    <span style="display: block; margin-top: 8px; font-size: 13px; color: #7A7065">Cargá una variedad con precio y su stock</span>
+  </div>
+  <div style="padding: 10px 24px 0"><a href="EntradaStock.dc.html" style="display: flex; align-items: center; justify-content: center; gap: 9px; height: 52px; border-radius: 999px; background: #F2EEE6; color: #231E18; text-decoration: none; font-size: 16px; font-weight: 600"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>Entrada de stock</a></div>
+  <div style="padding: 14px 24px 0"><a href="VariedadNueva.dc.html" style="font-size: 15px; color: #1B4FA8; text-decoration: none; box-shadow: 0 1px 0 #1B4FA8; padding-bottom: 1px">Nueva variedad</a></div>
+
+  <div style="padding: 28px 24px 0; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center">
+    <span style="font-size: 18px; font-weight: 600">Todavía no cargaste ninguna variedad</span>
+    <span style="font-size: 15px; color: #7A7065; line-height: 1.5; max-width: 280px">Agregá la primera con su precio para poder vender y mandar tu catálogo.</span>
+  </div>
+
+  <a href="TodasLasEntradas.dc.html" style="margin-top: auto; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-top: 1px solid #EBE5DA; text-decoration: none; color: #231E18">
+    <span style="font-size: 16px; font-weight: 600">Todas las entradas</span>
+    <span style="color: #9A9085" aria-hidden="true">›</span>
+  </a>
+
+  <div style="padding: 16px 24px 0">
+    <a href="NuevaVenta.dc.html" style="display: flex; align-items: center; justify-content: center; gap: 9px; height: 56px; border-radius: 999px; background: #231E18; color: #FCFBF8; text-decoration: none; font-size: 17px; font-weight: 600"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>Nueva venta</a>
+    <span style="display: block; margin-top: 8px; font-size: 13px; color: #7A7065; text-align: center">Cargale un precio a una variedad para poder vender</span>
+  </div>
+
+  <nav style="display: flex; padding: 14px 16px 20px">
+    <a href="Inicio.dc.html" style="flex: 1; min-height: 44px; display: flex; flex-direction: column; align-items: center; gap: 5px; text-decoration: none; color: #A79C8D"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.6 12 3.4l9 7.2"/><path d="M5.4 9.6V20h13.2V9.6"/></svg><span style="font-size: 11px; ">Inicio</span></a>
+    <a href="Ventas.dc.html" style="flex: 1; min-height: 44px; display: flex; flex-direction: column; align-items: center; gap: 5px; text-decoration: none; color: #A79C8D"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9.5 8.5h5"/><path d="M9.5 12.5h5"/></svg><span style="font-size: 11px; ">Ventas</span></a>
+    <a href="Clientes.dc.html" style="flex: 1; min-height: 44px; display: flex; flex-direction: column; align-items: center; gap: 5px; text-decoration: none; color: #A79C8D"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19.5c0-3 2.5-5.2 5.5-5.2s5.5 2.2 5.5 5.2"/><path d="M16 6.4a3 3 0 0 1 0 5.4"/></svg><span style="font-size: 11px; ">Clientes</span></a>
+    <a href="Variedades.dc.html" aria-current="page" style="flex: 1; min-height: 44px; display: flex; flex-direction: column; align-items: center; gap: 5px; text-decoration: none; color: #231E18"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M4 8.5 12 4l8 4.5v7L12 20l-8-4.5z"/></svg><span style="font-size: 11px; font-weight: 600; box-shadow: 0 2px 0 #231E18; padding-bottom: 2px">Variedades</span></a>
+    <a href="Mas.dc.html" style="flex: 1; min-height: 44px; display: flex; flex-direction: column; align-items: center; gap: 5px; text-decoration: none; color: #A79C8D"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="none" aria-hidden="true"><circle cx="5" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="19" cy="12" r="1.5" fill="currentColor"/></svg><span style="font-size: 11px; ">Más</span></a>
+  </nav>
+</div>
+</div>
 
 </div>
 </x-dc>

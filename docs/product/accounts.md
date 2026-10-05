@@ -2,12 +2,12 @@
 
 Businesses, their users, the only way in (an invitation and a login), the way back in (a password change and an operator-issued reset link), and the only way out (an operator's command that exports a business and removes it). Every other capability reads one thing from here, the business of the user asking, and serves that business alone (ADR-0004). It also holds the app as a whole:
 
-- how it is served, installed and navigated;
+- how it is served, installed and themed;
 - how the installation is published on the internet and backed up (ADR-0016);
 - the feedback rules every screen follows;
-- the Negocio screen.
+- the Negocio, Usuarios and Tu cuenta groups of Configuración.
 
-Inicio, where the app opens, is the panel defined in results.md.
+Where every screen sits (tabs, sidebar, Más, Configuración, the chrome and back rule, routes, first run) is navigation.md. Inicio, where the app opens, is the panel defined in results.md.
 
 ## Jobs
 
@@ -25,7 +25,7 @@ These two refine the "log in once and stay in" job above. The operator's command
 
 **When** I run my business from my phone (handing over an order, answering a customer on Telegram, paying for something, or catching up at the end of the day), **I want to** get in with the link I was sent and keep my customers, my prices, my stock and my expenses up to date from the phone, **so I can** stop keeping them in the spreadsheet and have real data in place when sales arrive. The computer is the same job on a bigger screen.
 
-**When** I open the app on my phone or computer, whatever my device's light or dark setting, **I want** to see it as it was designed ("Papel y azul": warm paper background, brown-black ink, one blue), **so I** always work in the one look that was designed and checked for reading figures, states and amounts, and the dark theme shows only once I choose it (that choice comes with Más and Negocio's screens).
+**When** I open the app on my phone or computer, whatever my device's light or dark setting, **I want** to see it as it was designed ("Papel y azul": warm paper background, brown-black ink, one blue), **so I** always work in the one look that was designed and checked for reading figures, states and amounts, and the dark theme shows only once I choose it (in Configuración → Apariencia, navigation.md).
 
 **When** a friend stops using the app, or asks to be taken out of it, **I want** to hand them everything the app holds of their business in one file and then remove that business from the installation completely, **so that** they keep their books and their customers' names, phone numbers and balances are no longer held by me or by anyone else on the installation. A business opened by mistake is covered by the same command. The business goes as a whole, every user included. The operator has agreed with every user of the business beforehand; the command does not check it.
 
@@ -33,6 +33,8 @@ These two refine the "log in once and stay in" job above. The operator's command
 
 - The protagonist of this last job is the operator of the installation, not a user in the app.
 - For a seller, only two things change: where they can reach the app from, and that it is on HTTPS.
+
+The navigation job (navigation.md) decides where Negocio, Usuarios and Tu cuenta are reached from: Configuración.
 
 Success criteria:
 
@@ -71,14 +73,14 @@ Success criteria:
 Success criteria, the theme:
 
 23. **Light whatever the system says**: the app opens in the light theme on every device and every screen, whether the system is set to light or dark. With the system in dark, the page background is `--papel` (#fcfbf8).
-24. **Dark only on request**: the dark theme (`InicioOscuro`) shows only when `data-tema="oscuro"` is set on `<html>`. Nothing in the shipped app sets it yet; the switch comes with Más and Negocio's screens.
+24. **Dark only on request**: the dark theme (`InicioOscuro`) shows only when `data-tema="oscuro"` is set on `<html>`. Only the choice "Oscuro" in Configuración → Apariencia sets it (navigation.md).
 25. **The themes themselves don't change**: both keep the same tokens and values; only what picks the theme changed. Every rule about state (no state told by color alone, blue ↔ amber) holds in both.
 26. **One rule, written the same everywhere**: the comment at the top of `web/src/styles/tokens.css`, `docs/product/design-system/tokens.css`, the design-system README and this file all state the same rule.
 
 Success criteria, changing and resetting a password:
 
 18. **Change, fast and final.**
-    - From Negocio on the phone, a user with the right current password sets a new one (at least 10 characters) in under a minute.
+    - From Configuración → Tu cuenta on the phone, a user with the right current password sets a new one (at least 10 characters) in under a minute.
     - Every other session of that user is closed at once.
     - The device that changed it stays signed in.
     - Partners' sessions are untouched.
@@ -223,7 +225,7 @@ Success criteria, removing a business:
   - it holds every recorded fact as stored:
     - the business name;
     - users (email and joining date);
-    - customers (name, phone number, channel, VIP);
+    - customers (name, phone number, VIP);
     - varieties with their low-stock threshold and catalog attributes;
     - price entries;
     - stock entries (date, variety, grams, origin, total cost, note; a lot is its stock entry, not a separate record);
@@ -248,7 +250,7 @@ Success criteria, removing a business:
 - **Serving**: the backend serves the built front from `web/dist` on the API's origin and port.
   - Front paths never collide with API paths.
   - Nothing outside `web/dist` is reachable.
-  - Front routes are public static files, outside the API's route list.
+  - Front routes are public static files, outside the API's route list. Their paths are in English, with redirects from the old Spanish ones (navigation.md).
 - **Installable, with no offline mode**:
   - a manifest with name, colors and icons for Android and iOS;
   - a service worker that caches nothing.
@@ -258,7 +260,7 @@ Success criteria, removing a business:
   - the app shows no banner or explanation of the difference.
 - **Install on the published installation**, over Render's TLS: Android's own install prompt is offered when the browser makes it available. The manifest and service worker already in place need no further work for it.
 - **No network**: when a request fails because the network dropped, the open app shows "Sin conexión" on any origin. This does not rely on the service worker.
-- **Theme**: the app opens in the light theme whatever the phone or computer is set to. The dark theme applies only when it is chosen (`data-tema="oscuro"`); where a person chooses it comes with Más and Negocio's screens.
+- **Theme**: the app opens in the light theme whatever the phone or computer is set to. The dark theme applies only when it is chosen (`data-tema="oscuro"`), and the one place a person chooses it is Configuración → Apariencia, Claro or Oscuro (navigation.md).
   - The rule is one: no attribute on `<html>` means light, `data-tema="oscuro"` means dark. There is no exception per screen, route or session, and the system's light or dark setting picks nothing. `oscuro` is the only recognised value.
   - Native controls and scrollbars follow the app's theme, not the system's: light with no attribute, dark with `data-tema="oscuro"`.
   - Both themes keep the same tokens and values, and every state rule holds in both.
@@ -278,19 +280,17 @@ Success criteria, removing a business:
     - It shows both when the link is opened and when a submit answers 404.
     - It keeps nothing typed and never says why the link is dead.
     - Its only button goes to Entrar.
-- **Shell**:
-  - The bottom bar on the phone and the side rail on a computer show only Inicio, Ventas, Clientes, Stock and Más, in that order (the design's).
-  - A fixed **"Nueva venta"** button, separate from the tabs, opens the sale form directly (sales.md). It is not a tab.
-  - It shows on every signed-in screen except the sale form itself and its customer sheet.
-- **Inicio**: the panel (results.md).
-  - Hoy · Semana · Mes, with sales, Ganancia, Caja, money owed and stock per variety.
-  - When no variety has a current price today, "Arrancá por las variedades" shows above the panel, and the panel still shows its real figures.
-  - "Tu catálogo en Telegram está desactualizado", a fixed notice while the pinned catalog is out of date (pinned-catalog.md). It opens Catálogo.
-- **Más**: Gastos, Variedades, Catálogo ("Catálogo · El mensaje de hoy, listo para copiar", catalog.md), Análisis ("Análisis · Variedades, semanas, meses y días", analysis.md), Negocio.
-- **Negocio**:
-  - rename the business;
+- **Where screens sit**: the bar, the sidebar, Más, Configuración, the chrome and back rule and the first run are navigation.md. Inicio is the panel (results.md).
+
+### In Configuración: Negocio, Usuarios, Tu cuenta
+
+These three groups of Configuración (navigation.md) replace the former Negocio screen. Each is a form: "Cerrar", and a confirmation when leaving with unsaved changes.
+
+- **Negocio**: rename the business.
+- **Usuarios**:
   - the users by email, the signed-in one marked "vos";
-  - "Invitá a un socio": each tap creates one fresh join link, to copy or share with the phone's share sheet;
+  - "Invitá a un socio": each tap creates one fresh join link, to copy or share with the phone's share sheet.
+- **Tu cuenta**:
   - "Cambiar contraseña", above "Cerrar sesión", opens a sheet:
     - the fields are "Contraseña actual" and "Contraseña nueva";
     - "Contraseña nueva" is asked once, hidden by default with a reveal, here and on the reset screen;
@@ -321,7 +321,7 @@ Success criteria, removing a business:
   - Publishing belongs to the installation as a whole: every business becomes reachable at once, kept apart only by session isolation (ADR-0004).
 - **No admin surface** (ADR-0002):
   - Brake state, backup health and drill results are read from outside the app: logs, the drill's output and the GitHub Actions run.
-  - Nothing is seen or done from a signed-in session, and the app gains no screen, route or navigation entry for it.
+  - Nothing is seen or done from a signed-in session, and the app gains no screen, route or navigation entry for it. Configuración holds no operator setting.
 
 ### Constraints
 
@@ -343,7 +343,7 @@ Success criteria, removing a business:
     - "Contraseña cambiada · cerramos tus otras sesiones".
   - The exception is "Cobro guardado · queda debiendo $ X" (payments.md). It names what the customer still owes, because seeing that is the point of recording a payment. When nothing is left owing it reads "Cobro guardado".
 - **No "Deshacer" on success toasts, with one deliberate exception**: "Venta guardada" (sales.md) carries Deshacer, because recording a sale is the fastest and most frequent entry. It still carries no data. No other success notice gets one.
-- **Leaving a form** discards what was typed without asking, with one deliberate exception: Nueva venta asks "¿Descartás la venta?" once anything has been entered (sales.md).
+- **Leaving a form or sheet** with unsaved changes asks before discarding, and an untouched one closes at once (navigation.md). Nueva venta's question is "¿Descartás la venta?" (sales.md).
 - **Refusals** show inline and keep what was typed. The one exception: a wrong current password clears "Contraseña actual".
 - **No network** shows "Sin conexión"; a server error shows a generic retry.
 - **A record that is gone** answers 404 whether it was deleted, never existed or belongs to another business (ADR-0004). The app never says who deleted it or that it once existed.
@@ -353,11 +353,11 @@ Success criteria, removing a business:
     - a fixed notice shows: "Eso ya no está. La lista ya está al día."
   - The notice is not a success toast. It has no data, no "Deshacer" and no "Reintentar", and it is announced like a toast.
   - Confirming the delete of a record already gone gives the same notice, not the delete's success toast.
-  - **Opening the detail of a record that is gone** (a variety, a customer, an expense, a sale or a stock entry) shows "Eso ya no está." with one button back to its list: "Volver a Variedades", "Volver a Clientes", "Volver a Gastos" (the current month), "Volver a Ventas" or "Volver a Stock". It carries no id, name or date.
+  - **Opening the detail of a record that is gone** (a variety, a customer, an expense, a sale or a stock entry) shows "Eso ya no está." with one button back to its list: "Volver a Variedades" (a variety or a stock entry), "Volver a Clientes", "Volver a Gastos" (the current month) or "Volver a Ventas". It carries no id, name or date.
 
 ## Metrics
 
-- **No curl (criterion 4)**: an end-to-end run through the front alone passes. It accepts a new-business invitation, renames the business, creates a join link and accepts it as a second user.
+- **No curl (criterion 4)**: an end-to-end run through the front alone passes. It accepts a new-business invitation, renames the business from Configuración → Negocio, creates a join link from Usuarios and accepts it as a second user.
 - **Isolation (criteria 1, 6)**:
   - the business routes sit in the isolation sweep and the gated-route test;
   - serving tests prove no path reaches outside `web/dist`;
@@ -373,15 +373,15 @@ Success criteria, removing a business:
 - **Theme (criteria 23–26)**:
   - light wins: an e2e run with the system emulated in dark (`emulateMedia({ colorScheme: 'dark' })`) and no attribute reads the page background as `--papel` (#fcfbf8);
   - dark on request: an e2e run with `data-tema="oscuro"` on `<html>`, whatever the system setting, reads the page background as the dark theme's own value from `tokens.css`;
+  - choosing Oscuro in Configuración → Apariencia sets the attribute, and Claro removes it;
   - no test or fixture reaches the dark theme by emulating a dark system;
   - no token value changed;
   - native controls and scrollbars are checked by eye on a dark-system device, light with no attribute and dark with it; no fast test reads them;
-  - the four places that state the rule say the same, and none names `claro`.
+  - the four places that state the rule say the same, and none names `claro` as an attribute value.
 - **Nothing invented (criterion 7)**:
-  - the bar shows exactly Inicio, Ventas, Clientes, Stock and Más, plus the "Nueva venta" button;
-  - Más shows exactly Gastos, Variedades, Catálogo, Análisis and Negocio;
+  - the bar, the sidebar, Más and Configuración show exactly the entries navigation.md lists;
   - every figure on Inicio equals the API's answer, with real zeros for a period with no activity (results.md);
-  - Inicio shows no notices other than "Arrancá por las variedades" and the pinned catalog's.
+  - Inicio shows no notices other than the first-run checklist, "Arrancá por las variedades", the pinned catalog's and the after-import notice.
 - **Password change (criterion 18)**:
   - after a Change, every earlier token of the user answers 401;
   - the acting device's fresh token works, and a partner's token in the same business still works;
@@ -405,7 +405,7 @@ Success criteria, removing a business:
   - the reset routes are never braked.
 - **Reset command (criteria 20, 22)**: an email with no user writes 0 rows and retires 0 links.
 - **No curl for passwords (criterion 22)**: the end-to-end front run:
-  - changes a password from Negocio, after which an old session is signed out and this one stays in;
+  - changes a password from Configuración → Tu cuenta, after which an old session is signed out and this one stays in;
   - completes a reset from a printed link through to Inicio;
   - sees the dead-link state for a used link.
 - **Nothing survives (criterion 11)**:
@@ -467,7 +467,7 @@ Success criteria, removing a business:
 - Blocking or marking a rerun after a commit whose outcome is unknown; the dry run is the check.
 - Roles within a business.
 - Offline use; an install walkthrough on iOS or Android.
-- A control to choose the theme, or a "follow the system" option: they come with Más and Negocio's screens (#49).
+- A "follow the system" theme option.
 - TLS on the home network, including local certificates: the published installation gets TLS from Render (ADR-0016).
 - Live updates between partners: a list refreshes when it is opened or after a save, not when the other partner changes something.
 - Stopping a guessing run spread across many addresses and many emails at once.

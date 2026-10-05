@@ -1,12 +1,16 @@
 # Catalog
 
-The text that offers today's sellable varieties to a business's customers. It is built from each variety's catalog attributes, its current price today (varieties.md) and its stock status right now (stock.md), between the business's own header and footer. It is seen only by its business (ADR-0004). The pinned catalog (pinned-catalog.md) sends exactly this text through the business's own Telegram bot and keeps it current. Copiar stays for pasting it by hand.
+The text that offers today's sellable varieties to a business's customers. It is built from each variety's catalog attributes, its current price today (varieties.md) and its stock status right now (stock.md), between the business's own header and footer. It is seen only by its business (ADR-0004). The pinned catalog (pinned-catalog.md) sends exactly this text through the business's own Telegram bot and keeps it current. Compartir and Copiar stay for sending it by hand.
+
+Where its pieces live (navigation.md): the catalog screen opens from "Mandar catálogo" on Variedades; a variety's attributes are edited on its page, in "En el catálogo"; the header and footer are edited in Configuración → Mensaje del catálogo.
 
 ## Jobs
 
-**When** a price changes, a variety sells out or I start offering one, **I want to** open the catalog text the app has already built from today's current prices and stock, check it, and copy it in one tap, **so I can** paste it into my Telegram chat myself without retyping a price or a variety name, and my customers never see a stale price or a variety I can't sell.
+**When** a price changes, a variety sells out or I start offering one, **I want to** open the catalog text the app has already built from today's current prices and stock, check it, and share or copy it in one tap, **so I can** send it to my customers myself (by WhatsApp, Telegram or Instagram) without retyping a price or a variety name, and my customers never see a stale price or a variety I can't sell.
 
 Setting the catalog attributes and the header and footer is the setup step of this same job. Keeping the pinned catalog current on its own (test send, publishing, pinning) is BRIEF.md's Telegram job, served by pinned-catalog.md, which reuses this text as it is.
+
+**When** I run my business from my phone between orders or mid-chat with a customer, several times a day, **I want** the app laid out around what I actually do and how often, **so I can** get back to the customer instead of hunting through menus. (The navigation job, navigation.md: served here by the catalog screen, at most 2 taps from any tab root.)
 
 Success criteria:
 
@@ -20,8 +24,8 @@ Success criteria:
 2. **Today, only what can be sold**: a variety appears only when it is shown, has a current price on today's Argentina date and has stock above zero right now.
    - Hidden, unpriced, sold-out and never-stocked varieties are out.
    - Low stock is still in.
-3. **Fast, from the phone**: from Más → Catálogo, a seller copies today's text in a few seconds without typing anything. This includes the phone on the home network over plain http. There is no API call by hand.
-4. **No guessing why**: every variety shows as in or out. Each out variety gives one reason, the first that applies: hidden, no price today, then "Agotada" or "Sin entradas". It is told by word, never by color alone.
+3. **Fast, from the phone**: from Variedades → "Mandar catálogo", a seller shares or copies today's text in a few seconds without typing anything. This includes the phone on the home network over plain http. There is no API call by hand.
+4. **No guessing why**: every variety that does not go out gives one reason, the first that applies: hidden, no price today, then sold out or no entries. It is told by word, never by color alone.
 5. **Businesses never mix** (ADR-0004): attributes, header and footer belong to one business. The text and the list never include another business's data.
 
 ## Behaviour
@@ -40,7 +44,7 @@ Success criteria:
   - Yes for every variety that existed when the catalog shipped.
 - **Who can be edited**: every variety, including ones out for lack of price or stock.
 - **No side effects**: the attributes never touch prices, stock or sales.
-- **Where**: they are edited only on Catálogo, never on Variedad detail.
+- **Where**: they are edited only on the variety's own page, in its "En el catálogo" section (varieties.md), never on the catalog screen.
 
 ### Header and footer, per business
 
@@ -50,6 +54,7 @@ Success criteria:
   - A new business receives them when it opens.
   - A business that existed when the catalog shipped received them once, on upgrade.
   - There is no "restore default".
+- **Where**: they are edited only in Configuración → Mensaje del catálogo (navigation.md).
 
 ### Catalog text
 
@@ -75,29 +80,32 @@ Success criteria:
   - A final unpaired `**` shows as typed.
   - This holds for the preview here and for the Telegram bot (pinned-catalog.md).
 
-### On screen (Catálogo)
+### On screen: the catalog screen
 
-- **Más entry**: "Catálogo · El mensaje de hoy, listo para copiar".
+- **Opened from**: "Mandar catálogo" on Variedades, and Inicio's "Tu catálogo en Telegram está desactualizado" notice. It is a detail (navigation.md): the bar or sidebar and "‹ Variedades", without "+ Nueva venta".
+- **It always opens**, including when nothing qualifies: it then shows the empty state, and the pinned catalog keeps its own empty message and "Al día" (pinned-catalog.md). "Mandar catálogo" is disabled, with its reason in words (e.g. "Cargá una variedad con precio y su stock"), only while the first-run checklist shows and nothing qualifies (navigation.md).
 - **"Cómo se ve en Telegram"**: the text as a customer reads it.
   - Bold follows the pairing rule above.
   - Every other line, break, emoji and price is identical to the copied text.
   - It shows the empty state when nothing qualifies.
-- **Copiar**:
+- **Compartir**, the main action:
+  - it opens the device's native share sheet with exactly the text Copiar copies, `**` markers included;
+  - where the browser offers no share sheet, it is not shown, and Copiar remains;
+  - closing the share sheet without sending changes nothing.
+- **Copiar**, the fallback:
   - It copies the raw text with its `**` markers, the same text the pinned catalog sends.
   - On success it shows the toast "Catálogo copiado".
   - It works from the phone over the home network's plain http.
   - A failure shows a fixed "No se pudo copiar." and no toast.
-- **"Qué sale en el catálogo"**:
-  - every variety by name, with its emoji, share and aroma;
-  - its state: in ("Sale"), or out with one reason, the first that applies:
-    1. "Oculta": hidden by the seller, and only that;
-    2. no price today ("No sale: sin precio hoy");
-    3. Stock's own words: "No sale: está agotada" or "No sale: sin entradas";
-  - every state is told by word, never by color alone.
-- **Editing**: a variety's attributes from its row, and the header and footer, on the same screen.
-  - Saving shows the new text and reasons at once, with the toast "Catálogo guardado".
-  - Toasts carry no data.
-- **"El bot de Telegram"**: the lower part of the screen, defined in pinned-catalog.md.
+- **The pinned catalog's status and Publicar** (pinned-catalog.md): "Al día" or "Desactualizado" with its fixed reason, and Publicar. When Publicar is unavailable, it says why in words and links to Configuración → Integraciones, where the bot and Probarlo live.
+- **What does not go out, and why**: every variety out of today's catalog, by name, each with one reason, the first that applies:
+  1. hidden by the seller ("oculta");
+  2. no price today ("sin precio");
+  3. Stock's own words: sold out ("agotada") or no entries ("sin entradas").
+
+  Every reason is told by word, never by color alone (e.g. "Sir Jack, agotada · Mango Bomb, sin precio · X, oculta"). The exact wording is design's.
+- **Links**: each variety named in the preview or in what does not go out opens that variety's "En el catálogo" section on its page. "Editar encabezado y pie" opens Configuración → Mensaje del catálogo.
+- **Saving attributes** (on the variety's page) or **the header and footer** (in Configuración) shows the toast "Catálogo guardado"; the catalog screen shows the new text the next time it opens. Toasts carry no data.
 - **Refusals** show inline and keep what was typed. Each carries a code from `contract.json` (ADR-0008) and never repeats the input (ADR-0005).
 - **A variety that is gone** follows accounts.md's "Eso ya no está." rule.
 
@@ -121,9 +129,11 @@ Success criteria:
   0 mismatches.
 - **Bold pairing**: the preview, with markers removed, equals the copied text. Bold falls between pairs read left to right, and an unpaired final `**` shows as typed. 100% passing.
 - **Inclusion (criterion 2)**: a matrix of shown/hidden × price/no price today × no entries, sold out, low and ok. Only shown + priced + stock above 0 appears. 100% passing.
-- **Reasons (criterion 4)**: exactly one reason per out variety, in priority order, told by word. 100% passing.
-- **No curl (criterion 3)**: the end-to-end front run opens Más → Catálogo, edits attributes, header and footer, then taps Copiar. The clipboard equals the API's text.
-- **Speed (criterion 3)**: the screen answers in under 300 ms with a few dozen varieties.
+- **Reasons (criterion 4)**: exactly one reason per variety that does not go out, in priority order, told by word. 100% passing.
+- **Share = copy**: with a stubbed share sheet, Compartir hands exactly the API's text; with none available, Compartir is not shown and Copiar works.
+- **Always opens**: the catalog screen opens with nothing qualifying outside first run, and "Mandar catálogo" is disabled only while the checklist shows and nothing qualifies.
+- **No curl (criterion 3)**: the end-to-end front run edits a variety's attributes on its page and the header and footer in Configuración, opens Variedades → "Mandar catálogo" and taps Copiar. The clipboard equals the API's text.
+- **Speed (criterion 3)**: the screen answers in under 300 ms with a few dozen varieties, and opens in at most 2 taps from any tab root.
 - **Isolation (criterion 5)**: every catalog route is in the sweep and answers 404 or empty from another business.
 - **No echo**: no refusal or log line contains the header, footer, aroma or emoji typed.
 
@@ -135,4 +145,4 @@ Success criteria:
 - Stock figures in the text.
 - Escaping or refusing a seller's own `**` markers.
 - Live updates between partners while the screen is open.
-- Editing catalog attributes from Variedad detail.
+- Editing catalog attributes or the header and footer from the catalog screen itself: it links to where they are edited.

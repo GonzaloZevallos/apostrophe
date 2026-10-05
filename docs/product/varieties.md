@@ -2,8 +2,10 @@
 
 The varieties a business sells and the price history of each, seen only by that
 business (ADR-0004). Every other capability reads prices from here: a sale takes the
-current price of its day, the catalog shows today's. Variedades also shows each variety's
-low-stock warning and stock status, whose rules belong to stock (`stock.md`).
+current price of its day, the catalog shows today's. Variedades is the one screen for a
+variety: its list and each variety's page hold the variety's prices (here), its stock,
+entries and low-stock threshold (`stock.md`), and its catalog attributes (`catalog.md`).
+It is a tab (navigation.md).
 
 ## Jobs
 
@@ -17,8 +19,14 @@ sales arrive.
 
 **When** I buy, harvest or count flower, **I want** to record it from my phone in a few
 taps, **so I can** know what I have of each variety, see one running out before a customer
-asks for it, and know what the grams I sell or gift cost me. (Served here by the
-low-stock warning and status on Variedades; defined in `stock.md`.)
+asks for it, and know what the grams I sell or gift cost me. (Served here by the list's
+status, the variety's page and "+ Entrada de stock"; defined in `stock.md`.)
+
+**When** I run my business from my phone between orders or mid-chat with a customer,
+several times a day, **I want** the app laid out around what I actually do and how often,
+with everything about one variety in one place, **so I can** get back to the customer
+instead of hunting through menus, and never wonder which of several screens holds what I
+need. (The navigation job, navigation.md.)
 
 Success criteria:
 
@@ -32,6 +40,8 @@ Success criteria:
    call by hand.
 5. Variedades says on its own, by shape and word and never by color alone, when a variety
    is sold out or below its threshold (`stock.md`, criterion 4).
+6. **One variety, one page**: a variety's stock and entries, prices, low-stock warning and
+   catalog attributes are seen and edited from its page, and from no other screen.
 
 ## Behaviour
 
@@ -51,33 +61,71 @@ Success criteria:
 - **Low-stock threshold**: optional grams, above zero, up to two decimals, set or turned
   off per variety. Its rules and the stock status are in `stock.md`.
 
-### On screen (Variedades)
+### On screen: the Variedades list (`Variedades`)
 
-- **The list** (`Variedades`):
-  - each variety with today's list price, bulk price and bulk minimum;
+- **A tab root** (navigation.md). On a computer it is two panes: the list on the left, the
+  selected variety's page on the right.
+- **Every variety**, hidden ones included, sorted by name, in a stable order.
+- **Each row**:
+  - the name;
   - its stock status mark (`MarcaEstado`: square = agotada as the inverted chip, filled
-    circle = baja, empty circle = ok);
-  - its warning: "Avisame abajo de 15 g", "Avisando: quedan 18,5 g" or "Aviso apagado".
-  - A variety with no price today shows "Sin precio: no se puede vender".
-- **A variety's detail** (`VariedadDetalle`): the price history with "Rige desde", and a new
-  price entry. The low-stock threshold is set or turned off from the variety. Toast:
-  "Aviso guardado".
-- Add and rename a variety.
-- **Deleting an entry**: every history row has a delete action. It is confirmed with "Antes
-  de borrar" ("¿Borrás…? / No, dejala / Sí, borrala"), and the copy says what takes the
-  entry's place:
+    circle = baja, empty circle = ok) and its word, with "Sin entradas" when it has none
+    and its detail line (`stock.md`);
+  - "Oculta" beside the status when the variety is hidden from the catalog. It never
+    replaces the stock status: a hidden variety can still be sold, gifted and restocked;
+  - grams and days left;
+  - today's list price per gram, or "Sin precio: no se puede vender" when it has none.
+- **The summary line**, above the list:
+  - with no varieties at all: no summary line, and a fixed empty state inviting the seller
+    to add the first variety;
+  - with every variety ok: "N variedades · todo ok";
+  - otherwise: every status that is not ok, counted by word, in stock-status order (e.g.
+    "1 sin entradas · 1 agotada · 1 baja"). It is never blank.
+  - The exact wording is design's, as long as each state is told by word.
+- **"Mandar catálogo"** at the top, opening the catalog screen (`catalog.md`). It is
+  disabled, with its reason in words, only while the first-run checklist shows and nothing
+  qualifies (navigation.md).
+- **"+ Entrada de stock"**, a secondary button above the list (not a floating button),
+  opening the stock entry form (`stock.md`).
+- **"Nueva variedad"**: adds a variety (a form).
+- **"Todas las entradas"** at the foot (`stock.md`).
+
+### On screen: a variety's page (`VariedadDetalle`)
+
+- **A detail** (navigation.md): the bar or sidebar and "‹ Variedades", without
+  "+ Nueva venta".
+- **The summary line** at the top: grams, status, days left and today's list price (e.g.
+  "64 g · ok · 21 días · $ 11.000 x g"), with "Oculta" when hidden.
+- **Two equal buttons**: "+ Entrada" (the stock entry form with this variety chosen,
+  `stock.md`) and "Nuevo precio" (the price entry form).
+- **Sections**, each with its last 3 rows and "Ver todas" for the full list:
+  - **Stock y entradas**: the variety's stock entries (`stock.md`);
+  - **Precios**: the price history with "Rige desde", newest first, each row with its
+    delete action;
+  - **Aviso de stock bajo**: the low-stock threshold, set or turned off here; its warning
+    reads "Avisame abajo de 15 g", "Avisando: quedan 18,5 g" or "Aviso apagado". Toast:
+    "Aviso guardado";
+  - **En el catálogo**: the variety's catalog attributes (shown or hidden, emoji, indica
+    share, aroma), edited here and nowhere else (`catalog.md`).
+- **Renaming** the variety is done here.
+- **Forms** opened from here (Nuevo precio, + Entrada, rename, the catalog attributes) have
+  "Cerrar" and a confirmation when leaving with something typed.
+- **Deleting a price entry**: confirmed with "Antes de borrar" ("¿Borrás…? / No, dejala /
+  Sí, borrala"), and the copy says what takes the entry's place:
   - with an earlier entry, the price that applies again and its date, e.g. "Vuelve a regir
     $ 9.000 x g desde el 12/09";
   - for the first entry, that there is no price before the next entry's date;
   - for the only entry, that the variety is left "Sin precio: no se puede vender".
 
   The copy never mentions sales.
-- **After deleting**, today's prices update at once on the detail and the list. Inicio may
+- **After deleting**, today's prices update at once on the page and the list. Inicio may
   show "Arrancá por las variedades" again.
 - **Toasts**: "Variedad guardada", "Precio guardado" and "Precio eliminado", with no amounts
   in them.
 - **Refusals**, such as a duplicate name or a duplicate date, show inline and keep what was
   typed.
+- **A variety that is gone** follows accounts.md's "Eso ya no está." rule, with "Volver a
+  Variedades".
 
 ## Metrics
 
@@ -87,12 +135,18 @@ Success criteria:
   covered by tests through the API and the front.
 - **Unique names (criterion 3)**: duplicates within a business, whatever the case or
   spacing, are 0.
-- **No curl (criterion 4)**: the end-to-end front run adds a variety, adds a price, renames
-  the variety, deletes a price entry, and sets and turns off a low-stock threshold.
-- **Status shown (criterion 5)**: Variedades shows the status mark and warning for each
-  status, never by color alone; covered by the front tests.
+- **No curl (criterion 4)**: the end-to-end front run adds a variety, adds a price from its
+  page, renames the variety, deletes a price entry, sets and turns off a low-stock
+  threshold, and edits the variety's catalog attributes from its page.
+- **Status shown (criterion 5)**: the list and the page show the status mark and word for
+  each status, "Oculta" beside (never instead of) the status of a hidden variety, and the
+  summary line for no varieties, all ok and a mix; never by color alone; covered by the
+  front tests.
+- **One page (criterion 6)**: no other screen offers an edit of a variety's prices,
+  entries' variety-level view, threshold or catalog attributes; checked against the docs
+  and the design.
 
 ## Out of scope
 
-- Catalog attributes (shown or hidden, emoji, indica share, aroma): the catalog capability.
+- The rules of catalog attributes: the catalog capability (they are edited here).
 - Deleting a variety.

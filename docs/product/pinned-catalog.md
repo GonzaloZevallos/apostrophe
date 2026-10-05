@@ -2,26 +2,31 @@
 
 Each business's own Telegram bot delivers the catalog text (catalog.md) to the business's chat as one pinned message and keeps it in step on its own. The seller sees a test copy in their own chat first. Seen only by its business (ADR-0004). The text comes from the catalog's single author (ADR-0022). This capability sends it and keeps it current. The bot only publishes; it never takes orders.
 
+Where its pieces live (navigation.md): the bot settings and Probarlo are in Configuración → Integraciones; the pin's status and Publicar are on the catalog screen (catalog.md); Inicio carries the out-of-date notice.
+
 ## Jobs
 
 **When** something changes what my catalog says (a price is recorded or deleted, a variety sells out or comes back, I hide or edit a variety, I change the header or footer), **I want** the catalog pinned in my business's Telegram chat to update by itself, after I've seen a test copy in my own chat before customers do, **so** my customers never see a stale price or a variety I can't sell, and I never have to remember to copy, paste and pin it again.
+
+**When** I run my business from my phone between orders or mid-chat with a customer, several times a day, **I want** every business setting in one place, **so I can** never wonder which of several screens holds what I need. (The navigation job, navigation.md: served here by the bot settings in Configuración → Integraciones.)
 
 Success criteria:
 
 1. **No step of my own**: once a change that affects the catalog is saved, the pin already shows it the next time anyone looks at Telegram. This includes a price entry whose date arrives with nobody saving anything.
 2. **One message, always the same one**: publishing or syncing edits the pinned message in place. The chat never fills with old catalogs. Switching the bot or the channel leaves the previous chat's pin untouched, and the seller is told so.
 3. **What customers read is the catalog**: the same text as the in-app preview and as Probarlo's test send, with real bold from the same left-to-right `**` pairing (ADR-0022).
-4. **Never surprised by a failure**: the save that triggered a sync (sale, price, stock, catalog edit) always succeeds on its own terms, and the sync happens after it. A stuck pin shows as "Desactualizado", with a one-line reason, on Catálogo and on Inicio.
+4. **Never surprised by a failure**: the save that triggered a sync (sale, price, stock, catalog edit) always succeeds on its own terms, and the sync happens after it. A stuck pin shows as "Desactualizado", with a one-line reason, on the catalog screen and on Inicio.
 5. **Businesses never mix and the token stays secret**: one bot, token, channel chat and own chat per business. The token is never shown again once saved. Nothing about the settings or a sync leaks across businesses (ADR-0004, ADR-0005).
-6. **Done from the phone**: setup, Probarlo, Publicar and seeing whether the pin is out of date all work from the phone, with no API call by hand.
+6. **Done from the phone**: setup and Probarlo in Integraciones, Publicar and seeing whether the pin is out of date on the catalog screen all work from the phone, with no API call by hand.
 
 Setup (token, chats, first Probarlo and Publicar) is judged by criteria 3, 5 and 6. Upkeep is judged by criteria 1, 2 and 4. Upkeep starts only after the first successful Publicar.
 
 ## Behaviour
 
-### Bot settings, per business
+### Bot settings, per business (Configuración → Integraciones)
 
 - One token, one channel chat and one own chat per business.
+- **Where**: the Integraciones group of Configuración, a form (navigation.md): "Cerrar", and a confirmation when leaving with something typed and not saved.
 - **Token**:
   - stored encrypted, keyed from `APOSTROPHE_SECRET_KEY`;
   - once saved, no route returns it and it is never logged;
@@ -35,7 +40,7 @@ Setup (token, chats, first Probarlo and Publicar) is judged by criteria 3, 5 and
 - **Changing any of the three** re-arms the test gate. The successful Probarlo that saves the change satisfies it again.
 - **Changing only the own chat** leaves the channel and its pin as they were: upkeep goes on and the status doesn't change.
 
-### Probarlo (test send)
+### Probarlo (test send, in Integraciones)
 
 - It tests the values typed on the screen, not the saved ones.
 - It needs the token and the own chat. The channel chat may be blank.
@@ -43,9 +48,9 @@ Setup (token, chats, first Probarlo and Publicar) is judged by criteria 3, 5 and
 - **On failure**: nothing is saved. A fixed inline reason shows that never repeats what was typed, and everything typed stays. A text over Telegram's limit fails with "Es demasiado largo para Telegram: acortá aromas u ocultá variedades."
 - It sends exactly what would be published, the empty-catalog case included.
 
-### Publicar (publish and pin)
+### Publicar (publish and pin, on the catalog screen)
 
-- **What it needs**: a saved channel chat, a successful Probarlo since the token or either chat last changed, and no unsaved edits typed in the settings. Until then it shows as disabled with "Probalo primero para ver cómo queda".
+- **What it needs**: a saved channel chat, and a successful Probarlo since the token or either chat last changed. Until then it shows as disabled with its reason in words ("Probalo primero para ver cómo queda", or that the channel is missing) and a link to Configuración → Integraciones.
 - **Posting and editing**:
   - The first Publicar to a channel chat posts the message and pins it.
   - A later Publicar edits that same message and pins it again, so a message unpinned by hand is pinned back.
@@ -91,14 +96,14 @@ Setup (token, chats, first Probarlo and Publicar) is judged by criteria 3, 5 and
 - **Before the first Publicar ever**: no status shows.
 - **Retrying**: a failed sync is retried automatically on the next trigger, or by Publicar. There is no "Reintentar".
 - **Where it shows**:
-  - on Catálogo, under Probarlo and Publicar;
-  - on Inicio: while the status is "Desactualizado", the fixed line "Tu catálogo en Telegram está desactualizado", which opens Catálogo. It is a notice, not a figure (accounts.md).
+  - on the catalog screen, next to Publicar (catalog.md);
+  - on Inicio: while the status is "Desactualizado", the fixed line "Tu catálogo en Telegram está desactualizado", which opens the catalog screen. It is a notice, not a figure (results.md).
 
 ### Nothing qualifies
 
 - The pin, Probarlo and Publicar use: the header, then "Por ahora no tenemos nada para ofrecer.", then the footer. A blank header or footer is left out.
 - This counts as "Al día".
-- Catálogo's own empty state and Copiar are unchanged: there is nothing to copy (catalog.md).
+- The catalog screen's own empty state and Copiar are unchanged: there is nothing to copy (catalog.md).
 - When a variety qualifies again, upkeep restores the full catalog.
 
 ### Changing the channel or the token
@@ -106,7 +111,7 @@ Setup (token, chats, first Probarlo and Publicar) is judged by criteria 3, 5 and
 - The app never edits, unpins or deletes the old pinned message again.
 - After the successful test that saves the change, the status reads "Desactualizado · Falta publicarlo con el bot o el canal nuevo".
 - The next Publicar posts and pins a new message, and "El último fue" restarts from it.
-- Changing either one shows: "El mensaje fijado anterior queda como está; desfijalo vos en Telegram."
+- Changing either one shows, in Integraciones: "El mensaje fijado anterior queda como está; desfijalo vos en Telegram."
 
 ### The text
 
@@ -139,23 +144,23 @@ Setup (token, chats, first Probarlo and Publicar) is judged by criteria 3, 5 and
 - **Too long (criteria 3, 4)**: a text over Telegram's limit is never split or cut, and nothing is sent. Probarlo and Publicar refuse it inline. Upkeep leaves the pin as it was and reports the length reason. The triggering save succeeds. 100% passing.
 - **Resilience (criterion 4)**: with the fake adapter failing:
   - every triggering save succeeds and answers normally;
-  - the status reads "Desactualizado" with the right reason, and Inicio shows its line;
+  - the status reads "Desactualizado" with the right reason on the catalog screen, and Inicio shows its line, which opens the catalog screen;
   - the next successful trigger or Publicar clears it.
 
   100% passing.
 - **Settings changes (criteria 2, 4)**:
   - changing only the own chat keeps upkeep running and the status unchanged;
   - a tested token or channel change reads "Falta publicarlo con el bot o el canal nuevo", with no "El último fue", until Publicar.
+- **Unavailable Publicar**: with no saved channel or no successful Probarlo since the last change, the catalog screen shows Publicar disabled with its reason in words and a link that opens Integraciones.
 - **Secrecy and isolation (criterion 5)**:
   - the token is never in any answer, log line or browser storage across a full front run;
   - every route is in the sweep and answers 404 or empty from another business.
 
   0 leaks.
 - **No curl (criterion 6)**: an end-to-end front run:
-  - enters the token and own chat;
-  - runs Probarlo, then sees Publicar enabled;
-  - enters the channel chat and runs Publicar;
-  - sees "Al día" on Catálogo and no line on Inicio.
+  - in Configuración → Integraciones, enters the token, the own chat and the channel chat and runs Probarlo;
+  - on the catalog screen, sees Publicar enabled and runs it;
+  - sees "Al día" on the catalog screen and no line on Inicio.
 
 ## Out of scope
 

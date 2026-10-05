@@ -1,6 +1,6 @@
 # Sales
 
-What a customer takes in one go, each line priced from the day's prices and that price kept on the line (ADR-0003). Sales are seen only by their business (ADR-0004). Reads current prices from varieties, and customers (with their VIP status) from customers. Payments (`payments.md`) settle what a sale leaves owing and say whether each sale is still owing. Stock (`stock.md`) takes each line's grams out of its variety's lots and gives the line its cost of goods, which follows the lots and is never frozen (ADR-0009). This capability also covers the sales screens: Nueva venta, Ventas and a sale's detail.
+What a customer takes in one go, each line priced from the day's prices and that price kept on the line (ADR-0003). Sales are seen only by their business (ADR-0004). Reads current prices from varieties, and customers (with their VIP status) from customers. Payments (`payments.md`) settle what a sale leaves owing and say whether each sale is still owing. Stock (`stock.md`) takes each line's grams out of its variety's lots and gives the line its cost of goods, which follows the lots and is never frozen (ADR-0009). This capability also covers the sales screens: Nueva venta, Ventas and a sale's detail. Where they sit is navigation.md.
 
 ## Jobs
 
@@ -13,6 +13,8 @@ What a customer takes in one go, each line priced from the day's prices and that
 **When** a customer pays me part or all of what they owe, in cash or by transfer, on the day or weeks later, **I want** to record it from my phone in a few taps and see their balance and "owing since" drop right away, **so I** always know who owes me what and since when, and nothing they paid or still owe gets lost or lands on the wrong person. (Served here by the "te debe" mark in Ventas; defined in `payments.md`.)
 
 **When** I register a customer (from Clientes, in the middle of a sale, or through the one-time spreadsheet import) and I don't have their phone number, **I want** to save them under their name anyway and add the number later if I ever get it, **so I can** record every sale and every debt against the person who actually owes it, without inventing a number or keeping that person outside the app. (Served here by Elegir cliente's "Nuevo cliente"; defined in `customers.md`.)
+
+**When** I run my business from my phone between orders or mid-chat with a customer, several times a day, **I want** the app laid out around what I actually do and how often, **so I can** get back to the customer instead of hunting through menus. (The navigation job, navigation.md: served here by "+ Nueva venta", one tap from every tab root.)
 
 Success criteria, recording (API):
 
@@ -129,8 +131,10 @@ Success criteria, on screen:
 ### On screen: Nueva venta (`NuevaVenta`, `NuevaVentaCompu`)
 
 - **Opening the form**:
-  - from the fixed "Nueva venta" button;
+  - from the fixed "+ Nueva venta" button, on every tab root (navigation.md);
   - or from "Nueva venta a <name>" on a customer's card, with that customer already chosen.
+  - With no variety priced today, "+ Nueva venta" stays visible and says in words what is missing (navigation.md).
+- **A form** (navigation.md): no bar and no "+ Nueva venta"; it closes with "Cerrar".
 - **Fields**:
   - the date: today by default, shown as "Hoy 02/10", never a later day;
   - the customer;
@@ -160,11 +164,11 @@ Success criteria, on screen:
   - A price changed before saving: the save goes through, and the detail shows what was stored.
   - A customer or variety not found when saving shows the generic line and keeps the form.
 - **Leaving**:
-  - Back or close after a line, a customer, shipping or a note has been entered asks "¿Descartás la venta?", with "No, seguí cargando" and "Sí, descartala".
+  - "Cerrar" or back after a line, a customer, shipping or a note has been entered asks "¿Descartás la venta?", with "No, seguí cargando" and "Sí, descartala".
   - An untouched form closes at once.
   - There are no drafts or autosave.
 - **Elegir cliente** (`NuevaVentaCliente`):
-  - A sheet over the sale. It offers search by phone or part of the name, "Sin cliente", and "Nuevo cliente" (the same form as in Clientes: only the name required; phone optional, plus channel and VIP), which creates the customer and uses it.
+  - A sheet over the sale. It offers search by phone or part of the name, "Sin cliente", and "Nuevo cliente" (the same form as in Clientes: only the name required; phone optional, plus VIP; no channel), which creates the customer and uses it.
   - Closing the sheet only returns to the form.
 - **"Venta guardada"** (`Estados`):
   - It carries **Deshacer** and no amount or name. It is announced like a toast and lasts a fixed few seconds.
@@ -174,6 +178,7 @@ Success criteria, on screen:
 
 ### On screen: Ventas (`Ventas`, `VentasCompu`)
 
+- **A tab root** (navigation.md): the bar or sidebar and "+ Nueva venta".
 - **Periods**: Hoy · Semana · Mes · Fechas, in Argentina time.
   - Semana is the Monday-to-Sunday week containing today.
   - Mes is the current calendar month.
@@ -194,6 +199,7 @@ Success criteria, on screen:
 
 ### On screen: Detalle de venta (`VentaDetalle`)
 
+- **A detail** (navigation.md): the bar or sidebar and "‹ Ventas", without "+ Nueva venta".
 - **Shows**:
   - the total;
   - each line's variety, grams, price per gram, rule badge and line total;

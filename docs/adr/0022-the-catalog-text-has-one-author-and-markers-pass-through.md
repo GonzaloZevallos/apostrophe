@@ -47,3 +47,20 @@ the seller.
   header and the name could still carry markers.
 - **A grams format method on `Grams`**: a rioplatense presentation rule in the shared
   kernel, which other hexagons would reuse and then change.
+
+## Amendment (2026-10-05): where the catalog is reached and edited, after GH-58
+
+**Supersedes** nothing above; this records where the navigation redesign (GH-58)
+places screens this ADR's text already assumed existed, without changing the one
+function or the pairing rule.
+
+- The catalog screen opens from Variedades → "Mandar catálogo" and from Inicio's
+  out-of-date notice. There is no separate Catálogo entry in Más any more.
+- Catalog attributes (what this ADR's "entries" are built from) are edited only on a
+  variety's own page, in its "En el catálogo" section — never on the catalog screen
+  itself.
+- The header and footer are edited in Configuración → Mensaje del catálogo, not on
+  the catalog screen.
+- The preview this ADR describes ("Cómo se ve en Telegram") lives at
+  `web/src/screens/telegramPreview.ts`; `web/src/catalog/` is not where it is — that
+  path was this ADR's placeholder, not the file that shipped.
