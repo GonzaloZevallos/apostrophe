@@ -68,6 +68,21 @@ test('an untouched form closes at once, back to the screen that opened it', asyn
   expect(screen.queryByText('Gasto guardado')).not.toBeInTheDocument()
 })
 
+test('"Cerrar" is there and works while the categories are still loading', async () => {
+  const pending: FetchImpl = async (url, init) => {
+    if (url.startsWith('/expense-categories') && (init?.method ?? 'GET') === 'GET') {
+      return new Promise(() => undefined)
+    }
+    return api()(url, init)
+  }
+  const router = renderExpenses([MORE, EXPENSE_NEW], pending)
+
+  await userEvent.click(await screen.findByRole('button', { name: 'Cerrar' }))
+
+  expect(await screen.findByText('Pantalla Más')).toBeInTheDocument()
+  expect(router.state.location.pathname).toBe(MORE)
+})
+
 test('closing with something typed asks before discarding; staying keeps the form', async () => {
   const router = renderExpenses([MORE, EXPENSE_NEW], api())
 

@@ -127,12 +127,14 @@ test('/expenses renders Gastos, with its month, under the gated shell', async ()
   ).toBeInTheDocument()
 })
 
-test('the Spanish /mas and /gastos are not front routes: the server redirects them', async () => {
+test.each(['/mas', '/gastos'])('the Spanish %s is not a front route: the server redirects it', async (path) => {
   vi.stubGlobal('fetch', fetchFor({}))
-  await act(() => router.navigate('/gastos'))
+  await act(() => router.navigate(path))
 
   render(<App />)
 
-  // The catch-all sends an unknown path to Inicio, never to Gastos.
-  expect(await screen.findByRole('main')).not.toHaveTextContent(/Las compras de flores/)
+  // The catch-all sends an unknown path to Inicio, never to Más or Gastos.
+  const main = await screen.findByRole('main')
+  expect(main).not.toHaveTextContent(/Las compras de flores/)
+  expect(router.state.location.pathname).toBe('/')
 })
