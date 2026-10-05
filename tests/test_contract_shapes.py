@@ -372,17 +372,24 @@ def test_every_fixture_routes_nullable_fields_match_openapi(app: FastAPI) -> Non
 # -- the walker itself, proven on schemas a wrong NULLABLE must disagree with --------
 
 
-def _walked(schema: dict[str, Any]) -> dict[str, JsonType]:
+def _walked(
+    schema: dict[str, Any], *, components: dict[str, Any] | None = None
+) -> dict[str, JsonType]:
     found: dict[str, JsonType] = {}
-    _walk(schema, {}, "", found)
+    _walk(schema, components or {}, "", found)
     return found
 
 
-def _assert_declared_matches_schema(schema: dict[str, Any], declared: dict[str, JsonType]) -> None:
+def _assert_declared_matches_schema(
+    schema: dict[str, Any],
+    declared: dict[str, JsonType],
+    *,
+    components: dict[str, Any] | None = None,
+) -> None:
     """The same comparison `test_every_fixture_routes_nullable_fields_match_openapi`
     makes for a real route, isolated so a wrong `declared` can be shown to fail it
     over a small inline schema, never only the real ones that already agree."""
-    assert _walked(schema) == declared
+    assert _walked(schema, components=components) == declared
 
 
 _NULLABLE_STRING_FIELD = {
@@ -447,3 +454,84 @@ def test_a_kind_item_s_nullable_field_declared_under_the_wrong_kind_fails() -> N
     # two variants' own paths with each other.
     with pytest.raises(AssertionError):
         _assert_declared_matches_schema(_KIND_DISCRIMINATED_ROWS, {"rows[payment].note": "string"})
+
+
+# -- the walker's own _deref, behind a $ref nested in a nullable anyOf ---------------
+
+# `X` sits neither first nor last, with a decoy carrying its own nullable field on
+# each side (`Y` before, `Z` after), so a `_deref` that picked the first or the last
+# component, or stopped short of the real indirection, would walk one of them instead.
+COMPONENTS: dict[str, Any] = {
+    "Y": {
+        "type": "object",
+        "properties": {"y": {"anyOf": [{"type": "string"}, {"type": "null"}]}},
+    },
+    # `A` only redirects to `X`: resolving the schema's own `$ref` takes two hops.
+    "A": {"$ref": "#/components/schemas/X"},
+    "X": {
+        "type": "object",
+        "properties": {
+            "nested": {"anyOf": [{"type": "string"}, {"type": "null"}]},
+            "required_field": {"type": "integer"},
+        },
+    },
+    "Z": {
+        "type": "object",
+        "properties": {"z": {"anyOf": [{"type": "string"}, {"type": "null"}]}},
+    },
+}
+
+_REF_BEHIND_NULLABLE_ANY_OF = {
+    "type": "object",
+    "properties": {
+        "x": {"anyOf": [{"$ref": "#/components/schemas/A"}, {"type": "null"}]},
+    },
+}
+
+
+def test_the_walker_resolves_a_ref_behind_a_nullable_any_of() -> None:
+    assert _walked(_REF_BEHIND_NULLABLE_ANY_OF, components=COMPONENTS) == {
+        "x": "object",
+        "x.nested": "string",
+    }
+
+
+def test_a_nested_path_behind_a_deref_d_ref_missing_from_the_declaration_fails() -> None:
+    # Pinned first: if `_deref` stopped short of `X` (or didn't resolve at all), the
+    # walk itself would raise "cannot classify" here, never reaching the `raises` below.
+    assert _walked(_REF_BEHIND_NULLABLE_ANY_OF, components=COMPONENTS) == {
+        "x": "object",
+        "x.nested": "string",
+    }
+
+    with pytest.raises(AssertionError):
+        _assert_declared_matches_schema(
+            _REF_BEHIND_NULLABLE_ANY_OF, {"x": "object"}, components=COMPONENTS
+        )
+
+
+def test_an_extra_declared_path_behind_a_deref_d_ref_fails() -> None:
+    assert _walked(_REF_BEHIND_NULLABLE_ANY_OF, components=COMPONENTS) == {
+        "x": "object",
+        "x.nested": "string",
+    }
+
+    # `X`'s own `required_field` is not nullable; the walker never reports it.
+    wrong: dict[str, JsonType] = {
+        "x": "object",
+        "x.nested": "string",
+        "x.required_field": "integer",
+    }
+    with pytest.raises(AssertionError):
+        _assert_declared_matches_schema(_REF_BEHIND_NULLABLE_ANY_OF, wrong, components=COMPONENTS)
+
+
+def test_a_path_behind_a_deref_d_ref_declared_the_wrong_json_type_fails() -> None:
+    assert _walked(_REF_BEHIND_NULLABLE_ANY_OF, components=COMPONENTS) == {
+        "x": "object",
+        "x.nested": "string",
+    }
+
+    wrong: dict[str, JsonType] = {"x": "string", "x.nested": "string"}
+    with pytest.raises(AssertionError):
+        _assert_declared_matches_schema(_REF_BEHIND_NULLABLE_ANY_OF, wrong, components=COMPONENTS)
