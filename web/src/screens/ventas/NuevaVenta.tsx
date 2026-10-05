@@ -15,9 +15,9 @@
  * fetches fresh, and nothing an earlier mount or another screen cached ever
  * surfaces here. The one other refetch is on `sale.no_price_that_day`.
  *
- * The leave guard (`useBlocker`, invariants: "reading a ref at call time") only
+ * The leave guard (`useLeaveGuard`, invariants: "reading a ref at call time") only
  * blocks Back/close once something has been typed, and never blocks the
- * replace-navigation a successful save performs — `savedRef` short-circuits the
+ * replace-navigation a successful save performs — `disarm()` short-circuits the
  * blocker's predicate once `onSubmit` has already saved.
  *
  * The line editor (plan, "Binding UX decision: the line editor" — no design file
@@ -30,21 +30,22 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { type FormEvent, useCallback, useEffect, useRef, useState } from 'react'
-import { useBlocker, useLocation, useNavigate, useOutletContext } from 'react-router'
+import { type FormEvent, useEffect, useRef, useState } from 'react'
+import { useLocation, useNavigate, useOutletContext } from 'react-router'
 import { ApiError, NetworkError, UNKNOWN_CODE, get, post } from '../../api/client'
 import type { Customer } from '../../api/customers'
 import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
 import { resolveOverride, type RefusalCode } from '../../api/refusals'
 import Boton from '../../components/Boton'
-import ConfirmDialog from '../../components/ConfirmDialog'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import { readNewSaleState, saleJustSaved } from '../../components/feedback'
 import Icono from '../../components/Icono'
+import LeaveConfirm from '../../components/LeaveConfirm'
 import ReglaInsignia from '../../components/ReglaInsignia'
 import SelectorPago from '../../components/SelectorPago'
 import SinConexion from '../../components/SinConexion'
+import { useLeaveGuard } from '../../components/useLeaveGuard'
 import { formatDateLong, formatDateShort, maxSaleDate } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
 import { parseGrams, parseMoney } from '../../format/parse'
@@ -197,7 +198,6 @@ export default function NuevaVenta() {
   } | null>(null)
   const focusNonceRef = useRef(0)
 
-  const savedRef = useRef(false)
   const varietyFieldRef = useRef<HTMLSelectElement | null>(null)
   const gramsFieldRef = useRef<HTMLInputElement | null>(null)
   const specialPriceFieldRef = useRef<HTMLInputElement | null>(null)
@@ -375,12 +375,7 @@ export default function NuevaVenta() {
     note.trim() !== '' ||
     shipping !== '0' ||
     lines.some((line) => !isBlank(line))
-  const touchedRef = useRef(touched)
-  useEffect(() => {
-    touchedRef.current = touched
-  }, [touched])
-  const shouldBlock = useCallback(() => touchedRef.current && !savedRef.current, [])
-  const blocker = useBlocker(shouldBlock)
+  const { blocker, disarm } = useLeaveGuard(touched)
 
   const save = useMutation({
     mutationFn: (body: SaleBody) => post<SavedSale>('/sales', body),
@@ -471,7 +466,7 @@ export default function NuevaVenta() {
 
     try {
       const saved = await save.mutateAsync(body)
-      savedRef.current = true
+      disarm()
       navigate(`/ventas/${saved.id}`, { replace: true, state: saleJustSaved() })
     } catch (caught) {
       if (caught instanceof ApiError && caught.status === 401) {
@@ -788,13 +783,12 @@ export default function NuevaVenta() {
       )}
 
       {blocker.state === 'blocked' && (
-        <ConfirmDialog
-          title="¿Descartás la venta?"
+        <LeaveConfirm
+          blocker={blocker}
+          question="¿Descartás la venta?"
           detail="No vas a poder recuperar lo que cargaste."
-          confirmText="Sí, descartala"
-          cancelText="No, seguí cargando"
-          onConfirm={() => blocker.proceed()}
-          onCancel={() => blocker.reset()}
+          keepLabel="No, seguí cargando"
+          discardLabel="Sí, descartala"
         />
       )}
     </main>
