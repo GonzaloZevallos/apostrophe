@@ -21,7 +21,8 @@
  * and on the phone also drops the bottom bar outright — `NuevaVenta`'s own
  * `/ventas/nueva` and `VentaDetalle`'s `/ventas/:id` are the two routes that set
  * it (`router.tsx`). The side rail's destinations never disappear on the
- * computer: only its button does (plan, "Chrome").
+ * computer: only its button does (plan, "Chrome"). `'card'` (Configuración's list) is
+ * the third case: the bar or the rail stays and only "+ Nueva venta" goes.
  */
 
 import { Link, NavLink, Outlet, useMatches, useOutletContext } from 'react-router'
@@ -44,22 +45,21 @@ const ITEMS: Item[] = [
 
 const NUEVA_VENTA_PATH = '/ventas/nueva'
 
-type Chrome = 'none'
+type Chrome = 'none' | 'card'
 
-function hasChrome(handle: unknown): handle is { chrome: Chrome } {
-  return (
-    typeof handle === 'object' &&
-    handle !== null &&
-    'chrome' in handle &&
-    (handle as { chrome: unknown }).chrome === 'none'
-  )
+function chromeOf(handle: unknown): Chrome | undefined {
+  if (typeof handle !== 'object' || handle === null || !('chrome' in handle)) return undefined
+  return handle.chrome === 'none' || handle.chrome === 'card' ? handle.chrome : undefined
 }
 
 /** The deepest match that declares `handle.chrome` wins — walk from the leaf
  * backwards and stop at the first one that has it. */
 function chromeFromMatches(matches: readonly { handle: unknown }[]): Chrome | undefined {
-  const deepest = [...matches].reverse().find((match) => hasChrome(match.handle))
-  return deepest === undefined ? undefined : 'none'
+  for (const match of [...matches].reverse()) {
+    const chrome = chromeOf(match.handle)
+    if (chrome !== undefined) return chrome
+  }
+  return undefined
 }
 
 function className(base: string): (state: { isActive: boolean }) => string {
@@ -70,7 +70,7 @@ export default function Shell() {
   const me = useOutletContext<Me>()
   const matches = useMatches()
   const chrome = chromeFromMatches(matches)
-  const showNuevaVenta = chrome !== 'none'
+  const showNuevaVenta = chrome === undefined
 
   return (
     <div className="disposicion">

@@ -396,6 +396,103 @@ button {
   color: var(--tinta2);
 }
 
+/* Configuración (`Configuracion.dc.html`, `ConfiguracionNegocio.dc.html`): the list of
+ * groups and the frame of one group. `Boton`'s link variant is the blue underlined one;
+ * here "Cerrar" and the back arrow are quiet text (the design's own), so only colour,
+ * weight and shadow are overridden, never its reset. */
+.ajustes {
+  gap: 0;
+  padding-top: var(--espacio-xl);
+}
+
+.ajustes > .boton--enlace {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  min-height: var(--alto-tocable);
+  margin-left: calc(-1 * var(--espacio-sm));
+  padding: 0 var(--espacio-sm);
+  color: var(--tinta);
+  font-weight: 500;
+  box-shadow: none;
+}
+
+.ajustes__titulos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-xs);
+}
+
+.ajustes__negocio {
+  display: none;
+}
+
+.ajustes__titulo {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.ajustes__lista {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--espacio-xl);
+}
+
+.ajustes__item {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+  min-height: var(--alto-tocable);
+  padding: var(--espacio-lg) 0;
+  border-bottom: 1px solid var(--linea);
+  color: var(--tinta);
+  text-decoration: none;
+}
+
+.ajustes__item:last-child {
+  border-bottom: 0;
+}
+
+.ajustes__item-rotulo {
+  flex: 1;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.ajustes__item-flecha {
+  display: flex;
+  color: var(--tinta2);
+}
+
+.ajustes-grupo__encabezado {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+  padding: var(--espacio-xl) var(--espacio-xl) var(--espacio-lg);
+}
+
+.ajustes-grupo__titulo {
+  flex: 1;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.ajustes-grupo__encabezado .boton--enlace {
+  color: var(--tinta2);
+  font-weight: 600;
+  box-shadow: none;
+}
+
+.ajustes-grupo__cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-md);
+  padding: var(--espacio-lg) var(--margen-pantalla) var(--espacio-xxl);
+}
+
 .columna-principal {
   flex: 1;
   display: flex;
@@ -2085,6 +2182,48 @@ button {
 @media (min-width: 900px) {
   .bar-inferior {
     display: none;
+  }
+
+  /* `ConfiguracionCompu`: the business name above the title, the list capped at 560px;
+     a group is a centred card (`ConfiguracionNegocioCompu`) rather than a full screen. */
+  .ajustes {
+    padding: var(--espacio-xxl) var(--espacio-xxl) 0;
+    gap: var(--espacio-sm);
+  }
+
+  .ajustes__negocio {
+    display: block;
+  }
+
+  .ajustes__titulo {
+    font-size: 28px;
+  }
+
+  .ajustes__lista {
+    max-width: 560px;
+  }
+
+  .ajustes-grupo {
+    align-items: center;
+    padding-top: 80px;
+  }
+
+  .ajustes-grupo__tarjeta {
+    width: 480px;
+    max-width: 100%;
+    background: var(--papel);
+    border: 1px solid var(--linea);
+    border-radius: var(--radio-panel-grande);
+    overflow: hidden;
+  }
+
+  .ajustes-grupo__encabezado {
+    padding: 22px var(--espacio-xxl) var(--espacio-xl);
+    border-bottom: 1px solid var(--linea);
+  }
+
+  .ajustes-grupo__cuerpo {
+    padding: var(--espacio-xl) var(--espacio-xxl);
   }
 
   .riel-lateral {

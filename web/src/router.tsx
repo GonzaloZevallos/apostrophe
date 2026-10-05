@@ -47,9 +47,18 @@ import VariedadDetalle from './screens/VariedadDetalle'
 import Variedades from './screens/Variedades'
 import Negocio from './screens/Negocio'
 import Reset from './screens/Reset'
+import Settings from './screens/settings/Settings'
+import AccountGroup from './screens/settings/AccountGroup'
+import AppearanceGroup from './screens/settings/AppearanceGroup'
+import BusinessGroup from './screens/settings/BusinessGroup'
+import CatalogMessageGroup from './screens/settings/CatalogMessageGroup'
+import ExpenseCategoriesGroup from './screens/settings/ExpenseCategoriesGroup'
+import IntegrationsGroup from './screens/settings/IntegrationsGroup'
+import UsersGroup from './screens/settings/UsersGroup'
 import NuevaVenta from './screens/ventas/NuevaVenta'
 import VentaDetalle from './screens/ventas/VentaDetalle'
 import Ventas from './screens/ventas/Ventas'
+import { redirectRoutes } from './redirects'
 import GatedLayout from './shell/GatedLayout'
 import Shell from './shell/Shell'
 
@@ -87,6 +96,30 @@ export const router = createBrowserRouter([
               { path: 'mi-stock/nueva-entrada', element: <EntradaStock mode="nuevo" /> },
               { path: 'mi-stock/entradas/:id', element: <EntradaStock mode="editar" /> },
               { path: 'negocio', element: <Negocio /> },
+              { path: 'settings', element: <Settings />, handle: { chrome: 'card' } },
+              { path: 'settings/business', element: <BusinessGroup />, handle: { chrome: 'none' } },
+              { path: 'settings/users', element: <UsersGroup />, handle: { chrome: 'none' } },
+              {
+                path: 'settings/integrations',
+                element: <IntegrationsGroup />,
+                handle: { chrome: 'none' },
+              },
+              {
+                path: 'settings/catalog-message',
+                element: <CatalogMessageGroup />,
+                handle: { chrome: 'none' },
+              },
+              {
+                path: 'settings/expense-categories',
+                element: <ExpenseCategoriesGroup />,
+                handle: { chrome: 'none' },
+              },
+              {
+                path: 'settings/appearance',
+                element: <AppearanceGroup />,
+                handle: { chrome: 'none' },
+              },
+              { path: 'settings/account', element: <AccountGroup />, handle: { chrome: 'none' } },
               { path: 'analisis', element: <Analisis /> },
               { path: 'catalogo', element: <Catalogo /> },
               {
@@ -101,6 +134,7 @@ export const router = createBrowserRouter([
           },
         ],
       },
+      ...redirectRoutes(),
       { path: '*', element: <Navigate to="/" replace /> },
     ],
   },
