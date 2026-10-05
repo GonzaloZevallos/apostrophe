@@ -5,6 +5,8 @@ infrastructure (CODING_STANDARDS.md section 5).
 
 from __future__ import annotations
 
+from decimal import Decimal
+
 from app.spreadsheet_import.domain.plan import split
 from tests.spreadsheet_import.factories import entrada_row, gasto_row, venta_row, workbook
 
@@ -27,6 +29,18 @@ def test_a_venta_row_with_text_total_is_left_out_and_listed_with_that_text() -> 
     assert unfinished.ref == row.ref
     assert unfinished.sheet == "Ventas"
     assert unfinished.text == "Falta pago"
+
+
+def test_a_venta_row_with_a_non_whole_decimal_total_is_finished_not_unfinished() -> None:
+    # GH-55: a non-whole Ventas Total (a Google Sheets float such as 15501.55) is
+    # kept as a `Decimal`, never text, so it is a numeric row like any other, never
+    # an `UnfinishedRow`.
+    row = venta_row(2, total=Decimal("15501.55"))
+    result = split(workbook(ventas=(row,)))
+
+    assert result.ventas == (row,)
+    assert result.unfinished == ()
+    assert result.problems == ()
 
 
 def test_a_venta_row_whose_total_has_no_saved_value_blocks() -> None:

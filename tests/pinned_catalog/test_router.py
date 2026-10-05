@@ -95,6 +95,22 @@ def test_probarlo_without_a_channel_saves_but_cannot_publish(
     assert "Por ahora no tenemos nada para ofrecer." in call[3]
 
 
+def test_status_matches_its_fixture_after_a_successful_publish(
+    client: TestClient, telegram: FakeTelegram
+) -> None:
+    client.post(
+        "/pinned-catalog/test",
+        json={"token": TOKEN, "own_chat": "111", "channel_chat": "@canal"},
+    )
+    published = client.post("/pinned-catalog/publish")
+    assert published.status_code == 200, published.text
+
+    status = client.get("/pinned-catalog/status")
+
+    assert status.status_code == 200, status.text
+    assert_matches_fixture(status.json(), "pinnedCatalogStatus")
+
+
 def test_publicar_without_a_saved_channel_is_not_ready(client: TestClient) -> None:
     client.post(
         "/pinned-catalog/test", json={"token": TOKEN, "own_chat": "111", "channel_chat": None}
