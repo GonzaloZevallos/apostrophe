@@ -1,4 +1,4 @@
-"""The one adapter that reaches Telegram's HTTP API (ADR-0013): plain text plus UTF-16
+"""The one adapter that reaches Telegram's HTTP API (ADR-0023): plain text plus UTF-16
 `entities` of type `bold`, no `parse_mode`; `urllib` with a 10 s timeout and an
 injectable opener, so no test needs the network or a real token (the plan's
 invariant). `classify` matches Telegram's answer over a fixed table of lowercase
