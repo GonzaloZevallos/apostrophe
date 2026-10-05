@@ -1,7 +1,8 @@
 """The HTTP shapes of a customer. Bare: no pydantic length or pattern constraint, so
 every rule stays the domain's and its message is a fixed string (ADR-0005). `PATCH` is
 partial: `model_fields_set` is how `CustomerPatchIn` tells a field left out from a field
-explicitly sent as `null`, which is only allowed for `channel`."""
+explicitly sent as `null`, which clears `phone` and `channel` but is refused for `name`
+and `vip`."""
 
 from datetime import date
 from typing import Literal
@@ -16,7 +17,7 @@ from app.customers.domain.customer import Channel, Customer
 
 class CustomerIn(BaseModel):
     name: str
-    phone: str
+    phone: str | None = None
     channel: Channel | None = None
     vip: bool = False
 
@@ -31,7 +32,7 @@ class CustomerPatchIn(BaseModel):
         present = self.model_fields_set
         return CustomerChanges(
             name=_required(self.name, "name" in present, "name"),
-            phone=_required(self.phone, "phone" in present, "phone"),
+            phone=self.phone if "phone" in present else UNCHANGED,
             channel=self.channel if "channel" in present else UNCHANGED,
             vip=_required(self.vip, "vip" in present, "vip"),
         )
@@ -46,7 +47,7 @@ NO_BALANCE = CustomerBalance(balance=0, owing_since=None, standing="settled")
 class CustomerOut(BaseModel):
     id: int
     name: str
-    phone: str
+    phone: str | None
     channel: Channel | None
     vip: bool
     balance: int
@@ -59,7 +60,7 @@ class CustomerOut(BaseModel):
         return cls(
             id=customer.id,
             name=customer.name.value,
-            phone=customer.phone.value,
+            phone=customer.phone.value if customer.phone is not None else None,
             channel=customer.channel,
             vip=customer.vip,
             balance=balance.balance,
@@ -69,7 +70,7 @@ class CustomerOut(BaseModel):
 
 
 def _required[T](
-    value: T | None, present: bool, field: Literal["name", "phone", "vip"]
+    value: T | None, present: bool, field: Literal["name", "vip"]
 ) -> T | Unchanged:
     if not present:
         return UNCHANGED

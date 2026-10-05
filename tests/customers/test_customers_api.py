@@ -2,6 +2,7 @@
 
 from typing import Any
 
+import pytest
 from fastapi.testclient import TestClient
 
 from tests.conftest import TODAY
@@ -11,10 +12,13 @@ from tests.contract_shapes import assert_matches_fixture
 def _register(
     client: TestClient,
     name: str = "Fran Araujo",
-    phone: str = "11 2345-6789",
+    phone: str | None = "11 2345-6789",
     **rest: Any,
 ) -> dict[str, Any]:
-    response = client.post("/customers", json={"name": name, "phone": phone, **rest})
+    body_in: dict[str, Any] = {"name": name, **rest}
+    if phone is not None:
+        body_in["phone"] = phone
+    response = client.post("/customers", json=body_in)
     assert response.status_code == 201, response.text
     body: dict[str, Any] = response.json()
     return body
@@ -236,13 +240,64 @@ def test_clearing_the_name_with_null_is_refused(client: TestClient) -> None:
     assert response.json()["detail"] == "name cannot be cleared"
 
 
-def test_clearing_the_phone_with_null_is_refused(client: TestClient) -> None:
+def test_clearing_the_phone_with_null_is_allowed(client: TestClient) -> None:
     customer = _register(client)
 
     response = client.patch(f"/customers/{customer['id']}", json={"phone": None})
 
-    assert response.status_code == 422
-    assert response.json()["detail"] == "phone cannot be cleared"
+    assert response.status_code == 200
+    assert response.json()["phone"] is None
+
+
+def test_clearing_the_phone_with_an_empty_string_is_allowed(client: TestClient) -> None:
+    customer = _register(client)
+
+    response = client.patch(f"/customers/{customer['id']}", json={"phone": ""})
+
+    assert response.status_code == 200
+    assert response.json()["phone"] is None
+
+
+@pytest.mark.parametrize("cleared_with", [None, ""])
+def test_clearing_the_phone_keeps_the_customers_sales_payments_and_balance(
+    client: TestClient, cleared_with: str | None
+) -> None:
+    customer = _register(client)
+    variety = client.post("/varieties", json={"name": "Lavanda"}).json()
+    client.post(
+        f"/varieties/{variety['id']}/prices",
+        json={"effective_from": "2026-01-01", "list_price": 10_000},
+    )
+    sale = client.post(
+        "/sales",
+        json={
+            "customer_id": customer["id"],
+            "payment": "owing",
+            "lines": [{"variety_id": variety["id"], "grams": "1"}],
+        },
+    ).json()
+    payment = client.post(
+        f"/customers/{customer['id']}/payments",
+        json={"paid_on": TODAY.isoformat(), "amount": 4_000, "method": "cash"},
+    ).json()
+
+    cleared = client.patch(f"/customers/{customer['id']}", json={"phone": cleared_with})
+
+    assert cleared.status_code == 200
+    assert cleared.json()["phone"] is None
+    assert cleared.json()["balance"] == 6_000
+    sales_after = client.get("/sales").json()
+    assert any(
+        s["customer"] is not None and s["customer"]["id"] == customer["id"]
+        for s in sales_after
+    )
+    sale_after = next(s for s in sales_after if s["id"] == sale["id"])
+    assert sale_after["still_owing"] is True
+    account_after = client.get(f"/customers/{customer['id']}/account").json()
+    assert any(
+        "payment" in row and row["payment"]["id"] == payment["payment"]["id"]
+        for row in account_after["rows"]
+    )
 
 
 def test_clearing_vip_with_null_is_refused(client: TestClient) -> None:
@@ -293,3 +348,105 @@ def test_a_validation_error_body_carries_no_input_ctx_or_url(client: TestClient)
     for error in response.json()["detail"]:
         assert set(error) == {"loc", "type", "msg"}
     assert "12345" not in response.text
+
+
+# -- A phone is optional (ADR-0021) ----------------------------------------------------
+
+
+def test_registering_with_no_phone_field_answers_phone_null(client: TestClient) -> None:
+    response = client.post("/customers", json={"name": "Sin Numero"})
+
+    assert response.status_code == 201, response.text
+    assert response.json()["phone"] is None
+
+
+def test_registering_with_an_explicit_null_phone_answers_phone_null(client: TestClient) -> None:
+    response = client.post("/customers", json={"name": "Sin Numero", "phone": None})
+
+    assert response.status_code == 201, response.text
+    assert response.json()["phone"] is None
+
+
+def test_registering_with_an_empty_string_phone_answers_phone_null(client: TestClient) -> None:
+    response = client.post("/customers", json={"name": "Sin Numero", "phone": ""})
+
+    assert response.status_code == 201, response.text
+    assert response.json()["phone"] is None
+
+
+def test_registering_with_a_blank_phone_answers_phone_null(client: TestClient) -> None:
+    response = client.post("/customers", json={"name": "Sin Numero", "phone": "   "})
+
+    assert response.status_code == 201, response.text
+    assert response.json()["phone"] is None
+
+
+def test_two_customers_with_no_phone_coexist(client: TestClient) -> None:
+    first = client.post("/customers", json={"name": "Primero"})
+    second = client.post("/customers", json={"name": "Segundo"})
+
+    assert first.status_code == 201, first.text
+    assert second.status_code == 201, second.text
+    assert first.json()["phone"] is None
+    assert second.json()["phone"] is None
+
+
+def test_a_malformed_phone_is_still_refused_when_most_customers_have_none(
+    client: TestClient,
+) -> None:
+    client.post("/customers", json={"name": "Sin Numero"})
+
+    response = client.post("/customers", json={"name": "Otro", "phone": "2345-6789"})
+
+    assert response.status_code == 422
+    assert response.json()["code"] == "customer.phone_invalid"
+
+
+def test_search_finds_a_no_phone_customer_by_name(client: TestClient) -> None:
+    client.post("/customers", json={"name": "Sin Numero"})
+
+    found = client.get("/customers", params={"q": "Sin Numero"}).json()
+
+    assert [c["name"] for c in found] == ["Sin Numero"]
+
+
+def test_search_by_digits_never_matches_a_no_phone_customer(client: TestClient) -> None:
+    client.post("/customers", json={"name": "Sin Numero"})
+
+    found = client.get("/customers", params={"q": "2345"}).json()
+
+    assert found == []
+
+
+def test_a_no_phone_customer_can_be_chosen_for_a_sale_left_owing_and_paid(
+    client: TestClient,
+) -> None:
+    customer = _register(client, "Sin Numero", None)
+    variety = client.post("/varieties", json={"name": "Lavanda"}).json()
+    client.post(
+        f"/varieties/{variety['id']}/prices",
+        json={"effective_from": "2026-01-01", "list_price": 10_000},
+    )
+
+    sale = client.post(
+        "/sales",
+        json={
+            "customer_id": customer["id"],
+            "payment": "owing",
+            "lines": [{"variety_id": variety["id"], "grams": "1"}],
+        },
+    )
+    assert sale.status_code == 201, sale.text
+
+    debtors = client.get("/payments/debtors").json()
+    assert any(debtor["customer"]["id"] == customer["id"] for debtor in debtors["debtors"])
+
+    payment = client.post(
+        f"/customers/{customer['id']}/payments",
+        json={"paid_on": TODAY.isoformat(), "amount": 10_000, "method": "cash"},
+    )
+    assert payment.status_code == 201, payment.text
+
+    settled = client.get(f"/customers/{customer['id']}").json()
+    assert settled["balance"] == 0
+    assert settled["standing"] == "settled"

@@ -6,6 +6,8 @@ The one-time load of a business's history from the spreadsheet `Control_de_venta
 
 **When** I switch my business from the spreadsheet to the app, **I want** what the sheet already holds (varieties and their price history, catalog setup, stock entries, expenses, and every sale with who still owes for it) loaded into my business once, on the day I stop using the sheet, **so I can** keep selling in the app from the next order with my real prices, stock and debts in place. I don't retype months of rows, and I don't lose track of who owes me.
 
+**When** I register a customer (from Clientes, in the middle of a sale, or through the one-time spreadsheet import) and I don't have their phone number, **I want** to save them under their name anyway and add the number later if I ever get it, **so I can** record every sale and every debt against the person who actually owes it, without inventing a number or keeping that person outside the app. (Served here by the optional mapping file; defined in customers.md.)
+
 Success criteria:
 
 1. **Look before writing.** A dry run reports everything that would be imported and every problem it finds, and writes nothing. The real run loads everything or nothing. If it is refused, the business stays exactly as it was.
@@ -18,6 +20,7 @@ Success criteria:
    Any figure that doesn't match is explained in the report. Profit and cash are not expected to match the sheet's Panel, because the sheet got profit wrong. Past Ganancia and Caja come from the app's own rules over the imported rows.
 3. **Nothing invented.** The command never guesses a phone number, never imports a row the sheet marked unfinished, and never takes over a derived column (Total, Precio x g, Revisar…). Derived figures are recomputed through the product's rules. Anything it can't trust is reported to the operator, who fixes the file or the mapping and runs it again.
 4. **One business, once, never mixed.** It imports only into one business that has no records yet, and never touches a business that has data. Everything imported belongs to that business alone (ADR-0004). The real sheet and its customers' data never enter the repository.
+5. **A sheet with no phone numbers imports in full.** The run goes through with no mapping file or only part of one. The report says how many customers came in without a number and never repeats a number. A number the mapping does give is still checked, and a malformed one still blocks.
 
 ## Behaviour
 
@@ -28,7 +31,7 @@ Success criteria:
 - **Which business**: the operator names the target business on the command line. An unknown business is refused and nothing is written.
 - **Inputs**:
   - the `.xlsx` export;
-  - a file mapping customer name → phone number;
+  - optionally, a file mapping customer name → phone number. Leaving it out behaves exactly like giving an empty file;
   - a dry-run switch.
 
 ### Dry run and real run
@@ -38,6 +41,7 @@ Success criteria:
 - **Mismatches**: both runs report every imported Ventas row whose sheet Total differs from the app's recomputed sale total, shipping included. The sheet's Total includes shipping, so the two are compared like for like. A mismatch never blocks.
 - **The report**, the same for a dry run and a successful real run:
   - counts per kind of record: varieties, price entries, catalog attributes, stock entries, expense categories, expenses, customers, sales and payments;
+  - the count of customers imported without a phone number;
   - every blocking problem, with its sheet and row;
   - every row left out as unfinished, with the sheet's own text for it (e.g. `Falta pago`);
   - every total mismatch, with the sheet's total and the recomputed one;
@@ -154,21 +158,22 @@ Also blocking:
 - an unknown origin or payment value;
 - a category outside A21:A28;
 - a bad Catálogo value or a bad threshold;
-- a customer name missing from the mapping;
 - a mapped number that doesn't normalise;
 - "Pendiente" with no customer, or `"Amigo"` with no customer;
 - `"Regalo"` with a special total;
 - a special total that isn't a whole number above $0.
 
-Rows the sheet marks unfinished are the one exception: they are left out and listed, and never block. How the file stores a cell never blocks on its own, with one exception: a date in a text cell, because what was typed can no longer be told.
+Rows the sheet marks unfinished are the one exception: they are left out and listed, and never block. A customer name missing from the mapping never blocks: that customer is imported without a number. How the file stores a cell never blocks on its own, with one exception: a date in a text cell, because what was typed can no longer be told.
 
 ### Customers
 
-- **Who becomes a customer**: every name on a finished Ventas row, whether or not they ever owed. Each one needs a number. A name that appears only on unfinished rows needs none and creates no customer.
+- **Who becomes a customer**: every name on a finished Ventas row, whether or not they ever owed. A name that appears only on unfinished rows creates no customer.
 - **A blank customer cell**: the row becomes a sale without a customer, which is allowed only when nothing stays owed.
-- **Matching names to the mapping**: exact, after trimming and collapsing inner spaces, with no case-folding. Every unmatched name is listed at once.
-- **Numbers**: each goes through customers.md's normalisation. A number that fails blocks, and the report never repeats it.
-- **Several spellings, one number**: when the normalised numbers are the same, the spellings become one customer, and the report lists them together.
+- **Matching names to the mapping**: exact, after trimming and collapsing inner spaces, with no case-folding.
+- **A name with no mapping entry**, or every name when there is no mapping file, is imported without a phone number. It is not a problem and is not listed; the report counts the customers imported without a number.
+- **Numbers**: each mapped number goes through customers.md's normalisation. A number that fails blocks, and the report never repeats it.
+- **One customer per name**: finished Ventas rows whose customer cells are the same after trimming and collapsing inner spaces (exact, case kept) are one customer. An unmapped spelling that differs in any other way is a separate customer; nothing is merged by guess.
+- **Several spellings, one number**: when mapped spellings normalise to the same number, they become one customer, and the report lists them together.
   - The customer is named after the spelling on their most recent finished Ventas row.
   - If those rows share a date, the lowest row in the sheet wins.
   - The seller can rename the customer afterwards.
@@ -219,6 +224,12 @@ From test fixtures, with no telemetry:
   - an import into a business holding any one of the seven kinds of record is refused with 0 rows written, tested for each kind;
   - a business with only seeded, renamed or removed categories and the seeded header and footer is accepted;
   - imported rows are invisible from another business through the isolation sweep.
+- **No phone numbers (criterion 5)**: 100% passing.
+  - a fixture with no mapping file imports in full, every customer without a number;
+  - a fixture with a partial mapping imports the unmapped names without a number and the mapped ones with theirs;
+  - the report's count of customers without a number equals the customers stored with none, in the dry run and the real run;
+  - a malformed mapped number still blocks;
+  - unmapped names that are equal after trimming and collapsing spaces become one customer, and ones that differ otherwise stay separate.
 - **No echo**: after a run over a fixture with names, numbers and amounts, no log line contains any of them, and the report never contains a phone number.
 
 ## Out of scope
@@ -228,6 +239,7 @@ From test fixtures, with no telemetry:
 - Importing derived columns, or reproducing the sheet's profit and cash.
 - Importing rows the sheet marks unfinished, or anything they name.
 - Inventing customers, phone numbers, categories or varieties to get an import through.
+- Merging differently spelled customer names that have no mapped number.
 - Reading back as text a date the sheet made out of what was typed into a text cell.
 - Grouping several rows into one sale with several lines.
 - Undoing an import once it is done.

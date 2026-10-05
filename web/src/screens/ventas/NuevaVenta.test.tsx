@@ -131,6 +131,25 @@ test('Debiendo is disabled with no customer, enables once one is chosen, and res
   expect(screen.getByRole('radio', { name: 'Debiendo' })).not.toBeChecked()
 })
 
+test('a customer with no phone shows no phone element in Elegir cliente nor the chosen chip', async () => {
+  const user = userEvent.setup()
+  const SOL = { id: 6, name: 'Sol', phone: null, channel: null, vip: false }
+  await openForm({
+    'GET /auth/me': () => jsonResponse(200, ME),
+    'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
+    'GET /customers': () => jsonResponse(200, [SOL]),
+  })
+
+  await user.click(screen.getByRole('button', { name: 'Elegir cliente' }))
+  const resultRow = await screen.findByRole('button', { name: /Sol/ })
+  expect(resultRow.querySelector('.lista-clientes__telefono')).toBeNull()
+
+  await user.click(resultRow)
+
+  const chip = await screen.findByRole('button', { name: /Sol/ })
+  expect(chip.querySelector('.nueva-venta__cliente-telefono')).toBeNull()
+})
+
 test('a successful save opens the sale the API answered with, replacing history', async () => {
   const user = userEvent.setup()
   // The API's own detail shape (`sale-detail.json`), not a hand-written stand-in:
