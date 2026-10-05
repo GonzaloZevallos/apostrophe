@@ -43,13 +43,17 @@ class SqlCustomers:
         row = self._row(customer.id)
         assert row is not None, "save takes a customer of this business"
         row.name = customer.name.value
-        row.phone = customer.phone.value
+        row.phone = customer.phone.value if customer.phone is not None else None
         row.channel = customer.channel.value if customer.channel else None
         row.vip = customer.vip
         self._flush_or_mark_taken()
         return _customer(row)
 
     def phone_taken(self, phone: PhoneNumber, *, other_than: int | None = None) -> bool:
+        """Called only for a non-`None` phone (the use cases' own rule): a customer
+        with no phone never collides, and SQLite's unique constraint already treats
+        every `NULL` as distinct from every other, so this never has to special-case
+        it."""
         statement = (
             select(func.count())
             .select_from(CustomerRow)
@@ -72,7 +76,7 @@ class SqlCustomers:
         return CustomerRow(
             business_id=self._business_id,
             name=customer.name.value,
-            phone=customer.phone.value,
+            phone=customer.phone.value if customer.phone is not None else None,
             channel=customer.channel.value if customer.channel else None,
             vip=customer.vip,
         )
@@ -90,7 +94,7 @@ class SqlCustomers:
 def _customer(row: CustomerRow) -> Customer:
     return Customer(
         name=CustomerName(row.name),
-        phone=PhoneNumber(row.phone),
+        phone=PhoneNumber(row.phone) if row.phone is not None else None,
         channel=Channel(row.channel) if row.channel else None,
         vip=row.vip,
         id=row.id,

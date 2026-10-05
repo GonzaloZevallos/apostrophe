@@ -82,3 +82,23 @@ def test_a_duplicate_name_is_a_problem_located_by_line_only(tmp_path: Path) -> N
     [problem] = parsed.problems
     assert problem.kind == "mapping_duplicate_name"
     assert problem.ref.row == 3
+
+
+def test_two_lines_differing_only_in_inner_spaces_are_a_duplicate(tmp_path: Path) -> None:
+    path = _write(tmp_path, "name,phone\nJuana  Perez,11-2345-6789\nJuana Perez,11-0000-0000\n")
+
+    parsed = read_mapping(path)
+
+    assert [(e.line, e.name) for e in parsed.entries] == [(2, "Juana  Perez")]
+    [problem] = parsed.problems
+    assert problem.kind == "mapping_duplicate_name"
+    assert problem.ref.row == 3
+
+
+def test_two_lines_differing_only_in_case_are_both_kept(tmp_path: Path) -> None:
+    path = _write(tmp_path, "name,phone\njuana perez,11-2345-6789\nJuana Perez,11-0000-0000\n")
+
+    parsed = read_mapping(path)
+
+    assert [(e.line, e.name) for e in parsed.entries] == [(2, "juana perez"), (3, "Juana Perez")]
+    assert parsed.problems == ()

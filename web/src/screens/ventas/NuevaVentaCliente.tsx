@@ -150,7 +150,9 @@ export default function NuevaVentaCliente({ allowNone, onChosen, onClose }: Nuev
                   {customer.name}
                   {customer.vip && <span className="vip-insignia">VIP</span>}
                 </span>
-                <span className="lista-clientes__telefono">{customer.phone}</span>
+                {customer.phone !== null && (
+                  <span className="lista-clientes__telefono">{customer.phone}</span>
+                )}
               </span>
             </Boton>
           ))}

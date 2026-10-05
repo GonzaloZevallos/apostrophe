@@ -89,3 +89,27 @@ domain (ADR-0006).
 - **One shared `recorded_at` for every row**: sheet order would rest on the id alone,
   and any reader sorting on `(date, recorded_at)` would scramble it.
 - **A pure plan that restates the owners' rules**: a second author of every rule.
+
+## Amendment (GH-54; ADR-0021): the mapping becomes an optional `--mapping` flag
+
+Zeta's real sheet has no phone numbers. ADR-0021 makes a customer's phone optional and
+the import's mapping file optional with it.
+
+- The command line becomes `scripts/import-spreadsheet.sh <business-id> <file.xlsx>
+  [--mapping PATH] [--dry-run]`: the mapping moves from a required positional argument
+  to an optional flag. Leaving it out behaves exactly like giving an empty mapping,
+  `ParsedMapping((), ())` — the same value eligibility's own ineligible-plan short
+  circuit already used.
+- `domain/plan.py`'s `customer_mentions(split, mapping)` is the one place that decides
+  which distinct collapsed customer name `check_customer` is asked about, and with what
+  phone: once per collapsed name on a finished Ventas row (the mapped phone, when a
+  matching entry has one, or `None`), and once per mapping entry whose name is on no
+  finished row (so a malformed phone there still blocks, even though it names nobody).
+  `application/plan_import.py` and `build_plan` both call this same pure function, so
+  the checks asked for and the problems filed against them never drift apart.
+- A planned customer is now keyed by a tagged `CustomerIdentity`: `ByPhone(phone_key)`
+  for one or more spellings sharing a number, `ByName(collapsed_name)` for a customer
+  with none — never by an untagged string that could be either kind of key.
+- `import.customer_not_in_mapping` is removed: a name missing from the mapping no
+  longer blocks, and is no longer listed as a problem. The report gains the count of
+  customers imported without a phone number, next to the customer count.

@@ -164,7 +164,7 @@ def test_the_whole_vocabulary_dry_runs_clean_and_real_runs_as_import_md_says(
 
     out, err = io.StringIO(), io.StringIO()
     code = run(
-        [str(business_id), str(xlsx), str(mapping), "--dry-run"],
+        [str(business_id), str(xlsx), "--mapping", str(mapping), "--dry-run"],
         engine=engine,
         clock=clock,
         out=out,
@@ -179,7 +179,11 @@ def test_the_whole_vocabulary_dry_runs_clean_and_real_runs_as_import_md_says(
 
     out, err = io.StringIO(), io.StringIO()
     code = run(
-        [str(business_id), str(xlsx), str(mapping)], engine=engine, clock=clock, out=out, err=err
+        [str(business_id), str(xlsx), "--mapping", str(mapping)],
+        engine=engine,
+        clock=clock,
+        out=out,
+        err=err,
     )
     assert code == 0, err.getvalue()
     assert err.getvalue() == ""
@@ -303,7 +307,7 @@ def test_pm_s_own_words_dry_run_clean_real_run_stores_cash_transfer_and_one_owin
 
     out, err = io.StringIO(), io.StringIO()
     code = run(
-        [str(business_id), str(xlsx), str(mapping), "--dry-run"],
+        [str(business_id), str(xlsx), "--mapping", str(mapping), "--dry-run"],
         engine=engine,
         clock=clock,
         out=out,
@@ -316,7 +320,11 @@ def test_pm_s_own_words_dry_run_clean_real_run_stores_cash_transfer_and_one_owin
 
     out, err = io.StringIO(), io.StringIO()
     code = run(
-        [str(business_id), str(xlsx), str(mapping)], engine=engine, clock=clock, out=out, err=err
+        [str(business_id), str(xlsx), "--mapping", str(mapping)],
+        engine=engine,
+        clock=clock,
+        out=out,
+        err=err,
     )
     assert code == 0, err.getvalue()
     assert err.getvalue() == ""
@@ -372,7 +380,7 @@ def test_a_blank_pago_on_a_finished_row_above_zero_blocks_as_payment_required(
     for argv_tail in (["--dry-run"], []):
         out, err = io.StringIO(), io.StringIO()
         code = run(
-            [str(business_id), str(xlsx), str(mapping), *argv_tail],
+            [str(business_id), str(xlsx), "--mapping", str(mapping), *argv_tail],
             engine=engine,
             clock=clock,
             out=out,
@@ -397,7 +405,7 @@ def test_an_unknown_pago_word_on_a_finished_row_above_zero_blocks_as_payment_unk
     for argv_tail in (["--dry-run"], []):
         out, err = io.StringIO(), io.StringIO()
         code = run(
-            [str(business_id), str(xlsx), str(mapping), *argv_tail],
+            [str(business_id), str(xlsx), "--mapping", str(mapping), *argv_tail],
             engine=engine,
             clock=clock,
             out=out,

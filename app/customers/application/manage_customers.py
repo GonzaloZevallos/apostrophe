@@ -22,7 +22,7 @@ UNCHANGED = Unchanged.UNCHANGED
 @dataclass(frozen=True)
 class CustomerChanges:
     name: str | Unchanged = UNCHANGED
-    phone: str | Unchanged = UNCHANGED
+    phone: str | None | Unchanged = UNCHANGED
     channel: Channel | None | Unchanged = UNCHANGED
     vip: bool | Unchanged = UNCHANGED
 
@@ -32,13 +32,13 @@ def register_customer(
     transaction: Transaction,
     *,
     name: str,
-    phone: str,
+    phone: str | None,
     channel: Channel | None,
     vip: bool,
 ) -> Customer:
     customer_name = CustomerName.of(name)
-    customer_phone = PhoneNumber.of(phone)
-    if customers.phone_taken(customer_phone):
+    customer_phone = PhoneNumber.optional(phone)
+    if customer_phone is not None and customers.phone_taken(customer_phone):
         raise PhoneTaken()
     customer = customers.add(
         Customer(name=customer_name, phone=customer_phone, channel=channel, vip=vip)
@@ -67,8 +67,8 @@ def edit_customer(
     if isinstance(changes.phone, Unchanged):
         phone = customer.phone
     else:
-        phone = PhoneNumber.of(changes.phone)
-        if customers.phone_taken(phone, other_than=customer_id):
+        phone = PhoneNumber.optional(changes.phone)
+        if phone is not None and customers.phone_taken(phone, other_than=customer_id):
             raise PhoneTaken()
 
     channel = customer.channel if isinstance(changes.channel, Unchanged) else changes.channel

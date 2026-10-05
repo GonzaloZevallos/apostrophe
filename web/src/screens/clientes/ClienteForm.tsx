@@ -1,8 +1,11 @@
 /**
  * The "Nuevo cliente" form (`NuevaVentaCliente.dc.html`), shared by add
- * (`/clientes/nuevo`) and edit (`/clientes/:id/editar`): name and phone are both
- * required (PRD round 1, "the human decided"). A refusal maps to its field
- * through `refusals.ts`; a phone or name refusal never repeats what was typed —
+ * (`/clientes/nuevo`) and edit (`/clientes/:id/editar`): only the name is required
+ * (GH-54, "a customer's phone number is optional"); the phone field stays, and
+ * clearing it on edit is just an ordinary save — the form never rewrites `''` to
+ * `null` or tests it for emptiness; that is the domain's job alone (invariants).
+ * A refusal maps to its field through `refusals.ts`; a phone or name refusal never
+ * repeats what was typed —
  * the field simply keeps it and shows the fixed message next to it. Saving an
  * edit that lands on a `gone` id closes the form, refreshes the list and shows
  * `GONE_NOTICE` instead (plan, "Gone records").
