@@ -3,6 +3,7 @@ through the front it exists to compare, so a redesigned screen cannot break it. 
 state the design's screens show has to exist after seeding."""
 
 import importlib.util
+import os
 import sys
 from pathlib import Path
 from types import ModuleType
@@ -10,7 +11,11 @@ from typing import Any
 
 from fastapi.testclient import TestClient
 
-from tests.conftest import TODAY
+from app.db import make_engine
+from app.main import create_app
+from app.settings import Settings
+from tests.conftest import PASSWORD, TEST_HASHER, TODAY
+from tests.fakes.telegram import FakeTelegram
 
 SCRIPT = Path(__file__).resolve().parents[2] / "scripts" / "design" / "sample_app.py"
 
@@ -63,3 +68,31 @@ def test_the_sample_business_has_every_state_the_design_shows(client: TestClient
     expenses = client.get("/expenses").json()
     assert expenses["total"] > 0
     assert len(expenses["categories"]) >= 2
+
+
+def test_reset_token_opens_a_live_reset_link(tmp_path: Path) -> None:
+    # The token the comparisons use is minted by the real operator command against the
+    # sample's own database, then must open a link the app answers 204 for.
+    sample_app = load_script()
+    url = f"sqlite:///{tmp_path / 'sample.db'}"
+    env = {
+        **{k: v for k, v in os.environ.items() if not k.startswith("APOSTROPHE_")},
+        "APOSTROPHE_SECRET_KEY": "sample-secret",
+        "APOSTROPHE_DATABASE_URL": url,
+        "APOSTROPHE_PUBLIC_URL": "http://127.0.0.1:9",
+    }
+    invite = sample_app.new_business_token(env)
+    app = create_app(
+        Settings("sample-secret", url), engine=make_engine(url), hasher=TEST_HASHER,
+        telegram=FakeTelegram(), upkeep_ticker=False,
+    )
+    with TestClient(app) as web:
+        accepted = web.post(
+            f"/invitations/{invite}/accept",
+            json={"email": sample_app.EMAIL, "password": PASSWORD, "business_name": "La Huerta"},
+        )
+        assert accepted.status_code == 201
+
+        token = sample_app.reset_token(env, sample_app.EMAIL)
+
+        assert web.get(f"/reset-links/{token}").status_code == 204
