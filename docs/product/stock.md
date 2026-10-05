@@ -4,7 +4,8 @@ What comes into a business (stock entries), what it has on hand per variety, and
 every gram sold or gifted cost, taken from the lots it came out of, oldest first. Seen
 only by its business (ADR-0004). Reads sale lines from sales and varieties from
 varieties. Its cost of goods sold feeds profit (#7) and margins (#8). Cost follows the
-lots as they stand and is never frozen (ADR-0009).
+lots as they stand and is never frozen (ADR-0009). Stock has no tab of its own: it is
+shown on Variedades, in the list and on each variety's page (varieties.md).
 
 ## Jobs
 
@@ -15,6 +16,12 @@ the grams I sell or gift cost me.
 
 **When** I run my business from my phone, **I want to** keep my stock up to date from the
 phone, **so I can** stop keeping it in the spreadsheet's stock tab.
+
+**When** I run my business from my phone between orders or mid-chat with a customer,
+several times a day, **I want** the app laid out around what I actually do and how often,
+**so I can** get back to the customer instead of hunting through menus. (The navigation
+job, navigation.md: served here by "+ Entrada de stock" on Variedades, at most 2 taps
+from any tab root, and a variety's stock on its own page.)
 
 Success criteria:
 
@@ -29,11 +36,11 @@ Success criteria:
    - Across all lines, the cost taken from a lot never exceeds the lot's cost.
    - Once a lot is used up, the costs taken from it add up to exactly its cost.
    - Grams with no lot behind them are pending, never $0.
-4. **Visible status, no surprises**: Stock and Variedades say on their own, by shape and
-   word and never by color alone, when a variety is sold out or below its threshold, so
-   the seller never finds out partway through a sale. A variety with no threshold still
-   shows sold out. Days left at the pace of the last 30 days sits next to each variety's
-   grams.
+4. **Visible status, no surprises**: Variedades (the list and each variety's page) says on
+   its own, by shape and word and never by color alone, when a variety is sold out or
+   below its threshold, so the seller never finds out partway through a sale. A variety
+   with no threshold still shows sold out. Days left at the pace of the last 30 days sits
+   next to each variety's grams.
 5. **Clean start**: a fresh business records its opening stock as ordinary
    `opening stock` entries before its first sale. A business bringing real history moves
    it through the spreadsheet import (#11). There is no date rule between opening stock
@@ -107,29 +114,37 @@ Success criteria:
   3. **Low**: stock > 0 and under the variety's low-stock threshold.
   4. **Ok**: otherwise.
 - **Low-stock threshold**: optional, per variety, above zero, up to two decimals. It is
-  set or turned off from the variety. With none, a variety is never low, but it can still
-  be sold out.
+  set or turned off on the variety's page, in "Aviso de stock bajo". With none, a variety
+  is never low, but it can still be sold out.
 - **Days left**: stock ÷ (grams sold or gifted in the last 30 days, today included,
   ÷ 30), rounded down to whole days. Nothing shows when stock ≤ 0 or when no grams went
   out in those 30 days.
-- **Total**: the sum of every variety's stock.
+- **Total**: the sum of every variety's stock. The API answers it; no screen shows it.
 
-### On screen (Stock)
+### On screen (in Variedades)
 
-- **Bar**: Stock is a tab: Inicio · Clientes · Stock · Más.
-- **Stock** (`Stock`):
-  - the total grams;
-  - per variety: its grams, its status mark and its detail ("Sin gramos desde el 30/09",
-    "Avisás abajo de 20 g", "Al ritmo de los últimos 30 días", "Cargale la primera
-    entrada" only for no entries), plus days left;
-  - the entries with date, variety, origin, grams, total cost and cost per gram, newest
-    date first, then most recently recorded first. Each can be edited or deleted.
+- **No Stock tab.** Stock lives in Variedades (varieties.md, navigation.md); the old
+  Stock path redirects there.
+- **Per variety**, on Variedades' list and at the top of its page: its grams, its status
+  mark and its detail ("Sin gramos desde el 30/09", "Avisás abajo de 20 g", "Al ritmo de
+  los últimos 30 días", "Cargale la primera entrada" only for no entries), plus days
+  left.
 - **Status marks** (`MarcaEstado`): told by shape and word, never by color alone.
   - square = agotada, as the inverted chip, not red;
   - filled circle = baja;
   - empty circle = ok.
-- **Empty state**: "Sin entradas de stock · Cargá tu stock inicial o una compra".
-- **Nueva entrada** (`EntradaStock`):
+- **"Stock y entradas"** on a variety's page: its last 3 entries and "Ver todas" for all
+  of that variety's entries.
+- **"Todas las entradas"**, at the foot of Variedades: a detail ("‹ Variedades") with
+  every entry of the business, with date, variety, origin, grams, total cost and cost per
+  gram, newest date first, then most recently recorded first. Each can be edited or
+  deleted.
+  - Its empty state: "Sin entradas de stock · Cargá tu stock inicial o una compra".
+- **Nueva entrada** (`EntradaStock`), a form (navigation.md): "Cerrar", and a
+  confirmation when leaving with something typed.
+  - Opened from "+ Entrada de stock" on Variedades (the seller chooses the variety) or
+    from "+ Entrada" on a variety's page (that variety already chosen, and "Stock
+    inicial" preselected as the origin when the variety has no entries yet).
   - date (filled with today), grams, and variety with "Hoy tiene N g";
   - origin: Compra · Cosecha · Stock inicial · Ajuste;
   - total cost, with "Obligatorio cuando es una compra";
@@ -146,7 +161,8 @@ Success criteria:
 - **Toasts**: "Entrada guardada", "Entrada eliminada" and "Aviso guardado". None carries
   grams or amounts.
 - **Refusals** show inline and keep what was typed.
-- **An entry that is gone** follows accounts.md's "Eso ya no está." rule.
+- **An entry that is gone** follows accounts.md's "Eso ya no está." rule, with "Volver a
+  Variedades".
 
 ### Constraints
 
@@ -175,13 +191,17 @@ Success criteria:
 - **Status (criterion 4)**: the matrix of nothing moved (no entries), sales without
   entries (sold out), entries netting to 0 (sold out), low, ok and no threshold, plus days
   left: 100%. No status is told by color alone.
+- **Entry from a variety**: an entry started from a variety's page comes with that
+  variety chosen, and with "Stock inicial" preselected only when it has no entries.
 - **Isolation**: every stock route sits in the sweep and answers 404 or empty from another
   business, including a reference to another business's variety.
 - **No echo**: no refusal or log contains the note, grams or amounts.
 - **Speed (criterion 6)**: an entry is recorded from the phone in under 60 s through the
-  front. Reading stock and costs answers in under 300 ms with a few dozen varieties.
-- **No curl (criterion 6)**: the end-to-end front run records, edits and deletes an entry,
-  and sets and turns off a threshold.
+  front, and its form opens in at most 2 taps from any tab root. Reading stock and costs
+  answers in under 300 ms with a few dozen varieties.
+- **No curl (criterion 6)**: the end-to-end front run records an entry from Variedades and
+  one from a variety's page, edits and deletes one from "Todas las entradas", and sets and
+  turns off a threshold on a variety's page.
 
 ## Out of scope
 
@@ -192,3 +212,4 @@ Success criteria:
 - Spreading cultivation inputs over harvests: those are expenses.
 - Live updates between partners; edit history of an entry.
 - Notifications outside the app.
+- A Stock tab, or total grams on screen.

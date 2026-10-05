@@ -24,9 +24,9 @@ _Avoid_: signup link, referral, code
 ## Catalog and prices
 
 **Variety**:
-A strain a business sells by the gram, identified by its name within that business.
-_In the app_: Variedad
+A strain a business sells by the gram, identified by its name within that business. Its stock, entries, prices, low-stock warning and catalog attributes are all on its own page in the Variedades tab. In the app: Variedad; the tab is Variedades.
 _Avoid_: product, strain, item, SKU
+_In the app_: Variedad
 
 **Price entry**:
 A variety's list price, bulk price and bulk minimum, effective from a date onwards. Never edited once recorded: a later entry supersedes it from its own date. A mistaken entry is deleted, never rewritten; a sale is unaffected because every sale line records the price it was sold at.
@@ -66,9 +66,8 @@ _Avoid_: contact, handle, username, identifier
 _In the app_: Teléfono
 
 **Channel**:
-Where a customer talks to the business: Telegram or WhatsApp. A customer may have neither, and then has no channel.
+No longer a concept of the product: a customer has no channel (Telegram or WhatsApp), and the entry is removed from the glossary. Where a customer talks to the business varies and is not recorded.
 _In the app_: Canal
-_Avoid_: platform, app, source
 
 **VIP customer**:
 A customer who always pays the bulk price, whatever the grams.
@@ -116,7 +115,7 @@ _In the app_: Nota
 _Avoid_: comment, description, memo
 
 **Payment**:
-Money a customer hands over on a date, in cash or by transfer, with no note. Either an on-the-spot payment recorded with its sale, or a later payment recorded through Registrar cobro. Its date, amount and method never change; it is deleted and recorded again, never edited.
+Money a customer hands over on a date, in cash or by transfer, with no note. Either an on-the-spot payment recorded with its sale, or a later payment recorded through Registrar cobro, opened by "Cobrar" on a debtor row of Clientes or Inicio or from the customer's card. Its date, amount and method never change; it is deleted and recorded again, never edited. In the app: Cobro.
 _Avoid_: collection, settlement, receipt, abono
 _In the app_: Cobro
 
@@ -148,9 +147,9 @@ _In the app_: Lote
 _Avoid_: batch
 
 **Stock**:
-The grams of a variety on hand: everything that came in minus everything sold or gifted. Can go negative when a sale or gift is recorded for grams not yet in: the figure still shows, never hidden.
-_In the app_: Stock
+The grams of a variety on hand: everything that came in minus everything sold or gifted. Can go negative when a sale or gift is recorded for grams not yet in: the figure still shows, never hidden. In the app: Stock, shown on Variedades and a variety's page; there is no Stock tab.
 _Avoid_: inventory, balance
+_In the app_: Stock
 
 **Pending cost**:
 What grams sold or gifted beyond everything recorded as coming in cost: not yet known, and never shown as $0. A later stock entry of that variety, wherever its date falls in the lot order, settles it (ADR-0009).
@@ -249,7 +248,7 @@ A stock entry recording the difference between a physical count and the stock th
 _Avoid_: correction, recount, shrinkage, write-off
 
 **Catalog attributes**:
-What a variety shows in the catalog: whether it is shown, its emoji, its indica share and its aroma. They never affect prices, stock or sales. _In the app_: edited from Qué sale en el catálogo.
+What a variety shows in the catalog: whether it is shown, its emoji, its indica share and its aroma. They never affect prices, stock or sales, and are edited only on the variety's own page. In the app: En el catálogo.
 _Avoid_: catalog settings, metadata, tags
 
 **Hidden variety**:
@@ -265,7 +264,7 @@ One line of free text describing a variety's aroma and flavour for the catalog, 
 _Avoid_: description, notes, flavor profile
 
 **Catalog header and footer**:
-A business's own text opening and closing the catalog, multi-line and up to 500 characters each. Either may be blank, and is then left out. They start as "🌿 **CATÁLOGO** 🌿" and "📩 Consultas y pedidos por privado.". _In the app_: Encabezado, Pie.
+A business's own text opening and closing the catalog, multi-line and up to 500 characters each; either may be blank, and is then left out. They start as "🌿 **CATÁLOGO** 🌿" and "📩 Consultas y pedidos por privado." and are edited only in Configuración. In the app: Encabezado, Pie, under Mensaje del catálogo.
 _Avoid_: title, signature, intro, outro
 
 **On-the-spot payment**:
@@ -281,11 +280,11 @@ A balance below zero, left only when a sale that payments had settled is deleted
 _Avoid_: refund, saldo a favor, overpayment
 
 **Sales still owing**:
-Every sale of a business that is not fully paid once settlement is applied, partially paid ones included, each counted once. _In the app_: te debe (in Ventas) and the count in Te deben.
+Every sale of a business that is not fully paid once settlement is applied, partially paid ones included, each counted once. In the app: te debe (in Ventas) and the count line of Clientes' Te deben section and Inicio's Te deben block.
 _Avoid_: unpaid orders, pending sales, open invoices
 
 **Total owed**:
-The sum of every customer's balance above $0 in a business; credits never subtract from it. _In the app_: the total heading Te deben and in Clientes' header.
+The sum of every customer's balance above $0 in a business; credits never subtract from it. In the app: the total heading Clientes' Te deben section and Inicio's Te deben block.
 _Avoid_: receivables, outstanding
 
 **Margin**:
@@ -321,7 +320,7 @@ Posting and pinning the catalog in the business's channel chat, or editing the a
 _Avoid_: broadcast, push, sync
 
 **Bot settings**:
-A business's one Telegram bot token, stored encrypted and never shown again once saved, plus its channel chat and the user's own chat. Changing any of them requires a new test send before publishing. _In the app_: El bot de Telegram.
+A business's one Telegram bot token, stored encrypted and never shown again once saved, plus its channel chat and the user's own chat. Changing any of them requires a new test send before publishing. In the app: Integraciones, in Configuración.
 _Avoid_: integration, connection, config
 
 **Out of date**:
@@ -329,7 +328,7 @@ The pinned catalog's state when customers are not seeing today's catalog: the la
 _Avoid_: stale, pending, out of sync, error
 
 **Panel**:
-Inicio's one-screen view of a business for today, this week (Monday to Sunday) or this month in Argentina time: sales, cost of goods sold, expenses, purchases, profit and cash, then money owed and stock per variety. Read only; every figure comes from the server. _In the app_: Inicio (tabs Hoy · Semana · Mes).
+Inicio's one-screen view of a business in Argentina time: Hoy shows what was sold today, money owed and stock per variety; Semana (Monday to Sunday) and Mes add cost of goods sold, expenses, grams gifted, purchases, profit and cash. Read only; every figure comes from the server. In the app: Inicio (tabs Hoy · Semana · Mes).
 _Avoid_: dashboard, overview, home, summary, Análisis
 
 **Average sale**:
@@ -371,9 +370,25 @@ A signed-in device of one user, lasting 30 days as a cookie and a token. A chang
 _Avoid_: login, device, token, connection
 
 **Password change**:
-A user setting a new password from Negocio with their current one. The only rule is at least 10 characters, and the same password is accepted. It closes every other session of that user and retires their unused reset links, while the device that made the change stays signed in. _In the app_: Cambiar contraseña.
+A user setting a new password with their current one, from Configuración → Tu cuenta. The only rule is at least 10 characters, and the same password is accepted. It closes every other session of that user and retires their unused reset links, while the device that made the change stays signed in. In the app: Cambiar contraseña.
 _Avoid_: password update, rotation, edit password
 
 **Reset link**:
 A link the operator prints with scripts/reset-password.sh that lets one user choose a new password themselves, once, within 24 hours, without the current one. A user has at most one live link: a newer link or any password change retires it. A retired, used, expired or unknown link answers the same 404. _In the app_: enlace ("Este enlace ya no sirve").
 _Avoid_: recovery code, reset token, magic link, forgot-password email
+
+**Navigation**:
+The app's fixed structure for a business: the tabs, Más, Configuración, and the one rule that gives every screen its chrome and its way back. It decides where each capability is reached from, never what it does. In the app: no word of its own.
+_Avoid_: menu, sitemap, routing, shell
+
+**Tab root**:
+A screen reached straight from the bar or the sidebar (Inicio, Ventas, Clientes, Variedades, Gastos, Análisis, Más); it shows the bar and "+ Nueva venta". Every other screen is a card or detail (with a back arrow to its parent) or a form or sheet (with "Cerrar").
+_Avoid_: home, main screen, section
+
+**Settings**:
+The one place holding every business-wide setting, in groups: Negocio, Usuarios, Integraciones, Mensaje del catálogo, Categorías de gastos, Apariencia and Tu cuenta. A setting of one variety lives on the variety, never here, and nothing of the operator's is here. In the app: Configuración.
+_Avoid_: Ajustes (in the spreadsheet that held prices), preferences, admin, Negocio (that is one group)
+
+**First-run checklist**:
+Four steps on Inicio for a business that has not yet both priced a variety for today and recorded a stock entry: those two, plus publishing the pinned catalog and adding a second user, which are optional. Each step is worked out from the business's data and reads "Hecho" when met; the checklist goes for good the first time the two required steps are met and never returns.
+_Avoid_: onboarding, tour, wizard, setup guide, welcome

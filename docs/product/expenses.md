@@ -2,7 +2,9 @@
 
 Money a business spends on anything that isn't flower, filed under its own expense
 categories and seen only by that business (ADR-0004). Flower bought is a purchase (stock),
-never an expense. Results (#7) read expenses and purchases separately.
+never an expense. Results (#7) read expenses and purchases separately. Gastos is reached
+from Más on the phone and from the sidebar on a computer; categories are managed in
+Configuración → Categorías de gastos (navigation.md).
 
 ## Jobs
 
@@ -15,10 +17,18 @@ much I spend each month and on what, and have my profit and cash count it.
 the phone, **so I can** stop keeping them in the spreadsheet and have real data in place
 when sales arrive.
 
+**When** I run my business from my phone between orders or mid-chat with a customer,
+several times a day, **I want** the app laid out around what I actually do and how often,
+with expenses within reach for the weekly or monthly look and every setting in one place,
+**so I can** get back to the customer instead of hunting through menus. (The navigation
+job, navigation.md: served here by "+ Cargar gasto" in Más and categories in
+Configuración.)
+
 Success criteria:
 
-1. An expense is recorded from the phone in under a minute. The date is already set to
-   today, and the category is picked from the business's list.
+1. An expense is recorded from the phone in under a minute. Its form opens in at most 2
+   taps from any tab root (Más → "+ Cargar gasto"). The date is already set to today, and
+   the category is picked from the business's list.
 2. For any month, the view shows every expense of that month and the month's total. It
    breaks them down by category, with a subtotal for each. The totals always equal the sum
    of the expenses shown, including straight after an edit or a delete.
@@ -84,12 +94,16 @@ Success criteria:
 - A month with no expenses shows a total of $0 and no categories.
 - This view is how a user finds a mistaken expense to fix or delete.
 
-### On screen (Gastos)
+### On screen
 
-- **The monthly view** (`Gastos`):
+- **Gastos** (`Gastos`), a tab root (navigation.md), reached from Más on the phone and from
+  the sidebar on a computer:
   - move between months;
-  - a fixed line: "Las compras de flores no van acá: se cargan en Stock."
-- **The expense form**:
+  - a fixed line: "Las compras de flores no van acá: se cargan en Stock.";
+  - a way to record a new expense.
+- **"+ Cargar gasto"**, first in Más on the phone, opens the expense form directly.
+- **The expense form**, a form (navigation.md): "Cerrar", and a confirmation when leaving
+  with something typed.
   - "Categoría", "Monto" and "Detalle" are marked required;
   - submit is blocked while the detail is blank;
   - the date comes filled with today.
@@ -103,8 +117,9 @@ Success criteria:
   - there is no undo;
   - the total and the subtotal update at once, and a category left with no expenses that
     month disappears.
-- **Categories**: add, rename and "Eliminar". A blocked removal shows the fixed refusal
-  above.
+- **Categories** are managed in Configuración → Categorías de gastos, and nowhere else:
+  add, rename and "Eliminar". A blocked removal shows the fixed refusal above. Creating
+  one inside the expense form stays as described.
 - **An expense or category that is gone** when it is saved, deleted or opened follows the
   app's rule in `accounts.md`: "Eso ya no está." Opening one offers "Volver a Gastos" on
   the current month.
@@ -124,7 +139,8 @@ Read from the data; there is no telemetry.
 
 - **M1, recorded on the spot (criterion 1)**: the share of expenses whose date equals the
   Argentina day they were recorded. Target: a majority once the front is in use. Through
-  the front, recording an expense from the phone takes under 60 s.
+  the front, recording an expense from the phone takes under 60 s, and its form opens in
+  at most 2 taps from any tab root.
 - **M2, totals hold (criterion 2)**: totals that differ from the sum of the expenses shown
   must be 0. This is checked by tests after create, edit and delete, in the API and on
   screen.
@@ -133,8 +149,9 @@ Read from the data; there is no telemetry.
 - **M4, use**: businesses with at least one expense in a month, out of active businesses.
 - **M5, flower kept out (criterion 3)**: purchases that appear in the expense lists must be
   0, by construction. An expense has no field that could hold grams or a variety.
-- **M6, no curl (criterion 4)**: the end-to-end front run records, edits and deletes an
-  expense, and adds, renames and removes a category, including a refused removal.
+- **M6, no curl (criterion 4)**: the end-to-end front run records an expense from Más →
+  "+ Cargar gasto", edits and deletes one, and adds, renames and removes a category in
+  Configuración, including a refused removal.
 
 ## Out of scope
 
@@ -145,3 +162,4 @@ Read from the data; there is no telemetry.
 - An all-time list of expenses per category.
 - A chronological list of expenses.
 - Archiving a category.
+- Managing categories from Gastos.
