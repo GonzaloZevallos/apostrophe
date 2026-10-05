@@ -12,16 +12,26 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from starlette.datastructures import Headers
 from starlette.exceptions import HTTPException
-from starlette.responses import FileResponse, Response
+from starlette.responses import FileResponse, RedirectResponse, Response
 from starlette.staticfiles import StaticFiles
 
 if TYPE_CHECKING:
-    from starlette.types import Scope
+    from starlette.types import ASGIApp, Receive, Scope, Send
 
 # Served with `Cache-Control: no-cache`: a stale copy of any of these would keep
 # serving an old shell, an old manifest or a stale service worker forever.
 _NO_CACHE_NAMES = frozenset({"index.html", "manifest.webmanifest", "sw.js"})
+
+
+# Front paths whose first segment is also an API route's (`/expenses`): the API's router
+# would answer them, so the front is served there only through this exact list, and only to
+# a browser navigation (docs/adr/0024). A moved screen adds its own entry with its route.
+SHARED_FRONT_PATHS = frozenset({"/expenses", "/expenses/new"})
+
+# The old Spanish front paths and where they live now. Permanent, whatever the method.
+LEGACY_FRONT_PATHS = {"/mas": "/more", "/gastos": "/expenses"}
 
 
 class MissingBuiltFront(RuntimeError):
@@ -66,3 +76,54 @@ class SpaStatic(StaticFiles):
         if first_segment in self._api_segments:
             return False
         return Path(path).suffix == ""
+
+
+class FrontNavigation:
+    """Pure ASGI, outside Starlette's routing and its `redirect_slashes`, so the raw path
+    decides before the API's router can claim it (docs/adr/0024):
+
+    - a legacy Spanish path (or it plus one trailing slash) is a 308 to its new path, for
+      any method and any `Accept`, keeping the query string;
+    - for a `GET`/`HEAD` that accepts `text/html`, an exact `SHARED_FRONT_PATHS` entry is
+      the app shell, served by the same `SpaStatic` as `/` so its headers have one author,
+      and the same path plus one trailing slash is a 308 to the slashless path;
+    - everything else reaches the app untouched.
+    """
+
+    def __init__(self, app: ASGIApp, spa: SpaStatic) -> None:
+        self._app = app
+        self._spa = spa
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self._app(scope, receive, send)
+            return
+        path: str = scope["path"]
+        legacy_target = LEGACY_FRONT_PATHS.get(_without_one_slash(path))
+        if legacy_target is not None:
+            await self._redirect(legacy_target, scope, receive, send)
+            return
+        if scope["method"] in ("GET", "HEAD") and _accepts_html(scope):
+            if path in SHARED_FRONT_PATHS:
+                response = await self._spa.get_response("index.html", scope)
+                await response(scope, receive, send)
+                return
+            slashless = _without_one_slash(path)
+            if slashless != path and slashless in SHARED_FRONT_PATHS:
+                await self._redirect(slashless, scope, receive, send)
+                return
+        await self._app(scope, receive, send)
+
+    @staticmethod
+    async def _redirect(target: str, scope: Scope, receive: Receive, send: Send) -> None:
+        query = scope["query_string"].decode("latin-1")
+        location = f"{target}?{query}" if query else target
+        await RedirectResponse(location, status_code=308)(scope, receive, send)
+
+
+def _without_one_slash(path: str) -> str:
+    return path[:-1] if path.endswith("/") and path != "/" else path
+
+
+def _accepts_html(scope: Scope) -> bool:
+    return "text/html" in Headers(scope=scope).get("accept", "").lower()

@@ -89,3 +89,22 @@ describe('post, patch and del', () => {
     await expect(del('/varieties/1/prices/2')).resolves.toBeUndefined()
   })
 })
+
+describe('the Accept header', () => {
+  test.each([
+    ['get', () => get('/expenses'), undefined],
+    ['post', () => post('/expenses', { amount: 1 }), { 'Content-Type': 'application/json' }],
+    ['patch', () => patch('/expenses/1', { amount: 1 }), { 'Content-Type': 'application/json' }],
+    ['del', () => del('/expenses/1'), undefined],
+  ])('%s asks for JSON, so the server never mistakes it for a navigation', async (_name, call, extra) => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse(200, {}))
+    vi.stubGlobal('fetch', fetchMock)
+
+    await call()
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ headers: { Accept: 'application/json', ...extra } }),
+    )
+  })
+})
