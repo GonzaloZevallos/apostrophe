@@ -111,7 +111,7 @@ test('a seller records an expense from Más and Cerrar goes back to where the fo
   await expect(page).toHaveURL(/\/more$/)
   await expect(page.getByText('Gasto guardado')).toBeVisible()
 
-  await page.getByRole('link', { name: /^Gastos/ }).click()
+  await page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /^Gastos/ }).click()
   await expect(page.getByText('Cajas de cartón')).toBeVisible()
   expect(consoleMessages).toEqual([])
 })

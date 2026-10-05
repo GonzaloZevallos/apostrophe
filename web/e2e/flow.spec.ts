@@ -162,10 +162,14 @@ test('a seller does everything the backend offers today, from the front alone', 
   await expect(page.getByText(/Las compras de flores no van acá/)).toBeVisible()
   await page.goto('/mas')
   await expect(page).toHaveURL(/\/more$/)
-  await expect(page.getByRole('link', { name: /Gastos/ })).toBeVisible()
+  await expect(
+    page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /^Gastos/ }),
+  ).toBeVisible()
   await page.reload()
   await expect(page).toHaveURL(/\/more$/)
-  await expect(page.getByRole('link', { name: /Gastos/ })).toBeVisible()
+  await expect(
+    page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /^Gastos/ }),
+  ).toBeVisible()
 
   // Add and remove an expense category. "Insumos de cultivo", "Packaging",
   // "Envíos y traslados" and "Otros" are the four the business starts with

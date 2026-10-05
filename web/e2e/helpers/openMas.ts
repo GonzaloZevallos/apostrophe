@@ -11,5 +11,5 @@ export async function openMas(page: Page): Promise<void> {
 /** Gastos, reached the way a seller reaches it: Más, then its entry. */
 export async function openGastos(page: Page): Promise<void> {
   await openMas(page)
-  await page.getByRole('link', { name: /Gastos/ }).click()
+  await page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /^Gastos/ }).click()
 }
