@@ -12,10 +12,12 @@ What a customer takes in one go, each line priced from the day's prices and that
 
 **When** a customer pays me part or all of what they owe, in cash or by transfer, on the day or weeks later, **I want** to record it from my phone in a few taps and see their balance and "owing since" drop right away, **so I** always know who owes me what and since when, and nothing they paid or still owe gets lost or lands on the wrong person. (Served here by the "te debe" mark in Ventas; defined in `payments.md`.)
 
+**When** I register a customer (from Clientes, in the middle of a sale, or through the one-time spreadsheet import) and I don't have their phone number, **I want** to save them under their name anyway and add the number later if I ever get it, **so I can** record every sale and every debt against the person who actually owes it, without inventing a number or keeping that person outside the app. (Served here by Elegir cliente's "Nuevo cliente"; defined in `customers.md`.)
+
 Success criteria, recording (API):
 
 1. **Speed**: from the phone, a sale is recorded in under 60 s, from opening the form to saved.
-   - This holds with an existing customer, a new one, or none, and a sale without a customer is the fastest.
+   - This holds with an existing customer, a new one (with or without a phone number), or none, and a sale without a customer is the fastest.
    - It is one minute shared with customers.md's find-or-register budget, not a second minute on top.
 2. **One order is one sale**: an order is one sale however many varieties it has, with shipping charged once. Its total is the sum of its lines plus shipping. Counts and averages count sales, not lines.
 3. **Right price, kept**:
@@ -83,6 +85,7 @@ Success criteria, on screen:
 - **Customer**:
   - Optional only when nothing stays owed.
   - It must belong to the same business; another business's customer is not found.
+  - A customer with or without a phone number is chosen the same way (customers.md).
 - **Sale without a customer**: counts in every total and in no customer's history.
 - **Assign a customer later**:
   - Only to a sale with none, and only a customer of the same business.
@@ -161,7 +164,7 @@ Success criteria, on screen:
   - An untouched form closes at once.
   - There are no drafts or autosave.
 - **Elegir cliente** (`NuevaVentaCliente`):
-  - A sheet over the sale. It offers search by phone or part of the name, "Sin cliente", and "Nuevo cliente" (phone and name required, plus channel and VIP), which creates the customer and uses it.
+  - A sheet over the sale. It offers search by phone or part of the name, "Sin cliente", and "Nuevo cliente" (the same form as in Clientes: only the name required; phone optional, plus channel and VIP), which creates the customer and uses it.
   - Closing the sheet only returns to the form.
 - **"Venta guardada"** (`Estados`):
   - It carries **Deshacer** and no amount or name. It is announced like a toast and lasts a fixed few seconds.
@@ -232,7 +235,7 @@ Success criteria, on screen:
 - **No echo**: (Criterion 5)
   - no refusal body or log line contains the note, a customer's name or a submitted amount;
   - after a full front run, the console and browser storage hold none of them.
-- **Record time**: a sale is recorded through the front, from a phone viewport, in under 60 s with an existing, new or no customer. Recording answers in under 300 ms with a few dozen varieties and customers. (Criterion 1)
+- **Record time**: a sale is recorded through the front, from a phone viewport, in under 60 s with an existing, new (with or without a number) or no customer. Recording answers in under 300 ms with a few dozen varieties and customers. (Criterion 1)
 - **Preview = stored**: (Criterion 6)
   - the front preview passes the same pricing matrix as the domain;
   - the end-to-end run compares the preview with the saved detail: 0 differences.

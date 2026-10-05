@@ -126,6 +126,32 @@ test('a settled customer shows their phone, channel and VIP, no balance and no R
   expect(screen.queryByRole('button', { name: 'Registrar cobro' })).not.toBeInTheDocument()
 })
 
+const NO_PHONE_CUSTOMER = {
+  id: 4,
+  name: 'Caro',
+  phone: null,
+  channel: null,
+  vip: false,
+  balance: 0,
+  owing_since: null,
+  standing: 'settled',
+}
+
+test('a customer with no phone shows no phone element, no dash, no empty label', async () => {
+  vi.mocked(fetch).mockImplementation(
+    dispatchFetch({
+      'GET /customers/4': () => jsonResponse(200, NO_PHONE_CUSTOMER),
+      'GET /customers/4/account': () => jsonResponse(200, EMPTY_ACCOUNT),
+    }),
+  )
+  renderFicha('4')
+
+  await screen.findByText('Caro')
+  expect(screen.queryByText('Teléfono')).not.toBeInTheDocument()
+  expect(screen.queryByText('-')).not.toBeInTheDocument()
+  expect(screen.queryByText('Sin teléfono')).not.toBeInTheDocument()
+})
+
 test('"Nueva venta a <name>" opens the sale form with this customer chosen, by id alone', async () => {
   vi.mocked(fetch).mockImplementation(
     dispatchFetch({

@@ -564,7 +564,9 @@ export default function NuevaVenta() {
                     {customer.name}
                     {customer.vip && <span className="vip-insignia">VIP</span>}
                   </span>
-                  <span className="nueva-venta__cliente-telefono">{customer.phone}</span>
+                  {customer.phone !== null && (
+                    <span className="nueva-venta__cliente-telefono">{customer.phone}</span>
+                  )}
                 </div>
                 <span className="nueva-venta__cliente-cambiar">Cambiar</span>
               </div>

@@ -117,8 +117,10 @@ def plan_import(
     }
 
     customer_checks = {
-        entry.name: _customer_key_or_refusal(customers.check_customer(entry.name, entry.phone))
-        for entry in mapping.entries
+        mention.collapsed_name: _customer_check_result(
+            customers.check_customer(mention.name, mention.phone)
+        )
+        for mention in domain_plan.customer_mentions(split_result, mapping)
     }
 
     sales_checks = _check_sales(split_result, variety_names, price_history_keys, sales, today)
@@ -151,7 +153,7 @@ def _ineligible_plan(business_ref: SheetRef) -> domain_plan.ImportPlan:
         customers=(),
         merged_categories=(),
         unused_mapping_entries=(),
-        counts=domain_plan.Counts(0, 0, 0, 0, 0, 0, 0, 0, 0),
+        counts=domain_plan.Counts(0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
         entrada_order=(),
         venta_order=(),
         sales=(),
@@ -177,11 +179,17 @@ def _variety_key_or_refusal(
     return domain_plan.VarietyKey(key=result.key, name=result.name)
 
 
-def _customer_key_or_refusal(
-    result: ports.CustomerKey | ports.Refusal,
-) -> domain_plan.CustomerKey | domain_plan.Refusal:
-    if isinstance(result, ports.Refusal):
-        return _to_domain_refusal(result)
+def _customer_check_result(
+    result: ports.CustomerKey | ports.CustomerRefusals,
+) -> domain_plan.CustomerKey | domain_plan.CustomerRefusal:
+    """A straight field-for-field mirror: `build_plan` files `name_code` and
+    `phone_code` independently, each at its own site, so both reach the report when
+    both are broken (ADR-0021: the import never reads a customer code string to
+    decide where it goes)."""
+    if isinstance(result, ports.CustomerRefusals):
+        return domain_plan.CustomerRefusal(
+            name_code=result.name_code, phone_code=result.phone_code
+        )
     return domain_plan.CustomerKey(phone_key=result.phone_key)
 
 

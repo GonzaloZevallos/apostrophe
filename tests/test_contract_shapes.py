@@ -233,6 +233,11 @@ FIXTURE_ROUTES: Mapping[str, tuple[RouteShape, ...]] = {
         RouteShape("GET", "/customers/{customer_id}"),
         RouteShape("GET", "/customers", item=True),
     ),
+    "customer-no-phone": (
+        RouteShape("POST", "/customers"),
+        RouteShape("GET", "/customers/{customer_id}"),
+        RouteShape("GET", "/customers", item=True),
+    ),
     "debtors": (RouteShape("GET", "/payments/debtors"),),
     "panel": (RouteShape("GET", "/panel"),),
     "payment": (RouteShape("POST", "/customers/{customer_id}/payments"),),

@@ -395,7 +395,7 @@ def test_dry_run_over_the_clean_export_finds_everything_and_reports_mismatches(
     out, err = io.StringIO(), io.StringIO()
 
     code = run(
-        [str(business_id), str(xlsx), str(mapping), "--dry-run"],
+        [str(business_id), str(xlsx), "--mapping", str(mapping), "--dry-run"],
         engine=engine,
         clock=clock,
         out=out,
@@ -423,7 +423,7 @@ def test_real_run_over_the_clean_export_writes_the_numeric_names(
     out, err = io.StringIO(), io.StringIO()
 
     code = run(
-        [str(business_id), str(xlsx), str(mapping)],
+        [str(business_id), str(xlsx), "--mapping", str(mapping)],
         engine=engine,
         clock=clock,
         out=out,
@@ -453,7 +453,7 @@ def test_dry_run_over_the_problem_export_lists_every_problem_in_one_pass(
     out, err = io.StringIO(), io.StringIO()
 
     code = run(
-        [str(business_id), str(xlsx), str(mapping), "--dry-run"],
+        [str(business_id), str(xlsx), "--mapping", str(mapping), "--dry-run"],
         engine=engine,
         clock=clock,
         out=out,
@@ -487,7 +487,7 @@ def test_real_run_over_the_problem_export_writes_nothing(
     out, err = io.StringIO(), io.StringIO()
 
     code = run(
-        [str(business_id), str(xlsx), str(mapping)],
+        [str(business_id), str(xlsx), "--mapping", str(mapping)],
         engine=engine,
         clock=clock,
         out=out,
