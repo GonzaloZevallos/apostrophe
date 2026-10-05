@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date
+from decimal import Decimal
 
 from app.shared.grams import Grams
 
@@ -112,10 +113,12 @@ class GastoRow:
 @dataclass(frozen=True)
 class VentaRow:
     """One row of Ventas: one sale with one line. `total` is the sheet's own cached
-    Total cell — a number when the row is finished, the sheet's own text for an
-    unfinished row (for example `"Falta pago"`), or `None` when the formula has no
-    saved value at all. Never stored: read only to decide whether the row is
-    finished, and, when it is, to report a mismatch against the recomputed total."""
+    Total cell — a number when the row is finished (an `int`, or a `Decimal` for a
+    non-whole float: GH-55, any number counts as finished and the mismatch
+    comparison against it is exact), the sheet's own text for an unfinished row (for
+    example `"Falta pago"`), or `None` when the formula has no saved value at all.
+    Never stored: read only to decide whether the row is finished, and, when it is,
+    to report a mismatch against the recomputed total."""
 
     ref: SheetRef
     sale_date: date | None
@@ -127,7 +130,7 @@ class VentaRow:
     shipping: int | None
     special_total: int | None
     note: str | None
-    total: int | str | None
+    total: int | Decimal | str | None
 
 
 @dataclass(frozen=True)

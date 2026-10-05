@@ -29,6 +29,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import date
+from decimal import Decimal
 
 from app.shared.grams import Grams
 from app.shared.names import collapse_spaces
@@ -296,10 +297,11 @@ class Checks:
 @dataclass(frozen=True)
 class Mismatch:
     """One finished Ventas row whose sheet `Total` (shipping included) differs from
-    the recomputed total. Never blocks."""
+    the recomputed total. Never blocks. `sheet_total` is a `Decimal` for a non-whole
+    sheet Total (GH-55): the comparison against `recomputed_total` is exact."""
 
     ref: SheetRef
-    sheet_total: int
+    sheet_total: int | Decimal
     recomputed_total: int
 
 
@@ -602,7 +604,11 @@ def build_plan(split: Split, mapping: ParsedMapping, checks: Checks) -> ImportPl
                 CellProblem(venta.ref, "Cliente", "import.pendiente_without_customer")
             )
             continue
-        assert isinstance(venta.total, int)
+        # A numeric Ventas Total, whole or not, never becomes an `UnfinishedRow`
+        # (`split` keeps it only when it is neither text nor missing): it is either
+        # an `int` or, for a non-whole sheet float, a `Decimal` (GH-55).
+        assert venta.total is not None
+        assert not isinstance(venta.total, str)
         if venta.total != check.total:
             mismatches.append(
                 Mismatch(venta.ref, sheet_total=venta.total, recomputed_total=check.total)
