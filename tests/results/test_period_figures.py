@@ -15,7 +15,7 @@ from app.results.domain.ledger import (
     PurchaseRecord,
     SaleRecord,
 )
-from app.results.domain.period_figures import period_figures
+from app.results.domain.period_figures import period_figures, scan, totals_between
 from app.shared.calendar import Month
 from app.shared.grams import Grams
 
@@ -352,6 +352,84 @@ def test_a_business_with_no_records_answers_the_empty_shape() -> None:
 
 
 # --- Time guard (docs/product/analysis.md: Speed) ---
+
+
+# --- totals_between (ADR-0013 amendment GH-70: Inicio's panel reads this seam,
+# never a second sum of its own) ---
+
+
+def test_totals_between_splits_sold_and_gifted_grams_and_counts_sales() -> None:
+    sold = _sold(
+        day=TODAY, variety_id=1, name="Flor", sale_id=1, line_total=10_000, grams="10",
+        costed=3_000, pending="0",
+    )
+    gifted = _gifted(
+        day=TODAY, variety_id=2, name="Regalo", sale_id=2, grams="2", costed=600, pending="0"
+    )
+    sales = [SaleRecord(1, TODAY, 0, 10_000), SaleRecord(2, TODAY, 0, 0)]
+    buckets, _ = scan(
+        draws=[sold, gifted],
+        sales=sales,
+        payments=[],
+        expenses=[],
+        purchases=[],
+        earliest_entry_day=TODAY,
+    )
+
+    totals = totals_between(buckets, TODAY, TODAY)
+
+    assert totals.sales == 10_000
+    assert totals.sales_count == 2
+    assert totals.grams_sold == Grams.of("10")
+    assert totals.grams_gifted == Grams.of("2")
+    assert totals.cost_of_goods.costed == 3_600
+    assert totals.shortfall is None
+    assert totals.profit.amount == 10_000 - 3_600
+
+
+def test_totals_between_excludes_a_day_outside_the_window() -> None:
+    """The enforcement artefact: a sale dated the day before the window must not leak
+    into it — proof the window edge, not just "every day scanned", is honoured."""
+    outside = TODAY - timedelta(days=1)
+    sale = SaleRecord(1, outside, 0, 5_000)
+    buckets, _ = scan(
+        draws=[], sales=[sale], payments=[], expenses=[], purchases=[],
+        earliest_entry_day=outside,
+    )
+
+    totals = totals_between(buckets, TODAY, TODAY)
+
+    assert totals.sales == 0
+    assert totals.sales_count == 0
+
+
+def test_totals_between_answers_shortfall_none_with_no_negative_adjustment() -> None:
+    sold = _sold(
+        day=TODAY, variety_id=1, name="Flor", sale_id=1, line_total=5_000, grams="5",
+        costed=1_000, pending="0",
+    )
+    buckets, _ = scan(
+        draws=[sold], sales=[SaleRecord(1, TODAY, 0, 5_000)], payments=[], expenses=[],
+        purchases=[], earliest_entry_day=TODAY,
+    )
+
+    totals = totals_between(buckets, TODAY, TODAY)
+
+    assert totals.shortfall is None
+
+
+def test_totals_between_carries_the_shortfall_s_own_amount_and_pending_grams() -> None:
+    shortfall = _shortfall(day=TODAY, costed=1_000, pending="2")
+    buckets, _ = scan(
+        draws=[shortfall], sales=[], payments=[], expenses=[], purchases=[],
+        earliest_entry_day=TODAY,
+    )
+
+    totals = totals_between(buckets, TODAY, TODAY)
+
+    assert totals.shortfall is not None
+    assert totals.shortfall.amount == 1_000
+    assert totals.shortfall.pending_grams == Grams.of("2")
 
 
 def test_the_domain_time_guard_runs_a_year_of_history_in_under_a_second() -> None:

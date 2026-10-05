@@ -133,6 +133,12 @@ def test_under_either_lock_change_is_refused_even_with_the_right_password(
                 json={"current_password": "not it", "new_password": NEW_PASSWORD},
             )
 
+        with Session(engine) as session:
+            email_before = session.get(LoginGuardRow, "locked@example.com")
+            address_before = session.scalar(select(LoginAddressGuardRow))
+            email_failures_before = email_before.failures if email_before is not None else 0
+            address_failures_before = address_before.failures if address_before is not None else 0
+
         under_lock = test_client.post(
             "/auth/password",
             json={"current_password": PASSWORD, "new_password": NEW_PASSWORD},
@@ -140,6 +146,11 @@ def test_under_either_lock_change_is_refused_even_with_the_right_password(
 
     assert under_lock.status_code == 429
     assert under_lock.json()["code"] == "account.login_locked"
+    with Session(engine) as session:
+        email_after = session.get(LoginGuardRow, "locked@example.com")
+        address_after = session.scalar(select(LoginAddressGuardRow))
+        assert email_after is not None and email_after.failures == email_failures_before + 1
+        assert address_after is not None and address_after.failures == address_failures_before + 1
 
 
 def test_under_the_email_lock_alone_a_short_new_password_still_answers_429_and_counts_both(
@@ -185,14 +196,24 @@ def test_under_the_email_lock_alone_a_short_new_password_still_answers_429_and_c
         assert total_address_failures == 6
 
 
-def test_under_the_address_lock_alone_a_short_new_password_still_answers_429_and_counts_both(
-    app: FastAPI, engine: Engine, clock: MovableClock
+@pytest.mark.parametrize("new_password", ["short", NEW_PASSWORD], ids=["short", "right"])
+def test_under_the_address_lock_alone_change_answers_429_and_counts_both_whatever_the_new_password(
+    app: FastAPI,
+    engine: Engine,
+    clock: MovableClock,
+    monkeypatch: pytest.MonkeyPatch,
+    new_password: str,
 ) -> None:
     """Twenty failed, unrelated logins from one address lock that address alone (no
     single one of those emails nears its own threshold). A Change from the same
-    address, with the right current password but a short new one, still finds the
-    address locked first and is refused -- counting against both the address and this
-    user's own, still-unlocked email."""
+    address, with the right current password and whatever the new password, still
+    finds the address locked first and is refused -- counting against both the
+    address and this user's own, still-unlocked email, with no scrypt computed."""
+    from app.accounts.domain.password import PasswordHasher
+
+    def boom(self: PasswordHasher, *args: object, **kwargs: object) -> None:
+        raise AssertionError("no scrypt should run once a lock is active")
+
     host = "203.0.113.60"
     with peer(app, host) as test_client:
         token = open_business(test_client, engine, clock, "Primer Negocio", "alock@example.com")
@@ -203,18 +224,29 @@ def test_under_the_address_lock_alone_a_short_new_password_still_answers_429_and
             )
 
         test_client.headers["Authorization"] = f"Bearer {token}"
+
+        with Session(engine) as session:
+            email_before = session.get(LoginGuardRow, "alock@example.com")
+            address_before = session.scalar(select(LoginAddressGuardRow))
+            email_failures_before = email_before.failures if email_before is not None else 0
+            address_failures_before = address_before.failures if address_before is not None else 0
+
+        monkeypatch.setattr(PasswordHasher, "hash", boom)
+        monkeypatch.setattr(PasswordHasher, "verify", boom)
+        monkeypatch.setattr(PasswordHasher, "burn", boom)
+
         under_lock = test_client.post(
             "/auth/password",
-            json={"current_password": PASSWORD, "new_password": "short"},
+            json={"current_password": PASSWORD, "new_password": new_password},
         )
 
     assert under_lock.status_code == 429
     assert under_lock.json()["code"] == "account.login_locked"
     with Session(engine) as session:
-        email_row = session.get(LoginGuardRow, "alock@example.com")
-        assert email_row is not None and email_row.failures == 1
-        address_row = session.scalar(select(LoginAddressGuardRow))
-        assert address_row is not None and address_row.failures == 21
+        email_after = session.get(LoginGuardRow, "alock@example.com")
+        address_after = session.scalar(select(LoginAddressGuardRow))
+        assert email_after is not None and email_after.failures == email_failures_before + 1
+        assert address_after is not None and address_after.failures == address_failures_before + 1
 
 
 def test_with_no_lock_a_short_new_password_answers_422_and_counts_nothing(
@@ -298,6 +330,7 @@ def test_under_a_lock_no_scrypt_is_computed(
 
         monkeypatch.setattr(PasswordHasher, "verify", boom)
         monkeypatch.setattr(PasswordHasher, "hash", boom)
+        monkeypatch.setattr(PasswordHasher, "burn", boom)
 
         under_lock = test_client.post(
             "/auth/password",

@@ -1,6 +1,6 @@
 # Pinned catalog
 
-Each business's own Telegram bot delivers the catalog text (catalog.md) to the business's chat as one pinned message and keeps it in step on its own. The seller sees a test copy in their own chat first. Seen only by its business (ADR-0004). The text comes from the catalog's single author (ADR-0012, catalog). This capability sends it and keeps it current. The bot only publishes; it never takes orders.
+Each business's own Telegram bot delivers the catalog text (catalog.md) to the business's chat as one pinned message and keeps it in step on its own. The seller sees a test copy in their own chat first. Seen only by its business (ADR-0004). The text comes from the catalog's single author (ADR-0022). This capability sends it and keeps it current. The bot only publishes; it never takes orders.
 
 Where its pieces live (navigation.md): the bot settings and Probarlo are in Configuración → Integraciones; the pin's status and Publicar are on the catalog screen (catalog.md); Inicio carries the out-of-date notice.
 
@@ -14,7 +14,7 @@ Success criteria:
 
 1. **No step of my own**: once a change that affects the catalog is saved, the pin already shows it the next time anyone looks at Telegram. This includes a price entry whose date arrives with nobody saving anything.
 2. **One message, always the same one**: publishing or syncing edits the pinned message in place. The chat never fills with old catalogs. Switching the bot or the channel leaves the previous chat's pin untouched, and the seller is told so.
-3. **What customers read is the catalog**: the same text as the in-app preview and as Probarlo's test send, with real bold from the same left-to-right `**` pairing (ADR-0012, catalog).
+3. **What customers read is the catalog**: the same text as the in-app preview and as Probarlo's test send, with real bold from the same left-to-right `**` pairing (ADR-0022).
 4. **Never surprised by a failure**: the save that triggered a sync (sale, price, stock, catalog edit) always succeeds on its own terms, and the sync happens after it. A stuck pin shows as "Desactualizado", with a one-line reason, on the catalog screen and on Inicio.
 5. **Businesses never mix and the token stays secret**: one bot, token, channel chat and own chat per business. The token is never shown again once saved. Nothing about the settings or a sync leaks across businesses (ADR-0004, ADR-0005).
 6. **Done from the phone**: setup and Probarlo in Integraciones, Publicar and seeing whether the pin is out of date on the catalog screen all work from the phone, with no API call by hand.
@@ -115,7 +115,7 @@ Setup (token, chats, first Probarlo and Publicar) is judged by criteria 3, 5 and
 
 ### The text
 
-- Exactly the catalog text from the one author (ADR-0012, catalog).
+- Exactly the catalog text from the one author (ADR-0022).
 - `**` markers become real Telegram bold, paired left to right. A final unpaired `**` shows as typed.
 - The test copy and the published copy are identical for the same data.
 - **Length**: measured as Telegram measures it, on the message as sent. Over Telegram's limit it is never split or cut; it is refused, as above.

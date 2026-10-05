@@ -1,7 +1,10 @@
-"""The panel's one use case (plan: subtask "Results core and GET /panel"): composes
-the five owner ports into one answer, computing `periods(today)` once and passing
-`today` and the periods into every port (plan invariant). No port is read twice, and
-no figure is recomputed here beyond the pure arithmetic in `app/results/domain/`.
+"""The panel's one use case (ADR-0013, amendment GH-70): composes stock's rows and
+draws, every ledger `analyse` already reads, and debts into one answer. `scan` runs
+once over the business's whole history; Hoy, the week and the month each read their
+own figures back through `totals_between` — the same computation `GET /analysis` uses
+for its weeks, months and since-first-record (ADR-0020) — so Inicio's Ganancia and
+Caja can no longer disagree with Análisis's for the same period. No figure here is a
+second sum of its own.
 """
 
 from __future__ import annotations
@@ -12,16 +15,28 @@ from datetime import date
 from app.results.application.ports import (
     DebtorRow,
     DebtSummary,
-    PaymentsReceived,
-    PeriodExpenses,
-    PeriodSales,
+    ExpensesLedger,
+    PaymentsLedger,
+    Purchases,
+    SalesLedger,
     StockFigures,
     StockRow,
 )
-from app.results.domain.arithmetic import average_sale, cash, profit
+from app.results.domain.arithmetic import average_sale
+from app.results.domain.period_figures import scan, totals_between
 from app.results.domain.periods import Period, periods
 from app.results.domain.sorting import oldest, sorted_by_name, teaser
 from app.shared.grams import Grams
+
+
+@dataclass(frozen=True)
+class ShortfallFigures:
+    """The panel's own shortfall shape: an amount and one pending flag, decided from
+    the shortfall figure's own pending grams (plan invariant) — no grams cross the
+    wire (PM)."""
+
+    amount: int
+    pending: bool
 
 
 @dataclass(frozen=True)
@@ -34,9 +49,11 @@ class PeriodFigures:
     grams_gifted: Grams
     cost_of_goods: int
     pending_cost: bool
+    shortfall: ShortfallFigures | None
     expenses: int
     purchases: int
     profit: int
+    profit_pending: bool
     cash: int
 
 
@@ -59,42 +76,52 @@ class Panel:
 
 def read_panel(
     today: date,
-    sales: PeriodSales,
     stock: StockFigures,
-    expenses: PeriodExpenses,
-    received: PaymentsReceived,
+    sales: SalesLedger,
+    payments: PaymentsLedger,
+    expenses: ExpensesLedger,
+    purchases: Purchases,
     debts: DebtSummary,
 ) -> Panel:
     the_periods = periods(today)
-    ordered = (the_periods.today, the_periods.week, the_periods.month)
-
-    sales_summaries = sales.summaries(ordered)
-    stock_answer = stock.read(today, ordered)
-    expense_totals = expenses.totals(ordered)
-    received_totals = received.totals(ordered)
-    debts_answer = debts.read()
+    stock_answer = stock.read(today)
+    buckets, _ = scan(
+        draws=stock_answer.draws,
+        sales=sales.all(),
+        payments=payments.all(),
+        expenses=expenses.all(),
+        purchases=purchases.purchases(),
+        earliest_entry_day=purchases.earliest_entry_day(),
+    )
 
     def figures_for(period: Period) -> PeriodFigures:
-        summary = sales_summaries[period]
-        cost = stock_answer.cost_of_goods[period]
-        spent = expense_totals[period]
-        bought = stock_answer.purchases[period]
-        collected = received_totals[period]
+        totals = totals_between(buckets, period.start, period.end)
+        shortfall = (
+            None
+            if totals.shortfall is None
+            else ShortfallFigures(
+                amount=totals.shortfall.amount,
+                pending=totals.shortfall.pending_grams.hundredths > 0,
+            )
+        )
         return PeriodFigures(
             period=period,
-            sales=summary.total,
-            sales_count=summary.count,
-            average_sale=average_sale(summary.total, summary.count),
-            grams_sold=summary.grams_sold,
-            grams_gifted=summary.grams_gifted,
-            cost_of_goods=cost.amount,
-            pending_cost=cost.pending,
-            expenses=spent,
-            purchases=bought,
-            profit=profit(summary.total, cost.amount, spent),
-            cash=cash(collected, spent, bought),
+            sales=totals.sales,
+            sales_count=totals.sales_count,
+            average_sale=average_sale(totals.sales, totals.sales_count),
+            grams_sold=totals.grams_sold,
+            grams_gifted=totals.grams_gifted,
+            cost_of_goods=totals.cost_of_goods.costed,
+            pending_cost=totals.cost_of_goods.pending_grams.hundredths > 0,
+            shortfall=shortfall,
+            expenses=totals.expenses,
+            purchases=totals.purchases,
+            profit=totals.profit.amount,
+            profit_pending=totals.profit.pending_grams.hundredths > 0,
+            cash=totals.cash,
         )
 
+    debts_answer = debts.read()
     debts_summary = DebtsSummary(
         total_owed=debts_answer.total_owed,
         sales_owing_count=debts_answer.sales_owing_count,

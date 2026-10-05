@@ -1,25 +1,11 @@
 """`app/results/domain/arithmetic.py` (CODING_STANDARDS section 5: domain unit test,
-no infrastructure). PRD criterion 3: Ganancia and Caja, including negatives; the
-half-up average, and `None` with no sales.
+no infrastructure). PRD criterion 3: the half-up average, and `None` with no sales.
+
+`profit` and `cash` moved to `period_figures` (GH-70, ADR-0013 amendment): see
+`tests/results/test_period_figures.py`'s `totals_between` tests instead.
 """
 
-from app.results.domain.arithmetic import average_sale, cash, profit
-
-
-def test_profit_is_sales_minus_cost_of_goods_minus_expenses() -> None:
-    assert profit(sales=15_000, cost_of_goods=6_000, expenses=0) == 9_000
-
-
-def test_profit_can_be_negative_and_is_never_floored() -> None:
-    assert profit(sales=0, cost_of_goods=0, expenses=5_000) == -5_000
-
-
-def test_cash_is_received_minus_expenses_minus_purchases() -> None:
-    assert cash(received=15_000, expenses=0, purchases=0) == 15_000
-
-
-def test_cash_can_be_negative_and_is_never_floored() -> None:
-    assert cash(received=30_000, expenses=12_000, purchases=30_000) == -12_000
+from app.results.domain.arithmetic import average_sale
 
 
 def test_average_sale_rounds_half_up_to_the_whole_peso() -> None:

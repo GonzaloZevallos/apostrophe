@@ -3,13 +3,13 @@
 Whether a business makes money and how much it actually has, over today, this week and this month: the panel on Inicio. It is read only and seen only by its business (ADR-0004). It reads:
 
 - sales and their totals from sales;
-- cost of goods sold from stock's lots (ADR-0009, ADR-0010);
+- cost of goods sold and stock shortfall from stock's lots (ADR-0009, ADR-0010);
 - expenses from expenses;
 - purchases from stock;
 - payments, balances and settlement from payments (ADR-0012);
 - stock status and days left from stock.
 
-It computes nothing those capabilities already compute, beyond adding them up. Inicio also carries the first-run checklist and the after-import notice, defined in navigation.md; their place on Inicio is set here.
+It computes nothing those capabilities already compute, beyond adding them up. Its period figures come from the one computation Análisis also reads (ADR-0020): Ganancia here and profit in Análisis are the same figure. Inicio also carries the first-run checklist and the after-import notice, defined in navigation.md; their place on Inicio is set here.
 
 ## Jobs
 
@@ -25,15 +25,17 @@ Success criteria:
 2. **It never disagrees with the dedicated screens**:
    - the period's sales total and count equal Ventas for the same period;
    - Te deben's total, count and oldest date equal Clientes' Te deben section;
-   - each variety's grams, status and days left equal Variedades.
+   - each variety's grams, status and days left equal Variedades;
+   - Semana's and Mes's Ganancia, cost of goods sold, stock shortfall, expenses and Caja equal Análisis's row for the same week and month.
 
    Any figure that disagrees is a defect.
 3. **Ganancia and Caja are honest**:
-   - Ganancia = sales − cost of goods sold − expenses.
+   - Ganancia = sales − cost of goods sold − stock shortfall − expenses (CONTEXT.md: Profit).
    - Caja = payments received − expenses − purchases, each counted on its own date.
    - They appear side by side under those names, in Semana and Mes.
    - A negative figure is shown as it is, never hidden or floored.
-   - Pending cost is flagged, never treated as $0 (ADR-0009).
+   - Pending cost is flagged, never treated as $0 (ADR-0009). Ganancia is then worked out over the costed part.
+   - Flower lost to a negative adjustment lowers Ganancia on the adjustment's date.
    - Corrected stock entries show the next time the panel opens: a period has no closing date.
 4. **Who owes and what's left, at a glance**: money owed, each debtor one tap from collecting, and stock per variety with its status. Status is told by shape and word, never by color alone.
 5. **Businesses never mix** (ADR-0004): every figure comes from the caller's business alone, and the panel route joins the isolation sweep. No figure goes to the console or browser storage.
@@ -56,7 +58,7 @@ Success criteria:
 
 ### Figures per period
 
-Each figure is counted on its own date.
+Each figure is counted on its own date. Sales, cost of goods sold, stock shortfall, expenses, Ganancia and Caja come from the same period computation as Análisis (ADR-0020), never from a second sum.
 
 - **Sales**: the sum of the period's sale totals, shipping included, paid or not. It is the same figure as Ventas' total. Its heading follows the tab: "Vendiste hoy", "Vendiste esta semana" or "Vendiste este mes".
 - **Number of sales**: counts sales, not lines.
@@ -64,23 +66,29 @@ Each figure is counted on its own date.
 - **Grams sold**: the grams of the period's lines that are not gifts.
 - **Grams gifted** ("Regalaste"): the grams of the period's gift lines.
 - **Cost of goods sold** ("Costo de lo vendido"): what the grams of the period's sale lines (gifts included) cost, from their lots as the lots stand now (ADR-0009, ADR-0010). A negative adjustment's cost is not part of it.
+- **Stock shortfall** ("Faltante de stock"): what the grams taken out by the period's negative adjustments cost, on the adjustment's date, from their lots as they stand now, oldest first (CONTEXT.md: Stock shortfall). It shows as "Faltante de stock $ X" only when the period has any negative adjustment; otherwise the line is left out.
 - **Expenses** ("Gastos"): the sum of the period's expenses.
 - **Purchases** ("Compras de flores"): the total cost of the period's purchase stock entries.
-- **Ganancia**: sales − cost of goods sold − expenses. It takes the design's accent treatment whatever its sign: the accent marks the headline figure, not whether it is good or bad.
+- **Ganancia**: sales − cost of goods sold − stock shortfall − expenses.
+  - When any of its cost is pending, it is worked out over the costed part: the sales of pending grams are left out (sales − (sales without shipping − sales of costed grams) − costed cost of goods − costed shortfall − expenses), with sales of costed grams per line as CONTEXT.md's Margin defines them (line total × costed grams ÷ line grams, half up). The sales figure shown stays the full sales.
+  - It is the same figure Análisis shows as profit for the same week or month.
+  - It takes the design's accent treatment whatever its sign: the accent marks the headline figure, not whether it is good or bad.
 - **Caja**: payments received − expenses − purchases. Payments received are every payment dated in the period, on-the-spot and later ones alike, each on its own payment date. Caja is shown side by side with Ganancia.
 
 ### What each tab shows
 
 - **Hoy** shows what can be acted on today: what was sold today (sales, number of sales, average sale and grams sold), then the Te deben block, then Lo que te queda.
-- **Semana and Mes** show sales, number of sales, average sale, grams sold, Regalaste, Costo de lo vendido, Gastos, Compras de flores, Ganancia and Caja, then the Te deben block and Lo que te queda.
-- Ganancia, Caja, Costo de lo vendido, Gastos, Regalaste and Compras never show on Hoy.
+- **Semana and Mes** show sales, number of sales, average sale, grams sold, Regalaste, Costo de lo vendido, Faltante de stock (when the period has one), Gastos, Compras de flores, Ganancia and Caja, then the Te deben block and Lo que te queda.
+- Ganancia, Caja, Costo de lo vendido, Faltante de stock, Gastos, Regalaste and Compras never show on Hoy.
 
 ### Pending cost
 
-- When any of the period's sale lines has pending grams as the lots stand now, a fixed "incluye costo pendiente" shows under Costo de lo vendido and under Ganancia.
-- The note carries no grams or amounts.
+- A fixed "incluye costo pendiente" note, with no grams or amounts:
+  - under Costo de lo vendido, when any of the period's sale lines has pending grams as the lots stand now;
+  - under Faltante de stock, when any of the period's negative adjustments has pending grams;
+  - under Ganancia, when either of those applies.
 - Caja never carries it: pending cost is not money that moved.
-- With nothing pending, neither figure shows the note.
+- With nothing pending, no figure shows the note.
 
 ### Negative figures
 
@@ -142,20 +150,24 @@ Each figure is counted on its own date.
 - **Agreement (criterion 2)**: 0 differences, per period:
   - sales total and count against Ventas;
   - Te deben figures against Clientes' Te deben section;
-  - each variety's grams, status, days left and detail against Variedades.
+  - each variety's grams, status, days left and detail against Variedades;
+  - Semana's and Mes's Ganancia, cost of goods sold, stock shortfall, expenses and Caja against `GET /analysis`'s row for the same week and month, over a seeded history that includes a negative adjustment with costed grams, one with pending grams, and a sale line with pending grams.
 - **Formulas (criterion 3)**: a matrix, 100% passing, covering:
   - Ganancia and Caja;
   - payments counted on their own date, not the sale's;
   - a backdated purchase or an edited stock entry moving cost of goods sold and Ganancia;
-  - pending cost showing the note under Costo de lo vendido and Ganancia only;
+  - a negative adjustment lowering Ganancia by its costed shortfall on its own date, showing "Faltante de stock $ X", and leaving cost of goods sold and Caja unchanged;
+  - a period with no negative adjustment showing no Faltante de stock line;
+  - pending grams on a sale line leaving their sales out of Ganancia while "Vendiste" keeps the full sales;
+  - pending cost showing the note under Costo de lo vendido, Faltante de stock and Ganancia as defined, and never under Caja;
   - negative Ganancia and Caja shown as "−$ X".
-- **Tabs**: front tests show Hoy with sales, Te deben and Lo que te queda only, and Ganancia, Caja, Costo de lo vendido, Gastos, Regalaste and Compras only on Semana and Mes.
+- **Tabs**: front tests show Hoy with sales, Te deben and Lo que te queda only, and Ganancia, Caja, Costo de lo vendido, Faltante de stock, Gastos, Regalaste and Compras only on Semana and Mes.
 - **Inicio's order**: front tests, phone and computer, show the checklist or "Arrancá por las variedades" (never both), then the out-of-date notice, then the after-import notice, then the figures.
 - **Period edges**: a week that crosses a month and a year, Monday as the first day, and a day boundary in Argentina time. 100% passing.
 - **Debtors teaser (criterion 4)**: ordered by balance, then owing since, then name; credits excluded; "Nadie te debe" when nobody owes; "Cobrar" with its accessible name on every row. No state is told by color alone.
 - **Isolation (criterion 5)**: from another business, the panel route shows none of the first business's figures. After a full front run, the console and browser storage hold no figures or names.
 - **Nothing invented (criterion 6)**:
-  - an empty business shows $ 0 and 0 g, with no average sale;
+  - an empty business shows $ 0 and 0 g, with no average sale and no Faltante de stock line;
   - every figure on screen equals the API's answer.
 - **No curl**: the end-to-end front run opens Inicio, switches across the three periods, opens Clientes from the block's heading, a customer from the teaser, and Registrar cobro from a teaser row's "Cobrar".
 
@@ -164,6 +176,6 @@ Each figure is counted on its own date.
 - Fechas or any custom range; comparing with earlier periods; charts.
 - Recording anything from the panel other than through "+ Nueva venta" and "Cobrar".
 - Live updates between partners.
-- Margins per variety (#8).
-- How a negative adjustment's cost counts anywhere.
+- Margins per variety (#8) and stock shortfall per variety.
+- Pending grams counted on the panel ("y N g sin costo"): the panel's note is fixed and carries no grams; Análisis shows the counts.
 - Stock's total grams on the panel.

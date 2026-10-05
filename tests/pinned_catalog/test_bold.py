@@ -1,7 +1,7 @@
 """`telegram_bold` and `fits_in_one_message` (the plan's declared seam): the pairing
 cases shared with the front's `telegramPreview.test.ts` via
 `telegramPreview.cases.json`, so the plain text Telegram renders and the in-app preview
-can never drift apart (ADR-0012, catalog; ADR-0013)."""
+can never drift apart (ADR-0022; ADR-0023)."""
 
 import json
 from pathlib import Path

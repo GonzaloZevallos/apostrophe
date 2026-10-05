@@ -7,7 +7,6 @@ A variety and a customer come from the `client` fixture over HTTP (CODING_STANDA
 section 5); only `SqlSales` itself, the seam under test, is built and called directly.
 """
 
-from collections.abc import Callable
 from datetime import UTC, date, datetime
 
 from fastapi.testclient import TestClient
@@ -404,75 +403,3 @@ def test_list_views_reads_exactly_two_statements_whatever_the_number_of_sales(
     assert len(statements) == 2, statements
 
 
-# -- `between` (results' `PeriodSales` port, plan: "PeriodSales") ---------------------
-
-
-def _count_statements(engine: Engine, action: Callable[[], object]) -> int:
-    statements: list[str] = []
-
-    def _record(
-        conn: object, cursor: object, statement: str, parameters: object, *args: object
-    ) -> None:
-        statements.append(statement)
-
-    event.listen(engine, "before_cursor_execute", _record)
-    try:
-        action()
-    finally:
-        event.remove(engine, "before_cursor_execute", _record)
-    return len(statements)
-
-
-def test_between_reads_exactly_two_statements_whatever_the_number_of_sales(
-    client: TestClient, engine: Engine
-) -> None:
-    variety_id = _variety_id(client)
-    business_id = _business_id_of_variety(engine, variety_id)
-    session = Session(engine)
-    sales = SqlSales(session, business_id)
-    sales.add(_sale(variety_id=variety_id))
-
-    count_for_one = _count_statements(
-        engine, lambda: sales.between(date(2026, 6, 1), date(2026, 6, 30))
-    )
-
-    for _ in range(49):
-        sales.add(_sale(variety_id=variety_id))
-
-    count_for_fifty = _count_statements(
-        engine, lambda: sales.between(date(2026, 6, 1), date(2026, 6, 30))
-    )
-
-    assert count_for_one == 2
-    assert count_for_fifty == 2
-
-
-def test_between_filters_by_an_inclusive_date_range(client: TestClient, engine: Engine) -> None:
-    variety_id = _variety_id(client)
-    business_id = _business_id_of_variety(engine, variety_id)
-    sales = SqlSales(Session(engine), business_id)
-    sales.add(_sale(variety_id=variety_id, sale_date=date(2026, 5, 1)))
-    start_edge = sales.add(_sale(variety_id=variety_id, sale_date=date(2026, 5, 5)))
-    end_edge = sales.add(_sale(variety_id=variety_id, sale_date=date(2026, 5, 15)))
-    sales.add(_sale(variety_id=variety_id, sale_date=date(2026, 5, 20)))
-
-    in_range = sales.between(date(2026, 5, 5), date(2026, 5, 15))
-
-    assert {s.id for s in in_range} == {start_edge.id, end_edge.id}
-
-
-def test_between_excludes_another_business_s_sales(
-    client: TestClient, other_client: TestClient, engine: Engine
-) -> None:
-    variety_id = _variety_id(client)
-    business_id = _business_id_of_variety(engine, variety_id)
-    other_variety_id = _variety_id(other_client)
-    other_business_id = _business_id_of_variety(engine, other_variety_id)
-    sales = SqlSales(Session(engine), business_id)
-    other_sales = SqlSales(Session(engine), other_business_id)
-    sales.add(_sale(variety_id=variety_id, sale_date=date(2026, 6, 15)))
-    other_sales.add(_sale(variety_id=other_variety_id, sale_date=date(2026, 6, 15)))
-
-    found = sales.between(date(2026, 6, 1), date(2026, 6, 30))
-
-    assert len(found) == 1

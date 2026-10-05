@@ -3,7 +3,7 @@ code sends `parse_mode` or hand-built entities to Telegram).
 
 `telegram_bold` pairs `**` left to right exactly as `web/src/screens/telegramPreview.ts`
 does, so the plain text Telegram renders and the front's preview always agree
-(ADR-0012, catalog; ADR-0013). Spans are offsets into the *plain* text (markers
+(ADR-0022; ADR-0023). Spans are offsets into the *plain* text (markers
 removed), measured in UTF-16 code units, because that is how Telegram's own
 `entities` are measured and how its 4096-character limit is counted.
 """

@@ -8,14 +8,37 @@
  * calling `uvicorn` and the `invite-business` CLI directly with explicit environment
  * variables — never `scripts/serve.sh` or `scripts/invite-business.sh`, which source
  * `.env` (plan, "Old shapes kept": the e2e run calls neither).
+ *
+ * The port is decided only here (plan, "Shape": "the port is decided only in
+ * `web/playwright.config.ts`"): `APOSTROPHE_E2E_PORT` when set, else a free port from
+ * `freePort.ts`, written back into the environment so every worker this config
+ * spawns inherits the same one. `env.ts`'s functions read it back; nothing else picks
+ * or hardcodes a port.
  */
 
 import { defineConfig } from '@playwright/test'
-import { E2E_BASE_URL, E2E_DB_PATH, E2E_ENV } from './e2e/env.js'
+import { freePort } from './e2e/freePort.js'
+import { E2E_HOST, e2eBaseUrl, e2eDbPath, e2eEnv, e2ePort } from './e2e/env.js'
 
-const envAssignments = Object.entries(E2E_ENV)
+if (process.env.APOSTROPHE_E2E_PORT === undefined) {
+  process.env.APOSTROPHE_E2E_PORT = String(await freePort(E2E_HOST))
+}
+// Validates the variable whether it was already set or was just picked above —
+// `e2ePort()` never picks a port itself, by decision.
+e2ePort()
+
+const envAssignments = Object.entries(e2eEnv())
   .map(([key, value]) => `${key}=${value}`)
   .join(' ')
+
+// Playwright races a `url` poll against `wait` (`node_modules/playwright/lib/runner/
+// index.js:946-951`), so keeping `url` set would let another worktree's server,
+// already answering on the same port, win that race and mark this run ready against
+// a server it never started. The only readiness signal is this run's own uvicorn
+// announcing itself on its own port.
+const readyPattern = new RegExp(
+  `Uvicorn running on http://${E2E_HOST.replace(/\./g, '\\.')}:${e2ePort()}\\b`,
+)
 
 export default defineConfig({
   testDir: './e2e',
@@ -25,7 +48,7 @@ export default defineConfig({
   workers: 1,
   reporter: 'list',
   use: {
-    baseURL: E2E_BASE_URL,
+    baseURL: e2eBaseUrl(),
   },
   // `catalogInsecureOrigin.spec.ts` (review finding, carried from the clipboard
   // subtask: the `execCommand` fallback was only proven in jsdom) needs a base URL
@@ -43,23 +66,24 @@ export default defineConfig({
     },
   ],
   webServer: {
-    // A throwaway SQLite file, removed before every run; `cwd: '..'` so the paths
-    // in `E2E_ENV` (repo-root-relative, matching `scripts/serve.sh`'s own) resolve
-    // the same way. Never `scripts/serve.sh`: that one sources `.env`.
+    // A throwaway SQLite file, keyed on the port so two runs never share one,
+    // removed before every run; `cwd: '..'` so the paths in `e2eEnv()`
+    // (repo-root-relative, matching `scripts/serve.sh`'s own) resolve the same way.
+    // Never `scripts/serve.sh`: that one sources `.env`.
     //
     // `tests.e2e_app:create_e2e_app`, not `app.main:create_app` (GH-10, front
     // subtask): the plan's own invariant — "the test app always injects
     // FakeTelegram and upkeep_ticker=False" — holds for the e2e run too, so no
     // spec here ever reaches a real Telegram token or the network.
     command:
-      `mkdir -p "$(dirname '${E2E_DB_PATH}')" && rm -f '${E2E_DB_PATH}' && ` +
+      `mkdir -p "$(dirname '${e2eDbPath()}')" && rm -f '${e2eDbPath()}' && ` +
       `${envAssignments} uv run --no-project uvicorn tests.e2e_app:create_e2e_app --factory ` +
-      `--host 127.0.0.1 --port 8799 --no-access-log`,
+      `--host ${E2E_HOST} --port ${e2ePort()} --no-access-log`,
     cwd: '..',
-    url: E2E_BASE_URL,
     reuseExistingServer: false,
     timeout: 30_000,
     stdout: 'pipe',
     stderr: 'pipe',
+    wait: { stderr: readyPattern },
   },
 })

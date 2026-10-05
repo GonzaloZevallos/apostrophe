@@ -41,7 +41,7 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-test('heads with the total owed and the count of sales still owing, lists debtors in the API\'s own order', async () => {
+test("heads with the total owed and lists debtors in the API's own order", async () => {
   // `debtors.json` (plan, invariants: "used by the front's fetch fakes") holds one
   // debtor; a second is added here only to prove the API's own order is kept,
   // never resorted by this screen.

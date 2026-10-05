@@ -41,7 +41,7 @@ class TooLong(PinnedCatalogRuleBroken):
 
 
 class TelegramOutcomeFailure(RuntimeError):
-    """What `classify` (ADR-0013) turns a Telegram answer into, carrying no part of
+    """What `classify` (ADR-0023) turns a Telegram answer into, carrying no part of
     Telegram's own description, URL or token (CODING_STANDARDS section 9)."""
 
 

@@ -654,7 +654,7 @@ button {
 .lista-clientes__fila-contenido {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--espacio-md);
   width: 100%;
   min-height: var(--alto-tocable);
 }
@@ -886,7 +886,7 @@ button {
   gap: 5px;
   background: var(--papel);
   border-radius: var(--radio-pildora);
-  padding: 4px;
+  padding: var(--espacio-xs);
 }
 
 .selector-pago__opcion {

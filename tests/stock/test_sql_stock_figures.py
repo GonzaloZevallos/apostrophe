@@ -12,7 +12,6 @@ from sqlalchemy import event, select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
-from app.results.domain.periods import Period
 from app.stock.adapters.stock_figures import SqlStockFigures
 from app.varieties.adapters.tables import VarietyRow
 from tests.conftest import TODAY
@@ -68,8 +67,7 @@ def test_reads_entries_and_draws_exactly_once_whatever_the_number_of_varieties(
 
     event.listen(engine, "before_cursor_execute", _record)
     try:
-        periods = [Period(TODAY, TODAY)]
-        figures.read(TODAY, periods)
+        figures.read(TODAY)
     finally:
         event.remove(engine, "before_cursor_execute", _record)
 
@@ -89,7 +87,7 @@ def test_rows_include_a_variety_with_no_entries_and_translate_stock_level(
     business_id = _business_id_of_variety(engine, priced)
     with Session(engine) as session:
         figures = SqlStockFigures(session, business_id)
-        answer = figures.read(TODAY, [Period(TODAY, TODAY)])
+        answer = figures.read(TODAY)
 
     by_id = {row.variety_id: row for row in answer.rows}
     assert by_id[priced].status == "ok"
@@ -97,9 +95,12 @@ def test_rows_include_a_variety_with_no_entries_and_translate_stock_level(
     assert by_id[untouched].name == "Zarzamora"
 
 
-def test_cost_of_goods_and_purchases_are_answered_per_period(
+def test_draws_are_costed_the_same_way_sql_draw_costs_answers_them(
     client: TestClient, engine: Engine
 ) -> None:
+    """`read`'s `draws` go through the same shared builder `SqlDrawCosts` uses (plan
+    invariant: one draw-row builder in `app/stock/adapters/`), so a sale-line draw
+    here costs exactly what `GET /analysis`'s own `DrawCosts` port would answer for it."""
     variety_id = _variety(client, "Lavanda")
     _entry(client, variety_id, grams="10", total_cost=1_000)
     sale = client.post(
@@ -109,11 +110,11 @@ def test_cost_of_goods_and_purchases_are_answered_per_period(
     assert sale.status_code == 201, sale.text
 
     business_id = _business_id_of_variety(engine, variety_id)
-    period = Period(TODAY, TODAY)
     with Session(engine) as session:
         figures = SqlStockFigures(session, business_id)
-        answer = figures.read(TODAY, [period])
+        answer = figures.read(TODAY)
 
-    assert answer.cost_of_goods[period].amount == 1_000
-    assert answer.cost_of_goods[period].pending is False
-    assert answer.purchases[period] == 1_000
+    sale_draws = [d for d in answer.draws if d.kind != "shortfall"]
+    assert len(sale_draws) == 1
+    assert sale_draws[0].costed == 1_000
+    assert sale_draws[0].variety_id == variety_id
