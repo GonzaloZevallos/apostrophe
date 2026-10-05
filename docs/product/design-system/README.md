@@ -2,11 +2,11 @@
 
 Contrato de diseño para el frontend. Estos archivos son la fuente de verdad del
 color, los formatos, los tipos del dominio y las reglas de precio. El diseño
-visual completo (28 pantallas, celular y compu) vive en un lienzo aparte:
-<https://claude.ai/code/artifact/297ea685-fd7e-4fd2-b22b-4d402df4220c>
-
-Las pantallas, como HTML estático para leer sin el lienzo, están en
-[`pantallas/`](pantallas/): abrí cualquiera en el navegador.
+visual completo (celular y compu) ya no vive en un lienzo aparte: el HTML
+estático en [`pantallas/`](pantallas/) es la referencia. Abrí cualquiera en el
+navegador; [`Componentes.dc.html`](pantallas/Componentes.dc.html) es donde se
+define el chrome compartido (barra, riel, encabezados, confirmaciones) y de
+donde toda otra pantalla lo copia tal cual.
 
 | Archivo | Qué es |
 | --- | --- |
@@ -37,7 +37,9 @@ del diseño ("La Huerta"), cargado por la API y nunca por el front. Cada compara
 PNG con el diseño a la izquierda y lo construido a la derecha, del mismo ancho; si un
 estado no se alcanza o la página desborda, lo dice arriba. Qué ruta y qué pasos llevan a
 cada pantalla está en `scripts/design/screens.json`: quien rehace una pantalla mantiene su
-entrada al día.
+entrada al día. Las cifras de La Huerta que usan las pantallas (saldos, stock, días
+restantes, las cifras del panel) están todas en
+[`muestra.md`](muestra.md), la única fuente: ninguna pantalla inventa un número propio.
 
 ## Dirección de diseño
 
