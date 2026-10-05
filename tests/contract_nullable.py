@@ -63,6 +63,13 @@ NULLABLE: Mapping[str, Mapping[str, JsonType | ShapeOf]] = {
         "since_first_record.shortfall": ShapeOf("analysis", "since_first_record.shortfall"),
     },
     "customer": {
+        "phone": "string",
+        "channel": "string",
+        "owing_since": "string",
+    },
+    "customer-no-phone": {
+        # A customer with no phone (ADR-0021): every nullable field is `null` here.
+        "phone": "string",
         "channel": "string",
         "owing_since": "string",
     },

@@ -227,10 +227,12 @@ export default function ClienteFicha() {
         )}
 
         <div className="formulario">
-          <div className="campo">
-            <span className="campo__rotulo">Teléfono</span>
-            <span>{formatPhone(data.phone)}</span>
-          </div>
+          {data.phone !== null && (
+            <div className="campo">
+              <span className="campo__rotulo">Teléfono</span>
+              <span>{formatPhone(data.phone)}</span>
+            </div>
+          )}
           <div className="campo">
             <span className="campo__rotulo">Canal</span>
             <span>{data.channel !== null ? CHANNEL_LABEL[data.channel] : 'Sin canal'}</span>

@@ -12,6 +12,7 @@ from __future__ import annotations
 import csv
 from pathlib import Path
 
+from app.shared.names import collapse_spaces
 from app.spreadsheet_import.adapters import layout
 from app.spreadsheet_import.domain.rows import CellProblem, MappingEntry, ParsedMapping, SheetRef
 
@@ -64,7 +65,8 @@ def read_mapping(path: Path) -> ParsedMapping:
 
             name = row[0].strip()
             phone = row[1].strip()
-            if name in seen:
+            collapsed_name = collapse_spaces(name)
+            if collapsed_name in seen:
                 problems.append(
                     CellProblem(
                         SheetRef(layout.MAPPING_FILE, line_number),
@@ -73,7 +75,7 @@ def read_mapping(path: Path) -> ParsedMapping:
                     )
                 )
                 continue
-            seen.add(name)
+            seen.add(collapsed_name)
             entries.append(MappingEntry(line_number, name, phone))
 
     return ParsedMapping(tuple(entries), tuple(problems))

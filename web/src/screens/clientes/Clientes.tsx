@@ -115,7 +115,9 @@ export default function Clientes() {
                   {customer.name}
                   {customer.vip && <span className="vip-insignia">VIP</span>}
                 </span>
-                <span className="lista-clientes__telefono">{formatPhone(customer.phone)}</span>
+                {customer.phone !== null && (
+                  <span className="lista-clientes__telefono">{formatPhone(customer.phone)}</span>
+                )}
                 {customer.standing === 'owes' && customer.owing_since !== null && (
                   <span className="lista-clientes__balance">
                     <span className="monto-deuda">{formatMoney(customer.balance)}</span>
