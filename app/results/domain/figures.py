@@ -120,6 +120,25 @@ class ExpenseBreakdown:
 
 
 @dataclass(frozen=True)
+class PeriodTotals:
+    """One `[start, end]` window's figures, answered by `period_figures.totals_between`
+    over a `scan`ned `Buckets` (ADR-0013 amendment GH-70, ADR-0020): Inicio's panel and
+    Análisis's weeks/months/since-first-record all read the same computation through
+    here, never a second sum of their own."""
+
+    sales: int
+    sales_count: int
+    grams_sold: Grams
+    grams_gifted: Grams
+    cost_of_goods: CostFigure
+    shortfall: AmountWithPending | None
+    expenses: int
+    purchases: int
+    profit: AmountWithPending
+    cash: int
+
+
+@dataclass(frozen=True)
 class AnalysisFigures:
     first_record: date | None
     month: MonthFigures
