@@ -6,8 +6,8 @@
  * `telegramPreview.cases.json` is the one fixture shared with the backend's own
  * `tests/pinned_catalog/test_bold.py` (the plan's subtask brief): the same left-to-right
  * pairing, read here as `(plain, spans)` built back from the preview's segments, so the
- * in-app preview and what Telegram bolds can never drift apart (ADR-0012, catalog;
- * ADR-0013).
+ * in-app preview and what Telegram bolds can never drift apart (ADR-0021;
+ * ADR-0022).
  */
 
 import { expect, test } from 'vitest'

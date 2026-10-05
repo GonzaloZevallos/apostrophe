@@ -5,7 +5,7 @@ date: 2026-10-03
 
 # What Telegram receives: plain text plus UTF-16 bold entities, and a fixed table that keeps no description
 
-The catalog's `**` markers (ADR-0012, catalog) must become real bold in Telegram, and
+The catalog's `**` markers (ADR-0021) must become real bold in Telegram, and
 the 4096-character limit must be checked the way Telegram itself counts, before every
 send. Telegram's own error answers carry a human description that can name a chat, a
 bot or a rate limit; none of that may ever reach a log, a response or an exception
