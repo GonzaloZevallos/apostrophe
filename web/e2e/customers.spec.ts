@@ -6,8 +6,8 @@
  * Depends on `customers-backend`: this branch is rebased onto it (plan, "Order":
  * "Merge only after `customers-backend` is approved: rebase onto it, with the
  * end-to-end spec below green against the real backend"), so this spec runs
- * against the real optional-phone domain, API and migration — confirmed green,
- * `npm --prefix web run e2e`, not skipped.
+ * against the real optional-phone domain, API and migration. What proves it
+ * green is `web-e2e`'s own run, not a claim in this comment.
  *
  * Covers the PRD's own lifecycle for a customer with no number: registered, edited,
  * found by name, chosen for a sale left owing, paid through Registrar cobro, and
