@@ -233,22 +233,11 @@ def test_a_customer_name_present_in_the_mapping_is_fine() -> None:
 
 
 # -- Pendiente with no customer ---------------------------------------------------------
-
-
-def test_pendiente_with_no_customer_and_a_total_above_zero_blocks() -> None:
-    split = _split(
-        varieties=(variety_row(7, "Variedad A"),),
-        ventas=(venta_row(2, payment="Pendiente", customer=None, total=1000),),
-    )
-    checks = Checks(
-        variety_names={"Variedad A": VARIEDAD_A},
-        sales={SheetRef("Ventas", 2): _ok_sale(SheetRef("Ventas", 2), 1000)},
-    )
-
-    plan = build_plan(split, mapping(), checks)
-
-    assert not plan.writable
-    assert any(p.kind == "import.pendiente_without_customer" for p in plan.problems)
+#
+# A `Pendiente` row with no customer and a total above $0 is never reached by this
+# module's own rules: the owner's `sale.owing_without_customer` (`Sale._payment`)
+# refuses it first, through `check.refusal`, before `build_plan` would ever look at
+# `has_customer` itself (the plan's finding: that branch was dead code).
 
 
 def test_pendiente_with_no_customer_and_a_zero_total_does_not_block() -> None:
@@ -664,7 +653,7 @@ def test_a_nonzero_total_keeps_its_method_and_owing() -> None:
     plan = build_plan(split, mapping(), checks)
 
     [sale] = plan.sales
-    assert sale.method == "Efectivo"
+    assert sale.method == "cash"
     assert sale.left_owing is False
     assert plan.counts.payments == 1
 

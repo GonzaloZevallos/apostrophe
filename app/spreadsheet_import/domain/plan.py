@@ -30,6 +30,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import date
 from decimal import Decimal
+from typing import Literal
 
 from app.shared.grams import Grams
 from app.shared.names import collapse_spaces
@@ -48,6 +49,12 @@ from app.spreadsheet_import.domain.rows import (
     VarietyRow,
     VentaRow,
 )
+
+# The sheet's `Pago` word, closed to what sales' port accepts on the spot (ADR-0018's
+# plan's invariant): `method` is typed `OnTheSpotMethod | None` on every hop from here
+# to `write_sale`, never `str`, so a word that slips past `PAGO_WORDS` cannot reach a
+# `PaymentMethod(...)` call downstream.
+OnTheSpotMethod = Literal["cash", "transfer"]
 
 # -- Mirrors of application/ports.py's result shapes (the plan's invariant: domain/
 # -- imports only the standard library, its own package and app.shared). -------------
@@ -90,7 +97,7 @@ class SaleCheckInput:
     gift: bool
     special_total: int | None
     shipping: int
-    method: str | None
+    method: OnTheSpotMethod | None
     left_owing: bool
     sale_date: date
     note: str | None
@@ -178,8 +185,19 @@ def split(parsed: ParsedWorkbook) -> Split:
 
 # -- sale_inputs -------------------------------------------------------------------------
 
-_KNOWN_PAYMENTS = ("Efectivo", "Transferencia")
-_KNOWN_KINDS = ("", "Lista", "Amigo", "Regalo")
+# Ventas' own `Pago` words (Spanish, as the sheet shows them), the import's one public
+# mapping for that cell (the plan's invariant: each accepted sheet word of a fixed-value
+# cell appears in exactly one public mapping table). "Pendiente" maps to the fixed
+# literal `"owing"`, never to a sales enum member: only `OnTheSpotMethod`'s own two
+# values ever cross into sales' port as a `method`.
+PAGO_WORDS: Mapping[str, OnTheSpotMethod | Literal["owing"]] = {
+    "Efectivo": "cash",
+    "Transferencia": "transfer",
+    "Pendiente": "owing",
+}
+
+# Ventas' own `Tipo` words, the import's one public mapping for that cell.
+TIPO_WORDS = ("", "Lista", "Amigo", "Regalo")
 
 
 def sale_inputs(
@@ -206,7 +224,7 @@ def sale_inputs(
             continue
 
         kind = row.kind or ""
-        if kind not in _KNOWN_KINDS:
+        if kind not in TIPO_WORDS:
             results.append(CellProblem(row.ref, "Tipo", "import.kind_unknown"))
             continue
         vip = kind == "Amigo"
@@ -223,13 +241,9 @@ def sale_inputs(
             results.append(CellProblem(row.ref, "Cliente", "import.amigo_without_customer"))
             continue
 
-        if row.payment == "Pendiente":
-            left_owing = True
-            method = None
-        elif row.payment in _KNOWN_PAYMENTS:
-            left_owing = False
-            method = row.payment
-        elif row.payment is None:
+        left_owing: bool
+        method: OnTheSpotMethod | None
+        if row.payment is None:
             # Only a `Regalo` row's `Pago` can be blank on a finished row (the sheet's
             # own formula never requires it for a gift): left not owing, no method,
             # provisionally. The owner's own rule ("a total above $0 needs a payment
@@ -237,8 +251,17 @@ def sale_inputs(
             left_owing = False
             method = None
         else:
-            results.append(CellProblem(row.ref, "Pago", "import.payment_unknown"))
-            continue
+            pago = PAGO_WORDS.get(row.payment)
+            if pago is None:
+                results.append(CellProblem(row.ref, "Pago", "import.payment_unknown"))
+                continue
+            match pago:
+                case "owing":
+                    left_owing = True
+                    method = None
+                case "cash" | "transfer":
+                    left_owing = False
+                    method = pago
 
         results.append(
             SaleCheckInput(
@@ -339,7 +362,7 @@ class PlannedSale:
     customer_phone_key: str | None
     vip: bool
     gift: bool
-    method: str | None
+    method: OnTheSpotMethod | None
     left_owing: bool
     total: int
     sale_date: date
@@ -599,11 +622,9 @@ def build_plan(split: Split, mapping: ParsedMapping, checks: Checks) -> ImportPl
             problems.append(CellProblem(venta.ref, "Ventas", check.refusal.code))
             continue
         assert check.total is not None
-        if sale_result.left_owing and not sale_result.has_customer and check.total > 0:
-            problems.append(
-                CellProblem(venta.ref, "Cliente", "import.pendiente_without_customer")
-            )
-            continue
+        # A `Pendiente` row with no customer is never reached here: the owner's own
+        # `sale.owing_without_customer` rule refuses it first, through `check.refusal`
+        # above (the plan's invariant: no rule is restated outside its owner).
         # A numeric Ventas Total, whole or not, never becomes an `UnfinishedRow`
         # (`split` keeps it only when it is neither text nor missing): it is either
         # an `int` or, for a non-whole sheet float, a `Decimal` (GH-55).

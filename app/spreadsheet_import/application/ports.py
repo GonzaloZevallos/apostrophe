@@ -23,6 +23,7 @@ from typing import Protocol
 
 from app.shared.grams import Grams
 from app.shared.transaction import Transaction
+from app.spreadsheet_import.domain.plan import OnTheSpotMethod
 from app.spreadsheet_import.domain.rows import (
     CatalogRow,
     EntradaRow,
@@ -70,7 +71,7 @@ class SaleCheckInput:
     gift: bool
     special_total: int | None
     shipping: int
-    method: str | None
+    method: OnTheSpotMethod | None
     left_owing: bool
     sale_date: date
     note: str | None
