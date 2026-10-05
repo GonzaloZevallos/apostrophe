@@ -32,6 +32,7 @@ import { copyText } from '../clipboard'
 import { formatDateShort } from '../format/dates'
 import { logOut } from '../session'
 import CambiarContrasena from './CambiarContrasena'
+import { MORE } from '../routes'
 
 export const RENAME_SUCCESS = 'Negocio renombrado'
 export const PASSWORD_CHANGED_SUCCESS = 'Contraseña cambiada · cerramos tus otras sesiones'
@@ -186,7 +187,7 @@ export default function Negocio() {
     <main className="pantalla">
       <div className="cuerpo">
         <div className="encabezado__fila">
-          <Link to="/mas" aria-label="Volver" className="encabezado__volver">
+          <Link to={MORE} aria-label="Volver" className="encabezado__volver">
             ‹
           </Link>
           <span className="encabezado__titulo">Negocio</span>

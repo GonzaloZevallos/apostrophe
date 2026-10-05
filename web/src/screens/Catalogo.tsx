@@ -30,6 +30,7 @@ import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGeneri
 import SinConexion from '../components/SinConexion'
 import PinnedCatalogBot from './PinnedCatalogBot'
 import { telegramPreview } from './telegramPreview'
+import { MORE } from '../routes'
 
 export const CATALOG_SAVED = 'Catálogo guardado'
 export const CATALOG_COPIED = 'Catálogo copiado'
@@ -279,7 +280,7 @@ export default function Catalogo() {
     <main className="pantalla">
       <div className="cuerpo">
         <div className="encabezado__fila">
-          <Link to="/mas" aria-label="Volver" className="encabezado__volver">
+          <Link to={MORE} aria-label="Volver" className="encabezado__volver">
             ‹
           </Link>
           <span className="encabezado__titulo">Catálogo</span>

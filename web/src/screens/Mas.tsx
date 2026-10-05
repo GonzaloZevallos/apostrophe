@@ -9,6 +9,7 @@
  */
 
 import { Link } from 'react-router'
+import { ANALYSIS, EXPENSES } from '../routes'
 
 interface Item {
   to: string
@@ -17,10 +18,10 @@ interface Item {
 }
 
 const ITEMS: Item[] = [
-  { to: '/gastos', label: 'Gastos', detail: 'Por mes y por categoría' },
+  { to: EXPENSES, label: 'Gastos', detail: 'Por mes y por categoría' },
   { to: '/variedades', label: 'Variedades', detail: 'Precios y avisos de stock bajo' },
   { to: '/catalogo', label: 'Catálogo', detail: 'El mensaje de hoy, listo para copiar' },
-  { to: '/analisis', label: 'Análisis', detail: 'Variedades, semanas, meses y días' },
+  { to: ANALYSIS, label: 'Análisis', detail: 'Variedades, semanas, meses y días' },
   { to: '/negocio', label: 'Negocio' },
 ]
 
