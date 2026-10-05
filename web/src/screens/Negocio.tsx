@@ -31,8 +31,10 @@ import { kindOf, resolveOverride, type RefusalCode } from '../api/refusals'
 import { copyText } from '../clipboard'
 import { formatDateShort } from '../format/dates'
 import { logOut } from '../session'
+import CambiarContrasena from './CambiarContrasena'
 
 export const RENAME_SUCCESS = 'Negocio renombrado'
+export const PASSWORD_CHANGED_SUCCESS = 'Contraseña cambiada · cerramos tus otras sesiones'
 export const BUSINESS_NAME_INVALID_MESSAGE = 'Ponele un nombre al negocio, sin espacios de más'
 export const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
 export { ERROR_GENERICO_MENSAJE as RETRY_MESSAGE }
@@ -77,6 +79,9 @@ export default function Negocio() {
 
   const [loggingOut, setLoggingOut] = useState(false)
   const [logoutOffline, setLogoutOffline] = useState(false)
+
+  const [changingPassword, setChangingPassword] = useState(false)
+  const [passwordChanged, setPasswordChanged] = useState(false)
 
   if (isPending) return <main className="pantalla" />
 
@@ -195,6 +200,14 @@ export default function Negocio() {
           </div>
         )}
 
+        {passwordChanged && (
+          <div className="aviso-flotante" role="status">
+            <div className="aviso-exito">
+              <span className="aviso-exito__texto">{PASSWORD_CHANGED_SUCCESS}</span>
+            </div>
+          </div>
+        )}
+
         <form className="formulario" onSubmit={onRename}>
           <label className="campo">
             <span className="campo__rotulo">Nombre del negocio</span>
@@ -254,11 +267,23 @@ export default function Negocio() {
           {inviteError && <ErrorGenerico />}
         </div>
 
+        <button className="boton" type="button" onClick={() => setChangingPassword(true)}>
+          Cambiar contraseña
+        </button>
         <button className="boton" type="button" onClick={onLogOut} disabled={loggingOut}>
           Cerrar sesión
         </button>
         {logoutOffline && <SinConexion />}
       </div>
+      {changingPassword && (
+        <CambiarContrasena
+          onClose={() => setChangingPassword(false)}
+          onSaved={() => {
+            setChangingPassword(false)
+            setPasswordChanged(true)
+          }}
+        />
+      )}
     </main>
   )
 }

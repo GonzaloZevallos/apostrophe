@@ -3,10 +3,13 @@ import { beforeEach, describe, expect, test, vi } from 'vitest'
 import * as client from './api/client'
 import {
   acceptInvitation,
+  changePassword,
   handleUnauthorized,
   login,
   logOut,
   openInvitation,
+  openResetLink,
+  submitReset,
   type SessionActions,
 } from './session'
 
@@ -126,8 +129,56 @@ describe('handleUnauthorized', () => {
 
     handleUnauthorized(session, '/entrar')
     handleUnauthorized(session, '/invitation/tok123')
+    handleUnauthorized(session, '/reset/tok123')
 
     expect(session.queryClient.getQueryData(['me'])).toEqual({ businessName: 'x' })
     expect(session.navigate).not.toHaveBeenCalled()
+  })
+})
+
+describe('changePassword', () => {
+  test('posts to /auth/password and never returns the response body', async () => {
+    const result = await changePassword('vieja123456', 'nueva123456')
+
+    expect(client.post).toHaveBeenCalledWith('/auth/password', {
+      current_password: 'vieja123456',
+      new_password: 'nueva123456',
+    })
+    expect(result).toBeUndefined()
+  })
+})
+
+describe('openResetLink', () => {
+  test('logs out, then clears the cache, then looks the link up — in that order', async () => {
+    const session = actions()
+    const order: string[] = []
+    vi.mocked(client.post).mockImplementation(async () => {
+      order.push('logout')
+    })
+    const clearSpy = vi.spyOn(session.queryClient, 'clear').mockImplementation(() => {
+      order.push('clear')
+    })
+    vi.mocked(client.get).mockImplementation(async () => {
+      order.push('lookup')
+    })
+
+    await openResetLink(session, 'tok123')
+
+    expect(order).toEqual(['logout', 'clear', 'lookup'])
+    expect(client.post).toHaveBeenCalledWith('/auth/logout')
+    expect(client.get).toHaveBeenCalledWith('/reset-links/tok123')
+    clearSpy.mockRestore()
+  })
+})
+
+describe('submitReset', () => {
+  test('posts the new password and lands on Inicio, cache cleared', async () => {
+    const session = actions()
+
+    await submitReset(session, 'tok123', 'nueva123456')
+
+    expect(client.post).toHaveBeenCalledWith('/reset-links/tok123', { new_password: 'nueva123456' })
+    expect(session.queryClient.getQueryData(['me'])).toBeUndefined()
+    expect(session.navigate).toHaveBeenCalledWith('/')
   })
 })

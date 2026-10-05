@@ -19,6 +19,7 @@ from app.business_removal.domain.exclusions import (
     SKIPPED_TABLES,
     WITHHELD_TABLES,
 )
+from app.business_removal.domain.labels import tables_written
 from app.business_removal.domain.schema import ColumnType, Schema, Table
 
 BUSINESS_ID_COLUMN = "business_id"
@@ -89,15 +90,16 @@ def looks_secret(column_name: str) -> bool:
 
 def secret_columns(schema: Schema) -> tuple[tuple[str, str], ...]:
     """Columns that look like a secret, are not already named in `EXCLUDED_COLUMNS`,
-    and whose table is not withheld whole already. A non-empty result means the
+    and belong to a table whose rows actually land in the export file
+    (`labels.tables_written`, defined once there). A non-empty result means the
     command must refuse: a new secret column needs its own exclusion, named by hand,
     before the removal can run again."""
+    written = set(tables_written(schema))
     found = [
-        (table.name, column.name)
-        for table in schema.tables
-        if table.name not in SKIPPED_TABLES and table.name not in WITHHELD_TABLES
-        for column in table.columns
-        if looks_secret(column.name) and (table.name, column.name) not in EXCLUDED_COLUMNS
+        (name, column.name)
+        for name in written
+        for column in schema.table(name).columns
+        if looks_secret(column.name) and (name, column.name) not in EXCLUDED_COLUMNS
     ]
     return tuple(sorted(found))
 

@@ -20,7 +20,8 @@ from sqlalchemy.orm import Session
 from app.accounts.adapters.sql_accounts import SqlAccounts
 from app.accounts.application.invitations import invite_partner
 from app.business_removal.adapters.sql_schema_rows import SqlSchemaRows
-from app.business_removal.domain.classification import delete_order, owned_tables
+from app.business_removal.domain.classification import delete_order
+from app.business_removal.domain.labels import exported_tables
 from app.db import make_engine
 from app.main import create_app
 from app.settings import Settings
@@ -219,9 +220,7 @@ def test_delete_business_empties_every_owned_table_and_leaves_the_other_business
         business = rows.business_of("leaving@example.com")
         assert business is not None
         order = delete_order(schema)
-        exported_table_names = sorted(
-            table.name for table in owned_tables(schema) if table.name != "invitation"
-        )
+        exported_table_names = sorted(exported_tables(schema))
 
         before = _table_counts(file_engine, [*exported_table_names, "invitation", "login_guard"])
         staying_before = _counts_for_business(file_engine, exported_table_names, staying_id)
@@ -229,7 +228,7 @@ def test_delete_business_empties_every_owned_table_and_leaves_the_other_business
         deleted = rows.delete_business(business.id, order)
         session.commit()
 
-    assert deleted.invitation_count >= 1
+    assert deleted.withheld_counts["invitation"] >= 1
     assert deleted.login_guard_count == 1
     for name in exported_table_names:
         assert deleted.tables[name] or name == "business"
@@ -241,7 +240,7 @@ def test_delete_business_empties_every_owned_table_and_leaves_the_other_business
         # Every row deleted belonged to the leaving business; the staying business's
         # rows of the same table are exactly what is left (criterion 6: untouched).
         assert before[name] - after[name] == len(deleted.tables[name])
-    assert before["invitation"] - after["invitation"] == deleted.invitation_count
+    assert before["invitation"] - after["invitation"] == deleted.withheld_counts["invitation"]
     assert before["login_guard"] - after["login_guard"] == deleted.login_guard_count
     # The staying business's own rows, counted by its own id, are untouched exactly.
     assert staying_before == staying_after
