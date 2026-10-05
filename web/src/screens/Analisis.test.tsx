@@ -164,6 +164,35 @@ test('the computer table carries headers, the margin stack, pending marks and th
   const giftMarginCell = giftRow.querySelector('.analisis__celda-margen') as HTMLElement
   expect(within(giftMarginCell).queryByText(/%$/)).toBeNull()
 
+  // "Flor B" (cost $ 9.000 with 2,5 g pending, margin $ 6.000/40% with the
+  // same 2,5 g pending): the table's own Costo and Margen cells each carry
+  // "y 2,5 g sin costo" beside their amount. `pendingSuffix` renders inside
+  // the same element as the figure (Analisis.tsx), so this matches the
+  // cell's own `textContent` rather than a standalone "y … g sin costo" node.
+  const headerNames = within(varietyTable)
+    .getAllByRole('columnheader')
+    .map((header) => header.textContent)
+  const costoIndex = headerNames.indexOf('Costo')
+  const margenIndex = headerNames.indexOf('Margen')
+  expect(costoIndex).toBeGreaterThanOrEqual(0)
+  expect(margenIndex).toBeGreaterThanOrEqual(0)
+
+  const [florBCell] = within(varietyTable).getAllByText('Flor B')
+  expect(florBCell).not.toBeUndefined()
+  const florBRow = (florBCell as HTMLElement).closest('tr') as HTMLElement
+  const florBCells = within(florBRow).getAllByRole('cell')
+  expect(florBCells[costoIndex]).toHaveTextContent('y 2,5 g sin costo')
+  expect(florBCells[margenIndex]).toHaveTextContent('y 2,5 g sin costo')
+
+  // In that same Margen cell, the amount sits above (before, in source order)
+  // the percentage: the first child span holds "$ 6.000…", the second "40%".
+  const florBMarginCell = florBCells[margenIndex] as HTMLElement
+  const marginSpans = florBMarginCell.querySelectorAll('span')
+  expect(marginSpans).toHaveLength(2)
+  expect(marginSpans[0]).toHaveTextContent('$ 6.000')
+  expect(marginSpans[0]).toHaveTextContent('y 2,5 g sin costo')
+  expect(marginSpans[1]).toHaveTextContent('40%')
+
   const weekTables = (await screen.findAllByText('Semana')).map((node) => node.closest('table'))
   const weekTable = weekTables.find((t) => t !== null) as HTMLElement
   const rows = within(weekTable).getAllByRole('row').slice(1) // drop the header row
