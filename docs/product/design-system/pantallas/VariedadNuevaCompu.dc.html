@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Nueva variedad en compu</title>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body { margin: 0 }
+a { color: #1B4FA8 } a:hover { color: #231E18 }
+</style>
+</helmet>
+
+<div style="width: 1280px; height: 920px; box-sizing: border-box; background: #FCFBF8; border: 1px solid #EBE5DA; border-radius: 12px; position: relative; display: flex; overflow: hidden; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: #231E18">
+  <div style="width: 256px; border-right: 1px solid #EBE5DA; opacity: 0.4; padding: 26px 16px">
+    <span style="display: block; font-size: 15px; font-weight: 600">apostrophe’</span>
+  </div>
+  <div style="flex: 1; opacity: 0.4; padding: 28px 32px">
+    <span style="font-size: 28px; font-weight: 600">Variedades</span>
+  </div>
+  <div style="position: absolute; inset: 0; background: rgba(35,30,24,0.28)"></div>
+  <div style="position: absolute; top: 80px; left: 50%; transform: translateX(-50%); width: 440px; background: #FCFBF8; border-radius: 24px; box-shadow: 0 24px 48px rgba(35,30,24,0.22); overflow: hidden">
+    <div style="padding: 22px 24px 18px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #EBE5DA">
+      <span style="flex: 1; font-size: 19px; font-weight: 600">Nueva variedad</span>
+      <span style="font-size: 15px; font-weight: 600; color: #7A7065">Cerrar</span>
+    </div>
+    <div style="padding: 20px 24px; display: flex; flex-direction: column; gap: 14px">
+      <label style="display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 14px; color: #7A7065">Nombre</span>
+        <input type="text" value="" placeholder="Por ejemplo, White Widow" style="height: 52px; box-sizing: border-box; padding: 0 16px; border-radius: 16px; border: 0; background: #F2EEE6; color: #9A9085; font: inherit; font-size: 17px">
+        <span style="font-size: 13px; color: #7A7065">Hasta 60 caracteres · no puede repetir el nombre de otra variedad</span>
+      </label>
+      <span style="display: flex; align-items: center; justify-content: center; height: 50px; border-radius: 999px; background: #231E18; color: #FCFBF8; font-size: 15px; font-weight: 600">Agregá la variedad</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
