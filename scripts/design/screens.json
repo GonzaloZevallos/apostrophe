@@ -1,5 +1,5 @@
 {
-  "_": "Each design screen and how to reach the same state in the built app (agentic-system ADR-0040). Whoever rebuilds a screen keeps its entry true. route: null means the screen is not built yet. {name} placeholders come from the sample app's facts. Steps: click (exact text), fill (label + value, which takes {email} and the ids too), wait (text). Main and Componentes are the design system itself, not screens, so they have no entry.",
+  "_": "Each design screen and how to reach the same state in the built app (agentic-system ADR-0040). Whoever rebuilds a screen keeps its entry true. route: null means the screen is not built yet. {name} placeholders come from the sample app's facts. Steps: click (exact text), fill (label + value, which takes {email} and the ids too), wait (text). tema: 'oscuro' forces the dark theme on the built capture via data-tema, the only value the app recognises (the system's own color scheme never picks it; both captures always run with colorScheme: 'light'). Main and Componentes are the design system itself, not screens, so they have no entry.",
   "screens": [
     { "screen": "Entrar", "route": "/entrar", "signed_out": true,
       "steps": [
@@ -10,7 +10,7 @@
     { "screen": "NegocioNuevo", "route": "/invitation/{new_business_token}", "signed_out": true },
     { "screen": "Invitacion", "route": "/invitation/{join_token}", "signed_out": true },
     { "screen": "Inicio", "route": "/", "steps": [{ "click": "Semana" }] },
-    { "screen": "InicioOscuro", "route": "/", "color_scheme": "dark", "steps": [{ "click": "Semana" }] },
+    { "screen": "InicioOscuro", "route": "/", "tema": "oscuro", "steps": [{ "click": "Semana" }] },
     { "screen": "InicioCompu", "route": "/", "viewport": [1280, 920], "steps": [{ "click": "Semana" }] },
     { "screen": "Ventas", "route": "/ventas", "steps": [{ "click": "Semana" }] },
     { "screen": "VentasCompu", "route": "/ventas", "viewport": [1280, 920], "steps": [{ "click": "Semana" }] },
