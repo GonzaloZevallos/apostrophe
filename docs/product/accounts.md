@@ -25,6 +25,8 @@ These two refine the "log in once and stay in" job above. The operator's command
 
 **When** I run my business from my phone (handing over an order, answering a customer on Telegram, paying for something, or catching up at the end of the day), **I want to** get in with the link I was sent and keep my customers, my prices, my stock and my expenses up to date from the phone, **so I can** stop keeping them in the spreadsheet and have real data in place when sales arrive. The computer is the same job on a bigger screen.
 
+**When** I open the app on my phone or computer, whatever my device's light or dark setting, **I want** to see it as it was designed ("Papel y azul": warm paper background, brown-black ink, one blue), **so I** always work in the one look that was designed and checked for reading figures, states and amounts, and the dark theme shows only once I choose it (that choice comes with Más and Negocio's screens).
+
 **When** a friend stops using the app, or asks to be taken out of it, **I want** to hand them everything the app holds of their business in one file and then remove that business from the installation completely, **so that** they keep their books and their customers' names, phone numbers and balances are no longer held by me or by anyone else on the installation. A business opened by mistake is covered by the same command. The business goes as a whole, every user included. The operator has agreed with every user of the business beforehand; the command does not check it.
 
 **When** a seller needs the app away from my home network, **I want** the installation published on the internet over HTTPS, with every business's data copied off the server continuously, encrypted, and proven restorable, **so I can** let sellers work from anywhere without one lost server, disk or leaked backup costing anyone their books or exposing their customers.
@@ -40,7 +42,7 @@ Success criteria:
 4. No `curl` at any point. From the phone alone, a seller can do everything the backend does, starting with opening or joining a business from the invitation link.
 5. It feels like a phone app.
    - It sits on the home screen with its own name and icon. On iOS it installs over the home network. On Android it is a home-screen shortcut there, and a full install on the published installation with TLS.
-   - It follows the phone's light or dark setting.
+   - It opens in the light theme whatever the phone's setting; dark only when chosen.
    - It says "Sin conexión" when the network drops.
    - No state is told by color alone (blue ↔ amber, never green ↔ red).
 6. Businesses stay invisible to each other in the browser too.
@@ -65,6 +67,13 @@ Success criteria:
 17. **Rebuildable from the repository.**
     - `deploy/README.md` documents every step to stand the installation up from zero.
     - No secret is in the repository.
+
+Success criteria, the theme:
+
+23. **Light whatever the system says**: the app opens in the light theme on every device and every screen, whether the system is set to light or dark. With the system in dark, the page background is `--papel` (#fcfbf8).
+24. **Dark only on request**: the dark theme (`InicioOscuro`) shows only when `data-tema="oscuro"` is set on `<html>`. Nothing in the shipped app sets it yet; the switch comes with Más and Negocio's screens.
+25. **The themes themselves don't change**: both keep the same tokens and values; only what picks the theme changed. Every rule about state (no state told by color alone, blue ↔ amber) holds in both.
+26. **One rule, written the same everywhere**: the comment at the top of `web/src/styles/tokens.css`, `docs/product/design-system/tokens.css`, the design-system README and this file all state the same rule.
 
 Success criteria, changing and resetting a password:
 
@@ -249,7 +258,12 @@ Success criteria, removing a business:
   - the app shows no banner or explanation of the difference.
 - **Install on the published installation**, over Render's TLS: Android's own install prompt is offered when the browser makes it available. The manifest and service worker already in place need no further work for it.
 - **No network**: when a request fails because the network dropped, the open app shows "Sin conexión" on any origin. This does not rely on the service worker.
-- **Theme**: light and dark follow the phone. The font is self-hosted.
+- **Theme**: the app opens in the light theme whatever the phone or computer is set to. The dark theme applies only when it is chosen (`data-tema="oscuro"`); where a person chooses it comes with Más and Negocio's screens.
+  - The rule is one: no attribute on `<html>` means light, `data-tema="oscuro"` means dark. There is no exception per screen, route or session, and the system's light or dark setting picks nothing. `oscuro` is the only recognised value.
+  - Native controls and scrollbars follow the app's theme, not the system's: light with no attribute, dark with `data-tema="oscuro"`.
+  - Both themes keep the same tokens and values, and every state rule holds in both.
+  - The installed app's chrome (`theme-color`, the manifest's colors) is static and matches the light theme.
+  - The font is self-hosted.
 - **Language and formats**: every word on screen in Rioplatense Spanish with vos. Money `$ 11.000`, a negative amount `−$ 4.500`, grams `3,5 g`, dates `dd/mm`. The catalog text keeps its own Telegram format (`$11.000`, catalog.md).
 - **Getting in** (`Entrar`, `NegocioNuevo`, `Invitacion`, the reset screen):
   - Login shows a fixed hint under the button that five failed attempts lock the email for 15 minutes. It shows no count of attempts left.
@@ -356,6 +370,13 @@ Success criteria, removing a business:
   - both themes render from the tokens;
   - an offline check shows "Sin conexión";
   - no state is told by color alone.
+- **Theme (criteria 23–26)**:
+  - light wins: an e2e run with the system emulated in dark (`emulateMedia({ colorScheme: 'dark' })`) and no attribute reads the page background as `--papel` (#fcfbf8);
+  - dark on request: an e2e run with `data-tema="oscuro"` on `<html>`, whatever the system setting, reads the page background as the dark theme's own value from `tokens.css`;
+  - no test or fixture reaches the dark theme by emulating a dark system;
+  - no token value changed;
+  - native controls and scrollbars are checked by eye on a dark-system device, light with no attribute and dark with it; no fast test reads them;
+  - the four places that state the rule say the same, and none names `claro`.
 - **Nothing invented (criterion 7)**:
   - the bar shows exactly Inicio, Ventas, Clientes, Stock and Más, plus the "Nueva venta" button;
   - Más shows exactly Gastos, Variedades, Catálogo and Negocio;
@@ -446,6 +467,7 @@ Success criteria, removing a business:
 - Blocking or marking a rerun after a commit whose outcome is unknown; the dry run is the check.
 - Roles within a business.
 - Offline use; an install walkthrough on iOS or Android.
+- A control to choose the theme, or a "follow the system" option: they come with Más and Negocio's screens (#49).
 - TLS on the home network, including local certificates: the published installation gets TLS from Render (ADR-0016).
 - Live updates between partners: a list refreshes when it is opened or after a save, not when the other partner changes something.
 - The Análisis entry: it comes with its own task.

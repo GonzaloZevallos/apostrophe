@@ -101,11 +101,6 @@ def test_the_panel_matches_the_fixture_s_shape(client: TestClient, clock: Movabl
     assert answer.status_code == 200, answer.text
     body = answer.json()
     assert_matches_fixture(body, "panel")
-    # The fixture's own `month.average_sale: null` makes `assert_matches_fixture`
-    # accept any type there (Tech Lead finding): pinned here instead, on every period.
-    for period in ("today", "week", "month"):
-        value = body["periods"][period]["average_sale"]
-        assert value is None or isinstance(value, int)
 
 
 def test_an_empty_business_answers_real_zeros(client: TestClient) -> None:

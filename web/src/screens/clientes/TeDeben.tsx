@@ -12,6 +12,7 @@ import { keys } from '../../api/keys'
 import { getDebtors } from '../../api/payments'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
+import { salesCount } from '../../format/counts'
 import { formatDateShort } from '../../format/dates'
 import { formatMoney } from '../../format/money'
 
@@ -38,7 +39,7 @@ export default function TeDeben() {
           <>
             <div className="ventas__resumen">
               <span className="cifra-xl">{formatMoney(data.total_owed)}</span>
-              <span className="rotulo">{`${data.sales_owing_count} ventas debiendo`}</span>
+              <span className="rotulo">{`${salesCount(data.sales_owing_count)} debiendo`}</span>
             </div>
 
             {data.debtors.length === 0 && <span className="campo__rotulo">{EMPTY_LIST}</span>}

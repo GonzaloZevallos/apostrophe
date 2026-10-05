@@ -29,6 +29,14 @@ if (!values.facts || !values.out) {
 }
 const facts = JSON.parse(readFileSync(values.facts, 'utf-8'))
 const { screens } = JSON.parse(readFileSync(join(HERE, 'screens.json'), 'utf-8'))
+// The app picks its theme from `data-tema` alone, never from the system (plan,
+// subtask `light-by-default`): a stray `color_scheme` entry would silently emulate
+// a dark system again, and a `tema` other than `'oscuro'` names a value the app
+// does not recognise.
+for (const s of screens) {
+  if ('color_scheme' in s) throw new Error(`${s.screen}: color_scheme is retired, use tema: 'oscuro'`)
+  if ('tema' in s && s.tema !== 'oscuro') throw new Error(`${s.screen}: unknown tema ${JSON.stringify(s.tema)}`)
+}
 const only = values.only ? new Set(values.only.split(',')) : null
 const out = resolve(values.out)
 mkdirSync(out, { recursive: true })
@@ -72,6 +80,18 @@ async function captureDesign(browser, s, options) {
 // wider than its viewport, goes into `notes`.
 async function captureBuilt(browser, s, options, notes) {
   const context = await browser.newContext(options)
+  if (s.tema) {
+    // `document.documentElement` does not exist yet when this init script
+    // runs (proven against this build), so it waits for the parser to
+    // create it before setting the attribute.
+    await context.addInitScript((tema) => {
+      const apply = () => {
+        document.documentElement.dataset.tema = tema
+      }
+      if (document.documentElement) apply()
+      else document.addEventListener('DOMContentLoaded', apply, { once: true })
+    }, s.tema)
+  }
   if (!s.signed_out) {
     const login = await context.request.post('/auth/login', {
       data: { email: facts.email, password: facts.password },
@@ -126,7 +146,7 @@ try {
     const options = {
       viewport: { width, height },
       deviceScaleFactor: 2,
-      colorScheme: s.color_scheme ?? 'light',
+      colorScheme: 'light',
       baseURL: facts.url,
     }
     const notes = []

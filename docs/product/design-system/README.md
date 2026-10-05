@@ -11,7 +11,7 @@ Las pantallas, como HTML estático para leer sin el lienzo, están en
 | Archivo | Qué es |
 | --- | --- |
 | `tokens.ts` | Paleta clara y oscura, escala tipográfica, espacios, radios, medidas. |
-| `tokens.css` | Los mismos valores como variables CSS, con tema automático y forzado. |
+| `tokens.css` | Los mismos valores como variables CSS. Sin atributo en `<html>` el tema es el de luz (Papel y azul); `data-tema="oscuro"` lo pasa a oscuro. El sistema operativo no elige el tema. |
 | `formato.ts` | Plata, gramos, fechas, semana y teléfonos. Las reglas del enunciado. |
 | `dominio.ts` | Tipos del dominio: negocio, variedades, precios, clientes, ventas, stock, gastos. |
 | `precios.ts` | Motor de precios, totales, validación de venta e imputación de cobros. |

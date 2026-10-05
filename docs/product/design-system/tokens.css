@@ -1,7 +1,7 @@
 /* apostrophe · tokens como variables CSS
  *
- * El tema sigue al sistema operativo (prefers-color-scheme) y se puede forzar
- * con data-tema="claro" | "oscuro" en <html>.
+ * Sin atributo en `<html>` el tema es el de luz (Papel y azul); `data-tema="oscuro"`
+ * lo pasa a oscuro. El sistema operativo no elige el tema.
  *
  * Los valores son los mismos de tokens.ts. Si cambiás uno, cambialo en los dos
  * o generá este archivo desde variablesCss().
@@ -10,6 +10,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
 :root {
+  color-scheme: light;
+
   --papel: #fcfbf8;
   --superficie: #f2eee6;
   --tinta: #231e18;
@@ -54,33 +56,9 @@
   --alto-boton: 56px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-tema='claro']) {
-    --papel: #10131a;
-    --superficie: #1a1f28;
-    --tinta: #e9edf2;
-    --tinta2: #8a93a1;
-    --tenue: #5e6872;
-    --linea: #262c36;
-
-    --acento: #8ab0ff;
-    --acento-suave: #1b2440;
-
-    --deuda: #edb05a;
-    --deuda-fondo: #2c2113;
-    --deuda2: #c08e4e;
-    --deuda-linea: #3a2c19;
-
-    --critico: #f5c77a;
-    --critico-texto: #231708;
-
-    --boton: #e9edf2;
-    --boton-texto: #10131a;
-    --nav-inactivo: #6e7a73;
-  }
-}
-
 :root[data-tema='oscuro'] {
+  color-scheme: dark;
+
   --papel: #10131a;
   --superficie: #1a1f28;
   --tinta: #e9edf2;

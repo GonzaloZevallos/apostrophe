@@ -80,6 +80,7 @@ Success criteria:
   - It lists only customers whose balance is above $0, by owing since (oldest first), ties by name.
   - Each row shows the balance and "desde dd/mm", and opens the customer's card.
   - The total owed and the count of sales still owing head the view.
+  - The count reads "1 venta debiendo" for one sale still owing, and "N ventas debiendo" for two or more (e.g. "4 ventas debiendo"). This is the same singular and plural rule Inicio's Te deben block uses for the same count (results.md).
   - No search, no new tab and no entry in Más.
 
 ### On screen: the customer's card (`ClienteFicha`)
@@ -145,7 +146,7 @@ Success criteria:
   - working out again after a late record or a delete of a sale or a payment.
 - **Balance identity (criterion 3)**: balance = bought and unpaid − payments, to the peso, after every create and delete of sales and payments.
 - **Credit**: after a settled sale is deleted, the credit is shown as "A favor", kept out of the header count, "Te deben", the total owed and the count, and applied to the next sale left owing.
-- **Who-owes totals (criterion 4)**: the total owed, the count of sales still owing, the Clientes header and the Ventas mark equal a direct computation over sales and payments. 0 differences.
+- **Who-owes totals (criterion 4)**: the total owed, the count of sales still owing, the Clientes header and the Ventas mark equal a direct computation over sales and payments. 0 differences. Te deben's count line reads "1 venta debiendo" for one sale and "N ventas debiendo" for two or more, both covered by the front tests.
 - **Account (criterion 5)**: the rows and running balance match the settlement for every case of the matrix.
 - **Dates kept (criterion 6)**: after any recompute, every payment's date, amount and method are unchanged.
 - **Preview = stored (criteria 2, 8)**: Registrar cobro's preview matches the settlement after saving. 0 differences.
@@ -156,7 +157,7 @@ Success criteria:
   - settles everything with "Todo";
   - records a partial payment;
   - deletes a payment;
-  - opens "Te deben".
+  - opens "Te deben" and checks its count line.
 
 ## Out of scope
 

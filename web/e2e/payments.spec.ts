@@ -153,7 +153,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await page.getByRole('link', { name: /te deben \$ 8\.000/ }).click()
   await expect(page).toHaveURL(/\/clientes\/deben$/)
   await expect(page.locator('.cifra-xl')).toHaveText('$ 8.000')
-  await expect(page.getByText('1 ventas debiendo')).toBeVisible()
+  await expect(page.getByText('1 venta debiendo')).toBeVisible()
   await page.getByRole('link', { name: 'Carla Pérez' }).click()
   await expect(page).toHaveURL(/\/clientes\/\d+$/)
   await expect(page.getByText('Te debe $ 8.000')).toBeVisible()
@@ -188,4 +188,33 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   }))
   expect(storage).toEqual({ local: 0, session: 0 })
   expect(consoleMessages).toEqual([])
+
+  // --- The plural form: two more sales left owing bring the count to "2 ventas
+  // debiendo", and Te deben's header total is their sum (payments.md, Metrics
+  // "Who-owes totals" and "No curl"). ---
+  await page.goto('/clientes')
+  await page.getByRole('link', { name: 'Carla Pérez' }).click()
+  await page.getByRole('link', { name: 'Nueva venta a Carla Pérez' }).click()
+  await expect(page).toHaveURL(/\/ventas\/nueva$/)
+  await fillSaleLine(page, 1, { variety: 'Rosa', grams: '2' })
+  await page.getByRole('radio', { name: 'Debiendo' }).check()
+  await page.getByRole('button', { name: 'Guardá la venta' }).click()
+  await expect(page).toHaveURL(/\/ventas\/\d+$/)
+  await expect(page.getByText('Venta guardada')).toBeVisible()
+
+  await page.goto('/clientes')
+  await page.getByRole('link', { name: 'Carla Pérez' }).click()
+  await page.getByRole('link', { name: 'Nueva venta a Carla Pérez' }).click()
+  await expect(page).toHaveURL(/\/ventas\/nueva$/)
+  await fillSaleLine(page, 1, { variety: 'Rosa', grams: '3' })
+  await page.getByRole('radio', { name: 'Debiendo' }).check()
+  await page.getByRole('button', { name: 'Guardá la venta' }).click()
+  await expect(page).toHaveURL(/\/ventas\/\d+$/)
+  await expect(page.getByText('Venta guardada')).toBeVisible()
+
+  await page.goto('/clientes')
+  await page.getByRole('link', { name: /te deben \$ 5\.000/ }).click()
+  await expect(page).toHaveURL(/\/clientes\/deben$/)
+  await expect(page.locator('.cifra-xl')).toHaveText('$ 5.000')
+  await expect(page.getByText('2 ventas debiendo')).toBeVisible()
 })
