@@ -1305,14 +1305,14 @@
 .analisis__dias {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--espacio-md);
 }
 
 .analisis__variedad {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 10px 0;
+  gap: var(--espacio-xs);
+  padding: var(--espacio-sm) 0;
   border-bottom: 1px solid var(--linea);
 }
 
@@ -1344,7 +1344,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: var(--espacio-sm);
   font-size: 14px;
 }
 
@@ -1353,14 +1353,14 @@
   flex: 1;
   min-width: 48px;
   height: 10px;
-  border-radius: 999px;
+  border-radius: var(--radio-pildora);
   background: var(--linea);
 }
 
 .analisis__barra-llena {
   display: block;
   height: 10px;
-  border-radius: 999px;
+  border-radius: var(--radio-pildora);
   background: var(--acento);
 }
 
@@ -1372,6 +1372,72 @@
 .analisis__gastos {
   display: flex;
   flex-direction: column;
+}
+
+/* `AnalisisCompu.dc.html`'s own tables (variety, week and month): hidden below
+   900px, where the cards above carry the same rows instead — only one of the two
+   is ever on screen, the same switch `.bar-inferior`/`.riel-lateral` already make,
+   never both at once (PM: "the computer gets the phone's cards" was the bug). */
+.analisis__tabla-contenedor {
+  display: none;
+}
+
+.analisis__tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+
+.analisis__tabla th,
+.analisis__tabla td {
+  padding: var(--espacio-sm) 0;
+  border-bottom: 1px solid var(--linea);
+  text-align: left;
+  font-weight: 400;
+}
+
+.analisis__tabla th {
+  color: var(--tinta2);
+  font-size: 13px;
+}
+
+.analisis__tabla td {
+  color: var(--tinta2);
+}
+
+.analisis__tabla td:first-child {
+  color: inherit;
+  font-weight: 600;
+}
+
+.analisis__num {
+  text-align: right;
+}
+
+/* The current week — always the table's last row, `weeks[]` being "oldest first,
+   at most 8", the current week included (plan): no date math here, just a position
+   in the array the API already ordered. A row can carry this shading and the
+   "mejor" tag at once. */
+.analisis__fila-actual {
+  background: var(--superficie);
+}
+
+.analisis__celda-margen {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.analisis__celda-margen span:first-child {
+  font-weight: 600;
+  color: var(--acento);
+}
+
+.analisis__etiqueta-mejor {
+  margin-left: var(--espacio-xs);
+  font-weight: 600;
+  color: var(--acento);
 }
 
 @media (min-width: 900px) {
@@ -1408,5 +1474,15 @@
   .analisis__aside {
     flex: 1 1 300px;
     max-width: 380px;
+  }
+
+  .analisis__variedades,
+  .analisis__semanas,
+  .analisis__meses {
+    display: none;
+  }
+
+  .analisis__tabla-contenedor {
+    display: block;
   }
 }

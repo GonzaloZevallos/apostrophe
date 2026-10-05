@@ -16,7 +16,9 @@ import analysisFixture from '../api/fixtures/analysis.json'
 import Analisis, {
   BEST_WEEKDAY_MARK,
   BEST_WEEK_MARK,
+  BEST_WEEK_TABLE_MARK,
   EMPTY_MONTH_LINE,
+  NO_BEST_WEEK_LINE,
   NO_HISTORY_LINE,
   SINCE_FIRST_RECORD_LABEL,
 } from './Analisis'
@@ -66,9 +68,11 @@ test('reads the best and worst variety by margin, the best week, the best weekda
   // The fixture sorts `varieties` by margin descending (plan, invariants: the front
   // never sorts) — "Flor A" (margin $ 40.000) is the best, "Flor Gift" (margin
   // -$ 5.000) is the worst. Reading them in that order needs no arithmetic.
-  const varietyNames = (await screen.findAllByText(/^(Flor A|Flor B|Flor Gift)$/)).map(
-    (node) => node.textContent,
-  )
+  // Both the phone's cards and the computer's table carry the same names (CSS
+  // alone picks one), so this reads only the card view's own copy.
+  const varietyNames = (await screen.findAllByText(/^(Flor A|Flor B|Flor Gift)$/))
+    .filter((node) => node.closest('.analisis__variedades') !== null)
+    .map((node) => node.textContent)
   expect(varietyNames).toEqual(['Flor A', 'Flor B', 'Flor Gift'])
   expect(screen.getByText(/margen \$ 40\.000/)).toBeInTheDocument()
   expect(screen.getByText(/margen \$ -5\.000/)).toBeInTheDocument()
@@ -98,8 +102,12 @@ test('pending marks show their own N, never a $0 cost', async () => {
 test('a variety only gifted shows no margin percentage', async () => {
   renderAnalisis(async () => jsonResponse(200, analysisFixture))
 
-  const giftRow = (await screen.findByText('Flor Gift')).closest('.analisis__variedad')
-  expect(giftRow).not.toBeNull()
+  // "Flor Gift" names both the card and the computer table's row; only the card
+  // carries the "margen" label this assertion reads.
+  const giftRow = (await screen.findAllByText('Flor Gift'))
+    .map((node) => node.closest('.analisis__variedad'))
+    .find((node) => node !== null)
+  expect(giftRow).not.toBeUndefined()
   const margin = within(giftRow as HTMLElement).getByText(/^margen/)
   expect(margin.textContent).not.toMatch(/%/)
 })
@@ -132,6 +140,57 @@ test('month navigation requests the previous month and disables at the bounds', 
 
   await user.click(screen.getByRole('button', { name: 'Mes anterior' }))
   expect(requested).toContain('/analysis?month=2026-09')
+})
+
+test('the computer table carries headers, the margin stack, pending marks and the best/current week', async () => {
+  renderAnalisis(async () => jsonResponse(200, analysisFixture))
+
+  const table = (await screen.findAllByText('Variedad')).find(
+    (node) => node.closest('table') !== null,
+  )
+  expect(table).not.toBeUndefined()
+  const varietyTable = (table as HTMLElement).closest('table') as HTMLElement
+  expect(within(varietyTable).getByText('Gramos regalo')).toBeInTheDocument()
+  expect(within(varietyTable).getByText('Margen')).toBeInTheDocument()
+
+  // "Flor B" (margin $ 6.000, 40%, 2,5 g pending): the table's own cell, with no
+  // "margen" label and no "costo" label — those belong to the card view only.
+  const [giftCell] = within(varietyTable).getAllByText('Flor Gift')
+  expect(giftCell).not.toBeUndefined()
+  const giftRow = (giftCell as HTMLElement).closest('tr') as HTMLElement
+  // A gift-only variety's sales are $0, so its margin percentage is left out
+  // (its "Parte" column still reads 0%, since share — unlike margin — is never
+  // null for a variety with its own $0 sales, only when the whole month is $0).
+  const giftMarginCell = giftRow.querySelector('.analisis__celda-margen') as HTMLElement
+  expect(within(giftMarginCell).queryByText(/%$/)).toBeNull()
+
+  const weekTables = (await screen.findAllByText('Semana')).map((node) => node.closest('table'))
+  const weekTable = weekTables.find((t) => t !== null) as HTMLElement
+  const rows = within(weekTable).getAllByRole('row').slice(1) // drop the header row
+  const lastRow = rows.at(-1)
+  expect(lastRow).not.toBeUndefined()
+  expect((lastRow as HTMLElement).className).toContain('analisis__fila-actual')
+  expect(within(lastRow as HTMLElement).getByText(BEST_WEEK_TABLE_MARK)).toBeInTheDocument()
+
+  const monthHeaders = await screen.findAllByText('Mes')
+  const monthTable = monthHeaders
+    .map((node) => node.closest('table'))
+    .find((t) => t !== null) as HTMLElement
+  expect(within(monthTable).getByText('Caja')).toBeInTheDocument()
+})
+
+test('"Ninguna se destacó" shows in the week table when every week is $0', async () => {
+  const noBestFixture = {
+    ...analysisFixture,
+    weeks: analysisFixture.weeks.map((week) => ({
+      ...week,
+      sales: 0,
+      best: false,
+    })),
+  }
+  renderAnalisis(async () => jsonResponse(200, noBestFixture))
+
+  expect(await screen.findByText(NO_BEST_WEEK_LINE)).toBeInTheDocument()
 })
 
 test('month navigation disables "Mes anterior" when there is no earlier month', async () => {

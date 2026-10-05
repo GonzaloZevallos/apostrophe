@@ -83,15 +83,21 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   await expect(page).toHaveURL(/\/analisis$/)
 
   // The current month: the variety row, week by week, by weekday and both expense
-  // breakdowns all carry this month's activity.
+  // breakdowns all carry this month's activity. At this (desktop-sized) viewport,
+  // `AnalisisCompu.dc.html`'s tables are the ones on screen — the phone's cards
+  // carry the same rows but are CSS-hidden here, the same switch the shell's own
+  // side rail/bottom bar already make.
   await expect(page.getByText('Vendiste en el mes')).toBeVisible()
-  const varietyRow = page.locator('.analisis__variedad').filter({ hasText: 'Rosa' })
+  const varietyRow = page
+    .locator('.analisis__tabla-contenedor--variedades tbody tr')
+    .filter({ hasText: 'Rosa' })
   await expect(varietyRow).toBeVisible()
-  await expect(varietyRow.getByText(/^costo \$/)).toBeVisible()
-  await expect(varietyRow.getByText(/^margen \$/)).toBeVisible()
+  await expect(varietyRow.getByRole('cell').nth(5)).toContainText('$') // Costo
+  await expect(varietyRow.getByRole('cell').nth(6)).toContainText('$') // Margen
 
   await expect(page.getByText('Semana a semana · últimas 8')).toBeVisible()
-  await expect(page.locator('.analisis__semana').first()).toBeVisible()
+  const weekRows = page.locator('.analisis__tabla-contenedor--semanas tbody tr')
+  await expect(weekRows.first()).toBeVisible()
 
   await expect(page.getByText('Por día de la semana')).toBeVisible()
   await expect(page.locator('.analisis__dia').first()).toBeVisible()
@@ -114,7 +120,7 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   )
   await expect(page.getByText('No vendiste ni regalaste nada este mes.')).toBeVisible()
   await expect(page.getByText('Semana a semana · últimas 8')).toBeVisible()
-  await expect(page.locator('.analisis__semana').first()).toBeVisible()
+  await expect(weekRows.first()).toBeVisible()
   await expect(page.getByText('Por día de la semana')).toBeVisible()
   await expect(page.getByText('Van aparte, se cargan en Stock').first()).toBeVisible()
 

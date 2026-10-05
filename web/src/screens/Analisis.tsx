@@ -41,6 +41,8 @@ export const SINCE_FIRST_RECORD_LABEL =
 export const PURCHASES_NOTE = 'Van aparte, se cargan en Stock'
 export const BEST_WEEK_MARK = 'Mejor semana'
 export const BEST_WEEKDAY_MARK = 'Mejor día'
+export const BEST_WEEK_TABLE_MARK = 'mejor'
+export const NO_BEST_WEEK_LINE = 'Ninguna se destacó'
 
 const WEEKDAY_LABEL: Record<number, string> = {
   1: 'Lun',
@@ -186,34 +188,87 @@ function AnalisisContenido({
           {m.varieties.length === 0 ? (
             <span className="pie">{EMPTY_MONTH_LINE}</span>
           ) : (
-            <div className="analisis__variedades">
-              {m.varieties.map((variety) => (
-                <div key={variety.variety_id} className="analisis__variedad">
-                  <div className="analisis__variedad-cabecera">
-                    <span className="analisis__variedad-nombre">{variety.name}</span>
-                    <span className="analisis__variedad-ventas">
-                      {formatMoney(variety.sales_without_shipping)}
-                    </span>
+            <>
+              {/* The phone's cards (`Analisis.dc.html`): one block per variety, every
+                 figure labelled inline, since there is no header row at this width. */}
+              <div className="analisis__variedades">
+                {m.varieties.map((variety) => (
+                  <div key={variety.variety_id} className="analisis__variedad">
+                    <div className="analisis__variedad-cabecera">
+                      <span className="analisis__variedad-nombre">{variety.name}</span>
+                      <span className="analisis__variedad-ventas">
+                        {formatMoney(variety.sales_without_shipping)}
+                      </span>
+                    </div>
+                    <div className="analisis__variedad-detalle">
+                      {variety.share_percent !== null && (
+                        <span>{variety.share_percent}% del mes</span>
+                      )}
+                      <span>{formatGrams(variety.grams_sold)} vendidos</span>
+                      <span>{formatGrams(variety.grams_gifted)} regalados</span>
+                      <span>
+                        costo {formatMoney(variety.cost.costed)}
+                        {pendingSuffix(variety.cost.pending_grams)}
+                      </span>
+                      <span className="analisis__variedad-margen">
+                        margen {formatMoney(variety.margin.amount)}
+                        {variety.margin.percent !== null && ` (${variety.margin.percent}%)`}
+                        {pendingSuffix(variety.margin.pending_grams)}
+                      </span>
+                    </div>
                   </div>
-                  <div className="analisis__variedad-detalle">
-                    {variety.share_percent !== null && (
-                      <span>{variety.share_percent}% del mes</span>
-                    )}
-                    <span>{formatGrams(variety.grams_sold)} vendidos</span>
-                    <span>{formatGrams(variety.grams_gifted)} regalados</span>
-                    <span>
-                      costo {formatMoney(variety.cost.costed)}
-                      {pendingSuffix(variety.cost.pending_grams)}
-                    </span>
-                    <span className="analisis__variedad-margen">
-                      margen {formatMoney(variety.margin.amount)}
-                      {variety.margin.percent !== null && ` (${variety.margin.percent}%)`}
-                      {pendingSuffix(variety.margin.pending_grams)}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+
+              {/* The computer's table (`AnalisisCompu.dc.html`): the same rows, with
+                 column headers instead of inline labels, sold and gifted grams in
+                 their own columns, and the margin cell stacking the peso amount
+                 over its percentage. CSS alone picks one of these two, the same
+                 way `Shell`'s side rail/bottom bar already do. */}
+              <div className="analisis__tabla-contenedor analisis__tabla-contenedor--variedades">
+                <table className="analisis__tabla">
+                  <thead>
+                    <tr>
+                      <th>Variedad</th>
+                      <th className="analisis__num">Ventas</th>
+                      <th className="analisis__num">Parte</th>
+                      <th className="analisis__num">Gramos</th>
+                      <th className="analisis__num">Gramos regalo</th>
+                      <th className="analisis__num">Costo</th>
+                      <th className="analisis__num">Margen</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {m.varieties.map((variety) => (
+                      <tr key={variety.variety_id}>
+                        <td>{variety.name}</td>
+                        <td className="analisis__num">
+                          {formatMoney(variety.sales_without_shipping)}
+                        </td>
+                        <td className="analisis__num">
+                          {variety.share_percent !== null ? `${variety.share_percent}%` : ''}
+                        </td>
+                        <td className="analisis__num">{formatGrams(variety.grams_sold)}</td>
+                        <td className="analisis__num">{formatGrams(variety.grams_gifted)}</td>
+                        <td className="analisis__num">
+                          {formatMoney(variety.cost.costed)}
+                          {pendingSuffix(variety.cost.pending_grams)}
+                        </td>
+                        <td className="analisis__num analisis__celda-margen">
+                          <span>
+                            {formatMoney(variety.margin.amount)}
+                            {pendingSuffix(variety.margin.pending_grams)}
+                          </span>
+                          {variety.margin.percent !== null && (
+                            <span>{variety.margin.percent}%</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
 
           <span className="pie">Semana a semana · últimas 8</span>
@@ -235,6 +290,47 @@ function AnalisisContenido({
             ))}
           </div>
 
+          <div className="analisis__tabla-contenedor analisis__tabla-contenedor--semanas">
+            <table className="analisis__tabla">
+              <thead>
+                <tr>
+                  <th>Semana</th>
+                  <th className="analisis__num">Ventas</th>
+                  <th className="analisis__num">Gramos</th>
+                  <th className="analisis__num">Gastos</th>
+                  <th className="analisis__num">Ganancia</th>
+                  <th className="analisis__num">Caja</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.weeks.map((week, index) => (
+                  <tr
+                    key={week.first_day}
+                    className={
+                      index === data.weeks.length - 1 ? 'analisis__fila-actual' : undefined
+                    }
+                  >
+                    <td>{formatDateShort(week.first_day)}</td>
+                    <td className="analisis__num">{formatMoney(week.sales)}</td>
+                    <td className="analisis__num">{formatGrams(week.grams)}</td>
+                    <td className="analisis__num">{formatMoney(week.expenses)}</td>
+                    <td className="analisis__num">
+                      {formatMoney(week.profit.amount)}
+                      {pendingSuffix(week.profit.pending_grams)}
+                      {week.best && (
+                        <span className="analisis__etiqueta-mejor">{BEST_WEEK_TABLE_MARK}</span>
+                      )}
+                    </td>
+                    <td className="analisis__num">{formatMoney(week.cash)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {data.weeks.length > 0 && data.weeks.every((week) => !week.best) && (
+              <span className="pie">{NO_BEST_WEEK_LINE}</span>
+            )}
+          </div>
+
           <span className="pie">Mes a mes · últimos 12</span>
           <div className="analisis__meses">
             {data.months.map((row) => (
@@ -250,6 +346,36 @@ function AnalisisContenido({
                 <span>caja {formatMoney(row.cash)}</span>
               </div>
             ))}
+          </div>
+
+          <div className="analisis__tabla-contenedor analisis__tabla-contenedor--meses">
+            <table className="analisis__tabla">
+              <thead>
+                <tr>
+                  <th>Mes</th>
+                  <th className="analisis__num">Ventas</th>
+                  <th className="analisis__num">Gramos</th>
+                  <th className="analisis__num">Gastos</th>
+                  <th className="analisis__num">Ganancia</th>
+                  <th className="analisis__num">Caja</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.months.map((row) => (
+                  <tr key={row.month}>
+                    <td>{formatMonthLong(row.month)}</td>
+                    <td className="analisis__num">{formatMoney(row.sales)}</td>
+                    <td className="analisis__num">{formatGrams(row.grams)}</td>
+                    <td className="analisis__num">{formatMoney(row.expenses)}</td>
+                    <td className="analisis__num">
+                      {formatMoney(row.profit.amount)}
+                      {pendingSuffix(row.profit.pending_grams)}
+                    </td>
+                    <td className="analisis__num">{formatMoney(row.cash)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
 
