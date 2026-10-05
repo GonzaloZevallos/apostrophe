@@ -1,5 +1,5 @@
 """`classify` and `HttpTelegram` with an injected opener (the plan's declared seam):
-every row of ADR-0022's table, and the invariant that no token or URL ever reaches an
+every row of ADR-0023's table, and the invariant that no token or URL ever reaches an
 exception's text."""
 
 from __future__ import annotations
