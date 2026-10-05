@@ -138,6 +138,28 @@ test('Semana: Ganancia\'s note and the Faltante de stock row (with its own note)
   expect(noteAfterRow(container, 'Faltante de stock')).toBe('incluye costo pendiente')
 })
 
+test('Semana: Faltante de stock shows with no note of its own when its cost isn\'t pending', async () => {
+  // A dedicated override: the shared fixture's week always carries a pending
+  // shortfall, so nothing else proves the row renders without `pie` when
+  // `shortfall.pending` is false.
+  const costedShortfall: PanelAnswer = {
+    ...PANEL,
+    periods: {
+      ...PANEL.periods,
+      week: { ...PANEL.periods.week, shortfall: { amount: 3000, pending: false } },
+    },
+  }
+  stubFetch(costedShortfall)
+  const { container } = renderInicio()
+  await screen.findByText('Vendiste hoy')
+  screen.getByRole('button', { name: 'Semana' }).click()
+  await screen.findByText('Vendiste esta semana')
+
+  const faltante = screen.getByText('Faltante de stock').closest<HTMLElement>('.panel-lista__fila')!
+  expect(within(faltante).getByText('$ 3.000')).toBeInTheDocument()
+  expect(noteAfterRow(container, 'Faltante de stock')).toBeNull()
+})
+
 test('Mes: Costo de lo vendido\'s note and Ganancia\'s note show; there is no Faltante de stock row', async () => {
   stubFetch(PANEL)
   const { container } = renderInicio()
