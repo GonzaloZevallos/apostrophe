@@ -89,7 +89,7 @@ as profit and cash go. Debts and the stock rows still come from their owners.
   `totals_between(buckets, start, end) -> PeriodTotals`: sales, sales count, grams sold
   and gifted, cost of goods, stock shortfall (or none), expenses, purchases, profit and
   cash. `_weeks`, `_months` and the since-first-record figures read the same function;
-  the profit and cash formulas are written once, in `_Buckets`. `average_sale` stays as
+  the profit and cash formulas are written once, in `Buckets`. `average_sale` stays as
   presentation arithmetic over one `PeriodTotals`.
 - **One read per source.** `read_panel` feeds `scan` from the same `SalesLedger`,
   `PaymentsLedger`, `ExpensesLedger` and `Purchases` ports `analyse` uses.
@@ -120,8 +120,21 @@ as profit and cash go. Debts and the stock rows still come from their owners.
 - A panel open now replays the business's whole history once:
   O(entries + draws + sales + payments + expenses), the shape Análisis has (ADR-0020,
   measured at 40–50 ms on a seeded year), plus debts as before. A test asserts the same
-  number of statements on a fresh business as on a seeded one.
+  number of statements on a small seeded business as on a big seeded one — a freshly
+  opened (empty) business is not the right comparison, since SQLAlchemy skips the price
+  entries' `selectinload` statement outright with no parent rows, and `SqlLedgers.all()`
+  issues none of its own three with no customers; measured at **16 statements**, equal
+  for both seeds (`tests/results/test_panel_router.py::
+  test_get_panel_issues_the_same_number_of_statements_small_or_seeded`).
 - The split read of this ADR's Consequences no longer exists *within* the period
   figures: Vendiste, Ganancia and Caja come from one scan. It remains between the period
   figures, debts and the stock rows.
 - ADR-0020 needs no amendment: its rule is now true of the code.
+- **Isolation proof, run by hand**: removed the `business_id` filter from the combined
+  stock read — `SqlStockEntries.for_varieties`' `WHERE` and every `ON` clause of
+  `SqlDraws.for_varieties`' two joins plus its own `WHERE` — leaving only the per-row
+  `StockEntryRow`/`SaleLineRow` selects unfiltered. `tests/test_business_isolation.py::
+  test_another_business_reads_the_panel_as_zero_while_a_has_every_figure` failed
+  (business B's `today.cost_of_goods`, `grams_sold`, `grams_gifted` and `profit` all
+  leaked business A's figures). Restored both filters; the sweep passed again, and
+  `ruff`/`mypy` were clean throughout.
