@@ -199,7 +199,7 @@ export interface FilaStockProps {
 /* Chrome                                                              */
 /* ------------------------------------------------------------------ */
 
-export type Destino = 'inicio' | 'ventas' | 'clientes' | 'stock' | 'mas';
+export type Destino = 'inicio' | 'ventas' | 'clientes' | 'variedades' | 'mas';
 
 export interface BarraInferiorProps {
   activo: Destino;
@@ -207,7 +207,7 @@ export interface BarraInferiorProps {
 }
 
 export interface RielLateralProps {
-  activo: Destino | 'gastos' | 'analisis' | 'catalogo' | 'variedades' | 'negocio';
+  activo: Destino | 'gastos' | 'analisis' | 'configuracion';
   onIr: (destino: string) => void;
   onNuevaVenta: () => void;
 }
@@ -252,7 +252,7 @@ export type NombreIcono =
   | 'inicio'
   | 'ventas'
   | 'clientes'
-  | 'stock'
+  | 'variedades'
   | 'mas'
   | 'atras'
   | 'chevron'
@@ -260,7 +260,6 @@ export type NombreIcono =
   | 'buscar'
   | 'calendario'
   | 'whatsapp'
-  | 'telegram'
   | 'tacho'
   | 'cobro'
   | 'personaMas';
