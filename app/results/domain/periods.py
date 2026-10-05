@@ -3,16 +3,20 @@ these three bounds are derived from "today" (plan invariant) — ports, the rout
 the front's own `periods.ts` all read them from here or from the one shared
 `web/src/format/periods.vectors.json`, never recomputing a bound of their own.
 
-Semana is the Monday-to-Sunday week containing today (PRD: "Behaviour, Periods").
-Mes is today's calendar month, first day to last.
+Semana is the Monday-to-Sunday week containing today (PRD: "Behaviour, Periods"),
+built from `app/shared/calendar`'s `Week.containing`. Mes is today's calendar month,
+first day to last, from that same module's `Month.containing` — the one place a
+week's start or a month's last day is derived (plan invariant); this module computes
+neither bound on its own.
 """
 
 from __future__ import annotations
 
-import calendar
 from dataclasses import dataclass
-from datetime import date, timedelta
+from datetime import date
 from typing import ClassVar
+
+from app.shared.calendar import Month, Week
 
 
 class InvalidPeriod(ValueError):
@@ -37,15 +41,13 @@ class Periods:
 
 
 def periods(today: date) -> Periods:
-    """`today` is today..today; `week` is the Monday..Sunday week containing it;
-    `month` is the first..last day of today's calendar month."""
-    monday = today - timedelta(days=today.weekday())
-    sunday = monday + timedelta(days=6)
-    month_start = today.replace(day=1)
-    last_day = calendar.monthrange(today.year, today.month)[1]
-    month_end = today.replace(day=last_day)
+    """`today` is today..today; `week` is the Monday..Sunday week containing it
+    (`Week.containing`); `month` is the first..last day of today's calendar month
+    (`Month.containing`) — both from `app/shared/calendar`, never derived here."""
+    week = Week.containing(today)
+    month = Month.containing(today)
     return Periods(
         today=Period(today, today),
-        week=Period(monday, sunday),
-        month=Period(month_start, month_end),
+        week=Period(week.first_day, week.last_day),
+        month=Period(month.first_day, month.last_day),
     )
