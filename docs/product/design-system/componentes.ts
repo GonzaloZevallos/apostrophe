@@ -8,7 +8,6 @@
 
 import type { ReactNode } from 'react';
 import type {
-  Canal,
   Cliente,
   EstadoStock,
   FormaPago,
@@ -97,10 +96,9 @@ export interface SelectorClienteProps {
 }
 
 export interface NuevoCliente {
-  /** Los dos obligatorios. */
-  telefono: string;
+  /** El único obligatorio. */
   nombre: string;
-  canal?: Canal;
+  telefono?: string;
   vip?: boolean;
 }
 
@@ -179,10 +177,20 @@ export interface FilaClienteProps {
   iniciales: string;
   nombre: string;
   telefono: string;
-  canal?: Canal;
   vip?: boolean;
   /** Si debe: monto en ámbar y "te debe desde 14/09". */
   saldo?: { monto: string; desde: string };
+  onClick?: () => void;
+}
+
+/** La fila de "Te deben" (Clientes, Inicio): además del monto y el "desde", el
+ *  botón Cobrar. El nombre accesible del botón es "Cobrar a <nombre>". */
+export interface FilaTeDebeProps {
+  iniciales: string;
+  nombre: string;
+  monto: string;
+  desde: string;
+  onCobrar: () => void;
   onClick?: () => void;
 }
 
@@ -259,7 +267,6 @@ export type NombreIcono =
   | 'abajo'
   | 'buscar'
   | 'calendario'
-  | 'whatsapp'
   | 'tacho'
   | 'cobro'
   | 'personaMas';

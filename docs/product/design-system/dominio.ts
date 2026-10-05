@@ -42,8 +42,6 @@ export interface Invitacion extends DelNegocio {
 /* Variedades y precios                                                */
 /* ------------------------------------------------------------------ */
 
-export type Canal = 'whatsapp' | 'telegram';
-
 export interface Variedad extends DelNegocio {
   id: Id;
   nombre: string;
@@ -83,7 +81,6 @@ export interface Cliente extends DelNegocio {
   telefono: string;
   /** Obligatorio: a quien se registra se lo conoce (Zeta, 02/10/2026). */
   nombre: string;
-  canal: Canal | null;
   vip: boolean;
   creadoEl: Date;
 }
