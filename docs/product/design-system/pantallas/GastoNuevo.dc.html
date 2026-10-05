@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Cargar un gasto</title>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body { margin: 0 }
+a { color: #1B4FA8 } a:hover { color: #231E18 }
+</style>
+</helmet>
+
+<div style="width: 390px; min-height: 820px; box-sizing: border-box; background: #FCFBF8; color: #231E18; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; display: flex; flex-direction: column">
+  <div style="padding: 24px 24px 0; display: flex; align-items: center; gap: 12px"><span style="flex: 1; font-size: 20px; font-weight: 600; letter-spacing: -0.02em">Cargar gasto</span><span style="font-size: 15px; font-weight: 600; color: #7A7065">Cerrar</span></div>
+  <div style="padding: 20px 24px 0; display: flex; flex-direction: column; gap: 14px">
+    <label style="display: flex; flex-direction: column; gap: 6px">
+      <span style="font-size: 14px; color: #7A7065">Fecha</span>
+      <span style="display: flex; align-items: center; gap: 10px; height: 56px; padding: 0 16px; border-radius: 16px; background: #F2EEE6; font-size: 17px; font-weight: 500">Hoy 02/10<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9.5 6 6 6-6"/></svg></span>
+    </label>
+    <label style="display: flex; flex-direction: column; gap: 6px">
+      <span style="font-size: 14px; color: #7A7065">Categoría <span style="color: #9A9085; font-weight: 400">Obligatorio</span></span>
+      <span style="display: flex; align-items: center; justify-content: space-between; gap: 10px; height: 56px; padding: 0 16px; border-radius: 16px; background: #F2EEE6; font-size: 17px; font-weight: 500">Packaging<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9.5 6 6 6-6"/></svg></span>
+      <span style="font-size: 15px; color: #1B4FA8; box-shadow: 0 1px 0 #1B4FA8; width: fit-content">Crear categoría nueva</span>
+    </label>
+    <label style="display: flex; flex-direction: column; gap: 6px">
+      <span style="font-size: 14px; color: #7A7065">Monto <span style="color: #9A9085; font-weight: 400">Obligatorio</span></span>
+      <input type="text" value="$ 12.500" style="height: 56px; box-sizing: border-box; padding: 0 16px; border-radius: 16px; border: 0; background: #F2EEE6; color: #231E18; font: inherit; font-size: 22px; font-weight: 600; letter-spacing: -0.03em">
+    </label>
+    <label style="display: flex; flex-direction: column; gap: 6px">
+      <span style="font-size: 14px; color: #7A7065">Detalle <span style="color: #9A9085; font-weight: 400">Obligatorio</span></span>
+      <input type="text" value="Bolsas con cierre x200" style="height: 56px; box-sizing: border-box; padding: 0 16px; border-radius: 16px; border: 0; background: #F2EEE6; color: #231E18; font: inherit; font-size: 17px">
+    </label>
+  </div>
+  <div style="padding: 24px 24px 24px"><span style="display: flex; align-items: center; justify-content: center; gap: 9px; height: 56px; border-radius: 999px; background: #231E18; color: #FCFBF8; font-size: 17px; font-weight: 600">Guardá el gasto</span></div>
+  <div style="margin: 0 24px; border-top: 1px solid #EBE5DA"></div>
+  <div style="padding: 20px 24px 24px; display: flex; flex-direction: column; gap: 8px">
+    <span style="font-size: 13px; color: #7A7065">Si un socio borró la categoría mientras cargabas el gasto</span>
+    <label style="display: flex; flex-direction: column; gap: 6px">
+      <span style="font-size: 14px; color: #7A4A00">Esa categoría ya no está. Elegí otra.</span>
+      <span style="display: flex; align-items: center; justify-content: space-between; gap: 10px; height: 56px; padding: 0 16px; border-radius: 16px; background: #F2EEE6; box-shadow: inset 0 0 0 2px #7A4A00; font-size: 17px; color: #9A9085">Elegí una categoría<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9.5 6 6 6-6"/></svg></span>
+    </label>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>
