@@ -80,7 +80,7 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
 
   // Más → Análisis.
   await openMas(page)
-  await page.getByRole('link', { name: /Análisis/ }).click()
+  await page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /^Análisis/ }).click()
   await expect(page).toHaveURL(/\/analisis$/)
 
   // The current month: the variety row, week by week, by weekday and both expense
