@@ -117,9 +117,11 @@ def test_an_empty_business_answers_real_zeros(client: TestClient) -> None:
         assert figures["grams_gifted"] == 0
         assert figures["cost_of_goods"] == 0
         assert figures["pending_cost"] is False
+        assert figures["shortfall"] is None  # no negative adjustment: no Faltante de stock
         assert figures["expenses"] == 0
         assert figures["purchases"] == 0
         assert figures["profit"] == 0
+        assert figures["profit_pending"] is False
         assert figures["cash"] == 0
     assert answer["debts"] == {
         "total_owed": 0,
