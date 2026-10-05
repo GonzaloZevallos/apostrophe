@@ -844,6 +844,8 @@ button {
 }
 
 .gastos__pie .pie {
+  padding: 0;
+  color: var(--tinta2);
   text-align: left;
   font-size: 13px;
   line-height: 1.5;
@@ -923,7 +925,7 @@ button {
   align-self: flex-start;
 }
 
-.gasto-form__cerrar {
+.gasto-form .gasto-form__cerrar {
   box-shadow: none;
   color: var(--tinta2);
   font-weight: 600;
