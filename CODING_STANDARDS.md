@@ -3,7 +3,7 @@
 How code is written in this product. They apply to the code a task adds or touches. They
 replace the agentic system's default standards whole (agentic-system, ADR-0012): sections
 1 to 8 are those practices said for this stack; section 9 is this product's own and
-outranks every other; section 10 says the frontend's.
+outranks every other; section 10 says the frontend's; section 11 names the database.
 
 ## 1. Hexagonal architecture
 
@@ -115,3 +115,67 @@ React, Vite and TypeScript in `web/`, built from the design in `docs/product/des
   spacing and components as its file in `pantallas/`. Look at its comparison
   (`scripts/design/comparisons.mjs`, design README) before delivering, and keep its entry
   in `scripts/design/screens.json` true.
+
+## 11. Database naming
+
+`tests/migrations/test_naming.py` machine-checks every rule below stated as **checked**,
+against a real SQLite schema reflected two ways (`upgrade_to_head` and
+`app.tables.metadata.create_all`), never against an object's `.name` in the metadata. A
+name on its allowlist is a known break, not a rule: #75 renames it, so it is never
+renamed as a side effect of another task, and no task other than #75 touches the
+allowlist.
+
+### Checked
+
+- Lowercase `snake_case` for every table, column, index and constraint name
+  (`^[a-z][a-z0-9]*(_[a-z0-9]+)*$`).
+- A boolean column starts with `is_` (`is_vip`, `is_shown`), and only a boolean column
+  does.
+- `_on` names a calendar date (`spent_on`), and only a date column ends in `_on`.
+- `_at` names a moment in time (`created_at`), and only a datetime column ends in `_at`.
+  No `_until`, `_from` or `_start`.
+- A foreign key to `<t>.id` is `<t>_id`, or ends in `_<t>_id` when it needs a role
+  prefix (`assigned_app_user_id` referencing `app_user`), matched on whole
+  `_`-separated segments, so `wholesale_id` against `sale` fails. A foreign key to a
+  column other than `id` (only possible inside a composite key) carries that column's
+  own name instead. `_id` alone does not imply a foreign key (`pinned_catalog.message_id`
+  is not one, and passes).
+- Every table's primary key is the single column `id`.
+- Names follow their pattern exactly: `ix_<table>_<columns>` for an index,
+  `uq_<table>_<columns>` for a unique constraint, `pk_<table>` for a primary key, and
+  `fk_<table>_<first column>_<referenced table>` for a foreign key (columns joined by
+  `_`, in their declared order).
+- A check constraint's name starts with `ck_<table>_` and is itself `snake_case`.
+- A unique, primary-key, foreign-key or check constraint always reflects with a name;
+  one that does not is a break on its own.
+
+### Review-only (not machine-checked)
+
+- Singular table names (`customer`, not `customers`); a junction table is `<a>_<b>`,
+  with its own surrogate `id` and a `uq_<a>_<b>_<a>_id_<b>_id` on the pair.
+- `catalog_attributes` keeps its plural name until #75: no code can flag it, since the
+  rules above have nothing to say about plurals.
+
+### How a table class states a name
+
+- A table class never passes `name=` to a constraint or an index: `NAMING_CONVENTION`
+  (`app/db.py`) fills it in from the convention above. A check constraint passes only
+  its short rule name (the convention adds the `ck_<table>_` prefix). A composite index
+  is declared `Index(None, "a", "b")`, never with a literal name. Its migration spells
+  the convention's name out with `op.f(...)`, since Alembic cannot recompute a
+  naming-convention name from a bare string.
+- A new column's mapped attribute has the column's own name.
+
+### Scope
+
+- §11 applies to every new table, column, index and constraint, and to the ones a task
+  otherwise touches — except a name already on `test_naming.py`'s allowlist, which stays
+  as it is even when the task changes its column. Only #75 removes an allowlist entry;
+  no other task adds or empties one.
+- A new index or unique constraint added on an allowlisted column is still named from
+  that column's current (unrenamed) name, e.g. `ix_sale_business_id_sale_date` next to
+  the allowlisted `sale.sale_date`.
+- Old and new names coexist until #75: new code says `app_user_id` while
+  `reset_link.user_id` stays as it is, and a new date column ends in `_on` while
+  `sale.sale_date` stays `sale_date`. Existing hand-written names
+  (`uq_customer_business_phone`, `expense`'s two indexes) are not rewritten either.
