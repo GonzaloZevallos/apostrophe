@@ -39,7 +39,7 @@ from app.spreadsheet_import.domain.rows import CatalogRow, HeaderFooterCells
 
 # The sheet's own two values for Catálogo's "shown" column (import.md); anything else
 # answers `import.shown_unknown` rather than being guessed either way.
-_SHOWN: dict[str, bool] = {"Sí": True, "No": False}
+SHOWN_WORDS: dict[str, bool] = {"Sí": True, "No": False}
 
 
 def _indica_share(value: int | str | None) -> int | None:
@@ -52,7 +52,7 @@ def _indica_share(value: int | str | None) -> int | None:
 
 def _attributes_of(row: CatalogRow) -> CatalogAttributes:
     return CatalogAttributes.of(
-        shown=_SHOWN[row.shown],
+        shown=SHOWN_WORDS[row.shown],
         emoji=row.emoji,
         indica_share=_indica_share(row.indica),
         aroma=row.aroma,
@@ -67,7 +67,7 @@ class CatalogImport:
         self._header_footer_repo = SqlCatalogHeaderFooter(session, business_id)
 
     def check_attributes(self, row: CatalogRow) -> Refusal | None:
-        if row.shown not in _SHOWN:
+        if row.shown not in SHOWN_WORDS:
             return Refusal("import.shown_unknown")
         try:
             _attributes_of(row)
@@ -98,7 +98,7 @@ class CatalogImport:
             self._header_footer_repo,
             transaction,
             variety_id,
-            _SHOWN[row.shown],
+            SHOWN_WORDS[row.shown],
             row.emoji,
             indica,
             row.aroma,

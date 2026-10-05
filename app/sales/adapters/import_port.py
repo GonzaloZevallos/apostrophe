@@ -14,6 +14,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from datetime import date, datetime
+from typing import assert_never
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -26,6 +27,7 @@ from app.sales.domain.pricing import SaleRuleBroken
 from app.sales.domain.sale import CustomerFact, LineRequest, PaymentMethod, Sale
 from app.shared.transaction import Transaction
 from app.spreadsheet_import.application.ports import Refusal, SaleCheck, SaleCheckInput
+from app.spreadsheet_import.domain.plan import OnTheSpotMethod
 from app.spreadsheet_import.domain.rows import PriceHistoryRow
 
 # Never written and never compared: `Sale.record` needs a `recorded_at` to build the
@@ -36,6 +38,22 @@ _UNUSED_RECORDED_AT = datetime(1970, 1, 1)
 # resolves a real customer, so any id that is not `None` tells `Sale.record` a customer
 # is present, and never leaves this module (the plan's invariant).
 _CHECK_CUSTOMER_ID = 1
+
+
+def _payment_method(method: OnTheSpotMethod | None) -> PaymentMethod | None:
+    """`method` is already closed to `OnTheSpotMethod | None` by every hop before this
+    one (the plan's invariant), so this is the only place `PaymentMethod` is ever built
+    from an import value, and it can never raise: `assert_never` makes a third sheet
+    word unreachable rather than a `ValueError` at runtime."""
+    match method:
+        case None:
+            return None
+        case "cash":
+            return PaymentMethod.CASH
+        case "transfer":
+            return PaymentMethod.TRANSFER
+        case _:
+            assert_never(method)
 
 
 class SalesImport:
@@ -88,7 +106,7 @@ class SalesImport:
                             special_price=sale.special_total,
                         )
                     ],
-                    method=None if sale.method is None else PaymentMethod(sale.method),
+                    method=_payment_method(sale.method),
                     left_owing=sale.left_owing,
                     recorded_at=_UNUSED_RECORDED_AT,
                 )
@@ -125,7 +143,7 @@ class SalesImport:
                     special_price=sale.special_total,
                 )
             ],
-            method=None if sale.method is None else PaymentMethod(sale.method),
+            method=_payment_method(sale.method),
             left_owing=sale.left_owing,
             recorded_at=recorded_at,
         )

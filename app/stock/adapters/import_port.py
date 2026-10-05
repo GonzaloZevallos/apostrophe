@@ -48,7 +48,7 @@ _CHECK_RECORDED_AT = datetime.min
 # domain origin. Any other text is `import.origin_unknown`, the import's own fixed
 # code: stock's domain has no such rule of its own, since a hand-entered form never
 # lets an origin be anything else.
-_ORIGINS = {
+ORIGEN_WORDS = {
     "Compra": Origin.PURCHASE,
     "Cosecha": Origin.HARVEST,
     "Stock inicial": Origin.OPENING_STOCK,
@@ -93,7 +93,7 @@ class SqlStockImport:
     def check_entry(self, row: EntradaRow, today: date) -> Refusal | None:
         if row.entry_date is None or row.variety is None or row.grams is None or row.origin is None:
             return Refusal("import.field_missing")
-        origin = _ORIGINS.get(row.origin)
+        origin = ORIGEN_WORDS.get(row.origin)
         if origin is None:
             return Refusal("import.origin_unknown")
         try:
@@ -126,7 +126,7 @@ class SqlStockImport:
         assert row.entry_date is not None, "write_entry takes a checked, finished row"
         assert row.grams is not None, "write_entry takes a checked, finished row"
         assert row.origin is not None, "write_entry takes a checked, finished row"
-        origin = _ORIGINS[row.origin]
+        origin = ORIGEN_WORDS[row.origin]
         entry = StockEntry.of(
             row.entry_date,
             variety_id,
