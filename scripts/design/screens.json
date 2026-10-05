@@ -29,6 +29,22 @@
     { "screen": "Analisis", "route": null },
     { "screen": "AnalisisCompu", "route": null, "viewport": [1280, 920] },
     { "screen": "Mas", "route": "/mas" },
+    { "screen": "Configuracion", "route": null, "path": "/settings" },
+    { "screen": "ConfiguracionCompu", "route": null, "path": "/settings", "viewport": [1280, 920] },
+    { "screen": "ConfiguracionNegocio", "route": null, "path": "/settings/business" },
+    { "screen": "ConfiguracionNegocioCompu", "route": null, "path": "/settings/business", "viewport": [1280, 920] },
+    { "screen": "ConfiguracionUsuarios", "route": null, "path": "/settings/users" },
+    { "screen": "ConfiguracionUsuariosCompu", "route": null, "path": "/settings/users", "viewport": [1280, 920] },
+    { "screen": "ConfiguracionIntegraciones", "route": null, "path": "/settings/integrations" },
+    { "screen": "ConfiguracionIntegracionesCompu", "route": null, "path": "/settings/integrations", "viewport": [1280, 920] },
+    { "screen": "ConfiguracionMensaje", "route": null, "path": "/settings/catalog-message" },
+    { "screen": "ConfiguracionMensajeCompu", "route": null, "path": "/settings/catalog-message", "viewport": [1280, 920] },
+    { "screen": "ConfiguracionCategorias", "route": null, "path": "/settings/expense-categories" },
+    { "screen": "ConfiguracionCategoriasCompu", "route": null, "path": "/settings/expense-categories", "viewport": [1280, 920] },
+    { "screen": "ConfiguracionApariencia", "route": null, "path": "/settings/appearance" },
+    { "screen": "ConfiguracionAparienciaCompu", "route": null, "path": "/settings/appearance", "viewport": [1280, 920] },
+    { "screen": "ConfiguracionCuenta", "route": null, "path": "/settings/account" },
+    { "screen": "ConfiguracionCuentaCompu", "route": null, "path": "/settings/account", "viewport": [1280, 920] },
     { "screen": "Estados", "route": null, "path": null }
   ]
 }
