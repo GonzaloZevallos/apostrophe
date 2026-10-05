@@ -18,6 +18,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import customerFixture from '../../api/fixtures/customer.json'
+import customerNoPhoneFixture from '../../api/fixtures/customer-no-phone.json'
 import debtorsFixture from '../../api/fixtures/debtors.json'
 import Clientes from './Clientes'
 import ClientesLayout from './ClientesLayout'
@@ -200,6 +201,16 @@ test('with no debtors, the header shows no debt part', async () => {
 
   expect(await screen.findByText('0 clientes')).toBeInTheDocument()
   expect(screen.queryByText(/te deben/)).not.toBeInTheDocument()
+})
+
+test('a customer with no phone shows no phone element, no dash, no empty label', async () => {
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [customerNoPhoneFixture])))
+  renderClientes()
+
+  const row = await screen.findByRole('link', { name: new RegExp(customerNoPhoneFixture.name) })
+  expect(row.querySelector('.lista-clientes__telefono')).toBeNull()
+  expect(row).not.toHaveTextContent('-')
+  expect(row).not.toHaveTextContent('Sin teléfono')
 })
 
 test('a customer who owes shows the amber mark; one in credit shows the blue "A favor"', async () => {

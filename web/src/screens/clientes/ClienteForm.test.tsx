@@ -25,6 +25,18 @@ function ListStub() {
   )
 }
 
+function FichaStub() {
+  const location = useLocation()
+  const state = location.state as { toast?: string; notice?: string } | null
+  return (
+    <div>
+      <span>la ficha</span>
+      {state?.toast !== undefined && <span>{state.toast}</span>}
+      {state?.notice !== undefined && <span>{state.notice}</span>}
+    </div>
+  )
+}
+
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
     status,
@@ -40,7 +52,7 @@ function renderForm(initialPath: string) {
           <Route path="/clientes/nuevo" element={<ClienteForm mode="nuevo" />} />
           <Route path="/clientes/:id/editar" element={<ClienteForm mode="editar" />} />
           <Route path="/clientes" element={<ListStub />} />
-          <Route path="/clientes/:id" element={<span>la ficha</span>} />
+          <Route path="/clientes/:id" element={<FichaStub />} />
         </Routes>
       </MemoryRouter>
     </QueryClientProvider>,
@@ -69,6 +81,50 @@ test('registers a customer and lands back on the list', async () => {
   expect(fetch).toHaveBeenCalledWith(
     '/customers',
     expect.objectContaining({ method: 'POST' }),
+  )
+})
+
+test('only Nombre is marked required; Teléfono stays optional', () => {
+  renderForm('/clientes/nuevo')
+
+  expect(screen.getByLabelText('Nombre')).toBeRequired()
+  expect(screen.getByLabelText('Teléfono')).not.toBeRequired()
+})
+
+test('registering with no phone sends the request and shows the saved toast', async () => {
+  vi.mocked(fetch).mockResolvedValue(
+    jsonResponse(201, { id: 10, name: 'Sol', phone: null, channel: null, vip: false }),
+  )
+  renderForm('/clientes/nuevo')
+
+  await userEvent.type(screen.getByLabelText('Nombre'), 'Sol')
+  await userEvent.click(screen.getByRole('button', { name: 'Guardá y usá' }))
+
+  expect(await screen.findByText('Cliente guardado')).toBeInTheDocument()
+  expect(fetch).toHaveBeenCalledWith(
+    '/customers',
+    expect.objectContaining({ method: 'POST', body: JSON.stringify({ name: 'Sol', phone: '', channel: null, vip: false }) }),
+  )
+})
+
+test('clearing a phone when editing sends it and shows the saved toast', async () => {
+  vi.mocked(fetch).mockResolvedValueOnce(
+    jsonResponse(200, { id: 7, name: 'Tincho', phone: '+5491144861258', channel: null, vip: false }),
+  )
+  vi.mocked(fetch).mockResolvedValueOnce(
+    jsonResponse(200, { id: 7, name: 'Tincho', phone: null, channel: null, vip: false }),
+  )
+  renderForm('/clientes/7/editar')
+
+  expect(await screen.findByLabelText('Teléfono')).toHaveValue('+5491144861258')
+  await userEvent.clear(screen.getByLabelText('Teléfono'))
+  await userEvent.click(screen.getByRole('button', { name: 'Guardá y usá' }))
+
+  expect(await screen.findByText('la ficha')).toBeInTheDocument()
+  expect(screen.getByText('Cliente guardado')).toBeInTheDocument()
+  expect(fetch).toHaveBeenCalledWith(
+    '/customers/7',
+    expect.objectContaining({ method: 'PATCH', body: JSON.stringify({ name: 'Tincho', phone: '', channel: null, vip: false }) }),
   )
 })
 
