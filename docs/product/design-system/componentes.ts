@@ -176,7 +176,8 @@ export interface FilaVentaProps {
 export interface FilaClienteProps {
   iniciales: string;
   nombre: string;
-  telefono: string;
+  /** Opcional (customers.md): sin número, la fila no muestra nada en su lugar. */
+  telefono?: string;
   vip?: boolean;
   /** Si debe: monto en ámbar y "te debe desde 14/09". */
   saldo?: { monto: string; desde: string };
@@ -188,7 +189,8 @@ export interface FilaClienteProps {
 export interface FilaTeDebeProps {
   iniciales: string;
   nombre: string;
-  telefono: string;
+  /** Opcional (customers.md): sin número, la fila no muestra nada en su lugar. */
+  telefono?: string;
   monto: string;
   desde: string;
   onCobrar: () => void;

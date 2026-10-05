@@ -77,8 +77,8 @@ export interface Precio extends DelNegocio {
 
 export interface Cliente extends DelNegocio {
   id: Id;
-  /** Obligatorio: es la clave con la que se busca. */
-  telefono: string;
+  /** Opcional (customers.md): la lista y la ficha no muestran nada en su lugar. */
+  telefono?: string;
   /** Obligatorio: a quien se registra se lo conoce (Zeta, 02/10/2026). */
   nombre: string;
   vip: boolean;
