@@ -8,7 +8,13 @@ from datetime import date, timedelta
 import pytest
 
 from app.results.domain.figures import AnalysisFigures
-from app.results.domain.ledger import DrawRow, ExpenseRecord, PaymentRecord, SaleRecord
+from app.results.domain.ledger import (
+    DrawRow,
+    ExpenseRecord,
+    PaymentRecord,
+    PurchaseRecord,
+    SaleRecord,
+)
 from app.results.domain.period_figures import period_figures
 from app.shared.calendar import Month
 from app.shared.grams import Grams
@@ -25,6 +31,7 @@ def _figures(
     sales: list[SaleRecord] | None = None,
     payments: list[PaymentRecord] | None = None,
     expenses: list[ExpenseRecord] | None = None,
+    purchases: list[PurchaseRecord] | None = None,
     earliest_entry_day: date | None = None,
 ) -> AnalysisFigures:
     return period_figures(
@@ -34,7 +41,7 @@ def _figures(
         sales=sales or [],
         payments=payments or [],
         expenses=expenses or [],
-        purchases=[],
+        purchases=purchases or [],
         earliest_entry_day=earliest_entry_day,
     )
 
@@ -382,6 +389,9 @@ def test_the_domain_time_guard_runs_a_year_of_history_in_under_a_second() -> Non
         )
         for i in range(100)
     ]
+    purchases = [
+        PurchaseRecord(day=TODAY - timedelta(days=i % 400), total_cost=1_000) for i in range(100)
+    ]
 
     started = time.monotonic()
     figures = _figures(
@@ -389,6 +399,7 @@ def test_the_domain_time_guard_runs_a_year_of_history_in_under_a_second() -> Non
         sales=sales,
         payments=payments,
         expenses=expenses,
+        purchases=purchases,
         earliest_entry_day=TODAY - timedelta(days=399),
     )
     elapsed = time.monotonic() - started

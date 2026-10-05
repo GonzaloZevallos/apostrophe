@@ -1,7 +1,7 @@
 """`GET /analysis` end to end (CODING_STANDARDS §5): a fresh in-memory SQLite per
 test, the real adapters, the movable clock. Seeds only through the API."""
 
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from fastapi.testclient import TestClient
@@ -186,6 +186,23 @@ def test_a_backdated_stock_entry_moves_only_the_affected_week_month_and_variety(
     october_row_after = next(m for m in after_october["months"] if m["month"] == "2026-10")
     assert october_row_after["profit"]["amount"] > october_row_before["profit"]["amount"]
 
+    # Affected: the week containing Flor's sale (today — `weeks` is not tied to the
+    # chosen month, so it reads the same off either response). Unaffected: an
+    # earlier week, the one containing Otra's own sale (2026-08-05), which draws no
+    # cost from Flor's new lot.
+    current_week_before = next(
+        w for w in before_october["weeks"] if w["last_day"] >= sale["date"]
+    )
+    current_week_after = next(w for w in after_october["weeks"] if w["last_day"] >= sale["date"])
+    assert current_week_after["profit"]["amount"] > current_week_before["profit"]["amount"]
+
+    for before_week, after_week in zip(
+        before_october["weeks"], after_october["weeks"], strict=True
+    ):
+        if before_week["last_day"] >= sale["date"]:
+            continue  # the current week: expected to move, and does, above
+        assert after_week == before_week
+
     # Unaffected: August's own month view (Otra's lot and sale draw no cost from
     # Flor's new lot) and August's row in `months` are untouched. (`since_first_record`
     # and the current week, which do cover Flor's October sale, are not compared
@@ -254,6 +271,10 @@ def _statement_count(engine: Engine, client: TestClient) -> int:
 
 
 def _seed_bigger_history(client: TestClient) -> None:
+    """A full seeded year (docs/product/analysis.md's '300 ms... a year of history'),
+    not 25 sales on one day: entries, sales and expenses spread across the last 360
+    days, over 8 varieties, so the 8 weeks, 12 months and every day bucket all carry
+    real history — not just today's."""
     variety_ids = [_variety_with_price(client, f"Variedad {i}", 500 + i * 10) for i in range(8)]
     for i, variety_id in enumerate(variety_ids):
         client.post(
@@ -261,22 +282,27 @@ def _seed_bigger_history(client: TestClient) -> None:
             json={
                 "variety_id": variety_id,
                 "origin": "opening_stock",
-                "grams": "500",
-                "total_cost": 10_000 + i * 100,
-                "date": "2026-08-01",
+                "grams": "5000",
+                "total_cost": 100_000 + i * 1_000,
+                "date": (TODAY - timedelta(days=360)).isoformat(),
             },
         )
     category = client.post("/expense-categories", json={"name": "Varios"}).json()
-    for i in range(25):
+    for i in range(120):
+        day = (TODAY - timedelta(days=(i * 3) % 360)).isoformat()
         variety_id = variety_ids[i % len(variety_ids)]
         client.post(
             "/sales",
-            json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": "1"}]},
+            json={
+                "date": day,
+                "payment": "cash",
+                "lines": [{"variety_id": variety_id, "grams": "1"}],
+            },
         )
         client.post(
             "/expenses",
             json={
-                "spent_on": TODAY.isoformat(),
+                "spent_on": day,
                 "category_id": category["id"],
                 "amount": 100 + i,
                 "detail": "gasto",
@@ -401,3 +427,36 @@ def test_a_seeded_history_s_figures_match_a_direct_computation(client: TestClien
     assert current_week["expenses"] == 300
     assert current_week["profit"]["amount"] == line_total - line_cost - 300
     assert current_week["cash"] == line_total - 300
+
+    # The two earlier sales (08-10, 09-15) each fall in their own week of the
+    # 8-week window, no expense on either date: same per-sale figures as a week
+    # with nothing else in it.
+    def _week_containing(day: str) -> dict[str, Any]:
+        return next(w for w in analysis["weeks"] if w["first_day"] <= day <= w["last_day"])
+
+    week_0810 = _week_containing("2026-08-10")
+    assert week_0810["sales"] == line_total
+    assert week_0810["expenses"] == 0
+    assert week_0810["profit"]["amount"] == line_total - line_cost
+    assert week_0810["cash"] == line_total
+
+    week_0915 = _week_containing("2026-09-15")
+    assert week_0915["sales"] == line_total
+    assert week_0915["expenses"] == 0
+    assert week_0915["profit"]["amount"] == line_total - line_cost
+    assert week_0915["cash"] == line_total
+
+    # Every other week in the window — no sale, no expense — reads $0, not a
+    # placeholder (plan, "nothing invented").
+    covered_first_days = {
+        week_0810["first_day"],
+        week_0915["first_day"],
+        current_week["first_day"],
+    }
+    for week in analysis["weeks"]:
+        if week["first_day"] in covered_first_days:
+            continue
+        assert week["sales"] == 0
+        assert week["expenses"] == 0
+        assert week["profit"]["amount"] == 0
+        assert week["cash"] == 0
