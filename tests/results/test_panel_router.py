@@ -11,13 +11,15 @@ dedicated screens at 2026-12-31, and an empty business's real zeros.
 
 from __future__ import annotations
 
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from typing import Any
 
 from fastapi.testclient import TestClient
+from sqlalchemy import event
+from sqlalchemy.engine import Engine
 
 from app.results.domain.periods import periods as compute_periods
-from tests.conftest import PASSWORD, MovableClock, signed_in
+from tests.conftest import PASSWORD, TODAY, MovableClock, signed_in
 from tests.contract_shapes import assert_matches_fixture
 
 
@@ -115,9 +117,11 @@ def test_an_empty_business_answers_real_zeros(client: TestClient) -> None:
         assert figures["grams_gifted"] == 0
         assert figures["cost_of_goods"] == 0
         assert figures["pending_cost"] is False
+        assert figures["shortfall"] is None  # no negative adjustment: no Faltante de stock
         assert figures["expenses"] == 0
         assert figures["purchases"] == 0
         assert figures["profit"] == 0
+        assert figures["profit_pending"] is False
         assert figures["cash"] == 0
     assert answer["debts"] == {
         "total_owed": 0,
@@ -228,12 +232,22 @@ def test_a_negative_adjustment_s_grams_are_never_summed_into_cost_of_goods(
     assert adjustment.status_code == 201, adjustment.text
     _sale(client, variety_id, grams="5", on="2026-10-15")
 
-    today = client.get("/panel").json()["periods"]["today"]
+    panel = client.get("/panel").json()["periods"]
+    today = panel["today"]
+    week = panel["week"]
 
     # 10g at $100/g; the adjustment removes 4g with no cost of its own; the sale then
     # draws 5g from what is left of the same lot: 5 * 100 = 500, never inflated by the
     # adjustment's grams.
     assert today["cost_of_goods"] == 500
+    # The adjustment is dated 2026-10-14, one day before Hoy (2026-10-15): it carries
+    # no shortfall of Hoy's own.
+    assert today["shortfall"] is None
+    # ...but 2026-10-14 falls in the same Monday-Sunday week as the sale, where the
+    # adjustment's own 4g, costed at the same $100/g, shows as Faltante de stock,
+    # never folded into cost_of_goods: 4 * 100 = 400.
+    assert week["shortfall"] == {"amount": 400, "pending": False}
+    assert week["profit"] == week["sales"] - week["cost_of_goods"] - week["shortfall"]["amount"]
 
 
 def test_negative_ganancia_and_cash_are_shown_not_floored(
@@ -341,3 +355,269 @@ def test_agreement_with_sales_debts_and_stock_at_2026_12_31(
         own = dict(row)
         del own["name"]
         assert own == reference
+
+
+# -- Agreement with GET /analysis (ADR-0013 amendment GH-70; PM: "Inicio's Ganancia
+# equals Análisis's profit for the same period, to the peso") -----------------------
+
+
+def test_a_negative_adjustment_beyond_every_lot_is_shortfall_only_pending(
+    client: TestClient, clock: MovableClock
+) -> None:
+    """A sale that exhausts the lot exactly, then a negative adjustment with nothing
+    left to draw from: the sale's own cost stays fully costed (`pending_cost` false)
+    while the shortfall alone carries pending grams — the two flags are read off their
+    own figure, never combined (plan invariant)."""
+    clock.set(datetime(2026, 10, 15, 18, 0, tzinfo=UTC))
+    variety_id = _variety(client, "Sin lote")
+    _entry(client, variety_id, grams="10", total_cost=1_000, on="2026-10-15")
+    _sale(client, variety_id, grams="10", on="2026-10-15")
+    # Same day as the sale, so only recording order (not the date) tells the two
+    # apart; `LotOrder` compares `recorded_at` ahead of `rank` (`app/stock/domain/
+    # lot_order.py`), so the clock must actually advance here for the sale to draw
+    # first and exhaust the lot, leaving the adjustment with nothing left to draw.
+    clock.set(datetime(2026, 10, 15, 18, 30, tzinfo=UTC))
+    adjustment = client.post(
+        "/stock/entries",
+        json={
+            "variety_id": variety_id,
+            "origin": "adjustment",
+            "grams": "-3",
+            "date": "2026-10-15",
+        },
+    )
+    assert adjustment.status_code == 201, adjustment.text
+
+    today = client.get("/panel").json()["periods"]["today"]
+
+    assert today["pending_cost"] is False
+    assert today["shortfall"] == {"amount": 0, "pending": True}
+    assert today["profit_pending"] is True
+
+
+def test_the_panel_agrees_with_analysis_on_shortfall_and_pending_grams(
+    client: TestClient,
+) -> None:
+    """The clock (`tests.conftest.TODAY`) is Friday 2026-10-02: the week is
+    28/09-04/10, the month 01/10-31/10 — chosen so Hoy, the week and the month each
+    hold records the other two don't (CODING_STANDARDS invariant). Varieties X, Y, Z
+    are priced from before 2026-09-20 (`_variety`'s own `effective_from`)."""
+    x_id = _variety(client, "X", price=1_000)
+    y_id = _variety(client, "Y", price=2_000)
+    z_id = _variety(client, "Z", price=1_500)
+    customer_id = _customer(client, "Deudora GH-70")
+
+    # 2026-09-20: X bought, 10g for $5.000 -> $500/g.
+    _entry(client, x_id, grams="10", total_cost=5_000, on="2026-09-20")
+    # 27/09: a 1g sale of X (owing, so there is something to pay on 01/10). Outside the
+    # week (which starts 28/09) and outside the month.
+    _sale(client, x_id, grams="1", on="2026-09-27", customer_id=customer_id, payment="owing")
+    # 29/09 (inside the week): a -2g adjustment, then a 7g sale — both costed off the
+    # same lot, which is used up exactly: 10 - 1 - 2 - 7 = 0.
+    adjustment_29 = client.post(
+        "/stock/entries",
+        json={"variety_id": x_id, "origin": "adjustment", "grams": "-2", "date": "2026-09-29"},
+    )
+    assert adjustment_29.status_code == 201, adjustment_29.text
+    _sale(client, x_id, grams="7", on="2026-09-29")
+
+    # 01/10 (inside the week and the month, outside Hoy): Z bought and sold, an
+    # expense, and a payment against the 27/09 debt.
+    _entry(client, z_id, grams="20", total_cost=2_000, on="2026-10-01")
+    _sale(client, z_id, grams="5", on="2026-10-01")
+    _expense(client, amount=800, on="2026-10-01")
+    payment = client.post(
+        f"/customers/{customer_id}/payments",
+        json={"paid_on": "2026-10-01", "amount": 1_000, "method": "cash"},
+    )
+    assert payment.status_code == 201, payment.text
+
+    # 02/10 = Hoy: a 3g sale of Y, which has no entry at all (wholly pending), and a
+    # -1g adjustment of X, whose lot is already empty (wholly pending too).
+    _sale(client, y_id, grams="3", on="2026-10-02")
+    adjustment_today = client.post(
+        "/stock/entries",
+        json={"variety_id": x_id, "origin": "adjustment", "grams": "-1", "date": "2026-10-02"},
+    )
+    assert adjustment_today.status_code == 201, adjustment_today.text
+
+    panel = client.get("/panel").json()
+    analysis = client.get("/analysis").json()
+
+    today_figures = panel["periods"]["today"]
+    week_figures = panel["periods"]["week"]
+    month_figures = panel["periods"]["month"]
+
+    # Hoy, worked out by hand: only the Y sale and the wholly-pending X adjustment
+    # fall on 2026-10-02.
+    assert today_figures["sales"] == 6_000  # 3g * $2.000/g, Y
+    assert today_figures["sales_count"] == 1  # the Y sale only; the adjustment is not a sale
+    assert today_figures["average_sale"] == 6_000  # one sale, so the average is its own total
+    assert today_figures["grams_sold"] == 3.0
+    assert today_figures["grams_gifted"] == 0.0
+    assert today_figures["cost_of_goods"] == 0  # Y has no entry: wholly pending, nothing costed
+    assert today_figures["pending_cost"] is True
+    assert today_figures["shortfall"] == {"amount": 0, "pending": True}  # X's lot is empty
+    assert today_figures["expenses"] == 0  # the expense is dated 01/10
+    assert today_figures["purchases"] == 0  # Z's purchase is dated 01/10
+    # sales(6000) - pending sales(6000, the whole Y line is uncosted) - cost(0) -
+    # shortfall costed(0) - expenses(0) = 0.
+    assert today_figures["profit"] == 0
+    assert today_figures["profit_pending"] is True
+    # The Y sale is posted "cash" (`_sale`'s own default), which records an
+    # on-the-spot payment dated today alongside it: 3g * $2.000/g = $6.000. No
+    # expense or purchase is dated 02/10.
+    assert today_figures["cash"] == 6_000
+
+    # The flag matrix the brief requires: true exactly where Análisis's figure for the
+    # same window carries pending grams.
+    assert week_figures["pending_cost"] is True
+    assert week_figures["shortfall"] == {"amount": 1_000, "pending": True}
+    assert week_figures["profit_pending"] is True
+    assert month_figures["pending_cost"] is True
+    assert month_figures["shortfall"] == {"amount": 0, "pending": True}
+    assert month_figures["profit_pending"] is True
+
+    # Agreement with GET /analysis, 0 differences: the week against `weeks[-1]`, the
+    # month against the chosen month (which defaults to Hoy's own month, 2026-10).
+    week_row = analysis["weeks"][-1]
+    assert week_row["first_day"] == week_figures["start"] == "2026-09-28"
+    assert week_row["last_day"] == week_figures["end"] == "2026-10-04"
+    assert week_row["sales"] == week_figures["sales"]
+    assert week_row["expenses"] == week_figures["expenses"]
+    assert week_row["profit"]["amount"] == week_figures["profit"]
+    assert week_row["cash"] == week_figures["cash"]
+
+    month_row = analysis["months"][-1]
+    assert month_row["first_day"] == month_figures["start"] == "2026-10-01"
+    assert month_row["last_day"] == month_figures["end"] == "2026-10-31"
+    assert month_row["sales"] == month_figures["sales"]
+    assert month_row["expenses"] == month_figures["expenses"]
+    assert month_row["profit"]["amount"] == month_figures["profit"]
+    assert month_row["cash"] == month_figures["cash"]
+
+    # Análisis's own month (the query defaults to Hoy's month, so this is the same
+    # October) exposes shortfall directly: the panel's month must match it to the peso.
+    # Análisis's shape carries `pending_grams` (a decimal), the panel's own `pending`
+    # (a bool, no grams on the wire, PM) — each flag read off its own figure's pending
+    # grams, never compared by combining the two shapes.
+    assert analysis["month"]["month"] == "2026-10"
+    analysis_month_shortfall = analysis["month"]["shortfall"]
+    assert analysis_month_shortfall is not None
+    assert month_figures["shortfall"] is not None
+    assert analysis_month_shortfall["amount"] == month_figures["shortfall"]["amount"]
+    assert (analysis_month_shortfall["pending_grams"] > 0) == month_figures["shortfall"]["pending"]
+
+
+# -- Statement count (plan invariant: the same number of SQL statements for a small
+# business as for a seeded one, in the style of Análisis's own
+# `test_one_get_analysis_issues_the_same_number_of_statements_small_or_seeded`) ------
+#
+# A freshly opened (empty) business is not the right comparison (orchestrator decision,
+# GH-70): with no rows at all, SQLAlchemy skips the price entries' `selectinload`
+# statement outright, and `SqlLedgers.all()` (`app/payments/adapters/sql_ledgers.py`)
+# issues none of its own three with no customers — an off-by-one that has nothing to
+# do with the invariant being guarded (no per-row query; the count does not grow with
+# history). Both seeds below are non-empty instead, so both sides hit the same joins.
+
+
+def _seed_small_panel_history(client: TestClient) -> None:
+    """The least a business can have while still exercising every join `GET /panel`
+    makes: one priced variety, one entry, one cash sale, one customer with a debt, one
+    expense and one negative adjustment."""
+    day = TODAY.isoformat()
+    variety_id = _variety(client, "Chica")
+    _entry(client, variety_id, grams="10", total_cost=500, on=day)
+    _sale(client, variety_id, grams="1", on=day)
+    customer_id = _customer(client, "Deudora chica")
+    _sale(client, variety_id, grams="1", on=day, customer_id=customer_id, payment="owing")
+    _expense(client, amount=100, on=day)
+    adjustment = client.post(
+        "/stock/entries",
+        json={"variety_id": variety_id, "origin": "adjustment", "grams": "-1", "date": day},
+    )
+    assert adjustment.status_code == 201, adjustment.text
+
+
+def _seed_bigger_panel_history(client: TestClient) -> None:
+    """Several varieties, entries, cash and owing sales, expenses, several debtors and
+    a negative adjustment, spread over roughly a year — never a handful of rows on one
+    day, so a per-row query hiding behind a small seed cannot pass unnoticed."""
+    variety_ids = [_variety(client, f"Variedad {i}", price=500 + i * 10) for i in range(8)]
+    for i, variety_id in enumerate(variety_ids):
+        _entry(
+            client,
+            variety_id,
+            grams="5000",
+            total_cost=100_000 + i * 1_000,
+            on=(TODAY - timedelta(days=360)).isoformat(),
+        )
+    category = client.post("/expense-categories", json={"name": "Varios GH-70"}).json()
+    customer_ids = []
+    for i in range(5):
+        customer = client.post(
+            "/customers", json={"name": f"Deudora {i}", "phone": f"11 5000-{i:04d}"}
+        ).json()
+        customer_ids.append(customer["id"])
+    for i in range(60):
+        day = (TODAY - timedelta(days=(i * 5) % 360)).isoformat()
+        variety_id = variety_ids[i % len(variety_ids)]
+        if i % 7 == 0:
+            _sale(
+                client,
+                variety_id,
+                grams="1",
+                on=day,
+                customer_id=customer_ids[i % len(customer_ids)],
+                payment="owing",
+            )
+        else:
+            _sale(client, variety_id, grams="1", on=day, payment="cash")
+        client.post(
+            "/expenses",
+            json={
+                "spent_on": day,
+                "category_id": category["id"],
+                "amount": 100 + i,
+                "detail": "gasto",
+            },
+        )
+    adjustment = client.post(
+        "/stock/entries",
+        json={
+            "variety_id": variety_ids[0],
+            "origin": "adjustment",
+            "grams": "-1",
+            "date": TODAY.isoformat(),
+        },
+    )
+    assert adjustment.status_code == 201, adjustment.text
+
+
+def _statement_count(engine: Engine, client: TestClient) -> int:
+    statements: list[str] = []
+
+    def _record(
+        conn: object, cursor: object, statement: str, parameters: object, *args: object
+    ) -> None:
+        statements.append(statement)
+
+    event.listen(engine, "before_cursor_execute", _record)
+    try:
+        response = client.get("/panel")
+        assert response.status_code == 200, response.text
+    finally:
+        event.remove(engine, "before_cursor_execute", _record)
+    return len(statements)
+
+
+def test_get_panel_issues_the_same_number_of_statements_small_or_seeded(
+    client: TestClient, other_client: TestClient, engine: Engine
+) -> None:
+    _seed_small_panel_history(client)
+    _seed_bigger_panel_history(other_client)
+
+    small_count = _statement_count(engine, client)
+    big_count = _statement_count(engine, other_client)
+
+    assert small_count == big_count, (small_count, big_count)

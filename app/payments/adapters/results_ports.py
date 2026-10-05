@@ -1,6 +1,8 @@
-"""Two of results' ports, implemented over payments' own storage (plan, subtask
-"PaymentsReceived and DebtSummary in payments"): `app.state.payments_received` and
-`app.state.debt_summary` in `app/main.py` wire both the same shape `app.state.balances`
+"""`DebtSummary`, results' port, implemented over payments' own storage (plan, subtask
+"PaymentsReceived and DebtSummary in payments"; ADR-0013 amendment GH-70 deleted this
+module's `PaymentsReceived` sibling — Caja now comes from `period_figures` like every
+other period figure, fed from the same `PaymentsLedger` `analyse` already uses).
+`app.state.debt_summary` in `app/main.py` wires this the same shape `app.state.balances`
 already uses for `SqlBalances` — a `(Session, business_id)` factory per request
 (ADR-0006).
 
@@ -11,46 +13,11 @@ payments reaches `app.results`' own types; `app/payments/domain/` and
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
-
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.payments.adapters.sql_ledgers import SqlLedgers
-from app.payments.adapters.tables import PaymentRow
 from app.payments.application.view_accounts import debtors as debtors_use_case
-from app.payments.domain.received import ReceivedPayment, received_in
 from app.results.application.ports import DebtorRow, Debts
-from app.results.domain.periods import Period
-
-
-class SqlPaymentsReceived:
-    """Every payment counted on its own `paid_on`, on-the-spot and later alike (PRD:
-    "What Caja counts"): no kind filter, and no join through `Ledgers` — a payment on
-    a sale with no customer counts too. One load over the periods' own min..max, then
-    `received_in` sums each period in Python (plan invariant: no SQL `SUM` or other
-    aggregate over payments is added anywhere)."""
-
-    def __init__(self, session: Session, business_id: int) -> None:
-        self._session = session
-        self._business_id = business_id
-
-    def totals(self, periods: Sequence[Period]) -> Mapping[Period, int]:
-        if not periods:
-            return {}
-        start = min(period.start for period in periods)
-        end = max(period.end for period in periods)
-        rows = self._session.execute(
-            select(PaymentRow.paid_on, PaymentRow.amount).where(
-                PaymentRow.business_id == self._business_id,
-                PaymentRow.paid_on >= start,
-                PaymentRow.paid_on <= end,
-            )
-        ).all()
-        payments = [ReceivedPayment(paid_on=row.paid_on, amount=row.amount) for row in rows]
-        return {
-            period: received_in(payments, period.start, period.end) for period in periods
-        }
 
 
 class SqlDebtSummary:

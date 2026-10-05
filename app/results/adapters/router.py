@@ -1,7 +1,9 @@
-"""`GET /panel`: no path, query or body parameter (plan invariant). It reads
-`get_today` once and builds each of the five owner ports from its own
-`app.state` factory over the request's `Session` and business — the same shape
-`app/sales/adapters/router.py` already uses for `line_costs` and `owing_sales`.
+"""`GET /panel`: no path, query or body parameter (plan invariant; ADR-0013 amendment
+GH-70). It reads `get_today` once and builds `StockFigures`, the same `SalesLedger`,
+`PaymentsLedger`, `ExpensesLedger` and `Purchases` ports `GET /analysis` uses, and
+`DebtSummary`, each from its own `app.state` factory over the request's `Session` and
+business — the same shape `app/sales/adapters/router.py` already uses for
+`line_costs` and `owing_sales`.
 
 `GET /analysis` (ADR-0020, docs/product/analysis.md). Gated; the business comes
 only from the session, never the request (CODING_STANDARDS section 9).
@@ -34,9 +36,6 @@ from app.results.application.ports import (
     DrawCosts,
     ExpensesLedger,
     PaymentsLedger,
-    PaymentsReceived,
-    PeriodExpenses,
-    PeriodSales,
     Purchases,
     SalesLedger,
     StockFigures,
@@ -49,33 +48,10 @@ SessionDep = Annotated[Session, Depends(get_session)]
 TodayDep = Annotated[date, Depends(get_today)]
 
 
-def get_period_sales(
-    request: Request, session: SessionDep, business_id: CurrentBusinessId
-) -> PeriodSales:
-    factory = cast(Callable[[Session, int], PeriodSales], request.app.state.period_sales)
-    return factory(session, business_id)
-
-
 def get_stock_figures(
     request: Request, session: SessionDep, business_id: CurrentBusinessId
 ) -> StockFigures:
     factory = cast(Callable[[Session, int], StockFigures], request.app.state.stock_figures)
-    return factory(session, business_id)
-
-
-def get_period_expenses(
-    request: Request, session: SessionDep, business_id: CurrentBusinessId
-) -> PeriodExpenses:
-    factory = cast(Callable[[Session, int], PeriodExpenses], request.app.state.period_expenses)
-    return factory(session, business_id)
-
-
-def get_payments_received(
-    request: Request, session: SessionDep, business_id: CurrentBusinessId
-) -> PaymentsReceived:
-    factory = cast(
-        Callable[[Session, int], PaymentsReceived], request.app.state.payments_received
-    )
     return factory(session, business_id)
 
 
@@ -84,26 +60,6 @@ def get_debt_summary(
 ) -> DebtSummary:
     factory = cast(Callable[[Session, int], DebtSummary], request.app.state.debt_summary)
     return factory(session, business_id)
-
-
-PeriodSalesDep = Annotated[PeriodSales, Depends(get_period_sales)]
-StockFiguresDep = Annotated[StockFigures, Depends(get_stock_figures)]
-PeriodExpensesDep = Annotated[PeriodExpenses, Depends(get_period_expenses)]
-PaymentsReceivedDep = Annotated[PaymentsReceived, Depends(get_payments_received)]
-DebtSummaryDep = Annotated[DebtSummary, Depends(get_debt_summary)]
-
-
-@router.get("/panel")
-def get_panel(
-    today: TodayDep,
-    sales: PeriodSalesDep,
-    stock: StockFiguresDep,
-    expenses: PeriodExpensesDep,
-    received: PaymentsReceivedDep,
-    debts: DebtSummaryDep,
-) -> PanelOut:
-    panel = read_panel(today, sales, stock, expenses, received, debts)
-    return PanelOut.of(panel)
 
 
 def get_draw_costs(
@@ -141,11 +97,28 @@ def get_purchases(
     return factory(session, business_id)
 
 
+StockFiguresDep = Annotated[StockFigures, Depends(get_stock_figures)]
+DebtSummaryDep = Annotated[DebtSummary, Depends(get_debt_summary)]
 DrawCostsDep = Annotated[DrawCosts, Depends(get_draw_costs)]
 SalesLedgerDep = Annotated[SalesLedger, Depends(get_sales_ledger)]
 PaymentsLedgerDep = Annotated[PaymentsLedger, Depends(get_payments_ledger)]
 ExpensesLedgerDep = Annotated[ExpensesLedger, Depends(get_expenses_ledger)]
 PurchasesDep = Annotated[Purchases, Depends(get_purchases)]
+
+
+@router.get("/panel")
+def get_panel(
+    today: TodayDep,
+    stock: StockFiguresDep,
+    sales: SalesLedgerDep,
+    payments: PaymentsLedgerDep,
+    expenses: ExpensesLedgerDep,
+    purchases: PurchasesDep,
+    debts: DebtSummaryDep,
+) -> PanelOut:
+    panel = read_panel(today, stock, sales, payments, expenses, purchases, debts)
+    return PanelOut.of(panel)
+
 
 as_http = TranslateErrors([(422, (AnalysisRuleBroken,))])
 
