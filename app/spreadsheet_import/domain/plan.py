@@ -136,9 +136,11 @@ class ByPhone:
 class ByName:
     """Identifies a planned customer with no phone number at all, by their own
     collapsed name (trimmed, inner spaces collapsed, case kept). Each distinct
-    collapsed name with no number is its own customer: nothing is merged by guess."""
+    collapsed name with no number is its own customer: nothing is merged by guess.
+    `repr=False`: this identity is also a dict key in `write_import.py`, so a
+    traceback over a `KeyError` there never shows the name either."""
 
-    collapsed_name: str
+    collapsed_name: str = field(repr=False)
 
 
 CustomerIdentity = ByPhone | ByName
