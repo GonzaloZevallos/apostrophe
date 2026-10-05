@@ -435,6 +435,10 @@ def test_a_well_formed_mapping_row_with_a_malformed_phone_blocks_with_no_echo(
     assert "Mapping row 2 [phone]: customer.phone_invalid" in report
     assert "Cliente]" not in report
     assert CUSTOMER not in report
+    # The malformed phone itself ("abc") has no digit run, so _DIGIT_RUN alone
+    # could not catch an echo of it: the literal text is checked too (the
+    # mapping's phone value must never reach the report, digits or not).
+    assert "abc" not in report
     assert not _DIGIT_RUN.search(report)
     assert not _DIGIT_RUN.search(err.getvalue())
     assert caplog.records == []
