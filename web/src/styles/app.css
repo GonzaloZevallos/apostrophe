@@ -351,6 +351,25 @@ button {
   font-weight: 600;
 }
 
+/* Below the rail's divider (`GastosCompu.dc.html`): smaller, no icon, the active one
+ * filled with the accent's bar on its left edge besides (never color alone). */
+.riel-lateral__divisor {
+  height: 1px;
+  margin: 12px 10px;
+  background: var(--linea);
+}
+
+.riel-lateral__item--secundario {
+  min-height: 42px;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.riel-lateral__item--secundario.riel-lateral__item--activo {
+  font-weight: 600;
+  box-shadow: inset 2px 0 0 var(--acento);
+}
+
 /* The fixed "Nueva venta" button (accounts.md, "Shell"): a pill above the bottom
  * bar on the phone, matching `.boton`'s own shape (`Inicio.dc.html`). Its
  * `--escritorio` twin sits above the side rail's items instead (`InicioCompu.dc.html`)
@@ -381,9 +400,15 @@ button {
 }
 
 .mas__item-texto {
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 2px;
+}
+
+.mas__item-flecha {
+  display: flex;
+  color: var(--tenue);
 }
 
 .mas__item-rotulo {

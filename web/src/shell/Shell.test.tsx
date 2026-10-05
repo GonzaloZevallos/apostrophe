@@ -5,8 +5,9 @@
  * file used before chrome moved to `handle` (plan, invariants: "no pathname
  * comparison decides it").
  *
- * Only destinations that exist show (PRD, "Nada inventado"; metric M5) — Inicio,
- * Ventas, Clientes, Stock and Más, in the design's own order. The fixed "Nueva
+ * Only destinations that exist show (PRD, "Nada inventado"; metric M5): the bar is
+ * Inicio, Ventas, Clientes, Stock and Más; the rail adds Gastos and Análisis after a
+ * divider, with Más last (it leaves with the issue that empties it). The fixed "Nueva
  * venta" button, separate from the tabs, shows on every signed-in screen except
  * where its route's `handle.chrome` is `'none'` (`NuevaVenta`'s own
  * `/ventas/nueva`, `VentaDetalle`'s `/ventas/:id`) — phone and computer differ
@@ -17,7 +18,11 @@
 import { render, screen, within } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { expect, test } from 'vitest'
+import { ANALYSIS, EXPENSE_NEW, EXPENSES, MORE } from '../routes'
 import Shell from './Shell'
+
+const BAR = ['Inicio', 'Ventas', 'Clientes', 'Stock', 'Más']
+const RAIL = ['Inicio', 'Ventas', 'Clientes', 'Stock', 'Gastos', 'Análisis', 'Más']
 
 /** The tabs only, in the order they render — drops the fixed "Nueva venta"
  * button, which shares the rail's `link` role but is not one of the tabs. */
@@ -35,8 +40,32 @@ function renderShell(initialPath: string) {
         element: <Shell />,
         children: [
           { index: true, element: <div>contenido</div> },
-          { path: 'ventas/nueva', element: <div>Nueva venta</div>, handle: { chrome: 'none' } },
-          { path: 'ventas/:id', element: <div>detalle</div>, handle: { chrome: 'none' } },
+          {
+            path: 'ventas/nueva',
+            element: <div>Nueva venta</div>,
+            handle: { chrome: 'none' },
+          },
+          {
+            path: 'ventas/:id',
+            element: <div>detalle</div>,
+            handle: { chrome: 'none' },
+          },
+          { path: 'more', element: <div>más</div> },
+          {
+            path: 'expenses',
+            element: <div>gastos</div>,
+            handle: { tab: 'more' },
+          },
+          {
+            path: 'analisis',
+            element: <div>análisis</div>,
+            handle: { tab: 'more' },
+          },
+          {
+            path: 'expenses/new',
+            element: <div>formulario</div>,
+            handle: { chrome: 'none', tab: 'more' },
+          },
         ],
       },
     ],
@@ -45,14 +74,62 @@ function renderShell(initialPath: string) {
   render(<RouterProvider router={router} />)
 }
 
-test('shows exactly Inicio, Ventas, Clientes, Stock and Más in both navs, no handle on the route', () => {
-  renderShell('/')
+test('the bar shows Inicio, Ventas, Clientes, Stock and Más; the rail adds Gastos and Análisis before Más', () => {
+  const { container } = renderShellWithContainer('/')
 
-  const navs = screen.getAllByRole('navigation')
-  expect(navs).toHaveLength(2)
-  for (const nav of navs) {
-    expect(tabNames(nav)).toEqual(['Inicio', 'Ventas', 'Clientes', 'Stock', 'Más'])
+  expect(container.querySelectorAll('nav')).toHaveLength(2)
+  expect(tabNames(bar(container))).toEqual(BAR)
+  expect(tabNames(rail(container))).toEqual(RAIL)
+})
+
+test('in the rail, Gastos and Análisis come after the divider and the first four before it', () => {
+  const { container } = renderShellWithContainer('/')
+
+  const entries = [...rail(container).children].map((child) =>
+    child.getAttribute('role') === 'separator' ? '---' : (child.textContent ?? ''),
+  )
+  expect(entries.filter((entry) => entry !== '').slice(1)).toEqual([
+    'Inicio',
+    'Ventas',
+    'Clientes',
+    'Stock',
+    '---',
+    'Gastos',
+    'Análisis',
+    'Más',
+  ])
+})
+
+test.each([
+  [EXPENSES, 'Gastos'],
+  [ANALYSIS, 'Análisis'],
+  [EXPENSE_NEW, 'Gastos'],
+  [MORE, 'Más'],
+])('on %s the rail marks %s and, where the bar shows, the bar marks Más', (path, railEntry) => {
+  const { container } = renderShellWithContainer(path)
+
+  expect(current(rail(container))).toEqual([railEntry])
+  const barNav = container.querySelector('.bar-inferior')
+  if (path === EXPENSE_NEW) {
+    expect(barNav).toBeNull()
+  } else {
+    expect(current(bar(container))).toEqual(['Más'])
   }
+})
+
+test('on Inicio each surface marks Inicio alone, by path, since no route declares a tab', () => {
+  const { container } = renderShellWithContainer('/')
+
+  expect(current(bar(container))).toEqual(['Inicio'])
+  expect(current(rail(container))).toEqual(['Inicio'])
+})
+
+test('the form route has no bar and no "Nueva venta" button, and its rail still marks Gastos', () => {
+  const { container } = renderShellWithContainer(EXPENSE_NEW)
+
+  expect(container.querySelector('.bar-inferior')).toBeNull()
+  expect(screen.queryByRole('link', { name: /Nueva venta/ })).not.toBeInTheDocument()
+  expect(current(rail(container))).toEqual(['Gastos'])
 })
 
 test('the fixed "Nueva venta" button shows outside a chrome route, once per nav rail', () => {
@@ -82,8 +159,21 @@ test('chrome: none keeps the rail and its tabs — the computer case, only the b
 
   const rail = container.querySelector('.riel-lateral')
   expect(rail).not.toBeNull()
-  expect(tabNames(rail as HTMLElement)).toEqual(['Inicio', 'Ventas', 'Clientes', 'Stock', 'Más'])
+  expect(tabNames(rail as HTMLElement)).toEqual(RAIL)
 })
+
+function bar(container: HTMLElement): HTMLElement {
+  return container.querySelector('.bar-inferior') as HTMLElement
+}
+
+function rail(container: HTMLElement): HTMLElement {
+  return container.querySelector('.riel-lateral') as HTMLElement
+}
+
+/** The entries a surface marks as the current page. */
+function current(nav: HTMLElement): string[] {
+  return [...nav.querySelectorAll('[aria-current="page"]')].map((link) => link.textContent ?? '')
+}
 
 function renderShellWithContainer(initialPath: string) {
   const router = createMemoryRouter(
@@ -92,8 +182,32 @@ function renderShellWithContainer(initialPath: string) {
         element: <Shell />,
         children: [
           { index: true, element: <div>contenido</div> },
-          { path: 'ventas/nueva', element: <div>Nueva venta</div>, handle: { chrome: 'none' } },
-          { path: 'ventas/:id', element: <div>detalle</div>, handle: { chrome: 'none' } },
+          {
+            path: 'ventas/nueva',
+            element: <div>Nueva venta</div>,
+            handle: { chrome: 'none' },
+          },
+          {
+            path: 'ventas/:id',
+            element: <div>detalle</div>,
+            handle: { chrome: 'none' },
+          },
+          { path: 'more', element: <div>más</div> },
+          {
+            path: 'expenses',
+            element: <div>gastos</div>,
+            handle: { tab: 'more' },
+          },
+          {
+            path: 'analisis',
+            element: <div>análisis</div>,
+            handle: { tab: 'more' },
+          },
+          {
+            path: 'expenses/new',
+            element: <div>formulario</div>,
+            handle: { chrome: 'none', tab: 'more' },
+          },
         ],
       },
     ],
