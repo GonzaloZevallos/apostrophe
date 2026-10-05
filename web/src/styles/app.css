@@ -843,6 +843,12 @@ button {
   gap: var(--espacio-md);
 }
 
+.gastos__pie .pie {
+  text-align: left;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 .fila-gasto {
   display: flex;
   align-items: center;
@@ -911,6 +917,10 @@ button {
   font-size: 20px;
   font-weight: 600;
   letter-spacing: -0.02em;
+}
+
+.gasto-form .boton--enlace {
+  align-self: flex-start;
 }
 
 .gasto-form__cerrar {
