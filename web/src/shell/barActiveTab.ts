@@ -11,7 +11,7 @@ export function barActiveTab(matches: readonly { handle: unknown }[]): string | 
   for (const match of [...matches].reverse()) {
     const { handle } = match
     if (typeof handle === 'object' && handle !== null && 'tab' in handle) {
-      const tab = (handle as { tab: unknown }).tab
+      const tab = handle.tab
       if (typeof tab === 'string') return tab
     }
   }
