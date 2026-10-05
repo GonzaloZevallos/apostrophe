@@ -61,6 +61,12 @@ npx --prefix web playwright install chromium   # once
 npm --prefix web run e2e                       # the browser against the real backend
 ```
 
+The e2e run's port comes from `APOSTROPHE_E2E_PORT`, or a free port picked for the
+run when it is unset, so two checkouts can run it at the same time. Run only one e2e
+at a time per checkout, though: `web/dist` is shared. A rare failure to start, from a
+port grabbed between picking it and binding it, is fixed by rerunning, or by setting
+`APOSTROPHE_E2E_PORT` yourself.
+
 All of them run in CI and are what the agentic system runs (`.agentic/stack.yaml`). The guards worth knowing before adding a route or a table:
 
 - `tests/test_gated_routes.py`: every route answers 401 without a session.

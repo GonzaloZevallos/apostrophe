@@ -7,13 +7,13 @@
  */
 
 import { execFileSync } from 'node:child_process'
-import { E2E_ENV } from './env.js'
+import { e2eEnv } from './env.js'
 
 export function newBusinessInvitationUrl(): string {
   const output = execFileSync(
     'uv',
     ['run', '--no-project', 'python', '-m', 'app.accounts.adapters.cli', 'invite-business'],
-    { cwd: '..', env: { ...process.env, ...E2E_ENV }, encoding: 'utf-8' },
+    { cwd: '..', env: { ...process.env, ...e2eEnv() }, encoding: 'utf-8' },
   )
   const firstLine = output.split('\n')[0]
   if (firstLine === undefined || !firstLine.startsWith('http')) {
@@ -36,7 +36,7 @@ export function supportsPasswordReset(): boolean {
     execFileSync(
       'uv',
       ['run', '--no-project', 'python', '-m', 'app.accounts.adapters.cli', 'reset-password', '--help'],
-      { cwd: '..', env: { ...process.env, ...E2E_ENV }, encoding: 'utf-8' },
+      { cwd: '..', env: { ...process.env, ...e2eEnv() }, encoding: 'utf-8' },
     )
     return true
   } catch {
@@ -51,7 +51,7 @@ export function resetLink(email: string): string {
   const output = execFileSync(
     'uv',
     ['run', '--no-project', 'python', '-m', 'app.accounts.adapters.cli', 'reset-password', email],
-    { cwd: '..', env: { ...process.env, ...E2E_ENV }, encoding: 'utf-8' },
+    { cwd: '..', env: { ...process.env, ...e2eEnv() }, encoding: 'utf-8' },
   )
   const firstLine = output.split('\n')[0]
   if (firstLine === undefined || !firstLine.startsWith('http')) {

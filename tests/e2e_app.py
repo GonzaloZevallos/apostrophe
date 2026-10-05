@@ -7,7 +7,7 @@ and `upkeep_ticker` is off, so no background sync races the run's own timing.
 
 `Settings.from_env()` reads the same environment variables `create_app` would read on
 its own (`APOSTROPHE_SECRET_KEY`, `APOSTROPHE_DATABASE_URL`, ...), so
-`web/e2e/env.ts`'s `E2E_ENV` is the one source of truth for both this module and the
+`web/e2e/env.ts`'s `e2eEnv()` is the one source of truth for both this module and the
 `invite-business` CLI call `web/e2e/backend.ts` makes.
 """
 
