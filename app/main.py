@@ -27,11 +27,10 @@ from app.db import make_engine
 from app.expenses.adapters.default_categories import ExpenseCategoriesOpening
 from app.expenses.adapters.expenses_ledger import SqlExpensesLedger
 from app.expenses.adapters.router import router as expenses_router
-from app.expenses.adapters.sql_period_expenses import SqlPeriodExpenses
 from app.http_errors import Refused
 from app.migrations.runner import upgrade_to_head
 from app.payments.adapters.payments_ledger import SqlPaymentsLedger
-from app.payments.adapters.results_ports import SqlDebtSummary, SqlPaymentsReceived
+from app.payments.adapters.results_ports import SqlDebtSummary
 from app.payments.adapters.router import customers_router as payments_customers_router
 from app.payments.adapters.router import router as payments_router
 from app.payments.adapters.settlements import SqlBalances, SqlOwingSales
@@ -43,7 +42,6 @@ from app.pinned_catalog.adapters.upkeep_trigger import schedule_upkeep
 from app.pinned_catalog.application.ports import Telegram
 from app.pinned_catalog.application.push import BusinessLocks
 from app.results.adapters.router import router as results_router
-from app.sales.adapters.period_sales import SqlPeriodSales
 from app.sales.adapters.router import router as sales_router
 from app.sales.adapters.sales_ledger import SqlSalesLedger
 from app.settings import Settings
@@ -173,34 +171,24 @@ def create_app(
     # business, the way `get_line_costs` already does for `line_costs`.
     app.state.balances = SqlBalances
     app.state.owing_sales = SqlOwingSales
-    # Same shape again: results reaches sales' per-period figures only through its own
-    # `PeriodSales` port (`app/results/application/ports.py`), never `app.sales`
-    # directly. The route that builds one over the request's `Session` and business
-    # is added with the panel route; this is the one seam that subtask reaches it
-    # through.
-    app.state.period_sales = SqlPeriodSales
-    # Another factory of the same shape: results reaches stock's figures only through
-    # its own `StockFigures` port, never `app.stock` directly (ADR-0006). The panel
-    # route builds this over the request's own `Session` and business, the way
+    # Another factory of the same shape: results reaches stock's rows and draws only
+    # through its own `StockFigures` port, never `app.stock` directly (ADR-0006). The
+    # panel route builds this over the request's own `Session` and business, the way
     # `get_line_costs` already does for `line_costs`.
     app.state.stock_figures = SqlStockFigures
-    # Another factory of the same shape: results reaches expenses only through its own
-    # `PeriodExpenses` port, never `app.expenses` directly (plan invariant). The panel
-    # route builds this over the request's own `Session` and business, the way
-    # `get_line_costs` already does for `line_costs`.
-    app.state.period_expenses = SqlPeriodExpenses
-    # Two more of results' own ports (plan: subtask "PaymentsReceived and DebtSummary in
-    # payments"), the same `(Session, business_id)` factory shape as `line_costs` and
-    # `balances` above; `app/results/adapters/` builds each over the request's own
-    # `Session` and business, never a second query against `app.payments` directly.
-    app.state.payments_received = SqlPaymentsReceived
+    # One more of results' own ports (plan: subtask "PaymentsReceived and DebtSummary in
+    # payments"; ADR-0013 amendment GH-70 deleted `PaymentsReceived` — Caja now comes
+    # from `period_figures`, fed by the ledgers below), the same `(Session,
+    # business_id)` factory shape as `line_costs` and `balances` above.
     app.state.debt_summary = SqlDebtSummary
     # Five more factories of the same shape: results reaches every ledger only
     # through its own ports (`DrawCosts`, `SalesLedger`, `PaymentsLedger`,
     # `ExpensesLedger`, `Purchases`), never `app.stock`, `app.sales`, `app.payments`
     # or `app.expenses` adapters directly. `app/results/adapters/router.py` builds
     # each over the request's own `Session` and business, the way `get_line_costs`
-    # already does for `line_costs`.
+    # already does for `line_costs`. `GET /panel` and `GET /analysis` share every one
+    # of these (ADR-0013 amendment GH-70): both read `period_figures`'s one
+    # computation, never a second sum of their own.
     app.state.draw_costs = SqlDrawCosts
     app.state.sales_ledger = SqlSalesLedger
     app.state.payments_ledger = SqlPaymentsLedger

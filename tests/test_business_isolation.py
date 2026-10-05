@@ -40,6 +40,7 @@ from app.main import create_app
 from app.payments.adapters import router as payments_router_module
 from app.payments.adapters.sql_payments import SqlPayments
 from app.payments.adapters.tables import PaymentRow
+from app.results.domain.periods import periods as compute_periods
 from app.shared.calendar import Month
 from app.shared.transaction import Transaction
 from tests.conftest import SETTINGS, TEST_HASHER, TODAY, MovableClock, open_business, signed_in
@@ -639,8 +640,11 @@ def test_another_business_reads_the_panel_as_zero_while_a_has_every_figure(
     business_a: TestClient, business_b: TestClient, clock: MovableClock
 ) -> None:
     """The panel route joins the isolation sweep (plan invariant, subtask brief): A
-    seeds a sale with a gift line, a sale left owing, a later payment, an expense and
-    a purchase, all dated today; B's panel must equal a freshly opened business's."""
+    seeds a sale with a gift line, a sale left owing, a later payment, an expense, a
+    purchase and a negative adjustment, all dated today; B's panel must equal a
+    freshly opened business's. The adjustment proves the combined stock read stays
+    filtered by business: without the `business_id` filter it would draw from A's
+    lot and B would show a shortfall too."""
     today = clock().date().isoformat()
     variety = business_a.post("/varieties", json={"name": f"{MARKER} panel variety"}).json()
     business_a.post(
@@ -698,6 +702,16 @@ def test_another_business_reads_the_panel_as_zero_while_a_has_every_figure(
         },
     )
     assert purchase.status_code == 201, purchase.text
+    adjustment = business_a.post(
+        "/stock/entries",
+        json={
+            "variety_id": variety["id"],
+            "origin": "adjustment",
+            "grams": "-5",
+            "date": today,
+        },
+    )
+    assert adjustment.status_code == 201, adjustment.text
 
     a_panel = business_a.get("/panel").json()
     today_figures = a_panel["periods"]["today"]
@@ -705,26 +719,40 @@ def test_another_business_reads_the_panel_as_zero_while_a_has_every_figure(
     assert today_figures["grams_gifted"] > 0
     assert today_figures["expenses"] > 0
     assert today_figures["purchases"] > 0
+    assert today_figures["shortfall"] is not None
+    assert today_figures["shortfall"]["amount"] > 0
     assert a_panel["debts"]["total_owed"] > 0
     assert a_panel["stock"] != []
 
     b_panel = business_b.get("/panel").json()
-    fresh = {
-        "start": today,
-        "end": today,
-        "sales": 0,
-        "sales_count": 0,
-        "average_sale": None,
-        "grams_sold": 0,
-        "grams_gifted": 0,
-        "cost_of_goods": 0,
-        "pending_cost": False,
-        "expenses": 0,
-        "purchases": 0,
-        "profit": 0,
-        "cash": 0,
-    }
-    assert b_panel["periods"]["today"] == fresh
+
+    def _fresh(start: str, end: str) -> dict[str, Any]:
+        return {
+            "start": start,
+            "end": end,
+            "sales": 0,
+            "sales_count": 0,
+            "average_sale": None,
+            "grams_sold": 0,
+            "grams_gifted": 0,
+            "cost_of_goods": 0,
+            "pending_cost": False,
+            "shortfall": None,
+            "expenses": 0,
+            "purchases": 0,
+            "profit": 0,
+            "profit_pending": False,
+            "cash": 0,
+        }
+
+    bounds = compute_periods(TODAY)
+    assert b_panel["periods"]["today"] == _fresh(today, today)
+    assert b_panel["periods"]["week"] == _fresh(
+        bounds.week.start.isoformat(), bounds.week.end.isoformat()
+    )
+    assert b_panel["periods"]["month"] == _fresh(
+        bounds.month.start.isoformat(), bounds.month.end.isoformat()
+    )
     assert b_panel["debts"] == {
         "total_owed": 0,
         "sales_owing_count": 0,

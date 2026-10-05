@@ -97,19 +97,80 @@ test('switching to Semana shows the week\'s figures, including a negative Caja',
   expect(screen.getByText('−$ 12.000')).toBeInTheDocument() // cash is negative
 })
 
-test('the pending-cost note shows under both Costo de lo vendido and Ganancia, only when pending', async () => {
-  stubFetch(PANEL)
-  renderInicio()
-  await screen.findByText('Vendiste hoy')
-  expect(screen.queryByText('incluye costo pendiente')).not.toBeInTheDocument()
+/** The sibling `.pie` note immediately after a `.panel-lista__fila` row found by its
+ * label — the panel-lista rows and their own pending notes sit side by side, not
+ * nested (same pattern as `panel-resultados__celda`'s own note). `null` when the row
+ * has no note right after it. */
+function noteAfterRow(container: HTMLElement, label: string): string | null {
+  const row = within(container).getByText(label).closest('.panel-lista__fila')
+  const next = row?.nextElementSibling ?? null
+  return next !== null && next.classList.contains('pie') ? next.textContent : null
+}
 
+test('Hoy: no pending note anywhere, and no Faltante de stock row', async () => {
+  stubFetch(PANEL)
+  const { container } = renderInicio()
+  await screen.findByText('Vendiste hoy')
+
+  const resultados = container.querySelectorAll<HTMLElement>('.panel-resultados__celda')[0]!
+  expect(within(resultados).queryByText('incluye costo pendiente')).not.toBeInTheDocument()
+  expect(noteAfterRow(container, 'Costo de lo vendido')).toBeNull()
+  expect(screen.queryByText('Faltante de stock')).not.toBeInTheDocument()
+})
+
+test('Semana: Ganancia\'s note and the Faltante de stock row (with its own note) show; Costo de lo vendido\'s doesn\'t', async () => {
+  stubFetch(PANEL)
+  const { container } = renderInicio()
+  await screen.findByText('Vendiste hoy')
   screen.getByRole('button', { name: 'Semana' }).click()
   await screen.findByText('Vendiste esta semana')
-  expect(screen.getAllByText('incluye costo pendiente')).toHaveLength(2)
 
+  const resultados = container.querySelectorAll<HTMLElement>('.panel-resultados__celda')[0]!
+  expect(within(resultados).getByText('incluye costo pendiente')).toBeInTheDocument()
+
+  // `pending_cost` is false on the week fixture: the Costo row stays unmarked even
+  // though Ganancia's own flag (`profit_pending`) is true — each note reads exactly
+  // one flag, never a combination.
+  expect(noteAfterRow(container, 'Costo de lo vendido')).toBeNull()
+
+  const faltante = screen.getByText('Faltante de stock').closest<HTMLElement>('.panel-lista__fila')!
+  expect(within(faltante).getByText('$ 3.000')).toBeInTheDocument()
+  expect(noteAfterRow(container, 'Faltante de stock')).toBe('incluye costo pendiente')
+})
+
+test('Semana: Faltante de stock shows with no note of its own when its cost isn\'t pending', async () => {
+  // A dedicated override: the shared fixture's week always carries a pending
+  // shortfall, so nothing else proves the row renders without `pie` when
+  // `shortfall.pending` is false.
+  const costedShortfall: PanelAnswer = {
+    ...PANEL,
+    periods: {
+      ...PANEL.periods,
+      week: { ...PANEL.periods.week, shortfall: { amount: 3000, pending: false } },
+    },
+  }
+  stubFetch(costedShortfall)
+  const { container } = renderInicio()
+  await screen.findByText('Vendiste hoy')
+  screen.getByRole('button', { name: 'Semana' }).click()
+  await screen.findByText('Vendiste esta semana')
+
+  const faltante = screen.getByText('Faltante de stock').closest<HTMLElement>('.panel-lista__fila')!
+  expect(within(faltante).getByText('$ 3.000')).toBeInTheDocument()
+  expect(noteAfterRow(container, 'Faltante de stock')).toBeNull()
+})
+
+test('Mes: Costo de lo vendido\'s note and Ganancia\'s note show; there is no Faltante de stock row', async () => {
+  stubFetch(PANEL)
+  const { container } = renderInicio()
+  await screen.findByText('Vendiste hoy')
   screen.getByRole('button', { name: 'Mes' }).click()
   await screen.findByText('Vendiste este mes')
-  expect(screen.queryByText('incluye costo pendiente')).not.toBeInTheDocument()
+
+  const resultados = container.querySelectorAll<HTMLElement>('.panel-resultados__celda')[0]!
+  expect(within(resultados).getByText('incluye costo pendiente')).toBeInTheDocument()
+  expect(noteAfterRow(container, 'Costo de lo vendido')).toBe('incluye costo pendiente')
+  expect(screen.queryByText('Faltante de stock')).not.toBeInTheDocument()
 })
 
 test('no sales shows no average, and the range reads with no year', async () => {
@@ -130,9 +191,11 @@ test('no sales shows no average, and the range reads with no year', async () => 
         grams_gifted: 0,
         cost_of_goods: 0,
         pending_cost: false,
+        shortfall: null,
         expenses: 5000,
         purchases: 0,
         profit: -5000,
+        profit_pending: false,
         cash: -5000,
       },
     },

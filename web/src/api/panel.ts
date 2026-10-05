@@ -9,6 +9,14 @@
 import { get } from './client'
 import type { VarietyStock } from './stock'
 
+/** A period's stock shortfall (CONTEXT.md: Stock shortfall), `null` exactly when the
+ * period has no negative adjustment. `pending` is decided from the shortfall figure's
+ * own pending grams (plan invariant); no grams cross the wire (PM). */
+export interface PanelShortfall {
+  amount: number
+  pending: boolean
+}
+
 export interface PanelPeriod {
   start: string
   end: string
@@ -19,9 +27,11 @@ export interface PanelPeriod {
   grams_gifted: number
   cost_of_goods: number
   pending_cost: boolean
+  shortfall: PanelShortfall | null
   expenses: number
   purchases: number
   profit: number
+  profit_pending: boolean
   cash: number
 }
 

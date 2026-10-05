@@ -1,32 +1,33 @@
-"""The ports results declares toward each owner (plan: "Ports"). One port per owning
-hexagon, each answering only results' own types or `app.shared` (plan invariant:
-results' ports answer only types declared under `app/results/` or `app/shared/`; no
-port signature or answer carries a class or `Literal` from another hexagon) — not the
-owner's own domain or adapter types, so results never imports another hexagon's
-`domain/` or `application/` (ADR-0006).
+"""The ports results declares toward each owner (plan: "Ports"; ADR-0013 amendment
+GH-70). One port per owning hexagon, each answering only results' own types or
+`app.shared` (plan invariant: results' ports answer only types declared under
+`app/results/` or `app/shared/`; no port signature or answer carries a class or
+`Literal` from another hexagon) — not the owner's own domain or adapter types, so
+results never imports another hexagon's `domain/` or `application/` (ADR-0006).
 
 Every port is built `(Session, business_id)` per request (plan: "Wiring"); none of
 them takes `today` itself for anything but `StockFigures.read`, which needs it to
 compute days left the way `stock_level` does.
 
-The analysis ports (`GET /analysis`, ADR-0020) follow the panel's:
-
 What results needs from the rest of the business (docs/adr/0006, ADR-0020). Each
 port is built for one business; a record of another business is, from here, a record
 that does not exist (docs/adr/0004).
 
-`DrawCosts` answers one row per draw — a sale line (sold or gifted) or a negative
-adjustment (shortfall) — already costed through `app.stock.domain.allocation.allocate`,
-called once per variety for the whole business (the plan's invariant: no other code
-multiplies grams by a cost or rounds a cost of goods). The other four ports answer
-plain, already-stored facts; `period_figures` is the one place they are summed. The
-record shapes themselves live in `app.results.domain.ledger`: a port is application,
-but what it answers is a domain type.
+`DrawCosts` and `StockFigures.read`'s `draws` both answer one row per draw — a sale
+line (sold or gifted) or a negative adjustment (shortfall) — already costed through
+`app.stock.domain.allocation.allocate`, called once per variety for the whole business
+(the plan's invariant: no other code multiplies grams by a cost or rounds a cost of
+goods). `SalesLedger`, `PaymentsLedger`, `ExpensesLedger` and `Purchases` answer plain,
+already-stored facts; `period_figures.scan`/`totals_between` is the one place any of
+these are summed, for both `GET /analysis` and `GET /panel` (ADR-0013 amendment GH-70:
+the panel is no longer a second author of profit or cash). The record shapes
+themselves live in `app.results.domain.ledger`: a port is application, but what it
+answers is a domain type.
 """
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date
 from typing import Literal, Protocol
@@ -38,30 +39,7 @@ from app.results.domain.ledger import (
     PurchaseRecord,
     SaleRecord,
 )
-from app.results.domain.periods import Period
 from app.shared.grams import Grams
-
-
-@dataclass(frozen=True)
-class SalesSummary:
-    total: int
-    count: int
-    grams_sold: Grams
-    grams_gifted: Grams
-
-
-class PeriodSales(Protocol):
-    """Sales figures for each of `periods`, in a fixed number of statements whatever
-    the number of sales (plan invariant): implemented in `app/sales/adapters/`."""
-
-    def summaries(self, periods: Sequence[Period]) -> Mapping[Period, SalesSummary]: ...
-
-
-@dataclass(frozen=True)
-class CostOfGoods:
-    amount: int
-    pending: bool
-
 
 # Results' own copy of stock's `Status` (stock-domain), with the same values: results
 # never imports `app.stock.domain` (ADR-0006), so this port answers its own literal
@@ -83,28 +61,16 @@ class StockRow:
 @dataclass(frozen=True)
 class StockFiguresAnswer:
     rows: tuple[StockRow, ...]
-    cost_of_goods: Mapping[Period, CostOfGoods]
-    purchases: Mapping[Period, int]
+    draws: tuple[DrawRow, ...]
 
 
 class StockFigures(Protocol):
-    """One `lots_and_draws` load answers the panel's stock rows, cost of goods and
-    purchases together (plan invariant): implemented in `app/stock/adapters/`."""
+    """One `lots_and_draws` load answers the panel's stock rows and its draws
+    together (plan invariant): implemented in `app/stock/adapters/`. `read_panel`
+    feeds `draws` into `period_figures.scan`, exactly as `DrawCosts.rows()` feeds
+    `analyse` — never a second cost-of-goods or purchases sum here."""
 
-    def read(self, today: date, periods: Sequence[Period]) -> StockFiguresAnswer: ...
-
-
-class PeriodExpenses(Protocol):
-    """Implemented in `app/expenses/adapters/`."""
-
-    def totals(self, periods: Sequence[Period]) -> Mapping[Period, int]: ...
-
-
-class PaymentsReceived(Protocol):
-    """Every payment counted on its own `paid_on` date, on-the-spot and later alike
-    (PRD: "What Caja counts"): implemented in `app/payments/adapters/`."""
-
-    def totals(self, periods: Sequence[Period]) -> Mapping[Period, int]: ...
+    def read(self, today: date) -> StockFiguresAnswer: ...
 
 
 @dataclass(frozen=True)

@@ -1,11 +1,12 @@
-"""The one computation every period figure goes through (ADR-0020; CONTEXT.md: Sales,
-Cost of goods sold, Stock shortfall, Expenses, Profit, Cash, Margin, Margin
-percentage, Average margin, Best week, Best weekday).
+"""The one computation every period figure goes through (ADR-0020; ADR-0013 amendment
+GH-70; CONTEXT.md: Sales, Cost of goods sold, Stock shortfall, Expenses, Profit, Cash,
+Margin, Margin percentage, Average margin, Best week, Best weekday).
 
-Scans each ledger once into day buckets (`_Buckets`); every window below — the chosen
-month, the last 8 weeks, the last 12 months, the 7 weekdays and since the first
-record — reads those buckets, never a second sum over the ledgers themselves. No
-`float`, `round()` or `Decimal.quantize` anywhere here.
+Scans each ledger once into day buckets (`Buckets`, via the public `scan`); every
+window — the chosen month, the last 8 weeks, the last 12 months, the 7 weekdays, since
+the first record, and now Inicio's Hoy/Semana/Mes through `totals_between` — reads
+those buckets, never a second sum over the ledgers themselves. No `float`, `round()`
+or `Decimal.quantize` anywhere here.
 """
 
 from __future__ import annotations
@@ -24,6 +25,7 @@ from app.results.domain.figures import (
     MarginFigure,
     MonthFigures,
     MonthRowFigures,
+    PeriodTotals,
     SinceFirstRecordFigures,
     VarietyRow,
     WeekdayFigures,
@@ -54,6 +56,8 @@ def _days(start: date, end_inclusive: date) -> list[date]:
 class _DayTotals:
     sales_without_shipping: int = 0
     grams: Grams = ZERO
+    grams_sold: Grams = ZERO
+    grams_gifted: Grams = ZERO
     costed_cost: int = 0
     sales_of_costed: int = 0
     pending_grams: Grams = ZERO
@@ -76,7 +80,7 @@ class _ShortfallDayTotals:
 
 
 @dataclass
-class _Buckets:
+class Buckets:
     """Everything `period_figures` scans each ledger into, once; every window below
     reads from here, never from the ledgers again."""
 
@@ -85,6 +89,7 @@ class _Buckets:
     shortfall_totals: dict[date, _ShortfallDayTotals] = field(default_factory=dict)
     variety_names: dict[int, str] = field(default_factory=dict)
     sales_by_day: dict[date, int] = field(default_factory=dict)
+    sales_count_by_day: dict[date, int] = field(default_factory=dict)
     weekday_sales: dict[int, int] = field(default_factory=dict)
     weekday_counts: dict[int, int] = field(default_factory=dict)
     payments_by_day: dict[date, int] = field(default_factory=dict)
@@ -98,6 +103,9 @@ class _Buckets:
 
     def sales(self, start: date, end: date) -> int:
         return sum(self.sales_by_day.get(d, 0) for d in _days(start, end))
+
+    def sales_count(self, start: date, end: date) -> int:
+        return sum(self.sales_count_by_day.get(d, 0) for d in _days(start, end))
 
     def payments(self, start: date, end: date) -> int:
         return sum(self.payments_by_day.get(d, 0) for d in _days(start, end))
@@ -122,6 +130,22 @@ class _Buckets:
             totals = self.day_totals.get(d)
             if totals is not None:
                 total = total + totals.grams
+        return total
+
+    def grams_sold(self, start: date, end: date) -> Grams:
+        total = ZERO
+        for d in _days(start, end):
+            totals = self.day_totals.get(d)
+            if totals is not None:
+                total = total + totals.grams_sold
+        return total
+
+    def grams_gifted(self, start: date, end: date) -> Grams:
+        total = ZERO
+        for d in _days(start, end):
+            totals = self.day_totals.get(d)
+            if totals is not None:
+                total = total + totals.grams_gifted
         return total
 
     def costed_cost(self, start: date, end: date) -> int:
@@ -191,19 +215,19 @@ class _Buckets:
         return totals
 
 
-def _build_buckets(
+def scan(
     draws: Sequence[DrawRow],
     sales: Sequence[SaleRecord],
     payments: Sequence[PaymentRecord],
     expenses: Sequence[ExpenseRecord],
     purchases: Sequence[PurchaseRecord],
     earliest_entry_day: date | None,
-) -> tuple[_Buckets, date | None]:
+) -> tuple[Buckets, date | None]:
     """Scans every ledger exactly once: each loop below both fills its own buckets
     and folds its own days into `first_record` — the minimum date across sales,
     stock entries, payments and expenses (ADR-0020) — so nothing is scanned a second
     time just to find it."""
-    buckets = _Buckets()
+    buckets = Buckets()
     first_record = earliest_entry_day
 
     for row in draws:
@@ -222,6 +246,10 @@ def _build_buckets(
         day = buckets.day_totals.setdefault(row.day, _DayTotals())
         day.sales_without_shipping += row.line_total
         day.grams = day.grams + row.grams
+        if row.kind == "sold":
+            day.grams_sold = day.grams_sold + row.grams
+        else:
+            day.grams_gifted = day.grams_gifted + row.grams
         day.costed_cost += row.costed or 0
         day.sales_of_costed += sold_amount
         day.pending_grams = day.pending_grams + row.pending
@@ -238,6 +266,7 @@ def _build_buckets(
 
     for sale in sales:
         buckets.sales_by_day[sale.day] = buckets.sales_by_day.get(sale.day, 0) + sale.total
+        buckets.sales_count_by_day[sale.day] = buckets.sales_count_by_day.get(sale.day, 0) + 1
         weekday = sale.day.isoweekday()
         buckets.weekday_sales[weekday] = buckets.weekday_sales.get(weekday, 0) + sale.total
         buckets.weekday_counts[weekday] = buckets.weekday_counts.get(weekday, 0) + 1
@@ -273,7 +302,31 @@ def _build_buckets(
     return buckets, first_record
 
 
-def _variety_rows(buckets: _Buckets, month: Month) -> tuple[VarietyRow, ...]:
+def totals_between(buckets: Buckets, start: date, end: date) -> PeriodTotals:
+    """One `[start, end]` window's figures, read off an already-`scan`ned `Buckets`
+    (ADR-0013 amendment GH-70): sales, sales count, grams sold and gifted, cost of
+    goods, stock shortfall, expenses, purchases, profit and cash — the one
+    computation Inicio's panel and Análisis's weeks/months/since-first-record all
+    read, never a second sum of their own. Profit and cash stay written once, in
+    `Buckets.profit`/`Buckets.cash` above."""
+    return PeriodTotals(
+        sales=buckets.sales(start, end),
+        sales_count=buckets.sales_count(start, end),
+        grams_sold=buckets.grams_sold(start, end),
+        grams_gifted=buckets.grams_gifted(start, end),
+        cost_of_goods=CostFigure(
+            costed=buckets.costed_cost(start, end),
+            pending_grams=buckets.pending_grams(start, end),
+        ),
+        shortfall=buckets.shortfall(start, end),
+        expenses=buckets.expenses(start, end),
+        purchases=buckets.purchases(start, end),
+        profit=buckets.profit(start, end),
+        cash=buckets.cash(start, end),
+    )
+
+
+def _variety_rows(buckets: Buckets, month: Month) -> tuple[VarietyRow, ...]:
     totals_by_variety: dict[int, _VarietyDayTotals] = {}
     for (day, variety_id), vday in buckets.variety_day_totals.items():
         if not (month.first_day <= day <= month.last_day):
@@ -312,7 +365,7 @@ def _variety_rows(buckets: _Buckets, month: Month) -> tuple[VarietyRow, ...]:
 
 
 def _month_figures(
-    buckets: _Buckets,
+    buckets: Buckets,
     month: Month,
     first_month: Month | None,
     current_month: Month,
@@ -349,7 +402,7 @@ def _month_figures(
     )
 
 
-def _weeks(buckets: _Buckets, today: date, first_record: date | None) -> tuple[WeekFigures, ...]:
+def _weeks(buckets: Buckets, today: date, first_record: date | None) -> tuple[WeekFigures, ...]:
     if first_record is None:
         return ()
     first_week = Week.containing(first_record)
@@ -362,19 +415,21 @@ def _weeks(buckets: _Buckets, today: date, first_record: date | None) -> tuple[W
         week = week.previous
     span.reverse()
 
-    rows = [
-        WeekFigures(
-            first_day=w.first_day,
-            last_day=w.last_day,
-            sales=buckets.sales(w.first_day, w.last_day),
-            grams=buckets.grams(w.first_day, w.last_day),
-            expenses=buckets.expenses(w.first_day, w.last_day),
-            profit=buckets.profit(w.first_day, w.last_day),
-            cash=buckets.cash(w.first_day, w.last_day),
-            best=False,
+    rows = []
+    for w in span:
+        totals = totals_between(buckets, w.first_day, w.last_day)
+        rows.append(
+            WeekFigures(
+                first_day=w.first_day,
+                last_day=w.last_day,
+                sales=totals.sales,
+                grams=totals.grams_sold + totals.grams_gifted,
+                expenses=totals.expenses,
+                profit=totals.profit,
+                cash=totals.cash,
+                best=False,
+            )
         )
-        for w in span
-    ]
     best_index = _best_index([row.sales for row in rows])
     if best_index is not None:
         rows[best_index] = WeekFigures(
@@ -403,7 +458,7 @@ def _best_index(values: list[int]) -> int | None:
 
 
 def _months(
-    buckets: _Buckets, today: date, first_record: date | None
+    buckets: Buckets, today: date, first_record: date | None
 ) -> tuple[MonthRowFigures, ...]:
     if first_record is None:
         return ()
@@ -417,22 +472,25 @@ def _months(
         month = month.previous
     span.reverse()
 
-    return tuple(
-        MonthRowFigures(
-            month=m,
-            first_day=m.first_day,
-            last_day=m.last_day,
-            sales=buckets.sales(m.first_day, m.last_day),
-            grams=buckets.grams(m.first_day, m.last_day),
-            expenses=buckets.expenses(m.first_day, m.last_day),
-            profit=buckets.profit(m.first_day, m.last_day),
-            cash=buckets.cash(m.first_day, m.last_day),
+    rows = []
+    for m in span:
+        totals = totals_between(buckets, m.first_day, m.last_day)
+        rows.append(
+            MonthRowFigures(
+                month=m,
+                first_day=m.first_day,
+                last_day=m.last_day,
+                sales=totals.sales,
+                grams=totals.grams_sold + totals.grams_gifted,
+                expenses=totals.expenses,
+                profit=totals.profit,
+                cash=totals.cash,
+            )
         )
-        for m in span
-    )
+    return tuple(rows)
 
 
-def _weekdays(buckets: _Buckets) -> tuple[WeekdayFigures, ...]:
+def _weekdays(buckets: Buckets) -> tuple[WeekdayFigures, ...]:
     sales = [buckets.weekday_sales.get(w, 0) for w in range(1, 8)]
     best_index = _best_earliest_on_tie(sales)
     return tuple(
@@ -453,7 +511,7 @@ def _best_earliest_on_tie(values: list[int]) -> int | None:
     return values.index(best)
 
 
-def _expense_breakdown(buckets: _Buckets, start: date, end_inclusive: date) -> ExpenseBreakdown:
+def _expense_breakdown(buckets: Buckets, start: date, end_inclusive: date) -> ExpenseBreakdown:
     totals = buckets.expense_categories(start, end_inclusive)
     ordered = sorted(totals.items(), key=lambda item: item[1][1])
     categories = tuple(
@@ -478,7 +536,7 @@ def period_figures(
     purchases: Sequence[PurchaseRecord],
     earliest_entry_day: date | None,
 ) -> AnalysisFigures:
-    buckets, first_record = _build_buckets(
+    buckets, first_record = scan(
         draws, sales, payments, expenses, purchases, earliest_entry_day
     )
 
@@ -493,12 +551,13 @@ def period_figures(
     since_first_record = None
     since_first_record_expenses = ExpenseBreakdown((), 0, 0)
     if first_record is not None:
+        since_totals = totals_between(buckets, first_record, today)
         since_first_record = SinceFirstRecordFigures(
-            sales=buckets.sales(first_record, today),
-            expenses=buckets.expenses(first_record, today),
-            profit=buckets.profit(first_record, today),
-            cash=buckets.cash(first_record, today),
-            shortfall=buckets.shortfall(first_record, today),
+            sales=since_totals.sales,
+            expenses=since_totals.expenses,
+            profit=since_totals.profit,
+            cash=since_totals.cash,
+            shortfall=since_totals.shortfall,
         )
         since_first_record_expenses = _expense_breakdown(buckets, first_record, today)
 

@@ -113,6 +113,10 @@ def seed(api: Api, today: date) -> Sample:
     entry(ago(40), cookies, "purchase", "40", 280_000)
     entry(ago(40), jack, "harvest", "10", None)
     entry(ago(0), gold, "purchase", "30", 150_000)
+    # A negative adjustment (GH-70): 24K Gold goes to 133 g, its 2 g costed at
+    # $ 10.000 from the same $ 5.000/g lots above — Inicio's Faltante de stock row
+    # and Ganancia now carry this, and Stock shows the Ajuste entry.
+    entry(ago(0), gold, "adjustment", "-2", None)
     api.call("PUT", f"/stock/varieties/{cookies}/threshold", {"grams": "20"})
 
     def customer(name: str, phone: str, channel: str | None, vip: bool = False) -> int:
