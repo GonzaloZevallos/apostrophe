@@ -34,6 +34,8 @@ These two refine the "log in once and stay in" job above. The operator's command
 - The protagonist of this last job is the operator of the installation, not a user in the app.
 - For a seller, only two things change: where they can reach the app from, and that it is on HTTPS.
 
+Inicio's own jobs (acting on today, and the first-run setup checklist whose "Invite a partner" step opens Negocio's "Invitá a un socio") are in results.md.
+
 Success criteria:
 
 1. Nothing of one business is reachable from another, through any route: by id it does not exist (404), in a list it is absent.
@@ -283,11 +285,15 @@ Success criteria, removing a business:
   - A fixed **"Nueva venta"** button, separate from the tabs, opens the sale form directly (sales.md). It is not a tab.
   - It shows on every signed-in screen except the sale form itself and its customer sheet.
 - **Inicio**: the panel (results.md).
-  - Hoy · Semana · Mes, with sales, Ganancia, Caja, money owed and stock per variety.
-  - When no variety has a current price today, "Arrancá por las variedades" shows above the panel, and the panel still shows its real figures.
-  - "Tu catálogo en Telegram está desactualizado", a fixed notice while the pinned catalog is out of date (pinned-catalog.md). It opens Catálogo.
+  - Hoy is for acting on today: sold today, Te deben with a "Cobrar" per debtor, and Lo que te queda. Semana and Mes hold the period's sales, Regalaste, Costo de lo vendido, Gastos, Compras, Ganancia and Caja.
+  - Inicio records only Cobrar's payment and the bot notice's dismissal; every figure comes from the server.
+  - The business avatar at the top (accessible name "Configuración") opens Negocio.
+  - Notices, only three, on Hoy:
+    - the setup checklist, or, once it is gone and no variety has a current price today, "Arrancá por las variedades" (the panel still shows its real figures);
+    - the bot notice (results.md), which opens Catálogo;
+    - "Tu catálogo en Telegram está desactualizado", a fixed notice while the pinned catalog is out of date (pinned-catalog.md). It opens Catálogo.
 - **Más**: Gastos, Variedades, Catálogo ("Catálogo · El mensaje de hoy, listo para copiar", catalog.md), Análisis ("Análisis · Variedades, semanas, meses y días", analysis.md), Negocio.
-- **Negocio**:
+- **Negocio** (also reached from Inicio's avatar, and from the setup checklist's "Invite a partner" step):
   - rename the business;
   - the users by email, the signed-in one marked "vos";
   - "Invitá a un socio": each tap creates one fresh join link, to copy or share with the phone's share sheet;
@@ -381,7 +387,7 @@ Success criteria, removing a business:
   - the bar shows exactly Inicio, Ventas, Clientes, Stock and Más, plus the "Nueva venta" button;
   - Más shows exactly Gastos, Variedades, Catálogo, Análisis and Negocio;
   - every figure on Inicio equals the API's answer, with real zeros for a period with no activity (results.md);
-  - Inicio shows no notices other than "Arrancá por las variedades" and the pinned catalog's.
+  - Inicio shows no notices other than three: the setup checklist or "Arrancá por las variedades", the bot notice, and the pinned catalog's "Tu catálogo en Telegram está desactualizado".
 - **Password change (criterion 18)**:
   - after a Change, every earlier token of the user answers 401;
   - the acting device's fresh token works, and a partner's token in the same business still works;
@@ -474,3 +480,4 @@ Success criteria, removing a business:
 - A scheduled restore drill; any notification channel to the operator.
 - An admin screen, route or navigation entry, or anything operated from a signed-in session.
 - A per-business publishing flag or staged rollout.
+- Renaming Negocio to Configuración, or changing the bar and routes: part 2.

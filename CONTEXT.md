@@ -329,7 +329,7 @@ The pinned catalog's state when customers are not seeing today's catalog: the la
 _Avoid_: stale, pending, out of sync, error
 
 **Panel**:
-Inicio's one-screen view of a business for today, this week (Monday to Sunday) or this month in Argentina time: sales, cost of goods sold, expenses, purchases, profit and cash, then money owed and stock per variety. Read only; every figure comes from the server. _In the app_: Inicio (tabs Hoy · Semana · Mes).
+Inicio's one-screen view of a business in Argentina time. Hoy is for acting on today: sold today, Te deben with Cobrar, and stock per variety. Semana (Monday to Sunday) and Mes show sales, cost of goods sold, expenses, purchases, profit and cash. It records only a payment through Cobrar and the bot notice's dismissal; every figure comes from the server. _In the app_: Inicio (tabs Hoy · Semana · Mes).
 _Avoid_: dashboard, overview, home, summary, Análisis
 
 **Average sale**:
@@ -377,3 +377,11 @@ _Avoid_: password update, rotation, edit password
 **Reset link**:
 A link the operator prints with scripts/reset-password.sh that lets one user choose a new password themselves, once, within 24 hours, without the current one. A user has at most one live link: a newer link or any password change retires it. A retired, used, expired or unknown link answers the same 404. _In the app_: enlace ("Este enlace ya no sirve").
 _Avoid_: recovery code, reset token, magic link, forgot-password email
+
+**Setup checklist**:
+The list on Hoy of what a business still lacks before it can sell and publish: a variety with a current price today and a stock entry (required), a first published catalog and a second user (optional). Each step reads "Hecho", with a box, when its condition is true in the data. It is gone for good, for the whole business, once both required steps are true at once. _In the app_: each step marked "Hecho".
+_Avoid_: onboarding, wizard, tutorial, to-do list, progress bar
+
+**Bot notice**:
+One notice on Hoy for a business that has records but has never published its catalog, shown only once the setup checklist is gone. It opens Catálogo. Dismissing it is one permanent decision for the whole business, and it also goes once the catalog is first published. _In the app_: fixed copy from the design.
+_Avoid_: banner, alert, reminder, nag
