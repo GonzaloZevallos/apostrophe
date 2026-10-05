@@ -89,13 +89,13 @@ Every screen is exactly one of three kinds, and gets its chrome only from its ki
 ### Routes
 
 - Every screen's route is in English: `/sales`, `/customers`, `/varieties`, `/expenses`, `/analysis`, `/settings`, `/more`, and the same for every other screen. The exact path of each screen, each Configuración group included, is fixed in `scripts/design/screens.json`.
-- Every old Spanish path redirects permanently to its new route, each tested one by one:
+- **One screen has not moved yet**: the catalog screen keeps `/catalogo`, and that address keeps opening it, with its preview, Compartir, Copiar, the pin's status and Publicar. Its English route under Variedades, and the permanent redirect from `/catalogo`, belong to the issue that moves Variedades to its English address. Until then, reloading a page under `/varieties` would collide with the API's own address.
+- Every other old Spanish path redirects permanently to its new route, each tested one by one:
   - `/ventas`, `/clientes`, `/mi-stock`, `/variedades`, `/gastos`, `/mas`, and every other one, including the old Te deben screen's path, which goes to Clientes;
   - `/negocio` goes to Configuración;
-  - `/catalogo` goes to the catalog screen's English route (preview, Compartir, Copiar, the pin's status and Publicar stay there);
-  - any old path or deep link to the bot settings inside Catálogo goes to Configuración → Integraciones, and to the header and footer, to Configuración → Mensaje del catálogo;
-  - the old Gastos → Categorías path goes to Configuración → Categorías de gastos;
-  - an old path with no counterpart lands on Configuración, never on an empty or invented screen.
+  - the old Gastos → Categorías path (`/gastos/categorias`) goes to Configuración → Categorías de gastos.
+- The old Catálogo had no separate paths for the bot or the header and footer, so nothing redirects to Integraciones or Mensaje del catálogo.
+- An unknown or mistyped address goes to Inicio (`/`), as it always has. A later task that removes a path with no counterpart decides where that path goes.
 - No route carries a business (ADR-0004). `/invitation/{token}` and `/reset/{token}` stay as they are (accounts.md).
 - Screen text stays in Rioplatense Spanish; only the routes change.
 
@@ -146,7 +146,8 @@ Every screen is exactly one of three kinds, and gets its chrome only from its ki
   - deleting the only price entry afterwards never brings it back;
   - an imported business never sees it and sees the after-import notice until dismissed or published;
   - "Mandar catálogo" is disabled only while the checklist shows and nothing qualifies.
-- **Redirects**: every old Spanish path answers a permanent redirect to its English route, tested one by one, including `/negocio`, `/catalogo`, the old bot and header/footer paths, the old Gastos → Categorías path and a path with no counterpart (to Configuración).
+- **Redirects**: every old Spanish path that has moved answers a permanent redirect to its English route, tested one by one, including `/negocio` and `/gastos/categorias`.
+- **The catalog screen's address**: a front test shows `/catalogo` still opens the catalog screen, and its "Editar encabezado y pie" opens Configuración → Mensaje del catálogo. The redirect from `/catalogo` is tested by the issue that moves it.
 - **One structure (criterion 7)**: the docs, CONTEXT.md, `pantallas/` and `screens.json` name the same screens and routes; Zeta approves the pull request that states them.
 
 ## Out of scope
@@ -158,4 +159,5 @@ Every screen is exactly one of three kinds, and gets its chrome only from its ki
 - A "follow the system" theme.
 - The pin's status or Publicar in Integraciones.
 - Per-variety settings in Configuración (#47).
+- A redirect rule for removed paths with no counterpart; changing where unknown addresses go.
 - Live updates between partners.
