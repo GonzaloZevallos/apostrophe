@@ -7,14 +7,14 @@
  * `relative`, so the table and the links cannot drift apart.
  */
 
-export const MORE = '/mas'
-export const EXPENSES = '/gastos'
+export const MORE = '/more'
+export const EXPENSES = '/expenses'
 export const EXPENSE_CATEGORIES = '/gastos/categorias'
 export const ANALYSIS = '/analisis'
-// Placeholder: no route uses it yet; the flip to /more and /expenses sets its real value.
-export const EXPENSE_NEW = '/gastos/nuevo'
+// Its route is mounted by the expense form's own subtask.
+export const EXPENSE_NEW = '/expenses/new'
 
-/** The path as a route-table segment (`'/mas'` → `'mas'`), for children of the root route. */
+/** The path as a route-table segment (`'/more'` → `'more'`), for children of the root route. */
 export function relative(path: string): string {
   return path.replace(/^\//, '')
 }

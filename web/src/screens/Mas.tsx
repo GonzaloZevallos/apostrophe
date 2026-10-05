@@ -1,6 +1,6 @@
 /**
  * `Mas`: Gastos, Variedades, Catálogo, Análisis and Negocio. Each entry links to
- * where its own screen subtask mounts its route (`/gastos`, `/variedades`,
+ * where its own screen subtask mounts its route (`/expenses`, `/variedades`,
  * `/catalogo`, `/analisis`, `/negocio`), already reserved in `contract.json`'s
  * `frontSegments`. The fixed subtitles are the design's own words (`Mas.dc.html`);
  * Análisis's is the plan's own line ("Análisis · Variedades, semanas, meses y

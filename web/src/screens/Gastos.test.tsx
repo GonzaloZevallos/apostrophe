@@ -50,10 +50,10 @@ function renderGastos(fetchImpl: (url: string, init?: RequestInit) => Promise<Re
   vi.stubGlobal('fetch', vi.fn(fetchImpl))
   render(
     <QueryClientProvider client={new QueryClient()}>
-      <MemoryRouter initialEntries={['/gastos']}>
+      <MemoryRouter initialEntries={['/expenses']}>
         <Routes>
           <Route element={<Provide />}>
-            <Route path="/gastos" element={<Gastos />} />
+            <Route path="/expenses" element={<Gastos />} />
           </Route>
         </Routes>
       </MemoryRouter>

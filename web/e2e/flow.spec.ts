@@ -145,6 +145,22 @@ test('a seller does everything the backend offers today, from the front alone', 
   await expect(page.getByText('Gasto eliminado')).toBeVisible()
   await expect(page.getByText('Flete al mercado central')).toHaveCount(0)
 
+  // The Spanish paths stay on purpose here: the server answers them with a 308 and the
+  // app shows the English screen (the one `goto('/gastos')` and one `goto('/mas')` of
+  // the run; every other step reaches a screen through the nav or its real path).
+  await page.goto('/gastos?month=2026-01')
+  await expect(page).toHaveURL(/\/expenses\?month=2026-01$/)
+  await expect(page.getByText(/Las compras de flores no van acá/)).toBeVisible()
+  await page.reload()
+  await expect(page).toHaveURL(/\/expenses\?month=2026-01$/)
+  await expect(page.getByText(/Las compras de flores no van acá/)).toBeVisible()
+  await page.goto('/mas')
+  await expect(page).toHaveURL(/\/more$/)
+  await expect(page.getByRole('link', { name: /Gastos/ })).toBeVisible()
+  await page.reload()
+  await expect(page).toHaveURL(/\/more$/)
+  await expect(page.getByRole('link', { name: /Gastos/ })).toBeVisible()
+
   // Add and remove an expense category. "Insumos de cultivo", "Packaging",
   // "Envíos y traslados" and "Otros" are the four the business starts with
   // (`app/expenses/domain/category.py`'s `DEFAULT_CATEGORY_NAMES`), so this one

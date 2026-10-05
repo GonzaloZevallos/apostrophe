@@ -95,3 +95,44 @@ test('/ventas/:id renders VentaDetalle, from the API, under the gated shell', as
   expect(await screen.findByText('Venta del 14/09')).toBeInTheDocument()
   expect(await screen.findByText('Flor A')).toBeInTheDocument()
 })
+
+function fetchFor(view: unknown) {
+  return vi.fn().mockImplementation((input: RequestInfo | URL) => {
+    const path = String(input)
+    if (path.startsWith('/expenses')) return Promise.resolve(jsonResponse(200, view))
+    if (path.startsWith('/expense-categories')) return Promise.resolve(jsonResponse(200, []))
+    return Promise.resolve(
+      jsonResponse(200, { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }),
+    )
+  })
+}
+
+test('/more renders Más under the gated shell', async () => {
+  vi.stubGlobal('fetch', fetchFor({}))
+  await act(() => router.navigate('/more'))
+
+  render(<App />)
+
+  expect(await within(await screen.findByRole('main')).findByText('Más')).toBeInTheDocument()
+})
+
+test('/expenses renders Gastos, with its month, under the gated shell', async () => {
+  vi.stubGlobal('fetch', fetchFor({ month: '2026-10', total: 0, categories: [] }))
+  await act(() => router.navigate('/expenses'))
+
+  render(<App />)
+
+  expect(
+    await within(await screen.findByRole('main')).findByText(/Las compras de flores no van acá/),
+  ).toBeInTheDocument()
+})
+
+test('the Spanish /mas and /gastos are not front routes: the server redirects them', async () => {
+  vi.stubGlobal('fetch', fetchFor({}))
+  await act(() => router.navigate('/gastos'))
+
+  render(<App />)
+
+  // The catch-all sends an unknown path to Inicio, never to Gastos.
+  expect(await screen.findByRole('main')).not.toHaveTextContent(/Las compras de flores/)
+})
