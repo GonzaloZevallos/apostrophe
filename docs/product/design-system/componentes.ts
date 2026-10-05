@@ -188,6 +188,7 @@ export interface FilaClienteProps {
 export interface FilaTeDebeProps {
   iniciales: string;
   nombre: string;
+  telefono: string;
   monto: string;
   desde: string;
   onCobrar: () => void;
