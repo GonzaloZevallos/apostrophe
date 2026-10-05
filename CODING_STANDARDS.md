@@ -133,7 +133,6 @@ allowlist.
   does.
 - `_on` names a calendar date (`spent_on`), and only a date column ends in `_on`.
 - `_at` names a moment in time (`created_at`), and only a datetime column ends in `_at`.
-  No `_until`, `_from` or `_start`.
 - A foreign key to `<t>.id` is `<t>_id`, or ends in `_<t>_id` when it needs a role
   prefix (`assigned_app_user_id` referencing `app_user`), matched on whole
   `_`-separated segments, so `wholesale_id` against `sale` fails. A foreign key to a
@@ -155,6 +154,11 @@ allowlist.
   with its own surrogate `id` and a `uq_<a>_<b>_<a>_id_<b>_id` on the pair.
 - `catalog_attributes` keeps its plural name until #75: no code can flag it, since the
   rules above have nothing to say about plurals.
+- No `_until`, `_from` or `_start` for a moment in time or a calendar date (`_at` and
+  `_on` say both, with no third option): a reviewer reads it, since a column bearing one
+  of these and no date or datetime type (where the `_on`/`_at` rules would already catch
+  it) is not something the reflected schema alone can tell apart from an ordinary
+  integer or string column of the same name.
 
 ### How a table class states a name
 

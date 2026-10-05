@@ -18,9 +18,11 @@ from sqlalchemy import (
     Date,
     DateTime,
     ForeignKey,
+    ForeignKeyConstraint,
     Index,
     Integer,
     MetaData,
+    PrimaryKeyConstraint,
     String,
     Table,
     UniqueConstraint,
@@ -166,11 +168,69 @@ def test_a_foreign_key_with_a_whole_word_role_prefix_passes() -> None:
     assert ("task", "foreign_key", ("parent_variety_id",), "fk_name") not in found
 
 
+def test_a_composite_foreign_key_to_a_non_id_column_with_a_mismatched_name_breaks() -> None:
+    # The referenced column is not `id` (only possible inside a composite key), so the
+    # local column must carry that column's own name; `category_code` does not.
+    metadata = MetaData(naming_convention=NAMING_CONVENTION)
+    Table(
+        "category",
+        metadata,
+        Column("business_id", Integer, primary_key=True),
+        Column("code", Integer, primary_key=True),
+    )
+    Table(
+        "item",
+        metadata,
+        Column("id", Integer, primary_key=True),
+        Column("business_id", Integer),
+        Column("category_code", Integer),
+        ForeignKeyConstraint(
+            ["business_id", "category_code"], ["category.business_id", "category.code"]
+        ),
+    )
+
+    found = breaks(_create_and_reflect(metadata))
+
+    assert ("item", "foreign_key", ("business_id", "category_code"), "fk_name") in found
+
+
+def test_a_foreign_key_with_a_literal_name_breaking_its_pattern_breaks() -> None:
+    # No naming convention: a literal name bypasses the `fk_<table>_<col>_<table>`
+    # pattern the convention would otherwise produce.
+    metadata = MetaData()
+    Table("sale", metadata, Column("id", Integer, primary_key=True))
+    Table(
+        "widget",
+        metadata,
+        Column("id", Integer, primary_key=True),
+        Column("sale_id", Integer),
+        ForeignKeyConstraint(["sale_id"], ["sale.id"], name="not_the_convention"),
+    )
+
+    assert ("widget", "foreign_key", ("sale_id",), "fk_name_pattern") in breaks(
+        _create_and_reflect(metadata)
+    )
+
+
 def test_a_primary_key_not_named_id_breaks() -> None:
     metadata = MetaData(naming_convention=NAMING_CONVENTION)
     Table("widget", metadata, Column("code", Integer, primary_key=True))
 
     assert ("widget", "primary_key", ("code",), "pk_id") in breaks(_create_and_reflect(metadata))
+
+
+def test_a_primary_key_with_a_literal_name_breaking_its_pattern_breaks() -> None:
+    # No naming convention: a literal name bypasses the `pk_<table>` pattern the
+    # convention would otherwise produce.
+    metadata = MetaData()
+    Table(
+        "widget",
+        metadata,
+        Column("id", Integer),
+        PrimaryKeyConstraint("id", name="not_the_convention"),
+    )
+
+    assert ("widget", "primary_key", ("id",), "pk_name") in breaks(_create_and_reflect(metadata))
 
 
 def test_a_hand_named_index_breaking_its_pattern_breaks() -> None:
