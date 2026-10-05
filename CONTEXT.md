@@ -190,7 +190,7 @@ _In the app_: Categoría
 _Avoid_: type, tag, label, account, cost center
 
 **Profit**:
-Sales (shipping included, paid or not) minus cost of goods sold minus expenses, over a period, each counted on its own date. Purchases never enter it. It may be negative, and is then shown with a minus sign, never hidden. _In the app_: Ganancia.
+Sales (shipping included, paid or not) minus cost of goods sold minus stock shortfall minus expenses, over a period, each counted on its own date. Purchases never enter it. When any of that cost is pending, it is worked out over the costed part (the sales of pending grams are left out) and marked "y N g sin costo", N adding the pending grams sold, gifted and taken out by negative adjustments in the period. It may be negative, and is then shown with a minus sign, never hidden. _In the app_: Ganancia.
 _Avoid_: margin, earnings, net
 _In the app_: Ganancia
 
@@ -287,6 +287,34 @@ _Avoid_: unpaid orders, pending sales, open invoices
 **Total owed**:
 The sum of every customer's balance above $0 in a business; credits never subtract from it. _In the app_: the total heading Te deben and in Clientes' header.
 _Avoid_: receivables, outstanding
+
+**Margin**:
+A variety's sales of costed grams in a period minus what those grams cost, in pesos; gifts add their cost and $0 of sales, so it can be negative. Sales of costed grams are, per line, line total × costed grams ÷ line grams, half up; pending grams are left out and marked "y N g sin costo". In the app: Margen.
+_Avoid_: profit, earnings, markup, ganancia
+
+**Margin percentage**:
+A variety's margin over its sales of costed grams in the period. There is none when those are $0, as for a variety only gifted or with every gram pending. In the app: Margen %.
+_Avoid_: markup, rentabilidad, return
+
+**Average margin**:
+A month's total margin across its varieties over the month's sales of costed grams, marked when any variety carries pending grams. In the app: Margen promedio.
+_Avoid_: average profit, mean margin
+
+**First record**:
+The earliest sale, stock entry, payment or expense a business recorded in the app. Análisis's history and its since-the-start totals begin there. In the app: Desde el primer registro.
+_Avoid_: start date, opening date, inception
+
+**Best week**:
+Of the last 8 Monday-to-Sunday weeks, the one with the highest sales, shipping included; on a tie the most recent wins, and none is marked when all are $0. In the app: Mejor semana.
+_Avoid_: top week, record week
+
+**Best weekday**:
+Since the first record, the weekday with the highest sales total; on a tie the earlier day from Monday to Sunday wins, and none is marked when all are $0. In the app: Mejor día.
+_Avoid_: peak day, top day
+
+**Stock shortfall**:
+What the grams taken out by negative adjustments in a period cost, on the adjustment's date, from their lots as they stand today, oldest first; a part beyond every lot is pending, never $0. It lowers profit. In the app: Faltante de stock.
+_Avoid_: shrinkage, write-off, loss, merma
 
 **Publish**:
 Posting and pinning the catalog in the business's channel chat, or editing the already pinned message there. It always sends, even when the text has not changed. _In the app_: Publicar.

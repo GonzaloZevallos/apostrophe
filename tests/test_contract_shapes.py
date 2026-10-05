@@ -226,6 +226,8 @@ class RouteShape:
 
 FIXTURE_ROUTES: Mapping[str, tuple[RouteShape, ...]] = {
     "account": (RouteShape("GET", "/customers/{customer_id}/account"),),
+    "analysis": (RouteShape("GET", "/analysis"),),
+    "analysis-empty": (RouteShape("GET", "/analysis"),),
     "customer": (
         RouteShape("POST", "/customers"),
         RouteShape("GET", "/customers/{customer_id}"),
