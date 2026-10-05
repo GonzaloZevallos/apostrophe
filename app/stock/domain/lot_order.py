@@ -54,11 +54,22 @@ class Lot:
 class Draw:
     """Grams going out of a variety: a sale line (gifts included) or a negative
     adjustment, always carried as a positive magnitude — the direction is already
-    `Draw` itself, never a signed `Grams`."""
+    `Draw` itself, never a signed `Grams`.
+
+    `sale_id`, `line_total`, `pricing_rule` and `variety_name` ride along from the
+    `SaleLineDraw` a sale-line draw was built from (a negative-adjustment draw leaves
+    them at their defaults), so results' own `DrawCosts` (ADR-0013) reads them off
+    this exact draw once `allocate` has costed it, never by joining a line to its
+    cost through `(sale_id, position)` afterwards. `allocate` and `stock_level` never
+    read them."""
 
     order: LotOrder
     variety_id: int
     grams: Grams
+    sale_id: int | None = None
+    line_total: int | None = None
+    pricing_rule: str | None = None
+    variety_name: str | None = None
 
     def __post_init__(self) -> None:
         if not self.grams.is_positive:
@@ -90,16 +101,12 @@ class SaleLineDraw:
     pricing_rule: str = "list"
 
 
-def entry_order(entry: StockEntry) -> LotOrder:
-    """A stock entry's `LotOrder` — exported so a caller that needs to match its own
-    data back onto `lots_and_draws`' draws (results' `DrawCosts`, ADR-0013) builds the
-    identical key instead of inventing a second formula for it."""
+def _entry_order(entry: StockEntry) -> LotOrder:
     assert entry.id is not None, "only a stored entry is ordered"
     return LotOrder(entry.entry_date, entry.recorded_at, STOCK_ENTRY_RANK, entry.id, 0)
 
 
-def sale_draw_order(draw: SaleLineDraw) -> LotOrder:
-    """A sale-line draw's `LotOrder`, exported for the same reason as `entry_order`."""
+def _sale_draw_order(draw: SaleLineDraw) -> LotOrder:
     return LotOrder(draw.day, draw.recorded_at, SALE_LINE_RANK, draw.sale_id, draw.position)
 
 
@@ -111,7 +118,7 @@ def lots_and_draws(
     lots: dict[int, list[Lot]] = {}
     draws: dict[int, list[Draw]] = {}
     for entry in entries:
-        order = entry_order(entry)
+        order = _entry_order(entry)
         if entry.grams.is_positive:
             lots.setdefault(entry.variety_id, []).append(
                 Lot(order, entry.variety_id, entry.grams, entry.total_cost)
@@ -122,7 +129,15 @@ def lots_and_draws(
             )
     for sale_draw in sale_draws:
         draws.setdefault(sale_draw.variety_id, []).append(
-            Draw(sale_draw_order(sale_draw), sale_draw.variety_id, sale_draw.grams)
+            Draw(
+                _sale_draw_order(sale_draw),
+                sale_draw.variety_id,
+                sale_draw.grams,
+                sale_id=sale_draw.sale_id,
+                line_total=sale_draw.line_total,
+                pricing_rule=sale_draw.pricing_rule,
+                variety_name=sale_draw.variety_name,
+            )
         )
     varieties = set(lots) | set(draws)
     return {
