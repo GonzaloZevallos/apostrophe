@@ -32,7 +32,7 @@
  */
 
 import { expect, test } from '@playwright/test'
-import { E2E_BASE_URL } from './env.js'
+import { e2eBaseUrl } from './env.js'
 import { newBusinessInvitationUrl } from './backend.js'
 
 const PASSWORD = 'correcthorsebattery'
@@ -47,7 +47,7 @@ test('Copiar still works through the execCommand fallback on a plain-http, non-l
 }) => {
   await page.route('**/*', async (route) => {
     const requested = new URL(route.request().url())
-    const target = new URL(requested.pathname + requested.search, E2E_BASE_URL)
+    const target = new URL(requested.pathname + requested.search, e2eBaseUrl())
     const response = await route.fetch({ url: target.toString() })
     await route.fulfill({ response })
   })
@@ -67,7 +67,7 @@ test('Copiar still works through the execCommand fallback on a plain-http, non-l
 
   const ownerEmail = `duena-insegura-${Date.now()}@example.com`
   const businessName = `Flores Inseguras ${Date.now()}`
-  const inviteUrl = newBusinessInvitationUrl().replace(E2E_BASE_URL, INSECURE_ORIGIN)
+  const inviteUrl = newBusinessInvitationUrl().replace(e2eBaseUrl(), INSECURE_ORIGIN)
 
   await page.goto(inviteUrl)
   expect(page.url().startsWith(INSECURE_ORIGIN)).toBe(true)
