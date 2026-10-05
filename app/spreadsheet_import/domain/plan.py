@@ -1,12 +1,13 @@
-"""The pure import plan (ADR-0018; the plan's invariants).
+"""The pure import plan (ADR-0018; ADR-0019; the plan's invariants).
 
 Pure over `domain/rows.py`'s parsed values and the owners' check results. This module
 never imports `application`: the check results it needs are mirrored here as plain
-dataclasses (`Refusal`, `VarietyKey`, `CustomerKey`, `SaleCheckInput`, `SaleCheck`),
-field for field, the same shapes `application/ports.py` declares. The application layer
-translates between the two; this module never sees an owner's object or a database id.
+dataclasses (`Refusal`, `VarietyKey`, `CustomerKey`, `CustomerRefusal`, `SaleCheckInput`,
+`SaleCheck`), field for field, the same shapes `application/ports.py` declares. The
+application layer translates between the two; this module never sees an owner's object
+or a database id.
 
-Three functions:
+Four functions:
 
 - `split(parsed) -> Split` decides, before any owner check runs, which Entradas, Gastos
   and Ventas rows are unfinished (Ventas: `total` holds text; Entradas/Gastos: `revisar`
@@ -17,11 +18,16 @@ Three functions:
   turns each finished Ventas row into what sales' port needs, or the problem that blocks
   it before any owner is asked (an unknown variety, an unknown payment or kind value, a
   gift with a special total, or an `Amigo` row with no customer).
+- `customer_mentions(split, mapping) -> tuple[CustomerMention, ...]` is the one place
+  that decides which distinct collapsed customer names `check_customer` must be asked
+  about, and with what phone: once per collapsed name on a finished Ventas row (the
+  mapped phone, or `None`), and once per mapping entry whose name is on no finished row
+  (kept only to still catch a malformed phone there). `application/plan_import.py` and
+  `build_plan` both call this same pure function, so they always agree.
 - `build_plan(split, mapping, checks) -> ImportPlan` runs every rule this import's
-  domain owns: unknown and duplicate varieties, a category outside Ajustes A21:A28, a
-  customer name missing from the mapping, merged spellings and categories, Amigo -> VIP,
-  mismatches, write order and the counts for the report. The plan is writable only when
-  it has no problems.
+  domain owns: unknown and duplicate varieties, a category outside Ajustes A21:A28,
+  merged spellings and categories, Amigo -> VIP, mismatches, write order and the counts
+  for the report. The plan is writable only when it has no problems.
 """
 
 from __future__ import annotations
@@ -69,12 +75,22 @@ class VarietyKey:
 
 @dataclass(frozen=True)
 class CustomerKey:
-    """Mirrors `application.ports.CustomerKey`. Never printed: `repr=False` so an
+    """Mirrors `application.ports.CustomerKey`: the normalised phone key, or `None`
+    for a customer with no phone at all (ADR-0019). Never printed: `repr=False` so an
     assertion message or a traceback involving this value never shows it either (the
     plan's invariant: no phone number appears in any report line, exception message,
     stdout or stderr)."""
 
-    phone_key: str = field(repr=False)
+    phone_key: str | None = field(repr=False)
+
+
+@dataclass(frozen=True)
+class CustomerRefusal:
+    """Mirrors `application.ports.CustomerRefusals`: every broken rule
+    `check_customer` found, filed by the field it answers in. At least one is set."""
+
+    name_code: str | None
+    phone_code: str | None
 
 
 @dataclass(frozen=True)
@@ -102,6 +118,30 @@ class SaleCheck:
 
     total: int | None
     refusal: Refusal | None
+
+
+# -- Customer identity (ADR-0019): a planned customer is keyed by a tagged identity,
+# -- never by an untagged string that could be either a phone or a name. -------------
+
+
+@dataclass(frozen=True)
+class ByPhone:
+    """Identifies a planned customer by their normalised phone key: one or more
+    spellings mapped to the same number share this identity."""
+
+    phone_key: str = field(repr=False)
+
+
+@dataclass(frozen=True)
+class ByName:
+    """Identifies a planned customer with no phone number at all, by their own
+    collapsed name (trimmed, inner spaces collapsed, case kept). Each distinct
+    collapsed name with no number is its own customer: nothing is merged by guess."""
+
+    collapsed_name: str
+
+
+CustomerIdentity = ByPhone | ByName
 
 
 # -- split -----------------------------------------------------------------------------
@@ -257,6 +297,74 @@ def sale_inputs(
     return results
 
 
+# -- customer_mentions -------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class CustomerMention:
+    """One distinct collapsed customer name this import must ask customers' port
+    about exactly once: either the first finished Ventas row naming them (`ref` set,
+    `name` that row's own spelling) or a mapping entry whose name is on no finished
+    row (`ref` is `None`, `name` the entry's own text, kept only to still catch a
+    malformed phone there). `phone` is the matching mapping entry's phone, when one
+    exists and is non-blank; otherwise `None`. `mapping_line` is that entry's line,
+    when one matched, for filing a phone problem at the mapping file."""
+
+    collapsed_name: str
+    name: str
+    phone: str | None
+    ref: SheetRef | None
+    mapping_line: int | None
+
+
+def _entry_phone(entry: MappingEntry | None) -> str | None:
+    if entry is None:
+        return None
+    return entry.phone or None
+
+
+def customer_mentions(split: Split, mapping: ParsedMapping) -> tuple[CustomerMention, ...]:
+    mapping_by_name: dict[str, MappingEntry] = {}
+    for entry in mapping.entries:
+        mapping_by_name.setdefault(collapse_spaces(entry.name), entry)
+
+    rows_by_customer_name: dict[str, list[VentaRow]] = {}
+    for venta in split.ventas:
+        if venta.customer is None:
+            continue
+        rows_by_customer_name.setdefault(collapse_spaces(venta.customer), []).append(venta)
+
+    mentions: list[CustomerMention] = []
+    for collapsed in sorted(rows_by_customer_name):
+        first_row = min(rows_by_customer_name[collapsed], key=lambda r: r.ref.row)
+        assert first_row.customer is not None
+        matching_entry = mapping_by_name.get(collapsed)
+        mentions.append(
+            CustomerMention(
+                collapsed_name=collapsed,
+                name=first_row.customer,
+                phone=_entry_phone(matching_entry),
+                ref=first_row.ref,
+                mapping_line=matching_entry.line if matching_entry is not None else None,
+            )
+        )
+
+    for collapsed, entry in mapping_by_name.items():
+        if collapsed in rows_by_customer_name:
+            continue
+        mentions.append(
+            CustomerMention(
+                collapsed_name=collapsed,
+                name=entry.name,
+                phone=_entry_phone(entry),
+                ref=None,
+                mapping_line=entry.line,
+            )
+        )
+
+    return tuple(mentions)
+
+
 # -- build_plan --------------------------------------------------------------------------
 
 
@@ -276,7 +384,8 @@ class Checks:
     """Every owner check's result, gathered by `application/plan_import.py` (not this
     module's job: domain never calls a port) and handed to `build_plan` in one bundle.
     Row-shaped results are keyed by `SheetRef`; name-shaped results by the raw text the
-    owner was asked to check — both kept as plain mappings so a test builds only the
+    owner was asked to check. `customers` is keyed by `CustomerMention.collapsed_name`
+    (see `customer_mentions`), kept as plain mappings so a test builds only the
     entries its scenario needs. `mapping_sheet` is the fixed label the caller uses for
     the mapping file's own `SheetRef`s (again from `layout.py`, never invented here)."""
 
@@ -288,7 +397,7 @@ class Checks:
     category_names: Mapping[str, str | Refusal] = field(default_factory=dict)
     expenses: Mapping[SheetRef, Refusal | None] = field(default_factory=dict)
     entradas: Mapping[SheetRef, Refusal | None] = field(default_factory=dict)
-    customers: Mapping[str, CustomerKey | Refusal] = field(default_factory=dict)
+    customers: Mapping[str, CustomerKey | CustomerRefusal] = field(default_factory=dict)
     sales: Mapping[SheetRef, SaleCheck] = field(default_factory=dict)
     mapping_sheet: str = ""
 
@@ -315,14 +424,15 @@ class MergedCategory:
 @dataclass(frozen=True)
 class PlannedCustomer:
     """One customer this import would write: one or more spellings sharing a phone
-    number, named after the spelling on the most recent finished Ventas row (ties: the
-    lowest row in the sheet, i.e. the one furthest down, wins), VIP when any of those
-    rows is a finished `Amigo` row. `phone_key` never appears in its own `repr`."""
+    number (`identity` a `ByPhone`), or exactly one collapsed name with no number
+    (`identity` a `ByName`) — named after the spelling on the most recent finished
+    Ventas row (ties: the lowest row in the sheet, i.e. the one furthest down, wins),
+    VIP when any of those rows is a finished `Amigo` row."""
 
     kept_name: str
     spellings: tuple[str, ...]
     vip: bool
-    phone_key: str = field(repr=False)
+    identity: CustomerIdentity
 
 
 @dataclass(frozen=True)
@@ -334,7 +444,7 @@ class PlannedSale:
 
     ref: SheetRef
     variety_key: str
-    customer_phone_key: str | None
+    customer_identity: CustomerIdentity | None
     vip: bool
     gift: bool
     method: str | None
@@ -355,6 +465,7 @@ class Counts:
     expense_categories: int
     expenses: int
     customers: int
+    customers_without_phone: int
     sales: int
     payments: int
 
@@ -516,48 +627,48 @@ def build_plan(split: Split, mapping: ParsedMapping, checks: Checks) -> ImportPl
         elif category_result is not None and category_result not in valid_category_keys:
             problems.append(CellProblem(gasto.ref, "Categoría", "import.category_outside_list"))
 
-    # -- Customers: match the mapping, merge spellings, decide VIP and kept name. ----
-    mapping_by_name: dict[str, MappingEntry] = {}
-    for entry in mapping.entries:
-        mapping_by_name.setdefault(collapse_spaces(entry.name), entry)
-
-    entry_phone_key: dict[str, str] = {}
-    for collapsed, entry in mapping_by_name.items():
-        customer_result = checks.customers.get(entry.name)
-        if isinstance(customer_result, Refusal):
-            problems.append(
-                CellProblem(
-                    SheetRef(checks.mapping_sheet, entry.line), "phone", customer_result.code
-                )
-            )
-        elif customer_result is not None:
-            entry_phone_key[collapsed] = customer_result.phone_key
-
+    # -- Customers: one check per distinct collapsed name, filed by its own field. ---
     rows_by_customer_name: dict[str, list[VentaRow]] = {}
     for venta in split.ventas:
         if venta.customer is None:
             continue
         rows_by_customer_name.setdefault(collapse_spaces(venta.customer), []).append(venta)
 
-    for collapsed in sorted(rows_by_customer_name):
-        if collapsed not in mapping_by_name:
-            first_row = min(rows_by_customer_name[collapsed], key=lambda r: r.ref.row)
-            problems.append(
-                CellProblem(first_row.ref, "Cliente", "import.customer_not_in_mapping")
+    mentions = customer_mentions(split, mapping)
+    unused_mapping_entries = tuple(mention.name for mention in mentions if mention.ref is None)
+
+    identity_by_name: dict[str, CustomerIdentity] = {}
+    for mention in mentions:
+        customer_result = checks.customers.get(mention.collapsed_name)
+        if customer_result is None:
+            continue
+        if isinstance(customer_result, CustomerRefusal):
+            if customer_result.phone_code is not None:
+                assert mention.mapping_line is not None
+                problems.append(
+                    CellProblem(
+                        SheetRef(checks.mapping_sheet, mention.mapping_line),
+                        "phone",
+                        customer_result.phone_code,
+                    )
+                )
+            if customer_result.name_code is not None and mention.ref is not None:
+                problems.append(CellProblem(mention.ref, "Cliente", customer_result.name_code))
+            continue
+        if mention.ref is not None:
+            identity_by_name[mention.collapsed_name] = (
+                ByPhone(customer_result.phone_key)
+                if customer_result.phone_key is not None
+                else ByName(mention.collapsed_name)
             )
 
-    unused_mapping_entries = tuple(
-        entry.name
-        for collapsed, entry in mapping_by_name.items()
-        if collapsed not in rows_by_customer_name
-    )
-
     phone_to_names: dict[str, set[str]] = {}
-    for collapsed in rows_by_customer_name:
-        phone_key = entry_phone_key.get(collapsed)
-        if phone_key is None:
-            continue
-        phone_to_names.setdefault(phone_key, set()).add(collapsed)
+    name_only: list[str] = []
+    for collapsed, identity in identity_by_name.items():
+        if isinstance(identity, ByPhone):
+            phone_to_names.setdefault(identity.phone_key, set()).add(collapsed)
+        else:
+            name_only.append(collapsed)
 
     customers: list[PlannedCustomer] = []
     for phone_key, collapsed_names in phone_to_names.items():
@@ -570,7 +681,21 @@ def build_plan(split: Split, mapping: ParsedMapping, checks: Checks) -> ImportPl
                 kept_name=kept_row.customer,
                 spellings=tuple(sorted(collapsed_names)),
                 vip=vip,
-                phone_key=phone_key,
+                identity=ByPhone(phone_key),
+            )
+        )
+
+    for collapsed in sorted(name_only):
+        rows_for_group = rows_by_customer_name[collapsed]
+        kept_row = max(rows_for_group, key=_venta_sort_key)
+        assert kept_row.customer is not None
+        vip = any(row.kind == "Amigo" for row in rows_for_group)
+        customers.append(
+            PlannedCustomer(
+                kept_name=kept_row.customer,
+                spellings=(collapsed,),
+                vip=vip,
+                identity=ByName(collapsed),
             )
         )
 
@@ -620,8 +745,8 @@ def build_plan(split: Split, mapping: ParsedMapping, checks: Checks) -> ImportPl
         if not left_owing and method is not None:
             payment_count += 1
 
-        customer_phone_key = (
-            entry_phone_key.get(collapse_spaces(venta.customer))
+        customer_identity = (
+            identity_by_name.get(collapse_spaces(venta.customer))
             if venta.customer is not None
             else None
         )
@@ -629,7 +754,7 @@ def build_plan(split: Split, mapping: ParsedMapping, checks: Checks) -> ImportPl
             PlannedSale(
                 ref=venta.ref,
                 variety_key=sale_result.variety_key,
-                customer_phone_key=customer_phone_key,
+                customer_identity=customer_identity,
                 vip=sale_result.vip,
                 gift=sale_result.gift,
                 method=method,
@@ -640,6 +765,8 @@ def build_plan(split: Split, mapping: ParsedMapping, checks: Checks) -> ImportPl
             )
         )
 
+    customers_without_phone = sum(1 for c in customers if isinstance(c.identity, ByName))
+
     counts = Counts(
         varieties=len(valid_variety_keys),
         price_entries=len(split.price_history),
@@ -648,6 +775,7 @@ def build_plan(split: Split, mapping: ParsedMapping, checks: Checks) -> ImportPl
         expense_categories=len(category_groups),
         expenses=len(split.gastos),
         customers=len(customers),
+        customers_without_phone=customers_without_phone,
         sales=sale_count,
         payments=payment_count,
     )

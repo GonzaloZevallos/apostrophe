@@ -18,7 +18,14 @@ from datetime import date, datetime, timedelta
 from app.spreadsheet_import.application import ports
 from app.spreadsheet_import.application.no_commit import NoCommit
 from app.spreadsheet_import.application.plan_import import has_any_records
-from app.spreadsheet_import.domain.plan import ImportPlan, PlannedCustomer, PlannedSale, split
+from app.spreadsheet_import.domain.plan import (
+    ByPhone,
+    CustomerIdentity,
+    ImportPlan,
+    PlannedCustomer,
+    PlannedSale,
+    split,
+)
 from app.spreadsheet_import.domain.rows import (
     CatalogRow,
     CategoryRow,
@@ -182,11 +189,12 @@ def _write_customers(
     customers_plan: tuple[PlannedCustomer, ...],
     customers: ports.CustomersImport,
     transaction: NoCommit,
-) -> dict[str, int]:
-    ids: dict[str, int] = {}
+) -> dict[CustomerIdentity, int]:
+    ids: dict[CustomerIdentity, int] = {}
     for planned in customers_plan:
-        ids[planned.phone_key] = customers.write_customer(
-            planned.kept_name, planned.phone_key, planned.vip, transaction
+        phone_key = planned.identity.phone_key if isinstance(planned.identity, ByPhone) else None
+        ids[planned.identity] = customers.write_customer(
+            planned.kept_name, phone_key, planned.vip, transaction
         )
     return ids
 
@@ -195,7 +203,7 @@ def _write_sale(
     planned: PlannedSale,
     ventas_by_ref: dict[SheetRef, VentaRow],
     variety_ids: dict[str, int],
-    customer_ids: dict[str, int],
+    customer_ids: dict[CustomerIdentity, int],
     sales: ports.SalesImport,
     recorded_at: _RecordedAtSequence,
     today: date,
@@ -206,7 +214,7 @@ def _write_sale(
     sale_input = ports.SaleCheckInput(
         variety_key=planned.variety_key,
         grams=row.grams,
-        has_customer=planned.customer_phone_key is not None,
+        has_customer=planned.customer_identity is not None,
         vip=planned.vip,
         gift=planned.gift,
         special_total=row.special_total,
@@ -217,7 +225,7 @@ def _write_sale(
         note=planned.note,
     )
     customer_id = (
-        customer_ids[planned.customer_phone_key] if planned.customer_phone_key is not None else None
+        customer_ids[planned.customer_identity] if planned.customer_identity is not None else None
     )
     variety_id = variety_ids[planned.variety_key]
     sales.write_sale(variety_id, customer_id, sale_input, recorded_at.next(), today, transaction)
