@@ -13,6 +13,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
+import { assertScreens } from './screens.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO = resolve(HERE, '..', '..')
@@ -29,14 +30,7 @@ if (!values.facts || !values.out) {
 }
 const facts = JSON.parse(readFileSync(values.facts, 'utf-8'))
 const { screens } = JSON.parse(readFileSync(join(HERE, 'screens.json'), 'utf-8'))
-// The app picks its theme from `data-tema` alone, never from the system (plan,
-// subtask `light-by-default`): a stray `color_scheme` entry would silently emulate
-// a dark system again, and a `tema` other than `'oscuro'` names a value the app
-// does not recognise.
-for (const s of screens) {
-  if ('color_scheme' in s) throw new Error(`${s.screen}: color_scheme is retired, use tema: 'oscuro'`)
-  if ('tema' in s && s.tema !== 'oscuro') throw new Error(`${s.screen}: unknown tema ${JSON.stringify(s.tema)}`)
-}
+assertScreens(screens)
 const only = values.only ? new Set(values.only.split(',')) : null
 const out = resolve(values.out)
 mkdirSync(out, { recursive: true })
