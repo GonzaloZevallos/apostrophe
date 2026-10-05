@@ -1,4 +1,4 @@
-"""`period_figures` with no infrastructure (CODING_STANDARDS §5, ADR-0013): the
+"""`period_figures` with no infrastructure (CODING_STANDARDS §5, ADR-0020): the
 margin matrix, best-and-ties, profit's pending N, sparse/empty history and the
 variety-identity (docs/product/analysis.md's metrics)."""
 

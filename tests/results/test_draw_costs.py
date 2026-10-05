@@ -1,5 +1,5 @@
 """`SqlDrawCosts` over a real database (CODING_STANDARDS section 5, ADR-0009,
-ADR-0013): the adapter `app/stock/adapters/draw_costs.py` wires onto
+ADR-0020): the adapter `app/stock/adapters/draw_costs.py` wires onto
 `app.state.draw_costs`, run here against real `stock_entry`, `sale` and `sale_line`
 rows instead of fakes — the gap the pure `period_figures` tests leave (`SqlDraws`
 and `SqlStockEntries` never touch SQL there). The variety, stock entries and sale

@@ -46,6 +46,7 @@ import TeDeben from './screens/clientes/TeDeben'
 import VariedadDetalle from './screens/VariedadDetalle'
 import Variedades from './screens/Variedades'
 import Negocio from './screens/Negocio'
+import Reset from './screens/Reset'
 import NuevaVenta from './screens/ventas/NuevaVenta'
 import VentaDetalle from './screens/ventas/VentaDetalle'
 import Ventas from './screens/ventas/Ventas'
@@ -58,6 +59,7 @@ export const router = createBrowserRouter([
     children: [
       { path: '/entrar', element: <Entrar /> },
       { path: '/invitation/:token', element: <Invitacion /> },
+      { path: '/reset/:token', element: <Reset /> },
       {
         element: <GatedLayout />,
         children: [
@@ -91,8 +93,8 @@ export const router = createBrowserRouter([
                 path: 'ventas',
                 children: [
                   { index: true, element: <Ventas /> },
-                  { path: 'nueva', element: <NuevaVenta /> },
-                  { path: ':id', element: <VentaDetalle /> },
+                  { path: 'nueva', element: <NuevaVenta />, handle: { chrome: 'none' } },
+                  { path: ':id', element: <VentaDetalle />, handle: { chrome: 'none' } },
                 ],
               },
             ],

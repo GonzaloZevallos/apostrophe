@@ -10,7 +10,7 @@ from typing import Any, cast
 
 from fastapi import Request
 from sqlalchemy import DateTime, Dialect, MetaData, TypeDecorator, create_engine, event
-from sqlalchemy.engine import Engine
+from sqlalchemy.engine import Engine, make_url
 from sqlalchemy.engine.interfaces import DBAPIConnection
 from sqlalchemy.orm import DeclarativeBase, Session
 from sqlalchemy.pool import ConnectionPoolEntry, StaticPool
@@ -47,16 +47,37 @@ class UtcDateTime(TypeDecorator[datetime]):
         return None if value is None else value.replace(tzinfo=UTC)
 
 
-def make_engine(url: str) -> Engine:
+def make_engine(url: str, auth_token: str | None = None) -> Engine:
+    """Branches on the driver name (`make_url(url).get_driver_name()`), never on
+    `url.startswith` (plan invariant): a Turso `sqlite+libsql://` URL and a local
+    `sqlite://` one both reach this function, and the right connect args follow the
+    driver, not a string prefix.
+
+    `check_same_thread` and `StaticPool` apply to pysqlite only: libsql's own DBAPI
+    manages its connections differently, and does not need either. `auth_token` is a
+    connect arg (plan invariant): it reaches the driver through `connect_args`, never
+    folded into `url`, so it is never where a log line could print it. The
+    foreign-key PRAGMA listener applies to both drivers, keyed on the backend name
+    (`sqlite`), since libsql is a SQLite dialect underneath.
+    """
+    driver = make_url(url).get_driver_name()
     kwargs: dict[str, Any] = {}
-    if url.startswith("sqlite"):
-        kwargs["connect_args"] = {"check_same_thread": False}
-    # An in-memory SQLite database lives in one connection; any other pool would hand
-    # each thread its own empty database.
-    if url in ("sqlite://", "sqlite:///:memory:"):
-        kwargs["poolclass"] = StaticPool
-    engine = create_engine(url, **kwargs)
-    if url.startswith("sqlite"):
+    connect_args: dict[str, Any] = {}
+    if driver == "pysqlite":
+        connect_args["check_same_thread"] = False
+        # An in-memory SQLite database lives in one connection; any other pool would
+        # hand each thread its own empty database.
+        if url in ("sqlite://", "sqlite:///:memory:"):
+            kwargs["poolclass"] = StaticPool
+    elif driver == "libsql" and auth_token is not None:
+        connect_args["auth_token"] = auth_token
+    if connect_args:
+        kwargs["connect_args"] = connect_args
+    # Never shown in SQL error output or logs: a catalog, pinned-catalog or
+    # spreadsheet-import statement can carry a seller's own text, a customer's name or
+    # phone number as a bound parameter (CODING_STANDARDS §9, the plan's invariant).
+    engine = create_engine(url, hide_parameters=True, **kwargs)
+    if make_url(url).get_backend_name() == "sqlite":
         event.listen(engine, "connect", _enable_sqlite_foreign_keys)
     return engine
 

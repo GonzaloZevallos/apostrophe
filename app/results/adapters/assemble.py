@@ -1,4 +1,4 @@
-"""Turns `period_figures`'s domain result into `AnalysisOut` (ADR-0013). The only
+"""Turns `period_figures`'s domain result into `AnalysisOut` (ADR-0020). The only
 place `AnalysisFigures` becomes JSON; the schemas themselves stay exactly as
 `analysis-contract` pinned them."""
 

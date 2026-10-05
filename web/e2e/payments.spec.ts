@@ -25,6 +25,7 @@
 import { expect, test } from '@playwright/test'
 import { newBusinessInvitationUrl } from './backend.js'
 import { watchConsole } from './console.js'
+import { fillSaleLine } from './helpers/sale.js'
 
 const PASSWORD = 'correcthorsebattery'
 
@@ -78,10 +79,9 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expect(page).toHaveURL(/\/ventas\/nueva$/)
   const todayIso = await page.getByLabel('Fecha').inputValue()
   const today = shortDate(todayIso)
-  await page.getByLabel('Variedad línea 1').selectOption({ label: 'Rosa' })
-  await page.getByLabel('Gramos línea 1').fill('5')
+  await fillSaleLine(page, 1, { variety: 'Rosa', grams: '5' })
   await page.getByRole('radio', { name: 'Debiendo' }).check()
-  await page.getByRole('button', { name: 'Guardar venta' }).click()
+  await page.getByRole('button', { name: 'Guardá la venta' }).click()
   await expect(page).toHaveURL(/\/ventas\/\d+$/)
   await expect(page.getByText('Venta guardada')).toBeVisible()
 
@@ -114,10 +114,9 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   // Sale 2: 8 g of Rosa, also left owing — $8.000.
   await page.getByRole('link', { name: 'Nueva venta a Carla Pérez' }).click()
   await expect(page).toHaveURL(/\/ventas\/nueva$/)
-  await page.getByLabel('Variedad línea 1').selectOption({ label: 'Rosa' })
-  await page.getByLabel('Gramos línea 1').fill('8')
+  await fillSaleLine(page, 1, { variety: 'Rosa', grams: '8' })
   await page.getByRole('radio', { name: 'Debiendo' }).check()
-  await page.getByRole('button', { name: 'Guardar venta' }).click()
+  await page.getByRole('button', { name: 'Guardá la venta' }).click()
   await expect(page).toHaveURL(/\/ventas\/\d+$/)
   await expect(page.getByText('Venta guardada')).toBeVisible()
 
@@ -154,7 +153,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await page.getByRole('link', { name: /te deben \$ 8\.000/ }).click()
   await expect(page).toHaveURL(/\/clientes\/deben$/)
   await expect(page.locator('.cifra-xl')).toHaveText('$ 8.000')
-  await expect(page.getByText('1 ventas debiendo')).toBeVisible()
+  await expect(page.getByText('1 venta debiendo')).toBeVisible()
   await page.getByRole('link', { name: 'Carla Pérez' }).click()
   await expect(page).toHaveURL(/\/clientes\/\d+$/)
   await expect(page.getByText('Te debe $ 8.000')).toBeVisible()
@@ -189,4 +188,33 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   }))
   expect(storage).toEqual({ local: 0, session: 0 })
   expect(consoleMessages).toEqual([])
+
+  // --- The plural form: two more sales left owing bring the count to "2 ventas
+  // debiendo", and Te deben's header total is their sum (payments.md, Metrics
+  // "Who-owes totals" and "No curl"). ---
+  await page.goto('/clientes')
+  await page.getByRole('link', { name: 'Carla Pérez' }).click()
+  await page.getByRole('link', { name: 'Nueva venta a Carla Pérez' }).click()
+  await expect(page).toHaveURL(/\/ventas\/nueva$/)
+  await fillSaleLine(page, 1, { variety: 'Rosa', grams: '2' })
+  await page.getByRole('radio', { name: 'Debiendo' }).check()
+  await page.getByRole('button', { name: 'Guardá la venta' }).click()
+  await expect(page).toHaveURL(/\/ventas\/\d+$/)
+  await expect(page.getByText('Venta guardada')).toBeVisible()
+
+  await page.goto('/clientes')
+  await page.getByRole('link', { name: 'Carla Pérez' }).click()
+  await page.getByRole('link', { name: 'Nueva venta a Carla Pérez' }).click()
+  await expect(page).toHaveURL(/\/ventas\/nueva$/)
+  await fillSaleLine(page, 1, { variety: 'Rosa', grams: '3' })
+  await page.getByRole('radio', { name: 'Debiendo' }).check()
+  await page.getByRole('button', { name: 'Guardá la venta' }).click()
+  await expect(page).toHaveURL(/\/ventas\/\d+$/)
+  await expect(page.getByText('Venta guardada')).toBeVisible()
+
+  await page.goto('/clientes')
+  await page.getByRole('link', { name: /te deben \$ 5\.000/ }).click()
+  await expect(page).toHaveURL(/\/clientes\/deben$/)
+  await expect(page.locator('.cifra-xl')).toHaveText('$ 5.000')
+  await expect(page.getByText('2 ventas debiendo')).toBeVisible()
 })

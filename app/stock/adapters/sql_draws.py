@@ -5,7 +5,7 @@ write, this is stock reading what already left (ADR-0009). Built for one busines
 every statement — and every join's ON clause — filters on it (CODING_STANDARDS
 section 9).
 
-`variety_name`, `line_total` and `pricing_rule` ride along on the same row (ADR-0013):
+`variety_name`, `line_total` and `pricing_rule` ride along on the same row (ADR-0020):
 results' `DrawCosts` needs them attached to this exact draw, never looked up again by
 `(sale_id, position)` afterwards.
 """

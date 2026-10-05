@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from typing import Annotated
+from typing import Annotated, Literal, TypedDict
 
 from fastapi import APIRouter, Depends, Response
 from pydantic import BaseModel
@@ -7,27 +7,31 @@ from sqlalchemy.orm import Session
 
 from app.accounts.adapters.deps import (
     SESSION_COOKIE,
+    ClientAddressDep,
     CurrentBusinessId,
     CurrentSession,
     get_accounts,
     get_business_opening,
     get_hasher,
     get_public_url,
+    get_settings,
     get_signer,
     raise_unauthenticated,
 )
 from app.accounts.adapters.sql_accounts import SqlAccounts
-from app.accounts.application import invitations, manage_business
+from app.accounts.application import invitations, manage_business, reset_password
 from app.accounts.application.invitations import EmailTaken
 from app.accounts.application.ports import BusinessOpening
-from app.accounts.application.sign_in import LoginLocked, log_in
+from app.accounts.application.sign_in import LoginLocked, change_password, log_in
 from app.accounts.domain.account import AccountRuleBroken
 from app.accounts.domain.invitation import InvitationKind, InvitationNotUsable
 from app.accounts.domain.password import PasswordHasher
+from app.accounts.domain.reset_link import CurrentPasswordWrong, ResetLinkGone
 from app.accounts.domain.session_token import SESSION_LIFETIME, SessionSigner
 from app.clock import Clock, get_clock, get_today
 from app.db import get_session
 from app.http_errors import TranslateErrors
+from app.settings import Settings
 
 # Public: how a user gets a session. Every other accounts route is gated in `app.main`.
 public_router = APIRouter(tags=["accounts"])
@@ -39,12 +43,13 @@ HasherDep = Annotated[PasswordHasher, Depends(get_hasher)]
 SignerDep = Annotated[SessionSigner, Depends(get_signer)]
 ClockDep = Annotated[Clock, Depends(get_clock)]
 TodayDep = Annotated[date, Depends(get_today)]
+SettingsDep = Annotated[Settings, Depends(get_settings)]
 
 as_http = TranslateErrors(
     [
-        (404, (InvitationNotUsable,)),
+        (404, (InvitationNotUsable, ResetLinkGone)),
         (409, (EmailTaken,)),
-        (422, (AccountRuleBroken,)),
+        (422, (AccountRuleBroken, CurrentPasswordWrong)),
         (429, (LoginLocked,)),
     ]
 )
@@ -98,19 +103,44 @@ class AcceptIn(BaseModel):
     business_name: str | None = None
 
 
+class ChangePasswordIn(BaseModel):
+    current_password: str
+    new_password: str
+
+
+class ResetSubmitIn(BaseModel):
+    new_password: str
+
+
 def invitation_url(public_url: str, token: str) -> str:
     return f"{public_url}/invitation/{token}"
 
 
-def _open(response: Response, token: str) -> SessionOut:
-    # Not `secure`: served over plain http on the home network until it is published
-    # (docs/adr/0002).
+def reset_url(public_url: str, token: str) -> str:
+    return f"{public_url}/reset/{token}"
+
+
+class _CookieAttributes(TypedDict):
+    httponly: bool
+    samesite: Literal["lax"]
+    secure: bool
+    path: str
+
+
+def _cookie_attributes(settings: Settings) -> _CookieAttributes:
+    # `secure` comes only from `Settings.secure_cookie` (derived from `public_url`),
+    # never guessed from the request (docs/adr/0002, plan invariant). The one builder
+    # serves both `set_cookie` (`_open`) and `delete_cookie` (`logout`), so they can
+    # never drift apart.
+    return {"httponly": True, "samesite": "lax", "secure": settings.secure_cookie, "path": "/"}
+
+
+def _open(response: Response, token: str, settings: Settings) -> SessionOut:
     response.set_cookie(
         SESSION_COOKIE,
         token,
         max_age=int(SESSION_LIFETIME.total_seconds()),
-        httponly=True,
-        samesite="lax",
+        **_cookie_attributes(settings),
     )
     return SessionOut(token=token)
 
@@ -124,17 +154,21 @@ def login(
     hasher: HasherDep,
     signer: SignerDep,
     clock: ClockDep,
+    settings: SettingsDep,
+    address: ClientAddressDep,
 ) -> SessionOut:
     with as_http:
-        token = log_in(accounts, session, hasher, signer, body.email, body.password, clock())
+        token = log_in(
+            accounts, session, hasher, signer, body.email, body.password, address, clock()
+        )
     if token is None:
         raise_unauthenticated()
-    return _open(response, token)
+    return _open(response, token, settings)
 
 
 @public_router.post("/auth/logout", status_code=204)
-def logout(response: Response) -> None:
-    response.delete_cookie(SESSION_COOKIE)
+def logout(response: Response, settings: SettingsDep) -> None:
+    response.delete_cookie(SESSION_COOKIE, **_cookie_attributes(settings))
 
 
 @public_router.get("/invitations/{token}")
@@ -156,6 +190,7 @@ def accept_invitation(
     hasher: HasherDep,
     signer: SignerDep,
     clock: ClockDep,
+    settings: SettingsDep,
     opening: Annotated[BusinessOpening, Depends(get_business_opening)],
 ) -> SessionOut:
     with as_http:
@@ -171,7 +206,7 @@ def accept_invitation(
             clock(),
             opening=opening,
         )
-    return _open(response, session_token)
+    return _open(response, session_token, settings)
 
 
 @router.get("/auth/me")
@@ -212,3 +247,58 @@ def invite_partner(
     """A link that adds one more user to the caller's own business."""
     issued = invitations.invite_partner(accounts, session, signed_in.business_id, clock())
     return InvitationOut(url=invitation_url(public_url, issued.token), expires_at=issued.expires_at)
+
+
+@router.post("/auth/password")
+def change_password_route(
+    body: ChangePasswordIn,
+    response: Response,
+    signed_in: CurrentSession,
+    accounts: AccountsDep,
+    session: SessionDep,
+    hasher: HasherDep,
+    signer: SignerDep,
+    clock: ClockDep,
+    settings: SettingsDep,
+    address: ClientAddressDep,
+) -> SessionOut:
+    """Only a missing or invalid session answers 401 here (docs/adr/0019): a wrong
+    current password is a 422, never a 401."""
+    with as_http:
+        token = change_password(
+            accounts,
+            session,
+            hasher,
+            signer,
+            signed_in.user,
+            body.current_password,
+            body.new_password,
+            address,
+            clock(),
+        )
+    return _open(response, token, settings)
+
+
+@public_router.get("/reset-links/{token}", status_code=204)
+def look_up_reset_link(token: str, accounts: AccountsDep, clock: ClockDep) -> None:
+    with as_http:
+        reset_password.look_up_reset_link(accounts, token, clock())
+
+
+@public_router.post("/reset-links/{token}")
+def submit_reset_link(
+    token: str,
+    body: ResetSubmitIn,
+    response: Response,
+    accounts: AccountsDep,
+    session: SessionDep,
+    hasher: HasherDep,
+    signer: SignerDep,
+    clock: ClockDep,
+    settings: SettingsDep,
+) -> SessionOut:
+    with as_http:
+        token_out = reset_password.reset_password(
+            accounts, session, hasher, signer, token, body.new_password, clock()
+        )
+    return _open(response, token_out, settings)

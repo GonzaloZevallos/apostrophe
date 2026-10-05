@@ -1,4 +1,4 @@
-"""Análisis's one use case (ADR-0013, docs/product/analysis.md): resolves and
+"""Análisis's one use case (ADR-0020, docs/product/analysis.md): resolves and
 validates the chosen month, reads every ledger once through its port, and hands them
 to `period_figures` — the one computation, never a second one."""
 

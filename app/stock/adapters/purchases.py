@@ -1,5 +1,5 @@
 """`Purchases`: results' port for flower purchases and the earliest stock entry of
-any origin (ADR-0013, CONTEXT.md: Purchase, First record). Built for one business.
+any origin (ADR-0020, CONTEXT.md: Purchase, First record). Built for one business.
 """
 
 from __future__ import annotations

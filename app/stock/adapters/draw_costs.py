@@ -1,4 +1,4 @@
-"""`DrawCosts`: results' one port for every draw, costed fresh (ADR-0009, ADR-0013).
+"""`DrawCosts`: results' one port for every draw, costed fresh (ADR-0009, ADR-0020).
 
 One query for every stock entry and every sale-line draw of the business (each
 already filtered on it, and `Draws` carries `variety_name`, `line_total` and
@@ -17,7 +17,7 @@ object `allocate` costs already carries them. Reading them back here, after `zip
 lines to draw costs by key") — a draw with no `sale_id` is simply a negative
 adjustment, told apart that way, with no variety or sale attached.
 
-`pricing_rule` is read here, so stock's own domain stays unaware of gifts (ADR-0013's
+`pricing_rule` is read here, so stock's own domain stays unaware of gifts (ADR-0020's
 "considered and rejected": a gift is never told by a $0 line total). Built for one
 business.
 """

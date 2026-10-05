@@ -19,6 +19,15 @@ checks:
   web-lint: npm --prefix web run lint
   web-tests: npm --prefix web test
   web-e2e: npm --prefix web run e2e
+# The product's design (agentic-system ADR-0040): the static prototype the design roles walk,
+# the screen a walk starts from, and the two commands they may run instead of a browser.
+# `sample_app` serves this checkout's front on a throwaway database seeded through the API;
+# `compare` does that, writes each design screen next to the built one, and stops it.
+design:
+  prototype: docs/product/design-system/pantallas
+  entry: Inicio.dc.html
+  sample_app: scripts/design/sample-app.sh
+  compare: scripts/design/compare.sh
 # What a Developer's Edit/Write may never add (CODING_STANDARDS.md, section 6).
 forbidden:
   - pattern: '#\s*(type:\s*ignore|noqa)\b'

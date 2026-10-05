@@ -1,6 +1,6 @@
 """A calendar month in Argentina time (docs/product/expenses.md: Monthly view).
 
-`Month` itself now lives in `app/shared/calendar.py` (ADR-0013), shared with Análisis
+`Month` itself now lives in `app/shared/calendar.py` (ADR-0020), shared with Análisis
 and Results: this module keeps expenses' own contract unchanged by translating its
 plain `ValueError` into `InvalidMonth` (`expense.month_invalid`), the one error code
 the rest of expenses already depends on.

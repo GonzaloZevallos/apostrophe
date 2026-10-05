@@ -1,4 +1,4 @@
-"""`costed_sales`: a sale line's sales, over its costed grams only (ADR-0013, PM
+"""`costed_sales`: a sale line's sales, over its costed grams only (ADR-0020, PM
 clarification round 1 Q2). Sales of costed grams are rounded once per line, here; a
 line's pending sales are always `line_total - costed_sales(...)` (the plan's
 invariant) — no other code rounds a line's sales again."""

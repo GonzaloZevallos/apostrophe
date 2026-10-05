@@ -1,0 +1,31 @@
+# Render's Blueprint for the app (docs/adr/0016, docs/adr/0017). Render's own network
+# boundary and TLS replace binding to 127.0.0.1 behind a reverse proxy: uvicorn still
+# binds 0.0.0.0 (scripts/serve.sh), reachable only through Render's edge.
+#
+# No secret lives here: every value below is `sync: false`, filled in by hand in
+# Render's dashboard (deploy/README.md). There is no pre-deploy command: the schema is
+# migrated only by `upgrade_to_head` in `app.main`'s `lifespan`, once, at startup.
+services:
+  - type: web
+    name: apostrophe
+    runtime: python
+    region: virginia
+    plan: free
+    autoDeploy: true
+    buildCommand: >-
+      uv sync --locked &&
+      npm --prefix web ci --no-fund --no-audit &&
+      npm --prefix web run build
+    startCommand: scripts/serve.sh
+    healthCheckPath: /health
+    envVars:
+      - key: APOSTROPHE_SECRET_KEY
+        sync: false
+      - key: APOSTROPHE_DATABASE_URL
+        sync: false
+      - key: APOSTROPHE_DATABASE_AUTH_TOKEN
+        sync: false
+      - key: APOSTROPHE_PUBLIC_URL
+        sync: false
+      - key: APOSTROPHE_TRUSTED_PROXIES
+        sync: false

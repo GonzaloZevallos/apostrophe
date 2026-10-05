@@ -43,6 +43,7 @@ from app.payments.adapters.tables import PaymentRow
 from app.shared.calendar import Month
 from app.shared.transaction import Transaction
 from tests.conftest import SETTINGS, TEST_HASHER, TODAY, MovableClock, open_business, signed_in
+from tests.fakes.telegram import FakeTelegram
 
 MARKER = "zz-isolation-marker"
 
@@ -149,6 +150,21 @@ def seed_stock(client: TestClient) -> dict[str, int]:
     return {"stock_entry_id": entry.json()["id"]}
 
 
+def seed_pinned_catalog(client: TestClient) -> dict[str, int]:
+    tested = client.post(
+        "/pinned-catalog/test",
+        json={
+            "token": f"{MARKER}:bot-token",
+            "own_chat": f"{MARKER} own chat",
+            "channel_chat": f"{MARKER} channel",
+        },
+    )
+    assert tested.status_code == 200, tested.text
+    published = client.post("/pinned-catalog/publish")
+    assert published.status_code == 200, published.text
+    return {}
+
+
 def seed_payments(client: TestClient) -> dict[str, int]:
     variety = client.post("/varieties", json={"name": f"{MARKER} payments variety"}).json()
     client.post(
@@ -182,6 +198,7 @@ SEEDERS: list[Callable[[TestClient], dict[str, int]]] = [
     seed_sales,
     seed_stock,
     seed_catalog,
+    seed_pinned_catalog,
     seed_payments,
 ]
 
@@ -233,6 +250,11 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
         "aroma": "another aroma",
     },
     ("PUT", "/catalog/header-footer"): {"header": "another header", "footer": "another footer"},
+    ("POST", "/pinned-catalog/test"): {
+        "token": "999999:another-token",
+        "own_chat": "another own chat",
+        "channel_chat": None,
+    },
     ("POST", "/customers/{customer_id}/payments/preview"): {
         "paid_on": "2026-10-02",
         "amount": 100,
@@ -242,18 +264,26 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
         "amount": 100,
         "method": "cash",
     },
+    ("POST", "/auth/password"): {
+        "current_password": "the wrong current password",
+        "new_password": "a new password of some length",
+    },
 }
 
 PUBLIC_PATHS = {"/health", "/auth/login", "/auth/logout"}
 
 
 def _operations() -> list[tuple[str, str, bool]]:
-    document = create_app(SETTINGS, hasher=TEST_HASHER).openapi()
+    document = create_app(
+        SETTINGS, hasher=TEST_HASHER, telegram=FakeTelegram(), upkeep_ticker=False
+    ).openapi()
     return sorted(
         (method.upper(), path, "requestBody" in operation)
         for path, item in document["paths"].items()
         for method, operation in item.items()
-        if path not in PUBLIC_PATHS and not path.startswith("/invitations/{token}")
+        if path not in PUBLIC_PATHS
+        and not path.startswith("/invitations/{token}")
+        and not path.startswith("/reset-links/{token}")
     )
 
 
@@ -602,6 +632,105 @@ def test_another_business_reads_debtors_as_zero_while_a_has_debt(
     assert b_debtors == {"total_owed": 0, "sales_owing_count": 0, "debtors": []}
 
 
+def test_another_business_reads_the_panel_as_zero_while_a_has_every_figure(
+    business_a: TestClient, business_b: TestClient, clock: MovableClock
+) -> None:
+    """The panel route joins the isolation sweep (plan invariant, subtask brief): A
+    seeds a sale with a gift line, a sale left owing, a later payment, an expense and
+    a purchase, all dated today; B's panel must equal a freshly opened business's."""
+    today = clock().date().isoformat()
+    variety = business_a.post("/varieties", json={"name": f"{MARKER} panel variety"}).json()
+    business_a.post(
+        f"/varieties/{variety['id']}/prices",
+        json={"effective_from": "2026-01-01", "list_price": 10_000},
+    )
+    customer = business_a.post(
+        "/customers", json={"name": f"{MARKER} panel customer", "phone": "11 7777-8888"}
+    ).json()
+    gifted = business_a.post(
+        "/sales",
+        json={
+            "date": today,
+            "payment": "cash",
+            "lines": [{"variety_id": variety["id"], "grams": "3", "gift": True}],
+        },
+    )
+    assert gifted.status_code == 201, gifted.text
+    owing = business_a.post(
+        "/sales",
+        json={
+            "date": today,
+            "customer_id": customer["id"],
+            "payment": "owing",
+            "lines": [{"variety_id": variety["id"], "grams": "2"}],
+        },
+    )
+    assert owing.status_code == 201, owing.text
+    payment = business_a.post(
+        f"/customers/{customer['id']}/payments",
+        json={"paid_on": today, "amount": 1_000, "method": "cash"},
+    )
+    assert payment.status_code == 201, payment.text
+    category = business_a.post(
+        "/expense-categories", json={"name": f"{MARKER} panel category"}
+    ).json()
+    expense = business_a.post(
+        "/expenses",
+        json={
+            "spent_on": today,
+            "category_id": category["id"],
+            "amount": 500,
+            "detail": f"{MARKER} panel expense",
+        },
+    )
+    assert expense.status_code == 201, expense.text
+    purchase = business_a.post(
+        "/stock/entries",
+        json={
+            "variety_id": variety["id"],
+            "origin": "purchase",
+            "grams": "50",
+            "total_cost": 2_000,
+            "date": today,
+        },
+    )
+    assert purchase.status_code == 201, purchase.text
+
+    a_panel = business_a.get("/panel").json()
+    today_figures = a_panel["periods"]["today"]
+    assert today_figures["sales"] > 0
+    assert today_figures["grams_gifted"] > 0
+    assert today_figures["expenses"] > 0
+    assert today_figures["purchases"] > 0
+    assert a_panel["debts"]["total_owed"] > 0
+    assert a_panel["stock"] != []
+
+    b_panel = business_b.get("/panel").json()
+    fresh = {
+        "start": today,
+        "end": today,
+        "sales": 0,
+        "sales_count": 0,
+        "average_sale": None,
+        "grams_sold": 0,
+        "grams_gifted": 0,
+        "cost_of_goods": 0,
+        "pending_cost": False,
+        "expenses": 0,
+        "purchases": 0,
+        "profit": 0,
+        "cash": 0,
+    }
+    assert b_panel["periods"]["today"] == fresh
+    assert b_panel["debts"] == {
+        "total_owed": 0,
+        "sales_owing_count": 0,
+        "oldest": None,
+        "teaser": [],
+    }
+    assert b_panel["stock"] == []
+
+
 def test_another_business_gets_404_deleting_an_on_the_spot_payment(
     business_a: TestClient, business_b: TestClient, engine: Engine, seeded: dict[str, int]
 ) -> None:
@@ -655,7 +784,7 @@ def test_another_business_s_analysis_is_exactly_the_empty_shape(
     business_a: TestClient, business_b: TestClient
 ) -> None:
     """`GET /analysis` has no path parameter, so it is only ever exercised as one of
-    `LISTS` by the sweep above. This is the plan's own extra proof (ADR-0013,
+    `LISTS` by the sweep above. This is the plan's own extra proof (ADR-0020,
     CODING_STANDARDS section 9): B, with no records of its own, must answer exactly
     the fixed empty shape — every field of it, not a sample — while A's answer
     carries real sales and the `MARKER` variety. Nothing of A's ever reaches B."""

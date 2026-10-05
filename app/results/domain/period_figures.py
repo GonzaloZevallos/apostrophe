@@ -1,4 +1,4 @@
-"""The one computation every period figure goes through (ADR-0013; CONTEXT.md: Sales,
+"""The one computation every period figure goes through (ADR-0020; CONTEXT.md: Sales,
 Cost of goods sold, Stock shortfall, Expenses, Profit, Cash, Margin, Margin
 percentage, Average margin, Best week, Best weekday).
 
@@ -201,7 +201,7 @@ def _build_buckets(
 ) -> tuple[_Buckets, date | None]:
     """Scans every ledger exactly once: each loop below both fills its own buckets
     and folds its own days into `first_record` — the minimum date across sales,
-    stock entries, payments and expenses (ADR-0013) — so nothing is scanned a second
+    stock entries, payments and expenses (ADR-0020) — so nothing is scanned a second
     time just to find it."""
     buckets = _Buckets()
     first_record = earliest_entry_day

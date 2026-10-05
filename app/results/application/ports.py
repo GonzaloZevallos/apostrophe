@@ -1,4 +1,17 @@
-"""What results needs from the rest of the business (docs/adr/0006, ADR-0013). Each
+"""The ports results declares toward each owner (plan: "Ports"). One port per owning
+hexagon, each answering only results' own types or `app.shared` (plan invariant:
+results' ports answer only types declared under `app/results/` or `app/shared/`; no
+port signature or answer carries a class or `Literal` from another hexagon) — not the
+owner's own domain or adapter types, so results never imports another hexagon's
+`domain/` or `application/` (ADR-0006).
+
+Every port is built `(Session, business_id)` per request (plan: "Wiring"); none of
+them takes `today` itself for anything but `StockFigures.read`, which needs it to
+compute days left the way `stock_level` does.
+
+The analysis ports (`GET /analysis`, ADR-0020) follow the panel's:
+
+What results needs from the rest of the business (docs/adr/0006, ADR-0020). Each
 port is built for one business; a record of another business is, from here, a record
 that does not exist (docs/adr/0004).
 
@@ -13,9 +26,10 @@ but what it answers is a domain type.
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
 from datetime import date
-from typing import Protocol
+from typing import Literal, Protocol
 
 from app.results.domain.ledger import (
     DrawRow,
@@ -24,6 +38,99 @@ from app.results.domain.ledger import (
     PurchaseRecord,
     SaleRecord,
 )
+from app.results.domain.periods import Period
+from app.shared.grams import Grams
+
+
+@dataclass(frozen=True)
+class SalesSummary:
+    total: int
+    count: int
+    grams_sold: Grams
+    grams_gifted: Grams
+
+
+class PeriodSales(Protocol):
+    """Sales figures for each of `periods`, in a fixed number of statements whatever
+    the number of sales (plan invariant): implemented in `app/sales/adapters/`."""
+
+    def summaries(self, periods: Sequence[Period]) -> Mapping[Period, SalesSummary]: ...
+
+
+@dataclass(frozen=True)
+class CostOfGoods:
+    amount: int
+    pending: bool
+
+
+# Results' own copy of stock's `Status` (stock-domain), with the same values: results
+# never imports `app.stock.domain` (ADR-0006), so this port answers its own literal
+# instead of the owner's.
+StockStatus = Literal["no_entries", "sold_out", "low", "ok"]
+
+
+@dataclass(frozen=True)
+class StockRow:
+    variety_id: int
+    name: str
+    grams: Grams
+    status: StockStatus
+    sold_out_since: date | None
+    threshold: Grams | None
+    days_left: int | None
+
+
+@dataclass(frozen=True)
+class StockFiguresAnswer:
+    rows: tuple[StockRow, ...]
+    cost_of_goods: Mapping[Period, CostOfGoods]
+    purchases: Mapping[Period, int]
+
+
+class StockFigures(Protocol):
+    """One `lots_and_draws` load answers the panel's stock rows, cost of goods and
+    purchases together (plan invariant): implemented in `app/stock/adapters/`."""
+
+    def read(self, today: date, periods: Sequence[Period]) -> StockFiguresAnswer: ...
+
+
+class PeriodExpenses(Protocol):
+    """Implemented in `app/expenses/adapters/`."""
+
+    def totals(self, periods: Sequence[Period]) -> Mapping[Period, int]: ...
+
+
+class PaymentsReceived(Protocol):
+    """Every payment counted on its own `paid_on` date, on-the-spot and later alike
+    (PRD: "What Caja counts"): implemented in `app/payments/adapters/`."""
+
+    def totals(self, periods: Sequence[Period]) -> Mapping[Period, int]: ...
+
+
+@dataclass(frozen=True)
+class DebtorRow:
+    customer_id: int
+    name: str
+    balance: int
+    owing_since: date
+
+
+@dataclass(frozen=True)
+class Debts:
+    """`debtors` arrives in `debtors()` order (payments-domain): oldest debt first,
+    ties broken by `fold`ed name then id. The panel's own teaser re-sorts (by balance,
+    then owing since, then name) and cuts this; it never re-queries for it."""
+
+    total_owed: int
+    sales_owing_count: int
+    debtors: tuple[DebtorRow, ...]
+
+
+class DebtSummary(Protocol):
+    """Implemented in `app/payments/adapters/`, over `view_accounts.debtors()`."""
+
+    def read(self) -> Debts: ...
+
 
 __all__ = [
     "DrawCosts",
@@ -67,7 +174,7 @@ class ExpensesLedger(Protocol):
 
 class Purchases(Protocol):
     """Flower purchases, for cash and the purchases line (CONTEXT.md: Purchase), and
-    the earliest stock entry of any origin, for the first record (ADR-0013: "First
+    the earliest stock entry of any origin, for the first record (ADR-0020: "First
     record" is the minimum date across sales, stock entries, payments and expenses).
     Built for one business."""
 

@@ -1,4 +1,4 @@
-"""`SalesLedger`: results' port for every sale, shipping included (ADR-0013). Built
+"""`SalesLedger`: results' port for every sale, shipping included (ADR-0020). Built
 for one business."""
 
 from __future__ import annotations

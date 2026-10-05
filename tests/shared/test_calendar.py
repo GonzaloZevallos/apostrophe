@@ -1,5 +1,5 @@
 """`Month` and `Week` with no infrastructure (CODING_STANDARDS §5): the one place a
-week or month boundary is computed (ADR-0013)."""
+week or month boundary is computed (ADR-0020)."""
 
 from datetime import date
 

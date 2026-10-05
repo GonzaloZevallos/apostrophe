@@ -75,6 +75,29 @@ def test_a_line_with_no_lot_behind_it_is_entirely_pending_never_a_zero_cost(
     assert cost == {"costed": None, "pending_grams": 10.0}
 
 
+def test_a_gift_line_with_no_lot_behind_it_matches_the_gift_fixture(client: TestClient) -> None:
+    """`sale-detail-gift` (plan step 5): no customer, and a gift line on a variety
+    with no stock entry at all, so its cost is entirely pending — `costed` must stay
+    `None`, never folded to `0`, and nothing here is ever left owing (a gift line
+    prices at $0, so the sale's own total is $0 and needs no payment method)."""
+    variety_id = _variety(client)  # priced, but no stock entry recorded at all
+
+    sale = client.post(
+        "/sales",
+        json={"lines": [{"variety_id": variety_id, "grams": "5", "gift": True}]},
+    )
+    assert sale.status_code == 201, sale.text
+    sale_id = sale.json()["id"]
+
+    detail = client.get(f"/sales/{sale_id}")
+
+    assert detail.status_code == 200, detail.text
+    body = detail.json()
+    assert body["customer"] is None
+    assert body["lines"][0]["cost"]["costed"] is None
+    assert_matches_fixture(body, "sale-detail-gift")
+
+
 def test_list_sales_never_carries_a_cost_field(client: TestClient) -> None:
     variety_id = _variety(client)
     _entry(client, variety_id, grams="10", total_cost=5_000)

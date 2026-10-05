@@ -24,6 +24,8 @@ export type SuccessToast =
   | 'Catálogo guardado'
   | 'Catálogo copiado'
   | 'Cobro eliminado'
+  | 'Prueba enviada'
+  | 'Catálogo publicado'
 
 export default function AvisoExito({ texto }: { texto: SuccessToast }) {
   return (

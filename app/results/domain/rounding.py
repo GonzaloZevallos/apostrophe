@@ -1,4 +1,4 @@
-"""The one rounding results ever does: half up, exact over `Fraction` (ADR-0013,
+"""The one rounding results ever does: half up, exact over `Fraction` (ADR-0020,
 CODING_STANDARDS.md's invariant — no `float`, `round()` or `Decimal.quantize` in any
 results money, grams or percentage path). `percent` keeps negatives as negatives:
 `floor(x + 1/2)` is not symmetric, but the plan declares it the one rule anyway."""

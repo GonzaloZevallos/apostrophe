@@ -1,4 +1,4 @@
-"""What `period_figures` answers (ADR-0013, CONTEXT.md: Margin, Margin percentage,
+"""What `period_figures` answers (ADR-0020, CONTEXT.md: Margin, Margin percentage,
 Average margin, Stock shortfall, Best week, Best weekday). Plain, frozen value
 objects; the adapter schemas (`app/results/adapters/schemas.py`) are the only place
 these turn into JSON."""

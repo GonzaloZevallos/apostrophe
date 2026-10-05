@@ -13,6 +13,7 @@
 import { expect, test } from '@playwright/test'
 import { newBusinessInvitationUrl } from './backend.js'
 import { watchConsole } from './console.js'
+import { fillSaleLine } from './helpers/sale.js'
 
 const PASSWORD = 'correcthorsebattery'
 
@@ -60,10 +61,9 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
 
   // A cash sale, today.
   await page.goto('/ventas/nueva')
-  await page.getByLabel('Variedad línea 1').selectOption({ label: 'Rosa' })
-  await page.getByLabel('Gramos línea 1').fill('10')
+  await fillSaleLine(page, 1, { variety: 'Rosa', grams: '10' })
   await page.getByRole('radio', { name: 'Efectivo' }).check()
-  await page.getByRole('button', { name: 'Guardar venta' }).click()
+  await page.getByRole('button', { name: 'Guardá la venta' }).click()
   await expect(page.getByText('Venta guardada')).toBeVisible()
 
   // An expense, today, with a category created inline.

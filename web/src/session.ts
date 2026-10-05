@@ -73,7 +73,42 @@ export async function openInvitation(
   return get<InvitationView>(`/invitations/${token}`)
 }
 
-const PUBLIC_PATH_PREFIXES = ['/entrar', '/invitation/']
+/**
+ * Changes the signed-in user's own password (plan, "Change"). Not a session
+ * boundary: the acting device gets a fresh cookie in the same answer and stays
+ * exactly where it was — no cache clear, no navigation — while every other
+ * session of that user is closed on the backend alone. The response carries a
+ * fresh `token`, but the client never reads it (plan, invariants): the session
+ * lives only in the backend's cookie, same as login and accept.
+ */
+export async function changePassword(current_password: string, new_password: string): Promise<void> {
+  await post('/auth/password', { current_password, new_password })
+}
+
+/**
+ * Opening `/reset/:token` always logs out first, through the backend, exactly
+ * like `openInvitation` (plan, "Reset"; PRD: "This holds even when the signed-in
+ * user is the same person"). The lookup itself spends nothing: a live link
+ * answers 204, a dead one 404 `account.reset_link_gone`.
+ */
+export async function openResetLink(
+  actions: Pick<SessionActions, 'queryClient'>,
+  token: string,
+): Promise<void> {
+  await post('/auth/logout')
+  actions.queryClient.clear()
+  await get<void>(`/reset-links/${token}`)
+}
+
+/** Submitting a new password through a live reset link signs this device in and
+ * lands on Inicio, same shape as `login`/`acceptInvitation`: the client never
+ * reads the response's `token`. */
+export async function submitReset(actions: SessionActions, token: string, new_password: string): Promise<void> {
+  await post(`/reset-links/${token}`, { new_password })
+  boundary(actions, '/')
+}
+
+const PUBLIC_PATH_PREFIXES = ['/entrar', '/invitation/', '/reset/']
 
 function isPublicPath(path: string): boolean {
   return PUBLIC_PATH_PREFIXES.some((prefix) => path.startsWith(prefix))

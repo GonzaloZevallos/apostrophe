@@ -1,0 +1,119 @@
+"""`SqlStockFigures` over a real database (CODING_STANDARDS section 5; plan invariant:
+one `lots_and_draws` load per request): entries and sale-line draws are each read
+exactly once per `.read()` call, whatever the number of varieties, sales or entries.
+"""
+
+from __future__ import annotations
+
+from typing import Any
+
+from fastapi.testclient import TestClient
+from sqlalchemy import event, select
+from sqlalchemy.engine import Engine
+from sqlalchemy.orm import Session
+
+from app.results.domain.periods import Period
+from app.stock.adapters.stock_figures import SqlStockFigures
+from app.varieties.adapters.tables import VarietyRow
+from tests.conftest import TODAY
+
+
+def _variety(client: TestClient, name: str, list_price: int = 10_000) -> int:
+    variety = client.post("/varieties", json={"name": name}).json()
+    variety_id = int(variety["id"])
+    client.post(
+        f"/varieties/{variety_id}/prices",
+        json={"effective_from": "2026-01-01", "list_price": list_price},
+    )
+    return variety_id
+
+
+def _entry(client: TestClient, variety_id: int, **overrides: Any) -> None:
+    body: dict[str, Any] = {"variety_id": variety_id, "origin": "purchase", "grams": "5"}
+    body.update(overrides)
+    response = client.post("/stock/entries", json=body)
+    assert response.status_code == 201, response.text
+
+
+def _business_id_of_variety(engine: Engine, variety_id: int) -> int:
+    with Session(engine) as session:
+        row = session.scalar(select(VarietyRow).where(VarietyRow.id == variety_id))
+        assert row is not None
+        return row.business_id
+
+
+def test_reads_entries_and_draws_exactly_once_whatever_the_number_of_varieties(
+    client: TestClient, engine: Engine
+) -> None:
+    lavanda = _variety(client, "Lavanda")
+    menta = _variety(client, "Menta")
+    for variety_id in (lavanda, menta):
+        _entry(client, variety_id, grams="10", total_cost=1_000)
+        sale = client.post(
+            "/sales",
+            json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": "2"}]},
+        )
+        assert sale.status_code == 201, sale.text
+
+    business_id = _business_id_of_variety(engine, lavanda)
+    session = Session(engine)
+    figures = SqlStockFigures(session, business_id)
+
+    statements: list[str] = []
+
+    def _record(
+        conn: object, cursor: object, statement: str, parameters: object, *args: object
+    ) -> None:
+        statements.append(statement)
+
+    event.listen(engine, "before_cursor_execute", _record)
+    try:
+        periods = [Period(TODAY, TODAY)]
+        figures.read(TODAY, periods)
+    finally:
+        event.remove(engine, "before_cursor_execute", _record)
+
+    entry_reads = [s for s in statements if "stock_entry" in s]
+    draw_reads = [s for s in statements if "sale_line" in s]
+    assert len(entry_reads) == 1, entry_reads
+    assert len(draw_reads) == 1, draw_reads
+
+
+def test_rows_include_a_variety_with_no_entries_and_translate_stock_level(
+    client: TestClient, engine: Engine
+) -> None:
+    priced = _variety(client, "Lavanda")
+    untouched = _variety(client, "Zarzamora")
+    _entry(client, priced, grams="10", total_cost=1_000)
+
+    business_id = _business_id_of_variety(engine, priced)
+    with Session(engine) as session:
+        figures = SqlStockFigures(session, business_id)
+        answer = figures.read(TODAY, [Period(TODAY, TODAY)])
+
+    by_id = {row.variety_id: row for row in answer.rows}
+    assert by_id[priced].status == "ok"
+    assert by_id[untouched].status == "no_entries"
+    assert by_id[untouched].name == "Zarzamora"
+
+
+def test_cost_of_goods_and_purchases_are_answered_per_period(
+    client: TestClient, engine: Engine
+) -> None:
+    variety_id = _variety(client, "Lavanda")
+    _entry(client, variety_id, grams="10", total_cost=1_000)
+    sale = client.post(
+        "/sales",
+        json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": "10"}]},
+    )
+    assert sale.status_code == 201, sale.text
+
+    business_id = _business_id_of_variety(engine, variety_id)
+    period = Period(TODAY, TODAY)
+    with Session(engine) as session:
+        figures = SqlStockFigures(session, business_id)
+        answer = figures.read(TODAY, [period])
+
+    assert answer.cost_of_goods[period].amount == 1_000
+    assert answer.cost_of_goods[period].pending is False
+    assert answer.purchases[period] == 1_000

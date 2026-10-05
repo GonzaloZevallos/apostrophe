@@ -190,7 +190,7 @@ _In the app_: Categoría
 _Avoid_: type, tag, label, account, cost center
 
 **Profit**:
-Sales minus cost of goods sold minus stock shortfall minus expenses, over a period; a sale counts on its own date, paid or not. When any of that cost is pending, it is worked out over the costed part (the sales of pending grams are left out) and marked "y N g sin costo", N adding the pending grams sold, gifted and taken out by negative adjustments in the period. In the app: Ganancia.
+Sales (shipping included, paid or not) minus cost of goods sold minus stock shortfall minus expenses, over a period, each counted on its own date. Purchases never enter it. When any of that cost is pending, it is worked out over the costed part (the sales of pending grams are left out) and marked "y N g sin costo", N adding the pending grams sold, gifted and taken out by negative adjustments in the period. It may be negative, and is then shown with a minus sign, never hidden. _In the app_: Ganancia.
 _Avoid_: margin, earnings, net
 _In the app_: Ganancia
 
@@ -207,14 +207,24 @@ _Avoid_: menu, price list, flyer
 _In the app_: Catálogo
 
 **Pinned catalog**:
-The catalog message pinned in the business's Telegram chat, kept in step whenever a price changes or a variety sells out.
-_In the app_: Mensaje fijado
+The catalog message pinned in the business's Telegram channel chat by its own bot. Once first published, it is edited in place whenever the catalog text changes, and it is never posted again in that chat. When nothing qualifies, it shows the header, "Por ahora no tenemos nada para ofrecer." and the footer. _In the app_: Mensaje fijado.
 _Avoid_: post, broadcast
+_In the app_: Mensaje fijado
 
 **Test send**:
-The catalog sent only to the user's own Telegram chat, to see how it looks before publishing.
-_In the app_: Enviarme una prueba
+The catalog sent only to the user's own Telegram chat, using the bot settings typed on the screen. They are saved only if it succeeds. A successful test since the settings last changed is required before Publicar. _In the app_: Probarlo.
 _Avoid_: preview, draft
+_In the app_: Enviarme una prueba
+
+**Upkeep**:
+The automatic edit of the pinned catalog after a change that may affect its text, or at the start of a new Argentina day. It only ever edits; it never posts or pins. _In the app_: no word of its own.
+_Avoid_: sync, auto-publish, refresh
+_In the app_: no word of its own
+
+**Last published text**:
+The source text (markers included) last sent to the pinned message of the current bot and channel chat. _In the app_: no word of its own.
+_Avoid_: cache, last snapshot
+_In the app_: no word of its own
 
 ## Language
 
@@ -305,3 +315,65 @@ _Avoid_: peak day, top day
 **Stock shortfall**:
 What the grams taken out by negative adjustments in a period cost, on the adjustment's date, from their lots as they stand today, oldest first; a part beyond every lot is pending, never $0. It lowers profit. In the app: Faltante de stock.
 _Avoid_: shrinkage, write-off, loss, merma
+
+**Publish**:
+Posting and pinning the catalog in the business's channel chat, or editing the already pinned message there. It always sends, even when the text has not changed. _In the app_: Publicar.
+_Avoid_: broadcast, push, sync
+
+**Bot settings**:
+A business's one Telegram bot token, stored encrypted and never shown again once saved, plus its channel chat and the user's own chat. Changing any of them requires a new test send before publishing. _In the app_: El bot de Telegram.
+_Avoid_: integration, connection, config
+
+**Out of date**:
+The pinned catalog's state when customers are not seeing today's catalog: the last automatic update failed (Telegram down, bot can't post, message deleted, text too long), or a new token or channel was tested but not yet published. It shows one fixed reason and, when the current chat has been published to, the last publish date. Its only other state is up to date. _In the app_: Desactualizado / Al día.
+_Avoid_: stale, pending, out of sync, error
+
+**Panel**:
+Inicio's one-screen view of a business for today, this week (Monday to Sunday) or this month in Argentina time: sales, cost of goods sold, expenses, purchases, profit and cash, then money owed and stock per variety. Read only; every figure comes from the server. _In the app_: Inicio (tabs Hoy · Semana · Mes).
+_Avoid_: dashboard, overview, home, summary, Análisis
+
+**Average sale**:
+A period's sales total, shipping included, divided by its number of sales (not lines), rounded half up to the whole peso. Not shown when the period has no sales.
+_Avoid_: average ticket, mean order, ticket promedio
+
+**Operator**:
+The person who runs the installation from outside the app. They run scripts/invite-business.sh, scripts/reset-password.sh and the business removal, deploy, keep the backups and run the restore drill. Not a user of any business; nothing they do happens from a signed-in session, and they never see or choose a user's password.
+_Avoid_: admin, administrator, superuser, owner, PM
+
+**Business export**:
+One JSON file holding every recorded fact of a business as stored, each record naming what it refers to, with no computed figure, password hash, secret or invitation. It is written only as the first step of removing the business.
+_Avoid_: backup, dump, archive
+
+**Business removal**:
+The operator's command that exports a business and then deletes every row of it, users and invitations included, along with its users' login-attempt history, in one transaction. Nothing is deleted unless the export was written, read back, and its counts match what is deleted.
+_Avoid_: offboarding, account deletion, purge, wipe
+
+
+**Login brake**:
+What stops password guessing at login and at a password change. An email is locked after 5 failures in a row, and a client address after 20 failed logins within 15 minutes, each for 15 minutes. Every refused attempt counts for both, a wrong current password on a password change included. A successful login, password change or reset resets only the email's count, and both locks answer the same. _In the app_: the brake message under Entrar and in Cambiar contraseña.
+_Avoid_: rate limit, throttle, ban, captcha
+
+**Restore drill**:
+A script the operator runs by hand to restore the backup into a scratch target, never the running app. It reports the integrity check, row counts and the time of the restored copy's latest change.
+_Avoid_: backup test, recovery check, DR test
+
+**Spreadsheet import**:
+The one-time load of a business's history from the `Control_de_ventas_y_gastos` spreadsheet into that business. The installation's operator runs it on switch day, and only into a business with no records yet. It never appears in the app; on screen, imported data is the same as data entered by hand.
+_Avoid_: migration, sync, upload, restore
+
+**Unfinished row**:
+A row of Ventas, Entradas or Gastos that the spreadsheet import leaves out because the sheet itself marks it not ready: Ventas by text instead of a number in its Total formula, Entradas and Gastos by a non-blank Revisar. It is listed in the import's report with the sheet's own text, creates no customer, no VIP and no kept spelling, and never blocks the import.
+_Avoid_: incomplete row, invalid row, skipped row
+_In the app_: (operator terminal only; never shown on screen)
+
+**Session**:
+A signed-in device of one user, lasting 30 days as a cookie and a token. A change of that user's password closes every session of theirs, except the device that changed it by Change, which gets a fresh one. _In the app_: Sesión (Cerrar sesión).
+_Avoid_: login, device, token, connection
+
+**Password change**:
+A user setting a new password from Negocio with their current one. The only rule is at least 10 characters, and the same password is accepted. It closes every other session of that user and retires their unused reset links, while the device that made the change stays signed in. _In the app_: Cambiar contraseña.
+_Avoid_: password update, rotation, edit password
+
+**Reset link**:
+A link the operator prints with scripts/reset-password.sh that lets one user choose a new password themselves, once, within 24 hours, without the current one. A user has at most one live link: a newer link or any password change retires it. A retired, used, expired or unknown link answers the same 404. _In the app_: enlace ("Este enlace ya no sirve").
+_Avoid_: recovery code, reset token, magic link, forgot-password email

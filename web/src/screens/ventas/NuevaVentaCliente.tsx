@@ -24,6 +24,8 @@ import { ApiError, NetworkError } from '../../api/client'
 import { type Customer, type CustomerIn, listCustomers, registerCustomer } from '../../api/customers'
 import { keys } from '../../api/keys'
 import { resolveOverride, type RefusalCode } from '../../api/refusals'
+import Boton from '../../components/Boton'
+import Icono from '../../components/Icono'
 import SinConexion from '../../components/SinConexion'
 import CustomerFields, { type CustomerFieldsValue } from '../clientes/CustomerFields'
 import {
@@ -111,13 +113,22 @@ export default function NuevaVentaCliente({ allowNone, onChosen, onClose }: Nuev
   }
 
   return (
-    <div className="capa" role="presentation">
-      <div className="capa__contenido">
-        <span className="panel__titulo">Elegir cliente</span>
-        <label className="campo">
-          <span className="campo__rotulo">Buscar</span>
+    <div className="cliente-sheet" role="presentation">
+      <div className="cliente-sheet__contenido">
+        <span className="cliente-sheet__manija" aria-hidden="true" />
+        <div className="cliente-sheet__encabezado">
+          <span className="panel__titulo">Elegir cliente</span>
+          <Boton variant="link" onClick={onClose}>
+            Cerrar
+          </Boton>
+        </div>
+        <label className="campo campo--buscar">
+          <span className="campo__rotulo visualmente-oculto">Buscar</span>
+          <span className="campo--buscar__icono">
+            <Icono nombre="buscar" size={18} strokeWidth={1.8} />
+          </span>
           <input
-            className="campo__input"
+            className="campo__input campo--buscar__input"
             type="text"
             placeholder="Teléfono o nombre"
             value={query}
@@ -126,39 +137,39 @@ export default function NuevaVentaCliente({ allowNone, onChosen, onClose }: Nuev
         </label>
         <div className="lista-clientes">
           {(results.data ?? []).map((customer) => (
-            <button
+            <Boton
               key={customer.id}
-              type="button"
-              className="lista-clientes__fila"
+              variant="row"
               onClick={() => {
                 onChosen(customer)
                 onClose()
               }}
             >
-              <span className="lista-clientes__nombre">
-                {customer.name}
-                {customer.vip && <span className="vip-insignia">VIP</span>}
+              <span className="lista-clientes__fila-contenido">
+                <span className="lista-clientes__nombre">
+                  {customer.name}
+                  {customer.vip && <span className="vip-insignia">VIP</span>}
+                </span>
+                <span className="lista-clientes__telefono">{customer.phone}</span>
               </span>
-              <span className="lista-clientes__telefono">{customer.phone}</span>
-            </button>
+            </Boton>
           ))}
         </div>
         {allowNone && (
-          <button
-            type="button"
-            className="boton boton--suave"
+          <Boton
+            variant="secondary"
             onClick={() => {
               onChosen(null)
               onClose()
             }}
           >
             Sin cliente
-          </button>
+          </Boton>
         )}
         {!showCreate ? (
-          <button type="button" className="boton-enlace" onClick={() => setShowCreate(true)}>
+          <Boton variant="link" onClick={() => setShowCreate(true)}>
             Nuevo cliente
-          </button>
+          </Boton>
         ) : (
           <form className="formulario" onSubmit={onCreate}>
             <CustomerFields
@@ -173,14 +184,11 @@ export default function NuevaVentaCliente({ allowNone, onChosen, onClose }: Nuev
               </span>
             )}
             {offline && <SinConexion />}
-            <button className="boton" type="submit" disabled={create.isPending}>
+            <Boton type="submit" disabled={create.isPending}>
               Crear cliente
-            </button>
+            </Boton>
           </form>
         )}
-        <button type="button" className="boton-enlace" onClick={onClose}>
-          Cerrar
-        </button>
       </div>
     </div>
   )

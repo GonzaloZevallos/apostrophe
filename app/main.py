@@ -2,6 +2,8 @@
 this module reads nothing from the environment; tests build the app with their own
 settings, engine and clock."""
 
+import asyncio
+import contextlib
 from collections.abc import AsyncIterator, Callable, Sequence
 from contextlib import asynccontextmanager
 from typing import Protocol, cast
@@ -25,13 +27,23 @@ from app.db import make_engine
 from app.expenses.adapters.default_categories import ExpenseCategoriesOpening
 from app.expenses.adapters.expenses_ledger import SqlExpensesLedger
 from app.expenses.adapters.router import router as expenses_router
+from app.expenses.adapters.sql_period_expenses import SqlPeriodExpenses
 from app.http_errors import Refused
 from app.migrations.runner import upgrade_to_head
 from app.payments.adapters.payments_ledger import SqlPaymentsLedger
+from app.payments.adapters.results_ports import SqlDebtSummary, SqlPaymentsReceived
 from app.payments.adapters.router import customers_router as payments_customers_router
 from app.payments.adapters.router import router as payments_router
 from app.payments.adapters.settlements import SqlBalances, SqlOwingSales
+from app.pinned_catalog.adapters.router import router as pinned_catalog_router
+from app.pinned_catalog.adapters.telegram_http import HttpTelegram
+from app.pinned_catalog.adapters.ticker import run_ticker
+from app.pinned_catalog.adapters.token_cipher import TokenCipher
+from app.pinned_catalog.adapters.upkeep_trigger import schedule_upkeep
+from app.pinned_catalog.application.ports import Telegram
+from app.pinned_catalog.application.push import BusinessLocks
 from app.results.adapters.router import router as results_router
+from app.sales.adapters.period_sales import SqlPeriodSales
 from app.sales.adapters.router import router as sales_router
 from app.sales.adapters.sales_ledger import SqlSalesLedger
 from app.settings import Settings
@@ -40,6 +52,7 @@ from app.stock.adapters.draw_costs import SqlDrawCosts
 from app.stock.adapters.line_costs import SqlLineCosts
 from app.stock.adapters.purchases import SqlPurchases
 from app.stock.adapters.router import router as stock_router
+from app.stock.adapters.stock_figures import SqlStockFigures
 from app.varieties.adapters.router import router as varieties_router
 
 
@@ -95,7 +108,20 @@ async def _refused(request: Request, exc: Exception) -> JSONResponse:
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     # Starlette's `State` is untyped; `create_app` always assigns an `Engine`.
     upgrade_to_head(cast(Engine, app.state.engine))
-    yield
+    # The day-change ticker (ADR-0014): started only when asked, so the test app
+    # (`upkeep_ticker=False`) never races a background sync against its own
+    # assertions. Exposed on `app.state` so a test can prove it stops on shutdown.
+    ticker_task: asyncio.Task[None] | None = None
+    if cast(bool, app.state.pinned_catalog_upkeep_ticker):
+        ticker_task = asyncio.create_task(run_ticker(app.state))
+    app.state.pinned_catalog_ticker_task = ticker_task
+    try:
+        yield
+    finally:
+        if ticker_task is not None:
+            ticker_task.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await ticker_task
 
 
 def create_app(
@@ -103,14 +129,27 @@ def create_app(
     engine: Engine | None = None,
     clock: Clock = system_clock,
     hasher: PasswordHasher | None = None,
+    telegram: Telegram | None = None,
+    upkeep_ticker: bool = True,
 ) -> FastAPI:
     settings = settings or Settings.from_env()
     app = FastAPI(title="apostrophe", lifespan=lifespan)
-    app.state.engine = engine or make_engine(settings.database_url)
+    app.state.engine = engine or make_engine(
+        settings.database_url, auth_token=settings.database_auth_token
+    )
     app.state.clock = clock
     app.state.signer = SessionSigner(settings.secret_key)
     app.state.hasher = hasher or PasswordHasher()
     app.state.public_url = settings.public_url
+    app.state.settings = settings
+    # `telegram=None` means the real adapter; every test but `telegram_http`'s own
+    # injects a fake through this same keyword (the plan's invariant). The ticker
+    # itself and the trigger dependency are the `upkeep` subtask's: this flag is only
+    # stored here for it to read.
+    app.state.pinned_catalog_telegram = telegram or HttpTelegram()
+    app.state.pinned_catalog_locks = BusinessLocks()
+    app.state.pinned_catalog_cipher = TokenCipher(settings.secret_key)
+    app.state.pinned_catalog_upkeep_ticker = upkeep_ticker
     app.add_exception_handler(RequestValidationError, _without_request_data)
     app.add_exception_handler(Refused, _refused)
     # A factory, not an instance: `get_business_opening` builds it over the request's
@@ -134,6 +173,28 @@ def create_app(
     # business, the way `get_line_costs` already does for `line_costs`.
     app.state.balances = SqlBalances
     app.state.owing_sales = SqlOwingSales
+    # Same shape again: results reaches sales' per-period figures only through its own
+    # `PeriodSales` port (`app/results/application/ports.py`), never `app.sales`
+    # directly. The route that builds one over the request's `Session` and business
+    # is added with the panel route; this is the one seam that subtask reaches it
+    # through.
+    app.state.period_sales = SqlPeriodSales
+    # Another factory of the same shape: results reaches stock's figures only through
+    # its own `StockFigures` port, never `app.stock` directly (ADR-0006). The panel
+    # route builds this over the request's own `Session` and business, the way
+    # `get_line_costs` already does for `line_costs`.
+    app.state.stock_figures = SqlStockFigures
+    # Another factory of the same shape: results reaches expenses only through its own
+    # `PeriodExpenses` port, never `app.expenses` directly (plan invariant). The panel
+    # route builds this over the request's own `Session` and business, the way
+    # `get_line_costs` already does for `line_costs`.
+    app.state.period_expenses = SqlPeriodExpenses
+    # Two more of results' own ports (plan: subtask "PaymentsReceived and DebtSummary in
+    # payments"), the same `(Session, business_id)` factory shape as `line_costs` and
+    # `balances` above; `app/results/adapters/` builds each over the request's own
+    # `Session` and business, never a second query against `app.payments` directly.
+    app.state.payments_received = SqlPaymentsReceived
+    app.state.debt_summary = SqlDebtSummary
     # Five more factories of the same shape: results reaches every ledger only
     # through its own ports (`DrawCosts`, `SalesLedger`, `PaymentsLedger`,
     # `ExpensesLedger`, `Purchases`), never `app.stock`, `app.sales`, `app.payments`
@@ -154,15 +215,19 @@ def create_app(
     # Every other router goes behind the session gate (docs/adr/0002); each endpoint
     # then takes its business from the session (docs/adr/0004).
     gated = [Depends(require_session)]
+    # Exactly these four (ADR-0014): a write here may change what the pinned catalog
+    # says, so it also schedules upkeep's own post-commit, off-session sync.
+    upkeep_gated = [*gated, Depends(schedule_upkeep)]
     app.include_router(accounts_router, dependencies=gated)
-    app.include_router(varieties_router, dependencies=gated)
+    app.include_router(varieties_router, dependencies=upkeep_gated)
     app.include_router(customers_router, dependencies=gated)
     app.include_router(expenses_router, dependencies=gated)
-    app.include_router(sales_router, dependencies=gated)
-    app.include_router(stock_router, dependencies=gated)
-    app.include_router(catalog_router, dependencies=gated)
+    app.include_router(sales_router, dependencies=upkeep_gated)
+    app.include_router(stock_router, dependencies=upkeep_gated)
+    app.include_router(catalog_router, dependencies=upkeep_gated)
     app.include_router(payments_router, dependencies=gated)
     app.include_router(payments_customers_router, dependencies=gated)
+    app.include_router(pinned_catalog_router, dependencies=gated)
     app.include_router(results_router, dependencies=gated)
 
     if settings.web_dist is not None:

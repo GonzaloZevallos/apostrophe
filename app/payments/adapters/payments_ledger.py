@@ -1,5 +1,5 @@
 """`PaymentsLedger`: results' port for every payment, on-the-spot and later alike
-(ADR-0013). Built for one business."""
+(ADR-0020). Built for one business."""
 
 from __future__ import annotations
 

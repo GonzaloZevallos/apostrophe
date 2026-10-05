@@ -1,4 +1,4 @@
-"""Calendar boundaries shared by every capability that reads a period (ADR-0013).
+"""Calendar boundaries shared by every capability that reads a period (ADR-0020).
 
 `Month` moved here from `app/expenses/domain/month.py`, raising a plain `ValueError`
 (not a capability's own error): `app.expenses.domain.month.Month` wraps it, translating

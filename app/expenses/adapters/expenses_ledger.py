@@ -1,5 +1,5 @@
 """`ExpensesLedger`: results' port for every expense, with its stored `name_key`
-(ADR-0013). Built for one business."""
+(ADR-0020). Built for one business."""
 
 from __future__ import annotations
 

@@ -58,7 +58,7 @@ class Draw:
 
     `sale_id`, `line_total`, `pricing_rule` and `variety_name` ride along from the
     `SaleLineDraw` a sale-line draw was built from (a negative-adjustment draw leaves
-    them at their defaults), so results' own `DrawCosts` (ADR-0013) reads them off
+    them at their defaults), so results' own `DrawCosts` (ADR-0020) reads them off
     this exact draw once `allocate` has costed it, never by joining a line to its
     cost through `(sale_id, position)` afterwards. `allocate` and `stock_level` never
     read them."""
@@ -86,7 +86,7 @@ class SaleLineDraw:
     `variety_name`, `line_total` and `pricing_rule` (the stored value, a plain `str`
     so this stays free of `app.sales.domain.pricing.PricingRule`) ride along on the
     same row `Draws` already reads (`sale_line ⨝ sale ⨝ variety`): results' own
-    `DrawCosts` (ADR-0013) needs them matched to this exact draw, never joined back by
+    `DrawCosts` (ADR-0020) needs them matched to this exact draw, never joined back by
     `(sale_id, position)` afterwards. They default so the fixtures already built for
     `lots_and_draws` and `costs_for_sale` — which never read them — need no change."""
 

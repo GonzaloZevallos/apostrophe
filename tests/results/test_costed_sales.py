@@ -1,4 +1,4 @@
-"""`costed_sales` with no infrastructure (CODING_STANDARDS §5, ADR-0013): a line's
+"""`costed_sales` with no infrastructure (CODING_STANDARDS §5, ADR-0020): a line's
 sales, over its costed grams only, rounded once per line."""
 
 from app.results.domain.costed_sales import costed_sales

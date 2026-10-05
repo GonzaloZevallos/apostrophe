@@ -1,4 +1,4 @@
-"""The plain, dated facts `period_figures` sums (ADR-0013). Each capability's own
+"""The plain, dated facts `period_figures` sums (ADR-0020). Each capability's own
 port (`app/results/application/ports.py`) answers these shapes; the domain only ever
 reads them, never SQLAlchemy or any adapter."""
 
