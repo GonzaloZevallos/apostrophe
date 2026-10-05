@@ -10,9 +10,11 @@
       "grams_gifted": 0.0,
       "cost_of_goods": 6000,
       "pending_cost": false,
+      "shortfall": null,
       "expenses": 0,
       "purchases": 0,
       "profit": 9000,
+      "profit_pending": false,
       "cash": 15000
     },
     "week": {
@@ -25,9 +27,11 @@
       "grams_gifted": 2.0,
       "cost_of_goods": 18000,
       "pending_cost": true,
+      "shortfall": { "amount": 3000, "pending": true },
       "expenses": 12000,
       "purchases": 30000,
       "profit": 12000,
+      "profit_pending": true,
       "cash": -12000
     },
     "month": {
@@ -40,9 +44,11 @@
       "grams_gifted": 0.0,
       "cost_of_goods": 9000,
       "pending_cost": false,
+      "shortfall": null,
       "expenses": 5000,
       "purchases": 0,
       "profit": 9000,
+      "profit_pending": false,
       "cash": 15000
     }
   },

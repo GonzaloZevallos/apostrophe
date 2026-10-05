@@ -719,9 +719,11 @@ def test_another_business_reads_the_panel_as_zero_while_a_has_every_figure(
         "grams_gifted": 0,
         "cost_of_goods": 0,
         "pending_cost": False,
+        "shortfall": None,
         "expenses": 0,
         "purchases": 0,
         "profit": 0,
+        "profit_pending": False,
         "cash": 0,
     }
     assert b_panel["periods"]["today"] == fresh

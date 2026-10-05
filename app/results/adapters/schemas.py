@@ -22,7 +22,7 @@ from datetime import date
 from pydantic import BaseModel
 
 from app.results.application.ports import DebtorRow, StockRow
-from app.results.application.read_panel import DebtsSummary, Panel, PeriodFigures
+from app.results.application.read_panel import DebtsSummary, Panel, PeriodFigures, ShortfallFigures
 from app.stock.adapters.schemas import VarietyStockOut
 from app.varieties.adapters.schemas import GramsOut
 
@@ -81,6 +81,19 @@ class DebtsOut(BaseModel):
         )
 
 
+class ShortfallOut(BaseModel):
+    """A period's stock shortfall (CONTEXT.md: Stock shortfall), `null` exactly when
+    the period has no negative adjustment. `pending` is decided from the shortfall
+    figure's own pending grams (plan invariant); no grams cross the wire (PM)."""
+
+    amount: int
+    pending: bool
+
+    @classmethod
+    def of(cls, shortfall: ShortfallFigures) -> ShortfallOut:
+        return cls(amount=shortfall.amount, pending=shortfall.pending)
+
+
 class PeriodOut(BaseModel):
     start: date
     end: date
@@ -91,9 +104,11 @@ class PeriodOut(BaseModel):
     grams_gifted: GramsOut
     cost_of_goods: int
     pending_cost: bool
+    shortfall: ShortfallOut | None
     expenses: int
     purchases: int
     profit: int
+    profit_pending: bool
     cash: int
 
     @classmethod
@@ -108,9 +123,11 @@ class PeriodOut(BaseModel):
             grams_gifted=figures.grams_gifted.as_decimal(),
             cost_of_goods=figures.cost_of_goods,
             pending_cost=figures.pending_cost,
+            shortfall=None if figures.shortfall is None else ShortfallOut.of(figures.shortfall),
             expenses=figures.expenses,
             purchases=figures.purchases,
             profit=figures.profit,
+            profit_pending=figures.profit_pending,
             cash=figures.cash,
         )
 

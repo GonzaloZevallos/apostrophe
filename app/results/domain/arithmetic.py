@@ -1,21 +1,13 @@
 """Results' own arithmetic (docs/product/results.md: "Figures per period"; PRD
-criterion 3). Pure, no infrastructure: `profit` and `cash` are each a plain
-subtraction over figures the adapters already computed; `average_sale` rounds half up
-to the whole peso and is `None` with no sales, never a `0`."""
+criterion 3). Pure, no infrastructure: `average_sale` rounds half up to the whole peso
+and is `None` with no sales, never a `0`.
+
+`profit` and `cash` used to live here as a second sum of the panel's own figures; GH-70
+deleted them (ADR-0013 amendment) — Ganancia and Caja now come from
+`period_figures.scan`/`totals_between`, the one computation `GET /analysis` already
+used, so the two screens can no longer disagree."""
 
 from __future__ import annotations
-
-
-def profit(sales: int, cost_of_goods: int, expenses: int) -> int:
-    """Ganancia = sales − cost of goods sold − expenses. May be negative; never
-    floored (PRD: "Negative figures")."""
-    return sales - cost_of_goods - expenses
-
-
-def cash(received: int, expenses: int, purchases: int) -> int:
-    """Caja = payments received − expenses − purchases. May be negative; never
-    floored (PRD: "Negative figures")."""
-    return received - expenses - purchases
 
 
 def average_sale(total: int, count: int) -> int | None:
