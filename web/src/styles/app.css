@@ -394,7 +394,7 @@ button {
   align-items: center;
   gap: var(--espacio-md);
   min-height: var(--alto-tocable);
-  padding: var(--espacio-lg) 0;
+  padding: var(--espacio-md) 0;
   border-bottom: 1px solid var(--linea);
   color: var(--tinta);
   text-decoration: none;
