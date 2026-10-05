@@ -65,10 +65,6 @@ Optional contact data for a customer, in international form: an Argentine number
 _Avoid_: contact, handle, username, identifier
 _In the app_: Teléfono
 
-**Channel**:
-No longer a concept of the product: a customer has no channel (Telegram or WhatsApp), and the entry is removed from the glossary. Where a customer talks to the business varies and is not recorded.
-_In the app_: Canal
-
 **VIP customer**:
 A customer who always pays the bulk price, whatever the grams.
 _In the app_: Cliente VIP

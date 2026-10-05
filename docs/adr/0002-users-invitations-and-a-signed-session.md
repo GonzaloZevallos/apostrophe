@@ -71,3 +71,16 @@ the operator of the installation resets one by hand until a task adds them."
   the database by hand (docs/adr/0019).
 - The session mechanism is unchanged: a changed password hash closes every session of
   that user. A Change hands the acting device a fresh session in the same answer.
+
+## Amendment (2026-10-05): the password change screen moves to Configuración
+
+**Supersedes** the Amendment (2026-10-04) bullet "A user changes their own password
+from Negocio (`POST /auth/password`)".
+
+- Negocio is gone from the navigation (GH-58); a user changes their own password from
+  Configuración → Tu cuenta, which also holds "log out". The route is still
+  `POST /auth/password`; only the screen that reaches it moves.
+- Nothing else in the Amendment (2026-10-04) section changes: the operator still
+  issues a reset link with `scripts/reset-password.sh <email>`, nobody edits the
+  database by hand, and a changed password hash still closes every session of that
+  user.
