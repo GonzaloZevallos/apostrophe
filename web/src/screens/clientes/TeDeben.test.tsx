@@ -57,13 +57,29 @@ test('heads with the total owed and the count of sales still owing, lists debtor
   renderTeDeben()
 
   expect(await screen.findByText(`$ ${debtorsFixture.total_owed.toLocaleString('es-AR')}`)).toBeInTheDocument()
-  expect(screen.getByText(`${debtorsFixture.sales_owing_count} ventas debiendo`)).toBeInTheDocument()
 
   const rows = screen.getAllByRole('link').filter((link) => link.getAttribute('href')?.startsWith('/clientes/'))
   expect(rows.map((row) => row.textContent)).toEqual([
     'Ana Pérez$ 15.000desde 14/09',
     'Beto$ 22.000desde 20/09',
   ])
+})
+
+test('one sale still owing reads "1 venta debiendo", singular', async () => {
+  // `sales_owing_count` is overridden in memory, never read off the fixture
+  // (plan invariant: "A test of a count line fakes the count it asserts and
+  // compares against a literal string, never one derived from a fixture value").
+  vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { ...debtorsFixture, sales_owing_count: 1 }))
+  renderTeDeben()
+
+  expect(await screen.findByText('1 venta debiendo')).toBeInTheDocument()
+})
+
+test('three sales still owing read "3 ventas debiendo", plural', async () => {
+  vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { ...debtorsFixture, sales_owing_count: 3 }))
+  renderTeDeben()
+
+  expect(await screen.findByText('3 ventas debiendo')).toBeInTheDocument()
 })
 
 test('an empty debtors list shows the empty-state text', async () => {
