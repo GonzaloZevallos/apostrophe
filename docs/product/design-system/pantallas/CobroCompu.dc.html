@@ -15,60 +15,53 @@ a { color: #1B4FA8 } a:hover { color: #231E18 }
 </helmet>
 
 <div style="width: 1280px; height: 920px; box-sizing: border-box; background: #FCFBF8; border: 1px solid #EBE5DA; border-radius: 12px; position: relative; display: flex; overflow: hidden; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: #231E18">
-  <div style="width: 256px; border-right: 1px solid #EBE5DA; opacity: 0.4; padding: 26px 16px; display: flex; flex-direction: column; gap: 5px">
-    <span style="display: flex; align-items: baseline; gap: 2px; padding: 0 10px 14px"><span style="font-size: 19px; font-weight: 700; letter-spacing: -0.04em">apostrophe</span><span style="font-size: 19px; font-weight: 700; color: #1B4FA8">’</span></span>
-    <span style="display: flex; align-items: center; justify-content: center; gap: 8px; height: 48px; border-radius: 999px; background: #231E18; color: #FCFBF8; font-size: 15px; font-weight: 600; margin-bottom: 12px">+ Nueva venta</span>
-    <span style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 14px; border-radius: 14px; color: #7A7065; font-size: 15px">Inicio</span>
-    <span style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 14px; border-radius: 14px; color: #7A7065; font-size: 15px">Ventas</span>
-    <span style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 14px; border-radius: 14px; background: #FCFBF8; font-size: 15px; font-weight: 600">Clientes</span>
-    <span style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 14px; border-radius: 14px; color: #7A7065; font-size: 15px">Variedades</span>
+  <div style="width: 256px; border-right: 1px solid #EBE5DA; opacity: 0.4; padding: 26px 16px">
+    <span style="display: block; font-size: 15px; font-weight: 600">apostrophe’</span>
   </div>
   <div style="flex: 1; opacity: 0.4; padding: 28px 32px">
     <span style="font-size: 28px; font-weight: 600">Clientes</span>
   </div>
   <div style="position: absolute; inset: 0; background: rgba(35,30,24,0.28)"></div>
 
-  <div style="position: absolute; top: 60px; left: 50%; transform: translateX(-50%); width: 420px; background: #FCFBF8; border-radius: 24px; box-shadow: 0 24px 48px rgba(35,30,24,0.22); overflow: hidden">
-    <div style="padding: 22px 24px 0; display: flex; flex-direction: column; gap: 2px; opacity: 0.5">
-      <span style="font-size: 16px; font-weight: 600">Nico Parra</span>
-      <span style="font-size: 13px">Te debe $ 20.000 desde el 16/09</span>
-    </div>
-    <div style="padding: 16px 24px 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-top: 1px solid #EBE5DA; margin-top: 14px; padding-top: 16px">
-      <span style="font-size: 19px; font-weight: 600">Registrá un cobro</span>
+  <div style="position: absolute; top: 80px; left: 50%; transform: translateX(-50%); width: 480px; background: #FCFBF8; border-radius: 24px; box-shadow: 0 24px 48px rgba(35,30,24,0.22); overflow: hidden">
+    <div style="padding: 22px 24px 18px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #EBE5DA">
+      <span style="flex: 1; font-size: 19px; font-weight: 600">Registrá un cobro</span>
       <span style="font-size: 15px; font-weight: 600; color: #7A7065">Cerrar</span>
     </div>
 
-    <div style="padding: 18px 24px 0">
-      <span style="display: block; font-size: 14px; color: #7A7065">Cuánto te pagó</span>
-      <span style="display: block; font-size: 44px; font-weight: 600; letter-spacing: -0.045em; line-height: 1.1; margin-top: 2px">$ 10.000</span>
-      <div style="display: flex; gap: 8px; margin-top: 12px">
-        <span style="height: 38px; display: flex; align-items: center; padding: 0 16px; border-radius: 999px; background: #F2EEE6; font-size: 14px; font-weight: 600">Todo: $ 20.000</span>
-      </div>
-    </div>
+    <div style="padding: 20px 24px 0; display: flex; flex-direction: column; gap: 14px">
+      <span style="display: block; font-size: 14px; color: #7A7065">Nico Parra · te debe $ 20.000 desde el 16/09</span>
 
-    <div style="padding: 18px 24px 0; display: flex; flex-direction: column">
-    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid #EBE5DA;"><span style="font-size: 15px">Fecha</span><span style="font-size: 15px; font-weight: 600; color: #231E18">Hoy 05/10</span></div>
-    </div>
-    <div style="padding: 12px 24px 0">
+      <div>
+        <span style="display: block; font-size: 14px; color: #7A7065">Cuánto te pagó</span>
+        <span style="display: block; font-size: 44px; font-weight: 600; letter-spacing: -0.045em; line-height: 1.1; margin-top: 2px">$ 10.000</span>
+        <div style="display: flex; gap: 8px; margin-top: 12px">
+          <span style="height: 38px; display: flex; align-items: center; padding: 0 16px; border-radius: 999px; background: #F2EEE6; font-size: 14px; font-weight: 600">Todo: $ 20.000</span>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid #EBE5DA;"><span style="font-size: 15px">Fecha</span><span style="font-size: 15px; font-weight: 600; color: #231E18">Hoy 05/10</span></div>
+
       <div style="display: flex; gap: 5px; background: #F2EEE6; border-radius: 999px; padding: 4px">
         <span style="flex: 1; text-align: center; padding: 11px 0; border-radius: 999px; background: #FCFBF8; font-size: 14px; font-weight: 600">Efectivo</span>
         <span style="flex: 1; text-align: center; padding: 11px 0; border-radius: 999px; font-size: 14px; color: #7A7065">Transferencia</span>
       </div>
-    </div>
 
-    <div style="margin: 18px 24px 0; background: #F2EEE6; border-radius: 20px; padding: 14px 16px">
-      <span style="display: block; font-size: 13px; color: #7A7065">Se descuenta de la deuda más vieja</span>
-      <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 8px">
-        <span style="font-size: 15px">Venta del 16/09</span>
-        <span style="font-size: 15px; font-weight: 600; color: #1B4FA8">− $ 10.000</span>
+      <div style="background: #F2EEE6; border-radius: 20px; padding: 14px 16px">
+        <span style="display: block; font-size: 13px; color: #7A7065">Se descuenta de la deuda más vieja</span>
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 8px">
+          <span style="font-size: 15px">Venta del 16/09</span>
+          <span style="font-size: 15px; font-weight: 600; color: #1B4FA8">− $ 10.000</span>
+        </div>
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-top: 8px; padding-top: 10px; border-top: 1px solid #EBE5DA">
+          <span style="font-size: 15px">Le queda debiendo</span>
+          <span style="font-size: 22px; font-weight: 600; letter-spacing: -0.035em; color: #7A4A00">$ 10.000</span>
+        </div>
       </div>
-      <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-top: 8px; padding-top: 10px; border-top: 1px solid #EBE5DA">
-        <span style="font-size: 15px">Le queda debiendo</span>
-        <span style="font-size: 22px; font-weight: 600; letter-spacing: -0.035em; color: #7A4A00">$ 10.000</span>
-      </div>
-    </div>
 
-    <div style="padding: 18px 24px 22px"><span style="display: flex; align-items: center; justify-content: center; height: 50px; border-radius: 999px; background: #231E18; color: #FCFBF8; font-size: 15px; font-weight: 600">Guardá el cobro</span></div>
+      <span style="display: flex; align-items: center; justify-content: center; height: 50px; border-radius: 999px; background: #231E18; color: #FCFBF8; font-size: 15px; font-weight: 600">Guardá el cobro</span>
+    </div>
+    <div style="height: 20px"></div>
   </div>
 </div>
 
