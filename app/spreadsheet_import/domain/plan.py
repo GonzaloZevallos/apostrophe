@@ -306,21 +306,22 @@ class CustomerMention:
     about exactly once: either the first finished Ventas row naming them (`ref` set,
     `name` that row's own spelling) or a mapping entry whose name is on no finished
     row (`ref` is `None`, `name` the entry's own text, kept only to still catch a
-    malformed phone there). `phone` is the matching mapping entry's phone, when one
-    exists and is non-blank; otherwise `None`. `mapping_line` is that entry's line,
-    when one matched, for filing a phone problem at the mapping file."""
+    malformed phone there). `phone` is the matching mapping entry's own phone text,
+    exactly as read, blank included: only `PhoneNumber.optional`, reached through
+    `check_customer`, decides a blank one means no number. It is `None` only when no
+    entry matched at all. `mapping_line` is that entry's line, when one matched, for
+    filing a phone problem at the mapping file. `repr=False`: a traceback or an
+    assertion message involving this value never shows the number either."""
 
     collapsed_name: str
     name: str
-    phone: str | None
+    phone: str | None = field(repr=False)
     ref: SheetRef | None
     mapping_line: int | None
 
 
 def _entry_phone(entry: MappingEntry | None) -> str | None:
-    if entry is None:
-        return None
-    return entry.phone or None
+    return entry.phone if entry is not None else None
 
 
 def customer_mentions(split: Split, mapping: ParsedMapping) -> tuple[CustomerMention, ...]:

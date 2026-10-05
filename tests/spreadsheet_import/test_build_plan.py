@@ -238,6 +238,28 @@ def test_an_unmapped_long_name_gives_one_problem_at_the_ventas_row() -> None:
     assert problem.kind == "customer.name_too_long"
 
 
+def test_a_mapped_long_name_gives_one_problem_only_at_the_ventas_row() -> None:
+    split = _split(
+        varieties=(variety_row(7, "Variedad A"),),
+        ventas=(venta_row(2, customer="Juana", total=1000),),
+    )
+    checks = Checks(
+        variety_names={"Variedad A": VARIEDAD_A},
+        customers={"Juana": CustomerRefusal(name_code="customer.name_too_long", phone_code=None)},
+        sales={SheetRef("Ventas", 2): _ok_sale(SheetRef("Ventas", 2), 1000)},
+    )
+
+    plan = build_plan(
+        split, mapping(entries=(MappingEntry(5, "Juana", "11-2345-6789"),)), checks
+    )
+
+    assert not plan.writable
+    [problem] = plan.problems
+    assert problem.ref == SheetRef("Ventas", 2)
+    assert problem.column == "Cliente"
+    assert problem.kind == "customer.name_too_long"
+
+
 def test_a_malformed_mapped_number_gives_one_problem_at_the_mapping_line() -> None:
     split = _split(
         varieties=(variety_row(7, "Variedad A"),),

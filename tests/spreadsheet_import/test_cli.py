@@ -405,6 +405,89 @@ def test_a_partial_mapping_imports_unmapped_names_without_a_phone(
     assert customers[CUSTOMER2]["phone"] is None
 
 
+def test_a_well_formed_mapping_row_with_a_malformed_phone_blocks_with_no_echo(
+    client: TestClient,
+    engine: Engine,
+    clock: MovableClock,
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    # The row itself is well formed (one name, one non-blank phone cell): the
+    # phone text just doesn't normalise. check_customer's own phone_code must
+    # still block the run, filed at the mapping line, never at the Ventas row.
+    business_id = _business_id(engine)
+    xlsx = _save_workbook(_workbook(), tmp_path)
+    mapping = _save_mapping(tmp_path, ((CUSTOMER, "abc"),))
+    out, err = io.StringIO(), io.StringIO()
+
+    with caplog.at_level(logging.DEBUG):
+        code = run(
+            [str(business_id), str(xlsx), "--mapping", str(mapping)],
+            engine=engine,
+            clock=clock,
+            out=out,
+            err=err,
+        )
+
+    assert code == 1
+    report = out.getvalue()
+    assert "customer.phone_invalid" in report
+    assert "Mapping row 2 [phone]: customer.phone_invalid" in report
+    assert "Cliente]" not in report
+    assert CUSTOMER not in report
+    assert not _DIGIT_RUN.search(report)
+    assert not _DIGIT_RUN.search(err.getvalue())
+    assert caplog.records == []
+    assert client.get("/customers").json() == []
+    assert client.get("/varieties").json() == []
+    assert client.get("/stock").json()["varieties"] == []
+
+
+def test_the_dry_run_count_of_customers_without_a_phone_matches_the_real_run(
+    client: TestClient, engine: Engine, clock: MovableClock, tmp_path: Path
+) -> None:
+    workbook = _workbook()
+    ventas = workbook[layout.VENTAS_SHEET]
+    ventas.cell(row=3, column=1, value=date(2026, 1, 11))
+    ventas.cell(row=3, column=2, value=VARIETY)
+    ventas.cell(row=3, column=3, value=5)
+    ventas.cell(row=3, column=4, value="Pendiente")
+    ventas.cell(row=3, column=5, value=5000)
+    ventas.cell(row=3, column=6, value=CUSTOMER2)
+    ventas.cell(row=3, column=7, value="")
+    xlsx = _save_workbook(workbook, tmp_path)
+    mapping = _save_mapping(tmp_path, ((CUSTOMER, PHONE),))
+    business_id = _business_id(engine)
+
+    dry_out, dry_err = io.StringIO(), io.StringIO()
+    dry_code = run(
+        [str(business_id), str(xlsx), "--mapping", str(mapping), "--dry-run"],
+        engine=engine,
+        clock=clock,
+        out=dry_out,
+        err=dry_err,
+    )
+
+    assert dry_code == 0, dry_err.getvalue()
+    assert "Customers without a phone number: 1" in dry_out.getvalue()
+    assert client.get("/customers").json() == []
+
+    real_out, real_err = io.StringIO(), io.StringIO()
+    real_code = run(
+        [str(business_id), str(xlsx), "--mapping", str(mapping)],
+        engine=engine,
+        clock=clock,
+        out=real_out,
+        err=real_err,
+    )
+
+    assert real_code == 0, real_err.getvalue()
+    assert "Customers without a phone number: 1" in real_out.getvalue()
+    customers = client.get("/customers").json()
+    without_phone = [c for c in customers if c["phone"] is None]
+    assert len(without_phone) == 1
+
+
 def test_the_last_writer_forced_to_raise_leaves_nothing_written(
     client: TestClient,
     engine: Engine,
