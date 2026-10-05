@@ -4,10 +4,16 @@ One query for every stock entry and every sale-line draw of the business (each
 already filtered on it, and `Draws` carries `variety_name`, `line_total` and
 `pricing_rule` already attached to its row); `allocate` runs once per variety (the
 plan's invariant: no other code multiplies grams by a cost or rounds a cost of
-goods). Each draw's row is built by sorting it into the exact `LotOrder` `allocate`
-reads lots and draws in and then zipping, position for position, with `allocate`'s
-own answer — never by joining a line to its cost through `(sale_id, position)`
-afterwards (the plan's invariant: "nothing joins sale lines to draw costs by key").
+goods). `lots_and_draws` stays the one place a variety's lots and draws are
+assembled, grouped and sorted (`lot_order.py`): its `draws` half is fed to `allocate`
+exactly as it comes back, in its own order, never rebuilt or re-sorted here. The
+display fields `lots_and_draws` has no room for — `kind`, `variety_name`, `sale_id`,
+`line_total` — ride along in a side dict keyed by each draw's own `LotOrder`
+(built with `lot_order.entry_order`/`sale_draw_order`, the same functions
+`lots_and_draws` itself uses, so the key can never drift from its grouping), and are
+looked up positionally by the already-ordered draw, never by joining a line to its
+cost through `(sale_id, position)` afterwards (the plan's invariant: "nothing joins
+sale lines to draw costs by key").
 
 A sale-line draw becomes a `sold` or `gifted` row — `pricing_rule` is read here, so
 stock's own domain stays unaware of gifts (ADR-0013's "considered and rejected": a
@@ -24,32 +30,21 @@ from sqlalchemy.orm import Session
 from app.results.application.ports import DrawCosts
 from app.results.domain.ledger import DrawKind, DrawRow
 from app.sales.domain.pricing import PricingRule
-from app.shared.grams import Grams
 from app.stock.adapters.sql_draws import SqlDraws
 from app.stock.adapters.sql_stock_entries import SqlStockEntries
 from app.stock.domain.allocation import DrawCost, allocate
-from app.stock.domain.lot_order import (
-    SALE_LINE_RANK,
-    STOCK_ENTRY_RANK,
-    Draw,
-    Lot,
-    LotOrder,
-    lots_and_draws,
-)
+from app.stock.domain.lot_order import LotOrder, entry_order, lots_and_draws, sale_draw_order
 
 
 @dataclass(frozen=True)
-class _RichDraw:
-    """One draw, in its own `LotOrder`, carrying everything a `DrawRow` needs —
-    built once here and never looked up again by key."""
+class _Meta:
+    """The fields a `DrawRow` needs beyond what `lots_and_draws`' plain `Draw`
+    carries, keyed onto it by `LotOrder` — never by `(sale_id, position)`."""
 
-    order: LotOrder
     kind: DrawKind
-    variety_id: int
     variety_name: str | None
     sale_id: int | None
     line_total: int | None
-    grams: Grams
 
 
 class SqlDrawCosts(DrawCosts):
@@ -61,63 +56,41 @@ class SqlDrawCosts(DrawCosts):
         entries = self._entries.for_varieties(None)
         sale_draws = self._draws.for_varieties(None)
 
-        # `lots_and_draws` groups and sorts the lots for `allocate`; its own `draws`
-        # half is not used here, since it would discard `variety_name`, `line_total`
-        # and `pricing_rule` — rebuilt instead, below, in the identical `LotOrder`.
         grouped = lots_and_draws(entries, sale_draws)
-        lots_by_variety = {variety_id: lots for variety_id, (lots, _) in grouped.items()}
 
-        rich_by_variety: dict[int, list[_RichDraw]] = {}
+        meta_by_order: dict[LotOrder, _Meta] = {}
         for entry in entries:
             if entry.grams.is_positive:
                 continue  # a lot, not a draw
-            assert entry.id is not None, "only a stored entry is ordered"
-            order = LotOrder(entry.entry_date, entry.recorded_at, STOCK_ENTRY_RANK, entry.id, 0)
-            rich_by_variety.setdefault(entry.variety_id, []).append(
-                _RichDraw(
-                    order=order,
-                    kind="shortfall",
-                    variety_id=entry.variety_id,
-                    variety_name=None,
-                    sale_id=None,
-                    line_total=None,
-                    grams=Grams(-entry.grams.hundredths),
-                )
+            meta_by_order[entry_order(entry)] = _Meta(
+                kind="shortfall", variety_name=None, sale_id=None, line_total=None
             )
-        for draw in sale_draws:
-            order = LotOrder(
-                draw.day, draw.recorded_at, SALE_LINE_RANK, draw.sale_id, draw.position
+        for sale_draw in sale_draws:
+            kind: DrawKind = (
+                "gifted" if sale_draw.pricing_rule == PricingRule.GIFT.value else "sold"
             )
-            kind: DrawKind = "gifted" if draw.pricing_rule == PricingRule.GIFT.value else "sold"
-            rich_by_variety.setdefault(draw.variety_id, []).append(
-                _RichDraw(
-                    order=order,
-                    kind=kind,
-                    variety_id=draw.variety_id,
-                    variety_name=draw.variety_name,
-                    sale_id=draw.sale_id,
-                    line_total=draw.line_total,
-                    grams=draw.grams,
-                )
+            meta_by_order[sale_draw_order(sale_draw)] = _Meta(
+                kind=kind,
+                variety_name=sale_draw.variety_name,
+                sale_id=sale_draw.sale_id,
+                line_total=sale_draw.line_total,
             )
 
         rows: list[DrawRow] = []
-        for variety_id, rich_list in rich_by_variety.items():
-            rich_list.sort(key=lambda rich: rich.order)
-            lots: list[Lot] = lots_by_variety.get(variety_id, [])
-            plain_draws = [Draw(rich.order, variety_id, rich.grams) for rich in rich_list]
-            costs: list[DrawCost] = allocate(lots, plain_draws)
-            for rich, cost in zip(rich_list, costs, strict=True):
-                is_shortfall = rich.kind == "shortfall"
+        for variety_id, (lots, draws) in grouped.items():
+            costs: list[DrawCost] = allocate(lots, draws)
+            for draw, cost in zip(draws, costs, strict=True):
+                meta = meta_by_order[draw.order]
+                is_shortfall = meta.kind == "shortfall"
                 rows.append(
                     DrawRow(
-                        kind=rich.kind,
-                        day=rich.order.day,
-                        variety_id=None if is_shortfall else rich.variety_id,
-                        variety_name=None if is_shortfall else rich.variety_name,
-                        sale_id=None if is_shortfall else rich.sale_id,
-                        line_total=None if is_shortfall else rich.line_total,
-                        grams=rich.grams,
+                        kind=meta.kind,
+                        day=draw.order.day,
+                        variety_id=None if is_shortfall else variety_id,
+                        variety_name=None if is_shortfall else meta.variety_name,
+                        sale_id=None if is_shortfall else meta.sale_id,
+                        line_total=None if is_shortfall else meta.line_total,
+                        grams=draw.grams,
                         costed=cost.costed,
                         pending=cost.pending,
                     )

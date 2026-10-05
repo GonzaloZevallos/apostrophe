@@ -5,18 +5,18 @@
     "month": "2026-10",
     "previous": "2026-09",
     "next": null,
-    "sales": 87000,
-    "sales_without_shipping": 85000,
+    "sales": 83818,
+    "sales_without_shipping": 81818,
     "grams_sold": 28.0,
     "grams_gifted": 15.0,
-    "average_margin": { "amount": 47000, "percent": 55, "pending_grams": 2.5 },
+    "average_margin": { "amount": 41000, "percent": 55, "pending_grams": 2.5 },
     "shortfall": { "amount": 3000, "pending_grams": 1.0 },
     "varieties": [
       {
         "variety_id": 1,
         "name": "Flor A",
         "sales_without_shipping": 60000,
-        "share_percent": 67,
+        "share_percent": 73,
         "grams_sold": 20.0,
         "grams_gifted": 0.0,
         "cost": { "costed": 20000, "pending_grams": 0.0 },
@@ -25,12 +25,12 @@
       {
         "variety_id": 2,
         "name": "Flor B",
-        "sales_without_shipping": 25000,
-        "share_percent": 28,
+        "sales_without_shipping": 21818,
+        "share_percent": 27,
         "grams_sold": 8.0,
         "grams_gifted": 0.0,
         "cost": { "costed": 9000, "pending_grams": 2.5 },
-        "margin": { "amount": 12000, "percent": 60, "pending_grams": 2.5 }
+        "margin": { "amount": 6000, "percent": 40, "pending_grams": 2.5 }
       },
       {
         "variety_id": 3,
@@ -181,10 +181,10 @@
       "month": "2026-10",
       "first_day": "2026-10-01",
       "last_day": "2026-10-31",
-      "sales": 87000,
+      "sales": 83818,
       "grams": 43.0,
-      "expenses": 3000,
-      "profit": { "amount": 44000, "pending_grams": 2.5 },
+      "expenses": 6500,
+      "profit": { "amount": 33500, "pending_grams": 3.5 },
       "cash": 40000
     }
   ],
@@ -193,15 +193,15 @@
     { "weekday": 2, "sales": 42000, "count": 18, "best": false },
     { "weekday": 3, "sales": 38000, "count": 15, "best": false },
     { "weekday": 4, "sales": 45000, "count": 19, "best": false },
-    { "weekday": 5, "sales": 68000, "count": 25, "best": true },
+    { "weekday": 5, "sales": 134818, "count": 25, "best": true },
     { "weekday": 6, "sales": 60000, "count": 22, "best": false },
     { "weekday": 7, "sales": 30000, "count": 12, "best": false }
   ],
   "since_first_record": {
-    "sales": 403000,
-    "expenses": 40600,
-    "profit": { "amount": 157500, "pending_grams": 6.0 },
-    "cash": 350000,
+    "sales": 399818,
+    "expenses": 43300,
+    "profit": { "amount": 140000, "pending_grams": 9.5 },
+    "cash": 317000,
     "shortfall": { "amount": 8000, "pending_grams": 3.0 }
   },
   "month_expenses": {
@@ -215,9 +215,9 @@
   "since_first_record_expenses": {
     "categories": [
       { "category_id": 1, "name": "Insumos", "total": 24000 },
-      { "category_id": 2, "name": "Transporte", "total": 16600 }
+      { "category_id": 2, "name": "Transporte", "total": 19300 }
     ],
-    "total": 40600,
+    "total": 43300,
     "purchases": 62000
   }
 }

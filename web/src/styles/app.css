@@ -1288,14 +1288,14 @@
 .analisis__columnas {
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: var(--espacio-xl);
 }
 
 .analisis__principal,
 .analisis__aside {
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: var(--espacio-xl);
   min-width: 0;
 }
 
@@ -1398,7 +1398,7 @@
     flex-direction: row;
     flex-wrap: wrap;
     align-items: flex-start;
-    gap: 28px;
+    gap: var(--espacio-xl);
   }
 
   .analisis__principal {

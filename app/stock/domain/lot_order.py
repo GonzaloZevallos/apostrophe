@@ -90,12 +90,16 @@ class SaleLineDraw:
     pricing_rule: str = "list"
 
 
-def _entry_order(entry: StockEntry) -> LotOrder:
+def entry_order(entry: StockEntry) -> LotOrder:
+    """A stock entry's `LotOrder` — exported so a caller that needs to match its own
+    data back onto `lots_and_draws`' draws (results' `DrawCosts`, ADR-0013) builds the
+    identical key instead of inventing a second formula for it."""
     assert entry.id is not None, "only a stored entry is ordered"
     return LotOrder(entry.entry_date, entry.recorded_at, STOCK_ENTRY_RANK, entry.id, 0)
 
 
-def _sale_draw_order(draw: SaleLineDraw) -> LotOrder:
+def sale_draw_order(draw: SaleLineDraw) -> LotOrder:
+    """A sale-line draw's `LotOrder`, exported for the same reason as `entry_order`."""
     return LotOrder(draw.day, draw.recorded_at, SALE_LINE_RANK, draw.sale_id, draw.position)
 
 
@@ -107,7 +111,7 @@ def lots_and_draws(
     lots: dict[int, list[Lot]] = {}
     draws: dict[int, list[Draw]] = {}
     for entry in entries:
-        order = _entry_order(entry)
+        order = entry_order(entry)
         if entry.grams.is_positive:
             lots.setdefault(entry.variety_id, []).append(
                 Lot(order, entry.variety_id, entry.grams, entry.total_cost)
@@ -118,7 +122,7 @@ def lots_and_draws(
             )
     for sale_draw in sale_draws:
         draws.setdefault(sale_draw.variety_id, []).append(
-            Draw(_sale_draw_order(sale_draw), sale_draw.variety_id, sale_draw.grams)
+            Draw(sale_draw_order(sale_draw), sale_draw.variety_id, sale_draw.grams)
         )
     varieties = set(lots) | set(draws)
     return {
