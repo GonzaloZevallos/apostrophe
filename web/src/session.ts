@@ -9,20 +9,22 @@
 
 import type { QueryClient } from '@tanstack/react-query'
 import { get, post } from './api/client'
+import { paths } from './routes/paths'
 
 export interface SessionActions {
   queryClient: QueryClient
-  navigate: (path: string) => void
+  navigate: (path: string, options?: { replace: boolean }) => void
 }
 
-function boundary(actions: SessionActions, path: string): void {
+function boundary(actions: SessionActions, path: string, options?: { replace: boolean }): void {
   actions.queryClient.clear()
-  actions.navigate(path)
+  if (options === undefined) actions.navigate(path)
+  else actions.navigate(path, options)
 }
 
 export async function login(actions: SessionActions, email: string, password: string): Promise<void> {
   await post('/auth/login', { email, password })
-  boundary(actions, '/')
+  boundary(actions, paths.home())
 }
 
 export interface AcceptBody {
@@ -38,12 +40,12 @@ export async function acceptInvitation(
   body: AcceptBody,
 ): Promise<void> {
   await post(`/invitations/${token}/accept`, body)
-  boundary(actions, '/')
+  boundary(actions, paths.home())
 }
 
 export async function logOut(actions: SessionActions): Promise<void> {
   await post('/auth/logout')
-  boundary(actions, '/entrar')
+  boundary(actions, paths.login())
 }
 
 export interface InvitationView {
@@ -105,10 +107,10 @@ export async function openResetLink(
  * reads the response's `token`. */
 export async function submitReset(actions: SessionActions, token: string, new_password: string): Promise<void> {
   await post(`/reset-links/${token}`, { new_password })
-  boundary(actions, '/')
+  boundary(actions, paths.home())
 }
 
-const PUBLIC_PATH_PREFIXES = ['/entrar', '/invitation/', '/reset/']
+const PUBLIC_PATH_PREFIXES = [paths.login(), paths.invitation(''), paths.reset('')]
 
 function isPublicPath(path: string): boolean {
   return PUBLIC_PATH_PREFIXES.some((prefix) => path.startsWith(prefix))
@@ -119,5 +121,6 @@ function isPublicPath(path: string): boolean {
  * does nothing: an invitation lookup, for one, answers signed out on purpose. */
 export function handleUnauthorized(actions: SessionActions, currentPath: string): void {
   if (isPublicPath(currentPath)) return
-  boundary(actions, '/entrar')
+  // `replace`: the screen that was refused must not stay in history behind the login.
+  boundary(actions, paths.login(), { replace: true })
 }

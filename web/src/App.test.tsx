@@ -10,12 +10,13 @@
  * is at that moment).
  */
 
-import { act, render, screen, within } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, expect, test, vi } from 'vitest'
 import SALE_DETAIL from './api/fixtures/sale-detail.json'
 import App from './App'
 import { queryClient } from './queryClient'
 import { router } from './router'
+import { paths } from './routes/paths'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -27,13 +28,13 @@ function jsonResponse(status: number, body: unknown): Response {
 afterEach(async () => {
   vi.unstubAllGlobals()
   queryClient.clear()
-  await act(() => router.navigate('/'))
+  await act(() => router.navigate(paths.home()))
 })
 
-test('the public /entrar route renders Entrar without running a gated query', async () => {
+test('the public login route renders Entrar without running a gated query', async () => {
   const fetchMock = vi.fn()
   vi.stubGlobal('fetch', fetchMock)
-  await act(() => router.navigate('/entrar'))
+  await act(() => router.navigate(paths.login()))
 
   render(<App />)
 
@@ -41,14 +42,14 @@ test('the public /entrar route renders Entrar without running a gated query', as
   expect(fetchMock).not.toHaveBeenCalled()
 })
 
-test('/ventas renders the Ventas stub under the gated shell', async () => {
+test('the sales route renders the Ventas stub under the gated shell', async () => {
   vi.stubGlobal(
     'fetch',
     vi.fn().mockResolvedValue(
       jsonResponse(200, { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }),
     ),
   )
-  await act(() => router.navigate('/ventas'))
+  await act(() => router.navigate(paths.sales()))
 
   render(<App />)
 
@@ -58,21 +59,21 @@ test('/ventas renders the Ventas stub under the gated shell', async () => {
   expect(await within(await screen.findByRole('main')).findByText('Ventas')).toBeInTheDocument()
 })
 
-test('/ventas/nueva renders the NuevaVenta stub under the gated shell', async () => {
+test('the new-sale route renders the NuevaVenta stub under the gated shell', async () => {
   vi.stubGlobal(
     'fetch',
     vi.fn().mockResolvedValue(
       jsonResponse(200, { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }),
     ),
   )
-  await act(() => router.navigate('/ventas/nueva'))
+  await act(() => router.navigate(paths.newSale()))
 
   render(<App />)
 
   expect(await screen.findByText('Nueva venta')).toBeInTheDocument()
 })
 
-test('/ventas/:id renders VentaDetalle, from the API, under the gated shell', async () => {
+test('the sale-detail route renders VentaDetalle, from the API, under the gated shell', async () => {
   // A dedicated response per call (never one `Response` instance shared across
   // `/auth/me` and `/sales/1`): `Response.json()` can only run once per instance,
   // and this route now makes both calls, unlike the stub it replaces.
@@ -88,10 +89,22 @@ test('/ventas/:id renders VentaDetalle, from the API, under the gated shell', as
       )
     }),
   )
-  await act(() => router.navigate('/ventas/1'))
+  await act(() => router.navigate(paths.sale(1)))
 
   render(<App />)
 
   expect(await screen.findByText('Venta del 14/09')).toBeInTheDocument()
   expect(await screen.findByText('Flor A')).toBeInTheDocument()
+})
+
+test('a 401 on the first gated call lands on the login path and leaves no history entry', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse(401, { detail: 'no', code: 'unknown' })))
+  await act(() => router.navigate(paths.sales()))
+  const entriesBefore = window.history.length
+
+  render(<App />)
+
+  await waitFor(() => expect(router.state.location.pathname).toBe(paths.login()))
+  expect(router.state.historyAction).toBe('REPLACE')
+  expect(window.history.length).toBe(entriesBefore)
 })

@@ -25,6 +25,7 @@ import { readFeedback } from '../../components/feedback'
 import Notice from '../../components/Notice'
 import SinConexion from '../../components/SinConexion'
 import { useCustomerSearch } from './CustomerSearch'
+import { paths } from '../../routes/paths'
 
 export const SEARCH_LABEL = 'Buscar cliente'
 export const SEARCH_PLACEHOLDER = 'Teléfono o nombre'
@@ -73,7 +74,7 @@ export default function Clientes() {
           {debtors.data !== undefined && debtors.data.debtors.length > 0 && (
             <>
               {' · '}
-              <Link to="/clientes/deben">
+              <Link to={paths.customersOwing()}>
                 {`${debtors.data.debtors.length} te deben ${formatMoney(debtors.data.total_owed)}`}
               </Link>
             </>
@@ -90,7 +91,7 @@ export default function Clientes() {
             onChange={(event) => setQuery(event.target.value)}
           />
         </label>
-        <Link className="boton" to="/clientes/nuevo">
+        <Link className="boton" to={paths.newCustomer()}>
           Nuevo cliente
         </Link>
         {isError && error instanceof NetworkError && <SinConexion />}
@@ -108,7 +109,7 @@ export default function Clientes() {
             {customers.map((customer) => (
               <Link
                 key={customer.id}
-                to={`/clientes/${customer.id}`}
+                to={paths.customer(customer.id)}
                 className="lista-clientes__fila"
               >
                 <span className="lista-clientes__nombre">

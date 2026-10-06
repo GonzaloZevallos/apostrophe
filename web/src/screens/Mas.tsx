@@ -9,6 +9,7 @@
  */
 
 import { Link } from 'react-router'
+import { paths } from '../routes/paths'
 
 interface Item {
   to: string
@@ -17,11 +18,11 @@ interface Item {
 }
 
 const ITEMS: Item[] = [
-  { to: '/gastos', label: 'Gastos', detail: 'Por mes y por categoría' },
-  { to: '/variedades', label: 'Variedades', detail: 'Precios y avisos de stock bajo' },
-  { to: '/catalogo', label: 'Catálogo', detail: 'El mensaje de hoy, listo para copiar' },
-  { to: '/analisis', label: 'Análisis', detail: 'Variedades, semanas, meses y días' },
-  { to: '/negocio', label: 'Negocio' },
+  { to: paths.expenses(), label: 'Gastos', detail: 'Por mes y por categoría' },
+  { to: paths.varieties(), label: 'Variedades', detail: 'Precios y avisos de stock bajo' },
+  { to: paths.catalog(), label: 'Catálogo', detail: 'El mensaje de hoy, listo para copiar' },
+  { to: paths.analysis(), label: 'Análisis', detail: 'Variedades, semanas, meses y días' },
+  { to: paths.business(), label: 'Negocio' },
 ]
 
 export default function Mas() {

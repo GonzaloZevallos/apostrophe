@@ -15,6 +15,7 @@ import { ApiError, NetworkError } from '../api/client'
 import type { Me } from '../api/me'
 import { SIN_CONEXION_TITULO } from '../components/SinConexion'
 import Variedades, { NAME_TAKEN_MESSAGE, NO_PRICE_TODAY, VARIETY_SAVED } from './Variedades'
+import { paths } from '../routes/paths'
 
 vi.mock('../api/client', async () => {
   const actual = await vi.importActual<typeof client>('../api/client')
@@ -29,10 +30,10 @@ function renderScreen() {
   const queryClient = new QueryClient()
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={['/variedades']}>
+      <MemoryRouter initialEntries={[paths.varieties()]}>
         <Routes>
           <Route element={<Outlet context={ME} />}>
-            <Route path="/variedades" element={<Variedades />} />
+            <Route path={paths.varieties()} element={<Variedades />} />
           </Route>
         </Routes>
       </MemoryRouter>
@@ -78,7 +79,7 @@ test('a variety links to its own detail, with no business id in the path', async
   renderScreen()
 
   const link = await screen.findByRole('link', { name: /Sir Jack/ })
-  expect(link).toHaveAttribute('href', '/variedades/7')
+  expect(link).toHaveAttribute('href', paths.variety(7))
 })
 
 describe('adding a variety', () => {

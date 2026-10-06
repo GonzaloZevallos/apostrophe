@@ -35,6 +35,7 @@ import { gone, toast, type ToastMessage } from '../../components/feedback'
 import GoneScreen from '../../components/GoneScreen'
 import SinConexion from '../../components/SinConexion'
 import CustomerFields from './CustomerFields'
+import { paths } from '../../routes/paths'
 
 export const SAVED_TOAST: ToastMessage = 'Cliente guardado'
 export const NAME_REQUIRED = 'Ponele un nombre'
@@ -69,7 +70,7 @@ export default function ClienteForm({ mode }: Props) {
 
   if (existing.isError) {
     if (existing.error instanceof ApiError && isGone(existing.error.code)) {
-      return <GoneScreen label="Clientes" to="/clientes" />
+      return <GoneScreen label="Clientes" to={paths.customers()} />
     }
     if (existing.error instanceof NetworkError) {
       return (
@@ -133,9 +134,9 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
       await save.mutateAsync({ name, phone, channel, vip })
       invalidateResource(queryClient, 'customers')
       if (mode === 'nuevo') {
-        navigate('/clientes', { state: toast(SAVED_TOAST) })
+        navigate(paths.customers(), { state: toast(SAVED_TOAST) })
       } else {
-        navigate(`/clientes/${customerId}`, { state: toast(SAVED_TOAST) })
+        navigate(paths.customer(customerId), { state: toast(SAVED_TOAST) })
       }
     } catch (caught) {
       if (caught instanceof ApiError && caught.status === 401) {
@@ -146,7 +147,7 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
       }
       if (caught instanceof ApiError && mode === 'editar' && isGone(caught.code)) {
         invalidateResource(queryClient, 'customers')
-        navigate('/clientes', { state: gone() })
+        navigate(paths.customers(), { state: gone() })
         return
       }
       if (caught instanceof ApiError) {

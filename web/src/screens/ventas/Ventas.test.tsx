@@ -14,6 +14,7 @@ import saleFixture from '../../api/fixtures/sale.json'
 import { GONE_NOTICE } from '../../api/refusals'
 import type { Me } from '../../api/me'
 import Ventas from './Ventas'
+import { paths } from '../../routes/paths'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -32,11 +33,11 @@ function renderVentas(state?: unknown) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[{ pathname: '/ventas', state }]}>
+      <MemoryRouter initialEntries={[{ pathname: paths.sales(), state }]}>
         <Routes>
           <Route element={<Context />}>
-            <Route path="/ventas" element={<Ventas />} />
-            <Route path="/ventas/:id" element={<span>detalle</span>} />
+            <Route path={paths.sales()} element={<Ventas />} />
+            <Route path={paths.sale(':id')} element={<span>detalle</span>} />
           </Route>
         </Routes>
       </MemoryRouter>

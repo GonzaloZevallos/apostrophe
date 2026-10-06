@@ -10,6 +10,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import Entrar, { BRAKE_MESSAGE, CREDENTIALS_WRONG, LOGIN_HINT, RETRY_MESSAGE } from './Entrar'
+import { paths } from '../routes/paths'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -21,7 +22,7 @@ function jsonResponse(status: number, body: unknown): Response {
 function renderEntrar(queryClient: QueryClient) {
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={['/entrar']}>
+      <MemoryRouter initialEntries={[paths.login()]}>
         <Entrar />
       </MemoryRouter>
     </QueryClientProvider>,

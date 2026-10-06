@@ -18,6 +18,7 @@ import { render, screen, within } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { expect, test } from 'vitest'
 import Shell from './Shell'
+import { paths } from '../routes/paths'
 
 /** The tabs only, in the order they render — drops the fixed "Nueva venta"
  * button, which shares the rail's `link` role but is not one of the tabs. */
@@ -46,7 +47,7 @@ function renderShell(initialPath: string) {
 }
 
 test('shows exactly Inicio, Ventas, Clientes, Stock and Más in both navs, no handle on the route', () => {
-  renderShell('/')
+  renderShell(paths.home())
 
   const navs = screen.getAllByRole('navigation')
   expect(navs).toHaveLength(2)
@@ -56,29 +57,29 @@ test('shows exactly Inicio, Ventas, Clientes, Stock and Más in both navs, no ha
 })
 
 test('the fixed "Nueva venta" button shows outside a chrome route, once per nav rail', () => {
-  renderShell('/')
+  renderShell(paths.home())
 
   const links = screen.getAllByRole('link', { name: /Nueva venta/ })
   expect(links).toHaveLength(2)
   for (const link of links) {
-    expect(link).toHaveAttribute('href', '/ventas/nueva')
+    expect(link).toHaveAttribute('href', paths.newSale())
   }
 })
 
 test('chrome: none hides the fixed "Nueva venta" button everywhere, phone and computer alike', () => {
-  renderShell('/ventas/nueva')
+  renderShell(paths.newSale())
 
   expect(screen.queryByRole('link', { name: /Nueva venta/ })).not.toBeInTheDocument()
 })
 
 test('chrome: none drops the bottom bar outright — the phone case', () => {
-  const { container } = renderShellWithContainer('/ventas/nueva')
+  const { container } = renderShellWithContainer(paths.newSale())
 
   expect(container.querySelector('.bar-inferior')).toBeNull()
 })
 
 test('chrome: none keeps the rail and its tabs — the computer case, only the button is gone', () => {
-  const { container } = renderShellWithContainer('/ventas/:id'.replace(':id', '7'))
+  const { container } = renderShellWithContainer(paths.sale(7))
 
   const rail = container.querySelector('.riel-lateral')
   expect(rail).not.toBeNull()
@@ -103,7 +104,7 @@ function renderShellWithContainer(initialPath: string) {
 }
 
 test('marks the active item by more than color: a distinct class the other items do not get', () => {
-  renderShell('/')
+  renderShell(paths.home())
 
   const inicioLinks = screen.getAllByRole('link', { name: 'Inicio' })
   const clientesLinks = screen.getAllByRole('link', { name: 'Clientes' })

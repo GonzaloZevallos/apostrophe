@@ -22,6 +22,7 @@ import customerNoPhoneFixture from '../../api/fixtures/customer-no-phone.json'
 import debtorsFixture from '../../api/fixtures/debtors.json'
 import Clientes from './Clientes'
 import ClientesLayout from './ClientesLayout'
+import { paths } from '../../routes/paths'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -52,10 +53,10 @@ function renderClientes() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={['/clientes']}>
+      <MemoryRouter initialEntries={[paths.customers()]}>
         <Routes>
           <Route element={<ClientesLayout />}>
-            <Route path="/clientes" element={<Clientes />} />
+            <Route path={paths.customers()} element={<Clientes />} />
           </Route>
         </Routes>
       </MemoryRouter>
@@ -192,7 +193,7 @@ test('the header reads "N clientes · M te deben $ X", and tapping the debt part
   const link = screen.getByRole('link', {
     name: `${debtorsFixture.debtors.length} te deben $ ${debtorsFixture.total_owed.toLocaleString('es-AR')}`,
   })
-  expect(link).toHaveAttribute('href', '/clientes/deben')
+  expect(link).toHaveAttribute('href', paths.customersOwing())
 })
 
 test('with no debtors, the header shows no debt part', async () => {

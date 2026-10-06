@@ -14,6 +14,7 @@ import { SIN_CONEXION_TITULO } from '../components/SinConexion'
 import { GONE_NOTICE } from '../api/refusals'
 import type { Me } from '../api/me'
 import Gastos, { CATEGORY_GONE, FLOWER_NOTICE } from './Gastos'
+import { paths } from '../routes/paths'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -50,10 +51,10 @@ function renderGastos(fetchImpl: (url: string, init?: RequestInit) => Promise<Re
   vi.stubGlobal('fetch', vi.fn(fetchImpl))
   render(
     <QueryClientProvider client={new QueryClient()}>
-      <MemoryRouter initialEntries={['/gastos']}>
+      <MemoryRouter initialEntries={[paths.expenses()]}>
         <Routes>
           <Route element={<Provide />}>
-            <Route path="/gastos" element={<Gastos />} />
+            <Route path={paths.expenses()} element={<Gastos />} />
           </Route>
         </Routes>
       </MemoryRouter>

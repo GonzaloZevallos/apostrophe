@@ -7,6 +7,7 @@
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { ApiError } from './api/client'
 import { queryClient, setCurrentPath, setNavigate } from './queryClient'
+import { paths } from './routes/paths'
 
 beforeEach(() => {
   queryClient.clear()
@@ -14,13 +15,13 @@ beforeEach(() => {
 
 afterEach(() => {
   queryClient.clear()
-  setCurrentPath('/')
+  setCurrentPath(paths.home())
   setNavigate(() => {})
 })
 
 test('a 401 from any gated query clears the cache and sends the person to Entrar', async () => {
   const navigate = vi.fn()
-  setCurrentPath('/clientes')
+  setCurrentPath(paths.customers())
   setNavigate(navigate)
   queryClient.setQueryData(['me'], { businessName: 'La Huerta' })
 
@@ -33,12 +34,12 @@ test('a 401 from any gated query clears the cache and sends the person to Entrar
     .catch(() => undefined)
 
   expect(queryClient.getQueryData(['me'])).toBeUndefined()
-  expect(navigate).toHaveBeenCalledWith('/entrar')
+  expect(navigate).toHaveBeenCalledWith(paths.login(), { replace: true })
 })
 
 test('a 401 while the current screen is public does nothing', async () => {
   const navigate = vi.fn()
-  setCurrentPath('/entrar')
+  setCurrentPath(paths.login())
   setNavigate(navigate)
   queryClient.setQueryData(['me'], { businessName: 'La Huerta' })
 
@@ -56,7 +57,7 @@ test('a 401 while the current screen is public does nothing', async () => {
 
 test('a refusal that is not a 401 never triggers the session boundary', async () => {
   const navigate = vi.fn()
-  setCurrentPath('/clientes')
+  setCurrentPath(paths.customers())
   setNavigate(navigate)
   queryClient.setQueryData(['me'], { businessName: 'La Huerta' })
 
@@ -74,7 +75,7 @@ test('a refusal that is not a 401 never triggers the session boundary', async ()
 
 test('a 401 from a gated mutation (a screen\'s own save or delete) is the same boundary', async () => {
   const navigate = vi.fn()
-  setCurrentPath('/clientes')
+  setCurrentPath(paths.customers())
   setNavigate(navigate)
   queryClient.setQueryData(['me'], { businessName: 'La Huerta' })
 
@@ -87,5 +88,5 @@ test('a 401 from a gated mutation (a screen\'s own save or delete) is the same b
     .catch(() => undefined)
 
   expect(queryClient.getQueryData(['me'])).toBeUndefined()
-  expect(navigate).toHaveBeenCalledWith('/entrar')
+  expect(navigate).toHaveBeenCalledWith(paths.login(), { replace: true })
 })

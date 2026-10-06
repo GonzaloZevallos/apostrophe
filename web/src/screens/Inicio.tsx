@@ -42,6 +42,7 @@ import { salesCount } from '../format/counts'
 import { formatDateShort } from '../format/dates'
 import { formatGrams, formatMoney, formatSignedMoney } from '../format/money'
 import { detailFor, sideNoteFor } from '../stock/detail'
+import { paths } from '../routes/paths'
 
 export const EMPTY_TITLE = 'Arrancá por las variedades'
 export const EMPTY_DETAIL =
@@ -115,7 +116,7 @@ export default function Inicio() {
         </div>
 
         {pinOutOfDate && (
-          <Link to="/catalogo" className="aviso-ambar" role="status">
+          <Link to={paths.catalog()} className="aviso-ambar" role="status">
             <span className="aviso-ambar__titulo">{PINNED_CATALOG_OUT_OF_DATE}</span>
           </Link>
         )}
@@ -265,7 +266,7 @@ function TeDebenBlock({ debts }: { debts: PanelDebts }) {
 
   return (
     <div className="bloque-deben">
-      <Link to="/clientes/deben" className="bloque-deben__titulo">
+      <Link to={paths.customersOwing()} className="bloque-deben__titulo">
         Te deben
       </Link>
       <span className="cifra-xl">{formatMoney(debts.total_owed)}</span>
@@ -274,7 +275,7 @@ function TeDebenBlock({ debts }: { debts: PanelDebts }) {
         {debts.oldest !== null && ` · desde ${formatDateShort(debts.oldest)}`}
       </span>
       {debts.teaser.map((row) => (
-        <Link key={row.customer_id} to={`/clientes/${row.customer_id}`} className="bloque-deben__fila">
+        <Link key={row.customer_id} to={paths.customer(row.customer_id)} className="bloque-deben__fila">
           <span>{row.name}</span>
           <span>{formatMoney(row.balance)}</span>
           <span className="pie">{`desde ${formatDateShort(row.owing_since)}`}</span>

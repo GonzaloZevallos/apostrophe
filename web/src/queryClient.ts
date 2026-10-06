@@ -14,16 +14,17 @@
 
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query'
 import { ApiError } from './api/client'
-import { handleUnauthorized } from './session'
+import { handleUnauthorized, type SessionActions } from './session'
+import { paths } from './routes/paths'
 
-let currentPath = '/'
-let navigateRef: ((path: string) => void) | null = null
+let currentPath = paths.home()
+let navigateRef: SessionActions['navigate'] | null = null
 
 export function setCurrentPath(path: string): void {
   currentPath = path
 }
 
-export function setNavigate(fn: (path: string) => void): void {
+export function setNavigate(fn: SessionActions['navigate']): void {
   navigateRef = fn
 }
 

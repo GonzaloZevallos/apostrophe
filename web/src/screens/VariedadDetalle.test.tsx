@@ -15,6 +15,7 @@ import type { Me } from '../api/me'
 import { GONE_DETAIL, GONE_NOTICE } from '../api/refusals'
 import { SIN_CONEXION_TITULO } from '../components/SinConexion'
 import VariedadDetalle from './VariedadDetalle'
+import { paths } from '../routes/paths'
 
 vi.mock('../api/client', async () => {
   const actual = await vi.importActual<typeof client>('../api/client')
@@ -36,10 +37,10 @@ function renderScreen() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={['/variedades/1']}>
+      <MemoryRouter initialEntries={[paths.variety(1)]}>
         <Routes>
           <Route element={<Outlet context={ME} />}>
-            <Route path="/variedades/:id" element={<VariedadDetalle />} />
+            <Route path={paths.variety(':id')} element={<VariedadDetalle />} />
           </Route>
         </Routes>
       </MemoryRouter>
@@ -294,6 +295,6 @@ test('a variety that is gone shows the gone-detail state with a way back to the 
   expect(await screen.findByText(GONE_DETAIL)).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Volver a Variedades' })).toHaveAttribute(
     'href',
-    '/variedades',
+    paths.varieties(),
   )
 })

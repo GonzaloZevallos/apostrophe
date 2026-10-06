@@ -19,6 +19,7 @@ import Invitacion, {
   NOT_USABLE_TITLE,
   RETRY_MESSAGE,
 } from './Invitacion'
+import { paths } from '../routes/paths'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -34,9 +35,9 @@ function noContent(): Response {
 function renderInvitacion(token = 'tok123') {
   render(
     <QueryClientProvider client={new QueryClient()}>
-      <MemoryRouter initialEntries={[`/invitation/${token}`]}>
+      <MemoryRouter initialEntries={[paths.invitation(token)]}>
         <Routes>
-          <Route path="/invitation/:token" element={<Invitacion />} />
+          <Route path={paths.invitation(':token')} element={<Invitacion />} />
         </Routes>
       </MemoryRouter>
     </QueryClientProvider>,

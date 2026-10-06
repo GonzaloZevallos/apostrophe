@@ -13,6 +13,7 @@ import { MemoryRouter, Outlet, Route, Routes, useLocation } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import type { Me } from '../api/me'
 import EntradaStock from './EntradaStock'
+import { paths } from '../routes/paths'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03' }
 
@@ -45,9 +46,9 @@ function renderForm(initialPath: string) {
       <MemoryRouter initialEntries={[initialPath]}>
         <Routes>
           <Route element={<Provide />}>
-            <Route path="/mi-stock/nueva-entrada" element={<EntradaStock mode="nuevo" />} />
-            <Route path="/mi-stock/entradas/:id" element={<EntradaStock mode="editar" />} />
-            <Route path="/mi-stock" element={<ListStub />} />
+            <Route path={paths.newEntry()} element={<EntradaStock mode="nuevo" />} />
+            <Route path={paths.entry(':id')} element={<EntradaStock mode="editar" />} />
+            <Route path={paths.entries()} element={<ListStub />} />
           </Route>
         </Routes>
       </MemoryRouter>
@@ -85,7 +86,7 @@ test('a new entry starts dated today and shows "Hoy tiene N g" once a variety is
       return Promise.resolve(jsonResponse(500, {}))
     }),
   )
-  renderForm('/mi-stock/nueva-entrada')
+  renderForm(paths.newEntry())
 
   expect(screen.getByLabelText('Fecha')).toHaveValue('2026-10-03')
 
@@ -116,7 +117,7 @@ test('records an entry and lands back on the list with the saved toast', async (
       )
     }),
   )
-  renderForm('/mi-stock/nueva-entrada')
+  renderForm(paths.newEntry())
 
   await userEvent.type(screen.getByLabelText('Gramos'), '30')
   await userEvent.selectOptions(await screen.findByLabelText('Variedad'), 'Sir Jack')
@@ -149,7 +150,7 @@ test('an adjustment can carry negative grams, sent through to the API as typed',
       )
     }),
   )
-  renderForm('/mi-stock/nueva-entrada')
+  renderForm(paths.newEntry())
 
   await userEvent.type(screen.getByLabelText('Gramos'), '-4,5')
   await userEvent.selectOptions(await screen.findByLabelText('Variedad'), 'Sir Jack')
@@ -196,7 +197,7 @@ test('re-saving an existing negative adjustment keeps its negative grams through
       )
     }),
   )
-  renderForm('/mi-stock/entradas/12')
+  renderForm(paths.entry(12))
 
   expect(await screen.findByLabelText('Gramos')).toHaveValue('-4.5')
   await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
@@ -216,7 +217,7 @@ test('a purchase refused for missing cost shows the refusal on its own field, ke
       return Promise.resolve(jsonResponse(422, { detail: 'needs a cost', code: 'stock.cost_required' }))
     }),
   )
-  renderForm('/mi-stock/nueva-entrada')
+  renderForm(paths.newEntry())
 
   await userEvent.type(screen.getByLabelText('Gramos'), '30')
   await userEvent.selectOptions(await screen.findByLabelText('Variedad'), 'Sir Jack')
@@ -261,7 +262,7 @@ test('editing an entry confirms before saving', async () => {
       )
     }),
   )
-  renderForm('/mi-stock/entradas/10')
+  renderForm(paths.entry(10))
 
   expect(await screen.findByLabelText('Gramos')).toHaveValue('25')
   await userEvent.clear(screen.getByLabelText('Gramos'))
@@ -301,7 +302,7 @@ test('deleting an entry confirms first, naming the date, variety and grams', asy
       return Promise.resolve(new Response(null, { status: 204 }))
     }),
   )
-  renderForm('/mi-stock/entradas/10')
+  renderForm(paths.entry(10))
 
   await userEvent.click(await screen.findByRole('button', { name: 'Borrar entrada' }))
 
@@ -356,7 +357,7 @@ test('deleting an entry never re-fetches the entry it just deleted', async () =>
       return Promise.resolve(new Response(null, { status: 404 }))
     }),
   )
-  renderForm('/mi-stock/entradas/10')
+  renderForm(paths.entry(10))
 
   await userEvent.click(await screen.findByRole('button', { name: 'Borrar entrada' }))
   await userEvent.click(await screen.findByRole('button', { name: 'Sí, borrala' }))

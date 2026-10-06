@@ -22,6 +22,7 @@ import Analisis, {
   NO_HISTORY_LINE,
   SINCE_FIRST_RECORD_LABEL,
 } from './Analisis'
+import { paths } from '../routes/paths'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-04' }
 
@@ -40,10 +41,10 @@ function renderAnalisis(fetchImpl: (url: string, init?: RequestInit) => Promise<
   vi.stubGlobal('fetch', vi.fn(fetchImpl))
   render(
     <QueryClientProvider client={new QueryClient()}>
-      <MemoryRouter initialEntries={['/analisis']}>
+      <MemoryRouter initialEntries={[paths.analysis()]}>
         <Routes>
           <Route element={<Provide />}>
-            <Route path="/analisis" element={<Analisis />} />
+            <Route path={paths.analysis()} element={<Analisis />} />
           </Route>
         </Routes>
       </MemoryRouter>

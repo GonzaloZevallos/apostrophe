@@ -31,6 +31,7 @@ import { formatDateShort, formatMonthLong } from '../format/dates'
 import { formatGrams, formatMoney } from '../format/money'
 import ErrorGenerico from '../components/ErrorGenerico'
 import SinConexion from '../components/SinConexion'
+import { paths } from '../routes/paths'
 
 export const NO_HISTORY_LINE = 'Todavía no hay nada para analizar.'
 export const EMPTY_MONTH_LINE = 'No vendiste ni regalaste nada este mes.'
@@ -440,7 +441,7 @@ export default function Analisis() {
     <main className="pantalla">
       <div className="cuerpo">
         <div className="encabezado__fila">
-          <Link to="/mas" aria-label="Volver" className="encabezado__volver">
+          <Link to={paths.more()} aria-label="Volver" className="encabezado__volver">
             ‹
           </Link>
           <span className="encabezado__titulo">Análisis</span>

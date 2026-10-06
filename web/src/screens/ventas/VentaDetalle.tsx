@@ -51,6 +51,7 @@ import { formatDateShort } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
 import { GENERIC_REFUSAL } from './NuevaVenta'
 import NuevaVentaCliente from './NuevaVentaCliente'
+import { paths } from '../../routes/paths'
 
 export const CUSTOMER_ALREADY_ASSIGNED_MESSAGE = 'Esta venta ya tiene cliente.'
 const ASSIGN_TOAST_MS = 2500
@@ -182,7 +183,7 @@ export default function VentaDetalle() {
         // still mounted for one more tick and would otherwise refetch into a 404
         // the browser logs on its own (keys.ts).
         invalidateResource(queryClient, 'sales', { refetchType: 'none' })
-        navigate('/ventas', { replace: true, state: gone() })
+        navigate(paths.sales(), { replace: true, state: gone() })
       } else if (caught instanceof ApiError) {
         const override = resolveOverride(ASSIGN_OVERRIDES, caught.code)
         setAssignError(override?.message ?? GENERIC_REFUSAL)
@@ -211,14 +212,14 @@ export default function VentaDetalle() {
       // Deshacer's own toast names the grams going back to stock (sales.md, PM
       // adjustment 4); the explicit "Borrar venta" confirmation already named them
       // in its question, so its toast stays the plain, existing one.
-      navigate('/ventas', {
+      navigate(paths.sales(), {
         replace: true,
         state: toast(reason === 'deshacer' ? UNDO_TOAST : DELETE_TOAST),
       })
     } catch (caught) {
       if (caught instanceof ApiError && isGone(caught.code)) {
         invalidateResource(queryClient, 'sales', { refetchType: 'none' })
-        navigate('/ventas', { replace: true, state: gone() })
+        navigate(paths.sales(), { replace: true, state: gone() })
       } else if (caught instanceof NetworkError) {
         setDeleteOffline(true)
       } else {
@@ -232,7 +233,7 @@ export default function VentaDetalle() {
 
   if (isError) {
     if (error instanceof ApiError && isGone(error.code)) {
-      return <GoneScreen label="Ventas" to="/ventas" />
+      return <GoneScreen label="Ventas" to={paths.sales()} />
     }
     if (error instanceof NetworkError) {
       return (
@@ -259,7 +260,7 @@ export default function VentaDetalle() {
     // No history to go back into (a direct open, a refresh): `/ventas` is the
     // only sure place back from here (plan, "Navigation").
     if (location.key === 'default') {
-      navigate('/ventas')
+      navigate(paths.sales())
     } else {
       navigate(-1)
     }

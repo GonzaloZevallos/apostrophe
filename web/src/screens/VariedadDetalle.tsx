@@ -33,6 +33,7 @@ import {
   VARIETY_SAVED,
   type Variety,
 } from './Variedades'
+import { paths } from '../routes/paths'
 
 export const PRICE_SAVED = 'Precio guardado'
 export const PRICE_DELETED = 'Precio eliminado'
@@ -298,7 +299,7 @@ export default function VariedadDetalle() {
           <div className="cuerpo">
             <div className="estado-vacio">
               <span className="estado-vacio__titulo">{GONE_DETAIL}</span>
-              <Link to="/variedades" className="boton">
+              <Link to={paths.varieties()} className="boton">
                 Volver a Variedades
               </Link>
             </div>

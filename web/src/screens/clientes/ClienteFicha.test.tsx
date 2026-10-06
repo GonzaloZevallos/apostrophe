@@ -27,6 +27,7 @@ import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import { readNewSaleState } from '../../components/feedback'
 import { SIN_CONEXION_TITULO } from '../../components/SinConexion'
 import ClienteFicha from './ClienteFicha'
+import { paths } from '../../routes/paths'
 
 const ME: Me = { email: 'a@b.com', business_name: 'Negocio', today: '2026-10-03' }
 
@@ -51,12 +52,12 @@ function renderFicha(id: string) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[`/clientes/${id}`]}>
+      <MemoryRouter initialEntries={[paths.customer(id)]}>
         <Routes>
           <Route element={<Context />}>
-            <Route path="/clientes/:id" element={<ClienteFicha />} />
-            <Route path="/clientes" element={<span>la lista</span>} />
-            <Route path="/ventas/nueva" element={<NuevaVentaStub />} />
+            <Route path={paths.customer(':id')} element={<ClienteFicha />} />
+            <Route path={paths.customers()} element={<span>la lista</span>} />
+            <Route path={paths.newSale()} element={<NuevaVentaStub />} />
           </Route>
         </Routes>
       </MemoryRouter>
@@ -106,7 +107,7 @@ test('a customer that is gone shows the gone screen, with a way back to the list
   expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Volver a Clientes' })).toHaveAttribute(
     'href',
-    '/clientes',
+    paths.customers(),
   )
   expect(screen.queryByText(/999/)).not.toBeInTheDocument()
 })
@@ -162,7 +163,7 @@ test('"Nueva venta a <name>" opens the sale form with this customer chosen, by i
   renderFicha('3')
 
   const link = await screen.findByRole('link', { name: 'Nueva venta a Fer' })
-  expect(link).toHaveAttribute('href', '/ventas/nueva')
+  expect(link).toHaveAttribute('href', paths.newSale())
   await userEvent.click(link)
 
   expect(await screen.findByText('Nueva venta para 3')).toBeInTheDocument()

@@ -32,6 +32,7 @@ import SinConexion from '../components/SinConexion'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import { isGone, resolveOverride, type RefusalCode } from '../api/refusals'
 import { WEAK_PASSWORD_MESSAGE } from './Invitacion'
+import { paths } from '../routes/paths'
 
 export const DEAD_LINK_MESSAGE = 'Este enlace ya no sirve. Pedile uno nuevo a quien te lo pasó.'
 export { ERROR_GENERICO_MENSAJE as RETRY_MESSAGE }
@@ -107,7 +108,7 @@ export default function Reset() {
           <div className="estado-vacio">
             <span className="estado-vacio__titulo">{DEAD_LINK_MESSAGE}</span>
           </div>
-          <a className="boton" href="/entrar">
+          <a className="boton" href={paths.login()}>
             Entrar
           </a>
         </div>

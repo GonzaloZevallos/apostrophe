@@ -13,6 +13,7 @@ import { afterEach, expect, test, vi } from 'vitest'
 import type { Me } from '../api/me'
 import * as clipboard from '../clipboard'
 import Catalogo from './Catalogo'
+import { paths } from '../routes/paths'
 
 vi.mock('../clipboard', () => ({ copyText: vi.fn().mockResolvedValue(true) }))
 
@@ -34,10 +35,10 @@ function renderCatalogo(fetchMock: ReturnType<typeof vi.fn>): QueryClient {
   const queryClient = new QueryClient()
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={['/catalogo']}>
+      <MemoryRouter initialEntries={[paths.catalog()]}>
         <Routes>
           <Route element={<Provide />}>
-            <Route path="/catalogo" element={<Catalogo />} />
+            <Route path={paths.catalog()} element={<Catalogo />} />
           </Route>
         </Routes>
       </MemoryRouter>
@@ -487,10 +488,10 @@ test('a catalog input never carries maxLength', async () => {
   const queryClient = new QueryClient()
   const { container } = render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={['/catalogo']}>
+      <MemoryRouter initialEntries={[paths.catalog()]}>
         <Routes>
           <Route element={<Provide />}>
-            <Route path="/catalogo" element={<Catalogo />} />
+            <Route path={paths.catalog()} element={<Catalogo />} />
           </Route>
         </Routes>
       </MemoryRouter>

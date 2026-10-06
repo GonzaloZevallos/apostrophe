@@ -15,6 +15,7 @@ import SinConexion from '../../components/SinConexion'
 import { salesCount } from '../../format/counts'
 import { formatDateShort } from '../../format/dates'
 import { formatMoney } from '../../format/money'
+import { paths } from '../../routes/paths'
 
 export const EMPTY_LIST = 'Nadie te debe.'
 
@@ -28,7 +29,7 @@ export default function TeDeben() {
     <main className="pantalla">
       <div className="cuerpo">
         <div>
-          <Link to="/clientes">Volver</Link>
+          <Link to={paths.customers()}>Volver</Link>
           <span className="encabezado__titulo">Te deben</span>
         </div>
 
@@ -48,7 +49,7 @@ export default function TeDeben() {
               {data.debtors.map((debtor) => (
                 <Link
                   key={debtor.customer.id}
-                  to={`/clientes/${debtor.customer.id}`}
+                  to={paths.customer(debtor.customer.id)}
                   className="lista-clientes__fila"
                 >
                   <span className="lista-clientes__nombre">{debtor.customer.name}</span>

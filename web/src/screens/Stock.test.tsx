@@ -12,6 +12,7 @@ import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import type { Me } from '../api/me'
 import Stock from './Stock'
+import { paths } from '../routes/paths'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03' }
 
@@ -30,10 +31,10 @@ function renderStock(fetchImpl: (url: string) => Promise<Response>) {
   vi.stubGlobal('fetch', vi.fn(fetchImpl))
   render(
     <QueryClientProvider client={new QueryClient()}>
-      <MemoryRouter initialEntries={['/mi-stock']}>
+      <MemoryRouter initialEntries={[paths.entries()]}>
         <Routes>
           <Route element={<Provide />}>
-            <Route path="/mi-stock" element={<Stock />} />
+            <Route path={paths.entries()} element={<Stock />} />
           </Route>
         </Routes>
       </MemoryRouter>
@@ -114,7 +115,7 @@ test('no entries at all shows the empty state, with a way to record the first en
   expect(screen.getByText('Cargá tu stock inicial o una compra')).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Nueva entrada' })).toHaveAttribute(
     'href',
-    '/mi-stock/nueva-entrada',
+    paths.newEntry(),
   )
 })
 

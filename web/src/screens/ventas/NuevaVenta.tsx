@@ -61,6 +61,7 @@ import {
 } from '../../sales/pricing'
 import type { Variety } from '../Variedades'
 import NuevaVentaCliente from './NuevaVentaCliente'
+import { paths } from '../../routes/paths'
 
 export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
 export const NO_LINES_MESSAGE = 'Cargá al menos una variedad.'
@@ -416,7 +417,7 @@ export default function NuevaVenta() {
   }
 
   function goBack(): void {
-    if (location.key === 'default') navigate('/ventas')
+    if (location.key === 'default') navigate(paths.sales())
     else navigate(-1)
   }
 
@@ -472,7 +473,7 @@ export default function NuevaVenta() {
     try {
       const saved = await save.mutateAsync(body)
       savedRef.current = true
-      navigate(`/ventas/${saved.id}`, { replace: true, state: saleJustSaved() })
+      navigate(paths.sale(saved.id), { replace: true, state: saleJustSaved() })
     } catch (caught) {
       if (caught instanceof ApiError && caught.status === 401) {
         // The session boundary already cleared the cache and is navigating to

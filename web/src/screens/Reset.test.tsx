@@ -13,6 +13,7 @@ import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import Reset, { DEAD_LINK_MESSAGE } from './Reset'
 import { WEAK_PASSWORD_MESSAGE } from './Invitacion'
+import { paths } from '../routes/paths'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -28,10 +29,10 @@ function noContent(): Response {
 function renderReset(token = 'tok123') {
   render(
     <QueryClientProvider client={new QueryClient()}>
-      <MemoryRouter initialEntries={[`/reset/${token}`]}>
+      <MemoryRouter initialEntries={[paths.reset(token)]}>
         <Routes>
-          <Route path="/reset/:token" element={<Reset />} />
-          <Route path="/" element={<div>Pantalla de inicio</div>} />
+          <Route path={paths.reset(':token')} element={<Reset />} />
+          <Route path={paths.home()} element={<div>Pantalla de inicio</div>} />
         </Routes>
       </MemoryRouter>
     </QueryClientProvider>,

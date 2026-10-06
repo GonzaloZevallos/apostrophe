@@ -22,6 +22,7 @@ import Negocio, {
 import { WRONG_CURRENT_PASSWORD_MESSAGE } from './CambiarContrasena'
 import { WEAK_PASSWORD_MESSAGE } from './Invitacion'
 import { BRAKE_MESSAGE } from './Entrar'
+import { paths } from '../routes/paths'
 
 vi.mock('../clipboard', () => ({ copyText: vi.fn().mockResolvedValue(true) }))
 
@@ -47,12 +48,12 @@ function renderNegocio(fetchMock: ReturnType<typeof vi.fn>): QueryClient {
   const queryClient = new QueryClient()
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={['/negocio']}>
+      <MemoryRouter initialEntries={[paths.business()]}>
         <Routes>
           <Route element={<Provide />}>
-            <Route path="/negocio" element={<Negocio />} />
+            <Route path={paths.business()} element={<Negocio />} />
           </Route>
-          <Route path="/entrar" element={<div>Pantalla de entrada</div>} />
+          <Route path={paths.login()} element={<div>Pantalla de entrada</div>} />
         </Routes>
       </MemoryRouter>
     </QueryClientProvider>,

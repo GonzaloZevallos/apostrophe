@@ -15,6 +15,7 @@ import panelFixture from '../api/fixtures/panel.json'
 import type { PanelAnswer } from '../api/panel'
 import type { Me } from '../api/me'
 import Inicio, { EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE } from './Inicio'
+import { paths } from '../routes/paths'
 
 const PANEL: PanelAnswer = panelFixture as PanelAnswer
 
@@ -53,7 +54,7 @@ function renderInicio(
 ) {
   return render(
     <QueryClientProvider client={client}>
-      <MemoryRouter initialEntries={['/']}>
+      <MemoryRouter initialEntries={[paths.home()]}>
         <Routes>
           <Route element={<Provide />}>
             <Route index element={<Inicio />} />
@@ -324,5 +325,5 @@ test('shows the fixed pinned-catalog notice while the pin is out of date', async
   renderInicio()
 
   const notice = await screen.findByText(PINNED_CATALOG_OUT_OF_DATE)
-  expect(notice.closest('a')).toHaveAttribute('href', '/catalogo')
+  expect(notice.closest('a')).toHaveAttribute('href', paths.catalog())
 })

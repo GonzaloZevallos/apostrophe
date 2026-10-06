@@ -53,6 +53,23 @@ describe('get', () => {
   })
 })
 
+describe('Accept', () => {
+  test('every request says it wants JSON, with or without a body', async () => {
+    const fetchMock = vi.fn().mockImplementation(() => Promise.resolve(jsonResponse(200, {})))
+    vi.stubGlobal('fetch', fetchMock)
+
+    await get('/business')
+    await post('/customers', { name: 'Ana' })
+    await del('/customers/1')
+
+    for (const [, init] of fetchMock.mock.calls) {
+      expect((init as RequestInit).headers).toMatchObject({ Accept: 'application/json' })
+    }
+    const postInit = fetchMock.mock.calls[1]?.[1] as RequestInit
+    expect(postInit.headers).toMatchObject({ 'Content-Type': 'application/json' })
+  })
+})
+
 describe('post, patch and del', () => {
   test('post sends a JSON body and credentials', async () => {
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse(201, { ok: true }))

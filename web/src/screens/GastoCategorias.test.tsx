@@ -11,6 +11,7 @@ import { MemoryRouter } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import { GONE_NOTICE } from '../api/refusals'
 import GastoCategorias, { CANNOT_REMOVE } from './GastoCategorias'
+import { paths } from '../routes/paths'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -25,7 +26,7 @@ function renderScreen(fetchImpl: (url: string, init?: RequestInit) => Promise<Re
   vi.stubGlobal('fetch', vi.fn(fetchImpl))
   render(
     <QueryClientProvider client={new QueryClient()}>
-      <MemoryRouter initialEntries={['/gastos/categorias']}>
+      <MemoryRouter initialEntries={[paths.expenseCategories()]}>
         <GastoCategorias />
       </MemoryRouter>
     </QueryClientProvider>,

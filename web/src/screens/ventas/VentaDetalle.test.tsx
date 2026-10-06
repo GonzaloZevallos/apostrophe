@@ -20,6 +20,7 @@ import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import SALE from '../../api/fixtures/sale-detail.json'
 import { readFeedback, saleJustSaved } from '../../components/feedback'
 import VentaDetalle from './VentaDetalle'
+import { paths } from '../../routes/paths'
 
 /** Stands in for the real `Ventas` screen, just enough to show what `VentaDetalle`
  * navigated back with (plan, invariants: history state is only ever read through
@@ -49,10 +50,10 @@ function renderDetalle(initialState?: unknown) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[{ pathname: '/ventas/10', state: initialState }]}>
+      <MemoryRouter initialEntries={[{ pathname: paths.sale(10), state: initialState }]}>
         <Routes>
-          <Route path="/ventas" element={<VentasProbe />} />
-          <Route path="/ventas/:id" element={<VentaDetalle />} />
+          <Route path={paths.sales()} element={<VentasProbe />} />
+          <Route path={paths.sale(':id')} element={<VentaDetalle />} />
         </Routes>
       </MemoryRouter>
     </QueryClientProvider>,
@@ -113,7 +114,7 @@ test('a gone sale shows the plain gone-detail state, never the generic retry', a
   renderDetalle()
 
   expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Volver a Ventas' })).toHaveAttribute('href', '/ventas')
+  expect(screen.getByRole('link', { name: 'Volver a Ventas' })).toHaveAttribute('href', paths.sales())
 })
 
 test('Borrar venta asks "Antes de borrar" naming the date, the amount and the grams returning to stock, then deletes and returns to Ventas with the plain toast', async () => {

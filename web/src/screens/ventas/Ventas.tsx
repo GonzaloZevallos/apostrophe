@@ -38,6 +38,7 @@ import { salesCount } from '../../format/counts'
 import { type DateRange, formatDate, monthRange, todayRange, weekRange } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
 import { saleGrams } from '../../sales/grams'
+import { paths } from '../../routes/paths'
 
 export type Period = 'hoy' | 'semana' | 'mes' | 'fechas'
 
@@ -162,7 +163,7 @@ export default function Ventas() {
                 const names = varietyNames(sale.lines)
                 const gramos = formatGrams(saleGrams(sale.lines))
                 return (
-                  <Link key={sale.id} to={`/ventas/${sale.id}`} className="fila-venta">
+                  <Link key={sale.id} to={paths.sale(sale.id)} className="fila-venta">
                     <span className="fila-venta__fecha">{formatDate(sale.date, me.today)}</span>
                     <span className="fila-venta__cuerpo">
                       <span className="fila-venta__nombre">

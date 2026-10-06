@@ -27,6 +27,7 @@
 import { Link, NavLink, Outlet, useMatches, useOutletContext } from 'react-router'
 import type { Me } from '../api/me'
 import Icono, { type NombreIcono } from '../components/Icono'
+import { paths } from '../routes/paths'
 
 interface Item {
   to: string
@@ -35,14 +36,14 @@ interface Item {
 }
 
 const ITEMS: Item[] = [
-  { to: '/', label: 'Inicio', icono: 'inicio' },
-  { to: '/ventas', label: 'Ventas', icono: 'ventas' },
-  { to: '/clientes', label: 'Clientes', icono: 'clientes' },
-  { to: '/mi-stock', label: 'Stock', icono: 'stock' },
-  { to: '/mas', label: 'Más', icono: 'mas' },
+  { to: paths.home(), label: 'Inicio', icono: 'inicio' },
+  { to: paths.sales(), label: 'Ventas', icono: 'ventas' },
+  { to: paths.customers(), label: 'Clientes', icono: 'clientes' },
+  { to: paths.entries(), label: 'Stock', icono: 'stock' },
+  { to: paths.more(), label: 'Más', icono: 'mas' },
 ]
 
-const NUEVA_VENTA_PATH = '/ventas/nueva'
+const NUEVA_VENTA_PATH = paths.newSale()
 
 type Chrome = 'none'
 
@@ -85,7 +86,7 @@ export default function Shell() {
           <NavLink
             key={item.to}
             to={item.to}
-            end={item.to === '/'}
+            end={item.to === paths.home()}
             className={className('riel-lateral__item')}
           >
             <Icono nombre={item.icono} />
@@ -107,7 +108,7 @@ export default function Shell() {
               <NavLink
                 key={item.to}
                 to={item.to}
-                end={item.to === '/'}
+                end={item.to === paths.home()}
                 className={className('bar-inferior__item')}
               >
                 <Icono nombre={item.icono} />

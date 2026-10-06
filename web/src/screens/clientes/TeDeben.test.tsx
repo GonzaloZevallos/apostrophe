@@ -11,6 +11,7 @@ import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import debtorsFixture from '../../api/fixtures/debtors.json'
 import TeDeben from './TeDeben'
+import { paths } from '../../routes/paths'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -23,10 +24,10 @@ function renderTeDeben() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={['/clientes/deben']}>
+      <MemoryRouter initialEntries={[paths.customersOwing()]}>
         <Routes>
-          <Route path="/clientes/deben" element={<TeDeben />} />
-          <Route path="/clientes/:id" element={<span>ficha</span>} />
+          <Route path={paths.customersOwing()} element={<TeDeben />} />
+          <Route path={paths.customer(':id')} element={<span>ficha</span>} />
         </Routes>
       </MemoryRouter>
     </QueryClientProvider>,
@@ -58,7 +59,7 @@ test("heads with the total owed and lists debtors in the API's own order", async
 
   expect(await screen.findByText(`$ ${debtorsFixture.total_owed.toLocaleString('es-AR')}`)).toBeInTheDocument()
 
-  const rows = screen.getAllByRole('link').filter((link) => link.getAttribute('href')?.startsWith('/clientes/'))
+  const rows = screen.getAllByRole('link').filter((link) => link.getAttribute('href')?.startsWith(paths.customer('')))
   expect(rows.map((row) => row.textContent)).toEqual([
     'Ana Pérez$ 15.000desde 14/09',
     'Beto$ 22.000desde 20/09',

@@ -13,6 +13,7 @@ import { afterEach, expect, test, vi } from 'vitest'
 import { SIN_CONEXION_TITULO } from '../components/SinConexion'
 import { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import GatedLayout from './GatedLayout'
+import { paths } from '../routes/paths'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -27,7 +28,7 @@ function renderGated() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={['/']}>
+      <MemoryRouter initialEntries={[paths.home()]}>
         <Routes>
           <Route element={<GatedLayout />}>
             <Route index element={<div>contenido del negocio</div>} />

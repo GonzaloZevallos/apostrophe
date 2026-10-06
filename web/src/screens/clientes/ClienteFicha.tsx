@@ -44,6 +44,7 @@ import { formatDateShort } from '../../format/dates'
 import { formatMoney, formatMoneyMagnitude } from '../../format/money'
 import { formatPhone } from '../../format/phone'
 import Cobro from './Cobro'
+import { paths } from '../../routes/paths'
 
 const CHANNEL_LABEL: Record<Channel, string> = {
   telegram: 'Telegram',
@@ -165,7 +166,7 @@ export default function ClienteFicha() {
 
   if (isError) {
     if (error instanceof ApiError && isGone(error.code)) {
-      return <GoneScreen label="Clientes" to="/clientes" />
+      return <GoneScreen label="Clientes" to={paths.customers()} />
     }
     if (error instanceof NetworkError) {
       return (
@@ -193,9 +194,9 @@ export default function ClienteFicha() {
     <main className="pantalla">
       <div className="cuerpo">
         <div>
-          <Link to="/clientes">Volver</Link>
+          <Link to={paths.customers()}>Volver</Link>
           <span className="encabezado__titulo">{data.name}</span>
-          <Link to={`/clientes/${customerId}/editar`}>Editar</Link>
+          <Link to={paths.editCustomer(customerId)}>Editar</Link>
         </div>
         {feedback !== null && <Notice kind={feedback.kind} message={feedback.message} />}
         {accountGone && <Notice kind="notice" message={GONE_NOTICE} />}
@@ -282,7 +283,7 @@ export default function ClienteFicha() {
           })}
         </div>
 
-        <Link to="/ventas/nueva" state={newSaleFor(customerId)} className="boton">
+        <Link to={paths.newSale()} state={newSaleFor(customerId)} className="boton">
           Nueva venta a {data.name}
         </Link>
       </div>

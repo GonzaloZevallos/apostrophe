@@ -1,0 +1,28 @@
+import { expect, test } from 'vitest'
+import { paths } from './paths'
+
+test('every screen has one path, ids and tokens interpolated', () => {
+  expect(paths.home()).toBe('/')
+  expect(paths.login()).toBe('/entrar')
+  expect(paths.sales()).toBe('/ventas')
+  expect(paths.newSale()).toBe('/ventas/nueva')
+  expect(paths.sale(7)).toBe('/ventas/7')
+  expect(paths.customers()).toBe('/clientes')
+  expect(paths.newCustomer()).toBe('/clientes/nuevo')
+  expect(paths.customer('3')).toBe('/clientes/3')
+  expect(paths.editCustomer('3')).toBe('/clientes/3/editar')
+  expect(paths.customersOwing()).toBe('/clientes/deben')
+  expect(paths.varieties()).toBe('/variedades')
+  expect(paths.variety(5)).toBe('/variedades/5')
+  expect(paths.catalog()).toBe('/catalogo')
+  expect(paths.entries()).toBe('/mi-stock')
+  expect(paths.newEntry()).toBe('/mi-stock/nueva-entrada')
+  expect(paths.entry(9)).toBe('/mi-stock/entradas/9')
+  expect(paths.expenses()).toBe('/gastos')
+  expect(paths.expenseCategories()).toBe('/gastos/categorias')
+  expect(paths.analysis()).toBe('/analisis')
+  expect(paths.more()).toBe('/mas')
+  expect(paths.business()).toBe('/negocio')
+  expect(paths.invitation('tok')).toBe('/invitation/tok')
+  expect(paths.reset('tok')).toBe('/reset/tok')
+})
