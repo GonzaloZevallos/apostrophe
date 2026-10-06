@@ -26,6 +26,7 @@ import { keys } from '../../api/keys'
 import { resolveOverride, type RefusalCode } from '../../api/refusals'
 import Boton from '../../components/Boton'
 import Icono from '../../components/Icono'
+import Loading from '../../components/Loading'
 import SinConexion from '../../components/SinConexion'
 import { useSheet } from '../../components/useSheetStack'
 import CustomerFields, { type CustomerFieldsValue } from '../clientes/CustomerFields'
@@ -142,6 +143,7 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
           />
         </label>
         <div className="lista-clientes">
+          {results.isPending && <Loading />}
           {(results.data ?? []).map((customer) => (
             <Boton
               key={customer.id}

@@ -9,6 +9,7 @@
 
 import { type KeyboardEvent, type RefObject, useSyncExternalStore } from 'react'
 import Boton from '../../components/Boton'
+import Loading from '../../components/Loading'
 import OpcionInterruptor from '../../components/OpcionInterruptor'
 import ReglaInsignia from '../../components/ReglaInsignia'
 import { COMPUTER_QUERY } from '../../format/breakpoints'
@@ -70,6 +71,9 @@ interface NuevaVentaLineaProps {
   preview: LinePreview | null
   /** `combinedLineError`'s one message for this line, or null. */
   error: string | null
+  /** A date change is fetching that day's prices: the line's price per gram, rule and total
+   * show a compact loading mark, never a figure of the day before. */
+  figuresLoading: boolean
   /** The line's variety, if the fetched prices carry it. */
   variety: Variety | undefined
   varieties: Variety[]
@@ -89,6 +93,7 @@ export default function NuevaVentaLinea({
   isOpen,
   preview,
   error,
+  figuresLoading,
   variety,
   varieties,
   canRemove,
@@ -118,14 +123,20 @@ export default function NuevaVentaLinea({
             </span>
           )}
         </div>
-        {preview !== null && (
+        {figuresLoading ? (
           <div className="nueva-venta__linea-detalle">
-            {preview.rule !== 'gift' && (
-              <span className="nueva-venta__linea-preciogramo">{formatMoney(preview.pricePerGram)} x g</span>
-            )}
-            <ReglaInsignia rule={preview.rule} />
-            <span className="nueva-venta__linea-total">{formatMoney(preview.lineTotal)}</span>
+            <Loading compacto />
           </div>
+        ) : (
+          preview !== null && (
+            <div className="nueva-venta__linea-detalle">
+              {preview.rule !== 'gift' && (
+                <span className="nueva-venta__linea-preciogramo">{formatMoney(preview.pricePerGram)} x g</span>
+              )}
+              <ReglaInsignia rule={preview.rule} />
+              <span className="nueva-venta__linea-total">{formatMoney(preview.lineTotal)}</span>
+            </div>
+          )
         )}
         {error !== null && (
           <span id={messageId} className="campo__error" role="alert">
@@ -218,7 +229,12 @@ export default function NuevaVentaLinea({
           {error}
         </span>
       )}
-      {error === null && preview !== null && (
+      {error === null && figuresLoading && (
+        <div className="nueva-venta__linea-detalle">
+          <Loading compacto />
+        </div>
+      )}
+      {error === null && !figuresLoading && preview !== null && (
         <div className="nueva-venta__linea-detalle">
           {preview.rule !== 'gift' && (
             <span className="nueva-venta__linea-preciogramo">{formatMoney(preview.pricePerGram)} x g</span>

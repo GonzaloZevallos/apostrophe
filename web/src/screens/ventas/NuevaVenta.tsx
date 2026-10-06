@@ -29,7 +29,7 @@
  * one source of a line's message, in the plan's priority order.
  */
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useOutletContext } from 'react-router'
 import { ApiError, NetworkError, UNKNOWN_CODE, get, post } from '../../api/client'
@@ -42,6 +42,7 @@ import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import { readNewSaleState, saleJustSaved } from '../../components/feedback'
 import Icono from '../../components/Icono'
 import LeaveConfirm from '../../components/LeaveConfirm'
+import Loading, { LoadingAnuncio } from '../../components/Loading'
 import SelectorPago from '../../components/SelectorPago'
 import SinConexion from '../../components/SinConexion'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
@@ -194,6 +195,9 @@ function NuevaVentaForm() {
   const varietiesQuery = useQuery({
     queryKey: keys.saleFormVarieties(date),
     queryFn: () => get<Variety[]>(`/varieties?on=${encodeURIComponent(date)}`),
+    // A date change keeps the form's varieties (names, options) while that day's prices
+    // come; no figure of the previous day is ever shown (`repricing` below).
+    placeholderData: keepPreviousData,
     gcTime: 0,
     staleTime: Infinity,
     refetchOnWindowFocus: false,
@@ -213,6 +217,10 @@ function NuevaVentaForm() {
   const customer: Customer | null =
     customerOverride !== undefined ? customerOverride : (customerByIdQuery.data ?? null)
   const varieties = varietiesQuery.data ?? []
+  // Until the first prices arrive the body is the shared loading state; after a date change
+  // the form stays and every figure that depends on a price waits behind a compact bar.
+  const opening = varietiesQuery.isPending
+  const repricing = varietiesQuery.isPlaceholderData
 
   function chooseCustomer(chosen: Customer | null): void {
     setCustomerOverride(chosen)
@@ -313,7 +321,7 @@ function NuevaVentaForm() {
   function combinedLineError(line: LineState): string | null {
     const special = specialPriceErrorFor(line)
     if (special !== null) return special
-    const noPrice = noPriceErrorFor(line.key)
+    const noPrice = repricing ? null : noPriceErrorFor(line.key)
     if (noPrice !== null) return noPrice
     const gramsTyped = line.grams.trim() !== ''
     const somethingTyped = line.varietyId !== '' || gramsTyped || line.gift || line.specialPrice.trim() !== ''
@@ -510,7 +518,7 @@ function NuevaVentaForm() {
     <main className="pantalla">
       <form ref={formRef} className="nueva-venta" onSubmit={onSubmit}>
         <div className="nueva-venta__disposicion">
-        <div className="nueva-venta__cuerpo">
+        <div className="nueva-venta__cuerpo" aria-busy={repricing || opening || undefined}>
           <div className="encabezado-fila nueva-venta__cabecera">
             <Boton variant="icon" ariaLabel="Volver" icon="atras" onClick={goBack} />
             <span className="encabezado__titulo">Nueva venta</span>
@@ -536,120 +544,132 @@ function NuevaVentaForm() {
             </span>
           )}
 
-          {customer === null ? (
-            <Boton variant="secondary" onClick={customerSheet.open}>
-              Elegir cliente
-            </Boton>
+          {opening ? (
+            <Loading />
           ) : (
-            <Boton variant="row" onClick={customerSheet.open}>
-              <div className="nueva-venta__cliente">
-                <div className="nueva-venta__cliente-texto">
-                  <span className="lista-clientes__nombre">
-                    {customer.name}
-                    {customer.vip && <span className="vip-insignia">VIP</span>}
-                  </span>
-                  {customer.phone !== null && (
-                    <span className="nueva-venta__cliente-telefono">{customer.phone}</span>
-                  )}
-                </div>
-                <span className="nueva-venta__cliente-cambiar">Cambiar</span>
+            <>
+              {repricing && !customerSheet.isOpen && <LoadingAnuncio />}
+              {customer === null ? (
+                <Boton variant="secondary" onClick={customerSheet.open}>
+                  Elegir cliente
+                </Boton>
+              ) : (
+                <Boton variant="row" onClick={customerSheet.open}>
+                  <div className="nueva-venta__cliente">
+                    <div className="nueva-venta__cliente-texto">
+                      <span className="lista-clientes__nombre">
+                        {customer.name}
+                        {customer.vip && <span className="vip-insignia">VIP</span>}
+                      </span>
+                      {customer.phone !== null && (
+                        <span className="nueva-venta__cliente-telefono">{customer.phone}</span>
+                      )}
+                    </div>
+                    <span className="nueva-venta__cliente-cambiar">Cambiar</span>
+                  </div>
+                </Boton>
+              )}
+
+              <div className="nueva-venta__lineas">
+                {lines.map((line, index) => (
+                  <NuevaVentaLinea
+                    key={line.key}
+                    n={index + 1}
+                    line={line}
+                    isOpen={line.key === openKey}
+                    preview={previews[index] ?? null}
+                    error={combinedLineError(line)}
+                    figuresLoading={repricing && line.varietyId !== '' && parseGrams(line.grams).ok}
+                    variety={varietyOf(line.varietyId)}
+                    varieties={varieties}
+                    canRemove={lines.length > 1}
+                    varietyRef={varietyFieldRef}
+                    gramsRef={gramsFieldRef}
+                    specialPriceRef={specialPriceFieldRef}
+                    onOpen={() => openLine(line.key)}
+                    onChange={(patch) => updateLine(line.key, patch)}
+                    onRemove={() => removeLine(line.key)}
+                  />
+                ))}
               </div>
-            </Boton>
-          )}
+              <Boton variant="link" onClick={addLine}>
+                Agregar otra variedad
+              </Boton>
 
-          <div className="nueva-venta__lineas">
-            {lines.map((line, index) => (
-              <NuevaVentaLinea
-                key={line.key}
-                n={index + 1}
-                line={line}
-                isOpen={line.key === openKey}
-                preview={previews[index] ?? null}
-                error={combinedLineError(line)}
-                variety={varietyOf(line.varietyId)}
-                varieties={varieties}
-                canRemove={lines.length > 1}
-                varietyRef={varietyFieldRef}
-                gramsRef={gramsFieldRef}
-                specialPriceRef={specialPriceFieldRef}
-                onOpen={() => openLine(line.key)}
-                onChange={(patch) => updateLine(line.key, patch)}
-                onRemove={() => removeLine(line.key)}
+              <div className="nueva-venta__fila-dato">
+                <span>Envío cobrado</span>
+                <input
+                  className="campo__input"
+                  aria-label="Envío"
+                  type="text"
+                  inputMode="numeric"
+                  value={shipping}
+                  onChange={(event) => setShipping(event.target.value)}
+                />
+              </div>
+              {shippingError !== null && (
+                <span className="campo__error" role="alert">
+                  {shippingError}
+                </span>
+              )}
+
+              <div className="nueva-venta__fila-dato">
+                <span>Nota</span>
+                <textarea
+                  className="campo__input"
+                  aria-label="Nota"
+                  value={note}
+                  onChange={(event) => setNote(event.target.value)}
+                />
+              </div>
+              {noteError !== null && (
+                <span className="campo__error" role="alert">
+                  {noteError}
+                </span>
+              )}
+
+              {formError !== null && (
+                <span className="campo__error" role="alert">
+                  {formError}
+                </span>
+              )}
+              {offline && <SinConexion />}
+            </>
+          )}
+        </div>
+
+        {!opening && (
+          <div className="nueva-venta__resumen">
+            <div className="nueva-venta__pago">
+              <SelectorPago
+                value={method}
+                onChange={setMethod}
+                owingDisabled={customer === null}
+                owingDescription={OWING_HINT}
               />
-            ))}
-          </div>
-          <Boton variant="link" onClick={addLine}>
-            Agregar otra variedad
-          </Boton>
+              {paymentError !== null && (
+                <span className="campo__error" role="alert">
+                  {paymentError}
+                </span>
+              )}
+            </div>
 
-          <div className="nueva-venta__fila-dato">
-            <span>Envío cobrado</span>
-            <input
-              className="campo__input"
-              aria-label="Envío"
-              type="text"
-              inputMode="numeric"
-              value={shipping}
-              onChange={(event) => setShipping(event.target.value)}
-            />
-          </div>
-          {shippingError !== null && (
-            <span className="campo__error" role="alert">
-              {shippingError}
-            </span>
-          )}
-
-          <div className="nueva-venta__fila-dato">
-            <span>Nota</span>
-            <textarea
-              className="campo__input"
-              aria-label="Nota"
-              value={note}
-              onChange={(event) => setNote(event.target.value)}
-            />
-          </div>
-          {noteError !== null && (
-            <span className="campo__error" role="alert">
-              {noteError}
-            </span>
-          )}
-
-          {formError !== null && (
-            <span className="campo__error" role="alert">
-              {formError}
-            </span>
-          )}
-          {offline && <SinConexion />}
-        </div>
-
-        <div className="nueva-venta__resumen">
-          <div className="nueva-venta__pago">
-            <SelectorPago
-              value={method}
-              onChange={setMethod}
-              owingDisabled={customer === null}
-              owingDescription={OWING_HINT}
-            />
-            {paymentError !== null && (
-              <span className="campo__error" role="alert">
-                {paymentError}
+            <div className="nueva-venta__pie">
+              <span className="rotulo">Total</span>
+              <span className="cifra-xl">
+                {repricing ? <Loading compacto /> : formatMoney(totals.total)}
               </span>
-            )}
+              <span className="rotulo nueva-venta__gramos">
+                {formatGrams(fromHundredths(totals.gramsSoldHundredths))} vendidos
+                {totals.gramsGiftedHundredths > 0 &&
+                  ` · ${formatGrams(fromHundredths(totals.gramsGiftedHundredths))} de regalo`}
+              </span>
+              <Boton type="submit" disabled={save.isPending || varietiesQuery.isFetching}>
+                Guardá la venta
+              </Boton>
+            </div>
           </div>
-
-          <div className="nueva-venta__pie">
-            <span className="rotulo">Total</span>
-            <span className="cifra-xl">{formatMoney(totals.total)}</span>
-            <span className="rotulo nueva-venta__gramos">
-              {formatGrams(fromHundredths(totals.gramsSoldHundredths))} vendidos
-              {totals.gramsGiftedHundredths > 0 &&
-                ` · ${formatGrams(fromHundredths(totals.gramsGiftedHundredths))} de regalo`}
-            </span>
-            <Boton type="submit" disabled={save.isPending || varietiesQuery.isFetching}>
-              Guardá la venta
-            </Boton>
-          </div>
-        </div>
+        )}
         </div>
       </form>
 

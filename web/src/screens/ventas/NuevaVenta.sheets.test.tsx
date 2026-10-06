@@ -134,7 +134,7 @@ test('choosing a customer closes the sheet and leaves exactly the form entry', a
   const user = userEvent.setup()
   const router = renderForm()
 
-  await user.click(screen.getByRole('button', { name: 'Elegir cliente' }))
+  await user.click(await screen.findByRole('button', { name: 'Elegir cliente' }))
   await user.click(await screen.findByRole('button', { name: /Ana/ }))
 
   await waitFor(() => expect(screen.queryByText('Buscar')).not.toBeInTheDocument())
