@@ -24,7 +24,10 @@ Success criteria:
 4. **Never surprised by a failure**: the save that triggered a sync (sale, price, stock, catalog edit) always succeeds on its own terms, and the sync happens after it. A stuck pin shows as "Desactualizado", with a one-line reason, on the catalog screen and on Inicio.
 5. **Businesses never mix and the token stays secret**: one bot, token, channel chat and own chat per business. The token is never shown again once saved. Nothing about the settings or a sync leaks across businesses (ADR-0004, ADR-0005).
 6. **Done from the phone**: setup, Buscar mi chat and Probarlo in Integraciones, Publicar and seeing whether the pin is out of date on the catalog screen all work from the phone, with no API call by hand. From Integraciones a plain link leads on to the catalog screen to publish.
-7. **Each cause of a failed Probarlo has its own fixed reason**, with a concrete action. An invalid token, an own chat not started and an own chat not found each show their own reason. No reason repeats what was typed, and everything typed stays in the form.
+7. **Each cause of a failed Probarlo has its own fixed reason**, with a concrete action.
+   - An invalid token and an own chat not started each show their own reason.
+   - Telegram's "chat not found" can't tell a wrong number from a chat not started. Its one reason names both fixes, so it never points at the wrong one.
+   - No reason repeats what was typed, and everything typed stays in the form.
 8. **Probarlo never blames the channel**: no Probarlo failure says "El bot no puede publicar en el canal", because Probarlo does not touch the channel. That reason stays unchanged for Publicar and upkeep, with their states and Inicio's notice.
 9. **The help line tells the truth**: before testing, the own-chat help says to tap Iniciar on the bot and where to get the number, and the screen does what it promises.
 10. **The seller gets to a successful test alone**: with a valid token, the seller goes from a failed Probarlo to a successful one from the phone, following only the screen's reasons and help.
@@ -93,7 +96,7 @@ Setup (token, chats, Buscar mi chat, first Probarlo and Publicar) is judged by c
 |---|---|
 | Invalid token (401) | "El token no es válido: copialo de nuevo de @BotFather." |
 | Own chat not started, or the seller blocked the bot (403) | "Abrí tu bot en Telegram y tocá Iniciar, después probalo de nuevo." |
-| Own chat not found (400 "chat not found") | "No encontramos tu chat: revisá el número." |
+| Own chat not found (400 "chat not found"): a wrong number, or a right number whose chat was never started, which Telegram does not tell apart | "No encontramos tu chat: revisá el número y tocá Iniciar en tu bot." |
 | Telegram down, 429 or no connection | "Telegram no respondió" |
 | Text over Telegram's limit | "Es demasiado largo para Telegram: acortá aromas u ocultá variedades." |
 | Any other failure | "No pudimos enviarte la prueba: revisá el token y tu chat." |
@@ -211,7 +214,9 @@ Setup (token, chats, Buscar mi chat, first Probarlo and Publicar) is judged by c
   - the link to the catalog screen, no pin status and no Publicar;
   - empty fields and no "Guardado" line with nothing saved;
   - the "desfijalo vos en Telegram" line after a token or channel change.
-- **Probarlo's reasons (criterion 7)**: one test per cause (401, 403, 400 chat not found, Telegram down/429/no connection, too long, any other). Each shows its fixed text, repeats nothing typed, keeps the form and saves nothing. 100% passing.
+- **Probarlo's reasons (criterion 7)**: 100% passing.
+  - There is one test per cause: 401; 403 (both "can't initiate conversation" and "blocked by the user"); 400 chat not found, which shows "No encontramos tu chat: revisá el número y tocá Iniciar en tu bot."; Telegram down, 429 or no connection; too long; and any other failure.
+  - Each shows its fixed text, repeats nothing typed, keeps the form and saves nothing.
 - **Probarlo never blames the channel (criterion 8)**: across every Probarlo failure, "El bot no puede publicar en el canal" never appears. Publicar and upkeep against the channel still produce it, and their states and Inicio's notice are unchanged. 100% passing.
 - **Help line (criterion 9)**: a front test shows the new own-chat help line and the unchanged channel help line.
 - **Buscar mi chat**: 100% passing.
@@ -249,6 +254,7 @@ Setup (token, chats, Buscar mi chat, first Probarlo and Publicar) is judged by c
 - A bot shared between businesses.
 - Changing the reasons of the channel, Publicar or upkeep.
 - Any check of the channel in Probarlo or Buscar mi chat.
+- Telling a wrong own-chat number from a chat not started when Telegram answers "chat not found" for both.
 - Changing the bot's setup in Telegram (a webhook, for one), or asking the seller to.
 - Saving a number found by Buscar mi chat without a successful Probarlo.
 - Showing the names or usernames of people who wrote to the bot, or letting the seller pick among several.
