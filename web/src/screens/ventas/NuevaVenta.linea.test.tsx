@@ -85,3 +85,32 @@ test('the keyboard key moves from grams to Precio especial, then closes the keyb
   expect(fetchMock.mock.calls.map(([path]) => path)).not.toContain('/sales')
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
 })
+
+test('on a computer Regalo is the plain checkbox the design always had, not the phone switch', async () => {
+  const user = userEvent.setup()
+  vi.stubGlobal(
+    'matchMedia',
+    vi.fn((query: string) => ({
+      matches: query === '(min-width: 900px)',
+      media: query,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    })),
+  )
+  await openForm()
+
+  expect(screen.queryByRole('switch')).not.toBeInTheDocument()
+  const gift = screen.getByRole('checkbox', { name: 'Regalo línea 1' })
+  await user.click(gift)
+  expect(gift).toBeChecked()
+  expect(screen.getByLabelText('Precio especial línea 1')).toBeDisabled()
+})
+
+test('with Regalo on, the keyboard key on grams closes the keyboard instead of stalling on a disabled field', async () => {
+  const user = userEvent.setup()
+  await openForm()
+
+  await user.click(screen.getByText('Regalo'))
+  await user.type(screen.getByLabelText('Gramos línea 1'), '2{Enter}')
+  expect(screen.getByLabelText('Gramos línea 1')).not.toBe(document.activeElement)
+})
