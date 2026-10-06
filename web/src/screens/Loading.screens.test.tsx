@@ -18,6 +18,7 @@ import {
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import type { Me } from '../api/me'
 import FlashProvider from '../flash/FlashProvider'
+import { SheetRouterProvider } from '../components/useSheetStack'
 import Root from '../Root'
 import ClienteFicha from './clientes/ClienteFicha'
 import ClienteForm from './clientes/ClienteForm'
@@ -61,16 +62,20 @@ function renderPending(element: ReactElement, route: string, path: string) {
   )
 }
 
-/** Configuración's groups guard leaving with `useBlocker`, which needs a data router. */
-function renderPendingInDataRouter(element: ReactElement, path: string) {
+/** Configuración's groups guard leaving with `useBlocker`, which needs a data router; so does
+ * a screen whose sheets live in history (`VentaDetalle`, ADR-0027), with the router's handle
+ * given to the sheet stack. */
+function renderPendingInDataRouter(element: ReactElement, path: string, route: string = path) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   const router = createMemoryRouter(
     [{ element: <Root />, children: [{ element: <Context />, children: [{ path, element }] }] }],
-    { initialEntries: [path] },
+    { initialEntries: [route] },
   )
   render(
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <SheetRouterProvider router={router}>
+        <RouterProvider router={router} />
+      </SheetRouterProvider>
     </QueryClientProvider>,
   )
 }
@@ -92,6 +97,7 @@ interface Case {
   element: () => ReactElement
   route: string
   path: string
+  dataRouter?: true
 }
 
 const SCREENS: Case[] = [
@@ -104,7 +110,13 @@ const SCREENS: Case[] = [
     route: '/clientes/7/editar',
     path: '/clientes/:id/editar',
   },
-  { name: 'VentaDetalle', element: () => <VentaDetalle />, route: '/ventas/9', path: '/ventas/:id' },
+  {
+    name: 'VentaDetalle',
+    element: () => <VentaDetalle />,
+    route: '/ventas/9',
+    path: '/ventas/:id',
+    dataRouter: true,
+  },
   { name: 'Gastos', element: () => <Gastos />, route: '/gastos', path: '/gastos' },
   { name: 'Stock', element: () => <Stock />, route: '/mi-stock', path: '/mi-stock' },
   {
@@ -116,7 +128,11 @@ const SCREENS: Case[] = [
 ]
 
 test.each(SCREENS)('$name shows the skeleton while its query is pending', async (screenCase) => {
-  renderPending(screenCase.element(), screenCase.route, screenCase.path)
+  if (screenCase.dataRouter === true) {
+    renderPendingInDataRouter(screenCase.element(), screenCase.path, screenCase.route)
+  } else {
+    renderPending(screenCase.element(), screenCase.route, screenCase.path)
+  }
 
   expect(await screen.findByRole('progressbar', { name: 'Cargando' })).toBeInTheDocument()
 })
