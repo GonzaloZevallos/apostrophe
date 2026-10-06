@@ -487,6 +487,11 @@ button {
   margin: 0 var(--margen-pantalla) var(--espacio-md);
 }
 
+.boton-nueva-venta,
+.boton-nueva-venta--escritorio {
+  text-decoration: none;
+}
+
 .boton-nueva-venta--escritorio {
   display: none;
   margin-bottom: var(--espacio-lg);
