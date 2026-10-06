@@ -3219,6 +3219,10 @@ button {
     padding-top: 80px;
   }
 
+  .variedad-nueva .pie {
+    text-align: left;
+  }
+
   .variedad-nueva::before {
     content: '';
     position: absolute;
@@ -3229,6 +3233,12 @@ button {
 
   .variedad-nueva .cuerpo {
     position: relative;
+    flex: 0 0 auto;
+    align-self: flex-start;
+    min-height: 0;
+    height: auto;
+    margin: 0 auto;
+    box-sizing: border-box;
     width: 480px;
     background: var(--papel);
     border-radius: var(--radio-panel-grande);
