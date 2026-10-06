@@ -1,6 +1,6 @@
 # Sales
 
-What a customer takes in one go, each line priced from the day's prices and that price kept on the line (ADR-0003). Sales are seen only by their business (ADR-0004). Reads current prices from varieties, and customers (with their VIP status) from customers. Payments (`payments.md`) settle what a sale leaves owing and say whether each sale is still owing. Stock (`stock.md`) takes each line's grams out of its variety's lots and gives the line its cost of goods, which follows the lots and is never frozen (ADR-0009). This capability also covers the sales screens: Nueva venta, Ventas and a sale's detail. Where they sit is navigation.md.
+What a customer takes in one go, each line priced from the day's prices and that price kept on the line (ADR-0003). Sales are seen only by their business (ADR-0004). Reads current prices from varieties, and customers (with their VIP status) from customers. Payments (`payments.md`) settle what a sale leaves owing and say whether each sale is still owing. Stock (`stock.md`) takes each line's grams out of its variety's lots and gives the line its cost of goods, which follows the lots and is never frozen (ADR-0009). This capability also covers the sales screens: Nueva venta, Ventas and a sale's detail, on the phone and on a computer. Where they sit is navigation.md.
 
 ## Jobs
 
@@ -8,13 +8,19 @@ What a customer takes in one go, each line priced from the day's prices and that
 
 **When** a customer orders over Telegram or WhatsApp and I'm handing it over, **I want** to load the order on my phone in a few taps (varieties, grams, who takes it, how they paid) and watch each line's price, rule and total, and the sale's total, update as I type, **so I can** confirm the total to the customer in the chat, never price from memory, and never have to redo a sale after saving it.
 
+**When** I'm handing over an order on my phone, mid-chat with the customer on Telegram or WhatsApp and often with one hand free, **I want** to fill in and save the sale with my thumb, with every field whole and readable, the total and "Guardá la venta" always in reach, and the keyboard never hiding what I'm typing, **so I can** confirm the total in the chat and get back to the customer in under a minute, without zooming, mis-tapping, losing the order or redoing the sale. (This refines the two jobs above for the phone; it is not a new job.)
+
 **When** I want to check what I sold today, this week or this month, **I want** to see that period's sales with their total and count, **so I can** tell how it's going between orders and find a particular sale to fix.
+
+**When** I check between orders what I sold today, this week or this month, **I want** to switch period and open a sale on my phone without mis-tapping and without a blank screen while it loads, **so I can** find the sale to fix and assign its customer or delete it in a few taps. (This refines the job above and criterion 11 for the phone; fixing a sale still means exactly those two things.)
 
 **When** a customer pays me part or all of what they owe, in cash or by transfer, on the day or weeks later, **I want** to record it from my phone in a few taps and see their balance and "owing since" drop right away, **so I** always know who owes me what and since when, and nothing they paid or still owe gets lost or lands on the wrong person. (Served here by the "te debe" mark in Ventas; defined in `payments.md`.)
 
 **When** I register a customer (from Clientes, in the middle of a sale, or through the one-time spreadsheet import) and I don't have their phone number, **I want** to save them under their name anyway and add the number later if I ever get it, **so I can** record every sale and every debt against the person who actually owes it, without inventing a number or keeping that person outside the app. (Served here by Elegir cliente's "Nuevo cliente"; defined in `customers.md`.)
 
 **When** I run my business from my phone between orders or mid-chat with a customer, several times a day, **I want** the app laid out around what I actually do and how often, **so I can** get back to the customer instead of hunting through menus. (The navigation job, navigation.md: served here by "+ Nueva venta", one tap from every tab root.)
+
+The protagonist of the phone jobs is the seller. The computer layouts (`NuevaVentaCompu`, `VentasCompu`) are the same jobs on a bigger screen. Before the phone redesign the seller recorded sales on the phone with friction (scrolling to find the save button, zooming to hit small controls, sometimes recording later from memory), with no fallback outside the app.
 
 Success criteria, recording (API):
 
@@ -43,6 +49,14 @@ Success criteria, on screen:
 9. **Undo in one tap**: a sale saved by mistake is undone in one tap from the "Venta guardada" notice, and nothing of it remains: no lines, no on-the-spot payment, and it is in no list.
 10. **Glance between orders**: switching between Hoy, Semana (Monday to Sunday) and Mes, or picking Fechas, answers fast enough to glance at in the middle of a chat.
 11. **Find and fix**: any sale in the period can be found and opened. In its detail, a sale with no customer can be given one (once, never changed), and a wrong sale can be deleted. Fixing a sale means exactly these two things.
+
+Success criteria, on the phone:
+
+12. **Nothing clipped, save in reach**: at 320, 375 and 430 px wide and at 130 % text, nothing in Nueva venta, Ventas or a sale's detail overflows or is clipped. In Nueva venta the total and "Guardá la venta" are visible without scrolling, above the keyboard and the home indicator, and the last field can be scrolled fully into view.
+13. **Thumb-sized, no zoom**: every control on these screens, dialog buttons included, is at least 44 px tall; every input is at least 16 px, the date included, so iOS never zooms on focus. Grams open a decimal keypad and pesos a numeric one, with `enterkeyhint` to move through a line.
+14. **Never blank**: nothing on these screens that waits for the server shows a blank screen; the sale is still recorded in under 60 s (criterion 1).
+15. **The order is never lost by accident**: the system back gesture asks "¿Descartás la venta?" under exactly the same condition as "Cerrar".
+16. **Nothing else changes**: pricing, the preview, the flow, the texts and the computer layouts behave as defined here; existing sales and navigation tests pass without being edited to fit the phone layout.
 
 ## Behaviour
 
@@ -148,6 +162,7 @@ Success criteria, on screen:
   - It applies exactly the pricing, rounding and total rules above.
   - Prices are loaded when the form opens and again when the date changes, which reprices every line from that day's current prices.
   - Prices are never re-checked live while the seller types.
+- **Waiting for prices**: while the form waits for prices on opening, it shows the shared loading state (accounts.md, `Estados`). On a date change the form stays on screen with everything typed; each line's price, rule and total show the loading state, never a placeholder figure, until that day's prices arrive, then every line is repriced.
 - **Regalo and Precio especial exclude each other**:
   - Choosing one clears and disables the other, and turning it off frees the other.
   - Precio especial doesn't accept $0.
@@ -164,17 +179,33 @@ Success criteria, on screen:
   - A price changed before saving: the save goes through, and the detail shows what was stored.
   - A customer or variety not found when saving shows the generic line and keeps the form.
 - **Leaving**:
-  - "Cerrar" or back after a line, a customer, shipping or a note has been entered asks "¿Descartás la venta?", with "No, seguí cargando" and "Sí, descartala".
+  - "Cerrar", or the system back gesture, after a line, a customer, shipping or a note has been entered asks "¿Descartás la venta?", with "No, seguí cargando" and "Sí, descartala".
+  - "No, seguí cargando" keeps the user on the form with everything intact; the next back gesture asks again.
   - An untouched form closes at once.
+  - With a sheet open over the form (Elegir cliente, or Nuevo cliente inside it), back does exactly what that sheet's own "Cerrar" does: it closes only the top sheet, and the form keeps everything typed. It never asks "¿Descartás la venta?".
   - There are no drafts or autosave.
 - **Elegir cliente** (`NuevaVentaCliente`):
   - A sheet over the sale. It offers search by phone or part of the name, "Sin cliente", and "Nuevo cliente" (the same form as in Clientes: only the name required; phone optional, plus VIP; no channel), which creates the customer and uses it.
+  - Its results show the shared loading state before their first answer.
   - Closing the sheet only returns to the form.
 - **"Venta guardada"** (`Estados`):
   - It carries **Deshacer** and no amount or name. It is announced like a toast and lasts a fixed few seconds.
   - Deshacer deletes the sale with no confirmation, then shows "Venta eliminada · los gramos vuelven al stock" and returns to Ventas.
   - If the sale is already gone, Deshacer shows "Eso ya no está. La lista ya está al día."
   - After the notice is gone, the way to undo is "Borrar venta".
+
+#### Nueva venta on the phone
+
+The phone layout only; `NuevaVentaCompu` keeps its own.
+
+- **Full screen, three zones**: a fixed header, a scrolling body and a fixed footer.
+- **Header**: fixed, never scrolls away; "Cerrar" and the date. The date input is at least 16 px and at least 44 px tall.
+- **Body**: scrolls between header and footer, in this order: the customer, the lines, shipping charged, the note, and how it was paid last. It scrolls so that how it was paid, and the "Para dejar debiendo elegí un cliente" line under it, come fully into view above the footer; that line has the screen's normal side margin.
+- **Footer**: fixed within thumb reach, above the keyboard and the home indicator. It holds the sale's total, the grams sold and gifted on one compact line, and "Guardá la venta". With the keyboard open it shrinks to the total and the button and stays visible. Its exact look is design's call.
+- **A line**: one fixed layout on every phone width from 320 to 430 px and at 130 % text, never switched by measuring the screen. First row: the variety and the grams. Under it: "Regalo", a toggle row at least 44 px tall, and "Precio especial". Below those: the line's price per gram, rule badge and total.
+- **No field overflows or is clipped** at 320 px or at 130 % text.
+- **Targets**: the payment options, "Agregar otra variedad" and the dialog buttons are at least 44 px tall; every input is at least 16 px.
+- **Keypads**: grams `inputmode="decimal"`; pesos (shipping, Precio especial) `inputmode="numeric"`; a line's fields carry `enterkeyhint` so the keyboard's action key moves through them.
 
 ### On screen: Ventas (`Ventas`, `VentasCompu`)
 
@@ -196,19 +227,28 @@ Success criteria, on screen:
 - **The VIP badge shows the customer's current VIP status**, not how the sale was priced.
   - Each line's rule badge in the detail is the record of how it was priced.
   - A customer who stops being VIP loses the badge on past sales, while their lines still read "VIP". That is not a reprice (ADR-0003).
+- **Loading**: before its first answer, the list shows the shared loading state, never a blank screen.
+- **On the phone** (`VentasCompu` unchanged):
+  - each period tab is at least 44 px tall;
+  - at normal text the four tabs share one row equally; when they don't fit (e.g. at 320 px or 130 % text) they wrap into equal-width cells, two by two, each at least 44 px tall; never horizontal scrolling, never a shortened label;
+  - the selected tab is marked by more than color;
+  - Fechas' two date inputs are at least 16 px and at least 44 px tall and never overflow at 320 px or 130 % text.
 
 ### On screen: Detalle de venta (`VentaDetalle`)
 
 - **A detail** (navigation.md): the bar or sidebar and "‹ Ventas", without "+ Nueva venta".
+- **Loading**: while the sale loads, it shows the shared loading state (accounts.md, `Estados`), never a blank page.
 - **Shows**:
   - the total;
   - each line's variety, grams, price per gram, rule badge and line total;
   - shipping, the note, how it was paid, and the customer or "Sin cliente".
 - **Asignar cliente**:
   - It shows only when the sale has none, and opens Elegir cliente without "Sin cliente".
+  - The system back gesture with its sheet open does what the sheet's own "Cerrar" does: it closes only the sheet and asks nothing.
   - On success, the toast "Cliente asignado".
   - If someone assigned one first, "Esta venta ya tiene cliente." and the detail refreshes.
 - **Borrar venta**:
+  - On the phone it, and its confirmation's buttons, are at least 44 px tall.
   - It is confirmed with `Antes de borrar`, naming the date, the amount and the total grams of its lines that return to stock, gifts included. For example: "¿Borrás la venta de $ 11.000 del 02/10? Vuelven 4 g al stock." The buttons are "No, dejala / Sí, borrala".
   - Then the toast "Venta eliminada" and back to Ventas.
   - The copy never mentions debt or credit; the customer's account shows the effect afterwards (`payments.md`).
@@ -216,6 +256,11 @@ Success criteria, on screen:
   - opening it shows "Eso ya no está." with "Volver a Ventas";
   - assigning, deleting or undoing shows "Eso ya no está. La lista ya está al día."
 - No names, notes or amounts go to the console or browser storage, and no business id appears in a URL.
+
+### Shared loading state
+
+- On these screens it applies to the sale's detail, Ventas' list before its first answer, Nueva venta while it waits for prices (on opening and on a date change) and Elegir cliente's results before their first answer.
+- It carries no digit, currency symbol or placeholder figure (accounts.md, criterion 7).
 
 ## Metrics
 
@@ -241,7 +286,7 @@ Success criteria, on screen:
 - **No echo**: (Criterion 5)
   - no refusal body or log line contains the note, a customer's name or a submitted amount;
   - after a full front run, the console and browser storage hold none of them.
-- **Record time**: a sale is recorded through the front, from a phone viewport, in under 60 s with an existing, new (with or without a number) or no customer. Recording answers in under 300 ms with a few dozen varieties and customers. (Criterion 1)
+- **Record time**: a sale is recorded through the front, from a phone viewport, in under 60 s with an existing, new (with or without a number) or no customer. Recording answers in under 300 ms with a few dozen varieties and customers. (Criteria 1, 14)
 - **Preview = stored**: (Criterion 6)
   - the front preview passes the same pricing matrix as the domain;
   - the end-to-end run compares the preview with the saved detail: 0 differences.
@@ -257,6 +302,13 @@ Success criteria, on screen:
   - the "te debe" mark matches the API's settlement;
   - the list answers in under 300 ms with a few hundred sales.
 - **Fixing**: the end-to-end run assigns a customer to a sale that had none (Asignar cliente then disappears) and deletes a sale through its confirmation. (Criterion 11)
+- **No overflow on the phone (criterion 12)**: front tests at 320, 375 and 430 px and at 130 % text, for Nueva venta, Ventas and the sale's detail, show nothing clipped or overflowing horizontally, "Precio especial", shipping and Fechas' inputs included; Ventas' tabs covered on one row and wrapped two by two.
+- **Save in reach (criterion 12)**: at those widths the footer's total and "Guardá la venta" are visible on load; the header stays while the body scrolls; with a simulated keyboard the footer stays visible; the payment options and the Debiendo hint (with side margin) scroll fully above the footer.
+- **Targets and inputs (criterion 13)**: every interactive element of the three screens, dialog buttons included, is at least 44 px tall; every input has a computed font size of at least 16 px; grams carry `inputmode="decimal"`, pesos `"numeric"`, and a line's fields `enterkeyhint`.
+- **Never blank (criterion 14)**: front tests show the shared loading state on the detail, Ventas' list, Nueva venta's price wait (opening and date change) and Elegir cliente's results, holding no digit, currency symbol or placeholder figure.
+- **Date change**: a front test shows everything typed is kept, the lines show loading, then every line is repriced.
+- **Back guard (criterion 15)**: front tests drive the system back gesture: it asks "¿Descartás la venta?" under the Cerrar condition; "No, seguí cargando" keeps the form and the next back asks again; an untouched form closes at once; with Elegir cliente, Nuevo cliente or Asignar cliente open, back closes only the top sheet as its own "Cerrar" does, the sale or detail underneath stays intact, and "¿Descartás la venta?" never appears.
+- **No regression (criterion 16)**: the existing sales and navigation tests pass without being edited; the pricing matrix and "preview = stored" stay at 0 differences; `NuevaVentaCompu` and `VentasCompu` are unchanged.
 
 ## Out of scope
 
@@ -268,3 +320,6 @@ Success criteria, on screen:
 - Profit and cash in Ventas: the results capability.
 - Live updates between partners while a form or list is open.
 - Importing sales from the spreadsheet.
+- A measurement-driven switch between line layouts on the phone; horizontal scrolling or shortened labels for Ventas' period tabs.
+- Changes to the computer layouts as part of the phone redesign; English screen texts (#53); the bar and back rule (#59).
+- Building Nuevo cliente's unsaved-changes confirmation (customers.md): its own issue, with its own copy, for Clientes and Elegir cliente alike.

@@ -13,3 +13,6 @@ __pycache__/
 .agentic/state.sqlite*
 .agentic/logs/
 .agentic/runs/
+
+# Vitest run cache written at the repo root by runs from web/.
+node_modules/

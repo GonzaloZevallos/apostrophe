@@ -54,6 +54,12 @@
   --margen-pantalla: 24px;
   --alto-tocable: 44px;
   --alto-boton: 56px;
+
+  /* Zonas seguras del sistema (muesca, barra de inicio): lo único que lee env() */
+  --inset-arriba: env(safe-area-inset-top, 0px);
+  --inset-abajo: env(safe-area-inset-bottom, 0px);
+  --inset-izquierda: env(safe-area-inset-left, 0px);
+  --inset-derecha: env(safe-area-inset-right, 0px);
 }
 
 :root[data-tema='oscuro'] {
