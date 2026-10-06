@@ -13,3 +13,13 @@ class NameTaken(ValueError):
 
     def __init__(self, name: str) -> None:
         super().__init__(f"there is already a variety called {name}")
+
+
+class VarietyArchived(LookupError):
+    """A variety that left the lists was referenced for something new: to the caller it
+    is as gone as a deleted one (docs/adr/0031)."""
+
+    code: ClassVar[str] = "variety.archived"
+
+    def __init__(self, variety_id: int) -> None:
+        super().__init__(f"variety {variety_id} is archived")

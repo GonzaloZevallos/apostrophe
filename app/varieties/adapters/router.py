@@ -12,7 +12,7 @@ from app.shared.grams import Grams, InvalidGrams
 from app.varieties.adapters.schemas import PriceEntryIn, PriceEntryOut, VarietyIn, VarietyOut
 from app.varieties.adapters.sql_varieties import SqlVarieties
 from app.varieties.application import manage_prices, manage_varieties
-from app.varieties.application.errors import NameTaken, VarietyNotFound
+from app.varieties.application.errors import NameTaken, VarietyArchived, VarietyNotFound
 from app.varieties.domain.variety import (
     DuplicateEffectiveDate,
     UnknownPriceEntry,
@@ -35,7 +35,7 @@ TodayDep = Annotated[date, Depends(get_today)]
 
 as_http = TranslateErrors(
     [
-        (404, (VarietyNotFound, UnknownPriceEntry)),
+        (404, (VarietyNotFound, VarietyArchived, UnknownPriceEntry)),
         (409, (NameTaken, DuplicateEffectiveDate)),
         (422, (VarietyRuleBroken, InvalidGrams)),
     ]

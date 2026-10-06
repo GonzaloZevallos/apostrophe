@@ -130,3 +130,14 @@ def test_the_price_history_lists_the_newest_entry_first() -> None:
     history = _gold().price_history()
 
     assert [e.effective_from for e in history] == [date(2026, 3, 1), date(2026, 1, 1)]
+
+
+def test_a_variety_is_live_until_it_carries_an_archived_instant() -> None:
+    from datetime import UTC, datetime
+
+    live = Variety(VarietyName.of("Gelato"))
+    archived = Variety(VarietyName.of("Gelato"), archived_at=datetime(2026, 1, 1, tzinfo=UTC))
+
+    assert live.archived_at is None
+    assert not live.is_archived
+    assert archived.is_archived

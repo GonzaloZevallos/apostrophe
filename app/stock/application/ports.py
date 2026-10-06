@@ -58,7 +58,7 @@ class VarietyCatalog(Protocol):
 
     def exists(self, variety_id: int) -> bool: ...
 
-    def ids(self) -> list[int]:
-        """Every variety id of this business, for a use case that walks all of them
-        (`read_stock`'s per-variety sweep) rather than looking one up at a time."""
+    def listed_ids(self) -> list[int]:
+        """The ids of this business's unarchived varieties, for a use case that walks
+        them all (`read_stock`'s per-variety rows) rather than looking one up at a time."""
         ...

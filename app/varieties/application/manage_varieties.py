@@ -6,7 +6,7 @@ from app.varieties.domain.variety import Variety, VarietyName
 
 def register_variety(varieties: Varieties, transaction: Transaction, raw_name: str) -> Variety:
     name = VarietyName.of(raw_name)
-    if varieties.name_taken(name):
+    if varieties.name_holder(name) is not None:
         raise NameTaken(name.value)
     variety = varieties.add(Variety(name))
     transaction.commit()
@@ -18,7 +18,7 @@ def rename_variety(
 ) -> Variety:
     variety = get_variety(varieties, variety_id)
     name = VarietyName.of(raw_name)
-    if varieties.name_taken(name, other_than=variety_id):
+    if varieties.name_holder(name, other_than=variety_id) is not None:
         raise NameTaken(name.value)
     variety.rename(name)
     stored = varieties.save(variety)
@@ -34,4 +34,4 @@ def get_variety(varieties: Varieties, variety_id: int) -> Variety:
 
 
 def list_varieties(varieties: Varieties) -> list[Variety]:
-    return varieties.all()
+    return varieties.listed()

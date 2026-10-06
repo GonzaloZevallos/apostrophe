@@ -8,7 +8,10 @@ from datetime import timedelta
 from typing import Any
 
 from fastapi.testclient import TestClient
+from sqlalchemy.engine import Engine
+from sqlalchemy.orm import Session
 
+from app.varieties.adapters.tables import VarietyRow
 from tests.conftest import NOW, MovableClock
 
 TODAY = "2026-10-02"
@@ -251,3 +254,22 @@ def test_days_left_counts_only_sales_within_the_last_30_days(
     assert later_row["grams"] == 90.0
     assert later_row["status"] == "ok"
     assert later_row["days_left"] is None
+
+
+def test_an_archived_variety_leaves_the_rows_but_its_grams_stay_in_the_total(
+    client: TestClient, engine: Engine
+) -> None:
+    kept = _variety_id(client, "Kept")
+    archived = _variety_id(client, "Archived")
+    _record(client, kept, grams="30")
+    _record(client, archived, grams="20")
+    with Session(engine) as session:
+        row = session.get(VarietyRow, archived)
+        assert row is not None
+        row.archived_at = NOW
+        session.commit()
+
+    stock = client.get("/stock").json()
+
+    assert [row["variety_id"] for row in stock["varieties"]] == [kept]
+    assert stock["total"] == 50.0

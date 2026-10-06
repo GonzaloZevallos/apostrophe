@@ -7,7 +7,8 @@ through it, so "one price entry per variety per effective date" holds in one pla
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
+from enum import Enum
 from typing import ClassVar
 
 from app.shared.grams import Grams
@@ -106,11 +107,24 @@ class PriceEntry:
         return cls(effective_from, list_price, BulkTerms(bulk_price, bulk_minimum), id)
 
 
+class NameHolder(Enum):
+    """Who holds a name within one business: a live variety, or an archived one that
+    keeps its name reserved (docs/adr/0031)."""
+
+    LIVE = "live"
+    ARCHIVED = "archived"
+
+
 @dataclass
 class Variety:
     name: VarietyName
     price_entries: tuple[PriceEntry, ...] = ()
     id: int | None = None
+    archived_at: datetime | None = None
+
+    @property
+    def is_archived(self) -> bool:
+        return self.archived_at is not None
 
     def rename(self, name: VarietyName) -> None:
         self.name = name
