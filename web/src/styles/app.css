@@ -3034,3 +3034,27 @@ button {
   border-radius: var(--radio-pildora);
   background: var(--papel);
 }
+
+/* On a variety's page the status word is read, not hidden: shape and word together. */
+.variedad-resumen .marca-estado {
+  gap: var(--espacio-xs);
+}
+
+.variedad-resumen .marca-estado__palabra {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+}
+
+.seccion-variedad__cabecera a,
+.variedad-acciones a,
+.encabezado__fila .boton--enlace {
+  text-decoration: none;
+}
+
+.seccion-variedad__cabecera a {
+  color: var(--acento);
+}
