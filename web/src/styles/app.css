@@ -2190,3 +2190,42 @@ button {
     color: var(--tinta2);
   }
 }
+
+/* ===== Loading ===== */
+/* `Loading` (`Estados.dc.html`, "Cargando"): three skeleton shapes in the surface
+ * color. Shapes only: no text, so nothing here can read as data. */
+.cargando {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cargando__barra {
+  display: block;
+  background: var(--superficie);
+}
+
+.cargando__barra--corta {
+  width: 120px;
+  height: 13px;
+  border-radius: var(--radio-pildora);
+}
+
+.cargando__barra--ancha {
+  width: 210px;
+  height: 36px;
+  border-radius: 10px;
+}
+
+.cargando__tarjetas {
+  display: flex;
+  gap: 10px;
+}
+
+.cargando__tarjeta {
+  flex: 1;
+  height: 72px;
+  border-radius: var(--radio-panel);
+  background: var(--superficie);
+}
+/* ===== end Loading ===== */
