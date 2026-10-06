@@ -24,5 +24,4 @@ def for_channel(cause: SendRefusal) -> BotCannotPost:
             return BotCannotPost()
         case SendRefusal.OTHER:
             return BotCannotPost()
-        case _:
-            assert_never(cause)
+    assert_never(cause)

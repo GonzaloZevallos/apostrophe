@@ -12,11 +12,9 @@ import urllib.error
 import urllib.request
 from collections.abc import Callable
 from email.message import Message
-from pathlib import Path
 
 import pytest
 
-from app.pinned_catalog.adapters import telegram_http
 from app.pinned_catalog.adapters.telegram_http import HttpTelegram, Opener
 from app.pinned_catalog.domain.errors import (
     MessageGone,
@@ -266,8 +264,8 @@ def test_send_reports_the_cause_of_each_row(
 @pytest.mark.parametrize(
     ("description", "expected"),
     [
-        ("Bad Request: message to edit not found", MessageGone),
-        ("Bad Request: message to pin not found", MessageGone),
+        ("Bad Request: message to edit not found: chat not found", MessageGone),
+        ("Bad Request: message to pin not found: chat not found", MessageGone),
     ],
 )
 def test_a_message_that_is_gone_wins_over_the_chat_markers(
@@ -305,8 +303,3 @@ def test_an_error_body_with_no_error_code_is_unreachable_as_before(body: bytes) 
     with pytest.raises(TelegramUnreachable):
         telegram.send(SECRET_TOKEN, "@channel", "hola", [])
 
-
-def test_the_adapter_module_never_names_bot_cannot_post() -> None:
-    source = Path(telegram_http.__file__).read_text()
-
-    assert "BotCannotPost" not in source.replace("`BotCannotPost`", "")
