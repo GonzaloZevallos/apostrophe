@@ -59,7 +59,7 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
 
   // Más → Catálogo.
   await page.goto('/mas')
-  await page.getByRole('link', { name: /Catálogo/ }).click()
+  await page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /Catálogo/ }).click()
   await expect(page).toHaveURL(/\/catalogo$/)
 
   // Edit Rosa's catalog attributes.
