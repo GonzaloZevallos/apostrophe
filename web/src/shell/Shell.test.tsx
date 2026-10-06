@@ -220,7 +220,7 @@ test('Más marks Más on the bar and nothing on the rail, which has no Más', ()
   expect(current(rail(container))).toEqual([])
 })
 
-test('/settings marks Más on the phone and the business row on a computer', () => {
+test('Configuración marks Más on the phone and the business row on a computer', () => {
   const { container } = renderShell([SETTINGS])
 
   const more = within(bar(container)).getByRole('link', { name: 'Más' })
@@ -292,7 +292,7 @@ test('the business row leads to Configuración, carrying inApp, one tap from Ini
   expect(rail(container).lastElementChild).toBe(row)
   await userEvent.click(row)
 
-  expect(screen.getByText('en /settings inApp=true')).toBeInTheDocument()
+  expect(screen.getByText(`en ${SETTINGS} inApp=true`)).toBeInTheDocument()
 })
 
 test('the phone reaches Configuración in two taps: the Más tab, then its Configuración entry', async () => {
@@ -303,7 +303,7 @@ test('the phone reaches Configuración in two taps: the Más tab, then its Confi
     within(screen.getByRole('navigation', { name: 'Más' })).getByRole('link', { name: /^Configuración/ }),
   )
 
-  expect(screen.getByText('en /settings inApp=true')).toBeInTheDocument()
+  expect(screen.getByText(`en ${SETTINGS} inApp=true`)).toBeInTheDocument()
 })
 
 test('Inicio\'s teaser opens the card with inApp state; the card reads "‹ Clientes" and Back lands on Inicio', async () => {
