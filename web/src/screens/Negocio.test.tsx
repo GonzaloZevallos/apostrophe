@@ -8,7 +8,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
+import { Outlet, RouterProvider, createMemoryRouter } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import type { Me } from '../api/me'
 import { SIN_CONEXION_TITULO } from '../components/SinConexion'
@@ -48,14 +48,15 @@ function renderNegocio(fetchMock: ReturnType<typeof vi.fn>): QueryClient {
   const queryClient = new QueryClient()
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[paths.settings()]}>
-        <Routes>
-          <Route element={<Provide />}>
-            <Route path={paths.settings()} element={<Negocio />} />
-          </Route>
-          <Route path={paths.login()} element={<div>Pantalla de entrada</div>} />
-        </Routes>
-      </MemoryRouter>
+      <RouterProvider
+        router={createMemoryRouter(
+          [
+            { element: <Provide />, children: [{ path: paths.settings(), element: <Negocio /> }] },
+            { path: paths.login(), element: <div>Pantalla de entrada</div> },
+          ],
+          { initialEntries: [paths.settings()] },
+        )}
+      />
     </QueryClientProvider>,
   )
   return queryClient

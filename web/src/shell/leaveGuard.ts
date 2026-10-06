@@ -13,7 +13,6 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useBlocker, useLocation, useNavigate } from 'react-router'
-import ConfirmDialog from '../components/ConfirmDialog'
 
 export interface Wording {
   title: string
@@ -92,20 +91,6 @@ export function useLeaveGuard({
     stay,
     discard,
   }
-}
-
-export function LeaveGuard({ guard }: { guard: LeaveGuardState }) {
-  if (!guard.asking) return null
-  return (
-    <ConfirmDialog
-      title={guard.wording.title}
-      detail={guard.wording.detail}
-      confirmText={guard.wording.discardText}
-      cancelText={guard.wording.stayText}
-      onConfirm={guard.discard}
-      onCancel={guard.stay}
-    />
-  )
 }
 
 /** The values a form opened with, captured once. `touched` is whether `values` differ

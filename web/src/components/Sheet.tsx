@@ -7,7 +7,8 @@
  */
 
 import type { ReactNode } from 'react'
-import { LeaveGuard, type LeaveGuardState } from '../shell/leaveGuard'
+import type { LeaveGuardState } from '../shell/leaveGuard'
+import { LeaveGuard } from '../shell/LeaveGuardDialog'
 import Boton from './Boton'
 
 export interface SheetProps {

@@ -60,7 +60,8 @@ import {
 import type { Variety } from '../Variedades'
 import NuevaVentaCliente from './NuevaVentaCliente'
 import { paths } from '../../routes/paths'
-import { LeaveGuard, type Wording, useCloseTo, useLeaveGuard } from '../../shell/leaveGuard'
+import { type Wording, useCloseTo, useLeaveGuard } from '../../shell/leaveGuard'
+import { LeaveGuard } from '../../shell/LeaveGuardDialog'
 
 export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
 export const NO_LINES_MESSAGE = 'Cargá al menos una variedad.'
