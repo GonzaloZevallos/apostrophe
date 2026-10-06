@@ -116,7 +116,10 @@ const COMPUTER_ROOTS: Root[] = [
 /** Counts a tap: every click in the budget goes through here. */
 class Taps {
   count = 0
-  constructor(private readonly page: Page) {}
+  private readonly page: Page
+  constructor(page: Page) {
+    this.page = page
+  }
 
   async link(name: string | RegExp, scope: 'nav' | 'screen'): Promise<void> {
     const where =

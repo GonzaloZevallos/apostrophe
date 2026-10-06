@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { paths } from '../routes/paths'
 import { assertScreens } from '../../../scripts/design/screens.mjs'
 import screens from '../../../scripts/design/screens.json'
 
@@ -29,17 +30,17 @@ describe('assertScreens', () => {
 
   it('refuses a built screen whose route is not its path', () => {
     expect(() =>
-      assertScreens([{ screen: 'Ventas', route: '/ventas', path: '/sales' }]),
-    ).toThrow(/Ventas: route "\/ventas" is not its path "\/sales"/)
+      assertScreens([{ screen: 'Ventas', route: paths.customers(), path: paths.sales() }]),
+    ).toThrow(new RegExp(`Ventas: route "${paths.customers()}" is not its path "${paths.sales()}"`))
   })
 
   it('accepts route = path, a screen not built yet, and a sheet over another route', () => {
     expect(() =>
       assertScreens([
-        { screen: 'Ventas', route: '/sales', path: '/sales' },
-        { screen: 'VariedadNueva', route: null, path: '/varieties/new' },
+        { screen: 'Ventas', route: paths.sales(), path: paths.sales() },
+        { screen: 'VariedadNueva', route: null, path: paths.varieties() },
         { screen: 'Estados', route: null, path: null },
-        { screen: 'Cobro', route: '/customers/{debtor}', path: '/customers/{debtor}/payment', sheet: true },
+        { screen: 'Cobro', route: paths.customer('{debtor}'), path: `${paths.customer('{debtor}')}/payment`, sheet: true },
       ]),
     ).not.toThrow()
   })

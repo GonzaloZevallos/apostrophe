@@ -8,16 +8,24 @@
 
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { createMemoryRouter, RouterProvider } from 'react-router'
+import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
 import { expect, test, vi } from 'vitest'
+import type { Me } from '../api/me'
 import Shell from '../shell/Shell'
 import { GuardedSheet } from './Sheet'
 import { paths } from '../routes/paths'
 import Sheet from './Sheet'
 
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
+
 function renderOverRoot(element: React.ReactNode) {
   const router = createMemoryRouter(
-    [{ element: <Shell />, children: [{ index: true, element }] }],
+    [
+      {
+        element: <Outlet context={ME} />,
+        children: [{ element: <Shell />, children: [{ index: true, element }] }],
+      },
+    ],
     { initialEntries: [paths.home()] },
   )
   render(<RouterProvider router={router} />)

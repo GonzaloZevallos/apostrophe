@@ -13,7 +13,7 @@
 
 import { createElement, type ReactElement } from 'react'
 import { Navigate, useLocation, useParams } from 'react-router'
-import { paths } from './paths'
+import { paths } from './paths.js'
 
 export const LEGACY_REDIRECTS: Readonly<Record<string, (id: string) => string>> = {
   '/entrar': () => paths.login(),
