@@ -28,7 +28,7 @@ import SinConexion from '../components/SinConexion'
 import { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import { changePassword } from '../session'
 import { BRAKE_MESSAGE } from './Entrar'
-import { WEAK_PASSWORD_MESSAGE } from './Invitacion'
+import { WEAK_PASSWORD_MESSAGE } from './authMessages'
 
 export const WRONG_CURRENT_PASSWORD_MESSAGE = 'La contraseña actual no es esa.'
 export const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'

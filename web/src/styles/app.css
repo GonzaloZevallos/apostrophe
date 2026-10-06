@@ -2243,3 +2243,29 @@ button {
   background: var(--superficie);
 }
 /* ===== end Loading ===== */
+
+/* ===== auth-layout ===== */
+/* `AuthPage` (ADR-0024): the one centred, phone-width column every getting-in screen
+ * renders through, on every viewport. Tokens only. */
+.auth-page {
+  align-items: center;
+}
+
+.auth-page__columna {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 430px;
+  padding: var(--margen-pantalla);
+  padding-top: calc(var(--alto-boton) + var(--espacio-md));
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--espacio-xxl) + var(--espacio-sm));
+}
+
+.auth-page__titulo {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  margin: var(--espacio-xs) 0 0;
+}
+/* ===== end auth-layout ===== */

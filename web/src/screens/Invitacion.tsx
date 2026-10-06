@@ -24,6 +24,7 @@ import { acceptInvitation, openInvitation, type InvitationView } from '../sessio
 import SinConexion from '../components/SinConexion'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import { formatDateShort } from '../format/dates'
+import { WEAK_PASSWORD_MESSAGE } from './authMessages'
 
 export const NOT_USABLE_TITLE = 'Esta invitación ya no sirve'
 export const NOT_USABLE_DETAIL =
@@ -31,7 +32,7 @@ export const NOT_USABLE_DETAIL =
 export const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
 export { ERROR_GENERICO_MENSAJE as RETRY_MESSAGE }
 export const EMAIL_TAKEN_MESSAGE = 'Ya hay una cuenta con ese email'
-export const WEAK_PASSWORD_MESSAGE = 'La contraseña tiene que tener al menos 10 caracteres'
+export { WEAK_PASSWORD_MESSAGE }
 export const EMAIL_INVALID_MESSAGE = 'Ingresá un email válido'
 export const BUSINESS_NAME_INVALID_MESSAGE = 'Ponele un nombre al negocio, sin espacios de más'
 
