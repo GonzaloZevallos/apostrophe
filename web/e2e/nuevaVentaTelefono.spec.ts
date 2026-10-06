@@ -63,7 +63,6 @@ async function expectShellFitsTheScreen(page: Page): Promise<void> {
 test('the form is three zones at every phone width: footer in view, header fixed, payment last above the footer', async ({
   page,
 }) => {
-  test.setTimeout(90_000)
   await signInWithAPricedVariety(page)
 
   for (const width of WIDTHS) {
@@ -118,7 +117,6 @@ test('the form is three zones at every phone width: footer in view, header fixed
 test('with the viewport shortened the footer stays in view, and the keyboard flag drops the grams line', async ({
   page,
 }) => {
-  test.setTimeout(60_000)
   await signInWithAPricedVariety(page)
   await page.goto('/ventas/nueva')
   const save = page.getByRole('button', { name: 'Guardá la venta' })
@@ -164,7 +162,6 @@ function expectMetrics(actual: TypeMetrics, expected: TypeMetrics): void {
 test('the footer total keeps its phone size, line height and tracking, and the computer total its own', async ({
   page,
 }) => {
-  test.setTimeout(60_000)
   await signInWithAPricedVariety(page)
 
   await page.setViewportSize({ width: 375, height: HEIGHT })
@@ -179,7 +176,6 @@ test('the footer total keeps its phone size, line height and tracking, and the c
 })
 
 test('the footer total takes its size and line height from the cifra-m custom properties', async ({ page }) => {
-  test.setTimeout(60_000)
   await signInWithAPricedVariety(page)
   await page.goto('/ventas/nueva')
   await expect(page.locator('.nueva-venta__pie > .cifra-xl')).toBeVisible()

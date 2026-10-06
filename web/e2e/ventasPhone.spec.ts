@@ -44,8 +44,6 @@ async function expectInsideTheScreen(page: Page, locator: Locator): Promise<void
 test('Ventas and a sale detail fit, and are thumb-sized, at 320, 430 and 130 % on the phone', async ({
   page,
 }) => {
-  test.setTimeout(90_000)
-
   await signUpNewBusiness(page, { businessName: `Vivero Telefono ${Date.now()}`, email: `duena-telefono-${Date.now()}@example.com` })
 
   await page.goto('/variedades')
