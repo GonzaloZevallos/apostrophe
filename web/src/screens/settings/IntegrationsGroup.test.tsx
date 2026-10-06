@@ -5,7 +5,7 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
@@ -38,12 +38,15 @@ const EMPTY = {
 function renderGroup(
   initial: unknown,
   onTest?: (init: RequestInit) => Response,
-  options: { refetchPending?: boolean } = {},
+  options: { refetchPending?: boolean; onLookup?: (init: RequestInit) => Promise<Response> } = {},
 ) {
   let reads = 0
   const fetchMock = vi.fn((url: string, init?: RequestInit) => {
     if (url === '/pinned-catalog/test' && init?.method === 'POST') {
       return Promise.resolve((onTest ?? (() => jsonResponse(200, { ...SAVED, previous_pin_left: false })))(init))
+    }
+    if (url === '/pinned-catalog/own-chat-lookup' && init?.method === 'POST') {
+      return (options.onLookup ?? (() => Promise.resolve(jsonResponse(200, { own_chat: '777' }))))(init)
     }
     if (url === '/pinned-catalog') {
       reads += 1
@@ -216,4 +219,174 @@ test('after saving, Cerrar closes at once even while the refetch is pending', as
 
   expect(await screen.findByRole('heading', { name: 'Lista' })).toBeInTheDocument()
   expect(screen.queryByText('¿Descartás el cambio?')).not.toBeInTheDocument()
+})
+
+const OWN_CHAT_HELP_LINE =
+  'Abrí tu bot en Telegram y tocá Iniciar. Tu número lo ves con @userinfobot, o tocá Buscar mi chat.'
+const CHANNEL_HELP_LINE = 'Es el @usuario o el enlace del canal donde se publica el catálogo.'
+
+function lookupCalls(fetchMock: ReturnType<typeof renderGroup>) {
+  return fetchMock.mock.calls.filter(([url]) => url === '/pinned-catalog/own-chat-lookup')
+}
+
+function saveCalls(fetchMock: ReturnType<typeof renderGroup>) {
+  return fetchMock.mock.calls.filter(([url]) => url === '/pinned-catalog/test')
+}
+
+test('the own-chat help line names Iniciar, @userinfobot and Buscar mi chat; the channel line is unchanged', async () => {
+  renderGroup(SAVED)
+
+  await screen.findByLabelText('Tu chat')
+  expect(screen.getByText(OWN_CHAT_HELP_LINE)).toBeInTheDocument()
+  expect(screen.getByText(CHANNEL_HELP_LINE)).toBeInTheDocument()
+  expect(screen.queryByText(/escribile cualquier cosa/)).not.toBeInTheDocument()
+})
+
+test('Buscar mi chat puts the one chat found in the field over a number already there, saves nothing and arms the leave guard', async () => {
+  const fetchMock = renderGroup(SAVED)
+
+  await screen.findByLabelText('Tu chat')
+  await userEvent.click(screen.getByRole('button', { name: 'Buscar mi chat' }))
+
+  await waitFor(() => expect(screen.getByLabelText('Tu chat')).toHaveValue('777'))
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  expect(saveCalls(fetchMock)).toHaveLength(0)
+  expect(screen.queryByText('Prueba enviada')).not.toBeInTheDocument()
+
+  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  expect(await screen.findByText('¿Descartás el cambio?')).toBeInTheDocument()
+})
+
+test('with the saved token and nothing typed, Buscar mi chat sends token null', async () => {
+  const fetchMock = renderGroup(SAVED)
+
+  await screen.findByLabelText('Tu chat')
+  await userEvent.click(screen.getByRole('button', { name: 'Buscar mi chat' }))
+  await waitFor(() => expect(lookupCalls(fetchMock)).toHaveLength(1))
+
+  expect(JSON.parse(lookupCalls(fetchMock)[0]?.[1]?.body as string)).toEqual({ token: null })
+})
+
+test('a token typed over the saved one is the one Buscar mi chat sends', async () => {
+  const fetchMock = renderGroup(SAVED)
+
+  await screen.findByLabelText('Tu chat')
+  await userEvent.click(screen.getByRole('button', { name: 'Cambiar' }))
+  await userEvent.type(screen.getByLabelText('Token del bot'), '123:typed')
+  await userEvent.click(screen.getByRole('button', { name: 'Buscar mi chat' }))
+  await waitFor(() => expect(lookupCalls(fetchMock)).toHaveLength(1))
+
+  expect(JSON.parse(lookupCalls(fetchMock)[0]?.[1]?.body as string)).toEqual({ token: '123:typed' })
+})
+
+test('a token field opened with Cambiar but left empty sends null', async () => {
+  const fetchMock = renderGroup(SAVED)
+
+  await screen.findByLabelText('Tu chat')
+  await userEvent.click(screen.getByRole('button', { name: 'Cambiar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Buscar mi chat' }))
+  await waitFor(() => expect(lookupCalls(fetchMock)).toHaveLength(1))
+
+  expect(JSON.parse(lookupCalls(fetchMock)[0]?.[1]?.body as string)).toEqual({ token: null })
+})
+
+test('with no token typed or saved, Buscar mi chat is disabled and says why in words', async () => {
+  const fetchMock = renderGroup(EMPTY)
+
+  await screen.findByLabelText('Token del bot')
+  const button = screen.getByRole('button', { name: 'Buscar mi chat' })
+  expect(button).toBeDisabled()
+  expect(screen.getByText('Cargá el token primero')).toBeInTheDocument()
+
+  await userEvent.type(screen.getByLabelText('Token del bot'), '123:typed')
+  expect(button).toBeEnabled()
+  expect(screen.queryByText('Cargá el token primero')).not.toBeInTheDocument()
+  expect(lookupCalls(fetchMock)).toHaveLength(0)
+})
+
+test('a token of only spaces does not enable Buscar mi chat', async () => {
+  renderGroup(EMPTY)
+
+  await userEvent.type(await screen.findByLabelText('Token del bot'), '   ')
+  expect(screen.getByRole('button', { name: 'Buscar mi chat' })).toBeDisabled()
+})
+
+test('Buscar mi chat is disabled while its request runs', async () => {
+  let answer: (response: Response) => void = () => undefined
+  renderGroup(SAVED, undefined, {
+    onLookup: () => new Promise<Response>((resolve) => (answer = resolve)),
+  })
+
+  await screen.findByLabelText('Tu chat')
+  await userEvent.click(screen.getByRole('button', { name: 'Buscar mi chat' }))
+  expect(screen.getByRole('button', { name: 'Buscar mi chat' })).toBeDisabled()
+
+  answer(jsonResponse(200, { own_chat: '777' }))
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Buscar mi chat' })).toBeEnabled())
+})
+
+const LOOKUP_REFUSALS: [string, string][] = [
+  [
+    'pinned_catalog.no_messages',
+    'Todavía no vemos mensajes en tu bot: abrilo en Telegram, tocá Iniciar y buscá de nuevo.',
+  ],
+  [
+    'pinned_catalog.several_chats',
+    'Le escribió más de una persona a tu bot: buscá tu número con @userinfobot y escribilo acá.',
+  ],
+  [
+    'pinned_catalog.updates_unreadable',
+    'No pudimos leer los mensajes de tu bot: buscá tu número con @userinfobot y escribilo acá.',
+  ],
+  ['pinned_catalog.token_invalid', 'El token no es válido: copialo de nuevo de @BotFather.'],
+  ['pinned_catalog.telegram_unreachable', 'Telegram no respondió'],
+]
+
+test.each(LOOKUP_REFUSALS)(
+  'Buscar mi chat refused with %s shows its reason and leaves the field as it was',
+  async (code, copy) => {
+    const fetchMock = renderGroup(SAVED, undefined, {
+      onLookup: () => Promise.resolve(jsonResponse(422, { detail: 'refused', code })),
+    })
+
+    await screen.findByLabelText('Tu chat')
+    await userEvent.click(screen.getByRole('button', { name: 'Buscar mi chat' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(copy)
+    expect(screen.getByLabelText('Tu chat')).toHaveValue('123456789')
+    expect(screen.getByLabelText('Chat del canal')).toHaveValue('@mi_canal')
+    expect(saveCalls(fetchMock)).toHaveLength(0)
+    expect(screen.getByRole('button', { name: 'Buscar mi chat' })).toBeEnabled()
+  },
+)
+
+test('Buscar mi chat with no connection shows the offline notice and keeps the field', async () => {
+  renderGroup(SAVED, undefined, { onLookup: () => Promise.reject(new TypeError('offline')) })
+
+  await screen.findByLabelText('Tu chat')
+  await userEvent.click(screen.getByRole('button', { name: 'Buscar mi chat' }))
+
+  expect(await screen.findByText(/conexión/i)).toBeInTheDocument()
+  expect(screen.getByLabelText('Tu chat')).toHaveValue('123456789')
+})
+
+test('a lookup reason clears when Probarlo runs, and a Probarlo reason clears when Buscar mi chat runs', async () => {
+  renderGroup(SAVED, () => jsonResponse(422, { detail: 'refused', code: 'pinned_catalog.test_failed' }), {
+    onLookup: () =>
+      Promise.resolve(jsonResponse(422, { detail: 'refused', code: 'pinned_catalog.no_messages' })),
+  })
+
+  await screen.findByLabelText('Tu chat')
+  await userEvent.click(screen.getByRole('button', { name: 'Buscar mi chat' }))
+  expect(await screen.findByRole('alert')).toHaveTextContent('Todavía no vemos mensajes')
+  await userEvent.click(screen.getByRole('button', { name: 'Probarlo' }))
+  await waitFor(() =>
+    expect(screen.getByRole('alert')).toHaveTextContent('No pudimos enviarte la prueba'),
+  )
+  expect(screen.getAllByRole('alert')).toHaveLength(1)
+  await userEvent.click(screen.getByRole('button', { name: 'Buscar mi chat' }))
+  await waitFor(() =>
+    expect(screen.getByRole('alert')).toHaveTextContent('Todavía no vemos mensajes'),
+  )
+  expect(screen.getAllByRole('alert')).toHaveLength(1)
 })

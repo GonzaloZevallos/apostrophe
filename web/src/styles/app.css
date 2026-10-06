@@ -2386,6 +2386,23 @@ body {
   color: var(--tinta2);
 }
 
+/* The own chat's input with its Buscar mi chat button beside it. */
+.campo__fila {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.campo__fila > .campo__input {
+  flex: 1;
+  min-width: 0;
+}
+
+.campo__fila > .boton-enlace:disabled {
+  color: var(--tinta2);
+  cursor: default;
+}
+
 .campo--casilla {
   flex-direction: row;
   align-items: center;
