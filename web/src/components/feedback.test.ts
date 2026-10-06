@@ -13,6 +13,7 @@ import {
   readNewSaleState,
   SALE_SAVED,
   saleJustSaved,
+  toast,
 } from './feedback'
 
 test('accepts a toast from the closed set', () => {
@@ -27,6 +28,10 @@ test('accepts "Venta eliminada · los gramos vuelven al stock", added to the clo
     kind: 'toast',
     message: 'Venta eliminada · los gramos vuelven al stock',
   })
+})
+
+test('accepts "Gasto guardado", which the expense screen hands to Gastos when it navigates away', () => {
+  expect(readFeedback(toast('Gasto guardado'))).toEqual({ kind: 'toast', message: 'Gasto guardado' })
 })
 
 test('accepts the fixed gone notice', () => {
