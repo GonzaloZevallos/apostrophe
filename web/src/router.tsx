@@ -44,6 +44,9 @@ import Clientes from './screens/clientes/Clientes'
 import ClientesLayout from './screens/clientes/ClientesLayout'
 import TeDeben from './screens/clientes/TeDeben'
 import VariedadDetalle from './screens/VariedadDetalle'
+import PriceHistory from './screens/varieties/PriceHistory'
+import PriceNew from './screens/varieties/PriceNew'
+import VarietyRoute from './screens/varieties/VarietyRoute'
 import Variedades from './screens/Variedades'
 import Reset from './screens/Reset'
 import Settings from './screens/settings/Settings'
@@ -71,6 +74,8 @@ import {
   MORE,
   VARIETIES,
   VARIETY,
+  VARIETY_PRICE_NEW,
+  VARIETY_PRICES,
   relative,
 } from './routes'
 
@@ -102,6 +107,16 @@ export const router = createBrowserRouter([
               },
               { path: relative(VARIETIES), element: <Variedades /> },
               { path: relative(VARIETY(':id')), element: <VariedadDetalle /> },
+              {
+                path: relative(VARIETY_PRICES(':id')),
+                element: <VarietyRoute render={(varietyId) => <PriceHistory varietyId={varietyId} />} />,
+                handle: { chrome: 'card' },
+              },
+              {
+                path: relative(VARIETY_PRICE_NEW(':id')),
+                element: <VarietyRoute render={(varietyId) => <PriceNew varietyId={varietyId} />} />,
+                handle: { chrome: 'none' },
+              },
               { path: relative(EXPENSES), element: <Gastos />, handle: { tab: 'more' } },
               {
                 path: relative(EXPENSE_NEW),
