@@ -1,6 +1,6 @@
 /**
  * `EntradaStock` (`stock.md`, "On screen"): records a new stock entry or edits one,
- * shared by `/mi-stock/nueva-entrada` and `/mi-stock/entradas/:id`, the way
+ * shared by `/varieties/entries/new` and `/varieties/entries/:id`, the way
  * `ClienteForm` shares add and edit. Editing confirms before saving; deleting confirms
  * through `ConfirmDialog`, naming the date, variety and grams (`stock.md`: "Antes de
  * borrar"). The cost-per-gram preview ("Te queda en $ 8.500 el gramo") is the one

@@ -36,10 +36,10 @@ function renderScreen() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={['/variedades/1']}>
+      <MemoryRouter initialEntries={['/varieties/1']}>
         <Routes>
           <Route element={<Outlet context={ME} />}>
-            <Route path="/variedades/:id" element={<VariedadDetalle />} />
+            <Route path="/varieties/:id" element={<VariedadDetalle />} />
           </Route>
         </Routes>
       </MemoryRouter>
@@ -294,6 +294,6 @@ test('a variety that is gone shows the gone-detail state with a way back to the 
   expect(await screen.findByText(GONE_DETAIL)).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Volver a Variedades' })).toHaveAttribute(
     'href',
-    '/variedades',
+    '/varieties',
   )
 })

@@ -10,18 +10,24 @@
  * read-only; "Editar encabezado y pie" opens Configuración → Mensaje del catálogo. The pin's status and Publicar are `PinPublish`; the bot's
  * settings and Probarlo live in Configuración → Integraciones, not here.
  *
- * The query is frozen (`gcTime: 0`, `staleTime: Infinity`, no refetch on focus or
- * reconnect — plan, invariants): a seller who leaves the screen open must not have
- * it silently recompute behind their back, and a save's own answer becomes the
- * query's data directly, through `setQueryData`, rather than invalidating and
+ * The query is `catalogQueryOptions()` (ADR-0022): fetched on every mount, never kept
+ * and never refetched on focus or reconnect, so a seller who leaves the screen open
+ * does not have it silently recompute behind their back. A save's own answer becomes
+ * the query's data directly, through `writeCatalog`, rather than invalidating and
  * refetching.
  */
 
 import { type FormEvent, useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useOutletContext } from 'react-router'
-import { ApiError, NetworkError, UNKNOWN_CODE, get, put } from '../api/client'
-import { keys } from '../api/keys'
+import {
+  catalogQueryOptions,
+  writeCatalog,
+  type Catalog,
+  type CatalogVariety,
+  type CatalogVarietyState,
+} from '../api/catalog'
+import { ApiError, NetworkError, UNKNOWN_CODE, put } from '../api/client'
 import type { Me } from '../api/me'
 import { GONE_NOTICE, isGone, kindOf, resolveOverride, type RefusalCode } from '../api/refusals'
 import { copyText } from '../clipboard'
@@ -42,8 +48,6 @@ export const INDICA_SHARE_INVALID_MESSAGE = 'El porcentaje de índica va de 0 a 
 export const AROMA_TOO_LONG_MESSAGE = 'El aroma es demasiado largo'
 export const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
 
-type CatalogVarietyState = 'in' | 'hidden' | 'no_price' | 'sold_out' | 'no_entries'
-
 // The first reason that applies, in words, never by color alone (PRD criterion 4).
 const STATE_LABEL: Record<CatalogVarietyState, string> = {
   in: 'Sale',
@@ -51,23 +55,6 @@ const STATE_LABEL: Record<CatalogVarietyState, string> = {
   no_price: 'No sale: sin precio hoy',
   sold_out: 'No sale: está agotada',
   no_entries: 'No sale: sin entradas',
-}
-
-interface CatalogVariety {
-  id: number
-  name: string
-  emoji: string | null
-  indica_share: number | null
-  aroma: string | null
-  shown: boolean
-  state: CatalogVarietyState
-}
-
-interface Catalog {
-  text: string | null
-  header: string
-  footer: string
-  varieties: CatalogVariety[]
 }
 
 const ATTRIBUTES_OVERRIDES: Partial<Record<RefusalCode, string>> = {
@@ -86,14 +73,7 @@ function detailFor(variety: CatalogVariety): string {
 export default function Catalogo() {
   useOutletContext<Me>()
   const queryClient = useQueryClient()
-  const catalogQuery = useQuery({
-    queryKey: keys.catalog(),
-    queryFn: () => get<Catalog>('/catalog'),
-    gcTime: 0,
-    staleTime: Infinity,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-  })
+  const catalogQuery = useQuery(catalogQueryOptions())
 
   const [toast, setToast] = useState<SuccessToast | null>(null)
   const [copyFailed, setCopyFailed] = useState(false)
@@ -122,7 +102,7 @@ export default function Catalogo() {
   }, [gone])
 
   function applyWrite(view: Catalog): void {
-    queryClient.setQueryData(keys.catalog(), view)
+    writeCatalog(queryClient, view)
   }
 
   function startEditingVariety(variety: CatalogVariety): void {

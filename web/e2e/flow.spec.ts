@@ -48,13 +48,13 @@ test('a seller does everything the backend offers today, from the front alone', 
   await expect(page.getByText('Cliente guardado')).toBeVisible()
 
   // Add a variety.
-  await page.goto('/variedades')
+  await page.goto('/varieties')
   await page.getByRole('button', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Rosa')
   await page.getByRole('button', { name: 'Guardar' }).click()
   await expect(page.getByText('Variedad guardada')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()
-  await expect(page).toHaveURL(/\/variedades\/.+/)
+  await expect(page).toHaveURL(/\/varieties\/.+/)
 
   // Add a price. "Rige desde" already defaults to `me.today` — the business day
   // the backend's clock reports, read through `GET /auth/me` — so it is left as
@@ -108,7 +108,7 @@ test('a seller does everything the backend offers today, from the front alone', 
 
   // Set Rosa's low-stock threshold from Variedades, then turn it off (varieties.md:
   // "set or turn off the threshold from the variety").
-  await page.goto('/variedades')
+  await page.goto('/varieties')
   await expect(page.getByText('Aviso apagado')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByLabel('Umbral de aviso (g)').fill('15')

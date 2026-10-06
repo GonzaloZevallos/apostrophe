@@ -2,6 +2,8 @@ import { matchRoutes } from 'react-router'
 import { describe, expect, test } from 'vitest'
 import { router } from './router'
 import * as routes from './routes'
+import contract from './api/contract.json'
+import routerSource from './router.tsx?raw'
 
 describe('routes.ts against the route table', () => {
   const mounted = {
@@ -10,6 +12,11 @@ describe('routes.ts against the route table', () => {
     EXPENSE_NEW: routes.EXPENSE_NEW,
     EXPENSE_CATEGORIES: routes.EXPENSE_CATEGORIES,
     ANALYSIS: routes.ANALYSIS,
+    VARIETIES: routes.VARIETIES,
+    VARIETY: routes.VARIETY('7'),
+    CATALOG: routes.CATALOG,
+    ENTRY_NEW: routes.ENTRY_NEW,
+    ENTRY: routes.ENTRY('7'),
   }
 
   test.each(Object.entries(mounted))('%s resolves to a route in router.tsx', (_name, path) => {
@@ -91,5 +98,53 @@ describe('source scan for path literals', () => {
     }))
     expect(files.length).toBeGreaterThan(10)
     expect(findPathLiterals(files)).toEqual([])
+  })
+})
+
+describe('routes.ts against contract.json', () => {
+  /** Every path `routes.ts` exports, with each id written as `7` (the contract's own sample). */
+  function sampleRoutes(): string[] {
+    return Object.entries(routes)
+      .filter(([name]) => name !== 'relative')
+      .map(([, value]) => (typeof value === 'function' ? (value as (id: string) => string)('7') : value))
+      .filter((value): value is string => typeof value === 'string')
+  }
+
+  const firstSegment = (path: string): string => path.split('/')[1] ?? ''
+
+  // The API's first segments that a front path also starts with are exactly those the
+  // contract lists as shared (`tests/test_refusal_codes.py` holds the other half: no API
+  // segment overlaps `frontSegments` without a shared entry).
+  const sharedSegments = new Set(contract.sharedFrontRoutes.map(firstSegment))
+
+  test('every route constant under an API segment is in sharedFrontRoutes', () => {
+    const missing = sampleRoutes()
+      .filter((path) => sharedSegments.has(firstSegment(path)))
+      .filter((path) => !contract.sharedFrontRoutes.includes(path))
+
+    expect(missing).toEqual([])
+  })
+
+  test('every route constant starts with a segment the contract lists', () => {
+    const unlisted = sampleRoutes().filter(
+      (path) => !contract.frontSegments.includes(firstSegment(path)),
+    )
+
+    expect(unlisted).toEqual([])
+  })
+
+  test('the check refuses a shared-segment constant the contract does not list', () => {
+    const forgotten = ['/varieties/7/forgotten']
+    const missing = forgotten
+      .filter((path) => sharedSegments.has(firstSegment(path)))
+      .filter((path) => !contract.sharedFrontRoutes.includes(path))
+
+    expect(missing).toEqual(forgotten)
+  })
+
+  test('router.tsx names no /varieties path or old Spanish path as a literal', () => {
+    const code = routerSource.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '')
+
+    expect(code).not.toMatch(/['"`]\/?(varieties|variedades|catalogo|mi-stock\/)/)
   })
 })

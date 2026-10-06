@@ -110,8 +110,8 @@ const SCREENS: Case[] = [
   {
     name: 'EntradaStock editing',
     element: () => <EntradaStock mode="editar" />,
-    route: '/mi-stock/entradas/4',
-    path: '/mi-stock/entradas/:id',
+    route: '/varieties/entries/4',
+    path: '/varieties/entries/:id',
   },
 ]
 

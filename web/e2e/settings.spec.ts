@@ -80,7 +80,7 @@ test('a seller goes through every Configuración group from the phone, with no c
   await page.getByRole('button', { name: 'Probarlo' }).click()
   await expect(page.getByText('Prueba enviada')).toBeVisible()
   await page.getByRole('link', { name: 'Ir al catálogo' }).click()
-  await expect(page).toHaveURL(/\/catalogo$/)
+  await expect(page).toHaveURL(/\/varieties\/catalog$/)
   await page.goBack()
   await close()
 

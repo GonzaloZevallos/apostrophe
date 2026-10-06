@@ -30,6 +30,7 @@ import { formatGrams, formatMoney } from '../format/money'
 import { detailFor, sideNoteFor } from '../stock/detail'
 import type { Variety } from './Variedades'
 import { get } from '../api/client'
+import { ENTRY, ENTRY_NEW } from '../routes'
 
 export const EMPTY_STATE_TITLE = 'Sin entradas de stock'
 export const EMPTY_STATE_DETAIL = 'Cargá tu stock inicial o una compra'
@@ -132,14 +133,14 @@ export default function Stock() {
           </div>
         )}
 
-        <Link to="/mi-stock/nueva-entrada" className="boton boton--suave">
+        <Link to={ENTRY_NEW} className="boton boton--suave">
           Nueva entrada
         </Link>
 
         <span className="rotulo">Entradas · costo por gramo</span>
         <div className="lista-entradas">
           {stock.entries.map((entry) => (
-            <Link key={entry.id} to={`/mi-stock/entradas/${entry.id}`} className="fila-entrada">
+            <Link key={entry.id} to={ENTRY(entry.id)} className="fila-entrada">
               <span className="fila-entrada__fecha">{formatDate(entry.date, me.today)}</span>
               <span className="fila-entrada__texto">
                 <span className="fila-entrada__linea1">

@@ -177,7 +177,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // A priced variety.
-  await page.goto('/variedades')
+  await page.goto('/varieties')
   await page.getByRole('button', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Rosa')
   await page.getByRole('button', { name: 'Guardar' }).click()
@@ -193,7 +193,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await expect(page.getByText('Precio guardado')).toBeVisible()
 
   // A purchase: the "Origen" pill defaults to "Compra" (`EntradaStock.tsx`).
-  await page.goto('/mi-stock/nueva-entrada')
+  await page.goto('/varieties/entries/new')
   await page.getByLabel('Gramos').fill('50')
   await page.getByLabel('Variedad').selectOption({ label: 'Rosa' })
   await expect(page.getByRole('button', { name: 'Compra' })).toHaveAttribute('aria-pressed', 'true')

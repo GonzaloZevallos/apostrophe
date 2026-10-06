@@ -29,10 +29,10 @@ function renderScreen() {
   const queryClient = new QueryClient()
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={['/variedades']}>
+      <MemoryRouter initialEntries={['/varieties']}>
         <Routes>
           <Route element={<Outlet context={ME} />}>
-            <Route path="/variedades" element={<Variedades />} />
+            <Route path="/varieties" element={<Variedades />} />
           </Route>
         </Routes>
       </MemoryRouter>
@@ -78,7 +78,7 @@ test('a variety links to its own detail, with no business id in the path', async
   renderScreen()
 
   const link = await screen.findByRole('link', { name: /Sir Jack/ })
-  expect(link).toHaveAttribute('href', '/variedades/7')
+  expect(link).toHaveAttribute('href', '/varieties/7')
 })
 
 describe('adding a variety', () => {

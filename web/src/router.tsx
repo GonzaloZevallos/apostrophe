@@ -60,7 +60,19 @@ import Ventas from './screens/ventas/Ventas'
 import { redirectRoutes } from './redirects'
 import GatedLayout from './shell/GatedLayout'
 import Shell from './shell/Shell'
-import { ANALYSIS, EXPENSE_CATEGORIES, EXPENSE_NEW, EXPENSES, MORE, relative } from './routes'
+import {
+  ANALYSIS,
+  CATALOG,
+  ENTRY,
+  ENTRY_NEW,
+  EXPENSE_CATEGORIES,
+  EXPENSE_NEW,
+  EXPENSES,
+  MORE,
+  VARIETIES,
+  VARIETY,
+  relative,
+} from './routes'
 
 export const router = createBrowserRouter([
   {
@@ -88,8 +100,8 @@ export const router = createBrowserRouter([
                   { path: ':id/editar', element: <ClienteForm mode="editar" /> },
                 ],
               },
-              { path: 'variedades', element: <Variedades /> },
-              { path: 'variedades/:id', element: <VariedadDetalle /> },
+              { path: relative(VARIETIES), element: <Variedades /> },
+              { path: relative(VARIETY(':id')), element: <VariedadDetalle /> },
               { path: relative(EXPENSES), element: <Gastos />, handle: { tab: 'more' } },
               {
                 path: relative(EXPENSE_NEW),
@@ -97,8 +109,8 @@ export const router = createBrowserRouter([
                 handle: { chrome: 'none', tab: 'more' },
               },
               { path: 'mi-stock', element: <Stock /> },
-              { path: 'mi-stock/nueva-entrada', element: <EntradaStock mode="nuevo" /> },
-              { path: 'mi-stock/entradas/:id', element: <EntradaStock mode="editar" /> },
+              { path: relative(ENTRY_NEW), element: <EntradaStock mode="nuevo" /> },
+              { path: relative(ENTRY(':id')), element: <EntradaStock mode="editar" /> },
               { path: 'settings', element: <Settings />, handle: { chrome: 'card', tab: 'more' } },
               { path: 'settings/business', element: <BusinessGroup />, handle: { chrome: 'none', tab: 'more' } },
               { path: 'settings/users', element: <UsersGroup />, handle: { chrome: 'none', tab: 'more' } },
@@ -124,7 +136,7 @@ export const router = createBrowserRouter([
               },
               { path: 'settings/account', element: <AccountGroup />, handle: { chrome: 'none', tab: 'more' } },
               { path: relative(ANALYSIS), element: <Analisis />, handle: { tab: 'more' } },
-              { path: 'catalogo', element: <Catalogo /> },
+              { path: relative(CATALOG), element: <Catalogo /> },
               {
                 path: 'ventas',
                 children: [

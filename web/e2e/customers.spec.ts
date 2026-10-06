@@ -41,7 +41,7 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // One priced variety, $1.000/g — round figures for every assertion below.
-  await page.goto('/variedades')
+  await page.goto('/varieties')
   await page.getByRole('button', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Jazmín')
   await page.getByRole('button', { name: 'Guardar' }).click()

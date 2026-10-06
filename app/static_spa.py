@@ -54,11 +54,20 @@ SHARED_FRONT_PATTERNS = (
 )
 
 # The old Spanish front paths and where they live now. Permanent, whatever the method.
-LEGACY_FRONT_PATHS = {"/mas": "/more", "/gastos": "/expenses"}
+LEGACY_FRONT_PATHS = {
+    "/mas": "/more",
+    "/gastos": "/expenses",
+    "/variedades": "/varieties",
+    "/catalogo": "/varieties/catalog",
+    "/mi-stock/nueva-entrada": "/varieties/entries/new",
+}
 
 # The old Spanish paths that carry a record's id across: each row is a fully anchored
 # pattern and the target it expands to (`\1` is the captured id).
-LEGACY_FRONT_PATTERNS: tuple[tuple[re.Pattern[str], str], ...] = ()
+LEGACY_FRONT_PATTERNS: tuple[tuple[re.Pattern[str], str], ...] = (
+    (re.compile(r"^/variedades/([0-9]+)$"), r"/varieties/\1"),
+    (re.compile(r"^/mi-stock/entradas/([0-9]+)$"), r"/varieties/entries/\1"),
+)
 
 
 class MissingBuiltFront(RuntimeError):

@@ -113,4 +113,24 @@ describe('findForbiddenUsages', () => {
 
     expect(violations.map((v) => v.rule).sort()).toEqual(['indexedDB', 'sessionStorage'])
   })
+
+  test('flags a module other than api/catalog.ts naming the catalog query key', () => {
+    const violations = findForbiddenUsages([
+      { path: 'src/screens/Catalogo.tsx', content: 'queryKey: keys.catalog(),' },
+      { path: 'src/screens/Other.tsx', content: "useQuery({ queryKey: ['catalog'] })" },
+    ])
+
+    expect(violations).toEqual([
+      { path: 'src/screens/Catalogo.tsx', rule: 'catalogQueryKey' },
+      { path: 'src/screens/Other.tsx', rule: 'catalogQueryKey' },
+    ])
+  })
+
+  test('allows the catalog query key only inside api/catalog.ts and api/keys.ts', () => {
+    const violations = findForbiddenUsages([
+      { path: 'src/api/catalog.ts', content: 'queryKey: keys.catalog(),' },
+    ])
+
+    expect(violations).toEqual([])
+  })
 })

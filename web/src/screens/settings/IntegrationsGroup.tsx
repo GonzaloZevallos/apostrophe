@@ -23,6 +23,7 @@ import ErrorGenerico from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import Loading from '../../components/Loading'
 import SettingsGroup, { type LeaveWording } from './SettingsGroup'
+import { CATALOG } from '../../routes'
 
 const TITLE = 'Integraciones'
 const TEST_SENT_TOAST: SuccessToast = 'Prueba enviada'
@@ -31,7 +32,6 @@ const PREVIOUS_PIN_NOTICE =
 const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
 const CHANNEL_CHAT_HELP = 'Es el @usuario o el enlace del canal donde se publica el catálogo.'
 const OWN_CHAT_HELP = 'Abrí tu chat con el bot y escribile cualquier cosa para verlo acá.'
-const CATALOG_PATH = '/catalogo'
 
 const LEAVE: LeaveWording = {
   question: '¿Descartás el cambio?',
@@ -214,7 +214,7 @@ function IntegrationsForm({ initial }: { initial: PinnedCatalog }) {
         </button>
       </form>
 
-      <Link to={CATALOG_PATH} className="boton--enlace">
+      <Link to={CATALOG} className="boton--enlace">
         Ir al catálogo
       </Link>
     </SettingsGroup>

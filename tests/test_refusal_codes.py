@@ -252,13 +252,40 @@ def pattern_problems(pattern: re.Pattern[str]) -> list[str]:
     return problems
 
 
-@pytest.mark.parametrize(
-    "pattern", [*SHARED_FRONT_PATTERNS, *(row[0] for row in LEGACY_FRONT_PATTERNS)]
-)
-def test_every_shared_and_legacy_front_pattern_is_anchored_with_only_digits_variable(
+def legacy_pattern_problems(pattern: re.Pattern[str]) -> list[str]:
+    """A legacy row captures its id as `([0-9]+)`, so the target can carry it across; the
+    capture group is the only thing it adds to what a shared pattern may say."""
+    return pattern_problems(re.compile(pattern.pattern.replace("([0-9]+)", "[0-9]+")))
+
+
+@pytest.mark.parametrize("pattern", SHARED_FRONT_PATTERNS)
+def test_every_shared_front_pattern_is_anchored_with_only_digits_variable(
     pattern: re.Pattern[str],
 ) -> None:
     assert pattern_problems(pattern) == []
+
+
+@pytest.mark.parametrize("pattern", [row[0] for row in LEGACY_FRONT_PATTERNS])
+def test_every_legacy_front_pattern_is_anchored_with_only_a_captured_digits_variable(
+    pattern: re.Pattern[str],
+) -> None:
+    assert legacy_pattern_problems(pattern) == []
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        r"/variedades/([0-9]+)$",
+        r"^/variedades/([0-9]+)",
+        r"^/variedades/(.+)$",
+        r"^/variedades/([0-9]*)$",
+        r"^/variedades/([^/]+)/x$",
+    ],
+)
+def test_a_legacy_pattern_not_anchored_or_wider_than_a_captured_digits_is_refused(
+    source: str,
+) -> None:
+    assert legacy_pattern_problems(re.compile(source)) != []
 
 
 @pytest.mark.parametrize(

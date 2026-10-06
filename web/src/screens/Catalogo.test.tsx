@@ -34,10 +34,10 @@ function renderCatalogo(fetchMock: ReturnType<typeof vi.fn>): QueryClient {
   const queryClient = new QueryClient()
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={['/catalogo']}>
+      <MemoryRouter initialEntries={['/varieties/catalog']}>
         <Routes>
           <Route element={<Provide />}>
-            <Route path="/catalogo" element={<Catalogo />} />
+            <Route path="/varieties/catalog" element={<Catalogo />} />
             <Route
               path="/settings/catalog-message"
               element={<div>Aterrizaste en el mensaje del catálogo</div>}
@@ -280,7 +280,7 @@ test('the catalog screen offers no header or footer editing, only the read-only 
   expect(screen.queryByRole('button', { name: 'Guardá el mensaje' })).not.toBeInTheDocument()
 })
 
-test('"/catalogo" still shows the preview, Copiar, the pin status and Publicar', async () => {
+test('"/varieties/catalog" still shows the preview, Copiar, the pin status and Publicar', async () => {
   const published = {
     ...DEFAULT_PINNED_CATALOG,
     can_publish: true,
@@ -321,10 +321,10 @@ test('a catalog input never carries maxLength', async () => {
   const queryClient = new QueryClient()
   const { container } = render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={['/catalogo']}>
+      <MemoryRouter initialEntries={['/varieties/catalog']}>
         <Routes>
           <Route element={<Provide />}>
-            <Route path="/catalogo" element={<Catalogo />} />
+            <Route path="/varieties/catalog" element={<Catalogo />} />
           </Route>
         </Routes>
       </MemoryRouter>

@@ -40,7 +40,7 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // A variety with a price and stock, so the catalog has something to show.
-  await page.goto('/variedades')
+  await page.goto('/varieties')
   await page.getByRole('button', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Rosa')
   await page.getByRole('button', { name: 'Guardar' }).click()
@@ -51,7 +51,7 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
   await page.getByRole('button', { name: 'Guardar precio' }).click()
   await expect(page.getByText('Precio guardado')).toBeVisible()
 
-  await page.goto('/mi-stock/nueva-entrada')
+  await page.goto('/varieties/entries/new')
   await page.getByLabel('Gramos').fill('50')
   await page.getByLabel('Variedad').selectOption({ label: 'Rosa' })
   await page.getByLabel('Costo total').fill('45000')
@@ -61,7 +61,7 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
   // Más → Catálogo.
   await openMas(page)
   await page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /Catálogo/ }).click()
-  await expect(page).toHaveURL(/\/catalogo$/)
+  await expect(page).toHaveURL(/\/varieties\/catalog$/)
 
   // Edit Rosa's catalog attributes.
   await page.getByRole('button', { name: 'Editar Rosa' }).click()
@@ -82,7 +82,7 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
   await page.getByRole('button', { name: 'Guardá el mensaje' }).click()
   await expect(page.getByText('Catálogo guardado')).toBeVisible()
   await page.getByRole('button', { name: 'Cerrar' }).click()
-  await expect(page).toHaveURL(/\/catalogo$/)
+  await expect(page).toHaveURL(/\/varieties\/catalog$/)
   const headerFooterSummary = page.locator('.catalogo__encabezado-pie')
   await expect(headerFooterSummary).toContainText('🌸 Catálogo de Flores del Catálogo 🌸')
   await expect(headerFooterSummary).toContainText('Pedidos por privado.')

@@ -134,7 +134,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   // perf sections below seed sales for on dates before today — a default "Rige
   // desde" of today would leave those earlier dates with no price of their own.
   async function addVariety(name: string, listPrice?: string, effectiveFrom?: string): Promise<void> {
-    await page.goto('/variedades')
+    await page.goto('/varieties')
     await page.getByRole('button', { name: 'Nueva variedad' }).click()
     await page.getByLabel('Nombre').fill(name)
     await page.getByRole('button', { name: 'Guardar' }).click()

@@ -233,7 +233,17 @@ def test_a_shared_front_path_is_the_shell_only_for_a_browser_navigation(
         assert "location" not in response.headers
 
 
-LEGACY_TARGETS = {"/mas": "/more", "/gastos": "/expenses"}
+LEGACY_TARGETS = {
+    "/mas": "/more",
+    "/gastos": "/expenses",
+    "/variedades": "/varieties",
+    "/catalogo": "/varieties/catalog",
+    "/mi-stock/nueva-entrada": "/varieties/entries/new",
+}
+LEGACY_ID_TARGETS = {
+    "/variedades/7": "/varieties/7",
+    "/mi-stock/entradas/7": "/varieties/entries/7",
+}
 
 
 @pytest.mark.parametrize("slash", [False, True])
@@ -247,6 +257,39 @@ def test_a_legacy_spanish_path_redirects_permanently_whatever_the_request(
 
     assert response.status_code == 308
     assert response.headers["location"] == LEGACY_TARGETS[legacy]
+
+
+@pytest.mark.parametrize("slash", [False, True])
+@pytest.mark.parametrize("accept", [HTML, JSON, ANY])
+@pytest.mark.parametrize("method", ["GET", "HEAD", "POST", "OPTIONS"])
+@pytest.mark.parametrize("legacy", sorted(LEGACY_ID_TARGETS))
+def test_a_legacy_path_with_an_id_redirects_permanently_carrying_the_id(
+    served_client: TestClient, legacy: str, method: str, accept: str, slash: bool
+) -> None:
+    response = _request(served_client, method, legacy + ("/" if slash else ""), accept)
+
+    assert response.status_code == 308
+    assert response.headers["location"] == LEGACY_ID_TARGETS[legacy]
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/variedades/abc",
+        "/variedades/7/prices",
+        "/variedades/7a",
+        "/mi-stock/entradas/x",
+        "/mi-stock/entradas/7/otra",
+        "/mi-stock/entradas",
+    ],
+)
+def test_a_near_miss_of_a_legacy_id_path_is_never_redirected(
+    served_client: TestClient, path: str
+) -> None:
+    response = _request(served_client, "GET", path, HTML)
+
+    assert response.status_code != 308
+    assert "location" not in response.headers
 
 
 @pytest.mark.parametrize("legacy", sorted(LEGACY_TARGETS))

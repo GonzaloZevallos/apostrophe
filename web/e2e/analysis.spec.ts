@@ -35,7 +35,7 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // A priced variety.
-  await page.goto('/variedades')
+  await page.goto('/varieties')
   await page.getByRole('button', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Rosa')
   await page.getByRole('button', { name: 'Guardar' }).click()
@@ -48,7 +48,7 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
 
   // A stock entry (origin defaults to "Compra"), backdated into last month so the
   // business's first record — and so "Mes anterior" — is not this same month.
-  await page.goto('/mi-stock/nueva-entrada')
+  await page.goto('/varieties/entries/new')
   const todayIso = await page.getByLabel('Fecha').inputValue()
   const lastMonth = new Date(todayIso)
   lastMonth.setDate(1)

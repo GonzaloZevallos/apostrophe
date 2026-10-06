@@ -114,7 +114,7 @@ test('no entries at all shows the empty state, with a way to record the first en
   expect(screen.getByText('Cargá tu stock inicial o una compra')).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Nueva entrada' })).toHaveAttribute(
     'href',
-    '/mi-stock/nueva-entrada',
+    '/varieties/entries/new',
   )
 })
 

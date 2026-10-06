@@ -19,6 +19,7 @@ import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGeneri
 import MarcaEstado from '../components/MarcaEstado'
 import SinConexion from '../components/SinConexion'
 import { formatGrams, formatMoney } from '../format/money'
+import { VARIETY } from '../routes'
 
 /** The warning line next to a variety's status mark (`stock.md`, "On screen"): told
  * from the same `GET /stock` row `MarcaEstado` already reads, never a figure the
@@ -173,7 +174,7 @@ export default function Variedades() {
           {(data ?? []).map((variety) => {
             const stockRow = stockOf(variety.id)
             return (
-            <Link key={variety.id} to={`/variedades/${variety.id}`} className="variedad-item">
+            <Link key={variety.id} to={VARIETY(variety.id)} className="variedad-item">
               <div className="variedad-item__encabezado">
                 <span className="variedad-item__nombre">{variety.name}</span>
                 {stockRow !== undefined && <MarcaEstado estado={stockRow.status} />}
