@@ -243,7 +243,7 @@ button {
  * action): a router `Link`, so it needs the underline off, room around its text and
  * the design's 6px of extra air above it. */
 .estado-vacio .boton {
-  margin-top: 6px;
+  margin-top: var(--espacio-sm);
   padding: 0 var(--espacio-xxl);
   text-decoration: none;
 }
@@ -1326,8 +1326,9 @@ button {
 /* "Venta guardada" with Deshacer (`Estados`): the one success notice with an
  * action, a deliberate exception (plan, invariants) — never the plain `.toast`/
  * `Notice` shape, so Deshacer can sit right next to the text. */
-/* The design draws it 18px round with 15px 18px of padding (the same as `.toast`);
- * 18px has no token, so `--radio-panel` (20px) is the nearest, a design defect. */
+/* The design draws it 18px round with 15px 18px of padding; none of those has a
+ * token, so `--radio-panel` (20px) and `--espacio-lg`/`--espacio-xl` (16px/20px) are
+ * the nearest, a design defect. */
 .venta-guardada {
   display: flex;
   align-items: center;
@@ -1336,7 +1337,7 @@ button {
   background: var(--boton);
   color: var(--boton-texto);
   border-radius: var(--radio-panel);
-  padding: 15px 18px;
+  padding: var(--espacio-lg) var(--espacio-xl);
 }
 
 .venta-guardada__texto {
@@ -2190,7 +2191,7 @@ button {
 .cargando {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--espacio-lg);
 }
 
 .cargando__barra {
@@ -2207,12 +2208,12 @@ button {
 .cargando__barra--ancha {
   width: 210px;
   height: 36px;
-  border-radius: 10px;
+  border-radius: var(--radio-campo);
 }
 
 .cargando__tarjetas {
   display: flex;
-  gap: 10px;
+  gap: var(--espacio-md);
 }
 
 .cargando__tarjeta {
