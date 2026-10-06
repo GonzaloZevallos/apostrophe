@@ -57,9 +57,10 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Nombre').fill('Noe Sinnumero')
   await page.getByRole('button', { name: 'Guardá y usá' }).click()
-  await expect(page).toHaveURL(/\/clientes$/)
+  await expect(page).toHaveURL(/\/clientes\/\d+$/)
   await expect(page.getByText('Cliente guardado')).toBeVisible()
 
+  await page.goto(CUSTOMERS)
   // Found by name, in the list: no phone line, no dash, no placeholder.
   const row = page.getByRole('link', { name: /Noe Sinnumero/ })
   await expect(row).toBeVisible()

@@ -29,10 +29,11 @@ import {
 import { costPerGram, gramsToHundredths } from '../domain/costPerGram'
 import ConfirmDialog from '../components/ConfirmDialog'
 import LeaveConfirm from '../components/LeaveConfirm'
+import { useFlash } from '../flash/useFlash'
 import { useBackOr } from '../components/useBackOr'
 import { useLeaveGuard } from '../components/useLeaveGuard'
 import { useViewport } from '../shell/useViewport'
-import { gone, toast } from '../components/feedback'
+import { gone } from '../components/feedback'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import GoneScreen from '../components/GoneScreen'
 import SinConexion from '../components/SinConexion'
@@ -149,6 +150,7 @@ function EntradaStockBody({ mode, entryId, today, initial }: BodyProps) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const viewport = useViewport()
+  const flash = useFlash()
 
   const varietiesQuery = useQuery({
     queryKey: keys.varieties(),
@@ -234,8 +236,9 @@ function EntradaStockBody({ mode, entryId, today, initial }: BodyProps) {
         await editEntry(entryId, body)
       }
       invalidateResource(queryClient, 'stock')
+      flash.armAfterLeaving('Entrada guardada')
       disarm()
-      void navigate(STOCK, { replace: true, state: toast('Entrada guardada') })
+      close()
     } catch (caught) {
       if (caught instanceof ApiError && mode === 'editar' && isGone(caught.code)) {
         invalidateStockAfterDeleting(queryClient, entryId)
@@ -272,8 +275,9 @@ function EntradaStockBody({ mode, entryId, today, initial }: BodyProps) {
     try {
       await deleteEntry(entryId)
       invalidateStockAfterDeleting(queryClient, entryId)
+      flash.armAfterLeaving('Entrada eliminada')
       disarm()
-      void navigate(STOCK, { replace: true, state: toast('Entrada eliminada') })
+      close()
     } catch (caught) {
       setConfirmingDelete(false)
       if (caught instanceof ApiError && isGone(caught.code)) {

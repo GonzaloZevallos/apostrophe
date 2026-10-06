@@ -11,6 +11,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Link, Outlet, RouterProvider, useLocation } from 'react-router'
+import FlashProvider from '../flash/FlashProvider'
 import { afterEach, expect, test, vi } from 'vitest'
 import type { Me } from '../api/me'
 import EntradaStock from './EntradaStock'
@@ -37,7 +38,11 @@ function ListStub() {
 }
 
 function Provide() {
-  return <Outlet context={ME} />
+  return (
+    <FlashProvider>
+      <Outlet context={ME} />
+    </FlashProvider>
+  )
 }
 
 function renderForm(initialPath: string, previous?: string) {
@@ -142,7 +147,7 @@ test('records an entry and lands back on the list with the saved toast', async (
   await userEvent.click(screen.getByRole('button', { name: 'Guardá la entrada' }))
 
   expect(await screen.findByText('la lista de stock')).toBeInTheDocument()
-  expect(screen.getByText('Entrada guardada')).toBeInTheDocument()
+  expect(await screen.findByText('Entrada guardada')).toBeInTheDocument()
   expect(fetch).toHaveBeenCalledWith('/stock/entries', expect.objectContaining({ method: 'POST' }))
 })
 
@@ -332,7 +337,7 @@ test('deleting an entry confirms first, naming the date, variety and grams', asy
   await userEvent.click(screen.getByRole('button', { name: 'Sí, borrala' }))
 
   expect(await screen.findByText('la lista de stock')).toBeInTheDocument()
-  expect(screen.getByText('Entrada eliminada')).toBeInTheDocument()
+  expect(await screen.findByText('Entrada eliminada')).toBeInTheDocument()
   expect(fetch).toHaveBeenCalledWith('/stock/entries/10', expect.objectContaining({ method: 'DELETE' }))
 })
 
@@ -447,7 +452,7 @@ test('with no in-app history, Cerrar goes to the stock list replacing the form',
   expect(router.state.historyAction).toBe('REPLACE')
 })
 
-test('after a save the form is not left in history', async () => {
+test('after a save, history goes back to Stock with the toast: a pop, no second Stock entry', async () => {
   const router = await openFromList()
   await userEvent.type(screen.getByLabelText('Gramos'), '10')
   await userEvent.selectOptions(screen.getByLabelText('Variedad'), 'Sir Jack')
@@ -456,8 +461,22 @@ test('after a save the form is not left in history', async () => {
   await userEvent.click(screen.getByRole('button', { name: 'Guardá la entrada' }))
 
   expect(await screen.findByText('Entrada guardada')).toBeInTheDocument()
+  expect(await screen.findByText('la lista de stock')).toBeInTheDocument()
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+  expect(router.state.location.pathname).toBe(STOCK)
+  expect(router.state.historyAction).toBe('POP')
+})
+
+test('with no in-app history, a save replaces the form with Stock and still toasts', async () => {
+  stubApi()
+  const router = renderForm(STOCK_ENTRY_NEW, '/otra')
+  await userEvent.type(screen.getByLabelText('Gramos'), '10')
+  await userEvent.selectOptions(await screen.findByLabelText('Variedad'), 'Sir Jack')
+  await userEvent.type(screen.getByLabelText(/Costo total/), '5000')
+
+  await userEvent.click(screen.getByRole('button', { name: 'Guardá la entrada' }))
+
+  expect(await screen.findByText('Entrada guardada')).toBeInTheDocument()
+  expect(router.state.location.pathname).toBe(STOCK)
   expect(router.state.historyAction).toBe('REPLACE')
-  await act(() => router.navigate(-1))
-  expect(router.state.location.pathname).not.toBe(STOCK_ENTRY_NEW)
 })

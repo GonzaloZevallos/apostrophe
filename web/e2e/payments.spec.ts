@@ -70,11 +70,8 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await page.getByLabel('Teléfono').fill('+5491155550099')
   await page.getByLabel('Nombre').fill('Carla Pérez')
   await page.getByRole('button', { name: 'Guardá y usá' }).click()
-  await expect(page).toHaveURL(/\/clientes$/)
-  await expect(page.getByText('Cliente guardado')).toBeVisible()
-
-  await page.getByRole('link', { name: 'Carla Pérez' }).click()
   await expect(page).toHaveURL(/\/clientes\/\d+$/)
+  await expect(page.getByText('Cliente guardado')).toBeVisible()
 
   // Sale 1: 5 g of Rosa, left owing — $5.000.
   await page.getByRole('link', { name: 'Nueva venta a Carla Pérez' }).click()

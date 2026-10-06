@@ -21,6 +21,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { type FormEvent, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import LeaveConfirm from '../../components/LeaveConfirm'
+import { useFlash } from '../../flash/useFlash'
 import { useBackOr } from '../../components/useBackOr'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
 import { useViewport } from '../../shell/useViewport'
@@ -36,13 +37,13 @@ import {
 import { invalidateResource, keys } from '../../api/keys'
 import { isGone, resolveOverride, type RefusalCode } from '../../api/refusals'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
-import { gone, toast, type ToastMessage } from '../../components/feedback'
+import { gone, toast } from '../../components/feedback'
 import GoneScreen from '../../components/GoneScreen'
 import SinConexion from '../../components/SinConexion'
 import Loading from '../../components/Loading'
 import CustomerFields from './CustomerFields'
 
-export const SAVED_TOAST: ToastMessage = 'Cliente guardado'
+export const SAVED_TOAST = 'Cliente guardado'
 export const NAME_REQUIRED = 'Ponele un nombre'
 export const PHONE_INVALID = 'Eso no parece un teléfono con su código de área'
 export const PHONE_TAKEN = 'Ese teléfono ya es de otro cliente'
@@ -118,6 +119,7 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const viewport = useViewport()
+  const flash = useFlash()
 
   const [name, setName] = useState(initial?.name ?? '')
   const [phone, setPhone] = useState(initial?.phone ?? '')
@@ -156,13 +158,14 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
     setFormError(null)
     setOffline(false)
     try {
-      await save.mutateAsync({ name, phone, channel, vip })
+      const saved = await save.mutateAsync({ name, phone, channel, vip })
       invalidateResource(queryClient, 'customers')
       disarm()
       if (mode === 'nuevo') {
-        void navigate(CUSTOMERS, { replace: true, state: toast(SAVED_TOAST) })
+        void navigate(pathTo(CUSTOMER, { id: saved.id }), { replace: true, state: toast(SAVED_TOAST) })
       } else {
-        void navigate(pathTo(CUSTOMER, { id: customerId }), { replace: true, state: toast(SAVED_TOAST) })
+        flash.armAfterLeaving(SAVED_TOAST)
+        close()
       }
     } catch (caught) {
       if (caught instanceof ApiError && caught.status === 401) {

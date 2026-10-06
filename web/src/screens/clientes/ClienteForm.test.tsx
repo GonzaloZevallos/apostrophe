@@ -9,7 +9,8 @@ import { CUSTOMER, CUSTOMERS, CUSTOMER_EDIT, CUSTOMER_NEW, LOGIN, pathTo } from 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { createMemoryRouter, Link, RouterProvider, useLocation } from 'react-router'
+import { createMemoryRouter, Link, Outlet, RouterProvider, useLocation } from 'react-router'
+import FlashProvider from '../../flash/FlashProvider'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { queryClient, setCurrentPath, setNavigate } from '../../queryClient'
 import ClienteForm from './ClienteForm'
@@ -49,19 +50,38 @@ function renderForm(initialPath: string, previous?: string) {
   const router = createMemoryRouter(
     [
       {
-        path: CUSTOMERS,
         element: (
-          <>
-            <ListStub />
-            <Link to={CUSTOMER_NEW} state={{ inApp: true }}>
-              Abrir el formulario
-            </Link>
-          </>
+          <FlashProvider>
+            <Outlet />
+          </FlashProvider>
         ),
+        children: [
+          {
+            path: CUSTOMERS,
+            element: (
+              <>
+                <ListStub />
+                <Link to={CUSTOMER_NEW} state={{ inApp: true }}>
+                  Abrir el formulario
+                </Link>
+              </>
+            ),
+          },
+          { path: CUSTOMER_NEW, element: <ClienteForm mode="nuevo" /> },
+          { path: CUSTOMER_EDIT, element: <ClienteForm mode="editar" /> },
+          {
+            path: CUSTOMER,
+            element: (
+              <>
+                <FichaStub />
+                <Link to={pathTo(CUSTOMER_EDIT, { id: 7 })} state={{ inApp: true }}>
+                  Editar
+                </Link>
+              </>
+            ),
+          },
+        ],
       },
-      { path: CUSTOMER_NEW, element: <ClienteForm mode="nuevo" /> },
-      { path: CUSTOMER_EDIT, element: <ClienteForm mode="editar" /> },
-      { path: CUSTOMER, element: <FichaStub /> },
     ],
     previous === undefined
       ? { initialEntries: [initialPath] }
@@ -83,7 +103,7 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-test('registers a customer and lands back on the list', async () => {
+test('registers a customer and lands on its card', async () => {
   vi.mocked(fetch).mockResolvedValue(
     jsonResponse(201, { id: 9, name: 'Nico', phone: '+5491131785094', channel: null, vip: false }),
   )
@@ -93,7 +113,7 @@ test('registers a customer and lands back on the list', async () => {
   await userEvent.type(screen.getByLabelText('Nombre'), 'Nico')
   await userEvent.click(screen.getByRole('button', { name: 'Guardá y usá' }))
 
-  expect(await screen.findByText('la lista')).toBeInTheDocument()
+  expect(await screen.findByText('la ficha')).toBeInTheDocument()
   expect(fetch).toHaveBeenCalledWith(
     '/customers',
     expect.objectContaining({ method: 'POST' }),
@@ -137,7 +157,7 @@ test('clearing a phone when editing sends it and shows the saved toast', async (
   await userEvent.click(screen.getByRole('button', { name: 'Guardá y usá' }))
 
   expect(await screen.findByText('la ficha')).toBeInTheDocument()
-  expect(screen.getByText('Cliente guardado')).toBeInTheDocument()
+  expect(await screen.findByText('Cliente guardado')).toBeInTheDocument()
   expect(fetch).toHaveBeenCalledWith(
     '/customers/7',
     expect.objectContaining({ method: 'PATCH', body: JSON.stringify({ name: 'Tincho', phone: '', channel: null, vip: false }) }),
@@ -215,7 +235,16 @@ test('a 401 on save clears the cache and goes to Entrar, through the session bou
   setCurrentPath(CUSTOMER_NEW)
 
   const router = createMemoryRouter(
-    [{ path: CUSTOMER_NEW, element: <ClienteForm mode="nuevo" /> }],
+    [
+      {
+        element: (
+          <FlashProvider>
+            <Outlet />
+          </FlashProvider>
+        ),
+        children: [{ path: CUSTOMER_NEW, element: <ClienteForm mode="nuevo" /> }],
+      },
+    ],
     { initialEntries: [CUSTOMER_NEW] },
   )
   render(
@@ -291,7 +320,7 @@ test('editing, Cerrar with no in-app history goes to the customer card', async (
   expect(router.state.location.pathname).toBe(pathTo(CUSTOMER, { id: 7 }))
 })
 
-test('after a save the form is not left in history', async () => {
+test('after registering, the form is replaced by the new customer card and Back skips the form', async () => {
   vi.mocked(fetch).mockResolvedValue(
     jsonResponse(201, { id: 10, name: 'Sol', phone: null, channel: null, vip: false }),
   )
@@ -302,7 +331,28 @@ test('after a save the form is not left in history', async () => {
 
   expect(await screen.findByText('Cliente guardado')).toBeInTheDocument()
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+  expect(router.state.location.pathname).toBe(pathTo(CUSTOMER, { id: 10 }))
   expect(router.state.historyAction).toBe('REPLACE')
   await act(() => router.navigate(-1))
-  expect(router.state.location.pathname).not.toBe(CUSTOMER_NEW)
+  expect(router.state.location.pathname).toBe(CUSTOMERS)
+})
+
+test('after editing from the card, the save goes back by history: no second card behind it', async () => {
+  vi.mocked(fetch).mockImplementation(() =>
+    Promise.resolve(
+      jsonResponse(200, { id: 7, name: 'Tincho', phone: '+5491144861258', channel: null, vip: false }),
+    ),
+  )
+  const router = renderForm(CUSTOMERS)
+  await act(() => router.navigate(pathTo(CUSTOMER, { id: 7 })))
+  await userEvent.click(screen.getByRole('link', { name: 'Editar' }))
+  await userEvent.type(await screen.findByLabelText('Nombre'), ' Aguirre')
+
+  await userEvent.click(screen.getByRole('button', { name: 'Guardá y usá' }))
+
+  expect(await screen.findByText('la ficha')).toBeInTheDocument()
+  expect(await screen.findByText('Cliente guardado')).toBeInTheDocument()
+  expect(router.state.historyAction).toBe('POP')
+  await act(() => router.navigate(-1))
+  expect(router.state.location.pathname).toBe(CUSTOMERS)
 })
