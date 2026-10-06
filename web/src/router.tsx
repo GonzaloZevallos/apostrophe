@@ -151,7 +151,7 @@ export const router = createBrowserRouter([
               },
               { path: 'settings/account', element: <AccountGroup />, handle: { chrome: 'none', tab: 'more' } },
               { path: relative(ANALYSIS), element: <Analisis />, handle: { tab: 'more' } },
-              { path: relative(CATALOG), element: <Catalogo /> },
+              { path: relative(CATALOG), element: <Catalogo />, handle: { chrome: 'card' } },
               {
                 path: 'ventas',
                 children: [

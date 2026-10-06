@@ -27,6 +27,12 @@ describe('routes.ts against the route table', () => {
     expect(leaf?.pathname).toBe(path)
   })
 
+  test('the catalog screen is a detail: its route declares the card chrome, so no "+ Nueva venta"', () => {
+    const leaf = matchRoutes(router.routes, routes.CATALOG)?.at(-1)
+
+    expect(leaf?.route.handle).toEqual({ chrome: 'card' })
+  })
+
   test('a path the table does not mount falls through to the catch-all', () => {
     const leaf = matchRoutes(router.routes, '/no-such-screen')?.at(-1)
     expect(leaf?.route.path).toBe('*')
@@ -107,7 +113,7 @@ describe('routes.ts against contract.json', () => {
     return Object.entries(routes)
       .filter(([name]) => name !== 'relative')
       .map(([, value]) => (typeof value === 'function' ? (value as (id: string) => string)('7') : value))
-      .filter((value): value is string => typeof value === 'string')
+      .filter((value): value is string => typeof value === 'string' && value.startsWith('/'))
   }
 
   const firstSegment = (path: string): string => path.split('/')[1] ?? ''

@@ -10,6 +10,10 @@
  * `navigator.clipboard` or `execCommand`, so the home network's plain-http
  * fallback stays in the one module that tests it.
  *
+ * Plan (Compartir): only `share.ts` names `navigator.share`, so the one place that
+ * tells a cancel from a failure, and that never logs, is the only one that can reach
+ * the native share sheet.
+ *
  * Invariant 7 (ADR-0022): only `api/catalog.ts` names the catalog query key, so every
  * reader shares one set of freshness options.
  *
@@ -50,6 +54,11 @@ const RULES: Rule[] = [
     name: 'navigatorClipboard',
     pattern: /\bnavigator\s*\??\.\s*clipboard\b|\bnavigator\s*\[\s*(['"])clipboard\1\s*\]/,
     allow: (path) => path === 'src/clipboard.ts',
+  },
+  {
+    name: 'navigatorShare',
+    pattern: /\bnavigator\s*\??\.\s*share\b|\bnavigator\s*\[\s*(['"])share\1\s*\]/,
+    allow: (path) => path === 'src/share.ts',
   },
   // Invariant 7: only `catalogQueryOptions` (`api/catalog.ts`) names the catalog query key.
   {
