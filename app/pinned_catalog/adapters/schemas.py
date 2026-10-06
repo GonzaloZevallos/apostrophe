@@ -36,15 +36,22 @@ class PinnedCatalogOut(BaseModel):
     own_chat: str | None
     channel_chat: str | None
     can_publish: bool
+    publish_blocked_by: Literal["not_tested", "channel_missing"] | None
     status: PinStatusOut | None
 
     @classmethod
     def of(cls, settings: SettingsSnapshot, status: PinStatus | None) -> PinnedCatalogOut:
+        blocked_by: Literal["not_tested", "channel_missing"] | None = None
+        if settings.token is None:
+            blocked_by = "not_tested"
+        elif settings.channel_chat is None:
+            blocked_by = "channel_missing"
         return cls(
             token_saved_on=settings.token_saved_on,
             own_chat=settings.own_chat,
             channel_chat=settings.channel_chat,
-            can_publish=settings.token is not None and settings.channel_chat is not None,
+            can_publish=blocked_by is None,
+            publish_blocked_by=blocked_by,
             status=PinStatusOut.of(status) if status is not None else None,
         )
 

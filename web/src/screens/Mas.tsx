@@ -1,11 +1,10 @@
 /**
  * `Mas`: "+ Cargar gasto", Gastos and Análisis first, in the design's order
  * (`Mas.dc.html`), then the entries whose screens have not moved yet (Variedades,
- * Catálogo, Negocio), which leave with the issues that move them. Configuración is
- * not here: it joins in the diff that creates it, and no entry opens something that
- * does not exist. Paths come from `routes.ts`. The subtitles are the design's own
- * words; Negocio's is left out since its design subtitle ("La Huerta · 2 usuarios")
- * is data this screen has no route to fetch.
+ * Catálogo), which leave with the issues that move them, and Configuración last.
+ * Paths come from `routes.ts`. The subtitles are the design's own words.
+ * Configuración carries `state: { inApp: true }`, which lets its list's back go
+ * through history (`useBackOr`).
  */
 
 import { Link } from 'react-router'
@@ -16,6 +15,8 @@ interface Item {
   to: string
   label: string
   detail?: string
+  /** Opening it leaves the app behind it, so a group's "Cerrar" can go back by history. */
+  inApp?: boolean
 }
 
 const ITEMS: Item[] = [
@@ -40,7 +41,12 @@ const ITEMS: Item[] = [
     label: 'Catálogo',
     detail: 'El mensaje de hoy, listo para copiar',
   },
-  { to: '/negocio', label: 'Negocio' },
+  {
+    to: '/settings',
+    label: 'Configuración',
+    detail: 'Negocio, usuarios, bot, catálogo, categorías, apariencia y tu cuenta',
+    inApp: true,
+  },
 ]
 
 export default function Mas() {
@@ -50,7 +56,12 @@ export default function Mas() {
         <span className="encabezado__titulo">Más</span>
         <nav className="mas__lista" aria-label="Más">
           {ITEMS.map((item) => (
-            <Link key={item.to} to={item.to} className="mas__item">
+            <Link
+              key={item.to}
+              to={item.to}
+              state={item.inApp === true ? { inApp: true } : undefined}
+              className="mas__item"
+            >
               <span className="mas__item-texto">
                 <span className="mas__item-rotulo">{item.label}</span>
                 {item.detail !== undefined && (

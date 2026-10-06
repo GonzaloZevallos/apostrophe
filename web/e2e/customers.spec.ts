@@ -20,6 +20,7 @@ import { expect, test } from '@playwright/test'
 import { newBusinessInvitationUrl } from './backend.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
+import { expectOnlyTheThemeStored } from './helpers/storage.js'
 
 const PASSWORD = 'correcthorsebattery'
 
@@ -131,10 +132,6 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   await expect(page.getByRole('link', { name: 'Noe Sinnumero' })).toHaveCount(0)
 
   // Nothing personal or technical reaches the console or the browser's own storage.
-  const storage = await page.evaluate(() => ({
-    local: Object.keys(localStorage).length,
-    session: Object.keys(sessionStorage).length,
-  }))
-  expect(storage).toEqual({ local: 0, session: 0 })
+  await expectOnlyTheThemeStored(page)
   expect(consoleMessages).toEqual([])
 })

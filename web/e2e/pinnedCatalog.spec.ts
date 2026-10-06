@@ -1,8 +1,9 @@
 /// <reference lib="dom" />
 /**
  * The pinned-catalog task's own end-to-end run (plan, "Front", "End to end"; PRD
- * metric 6, "No curl"): a seller enters the bot's token and own chat, runs Probarlo,
- * sees Publicar turn enabled, enters the channel chat, tests it too, then publishes —
+ * metric 6, "No curl"): a seller finds Publicar disabled on the catalog screen, follows
+ * its link to Configuración → Integraciones, enters the bot's token and own chat, runs
+ * Probarlo, adds the channel chat, tests it too, then publishes from the catalog screen —
  * all through the built front, against the real backend wired to `FakeTelegram`
  * (`tests/e2e_app.py::create_e2e_app`, this config's own `webServer`), never a real
  * Telegram token or the network.
@@ -15,7 +16,7 @@ import { openMas } from './helpers/openMas.js'
 
 const PASSWORD = 'correcthorsebattery'
 
-test('a seller sets up the bot, tests it, then publishes, from the front alone', async ({
+test('a seller sets up the bot in Integraciones, then publishes from the catalog screen', async ({
   page,
 }) => {
   const consoleMessages: string[] = []
@@ -44,30 +45,40 @@ test('a seller sets up the bot, tests it, then publishes, from the front alone',
   await expect(page.getByText('Precio guardado')).toBeVisible()
 
   await openMas(page)
-  await page.getByRole('link', { name: /Catálogo/ }).click()
+  await page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /Catálogo/ }).click()
   await expect(page).toHaveURL(/\/catalogo$/)
 
-  // No pin yet: Inicio shows no out-of-date line, and Catálogo shows no status.
+  // The catalog screen has no bot settings; with no bot yet, Publicar is disabled and
+  // says where to go. No pin yet, so it shows no status either.
+  await expect(page.getByLabel('Token del bot')).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Publicar' })).toBeDisabled()
   await expect(page.getByText('Al día')).toHaveCount(0)
   await expect(page.getByText('Desactualizado')).toHaveCount(0)
+  await page.getByRole('link', { name: 'Integraciones' }).click()
+  await expect(page).toHaveURL(/\/settings\/integrations$/)
 
   // Enter the token and the seller's own chat; the channel is still blank, which
   // Probarlo allows (PRD, "Probarlo": "The channel chat may be blank").
-  await page.getByLabel('Token', { exact: false }).fill('123456:fake-token-for-e2e')
-  await page.getByLabel('Tu chat', { exact: false }).fill('111111')
-  await expect(page.getByRole('button', { name: 'Publicar' })).toBeDisabled()
-
+  await page.getByLabel('Token del bot').fill('123456:fake-token-for-e2e')
+  await page.getByLabel('Tu chat').fill('111111')
   await page.getByRole('button', { name: 'Probarlo' }).click()
   await expect(page.getByText('Prueba enviada')).toBeVisible()
+  await expect(page.getByText('Guardado el')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Publicar' })).toHaveCount(0)
 
-  // Still disabled: no channel chat saved yet.
-  await expect(page.getByRole('button', { name: 'Publicar' })).toBeDisabled()
-
-  // Now the channel chat, tested again (the gate re-arms on any of the three
-  // fields changing), then Publicar turns enabled.
-  await page.getByLabel('Chat del canal', { exact: false }).fill('@la_huerta_canal')
+  // Now the channel chat, tested again.
+  // The first toast may still be on screen, so wait for this attempt's own answer.
+  await page.getByLabel('Chat del canal').fill('@la_huerta_canal')
+  const tested = page.waitForResponse(
+    (response) => response.url().endsWith('/pinned-catalog/test') && response.ok(),
+  )
   await page.getByRole('button', { name: 'Probarlo' }).click()
+  await tested
   await expect(page.getByText('Prueba enviada')).toBeVisible()
+
+  // Everything is saved, so leaving asks nothing: the link leads to the catalog screen.
+  await page.getByRole('link', { name: 'Ir al catálogo' }).click()
+  await expect(page).toHaveURL(/\/catalogo$/)
   await expect(page.getByRole('button', { name: 'Publicar' })).toBeEnabled()
 
   await page.getByRole('button', { name: 'Publicar' }).click()

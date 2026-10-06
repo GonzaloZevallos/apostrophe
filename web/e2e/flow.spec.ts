@@ -175,9 +175,9 @@ test('a seller does everything the backend offers today, from the front alone', 
   // "Envíos y traslados" and "Otros" are the four the business starts with
   // (`app/expenses/domain/category.py`'s `DEFAULT_CATEGORY_NAMES`), so this one
   // uses a name of its own.
-  await page.goto('/gastos/categorias')
+  await page.goto('/settings/expense-categories')
   await page.getByLabel('Nueva categoría').fill('Delivery en bici')
-  await page.getByRole('button', { name: 'Agregar categoría' }).click()
+  await page.getByRole('button', { name: '+ Categoría' }).click()
   await expect(page.getByText('Categoría guardada')).toBeVisible()
   const newRow = page.locator('.fila', { hasText: 'Delivery en bici' })
   await newRow.getByRole('button', { name: 'Eliminar' }).click()
@@ -186,16 +186,17 @@ test('a seller does everything the backend offers today, from the front alone', 
   await expect(page.getByText('Delivery en bici')).toHaveCount(0)
 
   // Rename the business.
-  await page.goto('/negocio')
+  await page.goto('/settings/business')
   const renamedTo = `${businessName} Renombrado`
   await page.getByLabel('Nombre del negocio').fill(renamedTo)
-  await page.getByRole('button', { name: 'Guardar' }).click()
+  await page.getByRole('button', { name: 'Guardá el nombre' }).click()
   await expect(page.getByText('Negocio renombrado')).toBeVisible()
 
   // Create a join link and accept it as a second user, from a separate browser
   // context (its own cookie jar — a second device).
+  await page.goto('/settings/users')
   await page.getByRole('button', { name: 'Invitá a un socio' }).click()
-  const inviteUrl = await page.locator('.negocio__link').textContent()
+  const inviteUrl = await page.locator('.usuarios__link').textContent()
   if (inviteUrl === null || inviteUrl === '') throw new Error('no invitation link shown')
 
   const partnerContext = await browser.newContext()

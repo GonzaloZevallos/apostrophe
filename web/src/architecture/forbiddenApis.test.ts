@@ -90,4 +90,27 @@ describe('findForbiddenUsages', () => {
 
     expect(violations.map((v) => v.rule).sort()).toEqual(['execCommand', 'navigatorClipboard'])
   })
+
+  test('allows localStorage only inside src/theme.ts (ADR-0026)', () => {
+    const body = 'localStorage.setItem("tema", "oscuro")'
+
+    expect(findForbiddenUsages([{ path: 'src/theme.ts', content: body }])).toEqual([])
+    expect(
+      findForbiddenUsages([
+        { path: 'src/screens/settings/AppearanceGroup.tsx', content: body },
+        { path: 'src/screens/theme.ts', content: body },
+      ]),
+    ).toEqual([
+      { path: 'src/screens/settings/AppearanceGroup.tsx', rule: 'localStorage' },
+      { path: 'src/screens/theme.ts', rule: 'localStorage' },
+    ])
+  })
+
+  test('theme.ts is not exempt from sessionStorage or indexedDB', () => {
+    const violations = findForbiddenUsages([
+      { path: 'src/theme.ts', content: 'sessionStorage.setItem("a", "b"); indexedDB.open("a")' },
+    ])
+
+    expect(violations.map((v) => v.rule).sort()).toEqual(['indexedDB', 'sessionStorage'])
+  })
 })

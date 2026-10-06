@@ -3,6 +3,7 @@
   "own_chat": "123456789",
   "channel_chat": null,
   "can_publish": false,
+  "publish_blocked_by": "channel_missing",
   "status": null,
   "previous_pin_left": false
 }

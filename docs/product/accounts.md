@@ -2,10 +2,10 @@
 
 Businesses, their users, the only way in (an invitation and a login), the way back in (a password change and an operator-issued reset link), and the only way out (an operator's command that exports a business and removes it). Every other capability reads one thing from here, the business of the user asking, and serves that business alone (ADR-0004). It also holds the app as a whole:
 
-- how it is served, installed and themed;
+- how it is served, installed and themed, including the theme choice each device remembers;
 - how the installation is published on the internet and backed up (ADR-0016);
 - the feedback rules every screen follows, and the shared states (`Estados`) that draw them;
-- the Negocio, Usuarios and Tu cuenta groups of Configuración.
+- the Negocio, Usuarios, Apariencia and Tu cuenta groups of Configuración.
 
 Where every screen sits (tabs, sidebar, Más, Configuración, the chrome and back rule, routes, first run) is navigation.md. Inicio, where the app opens, is the panel defined in results.md.
 
@@ -29,7 +29,9 @@ These two refine the "log in once and stay in" job above. The operator's command
 
 This refines the "log in once and stay in", "get in with the link I was sent" and forgotten-password jobs above; it is not a new job. Its protagonist is the seller; the operator's commands stay outside the app.
 
-**When** I open the app on my phone or computer, whatever my device's light or dark setting, **I want** to see it as it was designed ("Papel y azul": warm paper background, brown-black ink, one blue), **so I** always work in the one look that was designed and checked for reading figures, states and amounts, and the dark theme shows only once I choose it (in Configuración → Apariencia, navigation.md).
+**When** I open the app on my phone or computer, whatever my device's light or dark setting, **I want** to see it as it was designed ("Papel y azul": warm paper background, brown-black ink, one blue), **so I** always work in the one look that was designed and checked for reading figures, states and amounts, and the dark theme shows only once I choose it (in Configuración → Apariencia, navigation.md) and stays on that device once chosen.
+
+**When** I need to change how my business is set up (rename it, bring in a partner, connect or switch the Telegram bot, edit the catalog's header and footer, manage my expense categories, switch to dark, change my password or log out), **I want** every business-wide setting in one place, each in its own short screen, **so I can** change it in a few taps from my phone and get back to the customer, without wondering which screen holds it. (Served here by Configuración's Negocio, Usuarios, Apariencia and Tu cuenta; the structure is navigation.md.)
 
 **When** a friend stops using the app, or asks to be taken out of it, **I want** to hand them everything the app holds of their business in one file and then remove that business from the installation completely, **so that** they keep their books and their customers' names, phone numbers and balances are no longer held by me or by anyone else on the installation. A business opened by mistake is covered by the same command. The business goes as a whole, every user included. The operator has agreed with every user of the business beforehand; the command does not check it.
 
@@ -38,7 +40,7 @@ This refines the "log in once and stay in", "get in with the link I was sent" an
 - The protagonist of this last job is the operator of the installation, not a user in the app.
 - For a seller, only two things change: where they can reach the app from, and that it is on HTTPS.
 
-The navigation job (navigation.md) decides where Negocio, Usuarios and Tu cuenta are reached from: Configuración.
+The navigation job (navigation.md) decides where Negocio, Usuarios, Apariencia and Tu cuenta are reached from: Configuración.
 
 Success criteria:
 
@@ -48,12 +50,12 @@ Success criteria:
 4. No `curl` at any point. From the phone alone, a seller can do everything the backend does, starting with opening or joining a business from the invitation link.
 5. It feels like a phone app.
    - It sits on the home screen with its own name and icon. On iOS it installs over the home network. On Android it is a home-screen shortcut there, and a full install on the published installation with TLS.
-   - It opens in the light theme whatever the phone's setting; dark only when chosen.
+   - It opens in the light theme whatever the phone's setting; dark only when chosen on that device.
    - It says "Sin conexión" when the network drops.
    - No state is told by color alone (blue ↔ amber, never green ↔ red).
 6. Businesses stay invisible to each other in the browser too.
    - No business in a URL.
-   - No personal data or money in the console or browser storage.
+   - No personal data or money in the console or browser storage. The only thing the browser keeps is the device's theme choice.
    - The session lives only in the backend's cookie.
    - Serving the front reaches nothing outside the built app.
 7. Nothing invented: no placeholder figures, and no navigation entry for something that does not exist yet.
@@ -76,8 +78,8 @@ Success criteria:
 
 Success criteria, the theme:
 
-23. **Light whatever the system says**: the app opens in the light theme on every device and every screen, whether the system is set to light or dark. With the system in dark, the page background is `--papel` (#fcfbf8).
-24. **Dark only on request**: the dark theme (`InicioOscuro`) shows only when `data-tema="oscuro"` is set on `<html>`. Only the choice "Oscuro" in Configuración → Apariencia sets it (navigation.md).
+23. **Light unless chosen on the device**: a device with no stored choice opens in the light theme on every screen, whether the system is set to light or dark. With the system in dark, the page background is `--papel` (#fcfbf8).
+24. **Dark only on request, and it stays**: the dark theme (`InicioOscuro`) shows only when `data-tema="oscuro"` is set on `<html>`. Only the choice "Oscuro" in Configuración → Apariencia sets it (navigation.md). The device remembers it across closing the app, reloads and logging out, and shows it on every screen of that device, Entrar, the invitation and the reset screens included. Choosing "Claro" returns to light and is remembered the same way.
 25. **The themes themselves don't change**: both keep the same tokens and values; only what picks the theme changed. Every rule about state (no state told by color alone, blue ↔ amber) holds in both.
 26. **One rule, written the same everywhere**: the comment at the top of `web/src/styles/tokens.css`, `docs/product/design-system/tokens.css`, the design-system README and this file all state the same rule.
 
@@ -150,7 +152,7 @@ Success criteria, removing a business:
   - **Logs**: no client address, email or token is logged.
   - **Shared addresses**: people sharing one address can together trip the address lock. This is accepted at 20 failures in 15 minutes.
 - `GET /auth/me` answers the user's email and their business's name.
-- Logging out drops the cookie.
+- Logging out drops the cookie and goes to login. It does not clear the device's theme choice.
 
 ### Changing a password
 
@@ -273,8 +275,15 @@ Success criteria, removing a business:
   - the app shows no banner or explanation of the difference.
 - **Install on the published installation**, over Render's TLS: Android's own install prompt is offered when the browser makes it available. The manifest and service worker already in place need no further work for it.
 - **No network**: when a request fails because the network dropped, the open app shows "Sin conexión" on any origin. This does not rely on the service worker.
-- **Theme**: the app opens in the light theme whatever the phone or computer is set to. The dark theme applies only when it is chosen (`data-tema="oscuro"`), and the one place a person chooses it is Configuración → Apariencia, Claro or Oscuro (navigation.md).
+- **Theme**: the app opens in the light theme whatever the phone or computer is set to, unless Oscuro is stored on that device. The dark theme applies only when it is chosen (`data-tema="oscuro"`), and the one place a person chooses it is Configuración → Apariencia, Claro or Oscuro (navigation.md).
   - The rule is one: no attribute on `<html>` means light, `data-tema="oscuro"` means dark. There is no exception per screen, route or session, and the system's light or dark setting picks nothing. `oscuro` is the only recognised value.
+  - **The theme choice is remembered per device**:
+    - tapping Claro or Oscuro applies and remembers it at once, with no save, toast or unsaved-changes warning;
+    - the device keeps only the choice: nothing personal, no money, no session and nothing about a business;
+    - it belongs to the device, not to the user or the business; a partner's device and the user's other devices are unaffected;
+    - logging out does not clear it;
+    - a stored Oscuro shows on every screen of that device, Entrar, the invitation and the reset screens included; a device with nothing stored opens light;
+    - the screens before login have no theme control.
   - Native controls and scrollbars follow the app's theme, not the system's: light with no attribute, dark with `data-tema="oscuro"`.
   - Both themes keep the same tokens and values, and every state rule holds in both.
   - The installed app's chrome (`theme-color`, the manifest's colors) is static and matches the light theme.
@@ -298,14 +307,15 @@ Success criteria, removing a business:
     - Its only button goes to Entrar.
 - **Where screens sit**: the bar, the sidebar, Más, Configuración, the chrome and back rule and the first run are navigation.md. Inicio is the panel (results.md).
 
-### In Configuración: Negocio, Usuarios, Tu cuenta
+### In Configuración: Negocio, Usuarios, Apariencia, Tu cuenta
 
-These three groups of Configuración (navigation.md) replace the former Negocio screen. Each is a form: "Cerrar", and a confirmation when leaving with unsaved changes.
+These groups of Configuración (navigation.md) replace the former Negocio screen, which no longer exists; `/negocio` redirects to Configuración. Each is its own subscreen, a form: "Cerrar", and a confirmation when leaving with unsaved changes; an untouched one closes at once.
 
-- **Negocio**: rename the business.
+- **Negocio**: rename the business. Toast "Negocio renombrado"; refusals inline, keeping what was typed.
 - **Usuarios**:
-  - the users by email, the signed-in one marked "vos";
+  - the users by email, sorted by email, the signed-in one marked "vos"; it always lists at least the signed-in user;
   - "Invitá a un socio": each tap creates one fresh join link, to copy or share with the phone's share sheet.
+- **Apariencia**: Claro and Oscuro, the current one marked by word or shape and `aria-checked` or equivalent, never by color alone. A tap applies and remembers the choice on the device (see Theme). It never has unsaved changes, so "Cerrar" always closes at once.
 - **Tu cuenta**:
   - "Cambiar contraseña", above "Cerrar sesión", opens a sheet:
     - the fields are "Contraseña actual" and "Contraseña nueva";
@@ -313,7 +323,7 @@ These three groups of Configuración (navigation.md) replace the former Negocio 
     - on success, the toast "Contraseña cambiada · cerramos tus otras sesiones";
     - a wrong current password reads "La contraseña actual no es esa.". "Contraseña actual" is cleared and "Contraseña nueva" keeps what was typed;
     - a password under 10 characters shows the same refusal as accepting an invitation, and a lock shows the login brake message, keeping what was typed;
-  - log out ("Cerrar sesión").
+  - log out ("Cerrar sesión"), which goes to login.
 
 ### The published installation (ADR-0016)
 
@@ -349,6 +359,7 @@ These three groups of Configuración (navigation.md) replace the former Negocio 
   - brake lock;
   - reset link gone (one code for unknown, used, expired and retired).
 - **Secrets**: passwords are stored only as scrypt hashes and reset tokens only as digests (ADR-0002). No password, hash, token, digest or link appears in logs, answers, the console or browser storage.
+- **Browser storage** holds only the device's theme choice.
 
 ### Feedback, on every screen
 
@@ -359,6 +370,7 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
     - "Negocio renombrado";
     - "Invitación lista", unless the link is shown on the screen;
     - "Contraseña cambiada · cerramos tus otras sesiones".
+  - Choosing a theme shows no toast.
   - The exception is "Cobro guardado · queda debiendo $ X" (payments.md). It names what the customer still owes, because seeing that is the point of recording a payment. When nothing is left owing it reads "Cobro guardado".
 - **No "Deshacer" on success toasts, with one deliberate exception**: "Venta guardada" (sales.md) carries Deshacer, because recording a sale is the fastest and most frequent entry. It still carries no data. No other success notice gets one.
 - **Loading**: while a screen waits for the server, it shows a loading state whose wording and shape follow the design. It shows no figure, no placeholder amount and no text that could be read as data (criterion 7).
@@ -382,7 +394,7 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
 - **Isolation (criteria 1, 6)**:
   - the business routes sit in the isolation sweep and the gated-route test;
   - serving tests prove no path reaches outside `web/dist`;
-  - after a full run, browser storage and the console hold nothing personal or money;
+  - after a full run, browser storage holds only the theme choice, and the console and browser storage hold nothing personal or money;
   - no front URL carries a business id;
   - a record of another business, opened by id, shows the same "Eso ya no está." as a deleted one.
 - **Phone app (criterion 5)**:
@@ -392,9 +404,11 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
   - an offline check shows "Sin conexión";
   - no state is told by color alone.
 - **Theme (criteria 23–26)**:
-  - light wins: an e2e run with the system emulated in dark (`emulateMedia({ colorScheme: 'dark' })`) and no attribute reads the page background as `--papel` (#fcfbf8);
+  - light wins: an e2e run with the system emulated in dark (`emulateMedia({ colorScheme: 'dark' })`), nothing stored and no attribute reads the page background as `--papel` (#fcfbf8), Entrar included;
   - dark on request: an e2e run with `data-tema="oscuro"` on `<html>`, whatever the system setting, reads the page background as the dark theme's own value from `tokens.css`;
-  - choosing Oscuro in Configuración → Apariencia sets the attribute, and Claro removes it;
+  - choosing Oscuro in Configuración → Apariencia sets the attribute, and Claro removes it, with no toast, save button or unsaved-changes warning, and the current choice marked by more than color;
+  - the choice survives a reload and a logout; with Oscuro stored, Entrar, the invitation and the reset screens show dark;
+  - browser storage holds only the theme choice;
   - no test or fixture reaches the dark theme by emulating a dark system;
   - no token value changed;
   - native controls and scrollbars are checked by eye on a dark-system device, light with no attribute and dark with it; no fast test reads them;
@@ -496,7 +510,7 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
 - Blocking or marking a rerun after a commit whose outcome is unknown; the dry run is the check.
 - Roles within a business.
 - Offline use; an install walkthrough on iOS or Android.
-- A "follow the system" theme option.
+- A "follow the system" theme option; a theme control before login; syncing the theme choice per user, per business or across devices.
 - A computer-only layout for the getting-in screens; a design file of its own for the reset screen.
 - Any state drawn in Estados that no capability defines.
 - TLS on the home network, including local certificates: the published installation gets TLS from Render (ADR-0016).

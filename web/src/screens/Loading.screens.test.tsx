@@ -7,7 +7,14 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor } from '@testing-library/react'
 import type { ReactElement } from 'react'
-import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
+import {
+  createMemoryRouter,
+  MemoryRouter,
+  Outlet,
+  Route,
+  RouterProvider,
+  Routes,
+} from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import type { Me } from '../api/me'
 import FlashProvider from '../flash/FlashProvider'
@@ -16,9 +23,12 @@ import ClienteFicha from './clientes/ClienteFicha'
 import ClienteForm from './clientes/ClienteForm'
 import TeDeben from './clientes/TeDeben'
 import EntradaStock from './EntradaStock'
-import GastoCategorias from './GastoCategorias'
 import Gastos from './Gastos'
-import Negocio from './Negocio'
+import BusinessGroup from './settings/BusinessGroup'
+import CatalogMessageGroup from './settings/CatalogMessageGroup'
+import ExpenseCategoriesGroup from './settings/ExpenseCategoriesGroup'
+import IntegrationsGroup from './settings/IntegrationsGroup'
+import UsersGroup from './settings/UsersGroup'
 import Stock from './Stock'
 import Ventas from './ventas/Ventas'
 import VentaDetalle from './ventas/VentaDetalle'
@@ -47,6 +57,20 @@ function renderPending(element: ReactElement, route: string, path: string) {
           </Route>
         </Routes>
       </MemoryRouter>
+    </QueryClientProvider>,
+  )
+}
+
+/** Configuración's groups guard leaving with `useBlocker`, which needs a data router. */
+function renderPendingInDataRouter(element: ReactElement, path: string) {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  const router = createMemoryRouter(
+    [{ element: <Root />, children: [{ element: <Context />, children: [{ path, element }] }] }],
+    { initialEntries: [path] },
+  )
+  render(
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
     </QueryClientProvider>,
   )
 }
@@ -82,13 +106,6 @@ const SCREENS: Case[] = [
   },
   { name: 'VentaDetalle', element: () => <VentaDetalle />, route: '/ventas/9', path: '/ventas/:id' },
   { name: 'Gastos', element: () => <Gastos />, route: '/gastos', path: '/gastos' },
-  {
-    name: 'GastoCategorias',
-    element: () => <GastoCategorias />,
-    route: '/gastos/categorias',
-    path: '/gastos/categorias',
-  },
-  { name: 'Negocio', element: () => <Negocio />, route: '/negocio', path: '/negocio' },
   { name: 'Stock', element: () => <Stock />, route: '/mi-stock', path: '/mi-stock' },
   {
     name: 'EntradaStock editing',
@@ -100,6 +117,28 @@ const SCREENS: Case[] = [
 
 test.each(SCREENS)('$name shows the skeleton while its query is pending', async (screenCase) => {
   renderPending(screenCase.element(), screenCase.route, screenCase.path)
+
+  expect(await screen.findByRole('progressbar', { name: 'Cargando' })).toBeInTheDocument()
+})
+
+const SETTINGS_GROUPS: { name: string; element: () => ReactElement; path: string }[] = [
+  { name: 'BusinessGroup', element: () => <BusinessGroup />, path: '/settings/business' },
+  { name: 'UsersGroup', element: () => <UsersGroup />, path: '/settings/users' },
+  { name: 'IntegrationsGroup', element: () => <IntegrationsGroup />, path: '/settings/integrations' },
+  {
+    name: 'CatalogMessageGroup',
+    element: () => <CatalogMessageGroup />,
+    path: '/settings/catalog-message',
+  },
+  {
+    name: 'ExpenseCategoriesGroup',
+    element: () => <ExpenseCategoriesGroup />,
+    path: '/settings/expense-categories',
+  },
+]
+
+test.each(SETTINGS_GROUPS)('$name shows the skeleton while its query is pending', async (group) => {
+  renderPendingInDataRouter(group.element(), group.path)
 
   expect(await screen.findByRole('progressbar', { name: 'Cargando' })).toBeInTheDocument()
 })

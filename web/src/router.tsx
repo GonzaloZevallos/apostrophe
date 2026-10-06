@@ -32,7 +32,6 @@ import Analisis from './screens/Analisis'
 import Entrar from './screens/Entrar'
 import EntradaStock from './screens/EntradaStock'
 import ExpenseNewRoute from './screens/expenses/ExpenseNewRoute'
-import GastoCategorias from './screens/GastoCategorias'
 import Gastos from './screens/Gastos'
 import Inicio from './screens/Inicio'
 import Invitacion from './screens/Invitacion'
@@ -46,11 +45,19 @@ import ClientesLayout from './screens/clientes/ClientesLayout'
 import TeDeben from './screens/clientes/TeDeben'
 import VariedadDetalle from './screens/VariedadDetalle'
 import Variedades from './screens/Variedades'
-import Negocio from './screens/Negocio'
 import Reset from './screens/Reset'
+import Settings from './screens/settings/Settings'
+import AccountGroup from './screens/settings/AccountGroup'
+import AppearanceGroup from './screens/settings/AppearanceGroup'
+import BusinessGroup from './screens/settings/BusinessGroup'
+import CatalogMessageGroup from './screens/settings/CatalogMessageGroup'
+import ExpenseCategoriesGroup from './screens/settings/ExpenseCategoriesGroup'
+import IntegrationsGroup from './screens/settings/IntegrationsGroup'
+import UsersGroup from './screens/settings/UsersGroup'
 import NuevaVenta from './screens/ventas/NuevaVenta'
 import VentaDetalle from './screens/ventas/VentaDetalle'
 import Ventas from './screens/ventas/Ventas'
+import { redirectRoutes } from './redirects'
 import GatedLayout from './shell/GatedLayout'
 import Shell from './shell/Shell'
 import { ANALYSIS, EXPENSE_CATEGORIES, EXPENSE_NEW, EXPENSES, MORE, relative } from './routes'
@@ -89,11 +96,33 @@ export const router = createBrowserRouter([
                 element: <ExpenseNewRoute />,
                 handle: { chrome: 'none', tab: 'more' },
               },
-              { path: relative(EXPENSE_CATEGORIES), element: <GastoCategorias /> },
               { path: 'mi-stock', element: <Stock /> },
               { path: 'mi-stock/nueva-entrada', element: <EntradaStock mode="nuevo" /> },
               { path: 'mi-stock/entradas/:id', element: <EntradaStock mode="editar" /> },
-              { path: 'negocio', element: <Negocio /> },
+              { path: 'settings', element: <Settings />, handle: { chrome: 'card', tab: 'more' } },
+              { path: 'settings/business', element: <BusinessGroup />, handle: { chrome: 'none', tab: 'more' } },
+              { path: 'settings/users', element: <UsersGroup />, handle: { chrome: 'none', tab: 'more' } },
+              {
+                path: 'settings/integrations',
+                element: <IntegrationsGroup />,
+                handle: { chrome: 'none', tab: 'more' },
+              },
+              {
+                path: 'settings/catalog-message',
+                element: <CatalogMessageGroup />,
+                handle: { chrome: 'none', tab: 'more' },
+              },
+              {
+                path: relative(EXPENSE_CATEGORIES),
+                element: <ExpenseCategoriesGroup />,
+                handle: { chrome: 'none', tab: 'more' },
+              },
+              {
+                path: 'settings/appearance',
+                element: <AppearanceGroup />,
+                handle: { chrome: 'none', tab: 'more' },
+              },
+              { path: 'settings/account', element: <AccountGroup />, handle: { chrome: 'none', tab: 'more' } },
               { path: relative(ANALYSIS), element: <Analisis />, handle: { tab: 'more' } },
               { path: 'catalogo', element: <Catalogo /> },
               {
@@ -108,6 +137,7 @@ export const router = createBrowserRouter([
           },
         ],
       },
+      ...redirectRoutes(),
       { path: '*', element: <Navigate to="/" replace /> },
     ],
   },

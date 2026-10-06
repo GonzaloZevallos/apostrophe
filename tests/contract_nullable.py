@@ -96,6 +96,7 @@ NULLABLE: Mapping[str, Mapping[str, JsonType | ShapeOf]] = {
     },
     "pinnedCatalog": {
         "token_saved_on": "string",
+        "publish_blocked_by": "string",
         "own_chat": "string",
         "channel_chat": "string",
         "status": ShapeOf("pinnedCatalog", "status"),
@@ -109,6 +110,7 @@ NULLABLE: Mapping[str, Mapping[str, JsonType | ShapeOf]] = {
     },
     "pinnedCatalogTest": {
         "token_saved_on": "string",
+        "publish_blocked_by": "string",
         "own_chat": "string",
         "channel_chat": "string",
         # `pinnedCatalogTest.json`'s own `status` is `null`: the sibling fixture

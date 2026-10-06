@@ -12,14 +12,21 @@
  * where its route's `handle.chrome` is `'none'` (`NuevaVenta`'s own
  * `/ventas/nueva`, `VentaDetalle`'s `/ventas/:id`) — phone and computer differ
  * only in which markup the CSS shows; this suite checks both pieces of markup
- * directly rather than real viewport widths, which jsdom doesn't lay out.
+ * directly rather than real viewport widths, which jsdom doesn't lay out. The rail
+ * ends with the business row, a link to Configuración (`/settings`), which marks Más on
+ * the bar the way Gastos and Análisis do (`handle.tab`).
  */
 
 import { render, screen, within } from '@testing-library/react'
-import { createMemoryRouter, RouterProvider } from 'react-router'
+import userEvent from '@testing-library/user-event'
+import { createMemoryRouter, Outlet, RouterProvider, useLocation } from 'react-router'
 import { expect, test } from 'vitest'
+import type { Me } from '../api/me'
 import { ANALYSIS, EXPENSE_NEW, EXPENSES, MORE } from '../routes'
+import Mas from '../screens/Mas'
 import Shell from './Shell'
+
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03' }
 
 const BAR = ['Inicio', 'Ventas', 'Clientes', 'Stock', 'Más']
 const RAIL = ['Inicio', 'Ventas', 'Clientes', 'Stock', 'Gastos', 'Análisis', 'Más']
@@ -30,15 +37,21 @@ function tabNames(nav: HTMLElement): string[] {
   return within(nav)
     .getAllByRole('link')
     .map((link) => link.textContent)
-    .filter((name): name is string => name !== null && !name.startsWith('Nueva venta'))
+    .filter(
+      (name): name is string =>
+        name !== null && !name.startsWith('Nueva venta') && !name.startsWith('LH'),
+    )
 }
 
 function renderShell(initialPath: string) {
   const router = createMemoryRouter(
     [
       {
-        element: <Shell />,
+        element: <Outlet context={ME} />,
         children: [
+          {
+            element: <Shell />,
+            children: [
           { index: true, element: <div>contenido</div> },
           {
             path: 'ventas/nueva',
@@ -65,6 +78,8 @@ function renderShell(initialPath: string) {
             path: 'expenses/new',
             element: <div>formulario</div>,
             handle: { chrome: 'none', tab: 'more' },
+          },
+            ],
           },
         ],
       },
@@ -97,6 +112,7 @@ test('in the rail, Gastos and Análisis come after the divider and the first fou
     'Gastos',
     'Análisis',
     'Más',
+    'LHLa Huerta',
   ])
 })
 
@@ -179,8 +195,11 @@ function renderShellWithContainer(initialPath: string) {
   const router = createMemoryRouter(
     [
       {
-        element: <Shell />,
+        element: <Outlet context={ME} />,
         children: [
+          {
+            element: <Shell />,
+            children: [
           { index: true, element: <div>contenido</div> },
           {
             path: 'ventas/nueva',
@@ -208,6 +227,8 @@ function renderShellWithContainer(initialPath: string) {
             element: <div>formulario</div>,
             handle: { chrome: 'none', tab: 'more' },
           },
+            ],
+          },
         ],
       },
     ],
@@ -227,4 +248,92 @@ test('marks the active item by more than color: a distinct class the other items
   for (const link of clientesLinks) {
     expect(link.className).not.toMatch(/--activo/)
   }
+})
+
+function Landed() {
+  const location = useLocation()
+  const inApp = (location.state as { inApp?: boolean } | null)?.inApp
+  return <div>{`en ${location.pathname} inApp=${String(inApp)}`}</div>
+}
+
+function renderApp(initialPath: string) {
+  const router = createMemoryRouter(
+    [
+      {
+        element: <Outlet context={ME} />,
+        children: [
+          {
+            element: <Shell />,
+            children: [
+              { index: true, element: <div>contenido</div> },
+              { path: 'more', element: <Mas /> },
+              { path: 'settings', element: <Landed />, handle: { chrome: 'card', tab: 'more' } },
+              {
+                path: 'settings/users',
+                element: <Landed />,
+                handle: { chrome: 'none', tab: 'more' },
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    { initialEntries: [initialPath] },
+  )
+  return render(<RouterProvider router={router} />)
+}
+
+test('the rail ends with the business row, a link to Configuración carrying inApp, one tap from Inicio', async () => {
+  const { container } = renderApp('/')
+  const railNav = rail(container)
+
+  const row = within(railNav).getByRole('link', { name: 'Configuración de La Huerta' })
+  expect(row).toHaveAttribute('href', '/settings')
+  expect(row).toHaveTextContent('LH')
+  expect(row).toHaveTextContent('La Huerta')
+  expect(railNav.lastElementChild).toBe(row)
+  await userEvent.click(row)
+
+  expect(screen.getByText('en /settings inApp=true')).toBeInTheDocument()
+})
+
+test('the phone reaches Configuración in two taps: the Más tab, then its Configuración entry', async () => {
+  const { container } = renderApp('/')
+
+  await userEvent.click(within(bar(container)).getByRole('link', { name: 'Más' }))
+  await userEvent.click(
+    within(screen.getByRole('navigation', { name: 'Más' })).getByRole('link', {
+      name: /^Configuración/,
+    }),
+  )
+
+  expect(screen.getByText('en /settings inApp=true')).toBeInTheDocument()
+})
+
+test('on the phone, /settings marks Más as the active tab; the rail marks the business row', () => {
+  const { container } = renderApp('/settings')
+  const more = within(bar(container)).getByRole('link', { name: 'Más' })
+
+  expect(more).toHaveAttribute('aria-current', 'page')
+  expect(more.className).toMatch(/--activo/)
+  expect(within(bar(container)).getByRole('link', { name: 'Inicio' })).not.toHaveAttribute(
+    'aria-current',
+  )
+  expect(
+    within(rail(container)).getByRole('link', { name: 'Configuración de La Huerta' }),
+  ).toHaveAttribute('aria-current', 'page')
+})
+
+test('a Configuración group is a form: chrome none, no bar at all', () => {
+  const { container } = renderApp('/settings/users')
+
+  expect(container.querySelector('.bar-inferior')).toBeNull()
+})
+
+test('Más is not marked on other routes', () => {
+  const { container } = renderApp('/')
+
+  expect(within(bar(container)).getByRole('link', { name: 'Más' })).not.toHaveAttribute(
+    'aria-current',
+  )
 })

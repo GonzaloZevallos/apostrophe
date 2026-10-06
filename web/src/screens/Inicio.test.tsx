@@ -9,7 +9,8 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, within } from '@testing-library/react'
-import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
+import userEvent from '@testing-library/user-event'
+import { MemoryRouter, Outlet, Route, Routes, useLocation } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import panelFixture from '../api/fixtures/panel.json'
 import type { PanelAnswer } from '../api/panel'
@@ -29,6 +30,11 @@ const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10
 
 function Provide() {
   return <Outlet context={ME} />
+}
+
+function SettingsLanding() {
+  const location = useLocation()
+  return <span>{`Configuración inApp=${String((location.state as { inApp?: boolean } | null)?.inApp)}`}</span>
 }
 
 function stubFetch(
@@ -59,6 +65,7 @@ function renderInicio(
             <Route index element={<Inicio />} />
             <Route path="clientes/deben" element={<span>pantalla te deben</span>} />
             <Route path="clientes/:id" element={<span>ficha de cliente</span>} />
+            <Route path="settings" element={<SettingsLanding />} />
           </Route>
         </Routes>
       </MemoryRouter>
@@ -68,6 +75,20 @@ function renderInicio(
 
 afterEach(() => {
   vi.unstubAllGlobals()
+})
+
+test('the business avatar at the top opens Configuración in one tap, carrying inApp', async () => {
+  stubFetch(PANEL)
+  renderInicio()
+
+  const avatar = await screen.findByRole('link', { name: 'Configuración de La Huerta' })
+  expect(avatar).toHaveAttribute('href', '/settings')
+  expect(avatar).toHaveTextContent('LH')
+  // The name stays above the title, as the design draws it.
+  expect(screen.getByText('La Huerta')).toBeInTheDocument()
+  await userEvent.click(avatar)
+
+  expect(screen.getByText('Configuración inApp=true')).toBeInTheDocument()
 })
 
 test('shows today\'s figures on open: heading, count, average, grams, Ganancia, Caja', async () => {

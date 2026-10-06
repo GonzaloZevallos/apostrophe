@@ -50,6 +50,7 @@ import { expect, test } from '@playwright/test'
 import { newBusinessInvitationUrl } from './backend.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
+import { expectOnlyTheThemeStored } from './helpers/storage.js'
 
 test.use({ viewport: { width: 390, height: 844 } }) // a phone (PRD metric 1).
 
@@ -410,11 +411,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
 
   // Nothing personal or technical reaches the console or the browser's own storage
   // (CODING_STANDARDS.md section 9, in the browser too).
-  const storage = await page.evaluate(() => ({
-    local: Object.keys(localStorage).length,
-    session: Object.keys(sessionStorage).length,
-  }))
-  expect(storage).toEqual({ local: 0, session: 0 })
+  await expectOnlyTheThemeStored(page)
 
   // Every browser logs a generic "Failed to load resource: 404" line for any fetch
   // that comes back non-2xx, app code notwithstanding: the one unavoidable message

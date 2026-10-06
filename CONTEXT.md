@@ -388,3 +388,7 @@ _Avoid_: Ajustes (in the spreadsheet that held prices), preferences, admin, Nego
 **First-run checklist**:
 Four steps on Inicio for a business that has not yet both priced a variety for today and recorded a stock entry: those two, plus publishing the pinned catalog and adding a second user, which are optional. Each step is worked out from the business's data and reads "Hecho" when met; the checklist goes for good the first time the two required steps are met and never returns.
 _Avoid_: onboarding, tour, wizard, setup guide, welcome
+
+**Theme choice**:
+A device's choice of Claro or Oscuro. It is made only in Configuración → Apariencia, applies at once and is kept on that device alone. It is not tied to a user or a business, survives logging out and holds nothing else. With none stored, the app opens light whatever the system setting.
+_Avoid_: preference, dark mode setting, skin, user setting

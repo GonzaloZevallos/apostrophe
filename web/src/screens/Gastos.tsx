@@ -253,7 +253,7 @@ export default function Gastos() {
 
         <div className="gastos__pie">
           <span className="pie">{FLOWER_NOTICE}</span>
-          <Link to={EXPENSE_CATEGORIES} className="boton--enlace">
+          <Link to={EXPENSE_CATEGORIES} state={{ inApp: true }} className="boton--enlace">
             Categorías
           </Link>
         </div>

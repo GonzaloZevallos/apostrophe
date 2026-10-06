@@ -3,6 +3,7 @@
   "own_chat": "123456789",
   "channel_chat": "@mi_canal",
   "can_publish": true,
+  "publish_blocked_by": null,
   "status": {
     "state": "up_to_date",
     "reason": null,
