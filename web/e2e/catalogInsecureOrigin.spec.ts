@@ -69,12 +69,16 @@ test('Copiar still works through the execCommand fallback on a plain-http, non-l
   const businessName = `Flores Inseguras ${Date.now()}`
   const inviteUrl = newBusinessInvitationUrl().replace(e2eBaseUrl(), INSECURE_ORIGIN)
 
+  // Not `signUpNewBusiness`: this spec opens the invitation on `INSECURE_ORIGIN`, which
+  // the helper (always the project's base URL) cannot do, and checks the origin first.
   await page.goto(inviteUrl)
   expect(page.url().startsWith(INSECURE_ORIGIN)).toBe(true)
   await page.getByLabel('Nombre del negocio').fill(businessName)
   await page.getByLabel('Email').fill(ownerEmail)
   await page.getByLabel('Contraseña').fill(PASSWORD)
-  await page.getByRole('button', { name: 'Creá el negocio' }).click()
+  const create = page.getByRole('button', { name: 'Creá el negocio' })
+  await expect(create).toBeEnabled()
+  await create.click()
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   expect(await page.evaluate(() => window.isSecureContext)).toBe(false)

@@ -17,12 +17,10 @@
  */
 
 import { expect, test } from '@playwright/test'
-import { newBusinessInvitationUrl } from './backend.js'
+import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
-
-const PASSWORD = 'correcthorsebattery'
 
 test('a customer with no phone number is registered, edited, sold to, paid and shown in Te deben', async ({
   page,
@@ -33,11 +31,7 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   const ownerEmail = `duena-sin-telefono-${Date.now()}@example.com`
   const businessName = `Flores Sin Telefono ${Date.now()}`
 
-  await page.goto(newBusinessInvitationUrl())
-  await page.getByLabel('Nombre del negocio').fill(businessName)
-  await page.getByLabel('Email').fill(ownerEmail)
-  await page.getByLabel('Contraseña').fill(PASSWORD)
-  await page.getByRole('button', { name: 'Creá el negocio' }).click()
+  await signUpNewBusiness(page, { businessName, email: ownerEmail })
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // One priced variety, $1.000/g — round figures for every assertion below.

@@ -9,9 +9,8 @@
  */
 
 import { expect, test, type Locator, type Page } from '@playwright/test'
-import { newBusinessInvitationUrl } from './backend.js'
+import { signUpNewBusiness } from './helpers/signup.js'
 
-const PASSWORD = 'correcthorsebattery'
 const TOUCH_TARGET = 44
 const MIN_INPUT_FONT = 16
 
@@ -47,12 +46,7 @@ test('Ventas and a sale detail fit, and are thumb-sized, at 320, 430 and 130 % o
 }) => {
   test.setTimeout(90_000)
 
-  await page.goto(newBusinessInvitationUrl())
-  await page.getByLabel('Nombre del negocio').fill(`Vivero Telefono ${Date.now()}`)
-  await page.getByLabel('Email').fill(`duena-telefono-${Date.now()}@example.com`)
-  await page.getByLabel('Contraseña').fill(PASSWORD)
-  await page.getByRole('button', { name: 'Creá el negocio' }).click()
-  await expect(page.locator('.encabezado__negocio')).toBeVisible()
+  await signUpNewBusiness(page, { businessName: `Vivero Telefono ${Date.now()}`, email: `duena-telefono-${Date.now()}@example.com` })
 
   await page.goto('/variedades')
   await page.getByRole('button', { name: 'Nueva variedad' }).click()

@@ -47,14 +47,13 @@
  */
 
 import { expect, test } from '@playwright/test'
-import { newBusinessInvitationUrl } from './backend.js'
+import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
 
 test.use({ viewport: { width: 390, height: 844 } }) // a phone (PRD metric 1).
 
-const PASSWORD = 'correcthorsebattery'
 const RECORD_BUDGET_MS = 60_000 // PRD metric 1: "under a minute".
 const LIST_BUDGET_MS = 300 // PRD metric 6.
 const SEEDED_SALES_FOR_PERF = 300 // "a few hundred sales".
@@ -121,11 +120,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   const businessName = `Vivero Jacarandá ${Date.now()}`
 
   // Accept a new-business invitation.
-  await page.goto(newBusinessInvitationUrl())
-  await page.getByLabel('Nombre del negocio').fill(businessName)
-  await page.getByLabel('Email').fill(ownerEmail)
-  await page.getByLabel('Contraseña').fill(PASSWORD)
-  await page.getByRole('button', { name: 'Creá el negocio' }).click()
+  await signUpNewBusiness(page, { businessName, email: ownerEmail })
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // Two priced varieties and one with no price at all, for the "no price that day"
@@ -170,6 +165,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   // in `Shell.tsx`'s markup) is the one CSS hides; the fixed bottom button is last.
   await page.getByRole('link', { name: 'Nueva venta' }).last().click()
   await expect(page).toHaveURL(/\/ventas\/nueva$/)
+  await expect(page.getByLabel('Fecha')).toHaveValue(/^\d{4}-\d{2}-\d{2}$/)
   const todayIso = await page.getByLabel('Fecha').inputValue()
 
   const varieties: VarietyAnswer[] = await (
@@ -396,12 +392,10 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   const otherContext = await browser.newContext()
   const otherPage = await otherContext.newPage()
   watchConsole(otherPage, consoleMessages)
-  await otherPage.goto(newBusinessInvitationUrl())
-  await otherPage.getByLabel('Nombre del negocio').fill(`Otro negocio ${Date.now()}`)
-  await otherPage.getByLabel('Email').fill(`otra-${Date.now()}@example.com`)
-  await otherPage.getByLabel('Contraseña').fill(PASSWORD)
-  await otherPage.getByRole('button', { name: 'Creá el negocio' }).click()
-  await expect(otherPage.locator('.encabezado__negocio')).toBeVisible()
+  await signUpNewBusiness(otherPage, {
+    businessName: `Otro negocio ${Date.now()}`,
+    email: `otra-${Date.now()}@example.com`,
+  })
 
   await otherPage.goto(saleBUrl)
   await expect(otherPage.getByText('Eso ya no está.')).toBeVisible()
