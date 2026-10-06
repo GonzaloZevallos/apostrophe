@@ -8,7 +8,7 @@
 
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { HOME, LEGACY_REDIRECTS, LOGIN, pathTo } from '../src/routes.js'
+import { HOME, LEGACY_REDIRECTS, LOGIN, SALE, pathTo } from '../src/routes.js'
 import { expect, test, type Page } from '@playwright/test'
 import { watchConsole } from './console.js'
 import { seedRecords, signUp, type Records } from './helpers/seed.js'
@@ -104,7 +104,7 @@ test.describe.serial('navigation', () => {
   }
 
   test('an old link to a gone sale lands on the English route and says "Eso ya no está."', async () => {
-    const old = LEGACY_REDIRECTS.find(([path]) => path.endsWith('/:id') && path.startsWith('/ventas'))
+    const old = LEGACY_REDIRECTS.find(([, now]) => now === SALE)
     expect(old).toBeDefined()
     await page.goto(pathTo(old?.[0] ?? '', { id: GONE_ID }))
     expect(new URL(page.url()).pathname).toBe(pathTo(old?.[1] ?? '', { id: GONE_ID }))
