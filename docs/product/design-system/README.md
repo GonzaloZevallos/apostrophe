@@ -77,8 +77,10 @@ impreso no es el calculado. Si cambiás un color, cambiá la fila.
 - **general**: un token de texto que puede ir sobre cualquier superficie. Lleva una
   fila por cada superficie y todas llegan a 4,5:1, en los dos temas.
 - **par**: un token de texto que sólo se dibuja sobre su fondo. Lleva una sola fila.
-  Una regla de `app.css` que lo usa declara también ese fondo, salvo los selectores
-  de la última columna, que dibujan sobre el fondo de su contenedor.
+  Una regla de `app.css` que lo usa declara también ese fondo. La única excepción es
+  `.bar-inferior__item`, la etiqueta de la barra inferior, con `--nav-inactivo`. Un
+  texto que se dibuja sobre el fondo de su contenedor toma su color de la regla que
+  declara ese fondo.
 - **ícono**: no es texto y no se mide. Sólo puede ser el `color` de los selectores de
   la última columna. `--tenue` es sólo de íconos.
 
@@ -109,7 +111,7 @@ impreso no es el calculado. Si cambiás un color, cambiá la fila.
 | `--deuda2` | general | `--superficie` | 5,19 | 5,68 |  |
 | `--deuda2` | general | `--deuda-fondo` | 4,86 | 5,41 |  |
 | `--deuda2` | general | `--acento-suave` | 5,12 | 5,26 |  |
-| `--boton-texto` | par | `--boton` | 15,97 | 15,80 | `.toast__texto`, `.venta-guardada__deshacer` |
+| `--boton-texto` | par | `--boton` | 15,97 | 15,80 |  |
 | `--critico-texto` | par | `--critico` | 12,59 | 11,13 |  |
 | `--nav-inactivo` | par | `--papel` | 4,69 | 4,97 | `.bar-inferior__item` |
 | `--tenue` | ícono | — | — | — | `.mas__item-flecha`, `.fila-venta > svg` |

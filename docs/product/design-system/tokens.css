@@ -36,6 +36,9 @@
 
   /* Tipografía */
   --fuente: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  /* cifra-m: la única clase de texto que lee su tamaño de acá (el pie de Nueva venta también) */
+  --cifra-m-tamano: 25px;
+  --cifra-m-interlineado: 1.1;
 
   /* Espacio y radios */
   --espacio-xs: 4px;
@@ -101,7 +104,7 @@ body {
 /* Clases de texto — mismos valores que `texto` en tokens.ts */
 .cifra-xl { font-size: 54px; font-weight: 600; letter-spacing: -0.045em; line-height: 1.05 }
 .cifra-l  { font-size: 38px; font-weight: 600; letter-spacing: -0.04em;  line-height: 1.05 }
-.cifra-m  { font-size: 25px; font-weight: 600; letter-spacing: -0.035em; line-height: 1.1 }
+.cifra-m  { font-size: var(--cifra-m-tamano); font-weight: 600; letter-spacing: -0.035em; line-height: var(--cifra-m-interlineado) }
 .cifra-s  { font-size: 17px; font-weight: 600 }
 .titulo   { font-size: 20px; font-weight: 600; letter-spacing: -0.02em }
 .cuerpo   { font-size: 16px; font-weight: 400; line-height: 1.5 }

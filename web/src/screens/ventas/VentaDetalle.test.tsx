@@ -95,6 +95,31 @@ test('shows the total, each line with its lowercase rule badge, shipping, note a
   expect(screen.getByText('3,5 g · Ana Pérez · pagada en efectivo')).toBeInTheDocument()
 })
 
+test('shows the skeleton while the sale is pending, then the sale in its place', async () => {
+  let resolveSale: (response: Response) => void = () => {
+    throw new Error('fetch was never called')
+  }
+  const pending = new Promise<Response>((resolve) => {
+    resolveSale = resolve
+  })
+  // The first call is held; every later call gets its own Response, since a body reads once.
+  vi.mocked(fetch).mockImplementationOnce(() => pending)
+  vi.mocked(fetch).mockImplementation(() => Promise.resolve(jsonResponse(200, SALE)))
+  renderDetalle()
+
+  expect(await screen.findByRole('progressbar', { name: 'Cargando' })).toBeInTheDocument()
+  expect(screen.queryByText('Venta del 14/09')).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Borrar venta' })).not.toBeInTheDocument()
+  expect(fetch).toHaveBeenCalledTimes(1)
+  expect(fetch).toHaveBeenCalledWith('/sales/10', expect.objectContaining({ method: 'GET' }))
+
+  resolveSale(jsonResponse(200, SALE))
+
+  expect(await screen.findByText('Venta del 14/09')).toBeInTheDocument()
+  expect(screen.getAllByText('$ 11.000').length).toBeGreaterThan(0)
+  expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
+})
+
 test('a sale with no customer and no payment shows "Sin cliente" and drops the payment part', async () => {
   vi.mocked(fetch).mockResolvedValue(
     jsonResponse(200, { ...SALE, customer: null, payment: 'none' }),

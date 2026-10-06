@@ -46,7 +46,7 @@ The API is described at `http://localhost:8000/docs`.
 ## Check it
 
 ```sh
-uv run --no-project pytest
+uv run --no-project pytest -n auto
 uv run --no-project ruff check .
 uv run --no-project mypy app tests
 ```
