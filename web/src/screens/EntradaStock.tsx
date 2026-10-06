@@ -9,10 +9,10 @@
  * either what was typed or, after saving, the API's own answer.
  */
 
-import { STOCK } from '../routes'
+import { STOCK, parentOf } from '../routes'
 import { type FormEvent, useState } from 'react'
 import { type QueryClient, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link, useNavigate, useOutletContext, useParams } from 'react-router'
+import { useNavigate, useOutletContext, useParams } from 'react-router'
 import { ApiError, NetworkError, UNKNOWN_CODE, get } from '../api/client'
 import { invalidateResource, keys } from '../api/keys'
 import type { Me } from '../api/me'
@@ -28,7 +28,12 @@ import {
 } from '../api/stock'
 import { costPerGram, gramsToHundredths } from '../domain/costPerGram'
 import ConfirmDialog from '../components/ConfirmDialog'
-import { gone, toast } from '../components/feedback'
+import LeaveConfirm from '../components/LeaveConfirm'
+import { useFlash } from '../flash/useFlash'
+import { useBackOr } from '../components/useBackOr'
+import { useLeaveGuard } from '../components/useLeaveGuard'
+import { useViewport } from '../shell/useViewport'
+import { gone } from '../components/feedback'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import GoneScreen from '../components/GoneScreen'
 import SinConexion from '../components/SinConexion'
@@ -144,6 +149,8 @@ interface BodyProps {
 function EntradaStockBody({ mode, entryId, today, initial }: BodyProps) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const viewport = useViewport()
+  const flash = useFlash()
 
   const varietiesQuery = useQuery({
     queryKey: keys.varieties(),
@@ -166,6 +173,20 @@ function EntradaStockBody({ mode, entryId, today, initial }: BodyProps) {
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+
+  const initialTotalCost =
+    initial?.total_cost !== null && initial?.total_cost !== undefined ? String(initial.total_cost) : ''
+  const dirty =
+    date !== (initial?.date ?? today) ||
+    grams !== (initial !== undefined ? String(initial.grams) : '') ||
+    varietyId !== (initial !== undefined ? String(initial.variety_id) : '') ||
+    origin !== (initial?.origin ?? 'purchase') ||
+    totalCost !== initialTotalCost ||
+    note !== (initial?.note ?? '')
+  const { blocker, disarm } = useLeaveGuard(dirty)
+  const close = useBackOr(
+    parentOf(mode === 'nuevo' ? 'stock-entry-new' : 'stock-entry', viewport)?.path ?? STOCK,
+  )
 
   const previewGrams = parseSignedGrams(grams)
   const previewCost = parseMoney(totalCost)
@@ -215,11 +236,14 @@ function EntradaStockBody({ mode, entryId, today, initial }: BodyProps) {
         await editEntry(entryId, body)
       }
       invalidateResource(queryClient, 'stock')
-      navigate(STOCK, { state: toast('Entrada guardada') })
+      flash.armAfterLeaving('Entrada guardada')
+      disarm()
+      close()
     } catch (caught) {
       if (caught instanceof ApiError && mode === 'editar' && isGone(caught.code)) {
         invalidateStockAfterDeleting(queryClient, entryId)
-        navigate(STOCK, { state: gone() })
+        disarm()
+        void navigate(STOCK, { replace: true, state: gone() })
         return
       }
       if (caught instanceof ApiError) {
@@ -251,12 +275,15 @@ function EntradaStockBody({ mode, entryId, today, initial }: BodyProps) {
     try {
       await deleteEntry(entryId)
       invalidateStockAfterDeleting(queryClient, entryId)
-      navigate(STOCK, { state: toast('Entrada eliminada') })
+      flash.armAfterLeaving('Entrada eliminada')
+      disarm()
+      close()
     } catch (caught) {
       setConfirmingDelete(false)
       if (caught instanceof ApiError && isGone(caught.code)) {
         invalidateStockAfterDeleting(queryClient, entryId)
-        navigate(STOCK, { state: gone() })
+        disarm()
+        void navigate(STOCK, { replace: true, state: gone() })
         return
       }
       if (caught instanceof NetworkError) setOffline(true)
@@ -275,7 +302,9 @@ function EntradaStockBody({ mode, entryId, today, initial }: BodyProps) {
     <main className="pantalla">
       <div className="cuerpo">
         <div className="encabezado-fila">
-          <Link to={STOCK}>Volver</Link>
+          <button type="button" className="boton--enlace" onClick={close}>
+            Cerrar
+          </button>
           <span className="encabezado__titulo">
             {mode === 'nuevo' ? 'Nueva entrada' : 'Editar entrada'}
           </span>
@@ -405,6 +434,15 @@ function EntradaStockBody({ mode, entryId, today, initial }: BodyProps) {
         />
       )}
       {deleteError !== null && <ErrorGenerico />}
+      {blocker.state === 'blocked' && (
+        <LeaveConfirm
+          blocker={blocker}
+          question="¿Descartás la entrada?"
+          detail="Se pierde lo que cargaste: todavía no se guardó nada."
+          keepLabel="No, seguí cargando"
+          discardLabel="Sí, descartala"
+        />
+      )}
     </main>
   )
 }

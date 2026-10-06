@@ -205,7 +205,9 @@ export default function ClienteFicha() {
         <div>
           <Link to={CUSTOMERS}>Volver</Link>
           <span className="encabezado__titulo">{data.name}</span>
-          <Link to={pathTo(CUSTOMER_EDIT, { id: customerId })}>Editar</Link>
+          <Link to={pathTo(CUSTOMER_EDIT, { id: customerId })} state={{ inApp: true }}>
+            Editar
+          </Link>
         </div>
         {feedback !== null && <Notice kind={feedback.kind} message={feedback.message} />}
         {accountGone && <Notice kind="notice" message={GONE_NOTICE} />}

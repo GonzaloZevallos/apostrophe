@@ -45,7 +45,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.getByLabel('Teléfono').fill(PHONE)
   await page.getByLabel('Nombre').fill('Marisa Gómez')
   await page.getByRole('button', { name: 'Guardá y usá' }).click()
-  await expect(page).toHaveURL(/\/clientes$/)
+  await expect(page).toHaveURL(/\/clientes\/\d+$/)
   await expect(page.getByText('Cliente guardado')).toBeVisible()
 
   // Add a variety.

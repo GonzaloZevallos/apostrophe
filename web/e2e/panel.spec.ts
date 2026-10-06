@@ -207,11 +207,10 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await page.getByLabel('Teléfono').fill('+5491155550077')
   await page.getByLabel('Nombre').fill('Carla Pérez')
   await page.getByRole('button', { name: 'Guardá y usá' }).click()
-  await expect(page).toHaveURL(/\/clientes$/)
+  await expect(page).toHaveURL(/\/clientes\/\d+$/)
   await expect(page.getByText('Cliente guardado')).toBeVisible()
 
   // A sale left owing, to Carla.
-  await page.getByRole('link', { name: 'Carla Pérez' }).click()
   await page.getByRole('link', { name: 'Nueva venta a Carla Pérez' }).click()
   await expect(page).toHaveURL(/\/ventas\/nueva$/)
   const todayIso = await page.getByLabel('Fecha').inputValue()

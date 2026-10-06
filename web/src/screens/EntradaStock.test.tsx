@@ -8,9 +8,10 @@
 
 import { STOCK, STOCK_ENTRY, STOCK_ENTRY_NEW, pathTo } from '../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen } from '@testing-library/react'
+import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Outlet, Route, Routes, useLocation } from 'react-router'
+import { createMemoryRouter, Link, Outlet, RouterProvider, useLocation } from 'react-router'
+import FlashProvider from '../flash/FlashProvider'
 import { afterEach, expect, test, vi } from 'vitest'
 import type { Me } from '../api/me'
 import EntradaStock from './EntradaStock'
@@ -37,23 +38,45 @@ function ListStub() {
 }
 
 function Provide() {
-  return <Outlet context={ME} />
+  return (
+    <FlashProvider>
+      <Outlet context={ME} />
+    </FlashProvider>
+  )
 }
 
-function renderForm(initialPath: string) {
+function renderForm(initialPath: string, previous?: string) {
+  const router = createMemoryRouter(
+    [
+      {
+        element: <Provide />,
+        children: [
+          { path: STOCK_ENTRY_NEW, element: <EntradaStock mode="nuevo" /> },
+          { path: STOCK_ENTRY, element: <EntradaStock mode="editar" /> },
+          {
+            path: STOCK,
+            element: (
+              <>
+                <ListStub />
+                <Link to={STOCK_ENTRY_NEW} state={{ inApp: true }}>
+                  Abrir la entrada
+                </Link>
+              </>
+            ),
+          },
+        ],
+      },
+    ],
+    previous === undefined
+      ? { initialEntries: [initialPath] }
+      : { initialEntries: [previous, initialPath], initialIndex: 1 },
+  )
   render(
     <QueryClientProvider client={new QueryClient()}>
-      <MemoryRouter initialEntries={[initialPath]}>
-        <Routes>
-          <Route element={<Provide />}>
-            <Route path={STOCK_ENTRY_NEW} element={<EntradaStock mode="nuevo" />} />
-            <Route path={STOCK_ENTRY} element={<EntradaStock mode="editar" />} />
-            <Route path={STOCK} element={<ListStub />} />
-          </Route>
-        </Routes>
-      </MemoryRouter>
+      <RouterProvider router={router} />
     </QueryClientProvider>,
   )
+  return router
 }
 
 const VARIETIES = [{ id: 3, name: 'Sir Jack', current_price: null }]
@@ -124,7 +147,7 @@ test('records an entry and lands back on the list with the saved toast', async (
   await userEvent.click(screen.getByRole('button', { name: 'Guardá la entrada' }))
 
   expect(await screen.findByText('la lista de stock')).toBeInTheDocument()
-  expect(screen.getByText('Entrada guardada')).toBeInTheDocument()
+  expect(await screen.findByText('Entrada guardada')).toBeInTheDocument()
   expect(fetch).toHaveBeenCalledWith('/stock/entries', expect.objectContaining({ method: 'POST' }))
 })
 
@@ -314,7 +337,7 @@ test('deleting an entry confirms first, naming the date, variety and grams', asy
   await userEvent.click(screen.getByRole('button', { name: 'Sí, borrala' }))
 
   expect(await screen.findByText('la lista de stock')).toBeInTheDocument()
-  expect(screen.getByText('Entrada eliminada')).toBeInTheDocument()
+  expect(await screen.findByText('Entrada eliminada')).toBeInTheDocument()
   expect(fetch).toHaveBeenCalledWith('/stock/entries/10', expect.objectContaining({ method: 'DELETE' }))
 })
 
@@ -364,4 +387,96 @@ test('deleting an entry never re-fetches the entry it just deleted', async () =>
 
   expect(await screen.findByText('la lista de stock')).toBeInTheDocument()
   expect(getEntryCalls).toBe(1)
+})
+
+function stubApi(): void {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: string | URL | Request, init?: RequestInit) => {
+      const url = typeof input === 'string' ? input : input.toString()
+      if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/stock') return Promise.resolve(jsonResponse(200, STOCK_VIEW))
+      if (url === '/stock/entries' && init?.method === 'POST') {
+        return Promise.resolve(jsonResponse(201, { id: 1 }))
+      }
+      return Promise.resolve(jsonResponse(500, {}))
+    }),
+  )
+}
+
+async function openFromList(): Promise<ReturnType<typeof renderForm>> {
+  stubApi()
+  const router = renderForm(STOCK)
+  await userEvent.click(screen.getByRole('link', { name: 'Abrir la entrada' }))
+  expect(router.state.location.pathname).toBe(STOCK_ENTRY_NEW)
+  return router
+}
+
+test('closing, or going back by history, with something typed asks the same question', async () => {
+  const router = await openFromList()
+  await userEvent.type(screen.getByLabelText('Gramos'), '10')
+
+  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  const viaCerrar = screen.getByRole('alertdialog').textContent
+  await userEvent.click(screen.getByRole('button', { name: 'No, seguí cargando' }))
+  expect(router.state.location.pathname).toBe(STOCK_ENTRY_NEW)
+  expect(screen.getByLabelText('Gramos')).toHaveValue('10')
+
+  await act(() => router.navigate(-1))
+  expect(screen.getByRole('alertdialog').textContent).toBe(viaCerrar)
+  expect(viaCerrar).toContain('¿Descartás la entrada?')
+  expect(router.state.location.pathname).toBe(STOCK_ENTRY_NEW)
+
+  await userEvent.click(screen.getByRole('button', { name: 'Sí, descartala' }))
+  expect(await screen.findByText('la lista de stock')).toBeInTheDocument()
+  expect(router.state.location.pathname).toBe(STOCK)
+})
+
+test('an untouched form closes at once, by history', async () => {
+  const router = await openFromList()
+
+  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+
+  expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+  expect(router.state.location.pathname).toBe(STOCK)
+  expect(router.state.historyAction).toBe('POP')
+})
+
+test('with no in-app history, Cerrar goes to the stock list replacing the form', async () => {
+  stubApi()
+  const router = renderForm(STOCK_ENTRY_NEW, '/otra')
+
+  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+
+  expect(await screen.findByText('la lista de stock')).toBeInTheDocument()
+  expect(router.state.historyAction).toBe('REPLACE')
+})
+
+test('after a save, history goes back to Stock with the toast: a pop, no second Stock entry', async () => {
+  const router = await openFromList()
+  await userEvent.type(screen.getByLabelText('Gramos'), '10')
+  await userEvent.selectOptions(screen.getByLabelText('Variedad'), 'Sir Jack')
+  await userEvent.type(screen.getByLabelText(/Costo total/), '5000')
+
+  await userEvent.click(screen.getByRole('button', { name: 'Guardá la entrada' }))
+
+  expect(await screen.findByText('Entrada guardada')).toBeInTheDocument()
+  expect(await screen.findByText('la lista de stock')).toBeInTheDocument()
+  expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+  expect(router.state.location.pathname).toBe(STOCK)
+  expect(router.state.historyAction).toBe('POP')
+})
+
+test('with no in-app history, a save replaces the form with Stock and still toasts', async () => {
+  stubApi()
+  const router = renderForm(STOCK_ENTRY_NEW, '/otra')
+  await userEvent.type(screen.getByLabelText('Gramos'), '10')
+  await userEvent.selectOptions(await screen.findByLabelText('Variedad'), 'Sir Jack')
+  await userEvent.type(screen.getByLabelText(/Costo total/), '5000')
+
+  await userEvent.click(screen.getByRole('button', { name: 'Guardá la entrada' }))
+
+  expect(await screen.findByText('Entrada guardada')).toBeInTheDocument()
+  expect(router.state.location.pathname).toBe(STOCK)
+  expect(router.state.historyAction).toBe('REPLACE')
 })

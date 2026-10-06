@@ -9,7 +9,8 @@
  * logout) can drop the guard first.
  */
 
-import { SETTINGS } from '../../routes'
+import { SETTINGS, parentOf } from '../../routes'
+import { useViewport } from '../../shell/useViewport'
 import type { ReactNode } from 'react'
 import Boton from '../../components/Boton'
 import LeaveConfirm from '../../components/LeaveConfirm'
@@ -38,7 +39,7 @@ export interface SettingsGroupProps {
 
 export default function SettingsGroup({ title, dirty, leave, children }: SettingsGroupProps) {
   const { blocker, disarm } = useLeaveGuard(dirty)
-  const close = useBackOr(SETTINGS_PATH)
+  const close = useBackOr(parentOf('settings-business', useViewport())?.path ?? SETTINGS_PATH)
 
   return (
     <main className="pantalla ajustes-grupo">
