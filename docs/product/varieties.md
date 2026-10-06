@@ -4,8 +4,8 @@ The varieties a business sells and the price history of each, seen only by that
 business (ADR-0004). Every other capability reads prices from here: a sale takes the
 current price of its day, the catalog shows today's. Variedades is the one screen for a
 variety: its list and each variety's page hold the variety's prices (here), its stock,
-entries and low-stock threshold (`stock.md`), and its catalog attributes (`catalog.md`).
-It is a tab (navigation.md).
+entries, withdrawals and low-stock threshold (`stock.md`), and its catalog attributes
+(`catalog.md`). It is a tab (navigation.md).
 
 ## Jobs
 
@@ -21,6 +21,14 @@ sales arrive.
 taps, **so I can** know what I have of each variety, see one running out before a customer
 asks for it, and know what the grams I sell or gift cost me. (Served here by the list's
 status, the variety's page and "+ Entrada de stock"; defined in `stock.md`.)
+
+**When** I take grams out of my own stock without selling them (to share at a party so
+people get to know the business, or for my own use), **I want** to record them from my
+phone in a few taps (date, varieties and grams, the reason), **so I can** keep stock right
+and see in Ganancia what promoting the business and my own consumption cost me, without
+recording a sale nobody made or an adjustment that reads as lost flower. (Served here by
+"Sacar del stock" on the list and on a variety's page, and the withdrawals in its "Stock y
+entradas"; defined in `stock.md`.)
 
 **When** I run my business from my phone between orders or mid-chat with a customer,
 several times a day, **I want** the app laid out around what I actually do and how often,
@@ -40,8 +48,9 @@ Success criteria:
    call by hand.
 5. Variedades says on its own, by shape and word and never by color alone, when a variety
    is sold out or below its threshold (`stock.md`, criterion 4).
-6. **One variety, one page**: a variety's stock and entries, prices, low-stock warning and
-   catalog attributes are seen and edited from its page, and from no other screen.
+6. **One variety, one page**: a variety's stock and its movements (entries and
+   withdrawals), prices, low-stock warning and catalog attributes are seen and edited from
+   its page, and from no other screen.
 
 ## Behaviour
 
@@ -72,7 +81,8 @@ Success criteria:
     circle = baja, empty circle = ok) and its word, with "Sin entradas" when it has none
     and its detail line (`stock.md`);
   - "Oculta" beside the status when the variety is hidden from the catalog. It never
-    replaces the stock status: a hidden variety can still be sold, gifted and restocked;
+    replaces the stock status: a hidden variety can still be sold, gifted, withdrawn and
+    restocked;
   - grams and days left;
   - today's list price per gram, or "Sin precio: no se puede vender" when it has none.
 - **The summary line**, above the list:
@@ -87,8 +97,10 @@ Success criteria:
   qualifies (navigation.md).
 - **"+ Entrada de stock"**, a secondary button above the list (not a floating button),
   opening the stock entry form (`stock.md`).
+- **"Sacar del stock"**, a secondary button next to "+ Entrada de stock", on phone and
+  computer, opening the stock withdrawal form with no variety chosen (`stock.md`).
 - **"Nueva variedad"**: adds a variety (a form).
-- **"Todas las entradas"** at the foot (`stock.md`).
+- **"Todas las entradas"** at the foot (`stock.md`). It lists entries only.
 
 ### On screen: a variety's page (`VariedadDetalle`)
 
@@ -96,10 +108,15 @@ Success criteria:
   "+ Nueva venta".
 - **The summary line** at the top: grams, status, days left and today's list price (e.g.
   "64 g · ok · 21 días · $ 11.000 x g"), with "Oculta" when hidden.
-- **Two equal buttons**: "+ Entrada" (the stock entry form with this variety chosen,
-  `stock.md`) and "Nuevo precio" (the price entry form).
+- **Three actions**: "+ Entrada" (the stock entry form with this variety chosen,
+  `stock.md`), "Nuevo precio" (the price entry form) and "Sacar del stock" (the stock
+  withdrawal form with this variety chosen, `stock.md`). How the three sit together is
+  design's call.
 - **Sections**, each with its last 3 rows and "Ver todas" for the full list:
-  - **Stock y entradas**: the variety's stock entries (`stock.md`);
+  - **Stock y entradas**: the variety's stock entries and the withdrawals that touch it,
+    newest date first, then most recently recorded first; a withdrawal row shows its date,
+    "Promoción" or "Consumo propio" and this variety's grams with a minus sign, and opens
+    the withdrawal's detail (`stock.md`);
   - **Precios**: the price history with "Rige desde", newest first, each row with its
     delete action;
   - **Aviso de stock bajo**: the low-stock threshold, set or turned off here; its warning
@@ -108,8 +125,8 @@ Success criteria:
   - **En el catálogo**: the variety's catalog attributes (shown or hidden, emoji, indica
     share, aroma), edited here and nowhere else (`catalog.md`).
 - **Renaming** the variety is done here.
-- **Forms** opened from here (Nuevo precio, + Entrada, rename, the catalog attributes) have
-  "Cerrar" and a confirmation when leaving with something typed.
+- **Forms** opened from here (Nuevo precio, + Entrada, Sacar del stock, rename, the catalog
+  attributes) have "Cerrar" and a confirmation when leaving with something typed.
 - **Deleting a price entry**: confirmed with "Antes de borrar" ("¿Borrás…? / No, dejala /
   Sí, borrala"), and the copy says what takes the entry's place:
   - with an earlier entry, the price that applies again and its date, e.g. "Vuelve a regir
@@ -137,16 +154,19 @@ Success criteria:
   spacing, are 0.
 - **No curl (criterion 4)**: the end-to-end front run adds a variety, adds a price from its
   page, renames the variety, deletes a price entry, sets and turns off a low-stock
-  threshold, and edits the variety's catalog attributes from its page.
+  threshold, edits the variety's catalog attributes from its page, and records a
+  withdrawal from its page.
 - **Status shown (criterion 5)**: the list and the page show the status mark and word for
   each status, "Oculta" beside (never instead of) the status of a hidden variety, and the
   summary line for no varieties, all ok and a mix; never by color alone; covered by the
   front tests.
 - **One page (criterion 6)**: no other screen offers an edit of a variety's prices,
   entries' variety-level view, threshold or catalog attributes; checked against the docs
-  and the design.
+  and the design. Withdrawal rows on the page are told apart from entries by word and
+  sign, covered by front tests.
 
 ## Out of scope
 
 - The rules of catalog attributes: the catalog capability (they are edited here).
+- The rules of stock withdrawals: the stock capability (they are started and seen here).
 - Deleting a variety.
