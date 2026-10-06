@@ -22,7 +22,7 @@
  * first Publicar").
  */
 
-import { CATALOG, CUSTOMER, CUSTOMERS_OWING, SETTINGS, pathTo } from '../routes'
+import { CATALOG, CUSTOMER, CUSTOMERS, SETTINGS, pathTo } from '../routes'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useOutletContext } from 'react-router'
@@ -277,7 +277,7 @@ function TeDebenBlock({ debts }: { debts: PanelDebts }) {
 
   return (
     <div className="bloque-deben">
-      <Link to={CUSTOMERS_OWING} className="bloque-deben__titulo">
+      <Link to={CUSTOMERS} className="bloque-deben__titulo">
         Te deben
       </Link>
       <span className="cifra-xl">{formatMoney(debts.total_owed)}</span>

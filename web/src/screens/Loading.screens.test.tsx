@@ -4,7 +4,7 @@
  * its query never settles, and the skeleton must stand where the content will go.
  */
 
-import { CUSTOMER, CUSTOMERS_OWING, CUSTOMER_EDIT, EXPENSES, EXPENSE_CATEGORIES, SALE, SALES, SETTINGS_BUSINESS, SETTINGS_CATALOG_MESSAGE, SETTINGS_INTEGRATIONS, SETTINGS_USERS, STOCK, STOCK_ENTRY, pathTo } from '../routes'
+import { CUSTOMER, CUSTOMER_EDIT, EXPENSES, EXPENSE_CATEGORIES, SALE, SALES, SETTINGS_BUSINESS, SETTINGS_CATALOG_MESSAGE, SETTINGS_INTEGRATIONS, SETTINGS_USERS, STOCK, STOCK_ENTRY, pathTo } from '../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor } from '@testing-library/react'
 import type { ReactElement } from 'react'
@@ -22,7 +22,6 @@ import FlashProvider from '../flash/FlashProvider'
 import Root from '../Root'
 import ClienteFicha from './clientes/ClienteFicha'
 import ClienteForm from './clientes/ClienteForm'
-import TeDeben from './clientes/TeDeben'
 import EntradaStock from './EntradaStock'
 import Gastos from './Gastos'
 import BusinessGroup from './settings/BusinessGroup'
@@ -97,7 +96,6 @@ interface Case {
 
 const SCREENS: Case[] = [
   { name: 'Ventas', element: () => <Ventas />, route: SALES, path: SALES },
-  { name: 'TeDeben', element: () => <TeDeben />, route: CUSTOMERS_OWING, path: CUSTOMERS_OWING },
   { name: 'ClienteFicha', element: () => <ClienteFicha />, route: pathTo(CUSTOMER, { id: 7 }), path: CUSTOMER },
   {
     name: 'ClienteForm editing',

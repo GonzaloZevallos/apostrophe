@@ -1,71 +1,57 @@
 /**
- * "Te deben" (`payments.md`, "On screen"): opened from the Clientes header,
- * every customer with a balance above $0, oldest debt first — the API's own
- * order (`GET /payments/debtors`), never resorted here. No search, no new tab,
- * no entry in `Más` (PRD, "Out of scope").
+ * "Te deben" (`payments.md`, "On screen"): the section on top of Clientes, every
+ * customer with a balance above $0, oldest debt first — the API's own order
+ * (`GET /payments/debtors`), never resorted here. It is no screen of its own: the old
+ * `/clientes/deben` redirects to `/customers` (ADR-0024), so what that screen showed
+ * stays reachable here until Clientes' own rebuild.
  */
 
-import { CUSTOMER, CUSTOMERS, pathTo } from '../../routes'
+import { CUSTOMER, pathTo } from '../../routes'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router'
-import { NetworkError } from '../../api/client'
 import { keys } from '../../api/keys'
 import { getDebtors } from '../../api/payments'
-import ErrorGenerico from '../../components/ErrorGenerico'
-import SinConexion from '../../components/SinConexion'
-import Loading from '../../components/Loading'
 import { salesCount } from '../../format/counts'
 import { formatDateShort } from '../../format/dates'
 import { formatMoney } from '../../format/money'
 
-export const EMPTY_LIST = 'Nadie te debe.'
-
 export default function TeDeben() {
-  const { data, isPending, isError, error } = useQuery({
+  const { data } = useQuery({
     queryKey: keys.debtors(),
     queryFn: () => getDebtors(),
   })
 
+  // Nothing while it loads, when it fails or when nobody owes: Clientes' own list already
+  // shows its loading, its errors and its empty state, and this section is only worth a place
+  // above it when somebody owes.
+  if (data === undefined || data.debtors.length === 0) return null
+
   return (
-    <main className="pantalla">
-      <div className="cuerpo">
-        <div>
-          <Link to={CUSTOMERS}>Volver</Link>
-          <span className="encabezado__titulo">Te deben</span>
-        </div>
-
-        {isError && error instanceof NetworkError && <SinConexion />}
-        {isError && !(error instanceof NetworkError) && <ErrorGenerico />}
-
-        {isPending && <Loading />}
-
-        {!isError && !isPending && data !== undefined && (
-          <>
-            <div className="ventas__resumen">
-              <span className="cifra-xl">{formatMoney(data.total_owed)}</span>
-              <span className="rotulo">{`${salesCount(data.sales_owing_count)} debiendo`}</span>
-            </div>
-
-            {data.debtors.length === 0 && <span className="campo__rotulo">{EMPTY_LIST}</span>}
-
-            <div className="lista-clientes">
-              {data.debtors.map((debtor) => (
-                <Link
-                  key={debtor.customer.id}
-                  to={pathTo(CUSTOMER, { id: debtor.customer.id })}
-                  className="lista-clientes__fila"
-                >
-                  <span className="lista-clientes__nombre">{debtor.customer.name}</span>
-                  <span className="monto-deuda">{formatMoney(debtor.balance)}</span>
-                  {debtor.owing_since !== null && (
-                    <span className="monto-deuda">{`desde ${formatDateShort(debtor.owing_since)}`}</span>
-                  )}
-                </Link>
-              ))}
-            </div>
-          </>
-        )}
+    <section aria-label="Te deben">
+      <div>
+        <span className="encabezado__titulo">Te deben</span>
       </div>
-    </main>
+
+      <div className="ventas__resumen">
+        <span className="cifra-xl">{formatMoney(data.total_owed)}</span>
+        <span className="rotulo">{`${salesCount(data.sales_owing_count)} debiendo`}</span>
+      </div>
+
+      <div className="lista-clientes">
+        {data.debtors.map((debtor) => (
+          <Link
+            key={debtor.customer.id}
+            to={pathTo(CUSTOMER, { id: debtor.customer.id })}
+            className="lista-clientes__fila"
+          >
+            <span className="lista-clientes__nombre">{debtor.customer.name}</span>
+            <span className="monto-deuda">{formatMoney(debtor.balance)}</span>
+            {debtor.owing_since !== null && (
+              <span className="monto-deuda">{`desde ${formatDateShort(debtor.owing_since)}`}</span>
+            )}
+          </Link>
+        ))}
+      </div>
+    </section>
   )
 }

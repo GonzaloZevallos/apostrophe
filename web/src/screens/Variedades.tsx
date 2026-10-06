@@ -6,7 +6,7 @@
  * `caught.code === '…'` comparison.
  */
 
-import { VARIETY, pathTo } from '../routes'
+import { CATALOG, STOCK, STOCK_ENTRY_NEW, VARIETY, pathTo } from '../routes'
 import { type FormEvent, useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useOutletContext } from 'react-router'
@@ -146,6 +146,14 @@ export default function Variedades() {
             +
           </button>
         </div>
+        <div className="encabezado-fila">
+          <Link className="boton" to={CATALOG}>
+            Mandar catálogo
+          </Link>
+          <Link className="boton" to={STOCK_ENTRY_NEW}>
+            + Entrada de stock
+          </Link>
+        </div>
         {toast !== null && <AvisoExito texto={toast} />}
         {adding && (
           <form className="formulario" onSubmit={onSubmit}>
@@ -209,6 +217,7 @@ export default function Variedades() {
             )
           })}
         </div>
+        <Link to={STOCK}>Todas las entradas</Link>
       </div>
     </main>
   )

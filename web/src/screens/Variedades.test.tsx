@@ -5,7 +5,7 @@
  * module that calls `fetch`), never at `fetch` itself.
  */
 
-import { VARIETIES, VARIETY, pathTo } from '../routes'
+import { CATALOG, STOCK, STOCK_ENTRY_NEW, VARIETIES, VARIETY, pathTo } from '../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -80,6 +80,16 @@ test('a variety links to its own detail, with no business id in the path', async
 
   const link = await screen.findByRole('link', { name: /Sir Jack/ })
   expect(link).toHaveAttribute('href', pathTo(VARIETY, { id: 7 }))
+})
+
+test('offers the catalog, a new stock entry and all the entries, each opening its screen', async () => {
+  mockGet([])
+  renderScreen()
+
+  const catalog = await screen.findByRole('link', { name: 'Mandar catálogo' })
+  expect(catalog).toHaveAttribute('href', CATALOG)
+  expect(screen.getByRole('link', { name: '+ Entrada de stock' })).toHaveAttribute('href', STOCK_ENTRY_NEW)
+  expect(screen.getByRole('link', { name: 'Todas las entradas' })).toHaveAttribute('href', STOCK)
 })
 
 describe('adding a variety', () => {

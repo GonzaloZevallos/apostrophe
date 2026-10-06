@@ -1,5 +1,5 @@
 /**
- * The route table (plan, "Session"; "Shape"): a public branch (/entrar,
+ * The route table (plan, "Session"; "Shape"): a public branch (/login,
  * `/invitation/:token`) and a gated branch, exactly as the plan's invariants ask —
  * no gated query mounts under the public paths, because `GatedLayout` (which runs
  * `me`) is simply not in their element tree.
@@ -42,7 +42,6 @@ import ClienteFicha from './screens/clientes/ClienteFicha'
 import ClienteForm from './screens/clientes/ClienteForm'
 import Clientes from './screens/clientes/Clientes'
 import ClientesLayout from './screens/clientes/ClientesLayout'
-import TeDeben from './screens/clientes/TeDeben'
 import VariedadDetalle from './screens/VariedadDetalle'
 import Variedades from './screens/Variedades'
 import Reset from './screens/Reset'
@@ -57,7 +56,6 @@ import UsersGroup from './screens/settings/UsersGroup'
 import NuevaVenta from './screens/ventas/NuevaVenta'
 import VentaDetalle from './screens/ventas/VentaDetalle'
 import Ventas from './screens/ventas/Ventas'
-import { redirectRoutes } from './redirects'
 import GatedLayout from './shell/GatedLayout'
 import Shell from './shell/Shell'
 import { CATCH_ALL, HOME, INVITATION, LOGIN, RESET, SCREENS, type Screen, type ScreenId } from './routes'
@@ -71,7 +69,6 @@ const ELEMENTS: Record<ScreenId, ReactElement> = {
   'sale-new': <NuevaVenta />,
   sale: <VentaDetalle />,
   customers: <Clientes />,
-  'customers-owing': <TeDeben />,
   'customer-new': <ClienteForm mode="nuevo" />,
   customer: <ClienteFicha />,
   'customer-edit': <ClienteForm mode="editar" />,
@@ -97,7 +94,6 @@ const ELEMENTS: Record<ScreenId, ReactElement> = {
 /** The customer screens share `ClientesLayout`, which keeps the search across them. */
 const WITH_CUSTOMER_SEARCH: ReadonlySet<ScreenId> = new Set([
   'customers',
-  'customers-owing',
   'customer-new',
   'customer',
   'customer-edit',
@@ -128,7 +124,6 @@ export const router = createBrowserRouter([
         element: <GatedLayout />,
         children: [{ element: <Shell />, children: shellChildren }],
       },
-      ...redirectRoutes(),
       { path: CATCH_ALL, element: <Navigate to={HOME} replace /> },
     ],
   },

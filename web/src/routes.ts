@@ -43,7 +43,6 @@ export type ScreenId =
   | 'sale-new'
   | 'sale'
   | 'customers'
-  | 'customers-owing'
   | 'customer-new'
   | 'customer'
   | 'customer-edit'
@@ -70,33 +69,39 @@ export type Parent = ScreenId | { phone: ScreenId; computer: ScreenId }
 
 // Paths. A `:name` segment is a parameter; `pathTo` fills it.
 export const HOME = '/'
-export const LOGIN = '/entrar'
+export const LOGIN = '/login'
 export const INVITATION = '/invitation/:token'
 export const RESET = '/reset/:token'
 export const CATCH_ALL = '*'
 
-export const SALES = '/ventas'
-export const SALE_NEW = '/ventas/nueva'
-export const SALE = '/ventas/:id'
+export const SALES = '/sales'
+export const SALE_NEW = '/sales/new'
+export const SALE = '/sales/:id'
 
-export const CUSTOMERS = '/clientes'
-export const CUSTOMERS_OWING = '/clientes/deben'
-export const CUSTOMER_NEW = '/clientes/nuevo'
-export const CUSTOMER = '/clientes/:id'
-export const CUSTOMER_EDIT = '/clientes/:id/editar'
+export const CUSTOMERS = '/customers'
+export const CUSTOMER_NEW = '/customers/new'
+export const CUSTOMER = '/customers/:id'
+export const CUSTOMER_EDIT = '/customers/:id/edit'
 
-export const VARIETIES = '/variedades'
-export const VARIETY = '/variedades/:id'
-export const CATALOG = '/catalogo'
+export const VARIETIES = '/varieties'
+export const VARIETY = '/varieties/:id'
+export const CATALOG = '/varieties/catalog'
 
-export const STOCK = '/mi-stock'
-export const STOCK_ENTRY_NEW = '/mi-stock/nueva-entrada'
-export const STOCK_ENTRY = '/mi-stock/entradas/:id'
+export const STOCK = '/varieties/entries'
+export const STOCK_ENTRY_NEW = '/varieties/entries/new'
+export const STOCK_ENTRY = '/varieties/entries/:id'
 
 export const MORE = '/more'
 export const EXPENSES = '/expenses'
 export const EXPENSE_NEW = '/expenses/new'
-export const ANALYSIS = '/analisis'
+export const ANALYSIS = '/analysis'
+
+/** The old Spanish spellings: no front code uses them, only the server redirects them (308).
+ * Kept here so a test or an e2e spec can open one without writing the literal. */
+export const LEGACY_BUSINESS = '/negocio'
+export const LEGACY_EXPENSE_CATEGORIES = '/gastos/categorias'
+export const LEGACY_MORE = '/mas'
+export const LEGACY_EXPENSES = '/gastos'
 
 export const SETTINGS = '/settings'
 export const SETTINGS_BUSINESS = '/settings/business'
@@ -106,12 +111,6 @@ export const SETTINGS_CATALOG_MESSAGE = '/settings/catalog-message'
 export const EXPENSE_CATEGORIES = '/settings/expense-categories'
 export const SETTINGS_APPEARANCE = '/settings/appearance'
 export const SETTINGS_ACCOUNT = '/settings/account'
-
-/** Old paths that still redirect on the client (`redirects.ts`), until the server owns them. */
-export const LEGACY_BUSINESS = '/negocio'
-export const LEGACY_EXPENSE_CATEGORIES = '/gastos/categorias'
-export const LEGACY_MORE = '/mas'
-export const LEGACY_EXPENSES = '/gastos'
 
 /** Fills a template's `:name` segments: `pathTo(SALE, { id: 7 })` is `/ventas/7`. */
 export function pathTo(template: string, params: Readonly<Record<string, string | number>> = {}): string {
@@ -171,7 +170,6 @@ export const SCREENS: readonly Screen[] = [
     pane: 'list',
     place: { bar: 'customers', rail: 'customers' },
   }),
-  screen({ id: 'customers-owing', path: CUSTOMERS_OWING, kind: 'card', title: 'Te deben', parent: 'customers' }),
   screen({ id: 'customer-new', path: CUSTOMER_NEW, kind: 'form', title: 'Nuevo cliente', parent: 'customers' }),
   screen({ id: 'customer', path: CUSTOMER, kind: 'card', title: 'Cliente', pane: 'detail', parent: 'customers' }),
   screen({ id: 'customer-edit', path: CUSTOMER_EDIT, kind: 'form', title: 'Editar cliente', parent: 'customer' }),
@@ -247,13 +245,12 @@ export const SCREENS: readonly Screen[] = [
   screen({ id: 'settings-account', path: SETTINGS_ACCOUNT, kind: 'form', title: 'Tu cuenta', parent: 'settings' }),
 ]
 
-/** The public pages, the client redirects of `redirects.ts` and the catch-all: every route outside `Shell`. */
+/** The public pages and the catch-all: every route outside `Shell`. No front code redirects a
+ * Spanish path; the server's `LEGACY_FRONT_PATHS` does (308). */
 export const OUTSIDE: readonly Outside[] = [
   outside({ path: LOGIN }),
   outside({ path: INVITATION }),
   outside({ path: RESET }),
-  outside({ path: LEGACY_BUSINESS }),
-  outside({ path: LEGACY_EXPENSE_CATEGORIES }),
   outside({ path: CATCH_ALL }),
 ]
 

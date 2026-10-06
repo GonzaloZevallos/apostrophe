@@ -50,7 +50,6 @@ const EXPECTED: Record<ScreenId, Expected> = {
   'sale-new': expectation('form', 'sales', SALES_PLACE),
   sale: expectation('card', 'sales', SALES_PLACE),
   customers: expectation('root', undefined, CUSTOMERS_PLACE),
-  'customers-owing': expectation('card', 'customers', CUSTOMERS_PLACE),
   'customer-new': expectation('form', 'customers', CUSTOMERS_PLACE),
   customer: expectation('card', 'customers', CUSTOMERS_PLACE),
   'customer-edit': expectation('form', 'customer', CUSTOMERS_PLACE),
@@ -181,9 +180,60 @@ describe('the router against the registry', () => {
   })
 })
 
+/** Screens whose route is still null or still the old shape: the screen is not built yet, or a later piece flips it. */
+const NOT_BUILT = [
+  'InicioPrimeraVez',
+  'InicioPrimeraVezCompu',
+  'VerTodas',
+  'PrecioNuevo',
+  'PrecioNuevoCompu',
+  'VariedadNueva',
+  'VariedadNuevaCompu',
+  'CobroCompu',
+]
+
+describe('screens.json against the English routes', () => {
+  test('route is path for every screen, but the ones not built and Cobro (the payment route flips it)', () => {
+    const wrong = screensJson.screens.flatMap((entry) => {
+      if (NOT_BUILT.includes(entry.screen)) return entry.route === null ? [] : [`${entry.screen}: built, so route should not be null`]
+      if (entry.screen === 'Cobro') return entry.route === '/customers/{debtor}' ? [] : [`Cobro: ${entry.route}`]
+      return entry.route === entry.path ? [] : [`${entry.screen}: route ${entry.route} is not path ${entry.path}`]
+    })
+    expect(wrong).toEqual([])
+    expect(screensJson.screens.filter((entry) => entry.route === null).map((entry) => entry.screen).sort()).toEqual(
+      [...NOT_BUILT].sort(),
+    )
+  })
+
+  test('every English path of the registry is in the path column (but the three with no design file), and the old Spanish ones are gone', () => {
+    const paths = new Set(screensJson.screens.map((entry) => entry.path.replace(/\{[a-z_]+\}/g, ':id')))
+    const registered = [...SCREENS, ...OUTSIDE].map((entry) => entry.path.replace(/:[a-z]+/g, ':id'))
+    // These three screens have no design file of their own, so screens.json has no entry for them.
+    const NO_DESIGN = ['/customers/new', '/customers/:id/edit', '/varieties/entries/:id']
+    for (const path of registered.filter((path) => path !== routes.CATCH_ALL && !NO_DESIGN.includes(path))) {
+      expect(paths.has(path) || path.startsWith('/invitation') || path.startsWith('/reset'), `${path} is not in screens.json`).toBe(true)
+    }
+    for (const spanish of ['/ventas', '/clientes', '/mi-stock', '/variedades', '/catalogo', '/analisis', '/entrar']) {
+      expect(registered.some((path) => path === spanish || path.startsWith(`${spanish}/`)), spanish).toBe(false)
+    }
+  })
+
+  test('/varieties/entries shows today\'s entries list, as a card under Variedades', () => {
+    const leaf = matchRoutes(router.routes, '/varieties/entries')?.at(-1)
+    expect(screenIdOf(leaf?.route ?? {})).toBe('stock')
+    expect(parentOf('stock', 'phone')?.title).toBe('Variedades')
+  })
+
+  test('the old Spanish paths fall to the catch-all: no front code redirects them', () => {
+    for (const old of ['/ventas', '/clientes/3', '/mi-stock', '/catalogo', '/negocio', '/gastos/categorias', '/entrar']) {
+      expect(matchRoutes(router.routes, old)?.at(-1)?.route.path, old).toBe(routes.CATCH_ALL)
+    }
+  })
+})
+
 describe('pathTo and isPublicPath', () => {
   test('pathTo fills the parameters and refuses a missing one', () => {
-    expect(pathTo(routes.CUSTOMER_EDIT, { id: 7 })).toBe('/clientes/7/editar')
+    expect(pathTo(routes.CUSTOMER_EDIT, { id: 7 })).toBe('/customers/7/edit')
     expect(() => pathTo(routes.SALE)).toThrow(/needs id/)
   })
 
@@ -202,18 +252,21 @@ interface Source {
 }
 
 /** The first segment of every path the registry names: `'ventas'`, `'settings'`, and `''` for Inicio. */
-const FIRST_SEGMENTS = new Set(
-  [...SCREENS, ...OUTSIDE]
+const FIRST_SEGMENTS = new Set([
+  ...[...SCREENS, ...OUTSIDE]
     .map((entry) => entry.path)
     .filter((path) => path !== routes.CATCH_ALL)
     .map((path) => path.split('/')[1] ?? ''),
-)
+  // The old Spanish spellings: only the server redirects them, and only `routes.ts` names them.
+  ...['ventas', 'clientes', 'mi-stock', 'variedades', 'catalogo', 'analisis', 'entrar', 'mas', 'gastos', 'negocio'],
+])
 
 /** A literal that opens with `/`: a quote, the slash and the first segment after it. */
 const SLASH_LITERAL = /(?<!\w)(['"`])\/([a-z0-9-]*)/g
 
 /** A line that talks to the API, whose paths coincide with front paths (`/expenses`, `/sales`). */
-const API_LINE = /\bfetch\b|\burl\b|\brequest\.|\b(?:get|post|put|patch|del)\s*[<(]/
+const API_LINE =
+  /\bfetch\b|\burl\b|\brequest\.|\b(?:get|post|put|patch|del)\s*[<(]|toHaveBeenCalledWith|\bpath\s*[!=]==|\brequested\b/
 
 function withoutComments(content: string): string[] {
   return content
@@ -230,7 +283,8 @@ function findPathLiterals(files: Source[]): string[] {
     .filter(({ path }) => !path.startsWith('src/api/'))
     .filter(({ content }) =>
       withoutComments(content)
-        .filter((line) => !API_LINE.test(line))
+        // A line that talks to the API, or the argument line of a call opened on the one before.
+        .filter((line, index, lines) => !API_LINE.test(line) && !API_LINE.test(lines[index - 1] ?? ''))
         .some((line) =>
           [...line.matchAll(SLASH_LITERAL)].some(
             ([whole, quote, segment]) =>
@@ -257,10 +311,11 @@ describe('source scan for path literals', () => {
   test('flags a file that writes a front path, old or new, in any quote', () => {
     expect(
       findPathLiterals([
-        { path: 'src/screens/X.tsx', content: `<Link to="/ventas">` },
+        { path: 'src/screens/X.tsx', content: `<Link to="/sales">` },
         { path: 'src/screens/Y.tsx', content: "navigate('/settings/users?x=1')" },
-        { path: 'src/screens/Z.tsx', content: 'to={`/clientes/${id}`}' },
-        { path: 'src/screens/W.tsx', content: "const a = '/analisis'" },
+        { path: 'src/screens/Z.tsx', content: 'to={`/customers/${id}`}' },
+        { path: 'src/screens/W.tsx', content: "const a = '/analysis'" },
+        { path: 'src/screens/S.tsx', content: "page.goto('/gastos')" },
         { path: 'src/screens/V.tsx', content: "navigate('/')" },
         { path: 'e2e/a.spec.ts', content: "await page.goto('/more')" },
         { path: 'src/screens/U.test.tsx', content: "initialEntries={['/expenses/new']}" },
@@ -270,6 +325,7 @@ describe('source scan for path literals', () => {
       'src/screens/Y.tsx',
       'src/screens/Z.tsx',
       'src/screens/W.tsx',
+      'src/screens/S.tsx',
       'src/screens/V.tsx',
       'e2e/a.spec.ts',
       'src/screens/U.test.tsx',
@@ -284,6 +340,7 @@ describe('source scan for path literals', () => {
         { path: 'src/screens/Z.tsx', content: "// goes to '/mas'\n/* '/gastos' */" },
         { path: 'src/screens/A.tsx', content: "await post<Saved>('/sales', body)" },
         { path: 'src/screens/A.test.tsx', content: "expect(url).toBe('/expenses/9')" },
+        { path: 'src/screens/B.test.tsx', content: "expect(fetch).toHaveBeenCalledWith(\n  '/customers',\n  init)" },
         { path: 'src/api/me.ts', content: "get('/customers')" },
         { path: 'src/routes.ts', content: "export const MORE = '/more'" },
       ]),
