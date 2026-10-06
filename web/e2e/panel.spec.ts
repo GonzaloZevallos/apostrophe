@@ -28,6 +28,7 @@ import { expect, test } from '@playwright/test'
 import { newBusinessInvitationUrl } from './backend.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
+import { expectOnlyTheThemeStored } from './helpers/storage.js'
 
 const PASSWORD = 'correcthorsebattery'
 
@@ -386,10 +387,6 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   // Nothing personal or technical reaches the console or the browser's own storage
   // (CODING_STANDARDS.md section 9) — a customer's name and several amounts moved
   // through this run's panel alone.
-  const storage = await page.evaluate(() => ({
-    local: Object.keys(localStorage).length,
-    session: Object.keys(sessionStorage).length,
-  }))
-  expect(storage).toEqual({ local: 0, session: 0 })
+  await expectOnlyTheThemeStored(page)
   expect(consoleMessages).toEqual([])
 })
