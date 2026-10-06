@@ -16,7 +16,7 @@ function parseDate(iso: string): { year: string; month: string; day: string } {
   return { year: year ?? '', month: month ?? '', day: day ?? '' }
 }
 
-function parseMonth(month: string): { year: string; monthNumber: number } {
+function splitMonth(month: string): { year: string; monthNumber: number } {
   const match = MONTH_RE.exec(month)
   if (match === null) throw new Error(`not an API month: ${month}`)
   const [, year, monthPart] = match
@@ -57,16 +57,26 @@ const MONTH_NAMES = [
   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
 ]
 
+const SEARCH_MONTH_RE = /^\d{4}-(0[1-9]|1[0-2])$/
+
+/** The month Gastos shows: the first `month` value of the search that is a valid
+ * `YYYY-MM`, else the month of `today`. The one reader of `?month=` (future months
+ * stay allowed). */
+export function parseMonth(search: URLSearchParams, today: string): string {
+  const valid = search.getAll('month').find((value) => SEARCH_MONTH_RE.test(value))
+  return valid ?? today.slice(0, 7)
+}
+
 /** `"2026-10"` → `"Octubre 2026"`, for Gastos's month header. */
 export function formatMonthLong(month: string): string {
-  const { year, monthNumber } = parseMonth(month)
+  const { year, monthNumber } = splitMonth(month)
   return `${MONTH_NAMES[monthNumber - 1]} ${year}`
 }
 
 /** The month before or after `month` (`delta` in either direction), for moving
  * between months in Gastos. */
 export function shiftMonth(month: string, delta: number): string {
-  const { year, monthNumber } = parseMonth(month)
+  const { year, monthNumber } = splitMonth(month)
   const total = Number(year) * 12 + (monthNumber - 1) + delta
   const shiftedYear = Math.floor(total / 12)
   const shiftedMonth = ((total % 12) + 12) % 12

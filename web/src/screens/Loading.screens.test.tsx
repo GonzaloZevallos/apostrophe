@@ -10,6 +10,7 @@ import type { ReactElement } from 'react'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import type { Me } from '../api/me'
+import FlashProvider from '../flash/FlashProvider'
 import Root from '../Root'
 import ClienteFicha from './clientes/ClienteFicha'
 import ClienteForm from './clientes/ClienteForm'
@@ -24,8 +25,13 @@ import VentaDetalle from './ventas/VentaDetalle'
 
 const ME: Me = { email: 'a@b.com', business_name: 'Negocio', today: '2026-10-03' }
 
+// The gated layout's providers: a screen may raise a flash (`GatedLayout`).
 function Context() {
-  return <Outlet context={ME} />
+  return (
+    <FlashProvider>
+      <Outlet context={ME} />
+    </FlashProvider>
+  )
 }
 
 function renderPending(element: ReactElement, route: string, path: string) {

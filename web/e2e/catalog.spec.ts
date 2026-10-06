@@ -17,6 +17,7 @@
 import { expect, test } from '@playwright/test'
 import { newBusinessInvitationUrl } from './backend.js'
 import { watchConsole } from './console.js'
+import { openMas } from './helpers/openMas.js'
 
 const PASSWORD = 'correcthorsebattery'
 
@@ -58,7 +59,7 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
   await expect(page.getByText('Entrada guardada')).toBeVisible()
 
   // Más → Catálogo.
-  await page.goto('/mas')
+  await openMas(page)
   await page.getByRole('link', { name: /Catálogo/ }).click()
   await expect(page).toHaveURL(/\/catalogo$/)
 

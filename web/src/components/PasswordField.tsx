@@ -1,5 +1,5 @@
 /**
- * A password field with its own reveal (ADR-0024): hidden by default, "Mostrar" /
+ * A password field with its own reveal (ADR-0025): hidden by default, "Mostrar" /
  * "Ocultar" toggles it, and a refusal shows inline as an alert, under the input.
  * The reveal is a sibling of the label, never inside it, so the label's name stays
  * the field's name.

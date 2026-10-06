@@ -15,7 +15,7 @@
  * `Invitacion.tsx`): the code is in `contract.json` with `kind: "gone"`, so a
  * rename on the backend side fails `tsc` here instead of silently falling through.
  *
- * No design file exists for this screen: it renders through `AuthPage` (ADR-0024),
+ * No design file exists for this screen: it renders through `AuthPage` (ADR-0025),
  * the layout Invitacion shares, and is compared against `Invitacion.dc.html` through
  * the `Reset` entry of `scripts/design/screens.json` (`compare.sh`). It is shorter
  * than Invitacion's own form only because this screen's copy has no badge, subtitle

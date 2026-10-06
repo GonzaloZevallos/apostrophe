@@ -1,5 +1,5 @@
 /**
- * Copy the getting-in screens share (ADR-0024). A screen never imports a message
+ * Copy the getting-in screens share (ADR-0025). A screen never imports a message
  * constant from another screen: what two of them say lives here.
  */
 

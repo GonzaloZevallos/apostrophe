@@ -23,6 +23,7 @@ from app.payments.adapters.router import as_http as payments_as_http
 from app.pinned_catalog.adapters.router import as_http as pinned_catalog_as_http
 from app.results.adapters.router import as_http as results_as_http
 from app.sales.adapters.router import as_http as sales_as_http
+from app.static_spa import SHARED_FRONT_PATHS
 from app.stock.adapters.router import as_http as stock_as_http
 from app.varieties.adapters.router import as_http as varieties_as_http
 from tests.conftest import SETTINGS, TEST_HASHER
@@ -167,7 +168,18 @@ def test_the_contract_check_fails_when_a_gone_code_is_labelled_refusal() -> None
         check_contract({"a.code": "gone"}, {"a.code": {"kind": "refusal"}})
 
 
-def test_no_api_path_segment_is_a_front_segment() -> None:
+def check_front_segment_overlap(
+    api_first_segments: set[str], front_segments: set[str], shared_front_paths: frozenset[str]
+) -> None:
+    """A segment both the API and the front name is only allowed when an exact entry of
+    `SHARED_FRONT_PATHS` serves the front there (docs/adr/0024). Until `routes-flip` adds
+    `expenses` to `frontSegments` the overlap is empty, which this accepts."""
+    shared_segments = {path.strip("/").split("/", 1)[0] for path in shared_front_paths}
+    unserved = (api_first_segments & front_segments) - shared_segments
+    assert not unserved, f"the API and the front both claim {sorted(unserved)} with no shared entry"
+
+
+def test_an_api_path_segment_is_a_front_segment_only_through_a_shared_front_path() -> None:
     contract = json.loads(CONTRACT_PATH.read_text())
     front_segments: set[str] = set(contract["frontSegments"])
 
@@ -178,4 +190,15 @@ def test_no_api_path_segment_is_a_front_segment() -> None:
         path.strip("/").split("/", 1)[0] for path in document["paths"] if path != "/"
     }
 
-    assert api_first_segments.isdisjoint(front_segments)
+    check_front_segment_overlap(api_first_segments, front_segments, SHARED_FRONT_PATHS)
+
+
+def test_the_overlap_check_accepts_a_segment_a_shared_path_serves() -> None:
+    check_front_segment_overlap({"expenses", "sales"}, {"expenses", "entrar"}, SHARED_FRONT_PATHS)
+
+
+def test_the_overlap_check_rejects_a_segment_with_no_shared_path() -> None:
+    with pytest.raises(AssertionError, match="analysis"):
+        check_front_segment_overlap(
+            {"expenses", "analysis"}, {"expenses", "analysis"}, SHARED_FRONT_PATHS
+        )

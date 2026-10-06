@@ -24,6 +24,7 @@ import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGeneri
 import GoneNotice from '../components/GoneNotice'
 import SinConexion from '../components/SinConexion'
 import Loading from '../components/Loading'
+import { EXPENSES } from '../routes'
 
 export const CANNOT_REMOVE = 'No se puede borrar: todavía tiene gastos. Podés renombrarla.'
 export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
@@ -201,7 +202,7 @@ export default function GastoCategorias() {
   return (
     <main className="pantalla">
       <div className="cuerpo">
-        <Link to="/gastos" className="boton--enlace">
+        <Link to={EXPENSES} className="boton--enlace">
           Volver a Gastos
         </Link>
         <span className="encabezado__titulo">Categorías</span>

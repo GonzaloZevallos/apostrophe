@@ -1,5 +1,5 @@
 /**
- * The one page every getting-in screen renders through (ADR-0024): a single centred,
+ * The one page every getting-in screen renders through (ADR-0025): a single centred,
  * phone-width column on every viewport, with no per-screen or computer-only variant.
  * `eyebrow` is the small line above the title (Invitacion's "Te invitaron a").
  * `title` is optional only so a screen still waiting on its lookup (`Loading`) or

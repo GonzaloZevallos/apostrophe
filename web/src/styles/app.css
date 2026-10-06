@@ -339,6 +339,25 @@ button {
   font-weight: 600;
 }
 
+/* Below the rail's divider (`GastosCompu.dc.html`): smaller, no icon, the active one
+ * filled with the accent's bar on its left edge besides (never color alone). */
+.riel-lateral__divisor {
+  height: 1px;
+  margin: 12px 10px;
+  background: var(--linea);
+}
+
+.riel-lateral__item--secundario {
+  min-height: 42px;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.riel-lateral__item--secundario.riel-lateral__item--activo {
+  font-weight: 600;
+  box-shadow: inset 2px 0 0 var(--acento);
+}
+
 /* The fixed "Nueva venta" button (accounts.md, "Shell"): a pill above the bottom
  * bar on the phone, matching `.boton`'s own shape (`Inicio.dc.html`). Its
  * `--escritorio` twin sits above the side rail's items instead (`InicioCompu.dc.html`)
@@ -361,17 +380,24 @@ button {
 .mas__item {
   display: flex;
   align-items: center;
+  gap: var(--espacio-md);
   min-height: var(--alto-tocable);
-  padding: var(--espacio-sm) 0;
+  padding: var(--espacio-md) 0;
   border-bottom: 1px solid var(--linea);
   color: var(--tinta);
   text-decoration: none;
 }
 
 .mas__item-texto {
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 2px;
+}
+
+.mas__item-flecha {
+  display: flex;
+  color: var(--tenue);
 }
 
 .mas__item-rotulo {
@@ -693,7 +719,41 @@ button {
   font-weight: 500;
 }
 
+/* `Gastos` (`Gastos.dc.html`, `GastosCompu.dc.html`): on the phone the title and the
+ * round "Cargar gasto" sit on one row and the month pill under them; from 900px the
+ * title, the month pill and the "Cargar gasto" button share one row, the summary and
+ * "Últimos" side by side. */
+.gastos__cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-md);
+}
+
+.gastos__titulo {
+  flex: 1;
+}
+
+.gastos__cargar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espacio-sm);
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radio-pildora);
+  background: var(--superficie);
+  color: var(--tinta);
+  text-decoration: none;
+}
+
+.gastos__cargar-texto {
+  display: none;
+}
+
 .gastos__mes {
+  order: 3;
+  flex-basis: 100%;
   display: flex;
   align-items: center;
   gap: var(--espacio-sm);
@@ -724,10 +784,40 @@ button {
   font-weight: 600;
 }
 
+.gastos__resumen,
+.gastos__ultimos {
+  display: flex;
+  flex-direction: column;
+}
+
+.gastos__total {
+  display: flex;
+  flex-direction: column;
+  padding-top: var(--espacio-xs);
+}
+
+.gastos__conteo {
+  margin-top: 6px;
+  font-size: 14px;
+  color: var(--tinta2);
+}
+
+.gastos__seccion {
+  padding: var(--espacio-lg) 0 6px;
+  font-size: 14px;
+  color: var(--tinta2);
+}
+
+.gastos__categorias {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
 .gastos__categoria {
   display: flex;
   flex-direction: column;
-  gap: var(--espacio-xs);
+  gap: 7px;
 }
 
 .gastos__categoria-cabecera {
@@ -744,6 +834,35 @@ button {
 .gastos__categoria-subtotal {
   font-size: 17px;
   font-weight: 600;
+}
+
+.gastos__barra {
+  display: block;
+  height: 8px;
+  border-radius: var(--radio-pildora);
+  background: var(--linea);
+}
+
+.gastos__barra-relleno {
+  display: block;
+  height: 8px;
+  border-radius: var(--radio-pildora);
+  background: var(--tinta);
+}
+
+.gastos__pie {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--espacio-md);
+}
+
+.gastos__pie .pie {
+  padding: 0;
+  color: var(--tinta2);
+  text-align: left;
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 .fila-gasto {
@@ -771,14 +890,126 @@ button {
   color: var(--tinta2);
 }
 
-.fila-gasto__texto {
+.fila-gasto__cuerpo {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fila-gasto__categoria {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.fila-gasto__texto {
+  font-size: 13px;
+  color: var(--tinta2);
 }
 
 .fila-gasto__monto {
   font-size: 16px;
   font-weight: 600;
+}
+
+/* `GastoNuevo.dc.html`: the form's own header, "Cerrar" on the right. */
+.gasto-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-xl);
+  width: 100%;
+  max-width: 480px;
+}
+
+.gasto-form__cabecera {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+}
+
+.gasto-form__titulo {
+  flex: 1;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.gasto-form .boton--enlace {
+  align-self: flex-start;
+}
+
+.gasto-form .gasto-form__cerrar {
+  box-shadow: none;
+  color: var(--tinta2);
+  font-weight: 600;
+}
+
+.campo__input--monto {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+@media (min-width: 900px) {
+  .gastos__cargar {
+    order: 3;
+    width: auto;
+    height: 44px;
+    padding: 0 18px;
+    background: var(--boton);
+    color: var(--boton-texto);
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .gastos__cargar-texto {
+    display: inline;
+  }
+
+  .gastos__titulo {
+    font-size: 28px;
+    letter-spacing: -0.03em;
+  }
+
+  .gastos__mes {
+    order: 2;
+    flex-basis: auto;
+    min-width: 260px;
+    height: 44px;
+  }
+
+  .gastos {
+    display: grid;
+    grid-template-columns: minmax(320px, 420px) minmax(320px, 420px);
+    grid-template-areas:
+      'cabecera cabecera'
+      'resumen ultimos'
+      'pie ultimos';
+    align-content: start;
+    column-gap: 28px;
+  }
+
+  .gastos__cabecera {
+    grid-area: cabecera;
+    justify-content: space-between;
+  }
+
+  .gastos__titulo {
+    flex: 1 1 auto;
+  }
+
+  .gastos__resumen {
+    grid-area: resumen;
+  }
+
+  .gastos__ultimos {
+    grid-area: ultimos;
+  }
+
+  .gastos__pie {
+    grid-area: pie;
+  }
 }
 
 .panel {
@@ -2225,7 +2456,7 @@ button {
 /* ===== end Loading ===== */
 
 /* ===== auth-layout ===== */
-/* `AuthPage` (ADR-0024): the one centred, phone-width column every getting-in screen
+/* `AuthPage` (ADR-0025): the one centred, phone-width column every getting-in screen
  * renders through, on every viewport. Tokens only. */
 .auth-page {
   align-items: center;
