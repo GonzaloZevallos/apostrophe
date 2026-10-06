@@ -167,12 +167,20 @@ def test_the_contract_check_fails_when_a_gone_code_is_labelled_refusal() -> None
         check_contract({"a.code": "gone"}, {"a.code": {"kind": "refusal"}})
 
 
-def test_no_api_path_segment_is_a_static_segment() -> None:
-    # Only the static files must stay out of the API's way; the route segments may overlap
-    # it, because `NavigationFallback` tells a navigation from an API call (ADR-0024).
-    contract = json.loads(CONTRACT_PATH.read_text())
-    static_segments: set[str] = set(contract["staticSegments"])
+def check_front_segments(
+    api_first_segments: set[str], static_segments: set[str], route_segments: set[str]
+) -> None:
+    """Only the static files must stay out of the API's way; the route segments may overlap
+    it, because `NavigationFallback` tells a navigation from an API call (ADR-0024). The
+    two front lists never share a segment."""
+    shared_with_api = api_first_segments & static_segments
+    assert not shared_with_api, f"static segments the API also answers: {sorted(shared_with_api)}"
+    both = static_segments & route_segments
+    assert not both, f"segments listed as static and as route: {sorted(both)}"
 
+
+def test_the_contract_front_segments_are_sound() -> None:
+    contract = json.loads(CONTRACT_PATH.read_text())
     document = create_app(
         SETTINGS, hasher=TEST_HASHER, telegram=FakeTelegram(), upkeep_ticker=False
     ).openapi()
@@ -180,4 +188,20 @@ def test_no_api_path_segment_is_a_static_segment() -> None:
         path.strip("/").split("/", 1)[0] for path in document["paths"] if path != "/"
     }
 
-    assert api_first_segments.isdisjoint(static_segments)
+    check_front_segments(
+        api_first_segments, set(contract["staticSegments"]), set(contract["routeSegments"])
+    )
+
+
+def test_the_segment_check_fails_when_a_static_segment_is_an_api_segment() -> None:
+    with pytest.raises(AssertionError, match="assets"):
+        check_front_segments({"sales", "assets"}, {"assets", "fonts"}, {"sales"})
+
+
+def test_the_segment_check_passes_when_a_route_segment_overlaps_the_api() -> None:
+    check_front_segments({"sales"}, {"assets"}, {"sales"})
+
+
+def test_the_segment_check_fails_when_a_segment_is_both_static_and_route() -> None:
+    with pytest.raises(AssertionError, match="fonts"):
+        check_front_segments(set(), {"assets", "fonts"}, {"fonts", "sales"})

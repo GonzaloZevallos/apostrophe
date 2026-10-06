@@ -91,6 +91,7 @@ def test_every_overlapping_segment_reaches_the_api_without_navigation_headers(
         for headers in ({}, JSON_ACCEPT, {"Sec-Fetch-Mode": "cors"}):
             response = served_client.get(f"/{segment}", headers=headers)
 
+            assert response.status_code == 401, segment
             assert response.text != SHELL, segment
             assert response.headers["vary"] == VARY, segment
 
@@ -98,11 +99,13 @@ def test_every_overlapping_segment_reaches_the_api_without_navigation_headers(
 def test_a_signed_in_api_call_still_answers_json_with_the_vary(
     client: TestClient, served_app: FastAPI
 ) -> None:
-    # `client` signs in over its own app; the same session cookie is replayed against the
-    # app that serves the front.
-    with TestClient(served_app, cookies=client.cookies) as served:
-        response = served.get("/sales", headers=JSON_ACCEPT)
+    # `client` signs in over its own app (a bearer token, same database); the same token is
+    # replayed against the app that serves the front.
+    signed_in_headers = {**JSON_ACCEPT, "Authorization": client.headers["Authorization"]}
+    with TestClient(served_app) as served:
+        response = served.get("/sales", headers=signed_in_headers)
 
+    assert response.status_code == 200
     assert response.headers["content-type"].startswith("application/json")
     assert response.headers["vary"] == VARY
 
@@ -150,6 +153,3 @@ def test_a_path_that_merely_starts_like_a_segment_is_not_a_route(
 
     assert "vary" not in response.headers
 
-
-def test_the_static_segments_are_never_route_segments() -> None:
-    assert set(CONTRACT["staticSegments"]).isdisjoint(ROUTE_SEGMENTS)
