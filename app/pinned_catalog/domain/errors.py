@@ -92,6 +92,33 @@ class TestSendFailed(PinnedCatalogRuleBroken):
         super().__init__("the test send failed")
 
 
+class NoMessages(PinnedCatalogRuleBroken):
+    """Buscar mi chat: nobody wrote privately to the bot."""
+
+    code: ClassVar[str] = "pinned_catalog.no_messages"
+
+    def __init__(self) -> None:
+        super().__init__("no private chat wrote to the bot")
+
+
+class SeveralChats(PinnedCatalogRuleBroken):
+    """Buscar mi chat: more than one private chat wrote to the bot."""
+
+    code: ClassVar[str] = "pinned_catalog.several_chats"
+
+    def __init__(self) -> None:
+        super().__init__("more than one private chat wrote to the bot")
+
+
+class UpdatesUnreadable(PinnedCatalogRuleBroken):
+    """Buscar mi chat: Telegram would not hand over the bot's messages."""
+
+    code: ClassVar[str] = "pinned_catalog.updates_unreadable"
+
+    def __init__(self) -> None:
+        super().__init__("the bot's messages cannot be read")
+
+
 class UpdatesRefusal(StrEnum):
     """Why Telegram refused to hand over the bot's pending messages (getUpdates), with
     no part of Telegram's own description. Only `classify_updates` (the Telegram

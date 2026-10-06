@@ -73,3 +73,11 @@ class PinnedCatalogTestIn(BaseModel):
     token: str | None
     own_chat: str
     channel_chat: str | None
+
+
+class OwnChatLookupIn(BaseModel):
+    token: str | None
+
+
+class OwnChatLookupOut(BaseModel):
+    own_chat: str

@@ -13,6 +13,8 @@ from app.accounts.adapters.deps import CurrentBusinessId
 from app.clock import Clock, get_clock, get_today
 from app.http_errors import TranslateErrors
 from app.pinned_catalog.adapters.schemas import (
+    OwnChatLookupIn,
+    OwnChatLookupOut,
     PinnedCatalogOut,
     PinnedCatalogStatusOut,
     PinnedCatalogTestIn,
@@ -25,19 +27,23 @@ from app.pinned_catalog.adapters.sql_snapshot import SqlPinSnapshots
 from app.pinned_catalog.adapters.telegram_holder import PinnedCatalogTelegram
 from app.pinned_catalog.adapters.token_cipher import TokenCipher
 from app.pinned_catalog.application.channel_telegram import ChannelTelegram
-from app.pinned_catalog.application.ports import TelegramApi
+from app.pinned_catalog.application.own_chat_lookup import look_up_own_chat
+from app.pinned_catalog.application.ports import PrivateChats, TelegramApi
 from app.pinned_catalog.application.push import BusinessLocks, push, status_of, test_send
 from app.pinned_catalog.domain.errors import (
     BotCannotPost,
+    NoMessages,
     NotReady,
     OwnChatNotFound,
     OwnChatNotStarted,
     OwnChatRequired,
+    SeveralChats,
     TelegramUnreachable,
     TestSendFailed,
     TokenInvalid,
     TokenRequired,
     TooLong,
+    UpdatesUnreadable,
 )
 
 router = APIRouter(prefix="/pinned-catalog", tags=["pinned_catalog"])
@@ -61,6 +67,11 @@ def get_telegram_api(request: Request) -> TelegramApi:
     return holder.api
 
 
+def get_private_chats(request: Request) -> PrivateChats:
+    holder = cast(PinnedCatalogTelegram, request.app.state.pinned_catalog_telegram)
+    return holder.updates
+
+
 def get_locks(request: Request) -> BusinessLocks:
     return cast(BusinessLocks, request.app.state.pinned_catalog_locks)
 
@@ -72,6 +83,7 @@ def get_cipher(request: Request) -> TokenCipher:
 EngineDep = Annotated[Engine, Depends(get_engine)]
 ChannelTelegramDep = Annotated[ChannelTelegram, Depends(get_channel_telegram)]
 TelegramApiDep = Annotated[TelegramApi, Depends(get_telegram_api)]
+PrivateChatsDep = Annotated[PrivateChats, Depends(get_private_chats)]
 LocksDep = Annotated[BusinessLocks, Depends(get_locks)]
 CipherDep = Annotated[TokenCipher, Depends(get_cipher)]
 
@@ -107,6 +119,9 @@ as_http = TranslateErrors(
                 OwnChatNotStarted,
                 OwnChatNotFound,
                 TestSendFailed,
+                NoMessages,
+                SeveralChats,
+                UpdatesUnreadable,
             ),
         ),
     ]
@@ -173,3 +188,16 @@ def post_pinned_catalog_publish(
         snap = snapshots.snapshot(business_id, today)
         status = status_of(snap.settings, snap.pin)
         return PinnedCatalogOut.of(snap.settings, status)
+
+
+@router.post("/own-chat-lookup")
+def post_pinned_catalog_own_chat_lookup(
+    body: OwnChatLookupIn,
+    business_id: CurrentBusinessId,
+    updates: PrivateChatsDep,
+    snapshots: SnapshotsDep,
+    today: TodayDep,
+) -> OwnChatLookupOut:
+    with as_http:
+        own_chat = look_up_own_chat(updates, snapshots, business_id, body.token, today)
+        return OwnChatLookupOut(own_chat=own_chat)

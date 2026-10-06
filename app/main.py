@@ -35,13 +35,12 @@ from app.payments.adapters.router import customers_router as payments_customers_
 from app.payments.adapters.router import router as payments_router
 from app.payments.adapters.settlements import SqlBalances, SqlOwingSales
 from app.pinned_catalog.adapters.router import router as pinned_catalog_router
-from app.pinned_catalog.adapters.telegram_holder import PinnedCatalogTelegram
+from app.pinned_catalog.adapters.telegram_holder import PinnedCatalogTelegram, TelegramBackend
 from app.pinned_catalog.adapters.telegram_http import HttpTelegram
 from app.pinned_catalog.adapters.ticker import run_ticker
 from app.pinned_catalog.adapters.token_cipher import TokenCipher
 from app.pinned_catalog.adapters.upkeep_trigger import schedule_upkeep
 from app.pinned_catalog.application.channel_telegram import ChannelTelegram
-from app.pinned_catalog.application.ports import TelegramApi
 from app.pinned_catalog.application.push import BusinessLocks
 from app.results.adapters.router import router as results_router
 from app.sales.adapters.router import router as sales_router
@@ -129,7 +128,7 @@ def create_app(
     engine: Engine | None = None,
     clock: Clock = system_clock,
     hasher: PasswordHasher | None = None,
-    telegram: TelegramApi | None = None,
+    telegram: TelegramBackend | None = None,
     upkeep_ticker: bool = True,
 ) -> FastAPI:
     settings = settings or Settings.from_env()
@@ -147,7 +146,9 @@ def create_app(
     # itself and the trigger dependency are the `upkeep` subtask's: this flag is only
     # stored here for it to read.
     api = telegram or HttpTelegram()
-    app.state.pinned_catalog_telegram = PinnedCatalogTelegram(api=api, channel=ChannelTelegram(api))
+    app.state.pinned_catalog_telegram = PinnedCatalogTelegram(
+        api=api, channel=ChannelTelegram(api), updates=api
+    )
     app.state.pinned_catalog_locks = BusinessLocks()
     app.state.pinned_catalog_cipher = TokenCipher(settings.secret_key)
     app.state.pinned_catalog_upkeep_ticker = upkeep_ticker

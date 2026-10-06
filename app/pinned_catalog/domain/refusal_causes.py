@@ -15,6 +15,8 @@ from app.pinned_catalog.domain.errors import (
     SendRefusal,
     TestSendFailed,
     TokenInvalid,
+    UpdatesRefusal,
+    UpdatesUnreadable,
 )
 
 
@@ -50,4 +52,15 @@ def for_test_send(
             return TestSendFailed()
         case SendRefusal.OTHER:
             return TestSendFailed()
+    assert_never(cause)
+
+
+def for_lookup(cause: UpdatesRefusal) -> TokenInvalid | UpdatesUnreadable:
+    """Buscar mi chat: a token Telegram does not know is the token's own reason; any
+    other refusal to hand over the messages is the unreadable one."""
+    match cause:
+        case UpdatesRefusal.TOKEN_INVALID:
+            return TokenInvalid()
+        case UpdatesRefusal.UNREADABLE:
+            return UpdatesUnreadable()
     assert_never(cause)

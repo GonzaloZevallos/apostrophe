@@ -93,6 +93,15 @@ const PROBARLO_OWN_CHAT_NOT_FOUND_REASON =
   'No encontramos tu chat: revisá el número y tocá Iniciar en tu bot.'
 const PROBARLO_TEST_FAILED_REASON = 'No pudimos enviarte la prueba: revisá el token y tu chat.'
 
+/** What Buscar mi chat says when it finds no one person (the PRD's table): fixed text,
+ * repeating nothing typed and showing no name or number. */
+const LOOKUP_NO_MESSAGES_REASON =
+  'Todavía no vemos mensajes en tu bot: abrilo en Telegram, tocá Iniciar y buscá de nuevo.'
+const LOOKUP_SEVERAL_CHATS_REASON =
+  'Le escribió más de una persona a tu bot: buscá tu número con @userinfobot y escribilo acá.'
+const LOOKUP_UPDATES_UNREADABLE_REASON =
+  'No pudimos leer los mensajes de tu bot: buscá tu número con @userinfobot y escribilo acá.'
+
 /** Every `pinned_catalog.*` code `contract.json` lists, mapped here exhaustively
  * (plan, "Front": "Map every `pinned_catalog.*` code in `web/src/api/refusals.ts`;
  * `too_long` uses the same text as the status") — `PinnedCatalogBot.tsx` reads this
@@ -108,7 +117,10 @@ export const PINNED_CATALOG_REFUSAL_OVERRIDES: Record<
   | 'pinned_catalog.token_invalid'
   | 'pinned_catalog.own_chat_not_started'
   | 'pinned_catalog.own_chat_not_found'
-  | 'pinned_catalog.test_failed',
+  | 'pinned_catalog.test_failed'
+  | 'pinned_catalog.no_messages'
+  | 'pinned_catalog.several_chats'
+  | 'pinned_catalog.updates_unreadable',
   string
 > = {
   'pinned_catalog.token_required': PINNED_CATALOG_GENERIC_REFUSAL,
@@ -121,4 +133,7 @@ export const PINNED_CATALOG_REFUSAL_OVERRIDES: Record<
   'pinned_catalog.own_chat_not_started': PROBARLO_OWN_CHAT_NOT_STARTED_REASON,
   'pinned_catalog.own_chat_not_found': PROBARLO_OWN_CHAT_NOT_FOUND_REASON,
   'pinned_catalog.test_failed': PROBARLO_TEST_FAILED_REASON,
+  'pinned_catalog.no_messages': LOOKUP_NO_MESSAGES_REASON,
+  'pinned_catalog.several_chats': LOOKUP_SEVERAL_CHATS_REASON,
+  'pinned_catalog.updates_unreadable': LOOKUP_UPDATES_UNREADABLE_REASON,
 }

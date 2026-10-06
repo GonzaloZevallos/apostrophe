@@ -84,6 +84,9 @@
     "pinned_catalog.own_chat_not_started": { "kind": "refusal" },
     "pinned_catalog.own_chat_not_found": { "kind": "refusal" },
     "pinned_catalog.test_failed": { "kind": "refusal" },
+    "pinned_catalog.no_messages": { "kind": "refusal" },
+    "pinned_catalog.several_chats": { "kind": "refusal" },
+    "pinned_catalog.updates_unreadable": { "kind": "refusal" },
     "RequestInvalid": { "kind": "refusal" }
   },
   "frontSegments": [
