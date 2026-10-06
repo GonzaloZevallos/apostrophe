@@ -54,8 +54,10 @@ now carries the colour next to the `--boton` it already declared, and Deshacer d
 
 `.bar-inferior__item` on `--nav-inactivo` is the only selector exempt from the
 paired-background check. Text drawn on a container's background takes its colour from
+the rule that declares that background.
 
-parenthetical "(text drawn on a container's background, and the bottom-bar label)".
+This amendment supersedes the parenthetical of the "Three kinds of token" bullet,
+"(text drawn on a container's background, and the bottom-bar label)".
 
 `test_only_the_bottom_bar_label_skips_its_paired_background` in
 `tests/test_design_contrast.py` pins that single exemption on purpose: a new one changes
