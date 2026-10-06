@@ -8,7 +8,7 @@
 
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { HOME, LEGACY_REDIRECTS, LOGIN, SALE, pathTo } from '../src/routes.js'
+import { CUSTOMER, CUSTOMER_EDIT, HOME, LEGACY_REDIRECTS, LOGIN, SALE, STOCK_ENTRY, VARIETY, pathTo } from '../src/routes.js'
 import { expect, test, type Page } from '@playwright/test'
 import { watchConsole } from './console.js'
 import { seedRecords, signUp, type Records } from './helpers/seed.js'
@@ -35,16 +35,29 @@ const GONE_ID = 999999
 const QUERY = '?month=2026-01'
 
 function filled(template: string, ids: Record<string, number>): string {
-  return template.replace(/\{(\w+)\}/g, (_whole, name: string) => String(ids[name]))
+  return template.replace(/\{(\w+)\}/g, (_whole, name: string) => {
+    const id = ids[name]
+    if (id === undefined) throw new Error(`screens.json names {${name}}, which the spec has no id for`)
+    return String(id)
+  })
 }
 
-function legacyId(old: string, records: Records): number {
-  const first = old.split(/\//)[1]
-  if (first === 'ventas') return records.sale
-  if (first === 'clientes') return records.customer
-  if (first === 'mi-stock') return records.entry
-  return records.variety
+/** The record an old path's `:id` stands for, told by the route it moved to. */
+function legacyId(now: string, records: Records): number {
+  const byTarget = new Map([
+    [SALE, records.sale],
+    [CUSTOMER, records.customer],
+    [CUSTOMER_EDIT, records.customer],
+    [VARIETY, records.variety],
+    [STOCK_ENTRY, records.entry],
+  ])
+  const id = byTarget.get(now)
+  if (id === undefined) throw new Error(`no seeded record for ${now}`)
+  return id
 }
+
+/** The one console message a gone or foreign record is allowed to leave: the API's own 404. */
+const API_NOT_FOUND = /^error: Failed to load resource: the server responded with a status of 404/
 
 async function expectAppScreen(page: Page): Promise<void> {
   await expect(page.locator('#root main').first()).toBeVisible()
@@ -87,7 +100,7 @@ test.describe.serial('navigation', () => {
 
   for (const [old, now] of LEGACY_REDIRECTS) {
     test(`${old} answers a permanent redirect to ${now}, keeping the id and the query`, async () => {
-      const id = old.includes(':id') ? legacyId(old, records) : undefined
+      const id = old.includes(':id') ? legacyId(now, records) : undefined
       const from = pathTo(old, id === undefined ? {} : { id }) + QUERY
       const to = pathTo(now, id === undefined ? {} : { id })
 
@@ -98,7 +111,7 @@ test.describe.serial('navigation', () => {
       expect(location.search).toBe(QUERY)
 
       await page.goto(from)
-      await expect(page).toHaveURL(new RegExp(`${to.replace(/\//g, '\\/')}(\\?.*)?$`))
+      await expect(page).toHaveURL((url) => url.pathname === to && url.search === QUERY)
       await expectAppScreen(page)
     })
   }
@@ -112,6 +125,23 @@ test.describe.serial('navigation', () => {
     await expect(page.getByRole('link', { name: 'Volver a Ventas' }).or(page.getByRole('button', { name: 'Volver a Ventas' }))).toBeVisible()
   })
 
+  test("an old link to another business's sale lands on the English route and says \"Eso ya no está.\"", async ({
+    browser,
+  }) => {
+    const old = LEGACY_REDIRECTS.find(([, now]) => now === SALE)
+    expect(old).toBeDefined()
+    const context = await browser.newContext({ viewport: { width: 390, height: 844 } })
+    const other = await context.newPage()
+    await signUp(other, 'Ajena')
+    await other.goto(pathTo(old?.[0] ?? '', { id: records.sale }))
+    expect(new URL(other.url()).pathname).toBe(pathTo(old?.[1] ?? '', { id: records.sale }))
+    await expect(other.getByText('Eso ya no está.')).toBeVisible()
+    await expect(
+      other.getByRole('link', { name: 'Volver a Ventas' }).or(other.getByRole('button', { name: 'Volver a Ventas' })),
+    ).toBeVisible()
+    await context.close()
+  })
+
   test('an unknown address goes to Inicio', async () => {
     await page.goto('/no-such-screen')
     await expect(page).toHaveURL(new RegExp(`${HOME}$`))
@@ -123,7 +153,7 @@ test.describe.serial('navigation', () => {
 
   test('nothing but the theme is stored after the run, and the console stayed quiet', async () => {
     await expectOnlyTheThemeStored(page)
-    expect(consoleMessages.filter((message) => !message.includes('404') && !message.includes('308'))).toEqual([])
+    expect(consoleMessages.filter((message) => !API_NOT_FOUND.test(message))).toEqual([])
   })
 
   test('signed out, every built path lands on Entrar', async ({ browser }) => {

@@ -15,7 +15,7 @@ import { seedRecords, signUp } from './helpers/seed.js'
 
 const PASSWORD = 'correcthorsebattery'
 
-const PHONE = { width: 390, height: 760 }
+const PHONE = { width: 390, height: 844 }
 const COMPUTER = { width: 1280, height: 920 }
 
 /** Tab roots: where a seller can be standing when the need to record an expense comes. */
@@ -160,12 +160,8 @@ test('the sale form, Registrar cobro, the catalog and a stock entry open within 
 
       await page.goto(root)
       counter = { taps: 0 }
-      if (root === MORE) {
-        await tap(counter, page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /^Catálogo/ }))
-      } else {
-        if (root !== VARIETIES) await viaTab(page, counter, computer, 'Variedades')
-        await tap(counter, page.getByRole('link', { name: 'Mandar catálogo' }))
-      }
+      if (root !== VARIETIES) await viaTab(page, counter, computer, 'Variedades')
+      await tap(counter, page.getByRole('link', { name: 'Mandar catálogo' }))
       await expectPath(page, CATALOG)
       measure(`catalog ${root}`, device, counter.taps)
 

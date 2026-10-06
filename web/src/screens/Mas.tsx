@@ -1,14 +1,14 @@
 /**
- * `Mas`: "+ Cargar gasto", Gastos and Análisis first, in the design's order
- * (`Mas.dc.html`), then the entries whose screens have not moved yet (Variedades,
- * Catálogo), which leave with the issues that move them, and Configuración last.
+ * `Mas`: "+ Cargar gasto", Gastos, Análisis and Configuración, in the design's order
+ * (`Mas.dc.html`) and nothing else (navigation.md): Variedades is a bar tab, and the catalog
+ * is reached from it.
  * Paths come from `routes.ts`. The subtitles are the design's own words.
  * Every entry goes through `InAppLink`, which lets a card's back go through history.
  */
 
 import InAppLink from '../components/InAppLink'
 import Icono from '../components/Icono'
-import { ANALYSIS, CATALOG, EXPENSES, EXPENSE_NEW, SETTINGS, VARIETIES } from '../routes'
+import { ANALYSIS, EXPENSES, EXPENSE_NEW, SETTINGS } from '../routes'
 
 interface Item {
   to: string
@@ -27,16 +27,6 @@ const ITEMS: Item[] = [
     to: ANALYSIS,
     label: 'Análisis',
     detail: 'Variedades, semanas, meses y días',
-  },
-  {
-    to: VARIETIES,
-    label: 'Variedades',
-    detail: 'Precios y avisos de stock bajo',
-  },
-  {
-    to: CATALOG,
-    label: 'Catálogo',
-    detail: 'El mensaje de hoy, listo para copiar',
   },
   {
     to: SETTINGS,
