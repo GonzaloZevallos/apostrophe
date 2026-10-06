@@ -3063,6 +3063,8 @@ button {
  * and rows, and the two panes on a computer. Tokens only. */
 .variedades__resumen {
   margin: 0;
+  text-align: left;
+  font-size: 14px;
 }
 
 .variedades__acciones {
@@ -3122,7 +3124,8 @@ button {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: var(--espacio-md);
+  flex-wrap: wrap;
+  gap: var(--espacio-xs) var(--espacio-md);
   padding-left: var(--espacio-xxl);
 }
 
@@ -3134,6 +3137,7 @@ button {
 .variedad-fila__precio {
   font-size: 16px;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 /* The status word is read in a list row, beside its shape. */
