@@ -19,8 +19,8 @@ from starlette.datastructures import State
 from app.clock import Clock
 from app.pinned_catalog.adapters.sql_recorder import SqlPinRecorder
 from app.pinned_catalog.adapters.sql_snapshot import SqlPinSnapshots
+from app.pinned_catalog.adapters.telegram_holder import PinnedCatalogTelegram
 from app.pinned_catalog.adapters.token_cipher import TokenCipher
-from app.pinned_catalog.application.ports import Telegram
 from app.pinned_catalog.application.push import BusinessLocks, push, record_unreachable
 
 logger = logging.getLogger("apostrophe.pinned_catalog")
@@ -29,7 +29,7 @@ logger = logging.getLogger("apostrophe.pinned_catalog")
 def run_upkeep_safely(state: State, business_id: int, today: date) -> None:
     engine = cast(Engine, state.engine)
     cipher = cast(TokenCipher, state.pinned_catalog_cipher)
-    telegram = cast(Telegram, state.pinned_catalog_telegram)
+    telegram = cast(PinnedCatalogTelegram, state.pinned_catalog_telegram).channel
     locks = cast(BusinessLocks, state.pinned_catalog_locks)
     clock = cast(Clock, state.clock)
     snapshots = SqlPinSnapshots(engine, cipher)
