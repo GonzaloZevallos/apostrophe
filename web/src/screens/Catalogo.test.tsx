@@ -2,7 +2,7 @@
  * `Catalogo` at the screen seam (plan, "Front"): the preview built only from
  * `telegramPreview(text)`, Compartir and Copiar gated on the open's fetch and handed
  * exactly the API's text, "Qué no sale y por qué" told by one word per variety, the
- * links out, and (until section-forms moves it) the variety's edit form. The API is faked at `fetch`, never
+ * links out. It edits no variety attribute (that is the variety's own page). The API is faked at `fetch`, never
  * mocked deeper (CODING_STANDARDS §10).
  */
 
@@ -341,82 +341,10 @@ test('a failed copy shows the fixed message and no toast', async () => {
   expect(screen.queryByText('Catálogo copiado')).not.toBeInTheDocument()
 })
 
-test('editing a variety saves its attributes and shows the saved toast', async () => {
-  const fetchMock = vi.fn((url: string, init?: RequestInit) => {
-    if (init?.method === 'PUT' && url === '/catalog/varieties/2') {
-      return Promise.resolve(
-        jsonResponse(200, {
-          ...CATALOG,
-          varieties: [
-            CATALOG.varieties[0],
-            { ...CATALOG.varieties[1], shown: true, state: 'no_price' },
-          ],
-        }),
-      )
-    }
-    return Promise.resolve(defaultResponse(url))
-  })
-  renderCatalogo(fetchMock)
-
-  await userEvent.click(await screen.findByRole('button', { name: 'Editar Sir Jack' }))
-  await userEvent.click(screen.getByRole('checkbox', { name: 'Se muestra en el catálogo' }))
-  await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
-
-  expect(await screen.findByText('Catálogo guardado')).toBeInTheDocument()
-  const put = fetchMock.mock.calls.find(([, init]) => init?.method === 'PUT')
-  expect(put?.[0]).toBe('/catalog/varieties/2')
-  expect(JSON.parse(put?.[1]?.body as string)).toEqual({
-    shown: true,
-    emoji: '👑',
-    indica_share: null,
-    aroma: null,
-  })
-})
-
-test('an invalid indica share keeps what was typed and shows the inline refusal', async () => {
-  const fetchMock = vi.fn((url: string, init?: RequestInit) => {
-    if (init?.method === 'PUT') {
-      return Promise.resolve(
-        jsonResponse(422, { detail: 'invalid', code: 'catalog.indica_share_invalid' }),
-      )
-    }
-    return Promise.resolve(defaultResponse(url))
-  })
-  renderCatalogo(fetchMock)
-
-  await userEvent.click(await screen.findByRole('button', { name: 'Editar 24K Gold' }))
-  const shareInput = screen.getByLabelText('Porcentaje de índica')
-  await userEvent.clear(shareInput)
-  await userEvent.type(shareInput, '150')
-  await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
-
-  expect(await screen.findByRole('alert')).toHaveTextContent('El porcentaje de índica va de 0 a 100')
-  expect(shareInput).toHaveValue('150')
-})
-
-test('a gone variety shows "Eso ya no está." instead of a toast', async () => {
-  const fetchMock = vi.fn((url: string, init?: RequestInit) => {
-    if (init?.method === 'PUT') {
-      return Promise.resolve(
-        jsonResponse(404, { detail: 'gone', code: 'catalog.variety_not_found' }),
-      )
-    }
-    return Promise.resolve(defaultResponse(url))
-  })
-  renderCatalogo(fetchMock)
-
-  await userEvent.click(await screen.findByRole('button', { name: 'Editar 24K Gold' }))
-  await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
-
-  expect(await screen.findByText('Eso ya no está. La lista ya está al día.')).toBeInTheDocument()
-  expect(screen.queryByText('Catálogo guardado')).not.toBeInTheDocument()
-})
-
 test('the catalog screen offers no header or footer editing, only the link out', async () => {
   renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
 
-  await screen.findByRole('button', { name: 'Editar 24K Gold' })
-  expect(screen.getByRole('link', { name: 'Editar encabezado y pie' })).toBeInTheDocument()
+  expect(await screen.findByRole('link', { name: 'Editar encabezado y pie' })).toBeInTheDocument()
   expect(screen.queryByLabelText('Encabezado')).not.toBeInTheDocument()
   expect(screen.queryByLabelText('Pie')).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Guardá el mensaje' })).not.toBeInTheDocument()
@@ -458,24 +386,12 @@ test('the catalog screen offers no bot settings: they live in Integraciones', as
   expect(screen.queryByLabelText('Tu chat', { exact: false })).not.toBeInTheDocument()
 })
 
-test('a catalog input never carries maxLength', async () => {
-  vi.stubGlobal('fetch', vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
-  const queryClient = new QueryClient()
-  const { container } = render(
-    <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={['/varieties/catalog']}>
-        <Routes>
-          <Route element={<Provide />}>
-            <Route path="/varieties/catalog" element={<Catalogo />} />
-          </Route>
-        </Routes>
-      </MemoryRouter>
-    </QueryClientProvider>,
-  )
-  await userEvent.click(await screen.findByRole('button', { name: 'Editar 24K Gold' }))
+test('the catalog screen edits no variety attribute: no Editar button and no field', async () => {
+  renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
 
-  await waitFor(() => expect(container.querySelectorAll('input, textarea').length).toBeGreaterThan(0))
-  for (const el of container.querySelectorAll('input, textarea')) {
-    expect(el.hasAttribute('maxLength')).toBe(false)
-  }
+  await screen.findByRole('link', { name: 'Editar encabezado y pie' })
+  expect(screen.queryByRole('button', { name: /^Editar / })).not.toBeInTheDocument()
+  expect(screen.queryByText('Atributos en el catálogo')).not.toBeInTheDocument()
+  expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Guardar' })).not.toBeInTheDocument()
 })

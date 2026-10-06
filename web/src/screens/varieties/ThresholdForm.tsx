@@ -10,20 +10,14 @@ import { type FormEvent, useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { ApiError, NetworkError, UNKNOWN_CODE } from '../../api/client'
 import { invalidateResource } from '../../api/keys'
-import { isGone, kindOf, resolveOverride, type RefusalCode } from '../../api/refusals'
+import { isGone, kindOf, resolveOverride } from '../../api/refusals'
 import { setThreshold } from '../../api/stock'
 import type { SuccessToast } from '../../components/AvisoExito'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import { parseGrams } from '../../format/parse'
 import { GENERIC_REFUSAL_MESSAGE } from '../Variedades'
-
-export const THRESHOLD_INVALID_MESSAGE = 'Revisá el umbral cargado'
-export const THRESHOLD_SAVED: SuccessToast = 'Aviso guardado'
-
-export const THRESHOLD_OVERRIDES: Partial<Record<RefusalCode, string>> = {
-  'stock.threshold_invalid': THRESHOLD_INVALID_MESSAGE,
-}
+import { THRESHOLD_INVALID_MESSAGE, THRESHOLD_OVERRIDES, THRESHOLD_SAVED } from './thresholdMessages'
 
 /** The saved amount as a person types it: a comma, no unit. */
 function typedFrom(threshold: number | null): string {

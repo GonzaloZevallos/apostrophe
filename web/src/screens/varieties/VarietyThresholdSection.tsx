@@ -18,7 +18,7 @@ import SinConexion from '../../components/SinConexion'
 import { useFlash } from '../../flash/useFlash'
 import { warningFor } from '../../stock/detail'
 import { GENERIC_REFUSAL_MESSAGE } from '../Variedades'
-import { THRESHOLD_OVERRIDES, THRESHOLD_SAVED } from './ThresholdForm'
+import { THRESHOLD_OVERRIDES, THRESHOLD_SAVED } from './thresholdMessages'
 import { useOpenForm } from './varietyForms'
 
 export default function VarietyThresholdSection({

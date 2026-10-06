@@ -106,8 +106,18 @@ test('a seller does everything the backend offers today, from the front alone', 
   await expect(page.getByText('Entrada eliminada')).toBeVisible()
   await expect(page.getByText('Rosa · 60 g')).toHaveCount(0)
 
-  // Rosa's low-stock threshold form and the catalog attributes form are opened from the
-  // variety's page by the section-forms subtask, which also brings their steps here.
+  // Rosa's page: set the low-stock warning through its form (turning it on only opens the
+  // form), then turn it off (saved at once).
+  await page.goto('/varieties')
+  await page.getByRole('link', { name: /Rosa/ }).click()
+  await expect(page.getByText('Aviso apagado')).toBeVisible()
+  await page.getByRole('switch', { name: 'Avisar cuando quede poco' }).click()
+  await page.getByLabel('Avisar con menos de').fill('15')
+  await page.getByRole('button', { name: 'Guardá el aviso' }).click()
+  await expect(page.getByText('Aviso guardado')).toBeVisible()
+  await expect(page.getByText('Avisame abajo de 15 g')).toBeVisible()
+  await page.getByRole('switch', { name: 'Avisar cuando quede poco' }).click()
+  await expect(page.getByText('Aviso apagado')).toBeVisible()
 
   // Record an expense, with a category created inline.
   await openGastos(page)

@@ -133,6 +133,12 @@ function renderPage(path: string, overrides: Answers = {}, state: unknown = null
   return { router, fetchMock }
 }
 
+function putOf(fetchMock: ReturnType<typeof vi.fn>): { url: string; body: unknown } {
+  const call = fetchMock.mock.calls.find(([, init]) => (init as RequestInit | undefined)?.method === 'PUT')
+  if (call === undefined) throw new Error('no PUT was sent')
+  return { url: call[0] as string, body: JSON.parse((call[1] as RequestInit).body as string) as unknown }
+}
+
 function reads(fetchMock: ReturnType<typeof vi.fn>, call: string): number {
   return fetchMock.mock.calls.filter(([url, init]) => `${(init as RequestInit | undefined)?.method ?? 'GET'} ${url as string}` === call).length
 }
@@ -549,8 +555,7 @@ describe('Aviso de stock bajo: the form', () => {
 
     expect(await screen.findByText('Aviso guardado')).toBeInTheDocument()
     expect(screen.queryByLabelText('Avisar con menos de')).not.toBeInTheDocument()
-    const put = fetchMock.mock.calls.find(([, init]) => (init as RequestInit | undefined)?.method === 'PUT')
-    expect(JSON.parse((put?.[1] as RequestInit).body as string)).toEqual({ grams: 15.5 })
+    expect(putOf(fetchMock)).toEqual({ url: '/stock/varieties/1/threshold', body: { grams: 15.5 } })
     await waitFor(() => expect(reads(fetchMock, 'GET /stock')).toBe(2))
     await waitFor(() => expect(reads(fetchMock, 'GET /catalog')).toBe(2))
     expect(await screen.findByRole('switch')).toBeChecked()
@@ -674,13 +679,9 @@ describe('En el catálogo: the form', () => {
 
     expect(await screen.findByText('Catálogo guardado')).toBeInTheDocument()
     expect(screen.queryByLabelText('Emoji')).not.toBeInTheDocument()
-    const put = fetchMock.mock.calls.find(([, init]) => (init as RequestInit | undefined)?.method === 'PUT')
-    expect(put?.[0]).toBe('/catalog/varieties/1')
-    expect(JSON.parse((put?.[1] as RequestInit).body as string)).toEqual({
-      shown: false,
-      emoji: null,
-      indica_share: 70,
-      aroma: 'Cítrico',
+    expect(putOf(fetchMock)).toEqual({
+      url: '/catalog/varieties/1',
+      body: { shown: false, emoji: null, indica_share: 70, aroma: 'Cítrico' },
     })
     await waitFor(() => expect(reads(fetchMock, 'GET /catalog')).toBe(2))
   })

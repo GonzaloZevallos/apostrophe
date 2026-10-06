@@ -63,14 +63,17 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
   await page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /Catálogo/ }).click()
   await expect(page).toHaveURL(/\/varieties\/catalog$/)
 
-  // Edit Rosa's catalog attributes.
-  await page.getByRole('button', { name: 'Editar Rosa' }).click()
+  // Edit Rosa's catalog attributes on its own page, from "En el catálogo".
+  await page.goto('/varieties')
+  await page.getByRole('link', { name: /Rosa/ }).click()
+  await page.getByRole('button', { name: 'Editar catálogo' }).click()
   await page.getByLabel('Emoji').fill('🌹')
-  await page.getByLabel('Porcentaje de índica').fill('30')
+  await page.getByLabel('% índica').fill('30')
   await page.getByLabel('Aroma/sabor').fill('floral, dulce')
-  await page.getByRole('button', { name: 'Guardar' }).click()
+  await page.getByRole('button', { name: 'Guardá el catálogo' }).click()
   await expect(page.getByText('Catálogo guardado')).toBeVisible()
-  await expect(page.getByText('30% índica · floral, dulce')).toBeVisible()
+  await expect(page.getByText('floral, dulce')).toBeVisible()
+  await page.goto('/varieties/catalog')
 
   // Edit the header and footer in Configuración → Mensaje del catálogo, then close back
   // to the catalog screen, which only links out to it and shows neither value.

@@ -12,12 +12,12 @@ export const EMOJI_INVALID_MESSAGE = 'Poné exactamente un emoji'
 export const INDICA_SHARE_INVALID_MESSAGE = 'El porcentaje de índica va de 0 a 100'
 export const AROMA_TOO_LONG_MESSAGE = 'El aroma es demasiado largo'
 
-const FIELD_OF_CODE: Record<string, { field: CatalogField; message: string }> = {
-  'catalog.emoji_invalid': { field: 'emoji', message: EMOJI_INVALID_MESSAGE },
-  'catalog.indica_share_invalid': { field: 'indica_share', message: INDICA_SHARE_INVALID_MESSAGE },
-  'catalog.aroma_too_long': { field: 'aroma', message: AROMA_TOO_LONG_MESSAGE },
-}
+const FIELD_OF_CODE = new Map<string, { field: CatalogField; message: string }>([
+  ['catalog.emoji_invalid', { field: 'emoji', message: EMOJI_INVALID_MESSAGE }],
+  ['catalog.indica_share_invalid', { field: 'indica_share', message: INDICA_SHARE_INVALID_MESSAGE }],
+  ['catalog.aroma_too_long', { field: 'aroma', message: AROMA_TOO_LONG_MESSAGE }],
+])
 
 export function fieldOfRefusal(code: string): { field: CatalogField; message: string } | null {
-  return Object.hasOwn(FIELD_OF_CODE, code) ? FIELD_OF_CODE[code] : null
+  return FIELD_OF_CODE.get(code) ?? null
 }
