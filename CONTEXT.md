@@ -311,6 +311,10 @@ _Avoid_: peak day, top day
 What the grams taken out by negative adjustments in a period cost, on the adjustment's date, from their lots as they stand today, oldest first; a part beyond every lot is pending, never $0. It lowers profit. In the app: Faltante de stock.
 _Avoid_: shrinkage, write-off, loss, merma
 
+**Stock withdrawal**:
+A dated record of grams of one or more varieties taken out of stock for one reason, Promotion or Own use, with an optional note. No money moves and Caja is untouched. Its grams are costed on its date from the lots, oldest first, and a part beyond every lot is pending cost, never $0. The cost shows as its own line per reason and lowers profit; it never enters a variety's margin or the cost of goods sold. It can be edited or deleted at any time. In the app: Retiro, recorded with the action "Sacar del stock"; the reasons read Promoción and Consumo propio.
+_Avoid_: gift (a gift is a sale line at $0 price), shrinkage, write-off
+
 **Publish**:
 Posting and pinning the catalog in the business's channel chat, or editing the already pinned message there. It always sends, even when the text has not changed. _In the app_: Publicar.
 _Avoid_: broadcast, push, sync
