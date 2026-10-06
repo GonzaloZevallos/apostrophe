@@ -59,6 +59,7 @@ LEGACY_FRONT_PATHS = {
     "/gastos": "/expenses",
     "/variedades": "/varieties",
     "/catalogo": "/varieties/catalog",
+    "/mi-stock": "/varieties",
     "/mi-stock/nueva-entrada": "/varieties/entries/new",
 }
 

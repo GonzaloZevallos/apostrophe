@@ -238,6 +238,7 @@ LEGACY_TARGETS = {
     "/gastos": "/expenses",
     "/variedades": "/varieties",
     "/catalogo": "/varieties/catalog",
+    "/mi-stock": "/varieties",
     "/mi-stock/nueva-entrada": "/varieties/entries/new",
 }
 LEGACY_ID_TARGETS = {
