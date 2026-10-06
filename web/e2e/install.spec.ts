@@ -11,6 +11,7 @@ import { watchConsole } from './console.js'
 interface ManifestIcon {
   src: string
   sizes: string
+  purpose?: string
 }
 
 test('the manifest and its icons are served at their declared size, and the app is installable', async ({
@@ -23,7 +24,8 @@ test('the manifest and its icons are served at their declared size, and the app 
   const response = await page.request.get('/manifest.webmanifest')
   expect(response.status()).toBe(200)
   const manifest = (await response.json()) as { icons: ManifestIcon[] }
-  expect(manifest.icons.length).toBeGreaterThanOrEqual(2)
+  expect(manifest.icons.length).toBeGreaterThanOrEqual(3)
+  expect(manifest.icons.some((icon) => icon.sizes === '512x512' && icon.purpose === 'maskable')).toBe(true)
 
   for (const icon of manifest.icons) {
     const [width, height] = icon.sizes.split('x').map(Number)

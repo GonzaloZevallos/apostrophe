@@ -122,6 +122,29 @@ test('the 192 and 512 icons are purpose any, and every icon file exists', () => 
   }
 })
 
+/**
+ * A maskable 512 icon must be listed and its file must exist under /public. The `any`
+ * entry of the same size does not count: a launcher would crop it to its corners.
+ */
+export function maskableViolations(icons: Icon[], files: string[]): string[] {
+  const maskable = icons.find((icon) => icon.sizes === '512x512' && icon.purpose === 'maskable')
+  if (maskable === undefined) return ['the manifest has no 512 maskable icon']
+  return files.includes(`/public${maskable.src}`) ? [] : [`${maskable.src} does not exist under /public`]
+}
+
+test('the manifest lists a 512 maskable icon whose file exists', () => {
+  expect(maskableViolations(manifest.icons, iconFiles)).toEqual([])
+})
+
+test('maskableViolations rejects a manifest with no maskable icon, or one with no file', () => {
+  const any512: Icon = { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' }
+  expect(maskableViolations([any512], iconFiles)).toEqual(['the manifest has no 512 maskable icon'])
+  const missing: Icon = { ...any512, src: '/icons/nope.png', purpose: 'maskable' }
+  expect(maskableViolations([any512, missing], iconFiles)).toEqual([
+    '/icons/nope.png does not exist under /public',
+  ])
+})
+
 test('themeColorViolations rejects a single meta with the wrong color', () => {
   const broken = new DOMParser().parseFromString(
     '<meta name="theme-color" content="not-the-papel">',
