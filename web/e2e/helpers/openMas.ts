@@ -21,3 +21,14 @@ export async function openGastos(page: Page): Promise<void> {
   await openMas(page)
   await page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /^Gastos/ }).click()
 }
+
+/** The catalog, reached the way a seller reaches it: the Variedades tab, then "Mandar
+ * catálogo". Más no lists it. */
+export async function openCatalog(page: Page): Promise<void> {
+  const before = page.viewportSize()
+  await page.setViewportSize(PHONE)
+  await page.goto(HOME)
+  await page.getByRole('link', { name: 'Variedades', exact: true }).click()
+  await page.getByRole('link', { name: 'Mandar catálogo' }).click()
+  if (before !== null) await page.setViewportSize(before)
+}

@@ -14,7 +14,7 @@ import { expectPath } from './helpers/url.js'
 import { expect, test } from '@playwright/test'
 import { newBusinessInvitationUrl } from './backend.js'
 import { watchConsole } from './console.js'
-import { openMas } from './helpers/openMas.js'
+import { openCatalog } from './helpers/openMas.js'
 
 const PASSWORD = 'correcthorsebattery'
 
@@ -46,8 +46,7 @@ test('a seller sets up the bot in Integraciones, then publishes from the catalog
   await page.getByRole('button', { name: 'Guardar precio' }).click()
   await expect(page.getByText('Precio guardado')).toBeVisible()
 
-  await openMas(page)
-  await page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /Catálogo/ }).click()
+  await openCatalog(page)
   await expectPath(page, CATALOG)
 
   // The catalog screen has no bot settings; with no bot yet, Publicar is disabled and
