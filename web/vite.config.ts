@@ -31,10 +31,6 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/test-setup.ts'],
-    // Vitest replaces every stylesheet with an empty string, `?raw` reads included.
-    // `architecture/installShell.test.ts` reads the tokens' own text, so that one file
-    // keeps its content; every other stylesheet stays as vitest treats it by default.
-    css: { include: [/styles\/tokens\.css/] },
     // `web/e2e/` is Playwright's own suite (`playwright.config.ts`'s `testDir`),
     // run by the `web-e2e` check; vitest's defaults would otherwise also try to
     // run `flow.spec.ts` as a unit test and collide with Playwright's `test`.
@@ -42,7 +38,8 @@ export default defineConfig({
     // Vitest turns every `.css` import into an empty module, `?raw` ones included, so
     // the architecture tests that read stylesheets as text (`import.meta.glob(...,
     // { query: '?raw' })`) saw '' and passed on nothing. Only `?raw` loads are let
-    // through; component imports of CSS stay empty.
-    css: { include: [/[?&]raw(?:&|$)/] },
+    // through (the tokens' own import too, which `architecture/installShell.test.ts`
+    // reads); component imports of CSS stay empty.
+    css: { include: [/[?&]raw(?:&|$)/, /styles\/tokens\.css/] },
   },
 })
