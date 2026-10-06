@@ -71,18 +71,21 @@ test('a seller does everything the backend offers today, from the front alone', 
   await expect(page.getByText('Precio eliminado')).toBeVisible()
   await expect(page.getByText('Sin precio: no se puede vender')).toBeVisible()
 
-  // Record a stock entry for Rosa from the Stock tab (stock.md: "Nueva entrada").
-  await page.goto('/mi-stock')
+  // Record a stock entry for Rosa from Variedades ("+ Entrada de stock"), then read it in
+  // "Todas las entradas" (stock.md).
+  await page.goto('/varieties/entries')
   await expect(page.getByText('Sin entradas de stock')).toBeVisible()
-  await page.getByRole('link', { name: 'Nueva entrada' }).click()
+  await page.goto('/varieties')
+  await page.getByRole('link', { name: '+ Entrada de stock' }).click()
   await expect(page).toHaveURL(/\/varieties\/entries\/new$/)
   await page.getByLabel('Gramos').fill('50')
   await page.getByLabel('Variedad').selectOption({ label: 'Rosa' })
   await page.getByLabel('Costo total').fill('45000')
   await expect(page.getByText('Te queda en $ 900 el gramo')).toBeVisible()
   await page.getByRole('button', { name: 'Guardá la entrada' }).click()
-  await expect(page).toHaveURL(/\/mi-stock$/)
+  await expect(page).toHaveURL(/\/varieties(\/[0-9]+)?$/)
   await expect(page.getByText('Entrada guardada')).toBeVisible()
+  await page.goto('/varieties/entries')
   await expect(page.getByText('Rosa · 50 g')).toBeVisible()
 
   // Edit it: editing confirms before saving (stock.md).
@@ -93,7 +96,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.getByRole('button', { name: 'Guardar' }).click()
   await expect(page.getByText('¿Guardás los cambios?')).toBeVisible()
   await page.getByRole('button', { name: 'Sí, guardar' }).click()
-  await expect(page).toHaveURL(/\/mi-stock$/)
+  await expect(page).toHaveURL(/\/varieties\/entries$/)
   await expect(page.getByText('Entrada guardada')).toBeVisible()
   await expect(page.getByText('Rosa · 60 g')).toBeVisible()
 
@@ -102,7 +105,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.getByRole('button', { name: 'Borrar entrada' }).click()
   await expect(page.getByText('Antes de borrar')).toBeVisible()
   await page.getByRole('button', { name: 'Sí, borrala' }).click()
-  await expect(page).toHaveURL(/\/mi-stock$/)
+  await expect(page).toHaveURL(/\/varieties\/entries$/)
   await expect(page.getByText('Entrada eliminada')).toBeVisible()
   await expect(page.getByText('Rosa · 60 g')).toHaveCount(0)
 

@@ -24,7 +24,8 @@ describe('routes.ts against the route table', () => {
     expect(matches).not.toBeNull()
     const leaf = matches?.at(-1)
     expect(leaf?.route.path).not.toBe('*')
-    expect(leaf?.pathname).toBe(path)
+    // The list is an index route of its layout, whose own pathname ends in a slash.
+    expect(leaf?.pathname.replace(/\/$/, '')).toBe(path)
   })
 
   test('the catalog screen is a detail: its route declares the card chrome, so no "+ Nueva venta"', () => {
