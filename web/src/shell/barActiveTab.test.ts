@@ -20,7 +20,7 @@ test.each([EXPENSES, EXPENSE_NEW, ANALYSIS])('the app marks Más on the bar for 
   expect(tabOf(path)).toBe('more')
 })
 
-test.each(['/', '/ventas', '/clientes', '/mi-stock', MORE])(
+test.each(['/', '/ventas', '/clientes', '/varieties', MORE])(
   'the app declares no tab for %s, so the bar falls back to its path',
   (path) => {
     expect(tabOf(path)).toBeUndefined()
