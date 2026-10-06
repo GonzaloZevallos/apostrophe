@@ -19,12 +19,14 @@ import { kindOf, resolveOverride, type RefusalCode } from '../api/refusals'
 import { login } from '../session'
 import SinConexion from '../components/SinConexion'
 import { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
+import AuthPage from '../components/AuthPage'
+import PasswordField from '../components/PasswordField'
+import { BRAKE_MESSAGE } from './authMessages'
 
 export const CREDENTIALS_WRONG = 'Email o contraseña incorrectos'
-export const BRAKE_MESSAGE = '5 intentos fallidos · probá de nuevo en 15 minutos'
 export const LOGIN_HINT = 'Después de 5 intentos fallidos, el email queda bloqueado 15 minutos'
 export const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
-export { ERROR_GENERICO_MENSAJE as RETRY_MESSAGE }
+export { BRAKE_MESSAGE, ERROR_GENERICO_MENSAJE as RETRY_MESSAGE }
 
 const LOGIN_OVERRIDES: Partial<Record<RefusalCode, 'locked'>> = {
   'account.login_locked': 'locked',
@@ -66,54 +68,38 @@ export default function Entrar() {
   }
 
   return (
-    <main className="pantalla">
-      <div className="entrar__contenido">
-        <div>
-          <span className="marca">
-            apostrophe<span className="marca__apostrofe">’</span>
-          </span>
-          <p className="subtitulo">Tus ventas, tu stock y lo que te deben.</p>
-        </div>
-        <form className="formulario" onSubmit={onSubmit}>
-          <label className="campo">
-            <span className="campo__rotulo">Email</span>
-            <input
-              className="campo__input"
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              required
-            />
-          </label>
-          <label className="campo">
-            <span className="campo__rotulo">Contraseña</span>
-            <input
-              className="campo__input"
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              required
-            />
-            {error !== null && (
-              <span className="campo__error" role="alert">
-                {error}
-              </span>
-            )}
-          </label>
-          <button className="boton" type="submit" disabled={sending}>
-            Entrá
-          </button>
-          {locked ? (
-            <span className="campo__error" role="alert">
-              {BRAKE_MESSAGE}
-            </span>
-          ) : (
-            <span className="ayuda-fija">{LOGIN_HINT}</span>
-          )}
-          {offline && <SinConexion />}
-        </form>
+    <AuthPage>
+      <div>
+        <span className="marca">
+          apostrophe<span className="marca__apostrofe">’</span>
+        </span>
+        <p className="subtitulo">Tus ventas, tu stock y lo que te deben.</p>
       </div>
+      <form className="formulario" onSubmit={onSubmit}>
+        <label className="campo">
+          <span className="campo__rotulo">Email</span>
+          <input
+            className="campo__input"
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            required
+          />
+        </label>
+        <PasswordField label="Contraseña" value={password} onChange={setPassword} error={error} />
+        <button className="boton" type="submit" disabled={sending}>
+          Entrá
+        </button>
+        {locked ? (
+          <span className="campo__error" role="alert">
+            {BRAKE_MESSAGE}
+          </span>
+        ) : (
+          <span className="ayuda-fija">{LOGIN_HINT}</span>
+        )}
+        {offline && <SinConexion />}
+      </form>
       <div className="pie">Para usar apostrophe te tiene que invitar un negocio.</div>
-    </main>
+    </AuthPage>
   )
 }

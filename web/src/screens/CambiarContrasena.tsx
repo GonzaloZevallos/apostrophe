@@ -4,7 +4,7 @@
  * password clears "Contraseña actual" and keeps "Contraseña nueva" — a
  * deliberate exception to "refusals keep what was typed" (PM round 2). A short
  * new password shows the invitation's own too-short text; a lock shows the
- * login brake's own message (`Entrar`'s `BRAKE_MESSAGE`), both keeping
+ * login brake's own message (`authMessages.ts`'s `BRAKE_MESSAGE`), both keeping
  * everything typed. Neither a 422 nor a 429 ever sends the user to login: they
  * are handled here, inline, never through `handleUnauthorized`.
  *
@@ -27,8 +27,7 @@ import { kindOf, resolveOverride, type RefusalCode } from '../api/refusals'
 import SinConexion from '../components/SinConexion'
 import { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import { changePassword } from '../session'
-import { BRAKE_MESSAGE } from './Entrar'
-import { WEAK_PASSWORD_MESSAGE } from './authMessages'
+import { BRAKE_MESSAGE, WEAK_PASSWORD_MESSAGE } from './authMessages'
 
 export const WRONG_CURRENT_PASSWORD_MESSAGE = 'La contraseña actual no es esa.'
 export const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'

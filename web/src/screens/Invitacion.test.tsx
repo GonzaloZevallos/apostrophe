@@ -225,3 +225,11 @@ test('a server error on the lookup itself shows the generic retry, not a refusal
   expect(await screen.findByText(RETRY_MESSAGE)).toBeInTheDocument()
   expect(screen.queryByText(GENERIC_REFUSAL_MESSAGE)).not.toBeInTheDocument()
 })
+
+test('shows the Cargando progressbar, and no text of its own, while the lookup is pending', () => {
+  vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>(() => undefined)))
+  renderInvitacion()
+
+  expect(screen.getByRole('progressbar', { name: 'Cargando' })).toBeInTheDocument()
+  expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
+})
