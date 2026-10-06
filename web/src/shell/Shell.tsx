@@ -160,6 +160,9 @@ export default function Shell() {
   const chrome = chromeFromMatches(matches)
   const tab = barActiveTab(matches)
   const showNuevaVenta = chrome !== 'none'
+  // No bar below: the column itself keeps clear of the home bar (`styles/app.css`, insets).
+  const columnClassName =
+    chrome === 'none' ? 'columna-principal columna-principal--sin-bar' : 'columna-principal'
 
   return (
     <div className="disposicion">
@@ -182,7 +185,7 @@ export default function Shell() {
           </Fragment>
         ))}
       </nav>
-      <div className="columna-principal">
+      <div className={columnClassName}>
         <Outlet context={me} />
         {showNuevaVenta && (
           <Link to={NUEVA_VENTA_PATH} className="boton boton-nueva-venta">
