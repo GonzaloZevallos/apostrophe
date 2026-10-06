@@ -31,7 +31,6 @@ import Root from './Root'
 import Analisis from './screens/Analisis'
 import Entrar from './screens/Entrar'
 import EntradaStock from './screens/EntradaStock'
-import GastoCategorias from './screens/GastoCategorias'
 import Gastos from './screens/Gastos'
 import Inicio from './screens/Inicio'
 import Invitacion from './screens/Invitacion'
@@ -90,7 +89,6 @@ export const router = createBrowserRouter([
               { path: 'variedades', element: <Variedades /> },
               { path: 'variedades/:id', element: <VariedadDetalle /> },
               { path: 'gastos', element: <Gastos /> },
-              { path: 'gastos/categorias', element: <GastoCategorias /> },
               { path: 'mi-stock', element: <Stock /> },
               { path: 'mi-stock/nueva-entrada', element: <EntradaStock mode="nuevo" /> },
               { path: 'mi-stock/entradas/:id', element: <EntradaStock mode="editar" /> },

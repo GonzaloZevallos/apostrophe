@@ -82,6 +82,18 @@ test('shows the month\'s total, categories and expenses, and the fixed flower li
   expect(screen.getByText(FLOWER_NOTICE)).toBeInTheDocument()
 })
 
+test('offers no categories entry: they live in Configuración (creating one inside the form stays)', async () => {
+  renderGastos(async (url) => {
+    if (url.toString().startsWith('/expenses')) return jsonResponse(200, VIEW)
+    if (url.toString().startsWith('/expense-categories')) return jsonResponse(200, CATEGORIES)
+    throw new Error(`unexpected ${url}`)
+  })
+  await screen.findAllByText('$ 4.500')
+
+  expect(screen.queryByRole('link', { name: 'Categorías' })).not.toBeInTheDocument()
+  expect(document.querySelector('a[href*="categorias"]')).toBeNull()
+})
+
 test('recording an expense toasts "Gasto guardado" and refreshes the month', async () => {
   let posted: unknown = null
   renderGastos(async (url, init) => {

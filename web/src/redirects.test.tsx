@@ -50,3 +50,19 @@ test('the real table sends /negocio, the old business screen, to Configuración 
   expect(router.state.historyAction).toBe('REPLACE')
   expect(screen.getByRole('heading', { name: 'Configuración' })).toBeInTheDocument()
 })
+
+test('the real table sends /gastos/categorias, the old categories screen, to Configuración → Categorías de gastos with a replace', () => {
+  const router = createMemoryRouter(
+    [
+      ...redirectRoutes(),
+      { path: '/settings/expense-categories', element: <h1>Categorías de gastos</h1> },
+      { path: '*', element: <h1>Inicio</h1> },
+    ],
+    { initialEntries: ['/gastos', '/gastos/categorias'], initialIndex: 1 },
+  )
+  render(<RouterProvider router={router} />)
+
+  expect(router.state.location.pathname).toBe('/settings/expense-categories')
+  expect(router.state.historyAction).toBe('REPLACE')
+  expect(screen.getByRole('heading', { name: 'Categorías de gastos' })).toBeInTheDocument()
+})

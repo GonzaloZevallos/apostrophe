@@ -148,9 +148,9 @@ test('a seller does everything the backend offers today, from the front alone', 
   // "Envíos y traslados" and "Otros" are the four the business starts with
   // (`app/expenses/domain/category.py`'s `DEFAULT_CATEGORY_NAMES`), so this one
   // uses a name of its own.
-  await page.goto('/gastos/categorias')
+  await page.goto('/settings/expense-categories')
   await page.getByLabel('Nueva categoría').fill('Delivery en bici')
-  await page.getByRole('button', { name: 'Agregar categoría' }).click()
+  await page.getByRole('button', { name: '+ Categoría' }).click()
   await expect(page.getByText('Categoría guardada')).toBeVisible()
   const newRow = page.locator('.fila', { hasText: 'Delivery en bici' })
   await newRow.getByRole('button', { name: 'Eliminar' }).click()

@@ -14,7 +14,10 @@ export interface Redirect {
   to: string
 }
 
-export const redirects: readonly Redirect[] = [{ from: '/negocio', to: '/settings' }]
+export const redirects: readonly Redirect[] = [
+  { from: '/negocio', to: '/settings' },
+  { from: '/gastos/categorias', to: '/settings/expense-categories' },
+]
 
 /** The table as routes the router can mount beside its own, each a `<Navigate replace>`. */
 export function redirectRoutes(table: readonly Redirect[] = redirects): RouteObject[] {
