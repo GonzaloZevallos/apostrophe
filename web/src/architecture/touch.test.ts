@@ -113,6 +113,39 @@ test('the pressed block is one token-only rule', () => {
   expect(pressedViolations(file(APP_CSS), file(TOKENS))).toEqual([])
 })
 
+/**
+ * A link or button with a pressed look of its own resting fill must say so: the selected
+ * variants (`--activo`, `--activa`) rest on `--superficie`, so they need their own fill cue.
+ * Also: a control that is a Link in the pressed list must opt out of text selection too.
+ */
+export function pressedGapViolations(css: string): string[] {
+  const code = stripComments(css.slice(Math.max(css.indexOf('/* pressed */'), 0)))
+  const out: string[] = []
+  for (const selected of ['.riel-lateral__item--activo', '.selector-pago__opcion--activa']) {
+    const own = rules(code).some(
+      (rule) =>
+        rule.selector.includes(selected) &&
+        rule.selector.includes(':active') &&
+        /background-color:\s*var\(--linea\)/.test(rule.body),
+    )
+    if (!own) out.push(`${selected} has no pressed fill that differs from its resting one`)
+  }
+  for (const cls of ['.bloque-deben__titulo']) {
+    const inBlocks = rules(code).filter((rule) => rule.selector.includes(cls))
+    if (inBlocks.length < 2) out.push(`${cls} is not in both the pressed and the user-select rules`)
+  }
+  return out
+}
+
+test('the selected variants and the Te deben link are covered by the pressed block', () => {
+  expect(pressedGapViolations(file(APP_CSS))).toEqual([])
+  expect(pressedGapViolations('/* pressed */\n.x:active { transform: scale(0.98); }')).toEqual([
+    '.riel-lateral__item--activo has no pressed fill that differs from its resting one',
+    '.selector-pago__opcion--activa has no pressed fill that differs from its resting one',
+    '.bloque-deben__titulo is not in both the pressed and the user-select rules',
+  ])
+})
+
 test('no bare button:active, a:active or *:active anywhere', () => {
   expect(bareActiveViolations(file(APP_CSS))).toEqual([])
 })

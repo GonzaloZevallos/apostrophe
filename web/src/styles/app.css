@@ -2561,7 +2561,7 @@ body {
  *   .venta-guardada__deshacer;
  *   transparent, so --superficie is the fill cue: .boton-enlace, .boton--enlace,
  *   .boton--fila, .bar-inferior__item, .riel-lateral__item, .mas__item, .fila-venta,
- *   .fila-gasto, .fila-entrada, .lista-clientes__fila, .bloque-deben__fila,
+ *   .fila-gasto, .fila-entrada, .lista-clientes__fila, .bloque-deben__titulo, .bloque-deben__fila,
  *   .variedad-item, .pestanas__opcion, .selector-pago__opcion, .gastos__mes-boton,
  *   .encabezado__volver, .historial-fila__borrar.
  * Display-only rows (.encabezado-fila, .historial-fila and its other children, the
@@ -2591,6 +2591,7 @@ body {
     .fila-gasto,
     .fila-entrada,
     .lista-clientes__fila,
+    .bloque-deben__titulo,
     .bloque-deben__fila,
     .variedad-item,
     .pestanas__opcion,
@@ -2602,6 +2603,12 @@ body {
   transform: scale(0.98);
   background-color: var(--superficie);
   transition: none;
+}
+
+/* The one already selected rests on --superficie, so its fill cue is --linea instead:
+ * it differs from the resting fill in both themes. */
+:is(.riel-lateral__item--activo, .selector-pago__opcion--activa):active:not(:disabled):not([aria-disabled='true']) {
+  background-color: var(--linea);
 }
 
 /* A tap on a button, tab or the bar selects no text; text in lists and fields stays
@@ -2617,6 +2624,7 @@ body {
     .boton-enlace,
     .boton--enlace,
     .boton--fila,
+    .bloque-deben__titulo,
     .bar-inferior,
     .riel-lateral,
     .mas__item,
