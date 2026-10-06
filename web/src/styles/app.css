@@ -351,6 +351,66 @@ button {
   font-weight: 600;
 }
 
+/* The business row at the rail's foot (`InicioCompu.dc.html`): the avatar and the name,
+ * one link to Configuración. The rail is hidden on the phone, so this is computer only. */
+.riel-lateral__negocio {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  margin-top: 14px;
+  padding: 0 10px;
+  border-radius: 14px;
+  color: var(--tinta);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.riel-lateral__negocio--activo {
+  background: var(--superficie);
+  box-shadow: inset 2px 0 0 var(--acento);
+}
+
+.riel-lateral__avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radio-pildora);
+  background: var(--acento-suave);
+  color: var(--acento);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Inicio's header on the phone (`Inicio.dc.html`): the name and title, and the business
+ * avatar as a 44px touch target drawn at 38px. The computer has the rail's row instead. */
+.inicio__cabecera {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+}
+
+.inicio__cabecera-titulos {
+  flex: 1;
+}
+
+.inicio__avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radio-pildora);
+  background: var(--superficie);
+  color: var(--tinta);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+}
+
 /* The fixed "Nueva venta" button (accounts.md, "Shell"): a pill above the bottom
  * bar on the phone, matching `.boton`'s own shape (`Inicio.dc.html`). Its
  * `--escritorio` twin sits above the side rail's items instead (`InicioCompu.dc.html`)
@@ -2317,6 +2377,10 @@ button {
 
   .riel-lateral {
     display: flex;
+  }
+
+  .inicio__avatar {
+    display: none;
   }
 
   .boton-nueva-venta {

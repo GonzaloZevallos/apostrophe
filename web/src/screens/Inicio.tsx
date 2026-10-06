@@ -41,6 +41,7 @@ import SinConexion from '../components/SinConexion'
 import { salesCount } from '../format/counts'
 import { formatDateShort } from '../format/dates'
 import { formatGrams, formatMoney, formatSignedMoney } from '../format/money'
+import { initialsOf } from '../shell/initials'
 import { detailFor, sideNoteFor } from '../stock/detail'
 
 export const EMPTY_TITLE = 'Arrancá por las variedades'
@@ -109,9 +110,19 @@ export default function Inicio() {
   return (
     <main className="pantalla">
       <div className="cuerpo">
-        <div>
-          <span className="encabezado__negocio">{me.business_name}</span>
-          <span className="encabezado__titulo">Inicio</span>
+        <div className="inicio__cabecera">
+          <div className="inicio__cabecera-titulos">
+            <span className="encabezado__negocio">{me.business_name}</span>
+            <span className="encabezado__titulo">Inicio</span>
+          </div>
+          <Link
+            to="/settings"
+            state={{ inApp: true }}
+            aria-label={`Configuración de ${me.business_name}`}
+            className="inicio__avatar"
+          >
+            {initialsOf(me.business_name)}
+          </Link>
         </div>
 
         {pinOutOfDate && (

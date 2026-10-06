@@ -1,14 +1,14 @@
 /**
  * `Mas` at the screen seam: shows exactly Gastos, Variedades, Catálogo, Análisis and
- * Negocio (PRD, "Nada inventado"; metric M5).
+ * Configuración (PRD, "Nada inventado"; metric M5).
  */
 
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { expect, test } from 'vitest'
 import Mas from './Mas'
 
-test('shows exactly Gastos, Variedades, Catálogo, Análisis and Negocio', () => {
+test('shows exactly Gastos, Variedades, Catálogo, Análisis and Configuración', () => {
   render(
     <MemoryRouter>
       <Mas />
@@ -24,5 +24,8 @@ test('shows exactly Gastos, Variedades, Catálogo, Análisis and Negocio', () =>
   expect(nav).toHaveTextContent('El mensaje de hoy, listo para copiar')
   expect(nav).toHaveTextContent('Análisis')
   expect(nav).toHaveTextContent('Variedades, semanas, meses y días')
-  expect(nav).toHaveTextContent('Negocio')
+  expect(nav).toHaveTextContent('Configuración')
+  expect(nav).toHaveTextContent('Negocio, usuarios, bot, catálogo, categorías, apariencia y tu cuenta')
+  expect(within(nav).queryByRole('link', { name: /^Negocio$/ })).not.toBeInTheDocument()
+  expect(within(nav).getByRole('link', { name: /^Configuración/ })).toHaveAttribute('href', '/settings')
 })
