@@ -185,7 +185,7 @@ def check_front_segment_overlap(
 ) -> None:
     """A segment both the API and the front name is only allowed when an exact entry of
     `SHARED_FRONT_PATHS` or a pattern of `SHARED_FRONT_PATTERNS` serves the front there
-    (docs/adr/0024, docs/adr/0027)."""
+    (docs/adr/0024, docs/adr/0030)."""
     shared_segments = {_first_segment(path) for path in shared_front_paths} | {
         _pattern_first_segment(pattern) for pattern in shared_front_patterns
     }
@@ -237,7 +237,7 @@ _LITERAL_SEGMENT = re.compile(r"^[a-z]+(-[a-z]+)*$")
 
 def pattern_problems(pattern: re.Pattern[str]) -> list[str]:
     """What is wrong with a front pattern: not fully anchored, or a segment that is
-    neither a plain lowercase literal nor exactly `[0-9]+` (docs/adr/0027). Empty when the
+    neither a plain lowercase literal nor exactly `[0-9]+` (docs/adr/0030). Empty when the
     pattern is acceptable."""
     source = pattern.pattern
     problems: list[str] = []

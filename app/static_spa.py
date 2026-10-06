@@ -28,7 +28,7 @@ _NO_CACHE_NAMES = frozenset({"index.html", "manifest.webmanifest", "sw.js"})
 
 # Front paths whose first segment is also an API route's (`/expenses`): the API's router
 # would answer them, so the front is served there only through these two tables, and only to
-# a browser navigation (docs/adr/0024, docs/adr/0027). A moved screen adds its own entry
+# a browser navigation (docs/adr/0024, docs/adr/0030). A moved screen adds its own entry
 # with its route.
 SHARED_FRONT_PATHS = frozenset(
     {
@@ -117,7 +117,7 @@ class SpaStatic(StaticFiles):
 
 class FrontNavigation:
     """Pure ASGI, outside Starlette's routing and its `redirect_slashes`, so the raw path
-    decides before the API's router can claim it (docs/adr/0024, docs/adr/0027):
+    decides before the API's router can claim it (docs/adr/0024, docs/adr/0030):
 
     - a legacy Spanish path (or it plus one trailing slash), exact or matching a
       `LEGACY_FRONT_PATTERNS` row, is a 308 to its new path (the captured id carried

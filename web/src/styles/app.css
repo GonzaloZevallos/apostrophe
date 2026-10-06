@@ -3279,7 +3279,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    padding-top: 80px;
+    padding-top: calc(var(--inset-arriba) + 80px);
   }
 
   .variedad-nueva .pie {

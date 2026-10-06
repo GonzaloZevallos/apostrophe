@@ -369,7 +369,7 @@ def test_the_shell_on_a_shared_path_carries_the_same_headers_as_the_root(
     assert shared.headers["cache-control"] == "no-cache"
 
 
-# --- Parameterised shared paths and legacy patterns (docs/adr/0027) -----------------------
+# --- Parameterised shared paths and legacy patterns (docs/adr/0030) -----------------------
 
 CONTRACT = json.loads(
     (Path(__file__).resolve().parent.parent / "web" / "src" / "api" / "contract.json").read_text()

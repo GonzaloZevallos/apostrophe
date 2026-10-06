@@ -2,7 +2,7 @@
  * The one place the front names the path of Más, Gastos, the expense form, the
  * expense categories (a Configuración group since #60), Análisis and every
  * `/varieties/*` path (Variedades, a variety's page, its lists, the catalog screen and
- * the stock entry form; ADR-0027). A variety or an entry is named by its integer id,
+ * the stock entry form; ADR-0030). A variety or an entry is named by its integer id,
  * never by its name. Every constant under an API segment (`/varieties`, `/expenses`)
  * also appears in `contract.json`'s `sharedFrontRoutes` (`routes.test.ts` checks it). Components and
  * the shell import these; none writes the literal (a source scan in `routes.test.ts` fails if one does).
