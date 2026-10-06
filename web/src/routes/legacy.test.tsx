@@ -117,7 +117,7 @@ test.each(CASES)('signed in, $visit goes to $target, replacing, with its query a
   expect(router.state.location.pathname).toBe(paths.login())
 })
 
-test.each(CASES.filter((c) => c.pattern !== '/entrar'))(
+test.each(CASES.filter((c) => c.target !== paths.login()))(
   'signed out, $visit ends at /login without a history entry',
   async (c) => {
     stubApi(false, () => jsonResponse(401, {}))
