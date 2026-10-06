@@ -73,7 +73,7 @@ const ITEMS: Item[] = [
   {
     to: VARIETIES,
     label: 'Variedades',
-    icono: 'stock',
+    icono: 'variedades',
     placement: 'both',
     group: 'main',
     place: 'varieties',

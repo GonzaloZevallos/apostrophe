@@ -292,27 +292,27 @@ button {
 }
 
 .bar-inferior__item {
-  flex: 1;
+  /* Sized by the label, then the spare room shared out: the longest word ("Variedades")
+   * never has to give up a letter to the shortest ("Más"). */
+  flex: 1 1 auto;
+  min-width: min-content;
   min-height: var(--alto-tocable);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 5px;
-  min-width: 0;
   text-decoration: none;
   color: var(--nav-inactivo);
   font-size: 0.6875rem;
   font-weight: 500;
 }
 
-/* A label is never clipped or cut with an ellipsis: at 320 px with text at 130 % the five
- * tabs share 304 px, so a long one ("Variedades") wraps inside its tab instead. */
+/* A label is never clipped, cut with an ellipsis or broken mid-word: at 320 px with text at
+ * 130 % the five words (the widest, "Variedades") fit side by side in the 304 px. */
 .bar-inferior__item > span {
-  max-width: 100%;
   text-align: center;
   line-height: 1.15;
-  overflow-wrap: anywhere;
 }
 
 /* Not color alone (README, accessibility rule 2): the active item is also bold,
