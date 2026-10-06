@@ -113,4 +113,45 @@ describe('findForbiddenUsages', () => {
 
     expect(violations.map((v) => v.rule).sort()).toEqual(['indexedDB', 'sessionStorage'])
   })
+
+  test('flags a module other than api/catalog.ts naming the catalog query key', () => {
+    const violations = findForbiddenUsages([
+      { path: 'src/screens/Catalogo.tsx', content: 'queryKey: keys.catalog(),' },
+      { path: 'src/screens/Other.tsx', content: "useQuery({ queryKey: ['catalog'] })" },
+    ])
+
+    expect(violations).toEqual([
+      { path: 'src/screens/Catalogo.tsx', rule: 'catalogQueryKey' },
+      { path: 'src/screens/Other.tsx', rule: 'catalogQueryKey' },
+    ])
+  })
+
+  test('allows the catalog query key only inside api/catalog.ts and api/keys.ts', () => {
+    const violations = findForbiddenUsages([
+      { path: 'src/api/catalog.ts', content: 'queryKey: keys.catalog(),' },
+    ])
+
+    expect(violations).toEqual([])
+  })
+  test('flags a module other than share.ts naming navigator.share, in any spelling', () => {
+    const violations = findForbiddenUsages([
+      { path: 'src/screens/Catalogo.tsx', content: 'await navigator.share({ text })' },
+      { path: 'src/screens/Other.tsx', content: 'navigator?.share?.({ text })' },
+      { path: 'src/screens/Third.tsx', content: 'navigator["share"]({ text })' },
+      { path: 'src/screens/share.ts', content: 'navigator.share({ text })' },
+    ])
+
+    expect(violations.map((v) => `${v.path}:${v.rule}`)).toEqual([
+      'src/screens/Catalogo.tsx:navigatorShare',
+      'src/screens/Other.tsx:navigatorShare',
+      'src/screens/Third.tsx:navigatorShare',
+      'src/screens/share.ts:navigatorShare',
+    ])
+  })
+
+  test('allows navigator.share only inside src/share.ts', () => {
+    expect(
+      findForbiddenUsages([{ path: 'src/share.ts', content: 'await navigator.share({ text })' }]),
+    ).toEqual([])
+  })
 })

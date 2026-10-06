@@ -130,17 +130,17 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   // perf sections below seed sales for on dates before today — a default "Rige
   // desde" of today would leave those earlier dates with no price of their own.
   async function addVariety(name: string, listPrice?: string, effectiveFrom?: string): Promise<void> {
-    await page.goto('/variedades')
-    await page.getByRole('button', { name: 'Nueva variedad' }).click()
+    await page.goto('/varieties')
+    await page.getByRole('link', { name: 'Nueva variedad' }).click()
     await page.getByLabel('Nombre').fill(name)
-    await page.getByRole('button', { name: 'Guardar' }).click()
+    await page.getByRole('button', { name: 'Agregá la variedad' }).click()
     await expect(page.getByText('Variedad guardada')).toBeVisible()
     if (listPrice === undefined) return
     await page.getByRole('link', { name: new RegExp(name) }).click()
-    await page.getByRole('button', { name: 'Nuevo precio' }).click()
+    await page.getByRole('link', { name: 'Nuevo precio' }).click()
     if (effectiveFrom !== undefined) await page.getByLabel('Rige desde').fill(effectiveFrom)
-    await page.getByLabel('Precio de lista').fill(listPrice)
-    await page.getByRole('button', { name: 'Guardar precio' }).click()
+    await page.getByLabel(/^Precio de lista/).fill(listPrice)
+    await page.getByRole('button', { name: 'Guardá el precio' }).click()
     await expect(page.getByText('Precio guardado')).toBeVisible()
   }
   await addVariety('Jazmín', '500', '2000-01-01')
@@ -157,7 +157,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
     'Inicio',
     'Ventas',
     'Clientes',
-    'Stock',
+    'Variedades',
     'Más',
   ])
 

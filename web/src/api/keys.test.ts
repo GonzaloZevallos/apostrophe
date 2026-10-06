@@ -42,6 +42,28 @@ describe('keys', () => {
   })
 })
 
+describe('invalidateResource and the catalog', () => {
+  test.each(['stock', 'varieties'] as const)('a %s write also invalidates the catalog', (resource) => {
+    const queryClient = clientWithData()
+    queryClient.setQueryData(keys.catalog(), { text: 'x' })
+
+    invalidateResource(queryClient, resource)
+
+    expect(isInvalidated(queryClient, keys.catalog())).toBe(true)
+  })
+
+  test('a catalog write does not invalidate stock or varieties', () => {
+    const queryClient = clientWithData()
+    queryClient.setQueryData(keys.stock(), {})
+    queryClient.setQueryData(keys.varieties(), [])
+
+    invalidateResource(queryClient, 'catalog')
+
+    expect(isInvalidated(queryClient, keys.stock())).toBe(false)
+    expect(isInvalidated(queryClient, keys.varieties())).toBe(false)
+  })
+})
+
 describe('invalidateResource', () => {
   test('invalidates every query under the resource\'s own prefix', () => {
     const queryClient = clientWithData()

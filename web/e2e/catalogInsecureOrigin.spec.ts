@@ -85,30 +85,35 @@ test('Copiar still works through the execCommand fallback on a plain-http, non-l
   expect(await page.evaluate(() => typeof navigator.clipboard)).toBe('undefined')
 
   // A variety with a price and stock, so the catalog has something to copy.
-  await page.goto(`${INSECURE_ORIGIN}/variedades`)
-  await page.getByRole('button', { name: 'Nueva variedad' }).click()
+  await page.goto(`${INSECURE_ORIGIN}/varieties`)
+  await page.getByRole('link', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Rosa')
-  await page.getByRole('button', { name: 'Guardar' }).click()
+  await page.getByRole('button', { name: 'Agregá la variedad' }).click()
   await page.getByRole('link', { name: /Rosa/ }).click()
-  await page.getByRole('button', { name: 'Nuevo precio' }).click()
-  await page.getByLabel('Precio de lista').fill('9000')
-  await page.getByRole('button', { name: 'Guardar precio' }).click()
+  await page.getByRole('link', { name: 'Nuevo precio' }).click()
+  await page.getByLabel(/^Precio de lista/).fill('9000')
+  await page.getByRole('button', { name: 'Guardá el precio' }).click()
   await expect(page.getByText('Precio guardado')).toBeVisible()
 
-  await page.goto(`${INSECURE_ORIGIN}/mi-stock/nueva-entrada`)
+  await page.goto(`${INSECURE_ORIGIN}/varieties`)
+  await page.getByRole('link', { name: '+ Entrada de stock' }).click()
   await page.getByLabel('Gramos').fill('50')
   await page.getByLabel('Variedad').selectOption({ label: 'Rosa' })
   await page.getByLabel('Costo total').fill('45000')
   await page.getByRole('button', { name: 'Guardá la entrada' }).click()
   await expect(page.getByText('Entrada guardada')).toBeVisible()
 
-  await page.goto(`${INSECURE_ORIGIN}/catalogo`)
+  await page.goto(`${INSECURE_ORIGIN}/varieties/catalog`)
   const apiText = await page.evaluate(() =>
     fetch('/catalog', { credentials: 'include' })
       .then((response) => response.json() as Promise<{ text: string | null }>)
       .then((body) => body.text),
   )
   expect(apiText).not.toBeNull()
+
+  // Over plain http the share sheet is withheld (secure-context gated): only Copiar is offered.
+  await expect(page.getByRole('button', { name: 'Copiar' })).toBeEnabled()
+  await expect(page.getByRole('button', { name: 'Compartir' })).toHaveCount(0)
 
   await page.getByRole('button', { name: 'Copiar' }).click()
   await expect(page.getByText('Catálogo copiado')).toBeVisible()

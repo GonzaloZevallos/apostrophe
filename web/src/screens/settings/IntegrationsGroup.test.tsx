@@ -59,7 +59,7 @@ function renderGroup(
   const router = createMemoryRouter(
     [
       { path: '/settings', element: <h1>Lista</h1> },
-      { path: '/catalogo', element: <h1>Catálogo</h1> },
+      { path: '/varieties/catalog', element: <h1>Catálogo</h1> },
       { path: '/settings/integrations', element: <IntegrationsGroup /> },
     ],
     { initialEntries: ['/settings', { pathname: '/settings/integrations', state: { inApp: true } }], initialIndex: 1 },
@@ -99,7 +99,7 @@ test('links to the catalog screen, with no pin status and no Publicar', async ()
   renderGroup(SAVED)
 
   await screen.findByLabelText('Tu chat')
-  expect(screen.getByRole('link', { name: 'Ir al catálogo' })).toHaveAttribute('href', '/catalogo')
+  expect(screen.getByRole('link', { name: 'Ir al catálogo' })).toHaveAttribute('href', '/varieties/catalog')
   expect(screen.queryByRole('button', { name: 'Publicar' })).not.toBeInTheDocument()
   expect(screen.queryByText('Desactualizado')).not.toBeInTheDocument()
   expect(screen.queryByText('Al día')).not.toBeInTheDocument()

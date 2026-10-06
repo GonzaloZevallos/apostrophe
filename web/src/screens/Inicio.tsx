@@ -43,6 +43,7 @@ import { formatDateShort } from '../format/dates'
 import { formatGrams, formatMoney, formatSignedMoney } from '../format/money'
 import { initialsOf } from '../shell/initials'
 import { detailFor, sideNoteFor } from '../stock/detail'
+import { CATALOG } from '../routes'
 
 export const EMPTY_TITLE = 'Arrancá por las variedades'
 export const EMPTY_DETAIL =
@@ -126,7 +127,7 @@ export default function Inicio() {
         </div>
 
         {pinOutOfDate && (
-          <Link to="/catalogo" className="aviso-ambar" role="status">
+          <Link to={CATALOG} className="aviso-ambar" role="status">
             <span className="aviso-ambar__titulo">{PINNED_CATALOG_OUT_OF_DATE}</span>
           </Link>
         )}

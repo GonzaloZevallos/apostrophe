@@ -14,7 +14,7 @@ const PHONE = { width: 390, height: 760 }
 const COMPUTER = { width: 1280, height: 920 }
 
 /** Tab roots: where a seller can be standing when the need to record an expense comes. */
-const ROOTS = ['/', '/ventas', '/clientes', '/mi-stock', '/more', '/expenses'] as const
+const ROOTS = ['/', '/ventas', '/clientes', '/varieties', '/more', '/expenses'] as const
 
 interface Counter {
   taps: number

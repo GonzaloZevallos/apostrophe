@@ -19,6 +19,7 @@ import ErrorGenerico from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import Loading from '../../components/Loading'
 import { copyText } from '../../clipboard'
+import { canShare, shareText } from '../../share'
 import { formatDateShort } from '../../format/dates'
 import SettingsGroup from './SettingsGroup'
 
@@ -74,13 +75,10 @@ export default function UsersGroup() {
   }
 
   async function onShare(): Promise<void> {
-    if (invite === null || typeof navigator.share !== 'function') return
-    try {
-      await navigator.share({ url: invite.url })
-    } catch {
-      // Cancelling the phone's share sheet rejects the promise; that is not a
-      // failure worth a message of its own.
-    }
+    if (invite === null || !canShare()) return
+    // `share.ts` is the only module that names the share sheet; a cancel and a failure
+    // both stay silent here, the link is already readable right on the screen.
+    await shareText(invite.url)
   }
 
   return (

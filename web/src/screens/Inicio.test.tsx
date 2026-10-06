@@ -345,5 +345,5 @@ test('shows the fixed pinned-catalog notice while the pin is out of date', async
   renderInicio()
 
   const notice = await screen.findByText(PINNED_CATALOG_OUT_OF_DATE)
-  expect(notice.closest('a')).toHaveAttribute('href', '/catalogo')
+  expect(notice.closest('a')).toHaveAttribute('href', '/varieties/catalog')
 })

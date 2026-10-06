@@ -1,7 +1,10 @@
 /**
  * `EntradaStock` (`stock.md`, "On screen"): records a new stock entry or edits one,
- * shared by `/mi-stock/nueva-entrada` and `/mi-stock/entradas/:id`, the way
- * `ClienteForm` shares add and edit. Editing confirms before saving; deleting confirms
+ * shared by `/varieties/entries/new` and `/varieties/entries/:id`, the way
+ * `ClienteForm` shares add and edit. It is a form ("Cerrar", no bar): Cerrar and a save go
+ * back by history, or with none to Variedades (new) / "Todas las entradas" (edit), and leaving
+ * with something typed asks first. `?variety={id}` chooses that variety, and "Stock inicial"
+ * with it when `entriesOf` finds none for it. Editing confirms before saving; deleting confirms
  * through `ConfirmDialog`, naming the date, variety and grams (`stock.md`: "Antes de
  * borrar"). The cost-per-gram preview ("Te queda en $ 8.500 el gramo") is the one
  * figure the front computes before saving (`domain/costPerGram.ts`, the mirror of
@@ -9,9 +12,9 @@
  * either what was typed or, after saving, the API's own answer.
  */
 
-import { type FormEvent, useState } from 'react'
-import { type QueryClient, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link, useNavigate, useOutletContext, useParams } from 'react-router'
+import { type FormEvent, useEffect, useRef, useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useBlocker, useOutletContext, useParams, useSearchParams } from 'react-router'
 import { ApiError, NetworkError, UNKNOWN_CODE, get } from '../api/client'
 import { invalidateResource, keys } from '../api/keys'
 import type { Me } from '../api/me'
@@ -21,20 +24,23 @@ import {
   type StockEntry,
   deleteEntry,
   editEntry,
+  entriesOf,
   getEntry,
   readStock,
   recordEntry,
 } from '../api/stock'
 import { costPerGram, gramsToHundredths } from '../domain/costPerGram'
 import ConfirmDialog from '../components/ConfirmDialog'
-import { gone, toast } from '../components/feedback'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import GoneScreen from '../components/GoneScreen'
 import SinConexion from '../components/SinConexion'
 import Loading from '../components/Loading'
+import { useHistoryBack } from '../components/useHistoryBack'
+import { useFlash } from '../flash/useFlash'
 import { formatDate } from '../format/dates'
 import { formatGrams, formatMoney } from '../format/money'
 import { parseMoney, parseSignedGrams } from '../format/parse'
+import { ENTRIES, VARIETIES } from '../routes'
 import type { Variety } from './Variedades'
 
 export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
@@ -50,28 +56,6 @@ const ORIGIN_OPTIONS: { value: Origin; label: string }[] = [
   { value: 'adjustment', label: 'Ajuste' },
 ]
 
-/** A deleted (or already-gone) entry's own `stockEntry(entryId)` query shares the
- * `'stock'` prefix `invalidateResource` refreshes for everything else — grams,
- * status and days left all move when an entry goes. A plain `invalidateResource`
- * would also mark that one query active again while this screen is still mounted
- * (the moment before `navigate` unmounts it), so its still-subscribed `useQuery`
- * (the `existing` query below) refetches an entry that is already gone and the
- * browser logs the resulting 404 — caught by the e2e run's "zero console messages"
- * assertion (plan, "Observability"). This marks that one query stale without
- * refetching it, and refreshes every other `'stock'` query as usual. */
-function invalidateStockAfterDeleting(queryClient: QueryClient, entryId: string): void {
-  queryClient.invalidateQueries({
-    queryKey: keys.stockEntry(entryId),
-    exact: true,
-    refetchType: 'none',
-  })
-  queryClient.invalidateQueries({
-    predicate: (query) =>
-      query.queryKey[0] === 'stock' &&
-      !(query.queryKey[1] === 'entries' && query.queryKey[2] === entryId),
-  })
-}
-
 const FIELD_OVERRIDES: Partial<Record<RefusalCode, string>> = {
   'stock.cost_required': COST_REQUIRED,
   'stock.cost_on_negative_adjustment': COST_ON_NEGATIVE,
@@ -85,52 +69,80 @@ interface Props {
   mode: 'nuevo' | 'editar'
 }
 
+function Frame({ children }: { children: React.ReactNode }) {
+  return (
+    <main className="pantalla">
+      <div className="cuerpo">{children}</div>
+    </main>
+  )
+}
+
 export default function EntradaStock({ mode }: Props) {
   const me = useOutletContext<Me>()
   const { id } = useParams<{ id: string }>()
+  const [searchParams] = useSearchParams()
   const entryId = id ?? ''
+  const fromVariety = parseVarietyParam(searchParams.get('variety'))
 
   const existing = useQuery({
     queryKey: keys.stockEntry(entryId),
     queryFn: () => getEntry(entryId),
     enabled: mode === 'editar',
   })
+  // The preselection needs to know whether the variety has entries: the form waits for it.
+  const stockQuery = useQuery({
+    queryKey: keys.stock(),
+    queryFn: readStock,
+    enabled: mode === 'nuevo' && fromVariety !== null,
+  })
 
-  if (mode === 'nuevo') return <EntradaStockBody mode="nuevo" entryId={entryId} today={me.today} />
-
-  if (existing.isError) {
-    if (existing.error instanceof ApiError && isGone(existing.error.code)) {
-      return <GoneScreen label="Stock" to="/mi-stock" />
-    }
-    if (existing.error instanceof NetworkError) {
+  if (mode === 'nuevo') {
+    if (fromVariety === null) return <EntradaStockBody mode="nuevo" entryId={entryId} today={me.today} />
+    if (stockQuery.isError) return <Frame>{errorOf(stockQuery.error)}</Frame>
+    if (stockQuery.data === undefined) {
       return (
-        <main className="pantalla">
-          <div className="cuerpo">
-            <SinConexion />
-          </div>
-        </main>
+        <Frame>
+          <Loading />
+        </Frame>
       )
     }
     return (
-      <main className="pantalla">
-        <div className="cuerpo">
-          <ErrorGenerico />
-        </div>
-      </main>
+      <EntradaStockBody
+        mode="nuevo"
+        entryId={entryId}
+        today={me.today}
+        chosenVariety={fromVariety}
+        hasEntries={entriesOf(stockQuery.data, fromVariety).length > 0}
+      />
     )
+  }
+
+  if (existing.isError) {
+    if (existing.error instanceof ApiError && isGone(existing.error.code)) {
+      return <GoneScreen label="Variedades" to={VARIETIES} />
+    }
+    return <Frame>{errorOf(existing.error)}</Frame>
   }
 
   if (existing.data === undefined) {
     return (
-      <main className="pantalla">
-        <div className="cuerpo">
-          <Loading />
-        </div>
-      </main>
+      <Frame>
+        <Loading />
+      </Frame>
     )
   }
 
   return <EntradaStockBody mode="editar" entryId={entryId} today={me.today} initial={existing.data} />
+}
+
+function parseVarietyParam(raw: string | null): number | null {
+  if (raw === null || !/^[0-9]+$/.test(raw)) return null
+  const value = Number(raw)
+  return Number.isSafeInteger(value) ? value : null
+}
+
+function errorOf(error: unknown) {
+  return error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />
 }
 
 interface BodyProps {
@@ -138,11 +150,17 @@ interface BodyProps {
   entryId: string
   today: string
   initial?: StockEntry
+  chosenVariety?: number
+  hasEntries?: boolean
 }
 
-function EntradaStockBody({ mode, entryId, today, initial }: BodyProps) {
-  const navigate = useNavigate()
+function EntradaStockBody({ mode, entryId, today, initial, chosenVariety, hasEntries }: BodyProps) {
   const queryClient = useQueryClient()
+  const flash = useFlash()
+  const back = useHistoryBack(mode === 'nuevo' ? VARIETIES : ENTRIES)
+  const leftRef = useRef(false)
+  const dirtyRef = useRef(false)
+  const blocker = useBlocker(() => dirtyRef.current && !leftRef.current)
 
   const varietiesQuery = useQuery({
     queryKey: keys.varieties(),
@@ -152,8 +170,12 @@ function EntradaStockBody({ mode, entryId, today, initial }: BodyProps) {
 
   const [date, setDate] = useState(initial?.date ?? today)
   const [grams, setGrams] = useState(initial !== undefined ? String(initial.grams) : '')
-  const [varietyId, setVarietyId] = useState(initial !== undefined ? String(initial.variety_id) : '')
-  const [origin, setOrigin] = useState<Origin>(initial?.origin ?? 'purchase')
+  const [varietyId, setVarietyId] = useState(
+    initial !== undefined ? String(initial.variety_id) : chosenVariety !== undefined ? String(chosenVariety) : '',
+  )
+  const [origin, setOrigin] = useState<Origin>(
+    initial?.origin ?? (chosenVariety !== undefined && hasEntries === false ? 'opening_stock' : 'purchase'),
+  )
   const [totalCost, setTotalCost] = useState(
     initial?.total_cost !== null && initial?.total_cost !== undefined ? String(initial.total_cost) : '',
   )
@@ -165,6 +187,28 @@ function EntradaStockBody({ mode, entryId, today, initial }: BodyProps) {
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [gone, setGone] = useState(false)
+
+  // Something typed (or changed, on an edit) is what "Cerrar" asks about before discarding.
+  const dirty =
+    grams !== (initial !== undefined ? String(initial.grams) : '') ||
+    totalCost !== (initial?.total_cost != null ? String(initial.total_cost) : '') ||
+    note !== (initial?.note ?? '')
+  useEffect(() => {
+    dirtyRef.current = dirty
+  }, [dirty])
+
+  function leave(toast: 'Entrada guardada' | 'Entrada eliminada'): void {
+    leftRef.current = true
+    flash.armAfterLeaving(toast)
+    back()
+  }
+
+  // The entry is no longer there (deleted elsewhere, or never this business's).
+  function entryIsGone(): void {
+    invalidateResource(queryClient, 'stock', { refetchType: 'none' })
+    setGone(true)
+  }
 
   const previewGrams = parseSignedGrams(grams)
   const previewCost = parseMoney(totalCost)
@@ -213,12 +257,13 @@ function EntradaStockBody({ mode, entryId, today, initial }: BodyProps) {
       } else {
         await editEntry(entryId, body)
       }
-      invalidateResource(queryClient, 'stock')
-      navigate('/mi-stock', { state: toast('Entrada guardada') })
+      // Marked stale without refetching: this screen is leaving, and its own entry's query
+      // would otherwise refetch a record that may no longer be there.
+      invalidateResource(queryClient, 'stock', { refetchType: 'none' })
+      leave('Entrada guardada')
     } catch (caught) {
       if (caught instanceof ApiError && mode === 'editar' && isGone(caught.code)) {
-        invalidateStockAfterDeleting(queryClient, entryId)
-        navigate('/mi-stock', { state: gone() })
+        entryIsGone()
         return
       }
       if (caught instanceof ApiError) {
@@ -249,13 +294,12 @@ function EntradaStockBody({ mode, entryId, today, initial }: BodyProps) {
     setDeleteError(null)
     try {
       await deleteEntry(entryId)
-      invalidateStockAfterDeleting(queryClient, entryId)
-      navigate('/mi-stock', { state: toast('Entrada eliminada') })
+      invalidateResource(queryClient, 'stock', { refetchType: 'none' })
+      leave('Entrada eliminada')
     } catch (caught) {
       setConfirmingDelete(false)
       if (caught instanceof ApiError && isGone(caught.code)) {
-        invalidateStockAfterDeleting(queryClient, entryId)
-        navigate('/mi-stock', { state: gone() })
+        entryIsGone()
         return
       }
       if (caught instanceof NetworkError) setOffline(true)
@@ -270,14 +314,18 @@ function EntradaStockBody({ mode, entryId, today, initial }: BodyProps) {
     return found?.name ?? ''
   })()
 
+  if (gone) return <GoneScreen label="Variedades" to={VARIETIES} />
+
   return (
     <main className="pantalla">
       <div className="cuerpo">
-        <div className="encabezado-fila">
-          <Link to="/mi-stock">Volver</Link>
-          <span className="encabezado__titulo">
+        <div className="gasto-form__cabecera">
+          <span className="gasto-form__titulo">
             {mode === 'nuevo' ? 'Nueva entrada' : 'Editar entrada'}
           </span>
+          <button type="button" className="boton--enlace gasto-form__cerrar" onClick={back}>
+            Cerrar
+          </button>
         </div>
         <form className="formulario" onSubmit={onSubmit}>
           <label className="campo">
@@ -404,6 +452,16 @@ function EntradaStockBody({ mode, entryId, today, initial }: BodyProps) {
         />
       )}
       {deleteError !== null && <ErrorGenerico />}
+      {blocker.state === 'blocked' && (
+        <ConfirmDialog
+          title={mode === 'nuevo' ? '¿Descartás la entrada?' : '¿Descartás los cambios?'}
+          detail="Se pierde lo que cargaste: todavía no se guardó nada."
+          confirmText="Sí, descartalo"
+          cancelText="No, seguí cargando"
+          onConfirm={() => blocker.proceed()}
+          onCancel={() => blocker.reset()}
+        />
+      )}
     </main>
   )
 }

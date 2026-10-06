@@ -46,16 +46,16 @@ test('Ventas and a sale detail fit, and are thumb-sized, at 320, 430 and 130 % o
 }) => {
   await signUpNewBusiness(page, { businessName: `Vivero Telefono ${Date.now()}`, email: `duena-telefono-${Date.now()}@example.com` })
 
-  await page.goto('/variedades')
-  await page.getByRole('button', { name: 'Nueva variedad' }).click()
+  await page.goto('/varieties')
+  await page.getByRole('link', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Jazmín')
-  await page.getByRole('button', { name: 'Guardar' }).click()
+  await page.getByRole('button', { name: 'Agregá la variedad' }).click()
   await expect(page.getByText('Variedad guardada')).toBeVisible()
   await page.getByRole('link', { name: /Jazmín/ }).click()
-  await page.getByRole('button', { name: 'Nuevo precio' }).click()
+  await page.getByRole('link', { name: 'Nuevo precio' }).click()
   await page.getByLabel('Rige desde').fill('2000-01-01')
-  await page.getByLabel('Precio de lista').fill('500')
-  await page.getByRole('button', { name: 'Guardar precio' }).click()
+  await page.getByLabel(/^Precio de lista/).fill('500')
+  await page.getByRole('button', { name: 'Guardá el precio' }).click()
   await expect(page.getByText('Precio guardado')).toBeVisible()
 
   await page.goto('/ventas')

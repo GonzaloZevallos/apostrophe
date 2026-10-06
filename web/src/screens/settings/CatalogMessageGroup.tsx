@@ -17,8 +17,8 @@
 
 import { type FormEvent, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { ApiError, NetworkError, UNKNOWN_CODE, get, put } from '../../api/client'
-import { keys } from '../../api/keys'
+import { catalogQueryOptions, writeCatalog, type Catalog } from '../../api/catalog'
+import { ApiError, NetworkError, UNKNOWN_CODE, put } from '../../api/client'
 import { kindOf, resolveOverride, type RefusalCode } from '../../api/refusals'
 import AvisoExito from '../../components/AvisoExito'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
@@ -54,14 +54,7 @@ const OVERRIDES: Record<Field, Partial<Record<RefusalCode, string>>> = {
 }
 
 export default function CatalogMessageGroup() {
-  const { data, isPending, isError, error } = useQuery({
-    queryKey: keys.catalog(),
-    queryFn: () => get<HeaderFooter>('/catalog'),
-    gcTime: 0,
-    staleTime: Infinity,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-  })
+  const { data, isPending, isError, error } = useQuery(catalogQueryOptions())
 
   if (isPending || isError) {
     return (
@@ -112,8 +105,8 @@ function MessageForm({ initial }: { initial: HeaderFooter }) {
     clearFeedback()
     setSaving(true)
     try {
-      const view = await put<HeaderFooter>('/catalog/header-footer', { header, footer })
-      queryClient.setQueryData(keys.catalog(), view)
+      const view = await put<Catalog>('/catalog/header-footer', { header, footer })
+      writeCatalog(queryClient, view)
       setAccepted({ header: view.header, footer: view.footer })
       setHeader(view.header)
       setFooter(view.footer)

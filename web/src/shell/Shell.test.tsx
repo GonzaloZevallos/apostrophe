@@ -6,7 +6,7 @@
  * comparison decides it").
  *
  * Only destinations that exist show (PRD, "Nada inventado"; metric M5): the bar is
- * Inicio, Ventas, Clientes, Stock and Más; the rail adds Gastos and Análisis after a
+ * Inicio, Ventas, Clientes, Variedades and Más; the rail adds Gastos and Análisis after a
  * divider, with Más last (it leaves with the issue that empties it). The fixed "Nueva
  * venta" button, separate from the tabs, shows on every signed-in screen except
  * where its route's `handle.chrome` is `'none'` (`NuevaVenta`'s own
@@ -28,8 +28,8 @@ import Shell from './Shell'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03' }
 
-const BAR = ['Inicio', 'Ventas', 'Clientes', 'Stock', 'Más']
-const RAIL = ['Inicio', 'Ventas', 'Clientes', 'Stock', 'Gastos', 'Análisis', 'Más']
+const BAR = ['Inicio', 'Ventas', 'Clientes', 'Variedades', 'Más']
+const RAIL = ['Inicio', 'Ventas', 'Clientes', 'Variedades', 'Gastos', 'Análisis', 'Más']
 
 /** The tabs only, in the order they render — drops the fixed "Nueva venta"
  * button, which shares the rail's `link` role but is not one of the tabs. */
@@ -89,7 +89,7 @@ function renderShell(initialPath: string) {
   render(<RouterProvider router={router} />)
 }
 
-test('the bar shows Inicio, Ventas, Clientes, Stock and Más; the rail adds Gastos and Análisis before Más', () => {
+test('the bar shows Inicio, Ventas, Clientes, Variedades and Más; the rail adds Gastos and Análisis before Más', () => {
   const { container } = renderShellWithContainer('/')
 
   expect(container.querySelectorAll('nav')).toHaveLength(2)
@@ -107,7 +107,7 @@ test('in the rail, Gastos and Análisis come after the divider and the first fou
     'Inicio',
     'Ventas',
     'Clientes',
-    'Stock',
+    'Variedades',
     '---',
     'Gastos',
     'Análisis',

@@ -1,0 +1,108 @@
+/**
+ * `RenameForm`: renames a variety (`PATCH /varieties/{id}`). Like `ExpenseForm` it knows
+ * nothing of the router: its host supplies the exits (`onDone`, `onCancel`) and learns
+ * whether something was typed (`onDirtyChange`), so the host alone decides how leaving
+ * works. A refusal shows under the name and keeps what was typed.
+ */
+
+import { type FormEvent, useEffect, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import { ApiError, NetworkError, UNKNOWN_CODE, patch } from '../../api/client'
+import { invalidateResource } from '../../api/keys'
+import { isGone, kindOf, resolveOverride, type RefusalCode } from '../../api/refusals'
+import type { SuccessToast } from '../../components/AvisoExito'
+import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
+import SinConexion from '../../components/SinConexion'
+import {
+  GENERIC_REFUSAL_MESSAGE,
+  NAME_INVALID_MESSAGE,
+  NAME_TAKEN_MESSAGE,
+  VARIETY_SAVED,
+  type Variety,
+} from '../Variedades'
+
+const RENAME_OVERRIDES: Partial<Record<RefusalCode, string>> = {
+  'variety.name_taken': NAME_TAKEN_MESSAGE,
+  'variety.name_invalid': NAME_INVALID_MESSAGE,
+}
+
+export interface RenameFormProps {
+  variety: Pick<Variety, 'id' | 'name'>
+  onDone: (saved: SuccessToast) => void
+  onCancel: () => void
+  onDirtyChange: (dirty: boolean) => void
+  onGone: () => void
+}
+
+export default function RenameForm({ variety, onDone, onCancel, onDirtyChange, onGone }: RenameFormProps) {
+  const queryClient = useQueryClient()
+  const [name, setName] = useState(variety.name)
+  const [error, setError] = useState<string | null>(null)
+  const [offline, setOffline] = useState(false)
+  const [sending, setSending] = useState(false)
+
+  const dirty = name !== variety.name
+  useEffect(() => {
+    onDirtyChange(dirty)
+  }, [dirty, onDirtyChange])
+
+  async function onSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
+    event.preventDefault()
+    setError(null)
+    setOffline(false)
+    setSending(true)
+    try {
+      await patch<Variety>(`/varieties/${variety.id}`, { name })
+      invalidateResource(queryClient, 'varieties')
+      onDone(VARIETY_SAVED)
+    } catch (caught) {
+      if (caught instanceof ApiError && isGone(caught.code)) {
+        invalidateResource(queryClient, 'varieties')
+        onGone()
+      } else if (caught instanceof ApiError) {
+        const message = resolveOverride(RENAME_OVERRIDES, caught.code)
+        if (message !== undefined) setError(message)
+        else if (caught.code !== UNKNOWN_CODE && kindOf(caught.code) === 'refusal') setError(GENERIC_REFUSAL_MESSAGE)
+        else setError(ERROR_GENERICO_MENSAJE)
+      } else if (caught instanceof NetworkError) {
+        setOffline(true)
+      } else {
+        setError(ERROR_GENERICO_MENSAJE)
+      }
+    } finally {
+      setSending(false)
+    }
+  }
+
+  return (
+    <div className="gasto-form">
+      <div className="gasto-form__cabecera">
+        <span className="gasto-form__titulo">Renombrar variedad</span>
+        <button type="button" className="boton--enlace gasto-form__cerrar" onClick={onCancel}>
+          Cerrar
+        </button>
+      </div>
+      <form className="formulario" onSubmit={onSubmit}>
+        <label className="campo">
+          <span className="campo__rotulo">Nombre</span>
+          <input
+            className="campo__input"
+            type="text"
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            required
+          />
+          {error !== null && (
+            <span className="campo__error" role="alert">
+              {error}
+            </span>
+          )}
+        </label>
+        {offline && <SinConexion />}
+        <button className="boton" type="submit" disabled={sending}>
+          Guardá el nombre
+        </button>
+      </form>
+    </div>
+  )
+}
