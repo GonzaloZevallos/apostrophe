@@ -14,6 +14,20 @@ button {
   color: inherit;
 }
 
+/* gestures (GH-77): the installed app is not a page that bounces, zooms its text or
+ * flashes Android's blue on a tap. `tokens.css` keeps its own `html, body` rule (the
+ * design contract); these sit here so that file stays byte-identical to the design's. */
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+html,
+body {
+  overscroll-behavior: none;
+}
+
 /* Visible to a screen reader only — the design's own technique for a label a
  * placeholder already shows visibly (`Clientes.dc.html`'s "Buscar cliente"). */
 .visualmente-oculto {
@@ -1197,6 +1211,7 @@ button {
   gap: var(--espacio-md);
   max-height: 85dvh;
   overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 /* `Ventas` (`Ventas.dc.html`/`VentasCompu.dc.html`, plan "sales-list"): the
@@ -1856,6 +1871,7 @@ button {
   max-width: 480px;
   max-height: 88dvh;
   overflow-y: auto;
+  overscroll-behavior: contain;
   background: var(--papel);
   border-radius: var(--radio-hoja) var(--radio-hoja) 0 0;
   padding: var(--espacio-lg) var(--margen-pantalla) calc(var(--espacio-xxl) + var(--inset-abajo));
@@ -2530,3 +2546,86 @@ button {
   margin: var(--espacio-xs) 0 0;
 }
 /* ===== end auth-layout ===== */
+
+/* pressed */
+/* The pressed state (GH-77): of every control a finger can tap, from tokens only.
+ * Two cues, neither colour alone: the control shrinks a little (`transform`), and its
+ * fill changes. `transition: none` so it shows the moment the finger lands. Never a
+ * bare `button`, `a` or `*` rule: `PasswordField`'s reveal and the auth screens keep
+ * the browser's own behaviour unless they wear one of these classes.
+ *
+ * Controls rendered on a <button>, <a> or <Link> (each checked against its component):
+ *   filled, so a --papel ring is the fill cue (it differs from the resting fill in both
+ *   themes): .boton (with .boton--suave, .boton--destructivo and .boton-nueva-venta),
+ *   .boton-icono, .periodos__boton, .pildora, .gastos__cargar, .aviso-ambar,
+ *   .venta-guardada__deshacer;
+ *   transparent, so --superficie is the fill cue: .boton-enlace, .boton--enlace,
+ *   .boton--fila, .bar-inferior__item, .riel-lateral__item, .mas__item, .fila-venta,
+ *   .fila-gasto, .fila-entrada, .lista-clientes__fila, .bloque-deben__fila,
+ *   .variedad-item, .pestanas__opcion, .selector-pago__opcion, .gastos__mes-boton,
+ *   .encabezado__volver, .historial-fila__borrar.
+ * Display-only rows (.encabezado-fila, .historial-fila and its other children, the
+ * children of .fila-gasto) are left out: nothing happens when they are touched. */
+:is(
+    .boton,
+    .boton-icono,
+    .periodos__boton,
+    .pildora,
+    .gastos__cargar,
+    .aviso-ambar,
+    .venta-guardada__deshacer
+  ):active:not(:disabled):not([aria-disabled='true']) {
+  transform: scale(0.98);
+  box-shadow: inset 0 0 0 3px var(--papel);
+  transition: none;
+}
+
+:is(
+    .boton-enlace,
+    .boton--enlace,
+    .boton--fila,
+    .bar-inferior__item,
+    .riel-lateral__item,
+    .mas__item,
+    .fila-venta,
+    .fila-gasto,
+    .fila-entrada,
+    .lista-clientes__fila,
+    .bloque-deben__fila,
+    .variedad-item,
+    .pestanas__opcion,
+    .selector-pago__opcion,
+    .gastos__mes-boton,
+    .encabezado__volver,
+    .historial-fila__borrar
+  ):active:not(:disabled):not([aria-disabled='true']) {
+  transform: scale(0.98);
+  background-color: var(--superficie);
+  transition: none;
+}
+
+/* A tap on a button, tab or the bar selects no text; text in lists and fields stays
+ * selectable, since only these classes opt out. */
+:is(
+    .boton,
+    .boton-icono,
+    .periodos__boton,
+    .pildora,
+    .gastos__cargar,
+    .aviso-ambar,
+    .venta-guardada__deshacer,
+    .boton-enlace,
+    .boton--enlace,
+    .boton--fila,
+    .bar-inferior,
+    .riel-lateral,
+    .mas__item,
+    .pestanas,
+    .selector-pago__opcion,
+    .gastos__mes-boton,
+    .encabezado__volver,
+    .historial-fila__borrar
+  ) {
+  -webkit-user-select: none;
+  user-select: none;
+}
