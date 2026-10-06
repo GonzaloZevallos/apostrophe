@@ -45,6 +45,8 @@ import ClientesLayout from './screens/clientes/ClientesLayout'
 import TeDeben from './screens/clientes/TeDeben'
 import VariedadDetalle from './screens/VariedadDetalle'
 import Variedades from './screens/Variedades'
+import EntriesList from './screens/EntriesList'
+import VarietyEntriesRoute from './screens/VarietyEntriesRoute'
 import Reset from './screens/Reset'
 import Settings from './screens/settings/Settings'
 import AccountGroup from './screens/settings/AccountGroup'
@@ -63,6 +65,7 @@ import Shell from './shell/Shell'
 import {
   ANALYSIS,
   CATALOG,
+  ENTRIES,
   ENTRY,
   ENTRY_NEW,
   EXPENSE_CATEGORIES,
@@ -71,6 +74,7 @@ import {
   MORE,
   VARIETIES,
   VARIETY,
+  VARIETY_ENTRIES,
   relative,
 } from './routes'
 
@@ -109,8 +113,18 @@ export const router = createBrowserRouter([
                 handle: { chrome: 'none', tab: 'more' },
               },
               { path: 'mi-stock', element: <Stock /> },
-              { path: relative(ENTRY_NEW), element: <EntradaStock mode="nuevo" /> },
-              { path: relative(ENTRY(':id')), element: <EntradaStock mode="editar" /> },
+              { path: relative(ENTRIES), element: <EntriesList />, handle: { chrome: 'card' } },
+              {
+                path: relative(VARIETY_ENTRIES(':id')),
+                element: <VarietyEntriesRoute />,
+                handle: { chrome: 'card' },
+              },
+              { path: relative(ENTRY_NEW), element: <EntradaStock mode="nuevo" />, handle: { chrome: 'none' } },
+              {
+                path: relative(ENTRY(':id')),
+                element: <EntradaStock mode="editar" />,
+                handle: { chrome: 'none' },
+              },
               { path: 'settings', element: <Settings />, handle: { chrome: 'card', tab: 'more' } },
               { path: 'settings/business', element: <BusinessGroup />, handle: { chrome: 'none', tab: 'more' } },
               { path: 'settings/users', element: <UsersGroup />, handle: { chrome: 'none', tab: 'more' } },
