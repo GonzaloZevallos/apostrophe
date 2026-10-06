@@ -9,6 +9,7 @@ carry its own `code`, not one inherited from the base.
 """
 
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -23,7 +24,7 @@ from app.payments.adapters.router import as_http as payments_as_http
 from app.pinned_catalog.adapters.router import as_http as pinned_catalog_as_http
 from app.results.adapters.router import as_http as results_as_http
 from app.sales.adapters.router import as_http as sales_as_http
-from app.static_spa import SHARED_FRONT_PATHS
+from app.static_spa import LEGACY_FRONT_PATTERNS, SHARED_FRONT_PATHS, SHARED_FRONT_PATTERNS
 from app.stock.adapters.router import as_http as stock_as_http
 from app.varieties.adapters.router import as_http as varieties_as_http
 from tests.conftest import SETTINGS, TEST_HASHER
@@ -168,13 +169,26 @@ def test_the_contract_check_fails_when_a_gone_code_is_labelled_refusal() -> None
         check_contract({"a.code": "gone"}, {"a.code": {"kind": "refusal"}})
 
 
+def _first_segment(path: str) -> str:
+    return path.strip("/").split("/", 1)[0]
+
+
+def _pattern_first_segment(pattern: re.Pattern[str]) -> str:
+    return _first_segment(pattern.pattern.removeprefix("^"))
+
+
 def check_front_segment_overlap(
-    api_first_segments: set[str], front_segments: set[str], shared_front_paths: frozenset[str]
+    api_first_segments: set[str],
+    front_segments: set[str],
+    shared_front_paths: frozenset[str],
+    shared_front_patterns: tuple[re.Pattern[str], ...],
 ) -> None:
     """A segment both the API and the front name is only allowed when an exact entry of
-    `SHARED_FRONT_PATHS` serves the front there (docs/adr/0024). Until `routes-flip` adds
-    `expenses` to `frontSegments` the overlap is empty, which this accepts."""
-    shared_segments = {path.strip("/").split("/", 1)[0] for path in shared_front_paths}
+    `SHARED_FRONT_PATHS` or a pattern of `SHARED_FRONT_PATTERNS` serves the front there
+    (docs/adr/0024, docs/adr/0027)."""
+    shared_segments = {_first_segment(path) for path in shared_front_paths} | {
+        _pattern_first_segment(pattern) for pattern in shared_front_patterns
+    }
     unserved = (api_first_segments & front_segments) - shared_segments
     assert not unserved, f"the API and the front both claim {sorted(unserved)} with no shared entry"
 
@@ -190,15 +204,84 @@ def test_an_api_path_segment_is_a_front_segment_only_through_a_shared_front_path
         path.strip("/").split("/", 1)[0] for path in document["paths"] if path != "/"
     }
 
-    check_front_segment_overlap(api_first_segments, front_segments, SHARED_FRONT_PATHS)
+    check_front_segment_overlap(
+        api_first_segments, front_segments, SHARED_FRONT_PATHS, SHARED_FRONT_PATTERNS
+    )
+    assert {"expenses", "varieties"} <= api_first_segments & front_segments
 
 
-def test_the_overlap_check_accepts_a_segment_a_shared_path_serves() -> None:
-    check_front_segment_overlap({"expenses", "sales"}, {"expenses", "entrar"}, SHARED_FRONT_PATHS)
+def test_the_overlap_check_accepts_a_segment_a_shared_path_or_pattern_serves() -> None:
+    check_front_segment_overlap(
+        {"expenses", "varieties", "sales"},
+        {"expenses", "varieties", "entrar"},
+        SHARED_FRONT_PATHS,
+        SHARED_FRONT_PATTERNS,
+    )
+    check_front_segment_overlap(
+        {"stock"}, {"stock"}, frozenset(), (re.compile(r"^/stock/[0-9]+$"),)
+    )
 
 
 def test_the_overlap_check_rejects_a_segment_with_no_shared_path() -> None:
     with pytest.raises(AssertionError, match="analysis"):
         check_front_segment_overlap(
-            {"expenses", "analysis"}, {"expenses", "analysis"}, SHARED_FRONT_PATHS
+            {"expenses", "analysis"},
+            {"expenses", "analysis"},
+            SHARED_FRONT_PATHS,
+            SHARED_FRONT_PATTERNS,
         )
+
+
+_LITERAL_SEGMENT = re.compile(r"^[a-z]+(-[a-z]+)*$")
+
+
+def pattern_problems(pattern: re.Pattern[str]) -> list[str]:
+    """What is wrong with a front pattern: not fully anchored, or a segment that is
+    neither a plain lowercase literal nor exactly `[0-9]+` (docs/adr/0027). Empty when the
+    pattern is acceptable."""
+    source = pattern.pattern
+    problems: list[str] = []
+    if not source.startswith("^/"):
+        problems.append(f"{source!r} is not anchored at the start")
+    if not source.endswith("$") or source.endswith("\\$"):
+        problems.append(f"{source!r} is not anchored at the end")
+    body = source.removeprefix("^").removesuffix("$")
+    for segment in body.split("/")[1:]:
+        if segment != "[0-9]+" and not _LITERAL_SEGMENT.fullmatch(segment):
+            problems.append(f"{source!r} has the segment {segment!r}, not a literal or [0-9]+")
+    return problems
+
+
+@pytest.mark.parametrize(
+    "pattern", [*SHARED_FRONT_PATTERNS, *(row[0] for row in LEGACY_FRONT_PATTERNS)]
+)
+def test_every_shared_and_legacy_front_pattern_is_anchored_with_only_digits_variable(
+    pattern: re.Pattern[str],
+) -> None:
+    assert pattern_problems(pattern) == []
+
+
+@pytest.mark.parametrize(
+    ("source", "fragment"),
+    [
+        (r"/varieties/[0-9]+$", "start"),
+        (r"^/varieties/[0-9]+", "end"),
+        (r"^/varieties/.*$", "segment"),
+        (r"^/varieties/[0-9]*$", "segment"),
+        (r"^/varieties/\d+$", "segment"),
+        (r"^/varieties/[^/]+/prices$", "segment"),
+        (r"^/varieties/(catalog|new)$", "segment"),
+        (r"^/varieties/[0-9]+\$", "end"),
+    ],
+)
+def test_a_pattern_not_anchored_or_wider_than_digits_is_refused(
+    source: str, fragment: str
+) -> None:
+    problems = pattern_problems(re.compile(source))
+
+    assert any(fragment in problem for problem in problems)
+
+
+def test_every_exact_shared_path_is_a_plain_path() -> None:
+    """Every exact shared path is a plain path, never a pattern in disguise."""
+    assert all(re.fullmatch(r"(/[a-z]+)+", path) for path in SHARED_FRONT_PATHS)

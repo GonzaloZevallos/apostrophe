@@ -6,6 +6,8 @@ right next to it (outside the served directory) and a symlink inside it that poi
 that secret. The mount must never answer with the secret's contents, whatever the path.
 """
 
+import json
+import re
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -14,10 +16,12 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from httpx2 import Response
 from sqlalchemy.engine import Engine
+from starlette.responses import PlainTextResponse
+from starlette.types import Receive, Scope, Send
 
 from app.main import create_app
 from app.settings import Settings
-from app.static_spa import MissingBuiltFront
+from app.static_spa import FrontNavigation, MissingBuiltFront, SpaStatic
 from tests.conftest import SETTINGS, TEST_HASHER
 from tests.fakes.telegram import FakeTelegram
 
@@ -319,3 +323,144 @@ def test_the_shell_on_a_shared_path_carries_the_same_headers_as_the_root(
 
     assert comparable(shared) == comparable(root)
     assert shared.headers["cache-control"] == "no-cache"
+
+
+# --- Parameterised shared paths and legacy patterns (docs/adr/0027) -----------------------
+
+CONTRACT = json.loads(
+    (Path(__file__).resolve().parent.parent / "web" / "src" / "api" / "contract.json").read_text()
+)
+SHARED_FRONT_ROUTES: list[str] = CONTRACT["sharedFrontRoutes"]
+
+
+@pytest.mark.parametrize("method", ["GET", "HEAD"])
+@pytest.mark.parametrize("path", SHARED_FRONT_ROUTES)
+def test_every_shared_front_route_in_the_contract_is_the_shell_for_a_navigation(
+    served_client: TestClient, path: str, method: str
+) -> None:
+    response = _request(served_client, method, path, HTML)
+
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/html")
+    assert method == "HEAD" or "the app shell" in response.text
+
+
+@pytest.mark.parametrize("path", SHARED_FRONT_ROUTES)
+def test_every_shared_front_route_in_the_contract_reaches_the_api_for_json(
+    served_client: TestClient, path: str
+) -> None:
+    response = _request(served_client, "GET", path, JSON)
+
+    assert "the app shell" not in response.text
+    assert response.status_code in (401, 404)
+    assert response.headers["content-type"].startswith("application/json")
+
+
+def test_a_gated_api_route_under_a_shared_path_answers_401_signed_out_for_json(
+    served_client: TestClient,
+) -> None:
+    for path in ("/varieties/7", "/varieties/7/prices", "/varieties"):
+        assert _request(served_client, "GET", path, JSON).status_code == 401
+
+
+@pytest.mark.parametrize("path", ["/varieties/7/prices", "/varieties/entries/7"])
+@pytest.mark.parametrize("method", ["POST", "PUT", "PATCH", "DELETE"])
+def test_a_write_to_a_parameterised_shared_path_is_never_the_shell(
+    served_client: TestClient, path: str, method: str
+) -> None:
+    response = _request(served_client, method, path, HTML)
+
+    assert "the app shell" not in response.text
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        "/varieties/7a",
+        "/varieties/a7",
+        "/varieties/-7",
+        "/varieties/7/entries/x",
+        "/varieties/entries/7a",
+        "/varieties/7/prices/new/x",
+        "/varieties/7/prices/7",
+        "/varieties/entries/7/x",
+        "/varieties/7%0A",
+        "/varieties/%0A7",
+        "/varieties//7",
+        "/varieties/7//",
+        "/varieties/٧",
+    ],
+)
+def test_a_near_miss_of_a_shared_pattern_is_never_the_shell(
+    served_client: TestClient, path: str
+) -> None:
+    response = _request(served_client, "GET", path, HTML)
+
+    assert "the app shell" not in response.text
+
+
+@pytest.mark.parametrize(
+    ("path", "target"),
+    [
+        ("/varieties/7/", "/varieties/7"),
+        ("/varieties/7/prices/", "/varieties/7/prices"),
+        ("/varieties/entries/7/", "/varieties/entries/7"),
+        ("/varieties/catalog/", "/varieties/catalog"),
+    ],
+)
+def test_a_shared_path_with_one_trailing_slash_is_a_308_to_the_slashless_path(
+    served_client: TestClient, path: str, target: str
+) -> None:
+    response = _request(served_client, "GET", path, HTML, "?a=1")
+
+    assert response.status_code == 308
+    assert response.headers["location"] == f"{target}?a=1"
+
+
+async def _api_answer(scope: Scope, receive: Receive, send: Send) -> None:
+    await PlainTextResponse("the api")(scope, receive, send)
+
+
+@pytest.fixture
+def patterned(dist: Path) -> TestClient:
+    """`FrontNavigation` over a stub API with an injected legacy table, since the
+    production table holds no pattern until the front's own redirects land."""
+    spa = SpaStatic(dist, frozenset())
+    legacy = (
+        (re.compile(r"^/viejo/([0-9]+)$"), r"/nuevo/\1"),
+        (re.compile(r"^/viejo/([0-9]+)/cosas$"), r"/nuevo/\1/things"),
+    )
+    return TestClient(FrontNavigation(_api_answer, spa, legacy_patterns=legacy))
+
+
+@pytest.mark.parametrize("slash", [False, True])
+@pytest.mark.parametrize("accept", [HTML, JSON])
+@pytest.mark.parametrize("method", ["GET", "HEAD", "POST", "PUT", "DELETE"])
+def test_a_legacy_pattern_is_a_308_that_carries_the_id_for_any_request(
+    patterned: TestClient, method: str, accept: str, slash: bool
+) -> None:
+    response = _request(patterned, method, "/viejo/42" + ("/" if slash else ""), accept)
+
+    assert response.status_code == 308
+    assert response.headers["location"] == "/nuevo/42"
+
+
+def test_a_legacy_pattern_keeps_the_query_string_and_each_row_its_own_target(
+    patterned: TestClient,
+) -> None:
+    response = _request(patterned, "GET", "/viejo/42/cosas", HTML, "?month=2026-09")
+
+    assert response.status_code == 308
+    assert response.headers["location"] == "/nuevo/42/things?month=2026-09"
+
+
+@pytest.mark.parametrize(
+    "path", ["/viejo/4a", "/viejo/", "/viejo/42/otra", "/viejo/42//", "/viejo/42%0A"]
+)
+def test_a_path_a_legacy_pattern_does_not_fully_match_reaches_the_api(
+    patterned: TestClient, path: str
+) -> None:
+    response = _request(patterned, "GET", path, HTML)
+
+    assert response.status_code == 200
+    assert response.text == "the api"
