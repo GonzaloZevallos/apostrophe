@@ -1,0 +1,110 @@
+/**
+ * `AppearanceGroup` through what the person sees and does (ADR-0024): two choices, Claro
+ * and Oscuro, as a radio group; a tap applies and remembers the choice at once, with no save
+ * button, no toast and no unsaved-changes question; "Cerrar" always closes at once.
+ */
+
+import { act, render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { createMemoryRouter, Link, RouterProvider } from 'react-router'
+import { beforeEach, expect, test } from 'vitest'
+import AppearanceGroup from './AppearanceGroup'
+
+const html = document.documentElement
+
+beforeEach(() => {
+  localStorage.clear()
+  html.removeAttribute('data-tema')
+})
+
+function renderGroup() {
+  const router = createMemoryRouter(
+    [
+      {
+        path: '/settings',
+        element: (
+          <main>
+            <h1>Lista</h1>
+            <Link to="/settings/appearance" state={{ inApp: true }}>
+              Abrir
+            </Link>
+          </main>
+        ),
+      },
+      { path: '/settings/appearance', element: <AppearanceGroup /> },
+    ],
+    { initialEntries: ['/settings'] },
+  )
+  render(<RouterProvider router={router} />)
+  return router
+}
+
+async function open(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(await screen.findByRole('link', { name: 'Abrir' }))
+  await screen.findByText('Apariencia')
+}
+
+test('offers Claro and Oscuro as a radio group, Claro marked when nothing is stored', async () => {
+  const user = userEvent.setup()
+  renderGroup()
+  await open(user)
+
+  const group = screen.getByRole('radiogroup', { name: 'Tema' })
+  expect(group).toBeInTheDocument()
+  expect(screen.getAllByRole('radio').map((radio) => radio.textContent)).toEqual(['Claro', 'Oscuro'])
+  expect(screen.getByRole('radio', { name: 'Claro' })).toHaveAttribute('aria-checked', 'true')
+  expect(screen.getByRole('radio', { name: 'Oscuro' })).toHaveAttribute('aria-checked', 'false')
+})
+
+test('marks Oscuro when the page is already dark', async () => {
+  html.setAttribute('data-tema', 'oscuro')
+  const user = userEvent.setup()
+  renderGroup()
+  await open(user)
+
+  expect(screen.getByRole('radio', { name: 'Oscuro' })).toHaveAttribute('aria-checked', 'true')
+  expect(screen.getByRole('radio', { name: 'Claro' })).toHaveAttribute('aria-checked', 'false')
+})
+
+test('tapping Oscuro applies and remembers it, with no save button and no toast', async () => {
+  const user = userEvent.setup()
+  renderGroup()
+  await open(user)
+
+  await user.click(screen.getByRole('radio', { name: 'Oscuro' }))
+
+  expect(html.getAttribute('data-tema')).toBe('oscuro')
+  expect(localStorage.getItem('tema')).toBe('oscuro')
+  expect(screen.getByRole('radio', { name: 'Oscuro' })).toHaveAttribute('aria-checked', 'true')
+  expect(screen.getByRole('radio', { name: 'Claro' })).toHaveAttribute('aria-checked', 'false')
+  expect(screen.queryByRole('button', { name: /guardar/i })).not.toBeInTheDocument()
+  expect(screen.queryByRole('status')).not.toBeInTheDocument()
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+})
+
+test('tapping Claro removes the attribute and the stored key', async () => {
+  localStorage.setItem('tema', 'oscuro')
+  html.setAttribute('data-tema', 'oscuro')
+  const user = userEvent.setup()
+  renderGroup()
+  await open(user)
+
+  await user.click(screen.getByRole('radio', { name: 'Claro' }))
+
+  expect(html.hasAttribute('data-tema')).toBe(false)
+  expect(localStorage.getItem('tema')).toBeNull()
+  expect(screen.getByRole('radio', { name: 'Claro' })).toHaveAttribute('aria-checked', 'true')
+})
+
+test('"Cerrar" closes at once after choosing, with no question', async () => {
+  const user = userEvent.setup()
+  const router = renderGroup()
+  await open(user)
+  await user.click(screen.getByRole('radio', { name: 'Oscuro' }))
+
+  await user.click(screen.getByRole('button', { name: 'Cerrar' }))
+
+  await act(async () => undefined)
+  expect(router.state.location.pathname).toBe('/settings')
+  expect(screen.queryByText('¿Descartás el tema?')).not.toBeInTheDocument()
+})

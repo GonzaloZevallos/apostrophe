@@ -26,6 +26,11 @@ function readStored(): Theme {
   }
 }
 
+/** The theme the page shows now, for a control that marks it; the attribute stays this module's. */
+export function currentTheme(): Theme {
+  return document.documentElement.getAttribute('data-tema') === DARK ? 'oscuro' : 'claro'
+}
+
 export function applyStoredTheme(): void {
   setAttribute(readStored())
 }

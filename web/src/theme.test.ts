@@ -6,7 +6,7 @@
  */
 
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
-import { applyStoredTheme, chooseTheme } from './theme'
+import { applyStoredTheme, chooseTheme, currentTheme } from './theme'
 
 const html = document.documentElement
 
@@ -103,4 +103,14 @@ test('a storage that cannot even be reached gives light', () => {
   expect(() => applyStoredTheme()).not.toThrow()
   expect(() => chooseTheme('oscuro')).not.toThrow()
   expect(html.getAttribute('data-tema')).toBe('oscuro')
+})
+
+test('currentTheme tells what the page shows now', () => {
+  expect(currentTheme()).toBe('claro')
+
+  chooseTheme('oscuro')
+  expect(currentTheme()).toBe('oscuro')
+
+  html.setAttribute('data-tema', 'otro')
+  expect(currentTheme()).toBe('claro')
 })

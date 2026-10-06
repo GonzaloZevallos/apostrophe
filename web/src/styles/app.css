@@ -492,6 +492,39 @@ button {
   padding: var(--espacio-lg) var(--margen-pantalla) var(--espacio-xxl);
 }
 
+/* "Apariencia" (`ConfiguracionApariencia.dc.html`): Claro · Oscuro, the segmented control
+ * on the group's surface. The current one is a filled pill and bolder, not only a color. */
+.ajustes-tema__rotulo {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.ajustes-tema {
+  display: flex;
+  gap: 5px;
+  background: var(--superficie);
+  border-radius: var(--radio-pildora);
+  padding: var(--espacio-xs);
+}
+
+.ajustes-tema__opcion {
+  flex: 1;
+  text-align: center;
+  padding: 11px 0;
+  border: 0;
+  border-radius: var(--radio-pildora);
+  background: transparent;
+  color: var(--tinta2);
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.ajustes-tema__opcion--activa {
+  background: var(--papel);
+  color: var(--tinta);
+  font-weight: 600;
+}
+
 .columna-principal {
   flex: 1;
   display: flex;
