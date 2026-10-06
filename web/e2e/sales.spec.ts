@@ -110,8 +110,9 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
 }) => {
   // Seeding a few hundred sales one at a time (below, for the 300 ms list check)
   // comfortably clears the default 30 s budget on its own; this test's own journey
-  // around it needs the room too.
-  test.setTimeout(90_000)
+  // around it needs the room too. Under load (backend suite looping beside it) it ran past
+  // its former 90 s, so the ceiling is 240 s: raised, never lowered (GH-110).
+  test.setTimeout(240_000)
 
   const consoleMessages: string[] = []
   watchConsole(page, consoleMessages)

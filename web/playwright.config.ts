@@ -42,7 +42,16 @@ const readyPattern = new RegExp(
 
 export default defineConfig({
   testDir: './e2e',
-  timeout: 30_000,
+  // Wait ceilings, set here once (GH-110); a call site never sets a shorter one.
+  // Measured with the backend suite (`uv run --no-project pytest -n auto`) looping in
+  // another shell: accept-invitation POST (scrypt, ADR-0002) took 0.8 s to 8.5 s
+  // (max 8_458 ms, p95 7_299 ms, 29 signups). `expect` is at least 2x that max.
+  // A test's timeout is at least 2x its own longest duration under that load (the
+  // longest passing: payments 75 s, panel 69 s, passwords 67 s, insets 62 s), so the
+  // default is 160 s; `sales.spec.ts` needed more than its own 90 s (timed out at 94 s)
+  // and sets 240 s itself.
+  timeout: 160_000,
+  expect: { timeout: 17_000 },
   retries: 0,
   fullyParallel: false,
   workers: 1,
