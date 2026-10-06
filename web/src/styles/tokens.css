@@ -17,7 +17,7 @@
   --papel: #fcfbf8;
   --superficie: #f2eee6;
   --tinta: #231e18;
-  --tinta2: #7a7065;
+  --tinta2: #706659;
   --tenue: #9a9085;
   --linea: #ebe5da;
 
@@ -26,7 +26,7 @@
 
   --deuda: #7a4a00;
   --deuda-fondo: #f3e6cb;
-  --deuda2: #8a6530;
+  --deuda2: #7f5d28;
   --deuda-linea: #e6d5b4;
 
   --critico: #33281a;
@@ -34,7 +34,7 @@
 
   --boton: #231e18;
   --boton-texto: #fcfbf8;
-  --nav-inactivo: #a79c8d;
+  --nav-inactivo: #7a7064;
 
   /* Tipografía */
   --fuente: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
@@ -87,7 +87,7 @@
 
   --boton: #e9edf2;
   --boton-texto: #10131a;
-  --nav-inactivo: #6e7a73;
+  --nav-inactivo: #7b8780;
 }
 
 html,

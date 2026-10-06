@@ -65,6 +65,56 @@ condición conserva; verde contra rojo cae al mismo tono (medido: ΔE 64 → 4,0
 4. "Agotada" no es rojo: es el chip invertido, que se separa por luminosidad.
 5. Texto sobre fondo, mínimo 4,5:1.
 
+### Texto sobre fondo: la tabla
+
+La regla 5 se mide acá. `tests/test_design_contrast.py` lee esta tabla, calcula la
+relación de contraste (luminancia relativa WCAG 2.x) con los valores de
+`web/src/styles/tokens.css` y falla si alguna fila cae bajo 4,5:1 o si el número
+impreso no es el calculado. Si cambiás un color, cambiá la fila.
+
+- **superficie**: lista cerrada de las únicas superficies sobre las que se dibuja
+  texto general. No lleva ratio.
+- **general**: un token de texto que puede ir sobre cualquier superficie. Lleva una
+  fila por cada superficie y todas llegan a 4,5:1, en los dos temas.
+- **par**: un token de texto que sólo se dibuja sobre su fondo. Lleva una sola fila.
+  Una regla de `app.css` que lo usa declara también ese fondo, salvo los selectores
+  de la última columna, que dibujan sobre el fondo de su contenedor.
+- **ícono**: no es texto y no se mide. Sólo puede ser el `color` de los selectores de
+  la última columna. `--tenue` es sólo de íconos.
+
+<!-- contraste:inicio -->
+| Token | Tipo | Fondo | Claro | Oscuro | Selectores |
+|---|---|---|---|---|---|
+| `--papel` | superficie | — | — | — | |
+| `--superficie` | superficie | — | — | — | |
+| `--deuda-fondo` | superficie | — | — | — | |
+| `--acento-suave` | superficie | — | — | — | |
+| `--tinta` | general | `--papel` | 15,97 | 15,80 |  |
+| `--tinta` | general | `--superficie` | 14,29 | 14,06 |  |
+| `--tinta` | general | `--deuda-fondo` | 13,38 | 13,39 |  |
+| `--tinta` | general | `--acento-suave` | 14,11 | 13,01 |  |
+| `--tinta2` | general | `--papel` | 5,44 | 5,99 |  |
+| `--tinta2` | general | `--superficie` | 4,86 | 5,33 |  |
+| `--tinta2` | general | `--deuda-fondo` | 4,55 | 5,07 |  |
+| `--tinta2` | general | `--acento-suave` | 4,80 | 4,93 |  |
+| `--acento` | general | `--papel` | 7,43 | 8,61 |  |
+| `--acento` | general | `--superficie` | 6,65 | 7,66 |  |
+| `--acento` | general | `--deuda-fondo` | 6,22 | 7,30 |  |
+| `--acento` | general | `--acento-suave` | 6,56 | 7,09 |  |
+| `--deuda` | general | `--papel` | 7,23 | 9,70 |  |
+| `--deuda` | general | `--superficie` | 6,47 | 8,63 |  |
+| `--deuda` | general | `--deuda-fondo` | 6,05 | 8,21 |  |
+| `--deuda` | general | `--acento-suave` | 6,38 | 7,98 |  |
+| `--deuda2` | general | `--papel` | 5,80 | 6,39 |  |
+| `--deuda2` | general | `--superficie` | 5,19 | 5,68 |  |
+| `--deuda2` | general | `--deuda-fondo` | 4,86 | 5,41 |  |
+| `--deuda2` | general | `--acento-suave` | 5,12 | 5,26 |  |
+| `--boton-texto` | par | `--boton` | 15,97 | 15,80 | `.toast__texto`, `.venta-guardada__deshacer` |
+| `--critico-texto` | par | `--critico` | 12,59 | 11,13 |  |
+| `--nav-inactivo` | par | `--papel` | 4,69 | 4,97 | `.bar-inferior__item` |
+| `--tenue` | ícono | — | — | — | `.mas__item-flecha`, `.fila-venta > svg` |
+<!-- contraste:fin -->
+
 ## Reglas de negocio que viven en el código
 
 - **Precios históricos.** Una venta usa el precio que regía el día de la venta,

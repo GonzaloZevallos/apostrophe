@@ -214,7 +214,7 @@ body {
 .pie {
   padding: 0 var(--margen-pantalla) 32px;
   font-size: 13px;
-  color: var(--tenue);
+  color: var(--tinta2);
   text-align: center;
 }
 
