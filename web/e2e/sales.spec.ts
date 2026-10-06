@@ -143,7 +143,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
     await page.getByRole('link', { name: new RegExp(name) }).click()
     await page.getByRole('link', { name: 'Nuevo precio' }).click()
     if (effectiveFrom !== undefined) await page.getByLabel('Rige desde').fill(effectiveFrom)
-    await page.getByLabel('Precio de lista').fill(listPrice)
+    await page.getByLabel(/^Precio de lista/).fill(listPrice)
     await page.getByRole('button', { name: 'Guardá el precio' }).click()
     await expect(page.getByText('Precio guardado')).toBeVisible()
   }

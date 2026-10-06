@@ -40,7 +40,7 @@ test('a seller sets up the bot in Integraciones, then publishes from the catalog
   await expect(page.getByText('Variedad guardada')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'Nuevo precio' }).click()
-  await page.getByLabel('Precio de lista').fill('9000')
+  await page.getByLabel(/^Precio de lista/).fill('9000')
   await page.getByRole('button', { name: 'Guardá el precio' }).click()
   await expect(page.getByText('Precio guardado')).toBeVisible()
 

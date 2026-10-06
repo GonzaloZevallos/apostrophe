@@ -60,7 +60,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   // the backend's clock reports, read through `GET /auth/me` — so it is left as
   // is, never dated from the browser's own UTC clock (plan, "One clock").
   await page.getByRole('link', { name: 'Nuevo precio' }).click()
-  await page.getByLabel('Precio de lista').fill('9000')
+  await page.getByLabel(/^Precio de lista/).fill('9000')
   await page.getByRole('button', { name: 'Guardá el precio' }).click()
   await expect(page.getByText('Precio guardado')).toBeVisible()
   await expect(page.getByText(/\$ 9\.000 x g/)).toBeVisible()

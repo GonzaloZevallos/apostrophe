@@ -188,7 +188,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   // Jazmín): the extra, month-only sale seeded below needs a price that reaches
   // back that far too.
   await page.getByLabel('Rige desde').fill('2000-01-01')
-  await page.getByLabel('Precio de lista').fill('1000')
+  await page.getByLabel(/^Precio de lista/).fill('1000')
   await page.getByRole('button', { name: 'Guardá el precio' }).click()
   await expect(page.getByText('Precio guardado')).toBeVisible()
 
