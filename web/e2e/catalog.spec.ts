@@ -14,7 +14,8 @@
  * `catalogInsecureOrigin.spec.ts` exercises on a genuinely insecure origin instead.
  */
 
-import { STOCK_ENTRY_NEW, VARIETIES } from '../src/routes.js'
+import { CATALOG, SETTINGS_CATALOG_MESSAGE, STOCK_ENTRY_NEW, VARIETIES } from '../src/routes.js'
+import { expectPath } from './helpers/url.js'
 import { expect, test } from '@playwright/test'
 import { newBusinessInvitationUrl } from './backend.js'
 import { watchConsole } from './console.js'
@@ -62,7 +63,7 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
   // Más → Catálogo.
   await openMas(page)
   await page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /Catálogo/ }).click()
-  await expect(page).toHaveURL(/\/catalogo$/)
+  await expectPath(page, CATALOG)
 
   // Edit Rosa's catalog attributes.
   await page.getByRole('button', { name: 'Editar Rosa' }).click()
@@ -77,13 +78,13 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
   // to the catalog screen. The summary row is read-only here; a bare `getByText` would be
   // ambiguous, since the same strings also sit inside the preview on purpose.
   await page.getByRole('link', { name: 'Editar encabezado y pie' }).click()
-  await expect(page).toHaveURL(/\/settings\/catalog-message$/)
+  await expectPath(page, SETTINGS_CATALOG_MESSAGE)
   await page.getByLabel('Encabezado').fill('🌸 Catálogo de Flores del Catálogo 🌸')
   await page.getByLabel('Pie').fill('Pedidos por privado.')
   await page.getByRole('button', { name: 'Guardá el mensaje' }).click()
   await expect(page.getByText('Catálogo guardado')).toBeVisible()
   await page.getByRole('button', { name: 'Cerrar' }).click()
-  await expect(page).toHaveURL(/\/catalogo$/)
+  await expectPath(page, CATALOG)
   const headerFooterSummary = page.locator('.catalogo__encabezado-pie')
   await expect(headerFooterSummary).toContainText('🌸 Catálogo de Flores del Catálogo 🌸')
   await expect(headerFooterSummary).toContainText('Pedidos por privado.')

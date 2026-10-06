@@ -10,7 +10,7 @@
  * of a misleading "no customers yet" (PRD, "Feedback").
  */
 
-import { CUSTOMER, CUSTOMERS_OWING, CUSTOMER_NEW, pathTo } from '../../routes'
+import { CUSTOMER, CUSTOMER_NEW, pathTo } from '../../routes'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router'
@@ -26,6 +26,7 @@ import { readFeedback } from '../../components/feedback'
 import Notice from '../../components/Notice'
 import SinConexion from '../../components/SinConexion'
 import { useCustomerSearch } from './CustomerSearch'
+import TeDeben from './TeDeben'
 
 export const SEARCH_LABEL = 'Buscar cliente'
 export const SEARCH_PLACEHOLDER = 'Teléfono o nombre'
@@ -56,6 +57,7 @@ export default function Clientes() {
     queryKey: keys.customers(''),
     queryFn: () => listCustomers(''),
   })
+
   const debtors = useQuery({
     queryKey: keys.debtors(),
     queryFn: () => getDebtors(),
@@ -72,14 +74,10 @@ export default function Clientes() {
         <div className="campo__rotulo">
           <span>{`${total.data?.length ?? 0} clientes`}</span>
           {debtors.data !== undefined && debtors.data.debtors.length > 0 && (
-            <>
-              {' · '}
-              <Link to={CUSTOMERS_OWING}>
-                {`${debtors.data.debtors.length} te deben ${formatMoney(debtors.data.total_owed)}`}
-              </Link>
-            </>
+            <span>{` · ${debtors.data.debtors.length} te deben ${formatMoney(debtors.data.total_owed)}`}</span>
           )}
         </div>
+        {query === '' && <TeDeben />}
         {feedback !== null && <Notice kind={feedback.kind} message={feedback.message} />}
         <label className="campo">
           <span className="visualmente-oculto">{SEARCH_LABEL}</span>

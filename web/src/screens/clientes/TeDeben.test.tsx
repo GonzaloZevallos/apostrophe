@@ -1,13 +1,13 @@
 /**
- * `TeDeben` at the screen seam (CODING_STANDARDS §10): Testing Library, `fetch`
+ * `TeDeben`, the section on top of Clientes, at the screen seam (CODING_STANDARDS §10): Testing Library, `fetch`
  * faked. The list is the API's own order (plan, "Front": "the API's order"),
  * never resorted here; the total and count head the view and come from
  * `GET /payments/debtors` alone (payments.md, "Who owes and the totals").
  */
 
-import { CUSTOMER, CUSTOMERS, CUSTOMERS_OWING } from '../../routes'
+import { CUSTOMER, CUSTOMERS } from '../../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import debtorsFixture from '../../api/fixtures/debtors.json'
@@ -24,9 +24,9 @@ function renderTeDeben() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[CUSTOMERS_OWING]}>
+      <MemoryRouter initialEntries={[CUSTOMERS]}>
         <Routes>
-          <Route path={CUSTOMERS_OWING} element={<TeDeben />} />
+          <Route path={CUSTOMERS} element={<TeDeben />} />
           <Route path={CUSTOMER} element={<span>ficha</span>} />
         </Routes>
       </MemoryRouter>
@@ -83,16 +83,19 @@ test('three sales still owing read "3 ventas debiendo", plural', async () => {
   expect(await screen.findByText('3 ventas debiendo')).toBeInTheDocument()
 })
 
-test('an empty debtors list shows the empty-state text', async () => {
+test('nobody owing shows the empty state "Nadie te debe."', async () => {
   vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { total_owed: 0, sales_owing_count: 0, debtors: [] }))
   renderTeDeben()
 
   expect(await screen.findByText('Nadie te debe.')).toBeInTheDocument()
+  expect(screen.getByRole('region', { name: 'Te deben' })).toBeInTheDocument()
 })
 
-test('a dropped network shows Sin conexión', async () => {
+test('a dropped network shows nothing here: Clientes shows Sin conexión on its own list', async () => {
   vi.mocked(fetch).mockRejectedValue(new TypeError('network error'))
   renderTeDeben()
 
-  expect(await screen.findByText('Te quedaste sin internet')).toBeInTheDocument()
+  await waitFor(() => expect(fetch).toHaveBeenCalled())
+  expect(screen.queryByRole('region', { name: 'Te deben' })).not.toBeInTheDocument()
+  expect(screen.queryByText('Te quedaste sin internet')).not.toBeInTheDocument()
 })

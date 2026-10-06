@@ -5,11 +5,11 @@
  * module that calls `fetch`), never at `fetch` itself.
  */
 
-import { VARIETIES, VARIETY, pathTo } from '../routes'
+import { CATALOG, STOCK, STOCK_ENTRY_NEW, VARIETIES, VARIETY, pathTo } from '../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
+import { MemoryRouter, Outlet, Route, Routes, useLocation } from 'react-router'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import * as client from '../api/client'
 import { ApiError, NetworkError } from '../api/client'
@@ -80,6 +80,42 @@ test('a variety links to its own detail, with no business id in the path', async
 
   const link = await screen.findByRole('link', { name: /Sir Jack/ })
   expect(link).toHaveAttribute('href', pathTo(VARIETY, { id: 7 }))
+})
+
+describe('the entries Variedades offers', () => {
+  function renderWithTargets() {
+    const queryClient = new QueryClient()
+    function Where() {
+      const location = useLocation()
+      return <span>{`${location.pathname}|${JSON.stringify(location.state)}`}</span>
+    }
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={[VARIETIES]}>
+          <Routes>
+            <Route element={<Outlet context={ME} />}>
+              <Route path={VARIETIES} element={<Variedades />} />
+              <Route path="*" element={<Where />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>,
+    )
+  }
+
+  test.each([
+    ['Mandar catálogo', CATALOG],
+    ['+ Entrada de stock', STOCK_ENTRY_NEW],
+    ['Todas las entradas', STOCK],
+  ])('"%s" opens %s, marked as opened from inside the app so Back returns here', async (name, path) => {
+    const user = userEvent.setup()
+    mockGet([])
+    renderWithTargets()
+
+    await user.click(await screen.findByRole('link', { name }))
+
+    expect(await screen.findByText(`${path}|{"inApp":true}`)).toBeInTheDocument()
+  })
 })
 
 describe('adding a variety', () => {

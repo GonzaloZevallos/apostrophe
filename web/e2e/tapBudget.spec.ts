@@ -6,8 +6,8 @@
  * Más, and the form's exit goes back by history to the screen that opened it.
  */
 
-import { HOME } from '../src/routes.js'
-import { CUSTOMERS, EXPENSES, MORE, SALES, STOCK } from '../src/routes.js'
+import { expectPath } from './helpers/url.js'
+import { CUSTOMERS, EXPENSES, EXPENSE_NEW, HOME, MORE, SALES, STOCK } from '../src/routes.js'
 import { expect, test, type Locator, type Page } from '@playwright/test'
 import { newBusinessInvitationUrl } from './backend.js'
 import { watchConsole } from './console.js'
@@ -45,7 +45,7 @@ async function openExpenseForm(page: Page, computer: boolean): Promise<number> {
     await tap(counter, page.locator('.bar-inferior').getByRole('link', { name: 'Más' }))
     await tap(counter, page.getByRole('link', { name: /^\+ Cargar gasto/ }))
   }
-  await expect(page).toHaveURL(/\/expenses\/new$/)
+  await expectPath(page, EXPENSE_NEW)
   await expect(page.getByRole('button', { name: 'Cerrar' })).toBeVisible()
   return counter.taps
 }
@@ -103,14 +103,14 @@ test('a seller records an expense from Más and Cerrar goes back to where the fo
   await page.goto(MORE)
   await page.getByRole('link', { name: /^\+ Cargar gasto/ }).click()
   await page.getByRole('button', { name: 'Cerrar' }).click()
-  await expect(page).toHaveURL(/\/more$/)
+  await expectPath(page, MORE)
 
   await page.getByRole('link', { name: /^\+ Cargar gasto/ }).click()
   await page.getByRole('combobox', { name: 'Categoría' }).selectOption({ label: 'Packaging' })
   await page.getByLabel('Monto').fill('3200')
   await page.getByLabel('Detalle').fill('Cajas de cartón')
   await page.getByRole('button', { name: 'Guardá el gasto' }).click()
-  await expect(page).toHaveURL(/\/more$/)
+  await expectPath(page, MORE)
   await expect(page.getByText('Gasto guardado')).toBeVisible()
 
   await page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /^Gastos/ }).click()
