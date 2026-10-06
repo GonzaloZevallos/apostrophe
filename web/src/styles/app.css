@@ -2819,3 +2819,145 @@ button {
   margin: var(--espacio-xs) 0 0;
 }
 /* ===== end auth-layout ===== */
+
+/* ===== primitivas-telefono ===== */
+/* The shared primitives of the phone sales screens (GH-78): `Pestanas ajuste="celdas"`,
+ * `OpcionInterruptor`, `Loading compacto` / `LoadingAnuncio`, and `ConfirmDialog`'s
+ * buttons at 44 px on the phone. Every class but the last is opt-in: no existing caller
+ * renders it. Colors, type and spacing from the tokens. A container query's condition
+ * cannot read a custom property, so its one threshold is written in `ch` (it scales
+ * with the text size) plus the cells' fixed padding and gaps. */
+
+/* `Pestanas ajuste="celdas"`: the group is the size container, its inner grid the
+ * cells. Two columns by default (two by two); four when the container can hold the
+ * longest four labels, so at 130 % text the tabs wrap instead of overflowing. Each
+ * cell is at least 44 px tall, its label never truncated, nothing scrolls. */
+.pestanas--celdas {
+  display: block;
+  container-type: inline-size;
+}
+
+.pestanas__celdas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espacio-sm);
+}
+
+.pestanas--celdas .pestanas__opcion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--alto-tocable);
+  padding: 0 var(--espacio-xs);
+  text-align: center;
+  overflow-wrap: normal;
+  white-space: nowrap;
+}
+
+@container (min-inline-size: calc(26ch + 56px)) {
+  .pestanas__celdas {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* `OpcionInterruptor`: the whole row is the label, at least 44 px tall. The native
+ * checkbox is visually hidden but stays focusable; the track and thumb are drawn from
+ * its state. Off: the thumb sits left on an open track; on: it sits right on a filled
+ * one, so the state is told by position and fill, not by color alone. */
+.opcion-interruptor {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-md);
+  min-height: var(--alto-tocable);
+  box-sizing: border-box;
+  color: var(--tinta);
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.opcion-interruptor--inactiva {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.opcion-interruptor__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
+}
+
+.opcion-interruptor__pista {
+  display: flex;
+  flex: none;
+  align-items: center;
+  box-sizing: border-box;
+  width: 52px;
+  height: 32px;
+  padding: var(--espacio-xs);
+  border: 2px solid var(--tinta2);
+  border-radius: var(--radio-pildora);
+  background: var(--superficie);
+}
+
+.opcion-interruptor__pulgar {
+  display: block;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radio-pildora);
+  background: var(--tinta2);
+  transition: transform 120ms;
+}
+
+.opcion-interruptor__input:checked + .opcion-interruptor__pista {
+  border-color: var(--acento);
+  background: var(--acento);
+}
+
+.opcion-interruptor__input:checked + .opcion-interruptor__pista .opcion-interruptor__pulgar {
+  background: var(--papel);
+  transform: translateX(20px);
+}
+
+.opcion-interruptor__input:focus-visible + .opcion-interruptor__pista {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .opcion-interruptor__pulgar {
+    transition: none;
+  }
+}
+
+/* `Loading compacto`: the short bar alone, standing where one figure will be. */
+.cargando--compacto {
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+/* `LoadingAnuncio`: the screen's one progressbar, visually hidden, never in the way. */
+.cargando__anuncio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* `ConfirmDialog`: on the phone its two buttons are at least 44 px tall, and grow with a
+ * label that wraps instead of clipping it. The same component for every caller. */
+@media (max-width: 899.98px) {
+  .confirmacion__acciones .boton {
+    height: auto;
+    min-height: var(--alto-tocable);
+  }
+}
+/* ===== end primitivas-telefono ===== */
