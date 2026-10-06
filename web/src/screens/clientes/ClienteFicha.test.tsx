@@ -17,7 +17,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Outlet, useLocation } from 'react-router'
-import { MemoryRouter, Route, Routes } from 'react-router'
+import { RouterProvider, createMemoryRouter } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import accountFixture from '../../api/fixtures/account.json'
 import paymentFixture from '../../api/fixtures/payment.json'
@@ -50,17 +50,22 @@ function jsonResponse(status: number, body: unknown): Response {
 
 function renderFicha(id: string) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  const router = createMemoryRouter(
+    [
+      {
+        element: <Context />,
+        children: [
+          { path: paths.customer(':id'), element: <ClienteFicha /> },
+          { path: paths.customers(), element: <span>la lista</span> },
+          { path: paths.newSale(), element: <NuevaVentaStub /> },
+        ],
+      },
+    ],
+    { initialEntries: [paths.customer(id)] },
+  )
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[paths.customer(id)]}>
-        <Routes>
-          <Route element={<Context />}>
-            <Route path={paths.customer(':id')} element={<ClienteFicha />} />
-            <Route path={paths.customers()} element={<span>la lista</span>} />
-            <Route path={paths.newSale()} element={<NuevaVentaStub />} />
-          </Route>
-        </Routes>
-      </MemoryRouter>
+      <RouterProvider router={router} />
     </QueryClientProvider>,
   )
 }

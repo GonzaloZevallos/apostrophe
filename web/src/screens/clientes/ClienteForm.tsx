@@ -30,12 +30,14 @@ import {
 } from '../../api/customers'
 import { invalidateResource, keys } from '../../api/keys'
 import { isGone, resolveOverride, type RefusalCode } from '../../api/refusals'
+import Boton from '../../components/Boton'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import { gone, toast, type ToastMessage } from '../../components/feedback'
 import GoneScreen from '../../components/GoneScreen'
 import SinConexion from '../../components/SinConexion'
 import CustomerFields from './CustomerFields'
 import { paths } from '../../routes/paths'
+import { LeaveGuard, useCloseTo, useLeaveGuard, useTouched } from '../../shell/leaveGuard'
 
 export const SAVED_TOAST: ToastMessage = 'Cliente guardado'
 export const NAME_REQUIRED = 'Ponele un nombre'
@@ -113,6 +115,8 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
   const [phoneError, setPhoneError] = useState<string | null>(null)
   const [formError, setFormError] = useState<string | null>(null)
   const [offline, setOffline] = useState(false)
+  const guard = useLeaveGuard({ touched: useTouched({ name, phone, channel, vip }) })
+  const closeForm = useCloseTo(mode === 'nuevo' ? paths.customers() : paths.customer(customerId))
 
   // A plain `useMutation`, so a 401 reaches the shared `MutationCache`'s
   // `onError` (`queryClient.ts`) and triggers the session boundary — clearing
@@ -133,6 +137,7 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
     try {
       await save.mutateAsync({ name, phone, channel, vip })
       invalidateResource(queryClient, 'customers')
+      guard.allowLeave()
       if (mode === 'nuevo') {
         navigate(paths.customers(), { state: toast(SAVED_TOAST) })
       } else {
@@ -147,6 +152,7 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
       }
       if (caught instanceof ApiError && mode === 'editar' && isGone(caught.code)) {
         invalidateResource(queryClient, 'customers')
+        guard.allowLeave()
         navigate(paths.customers(), { state: gone() })
         return
       }
@@ -172,9 +178,14 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
   return (
     <main className="pantalla">
       <div className="cuerpo">
-        <span className="encabezado__titulo">
-          {mode === 'nuevo' ? 'Nuevo cliente' : 'Editar cliente'}
-        </span>
+        <div className="encabezado-fila">
+          <span className="encabezado__titulo">
+            {mode === 'nuevo' ? 'Nuevo cliente' : 'Editar cliente'}
+          </span>
+          <Boton variant="link" onClick={() => guard.requestClose(closeForm)}>
+            Cerrar
+          </Boton>
+        </div>
         <form className="formulario" onSubmit={onSubmit}>
           <CustomerFields
             value={{ name, phone, channel, vip }}
@@ -198,6 +209,7 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
           </button>
         </form>
       </div>
+      <LeaveGuard guard={guard} />
     </main>
   )
 }

@@ -6,9 +6,9 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
+import { RouterProvider, createMemoryRouter, useLocation } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { queryClient, setCurrentPath, setNavigate } from '../../queryClient'
 import ClienteForm from './ClienteForm'
@@ -46,18 +46,21 @@ function jsonResponse(status: number, body: unknown): Response {
 }
 
 function renderForm(initialPath: string) {
+  const router = createMemoryRouter(
+    [
+      { path: paths.newCustomer(), element: <ClienteForm mode="nuevo" /> },
+      { path: paths.editCustomer(':id'), element: <ClienteForm mode="editar" /> },
+      { path: paths.customers(), element: <ListStub /> },
+      { path: paths.customer(':id'), element: <FichaStub /> },
+    ],
+    { initialEntries: [initialPath] },
+  )
   render(
     <QueryClientProvider client={new QueryClient()}>
-      <MemoryRouter initialEntries={[initialPath]}>
-        <Routes>
-          <Route path={paths.newCustomer()} element={<ClienteForm mode="nuevo" />} />
-          <Route path={paths.editCustomer(':id')} element={<ClienteForm mode="editar" />} />
-          <Route path={paths.customers()} element={<ListStub />} />
-          <Route path={paths.customer(':id')} element={<FichaStub />} />
-        </Routes>
-      </MemoryRouter>
+      <RouterProvider router={router} />
     </QueryClientProvider>,
   )
+  return router
 }
 
 beforeEach(() => {
@@ -201,11 +204,11 @@ test('a 401 on save clears the cache and goes to Entrar, through the session bou
 
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[paths.newCustomer()]}>
-        <Routes>
-          <Route path={paths.newCustomer()} element={<ClienteForm mode="nuevo" />} />
-        </Routes>
-      </MemoryRouter>
+      <RouterProvider
+        router={createMemoryRouter([{ path: paths.newCustomer(), element: <ClienteForm mode="nuevo" /> }], {
+          initialEntries: [paths.newCustomer()],
+        })}
+      />
     </QueryClientProvider>,
   )
 
@@ -216,4 +219,71 @@ test('a 401 on save clears the cache and goes to Entrar, through the session bou
   await waitFor(() => expect(navigate).toHaveBeenCalledWith(paths.login(), { replace: true }))
   expect(queryClient.getQueryData(['me'])).toBeUndefined()
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+})
+
+function renderFromList() {
+  const router = renderForm(paths.newCustomer())
+  return router
+}
+
+test('an untouched form closes at once on Cerrar and on browser Back', async () => {
+  const router = createMemoryRouter(
+    [
+      { path: paths.newCustomer(), element: <ClienteForm mode="nuevo" /> },
+      { path: paths.customers(), element: <ListStub /> },
+    ],
+    { initialEntries: [paths.customers(), paths.newCustomer()], initialIndex: 1 },
+  )
+  render(
+    <QueryClientProvider client={new QueryClient()}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>,
+  )
+  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  expect(await screen.findByText('la lista')).toBeInTheDocument()
+  expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+
+  await act(() => router.navigate(paths.newCustomer()))
+  await act(() => router.navigate(-1))
+  expect(await screen.findByText('la lista')).toBeInTheDocument()
+  expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+})
+
+test('a touched form asks with the shared wording; "No, seguí" keeps what was typed, "Sí, descartalos" leaves', async () => {
+  const router = createMemoryRouter(
+    [
+      { path: paths.newCustomer(), element: <ClienteForm mode="nuevo" /> },
+      { path: paths.customers(), element: <ListStub /> },
+    ],
+    { initialEntries: [paths.customers(), paths.newCustomer()], initialIndex: 1 },
+  )
+  render(
+    <QueryClientProvider client={new QueryClient()}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>,
+  )
+  await userEvent.type(screen.getByLabelText('Nombre'), 'Nico')
+  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  expect(await screen.findByText('¿Descartás los cambios?')).toBeInTheDocument()
+  await userEvent.click(screen.getByRole('button', { name: 'No, seguí' }))
+  expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+  expect(screen.getByLabelText('Nombre')).toHaveValue('Nico')
+
+  // Browser Back is caught by the same dialog.
+  await act(() => router.navigate(-1))
+  expect(await screen.findByText('¿Descartás los cambios?')).toBeInTheDocument()
+  expect(screen.queryByText('la lista')).not.toBeInTheDocument()
+  await userEvent.click(screen.getByRole('button', { name: 'Sí, descartalos' }))
+  expect(await screen.findByText('la lista')).toBeInTheDocument()
+})
+
+test('after a successful save nothing asks', async () => {
+  vi.mocked(fetch).mockResolvedValue(
+    jsonResponse(201, { id: 9, name: 'Nico', phone: '+5491131785094', channel: null, vip: false }),
+  )
+  renderFromList()
+  await userEvent.type(screen.getByLabelText('Nombre'), 'Nico')
+  await userEvent.click(screen.getByRole('button', { name: 'Guardá y usá' }))
+  expect(await screen.findByText('la lista')).toBeInTheDocument()
+  expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
 })
