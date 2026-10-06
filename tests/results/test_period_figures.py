@@ -695,3 +695,18 @@ def test_a_window_with_no_withdrawal_of_a_reason_answers_none_for_it() -> None:
 
     assert totals.promotion is None
     assert totals.own_use is None
+
+
+def test_a_withdrawal_draw_with_only_a_variety_is_rejected() -> None:
+    with pytest.raises(ValueError, match="no variety or sale"):
+        DrawRow(
+            kind="own_use",
+            day=TODAY,
+            variety_id=1,
+            variety_name=None,
+            sale_id=None,
+            line_total=None,
+            grams=Grams.of("2"),
+            costed=1000,
+            pending=Grams.of("0"),
+        )

@@ -250,7 +250,7 @@ class Buckets:
         return totals
 
 
-def _add_sale_line(buckets: Buckets, row: DrawRow) -> None:
+def _add_sale_line(buckets: Buckets, row: DrawRow, kind: Literal["sold", "gifted"]) -> None:
     if row.variety_id is None or row.line_total is None:
         raise ValueError("a sale-line draw row always carries its variety and line total")
     if row.variety_name is not None:
@@ -260,20 +260,26 @@ def _add_sale_line(buckets: Buckets, row: DrawRow) -> None:
     day = buckets.day_totals.setdefault(row.day, _DayTotals())
     day.sales_without_shipping += row.line_total
     day.grams = day.grams + row.grams
-    if row.kind == "sold":
-        day.grams_sold = day.grams_sold + row.grams
-    else:
-        day.grams_gifted = day.grams_gifted + row.grams
+    match kind:
+        case "sold":
+            day.grams_sold = day.grams_sold + row.grams
+        case "gifted":
+            day.grams_gifted = day.grams_gifted + row.grams
+        case _:
+            assert_never(kind)
     day.costed_cost += row.costed or 0
     day.sales_of_costed += sold_amount
     day.pending_grams = day.pending_grams + row.pending
 
     vday = buckets.variety_day_totals.setdefault((row.day, row.variety_id), _VarietyDayTotals())
     vday.sales_without_shipping += row.line_total
-    if row.kind == "sold":
-        vday.grams_sold = vday.grams_sold + row.grams
-    else:
-        vday.grams_gifted = vday.grams_gifted + row.grams
+    match kind:
+        case "sold":
+            vday.grams_sold = vday.grams_sold + row.grams
+        case "gifted":
+            vday.grams_gifted = vday.grams_gifted + row.grams
+        case _:
+            assert_never(kind)
     vday.costed_cost += row.costed or 0
     vday.sales_of_costed += sold_amount
     vday.pending_grams = vday.pending_grams + row.pending
@@ -311,7 +317,7 @@ def scan(
                 if first_record is None or row.day < first_record:
                     first_record = row.day
             case "sold" | "gifted":
-                _add_sale_line(buckets, row)
+                _add_sale_line(buckets, row, row.kind)
             case _:
                 assert_never(row.kind)
 
