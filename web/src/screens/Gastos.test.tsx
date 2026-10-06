@@ -8,7 +8,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Outlet, RouterProvider, createMemoryRouter } from 'react-router'
-import { afterEach, beforeEach, expect, test, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import { SIN_CONEXION_TITULO } from '../components/SinConexion'
 import { GONE_NOTICE } from '../api/refusals'
@@ -333,4 +333,128 @@ test('NuevoGasto opens the form with today\'s date, records the expense and land
   expect(posted).toBe(
     JSON.stringify({ spent_on: '2026-10-02', category_id: 1, amount: 1000, detail: 'Cinta' }),
   )
+})
+
+describe('leaving the expense form', () => {
+  const ASK = '¿Descartás los cambios?'
+  const api = async (url: string, init?: RequestInit) => {
+    const method = init?.method ?? 'GET'
+    if (url.toString().startsWith('/expense-categories') && method === 'GET') return jsonResponse(200, CATEGORIES)
+    if (url.toString() === '/expenses' && method === 'POST') {
+      return jsonResponse(201, { id: 10, spent_on: '2026-10-02', category_id: 1, amount: 1000, detail: 'Cinta' })
+    }
+    if (url.toString().startsWith('/expenses') && method === 'GET') return jsonResponse(200, VIEW)
+    throw new Error(`unexpected ${method} ${url}`)
+  }
+
+  function renderNew() {
+    vi.stubGlobal('fetch', vi.fn(api))
+    const router = createMemoryRouter(
+      [
+        {
+          element: <Provide />,
+          children: [
+            { path: paths.newExpense(), element: <NuevoGasto /> },
+            { path: paths.expenses(), element: <Gastos /> },
+          ],
+        },
+      ],
+      { initialEntries: [paths.expenses(), paths.newExpense()], initialIndex: 1 },
+    )
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>,
+    )
+    return router
+  }
+
+  test('inline: untouched closes at once on Cerrar, with today as the seed', async () => {
+    renderGastos(api)
+    await screen.findByText('Packaging')
+    await userEvent.click(screen.getByRole('button', { name: 'Nuevo gasto' }))
+    expect(screen.getByLabelText('Fecha')).toHaveValue('2026-10-02')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+
+    expect(screen.queryByLabelText('Monto')).not.toBeInTheDocument()
+    expect(screen.queryByText(ASK)).not.toBeInTheDocument()
+  })
+
+  test('inline: touched asks; "No, seguí" keeps the amount; "Sí, descartalos" closes', async () => {
+    renderGastos(api)
+    await screen.findByText('Packaging')
+    await userEvent.click(screen.getByRole('button', { name: 'Nuevo gasto' }))
+    await userEvent.type(screen.getByLabelText('Monto'), '1000')
+    await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+
+    expect(screen.getByText(ASK)).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'No, seguí' }))
+    expect(screen.getByLabelText('Monto')).toHaveValue('1000')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Sí, descartalos' }))
+    expect(screen.queryByLabelText('Monto')).not.toBeInTheDocument()
+  })
+
+  test('inline: the new-category panel counts as touched, and nothing asks after a save', async () => {
+    renderGastos(api)
+    await screen.findByText('Packaging')
+    await userEvent.click(screen.getByRole('button', { name: 'Nuevo gasto' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Crear una categoría nueva' }))
+    await userEvent.type(screen.getByLabelText('Nombre de la categoría nueva'), 'Insumos')
+    await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+    expect(screen.getByText(ASK)).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Sí, descartalos' }))
+
+    await userEvent.click(screen.getByRole('button', { name: 'Nuevo gasto' }))
+    await userEvent.selectOptions(screen.getByLabelText('Categoría'), 'Packaging')
+    await userEvent.type(screen.getByLabelText('Monto'), '1000')
+    await userEvent.type(screen.getByLabelText('Detalle'), 'Cinta')
+    await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+
+    expect(await screen.findByText('Gasto guardado')).toBeInTheDocument()
+    expect(screen.queryByText(ASK)).not.toBeInTheDocument()
+  })
+
+  test('/expenses/new: untouched closes on Cerrar and on browser Back', async () => {
+    const router = renderNew()
+    await screen.findByLabelText('Monto')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+    expect(await screen.findByText('Packaging')).toBeInTheDocument()
+
+    await router.navigate(1)
+    await screen.findByLabelText('Monto')
+    await router.navigate(-1)
+    expect(await screen.findByText('Packaging')).toBeInTheDocument()
+    expect(screen.queryByText(ASK)).not.toBeInTheDocument()
+  })
+
+  test('/expenses/new: touched asks, browser Back is caught, "Sí, descartalos" leaves', async () => {
+    const router = renderNew()
+    await userEvent.type(await screen.findByLabelText('Monto'), '1000')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+    expect(screen.getByText(ASK)).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'No, seguí' }))
+    expect(screen.getByLabelText('Monto')).toHaveValue('1000')
+
+    await router.navigate(-1)
+    expect(await screen.findByText(ASK)).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe(paths.newExpense())
+    await userEvent.click(screen.getByRole('button', { name: 'Sí, descartalos' }))
+    expect(await screen.findByText('Packaging')).toBeInTheDocument()
+  })
+
+  test('/expenses/new: nothing asks after a successful save', async () => {
+    renderNew()
+    await userEvent.selectOptions(await screen.findByLabelText('Categoría'), 'Packaging')
+    await userEvent.type(screen.getByLabelText('Monto'), '1000')
+    await userEvent.type(screen.getByLabelText('Detalle'), 'Cinta')
+    await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+
+    expect(await screen.findByText('Gasto guardado')).toBeInTheDocument()
+    expect(screen.queryByText(ASK)).not.toBeInTheDocument()
+  })
 })
