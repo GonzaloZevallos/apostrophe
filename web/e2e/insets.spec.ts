@@ -151,7 +151,9 @@ test('every screen, bar, sheet and toast keeps clear of the notch and the home b
     if (!viewport.wide) expect(detail.left, where('detail left')).toBe(SIDE)
     await scrollToEnd(page)
     const detailEnd = await box(page, '.cuerpo')
-    expect(detailEnd.bottom, where('detail bottom')).toBeLessThanOrEqual(viewport.height - BOTTOM)
+    // The page scrolls by whole pixels while its height can be fractional (590.1875 in
+    // landscape), so the end can sit up to a pixel short of the bottom: under 1 px is no overlap.
+    expect(detailEnd.bottom, where('detail bottom')).toBeLessThan(viewport.height - BOTTOM + 1)
 
     // Nueva venta: the save button, and the customer sheet over it.
     await page.goto('/ventas/nueva')

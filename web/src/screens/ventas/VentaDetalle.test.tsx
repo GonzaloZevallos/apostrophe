@@ -15,10 +15,11 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
+import { createMemoryRouter, RouterProvider, useLocation } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import SALE from '../../api/fixtures/sale-detail.json'
 import { readFeedback, saleJustSaved } from '../../components/feedback'
+import { SheetRouterProvider } from '../../components/useSheetStack'
 import VentaDetalle from './VentaDetalle'
 
 /** Stands in for the real `Ventas` screen, just enough to show what `VentaDetalle`
@@ -47,14 +48,20 @@ const DELETED = { returned: [{ variety_id: 2, grams: 3.5 }] }
 
 function renderDetalle(initialState?: unknown) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  // A data router, with its handle given to the sheet stack: Asignar cliente's sheet is a
+  // history entry (ADR-0027) and its depth is read from the router's own state.
+  const router = createMemoryRouter(
+    [
+      { path: '/ventas', element: <VentasProbe /> },
+      { path: '/ventas/:id', element: <VentaDetalle /> },
+    ],
+    { initialEntries: [{ pathname: '/ventas/10', state: initialState }] },
+  )
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[{ pathname: '/ventas/10', state: initialState }]}>
-        <Routes>
-          <Route path="/ventas" element={<VentasProbe />} />
-          <Route path="/ventas/:id" element={<VentaDetalle />} />
-        </Routes>
-      </MemoryRouter>
+      <SheetRouterProvider router={router}>
+        <RouterProvider router={router} />
+      </SheetRouterProvider>
     </QueryClientProvider>,
   )
 }

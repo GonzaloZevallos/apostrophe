@@ -40,3 +40,44 @@ test('every tab carries boton--enlace, Boton\'s own border/background reset, nev
     expect(button.className.split(' ')).toContain('boton--enlace')
   }
 })
+
+const FOUR = [
+  { value: 'hoy', label: 'Hoy' },
+  { value: 'semana', label: 'Semana' },
+  { value: 'mes', label: 'Mes' },
+  { value: 'fechas', label: 'Fechas' },
+] as const
+
+test('without ajuste the output carries no celdas class and no inner grid', () => {
+  const { container } = render(
+    <Pestanas items={FOUR} value="hoy" onChange={() => {}} ariaLabel="Período" />,
+  )
+  const group = screen.getByRole('group', { name: 'Período' })
+  expect(group.className).toBe('pestanas')
+  expect(container.querySelector('.pestanas__celdas')).toBeNull()
+  expect(group.children).toHaveLength(4)
+})
+
+test('with ajuste celdas the group gets the celdas class and every label stays whole', () => {
+  render(
+    <Pestanas items={FOUR} value="mes" onChange={() => {}} ariaLabel="Período" ajuste="celdas" />,
+  )
+  const group = screen.getByRole('group', { name: 'Período' })
+  expect(group.className.split(' ')).toContain('pestanas--celdas')
+  for (const name of ['Hoy', 'Semana', 'Mes', 'Fechas']) {
+    expect(screen.getByRole('button', { name })).toHaveTextContent(name)
+  }
+})
+
+test('with ajuste celdas aria-pressed and onChange behave as without it', async () => {
+  const onChange = vi.fn()
+  render(
+    <Pestanas items={FOUR} value="mes" onChange={onChange} ariaLabel="Período" ajuste="celdas" />,
+  )
+  expect(screen.getByRole('button', { name: 'Mes' })).toHaveAttribute('aria-pressed', 'true')
+  expect(screen.getByRole('button', { name: 'Hoy' })).toHaveAttribute('aria-pressed', 'false')
+
+  await userEvent.click(screen.getByRole('button', { name: 'Fechas' }))
+
+  expect(onChange).toHaveBeenCalledWith('fechas')
+})

@@ -2866,6 +2866,395 @@ body {
 }
 /* ===== end auth-layout ===== */
 
+/* ===== primitivas-telefono ===== */
+/* The shared primitives of the phone sales screens (GH-78): `Pestanas ajuste="celdas"`,
+ * `OpcionInterruptor`, `Loading compacto` / `LoadingAnuncio`, and `ConfirmDialog`'s
+ * buttons at 44 px on the phone. Every class but the last is opt-in: no existing caller
+ * renders it. Colors, type and spacing from the tokens. A container query's condition
+ * cannot read a custom property, so its one threshold is written in `ch` (it scales
+ * with the text size) plus the cells' fixed padding and gaps. */
+
+/* `Pestanas ajuste="celdas"`: the group is the size container, its inner grid the
+ * cells. Two columns by default (two by two); four when the container can hold the
+ * longest four labels, so at 130 % text the tabs wrap instead of overflowing. Each
+ * cell is at least 44 px tall, its label never truncated, nothing scrolls. */
+.pestanas--celdas {
+  display: block;
+  container-type: inline-size;
+}
+
+.pestanas__celdas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espacio-sm);
+}
+
+.pestanas--celdas .pestanas__opcion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--alto-tocable);
+  padding: 0 var(--espacio-xs);
+  text-align: center;
+  overflow-wrap: normal;
+  white-space: nowrap;
+}
+
+@container (min-inline-size: calc(26ch + 56px)) {
+  .pestanas__celdas {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* `OpcionInterruptor`: the whole row is the label, at least 44 px tall. The native
+ * checkbox is visually hidden but stays focusable; the track and thumb are drawn from
+ * its state. Off: the thumb sits left on an open track; on: it sits right on a filled
+ * one, so the state is told by position and fill, not by color alone. */
+.opcion-interruptor {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-md);
+  min-height: var(--alto-tocable);
+  box-sizing: border-box;
+  color: var(--tinta);
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.opcion-interruptor--inactiva {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.opcion-interruptor__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
+}
+
+.opcion-interruptor__pista {
+  display: flex;
+  flex: none;
+  align-items: center;
+  box-sizing: border-box;
+  width: 52px;
+  height: 32px;
+  padding: var(--espacio-xs);
+  border: 2px solid var(--tinta2);
+  border-radius: var(--radio-pildora);
+  background: var(--superficie);
+}
+
+.opcion-interruptor__pulgar {
+  display: block;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radio-pildora);
+  background: var(--tinta2);
+  transition: transform 120ms;
+}
+
+.opcion-interruptor__input:checked + .opcion-interruptor__pista {
+  border-color: var(--acento);
+  background: var(--acento);
+}
+
+.opcion-interruptor__input:checked + .opcion-interruptor__pista .opcion-interruptor__pulgar {
+  background: var(--papel);
+  transform: translateX(20px);
+}
+
+.opcion-interruptor__input:focus-visible + .opcion-interruptor__pista {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .opcion-interruptor__pulgar {
+    transition: none;
+  }
+}
+
+/* `Loading compacto`: the short bar alone, standing where one figure will be. */
+.cargando--compacto {
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+/* `LoadingAnuncio`: the screen's one progressbar, visually hidden, never in the way. */
+.cargando__anuncio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* `ConfirmDialog`: on the phone its two buttons are at least 44 px tall, and grow with a
+ * label that wraps instead of clipping it. The same component for every caller. */
+@media (max-width: 899.98px) {
+  .confirmacion__acciones .boton {
+    height: auto;
+    min-height: var(--alto-tocable);
+  }
+}
+/* ===== end primitivas-telefono ===== */
+
+/* ===== ventas-telefono-shell ===== */
+/* Nueva venta on the phone (ADR-0028): one fixed form pinned to the visual viewport, so the
+ * footer rides above the keyboard. Three zones in one scroller: the header sticks to the top,
+ * the body (customer, lines, shipping, note, how it was paid) scrolls, the footer sticks to
+ * the bottom. `.nueva-venta__cuerpo` and `.nueva-venta__resumen` stay the computer layout's
+ * columns, and turn into `display: contents` here so how it was paid (the computer's aside)
+ * lands last in the phone's body, above the footer. */
+@media (max-width: 899.98px) {
+  html.html--formulario-fijo {
+    overflow: hidden;
+  }
+
+  .nueva-venta {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: var(--vv-top, 0px);
+    height: var(--vv-alto, 100dvh);
+    min-height: 0;
+    z-index: 1;
+    padding: 0 var(--inset-derecha) 0 var(--inset-izquierda);
+    background: var(--papel);
+  }
+
+  .nueva-venta__disposicion {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0 var(--margen-pantalla);
+    gap: var(--espacio-lg);
+  }
+
+  .nueva-venta__cuerpo,
+  .nueva-venta__resumen {
+    display: contents;
+  }
+
+  .nueva-venta__cabecera {
+    position: sticky;
+    top: var(--inset-arriba);
+    z-index: 2;
+    margin: var(--inset-arriba) calc(var(--margen-pantalla) * -1) 0;
+    padding: var(--espacio-md) var(--margen-pantalla);
+    background: var(--papel);
+    /* Covers the notch strip above it, which the body scrolls through. */
+    box-shadow: 0 calc(-1 * var(--inset-arriba)) 0 var(--papel);
+  }
+
+  .nueva-venta .fecha-pildora {
+    min-height: var(--alto-tocable);
+  }
+
+  .nueva-venta .fecha-pildora__input {
+    font-size: 16px;
+  }
+
+  .nueva-venta__fila-dato > .campo__input {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .nueva-venta .selector-pago {
+    flex-wrap: wrap;
+    border-radius: var(--radio-campo);
+  }
+
+  .nueva-venta .selector-pago__opcion {
+    flex: 1 1 auto;
+    min-height: var(--alto-tocable);
+    padding: 0 var(--espacio-md);
+  }
+
+  .nueva-venta__pago {
+    padding-bottom: var(--espacio-lg);
+  }
+
+  .nueva-venta__pie {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: baseline;
+    column-gap: var(--espacio-md);
+    row-gap: 0;
+    margin: 0 calc(var(--margen-pantalla) * -1);
+    padding: var(--espacio-md) var(--margen-pantalla) max(var(--inset-abajo), var(--espacio-sm));
+    background: var(--papel);
+  }
+
+  /* The total at `cifra-m`'s size (tokens.css): the footer is a strip, not the screen's hero. */
+  .nueva-venta__pie > .cifra-xl {
+    justify-self: end;
+    font-size: 25px;
+    line-height: 1.1;
+  }
+
+  .nueva-venta__gramos,
+  .nueva-venta__pie > .boton {
+    grid-column: 1 / -1;
+  }
+
+  .nueva-venta__pie > .boton {
+    margin-top: var(--espacio-sm);
+  }
+
+  .nueva-venta[data-teclado='abierto'] .nueva-venta__gramos {
+    display: none;
+  }
+}
+/* ===== end ventas-telefono-shell ===== */
+
+/* ===== ventas-telefono-linea ===== */
+/* Nueva venta's open line on the phone: one fixed layout at every width from 320 to
+ * 430 px and at 130 % text, never switched by a measurement. Row 1 is the variety and the
+ * grams; under it Regalo (a whole 44 px row) and "Precio especial", each full width;
+ * below, the line's price per gram, rule and total, which wrap instead of clipping. */
+@media (max-width: 899.98px) {
+  .nueva-venta__linea--abierta {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    column-gap: var(--espacio-md);
+    row-gap: var(--espacio-sm);
+    align-items: start;
+  }
+
+  .nueva-venta__linea--abierta > * {
+    grid-column: 1 / -1;
+    min-width: 0;
+  }
+
+  .nueva-venta__linea--abierta > .campo {
+    grid-column: auto;
+  }
+
+  .nueva-venta__linea--abierta .campo__input {
+    width: 100%;
+    min-width: 0;
+    font-size: 17px;
+  }
+
+  .nueva-venta__linea-opciones {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--espacio-sm);
+  }
+
+  .nueva-venta__linea--abierta .nueva-venta__linea-detalle {
+    flex-wrap: wrap;
+  }
+
+  /* "Agregar otra variedad" and a line's "Quitar": the link buttons of this screen's
+   * body and lines, at least 44 px tall. */
+  .nueva-venta__cuerpo > .boton--enlace,
+  .nueva-venta__linea .boton--enlace {
+    display: flex;
+    align-items: center;
+    align-self: flex-start;
+    min-height: var(--alto-tocable);
+    padding: 0 var(--espacio-sm);
+    font-size: 16px;
+    /* The 1 px underline is a box-shadow at the box's bottom edge, which a 44 px box
+     * would draw far under the text; the underline moves onto the text. */
+    box-shadow: none;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  /* Shipping and the note sit in a row with their label: the field takes what is left
+   * of the row and shrinks, so it never leaves the screen. */
+  .nueva-venta__fila-dato .campo__input {
+    flex: 1 1 0;
+    min-width: 0;
+    font-size: 17px;
+  }
+}
+/* ===== end ventas-telefono-linea ===== */
+
+/* ===== ventas-telefono-lista ===== */
+/* `Ventas` and a sale's detail on the phone (GH-78): Fechas' two date inputs and
+ * "Borrar venta". Phone only: the computer layouts show no diff. The period tabs
+ * themselves are `Pestanas ajuste="celdas"` (`primitivas-telefono`). */
+@media (max-width: 899.98px) {
+  /* Fechas: the two fields share the row while they fit and wrap under each other
+   * when they don't (320 px, 130 % text); each input is at least 16 px and 44 px tall
+   * and never wider than its cell. */
+  .periodos__fechas {
+    flex-wrap: wrap;
+  }
+
+  .periodos__fechas .campo {
+    flex: 1 1 10rem;
+    min-width: 0;
+  }
+
+  .periodos__fechas .campo__input {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    min-height: var(--alto-tocable);
+    font-size: 16px;
+  }
+
+  /* "Borrar venta": the link-style button at 44 px. Its 1 px underline would now sit
+   * 44 px below the text, so it goes (the design draws this action without one). */
+  .venta-detalle__acciones .boton--enlace {
+    display: flex;
+    box-shadow: none;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--alto-tocable);
+  }
+}
+/* ===== end ventas-telefono-lista ===== */
+
+/* ===== ventas-telefono-carga ===== */
+/* Nueva venta's scroller is a column with a fixed height: a child that is only a button would
+ * shrink with the room instead of scrolling (the phone sweep measured "Elegir cliente" at
+ * 24 px). The body and the footer's children (`display: contents`, so the scroller's own
+ * items) keep their own height, and the body scrolls. */
+@media (max-width: 899.98px) {
+  .nueva-venta__cuerpo > *,
+  .nueva-venta__resumen > * {
+    flex-shrink: 0;
+  }
+
+  /* "¿Descartás la venta?" asks over the fixed form, which would otherwise cover it. */
+  .nueva-venta__aviso {
+    position: fixed;
+    inset: 0;
+    z-index: 3;
+    display: flex;
+    align-items: flex-end;
+    padding: calc(var(--margen-pantalla) + var(--inset-arriba))
+      calc(var(--margen-pantalla) + var(--inset-derecha))
+      calc(var(--margen-pantalla) + var(--inset-abajo))
+      calc(var(--margen-pantalla) + var(--inset-izquierda));
+    background: color-mix(in srgb, var(--tinta) 40%, transparent);
+  }
+
+  .nueva-venta__aviso > .confirmacion {
+    flex: 1 1 auto;
+  }
+}
+/* ===== end ventas-telefono-carga ===== */
+
 /* pressed */
 /* The pressed state (GH-77): of every control a finger can tap, from tokens only.
  * Two cues, neither colour alone: the control shrinks a little (`transform`), and its

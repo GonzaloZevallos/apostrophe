@@ -16,12 +16,12 @@ import type { Me } from '../../api/me'
 import Boton from '../../components/Boton'
 import Icono from '../../components/Icono'
 import { useBackOr } from '../../components/useBackOr'
+import { COMPUTER_QUERY } from '../../format/breakpoints'
 import { EXPENSE_CATEGORIES, MORE } from '../../routes'
 
 /** The route the phone's Más tab lives at (`routes.ts`). */
 export const MORE_PATH = MORE
 const HOME_PATH = '/'
-const COMPUTER_QUERY = '(min-width: 900px)'
 
 const GROUPS = [
   { to: '/settings/business', label: 'Negocio' },
