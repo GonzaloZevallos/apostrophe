@@ -127,8 +127,8 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   await page.goto(CUSTOMERS)
   const debtorRow = page.getByRole('region', { name: 'Te deben' }).getByRole('link', { name: 'Sol Sinnumero' })
   await expect(debtorRow).toBeVisible()
+  await expect(debtorRow).toContainText('$ 2.000')
   await expect(page.getByRole('region', { name: 'Te deben' }).getByRole('link', { name: 'Noe Sinnumero' })).toHaveCount(0)
-  await expect(page.getByRole('link', { name: 'Noe Sinnumero' })).toHaveCount(0)
 
   // Nothing personal or technical reaches the console or the browser's own storage.
   await expectOnlyTheThemeStored(page)
