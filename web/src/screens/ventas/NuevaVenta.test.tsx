@@ -53,6 +53,12 @@ async function openForm(handlers: Record<string, () => Response>): Promise<Retur
   await act(() => router.navigate(SALE_NEW))
   render(<App />)
   await screen.findByText('Nueva venta')
+  // The varieties arrive after the form mounts; a test that picks one straight away
+  // races the fetch on a loaded machine, so wait until the first line can offer them.
+  if (Object.keys(handlers).some((key) => key.startsWith('GET /varieties'))) {
+    const picker = await screen.findByLabelText('Variedad línea 1')
+    await waitFor(() => expect(within(picker).getAllByRole('option').length).toBeGreaterThan(1))
+  }
   return fetchMock
 }
 
