@@ -6,12 +6,14 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, within } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { Outlet, RouterProvider, createMemoryRouter, useLocation } from 'react-router'
+import { Outlet, RouterProvider, createMemoryRouter, matchRoutes, useLocation } from 'react-router'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import type { Me } from '../../api/me'
 import FlashProvider from '../../flash/FlashProvider'
+import { router as appRouter } from '../../router'
+import Shell from '../../shell/Shell'
 import { VARIETIES, VARIETY, relative } from '../../routes'
 import VarietyPage from './VarietyPage'
 import VarietyRoute from './VarietyRoute'
@@ -109,12 +111,19 @@ function renderPage(path: string, overrides: Answers = {}) {
           </QueryClientProvider>
         ),
         children: [
-          { path: relative(VARIETIES), element: <main>Pantalla Variedades</main> },
           {
-            path: relative(VARIETY(':id')),
-            element: <VarietyRoute render={(varietyId) => <VarietyPage varietyId={varietyId} />} />,
+            element: <Shell />,
+            children: [
+              { path: relative(VARIETIES), element: <main>Pantalla Variedades</main> },
+              {
+                path: relative(VARIETY(':id')),
+                element: <VarietyRoute render={(varietyId) => <VarietyPage varietyId={varietyId} />} />,
+                // The handle the app's own route table declares, so the shell draws the same chrome.
+                handle: matchRoutes(appRouter.routes, VARIETY(1))?.at(-1)?.route.handle,
+              },
+              { path: '*', element: <main>Otra pantalla</main> },
+            ],
           },
-          { path: '*', element: <main>Otra pantalla</main> },
         ],
       },
     ],
@@ -182,7 +191,8 @@ describe('the actions and the sections', () => {
     renderPage('/varieties/1')
 
     expect(await screen.findByRole('link', { name: '‹ Variedades' })).toHaveAttribute('href', '/varieties')
-    expect(screen.queryByText('+ Nueva venta')).not.toBeInTheDocument()
+    expect(screen.queryByText(/Nueva venta/)).not.toBeInTheDocument()
+    expect(screen.getAllByRole('navigation').length).toBeGreaterThan(0)
   })
 
   test('Stock y entradas carries this variety\'s last 3 entries and "Ver todas"', async () => {
@@ -313,10 +323,120 @@ describe('the openers push a history entry, so Back closes the form', () => {
     expect(writes(fetchMock)).toEqual([])
   })
 
-  test('an unknown form state renders no form and no placeholder', async () => {
-    renderPage('/varieties/1')
+  test.each([
+    ['an unknown form name', { form: 'bogus' }],
+    ['a form that is not a string', { form: 7 }],
+    ['a state with no form', { other: 'rename' }],
+    ['a state that is not an object', 'rename'],
+  ])('%s renders no form and no placeholder', async (_name, state) => {
+    const { router } = renderPage('/varieties/1')
     await screen.findByRole('heading', { name: 'Precios' })
+    await act(() => router.navigate('.', { state }))
+
+    expect(screen.queryByRole('button', { name: 'Cerrar' })).not.toBeInTheDocument()
+    expect(screen.queryByText('Renombrar variedad')).not.toBeInTheDocument()
     expect(screen.queryByText(/Próximamente/)).not.toBeInTheDocument()
+  })
+
+  test.each(['threshold', 'catalog'])('the %s form state renders nothing here: section-forms draws it', async (form) => {
+    const { router } = renderPage('/varieties/1')
+    await screen.findByRole('heading', { name: 'Precios' })
+    await act(() => router.navigate('.', { state: { form } }))
+
+    expect(screen.getByRole('heading', { name: '24K Gold' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Cerrar' })).not.toBeInTheDocument()
+    expect(screen.queryByText(/Próximamente/)).not.toBeInTheDocument()
+  })
+})
+
+describe('renaming from the page', () => {
+  test('"Editar" next to the name pushes {form: "rename"} and shows the rename form', async () => {
+    const user = userEvent.setup()
+    const { router } = renderPage('/varieties/1')
+
+    await user.click(await screen.findByRole('button', { name: 'Editar nombre' }))
+
+    expect(router.state.location.state).toEqual({ form: 'rename' })
+    expect(await screen.findByText('Renombrar variedad')).toBeInTheDocument()
+    expect(screen.getByLabelText('Nombre')).toHaveValue('24K Gold')
+  })
+
+  test('"Cerrar" goes back by history and the form is gone', async () => {
+    const user = userEvent.setup()
+    const { router } = renderPage('/varieties/1')
+    await user.click(await screen.findByRole('button', { name: 'Editar nombre' }))
+
+    await user.click(await screen.findByRole('button', { name: 'Cerrar' }))
+
+    await waitFor(() => expect(router.state.location.state).toBeNull())
+    expect(screen.queryByText('Renombrar variedad')).not.toBeInTheDocument()
+  })
+
+  test('Back closes the form', async () => {
+    const user = userEvent.setup()
+    const { router } = renderPage('/varieties/1')
+    await user.click(await screen.findByRole('button', { name: 'Editar nombre' }))
+    await screen.findByText('Renombrar variedad')
+
+    await act(() => router.navigate(-1))
+
+    expect(screen.queryByText('Renombrar variedad')).not.toBeInTheDocument()
+  })
+
+  test('saving renames, closes the form and toasts "Variedad guardada"', async () => {
+    const user = userEvent.setup()
+    const { fetchMock } = renderPage('/varieties/1', {
+      'PATCH /varieties/1': () => json(200, { ...VARIETY_ROW, name: 'Gold' }),
+    })
+    await user.click(await screen.findByRole('button', { name: 'Editar nombre' }))
+    const field = await screen.findByLabelText('Nombre')
+    await user.clear(field)
+    await user.type(field, 'Gold')
+    await user.click(screen.getByRole('button', { name: 'Guardá el nombre' }))
+
+    expect(await screen.findByText('Variedad guardada')).toBeInTheDocument()
+    expect(screen.queryByText('Renombrar variedad')).not.toBeInTheDocument()
+    expect(writes(fetchMock)).toEqual(['PATCH /varieties/1'])
+  })
+
+  test('leaving with a changed name asks first, and keeping stays on the form', async () => {
+    const user = userEvent.setup()
+    const { router } = renderPage('/varieties/1')
+    await user.click(await screen.findByRole('button', { name: 'Editar nombre' }))
+    await user.type(await screen.findByLabelText('Nombre'), ' 2')
+
+    await user.click(screen.getByRole('button', { name: 'Cerrar' }))
+
+    expect(await screen.findByText('¿Descartás el cambio?')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'No, seguí escribiendo' }))
+    expect(screen.getByLabelText('Nombre')).toHaveValue('24K Gold 2')
+    expect(router.state.location.state).toEqual({ form: 'rename' })
+  })
+
+  test('discarding leaves the form without saving', async () => {
+    const user = userEvent.setup()
+    const { router, fetchMock } = renderPage('/varieties/1')
+    await user.click(await screen.findByRole('button', { name: 'Editar nombre' }))
+    await user.type(await screen.findByLabelText('Nombre'), ' 2')
+    await user.click(screen.getByRole('button', { name: 'Cerrar' }))
+
+    await user.click(await screen.findByRole('button', { name: 'Sí, descartalo' }))
+
+    await waitFor(() => expect(router.state.location.state).toBeNull())
+    expect(writes(fetchMock)).toEqual([])
+  })
+
+  test('a name already taken is refused inline and keeps what was typed', async () => {
+    const user = userEvent.setup()
+    renderPage('/varieties/1', { 'PATCH /varieties/1': () => json(409, { code: 'variety.name_taken' }) })
+    await user.click(await screen.findByRole('button', { name: 'Editar nombre' }))
+    const field = await screen.findByLabelText('Nombre')
+    await user.clear(field)
+    await user.type(field, 'Otra')
+    await user.click(screen.getByRole('button', { name: 'Guardá el nombre' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Ya existe una variedad con ese nombre')
+    expect(screen.getByLabelText(/^Nombre/)).toHaveValue('Otra')
   })
 })
 
