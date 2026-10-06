@@ -392,3 +392,7 @@ _Avoid_: onboarding, tour, wizard, setup guide, welcome
 **Theme choice**:
 A device's choice of Claro or Oscuro. It is made only in Configuración → Apariencia, applies at once and is kept on that device alone. It is not tied to a user or a business, survives logging out and holds nothing else. With none stored, the app opens light whatever the system setting.
 _Avoid_: preference, dark mode setting, skin, user setting
+
+**Own chat lookup**:
+Finding the seller's own chat number among the private chats that wrote to the business's bot, using the token Probarlo would use. It fills the own chat field only when exactly one person wrote privately, shows only the number and saves nothing; settings are still saved only by a successful test send. In the app: Buscar mi chat.
+_Avoid_: auto-detect, discovery, getUpdates, chat search, sync
