@@ -13,7 +13,7 @@ import { catalogQueryOptions } from '../api/catalog'
 import type { Me } from '../api/me'
 import FlashProvider from '../flash/FlashProvider'
 import EntriesList from './EntriesList'
-import VarietyEntriesRoute from './VarietyEntriesRoute'
+import VarietyRoute from './varieties/VarietyRoute'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-06' }
 
@@ -99,7 +99,7 @@ function renderAt(
               <Route path="/varieties" element={<Where />} />
               <Route path="/varieties/entries" element={<EntriesList />} />
               <Route path="/varieties/entries/:id" element={<Where />} />
-              <Route path="/varieties/:id/entries" element={<VarietyEntriesRoute />} />
+              <Route path="/varieties/:id/entries" element={<VarietyRoute render={(varietyId) => <EntriesList varietyId={varietyId} />} />} />
               <Route path="/varieties/:id" element={<Where />} />
             </Route>
           </Routes>
@@ -150,7 +150,7 @@ test('Back with no history goes to the variety, and "Todas las entradas" goes to
         <FlashProvider>
           <Routes>
             <Route element={<Provide />}>
-              <Route path="/varieties/:id/entries" element={<VarietyEntriesRoute />} />
+              <Route path="/varieties/:id/entries" element={<VarietyRoute render={(varietyId) => <EntriesList varietyId={varietyId} />} />} />
               <Route path="/varieties/:id" element={<Where />} />
             </Route>
           </Routes>

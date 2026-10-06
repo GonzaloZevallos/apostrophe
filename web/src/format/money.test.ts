@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { formatGrams, formatMoney, formatMoneyMagnitude, formatSignedMoney } from './money'
+import { formatGrams, formatGramsInput, formatMoney, formatMoneyMagnitude, formatSignedMoney } from './money'
 
 describe('formatMoney', () => {
   test('whole pesos with a dot as the thousands separator', () => {
@@ -62,5 +62,12 @@ describe('formatGrams', () => {
 
   test('a decimal string from the API is read the same way', () => {
     expect(formatGrams('18.50')).toBe('18,5 g')
+  })
+})
+
+describe('formatGramsInput', () => {
+  test('a field shows the comma, no unit and no thousands dot', () => {
+    expect(formatGramsInput(18.5)).toBe('18,5')
+    expect(formatGramsInput(1500)).toBe('1500')
   })
 })

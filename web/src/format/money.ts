@@ -22,6 +22,14 @@ export function formatGrams(grams: number | string): string {
   return `${GRAMS_FMT.format(value)} g`
 }
 
+const GRAMS_INPUT_FMT = new Intl.NumberFormat('es-AR', { maximumFractionDigits: 2, useGrouping: false })
+
+/** `3.5` → `"3,5"`: the grams as a person types them into a field, with the comma and
+ * no unit or thousands dots, so `parseGrams` reads it back. */
+export function formatGramsInput(grams: number): string {
+  return GRAMS_INPUT_FMT.format(grams)
+}
+
 /** `-2000` → `"$ 2.000"`: the one place a signed balance's magnitude is shown
  * (plan, "Front": "A negative amount is shown as its magnitude by one format
  * helper ... the only place a sign is dropped, and it never decides a label").

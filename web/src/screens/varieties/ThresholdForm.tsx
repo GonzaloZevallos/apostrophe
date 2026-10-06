@@ -15,13 +15,14 @@ import { setThreshold } from '../../api/stock'
 import type { SuccessToast } from '../../components/AvisoExito'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
+import { formatGramsInput } from '../../format/money'
 import { parseGrams } from '../../format/parse'
 import { GENERIC_REFUSAL_MESSAGE } from '../Variedades'
 import { THRESHOLD_INVALID_MESSAGE, THRESHOLD_OVERRIDES, THRESHOLD_SAVED } from './thresholdMessages'
 
 /** The saved amount as a person types it: a comma, no unit. */
 function typedFrom(threshold: number | null): string {
-  return threshold === null ? '' : String(threshold).replace('.', ',')
+  return threshold === null ? '' : formatGramsInput(threshold)
 }
 
 export interface ThresholdFormProps {

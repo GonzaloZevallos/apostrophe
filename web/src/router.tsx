@@ -50,7 +50,6 @@ import VarietiesIndex from './screens/varieties/VarietiesIndex'
 import VarietiesLayout from './screens/varieties/VarietiesLayout'
 import VarietyNew from './screens/varieties/VarietyNew'
 import EntriesList from './screens/EntriesList'
-import VarietyEntriesRoute from './screens/VarietyEntriesRoute'
 import Reset from './screens/Reset'
 import Settings from './screens/settings/Settings'
 import AccountGroup from './screens/settings/AccountGroup'
@@ -143,7 +142,7 @@ export const router = createBrowserRouter([
               { path: relative(ENTRIES), element: <EntriesList />, handle: { chrome: 'card' } },
               {
                 path: relative(VARIETY_ENTRIES(':id')),
-                element: <VarietyEntriesRoute />,
+                element: <VarietyRoute render={(varietyId) => <EntriesList varietyId={varietyId} />} />,
                 handle: { chrome: 'card' },
               },
               { path: relative(ENTRY_NEW), element: <EntradaStock mode="nuevo" />, handle: { chrome: 'none' } },
