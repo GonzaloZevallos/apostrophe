@@ -34,6 +34,7 @@ import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGen
 import { gone, toast, type ToastMessage } from '../../components/feedback'
 import GoneScreen from '../../components/GoneScreen'
 import SinConexion from '../../components/SinConexion'
+import Loading from '../../components/Loading'
 import CustomerFields from './CustomerFields'
 
 export const SAVED_TOAST: ToastMessage = 'Cliente guardado'
@@ -89,7 +90,15 @@ export default function ClienteForm({ mode }: Props) {
     )
   }
 
-  if (existing.data === undefined) return null
+  if (existing.data === undefined) {
+    return (
+      <main className="pantalla">
+        <div className="cuerpo">
+          <Loading />
+        </div>
+      </main>
+    )
+  }
 
   return <ClienteFormBody mode="editar" customerId={customerId} initial={existing.data} />
 }

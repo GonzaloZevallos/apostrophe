@@ -33,6 +33,7 @@ import Aviso, { type SuccessToast } from '../components/Aviso'
 import GoneNotice from '../components/GoneNotice'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import SinConexion from '../components/SinConexion'
+import Loading from '../components/Loading'
 
 export const FLOWER_NOTICE = 'Las compras de flores no van acá: se cargan en Stock.'
 export const CATEGORY_GONE = 'Esa categoría ya no está. Elegí otra.'
@@ -412,7 +413,7 @@ export default function Gastos() {
           </button>
         </div>
 
-        {view.isPending && null}
+        {view.isPending && <Loading />}
         {view.isError && view.error instanceof NetworkError && <SinConexion />}
         {view.isError && !(view.error instanceof NetworkError) && <ErrorGenerico />}
 

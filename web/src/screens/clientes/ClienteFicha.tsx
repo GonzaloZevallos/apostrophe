@@ -40,6 +40,7 @@ import { newSaleFor, readFeedback } from '../../components/feedback'
 import GoneScreen from '../../components/GoneScreen'
 import Notice from '../../components/Notice'
 import SinConexion from '../../components/SinConexion'
+import Loading from '../../components/Loading'
 import { formatDateShort } from '../../format/dates'
 import { formatMoney, formatMoneyMagnitude } from '../../format/money'
 import { formatPhone } from '../../format/phone'
@@ -185,7 +186,15 @@ export default function ClienteFicha() {
     )
   }
 
-  if (isPending || data === undefined) return null
+  if (isPending || data === undefined) {
+    return (
+      <main className="pantalla">
+        <div className="cuerpo">
+          <Loading />
+        </div>
+      </main>
+    )
+  }
 
   const seenPaymentIds = new Set<number>()
 

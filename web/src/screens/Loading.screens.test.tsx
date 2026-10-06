@@ -57,21 +57,43 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-const SCREENS: [string, ReactElement, string, string][] = [
-  ['Ventas', <Ventas />, '/ventas', '/ventas'],
-  ['TeDeben', <TeDeben />, '/clientes/deben', '/clientes/deben'],
-  ['ClienteFicha', <ClienteFicha />, '/clientes/7', '/clientes/:id'],
-  ['ClienteForm editing', <ClienteForm mode="editar" />, '/clientes/7/editar', '/clientes/:id/editar'],
-  ['VentaDetalle', <VentaDetalle />, '/ventas/9', '/ventas/:id'],
-  ['Gastos', <Gastos />, '/gastos', '/gastos'],
-  ['GastoCategorias', <GastoCategorias />, '/gastos/categorias', '/gastos/categorias'],
-  ['Negocio', <Negocio />, '/negocio', '/negocio'],
-  ['Stock', <Stock />, '/mi-stock', '/mi-stock'],
-  ['EntradaStock editing', <EntradaStock mode="editar" />, '/mi-stock/entradas/4', '/mi-stock/entradas/:id'],
+interface Case {
+  name: string
+  element: () => ReactElement
+  route: string
+  path: string
+}
+
+const SCREENS: Case[] = [
+  { name: 'Ventas', element: () => <Ventas />, route: '/ventas', path: '/ventas' },
+  { name: 'TeDeben', element: () => <TeDeben />, route: '/clientes/deben', path: '/clientes/deben' },
+  { name: 'ClienteFicha', element: () => <ClienteFicha />, route: '/clientes/7', path: '/clientes/:id' },
+  {
+    name: 'ClienteForm editing',
+    element: () => <ClienteForm mode="editar" />,
+    route: '/clientes/7/editar',
+    path: '/clientes/:id/editar',
+  },
+  { name: 'VentaDetalle', element: () => <VentaDetalle />, route: '/ventas/9', path: '/ventas/:id' },
+  { name: 'Gastos', element: () => <Gastos />, route: '/gastos', path: '/gastos' },
+  {
+    name: 'GastoCategorias',
+    element: () => <GastoCategorias />,
+    route: '/gastos/categorias',
+    path: '/gastos/categorias',
+  },
+  { name: 'Negocio', element: () => <Negocio />, route: '/negocio', path: '/negocio' },
+  { name: 'Stock', element: () => <Stock />, route: '/mi-stock', path: '/mi-stock' },
+  {
+    name: 'EntradaStock editing',
+    element: () => <EntradaStock mode="editar" />,
+    route: '/mi-stock/entradas/4',
+    path: '/mi-stock/entradas/:id',
+  },
 ]
 
-test.each(SCREENS)('%s shows the skeleton while its query is pending', async (_name, element, route, path) => {
-  renderPending(element, route, path)
+test.each(SCREENS)('$name shows the skeleton while its query is pending', async (screenCase) => {
+  renderPending(screenCase.element(), screenCase.route, screenCase.path)
 
   expect(await screen.findByRole('progressbar', { name: 'Cargando' })).toBeInTheDocument()
 })
