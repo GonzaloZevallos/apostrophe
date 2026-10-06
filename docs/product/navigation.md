@@ -46,9 +46,9 @@ Success criteria:
    - No navigation entry or screen exists for something not yet built: no "coming soon", no promotions, automations or languages.
 5. **One rule for chrome, back and marks.**
    - Every screen is one of three kinds: tab root, card or detail, form or sheet. Each kind gets its chrome by the rule.
-   - Back follows history, and the parent screen is the fallback.
+   - Back follows history, and the named parent is the fallback.
    - Leaving a form or sheet with unsaved changes asks first, by any way out, and an untouched one closes at once.
-   - A screen's mark comes from its place in the structure, never from how it was reached.
+   - A screen's mark and its "‹ <parent>" label come from its place in the structure, never from how it was reached.
 6. **Readable and accessible.**
    - Tab labels are always visible.
    - The active tab and every state are marked by shape or word, never color alone, with `aria-current` on the active place.
@@ -103,7 +103,7 @@ Success criteria:
     - Language has no entry until it exists.
   - **Tu cuenta**: "Cambiar contraseña" above "Cerrar sesión" (accounts.md). Nothing new.
 - **Reached from**: the business avatar at the top of Inicio; Más on the phone; the sidebar's business row on a computer.
-- **The list of groups** is a card: the bar or sidebar and a back arrow, no "+ Nueva venta". Back follows history; with none, it goes to "‹ Más" on the phone and "‹ Inicio" on a computer.
+- **The list of groups** is a card: the bar or sidebar and a back arrow, no "+ Nueva venta". Its parent is Más on the phone ("‹ Más") and Inicio on a computer ("‹ Inicio"). Back follows history, and with none goes to that parent.
 - **Each group** is its own subscreen, a form: "Cerrar", no bar, no "+ Nueva venta". Unsaved changes ask before discarding, and an untouched group closes at once. Apariencia never has unsaved changes, so it always closes at once.
 - **Empty business**: every group works.
   - Usuarios lists at least the signed-in user.
@@ -126,7 +126,9 @@ Every screen is exactly one of three kinds, and gets its chrome only from its ki
   - It shows the bar (or the sidebar) and "+ Nueva venta".
   - Gastos and Análisis are reached from Más on the phone and from the sidebar on a computer.
 - **Card or detail**: a customer's card, a variety's page, a sale's detail, an expense, a stock entry, the catalog screen, "Todas las entradas", every "Ver todas" list of a variety's page, and Configuración's list of groups.
-  - It shows the bar (or the sidebar) and a "‹ <parent>" back arrow naming the screen it returns to.
+  - It shows the bar (or the sidebar) and a "‹ <parent>" back arrow.
+  - **The arrow names the screen's parent**, fixed by the screen's place in the structure, whatever screen opened it. A customer's card reads "‹ Clientes" even when opened from Inicio's teaser, and the catalog screen reads "‹ Variedades" even when opened from Inicio's notice. A reload or a saved link shows the same label.
+  - **Tapping the arrow, like the device's back, follows the app's history**: from a customer's card opened on Inicio, it returns to Inicio. Only with no history (a link opened directly, a reload with nothing before it) does it go to the parent the arrow names.
   - It never shows "+ Nueva venta". A customer's card carries only "Nueva venta a <name>".
 - **Form or sheet**: Nueva venta and Elegir cliente, Registrar cobro, the stock entry form, the price entry form, the expense form, a variety's add and rename, and every Configuración group.
   - It shows neither the bar nor "+ Nueva venta". It closes with "Cerrar".
@@ -135,7 +137,7 @@ Every screen is exactly one of three kinds, and gets its chrome only from its ki
     - Every other form or sheet asks with its own fixed wording.
   - An untouched form or sheet leaves at once.
   - With no history (a direct link), a form leaves to the fallback its capability defines (the expense form goes to Gastos on the current month), or to its parent.
-- **Back** from a card or detail follows the app's history. With no history (a link opened directly), it goes to the parent named by "‹".
+- **Back**, from any card, detail, form or sheet, follows the app's history. With no history, it goes to the parent: the one named by "‹", or the form's own fallback.
 
 ### Which place is marked
 
@@ -243,6 +245,10 @@ This covers Configuración and its groups, the catalog screen and a variety's pa
   - forms and sheets: neither, and a confirmation on an unsaved leave.
 
   Back with no history goes to the parent; from Configuración's list, to Más on the phone and to Inicio on a computer.
+- **Back by history, label by parent (criterion 5)**: front tests show:
+  - a customer's card opened from Inicio's teaser reads "‹ Clientes", and its arrow and the device's back both return to Inicio;
+  - the catalog screen opened from Inicio's notice reads "‹ Variedades" and returns to Inicio;
+  - the same card opened directly by its address reads "‹ Clientes" and goes to Clientes.
 - **Leaving (criterion 5)**: on a form with unsaved changes, "Cerrar", browser back and the swipe give the same question. An untouched form leaves at once. With no history, forms go to their capability's fallback or their parent.
 - **Marks (criteria 5, 6)**: front tests show:
   - a detail marks its parent's tab when opened from another screen, after a reload and from a saved link;
@@ -284,6 +290,7 @@ This covers Configuración and its groups, the catalog screen and a variety's pa
 - The pin's status or Publicar in Integraciones.
 - Per-variety settings in Configuración (#47).
 - A redirect rule for removed paths with no counterpart; changing where unknown addresses go.
-- Marks that depend on how a screen was reached.
+- Marks or "‹ <parent>" labels that depend on how a screen was reached.
+- A back arrow that ignores history.
 - Changing the copy of any existing unsaved-changes question.
 - Live updates between partners.
