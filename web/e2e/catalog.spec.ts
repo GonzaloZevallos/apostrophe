@@ -73,8 +73,7 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
   await expect(page.getByText('30% índica · floral, dulce')).toBeVisible()
 
   // Edit the header and footer in Configuración → Mensaje del catálogo, then close back
-  // to the catalog screen. The summary row is read-only here; a bare `getByText` would be
-  // ambiguous, since the same strings also sit inside the preview on purpose.
+  // to the catalog screen, which only links out to it and shows neither value.
   await page.getByRole('link', { name: 'Editar encabezado y pie' }).click()
   await expect(page).toHaveURL(/\/settings\/catalog-message$/)
   await page.getByLabel('Encabezado').fill('🌸 Catálogo de Flores del Catálogo 🌸')
@@ -83,9 +82,6 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
   await expect(page.getByText('Catálogo guardado')).toBeVisible()
   await page.getByRole('button', { name: 'Cerrar' }).click()
   await expect(page).toHaveURL(/\/varieties\/catalog$/)
-  const headerFooterSummary = page.locator('.catalogo__encabezado-pie')
-  await expect(headerFooterSummary).toContainText('🌸 Catálogo de Flores del Catálogo 🌸')
-  await expect(headerFooterSummary).toContainText('Pedidos por privado.')
   await expect(page.getByLabel('Pie')).toHaveCount(0)
 
   // The API's own text is what both the preview and the clipboard must match.
