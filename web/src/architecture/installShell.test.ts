@@ -86,7 +86,7 @@ test('there is exactly one theme-color, with no media, equal to the light --pape
   expect(themeColorViolations(doc, lightPapel())).toEqual([])
 })
 
-test('themeColorViolations rejects a pair of metas with media and a wrong color', () => {
+test('themeColorViolations rejects a pair of metas, one carrying media', () => {
   const broken = new DOMParser().parseFromString(
     '<meta name="theme-color" content="x" media="(prefers-color-scheme: dark)">' +
       '<meta name="theme-color" content="y">',
@@ -120,4 +120,14 @@ test('the 192 and 512 icons are purpose any, and every icon file exists', () => 
   for (const icon of manifest.icons) {
     expect(iconFiles).toContain(`/public${icon.src}`)
   }
+})
+
+test('themeColorViolations rejects a single meta with the wrong color', () => {
+  const broken = new DOMParser().parseFromString(
+    '<meta name="theme-color" content="not-the-papel">',
+    'text/html',
+  )
+  expect(themeColorViolations(broken, lightPapel())).toEqual([
+    'the theme-color is not the light --papel',
+  ])
 })
