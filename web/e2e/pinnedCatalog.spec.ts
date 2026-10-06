@@ -15,6 +15,11 @@ import { watchConsole } from './console.js'
 import { openMas } from './helpers/openMas.js'
 
 const PASSWORD = 'correcthorsebattery'
+const TOKEN = '123456:fake-token-for-e2e'
+// The e2e bot's one started chat (`tests/e2e_app.py`): Buscar mi chat finds it.
+const STARTED_CHAT = '111111'
+
+test.use({ isMobile: true, hasTouch: true, viewport: { width: 375, height: 812 } })
 
 test('a seller sets up the bot in Integraciones, then publishes from the catalog screen', async ({
   page,
@@ -59,8 +64,29 @@ test('a seller sets up the bot in Integraciones, then publishes from the catalog
 
   // Enter the token and the seller's own chat; the channel is still blank, which
   // Probarlo allows (PRD, "Probarlo": "The channel chat may be blank").
-  await page.getByLabel('Token del bot').fill('123456:fake-token-for-e2e')
-  await page.getByLabel('Tu chat').fill('111111')
+  await expect(page.getByRole('button', { name: 'Buscar mi chat' })).toBeDisabled()
+  await expect(page.getByText('Cargá el token primero')).toBeVisible()
+  await page.getByLabel('Token del bot').fill(TOKEN)
+  await expect(page.getByRole('button', { name: 'Buscar mi chat' })).toBeEnabled()
+
+  // A chat that never pressed Iniciar: Probarlo says so, in the seller's words, and keeps
+  // everything typed.
+  await page.getByLabel('Tu chat').fill('222222')
+  await page.getByRole('button', { name: 'Probarlo' }).click()
+  await expect(page.getByRole('alert')).toHaveText(
+    'Abrí tu bot en Telegram y tocá Iniciar, después probalo de nuevo.',
+  )
+  await expect(page.getByText('El bot no puede publicar en el canal')).toHaveCount(0)
+  await expect(page.getByLabel('Token del bot')).toHaveValue(TOKEN)
+  await expect(page.getByLabel('Tu chat')).toHaveValue('222222')
+
+  // Buscar mi chat finds the one person who wrote to the bot and fills the number in,
+  // replacing the wrong one; nothing is saved yet.
+  await page.getByRole('button', { name: 'Buscar mi chat' }).click()
+  await expect(page.getByLabel('Tu chat')).toHaveValue(STARTED_CHAT)
+  await expect(page.getByRole('alert')).toHaveCount(0)
+  await expect(page.getByText('Guardado el')).toHaveCount(0)
+
   await page.getByRole('button', { name: 'Probarlo' }).click()
   await expect(page.getByText('Prueba enviada')).toBeVisible()
   await expect(page.getByText('Guardado el')).toBeVisible()
@@ -88,5 +114,16 @@ test('a seller sets up the bot in Integraciones, then publishes from the catalog
   await page.goto('/')
   await expect(page.getByText('Tu catálogo en Telegram está desactualizado')).toHaveCount(0)
 
-  expect(consoleMessages).toEqual([])
+  // The refused Probarlo answers 422, and Chromium logs every failed resource load by
+  // itself; that one line carries no data, so it is excluded by exact text.
+  const REFUSED_PROBARLO_NETWORK_LOG =
+    'error: Failed to load resource: the server responded with a status of 422 (Unprocessable Content)'
+  expect(consoleMessages.filter((message) => message !== REFUSED_PROBARLO_NETWORK_LOG)).toEqual([])
+
+  // No token and no number found in the browser's storage.
+  const stored = await page.evaluate(() =>
+    JSON.stringify([{ ...localStorage }, { ...sessionStorage }]),
+  )
+  expect(stored).not.toContain(TOKEN)
+  expect(stored).not.toContain(STARTED_CHAT)
 })

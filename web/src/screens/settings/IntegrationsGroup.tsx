@@ -9,7 +9,8 @@
  * the query cache. The typed token lives only in this component's state: it is in no query
  * key, URL, storage, toast or log, is cleared on a successful Probarlo and kept on a
  * refusal. Probarlo invalidates `keys.pinnedCatalog()`, which also reaches Inicio's notice
- * and the catalog screen's Publicar.
+ * and the catalog screen's Publicar. Buscar mi chat only fills the own chat field from the
+ * bot's messages and saves nothing, so the number it fills is a typed change like any other.
  */
 
 import { type FormEvent, useEffect, useId, useState } from 'react'
