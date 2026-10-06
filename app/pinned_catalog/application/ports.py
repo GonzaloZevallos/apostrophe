@@ -41,6 +41,17 @@ class TelegramApi(Protocol):
     def pin(self, token: str, chat: str, message_id: int) -> None: ...
 
 
+class PrivateChats(Protocol):
+    """The own-chat lookup's port over Telegram's getUpdates."""
+
+    def private_chats(self, token: str) -> frozenset[str]:
+        """The distinct ids of the private chats that wrote to the bot, from its
+        pending messages: it never consumes them and never changes the bot's setup.
+        Raises `UpdatesRefused` (carrying why) or `TelegramUnreachable`, never
+        Telegram's own description, URL or token (CODING_STANDARDS §9)."""
+        ...
+
+
 @dataclass(frozen=True)
 class SettingsSnapshot:
     """The part of a business's bot settings a snapshot answers. `token` is the

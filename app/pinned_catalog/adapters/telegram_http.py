@@ -27,13 +27,17 @@ from app.pinned_catalog.domain.errors import (
     TelegramRefused,
     TelegramUnreachable,
     TooLong,
+    UpdatesRefusal,
+    UpdatesRefused,
 )
 
 API_BASE = "https://api.telegram.org/bot"
 TIMEOUT_SECONDS = 10.0
 
 Outcome = SendRefusal | Literal["unchanged", "message_gone", "too_long", "telegram_unreachable"]
-Classifier = Callable[[int | None, str], Outcome]
+UpdatesOutcome = UpdatesRefusal | Literal["telegram_unreachable"]
+Classifier = Callable[[int | None, str], Outcome | UpdatesOutcome]
+UPDATES_LIMIT = 100
 
 UNCHANGED = "message is not modified"
 MESSAGE_GONE_MARKERS = ("message to edit not found", "message to pin not found")
@@ -69,7 +73,22 @@ def classify(error_code: int | None, description: str) -> Outcome:
     return "telegram_unreachable"  # a timeout or no connection: no `error_code` at all
 
 
-def _raise(outcome: Outcome) -> NoReturn:
+def classify_updates(error_code: int | None, description: str) -> UpdatesOutcome:
+    """The table for getUpdates, by `error_code` alone: `description` is never read, so
+    no wording of Telegram's can change the cause. A 401 or a 404 is the token; a 429 or
+    a 5xx is Telegram being down; a 409 (a webhook, or another getUpdates running) and
+    anything else, an answer with no `error_code` included, is unreadable. A timeout or
+    no connection never reaches here: the transport raises `TelegramUnreachable`."""
+    if error_code in (401, 404):
+        return UpdatesRefusal.TOKEN_INVALID
+    if error_code == 429 or (error_code is not None and error_code >= 500):
+        return "telegram_unreachable"
+    return UpdatesRefusal.UNREADABLE
+
+
+def _raise(outcome: Outcome | UpdatesOutcome) -> NoReturn:
+    if isinstance(outcome, UpdatesRefusal):
+        raise UpdatesRefused(outcome) from None
     if isinstance(outcome, SendRefusal):
         raise TelegramRefused(outcome) from None
     if outcome == "message_gone":
@@ -98,8 +117,8 @@ def _entities(spans: Sequence[tuple[int, int]]) -> list[dict[str, object]]:
 
 
 class HttpTelegram:
-    """The real `TelegramApi` adapter; `app.main` builds exactly one, used from no test
-    but its own (the plan's invariant)."""
+    """The real `TelegramApi` and `PrivateChats` adapter; `app.main` builds exactly one,
+    used from no test but its own (the plan's invariant)."""
 
     def __init__(self, opener: Opener = _default_opener) -> None:
         self._opener = opener
@@ -136,6 +155,23 @@ class HttpTelegram:
             token,
             {"chat_id": chat, "message_id": message_id, "disable_notification": True},
         )
+
+    def private_chats(self, token: str) -> frozenset[str]:
+        """`PrivateChats`: getUpdates with exactly `limit` and `timeout`, never `offset`
+        (nothing is consumed) and never `allowed_updates` (the bot's setup is never
+        changed). Reads only `chat.id` and `chat.type`, never a name or a username."""
+        body = self._post(
+            "getUpdates", token, {"timeout": 0, "limit": UPDATES_LIMIT}, classify_updates
+        )
+        assert body is not None, "classify_updates never answers 'unchanged'"
+        try:
+            parsed = json.loads(body)
+        except ValueError:
+            raise UpdatesRefused(UpdatesRefusal.UNREADABLE) from None
+        result = parsed.get("result") if isinstance(parsed, dict) else None
+        if not isinstance(result, list):
+            raise UpdatesRefused(UpdatesRefusal.UNREADABLE) from None
+        return frozenset(chat_id for update in result if (chat_id := _private_chat_id(update)))
 
     def _call(
         self, method: str, token: str, payload: dict[str, object]
@@ -199,3 +235,18 @@ def _parse_error(body: bytes) -> tuple[int | None, str]:
         error_code if isinstance(error_code, int) else None,
         description if isinstance(description, str) else "",
     )
+
+
+def _private_chat_id(update: object) -> str | None:
+    """The id of the private chat an update's `message` or `edited_message` came from,
+    or `None` for anything else (a group, a channel, another kind of update)."""
+    if not isinstance(update, dict):
+        return None
+    for key in ("message", "edited_message"):
+        message = update.get(key)
+        chat = message.get("chat") if isinstance(message, dict) else None
+        if isinstance(chat, dict) and chat.get("type") == "private":
+            chat_id = chat.get("id")
+            if isinstance(chat_id, int) and not isinstance(chat_id, bool):
+                return str(chat_id)
+    return None
