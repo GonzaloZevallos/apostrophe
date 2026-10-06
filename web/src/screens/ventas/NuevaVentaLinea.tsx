@@ -41,12 +41,10 @@ function scrollFieldIntoView(element: HTMLElement): void {
 
 /** The keyboard's action key ("next" / "done") does what its label says. Enter inside a
  * form would otherwise submit the sale from a half-typed line. */
-function onEnter(action: () => void): (event: KeyboardEvent<HTMLInputElement>) => void {
-  return (event) => {
-    if (event.key !== 'Enter') return
-    event.preventDefault()
-    action()
-  }
+function onEnter(event: KeyboardEvent<HTMLInputElement>, action: () => void): void {
+  if (event.key !== 'Enter') return
+  event.preventDefault()
+  action()
 }
 
 interface NuevaVentaLineaProps {
@@ -152,7 +150,7 @@ export default function NuevaVentaLinea({
           enterKeyHint="next"
           value={line.grams}
           ref={gramsRef}
-          onKeyDown={onEnter(() => specialPriceRef.current?.focus())}
+          onKeyDown={(event) => onEnter(event, () => specialPriceRef.current?.focus())}
           onFocus={(event) => scrollFieldIntoView(event.currentTarget)}
           onChange={(event) => onChange({ grams: event.target.value })}
         />
@@ -176,7 +174,7 @@ export default function NuevaVentaLinea({
           value={line.specialPrice}
           disabled={line.gift}
           ref={specialPriceRef}
-          onKeyDown={onEnter(() => specialPriceRef.current?.blur())}
+          onKeyDown={(event) => onEnter(event, () => specialPriceRef.current?.blur())}
           onFocus={(event) => scrollFieldIntoView(event.currentTarget)}
           onChange={(event) => onChange({ specialPrice: event.target.value })}
         />
