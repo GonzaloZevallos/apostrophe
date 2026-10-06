@@ -12,6 +12,7 @@
  * VIP customer, no customer at all).
  */
 
+import { SALE as SALE_ROUTE, SALES, pathTo } from '../../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -49,10 +50,10 @@ function renderDetalle(initialState?: unknown) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[{ pathname: '/ventas/10', state: initialState }]}>
+      <MemoryRouter initialEntries={[{ pathname: pathTo(SALE_ROUTE, { id: 10 }), state: initialState }]}>
         <Routes>
-          <Route path="/ventas" element={<VentasProbe />} />
-          <Route path="/ventas/:id" element={<VentaDetalle />} />
+          <Route path={SALES} element={<VentasProbe />} />
+          <Route path={SALE_ROUTE} element={<VentaDetalle />} />
         </Routes>
       </MemoryRouter>
     </QueryClientProvider>,
@@ -113,7 +114,7 @@ test('a gone sale shows the plain gone-detail state, never the generic retry', a
   renderDetalle()
 
   expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Volver a Ventas' })).toHaveAttribute('href', '/ventas')
+  expect(screen.getByRole('link', { name: 'Volver a Ventas' })).toHaveAttribute('href', SALES)
 })
 
 test('Borrar venta asks "Antes de borrar" naming the date, the amount and the grams returning to stock, then deletes and returns to Ventas with the plain toast', async () => {

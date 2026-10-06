@@ -6,6 +6,8 @@
  * Más, and the form's exit goes back by history to the screen that opened it.
  */
 
+import { HOME } from '../src/routes.js'
+import { CUSTOMERS, EXPENSES, MORE, SALES, STOCK } from '../src/routes.js'
 import { expect, test, type Locator, type Page } from '@playwright/test'
 import { newBusinessInvitationUrl } from './backend.js'
 import { watchConsole } from './console.js'
@@ -16,7 +18,7 @@ const PHONE = { width: 390, height: 760 }
 const COMPUTER = { width: 1280, height: 920 }
 
 /** Tab roots: where a seller can be standing when the need to record an expense comes. */
-const ROOTS = ['/', '/ventas', '/clientes', '/mi-stock', '/more', '/expenses'] as const
+const ROOTS = [HOME, SALES, CUSTOMERS, STOCK, MORE, EXPENSES] as const
 
 interface Counter {
   taps: number
@@ -32,9 +34,9 @@ async function tap(counter: Counter, target: Locator): Promise<void> {
 async function openExpenseForm(page: Page, computer: boolean): Promise<number> {
   const counter: Counter = { taps: 0 }
   const here = new URL(page.url()).pathname
-  if (here === '/expenses') {
+  if (here === EXPENSES) {
     await tap(counter, page.getByRole('link', { name: 'Cargar gasto' }))
-  } else if (here === '/more') {
+  } else if (here === MORE) {
     await tap(counter, page.getByRole('link', { name: /^\+ Cargar gasto/ }))
   } else if (computer) {
     await tap(counter, page.locator('.riel-lateral').getByRole('link', { name: 'Gastos' }))
@@ -76,11 +78,11 @@ test('the expense form opens within the tap budget from every tab root, phone an
   for (const root of ROOTS) {
     const phone = taps.phone[root]
     const computer = taps.computer[root]
-    expect(phone, `phone, from ${root}`).toBeLessThanOrEqual(root === '/expenses' ? 1 : 2)
+    expect(phone, `phone, from ${root}`).toBeLessThanOrEqual(root === EXPENSES ? 1 : 2)
     expect(computer, `computer, from ${root}`).toBeLessThanOrEqual(phone ?? 0)
   }
-  expect(taps.phone['/more']).toBe(1)
-  expect(taps.phone['/expenses']).toBe(1)
+  expect(taps.phone[MORE]).toBe(1)
+  expect(taps.phone[EXPENSES]).toBe(1)
   expect(consoleMessages).toEqual([])
 })
 
@@ -98,7 +100,7 @@ test('a seller records an expense from Más and Cerrar goes back to where the fo
   await page.getByRole('button', { name: 'Creá el negocio' }).click()
   await expect(page.locator('.encabezado__negocio')).toBeVisible()
 
-  await page.goto('/more')
+  await page.goto(MORE)
   await page.getByRole('link', { name: /^\+ Cargar gasto/ }).click()
   await page.getByRole('button', { name: 'Cerrar' }).click()
   await expect(page).toHaveURL(/\/more$/)

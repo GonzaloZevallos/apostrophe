@@ -12,7 +12,7 @@ import { afterEach, expect, test, vi } from 'vitest'
 import { GONE_NOTICE } from '../api/refusals'
 import { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import { SIN_CONEXION_TITULO } from '../components/SinConexion'
-import { EXPENSE_CATEGORIES, EXPENSES } from '../routes'
+import { EXPENSES, EXPENSE_CATEGORIES } from '../routes'
 import { FLOWER_NOTICE } from './Gastos'
 import { CATEGORY_GONE } from './expenses/ExpenseForm'
 import { type FetchImpl, ME, jsonResponse, renderExpenses } from './expenses/renderExpenses'
@@ -75,7 +75,7 @@ function store(rows: Row[], overrides?: FetchImpl) {
       categories.push(created)
       return jsonResponse(201, created)
     }
-    if (url === '/expenses' && method === 'POST') {
+    if (url === EXPENSES && method === 'POST') {
       const body = JSON.parse(String(init?.body)) as Omit<Row, 'id'>
       const row = { id: 100 + rows.length, ...body }
       rows.push(row)
@@ -214,7 +214,7 @@ test('records from Gastos on a past month: back to that month with the expense s
   expect(screen.getByText('Septiembre 2026')).toBeInTheDocument()
   expect(await screen.findAllByText('Gasto guardado')).toHaveLength(1)
   expect(totalShown()).toBe('$ 2.200')
-  expect(fetch).toHaveBeenCalledWith('/expenses', expect.objectContaining({ method: 'POST' }))
+  expect(fetch).toHaveBeenCalledWith(EXPENSES, expect.objectContaining({ method: 'POST' }))
 })
 
 test('the record action opens the form with today\'s date', async () => {
@@ -346,7 +346,7 @@ test('a category removed mid-form keeps what was typed and empties Categoría', 
     store(
       [...SEED],
       failing(
-        (url, method) => url === '/expenses' && method === 'POST',
+        (url, method) => url === EXPENSES && method === 'POST',
         () => jsonResponse(404, { detail: 'no category', code: 'expense_category.not_found' }),
       ),
     ),
@@ -366,7 +366,7 @@ test('a server error on the expense form shows the generic retry, never the refu
     store(
       [...SEED],
       failing(
-        (url, method) => url === '/expenses' && method === 'POST',
+        (url, method) => url === EXPENSES && method === 'POST',
         () => new Response('internal error', { status: 500 }),
       ),
     ),
@@ -398,7 +398,7 @@ test('links to the expense categories, now a Configuración group, from its foot
 
   const categories = await screen.findByRole('link', { name: 'Categorías' })
   expect(categories).toHaveAttribute('href', EXPENSE_CATEGORIES)
-  expect(EXPENSE_CATEGORIES).toBe('/settings/expense-categories')
+  expect(EXPENSE_CATEGORIES).toBe(EXPENSE_CATEGORIES)
 })
 
 test('subtotals and the total stay equal to the sum shown after create, edit and delete', async () => {

@@ -9,6 +9,7 @@
  * the console holds nothing.
  */
 
+import { HOME } from '../src/routes.js'
 import { expect, test } from '@playwright/test'
 import { newBusinessInvitationUrl } from './backend.js'
 import { watchConsole } from './console.js'
@@ -55,7 +56,7 @@ test('a seller goes through every Configuración group from the phone, with no c
     await page.getByRole('button', { name: 'Cerrar', exact: true }).click()
     await expect(page.getByRole('heading', { name: 'Configuración' })).toBeVisible()
   }
-  await page.goto('/')
+  await page.goto(HOME)
   await page.getByRole('link', { name: /^Configuración de / }).click()
   await expect(page.getByRole('heading', { name: 'Configuración' })).toBeVisible()
 

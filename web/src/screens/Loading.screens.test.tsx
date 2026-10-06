@@ -4,6 +4,7 @@
  * its query never settles, and the skeleton must stand where the content will go.
  */
 
+import { CUSTOMER, CUSTOMERS_OWING, CUSTOMER_EDIT, EXPENSES, EXPENSE_CATEGORIES, SALE, SALES, SETTINGS_BUSINESS, SETTINGS_CATALOG_MESSAGE, SETTINGS_INTEGRATIONS, SETTINGS_USERS, STOCK, STOCK_ENTRY, pathTo } from '../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor } from '@testing-library/react'
 import type { ReactElement } from 'react'
@@ -95,23 +96,23 @@ interface Case {
 }
 
 const SCREENS: Case[] = [
-  { name: 'Ventas', element: () => <Ventas />, route: '/ventas', path: '/ventas' },
-  { name: 'TeDeben', element: () => <TeDeben />, route: '/clientes/deben', path: '/clientes/deben' },
-  { name: 'ClienteFicha', element: () => <ClienteFicha />, route: '/clientes/7', path: '/clientes/:id' },
+  { name: 'Ventas', element: () => <Ventas />, route: SALES, path: SALES },
+  { name: 'TeDeben', element: () => <TeDeben />, route: CUSTOMERS_OWING, path: CUSTOMERS_OWING },
+  { name: 'ClienteFicha', element: () => <ClienteFicha />, route: pathTo(CUSTOMER, { id: 7 }), path: CUSTOMER },
   {
     name: 'ClienteForm editing',
     element: () => <ClienteForm mode="editar" />,
-    route: '/clientes/7/editar',
-    path: '/clientes/:id/editar',
+    route: pathTo(CUSTOMER_EDIT, { id: 7 }),
+    path: CUSTOMER_EDIT,
   },
-  { name: 'VentaDetalle', element: () => <VentaDetalle />, route: '/ventas/9', path: '/ventas/:id' },
-  { name: 'Gastos', element: () => <Gastos />, route: '/gastos', path: '/gastos' },
-  { name: 'Stock', element: () => <Stock />, route: '/mi-stock', path: '/mi-stock' },
+  { name: 'VentaDetalle', element: () => <VentaDetalle />, route: pathTo(SALE, { id: 9 }), path: SALE },
+  { name: 'Gastos', element: () => <Gastos />, route: EXPENSES, path: EXPENSES },
+  { name: 'Stock', element: () => <Stock />, route: STOCK, path: STOCK },
   {
     name: 'EntradaStock editing',
     element: () => <EntradaStock mode="editar" />,
-    route: '/mi-stock/entradas/4',
-    path: '/mi-stock/entradas/:id',
+    route: pathTo(STOCK_ENTRY, { id: 4 }),
+    path: STOCK_ENTRY,
   },
 ]
 
@@ -122,18 +123,18 @@ test.each(SCREENS)('$name shows the skeleton while its query is pending', async 
 })
 
 const SETTINGS_GROUPS: { name: string; element: () => ReactElement; path: string }[] = [
-  { name: 'BusinessGroup', element: () => <BusinessGroup />, path: '/settings/business' },
-  { name: 'UsersGroup', element: () => <UsersGroup />, path: '/settings/users' },
-  { name: 'IntegrationsGroup', element: () => <IntegrationsGroup />, path: '/settings/integrations' },
+  { name: 'BusinessGroup', element: () => <BusinessGroup />, path: SETTINGS_BUSINESS },
+  { name: 'UsersGroup', element: () => <UsersGroup />, path: SETTINGS_USERS },
+  { name: 'IntegrationsGroup', element: () => <IntegrationsGroup />, path: SETTINGS_INTEGRATIONS },
   {
     name: 'CatalogMessageGroup',
     element: () => <CatalogMessageGroup />,
-    path: '/settings/catalog-message',
+    path: SETTINGS_CATALOG_MESSAGE,
   },
   {
     name: 'ExpenseCategoriesGroup',
     element: () => <ExpenseCategoriesGroup />,
-    path: '/settings/expense-categories',
+    path: EXPENSE_CATEGORIES,
   },
 ]
 
@@ -145,7 +146,7 @@ test.each(SETTINGS_GROUPS)('$name shows the skeleton while its query is pending'
 
 test('a screen opened offline shows the skeleton under the offline banner, without throwing', async () => {
   vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
-  renderPending(<Ventas />, '/ventas', '/ventas')
+  renderPending(<Ventas />, SALES, SALES)
 
   expect(await screen.findByRole('progressbar', { name: 'Cargando' })).toBeInTheDocument()
   expect(screen.getByText('Te quedaste sin internet')).toBeInTheDocument()
@@ -155,7 +156,7 @@ test('the skeleton gives way to the content once the query settles', async () =>
   vi.mocked(fetch).mockResolvedValue(
     new Response('[]', { status: 200, headers: { 'Content-Type': 'application/json' } }),
   )
-  renderPending(<Ventas />, '/ventas', '/ventas')
+  renderPending(<Ventas />, SALES, SALES)
 
   await waitFor(() => expect(screen.queryByRole('progressbar')).not.toBeInTheDocument())
 })

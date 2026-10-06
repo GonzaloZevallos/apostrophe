@@ -22,6 +22,7 @@
  * forbids there.
  */
 
+import { CUSTOMERS, CUSTOMER_NEW, SALES, VARIETIES } from '../src/routes.js'
 import { expect, test } from '@playwright/test'
 import { newBusinessInvitationUrl } from './backend.js'
 import { watchConsole } from './console.js'
@@ -53,7 +54,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // One priced variety, $1.000/g — round figures for every assertion below.
-  await page.goto('/variedades')
+  await page.goto(VARIETIES)
   await page.getByRole('button', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Rosa')
   await page.getByRole('button', { name: 'Guardar' }).click()
@@ -65,7 +66,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expect(page.getByText('Precio guardado')).toBeVisible()
 
   // A customer, left owing on its first sale.
-  await page.goto('/clientes/nuevo')
+  await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Teléfono').fill('+5491155550099')
   await page.getByLabel('Nombre').fill('Carla Pérez')
   await page.getByRole('button', { name: 'Guardá y usá' }).click()
@@ -87,7 +88,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expect(page.getByText('Venta guardada')).toBeVisible()
 
   // The card shows the debt, straight from the API.
-  await page.goto('/clientes')
+  await page.goto(CUSTOMERS)
   await page.getByRole('link', { name: 'Carla Pérez' }).click()
   await expect(page.getByText('Te debe $ 5.000')).toBeVisible()
   await expect(page.getByText(`desde el ${today}`)).toBeVisible()
@@ -121,7 +122,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expect(page).toHaveURL(/\/ventas\/\d+$/)
   await expect(page.getByText('Venta guardada')).toBeVisible()
 
-  await page.goto('/clientes')
+  await page.goto(CUSTOMERS)
   await page.getByRole('link', { name: 'Carla Pérez' }).click()
   await expect(page.getByText('Te debe $ 8.000')).toBeVisible()
 
@@ -149,7 +150,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
 
   // --- Te deben: opened from the Clientes header, lists her with the same figure,
   // and the total/count head the view. ---
-  await page.goto('/clientes')
+  await page.goto(CUSTOMERS)
   await expect(page.getByRole('link', { name: /te deben \$ 8\.000/ })).toBeVisible()
   await page.getByRole('link', { name: /te deben \$ 8\.000/ }).click()
   await expect(page).toHaveURL(/\/clientes\/deben$/)
@@ -161,7 +162,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
 
   // --- Deleting a sale names the grams returning to stock (sales.md, left over
   // from #20), never the debt or the credit it leaves. ---
-  await page.goto('/ventas')
+  await page.goto(SALES)
   const saleTwoRow = page.locator('.fila-venta').filter({ hasText: '$ 8.000' })
   await expect(saleTwoRow.getByText('te debe')).toBeVisible()
   await saleTwoRow.click()
@@ -177,7 +178,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
 
   // Nothing left owing: the debt that sale carried is gone with it, never a
   // credit (recording never creates one, and this sale took no payment with it).
-  await page.goto('/clientes')
+  await page.goto(CUSTOMERS)
   await page.getByRole('link', { name: 'Carla Pérez' }).click()
   await expect(page.getByText('Te debe', { exact: false })).toHaveCount(0)
   await expect(page.getByText('A favor', { exact: false })).toHaveCount(0)
@@ -189,7 +190,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   // --- The plural form: two more sales left owing bring the count to "2 ventas
   // debiendo", and Te deben's header total is their sum (payments.md, Metrics
   // "Who-owes totals" and "No curl"). ---
-  await page.goto('/clientes')
+  await page.goto(CUSTOMERS)
   await page.getByRole('link', { name: 'Carla Pérez' }).click()
   await page.getByRole('link', { name: 'Nueva venta a Carla Pérez' }).click()
   await expect(page).toHaveURL(/\/ventas\/nueva$/)
@@ -199,7 +200,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expect(page).toHaveURL(/\/ventas\/\d+$/)
   await expect(page.getByText('Venta guardada')).toBeVisible()
 
-  await page.goto('/clientes')
+  await page.goto(CUSTOMERS)
   await page.getByRole('link', { name: 'Carla Pérez' }).click()
   await page.getByRole('link', { name: 'Nueva venta a Carla Pérez' }).click()
   await expect(page).toHaveURL(/\/ventas\/nueva$/)
@@ -209,7 +210,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expect(page).toHaveURL(/\/ventas\/\d+$/)
   await expect(page.getByText('Venta guardada')).toBeVisible()
 
-  await page.goto('/clientes')
+  await page.goto(CUSTOMERS)
   await page.getByRole('link', { name: /te deben \$ 5\.000/ }).click()
   await expect(page).toHaveURL(/\/clientes\/deben$/)
   await expect(page.locator('.cifra-xl')).toHaveText('$ 5.000')

@@ -4,6 +4,7 @@
  * through the "Antes de borrar" confirmation. The API is faked at `../api/client`.
  */
 
+import { VARIETIES, VARIETY as VARIETY_ROUTE, pathTo } from '../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -36,10 +37,10 @@ function renderScreen() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={['/variedades/1']}>
+      <MemoryRouter initialEntries={[pathTo(VARIETY_ROUTE, { id: 1 })]}>
         <Routes>
           <Route element={<Outlet context={ME} />}>
-            <Route path="/variedades/:id" element={<VariedadDetalle />} />
+            <Route path={VARIETY_ROUTE} element={<VariedadDetalle />} />
           </Route>
         </Routes>
       </MemoryRouter>
@@ -294,6 +295,6 @@ test('a variety that is gone shows the gone-detail state with a way back to the 
   expect(await screen.findByText(GONE_DETAIL)).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Volver a Variedades' })).toHaveAttribute(
     'href',
-    '/variedades',
+    VARIETIES,
   )
 })

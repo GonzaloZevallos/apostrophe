@@ -1,6 +1,6 @@
 /**
  * `EntradaStock` (`stock.md`, "On screen"): records a new stock entry or edits one,
- * shared by `/mi-stock/nueva-entrada` and `/mi-stock/entradas/:id`, the way
+ * shared by /mi-stock/nueva-entrada and `/mi-stock/entradas/:id`, the way
  * `ClienteForm` shares add and edit. Editing confirms before saving; deleting confirms
  * through `ConfirmDialog`, naming the date, variety and grams (`stock.md`: "Antes de
  * borrar"). The cost-per-gram preview ("Te queda en $ 8.500 el gramo") is the one
@@ -9,6 +9,7 @@
  * either what was typed or, after saving, the API's own answer.
  */
 
+import { STOCK } from '../routes'
 import { type FormEvent, useState } from 'react'
 import { type QueryClient, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate, useOutletContext, useParams } from 'react-router'
@@ -100,7 +101,7 @@ export default function EntradaStock({ mode }: Props) {
 
   if (existing.isError) {
     if (existing.error instanceof ApiError && isGone(existing.error.code)) {
-      return <GoneScreen label="Stock" to="/mi-stock" />
+      return <GoneScreen label="Stock" to={STOCK} />
     }
     if (existing.error instanceof NetworkError) {
       return (
@@ -214,11 +215,11 @@ function EntradaStockBody({ mode, entryId, today, initial }: BodyProps) {
         await editEntry(entryId, body)
       }
       invalidateResource(queryClient, 'stock')
-      navigate('/mi-stock', { state: toast('Entrada guardada') })
+      navigate(STOCK, { state: toast('Entrada guardada') })
     } catch (caught) {
       if (caught instanceof ApiError && mode === 'editar' && isGone(caught.code)) {
         invalidateStockAfterDeleting(queryClient, entryId)
-        navigate('/mi-stock', { state: gone() })
+        navigate(STOCK, { state: gone() })
         return
       }
       if (caught instanceof ApiError) {
@@ -250,12 +251,12 @@ function EntradaStockBody({ mode, entryId, today, initial }: BodyProps) {
     try {
       await deleteEntry(entryId)
       invalidateStockAfterDeleting(queryClient, entryId)
-      navigate('/mi-stock', { state: toast('Entrada eliminada') })
+      navigate(STOCK, { state: toast('Entrada eliminada') })
     } catch (caught) {
       setConfirmingDelete(false)
       if (caught instanceof ApiError && isGone(caught.code)) {
         invalidateStockAfterDeleting(queryClient, entryId)
-        navigate('/mi-stock', { state: gone() })
+        navigate(STOCK, { state: gone() })
         return
       }
       if (caught instanceof NetworkError) setOffline(true)
@@ -274,7 +275,7 @@ function EntradaStockBody({ mode, entryId, today, initial }: BodyProps) {
     <main className="pantalla">
       <div className="cuerpo">
         <div className="encabezado-fila">
-          <Link to="/mi-stock">Volver</Link>
+          <Link to={STOCK}>Volver</Link>
           <span className="encabezado__titulo">
             {mode === 'nuevo' ? 'Nueva entrada' : 'Editar entrada'}
           </span>

@@ -13,6 +13,7 @@
  * browser console (CODING_STANDARDS.md section 9, in the browser too).
  */
 
+import { CUSTOMER_NEW, EXPENSE_CATEGORIES, LEGACY_EXPENSES, LEGACY_MORE, SETTINGS_BUSINESS, SETTINGS_USERS, STOCK, VARIETIES } from '../src/routes.js'
 import { expect, test } from '@playwright/test'
 import { newBusinessInvitationUrl } from './backend.js'
 import { watchConsole } from './console.js'
@@ -40,7 +41,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // Add a customer.
-  await page.goto('/clientes/nuevo')
+  await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Teléfono').fill(PHONE)
   await page.getByLabel('Nombre').fill('Marisa Gómez')
   await page.getByRole('button', { name: 'Guardá y usá' }).click()
@@ -48,7 +49,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await expect(page.getByText('Cliente guardado')).toBeVisible()
 
   // Add a variety.
-  await page.goto('/variedades')
+  await page.goto(VARIETIES)
   await page.getByRole('button', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Rosa')
   await page.getByRole('button', { name: 'Guardar' }).click()
@@ -72,7 +73,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await expect(page.getByText('Sin precio: no se puede vender')).toBeVisible()
 
   // Record a stock entry for Rosa from the Stock tab (stock.md: "Nueva entrada").
-  await page.goto('/mi-stock')
+  await page.goto(STOCK)
   await expect(page.getByText('Sin entradas de stock')).toBeVisible()
   await page.getByRole('link', { name: 'Nueva entrada' }).click()
   await expect(page).toHaveURL(/\/mi-stock\/nueva-entrada$/)
@@ -108,7 +109,7 @@ test('a seller does everything the backend offers today, from the front alone', 
 
   // Set Rosa's low-stock threshold from Variedades, then turn it off (varieties.md:
   // "set or turn off the threshold from the variety").
-  await page.goto('/variedades')
+  await page.goto(VARIETIES)
   await expect(page.getByText('Aviso apagado')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByLabel('Umbral de aviso (g)').fill('15')
@@ -152,15 +153,15 @@ test('a seller does everything the backend offers today, from the front alone', 
   await expect(page.getByText(/Las compras de flores no van acá/)).toBeVisible()
 
   // The Spanish paths stay on purpose here: the server answers them with a 308 and the
-  // app shows the English screen (the one `goto('/gastos')` and one `goto('/mas')` of
+  // app shows the English screen (the one `goto('/gastos')` and one `goto(LEGACY_MORE)` of
   // the run; every other step reaches a screen through the nav or its real path).
-  await page.goto('/gastos?month=2026-01')
+  await page.goto(`${LEGACY_EXPENSES}?month=2026-01`)
   await expect(page).toHaveURL(/\/expenses\?month=2026-01$/)
   await expect(page.getByText(/Las compras de flores no van acá/)).toBeVisible()
   await page.reload()
   await expect(page).toHaveURL(/\/expenses\?month=2026-01$/)
   await expect(page.getByText(/Las compras de flores no van acá/)).toBeVisible()
-  await page.goto('/mas')
+  await page.goto(LEGACY_MORE)
   await expect(page).toHaveURL(/\/more$/)
   await expect(
     page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /^Gastos/ }),
@@ -175,7 +176,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   // "Envíos y traslados" and "Otros" are the four the business starts with
   // (`app/expenses/domain/category.py`'s `DEFAULT_CATEGORY_NAMES`), so this one
   // uses a name of its own.
-  await page.goto('/settings/expense-categories')
+  await page.goto(EXPENSE_CATEGORIES)
   await page.getByLabel('Nueva categoría').fill('Delivery en bici')
   await page.getByRole('button', { name: '+ Categoría' }).click()
   await expect(page.getByText('Categoría guardada')).toBeVisible()
@@ -186,7 +187,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await expect(page.getByText('Delivery en bici')).toHaveCount(0)
 
   // Rename the business.
-  await page.goto('/settings/business')
+  await page.goto(SETTINGS_BUSINESS)
   const renamedTo = `${businessName} Renombrado`
   await page.getByLabel('Nombre del negocio').fill(renamedTo)
   await page.getByRole('button', { name: 'Guardá el nombre' }).click()
@@ -194,7 +195,7 @@ test('a seller does everything the backend offers today, from the front alone', 
 
   // Create a join link and accept it as a second user, from a separate browser
   // context (its own cookie jar — a second device).
-  await page.goto('/settings/users')
+  await page.goto(SETTINGS_USERS)
   await page.getByRole('button', { name: 'Invitá a un socio' }).click()
   const inviteUrl = await page.locator('.usuarios__link').textContent()
   if (inviteUrl === null || inviteUrl === '') throw new Error('no invitation link shown')

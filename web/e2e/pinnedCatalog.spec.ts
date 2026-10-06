@@ -9,6 +9,7 @@
  * Telegram token or the network.
  */
 
+import { HOME, VARIETIES } from '../src/routes.js'
 import { expect, test } from '@playwright/test'
 import { newBusinessInvitationUrl } from './backend.js'
 import { watchConsole } from './console.js'
@@ -33,7 +34,7 @@ test('a seller sets up the bot in Integraciones, then publishes from the catalog
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // A variety with a price, so the catalog has something to publish.
-  await page.goto('/variedades')
+  await page.goto(VARIETIES)
   await page.getByRole('button', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Rosa')
   await page.getByRole('button', { name: 'Guardar' }).click()
@@ -85,7 +86,7 @@ test('a seller sets up the bot in Integraciones, then publishes from the catalog
   await expect(page.getByText('Catálogo publicado')).toBeVisible()
   await expect(page.getByText('Al día')).toBeVisible()
 
-  await page.goto('/')
+  await page.goto(HOME)
   await expect(page.getByText('Tu catálogo en Telegram está desactualizado')).toHaveCount(0)
 
   expect(consoleMessages).toEqual([])

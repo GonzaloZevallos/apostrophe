@@ -12,6 +12,7 @@
  * and the catalog screen's Publicar.
  */
 
+import { CATALOG } from '../../routes'
 import { type FormEvent, useEffect, useId, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router'
@@ -31,7 +32,7 @@ const PREVIOUS_PIN_NOTICE =
 const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
 const CHANNEL_CHAT_HELP = 'Es el @usuario o el enlace del canal donde se publica el catálogo.'
 const OWN_CHAT_HELP = 'Abrí tu chat con el bot y escribile cualquier cosa para verlo acá.'
-const CATALOG_PATH = '/catalogo'
+const CATALOG_PATH = CATALOG
 
 const LEAVE: LeaveWording = {
   question: '¿Descartás el cambio?',

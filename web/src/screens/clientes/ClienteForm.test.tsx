@@ -5,6 +5,7 @@
  * (plan, "Gone records").
  */
 
+import { CUSTOMER, CUSTOMERS, CUSTOMER_EDIT, CUSTOMER_NEW, LOGIN, pathTo } from '../../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -49,10 +50,10 @@ function renderForm(initialPath: string) {
     <QueryClientProvider client={new QueryClient()}>
       <MemoryRouter initialEntries={[initialPath]}>
         <Routes>
-          <Route path="/clientes/nuevo" element={<ClienteForm mode="nuevo" />} />
-          <Route path="/clientes/:id/editar" element={<ClienteForm mode="editar" />} />
-          <Route path="/clientes" element={<ListStub />} />
-          <Route path="/clientes/:id" element={<FichaStub />} />
+          <Route path={CUSTOMER_NEW} element={<ClienteForm mode="nuevo" />} />
+          <Route path={CUSTOMER_EDIT} element={<ClienteForm mode="editar" />} />
+          <Route path={CUSTOMERS} element={<ListStub />} />
+          <Route path={CUSTOMER} element={<FichaStub />} />
         </Routes>
       </MemoryRouter>
     </QueryClientProvider>,
@@ -71,7 +72,7 @@ test('registers a customer and lands back on the list', async () => {
   vi.mocked(fetch).mockResolvedValue(
     jsonResponse(201, { id: 9, name: 'Nico', phone: '+5491131785094', channel: null, vip: false }),
   )
-  renderForm('/clientes/nuevo')
+  renderForm(CUSTOMER_NEW)
 
   await userEvent.type(screen.getByLabelText('Teléfono'), '+5491131785094')
   await userEvent.type(screen.getByLabelText('Nombre'), 'Nico')
@@ -85,7 +86,7 @@ test('registers a customer and lands back on the list', async () => {
 })
 
 test('only Nombre is marked required; Teléfono stays optional', () => {
-  renderForm('/clientes/nuevo')
+  renderForm(CUSTOMER_NEW)
 
   expect(screen.getByLabelText('Nombre')).toBeRequired()
   expect(screen.getByLabelText('Teléfono')).not.toBeRequired()
@@ -95,7 +96,7 @@ test('registering with no phone sends the request and shows the saved toast', as
   vi.mocked(fetch).mockResolvedValue(
     jsonResponse(201, { id: 10, name: 'Sol', phone: null, channel: null, vip: false }),
   )
-  renderForm('/clientes/nuevo')
+  renderForm(CUSTOMER_NEW)
 
   await userEvent.type(screen.getByLabelText('Nombre'), 'Sol')
   await userEvent.click(screen.getByRole('button', { name: 'Guardá y usá' }))
@@ -114,7 +115,7 @@ test('clearing a phone when editing sends it and shows the saved toast', async (
   vi.mocked(fetch).mockResolvedValueOnce(
     jsonResponse(200, { id: 7, name: 'Tincho', phone: null, channel: null, vip: false }),
   )
-  renderForm('/clientes/7/editar')
+  renderForm(pathTo(CUSTOMER_EDIT, { id: 7 }))
 
   expect(await screen.findByLabelText('Teléfono')).toHaveValue('+5491144861258')
   await userEvent.clear(screen.getByLabelText('Teléfono'))
@@ -132,7 +133,7 @@ test('a duplicate phone is refused on the phone field, keeping what was typed', 
   vi.mocked(fetch).mockResolvedValue(
     jsonResponse(409, { detail: 'taken', code: 'customer.phone_taken' }),
   )
-  renderForm('/clientes/nuevo')
+  renderForm(CUSTOMER_NEW)
 
   await userEvent.type(screen.getByLabelText('Teléfono'), '+5491131785094')
   await userEvent.type(screen.getByLabelText('Nombre'), 'Nico')
@@ -162,7 +163,7 @@ test('edit loads the existing customer and saves the change', async () => {
       vip: false,
     }),
   )
-  renderForm('/clientes/7/editar')
+  renderForm(pathTo(CUSTOMER_EDIT, { id: 7 }))
 
   expect(await screen.findByLabelText('Nombre')).toHaveValue('Tincho')
 
@@ -181,7 +182,7 @@ test('saving an edit on a customer that is gone shows the gone notice, not the t
   vi.mocked(fetch).mockResolvedValueOnce(
     jsonResponse(404, { detail: 'no such customer', code: 'customer.not_found' }),
   )
-  renderForm('/clientes/7/editar')
+  renderForm(pathTo(CUSTOMER_EDIT, { id: 7 }))
 
   expect(await screen.findByLabelText('Nombre')).toHaveValue('Tincho')
   await userEvent.click(screen.getByRole('button', { name: 'Guardá y usá' }))
@@ -196,13 +197,13 @@ test('a 401 on save clears the cache and goes to Entrar, through the session bou
   queryClient.setQueryData(['me'], { businessName: 'stale' })
   const navigate = vi.fn()
   setNavigate(navigate)
-  setCurrentPath('/clientes/nuevo')
+  setCurrentPath(CUSTOMER_NEW)
 
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={['/clientes/nuevo']}>
+      <MemoryRouter initialEntries={[CUSTOMER_NEW]}>
         <Routes>
-          <Route path="/clientes/nuevo" element={<ClienteForm mode="nuevo" />} />
+          <Route path={CUSTOMER_NEW} element={<ClienteForm mode="nuevo" />} />
         </Routes>
       </MemoryRouter>
     </QueryClientProvider>,
@@ -212,7 +213,7 @@ test('a 401 on save clears the cache and goes to Entrar, through the session bou
   await userEvent.type(screen.getByLabelText('Nombre'), 'Nico')
   await userEvent.click(screen.getByRole('button', { name: 'Guardá y usá' }))
 
-  await waitFor(() => expect(navigate).toHaveBeenCalledWith('/entrar'))
+  await waitFor(() => expect(navigate).toHaveBeenCalledWith(LOGIN))
   expect(queryClient.getQueryData(['me'])).toBeUndefined()
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
 })

@@ -1,10 +1,11 @@
+import { HOME } from '../../src/routes.js'
 import type { Page } from '@playwright/test'
 
 /** Opens Más through the shell's own navigation, not by typing its path: the path of
  * Más is the front's to name (and the server redirects its old Spanish spelling), so a
  * spec that goes through the nav never depends on it. */
 export async function openMas(page: Page): Promise<void> {
-  await page.goto('/')
+  await page.goto(HOME)
   await page.getByRole('link', { name: 'Más', exact: true }).click()
 }
 

@@ -10,6 +10,7 @@
  * through the built front alone, against the real backend.
  */
 
+import { SALE_NEW, STOCK_ENTRY_NEW, VARIETIES } from '../src/routes.js'
 import { expect, test } from '@playwright/test'
 import { newBusinessInvitationUrl } from './backend.js'
 import { watchConsole } from './console.js'
@@ -35,7 +36,7 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // A priced variety.
-  await page.goto('/variedades')
+  await page.goto(VARIETIES)
   await page.getByRole('button', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Rosa')
   await page.getByRole('button', { name: 'Guardar' }).click()
@@ -48,7 +49,7 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
 
   // A stock entry (origin defaults to "Compra"), backdated into last month so the
   // business's first record — and so "Mes anterior" — is not this same month.
-  await page.goto('/mi-stock/nueva-entrada')
+  await page.goto(STOCK_ENTRY_NEW)
   const todayIso = await page.getByLabel('Fecha').inputValue()
   const lastMonth = new Date(todayIso)
   lastMonth.setDate(1)
@@ -61,7 +62,7 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   await expect(page.getByText('Entrada guardada')).toBeVisible()
 
   // A cash sale, today.
-  await page.goto('/ventas/nueva')
+  await page.goto(SALE_NEW)
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '10' })
   await page.getByRole('radio', { name: 'Efectivo' }).check()
   await page.getByRole('button', { name: 'Guardá la venta' }).click()

@@ -1,3 +1,4 @@
+import { EXPENSE_CATEGORIES, HOME, LEGACY_BUSINESS, LEGACY_EXPENSE_CATEGORIES, LEGACY_EXPENSES, LEGACY_MORE, SETTINGS } from './routes'
 import { render, screen } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { expect, test } from 'vitest'
@@ -5,7 +6,7 @@ import { redirectRoutes, type Redirect } from './redirects'
 
 const FIXTURE: readonly Redirect[] = [
   { from: '/viejo', to: '/nuevo' },
-  { from: '/otro-viejo', to: '/settings/algo' },
+  { from: '/otro-viejo', to: '/algo' },
 ]
 
 function renderAt(path: string) {
@@ -13,10 +14,10 @@ function renderAt(path: string) {
     [
       ...redirectRoutes(FIXTURE),
       { path: '/nuevo', element: <h1>Nuevo</h1> },
-      { path: '/settings/algo', element: <h1>Algo</h1> },
+      { path: '/algo', element: <h1>Algo</h1> },
       { path: '*', element: <h1>Inicio</h1> },
     ],
-    { initialEntries: ['/', path], initialIndex: 1 },
+    { initialEntries: [HOME, path], initialIndex: 1 },
   )
   render(<RouterProvider router={router} />)
   return router
@@ -31,7 +32,7 @@ test('an entry of the table turns into a replace navigation to its target', () =
 })
 
 test('every entry redirects on its own, and a path outside the table is untouched', () => {
-  expect(renderAt('/otro-viejo').state.location.pathname).toBe('/settings/algo')
+  expect(renderAt('/otro-viejo').state.location.pathname).toBe('/algo')
   expect(renderAt('/no-esta-en-la-tabla').state.location.pathname).toBe('/no-esta-en-la-tabla')
 })
 
@@ -39,14 +40,14 @@ test('the real table sends /negocio, the old business screen, to Configuración 
   const router = createMemoryRouter(
     [
       ...redirectRoutes(),
-      { path: '/settings', element: <h1>Configuración</h1> },
+      { path: SETTINGS, element: <h1>Configuración</h1> },
       { path: '*', element: <h1>Inicio</h1> },
     ],
-    { initialEntries: ['/mas', '/negocio'], initialIndex: 1 },
+    { initialEntries: [LEGACY_MORE, LEGACY_BUSINESS], initialIndex: 1 },
   )
   render(<RouterProvider router={router} />)
 
-  expect(router.state.location.pathname).toBe('/settings')
+  expect(router.state.location.pathname).toBe(SETTINGS)
   expect(router.state.historyAction).toBe('REPLACE')
   expect(screen.getByRole('heading', { name: 'Configuración' })).toBeInTheDocument()
 })
@@ -55,14 +56,14 @@ test('the real table sends /gastos/categorias, the old categories screen, to Con
   const router = createMemoryRouter(
     [
       ...redirectRoutes(),
-      { path: '/settings/expense-categories', element: <h1>Categorías de gastos</h1> },
+      { path: EXPENSE_CATEGORIES, element: <h1>Categorías de gastos</h1> },
       { path: '*', element: <h1>Inicio</h1> },
     ],
-    { initialEntries: ['/gastos', '/gastos/categorias'], initialIndex: 1 },
+    { initialEntries: [LEGACY_EXPENSES, LEGACY_EXPENSE_CATEGORIES], initialIndex: 1 },
   )
   render(<RouterProvider router={router} />)
 
-  expect(router.state.location.pathname).toBe('/settings/expense-categories')
+  expect(router.state.location.pathname).toBe(EXPENSE_CATEGORIES)
   expect(router.state.historyAction).toBe('REPLACE')
   expect(screen.getByRole('heading', { name: 'Categorías de gastos' })).toBeInTheDocument()
 })

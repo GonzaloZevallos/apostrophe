@@ -29,6 +29,7 @@
  * one source of a line's message, in the plan's priority order.
  */
 
+import { SALE, SALES, pathTo } from '../../routes'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useOutletContext } from 'react-router'
@@ -411,7 +412,7 @@ export default function NuevaVenta() {
   }
 
   function goBack(): void {
-    if (location.key === 'default') navigate('/ventas')
+    if (location.key === 'default') navigate(SALES)
     else navigate(-1)
   }
 
@@ -467,7 +468,7 @@ export default function NuevaVenta() {
     try {
       const saved = await save.mutateAsync(body)
       disarm()
-      navigate(`/ventas/${saved.id}`, { replace: true, state: saleJustSaved() })
+      navigate(pathTo(SALE, { id: saved.id }), { replace: true, state: saleJustSaved() })
     } catch (caught) {
       if (caught instanceof ApiError && caught.status === 401) {
         // The session boundary already cleared the cache and is navigating to

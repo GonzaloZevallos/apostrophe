@@ -6,6 +6,7 @@
  * record a new entry — nothing here is computed by the front (plan, invariants).
  */
 
+import { STOCK, STOCK_ENTRY_NEW } from '../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
@@ -30,10 +31,10 @@ function renderStock(fetchImpl: (url: string) => Promise<Response>) {
   vi.stubGlobal('fetch', vi.fn(fetchImpl))
   render(
     <QueryClientProvider client={new QueryClient()}>
-      <MemoryRouter initialEntries={['/mi-stock']}>
+      <MemoryRouter initialEntries={[STOCK]}>
         <Routes>
           <Route element={<Provide />}>
-            <Route path="/mi-stock" element={<Stock />} />
+            <Route path={STOCK} element={<Stock />} />
           </Route>
         </Routes>
       </MemoryRouter>
@@ -114,7 +115,7 @@ test('no entries at all shows the empty state, with a way to record the first en
   expect(screen.getByText('Cargá tu stock inicial o una compra')).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Nueva entrada' })).toHaveAttribute(
     'href',
-    '/mi-stock/nueva-entrada',
+    STOCK_ENTRY_NEW,
   )
 })
 

@@ -8,6 +8,7 @@
  * this subtask replaces.
  */
 
+import { HOME, SALE, SALES, SALE_NEW, pathTo } from '../../routes'
 import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
@@ -45,11 +46,11 @@ function setupFetch(handlers: Record<string, () => Response>): ReturnType<typeof
 
 async function openForm(handlers: Record<string, () => Response>): Promise<ReturnType<typeof vi.fn>> {
   const fetchMock = setupFetch(handlers)
-  // Via `/ventas` first, as the design's own "Nueva venta" button always does
+  // Via /ventas first, as the design's own "Nueva venta" button always does
   // (`Inicio.dc.html`/`Ventas.dc.html`): the back chevron's `navigate(-1)` then
   // has something real to land on, the same page a seller actually came from.
-  await act(() => router.navigate('/ventas'))
-  await act(() => router.navigate('/ventas/nueva'))
+  await act(() => router.navigate(SALES))
+  await act(() => router.navigate(SALE_NEW))
   render(<App />)
   await screen.findByText('Nueva venta')
   return fetchMock
@@ -58,7 +59,7 @@ async function openForm(handlers: Record<string, () => Response>): Promise<Retur
 afterEach(async () => {
   vi.unstubAllGlobals()
   queryClient.clear()
-  await act(() => router.navigate('/'))
+  await act(() => router.navigate(HOME))
 })
 
 test('the live preview prices a list line as the sale types, with no save call', async () => {
@@ -171,7 +172,7 @@ test('a successful save opens the sale the API answered with, replacing history'
   await user.click(screen.getByRole('radio', { name: 'Efectivo' }))
   await user.click(screen.getByRole('button', { name: 'Guardá la venta' }))
 
-  await waitFor(() => expect(router.state.location.pathname).toBe('/ventas/42'))
+  await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(SALE, { id: 42 })))
   expect(await screen.findByText('Venta guardada')).toBeInTheDocument()
 })
 
@@ -190,7 +191,7 @@ test('an untouched form closes at once; a touched one asks "¿Descartás la vent
     await screen.findByText('Ventas', { selector: '.encabezado__titulo' }),
   ).toBeInTheDocument()
 
-  await act(() => router.navigate('/ventas/nueva'))
+  await act(() => router.navigate(SALE_NEW))
   await screen.findByText('Nueva venta')
   await user.type(screen.getByLabelText('Gramos línea 1'), '2')
   await user.click(screen.getByRole('button', { name: 'Volver' }))
@@ -372,7 +373,7 @@ test('nothing an earlier mount cached ever renders: a remount with a different p
   // fetch — reading `listPrice` fresh — is the one this assertion prices, never
   // the one the previous mount already cached.
   queryClient.clear()
-  await act(() => router.navigate('/ventas/nueva'))
+  await act(() => router.navigate(SALE_NEW))
   await screen.findByText('Nueva venta')
   await user.selectOptions(await screen.findByLabelText('Variedad línea 1'), '1')
   await user.type(screen.getByLabelText('Gramos línea 1'), '2')
@@ -427,7 +428,7 @@ test('"Nueva venta a <name>" prices a VIP customer at the bulk rate below the bu
     'GET /varieties?on=2026-10-02': () => jsonResponse(200, [WITH_BULK]),
     'GET /customers/7': () => jsonResponse(200, VIP_ANA),
   })
-  await act(() => router.navigate('/ventas/nueva', { state: { customerId: '7' } }))
+  await act(() => router.navigate(SALE_NEW, { state: { customerId: '7' } }))
   render(<App />)
   await screen.findByText('Nueva venta')
 

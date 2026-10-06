@@ -6,6 +6,7 @@
  * The API is faked at `fetch`.
  */
 
+import { EXPENSE_CATEGORIES, SETTINGS } from '../../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -30,11 +31,11 @@ function renderGroup(fetchImpl: Fetch) {
   vi.stubGlobal('fetch', vi.fn(fetchImpl))
   const router = createMemoryRouter(
     [
-      { path: '/settings', element: <div>Lista de grupos</div> },
-      { path: '/settings/expense-categories', element: <ExpenseCategoriesGroup /> },
+      { path: SETTINGS, element: <div>Lista de grupos</div> },
+      { path: EXPENSE_CATEGORIES, element: <ExpenseCategoriesGroup /> },
     ],
     {
-      initialEntries: ['/settings', { pathname: '/settings/expense-categories', state: { inApp: true } }],
+      initialEntries: [SETTINGS, { pathname: EXPENSE_CATEGORIES, state: { inApp: true } }],
       initialIndex: 1,
     },
   )

@@ -24,6 +24,7 @@
  * several amounts through the panel alone.
  */
 
+import { CUSTOMER, CUSTOMER_NEW, HOME, SALES, STOCK_ENTRY_NEW, VARIETIES, pathTo } from '../src/routes.js'
 import { expect, test } from '@playwright/test'
 import { newBusinessInvitationUrl } from './backend.js'
 import { watchConsole } from './console.js'
@@ -177,7 +178,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // A priced variety.
-  await page.goto('/variedades')
+  await page.goto(VARIETIES)
   await page.getByRole('button', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Rosa')
   await page.getByRole('button', { name: 'Guardar' }).click()
@@ -193,7 +194,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await expect(page.getByText('Precio guardado')).toBeVisible()
 
   // A purchase: the "Origen" pill defaults to "Compra" (`EntradaStock.tsx`).
-  await page.goto('/mi-stock/nueva-entrada')
+  await page.goto(STOCK_ENTRY_NEW)
   await page.getByLabel('Gramos').fill('50')
   await page.getByLabel('Variedad').selectOption({ label: 'Rosa' })
   await expect(page.getByRole('button', { name: 'Compra' })).toHaveAttribute('aria-pressed', 'true')
@@ -202,7 +203,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await expect(page.getByText('Entrada guardada')).toBeVisible()
 
   // A customer, for the sale left owing.
-  await page.goto('/clientes/nuevo')
+  await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Teléfono').fill('+5491155550077')
   await page.getByLabel('Nombre').fill('Carla Pérez')
   await page.getByRole('button', { name: 'Guardá y usá' }).click()
@@ -220,7 +221,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await expect(page.getByText('Venta guardada')).toBeVisible()
 
   // A sale paid on the spot, no customer.
-  await page.goto('/ventas')
+  await page.goto(SALES)
   await page.getByRole('link', { name: 'Nueva venta' }).click()
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '3' })
   await page.getByRole('radio', { name: 'Efectivo' }).check()
@@ -282,7 +283,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
     fetch('/panel', { credentials: 'include' }).then((response) => response.json() as Promise<PanelAnswer>),
   )
 
-  await page.goto('/')
+  await page.goto(HOME)
   await expect(page.locator('.encabezado__titulo')).toHaveText('Inicio')
 
   async function assertPeriod(period: PanelPeriod, rangeText: string): Promise<void> {
@@ -381,7 +382,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
 
   // The teaser: Carla's own row, opening her card.
   await page.getByRole('link', { name: teaserRow.name }).click()
-  await expect(page).toHaveURL(new RegExp(`/clientes/${teaserRow.customer_id}$`))
+  await expect(page).toHaveURL(new RegExp(`${pathTo(CUSTOMER, { id: teaserRow.customer_id })}$`))
   await expect(page.locator('.encabezado__titulo')).toHaveText(teaserRow.name)
   await expect(page.getByText(`Te debe ${pesos(teaserRow.balance)}`)).toBeVisible()
 

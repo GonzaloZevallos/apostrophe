@@ -13,6 +13,7 @@
  * number.
  */
 
+import { CUSTOMER, CUSTOMERS, SALE_NEW, pathTo } from '../../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -51,12 +52,12 @@ function renderFicha(id: string) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[`/clientes/${id}`]}>
+      <MemoryRouter initialEntries={[pathTo(CUSTOMER, { id })]}>
         <Routes>
           <Route element={<Context />}>
-            <Route path="/clientes/:id" element={<ClienteFicha />} />
-            <Route path="/clientes" element={<span>la lista</span>} />
-            <Route path="/ventas/nueva" element={<NuevaVentaStub />} />
+            <Route path={CUSTOMER} element={<ClienteFicha />} />
+            <Route path={CUSTOMERS} element={<span>la lista</span>} />
+            <Route path={SALE_NEW} element={<NuevaVentaStub />} />
           </Route>
         </Routes>
       </MemoryRouter>
@@ -106,7 +107,7 @@ test('a customer that is gone shows the gone screen, with a way back to the list
   expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Volver a Clientes' })).toHaveAttribute(
     'href',
-    '/clientes',
+    CUSTOMERS,
   )
   expect(screen.queryByText(/999/)).not.toBeInTheDocument()
 })
@@ -162,7 +163,7 @@ test('"Nueva venta a <name>" opens the sale form with this customer chosen, by i
   renderFicha('3')
 
   const link = await screen.findByRole('link', { name: 'Nueva venta a Fer' })
-  expect(link).toHaveAttribute('href', '/ventas/nueva')
+  expect(link).toHaveAttribute('href', SALE_NEW)
   await userEvent.click(link)
 
   expect(await screen.findByText('Nueva venta para 3')).toBeInTheDocument()

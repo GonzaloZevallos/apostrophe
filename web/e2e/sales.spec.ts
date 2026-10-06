@@ -46,6 +46,7 @@
  * there.
  */
 
+import { CUSTOMERS, SALES, VARIETIES } from '../src/routes.js'
 import { expect, test } from '@playwright/test'
 import { newBusinessInvitationUrl } from './backend.js'
 import { watchConsole } from './console.js'
@@ -134,7 +135,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   // perf sections below seed sales for on dates before today — a default "Rige
   // desde" of today would leave those earlier dates with no price of their own.
   async function addVariety(name: string, listPrice?: string, effectiveFrom?: string): Promise<void> {
-    await page.goto('/variedades')
+    await page.goto(VARIETIES)
     await page.getByRole('button', { name: 'Nueva variedad' }).click()
     await page.getByLabel('Nombre').fill(name)
     await page.getByRole('button', { name: 'Guardar' }).click()
@@ -151,7 +152,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   await addVariety('Lirio', '300')
   await addVariety('Mimosa')
 
-  await page.goto('/ventas')
+  await page.goto(SALES)
 
   // Shell metric: the bar shows exactly Inicio, Ventas, Clientes, Stock and Más, in that
   // order — the mobile bottom bar at this viewport (`Shell.tsx`'s `.bar-inferior`;
@@ -255,7 +256,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   await expect(page.getByText('Todavía no registraste ninguna venta en este período.')).toBeVisible()
 
   // --- Sale B: "Nueva venta a <name>", a gift line, no payment needed for $0. ---
-  await page.goto('/clientes')
+  await page.goto(CUSTOMERS)
   await page.getByRole('link', { name: 'Carla Pérez' }).click()
   await page.getByRole('link', { name: 'Nueva venta a Carla Pérez' }).click()
   await expect(page).toHaveURL(/\/ventas\/nueva$/)
@@ -282,7 +283,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   await expect(page.getByRole('button', { name: 'Asignar cliente' })).toHaveCount(0) // already has one.
 
   // --- Sale C: no customer, assigned afterwards, then deleted. ---
-  await page.goto('/ventas')
+  await page.goto(SALES)
   await page.getByRole('link', { name: 'Nueva venta' }).last().click()
   const saleCStart = Date.now()
   await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '2' })
@@ -356,7 +357,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   // N ventas", `Ventas.tsx`'s `ventas__rango`), not a standalone node — checked by
   // substring (`toContainText`), and the total through its own `ventas__total`
   // class, which replaced the oversized shared `.cifra-xl`.
-  await page.goto('/ventas')
+  await page.goto(SALES)
   const hoy = expectedFor(todayIso, todayIso)
   await expect(page.locator('.ventas__rango')).toContainText(countLabel(hoy.count))
   await expect(page.locator('.ventas__total')).toHaveText(pesos(hoy.total))

@@ -18,6 +18,7 @@
  * same breakpoint `sales.spec.ts` uses.
  */
 
+import { HOME, LOGIN, SETTINGS_ACCOUNT } from '../src/routes.js'
 import { expect, test } from '@playwright/test'
 import { newBusinessInvitationUrl, resetLink, supportsPasswordReset } from './backend.js'
 import { watchConsole } from './console.js'
@@ -54,7 +55,7 @@ test('changes a password from Configuración → Tu cuenta in under a minute, si
   const otherContext = await browser.newContext()
   const otherPage = await otherContext.newPage()
   watchConsole(otherPage, consoleMessages)
-  await otherPage.goto('/entrar')
+  await otherPage.goto(LOGIN)
   await otherPage.getByLabel('Email').fill(ownerEmail)
   await otherPage.getByLabel('Contraseña').fill(PASSWORD)
   await otherPage.getByRole('button', { name: 'Entrá' }).click()
@@ -62,7 +63,7 @@ test('changes a password from Configuración → Tu cuenta in under a minute, si
 
   const startedAt = Date.now()
 
-  await page.goto('/settings/account')
+  await page.goto(SETTINGS_ACCOUNT)
   await page.getByRole('button', { name: 'Cambiar contraseña' }).click()
   const sheet = page.locator('.capa')
   await sheet.getByLabel('Contraseña actual').fill(PASSWORD)
@@ -75,7 +76,7 @@ test('changes a password from Configuración → Tu cuenta in under a minute, si
   // This device stays signed in: `.encabezado__negocio` only renders on Inicio
   // (`Inicio.tsx`), never on a Configuración group itself, so the check navigates home rather
   // than reloading the settings screen it was already on.
-  await page.goto('/')
+  await page.goto(HOME)
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // The older device is signed out: its gated calls now answer 401, which is

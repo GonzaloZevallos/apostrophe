@@ -1,3 +1,4 @@
+import { HOME } from '../routes'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
@@ -44,10 +45,10 @@ function Form({ startDirty }: { startDirty: boolean }) {
 function renderForm(startDirty: boolean) {
   const router = createMemoryRouter(
     [
-      { path: '/', element: <Form startDirty={startDirty} /> },
+      { path: HOME, element: <Form startDirty={startDirty} /> },
       { path: '/afuera', element: <h1>Afuera</h1> },
     ],
-    { initialEntries: ['/'] },
+    { initialEntries: [HOME] },
   )
   render(<RouterProvider router={router} />)
   return router
@@ -70,12 +71,12 @@ test('a dirty form blocks and asks with the caller wording; keeping stays, disca
   await user.click(screen.getByRole('button', { name: 'Escribir' }))
   await user.click(screen.getByRole('button', { name: 'Salir' }))
 
-  expect(router.state.location.pathname).toBe('/')
+  expect(router.state.location.pathname).toBe(HOME)
   expect(screen.getByRole('alertdialog', { name: '¿Descartás los cambios?' })).toBeInTheDocument()
   expect(screen.getByText('No vas a poder recuperarlos.')).toBeInTheDocument()
 
   await user.click(screen.getByRole('button', { name: 'No, seguí editando' }))
-  expect(router.state.location.pathname).toBe('/')
+  expect(router.state.location.pathname).toBe(HOME)
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
 
   await user.click(screen.getByRole('button', { name: 'Salir' }))

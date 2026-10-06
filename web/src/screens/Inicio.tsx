@@ -22,6 +22,7 @@
  * first Publicar").
  */
 
+import { CATALOG, CUSTOMER, CUSTOMERS_OWING, SETTINGS, pathTo } from '../routes'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useOutletContext } from 'react-router'
@@ -116,7 +117,7 @@ export default function Inicio() {
             <span className="encabezado__titulo">Inicio</span>
           </div>
           <Link
-            to="/settings"
+            to={SETTINGS}
             state={{ inApp: true }}
             aria-label={`Configuración de ${me.business_name}`}
             className="inicio__avatar"
@@ -126,7 +127,7 @@ export default function Inicio() {
         </div>
 
         {pinOutOfDate && (
-          <Link to="/catalogo" className="aviso-ambar" role="status">
+          <Link to={CATALOG} className="aviso-ambar" role="status">
             <span className="aviso-ambar__titulo">{PINNED_CATALOG_OUT_OF_DATE}</span>
           </Link>
         )}
@@ -276,7 +277,7 @@ function TeDebenBlock({ debts }: { debts: PanelDebts }) {
 
   return (
     <div className="bloque-deben">
-      <Link to="/clientes/deben" className="bloque-deben__titulo">
+      <Link to={CUSTOMERS_OWING} className="bloque-deben__titulo">
         Te deben
       </Link>
       <span className="cifra-xl">{formatMoney(debts.total_owed)}</span>
@@ -285,7 +286,7 @@ function TeDebenBlock({ debts }: { debts: PanelDebts }) {
         {debts.oldest !== null && ` · desde ${formatDateShort(debts.oldest)}`}
       </span>
       {debts.teaser.map((row) => (
-        <Link key={row.customer_id} to={`/clientes/${row.customer_id}`} className="bloque-deben__fila">
+        <Link key={row.customer_id} to={pathTo(CUSTOMER, { id: row.customer_id })} className="bloque-deben__fila">
           <span>{row.name}</span>
           <span>{formatMoney(row.balance)}</span>
           <span className="pie">{`desde ${formatDateShort(row.owing_since)}`}</span>

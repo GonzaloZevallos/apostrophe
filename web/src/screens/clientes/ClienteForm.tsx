@@ -1,6 +1,6 @@
 /**
  * The "Nuevo cliente" form (`NuevaVentaCliente.dc.html`), shared by add
- * (`/clientes/nuevo`) and edit (`/clientes/:id/editar`): only the name is required
+ * (/clientes/nuevo) and edit (`/clientes/:id/editar`): only the name is required
  * (GH-54, "a customer's phone number is optional"); the phone field stays, and
  * clearing it on edit is just an ordinary save — the form never rewrites `''` to
  * `null` or tests it for emptiness; that is the domain's job alone (invariants).
@@ -16,6 +16,7 @@
  * `set-state-in-effect`).
  */
 
+import { CUSTOMER, CUSTOMERS, pathTo } from '../../routes'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { type FormEvent, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
@@ -70,7 +71,7 @@ export default function ClienteForm({ mode }: Props) {
 
   if (existing.isError) {
     if (existing.error instanceof ApiError && isGone(existing.error.code)) {
-      return <GoneScreen label="Clientes" to="/clientes" />
+      return <GoneScreen label="Clientes" to={CUSTOMERS} />
     }
     if (existing.error instanceof NetworkError) {
       return (
@@ -142,9 +143,9 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
       await save.mutateAsync({ name, phone, channel, vip })
       invalidateResource(queryClient, 'customers')
       if (mode === 'nuevo') {
-        navigate('/clientes', { state: toast(SAVED_TOAST) })
+        navigate(CUSTOMERS, { state: toast(SAVED_TOAST) })
       } else {
-        navigate(`/clientes/${customerId}`, { state: toast(SAVED_TOAST) })
+        navigate(pathTo(CUSTOMER, { id: customerId }), { state: toast(SAVED_TOAST) })
       }
     } catch (caught) {
       if (caught instanceof ApiError && caught.status === 401) {
@@ -155,7 +156,7 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
       }
       if (caught instanceof ApiError && mode === 'editar' && isGone(caught.code)) {
         invalidateResource(queryClient, 'customers')
-        navigate('/clientes', { state: gone() })
+        navigate(CUSTOMERS, { state: gone() })
         return
       }
       if (caught instanceof ApiError) {

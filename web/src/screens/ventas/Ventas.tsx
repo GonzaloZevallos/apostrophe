@@ -20,6 +20,7 @@
  * own left-out list.
  */
 
+import { SALE, pathTo } from '../../routes'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useLocation, useOutletContext } from 'react-router'
@@ -165,7 +166,7 @@ export default function Ventas() {
                 const names = varietyNames(sale.lines)
                 const gramos = formatGrams(saleGrams(sale.lines))
                 return (
-                  <Link key={sale.id} to={`/ventas/${sale.id}`} className="fila-venta">
+                  <Link key={sale.id} to={pathTo(SALE, { id: sale.id })} className="fila-venta">
                     <span className="fila-venta__fecha">{formatDate(sale.date, me.today)}</span>
                     <span className="fila-venta__cuerpo">
                       <span className="fila-venta__nombre">

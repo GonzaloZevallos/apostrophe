@@ -31,7 +31,7 @@ import SinConexion from '../components/SinConexion'
 import PinPublish from './PinPublish'
 import { CATALOG_SAVED } from './settings/messages'
 import { telegramPreview } from './telegramPreview'
-import { MORE } from '../routes'
+import { MORE, SETTINGS_CATALOG_MESSAGE } from '../routes'
 
 export const CATALOG_COPIED = 'Catálogo copiado'
 export const COPY_FAILED_MESSAGE = 'No se pudo copiar.'
@@ -367,7 +367,7 @@ export default function Catalogo() {
                 </span>
               </div>
               <Link
-                to="/settings/catalog-message"
+                to={SETTINGS_CATALOG_MESSAGE}
                 state={{ inApp: true }}
                 className="boton-enlace"
               >

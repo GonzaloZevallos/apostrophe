@@ -23,7 +23,7 @@ function api(): FetchImpl {
     const method = init?.method ?? 'GET'
     if (url.startsWith('/expense-categories') && method === 'GET') return jsonResponse(200, CATEGORIES)
     if (url.startsWith('/expenses?month=') && method === 'GET') return jsonResponse(200, EMPTY_VIEW)
-    if (url === '/expenses' && method === 'POST') {
+    if (url === EXPENSES && method === 'POST') {
       return jsonResponse(201, { id: 10, spent_on: ME.today, category_id: 1, amount: 1000, detail: 'Cinta' })
     }
     throw new Error(`unexpected ${method} ${url}`)
@@ -106,7 +106,7 @@ test('confirming the discard leaves the form and saves nothing', async () => {
 
   expect(await screen.findByText('Pantalla Más')).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(MORE)
-  expect(fetch).not.toHaveBeenCalledWith('/expenses', expect.objectContaining({ method: 'POST' }))
+  expect(fetch).not.toHaveBeenCalledWith(EXPENSES, expect.objectContaining({ method: 'POST' }))
 })
 
 test('with no history, closing goes to Gastos on the current month', async () => {

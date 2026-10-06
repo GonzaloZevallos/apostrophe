@@ -42,7 +42,9 @@ export function renderExpenses(initialEntries: string[], fetchImpl: FetchImpl) {
           {
             element: <Shell />,
             children: [
-              { path: relative(MORE), 
+              {
+                path: relative(MORE),
+                handle: { screen: 'more' },
                 element: (
                   <main>
                     <span>Pantalla Más</span>
@@ -50,11 +52,11 @@ export function renderExpenses(initialEntries: string[], fetchImpl: FetchImpl) {
                   </main>
                 ),
               },
-              { path: relative(EXPENSES), element: <Gastos />, handle: { tab: 'more' } },
+              { path: relative(EXPENSES), element: <Gastos />, handle: { screen: 'expenses' } },
               {
                 path: relative(EXPENSE_NEW),
                 element: <ExpenseNewRoute />,
-                handle: { chrome: 'none', tab: 'more' },
+                handle: { screen: 'expense-new' },
               },
             ],
           },

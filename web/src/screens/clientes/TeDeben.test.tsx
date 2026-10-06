@@ -5,6 +5,7 @@
  * `GET /payments/debtors` alone (payments.md, "Who owes and the totals").
  */
 
+import { CUSTOMER, CUSTOMERS, CUSTOMERS_OWING } from '../../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
@@ -23,10 +24,10 @@ function renderTeDeben() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={['/clientes/deben']}>
+      <MemoryRouter initialEntries={[CUSTOMERS_OWING]}>
         <Routes>
-          <Route path="/clientes/deben" element={<TeDeben />} />
-          <Route path="/clientes/:id" element={<span>ficha</span>} />
+          <Route path={CUSTOMERS_OWING} element={<TeDeben />} />
+          <Route path={CUSTOMER} element={<span>ficha</span>} />
         </Routes>
       </MemoryRouter>
     </QueryClientProvider>,
@@ -58,7 +59,7 @@ test("heads with the total owed and lists debtors in the API's own order", async
 
   expect(await screen.findByText(`$ ${debtorsFixture.total_owed.toLocaleString('es-AR')}`)).toBeInTheDocument()
 
-  const rows = screen.getAllByRole('link').filter((link) => link.getAttribute('href')?.startsWith('/clientes/'))
+  const rows = screen.getAllByRole('link').filter((link) => link.getAttribute('href')?.startsWith(`${CUSTOMERS}/`))
   expect(rows.map((row) => row.textContent)).toEqual([
     'Ana Pérez$ 15.000desde 14/09',
     'Beto$ 22.000desde 20/09',

@@ -1,6 +1,6 @@
 /**
  * `Clientes` at the screen seam (CODING_STANDARDS §10): Testing Library, `fetch`
- * faked. Search lives in the `/clientes` layout's context, never the URL
+ * faked. Search lives in the /clientes layout's context, never the URL
  * (plan, invariants); a stale answer is only ever shown marked pending, never as
  * the answer to the query currently typed (`customers.md`, "List and search").
  *
@@ -12,6 +12,7 @@
  * search list's own.
  */
 
+import { CUSTOMERS, CUSTOMERS_OWING } from '../../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -52,10 +53,10 @@ function renderClientes() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={['/clientes']}>
+      <MemoryRouter initialEntries={[CUSTOMERS]}>
         <Routes>
           <Route element={<ClientesLayout />}>
-            <Route path="/clientes" element={<Clientes />} />
+            <Route path={CUSTOMERS} element={<Clientes />} />
           </Route>
         </Routes>
       </MemoryRouter>
@@ -192,7 +193,7 @@ test('the header reads "N clientes · M te deben $ X", and tapping the debt part
   const link = screen.getByRole('link', {
     name: `${debtorsFixture.debtors.length} te deben $ ${debtorsFixture.total_owed.toLocaleString('es-AR')}`,
   })
-  expect(link).toHaveAttribute('href', '/clientes/deben')
+  expect(link).toHaveAttribute('href', CUSTOMERS_OWING)
 })
 
 test('with no debtors, the header shows no debt part', async () => {

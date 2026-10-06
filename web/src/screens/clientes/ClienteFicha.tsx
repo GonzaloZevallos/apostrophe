@@ -10,6 +10,7 @@
  * (ADR-0004).
  */
 
+import { CUSTOMERS, CUSTOMER_EDIT, SALE_NEW, pathTo } from '../../routes'
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useLocation, useOutletContext, useParams } from 'react-router'
@@ -166,7 +167,7 @@ export default function ClienteFicha() {
 
   if (isError) {
     if (error instanceof ApiError && isGone(error.code)) {
-      return <GoneScreen label="Clientes" to="/clientes" />
+      return <GoneScreen label="Clientes" to={CUSTOMERS} />
     }
     if (error instanceof NetworkError) {
       return (
@@ -202,9 +203,9 @@ export default function ClienteFicha() {
     <main className="pantalla">
       <div className="cuerpo">
         <div>
-          <Link to="/clientes">Volver</Link>
+          <Link to={CUSTOMERS}>Volver</Link>
           <span className="encabezado__titulo">{data.name}</span>
-          <Link to={`/clientes/${customerId}/editar`}>Editar</Link>
+          <Link to={pathTo(CUSTOMER_EDIT, { id: customerId })}>Editar</Link>
         </div>
         {feedback !== null && <Notice kind={feedback.kind} message={feedback.message} />}
         {accountGone && <Notice kind="notice" message={GONE_NOTICE} />}
@@ -291,7 +292,7 @@ export default function ClienteFicha() {
           })}
         </div>
 
-        <Link to="/ventas/nueva" state={newSaleFor(customerId)} className="boton">
+        <Link to={SALE_NEW} state={newSaleFor(customerId)} className="boton">
           Nueva venta a {data.name}
         </Link>
       </div>

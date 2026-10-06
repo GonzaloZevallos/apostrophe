@@ -7,6 +7,7 @@
  * different answer never showing the first answer's figures (`gcTime: 0`).
  */
 
+import { CATALOG, HOME, SETTINGS } from '../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -59,7 +60,7 @@ function renderInicio(
 ) {
   return render(
     <QueryClientProvider client={client}>
-      <MemoryRouter initialEntries={['/']}>
+      <MemoryRouter initialEntries={[HOME]}>
         <Routes>
           <Route element={<Provide />}>
             <Route index element={<Inicio />} />
@@ -82,7 +83,7 @@ test('the business avatar at the top opens Configuración in one tap, carrying i
   renderInicio()
 
   const avatar = await screen.findByRole('link', { name: 'Configuración de La Huerta' })
-  expect(avatar).toHaveAttribute('href', '/settings')
+  expect(avatar).toHaveAttribute('href', SETTINGS)
   expect(avatar).toHaveTextContent('LH')
   // The name stays above the title, as the design draws it.
   expect(screen.getByText('La Huerta')).toBeInTheDocument()
@@ -345,5 +346,5 @@ test('shows the fixed pinned-catalog notice while the pin is out of date', async
   renderInicio()
 
   const notice = await screen.findByText(PINNED_CATALOG_OUT_OF_DATE)
-  expect(notice.closest('a')).toHaveAttribute('href', '/catalogo')
+  expect(notice.closest('a')).toHaveAttribute('href', CATALOG)
 })

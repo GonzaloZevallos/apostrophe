@@ -1,6 +1,6 @@
 /**
  * `Clientes`: the list, with search by part of the name or of the phone number
- * (`customers.md`). The query lives in the `/clientes` layout route's context,
+ * (`customers.md`). The query lives in the /clientes layout route's context,
  * never in the URL (plan, invariants: "No customer search query ... in a front
  * URL"). Debounced at 150 ms before it becomes the query key
  * (`keys.customers(q)`), so a result that is still catching up to a newer
@@ -10,6 +10,7 @@
  * of a misleading "no customers yet" (PRD, "Feedback").
  */
 
+import { CUSTOMER, CUSTOMERS_OWING, CUSTOMER_NEW, pathTo } from '../../routes'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router'
@@ -73,7 +74,7 @@ export default function Clientes() {
           {debtors.data !== undefined && debtors.data.debtors.length > 0 && (
             <>
               {' · '}
-              <Link to="/clientes/deben">
+              <Link to={CUSTOMERS_OWING}>
                 {`${debtors.data.debtors.length} te deben ${formatMoney(debtors.data.total_owed)}`}
               </Link>
             </>
@@ -90,7 +91,7 @@ export default function Clientes() {
             onChange={(event) => setQuery(event.target.value)}
           />
         </label>
-        <Link className="boton" to="/clientes/nuevo">
+        <Link className="boton" to={CUSTOMER_NEW}>
           Nuevo cliente
         </Link>
         {isError && error instanceof NetworkError && <SinConexion />}
@@ -108,7 +109,7 @@ export default function Clientes() {
             {customers.map((customer) => (
               <Link
                 key={customer.id}
-                to={`/clientes/${customer.id}`}
+                to={pathTo(CUSTOMER, { id: customer.id })}
                 className="lista-clientes__fila"
               >
                 <span className="lista-clientes__nombre">

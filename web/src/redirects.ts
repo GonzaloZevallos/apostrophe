@@ -6,6 +6,7 @@
  * `/`; it is not an entry here.
  */
 
+import { EXPENSE_CATEGORIES, LEGACY_BUSINESS, LEGACY_EXPENSE_CATEGORIES, SETTINGS } from './routes'
 import { createElement } from 'react'
 import { Navigate, type RouteObject } from 'react-router'
 
@@ -15,8 +16,8 @@ export interface Redirect {
 }
 
 export const redirects: readonly Redirect[] = [
-  { from: '/negocio', to: '/settings' },
-  { from: '/gastos/categorias', to: '/settings/expense-categories' },
+  { from: LEGACY_BUSINESS, to: SETTINGS },
+  { from: LEGACY_EXPENSE_CATEGORIES, to: EXPENSE_CATEGORIES },
 ]
 
 /** The table as routes the router can mount beside its own, each a `<Navigate replace>`. */

@@ -12,11 +12,12 @@
  * navigate function yet and a 401 does nothing — the same as on a public route.
  */
 
+import { HOME } from './routes'
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query'
 import { ApiError } from './api/client'
 import { handleUnauthorized } from './session'
 
-let currentPath = '/'
+let currentPath = HOME
 let navigateRef: ((path: string) => void) | null = null
 
 export function setCurrentPath(path: string): void {

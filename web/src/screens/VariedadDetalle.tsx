@@ -6,6 +6,7 @@
  * plain gone-detail state, never the generic retry (plan, "Gone records").
  */
 
+import { VARIETIES } from '../routes'
 import { type FormEvent, useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useOutletContext, useParams } from 'react-router'
@@ -298,7 +299,7 @@ export default function VariedadDetalle() {
           <div className="cuerpo">
             <div className="estado-vacio">
               <span className="estado-vacio__titulo">{GONE_DETAIL}</span>
-              <Link to="/variedades" className="boton">
+              <Link to={VARIETIES} className="boton">
                 Volver a Variedades
               </Link>
             </div>

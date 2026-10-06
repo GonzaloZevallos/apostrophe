@@ -7,48 +7,42 @@
  * four, a divider, then Gastos, Análisis and Más, as `GastosCompu.dc.html` draws the
  * sidebar. Más stays on the rail until the issue that empties it removes it, in the
  * same diff, so nothing a seller reaches today through Más is lost; Gastos and
- * Análisis never depend on it. Paths of the screens that moved come from `routes.ts`.
+ * Análisis never depend on it.
  *
- * Active state, per surface, at most one entry each (`aria-current="page"`): the rail
- * marks its entry by path alone (`NavLink`), so `/expenses/new` marks Gastos; the bar
- * marks Más for the screens reached from it through `barActiveTab(matches)`, the
- * deepest `handle.tab`, and with none declared falls back to the path. The active
- * entry is also bold and, in the rail, filled: never color alone.
+ * Everything the shell decides comes from the leaf route's registry entry (`routes.ts`),
+ * found through the route's `handle.screen`: its kind sets the chrome (a root shows the
+ * bar and "+ Nueva venta", a card the bar alone, a form neither), and `placeOf(id,
+ * viewport)` says which entry each surface marks. Never the pathname, never history, so a
+ * reload or a saved link marks the same entry. At most one entry per surface carries
+ * `aria-current="page"`, and it is also bold and, in the rail, filled: never color alone.
+ * The bar marks with `placeOf(id, 'phone').bar`, the rail with `placeOf(id, 'computer').rail`,
+ * since both are in the DOM and CSS picks one.
  *
- * `useOutletContext` passes `me` on to whatever the active
- * route renders (`Inicio` first; the screen subtasks' routes next), so none of them
+ * `useOutletContext` passes `me` on to whatever the active route renders, so none of them
  * has to re-run `GET /auth/me`.
- *
- * Chrome comes only from the route (plan, invariants: "Only `Shell.tsx` decides
- * whether the bottom bar and the 'Nueva venta' button render, from route
- * `handle.chrome` read with `useMatches()`; no pathname comparison decides it").
- * `useMatches()` returns the whole match chain root to leaf; the deepest one that
- * declares `handle.chrome` wins, so a parent's absence of a handle never
- * overrides a child's. `'none'` hides the fixed "Nueva venta" button everywhere,
- * and on the phone also drops the bottom bar outright — `NuevaVenta`'s own
- * `/ventas/nueva` and `VentaDetalle`'s `/ventas/:id` are the two routes that set
- * it (`router.tsx`). The side rail's destinations never disappear on the
- * computer: only its button does (plan, "Chrome"). `'card'` (Configuración's list) is
- * the third case: the bar or the rail stays and only "+ Nueva venta" goes.
  */
 
 import { Fragment } from 'react'
-import {
-  Link,
-  matchPath,
-  NavLink,
-  Outlet,
-  useLocation,
-  useMatches,
-  useOutletContext,
-} from 'react-router'
+import { Link, Outlet, useMatches, useOutletContext } from 'react-router'
 import type { Me } from '../api/me'
 import Icono, { type NombreIcono } from '../components/Icono'
-import { ANALYSIS, EXPENSES, MORE } from '../routes'
-import { barActiveTab } from './barActiveTab'
+import {
+  ANALYSIS,
+  EXPENSES,
+  HOME,
+  isScreenId,
+  MORE,
+  placeOf,
+  SALE_NEW,
+  SALES,
+  screenOf,
+  CUSTOMERS,
+  SETTINGS,
+  STOCK,
+  type RailPlace,
+  type Screen,
+} from '../routes'
 import { initialsOf } from './initials'
-
-const SETTINGS_PATH = '/settings'
 
 type Placement = 'bar' | 'rail' | 'both'
 
@@ -62,89 +56,51 @@ interface Item {
   icono?: NombreIcono
   placement: Placement
   group: Group
-  /** The `handle.tab` a route declares to mark this entry on the bar. */
-  tab?: string
+  /** The place a screen's registry entry names when this entry is the one to mark. */
+  place: RailPlace
 }
 
 const ITEMS: Item[] = [
+  { to: HOME, label: 'Inicio', icono: 'inicio', placement: 'both', group: 'main', place: 'home' },
+  { to: SALES, label: 'Ventas', icono: 'ventas', placement: 'both', group: 'main', place: 'sales' },
   {
-    to: '/',
-    label: 'Inicio',
-    icono: 'inicio',
-    placement: 'both',
-    group: 'main',
-  },
-  {
-    to: '/ventas',
-    label: 'Ventas',
-    icono: 'ventas',
-    placement: 'both',
-    group: 'main',
-  },
-  {
-    to: '/clientes',
+    to: CUSTOMERS,
     label: 'Clientes',
     icono: 'clientes',
     placement: 'both',
     group: 'main',
+    place: 'customers',
   },
-  {
-    to: '/mi-stock',
-    label: 'Stock',
-    icono: 'stock',
-    placement: 'both',
-    group: 'main',
-  },
-  { to: EXPENSES, label: 'Gastos', placement: 'rail', group: 'more' },
-  { to: ANALYSIS, label: 'Análisis', placement: 'rail', group: 'more' },
-  {
-    to: MORE,
-    label: 'Más',
-    icono: 'mas',
-    placement: 'both',
-    group: 'more',
-    tab: 'more',
-  },
+  { to: STOCK, label: 'Stock', icono: 'stock', placement: 'both', group: 'main', place: 'varieties' },
+  { to: EXPENSES, label: 'Gastos', placement: 'rail', group: 'more', place: 'expenses' },
+  { to: ANALYSIS, label: 'Análisis', placement: 'rail', group: 'more', place: 'analysis' },
+  { to: MORE, label: 'Más', icono: 'mas', placement: 'both', group: 'more', place: 'more' },
 ]
 
 const BAR_ITEMS = ITEMS.filter((item) => item.placement !== 'rail')
 const RAIL_ITEMS = ITEMS.filter((item) => item.placement !== 'bar')
 
-const NUEVA_VENTA_PATH = '/ventas/nueva'
-
-type Chrome = 'none' | 'card'
-
-function chromeOf(handle: unknown): Chrome | undefined {
-  if (typeof handle !== 'object' || handle === null || !('chrome' in handle)) return undefined
-  return handle.chrome === 'none' || handle.chrome === 'card' ? handle.chrome : undefined
-}
-
-/** The deepest match that declares `handle.chrome` wins — walk from the leaf
- * backwards and stop at the first one that has it. */
-function chromeFromMatches(matches: readonly { handle: unknown }[]): Chrome | undefined {
+/** The registry entry of the leaf route: the deepest match that names a screen. */
+function leafScreen(matches: readonly { handle: unknown }[]): Screen {
   for (const match of [...matches].reverse()) {
-    const chrome = chromeOf(match.handle)
-    if (chrome !== undefined) return chrome
+    const { handle } = match
+    if (typeof handle === 'object' && handle !== null && 'screen' in handle && isScreenId(handle.screen)) {
+      return screenOf(handle.screen)
+    }
   }
-  return undefined
+  throw new Error('Shell: the leaf route does not declare a screen (routes.ts)')
 }
 
-function railClassName(item: Item): (state: { isActive: boolean }) => string {
+function railClassName(item: Item, active: boolean): string {
   const base =
     item.group === 'more'
       ? 'riel-lateral__item riel-lateral__item--secundario'
       : 'riel-lateral__item'
-  return ({ isActive }) => (isActive ? `${base} riel-lateral__item--activo` : base)
+  return active ? `${base} riel-lateral__item--activo` : base
 }
 
-/** One bottom-bar entry. `Link`, not `NavLink`: with a `handle.tab` declared the bar
- * marks the entry the route names, whatever the path, and `NavLink` only knows paths. */
-function BarItem({ item, tab }: { item: Item; tab: string | undefined }) {
-  const { pathname } = useLocation()
-  const active =
-    tab !== undefined
-      ? item.tab === tab
-      : matchPath({ path: item.to, end: item.to === '/' }, pathname) !== null
+/** One bottom-bar entry; `active` is the registry's mark, not a path comparison. */
+function BarItem({ item, active }: { item: Item; active: boolean }) {
   return (
     <Link
       to={item.to}
@@ -159,57 +115,68 @@ function BarItem({ item, tab }: { item: Item; tab: string | undefined }) {
 
 export default function Shell() {
   const me = useOutletContext<Me>()
-  const matches = useMatches()
-  const chrome = chromeFromMatches(matches)
-  const tab = barActiveTab(matches)
-  const showNuevaVenta = chrome === undefined
+  const leaf = leafScreen(useMatches())
+  const barPlace = placeOf(leaf.id, 'phone').bar
+  const railPlace = placeOf(leaf.id, 'computer').rail
+  const showNuevaVenta = leaf.kind === 'root'
+  const showBar = leaf.kind !== 'form'
 
   return (
     <div className="disposicion">
       <nav className="riel-lateral" aria-label="Navegación">
         {showNuevaVenta && (
-          <Link to={NUEVA_VENTA_PATH} className="boton boton-nueva-venta--escritorio">
+          <Link to={SALE_NEW} className="boton boton-nueva-venta--escritorio">
             <Icono nombre="agregar" size={19} strokeWidth={2} />
             Nueva venta
           </Link>
         )}
-        {RAIL_ITEMS.map((item, index) => (
-          <Fragment key={item.to}>
-            {index > 0 && RAIL_ITEMS[index - 1]?.group !== item.group && (
-              <div role="separator" className="riel-lateral__divisor" />
-            )}
-            <NavLink to={item.to} end={item.to === '/'} className={railClassName(item)}>
-              {item.group === 'main' && item.icono !== undefined && <Icono nombre={item.icono} />}
-              {item.label}
-            </NavLink>
-          </Fragment>
-        ))}
-        <NavLink
-          to={SETTINGS_PATH}
+        {RAIL_ITEMS.map((item, index) => {
+          const active = railPlace === item.place
+          return (
+            <Fragment key={item.to}>
+              {index > 0 && RAIL_ITEMS[index - 1]?.group !== item.group && (
+                <div role="separator" className="riel-lateral__divisor" />
+              )}
+              <Link
+                to={item.to}
+                aria-current={active ? 'page' : undefined}
+                className={railClassName(item, active)}
+              >
+                {item.group === 'main' && item.icono !== undefined && <Icono nombre={item.icono} />}
+                {item.label}
+              </Link>
+            </Fragment>
+          )
+        })}
+        <Link
+          to={SETTINGS}
           state={{ inApp: true }}
           aria-label={`Configuración de ${me.business_name}`}
-          className={({ isActive }) =>
-            isActive ? 'riel-lateral__negocio riel-lateral__negocio--activo' : 'riel-lateral__negocio'
+          aria-current={railPlace === 'business' ? 'page' : undefined}
+          className={
+            railPlace === 'business'
+              ? 'riel-lateral__negocio riel-lateral__negocio--activo'
+              : 'riel-lateral__negocio'
           }
         >
           <span className="riel-lateral__avatar" aria-hidden="true">
             {initialsOf(me.business_name)}
           </span>
           <span className="riel-lateral__negocio-nombre">{me.business_name}</span>
-        </NavLink>
+        </Link>
       </nav>
       <div className="columna-principal">
         <Outlet context={me} />
         {showNuevaVenta && (
-          <Link to={NUEVA_VENTA_PATH} className="boton boton-nueva-venta">
+          <Link to={SALE_NEW} className="boton boton-nueva-venta">
             <Icono nombre="agregar" size={19} strokeWidth={2} />
             Nueva venta
           </Link>
         )}
-        {chrome !== 'none' && (
+        {showBar && (
           <nav className="bar-inferior" aria-label="Navegación">
             {BAR_ITEMS.map((item) => (
-              <BarItem key={item.to} item={item} tab={tab} />
+              <BarItem key={item.to} item={item} active={barPlace === item.place} />
             ))}
           </nav>
         )}

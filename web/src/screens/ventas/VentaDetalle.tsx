@@ -31,6 +31,7 @@
  * customer, deleting or undoing shows 'Eso ya no está. La lista ya está al día.'").
  */
 
+import { SALES } from '../../routes'
 import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useLocation, useNavigate, useParams } from 'react-router'
@@ -183,7 +184,7 @@ export default function VentaDetalle() {
         // still mounted for one more tick and would otherwise refetch into a 404
         // the browser logs on its own (keys.ts).
         invalidateResource(queryClient, 'sales', { refetchType: 'none' })
-        navigate('/ventas', { replace: true, state: gone() })
+        navigate(SALES, { replace: true, state: gone() })
       } else if (caught instanceof ApiError) {
         const override = resolveOverride(ASSIGN_OVERRIDES, caught.code)
         setAssignError(override?.message ?? GENERIC_REFUSAL)
@@ -212,14 +213,14 @@ export default function VentaDetalle() {
       // Deshacer's own toast names the grams going back to stock (sales.md, PM
       // adjustment 4); the explicit "Borrar venta" confirmation already named them
       // in its question, so its toast stays the plain, existing one.
-      navigate('/ventas', {
+      navigate(SALES, {
         replace: true,
         state: toast(reason === 'deshacer' ? UNDO_TOAST : DELETE_TOAST),
       })
     } catch (caught) {
       if (caught instanceof ApiError && isGone(caught.code)) {
         invalidateResource(queryClient, 'sales', { refetchType: 'none' })
-        navigate('/ventas', { replace: true, state: gone() })
+        navigate(SALES, { replace: true, state: gone() })
       } else if (caught instanceof NetworkError) {
         setDeleteOffline(true)
       } else {
@@ -233,7 +234,7 @@ export default function VentaDetalle() {
 
   if (isError) {
     if (error instanceof ApiError && isGone(error.code)) {
-      return <GoneScreen label="Ventas" to="/ventas" />
+      return <GoneScreen label="Ventas" to={SALES} />
     }
     if (error instanceof NetworkError) {
       return (
@@ -265,10 +266,10 @@ export default function VentaDetalle() {
   const sale = data
 
   function goBack(): void {
-    // No history to go back into (a direct open, a refresh): `/ventas` is the
+    // No history to go back into (a direct open, a refresh): /ventas is the
     // only sure place back from here (plan, "Navigation").
     if (location.key === 'default') {
-      navigate('/ventas')
+      navigate(SALES)
     } else {
       navigate(-1)
     }

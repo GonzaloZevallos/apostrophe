@@ -5,6 +5,7 @@
  * mocked deeper (CODING_STANDARDS §10).
  */
 
+import { CATALOG as CATALOG_ROUTE, SETTINGS_CATALOG_MESSAGE } from '../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -34,12 +35,12 @@ function renderCatalogo(fetchMock: ReturnType<typeof vi.fn>): QueryClient {
   const queryClient = new QueryClient()
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={['/catalogo']}>
+      <MemoryRouter initialEntries={[CATALOG_ROUTE]}>
         <Routes>
           <Route element={<Provide />}>
-            <Route path="/catalogo" element={<Catalogo />} />
+            <Route path={CATALOG_ROUTE} element={<Catalogo />} />
             <Route
-              path="/settings/catalog-message"
+              path={SETTINGS_CATALOG_MESSAGE}
               element={<div>Aterrizaste en el mensaje del catálogo</div>}
             />
           </Route>
@@ -280,7 +281,7 @@ test('the catalog screen offers no header or footer editing, only the read-only 
   expect(screen.queryByRole('button', { name: 'Guardá el mensaje' })).not.toBeInTheDocument()
 })
 
-test('"/catalogo" still shows the preview, Copiar, the pin status and Publicar', async () => {
+test('CATALOG still shows the preview, Copiar, the pin status and Publicar', async () => {
   const published = {
     ...DEFAULT_PINNED_CATALOG,
     can_publish: true,
@@ -321,10 +322,10 @@ test('a catalog input never carries maxLength', async () => {
   const queryClient = new QueryClient()
   const { container } = render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={['/catalogo']}>
+      <MemoryRouter initialEntries={[CATALOG_ROUTE]}>
         <Routes>
           <Route element={<Provide />}>
-            <Route path="/catalogo" element={<Catalogo />} />
+            <Route path={CATALOG_ROUTE} element={<Catalogo />} />
           </Route>
         </Routes>
       </MemoryRouter>

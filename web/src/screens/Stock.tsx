@@ -13,6 +13,7 @@
  * no new request surface — it is the same list `Variedades` already reads).
  */
 
+import { STOCK_ENTRY, STOCK_ENTRY_NEW, pathTo } from '../routes'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useLocation, useOutletContext } from 'react-router'
 import { NetworkError } from '../api/client'
@@ -132,14 +133,14 @@ export default function Stock() {
           </div>
         )}
 
-        <Link to="/mi-stock/nueva-entrada" className="boton boton--suave">
+        <Link to={STOCK_ENTRY_NEW} className="boton boton--suave">
           Nueva entrada
         </Link>
 
         <span className="rotulo">Entradas · costo por gramo</span>
         <div className="lista-entradas">
           {stock.entries.map((entry) => (
-            <Link key={entry.id} to={`/mi-stock/entradas/${entry.id}`} className="fila-entrada">
+            <Link key={entry.id} to={pathTo(STOCK_ENTRY, { id: entry.id })} className="fila-entrada">
               <span className="fila-entrada__fecha">{formatDate(entry.date, me.today)}</span>
               <span className="fila-entrada__texto">
                 <span className="fila-entrada__linea1">

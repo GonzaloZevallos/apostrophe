@@ -5,6 +5,7 @@
  * no entry in `Más` (PRD, "Out of scope").
  */
 
+import { CUSTOMER, CUSTOMERS, pathTo } from '../../routes'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router'
 import { NetworkError } from '../../api/client'
@@ -29,7 +30,7 @@ export default function TeDeben() {
     <main className="pantalla">
       <div className="cuerpo">
         <div>
-          <Link to="/clientes">Volver</Link>
+          <Link to={CUSTOMERS}>Volver</Link>
           <span className="encabezado__titulo">Te deben</span>
         </div>
 
@@ -51,7 +52,7 @@ export default function TeDeben() {
               {data.debtors.map((debtor) => (
                 <Link
                   key={debtor.customer.id}
-                  to={`/clientes/${debtor.customer.id}`}
+                  to={pathTo(CUSTOMER, { id: debtor.customer.id })}
                   className="lista-clientes__fila"
                 >
                   <span className="lista-clientes__nombre">{debtor.customer.name}</span>

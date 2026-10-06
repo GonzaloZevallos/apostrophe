@@ -3,19 +3,20 @@
  * the title, "Cerrar", and the unsaved-changes confirmation. It is a form, so it carries no
  * bar and no "+ Nueva venta" (the route says `chrome: 'none'`; `Shell` reads it).
  *
- * "Cerrar" goes through `useBackOr('/settings')` and never calls `disarm()`: a dirty group
+ * "Cerrar" goes through `useBackOr(/settings)` and never calls `disarm()`: a dirty group
  * always asks, and only discarding lets it through. `disarm` is handed to the child so a
  * save that navigates (invariant: only right before a navigation after a successful save or
  * logout) can drop the guard first.
  */
 
+import { SETTINGS } from '../../routes'
 import type { ReactNode } from 'react'
 import Boton from '../../components/Boton'
 import LeaveConfirm from '../../components/LeaveConfirm'
 import { useBackOr } from '../../components/useBackOr'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
 
-export const SETTINGS_PATH = '/settings'
+export const SETTINGS_PATH = SETTINGS
 
 export interface LeaveWording {
   question: string

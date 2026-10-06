@@ -9,7 +9,7 @@ import { MemoryRouter } from 'react-router'
 import { expect, test } from 'vitest'
 import { matchRoutes } from 'react-router'
 import { router } from '../router'
-import { ANALYSIS, EXPENSE_NEW, EXPENSES } from '../routes'
+import { ANALYSIS, EXPENSES, EXPENSE_NEW, SETTINGS } from '../routes'
 import Mas from './Mas'
 
 function renderMas() {
@@ -38,7 +38,7 @@ test('lists "+ Cargar gasto", Gastos and Análisis first, in that order, then th
   expect(entries[5]).toHaveTextContent(
     'Negocio, usuarios, bot, catálogo, categorías, apariencia y tu cuenta',
   )
-  expect(entries[5]).toHaveAttribute('href', '/settings')
+  expect(entries[5]).toHaveAttribute('href', SETTINGS)
 })
 
 test('every entry opens a route the table mounts: no placeholder, nothing not built', () => {
