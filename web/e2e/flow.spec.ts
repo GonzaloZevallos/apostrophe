@@ -159,16 +159,17 @@ test('a seller does everything the backend offers today, from the front alone', 
   await expect(page.getByText('Delivery en bici')).toHaveCount(0)
 
   // Rename the business.
-  await page.goto('/negocio')
+  await page.goto('/settings/business')
   const renamedTo = `${businessName} Renombrado`
   await page.getByLabel('Nombre del negocio').fill(renamedTo)
-  await page.getByRole('button', { name: 'Guardar' }).click()
+  await page.getByRole('button', { name: 'Guardá el nombre' }).click()
   await expect(page.getByText('Negocio renombrado')).toBeVisible()
 
   // Create a join link and accept it as a second user, from a separate browser
   // context (its own cookie jar — a second device).
+  await page.goto('/settings/users')
   await page.getByRole('button', { name: 'Invitá a un socio' }).click()
-  const inviteUrl = await page.locator('.negocio__link').textContent()
+  const inviteUrl = await page.locator('.usuarios__link').textContent()
   if (inviteUrl === null || inviteUrl === '') throw new Error('no invitation link shown')
 
   const partnerContext = await browser.newContext()

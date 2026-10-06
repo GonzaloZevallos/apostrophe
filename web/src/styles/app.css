@@ -450,6 +450,23 @@ button {
   text-decoration: none;
 }
 
+/* A row that does something instead of going somewhere (Tu cuenta): the same row, as a button. */
+.ajustes__item--boton {
+  width: 100%;
+  background: none;
+  border-top: 0;
+  border-left: 0;
+  border-right: 0;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ajustes__item--boton:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
 .ajustes__item:last-child {
   border-bottom: 0;
 }
@@ -681,7 +698,7 @@ button {
   font-size: 20px;
 }
 
-.negocio__lista {
+.usuarios__lista {
   list-style: none;
   margin: var(--espacio-sm) 0 0;
   padding: 0;
@@ -689,7 +706,7 @@ button {
   flex-direction: column;
 }
 
-.negocio__usuario {
+.usuarios__usuario {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -701,7 +718,7 @@ button {
 }
 
 /* Not color alone: "vos" is a labelled pill, not a tint on the row. */
-.negocio__vos {
+.usuarios__vos {
   font-size: 12px;
   font-weight: 600;
   background: var(--superficie);
@@ -710,7 +727,7 @@ button {
   border-radius: var(--radio-pildora);
 }
 
-.negocio__invitar {
+.usuarios__invitacion {
   display: flex;
   flex-direction: column;
   gap: var(--espacio-sm);
@@ -719,7 +736,7 @@ button {
   padding: var(--espacio-lg);
 }
 
-.negocio__link {
+.usuarios__link {
   background: var(--papel);
   border-radius: var(--radio-campo);
   padding: var(--espacio-sm) var(--espacio-md);
@@ -730,12 +747,12 @@ button {
   white-space: nowrap;
 }
 
-.negocio__acciones {
+.usuarios__acciones {
   display: flex;
   gap: var(--espacio-sm);
 }
 
-.negocio__acciones .boton {
+.usuarios__acciones .boton {
   flex: 1;
 }
 
@@ -948,7 +965,7 @@ button {
   margin-top: var(--espacio-sm);
 }
 
-/* Same pattern as `.confirmacion__acciones .boton`/`.negocio__acciones .boton`:
+/* Same pattern as `.confirmacion__acciones .boton`/`.usuarios__acciones .boton`:
  * side by side, evenly split — scoped to this container, never redefining the
  * shared `.boton--suave`/`.boton--destructivo` (review finding, e2e: the merge
  * had kept two `.boton--suave` rules, the later one winning everywhere and
