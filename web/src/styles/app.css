@@ -3174,3 +3174,31 @@ button {
   }
 }
 /* ===== end ventas-telefono-lista ===== */
+
+/* ===== ventas-telefono-carga ===== */
+/* Nueva venta's scroller is a column with a fixed height: a child that is only a button would
+ * shrink with the room instead of scrolling (the phone sweep measured "Elegir cliente" at
+ * 24 px). The body and the footer's children (`display: contents`, so the scroller's own
+ * items) keep their own height, and the body scrolls. */
+@media (max-width: 899.98px) {
+  .nueva-venta__cuerpo > *,
+  .nueva-venta__resumen > * {
+    flex-shrink: 0;
+  }
+
+  /* "¿Descartás la venta?" asks over the fixed form, which would otherwise cover it. */
+  .nueva-venta__aviso {
+    position: fixed;
+    inset: 0;
+    z-index: 3;
+    display: flex;
+    align-items: flex-end;
+    padding: var(--margen-pantalla);
+    background: color-mix(in srgb, var(--tinta) 40%, transparent);
+  }
+
+  .nueva-venta__aviso > .confirmacion {
+    flex: 1 1 auto;
+  }
+}
+/* ===== end ventas-telefono-carga ===== */

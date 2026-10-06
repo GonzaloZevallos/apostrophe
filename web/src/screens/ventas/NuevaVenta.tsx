@@ -676,13 +676,15 @@ function NuevaVentaForm() {
       {customerSheet.isOpen && <NuevaVentaCliente allowNone onChosen={chooseCustomer} />}
 
       {blocker.state === 'blocked' && (
-        <LeaveConfirm
-          blocker={blocker}
-          question="¿Descartás la venta?"
-          detail="No vas a poder recuperar lo que cargaste."
-          keepLabel="No, seguí cargando"
-          discardLabel="Sí, descartala"
-        />
+        <div className="nueva-venta__aviso">
+          <LeaveConfirm
+            blocker={blocker}
+            question="¿Descartás la venta?"
+            detail="No vas a poder recuperar lo que cargaste."
+            keepLabel="No, seguí cargando"
+            discardLabel="Sí, descartala"
+          />
+        </div>
       )}
     </main>
   )
