@@ -50,9 +50,28 @@ def test_before_any_settings_nothing_shows(client: TestClient) -> None:
         "own_chat": None,
         "channel_chat": None,
         "can_publish": False,
+        "publish_blocked_by": "not_tested",
         "status": None,
     }
     assert status.json() == {"status": None}
+
+
+def test_publish_blocked_by_names_what_is_missing(client: TestClient) -> None:
+    assert client.get("/pinned-catalog").json()["publish_blocked_by"] == "not_tested"
+
+    tested = client.post(
+        "/pinned-catalog/test", json={"token": TOKEN, "own_chat": "111", "channel_chat": None}
+    )
+    assert tested.json()["publish_blocked_by"] == "channel_missing"
+    assert client.get("/pinned-catalog").json()["publish_blocked_by"] == "channel_missing"
+
+    ready = client.post(
+        "/pinned-catalog/test",
+        json={"token": None, "own_chat": "111", "channel_chat": "@canal"},
+    )
+    assert ready.json()["publish_blocked_by"] is None
+    assert ready.json()["can_publish"] is True
+    assert client.get("/pinned-catalog").json()["publish_blocked_by"] is None
 
 
 def test_probarlo_requires_a_token(client: TestClient) -> None:
