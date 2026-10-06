@@ -5,7 +5,7 @@
  * confirmation, and the fallback when there is no history.
  */
 
-import { screen } from '@testing-library/react'
+import { act, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import { EXPENSES, EXPENSE_NEW, MORE } from '../../routes'
@@ -52,6 +52,11 @@ test('a save opened from Más goes back to Más and toasts "Gasto guardado" ther
   expect(await screen.findAllByText('Gasto guardado')).toHaveLength(1)
 })
 
+async function openFromMore(router: ReturnType<typeof renderExpenses>): Promise<void> {
+  await userEvent.click(await screen.findByRole('link', { name: 'Cargar gasto desde Más' }))
+  expect(router.state.location.pathname).toBe(EXPENSE_NEW)
+}
+
 test('the date is today', async () => {
   renderExpenses([MORE, EXPENSE_NEW], api())
 
@@ -59,7 +64,8 @@ test('the date is today', async () => {
 })
 
 test('an untouched form closes at once, back to the screen that opened it', async () => {
-  const router = renderExpenses([MORE, EXPENSE_NEW], api())
+  const router = renderExpenses([MORE], api())
+  await openFromMore(router)
 
   await userEvent.click(await screen.findByRole('button', { name: 'Cerrar' }))
 
@@ -75,7 +81,8 @@ test('"Cerrar" is there and works while the categories are still loading', async
     }
     return api()(url, init)
   }
-  const router = renderExpenses([MORE, EXPENSE_NEW], pending)
+  const router = renderExpenses([MORE], pending)
+  await openFromMore(router)
 
   await userEvent.click(await screen.findByRole('button', { name: 'Cerrar' }))
 
@@ -84,7 +91,8 @@ test('"Cerrar" is there and works while the categories are still loading', async
 })
 
 test('closing with something typed asks before discarding; staying keeps the form', async () => {
-  const router = renderExpenses([MORE, EXPENSE_NEW], api())
+  const router = renderExpenses([MORE], api())
+  await openFromMore(router)
 
   await userEvent.type(await screen.findByLabelText('Detalle'), 'Cinta')
   await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
@@ -98,7 +106,8 @@ test('closing with something typed asks before discarding; staying keeps the for
 })
 
 test('confirming the discard leaves the form and saves nothing', async () => {
-  const router = renderExpenses([MORE, EXPENSE_NEW], api())
+  const router = renderExpenses([MORE], api())
+  await openFromMore(router)
 
   await userEvent.type(await screen.findByLabelText('Detalle'), 'Cinta')
   await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
@@ -141,4 +150,47 @@ test('the form route has no bar and no "Nueva venta"; Gastos has both', async ()
 
   expect(screen.queryByRole('link', { name: 'Nueva venta' })).not.toBeInTheDocument()
   expect(screen.getAllByRole('navigation')).toHaveLength(navsOnGastos - 1)
+})
+
+test('closing, or going back by history, with something typed asks the same question', async () => {
+  const router = renderExpenses([MORE], api())
+  await openFromMore(router)
+  await userEvent.type(await screen.findByLabelText('Detalle'), 'Cinta')
+
+  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  const viaCerrar = (await screen.findByRole('alertdialog')).textContent
+  await userEvent.click(screen.getByRole('button', { name: 'No, seguí cargando' }))
+
+  await act(() => router.navigate(-1))
+  const viaBack = (await screen.findByRole('alertdialog')).textContent
+
+  expect(viaBack).toBe(viaCerrar)
+  expect(viaBack).toContain('¿Descartás el gasto?')
+  expect(router.state.location.pathname).toBe(EXPENSE_NEW)
+  expect(screen.getByLabelText('Detalle')).toHaveValue('Cinta')
+
+  await userEvent.click(screen.getByRole('button', { name: 'Sí, descartalo' }))
+  expect(await screen.findByText('Pantalla Más')).toBeInTheDocument()
+})
+
+test('with no in-app history, closing replaces the form with Gastos', async () => {
+  const router = renderExpenses([MORE, EXPENSE_NEW], api())
+
+  await userEvent.click(await screen.findByRole('button', { name: 'Cerrar' }))
+
+  expect(await screen.findByText('Gastaste en el mes')).toBeInTheDocument()
+  expect(router.state.location.pathname).toBe(EXPENSES)
+  expect(router.state.historyAction).toBe('REPLACE')
+})
+
+test('after a save the form is no longer in history: leaving by history is a pop to Más', async () => {
+  const router = renderExpenses([MORE], api())
+  await openFromMore(router)
+
+  await fillForm()
+  await userEvent.click(screen.getByRole('button', { name: 'Guardá el gasto' }))
+
+  expect(await screen.findByText('Pantalla Más')).toBeInTheDocument()
+  expect(router.state.historyAction).toBe('POP')
+  expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
 })

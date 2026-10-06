@@ -24,6 +24,7 @@ const ITEMS: Item[] = [
     to: EXPENSE_NEW,
     label: '+ Cargar gasto',
     detail: 'Categoría, monto y detalle',
+    inApp: true,
   },
   { to: EXPENSES, label: 'Gastos', detail: 'Por mes y por categoría' },
   {

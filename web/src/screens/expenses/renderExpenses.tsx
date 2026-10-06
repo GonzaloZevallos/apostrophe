@@ -48,7 +48,9 @@ export function renderExpenses(initialEntries: string[], fetchImpl: FetchImpl) {
                 element: (
                   <main>
                     <span>Pantalla Más</span>
-                    <Link to={EXPENSE_NEW}>Cargar gasto desde Más</Link>
+                    <Link to={EXPENSE_NEW} state={{ inApp: true }}>
+                      Cargar gasto desde Más
+                    </Link>
                   </main>
                 ),
               },
