@@ -237,6 +237,8 @@ export default function Catalogo() {
         )}
         {toast !== null && <AvisoExito texto={toast} />}
 
+        <div className="catalogo__columnas">
+        <div className="catalogo__vista">
         <span className="rotulo">Cómo se ve en Telegram</span>
         {catalog === undefined ? (
           <div className="catalogo__vista-previa" />
@@ -256,7 +258,9 @@ export default function Catalogo() {
             )}
           </div>
         )}
+        </div>
 
+        <div className="catalogo__panel">
         {catalog !== undefined && catalog.text !== null && (
           <>
             <div className="catalogo__acciones">
@@ -398,6 +402,8 @@ export default function Catalogo() {
             </Link>
           </>
         )}
+        </div>
+        </div>
       </div>
     </main>
   )

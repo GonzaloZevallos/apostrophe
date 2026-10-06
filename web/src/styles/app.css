@@ -2376,7 +2376,39 @@ button {
 /* `Catalogo.dc.html`: Compartir (the main action) is wider than Copiar, side by side. */
 .catalogo__acciones {
   display: flex;
-  gap: 10px;
+  gap: var(--espacio-md);
+}
+
+/* `CatalogoCompu.dc.html`: the preview on the left, the actions, the pin card and the
+   reasons on the right. On the phone the two stack in that same order. */
+.catalogo__columnas,
+.catalogo__vista,
+.catalogo__panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-lg);
+}
+
+.catalogo__vista {
+  gap: var(--espacio-sm);
+}
+
+@media (min-width: 900px) {
+  .catalogo__columnas {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: var(--espacio-xxl);
+  }
+
+  .catalogo__vista {
+    flex: 1 1 340px;
+    max-width: 380px;
+  }
+
+  .catalogo__panel {
+    flex: 1 1 320px;
+    max-width: 360px;
+  }
 }
 
 .catalogo__compartir {
