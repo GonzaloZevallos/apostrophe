@@ -12,6 +12,9 @@ export interface OpcionInterruptorProps {
   label: string
   checked: boolean
   disabled?: boolean
+  /** The switch's accessible name when the screen's own name is longer than the visible
+   * label (Nueva venta's "Regalo línea 2"); the visible text stays `label`. */
+  ariaLabel?: string
   onChange: (checked: boolean) => void
 }
 
@@ -19,6 +22,7 @@ export default function OpcionInterruptor({
   label,
   checked,
   disabled = false,
+  ariaLabel,
   onChange,
 }: OpcionInterruptorProps) {
   const id = useId()
@@ -38,6 +42,7 @@ export default function OpcionInterruptor({
         checked={checked}
         disabled={disabled}
         aria-checked={checked}
+        aria-label={ariaLabel}
         onChange={(event) => onChange(event.target.checked)}
       />
       <span className="opcion-interruptor__pista" aria-hidden="true">

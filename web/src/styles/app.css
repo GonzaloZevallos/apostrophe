@@ -3071,3 +3071,69 @@ button {
   }
 }
 /* ===== end ventas-telefono-shell ===== */
+
+/* ===== ventas-telefono-linea ===== */
+/* Nueva venta's open line on the phone: one fixed layout at every width from 320 to
+ * 430 px and at 130 % text, never switched by a measurement. Row 1 is the variety and the
+ * grams; under it Regalo (a whole 44 px row) and "Precio especial", each full width;
+ * below, the line's price per gram, rule and total, which wrap instead of clipping. */
+@media (max-width: 899.98px) {
+  .nueva-venta__linea--abierta {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    column-gap: var(--espacio-md);
+    row-gap: var(--espacio-sm);
+    align-items: start;
+  }
+
+  .nueva-venta__linea--abierta > * {
+    grid-column: 1 / -1;
+    min-width: 0;
+  }
+
+  .nueva-venta__linea--abierta > .campo {
+    grid-column: auto;
+  }
+
+  .nueva-venta__linea--abierta .campo__input {
+    width: 100%;
+    min-width: 0;
+    font-size: 17px;
+  }
+
+  .nueva-venta__linea-opciones {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--espacio-sm);
+  }
+
+  .nueva-venta__linea--abierta .nueva-venta__linea-detalle {
+    flex-wrap: wrap;
+  }
+
+  /* "Agregar otra variedad" and a line's "Quitar": the link buttons of this screen's
+   * body and lines, at least 44 px tall. */
+  .nueva-venta__cuerpo > .boton--enlace,
+  .nueva-venta__linea .boton--enlace {
+    display: flex;
+    align-items: center;
+    align-self: flex-start;
+    min-height: var(--alto-tocable);
+    padding: 0 var(--espacio-sm);
+    font-size: 16px;
+    /* The 1 px underline is a box-shadow at the box's bottom edge, which a 44 px box
+     * would draw far under the text; the underline moves onto the text. */
+    box-shadow: none;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  /* Shipping and the note sit in a row with their label: the field takes what is left
+   * of the row and shrinks, so it never leaves the screen. */
+  .nueva-venta__fila-dato .campo__input {
+    flex: 1 1 0;
+    min-width: 0;
+    font-size: 17px;
+  }
+}
+/* ===== end ventas-telefono-linea ===== */
