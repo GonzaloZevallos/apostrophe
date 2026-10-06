@@ -124,7 +124,7 @@ Success criteria, the installed shell:
     - A screen's height follows the visible screen, so nothing jumps or is cut off when the browser's own bars appear or go away.
     - With the keyboard open, the focused field stays in view.
 34. **The status bar is the app's colour.**
-    - On Android it matches the paper of the theme the user chose: light `--papel` with no `data-tema`, the dark theme's own paper token with `data-tema="oscuro"`. It changes as soon as the choice changes.
+    - On Android it matches the paper of the theme in force: light `--papel` with no `data-tema`, the dark theme's own paper token with `data-tema="oscuro"`. It changes as soon as the attribute changes.
     - The phone's own light or dark setting picks nothing. There is no blue band in either theme.
     - The splash and the manifest's colours are light `--papel`.
     - On iOS the status bar stays light in both themes, because iOS fixes its style at launch. This is an accepted limitation, not a defect.
@@ -138,7 +138,7 @@ Success criteria, the installed shell:
     - Every accounts, navigation and feedback test passes unchanged.
     - The bar still fits at 320 px with text at 130%.
     - No state is told by colour alone, in either theme; the pressed state uses tokens only, in both themes.
-    - No existing token value changes; only the two inset tokens are added.
+    - No existing token value changes; only the four new inset tokens are added.
 
 Success criteria, removing a business:
 
@@ -328,7 +328,7 @@ Success criteria, removing a business:
 
 ### The installed shell
 
-How the app fills a phone's screen and responds to touch once installed (criteria 33–36). It changes no screen's own layout and no bar or header behaviour (#59).
+How the app fills a phone's screen and responds to touch once installed (criteria 33–36). It changes no screen's own layout and no bar or header behaviour (#59), and it builds no theme choice: the status bar follows whatever sets `data-tema`.
 
 - **Document and viewport**:
   - the viewport reads `width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content`;
@@ -338,10 +338,12 @@ How the app fills a phone's screen and responds to touch once installed (criteri
   - `-webkit-text-size-adjust: 100%`.
 - **Status bar**:
   - exactly one `theme-color` meta, with no `media` attribute, light `--papel` in the static HTML;
-  - it is updated whenever `data-tema` is set or removed, including at app start, from the theme's paper token, never a copied value;
+  - one place sets or removes `data-tema` and updates `theme-color` with it, including at app start, from the theme's paper token, never a copied value;
   - there is no pair of metas with `prefers-color-scheme`: the system setting picks nothing;
   - only Android follows it live; iOS keeps the light `default` strip in both themes.
-- **Insets**: two tokens, `--inset-arriba` and `--inset-abajo`, built from `env(safe-area-inset-*)`, used by the bar, the header, the fixed "+ Nueva venta", sheets and toasts. Insets apply on every side, so landscape is safe but not designed.
+- **Insets**: four tokens, `--inset-arriba`, `--inset-abajo`, `--inset-izquierda` and `--inset-derecha`, built from `env(safe-area-inset-*)`.
+  - Top and bottom are used by the bar, the header, the fixed "+ Nueva venta", sheets and toasts.
+  - Left and right keep content, the bar, sheets and toasts clear of a side cut-out, so landscape is safe but not designed.
 - **Height**: every height tied to the screen uses `dvh`, `.pantalla`, `.disposicion` and the sheets included.
 - **Gestures and press**:
   - `overscroll-behavior: none` on `html` and `body`, `contain` on scrolling regions;
@@ -449,7 +451,7 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
 - **Theme (criteria 23–26)**:
   - light wins: an e2e run with the system emulated in dark (`emulateMedia({ colorScheme: 'dark' })`) and no attribute reads the page background as `--papel` (#fcfbf8);
   - dark on request: an e2e run with `data-tema="oscuro"` on `<html>`, whatever the system setting, reads the page background as the dark theme's own value from `tokens.css`;
-  - choosing Oscuro in Configuración → Apariencia sets the attribute, and Claro removes it;
+  - choosing Oscuro in Configuración → Apariencia sets the attribute, and Claro removes it (checked by the issue that builds Apariencia, together with the status bar following the choice);
   - no test or fixture reaches the dark theme by emulating a dark system;
   - no token value changed;
   - native controls and scrollbars are checked by eye on a dark-system device, light with no attribute and dark with it; no fast test reads them;
@@ -458,8 +460,8 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
   - meta tags, fast test: the viewport has its four parts and no zoom restriction; `mobile-web-app-capable` and the iOS status-bar style `default` are present; exactly one `theme-color`, with no `media`;
   - manifest, fast test: `id: "/"`, `scope: "/"`, `lang: "es"`, `display: "standalone"`, `theme_color` and `background_color` equal to `--papel`, no `orientation`; 192 and 512 icons `any` and a 512 `maskable` present;
   - installability: the manifest still passes the browser's installability check on `localhost` with its new fields;
-  - status bar, front test: `theme-color` is light `--papel` with no attribute, the dark paper token after choosing Oscuro, light again after Claro, and stays light with the system emulated dark and no attribute;
-  - static checks: no screen-tied `vh` left in `app.css` (`dvh` instead); the inset tokens exist and the bar, the header, "+ Nueva venta", sheets and toasts use them; no existing token value changed;
+  - status bar, front test driving `data-tema` directly: `theme-color` is light `--papel` with no attribute, the dark paper token with `oscuro`, light again once the attribute is removed, and stays light with the system emulated dark and no attribute;
+  - static checks: no screen-tied `vh` left in `app.css` (`dvh` instead); the four inset tokens exist, and the bar, the header, "+ Nueva venta", sheets and toasts use them; no existing token value changed;
   - regression: the accounts, navigation and feedback suites pass unchanged; the bar fits at 320 px with text at 130 %; the pressed state uses tokens only, in both themes;
   - by eye, in portrait, on a real iPhone installed over the home network and a real Android phone on the published installation: criterion 33 (Nueva venta, Registrar cobro and the expense form with the keyboard open included), criterion 35 (the pressed state visible in both themes), the Android status bar in both themes, the iOS light strip with the top inset handled, and the maskable icon on the Android launcher.
 - **Nothing invented (criterion 7)**:
@@ -569,6 +571,7 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
 - An admin screen, route or navigation entry, or anything operated from a signed-in session.
 - A per-business publishing flag or staged rollout.
 - The bar's and header's own behaviour (#59), and each screen's own layout, including a save action pinned above the keyboard.
+- Building Configuración → Apariencia, and whether or where the theme choice is kept: its own issue.
 - A dark splash, and iOS `apple-touch-startup-image` splash images.
 - An iOS status bar that follows the theme live.
 - A landscape-specific design; locking orientation or disabling zoom.
