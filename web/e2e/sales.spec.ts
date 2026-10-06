@@ -11,7 +11,7 @@
  * the design's own 900px breakpoint.
  *
  * One business proves the PRD's own metrics in sequence:
- * - The shell: the bar shows exactly Inicio, Ventas, Clientes, Stock and Más.
+ * - The shell: the bar shows exactly Inicio, Ventas, Clientes, Variedades and Más.
  * - "Caught before save" (3): Debiendo disabled with no customer, and a line whose
  *   variety has no price that day, both shown before any save is attempted.
  * - "Under a minute" (1): each of the three sales below — a new customer, an
@@ -154,7 +154,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
 
   await page.goto(paths.sales())
 
-  // Shell metric: the bar shows exactly Inicio, Ventas, Clientes, Stock and Más, in that
+  // Shell metric: the bar shows exactly Inicio, Ventas, Clientes, Variedades and Más, in that
   // order — the mobile bottom bar at this viewport (`Shell.tsx`'s `.bar-inferior`;
   // the side rail, `.riel-lateral`, shares the same `aria-label` but is hidden here).
   const tabBar = page.getByRole('navigation', { name: 'Navegación' }).last()
@@ -162,7 +162,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
     'Inicio',
     'Ventas',
     'Clientes',
-    'Stock',
+    'Variedades',
     'Más',
   ])
 
@@ -406,7 +406,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
 
   await otherPage.goto(saleBUrl)
   await expect(otherPage.getByText('Eso ya no está.')).toBeVisible()
-  await otherPage.getByRole('link', { name: 'Volver a Ventas' }).click()
+  await otherPage.getByRole('main').getByRole('link', { name: 'Volver a Ventas' }).click()
   await expect(otherPage).toHaveURL(endsWith(paths.sales()))
   await otherContext.close()
 
