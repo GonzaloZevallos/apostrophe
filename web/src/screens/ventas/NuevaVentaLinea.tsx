@@ -7,8 +7,9 @@
  * price per gram, rule and total, and "Quitar"). It only renders what it is given.
  */
 
-import type { RefObject } from 'react'
+import type { KeyboardEvent, RefObject } from 'react'
 import Boton from '../../components/Boton'
+import OpcionInterruptor from '../../components/OpcionInterruptor'
 import ReglaInsignia from '../../components/ReglaInsignia'
 import { formatGrams, formatMoney } from '../../format/money'
 import { type priceLine, fromHundredths } from '../../sales/pricing'
@@ -36,6 +37,16 @@ export interface LinePreview {
  * focus"). */
 function scrollFieldIntoView(element: HTMLElement): void {
   if (typeof element.scrollIntoView === 'function') element.scrollIntoView({ block: 'nearest' })
+}
+
+/** The keyboard's action key ("next" / "done") does what its label says. Enter inside a
+ * form would otherwise submit the sale from a half-typed line. */
+function onEnter(action: () => void): (event: KeyboardEvent<HTMLInputElement>) => void {
+  return (event) => {
+    if (event.key !== 'Enter') return
+    event.preventDefault()
+    action()
+  }
 }
 
 interface NuevaVentaLineaProps {
@@ -138,34 +149,34 @@ export default function NuevaVentaLinea({
           aria-label={`Gramos línea ${n}`}
           type="text"
           inputMode="decimal"
+          enterKeyHint="next"
           value={line.grams}
           ref={gramsRef}
+          onKeyDown={onEnter(() => specialPriceRef.current?.focus())}
           onFocus={(event) => scrollFieldIntoView(event.currentTarget)}
           onChange={(event) => onChange({ grams: event.target.value })}
         />
         <span className="campo__ayuda">Coma, hasta dos decimales</span>
       </label>
       <div className="nueva-venta__linea-opciones">
-        <label>
-          <input
-            type="checkbox"
-            aria-label={`Regalo línea ${n}`}
-            checked={line.gift}
-            disabled={line.specialPrice.trim() !== ''}
-            onFocus={(event) => scrollFieldIntoView(event.currentTarget)}
-            onChange={(event) => onChange({ gift: event.target.checked })}
-          />
-          Regalo
-        </label>
+        <OpcionInterruptor
+          label="Regalo"
+          ariaLabel={`Regalo línea ${n}`}
+          checked={line.gift}
+          disabled={line.specialPrice.trim() !== ''}
+          onChange={(gift) => onChange({ gift })}
+        />
         <input
           className="campo__input"
           aria-label={`Precio especial línea ${n}`}
           type="text"
           inputMode="numeric"
+          enterKeyHint="done"
           placeholder="Precio especial"
           value={line.specialPrice}
           disabled={line.gift}
           ref={specialPriceRef}
+          onKeyDown={onEnter(() => specialPriceRef.current?.blur())}
           onFocus={(event) => scrollFieldIntoView(event.currentTarget)}
           onChange={(event) => onChange({ specialPrice: event.target.value })}
         />
