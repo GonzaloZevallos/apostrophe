@@ -146,14 +146,12 @@ export default function Variedades() {
             +
           </button>
         </div>
-        <div className="encabezado-fila">
-          <Link className="boton" to={CATALOG}>
-            Mandar catálogo
-          </Link>
-          <Link className="boton" to={STOCK_ENTRY_NEW}>
-            + Entrada de stock
-          </Link>
-        </div>
+        <Link className="boton" to={CATALOG}>
+          Mandar catálogo
+        </Link>
+        <Link className="boton" to={STOCK_ENTRY_NEW}>
+          + Entrada de stock
+        </Link>
         {toast !== null && <AvisoExito texto={toast} />}
         {adding && (
           <form className="formulario" onSubmit={onSubmit}>
