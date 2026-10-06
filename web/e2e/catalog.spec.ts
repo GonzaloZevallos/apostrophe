@@ -59,9 +59,9 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
   await page.getByRole('button', { name: 'Guardá la entrada' }).click()
   await expect(page.getByText('Entrada guardada')).toBeVisible()
 
-  // Más → Catálogo.
-  await page.goto(paths.more())
-  await page.getByRole('main').getByRole('link', { name: /Catálogo/ }).click()
+  // Variedades → Mandar catálogo.
+  await page.goto(paths.varieties())
+  await page.getByRole('link', { name: 'Mandar catálogo' }).click()
   await expect(page).toHaveURL(endsWith(paths.catalog()))
 
   // Edit Rosa's catalog attributes.

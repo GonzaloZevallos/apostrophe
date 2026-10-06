@@ -44,8 +44,8 @@ test('a seller sets up the bot, tests it, then publishes, from the front alone',
   await page.getByRole('button', { name: 'Guardar precio' }).click()
   await expect(page.getByText('Precio guardado')).toBeVisible()
 
-  await page.goto(paths.more())
-  await page.getByRole('link', { name: /Catálogo/ }).click()
+  await page.goto(paths.varieties())
+  await page.getByRole('link', { name: 'Mandar catálogo' }).click()
   await expect(page).toHaveURL(endsWith(paths.catalog()))
 
   // No pin yet: Inicio shows no out-of-date line, and Catálogo shows no status.
