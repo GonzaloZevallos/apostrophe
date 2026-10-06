@@ -35,21 +35,22 @@ function renderScreen() {
   // `retry: false`: a failed query must settle into `isError` on the first try, not
   // after react-query's default backoff, so the gone-detail test does not time out.
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  const router = createMemoryRouter(
+    [
+      { path: paths.varieties(), element: <div>lista</div> },
+      {
+        element: <Outlet context={ME} />,
+        children: [{ path: paths.variety(':id'), element: <VariedadDetalle /> }],
+      },
+    ],
+    { initialEntries: [paths.varieties(), paths.variety(1)], initialIndex: 1 },
+  )
   render(
     <QueryClientProvider client={queryClient}>
-      <RouterProvider
-        router={createMemoryRouter(
-          [
-            {
-              element: <Outlet context={ME} />,
-              children: [{ path: paths.variety(':id'), element: <VariedadDetalle /> }],
-            },
-          ],
-          { initialEntries: [paths.variety(1)] },
-        )}
-      />
+      <RouterProvider router={router} />
     </QueryClientProvider>,
   )
+  return router
 }
 
 const EMPTY_STOCK = { total: 0, varieties: [], entries: [] }
@@ -127,6 +128,132 @@ test('recording a new price entry saves and toasts "Precio guardado"', async () 
 
   expect(await screen.findByText('Precio guardado')).toBeInTheDocument()
   expect(client.post).toHaveBeenCalledWith('/varieties/1/prices', expect.objectContaining({ list_price: 12000 }))
+})
+
+describe('leaving the rename form', () => {
+  const ASK = '¿Descartás los cambios?'
+
+  test('untouched closes at once, with no question', async () => {
+    const user = userEvent.setup()
+    mockGet()
+    renderScreen()
+
+    await screen.findByText('24K Gold')
+    await user.click(screen.getByRole('button', { name: 'Editar' }))
+    await user.click(screen.getByRole('button', { name: 'Cerrar' }))
+
+    expect(screen.queryByLabelText('Nombre')).not.toBeInTheDocument()
+    expect(screen.queryByText(ASK)).not.toBeInTheDocument()
+  })
+
+  test('touched asks; "No, seguí" keeps what was typed; "Sí, descartalos" closes', async () => {
+    const user = userEvent.setup()
+    mockGet()
+    renderScreen()
+
+    await screen.findByText('24K Gold')
+    await user.click(screen.getByRole('button', { name: 'Editar' }))
+    await user.type(screen.getByLabelText('Nombre'), ' X')
+    await user.click(screen.getByRole('button', { name: 'Cerrar' }))
+
+    expect(screen.getByText(ASK)).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'No, seguí' }))
+    expect(screen.getByLabelText('Nombre')).toHaveValue('24K Gold X')
+
+    await user.click(screen.getByRole('button', { name: 'Cerrar' }))
+    await user.click(screen.getByRole('button', { name: 'Sí, descartalos' }))
+    expect(screen.queryByLabelText('Nombre')).not.toBeInTheDocument()
+  })
+
+  test('browser Back is caught while touched', async () => {
+    const user = userEvent.setup()
+    mockGet()
+    const router = renderScreen()
+
+    await screen.findByText('24K Gold')
+    await user.click(screen.getByRole('button', { name: 'Editar' }))
+    await user.type(screen.getByLabelText('Nombre'), ' X')
+    await router.navigate(-1)
+
+    expect(await screen.findByText(ASK)).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe(paths.variety(1))
+  })
+
+  test('nothing asks after a successful save', async () => {
+    const user = userEvent.setup()
+    mockGet()
+    vi.mocked(client.patch).mockResolvedValue({ ...VARIETY, name: 'Oro 24K' })
+    renderScreen()
+
+    await screen.findByText('24K Gold')
+    await user.click(screen.getByRole('button', { name: 'Editar' }))
+    await user.clear(screen.getByLabelText('Nombre'))
+    await user.type(screen.getByLabelText('Nombre'), 'Oro 24K')
+    await user.click(screen.getByRole('button', { name: 'Guardar' }))
+
+    expect(await screen.findByText('Variedad guardada')).toBeInTheDocument()
+    expect(screen.queryByText(ASK)).not.toBeInTheDocument()
+  })
+})
+
+describe('leaving the price form', () => {
+  const ASK = '¿Descartás los cambios?'
+
+  test('untouched closes at once; the seed includes the default date', async () => {
+    const user = userEvent.setup()
+    mockGet()
+    renderScreen()
+
+    await screen.findByText('24K Gold')
+    await user.click(screen.getByRole('button', { name: 'Nuevo precio' }))
+    expect(screen.getByLabelText('Rige desde')).toHaveValue(ME.today)
+    await user.click(screen.getByRole('button', { name: 'Cerrar' }))
+
+    expect(screen.queryByLabelText('Precio de lista')).not.toBeInTheDocument()
+    expect(screen.queryByText(ASK)).not.toBeInTheDocument()
+  })
+
+  test('touched asks; "No, seguí" keeps the price; "Sí, descartalos" closes and the next open is clean', async () => {
+    const user = userEvent.setup()
+    mockGet()
+    renderScreen()
+
+    await screen.findByText('24K Gold')
+    await user.click(screen.getByRole('button', { name: 'Nuevo precio' }))
+    await user.type(screen.getByLabelText('Precio de lista'), '12000')
+    await user.click(screen.getByRole('button', { name: 'Cerrar' }))
+
+    expect(screen.getByText(ASK)).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'No, seguí' }))
+    expect(screen.getByLabelText('Precio de lista')).toHaveValue('12000')
+
+    await user.click(screen.getByRole('button', { name: 'Cerrar' }))
+    await user.click(screen.getByRole('button', { name: 'Sí, descartalos' }))
+    expect(screen.queryByLabelText('Precio de lista')).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Nuevo precio' }))
+    expect(screen.getByLabelText('Precio de lista')).toHaveValue('')
+    await user.click(screen.getByRole('button', { name: 'Cerrar' }))
+    expect(screen.queryByText(ASK)).not.toBeInTheDocument()
+  })
+
+  test('browser Back is caught while touched, and nothing asks after a save', async () => {
+    const user = userEvent.setup()
+    mockGet()
+    vi.mocked(client.post).mockResolvedValue({ id: 4, effective_from: '2026-10-02', list_price: 12000, bulk_price: null, bulk_minimum: null })
+    const router = renderScreen()
+
+    await screen.findByText('24K Gold')
+    await user.click(screen.getByRole('button', { name: 'Nuevo precio' }))
+    await user.type(screen.getByLabelText('Precio de lista'), '12000')
+    await router.navigate(-1)
+    expect(await screen.findByText(ASK)).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'No, seguí' }))
+
+    await user.click(screen.getByRole('button', { name: 'Guardar precio' }))
+    expect(await screen.findByText('Precio guardado')).toBeInTheDocument()
+    expect(screen.queryByText(ASK)).not.toBeInTheDocument()
+  })
 })
 
 describe('deleting an entry', () => {
