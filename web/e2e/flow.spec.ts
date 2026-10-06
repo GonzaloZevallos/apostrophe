@@ -75,7 +75,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.goto('/mi-stock')
   await expect(page.getByText('Sin entradas de stock')).toBeVisible()
   await page.getByRole('link', { name: 'Nueva entrada' }).click()
-  await expect(page).toHaveURL(/\/mi-stock\/nueva-entrada$/)
+  await expect(page).toHaveURL(/\/varieties\/entries\/new$/)
   await page.getByLabel('Gramos').fill('50')
   await page.getByLabel('Variedad').selectOption({ label: 'Rosa' })
   await page.getByLabel('Costo total').fill('45000')
@@ -87,7 +87,7 @@ test('a seller does everything the backend offers today, from the front alone', 
 
   // Edit it: editing confirms before saving (stock.md).
   await page.getByText('Rosa · 50 g').click()
-  await expect(page).toHaveURL(/\/mi-stock\/entradas\/.+/)
+  await expect(page).toHaveURL(/\/varieties\/entries\/.+/)
   await expect(page.getByLabel('Gramos')).toHaveValue('50')
   await page.getByLabel('Gramos').fill('60')
   await page.getByRole('button', { name: 'Guardar' }).click()
