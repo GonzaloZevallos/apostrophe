@@ -192,6 +192,26 @@ describe('leaving the categories page', () => {
     expect(await screen.findByText('Configuración')).toBeInTheDocument()
   })
 
+  test('another row cannot start a rename while one is in progress, so nothing typed is lost', async () => {
+    renderScreen(async (url, init) => {
+      const method = init?.method ?? 'GET'
+      if (url.toString() === '/expense-categories' && method === 'GET') {
+        return jsonResponse(200, [...CATEGORIES, { id: 2, name: 'Insumos' }])
+      }
+      throw new Error(`unexpected ${method} ${url}`)
+    })
+    await screen.findByText('Insumos')
+    const [first] = screen.getAllByRole('button', { name: 'Renombrar' })
+    await userEvent.click(first as HTMLElement)
+    await userEvent.type(screen.getByLabelText('Nombre de Packaging'), 'X')
+
+    const others = screen.getAllByRole('button', { name: 'Renombrar' })
+    expect(others).toHaveLength(1)
+    expect(others[0]).toBeDisabled()
+    await userEvent.click(others[0] as HTMLElement)
+    expect(screen.getByLabelText('Nombre de Packaging')).toHaveValue('PackagingX')
+  })
+
   test('nothing asks after adding a category', async () => {
     renderScreen(list)
     await screen.findByText('Packaging')

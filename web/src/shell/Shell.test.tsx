@@ -187,13 +187,27 @@ test('a settings detail marks Más on the phone bar', async () => {
   expect(row).toHaveAttribute('aria-current', 'page')
 })
 
-test('Gastos is current in the sidebar and no bar tab is', async () => {
+test('Gastos is current in the sidebar and Más is on the phone bar', async () => {
   const { container } = open([paths.expenses()])
   await screen.findAllByRole('link', { name: /Nueva venta/ })
 
   const rail = sidebar(container) as HTMLElement
   expect(within(rail).getByRole('link', { current: 'page' })).toHaveTextContent('Gastos')
-  expect(within(bar(container) as HTMLElement).queryByRole('link', { current: 'page' })).toBeNull()
+  const phone = within(bar(container) as HTMLElement).getByRole('link', { current: 'page' })
+  expect(phone).toHaveTextContent('Más')
+  expect(phone.className).toMatch(/--activo/)
+})
+
+test('Análisis is current in the sidebar and Más is on the phone bar', async () => {
+  const { container } = open([paths.analysis()])
+  await screen.findAllByRole('link', { name: /Nueva venta/ })
+
+  expect(within(sidebar(container) as HTMLElement).getByRole('link', { current: 'page' })).toHaveTextContent(
+    'Análisis',
+  )
+  const phone = within(bar(container) as HTMLElement).getByRole('link', { current: 'page' })
+  expect(phone).toHaveTextContent('Más')
+  expect(phone.className).toMatch(/--activo/)
 })
 
 test('Inicio opens Configuración from the business avatar at its top', async () => {

@@ -6,7 +6,7 @@
 
 import { expect, test } from 'vitest'
 import { paths } from '../routes/paths'
-import { activeTab, type Tab } from './activeTab'
+import { activeTab, barTab, type Tab } from './activeTab'
 
 const TABLE: [string, Tab | null][] = [
   [paths.home(), 'home'],
@@ -49,4 +49,21 @@ test.each(TABLE)('%s marks %s', (pathname, expected) => {
 test('a segment that only starts like a tab does not mark it', () => {
   expect(activeTab('/salesman')).toBeNull()
   expect(activeTab('/settingsx')).toBeNull()
+})
+
+test('the phone bar marks Más on Gastos and Análisis; every path lights one bar tab', () => {
+  expect(barTab(activeTab(paths.expenses()))).toBe('more')
+  expect(barTab(activeTab(paths.newExpense()))).toBe('more')
+  expect(barTab(activeTab(paths.analysis()))).toBe('more')
+  expect(barTab(activeTab(paths.settings()))).toBe('more')
+  expect(barTab(activeTab(paths.sales()))).toBe('sales')
+  expect(barTab(activeTab('/nowhere'))).toBeNull()
+  for (const [pathname, tab] of TABLE) {
+    if (tab !== null) expect(['home', 'sales', 'customers', 'varieties', 'more']).toContain(barTab(activeTab(pathname)))
+  }
+})
+
+test('the sidebar still marks Gastos and Análisis on their own', () => {
+  expect(activeTab(paths.expenses())).toBe('expenses')
+  expect(activeTab(paths.analysis())).toBe('analysis')
 })

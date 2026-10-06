@@ -140,7 +140,12 @@ function CategoryRow({
   return (
     <div className="fila">
       <span className="categoria-fila__nombre">{category.name}</span>
-      <button type="button" className="boton--enlace" onClick={() => setEditing(true)}>
+      <button
+        type="button"
+        className="boton--enlace"
+        disabled={edit !== null}
+        onClick={() => setEditing(true)}
+      >
         Renombrar
       </button>
       <button type="button" className="boton--enlace" onClick={() => setConfirming(true)}>

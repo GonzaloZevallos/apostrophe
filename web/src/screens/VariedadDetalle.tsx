@@ -338,7 +338,7 @@ export default function VariedadDetalle() {
         {toast !== null && <AvisoExito texto={toast} />}
         <div className="encabezado-fila">
           <span className="encabezado__titulo">{variety?.name ?? ''}</span>
-          {variety !== undefined && !renaming && (
+          {variety !== undefined && !renaming && !addingPrice && (
             <button
               type="button"
               className="boton-enlace"
@@ -404,16 +404,18 @@ export default function VariedadDetalle() {
           </div>
         )}
 
-        <button
-          type="button"
-          className="boton boton--suave"
-          onClick={() => {
-            setPriceError(null)
-            setAddingPrice(true)
-          }}
-        >
-          Nuevo precio
-        </button>
+        {!renaming && (
+          <button
+            type="button"
+            className="boton boton--suave"
+            onClick={() => {
+              setPriceError(null)
+              setAddingPrice(true)
+            }}
+          >
+            Nuevo precio
+          </button>
+        )}
 
         {addingPrice && (
           <GuardedSheet

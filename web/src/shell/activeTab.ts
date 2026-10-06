@@ -29,3 +29,12 @@ export function activeTab(pathname: string): Tab | null {
   if (pathname === paths.home()) return 'home'
   return BY_SEGMENT[firstSegment(pathname)] ?? null
 }
+
+/**
+ * The phone bar has no Gastos or Análisis tab: they are reached through Más, so Más
+ * is the bar's active entry on both. The sidebar keeps `activeTab`'s own answer.
+ * Still a function of `activeTab`'s result alone: no width is read in JavaScript.
+ */
+export function barTab(tab: Tab | null): Tab | null {
+  return tab === 'expenses' || tab === 'analysis' ? 'more' : tab
+}

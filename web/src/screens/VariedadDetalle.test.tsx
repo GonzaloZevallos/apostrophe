@@ -133,6 +133,20 @@ test('recording a new price entry saves and toasts "Precio guardado"', async () 
 describe('leaving the rename form', () => {
   const ASK = '¿Descartás los cambios?'
 
+  test('only one of the rename and price sheets can be open at a time', async () => {
+    const user = userEvent.setup()
+    mockGet()
+    renderScreen()
+
+    await screen.findByText('24K Gold')
+    await user.click(screen.getByRole('button', { name: 'Editar' }))
+    expect(screen.queryByRole('button', { name: 'Nuevo precio' })).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Cerrar' }))
+
+    await user.click(screen.getByRole('button', { name: 'Nuevo precio' }))
+    expect(screen.queryByRole('button', { name: 'Editar' })).not.toBeInTheDocument()
+  })
+
   test('untouched closes at once, with no question', async () => {
     const user = userEvent.setup()
     mockGet()

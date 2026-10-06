@@ -80,6 +80,11 @@ test('shows the month\'s total, categories and expenses, and the fixed flower li
   expect(screen.getByText('Packaging')).toBeInTheDocument()
   expect(screen.getByText('Bolsas')).toBeInTheDocument()
   expect(screen.getByText(FLOWER_NOTICE)).toBeInTheDocument()
+  // Categories are reached only from Configuración, never from Gastos.
+  expect(screen.queryByRole('link', { name: /Categorías/ })).toBeNull()
+  for (const link of screen.queryAllByRole('link')) {
+    expect(link.getAttribute('href')).not.toBe(paths.expenseCategories())
+  }
 })
 
 test('recording an expense toasts "Gasto guardado" and refreshes the month', async () => {

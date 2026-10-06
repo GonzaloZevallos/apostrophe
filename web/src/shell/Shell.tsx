@@ -27,7 +27,7 @@ import type { Me } from '../api/me'
 import BusinessAvatar from '../components/BusinessAvatar'
 import Icono, { type NombreIcono } from '../components/Icono'
 import { paths } from '../routes/paths'
-import { activeTab, type Tab } from './activeTab'
+import { activeTab, barTab, type Tab } from './activeTab'
 import { handleOf, parentOf, type ViewportParent } from './routeHandle'
 import { useBack } from './useBack'
 
@@ -89,6 +89,7 @@ export default function Shell() {
   const { pathname } = useLocation()
   const handle = handleOf(matches) ?? { kind: 'root' as const }
   const tab = activeTab(pathname)
+  const phoneTab = barTab(tab)
   const showNewSale = handle.kind === 'root'
   const showNav = handle.kind !== 'form'
 
@@ -149,8 +150,8 @@ export default function Shell() {
               <Link
                 key={entry.tab}
                 to={entry.to}
-                aria-current={current(tab === entry.tab)}
-                className={mark('bar-inferior__item', tab === entry.tab)}
+                aria-current={current(phoneTab === entry.tab)}
+                className={mark('bar-inferior__item', phoneTab === entry.tab)}
               >
                 {entry.icono !== undefined && <Icono nombre={entry.icono} />}
                 <span>{entry.label}</span>

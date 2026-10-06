@@ -10,7 +10,7 @@
 
 import { type FormEvent, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link, useLocation, useNavigate, useOutletContext } from 'react-router'
+import { useLocation, useNavigate, useOutletContext } from 'react-router'
 import { ApiError, NetworkError, UNKNOWN_CODE } from '../api/client'
 import {
   type Expense,
@@ -492,9 +492,6 @@ export default function Gastos() {
         )}
 
         <span className="pie">{FLOWER_NOTICE}</span>
-        <Link to={paths.expenseCategories()} className="boton--enlace">
-          Categorías
-        </Link>
         <button type="button" className="boton" onClick={() => setFormTarget('nuevo')}>
           Nuevo gasto
         </button>
