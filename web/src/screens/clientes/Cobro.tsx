@@ -260,16 +260,16 @@ export default function Cobro({ customerId, balance, today }: CobroProps) {
             Guardar
           </button>
         </form>
+        {blocker.state === 'blocked' && (
+          <LeaveConfirm
+            blocker={blocker}
+            question="¿Descartás el cobro?"
+            detail="Se pierde lo que cargaste: todavía no se guardó nada."
+            keepLabel="No, seguí cargando"
+            discardLabel="Sí, descartalo"
+          />
+        )}
       </div>
-      {blocker.state === 'blocked' && (
-        <LeaveConfirm
-          blocker={blocker}
-          question="¿Descartás el cobro?"
-          detail="Se pierde lo que cargaste: todavía no se guardó nada."
-          keepLabel="No, seguí cargando"
-          discardLabel="Sí, descartalo"
-        />
-      )}
     </div>
   )
 }
