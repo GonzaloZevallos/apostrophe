@@ -21,7 +21,7 @@ export interface Paleta {
   tinta: string;
   /** Rótulos, datos secundarios, íconos inactivos. */
   tinta2: string;
-  /** Texto deshabilitado y placeholders. */
+  /** Sólo íconos: no es texto, no llega a 4,5:1 (ver la tabla del README). */
   tenue: string;
   /** Línea fina que separa filas y secciones. */
   linea: string;
@@ -55,7 +55,7 @@ export const claro: Paleta = {
   papel: '#FCFBF8',
   superficie: '#F2EEE6',
   tinta: '#231E18',
-  tinta2: '#7A7065',
+  tinta2: '#706659',
   tenue: '#9A9085',
   linea: '#EBE5DA',
 
@@ -64,7 +64,7 @@ export const claro: Paleta = {
 
   deuda: '#7A4A00',
   deudaFondo: '#F3E6CB',
-  deuda2: '#8A6530',
+  deuda2: '#7F5D28',
   deudaLinea: '#E6D5B4',
 
   critico: '#33281A',
@@ -72,7 +72,7 @@ export const claro: Paleta = {
 
   boton: '#231E18',
   botonTexto: '#FCFBF8',
-  navInactivo: '#A79C8D',
+  navInactivo: '#7A7064',
 };
 
 export const oscuro: Paleta = {
@@ -97,7 +97,7 @@ export const oscuro: Paleta = {
 
   boton: '#E9EDF2',
   botonTexto: '#10131A',
-  navInactivo: '#6E7A73',
+  navInactivo: '#7B8780',
 };
 
 export const paletas: Record<Tema, Paleta> = { claro, oscuro };
