@@ -23,6 +23,18 @@ import { expectOnlyTheThemeStored } from './helpers/storage.js'
 const PAPEL = 'rgb(252, 251, 248)'
 const PAPEL_OSCURO = 'rgb(16, 19, 26)'
 
+async function themeColor(page: Page): Promise<string | null> {
+  return page.evaluate(
+    () => document.querySelector('meta[name="theme-color"]')?.getAttribute('content') ?? null,
+  )
+}
+
+async function computedPapel(page: Page): Promise<string> {
+  return page.evaluate(() =>
+    getComputedStyle(document.documentElement).getPropertyValue('--papel').trim(),
+  )
+}
+
 async function htmlBackground(page: Page): Promise<string> {
   return page.evaluate(() => getComputedStyle(document.documentElement).backgroundColor)
 }
@@ -35,6 +47,35 @@ test('a dark system alone never gives the dark theme', async ({ page }) => {
   await page.goto('/entrar')
 
   expect(await htmlBackground(page)).toBe(PAPEL)
+  expect(messages).toEqual([])
+})
+
+test('the status bar follows data-tema alone: light by default, dark with the attribute, light again without', async ({
+  page,
+}) => {
+  const messages: string[] = []
+  watchConsole(page, messages)
+
+  // The system is dark and no attribute is set: the meta must stay the light paper.
+  await page.emulateMedia({ colorScheme: 'dark' })
+  await page.goto('/entrar')
+  await page.waitForLoadState('load')
+  const light = await computedPapel(page)
+  expect(light).not.toBe('')
+  expect(await themeColor(page)).toBe(light)
+
+  await page.evaluate(() => {
+    document.documentElement.dataset.tema = 'oscuro'
+  })
+  await expect.poll(() => themeColor(page)).not.toBe(light)
+  const dark = await computedPapel(page)
+  expect(dark).not.toBe(light)
+  expect(await themeColor(page)).toBe(dark)
+
+  await page.evaluate(() => {
+    document.documentElement.removeAttribute('data-tema')
+  })
+  await expect.poll(() => themeColor(page)).toBe(light)
   expect(messages).toEqual([])
 })
 
