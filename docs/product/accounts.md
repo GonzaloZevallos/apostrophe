@@ -3,6 +3,7 @@
 Businesses, their users, the only way in (an invitation and a login), the way back in (a password change and an operator-issued reset link), and the only way out (an operator's command that exports a business and removes it). Every other capability reads one thing from here, the business of the user asking, and serves that business alone (ADR-0004). It also holds the app as a whole:
 
 - how it is served, installed and themed, including the theme choice each device remembers, and how the installed shell fills the phone's screen;
+- the phone standard every screen meets at phone widths, and the check that keeps it true;
 - how the installation is published on the internet and backed up (ADR-0016);
 - the feedback rules every screen follows, and the shared states (`Estados`) that draw them;
 - the Negocio, Usuarios, Apariencia and Tu cuenta groups of Configuración.
@@ -37,6 +38,10 @@ This refines the "log in once and stay in", "get in with the link I was sent" an
 
 This refines the "log in once and stay in" job above and criterion 5; it is not a new job. Its protagonist is the seller; the operator and Capacitor are not part of it.
 
+**When** I handle an order, a payment, a stock entry or an expense on my phone, one-handed and mid-chat with a customer, **I want** every screen to behave like a phone app (the bar and header always in reach, controls I can hit with my thumb, the keyboard never hiding what I type, never a blank screen while it loads, text I can read in both themes), **so I can** finish and get back to the customer without zooming, mis-tapping or wondering whether it froze.
+
+This refines criterion 5 and the installed-shell job above, extending them from the shell to every screen; it is not a new job. Its protagonist is the seller. The builder's half (one written phone rule and a check that fails when a screen breaks it) is how the job is delivered, not a second job. The operator and Capacitor are not part of it.
+
 **When** a friend stops using the app, or asks to be taken out of it, **I want** to hand them everything the app holds of their business in one file and then remove that business from the installation completely, **so that** they keep their books and their customers' names, phone numbers and balances are no longer held by me or by anyone else on the installation. A business opened by mistake is covered by the same command. The business goes as a whole, every user included. The operator has agreed with every user of the business beforehand; the command does not check it.
 
 **When** a seller needs the app away from my home network, **I want** the installation published on the internet over HTTPS, with every business's data copied off the server continuously, encrypted, and proven restorable, **so I can** let sellers work from anywhere without one lost server, disk or leaked backup costing anyone their books or exposing their customers.
@@ -58,6 +63,7 @@ Success criteria:
    - It says "Sin conexión" when the network drops.
    - No state is told by color alone (blue ↔ amber, never green ↔ red).
    - Installed, it fills the screen and responds like a phone app (criteria 33–36).
+   - Every screen at phone widths (below the 900 px computer breakpoint) meets the phone standard, written in CODING_STANDARDS §10 "Phone" and the design README's "En el celular", and checked by `web/e2e/mobile.spec.ts` (criteria 37–41).
 6. Businesses stay invisible to each other in the browser too.
    - No business in a URL.
    - No personal data or money in the console or browser storage. The only thing the browser keeps is the device's theme choice.
@@ -141,6 +147,24 @@ Success criteria, the installed shell:
     - The bar still fits at 320 px with text at 130%.
     - No state is told by colour alone, in either theme; the pressed state uses tokens only, in both themes.
     - No existing token value changes; only the four new inset tokens are added.
+
+Success criteria, the phone standard:
+
+37. **Written once, read from both sides.**
+    - CODING_STANDARDS §10 "Phone" and the design README's "En el celular" state the same eight requirements: chrome, touch, inputs, forms and sheets, layout, gestures, loading and readability.
+    - Each requirement carries the same "checked" or "review" label in both.
+    - Neither contradicts the other, this file's installed-shell rules, ADR-0027, ADR-0028 or ADR-0029.
+    - Where one of those already decides a point, the standard cites it and does not restate it.
+38. **Checked, not trusted.** `web/e2e/mobile.spec.ts` covers every route in `scripts/design/screens.json`, every form and sheet, and the shared `Estados` states.
+    - It runs at 320×568, 375×812, 430×932 and 246×437 (130 %), in both themes.
+    - It fails on every checked defect.
+39. **The list of known offenders can only shrink.**
+    - Each expected failure names the issue that removes it.
+    - A new offender fails the run, and so does a fixed one left on the list.
+40. **Every area PR shows it.** Each area issue's PR (#45–#49, #59, #60, #78) and `scripts/design/compare.sh` attach the check's result. An area issue is not done while its own screens are still on the offender list.
+41. **Nothing regresses for the seller.**
+    - A sale, a payment, a stock entry and an expense are each still recorded from the phone in under 60 s.
+    - The existing accounts, navigation, sales and feedback suites pass unedited.
 
 Success criteria, removing a business:
 
@@ -364,6 +388,43 @@ How the app fills a phone's screen and responds to touch once installed (criteri
 - **Splash**: no `apple-touch-startup-image`; iOS shows its own blank launch screen, accepted. Android's splash comes from the manifest's `background_color` and icon.
 - **Accepted limitations**: on iOS the status strip stays light with dark text above the dark paper in the dark theme; on iOS the launch screen is blank until the app paints.
 
+### The phone standard (every screen)
+
+The rule every screen meets at phone widths (criteria 37–41). It is written once, with the same eight requirements and the same "checked" or "review" labels, in two places:
+
+- CODING_STANDARDS §10 "Phone";
+- the design README's "En el celular".
+
+This file only says where it applies and how it is kept true. It does not restate the requirements.
+
+- **Where it applies**: below the 900 px computer breakpoint only. The computer layouts are out of its scope.
+  - Getting-in screens are screens, not sheets, and every rule applies to them.
+  - Confirmations are short dialogs, not sheets.
+- **What it cites, not restates**:
+  - this file's installed shell: the viewport meta, `dvh`, the inset tokens, the `:active` state, the tap highlight and `contain` on scrolling regions;
+  - ADR-0027: a sheet is a history entry;
+  - ADR-0028: Nueva venta pinned to the visual viewport;
+  - ADR-0029: the contrast table.
+- **Viewport meta**: the standard states only the outcome. The focused field stays in view and the submit is reachable by scrolling. Nobody changes the meta outside #77, which ships it with ADR-0028's phone comparison of every screen. Until then, ADR-0028's hook stands.
+- **Exceptions**: an area's product doc may record a deliberate exception. Without one, the standard wins over an area issue. ADRs decide how a rule is implemented.
+- **The check, `web/e2e/mobile.spec.ts`**:
+  - **Setup**: Playwright with isMobile and hasTouch, at 320×568, 375×812, 430×932 and 246×437 (130 %), in light and dark.
+  - **Coverage**:
+    - every route in `scripts/design/screens.json`;
+    - every form and sheet;
+    - the shared `Estados` states: the brake message, both dead-link texts, "Sin conexión", the generic retry, both "Eso ya no está." forms and loading.
+
+    A front route missing from `screens.json` fails it.
+  - **Fixture**: a 60-character name, and nine-digit figures ("$ 999.999.999", and "−$ 999.999.999" on Ganancia and Caja).
+  - **Empty states**: the forbidden empty-state wordings while data loads are read from one list in the spec.
+  - **Not automated**: the real keyboard and the real-device pass stay by eye, as the installed shell and ADR-0028 require.
+- **Offender list**:
+  - An entry is one screen, one rule and one issue number.
+  - The run fails on a new offender, on an entry whose screen now passes, and on an entry with no issue number.
+  - There is no network lookup; review checks that the number is a real, open area issue.
+  - The chrome assertions ship enabled, with today's failing screens listed against #59.
+- **Attached**: `scripts/design/compare.sh` output and every area PR attach the check's result.
+
 ### In Configuración: Negocio, Usuarios, Apariencia, Tu cuenta
 
 These groups of Configuración (navigation.md) replace the former Negocio screen, which no longer exists; `/negocio` redirects to Configuración. Each is its own subscreen, a form: "Cerrar", and a confirmation when leaving with unsaved changes; an untouched one closes at once.
@@ -430,7 +491,7 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
   - Choosing a theme shows no toast.
   - The exception is "Cobro guardado · queda debiendo $ X" (payments.md). It names what the customer still owes, because seeing that is the point of recording a payment. When nothing is left owing it reads "Cobro guardado".
 - **No "Deshacer" on success toasts, with one deliberate exception**: "Venta guardada" (sales.md) carries Deshacer, because recording a sale is the fastest and most frequent entry. It still carries no data. No other success notice gets one.
-- **Loading**: while a screen waits for the server, it shows a loading state whose wording and shape follow the design. It shows no figure, no placeholder amount and no text that could be read as data (criterion 7).
+- **Loading**: while a screen waits for the server, it shows a loading state whose wording and shape follow the design. It shows no figure, no placeholder amount and no text that could be read as data (criterion 7). At phone widths it also meets the phone standard's loading rule: shaped like the content, `aria-busy`, no false empty state.
 - **Empty states** keep each capability's own fixed wording.
 - **Leaving a form or sheet** with unsaved changes asks before discarding, and an untouched one closes at once (navigation.md). Nueva venta's question is "¿Descartás la venta?" (sales.md).
 - **Refusals** show inline and keep what was typed. The one exception: a wrong current password clears "Contraseña actual".
@@ -478,6 +539,14 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
   - static checks: no screen-tied `vh` left in `app.css` (`dvh` instead); the four inset tokens exist, and the bar, the header, "+ Nueva venta", sheets and toasts use them; no existing token value changed;
   - regression: the accounts, navigation and feedback suites pass unchanged; the bar fits at 320 px with text at 130 %; the pressed state uses tokens only, in both themes;
   - by eye, in portrait, on a real iPhone installed over the home network and a real Android phone on the published installation: criterion 33 (Nueva venta, Registrar cobro and the expense form with the keyboard open included), criterion 35 (the pressed state visible in both themes), the Android status bar in both themes, the iOS light strip with the top inset handled, and the maskable icon on the Android launcher.
+- **Phone standard (criteria 37–41)**: no telemetry; the measures come from the check and from review.
+  - offenders: the number of entries in the offender list, per rule and per issue. It starts at today's count and only goes down, reported in each area PR and in `compare.sh` output. Target: 0 once #45–#49, #59, #60 and #78 close;
+  - check attached: the share of area PRs that attach the mobile check's result. Target: 100%;
+  - written once: a review check that CODING_STANDARDS §10 and the design README list the same eight requirements with the same labels, and contradict none of this file, ADR-0027, ADR-0028 or ADR-0029;
+  - coverage: the spec fails for a route missing from `screens.json`, and a test shows that a wording added to the empty-state list is enforced;
+  - offender rules: tests show the run fails on a new offender, on a fixed entry left listed and on an entry with no issue number;
+  - no regression: the under-60-s recording times (sale, payment, stock entry, expense) and the existing accounts, navigation, sales and feedback suites pass unedited;
+  - by eye: the real-device pass, as for the installed shell and ADR-0028.
 - **Nothing invented (criterion 7)**:
   - the bar, the sidebar, Más and Configuración show exactly the entries navigation.md lists;
   - every figure on Inicio equals the API's answer, with real zeros for a period with no activity (results.md);
@@ -590,3 +659,7 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
 - An iOS status bar that follows the theme live.
 - A landscape-specific design; locking orientation or disabling zoom.
 - A new icon look (a branding change).
+- Fixing each area's screens to meet the phone standard (#45–#49, #59, #60, #78): each area issue does its own.
+- The phone standard on the computer layouts; a large-text 3:1 contrast relaxation; a network lookup of whether an offender's issue is open.
+- Automatic checks of the 8 px gap, the `:active` state, hover dependence and `enterkeyhint` outside Nueva venta's lines: review-only.
+- Changing the viewport meta outside #77.
