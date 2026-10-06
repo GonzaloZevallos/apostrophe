@@ -176,6 +176,55 @@ test('a successful save opens the sale the API answered with, replacing history'
   expect(await screen.findByText('Venta guardada')).toBeInTheDocument()
 })
 
+test('the form closes with "Cerrar" and shows no back control named "Volver"', async () => {
+  await openForm({
+    'GET /auth/me': () => jsonResponse(200, ME),
+    'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
+  })
+
+  expect(screen.getByRole('button', { name: 'Cerrar' })).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Volver' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: 'Volver' })).not.toBeInTheDocument()
+})
+
+test('with no history behind it, "Cerrar" replaces the form with Ventas instead of pushing it', async () => {
+  const user = userEvent.setup()
+  setupFetch({
+    'GET /auth/me': () => jsonResponse(200, ME),
+    'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
+    'GET /sales?date_from=2026-10-02&date_to=2026-10-02': () => jsonResponse(200, []),
+  })
+  await act(() => router.navigate(SALE_NEW))
+  render(<App />)
+  await screen.findByText('Nueva venta')
+
+  await user.click(screen.getByRole('button', { name: 'Cerrar' }))
+  expect(
+    await screen.findByText('Ventas', { selector: '.encabezado__titulo' }),
+  ).toBeInTheDocument()
+  expect(router.state.location.pathname).toBe(SALES)
+
+  await act(() => router.navigate(-1))
+  expect(router.state.location.pathname).not.toBe(SALE_NEW)
+})
+
+test('opened from inside the app, "Cerrar" goes back through history', async () => {
+  const user = userEvent.setup()
+  setupFetch({
+    'GET /auth/me': () => jsonResponse(200, ME),
+    'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
+    'GET /sales?date_from=2026-10-02&date_to=2026-10-02': () => jsonResponse(200, []),
+  })
+  await act(() => router.navigate(SALES))
+  await act(() => router.navigate(SALE_NEW, { state: { inApp: true } }))
+  render(<App />)
+  await screen.findByText('Nueva venta')
+
+  await user.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await waitFor(() => expect(router.state.location.pathname).toBe(SALES))
+  expect(router.state.location.state).toBeNull()
+})
+
 test('an untouched form closes at once; a touched one asks "¿Descartás la venta?" first', async () => {
   const user = userEvent.setup()
   await openForm({
@@ -186,7 +235,7 @@ test('an untouched form closes at once; a touched one asks "¿Descartás la vent
     'GET /sales?date_from=2026-10-02&date_to=2026-10-02': () => jsonResponse(200, []),
   })
 
-  await user.click(screen.getByRole('button', { name: 'Volver' }))
+  await user.click(screen.getByRole('button', { name: 'Cerrar' }))
   expect(
     await screen.findByText('Ventas', { selector: '.encabezado__titulo' }),
   ).toBeInTheDocument()
@@ -194,7 +243,7 @@ test('an untouched form closes at once; a touched one asks "¿Descartás la vent
   await act(() => router.navigate(SALE_NEW))
   await screen.findByText('Nueva venta')
   await user.type(screen.getByLabelText('Gramos línea 1'), '2')
-  await user.click(screen.getByRole('button', { name: 'Volver' }))
+  await user.click(screen.getByRole('button', { name: 'Cerrar' }))
 
   const dialog = await screen.findByRole('alertdialog')
   expect(within(dialog).getByText('¿Descartás la venta?')).toBeInTheDocument()
@@ -202,7 +251,7 @@ test('an untouched form closes at once; a touched one asks "¿Descartás la vent
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
   expect(screen.getByText('Nueva venta')).toBeInTheDocument()
 
-  await user.click(screen.getByRole('button', { name: 'Volver' }))
+  await user.click(screen.getByRole('button', { name: 'Cerrar' }))
   const dialogAgain = await screen.findByRole('alertdialog')
   await user.click(within(dialogAgain).getByRole('button', { name: 'Sí, descartala' }))
   expect(
@@ -363,7 +412,7 @@ test('nothing an earlier mount cached ever renders: a remount with a different p
   // Leave (unmounting NuevaVenta — `gcTime: 0` evicts its frozen query right away)
   // and change what the next fetch answers with, as if a partner had repriced Rosa
   // meanwhile. The form is touched, so "Cerrar" asks first.
-  await user.click(screen.getByRole('button', { name: 'Volver' }))
+  await user.click(screen.getByRole('button', { name: 'Cerrar' }))
   await user.click(await screen.findByRole('button', { name: 'Sí, descartala' }))
   await screen.findByText('Ventas', { selector: '.encabezado__titulo' })
   listPrice = 5000

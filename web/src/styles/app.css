@@ -1212,6 +1212,7 @@ button {
   align-self: flex-start;
 }
 
+.nueva-venta .nueva-venta__cerrar,
 .gasto-form .gasto-form__cerrar {
   box-shadow: none;
   color: var(--tinta2);

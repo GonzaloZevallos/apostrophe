@@ -46,6 +46,7 @@ import LeaveConfirm from '../../components/LeaveConfirm'
 import ReglaInsignia from '../../components/ReglaInsignia'
 import SelectorPago from '../../components/SelectorPago'
 import SinConexion from '../../components/SinConexion'
+import { useBackOr } from '../../components/useBackOr'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
 import { formatDateLong, formatDateShort, maxSaleDate } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
@@ -411,10 +412,7 @@ export default function NuevaVenta() {
     return 'variety'
   }
 
-  function goBack(): void {
-    if (location.key === 'default') navigate(SALES)
-    else navigate(-1)
-  }
+  const close = useBackOr(SALES)
 
   async function onSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault()
@@ -524,7 +522,6 @@ export default function NuevaVenta() {
         <div className="nueva-venta__disposicion">
         <div className="nueva-venta__cuerpo">
           <div className="encabezado-fila">
-            <Boton variant="icon" ariaLabel="Volver" icon="atras" onClick={goBack} />
             <span className="encabezado__titulo">Nueva venta</span>
             <span className="fecha-pildora">
               <input
@@ -541,6 +538,9 @@ export default function NuevaVenta() {
                 <Icono nombre="abajo" size={15} strokeWidth={1.8} />
               </span>
             </span>
+            <button type="button" className="boton--enlace nueva-venta__cerrar" onClick={close}>
+              Cerrar
+            </button>
           </div>
           {dateError !== null && (
             <span className="campo__error" role="alert">
