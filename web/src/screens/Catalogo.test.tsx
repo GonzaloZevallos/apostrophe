@@ -1,7 +1,7 @@
 /**
  * `Catalogo` at the screen seam (plan, "Front"): the preview built only from
  * `telegramPreview(text)`, Copiar gated on the open's fetch, "Qué sale en el
- * catálogo" told by word, and both edit forms. The API is faked at `fetch`, never
+ * catálogo" told by word, and the variety's edit form. The API is faked at `fetch`, never
  * mocked deeper (CODING_STANDARDS §10).
  */
 
@@ -38,6 +38,10 @@ function renderCatalogo(fetchMock: ReturnType<typeof vi.fn>): QueryClient {
         <Routes>
           <Route element={<Provide />}>
             <Route path="/catalogo" element={<Catalogo />} />
+            <Route
+              path="/settings/catalog-message"
+              element={<div>Aterrizaste en el mensaje del catálogo</div>}
+            />
           </Route>
         </Routes>
       </MemoryRouter>
@@ -265,29 +269,42 @@ test('a gone variety shows "Eso ya no está." instead of a toast', async () => {
   expect(screen.queryByText('Catálogo guardado')).not.toBeInTheDocument()
 })
 
-test('editing the header and footer saves and shows the new values', async () => {
-  const fetchMock = vi.fn((url: string, init?: RequestInit) => {
-    if (init?.method === 'PUT' && url === '/catalog/header-footer') {
-      return Promise.resolve(
-        jsonResponse(200, { ...CATALOG, header: 'Nuevo encabezado', footer: 'Nuevo pie' }),
-      )
-    }
-    return Promise.resolve(defaultResponse(url))
-  })
-  renderCatalogo(fetchMock)
+test('the catalog screen offers no header or footer editing, only the read-only values', async () => {
+  renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Editar encabezado y pie' }))
-  const headerInput = screen.getByLabelText('Encabezado')
-  await userEvent.clear(headerInput)
-  await userEvent.type(headerInput, 'Nuevo encabezado')
-  const footerInput = screen.getByLabelText('Pie')
-  await userEvent.clear(footerInput)
-  await userEvent.type(footerInput, 'Nuevo pie')
-  await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+  await screen.findByRole('button', { name: 'Editar 24K Gold' })
+  expect(screen.getByText('Encabezado')).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Editar encabezado y pie' })).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Encabezado')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Pie')).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Guardá el mensaje' })).not.toBeInTheDocument()
+})
 
-  expect(await screen.findByText('Catálogo guardado')).toBeInTheDocument()
-  expect(await screen.findByText('Nuevo encabezado')).toBeInTheDocument()
-  expect(await screen.findByText('Nuevo pie')).toBeInTheDocument()
+test('"/catalogo" still shows the preview, Copiar, the pin status and Publicar', async () => {
+  const published = {
+    ...DEFAULT_PINNED_CATALOG,
+    can_publish: true,
+    publish_blocked_by: null,
+    status: { state: 'up_to_date', reason: null, last_published_on: '2026-10-01' },
+  }
+  renderCatalogo(
+    vi.fn((url: string) =>
+      Promise.resolve(jsonResponse(200, url === '/pinned-catalog' ? published : CATALOG)),
+    ),
+  )
+
+  expect(await screen.findByText('Cómo se ve en Telegram')).toBeInTheDocument()
+  expect(await screen.findByRole('button', { name: 'Copiar' })).toBeInTheDocument()
+  expect(await screen.findByRole('button', { name: 'Publicar' })).toBeInTheDocument()
+  expect(await screen.findByText('Al día')).toBeInTheDocument()
+})
+
+test('"Editar encabezado y pie" opens Configuración → Mensaje del catálogo', async () => {
+  renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
+
+  await userEvent.click(await screen.findByRole('link', { name: 'Editar encabezado y pie' }))
+
+  expect(await screen.findByText('Aterrizaste en el mensaje del catálogo')).toBeInTheDocument()
 })
 
 test('the catalog screen offers no bot settings: they live in Integraciones', async () => {
@@ -314,7 +331,6 @@ test('a catalog input never carries maxLength', async () => {
     </QueryClientProvider>,
   )
   await userEvent.click(await screen.findByRole('button', { name: 'Editar 24K Gold' }))
-  await userEvent.click(await screen.findByRole('button', { name: 'Editar encabezado y pie' }))
 
   await waitFor(() => expect(container.querySelectorAll('input, textarea').length).toBeGreaterThan(0))
   for (const el of container.querySelectorAll('input, textarea')) {

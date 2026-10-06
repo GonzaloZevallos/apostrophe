@@ -6,8 +6,8 @@
  * path that works over the home network's plain http (ADR-0002), and is not
  * rendered until this open's own fetch has resolved. "Qué sale en el catálogo"
  * tells every variety in or out by word (`STATE_LABEL`), never by color alone, and
- * opens that variety's attributes for editing. The header and footer are edited
- * from the same screen. The pin's status and Publicar are `PinPublish`; the bot's
+ * opens that variety's attributes for editing. The header and footer show here
+ * read-only; "Editar encabezado y pie" opens Configuración → Mensaje del catálogo. The pin's status and Publicar are `PinPublish`; the bot's
  * settings and Probarlo live in Configuración → Integraciones, not here.
  *
  * The query is frozen (`gcTime: 0`, `staleTime: Infinity`, no refetch on focus or
@@ -29,9 +29,9 @@ import AvisoExito, { type SuccessToast } from '../components/AvisoExito'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import SinConexion from '../components/SinConexion'
 import PinPublish from './PinPublish'
+import { CATALOG_SAVED } from './settings/messages'
 import { telegramPreview } from './telegramPreview'
 
-export const CATALOG_SAVED = 'Catálogo guardado'
 export const CATALOG_COPIED = 'Catálogo copiado'
 export const COPY_FAILED_MESSAGE = 'No se pudo copiar.'
 export const EMPTY_STATE_TITLE = 'No hay nada en el catálogo hoy'
@@ -39,8 +39,6 @@ export const EMPTY_STATE_DETAIL = 'No hay nada para copiar todavía'
 export const EMOJI_INVALID_MESSAGE = 'Poné exactamente un emoji'
 export const INDICA_SHARE_INVALID_MESSAGE = 'El porcentaje de índica va de 0 a 100'
 export const AROMA_TOO_LONG_MESSAGE = 'El aroma es demasiado largo'
-export const HEADER_TOO_LONG_MESSAGE = 'El encabezado es demasiado largo'
-export const FOOTER_TOO_LONG_MESSAGE = 'El pie es demasiado largo'
 export const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
 
 type CatalogVarietyState = 'in' | 'hidden' | 'no_price' | 'sold_out' | 'no_entries'
@@ -77,11 +75,6 @@ const ATTRIBUTES_OVERRIDES: Partial<Record<RefusalCode, string>> = {
   'catalog.aroma_too_long': AROMA_TOO_LONG_MESSAGE,
 }
 
-const HEADER_FOOTER_OVERRIDES: Partial<Record<RefusalCode, string>> = {
-  'catalog.header_too_long': HEADER_TOO_LONG_MESSAGE,
-  'catalog.footer_too_long': FOOTER_TOO_LONG_MESSAGE,
-}
-
 function detailFor(variety: CatalogVariety): string {
   const bits: string[] = []
   if (variety.indica_share !== null) bits.push(`${variety.indica_share}% índica`)
@@ -115,13 +108,6 @@ export default function Catalogo() {
   const [attrOffline, setAttrOffline] = useState(false)
   const [savingAttrs, setSavingAttrs] = useState(false)
 
-  const [editingHeaderFooter, setEditingHeaderFooter] = useState(false)
-  const [headerInput, setHeaderInput] = useState('')
-  const [footerInput, setFooterInput] = useState('')
-  const [headerFooterError, setHeaderFooterError] = useState<string | null>(null)
-  const [headerFooterOffline, setHeaderFooterOffline] = useState(false)
-  const [savingHeaderFooter, setSavingHeaderFooter] = useState(false)
-
   useEffect(() => {
     if (toast === null) return
     const timer = setTimeout(() => setToast(null), 3000)
@@ -139,7 +125,6 @@ export default function Catalogo() {
   }
 
   function startEditingVariety(variety: CatalogVariety): void {
-    setEditingHeaderFooter(false)
     setEditingVarietyId(variety.id)
     setAttrShown(variety.shown)
     setAttrEmoji(variety.emoji ?? '')
@@ -198,47 +183,6 @@ export default function Catalogo() {
       }
     } finally {
       setSavingAttrs(false)
-    }
-  }
-
-  function startEditingHeaderFooter(catalog: Catalog): void {
-    setEditingVarietyId(null)
-    setHeaderInput(catalog.header)
-    setFooterInput(catalog.footer)
-    setHeaderFooterError(null)
-    setHeaderFooterOffline(false)
-    setEditingHeaderFooter(true)
-  }
-
-  async function onSaveHeaderFooter(event: FormEvent<HTMLFormElement>): Promise<void> {
-    event.preventDefault()
-    setHeaderFooterError(null)
-    setHeaderFooterOffline(false)
-    setSavingHeaderFooter(true)
-    try {
-      const view = await put<Catalog>('/catalog/header-footer', {
-        header: headerInput,
-        footer: footerInput,
-      })
-      applyWrite(view)
-      setEditingHeaderFooter(false)
-      setToast(CATALOG_SAVED)
-    } catch (caught) {
-      if (caught instanceof ApiError) {
-        const message = resolveOverride(HEADER_FOOTER_OVERRIDES, caught.code)
-        if (message !== undefined) setHeaderFooterError(message)
-        else if (caught.code !== UNKNOWN_CODE && kindOf(caught.code) === 'refusal') {
-          setHeaderFooterError(GENERIC_REFUSAL_MESSAGE)
-        } else {
-          setHeaderFooterError(ERROR_GENERICO_MENSAJE)
-        }
-      } else if (caught instanceof NetworkError) {
-        setHeaderFooterOffline(true)
-      } else {
-        setHeaderFooterError(ERROR_GENERICO_MENSAJE)
-      }
-    } finally {
-      setSavingHeaderFooter(false)
     }
   }
 
@@ -421,44 +365,14 @@ export default function Catalogo() {
                   <span>{catalog.footer}</span>
                 </span>
               </div>
-              <button
-                type="button"
+              <Link
+                to="/settings/catalog-message"
+                state={{ inApp: true }}
                 className="boton-enlace"
-                onClick={() => startEditingHeaderFooter(catalog)}
               >
                 Editar encabezado y pie
-              </button>
+              </Link>
             </div>
-
-            {editingHeaderFooter && (
-              <form className="formulario" onSubmit={onSaveHeaderFooter}>
-                <label className="campo">
-                  <span className="campo__rotulo">Encabezado</span>
-                  <textarea
-                    className="campo__input"
-                    value={headerInput}
-                    onChange={(event) => setHeaderInput(event.target.value)}
-                  />
-                </label>
-                <label className="campo">
-                  <span className="campo__rotulo">Pie</span>
-                  <textarea
-                    className="campo__input"
-                    value={footerInput}
-                    onChange={(event) => setFooterInput(event.target.value)}
-                  />
-                </label>
-                {headerFooterError !== null && (
-                  <span className="campo__error" role="alert">
-                    {headerFooterError}
-                  </span>
-                )}
-                {headerFooterOffline && <SinConexion />}
-                <button className="boton" type="submit" disabled={savingHeaderFooter}>
-                  Guardar
-                </button>
-              </form>
-            )}
 
           </>
         )}
