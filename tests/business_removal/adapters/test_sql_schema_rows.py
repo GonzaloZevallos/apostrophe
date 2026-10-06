@@ -147,6 +147,32 @@ def _seed_join_invitations(client: TestClient, engine: Engine, business_id: int)
     _issue_join_invitation(engine, business_id, NOW - timedelta(days=30))
 
 
+def _seed_withdrawal(engine: Engine, business_id: int, variety_id: int) -> None:
+    """A stock withdrawal with one line, written by hand: its routes belong to a later
+    subtask, and the removal only needs the two tables to hold a row of this business."""
+    with engine.begin() as connection:
+        withdrawal_id = connection.execute(
+            text(
+                "INSERT INTO stock_withdrawal (business_id, reason, withdrawn_on, recorded_at) "
+                "VALUES (:business_id, 'promotion', '2026-01-01', '2026-01-01 12:00:00') "
+                "RETURNING id"
+            ),
+            {"business_id": business_id},
+        ).scalar_one()
+        connection.execute(
+            text(
+                "INSERT INTO stock_withdrawal_line "
+                "(business_id, stock_withdrawal_id, variety_id, position, grams_hundredths) "
+                "VALUES (:business_id, :withdrawal_id, :variety_id, 0, 500)"
+            ),
+            {
+                "business_id": business_id,
+                "withdrawal_id": withdrawal_id,
+                "variety_id": variety_id,
+            },
+        )
+
+
 @pytest.fixture
 def seeded(
     app: FastAPI, file_engine: Engine, leaving_token: str, staying_token: str
@@ -156,9 +182,15 @@ def seeded(
         leaving_records = _seed_everything(leaving, "leaving@example.com")
         leaving_business_id = _business_id(file_engine, "leaving@example.com")
         _seed_join_invitations(leaving, file_engine, leaving_business_id)
+        _seed_withdrawal(file_engine, leaving_business_id, leaving_records["variety_id"])
 
         staying = signed_in(client, staying_token)
         staying_records = _seed_everything(staying, "staying@example.com")
+        _seed_withdrawal(
+            file_engine,
+            _business_id(file_engine, "staying@example.com"),
+            staying_records["variety_id"],
+        )
     return {"leaving": leaving_records, "staying": staying_records}
 
 
