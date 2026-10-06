@@ -296,7 +296,7 @@ A month's total margin across its varieties over the month's sales of costed gra
 _Avoid_: average profit, mean margin
 
 **First record**:
-The earliest sale, stock entry, payment or expense a business recorded in the app. Análisis's history and its since-the-start totals begin there. In the app: Desde el primer registro.
+The earliest sale, stock entry, stock withdrawal, payment or expense a business recorded in the app. Análisis's history and its since-the-start totals begin there, so no withdrawal's cost is ever left out of them. In the app: Desde el primer registro.
 _Avoid_: start date, opening date, inception
 
 **Best week**:

@@ -1,6 +1,6 @@
 # Analysis
 
-Where a business makes and loses money, across periods and down to each variety: margins per variety for a chosen month, sales, profit and cash over the last 8 weeks and 12 months, the weekday pattern, totals since the first record, and expenses by category. Read only and seen only by its business (ADR-0004). Every figure it shares with Results (#7) comes from #7's computation; cost of goods, stock shortfall and the cost of stock withdrawals follow the lots as they stand today (ADR-0009, ADR-0010). Reads sales, stock, payments and expenses. Reached from Más on the phone and from the sidebar on a computer (navigation.md).
+Where a business makes and loses money, across periods and down to each variety: margins per variety for a chosen month, sales, profit and cash over the last 8 weeks and 12 months, the weekday pattern, totals since the first record, and expenses by category. Read only and seen only by its business (ADR-0004). Every figure it shares with Results (#7) comes from #7's computation; cost of goods, stock shortfall and the cost of stock withdrawals follow the lots as they stand today (ADR-0009, ADR-0010). Reads sales, stock (entries and withdrawals), payments and expenses. Reached from Más on the phone and from the sidebar on a computer (navigation.md).
 
 ## Jobs
 
@@ -27,11 +27,11 @@ Success criteria:
 - **Chosen month**: opens on the current month in Argentina time; moved one month at a time, as in Gastos; from the month of the business's first record to the current month. No custom range (no Fechas).
 - **Last 8 weeks**: Monday-to-Sunday weeks in Argentina time, the current one included, as in Ventas.
 - **Last 12 months**: calendar months, the current one included.
-- **Since the first record**: from the business's first record (its earliest sale, stock entry, payment or expense in the app) to today. The spreadsheet's history is the import's job (#11).
+- **Since the first record**: from the business's first record (its earliest sale, stock entry, stock withdrawal, payment or expense in the app) to today. A withdrawal dated before every other record starts the history, so its cost is never left out. The spreadsheet's history is the import's job (#11).
 - **Sparse history**:
   - weeks and months before the first record are absent, with no placeholder rows;
   - inside the history, a week or month with no activity shows $0;
-  - a business with no record yet shows a fixed line saying there is nothing to analyse yet, and no figures.
+  - a business with no record of any of the five kinds yet shows a fixed line saying there is nothing to analyse yet, and no figures.
 
 ### Shared definitions (identical to Results #7)
 
@@ -106,6 +106,7 @@ Success criteria:
 
 - **Answers without arithmetic (criterion 1)**: a front test over a seeded business reads from the screen alone the best and worst variety by margin, the marked best week, the marked best weekday and the month's largest category, each matching the expected answer.
 - **One computation (criterion 2)**: for every week, month and the all-time window of a seeded history, sales, cost of goods, stock shortfall, promotion cost, own-use cost, expenses, profit and cash equal Results' (#7) figures and a direct computation. 0 differences. The variety table's sales add up to the month's sales minus its shipping.
+- **First record includes withdrawals (criterion 2)**: a withdrawal dated before every other record starts the history; its week and month rows and the since-the-first-record profit carry its cost, and they equal Inicio's figures for the same week and month, 0 differences. A business whose only record is a withdrawal shows that history, not the nothing-to-analyse line.
 - **Honest cost (criterion 3)**: 100% passing.
   - A backdated or edited stock entry or withdrawal moves the affected past weeks', months' and varieties' cost and margin on the next read, and nothing else.
   - Pending grams always show "y N g sin costo" and are never costed $0.
