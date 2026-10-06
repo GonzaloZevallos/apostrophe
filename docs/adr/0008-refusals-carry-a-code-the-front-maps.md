@@ -24,10 +24,11 @@ phone, an empty name and a too-long name.
   never reads it.
 - **`web/src/api/contract.json` is the contract between the two languages.** It holds
   `refusalCodes`, each with a kind (`refusal`, or `gone` for a code registered under
-  404), and `frontSegments`, the front's top-level paths. A pytest checks that the codes
+  404), and `staticSegments` and `routeSegments`, the front's top-level paths (ADR-0024 split
+  the first `frontSegments` list in two). A pytest checks that the codes
   of every registered class (subclasses walked) exist, are unique, equal the JSON's set
-  and have the kind their status implies, and that no API path segment is a front
-  segment.
+  and have the kind their status implies, and that no API path segment is a static
+  segment (a route segment may overlap the API, ADR-0024).
 - **`web/src/api/refusals.ts` is typed `Record<RefusalCode, Refusal>`** over the JSON, so
   a missing or stale code fails `tsc`. The front dispatches on the kind and maps the code
   to its field and Spanish text; an unknown code gets a generic line.

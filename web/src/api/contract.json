@@ -82,23 +82,27 @@
     "pinned_catalog.bot_cannot_post": { "kind": "refusal" },
     "RequestInvalid": { "kind": "refusal" }
   },
-  "frontSegments": [
-    "entrar",
+  "staticSegments": ["assets", "fonts", "icons", "manifest.webmanifest", "sw.js"],
+  "routeSegments": [
+    "login",
     "invitation",
     "reset",
+    "sales",
+    "customers",
+    "varieties",
+    "expenses",
+    "analysis",
+    "settings",
+    "more",
+    "entrar",
+    "ventas",
     "clientes",
     "variedades",
     "gastos",
-    "ventas",
-    "mi-stock",
+    "analisis",
     "mas",
     "negocio",
-    "analisis",
     "catalogo",
-    "assets",
-    "fonts",
-    "icons",
-    "manifest.webmanifest",
-    "sw.js"
+    "mi-stock"
   ]
 }
