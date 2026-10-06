@@ -1,5 +1,6 @@
 import { QueryClient, QueryObserver } from '@tanstack/react-query'
-import { describe, expect, test } from 'vitest'
+import { waitFor } from '@testing-library/react'
+import { afterEach, describe, expect, test, vi } from 'vitest'
 import { invalidateResource, keys } from './keys'
 
 function clientWithData(): QueryClient {
@@ -156,12 +157,19 @@ describe('invalidateResource refetchType', () => {
     return { queryClient, calls }
   }
 
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   test('"none" leaves a still-mounted query stale, without refetching it', async () => {
     const { queryClient, calls } = await clientWithActiveObserver()
     expect(calls).toHaveLength(1)
 
+    // A refetch that must never happen cannot be waited for: the fake clock is advanced
+    // explicitly instead, so the "nothing happened" check holds at any machine speed.
+    vi.useFakeTimers()
     invalidateResource(queryClient, 'sales', { refetchType: 'none' })
-    await new Promise((resolve) => setTimeout(resolve, 0))
+    await vi.advanceTimersByTimeAsync(1000)
 
     expect(calls).toHaveLength(1) // never refetched while still mounted.
     expect(isInvalidated(queryClient, keys.sale('1'))).toBe(true) // still marked stale.
@@ -172,8 +180,7 @@ describe('invalidateResource refetchType', () => {
     expect(calls).toHaveLength(1)
 
     invalidateResource(queryClient, 'sales')
-    await new Promise((resolve) => setTimeout(resolve, 0))
 
-    expect(calls).toHaveLength(2) // the default every other mutation still relies on.
+    await waitFor(() => expect(calls).toHaveLength(2)) // the default every other mutation still relies on.
   })
 })

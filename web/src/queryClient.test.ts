@@ -24,13 +24,13 @@ test('a 401 from any gated query clears the cache and sends the person to Entrar
   setNavigate(navigate)
   queryClient.setQueryData(['me'], { businessName: 'La Huerta' })
 
-  await queryClient
-    .fetchQuery({
+  await expect(
+    queryClient.fetchQuery({
       queryKey: ['boom-1'],
       queryFn: () => Promise.reject(new ApiError(401, 'unknown')),
       retry: false,
-    })
-    .catch(() => undefined)
+    }),
+  ).rejects.toMatchObject({ status: 401, code: 'unknown' })
 
   expect(queryClient.getQueryData(['me'])).toBeUndefined()
   expect(navigate).toHaveBeenCalledWith('/entrar')
@@ -42,13 +42,13 @@ test('a 401 while the current screen is public does nothing', async () => {
   setNavigate(navigate)
   queryClient.setQueryData(['me'], { businessName: 'La Huerta' })
 
-  await queryClient
-    .fetchQuery({
+  await expect(
+    queryClient.fetchQuery({
       queryKey: ['boom-2'],
       queryFn: () => Promise.reject(new ApiError(401, 'unknown')),
       retry: false,
-    })
-    .catch(() => undefined)
+    }),
+  ).rejects.toMatchObject({ status: 401, code: 'unknown' })
 
   expect(queryClient.getQueryData(['me'])).toEqual({ businessName: 'La Huerta' })
   expect(navigate).not.toHaveBeenCalled()
@@ -60,13 +60,13 @@ test('a refusal that is not a 401 never triggers the session boundary', async ()
   setNavigate(navigate)
   queryClient.setQueryData(['me'], { businessName: 'La Huerta' })
 
-  await queryClient
-    .fetchQuery({
+  await expect(
+    queryClient.fetchQuery({
       queryKey: ['boom-3'],
       queryFn: () => Promise.reject(new ApiError(404, 'customer.not_found')),
       retry: false,
-    })
-    .catch(() => undefined)
+    }),
+  ).rejects.toMatchObject({ status: 404, code: 'customer.not_found' })
 
   expect(queryClient.getQueryData(['me'])).toEqual({ businessName: 'La Huerta' })
   expect(navigate).not.toHaveBeenCalled()
@@ -78,13 +78,14 @@ test('a 401 from a gated mutation (a screen\'s own save or delete) is the same b
   setNavigate(navigate)
   queryClient.setQueryData(['me'], { businessName: 'La Huerta' })
 
-  await queryClient
-    .getMutationCache()
-    .build(queryClient, {
-      mutationFn: () => Promise.reject(new ApiError(401, 'unknown')),
-    })
-    .execute(undefined)
-    .catch(() => undefined)
+  await expect(
+    queryClient
+      .getMutationCache()
+      .build(queryClient, {
+        mutationFn: () => Promise.reject(new ApiError(401, 'unknown')),
+      })
+      .execute(undefined),
+  ).rejects.toMatchObject({ status: 401, code: 'unknown' })
 
   expect(queryClient.getQueryData(['me'])).toBeUndefined()
   expect(navigate).toHaveBeenCalledWith('/entrar')

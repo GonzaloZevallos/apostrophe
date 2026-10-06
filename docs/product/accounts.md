@@ -2,7 +2,7 @@
 
 Businesses, their users, the only way in (an invitation and a login), the way back in (a password change and an operator-issued reset link), and the only way out (an operator's command that exports a business and removes it). Every other capability reads one thing from here, the business of the user asking, and serves that business alone (ADR-0004). It also holds the app as a whole:
 
-- how it is served, installed and themed, including the theme choice each device remembers;
+- how it is served, installed and themed, including the theme choice each device remembers, and how the installed shell fills the phone's screen;
 - how the installation is published on the internet and backed up (ADR-0016);
 - the feedback rules every screen follows, and the shared states (`Estados`) that draw them;
 - the Negocio, Usuarios, Apariencia and Tu cuenta groups of Configuración.
@@ -33,6 +33,10 @@ This refines the "log in once and stay in", "get in with the link I was sent" an
 
 **When** I need to change how my business is set up (rename it, bring in a partner, connect or switch the Telegram bot, edit the catalog's header and footer, manage my expense categories, switch to dark, change my password or log out), **I want** every business-wide setting in one place, each in its own short screen, **so I can** change it in a few taps from my phone and get back to the customer, without wondering which screen holds it. (Served here by Configuración's Negocio, Usuarios, Apariencia and Tu cuenta; the structure is navigation.md.)
 
+**When** I open the installed app on my phone between orders or mid-chat with a customer, **I want** it to fill the screen and respond the way a phone app does (nothing hidden under the notch or the home bar, a status bar the colour of the app, no page bounce or pull-to-refresh, no blue flash or stray text selection when I tap, and the field I'm typing in never hidden by the keyboard), **so I can** tap, type and read figures fast and get back to the customer, without the app feeling like a web page in a frame.
+
+This refines the "log in once and stay in" job above and criterion 5; it is not a new job. Its protagonist is the seller; the operator and Capacitor are not part of it.
+
 **When** a friend stops using the app, or asks to be taken out of it, **I want** to hand them everything the app holds of their business in one file and then remove that business from the installation completely, **so that** they keep their books and their customers' names, phone numbers and balances are no longer held by me or by anyone else on the installation. A business opened by mistake is covered by the same command. The business goes as a whole, every user included. The operator has agreed with every user of the business beforehand; the command does not check it.
 
 **When** a seller needs the app away from my home network, **I want** the installation published on the internet over HTTPS, with every business's data copied off the server continuously, encrypted, and proven restorable, **so I can** let sellers work from anywhere without one lost server, disk or leaked backup costing anyone their books or exposing their customers.
@@ -53,6 +57,7 @@ Success criteria:
    - It opens in the light theme whatever the phone's setting; dark only when chosen on that device.
    - It says "Sin conexión" when the network drops.
    - No state is told by color alone (blue ↔ amber, never green ↔ red).
+   - Installed, it fills the screen and responds like a phone app (criteria 33–36).
 6. Businesses stay invisible to each other in the browser too.
    - No business in a URL.
    - No personal data or money in the console or browser storage. The only thing the browser keeps is the device's theme choice.
@@ -113,6 +118,29 @@ Success criteria, the getting-in screens and shared states as redesigned (GH-49)
 30. **The look reveals nothing new.** No screen or state says whether an email has a user, which brake fired or how many attempts are left; a dead link never says why; "Eso ya no está." carries no id, name or date; no personal data or money reaches the console or browser storage.
 31. **Both themes.** These screens follow the theme rule (criteria 23–25), with no token change.
 32. **No behaviour regresses.** Every accounts, navigation and feedback test passes unchanged.
+
+Success criteria, the installed shell:
+
+33. **Nothing under the system areas.**
+    - On an installed phone with a notch and a home bar, in portrait, every screen's content is fully visible and tappable: the tab bar, the header, "+ Nueva venta", sheets and toasts included.
+    - A screen's height follows the visible screen, so nothing jumps or is cut off when the browser's own bars appear or go away.
+    - With the keyboard open, the focused field stays in view.
+34. **The status bar is the app's colour.**
+    - On Android it matches the paper of the theme in force: light `--papel` with no `data-tema`, the dark theme's own paper token with `data-tema="oscuro"`. It changes as soon as the attribute changes.
+    - The phone's own light or dark setting picks nothing. There is no blue band in either theme.
+    - The splash and the manifest's colours are light `--papel`.
+    - On iOS the status bar stays light in both themes, because iOS fixes its style at launch. This is an accepted limitation, not a defect.
+35. **Taps feel like a phone app's.**
+    - Every button, row and bar item shows a pressed state at once.
+    - No Android tap highlight; tapping never selects text on buttons, tabs or the bar.
+    - No overscroll bounce or pull-to-refresh on the page as a whole.
+    - Text inside lists and fields stays selectable where it is today.
+    - The manifest passes the browser's installability check.
+36. **Nothing regresses.**
+    - Every accounts, navigation and feedback test passes unchanged.
+    - The bar still fits at 320 px with text at 130%.
+    - No state is told by colour alone, in either theme; the pressed state uses tokens only, in both themes.
+    - No existing token value changes; only the four new inset tokens are added.
 
 Success criteria, removing a business:
 
@@ -267,7 +295,7 @@ Success criteria, removing a business:
   - Nothing outside `web/dist` is reachable.
   - Front routes are public static files, outside the API's route list. Their paths are in English, with redirects from the old Spanish ones (navigation.md).
 - **Installable, with no offline mode**:
-  - a manifest with name, colors and icons for Android and iOS;
+  - a manifest with name, colors and icons for Android and iOS (its fields are in "The installed shell" below);
   - a service worker that caches nothing.
 - **Install on the home network**, served over plain http (ADR-0002):
   - iOS installs through "Agregar a inicio", with no walkthrough;
@@ -286,7 +314,7 @@ Success criteria, removing a business:
     - the screens before login have no theme control.
   - Native controls and scrollbars follow the app's theme, not the system's: light with no attribute, dark with `data-tema="oscuro"`.
   - Both themes keep the same tokens and values, and every state rule holds in both.
-  - The installed app's chrome (`theme-color`, the manifest's colors) is static and matches the light theme.
+  - The manifest's colours and the splash are static and light. The status bar follows the app's chosen theme (`data-tema`), never the system's; on iOS it stays light, because iOS fixes its style at launch.
   - The font is self-hosted.
 - **Language and formats**: every word on screen in Rioplatense Spanish with vos. Money `$ 11.000`, a negative amount `−$ 4.500`, grams `3,5 g`, dates `dd/mm`. The catalog text keeps its own Telegram format (`$11.000`, catalog.md).
 - **Getting in** (`Entrar`, `NegocioNuevo`, `Invitacion`, the reset screen):
@@ -306,6 +334,35 @@ Success criteria, removing a business:
     - It keeps nothing typed and never says why the link is dead.
     - Its only button goes to Entrar.
 - **Where screens sit**: the bar, the sidebar, Más, Configuración, the chrome and back rule and the first run are navigation.md. Inicio is the panel (results.md).
+
+### The installed shell
+
+How the app fills a phone's screen and responds to touch once installed (criteria 33–36). It changes no screen's own layout and no bar or header behaviour (#59), and it builds no theme choice: the status bar follows whatever sets `data-tema`.
+
+- **Document and viewport**:
+  - the viewport reads `width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content`;
+  - there is no `maximum-scale` and no `user-scalable=no`: pinch-zoom stays allowed;
+  - `mobile-web-app-capable` is set; `apple-mobile-web-app-status-bar-style` is `default`;
+  - on iOS the top inset is handled, so content never sits under the notch;
+  - `-webkit-text-size-adjust: 100%`.
+- **Status bar**:
+  - exactly one `theme-color` meta, with no `media` attribute, light `--papel` in the static HTML;
+  - one place sets or removes `data-tema` and updates `theme-color` with it, including at app start, from the theme's paper token, never a copied value;
+  - there is no pair of metas with `prefers-color-scheme`: the system setting picks nothing;
+  - only Android follows it live; iOS keeps the light `default` strip in both themes.
+- **Insets**: four tokens, `--inset-arriba`, `--inset-abajo`, `--inset-izquierda` and `--inset-derecha`, built from `env(safe-area-inset-*)`.
+  - Top and bottom are used by the bar, the header, the fixed "+ Nueva venta", sheets and toasts.
+  - Left and right keep content, the bar, sheets and toasts clear of a side cut-out, so landscape is safe but not designed.
+- **Height**: every height tied to the screen uses `dvh`, `.pantalla`, `.disposicion` and the sheets included.
+- **Gestures and press**:
+  - `overscroll-behavior: none` on `html` and `body`, `contain` on scrolling regions;
+  - `-webkit-tap-highlight-color` transparent; `touch-action: manipulation`;
+  - `user-select: none` on buttons, tabs and the bar; text inside lists and fields stays selectable;
+  - `.boton*`, rows and bar items get an `:active` state built from tokens, in both themes.
+- **Keyboard**: on iOS and Android, when the keyboard opens, the page and every sheet keep the focused field in view and can scroll, so "Guardar" or "Registrar" is reachable by scrolling. A save action pinned above the keyboard is not promised; that is each screen's own decision. The tab bar and "+ Nueva venta" need not stay above the keyboard, since forms and sheets don't show them (navigation.md).
+- **Manifest**: `id` `"/"` (never changed once shipped), `scope` `"/"`, `lang` `"es"`, `display` `"standalone"`, `theme_color` and `background_color` light `--papel`, no `orientation`. Icons: the existing 192 and 512 keep `"purpose": "any"` unchanged; a maskable 512 keeps today's look (same background and mark colours, full-bleed, the mark inside the safe zone), drawn by design.
+- **Splash**: no `apple-touch-startup-image`; iOS shows its own blank launch screen, accepted. Android's splash comes from the manifest's `background_color` and icon.
+- **Accepted limitations**: on iOS the status strip stays light with dark text above the dark paper in the dark theme; on iOS the launch screen is blank until the app paints.
 
 ### In Configuración: Negocio, Usuarios, Apariencia, Tu cuenta
 
@@ -413,6 +470,14 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
   - no token value changed;
   - native controls and scrollbars are checked by eye on a dark-system device, light with no attribute and dark with it; no fast test reads them;
   - the four places that state the rule say the same, and none names `claro` as an attribute value.
+- **Installed shell (criteria 33–36)**:
+  - meta tags, fast test: the viewport has its four parts and no zoom restriction; `mobile-web-app-capable` and the iOS status-bar style `default` are present; exactly one `theme-color`, with no `media`;
+  - manifest, fast test: `id: "/"`, `scope: "/"`, `lang: "es"`, `display: "standalone"`, `theme_color` and `background_color` equal to `--papel`, no `orientation`; 192 and 512 icons `any` and a 512 `maskable` present;
+  - installability: the manifest still passes the browser's installability check on `localhost` with its new fields;
+  - status bar, front test driving `data-tema` directly: `theme-color` is light `--papel` with no attribute, the dark paper token with `oscuro`, light again once the attribute is removed, and stays light with the system emulated dark and no attribute;
+  - static checks: no screen-tied `vh` left in `app.css` (`dvh` instead); the four inset tokens exist, and the bar, the header, "+ Nueva venta", sheets and toasts use them; no existing token value changed;
+  - regression: the accounts, navigation and feedback suites pass unchanged; the bar fits at 320 px with text at 130 %; the pressed state uses tokens only, in both themes;
+  - by eye, in portrait, on a real iPhone installed over the home network and a real Android phone on the published installation: criterion 33 (Nueva venta, Registrar cobro and the expense form with the keyboard open included), criterion 35 (the pressed state visible in both themes), the Android status bar in both themes, the iOS light strip with the top inset handled, and the maskable icon on the Android launcher.
 - **Nothing invented (criterion 7)**:
   - the bar, the sidebar, Más and Configuración show exactly the entries navigation.md lists;
   - every figure on Inicio equals the API's answer, with real zeros for a period with no activity (results.md);
@@ -509,7 +574,7 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
 - Removing the export file from the server after handing it over.
 - Blocking or marking a rerun after a commit whose outcome is unknown; the dry run is the check.
 - Roles within a business.
-- Offline use; an install walkthrough on iOS or Android.
+- Offline use; an install walkthrough on iOS or Android; Capacitor.
 - A "follow the system" theme option; a theme control before login; syncing the theme choice per user, per business or across devices.
 - A computer-only layout for the getting-in screens; a design file of its own for the reset screen.
 - Any state drawn in Estados that no capability defines.
@@ -519,3 +584,9 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
 - A scheduled restore drill; any notification channel to the operator.
 - An admin screen, route or navigation entry, or anything operated from a signed-in session.
 - A per-business publishing flag or staged rollout.
+- The bar's and header's own behaviour (#59), and each screen's own layout, including a save action pinned above the keyboard.
+- Building Configuración → Apariencia, and whether or where the theme choice is kept: its own issue.
+- A dark splash, and iOS `apple-touch-startup-image` splash images.
+- An iOS status bar that follows the theme live.
+- A landscape-specific design; locking orientation or disabling zoom.
+- A new icon look (a branding change).

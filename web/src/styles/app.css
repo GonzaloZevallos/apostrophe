@@ -14,6 +14,20 @@ button {
   color: inherit;
 }
 
+/* gestures (GH-77): the installed app is not a page that bounces, zooms its text or
+ * flashes Android's blue on a tap. `tokens.css` keeps its own `html, body` rule (the
+ * design contract); these sit here so that file stays byte-identical to the design's. */
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+html,
+body {
+  overscroll-behavior: none;
+}
+
 /* Visible to a screen reader only — the design's own technique for a label a
  * placeholder already shows visibly (`Clientes.dc.html`'s "Buscar cliente"). */
 .visualmente-oculto {
@@ -24,8 +38,17 @@ button {
   clip-path: inset(50%);
 }
 
+/* insets: every side of the safe area has one owner per element chain, so none is
+ * applied twice. Inside the shell `.disposicion` owns top, left and right and the
+ * bar (or `.columna-principal`) owns the bottom; outside it `.pantalla` owns all four;
+ * a `.pantalla` nested in `.disposicion` resets to 0; `.bar-inferior` cancels the
+ * root's side insets and adds them back as padding, so it is the second owner of left
+ * and right for its own items. Fixed layers (`.aviso-flotante`, `.capa`,
+ * `.cliente-sheet`) and the sticky summary own theirs, since they leave the flow. */
 .pantalla {
-  min-height: 100vh;
+  box-sizing: border-box;
+  min-height: 100dvh;
+  padding: var(--inset-arriba) var(--inset-derecha) var(--inset-abajo) var(--inset-izquierda);
   display: flex;
   flex-direction: column;
   background: var(--papel);
@@ -191,7 +214,7 @@ button {
 .pie {
   padding: 0 var(--margen-pantalla) 32px;
   font-size: 13px;
-  color: var(--tenue);
+  color: var(--tinta2);
   text-align: center;
 }
 
@@ -250,9 +273,9 @@ button {
 
 .aviso-flotante {
   position: fixed;
-  top: var(--espacio-md);
-  left: var(--espacio-md);
-  right: var(--espacio-md);
+  top: calc(var(--inset-arriba) + var(--espacio-md));
+  left: calc(var(--inset-izquierda) + var(--espacio-md));
+  right: calc(var(--inset-derecha) + var(--espacio-md));
   z-index: 10;
   /* A toast is only told, never tapped: it must not swallow a tap on the "Cerrar" it floats over. */
   pointer-events: none;
@@ -280,14 +303,22 @@ button {
 }
 
 .disposicion {
+  box-sizing: border-box;
   display: flex;
   flex: 1;
-  min-height: 100vh;
+  min-height: 100dvh;
+  padding: var(--inset-arriba) var(--inset-derecha) 0 var(--inset-izquierda);
+}
+
+.disposicion .pantalla {
+  padding: 0;
 }
 
 .bar-inferior {
   display: flex;
-  padding: 14px 16px 20px;
+  margin-inline: calc(-1 * var(--inset-izquierda)) calc(-1 * var(--inset-derecha));
+  padding: 14px calc(16px + var(--inset-derecha)) calc(20px + var(--inset-abajo))
+    calc(16px + var(--inset-izquierda));
   border-top: 1px solid var(--linea);
 }
 
@@ -631,6 +662,11 @@ button {
   min-width: 0;
 }
 
+/* No bar below (`Shell.tsx`, `chrome === 'none'`): the column keeps clear of the home bar. */
+.columna-principal--sin-bar {
+  padding-bottom: var(--inset-abajo);
+}
+
 .encabezado-fila {
   display: flex;
   align-items: center;
@@ -844,6 +880,7 @@ button {
  * it from the accessibility tree too). */
 .toast {
   background: var(--boton);
+  color: var(--boton-texto);
   border-radius: var(--radio-panel);
   padding: 15px 18px;
   display: flex;
@@ -855,7 +892,6 @@ button {
   flex: 1;
   font-size: 15px;
   font-weight: 500;
-  color: var(--boton-texto);
 }
 
 .lista-clientes {
@@ -1387,7 +1423,10 @@ button {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding: var(--margen-pantalla);
+  padding: calc(var(--margen-pantalla) + var(--inset-arriba))
+    calc(var(--margen-pantalla) + var(--inset-derecha))
+    calc(var(--margen-pantalla) + var(--inset-abajo))
+    calc(var(--margen-pantalla) + var(--inset-izquierda));
   z-index: 20;
 }
 
@@ -1409,8 +1448,9 @@ button {
   display: flex;
   flex-direction: column;
   gap: var(--espacio-md);
-  max-height: 85vh;
+  max-height: 85dvh;
   overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 /* `Ventas` (`Ventas.dc.html`/`VentasCompu.dc.html`, plan "sales-list"): the
@@ -1886,7 +1926,7 @@ button {
     flex: 1 1 290px;
     max-width: 360px;
     position: sticky;
-    top: var(--espacio-xl);
+    top: calc(var(--espacio-xl) + var(--inset-arriba));
     background: var(--superficie);
     border-radius: var(--radio-panel-grande);
     padding: var(--espacio-xl);
@@ -2049,6 +2089,7 @@ button {
 .cliente-sheet {
   position: fixed;
   inset: 0;
+  padding: var(--inset-arriba) var(--inset-derecha) 0 var(--inset-izquierda);
   z-index: 20;
   display: flex;
   align-items: flex-end;
@@ -2067,11 +2108,12 @@ button {
   position: relative;
   width: 100%;
   max-width: 480px;
-  max-height: 88vh;
+  max-height: 88dvh;
   overflow-y: auto;
+  overscroll-behavior: contain;
   background: var(--papel);
   border-radius: var(--radio-hoja) var(--radio-hoja) 0 0;
-  padding: var(--espacio-lg) var(--margen-pantalla) var(--espacio-xxl);
+  padding: var(--espacio-lg) var(--margen-pantalla) calc(var(--espacio-xxl) + var(--inset-abajo));
   display: flex;
   flex-direction: column;
   gap: var(--espacio-md);
@@ -2110,7 +2152,7 @@ button {
 }
 
 .venta-guardada__deshacer {
-  background: transparent;
+  background: var(--boton);
   border: 0;
   color: var(--boton-texto);
   font-size: 15px;
@@ -2380,6 +2422,23 @@ button {
 .campo__ayuda {
   font-size: 13px;
   color: var(--tinta2);
+}
+
+/* The own chat's input with its Buscar mi chat button beside it. */
+.campo__fila {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.campo__fila > .campo__input {
+  flex: 1;
+  min-width: 0;
+}
+
+.campo__fila > .boton-enlace:disabled {
+  color: var(--tinta2);
+  cursor: default;
 }
 
 .campo--casilla {
@@ -2723,6 +2782,10 @@ button {
 
   .ajustes-grupo__cuerpo {
     padding: var(--espacio-xl) var(--espacio-xxl);
+  }
+
+  .columna-principal {
+    padding-bottom: var(--inset-abajo);
   }
 
   .riel-lateral {
@@ -3244,4 +3307,485 @@ button {
     border-radius: var(--radio-panel-grande);
     padding: var(--espacio-xxl);
   }
+}
+
+/* ===== primitivas-telefono ===== */
+/* The shared primitives of the phone sales screens (GH-78): `Pestanas ajuste="celdas"`,
+ * `OpcionInterruptor`, `Loading compacto` / `LoadingAnuncio`, and `ConfirmDialog`'s
+ * buttons at 44 px on the phone. Every class but the last is opt-in: no existing caller
+ * renders it. Colors, type and spacing from the tokens. A container query's condition
+ * cannot read a custom property, so its one threshold is written in `ch` (it scales
+ * with the text size) plus the cells' fixed padding and gaps. */
+
+/* `Pestanas ajuste="celdas"`: the group is the size container, its inner grid the
+ * cells. Two columns by default (two by two); four when the container can hold the
+ * longest four labels, so at 130 % text the tabs wrap instead of overflowing. Each
+ * cell is at least 44 px tall, its label never truncated, nothing scrolls. */
+.pestanas--celdas {
+  display: block;
+  container-type: inline-size;
+}
+
+.pestanas__celdas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espacio-sm);
+}
+
+.pestanas--celdas .pestanas__opcion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--alto-tocable);
+  padding: 0 var(--espacio-xs);
+  text-align: center;
+  overflow-wrap: normal;
+  white-space: nowrap;
+}
+
+@container (min-inline-size: calc(26ch + 56px)) {
+  .pestanas__celdas {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* `OpcionInterruptor`: the whole row is the label, at least 44 px tall. The native
+ * checkbox is visually hidden but stays focusable; the track and thumb are drawn from
+ * its state. Off: the thumb sits left on an open track; on: it sits right on a filled
+ * one, so the state is told by position and fill, not by color alone. */
+.opcion-interruptor {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-md);
+  min-height: var(--alto-tocable);
+  box-sizing: border-box;
+  color: var(--tinta);
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.opcion-interruptor--inactiva {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.opcion-interruptor__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
+}
+
+.opcion-interruptor__pista {
+  display: flex;
+  flex: none;
+  align-items: center;
+  box-sizing: border-box;
+  width: 52px;
+  height: 32px;
+  padding: var(--espacio-xs);
+  border: 2px solid var(--tinta2);
+  border-radius: var(--radio-pildora);
+  background: var(--superficie);
+}
+
+.opcion-interruptor__pulgar {
+  display: block;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radio-pildora);
+  background: var(--tinta2);
+  transition: transform 120ms;
+}
+
+.opcion-interruptor__input:checked + .opcion-interruptor__pista {
+  border-color: var(--acento);
+  background: var(--acento);
+}
+
+.opcion-interruptor__input:checked + .opcion-interruptor__pista .opcion-interruptor__pulgar {
+  background: var(--papel);
+  transform: translateX(20px);
+}
+
+.opcion-interruptor__input:focus-visible + .opcion-interruptor__pista {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .opcion-interruptor__pulgar {
+    transition: none;
+  }
+}
+
+/* `Loading compacto`: the short bar alone, standing where one figure will be. */
+.cargando--compacto {
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+/* `LoadingAnuncio`: the screen's one progressbar, visually hidden, never in the way. */
+.cargando__anuncio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* `ConfirmDialog`: on the phone its two buttons are at least 44 px tall, and grow with a
+ * label that wraps instead of clipping it. The same component for every caller. */
+@media (max-width: 899.98px) {
+  .confirmacion__acciones .boton {
+    height: auto;
+    min-height: var(--alto-tocable);
+  }
+}
+/* ===== end primitivas-telefono ===== */
+
+/* ===== ventas-telefono-shell ===== */
+/* Nueva venta on the phone (ADR-0028): one fixed form pinned to the visual viewport, so the
+ * footer rides above the keyboard. Three zones in one scroller: the header sticks to the top,
+ * the body (customer, lines, shipping, note, how it was paid) scrolls, the footer sticks to
+ * the bottom. `.nueva-venta__cuerpo` and `.nueva-venta__resumen` stay the computer layout's
+ * columns, and turn into `display: contents` here so how it was paid (the computer's aside)
+ * lands last in the phone's body, above the footer. */
+@media (max-width: 899.98px) {
+  html.html--formulario-fijo {
+    overflow: hidden;
+  }
+
+  .nueva-venta {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: var(--vv-top, 0px);
+    height: var(--vv-alto, 100dvh);
+    min-height: 0;
+    z-index: 1;
+    padding: 0 var(--inset-derecha) 0 var(--inset-izquierda);
+    background: var(--papel);
+  }
+
+  .nueva-venta__disposicion {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0 var(--margen-pantalla);
+    gap: var(--espacio-lg);
+  }
+
+  .nueva-venta__cuerpo,
+  .nueva-venta__resumen {
+    display: contents;
+  }
+
+  .nueva-venta__cabecera {
+    position: sticky;
+    top: var(--inset-arriba);
+    z-index: 2;
+    margin: var(--inset-arriba) calc(var(--margen-pantalla) * -1) 0;
+    padding: var(--espacio-md) var(--margen-pantalla);
+    background: var(--papel);
+    /* Covers the notch strip above it, which the body scrolls through. */
+    box-shadow: 0 calc(-1 * var(--inset-arriba)) 0 var(--papel);
+  }
+
+  .nueva-venta .fecha-pildora {
+    min-height: var(--alto-tocable);
+  }
+
+  .nueva-venta .fecha-pildora__input {
+    font-size: 16px;
+  }
+
+  .nueva-venta__fila-dato > .campo__input {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .nueva-venta .selector-pago {
+    flex-wrap: wrap;
+    border-radius: var(--radio-campo);
+  }
+
+  .nueva-venta .selector-pago__opcion {
+    flex: 1 1 auto;
+    min-height: var(--alto-tocable);
+    padding: 0 var(--espacio-md);
+  }
+
+  .nueva-venta__pago {
+    padding-bottom: var(--espacio-lg);
+  }
+
+  .nueva-venta__pie {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: baseline;
+    column-gap: var(--espacio-md);
+    row-gap: 0;
+    margin: 0 calc(var(--margen-pantalla) * -1);
+    padding: var(--espacio-md) var(--margen-pantalla) max(var(--inset-abajo), var(--espacio-sm));
+    background: var(--papel);
+  }
+
+  /* The footer is a strip, not the screen's hero: its total borrows `cifra-m`'s size and line
+     height from the tokens in tokens.css, and keeps `cifra-xl`'s weight and tracking. */
+  .nueva-venta__pie > .cifra-xl {
+    justify-self: end;
+    font-size: var(--cifra-m-tamano);
+    line-height: var(--cifra-m-interlineado);
+  }
+
+  .nueva-venta__gramos,
+  .nueva-venta__pie > .boton {
+    grid-column: 1 / -1;
+  }
+
+  .nueva-venta__pie > .boton {
+    margin-top: var(--espacio-sm);
+  }
+
+  .nueva-venta[data-teclado='abierto'] .nueva-venta__gramos {
+    display: none;
+  }
+}
+/* ===== end ventas-telefono-shell ===== */
+
+/* ===== ventas-telefono-linea ===== */
+/* Nueva venta's open line on the phone: one fixed layout at every width from 320 to
+ * 430 px and at 130 % text, never switched by a measurement. Row 1 is the variety and the
+ * grams; under it Regalo (a whole 44 px row) and "Precio especial", each full width;
+ * below, the line's price per gram, rule and total, which wrap instead of clipping. */
+@media (max-width: 899.98px) {
+  .nueva-venta__linea--abierta {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    column-gap: var(--espacio-md);
+    row-gap: var(--espacio-sm);
+    align-items: start;
+  }
+
+  .nueva-venta__linea--abierta > * {
+    grid-column: 1 / -1;
+    min-width: 0;
+  }
+
+  .nueva-venta__linea--abierta > .campo {
+    grid-column: auto;
+  }
+
+  .nueva-venta__linea--abierta .campo__input {
+    width: 100%;
+    min-width: 0;
+    font-size: 17px;
+  }
+
+  .nueva-venta__linea-opciones {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--espacio-sm);
+  }
+
+  .nueva-venta__linea--abierta .nueva-venta__linea-detalle {
+    flex-wrap: wrap;
+  }
+
+  /* "Agregar otra variedad" and a line's "Quitar": the link buttons of this screen's
+   * body and lines, at least 44 px tall. */
+  .nueva-venta__cuerpo > .boton--enlace,
+  .nueva-venta__linea .boton--enlace {
+    display: flex;
+    align-items: center;
+    align-self: flex-start;
+    min-height: var(--alto-tocable);
+    padding: 0 var(--espacio-sm);
+    font-size: 16px;
+    /* The 1 px underline is a box-shadow at the box's bottom edge, which a 44 px box
+     * would draw far under the text; the underline moves onto the text. */
+    box-shadow: none;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  /* Shipping and the note sit in a row with their label: the field takes what is left
+   * of the row and shrinks, so it never leaves the screen. */
+  .nueva-venta__fila-dato .campo__input {
+    flex: 1 1 0;
+    min-width: 0;
+    font-size: 17px;
+  }
+}
+/* ===== end ventas-telefono-linea ===== */
+
+/* ===== ventas-telefono-lista ===== */
+/* `Ventas` and a sale's detail on the phone (GH-78): Fechas' two date inputs and
+ * "Borrar venta". Phone only: the computer layouts show no diff. The period tabs
+ * themselves are `Pestanas ajuste="celdas"` (`primitivas-telefono`). */
+@media (max-width: 899.98px) {
+  /* Fechas: the two fields share the row while they fit and wrap under each other
+   * when they don't (320 px, 130 % text); each input is at least 16 px and 44 px tall
+   * and never wider than its cell. */
+  .periodos__fechas {
+    flex-wrap: wrap;
+  }
+
+  .periodos__fechas .campo {
+    flex: 1 1 10rem;
+    min-width: 0;
+  }
+
+  .periodos__fechas .campo__input {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    min-height: var(--alto-tocable);
+    font-size: 16px;
+  }
+
+  /* "Borrar venta": the link-style button at 44 px. Its 1 px underline would now sit
+   * 44 px below the text, so it goes (the design draws this action without one). */
+  .venta-detalle__acciones .boton--enlace {
+    display: flex;
+    box-shadow: none;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--alto-tocable);
+  }
+}
+/* ===== end ventas-telefono-lista ===== */
+
+/* ===== ventas-telefono-carga ===== */
+/* Nueva venta's scroller is a column with a fixed height: a child that is only a button would
+ * shrink with the room instead of scrolling (the phone sweep measured "Elegir cliente" at
+ * 24 px). The body and the footer's children (`display: contents`, so the scroller's own
+ * items) keep their own height, and the body scrolls. */
+@media (max-width: 899.98px) {
+  .nueva-venta__cuerpo > *,
+  .nueva-venta__resumen > * {
+    flex-shrink: 0;
+  }
+
+  /* "¿Descartás la venta?" asks over the fixed form, which would otherwise cover it. */
+  .nueva-venta__aviso {
+    position: fixed;
+    inset: 0;
+    z-index: 3;
+    display: flex;
+    align-items: flex-end;
+    padding: calc(var(--margen-pantalla) + var(--inset-arriba))
+      calc(var(--margen-pantalla) + var(--inset-derecha))
+      calc(var(--margen-pantalla) + var(--inset-abajo))
+      calc(var(--margen-pantalla) + var(--inset-izquierda));
+    background: color-mix(in srgb, var(--tinta) 40%, transparent);
+  }
+
+  .nueva-venta__aviso > .confirmacion {
+    flex: 1 1 auto;
+  }
+}
+/* ===== end ventas-telefono-carga ===== */
+
+/* pressed */
+/* The pressed state (GH-77): of every control a finger can tap, from tokens only.
+ * Two cues, neither colour alone: the control shrinks a little (`transform`), and its
+ * fill changes. `transition: none` so it shows the moment the finger lands. Never a
+ * bare `button`, `a` or `*` rule: `PasswordField`'s reveal and the auth screens keep
+ * the browser's own behaviour unless they wear one of these classes.
+ *
+ * Controls rendered on a <button>, <a> or <Link> (each checked against its component):
+ *   filled, so a --papel ring is the fill cue (it differs from the resting fill in both
+ *   themes): .boton (with .boton--suave, .boton--destructivo and .boton-nueva-venta),
+ *   .boton-icono, .periodos__boton, .pildora, .gastos__cargar, .aviso-ambar,
+ *   .venta-guardada__deshacer;
+ *   transparent, so --superficie is the fill cue: .boton-enlace, .boton--enlace,
+ *   .boton--fila, .bar-inferior__item, .riel-lateral__item, .mas__item, .fila-venta,
+ *   .fila-gasto, .fila-entrada, .lista-clientes__fila, .bloque-deben__titulo, .bloque-deben__fila,
+ *   .variedad-item, .pestanas__opcion, .selector-pago__opcion, .gastos__mes-boton,
+ *   .encabezado__volver, .historial-fila__borrar.
+ * Display-only rows (.encabezado-fila, .historial-fila and its other children, the
+ * children of .fila-gasto) are left out: nothing happens when they are touched. */
+:is(
+    .boton,
+    .boton-icono,
+    .periodos__boton,
+    .pildora,
+    .gastos__cargar,
+    .aviso-ambar,
+    .venta-guardada__deshacer
+  ):active:not(:disabled):not([aria-disabled='true']) {
+  transform: scale(0.98);
+  box-shadow: inset 0 0 0 3px var(--papel);
+  transition: none;
+}
+
+:is(
+    .boton-enlace,
+    .boton--enlace,
+    .boton--fila,
+    .bar-inferior__item,
+    .riel-lateral__item,
+    .mas__item,
+    .fila-venta,
+    .fila-gasto,
+    .fila-entrada,
+    .lista-clientes__fila,
+    .bloque-deben__titulo,
+    .bloque-deben__fila,
+    .variedad-item,
+    .pestanas__opcion,
+    .selector-pago__opcion,
+    .gastos__mes-boton,
+    .encabezado__volver,
+    .historial-fila__borrar
+  ):active:not(:disabled):not([aria-disabled='true']) {
+  transform: scale(0.98);
+  background-color: var(--superficie);
+  transition: none;
+}
+
+/* The one already selected rests on --superficie, so its fill cue is --linea instead:
+ * it differs from the resting fill in both themes. */
+:is(.riel-lateral__item--activo, .selector-pago__opcion--activa):active:not(:disabled):not([aria-disabled='true']) {
+  background-color: var(--linea);
+}
+
+/* A tap on a button, tab or the bar selects no text; text in lists and fields stays
+ * selectable, since only these classes opt out. */
+:is(
+    .boton,
+    .boton-icono,
+    .periodos__boton,
+    .pildora,
+    .gastos__cargar,
+    .aviso-ambar,
+    .venta-guardada__deshacer,
+    .boton-enlace,
+    .boton--enlace,
+    .boton--fila,
+    .bloque-deben__titulo,
+    .bar-inferior,
+    .riel-lateral,
+    .mas__item,
+    .pestanas,
+    .selector-pago__opcion,
+    .gastos__mes-boton,
+    .encabezado__volver,
+    .historial-fila__borrar
+  ) {
+  -webkit-user-select: none;
+  user-select: none;
 }

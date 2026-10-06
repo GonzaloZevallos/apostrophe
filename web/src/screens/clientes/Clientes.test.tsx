@@ -13,7 +13,7 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
@@ -123,8 +123,25 @@ test('a stale answer still in flight shows marked pending, never as the current 
   // call's late answer replace it afterwards.
   await waitFor(() => expect(screen.getByText('Nico Parra')).toBeInTheDocument())
 
-  resolveEmpty?.(jsonResponse(200, []))
-  await new Promise((resolve) => setTimeout(resolve, 10))
+  // Let the late answer be read to its end, then check it replaced nothing. The body is a
+  // stream that only runs when something reads it, however (`json()`, `text()`): the wait
+  // is on that read, not on a guessed number of milliseconds.
+  let lateBodyRead = false
+  const lateBody = new ReadableStream<Uint8Array>(
+    {
+      pull(controller) {
+        lateBodyRead = true
+        controller.enqueue(new TextEncoder().encode('[]'))
+        controller.close()
+      },
+    },
+    { highWaterMark: 0 },
+  )
+  resolveEmpty?.(
+    new Response(lateBody, { status: 200, headers: { 'Content-Type': 'application/json' } }),
+  )
+  await waitFor(() => expect(lateBodyRead).toBe(true))
+  await act(async () => {})
   expect(screen.getByText('Nico Parra')).toBeInTheDocument()
 })
 

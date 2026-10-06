@@ -9,7 +9,8 @@
  * the query cache. The typed token lives only in this component's state: it is in no query
  * key, URL, storage, toast or log, is cleared on a successful Probarlo and kept on a
  * refusal. Probarlo invalidates `keys.pinnedCatalog()`, which also reaches Inicio's notice
- * and the catalog screen's Publicar.
+ * and the catalog screen's Publicar. Buscar mi chat only fills the own chat field from the
+ * bot's messages and saves nothing, so the number it fills is a typed change like any other.
  */
 
 import { type FormEvent, useEffect, useId, useState } from 'react'
@@ -31,7 +32,9 @@ const PREVIOUS_PIN_NOTICE =
   'El mensaje fijado anterior queda como está; desfijalo vos en Telegram.'
 const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
 const CHANNEL_CHAT_HELP = 'Es el @usuario o el enlace del canal donde se publica el catálogo.'
-const OWN_CHAT_HELP = 'Abrí tu chat con el bot y escribile cualquier cosa para verlo acá.'
+const OWN_CHAT_HELP =
+  'Abrí tu bot en Telegram y tocá Iniciar. Tu número lo ves con @userinfobot, o tocá Buscar mi chat.'
+const LOAD_THE_TOKEN_FIRST = 'Cargá el token primero'
 
 const LEAVE: LeaveWording = {
   question: '¿Descartás el cambio?',
@@ -48,6 +51,10 @@ interface PinnedCatalog {
 
 interface PinnedCatalogTestResult extends PinnedCatalog {
   previous_pin_left: boolean
+}
+
+interface OwnChatFound {
+  own_chat: string
 }
 
 interface Accepted {
@@ -83,6 +90,7 @@ function IntegrationsForm({ initial }: { initial: PinnedCatalog }) {
   const [testError, setTestError] = useState<string | null>(null)
   const [testOffline, setTestOffline] = useState(false)
   const [testing, setTesting] = useState(false)
+  const [searching, setSearching] = useState(false)
 
   useEffect(() => {
     if (toast === null) return
@@ -96,6 +104,38 @@ function IntegrationsForm({ initial }: { initial: PinnedCatalog }) {
     ownChatInput !== accepted.ownChat ||
     channelChatInput !== accepted.channelChat
 
+  const typedToken = tokenFieldOpen && tokenInput.trim() !== '' ? tokenInput : null
+  const canSearch = typedToken !== null || accepted.tokenSavedOn !== null
+
+  function showRefusal(caught: unknown): void {
+    if (caught instanceof ApiError) {
+      setTestError(
+        resolveOverride(PINNED_CATALOG_REFUSAL_OVERRIDES, caught.code) ?? GENERIC_REFUSAL_MESSAGE,
+      )
+    } else if (caught instanceof NetworkError) {
+      setTestOffline(true)
+    } else {
+      setTestError(GENERIC_REFUSAL_MESSAGE)
+    }
+  }
+
+  async function onSearchOwnChat(): Promise<void> {
+    setTestError(null)
+    setTestOffline(false)
+    setSearching(true)
+    try {
+      // Reads only: nothing is saved, and a refusal leaves every field as it was.
+      const found = await post<OwnChatFound>('/pinned-catalog/own-chat-lookup', {
+        token: typedToken,
+      })
+      setOwnChatInput(found.own_chat)
+    } catch (caught) {
+      showRefusal(caught)
+    } finally {
+      setSearching(false)
+    }
+  }
+
   async function onProbarlo(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault()
     setTestError(null)
@@ -104,7 +144,7 @@ function IntegrationsForm({ initial }: { initial: PinnedCatalog }) {
     setTesting(true)
     try {
       const result = await post<PinnedCatalogTestResult>('/pinned-catalog/test', {
-        token: tokenFieldOpen && tokenInput.trim() !== '' ? tokenInput : null,
+        token: typedToken,
         own_chat: ownChatInput,
         channel_chat: channelChatInput.trim() === '' ? null : channelChatInput,
       })
@@ -118,15 +158,7 @@ function IntegrationsForm({ initial }: { initial: PinnedCatalog }) {
       setToast(TEST_SENT_TOAST)
     } catch (caught) {
       // A refusal saves nothing and keeps everything typed, the token included.
-      if (caught instanceof ApiError) {
-        setTestError(
-          resolveOverride(PINNED_CATALOG_REFUSAL_OVERRIDES, caught.code) ?? GENERIC_REFUSAL_MESSAGE,
-        )
-      } else if (caught instanceof NetworkError) {
-        setTestOffline(true)
-      } else {
-        setTestError(GENERIC_REFUSAL_MESSAGE)
-      }
+      showRefusal(caught)
     } finally {
       setTesting(false)
       invalidateResource(queryClient, 'pinnedCatalog')
@@ -184,17 +216,33 @@ function IntegrationsForm({ initial }: { initial: PinnedCatalog }) {
           <label className="campo__rotulo" htmlFor={`${fieldId}-own`}>
             Tu chat
           </label>
-          <input
-            id={`${fieldId}-own`}
-            className="campo__input"
-            type="text"
-            aria-describedby={`${fieldId}-own-help`}
-            value={ownChatInput}
-            onChange={(event) => setOwnChatInput(event.target.value)}
-          />
+          <div className="campo__fila">
+            <input
+              id={`${fieldId}-own`}
+              className="campo__input"
+              type="text"
+              aria-describedby={`${fieldId}-own-help`}
+              value={ownChatInput}
+              onChange={(event) => setOwnChatInput(event.target.value)}
+            />
+            <button
+              type="button"
+              className="boton-enlace"
+              disabled={!canSearch || searching}
+              aria-describedby={canSearch ? undefined : `${fieldId}-search-help`}
+              onClick={() => void onSearchOwnChat()}
+            >
+              Buscar mi chat
+            </button>
+          </div>
           <span id={`${fieldId}-own-help`} className="campo__ayuda">
             {OWN_CHAT_HELP}
           </span>
+          {!canSearch && (
+            <span id={`${fieldId}-search-help`} className="campo__ayuda">
+              {LOAD_THE_TOKEN_FIRST}
+            </span>
+          )}
         </div>
 
         {testError !== null && (

@@ -31,9 +31,20 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/test-setup.ts'],
+    // The ceiling for a whole test. Rule: at least 3x `asyncUtilTimeout` in
+    // `src/test-setup.ts` (a test may await up to three sequential `findBy*`, as
+    // `NuevaVenta.shell.test.tsx` does) and at least 2x the longest passing test
+    // measured under load. Both ceilings are set only here and there: a call site
+    // never sets its own shorter one.
+    testTimeout: 40_000,
     // `web/e2e/` is Playwright's own suite (`playwright.config.ts`'s `testDir`),
     // run by the `web-e2e` check; vitest's defaults would otherwise also try to
     // run `flow.spec.ts` as a unit test and collide with Playwright's `test`.
     exclude: ['**/node_modules/**', 'e2e/**'],
+    // Vitest turns every `.css` import into an empty module, `?raw` ones included, so
+    // the architecture tests that read stylesheets as text (`import.meta.glob(...,
+    // { query: '?raw' })`) saw '' and passed on nothing. Only `?raw` loads are let
+    // through; component imports of CSS stay empty.
+    css: { include: [/styles\/tokens\.css/, /[?&]raw(?:&|$)/] },
   },
 })

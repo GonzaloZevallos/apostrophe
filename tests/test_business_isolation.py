@@ -259,6 +259,7 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
         "own_chat": "another own chat",
         "channel_chat": None,
     },
+    ("POST", "/pinned-catalog/own-chat-lookup"): {"token": None},
     ("POST", "/customers/{customer_id}/payments/preview"): {
         "paid_on": "2026-10-02",
         "amount": 100,
@@ -551,6 +552,28 @@ def test_another_business_reads_the_pinned_catalog_as_its_own_empty_state(
     assert own["publish_blocked_by"] is None
     assert MARKER not in other.text
     assert other.json()["publish_blocked_by"] == "not_tested"
+
+
+def test_another_business_cannot_look_up_with_the_saved_token_of_a_business(
+    business_a: TestClient,
+    business_b: TestClient,
+    seeded: dict[str, int],
+    telegram: FakeTelegram,
+) -> None:
+    """The lookup with no typed token takes the saved one of the caller's own business
+    only: A has a saved token and a chat that wrote to its bot, and B, with none, is
+    told so and never reaches A's chat or token."""
+    telegram.set_private_chats(f"{MARKER}:bot-token", ["424242424"])
+    own = business_a.post("/pinned-catalog/own-chat-lookup", json={"token": None})
+
+    other = business_b.post("/pinned-catalog/own-chat-lookup", json={"token": None})
+
+    assert own.status_code == 200, own.text
+    assert own.json() == {"own_chat": "424242424"}
+    assert other.status_code == 422
+    assert other.json()["code"] == "pinned_catalog.token_required"
+    assert "424242424" not in other.text
+    assert MARKER not in other.text
 
 
 def test_the_list_check_catches_a_write_that_a_bare_404_check_would_miss(

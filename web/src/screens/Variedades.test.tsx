@@ -128,7 +128,7 @@ describe('the list', () => {
   test('lists every variety by name, each with its status by shape and word, detail and price', async () => {
     renderApp('/varieties')
 
-    const rows = await screen.findAllByRole('link', { name: /x g|Sin precio/ }, { timeout: 5000 })
+    const rows = await screen.findAllByRole('link', { name: /x g|Sin precio/ })
     expect(rows.map((row) => row.getAttribute('href'))).toEqual([
       '/varieties/1',
       '/varieties/2',
@@ -249,7 +249,7 @@ describe('on a computer: two panes', () => {
 
   test('picking another variety replaces the selection, both panes stay', async () => {
     const { router } = renderApp('/varieties', { computer: true })
-    await screen.findByRole('heading', { name: '24K Gold' }, { timeout: 4000 })
+    await screen.findByRole('heading', { name: '24K Gold' })
 
     await userEvent.click(screen.getByRole('link', { name: /Sir Jack/ }))
 

@@ -20,7 +20,7 @@
  * own left-out list.
  */
 
-import { useState } from 'react'
+import { useState, useSyncExternalStore } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useLocation, useOutletContext } from 'react-router'
 import { NetworkError } from '../../api/client'
@@ -35,6 +35,7 @@ import Loading from '../../components/Loading'
 import Notice from '../../components/Notice'
 import Pestanas from '../../components/Pestanas'
 import SinConexion from '../../components/SinConexion'
+import { COMPUTER_QUERY } from '../../format/breakpoints'
 import { salesCount } from '../../format/counts'
 import { type DateRange, formatDate, monthRange, todayRange, weekRange } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
@@ -54,6 +55,17 @@ const PERIOD_LABEL: Record<Period, string> = {
 const PERIODS: Period[] = ['hoy', 'semana', 'mes', 'fechas']
 
 const PESTANA_ITEMS = PERIODS.map((item) => ({ value: item, label: PERIOD_LABEL[item] }))
+
+function subscribeToComputer(onChange: () => void): () => void {
+  if (typeof window.matchMedia !== 'function') return () => undefined
+  const query = window.matchMedia(COMPUTER_QUERY)
+  query.addEventListener('change', onChange)
+  return () => query.removeEventListener('change', onChange)
+}
+
+function onComputer(): boolean {
+  return typeof window.matchMedia === 'function' && window.matchMedia(COMPUTER_QUERY).matches
+}
 
 function rangeFor(period: Period, today: string, custom: DateRange): DateRange {
   if (period === 'hoy') return todayRange(today)
@@ -91,6 +103,8 @@ export default function Ventas() {
   const [feedback] = useState(() => readFeedback(location.state))
   const [period, setPeriod] = useState<Period>('hoy')
   const [custom, setCustom] = useState<DateRange>(() => monthRange(me.today))
+  // The phone's equal-cells fit is opt-in; the computer keeps `VentasCompu`'s plain tab list.
+  const computer = useSyncExternalStore(subscribeToComputer, onComputer)
 
   const range = rangeFor(period, me.today, custom)
 
@@ -108,7 +122,13 @@ export default function Ventas() {
         <div className="ventas__cabecera">
           <span className="encabezado__titulo">Ventas</span>
 
-          <Pestanas items={PESTANA_ITEMS} value={period} onChange={setPeriod} ariaLabel="Período" />
+          <Pestanas
+            items={PESTANA_ITEMS}
+            value={period}
+            onChange={setPeriod}
+            ariaLabel="Período"
+            ajuste={computer ? undefined : 'celdas'}
+          />
 
           {!isError && !isPending && (
             <div className="ventas__resumen">

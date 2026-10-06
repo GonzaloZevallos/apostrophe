@@ -15,10 +15,11 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
+import { createMemoryRouter, RouterProvider, useLocation } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import SALE from '../../api/fixtures/sale-detail.json'
 import { readFeedback, saleJustSaved } from '../../components/feedback'
+import { SheetRouterProvider } from '../../components/useSheetStack'
 import VentaDetalle from './VentaDetalle'
 
 /** Stands in for the real `Ventas` screen, just enough to show what `VentaDetalle`
@@ -47,14 +48,20 @@ const DELETED = { returned: [{ variety_id: 2, grams: 3.5 }] }
 
 function renderDetalle(initialState?: unknown) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  // A data router, with its handle given to the sheet stack: Asignar cliente's sheet is a
+  // history entry (ADR-0027) and its depth is read from the router's own state.
+  const router = createMemoryRouter(
+    [
+      { path: '/ventas', element: <VentasProbe /> },
+      { path: '/ventas/:id', element: <VentaDetalle /> },
+    ],
+    { initialEntries: [{ pathname: '/ventas/10', state: initialState }] },
+  )
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[{ pathname: '/ventas/10', state: initialState }]}>
-        <Routes>
-          <Route path="/ventas" element={<VentasProbe />} />
-          <Route path="/ventas/:id" element={<VentaDetalle />} />
-        </Routes>
-      </MemoryRouter>
+      <SheetRouterProvider router={router}>
+        <RouterProvider router={router} />
+      </SheetRouterProvider>
     </QueryClientProvider>,
   )
 }
@@ -86,6 +93,31 @@ test('shows the total, each line with its lowercase rule badge, shipping, note a
   expect(screen.getByText('$ 500')).toBeInTheDocument()
   expect(screen.getByText('Entregar a la tarde')).toBeInTheDocument()
   expect(screen.getByText('3,5 g · Ana Pérez · pagada en efectivo')).toBeInTheDocument()
+})
+
+test('shows the skeleton while the sale is pending, then the sale in its place', async () => {
+  let resolveSale: (response: Response) => void = () => {
+    throw new Error('fetch was never called')
+  }
+  const pending = new Promise<Response>((resolve) => {
+    resolveSale = resolve
+  })
+  // The first call is held; every later call gets its own Response, since a body reads once.
+  vi.mocked(fetch).mockImplementationOnce(() => pending)
+  vi.mocked(fetch).mockImplementation(() => Promise.resolve(jsonResponse(200, SALE)))
+  renderDetalle()
+
+  expect(await screen.findByRole('progressbar', { name: 'Cargando' })).toBeInTheDocument()
+  expect(screen.queryByText('Venta del 14/09')).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Borrar venta' })).not.toBeInTheDocument()
+  expect(fetch).toHaveBeenCalledTimes(1)
+  expect(fetch).toHaveBeenCalledWith('/sales/10', expect.objectContaining({ method: 'GET' }))
+
+  resolveSale(jsonResponse(200, SALE))
+
+  expect(await screen.findByText('Venta del 14/09')).toBeInTheDocument()
+  expect(screen.getAllByText('$ 11.000').length).toBeGreaterThan(0)
+  expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
 })
 
 test('a sale with no customer and no payment shows "Sin cliente" and drops the payment part', async () => {

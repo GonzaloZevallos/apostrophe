@@ -48,6 +48,7 @@ import GoneScreen from '../../components/GoneScreen'
 import ReglaInsignia from '../../components/ReglaInsignia'
 import SinConexion from '../../components/SinConexion'
 import Loading from '../../components/Loading'
+import { SheetStackProvider, useSheet } from '../../components/useSheetStack'
 import { formatDateShort } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
 import { GENERIC_REFUSAL } from './NuevaVenta'
@@ -106,7 +107,16 @@ function deleteTitle(sale: SaleDetail): string {
 const DELETE_TOAST = 'Venta eliminada'
 const UNDO_TOAST = 'Venta eliminada · los gramos vuelven al stock'
 
+/** One sheet stack per screen (ADR-0027): Asignar cliente is level 1, Nuevo cliente level 2. */
 export default function VentaDetalle() {
+  return (
+    <SheetStackProvider>
+      <VentaDetalleScreen />
+    </SheetStackProvider>
+  )
+}
+
+function VentaDetalleScreen() {
   const { id } = useParams<{ id: string }>()
   const saleId = id ?? ''
   const location = useLocation()
@@ -140,7 +150,7 @@ export default function VentaDetalle() {
   const [deleteOffline, setDeleteOffline] = useState(false)
   const [deleteFailed, setDeleteFailed] = useState(false)
 
-  const [showAssignSheet, setShowAssignSheet] = useState(false)
+  const assignSheet = useSheet(1)
   const [assignError, setAssignError] = useState<string | null>(null)
   const [assignOffline, setAssignOffline] = useState(false)
   const [assigned, setAssigned] = useState(false)
@@ -157,7 +167,6 @@ export default function VentaDetalle() {
 
   async function onCustomerChosen(customer: Customer | null): Promise<void> {
     if (customer === null) return // `allowNone={false}`: the sheet never offers it here.
-    setShowAssignSheet(false)
     setAssignError(null)
     setAssignOffline(false)
     try {
@@ -356,7 +365,7 @@ export default function VentaDetalle() {
 
         <div className="venta-detalle__acciones">
           {sale.customer === null && (
-            <Boton variant="secondary" icon="personaMas" onClick={() => setShowAssignSheet(true)}>
+            <Boton variant="secondary" icon="personaMas" onClick={assignSheet.open}>
               Asignar cliente
             </Boton>
           )}
@@ -367,12 +376,8 @@ export default function VentaDetalle() {
         </div>
       </div>
 
-      {showAssignSheet && (
-        <NuevaVentaCliente
-          allowNone={false}
-          onChosen={(customer) => void onCustomerChosen(customer)}
-          onClose={() => setShowAssignSheet(false)}
-        />
+      {assignSheet.isOpen && (
+        <NuevaVentaCliente allowNone={false} onChosen={(customer) => void onCustomerChosen(customer)} />
       )}
 
       {confirmingDelete && (

@@ -25,13 +25,11 @@
  */
 
 import { expect, test } from '@playwright/test'
-import { newBusinessInvitationUrl } from './backend.js'
+import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { openGastos } from './helpers/openMas.js'
 import { fillSaleLine } from './helpers/sale.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
-
-const PASSWORD = 'correcthorsebattery'
 
 interface PanelPeriod {
   start: string
@@ -169,11 +167,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   const businessName = `Flores del Panel ${Date.now()}`
 
   // Accept a new-business invitation.
-  await page.goto(newBusinessInvitationUrl())
-  await page.getByLabel('Nombre del negocio').fill(businessName)
-  await page.getByLabel('Email').fill(ownerEmail)
-  await page.getByLabel('Contraseña').fill(PASSWORD)
-  await page.getByRole('button', { name: 'Creá el negocio' }).click()
+  await signUpNewBusiness(page, { businessName, email: ownerEmail })
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // A priced variety.
@@ -214,6 +208,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await page.getByRole('link', { name: 'Carla Pérez' }).click()
   await page.getByRole('link', { name: 'Nueva venta a Carla Pérez' }).click()
   await expect(page).toHaveURL(/\/ventas\/nueva$/)
+  await expect(page.getByLabel('Fecha')).toHaveValue(/^\d{4}-\d{2}-\d{2}$/)
   const todayIso = await page.getByLabel('Fecha').inputValue()
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '5' })
   await page.getByRole('radio', { name: 'Debiendo' }).check()

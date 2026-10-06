@@ -17,12 +17,10 @@
  */
 
 import { expect, test } from '@playwright/test'
-import { newBusinessInvitationUrl } from './backend.js'
+import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
-
-const PASSWORD = 'correcthorsebattery'
 
 test('a customer with no phone number is registered, edited, sold to, paid and shown in Te deben', async ({
   page,
@@ -33,11 +31,7 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   const ownerEmail = `duena-sin-telefono-${Date.now()}@example.com`
   const businessName = `Flores Sin Telefono ${Date.now()}`
 
-  await page.goto(newBusinessInvitationUrl())
-  await page.getByLabel('Nombre del negocio').fill(businessName)
-  await page.getByLabel('Email').fill(ownerEmail)
-  await page.getByLabel('Contraseña').fill(PASSWORD)
-  await page.getByRole('button', { name: 'Creá el negocio' }).click()
+  await signUpNewBusiness(page, { businessName, email: ownerEmail })
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // One priced variety, $1.000/g — round figures for every assertion below.
@@ -93,6 +87,19 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   await page.goto('/clientes')
   await page.getByRole('link', { name: 'Noe Sinnumero' }).click()
   await expect(page.getByText('Te debe $ 4.000')).toBeVisible()
+
+  // The balance is set in `cifra-m`: 25px on a 27.5px line, tracked at -0.035em.
+  const owed = await page.getByText('Te debe $ 4.000').evaluate((node) => {
+    const style = getComputedStyle(node)
+    return {
+      fontSize: parseFloat(style.fontSize),
+      lineHeight: parseFloat(style.lineHeight),
+      letterSpacing: parseFloat(style.letterSpacing),
+    }
+  })
+  expect(Math.abs(owed.fontSize - 25)).toBeLessThan(0.01)
+  expect(Math.abs(owed.lineHeight - 27.5)).toBeLessThan(0.01)
+  expect(Math.abs(owed.letterSpacing - -0.875)).toBeLessThan(0.01)
 
   // Paid in full through Registrar cobro.
   await page.getByRole('button', { name: 'Registrar cobro' }).click()

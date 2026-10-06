@@ -54,3 +54,48 @@ bot or a rate limit; none of that may ever reach a log, a response or an excepti
 - **Keeping Telegram's description for diagnosis**: it can carry a chat id, a bot
   name or the shape of a rate limit; CODING_STANDARDS §9 forbids it everywhere a
   status, log line or response could show it.
+
+## Amendment (2026-10-06, GH-96): `classify` reports a cause, and each action says its own reason
+
+**Supersedes**: the `classify` bullet above, where "chat not found", "not enough
+rights", "bot was kicked", "bot is not a member", a 401 and any other 4xx all became
+`BotCannotPost`. That made Probarlo, which only writes to the seller's own chat, tell
+her "El bot no puede publicar en el canal".
+
+- **The adapter reports a cause, never a reason.** `classify` raises `TelegramRefused`
+  carrying a closed `SendRefusal` (`app/pinned_catalog/domain/errors.py`). Checked in
+  order, each row's source being **community reports, not captured responses**:
+
+  | Telegram's answer | Outcome |
+  |---|---|
+  | "message is not modified" | `Unchanged` (a success) |
+  | "message to edit/pin not found" | `MessageGone` |
+  | "message is too long" | `TooLong` |
+  | 401, or a 404 | `SendRefusal.TOKEN_INVALID` |
+  | "bot can't initiate conversation", "bot was blocked by the user" | `SendRefusal.CHAT_NOT_STARTED` |
+  | "chat not found" | `SendRefusal.CHAT_NOT_FOUND` |
+  | "not enough rights", "bot was kicked", "bot is not a member" | `SendRefusal.NO_RIGHTS` |
+  | 429 or 5xx | `TelegramUnreachable` |
+  | any other 4xx | `SendRefusal.OTHER` |
+  | no answer or a timeout | `TelegramUnreachable` |
+
+- **Three folds, each an exhaustive `match` ending in `assert_never`, with no default
+  branch** (`refusal_causes.py`): `for_channel` (every cause → `BotCannotPost`, for
+  Publicar and upkeep), `for_test_send` (token invalid, own chat not started, own chat
+  not found, and `test_failed` for no rights and other) and `for_lookup` (the lookup's
+  own subtask). A new cause fails `mypy --strict` until every fold says what it means.
+- **Two types keep the channel's reason where it belongs.** `TelegramApi` is the raw
+  port and raises `TelegramRefused`, never `BotCannotPost`. `ChannelTelegram`
+  (`application/channel_telegram.py`, `@final`) wraps it and folds every
+  `TelegramRefused` to `BotCannotPost`; `push`, `safe_upkeep` and `/publish` take
+  `ChannelTelegram`, so passing the raw adapter is a type error. `test_send` takes the
+  raw `TelegramApi` and folds with `for_test_send` around its `send` alone.
+- **One typed holder.** `app.state.pinned_catalog_telegram` is a `PinnedCatalogTelegram`
+  (`api`, `channel`), built only in `app/main.py`; each reader casts `State` to it once
+  and takes the field it needs.
+- **Known risk.** The rows above are not captured bodies. A wrong row degrades to the
+  less specific `test_failed` in Probarlo (or a wrong one of the three specific
+  reasons), and can never show the channel reason there. The trigger to capture real
+  bodies is a seller reporting a reason that does not fit.
+- `TelegramRefused` and the four Probarlo errors carry fixed messages and no data, and
+  are raised `from None`; `TelegramRefused` is never registered in a router.

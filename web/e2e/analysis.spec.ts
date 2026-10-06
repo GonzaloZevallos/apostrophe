@@ -11,12 +11,10 @@
  */
 
 import { expect, test } from '@playwright/test'
-import { newBusinessInvitationUrl } from './backend.js'
+import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { openGastos, openMas } from './helpers/openMas.js'
 import { fillSaleLine } from './helpers/sale.js'
-
-const PASSWORD = 'correcthorsebattery'
 
 test('a seller opens Análisis from Más, moves back a month and reads each section', async ({
   page,
@@ -27,11 +25,7 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   const ownerEmail = `duena-analisis-${Date.now()}@example.com`
   const businessName = `Flores del Análisis ${Date.now()}`
 
-  await page.goto(newBusinessInvitationUrl())
-  await page.getByLabel('Nombre del negocio').fill(businessName)
-  await page.getByLabel('Email').fill(ownerEmail)
-  await page.getByLabel('Contraseña').fill(PASSWORD)
-  await page.getByRole('button', { name: 'Creá el negocio' }).click()
+  await signUpNewBusiness(page, { businessName, email: ownerEmail })
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // A priced variety.
@@ -50,6 +44,7 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   // business's first record — and so "Mes anterior" — is not this same month.
   await page.goto('/varieties')
   await page.getByRole('link', { name: '+ Entrada de stock' }).click()
+  await expect(page.getByLabel('Fecha')).toHaveValue(/^\d{4}-\d{2}-\d{2}$/)
   const todayIso = await page.getByLabel('Fecha').inputValue()
   const lastMonth = new Date(todayIso)
   lastMonth.setDate(1)
@@ -108,6 +103,7 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   await expect(page.getByText('Flete').first()).toBeVisible()
   await expect(page.getByText('Van aparte, se cargan en Stock').first()).toBeVisible()
 
+  await expect(page.locator('.gastos__mes-etiqueta').first()).toHaveText(/\S/)
   const monthLabelBefore = await page
     .locator('.gastos__mes-etiqueta')
     .first()
