@@ -12,6 +12,10 @@ This is the navigation job underneath every capability's own "from my phone" job
 
 This refines the navigation job for varieties, stock and the catalog (varieties.md); it is not a new job.
 
+**When** a variety I loaded by mistake, or one I no longer work with, keeps showing in my lists and pickers, **I want** to take it out from my phone in a few taps, deleting it if it never moved and archiving it if it has history, **so** my lists show only what I still sell, no past sale, stock, cost or profit figure changes, and I can bring it back exactly as it was if I start selling it again.
+
+This refines the varieties and navigation job for the end of a variety's life (varieties.md); it is not a new job. Served here by the Archivadas card and the archived variety's page.
+
 **When** I need to change how my business is set up (rename it, bring in a partner, connect or switch the Telegram bot, edit the catalog's header and footer, manage my expense categories, switch to dark, change my password or log out), **I want** every business-wide setting in one place, each in its own short screen, **so I can** change it in a few taps from my phone and get back to the customer, without wondering which screen holds it.
 
 Configuración is rare and deliberate; the daily jobs never need it. It refines the navigation job's "every business setting in one other place". Settings that belong to one variety live on its page and are not part of this job. Before it, settings were split across Negocio (name, partners, password), Catálogo (bot, header and footer) and Gastos → Categorías, and the dark theme could not be chosen in the app.
@@ -51,7 +55,7 @@ Success criteria:
 - From the top: "+ Nueva venta"; Inicio, Ventas, Clientes, Variedades; a divider; Gastos, Análisis.
 - At the bottom: the business's name with its avatar, which opens Configuración (as `InicioCompu` draws it).
 - There is no Más on a computer.
-- **Two panes**: Clientes and Variedades show the list on the left and the selected customer's card or variety's page on the right. Variedades opened with nothing selected selects the first variety by name (varieties.md); that counts as no tap.
+- **Two panes**: Clientes and Variedades show the list on the left and the selected customer's card or variety's page on the right. Variedades opened with nothing selected selects the first unarchived variety by name (varieties.md); that counts as no tap. Archivadas uses the same two panes, selecting the first archived variety by name.
 
 ### Más (phone)
 
@@ -73,7 +77,7 @@ Success criteria:
 - **The list of groups** is a card: the bar or sidebar and a back arrow, no "+ Nueva venta". Back follows history; with none, it goes to "‹ Más" on the phone and "‹ Inicio" on a computer.
 - **Each group** is its own subscreen, a form: "Cerrar", no bar, no "+ Nueva venta"; unsaved changes ask before discarding, an untouched group closes at once. Apariencia never has unsaved changes, so it always closes at once.
 - **Empty business**: every group works. Usuarios lists at least the signed-in user; Categorías de gastos with none shows an empty list and the add action; Integraciones with nothing saved shows empty fields and no "Guardado" line.
-- **Never here**: a variety's own settings (catalog attributes, low-stock threshold), which live only on its page (varieties.md); anything for the operator (ADR-0002); a group or placeholder for anything not built.
+- **Never here**: a variety's own settings (catalog attributes, low-stock threshold) or its archiving, which live only on its page and in Archivadas (varieties.md); anything for the operator (ADR-0002); a group or placeholder for anything not built.
 - **Nowhere else**: the old Negocio screen is gone; the catalog screen edits no header or footer (its "Editar encabezado y pie" opens Mensaje del catálogo); Gastos has no categories entry, apart from creating one inside the expense form (expenses.md).
 - **Temporary exception, until Integraciones and Mensaje del catálogo exist**: the bot settings and the header and footer stay editable, exactly as before, in one temporary place reached only from the catalog screen ("Editar encabezado y pie" and Publicar's "unavailable" link). It is a form ("Cerrar" back by history, else to the catalog screen; confirmation on unsaved leave), with no tab, Más entry, Configuración group or "coming soon" mark, and no pin status or Publicar. The catalog screen itself still edits nothing; it links out. Configuración's own issue retargets both links and removes the temporary place.
 
@@ -82,19 +86,19 @@ Success criteria:
 Every screen is exactly one of three kinds, and gets its chrome only from its kind.
 
 - **Tab root**: Inicio, Ventas, Clientes, Variedades, Gastos, Análisis and Más. It shows the bar (or the sidebar) and "+ Nueva venta". Gastos and Análisis are reached from Más on the phone and from the sidebar on a computer.
-- **Card or detail**: a customer's card, a variety's page, a sale's detail, an expense, the catalog screen, "Todas las entradas", every "Ver todas" list of a variety's page (its entries and its prices), and Configuración's list of groups.
+- **Card or detail**: a customer's card, a variety's page, an archived variety's page ("‹ Archivadas"), the Archivadas card ("‹ Variedades"), a sale's detail, an expense, the catalog screen, "Todas las entradas", every "Ver todas" list of a variety's page (its entries and its prices), and Configuración's list of groups.
   - It shows the bar (or the sidebar) and a "‹ <parent>" back arrow naming the screen it returns to.
   - It never shows "+ Nueva venta". A customer's card carries only "Nueva venta a <name>".
 - **Form or sheet**: Nueva venta and Elegir cliente, Registrar cobro, the stock entry form (new or editing, `/varieties/entries/{id}`), the price entry form, the expense form, a variety's add and rename, a variety's low-stock warning form and catalog attributes form, every Configuración group, and the temporary place for the bot and the header and footer while it exists.
   - It shows neither the bar nor "+ Nueva venta". It closes with "Cerrar".
   - Leaving it with unsaved changes asks before discarding. Nueva venta keeps its own "¿Descartás la venta?" (sales.md); every other form or sheet asks the same way with its own fixed wording.
   - An untouched form or sheet closes at once.
-- **Back** follows the app's history. With no history (a link opened directly), it goes to the parent named by "‹", or for a form to the screen it belongs to (editing a stock entry: "Todas las entradas").
+- **Back** follows the app's history. With no history (a link opened directly), it goes to the parent named by "‹", or for a form to the screen it belongs to (editing a stock entry: "Todas las entradas"; an archived variety's page: Archivadas).
 
 ### Routes
 
 - Every screen's route is in English: `/sales`, `/customers`, `/varieties`, `/expenses`, `/analysis`, `/settings`, `/more`, and the same for every other screen. The exact path of each screen, each Configuración group included, is fixed in `scripts/design/screens.json`.
-- **Variedades** and its screens: `/varieties`, `/varieties/{low}`, `/varieties/catalog` (the catalog screen), `/varieties/entries` ("Todas las entradas"), `/varieties/entries/new`, `/varieties/entries/{id}` (editing a stock entry), `/varieties/{low}/entries` (a variety's entries, the same list filtered to it, "‹ <variety>"), `/varieties/{low}/prices`, `/varieties/{low}/prices/new` and `/varieties/new`. A reload on any of them opens the screen, never the API's answer; paths that share their first segment with the API are served under ADR-0024.
+- **Variedades** and its screens: `/varieties`, `/varieties/{low}` (a variety's page, read-only when the variety is archived), `/varieties/catalog` (the catalog screen), `/varieties/entries` ("Todas las entradas"), `/varieties/entries/new`, `/varieties/entries/{id}` (editing a stock entry), `/varieties/{low}/entries` (a variety's entries, the same list filtered to it, "‹ <variety>"), `/varieties/{low}/prices`, `/varieties/{low}/prices/new`, `/varieties/new` and `/varieties/archived` (the Archivadas card). A reload on any of them opens the screen, never the API's answer; paths that share their first segment with the API are served under ADR-0024 and ADR-0030.
 - Every old Spanish path redirects permanently to its new route, each tested one by one:
   - `/ventas`, `/clientes`, `/mi-stock`, `/mi-stock/nueva-entrada`, `/mi-stock/entradas/{id}` (to `/varieties/entries/{id}`), `/variedades`, `/catalogo`, `/gastos`, `/mas`, and every other one, including the old Te deben screen's path, which goes to Clientes;
   - `/negocio` goes to Configuración;
@@ -139,7 +143,7 @@ Every screen is exactly one of three kinds, and gets its chrome only from its ki
 - **Settings in one place (criterion 2)**: every business-wide setting named in the product docs sits in exactly one Configuración group and on no other screen; the catalog screen edits no header or footer, Gastos has no categories entry, and the old Negocio screen does not exist; every per-variety setting sits only on the variety's page. Configuración opens in ≤2 taps from every tab root, phone and computer. While the temporary place stands in for Integraciones and Mensaje del catálogo, it is reached only from the catalog screen and from no tab, Más or Configuración entry.
 - **One fact, one place (criterion 3)**: no price, stock entry, threshold or catalog attribute is editable from two screens, checked against the docs and the design. A stock entry is edited through its one form, `/varieties/entries/{id}`, whichever list it was opened from.
 - **Nothing lost, nothing invented (criterion 4)**: every action a seller had before the redesign maps to a place in the new structure, except the customer channel; the bar, the sidebar, Más and Configuración show exactly the entries listed above, with no placeholder group; no link points at a missing screen.
-- **Chrome (criterion 5)**: every screen in the docs and in `scripts/design/screens.json` is classified as exactly one kind, and front tests check its chrome: tab roots with the bar and "+ Nueva venta", cards with "‹ <parent>" and no "+ Nueva venta", forms and sheets with neither and a confirmation on unsaved leave. Back with no history goes to the parent; from Configuración's list, to Más on the phone and Inicio on a computer; from a variety's entries list, to the variety's page; from editing an entry, to "Todas las entradas".
+- **Chrome (criterion 5)**: every screen in the docs and in `scripts/design/screens.json` is classified as exactly one kind, and front tests check its chrome: tab roots with the bar and "+ Nueva venta", cards with "‹ <parent>" and no "+ Nueva venta", forms and sheets with neither and a confirmation on unsaved leave. Back with no history goes to the parent; from Configuración's list, to Más on the phone and Inicio on a computer; from a variety's entries list, to the variety's page; from editing an entry, to "Todas las entradas"; from an archived variety's page, to Archivadas; from Archivadas, to Variedades.
 - **Accessible bar (criterion 6)**: a front test at 320 px with text at 130 % shows every tab label whole; the active tab carries `aria-current` and a non-color mark; no state is told by color alone.
 - **Configuración (criterion 8)**:
   - front tests: every group has "Cerrar" and no bar; unsaved changes ask; an untouched group closes at once; Apariencia shows no save, toast or warning;
@@ -152,8 +156,8 @@ Every screen is exactly one of three kinds, and gets its chrome only from its ki
   - an imported business never sees it and sees the after-import notice until dismissed or published;
   - "Mandar catálogo" is disabled only while the checklist shows and nothing qualifies.
 - **Redirects**: every old Spanish path that has moved answers a permanent redirect to its English route, tested one by one, including `/negocio`, `/gastos/categorias`, `/catalogo`, `/mi-stock/nueva-entrada` and `/mi-stock/entradas/{id}`.
-- **Reloads under `/varieties`**: a browser navigation to each Variedades route, parameterised ones included (`/varieties/{low}`, `/varieties/{low}/entries`, `/varieties/{low}/prices`, `/varieties/entries/{id}`), opens the screen, never the API's answer; the front's own API calls still reach the API.
-- **One structure (criterion 7)**: the docs, CONTEXT.md, `pantallas/` and `screens.json` name the same screens and routes; Zeta approves the pull request that states them.
+- **Reloads under `/varieties`**: a browser navigation to each Variedades route, parameterised ones included (`/varieties/{low}`, `/varieties/{low}/entries`, `/varieties/{low}/prices`, `/varieties/entries/{id}`) and `/varieties/archived`, opens the screen, never the API's answer; the front's own API calls still reach the API.
+- **One structure (criterion 7)**: the docs, CONTEXT.md, `pantallas/` and `screens.json` name the same screens and routes, the Archivadas card and the archived variety's page included; Zeta approves the pull request that states them.
 
 ## Out of scope
 
@@ -164,5 +168,6 @@ Every screen is exactly one of three kinds, and gets its chrome only from its ki
 - A "follow the system" theme.
 - The pin's status or Publicar in Integraciones.
 - Per-variety settings in Configuración (#47).
+- An Archivadas entry in the bar, the sidebar, Más or Configuración: it is reached only from Variedades.
 - A redirect rule for removed paths with no counterpart; changing where unknown addresses go.
 - Live updates between partners.
