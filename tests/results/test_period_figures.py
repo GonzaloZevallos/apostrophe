@@ -4,10 +4,11 @@ variety-identity (docs/product/analysis.md's metrics)."""
 
 import time
 from datetime import date, timedelta
+from typing import Literal
 
 import pytest
 
-from app.results.domain.figures import AnalysisFigures
+from app.results.domain.figures import AmountWithPending, AnalysisFigures, CostFigure
 from app.results.domain.ledger import (
     DrawRow,
     ExpenseRecord,
@@ -15,7 +16,7 @@ from app.results.domain.ledger import (
     PurchaseRecord,
     SaleRecord,
 )
-from app.results.domain.period_figures import period_figures, scan, totals_between
+from app.results.domain.period_figures import Buckets, period_figures, scan, totals_between
 from app.shared.calendar import Month
 from app.shared.grams import Grams
 
@@ -107,6 +108,42 @@ def _shortfall(*, day: date, costed: int | None, pending: str) -> DrawRow:
     )
 
 
+def _withdrawal(
+    *,
+    kind: Literal["promotion", "own_use"],
+    day: date,
+    grams: str,
+    costed: int | None,
+    pending: str,
+) -> DrawRow:
+    return DrawRow(
+        kind=kind,
+        day=day,
+        variety_id=None,
+        variety_name=None,
+        sale_id=None,
+        line_total=None,
+        grams=Grams.of(grams),
+        costed=costed,
+        pending=Grams.of(pending),
+    )
+
+
+def _scan(
+    draws: list[DrawRow],
+    sales: list[SaleRecord] | None = None,
+    earliest_entry_day: date | None = None,
+) -> tuple[Buckets, date | None]:
+    return scan(
+        draws=draws,
+        sales=sales or [],
+        payments=[],
+        expenses=[],
+        purchases=[],
+        earliest_entry_day=earliest_entry_day,
+    )
+
+
 # --- DrawRow is an enforcement artefact: its own __post_init__ must reject a draw
 # that mixes a shortfall's shape with a sale line's fields. ---
 
@@ -124,6 +161,22 @@ def test_a_shortfall_draw_with_a_variety_is_rejected() -> None:
             costed=1000,
             pending=Grams.of("0"),
         )
+
+
+def test_a_withdrawal_draw_with_a_sale_or_a_line_total_is_rejected() -> None:
+    for sale_id, line_total in ((1, None), (None, 1_000)):
+        with pytest.raises(ValueError, match="no variety or sale|no line total"):
+            DrawRow(
+                kind="promotion",
+                day=TODAY,
+                variety_id=None,
+                variety_name=None,
+                sale_id=sale_id,
+                line_total=line_total,
+                grams=Grams.of("2"),
+                costed=1000,
+                pending=Grams.of("0"),
+            )
 
 
 def test_a_sale_line_draw_with_no_variety_is_rejected() -> None:
@@ -485,3 +538,160 @@ def test_the_domain_time_guard_runs_a_year_of_history_in_under_a_second() -> Non
     assert elapsed < 1.0, elapsed
     assert len(figures.month.varieties) > 0
     assert figures.since_first_record is not None
+
+
+# --- Stock withdrawals: Promoción and Consumo propio (ADR-0030) ---
+
+YESTERDAY = TODAY - timedelta(days=1)
+
+
+def test_a_promotion_and_an_own_use_each_lower_profit_by_their_costed_amount_on_their_date() -> (
+    None
+):
+    sold = _sold(
+        day=TODAY,
+        variety_id=1,
+        name="Flor",
+        sale_id=1,
+        line_total=10_000,
+        grams="10",
+        costed=3_000,
+        pending="0",
+    )
+    promotion = _withdrawal(kind="promotion", day=YESTERDAY, grams="2", costed=600, pending="0")
+    own_use = _withdrawal(kind="own_use", day=TODAY, grams="1", costed=300, pending="0")
+    buckets, _ = _scan([sold, promotion, own_use], [SaleRecord(1, TODAY, 0, 10_000)], TODAY)
+
+    on_yesterday = totals_between(buckets, YESTERDAY, YESTERDAY)
+    on_today = totals_between(buckets, TODAY, TODAY)
+
+    assert on_yesterday.profit.amount == -600
+    assert on_yesterday.promotion == AmountWithPending(600, Grams.of("0"))
+    assert on_yesterday.own_use is None
+    assert on_today.profit.amount == 10_000 - 3_000 - 300
+    assert on_today.own_use == AmountWithPending(300, Grams.of("0"))
+    assert on_today.promotion is None
+
+
+def test_a_withdrawal_leaves_cost_of_goods_shortfall_sales_and_grams_sold_untouched() -> None:
+    sold = _sold(
+        day=TODAY,
+        variety_id=1,
+        name="Flor",
+        sale_id=1,
+        line_total=10_000,
+        grams="10",
+        costed=3_000,
+        pending="0",
+    )
+    sales = [SaleRecord(1, TODAY, 0, 10_000)]
+    without, _ = _scan([sold], sales, TODAY)
+    withdrawals = [
+        _withdrawal(kind="promotion", day=TODAY, grams="2", costed=600, pending="1"),
+        _withdrawal(kind="own_use", day=TODAY, grams="3", costed=None, pending="3"),
+    ]
+    with_them, _ = _scan([sold, *withdrawals], sales, TODAY)
+
+    before = totals_between(without, TODAY, TODAY)
+    after = totals_between(with_them, TODAY, TODAY)
+
+    assert after.cost_of_goods == before.cost_of_goods
+    assert after.shortfall is None
+    assert after.sales == before.sales
+    assert after.sales_count == before.sales_count
+    assert after.grams_sold == before.grams_sold
+    assert after.grams_gifted == before.grams_gifted
+    assert with_them.variety_day_totals == without.variety_day_totals
+    assert with_them.day_totals == without.day_totals
+    assert with_them.sales_by_day == without.sales_by_day
+    assert with_them.weekday_sales == without.weekday_sales
+    assert with_them.weekday_counts == without.weekday_counts
+
+
+def test_a_withdrawal_never_enters_the_month_s_variety_table_or_shortfall() -> None:
+    sold = _sold(
+        day=TODAY,
+        variety_id=1,
+        name="Flor",
+        sale_id=1,
+        line_total=10_000,
+        grams="10",
+        costed=3_000,
+        pending="0",
+    )
+    promotion = _withdrawal(kind="promotion", day=TODAY, grams="2", costed=600, pending="0")
+    figures = _figures(
+        draws=[sold, promotion],
+        sales=[SaleRecord(1, TODAY, 0, 10_000)],
+        earliest_entry_day=TODAY,
+    )
+
+    [row] = figures.month.varieties
+    assert row.grams_sold == Grams.of("10")
+    assert row.margin.amount == 7_000
+    assert figures.month.shortfall is None
+    assert figures.month.average_margin.amount == 7_000
+
+
+def test_a_pending_only_withdrawal_gives_profit_a_pending_count_and_cost_of_goods_none() -> None:
+    promotion = _withdrawal(kind="promotion", day=TODAY, grams="4", costed=None, pending="4")
+    buckets, _ = _scan([promotion], earliest_entry_day=TODAY)
+
+    totals = totals_between(buckets, TODAY, TODAY)
+
+    assert totals.profit == AmountWithPending(0, Grams.of("4"))
+    assert totals.promotion == AmountWithPending(0, Grams.of("4"))
+    assert totals.cost_of_goods == CostFigure(0, Grams.of("0"))
+
+
+def test_each_reason_counts_only_its_own_pending_grams_and_profit_adds_every_one() -> None:
+    sold = _sold(
+        day=TODAY,
+        variety_id=1,
+        name="Flor",
+        sale_id=1,
+        line_total=1_000,
+        grams="1",
+        costed=None,
+        pending="1",
+    )
+    promotion = _withdrawal(kind="promotion", day=TODAY, grams="4", costed=None, pending="4")
+    own_use = _withdrawal(kind="own_use", day=TODAY, grams="2", costed=None, pending="2")
+    buckets, _ = _scan([sold, promotion, own_use], [SaleRecord(1, TODAY, 0, 1_000)], TODAY)
+
+    totals = totals_between(buckets, TODAY, TODAY)
+
+    assert totals.promotion is not None
+    assert totals.promotion.pending_grams == Grams.of("4")
+    assert totals.own_use is not None
+    assert totals.own_use.pending_grams == Grams.of("2")
+    assert totals.profit.pending_grams == Grams.of("7")
+
+
+def test_a_withdrawal_dated_before_every_other_record_moves_the_first_record() -> None:
+    earlier = TODAY - timedelta(days=20)
+    sold = _sold(
+        day=TODAY,
+        variety_id=1,
+        name="Flor",
+        sale_id=1,
+        line_total=1_000,
+        grams="1",
+        costed=100,
+        pending="0",
+    )
+    withdrawal = _withdrawal(kind="own_use", day=earlier, grams="1", costed=100, pending="0")
+
+    _, first_record = _scan([sold, withdrawal], [SaleRecord(1, TODAY, 0, 1_000)], TODAY)
+
+    assert first_record == earlier
+
+
+def test_a_window_with_no_withdrawal_of_a_reason_answers_none_for_it() -> None:
+    promotion = _withdrawal(kind="promotion", day=YESTERDAY, grams="1", costed=100, pending="0")
+    buckets, _ = _scan([promotion], earliest_entry_day=YESTERDAY)
+
+    totals = totals_between(buckets, TODAY, TODAY)
+
+    assert totals.promotion is None
+    assert totals.own_use is None

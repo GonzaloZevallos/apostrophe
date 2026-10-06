@@ -29,9 +29,7 @@ def _lot(grams: str, cost: int) -> Lot:
 
 
 def _withdrawal(source: DrawSource, grams: str) -> Draw:
-    return Draw(
-        LotOrder(DAY, NOW, WITHDRAWAL_LINE_RANK, 1, 0), VARIETY, Grams.of(grams), source
-    )
+    return Draw(LotOrder(DAY, NOW, WITHDRAWAL_LINE_RANK, 1, 0), VARIETY, Grams.of(grams), source)
 
 
 def _sale_line(rule: PricingRule, line_total: int) -> Draw:

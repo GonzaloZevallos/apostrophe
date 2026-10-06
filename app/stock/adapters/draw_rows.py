@@ -66,7 +66,8 @@ def _row_of(variety_id: int, draw: Draw, cost: DrawCost) -> DrawRow:
 def build_draw_rows(grouped: Mapping[int, tuple[list[Lot], list[Draw]]]) -> list[DrawRow]:
     """Runs `allocate` once per variety in `grouped` (its own full history, in its own
     order), then turns each `(draw, cost)` pair into one `DrawRow` — a sale line (sold
-    or gifted), a shortfall, a promotion or an own use. Never rebuilds or re-sorts `draws` itself."""
+    or gifted), a shortfall, a promotion or an own use. Never rebuilds or re-sorts
+    `draws` itself."""
     rows: list[DrawRow] = []
     for variety_id, (lots, draws) in grouped.items():
         costs: list[DrawCost] = allocate(lots, draws)
