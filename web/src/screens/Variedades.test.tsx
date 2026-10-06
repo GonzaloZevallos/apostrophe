@@ -8,7 +8,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
+import { Outlet, RouterProvider, createMemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import * as client from '../api/client'
 import { ApiError, NetworkError } from '../api/client'
@@ -28,17 +28,19 @@ const EMPTY_STOCK = { total: 0, varieties: [], entries: [] }
 
 function renderScreen() {
   const queryClient = new QueryClient()
+  const router = createMemoryRouter(
+    [
+      { path: paths.more(), element: <div>stock</div> },
+      { element: <Outlet context={ME} />, children: [{ path: paths.varieties(), element: <Variedades /> }] },
+    ],
+    { initialEntries: [paths.more(), paths.varieties()], initialIndex: 1 },
+  )
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[paths.varieties()]}>
-        <Routes>
-          <Route element={<Outlet context={ME} />}>
-            <Route path={paths.varieties()} element={<Variedades />} />
-          </Route>
-        </Routes>
-      </MemoryRouter>
+      <RouterProvider router={router} />
     </QueryClientProvider>,
   )
+  return router
 }
 
 function mockGet(varieties: unknown[], stock: unknown = EMPTY_STOCK) {
@@ -128,6 +130,56 @@ describe('adding a variety', () => {
 
     expect(await screen.findByText(SIN_CONEXION_TITULO)).toBeInTheDocument()
     expect(screen.getByRole('textbox')).toHaveValue('Golden Cookies')
+  })
+})
+
+describe('leaving the add form', () => {
+  test('untouched closes at once on Cerrar, with no question', async () => {
+    const user = userEvent.setup()
+    mockGet([])
+    renderScreen()
+
+    await user.click(screen.getByRole('button', { name: 'Nueva variedad' }))
+    await user.click(screen.getByRole('button', { name: 'Cerrar' }))
+
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
+    expect(screen.queryByText('¿Descartás los cambios?')).not.toBeInTheDocument()
+  })
+
+  test('touched asks; "No, seguí" keeps the name; "Sí, descartalos" closes', async () => {
+    const user = userEvent.setup()
+    mockGet([])
+    renderScreen()
+
+    await user.click(screen.getByRole('button', { name: 'Nueva variedad' }))
+    await user.type(screen.getByRole('textbox'), 'Golden')
+    await user.click(screen.getByRole('button', { name: 'Cerrar' }))
+
+    expect(screen.getByText('¿Descartás los cambios?')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'No, seguí' }))
+    expect(screen.getByRole('textbox')).toHaveValue('Golden')
+
+    await user.click(screen.getByRole('button', { name: 'Cerrar' }))
+    await user.click(screen.getByRole('button', { name: 'Sí, descartalos' }))
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
+  })
+
+  test('browser Back is caught while touched, and nothing asks after a save', async () => {
+    const user = userEvent.setup()
+    mockGet([])
+    vi.mocked(client.post).mockResolvedValue({ id: 3, name: 'Golden', current_price: null })
+    const router = renderScreen()
+
+    await user.click(screen.getByRole('button', { name: 'Nueva variedad' }))
+    await user.type(screen.getByRole('textbox'), 'Golden')
+    await router.navigate(-1)
+    expect(await screen.findByText('¿Descartás los cambios?')).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe(paths.varieties())
+    await user.click(screen.getByRole('button', { name: 'No, seguí' }))
+
+    await user.click(screen.getByRole('button', { name: 'Guardar' }))
+    expect(await screen.findByText(VARIETY_SAVED)).toBeInTheDocument()
+    expect(screen.queryByText('¿Descartás los cambios?')).not.toBeInTheDocument()
   })
 })
 

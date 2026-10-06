@@ -8,7 +8,6 @@
 
 import { type FormEvent, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link } from 'react-router'
 import { ApiError, NetworkError, UNKNOWN_CODE } from '../api/client'
 import {
   type ExpenseCategory,
@@ -20,10 +19,13 @@ import {
 import { invalidateResource, keys } from '../api/keys'
 import { isGone, kindOf, resolveOverride, type RefusalCode } from '../api/refusals'
 import Aviso, { type SuccessToast } from '../components/Aviso'
+import Boton from '../components/Boton'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import GoneNotice from '../components/GoneNotice'
 import SinConexion from '../components/SinConexion'
 import { paths } from '../routes/paths'
+import { useCloseTo, useLeaveGuard } from '../shell/leaveGuard'
+import { LeaveGuard } from '../shell/LeaveGuardDialog'
 
 export const CANNOT_REMOVE = 'No se puede borrar: todavía tiene gastos. Podés renombrarla.'
 export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
@@ -36,18 +38,31 @@ function isRefusal(caught: unknown): caught is ApiError {
   return caught instanceof ApiError && caught.code !== UNKNOWN_CODE && kindOf(caught.code) === 'refusal'
 }
 
+/** The rename in progress lives on the screen, not in its row, so the screen's one
+ * leave guard can tell it from untouched. */
+interface Edit {
+  id: number
+  name: string
+}
+
 function CategoryRow({
   category,
+  edit,
+  onEdit,
   onDone,
   onGone,
 }: {
   category: ExpenseCategory
+  edit: Edit | null
+  onEdit: (next: Edit | null) => void
   onDone: (toast: SuccessToast) => void
   onGone: () => void
 }) {
   const queryClient = useQueryClient()
-  const [editing, setEditing] = useState(false)
-  const [name, setName] = useState(category.name)
+  const editing = edit?.id === category.id
+  const name = edit?.id === category.id ? edit.name : category.name
+  const setName = (value: string): void => onEdit({ id: category.id, name: value })
+  const setEditing = (value: boolean): void => onEdit(value ? { id: category.id, name: category.name } : null)
   const [error, setError] = useState<string | null>(null)
   const [offline, setOffline] = useState(false)
   const [confirming, setConfirming] = useState(false)
@@ -163,6 +178,12 @@ export default function GastoCategorias() {
   const queryClient = useQueryClient()
   const categories = useQuery({ queryKey: keys.expenseCategories(), queryFn: listCategories })
   const [newName, setNewName] = useState('')
+  const [edit, setEdit] = useState<Edit | null>(null)
+  const editedFrom = categories.data?.find((category) => category.id === edit?.id)?.name
+  const guard = useLeaveGuard({
+    touched: newName.trim() !== '' || (edit !== null && editedFrom !== undefined && edit.name !== editedFrom),
+  })
+  const closeScreen = useCloseTo(paths.settings())
   const [error, setError] = useState<string | null>(null)
   const [offline, setOffline] = useState(false)
   const [toast, setToast] = useState<SuccessToast | null>(null)
@@ -201,10 +222,12 @@ export default function GastoCategorias() {
   return (
     <main className="pantalla">
       <div className="cuerpo">
-        <Link to={paths.expenses()} className="boton--enlace">
-          Volver a Gastos
-        </Link>
-        <span className="encabezado__titulo">Categorías</span>
+        <div className="encabezado-fila">
+          <span className="encabezado__titulo">Categorías</span>
+          <Boton variant="link" onClick={() => guard.requestClose(closeScreen)}>
+            Cerrar
+          </Boton>
+        </div>
 
         {categories.isPending && null}
         {categories.isError && categories.error instanceof NetworkError && <SinConexion />}
@@ -213,7 +236,14 @@ export default function GastoCategorias() {
         {categories.data !== undefined && (
           <div>
             {categories.data.map((category) => (
-              <CategoryRow key={category.id} category={category} onDone={flash} onGone={flashGone} />
+              <CategoryRow
+                key={category.id}
+                category={category}
+                edit={edit}
+                onEdit={setEdit}
+                onDone={flash}
+                onGone={flashGone}
+              />
             ))}
           </div>
         )}
@@ -239,6 +269,7 @@ export default function GastoCategorias() {
           </button>
         </form>
       </div>
+      <LeaveGuard guard={guard} />
       {toast !== null && <Aviso texto={toast} />}
       {goneNotice && (
         <div className="aviso-flotante">

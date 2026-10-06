@@ -24,11 +24,13 @@
 import { type FormEvent, useState } from 'react'
 import { ApiError, NetworkError, UNKNOWN_CODE } from '../api/client'
 import { kindOf, resolveOverride, type RefusalCode } from '../api/refusals'
+import Sheet from '../components/Sheet'
 import SinConexion from '../components/SinConexion'
 import { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import { changePassword } from '../session'
 import { BRAKE_MESSAGE } from './Entrar'
 import { WEAK_PASSWORD_MESSAGE } from './Invitacion'
+import { useLeaveGuard } from '../shell/leaveGuard'
 
 export const WRONG_CURRENT_PASSWORD_MESSAGE = 'La contraseña actual no es esa.'
 export const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
@@ -53,6 +55,7 @@ export default function CambiarContrasena({ onClose, onSaved }: CambiarContrasen
   const [formError, setFormError] = useState<string | null>(null)
   const [offline, setOffline] = useState(false)
   const [sending, setSending] = useState(false)
+  const guard = useLeaveGuard({ touched: currentPassword !== '' || newPassword !== '' })
 
   async function onSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault()
@@ -63,6 +66,7 @@ export default function CambiarContrasena({ onClose, onSaved }: CambiarContrasen
     setSending(true)
     try {
       await changePassword(currentPassword, newPassword)
+      guard.allowLeave()
       onSaved()
     } catch (caught) {
       if (caught instanceof NetworkError) {
@@ -90,9 +94,7 @@ export default function CambiarContrasena({ onClose, onSaved }: CambiarContrasen
   }
 
   return (
-    <div className="capa" role="presentation">
-      <div className="capa__contenido">
-        <span className="panel__titulo">Cambiar contraseña</span>
+    <Sheet title="Cambiar contraseña" guard={guard} onClose={onClose}>
         <form className="formulario" onSubmit={(event) => void onSubmit(event)}>
           <label className="campo">
             <span className="campo__rotulo">Contraseña actual</span>
@@ -136,11 +138,7 @@ export default function CambiarContrasena({ onClose, onSaved }: CambiarContrasen
           <button className="boton" type="submit" disabled={sending}>
             Guardar
           </button>
-          <button type="button" className="boton-enlace" onClick={onClose}>
-            Cancelar
-          </button>
         </form>
-      </div>
-    </div>
+    </Sheet>
   )
 }

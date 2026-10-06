@@ -31,11 +31,13 @@ import { parseMoney } from '../format/parse'
 import { isGone, kindOf, resolveOverride, type RefusalCode } from '../api/refusals'
 import Aviso, { type SuccessToast } from '../components/Aviso'
 import GoneNotice from '../components/GoneNotice'
+import Sheet from '../components/Sheet'
 import Notice from '../components/Notice'
 import { gone, readFeedback, toast as toastState } from '../components/feedback'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import SinConexion from '../components/SinConexion'
 import { paths } from '../routes/paths'
+import { useCloseTo, useLeaveGuard, useTouched } from '../shell/leaveGuard'
 
 export const FLOWER_NOTICE = 'Las compras de flores no van acá: se cargan en Stock.'
 export const CATEGORY_GONE = 'Esa categoría ya no está. Elegí otra.'
@@ -89,6 +91,7 @@ function ExpenseForm({
   categories,
   onDone,
   onGone,
+  onClose,
   onRequestDelete,
 }: {
   target: FormTarget
@@ -96,6 +99,7 @@ function ExpenseForm({
   categories: ExpenseCategory[]
   onDone: (toast: SuccessToast) => void
   onGone: () => void
+  onClose: () => void
   onRequestDelete: (expense: Expense) => void
 }) {
   const queryClient = useQueryClient()
@@ -109,6 +113,11 @@ function ExpenseForm({
   const [newCategoryName, setNewCategoryName] = useState('')
   const [newCategoryError, setNewCategoryError] = useState<string | null>(null)
   const [newCategorySending, setNewCategorySending] = useState(false)
+  // Seed: the date opens as today (or the expense's own), so only a different value, a
+  // typed new-category name or an open new-category panel counts as touched.
+  const guard = useLeaveGuard({
+    touched: useTouched({ form, creatingCategory, newCategoryName, extra: extraCategories.length }),
+  })
 
   const allCategories = [
     ...categories,
@@ -163,6 +172,7 @@ function ExpenseForm({
         await editExpense(target.id, body)
       }
       invalidateResource(queryClient, 'expenses')
+      guard.allowLeave()
       onDone('Gasto guardado')
     } catch (caught) {
       if (caught instanceof NetworkError) {
@@ -173,6 +183,7 @@ function ExpenseForm({
         setCategoryError(CATEGORY_GONE)
       } else if (caught instanceof ApiError && isGone(caught.code)) {
         invalidateResource(queryClient, 'expenses')
+        guard.allowLeave()
         onGone()
       } else if (isRefusal(caught)) {
         setFormError(GENERIC_REFUSAL)
@@ -185,9 +196,7 @@ function ExpenseForm({
   }
 
   return (
-    <div className="capa" role="presentation">
-      <div className="capa__contenido">
-        <span className="panel__titulo">{target === 'nuevo' ? 'Nuevo gasto' : 'Editar gasto'}</span>
+    <Sheet title={target === 'nuevo' ? 'Nuevo gasto' : 'Editar gasto'} guard={guard} onClose={onClose}>
         <form className="formulario" onSubmit={onSubmit}>
           <label className="campo">
             <span className="campo__rotulo">Fecha</span>
@@ -286,14 +295,16 @@ function ExpenseForm({
             <button
               type="button"
               className="boton--enlace"
-              onClick={() => onRequestDelete(target)}
+              onClick={() => {
+                guard.allowLeave()
+                onRequestDelete(target)
+              }}
             >
               Borrar gasto
             </button>
           )}
         </form>
-      </div>
-    </div>
+    </Sheet>
   )
 }
 
@@ -372,6 +383,7 @@ function DeleteConfirm({
 export function NuevoGasto() {
   const me = useOutletContext<Me>()
   const navigate = useNavigate()
+  const closeForm = useCloseTo(paths.expenses())
   const categories = useQuery({ queryKey: keys.expenseCategories(), queryFn: listCategories })
 
   if (categories.data === undefined) return <main className="pantalla" />
@@ -384,6 +396,7 @@ export function NuevoGasto() {
         categories={categories.data}
         onDone={() => navigate(paths.expenses(), { state: toastState('Gasto guardado') })}
         onGone={() => navigate(paths.expenses(), { state: gone() })}
+        onClose={closeForm}
         // A new expense has nothing to delete: the button only shows on an existing one.
         onRequestDelete={() => undefined}
       />
@@ -500,6 +513,7 @@ export default function Gastos() {
             setFormTarget(null)
             flashGone()
           }}
+          onClose={() => setFormTarget(null)}
           onRequestDelete={(expense) => {
             setFormTarget(null)
             setDeleteTarget(expense)

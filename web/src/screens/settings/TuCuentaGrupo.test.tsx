@@ -11,7 +11,7 @@ import { WRONG_CURRENT_PASSWORD_MESSAGE } from '../CambiarContrasena'
 import { WEAK_PASSWORD_MESSAGE } from '../Invitacion'
 import { BRAKE_MESSAGE } from '../Entrar'
 import TuCuentaGrupo, { PASSWORD_CHANGED_SUCCESS } from './TuCuentaGrupo'
-import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
+import { Outlet, RouterProvider, createMemoryRouter } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import type { Me } from '../../api/me'
 import { paths } from '../../routes/paths'
@@ -38,14 +38,15 @@ function renderGrupo(fetchMock: ReturnType<typeof vi.fn>): QueryClient {
   const queryClient = new QueryClient()
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[paths.settingsAccount()]}>
-        <Routes>
-          <Route element={<Provide />}>
-            <Route path={paths.settingsAccount()} element={<TuCuentaGrupo />} />
-          </Route>
-          <Route path={paths.login()} element={<div>Pantalla de entrada</div>} />
-        </Routes>
-      </MemoryRouter>
+      <RouterProvider
+        router={createMemoryRouter(
+          [
+            { element: <Provide />, children: [{ path: paths.settingsAccount(), element: <TuCuentaGrupo /> }] },
+            { path: paths.login(), element: <div>Pantalla de entrada</div> },
+          ],
+          { initialEntries: [paths.settingsAccount()] },
+        )}
+      />
     </QueryClientProvider>,
   )
   return queryClient
@@ -182,4 +183,25 @@ test('a dropped network while logging out shows "Sin conexión" and re-enables t
 
   expect(await screen.findByText(SIN_CONEXION_TITULO)).toBeInTheDocument()
   expect(button).not.toBeDisabled()
+})
+
+test('the password sheet is a Sheet: untouched Cerrar closes at once, touched asks, "No, seguí" keeps what was typed', async () => {
+  const user = userEvent.setup()
+  renderGrupo(vi.fn())
+
+  await user.click(screen.getByRole('button', { name: 'Cambiar contraseña' }))
+  await user.click(screen.getByRole('button', { name: 'Cerrar' }))
+  expect(screen.queryByLabelText('Contraseña actual')).not.toBeInTheDocument()
+  expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+
+  await user.click(screen.getByRole('button', { name: 'Cambiar contraseña' }))
+  await user.type(screen.getByLabelText('Contraseña actual'), 'abc')
+  await user.click(screen.getByRole('button', { name: 'Cerrar' }))
+  expect(await screen.findByText('¿Descartás los cambios?')).toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'No, seguí' }))
+  expect(screen.getByLabelText('Contraseña actual')).toHaveValue('abc')
+
+  await user.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await user.click(await screen.findByRole('button', { name: 'Sí, descartalos' }))
+  expect(screen.queryByLabelText('Contraseña actual')).not.toBeInTheDocument()
 })

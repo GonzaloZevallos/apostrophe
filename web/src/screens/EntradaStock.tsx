@@ -11,7 +11,7 @@
 
 import { type FormEvent, useState } from 'react'
 import { type QueryClient, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link, useNavigate, useOutletContext, useParams } from 'react-router'
+import { useNavigate, useOutletContext, useParams } from 'react-router'
 import { ApiError, NetworkError, UNKNOWN_CODE, get } from '../api/client'
 import { invalidateResource, keys } from '../api/keys'
 import type { Me } from '../api/me'
@@ -26,6 +26,7 @@ import {
   recordEntry,
 } from '../api/stock'
 import { costPerGram, gramsToHundredths } from '../domain/costPerGram'
+import Boton from '../components/Boton'
 import ConfirmDialog from '../components/ConfirmDialog'
 import { gone, toast } from '../components/feedback'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
@@ -36,6 +37,8 @@ import { formatGrams, formatMoney } from '../format/money'
 import { parseMoney, parseSignedGrams } from '../format/parse'
 import type { Variety } from './Variedades'
 import { paths } from '../routes/paths'
+import { useCloseTo, useLeaveGuard, useTouched } from '../shell/leaveGuard'
+import { LeaveGuard } from '../shell/LeaveGuardDialog'
 
 export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
 export const COST_REQUIRED = 'Una compra necesita un costo total'
@@ -157,6 +160,10 @@ function EntradaStockBody({ mode, entryId, today, initial }: BodyProps) {
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+  const guard = useLeaveGuard({
+    touched: useTouched({ date, grams, varietyId, origin, totalCost, note }),
+  })
+  const closeForm = useCloseTo(paths.entries())
 
   const previewGrams = parseSignedGrams(grams)
   const previewCost = parseMoney(totalCost)
@@ -206,10 +213,12 @@ function EntradaStockBody({ mode, entryId, today, initial }: BodyProps) {
         await editEntry(entryId, body)
       }
       invalidateResource(queryClient, 'stock')
+      guard.allowLeave()
       navigate(paths.entries(), { state: toast('Entrada guardada') })
     } catch (caught) {
       if (caught instanceof ApiError && mode === 'editar' && isGone(caught.code)) {
         invalidateStockAfterDeleting(queryClient, entryId)
+        guard.allowLeave()
         navigate(paths.entries(), { state: gone() })
         return
       }
@@ -242,11 +251,13 @@ function EntradaStockBody({ mode, entryId, today, initial }: BodyProps) {
     try {
       await deleteEntry(entryId)
       invalidateStockAfterDeleting(queryClient, entryId)
+      guard.allowLeave()
       navigate(paths.entries(), { state: toast('Entrada eliminada') })
     } catch (caught) {
       setConfirmingDelete(false)
       if (caught instanceof ApiError && isGone(caught.code)) {
         invalidateStockAfterDeleting(queryClient, entryId)
+        guard.allowLeave()
         navigate(paths.entries(), { state: gone() })
         return
       }
@@ -266,7 +277,9 @@ function EntradaStockBody({ mode, entryId, today, initial }: BodyProps) {
     <main className="pantalla">
       <div className="cuerpo">
         <div className="encabezado-fila">
-          <Link to={paths.entries()}>Volver</Link>
+          <Boton variant="link" onClick={() => guard.requestClose(closeForm)}>
+            Cerrar
+          </Boton>
           <span className="encabezado__titulo">
             {mode === 'nuevo' ? 'Nueva entrada' : 'Editar entrada'}
           </span>
@@ -396,6 +409,7 @@ function EntradaStockBody({ mode, entryId, today, initial }: BodyProps) {
         />
       )}
       {deleteError !== null && <ErrorGenerico />}
+      <LeaveGuard guard={guard} />
     </main>
   )
 }

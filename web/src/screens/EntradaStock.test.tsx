@@ -9,8 +9,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Outlet, Route, Routes, useLocation } from 'react-router'
-import { afterEach, expect, test, vi } from 'vitest'
+import { Outlet, RouterProvider, createMemoryRouter, useLocation } from 'react-router'
+import { afterEach, describe, expect, test, vi } from 'vitest'
 import type { Me } from '../api/me'
 import EntradaStock from './EntradaStock'
 import { paths } from '../routes/paths'
@@ -40,20 +40,26 @@ function Provide() {
   return <Outlet context={ME} />
 }
 
-function renderForm(initialPath: string) {
+function renderForm(initialPath: string, entries: string[] = [initialPath]) {
+  const router = createMemoryRouter(
+    [
+      {
+        element: <Provide />,
+        children: [
+          { path: paths.newEntry(), element: <EntradaStock mode="nuevo" /> },
+          { path: paths.entry(':id'), element: <EntradaStock mode="editar" /> },
+          { path: paths.entries(), element: <ListStub /> },
+        ],
+      },
+    ],
+    { initialEntries: entries, initialIndex: entries.length - 1 },
+  )
   render(
     <QueryClientProvider client={new QueryClient()}>
-      <MemoryRouter initialEntries={[initialPath]}>
-        <Routes>
-          <Route element={<Provide />}>
-            <Route path={paths.newEntry()} element={<EntradaStock mode="nuevo" />} />
-            <Route path={paths.entry(':id')} element={<EntradaStock mode="editar" />} />
-            <Route path={paths.entries()} element={<ListStub />} />
-          </Route>
-        </Routes>
-      </MemoryRouter>
+      <RouterProvider router={router} />
     </QueryClientProvider>,
   )
+  return router
 }
 
 const VARIETIES = [{ id: 3, name: 'Sir Jack', current_price: null }]
@@ -364,4 +370,107 @@ test('deleting an entry never re-fetches the entry it just deleted', async () =>
 
   expect(await screen.findByText('la lista de stock')).toBeInTheDocument()
   expect(getEntryCalls).toBe(1)
+})
+
+describe('leaving the stock entry form', () => {
+  const ASK = '¿Descartás los cambios?'
+  const ENTRY = {
+    id: 10,
+    date: '2026-09-20',
+    variety_id: 3,
+    origin: 'harvest',
+    grams: 25,
+    total_cost: null,
+    cost_per_gram: null,
+    note: null,
+  }
+
+  function stubApi() {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: string | URL | Request, init?: RequestInit) => {
+        const url = typeof input === 'string' ? input : input.toString()
+        if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+        if (url === '/stock') return Promise.resolve(jsonResponse(200, STOCK_VIEW))
+        if (url === '/stock/entries/10' && (init?.method ?? 'GET') === 'GET') {
+          return Promise.resolve(jsonResponse(200, ENTRY))
+        }
+        return Promise.resolve(jsonResponse(201, { ...ENTRY, grams: 30 }))
+      }),
+    )
+  }
+
+  test('a new entry, untouched, closes at once on Cerrar and on browser Back — today counts as seed', async () => {
+    stubApi()
+    const router = renderForm(paths.newEntry(), [paths.entries(), paths.newEntry()])
+    await screen.findByRole('option', { name: 'Sir Jack' })
+    expect(screen.getByLabelText('Fecha')).toHaveValue('2026-10-03')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+    expect(await screen.findByText('la lista de stock')).toBeInTheDocument()
+    expect(screen.queryByText(ASK)).not.toBeInTheDocument()
+
+    await router.navigate(1)
+    await screen.findByLabelText('Gramos')
+    await router.navigate(-1)
+    expect(await screen.findByText('la lista de stock')).toBeInTheDocument()
+    expect(screen.queryByText(ASK)).not.toBeInTheDocument()
+  })
+
+  test('a new entry, touched, asks; "No, seguí" keeps the grams; browser Back is caught; "Sí, descartalos" leaves', async () => {
+    stubApi()
+    const router = renderForm(paths.newEntry(), [paths.entries(), paths.newEntry()])
+    await userEvent.type(await screen.findByLabelText('Gramos'), '30')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+    expect(screen.getByText(ASK)).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'No, seguí' }))
+    expect(screen.getByLabelText('Gramos')).toHaveValue('30')
+
+    await router.navigate(-1)
+    expect(await screen.findByText(ASK)).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe(paths.newEntry())
+
+    await userEvent.click(screen.getByRole('button', { name: 'Sí, descartalos' }))
+    expect(await screen.findByText('la lista de stock')).toBeInTheDocument()
+  })
+
+  test('a new entry asks nothing after a successful save', async () => {
+    stubApi()
+    renderForm(paths.newEntry(), [paths.entries(), paths.newEntry()])
+    await userEvent.type(await screen.findByLabelText('Gramos'), '30')
+    await userEvent.selectOptions(await screen.findByLabelText('Variedad'), 'Sir Jack')
+    await userEvent.click(screen.getByRole('button', { name: 'Guardá la entrada' }))
+
+    expect(await screen.findByText('Entrada guardada')).toBeInTheDocument()
+    expect(screen.queryByText(ASK)).not.toBeInTheDocument()
+  })
+
+  test('an edited entry, untouched, closes at once; once changed it asks and keeps the value on "No, seguí"', async () => {
+    stubApi()
+    const router = renderForm(paths.entry(10), [paths.entries(), paths.entry(10)])
+    expect(await screen.findByLabelText('Gramos')).toHaveValue('25')
+
+    await router.navigate(-1)
+    expect(await screen.findByText('la lista de stock')).toBeInTheDocument()
+    expect(screen.queryByText(ASK)).not.toBeInTheDocument()
+
+    await router.navigate(1)
+    await userEvent.type(await screen.findByLabelText('Gramos'), '1')
+    await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+    expect(screen.getByText(ASK)).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'No, seguí' }))
+    expect(screen.getByLabelText('Gramos')).toHaveValue('251')
+  })
+
+  test('an edited entry asks nothing after its confirmed save', async () => {
+    stubApi()
+    renderForm(paths.entry(10), [paths.entries(), paths.entry(10)])
+    await userEvent.type(await screen.findByLabelText('Gramos'), '1')
+    await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Sí, guardar' }))
+
+    expect(await screen.findByText('la lista de stock')).toBeInTheDocument()
+    expect(screen.queryByText(ASK)).not.toBeInTheDocument()
+  })
 })

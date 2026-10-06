@@ -15,10 +15,9 @@
  * fetches fresh, and nothing an earlier mount or another screen cached ever
  * surfaces here. The one other refetch is on `sale.no_price_that_day`.
  *
- * The leave guard (`useBlocker`, invariants: "reading a ref at call time") only
- * blocks Back/close once something has been typed, and never blocks the
- * replace-navigation a successful save performs — `savedRef` short-circuits the
- * blocker's predicate once `onSubmit` has already saved.
+ * The leave guard (`shell/leaveGuard.tsx`, with this screen's own wording) only blocks
+ * Back/"Cerrar" once something differs from what the form opened with, and never
+ * blocks the replace-navigation a successful save performs (`allowLeave`).
  *
  * The line editor (plan, "Binding UX decision: the line editor" — no design file
  * draws it): one open line at a time, in place. `openKey` names which line is
@@ -30,15 +29,14 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { type FormEvent, useCallback, useEffect, useRef, useState } from 'react'
-import { useBlocker, useLocation, useNavigate, useOutletContext } from 'react-router'
+import { type FormEvent, useEffect, useRef, useState } from 'react'
+import { useLocation, useNavigate, useOutletContext } from 'react-router'
 import { ApiError, NetworkError, UNKNOWN_CODE, get, post } from '../../api/client'
 import type { Customer } from '../../api/customers'
 import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
 import { resolveOverride, type RefusalCode } from '../../api/refusals'
 import Boton from '../../components/Boton'
-import ConfirmDialog from '../../components/ConfirmDialog'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import { readNewSaleState, saleJustSaved } from '../../components/feedback'
 import Icono from '../../components/Icono'
@@ -62,6 +60,8 @@ import {
 import type { Variety } from '../Variedades'
 import NuevaVentaCliente from './NuevaVentaCliente'
 import { paths } from '../../routes/paths'
+import { type Wording, useCloseTo, useLeaveGuard } from '../../shell/leaveGuard'
+import { LeaveGuard } from '../../shell/LeaveGuardDialog'
 
 export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
 export const NO_LINES_MESSAGE = 'Cargá al menos una variedad.'
@@ -70,6 +70,13 @@ export const PAYMENT_REQUIRED_MESSAGE = 'Elegí cómo se pagó, o dejá la venta
 export const SPECIAL_PRICE_INVALID_MESSAGE = 'El precio especial tiene que ser mayor a $0'
 export const LINE_GRAMS_INVALID = 'Cargá los gramos: coma, hasta dos decimales'
 export const LINE_VARIETY_MISSING = 'Elegí una variedad'
+
+const SALE_WORDING: Wording = {
+  title: '¿Descartás la venta?',
+  detail: 'No vas a poder recuperar lo que cargaste.',
+  stayText: 'No, seguí cargando',
+  discardText: 'Sí, descartala',
+}
 
 interface LineState {
   key: string
@@ -198,7 +205,6 @@ export default function NuevaVenta() {
   } | null>(null)
   const focusNonceRef = useRef(0)
 
-  const savedRef = useRef(false)
   const varietyFieldRef = useRef<HTMLSelectElement | null>(null)
   const gramsFieldRef = useRef<HTMLInputElement | null>(null)
   const specialPriceFieldRef = useRef<HTMLInputElement | null>(null)
@@ -371,17 +377,21 @@ export default function NuevaVenta() {
     parseShipping(shipping) ?? 0,
   )
 
+  // Touched is "differs from what the form opened with": a customer passed in by
+  // "Nueva venta a <name>" is part of the seed, not a change.
+  const [seedCustomerId] = useState(() => (initialCustomerId === null ? null : Number(initialCustomerId)))
+  const customerChanged =
+    customerOverride !== undefined && (customerOverride?.id ?? null) !== seedCustomerId
+  const [seedDate] = useState(me.today)
   const touched =
-    customer !== null ||
+    customerChanged ||
+    date !== seedDate ||
+    method !== null ||
     note.trim() !== '' ||
     shipping !== '0' ||
     lines.some((line) => !isBlank(line))
-  const touchedRef = useRef(touched)
-  useEffect(() => {
-    touchedRef.current = touched
-  }, [touched])
-  const shouldBlock = useCallback(() => touchedRef.current && !savedRef.current, [])
-  const blocker = useBlocker(shouldBlock)
+  const guard = useLeaveGuard({ touched, wording: SALE_WORDING })
+  const closeForm = useCloseTo(paths.sales())
 
   const save = useMutation({
     mutationFn: (body: SaleBody) => post<SavedSale>('/sales', body),
@@ -414,11 +424,6 @@ export default function NuevaVenta() {
     if (noPriceErrorFor(line.key) !== null) return 'variety'
     if (!parseGrams(line.grams).ok) return 'grams'
     return 'variety'
-  }
-
-  function goBack(): void {
-    if (location.key === 'default') navigate(paths.sales())
-    else navigate(-1)
   }
 
   async function onSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
@@ -472,7 +477,7 @@ export default function NuevaVenta() {
 
     try {
       const saved = await save.mutateAsync(body)
-      savedRef.current = true
+      guard.allowLeave()
       navigate(paths.sale(saved.id), { replace: true, state: saleJustSaved() })
     } catch (caught) {
       if (caught instanceof ApiError && caught.status === 401) {
@@ -529,7 +534,12 @@ export default function NuevaVenta() {
         <div className="nueva-venta__disposicion">
         <div className="nueva-venta__cuerpo">
           <div className="encabezado-fila">
-            <Boton variant="icon" ariaLabel="Volver" icon="atras" onClick={goBack} />
+            <Boton
+              variant="icon"
+              ariaLabel="Cerrar"
+              icon="atras"
+              onClick={() => guard.requestClose(closeForm)}
+            />
             <span className="encabezado__titulo">Nueva venta</span>
             <span className="fecha-pildora">
               <input
@@ -788,16 +798,7 @@ export default function NuevaVenta() {
         />
       )}
 
-      {blocker.state === 'blocked' && (
-        <ConfirmDialog
-          title="¿Descartás la venta?"
-          detail="No vas a poder recuperar lo que cargaste."
-          confirmText="Sí, descartala"
-          cancelText="No, seguí cargando"
-          onConfirm={() => blocker.proceed()}
-          onCancel={() => blocker.reset()}
-        />
-      )}
+      <LeaveGuard guard={guard} />
     </main>
   )
 }

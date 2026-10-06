@@ -15,7 +15,11 @@ import { ApiError, NetworkError, UNKNOWN_CODE, patch } from '../../api/client'
 import { invalidateResource } from '../../api/keys'
 import { kindOf, resolveOverride, type RefusalCode } from '../../api/refusals'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
+import Boton from '../../components/Boton'
 import SinConexion from '../../components/SinConexion'
+import { paths } from '../../routes/paths'
+import { useCloseTo, useLeaveGuard } from '../../shell/leaveGuard'
+import { LeaveGuard } from '../../shell/LeaveGuardDialog'
 import { type Business, useBusiness } from './business'
 
 export const RENAME_SUCCESS = 'Negocio renombrado'
@@ -36,6 +40,12 @@ export default function NegocioGrupo() {
   const [nameOffline, setNameOffline] = useState(false)
   const [savingName, setSavingName] = useState(false)
   const [renamed, setRenamed] = useState(false)
+  // The seed is the name the screen opened with, or the one last saved: a rename that
+  // was saved is not an unsaved change while the refetch is still on its way.
+  const [savedName, setSavedName] = useState<string | null>(null)
+  const baseline = savedName ?? data?.name
+  const guard = useLeaveGuard({ touched: name !== null && baseline !== undefined && name !== baseline })
+  const closeGroup = useCloseTo(paths.settings())
 
   if (isPending) return <main className="pantalla" />
 
@@ -68,6 +78,7 @@ export default function NegocioGrupo() {
       const updated = await patch<Business>('/business', { name: currentName })
       invalidateResource(queryClient, 'business')
       setName(updated.name)
+      setSavedName(updated.name)
       setRenamed(true)
     } catch (caught) {
       if (caught instanceof NetworkError) {
@@ -92,7 +103,12 @@ export default function NegocioGrupo() {
   return (
     <main className="pantalla">
       <div className="cuerpo">
-        <span className="encabezado__titulo">Negocio</span>
+        <div className="encabezado-fila">
+          <span className="encabezado__titulo">Negocio</span>
+          <Boton variant="link" onClick={() => guard.requestClose(closeGroup)}>
+            Cerrar
+          </Boton>
+        </div>
 
         {renamed && (
           <div className="aviso-flotante" role="status">
@@ -124,6 +140,7 @@ export default function NegocioGrupo() {
           {nameOffline && <SinConexion />}
         </form>
       </div>
+      <LeaveGuard guard={guard} />
     </main>
   )
 }

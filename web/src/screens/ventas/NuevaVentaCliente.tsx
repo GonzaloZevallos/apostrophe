@@ -26,6 +26,7 @@ import { keys } from '../../api/keys'
 import { resolveOverride, type RefusalCode } from '../../api/refusals'
 import Boton from '../../components/Boton'
 import Icono from '../../components/Icono'
+import Sheet from '../../components/Sheet'
 import SinConexion from '../../components/SinConexion'
 import CustomerFields, { type CustomerFieldsValue } from '../clientes/CustomerFields'
 import {
@@ -113,15 +114,7 @@ export default function NuevaVentaCliente({ allowNone, onChosen, onClose }: Nuev
   }
 
   return (
-    <div className="cliente-sheet" role="presentation">
-      <div className="cliente-sheet__contenido">
-        <span className="cliente-sheet__manija" aria-hidden="true" />
-        <div className="cliente-sheet__encabezado">
-          <span className="panel__titulo">Elegir cliente</span>
-          <Boton variant="link" onClick={onClose}>
-            Cerrar
-          </Boton>
-        </div>
+    <Sheet title="Elegir cliente" look="customer" onClose={onClose}>
         <label className="campo campo--buscar">
           <span className="campo__rotulo visualmente-oculto">Buscar</span>
           <span className="campo--buscar__icono">
@@ -191,7 +184,6 @@ export default function NuevaVentaCliente({ allowNone, onChosen, onClose }: Nuev
             </Boton>
           </form>
         )}
-      </div>
-    </div>
+    </Sheet>
   )
 }

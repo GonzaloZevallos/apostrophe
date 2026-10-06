@@ -8,7 +8,7 @@
  * this subtask replaces.
  */
 
-import { act, render, screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import SALE_DETAIL from '../../api/fixtures/sale-detail.json'
@@ -186,7 +186,7 @@ test('an untouched form closes at once; a touched one asks "¿Descartás la vent
     'GET /sales?date_from=2026-10-02&date_to=2026-10-02': () => jsonResponse(200, []),
   })
 
-  await user.click(screen.getByRole('button', { name: 'Volver' }))
+  await user.click(screen.getByRole('button', { name: 'Cerrar' }))
   expect(
     await screen.findByText('Ventas', { selector: '.encabezado__titulo' }),
   ).toBeInTheDocument()
@@ -194,7 +194,7 @@ test('an untouched form closes at once; a touched one asks "¿Descartás la vent
   await act(() => router.navigate(paths.newSale()))
   await screen.findByText('Nueva venta')
   await user.type(screen.getByLabelText('Gramos línea 1'), '2')
-  await user.click(screen.getByRole('button', { name: 'Volver' }))
+  await user.click(screen.getByRole('button', { name: 'Cerrar' }))
 
   const dialog = await screen.findByRole('alertdialog')
   expect(within(dialog).getByText('¿Descartás la venta?')).toBeInTheDocument()
@@ -202,12 +202,52 @@ test('an untouched form closes at once; a touched one asks "¿Descartás la vent
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
   expect(screen.getByText('Nueva venta')).toBeInTheDocument()
 
-  await user.click(screen.getByRole('button', { name: 'Volver' }))
+  await user.click(screen.getByRole('button', { name: 'Cerrar' }))
   const dialogAgain = await screen.findByRole('alertdialog')
   await user.click(within(dialogAgain).getByRole('button', { name: 'Sí, descartala' }))
   expect(
     await screen.findByText('Ventas', { selector: '.encabezado__titulo' }),
   ).toBeInTheDocument()
+})
+
+test('browser Back is caught while touched, with the sale wording; untouched it leaves at once', async () => {
+  const user = userEvent.setup()
+  await openForm({
+    'GET /auth/me': () => jsonResponse(200, ME),
+    'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
+    'GET /sales?date_from=2026-10-02&date_to=2026-10-02': () => jsonResponse(200, []),
+  })
+
+  await user.type(screen.getByLabelText('Gramos línea 1'), '2')
+  await act(() => router.navigate(-1))
+
+  const dialog = await screen.findByRole('alertdialog')
+  expect(within(dialog).getByText('¿Descartás la venta?')).toBeInTheDocument()
+  expect(router.state.location.pathname).toBe(paths.newSale())
+  await user.click(within(dialog).getByRole('button', { name: 'No, seguí cargando' }))
+  expect(screen.getByLabelText('Gramos línea 1')).toHaveValue('2')
+
+  await act(() => router.navigate(-1))
+  await user.click(await screen.findByRole('button', { name: 'Sí, descartala' }))
+  await waitFor(() => expect(router.state.location.pathname).toBe(paths.sales()))
+})
+
+test('changing only the date, or only picking a payment method, counts as touched', async () => {
+  const user = userEvent.setup()
+  await openForm({
+    'GET /auth/me': () => jsonResponse(200, ME),
+    'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
+  })
+
+  fireEvent.change(screen.getByLabelText('Fecha'), { target: { value: '2026-10-01' } })
+  await user.click(screen.getByRole('button', { name: 'Cerrar' }))
+  expect(await screen.findByRole('alertdialog')).toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'No, seguí cargando' }))
+
+  fireEvent.change(screen.getByLabelText('Fecha'), { target: { value: '2026-10-02' } })
+  await user.click(screen.getByRole('radio', { name: 'Efectivo' }))
+  await user.click(screen.getByRole('button', { name: 'Cerrar' }))
+  expect(await screen.findByRole('alertdialog')).toBeInTheDocument()
 })
 
 test('a refused save keeps everything typed, the message on its field', async () => {
@@ -363,7 +403,7 @@ test('nothing an earlier mount cached ever renders: a remount with a different p
   // Leave (unmounting NuevaVenta — `gcTime: 0` evicts its frozen query right away)
   // and change what the next fetch answers with, as if a partner had repriced Rosa
   // meanwhile. The form is touched, so "Cerrar" asks first.
-  await user.click(screen.getByRole('button', { name: 'Volver' }))
+  await user.click(screen.getByRole('button', { name: 'Cerrar' }))
   await user.click(await screen.findByRole('button', { name: 'Sí, descartala' }))
   await screen.findByText('Ventas', { selector: '.encabezado__titulo' })
   listPrice = 5000

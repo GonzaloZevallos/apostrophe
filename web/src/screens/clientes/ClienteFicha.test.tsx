@@ -17,8 +17,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Outlet, useLocation } from 'react-router'
-import { MemoryRouter, Route, Routes } from 'react-router'
-import { afterEach, beforeEach, expect, test, vi } from 'vitest'
+import { RouterProvider, createMemoryRouter } from 'react-router'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import accountFixture from '../../api/fixtures/account.json'
 import paymentFixture from '../../api/fixtures/payment.json'
 import paymentPreviewFixture from '../../api/fixtures/payment-preview.json'
@@ -50,19 +50,25 @@ function jsonResponse(status: number, body: unknown): Response {
 
 function renderFicha(id: string) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  const router = createMemoryRouter(
+    [
+      {
+        element: <Context />,
+        children: [
+          { path: paths.customer(':id'), element: <ClienteFicha /> },
+          { path: paths.customers(), element: <span>la lista</span> },
+          { path: paths.newSale(), element: <NuevaVentaStub /> },
+        ],
+      },
+    ],
+    { initialEntries: [paths.customers(), paths.customer(id)], initialIndex: 1 },
+  )
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[paths.customer(id)]}>
-        <Routes>
-          <Route element={<Context />}>
-            <Route path={paths.customer(':id')} element={<ClienteFicha />} />
-            <Route path={paths.customers()} element={<span>la lista</span>} />
-            <Route path={paths.newSale()} element={<NuevaVentaStub />} />
-          </Route>
-        </Routes>
-      </MemoryRouter>
+      <RouterProvider router={router} />
     </QueryClientProvider>,
   )
+  return router
 }
 
 const SETTLED_CUSTOMER = {
@@ -560,4 +566,76 @@ test('a payment above the balance shows the fixed refusal inline and keeps what 
 
   expect(await screen.findByText('El monto supera lo que te debe.')).toBeInTheDocument()
   expect(within(sheet as HTMLElement).getByLabelText('Monto')).toHaveValue('999000')
+})
+
+describe('leaving the Cobro sheet', () => {
+  const ASK = '¿Descartás los cambios?'
+
+  async function openCobro() {
+    vi.mocked(fetch).mockImplementation(
+      dispatchFetch({
+        'GET /customers/1': () => jsonResponse(200, OWING_CUSTOMER),
+        'GET /customers/1/account': () => jsonResponse(200, OWING_ACCOUNT),
+        'POST /customers/1/payments': () => jsonResponse(201, paymentFixture),
+      }),
+    )
+    const router = renderFicha('1')
+    await userEvent.click(await screen.findByRole('button', { name: 'Registrar cobro' }))
+    const sheet = (await screen.findByRole('button', { name: 'Guardar' })).closest('.capa__contenido')
+    expect(sheet).not.toBeNull()
+    return { router, sheet: sheet as HTMLElement }
+  }
+
+  test('untouched, with the balance preloaded as its seed, closes at once on Cerrar and on browser Back', async () => {
+    const { router, sheet } = await openCobro()
+    expect(within(sheet).getByLabelText('Monto')).not.toHaveValue('')
+
+    await userEvent.click(within(sheet).getByRole('button', { name: 'Cerrar' }))
+    expect(screen.queryByRole('button', { name: 'Guardar' })).not.toBeInTheDocument()
+    expect(screen.queryByText(ASK)).not.toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Registrar cobro' }))
+    await router.navigate(-1)
+    expect(await screen.findByText('la lista')).toBeInTheDocument()
+    expect(screen.queryByText(ASK)).not.toBeInTheDocument()
+  })
+
+  test('touched asks; "No, seguí" keeps the amount; browser Back is caught; "Sí, descartalos" closes the sheet', async () => {
+    const { router, sheet } = await openCobro()
+    await userEvent.clear(within(sheet).getByLabelText('Monto'))
+    await userEvent.type(within(sheet).getByLabelText('Monto'), '5000')
+
+    await userEvent.click(within(sheet).getByRole('button', { name: 'Cerrar' }))
+    expect(screen.getByText(ASK)).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'No, seguí' }))
+    expect(within(sheet).getByLabelText('Monto')).toHaveValue('5000')
+
+    await router.navigate(-1)
+    expect(await screen.findByText(ASK)).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe(paths.customer(1))
+    await userEvent.click(screen.getByRole('button', { name: 'No, seguí' }))
+
+    await userEvent.click(within(sheet).getByRole('button', { name: 'Cerrar' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Sí, descartalos' }))
+    expect(screen.queryByRole('button', { name: 'Guardar' })).not.toBeInTheDocument()
+  })
+
+  test('picking only the payment method counts as touched', async () => {
+    const { sheet } = await openCobro()
+    await userEvent.click(within(sheet).getByLabelText('Efectivo'))
+    await userEvent.click(within(sheet).getByRole('button', { name: 'Cerrar' }))
+
+    expect(screen.getByText(ASK)).toBeInTheDocument()
+  })
+
+  test('nothing asks after a successful save', async () => {
+    const { sheet } = await openCobro()
+    await userEvent.clear(within(sheet).getByLabelText('Monto'))
+    await userEvent.type(within(sheet).getByLabelText('Monto'), '5000')
+    await userEvent.click(within(sheet).getByLabelText('Efectivo'))
+    await userEvent.click(within(sheet).getByRole('button', { name: 'Guardar' }))
+
+    expect(await screen.findByText(/Cobro guardado/)).toBeInTheDocument()
+    expect(screen.queryByText(ASK)).not.toBeInTheDocument()
+  })
 })

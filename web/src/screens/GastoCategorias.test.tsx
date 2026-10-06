@@ -7,8 +7,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router'
-import { afterEach, expect, test, vi } from 'vitest'
+import { RouterProvider, createMemoryRouter } from 'react-router'
+import { afterEach, describe, expect, test, vi } from 'vitest'
 import { GONE_NOTICE } from '../api/refusals'
 import GastoCategorias, { CANNOT_REMOVE } from './GastoCategorias'
 import { paths } from '../routes/paths'
@@ -24,13 +24,19 @@ const CATEGORIES = [{ id: 1, name: 'Packaging' }]
 
 function renderScreen(fetchImpl: (url: string, init?: RequestInit) => Promise<Response>) {
   vi.stubGlobal('fetch', vi.fn(fetchImpl))
+  const router = createMemoryRouter(
+    [
+      { path: paths.settings(), element: <div>Configuración</div> },
+      { path: paths.expenseCategories(), element: <GastoCategorias /> },
+    ],
+    { initialEntries: [paths.settings(), paths.expenseCategories()], initialIndex: 1 },
+  )
   render(
     <QueryClientProvider client={new QueryClient()}>
-      <MemoryRouter initialEntries={[paths.expenseCategories()]}>
-        <GastoCategorias />
-      </MemoryRouter>
+      <RouterProvider router={router} />
     </QueryClientProvider>,
   )
+  return router
 }
 
 afterEach(() => {
@@ -129,4 +135,72 @@ test('removing a category that is already gone shows the gone notice, not the re
 
   expect(await screen.findByText(GONE_NOTICE)).toBeInTheDocument()
   expect(screen.queryByText(CANNOT_REMOVE)).not.toBeInTheDocument()
+})
+
+describe('leaving the categories page', () => {
+  const ASK = '¿Descartás los cambios?'
+  const list = async (url: string, init?: RequestInit) => {
+    const method = init?.method ?? 'GET'
+    if (url.toString() === '/expense-categories' && method === 'GET') return jsonResponse(200, CATEGORIES)
+    if (url.toString() === '/expense-categories' && method === 'POST') return jsonResponse(201, { id: 2, name: 'Insumos' })
+    throw new Error(`unexpected ${method} ${url}`)
+  }
+
+  test('untouched closes at once on Cerrar and on browser Back', async () => {
+    const router = renderScreen(list)
+    await screen.findByText('Packaging')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+    expect(await screen.findByText('Configuración')).toBeInTheDocument()
+
+    await router.navigate(1)
+    await screen.findByText('Packaging')
+    await router.navigate(-1)
+    expect(await screen.findByText('Configuración')).toBeInTheDocument()
+    expect(screen.queryByText(ASK)).not.toBeInTheDocument()
+  })
+
+  test('a typed new name asks; "No, seguí" keeps it; "Sí, descartalos" leaves', async () => {
+    renderScreen(list)
+    await screen.findByText('Packaging')
+    await userEvent.type(screen.getByLabelText('Nueva categoría'), 'Insumos')
+    await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+
+    expect(screen.getByText(ASK)).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'No, seguí' }))
+    expect(screen.getByLabelText('Nueva categoría')).toHaveValue('Insumos')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Sí, descartalos' }))
+    expect(await screen.findByText('Configuración')).toBeInTheDocument()
+  })
+
+  test('a rename in progress asks on browser Back, and an unchanged one does not', async () => {
+    const router = renderScreen(list)
+    await screen.findByText('Packaging')
+    await userEvent.click(screen.getByRole('button', { name: 'Renombrar' }))
+    await userEvent.type(screen.getByLabelText('Nombre de Packaging'), 'X')
+    await router.navigate(-1)
+
+    expect(await screen.findByText(ASK)).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe(paths.expenseCategories())
+    await userEvent.click(screen.getByRole('button', { name: 'No, seguí' }))
+    expect(screen.getByLabelText('Nombre de Packaging')).toHaveValue('PackagingX')
+
+    await userEvent.type(screen.getByLabelText('Nombre de Packaging'), '{Backspace}')
+    await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+    expect(await screen.findByText('Configuración')).toBeInTheDocument()
+  })
+
+  test('nothing asks after adding a category', async () => {
+    renderScreen(list)
+    await screen.findByText('Packaging')
+    await userEvent.type(screen.getByLabelText('Nueva categoría'), 'Insumos')
+    await userEvent.click(screen.getByRole('button', { name: 'Agregar categoría' }))
+    await screen.findByText('Categoría guardada')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+    expect(await screen.findByText('Configuración')).toBeInTheDocument()
+    expect(screen.queryByText(ASK)).not.toBeInTheDocument()
+  })
 })
