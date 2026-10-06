@@ -710,3 +710,94 @@ def test_a_withdrawal_draw_with_only_a_variety_is_rejected() -> None:
             costed=1000,
             pending=Grams.of("0"),
         )
+
+
+# --- Windows: the two withdrawal lines in the month, weeks, months and since-first-record ---
+
+
+def test_the_month_header_shows_each_reason_only_when_present_with_its_own_pending_grams() -> None:
+    promotion = _withdrawal(kind="promotion", day=TODAY, grams="2", costed=600, pending="1")
+    figures = _figures(draws=[promotion], earliest_entry_day=TODAY)
+
+    assert figures.month.promotion == AmountWithPending(600, Grams.of("1"))
+    assert figures.month.own_use is None
+
+
+def test_a_week_and_a_month_row_carry_the_lines_and_profit_equals_totals_between() -> None:
+    promotion = _withdrawal(kind="promotion", day=TODAY, grams="2", costed=600, pending="0")
+    own_use = _withdrawal(kind="own_use", day=TODAY, grams="3", costed=None, pending="3")
+    figures = _figures(draws=[promotion, own_use], earliest_entry_day=TODAY)
+    buckets, _ = _scan([promotion, own_use], earliest_entry_day=TODAY)
+
+    [week] = [w for w in figures.weeks if w.first_day <= TODAY <= w.last_day]
+    [month_row] = [m for m in figures.months if m.month == MONTH]
+    week_totals = totals_between(buckets, week.first_day, week.last_day)
+    month_totals = totals_between(buckets, month_row.first_day, month_row.last_day)
+
+    assert week.promotion == AmountWithPending(600, Grams.of("0"))
+    assert week.own_use == AmountWithPending(0, Grams.of("3"))
+    assert week.profit == week_totals.profit == AmountWithPending(-600, Grams.of("3"))
+    assert month_row.promotion == week.promotion
+    assert month_row.own_use == week.own_use
+    assert month_row.profit == month_totals.profit
+
+
+def test_since_the_first_record_carries_both_lines() -> None:
+    earlier = TODAY - timedelta(days=40)
+    promotion = _withdrawal(kind="promotion", day=earlier, grams="1", costed=100, pending="0")
+    own_use = _withdrawal(kind="own_use", day=TODAY, grams="1", costed=300, pending="0")
+    figures = _figures(draws=[promotion, own_use], earliest_entry_day=earlier)
+
+    assert figures.since_first_record is not None
+    assert figures.since_first_record.promotion == AmountWithPending(100, Grams.of("0"))
+    assert figures.since_first_record.own_use == AmountWithPending(300, Grams.of("0"))
+    assert figures.since_first_record.profit == AmountWithPending(-400, Grams.of("0"))
+
+
+def test_a_withdrawal_as_the_only_record_starts_the_history_with_zero_sales() -> None:
+    promotion = _withdrawal(kind="promotion", day=YESTERDAY, grams="2", costed=600, pending="0")
+    figures = _figures(draws=[promotion], earliest_entry_day=YESTERDAY)
+
+    assert figures.first_record == YESTERDAY
+    assert figures.since_first_record is not None
+    assert figures.since_first_record.sales == 0
+    assert figures.since_first_record.profit == AmountWithPending(-600, Grams.of("0"))
+    assert figures.weeks and figures.months
+
+
+def test_a_withdrawal_moves_no_variety_row_share_average_margin_best_week_or_weekday() -> None:
+    sold = _sold(
+        day=TODAY, variety_id=1, name="Flor", sale_id=1, line_total=1_000, grams="1",
+        costed=400, pending="0",
+    )
+    promotion = _withdrawal(kind="promotion", day=TODAY, grams="5", costed=900, pending="0")
+    sales = [SaleRecord(1, TODAY, 0, 1_000)]
+    alone = _figures(draws=[sold], sales=sales, earliest_entry_day=TODAY)
+    with_withdrawal = _figures(draws=[sold, promotion], sales=sales, earliest_entry_day=TODAY)
+
+    assert with_withdrawal.month.varieties == alone.month.varieties
+    assert with_withdrawal.month.average_margin == alone.month.average_margin
+    assert with_withdrawal.month.grams_sold == alone.month.grams_sold
+    assert with_withdrawal.month.grams_gifted == alone.month.grams_gifted
+    assert with_withdrawal.weekdays == alone.weekdays
+    assert [w.best for w in with_withdrawal.weeks] == [w.best for w in alone.weeks]
+    assert [w.grams for w in with_withdrawal.weeks] == [w.grams for w in alone.weeks]
+
+
+def test_a_week_with_7_g_sold_2_g_promoted_and_1_g_own_use_pending_reads_exactly_so() -> None:
+    sold = _sold(
+        day=TODAY, variety_id=1, name="Flor", sale_id=1, line_total=7_000, grams="7",
+        costed=None, pending="7",
+    )
+    promotion = _withdrawal(kind="promotion", day=TODAY, grams="2", costed=None, pending="2")
+    own_use = _withdrawal(kind="own_use", day=TODAY, grams="1", costed=None, pending="1")
+    figures = _figures(
+        draws=[sold, promotion, own_use],
+        sales=[SaleRecord(1, TODAY, 0, 7_000)],
+        earliest_entry_day=TODAY,
+    )
+
+    [week] = [w for w in figures.weeks if w.first_day <= TODAY <= w.last_day]
+    assert week.promotion == AmountWithPending(0, Grams.of("2"))
+    assert week.own_use == AmountWithPending(0, Grams.of("1"))
+    assert week.profit.pending_grams == Grams.of("10")
