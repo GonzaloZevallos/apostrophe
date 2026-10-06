@@ -21,6 +21,7 @@
 import { expect, test } from '@playwright/test'
 import { newBusinessInvitationUrl, resetLink, supportsPasswordReset } from './backend.js'
 import { watchConsole } from './console.js'
+import { expectOnlyTheThemeStored } from './helpers/storage.js'
 
 const PASSWORD = 'correcthorsebattery'
 const NEW_PASSWORD = 'unanuevaclave99'
@@ -88,11 +89,7 @@ test('changes a password from Configuración → Tu cuenta in under a minute, si
   await expect(otherPage).toHaveURL(/\/entrar$/)
   await otherContext.close()
 
-  const storage = await page.evaluate(() => ({
-    local: Object.keys(localStorage).length,
-    session: Object.keys(sessionStorage).length,
-  }))
-  expect(storage).toEqual({ local: 0, session: 0 })
+  await expectOnlyTheThemeStored(page)
   expect(consoleMessages.filter((message) => message !== EXPECTED_SIGNED_OUT_NETWORK_LOG)).toEqual([])
 })
 
@@ -138,10 +135,6 @@ test('resets a forgotten password from a printed link through to Inicio, then sh
     page.getByText('Este enlace ya no sirve. Pedile uno nuevo a quien te lo pasó.'),
   ).toBeVisible()
 
-  const storage = await page.evaluate(() => ({
-    local: Object.keys(localStorage).length,
-    session: Object.keys(sessionStorage).length,
-  }))
-  expect(storage).toEqual({ local: 0, session: 0 })
+  await expectOnlyTheThemeStored(page)
   expect(consoleMessages.filter((message) => message !== EXPECTED_DEAD_LINK_NETWORK_LOG)).toEqual([])
 })

@@ -266,6 +266,8 @@ button {
   left: var(--espacio-md);
   right: var(--espacio-md);
   z-index: 10;
+  /* A toast is only told, never tapped: it must not swallow a tap on the "Cerrar" it floats over. */
+  pointer-events: none;
 }
 
 .cuerpo {
