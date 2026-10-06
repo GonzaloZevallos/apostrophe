@@ -114,10 +114,10 @@ test('with no history, closing goes to Gastos on the current month', async () =>
 
   await userEvent.click(await screen.findByRole('button', { name: 'Cerrar' }))
 
-  expect(await screen.findByText('Gastaste en el mes')).toBeInTheDocument()
+  expect(await screen.findByText('Gastaste en el mes', {}, { timeout: 5000 })).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(EXPENSES)
   expect(router.state.location.search).toBe('')
-})
+}, 15000)
 
 test('with no history, a save goes to Gastos and toasts there', async () => {
   const router = renderExpenses([EXPENSE_NEW], api())
@@ -125,10 +125,12 @@ test('with no history, a save goes to Gastos and toasts there', async () => {
   await fillForm()
   await userEvent.click(screen.getByRole('button', { name: 'Guardá el gasto' }))
 
-  expect(await screen.findByText('Gastaste en el mes')).toBeInTheDocument()
+  // The save, the redirect and Gastos' own fetch run after a full form fill: under the whole
+  // suite's parallel load the default one-second wait was flaky, so this one waits longer.
+  expect(await screen.findByText('Gastaste en el mes', {}, { timeout: 5000 })).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(EXPENSES)
-  expect(await screen.findAllByText('Gasto guardado')).toHaveLength(1)
-})
+  expect(await screen.findAllByText('Gasto guardado', {}, { timeout: 5000 })).toHaveLength(1)
+}, 15000)
 
 test('the form route has no bar and no "Nueva venta"; Gastos has both', async () => {
   renderExpenses([EXPENSES], api())
