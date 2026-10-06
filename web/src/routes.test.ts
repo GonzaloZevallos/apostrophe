@@ -117,12 +117,15 @@ describe('routes.ts against contract.json', () => {
   // segment overlaps `frontSegments` without a shared entry).
   const sharedSegments = new Set(contract.sharedFrontRoutes.map(firstSegment))
 
-  test('every route constant under an API segment is in sharedFrontRoutes', () => {
-    const missing = sampleRoutes()
+  /** The paths under an API segment that `sharedFrontRoutes` does not list. */
+  function missingSharedRoutes(paths: string[]): string[] {
+    return paths
       .filter((path) => sharedSegments.has(firstSegment(path)))
       .filter((path) => !contract.sharedFrontRoutes.includes(path))
+  }
 
-    expect(missing).toEqual([])
+  test('every route constant under an API segment is in sharedFrontRoutes', () => {
+    expect(missingSharedRoutes(sampleRoutes())).toEqual([])
   })
 
   test('every route constant starts with a segment the contract lists', () => {
@@ -135,11 +138,8 @@ describe('routes.ts against contract.json', () => {
 
   test('the check refuses a shared-segment constant the contract does not list', () => {
     const forgotten = ['/varieties/7/forgotten']
-    const missing = forgotten
-      .filter((path) => sharedSegments.has(firstSegment(path)))
-      .filter((path) => !contract.sharedFrontRoutes.includes(path))
 
-    expect(missing).toEqual(forgotten)
+    expect(missingSharedRoutes([...forgotten, '/varieties/7'])).toEqual(forgotten)
   })
 
   test('router.tsx names no /varieties path or old Spanish path as a literal', () => {
