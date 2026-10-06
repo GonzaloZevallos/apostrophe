@@ -3099,11 +3099,12 @@ body {
     background: var(--papel);
   }
 
-  /* The total at `cifra-m`'s size (tokens.css): the footer is a strip, not the screen's hero. */
+  /* The footer is a strip, not the screen's hero: its total borrows `cifra-m`'s size and line
+     height from the tokens in tokens.css, and keeps `cifra-xl`'s weight and tracking. */
   .nueva-venta__pie > .cifra-xl {
     justify-self: end;
-    font-size: 25px;
-    line-height: 1.1;
+    font-size: var(--cifra-m-tamano);
+    line-height: var(--cifra-m-interlineado);
   }
 
   .nueva-venta__gramos,

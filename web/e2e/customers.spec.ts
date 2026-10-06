@@ -94,6 +94,19 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   await page.getByRole('link', { name: 'Noe Sinnumero' }).click()
   await expect(page.getByText('Te debe $ 4.000')).toBeVisible()
 
+  // The balance is set in `cifra-m`: 25px on a 27.5px line, tracked at -0.035em.
+  const owed = await page.getByText('Te debe $ 4.000').evaluate((node) => {
+    const style = getComputedStyle(node)
+    return {
+      fontSize: parseFloat(style.fontSize),
+      lineHeight: parseFloat(style.lineHeight),
+      letterSpacing: parseFloat(style.letterSpacing),
+    }
+  })
+  expect(Math.abs(owed.fontSize - 25)).toBeLessThan(0.01)
+  expect(Math.abs(owed.lineHeight - 27.5)).toBeLessThan(0.01)
+  expect(Math.abs(owed.letterSpacing - -0.875)).toBeLessThan(0.01)
+
   // Paid in full through Registrar cobro.
   await page.getByRole('button', { name: 'Registrar cobro' }).click()
   await page.getByRole('button', { name: 'Todo: $ 4.000' }).click()
