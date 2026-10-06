@@ -58,8 +58,8 @@ function renderInicio(
         <Routes>
           <Route element={<Provide />}>
             <Route index element={<Inicio />} />
-            <Route path="clientes/deben" element={<span>pantalla te deben</span>} />
-            <Route path="clientes/:id" element={<span>ficha de cliente</span>} />
+            <Route path={paths.customersOwing()} element={<span>pantalla te deben</span>} />
+            <Route path={paths.customer(':id')} element={<span>ficha de cliente</span>} />
           </Route>
         </Routes>
       </MemoryRouter>

@@ -1,37 +1,40 @@
 /**
  * The only author of a route path in the front: no component, hook, test or
  * `navigate`/`Link`/`Navigate` call spells one out (an architecture test scans for it).
- * Today these are the Spanish paths; the `routes` subtask flips the values.
+ * The values are the English paths of `scripts/design/screens.json`; the old Spanish
+ * ones live only in `legacy.ts`.
  */
 
 type Id = string | number
 
 export const paths = {
   home: () => '/',
-  login: () => '/entrar',
-  sales: () => '/ventas',
-  newSale: () => '/ventas/nueva',
-  sale: (id: Id) => `/ventas/${id}`,
-  customers: () => '/clientes',
-  newCustomer: () => '/clientes/nuevo',
-  customer: (id: Id) => `/clientes/${id}`,
-  editCustomer: (id: Id) => `/clientes/${id}/editar`,
-  customersOwing: () => '/clientes/deben',
-  varieties: () => '/variedades',
-  variety: (id: Id) => `/variedades/${id}`,
-  catalog: () => '/catalogo',
-  entries: () => '/mi-stock',
-  newEntry: () => '/mi-stock/nueva-entrada',
-  entry: (id: Id) => `/mi-stock/entradas/${id}`,
-  expenses: () => '/gastos',
-  newExpense: () => '/gastos/nuevo',
-  expenseCategories: () => '/gastos/categorias',
-  analysis: () => '/analisis',
-  more: () => '/mas',
-  business: () => '/negocio',
+  login: () => '/login',
+  sales: () => '/sales',
+  newSale: () => '/sales/new',
+  sale: (id: Id) => `/sales/${id}`,
+  customers: () => '/customers',
+  newCustomer: () => '/customers/new',
+  customer: (id: Id) => `/customers/${id}`,
+  editCustomer: (id: Id) => `/customers/${id}/edit`,
+  customersOwing: () => '/customers/owing',
+  varieties: () => '/varieties',
+  variety: (id: Id) => `/varieties/${id}`,
+  catalog: () => '/varieties/catalog',
+  entries: () => '/varieties/entries',
+  newEntry: () => '/varieties/entries/new',
+  entry: (id: Id) => `/varieties/entries/${id}`,
+  expenses: () => '/expenses',
+  newExpense: () => '/expenses/new',
+  expenseCategories: () => '/settings/expense-categories',
+  analysis: () => '/analysis',
+  more: () => '/more',
+  settings: () => '/settings',
   settingsBusiness: () => '/settings/business',
   settingsUsers: () => '/settings/users',
   settingsAccount: () => '/settings/account',
+  settingsIntegrations: () => '/settings/integrations',
+  settingsCatalogMessage: () => '/settings/catalog-message',
   invitation: (token: string) => `/invitation/${token}`,
   reset: (token: string) => `/reset/${token}`,
 } as const

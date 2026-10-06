@@ -20,6 +20,7 @@ const OWNERS = [
   'src/router.tsx',
   'src/routes/legacy.ts',
   'src/routes/legacy.test.ts',
+  'src/routes/legacy.test.tsx',
 ]
 
 test('no component, hook or test holds a literal route path', () => {

@@ -48,10 +48,10 @@ function renderNegocio(fetchMock: ReturnType<typeof vi.fn>): QueryClient {
   const queryClient = new QueryClient()
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[paths.business()]}>
+      <MemoryRouter initialEntries={[paths.settings()]}>
         <Routes>
           <Route element={<Provide />}>
-            <Route path={paths.business()} element={<Negocio />} />
+            <Route path={paths.settings()} element={<Negocio />} />
           </Route>
           <Route path={paths.login()} element={<div>Pantalla de entrada</div>} />
         </Routes>

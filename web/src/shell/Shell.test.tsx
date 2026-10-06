@@ -36,8 +36,8 @@ function renderShell(initialPath: string) {
         element: <Shell />,
         children: [
           { index: true, element: <div>contenido</div> },
-          { path: 'ventas/nueva', element: <div>Nueva venta</div>, handle: { chrome: 'none' } },
-          { path: 'ventas/:id', element: <div>detalle</div>, handle: { chrome: 'none' } },
+          { path: paths.newSale(), element: <div>Nueva venta</div>, handle: { kind: 'form' } },
+          { path: paths.sale(':id'), element: <div>detalle</div>, handle: { kind: 'form' } },
         ],
       },
     ],
@@ -93,8 +93,8 @@ function renderShellWithContainer(initialPath: string) {
         element: <Shell />,
         children: [
           { index: true, element: <div>contenido</div> },
-          { path: 'ventas/nueva', element: <div>Nueva venta</div>, handle: { chrome: 'none' } },
-          { path: 'ventas/:id', element: <div>detalle</div>, handle: { chrome: 'none' } },
+          { path: paths.newSale(), element: <div>Nueva venta</div>, handle: { kind: 'form' } },
+          { path: paths.sale(':id'), element: <div>detalle</div>, handle: { kind: 'form' } },
         ],
       },
     ],

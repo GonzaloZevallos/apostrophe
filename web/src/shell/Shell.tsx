@@ -28,6 +28,7 @@ import { Link, NavLink, Outlet, useMatches, useOutletContext } from 'react-route
 import type { Me } from '../api/me'
 import Icono, { type NombreIcono } from '../components/Icono'
 import { paths } from '../routes/paths'
+import { handleOf } from './routeHandle'
 
 interface Item {
   to: string
@@ -45,24 +46,6 @@ const ITEMS: Item[] = [
 
 const NUEVA_VENTA_PATH = paths.newSale()
 
-type Chrome = 'none'
-
-function hasChrome(handle: unknown): handle is { chrome: Chrome } {
-  return (
-    typeof handle === 'object' &&
-    handle !== null &&
-    'chrome' in handle &&
-    (handle as { chrome: unknown }).chrome === 'none'
-  )
-}
-
-/** The deepest match that declares `handle.chrome` wins — walk from the leaf
- * backwards and stop at the first one that has it. */
-function chromeFromMatches(matches: readonly { handle: unknown }[]): Chrome | undefined {
-  const deepest = [...matches].reverse().find((match) => hasChrome(match.handle))
-  return deepest === undefined ? undefined : 'none'
-}
-
 function className(base: string): (state: { isActive: boolean }) => string {
   return ({ isActive }) => (isActive ? `${base} ${base}--activo` : base)
 }
@@ -70,8 +53,11 @@ function className(base: string): (state: { isActive: boolean }) => string {
 export default function Shell() {
   const me = useOutletContext<Me>()
   const matches = useMatches()
-  const chrome = chromeFromMatches(matches)
-  const showNuevaVenta = chrome !== 'none'
+  // Minimal read of the route's kind (the `shell` subtask builds the rest): a form
+  // shows neither bar nor "Nueva venta", a detail shows the bar without the button.
+  const kind = handleOf(matches)?.kind ?? 'root'
+  const showNuevaVenta = kind === 'root'
+  const showBar = kind !== 'form'
 
   return (
     <div className="disposicion">
@@ -102,7 +88,7 @@ export default function Shell() {
             Nueva venta
           </Link>
         )}
-        {chrome !== 'none' && (
+        {showBar && (
           <nav className="bar-inferior" aria-label="Navegación">
             {ITEMS.map((item) => (
               <NavLink

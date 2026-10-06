@@ -22,7 +22,7 @@ const ITEMS: Item[] = [
   { to: paths.varieties(), label: 'Variedades', detail: 'Precios y avisos de stock bajo' },
   { to: paths.catalog(), label: 'Catálogo', detail: 'El mensaje de hoy, listo para copiar' },
   { to: paths.analysis(), label: 'Análisis', detail: 'Variedades, semanas, meses y días' },
-  { to: paths.business(), label: 'Negocio' },
+  { to: paths.settings(), label: 'Negocio' },
 ]
 
 export default function Mas() {
