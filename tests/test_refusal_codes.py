@@ -172,8 +172,8 @@ def check_front_segment_overlap(
     api_first_segments: set[str], front_segments: set[str], shared_front_paths: frozenset[str]
 ) -> None:
     """A segment both the API and the front name is only allowed when an exact entry of
-    `SHARED_FRONT_PATHS` serves the front there (docs/adr/0024). Until `routes-flip` adds
-    `expenses` to `frontSegments` the overlap is empty, which this accepts."""
+    `SHARED_FRONT_PATHS` serves the front there (docs/adr/0024); the
+    front's own segments that no API route shares need none."""
     shared_segments = {path.strip("/").split("/", 1)[0] for path in shared_front_paths}
     unserved = (api_first_segments & front_segments) - shared_segments
     assert not unserved, f"the API and the front both claim {sorted(unserved)} with no shared entry"
@@ -198,7 +198,7 @@ def test_the_overlap_check_accepts_a_segment_a_shared_path_serves() -> None:
 
 
 def test_the_overlap_check_rejects_a_segment_with_no_shared_path() -> None:
-    with pytest.raises(AssertionError, match="analysis"):
+    with pytest.raises(AssertionError, match="settings"):
         check_front_segment_overlap(
-            {"expenses", "analysis"}, {"expenses", "analysis"}, SHARED_FRONT_PATHS
+            {"expenses", "settings"}, {"expenses", "settings"}, SHARED_FRONT_PATHS
         )

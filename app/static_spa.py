@@ -25,13 +25,93 @@ if TYPE_CHECKING:
 _NO_CACHE_NAMES = frozenset({"index.html", "manifest.webmanifest", "sw.js"})
 
 
-# Front paths whose first segment is also an API route's (`/expenses`): the API's router
-# would answer them, so the front is served there only through this exact list, and only to
-# a browser navigation (docs/adr/0024). A moved screen adds its own entry with its route.
-SHARED_FRONT_PATHS = frozenset({"/expenses", "/expenses/new"})
+# Front paths whose first segment is also an API route's (`/sales`, `/expenses`): the API's
+# router would answer them, so the front is served there only through this list of
+# whole-path templates, and only to a browser navigation (docs/adr/0024, amendment of
+# GH-59). A segment is a literal or `{id}`, which matches digits only.
+SHARED_FRONT_PATHS = frozenset(
+    {
+        "/sales",
+        "/sales/new",
+        "/sales/{id}",
+        "/customers",
+        "/customers/new",
+        "/customers/{id}",
+        "/customers/{id}/edit",
+        "/customers/{id}/payment",
+        "/varieties",
+        "/varieties/{id}",
+        "/varieties/catalog",
+        "/varieties/entries",
+        "/varieties/entries/new",
+        "/varieties/entries/{id}",
+        "/expenses",
+        "/expenses/new",
+        "/analysis",
+    }
+)
 
-# The old Spanish front paths and where they live now. Permanent, whatever the method.
-LEGACY_FRONT_PATHS = {"/mas": "/more", "/gastos": "/expenses"}
+# The old Spanish front paths and where they live now, as (old, new) templates. Permanent,
+# whatever the method; the id an old template captures is carried into the new one.
+LEGACY_FRONT_PATHS: tuple[tuple[str, str], ...] = (
+    ("/ventas", "/sales"),
+    ("/ventas/nueva", "/sales/new"),
+    ("/ventas/{id}", "/sales/{id}"),
+    ("/clientes", "/customers"),
+    ("/clientes/deben", "/customers"),
+    ("/clientes/nuevo", "/customers/new"),
+    ("/clientes/{id}", "/customers/{id}"),
+    ("/clientes/{id}/editar", "/customers/{id}/edit"),
+    ("/mi-stock", "/varieties"),
+    ("/mi-stock/nueva-entrada", "/varieties/entries/new"),
+    ("/mi-stock/entradas/{id}", "/varieties/entries/{id}"),
+    ("/variedades", "/varieties"),
+    ("/variedades/{id}", "/varieties/{id}"),
+    ("/analisis", "/analysis"),
+    ("/gastos", "/expenses"),
+    ("/gastos/categorias", "/settings/expense-categories"),
+    ("/mas", "/more"),
+    ("/catalogo", "/varieties/catalog"),
+    ("/negocio", "/settings"),
+    ("/entrar", "/login"),
+)
+
+_ID = "{id}"
+
+
+def matches_template(path: str, template: str) -> dict[str, str] | None:
+    """The one matcher of a request path against a front path (docs/adr/0024). The whole
+    path, segment by segment: a literal must be equal, `{id}` takes ASCII digits only, and
+    both must have the same number of segments (an empty one never matches). Answers what
+    the placeholder captured (`{}` when the template has none), or `None` for no match;
+    compare with `is not None`, since `{}` is a match."""
+    segments = path.split("/")
+    expected = template.split("/")
+    if len(segments) != len(expected):
+        return None
+    captured: dict[str, str] = {}
+    for segment, wanted in zip(segments, expected, strict=True):
+        if wanted == _ID:
+            if not (segment.isascii() and segment.isdigit()):
+                return None
+            captured["id"] = segment
+        elif segment != wanted:
+            return None
+    return captured
+
+
+def _matching(path: str, templates: frozenset[str]) -> bool:
+    return any(matches_template(path, template) is not None for template in templates)
+
+
+def _legacy_target(path: str) -> str | None:
+    """The new path an old Spanish `path` (or it plus one trailing slash) moved to."""
+    whole = _without_one_slash(path)
+    for old, new in LEGACY_FRONT_PATHS:
+        captured = matches_template(whole, old)
+        if captured is not None:
+            return new.replace(_ID, captured.get("id", ""))
+    return None
 
 
 class MissingBuiltFront(RuntimeError):
@@ -84,7 +164,7 @@ class FrontNavigation:
 
     - a legacy Spanish path (or it plus one trailing slash) is a 308 to its new path, for
       any method and any `Accept`, keeping the query string;
-    - for a `GET`/`HEAD` that accepts `text/html`, an exact `SHARED_FRONT_PATHS` entry is
+    - for a `GET`/`HEAD` that accepts `text/html`, a whole-path `SHARED_FRONT_PATHS` match is
       the app shell, served by the same `SpaStatic` as `/` so its headers have one author,
       and the same path plus one trailing slash is a 308 to the slashless path;
     - everything else reaches the app untouched.
@@ -99,17 +179,17 @@ class FrontNavigation:
             await self._app(scope, receive, send)
             return
         path: str = scope["path"]
-        legacy_target = LEGACY_FRONT_PATHS.get(_without_one_slash(path))
+        legacy_target = _legacy_target(path)
         if legacy_target is not None:
             await self._redirect(legacy_target, scope, receive, send)
             return
         if scope["method"] in ("GET", "HEAD") and _accepts_html(scope):
-            if path in SHARED_FRONT_PATHS:
+            if _matching(path, SHARED_FRONT_PATHS):
                 response = await self._spa.get_response("index.html", scope)
                 await response(scope, receive, send)
                 return
             slashless = _without_one_slash(path)
-            if slashless != path and slashless in SHARED_FRONT_PATHS:
+            if slashless != path and _matching(slashless, SHARED_FRONT_PATHS):
                 await self._redirect(slashless, scope, receive, send)
                 return
         await self._app(scope, receive, send)
