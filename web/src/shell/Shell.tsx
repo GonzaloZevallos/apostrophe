@@ -12,16 +12,10 @@
  * route renders (`Inicio` first; the screen subtasks' routes next), so none of them
  * has to re-run `GET /auth/me`.
  *
- * Chrome comes only from the route (plan, invariants: "Only `Shell.tsx` decides
- * whether the bottom bar and the 'Nueva venta' button render, from route
- * `handle.chrome` read with `useMatches()`; no pathname comparison decides it").
- * `useMatches()` returns the whole match chain root to leaf; the deepest one that
- * declares `handle.chrome` wins, so a parent's absence of a handle never
- * overrides a child's. `'none'` hides the fixed "Nueva venta" button everywhere,
- * and on the phone also drops the bottom bar outright — `NuevaVenta`'s own
- * `/ventas/nueva` and `VentaDetalle`'s `/ventas/:id` are the two routes that set
- * it (`router.tsx`). The side rail's destinations never disappear on the
- * computer: only its button does (plan, "Chrome").
+ * Chrome comes only from the route: the deepest `handle.kind` (`routeHandle.ts`), read
+ * with `useMatches()`, decides. A root shows the bar and "Nueva venta"; a detail shows
+ * the bar without the button; a form shows neither on the phone, and the rail without
+ * its button on a computer. No pathname comparison decides it.
  */
 
 import { Link, NavLink, Outlet, useMatches, useOutletContext } from 'react-router'

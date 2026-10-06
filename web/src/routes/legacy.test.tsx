@@ -18,6 +18,7 @@ import { afterEach, expect, test, vi } from 'vitest'
 import { queryClient } from '../queryClient'
 import { routes } from '../router'
 import { LEGACY_REDIRECTS } from './legacy'
+import { paths } from './paths'
 
 interface Case {
   /** The key `LEGACY_REDIRECTS` must have. */
@@ -82,7 +83,7 @@ function stubApi(signedIn: boolean, otherwise: () => Response): void {
 
 /** Opens the app on `visit` with one entry behind it. */
 function open(visit: string) {
-  const router = createMemoryRouter(routes, { initialEntries: ['/login', visit], initialIndex: 1 })
+  const router = createMemoryRouter(routes, { initialEntries: [paths.login(), visit], initialIndex: 1 })
   const actions: string[] = []
   router.subscribe((state) => actions.push(state.historyAction))
   render(
@@ -113,30 +114,30 @@ test.each(CASES)('signed in, $visit goes to $target, replacing, with its query a
 
   // No history entry of the old path: back lands on the entry before it.
   await act(() => router.navigate(-1))
-  expect(router.state.location.pathname).toBe('/login')
+  expect(router.state.location.pathname).toBe(paths.login())
 })
 
-test.each(CASES.filter((c) => c.target !== '/login'))(
+test.each(CASES.filter((c) => c.pattern !== '/entrar'))(
   'signed out, $visit ends at /login without a history entry',
   async (c) => {
     stubApi(false, () => jsonResponse(401, {}))
     const { router, actions } = open(`${c.visit}?q=1`)
 
     await waitFor(() => expect(actions.length).toBeGreaterThan(1))
-    await waitFor(() => expect(router.state.location.pathname).toBe('/login'))
+    await waitFor(() => expect(router.state.location.pathname).toBe(paths.login()))
     expect(actions).not.toContain('PUSH')
 
     await act(() => router.navigate(-1))
-    expect(router.state.location.pathname).toBe('/login')
+    expect(router.state.location.pathname).toBe(paths.login())
     expect(router.state.location.search).toBe('')
   },
 )
 
-test('/entrar signed out ends at /login too, as one replace', async () => {
+test('the old login path signed out ends at /login too, as one replace', async () => {
   stubApi(false, () => jsonResponse(401, {}))
-  const { router, actions } = open('/entrar?q=1')
+  const { router, actions } = open(`${CASES[0]?.visit}?q=1`)
 
-  await waitFor(() => expect(router.state.location.pathname).toBe('/login'))
+  await waitFor(() => expect(router.state.location.pathname).toBe(paths.login()))
   expect(actions).toEqual(['REPLACE'])
 })
 
@@ -148,13 +149,18 @@ test.each(GONE)('$visit with a gone or foreign id redirects, then says "Eso ya n
   expect(router.state.location.pathname).toMatch(/^\/(sales|customers|varieties)\//)
 })
 
-test('the invitation and reset links are not redirected, and unknown paths go to Inicio', async () => {
+test.each([paths.invitation('tok'), paths.reset('tok')])('%s is not redirected', async (link) => {
   stubApi(true, () => jsonResponse(404, { code: 'x' }))
-  const invitation = open('/invitation/tok')
-  await waitFor(() => expect(invitation.actions).toEqual([]))
-  expect(invitation.router.state.location.pathname).toBe('/invitation/tok')
+  const { router, actions } = open(link)
 
-  const unknown = open('/settings/appearance')
-  await waitFor(() => expect(unknown.router.state.location.pathname).toBe('/'))
+  await waitFor(() => expect(router.state.location.pathname).toBe(link))
+  expect(actions).toEqual([])
+})
+
+test('an unknown path goes to Inicio with one replace', async () => {
+  stubApi(true, () => jsonResponse(404, { code: 'x' }))
+  const unknown = open(`${paths.settings()}/appearance`)
+
+  await waitFor(() => expect(unknown.router.state.location.pathname).toBe(paths.home()))
   expect(unknown.actions).toEqual(['REPLACE'])
 })

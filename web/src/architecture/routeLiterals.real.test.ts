@@ -19,7 +19,6 @@ const OWNERS = [
   'src/routes/paths.test.ts',
   'src/router.tsx',
   'src/routes/legacy.ts',
-  'src/routes/legacy.test.ts',
   'src/routes/legacy.test.tsx',
 ]
 

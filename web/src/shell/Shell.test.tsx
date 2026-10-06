@@ -8,8 +8,8 @@
  * Only destinations that exist show (PRD, "Nada inventado"; metric M5) — Inicio,
  * Ventas, Clientes, Stock and Más, in the design's own order. The fixed "Nueva
  * venta" button, separate from the tabs, shows on every signed-in screen except
- * where its route's `handle.chrome` is `'none'` (`NuevaVenta`'s own
- * `/ventas/nueva`, `VentaDetalle`'s `/ventas/:id`) — phone and computer differ
+ * where its route's `handle.kind` is `'form'` (`NuevaVenta`'s own
+ * sale form, `VentaDetalle`'s detail) — phone and computer differ
  * only in which markup the CSS shows; this suite checks both pieces of markup
  * directly rather than real viewport widths, which jsdom doesn't lay out.
  */

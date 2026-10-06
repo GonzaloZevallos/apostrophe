@@ -9,14 +9,15 @@ import { expect, test } from 'vitest'
 import type { RouteObject } from 'react-router'
 import contract from '../api/contract.json'
 import { routes } from '../router'
+import { paths } from '../routes/paths'
 import { LEGACY_REDIRECTS } from '../routes/legacy'
 import GatedLayout from '../shell/GatedLayout'
 import { firstSegment, gatedLeafViolations, routePaths, uncoveredSegments } from './routeTable'
 
-const PARENT = { label: 'Ventas', to: '/sales' }
+const PARENT = { label: 'Ventas', to: paths.sales() }
 
 function gated(children: RouteObject[]): RouteObject[] {
-  return [{ path: '/login', element: <div /> }, { element: <GatedLayout />, children }]
+  return [{ path: paths.login(), element: <div /> }, { element: <GatedLayout />, children }]
 }
 
 test('the real table: every gated leaf has exactly one valid kind, every detail a parent', () => {
@@ -67,12 +68,12 @@ test('every first segment of the table and of every old path is in routeSegments
 
 test('a segment missing from routeSegments is reported, relative children joined to their parent', () => {
   const table: RouteObject[] = [
-    { path: '/sales', children: [{ path: 'new', element: <div /> }] },
+    { path: paths.sales(), children: [{ path: 'new', element: <div /> }] },
     { path: 'pedidos', children: [{ path: ':id', element: <div /> }] },
     { path: '*', element: <div /> },
   ]
 
-  expect(routePaths(table)).toEqual(['/sales', '/sales/new', '/pedidos', '/pedidos/:id'])
-  expect(uncoveredSegments(['/sales/new', '/pedidos/7', '/'], contract.routeSegments)).toEqual(['pedidos'])
-  expect(firstSegment('/')).toBe('')
+  expect(routePaths(table)).toEqual([paths.sales(), paths.newSale(), '/pedidos', '/pedidos/:id'])
+  expect(uncoveredSegments([paths.newSale(), '/pedidos/7', paths.home()], contract.routeSegments)).toEqual(['pedidos'])
+  expect(firstSegment(paths.home())).toBe('')
 })

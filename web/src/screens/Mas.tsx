@@ -2,7 +2,7 @@
  * `Mas`: Gastos, Variedades, Catálogo, Análisis and Negocio. Each entry links to
  * where its own screen subtask mounts its route (`/gastos`, `/variedades`,
  * `/catalogo`, `/analisis`, `/negocio`), already reserved in `contract.json`'s
- * `frontSegments`. The fixed subtitles are the design's own words (`Mas.dc.html`);
+ * `routeSegments`. The fixed subtitles are the design's own words (`Mas.dc.html`);
  * Análisis's is the plan's own line ("Análisis · Variedades, semanas, meses y
  * días"); Negocio's is left out since its design subtitle ("La Huerta · 2 usuarios")
  * is data this subtask has no route to fetch.
