@@ -4,8 +4,8 @@
  * the route's `:id`). A detail: "‹ Variedades", no "+ Nueva venta" (the route declares
  * `chrome: 'card'`). One summary line; "+ Entrada" and "Nuevo precio"; four read-only
  * sections. Forms open over the page by history state (`varietyForms.ts`); the rename form
- * is rendered here, the other two are rendered by `section-forms`, and a state that names
- * no form renders nothing.
+ * is rendered here, so are the other two (`ThresholdForm`, `CatalogAttributesForm`), and a state that
+ * names no form renders nothing.
  *
  * Stock, status and days left are what `GET /stock` answered; whether the variety is shown
  * is the server's own `shown` from `GET /catalog`; nothing here decides a status or a reason.
@@ -34,6 +34,7 @@ import { CATALOG_SECTION_ID, ENTRY_NEW, VARIETIES, VARIETY_PRICE_NEW } from '../
 import { NO_PRICE_TODAY, type Variety } from '../Variedades'
 import type { PriceRow } from './PriceRows'
 import RenameForm from './RenameForm'
+import ThresholdForm from './ThresholdForm'
 import VarietyCatalogSection from './VarietyCatalogSection'
 import { readForm, useOpenForm } from './varietyForms'
 import VarietyPricesSection from './VarietyPricesSection'
@@ -103,7 +104,12 @@ export default function VarietyPage({ varietyId }: { varietyId: number }) {
     void navigate(-1)
   }
 
-  function onRenamed(saved: SuccessToast): void {
+  function onFormGone(): void {
+    disarm()
+    setGone(true)
+  }
+
+  function onSaved(saved: SuccessToast): void {
     disarm()
     flash.armAfterLeaving(saved)
     leaveForm()
@@ -136,13 +142,21 @@ export default function VarietyPage({ varietyId }: { varietyId: number }) {
         {form === 'rename' && (
           <RenameForm
             variety={variety}
-            onDone={onRenamed}
+            onDone={onSaved}
             onCancel={leaveForm}
             onDirtyChange={onDirtyChange}
-            onGone={() => {
-              disarm()
-              setGone(true)
-            }}
+            onGone={onFormGone}
+          />
+        )}
+
+        {form === 'threshold' && row !== undefined && (
+          <ThresholdForm
+            varietyId={varietyId}
+            threshold={row.threshold}
+            onDone={onSaved}
+            onCancel={leaveForm}
+            onDirtyChange={onDirtyChange}
+            onGone={onFormGone}
           />
         )}
 

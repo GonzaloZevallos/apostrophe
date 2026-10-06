@@ -11,20 +11,15 @@ import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { ApiError, NetworkError, UNKNOWN_CODE } from '../../api/client'
 import { invalidateResource } from '../../api/keys'
-import { isGone, kindOf, resolveOverride, type RefusalCode } from '../../api/refusals'
+import { isGone, kindOf, resolveOverride } from '../../api/refusals'
 import { type VarietyStock, setThreshold } from '../../api/stock'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import { useFlash } from '../../flash/useFlash'
 import { warningFor } from '../../stock/detail'
 import { GENERIC_REFUSAL_MESSAGE } from '../Variedades'
+import { THRESHOLD_OVERRIDES, THRESHOLD_SAVED } from './ThresholdForm'
 import { useOpenForm } from './varietyForms'
-
-export const THRESHOLD_INVALID_MESSAGE = 'Revisá el umbral cargado'
-
-const OVERRIDES: Partial<Record<RefusalCode, string>> = {
-  'stock.threshold_invalid': THRESHOLD_INVALID_MESSAGE,
-}
 
 export default function VarietyThresholdSection({
   varietyId,
@@ -53,13 +48,13 @@ export default function VarietyThresholdSection({
     try {
       await setThreshold(varietyId, null)
       invalidateResource(queryClient, 'stock')
-      flash.showNow('Aviso guardado')
+      flash.showNow(THRESHOLD_SAVED)
     } catch (caught) {
       if (caught instanceof ApiError && isGone(caught.code)) {
         invalidateResource(queryClient, 'stock')
         onGone()
       } else if (caught instanceof ApiError) {
-        const message = resolveOverride(OVERRIDES, caught.code)
+        const message = resolveOverride(THRESHOLD_OVERRIDES, caught.code)
         if (message !== undefined) setError(message)
         else if (caught.code !== UNKNOWN_CODE && kindOf(caught.code) === 'refusal') setError(GENERIC_REFUSAL_MESSAGE)
         else setError(ERROR_GENERICO_MENSAJE)

@@ -90,7 +90,7 @@ function Where() {
   return <output aria-label="ubicación">{`${location.pathname}${location.search}|${JSON.stringify(location.state)}`}</output>
 }
 
-function renderPage(path: string, overrides: Answers = {}) {
+function renderPage(path: string, overrides: Answers = {}, state: unknown = null) {
   const answers = { ...defaults(), ...overrides }
   const fetchMock = vi.fn((url: string, init?: RequestInit) => {
     const answer = answers[`${init?.method ?? 'GET'} ${url}`]
@@ -127,10 +127,14 @@ function renderPage(path: string, overrides: Answers = {}) {
         ],
       },
     ],
-    { initialEntries: ['/varieties', path], initialIndex: 1 },
+    { initialEntries: ['/varieties', { pathname: path, state }], initialIndex: 1 },
   )
   render(<RouterProvider router={router} />)
   return { router, fetchMock }
+}
+
+function reads(fetchMock: ReturnType<typeof vi.fn>, call: string): number {
+  return fetchMock.mock.calls.filter(([url, init]) => `${(init as RequestInit | undefined)?.method ?? 'GET'} ${url as string}` === call).length
 }
 
 function writes(fetchMock: ReturnType<typeof vi.fn>): string[] {
@@ -337,16 +341,6 @@ describe('the openers push a history entry, so Back closes the form', () => {
     expect(screen.queryByText('Renombrar variedad')).not.toBeInTheDocument()
     expect(screen.queryByText(/Próximamente/)).not.toBeInTheDocument()
   })
-
-  test.each(['threshold', 'catalog'])('the %s form state renders nothing here: section-forms draws it', async (form) => {
-    const { router } = renderPage('/varieties/1')
-    await screen.findByRole('heading', { name: 'Precios' })
-    await act(() => router.navigate('.', { state: { form } }))
-
-    expect(screen.getByRole('heading', { name: '24K Gold' })).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Cerrar' })).not.toBeInTheDocument()
-    expect(screen.queryByText(/Próximamente/)).not.toBeInTheDocument()
-  })
 })
 
 describe('renaming from the page', () => {
@@ -505,5 +499,142 @@ describe('turning the warning off', () => {
 
     expect(await screen.findByText('Te quedaste sin internet')).toBeInTheDocument()
     expect(screen.getByRole('switch')).toBeChecked()
+  })
+})
+
+describe('Aviso de stock bajo: the form', () => {
+  const OFF = { ...STOCK_ROW, threshold: null, status: 'ok', grams: 90, days_left: 60 }
+
+  test('the section is read-only until "Editar" opens the form with the saved amount', async () => {
+    const user = userEvent.setup()
+    renderPage('/varieties/1')
+
+    const section = (await screen.findByRole('heading', { name: 'Aviso de stock bajo' })).closest('section') as HTMLElement
+    expect(screen.queryByLabelText('Avisar con menos de')).not.toBeInTheDocument()
+    await user.click(within(section).getByRole('button', { name: 'Editar aviso' }))
+
+    expect(await screen.findByLabelText('Avisar con menos de')).toHaveValue('20')
+    expect(screen.getByRole('button', { name: 'Guardá el aviso' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Cerrar' })).toBeInTheDocument()
+  })
+
+  test('turning the warning on opens an empty form, and closing it leaves the warning off', async () => {
+    const user = userEvent.setup()
+    const { router, fetchMock } = renderPage('/varieties/1', { 'GET /stock': () => json(200, stockOf(OFF)) })
+
+    await user.click(await screen.findByRole('switch'))
+    expect(await screen.findByLabelText('Avisar con menos de')).toHaveValue('')
+    await user.click(screen.getByRole('button', { name: 'Cerrar' }))
+
+    await waitFor(() => expect(router.state.location.state).toBeNull())
+    expect(screen.queryByLabelText('Avisar con menos de')).not.toBeInTheDocument()
+    expect(screen.getByRole('switch')).not.toBeChecked()
+    expect(screen.getByText('Aviso apagado')).toBeInTheDocument()
+    expect(writes(fetchMock)).toEqual([])
+  })
+
+  test('saving puts the typed grams, closes the form, toasts and asks stock and the catalog again', async () => {
+    const user = userEvent.setup()
+    let stock = stockOf(OFF)
+    const { fetchMock } = renderPage('/varieties/1', {
+      'GET /stock': () => json(200, stock),
+      'PUT /stock/varieties/1/threshold': () => {
+        stock = stockOf({ ...STOCK_ROW, threshold: 15.5 })
+        return json(200, { ...STOCK_ROW, threshold: 15.5 })
+      },
+    })
+    await user.click(await screen.findByRole('switch'))
+    await user.type(await screen.findByLabelText('Avisar con menos de'), '15,5')
+    await user.click(screen.getByRole('button', { name: 'Guardá el aviso' }))
+
+    expect(await screen.findByText('Aviso guardado')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Avisar con menos de')).not.toBeInTheDocument()
+    const put = fetchMock.mock.calls.find(([, init]) => (init as RequestInit | undefined)?.method === 'PUT')
+    expect(JSON.parse((put?.[1] as RequestInit).body as string)).toEqual({ grams: 15.5 })
+    await waitFor(() => expect(reads(fetchMock, 'GET /stock')).toBe(2))
+    await waitFor(() => expect(reads(fetchMock, 'GET /catalog')).toBe(2))
+    expect(await screen.findByRole('switch')).toBeChecked()
+  })
+
+  test('a refused amount shows under the field and keeps what was typed', async () => {
+    const user = userEvent.setup()
+    renderPage('/varieties/1', { 'PUT /stock/varieties/1/threshold': () => json(422, { code: 'stock.threshold_invalid' }) })
+    await user.click(await screen.findByRole('button', { name: 'Editar aviso' }))
+    const field = await screen.findByLabelText('Avisar con menos de')
+    await user.clear(field)
+    await user.type(field, '5')
+    await user.click(screen.getByRole('button', { name: 'Guardá el aviso' }))
+
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent('Revisá el umbral cargado')
+    expect(alert.closest('label')).toHaveTextContent('Avisar con menos de')
+    expect(screen.getByLabelText(/^Avisar con menos de/)).toHaveValue('5')
+  })
+
+  test('text that is no amount is refused under the field without asking the server', async () => {
+    const user = userEvent.setup()
+    const { fetchMock } = renderPage('/varieties/1')
+    await user.click(await screen.findByRole('button', { name: 'Editar aviso' }))
+    const field = await screen.findByLabelText('Avisar con menos de')
+    await user.clear(field)
+    await user.type(field, 'mucho')
+    await user.click(screen.getByRole('button', { name: 'Guardá el aviso' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Revisá el umbral cargado')
+    expect(writes(fetchMock)).toEqual([])
+  })
+
+  test('a variety that is gone while saving shows "Eso ya no está."', async () => {
+    const user = userEvent.setup()
+    renderPage('/varieties/1', { 'PUT /stock/varieties/1/threshold': () => json(404, { code: 'variety.not_found' }) })
+    await user.click(await screen.findByRole('button', { name: 'Editar aviso' }))
+    await user.type(await screen.findByLabelText('Avisar con menos de'), '1')
+    await user.click(screen.getByRole('button', { name: 'Guardá el aviso' }))
+
+    expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
+  })
+
+  test('Back closes the form', async () => {
+    const user = userEvent.setup()
+    const { router } = renderPage('/varieties/1')
+    await user.click(await screen.findByRole('button', { name: 'Editar aviso' }))
+    await screen.findByLabelText('Avisar con menos de')
+
+    await act(() => router.navigate(-1))
+
+    expect(screen.queryByLabelText('Avisar con menos de')).not.toBeInTheDocument()
+  })
+
+  test('typed text is asked about before leaving; keeping stays, discarding closes', async () => {
+    const user = userEvent.setup()
+    const { router, fetchMock } = renderPage('/varieties/1')
+    await user.click(await screen.findByRole('button', { name: 'Editar aviso' }))
+    await user.type(await screen.findByLabelText('Avisar con menos de'), '5')
+    await user.click(screen.getByRole('button', { name: 'Cerrar' }))
+
+    expect(await screen.findByText('¿Descartás el cambio?')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'No, seguí escribiendo' }))
+    expect(screen.getByLabelText('Avisar con menos de')).toHaveValue('205')
+    await user.click(screen.getByRole('button', { name: 'Cerrar' }))
+    await user.click(await screen.findByRole('button', { name: 'Sí, descartalo' }))
+
+    await waitFor(() => expect(router.state.location.state).toBeNull())
+    expect(writes(fetchMock)).toEqual([])
+  })
+
+  test('closing an untouched form does not ask', async () => {
+    const user = userEvent.setup()
+    const { router } = renderPage('/varieties/1')
+    await user.click(await screen.findByRole('button', { name: 'Editar aviso' }))
+    await user.click(await screen.findByRole('button', { name: 'Cerrar' }))
+
+    await waitFor(() => expect(router.state.location.state).toBeNull())
+    expect(screen.queryByText('¿Descartás el cambio?')).not.toBeInTheDocument()
+  })
+
+  test('a reload with the form open reopens it with the saved amount', async () => {
+    renderPage('/varieties/1', {}, { form: 'threshold' })
+
+    expect(await screen.findByLabelText('Avisar con menos de')).toHaveValue('20')
   })
 })
