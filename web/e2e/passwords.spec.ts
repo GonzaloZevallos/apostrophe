@@ -27,7 +27,7 @@ const NEW_PASSWORD = 'unanuevaclave99'
 
 test.use({ viewport: { width: 390, height: 844 } })
 
-test('changes a password from Negocio in under a minute, signing an older device out and keeping this one', async ({
+test('changes a password from Configuración → Tu cuenta in under a minute, signing an older device out and keeping this one', async ({
   page,
   browser,
 }) => {
