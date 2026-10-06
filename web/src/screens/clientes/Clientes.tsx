@@ -91,7 +91,7 @@ export default function Clientes() {
             onChange={(event) => setQuery(event.target.value)}
           />
         </label>
-        <Link className="boton" to={CUSTOMER_NEW}>
+        <Link className="boton" to={CUSTOMER_NEW} state={{ inApp: true }}>
           Nuevo cliente
         </Link>
         {isError && error instanceof NetworkError && <SinConexion />}

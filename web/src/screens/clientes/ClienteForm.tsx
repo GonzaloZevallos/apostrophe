@@ -16,10 +16,14 @@
  * `set-state-in-effect`).
  */
 
-import { CUSTOMER, CUSTOMERS, pathTo } from '../../routes'
+import { CUSTOMER, CUSTOMERS, parentOf, pathTo } from '../../routes'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { type FormEvent, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
+import LeaveConfirm from '../../components/LeaveConfirm'
+import { useBackOr } from '../../components/useBackOr'
+import { useLeaveGuard } from '../../components/useLeaveGuard'
+import { useViewport } from '../../shell/useViewport'
 import { ApiError, NetworkError, UNKNOWN_CODE } from '../../api/client'
 import {
   type Channel,
@@ -113,6 +117,7 @@ interface BodyProps {
 function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const viewport = useViewport()
 
   const [name, setName] = useState(initial?.name ?? '')
   const [phone, setPhone] = useState(initial?.phone ?? '')
@@ -122,6 +127,17 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
   const [phoneError, setPhoneError] = useState<string | null>(null)
   const [formError, setFormError] = useState<string | null>(null)
   const [offline, setOffline] = useState(false)
+
+  const dirty =
+    name !== (initial?.name ?? '') ||
+    phone !== (initial?.phone ?? '') ||
+    channel !== (initial?.channel ?? null) ||
+    vip !== (initial?.vip ?? false)
+  const { blocker, disarm } = useLeaveGuard(dirty)
+  const parent = parentOf(mode === 'nuevo' ? 'customer-new' : 'customer-edit', viewport)
+  const close = useBackOr(
+    parent === undefined ? CUSTOMERS : pathTo(parent.path, mode === 'editar' ? { id: customerId } : {}),
+  )
 
   // A plain `useMutation`, so a 401 reaches the shared `MutationCache`'s
   // `onError` (`queryClient.ts`) and triggers the session boundary — clearing
@@ -142,10 +158,11 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
     try {
       await save.mutateAsync({ name, phone, channel, vip })
       invalidateResource(queryClient, 'customers')
+      disarm()
       if (mode === 'nuevo') {
-        navigate(CUSTOMERS, { state: toast(SAVED_TOAST) })
+        void navigate(CUSTOMERS, { replace: true, state: toast(SAVED_TOAST) })
       } else {
-        navigate(pathTo(CUSTOMER, { id: customerId }), { state: toast(SAVED_TOAST) })
+        void navigate(pathTo(CUSTOMER, { id: customerId }), { replace: true, state: toast(SAVED_TOAST) })
       }
     } catch (caught) {
       if (caught instanceof ApiError && caught.status === 401) {
@@ -156,7 +173,8 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
       }
       if (caught instanceof ApiError && mode === 'editar' && isGone(caught.code)) {
         invalidateResource(queryClient, 'customers')
-        navigate(CUSTOMERS, { state: gone() })
+        disarm()
+        void navigate(CUSTOMERS, { replace: true, state: gone() })
         return
       }
       if (caught instanceof ApiError) {
@@ -181,9 +199,14 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
   return (
     <main className="pantalla">
       <div className="cuerpo">
-        <span className="encabezado__titulo">
-          {mode === 'nuevo' ? 'Nuevo cliente' : 'Editar cliente'}
-        </span>
+        <div className="encabezado-fila">
+          <span className="encabezado__titulo">
+            {mode === 'nuevo' ? 'Nuevo cliente' : 'Editar cliente'}
+          </span>
+          <button type="button" className="boton--enlace" onClick={close}>
+            Cerrar
+          </button>
+        </div>
         <form className="formulario" onSubmit={onSubmit}>
           <CustomerFields
             value={{ name, phone, channel, vip }}
@@ -207,6 +230,15 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
           </button>
         </form>
       </div>
+      {blocker.state === 'blocked' && (
+        <LeaveConfirm
+          blocker={blocker}
+          question="¿Descartás el cliente?"
+          detail="Se pierde lo que cargaste: todavía no se guardó nada."
+          keepLabel="No, seguí cargando"
+          discardLabel="Sí, descartalo"
+        />
+      )}
     </main>
   )
 }
