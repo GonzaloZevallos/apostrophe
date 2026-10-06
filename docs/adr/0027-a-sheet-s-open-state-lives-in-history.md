@@ -43,5 +43,6 @@ sheet's back does exactly what its own "Cerrar" does.
 - New sheets adopt `useSheet`. Existing sheets of other screens stay `useState` until a task
   touches them.
 - A form's back after "No, seguí cargando" asks again, because the guard re-arms as before.
-- Without `SheetRouterProvider` (a non-data router in a test) depth falls back to the last
-  rendered location; the app always provides it.
+- `SheetStackProvider` throws without a `SheetRouterProvider` above it. There is no fallback
+  to the rendered location, which lags a pop; tests render with a real data router and
+  `SheetRouterProvider`.

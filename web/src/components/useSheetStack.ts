@@ -14,8 +14,7 @@
  * reload) is never called.
  *
  * The router is handed over by `SheetRouterProvider`, set where `RouterProvider` is
- * created. Without it (a non-data router in a test) the depth falls back to the last
- * rendered location.
+ * created. `SheetStackProvider` throws without it: there is no other source of depth.
  */
 
 import {
@@ -25,9 +24,7 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useLayoutEffect,
   useMemo,
-  useRef,
   useState,
   useSyncExternalStore,
 } from 'react'
@@ -101,10 +98,7 @@ export function SheetStackProvider({ children }: { children: ReactNode }) {
   const router = useContext(RouterContext)
   const location = useLocation()
   const navigate = useNavigate()
-  const renderedRef = useRef(location)
-  useLayoutEffect(() => {
-    renderedRef.current = location
-  }, [location])
+  if (router === null) throw new Error('SheetStackProvider needs a SheetRouterProvider above it')
 
   // What this provider pushed and is still on the stack, and the depth of an `open()` whose
   // entry has not reached `location` yet. It decides what renders (`isOpen`): an orphan must
@@ -112,10 +106,7 @@ export function SheetStackProvider({ children }: { children: ReactNode }) {
   const [store] = useState(createBookStore)
   const book = useSyncExternalStore(store.subscribe, store.get)
 
-  const readDepth = useCallback(
-    () => sheetDepth((router ? router.state.location : renderedRef.current).state),
-    [router],
-  )
+  const readDepth = useCallback(() => sheetDepth(router.state.location.state), [router])
 
   const rawDepth = sheetDepth(location.state)
   const isOrphan = rawDepth > 0 && !(location.key in book.keys) && book.pending !== rawDepth
@@ -146,7 +137,7 @@ export function SheetStackProvider({ children }: { children: ReactNode }) {
   }, [rawDepth, location, store, navigate])
 
   const push = useCallback(() => {
-    const current = router ? router.state.location : renderedRef.current
+    const current = router.state.location
     const next = sheetDepth(current.state) + 1
     store.set({ ...store.get(), pending: next })
     void navigate(
