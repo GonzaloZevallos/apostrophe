@@ -193,7 +193,8 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await expect(page.getByText('Precio guardado')).toBeVisible()
 
   // A purchase: the "Origen" pill defaults to "Compra" (`EntradaStock.tsx`).
-  await page.goto('/varieties/entries/new')
+  await page.goto('/varieties')
+  await page.getByRole('link', { name: '+ Entrada de stock' }).click()
   await page.getByLabel('Gramos').fill('50')
   await page.getByLabel('Variedad').selectOption({ label: 'Rosa' })
   await expect(page.getByRole('button', { name: 'Compra' })).toHaveAttribute('aria-pressed', 'true')

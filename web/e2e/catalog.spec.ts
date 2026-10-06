@@ -51,7 +51,8 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
   await page.getByRole('button', { name: 'Guardá el precio' }).click()
   await expect(page.getByText('Precio guardado')).toBeVisible()
 
-  await page.goto('/varieties/entries/new')
+  await page.goto('/varieties')
+  await page.getByRole('link', { name: '+ Entrada de stock' }).click()
   await page.getByLabel('Gramos').fill('50')
   await page.getByLabel('Variedad').selectOption({ label: 'Rosa' })
   await page.getByLabel('Costo total').fill('45000')

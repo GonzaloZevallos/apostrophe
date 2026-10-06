@@ -91,7 +91,8 @@ test('Copiar still works through the execCommand fallback on a plain-http, non-l
   await page.getByRole('button', { name: 'Guardá el precio' }).click()
   await expect(page.getByText('Precio guardado')).toBeVisible()
 
-  await page.goto(`${INSECURE_ORIGIN}/varieties/entries/new`)
+  await page.goto(`${INSECURE_ORIGIN}/varieties`)
+  await page.getByRole('link', { name: '+ Entrada de stock' }).click()
   await page.getByLabel('Gramos').fill('50')
   await page.getByLabel('Variedad').selectOption({ label: 'Rosa' })
   await page.getByLabel('Costo total').fill('45000')
