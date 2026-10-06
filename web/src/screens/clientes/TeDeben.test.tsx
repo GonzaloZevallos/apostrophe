@@ -59,10 +59,16 @@ test("heads with the total owed and lists debtors in the API's own order", async
 
   expect(await screen.findByText(`$ ${debtorsFixture.total_owed.toLocaleString('es-AR')}`)).toBeInTheDocument()
 
-  const rows = screen.getAllByRole('link').filter((link) => link.getAttribute('href')?.startsWith(`${CUSTOMERS}/`))
+  const rows = screen
+    .getAllByRole('link')
+    .filter((link) => link.getAttribute('href')?.startsWith(`${CUSTOMERS}/`) && link.textContent !== 'Cobrar')
   expect(rows.map((row) => row.textContent)).toEqual([
     'Ana Pérez$ 15.000desde 14/09',
     'Beto$ 22.000desde 20/09',
+  ])
+  expect(screen.getAllByRole('link', { name: /^Cobrar a / }).map((link) => link.getAttribute('aria-label'))).toEqual([
+    'Cobrar a Ana Pérez',
+    'Cobrar a Beto',
   ])
 })
 

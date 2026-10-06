@@ -57,6 +57,7 @@ const EXPECTED: Record<ScreenId, Expected> = {
   "customer-new": expectation("form", "customers", CUSTOMERS_PLACE),
   customer: expectation("card", "customers", CUSTOMERS_PLACE),
   "customer-edit": expectation("form", "customer", CUSTOMERS_PLACE),
+  "customer-payment": expectation("form", "customer", CUSTOMERS_PLACE),
   varieties: expectation("root", undefined, VARIETIES_PLACE),
   variety: expectation("card", "varieties", VARIETIES_PLACE),
   catalog: expectation("card", "varieties", VARIETIES_PLACE),
@@ -230,20 +231,15 @@ const NOT_BUILT = [
   "PrecioNuevoCompu",
   "VariedadNueva",
   "VariedadNuevaCompu",
-  "CobroCompu",
 ];
 
 describe("screens.json against the English routes", () => {
-  test("route is path for every screen, but the ones not built and Cobro (the payment route flips it)", () => {
+  test("route is path for every screen, but the ones not built", () => {
     const wrong = screensJson.screens.flatMap((entry) => {
       if (NOT_BUILT.includes(entry.screen))
         return entry.route === null
           ? []
           : [`${entry.screen}: built, so route should not be null`];
-      if (entry.screen === "Cobro")
-        return entry.route === "/customers/{debtor}"
-          ? []
-          : [`Cobro: ${entry.route}`];
       return entry.route === entry.path
         ? []
         : [`${entry.screen}: route ${entry.route} is not path ${entry.path}`];

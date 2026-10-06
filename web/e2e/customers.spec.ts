@@ -98,7 +98,7 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   await expect(page.getByText('Te debe $ 4.000')).toBeVisible()
 
   // Paid in full through Registrar cobro.
-  await page.getByRole('button', { name: 'Registrar cobro' }).click()
+  await page.getByRole('link', { name: 'Registrar cobro' }).click()
   await page.getByRole('button', { name: 'Todo: $ 4.000' }).click()
   await page.getByRole('radio', { name: 'Efectivo' }).check()
   await page.getByRole('button', { name: 'Guardar' }).click()
@@ -127,7 +127,7 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   // Te deben lists the second, no-number customer's own fresh debt — the first
   // customer's debt is already settled, so she never named here.
   await page.goto(CUSTOMERS)
-  const debtorRow = page.getByRole('region', { name: 'Te deben' }).getByRole('link', { name: 'Sol Sinnumero' })
+  const debtorRow = page.getByRole('region', { name: 'Te deben' }).getByRole('link', { name: /^Sol Sinnumero/ })
   await expect(debtorRow).toBeVisible()
   await expect(debtorRow).toContainText('$ 2.000')
   await expect(page.getByRole('region', { name: 'Te deben' }).getByRole('link', { name: 'Noe Sinnumero' })).toHaveCount(0)

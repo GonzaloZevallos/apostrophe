@@ -10,7 +10,7 @@
  * of a misleading "no customers yet" (PRD, "Feedback").
  */
 
-import { CUSTOMER, CUSTOMER_NEW, pathTo } from '../../routes'
+import { CUSTOMER, CUSTOMER_NEW, CUSTOMER_PAYMENT, pathTo } from '../../routes'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router'
@@ -105,30 +105,38 @@ export default function Clientes() {
               <span className="campo__rotulo">{EMPTY_LIST}</span>
             )}
             {customers.map((customer) => (
-              <Link
-                key={customer.id}
-                to={pathTo(CUSTOMER, { id: customer.id })}
-                className="lista-clientes__fila"
-              >
-                <span className="lista-clientes__nombre">
-                  {customer.name}
-                  {customer.vip && <span className="vip-insignia">VIP</span>}
-                </span>
-                {customer.phone !== null && (
-                  <span className="lista-clientes__telefono">{formatPhone(customer.phone)}</span>
-                )}
-                {customer.standing === 'owes' && customer.owing_since !== null && (
-                  <span className="lista-clientes__balance">
-                    <span className="monto-deuda">{formatMoney(customer.balance)}</span>
-                    <span className="monto-deuda">
-                      te debe desde {formatDateShort(customer.owing_since)}
-                    </span>
+              <div key={customer.id} className="lista-clientes__item">
+                <Link to={pathTo(CUSTOMER, { id: customer.id })} className="lista-clientes__fila">
+                  <span className="lista-clientes__nombre">
+                    {customer.name}
+                    {customer.vip && <span className="vip-insignia">VIP</span>}
                   </span>
+                  {customer.phone !== null && (
+                    <span className="lista-clientes__telefono">{formatPhone(customer.phone)}</span>
+                  )}
+                  {customer.standing === 'owes' && customer.owing_since !== null && (
+                    <span className="lista-clientes__balance">
+                      <span className="monto-deuda">{formatMoney(customer.balance)}</span>
+                      <span className="monto-deuda">
+                        te debe desde {formatDateShort(customer.owing_since)}
+                      </span>
+                    </span>
+                  )}
+                  {customer.standing === 'credit' && (
+                    <span className="monto-credito">A favor {formatMoneyMagnitude(customer.balance)}</span>
+                  )}
+                </Link>
+                {customer.standing === 'owes' && (
+                  <Link
+                    to={pathTo(CUSTOMER_PAYMENT, { id: customer.id })}
+                    state={{ inApp: true }}
+                    aria-label={`Cobrar a ${customer.name}`}
+                    className="cobrar"
+                  >
+                    Cobrar
+                  </Link>
                 )}
-                {customer.standing === 'credit' && (
-                  <span className="monto-credito">A favor {formatMoneyMagnitude(customer.balance)}</span>
-                )}
-              </Link>
+              </div>
             ))}
           </div>
         )}

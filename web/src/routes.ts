@@ -46,6 +46,7 @@ export type ScreenId =
   | 'customer-new'
   | 'customer'
   | 'customer-edit'
+  | 'customer-payment'
   | 'varieties'
   | 'variety'
   | 'catalog'
@@ -82,6 +83,7 @@ export const CUSTOMERS = '/customers'
 export const CUSTOMER_NEW = '/customers/new'
 export const CUSTOMER = '/customers/:id'
 export const CUSTOMER_EDIT = '/customers/:id/edit'
+export const CUSTOMER_PAYMENT = '/customers/:id/payment'
 
 export const VARIETIES = '/varieties'
 export const VARIETY = '/varieties/:id'
@@ -173,6 +175,7 @@ export const SCREENS: readonly Screen[] = [
   screen({ id: 'customer-new', path: CUSTOMER_NEW, kind: 'form', title: 'Nuevo cliente', parent: 'customers' }),
   screen({ id: 'customer', path: CUSTOMER, kind: 'card', title: 'Cliente', pane: 'detail', parent: 'customers' }),
   screen({ id: 'customer-edit', path: CUSTOMER_EDIT, kind: 'form', title: 'Editar cliente', parent: 'customer' }),
+  screen({ id: 'customer-payment', path: CUSTOMER_PAYMENT, kind: 'form', title: 'Registrar cobro', parent: 'customer' }),
 
   screen({
     id: 'varieties',

@@ -27,6 +27,8 @@ export type SuccessToast =
   | 'Catálogo guardado'
   | 'Catálogo copiado'
   | 'Cobro eliminado'
+  | 'Cobro guardado'
+  | `Cobro guardado · queda debiendo ${string}`
   | 'Prueba enviada'
   | 'Catálogo publicado'
 

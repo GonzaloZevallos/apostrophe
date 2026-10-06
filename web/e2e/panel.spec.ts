@@ -381,7 +381,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await expect(page.locator('.encabezado__titulo')).toHaveText('Inicio')
 
   // The teaser: Carla's own row, opening her card.
-  await page.getByRole('link', { name: teaserRow.name }).click()
+  await page.getByRole('link', { name: teaserRow.name }).first().click()
   await expect(page).toHaveURL(new RegExp(`${pathTo(CUSTOMER, { id: teaserRow.customer_id })}$`))
   await expect(page.locator('.encabezado__titulo')).toHaveText(teaserRow.name)
   await expect(page.getByText(`Te debe ${pesos(teaserRow.balance)}`)).toBeVisible()

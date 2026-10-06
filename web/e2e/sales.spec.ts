@@ -258,7 +258,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
 
   // --- Sale B: "Nueva venta a <name>", a gift line, no payment needed for $0. ---
   await page.goto(CUSTOMERS)
-  await page.getByRole('link', { name: 'Carla Pérez' }).click()
+  await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
   await page.getByRole('link', { name: 'Nueva venta a Carla Pérez' }).click()
   await expectPath(page, SALE_NEW)
   const saleBStart = Date.now()

@@ -6,7 +6,7 @@
  * stays reachable here until Clientes' own rebuild.
  */
 
-import { CUSTOMER, pathTo } from '../../routes'
+import { CUSTOMER, CUSTOMER_PAYMENT, pathTo } from '../../routes'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router'
 import { keys } from '../../api/keys'
@@ -42,17 +42,23 @@ export default function TeDeben() {
 
       <div className="lista-clientes">
         {data.debtors.map((debtor) => (
-          <Link
-            key={debtor.customer.id}
-            to={pathTo(CUSTOMER, { id: debtor.customer.id })}
-            className="lista-clientes__fila"
-          >
-            <span className="lista-clientes__nombre">{debtor.customer.name}</span>
-            <span className="monto-deuda">{formatMoney(debtor.balance)}</span>
-            {debtor.owing_since !== null && (
-              <span className="monto-deuda">{`desde ${formatDateShort(debtor.owing_since)}`}</span>
-            )}
-          </Link>
+          <div key={debtor.customer.id} className="lista-clientes__item">
+            <Link to={pathTo(CUSTOMER, { id: debtor.customer.id })} className="lista-clientes__fila">
+              <span className="lista-clientes__nombre">{debtor.customer.name}</span>
+              <span className="monto-deuda">{formatMoney(debtor.balance)}</span>
+              {debtor.owing_since !== null && (
+                <span className="monto-deuda">{`desde ${formatDateShort(debtor.owing_since)}`}</span>
+              )}
+            </Link>
+            <Link
+              to={pathTo(CUSTOMER_PAYMENT, { id: debtor.customer.id })}
+              state={{ inApp: true }}
+              aria-label={`Cobrar a ${debtor.customer.name}`}
+              className="cobrar"
+            >
+              Cobrar
+            </Link>
+          </div>
         ))}
       </div>
     </section>

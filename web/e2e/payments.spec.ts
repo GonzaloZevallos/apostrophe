@@ -93,7 +93,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   // Clientes' own header already counts her (checked again, with the figure, below).
 
   // --- Registrar cobro: "Todo" fills and settles the whole balance. ---
-  await page.getByRole('button', { name: 'Registrar cobro' }).click()
+  await page.getByRole('link', { name: 'Registrar cobro' }).click()
   await page.getByRole('button', { name: 'Todo: $ 5.000' }).click()
   await page.getByRole('radio', { name: 'Efectivo' }).check()
   await expect(page.getByText('Se descuenta de la deuda más vieja')).toBeVisible()
@@ -106,7 +106,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   // how it was paid and the sale as "Quedó debiendo" no more — it reads the cash
   // cobro reaching that sale instead.
   await expect(page.getByText('Te debe', { exact: false })).toHaveCount(0)
-  await expect(page.getByRole('button', { name: 'Registrar cobro' })).toHaveCount(0)
+  await expect(page.getByRole('link', { name: 'Registrar cobro' })).toHaveCount(0)
   await expect(
     page.getByText(`Cobro · efectivo · A cuenta de la venta del ${today}`),
   ).toBeVisible()
@@ -126,7 +126,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
 
   // --- A partial payment, by transfer: the preview names what is left before
   // saving, and the toast after saving carries the same figure (PRD metric 2). ---
-  await page.getByRole('button', { name: 'Registrar cobro' }).click()
+  await page.getByRole('link', { name: 'Registrar cobro' }).click()
   await page.getByLabel('Monto').fill('3000')
   await page.getByRole('radio', { name: 'Transferencia' }).check()
   await expect(page.getByText(`$ 3.000 a la venta del ${today}`)).toBeVisible()

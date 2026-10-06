@@ -10,7 +10,7 @@
  * (ADR-0004).
  */
 
-import { CUSTOMERS, CUSTOMER_EDIT, SALE_NEW, pathTo } from '../../routes'
+import { CUSTOMERS, CUSTOMER_EDIT, CUSTOMER_PAYMENT, SALE_NEW, pathTo } from '../../routes'
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useLocation, useOutletContext, useParams } from 'react-router'
@@ -22,7 +22,6 @@ import {
   type AccountRow,
   type HowPaid,
   type PaymentMethod,
-  type RecordedPayment,
   deletePayment,
   getAccount,
 } from '../../api/payments'
@@ -97,7 +96,12 @@ function rowOwnAmount(row: AccountRow): string {
   return formatMoneyMagnitude(row.amount)
 }
 
-export default function ClienteFicha() {
+export interface ClienteFichaProps {
+  /** The payment route: the card with "Registrar cobro" open over it. */
+  payment?: boolean
+}
+
+export default function ClienteFicha({ payment = false }: ClienteFichaProps) {
   const { id } = useParams<{ id: string }>()
   const customerId = id ?? ''
   const location = useLocation()
@@ -105,8 +109,6 @@ export default function ClienteFicha() {
   const queryClient = useQueryClient()
   const me = useOutletContext<Me>()
 
-  const [showCobro, setShowCobro] = useState(false)
-  const [savedNotice, setSavedNotice] = useState<string | null>(null)
   const [deletedToast, setDeletedToast] = useState(false)
   const [confirmingDelete, setConfirmingDelete] = useState<
     { id: number; amount: number; method: PaymentMethod; paid_on: string } | null
@@ -129,15 +131,6 @@ export default function ClienteFicha() {
   const removePayment = useMutation({
     mutationFn: (paymentId: number) => deletePayment(String(paymentId)),
   })
-
-  function onCobroSaved(recorded: RecordedPayment): void {
-    setShowCobro(false)
-    setSavedNotice(
-      recorded.after.standing === 'owes'
-        ? `Cobro guardado · queda debiendo ${formatMoney(recorded.after.balance)}`
-        : 'Cobro guardado',
-    )
-  }
 
   async function onConfirmDeletePayment(): Promise<void> {
     if (confirmingDelete === null) return
@@ -211,11 +204,6 @@ export default function ClienteFicha() {
         </div>
         {feedback !== null && <Notice kind={feedback.kind} message={feedback.message} />}
         {accountGone && <Notice kind="notice" message={GONE_NOTICE} />}
-        {savedNotice !== null && (
-          <div className="toast" role="status">
-            <span className="toast__texto">{savedNotice}</span>
-          </div>
-        )}
         {deletedToast && (
           <div className="toast" role="status">
             <span className="toast__texto">Cobro eliminado</span>
@@ -256,9 +244,9 @@ export default function ClienteFicha() {
         </div>
 
         {data.standing === 'owes' && (
-          <button type="button" className="boton" onClick={() => setShowCobro(true)}>
+          <Link to={pathTo(CUSTOMER_PAYMENT, { id: customerId })} state={{ inApp: true }} className="boton">
             Registrar cobro
-          </button>
+          </Link>
         )}
 
         <div className="cuenta-cliente">
@@ -299,19 +287,7 @@ export default function ClienteFicha() {
         </Link>
       </div>
 
-      {showCobro && (
-        <Cobro
-          customerId={customerId}
-          balance={data.balance}
-          today={me.today}
-          onClose={() => setShowCobro(false)}
-          onSaved={onCobroSaved}
-          onGone={() => {
-            setShowCobro(false)
-            setAccountGone(true)
-          }}
-        />
-      )}
+      {payment && <Cobro customerId={customerId} balance={data.balance} today={me.today} />}
 
       {confirmingDelete !== null && (
         <ConfirmDialog

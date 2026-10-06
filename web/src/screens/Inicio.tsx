@@ -22,7 +22,7 @@
  * first Publicar").
  */
 
-import { CATALOG, CUSTOMER, CUSTOMERS, SETTINGS, pathTo } from '../routes'
+import { CATALOG, CUSTOMER, CUSTOMER_PAYMENT, CUSTOMERS, SETTINGS, pathTo } from '../routes'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useOutletContext } from 'react-router'
@@ -286,11 +286,21 @@ function TeDebenBlock({ debts }: { debts: PanelDebts }) {
         {debts.oldest !== null && ` · desde ${formatDateShort(debts.oldest)}`}
       </span>
       {debts.teaser.map((row) => (
-        <Link key={row.customer_id} to={pathTo(CUSTOMER, { id: row.customer_id })} className="bloque-deben__fila">
-          <span>{row.name}</span>
-          <span>{formatMoney(row.balance)}</span>
-          <span className="pie">{`desde ${formatDateShort(row.owing_since)}`}</span>
-        </Link>
+        <div key={row.customer_id} className="bloque-deben__fila">
+          <Link to={pathTo(CUSTOMER, { id: row.customer_id })} className="bloque-deben__datos">
+            <span>{row.name}</span>
+            <span>{formatMoney(row.balance)}</span>
+            <span className="pie">{`desde ${formatDateShort(row.owing_since)}`}</span>
+          </Link>
+          <Link
+            to={pathTo(CUSTOMER_PAYMENT, { id: row.customer_id })}
+            state={{ inApp: true }}
+            aria-label={`Cobrar a ${row.name}`}
+            className="cobrar cobrar--acento"
+          >
+            Cobrar
+          </Link>
+        </div>
       ))}
     </div>
   )

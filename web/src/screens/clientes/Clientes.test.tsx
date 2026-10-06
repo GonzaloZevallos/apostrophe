@@ -12,7 +12,7 @@
  * search list's own.
  */
 
-import { CUSTOMERS } from '../../routes'
+import { CUSTOMER_PAYMENT, CUSTOMERS, pathTo } from '../../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -202,7 +202,30 @@ test('the header reads "N clientes", and the Te deben section sits above the lis
   ).toBeInTheDocument()
   expect(within(section).getAllByRole('link').map((link) => link.textContent)).toEqual([
     'Ana Pérez$ 15.000desde 14/09',
+    'Cobrar',
   ])
+})
+
+test('"Cobrar a X" is on every row that owes, in the section and in the list, and never on one that does not', async () => {
+  vi.mocked(fetch).mockImplementation(
+    fetchStub(
+      () =>
+        jsonResponse(200, [
+          customerFixture,
+          { id: 2, name: 'Lu', phone: '+5491100000002', channel: null, vip: false, balance: 0, owing_since: null, standing: 'settled' },
+        ]),
+      () => jsonResponse(200, debtorsFixture),
+    ),
+  )
+  renderClientes()
+
+  await screen.findByRole('region', { name: 'Te deben' })
+  const links = await screen.findAllByRole('link', { name: `Cobrar a ${customerFixture.name}` })
+  expect(links).toHaveLength(2)
+  for (const link of links) {
+    expect(link).toHaveAttribute('href', pathTo(CUSTOMER_PAYMENT, { id: customerFixture.id }))
+  }
+  expect(screen.queryByRole('link', { name: 'Cobrar a Lu' })).not.toBeInTheDocument()
 })
 
 test('with no debtors, the header shows no debt part and the section says "Nadie te debe."', async () => {

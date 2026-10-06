@@ -71,6 +71,7 @@ const ELEMENTS: Record<ScreenId, ReactElement> = {
   customers: <Clientes />,
   'customer-new': <ClienteForm mode="nuevo" />,
   customer: <ClienteFicha />,
+  'customer-payment': <ClienteFicha payment />,
   'customer-edit': <ClienteForm mode="editar" />,
   varieties: <Variedades />,
   variety: <VariedadDetalle />,
@@ -97,6 +98,7 @@ const WITH_CUSTOMER_SEARCH: ReadonlySet<ScreenId> = new Set([
   'customer-new',
   'customer',
   'customer-edit',
+  'customer-payment',
 ])
 
 /** A declared screen as a route; `handle.screen` is how `Shell` finds its registry entry. */

@@ -7,11 +7,11 @@
  * different answer never showing the first answer's figures (`gcTime: 0`).
  */
 
-import { CATALOG, CUSTOMER, CUSTOMERS, HOME, SETTINGS } from '../routes'
+import { CATALOG, CUSTOMER, CUSTOMER_PAYMENT, CUSTOMERS, HOME, SETTINGS } from '../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Outlet, Route, Routes, useLocation } from 'react-router'
+import { MemoryRouter, Outlet, Route, Routes, useLocation, useParams } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import panelFixture from '../api/fixtures/panel.json'
 import type { PanelAnswer } from '../api/panel'
@@ -55,6 +55,18 @@ function stubFetch(
   )
 }
 
+function PaymentStub() {
+  const { id } = useParams<{ id: string }>()
+  const state: unknown = useLocation().state
+  const inApp = typeof state === 'object' && state !== null && 'inApp' in state && state.inApp === true
+  return (
+    <>
+      <span>cobro de {id}</span>
+      {inApp && <span>desde la app</span>}
+    </>
+  )
+}
+
 function renderInicio(
   client: QueryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } }),
 ) {
@@ -66,6 +78,7 @@ function renderInicio(
             <Route index element={<Inicio />} />
             <Route path={CUSTOMERS} element={<span>pantalla clientes</span>} />
             <Route path={CUSTOMER} element={<span>ficha de cliente</span>} />
+            <Route path={CUSTOMER_PAYMENT} element={<PaymentStub />} />
             <Route path={SETTINGS} element={<SettingsLanding />} />
           </Route>
         </Routes>
@@ -246,6 +259,17 @@ test('Te deben: total, count, oldest date, and the teaser opens a customer card'
   expect(row).not.toBeNull()
   row?.click()
   expect(await screen.findByText('ficha de cliente')).toBeInTheDocument()
+})
+
+test('the teaser\'s "Cobrar a X" opens Registrar cobro for that customer, from inside the app', async () => {
+  stubFetch(PANEL)
+  renderInicio()
+  await screen.findByText('$ 37.000')
+
+  screen.getByRole('link', { name: 'Cobrar a Ana Pérez' }).click()
+
+  expect(await screen.findByText('cobro de 1')).toBeInTheDocument()
+  expect(screen.getByText('desde la app')).toBeInTheDocument()
 })
 
 test('tapping "Te deben" opens Clientes, where the debtors section is', async () => {

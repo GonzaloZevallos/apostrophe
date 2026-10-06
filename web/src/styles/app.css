@@ -863,6 +863,37 @@ button {
   flex-direction: column;
 }
 
+.lista-clientes__item {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid var(--linea);
+}
+
+.lista-clientes__item > .lista-clientes__fila {
+  border-bottom: 0;
+}
+
+/* The "Cobrar" pill of a debtor's row (Clientes) and of Inicio's teaser: a link to
+ * Registrar cobro with that customer chosen, beside the row's own link to the card. */
+.cobrar {
+  align-self: flex-end;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--alto-tocable);
+  padding: 0 var(--espacio-lg);
+  border-radius: var(--radio-pildora);
+  background: var(--boton);
+  color: var(--boton-texto);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.cobrar--acento {
+  background: var(--acento);
+}
+
 .lista-clientes__fila {
   display: flex;
   align-items: center;
@@ -1769,6 +1800,16 @@ button {
   margin-top: var(--espacio-sm);
   border-top: 1px solid var(--deuda-linea);
   color: var(--deuda);
+  text-decoration: none;
+}
+
+.bloque-deben__datos {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-sm);
+  color: inherit;
   text-decoration: none;
 }
 
