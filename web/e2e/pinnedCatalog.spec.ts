@@ -47,7 +47,7 @@ test('a seller sets up the bot in Integraciones, then publishes from the catalog
 
   await openMas(page)
   await page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /Catálogo/ }).click()
-  await expect(page).toHaveURL(/\/catalogo$/)
+  await expect(page).toHaveURL(/\/varieties\/catalog$/)
 
   // The catalog screen has no bot settings; with no bot yet, Publicar is disabled and
   // says where to go. No pin yet, so it shows no status either.
@@ -79,7 +79,7 @@ test('a seller sets up the bot in Integraciones, then publishes from the catalog
 
   // Everything is saved, so leaving asks nothing: the link leads to the catalog screen.
   await page.getByRole('link', { name: 'Ir al catálogo' }).click()
-  await expect(page).toHaveURL(/\/catalogo$/)
+  await expect(page).toHaveURL(/\/varieties\/catalog$/)
   await expect(page.getByRole('button', { name: 'Publicar' })).toBeEnabled()
 
   await page.getByRole('button', { name: 'Publicar' }).click()

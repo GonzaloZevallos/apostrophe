@@ -81,7 +81,7 @@ test('a seller goes through every Configuración group from the phone, with no c
   await page.getByRole('button', { name: 'Probarlo' }).click()
   await expect(page.getByText('Prueba enviada')).toBeVisible()
   await page.getByRole('link', { name: 'Ir al catálogo' }).click()
-  await expect(page).toHaveURL(/\/catalogo$/)
+  await expect(page).toHaveURL(/\/varieties\/catalog$/)
   await page.goBack()
   await close()
 
@@ -131,7 +131,7 @@ test('a seller goes through every Configuración group from the phone, with no c
   await sheet.getByRole('button', { name: 'Guardar' }).click()
   await expect(page.getByText('Contraseña cambiada · cerramos tus otras sesiones')).toBeVisible()
   await page.getByRole('button', { name: 'Cerrar sesión' }).click()
-  await expect(page).toHaveURL(/\/entrar$/)
+  await expect(page).toHaveURL(/\/login$/)
 
   await page.getByLabel('Email').fill(ownerEmail)
   await page.getByLabel('Contraseña').fill(NEW_PASSWORD)

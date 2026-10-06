@@ -207,13 +207,13 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await page.getByLabel('Teléfono').fill('+5491155550077')
   await page.getByLabel('Nombre').fill('Carla Pérez')
   await page.getByRole('button', { name: 'Guardá y usá' }).click()
-  await expect(page).toHaveURL(/\/clientes$/)
+  await expect(page).toHaveURL(/\/customers$/)
   await expect(page.getByText('Cliente guardado')).toBeVisible()
 
   // A sale left owing, to Carla.
   await page.getByRole('link', { name: 'Carla Pérez' }).click()
   await page.getByRole('link', { name: 'Nueva venta a Carla Pérez' }).click()
-  await expect(page).toHaveURL(/\/ventas\/nueva$/)
+  await expect(page).toHaveURL(/\/sales\/new$/)
   const todayIso = await page.getByLabel('Fecha').inputValue()
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '5' })
   await page.getByRole('radio', { name: 'Debiendo' }).check()
@@ -374,7 +374,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
 
   // Opens Te deben from the block's own heading, then goes back to Inicio.
   await page.getByRole('link', { name: 'Te deben' }).click()
-  await expect(page).toHaveURL(/\/clientes\/deben$/)
+  await expect(page).toHaveURL(/\/customers$/)
   await expect(page.locator('.ventas__resumen .cifra-xl')).toHaveText(pesos(panel.debts.total_owed))
   await page.goBack()
   await expect(page).toHaveURL(/\/$/)

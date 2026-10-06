@@ -45,7 +45,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.getByLabel('Teléfono').fill(PHONE)
   await page.getByLabel('Nombre').fill('Marisa Gómez')
   await page.getByRole('button', { name: 'Guardá y usá' }).click()
-  await expect(page).toHaveURL(/\/clientes$/)
+  await expect(page).toHaveURL(/\/customers$/)
   await expect(page.getByText('Cliente guardado')).toBeVisible()
 
   // Add a variety.
@@ -55,7 +55,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.getByRole('button', { name: 'Guardar' }).click()
   await expect(page.getByText('Variedad guardada')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()
-  await expect(page).toHaveURL(/\/variedades\/.+/)
+  await expect(page).toHaveURL(/\/varieties\/.+/)
 
   // Add a price. "Rige desde" already defaults to `me.today` — the business day
   // the backend's clock reports, read through `GET /auth/me` — so it is left as
@@ -76,25 +76,25 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.goto(STOCK)
   await expect(page.getByText('Sin entradas de stock')).toBeVisible()
   await page.getByRole('link', { name: 'Nueva entrada' }).click()
-  await expect(page).toHaveURL(/\/mi-stock\/nueva-entrada$/)
+  await expect(page).toHaveURL(/\/varieties\/entries\/new$/)
   await page.getByLabel('Gramos').fill('50')
   await page.getByLabel('Variedad').selectOption({ label: 'Rosa' })
   await page.getByLabel('Costo total').fill('45000')
   await expect(page.getByText('Te queda en $ 900 el gramo')).toBeVisible()
   await page.getByRole('button', { name: 'Guardá la entrada' }).click()
-  await expect(page).toHaveURL(/\/mi-stock$/)
+  await expect(page).toHaveURL(/\/varieties\/entries$/)
   await expect(page.getByText('Entrada guardada')).toBeVisible()
   await expect(page.getByText('Rosa · 50 g')).toBeVisible()
 
   // Edit it: editing confirms before saving (stock.md).
   await page.getByText('Rosa · 50 g').click()
-  await expect(page).toHaveURL(/\/mi-stock\/entradas\/.+/)
+  await expect(page).toHaveURL(/\/varieties\/entries\/.+/)
   await expect(page.getByLabel('Gramos')).toHaveValue('50')
   await page.getByLabel('Gramos').fill('60')
   await page.getByRole('button', { name: 'Guardar' }).click()
   await expect(page.getByText('¿Guardás los cambios?')).toBeVisible()
   await page.getByRole('button', { name: 'Sí, guardar' }).click()
-  await expect(page).toHaveURL(/\/mi-stock$/)
+  await expect(page).toHaveURL(/\/varieties\/entries$/)
   await expect(page.getByText('Entrada guardada')).toBeVisible()
   await expect(page.getByText('Rosa · 60 g')).toBeVisible()
 
@@ -103,7 +103,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.getByRole('button', { name: 'Borrar entrada' }).click()
   await expect(page.getByText('Antes de borrar')).toBeVisible()
   await page.getByRole('button', { name: 'Sí, borrala' }).click()
-  await expect(page).toHaveURL(/\/mi-stock$/)
+  await expect(page).toHaveURL(/\/varieties\/entries$/)
   await expect(page.getByText('Entrada eliminada')).toBeVisible()
   await expect(page.getByText('Rosa · 60 g')).toHaveCount(0)
 

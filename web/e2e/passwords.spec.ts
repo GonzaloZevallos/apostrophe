@@ -87,7 +87,7 @@ test('changes a password from Configuración → Tu cuenta in under a minute, si
   const EXPECTED_SIGNED_OUT_NETWORK_LOG =
     'error: Failed to load resource: the server responded with a status of 401 (Unauthorized)'
   await otherPage.reload()
-  await expect(otherPage).toHaveURL(/\/entrar$/)
+  await expect(otherPage).toHaveURL(/\/login$/)
   await otherContext.close()
 
   await expectOnlyTheThemeStored(page)

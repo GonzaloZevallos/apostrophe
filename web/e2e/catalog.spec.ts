@@ -62,7 +62,7 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
   // Más → Catálogo.
   await openMas(page)
   await page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /Catálogo/ }).click()
-  await expect(page).toHaveURL(/\/catalogo$/)
+  await expect(page).toHaveURL(/\/varieties\/catalog$/)
 
   // Edit Rosa's catalog attributes.
   await page.getByRole('button', { name: 'Editar Rosa' }).click()
@@ -83,7 +83,7 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
   await page.getByRole('button', { name: 'Guardá el mensaje' }).click()
   await expect(page.getByText('Catálogo guardado')).toBeVisible()
   await page.getByRole('button', { name: 'Cerrar' }).click()
-  await expect(page).toHaveURL(/\/catalogo$/)
+  await expect(page).toHaveURL(/\/varieties\/catalog$/)
   const headerFooterSummary = page.locator('.catalogo__encabezado-pie')
   await expect(headerFooterSummary).toContainText('🌸 Catálogo de Flores del Catálogo 🌸')
   await expect(headerFooterSummary).toContainText('Pedidos por privado.')
