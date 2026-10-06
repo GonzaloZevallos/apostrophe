@@ -260,6 +260,15 @@ button {
   max-width: 250px;
 }
 
+/* The card's one button (`GoneScreen`'s "Volver a …", an empty state's call to
+ * action): a router `Link`, so it needs the underline off, room around its text and
+ * the design's 6px of extra air above it. */
+.estado-vacio .boton {
+  margin-top: 6px;
+  padding: 0 var(--espacio-xxl);
+  text-decoration: none;
+}
+
 .aviso-flotante {
   position: fixed;
   top: var(--espacio-md);
@@ -1338,6 +1347,8 @@ button {
 /* "Venta guardada" with Deshacer (`Estados`): the one success notice with an
  * action, a deliberate exception (plan, invariants) — never the plain `.toast`/
  * `Notice` shape, so Deshacer can sit right next to the text. */
+/* The design draws it 18px round with 15px 18px of padding (the same as `.toast`);
+ * 18px has no token, so `--radio-panel` (20px) is the nearest, a design defect. */
 .venta-guardada {
   display: flex;
   align-items: center;
@@ -1346,10 +1357,11 @@ button {
   background: var(--boton);
   color: var(--boton-texto);
   border-radius: var(--radio-panel);
-  padding: var(--espacio-md) var(--espacio-lg);
+  padding: 15px 18px;
 }
 
 .venta-guardada__texto {
+  flex: 1;
   font-size: 15px;
   font-weight: 500;
 }
@@ -1653,7 +1665,9 @@ button {
   color: var(--boton-texto);
   font-size: 15px;
   font-weight: 600;
-  text-decoration: underline;
+  opacity: 0.75;
+  min-height: var(--alto-tocable);
+  padding: 0 var(--espacio-xs);
   cursor: pointer;
 }
 
