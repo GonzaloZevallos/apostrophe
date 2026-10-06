@@ -2961,3 +2961,38 @@ button {
   }
 }
 /* ===== end primitivas-telefono ===== */
+
+/* ===== ventas-telefono-lista ===== */
+/* `Ventas` and a sale's detail on the phone (GH-78): Fechas' two date inputs and
+ * "Borrar venta". Phone only: the computer layouts show no diff. The period tabs
+ * themselves are `Pestanas ajuste="celdas"` (`primitivas-telefono`). */
+@media (max-width: 899.98px) {
+  /* Fechas: the two fields share the row while they fit and wrap under each other
+   * when they don't (320 px, 130 % text); each input is at least 16 px and 44 px tall
+   * and never wider than its cell. */
+  .periodos__fechas {
+    flex-wrap: wrap;
+  }
+
+  .periodos__fechas .campo {
+    flex: 1 1 10rem;
+    min-width: 0;
+  }
+
+  .periodos__fechas .campo__input {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    min-height: var(--alto-tocable);
+    font-size: 16px;
+  }
+
+  /* "Borrar venta": the link-style button at 44 px, its text still left-aligned. */
+  .venta-detalle__acciones .boton--enlace {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--alto-tocable);
+  }
+}
+/* ===== end ventas-telefono-lista ===== */
