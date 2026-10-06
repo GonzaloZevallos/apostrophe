@@ -10,7 +10,7 @@
 
 import { type FormEvent, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link, useOutletContext } from 'react-router'
+import { Link, useLocation, useNavigate, useOutletContext } from 'react-router'
 import { ApiError, NetworkError, UNKNOWN_CODE } from '../api/client'
 import {
   type Expense,
@@ -31,6 +31,8 @@ import { parseMoney } from '../format/parse'
 import { isGone, kindOf, resolveOverride, type RefusalCode } from '../api/refusals'
 import Aviso, { type SuccessToast } from '../components/Aviso'
 import GoneNotice from '../components/GoneNotice'
+import Notice from '../components/Notice'
+import { gone, readFeedback, toast as toastState } from '../components/feedback'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import SinConexion from '../components/SinConexion'
 import { paths } from '../routes/paths'
@@ -361,8 +363,38 @@ function DeleteConfirm({
   )
 }
 
+/**
+ * The expense form as a screen of its own (`/expenses/new`, from Más's "+ Cargar
+ * gasto"): the same `ExpenseForm` Gastos opens, with today's date and no second form
+ * written. Saving goes to Gastos, which shows "Gasto guardado" from the navigation
+ * state; the screen it leaves is gone by then, so a toast of its own would never show.
+ */
+export function NuevoGasto() {
+  const me = useOutletContext<Me>()
+  const navigate = useNavigate()
+  const categories = useQuery({ queryKey: keys.expenseCategories(), queryFn: listCategories })
+
+  if (categories.data === undefined) return <main className="pantalla" />
+
+  return (
+    <main className="pantalla">
+      <ExpenseForm
+        target="nuevo"
+        today={me.today}
+        categories={categories.data}
+        onDone={() => navigate(paths.expenses(), { state: toastState('Gasto guardado') })}
+        onGone={() => navigate(paths.expenses(), { state: gone() })}
+        // A new expense has nothing to delete: the button only shows on an existing one.
+        onRequestDelete={() => undefined}
+      />
+    </main>
+  )
+}
+
 export default function Gastos() {
   const me = useOutletContext<Me>()
+  const location = useLocation()
+  const [arrivedWith] = useState(() => readFeedback(location.state))
   const [month, setMonth] = useState(() => me.today.slice(0, 7))
   const [formTarget, setFormTarget] = useState<FormTarget | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Expense | null>(null)
@@ -491,6 +523,11 @@ export default function Gastos() {
             flashGone()
           }}
         />
+      )}
+      {arrivedWith !== null && (
+        <div className="aviso-flotante">
+          <Notice kind={arrivedWith.kind} message={arrivedWith.message} />
+        </div>
       )}
       {toast !== null && <Aviso texto={toast} />}
       {goneNotice && (

@@ -39,6 +39,7 @@ export const TOAST_MESSAGES = [
   'Venta eliminada · los gramos vuelven al stock',
   'Entrada guardada',
   'Entrada eliminada',
+  'Gasto guardado',
 ] as const
 
 export type ToastMessage = (typeof TOAST_MESSAGES)[number]

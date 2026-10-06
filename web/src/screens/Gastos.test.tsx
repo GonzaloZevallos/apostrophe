@@ -13,7 +13,7 @@ import { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import { SIN_CONEXION_TITULO } from '../components/SinConexion'
 import { GONE_NOTICE } from '../api/refusals'
 import type { Me } from '../api/me'
-import Gastos, { CATEGORY_GONE, FLOWER_NOTICE } from './Gastos'
+import Gastos, { CATEGORY_GONE, FLOWER_NOTICE, NuevoGasto } from './Gastos'
 import { paths } from '../routes/paths'
 
 function jsonResponse(status: number, body: unknown): Response {
@@ -287,4 +287,45 @@ test('creating a category inside the expense form keeps what was typed and selec
     expect(screen.getByLabelText('Categoría')).toHaveValue('3')
   })
   expect(screen.getByLabelText('Detalle')).toHaveValue('Sustrato nuevo')
+})
+
+test('NuevoGasto opens the form with today\'s date, records the expense and lands on Gastos with the toast', async () => {
+  let posted: unknown = null
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (url: string, init?: RequestInit) => {
+      const method = init?.method ?? 'GET'
+      if (url.toString().startsWith('/expense-categories')) return jsonResponse(200, CATEGORIES)
+      if (url.toString() === '/expenses' && method === 'POST') {
+        posted = init?.body
+        return jsonResponse(201, { id: 10, spent_on: '2026-10-02', category_id: 1, amount: 1000, detail: 'Cinta' })
+      }
+      if (url.toString().startsWith('/expenses') && method === 'GET') return jsonResponse(200, VIEW)
+      throw new Error(`unexpected ${method} ${url}`)
+    }),
+  )
+  render(
+    <QueryClientProvider client={new QueryClient()}>
+      <MemoryRouter initialEntries={[paths.newExpense()]}>
+        <Routes>
+          <Route element={<Provide />}>
+            <Route path={paths.newExpense()} element={<NuevoGasto />} />
+            <Route path={paths.expenses()} element={<Gastos />} />
+          </Route>
+        </Routes>
+      </MemoryRouter>
+    </QueryClientProvider>,
+  )
+
+  expect(await screen.findByLabelText('Fecha')).toHaveValue('2026-10-02')
+  await userEvent.selectOptions(screen.getByLabelText('Categoría'), 'Packaging')
+  await userEvent.type(screen.getByLabelText('Monto'), '1000')
+  await userEvent.type(screen.getByLabelText('Detalle'), 'Cinta')
+  await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+
+  expect(await screen.findByText('Gasto guardado')).toBeInTheDocument()
+  expect(await screen.findByText('Packaging')).toBeInTheDocument()
+  expect(posted).toBe(
+    JSON.stringify({ spent_on: '2026-10-02', category_id: 1, amount: 1000, detail: 'Cinta' }),
+  )
 })
