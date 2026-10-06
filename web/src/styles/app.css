@@ -509,6 +509,12 @@ button {
   padding: var(--espacio-lg) var(--margen-pantalla) var(--espacio-xxl);
 }
 
+/* The header and footer fields of "Mensaje del catálogo" are multi-line: the design gives them 92px. */
+.ajustes-grupo__cuerpo textarea.campo__input {
+  min-height: 92px;
+  resize: vertical;
+}
+
 /* "Apariencia" (`ConfiguracionApariencia.dc.html`): Claro · Oscuro, the segmented control
  * on the group's surface. The current one is a filled pill and bolder, not only a color. */
 .ajustes-tema__rotulo {
