@@ -35,5 +35,10 @@ export default defineConfig({
     // run by the `web-e2e` check; vitest's defaults would otherwise also try to
     // run `flow.spec.ts` as a unit test and collide with Playwright's `test`.
     exclude: ['**/node_modules/**', 'e2e/**'],
+    // The screen tests walk whole flows through `userEvent` (pick, type, save, land on the
+    // next screen), a second or two each on a quiet machine. The delivery gate runs the web
+    // checks side by side, and the same flows then take several times longer, so the 5 s
+    // default fails them on load rather than on a bug. A hung test still fails, only later.
+    testTimeout: 30_000,
   },
 })

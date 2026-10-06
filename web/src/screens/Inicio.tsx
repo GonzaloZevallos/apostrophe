@@ -25,7 +25,8 @@
 import { CATALOG, CUSTOMER, CUSTOMER_PAYMENT, CUSTOMERS, SETTINGS, pathTo } from '../routes'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Link, useOutletContext } from 'react-router'
+import { useOutletContext } from 'react-router'
+import InAppLink from '../components/InAppLink'
 import { get, NetworkError } from '../api/client'
 import { keys } from '../api/keys'
 import type { Me } from '../api/me'
@@ -116,20 +117,19 @@ export default function Inicio() {
             <span className="encabezado__negocio">{me.business_name}</span>
             <span className="encabezado__titulo">Inicio</span>
           </div>
-          <Link
+          <InAppLink
             to={SETTINGS}
-            state={{ inApp: true }}
             aria-label={`Configuración de ${me.business_name}`}
             className="inicio__avatar"
           >
             {initialsOf(me.business_name)}
-          </Link>
+          </InAppLink>
         </div>
 
         {pinOutOfDate && (
-          <Link to={CATALOG} className="aviso-ambar" role="status">
+          <InAppLink to={CATALOG} className="aviso-ambar" role="status">
             <span className="aviso-ambar__titulo">{PINNED_CATALOG_OUT_OF_DATE}</span>
-          </Link>
+          </InAppLink>
         )}
         {varietiesQuery.data !== undefined && !hasPricedVariety && (
           <div className="estado-vacio">
@@ -277,9 +277,9 @@ function TeDebenBlock({ debts }: { debts: PanelDebts }) {
 
   return (
     <div className="bloque-deben">
-      <Link to={CUSTOMERS} className="bloque-deben__titulo">
+      <InAppLink to={CUSTOMERS} className="bloque-deben__titulo">
         Te deben
-      </Link>
+      </InAppLink>
       <span className="cifra-xl">{formatMoney(debts.total_owed)}</span>
       <span className="pie">
         {salesCount(debts.sales_owing_count)}
@@ -287,19 +287,18 @@ function TeDebenBlock({ debts }: { debts: PanelDebts }) {
       </span>
       {debts.teaser.map((row) => (
         <div key={row.customer_id} className="bloque-deben__fila">
-          <Link to={pathTo(CUSTOMER, { id: row.customer_id })} className="bloque-deben__datos">
+          <InAppLink to={pathTo(CUSTOMER, { id: row.customer_id })} className="bloque-deben__datos">
             <span>{row.name}</span>
             <span>{formatMoney(row.balance)}</span>
             <span className="pie">{`desde ${formatDateShort(row.owing_since)}`}</span>
-          </Link>
-          <Link
+          </InAppLink>
+          <InAppLink
             to={pathTo(CUSTOMER_PAYMENT, { id: row.customer_id })}
-            state={{ inApp: true }}
             aria-label={`Cobrar a ${row.name}`}
             className="cobrar cobrar--acento"
           >
             Cobrar
-          </Link>
+          </InAppLink>
         </div>
       ))}
     </div>

@@ -9,7 +9,8 @@
 import { CATALOG, STOCK, STOCK_ENTRY_NEW, VARIETY, pathTo } from '../routes'
 import { type FormEvent, useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link, useOutletContext } from 'react-router'
+import { useOutletContext } from 'react-router'
+import InAppLink from '../components/InAppLink'
 import { ApiError, NetworkError, UNKNOWN_CODE, get, post } from '../api/client'
 import { invalidateResource, keys } from '../api/keys'
 import type { Me } from '../api/me'
@@ -146,12 +147,12 @@ export default function Variedades() {
             +
           </button>
         </div>
-        <Link className="boton" to={CATALOG} state={{ inApp: true }}>
+        <InAppLink className="boton" to={CATALOG}>
           Mandar catálogo
-        </Link>
-        <Link className="boton" to={STOCK_ENTRY_NEW} state={{ inApp: true }}>
+        </InAppLink>
+        <InAppLink className="boton" to={STOCK_ENTRY_NEW}>
           + Entrada de stock
-        </Link>
+        </InAppLink>
         {toast !== null && <AvisoExito texto={toast} />}
         {adding && (
           <form className="formulario" onSubmit={onSubmit}>
@@ -180,7 +181,7 @@ export default function Variedades() {
           {(data ?? []).map((variety) => {
             const stockRow = stockOf(variety.id)
             return (
-            <Link key={variety.id} to={pathTo(VARIETY, { id: variety.id })} className="variedad-item">
+            <InAppLink key={variety.id} to={pathTo(VARIETY, { id: variety.id })} className="variedad-item">
               <div className="variedad-item__encabezado">
                 <span className="variedad-item__nombre">{variety.name}</span>
                 {stockRow !== undefined && <MarcaEstado estado={stockRow.status} />}
@@ -211,13 +212,13 @@ export default function Variedades() {
                     )}
                 </div>
               )}
-            </Link>
+            </InAppLink>
             )
           })}
         </div>
-        <Link to={STOCK} state={{ inApp: true }}>
+        <InAppLink to={STOCK}>
           Todas las entradas
-        </Link>
+        </InAppLink>
       </div>
     </main>
   )

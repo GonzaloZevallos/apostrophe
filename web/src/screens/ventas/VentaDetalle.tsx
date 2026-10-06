@@ -265,21 +265,10 @@ export default function VentaDetalle() {
   }
   const sale = data
 
-  function goBack(): void {
-    // No history to go back into (a direct open, a refresh): /ventas is the
-    // only sure place back from here (plan, "Navigation").
-    if (location.key === 'default') {
-      navigate(SALES)
-    } else {
-      navigate(-1)
-    }
-  }
-
   return (
     <main className="pantalla">
       <div className="cuerpo">
         <div className="encabezado__fila">
-          <Boton variant="icon" icon="atras" ariaLabel="Volver" onClick={goBack} />
           <span className="encabezado__titulo">{`Venta del ${formatDateShort(sale.date)}`}</span>
         </div>
 

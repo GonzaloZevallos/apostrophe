@@ -15,7 +15,8 @@
 
 import { STOCK_ENTRY, STOCK_ENTRY_NEW, pathTo } from '../routes'
 import { useQuery } from '@tanstack/react-query'
-import { Link, useLocation, useOutletContext } from 'react-router'
+import { useLocation, useOutletContext } from 'react-router'
+import InAppLink from '../components/InAppLink'
 import { NetworkError } from '../api/client'
 import { keys } from '../api/keys'
 import type { Me } from '../api/me'
@@ -133,17 +134,16 @@ export default function Stock() {
           </div>
         )}
 
-        <Link to={STOCK_ENTRY_NEW} state={{ inApp: true }} className="boton boton--suave">
+        <InAppLink to={STOCK_ENTRY_NEW} className="boton boton--suave">
           Nueva entrada
-        </Link>
+        </InAppLink>
 
         <span className="rotulo">Entradas · costo por gramo</span>
         <div className="lista-entradas">
           {stock.entries.map((entry) => (
-            <Link
+            <InAppLink
               key={entry.id}
               to={pathTo(STOCK_ENTRY, { id: entry.id })}
-              state={{ inApp: true }}
               className="fila-entrada"
             >
               <span className="fila-entrada__fecha">{formatDate(entry.date, me.today)}</span>
@@ -159,7 +159,7 @@ export default function Stock() {
               <span className="fila-entrada__costo">
                 {entry.cost_per_gram !== null ? formatMoney(entry.cost_per_gram) : '—'}
               </span>
-            </Link>
+            </InAppLink>
           ))}
         </div>
       </div>

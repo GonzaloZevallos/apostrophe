@@ -3,11 +3,10 @@
  * (`Mas.dc.html`), then the entries whose screens have not moved yet (Variedades,
  * Catálogo), which leave with the issues that move them, and Configuración last.
  * Paths come from `routes.ts`. The subtitles are the design's own words.
- * Configuración carries `state: { inApp: true }`, which lets its list's back go
- * through history (`useBackOr`).
+ * Every entry goes through `InAppLink`, which lets a card's back go through history.
  */
 
-import { Link } from 'react-router'
+import InAppLink from '../components/InAppLink'
 import Icono from '../components/Icono'
 import { ANALYSIS, CATALOG, EXPENSES, EXPENSE_NEW, SETTINGS, VARIETIES } from '../routes'
 
@@ -15,8 +14,6 @@ interface Item {
   to: string
   label: string
   detail?: string
-  /** Opening it leaves the app behind it, so a group's "Cerrar" can go back by history. */
-  inApp?: boolean
 }
 
 const ITEMS: Item[] = [
@@ -24,7 +21,6 @@ const ITEMS: Item[] = [
     to: EXPENSE_NEW,
     label: '+ Cargar gasto',
     detail: 'Categoría, monto y detalle',
-    inApp: true,
   },
   { to: EXPENSES, label: 'Gastos', detail: 'Por mes y por categoría' },
   {
@@ -46,7 +42,6 @@ const ITEMS: Item[] = [
     to: SETTINGS,
     label: 'Configuración',
     detail: 'Negocio, usuarios, bot, catálogo, categorías, apariencia y tu cuenta',
-    inApp: true,
   },
 ]
 
@@ -57,10 +52,9 @@ export default function Mas() {
         <span className="encabezado__titulo">Más</span>
         <nav className="mas__lista" aria-label="Más">
           {ITEMS.map((item) => (
-            <Link
+            <InAppLink
               key={item.to}
               to={item.to}
-              state={item.inApp === true ? { inApp: true } : undefined}
               className="mas__item"
             >
               <span className="mas__item-texto">
@@ -72,7 +66,7 @@ export default function Mas() {
               <span className="mas__item-flecha">
                 <Icono nombre="chevron" size={18} />
               </span>
-            </Link>
+            </InAppLink>
           ))}
         </nav>
       </div>

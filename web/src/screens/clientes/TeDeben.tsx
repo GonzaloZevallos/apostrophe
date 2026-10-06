@@ -8,7 +8,7 @@
 
 import { CUSTOMER, CUSTOMER_PAYMENT, pathTo } from '../../routes'
 import { useQuery } from '@tanstack/react-query'
-import { Link } from 'react-router'
+import InAppLink from '../../components/InAppLink'
 import { keys } from '../../api/keys'
 import { getDebtors } from '../../api/payments'
 import { salesCount } from '../../format/counts'
@@ -43,21 +43,20 @@ export default function TeDeben() {
       <div className="lista-clientes">
         {data.debtors.map((debtor) => (
           <div key={debtor.customer.id} className="lista-clientes__item">
-            <Link to={pathTo(CUSTOMER, { id: debtor.customer.id })} className="lista-clientes__fila">
+            <InAppLink to={pathTo(CUSTOMER, { id: debtor.customer.id })} className="lista-clientes__fila">
               <span className="lista-clientes__nombre">{debtor.customer.name}</span>
               <span className="monto-deuda">{formatMoney(debtor.balance)}</span>
               {debtor.owing_since !== null && (
                 <span className="monto-deuda">{`desde ${formatDateShort(debtor.owing_since)}`}</span>
               )}
-            </Link>
-            <Link
+            </InAppLink>
+            <InAppLink
               to={pathTo(CUSTOMER_PAYMENT, { id: debtor.customer.id })}
-              state={{ inApp: true }}
               aria-label={`Cobrar a ${debtor.customer.name}`}
               className="cobrar"
             >
               Cobrar
-            </Link>
+            </InAppLink>
           </div>
         ))}
       </div>

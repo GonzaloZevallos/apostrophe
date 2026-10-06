@@ -1,8 +1,8 @@
 /**
  * `Settings`, the list of groups, mounted through the real route table (`router.routes`)
  * under a memory router, so the test also proves what `router.tsx` registers: which chrome
- * the list and a group get, and which groups exist. `matchMedia` is stubbed per case since
- * jsdom lays nothing out: the list's back arrow reads one media query.
+ * the list and a group get, and which groups exist. `useViewport` is mocked per case since
+ * jsdom lays nothing out: the list's back arrow reads the viewport.
  */
 
 import { EXPENSE_CATEGORIES, HOME, MORE, SALES, SETTINGS, SETTINGS_ACCOUNT, SETTINGS_APPEARANCE, SETTINGS_BUSINESS, SETTINGS_CATALOG_MESSAGE, SETTINGS_INTEGRATIONS, SETTINGS_USERS } from '../../routes'
@@ -24,17 +24,12 @@ const GROUPS = [
   ['Tu cuenta', SETTINGS_ACCOUNT],
 ] as const
 
+const viewport = vi.hoisted(() => ({ current: 'phone' as 'phone' | 'computer' }))
+
+vi.mock('../../shell/useViewport', () => ({ useViewport: () => viewport.current }))
+
 function stubComputer(isComputer: boolean) {
-  vi.stubGlobal(
-    'matchMedia',
-    (query: string) =>
-      ({
-        matches: isComputer,
-        media: query,
-        addEventListener: () => undefined,
-        removeEventListener: () => undefined,
-      }) as unknown as MediaQueryList,
-  )
+  viewport.current = isComputer ? 'computer' : 'phone'
 }
 
 function renderApp(entries: string[], index?: number) {
