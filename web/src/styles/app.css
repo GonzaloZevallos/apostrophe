@@ -323,6 +323,12 @@ button {
   font-weight: 700;
 }
 
+.bar-inferior__item--activo span {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
 .riel-lateral {
   display: none;
   flex-direction: column;
@@ -349,6 +355,127 @@ button {
   background: var(--superficie);
   color: var(--tinta);
   font-weight: 600;
+  box-shadow: inset 2px 0 0 var(--acento);
+}
+
+.riel-lateral__marca {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  padding: 0 10px 20px;
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+
+.riel-lateral__apostrofe {
+  color: var(--acento);
+}
+
+.riel-lateral__division {
+  height: 1px;
+  margin: 12px 10px;
+  background: var(--linea);
+}
+
+.riel-lateral__secundario {
+  display: flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 0 14px;
+  border-radius: 14px;
+  color: var(--tinta2);
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.riel-lateral__secundario--activo {
+  background: var(--superficie);
+  color: var(--tinta);
+  font-weight: 600;
+  box-shadow: inset 2px 0 0 var(--acento);
+}
+
+.riel-lateral__negocio {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  margin-top: auto;
+  padding: 0 10px;
+  border-radius: 14px;
+  color: var(--tinta);
+  text-decoration: none;
+}
+
+.riel-lateral__negocio--activo {
+  background: var(--superficie);
+  box-shadow: inset 2px 0 0 var(--acento);
+}
+
+.riel-lateral__negocio-nombre {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radio-pildora);
+  font-weight: 600;
+}
+
+.avatar--chico {
+  width: 30px;
+  height: 30px;
+  background: var(--acento-suave);
+  color: var(--acento);
+  font-size: 13px;
+}
+
+.avatar--inicio {
+  width: 38px;
+  height: 38px;
+  background: var(--superficie);
+  color: var(--tinta);
+  font-size: 14px;
+  text-decoration: none;
+}
+
+/* The "‹ <parent>" row the shell draws above a detail. Configuración's two parents
+ * are both in the markup; the one that does not belong to the viewport is
+ * `display: none`, so it leaves the accessibility tree too (the 900 px switch
+ * below, the one `.bar-inferior` and `.riel-lateral` already make). */
+.volver-fila {
+  padding: var(--espacio-lg) var(--margen-pantalla) 0;
+}
+
+.volver {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-xs);
+  min-height: var(--alto-tocable);
+  color: var(--tinta2);
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.volver--compu {
+  display: none;
+}
+
+.encabezado__fila--inicio {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+}
+
+.encabezado__fila--inicio > :first-child {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 /* The fixed "Nueva venta" button (accounts.md, "Shell"): a pill above the bottom
@@ -2084,6 +2211,18 @@ button {
 
 @media (min-width: 900px) {
   .bar-inferior {
+    display: none;
+  }
+
+  .volver--telefono {
+    display: none;
+  }
+
+  .volver--compu {
+    display: inline-flex;
+  }
+
+  .avatar--inicio {
     display: none;
   }
 

@@ -19,7 +19,7 @@
 
 import { type FormEvent, useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link, useOutletContext } from 'react-router'
+import { useOutletContext } from 'react-router'
 import { ApiError, NetworkError, UNKNOWN_CODE, get, put } from '../api/client'
 import { keys } from '../api/keys'
 import type { Me } from '../api/me'
@@ -30,7 +30,6 @@ import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGeneri
 import SinConexion from '../components/SinConexion'
 import PinnedCatalogBot from './PinnedCatalogBot'
 import { telegramPreview } from './telegramPreview'
-import { paths } from '../routes/paths'
 
 export const CATALOG_SAVED = 'Catálogo guardado'
 export const CATALOG_COPIED = 'Catálogo copiado'
@@ -280,9 +279,6 @@ export default function Catalogo() {
     <main className="pantalla">
       <div className="cuerpo">
         <div className="encabezado__fila">
-          <Link to={paths.more()} aria-label="Volver" className="encabezado__volver">
-            ‹
-          </Link>
           <span className="encabezado__titulo">Catálogo</span>
         </div>
 

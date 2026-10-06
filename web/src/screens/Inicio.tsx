@@ -43,6 +43,7 @@ import { formatDateShort } from '../format/dates'
 import { formatGrams, formatMoney, formatSignedMoney } from '../format/money'
 import { detailFor, sideNoteFor } from '../stock/detail'
 import { paths } from '../routes/paths'
+import { initialsOf } from '../shell/initials'
 
 export const EMPTY_TITLE = 'Arrancá por las variedades'
 export const EMPTY_DETAIL =
@@ -110,9 +111,18 @@ export default function Inicio() {
   return (
     <main className="pantalla">
       <div className="cuerpo">
-        <div>
-          <span className="encabezado__negocio">{me.business_name}</span>
-          <span className="encabezado__titulo">Inicio</span>
+        <div className="encabezado__fila--inicio">
+          <div>
+            <span className="encabezado__negocio">{me.business_name}</span>
+            <span className="encabezado__titulo">Inicio</span>
+          </div>
+          <Link
+            to={paths.settings()}
+            aria-label={`Configuración de ${me.business_name}`}
+            className="avatar avatar--inicio"
+          >
+            {initialsOf(me.business_name)}
+          </Link>
         </div>
 
         {pinOutOfDate && (

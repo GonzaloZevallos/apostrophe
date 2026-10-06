@@ -194,7 +194,6 @@ export default function ClienteFicha() {
     <main className="pantalla">
       <div className="cuerpo">
         <div>
-          <Link to={paths.customers()}>Volver</Link>
           <span className="encabezado__titulo">{data.name}</span>
           <Link to={paths.editCustomer(customerId)}>Editar</Link>
         </div>

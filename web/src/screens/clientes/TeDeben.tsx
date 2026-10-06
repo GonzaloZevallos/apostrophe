@@ -29,7 +29,6 @@ export default function TeDeben() {
     <main className="pantalla">
       <div className="cuerpo">
         <div>
-          <Link to={paths.customers()}>Volver</Link>
           <span className="encabezado__titulo">Te deben</span>
         </div>
 
