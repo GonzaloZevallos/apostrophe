@@ -8,11 +8,10 @@
  */
 
 import { expect, test, type Page } from '@playwright/test'
-import { newBusinessInvitationUrl } from './backend.js'
+import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
 
-const PASSWORD = 'correcthorsebattery'
 const TOP = 47
 const BOTTOM = 34
 const SIDE = 44
@@ -90,12 +89,7 @@ test('every screen, bar, sheet and toast keeps clear of the notch and the home b
   }
 
   await page.setViewportSize(VIEWPORTS[0])
-  await page.goto(newBusinessInvitationUrl())
-  await page.getByLabel('Nombre del negocio').fill(`Flores del Borde ${Date.now()}`)
-  await page.getByLabel('Email').fill(`duena-bordes-${Date.now()}@example.com`)
-  await page.getByLabel('Contraseña').fill(PASSWORD)
-  await page.getByRole('button', { name: 'Creá el negocio' }).click()
-  await expect(page.locator('.encabezado__negocio')).toBeVisible()
+  await signUpNewBusiness(page, { businessName: `Flores del Borde ${Date.now()}`, email: `duena-bordes-${Date.now()}@example.com` })
 
   await page.goto('/variedades')
   await page.getByRole('button', { name: 'Nueva variedad' }).click()

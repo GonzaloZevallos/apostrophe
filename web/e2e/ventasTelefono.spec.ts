@@ -8,10 +8,9 @@
  */
 
 import { expect, test, type Page } from '@playwright/test'
-import { newBusinessInvitationUrl } from './backend.js'
+import { signUpNewBusiness } from './helpers/signup.js'
 import { fillSaleLine } from './helpers/sale.js'
 
-const PASSWORD = 'correcthorsebattery'
 const ONE_MINUTE = 60_000
 const TOUCH_TARGET = 44
 const MIN_INPUT_FONT = 16
@@ -26,12 +25,7 @@ const PHONES = [
 test.use({ isMobile: true, hasTouch: true, viewport: { width: 375, height: 812 } })
 
 async function signUpWithAVariety(page: Page): Promise<void> {
-  await page.goto(newBusinessInvitationUrl())
-  await page.getByLabel('Nombre del negocio').fill(`Vivero Telefono ${Date.now()}`)
-  await page.getByLabel('Email').fill(`telefono-venta-${Date.now()}@example.com`)
-  await page.getByLabel('Contraseña').fill(PASSWORD)
-  await page.getByRole('button', { name: 'Creá el negocio' }).click()
-  await expect(page.locator('.encabezado__negocio')).toBeVisible()
+  await signUpNewBusiness(page, { businessName: `Vivero Telefono ${Date.now()}`, email: `telefono-venta-${Date.now()}@example.com` })
   await page.goto('/variedades')
   await page.getByRole('button', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Jazmín')

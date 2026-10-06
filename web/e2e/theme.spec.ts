@@ -17,6 +17,7 @@
 import type { Page } from '@playwright/test'
 import { expect, test } from '@playwright/test'
 import { newBusinessInvitationUrl, resetLink } from './backend.js'
+import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
 
@@ -105,12 +106,7 @@ const PASSWORD = 'correcthorsebattery'
 
 async function signUp(page: Page): Promise<string> {
   const email = `tema-${Date.now()}-${Math.floor(Math.random() * 1e6)}@example.com`
-  await page.goto(newBusinessInvitationUrl())
-  await page.getByLabel('Nombre del negocio').fill(`Tema ${Date.now()}`)
-  await page.getByLabel('Email').fill(email)
-  await page.getByLabel('Contraseña').fill(PASSWORD)
-  await page.getByRole('button', { name: 'Creá el negocio' }).click()
-  await expect(page.locator('.encabezado__negocio')).toBeVisible()
+  await signUpNewBusiness(page, { businessName: `Tema ${Date.now()}`, email })
   return email
 }
 

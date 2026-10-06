@@ -19,7 +19,8 @@
  */
 
 import { expect, test } from '@playwright/test'
-import { newBusinessInvitationUrl, resetLink, supportsPasswordReset } from './backend.js'
+import { resetLink, supportsPasswordReset } from './backend.js'
+import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
 
@@ -43,11 +44,7 @@ test('changes a password from Configuración → Tu cuenta in under a minute, si
   const ownerEmail = `duena-clave-${Date.now()}@example.com`
   const businessName = `Flores del Cambio ${Date.now()}`
 
-  await page.goto(newBusinessInvitationUrl())
-  await page.getByLabel('Nombre del negocio').fill(businessName)
-  await page.getByLabel('Email').fill(ownerEmail)
-  await page.getByLabel('Contraseña').fill(PASSWORD)
-  await page.getByRole('button', { name: 'Creá el negocio' }).click()
+  await signUpNewBusiness(page, { businessName, email: ownerEmail })
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // A second device, signed in as the same user.
@@ -107,11 +104,7 @@ test('resets a forgotten password from a printed link through to Inicio, then sh
   const ownerEmail = `duena-reset-${Date.now()}@example.com`
   const businessName = `Flores del Reinicio ${Date.now()}`
 
-  await page.goto(newBusinessInvitationUrl())
-  await page.getByLabel('Nombre del negocio').fill(businessName)
-  await page.getByLabel('Email').fill(ownerEmail)
-  await page.getByLabel('Contraseña').fill(PASSWORD)
-  await page.getByRole('button', { name: 'Creá el negocio' }).click()
+  await signUpNewBusiness(page, { businessName, email: ownerEmail })
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   const link = resetLink(ownerEmail)

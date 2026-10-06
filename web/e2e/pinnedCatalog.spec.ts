@@ -10,11 +10,10 @@
  */
 
 import { expect, test } from '@playwright/test'
-import { newBusinessInvitationUrl } from './backend.js'
+import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { openMas } from './helpers/openMas.js'
 
-const PASSWORD = 'correcthorsebattery'
 const TOKEN = '123456:fake-token-for-e2e'
 // The e2e bot's one started chat (`tests/e2e_app.py`): Buscar mi chat finds it.
 const STARTED_CHAT = '111111'
@@ -30,11 +29,7 @@ test('a seller sets up the bot in Integraciones, then publishes from the catalog
   const ownerEmail = `duena-bot-${Date.now()}@example.com`
   const businessName = `Flores del Bot ${Date.now()}`
 
-  await page.goto(newBusinessInvitationUrl())
-  await page.getByLabel('Nombre del negocio').fill(businessName)
-  await page.getByLabel('Email').fill(ownerEmail)
-  await page.getByLabel('Contraseña').fill(PASSWORD)
-  await page.getByRole('button', { name: 'Creá el negocio' }).click()
+  await signUpNewBusiness(page, { businessName, email: ownerEmail })
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // A variety with a price, so the catalog has something to publish.

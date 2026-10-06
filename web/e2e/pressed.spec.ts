@@ -6,10 +6,8 @@
  */
 
 import { expect, test, type Page } from '@playwright/test'
-import { newBusinessInvitationUrl } from './backend.js'
+import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
-
-const PASSWORD = 'correcthorsebattery'
 
 interface Look {
   transform: string
@@ -56,12 +54,7 @@ for (const theme of ['claro', 'oscuro'] as const) {
     const messages: string[] = []
     watchConsole(page, messages)
 
-    await page.goto(newBusinessInvitationUrl())
-    await page.getByLabel('Nombre del negocio').fill(`Flores del Toque ${theme} ${Date.now()}`)
-    await page.getByLabel('Email').fill(`duena-toque-${theme}-${Date.now()}@example.com`)
-    await page.getByLabel('Contraseña').fill(PASSWORD)
-    await page.getByRole('button', { name: 'Creá el negocio' }).click()
-    await expect(page.locator('.encabezado__negocio')).toBeVisible()
+    await signUpNewBusiness(page, { businessName: `Flores del Toque ${theme} ${Date.now()}`, email: `duena-toque-${theme}-${Date.now()}@example.com` })
 
     await page.goto('/mas')
     await page.evaluate((value) => {

@@ -88,7 +88,6 @@ describe('adding a variety', () => {
     vi.mocked(client.post).mockResolvedValue({ id: 3, name: 'Golden Cookies', current_price: null })
 
     renderScreen()
-    await screen.findByText(NO_PRICE_TODAY, {}, { timeout: 3000 }).catch(() => undefined)
 
     await user.click(screen.getByRole('button', { name: 'Nueva variedad' }))
     await user.type(screen.getByRole('textbox'), 'Golden Cookies')
