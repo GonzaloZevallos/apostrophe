@@ -82,9 +82,9 @@ test('Copiar still works through the execCommand fallback on a plain-http, non-l
 
   // A variety with a price and stock, so the catalog has something to copy.
   await page.goto(`${INSECURE_ORIGIN}/varieties`)
-  await page.getByRole('button', { name: 'Nueva variedad' }).click()
+  await page.getByRole('link', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Rosa')
-  await page.getByRole('button', { name: 'Guardar' }).click()
+  await page.getByRole('button', { name: 'Agregá la variedad' }).click()
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'Nuevo precio' }).click()
   await page.getByLabel(/^Precio de lista/).fill('9000')

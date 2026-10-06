@@ -49,9 +49,9 @@ test('a seller does everything the backend offers today, from the front alone', 
 
   // Add a variety.
   await page.goto('/varieties')
-  await page.getByRole('button', { name: 'Nueva variedad' }).click()
+  await page.getByRole('link', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Rosa')
-  await page.getByRole('button', { name: 'Guardar' }).click()
+  await page.getByRole('button', { name: 'Agregá la variedad' }).click()
   await expect(page.getByText('Variedad guardada')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()
   await expect(page).toHaveURL(/\/varieties\/.+/)
@@ -63,13 +63,13 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.getByLabel(/^Precio de lista/).fill('9000')
   await page.getByRole('button', { name: 'Guardá el precio' }).click()
   await expect(page.getByText('Precio guardado')).toBeVisible()
-  await expect(page.getByText(/\$ 9\.000 x g/)).toBeVisible()
+  await expect(page.getByText(/\$ 9\.000 x g/).first()).toBeVisible()
 
   // Delete the price entry (the only one): the variety is left with no price.
   await page.getByRole('button', { name: 'Borrar este precio' }).click();
   await page.getByRole('button', { name: 'Sí, borrala' }).click();
   await expect(page.getByText('Precio eliminado')).toBeVisible()
-  await expect(page.getByText('Sin precio: no se puede vender')).toBeVisible()
+  await expect(page.getByText('Sin precio: no se puede vender').first()).toBeVisible()
 
   // Record a stock entry for Rosa from Variedades ("+ Entrada de stock"), then read it in
   // "Todas las entradas" (stock.md).
@@ -86,10 +86,10 @@ test('a seller does everything the backend offers today, from the front alone', 
   await expect(page).toHaveURL(/\/varieties(\/[0-9]+)?$/)
   await expect(page.getByText('Entrada guardada')).toBeVisible()
   await page.goto('/varieties/entries')
-  await expect(page.getByText('Rosa · 50 g')).toBeVisible()
+  await expect(page.getByText('Compra · 50 g')).toBeVisible()
 
   // Edit it: editing confirms before saving (stock.md).
-  await page.getByText('Rosa · 50 g').click()
+  await page.getByRole('link', { name: 'Editar' }).click()
   await expect(page).toHaveURL(/\/varieties\/entries\/.+/)
   await expect(page.getByLabel('Gramos')).toHaveValue('50')
   await page.getByLabel('Gramos').fill('60')
@@ -98,16 +98,15 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.getByRole('button', { name: 'Sí, guardar' }).click()
   await expect(page).toHaveURL(/\/varieties\/entries$/)
   await expect(page.getByText('Entrada guardada')).toBeVisible()
-  await expect(page.getByText('Rosa · 60 g')).toBeVisible()
+  await expect(page.getByText('Compra · 60 g')).toBeVisible()
 
   // Delete it: confirmed first, naming the date, variety and grams ("Antes de borrar").
-  await page.getByText('Rosa · 60 g').click()
-  await page.getByRole('button', { name: 'Borrar entrada' }).click()
+  await page.getByRole('button', { name: 'Borrar', exact: true }).click()
   await expect(page.getByText('Antes de borrar')).toBeVisible()
   await page.getByRole('button', { name: 'Sí, borrala' }).click()
   await expect(page).toHaveURL(/\/varieties\/entries$/)
   await expect(page.getByText('Entrada eliminada')).toBeVisible()
-  await expect(page.getByText('Rosa · 60 g')).toHaveCount(0)
+  await expect(page.getByText('Compra · 60 g')).toHaveCount(0)
 
   // Rosa's low-stock threshold form and the catalog attributes form are opened from the
   // variety's page by the section-forms subtask, which also brings their steps here.

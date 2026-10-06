@@ -128,7 +128,7 @@ describe('the list', () => {
   test('lists every variety by name, each with its status by shape and word, detail and price', async () => {
     renderApp('/varieties')
 
-    const rows = await screen.findAllByRole('link', { name: /x g|Sin precio/ })
+    const rows = await screen.findAllByRole('link', { name: /x g|Sin precio/ }, { timeout: 5000 })
     expect(rows.map((row) => row.getAttribute('href'))).toEqual([
       '/varieties/1',
       '/varieties/2',

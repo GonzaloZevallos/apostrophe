@@ -41,9 +41,9 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
 
   // A variety with a price and stock, so the catalog has something to show.
   await page.goto('/varieties')
-  await page.getByRole('button', { name: 'Nueva variedad' }).click()
+  await page.getByRole('link', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Rosa')
-  await page.getByRole('button', { name: 'Guardar' }).click()
+  await page.getByRole('button', { name: 'Agregá la variedad' }).click()
   await expect(page.getByText('Variedad guardada')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'Nuevo precio' }).click()
