@@ -47,3 +47,14 @@ test('the notice for a gone record is announced like a toast, with no Deshacer a
   expect(screen.queryByText(/Deshacer|Reintentar/)).toBeNull()
   expect(screen.queryAllByRole('button')).toHaveLength(0)
 })
+
+test('a plain success toast is a status with its fixed text, never an action and never data', () => {
+  const { container } = render(<Notice kind="toast" message="Venta eliminada · los gramos vuelven al stock" />)
+
+  expect(screen.getByRole('status')).toHaveTextContent(
+    'Venta eliminada · los gramos vuelven al stock',
+  )
+  expect(screen.queryAllByRole('button')).toHaveLength(0)
+  expect(screen.queryByText(/Deshacer/)).toBeNull()
+  expect(container.textContent).not.toMatch(/\d|\$/)
+})
