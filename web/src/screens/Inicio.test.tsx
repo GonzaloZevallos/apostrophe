@@ -7,7 +7,7 @@
  * different answer never showing the first answer's figures (`gcTime: 0`).
  */
 
-import { CATALOG, HOME, SETTINGS } from '../routes'
+import { CATALOG, CUSTOMER, CUSTOMERS, HOME, SETTINGS } from '../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -64,9 +64,9 @@ function renderInicio(
         <Routes>
           <Route element={<Provide />}>
             <Route index element={<Inicio />} />
-            <Route path="clientes/deben" element={<span>pantalla te deben</span>} />
-            <Route path="clientes/:id" element={<span>ficha de cliente</span>} />
-            <Route path="settings" element={<SettingsLanding />} />
+            <Route path={CUSTOMERS} element={<span>pantalla clientes</span>} />
+            <Route path={CUSTOMER} element={<span>ficha de cliente</span>} />
+            <Route path={SETTINGS} element={<SettingsLanding />} />
           </Route>
         </Routes>
       </MemoryRouter>
@@ -248,14 +248,14 @@ test('Te deben: total, count, oldest date, and the teaser opens a customer card'
   expect(await screen.findByText('ficha de cliente')).toBeInTheDocument()
 })
 
-test('tapping "Te deben" opens the Te deben screen', async () => {
+test('tapping "Te deben" opens Clientes, where the debtors section is', async () => {
   stubFetch(PANEL)
   renderInicio()
   await screen.findByText('$ 37.000')
 
   screen.getByRole('link', { name: 'Te deben' }).click()
 
-  expect(await screen.findByText('pantalla te deben')).toBeInTheDocument()
+  expect(await screen.findByText('pantalla clientes')).toBeInTheDocument()
 })
 
 test('"Nadie te debe" with nothing to tap when nobody owes', async () => {
