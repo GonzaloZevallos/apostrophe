@@ -114,6 +114,31 @@ export const EXPENSE_CATEGORIES = '/settings/expense-categories'
 export const SETTINGS_APPEARANCE = '/settings/appearance'
 export const SETTINGS_ACCOUNT = '/settings/account'
 
+/** Every old Spanish path and the route it moved to, whole path (a `:id` carries across). The
+ * server's `LEGACY_FRONT_PATHS` answers each with a 308; the e2e spec opens them one by one. */
+export const LEGACY_REDIRECTS: readonly (readonly [old: string, now: string])[] = [
+  ['/ventas', SALES],
+  ['/ventas/nueva', SALE_NEW],
+  ['/ventas/:id', SALE],
+  ['/clientes', CUSTOMERS],
+  ['/clientes/deben', CUSTOMERS],
+  ['/clientes/nuevo', CUSTOMER_NEW],
+  ['/clientes/:id', CUSTOMER],
+  ['/clientes/:id/editar', CUSTOMER_EDIT],
+  ['/mi-stock', VARIETIES],
+  ['/mi-stock/nueva-entrada', STOCK_ENTRY_NEW],
+  ['/mi-stock/entradas/:id', STOCK_ENTRY],
+  ['/variedades', VARIETIES],
+  ['/variedades/:id', VARIETY],
+  ['/analisis', ANALYSIS],
+  [LEGACY_EXPENSES, EXPENSES],
+  [LEGACY_EXPENSE_CATEGORIES, EXPENSE_CATEGORIES],
+  [LEGACY_MORE, MORE],
+  ['/catalogo', CATALOG],
+  [LEGACY_BUSINESS, SETTINGS],
+  ['/entrar', LOGIN],
+]
+
 /** Fills a template's `:name` segments: `pathTo(SALE, { id: 7 })` is `/ventas/7`. */
 export function pathTo(template: string, params: Readonly<Record<string, string | number>> = {}): string {
   return template.replace(/:([A-Za-z]+)/g, (_match, name: string) => {

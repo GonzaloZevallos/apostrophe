@@ -7,10 +7,11 @@
  */
 
 import { expectPath } from './helpers/url.js'
-import { CUSTOMERS, EXPENSES, EXPENSE_NEW, HOME, MORE, SALES, STOCK } from '../src/routes.js'
+import { CATALOG, CUSTOMERS, CUSTOMER_PAYMENT, EXPENSES, EXPENSE_NEW, HOME, MORE, SALES, SALE_NEW, STOCK_ENTRY_NEW, VARIETIES } from '../src/routes.js'
 import { expect, test, type Locator, type Page } from '@playwright/test'
 import { newBusinessInvitationUrl } from './backend.js'
 import { watchConsole } from './console.js'
+import { seedRecords, signUp } from './helpers/seed.js'
 
 const PASSWORD = 'correcthorsebattery'
 
@@ -18,7 +19,7 @@ const PHONE = { width: 390, height: 760 }
 const COMPUTER = { width: 1280, height: 920 }
 
 /** Tab roots: where a seller can be standing when the need to record an expense comes. */
-const ROOTS = [HOME, SALES, CUSTOMERS, STOCK, MORE, EXPENSES] as const
+const ROOTS = [HOME, SALES, CUSTOMERS, VARIETIES, MORE, EXPENSES] as const
 
 interface Counter {
   taps: number
@@ -115,5 +116,73 @@ test('a seller records an expense from Más and Cerrar goes back to where the fo
 
   await page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /^Gastos/ }).click()
   await expect(page.getByText('Cajas de cartón')).toBeVisible()
+  expect(consoleMessages).toEqual([])
+})
+
+/** Goes to a tab through the bar or the sidebar, one tap, unless the seller is already there. */
+async function viaTab(page: Page, counter: Counter, computer: boolean, label: string): Promise<void> {
+  const nav = page.locator(computer ? '.riel-lateral' : '.bar-inferior')
+  await tap(counter, nav.getByRole('link', { name: label, exact: true }))
+}
+
+test('the sale form, Registrar cobro, the catalog and a stock entry open within the tap budget', async ({ page }) => {
+  test.setTimeout(120_000)
+  const consoleMessages: string[] = []
+  watchConsole(page, consoleMessages)
+  await signUp(page, 'Toques')
+  await seedRecords(page, 'Carla Toques')
+
+  const taps: Record<string, Record<'phone' | 'computer', number>> = {}
+  const measure = (key: string, device: 'phone' | 'computer', count: number): void => {
+    taps[key] = { ...(taps[key] ?? { phone: 0, computer: 0 }), [device]: count }
+  }
+
+  for (const [device, size] of [['phone', PHONE], ['computer', COMPUTER]] as const) {
+    await page.setViewportSize(size)
+    const computer = device === 'computer'
+    for (const root of ROOTS) {
+      const label = `${device} from ${root}`
+
+      await page.goto(root)
+      let counter: Counter = { taps: 0 }
+      await tap(counter, page.getByRole('link', { name: /Nueva venta$/ }).filter({ visible: true }).first())
+      await expectPath(page, SALE_NEW)
+      measure(`sale ${root}`, device, counter.taps)
+
+      if (root === HOME || root === CUSTOMERS) {
+        await page.goto(root)
+        counter = { taps: 0 }
+        await tap(counter, page.getByRole('link', { name: 'Cobrar a Carla Toques' }).first())
+        await expectPath(page, CUSTOMER_PAYMENT)
+        await expect(page.getByRole('button', { name: 'Cerrar' }), label).toBeVisible()
+        measure(`payment ${root}`, device, counter.taps)
+      }
+
+      await page.goto(root)
+      counter = { taps: 0 }
+      if (root === MORE) {
+        await tap(counter, page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /^Catálogo/ }))
+      } else {
+        if (root !== VARIETIES) await viaTab(page, counter, computer, 'Variedades')
+        await tap(counter, page.getByRole('link', { name: 'Mandar catálogo' }))
+      }
+      await expectPath(page, CATALOG)
+      measure(`catalog ${root}`, device, counter.taps)
+
+      await page.goto(root)
+      counter = { taps: 0 }
+      if (root !== VARIETIES) await viaTab(page, counter, computer, 'Variedades')
+      await tap(counter, page.getByRole('link', { name: '+ Entrada de stock' }))
+      await expectPath(page, STOCK_ENTRY_NEW)
+      measure(`stock entry ${root}`, device, counter.taps)
+    }
+  }
+
+  expect(Object.keys(taps).length).toBeGreaterThan(10)
+  for (const [key, { phone, computer }] of Object.entries(taps)) {
+    expect(phone, `phone: ${key}`).toBeGreaterThan(0)
+    expect(phone, `phone: ${key}`).toBeLessThanOrEqual(key.startsWith('sale') || key.startsWith('payment') ? 1 : 2)
+    expect(computer, `computer: ${key}`).toBeLessThanOrEqual(phone)
+  }
   expect(consoleMessages).toEqual([])
 })
