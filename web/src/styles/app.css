@@ -2987,9 +2987,11 @@ button {
     font-size: 16px;
   }
 
-  /* "Borrar venta": the link-style button at 44 px, its text still left-aligned. */
+  /* "Borrar venta": the link-style button at 44 px. Its 1 px underline would now sit
+   * 44 px below the text, so it goes (the design draws this action without one). */
   .venta-detalle__acciones .boton--enlace {
     display: flex;
+    box-shadow: none;
     align-items: center;
     justify-content: center;
     min-height: var(--alto-tocable);
