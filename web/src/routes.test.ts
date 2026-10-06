@@ -107,7 +107,7 @@ describe('routes.ts against contract.json', () => {
     return Object.entries(routes)
       .filter(([name]) => name !== 'relative')
       .map(([, value]) => (typeof value === 'function' ? (value as (id: string) => string)('7') : value))
-      .filter((value): value is string => typeof value === 'string')
+      .filter((value): value is string => typeof value === 'string' && value.startsWith('/'))
   }
 
   const firstSegment = (path: string): string => path.split('/')[1] ?? ''

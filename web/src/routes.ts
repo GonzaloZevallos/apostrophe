@@ -30,6 +30,10 @@ export const VARIETY_PRICES = (id: Id): string => `/varieties/${id}/prices`
 export const VARIETY_PRICE_NEW = (id: Id): string => `/varieties/${id}/prices/new`
 export const VARIETY_ENTRIES = (id: Id): string => `/varieties/${id}/entries`
 
+/** The anchor of a variety's "En el catálogo" section: the catalog screen links to it and
+ * the variety's page honours it. Not a path, so it is not a sharedFrontRoutes entry. */
+export const CATALOG_SECTION_ID = 'en-el-catalogo'
+
 /** The path as a route-table segment (`'/more'` → `'more'`), for children of the root route. */
 export function relative(path: string): string {
   return path.replace(/^\//, '')

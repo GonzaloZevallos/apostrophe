@@ -106,6 +106,10 @@ test('Copiar still works through the execCommand fallback on a plain-http, non-l
   )
   expect(apiText).not.toBeNull()
 
+  // Over plain http the share sheet is withheld (secure-context gated): only Copiar is offered.
+  await expect(page.getByRole('button', { name: 'Copiar' })).toBeEnabled()
+  await expect(page.getByRole('button', { name: 'Compartir' })).toHaveCount(0)
+
   await page.getByRole('button', { name: 'Copiar' }).click()
   await expect(page.getByText('Catálogo copiado')).toBeVisible()
 
