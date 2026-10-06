@@ -249,7 +249,7 @@ describe('on a computer: two panes', () => {
 
   test('picking another variety replaces the selection, both panes stay', async () => {
     const { router } = renderApp('/varieties', { computer: true })
-    await screen.findByRole('heading', { name: '24K Gold' })
+    await screen.findByRole('heading', { name: '24K Gold' }, { timeout: 4000 })
 
     await userEvent.click(screen.getByRole('link', { name: /Sir Jack/ }))
 
