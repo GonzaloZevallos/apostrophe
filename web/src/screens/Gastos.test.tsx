@@ -7,7 +7,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
+import { Outlet, RouterProvider, createMemoryRouter } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import { SIN_CONEXION_TITULO } from '../components/SinConexion'
@@ -51,13 +51,12 @@ function renderGastos(fetchImpl: (url: string, init?: RequestInit) => Promise<Re
   vi.stubGlobal('fetch', vi.fn(fetchImpl))
   render(
     <QueryClientProvider client={new QueryClient()}>
-      <MemoryRouter initialEntries={[paths.expenses()]}>
-        <Routes>
-          <Route element={<Provide />}>
-            <Route path={paths.expenses()} element={<Gastos />} />
-          </Route>
-        </Routes>
-      </MemoryRouter>
+      <RouterProvider
+        router={createMemoryRouter(
+          [{ element: <Provide />, children: [{ path: paths.expenses(), element: <Gastos /> }] }],
+          { initialEntries: [paths.expenses()] },
+        )}
+      />
     </QueryClientProvider>,
   )
 }
@@ -306,14 +305,20 @@ test('NuevoGasto opens the form with today\'s date, records the expense and land
   )
   render(
     <QueryClientProvider client={new QueryClient()}>
-      <MemoryRouter initialEntries={[paths.newExpense()]}>
-        <Routes>
-          <Route element={<Provide />}>
-            <Route path={paths.newExpense()} element={<NuevoGasto />} />
-            <Route path={paths.expenses()} element={<Gastos />} />
-          </Route>
-        </Routes>
-      </MemoryRouter>
+      <RouterProvider
+        router={createMemoryRouter(
+          [
+            {
+              element: <Provide />,
+              children: [
+                { path: paths.newExpense(), element: <NuevoGasto /> },
+                { path: paths.expenses(), element: <Gastos /> },
+              ],
+            },
+          ],
+          { initialEntries: [paths.newExpense()] },
+        )}
+      />
     </QueryClientProvider>,
   )
 

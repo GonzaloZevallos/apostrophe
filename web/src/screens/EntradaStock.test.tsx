@@ -9,7 +9,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Outlet, Route, Routes, useLocation } from 'react-router'
+import { Outlet, RouterProvider, createMemoryRouter, useLocation } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import type { Me } from '../api/me'
 import EntradaStock from './EntradaStock'
@@ -40,20 +40,26 @@ function Provide() {
   return <Outlet context={ME} />
 }
 
-function renderForm(initialPath: string) {
+function renderForm(initialPath: string, entries: string[] = [initialPath]) {
+  const router = createMemoryRouter(
+    [
+      {
+        element: <Provide />,
+        children: [
+          { path: paths.newEntry(), element: <EntradaStock mode="nuevo" /> },
+          { path: paths.entry(':id'), element: <EntradaStock mode="editar" /> },
+          { path: paths.entries(), element: <ListStub /> },
+        ],
+      },
+    ],
+    { initialEntries: entries, initialIndex: entries.length - 1 },
+  )
   render(
     <QueryClientProvider client={new QueryClient()}>
-      <MemoryRouter initialEntries={[initialPath]}>
-        <Routes>
-          <Route element={<Provide />}>
-            <Route path={paths.newEntry()} element={<EntradaStock mode="nuevo" />} />
-            <Route path={paths.entry(':id')} element={<EntradaStock mode="editar" />} />
-            <Route path={paths.entries()} element={<ListStub />} />
-          </Route>
-        </Routes>
-      </MemoryRouter>
+      <RouterProvider router={router} />
     </QueryClientProvider>,
   )
+  return router
 }
 
 const VARIETIES = [{ id: 3, name: 'Sir Jack', current_price: null }]
