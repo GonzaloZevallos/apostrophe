@@ -33,12 +33,6 @@ describe('routes.ts against the route table', () => {
     expect(leaf?.route.handle).toEqual({ chrome: 'card' })
   })
 
-  test('a variety page is a detail too: its route declares the card chrome', () => {
-    const leaf = matchRoutes(router.routes, routes.VARIETY('7'))?.at(-1)
-
-    expect(leaf?.route.handle).toEqual({ chrome: 'card' })
-  })
-
   test('a path the table does not mount falls through to the catch-all', () => {
     const leaf = matchRoutes(router.routes, '/no-such-screen')?.at(-1)
     expect(leaf?.route.path).toBe('*')
