@@ -7,13 +7,13 @@
  * divider, Gastos and Análisis, and the business row, with no Más. "+ Nueva venta" is fixed,
  * apart from the tabs, and only a root shows it. A card shows the bar and a "‹ parent" arrow,
  * a form neither. jsdom lays nothing out, so each surface is checked through its markup and
- * `matchMedia` is stubbed per case for the viewport.
+ * `useViewport` is mocked per case for the viewport (its own test owns `matchMedia`).
  */
 
 import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Outlet, RouterProvider, useLocation, type RouteObject } from 'react-router'
-import { afterEach, expect, test, vi } from 'vitest'
+import { expect, test, vi } from 'vitest'
 import type { Me } from '../api/me'
 import InAppLink from '../components/InAppLink'
 import {
@@ -43,22 +43,9 @@ const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10
 const BAR = ['Inicio', 'Ventas', 'Clientes', 'Variedades', 'Más']
 const RAIL = ['Inicio', 'Ventas', 'Clientes', 'Variedades', 'Gastos', 'Análisis']
 
-afterEach(() => {
-  vi.unstubAllGlobals()
-})
+const viewport = vi.hoisted(() => ({ current: 'phone' as 'phone' | 'computer' }))
 
-function stubComputer(isComputer: boolean) {
-  vi.stubGlobal(
-    'matchMedia',
-    (query: string) =>
-      ({
-        matches: isComputer,
-        media: query,
-        addEventListener: () => undefined,
-        removeEventListener: () => undefined,
-      }) as unknown as MediaQueryList,
-  )
-}
+vi.mock('./useViewport', () => ({ useViewport: () => viewport.current }))
 
 /** The tabs only, in the order they render: drops "Nueva venta" and the business row. */
 function tabNames(nav: HTMLElement): string[] {
@@ -96,7 +83,7 @@ function leaf(entry: Screen): RouteObject {
 }
 
 function renderShell(entries: string[], options: { computer?: boolean; index?: number } = {}) {
-  stubComputer(options.computer === true)
+  viewport.current = options.computer === true ? 'computer' : 'phone'
   const router = createMemoryRouter(
     [{ element: <Outlet context={ME} />, children: [{ element: <Shell />, children: SCREENS.map(leaf) }] }],
     { initialEntries: entries, initialIndex: options.index ?? entries.length - 1 },

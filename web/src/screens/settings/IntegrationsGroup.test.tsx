@@ -10,7 +10,10 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
+import BackArrow from '../../shell/BackArrow'
 import IntegrationsGroup from './IntegrationsGroup'
+
+vi.mock('../../shell/useViewport', () => ({ useViewport: () => 'phone' }))
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -57,7 +60,15 @@ function renderGroup(
   const router = createMemoryRouter(
     [
       { path: SETTINGS, element: <h1>Lista</h1> },
-      { path: CATALOG, element: <h1>Catálogo</h1> },
+      {
+        path: CATALOG,
+        element: (
+          <>
+            <h1>Catálogo</h1>
+            <BackArrow id="catalog" />
+          </>
+        ),
+      },
       { path: SETTINGS_INTEGRATIONS, element: <IntegrationsGroup /> },
     ],
     { initialEntries: [SETTINGS, { pathname: SETTINGS_INTEGRATIONS, state: { inApp: true } }], initialIndex: 1 },
@@ -67,7 +78,7 @@ function renderGroup(
       <RouterProvider router={router} />
     </QueryClientProvider>,
   )
-  return fetchMock
+  return Object.assign(fetchMock, { router })
 }
 
 afterEach(() => {
@@ -101,6 +112,21 @@ test('links to the catalog screen, with no pin status and no Publicar', async ()
   expect(screen.queryByRole('button', { name: 'Publicar' })).not.toBeInTheDocument()
   expect(screen.queryByText('Desactualizado')).not.toBeInTheDocument()
   expect(screen.queryByText('Al día')).not.toBeInTheDocument()
+})
+
+test('"Ir al catálogo" opens Catálogo as an in-app entry, and its arrow goes back to Integraciones', async () => {
+  const { router } = renderGroup(SAVED)
+
+  await userEvent.click(await screen.findByRole('link', { name: 'Ir al catálogo' }))
+
+  expect(router.state.location.pathname).toBe(CATALOG)
+  expect(router.state.location.state).toEqual({ inApp: true })
+
+  await userEvent.click(await screen.findByRole('button', { name: /^‹/ }))
+
+  expect(router.state.location.pathname).toBe(SETTINGS_INTEGRATIONS)
+  expect(router.state.historyAction).toBe('POP')
+  expect(await screen.findByLabelText('Tu chat')).toBeInTheDocument()
 })
 
 test('Probarlo saves, clears the token, shows the toast and the "desfijalo" line', async () => {
