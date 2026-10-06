@@ -12,11 +12,13 @@ import type { ReactNode } from 'react'
 export default function AuthPage({
   eyebrow,
   title,
+  titleClass,
   subtitle,
   children,
 }: {
   eyebrow?: string
   title?: string
+  titleClass?: string
   subtitle?: string
   children?: ReactNode
 }) {
@@ -26,7 +28,7 @@ export default function AuthPage({
         {title !== undefined && (
           <div>
             {eyebrow !== undefined && <span className="auth-page__pastilla">{eyebrow}</span>}
-            <h1 className="auth-page__titulo">{title}</h1>
+            <h1 className={titleClass === undefined ? 'auth-page__titulo' : `auth-page__titulo ${titleClass}`}>{title}</h1>
             {subtitle !== undefined && <p className="subtitulo">{subtitle}</p>}
           </div>
         )}

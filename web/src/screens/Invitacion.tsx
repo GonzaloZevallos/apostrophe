@@ -155,6 +155,7 @@ export default function Invitacion() {
 
   return (
     <AuthPage
+      titleClass="invitacion__titulo"
       eyebrow={isNewBusiness ? 'Invitación válida' : 'Te invitaron a'}
       title={isNewBusiness ? 'Armá tu negocio' : (view.business_name ?? undefined)}
       subtitle={
