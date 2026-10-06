@@ -42,7 +42,6 @@ import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import { readNewSaleState, saleJustSaved } from '../../components/feedback'
 import Icono from '../../components/Icono'
 import LeaveConfirm from '../../components/LeaveConfirm'
-import ReglaInsignia from '../../components/ReglaInsignia'
 import SelectorPago from '../../components/SelectorPago'
 import SinConexion from '../../components/SinConexion'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
@@ -62,6 +61,7 @@ import {
 } from '../../sales/pricing'
 import type { Variety } from '../Variedades'
 import NuevaVentaCliente from './NuevaVentaCliente'
+import NuevaVentaLinea, { type LinePreview, type LineState } from './NuevaVentaLinea'
 
 export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
 export const NO_LINES_MESSAGE = 'Cargá al menos una variedad.'
@@ -70,14 +70,6 @@ export const PAYMENT_REQUIRED_MESSAGE = 'Elegí cómo se pagó, o dejá la venta
 export const SPECIAL_PRICE_INVALID_MESSAGE = 'El precio especial tiene que ser mayor a $0'
 export const LINE_GRAMS_INVALID = 'Cargá los gramos: coma, hasta dos decimales'
 export const LINE_VARIETY_MISSING = 'Elegí una variedad'
-
-interface LineState {
-  key: string
-  varietyId: string
-  grams: string
-  gift: boolean
-  specialPrice: string
-}
 
 function emptyLine(): LineState {
   return {
@@ -110,22 +102,6 @@ function parseShipping(input: string): number | null {
   if (!/^\d{1,3}(\.\d{3})+$|^\d+$/.test(trimmed)) return null
   const value = Number(trimmed.replace(/\./g, ''))
   return Number.isSafeInteger(value) && value >= 0 ? value : null
-}
-
-/** `scrollIntoView` doesn't exist in the jsdom the component's own tests render
- * under; guarded so an open field's focus handler is a no-op there instead of a
- * thrown error, and still scrolls a real phone's viewport into place (plan,
- * "Phone layout": "Open fields call `scrollIntoView({block: 'nearest'})` on
- * focus"). */
-function scrollFieldIntoView(element: HTMLElement): void {
-  if (typeof element.scrollIntoView === 'function') element.scrollIntoView({ block: 'nearest' })
-}
-
-interface LinePreview {
-  rule: ReturnType<typeof priceLine>['rule']
-  pricePerGram: number
-  lineTotal: number
-  gramsHundredths: number
 }
 
 interface SavedSale {
@@ -569,135 +545,25 @@ export default function NuevaVenta() {
           )}
 
           <div className="nueva-venta__lineas">
-            {lines.map((line, index) => {
-              const n = index + 1
-              const preview = previews[index] ?? null
-              const lineError = combinedLineError(line)
-              const variety = varietyOf(line.varietyId)
-              const isOpen = line.key === openKey
-
-              if (!isOpen) {
-                const displayName = variety?.name ?? 'Sin variedad'
-                const messageId = `linea-mensaje-${line.key}`
-                return (
-                  <Boton
-                    key={line.key}
-                    variant="row"
-                    ariaLabel={`Línea ${n}: ${displayName}`}
-                    ariaDescribedBy={lineError !== null ? messageId : undefined}
-                    onClick={() => openLine(line.key)}
-                  >
-                    <div className="nueva-venta__linea-encabezado">
-                      <span className="nueva-venta__linea-nombre">{displayName}</span>
-                      {preview !== null && (
-                        <span className="nueva-venta__linea-gramos">
-                          {formatGrams(fromHundredths(preview.gramsHundredths))} g
-                        </span>
-                      )}
-                    </div>
-                    {preview !== null && (
-                      <div className="nueva-venta__linea-detalle">
-                        {preview.rule !== 'gift' && (
-                          <span className="nueva-venta__linea-preciogramo">
-                            {formatMoney(preview.pricePerGram)} x g
-                          </span>
-                        )}
-                        <ReglaInsignia rule={preview.rule} />
-                        <span className="nueva-venta__linea-total">{formatMoney(preview.lineTotal)}</span>
-                      </div>
-                    )}
-                    {lineError !== null && (
-                      <span id={messageId} className="campo__error" role="alert">
-                        {lineError}
-                      </span>
-                    )}
-                  </Boton>
-                )
-              }
-
-              return (
-                <div key={line.key} className="nueva-venta__linea nueva-venta__linea--abierta">
-                  <label className="campo">
-                    <span className="campo__rotulo">Variedad</span>
-                    <select
-                      className="campo__input"
-                      aria-label={`Variedad línea ${n}`}
-                      value={line.varietyId}
-                      ref={varietyFieldRef}
-                      onFocus={(event) => scrollFieldIntoView(event.currentTarget)}
-                      onChange={(event) => updateLine(line.key, { varietyId: event.target.value })}
-                    >
-                      <option value="">Elegí una variedad</option>
-                      {varieties.map((item) => (
-                        <option key={item.id} value={item.id}>
-                          {item.name}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label className="campo">
-                    <span className="campo__rotulo">Gramos</span>
-                    <input
-                      className="campo__input"
-                      aria-label={`Gramos línea ${n}`}
-                      type="text"
-                      inputMode="decimal"
-                      value={line.grams}
-                      ref={gramsFieldRef}
-                      onFocus={(event) => scrollFieldIntoView(event.currentTarget)}
-                      onChange={(event) => updateLine(line.key, { grams: event.target.value })}
-                    />
-                    <span className="campo__ayuda">Coma, hasta dos decimales</span>
-                  </label>
-                  <div className="nueva-venta__linea-opciones">
-                    <label>
-                      <input
-                        type="checkbox"
-                        aria-label={`Regalo línea ${n}`}
-                        checked={line.gift}
-                        disabled={line.specialPrice.trim() !== ''}
-                        onFocus={(event) => scrollFieldIntoView(event.currentTarget)}
-                        onChange={(event) => updateLine(line.key, { gift: event.target.checked })}
-                      />
-                      Regalo
-                    </label>
-                    <input
-                      className="campo__input"
-                      aria-label={`Precio especial línea ${n}`}
-                      type="text"
-                      inputMode="numeric"
-                      placeholder="Precio especial"
-                      value={line.specialPrice}
-                      disabled={line.gift}
-                      ref={specialPriceFieldRef}
-                      onFocus={(event) => scrollFieldIntoView(event.currentTarget)}
-                      onChange={(event) => updateLine(line.key, { specialPrice: event.target.value })}
-                    />
-                  </div>
-                  {lineError !== null && (
-                    <span className="campo__error" role="alert">
-                      {lineError}
-                    </span>
-                  )}
-                  {lineError === null && preview !== null && (
-                    <div className="nueva-venta__linea-detalle">
-                      {preview.rule !== 'gift' && (
-                        <span className="nueva-venta__linea-preciogramo">
-                          {formatMoney(preview.pricePerGram)} x g
-                        </span>
-                      )}
-                      <ReglaInsignia rule={preview.rule} />
-                      <span className="nueva-venta__linea-total">{formatMoney(preview.lineTotal)}</span>
-                    </div>
-                  )}
-                  {lines.length > 1 && (
-                    <Boton variant="link" ariaLabel={`Quitar línea ${n}`} onClick={() => removeLine(line.key)}>
-                      Quitar
-                    </Boton>
-                  )}
-                </div>
-              )
-            })}
+            {lines.map((line, index) => (
+              <NuevaVentaLinea
+                key={line.key}
+                n={index + 1}
+                line={line}
+                isOpen={line.key === openKey}
+                preview={previews[index] ?? null}
+                error={combinedLineError(line)}
+                variety={varietyOf(line.varietyId)}
+                varieties={varieties}
+                canRemove={lines.length > 1}
+                varietyRef={varietyFieldRef}
+                gramsRef={gramsFieldRef}
+                specialPriceRef={specialPriceFieldRef}
+                onOpen={() => openLine(line.key)}
+                onChange={(patch) => updateLine(line.key, patch)}
+                onRemove={() => removeLine(line.key)}
+              />
+            ))}
           </div>
           <Boton variant="link" onClick={addLine}>
             Agregar otra variedad
