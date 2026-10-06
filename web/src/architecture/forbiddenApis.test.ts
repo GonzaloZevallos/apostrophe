@@ -133,4 +133,25 @@ describe('findForbiddenUsages', () => {
 
     expect(violations).toEqual([])
   })
+  test('flags a module other than share.ts naming navigator.share, in any spelling', () => {
+    const violations = findForbiddenUsages([
+      { path: 'src/screens/Catalogo.tsx', content: 'await navigator.share({ text })' },
+      { path: 'src/screens/Other.tsx', content: 'navigator?.share?.({ text })' },
+      { path: 'src/screens/Third.tsx', content: 'navigator["share"]({ text })' },
+      { path: 'src/screens/share.ts', content: 'navigator.share({ text })' },
+    ])
+
+    expect(violations.map((v) => `${v.path}:${v.rule}`)).toEqual([
+      'src/screens/Catalogo.tsx:navigatorShare',
+      'src/screens/Other.tsx:navigatorShare',
+      'src/screens/Third.tsx:navigatorShare',
+      'src/screens/share.ts:navigatorShare',
+    ])
+  })
+
+  test('allows navigator.share only inside src/share.ts', () => {
+    expect(
+      findForbiddenUsages([{ path: 'src/share.ts', content: 'await navigator.share({ text })' }]),
+    ).toEqual([])
+  })
 })
