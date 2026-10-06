@@ -45,6 +45,7 @@ import LeaveConfirm from '../../components/LeaveConfirm'
 import SelectorPago from '../../components/SelectorPago'
 import SinConexion from '../../components/SinConexion'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
+import { SheetStackProvider, useSheet } from '../../components/useSheetStack'
 import { formatDateLong, formatDateShort, maxSaleDate } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
 import { parseGrams, parseMoney } from '../../format/parse'
@@ -145,7 +146,16 @@ const SUBMIT_OVERRIDES: Partial<
   'sale.price_quote_invalid': { field: 'form', message: GENERIC_REFUSAL },
 }
 
+/** One sheet stack per screen (ADR-0027): Elegir cliente is level 1, Nuevo cliente level 2. */
 export default function NuevaVenta() {
+  return (
+    <SheetStackProvider>
+      <NuevaVentaForm />
+    </SheetStackProvider>
+  )
+}
+
+function NuevaVentaForm() {
   const me = useOutletContext<Me>()
   const navigate = useNavigate()
   const location = useLocation()
@@ -160,7 +170,7 @@ export default function NuevaVenta() {
   const [shipping, setShipping] = useState('0')
   const [note, setNote] = useState('')
   const [method, setMethod] = useState<PaymentChoice | null>(null)
-  const [showCustomerSheet, setShowCustomerSheet] = useState(false)
+  const customerSheet = useSheet(1)
   const [formError, setFormError] = useState<string | null>(null)
   const [shippingError, setShippingError] = useState<string | null>(null)
   const [noteError, setNoteError] = useState<string | null>(null)
@@ -524,11 +534,11 @@ export default function NuevaVenta() {
           )}
 
           {customer === null ? (
-            <Boton variant="secondary" onClick={() => setShowCustomerSheet(true)}>
+            <Boton variant="secondary" onClick={customerSheet.open}>
               Elegir cliente
             </Boton>
           ) : (
-            <Boton variant="row" onClick={() => setShowCustomerSheet(true)}>
+            <Boton variant="row" onClick={customerSheet.open}>
               <div className="nueva-venta__cliente">
                 <div className="nueva-venta__cliente-texto">
                   <span className="lista-clientes__nombre">
@@ -640,13 +650,7 @@ export default function NuevaVenta() {
         </div>
       </form>
 
-      {showCustomerSheet && (
-        <NuevaVentaCliente
-          allowNone
-          onChosen={chooseCustomer}
-          onClose={() => setShowCustomerSheet(false)}
-        />
-      )}
+      {customerSheet.isOpen && <NuevaVentaCliente allowNone onChosen={chooseCustomer} />}
 
       {blocker.state === 'blocked' && (
         <LeaveConfirm

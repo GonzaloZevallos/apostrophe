@@ -27,6 +27,7 @@ import { resolveOverride, type RefusalCode } from '../../api/refusals'
 import Boton from '../../components/Boton'
 import Icono from '../../components/Icono'
 import SinConexion from '../../components/SinConexion'
+import { useSheet } from '../../components/useSheetStack'
 import CustomerFields, { type CustomerFieldsValue } from '../clientes/CustomerFields'
 import {
   GENERIC_REFUSAL,
@@ -38,7 +39,6 @@ import {
 export interface NuevaVentaClienteProps {
   allowNone: boolean
   onChosen: (customer: Customer | null) => void
-  onClose: () => void
 }
 
 const EMPTY_NEW_CUSTOMER: CustomerFieldsValue = {
@@ -57,9 +57,13 @@ const FIELD_OVERRIDES: Partial<Record<RefusalCode, { field: Field; message: stri
   'customer.phone_taken': { field: 'phone', message: PHONE_TAKEN },
 }
 
-export default function NuevaVentaCliente({ allowNone, onChosen, onClose }: NuevaVentaClienteProps) {
+export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaClienteProps) {
+  // Elegir cliente is the screen's first sheet and Nuevo cliente the second (ADR-0027):
+  // both are history entries, so back and "Cerrar" are the same `close()`, and a choice or a
+  // saved customer leaves every sheet at once with `closeAll()`.
+  const chooser = useSheet(1)
+  const creator = useSheet(2)
   const [query, setQuery] = useState('')
-  const [showCreate, setShowCreate] = useState(false)
   const [newCustomer, setNewCustomer] = useState<CustomerFieldsValue>(EMPTY_NEW_CUSTOMER)
   const [nameError, setNameError] = useState<string | null>(null)
   const [phoneError, setPhoneError] = useState<string | null>(null)
@@ -88,7 +92,9 @@ export default function NuevaVentaCliente({ allowNone, onChosen, onClose }: Nuev
     try {
       const customer = await create.mutateAsync(newCustomer)
       onChosen(customer)
-      onClose()
+      // Read at call time from the router: a save that resolves after the user already
+      // closed the sheets closes nothing more.
+      creator.closeAll()
     } catch (caught) {
       if (caught instanceof ApiError && caught.status === 401) {
         // The session boundary already cleared the cache and is navigating to
@@ -118,7 +124,7 @@ export default function NuevaVentaCliente({ allowNone, onChosen, onClose }: Nuev
         <span className="cliente-sheet__manija" aria-hidden="true" />
         <div className="cliente-sheet__encabezado">
           <span className="panel__titulo">Elegir cliente</span>
-          <Boton variant="link" onClick={onClose}>
+          <Boton variant="link" onClick={chooser.close}>
             Cerrar
           </Boton>
         </div>
@@ -142,7 +148,7 @@ export default function NuevaVentaCliente({ allowNone, onChosen, onClose }: Nuev
               variant="row"
               onClick={() => {
                 onChosen(customer)
-                onClose()
+                chooser.closeAll()
               }}
             >
               <span className="lista-clientes__fila-contenido">
@@ -162,14 +168,14 @@ export default function NuevaVentaCliente({ allowNone, onChosen, onClose }: Nuev
             variant="secondary"
             onClick={() => {
               onChosen(null)
-              onClose()
+              chooser.closeAll()
             }}
           >
             Sin cliente
           </Boton>
         )}
-        {!showCreate ? (
-          <Boton variant="link" onClick={() => setShowCreate(true)}>
+        {!creator.isOpen ? (
+          <Boton variant="link" onClick={creator.open}>
             Nuevo cliente
           </Boton>
         ) : (
