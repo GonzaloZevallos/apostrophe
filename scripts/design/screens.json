@@ -36,7 +36,7 @@
     { "screen": "CobroCompu", "route": null, "path": "/customers/{debtor}/payment", "viewport": [1280, 920] },
     { "screen": "EntradaStock", "route": "/varieties/entries/new", "path": "/varieties/entries/new" },
     { "screen": "EntradaStockEditar", "design": "EntradaStock", "route": "/varieties/entries/{entry}", "path": "/varieties/entries/{entry}" },
-    { "screen": "EntradaStockCompu", "route": null, "path": "/varieties/entries/new", "viewport": [1280, 920] },
+    { "screen": "EntradaStockCompu", "route": "/varieties/entries/new", "path": "/varieties/entries/new", "viewport": [1280, 920] },
     { "screen": "TodasLasEntradas", "route": "/varieties/entries", "path": "/varieties/entries" },
     { "screen": "TodasLasEntradasVariedad", "design": "TodasLasEntradas", "route": "/varieties/{low}/entries", "path": "/varieties/{low}/entries" },
     { "screen": "VerTodas", "route": null, "path": "/varieties/{low}/prices" },

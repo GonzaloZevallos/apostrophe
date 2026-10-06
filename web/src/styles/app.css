@@ -2268,6 +2268,9 @@ button {
 .lista-entradas {
   display: flex;
   flex-direction: column;
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 .fila-entrada {
@@ -2339,11 +2342,13 @@ button {
 .fila-entrada__acciones .boton--enlace {
   color: var(--tinta2);
   text-decoration: none;
+  box-shadow: none;
 }
 
 .fila-entrada__volver {
   align-self: flex-start;
   text-decoration: none;
+  box-shadow: none;
 }
 
 .origen-pildoras {
