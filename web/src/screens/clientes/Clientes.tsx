@@ -13,7 +13,8 @@
 import { CUSTOMER, CUSTOMERS_OWING, CUSTOMER_NEW, pathTo } from '../../routes'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
-import { Link, useLocation } from 'react-router'
+import { useLocation } from 'react-router'
+import InAppLink from '../../components/InAppLink'
 import { NetworkError } from '../../api/client'
 import { listCustomers } from '../../api/customers'
 import { keys } from '../../api/keys'
@@ -74,9 +75,9 @@ export default function Clientes() {
           {debtors.data !== undefined && debtors.data.debtors.length > 0 && (
             <>
               {' · '}
-              <Link to={CUSTOMERS_OWING}>
+              <InAppLink to={CUSTOMERS_OWING}>
                 {`${debtors.data.debtors.length} te deben ${formatMoney(debtors.data.total_owed)}`}
-              </Link>
+              </InAppLink>
             </>
           )}
         </div>
@@ -91,9 +92,9 @@ export default function Clientes() {
             onChange={(event) => setQuery(event.target.value)}
           />
         </label>
-        <Link className="boton" to={CUSTOMER_NEW}>
+        <InAppLink className="boton" to={CUSTOMER_NEW}>
           Nuevo cliente
-        </Link>
+        </InAppLink>
         {isError && error instanceof NetworkError && <SinConexion />}
         {isError && !(error instanceof NetworkError) && <ErrorGenerico />}
         {!isError && (
@@ -107,7 +108,7 @@ export default function Clientes() {
               <span className="campo__rotulo">{EMPTY_LIST}</span>
             )}
             {customers.map((customer) => (
-              <Link
+              <InAppLink
                 key={customer.id}
                 to={pathTo(CUSTOMER, { id: customer.id })}
                 className="lista-clientes__fila"
@@ -130,7 +131,7 @@ export default function Clientes() {
                 {customer.standing === 'credit' && (
                   <span className="monto-credito">A favor {formatMoneyMagnitude(customer.balance)}</span>
                 )}
-              </Link>
+              </InAppLink>
             ))}
           </div>
         )}

@@ -4,20 +4,17 @@
  * rail shows and "+ Nueva venta" does not. Nothing else is listed (no language, no
  * placeholder): a group that does not exist is not drawn.
  *
- * Every link carries `state: { inApp: true }`, which is what lets a group's "Cerrar" and
- * this list's back go through history (`useBackOr`). The arrow's word and Back's fallback are
- * the screen's parent in the registry (`parentOf`): Más on the phone, Inicio on a computer.
+ * Every link goes through `InAppLink`, which is what lets a group's "Cerrar" and
+ * this list's back go through history (`useBackOr`). The "‹ parent" arrow is the shell's
+ * (`shell/BackArrow.tsx`): Más on the phone, Inicio on a computer.
  */
 
-import { Link, useOutletContext } from 'react-router'
+import { useOutletContext } from 'react-router'
 import type { Me } from '../../api/me'
-import Boton from '../../components/Boton'
 import Icono from '../../components/Icono'
-import { useBackOr } from '../../components/useBackOr'
+import InAppLink from '../../components/InAppLink'
 import {
   EXPENSE_CATEGORIES,
-  HOME,
-  parentOf,
   SETTINGS_ACCOUNT,
   SETTINGS_APPEARANCE,
   SETTINGS_BUSINESS,
@@ -25,7 +22,6 @@ import {
   SETTINGS_INTEGRATIONS,
   SETTINGS_USERS,
 } from '../../routes'
-import { useViewport } from '../../shell/useViewport'
 
 const GROUPS = [
   { to: SETTINGS_BUSINESS, label: 'Negocio' },
@@ -39,27 +35,22 @@ const GROUPS = [
 
 export default function Settings() {
   const me = useOutletContext<Me>()
-  const parent = parentOf('settings', useViewport())
-  const back = useBackOr(parent?.path ?? HOME)
 
   return (
     <main className="pantalla">
       <div className="cuerpo ajustes">
-        <Boton variant="link" onClick={back}>
-          {`‹ ${parent?.title ?? ''}`}
-        </Boton>
         <div className="ajustes__titulos">
           <span className="encabezado__negocio ajustes__negocio">{me.business_name}</span>
           <h1 className="ajustes__titulo">Configuración</h1>
         </div>
         <nav className="ajustes__lista" aria-label="Configuración">
           {GROUPS.map((group) => (
-            <Link key={group.to} to={group.to} state={{ inApp: true }} className="ajustes__item">
+            <InAppLink key={group.to} to={group.to} className="ajustes__item">
               <span className="ajustes__item-rotulo">{group.label}</span>
               <span className="ajustes__item-flecha">
                 <Icono nombre="chevron" size={18} />
               </span>
-            </Link>
+            </InAppLink>
           ))}
         </nav>
       </div>

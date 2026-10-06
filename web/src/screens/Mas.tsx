@@ -7,7 +7,7 @@
  * through history (`useBackOr`).
  */
 
-import { Link } from 'react-router'
+import InAppLink from '../components/InAppLink'
 import Icono from '../components/Icono'
 import { ANALYSIS, CATALOG, EXPENSES, EXPENSE_NEW, SETTINGS, VARIETIES } from '../routes'
 
@@ -56,7 +56,7 @@ export default function Mas() {
         <span className="encabezado__titulo">Más</span>
         <nav className="mas__lista" aria-label="Más">
           {ITEMS.map((item) => (
-            <Link
+            <InAppLink
               key={item.to}
               to={item.to}
               state={item.inApp === true ? { inApp: true } : undefined}
@@ -71,7 +71,7 @@ export default function Mas() {
               <span className="mas__item-flecha">
                 <Icono nombre="chevron" size={18} />
               </span>
-            </Link>
+            </InAppLink>
           ))}
         </nav>
       </div>

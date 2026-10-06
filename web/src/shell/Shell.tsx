@@ -1,22 +1,19 @@
 /**
- * The bottom bar on the phone, the side rail on a computer (plan, "Shell";
- * `componentes.ts`'s `Destino`); CSS alone switches between them (`styles/app.css`).
- * Only destinations that exist show (PRD, "Nada inventado"; metric M5). Each entry
- * says where it shows (`placement`) and, for the rail, which group it belongs to
- * (`group`): the bar is Inicio, Ventas, Clientes, Stock and Más; the rail is the same
- * four, a divider, then Gastos, Análisis and Más, as `GastosCompu.dc.html` draws the
- * sidebar. Más stays on the rail until the issue that empties it removes it, in the
- * same diff, so nothing a seller reaches today through Más is lost; Gastos and
- * Análisis never depend on it.
+ * The bottom bar on the phone, the side rail on a computer (`componentes.ts`'s `Destino`);
+ * CSS alone switches between them (`styles/app.css`). Only destinations that exist show.
+ * The bar is Inicio, Ventas, Clientes, Variedades and Más; the rail is "+ Nueva venta", the
+ * same first four, a divider, Gastos and Análisis, and the business row (avatar and name) at
+ * the bottom, which opens Configuración. There is no Más on a computer.
  *
  * Everything the shell decides comes from the leaf route's registry entry (`routes.ts`),
- * found through the route's `handle.screen`: its kind sets the chrome (a root shows the
- * bar and "+ Nueva venta", a card the bar alone, a form neither), and `placeOf(id,
- * viewport)` says which entry each surface marks. Never the pathname, never history, so a
- * reload or a saved link marks the same entry. At most one entry per surface carries
- * `aria-current="page"`, and it is also bold and, in the rail, filled: never color alone.
- * The bar marks with `placeOf(id, 'phone').bar`, the rail with `placeOf(id, 'computer').rail`,
- * since both are in the DOM and CSS picks one.
+ * found through the route's `handle.screen`: its kind sets the chrome (a root shows the bar
+ * and "+ Nueva venta", a card the bar and a "‹ parent" arrow, a form neither), and
+ * `placeOf(id, viewport)` says which entry each surface marks. Never the pathname, never
+ * history, so a reload or a saved link marks the same entry. At most one entry per surface
+ * carries `aria-current="page"`, and it is also bold and drawn filled and underlined (or, on
+ * the rail, with its accent rule): never color alone. The bar marks with `placeOf(id,
+ * 'phone').bar`, the rail with `placeOf(id, 'computer').rail`, since both are in the DOM and
+ * CSS picks one.
  *
  * `useOutletContext` passes `me` on to whatever the active route renders, so none of them
  * has to re-run `GET /auth/me`.
@@ -26,6 +23,7 @@ import { Fragment } from 'react'
 import { Link, Outlet, useMatches, useOutletContext } from 'react-router'
 import type { Me } from '../api/me'
 import Icono, { type NombreIcono } from '../components/Icono'
+import InAppLink from '../components/InAppLink'
 import {
   ANALYSIS,
   EXPENSES,
@@ -38,10 +36,11 @@ import {
   screenOf,
   CUSTOMERS,
   SETTINGS,
-  STOCK,
+  VARIETIES,
   type RailPlace,
   type Screen,
 } from '../routes'
+import BackArrow from './BackArrow'
 import { initialsOf } from './initials'
 
 type Placement = 'bar' | 'rail' | 'both'
@@ -71,10 +70,17 @@ const ITEMS: Item[] = [
     group: 'main',
     place: 'customers',
   },
-  { to: STOCK, label: 'Stock', icono: 'stock', placement: 'both', group: 'main', place: 'varieties' },
+  {
+    to: VARIETIES,
+    label: 'Variedades',
+    icono: 'stock',
+    placement: 'both',
+    group: 'main',
+    place: 'varieties',
+  },
   { to: EXPENSES, label: 'Gastos', placement: 'rail', group: 'more', place: 'expenses' },
   { to: ANALYSIS, label: 'Análisis', placement: 'rail', group: 'more', place: 'analysis' },
-  { to: MORE, label: 'Más', icono: 'mas', placement: 'both', group: 'more', place: 'more' },
+  { to: MORE, label: 'Más', icono: 'mas', placement: 'bar', group: 'more', place: 'more' },
 ]
 
 const BAR_ITEMS = ITEMS.filter((item) => item.placement !== 'rail')
@@ -125,10 +131,10 @@ export default function Shell() {
     <div className="disposicion">
       <nav className="riel-lateral" aria-label="Navegación">
         {showNuevaVenta && (
-          <Link to={SALE_NEW} className="boton boton-nueva-venta--escritorio">
+          <InAppLink to={SALE_NEW} className="boton boton-nueva-venta--escritorio">
             <Icono nombre="agregar" size={19} strokeWidth={2} />
             Nueva venta
-          </Link>
+          </InAppLink>
         )}
         {RAIL_ITEMS.map((item, index) => {
           const active = railPlace === item.place
@@ -148,9 +154,8 @@ export default function Shell() {
             </Fragment>
           )
         })}
-        <Link
+        <InAppLink
           to={SETTINGS}
-          state={{ inApp: true }}
           aria-label={`Configuración de ${me.business_name}`}
           aria-current={railPlace === 'business' ? 'page' : undefined}
           className={
@@ -163,15 +168,16 @@ export default function Shell() {
             {initialsOf(me.business_name)}
           </span>
           <span className="riel-lateral__negocio-nombre">{me.business_name}</span>
-        </Link>
+        </InAppLink>
       </nav>
       <div className="columna-principal">
+        {leaf.kind === 'card' && <BackArrow id={leaf.id} />}
         <Outlet context={me} />
         {showNuevaVenta && (
-          <Link to={SALE_NEW} className="boton boton-nueva-venta">
+          <InAppLink to={SALE_NEW} className="boton boton-nueva-venta">
             <Icono nombre="agregar" size={19} strokeWidth={2} />
             Nueva venta
-          </Link>
+          </InAppLink>
         )}
         {showBar && (
           <nav className="bar-inferior" aria-label="Navegación">

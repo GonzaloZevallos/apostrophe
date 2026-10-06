@@ -13,7 +13,8 @@
 import { CUSTOMERS, CUSTOMER_EDIT, SALE_NEW, pathTo } from '../../routes'
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link, useLocation, useOutletContext, useParams } from 'react-router'
+import InAppLink from '../../components/InAppLink'
+import { useLocation, useOutletContext, useParams } from 'react-router'
 import { ApiError, NetworkError } from '../../api/client'
 import { type Channel, getCustomer } from '../../api/customers'
 import { invalidateResource, keys } from '../../api/keys'
@@ -203,9 +204,8 @@ export default function ClienteFicha() {
     <main className="pantalla">
       <div className="cuerpo">
         <div>
-          <Link to={CUSTOMERS}>Volver</Link>
           <span className="encabezado__titulo">{data.name}</span>
-          <Link to={pathTo(CUSTOMER_EDIT, { id: customerId })}>Editar</Link>
+          <InAppLink to={pathTo(CUSTOMER_EDIT, { id: customerId })}>Editar</InAppLink>
         </div>
         {feedback !== null && <Notice kind={feedback.kind} message={feedback.message} />}
         {accountGone && <Notice kind="notice" message={GONE_NOTICE} />}
@@ -292,9 +292,9 @@ export default function ClienteFicha() {
           })}
         </div>
 
-        <Link to={SALE_NEW} state={newSaleFor(customerId)} className="boton">
+        <InAppLink to={SALE_NEW} state={newSaleFor(customerId)} className="boton">
           Nueva venta a {data.name}
-        </Link>
+        </InAppLink>
       </div>
 
       {showCobro && (
