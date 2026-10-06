@@ -258,29 +258,23 @@ LEGACY_CASES = [
 ]
 
 
-@pytest.mark.parametrize("slash", [False, True])
-@pytest.mark.parametrize("accept", [HTML, JSON, ANY])
-@pytest.mark.parametrize("method", ["GET", "HEAD", "POST", "OPTIONS"])
 @pytest.mark.parametrize(("legacy", "target"), LEGACY_CASES)
 def test_a_legacy_spanish_path_redirects_permanently_whatever_the_request(
-    served_client: TestClient, legacy: str, target: str, method: str, accept: str, slash: bool
+    served_client: TestClient, legacy: str, target: str
 ) -> None:
-    response = _request(served_client, method, legacy + ("/" if slash else ""), accept)
-
-    assert response.status_code == 308
-    assert response.headers["location"] == target
-
-
-@pytest.mark.parametrize("slash", [False, True])
-@pytest.mark.parametrize(("legacy", "target"), LEGACY_CASES)
-def test_the_query_string_is_kept_on_a_legacy_redirect(
-    served_client: TestClient, legacy: str, target: str, slash: bool
-) -> None:
-    response = _request(
-        served_client, "GET", legacy + ("/" if slash else ""), HTML, "?month=2026-09&x=%C3%B1"
-    )
-
-    assert response.headers["location"] == f"{target}?month=2026-09&x=%C3%B1"
+    # One app per row, many cheap requests: the whole grid of method, Accept, trailing
+    # slash and query string, so each row is tested one by one without 700 app builds.
+    for method in ("GET", "HEAD", "POST", "OPTIONS"):
+        for accept in (HTML, JSON, ANY):
+            for slash in (False, True):
+                response = _request(served_client, method, legacy + ("/" if slash else ""), accept)
+                assert response.status_code == 308, (method, accept, slash)
+                assert response.headers["location"] == target, (method, accept, slash)
+    for slash in (False, True):
+        response = _request(
+            served_client, "GET", legacy + ("/" if slash else ""), HTML, "?month=2026-09&x=%C3%B1"
+        )
+        assert response.headers["location"] == f"{target}?month=2026-09&x=%C3%B1"
 
 
 @pytest.mark.parametrize(
