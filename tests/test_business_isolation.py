@@ -540,6 +540,19 @@ def test_business_a_sees_its_own_catalog_seed(
     )
 
 
+def test_another_business_reads_the_pinned_catalog_as_its_own_empty_state(
+    business_a: TestClient, business_b: TestClient, seeded: dict[str, int]
+) -> None:
+    """A's saved token and channel never reach B: B's `publish_blocked_by` is the
+    empty state's own value, while A's is `None`."""
+    own = business_a.get("/pinned-catalog").json()
+    other = business_b.get("/pinned-catalog")
+
+    assert own["publish_blocked_by"] is None
+    assert MARKER not in other.text
+    assert other.json()["publish_blocked_by"] == "not_tested"
+
+
 def test_the_list_check_catches_a_write_that_a_bare_404_check_would_miss(
     business_a: TestClient,
     business_b: TestClient,

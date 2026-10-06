@@ -2055,6 +2055,40 @@ button {
   border-bottom: 1px solid var(--linea);
 }
 
+/* `Catalogo.dc.html`: the card under Compartir and Copiar that holds the pin's status
+   and Publicar. Out of date takes the amber panel, and always says so in words. */
+.catalogo__publicar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-sm);
+  background: var(--superficie);
+  border-radius: var(--radio-panel);
+  padding: var(--espacio-lg) 18px;
+}
+
+.catalogo__publicar--desactualizado {
+  background: var(--deuda-fondo);
+}
+
+.catalogo__publicar-titulo {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--acento);
+}
+
+.catalogo__publicar--desactualizado .catalogo__publicar-titulo {
+  color: var(--deuda);
+}
+
+.catalogo__publicar-detalle {
+  font-size: 13px;
+  color: var(--tinta2);
+}
+
+.catalogo__publicar--desactualizado .catalogo__publicar-detalle {
+  color: var(--deuda2);
+}
+
 .catalogo__fila-texto {
   flex: 1;
   min-width: 0;

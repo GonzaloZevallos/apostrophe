@@ -7,8 +7,8 @@
  * rendered until this open's own fetch has resolved. "Qué sale en el catálogo"
  * tells every variety in or out by word (`STATE_LABEL`), never by color alone, and
  * opens that variety's attributes for editing. The header and footer are edited
- * from the same screen. The bot's part of this screen (Probarlo, Publicar, token,
- * chats) comes with #10 and is out of scope here.
+ * from the same screen. The pin's status and Publicar are `PinPublish`; the bot's
+ * settings and Probarlo live in Configuración → Integraciones, not here.
  *
  * The query is frozen (`gcTime: 0`, `staleTime: Infinity`, no refetch on focus or
  * reconnect — plan, invariants): a seller who leaves the screen open must not have
@@ -28,7 +28,7 @@ import { copyText } from '../clipboard'
 import AvisoExito, { type SuccessToast } from '../components/AvisoExito'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import SinConexion from '../components/SinConexion'
-import PinnedCatalogBot from './PinnedCatalogBot'
+import PinPublish from './PinPublish'
 import { telegramPreview } from './telegramPreview'
 
 export const CATALOG_SAVED = 'Catálogo guardado'
@@ -330,6 +330,8 @@ export default function Catalogo() {
           </>
         )}
 
+        <PinPublish />
+
         {catalog !== undefined && (
           <>
             <span className="rotulo">Qué sale en el catálogo</span>
@@ -458,7 +460,6 @@ export default function Catalogo() {
               </form>
             )}
 
-            <PinnedCatalogBot />
           </>
         )}
       </div>
