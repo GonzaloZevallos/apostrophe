@@ -31,6 +31,10 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/test-setup.ts'],
+    // Vitest replaces every stylesheet with an empty string, `?raw` reads included.
+    // `architecture/installShell.test.ts` reads the tokens' own text, so that one file
+    // keeps its content; every other stylesheet stays as vitest treats it by default.
+    css: { include: [/styles\/tokens\.css/] },
     // `web/e2e/` is Playwright's own suite (`playwright.config.ts`'s `testDir`),
     // run by the `web-e2e` check; vitest's defaults would otherwise also try to
     // run `flow.spec.ts` as a unit test and collide with Playwright's `test`.

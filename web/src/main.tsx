@@ -8,9 +8,12 @@ import './styles/app.css'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App'
+import { startThemeSync } from './theme/theme'
 
 const root = document.getElementById('root')
 if (root === null) throw new Error('index.html has no #root')
+
+startThemeSync()
 
 createRoot(root).render(
   <StrictMode>
