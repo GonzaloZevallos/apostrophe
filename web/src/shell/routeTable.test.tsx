@@ -15,7 +15,7 @@ import { isRouteHandle } from './routeHandle'
 import Shell from './Shell'
 
 /** Gated leaves whose pathname marks no tab on purpose. */
-const NO_TAB: string[] = []
+const NO_TAB: readonly string[] = []
 
 interface Leaf {
   path: string
@@ -35,6 +35,13 @@ function leaves(list: RouteObject[], parent: string, underShell: boolean, out: L
   return out
 }
 
+/** The gated leaves of a table whose path marks no tab and are not on `deliberate`. */
+function untabbedLeaves(table: RouteObject[], deliberate: readonly string[]): string[] {
+  return leaves(table, '', false, [])
+    .map((leaf) => leaf.path)
+    .filter((path) => activeTab(path.replace(/:\w+/g, '7')) === null && !deliberate.includes(path))
+}
+
 const gated = leaves(routes, '', false, [])
 
 test('the gated branch has leaves to check', () => {
@@ -47,9 +54,34 @@ test('every gated leaf declares a route kind', () => {
 })
 
 test('every gated leaf marks a tab, or is a listed, deliberate none', () => {
-  for (const leaf of gated) {
-    const tab = activeTab(leaf.path.replace(/:\w+/g, '7'))
-    if (NO_TAB.includes(leaf.path)) expect(tab, leaf.path).toBeNull()
-    else expect(tab, leaf.path).not.toBeNull()
-  }
+  expect(untabbedLeaves(routes, NO_TAB)).toEqual([])
+})
+
+const ROOT = { kind: 'root' } as const
+
+function underShell(children: RouteObject[]): RouteObject[] {
+  return [{ element: <Shell />, children }]
+}
+
+test('a gated leaf whose path marks no tab is reported, a listed one and a public one are not', () => {
+  const table: RouteObject[] = [
+    { path: '/public-only', element: <div /> },
+    ...underShell([
+      { index: true, element: <div />, handle: ROOT },
+      { path: paths.sales(), element: <div />, handle: ROOT },
+      { path: '/orphan/:id', element: <div />, handle: ROOT },
+      { path: '/listed', element: <div />, handle: ROOT },
+    ]),
+  ]
+
+  expect(untabbedLeaves(table, ['/listed'])).toEqual(['/orphan/:id'])
+  expect(untabbedLeaves(table, [])).toEqual(['/orphan/:id', '/listed'])
+})
+
+test('a nested gated leaf with no tab is reached and reported', () => {
+  const table = underShell([
+    { path: paths.customers(), element: <div />, children: [{ path: '/nowhere', element: <div />, handle: ROOT }] },
+  ])
+
+  expect(untabbedLeaves(table, [])).toEqual(['/nowhere'])
 })
