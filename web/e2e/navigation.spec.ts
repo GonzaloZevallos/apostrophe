@@ -39,7 +39,7 @@ function filled(template: string, ids: Record<string, number>): string {
 }
 
 function legacyId(old: string, records: Records): number {
-  const first = old.split('/')[1]
+  const first = old.split(/\//)[1]
   if (first === 'ventas') return records.sale
   if (first === 'clientes') return records.customer
   if (first === 'mi-stock') return records.entry
