@@ -123,6 +123,8 @@ Success criteria:
   either sign). It is worked out live and never stored.
 - **Not history**: price entries, the low-stock threshold and catalog attributes. A
   deleted variety takes them with it.
+- **History decides which action is offered**, worked out when the page is read: Delete
+  with no history, Archive with history. Only Delete is guarded by the domain.
 - **Delete**: only for a variety with no history. The variety disappears for good.
   - Once the seller deletes the variety's last sale or last stock entry, Delete is offered
     again.
@@ -133,8 +135,15 @@ Success criteria:
     ever orphaned.
   - A variety already gone answers 404 and follows accounts.md: "Eso ya no está. La lista
     ya está al día."
-- **Archive**: for a variety with history. It leaves every list and picker but stays in
-  the books.
+- **Archive**: offered for a variety with history. It leaves every list and picker but
+  stays in the books.
+  - Archive is never refused for having or lacking history. If the variety's last sale or
+    entry was deleted after the page loaded, tapping "Archivar variedad" still archives
+    it; it can be deleted later by restoring it first. An archived variety may also lose
+    all its history while archived (its last entry or sale deleted); the same path
+    applies.
+  - Archiving a variety already archived changes nothing; one already gone answers "Eso ya
+    no está".
   - Allowed with stock above, at or below zero, always after a confirmation.
   - Archiving and restoring never create a stock entry and never change stock, lots, cost
     of goods, pending cost, prices or any other figure.
@@ -280,16 +289,18 @@ Success criteria:
     when stock is not zero (e.g. "Te quedan 12 g. Si la archivás, dejan de verse en Inicio
     y en las listas, pero el stock queda guardado.") and simply asks with zero stock (the
     exact wording is design's), then the toast "Variedad archivada".
-  - **Stale page**: if history appeared after the page loaded, the delete is refused with
-    its coded refusal and the page refreshes to show "Archivar variedad". The UI never
-    offers a delete it knows will be refused.
+  - **Stale page, delete**: if history appeared after the page loaded, the delete is
+    refused with its coded refusal and the page refreshes to show "Archivar variedad". The
+    UI never offers a delete it knows will be refused.
+  - **Stale page, archive**: if the history went away after the page loaded, "Archivar
+    variedad" still archives it, with no refusal.
 - **An archived variety's page** is the same page, read-only, with the back arrow
   "‹ Archivadas" (with no history, back goes to Archivadas):
   - its summary line and sections show read-only, with "Archivada" in words;
   - no "+ Entrada", "Nuevo precio", price delete, threshold switch, rename, Editar forms or
     removal action; its one action is "Restaurar";
-  - to delete an archived variety that has lost all its history, the seller restores it
-    first, then deletes it. There is no second path.
+  - to delete an archived variety that has no history, the seller restores it first, then
+    deletes it. There is no second path.
 - **"Ver todas" lists** are cards (navigation.md): the bar or sidebar and "‹ <variety>",
   without "+ Nueva venta"; back with no history goes to the variety's page.
 - **Renaming** the variety is done here.
@@ -323,8 +334,8 @@ Success criteria:
 - Every route, the delete, archive and restore routes included, joins the isolation sweep
   and the gated-route test (ADR-0004).
 - Refusal codes in `contract.json` (ADR-0008): a delete with history; a name held by an
-  archived variety; an archived variety referenced for a new record (gone). None repeats a
-  name or an amount (ADR-0005).
+  archived variety; an archived variety referenced for a new record (gone). Archive has no
+  refusal of its own. None repeats a name or an amount (ADR-0005).
 
 ## Metrics
 
@@ -374,7 +385,8 @@ Success criteria:
   each origin, both adjustment signs). Price entries, a threshold and catalog attributes
   alone leave Delete offered. Deleting the last sale or entry offers Delete again. The
   domain refuses a delete with history with its code through the API, whatever the UI
-  showed.
+  showed. Archiving a variety whose history was deleted after the page loaded succeeds;
+  after restoring it, its page offers Delete.
 - **No orphan (criterion 12)**: a repository test over real SQLite races a delete with a
   sale line and with a stock entry: either the delete is refused or the record is refused
   as gone; 0 rows reference a missing variety.
@@ -418,6 +430,8 @@ Success criteria:
 
 - The rules of catalog attributes: the catalog capability (they are edited here).
 - Deleting a variety with history, by any path.
+- Deleting an archived variety without restoring it first.
+- Refusing an archive because the variety has no history.
 - Merging varieties, or taking over an archived variety's name.
 - Deleting, archiving or restoring several varieties at once; archiving or deleting from
   the list itself.

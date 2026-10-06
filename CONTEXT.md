@@ -398,7 +398,7 @@ Finding the seller's own chat number among the private chats that wrote to the b
 _Avoid_: auto-detect, discovery, getUpdates, chat search, sync
 
 **Archived variety**:
-A variety with history that the seller took out of every list and picker (Variedades, Lo que te queda, Nueva venta, the stock entry and price forms, the catalog and the pinned catalog), while every past record keeps its plain name and figures. It keeps its name reserved and keeps its hidden flag. It is seen and restored only from Archivadas, its page is read-only, and restoring brings it back exactly as it was. In the app: Archivada.
+A variety the seller took out of every list and picker (Variedades, Lo que te queda, Nueva venta, the stock entry and price forms, the catalog and the pinned catalog), while every past record keeps its plain name and figures. Archive is the action offered for a variety with history, but an archived variety may have none. It keeps its name reserved and its hidden flag, is seen and restored only from Archivadas, has a read-only page, and restoring brings it back exactly as it was. In the app: Archivada.
 _Avoid_: deleted, hidden, inactive, disabled, oculta
 
 **Variety history**:
