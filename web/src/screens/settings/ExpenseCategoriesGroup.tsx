@@ -283,10 +283,18 @@ function CategoryRow({
   return (
     <div className="fila">
       <span className="categoria-fila__nombre">{category.name}</span>
-      <button type="button" className="boton--enlace" onClick={() => onDraft(category.name)}>
+      <button
+        type="button"
+        className="boton--enlace categoria-fila__accion"
+        onClick={() => onDraft(category.name)}
+      >
         Renombrar
       </button>
-      <button type="button" className="boton--enlace" onClick={() => setConfirming(true)}>
+      <button
+        type="button"
+        className="boton--enlace categoria-fila__accion categoria-fila__accion--eliminar"
+        onClick={() => setConfirming(true)}
+      >
         Eliminar
       </button>
       {error !== null && (

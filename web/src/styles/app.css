@@ -1046,6 +1046,31 @@ button {
   flex: 1;
 }
 
+/* `ConfiguracionCategorias.dc.html`: a row is 13px of air, a hairline under every row but
+ * the last, "Renombrar" in the accent and "Eliminar" in the amber, bold and not underlined
+ * (their words tell them apart, not the color alone). */
+.ajustes-grupo__cuerpo .fila {
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-md);
+  padding: 13px 0;
+  border-bottom: 1px solid var(--linea);
+}
+
+.ajustes-grupo__cuerpo .fila:last-child {
+  border-bottom: 0;
+}
+
+.boton--enlace.categoria-fila__accion {
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: none;
+}
+
+.boton--enlace.categoria-fila__accion--eliminar {
+  color: var(--deuda);
+}
+
 /* The design's link look (`Componentes.dc.html`'s "Agregar otra variedad"): an
  * underline drawn as a 1 px `box-shadow`, never `text-decoration`, which the
  * design never uses on a link-shaped button — scoped to this class alone, never
