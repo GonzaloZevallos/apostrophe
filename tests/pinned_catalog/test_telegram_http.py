@@ -15,13 +15,15 @@ from email.message import Message
 
 import pytest
 
-from app.pinned_catalog.adapters.telegram_http import HttpTelegram, Opener
+from app.pinned_catalog.adapters.telegram_http import HttpTelegram, Opener, classify_updates
 from app.pinned_catalog.domain.errors import (
     MessageGone,
     SendRefusal,
     TelegramRefused,
     TelegramUnreachable,
     TooLong,
+    UpdatesRefusal,
+    UpdatesRefused,
 )
 
 SECRET_TOKEN = "123456789:AAour-secret-token-value"
@@ -303,3 +305,196 @@ def test_an_error_body_with_no_error_code_is_unreachable_as_before(body: bytes) 
     with pytest.raises(TelegramUnreachable):
         telegram.send(SECRET_TOKEN, "@channel", "hola", [])
 
+
+# --- private_chats over getUpdates (Buscar mi chat, the Telegram side) ---
+
+
+def _update(
+    update_id: int, chat_id: int, chat_type: str, key: str = "message"
+) -> dict[str, object]:
+    """A full getUpdates item, with the name and username fields Telegram sends: the
+    adapter must read none of them into its answer."""
+    return {
+        "update_id": update_id,
+        key: {
+            "message_id": update_id,
+            "from": {"id": chat_id, "is_bot": False, "first_name": "Ana", "username": "ana_s"},
+            "chat": {
+                "id": chat_id,
+                "first_name": "Ana",
+                "username": "ana_s",
+                "type": chat_type,
+            },
+            "date": 1_700_000_000,
+            "text": "/start",
+        },
+    }
+
+
+def _serving(updates: list[dict[str, object]], sent: list[urllib.request.Request]) -> Opener:
+    def opener(request: urllib.request.Request, timeout: float) -> _FakeResponse:
+        sent.append(request)
+        return _ok(updates)
+
+    return opener
+
+
+def test_several_messages_from_one_private_chat_give_one_id() -> None:
+    updates = [_update(1, 555, "private"), _update(2, 555, "private"), _update(3, 555, "private")]
+    telegram = HttpTelegram(opener=_serving(updates, []))
+
+    assert telegram.private_chats(SECRET_TOKEN) == frozenset({"555"})
+
+
+def test_two_private_chats_give_two_ids_and_edited_messages_count() -> None:
+    updates = [_update(1, 555, "private"), _update(2, 777, "private", key="edited_message")]
+    telegram = HttpTelegram(opener=_serving(updates, []))
+
+    assert telegram.private_chats(SECRET_TOKEN) == frozenset({"555", "777"})
+
+
+def test_group_supergroup_and_channel_updates_never_count() -> None:
+    updates = [
+        _update(1, -100, "group"),
+        _update(2, -200, "supergroup"),
+        _update(3, -300, "channel", key="edited_message"),
+        _update(4, 555, "private"),
+    ]
+    telegram = HttpTelegram(opener=_serving(updates, []))
+
+    assert telegram.private_chats(SECRET_TOKEN) == frozenset({"555"})
+
+
+def test_updates_of_other_kinds_and_no_updates_give_no_ids() -> None:
+    updates: list[dict[str, object]] = [
+        {"update_id": 1, "channel_post": {"chat": {"id": -300, "type": "private"}}},
+        {"update_id": 2, "message": {"chat": "garbled"}},
+        {"update_id": 3, "message": {"chat": {"id": "not-a-number", "type": "private"}}},
+    ]
+
+    assert HttpTelegram(opener=_serving(updates, [])).private_chats(SECRET_TOKEN) == frozenset()
+    assert HttpTelegram(opener=_serving([], [])).private_chats(SECRET_TOKEN) == frozenset()
+
+
+def test_the_get_updates_request_has_no_offset_and_no_allowed_updates() -> None:
+    sent: list[urllib.request.Request] = []
+    telegram = HttpTelegram(opener=_serving([], sent))
+
+    telegram.private_chats(SECRET_TOKEN)
+
+    (request,) = sent
+    assert request.full_url.endswith("/getUpdates")
+    assert isinstance(request.data, bytes)
+    payload = json.loads(request.data.decode("utf-8"))
+    assert payload == {"timeout": 0, "limit": 100}
+    assert "offset" not in payload
+    assert "allowed_updates" not in payload
+
+
+UPDATES_ROWS: list[tuple[str, int, str, UpdatesRefusal | type[Exception]]] = [
+    ("401", 401, "Unauthorized", UpdatesRefusal.TOKEN_INVALID),
+    ("404", 404, "Not Found", UpdatesRefusal.TOKEN_INVALID),
+    (
+        "409 webhook or concurrent",
+        409,
+        "Conflict: can't use getUpdates method while webhook is active",
+        UpdatesRefusal.UNREADABLE,
+    ),
+    ("other 4xx", 400, "Bad Request: something nobody mapped", UpdatesRefusal.UNREADABLE),
+    ("429", 429, "Too Many Requests: retry after 5", TelegramUnreachable),
+    ("500", 500, "Internal Server Error", TelegramUnreachable),
+    ("502", 502, "Bad Gateway", TelegramUnreachable),
+]
+
+
+@pytest.mark.parametrize(
+    ("error_code", "description", "expected"),
+    [row[1:] for row in UPDATES_ROWS],
+    ids=[row[0] for row in UPDATES_ROWS],
+)
+def test_private_chats_reports_the_cause_of_each_row(
+    error_code: int, description: str, expected: UpdatesRefusal | type[Exception]
+) -> None:
+    telegram = HttpTelegram(
+        opener=_raising(lambda: _http_error(error_code, error_code, description))
+    )
+
+    with pytest.raises(Exception) as excinfo:
+        telegram.private_chats(SECRET_TOKEN)
+
+    if isinstance(expected, UpdatesRefusal):
+        assert isinstance(excinfo.value, UpdatesRefused)
+        assert excinfo.value.cause is expected
+    else:
+        assert type(excinfo.value) is expected
+
+
+def test_updates_refused_carries_no_token_no_text_and_no_context() -> None:
+    error = _http_error(409, 409, f"Conflict: webhook is active, bot{SECRET_TOKEN}")
+    telegram = HttpTelegram(opener=_raising(lambda: error))
+
+    with pytest.raises(UpdatesRefused) as excinfo:
+        telegram.private_chats(SECRET_TOKEN)
+
+    assert SECRET_TOKEN not in str(excinfo.value)
+    assert "webhook" not in str(excinfo.value)
+    assert excinfo.value.__cause__ is None
+    assert excinfo.value.__suppress_context__ is True
+
+
+@pytest.mark.parametrize(
+    "make_error",
+    [
+        lambda: TimeoutError("timed out"),
+        lambda: urllib.error.URLError("no route"),
+        lambda: ConnectionResetError("reset"),
+    ],
+    ids=["timeout", "no connection", "reset"],
+)
+def test_private_chats_is_unreachable_with_no_answer(
+    make_error: Callable[[], BaseException],
+) -> None:
+    telegram = HttpTelegram(opener=_raising(make_error))
+
+    with pytest.raises(TelegramUnreachable):
+        telegram.private_chats(SECRET_TOKEN)
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        b"not json",
+        b"",
+        b"[1, 2]",
+        b'{"ok": true}',
+        b'{"ok": true, "result": {"update_id": 1}}',
+        b'{"ok": true, "result": "nope"}',
+    ],
+)
+def test_a_garbage_ok_body_is_unreadable(body: bytes) -> None:
+    def opener(request: urllib.request.Request, timeout: float) -> _FakeResponse:
+        return _FakeResponse(body)
+
+    telegram = HttpTelegram(opener=opener)
+
+    with pytest.raises(UpdatesRefused) as excinfo:
+        telegram.private_chats(SECRET_TOKEN)
+
+    assert excinfo.value.cause is UpdatesRefusal.UNREADABLE
+
+
+@pytest.mark.parametrize("body", [b"not json", b"[1, 2]", b'{"ok": false}', b""])
+def test_a_garbage_error_body_is_unreadable(body: bytes) -> None:
+    telegram = HttpTelegram(opener=_raising(lambda: _http_error_with_body(400, body)))
+
+    with pytest.raises(UpdatesRefused) as excinfo:
+        telegram.private_chats(SECRET_TOKEN)
+
+    assert excinfo.value.cause is UpdatesRefusal.UNREADABLE
+
+
+def test_classify_updates_never_reads_the_description() -> None:
+    assert classify_updates(401, "anything chat not found") is UpdatesRefusal.TOKEN_INVALID
+    assert classify_updates(409, "") is UpdatesRefusal.UNREADABLE
+    assert classify_updates(None, "") is UpdatesRefusal.UNREADABLE
+    assert classify_updates(503, "") == "telegram_unreachable"

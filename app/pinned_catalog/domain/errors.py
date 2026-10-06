@@ -92,6 +92,15 @@ class TestSendFailed(PinnedCatalogRuleBroken):
         super().__init__("the test send failed")
 
 
+class UpdatesRefusal(StrEnum):
+    """Why Telegram refused to hand over the bot's pending messages (getUpdates), with
+    no part of Telegram's own description. Only `classify_updates` (the Telegram
+    adapter) decides it; the own-chat lookup folds it to its own error."""
+
+    TOKEN_INVALID = "token_invalid"
+    UNREADABLE = "unreadable"
+
+
 class TelegramOutcomeFailure(RuntimeError):
     """What `classify` (ADR-0023) turns a Telegram answer into, carrying no part of
     Telegram's own description, URL or token (CODING_STANDARDS section 9)."""
@@ -114,6 +123,19 @@ class TelegramRefused(TelegramOutcomeFailure):
 
     def __init__(self, cause: SendRefusal) -> None:
         super().__init__("telegram refused the request")
+        self.cause = cause
+
+
+class UpdatesRefused(TelegramOutcomeFailure):
+    """Telegram refused getUpdates, and `cause` says why. Only the adapter raises it;
+    it is never registered in a router's `TranslateErrors`: the lookup folds `cause`
+    to its own error first. It carries its own `code` like every error here, for
+    whoever reaches it next."""
+
+    code: ClassVar[str] = "pinned_catalog.updates_refused"
+
+    def __init__(self, cause: UpdatesRefusal) -> None:
+        super().__init__("telegram refused to hand over the updates")
         self.cause = cause
 
 
