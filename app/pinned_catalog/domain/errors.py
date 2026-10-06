@@ -5,6 +5,7 @@ wording can never slip into it, and its own `code` (docs/adr/0008), never inheri
 
 from __future__ import annotations
 
+from enum import StrEnum
 from typing import ClassVar
 
 
@@ -40,6 +41,19 @@ class TooLong(PinnedCatalogRuleBroken):
         super().__init__("the text does not fit in one Telegram message")
 
 
+class SendRefusal(StrEnum):
+    """Why Telegram refused a send, an edit or a pin: the cause `classify` (ADR-0023)
+    reports, with no part of Telegram's own description. Each action folds it to its
+    own error (`refusal_causes.py`); nothing but the Telegram adapter ever reads
+    Telegram's `error_code` or text."""
+
+    TOKEN_INVALID = "token_invalid"
+    CHAT_NOT_STARTED = "chat_not_started"
+    CHAT_NOT_FOUND = "chat_not_found"
+    NO_RIGHTS = "no_rights"
+    OTHER = "other"
+
+
 class TelegramOutcomeFailure(RuntimeError):
     """What `classify` (ADR-0023) turns a Telegram answer into, carrying no part of
     Telegram's own description, URL or token (CODING_STANDARDS section 9)."""
@@ -50,6 +64,19 @@ class TelegramUnreachable(TelegramOutcomeFailure):
 
     def __init__(self) -> None:
         super().__init__("telegram did not answer")
+
+
+class TelegramRefused(TelegramOutcomeFailure):
+    """Telegram refused a send, an edit or a pin, and `cause` says why. Only the
+    adapter raises it; it is never registered in a router's `TranslateErrors`: the
+    action that called Telegram folds `cause` to its own error first. It carries its
+    own `code` like every error here, for whoever reaches it next."""
+
+    code: ClassVar[str] = "pinned_catalog.telegram_refused"
+
+    def __init__(self, cause: SendRefusal) -> None:
+        super().__init__("telegram refused the request")
+        self.cause = cause
 
 
 class BotCannotPost(TelegramOutcomeFailure):

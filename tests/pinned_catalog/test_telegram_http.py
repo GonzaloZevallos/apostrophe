@@ -1,6 +1,8 @@
-"""`classify` and `HttpTelegram` with an injected opener (the plan's declared seam):
-every row of ADR-0023's table, and the invariant that no token or URL ever reaches an
-exception's text."""
+"""`HttpTelegram` with an injected opener (the plan's declared seam): every row of
+ADR-0023's table, and the invariant that no token or URL ever reaches an exception's
+text. The error bodies below are community reports of Telegram's wording, **not
+captured** responses: a wrong row degrades to a less specific cause (`OTHER`), never to
+the channel's reason, and the adapter never raises `BotCannotPost` at all."""
 
 from __future__ import annotations
 
@@ -8,44 +10,23 @@ import io
 import json
 import urllib.error
 import urllib.request
+from collections.abc import Callable
 from email.message import Message
+from pathlib import Path
 
 import pytest
 
-from app.pinned_catalog.adapters.telegram_http import HttpTelegram, classify
+from app.pinned_catalog.adapters import telegram_http
+from app.pinned_catalog.adapters.telegram_http import HttpTelegram, Opener
 from app.pinned_catalog.domain.errors import (
-    BotCannotPost,
     MessageGone,
+    SendRefusal,
+    TelegramRefused,
     TelegramUnreachable,
     TooLong,
 )
 
 SECRET_TOKEN = "123456789:AAour-secret-token-value"
-
-
-@pytest.mark.parametrize(
-    ("description", "error_code", "expected"),
-    [
-        ("Bad Request: message is not modified", 400, "unchanged"),
-        ("Bad Request: message to edit not found", 400, "message_gone"),
-        ("Bad Request: message to pin not found", 400, "message_gone"),
-        ("Bad Request: message is too long", 400, "too_long"),
-        ("Bad Request: chat not found", 400, "bot_cannot_post"),
-        ("Forbidden: bot was kicked from the channel", 403, "bot_cannot_post"),
-        ("Forbidden: bot is not a member of the channel", 403, "bot_cannot_post"),
-        ("Bad Request: not enough rights to send text messages", 400, "bot_cannot_post"),
-        ("Unauthorized", 401, "bot_cannot_post"),
-        ("Too Many Requests: retry later", 429, "telegram_unreachable"),
-        ("Internal Server Error", 500, "telegram_unreachable"),
-        ("Bad Gateway", 502, "telegram_unreachable"),
-        ("some other refusal", 404, "bot_cannot_post"),
-        ("", None, "telegram_unreachable"),
-    ],
-)
-def test_classify_matches_the_plan_s_fixed_table(
-    description: str, error_code: int | None, expected: str
-) -> None:
-    assert classify("editMessageText", error_code, description) == expected
 
 
 class _FakeResponse:
@@ -70,10 +51,14 @@ def _http_error(status: int, error_code: int, description: str) -> urllib.error.
     body = json.dumps({"ok": False, "error_code": error_code, "description": description}).encode(
         "utf-8"
     )
+    return _http_error_with_body(status, body)
+
+
+def _http_error_with_body(status: int, body: bytes) -> urllib.error.HTTPError:
     return urllib.error.HTTPError(
         "https://api.telegram.org/bot<redacted>/sendMessage",
         status,
-        description,
+        "error",
         Message(),
         io.BytesIO(body),
     )
@@ -126,18 +111,6 @@ def test_edit_raises_message_gone() -> None:
         telegram.edit(SECRET_TOKEN, "@channel", 42, "hola", [])
 
 
-def test_send_raises_bot_cannot_post_on_chat_not_found() -> None:
-    error = _http_error(400, 400, "Bad Request: chat not found")
-
-    def opener(request: urllib.request.Request, timeout: float) -> _FakeResponse:
-        raise error
-
-    telegram = HttpTelegram(opener=opener)
-
-    with pytest.raises(BotCannotPost):
-        telegram.send(SECRET_TOKEN, "@channel", "hola", [])
-
-
 def test_send_raises_telegram_unreachable_on_a_server_error() -> None:
     error = _http_error(500, 500, "Internal Server Error")
 
@@ -183,11 +156,13 @@ def test_no_exception_text_ever_carries_the_token_or_the_url() -> None:
 
     telegram = HttpTelegram(opener=opener)
 
-    with pytest.raises(BotCannotPost) as excinfo:
+    with pytest.raises(TelegramRefused) as excinfo:
         telegram.send(SECRET_TOKEN, "@channel", "hola", [])
 
     assert SECRET_TOKEN not in str(excinfo.value)
     assert "kicked" not in str(excinfo.value)
+    assert excinfo.value.__cause__ is None
+    assert excinfo.value.__suppress_context__ is True
 
 
 def test_entities_are_sent_as_bold_with_no_parse_mode() -> None:
@@ -211,3 +186,127 @@ def test_entities_are_sent_as_bold_with_no_parse_mode() -> None:
         }
     ]
     assert "parse_mode" not in sent_payloads[0]
+
+
+def _raising(make_error: Callable[[], BaseException]) -> Opener:
+    """A fresh error per call: an `HTTPError`'s body can be read once."""
+
+    def opener(request: urllib.request.Request, timeout: float) -> _FakeResponse:
+        raise make_error()
+
+    return opener
+
+
+# One full JSON error body per row of the plan's table, in the table's order, each with
+# what `send` must raise (a `SendRefusal` cause, or another outcome's own error).
+SEND_ROWS: list[tuple[str, int, str, SendRefusal | type[Exception]]] = [
+    ("401", 401, "Unauthorized", SendRefusal.TOKEN_INVALID),
+    ("404", 404, "Not Found", SendRefusal.TOKEN_INVALID),
+    (
+        "not started",
+        403,
+        "Forbidden: bot can't initiate conversation with a user",
+        SendRefusal.CHAT_NOT_STARTED,
+    ),
+    (
+        "blocked",
+        403,
+        "Forbidden: bot was blocked by the user",
+        SendRefusal.CHAT_NOT_STARTED,
+    ),
+    ("chat not found", 400, "Bad Request: chat not found", SendRefusal.CHAT_NOT_FOUND),
+    (
+        "kicked",
+        403,
+        "Forbidden: bot was kicked from the channel chat",
+        SendRefusal.NO_RIGHTS,
+    ),
+    (
+        "not a member",
+        403,
+        "Forbidden: bot is not a member of the channel chat",
+        SendRefusal.NO_RIGHTS,
+    ),
+    (
+        "no rights",
+        400,
+        "Bad Request: not enough rights to send text messages to the chat",
+        SendRefusal.NO_RIGHTS,
+    ),
+    ("429", 429, "Too Many Requests: retry after 5", TelegramUnreachable),
+    ("500", 500, "Internal Server Error", TelegramUnreachable),
+    ("502", 502, "Bad Gateway", TelegramUnreachable),
+    ("other 4xx", 400, "Bad Request: something nobody mapped", SendRefusal.OTHER),
+    ("too long", 400, "Bad Request: message is too long", TooLong),
+]
+
+
+@pytest.mark.parametrize(
+    ("error_code", "description", "expected"),
+    [row[1:] for row in SEND_ROWS],
+    ids=[row[0] for row in SEND_ROWS],
+)
+def test_send_reports_the_cause_of_each_row(
+    error_code: int, description: str, expected: SendRefusal | type[Exception]
+) -> None:
+    telegram = HttpTelegram(
+        opener=_raising(lambda: _http_error(error_code, error_code, description))
+    )
+
+    with pytest.raises(Exception) as excinfo:
+        telegram.send(SECRET_TOKEN, "@channel", "hola", [])
+
+    if isinstance(expected, SendRefusal):
+        assert isinstance(excinfo.value, TelegramRefused)
+        assert excinfo.value.cause is expected
+    else:
+        assert type(excinfo.value) is expected
+
+
+@pytest.mark.parametrize(
+    ("description", "expected"),
+    [
+        ("Bad Request: message to edit not found", MessageGone),
+        ("Bad Request: message to pin not found", MessageGone),
+    ],
+)
+def test_a_message_that_is_gone_wins_over_the_chat_markers(
+    description: str, expected: type[Exception]
+) -> None:
+    telegram = HttpTelegram(opener=_raising(lambda: _http_error(400, 400, description)))
+
+    with pytest.raises(expected):
+        telegram.edit(SECRET_TOKEN, "@channel", 42, "hola", [])
+    with pytest.raises(expected):
+        telegram.pin(SECRET_TOKEN, "@channel", 42)
+
+
+@pytest.mark.parametrize("call", ["send", "edit", "pin"])
+def test_every_call_reports_a_refusal_cause(call: str) -> None:
+    telegram = HttpTelegram(
+        opener=_raising(lambda: _http_error(400, 400, "Bad Request: chat not found"))
+    )
+
+    with pytest.raises(TelegramRefused) as excinfo:
+        if call == "send":
+            telegram.send(SECRET_TOKEN, "@channel", "hola", [])
+        elif call == "edit":
+            telegram.edit(SECRET_TOKEN, "@channel", 42, "hola", [])
+        else:
+            telegram.pin(SECRET_TOKEN, "@channel", 42)
+
+    assert excinfo.value.cause is SendRefusal.CHAT_NOT_FOUND
+
+
+@pytest.mark.parametrize("body", [b"not json", b"[1, 2]", b'{"ok": false}', b""])
+def test_an_error_body_with_no_error_code_is_unreachable_as_before(body: bytes) -> None:
+    telegram = HttpTelegram(opener=_raising(lambda: _http_error_with_body(400, body)))
+
+    with pytest.raises(TelegramUnreachable):
+        telegram.send(SECRET_TOKEN, "@channel", "hola", [])
+
+
+def test_the_adapter_module_never_names_bot_cannot_post() -> None:
+    source = Path(telegram_http.__file__).read_text()
+
+    assert "BotCannotPost" not in source.replace("`BotCannotPost`", "")

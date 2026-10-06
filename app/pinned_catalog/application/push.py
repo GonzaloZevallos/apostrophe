@@ -16,13 +16,13 @@ from datetime import date, datetime
 from typing import Literal
 
 from app.clock import business_day
+from app.pinned_catalog.application.channel_telegram import ChannelTelegram
 from app.pinned_catalog.application.ports import (
     PinFacts,
     PinRecorder,
     PinSnapshots,
     SettingsSnapshot,
     SettingsWriter,
-    Telegram,
 )
 from app.pinned_catalog.domain.bold import fits_in_one_message, telegram_bold
 from app.pinned_catalog.domain.errors import (
@@ -120,7 +120,7 @@ class TestSendResult:
 
 
 def test_send(
-    telegram: Telegram,
+    telegram: ChannelTelegram,
     snapshots: PinSnapshots,
     settings_writer: SettingsWriter,
     locks: BusinessLocks,
@@ -156,7 +156,7 @@ def test_send(
 
 
 def push(
-    telegram: Telegram,
+    telegram: ChannelTelegram,
     snapshots: PinSnapshots,
     recorder: PinRecorder,
     locks: BusinessLocks,
@@ -187,7 +187,7 @@ def push(
 
 
 def _push_upkeep(
-    telegram: Telegram,
+    telegram: ChannelTelegram,
     recorder: PinRecorder,
     business_id: int,
     settings: SettingsSnapshot,
@@ -316,7 +316,7 @@ def _push_upkeep(
 
 
 def _push_publish(
-    telegram: Telegram,
+    telegram: ChannelTelegram,
     recorder: PinRecorder,
     business_id: int,
     settings: SettingsSnapshot,

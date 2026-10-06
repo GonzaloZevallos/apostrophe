@@ -22,8 +22,9 @@ from app.pinned_catalog.adapters.schemas import (
 from app.pinned_catalog.adapters.sql_recorder import SqlPinRecorder
 from app.pinned_catalog.adapters.sql_settings import SqlSettingsWriter
 from app.pinned_catalog.adapters.sql_snapshot import SqlPinSnapshots
+from app.pinned_catalog.adapters.telegram_holder import PinnedCatalogTelegram
 from app.pinned_catalog.adapters.token_cipher import TokenCipher
-from app.pinned_catalog.application.ports import Telegram
+from app.pinned_catalog.application.channel_telegram import ChannelTelegram
 from app.pinned_catalog.application.push import BusinessLocks, push, status_of, test_send
 from app.pinned_catalog.domain.errors import (
     BotCannotPost,
@@ -45,8 +46,9 @@ def get_engine(request: Request) -> Engine:
     return cast(Engine, request.app.state.engine)
 
 
-def get_telegram(request: Request) -> Telegram:
-    return cast(Telegram, request.app.state.pinned_catalog_telegram)
+def get_channel_telegram(request: Request) -> ChannelTelegram:
+    holder = cast(PinnedCatalogTelegram, request.app.state.pinned_catalog_telegram)
+    return holder.channel
 
 
 def get_locks(request: Request) -> BusinessLocks:
@@ -58,7 +60,7 @@ def get_cipher(request: Request) -> TokenCipher:
 
 
 EngineDep = Annotated[Engine, Depends(get_engine)]
-TelegramDep = Annotated[Telegram, Depends(get_telegram)]
+ChannelTelegramDep = Annotated[ChannelTelegram, Depends(get_channel_telegram)]
 LocksDep = Annotated[BusinessLocks, Depends(get_locks)]
 CipherDep = Annotated[TokenCipher, Depends(get_cipher)]
 
@@ -118,7 +120,7 @@ def get_pinned_catalog_status(
 def post_pinned_catalog_test(
     body: PinnedCatalogTestIn,
     business_id: CurrentBusinessId,
-    telegram: TelegramDep,
+    telegram: ChannelTelegramDep,
     snapshots: SnapshotsDep,
     settings_writer: SettingsWriterDep,
     locks: LocksDep,
@@ -144,7 +146,7 @@ def post_pinned_catalog_test(
 @router.post("/publish")
 def post_pinned_catalog_publish(
     business_id: CurrentBusinessId,
-    telegram: TelegramDep,
+    telegram: ChannelTelegramDep,
     snapshots: SnapshotsDep,
     recorder: RecorderDep,
     locks: LocksDep,

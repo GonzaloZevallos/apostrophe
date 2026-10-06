@@ -176,3 +176,39 @@ def test_every_create_app_call_under_tests_names_telegram_and_upkeep_ticker() ->
     ]
 
     assert violators == []
+
+
+GUARDED_CONSTRUCTORS = frozenset({"ChannelTelegram", "PinnedCatalogTelegram"})
+
+
+def constructs_guarded_telegram_type(module: Path) -> bool:
+    """Whether `module` calls `ChannelTelegram(...)` or `PinnedCatalogTelegram(...)`:
+    only `app/main.py` may (the plan's invariant), proven below on a module that must be
+    flagged and on one that must not."""
+    tree = ast.parse(module.read_text(), filename=str(module))
+    return any(
+        isinstance(node, ast.Call)
+        and (
+            (isinstance(node.func, ast.Name) and node.func.id in GUARDED_CONSTRUCTORS)
+            or (isinstance(node.func, ast.Attribute) and node.func.attr in GUARDED_CONSTRUCTORS)
+        )
+        for node in ast.walk(tree)
+    )
+
+
+def test_the_constructor_guard_flags_a_module_that_builds_a_channel_telegram() -> None:
+    assert constructs_guarded_telegram_type(FIXTURES / "constructs_channel_telegram.py") is True
+
+
+def test_the_constructor_guard_does_not_flag_an_unrelated_module() -> None:
+    assert constructs_guarded_telegram_type(FIXTURES / "does_not_reach_telegram_http.py") is False
+
+
+def test_only_app_main_constructs_channel_telegram_or_the_holder() -> None:
+    violators = [
+        module
+        for module in sorted((REPO_ROOT / "app").rglob("*.py"))
+        if module != REPO_ROOT / "app" / "main.py" and constructs_guarded_telegram_type(module)
+    ]
+
+    assert violators == []
