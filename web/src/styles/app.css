@@ -2268,6 +2268,9 @@ button {
 .lista-entradas {
   display: flex;
   flex-direction: column;
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 .fila-entrada {
@@ -2311,6 +2314,41 @@ button {
 .fila-entrada__costo {
   font-size: 16px;
   font-weight: 600;
+}
+
+.fila-entrada__cifras {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  white-space: nowrap;
+}
+
+.fila-entrada__costo--sin {
+  color: var(--tinta2);
+}
+
+.fila-entrada__acciones {
+  display: flex;
+  gap: var(--espacio-sm);
+  white-space: nowrap;
+  font-size: 14px;
+}
+
+.fila-entrada__acciones a {
+  color: var(--acento);
+  text-decoration: none;
+}
+
+.fila-entrada__acciones .boton--enlace {
+  color: var(--tinta2);
+  text-decoration: none;
+  box-shadow: none;
+}
+
+.fila-entrada__volver {
+  align-self: flex-start;
+  text-decoration: none;
+  box-shadow: none;
 }
 
 .origen-pildoras {

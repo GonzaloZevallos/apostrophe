@@ -60,6 +60,7 @@ class Sample:
     sold_out: int
     low: int
     no_entries: int
+    entry: int
 
 
 def seed(api: Api, today: date) -> Sample:
@@ -95,8 +96,8 @@ def seed(api: Api, today: date) -> Sample:
     jack = variety("Sir Jack", 11_000)
     mango = variety("Mango Bomb", 15_000)
 
-    def entry(when: str, variety_id: int, origin: str, grams: str, cost: int | None) -> None:
-        api.call(
+    def entry(when: str, variety_id: int, origin: str, grams: str, cost: int | None) -> int:
+        made: int = api.call(
             "POST",
             "/stock/entries",
             {
@@ -107,9 +108,10 @@ def seed(api: Api, today: date) -> Sample:
                 "total_cost": cost,
                 "note": None,
             },
-        )
+        )["id"]
+        return made
 
-    entry(ago(40), gold, "purchase", "120", 600_000)
+    first_entry = entry(ago(40), gold, "purchase", "120", 600_000)
     entry(ago(40), cookies, "purchase", "40", 280_000)
     entry(ago(40), jack, "harvest", "10", None)
     entry(ago(0), gold, "purchase", "30", 150_000)
@@ -222,7 +224,13 @@ def seed(api: Api, today: date) -> Sample:
         )
 
     return Sample(
-        debtor=nico, owing_sale=owing, vip=mica, sold_out=jack, low=cookies, no_entries=mango
+        debtor=nico,
+        owing_sale=owing,
+        vip=mica,
+        sold_out=jack,
+        low=cookies,
+        no_entries=mango,
+        entry=first_entry,
     )
 
 

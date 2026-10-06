@@ -7,11 +7,13 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen } from '@testing-library/react'
+import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Outlet, Route, Routes, useLocation } from 'react-router'
+import { createMemoryRouter, Outlet, RouterProvider, useLocation } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
+import { catalogQueryOptions } from '../api/catalog'
 import type { Me } from '../api/me'
+import FlashProvider from '../flash/FlashProvider'
 import EntradaStock from './EntradaStock'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03' }
@@ -23,36 +25,52 @@ function jsonResponse(status: number, body: unknown): Response {
   })
 }
 
-function ListStub() {
+function Where({ label }: { label: string }) {
   const location = useLocation()
-  const state = location.state as { toast?: string; notice?: string } | null
+  const state = location.state as { notice?: string } | null
   return (
     <div>
-      <span>la lista de stock</span>
-      {state?.toast !== undefined && <span>{state.toast}</span>}
+      <span>{label}</span>
+      <span data-testid="where">{location.pathname}</span>
       {state?.notice !== undefined && <span>{state.notice}</span>}
     </div>
   )
 }
 
 function Provide() {
-  return <Outlet context={ME} />
+  return (
+    <FlashProvider>
+      <Outlet context={ME} />
+    </FlashProvider>
+  )
 }
 
-function renderForm(initialPath: string) {
+function renderForm(
+  initialPath: string | string[],
+  client = new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+) {
+  const entries = typeof initialPath === 'string' ? [initialPath] : initialPath
+  const router = createMemoryRouter(
+    [
+      {
+        element: <Provide />,
+        children: [
+          { path: '/varieties/entries/new', element: <EntradaStock mode="nuevo" /> },
+          { path: '/varieties/entries/:id', element: <EntradaStock mode="editar" /> },
+          { path: '/varieties/entries', element: <Where label="todas las entradas" /> },
+          { path: '/varieties/:id', element: <Where label="la página de la variedad" /> },
+          { path: '/varieties', element: <Where label="la lista de variedades" /> },
+        ],
+      },
+    ],
+    { initialEntries: entries, initialIndex: entries.length - 1 },
+  )
   render(
-    <QueryClientProvider client={new QueryClient()}>
-      <MemoryRouter initialEntries={[initialPath]}>
-        <Routes>
-          <Route element={<Provide />}>
-            <Route path="/varieties/entries/new" element={<EntradaStock mode="nuevo" />} />
-            <Route path="/varieties/entries/:id" element={<EntradaStock mode="editar" />} />
-            <Route path="/mi-stock" element={<ListStub />} />
-          </Route>
-        </Routes>
-      </MemoryRouter>
+    <QueryClientProvider client={client}>
+      <RouterProvider router={router} />
     </QueryClientProvider>,
   )
+  return client
 }
 
 const VARIETIES = [{ id: 3, name: 'Sir Jack', current_price: null }]
@@ -122,8 +140,8 @@ test('records an entry and lands back on the list with the saved toast', async (
   await userEvent.selectOptions(await screen.findByLabelText('Variedad'), 'Sir Jack')
   await userEvent.click(screen.getByRole('button', { name: 'Guardá la entrada' }))
 
-  expect(await screen.findByText('la lista de stock')).toBeInTheDocument()
-  expect(screen.getByText('Entrada guardada')).toBeInTheDocument()
+  expect(await screen.findByText('la lista de variedades')).toBeInTheDocument()
+  expect(await screen.findByText('Entrada guardada')).toBeInTheDocument()
   expect(fetch).toHaveBeenCalledWith('/stock/entries', expect.objectContaining({ method: 'POST' }))
 })
 
@@ -156,7 +174,7 @@ test('an adjustment can carry negative grams, sent through to the API as typed',
   await userEvent.click(screen.getByRole('button', { name: 'Ajuste' }))
   await userEvent.click(screen.getByRole('button', { name: 'Guardá la entrada' }))
 
-  expect(await screen.findByText('la lista de stock')).toBeInTheDocument()
+  expect(await screen.findByText('la lista de variedades')).toBeInTheDocument()
   expect(fetch).toHaveBeenCalledWith('/stock/entries', expect.objectContaining({ method: 'POST' }))
 })
 
@@ -202,7 +220,7 @@ test('re-saving an existing negative adjustment keeps its negative grams through
   await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
   await userEvent.click(await screen.findByRole('button', { name: 'Sí, guardar' }))
 
-  expect(await screen.findByText('la lista de stock')).toBeInTheDocument()
+  expect(await screen.findByText('todas las entradas')).toBeInTheDocument()
   expect(fetch).toHaveBeenCalledWith('/stock/entries/12', expect.objectContaining({ method: 'PUT' }))
 })
 
@@ -273,7 +291,8 @@ test('editing an entry confirms before saving', async () => {
 
   await userEvent.click(screen.getByRole('button', { name: 'Sí, guardar' }))
 
-  expect(await screen.findByText('la lista de stock')).toBeInTheDocument()
+  expect(await screen.findByText('todas las entradas')).toBeInTheDocument()
+  expect(await screen.findByText('Entrada guardada')).toBeInTheDocument()
   expect(fetch).toHaveBeenCalledWith('/stock/entries/10', expect.objectContaining({ method: 'PUT' }))
 })
 
@@ -312,8 +331,8 @@ test('deleting an entry confirms first, naming the date, variety and grams', asy
 
   await userEvent.click(screen.getByRole('button', { name: 'Sí, borrala' }))
 
-  expect(await screen.findByText('la lista de stock')).toBeInTheDocument()
-  expect(screen.getByText('Entrada eliminada')).toBeInTheDocument()
+  expect(await screen.findByText('todas las entradas')).toBeInTheDocument()
+  expect(await screen.findByText('Entrada eliminada')).toBeInTheDocument()
   expect(fetch).toHaveBeenCalledWith('/stock/entries/10', expect.objectContaining({ method: 'DELETE' }))
 })
 
@@ -361,6 +380,181 @@ test('deleting an entry never re-fetches the entry it just deleted', async () =>
   await userEvent.click(await screen.findByRole('button', { name: 'Borrar entrada' }))
   await userEvent.click(await screen.findByRole('button', { name: 'Sí, borrala' }))
 
-  expect(await screen.findByText('la lista de stock')).toBeInTheDocument()
+  expect(await screen.findByText('todas las entradas')).toBeInTheDocument()
   expect(getEntryCalls).toBe(1)
+})
+
+function stockOf(entries: { id: number; variety_id: number }[]) {
+  return {
+    ...STOCK_VIEW,
+    entries: entries.map((row) => ({
+      ...row,
+      date: '2026-09-01',
+      origin: 'harvest',
+      grams: 10,
+      total_cost: null,
+      cost_per_gram: null,
+      note: null,
+    })),
+  }
+}
+
+function fakeFor(stock: unknown, extra: Record<string, () => Response> = {}) {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: string | URL | Request, init?: RequestInit) => {
+      const url = typeof input === 'string' ? input : input.toString()
+      const key = `${init?.method ?? 'GET'} ${url}`
+      const hit = extra[key]
+      if (hit !== undefined) return Promise.resolve(hit())
+      if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/stock') return Promise.resolve(jsonResponse(200, stock))
+      return Promise.resolve(jsonResponse(500, {}))
+    }),
+  )
+}
+
+test('an entry started from a variety has it chosen and "Stock inicial" preselected when it has no entries', async () => {
+  fakeFor(stockOf([]))
+  renderForm('/varieties/entries/new?variety=3')
+
+  const select = await screen.findByRole('combobox', { name: /^Variedad/ })
+  await waitFor(() => expect(select).toHaveValue('3'))
+  expect(screen.getByRole('button', { name: 'Stock inicial' })).toHaveAttribute('aria-pressed', 'true')
+  expect(screen.getByRole('button', { name: 'Compra' })).toHaveAttribute('aria-pressed', 'false')
+})
+
+test('an entry started from a variety that already has entries keeps Compra', async () => {
+  fakeFor(stockOf([{ id: 1, variety_id: 3 }]))
+  renderForm('/varieties/entries/new?variety=3')
+
+  const select = await screen.findByRole('combobox', { name: /^Variedad/ })
+  await waitFor(() => expect(select).toHaveValue('3'))
+  expect(screen.getByRole('button', { name: 'Compra' })).toHaveAttribute('aria-pressed', 'true')
+  expect(screen.getByRole('button', { name: 'Stock inicial' })).toHaveAttribute('aria-pressed', 'false')
+})
+
+test("another variety's entries do not stop 'Stock inicial' from being preselected", async () => {
+  fakeFor(stockOf([{ id: 1, variety_id: 9 }]))
+  renderForm('/varieties/entries/new?variety=3')
+
+  const select = await screen.findByRole('combobox', { name: /^Variedad/ })
+  await waitFor(() => expect(select).toHaveValue('3'))
+  expect(screen.getByRole('button', { name: 'Stock inicial' })).toHaveAttribute('aria-pressed', 'true')
+})
+
+test('from "+ Entrada de stock" no variety is chosen and Compra is the origin', async () => {
+  fakeFor(stockOf([]))
+  renderForm('/varieties/entries/new')
+
+  expect(await screen.findByRole('combobox', { name: /^Variedad/ })).toHaveValue('')
+  expect(screen.getByRole('button', { name: 'Compra' })).toHaveAttribute('aria-pressed', 'true')
+})
+
+test('Cerrar goes back by history to where the form was opened', async () => {
+  fakeFor(stockOf([]))
+  renderForm(['/varieties/3', '/varieties/entries/new?variety=3'])
+
+  await userEvent.click(await screen.findByRole('button', { name: 'Cerrar' }))
+  expect(await screen.findByText('la página de la variedad')).toBeInTheDocument()
+  expect(screen.getByTestId('where')).toHaveTextContent('/varieties/3')
+})
+
+test('Cerrar with no history goes to Variedades for a new entry and to "Todas las entradas" for an edit', async () => {
+  fakeFor(stockOf([]), {
+    'GET /stock/entries/10': () =>
+      jsonResponse(200, {
+        id: 10,
+        date: '2026-09-20',
+        variety_id: 3,
+        origin: 'harvest',
+        grams: 25,
+        total_cost: null,
+        cost_per_gram: null,
+        note: null,
+      }),
+  })
+  const first = renderForm('/varieties/entries/new')
+  await userEvent.click(await screen.findByRole('button', { name: 'Cerrar' }))
+  expect(await screen.findByText('la lista de variedades')).toBeInTheDocument()
+  first.clear()
+  cleanup()
+
+  renderForm('/varieties/entries/10')
+  await userEvent.click(await screen.findByRole('button', { name: 'Cerrar' }))
+  expect(await screen.findByText('todas las entradas')).toBeInTheDocument()
+})
+
+test('a save goes back by history too, and says "Entrada guardada" there', async () => {
+  fakeFor(stockOf([]), {
+    'POST /stock/entries': () =>
+      jsonResponse(201, {
+        id: 11,
+        date: '2026-10-03',
+        variety_id: 3,
+        origin: 'opening_stock',
+        grams: 30,
+        total_cost: null,
+        cost_per_gram: null,
+        note: null,
+      }),
+  })
+  renderForm(['/varieties/3', '/varieties/entries/new?variety=3'])
+
+  await userEvent.type(await screen.findByLabelText('Gramos'), '30')
+  await userEvent.click(screen.getByRole('button', { name: 'Guardá la entrada' }))
+  expect(await screen.findByText('la página de la variedad')).toBeInTheDocument()
+  expect(await screen.findByText('Entrada guardada')).toBeInTheDocument()
+})
+
+test('a missing or foreign entry shows "Eso ya no está." with "Volver a Variedades"', async () => {
+  fakeFor(stockOf([]), {
+    'GET /stock/entries/99': () => jsonResponse(404, { code: 'stock.entry_not_found', detail: 'x' }),
+  })
+  renderForm('/varieties/entries/99')
+
+  expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Volver a Variedades' })).toHaveAttribute('href', '/varieties')
+})
+
+test('a save marks the catalog stale, since stock changes what it says', async () => {
+  fakeFor(stockOf([]), {
+    'POST /stock/entries': () =>
+      jsonResponse(201, {
+        id: 11,
+        date: '2026-10-03',
+        variety_id: 3,
+        origin: 'harvest',
+        grams: 30,
+        total_cost: null,
+        cost_per_gram: null,
+        note: null,
+      }),
+  })
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  client.setQueryData(catalogQueryOptions().queryKey, { text: null, header: '', footer: '', varieties: [] })
+  renderForm('/varieties/entries/new', client)
+
+  await userEvent.type(await screen.findByLabelText('Gramos'), '30')
+  await userEvent.selectOptions(await screen.findByLabelText('Variedad'), 'Sir Jack')
+  await userEvent.click(screen.getByRole('button', { name: 'Guardá la entrada' }))
+  await screen.findByText('la lista de variedades')
+  expect(client.getQueryState(catalogQueryOptions().queryKey)?.isInvalidated).toBe(true)
+})
+
+test('Cerrar with something typed asks before discarding, and leaving is refused until it is answered', async () => {
+  fakeFor(stockOf([]))
+  renderForm(['/varieties/3', '/varieties/entries/new?variety=3'])
+
+  await userEvent.type(await screen.findByLabelText('Gramos'), '30')
+  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  expect(await screen.findByRole('alertdialog')).toHaveTextContent('¿Descartás la entrada?')
+  expect(screen.queryByText('la página de la variedad')).not.toBeInTheDocument()
+
+  await userEvent.click(screen.getByRole('button', { name: 'No, seguí cargando' }))
+  expect(screen.getByLabelText('Gramos')).toHaveValue('30')
+
+  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Sí, descartalo' }))
+  expect(await screen.findByText('la página de la variedad')).toBeInTheDocument()
 })
