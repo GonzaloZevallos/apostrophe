@@ -33,7 +33,7 @@ const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
 const CHANNEL_CHAT_HELP = 'Es el @usuario o el enlace del canal donde se publica el catálogo.'
 const OWN_CHAT_HELP =
   'Abrí tu bot en Telegram y tocá Iniciar. Tu número lo ves con @userinfobot, o tocá Buscar mi chat.'
-const LOOKUP_NEEDS_TOKEN = 'Cargá el token primero'
+const LOAD_THE_TOKEN_FIRST = 'Cargá el token primero'
 const CATALOG_PATH = '/catalogo'
 
 const LEAVE: LeaveWording = {
@@ -240,7 +240,7 @@ function IntegrationsForm({ initial }: { initial: PinnedCatalog }) {
           </span>
           {!canSearch && (
             <span id={`${fieldId}-search-help`} className="campo__ayuda">
-              {LOOKUP_NEEDS_TOKEN}
+              {LOAD_THE_TOKEN_FIRST}
             </span>
           )}
         </div>
