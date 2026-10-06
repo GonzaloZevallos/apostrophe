@@ -2961,3 +2961,113 @@ button {
   }
 }
 /* ===== end primitivas-telefono ===== */
+
+/* ===== ventas-telefono-shell ===== */
+/* Nueva venta on the phone (ADR-0028): one fixed form pinned to the visual viewport, so the
+ * footer rides above the keyboard. Three zones in one scroller: the header sticks to the top,
+ * the body (customer, lines, shipping, note, how it was paid) scrolls, the footer sticks to
+ * the bottom. `.nueva-venta__cuerpo` and `.nueva-venta__resumen` stay the computer layout's
+ * columns, and turn into `display: contents` here so how it was paid (the computer's aside)
+ * lands last in the phone's body, above the footer. */
+@media (max-width: 899.98px) {
+  html.html--formulario-fijo {
+    overflow: hidden;
+  }
+
+  .nueva-venta {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: var(--vv-top, 0px);
+    height: var(--vv-alto, 100dvh);
+    min-height: 0;
+    z-index: 1;
+    background: var(--papel);
+  }
+
+  .nueva-venta__disposicion {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0 var(--margen-pantalla);
+    gap: var(--espacio-lg);
+  }
+
+  .nueva-venta__cuerpo,
+  .nueva-venta__resumen {
+    display: contents;
+  }
+
+  .nueva-venta__cabecera {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    margin: 0 calc(var(--margen-pantalla) * -1);
+    padding: var(--espacio-md) var(--margen-pantalla);
+    background: var(--papel);
+  }
+
+  .nueva-venta .fecha-pildora {
+    min-height: var(--alto-tocable);
+  }
+
+  .nueva-venta .fecha-pildora__input {
+    font-size: 16px;
+  }
+
+  .nueva-venta__fila-dato > .campo__input {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .nueva-venta .selector-pago {
+    flex-wrap: wrap;
+    border-radius: var(--radio-campo);
+  }
+
+  .nueva-venta .selector-pago__opcion {
+    flex: 1 1 auto;
+    min-height: var(--alto-tocable);
+    padding: 0 var(--espacio-md);
+  }
+
+  .nueva-venta__pago {
+    padding-bottom: var(--espacio-lg);
+  }
+
+  .nueva-venta__pie {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: baseline;
+    column-gap: var(--espacio-md);
+    row-gap: 0;
+    margin: 0 calc(var(--margen-pantalla) * -1);
+    padding: var(--espacio-md) var(--margen-pantalla) max(env(safe-area-inset-bottom), var(--espacio-sm));
+    background: var(--papel);
+  }
+
+  /* The total at `cifra-m`'s size (tokens.css): the footer is a strip, not the screen's hero. */
+  .nueva-venta__pie > .cifra-xl {
+    justify-self: end;
+    font-size: 25px;
+    line-height: 1.1;
+  }
+
+  .nueva-venta__gramos,
+  .nueva-venta__pie > .boton {
+    grid-column: 1 / -1;
+  }
+
+  .nueva-venta__pie > .boton {
+    margin-top: var(--espacio-sm);
+  }
+
+  .nueva-venta[data-teclado='abierto'] .nueva-venta__gramos {
+    display: none;
+  }
+}
+/* ===== end ventas-telefono-shell ===== */

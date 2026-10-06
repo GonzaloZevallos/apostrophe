@@ -46,6 +46,7 @@ import SelectorPago from '../../components/SelectorPago'
 import SinConexion from '../../components/SinConexion'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
 import { SheetStackProvider, useSheet } from '../../components/useSheetStack'
+import { useVisualViewport } from '../../components/useVisualViewport'
 import { formatDateLong, formatDateShort, maxSaleDate } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
 import { parseGrams, parseMoney } from '../../format/parse'
@@ -183,6 +184,8 @@ function NuevaVentaForm() {
     nonce: number
   } | null>(null)
   const focusNonceRef = useRef(0)
+  const formRef = useRef<HTMLFormElement | null>(null)
+  useVisualViewport(formRef)
 
   const varietyFieldRef = useRef<HTMLSelectElement | null>(null)
   const gramsFieldRef = useRef<HTMLInputElement | null>(null)
@@ -505,10 +508,10 @@ function NuevaVentaForm() {
 
   return (
     <main className="pantalla">
-      <form className="nueva-venta" onSubmit={onSubmit}>
+      <form ref={formRef} className="nueva-venta" onSubmit={onSubmit}>
         <div className="nueva-venta__disposicion">
         <div className="nueva-venta__cuerpo">
-          <div className="encabezado-fila">
+          <div className="encabezado-fila nueva-venta__cabecera">
             <Boton variant="icon" ariaLabel="Volver" icon="atras" onClick={goBack} />
             <span className="encabezado__titulo">Nueva venta</span>
             <span className="fecha-pildora">
@@ -637,7 +640,7 @@ function NuevaVentaForm() {
           <div className="nueva-venta__pie">
             <span className="rotulo">Total</span>
             <span className="cifra-xl">{formatMoney(totals.total)}</span>
-            <span className="rotulo">
+            <span className="rotulo nueva-venta__gramos">
               {formatGrams(fromHundredths(totals.gramsSoldHundredths))} vendidos
               {totals.gramsGiftedHundredths > 0 &&
                 ` · ${formatGrams(fromHundredths(totals.gramsGiftedHundredths))} de regalo`}
