@@ -25,6 +25,10 @@ export async function fillSaleLine(
   { variety, grams, gift, specialPrice }: SaleLineInput,
 ): Promise<void> {
   const varietyField = page.getByLabel(`Variedad línea ${n}`)
+  // The lines render only once the varieties have arrived, and `count()` below does not
+  // wait: read before that, it would see no line and add a second one. "Agregar otra
+  // variedad" is on screen exactly when the lines are.
+  await expect(page.getByRole('button', { name: 'Agregar otra variedad' })).toBeVisible()
   if ((await varietyField.count()) === 0) {
     const closedRow = page.getByRole('button', { name: new RegExp(`^Línea ${n}:`) })
     if ((await closedRow.count()) > 0) {

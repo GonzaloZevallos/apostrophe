@@ -15,11 +15,9 @@
  */
 
 import { expect, test } from '@playwright/test'
-import { newBusinessInvitationUrl } from './backend.js'
+import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { openMas } from './helpers/openMas.js'
-
-const PASSWORD = 'correcthorsebattery'
 
 test('a seller edits a variety, the header and footer, then copies today\'s catalog', async ({
   page,
@@ -32,11 +30,7 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
   const ownerEmail = `duena-catalogo-${Date.now()}@example.com`
   const businessName = `Flores del Catálogo ${Date.now()}`
 
-  await page.goto(newBusinessInvitationUrl())
-  await page.getByLabel('Nombre del negocio').fill(businessName)
-  await page.getByLabel('Email').fill(ownerEmail)
-  await page.getByLabel('Contraseña').fill(PASSWORD)
-  await page.getByRole('button', { name: 'Creá el negocio' }).click()
+  await signUpNewBusiness(page, { businessName, email: ownerEmail })
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // A variety with a price and stock, so the catalog has something to show.
@@ -97,8 +91,9 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
   expect(apiText).not.toBeNull()
   if (apiText === null) throw new Error('unreachable: asserted above')
 
-  const previewText = await page.locator('.catalogo__vista-previa').textContent()
-  expect(previewText).toBe(apiText.replaceAll('**', ''))
+  await expect
+    .poll(() => page.locator('.catalogo__vista-previa').textContent())
+    .toBe(apiText.replaceAll('**', ''))
 
   await page.getByRole('button', { name: 'Copiar' }).click()
   await expect(page.getByText('Catálogo copiado')).toBeVisible()

@@ -7,21 +7,15 @@
  */
 
 import { expect, test, type Locator, type Page } from '@playwright/test'
-import { newBusinessInvitationUrl } from './backend.js'
+import { signUpNewBusiness } from './helpers/signup.js'
 import { fillSaleLine } from './helpers/sale.js'
 
-const PASSWORD = 'correcthorsebattery'
 const WIDTHS = [320, 375, 430, 246] as const
 const TOUCH_TARGET = 44
 const MIN_INPUT_FONT = 16
 
 async function signUpWithAVariety(page: Page): Promise<void> {
-  await page.goto(newBusinessInvitationUrl())
-  await page.getByLabel('Nombre del negocio').fill(`Vivero Línea ${Date.now()}`)
-  await page.getByLabel('Email').fill(`duena-linea-${Date.now()}@example.com`)
-  await page.getByLabel('Contraseña').fill(PASSWORD)
-  await page.getByRole('button', { name: 'Creá el negocio' }).click()
-  await expect(page.locator('.encabezado__negocio')).toBeVisible()
+  await signUpNewBusiness(page, { businessName: `Vivero Línea ${Date.now()}`, email: `duena-linea-${Date.now()}@example.com` })
   await page.goto('/variedades')
   await page.getByRole('button', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Jazmín con un nombre bastante largo')

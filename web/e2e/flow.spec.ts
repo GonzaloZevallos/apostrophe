@@ -14,7 +14,7 @@
  */
 
 import { expect, test } from '@playwright/test'
-import { newBusinessInvitationUrl } from './backend.js'
+import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { openGastos } from './helpers/openMas.js'
 
@@ -32,11 +32,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   const businessName = `Flores del Centro ${Date.now()}`
 
   // Accept a new-business invitation.
-  await page.goto(newBusinessInvitationUrl())
-  await page.getByLabel('Nombre del negocio').fill(businessName)
-  await page.getByLabel('Email').fill(ownerEmail)
-  await page.getByLabel('Contraseña').fill(PASSWORD)
-  await page.getByRole('button', { name: 'Creá el negocio' }).click()
+  await signUpNewBusiness(page, { businessName, email: ownerEmail })
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // Add a customer.
@@ -196,6 +192,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   // context (its own cookie jar — a second device).
   await page.goto('/settings/users')
   await page.getByRole('button', { name: 'Invitá a un socio' }).click()
+  await expect(page.locator('.usuarios__link')).toHaveText(/^https?:\/\//)
   const inviteUrl = await page.locator('.usuarios__link').textContent()
   if (inviteUrl === null || inviteUrl === '') throw new Error('no invitation link shown')
 
