@@ -13,3 +13,4 @@ __pycache__/
 .agentic/state.sqlite*
 .agentic/logs/
 .agentic/runs/
+node_modules/
