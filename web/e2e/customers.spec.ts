@@ -17,6 +17,8 @@
  */
 
 import { expect, test } from '@playwright/test'
+import { paths } from '../src/routes/paths.js'
+import { endsWith } from './helpers/urls.js'
 import { newBusinessInvitationUrl } from './backend.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
@@ -40,7 +42,7 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // One priced variety, $1.000/g — round figures for every assertion below.
-  await page.goto('/variedades')
+  await page.goto(paths.varieties())
   await page.getByRole('button', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Jazmín')
   await page.getByRole('button', { name: 'Guardar' }).click()
@@ -52,10 +54,10 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   await expect(page.getByText('Precio guardado')).toBeVisible()
 
   // Registered with no phone number at all.
-  await page.goto('/clientes/nuevo')
+  await page.goto(paths.newCustomer())
   await page.getByLabel('Nombre').fill('Noe Sinnumero')
   await page.getByRole('button', { name: 'Guardá y usá' }).click()
-  await expect(page).toHaveURL(/\/clientes$/)
+  await expect(page).toHaveURL(endsWith(paths.customers()))
   await expect(page.getByText('Cliente guardado')).toBeVisible()
 
   // Found by name, in the list: no phone line, no dash, no placeholder.
@@ -67,7 +69,7 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
 
   // The card shows no phone field either.
   await row.click()
-  await expect(page).toHaveURL(/\/clientes\/\d+$/)
+  await expect(page).toHaveURL(endsWith(paths.customer('\\d+')))
   await expect(page.getByText('Teléfono')).toHaveCount(0)
 
   // Edited: still no phone number, and the edit form shows no required marker on
@@ -81,15 +83,15 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   // Chosen for a sale, left owing — $4.000.
   const todayStart = Date.now()
   await page.getByRole('link', { name: 'Nueva venta a Noe Sinnumero' }).click()
-  await expect(page).toHaveURL(/\/ventas\/nueva$/)
+  await expect(page).toHaveURL(endsWith(paths.newSale()))
   await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '4' })
   await page.getByRole('radio', { name: 'Debiendo' }).check()
   await page.getByRole('button', { name: 'Guardá la venta' }).click()
-  await expect(page).toHaveURL(/\/ventas\/\d+$/)
+  await expect(page).toHaveURL(endsWith(paths.sale('\\d+')))
   await expect(page.getByText('Venta guardada')).toBeVisible()
   expect(Date.now() - todayStart).toBeLessThan(60_000)
 
-  await page.goto('/clientes')
+  await page.goto(paths.customers())
   await page.getByRole('link', { name: 'Noe Sinnumero' }).click()
   await expect(page.getByText('Te debe $ 4.000')).toBeVisible()
 
@@ -104,7 +106,7 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   // A second customer, also without a phone number, created straight from Elegir
   // cliente inside a new sale, chosen and sold to in one timed run (PRD metric 1).
   const sheetStart = Date.now()
-  await page.goto('/ventas/nueva')
+  await page.goto(paths.newSale())
   await page.getByRole('button', { name: 'Elegir cliente' }).click()
   await page.getByRole('button', { name: 'Nuevo cliente' }).click()
   await page.getByLabel('Nombre').fill('Sol Sinnumero')
@@ -116,15 +118,15 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '2' })
   await page.getByRole('radio', { name: 'Debiendo' }).check()
   await page.getByRole('button', { name: 'Guardá la venta' }).click()
-  await expect(page).toHaveURL(/\/ventas\/\d+$/)
+  await expect(page).toHaveURL(endsWith(paths.sale('\\d+')))
   await expect(page.getByText('Venta guardada')).toBeVisible()
   expect(Date.now() - sheetStart).toBeLessThan(60_000)
 
   // Te deben lists the second, no-number customer's own fresh debt — the first
   // customer's debt is already settled, so she never named here.
-  await page.goto('/clientes')
+  await page.goto(paths.customers())
   await page.getByRole('link', { name: /te deben \$ 2\.000/ }).click()
-  await expect(page).toHaveURL(/\/clientes\/deben$/)
+  await expect(page).toHaveURL(endsWith(paths.customersOwing()))
   const debtorRow = page.getByRole('link', { name: 'Sol Sinnumero' })
   await expect(debtorRow).toBeVisible()
   await expect(debtorRow).toContainText('$ 2.000')

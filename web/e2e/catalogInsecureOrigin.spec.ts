@@ -33,6 +33,7 @@
 
 import { expect, test } from '@playwright/test'
 import { e2eBaseUrl } from './env.js'
+import { paths } from '../src/routes/paths.js'
 import { newBusinessInvitationUrl } from './backend.js'
 
 const PASSWORD = 'correcthorsebattery'
@@ -81,7 +82,7 @@ test('Copiar still works through the execCommand fallback on a plain-http, non-l
   expect(await page.evaluate(() => typeof navigator.clipboard)).toBe('undefined')
 
   // A variety with a price and stock, so the catalog has something to copy.
-  await page.goto(`${INSECURE_ORIGIN}/variedades`)
+  await page.goto(`${INSECURE_ORIGIN}${paths.varieties()}`)
   await page.getByRole('button', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Rosa')
   await page.getByRole('button', { name: 'Guardar' }).click()
@@ -91,14 +92,14 @@ test('Copiar still works through the execCommand fallback on a plain-http, non-l
   await page.getByRole('button', { name: 'Guardar precio' }).click()
   await expect(page.getByText('Precio guardado')).toBeVisible()
 
-  await page.goto(`${INSECURE_ORIGIN}/mi-stock/nueva-entrada`)
+  await page.goto(`${INSECURE_ORIGIN}${paths.newEntry()}`)
   await page.getByLabel('Gramos').fill('50')
   await page.getByLabel('Variedad').selectOption({ label: 'Rosa' })
   await page.getByLabel('Costo total').fill('45000')
   await page.getByRole('button', { name: 'Guardá la entrada' }).click()
   await expect(page.getByText('Entrada guardada')).toBeVisible()
 
-  await page.goto(`${INSECURE_ORIGIN}/catalogo`)
+  await page.goto(`${INSECURE_ORIGIN}${paths.catalog()}`)
   const apiText = await page.evaluate(() =>
     fetch('/catalog', { credentials: 'include' })
       .then((response) => response.json() as Promise<{ text: string | null }>)

@@ -11,6 +11,8 @@
  */
 
 import { expect, test } from '@playwright/test'
+import { paths } from '../src/routes/paths.js'
+import { endsWith } from './helpers/urls.js'
 import { newBusinessInvitationUrl } from './backend.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
@@ -34,7 +36,7 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // A priced variety.
-  await page.goto('/variedades')
+  await page.goto(paths.varieties())
   await page.getByRole('button', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Rosa')
   await page.getByRole('button', { name: 'Guardar' }).click()
@@ -47,7 +49,7 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
 
   // A stock entry (origin defaults to "Compra"), backdated into last month so the
   // business's first record — and so "Mes anterior" — is not this same month.
-  await page.goto('/mi-stock/nueva-entrada')
+  await page.goto(paths.newEntry())
   const todayIso = await page.getByLabel('Fecha').inputValue()
   const lastMonth = new Date(todayIso)
   lastMonth.setDate(1)
@@ -60,14 +62,14 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   await expect(page.getByText('Entrada guardada')).toBeVisible()
 
   // A cash sale, today.
-  await page.goto('/ventas/nueva')
+  await page.goto(paths.newSale())
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '10' })
   await page.getByRole('radio', { name: 'Efectivo' }).check()
   await page.getByRole('button', { name: 'Guardá la venta' }).click()
   await expect(page.getByText('Venta guardada')).toBeVisible()
 
   // An expense, today, with a category created inline.
-  await page.goto('/gastos')
+  await page.goto(paths.expenses())
   await page.getByRole('button', { name: 'Nuevo gasto' }).click()
   await page.getByRole('button', { name: 'Crear una categoría nueva' }).click()
   await page.getByLabel('Nombre de la categoría nueva').fill('Flete')
@@ -78,9 +80,9 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   await expect(page.getByText('Gasto guardado')).toBeVisible()
 
   // Más → Análisis.
-  await page.goto('/mas')
+  await page.goto(paths.more())
   await page.getByRole('link', { name: /Análisis/ }).click()
-  await expect(page).toHaveURL(/\/analisis$/)
+  await expect(page).toHaveURL(endsWith(paths.analysis()))
 
   // The current month: the variety row, week by week, by weekday and both expense
   // breakdowns all carry this month's activity. At this (desktop-sized) viewport,

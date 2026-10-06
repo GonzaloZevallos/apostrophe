@@ -14,6 +14,8 @@
  */
 
 import { expect, test } from '@playwright/test'
+import { paths } from '../src/routes/paths.js'
+import { endsWith } from './helpers/urls.js'
 import { newBusinessInvitationUrl } from './backend.js'
 import { watchConsole } from './console.js'
 
@@ -39,21 +41,21 @@ test('a seller does everything the backend offers today, from the front alone', 
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // Add a customer.
-  await page.goto('/clientes/nuevo')
+  await page.goto(paths.newCustomer())
   await page.getByLabel('Teléfono').fill(PHONE)
   await page.getByLabel('Nombre').fill('Marisa Gómez')
   await page.getByRole('button', { name: 'Guardá y usá' }).click()
-  await expect(page).toHaveURL(/\/clientes$/)
+  await expect(page).toHaveURL(endsWith(paths.customers()))
   await expect(page.getByText('Cliente guardado')).toBeVisible()
 
   // Add a variety.
-  await page.goto('/variedades')
+  await page.goto(paths.varieties())
   await page.getByRole('button', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Rosa')
   await page.getByRole('button', { name: 'Guardar' }).click()
   await expect(page.getByText('Variedad guardada')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()
-  await expect(page).toHaveURL(/\/variedades\/.+/)
+  await expect(page).toHaveURL(new RegExp(paths.variety('.+')))
 
   // Add a price. "Rige desde" already defaults to `me.today` — the business day
   // the backend's clock reports, read through `GET /auth/me` — so it is left as
@@ -71,28 +73,28 @@ test('a seller does everything the backend offers today, from the front alone', 
   await expect(page.getByText('Sin precio: no se puede vender')).toBeVisible()
 
   // Record a stock entry for Rosa from the Stock tab (stock.md: "Nueva entrada").
-  await page.goto('/mi-stock')
+  await page.goto(paths.entries())
   await expect(page.getByText('Sin entradas de stock')).toBeVisible()
   await page.getByRole('link', { name: 'Nueva entrada' }).click()
-  await expect(page).toHaveURL(/\/mi-stock\/nueva-entrada$/)
+  await expect(page).toHaveURL(endsWith(paths.newEntry()))
   await page.getByLabel('Gramos').fill('50')
   await page.getByLabel('Variedad').selectOption({ label: 'Rosa' })
   await page.getByLabel('Costo total').fill('45000')
   await expect(page.getByText('Te queda en $ 900 el gramo')).toBeVisible()
   await page.getByRole('button', { name: 'Guardá la entrada' }).click()
-  await expect(page).toHaveURL(/\/mi-stock$/)
+  await expect(page).toHaveURL(endsWith(paths.entries()))
   await expect(page.getByText('Entrada guardada')).toBeVisible()
   await expect(page.getByText('Rosa · 50 g')).toBeVisible()
 
   // Edit it: editing confirms before saving (stock.md).
   await page.getByText('Rosa · 50 g').click()
-  await expect(page).toHaveURL(/\/mi-stock\/entradas\/.+/)
+  await expect(page).toHaveURL(new RegExp(paths.entry('.+')))
   await expect(page.getByLabel('Gramos')).toHaveValue('50')
   await page.getByLabel('Gramos').fill('60')
   await page.getByRole('button', { name: 'Guardar' }).click()
   await expect(page.getByText('¿Guardás los cambios?')).toBeVisible()
   await page.getByRole('button', { name: 'Sí, guardar' }).click()
-  await expect(page).toHaveURL(/\/mi-stock$/)
+  await expect(page).toHaveURL(endsWith(paths.entries()))
   await expect(page.getByText('Entrada guardada')).toBeVisible()
   await expect(page.getByText('Rosa · 60 g')).toBeVisible()
 
@@ -101,13 +103,13 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.getByRole('button', { name: 'Borrar entrada' }).click()
   await expect(page.getByText('Antes de borrar')).toBeVisible()
   await page.getByRole('button', { name: 'Sí, borrala' }).click()
-  await expect(page).toHaveURL(/\/mi-stock$/)
+  await expect(page).toHaveURL(endsWith(paths.entries()))
   await expect(page.getByText('Entrada eliminada')).toBeVisible()
   await expect(page.getByText('Rosa · 60 g')).toHaveCount(0)
 
   // Set Rosa's low-stock threshold from Variedades, then turn it off (varieties.md:
   // "set or turn off the threshold from the variety").
-  await page.goto('/variedades')
+  await page.goto(paths.varieties())
   await expect(page.getByText('Aviso apagado')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByLabel('Umbral de aviso (g)').fill('15')
@@ -119,7 +121,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await expect(page.getByText('Aviso apagado')).toBeVisible()
 
   // Record an expense, with a category created inline.
-  await page.goto('/gastos')
+  await page.goto(paths.expenses())
   await page.getByRole('button', { name: 'Nuevo gasto' }).click()
   await page.getByRole('button', { name: 'Crear una categoría nueva' }).click()
   await page.getByLabel('Nombre de la categoría nueva').fill('Flete')
@@ -148,7 +150,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   // "Envíos y traslados" and "Otros" are the four the business starts with
   // (`app/expenses/domain/category.py`'s `DEFAULT_CATEGORY_NAMES`), so this one
   // uses a name of its own.
-  await page.goto('/gastos/categorias')
+  await page.goto(paths.expenseCategories())
   await page.getByLabel('Nueva categoría').fill('Delivery en bici')
   await page.getByRole('button', { name: 'Agregar categoría' }).click()
   await expect(page.getByText('Categoría guardada')).toBeVisible()
@@ -159,7 +161,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await expect(page.getByText('Delivery en bici')).toHaveCount(0)
 
   // Rename the business.
-  await page.goto('/negocio')
+  await page.goto(paths.settingsBusiness())
   const renamedTo = `${businessName} Renombrado`
   await page.getByLabel('Nombre del negocio').fill(renamedTo)
   await page.getByRole('button', { name: 'Guardar' }).click()
@@ -167,6 +169,7 @@ test('a seller does everything the backend offers today, from the front alone', 
 
   // Create a join link and accept it as a second user, from a separate browser
   // context (its own cookie jar — a second device).
+  await page.goto(paths.settingsUsers())
   await page.getByRole('button', { name: 'Invitá a un socio' }).click()
   const inviteUrl = await page.locator('.negocio__link').textContent()
   if (inviteUrl === null || inviteUrl === '') throw new Error('no invitation link shown')

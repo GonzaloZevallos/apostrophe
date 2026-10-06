@@ -47,6 +47,8 @@
  */
 
 import { expect, test } from '@playwright/test'
+import { paths } from '../src/routes/paths.js'
+import { endsWith } from './helpers/urls.js'
 import { newBusinessInvitationUrl } from './backend.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
@@ -133,7 +135,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   // perf sections below seed sales for on dates before today — a default "Rige
   // desde" of today would leave those earlier dates with no price of their own.
   async function addVariety(name: string, listPrice?: string, effectiveFrom?: string): Promise<void> {
-    await page.goto('/variedades')
+    await page.goto(paths.varieties())
     await page.getByRole('button', { name: 'Nueva variedad' }).click()
     await page.getByLabel('Nombre').fill(name)
     await page.getByRole('button', { name: 'Guardar' }).click()
@@ -150,7 +152,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   await addVariety('Lirio', '300')
   await addVariety('Mimosa')
 
-  await page.goto('/ventas')
+  await page.goto(paths.sales())
 
   // Shell metric: the bar shows exactly Inicio, Ventas, Clientes, Stock and Más, in that
   // order — the mobile bottom bar at this viewport (`Shell.tsx`'s `.bar-inferior`;
@@ -168,7 +170,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   // `.last()`: at this phone viewport the side rail's own "Nueva venta" link (first
   // in `Shell.tsx`'s markup) is the one CSS hides; the fixed bottom button is last.
   await page.getByRole('link', { name: 'Nueva venta' }).last().click()
-  await expect(page).toHaveURL(/\/ventas\/nueva$/)
+  await expect(page).toHaveURL(endsWith(paths.newSale()))
   const todayIso = await page.getByLabel('Fecha').inputValue()
 
   const varieties: VarietyAnswer[] = await (
@@ -226,7 +228,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   await expect(page.getByText('30 g vendidos')).toBeVisible()
 
   await page.getByRole('button', { name: 'Guardá la venta' }).click()
-  await expect(page).toHaveURL(/\/ventas\/\d+$/)
+  await expect(page).toHaveURL(endsWith(paths.sale('\\d+')))
   await expect(page.getByText('Venta guardada')).toBeVisible()
   expect(Date.now() - saleAStart).toBeLessThan(RECORD_BUDGET_MS) // a new customer.
 
@@ -248,16 +250,16 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
 
   // Deshacer, right after saving: nothing of this sale survives.
   await page.getByRole('button', { name: 'Deshacer' }).click()
-  await expect(page).toHaveURL(/\/ventas$/)
+  await expect(page).toHaveURL(endsWith(paths.sales()))
   await expect(page.getByText('Venta eliminada')).toBeVisible()
   await expect(page.getByText('0 ventas')).toBeVisible()
   await expect(page.getByText('Todavía no registraste ninguna venta en este período.')).toBeVisible()
 
   // --- Sale B: "Nueva venta a <name>", a gift line, no payment needed for $0. ---
-  await page.goto('/clientes')
+  await page.goto(paths.customers())
   await page.getByRole('link', { name: 'Carla Pérez' }).click()
   await page.getByRole('link', { name: 'Nueva venta a Carla Pérez' }).click()
-  await expect(page).toHaveURL(/\/ventas\/nueva$/)
+  await expect(page).toHaveURL(endsWith(paths.newSale()))
   const saleBStart = Date.now()
   // Already chosen, no picking needed: fetched by id (keys.saleFormCustomer), not
   // carried along in history state (plan, invariants).
@@ -273,7 +275,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   const saveButtonB = page.getByRole('button', { name: 'Guardá la venta' })
   await expect(saveButtonB).toBeEnabled()
   await saveButtonB.click()
-  await expect(page).toHaveURL(/\/ventas\/\d+$/)
+  await expect(page).toHaveURL(endsWith(paths.sale('\\d+')))
   const saleBUrl = page.url()
   await expect(page.getByText('Venta guardada')).toBeVisible()
   expect(Date.now() - saleBStart).toBeLessThan(RECORD_BUDGET_MS) // an existing customer.
@@ -281,13 +283,13 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   await expect(page.getByRole('button', { name: 'Asignar cliente' })).toHaveCount(0) // already has one.
 
   // --- Sale C: no customer, assigned afterwards, then deleted. ---
-  await page.goto('/ventas')
+  await page.goto(paths.sales())
   await page.getByRole('link', { name: 'Nueva venta' }).last().click()
   const saleCStart = Date.now()
   await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '2' })
   await page.getByRole('radio', { name: 'Efectivo' }).check()
   await page.getByRole('button', { name: 'Guardá la venta' }).click()
-  await expect(page).toHaveURL(/\/ventas\/\d+$/)
+  await expect(page).toHaveURL(endsWith(paths.sale('\\d+')))
   await expect(page.getByText('Venta guardada')).toBeVisible()
   expect(Date.now() - saleCStart).toBeLessThan(RECORD_BUDGET_MS) // no customer: the fastest.
   await expect(page.getByText('Sin cliente')).toBeVisible()
@@ -308,7 +310,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
     }),
   ).toBeVisible()
   await page.getByRole('button', { name: 'Sí, borrala' }).click()
-  await expect(page).toHaveURL(/\/ventas$/)
+  await expect(page).toHaveURL(endsWith(paths.sales()))
   await expect(page.getByText('Venta eliminada')).toBeVisible()
 
   // --- Ventas' periods: sums across several sales, and the Monday-to-Sunday week
@@ -355,7 +357,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   // N ventas", `Ventas.tsx`'s `ventas__rango`), not a standalone node — checked by
   // substring (`toContainText`), and the total through its own `ventas__total`
   // class, which replaced the oversized shared `.cifra-xl`.
-  await page.goto('/ventas')
+  await page.goto(paths.sales())
   const hoy = expectedFor(todayIso, todayIso)
   await expect(page.locator('.ventas__rango')).toContainText(countLabel(hoy.count))
   await expect(page.locator('.ventas__total')).toHaveText(pesos(hoy.total))
@@ -405,7 +407,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   await otherPage.goto(saleBUrl)
   await expect(otherPage.getByText('Eso ya no está.')).toBeVisible()
   await otherPage.getByRole('link', { name: 'Volver a Ventas' }).click()
-  await expect(otherPage).toHaveURL(/\/ventas$/)
+  await expect(otherPage).toHaveURL(endsWith(paths.sales()))
   await otherContext.close()
 
   // Nothing personal or technical reaches the console or the browser's own storage

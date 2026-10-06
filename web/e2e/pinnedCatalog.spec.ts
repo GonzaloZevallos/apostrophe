@@ -9,6 +9,8 @@
  */
 
 import { expect, test } from '@playwright/test'
+import { paths } from '../src/routes/paths.js'
+import { endsWith } from './helpers/urls.js'
 import { newBusinessInvitationUrl } from './backend.js'
 import { watchConsole } from './console.js'
 
@@ -31,7 +33,7 @@ test('a seller sets up the bot, tests it, then publishes, from the front alone',
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // A variety with a price, so the catalog has something to publish.
-  await page.goto('/variedades')
+  await page.goto(paths.varieties())
   await page.getByRole('button', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Rosa')
   await page.getByRole('button', { name: 'Guardar' }).click()
@@ -42,9 +44,9 @@ test('a seller sets up the bot, tests it, then publishes, from the front alone',
   await page.getByRole('button', { name: 'Guardar precio' }).click()
   await expect(page.getByText('Precio guardado')).toBeVisible()
 
-  await page.goto('/mas')
+  await page.goto(paths.more())
   await page.getByRole('link', { name: /Catálogo/ }).click()
-  await expect(page).toHaveURL(/\/catalogo$/)
+  await expect(page).toHaveURL(endsWith(paths.catalog()))
 
   // No pin yet: Inicio shows no out-of-date line, and Catálogo shows no status.
   await expect(page.getByText('Al día')).toHaveCount(0)
@@ -73,7 +75,7 @@ test('a seller sets up the bot, tests it, then publishes, from the front alone',
   await expect(page.getByText('Catálogo publicado')).toBeVisible()
   await expect(page.getByText('Al día')).toBeVisible()
 
-  await page.goto('/')
+  await page.goto(paths.home())
   await expect(page.getByText('Tu catálogo en Telegram está desactualizado')).toHaveCount(0)
 
   expect(consoleMessages).toEqual([])

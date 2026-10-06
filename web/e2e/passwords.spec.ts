@@ -19,6 +19,8 @@
  */
 
 import { expect, test } from '@playwright/test'
+import { paths } from '../src/routes/paths.js'
+import { endsWith } from './helpers/urls.js'
 import { newBusinessInvitationUrl, resetLink, supportsPasswordReset } from './backend.js'
 import { watchConsole } from './console.js'
 
@@ -53,7 +55,7 @@ test('changes a password from Negocio in under a minute, signing an older device
   const otherContext = await browser.newContext()
   const otherPage = await otherContext.newPage()
   watchConsole(otherPage, consoleMessages)
-  await otherPage.goto('/entrar')
+  await otherPage.goto(paths.login())
   await otherPage.getByLabel('Email').fill(ownerEmail)
   await otherPage.getByLabel('Contraseña').fill(PASSWORD)
   await otherPage.getByRole('button', { name: 'Entrá' }).click()
@@ -61,7 +63,7 @@ test('changes a password from Negocio in under a minute, signing an older device
 
   const startedAt = Date.now()
 
-  await page.goto('/negocio')
+  await page.goto(paths.settingsAccount())
   await page.getByRole('button', { name: 'Cambiar contraseña' }).click()
   const sheet = page.locator('.capa')
   await sheet.getByLabel('Contraseña actual').fill(PASSWORD)
@@ -74,7 +76,7 @@ test('changes a password from Negocio in under a minute, signing an older device
   // This device stays signed in: `.encabezado__negocio` only renders on Inicio
   // (`Inicio.tsx`), never on `Negocio` itself, so the check navigates home rather
   // than reloading the settings screen it was already on.
-  await page.goto('/')
+  await page.goto(paths.home())
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // The older device is signed out: its gated calls now answer 401, which is
@@ -85,7 +87,7 @@ test('changes a password from Negocio in under a minute, signing an older device
   const EXPECTED_SIGNED_OUT_NETWORK_LOG =
     'error: Failed to load resource: the server responded with a status of 401 (Unauthorized)'
   await otherPage.reload()
-  await expect(otherPage).toHaveURL(/\/entrar$/)
+  await expect(otherPage).toHaveURL(endsWith(paths.login()))
   await otherContext.close()
 
   const storage = await page.evaluate(() => ({

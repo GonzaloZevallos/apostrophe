@@ -1,3 +1,4 @@
+import { paths } from '../src/routes/paths.js'
 /**
  * Pins the theme rule end to end (plan, subtask `light-by-default`, seam 2; PRD
  * metrics for criteria 1 and 2): the app opens light whatever the operating
@@ -25,7 +26,7 @@ test('a dark system alone never gives the dark theme', async ({ page }) => {
   watchConsole(page, messages)
 
   await page.emulateMedia({ colorScheme: 'dark' })
-  await page.goto('/entrar')
+  await page.goto(paths.login())
 
   expect(await htmlBackground(page)).toBe(PAPEL)
   expect(messages).toEqual([])
@@ -47,7 +48,7 @@ test('data-tema="oscuro" turns the theme dark on a light system too', async ({ p
     if (document.documentElement) apply()
     else document.addEventListener('DOMContentLoaded', apply, { once: true })
   })
-  await page.goto('/entrar')
+  await page.goto(paths.login())
 
   expect(await htmlBackground(page)).toBe(PAPEL_OSCURO)
   expect(messages).toEqual([])

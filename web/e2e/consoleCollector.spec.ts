@@ -1,3 +1,4 @@
+import { paths } from '../src/routes/paths.js'
 /**
  * Proves `watchConsole` — the collector `flow.spec.ts` attaches to both `page` and
  * `partnerPage` and asserts empty at the end (plan, "Observability") — actually
@@ -15,7 +16,7 @@ test('the shared console collector records a message it must later reject', asyn
   const consoleMessages: string[] = []
   watchConsole(page, consoleMessages)
 
-  await page.goto('/entrar')
+  await page.goto(paths.login())
   await page.evaluate(() => {
     console.log('e2e-canary')
   })

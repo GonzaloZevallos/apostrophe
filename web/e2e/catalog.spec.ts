@@ -15,6 +15,8 @@
  */
 
 import { expect, test } from '@playwright/test'
+import { paths } from '../src/routes/paths.js'
+import { endsWith } from './helpers/urls.js'
 import { newBusinessInvitationUrl } from './backend.js'
 import { watchConsole } from './console.js'
 
@@ -39,7 +41,7 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // A variety with a price and stock, so the catalog has something to show.
-  await page.goto('/variedades')
+  await page.goto(paths.varieties())
   await page.getByRole('button', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Rosa')
   await page.getByRole('button', { name: 'Guardar' }).click()
@@ -50,7 +52,7 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
   await page.getByRole('button', { name: 'Guardar precio' }).click()
   await expect(page.getByText('Precio guardado')).toBeVisible()
 
-  await page.goto('/mi-stock/nueva-entrada')
+  await page.goto(paths.newEntry())
   await page.getByLabel('Gramos').fill('50')
   await page.getByLabel('Variedad').selectOption({ label: 'Rosa' })
   await page.getByLabel('Costo total').fill('45000')
@@ -58,9 +60,9 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
   await expect(page.getByText('Entrada guardada')).toBeVisible()
 
   // Más → Catálogo.
-  await page.goto('/mas')
+  await page.goto(paths.more())
   await page.getByRole('link', { name: /Catálogo/ }).click()
-  await expect(page).toHaveURL(/\/catalogo$/)
+  await expect(page).toHaveURL(endsWith(paths.catalog()))
 
   // Edit Rosa's catalog attributes.
   await page.getByRole('button', { name: 'Editar Rosa' }).click()
