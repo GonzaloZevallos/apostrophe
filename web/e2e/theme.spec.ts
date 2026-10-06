@@ -174,7 +174,7 @@ test('a tampered stored value reads as light and is left alone', async ({ page }
   expect(messages).toEqual([])
 })
 
-test('the storage helper rejects a stored claro, a second key and session storage', async ({ page }) => {
+test('the storage helper rejects a stored claro, a second key, session storage and an IndexedDB database', async ({ page }) => {
   await page.goto('/entrar')
   await expectOnlyTheThemeStored(page)
 
@@ -189,6 +189,27 @@ test('the storage helper rejects a stored claro, a second key and session storag
   await page.evaluate(() => sessionStorage.setItem('x', '1'))
   await expect(expectOnlyTheThemeStored(page)).rejects.toThrow()
   await page.evaluate(() => sessionStorage.clear())
+
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve, reject) => {
+        const open = indexedDB.open('intruso')
+        open.onsuccess = () => {
+          open.result.close()
+          resolve()
+        }
+        open.onerror = () => reject(new Error('indexedDB.open failed'))
+      }),
+  )
+  await expect(expectOnlyTheThemeStored(page)).rejects.toThrow()
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve, reject) => {
+        const drop = indexedDB.deleteDatabase('intruso')
+        drop.onsuccess = () => resolve()
+        drop.onerror = () => reject(new Error('indexedDB.deleteDatabase failed'))
+      }),
+  )
 
   await page.evaluate(() => localStorage.setItem('tema', 'oscuro'))
   await expectOnlyTheThemeStored(page)

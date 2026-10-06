@@ -71,6 +71,12 @@ export default function ExpenseCategoriesGroup() {
   return <Categories initial={data} />
 }
 
+/** The server orders by the case-folded name (binary); the list keeps that order after an add or a rename. */
+function byNameKey(categories: ExpenseCategory[]): ExpenseCategory[] {
+  const key = (category: ExpenseCategory): string => category.name.toLowerCase()
+  return [...categories].sort((a, b) => (key(a) < key(b) ? -1 : key(a) > key(b) ? 1 : 0))
+}
+
 function Categories({ initial }: { initial: ExpenseCategory[] }) {
   const queryClient = useQueryClient()
   const [accepted, setAccepted] = useState(initial)
@@ -109,7 +115,7 @@ function Categories({ initial }: { initial: ExpenseCategory[] }) {
   }
 
   function accept(next: ExpenseCategory[]): void {
-    setAccepted(next)
+    setAccepted(byNameKey(next))
     invalidateResource(queryClient, 'expenseCategories')
   }
 

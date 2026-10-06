@@ -143,6 +143,42 @@ test('renaming a category toasts "Categoría guardada" and shows what the server
   expect(screen.getByText('Empaque')).toBeInTheDocument()
 })
 
+test('after an add or a rename the list keeps the server order, by name without case', async () => {
+  renderGroup(
+    async (url, init) => {
+      const method = init?.method ?? 'GET'
+      if (url === '/expense-categories' && method === 'GET') {
+        return jsonResponse(200, [
+          { id: 1, name: 'Bolsas' },
+          { id: 2, name: 'Packaging' },
+        ])
+      }
+      if (url === '/expense-categories' && method === 'POST') return jsonResponse(201, { id: 3, name: 'alquiler' })
+      if (url === '/expense-categories/2' && method === 'PATCH') return jsonResponse(200, { id: 2, name: 'Cajas' })
+      throw new Error(`unexpected ${method} ${url}`)
+    },
+  )
+
+  await screen.findByText('Bolsas')
+  await userEvent.type(screen.getByLabelText('Nueva categoría'), 'alquiler')
+  await userEvent.click(screen.getByRole('button', { name: '+ Categoría' }))
+  await screen.findByText('alquiler')
+  // Rows are in the order of their rename buttons: alquiler, Bolsas, Packaging.
+  const rename = async (index: number, current: string): Promise<void> => {
+    await userEvent.click(screen.getAllByRole('button', { name: 'Renombrar' })[index] as HTMLElement)
+    expect(screen.getByLabelText(`Nombre de ${current}`)).toBeInTheDocument()
+  }
+  await rename(2, 'Packaging')
+  const input = screen.getByLabelText('Nombre de Packaging')
+  await userEvent.clear(input)
+  await userEvent.type(input, 'Cajas')
+  await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+  await screen.findByText('Cajas')
+
+  // Cajas sorts between Bolsas and alquiler's case-folded place: alquiler, Bolsas, Cajas.
+  await rename(2, 'Cajas')
+})
+
 test('renaming a category that is already gone shows the gone notice and drops the row', async () => {
   renderGroup(
     serving(async (url, init) => {

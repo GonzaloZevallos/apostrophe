@@ -6,10 +6,11 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
+import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
 import { SIN_CONEXION_TITULO } from '../../components/SinConexion'
 import CatalogMessageGroup from './CatalogMessageGroup'
@@ -38,7 +39,8 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-function renderGroup(fetchMock: ReturnType<typeof vi.fn>): void {
+function renderGroup(fetchMock: ReturnType<typeof vi.fn>): QueryClient {
+  const client = new QueryClient()
   vi.stubGlobal('fetch', fetchMock)
   const router = createMemoryRouter(
     [
@@ -56,10 +58,11 @@ function renderGroup(fetchMock: ReturnType<typeof vi.fn>): void {
     },
   )
   render(
-    <QueryClientProvider client={new QueryClient()}>
+    <QueryClientProvider client={client}>
       <RouterProvider router={router} />
     </QueryClientProvider>,
   )
+  return client
 }
 
 function serving(put?: (body: { header: string; footer: string }) => Response) {
@@ -187,25 +190,43 @@ test('discarding leaves the group', async () => {
   expect(await screen.findByText('Lista de grupos')).toBeInTheDocument()
 })
 
-test('after saving, "Cerrar" closes at once even while the refetch is pending', async () => {
-  let reads = 0
-  const fetchMock = vi.fn((url: string, init?: RequestInit) => {
-    if (init?.method === 'PUT' && url === '/catalog/header-footer') {
-      const body = JSON.parse(String(init.body)) as { header: string; footer: string }
-      return Promise.resolve(jsonResponse(200, { ...CATALOG, ...body }))
-    }
-    reads += 1
-    // The first read answers; any later one (a refetch after the save) never does.
-    return reads === 1 ? Promise.resolve(jsonResponse(200, CATALOG)) : new Promise<Response>(() => {})
-  })
-  renderGroup(fetchMock)
+test('after saving, dirty is measured against what the server accepted, not the query cache', async () => {
+  const client = renderGroup(
+    serving((body) => jsonResponse(200, { ...CATALOG, ...body })),
+  )
   await screen.findByLabelText('Encabezado')
 
   await type('Pie', 'Guardado')
   await userEvent.click(screen.getByRole('button', { name: 'Guardá el mensaje' }))
   await screen.findByText('Catálogo guardado')
+  // The cache moves to something else entirely (a refetch, a partner's edit): the group's
+  // `accepted` is the PUT answer, so closing is still at once.
+  act(() => {
+    client.setQueryData(keys.catalog(), { ...CATALOG, header: 'Otro', footer: 'Otro' })
+  })
   await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
 
   await waitFor(() => expect(screen.getByText('Lista de grupos')).toBeInTheDocument())
   expect(screen.queryByText('¿Descartás el mensaje?')).not.toBeInTheDocument()
+})
+
+test('after saving, a real change asks again', async () => {
+  renderGroup(serving((body) => jsonResponse(200, { ...CATALOG, ...body })))
+  await screen.findByLabelText('Encabezado')
+
+  await type('Pie', 'Guardado')
+  await userEvent.click(screen.getByRole('button', { name: 'Guardá el mensaje' }))
+  await screen.findByText('Catálogo guardado')
+  await type('Pie', 'Otra vez')
+  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+
+  expect(await screen.findByText('¿Descartás el mensaje?')).toBeInTheDocument()
+})
+
+test('the header and footer fields never carry maxLength: the backend counts the 500', async () => {
+  renderGroup(serving())
+  const header = await screen.findByLabelText('Encabezado')
+
+  expect(header).not.toHaveAttribute('maxlength')
+  expect(screen.getByLabelText('Pie')).not.toHaveAttribute('maxlength')
 })
