@@ -8,7 +8,7 @@
  * expense, hence the fixed line at the bottom.
  */
 
-import { type FormEvent, useState } from 'react'
+import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useOutletContext } from 'react-router'
 import { ApiError, NetworkError, UNKNOWN_CODE } from '../api/client'
@@ -372,14 +372,21 @@ export default function Gastos() {
   const view = useQuery({ queryKey: keys.expenses(month), queryFn: () => monthlyView(month) })
   const categories = useQuery({ queryKey: keys.expenseCategories(), queryFn: listCategories })
 
+  // The notices clear themselves after 2.5 s; a pending timer must not outlive the screen.
+  const timers = useRef<number[]>([])
+  useEffect(() => {
+    const pending = timers.current
+    return () => pending.forEach((id) => window.clearTimeout(id))
+  }, [])
+
   function flash(message: SuccessToast): void {
     setToast(message)
-    setTimeout(() => setToast(null), 2500)
+    timers.current.push(window.setTimeout(() => setToast(null), 2500))
   }
 
   function flashGone(): void {
     setGoneNotice(true)
-    setTimeout(() => setGoneNotice(false), 2500)
+    timers.current.push(window.setTimeout(() => setGoneNotice(false), 2500))
   }
 
   function categoryNameOf(categoryId: number): string {
