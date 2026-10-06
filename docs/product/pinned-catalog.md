@@ -2,7 +2,7 @@
 
 Each business's own Telegram bot delivers the catalog text (catalog.md) to the business's chat as one pinned message and keeps it in step on its own. The seller sees a test copy in their own chat first. Seen only by its business (ADR-0004). The text comes from the catalog's single author (ADR-0022). This capability sends it and keeps it current. The bot only publishes; it never takes orders.
 
-Where its pieces live (navigation.md): the bot settings and Probarlo are in Configuración → Integraciones, with a plain link to the catalog screen; the pin's status and Publicar are on the catalog screen (catalog.md); Inicio carries the out-of-date notice.
+Where its pieces live (navigation.md): the bot settings and Probarlo are in Configuración → Integraciones, with a plain link to the catalog screen; the pin's status and Publicar are on the catalog screen (catalog.md); Inicio carries the out-of-date notice. Until Integraciones exists, the bot settings and Probarlo sit in a temporary place reached only from the catalog screen (catalog.md).
 
 ## Jobs
 
@@ -28,7 +28,8 @@ Setup (token, chats, first Probarlo and Publicar) is judged by criteria 3, 5 and
 ### Bot settings, per business (Configuración → Integraciones)
 
 - One token, one channel chat and one own chat per business.
-- **Where**: the Integraciones group of Configuración, a form (navigation.md): "Cerrar", and a confirmation when leaving with something typed and not saved. It is the only place they are seen or changed; the catalog screen no longer holds them, and old paths to them redirect here.
+- **Where**: the Integraciones group of Configuración, a form (navigation.md): "Cerrar", and a confirmation when leaving with something typed and not saved. It is the only place they are seen or changed; the catalog screen holds none of them, and old paths to them redirect here.
+  - **Temporary exception**: until Integraciones exists, they are seen and changed, exactly as before and with no rework, in the temporary place reached only from the catalog screen (catalog.md). It has no tab, Más entry, Configuración group or "coming soon" mark, shows no pin status and no Publicar, and is removed when Configuración ships.
 - **Token**:
   - stored encrypted, keyed from `APOSTROPHE_SECRET_KEY`;
   - once saved, no route returns it and it is never logged;
@@ -55,7 +56,7 @@ Setup (token, chats, first Probarlo and Publicar) is judged by criteria 3, 5 and
 
 ### Publicar (publish and pin, on the catalog screen)
 
-- **What it needs**: a saved channel chat, and a successful Probarlo since the token or either chat last changed. Until then it shows as disabled with its reason in words ("Probalo primero para ver cómo queda", or that the channel is missing) and a link to Configuración → Integraciones.
+- **What it needs**: a saved channel chat, and a successful Probarlo since the token or either chat last changed. Until then it shows as disabled with its reason in words ("Probalo primero para ver cómo queda", or that the channel is missing) and a link to Configuración → Integraciones (the temporary place until Integraciones exists).
 - **Posting and editing**:
   - The first Publicar to a channel chat posts the message and pins it.
   - A later Publicar edits that same message and pins it again, so a message unpinned by hand is pinned back.
@@ -103,7 +104,7 @@ Setup (token, chats, first Probarlo and Publicar) is judged by criteria 3, 5 and
 - **Where it shows**:
   - on the catalog screen, next to Publicar (catalog.md);
   - on Inicio: while the status is "Desactualizado", the fixed line "Tu catálogo en Telegram está desactualizado", which opens the catalog screen. It is a notice, not a figure (results.md);
-  - never in Integraciones.
+  - never in Integraciones, nor in the temporary place.
 
 ### Nothing qualifies
 
@@ -157,16 +158,16 @@ Setup (token, chats, first Probarlo and Publicar) is judged by criteria 3, 5 and
 - **Settings changes (criteria 2, 4)**:
   - changing only the own chat keeps upkeep running and the status unchanged;
   - a tested token or channel change reads "Falta publicarlo con el bot o el canal nuevo", with no "El último fue", until Publicar.
-- **Unavailable Publicar**: with no saved channel or no successful Probarlo since the last change, the catalog screen shows Publicar disabled with its reason in words and a link that opens Integraciones.
-- **Integraciones**: a front test shows the link to the catalog screen, no pin status and no Publicar, empty fields and no "Guardado" line with nothing saved, and the "desfijalo vos en Telegram" line after a token or channel change.
+- **Unavailable Publicar**: with no saved channel or no successful Probarlo since the last change, the catalog screen shows Publicar disabled with its reason in words and a link that opens Integraciones (the temporary place until Integraciones exists).
+- **Integraciones**: a front test shows the link to the catalog screen, no pin status and no Publicar, empty fields and no "Guardado" line with nothing saved, and the "desfijalo vos en Telegram" line after a token or channel change. While the temporary place stands in for it, the same test covers the temporary place, minus the link back (it is reached from the catalog screen).
 - **Secrecy and isolation (criterion 5)**:
   - the token is never in any answer, log line or browser storage across a full front run;
   - every route is in the sweep and answers 404 or empty from another business.
 
   0 leaks.
 - **No curl (criterion 6)**: an end-to-end front run:
-  - in Configuración → Integraciones, enters the token, the own chat and the channel chat and runs Probarlo;
-  - follows Integraciones' link to the catalog screen, sees Publicar enabled and runs it;
+  - in Configuración → Integraciones (or the temporary place until it exists), enters the token, the own chat and the channel chat and runs Probarlo;
+  - reaches the catalog screen, sees Publicar enabled and runs it;
   - sees "Al día" on the catalog screen and no line on Inicio.
 
 ## Out of scope
@@ -177,7 +178,8 @@ Setup (token, chats, first Probarlo and Publicar) is judged by criteria 3, 5 and
 - Splitting a long catalog across several messages, or cutting it short.
 - Upkeep posting a new message on its own.
 - A pending state, or a "Reintentar" control.
-- The pin's status or Publicar in Integraciones.
+- The pin's status or Publicar in Integraciones or in the temporary place.
 - Checking chat formats.
 - Live updates while a screen is open.
 - A bot shared between businesses.
+- Redesigning the bot settings while they sit in the temporary place.
