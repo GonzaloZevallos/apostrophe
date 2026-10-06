@@ -45,7 +45,13 @@ from app.results.adapters.router import router as results_router
 from app.sales.adapters.router import router as sales_router
 from app.sales.adapters.sales_ledger import SqlSalesLedger
 from app.settings import Settings
-from app.static_spa import MissingBuiltFront, SpaStatic, api_segments
+from app.static_spa import (
+    MissingBuiltFront,
+    NavigationFallback,
+    SpaStatic,
+    api_segments,
+    route_segments,
+)
 from app.stock.adapters.draw_costs import SqlDrawCosts
 from app.stock.adapters.line_costs import SqlLineCosts
 from app.stock.adapters.purchases import SqlPurchases
@@ -225,4 +231,10 @@ def create_app(
         # adds no entry to `app.openapi()["paths"]`.
         segments = api_segments(app.openapi()["paths"])
         app.mount("/", SpaStatic(settings.web_dist, segments))
+        # Ahead of routing: a navigation to `/sales` must reach the front, not the API.
+        app.add_middleware(
+            NavigationFallback,
+            index=settings.web_dist / "index.html",
+            segments=route_segments(),
+        )
     return app

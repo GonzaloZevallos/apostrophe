@@ -167,9 +167,11 @@ def test_the_contract_check_fails_when_a_gone_code_is_labelled_refusal() -> None
         check_contract({"a.code": "gone"}, {"a.code": {"kind": "refusal"}})
 
 
-def test_no_api_path_segment_is_a_front_segment() -> None:
+def test_no_api_path_segment_is_a_static_segment() -> None:
+    # Only the static files must stay out of the API's way; the route segments may overlap
+    # it, because `NavigationFallback` tells a navigation from an API call (ADR-0024).
     contract = json.loads(CONTRACT_PATH.read_text())
-    front_segments: set[str] = set(contract["frontSegments"])
+    static_segments: set[str] = set(contract["staticSegments"])
 
     document = create_app(
         SETTINGS, hasher=TEST_HASHER, telegram=FakeTelegram(), upkeep_ticker=False
@@ -178,4 +180,4 @@ def test_no_api_path_segment_is_a_front_segment() -> None:
         path.strip("/").split("/", 1)[0] for path in document["paths"] if path != "/"
     }
 
-    assert api_first_segments.isdisjoint(front_segments)
+    assert api_first_segments.isdisjoint(static_segments)
