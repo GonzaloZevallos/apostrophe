@@ -33,14 +33,6 @@ button {
   font-family: var(--fuente);
 }
 
-.entrar__contenido {
-  flex: 1;
-  padding: 72px var(--margen-pantalla) 0;
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
-}
-
 .marca {
   display: flex;
   align-items: baseline;
@@ -59,19 +51,6 @@ button {
   color: var(--tinta2);
   line-height: 1.5;
   margin: 10px 0 0;
-}
-
-.invitacion__pastilla {
-  display: block;
-  font-size: 14px;
-  color: var(--acento);
-}
-
-.invitacion__titulo {
-  font-size: 28px;
-  font-weight: 600;
-  letter-spacing: -0.03em;
-  margin: 4px 0 0;
 }
 
 .formulario {
@@ -258,6 +237,15 @@ button {
   color: var(--tinta2);
   line-height: 1.5;
   max-width: 250px;
+}
+
+/* The card's one button (`GoneScreen`'s "Volver a …", an empty state's call to
+ * action): a router `Link`, so it needs the underline off, room around its text and
+ * the design's 6px of extra air above it. */
+.estado-vacio .boton {
+  margin-top: var(--espacio-sm);
+  padding: 0 var(--espacio-xxl);
+  text-decoration: none;
 }
 
 .aviso-flotante {
@@ -1569,6 +1557,9 @@ button {
 /* "Venta guardada" with Deshacer (`Estados`): the one success notice with an
  * action, a deliberate exception (plan, invariants) — never the plain `.toast`/
  * `Notice` shape, so Deshacer can sit right next to the text. */
+/* The design draws it 18px round with 15px 18px of padding; none of those has a
+ * token, so `--radio-panel` (20px) and `--espacio-lg`/`--espacio-xl` (16px/20px) are
+ * the nearest, a design defect. */
 .venta-guardada {
   display: flex;
   align-items: center;
@@ -1577,10 +1568,11 @@ button {
   background: var(--boton);
   color: var(--boton-texto);
   border-radius: var(--radio-panel);
-  padding: var(--espacio-md) var(--espacio-lg);
+  padding: var(--espacio-lg) var(--espacio-xl);
 }
 
 .venta-guardada__texto {
+  flex: 1;
   font-size: 15px;
   font-weight: 500;
 }
@@ -1884,7 +1876,9 @@ button {
   color: var(--boton-texto);
   font-size: 15px;
   font-weight: 600;
-  text-decoration: underline;
+  opacity: 0.75;
+  min-height: var(--alto-tocable);
+  padding: 0 var(--espacio-xs);
   cursor: pointer;
 }
 
@@ -2421,3 +2415,88 @@ button {
     color: var(--tinta2);
   }
 }
+
+/* ===== Loading ===== */
+/* `Loading` (`Estados.dc.html`, "Cargando"): three skeleton shapes in the surface
+ * color. Shapes only: no text, so nothing here can read as data. */
+.cargando {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-lg);
+}
+
+.cargando__barra {
+  display: block;
+  background: var(--superficie);
+}
+
+.cargando__barra--corta {
+  width: 120px;
+  height: 13px;
+  border-radius: var(--radio-pildora);
+}
+
+.cargando__barra--ancha {
+  width: 210px;
+  height: 36px;
+  border-radius: var(--radio-campo);
+}
+
+.cargando__tarjetas {
+  display: flex;
+  gap: var(--espacio-md);
+}
+
+.cargando__tarjeta {
+  flex: 1;
+  height: 72px;
+  border-radius: var(--radio-panel);
+  background: var(--superficie);
+}
+/* ===== end Loading ===== */
+
+/* ===== auth-layout ===== */
+/* `AuthPage` (ADR-0025): the one centred, phone-width column every getting-in screen
+ * renders through, on every viewport. Tokens only. */
+.auth-page {
+  align-items: center;
+}
+
+.auth-page__columna {
+  flex: 1;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 430px;
+  padding: var(--margen-pantalla);
+  padding-top: calc(var(--alto-boton) + var(--espacio-md));
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--espacio-xxl) + var(--espacio-sm));
+}
+
+/* The footer line ("Para usar apostrophe…", the invitation's expiry) sits at the foot
+ * of the column; the column's own padding already gives its side margins. */
+.auth-page__columna .pie {
+  margin-top: auto;
+  padding: 0;
+}
+
+/* The reveal ("Mostrar"/"Ocultar") is not in the design: it sits at the field's right
+ * edge so it reads as the field's own, not as a third button. */
+.auth-page .boton-enlace {
+  align-self: flex-end;
+}
+
+.auth-page__pastilla {
+  display: block;
+  font-size: 14px;
+  color: var(--acento);
+}
+
+.auth-page__titulo {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  margin: var(--espacio-xs) 0 0;
+}
+/* ===== end auth-layout ===== */

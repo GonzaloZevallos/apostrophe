@@ -4,7 +4,7 @@ Businesses, their users, the only way in (an invitation and a login), the way ba
 
 - how it is served, installed and themed;
 - how the installation is published on the internet and backed up (ADR-0016);
-- the feedback rules every screen follows;
+- the feedback rules every screen follows, and the shared states (`Estados`) that draw them;
 - the Negocio, Usuarios and Tu cuenta groups of Configuración.
 
 Where every screen sits (tabs, sidebar, Más, Configuración, the chrome and back rule, routes, first run) is navigation.md. Inicio, where the app opens, is the panel defined in results.md.
@@ -24,6 +24,10 @@ Where every screen sits (tabs, sidebar, Más, Configuración, the chrome and bac
 These two refine the "log in once and stay in" job above. The operator's command is the reset job's mechanism, not a job of its own.
 
 **When** I run my business from my phone (handing over an order, answering a customer on Telegram, paying for something, or catching up at the end of the day), **I want to** get in with the link I was sent and keep my customers, my prices, my stock and my expenses up to date from the phone, **so I can** stop keeping them in the spreadsheet and have real data in place when sales arrive. The computer is the same job on a bigger screen.
+
+**When** I open the app from an invitation link for the first time, come back with a reset link after forgetting my password, log in again on my phone, or land on a screen that is empty, still loading or failing, **I want** one clear screen on my phone that gets me in or tells me in plain words what happened and what to do next, **so I can** get back to my books without asking anyone, guessing, or learning anything about other businesses or users.
+
+This refines the "log in once and stay in", "get in with the link I was sent" and forgotten-password jobs above; it is not a new job. Its protagonist is the seller; the operator's commands stay outside the app.
 
 **When** I open the app on my phone or computer, whatever my device's light or dark setting, **I want** to see it as it was designed ("Papel y azul": warm paper background, brown-black ink, one blue), **so I** always work in the one look that was designed and checked for reading figures, states and amounts, and the dark theme shows only once I choose it (in Configuración → Apariencia, navigation.md).
 
@@ -98,6 +102,15 @@ Success criteria, changing and resetting a password:
     - While either lock is active, Change is refused with the same brake message.
     - Nothing in either flow tells whether an email has a user. The operator's terminal is the exception, because the operator is not a user.
 22. **No curl.** Both flows run entirely from the phone. The operator's command is the only exception, and it sits outside the app as `invite-business.sh` does.
+
+Success criteria, the getting-in screens and shared states as redesigned (GH-49):
+
+27. **Getting in is fast.** From the phone, a seller opens an invitation link, or a reset link, and lands on Inicio signed in in under a minute, and logs in from Entrar in a few seconds. No step appears that the design does not draw.
+28. **Every state is told by word and shape, never by color alone**: the brake message, "Esta invitación ya no sirve", "Este enlace ya no sirve. Pedile uno nuevo a quien te lo pasó.", "Sin conexión", empty, loading, the generic server-error retry and "Eso ya no está.". All copy in Rioplatense Spanish with vos.
+29. **Phone and computer match the design.** Entrar, NegocioNuevo, Invitacion, the reset screen and Estados match `docs/product/design-system/pantallas/` on both, checked by eye; `scripts/design/compare.sh` runs before and after.
+30. **The look reveals nothing new.** No screen or state says whether an email has a user, which brake fired or how many attempts are left; a dead link never says why; "Eso ya no está." carries no id, name or date; no personal data or money reaches the console or browser storage.
+31. **Both themes.** These screens follow the theme rule (criteria 23–25), with no token change.
+32. **No behaviour regresses.** Every accounts, navigation and feedback test passes unchanged.
 
 Success criteria, removing a business:
 
@@ -268,13 +281,16 @@ Success criteria, removing a business:
   - The font is self-hosted.
 - **Language and formats**: every word on screen in Rioplatense Spanish with vos. Money `$ 11.000`, a negative amount `−$ 4.500`, grams `3,5 g`, dates `dd/mm`. The catalog text keeps its own Telegram format (`$11.000`, catalog.md).
 - **Getting in** (`Entrar`, `NegocioNuevo`, `Invitacion`, the reset screen):
-  - Login shows a fixed hint under the button that five failed attempts lock the email for 15 minutes. It shows no count of attempts left.
-  - Either lock shows the brake message. No copy names the address brake.
+  - **Drawn from the design** in `docs/product/design-system/pantallas/` (GH-49). Where the design's wording differs from this file, this file wins and the difference is a defect in the design.
+  - **One centred, phone-width layout** on every viewport, the computer's included; there is no computer-only layout for these screens.
+  - **Entrar**: the labels "Email" and "Contraseña" and the button "Entrá". It shows a fixed hint under the button that five failed attempts lock the email for 15 minutes, and no count of attempts left. A wrong password and an unknown email show the same refusal; refusals show inline and keep what was typed.
+  - Either lock shows the brake message. No copy names the address brake, and both locks look and read the same.
   - A request answered 401 goes to login.
   - An unknown, used or expired invitation shows "Esta invitación ya no sirve".
   - Opening `/invitation/{token}` or `/reset/{token}` while signed in logs out first, through the backend, then shows the invitation or the reset screen as if signed out. That includes the user's own business's join link, and a reset link for the same user.
-  - **The reset screen** (`/reset/{token}`) is shaped like `Invitacion`:
-    - "Elegí tu contraseña nueva", one field "Contraseña nueva" and the button "Guardar y entrar";
+  - **The reset screen** (`/reset/{token}`) reuses `Invitacion`'s layout; it has no design file of its own and is registered in `scripts/design/screens.json` as a signed-out phone screen:
+    - "Elegí tu contraseña nueva", one field "Contraseña nueva" (hidden by default, with a reveal) and the button "Guardar y entrar";
+    - a password under 10 characters shows the same refusal as accepting an invitation and keeps what was typed;
     - on success it goes to Inicio, with no toast.
   - **A dead reset link**: an unknown, used, expired or retired link shows "Este enlace ya no sirve. Pedile uno nuevo a quien te lo pasó."
     - It shows both when the link is opened and when a submit answers 404.
@@ -336,6 +352,8 @@ These three groups of Configuración (navigation.md) replace the former Negocio 
 
 ### Feedback, on every screen
 
+These states are drawn by `Estados` (GH-49), restyled from the design with their wording unchanged; each is checked on the phone and inside every screen's own computer layout (InicioCompu, VentasCompu, the two-pane Clientes and Variedades), with the same words and shapes. `Estados` draws nothing for a state no capability defines.
+
 - **Success toasts** are short, fixed and carry no data, with one deliberate exception.
   - This capability's toasts:
     - "Negocio renombrado";
@@ -343,6 +361,8 @@ These three groups of Configuración (navigation.md) replace the former Negocio 
     - "Contraseña cambiada · cerramos tus otras sesiones".
   - The exception is "Cobro guardado · queda debiendo $ X" (payments.md). It names what the customer still owes, because seeing that is the point of recording a payment. When nothing is left owing it reads "Cobro guardado".
 - **No "Deshacer" on success toasts, with one deliberate exception**: "Venta guardada" (sales.md) carries Deshacer, because recording a sale is the fastest and most frequent entry. It still carries no data. No other success notice gets one.
+- **Loading**: while a screen waits for the server, it shows a loading state whose wording and shape follow the design. It shows no figure, no placeholder amount and no text that could be read as data (criterion 7).
+- **Empty states** keep each capability's own fixed wording.
 - **Leaving a form or sheet** with unsaved changes asks before discarding, and an untouched one closes at once (navigation.md). Nueva venta's question is "¿Descartás la venta?" (sales.md).
 - **Refusals** show inline and keep what was typed. The one exception: a wrong current password clears "Contraseña actual".
 - **No network** shows "Sin conexión"; a server error shows a generic retry.
@@ -354,6 +374,7 @@ These three groups of Configuración (navigation.md) replace the former Negocio 
   - The notice is not a success toast. It has no data, no "Deshacer" and no "Reintentar", and it is announced like a toast.
   - Confirming the delete of a record already gone gives the same notice, not the delete's success toast.
   - **Opening the detail of a record that is gone** (a variety, a customer, an expense, a sale or a stock entry) shows "Eso ya no está." with one button back to its list: "Volver a Variedades" (a variety or a stock entry), "Volver a Clientes", "Volver a Gastos" (the current month) or "Volver a Ventas". It carries no id, name or date.
+- No state is told by color alone (blue ↔ amber, never green ↔ red), in either theme.
 
 ## Metrics
 
@@ -408,6 +429,14 @@ These three groups of Configuración (navigation.md) replace the former Negocio 
   - changes a password from Configuración → Tu cuenta, after which an old session is signed out and this one stays in;
   - completes a reset from a printed link through to Inicio;
   - sees the dead-link state for a used link.
+- **Getting in, redesigned (criteria 27–32)**:
+  - fast: from a phone viewport, the end-to-end front run accepts an invitation, completes a reset from a printed link and logs in at Entrar, each landing on Inicio signed in, the links in under 60 s;
+  - states: front tests show each fixed text (brake message, both dead-link texts, "Sin conexión", the retry, both "Eso ya no está." forms, loading); shape and color checked by eye in both themes;
+  - loading is not data: a front test shows the loading state holds no digit, currency symbol or placeholder figure;
+  - design: `scripts/design/compare.sh` runs before and after for Entrar, NegocioNuevo, Invitacion, `/reset/{token}` and Estados, with the comparisons attached to the PR; a by-eye pass at phone and computer viewports covers the getting-in screens and Estados inside the computer layouts; every design-vs-docs wording difference is listed in the PR;
+  - nothing revealed: the same refusal for a wrong password and an unknown email, no attempt count, no brake detail; dead-link and "Eso ya no está." carry no id, name, date or reason;
+  - registry: `scripts/design/screens.json` holds `/reset/{token}` and `compare.sh` measures it;
+  - no regression: the existing suite passes with no test edited to fit the new look.
 - **Nothing survives (criterion 11)**:
   - after a real run on one of two seeded businesses with one of everything, 0 rows carry its id in any table discovered from the schema;
   - pending, used and expired invitations all go;
@@ -468,6 +497,8 @@ These three groups of Configuración (navigation.md) replace the former Negocio 
 - Roles within a business.
 - Offline use; an install walkthrough on iOS or Android.
 - A "follow the system" theme option.
+- A computer-only layout for the getting-in screens; a design file of its own for the reset screen.
+- Any state drawn in Estados that no capability defines.
 - TLS on the home network, including local certificates: the published installation gets TLS from Render (ADR-0016).
 - Live updates between partners: a list refreshes when it is opened or after a save, not when the other partner changes something.
 - Stopping a guessing run spread across many addresses and many emails at once.

@@ -14,7 +14,7 @@
  * expense, hence the fixed line at the bottom.
  */
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useOutletContext, useSearchParams } from 'react-router'
 import { ApiError, NetworkError } from '../api/client'
@@ -29,6 +29,7 @@ import GoneNotice from '../components/GoneNotice'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import Icono from '../components/Icono'
 import SinConexion from '../components/SinConexion'
+import Loading from '../components/Loading'
 import { useFlash } from '../flash/useFlash'
 import { EXPENSE_CATEGORIES, EXPENSE_NEW } from '../routes'
 import ExpenseForm from './expenses/ExpenseForm'
@@ -127,13 +128,20 @@ export default function Gastos() {
 
   const view = useQuery({ queryKey: keys.expenses(month), queryFn: () => monthlyView(month) })
 
+  // The gone notice clears itself after 2.5 s; a pending timer must not outlive the screen.
+  const timers = useRef<number[]>([])
+  useEffect(() => {
+    const pending = timers.current
+    return () => pending.forEach((id) => window.clearTimeout(id))
+  }, [])
+
   function moveMonth(delta: number): void {
     setSearchParams({ month: shiftMonth(month, delta) }, { replace: true })
   }
 
   function flashGone(): void {
     setGoneNotice(true)
-    setTimeout(() => setGoneNotice(false), 2500)
+    timers.current.push(window.setTimeout(() => setGoneNotice(false), 2500))
   }
 
   function closeEdit(): void {
@@ -184,6 +192,7 @@ export default function Gastos() {
           </div>
         </div>
 
+        {view.isPending && <Loading />}
         {view.isError && view.error instanceof NetworkError && <SinConexion />}
         {view.isError && !(view.error instanceof NetworkError) && <ErrorGenerico />}
 

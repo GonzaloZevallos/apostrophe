@@ -23,6 +23,7 @@ import Aviso, { type SuccessToast } from '../components/Aviso'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import GoneNotice from '../components/GoneNotice'
 import SinConexion from '../components/SinConexion'
+import Loading from '../components/Loading'
 import { EXPENSES } from '../routes'
 
 export const CANNOT_REMOVE = 'No se puede borrar: todavía tiene gastos. Podés renombrarla.'
@@ -206,7 +207,7 @@ export default function GastoCategorias() {
         </Link>
         <span className="encabezado__titulo">Categorías</span>
 
-        {categories.isPending && null}
+        {categories.isPending && <Loading />}
         {categories.isError && categories.error instanceof NetworkError && <SinConexion />}
         {categories.isError && !(categories.error instanceof NetworkError) && <ErrorGenerico />}
 

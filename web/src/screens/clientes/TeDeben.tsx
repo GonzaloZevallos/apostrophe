@@ -12,6 +12,7 @@ import { keys } from '../../api/keys'
 import { getDebtors } from '../../api/payments'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
+import Loading from '../../components/Loading'
 import { salesCount } from '../../format/counts'
 import { formatDateShort } from '../../format/dates'
 import { formatMoney } from '../../format/money'
@@ -34,6 +35,8 @@ export default function TeDeben() {
 
         {isError && error instanceof NetworkError && <SinConexion />}
         {isError && !(error instanceof NetworkError) && <ErrorGenerico />}
+
+        {isPending && <Loading />}
 
         {!isError && !isPending && data !== undefined && (
           <>

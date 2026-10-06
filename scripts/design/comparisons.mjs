@@ -52,6 +52,8 @@ async function run(page, step) {
   if (step.click) await page.getByText(step.click, { exact: true }).first().click()
   else if (step.fill) await page.getByLabel(step.fill.label).first().fill(resolveFacts(step.fill.value))
   else if (step.wait) await page.getByText(step.wait, { exact: true }).first().waitFor()
+  // The page has settled by now: only the network goes, the page is never reloaded.
+  else if (step.offline) await page.context().setOffline(true)
   else throw new Error(`unknown step ${JSON.stringify(step)}`)
 }
 
@@ -60,12 +62,18 @@ async function settle(page) {
   await page.evaluate(() => document.fonts.ready)
 }
 
+// The design file an entry is compared against: `design`, else the entry's own name.
+const designOf = (s) => s.design ?? s.screen
+
 async function captureDesign(browser, s, options) {
   const context = await browser.newContext(options)
   const page = await context.newPage()
-  await page.goto(pathToFileURL(join(PROTOTYPE, `${s.screen}.dc.html`)).href)
+  await page.goto(pathToFileURL(join(PROTOTYPE, `${designOf(s)}.dc.html`)).href)
   await settle(page)
-  const png = await page.screenshot({ fullPage: true })
+  // A file that draws several states: only the block under the entry's `section` label.
+  const png = s.section
+    ? await page.getByText(s.section, { exact: true }).first().locator('xpath=..').screenshot()
+    : await page.screenshot({ fullPage: true })
   await context.close()
   return png
 }
@@ -126,7 +134,7 @@ async function composeSheet(browser, s, width, design, built, notes, file) {
     figcaption{font-weight:600;margin-bottom:8px} img{display:block;width:${width}px;border:1px solid #9a9085}
     .none{width:${width}px;height:200px;border:1px dashed #9a9085;display:grid;place-items:center}
     </style><h1>${s.screen}</h1>${notes.map((n) => `<p>${n}</p>`).join('')}
-    <div class="row">${column(`Diseño · ${s.screen}.dc.html`, design)}${column(`Construido · ${s.route ?? 'sin ruta'}`, built)}</div>`)
+    <div class="row">${column(`Diseño · ${designOf(s)}.dc.html${s.section ? ` · ${s.section}` : ''}`, design)}${column(`Construido · ${s.route ?? 'sin ruta'}`, built)}</div>`)
   await page.locator('body').screenshot({ path: file })
   await context.close()
 }

@@ -25,6 +25,7 @@ import { Link, useNavigate, useOutletContext } from 'react-router'
 import { ApiError, NetworkError, UNKNOWN_CODE, get, patch, post } from '../api/client'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import SinConexion from '../components/SinConexion'
+import Loading from '../components/Loading'
 import { invalidateResource, keys } from '../api/keys'
 import type { Me } from '../api/me'
 import { kindOf, resolveOverride, type RefusalCode } from '../api/refusals'
@@ -84,7 +85,15 @@ export default function Negocio() {
   const [changingPassword, setChangingPassword] = useState(false)
   const [passwordChanged, setPasswordChanged] = useState(false)
 
-  if (isPending) return <main className="pantalla" />
+  if (isPending) {
+    return (
+      <main className="pantalla">
+        <div className="cuerpo">
+          <Loading />
+        </div>
+      </main>
+    )
+  }
 
   if (isError) {
     return (
