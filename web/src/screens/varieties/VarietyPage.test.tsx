@@ -638,3 +638,160 @@ describe('Aviso de stock bajo: the form', () => {
     expect(await screen.findByLabelText('Avisar con menos de')).toHaveValue('20')
   })
 })
+
+describe('En el catálogo: the form', () => {
+  const section = async () =>
+    (await screen.findByRole('heading', { name: 'En el catálogo' })).closest('section') as HTMLElement
+
+  test('the section is read-only until "Editar" opens one form holding the four saved values', async () => {
+    const user = userEvent.setup()
+    renderPage('/varieties/1')
+
+    const before = await section()
+    expect(screen.queryByLabelText('Emoji')).not.toBeInTheDocument()
+    await user.click(within(before).getByRole('button', { name: 'Editar catálogo' }))
+
+    expect(await screen.findByLabelText('Emoji')).toHaveValue('🍪')
+    expect(screen.getByLabelText('% índica')).toHaveValue('70')
+    expect(screen.getByLabelText('Aroma/sabor')).toHaveValue('Galletita y vainilla')
+    expect(screen.getByRole('switch', { name: 'Mostrar en el catálogo' })).toBeChecked()
+    expect(screen.getByRole('button', { name: 'Guardá el catálogo' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Cerrar' })).toBeInTheDocument()
+  })
+
+  test('saving puts the four values, closes the form, toasts and asks the catalog again', async () => {
+    const user = userEvent.setup()
+    const { fetchMock } = renderPage('/varieties/1', {
+      'PUT /catalog/varieties/1': () => json(200, CATALOG),
+    })
+    await user.click(within(await section()).getByRole('button', { name: 'Editar catálogo' }))
+    await user.click(screen.getByRole('switch', { name: 'Mostrar en el catálogo' }))
+    const aroma = screen.getByLabelText('Aroma/sabor')
+    await user.clear(aroma)
+    await user.type(aroma, 'Cítrico')
+    await user.clear(screen.getByLabelText('Emoji'))
+    await user.click(screen.getByRole('button', { name: 'Guardá el catálogo' }))
+
+    expect(await screen.findByText('Catálogo guardado')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Emoji')).not.toBeInTheDocument()
+    const put = fetchMock.mock.calls.find(([, init]) => (init as RequestInit | undefined)?.method === 'PUT')
+    expect(put?.[0]).toBe('/catalog/varieties/1')
+    expect(JSON.parse((put?.[1] as RequestInit).body as string)).toEqual({
+      shown: false,
+      emoji: null,
+      indica_share: 70,
+      aroma: 'Cítrico',
+    })
+    await waitFor(() => expect(reads(fetchMock, 'GET /catalog')).toBe(2))
+  })
+
+  test('a too-long aroma is refused under its own field and keeps everything typed', async () => {
+    const user = userEvent.setup()
+    renderPage('/varieties/1', {
+      'PUT /catalog/varieties/1': () => json(422, { code: 'catalog.aroma_too_long' }),
+    })
+    await user.click(within(await section()).getByRole('button', { name: 'Editar catálogo' }))
+    await user.type(screen.getByLabelText('Emoji'), 'x')
+    await user.clear(screen.getByLabelText('% índica'))
+    await user.type(screen.getByLabelText('% índica'), '40')
+    await user.type(screen.getByLabelText('Aroma/sabor'), ' larguísimo')
+    await user.click(screen.getByRole('button', { name: 'Guardá el catálogo' }))
+
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent('El aroma es demasiado largo')
+    expect(alert.closest('label')).toHaveTextContent('Aroma/sabor')
+    expect(screen.getAllByRole('alert')).toHaveLength(1)
+    expect(screen.getByLabelText(/^Aroma\/sabor/)).toHaveValue('Galletita y vainilla larguísimo')
+    expect(screen.getByLabelText(/^Emoji/)).toHaveValue('🍪x')
+    expect(screen.getByLabelText(/^% índica/)).toHaveValue('40')
+  })
+
+  test.each([
+    ['catalog.emoji_invalid', 'Emoji', 'Poné exactamente un emoji'],
+    ['catalog.indica_share_invalid', '% índica', 'El porcentaje de índica va de 0 a 100'],
+  ])('%s is shown under %s only', async (code, label, message) => {
+    const user = userEvent.setup()
+    renderPage('/varieties/1', { 'PUT /catalog/varieties/1': () => json(422, { code }) })
+    await user.click(within(await section()).getByRole('button', { name: 'Editar catálogo' }))
+    await user.type(screen.getByLabelText('Aroma/sabor'), '!')
+    await user.click(screen.getByRole('button', { name: 'Guardá el catálogo' }))
+
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent(message)
+    expect(alert.closest('label')).toHaveTextContent(label)
+  })
+
+  test('an index that is not whole digits is refused under its field without asking the server', async () => {
+    const user = userEvent.setup()
+    const { fetchMock } = renderPage('/varieties/1')
+    await user.click(within(await section()).getByRole('button', { name: 'Editar catálogo' }))
+    await user.clear(screen.getByLabelText('% índica'))
+    await user.type(screen.getByLabelText('% índica'), '7,5')
+    await user.click(screen.getByRole('button', { name: 'Guardá el catálogo' }))
+
+    const alert = await screen.findByRole('alert')
+    expect(alert.closest('label')).toHaveTextContent('% índica')
+    expect(writes(fetchMock)).toEqual([])
+  })
+
+  test('a variety that is gone while saving shows "Eso ya no está."', async () => {
+    const user = userEvent.setup()
+    renderPage('/varieties/1', { 'PUT /catalog/varieties/1': () => json(404, { code: 'catalog.variety_not_found' }) })
+    await user.click(within(await section()).getByRole('button', { name: 'Editar catálogo' }))
+    await user.click(screen.getByRole('button', { name: 'Guardá el catálogo' }))
+
+    expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
+  })
+
+  test('Back closes the form', async () => {
+    const user = userEvent.setup()
+    const { router } = renderPage('/varieties/1')
+    await user.click(within(await section()).getByRole('button', { name: 'Editar catálogo' }))
+    await screen.findByLabelText('Emoji')
+
+    await act(() => router.navigate(-1))
+
+    expect(screen.queryByLabelText('Emoji')).not.toBeInTheDocument()
+  })
+
+  test('typed text is asked about before leaving; keeping stays, discarding closes without saving', async () => {
+    const user = userEvent.setup()
+    const { router, fetchMock } = renderPage('/varieties/1')
+    await user.click(within(await section()).getByRole('button', { name: 'Editar catálogo' }))
+    await user.type(screen.getByLabelText('Aroma/sabor'), ' y menta')
+    await user.click(screen.getByRole('button', { name: 'Cerrar' }))
+
+    expect(await screen.findByText('¿Descartás el cambio?')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'No, seguí escribiendo' }))
+    expect(screen.getByLabelText('Aroma/sabor')).toHaveValue('Galletita y vainilla y menta')
+    await user.click(screen.getByRole('button', { name: 'Cerrar' }))
+    await user.click(await screen.findByRole('button', { name: 'Sí, descartalo' }))
+
+    await waitFor(() => expect(router.state.location.state).toBeNull())
+    expect(writes(fetchMock)).toEqual([])
+  })
+
+  test('closing an untouched form does not ask', async () => {
+    const user = userEvent.setup()
+    const { router } = renderPage('/varieties/1')
+    await user.click(within(await section()).getByRole('button', { name: 'Editar catálogo' }))
+    await user.click(await screen.findByRole('button', { name: 'Cerrar' }))
+
+    await waitFor(() => expect(router.state.location.state).toBeNull())
+    expect(screen.queryByText('¿Descartás el cambio?')).not.toBeInTheDocument()
+  })
+
+  test('a reload with the form open reopens it with the saved values', async () => {
+    renderPage('/varieties/1', {}, { form: 'catalog' })
+
+    expect(await screen.findByLabelText('Aroma/sabor')).toHaveValue('Galletita y vainilla')
+    expect(screen.getByLabelText('Emoji')).toHaveValue('🍪')
+  })
+
+  test('the form never carries a maxLength: the length rule is the server\'s', async () => {
+    renderPage('/varieties/1', {}, { form: 'catalog' })
+    await screen.findByLabelText('Aroma/sabor')
+
+    for (const input of screen.getAllByRole('textbox')) expect(input).not.toHaveAttribute('maxLength')
+  })
+})

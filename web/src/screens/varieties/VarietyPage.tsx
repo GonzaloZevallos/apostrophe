@@ -33,6 +33,7 @@ import { formatGrams, formatMoney } from '../../format/money'
 import { CATALOG_SECTION_ID, ENTRY_NEW, VARIETIES, VARIETY_PRICE_NEW } from '../../routes'
 import { NO_PRICE_TODAY, type Variety } from '../Variedades'
 import type { PriceRow } from './PriceRows'
+import CatalogAttributesForm from './CatalogAttributesForm'
 import RenameForm from './RenameForm'
 import ThresholdForm from './ThresholdForm'
 import VarietyCatalogSection from './VarietyCatalogSection'
@@ -153,6 +154,16 @@ export default function VarietyPage({ varietyId }: { varietyId: number }) {
           <ThresholdForm
             varietyId={varietyId}
             threshold={row.threshold}
+            onDone={onSaved}
+            onCancel={leaveForm}
+            onDirtyChange={onDirtyChange}
+            onGone={onFormGone}
+          />
+        )}
+
+        {form === 'catalog' && catalogRow !== null && (
+          <CatalogAttributesForm
+            row={catalogRow}
             onDone={onSaved}
             onCancel={leaveForm}
             onDirtyChange={onDirtyChange}
