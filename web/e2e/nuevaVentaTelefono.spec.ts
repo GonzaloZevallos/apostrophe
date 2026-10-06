@@ -142,3 +142,65 @@ test('with the viewport shortened the footer stays in view, and the keyboard fla
   await expect(page.locator('.nueva-venta__pie').getByText('Total')).toBeVisible()
   await expect(save).toBeInViewport()
 })
+
+interface TypeMetrics {
+  fontSize: number
+  lineHeight: number
+  letterSpacing: number
+}
+
+async function footerTotalMetrics(page: Page): Promise<TypeMetrics> {
+  return page.locator('.nueva-venta__pie > .cifra-xl').evaluate((node) => {
+    const style = getComputedStyle(node)
+    return {
+      fontSize: parseFloat(style.fontSize),
+      lineHeight: parseFloat(style.lineHeight),
+      letterSpacing: parseFloat(style.letterSpacing),
+    }
+  })
+}
+
+function expectMetrics(actual: TypeMetrics, expected: TypeMetrics): void {
+  expect(Math.abs(actual.fontSize - expected.fontSize)).toBeLessThan(0.01)
+  expect(Math.abs(actual.lineHeight - expected.lineHeight)).toBeLessThan(0.01)
+  expect(Math.abs(actual.letterSpacing - expected.letterSpacing)).toBeLessThan(0.01)
+}
+
+test('the footer total keeps its phone size, line height and tracking, and the computer total its own', async ({
+  page,
+}) => {
+  test.setTimeout(60_000)
+  await signInWithAPricedVariety(page)
+
+  await page.setViewportSize({ width: 375, height: HEIGHT })
+  await page.goto('/ventas/nueva')
+  await expect(page.locator('.nueva-venta__pie > .cifra-xl')).toBeVisible()
+  expectMetrics(await footerTotalMetrics(page), { fontSize: 25, lineHeight: 27.5, letterSpacing: -1.125 })
+
+  await page.setViewportSize({ width: 1280, height: 800 })
+  await page.goto('/ventas/nueva')
+  await expect(page.locator('.nueva-venta__pie > .cifra-xl')).toBeVisible()
+  expectMetrics(await footerTotalMetrics(page), { fontSize: 54, lineHeight: 56.7, letterSpacing: -2.43 })
+})
+
+test('the footer total takes its size and line height from the cifra-m custom properties', async ({ page }) => {
+  test.setTimeout(60_000)
+  await signInWithAPricedVariety(page)
+  await page.goto('/ventas/nueva')
+  await expect(page.locator('.nueva-venta__pie > .cifra-xl')).toBeVisible()
+
+  const token = await page.evaluate(() => {
+    const root = getComputedStyle(document.documentElement)
+    return {
+      size: parseFloat(root.getPropertyValue('--cifra-m-tamano')),
+      leading: parseFloat(root.getPropertyValue('--cifra-m-interlineado')),
+    }
+  })
+  // A token that is not declared resolves to NaN: that is the red state, not a pass.
+  expect(Number.isFinite(token.size)).toBe(true)
+  expect(Number.isFinite(token.leading)).toBe(true)
+
+  const total = await footerTotalMetrics(page)
+  expect(Math.abs(total.fontSize - token.size)).toBeLessThan(0.01)
+  expect(Math.abs(total.lineHeight - token.size * token.leading)).toBeLessThan(0.01)
+})
