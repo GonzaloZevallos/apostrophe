@@ -8,7 +8,7 @@ A `Draw` carries its `DrawSource` explicitly: no code tells a draw's kind by a m
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import assert_never
 
 
@@ -19,7 +19,7 @@ class DrawSource(Enum):
     OWN_USE = "own_use"
 
 
-class WithdrawalReason(Enum):
+class WithdrawalReason(StrEnum):
     """Why grams were taken out of stock with no sale (CONTEXT.md: Promotion, Own
     use). The values are what the database stores."""
 
