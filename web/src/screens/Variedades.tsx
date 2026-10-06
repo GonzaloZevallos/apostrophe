@@ -17,6 +17,7 @@ import { readStock, type VarietyStock } from '../api/stock'
 import AvisoExito, { type SuccessToast } from '../components/AvisoExito'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import MarcaEstado from '../components/MarcaEstado'
+import { GuardedSheet } from '../components/Sheet'
 import SinConexion from '../components/SinConexion'
 import { formatGrams, formatMoney } from '../format/money'
 import { paths } from '../routes/paths'
@@ -148,6 +149,15 @@ export default function Variedades() {
         </div>
         {toast !== null && <AvisoExito texto={toast} />}
         {adding && (
+          <GuardedSheet
+            title="Nueva variedad"
+            values={name}
+            onClose={() => {
+              setAdding(false)
+              setName('')
+              setFormError(null)
+            }}
+          >
           <form className="formulario" onSubmit={onSubmit}>
             <label className="campo">
               <span className="campo__rotulo">Nombre</span>
@@ -169,6 +179,7 @@ export default function Variedades() {
               Guardar
             </button>
           </form>
+          </GuardedSheet>
         )}
         <div className="lista-variedades">
           {(data ?? []).map((variety) => {

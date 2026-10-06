@@ -16,6 +16,7 @@ import { GONE_DETAIL, isGone, kindOf, resolveOverride, type RefusalCode } from '
 import { readStock, setThreshold } from '../api/stock'
 import AvisoExito, { type SuccessToast } from '../components/AvisoExito'
 import ConfirmDialog from '../components/ConfirmDialog'
+import { GuardedSheet } from '../components/Sheet'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import GoneNotice from '../components/GoneNotice'
 import SinConexion from '../components/SinConexion'
@@ -161,6 +162,15 @@ export default function VariedadDetalle() {
     } finally {
       setSavingRename(false)
     }
+  }
+
+  function closePriceForm(): void {
+    setAddingPrice(false)
+    setEffectiveFrom(me.today)
+    setListPrice('')
+    setBulkPrice('')
+    setBulkMinimum('')
+    setPriceError(null)
   }
 
   async function onAddPrice(event: FormEvent<HTMLFormElement>): Promise<void> {
@@ -344,6 +354,7 @@ export default function VariedadDetalle() {
         </div>
 
         {renaming && (
+          <GuardedSheet title="Editar variedad" values={name} onClose={() => setRenaming(false)}>
           <form className="formulario" onSubmit={onRename}>
             <label className="campo">
               <span className="campo__rotulo">Nombre</span>
@@ -365,6 +376,7 @@ export default function VariedadDetalle() {
               Guardar
             </button>
           </form>
+          </GuardedSheet>
         )}
 
         {variety?.current_price === null && (
@@ -392,11 +404,23 @@ export default function VariedadDetalle() {
           </div>
         )}
 
-        <button type="button" className="boton boton--suave" onClick={() => setAddingPrice(true)}>
+        <button
+          type="button"
+          className="boton boton--suave"
+          onClick={() => {
+            setPriceError(null)
+            setAddingPrice(true)
+          }}
+        >
           Nuevo precio
         </button>
 
         {addingPrice && (
+          <GuardedSheet
+            title="Nuevo precio"
+            values={{ effectiveFrom, listPrice, bulkPrice, bulkMinimum }}
+            onClose={closePriceForm}
+          >
           <form className="formulario" onSubmit={onAddPrice}>
             <label className="campo">
               <span className="campo__rotulo">Rige desde</span>
@@ -449,6 +473,7 @@ export default function VariedadDetalle() {
               Guardar precio
             </button>
           </form>
+          </GuardedSheet>
         )}
 
         <span className="campo__rotulo">Aviso de stock bajo</span>

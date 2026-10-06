@@ -8,7 +8,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { SIN_CONEXION_TITULO } from '../../components/SinConexion'
 import NegocioGrupo, { BUSINESS_NAME_INVALID_MESSAGE, RENAME_SUCCESS, RETRY_MESSAGE } from './NegocioGrupo'
-import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
+import { Outlet, RouterProvider, createMemoryRouter } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import type { Me } from '../../api/me'
 import { paths } from '../../routes/paths'
@@ -31,14 +31,15 @@ function renderGrupo(fetchMock: ReturnType<typeof vi.fn>): QueryClient {
   const queryClient = new QueryClient()
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[paths.settingsBusiness()]}>
-        <Routes>
-          <Route element={<Provide />}>
-            <Route path={paths.settingsBusiness()} element={<NegocioGrupo />} />
-          </Route>
-          <Route path={paths.login()} element={<div>Pantalla de entrada</div>} />
-        </Routes>
-      </MemoryRouter>
+      <RouterProvider
+        router={createMemoryRouter(
+          [
+            { element: <Provide />, children: [{ path: paths.settingsBusiness(), element: <NegocioGrupo /> }] },
+            { path: paths.login(), element: <div>Pantalla de entrada</div> },
+          ],
+          { initialEntries: [paths.settingsBusiness()] },
+        )}
+      />
     </QueryClientProvider>,
   )
   return queryClient

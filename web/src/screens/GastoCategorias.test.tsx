@@ -7,7 +7,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router'
+import { RouterProvider, createMemoryRouter } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import { GONE_NOTICE } from '../api/refusals'
 import GastoCategorias, { CANNOT_REMOVE } from './GastoCategorias'
@@ -26,9 +26,12 @@ function renderScreen(fetchImpl: (url: string, init?: RequestInit) => Promise<Re
   vi.stubGlobal('fetch', vi.fn(fetchImpl))
   render(
     <QueryClientProvider client={new QueryClient()}>
-      <MemoryRouter initialEntries={[paths.expenseCategories()]}>
-        <GastoCategorias />
-      </MemoryRouter>
+      <RouterProvider
+        router={createMemoryRouter(
+          [{ path: paths.expenseCategories(), element: <GastoCategorias /> }],
+          { initialEntries: [paths.expenseCategories()] },
+        )}
+      />
     </QueryClientProvider>,
   )
 }

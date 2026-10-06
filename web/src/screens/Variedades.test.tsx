@@ -8,7 +8,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
+import { Outlet, RouterProvider, createMemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import * as client from '../api/client'
 import { ApiError, NetworkError } from '../api/client'
@@ -30,13 +30,12 @@ function renderScreen() {
   const queryClient = new QueryClient()
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[paths.varieties()]}>
-        <Routes>
-          <Route element={<Outlet context={ME} />}>
-            <Route path={paths.varieties()} element={<Variedades />} />
-          </Route>
-        </Routes>
-      </MemoryRouter>
+      <RouterProvider
+        router={createMemoryRouter(
+          [{ element: <Outlet context={ME} />, children: [{ path: paths.varieties(), element: <Variedades /> }] }],
+          { initialEntries: [paths.varieties()] },
+        )}
+      />
     </QueryClientProvider>,
   )
 }

@@ -96,7 +96,7 @@ export function useLeaveGuard({
 /** The values a form opened with, captured once. `touched` is whether `values` differ
  * from them now; a value that is an object compares by its JSON, so a form passes its
  * fields as one plain object. */
-export function useTouched(values: unknown): boolean {
+export function useTouched<T>(values: T): boolean {
   const [seed] = useState(() => JSON.stringify(values))
   return JSON.stringify(values) !== seed
 }

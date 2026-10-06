@@ -382,8 +382,11 @@ export default function NuevaVenta() {
   const [seedCustomerId] = useState(() => (initialCustomerId === null ? null : Number(initialCustomerId)))
   const customerChanged =
     customerOverride !== undefined && (customerOverride?.id ?? null) !== seedCustomerId
+  const [seedDate] = useState(me.today)
   const touched =
     customerChanged ||
+    date !== seedDate ||
+    method !== null ||
     note.trim() !== '' ||
     shipping !== '0' ||
     lines.some((line) => !isBlank(line))

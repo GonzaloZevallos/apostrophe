@@ -7,7 +7,7 @@
  */
 
 import type { ReactNode } from 'react'
-import type { LeaveGuardState } from '../shell/leaveGuard'
+import { type LeaveGuardState, useLeaveGuard, useTouched, type Wording } from '../shell/leaveGuard'
 import { LeaveGuard } from '../shell/LeaveGuardDialog'
 import Boton from './Boton'
 
@@ -37,4 +37,16 @@ export default function Sheet({ title, onClose, guard, look = 'default', childre
       </div>
     </div>
   )
+}
+
+/** A sheet whose own `values` are the form: it captures them when it opens and asks
+ * before closing once they differ. For a sheet that closes by state (no navigation
+ * after a save), so it needs no `allowLeave`. */
+export function GuardedSheet({
+  values,
+  wording,
+  ...rest
+}: Omit<SheetProps, 'guard'> & { values: unknown; wording?: Wording }) {
+  const guard = useLeaveGuard({ touched: useTouched(values), wording })
+  return <Sheet {...rest} guard={guard} />
 }

@@ -96,8 +96,11 @@ export default function Cobro({ customerId, balance, today, onClose, onSaved, on
   const queryClient = useQueryClient()
   // Seed: the amount opens as the whole balance and the date as today, so only a
   // different amount, date or a chosen method counts as touched.
+  // Captured when the sheet opens: a card refetch that moves `balance` meanwhile is
+  // not something the seller typed.
+  const [seed] = useState({ amount, date })
   const guard = useLeaveGuard({
-    touched: amount !== String(balance) || date !== today || method !== null,
+    touched: amount !== seed.amount || date !== seed.date || method !== null,
   })
 
   const parsedAmount = parseMoney(amount)
