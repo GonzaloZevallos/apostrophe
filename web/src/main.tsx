@@ -9,11 +9,14 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App'
 import { startKeepFocusVisible } from './shell/keepFocusVisible'
+import { applyStoredTheme } from './theme'
 import { startThemeSync } from './theme/theme'
 
 const root = document.getElementById('root')
 if (root === null) throw new Error('index.html has no #root')
 
+// ADR-0026: the device's theme before the first render, Entrar included.
+applyStoredTheme()
 startThemeSync()
 startKeepFocusVisible()
 

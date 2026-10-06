@@ -18,6 +18,7 @@ export type SuccessToast =
   | 'Categoría guardada'
   | 'Categoría eliminada'
   | 'Negocio renombrado'
+  | 'Contraseña cambiada · cerramos tus otras sesiones'
   | 'Invitación lista'
   | 'Cliente asignado'
   | 'Aviso guardado'

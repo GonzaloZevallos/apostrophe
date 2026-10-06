@@ -2,8 +2,8 @@
 /**
  * The catalog task's own end-to-end run (plan, "Testing": the Playwright main flow
  * Más → Catálogo → edit → Copiar). A seller adds a variety with a price and stock,
- * opens Catálogo, edits that variety's attributes and the business's header and
- * footer, then copies the result — all through the built front, against the real
+ * opens Catálogo, edits that variety's attributes and, in Configuración, the
+ * business's header and footer, then copies the result — all through the built front, against the real
  * backend (PRD, M1: "no `curl` at any point"; "No curl" metric: "the clipboard
  * equals the API's text, and the preview with markers removed equals it too").
  *
@@ -60,7 +60,7 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
 
   // Más → Catálogo.
   await openMas(page)
-  await page.getByRole('link', { name: /Catálogo/ }).click()
+  await page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /Catálogo/ }).click()
   await expect(page).toHaveURL(/\/catalogo$/)
 
   // Edit Rosa's catalog attributes.
@@ -72,15 +72,17 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
   await expect(page.getByText('Catálogo guardado')).toBeVisible()
   await expect(page.getByText('30% índica · floral, dulce')).toBeVisible()
 
-  // Edit the header and footer. Scoped to the read-only summary row, not a bare
-  // `getByText`: the same strings also sit inside the preview on purpose, and a
-  // substring match is case-insensitive, so an unscoped query is ambiguous by
-  // design, not by a bug.
-  await page.getByRole('button', { name: 'Editar encabezado y pie' }).click()
+  // Edit the header and footer in Configuración → Mensaje del catálogo, then close back
+  // to the catalog screen. The summary row is read-only here; a bare `getByText` would be
+  // ambiguous, since the same strings also sit inside the preview on purpose.
+  await page.getByRole('link', { name: 'Editar encabezado y pie' }).click()
+  await expect(page).toHaveURL(/\/settings\/catalog-message$/)
   await page.getByLabel('Encabezado').fill('🌸 Catálogo de Flores del Catálogo 🌸')
   await page.getByLabel('Pie').fill('Pedidos por privado.')
-  await page.getByRole('button', { name: 'Guardar' }).click()
+  await page.getByRole('button', { name: 'Guardá el mensaje' }).click()
   await expect(page.getByText('Catálogo guardado')).toBeVisible()
+  await page.getByRole('button', { name: 'Cerrar' }).click()
+  await expect(page).toHaveURL(/\/catalogo$/)
   const headerFooterSummary = page.locator('.catalogo__encabezado-pie')
   await expect(headerFooterSummary).toContainText('🌸 Catálogo de Flores del Catálogo 🌸')
   await expect(headerFooterSummary).toContainText('Pedidos por privado.')

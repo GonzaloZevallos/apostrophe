@@ -41,6 +41,8 @@ interface Source {
 function findPathLiterals(files: Source[]): string[] {
   return files
     .filter(({ path }) => path !== 'src/routes.ts')
+    // `redirects.ts` names the old paths on purpose: each line sends one to its new home.
+    .filter(({ path }) => path !== 'src/redirects.ts')
     .filter(({ path }) => !/\.test\.tsx?$/.test(path))
     // `api/` names the server's own routes (`/expenses`), not front paths.
     .filter(({ path }) => !path.startsWith('src/api/'))

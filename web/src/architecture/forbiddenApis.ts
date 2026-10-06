@@ -4,6 +4,8 @@
  * `console`, `localStorage`, `sessionStorage`, `indexedDB` or the Cache API. The
  * service worker carries none of these either, and has no `fetch` handler.
  *
+ * ADR-0026: only `theme.ts` names `localStorage`, for the one `tema=oscuro` entry.
+ *
  * Plan ("Clipboard over plain http"): only `clipboard.ts` names
  * `navigator.clipboard` or `execCommand`, so the home network's plain-http
  * fallback stays in the one module that tests it.
@@ -32,7 +34,11 @@ const RULES: Rule[] = [
   { name: 'fetch', pattern: /\bfetch\s*\(/, allow: (path) => path.endsWith('api/client.ts') },
   { name: 'XMLHttpRequest', pattern: /\bXMLHttpRequest\b/ },
   { name: 'console', pattern: /\bconsole\s*\./ },
-  { name: 'localStorage', pattern: /\blocalStorage\b/ },
+  {
+    name: 'localStorage',
+    pattern: /\blocalStorage\b/,
+    allow: (path) => path === 'src/theme.ts',
+  },
   { name: 'sessionStorage', pattern: /\bsessionStorage\b/ },
   { name: 'indexedDB', pattern: /\bindexedDB\b/ },
   { name: 'CacheStorage', pattern: /\bcaches\s*\./ },

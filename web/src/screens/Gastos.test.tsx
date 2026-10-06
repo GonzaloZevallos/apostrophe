@@ -12,7 +12,7 @@ import { afterEach, expect, test, vi } from 'vitest'
 import { GONE_NOTICE } from '../api/refusals'
 import { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import { SIN_CONEXION_TITULO } from '../components/SinConexion'
-import { EXPENSES } from '../routes'
+import { EXPENSE_CATEGORIES, EXPENSES } from '../routes'
 import { FLOWER_NOTICE } from './Gastos'
 import { CATEGORY_GONE } from './expenses/ExpenseForm'
 import { type FetchImpl, ME, jsonResponse, renderExpenses } from './expenses/renderExpenses'
@@ -393,14 +393,12 @@ test('creating a category inside the expense form keeps what was typed and selec
   expect(screen.getByLabelText('Detalle')).toHaveValue('Sustrato nuevo')
 })
 
-test('keeps its link to the categories screen and renders no link to Configuración', async () => {
+test('links to the expense categories, now a Configuración group, from its foot', async () => {
   renderExpenses([EXPENSES], store([...SEED]))
 
-  expect(await screen.findByRole('link', { name: 'Categorías' })).toBeInTheDocument()
-  for (const link of screen.getAllByRole('link')) {
-    expect(link.getAttribute('href') ?? '').not.toMatch(/^\/settings/)
-  }
-  expect(screen.queryByRole('link', { name: /Configuración/ })).not.toBeInTheDocument()
+  const categories = await screen.findByRole('link', { name: 'Categorías' })
+  expect(categories).toHaveAttribute('href', EXPENSE_CATEGORIES)
+  expect(EXPENSE_CATEGORIES).toBe('/settings/expense-categories')
 })
 
 test('subtotals and the total stay equal to the sum shown after create, edit and delete', async () => {

@@ -21,13 +21,14 @@
 import { expect, test } from '@playwright/test'
 import { newBusinessInvitationUrl, resetLink, supportsPasswordReset } from './backend.js'
 import { watchConsole } from './console.js'
+import { expectOnlyTheThemeStored } from './helpers/storage.js'
 
 const PASSWORD = 'correcthorsebattery'
 const NEW_PASSWORD = 'unanuevaclave99'
 
 test.use({ viewport: { width: 390, height: 844 } })
 
-test('changes a password from Negocio in under a minute, signing an older device out and keeping this one', async ({
+test('changes a password from Configuración → Tu cuenta in under a minute, signing an older device out and keeping this one', async ({
   page,
   browser,
 }) => {
@@ -61,7 +62,7 @@ test('changes a password from Negocio in under a minute, signing an older device
 
   const startedAt = Date.now()
 
-  await page.goto('/negocio')
+  await page.goto('/settings/account')
   await page.getByRole('button', { name: 'Cambiar contraseña' }).click()
   const sheet = page.locator('.capa')
   await sheet.getByLabel('Contraseña actual').fill(PASSWORD)
@@ -72,7 +73,7 @@ test('changes a password from Negocio in under a minute, signing an older device
   expect(Date.now() - startedAt).toBeLessThan(60_000)
 
   // This device stays signed in: `.encabezado__negocio` only renders on Inicio
-  // (`Inicio.tsx`), never on `Negocio` itself, so the check navigates home rather
+  // (`Inicio.tsx`), never on a Configuración group itself, so the check navigates home rather
   // than reloading the settings screen it was already on.
   await page.goto('/')
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
@@ -88,11 +89,7 @@ test('changes a password from Negocio in under a minute, signing an older device
   await expect(otherPage).toHaveURL(/\/entrar$/)
   await otherContext.close()
 
-  const storage = await page.evaluate(() => ({
-    local: Object.keys(localStorage).length,
-    session: Object.keys(sessionStorage).length,
-  }))
-  expect(storage).toEqual({ local: 0, session: 0 })
+  await expectOnlyTheThemeStored(page)
   expect(consoleMessages.filter((message) => message !== EXPECTED_SIGNED_OUT_NETWORK_LOG)).toEqual([])
 })
 
@@ -138,10 +135,6 @@ test('resets a forgotten password from a printed link through to Inicio, then sh
     page.getByText('Este enlace ya no sirve. Pedile uno nuevo a quien te lo pasó.'),
   ).toBeVisible()
 
-  const storage = await page.evaluate(() => ({
-    local: Object.keys(localStorage).length,
-    session: Object.keys(sessionStorage).length,
-  }))
-  expect(storage).toEqual({ local: 0, session: 0 })
+  await expectOnlyTheThemeStored(page)
   expect(consoleMessages.filter((message) => message !== EXPECTED_DEAD_LINK_NETWORK_LOG)).toEqual([])
 })

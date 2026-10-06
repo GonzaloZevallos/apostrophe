@@ -28,7 +28,8 @@
  * and on the phone also drops the bottom bar outright — `NuevaVenta`'s own
  * `/ventas/nueva` and `VentaDetalle`'s `/ventas/:id` are the two routes that set
  * it (`router.tsx`). The side rail's destinations never disappear on the
- * computer: only its button does (plan, "Chrome").
+ * computer: only its button does (plan, "Chrome"). `'card'` (Configuración's list) is
+ * the third case: the bar or the rail stays and only "+ Nueva venta" goes.
  */
 
 import { Fragment } from 'react'
@@ -45,6 +46,9 @@ import type { Me } from '../api/me'
 import Icono, { type NombreIcono } from '../components/Icono'
 import { ANALYSIS, EXPENSES, MORE } from '../routes'
 import { barActiveTab } from './barActiveTab'
+import { initialsOf } from './initials'
+
+const SETTINGS_PATH = '/settings'
 
 type Placement = 'bar' | 'rail' | 'both'
 
@@ -108,22 +112,21 @@ const RAIL_ITEMS = ITEMS.filter((item) => item.placement !== 'bar')
 
 const NUEVA_VENTA_PATH = '/ventas/nueva'
 
-type Chrome = 'none'
+type Chrome = 'none' | 'card'
 
-function hasChrome(handle: unknown): handle is { chrome: Chrome } {
-  return (
-    typeof handle === 'object' &&
-    handle !== null &&
-    'chrome' in handle &&
-    (handle as { chrome: unknown }).chrome === 'none'
-  )
+function chromeOf(handle: unknown): Chrome | undefined {
+  if (typeof handle !== 'object' || handle === null || !('chrome' in handle)) return undefined
+  return handle.chrome === 'none' || handle.chrome === 'card' ? handle.chrome : undefined
 }
 
 /** The deepest match that declares `handle.chrome` wins — walk from the leaf
  * backwards and stop at the first one that has it. */
 function chromeFromMatches(matches: readonly { handle: unknown }[]): Chrome | undefined {
-  const deepest = [...matches].reverse().find((match) => hasChrome(match.handle))
-  return deepest === undefined ? undefined : 'none'
+  for (const match of [...matches].reverse()) {
+    const chrome = chromeOf(match.handle)
+    if (chrome !== undefined) return chrome
+  }
+  return undefined
 }
 
 function railClassName(item: Item): (state: { isActive: boolean }) => string {
@@ -159,7 +162,7 @@ export default function Shell() {
   const matches = useMatches()
   const chrome = chromeFromMatches(matches)
   const tab = barActiveTab(matches)
-  const showNuevaVenta = chrome !== 'none'
+  const showNuevaVenta = chrome === undefined
   // No bar below: the column itself keeps clear of the home bar (`styles/app.css`, insets).
   const columnClassName =
     chrome === 'none' ? 'columna-principal columna-principal--sin-bar' : 'columna-principal'
@@ -184,6 +187,19 @@ export default function Shell() {
             </NavLink>
           </Fragment>
         ))}
+        <NavLink
+          to={SETTINGS_PATH}
+          state={{ inApp: true }}
+          aria-label={`Configuración de ${me.business_name}`}
+          className={({ isActive }) =>
+            isActive ? 'riel-lateral__negocio riel-lateral__negocio--activo' : 'riel-lateral__negocio'
+          }
+        >
+          <span className="riel-lateral__avatar" aria-hidden="true">
+            {initialsOf(me.business_name)}
+          </span>
+          <span className="riel-lateral__negocio-nombre">{me.business_name}</span>
+        </NavLink>
       </nav>
       <div className={columnClassName}>
         <Outlet context={me} />

@@ -277,6 +277,8 @@ body {
   left: calc(var(--inset-izquierda) + var(--espacio-md));
   right: calc(var(--inset-derecha) + var(--espacio-md));
   z-index: 10;
+  /* A toast is only told, never tapped: it must not swallow a tap on the "Cerrar" it floats over. */
+  pointer-events: none;
 }
 
 .cuerpo {
@@ -370,6 +372,66 @@ body {
   font-weight: 600;
 }
 
+/* The business row at the rail's foot (`InicioCompu.dc.html`): the avatar and the name,
+ * one link to Configuración. The rail is hidden on the phone, so this is computer only. */
+.riel-lateral__negocio {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  margin-top: 14px;
+  padding: 0 10px;
+  border-radius: 14px;
+  color: var(--tinta);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.riel-lateral__negocio--activo {
+  background: var(--superficie);
+  box-shadow: inset 2px 0 0 var(--acento);
+}
+
+.riel-lateral__avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radio-pildora);
+  background: var(--acento-suave);
+  color: var(--acento);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Inicio's header on the phone (`Inicio.dc.html`): the name and title, and the business
+ * avatar as a 44px touch target drawn at 38px. The computer has the rail's row instead. */
+.inicio__cabecera {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+}
+
+.inicio__cabecera-titulos {
+  flex: 1;
+}
+
+.inicio__avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radio-pildora);
+  background: var(--superficie);
+  color: var(--tinta);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+}
+
 /* Below the rail's divider (`GastosCompu.dc.html`): smaller, no icon, the active one
  * filled with the accent's bar on its left edge besides (never color alone). */
 .riel-lateral__divisor {
@@ -439,6 +501,158 @@ body {
 .mas__item-detalle {
   font-size: 13px;
   color: var(--tinta2);
+}
+
+/* Configuración (`Configuracion.dc.html`, `ConfiguracionNegocio.dc.html`): the list of
+ * groups and the frame of one group. `Boton`'s link variant is the blue underlined one;
+ * here "Cerrar" and the back arrow are quiet text (the design's own), so only colour,
+ * weight and shadow are overridden, never its reset. */
+.ajustes {
+  gap: 0;
+  padding-top: var(--espacio-xl);
+}
+
+.ajustes > .boton--enlace {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  min-height: var(--alto-tocable);
+  margin-left: calc(-1 * var(--espacio-sm));
+  padding: 0 var(--espacio-sm);
+  color: var(--tinta);
+  font-weight: 500;
+  box-shadow: none;
+}
+
+.ajustes__titulos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-xs);
+}
+
+.ajustes__negocio {
+  display: none;
+}
+
+.ajustes__titulo {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.ajustes__lista {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--espacio-xl);
+}
+
+.ajustes__item {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+  padding: var(--espacio-lg) 0;
+  border-bottom: 1px solid var(--linea);
+  color: var(--tinta);
+  text-decoration: none;
+}
+
+/* A row that does something instead of going somewhere (Tu cuenta): the same row, as a button. */
+.ajustes__item--boton {
+  width: 100%;
+  background: none;
+  border-top: 0;
+  border-left: 0;
+  border-right: 0;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ajustes__item--boton:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.ajustes__item:last-child {
+  border-bottom: 0;
+}
+
+.ajustes__item-rotulo {
+  flex: 1;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.ajustes__item-flecha {
+  display: flex;
+  color: var(--tinta2);
+}
+
+.ajustes-grupo__encabezado {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+  padding: var(--espacio-xl) var(--espacio-xl) var(--espacio-lg);
+}
+
+.ajustes-grupo__titulo {
+  flex: 1;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.ajustes-grupo__encabezado .boton--enlace {
+  color: var(--tinta2);
+  font-weight: 600;
+  box-shadow: none;
+}
+
+.ajustes-grupo__cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-md);
+  padding: var(--espacio-lg) var(--margen-pantalla) var(--espacio-xxl);
+}
+
+/* The header and footer fields of "Mensaje del catálogo" are multi-line: the design gives them 92px. */
+.ajustes-grupo__cuerpo textarea.campo__input {
+  min-height: 92px;
+  resize: vertical;
+}
+
+/* "Apariencia" (`ConfiguracionApariencia.dc.html`): Claro · Oscuro, the segmented control
+ * on the group's surface. The current one is a filled pill and bolder, not only a color. */
+.ajustes-tema__rotulo {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.ajustes-tema {
+  display: flex;
+  gap: 5px;
+  background: var(--superficie);
+  border-radius: var(--radio-pildora);
+  padding: var(--espacio-xs);
+}
+
+.ajustes-tema__opcion {
+  flex: 1;
+  text-align: center;
+  padding: 11px 0;
+  border: 0;
+  border-radius: var(--radio-pildora);
+  background: transparent;
+  color: var(--tinta2);
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.ajustes-tema__opcion--activa {
+  background: var(--papel);
+  color: var(--tinta);
+  font-weight: 600;
 }
 
 .columna-principal {
@@ -602,7 +816,7 @@ body {
   font-size: 20px;
 }
 
-.negocio__lista {
+.usuarios__lista {
   list-style: none;
   margin: var(--espacio-sm) 0 0;
   padding: 0;
@@ -610,7 +824,7 @@ body {
   flex-direction: column;
 }
 
-.negocio__usuario {
+.usuarios__usuario {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -622,7 +836,7 @@ body {
 }
 
 /* Not color alone: "vos" is a labelled pill, not a tint on the row. */
-.negocio__vos {
+.usuarios__vos {
   font-size: 12px;
   font-weight: 600;
   background: var(--superficie);
@@ -631,7 +845,7 @@ body {
   border-radius: var(--radio-pildora);
 }
 
-.negocio__invitar {
+.usuarios__invitacion {
   display: flex;
   flex-direction: column;
   gap: var(--espacio-sm);
@@ -640,7 +854,7 @@ body {
   padding: var(--espacio-lg);
 }
 
-.negocio__link {
+.usuarios__link {
   background: var(--papel);
   border-radius: var(--radio-campo);
   padding: var(--espacio-sm) var(--espacio-md);
@@ -651,12 +865,12 @@ body {
   white-space: nowrap;
 }
 
-.negocio__acciones {
+.usuarios__acciones {
   display: flex;
   gap: var(--espacio-sm);
 }
 
-.negocio__acciones .boton {
+.usuarios__acciones .boton {
   flex: 1;
 }
 
@@ -1074,7 +1288,7 @@ body {
   margin-top: var(--espacio-sm);
 }
 
-/* Same pattern as `.confirmacion__acciones .boton`/`.negocio__acciones .boton`:
+/* Same pattern as `.confirmacion__acciones .boton`/`.usuarios__acciones .boton`:
  * side by side, evenly split — scoped to this container, never redefining the
  * shared `.boton--suave`/`.boton--destructivo` (review finding, e2e: the merge
  * had kept two `.boton--suave` rules, the later one winning everywhere and
@@ -1087,6 +1301,31 @@ body {
 
 .categoria-fila__nombre {
   flex: 1;
+}
+
+/* `ConfiguracionCategorias.dc.html`: a row is 13px of air, a hairline under every row but
+ * the last, "Renombrar" in the accent and "Eliminar" in the amber, bold and not underlined
+ * (their words tell them apart, not the color alone). */
+.ajustes-grupo__cuerpo .fila {
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-md);
+  padding: 13px 0;
+  border-bottom: 1px solid var(--linea);
+}
+
+.ajustes-grupo__cuerpo .fila:last-child {
+  border-bottom: 0;
+}
+
+.boton--enlace.categoria-fila__accion {
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: none;
+}
+
+.boton--enlace.categoria-fila__accion--eliminar {
+  color: var(--deuda);
 }
 
 /* The design's link look (`Componentes.dc.html`'s "Agregar otra variedad"): an
@@ -2176,6 +2415,40 @@ body {
   border-bottom: 1px solid var(--linea);
 }
 
+/* `Catalogo.dc.html`: the card under Compartir and Copiar that holds the pin's status
+   and Publicar. Out of date takes the amber panel, and always says so in words. */
+.catalogo__publicar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-sm);
+  background: var(--superficie);
+  border-radius: var(--radio-panel);
+  padding: var(--espacio-lg) 18px;
+}
+
+.catalogo__publicar--desactualizado {
+  background: var(--deuda-fondo);
+}
+
+.catalogo__publicar-titulo {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--acento);
+}
+
+.catalogo__publicar--desactualizado .catalogo__publicar-titulo {
+  color: var(--deuda);
+}
+
+.catalogo__publicar-detalle {
+  font-size: 13px;
+  color: var(--tinta2);
+}
+
+.catalogo__publicar--desactualizado .catalogo__publicar-detalle {
+  color: var(--deuda2);
+}
+
 .catalogo__fila-texto {
   flex: 1;
   min-width: 0;
@@ -2354,12 +2627,58 @@ body {
     display: none;
   }
 
+  /* `ConfiguracionCompu`: the business name above the title, the list capped at 560px;
+     a group is a centred card (`ConfiguracionNegocioCompu`) rather than a full screen. */
+  .ajustes {
+    padding: var(--espacio-xxl) var(--espacio-xxl) 0;
+    gap: var(--espacio-sm);
+  }
+
+  .ajustes__negocio {
+    display: block;
+  }
+
+  .ajustes__titulo {
+    font-size: 28px;
+  }
+
+  .ajustes__lista {
+    max-width: 560px;
+  }
+
+  .ajustes-grupo {
+    align-items: center;
+    padding-top: 80px;
+  }
+
+  .ajustes-grupo__tarjeta {
+    width: 480px;
+    max-width: 100%;
+    background: var(--papel);
+    border: 1px solid var(--linea);
+    border-radius: var(--radio-panel-grande);
+    overflow: hidden;
+  }
+
+  .ajustes-grupo__encabezado {
+    padding: 22px var(--espacio-xxl) var(--espacio-xl);
+    border-bottom: 1px solid var(--linea);
+  }
+
+  .ajustes-grupo__cuerpo {
+    padding: var(--espacio-xl) var(--espacio-xxl);
+  }
+
   .columna-principal {
     padding-bottom: var(--inset-abajo);
   }
 
   .riel-lateral {
     display: flex;
+  }
+
+  .inicio__avatar {
+    display: none;
   }
 
   .boton-nueva-venta {
