@@ -417,6 +417,25 @@ def test_a_shared_path_with_one_trailing_slash_is_a_308_to_the_slashless_path(
     assert response.headers["location"] == f"{target}?a=1"
 
 
+def test_a_head_navigation_to_a_slashed_shared_path_is_a_308_too(
+    served_client: TestClient,
+) -> None:
+    response = _request(served_client, "HEAD", "/varieties/7/prices/", HTML)
+
+    assert response.status_code == 308
+    assert response.headers["location"] == "/varieties/7/prices"
+
+
+@pytest.mark.parametrize(("method", "accept"), [("GET", JSON), ("POST", HTML), ("DELETE", HTML)])
+def test_a_slashed_shared_path_is_redirected_only_for_a_html_navigation(
+    served_client: TestClient, method: str, accept: str
+) -> None:
+    response = _request(served_client, method, "/varieties/7/", accept)
+
+    assert response.status_code != 308
+    assert "the app shell" not in response.text
+
+
 async def _api_answer(scope: Scope, receive: Receive, send: Send) -> None:
     await PlainTextResponse("the api")(scope, receive, send)
 
