@@ -14,6 +14,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from datetime import date, timedelta
+from typing import Literal, assert_never
 
 from app.results.domain.costed_sales import costed_sales
 from app.results.domain.figures import (
@@ -43,6 +44,9 @@ from app.shared.calendar import Month, Week
 from app.shared.grams import Grams
 
 ZERO = Grams(0)
+
+WithdrawalKind = Literal["promotion", "own_use"]
+CostLine = Literal["shortfall", "promotion", "own_use"]
 
 
 def _days(start: date, end_inclusive: date) -> list[date]:
@@ -74,7 +78,10 @@ class _VarietyDayTotals:
 
 
 @dataclass
-class _ShortfallDayTotals:
+class _CostDayTotals:
+    """One day's costed amount and pending grams of one cost line: the stock shortfall
+    or one withdrawal reason."""
+
     costed: int = 0
     pending_grams: Grams = ZERO
 
@@ -86,7 +93,10 @@ class Buckets:
 
     day_totals: dict[date, _DayTotals] = field(default_factory=dict)
     variety_day_totals: dict[tuple[date, int], _VarietyDayTotals] = field(default_factory=dict)
-    shortfall_totals: dict[date, _ShortfallDayTotals] = field(default_factory=dict)
+    shortfall_totals: dict[date, _CostDayTotals] = field(default_factory=dict)
+    withdrawal_totals: dict[tuple[date, WithdrawalKind], _CostDayTotals] = field(
+        default_factory=dict
+    )
     variety_names: dict[int, str] = field(default_factory=dict)
     sales_by_day: dict[date, int] = field(default_factory=dict)
     sales_count_by_day: dict[date, int] = field(default_factory=dict)
@@ -172,15 +182,35 @@ class Buckets:
                 total = total + totals.pending_grams
         return total
 
-    def shortfall(self, start: date, end: date) -> AmountWithPending | None:
-        days = [d for d in _days(start, end) if d in self.shortfall_totals]
+    def _cost_line(self, line: CostLine, start: date, end: date) -> AmountWithPending | None:
+        """One cost line's costed amount and pending grams in `[start, end]`, `None`
+        exactly when no draw of that kind falls in the window."""
+        days: list[_CostDayTotals] = []
+        for d in _days(start, end):
+            match line:
+                case "shortfall":
+                    found = self.shortfall_totals.get(d)
+                case "promotion" | "own_use":
+                    found = self.withdrawal_totals.get((d, line))
+                case _:
+                    assert_never(line)
+            if found is not None:
+                days.append(found)
         if not days:
             return None
-        costed = sum(self.shortfall_totals[d].costed for d in days)
         pending = ZERO
-        for d in days:
-            pending = pending + self.shortfall_totals[d].pending_grams
-        return AmountWithPending(costed, pending)
+        for day_totals in days:
+            pending = pending + day_totals.pending_grams
+        return AmountWithPending(sum(t.costed for t in days), pending)
+
+    def shortfall(self, start: date, end: date) -> AmountWithPending | None:
+        return self._cost_line("shortfall", start, end)
+
+    def promotion(self, start: date, end: date) -> AmountWithPending | None:
+        return self._cost_line("promotion", start, end)
+
+    def own_use(self, start: date, end: date) -> AmountWithPending | None:
+        return self._cost_line("own_use", start, end)
 
     def profit(self, start: date, end: date) -> AmountWithPending:
         sales_total = self.sales(start, end)
@@ -188,12 +218,17 @@ class Buckets:
         sales_costed = self.sales_of_costed(start, end)
         sales_pending = sales_no_shipping - sales_costed
         cost = self.costed_cost(start, end)
-        shortfall = self.shortfall(start, end)
-        shortfall_costed = shortfall.amount if shortfall is not None else 0
-        shortfall_pending = shortfall.pending_grams if shortfall is not None else ZERO
         spent = self.expenses(start, end)
-        amount = sales_total - sales_pending - cost - shortfall_costed - spent
-        pending = self.pending_grams(start, end) + shortfall_pending
+        amount = sales_total - sales_pending - cost - spent
+        pending = self.pending_grams(start, end)
+        for line in (
+            self.shortfall(start, end),
+            self.promotion(start, end),
+            self.own_use(start, end),
+        ):
+            if line is not None:
+                amount -= line.amount
+                pending = pending + line.pending_grams
         return AmountWithPending(amount, pending)
 
     def cash(self, start: date, end: date) -> int:
@@ -215,6 +250,41 @@ class Buckets:
         return totals
 
 
+def _add_sale_line(buckets: Buckets, row: DrawRow, kind: Literal["sold", "gifted"]) -> None:
+    if row.variety_id is None or row.line_total is None:
+        raise ValueError("a sale-line draw row always carries its variety and line total")
+    if row.variety_name is not None:
+        buckets.variety_names[row.variety_id] = row.variety_name
+    sold_amount = costed_sales(row.line_total, row.grams, row.pending)
+
+    day = buckets.day_totals.setdefault(row.day, _DayTotals())
+    day.sales_without_shipping += row.line_total
+    day.grams = day.grams + row.grams
+    match kind:
+        case "sold":
+            day.grams_sold = day.grams_sold + row.grams
+        case "gifted":
+            day.grams_gifted = day.grams_gifted + row.grams
+        case _:
+            assert_never(kind)
+    day.costed_cost += row.costed or 0
+    day.sales_of_costed += sold_amount
+    day.pending_grams = day.pending_grams + row.pending
+
+    vday = buckets.variety_day_totals.setdefault((row.day, row.variety_id), _VarietyDayTotals())
+    vday.sales_without_shipping += row.line_total
+    match kind:
+        case "sold":
+            vday.grams_sold = vday.grams_sold + row.grams
+        case "gifted":
+            vday.grams_gifted = vday.grams_gifted + row.grams
+        case _:
+            assert_never(kind)
+    vday.costed_cost += row.costed or 0
+    vday.sales_of_costed += sold_amount
+    vday.pending_grams = vday.pending_grams + row.pending
+
+
 def scan(
     draws: Sequence[DrawRow],
     sales: Sequence[SaleRecord],
@@ -225,44 +295,31 @@ def scan(
 ) -> tuple[Buckets, date | None]:
     """Scans every ledger exactly once: each loop below both fills its own buckets
     and folds its own days into `first_record` — the minimum date across sales,
-    stock entries, payments and expenses (ADR-0020) — so nothing is scanned a second
-    time just to find it."""
+    stock entries, stock withdrawals, payments and expenses (ADR-0020) — so nothing is
+    scanned a second time just to find it."""
     buckets = Buckets()
     first_record = earliest_entry_day
 
     for row in draws:
-        if row.kind == "shortfall":
-            agg = buckets.shortfall_totals.setdefault(row.day, _ShortfallDayTotals())
-            agg.costed += row.costed or 0
-            agg.pending_grams = agg.pending_grams + row.pending
-            continue
-
-        if row.variety_id is None or row.line_total is None:
-            raise ValueError("a sale-line draw row always carries its variety and line total")
-        if row.variety_name is not None:
-            buckets.variety_names[row.variety_id] = row.variety_name
-        sold_amount = costed_sales(row.line_total, row.grams, row.pending)
-
-        day = buckets.day_totals.setdefault(row.day, _DayTotals())
-        day.sales_without_shipping += row.line_total
-        day.grams = day.grams + row.grams
-        if row.kind == "sold":
-            day.grams_sold = day.grams_sold + row.grams
-        else:
-            day.grams_gifted = day.grams_gifted + row.grams
-        day.costed_cost += row.costed or 0
-        day.sales_of_costed += sold_amount
-        day.pending_grams = day.pending_grams + row.pending
-
-        vday = buckets.variety_day_totals.setdefault((row.day, row.variety_id), _VarietyDayTotals())
-        vday.sales_without_shipping += row.line_total
-        if row.kind == "sold":
-            vday.grams_sold = vday.grams_sold + row.grams
-        else:
-            vday.grams_gifted = vday.grams_gifted + row.grams
-        vday.costed_cost += row.costed or 0
-        vday.sales_of_costed += sold_amount
-        vday.pending_grams = vday.pending_grams + row.pending
+        match row.kind:
+            case "shortfall":
+                agg = buckets.shortfall_totals.setdefault(row.day, _CostDayTotals())
+                agg.costed += row.costed or 0
+                agg.pending_grams = agg.pending_grams + row.pending
+            case "promotion" | "own_use":
+                # A withdrawal is neither a sale nor a shortfall: it writes only its
+                # own bucket, and its date counts as a first record.
+                withdrawn = buckets.withdrawal_totals.setdefault(
+                    (row.day, row.kind), _CostDayTotals()
+                )
+                withdrawn.costed += row.costed or 0
+                withdrawn.pending_grams = withdrawn.pending_grams + row.pending
+                if first_record is None or row.day < first_record:
+                    first_record = row.day
+            case "sold" | "gifted":
+                _add_sale_line(buckets, row, row.kind)
+            case _:
+                assert_never(row.kind)
 
     for sale in sales:
         buckets.sales_by_day[sale.day] = buckets.sales_by_day.get(sale.day, 0) + sale.total
@@ -305,7 +362,7 @@ def scan(
 def totals_between(buckets: Buckets, start: date, end: date) -> PeriodTotals:
     """One `[start, end]` window's figures, read off an already-`scan`ned `Buckets`
     (ADR-0013 amendment GH-70): sales, sales count, grams sold and gifted, cost of
-    goods, stock shortfall, expenses, purchases, profit and cash — the one
+    goods, stock shortfall, promotion, own use, expenses, purchases, profit and cash — the one
     computation Inicio's panel and Análisis's weeks/months/since-first-record all
     read, never a second sum of their own. Profit and cash stay written once, in
     `Buckets.profit`/`Buckets.cash` above."""
@@ -319,6 +376,8 @@ def totals_between(buckets: Buckets, start: date, end: date) -> PeriodTotals:
             pending_grams=buckets.pending_grams(start, end),
         ),
         shortfall=buckets.shortfall(start, end),
+        promotion=buckets.promotion(start, end),
+        own_use=buckets.own_use(start, end),
         expenses=buckets.expenses(start, end),
         purchases=buckets.purchases(start, end),
         profit=buckets.profit(start, end),

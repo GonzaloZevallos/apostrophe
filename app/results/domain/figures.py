@@ -132,6 +132,8 @@ class PeriodTotals:
     grams_gifted: Grams
     cost_of_goods: CostFigure
     shortfall: AmountWithPending | None
+    promotion: AmountWithPending | None
+    own_use: AmountWithPending | None
     expenses: int
     purchases: int
     profit: AmountWithPending
