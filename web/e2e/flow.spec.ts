@@ -59,11 +59,11 @@ test('a seller does everything the backend offers today, from the front alone', 
   // Add a price. "Rige desde" already defaults to `me.today` — the business day
   // the backend's clock reports, read through `GET /auth/me` — so it is left as
   // is, never dated from the browser's own UTC clock (plan, "One clock").
-  await page.getByRole('button', { name: 'Nuevo precio' }).click()
+  await page.getByRole('link', { name: 'Nuevo precio' }).click()
   await page.getByLabel('Precio de lista').fill('9000')
-  await page.getByRole('button', { name: 'Guardar precio' }).click()
+  await page.getByRole('button', { name: 'Guardá el precio' }).click()
   await expect(page.getByText('Precio guardado')).toBeVisible()
-  await expect(page.locator('.precio-panel__valor')).toHaveText('$ 9.000')
+  await expect(page.getByText(/\$ 9\.000 x g/)).toBeVisible()
 
   // Delete the price entry (the only one): the variety is left with no price.
   await page.getByRole('button', { name: 'Borrar este precio' }).click();
@@ -106,18 +106,8 @@ test('a seller does everything the backend offers today, from the front alone', 
   await expect(page.getByText('Entrada eliminada')).toBeVisible()
   await expect(page.getByText('Rosa · 60 g')).toHaveCount(0)
 
-  // Set Rosa's low-stock threshold from Variedades, then turn it off (varieties.md:
-  // "set or turn off the threshold from the variety").
-  await page.goto('/varieties')
-  await expect(page.getByText('Aviso apagado')).toBeVisible()
-  await page.getByRole('link', { name: /Rosa/ }).click()
-  await page.getByLabel('Umbral de aviso (g)').fill('15')
-  await page.getByRole('button', { name: 'Guardar aviso' }).click()
-  await expect(page.getByText('Aviso guardado')).toBeVisible()
-  await expect(page.getByText('Avisame abajo de 15 g')).toBeVisible()
-  await page.getByRole('button', { name: 'Apagar aviso' }).click()
-  await expect(page.getByText('Aviso guardado')).toBeVisible()
-  await expect(page.getByText('Aviso apagado')).toBeVisible()
+  // Rosa's low-stock threshold form and the catalog attributes form are opened from the
+  // variety's page by the section-forms subtask, which also brings their steps here.
 
   // Record an expense, with a category created inline.
   await openGastos(page)

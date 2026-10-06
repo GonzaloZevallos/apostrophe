@@ -19,16 +19,8 @@ import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGeneri
 import MarcaEstado from '../components/MarcaEstado'
 import SinConexion from '../components/SinConexion'
 import { formatGrams, formatMoney } from '../format/money'
+import { warningFor } from '../stock/detail'
 import { VARIETY } from '../routes'
-
-/** The warning line next to a variety's status mark (`stock.md`, "On screen"): told
- * from the same `GET /stock` row `MarcaEstado` already reads, never a figure the
- * front works out itself. */
-function warningFor(row: VarietyStock): string {
-  if (row.threshold === null) return 'Aviso apagado'
-  if (row.status === 'low') return `Avisando: quedan ${formatGrams(row.grams)}`
-  return `Avisame abajo de ${formatGrams(row.threshold)}`
-}
 
 export const VARIETY_SAVED = 'Variedad guardada'
 export const NO_PRICE_TODAY = 'Sin precio: no se puede vender'

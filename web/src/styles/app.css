@@ -2917,3 +2917,120 @@ button {
   margin: var(--espacio-xs) 0 0;
 }
 /* ===== end auth-layout ===== */
+
+/* A variety's page (VariedadDetalle.dc.html): one summary line, two equal actions and the
+ * four sections, all from the tokens. */
+.variedad-resumen {
+  margin: 0;
+  font-size: 15px;
+  color: var(--deuda);
+}
+
+.variedad-resumen__oculta {
+  font-weight: 600;
+}
+
+.variedad-acciones {
+  display: flex;
+  gap: var(--espacio-md);
+}
+
+.variedad-acciones .boton {
+  flex: 1;
+  height: 52px;
+  font-size: 15px;
+  text-decoration: none;
+}
+
+.seccion-variedad {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-sm);
+  padding-top: var(--espacio-xl);
+}
+
+.seccion-variedad__cabecera {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--espacio-md);
+  font-size: 14px;
+}
+
+.seccion-variedad__titulo {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--tinta2);
+}
+
+.seccion-variedad__fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-md);
+}
+
+.seccion-variedad__valor {
+  font-size: 16px;
+}
+
+.seccion-variedad__valor--aviso {
+  color: var(--deuda);
+}
+
+.seccion-variedad__datos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espacio-md);
+  margin: 0;
+  padding: var(--espacio-lg);
+  background: var(--superficie);
+  border-radius: var(--radio-panel);
+}
+
+.seccion-variedad__dato {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.seccion-variedad__dato dt {
+  font-size: 13px;
+  color: var(--tinta2);
+}
+
+.seccion-variedad__dato dd {
+  margin: 0;
+  font-size: 16px;
+}
+
+.interruptor {
+  display: flex;
+  align-items: center;
+  width: 44px;
+  height: 26px;
+  padding: 3px;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: var(--radio-pildora);
+  background: var(--linea);
+  cursor: pointer;
+}
+
+.interruptor[aria-checked='true'] {
+  background: var(--boton);
+  justify-content: flex-end;
+}
+
+.interruptor:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.interruptor__perilla {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radio-pildora);
+  background: var(--papel);
+}

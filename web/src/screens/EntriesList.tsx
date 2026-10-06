@@ -28,16 +28,10 @@ import { formatDate } from '../format/dates'
 import { formatGrams, formatMoney } from '../format/money'
 import { ENTRY, VARIETIES, VARIETY } from '../routes'
 import type { Variety } from './Variedades'
+import { ORIGIN_LABEL } from './originLabel'
 
 export const EMPTY_STATE_TITLE = 'Sin entradas de stock'
 export const EMPTY_STATE_DETAIL = 'Cargá tu stock inicial o una compra'
-
-const ORIGIN_LABEL: Record<StockEntry['origin'], string> = {
-  purchase: 'Compra',
-  harvest: 'Cosecha',
-  opening_stock: 'Stock inicial',
-  adjustment: 'Ajuste',
-}
 
 function Card({ children }: { children: React.ReactNode }) {
   return (
