@@ -61,7 +61,7 @@ test('changes a password from Negocio in under a minute, signing an older device
 
   const startedAt = Date.now()
 
-  await page.goto('/negocio')
+  await page.goto('/settings/account')
   await page.getByRole('button', { name: 'Cambiar contraseña' }).click()
   const sheet = page.locator('.capa')
   await sheet.getByLabel('Contraseña actual').fill(PASSWORD)
@@ -72,7 +72,7 @@ test('changes a password from Negocio in under a minute, signing an older device
   expect(Date.now() - startedAt).toBeLessThan(60_000)
 
   // This device stays signed in: `.encabezado__negocio` only renders on Inicio
-  // (`Inicio.tsx`), never on `Negocio` itself, so the check navigates home rather
+  // (`Inicio.tsx`), never on a Configuración group itself, so the check navigates home rather
   // than reloading the settings screen it was already on.
   await page.goto('/')
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)

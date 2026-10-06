@@ -34,3 +34,19 @@ test('every entry redirects on its own, and a path outside the table is untouche
   expect(renderAt('/otro-viejo').state.location.pathname).toBe('/settings/algo')
   expect(renderAt('/no-esta-en-la-tabla').state.location.pathname).toBe('/no-esta-en-la-tabla')
 })
+
+test('the real table sends /negocio, the old business screen, to Configuración with a replace', () => {
+  const router = createMemoryRouter(
+    [
+      ...redirectRoutes(),
+      { path: '/settings', element: <h1>Configuración</h1> },
+      { path: '*', element: <h1>Inicio</h1> },
+    ],
+    { initialEntries: ['/mas', '/negocio'], initialIndex: 1 },
+  )
+  render(<RouterProvider router={router} />)
+
+  expect(router.state.location.pathname).toBe('/settings')
+  expect(router.state.historyAction).toBe('REPLACE')
+  expect(screen.getByRole('heading', { name: 'Configuración' })).toBeInTheDocument()
+})

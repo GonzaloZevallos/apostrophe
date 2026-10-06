@@ -45,7 +45,6 @@ import ClientesLayout from './screens/clientes/ClientesLayout'
 import TeDeben from './screens/clientes/TeDeben'
 import VariedadDetalle from './screens/VariedadDetalle'
 import Variedades from './screens/Variedades'
-import Negocio from './screens/Negocio'
 import Reset from './screens/Reset'
 import Settings from './screens/settings/Settings'
 import AccountGroup from './screens/settings/AccountGroup'
@@ -95,7 +94,6 @@ export const router = createBrowserRouter([
               { path: 'mi-stock', element: <Stock /> },
               { path: 'mi-stock/nueva-entrada', element: <EntradaStock mode="nuevo" /> },
               { path: 'mi-stock/entradas/:id', element: <EntradaStock mode="editar" /> },
-              { path: 'negocio', element: <Negocio /> },
               { path: 'settings', element: <Settings />, handle: { chrome: 'card' } },
               { path: 'settings/business', element: <BusinessGroup />, handle: { chrome: 'none' } },
               { path: 'settings/users', element: <UsersGroup />, handle: { chrome: 'none' } },
