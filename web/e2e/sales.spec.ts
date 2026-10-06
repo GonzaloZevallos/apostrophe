@@ -56,7 +56,6 @@ test.use({ viewport: { width: 390, height: 844 } }) // a phone (PRD metric 1).
 
 const RECORD_BUDGET_MS = 60_000 // PRD metric 1: "under a minute".
 const LIST_BUDGET_MS = 300 // PRD metric 6.
-const LIST_SAMPLES = 5 // odd, so the median is one of the readings.
 const SEEDED_SALES_FOR_PERF = 300 // "a few hundred sales".
 
 interface VarietyAnswer {
@@ -384,20 +383,11 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   for (let i = 0; i < SEEDED_SALES_FOR_PERF; i += 1) {
     await seedSale(todayIso, '1')
   }
-  // PRD metric 6 is the list's typical latency, so the budget (300 ms, unchanged) is held
-  // by the median of LIST_SAMPLES requests, every one of which must answer `ok`. One
-  // request read on a machine busy with other suites timed the machine, not the list: 478
-  // ms and 301 ms were seen with the backend suite looping. A list that is consistently
-  // over the budget still fails; a single slow outlier no longer does.
-  const listMs: number[] = []
-  for (let sample = 0; sample < LIST_SAMPLES; sample += 1) {
-    const perfStart = Date.now()
-    const perfResponse = await page.request.get(`/sales?date_from=${todayIso}&date_to=${todayIso}`)
-    listMs.push(Date.now() - perfStart)
-    expect(perfResponse.ok()).toBe(true)
-  }
-  const medianMs = listMs.toSorted((a, b) => a - b)[Math.floor(LIST_SAMPLES / 2)]
-  expect(medianMs, `list times ${listMs.join(', ')} ms`).toBeLessThan(LIST_BUDGET_MS)
+  const perfStart = Date.now()
+  const perfResponse = await page.request.get(`/sales?date_from=${todayIso}&date_to=${todayIso}`)
+  const elapsedMs = Date.now() - perfStart
+  expect(perfResponse.ok()).toBe(true)
+  expect(elapsedMs, `list took ${elapsedMs} ms`).toBeLessThan(LIST_BUDGET_MS)
 
   // --- Isolation: a second business can never reach the first one's sale. ---
   const otherContext = await browser.newContext()
