@@ -11,7 +11,7 @@ donde toda otra pantalla lo copia tal cual.
 | Archivo | Qué es |
 | --- | --- |
 | `tokens.ts` | Paleta clara y oscura, escala tipográfica, espacios, radios, medidas. |
-| `tokens.css` | Los mismos valores como variables CSS. Sin atributo en `<html>` el tema es el de luz (Papel y azul); `data-tema="oscuro"` lo pasa a oscuro. El sistema operativo no elige el tema. |
+| `tokens.css` | Los mismos valores como variables CSS. Sin atributo en `<html>` el tema es el de luz (Papel y azul); `data-tema="oscuro"` lo pasa a oscuro. El sistema operativo no elige el tema. Las cuatro zonas seguras (`--inset-arriba`, `--inset-abajo`, `--inset-izquierda`, `--inset-derecha`) salen de `env(safe-area-inset-*)`, valen 0 donde no hay muesca y no tienen valor en `tokens.ts`. |
 | `formato.ts` | Plata, gramos, fechas, semana y teléfonos. Las reglas del enunciado. |
 | `dominio.ts` | Tipos del dominio: negocio, variedades, precios, clientes, ventas, stock, gastos. |
 | `precios.ts` | Motor de precios, totales, validación de venta e imputación de cobros. |

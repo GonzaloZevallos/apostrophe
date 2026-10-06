@@ -24,8 +24,17 @@ button {
   clip-path: inset(50%);
 }
 
+/* insets: every side of the safe area has one owner per element chain, so none is
+ * applied twice. Inside the shell `.disposicion` owns top, left and right and the
+ * bar (or `.columna-principal`) owns the bottom; outside it `.pantalla` owns all four;
+ * a `.pantalla` nested in `.disposicion` resets to 0; `.bar-inferior` cancels the
+ * root's side insets and adds them back as padding, so it is the second owner of left
+ * and right for its own items. Fixed layers (`.aviso-flotante`, `.capa`,
+ * `.cliente-sheet`) and the sticky summary own theirs, since they leave the flow. */
 .pantalla {
-  min-height: 100vh;
+  box-sizing: border-box;
+  min-height: 100dvh;
+  padding: var(--inset-arriba) var(--inset-derecha) var(--inset-abajo) var(--inset-izquierda);
   display: flex;
   flex-direction: column;
   background: var(--papel);
@@ -250,9 +259,9 @@ button {
 
 .aviso-flotante {
   position: fixed;
-  top: var(--espacio-md);
-  left: var(--espacio-md);
-  right: var(--espacio-md);
+  top: calc(var(--inset-arriba) + var(--espacio-md));
+  left: calc(var(--inset-izquierda) + var(--espacio-md));
+  right: calc(var(--inset-derecha) + var(--espacio-md));
   z-index: 10;
 }
 
@@ -278,14 +287,22 @@ button {
 }
 
 .disposicion {
+  box-sizing: border-box;
   display: flex;
   flex: 1;
-  min-height: 100vh;
+  min-height: 100dvh;
+  padding: var(--inset-arriba) var(--inset-derecha) 0 var(--inset-izquierda);
+}
+
+.disposicion .pantalla {
+  padding: 0;
 }
 
 .bar-inferior {
   display: flex;
-  padding: 14px 16px 20px;
+  margin-inline: calc(-1 * var(--inset-izquierda)) calc(-1 * var(--inset-derecha));
+  padding: 14px calc(16px + var(--inset-derecha)) calc(20px + var(--inset-abajo))
+    calc(16px + var(--inset-izquierda));
   border-top: 1px solid var(--linea);
 }
 
@@ -415,6 +432,11 @@ button {
   display: flex;
   flex-direction: column;
   min-width: 0;
+}
+
+/* No bar below (`Shell.tsx`, `chrome === 'none'`): the column keeps clear of the home bar. */
+.columna-principal--sin-bar {
+  padding-bottom: var(--inset-abajo);
 }
 
 .encabezado-fila {
@@ -1148,7 +1170,10 @@ button {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding: var(--margen-pantalla);
+  padding: calc(var(--margen-pantalla) + var(--inset-arriba))
+    calc(var(--margen-pantalla) + var(--inset-derecha))
+    calc(var(--margen-pantalla) + var(--inset-abajo))
+    calc(var(--margen-pantalla) + var(--inset-izquierda));
   z-index: 20;
 }
 
@@ -1170,7 +1195,7 @@ button {
   display: flex;
   flex-direction: column;
   gap: var(--espacio-md);
-  max-height: 85vh;
+  max-height: 85dvh;
   overflow-y: auto;
 }
 
@@ -1647,7 +1672,7 @@ button {
     flex: 1 1 290px;
     max-width: 360px;
     position: sticky;
-    top: var(--espacio-xl);
+    top: calc(var(--espacio-xl) + var(--inset-arriba));
     background: var(--superficie);
     border-radius: var(--radio-panel-grande);
     padding: var(--espacio-xl);
@@ -1810,6 +1835,7 @@ button {
 .cliente-sheet {
   position: fixed;
   inset: 0;
+  padding: var(--inset-arriba) var(--inset-derecha) 0 var(--inset-izquierda);
   z-index: 20;
   display: flex;
   align-items: flex-end;
@@ -1828,11 +1854,11 @@ button {
   position: relative;
   width: 100%;
   max-width: 480px;
-  max-height: 88vh;
+  max-height: 88dvh;
   overflow-y: auto;
   background: var(--papel);
   border-radius: var(--radio-hoja) var(--radio-hoja) 0 0;
-  padding: var(--espacio-lg) var(--margen-pantalla) var(--espacio-xxl);
+  padding: var(--espacio-lg) var(--margen-pantalla) calc(var(--espacio-xxl) + var(--inset-abajo));
   display: flex;
   flex-direction: column;
   gap: var(--espacio-md);
@@ -2310,6 +2336,10 @@ button {
 @media (min-width: 900px) {
   .bar-inferior {
     display: none;
+  }
+
+  .columna-principal {
+    padding-bottom: var(--inset-abajo);
   }
 
   .riel-lateral {
