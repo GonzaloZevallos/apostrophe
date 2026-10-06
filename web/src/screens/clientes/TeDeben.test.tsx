@@ -83,13 +83,12 @@ test('three sales still owing read "3 ventas debiendo", plural', async () => {
   expect(await screen.findByText('3 ventas debiendo')).toBeInTheDocument()
 })
 
-test('nobody owing shows nothing: Clientes keeps its own empty state', async () => {
+test('nobody owing shows the empty state "Nadie te debe."', async () => {
   vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { total_owed: 0, sales_owing_count: 0, debtors: [] }))
   renderTeDeben()
 
-  await waitFor(() => expect(fetch).toHaveBeenCalled())
-  expect(screen.queryByRole('region', { name: 'Te deben' })).not.toBeInTheDocument()
-  expect(screen.queryByText('Nadie te debe.')).not.toBeInTheDocument()
+  expect(await screen.findByText('Nadie te debe.')).toBeInTheDocument()
+  expect(screen.getByRole('region', { name: 'Te deben' })).toBeInTheDocument()
 })
 
 test('a dropped network shows nothing here: Clientes shows Sin conexión on its own list', async () => {

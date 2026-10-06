@@ -191,6 +191,11 @@ test('the header reads "N clientes", and the Te deben section sits above the lis
   renderClientes()
 
   expect(await screen.findByText('2 clientes')).toBeInTheDocument()
+  expect(
+    await screen.findByText(
+      `· ${debtorsFixture.debtors.length} te deben $ ${debtorsFixture.total_owed.toLocaleString('es-AR')}`,
+    ),
+  ).toBeInTheDocument()
   const section = await screen.findByRole('region', { name: 'Te deben' })
   expect(
     within(section).getByText(`$ ${debtorsFixture.total_owed.toLocaleString('es-AR')}`),
@@ -200,12 +205,13 @@ test('the header reads "N clientes", and the Te deben section sits above the lis
   ])
 })
 
-test('with no debtors, there is no Te deben section', async () => {
+test('with no debtors, the header shows no debt part and the section says "Nadie te debe."', async () => {
   vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [])))
   renderClientes()
 
   expect(await screen.findByText('0 clientes')).toBeInTheDocument()
-  expect(screen.queryByRole('region', { name: 'Te deben' })).not.toBeInTheDocument()
+  expect(await screen.findByText('Nadie te debe.')).toBeInTheDocument()
+  expect(screen.queryByText(/ te deben \$/)).not.toBeInTheDocument()
 })
 
 test('a customer with no phone shows no phone element, no dash, no empty label', async () => {

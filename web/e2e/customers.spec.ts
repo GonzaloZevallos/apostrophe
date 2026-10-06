@@ -16,7 +16,8 @@
  * browser's own storage.
  */
 
-import { CUSTOMERS, CUSTOMER_NEW, SALE_NEW, VARIETIES } from '../src/routes.js'
+import { CUSTOMER, CUSTOMERS, CUSTOMER_NEW, SALE, SALE_NEW, VARIETIES } from '../src/routes.js'
+import { expectPath } from './helpers/url.js'
 import { expect, test } from '@playwright/test'
 import { newBusinessInvitationUrl } from './backend.js'
 import { watchConsole } from './console.js'
@@ -57,7 +58,7 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Nombre').fill('Noe Sinnumero')
   await page.getByRole('button', { name: 'Guardá y usá' }).click()
-  await expect(page).toHaveURL(/\/customers$/)
+  await expectPath(page, CUSTOMERS)
   await expect(page.getByText('Cliente guardado')).toBeVisible()
 
   // Found by name, in the list: no phone line, no dash, no placeholder.
@@ -69,7 +70,7 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
 
   // The card shows no phone field either.
   await row.click()
-  await expect(page).toHaveURL(/\/customers\/\d+$/)
+  await expectPath(page, CUSTOMER)
   await expect(page.getByText('Teléfono')).toHaveCount(0)
 
   // Edited: still no phone number, and the edit form shows no required marker on
@@ -83,11 +84,11 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   // Chosen for a sale, left owing — $4.000.
   const todayStart = Date.now()
   await page.getByRole('link', { name: 'Nueva venta a Noe Sinnumero' }).click()
-  await expect(page).toHaveURL(/\/sales\/new$/)
+  await expectPath(page, SALE_NEW)
   await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '4' })
   await page.getByRole('radio', { name: 'Debiendo' }).check()
   await page.getByRole('button', { name: 'Guardá la venta' }).click()
-  await expect(page).toHaveURL(/\/sales\/\d+$/)
+  await expectPath(page, SALE)
   await expect(page.getByText('Venta guardada')).toBeVisible()
   expect(Date.now() - todayStart).toBeLessThan(60_000)
 
@@ -118,7 +119,7 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '2' })
   await page.getByRole('radio', { name: 'Debiendo' }).check()
   await page.getByRole('button', { name: 'Guardá la venta' }).click()
-  await expect(page).toHaveURL(/\/sales\/\d+$/)
+  await expectPath(page, SALE)
   await expect(page.getByText('Venta guardada')).toBeVisible()
   expect(Date.now() - sheetStart).toBeLessThan(60_000)
 

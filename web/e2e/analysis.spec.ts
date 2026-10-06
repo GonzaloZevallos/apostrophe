@@ -10,7 +10,8 @@
  * through the built front alone, against the real backend.
  */
 
-import { SALE_NEW, STOCK_ENTRY_NEW, VARIETIES } from '../src/routes.js'
+import { ANALYSIS, SALE_NEW, STOCK_ENTRY_NEW, VARIETIES } from '../src/routes.js'
+import { expectPath } from './helpers/url.js'
 import { expect, test } from '@playwright/test'
 import { newBusinessInvitationUrl } from './backend.js'
 import { watchConsole } from './console.js'
@@ -82,7 +83,7 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   // Más → Análisis.
   await openMas(page)
   await page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /^Análisis/ }).click()
-  await expect(page).toHaveURL(/\/analysis$/)
+  await expectPath(page, ANALYSIS)
 
   // The current month: the variety row, week by week, by weekday and both expense
   // breakdowns all carry this month's activity. At this (desktop-sized) viewport,

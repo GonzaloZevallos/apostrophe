@@ -17,6 +17,7 @@ import { Link, useLocation } from 'react-router'
 import { NetworkError } from '../../api/client'
 import { listCustomers } from '../../api/customers'
 import { keys } from '../../api/keys'
+import { getDebtors } from '../../api/payments'
 import { formatPhone } from '../../format/phone'
 import { formatDateShort } from '../../format/dates'
 import { formatMoney, formatMoneyMagnitude } from '../../format/money'
@@ -57,6 +58,11 @@ export default function Clientes() {
     queryFn: () => listCustomers(''),
   })
 
+  const debtors = useQuery({
+    queryKey: keys.debtors(),
+    queryFn: () => getDebtors(),
+  })
+
   const customers = data ?? []
 
   return (
@@ -67,6 +73,9 @@ export default function Clientes() {
         </div>
         <div className="campo__rotulo">
           <span>{`${total.data?.length ?? 0} clientes`}</span>
+          {debtors.data !== undefined && debtors.data.debtors.length > 0 && (
+            <span>{` · ${debtors.data.debtors.length} te deben ${formatMoney(debtors.data.total_owed)}`}</span>
+          )}
         </div>
         {query === '' && <TeDeben />}
         {feedback !== null && <Notice kind={feedback.kind} message={feedback.message} />}

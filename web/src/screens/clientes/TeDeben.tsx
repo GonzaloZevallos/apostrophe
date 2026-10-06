@@ -15,16 +15,17 @@ import { salesCount } from '../../format/counts'
 import { formatDateShort } from '../../format/dates'
 import { formatMoney } from '../../format/money'
 
+export const EMPTY_LIST = 'Nadie te debe.'
+
 export default function TeDeben() {
   const { data } = useQuery({
     queryKey: keys.debtors(),
     queryFn: () => getDebtors(),
   })
 
-  // Nothing while it loads, when it fails or when nobody owes: Clientes' own list already
-  // shows its loading, its errors and its empty state, and this section is only worth a place
-  // above it when somebody owes.
-  if (data === undefined || data.debtors.length === 0) return null
+  // Nothing while it loads or when it fails: Clientes' own list already shows its loading and
+  // its errors. With nobody owing it keeps its own empty state, "Nadie te debe.".
+  if (data === undefined) return null
 
   return (
     <section aria-label="Te deben">
@@ -36,6 +37,8 @@ export default function TeDeben() {
         <span className="cifra-xl">{formatMoney(data.total_owed)}</span>
         <span className="rotulo">{`${salesCount(data.sales_owing_count)} debiendo`}</span>
       </div>
+
+      {data.debtors.length === 0 && <span className="campo__rotulo">{EMPTY_LIST}</span>}
 
       <div className="lista-clientes">
         {data.debtors.map((debtor) => (

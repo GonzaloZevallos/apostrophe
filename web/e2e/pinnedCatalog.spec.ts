@@ -9,7 +9,8 @@
  * Telegram token or the network.
  */
 
-import { HOME, VARIETIES } from '../src/routes.js'
+import { CATALOG, HOME, SETTINGS_INTEGRATIONS, VARIETIES } from '../src/routes.js'
+import { expectPath } from './helpers/url.js'
 import { expect, test } from '@playwright/test'
 import { newBusinessInvitationUrl } from './backend.js'
 import { watchConsole } from './console.js'
@@ -47,7 +48,7 @@ test('a seller sets up the bot in Integraciones, then publishes from the catalog
 
   await openMas(page)
   await page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /Catálogo/ }).click()
-  await expect(page).toHaveURL(/\/varieties\/catalog$/)
+  await expectPath(page, CATALOG)
 
   // The catalog screen has no bot settings; with no bot yet, Publicar is disabled and
   // says where to go. No pin yet, so it shows no status either.
@@ -56,7 +57,7 @@ test('a seller sets up the bot in Integraciones, then publishes from the catalog
   await expect(page.getByText('Al día')).toHaveCount(0)
   await expect(page.getByText('Desactualizado')).toHaveCount(0)
   await page.getByRole('link', { name: 'Integraciones' }).click()
-  await expect(page).toHaveURL(/\/settings\/integrations$/)
+  await expectPath(page, SETTINGS_INTEGRATIONS)
 
   // Enter the token and the seller's own chat; the channel is still blank, which
   // Probarlo allows (PRD, "Probarlo": "The channel chat may be blank").
@@ -79,7 +80,7 @@ test('a seller sets up the bot in Integraciones, then publishes from the catalog
 
   // Everything is saved, so leaving asks nothing: the link leads to the catalog screen.
   await page.getByRole('link', { name: 'Ir al catálogo' }).click()
-  await expect(page).toHaveURL(/\/varieties\/catalog$/)
+  await expectPath(page, CATALOG)
   await expect(page.getByRole('button', { name: 'Publicar' })).toBeEnabled()
 
   await page.getByRole('button', { name: 'Publicar' }).click()

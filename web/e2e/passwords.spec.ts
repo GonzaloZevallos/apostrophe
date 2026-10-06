@@ -19,6 +19,7 @@
  */
 
 import { HOME, LOGIN, SETTINGS_ACCOUNT } from '../src/routes.js'
+import { expectPath } from './helpers/url.js'
 import { expect, test } from '@playwright/test'
 import { newBusinessInvitationUrl, resetLink, supportsPasswordReset } from './backend.js'
 import { watchConsole } from './console.js'
@@ -87,7 +88,7 @@ test('changes a password from Configuración → Tu cuenta in under a minute, si
   const EXPECTED_SIGNED_OUT_NETWORK_LOG =
     'error: Failed to load resource: the server responded with a status of 401 (Unauthorized)'
   await otherPage.reload()
-  await expect(otherPage).toHaveURL(/\/login$/)
+  await expectPath(otherPage, LOGIN)
   await otherContext.close()
 
   await expectOnlyTheThemeStored(page)

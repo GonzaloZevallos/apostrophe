@@ -13,7 +13,8 @@
  * browser console (CODING_STANDARDS.md section 9, in the browser too).
  */
 
-import { CUSTOMER_NEW, EXPENSE_CATEGORIES, LEGACY_EXPENSES, LEGACY_MORE, SETTINGS_BUSINESS, SETTINGS_USERS, STOCK, VARIETIES } from '../src/routes.js'
+import { CUSTOMERS, CUSTOMER_NEW, EXPENSES, EXPENSE_CATEGORIES, LEGACY_EXPENSES, LEGACY_MORE, MORE, SETTINGS_BUSINESS, SETTINGS_USERS, STOCK, STOCK_ENTRY, STOCK_ENTRY_NEW, VARIETIES, VARIETY } from '../src/routes.js'
+import { expectPath } from './helpers/url.js'
 import { expect, test } from '@playwright/test'
 import { newBusinessInvitationUrl } from './backend.js'
 import { watchConsole } from './console.js'
@@ -45,7 +46,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.getByLabel('Teléfono').fill(PHONE)
   await page.getByLabel('Nombre').fill('Marisa Gómez')
   await page.getByRole('button', { name: 'Guardá y usá' }).click()
-  await expect(page).toHaveURL(/\/customers$/)
+  await expectPath(page, CUSTOMERS)
   await expect(page.getByText('Cliente guardado')).toBeVisible()
 
   // Add a variety.
@@ -55,7 +56,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.getByRole('button', { name: 'Guardar' }).click()
   await expect(page.getByText('Variedad guardada')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()
-  await expect(page).toHaveURL(/\/varieties\/.+/)
+  await expectPath(page, VARIETY)
 
   // Add a price. "Rige desde" already defaults to `me.today` — the business day
   // the backend's clock reports, read through `GET /auth/me` — so it is left as
@@ -76,25 +77,25 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.goto(STOCK)
   await expect(page.getByText('Sin entradas de stock')).toBeVisible()
   await page.getByRole('link', { name: 'Nueva entrada' }).click()
-  await expect(page).toHaveURL(/\/varieties\/entries\/new$/)
+  await expectPath(page, STOCK_ENTRY_NEW)
   await page.getByLabel('Gramos').fill('50')
   await page.getByLabel('Variedad').selectOption({ label: 'Rosa' })
   await page.getByLabel('Costo total').fill('45000')
   await expect(page.getByText('Te queda en $ 900 el gramo')).toBeVisible()
   await page.getByRole('button', { name: 'Guardá la entrada' }).click()
-  await expect(page).toHaveURL(/\/varieties\/entries$/)
+  await expectPath(page, STOCK)
   await expect(page.getByText('Entrada guardada')).toBeVisible()
   await expect(page.getByText('Rosa · 50 g')).toBeVisible()
 
   // Edit it: editing confirms before saving (stock.md).
   await page.getByText('Rosa · 50 g').click()
-  await expect(page).toHaveURL(/\/varieties\/entries\/.+/)
+  await expectPath(page, STOCK_ENTRY)
   await expect(page.getByLabel('Gramos')).toHaveValue('50')
   await page.getByLabel('Gramos').fill('60')
   await page.getByRole('button', { name: 'Guardar' }).click()
   await expect(page.getByText('¿Guardás los cambios?')).toBeVisible()
   await page.getByRole('button', { name: 'Sí, guardar' }).click()
-  await expect(page).toHaveURL(/\/varieties\/entries$/)
+  await expectPath(page, STOCK)
   await expect(page.getByText('Entrada guardada')).toBeVisible()
   await expect(page.getByText('Rosa · 60 g')).toBeVisible()
 
@@ -103,7 +104,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.getByRole('button', { name: 'Borrar entrada' }).click()
   await expect(page.getByText('Antes de borrar')).toBeVisible()
   await page.getByRole('button', { name: 'Sí, borrala' }).click()
-  await expect(page).toHaveURL(/\/varieties\/entries$/)
+  await expectPath(page, STOCK)
   await expect(page.getByText('Entrada eliminada')).toBeVisible()
   await expect(page.getByText('Rosa · 60 g')).toHaveCount(0)
 
@@ -148,7 +149,7 @@ test('a seller does everything the backend offers today, from the front alone', 
 
   // Move between months: the month lives in the URL, one step back and one forward.
   await page.getByRole('button', { name: 'Mes anterior' }).click()
-  await expect(page).toHaveURL(/\/expenses\?month=\d{4}-\d{2}$/)
+  await expectPath(page, EXPENSES, /\?month=\d{4}-\d{2}/)
   await page.getByRole('button', { name: 'Mes siguiente' }).click()
   await expect(page.getByText(/Las compras de flores no van acá/)).toBeVisible()
 
@@ -156,18 +157,18 @@ test('a seller does everything the backend offers today, from the front alone', 
   // app shows the English screen (the one `goto('/gastos')` and one `goto(LEGACY_MORE)` of
   // the run; every other step reaches a screen through the nav or its real path).
   await page.goto(`${LEGACY_EXPENSES}?month=2026-01`)
-  await expect(page).toHaveURL(/\/expenses\?month=2026-01$/)
+  await expectPath(page, EXPENSES, '?month=2026-01')
   await expect(page.getByText(/Las compras de flores no van acá/)).toBeVisible()
   await page.reload()
-  await expect(page).toHaveURL(/\/expenses\?month=2026-01$/)
+  await expectPath(page, EXPENSES, '?month=2026-01')
   await expect(page.getByText(/Las compras de flores no van acá/)).toBeVisible()
   await page.goto(LEGACY_MORE)
-  await expect(page).toHaveURL(/\/more$/)
+  await expectPath(page, MORE)
   await expect(
     page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /^Gastos/ }),
   ).toBeVisible()
   await page.reload()
-  await expect(page).toHaveURL(/\/more$/)
+  await expectPath(page, MORE)
   await expect(
     page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /^Gastos/ }),
   ).toBeVisible()

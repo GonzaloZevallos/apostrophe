@@ -146,10 +146,10 @@ export default function Variedades() {
             +
           </button>
         </div>
-        <Link className="boton" to={CATALOG}>
+        <Link className="boton" to={CATALOG} state={{ inApp: true }}>
           Mandar catálogo
         </Link>
-        <Link className="boton" to={STOCK_ENTRY_NEW}>
+        <Link className="boton" to={STOCK_ENTRY_NEW} state={{ inApp: true }}>
           + Entrada de stock
         </Link>
         {toast !== null && <AvisoExito texto={toast} />}
@@ -215,7 +215,9 @@ export default function Variedades() {
             )
           })}
         </div>
-        <Link to={STOCK}>Todas las entradas</Link>
+        <Link to={STOCK} state={{ inApp: true }}>
+          Todas las entradas
+        </Link>
       </div>
     </main>
   )

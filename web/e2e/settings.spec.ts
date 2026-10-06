@@ -9,7 +9,8 @@
  * the console holds nothing.
  */
 
-import { HOME } from '../src/routes.js'
+import { CATALOG, HOME, LOGIN } from '../src/routes.js'
+import { expectPath } from './helpers/url.js'
 import { expect, test } from '@playwright/test'
 import { newBusinessInvitationUrl } from './backend.js'
 import { watchConsole } from './console.js'
@@ -81,7 +82,7 @@ test('a seller goes through every Configuración group from the phone, with no c
   await page.getByRole('button', { name: 'Probarlo' }).click()
   await expect(page.getByText('Prueba enviada')).toBeVisible()
   await page.getByRole('link', { name: 'Ir al catálogo' }).click()
-  await expect(page).toHaveURL(/\/varieties\/catalog$/)
+  await expectPath(page, CATALOG)
   await page.goBack()
   await close()
 
@@ -131,7 +132,7 @@ test('a seller goes through every Configuración group from the phone, with no c
   await sheet.getByRole('button', { name: 'Guardar' }).click()
   await expect(page.getByText('Contraseña cambiada · cerramos tus otras sesiones')).toBeVisible()
   await page.getByRole('button', { name: 'Cerrar sesión' }).click()
-  await expect(page).toHaveURL(/\/login$/)
+  await expectPath(page, LOGIN)
 
   await page.getByLabel('Email').fill(ownerEmail)
   await page.getByLabel('Contraseña').fill(NEW_PASSWORD)
