@@ -29,5 +29,5 @@ class SqlDrawCosts(DrawCosts):
     def rows(self) -> list[DrawRow]:
         entries = self._entries.for_varieties(None)
         sale_draws = self._draws.for_varieties(None)
-        grouped = lots_and_draws(entries, sale_draws)
+        grouped = lots_and_draws(entries, sale_draws, withdrawal_draws=[])
         return build_draw_rows(grouped)

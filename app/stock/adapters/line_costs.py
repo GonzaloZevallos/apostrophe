@@ -28,7 +28,9 @@ def costs_for_sale(entries: StockEntries, draws: Draws, sale: Sale) -> list[Line
     """One `LineCost` per line of `sale`, in the same order as `sale.lines`. Only the
     varieties on this sale are read, narrowed through `for_varieties`."""
     variety_ids = {line.variety_id for line in sale.lines}
-    grouped = lots_and_draws(entries.for_varieties(variety_ids), draws.for_varieties(variety_ids))
+    grouped = lots_and_draws(
+        entries.for_varieties(variety_ids), draws.for_varieties(variety_ids), withdrawal_draws=[]
+    )
 
     by_variety_position: dict[tuple[int, int], DrawCost] = {}
     for variety_id in variety_ids:

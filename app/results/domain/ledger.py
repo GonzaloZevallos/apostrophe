@@ -10,7 +10,7 @@ from typing import Literal
 
 from app.shared.grams import Grams
 
-DrawKind = Literal["sold", "gifted", "shortfall"]
+DrawKind = Literal["sold", "gifted", "shortfall", "promotion", "own_use"]
 
 
 @dataclass(frozen=True)

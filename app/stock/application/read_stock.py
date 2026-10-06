@@ -39,7 +39,7 @@ def read_stock(
 ) -> StockView:
     all_entries = entries.for_varieties(None)
     sale_draws = draws.for_varieties(None)
-    grouped = lots_and_draws(all_entries, sale_draws)
+    grouped = lots_and_draws(all_entries, sale_draws, withdrawal_draws=[])
     threshold_map = thresholds.all()
 
     varieties: list[VarietyStock] = []
@@ -64,7 +64,9 @@ def read_variety_stock(
     `set_threshold` writes, so the route can answer that variety's own row without a
     second full sweep."""
     narrowed = {variety_id}
-    grouped = lots_and_draws(entries.for_varieties(narrowed), draws.for_varieties(narrowed))
+    grouped = lots_and_draws(
+        entries.for_varieties(narrowed), draws.for_varieties(narrowed), withdrawal_draws=[]
+    )
     lots, variety_draws = grouped.get(variety_id, ([], []))
     threshold = thresholds.get(variety_id)
     level = stock_level(lots, variety_draws, threshold, today)
