@@ -21,7 +21,8 @@ sales arrive.
 **When** I buy, harvest or count flower, **I want** to record it from my phone in a few
 taps, **so I can** know what I have of each variety, see one running out before a customer
 asks for it, and know what the grams I sell or gift cost me. (Served here by the list's
-status, the variety's page and "+ Entrada de stock"; defined in `stock.md`.)
+status, the variety's page, its low-stock warning and "+ Entrada de stock"; defined in
+`stock.md`.)
 
 **When** I run my business from my phone between orders or mid-chat with a customer,
 several times a day, **I want** the app laid out around what I actually do and how often,
@@ -56,7 +57,8 @@ Success criteria:
    is sold out or below its threshold (`stock.md`, criterion 4). The summary line is
    never blank.
 6. **One variety, one page**: a variety's stock and entries, prices, low-stock warning and
-   catalog attributes are seen and edited from its page, and from no other screen.
+   catalog attributes are seen and edited from its page, and from no other screen. Every
+   edit there ends in an explicit save, so the seller always knows a change was kept.
 7. **Two taps at most**: from any tab root, the catalog screen ("Mandar catálogo") and
    the stock entry form ("+ Entrada de stock") open in at most 2 taps; a computer never
    takes more than the phone. An entry started from a variety's page has that variety
@@ -81,18 +83,21 @@ Success criteria:
   none. Today is the business day in Argentina time.
 - The price history lists the newest entry first.
 - **Low-stock threshold**: optional grams, above zero, up to two decimals, set or turned
-  off per variety. Its rules and the stock status are in `stock.md`.
+  off per variety. Turned off means the variety has none; no former amount is kept. Its
+  rules and the stock status are in `stock.md`.
 
 ### Routes
 
 - The routes are those in `scripts/design/screens.json`: `/varieties`,
   `/varieties/{low}`, `/varieties/catalog`, `/varieties/entries`,
-  `/varieties/entries/new`, `/varieties/{low}/prices`, `/varieties/{low}/prices/new` and
-  `/varieties/new`.
+  `/varieties/entries/new`, `/varieties/entries/{id}` (editing a stock entry),
+  `/varieties/{low}/entries` (a variety's "Ver todas" of entries),
+  `/varieties/{low}/prices`, `/varieties/{low}/prices/new` and `/varieties/new`.
 - A reload on any of them opens the screen, never the API's answer (ADR-0024 governs
   paths shared with the API).
-- Old paths (`/variedades`, `/mi-stock`, `/mi-stock/nueva-entrada`, `/catalogo` and every
-  other former Stock, Variedades or Catálogo path) redirect permanently (navigation.md).
+- Old paths (`/variedades`, `/mi-stock`, `/mi-stock/nueva-entrada`,
+  `/mi-stock/entradas/{id}`, `/catalogo` and every other former Stock, Variedades or
+  Catálogo path) redirect permanently (navigation.md).
 
 ### On screen: the Variedades list (`Variedades`)
 
@@ -127,7 +132,7 @@ Success criteria:
 - **"+ Entrada de stock"**, a secondary button above the list (not a floating button),
   opening the stock entry form with the variety to be chosen (`stock.md`).
 - **"Nueva variedad"**: adds a variety (a form).
-- **"Todas las entradas"** at the foot (`stock.md`).
+- **"Todas las entradas"** at the foot (`stock.md`), at `/varieties/entries`.
 
 ### On screen: a variety's page (`VariedadDetalle`)
 
@@ -139,21 +144,35 @@ Success criteria:
   "Stock inicial" preselected only when it has no entries, `stock.md`) and "Nuevo precio"
   (the price entry form).
 - **Sections**:
-  - **Stock y entradas**: the variety's last 3 stock entries and "Ver todas" for all of
-    them (`stock.md`);
+  - **Stock y entradas**: the variety's last 3 stock entries and "Ver todas", which opens
+    `/varieties/{low}/entries`: the same list as "Todas las entradas", filtered to this
+    variety, where each entry can be edited or deleted (`stock.md`);
   - **Precios**: the last 3 price entries with "Rige desde", newest first, each row with
-    its delete action, and "Ver todas" for the full history;
-  - **Aviso de stock bajo**: the low-stock threshold and its edit action, nothing else
-    (no "Ver todas"); its warning reads "Avisame abajo de 15 g", "Avisando: quedan
-    18,5 g" or "Aviso apagado". Toast: "Aviso guardado";
-  - **En el catálogo**: the variety's catalog attributes (shown or hidden, emoji, indica
-    share, aroma) and their edit action, nothing else (no "Ver todas"), edited here and
-    nowhere else (`catalog.md`).
+    its delete action, and "Ver todas" (`/varieties/{low}/prices`) for the full history;
+  - **Aviso de stock bajo**: the current warning, read-only, with an on/off switch and an
+    "Editar" link, and nothing else (no "Ver todas"):
+    - it reads "Avisame abajo de 15 g", "Avisando: quedan 18,5 g" or "Aviso apagado";
+    - "Editar" opens a small form: "Avisar con menos de" in grams, "Guardá el aviso" and
+      "Cerrar". A refused amount shows under the field and keeps what was typed;
+    - turning the switch on opens that same form (an off warning keeps no amount); closing
+      it without saving leaves the warning off;
+    - turning the switch off saves at once;
+    - every save, the switch-off included, shows the toast "Aviso guardado";
+  - **En el catálogo**: the variety's catalog attributes, read-only (shown or hidden,
+    emoji, % índica, aroma/sabor), with an "Editar" link, and nothing else (no "Ver
+    todas"). It is the only place they are edited (`catalog.md`):
+    - "Editar" opens one form with "Mostrar en el catálogo", Emoji, % índica and
+      Aroma/sabor, ending in "Guardá el catálogo";
+    - each refusal (for example an aroma over 200 characters) shows under its own field
+      and keeps everything typed;
+    - leaving with something typed and not saved asks before discarding;
+    - a save shows the toast "Catálogo guardado".
 - **"Ver todas" lists** are cards (navigation.md): the bar or sidebar and "‹ <variety>",
-  without "+ Nueva venta".
+  without "+ Nueva venta"; back with no history goes to the variety's page.
 - **Renaming** the variety is done here.
-- **Forms** opened from here (Nuevo precio, + Entrada, rename, the catalog attributes) have
-  "Cerrar" and a confirmation when leaving with something typed.
+- **Forms** opened from here (Nuevo precio, + Entrada, rename, the low-stock warning, the
+  catalog attributes) have "Cerrar" and a confirmation when leaving with something typed;
+  an untouched one closes at once.
 - **Deleting a price entry**: confirmed with "Antes de borrar" ("¿Borrás…? / No, dejala /
   Sí, borrala"), and the copy says what takes the entry's place:
   - with an earlier entry, the price that applies again and its date, e.g. "Vuelve a regir
@@ -182,8 +201,9 @@ Success criteria:
 - **Unique names (criterion 3)**: duplicates within a business, whatever the case or
   spacing, are 0.
 - **No curl (criterion 4)**: the end-to-end front run adds a variety, adds a price from its
-  page, renames the variety, deletes a price entry, sets and turns off a low-stock
-  threshold, and edits the variety's catalog attributes from its page.
+  page, renames the variety, deletes a price entry, sets a low-stock threshold through
+  "Editar", turns it off and on again through the switch, and edits the variety's catalog
+  attributes through "Editar" and "Guardá el catálogo", all from its page.
 - **Status shown (criterion 5)**: the list and the page show the status mark and word for
   each status, "Oculta" beside (never instead of) the status of a hidden variety, and the
   summary line for no varieties, all ok and a mix; never by color alone; covered by the
@@ -192,6 +212,13 @@ Success criteria:
   entries' variety-level view, threshold or catalog attributes; checked against the docs
   and the design. Front tests show only Stock y entradas and Precios carry their last 3
   rows and "Ver todas".
+- **Saved, never guessed (criterion 6)**: front tests show:
+  - Aviso de stock bajo and En el catálogo read-only until "Editar";
+  - switching the warning on opens the threshold form, and "Cerrar" leaves it off;
+  - switching it off saves at once with "Aviso guardado";
+  - a too-long aroma refused under its field, everything typed kept;
+  - leaving the catalog form with unsaved text asks first, and an untouched form closes at
+    once.
 - **Two taps (criterion 7)**: the end-to-end run, phone and computer viewports, counts the
   taps from every tab root to the catalog screen and to the stock entry form: 100% within
   2, a computer never more than the phone; an entry from a variety's page has the variety
@@ -200,12 +227,15 @@ Success criteria:
   no varieties leaves the right pane with no figure; on the phone the list never opens a
   variety.
 - **Nothing lost (criterion 8)**: every old Stock, Variedades and Catálogo path answers a
-  permanent redirect, tested one by one; every old action maps to a place in the new
-  screens; no link points at a missing screen.
-- **Isolation**: another business's variety opened by id shows "Eso ya no está."; after a
-  full front run, the console and browser storage hold no names or amounts.
+  permanent redirect, tested one by one, `/mi-stock/entradas/{id}` included; every old
+  action maps to a place in the new screens; no link points at a missing screen; a reload
+  on `/varieties/{low}/entries` and `/varieties/entries/{id}` opens the screen.
+- **Isolation**: another business's variety or entry opened by id shows "Eso ya no está.";
+  after a full front run, the console and browser storage hold no names or amounts.
 - **Design**: `scripts/design/compare.sh` runs before and after for the list and the
-  page, phone and computer, attached to the PR and judged by eye.
+  page, phone and computer, attached to the PR and judged by eye. The PR lists the two
+  agreed departures from the drawing (the "Editar" forms of Aviso de stock bajo and En el
+  catálogo).
 - **Speed**: Variedades answers in under 300 ms with a few dozen varieties.
 
 ## Out of scope
@@ -213,3 +243,4 @@ Success criteria:
 - The rules of catalog attributes: the catalog capability (they are edited here).
 - Deleting a variety.
 - Configuración and its groups.
+- Editing catalog attributes or the threshold in place, without a form and a save.
