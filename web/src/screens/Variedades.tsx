@@ -17,6 +17,7 @@ import { readStock, type VarietyStock } from '../api/stock'
 import AvisoExito, { type SuccessToast } from '../components/AvisoExito'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import MarcaEstado from '../components/MarcaEstado'
+import Icono from '../components/Icono'
 import { GuardedSheet } from '../components/Sheet'
 import SinConexion from '../components/SinConexion'
 import { formatGrams, formatMoney } from '../format/money'
@@ -148,6 +149,14 @@ export default function Variedades() {
           </button>
         </div>
         {toast !== null && <AvisoExito texto={toast} />}
+        <div className="variedades__acciones">
+          <Link to={paths.catalog()} className="boton">
+            Mandar catálogo
+          </Link>
+          <Link to={paths.newEntry()} className="boton boton--suave">
+            + Entrada de stock
+          </Link>
+        </div>
         {adding && (
           <GuardedSheet
             title="Nueva variedad"
@@ -220,6 +229,10 @@ export default function Variedades() {
             )
           })}
         </div>
+        <Link to={paths.entries()} className="variedades__pie">
+          Todas las entradas
+          <Icono nombre="chevron" size={18} strokeWidth={1.6} />
+        </Link>
       </div>
     </main>
   )

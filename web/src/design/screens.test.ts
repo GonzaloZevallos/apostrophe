@@ -27,6 +27,23 @@ describe('assertScreens', () => {
     ).not.toThrow()
   })
 
+  it('refuses a built screen whose route is not its path', () => {
+    expect(() =>
+      assertScreens([{ screen: 'Ventas', route: '/ventas', path: '/sales' }]),
+    ).toThrow(/Ventas: route "\/ventas" is not its path "\/sales"/)
+  })
+
+  it('accepts route = path, a screen not built yet, and a sheet over another route', () => {
+    expect(() =>
+      assertScreens([
+        { screen: 'Ventas', route: '/sales', path: '/sales' },
+        { screen: 'VariedadNueva', route: null, path: '/varieties/new' },
+        { screen: 'Estados', route: null, path: null },
+        { screen: 'Cobro', route: '/customers/{debtor}', path: '/customers/{debtor}/payment', sheet: true },
+      ]),
+    ).not.toThrow()
+  })
+
   it('accepts the real screens.json, imported, never copied', () => {
     expect(() => assertScreens(screens.screens)).not.toThrow()
   })

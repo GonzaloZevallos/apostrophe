@@ -513,9 +513,15 @@ button {
 }
 
 .mas__item-texto {
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 2px;
+}
+
+.mas__item-flecha {
+  display: flex;
+  color: var(--tinta2);
 }
 
 .mas__item-rotulo {
@@ -2333,4 +2339,27 @@ button {
     font-size: 15px;
     color: var(--tinta2);
   }
+}
+
+.variedades__acciones {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-sm);
+  margin-top: var(--espacio-lg);
+}
+
+.variedades__acciones .boton,
+.variedades__pie {
+  text-decoration: none;
+}
+
+.variedades__pie {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-sm);
+  min-height: var(--alto-tocable);
+  margin-top: var(--espacio-lg);
+  border-top: 1px solid var(--linea);
+  color: var(--tinta);
 }

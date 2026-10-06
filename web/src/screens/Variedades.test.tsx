@@ -84,6 +84,60 @@ test('a variety links to its own detail, with no business id in the path', async
   expect(link).toHaveAttribute('href', paths.variety(7))
 })
 
+describe('the entry points', () => {
+  test('"Mandar catálogo" first, "+ Entrada de stock" above the list and "Todas las entradas" at its foot', async () => {
+    mockGet([
+      { id: 1, name: '24K Gold', current_price: null },
+      { id: 2, name: 'Mango Bomb', current_price: null },
+    ])
+
+    renderScreen()
+    await screen.findByText('24K Gold')
+
+    const links = screen.getAllByRole('link')
+    expect(links.map((link) => link.getAttribute('href'))).toEqual([
+      paths.catalog(),
+      paths.newEntry(),
+      paths.variety(1),
+      paths.variety(2),
+      paths.entries(),
+    ])
+    expect(links[0]).toHaveTextContent('Mandar catálogo')
+    expect(links[1]).toHaveTextContent('+ Entrada de stock')
+    expect(links[4]).toHaveTextContent('Todas las entradas')
+  })
+
+  test('with no varieties the three are still there and "Mandar catálogo" opens the catalog screen', async () => {
+    mockGet([])
+
+    renderScreen()
+
+    // The first-run checklist is not built yet (it is the Inicio issue's), so nothing
+    // can make the button disabled: it is a live link, never `aria-disabled`.
+    const catalog = await screen.findByRole('link', { name: 'Mandar catálogo' })
+    expect(catalog).toHaveAttribute('href', paths.catalog())
+    expect(catalog).not.toHaveAttribute('aria-disabled')
+    expect(screen.getByRole('link', { name: '+ Entrada de stock' })).toHaveAttribute(
+      'href',
+      paths.newEntry(),
+    )
+    expect(screen.getByRole('link', { name: 'Todas las entradas' })).toHaveAttribute(
+      'href',
+      paths.entries(),
+    )
+  })
+
+  test('"+ Entrada de stock" and "Todas las entradas" lead to their screens', async () => {
+    const user = userEvent.setup()
+    mockGet([])
+    const router = renderScreen()
+
+    await user.click(await screen.findByRole('link', { name: '+ Entrada de stock' }))
+
+    expect(router.state.location.pathname).toBe(paths.newEntry())
+  })
+})
+
 describe('adding a variety', () => {
   test('saves it, toasts, and clears the form', async () => {
     const user = userEvent.setup()
