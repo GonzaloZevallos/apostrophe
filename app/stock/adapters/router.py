@@ -12,6 +12,7 @@ from app.shared.grams import Grams, InvalidGrams
 from app.stock.adapters.schemas import EntryIn, EntryOut, StockOut, ThresholdIn, VarietyStockOut
 from app.stock.adapters.sql_draws import SqlDraws
 from app.stock.adapters.sql_stock_entries import SqlStockEntries
+from app.stock.adapters.sql_stock_withdrawals import SqlStockWithdrawals
 from app.stock.adapters.sql_thresholds import SqlThresholds
 from app.stock.adapters.variety_catalog import SqlVarietyCatalog
 from app.stock.application import manage_entries
@@ -51,6 +52,10 @@ def get_draws(session: SessionDep, business_id: CurrentBusinessId) -> SqlDraws:
     return SqlDraws(session, business_id)
 
 
+def get_withdrawals(session: SessionDep, business_id: CurrentBusinessId) -> SqlStockWithdrawals:
+    return SqlStockWithdrawals(session, business_id)
+
+
 def get_thresholds(session: SessionDep, business_id: CurrentBusinessId) -> SqlThresholds:
     return SqlThresholds(session, business_id)
 
@@ -58,6 +63,7 @@ def get_thresholds(session: SessionDep, business_id: CurrentBusinessId) -> SqlTh
 EntriesDep = Annotated[SqlStockEntries, Depends(get_entries)]
 CatalogDep = Annotated[SqlVarietyCatalog, Depends(get_catalog)]
 DrawsDep = Annotated[SqlDraws, Depends(get_draws)]
+WithdrawalsDep = Annotated[SqlStockWithdrawals, Depends(get_withdrawals)]
 ThresholdsDep = Annotated[SqlThresholds, Depends(get_thresholds)]
 
 as_http = TranslateErrors(
@@ -163,11 +169,12 @@ def delete_entry(stock_entry_id: int, entries: EntriesDep, session: SessionDep) 
 def get_stock(
     entries: EntriesDep,
     draws: DrawsDep,
+    withdrawals: WithdrawalsDep,
     catalog: CatalogDep,
     thresholds: ThresholdsDep,
     today: TodayDep,
 ) -> StockOut:
-    view = read_stock_uc.read_stock(entries, draws, catalog, thresholds, today)
+    view = read_stock_uc.read_stock(entries, draws, withdrawals, catalog, thresholds, today)
     return StockOut.of(view)
 
 
@@ -177,6 +184,7 @@ def set_threshold(
     body: ThresholdIn,
     entries: EntriesDep,
     draws: DrawsDep,
+    withdrawals: WithdrawalsDep,
     catalog: CatalogDep,
     thresholds: ThresholdsDep,
     session: SessionDep,
@@ -186,7 +194,7 @@ def set_threshold(
         grams = Grams.of(body.grams) if body.grams is not None else None
         try:
             view = set_threshold_uc.set_threshold(
-                entries, draws, thresholds, catalog, session, variety_id, grams, today
+                entries, draws, withdrawals, thresholds, catalog, session, variety_id, grams, today
             )
         except _UnknownVariety as exc:
             raise _or_variety_not_found(exc, variety_id) from exc
