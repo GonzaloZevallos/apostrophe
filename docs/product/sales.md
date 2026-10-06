@@ -182,7 +182,7 @@ Success criteria, on the phone:
   - "Cerrar", or the system back gesture, after a line, a customer, shipping or a note has been entered asks "¿Descartás la venta?", with "No, seguí cargando" and "Sí, descartala".
   - "No, seguí cargando" keeps the user on the form with everything intact; the next back gesture asks again.
   - An untouched form closes at once.
-  - With a sheet open over the form (Elegir cliente, or Nuevo cliente inside it), back closes only that sheet and returns to the form with everything intact; it never asks "¿Descartás la venta?". Elegir cliente closes at once; Nuevo cliente with something typed asks only its own unsaved-changes confirmation (customers.md).
+  - With a sheet open over the form (Elegir cliente, or Nuevo cliente inside it), back does exactly what that sheet's own "Cerrar" does: it closes only the top sheet, and the form keeps everything typed. It never asks "¿Descartás la venta?".
   - There are no drafts or autosave.
 - **Elegir cliente** (`NuevaVentaCliente`):
   - A sheet over the sale. It offers search by phone or part of the name, "Sin cliente", and "Nuevo cliente" (the same form as in Clientes: only the name required; phone optional, plus VIP; no channel), which creates the customer and uses it.
@@ -244,7 +244,7 @@ The phone layout only; `NuevaVentaCompu` keeps its own.
   - shipping, the note, how it was paid, and the customer or "Sin cliente".
 - **Asignar cliente**:
   - It shows only when the sale has none, and opens Elegir cliente without "Sin cliente".
-  - The system back gesture with its sheet open closes only the sheet and asks nothing.
+  - The system back gesture with its sheet open does what the sheet's own "Cerrar" does: it closes only the sheet and asks nothing.
   - On success, the toast "Cliente asignado".
   - If someone assigned one first, "Esta venta ya tiene cliente." and the detail refreshes.
 - **Borrar venta**:
@@ -307,7 +307,7 @@ The phone layout only; `NuevaVentaCompu` keeps its own.
 - **Targets and inputs (criterion 13)**: every interactive element of the three screens, dialog buttons included, is at least 44 px tall; every input has a computed font size of at least 16 px; grams carry `inputmode="decimal"`, pesos `"numeric"`, and a line's fields `enterkeyhint`.
 - **Never blank (criterion 14)**: front tests show the shared loading state on the detail, Ventas' list, Nueva venta's price wait (opening and date change) and Elegir cliente's results, holding no digit, currency symbol or placeholder figure.
 - **Date change**: a front test shows everything typed is kept, the lines show loading, then every line is repriced.
-- **Back guard (criterion 15)**: front tests drive the system back gesture: it asks "¿Descartás la venta?" under the Cerrar condition; "No, seguí cargando" keeps the form and the next back asks again; an untouched form closes at once; with Elegir cliente or Asignar cliente open, back closes only the sheet and asks nothing; with Nuevo cliente open and something typed, back asks only its own confirmation.
+- **Back guard (criterion 15)**: front tests drive the system back gesture: it asks "¿Descartás la venta?" under the Cerrar condition; "No, seguí cargando" keeps the form and the next back asks again; an untouched form closes at once; with Elegir cliente, Nuevo cliente or Asignar cliente open, back closes only the top sheet as its own "Cerrar" does, the sale or detail underneath stays intact, and "¿Descartás la venta?" never appears.
 - **No regression (criterion 16)**: the existing sales and navigation tests pass without being edited; the pricing matrix and "preview = stored" stay at 0 differences; `NuevaVentaCompu` and `VentasCompu` are unchanged.
 
 ## Out of scope
@@ -322,3 +322,4 @@ The phone layout only; `NuevaVentaCompu` keeps its own.
 - Importing sales from the spreadsheet.
 - A measurement-driven switch between line layouts on the phone; horizontal scrolling or shortened labels for Ventas' period tabs.
 - Changes to the computer layouts as part of the phone redesign; English screen texts (#53); the bar and back rule (#59).
+- Building Nuevo cliente's unsaved-changes confirmation (customers.md): its own issue, with its own copy, for Clientes and Elegir cliente alike.
