@@ -80,6 +80,10 @@
     "pinned_catalog.too_long": { "kind": "refusal" },
     "pinned_catalog.telegram_unreachable": { "kind": "refusal" },
     "pinned_catalog.bot_cannot_post": { "kind": "refusal" },
+    "pinned_catalog.token_invalid": { "kind": "refusal" },
+    "pinned_catalog.own_chat_not_started": { "kind": "refusal" },
+    "pinned_catalog.own_chat_not_found": { "kind": "refusal" },
+    "pinned_catalog.test_failed": { "kind": "refusal" },
     "RequestInvalid": { "kind": "refusal" }
   },
   "frontSegments": [

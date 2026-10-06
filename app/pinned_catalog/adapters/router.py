@@ -25,12 +25,17 @@ from app.pinned_catalog.adapters.sql_snapshot import SqlPinSnapshots
 from app.pinned_catalog.adapters.telegram_holder import PinnedCatalogTelegram
 from app.pinned_catalog.adapters.token_cipher import TokenCipher
 from app.pinned_catalog.application.channel_telegram import ChannelTelegram
+from app.pinned_catalog.application.ports import TelegramApi
 from app.pinned_catalog.application.push import BusinessLocks, push, status_of, test_send
 from app.pinned_catalog.domain.errors import (
     BotCannotPost,
     NotReady,
+    OwnChatNotFound,
+    OwnChatNotStarted,
     OwnChatRequired,
     TelegramUnreachable,
+    TestSendFailed,
+    TokenInvalid,
     TokenRequired,
     TooLong,
 )
@@ -51,6 +56,11 @@ def get_channel_telegram(request: Request) -> ChannelTelegram:
     return holder.channel
 
 
+def get_telegram_api(request: Request) -> TelegramApi:
+    holder = cast(PinnedCatalogTelegram, request.app.state.pinned_catalog_telegram)
+    return holder.api
+
+
 def get_locks(request: Request) -> BusinessLocks:
     return cast(BusinessLocks, request.app.state.pinned_catalog_locks)
 
@@ -61,6 +71,7 @@ def get_cipher(request: Request) -> TokenCipher:
 
 EngineDep = Annotated[Engine, Depends(get_engine)]
 ChannelTelegramDep = Annotated[ChannelTelegram, Depends(get_channel_telegram)]
+TelegramApiDep = Annotated[TelegramApi, Depends(get_telegram_api)]
 LocksDep = Annotated[BusinessLocks, Depends(get_locks)]
 CipherDep = Annotated[TokenCipher, Depends(get_cipher)]
 
@@ -92,6 +103,10 @@ as_http = TranslateErrors(
                 TooLong,
                 TelegramUnreachable,
                 BotCannotPost,
+                TokenInvalid,
+                OwnChatNotStarted,
+                OwnChatNotFound,
+                TestSendFailed,
             ),
         ),
     ]
@@ -120,7 +135,7 @@ def get_pinned_catalog_status(
 def post_pinned_catalog_test(
     body: PinnedCatalogTestIn,
     business_id: CurrentBusinessId,
-    telegram: ChannelTelegramDep,
+    telegram: TelegramApiDep,
     snapshots: SnapshotsDep,
     settings_writer: SettingsWriterDep,
     locks: LocksDep,

@@ -54,6 +54,44 @@ class SendRefusal(StrEnum):
     OTHER = "other"
 
 
+class TokenInvalid(PinnedCatalogRuleBroken):
+    """Probarlo: Telegram does not know the token. Registered in the router, so its
+    `code` answers an HTTP refusal; the message names no part of what was typed."""
+
+    code: ClassVar[str] = "pinned_catalog.token_invalid"
+
+    def __init__(self) -> None:
+        super().__init__("the bot token is not valid")
+
+
+class OwnChatNotStarted(PinnedCatalogRuleBroken):
+    """Probarlo: the bot may not write first to the seller's own chat."""
+
+    code: ClassVar[str] = "pinned_catalog.own_chat_not_started"
+
+    def __init__(self) -> None:
+        super().__init__("the own chat has not started the bot")
+
+
+class OwnChatNotFound(PinnedCatalogRuleBroken):
+    """Probarlo: Telegram does not find the own chat (or it was never started: the
+    400 answer cannot tell the two causes apart)."""
+
+    code: ClassVar[str] = "pinned_catalog.own_chat_not_found"
+
+    def __init__(self) -> None:
+        super().__init__("the own chat was not found")
+
+
+class TestSendFailed(PinnedCatalogRuleBroken):
+    """Probarlo: any other refusal of the test send."""
+
+    code: ClassVar[str] = "pinned_catalog.test_failed"
+
+    def __init__(self) -> None:
+        super().__init__("the test send failed")
+
+
 class TelegramOutcomeFailure(RuntimeError):
     """What `classify` (ADR-0023) turns a Telegram answer into, carrying no part of
     Telegram's own description, URL or token (CODING_STANDARDS section 9)."""

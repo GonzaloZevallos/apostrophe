@@ -143,6 +143,45 @@ test('a refused Probarlo saves nothing and keeps everything typed, the token inc
   expect(screen.queryByText(/Guardado el/)).not.toBeInTheDocument()
 })
 
+const PROBARLO_REASONS: [string, string][] = [
+  ['pinned_catalog.token_invalid', 'El token no es válido: copialo de nuevo de @BotFather.'],
+  [
+    'pinned_catalog.own_chat_not_started',
+    'Abrí tu bot en Telegram y tocá Iniciar, después probalo de nuevo.',
+  ],
+  [
+    'pinned_catalog.own_chat_not_found',
+    'No encontramos tu chat: revisá el número y tocá Iniciar en tu bot.',
+  ],
+  ['pinned_catalog.test_failed', 'No pudimos enviarte la prueba: revisá el token y tu chat.'],
+  ['pinned_catalog.telegram_unreachable', 'Telegram no respondió'],
+  [
+    'pinned_catalog.too_long',
+    'Es demasiado largo para Telegram: acortá aromas u ocultá variedades.',
+  ],
+]
+
+test.each(PROBARLO_REASONS)(
+  'a Probarlo refused with %s shows its own reason, keeps the form and never blames the channel',
+  async (code, copy) => {
+    renderGroup(EMPTY, () => jsonResponse(422, { detail: 'refused', code }))
+
+    await userEvent.type(await screen.findByLabelText('Token del bot'), '123:secret')
+    await userEvent.type(screen.getByLabelText('Tu chat'), '555')
+    await userEvent.type(screen.getByLabelText('Chat del canal'), '@probando')
+    await userEvent.click(screen.getByRole('button', { name: 'Probarlo' }))
+
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent(copy)
+    expect(alert).not.toHaveTextContent('El bot no puede publicar en el canal')
+    expect(alert).not.toHaveTextContent('123:secret')
+    expect(screen.queryByText('Prueba enviada')).not.toBeInTheDocument()
+    expect(screen.getByLabelText('Token del bot')).toHaveValue('123:secret')
+    expect(screen.getByLabelText('Tu chat')).toHaveValue('555')
+    expect(screen.getByLabelText('Chat del canal')).toHaveValue('@probando')
+  },
+)
+
 test('an untouched group closes at once; a typed change asks first', async () => {
   renderGroup(SAVED)
 

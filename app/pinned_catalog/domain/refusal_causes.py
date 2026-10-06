@@ -8,7 +8,14 @@ from __future__ import annotations
 
 from typing import assert_never
 
-from app.pinned_catalog.domain.errors import BotCannotPost, SendRefusal
+from app.pinned_catalog.domain.errors import (
+    BotCannotPost,
+    OwnChatNotFound,
+    OwnChatNotStarted,
+    SendRefusal,
+    TestSendFailed,
+    TokenInvalid,
+)
 
 
 def for_channel(cause: SendRefusal) -> BotCannotPost:
@@ -24,4 +31,23 @@ def for_channel(cause: SendRefusal) -> BotCannotPost:
             return BotCannotPost()
         case SendRefusal.OTHER:
             return BotCannotPost()
+    assert_never(cause)
+
+
+def for_test_send(
+    cause: SendRefusal,
+) -> TokenInvalid | OwnChatNotStarted | OwnChatNotFound | TestSendFailed:
+    """Probarlo: the reason it answers for each cause, never the channel's. A cause it
+    has no specific word for (no rights, any other refusal) is `TestSendFailed`."""
+    match cause:
+        case SendRefusal.TOKEN_INVALID:
+            return TokenInvalid()
+        case SendRefusal.CHAT_NOT_STARTED:
+            return OwnChatNotStarted()
+        case SendRefusal.CHAT_NOT_FOUND:
+            return OwnChatNotFound()
+        case SendRefusal.NO_RIGHTS:
+            return TestSendFailed()
+        case SendRefusal.OTHER:
+            return TestSendFailed()
     assert_never(cause)
