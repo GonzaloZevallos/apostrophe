@@ -1,5 +1,5 @@
 /**
- * Pins the device's theme choice (ADR-0024) on top of the rule below: Oscuro chosen in
+ * Pins the device's theme choice (ADR-0026) on top of the rule below: Oscuro chosen in
  * Configuración → Apariencia is remembered on the device, survives a reload and a logout,
  * and shows on every screen before login; Claro removes it; a tampered value reads as light.
  * No test here reaches dark by emulating a dark system.

@@ -23,6 +23,7 @@ import { kindOf, resolveOverride, type RefusalCode } from '../../api/refusals'
 import AvisoExito from '../../components/AvisoExito'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
+import Loading from '../../components/Loading'
 import {
   CATALOG_SAVED,
   FOOTER_TOO_LONG_MESSAGE,
@@ -65,6 +66,7 @@ export default function CatalogMessageGroup() {
   if (isPending || isError) {
     return (
       <SettingsGroup title={TITLE} dirty={false} leave={LEAVE}>
+        {isPending && <Loading />}
         {isError && (error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />)}
       </SettingsGroup>
     )

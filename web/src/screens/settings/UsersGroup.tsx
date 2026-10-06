@@ -17,6 +17,7 @@ import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
+import Loading from '../../components/Loading'
 import { copyText } from '../../clipboard'
 import { formatDateShort } from '../../format/dates'
 import SettingsGroup from './SettingsGroup'
@@ -84,6 +85,7 @@ export default function UsersGroup() {
 
   return (
     <SettingsGroup title="Usuarios" dirty={false} leave={LEAVE}>
+      {isPending && <Loading />}
       {isError && (error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />)}
       {!isPending && !isError && (
         <ul className="usuarios__lista">

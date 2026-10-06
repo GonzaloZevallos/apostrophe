@@ -1,13 +1,15 @@
 /**
- * `Mas`: Gastos, Variedades, Catálogo, Análisis and Configuración. Each entry links to
- * where its own screen subtask mounts its route (`/gastos`, `/variedades`,
- * `/catalogo`, `/analisis`, `/settings`). The fixed subtitles are the design's own words
- * (`Mas.dc.html`); Análisis's is the plan's own line ("Análisis · Variedades, semanas,
- * meses y días"). Configuración carries `state: { inApp: true }`, which lets its list's
- * back go through history (`useBackOr`).
+ * `Mas`: "+ Cargar gasto", Gastos and Análisis first, in the design's order
+ * (`Mas.dc.html`), then the entries whose screens have not moved yet (Variedades,
+ * Catálogo), which leave with the issues that move them, and Configuración last.
+ * Paths come from `routes.ts`. The subtitles are the design's own words.
+ * Configuración carries `state: { inApp: true }`, which lets its list's back go
+ * through history (`useBackOr`).
  */
 
 import { Link } from 'react-router'
+import Icono from '../components/Icono'
+import { ANALYSIS, EXPENSE_NEW, EXPENSES } from '../routes'
 
 interface Item {
   to: string
@@ -18,10 +20,27 @@ interface Item {
 }
 
 const ITEMS: Item[] = [
-  { to: '/gastos', label: 'Gastos', detail: 'Por mes y por categoría' },
-  { to: '/variedades', label: 'Variedades', detail: 'Precios y avisos de stock bajo' },
-  { to: '/catalogo', label: 'Catálogo', detail: 'El mensaje de hoy, listo para copiar' },
-  { to: '/analisis', label: 'Análisis', detail: 'Variedades, semanas, meses y días' },
+  {
+    to: EXPENSE_NEW,
+    label: '+ Cargar gasto',
+    detail: 'Categoría, monto y detalle',
+  },
+  { to: EXPENSES, label: 'Gastos', detail: 'Por mes y por categoría' },
+  {
+    to: ANALYSIS,
+    label: 'Análisis',
+    detail: 'Variedades, semanas, meses y días',
+  },
+  {
+    to: '/variedades',
+    label: 'Variedades',
+    detail: 'Precios y avisos de stock bajo',
+  },
+  {
+    to: '/catalogo',
+    label: 'Catálogo',
+    detail: 'El mensaje de hoy, listo para copiar',
+  },
   {
     to: '/settings',
     label: 'Configuración',
@@ -48,6 +67,9 @@ export default function Mas() {
                 {item.detail !== undefined && (
                   <span className="mas__item-detalle">{item.detail}</span>
                 )}
+              </span>
+              <span className="mas__item-flecha">
+                <Icono nombre="chevron" size={18} />
               </span>
             </Link>
           ))}

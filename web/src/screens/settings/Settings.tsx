@@ -16,9 +16,10 @@ import type { Me } from '../../api/me'
 import Boton from '../../components/Boton'
 import Icono from '../../components/Icono'
 import { useBackOr } from '../../components/useBackOr'
+import { EXPENSE_CATEGORIES, MORE } from '../../routes'
 
-/** The route the phone's Más tab lives at today. */
-export const MORE_PATH = '/mas'
+/** The route the phone's Más tab lives at (`routes.ts`). */
+export const MORE_PATH = MORE
 const HOME_PATH = '/'
 const COMPUTER_QUERY = '(min-width: 900px)'
 
@@ -27,7 +28,7 @@ const GROUPS = [
   { to: '/settings/users', label: 'Usuarios' },
   { to: '/settings/integrations', label: 'Integraciones' },
   { to: '/settings/catalog-message', label: 'Mensaje del catálogo' },
-  { to: '/settings/expense-categories', label: 'Categorías de gastos' },
+  { to: EXPENSE_CATEGORIES, label: 'Categorías de gastos' },
   { to: '/settings/appearance', label: 'Apariencia' },
   { to: '/settings/account', label: 'Tu cuenta' },
 ] as const

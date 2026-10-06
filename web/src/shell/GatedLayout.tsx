@@ -6,7 +6,9 @@
  * retry panel on top of that redirect. A dropped network shows "Sin conexión"
  * (`accounts.md`, "No network" — this does not depend on the service worker); any
  * other failure (a 500, above all) shows the generic retry instead of a blank page
- * that never recovers.
+ * that never recovers. A successful `me` mounts the flash toast's provider
+ * (`flash/`) above everything nested, so a toast armed before `navigate(-1)` shows on
+ * the screen history returns to.
  */
 
 import { useQuery } from '@tanstack/react-query'
@@ -16,6 +18,7 @@ import { getMe } from '../api/me'
 import { ApiError, NetworkError } from '../api/client'
 import SinConexion from '../components/SinConexion'
 import ErrorGenerico from '../components/ErrorGenerico'
+import FlashProvider from '../flash/FlashProvider'
 
 export default function GatedLayout() {
   const { data, isPending, isError, error } = useQuery({ queryKey: keys.me(), queryFn: getMe })
@@ -41,5 +44,9 @@ export default function GatedLayout() {
     )
   }
   if (data === undefined) return null
-  return <Outlet context={data} />
+  return (
+    <FlashProvider>
+      <Outlet context={data} />
+    </FlashProvider>
+  )
 }

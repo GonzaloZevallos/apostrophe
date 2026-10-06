@@ -13,7 +13,7 @@ import { applyStoredTheme } from './theme'
 const root = document.getElementById('root')
 if (root === null) throw new Error('index.html has no #root')
 
-// ADR-0024: the device's theme before the first render, Entrar included.
+// ADR-0026: the device's theme before the first render, Entrar included.
 applyStoredTheme()
 
 createRoot(root).render(

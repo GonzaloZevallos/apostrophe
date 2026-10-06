@@ -1,5 +1,5 @@
 /**
- * The device's theme choice (ADR-0024): the only module that names `localStorage` and the
+ * The device's theme choice (ADR-0026): the only module that names `localStorage` and the
  * only one that touches `data-tema` on `<html>`.
  *
  * One key, `tema`, whose only stored value is `oscuro`. Claro removes the key. Any other

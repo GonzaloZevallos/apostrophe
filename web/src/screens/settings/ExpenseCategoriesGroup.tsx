@@ -29,6 +29,7 @@ import Aviso, { type SuccessToast } from '../../components/Aviso'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import GoneNotice from '../../components/GoneNotice'
 import SinConexion from '../../components/SinConexion'
+import Loading from '../../components/Loading'
 import { GENERIC_REFUSAL_MESSAGE } from './messages'
 import SettingsGroup from './SettingsGroup'
 
@@ -52,7 +53,7 @@ function isRefusal(caught: unknown): caught is ApiError {
 }
 
 export default function ExpenseCategoriesGroup() {
-  const { data, isError, error } = useQuery({
+  const { data, isPending, isError, error } = useQuery({
     queryKey: keys.expenseCategories(),
     queryFn: listCategories,
     gcTime: 0,
@@ -64,6 +65,7 @@ export default function ExpenseCategoriesGroup() {
   if (data === undefined) {
     return (
       <SettingsGroup title={TITLE} dirty={false} leave={LEAVE}>
+        {isPending && <Loading />}
         {isError && (error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />)}
       </SettingsGroup>
     )

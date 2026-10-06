@@ -31,6 +31,7 @@ import { gone, toast } from '../components/feedback'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import GoneScreen from '../components/GoneScreen'
 import SinConexion from '../components/SinConexion'
+import Loading from '../components/Loading'
 import { formatDate } from '../format/dates'
 import { formatGrams, formatMoney } from '../format/money'
 import { parseMoney, parseSignedGrams } from '../format/parse'
@@ -119,7 +120,15 @@ export default function EntradaStock({ mode }: Props) {
     )
   }
 
-  if (existing.data === undefined) return null
+  if (existing.data === undefined) {
+    return (
+      <main className="pantalla">
+        <div className="cuerpo">
+          <Loading />
+        </div>
+      </main>
+    )
+  }
 
   return <EntradaStockBody mode="editar" entryId={entryId} today={me.today} initial={existing.data} />
 }

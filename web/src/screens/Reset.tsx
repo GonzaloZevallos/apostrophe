@@ -15,25 +15,27 @@
  * `Invitacion.tsx`): the code is in `contract.json` with `kind: "gone"`, so a
  * rename on the backend side fails `tsc` here instead of silently falling through.
  *
- * No design file exists for this screen: checked by eye before delivery against
- * `Invitacion`'s own comparison (`scripts/design/compare.sh`) — same
- * `.entrar__contenido` top padding, the same `.invitacion__titulo` type for the
- * heading, the same `.formulario`/`.campo` field rhythm and pill button. It is
- * shorter than Invitacion's own form only because this screen's copy has no
- * badge, subtitle or footer line, not because of a missed spacing rule.
+ * No design file exists for this screen: it renders through `AuthPage` (ADR-0025),
+ * the layout Invitacion shares, and is compared against `Invitacion.dc.html` through
+ * the `Reset` entry of `scripts/design/screens.json` (`compare.sh`). It is shorter
+ * than Invitacion's own form only because this screen's copy has no badge, subtitle
+ * or footer line.
  */
 
 import { type FormEvent, useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { useNavigate, useParams } from 'react-router'
+import { Link, useNavigate, useParams } from 'react-router'
 import { ApiError, NetworkError } from '../api/client'
 import { openResetLink, submitReset } from '../session'
+import AuthPage from '../components/AuthPage'
+import Loading from '../components/Loading'
+import PasswordField from '../components/PasswordField'
 import SinConexion from '../components/SinConexion'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import { isGone, resolveOverride, type RefusalCode } from '../api/refusals'
-import { WEAK_PASSWORD_MESSAGE } from './Invitacion'
+import { DEAD_LINK_MESSAGE, WEAK_PASSWORD_MESSAGE } from './authMessages'
 
-export const DEAD_LINK_MESSAGE = 'Este enlace ya no sirve. Pedile uno nuevo a quien te lo pasó.'
+export { DEAD_LINK_MESSAGE }
 export { ERROR_GENERICO_MENSAJE as RETRY_MESSAGE }
 
 const SUBMIT_OVERRIDES: Partial<Record<RefusalCode, string>> = {
@@ -48,7 +50,6 @@ export default function Reset() {
   const navigate = useNavigate()
   const [status, setStatus] = useState<Status>('loading')
   const [password, setPassword] = useState('')
-  const [reveal, setReveal] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [sending, setSending] = useState(false)
 
@@ -98,73 +99,48 @@ export default function Reset() {
     }
   }
 
-  if (status === 'loading') return <main className="pantalla" />
+  if (status === 'loading') {
+    return (
+      <AuthPage>
+        <Loading />
+      </AuthPage>
+    )
+  }
 
   if (status === 'dead') {
     return (
-      <main className="pantalla">
-        <div className="cuerpo">
-          <div className="estado-vacio">
-            <span className="estado-vacio__titulo">{DEAD_LINK_MESSAGE}</span>
-          </div>
-          <a className="boton" href="/entrar">
-            Entrar
-          </a>
-        </div>
-      </main>
+      <AuthPage title={DEAD_LINK_MESSAGE}>
+        <Link className="boton" to="/entrar">
+          Entrar
+        </Link>
+      </AuthPage>
     )
   }
 
   if (status === 'offline') {
     return (
-      <main className="pantalla">
-        <div className="cuerpo">
-          <SinConexion />
-        </div>
-      </main>
+      <AuthPage>
+        <SinConexion />
+      </AuthPage>
     )
   }
 
   if (status === 'error') {
     return (
-      <main className="pantalla">
-        <div className="cuerpo">
-          <ErrorGenerico />
-        </div>
-      </main>
+      <AuthPage>
+        <ErrorGenerico />
+      </AuthPage>
     )
   }
 
   return (
-    <main className="pantalla">
-      <div className="entrar__contenido">
-        <div>
-          <p className="invitacion__titulo">Elegí tu contraseña nueva</p>
-        </div>
-        <form className="formulario" onSubmit={(event) => void onSubmit(event)}>
-          <label className="campo">
-            <span className="campo__rotulo">Contraseña nueva</span>
-            <input
-              className="campo__input"
-              type={reveal ? 'text' : 'password'}
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              required
-            />
-            {error !== null && (
-              <span className="campo__error" role="alert">
-                {error}
-              </span>
-            )}
-          </label>
-          <button type="button" className="boton-enlace" onClick={() => setReveal((shown) => !shown)}>
-            {reveal ? 'Ocultar' : 'Mostrar'}
-          </button>
-          <button className="boton" type="submit" disabled={sending}>
-            Guardar y entrar
-          </button>
-        </form>
-      </div>
-    </main>
+    <AuthPage title="Elegí tu contraseña nueva">
+      <form className="formulario" onSubmit={(event) => void onSubmit(event)}>
+        <PasswordField label="Contraseña nueva" value={password} onChange={setPassword} error={error} />
+        <button className="boton" type="submit" disabled={sending}>
+          Guardar y entrar
+        </button>
+      </form>
+    </AuthPage>
   )
 }

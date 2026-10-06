@@ -47,6 +47,7 @@ import ErrorGenerico from '../../components/ErrorGenerico'
 import GoneScreen from '../../components/GoneScreen'
 import ReglaInsignia from '../../components/ReglaInsignia'
 import SinConexion from '../../components/SinConexion'
+import Loading from '../../components/Loading'
 import { formatDateShort } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
 import { GENERIC_REFUSAL } from './NuevaVenta'
@@ -252,7 +253,15 @@ export default function VentaDetalle() {
     )
   }
 
-  if (isPending || data === undefined) return null
+  if (isPending || data === undefined) {
+    return (
+      <main className="pantalla">
+        <div className="cuerpo">
+          <Loading />
+        </div>
+      </main>
+    )
+  }
   const sale = data
 
   function goBack(): void {

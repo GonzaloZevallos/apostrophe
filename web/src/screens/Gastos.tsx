@@ -1,297 +1,51 @@
 /**
- * `Gastos`: the monthly view, and recording, editing and deleting an expense
- * (`docs/product/expenses.md`). There is no `GET /expenses/{id}`, so an existing
- * expense is only ever reached from the monthly view's own data, already in the
- * query cache — never refetched by id (plan, "Decisions and assumptions").
+ * `Gastos`: the monthly view (`Gastos.dc.html`, `GastosCompu.dc.html`), and editing and
+ * deleting an expense (`docs/product/expenses.md`). There is no `GET /expenses/{id}`,
+ * so an existing expense is only ever reached from the monthly view's own data,
+ * already in the query cache — never refetched by id (plan, "Decisions and
+ * assumptions"). Recording a new one is the form's own route (`ExpenseNewRoute`),
+ * reached from the "Cargar gasto" action.
+ *
+ * The month lives in the URL (`?month=`), read only through `parseMonth`, so a save
+ * that goes back by history returns to the month that was showing. Its toasts all
+ * come from the flash (`showNow`): one toast path.
  *
  * Money a business spends that is not flower; flower bought is stock, never an
  * expense, hence the fixed line at the bottom.
  */
 
-import { type FormEvent, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useOutletContext } from 'react-router'
-import { ApiError, NetworkError, UNKNOWN_CODE } from '../api/client'
-import {
-  type Expense,
-  type ExpenseCategory,
-  type ExpenseInput,
-  addCategory,
-  deleteExpense,
-  editExpense,
-  listCategories,
-  monthlyView,
-  recordExpense,
-} from '../api/expenses'
+import { Link, useOutletContext, useSearchParams } from 'react-router'
+import { ApiError, NetworkError } from '../api/client'
+import { type Expense, deleteExpense, monthlyView } from '../api/expenses'
 import { invalidateResource, keys } from '../api/keys'
 import type { Me } from '../api/me'
-import { formatDate, formatMonthLong, shiftMonth } from '../format/dates'
+import { formatDate, formatMonthLong, parseMonth, shiftMonth } from '../format/dates'
 import { formatMoney } from '../format/money'
-import { parseMoney } from '../format/parse'
-import { isGone, kindOf, resolveOverride, type RefusalCode } from '../api/refusals'
-import Aviso, { type SuccessToast } from '../components/Aviso'
+import { isGone } from '../api/refusals'
+import ConfirmDialog from '../components/ConfirmDialog'
 import GoneNotice from '../components/GoneNotice'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
+import Icono from '../components/Icono'
 import SinConexion from '../components/SinConexion'
+import Loading from '../components/Loading'
+import { useFlash } from '../flash/useFlash'
+import { EXPENSE_CATEGORIES, EXPENSE_NEW } from '../routes'
+import ExpenseForm from './expenses/ExpenseForm'
 
 export const FLOWER_NOTICE = 'Las compras de flores no van acá: se cargan en Stock.'
-export const CATEGORY_GONE = 'Esa categoría ya no está. Elegí otra.'
-export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
 export const NO_DISCARD_TITLE = 'No, dejala'
 export const YES_DELETE_TITLE = 'Sí, borrala'
 
-// `expense_category.not_found` is the one code the expense form handles on its
-// own field instead of the generic gone notice (PM round 3): the expense itself
-// still has somewhere to go, so nothing is discarded.
-const EXPENSE_FORM_OVERRIDES: Partial<Record<RefusalCode, 'category-gone'>> = {
-  'expense_category.not_found': 'category-gone',
-}
-
-function isRefusal(caught: unknown): caught is ApiError {
-  return caught instanceof ApiError && caught.code !== UNKNOWN_CODE && kindOf(caught.code) === 'refusal'
-}
-
-type FormTarget = 'nuevo' | Expense
-
-function amountLabel(amount: number): string {
-  return formatMoney(amount)
-}
-
 function deleteQuestion(expense: Expense, categoryName: string, today: string): string {
-  return `¿Borrás el gasto de ${amountLabel(expense.amount)} en ${categoryName} del ${formatDate(expense.spent_on, today)}?`
+  return `¿Borrás el gasto de ${formatMoney(expense.amount)} en ${categoryName} del ${formatDate(expense.spent_on, today)}?`
 }
 
-interface FormState {
-  spent_on: string
-  category_id: string
-  amount: string
-  detail: string
-}
-
-function initialForm(target: FormTarget, today: string): FormState {
-  if (target === 'nuevo') {
-    return { spent_on: today, category_id: '', amount: '', detail: '' }
-  }
-  return {
-    spent_on: target.spent_on,
-    category_id: String(target.category_id),
-    amount: String(target.amount),
-    detail: target.detail,
-  }
-}
-
-function ExpenseForm({
-  target,
-  today,
-  categories,
-  onDone,
-  onGone,
-  onRequestDelete,
-}: {
-  target: FormTarget
-  today: string
-  categories: ExpenseCategory[]
-  onDone: (toast: SuccessToast) => void
-  onGone: () => void
-  onRequestDelete: (expense: Expense) => void
-}) {
-  const queryClient = useQueryClient()
-  const [form, setForm] = useState<FormState>(() => initialForm(target, today))
-  const [categoryError, setCategoryError] = useState<string | null>(null)
-  const [formError, setFormError] = useState<string | null>(null)
-  const [offline, setOffline] = useState(false)
-  const [sending, setSending] = useState(false)
-  const [extraCategories, setExtraCategories] = useState<ExpenseCategory[]>([])
-  const [creatingCategory, setCreatingCategory] = useState(false)
-  const [newCategoryName, setNewCategoryName] = useState('')
-  const [newCategoryError, setNewCategoryError] = useState<string | null>(null)
-  const [newCategorySending, setNewCategorySending] = useState(false)
-
-  const allCategories = [
-    ...categories,
-    ...extraCategories.filter((extra) => !categories.some((category) => category.id === extra.id)),
-  ]
-
-  const detailTrimmed = form.detail.trim()
-  const canSubmit = form.category_id !== '' && detailTrimmed !== '' && !sending
-
-  async function onCreateCategory(): Promise<void> {
-    setNewCategoryError(null)
-    setOffline(false)
-    setNewCategorySending(true)
-    try {
-      const created = await addCategory(newCategoryName)
-      invalidateResource(queryClient, 'expenseCategories')
-      setExtraCategories((previous) => [...previous, created])
-      setForm((previous) => ({ ...previous, category_id: String(created.id) }))
-      setCategoryError(null)
-      setCreatingCategory(false)
-      setNewCategoryName('')
-    } catch (caught) {
-      if (caught instanceof NetworkError) setOffline(true)
-      else if (isRefusal(caught)) setNewCategoryError(GENERIC_REFUSAL)
-      else setFormError(ERROR_GENERICO_MENSAJE)
-    } finally {
-      setNewCategorySending(false)
-    }
-  }
-
-  async function onSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
-    event.preventDefault()
-    setFormError(null)
-    setCategoryError(null)
-    setOffline(false)
-    const parsedAmount = parseMoney(form.amount)
-    if (!parsedAmount.ok) {
-      setFormError(GENERIC_REFUSAL)
-      return
-    }
-    const body: ExpenseInput = {
-      spent_on: form.spent_on,
-      category_id: Number(form.category_id),
-      amount: parsedAmount.value,
-      detail: detailTrimmed,
-    }
-    setSending(true)
-    try {
-      if (target === 'nuevo') {
-        await recordExpense(body)
-      } else {
-        await editExpense(target.id, body)
-      }
-      invalidateResource(queryClient, 'expenses')
-      onDone('Gasto guardado')
-    } catch (caught) {
-      if (caught instanceof NetworkError) {
-        setOffline(true)
-      } else if (caught instanceof ApiError && resolveOverride(EXPENSE_FORM_OVERRIDES, caught.code) === 'category-gone') {
-        invalidateResource(queryClient, 'expenseCategories')
-        setForm((previous) => ({ ...previous, category_id: '' }))
-        setCategoryError(CATEGORY_GONE)
-      } else if (caught instanceof ApiError && isGone(caught.code)) {
-        invalidateResource(queryClient, 'expenses')
-        onGone()
-      } else if (isRefusal(caught)) {
-        setFormError(GENERIC_REFUSAL)
-      } else {
-        setFormError(ERROR_GENERICO_MENSAJE)
-      }
-    } finally {
-      setSending(false)
-    }
-  }
-
-  return (
-    <div className="capa" role="presentation">
-      <div className="capa__contenido">
-        <span className="panel__titulo">{target === 'nuevo' ? 'Nuevo gasto' : 'Editar gasto'}</span>
-        <form className="formulario" onSubmit={onSubmit}>
-          <label className="campo">
-            <span className="campo__rotulo">Fecha</span>
-            <input
-              className="campo__input"
-              type="date"
-              value={form.spent_on}
-              max={today}
-              onChange={(event) => setForm((previous) => ({ ...previous, spent_on: event.target.value }))}
-              required
-            />
-          </label>
-          <label className="campo">
-            <span className="campo__rotulo">Categoría</span>
-            <select
-              className="campo__input"
-              value={form.category_id}
-              onChange={(event) => {
-                setCategoryError(null)
-                setForm((previous) => ({ ...previous, category_id: event.target.value }))
-              }}
-              required
-            >
-              <option value="">Elegí una categoría</option>
-              {allCategories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          {categoryError !== null && (
-            <span className="campo__error" role="alert">
-              {categoryError}
-            </span>
-          )}
-          {creatingCategory ? (
-            <div className="campo">
-              <label className="campo">
-                <span className="campo__rotulo">Nombre de la categoría nueva</span>
-                <input
-                  className="campo__input"
-                  value={newCategoryName}
-                  onChange={(event) => setNewCategoryName(event.target.value)}
-                />
-              </label>
-              {newCategoryError !== null && (
-                <span className="campo__error" role="alert">
-                  {newCategoryError}
-                </span>
-              )}
-              <button
-                type="button"
-                className="boton"
-                disabled={newCategorySending || newCategoryName.trim() === ''}
-                onClick={onCreateCategory}
-              >
-                Crear categoría
-              </button>
-            </div>
-          ) : (
-            <button type="button" className="boton--enlace" onClick={() => setCreatingCategory(true)}>
-              Crear una categoría nueva
-            </button>
-          )}
-          <label className="campo">
-            <span className="campo__rotulo">Monto</span>
-            <input
-              className="campo__input"
-              inputMode="numeric"
-              value={form.amount}
-              onChange={(event) => setForm((previous) => ({ ...previous, amount: event.target.value }))}
-              required
-            />
-          </label>
-          <label className="campo">
-            <span className="campo__rotulo">Detalle</span>
-            <input
-              className="campo__input"
-              value={form.detail}
-              maxLength={200}
-              onChange={(event) => setForm((previous) => ({ ...previous, detail: event.target.value }))}
-              required
-            />
-          </label>
-          {formError !== null && (
-            <span className="campo__error" role="alert">
-              {formError}
-            </span>
-          )}
-          {offline && <SinConexion />}
-          <button className="boton" type="submit" disabled={!canSubmit}>
-            Guardar
-          </button>
-          {target !== 'nuevo' && (
-            <button
-              type="button"
-              className="boton--enlace"
-              onClick={() => onRequestDelete(target)}
-            >
-              Borrar gasto
-            </button>
-          )}
-        </form>
-      </div>
-    </div>
-  )
+function countLine(expenses: number, categories: number): string {
+  const spent = expenses === 1 ? '1 gasto' : `${expenses} gastos`
+  const inCategories = categories === 1 ? '1 categoría' : `${categories} categorías`
+  return `${spent} en ${inCategories}`
 }
 
 function DeleteConfirm({
@@ -362,23 +116,38 @@ function DeleteConfirm({
 
 export default function Gastos() {
   const me = useOutletContext<Me>()
-  const [month, setMonth] = useState(() => me.today.slice(0, 7))
-  const [formTarget, setFormTarget] = useState<FormTarget | null>(null)
+  const flash = useFlash()
+  const queryClient = useQueryClient()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const month = parseMonth(searchParams, me.today)
+  const [editTarget, setEditTarget] = useState<Expense | null>(null)
+  const [editDirty, setEditDirty] = useState(false)
+  const [confirmingDiscard, setConfirmingDiscard] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<Expense | null>(null)
-  const [toast, setToast] = useState<SuccessToast | null>(null)
   const [goneNotice, setGoneNotice] = useState(false)
 
   const view = useQuery({ queryKey: keys.expenses(month), queryFn: () => monthlyView(month) })
-  const categories = useQuery({ queryKey: keys.expenseCategories(), queryFn: listCategories })
 
-  function flash(message: SuccessToast): void {
-    setToast(message)
-    setTimeout(() => setToast(null), 2500)
+  // The gone notice clears itself after 2.5 s; a pending timer must not outlive the screen.
+  const timers = useRef<number[]>([])
+  useEffect(() => {
+    const pending = timers.current
+    return () => pending.forEach((id) => window.clearTimeout(id))
+  }, [])
+
+  function moveMonth(delta: number): void {
+    setSearchParams({ month: shiftMonth(month, delta) }, { replace: true })
   }
 
   function flashGone(): void {
     setGoneNotice(true)
-    setTimeout(() => setGoneNotice(false), 2500)
+    timers.current.push(window.setTimeout(() => setGoneNotice(false), 2500))
+  }
+
+  function closeEdit(): void {
+    setEditTarget(null)
+    setEditDirty(false)
+    setConfirmingDiscard(false)
   }
 
   function categoryNameOf(categoryId: number): string {
@@ -386,89 +155,143 @@ export default function Gastos() {
     return found?.name ?? ''
   }
 
+  const latest =
+    view.data === undefined
+      ? []
+      : view.data.categories
+          .flatMap((category) => category.expenses.map((expense) => ({ expense, categoryName: category.name })))
+          .sort((a, b) => b.expense.spent_on.localeCompare(a.expense.spent_on) || b.expense.id - a.expense.id)
+
   return (
     <main className="pantalla">
-      <div className="cuerpo">
-        <div>
-          <span className="encabezado__titulo">Gastos</span>
-        </div>
-        <div className="gastos__mes">
-          <button
-            type="button"
-            className="gastos__mes-boton"
-            aria-label="Mes anterior"
-            onClick={() => setMonth((current) => shiftMonth(current, -1))}
-          >
-            ‹
-          </button>
-          <span className="gastos__mes-etiqueta">{formatMonthLong(month)}</span>
-          <button
-            type="button"
-            className="gastos__mes-boton"
-            aria-label="Mes siguiente"
-            onClick={() => setMonth((current) => shiftMonth(current, 1))}
-          >
-            ›
-          </button>
+      <div className="cuerpo gastos">
+        <div className="gastos__cabecera">
+          <span className="encabezado__titulo gastos__titulo">Gastos</span>
+          <Link to={EXPENSE_NEW} className="gastos__cargar" aria-label="Cargar gasto">
+            <Icono nombre="agregar" size={20} strokeWidth={1.8} />
+            <span className="gastos__cargar-texto">Cargar gasto</span>
+          </Link>
+          <div className="gastos__mes">
+            <button
+              type="button"
+              className="gastos__mes-boton"
+              aria-label="Mes anterior"
+              onClick={() => moveMonth(-1)}
+            >
+              <Icono nombre="atras" size={18} strokeWidth={1.8} />
+            </button>
+            <span className="gastos__mes-etiqueta">{formatMonthLong(month)}</span>
+            <button
+              type="button"
+              className="gastos__mes-boton"
+              aria-label="Mes siguiente"
+              onClick={() => moveMonth(1)}
+            >
+              <Icono nombre="chevron" size={18} strokeWidth={1.8} />
+            </button>
+          </div>
         </div>
 
-        {view.isPending && null}
+        {view.isPending && <Loading />}
         {view.isError && view.error instanceof NetworkError && <SinConexion />}
         {view.isError && !(view.error instanceof NetworkError) && <ErrorGenerico />}
 
         {view.data !== undefined && (
           <>
-            <div>
-              <span className="rotulo">Gastaste en el mes</span>
-              <span className="cifra-xl">{formatMoney(view.data.total)}</span>
+            <div className="gastos__resumen">
+              <div className="gastos__total">
+                <span className="rotulo">Gastaste en el mes</span>
+                <span className="cifra-xl">{formatMoney(view.data.total)}</span>
+                {latest.length > 0 && (
+                  <span className="gastos__conteo">{countLine(latest.length, view.data.categories.length)}</span>
+                )}
+              </div>
+              {view.data.categories.length > 0 && (
+                <>
+                  <span className="gastos__seccion">Por categoría</span>
+                  <div className="gastos__categorias">
+                    {view.data.categories.map((category) => (
+                      <div key={category.id} className="gastos__categoria">
+                        <div className="gastos__categoria-cabecera">
+                          <span className="gastos__categoria-nombre">{category.name}</span>
+                          <span className="gastos__categoria-subtotal">{formatMoney(category.subtotal)}</span>
+                        </div>
+                        <span className="gastos__barra" aria-hidden="true">
+                          <span
+                            className="gastos__barra-relleno"
+                            style={{ width: `${Math.round((category.subtotal / view.data.total) * 100)}%` }}
+                          />
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
-            {view.data.categories.map((category) => (
-              <div key={category.id} className="gastos__categoria">
-                <div className="gastos__categoria-cabecera">
-                  <span className="gastos__categoria-nombre">{category.name}</span>
-                  <span className="gastos__categoria-subtotal">{formatMoney(category.subtotal)}</span>
-                </div>
-                {category.expenses.map((expense) => (
+            {latest.length > 0 && (
+              <div className="gastos__ultimos">
+                <span className="gastos__seccion">Últimos</span>
+                {latest.map(({ expense, categoryName }) => (
                   <button
                     key={expense.id}
                     type="button"
                     className="fila-gasto"
-                    onClick={() => setFormTarget(expense)}
+                    onClick={() => setEditTarget(expense)}
                   >
                     <span className="fila-gasto__fecha">{formatDate(expense.spent_on, me.today)}</span>
-                    <span className="fila-gasto__texto">{expense.detail}</span>
+                    <span className="fila-gasto__cuerpo">
+                      <span className="fila-gasto__categoria">{categoryName}</span>
+                      <span className="fila-gasto__texto">{expense.detail}</span>
+                    </span>
                     <span className="fila-gasto__monto">{formatMoney(expense.amount)}</span>
                   </button>
                 ))}
               </div>
-            ))}
+            )}
           </>
         )}
 
-        <span className="pie">{FLOWER_NOTICE}</span>
-        <button type="button" className="boton" onClick={() => setFormTarget('nuevo')}>
-          Nuevo gasto
-        </button>
+        <div className="gastos__pie">
+          <span className="pie">{FLOWER_NOTICE}</span>
+          <Link to={EXPENSE_CATEGORIES} state={{ inApp: true }} className="boton--enlace">
+            Categorías
+          </Link>
+        </div>
       </div>
 
-      {formTarget !== null && categories.data !== undefined && (
-        <ExpenseForm
-          target={formTarget}
-          today={me.today}
-          categories={categories.data}
-          onDone={(message) => {
-            setFormTarget(null)
-            flash(message)
-          }}
-          onGone={() => {
-            setFormTarget(null)
-            flashGone()
-          }}
-          onRequestDelete={(expense) => {
-            setFormTarget(null)
-            setDeleteTarget(expense)
-          }}
-        />
+      {editTarget !== null && (
+        <div className="capa" role="presentation">
+          <div className="capa__contenido">
+            <ExpenseForm
+              target={editTarget}
+              onDirtyChange={setEditDirty}
+              onCancel={() => (editDirty ? setConfirmingDiscard(true) : closeEdit())}
+              onDone={(saved) => {
+                invalidateResource(queryClient, 'expenses')
+                closeEdit()
+                flash.showNow(saved)
+              }}
+              onGone={() => {
+                closeEdit()
+                flashGone()
+              }}
+              onRequestDelete={(expense) => {
+                closeEdit()
+                setDeleteTarget(expense)
+              }}
+            />
+            {confirmingDiscard && (
+              <ConfirmDialog
+                title="¿Descartás los cambios?"
+                detail="Se pierde lo que cambiaste: el gasto sigue como estaba."
+                confirmText="Sí, descartalos"
+                cancelText="No, seguí editando"
+                onConfirm={closeEdit}
+                onCancel={() => setConfirmingDiscard(false)}
+              />
+            )}
+          </div>
+        </div>
       )}
       {deleteTarget !== null && (
         <DeleteConfirm
@@ -478,17 +301,14 @@ export default function Gastos() {
           onCancel={() => setDeleteTarget(null)}
           onDone={() => {
             setDeleteTarget(null)
-            setFormTarget(null)
-            flash('Gasto eliminado')
+            flash.showNow('Gasto eliminado')
           }}
           onGone={() => {
             setDeleteTarget(null)
-            setFormTarget(null)
             flashGone()
           }}
         />
       )}
-      {toast !== null && <Aviso texto={toast} />}
       {goneNotice && (
         <div className="aviso-flotante">
           <GoneNotice />

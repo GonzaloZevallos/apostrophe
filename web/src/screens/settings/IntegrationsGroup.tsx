@@ -21,6 +21,7 @@ import { PINNED_CATALOG_REFUSAL_OVERRIDES, resolveOverride } from '../../api/ref
 import AvisoExito, { type SuccessToast } from '../../components/AvisoExito'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
+import Loading from '../../components/Loading'
 import SettingsGroup, { type LeaveWording } from './SettingsGroup'
 
 const TITLE = 'Integraciones'
@@ -230,6 +231,7 @@ export default function IntegrationsGroup() {
 
   return (
     <SettingsGroup title={TITLE} dirty={false} leave={LEAVE}>
+      {query.isPending && <Loading />}
       {query.isError ? query.error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico /> : null}
     </SettingsGroup>
   )

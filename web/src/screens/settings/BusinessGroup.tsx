@@ -21,6 +21,7 @@ import { kindOf, resolveOverride, type RefusalCode } from '../../api/refusals'
 import AvisoExito from '../../components/AvisoExito'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
+import Loading from '../../components/Loading'
 import { BUSINESS_NAME_INVALID_MESSAGE, GENERIC_REFUSAL_MESSAGE, RENAME_SUCCESS } from './messages'
 import SettingsGroup from './SettingsGroup'
 
@@ -48,6 +49,7 @@ export default function BusinessGroup() {
   if (isPending || isError) {
     return (
       <SettingsGroup title="Negocio" dirty={false} leave={LEAVE}>
+        {isPending && <Loading />}
         {isError && (error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />)}
       </SettingsGroup>
     )

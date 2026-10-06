@@ -31,6 +31,7 @@ import ErrorGenerico from '../../components/ErrorGenerico'
 import { readFeedback } from '../../components/feedback'
 import Icono from '../../components/Icono'
 import Insignia from '../../components/Insignia'
+import Loading from '../../components/Loading'
 import Notice from '../../components/Notice'
 import Pestanas from '../../components/Pestanas'
 import SinConexion from '../../components/SinConexion'
@@ -152,6 +153,8 @@ export default function Ventas() {
 
         {isError && error instanceof NetworkError && <SinConexion />}
         {isError && !(error instanceof NetworkError) && <ErrorGenerico />}
+
+        {isPending && <Loading />}
 
         {!isError && !isPending && (
           <>

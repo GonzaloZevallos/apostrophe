@@ -24,6 +24,7 @@ import { readFeedback } from '../components/feedback'
 import MarcaEstado from '../components/MarcaEstado'
 import Notice from '../components/Notice'
 import SinConexion from '../components/SinConexion'
+import Loading from '../components/Loading'
 import { formatDate } from '../format/dates'
 import { formatGrams, formatMoney } from '../format/money'
 import { detailFor, sideNoteFor } from '../stock/detail'
@@ -74,7 +75,15 @@ export default function Stock() {
     )
   }
 
-  if (stockQuery.data === undefined) return null
+  if (stockQuery.data === undefined) {
+    return (
+      <main className="pantalla">
+        <div className="cuerpo">
+          <Loading />
+        </div>
+      </main>
+    )
+  }
 
   const stock = stockQuery.data
   const nameOf = (varietyId: number): string => {

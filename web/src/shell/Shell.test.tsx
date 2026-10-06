@@ -5,13 +5,16 @@
  * file used before chrome moved to `handle` (plan, invariants: "no pathname
  * comparison decides it").
  *
- * Only destinations that exist show (PRD, "Nada inventado"; metric M5) — Inicio,
- * Ventas, Clientes, Stock and Más, in the design's own order. The fixed "Nueva
+ * Only destinations that exist show (PRD, "Nada inventado"; metric M5): the bar is
+ * Inicio, Ventas, Clientes, Stock and Más; the rail adds Gastos and Análisis after a
+ * divider, with Más last (it leaves with the issue that empties it). The fixed "Nueva
  * venta" button, separate from the tabs, shows on every signed-in screen except
  * where its route's `handle.chrome` is `'none'` (`NuevaVenta`'s own
  * `/ventas/nueva`, `VentaDetalle`'s `/ventas/:id`) — phone and computer differ
  * only in which markup the CSS shows; this suite checks both pieces of markup
- * directly rather than real viewport widths, which jsdom doesn't lay out.
+ * directly rather than real viewport widths, which jsdom doesn't lay out. The rail
+ * ends with the business row, a link to Configuración (`/settings`), which marks Más on
+ * the bar the way Gastos and Análisis do (`handle.tab`).
  */
 
 import { render, screen, within } from '@testing-library/react'
@@ -19,10 +22,14 @@ import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Outlet, RouterProvider, useLocation } from 'react-router'
 import { expect, test } from 'vitest'
 import type { Me } from '../api/me'
+import { ANALYSIS, EXPENSE_NEW, EXPENSES, MORE } from '../routes'
 import Mas from '../screens/Mas'
 import Shell from './Shell'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03' }
+
+const BAR = ['Inicio', 'Ventas', 'Clientes', 'Stock', 'Más']
+const RAIL = ['Inicio', 'Ventas', 'Clientes', 'Stock', 'Gastos', 'Análisis', 'Más']
 
 /** The tabs only, in the order they render — drops the fixed "Nueva venta"
  * button, which shares the rail's `link` role but is not one of the tabs. */
@@ -30,7 +37,10 @@ function tabNames(nav: HTMLElement): string[] {
   return within(nav)
     .getAllByRole('link')
     .map((link) => link.textContent)
-    .filter((name): name is string => name !== null && !name.startsWith('Nueva venta') && !name.startsWith('LH'))
+    .filter(
+      (name): name is string =>
+        name !== null && !name.startsWith('Nueva venta') && !name.startsWith('LH'),
+    )
 }
 
 function renderShell(initialPath: string) {
@@ -38,11 +48,40 @@ function renderShell(initialPath: string) {
     [
       {
         element: <Outlet context={ME} />,
-        children: [{ element: <Shell />, children: [
+        children: [
+          {
+            element: <Shell />,
+            children: [
           { index: true, element: <div>contenido</div> },
-          { path: 'ventas/nueva', element: <div>Nueva venta</div>, handle: { chrome: 'none' } },
-          { path: 'ventas/:id', element: <div>detalle</div>, handle: { chrome: 'none' } },
-        ] }],
+          {
+            path: 'ventas/nueva',
+            element: <div>Nueva venta</div>,
+            handle: { chrome: 'none' },
+          },
+          {
+            path: 'ventas/:id',
+            element: <div>detalle</div>,
+            handle: { chrome: 'none' },
+          },
+          { path: 'more', element: <div>más</div> },
+          {
+            path: 'expenses',
+            element: <div>gastos</div>,
+            handle: { tab: 'more' },
+          },
+          {
+            path: 'analisis',
+            element: <div>análisis</div>,
+            handle: { tab: 'more' },
+          },
+          {
+            path: 'expenses/new',
+            element: <div>formulario</div>,
+            handle: { chrome: 'none', tab: 'more' },
+          },
+            ],
+          },
+        ],
       },
     ],
     { initialEntries: [initialPath] },
@@ -50,14 +89,63 @@ function renderShell(initialPath: string) {
   render(<RouterProvider router={router} />)
 }
 
-test('shows exactly Inicio, Ventas, Clientes, Stock and Más in both navs, no handle on the route', () => {
-  renderShell('/')
+test('the bar shows Inicio, Ventas, Clientes, Stock and Más; the rail adds Gastos and Análisis before Más', () => {
+  const { container } = renderShellWithContainer('/')
 
-  const navs = screen.getAllByRole('navigation')
-  expect(navs).toHaveLength(2)
-  for (const nav of navs) {
-    expect(tabNames(nav)).toEqual(['Inicio', 'Ventas', 'Clientes', 'Stock', 'Más'])
+  expect(container.querySelectorAll('nav')).toHaveLength(2)
+  expect(tabNames(bar(container))).toEqual(BAR)
+  expect(tabNames(rail(container))).toEqual(RAIL)
+})
+
+test('in the rail, Gastos and Análisis come after the divider and the first four before it', () => {
+  const { container } = renderShellWithContainer('/')
+
+  const entries = [...rail(container).children].map((child) =>
+    child.getAttribute('role') === 'separator' ? '---' : (child.textContent ?? ''),
+  )
+  expect(entries.filter((entry) => entry !== '').slice(1)).toEqual([
+    'Inicio',
+    'Ventas',
+    'Clientes',
+    'Stock',
+    '---',
+    'Gastos',
+    'Análisis',
+    'Más',
+    'LHLa Huerta',
+  ])
+})
+
+test.each([
+  [EXPENSES, 'Gastos'],
+  [ANALYSIS, 'Análisis'],
+  [EXPENSE_NEW, 'Gastos'],
+  [MORE, 'Más'],
+])('on %s the rail marks %s and, where the bar shows, the bar marks Más', (path, railEntry) => {
+  const { container } = renderShellWithContainer(path)
+
+  expect(current(rail(container))).toEqual([railEntry])
+  const barNav = container.querySelector('.bar-inferior')
+  if (path === EXPENSE_NEW) {
+    expect(barNav).toBeNull()
+  } else {
+    expect(current(bar(container))).toEqual(['Más'])
   }
+})
+
+test('on Inicio each surface marks Inicio alone, by path, since no route declares a tab', () => {
+  const { container } = renderShellWithContainer('/')
+
+  expect(current(bar(container))).toEqual(['Inicio'])
+  expect(current(rail(container))).toEqual(['Inicio'])
+})
+
+test('the form route has no bar and no "Nueva venta" button, and its rail still marks Gastos', () => {
+  const { container } = renderShellWithContainer(EXPENSE_NEW)
+
+  expect(container.querySelector('.bar-inferior')).toBeNull()
+  expect(screen.queryByRole('link', { name: /Nueva venta/ })).not.toBeInTheDocument()
+  expect(current(rail(container))).toEqual(['Gastos'])
 })
 
 test('the fixed "Nueva venta" button shows outside a chrome route, once per nav rail', () => {
@@ -87,19 +175,61 @@ test('chrome: none keeps the rail and its tabs — the computer case, only the b
 
   const rail = container.querySelector('.riel-lateral')
   expect(rail).not.toBeNull()
-  expect(tabNames(rail as HTMLElement)).toEqual(['Inicio', 'Ventas', 'Clientes', 'Stock', 'Más'])
+  expect(tabNames(rail as HTMLElement)).toEqual(RAIL)
 })
+
+function bar(container: HTMLElement): HTMLElement {
+  return container.querySelector('.bar-inferior') as HTMLElement
+}
+
+function rail(container: HTMLElement): HTMLElement {
+  return container.querySelector('.riel-lateral') as HTMLElement
+}
+
+/** The entries a surface marks as the current page. */
+function current(nav: HTMLElement): string[] {
+  return [...nav.querySelectorAll('[aria-current="page"]')].map((link) => link.textContent ?? '')
+}
 
 function renderShellWithContainer(initialPath: string) {
   const router = createMemoryRouter(
     [
       {
         element: <Outlet context={ME} />,
-        children: [{ element: <Shell />, children: [
+        children: [
+          {
+            element: <Shell />,
+            children: [
           { index: true, element: <div>contenido</div> },
-          { path: 'ventas/nueva', element: <div>Nueva venta</div>, handle: { chrome: 'none' } },
-          { path: 'ventas/:id', element: <div>detalle</div>, handle: { chrome: 'none' } },
-        ] }],
+          {
+            path: 'ventas/nueva',
+            element: <div>Nueva venta</div>,
+            handle: { chrome: 'none' },
+          },
+          {
+            path: 'ventas/:id',
+            element: <div>detalle</div>,
+            handle: { chrome: 'none' },
+          },
+          { path: 'more', element: <div>más</div> },
+          {
+            path: 'expenses',
+            element: <div>gastos</div>,
+            handle: { tab: 'more' },
+          },
+          {
+            path: 'analisis',
+            element: <div>análisis</div>,
+            handle: { tab: 'more' },
+          },
+          {
+            path: 'expenses/new',
+            element: <div>formulario</div>,
+            handle: { chrome: 'none', tab: 'more' },
+          },
+            ],
+          },
+        ],
       },
     ],
     { initialEntries: [initialPath] },
@@ -122,7 +252,8 @@ test('marks the active item by more than color: a distinct class the other items
 
 function Landed() {
   const location = useLocation()
-  return <div>{`en ${location.pathname} inApp=${String((location.state as { inApp?: boolean } | null)?.inApp)}`}</div>
+  const inApp = (location.state as { inApp?: boolean } | null)?.inApp
+  return <div>{`en ${location.pathname} inApp=${String(inApp)}`}</div>
 }
 
 function renderApp(initialPath: string) {
@@ -135,9 +266,13 @@ function renderApp(initialPath: string) {
             element: <Shell />,
             children: [
               { index: true, element: <div>contenido</div> },
-              { path: 'mas', element: <Mas /> },
-              { path: 'settings', element: <Landed />, handle: { chrome: 'card' } },
-              { path: 'settings/users', element: <Landed />, handle: { chrome: 'none' } },
+              { path: 'more', element: <Mas /> },
+              { path: 'settings', element: <Landed />, handle: { chrome: 'card', tab: 'more' } },
+              {
+                path: 'settings/users',
+                element: <Landed />,
+                handle: { chrome: 'none', tab: 'more' },
+              },
             ],
           },
         ],
@@ -150,13 +285,13 @@ function renderApp(initialPath: string) {
 
 test('the rail ends with the business row, a link to Configuración carrying inApp, one tap from Inicio', async () => {
   const { container } = renderApp('/')
-  const rail = container.querySelector('.riel-lateral') as HTMLElement
+  const railNav = rail(container)
 
-  const row = within(rail).getByRole('link', { name: 'Configuración de La Huerta' })
+  const row = within(railNav).getByRole('link', { name: 'Configuración de La Huerta' })
   expect(row).toHaveAttribute('href', '/settings')
   expect(row).toHaveTextContent('LH')
   expect(row).toHaveTextContent('La Huerta')
-  expect(rail.lastElementChild).toBe(row)
+  expect(railNav.lastElementChild).toBe(row)
   await userEvent.click(row)
 
   expect(screen.getByText('en /settings inApp=true')).toBeInTheDocument()
@@ -164,42 +299,41 @@ test('the rail ends with the business row, a link to Configuración carrying inA
 
 test('the phone reaches Configuración in two taps: the Más tab, then its Configuración entry', async () => {
   const { container } = renderApp('/')
-  const bar = container.querySelector('.bar-inferior') as HTMLElement
 
-  await userEvent.click(within(bar).getByRole('link', { name: 'Más' }))
+  await userEvent.click(within(bar(container)).getByRole('link', { name: 'Más' }))
   await userEvent.click(
-    within(screen.getByRole('navigation', { name: 'Más' })).getByRole('link', { name: /^Configuración/ }),
+    within(screen.getByRole('navigation', { name: 'Más' })).getByRole('link', {
+      name: /^Configuración/,
+    }),
   )
 
   expect(screen.getByText('en /settings inApp=true')).toBeInTheDocument()
 })
 
-test('on the phone, /settings and its groups mark Más as the active tab; the rail marks the business row', () => {
-  for (const path of ['/settings', '/settings/users']) {
-    const { container, unmount } = renderApp(path)
-    const bar = container.querySelector('.bar-inferior') as HTMLElement
-    const rail = container.querySelector('.riel-lateral') as HTMLElement
+test('on the phone, /settings marks Más as the active tab; the rail marks the business row', () => {
+  const { container } = renderApp('/settings')
+  const more = within(bar(container)).getByRole('link', { name: 'Más' })
 
-    if (path === '/settings') {
-      const more = within(bar).getByRole('link', { name: 'Más' })
-      expect(more).toHaveAttribute('aria-current', 'page')
-      expect(more.className).toMatch(/--activo/)
-      expect(within(bar).getByRole('link', { name: 'Inicio' })).not.toHaveAttribute('aria-current')
-      expect(within(rail).getByRole('link', { name: 'Configuración de La Huerta' })).toHaveAttribute(
-        'aria-current',
-        'page',
-      )
-    } else {
-      // A group is a form: chrome none, no bar at all.
-      expect(bar).toBeNull()
-    }
-    unmount()
-  }
+  expect(more).toHaveAttribute('aria-current', 'page')
+  expect(more.className).toMatch(/--activo/)
+  expect(within(bar(container)).getByRole('link', { name: 'Inicio' })).not.toHaveAttribute(
+    'aria-current',
+  )
+  expect(
+    within(rail(container)).getByRole('link', { name: 'Configuración de La Huerta' }),
+  ).toHaveAttribute('aria-current', 'page')
+})
+
+test('a Configuración group is a form: chrome none, no bar at all', () => {
+  const { container } = renderApp('/settings/users')
+
+  expect(container.querySelector('.bar-inferior')).toBeNull()
 })
 
 test('Más is not marked on other routes', () => {
   const { container } = renderApp('/')
-  const bar = container.querySelector('.bar-inferior') as HTMLElement
 
-  expect(within(bar).getByRole('link', { name: 'Más' })).not.toHaveAttribute('aria-current')
+  expect(within(bar(container)).getByRole('link', { name: 'Más' })).not.toHaveAttribute(
+    'aria-current',
+  )
 })

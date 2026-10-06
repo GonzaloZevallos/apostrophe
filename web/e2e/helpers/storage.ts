@@ -1,5 +1,5 @@
 /**
- * The browser-storage check every e2e run ends with (ADR-0024; CODING_STANDARDS §9, in the
+ * The browser-storage check every e2e run ends with (ADR-0026; CODING_STANDARDS §9, in the
  * browser too): the device keeps exactly one thing, the theme choice. `localStorage` keys
  * are a subset of `{tema}` and `tema`, when present, is `oscuro`; `sessionStorage` is empty
  * and so is IndexedDB. Anything else — a token, a name, an amount, a second key, a stored

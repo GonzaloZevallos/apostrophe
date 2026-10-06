@@ -58,6 +58,47 @@ test('logs out before looking the link up, then shows the one-field form', async
   expect(screen.getByRole('button', { name: 'Guardar y entrar' })).toBeInTheDocument()
 })
 
+test('while the lookup is pending it shows the Cargando progressbar and no form', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((url: string) => {
+      if (url === '/auth/logout') return Promise.resolve(noContent())
+      return new Promise<Response>(() => {})
+    }),
+  )
+
+  renderReset()
+
+  expect(await screen.findByRole('progressbar', { name: 'Cargando' })).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Guardar y entrar' })).not.toBeInTheDocument()
+})
+
+test('the dead link offers a router link to Entrar, not a page reload', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((url: string) => {
+      if (url === '/auth/logout') return Promise.resolve(noContent())
+      return Promise.resolve(jsonResponse(404, { detail: 'gone', code: 'account.reset_link_gone' }))
+    }),
+  )
+
+  render(
+    <QueryClientProvider client={new QueryClient()}>
+      <MemoryRouter initialEntries={['/reset/tok123']}>
+        <Routes>
+          <Route path="/reset/:token" element={<Reset />} />
+          <Route path="/entrar" element={<div>Pantalla de entrar</div>} />
+        </Routes>
+      </MemoryRouter>
+    </QueryClientProvider>,
+  )
+
+  await screen.findByText(DEAD_LINK_MESSAGE)
+  const user = userEvent.setup()
+  await user.click(screen.getByRole('link', { name: 'Entrar' }))
+  expect(await screen.findByText('Pantalla de entrar')).toBeInTheDocument()
+})
+
 test('a dead link on open shows the fixed notice, never the form', async () => {
   vi.stubGlobal(
     'fetch',

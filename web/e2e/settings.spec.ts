@@ -13,6 +13,7 @@ import { expect, test } from '@playwright/test'
 import { newBusinessInvitationUrl } from './backend.js'
 import { watchConsole } from './console.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
+import { openGastos } from './helpers/openMas.js'
 
 const PASSWORD = 'correcthorsebattery'
 const NEW_PASSWORD = 'unanuevaclave99'
@@ -36,14 +37,14 @@ test('a seller goes through every Configuración group from the phone, with no c
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // A category with an expense in it, so its removal is refused later.
-  await page.goto('/gastos')
-  await page.getByRole('button', { name: 'Nuevo gasto' }).click()
+  await openGastos(page)
+  await page.getByRole('link', { name: 'Cargar gasto' }).click()
   await page.getByRole('button', { name: 'Crear una categoría nueva' }).click()
   await page.getByLabel('Nombre de la categoría nueva').fill('Flete')
   await page.getByRole('button', { name: 'Crear categoría' }).click()
   await page.getByLabel('Monto').fill('4500')
   await page.getByLabel('Detalle').fill('Flete al mercado')
-  await page.getByRole('button', { name: 'Guardar' }).click()
+  await page.getByRole('button', { name: 'Guardá el gasto' }).click()
   await expect(page.getByText('Gasto guardado')).toBeVisible()
 
   // One tap from Inicio's avatar: the list of groups, then a group, then "Cerrar" back.

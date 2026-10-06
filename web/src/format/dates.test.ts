@@ -6,6 +6,7 @@ import {
   formatMonthLong,
   maxSaleDate,
   monthRange,
+  parseMonth,
   shiftMonth,
   sinceWhen,
   todayRange,
@@ -121,5 +122,26 @@ describe('monthRange', () => {
 describe('maxSaleDate', () => {
   test('a sale cannot be dated later than today', () => {
     expect(maxSaleDate('2026-10-03')).toBe('2026-10-03')
+  })
+})
+
+describe('parseMonth', () => {
+  const TODAY = '2026-10-02'
+
+  test.each([
+    ['absent', '', '2026-10'],
+    ['empty', 'month=', '2026-10'],
+    ['garbage', 'month=garbage', '2026-10'],
+    ['month 13', 'month=2026-13', '2026-10'],
+    ['month 00', 'month=2026-00', '2026-10'],
+    ['one-digit month', 'month=2026-1', '2026-10'],
+    ['a full date', 'month=2026-10-01', '2026-10'],
+    ['a valid past month', 'month=2026-01', '2026-01'],
+    ['a valid future month', 'month=2027-03', '2027-03'],
+    ['two values: the first valid one', 'month=2026-03&month=2026-04', '2026-03'],
+    ['two values: the first is garbage, the second valid', 'month=x&month=2026-04', '2026-04'],
+    ['other parameters are ignored', 'q=1&month=2025-12', '2025-12'],
+  ])('%s', (_name, search, expected) => {
+    expect(parseMonth(new URLSearchParams(search), TODAY)).toBe(expected)
   })
 })

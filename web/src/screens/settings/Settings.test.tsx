@@ -120,7 +120,7 @@ test('reached directly on the phone, back says "‹ Más" and goes to Más', asy
 
   await user.click(await screen.findByRole('button', { name: '‹ Más' }))
 
-  expect(router.state.location.pathname).toBe('/mas')
+  expect(router.state.location.pathname).toBe('/more')
   expect(screen.queryByRole('button', { name: '‹ Inicio' })).not.toBeInTheDocument()
 })
 

@@ -1,5 +1,5 @@
 /**
- * `theme.ts` at its own seam (ADR-0024): the one module that names `localStorage` and the
+ * `theme.ts` at its own seam (ADR-0026): the one module that names `localStorage` and the
  * one that touches `data-tema` on `<html>`. The stored value is `oscuro` or nothing; any
  * other value reads as light and is left alone; a storage that throws never breaks the
  * page, and choosing still applies the attribute for the page's lifetime.

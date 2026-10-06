@@ -254,18 +254,12 @@ def token_from(url: str) -> str:
     return url.rstrip("/").rsplit("/", 1)[-1]
 
 
-def new_business_token(env: dict[str, str]) -> str:
-    """A new-business invitation, issued the way `scripts/invite-business.sh` does."""
+def operator_link(env: dict[str, str], *command: str) -> str:
+    """The token of a link minted by the operator's own command
+    (`app.accounts.adapters.cli`), run the way `scripts/invite-business.sh` and
+    `scripts/reset-password.sh` run it: never a row inserted by hand."""
     first_line = subprocess.run(
-        [
-            "uv",
-            "run",
-            "--no-project",
-            "python",
-            "-m",
-            "app.accounts.adapters.cli",
-            "invite-business",
-        ],
+        ["uv", "run", "--no-project", "python", "-m", "app.accounts.adapters.cli", *command],
         cwd=REPO,
         env=env,
         check=True,
@@ -273,6 +267,16 @@ def new_business_token(env: dict[str, str]) -> str:
         text=True,
     ).stdout.split("\n")[0]
     return token_from(first_line)
+
+
+def new_business_token(env: dict[str, str]) -> str:
+    """A new-business invitation, issued the way `scripts/invite-business.sh` does."""
+    return operator_link(env, "invite-business")
+
+
+def reset_token(env: dict[str, str], email: str) -> str:
+    """A reset link for `email`, issued the way `scripts/reset-password.sh` does."""
+    return operator_link(env, "reset-password", email)
 
 
 def free_port() -> int:
@@ -354,6 +358,8 @@ def main(argv: list[str] | None = None) -> int:
             # other joins La Huerta.
             "new_business_token": new_business_token(env),
             "join_token": token_from(api.call("POST", "/invitations")["url"]),
+            # A live reset link for the sample's user, so the reset screen can be compared.
+            "reset_token": reset_token(env, EMAIL),
         }
     except BaseException:
         server.terminate()

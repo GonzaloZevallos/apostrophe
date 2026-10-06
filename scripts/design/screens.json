@@ -1,5 +1,5 @@
 {
-  "_": "Each design screen and how to reach the same state in the built app (agentic-system ADR-0040, Tech Lead's plan for GH-58). route: where the built app shows a screen of that name today, even an old version of it; null only when no screen of that name is built yet. path: the decided English route (navigation.md). A build issue sets route = path in the diff that ships the screen. A redrawn screen's comparison deliberately shows the old-built screen next to the new design: that mismatch is expected until its build issue lands. Each subtask adds a screen's entry only in the diff that creates its .dc.html; only the chrome subtask removes entries, together with the file. {name} placeholders come from the sample app's facts. Steps: click (exact text), fill (label + value, which takes {email} and the ids too), wait (text). tema: 'oscuro' forces the dark theme on the built capture via data-tema, the only value the app recognises (the system's own color scheme never picks it; both captures always run with colorScheme: 'light'). Main and Componentes are the design system itself, not screens, so they have no entry.",
+  "_": "Each design screen and how to reach the same state in the built app (agentic-system ADR-0040, Tech Lead's plan for GH-58). route: where the built app shows a screen of that name today, even an old version of it; null only when no screen of that name is built yet. path: the decided English route (navigation.md). A build issue sets route = path in the diff that ships the screen. A redrawn screen's comparison deliberately shows the old-built screen next to the new design: that mismatch is expected until its build issue lands. Each subtask adds a screen's entry only in the diff that creates its .dc.html; only the chrome subtask removes entries, together with the file. {name} placeholders come from the sample app's facts. Steps: click (exact text), fill (label + value, which takes {email} and the ids too), wait (text). tema: 'oscuro' forces the dark theme on the built capture via data-tema, the only value the app recognises (the system's own color scheme never picks it; both captures always run with colorScheme: 'light'). screen is the unique key of an entry: its PNG name, its --only key and its heading; assertScreens refuses a repeat. design (optional) names the file pantallas/<design>.dc.html to compare against, default screen; it must exist. section (optional) is the exact label text of one block inside a design file that draws several states: the design column is cropped to that block, and the text must occur in the file. Steps also take { offline: true }: once the screen has loaded and settled it takes the browser offline, with no reload. Dark twins (EntrarOscuro, ResetOscuro) are compared against the light design file, so they check structure only; their dark colors are checked by eye against tokens.css. Reset has no design file of its own: it reuses Invitacion's. EstadosGone has no section because no label in Estados.dc.html draws 'Eso ya no está.': the whole file is the design column. Checked by eye, with the steps written in the PR, because no entry here can reach them: loading, the server-error retry, the transient notices ('Eso ya no está. La lista ya está al día.', 'Venta guardada' with Deshacer) and the empty lists. Main and Componentes are the design system itself, not screens, so they have no entry.",
   "screens": [
     { "screen": "Entrar", "route": "/entrar", "path": "/login", "signed_out": true,
       "steps": [
@@ -7,8 +7,16 @@
         { "fill": { "label": "Contraseña", "value": "equivocada123" } },
         { "click": "Entrá" }
       ] },
+    { "screen": "EntrarOscuro", "design": "Entrar", "route": "/entrar", "path": "/login", "signed_out": true, "tema": "oscuro",
+      "steps": [
+        { "fill": { "label": "Email", "value": "{email}" } },
+        { "fill": { "label": "Contraseña", "value": "equivocada123" } },
+        { "click": "Entrá" }
+      ] },
     { "screen": "NegocioNuevo", "route": "/invitation/{new_business_token}", "path": "/invitation/{new_business_token}", "signed_out": true },
     { "screen": "Invitacion", "route": "/invitation/{join_token}", "path": "/invitation/{join_token}", "signed_out": true },
+    { "screen": "Reset", "design": "Invitacion", "route": "/reset/{reset_token}", "path": "/reset/{reset_token}", "signed_out": true },
+    { "screen": "ResetOscuro", "design": "Invitacion", "route": "/reset/{reset_token}", "path": "/reset/{reset_token}", "signed_out": true, "tema": "oscuro" },
     { "screen": "Inicio", "route": "/", "path": "/", "steps": [{ "click": "Semana" }] },
     { "screen": "InicioOscuro", "route": "/", "path": "/", "tema": "oscuro", "steps": [{ "click": "Semana" }] },
     { "screen": "InicioCompu", "route": "/", "path": "/", "viewport": [1280, 920], "steps": [{ "click": "Semana" }] },
@@ -37,15 +45,15 @@
     { "screen": "Variedades", "route": "/variedades", "path": "/varieties" },
     { "screen": "VariedadesCompu", "route": null, "path": "/varieties/{low}", "viewport": [1280, 920] },
     { "screen": "VariedadDetalle", "route": "/variedades/{low}", "path": "/varieties/{low}" },
-    { "screen": "Gastos", "route": "/gastos", "path": "/expenses" },
-    { "screen": "GastosCompu", "route": null, "path": "/expenses", "viewport": [1280, 920] },
-    { "screen": "GastoNuevo", "route": null, "path": "/expenses/new" },
-    { "screen": "GastoNuevoCompu", "route": null, "path": "/expenses/new", "viewport": [1280, 920] },
+    { "screen": "Gastos", "route": "/expenses", "path": "/expenses" },
+    { "screen": "GastosCompu", "route": "/expenses", "path": "/expenses", "viewport": [1280, 920] },
+    { "screen": "GastoNuevo", "route": "/expenses/new", "path": "/expenses/new" },
+    { "screen": "GastoNuevoCompu", "route": "/expenses/new", "path": "/expenses/new", "viewport": [1280, 920] },
     { "screen": "Catalogo", "route": "/catalogo", "path": "/varieties/catalog" },
     { "screen": "CatalogoCompu", "route": null, "path": "/varieties/catalog", "viewport": [1280, 920] },
     { "screen": "Analisis", "route": "/analisis", "path": "/analysis" },
     { "screen": "AnalisisCompu", "route": "/analisis", "path": "/analysis", "viewport": [1280, 920] },
-    { "screen": "Mas", "route": "/mas", "path": "/more" },
+    { "screen": "Mas", "route": "/more", "path": "/more" },
     { "screen": "Configuracion", "route": "/settings", "path": "/settings" },
     { "screen": "ConfiguracionCompu", "route": "/settings", "path": "/settings", "viewport": [1280, 920] },
     { "screen": "ConfiguracionNegocio", "route": "/settings/business", "path": "/settings/business" },
@@ -62,6 +70,10 @@
     { "screen": "ConfiguracionAparienciaCompu", "route": "/settings/appearance", "path": "/settings/appearance", "viewport": [1280, 920] },
     { "screen": "ConfiguracionCuenta", "route": "/settings/account", "path": "/settings/account" },
     { "screen": "ConfiguracionCuentaCompu", "route": "/settings/account", "path": "/settings/account", "viewport": [1280, 920] },
-    { "screen": "Estados", "route": null, "path": null }
+    { "screen": "EstadosSinConexion", "design": "Estados", "section": "Sin conexión", "route": "/ventas", "path": "/sales",
+      "steps": [{ "offline": true }, { "wait": "Te quedaste sin internet" }] },
+    { "screen": "EstadosSinConexionCompu", "design": "Estados", "section": "Sin conexión", "route": "/ventas", "path": "/sales", "viewport": [1280, 920],
+      "steps": [{ "offline": true }, { "wait": "Te quedaste sin internet" }] },
+    { "screen": "EstadosGone", "design": "Estados", "route": "/ventas/999999", "path": "/sales/999999" }
   ]
 }

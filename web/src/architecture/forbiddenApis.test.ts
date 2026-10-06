@@ -91,7 +91,7 @@ describe('findForbiddenUsages', () => {
     expect(violations.map((v) => v.rule).sort()).toEqual(['execCommand', 'navigatorClipboard'])
   })
 
-  test('allows localStorage only inside src/theme.ts (ADR-0024)', () => {
+  test('allows localStorage only inside src/theme.ts (ADR-0026)', () => {
     const body = 'localStorage.setItem("tema", "oscuro")'
 
     expect(findForbiddenUsages([{ path: 'src/theme.ts', content: body }])).toEqual([])

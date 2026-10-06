@@ -1,7 +1,7 @@
 /**
  * "Apariencia" (`ConfiguracionApariencia.dc.html` and its Compu sibling): Claro or Oscuro,
  * a radio group. A tap applies and remembers the choice at once through `theme.ts`
- * (ADR-0024): no save button, no toast and no unsaved-changes question, so the frame gets
+ * (ADR-0026): no save button, no toast and no unsaved-changes question, so the frame gets
  * `dirty={false}` and "Cerrar" always closes at once. The current choice is told by `aria-checked`,
  * the filled pill and the bolder word, never by color alone.
  */

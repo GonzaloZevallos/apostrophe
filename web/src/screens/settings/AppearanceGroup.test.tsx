@@ -1,5 +1,5 @@
 /**
- * `AppearanceGroup` through what the person sees and does (ADR-0024): two choices, Claro
+ * `AppearanceGroup` through what the person sees and does (ADR-0026): two choices, Claro
  * and Oscuro, as a radio group; a tap applies and remembers the choice at once, with no save
  * button, no toast and no unsaved-changes question; "Cerrar" always closes at once.
  */

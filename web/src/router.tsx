@@ -31,6 +31,7 @@ import Root from './Root'
 import Analisis from './screens/Analisis'
 import Entrar from './screens/Entrar'
 import EntradaStock from './screens/EntradaStock'
+import ExpenseNewRoute from './screens/expenses/ExpenseNewRoute'
 import Gastos from './screens/Gastos'
 import Inicio from './screens/Inicio'
 import Invitacion from './screens/Invitacion'
@@ -59,6 +60,7 @@ import Ventas from './screens/ventas/Ventas'
 import { redirectRoutes } from './redirects'
 import GatedLayout from './shell/GatedLayout'
 import Shell from './shell/Shell'
+import { ANALYSIS, EXPENSE_CATEGORIES, EXPENSE_NEW, EXPENSES, MORE, relative } from './routes'
 
 export const router = createBrowserRouter([
   {
@@ -74,7 +76,7 @@ export const router = createBrowserRouter([
             element: <Shell />,
             children: [
               { index: true, element: <Inicio /> },
-              { path: 'mas', element: <Mas /> },
+              { path: relative(MORE), element: <Mas /> },
               {
                 path: 'clientes',
                 element: <ClientesLayout />,
@@ -88,35 +90,40 @@ export const router = createBrowserRouter([
               },
               { path: 'variedades', element: <Variedades /> },
               { path: 'variedades/:id', element: <VariedadDetalle /> },
-              { path: 'gastos', element: <Gastos /> },
+              { path: relative(EXPENSES), element: <Gastos />, handle: { tab: 'more' } },
+              {
+                path: relative(EXPENSE_NEW),
+                element: <ExpenseNewRoute />,
+                handle: { chrome: 'none', tab: 'more' },
+              },
               { path: 'mi-stock', element: <Stock /> },
               { path: 'mi-stock/nueva-entrada', element: <EntradaStock mode="nuevo" /> },
               { path: 'mi-stock/entradas/:id', element: <EntradaStock mode="editar" /> },
-              { path: 'settings', element: <Settings />, handle: { chrome: 'card' } },
-              { path: 'settings/business', element: <BusinessGroup />, handle: { chrome: 'none' } },
-              { path: 'settings/users', element: <UsersGroup />, handle: { chrome: 'none' } },
+              { path: 'settings', element: <Settings />, handle: { chrome: 'card', tab: 'more' } },
+              { path: 'settings/business', element: <BusinessGroup />, handle: { chrome: 'none', tab: 'more' } },
+              { path: 'settings/users', element: <UsersGroup />, handle: { chrome: 'none', tab: 'more' } },
               {
                 path: 'settings/integrations',
                 element: <IntegrationsGroup />,
-                handle: { chrome: 'none' },
+                handle: { chrome: 'none', tab: 'more' },
               },
               {
                 path: 'settings/catalog-message',
                 element: <CatalogMessageGroup />,
-                handle: { chrome: 'none' },
+                handle: { chrome: 'none', tab: 'more' },
               },
               {
-                path: 'settings/expense-categories',
+                path: relative(EXPENSE_CATEGORIES),
                 element: <ExpenseCategoriesGroup />,
-                handle: { chrome: 'none' },
+                handle: { chrome: 'none', tab: 'more' },
               },
               {
                 path: 'settings/appearance',
                 element: <AppearanceGroup />,
-                handle: { chrome: 'none' },
+                handle: { chrome: 'none', tab: 'more' },
               },
-              { path: 'settings/account', element: <AccountGroup />, handle: { chrome: 'none' } },
-              { path: 'analisis', element: <Analisis /> },
+              { path: 'settings/account', element: <AccountGroup />, handle: { chrome: 'none', tab: 'more' } },
+              { path: relative(ANALYSIS), element: <Analisis />, handle: { tab: 'more' } },
               { path: 'catalogo', element: <Catalogo /> },
               {
                 path: 'ventas',

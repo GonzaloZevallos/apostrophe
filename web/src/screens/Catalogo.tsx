@@ -31,6 +31,7 @@ import SinConexion from '../components/SinConexion'
 import PinPublish from './PinPublish'
 import { CATALOG_SAVED } from './settings/messages'
 import { telegramPreview } from './telegramPreview'
+import { MORE } from '../routes'
 
 export const CATALOG_COPIED = 'Catálogo copiado'
 export const COPY_FAILED_MESSAGE = 'No se pudo copiar.'
@@ -223,7 +224,7 @@ export default function Catalogo() {
     <main className="pantalla">
       <div className="cuerpo">
         <div className="encabezado__fila">
-          <Link to="/mas" aria-label="Volver" className="encabezado__volver">
+          <Link to={MORE} aria-label="Volver" className="encabezado__volver">
             ‹
           </Link>
           <span className="encabezado__titulo">Catálogo</span>

@@ -4,7 +4,7 @@
  * `console`, `localStorage`, `sessionStorage`, `indexedDB` or the Cache API. The
  * service worker carries none of these either, and has no `fetch` handler.
  *
- * ADR-0024: only `theme.ts` names `localStorage`, for the one `tema=oscuro` entry.
+ * ADR-0026: only `theme.ts` names `localStorage`, for the one `tema=oscuro` entry.
  *
  * Plan ("Clipboard over plain http"): only `clipboard.ts` names
  * `navigator.clipboard` or `execCommand`, so the home network's plain-http
