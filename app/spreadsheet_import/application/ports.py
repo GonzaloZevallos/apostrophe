@@ -22,6 +22,7 @@ from datetime import date, datetime
 from typing import Protocol
 
 from app.shared.grams import Grams
+from app.shared.pricing_settings import PricingSettings
 from app.shared.transaction import Transaction
 from app.spreadsheet_import.domain.plan import OnTheSpotMethod
 from app.spreadsheet_import.domain.rows import (
@@ -238,10 +239,12 @@ class SalesImport(Protocol):
         variety_keys: Mapping[str, str],
         sales: Sequence[SaleCheckInput],
         today: date,
+        settings: PricingSettings,
     ) -> Sequence[SaleCheck]:
         """One `SaleCheck` per entry of `sales`, in the same order, batched so
         sales' adapter builds its `PlannedPriceBook` once per run from the plain
-        `price_history` rows rather than once per row."""
+        `price_history` rows rather than once per row. `settings` are the switches the
+        import will leave: every row is priced with them."""
         ...
 
     def write_sale(
@@ -252,9 +255,10 @@ class SalesImport(Protocol):
         recorded_at: datetime,
         today: date,
         transaction: Transaction,
+        settings: PricingSettings,
     ) -> int:
         """Record the sale and its on-the-spot payment, if any; return the stored
-        total."""
+        total, priced with `settings` (the switches the import leaves)."""
         ...
 
 

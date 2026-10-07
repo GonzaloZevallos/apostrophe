@@ -171,6 +171,9 @@ def create_app(
     # `get_business_opening` already does for `business_opening` — not added here, so
     # this line is the one seam the sales-costs subtask reaches it through.
     app.state.line_costs = SqlLineCosts
+    # The same shape again: sales reads the switches only through its own
+    # `PricingSettingsReader` port, never `app.pricing_settings` (docs/adr/0031).
+    app.state.pricing_settings = SqlPricingSettings
     # Two more factories of the same shape: customers reaches a balance, and sales a
     # "still owing" mark, only through `Balances`/`OwingSales`, never `app.payments`
     # directly (the plan's invariant). `app/customers/adapters/router.py` and

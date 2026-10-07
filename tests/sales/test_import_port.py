@@ -20,12 +20,14 @@ from app.sales.adapters.price_book import PlannedPriceBook
 from app.sales.adapters.sql_sales import SqlSales
 from app.sales.domain.pricing import price_line
 from app.shared.grams import Grams
+from app.shared.pricing_settings import PricingSettings
 from app.spreadsheet_import.application.no_commit import NoCommit
 from app.spreadsheet_import.application.ports import Refusal, SaleCheck, SaleCheckInput
 from app.spreadsheet_import.domain.plan import OnTheSpotMethod
 from app.spreadsheet_import.domain.rows import PriceHistoryRow, SheetRef
 from app.varieties.adapters.import_port import VarietiesImport
 
+BOTH_ON = PricingSettings(is_bulk_pricing=True, is_vip_customers=True)
 TODAY = date(2026, 6, 15)
 ONE_GRAM = Grams.of(1)
 
@@ -107,7 +109,13 @@ def test_has_records_is_false_for_a_fresh_business_true_after_write(
         )
         sale = _sale_input()
         sales_import.write_sale(
-            variety_id, None, sale, datetime(2026, 6, 15, 12, tzinfo=UTC), TODAY, NoCommit()
+            variety_id,
+            None,
+            sale,
+            datetime(2026, 6, 15, 12, tzinfo=UTC),
+            TODAY,
+            NoCommit(),
+            BOTH_ON,
         )
         session.commit()
 
@@ -125,6 +133,7 @@ def test_check_sales_refuses_a_row_with_no_price_that_day(
             variety_keys={},
             sales=[_sale_input()],
             today=TODAY,
+            settings=BOTH_ON,
         )
 
     assert len(results) == 1
@@ -147,6 +156,7 @@ def test_check_sales_refuses_a_gift_with_a_special_total(
             variety_keys=keys,
             sales=[_sale_input(gift=True, special_total=500, method=None)],
             today=TODAY,
+            settings=BOTH_ON,
         )
 
     assert results[0].refusal is not None
@@ -182,6 +192,7 @@ def test_check_sales_prices_list_bulk_and_vip_falling_back_to_list(
             variety_keys=keys,
             sales=[lista_bulk, lista_under_minimum, amigo_no_bulk_that_day],
             today=date(2026, 7, 31),
+            settings=BOTH_ON,
         )
 
     assert results[0].total == 16_000  # 20g at the bulk price of 800
@@ -206,7 +217,7 @@ def test_planned_price_book_agrees_with_the_sql_book_once_written(
     with Session(engine) as session:
         sales_import = SalesImport(session, business_id)
         planned = sales_import.check_sales(
-            price_history=history, variety_keys=keys, sales=[sale], today=TODAY
+            price_history=history, variety_keys=keys, sales=[sale], today=TODAY, settings=BOTH_ON
         )
         assert planned[0].refusal is None
         planned_total = planned[0].total
@@ -221,6 +232,7 @@ def test_planned_price_book_agrees_with_the_sql_book_once_written(
             datetime(2026, 6, 1, 12, tzinfo=UTC),
             TODAY,
             NoCommit(),
+            BOTH_ON,
         )
         session.commit()
 
@@ -287,6 +299,7 @@ def test_write_sale_stores_the_pricing_rule_from_the_row_s_own_vip_fact(
                 datetime(sale_date.year, sale_date.month, sale_date.day, 12, tzinfo=UTC),
                 run_today,
                 NoCommit(),
+                BOTH_ON,
             )
         session.commit()
 
@@ -346,7 +359,8 @@ def test_planned_price_book_matches_what_write_sale_stores_for_bulk_list_vip_and
             price_line(
                 gift=sale.gift,
                 special_price=sale.special_total,
-                vip=sale.vip,
+                customer_is_vip=sale.vip,
+                settings=BOTH_ON,
                 quote=quote,
                 grams=sale.grams,
             )
@@ -370,6 +384,7 @@ def test_planned_price_book_matches_what_write_sale_stores_for_bulk_list_vip_and
                 ),
                 run_today,
                 NoCommit(),
+                BOTH_ON,
             )
         session.commit()
 
