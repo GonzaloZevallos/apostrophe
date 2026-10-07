@@ -13,10 +13,15 @@
  * number.
  */
 
-import { CUSTOMER, CUSTOMER_PAYMENT, CUSTOMERS, SALE_NEW, pathTo } from '../../routes'
+import { CUSTOMER, CUSTOMER_PAYMENT, CUSTOMERS, HOME, SALE_NEW, pathTo } from '../../routes'
 import { inAppState } from '../../components/inAppState'
+import { useGoneNotice } from '../../components/goneExit'
+import { SheetRouterProvider } from '../../components/useSheetStack'
+import { GONE_NOTICE } from '../../api/refusals'
+import { stubViewport } from '../../test-viewport'
+import { StrictMode } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Outlet, useLocation } from 'react-router'
 import { RouterProvider, createMemoryRouter } from 'react-router'
@@ -595,19 +600,23 @@ test('the payment route opens the sheet by itself, from a typed address, and Cer
   expect(screen.queryByRole('button', { name: 'Guardar' })).not.toBeInTheDocument()
 })
 
-test('an untouched sheet leaves at once on history back, a touched one asks first and "No" keeps what was typed', async () => {
+test('an untouched sheet leaves at once on history back', async () => {
   vi.mocked(fetch).mockImplementation(dispatchFetch(OWING_FETCHES))
   const router = renderFicha('1')
   await userEvent.click(await screen.findByRole('link', { name: 'Registrar cobro' }))
   await screen.findByRole('button', { name: 'Guardar' })
 
-  await router.navigate(-1)
+  await act(() => router.navigate(-1))
+
   await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(CUSTOMER, { id: 1 })))
   expect(screen.queryByText('¿Descartás el cobro?')).not.toBeInTheDocument()
+})
 
-  await userEvent.click(await screen.findByRole('link', { name: 'Registrar cobro' }))
+test('a touched sheet asks before history back leaves, "No" keeps what was typed and "Sí" leaves to Clientes, its parent', async () => {
+  vi.mocked(fetch).mockImplementation(dispatchFetch(OWING_FETCHES))
+  const router = renderFicha('1', [pathTo(CUSTOMER, { id: 1 }), pathTo(CUSTOMER_PAYMENT, { id: 1 })])
   await userEvent.click(await screen.findByLabelText('Efectivo'))
-  await router.navigate(-1)
+  await act(() => router.navigate(-1))
 
   expect(await screen.findByText('¿Descartás el cobro?')).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(pathTo(CUSTOMER_PAYMENT, { id: 1 }))
@@ -617,7 +626,7 @@ test('an untouched sheet leaves at once on history back, a touched one asks firs
 
   await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
   await userEvent.click(await screen.findByRole('button', { name: 'Sí, descartalo' }))
-  await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(CUSTOMER, { id: 1 })))
+  await waitFor(() => expect(router.state.location.pathname).toBe(CUSTOMERS))
 })
 
 test('after a save the sheet is not in history: back from the card goes to what was before it', async () => {
@@ -638,4 +647,144 @@ test('after a save the sheet is not in history: back from the card goes to what 
   expect(await screen.findByText('Cobro guardado · queda debiendo $ 6.000')).toBeInTheDocument()
   await router.navigate(-1)
   await waitFor(() => expect(router.state.location.pathname).toBe(CUSTOMERS))
+})
+
+// The gone exit of "Registrar cobro" (navigation.md, "A gone exit is the same move as
+// Cerrar"): its registered parent is Clientes.
+type HistoryEntry = string | { pathname: string; state: unknown }
+
+function ListWithNotice() {
+  const goneShown = useGoneNotice()
+  return (
+    <div>
+      <span>la lista</span>
+      {goneShown && <span>{GONE_NOTICE}</span>}
+    </div>
+  )
+}
+
+function fakeGonePayment() {
+  vi.mocked(fetch).mockImplementation(
+    dispatchFetch({
+      ...OWING_FETCHES,
+      'POST /customers/1/payments': () =>
+        jsonResponse(404, { detail: 'no such customer', code: 'payment.customer_not_found' }),
+    }),
+  )
+}
+
+/** The real data router under StrictMode, with the router handle the gone notice follows. */
+function renderGone(entries: HistoryEntry[]) {
+  const router = createMemoryRouter(
+    [
+      {
+        element: <Flash />,
+        children: [
+          { path: CUSTOMER, element: <ClienteFicha /> },
+          { path: CUSTOMER_PAYMENT, element: <ClienteFicha payment /> },
+          { path: CUSTOMERS, element: <ListWithNotice /> },
+          { path: HOME, element: <span>Inicio</span> },
+        ],
+      },
+    ],
+    { initialEntries: entries, initialIndex: entries.length - 1 },
+  )
+  const app = (
+    <StrictMode>
+      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+        <SheetRouterProvider router={router}>
+          <RouterProvider router={router} />
+        </SheetRouterProvider>
+      </QueryClientProvider>
+    </StrictMode>
+  )
+  const view = render(app)
+  return { router, view, app }
+}
+
+async function saveTheGonePayment() {
+  await userEvent.click(await screen.findByLabelText('Efectivo'))
+  await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+}
+
+const PAYMENT = pathTo(CUSTOMER_PAYMENT, { id: 1 })
+
+test('a gone cobro opened from Clientes goes back to it: Clientes is in history once, with the notice once', async () => {
+  fakeGonePayment()
+  const { router } = renderGone([HOME, CUSTOMERS, { pathname: PAYMENT, state: inAppState({ pathname: CUSTOMERS }) }])
+
+  await saveTheGonePayment()
+
+  expect(await screen.findByText('la lista')).toBeInTheDocument()
+  expect(router.state.historyAction).toBe('POP')
+  expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
+  await act(() => router.navigate(-1))
+  expect(router.state.location.pathname).toBe(HOME)
+  expect(screen.queryByText(GONE_NOTICE)).not.toBeInTheDocument()
+})
+
+test("a gone cobro opened from Inicio's teaser replaces the sheet with Clientes and leaves Inicio alone", async () => {
+  fakeGonePayment()
+  const { router } = renderGone([HOME, { pathname: PAYMENT, state: inAppState({ pathname: HOME }) }])
+
+  await saveTheGonePayment()
+
+  expect(await screen.findByText('la lista')).toBeInTheDocument()
+  expect(router.state.historyAction).toBe('REPLACE')
+  expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
+  await act(() => router.navigate(-1))
+  expect(router.state.location.pathname).toBe(HOME)
+  expect(screen.queryByText(GONE_NOTICE)).not.toBeInTheDocument()
+})
+
+test('a gone cobro on a direct link replaces the sheet with Clientes and shows the notice', async () => {
+  fakeGonePayment()
+  const { router } = renderGone([PAYMENT])
+
+  await saveTheGonePayment()
+
+  expect(await screen.findByText('la lista')).toBeInTheDocument()
+  expect(router.state.historyAction).toBe('REPLACE')
+  expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
+})
+
+test('after a reload of the sheet, the gone exit still goes back once', async () => {
+  fakeGonePayment()
+  const { router, view, app } = renderGone([HOME, CUSTOMERS, { pathname: PAYMENT, state: inAppState({ pathname: CUSTOMERS }) }])
+  await screen.findByLabelText('Efectivo')
+  view.unmount()
+  render(app)
+
+  await saveTheGonePayment()
+
+  expect(await screen.findByText('la lista')).toBeInTheDocument()
+  expect(router.state.historyAction).toBe('POP')
+  expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
+})
+
+test('a resize across 900 px between opening and leaving does not change where the exit goes', async () => {
+  fakeGonePayment()
+  stubViewport('phone')
+  const { router } = renderGone([HOME, CUSTOMERS, { pathname: PAYMENT, state: inAppState({ pathname: CUSTOMERS }) }])
+  await screen.findByLabelText('Efectivo')
+  stubViewport('computer')
+
+  await saveTheGonePayment()
+
+  expect(await screen.findByText('la lista')).toBeInTheDocument()
+  expect(router.state.historyAction).toBe('POP')
+})
+
+test.each([
+  ['a query string', `${CUSTOMERS}?q=fer`],
+  ['a trailing slash', `${CUSTOMERS}/`],
+])('a from with %s still counts as the parent: the exit goes back', async (_name, from) => {
+  fakeGonePayment()
+  const { router } = renderGone([HOME, CUSTOMERS, { pathname: PAYMENT, state: inAppState({ pathname: from }) }])
+
+  await saveTheGonePayment()
+
+  expect(await screen.findByText('la lista')).toBeInTheDocument()
+  expect(router.state.historyAction).toBe('POP')
+  expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
 })
