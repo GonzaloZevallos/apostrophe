@@ -35,6 +35,7 @@ from app.customers.adapters.import_port import CustomersImport
 from app.db import make_engine
 from app.expenses.adapters.import_port import ExpensesImport
 from app.migrations.runner import upgrade_to_head
+from app.onboarding.adapters.import_port import OnboardingEnding
 from app.payments.adapters.import_port import PaymentsImport
 from app.sales.adapters.import_port import SalesImport
 from app.settings import Settings
@@ -115,6 +116,7 @@ def _run(args: argparse.Namespace, engine: Engine, clock: Clock, out: TextIO) ->
         customers = CustomersImport(session, args.business_id)
         sales = SalesImport(session, args.business_id)
         payments = PaymentsImport(session, args.business_id)
+        onboarding = OnboardingEnding(session, args.business_id)
 
         ineligible = has_any_records(varieties, stock, expenses, customers, sales, payments)
         if ineligible:
@@ -158,6 +160,7 @@ def _run(args: argparse.Namespace, engine: Engine, clock: Clock, out: TextIO) ->
             customers=customers,
             sales=sales,
             payments=payments,
+            onboarding=onboarding,
             import_instant=instant,
             today=today,
         )

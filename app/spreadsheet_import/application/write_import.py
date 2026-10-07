@@ -71,6 +71,7 @@ def write_import(
     customers: ports.CustomersImport,
     sales: ports.SalesImport,
     payments: ports.PaymentsImport,
+    onboarding: ports.OnboardingEnding,
     import_instant: datetime,
     today: date,
 ) -> None:
@@ -114,6 +115,10 @@ def write_import(
             today,
             transaction,
         )
+
+    # After the last writer, under the same `NoCommit`: the import's one commit carries
+    # the end of the Onboarding with the records that made it over (docs/adr/0032).
+    onboarding.imported(import_instant, transaction)
 
 
 def _variety_key(raw: str | None, varieties: ports.VarietiesImport) -> str:
