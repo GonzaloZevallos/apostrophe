@@ -621,8 +621,8 @@ def test_a_vip_customer_is_stored_as_vip_once_vip_is_switched_on(
 def test_switching_a_rule_off_leaves_a_recorded_sale_as_it_was(
     client: TestClient, engine: Engine
 ) -> None:
-    variety_id = _variety_with_bulk(client)
     _switches(engine, bulk=True, vip=False)
+    variety_id = _variety_with_bulk(client)
     created = client.post(
         "/sales",
         json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": "50"}]},

@@ -12,6 +12,8 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { queryClient, setCurrentPath, setNavigate } from '../../queryClient'
 import ClienteForm from './ClienteForm'
+import { stubFetchWithSettings } from '../stubFetchWithSettings'
+
 
 function ListStub() {
   const location = useLocation()
@@ -59,8 +61,10 @@ function renderForm(initialPath: string) {
   )
 }
 
+let api: ReturnType<typeof stubFetchWithSettings>
+
 beforeEach(() => {
-  vi.stubGlobal('fetch', vi.fn())
+  api = stubFetchWithSettings()
 })
 
 afterEach(() => {
@@ -68,7 +72,7 @@ afterEach(() => {
 })
 
 test('registers a customer and lands back on the list', async () => {
-  vi.mocked(fetch).mockResolvedValue(
+  api.mockResolvedValue(
     jsonResponse(201, { id: 9, name: 'Nico', phone: '+5491131785094', channel: null, vip: false }),
   )
   renderForm('/clientes/nuevo')
@@ -78,7 +82,7 @@ test('registers a customer and lands back on the list', async () => {
   await userEvent.click(screen.getByRole('button', { name: 'Guardá y usá' }))
 
   expect(await screen.findByText('la lista')).toBeInTheDocument()
-  expect(fetch).toHaveBeenCalledWith(
+  expect(api).toHaveBeenCalledWith(
     '/customers',
     expect.objectContaining({ method: 'POST' }),
   )
@@ -92,7 +96,7 @@ test('only Nombre is marked required; Teléfono stays optional', () => {
 })
 
 test('registering with no phone sends the request and shows the saved toast', async () => {
-  vi.mocked(fetch).mockResolvedValue(
+  api.mockResolvedValue(
     jsonResponse(201, { id: 10, name: 'Sol', phone: null, channel: null, vip: false }),
   )
   renderForm('/clientes/nuevo')
@@ -101,17 +105,17 @@ test('registering with no phone sends the request and shows the saved toast', as
   await userEvent.click(screen.getByRole('button', { name: 'Guardá y usá' }))
 
   expect(await screen.findByText('Cliente guardado')).toBeInTheDocument()
-  expect(fetch).toHaveBeenCalledWith(
+  expect(api).toHaveBeenCalledWith(
     '/customers',
     expect.objectContaining({ method: 'POST', body: JSON.stringify({ name: 'Sol', phone: '', channel: null, vip: false }) }),
   )
 })
 
 test('clearing a phone when editing sends it and shows the saved toast', async () => {
-  vi.mocked(fetch).mockResolvedValueOnce(
+  api.mockResolvedValueOnce(
     jsonResponse(200, { id: 7, name: 'Tincho', phone: '+5491144861258', channel: null, vip: false }),
   )
-  vi.mocked(fetch).mockResolvedValueOnce(
+  api.mockResolvedValueOnce(
     jsonResponse(200, { id: 7, name: 'Tincho', phone: null, channel: null, vip: false }),
   )
   renderForm('/clientes/7/editar')
@@ -122,14 +126,14 @@ test('clearing a phone when editing sends it and shows the saved toast', async (
 
   expect(await screen.findByText('la ficha')).toBeInTheDocument()
   expect(screen.getByText('Cliente guardado')).toBeInTheDocument()
-  expect(fetch).toHaveBeenCalledWith(
+  expect(api).toHaveBeenCalledWith(
     '/customers/7',
     expect.objectContaining({ method: 'PATCH', body: JSON.stringify({ name: 'Tincho', phone: '', channel: null, vip: false }) }),
   )
 })
 
 test('a duplicate phone is refused on the phone field, keeping what was typed', async () => {
-  vi.mocked(fetch).mockResolvedValue(
+  api.mockResolvedValue(
     jsonResponse(409, { detail: 'taken', code: 'customer.phone_taken' }),
   )
   renderForm('/clientes/nuevo')
@@ -144,7 +148,7 @@ test('a duplicate phone is refused on the phone field, keeping what was typed', 
 })
 
 test('edit loads the existing customer and saves the change', async () => {
-  vi.mocked(fetch).mockResolvedValueOnce(
+  api.mockResolvedValueOnce(
     jsonResponse(200, {
       id: 7,
       name: 'Tincho',
@@ -153,7 +157,7 @@ test('edit loads the existing customer and saves the change', async () => {
       vip: false,
     }),
   )
-  vi.mocked(fetch).mockResolvedValueOnce(
+  api.mockResolvedValueOnce(
     jsonResponse(200, {
       id: 7,
       name: 'Tincho Aguirre',
@@ -171,14 +175,14 @@ test('edit loads the existing customer and saves the change', async () => {
   await userEvent.click(screen.getByRole('button', { name: 'Guardá y usá' }))
 
   expect(await screen.findByText('la ficha')).toBeInTheDocument()
-  expect(fetch).toHaveBeenCalledWith('/customers/7', expect.objectContaining({ method: 'PATCH' }))
+  expect(api).toHaveBeenCalledWith('/customers/7', expect.objectContaining({ method: 'PATCH' }))
 })
 
 test('saving an edit on a customer that is gone shows the gone notice, not the toast', async () => {
-  vi.mocked(fetch).mockResolvedValueOnce(
+  api.mockResolvedValueOnce(
     jsonResponse(200, { id: 7, name: 'Tincho', phone: '+5491144861258', channel: null, vip: false }),
   )
-  vi.mocked(fetch).mockResolvedValueOnce(
+  api.mockResolvedValueOnce(
     jsonResponse(404, { detail: 'no such customer', code: 'customer.not_found' }),
   )
   renderForm('/clientes/7/editar')
@@ -192,7 +196,7 @@ test('saving an edit on a customer that is gone shows the gone notice, not the t
 })
 
 test('a 401 on save clears the cache and goes to Entrar, through the session boundary', async () => {
-  vi.mocked(fetch).mockResolvedValue(jsonResponse(401, { detail: 'not signed in' }))
+  api.mockResolvedValue(jsonResponse(401, { detail: 'not signed in' }))
   queryClient.setQueryData(['me'], { businessName: 'stale' })
   const navigate = vi.fn()
   setNavigate(navigate)

@@ -14,6 +14,8 @@ import saleFixture from '../../api/fixtures/sale.json'
 import { GONE_NOTICE } from '../../api/refusals'
 import type { Me } from '../../api/me'
 import Ventas from './Ventas'
+import { stubFetchWithSettings } from '../stubFetchWithSettings'
+
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -44,8 +46,10 @@ function renderVentas(state?: unknown) {
   )
 }
 
+let api: ReturnType<typeof stubFetchWithSettings>
+
 beforeEach(() => {
-  vi.stubGlobal('fetch', vi.fn())
+  api = stubFetchWithSettings()
 })
 
 afterEach(() => {
@@ -53,11 +57,11 @@ afterEach(() => {
 })
 
 test('Hoy, the default, asks the API for today alone', async () => {
-  vi.mocked(fetch).mockResolvedValue(jsonResponse(200, []))
+  api.mockResolvedValue(jsonResponse(200, []))
   renderVentas()
 
   await waitFor(() =>
-    expect(fetch).toHaveBeenCalledWith(
+    expect(api).toHaveBeenCalledWith(
       '/sales?date_from=2026-10-03&date_to=2026-10-03',
       expect.anything(),
     ),
@@ -65,14 +69,14 @@ test('Hoy, the default, asks the API for today alone', async () => {
 })
 
 test('Semana asks for the Monday-to-Sunday week containing today', async () => {
-  vi.mocked(fetch).mockResolvedValue(jsonResponse(200, []))
+  api.mockResolvedValue(jsonResponse(200, []))
   renderVentas()
-  await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1))
+  await waitFor(() => expect(api).toHaveBeenCalledTimes(1))
 
   await userEvent.click(screen.getByRole('button', { name: 'Semana' }))
 
   await waitFor(() =>
-    expect(fetch).toHaveBeenCalledWith(
+    expect(api).toHaveBeenCalledWith(
       '/sales?date_from=2026-09-28&date_to=2026-10-04',
       expect.anything(),
     ),
@@ -80,14 +84,14 @@ test('Semana asks for the Monday-to-Sunday week containing today', async () => {
 })
 
 test('Mes asks for the current calendar month', async () => {
-  vi.mocked(fetch).mockResolvedValue(jsonResponse(200, []))
+  api.mockResolvedValue(jsonResponse(200, []))
   renderVentas()
-  await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1))
+  await waitFor(() => expect(api).toHaveBeenCalledTimes(1))
 
   await userEvent.click(screen.getByRole('button', { name: 'Mes' }))
 
   await waitFor(() =>
-    expect(fetch).toHaveBeenCalledWith(
+    expect(api).toHaveBeenCalledWith(
       '/sales?date_from=2026-10-01&date_to=2026-10-31',
       expect.anything(),
     ),
@@ -95,9 +99,9 @@ test('Mes asks for the current calendar month', async () => {
 })
 
 test('Fechas opens on the current month and never lets the start run past the end', async () => {
-  vi.mocked(fetch).mockResolvedValue(jsonResponse(200, []))
+  api.mockResolvedValue(jsonResponse(200, []))
   renderVentas()
-  await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1))
+  await waitFor(() => expect(api).toHaveBeenCalledTimes(1))
 
   await userEvent.click(screen.getByRole('button', { name: 'Fechas' }))
 
@@ -113,7 +117,7 @@ test('Fechas opens on the current month and never lets the start run past the en
 })
 
 test("the period's total and count are the sum and the number of sales shown", async () => {
-  vi.mocked(fetch).mockResolvedValue(
+  api.mockResolvedValue(
     jsonResponse(200, [
       {
         id: 1,
@@ -152,7 +156,7 @@ test("the period's total and count are the sum and the number of sales shown", a
 })
 
 test('the header shows the range next to the total, dd/mm, collapsed to one date for Hoy', async () => {
-  vi.mocked(fetch).mockImplementation(() => Promise.resolve(jsonResponse(200, [])))
+  api.mockImplementation(() => Promise.resolve(jsonResponse(200, [])))
   renderVentas()
 
   expect(await screen.findByText('03/10 · 0 ventas')).toBeInTheDocument()
@@ -170,7 +174,7 @@ test('the header shows the range next to the total, dd/mm, collapsed to one date
 })
 
 test('each row carries the chevron icon', async () => {
-  vi.mocked(fetch).mockResolvedValue(jsonResponse(200, [saleFixture]))
+  api.mockResolvedValue(jsonResponse(200, [saleFixture]))
   renderVentas()
 
   const row = await screen.findByRole('link')
@@ -178,7 +182,7 @@ test('each row carries the chevron icon', async () => {
 })
 
 test('a sale with no customer shows "Sin cliente" and no VIP badge', async () => {
-  vi.mocked(fetch).mockResolvedValue(
+  api.mockResolvedValue(
     jsonResponse(200, [
       {
         id: 3,
@@ -203,7 +207,7 @@ test('a sale with no customer shows "Sin cliente" and no VIP badge', async () =>
 test('a sale still owing shows its total in amber with "te debe" under it, from the API', async () => {
   // `sale.json` (plan, invariants: "used by the front's fetch fakes"): `still_owing`
   // true, `total` 11000.
-  vi.mocked(fetch).mockResolvedValue(jsonResponse(200, [saleFixture]))
+  api.mockResolvedValue(jsonResponse(200, [saleFixture]))
   renderVentas()
 
   const row = await screen.findByRole('link')
@@ -212,7 +216,7 @@ test('a sale still owing shows its total in amber with "te debe" under it, from 
 })
 
 test('a sale paid in full shows no "te debe" mark', async () => {
-  vi.mocked(fetch).mockResolvedValue(
+  api.mockResolvedValue(
     jsonResponse(200, [{ ...saleFixture, payment: 'cash', still_owing: false }]),
   )
   renderVentas()
@@ -222,14 +226,14 @@ test('a sale paid in full shows no "te debe" mark', async () => {
 })
 
 test('an empty period shows the empty-list text, not a blank list', async () => {
-  vi.mocked(fetch).mockResolvedValue(jsonResponse(200, []))
+  api.mockResolvedValue(jsonResponse(200, []))
   renderVentas()
 
   expect(await screen.findByText('Todavía no registraste ninguna venta en este período.')).toBeInTheDocument()
 })
 
 test('a dropped network shows Sin conexión, never the empty-list text', async () => {
-  vi.mocked(fetch).mockRejectedValue(new TypeError('network error'))
+  api.mockRejectedValue(new TypeError('network error'))
   renderVentas()
 
   expect(await screen.findByText('Te quedaste sin internet')).toBeInTheDocument()
@@ -239,7 +243,7 @@ test('a dropped network shows Sin conexión, never the empty-list text', async (
 })
 
 test('arriving back from Borrar venta or Deshacer shows "Venta eliminada · los gramos vuelven al stock"', async () => {
-  vi.mocked(fetch).mockResolvedValue(jsonResponse(200, []))
+  api.mockResolvedValue(jsonResponse(200, []))
   renderVentas({ toast: 'Venta eliminada · los gramos vuelven al stock' })
 
   expect(
@@ -248,7 +252,7 @@ test('arriving back from Borrar venta or Deshacer shows "Venta eliminada · los 
 })
 
 test('arriving back after deleting an already-gone sale shows the gone notice', async () => {
-  vi.mocked(fetch).mockResolvedValue(jsonResponse(200, []))
+  api.mockResolvedValue(jsonResponse(200, []))
   renderVentas({ notice: GONE_NOTICE })
 
   expect(await screen.findByText(GONE_NOTICE)).toBeInTheDocument()
