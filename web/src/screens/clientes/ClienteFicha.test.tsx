@@ -584,14 +584,14 @@ const OWING_FETCHES = {
   'GET /customers/1/account': () => jsonResponse(200, OWING_ACCOUNT),
 }
 
-test('the payment route opens the sheet by itself, from a typed address, and Cerrar leaves to the card', async () => {
+test('the payment route opens the sheet by itself, from a typed address, and Cerrar leaves to Clientes, its parent', async () => {
   vi.mocked(fetch).mockImplementation(dispatchFetch(OWING_FETCHES))
   const router = renderFicha('1', [pathTo(CUSTOMER_PAYMENT, { id: 1 })])
 
   expect(await screen.findByRole('button', { name: 'Guardar' })).toBeInTheDocument()
   await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
 
-  await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(CUSTOMER, { id: 1 })))
+  await waitFor(() => expect(router.state.location.pathname).toBe(CUSTOMERS))
   expect(screen.queryByRole('button', { name: 'Guardar' })).not.toBeInTheDocument()
 })
 

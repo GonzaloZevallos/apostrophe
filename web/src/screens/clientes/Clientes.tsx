@@ -24,6 +24,8 @@ import { formatDateShort } from '../../format/dates'
 import { formatMoney, formatMoneyMagnitude } from '../../format/money'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import { readFeedback } from '../../components/feedback'
+import { useGoneNotice } from '../../components/goneExit'
+import { GONE_NOTICE } from '../../api/refusals'
 import Notice from '../../components/Notice'
 import SinConexion from '../../components/SinConexion'
 import { useCustomerSearch } from './CustomerSearch'
@@ -38,7 +40,9 @@ export default function Clientes() {
   const { query, setQuery } = useCustomerSearch()
   const [debounced, setDebounced] = useState(query)
   const location = useLocation()
-  const [feedback] = useState(() => readFeedback(location.state))
+  const [stateFeedback] = useState(() => readFeedback(location.state))
+  const goneShown = useGoneNotice()
+  const feedback = stateFeedback ?? (goneShown ? { kind: 'notice' as const, message: GONE_NOTICE } : null)
 
   useEffect(() => {
     const id = setTimeout(() => setDebounced(query), 150)

@@ -13,7 +13,7 @@ import { useLocation, useNavigate } from 'react-router'
 import { type ScreenId, parentOf, pathTo } from '../routes'
 import { currentViewport } from '../shell/useViewport'
 import { gone } from './feedback'
-import { markGone } from './goneNotice'
+import { markGone } from './goneExit'
 
 /** A pathname without its query, hash and one trailing slash (the root stays `/`). */
 export function normalisePath(path: string): string {

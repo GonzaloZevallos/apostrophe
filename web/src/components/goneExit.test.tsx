@@ -2,7 +2,7 @@ import { act, render, screen } from '@testing-library/react'
 import { StrictMode } from 'react'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { expect, test } from 'vitest'
-import { markGone, useGoneNotice } from './goneNotice'
+import { markGone, useGoneNotice } from './goneExit'
 import { gone } from './feedback'
 import { SheetRouterProvider } from './useSheetStack'
 

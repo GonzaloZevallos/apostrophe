@@ -23,6 +23,7 @@ import { useNavigate, useParams } from 'react-router'
 import LeaveConfirm from '../../components/LeaveConfirm'
 import { useFlash } from '../../flash/useFlash'
 import { useBackOr } from '../../components/useBackOr'
+import { useGoneExit } from '../../components/useGoneExit'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
 import { useViewport } from '../../shell/useViewport'
 import { ApiError, NetworkError, UNKNOWN_CODE } from '../../api/client'
@@ -37,7 +38,7 @@ import {
 import { invalidateResource, keys } from '../../api/keys'
 import { isGone, resolveOverride, type RefusalCode } from '../../api/refusals'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
-import { gone, toast } from '../../components/feedback'
+import { toast } from '../../components/feedback'
 import GoneScreen from '../../components/GoneScreen'
 import SinConexion from '../../components/SinConexion'
 import Loading from '../../components/Loading'
@@ -137,6 +138,7 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
     vip !== (initial?.vip ?? false)
   const { blocker, disarm } = useLeaveGuard(dirty)
   const parent = parentOf(mode === 'nuevo' ? 'customer-new' : 'customer-edit', viewport)
+  const goneExit = useGoneExit('customer')
   const close = useBackOr(
     parent === undefined ? CUSTOMERS : pathTo(parent.path, mode === 'editar' ? { id: customerId } : {}),
   )
@@ -177,7 +179,7 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
       if (caught instanceof ApiError && mode === 'editar' && isGone(caught.code)) {
         invalidateResource(queryClient, 'customers')
         disarm()
-        void navigate(CUSTOMERS, { replace: true, state: gone() })
+        goneExit()
         return
       }
       if (caught instanceof ApiError) {

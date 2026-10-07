@@ -36,6 +36,7 @@ import GoneScreen from '../components/GoneScreen'
 import SinConexion from '../components/SinConexion'
 import Loading from '../components/Loading'
 import { useBackOr } from '../components/useBackOr'
+import { useGoneExit } from '../components/useGoneExit'
 import { useLeaveGuard } from '../components/useLeaveGuard'
 import { useFlash } from '../flash/useFlash'
 import { formatDate } from '../format/dates'
@@ -159,6 +160,7 @@ function EntradaStockBody({ mode, entryId, today, initial, chosenVariety, hasEnt
   const queryClient = useQueryClient()
   const flash = useFlash()
   const back = useBackOr(mode === 'nuevo' ? VARIETIES : STOCK)
+  const goneExit = useGoneExit('stock-entry', { id: entryId })
 
   const varietiesQuery = useQuery({
     queryKey: keys.varieties(),
@@ -185,7 +187,6 @@ function EntradaStockBody({ mode, entryId, today, initial, chosenVariety, hasEnt
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
-  const [gone, setGone] = useState(false)
 
   // Something typed (or changed, on an edit) is what "Cerrar" asks about before discarding.
   const dirty =
@@ -203,7 +204,8 @@ function EntradaStockBody({ mode, entryId, today, initial, chosenVariety, hasEnt
   // The entry is no longer there (deleted elsewhere, or never this business's).
   function entryIsGone(): void {
     invalidateResource(queryClient, 'stock', { refetchType: 'none' })
-    setGone(true)
+    disarm()
+    goneExit()
   }
 
   const previewGrams = parseSignedGrams(grams)
@@ -310,7 +312,6 @@ function EntradaStockBody({ mode, entryId, today, initial, chosenVariety, hasEnt
     return found?.name ?? ''
   })()
 
-  if (gone) return <GoneScreen label="Variedades" to={VARIETIES} />
 
   return (
     <main className="pantalla">

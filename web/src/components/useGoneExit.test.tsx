@@ -7,7 +7,7 @@ import { CUSTOMERS, HOME, MORE, SETTINGS, STOCK, STOCK_ENTRY, VARIETIES, pathTo 
 import { stubViewport } from '../test-viewport'
 import { inAppState } from './inAppState'
 import { normalisePath, useGoneExit } from './useGoneExit'
-import { useGoneNotice } from './goneNotice'
+import { useGoneNotice } from './goneExit'
 import { SheetRouterProvider } from './useSheetStack'
 
 afterEach(() => vi.unstubAllGlobals())

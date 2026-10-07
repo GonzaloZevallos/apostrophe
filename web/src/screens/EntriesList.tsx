@@ -19,6 +19,7 @@ import { type StockEntry, deleteEntry, entriesOf, readStock } from '../api/stock
 import ConfirmDialog from '../components/ConfirmDialog'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import GoneNotice from '../components/GoneNotice'
+import { useGoneNotice } from '../components/goneExit'
 import GoneScreen from '../components/GoneScreen'
 import InAppLink from '../components/InAppLink'
 import Loading from '../components/Loading'
@@ -68,6 +69,7 @@ export default function EntriesList({ varietyId }: Props) {
   const [offline, setOffline] = useState(false)
   const [failed, setFailed] = useState(false)
   const [goneNotice, setGoneNotice] = useState(false)
+  const goneExited = useGoneNotice()
 
   const error = stockQuery.error ?? varietyQuery.error
   if (varietyQuery.error instanceof ApiError && isGone(varietyQuery.error.code)) {
@@ -118,7 +120,7 @@ export default function EntriesList({ varietyId }: Props) {
       <h1 className="encabezado__titulo">
         {varietyId === undefined ? 'Todas las entradas' : 'Entradas'}
       </h1>
-      {goneNotice && <GoneNotice />}
+      {(goneNotice || goneExited) && <GoneNotice />}
       {offline && <SinConexion />}
       {failed && <span className="campo__error" role="alert">{ERROR_GENERICO_MENSAJE}</span>}
 

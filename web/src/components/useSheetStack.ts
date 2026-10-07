@@ -29,7 +29,7 @@ import {
   useSyncExternalStore,
 } from 'react'
 import { type Location, useLocation, useNavigate } from 'react-router'
-import { attachGoneNotice } from './goneNotice'
+import { attachGoneNotice } from './goneExit'
 
 /** The `sheet` depth a history state carries: an integer, 0 when absent or not one. */
 export function sheetDepth(state: unknown): number {

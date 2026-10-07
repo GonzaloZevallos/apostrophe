@@ -27,7 +27,6 @@
 
 import { type FormEvent, useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useNavigate } from 'react-router'
 import { ApiError, NetworkError } from '../../api/client'
 import { invalidateResource, keys } from '../../api/keys'
 import {
@@ -36,16 +35,16 @@ import {
   previewPayment,
   recordPayment,
 } from '../../api/payments'
-import { gone } from '../../components/feedback'
 import LeaveConfirm from '../../components/LeaveConfirm'
 import SinConexion from '../../components/SinConexion'
 import { useBackOr } from '../../components/useBackOr'
+import { useGoneExit } from '../../components/useGoneExit'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
 import { useFlash } from '../../flash/useFlash'
 import { formatDateShort } from '../../format/dates'
 import { formatMoney } from '../../format/money'
 import { parseMoney } from '../../format/parse'
-import { CUSTOMER, pathTo } from '../../routes'
+import { CUSTOMERS } from '../../routes'
 import { GENERIC_REFUSAL } from './ClienteForm'
 
 export interface CobroProps {
@@ -95,14 +94,13 @@ export default function Cobro({ customerId, balance, today }: CobroProps) {
   const [methodError, setMethodError] = useState<string | null>(null)
   const [offline, setOffline] = useState(false)
   const queryClient = useQueryClient()
-  const navigate = useNavigate()
   const flash = useFlash()
 
   // Touched means any of the three fields differs from what the sheet opened with.
   const dirty = amount !== String(balance) || date !== today || method !== null
   const { blocker, disarm } = useLeaveGuard(dirty)
-  const cardPath = pathTo(CUSTOMER, { id: customerId })
-  const close = useBackOr(cardPath)
+  const close = useBackOr(CUSTOMERS)
+  const goneExit = useGoneExit('customer-payment', { id: customerId })
 
   const parsedAmount = parseMoney(amount)
 
@@ -159,7 +157,7 @@ export default function Cobro({ customerId, balance, today }: CobroProps) {
     } catch (caught) {
       if (caught instanceof ApiError && isPaymentGone(caught.code)) {
         disarm()
-        void navigate(cardPath, { replace: true, state: gone() })
+        goneExit()
       } else if (caught instanceof ApiError) {
         if (caught.code === 'payment.method_required') setMethodError(METHOD_REQUIRED_MESSAGE)
         else setAmountError(amountMessage(caught.code) ?? GENERIC_REFUSAL)
