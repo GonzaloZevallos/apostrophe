@@ -172,6 +172,16 @@ describe('archiving', () => {
     expect(screen.getByRole('alertdialog')).not.toHaveTextContent('Te quedan')
   })
 
+  test('with negative stock it says the shortfall, not "Te quedan"', async () => {
+    const user = userEvent.setup()
+    renderPage({ grams: -5 })
+
+    await user.click(await screen.findByRole('button', { name: 'Archivar variedad' }))
+
+    expect(screen.getByRole('alertdialog')).toHaveTextContent('Tiene un faltante de 5 g.')
+    expect(screen.getByRole('alertdialog')).not.toHaveTextContent('Te quedan')
+  })
+
   test('"No, dejala" closes the dialog and sends nothing', async () => {
     const user = userEvent.setup()
     const { fetchMock } = renderPage()

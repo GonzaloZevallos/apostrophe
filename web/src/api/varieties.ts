@@ -16,12 +16,12 @@ export interface VarietyDetail {
   removal: Removal | null
 }
 
-export function archiveVariety(varietyId: number): Promise<unknown> {
-  return post(`/varieties/${varietyId}/archive`)
+export function archiveVariety(varietyId: number): Promise<VarietyDetail> {
+  return post<VarietyDetail>(`/varieties/${varietyId}/archive`)
 }
 
-export function restoreVariety(varietyId: number): Promise<unknown> {
-  return post(`/varieties/${varietyId}/restore`)
+export function restoreVariety(varietyId: number): Promise<VarietyDetail> {
+  return post<VarietyDetail>(`/varieties/${varietyId}/restore`)
 }
 
 export function deleteVariety(varietyId: number): Promise<void> {

@@ -53,7 +53,7 @@ function neighbourOf(list: readonly Variety[], varietyId: number): number | null
 
 interface Props {
   varietyId: number
-  removal: Removal | null | undefined
+  removal: Removal | null
   /** The grams on hand from `GET /stock`, or `null` while that row is not there. */
   grams: number | null
 }
@@ -69,7 +69,7 @@ export default function VarietyRemoval({ varietyId, removal, grams }: Props) {
   const [offline, setOffline] = useState(false)
   const [failed, setFailed] = useState(false)
 
-  if (removal !== 'delete' && removal !== 'archive') return null
+  if (removal === null) return null
 
   function leave(): void {
     const list = queryClient.getQueryData<Variety[]>(keys.varieties())

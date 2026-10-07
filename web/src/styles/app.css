@@ -3011,11 +3011,6 @@ body {
   margin-top: var(--espacio-lg);
 }
 
-.variedad-retiro .boton {
-  height: 52px;
-  font-size: 15px;
-}
-
 .seccion-variedad {
   display: flex;
   flex-direction: column;
