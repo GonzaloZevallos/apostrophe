@@ -510,7 +510,42 @@ function findMatchMediaCalls(files: Source[]): string[] {
     .map(({ path }) => path);
 }
 
+/** The names a per-screen path function would have: every path constant of `routes.ts`, plus the
+ * retired spellings of #47 (`ENTRY`, `ENTRIES`, `ENTRY_NEW`). A call to one is a path built
+ * outside `pathTo`; the registry's template goes through `pathTo`, never through a call. */
+const PATH_CONSTANTS = [
+  ...Object.entries(routes)
+    .filter(([, value]) => typeof value === "string" && value.startsWith("/"))
+    .map(([name]) => name),
+  "ENTRY",
+  "ENTRIES",
+  "ENTRY_NEW",
+];
+
+/** Files that call a path constant (`VARIETY(id)`, `ENTRY(id)`) as if it were a function. */
+function findPathFunctions(files: Source[]): string[] {
+  const call = new RegExp(`(?<![\\w.])(?:${PATH_CONSTANTS.join("|")})\\s*\\(`);
+  return files
+    .filter(({ path }) => path !== "src/routes.ts" && path !== "src/routes.test.ts")
+    .filter(({ content }) => withoutComments(content).some((line) => call.test(line)))
+    .map(({ path }) => path);
+}
+
 describe("source scan for path literals", () => {
+  test("flags a per-screen path function in a screen, a test or a spec", () => {
+    expect(
+      findPathFunctions([
+        { path: "src/screens/X.tsx", content: "<Link to={VARIETY(id)}>" },
+        { path: "src/screens/Y.tsx", content: "navigate(VARIETY_PRICE_NEW (3))" },
+        { path: "src/screens/Y.test.tsx", content: "const to = ENTRY(9)" },
+        { path: "e2e/a.spec.ts", content: "await page.goto(SALE(2))" },
+        { path: "src/screens/Ok.tsx", content: "<Link to={pathTo(VARIETY, { id })}>" },
+        { path: "src/screens/Ok2.tsx", content: "// VARIETY(id) was the old way" },
+        { path: "src/screens/Ok3.tsx", content: "useVARIETY(id)" },
+      ]),
+    ).toEqual(["src/screens/X.tsx", "src/screens/Y.tsx", "src/screens/Y.test.tsx", "e2e/a.spec.ts"]);
+  });
+
   test("flags a file that writes a front path, old or new, in any quote", () => {
     expect(
       findPathLiterals([
@@ -612,6 +647,7 @@ describe("source scan for path literals", () => {
     }));
     expect(files.length).toBeGreaterThan(50);
     expect(findPathLiterals(files)).toEqual([]);
+    expect(findPathFunctions(files)).toEqual([]);
     expect(findMatchMediaCalls(files)).toEqual([]);
   });
 });

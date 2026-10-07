@@ -11,6 +11,7 @@ import { MemoryRouter, Outlet, Route, Routes, useLocation } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import { catalogQueryOptions } from '../api/catalog'
 import type { Me } from '../api/me'
+import InAppLink from '../components/InAppLink'
 import FlashProvider from '../flash/FlashProvider'
 import {
   STOCK as STOCK_PATH,
@@ -64,9 +65,14 @@ function Provide() {
   return <Outlet context={ME} />
 }
 
-function Where() {
+function Where({ opens }: { opens?: string }) {
   const location = useLocation()
-  return <span data-testid="where">{location.pathname}</span>
+  return (
+    <div>
+      <span data-testid="where">{location.pathname}</span>
+      {opens !== undefined && <InAppLink to={opens}>Abrir</InAppLink>}
+    </div>
+  )
 }
 
 function fakeApi(overrides: Record<string, () => Response> = {}) {
@@ -94,17 +100,19 @@ function fakeApi(overrides: Record<string, () => Response> = {}) {
   )
 }
 
+/** `entries` is the history, the last one current; `opens` is the link Variedades offers. */
 function renderAt(
   path: string,
   client = new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+  { entries = [VARIETIES_PATH, path], opens }: { entries?: string[]; opens?: string } = {},
 ) {
   render(
     <QueryClientProvider client={client}>
-      <MemoryRouter initialEntries={[VARIETIES_PATH, path]} initialIndex={1}>
+      <MemoryRouter initialEntries={entries} initialIndex={entries.length - 1}>
         <FlashProvider>
           <Routes>
             <Route element={<Provide />}>
-              <Route path={VARIETIES_PATH} element={<Where />} />
+              <Route path={VARIETIES_PATH} element={<Where opens={opens} />} />
               <Route path={STOCK_PATH} element={<EntriesList />} />
               <Route path={STOCK_ENTRY} element={<Where />} />
               <Route path={VARIETY_ENTRIES} element={<VarietyRoute render={(varietyId) => <EntriesList varietyId={varietyId} />} />} />
@@ -138,36 +146,50 @@ test('"Todas las entradas" lists every entry newest first with its variety, orig
   expect(screen.getByRole('heading', { name: 'Todas las entradas' })).toBeInTheDocument()
 })
 
-test("a variety's list shows only its entries and goes back to the variety", async () => {
+test("a variety's list shows only its entries", async () => {
   fakeApi()
   renderAt(pathTo(VARIETY_ENTRIES, { id: 3 }))
 
   const rows = await screen.findAllByRole('listitem')
   expect(rows).toHaveLength(2)
   expect(screen.queryByText('26/08 · Sir Jack')).not.toBeInTheDocument()
-
-  await userEvent.click(screen.getByRole('button', { name: '‹ 24K Gold' }))
-  expect(await screen.findByTestId('where')).toHaveTextContent(VARIETIES_PATH)
 })
 
-test('Back with no history goes to the variety, and "Todas las entradas" goes to Variedades', async () => {
+/** Opens a list the way the seller does, from Variedades by a link, so the entry carries the in-app state. */
+async function openFromVariedades(path: string) {
   fakeApi()
-  render(
-    <QueryClientProvider client={new QueryClient()}>
-      <MemoryRouter initialEntries={[pathTo(VARIETY_ENTRIES, { id: 3 })]}>
-        <FlashProvider>
-          <Routes>
-            <Route element={<Provide />}>
-              <Route path={VARIETY_ENTRIES} element={<VarietyRoute render={(varietyId) => <EntriesList varietyId={varietyId} />} />} />
-              <Route path={VARIETY} element={<Where />} />
-            </Route>
-          </Routes>
-        </FlashProvider>
-      </MemoryRouter>
-    </QueryClientProvider>,
-  )
+  renderAt(VARIETIES_PATH, undefined, { entries: [VARIETIES_PATH], opens: path })
+  await userEvent.click(await screen.findByRole('link', { name: 'Abrir' }))
+}
+
+test("a variety's list goes back by history to where the seller came from", async () => {
+  await openFromVariedades(pathTo(VARIETY_ENTRIES, { id: 3 }))
+
   await userEvent.click(await screen.findByRole('button', { name: '‹ 24K Gold' }))
-  expect(await screen.findByTestId('where')).toHaveTextContent(pathTo(VARIETY, { id: 3 }))
+  expect((await screen.findByTestId('where')).textContent).toBe(VARIETIES_PATH)
+})
+
+test('"Todas las entradas" goes back by history to where the seller came from', async () => {
+  await openFromVariedades(STOCK_PATH)
+
+  await userEvent.click(await screen.findByRole('button', { name: /^‹ / }))
+  expect((await screen.findByTestId('where')).textContent).toBe(VARIETIES_PATH)
+})
+
+test("a variety's list with no history goes back to the variety's page", async () => {
+  fakeApi()
+  renderAt(pathTo(VARIETY_ENTRIES, { id: 3 }), undefined, { entries: [pathTo(VARIETY_ENTRIES, { id: 3 })] })
+
+  await userEvent.click(await screen.findByRole('button', { name: '‹ 24K Gold' }))
+  expect((await screen.findByTestId('where')).textContent).toBe(pathTo(VARIETY, { id: 3 }))
+})
+
+test('"Todas las entradas" with no history goes back to Variedades', async () => {
+  fakeApi()
+  renderAt(STOCK_PATH, undefined, { entries: [STOCK_PATH] })
+
+  await userEvent.click(await screen.findByRole('button', { name: /^‹ / }))
+  expect((await screen.findByTestId('where')).textContent).toBe(VARIETIES_PATH)
 })
 
 test('Editar links to the entry form', async () => {

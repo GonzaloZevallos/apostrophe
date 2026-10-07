@@ -7,7 +7,7 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Outlet, RouterProvider, useLocation } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
@@ -472,7 +472,14 @@ test('Cerrar goes back by history to where the form was opened', async () => {
   expect(screen.getByTestId('where')).toHaveTextContent(pathTo(VARIETY, { id: 3 }))
 })
 
-test('Cerrar with no history goes to Variedades for a new entry and to "Todas las entradas" for an edit', async () => {
+test('Cerrar with no history goes to Variedades for a new entry', async () => {
+  fakeFor(stockOf([]))
+  renderForm(STOCK_ENTRY_NEW)
+  await userEvent.click(await screen.findByRole('button', { name: 'Cerrar' }))
+  expect(await screen.findByText('la lista de variedades')).toBeInTheDocument()
+})
+
+test('Cerrar with no history goes to "Todas las entradas" for an edit', async () => {
   fakeFor(stockOf([]), {
     'GET /stock/entries/10': () =>
       jsonResponse(200, {
@@ -486,12 +493,6 @@ test('Cerrar with no history goes to Variedades for a new entry and to "Todas la
         note: null,
       }),
   })
-  const first = renderForm(STOCK_ENTRY_NEW)
-  await userEvent.click(await screen.findByRole('button', { name: 'Cerrar' }))
-  expect(await screen.findByText('la lista de variedades')).toBeInTheDocument()
-  first.clear()
-  cleanup()
-
   renderForm(pathTo(STOCK_ENTRY, { id: 10 }))
   await userEvent.click(await screen.findByRole('button', { name: 'Cerrar' }))
   expect(await screen.findByText('todas las entradas')).toBeInTheDocument()
