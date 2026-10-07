@@ -6,3 +6,8 @@ export const REASON_OPTIONS: { value: WithdrawalReason; label: string }[] = [
   { value: 'promotion', label: 'Promoción' },
   { value: 'own_use', label: 'Consumo propio' },
 ]
+
+export const REASON_LABEL: Record<WithdrawalReason, string> = {
+  promotion: 'Promoción',
+  own_use: 'Consumo propio',
+}

@@ -28,10 +28,9 @@ import SinConexion from '../../components/SinConexion'
 import { gone } from '../../components/feedback'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
 import { useFlash } from '../../flash/useFlash'
-import { withdrawalPath } from '../../routes'
+import { VARIETIES, withdrawalPath } from '../../routes'
 import WithdrawalForm, { type WithdrawalTarget } from './WithdrawalForm'
 
-const VARIETIES = '/variedades'
 
 function Frame({ children }: { children: ReactNode }) {
   return (

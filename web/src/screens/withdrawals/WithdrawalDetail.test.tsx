@@ -27,7 +27,7 @@ function serving(body: unknown, extra?: FetchImpl): FetchImpl {
 }
 
 test('shows the date, the reason by word, every line and the note, with the bar and no "+ Nueva venta"', async () => {
-  renderWithdrawals(['/variedades', '/withdrawals/1'], serving(WITHDRAWAL))
+  renderWithdrawals(['/varieties', '/withdrawals/1'], serving(WITHDRAWAL))
 
   expect(await screen.findByText('Zkittlez')).toBeInTheDocument()
   expect(screen.getByText('Promoción')).toBeInTheDocument()
@@ -41,11 +41,11 @@ test('shows the date, the reason by word, every line and the note, with the bar 
 })
 
 test('the "‹" back goes to the page it was opened from', async () => {
-  const { router } = renderWithdrawals(['/variedades', '/withdrawals/1'], serving(WITHDRAWAL))
+  const { router } = renderWithdrawals(['/varieties', '/withdrawals/1'], serving(WITHDRAWAL))
 
   await userEvent.click(await screen.findByRole('button', { name: 'Volver' }))
 
-  await waitFor(() => expect(router.state.location.pathname).toBe('/variedades'))
+  await waitFor(() => expect(router.state.location.pathname).toBe('/varieties'))
 })
 
 test('with no history, back goes to Variedades', async () => {
@@ -53,13 +53,13 @@ test('with no history, back goes to Variedades', async () => {
 
   await userEvent.click(await screen.findByRole('button', { name: 'Volver' }))
 
-  await waitFor(() => expect(router.state.location.pathname).toBe('/variedades'))
+  await waitFor(() => expect(router.state.location.pathname).toBe('/varieties'))
 })
 
 test('Borrar names the promotion, the date and the grams; confirming deletes and toasts "Retiro eliminado"', async () => {
   const deletes = vi.fn()
   const { router } = renderWithdrawals(
-    ['/variedades', '/withdrawals/1'],
+    ['/varieties', '/withdrawals/1'],
     serving(WITHDRAWAL, async (url, init) => {
       if (url === '/stock/withdrawals/1' && init?.method === 'DELETE') {
         deletes()
@@ -81,12 +81,12 @@ test('Borrar names the promotion, the date and the grams; confirming deletes and
   )
 
   expect(await screen.findByText('Retiro eliminado')).toBeInTheDocument()
-  expect(router.state.location.pathname).toBe('/variedades')
+  expect(router.state.location.pathname).toBe('/varieties')
   expect(deletes).toHaveBeenCalledTimes(1)
 })
 
 test('Borrar on an own-use withdrawal says "el consumo propio"', async () => {
-  renderWithdrawals(['/variedades', '/withdrawals/1'], serving(OWN_USE))
+  renderWithdrawals(['/varieties', '/withdrawals/1'], serving(OWN_USE))
 
   await userEvent.click(await screen.findByRole('button', { name: 'Borrar' }))
 
@@ -98,7 +98,7 @@ test('Borrar on an own-use withdrawal says "el consumo propio"', async () => {
 test('Editar opens the form filled in; saving is confirmed first and toasts "Retiro guardado"', async () => {
   const puts: unknown[] = []
   const { router } = renderWithdrawals(
-    ['/variedades', '/withdrawals/1'],
+    ['/varieties', '/withdrawals/1'],
     serving(WITHDRAWAL, async (url, init) => {
       if (url === '/stock/withdrawals/1' && init?.method === 'PUT') {
         puts.push(JSON.parse(String(init.body)))
@@ -140,12 +140,12 @@ test('opening a withdrawal that is gone shows "Eso ya no está." and "Volver a V
   renderWithdrawals(['/withdrawals/1'], async () => jsonResponse(404, { code: 'stock.withdrawal_not_found' }))
 
   expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Volver a Variedades' })).toHaveAttribute('href', '/variedades')
+  expect(screen.getByRole('link', { name: 'Volver a Variedades' })).toHaveAttribute('href', '/varieties')
 })
 
 test('deleting a withdrawal that is gone goes to Variedades with "Eso ya no está. La lista ya está al día."', async () => {
   const { router } = renderWithdrawals(
-    ['/variedades', '/withdrawals/1'],
+    ['/varieties', '/withdrawals/1'],
     serving(WITHDRAWAL, async (url, init) =>
       url === '/stock/withdrawals/1' && init?.method === 'DELETE'
         ? jsonResponse(404, { code: 'stock.withdrawal_not_found' })
@@ -158,5 +158,5 @@ test('deleting a withdrawal that is gone goes to Variedades with "Eso ya no est�
   )
 
   expect(await screen.findByText('Eso ya no está. La lista ya está al día.')).toBeInTheDocument()
-  expect(router.state.location.pathname).toBe('/variedades')
+  expect(router.state.location.pathname).toBe('/varieties')
 })

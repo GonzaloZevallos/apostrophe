@@ -1,4 +1,4 @@
-"""Stock withdrawals (CONTEXT.md: Stock withdrawal, Promotion, Own use; ADR-0030): a
+"""Stock withdrawals (CONTEXT.md: Stock withdrawal, Promotion, Own use; ADR-0031): a
 header with its reason, date and note, and its lines of variety and grams.
 
 Revision ID: 0012

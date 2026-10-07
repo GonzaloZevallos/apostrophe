@@ -1,5 +1,5 @@
 """`history`: the one assembly of a business's lots and draws (CONTEXT.md: Lot, Draw;
-ADR-0030). It reads the three sources — stock entries, sale-line draws and
+ADR-0031). It reads the three sources — stock entries, sale-line draws and
 withdrawal-line draws — with the same `variety_ids` (`None` for every variety) and
 hands them to `lots_and_draws`, whose only caller it is. Every reader that costs or
 counts grams (`read_stock`, `read_variety_stock`, `costs_for_sale`, `SqlDrawCosts`,

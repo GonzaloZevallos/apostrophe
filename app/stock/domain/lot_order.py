@@ -3,7 +3,7 @@ Lot order; ADR-0009).
 
 A stock entry is a `Lot` when its grams are positive, a `Draw` when they are not (a
 negative adjustment); a sale line (gifts included) and a stock withdrawal's line are
-always a `Draw`. Every draw carries its `DrawSource` (ADR-0030). Both carry a
+always a `Draw`. Every draw carries its `DrawSource` (ADR-0031). Both carry a
 `LotOrder`: date first, then recording order — a stock entry's `recorded_at`, a sale
 line's own, a withdrawal's own — with `rank` telling the three sources apart so an exact
 tie never depends on which table happened to be read first: a negative adjustment, then

@@ -7,16 +7,14 @@
  */
 
 import { expect, test, type Locator, type Page } from '@playwright/test'
-import { newBusinessInvitationUrl } from './backend.js'
+import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
-
-const PASSWORD = 'correcthorsebattery'
 
 const PHONE = { width: 390, height: 760 }
 const COMPUTER = { width: 1280, height: 920 }
 
 /** Tab roots: where a seller can be standing when the need to record an expense comes. */
-const ROOTS = ['/', '/ventas', '/clientes', '/mi-stock', '/more', '/expenses'] as const
+const ROOTS = ['/', '/ventas', '/clientes', '/varieties', '/more', '/expenses'] as const
 
 interface Counter {
   taps: number
@@ -54,12 +52,7 @@ test('the expense form opens within the tap budget from every tab root, phone an
   const consoleMessages: string[] = []
   watchConsole(page, consoleMessages)
 
-  await page.goto(newBusinessInvitationUrl())
-  await page.getByLabel('Nombre del negocio').fill(`Flores del Gasto ${Date.now()}`)
-  await page.getByLabel('Email').fill(`duena-gasto-${Date.now()}@example.com`)
-  await page.getByLabel('Contraseña').fill(PASSWORD)
-  await page.getByRole('button', { name: 'Creá el negocio' }).click()
-  await expect(page.locator('.encabezado__negocio')).toBeVisible()
+  await signUpNewBusiness(page, { businessName: `Flores del Gasto ${Date.now()}`, email: `duena-gasto-${Date.now()}@example.com` })
 
   const taps: Record<'phone' | 'computer', Record<string, number>> = { phone: {}, computer: {} }
   for (const [device, size] of [
@@ -91,12 +84,7 @@ test('a seller records an expense from Más and Cerrar goes back to where the fo
   watchConsole(page, consoleMessages)
   await page.setViewportSize(PHONE)
 
-  await page.goto(newBusinessInvitationUrl())
-  await page.getByLabel('Nombre del negocio').fill(`Flores de Más ${Date.now()}`)
-  await page.getByLabel('Email').fill(`duena-mas-${Date.now()}@example.com`)
-  await page.getByLabel('Contraseña').fill(PASSWORD)
-  await page.getByRole('button', { name: 'Creá el negocio' }).click()
-  await expect(page.locator('.encabezado__negocio')).toBeVisible()
+  await signUpNewBusiness(page, { businessName: `Flores de Más ${Date.now()}`, email: `duena-mas-${Date.now()}@example.com` })
 
   await page.goto('/more')
   await page.getByRole('link', { name: /^\+ Cargar gasto/ }).click()

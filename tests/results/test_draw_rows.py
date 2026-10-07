@@ -1,4 +1,4 @@
-"""`build_draw_rows` at its seam (ADR-0030): each draw source maps to its own kind,
+"""`build_draw_rows` at its seam (ADR-0031): each draw source maps to its own kind,
 told by `Draw.source` alone, never by a missing sale id or a $0 line total."""
 
 from __future__ import annotations

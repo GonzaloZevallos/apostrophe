@@ -27,10 +27,9 @@ import { gone } from '../../components/feedback'
 import { useFlash } from '../../flash/useFlash'
 import { formatDate } from '../../format/dates'
 import { formatGrams } from '../../format/money'
-import { withdrawalEditPath } from '../../routes'
+import { VARIETIES, withdrawalEditPath } from '../../routes'
 import { REASON_OPTIONS } from './withdrawalReasons'
 
-const VARIETIES = '/variedades'
 
 /** A deleted withdrawal's own query shares the `'stock'` prefix every other stock figure
  * is refreshed through. A plain invalidation would refetch it while the detail is still

@@ -47,14 +47,13 @@
  */
 
 import { expect, test } from '@playwright/test'
-import { newBusinessInvitationUrl } from './backend.js'
+import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
 
 test.use({ viewport: { width: 390, height: 844 } }) // a phone (PRD metric 1).
 
-const PASSWORD = 'correcthorsebattery'
 const RECORD_BUDGET_MS = 60_000 // PRD metric 1: "under a minute".
 const LIST_BUDGET_MS = 300 // PRD metric 6.
 const SEEDED_SALES_FOR_PERF = 300 // "a few hundred sales".
@@ -110,9 +109,10 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   browser,
 }) => {
   // Seeding a few hundred sales one at a time (below, for the 300 ms list check)
-  // comfortably clears the default 30 s budget on its own; this test's own journey
-  // around it needs the room too.
-  test.setTimeout(90_000)
+  // comfortably clears a 30 s budget on its own; this test's own journey
+  // around it needs the room too. Under load (backend suite looping beside it) it ran past
+  // its former 90 s, so the ceiling is 240 s: raised, never lowered (GH-110).
+  test.setTimeout(240_000)
 
   const consoleMessages: string[] = []
   watchConsole(page, consoleMessages)
@@ -121,11 +121,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   const businessName = `Vivero Jacarandá ${Date.now()}`
 
   // Accept a new-business invitation.
-  await page.goto(newBusinessInvitationUrl())
-  await page.getByLabel('Nombre del negocio').fill(businessName)
-  await page.getByLabel('Email').fill(ownerEmail)
-  await page.getByLabel('Contraseña').fill(PASSWORD)
-  await page.getByRole('button', { name: 'Creá el negocio' }).click()
+  await signUpNewBusiness(page, { businessName, email: ownerEmail })
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // Two priced varieties and one with no price at all, for the "no price that day"
@@ -134,17 +130,17 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   // perf sections below seed sales for on dates before today — a default "Rige
   // desde" of today would leave those earlier dates with no price of their own.
   async function addVariety(name: string, listPrice?: string, effectiveFrom?: string): Promise<void> {
-    await page.goto('/variedades')
-    await page.getByRole('button', { name: 'Nueva variedad' }).click()
+    await page.goto('/varieties')
+    await page.getByRole('link', { name: 'Nueva variedad' }).click()
     await page.getByLabel('Nombre').fill(name)
-    await page.getByRole('button', { name: 'Guardar' }).click()
+    await page.getByRole('button', { name: 'Agregá la variedad' }).click()
     await expect(page.getByText('Variedad guardada')).toBeVisible()
     if (listPrice === undefined) return
     await page.getByRole('link', { name: new RegExp(name) }).click()
-    await page.getByRole('button', { name: 'Nuevo precio' }).click()
+    await page.getByRole('link', { name: 'Nuevo precio' }).click()
     if (effectiveFrom !== undefined) await page.getByLabel('Rige desde').fill(effectiveFrom)
-    await page.getByLabel('Precio de lista').fill(listPrice)
-    await page.getByRole('button', { name: 'Guardar precio' }).click()
+    await page.getByLabel(/^Precio de lista/).fill(listPrice)
+    await page.getByRole('button', { name: 'Guardá el precio' }).click()
     await expect(page.getByText('Precio guardado')).toBeVisible()
   }
   await addVariety('Jazmín', '500', '2000-01-01')
@@ -161,7 +157,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
     'Inicio',
     'Ventas',
     'Clientes',
-    'Stock',
+    'Variedades',
     'Más',
   ])
 
@@ -170,6 +166,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   // in `Shell.tsx`'s markup) is the one CSS hides; the fixed bottom button is last.
   await page.getByRole('link', { name: 'Nueva venta' }).last().click()
   await expect(page).toHaveURL(/\/ventas\/nueva$/)
+  await expect(page.getByLabel('Fecha')).toHaveValue(/^\d{4}-\d{2}-\d{2}$/)
   const todayIso = await page.getByLabel('Fecha').inputValue()
 
   const varieties: VarietyAnswer[] = await (
@@ -390,18 +387,16 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   const perfResponse = await page.request.get(`/sales?date_from=${todayIso}&date_to=${todayIso}`)
   const elapsedMs = Date.now() - perfStart
   expect(perfResponse.ok()).toBe(true)
-  expect(elapsedMs).toBeLessThan(LIST_BUDGET_MS)
+  expect(elapsedMs, `list took ${elapsedMs} ms`).toBeLessThan(LIST_BUDGET_MS)
 
   // --- Isolation: a second business can never reach the first one's sale. ---
   const otherContext = await browser.newContext()
   const otherPage = await otherContext.newPage()
   watchConsole(otherPage, consoleMessages)
-  await otherPage.goto(newBusinessInvitationUrl())
-  await otherPage.getByLabel('Nombre del negocio').fill(`Otro negocio ${Date.now()}`)
-  await otherPage.getByLabel('Email').fill(`otra-${Date.now()}@example.com`)
-  await otherPage.getByLabel('Contraseña').fill(PASSWORD)
-  await otherPage.getByRole('button', { name: 'Creá el negocio' }).click()
-  await expect(otherPage.locator('.encabezado__negocio')).toBeVisible()
+  await signUpNewBusiness(otherPage, {
+    businessName: `Otro negocio ${Date.now()}`,
+    email: `otra-${Date.now()}@example.com`,
+  })
 
   await otherPage.goto(saleBUrl)
   await expect(otherPage.getByText('Eso ya no está.')).toBeVisible()

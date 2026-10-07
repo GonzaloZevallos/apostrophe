@@ -63,9 +63,9 @@ export const keys = {
   stockEntry: (id: string) => [PREFIX.stock, 'entries', id] as const,
   stockMovements: (varietyId: string) => [PREFIX.stock, 'movements', varietyId] as const,
   stockWithdrawal: (id: string) => [PREFIX.stock, 'withdrawals', id] as const,
-  // Frozen at the call site (`gcTime: 0`, `staleTime: Infinity`, plan, "Front"), the
-  // same way `saleFormVarieties` is: a save's own answer replaces this key's data
-  // directly through `setQueryData`, so this prefix is never invalidated either.
+  // Named only by `api/catalog.ts` (`catalogQueryOptions`, ADR-0022), which freezes its
+  // freshness (`staleTime: 0`, `gcTime: 0`). A stock or varieties write invalidates it
+  // through `CROSS_INVALIDATES`; the catalog's own saves set its data directly.
   catalog: () => [PREFIX.catalog] as const,
   // Both share `pinned-catalog`'s own prefix (plan, "Front": "invalidate the
   // pinned-catalog and status queries"), so invalidating the bare prefix through
@@ -97,13 +97,16 @@ export const keys = {
 // "Server state"): a category write touches the month view that lists them; a
 // business rename touches what `GET /auth/me` already cached; a payment touches the
 // customer's balance and the sale it settled; a sale touches its customer's balance
-// and, having left one owing or not, "Te deben"; a customer rename shows in it too.
+// and, having left one owing or not, "Te deben"; a customer rename shows in it too; a
+// stock or varieties write changes what GET /catalog says (ADR-0022).
 const CROSS_INVALIDATES: Partial<Record<Resource, Resource[]>> = {
   expenseCategories: ['expenses'],
   business: ['me'],
   payments: ['customers', 'sales'],
   sales: ['customers', 'payments'],
   customers: ['payments'],
+  stock: ['catalog'],
+  varieties: ['catalog'],
 }
 
 /** Invalidates the whole prefix a write belongs to, plus its cross rule if it has

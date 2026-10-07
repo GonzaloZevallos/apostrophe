@@ -10,7 +10,7 @@
  */
 
 import { expect, test } from '@playwright/test'
-import { newBusinessInvitationUrl } from './backend.js'
+import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
 import { openGastos } from './helpers/openMas.js'
@@ -29,11 +29,7 @@ test('a seller goes through every Configuración group from the phone, with no c
   const ownerEmail = `duena-config-${Date.now()}@example.com`
   const businessName = `Flores de Ajustes ${Date.now()}`
 
-  await page.goto(newBusinessInvitationUrl())
-  await page.getByLabel('Nombre del negocio').fill(businessName)
-  await page.getByLabel('Email').fill(ownerEmail)
-  await page.getByLabel('Contraseña').fill(PASSWORD)
-  await page.getByRole('button', { name: 'Creá el negocio' }).click()
+  await signUpNewBusiness(page, { businessName, email: ownerEmail })
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // A category with an expense in it, so its removal is refused later.
@@ -80,7 +76,7 @@ test('a seller goes through every Configuración group from the phone, with no c
   await page.getByRole('button', { name: 'Probarlo' }).click()
   await expect(page.getByText('Prueba enviada')).toBeVisible()
   await page.getByRole('link', { name: 'Ir al catálogo' }).click()
-  await expect(page).toHaveURL(/\/catalogo$/)
+  await expect(page).toHaveURL(/\/varieties\/catalog$/)
   await page.goBack()
   await close()
 

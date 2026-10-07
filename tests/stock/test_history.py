@@ -1,4 +1,4 @@
-"""`history`: the one assembly of lots and draws over the three sources (ADR-0030),
+"""`history`: the one assembly of lots and draws over the three sources (ADR-0031),
 run against the real adapters over a fresh in-memory SQLite. Entries and the sale
 come over HTTP from the `client` fixture; only the withdrawal is written through its
 repository, since its route belongs to another subtask."""

@@ -1,5 +1,5 @@
 """Where a draw comes from (CONTEXT.md: Draw, Stock withdrawal, Promotion, Own use;
-ADR-0030).
+ADR-0031).
 
 A `Draw` carries its `DrawSource` explicitly: no code tells a draw's kind by a missing
 `sale_id`, pricing rule or line total. Every branch over `DrawSource` is an exhaustive

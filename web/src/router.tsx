@@ -37,14 +37,19 @@ import Inicio from './screens/Inicio'
 import Invitacion from './screens/Invitacion'
 import Mas from './screens/Mas'
 import Catalogo from './screens/Catalogo'
-import Stock from './screens/Stock'
 import ClienteFicha from './screens/clientes/ClienteFicha'
 import ClienteForm from './screens/clientes/ClienteForm'
 import Clientes from './screens/clientes/Clientes'
 import ClientesLayout from './screens/clientes/ClientesLayout'
 import TeDeben from './screens/clientes/TeDeben'
-import VariedadDetalle from './screens/VariedadDetalle'
-import Variedades from './screens/Variedades'
+import PriceHistory from './screens/varieties/PriceHistory'
+import PriceNew from './screens/varieties/PriceNew'
+import VarietyPage from './screens/varieties/VarietyPage'
+import VarietyRoute from './screens/varieties/VarietyRoute'
+import VarietiesIndex from './screens/varieties/VarietiesIndex'
+import VarietiesLayout from './screens/varieties/VarietiesLayout'
+import VarietyNew from './screens/varieties/VarietyNew'
+import EntriesList from './screens/EntriesList'
 import Reset from './screens/Reset'
 import Settings from './screens/settings/Settings'
 import AccountGroup from './screens/settings/AccountGroup'
@@ -54,7 +59,6 @@ import CatalogMessageGroup from './screens/settings/CatalogMessageGroup'
 import ExpenseCategoriesGroup from './screens/settings/ExpenseCategoriesGroup'
 import IntegrationsGroup from './screens/settings/IntegrationsGroup'
 import UsersGroup from './screens/settings/UsersGroup'
-import VariedadMovimientos from './screens/VariedadMovimientos'
 import WithdrawalDetail from './screens/withdrawals/WithdrawalDetail'
 import WithdrawalFormRoute from './screens/withdrawals/WithdrawalFormRoute'
 import NuevaVenta from './screens/ventas/NuevaVenta'
@@ -65,11 +69,20 @@ import GatedLayout from './shell/GatedLayout'
 import Shell from './shell/Shell'
 import {
   ANALYSIS,
+  CATALOG,
+  ENTRIES,
+  ENTRY,
+  ENTRY_NEW,
   EXPENSE_CATEGORIES,
   EXPENSE_NEW,
   EXPENSES,
   MORE,
-  VARIETY_MOVEMENTS,
+  VARIETIES,
+  VARIETY,
+  VARIETY_ENTRIES,
+  VARIETY_NEW,
+  VARIETY_PRICE_NEW,
+  VARIETY_PRICES,
   WITHDRAWAL,
   WITHDRAWAL_EDIT,
   WITHDRAWAL_NEW,
@@ -102,12 +115,28 @@ export const router = createBrowserRouter([
                   { path: ':id/editar', element: <ClienteForm mode="editar" /> },
                 ],
               },
-              { path: 'variedades', element: <Variedades /> },
-              { path: 'variedades/:id', element: <VariedadDetalle /> },
               {
-                path: relative(VARIETY_MOVEMENTS),
-                element: <VariedadMovimientos />,
+                path: VARIETIES,
+                element: <VarietiesLayout />,
+                children: [
+                  { index: true, element: <VarietiesIndex /> },
+                  { path: VARIETY_NEW, element: <VarietyNew />, handle: { chrome: 'none' } },
+                  {
+                    path: VARIETY(':id'),
+                    element: <VarietyRoute render={(varietyId) => <VarietyPage varietyId={varietyId} />} />,
+                    handle: { chrome: 'card' },
+                  },
+                ],
+              },
+              {
+                path: relative(VARIETY_PRICES(':id')),
+                element: <VarietyRoute render={(varietyId) => <PriceHistory varietyId={varietyId} />} />,
                 handle: { chrome: 'card' },
+              },
+              {
+                path: relative(VARIETY_PRICE_NEW(':id')),
+                element: <VarietyRoute render={(varietyId) => <PriceNew varietyId={varietyId} />} />,
+                handle: { chrome: 'none' },
               },
               { path: relative(EXPENSES), element: <Gastos />, handle: { tab: 'more' } },
               {
@@ -126,9 +155,18 @@ export const router = createBrowserRouter([
                 handle: { chrome: 'none', tab: 'more' },
               },
               { path: relative(WITHDRAWAL), element: <WithdrawalDetail />, handle: { chrome: 'card' } },
-              { path: 'mi-stock', element: <Stock /> },
-              { path: 'mi-stock/nueva-entrada', element: <EntradaStock mode="nuevo" /> },
-              { path: 'mi-stock/entradas/:id', element: <EntradaStock mode="editar" /> },
+              { path: relative(ENTRIES), element: <EntriesList />, handle: { chrome: 'card' } },
+              {
+                path: relative(VARIETY_ENTRIES(':id')),
+                element: <VarietyRoute render={(varietyId) => <EntriesList varietyId={varietyId} />} />,
+                handle: { chrome: 'card' },
+              },
+              { path: relative(ENTRY_NEW), element: <EntradaStock mode="nuevo" />, handle: { chrome: 'none' } },
+              {
+                path: relative(ENTRY(':id')),
+                element: <EntradaStock mode="editar" />,
+                handle: { chrome: 'none' },
+              },
               { path: 'settings', element: <Settings />, handle: { chrome: 'card', tab: 'more' } },
               { path: 'settings/business', element: <BusinessGroup />, handle: { chrome: 'none', tab: 'more' } },
               { path: 'settings/users', element: <UsersGroup />, handle: { chrome: 'none', tab: 'more' } },
@@ -154,7 +192,7 @@ export const router = createBrowserRouter([
               },
               { path: 'settings/account', element: <AccountGroup />, handle: { chrome: 'none', tab: 'more' } },
               { path: relative(ANALYSIS), element: <Analisis />, handle: { tab: 'more' } },
-              { path: 'catalogo', element: <Catalogo /> },
+              { path: relative(CATALOG), element: <Catalogo />, handle: { chrome: 'card' } },
               {
                 path: 'ventas',
                 children: [

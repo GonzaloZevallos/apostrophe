@@ -52,3 +52,11 @@ export function sideNoteFor(variety: StockSideNoteSubject): string | null {
   if (variety.days_left === null) return null
   return `${variety.days_left} días`
 }
+
+/** The warning line next to a variety's status mark (`stock.md`, "On screen"): told from
+ * the same `GET /stock` row `MarcaEstado` reads, never a figure the front works out itself. */
+export function warningFor(row: StockDetailSubject & { grams: number }): string {
+  if (row.threshold === null) return 'Aviso apagado'
+  if (row.status === 'low') return `Avisando: quedan ${formatGrams(row.grams)}`
+  return `Avisame abajo de ${formatGrams(row.threshold)}`
+}

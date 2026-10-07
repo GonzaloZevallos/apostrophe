@@ -1,4 +1,4 @@
-"""`SqlStockWithdrawals` over a real database (CODING_STANDARDS section 5, ADR-0030):
+"""`SqlStockWithdrawals` over a real database (CODING_STANDARDS section 5, ADR-0031):
 the repository for `stock_withdrawal` and its lines, built for one business. Varieties
 come from the `client` fixtures over HTTP; only the repository is built directly."""
 

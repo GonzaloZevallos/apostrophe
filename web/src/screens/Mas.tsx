@@ -9,7 +9,7 @@
 
 import { Link } from 'react-router'
 import Icono from '../components/Icono'
-import { ANALYSIS, EXPENSE_NEW, EXPENSES, WITHDRAWAL_NEW } from '../routes'
+import { ANALYSIS, CATALOG, EXPENSE_NEW, EXPENSES, VARIETIES, WITHDRAWAL_NEW } from '../routes'
 
 interface Item {
   to: string
@@ -37,12 +37,12 @@ const ITEMS: Item[] = [
     detail: 'Variedades, semanas, meses y días',
   },
   {
-    to: '/variedades',
+    to: VARIETIES,
     label: 'Variedades',
     detail: 'Precios y avisos de stock bajo',
   },
   {
-    to: '/catalogo',
+    to: CATALOG,
     label: 'Catálogo',
     detail: 'El mensaje de hoy, listo para copiar',
   },

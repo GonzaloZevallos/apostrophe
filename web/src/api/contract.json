@@ -106,6 +106,7 @@
     "gastos",
     "expenses",
     "withdrawals",
+    "varieties",
     "ventas",
     "mi-stock",
     "mas",
@@ -119,5 +120,19 @@
     "icons",
     "manifest.webmanifest",
     "sw.js"
+  ],
+  "sharedFrontRoutes": [
+    "/varieties",
+    "/varieties/new",
+    "/varieties/catalog",
+    "/varieties/entries",
+    "/varieties/entries/new",
+    "/varieties/entries/7",
+    "/varieties/7",
+    "/varieties/7/prices",
+    "/varieties/7/prices/new",
+    "/varieties/7/entries",
+    "/expenses",
+    "/expenses/new"
   ]
 }

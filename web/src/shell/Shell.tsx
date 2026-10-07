@@ -3,7 +3,7 @@
  * `componentes.ts`'s `Destino`); CSS alone switches between them (`styles/app.css`).
  * Only destinations that exist show (PRD, "Nada inventado"; metric M5). Each entry
  * says where it shows (`placement`) and, for the rail, which group it belongs to
- * (`group`): the bar is Inicio, Ventas, Clientes, Stock and Más; the rail is the same
+ * (`group`): the bar is Inicio, Ventas, Clientes, Variedades and Más; the rail is the same
  * four, a divider, then Gastos, Análisis and Más, as `GastosCompu.dc.html` draws the
  * sidebar. Más stays on the rail until the issue that empties it removes it, in the
  * same diff, so nothing a seller reaches today through Más is lost; Gastos and
@@ -44,7 +44,7 @@ import {
 } from 'react-router'
 import type { Me } from '../api/me'
 import Icono, { type NombreIcono } from '../components/Icono'
-import { ANALYSIS, EXPENSES, MORE } from '../routes'
+import { ANALYSIS, EXPENSES, MORE, VARIETIES } from '../routes'
 import { barActiveTab } from './barActiveTab'
 import { initialsOf } from './initials'
 
@@ -89,8 +89,8 @@ const ITEMS: Item[] = [
     group: 'main',
   },
   {
-    to: '/mi-stock',
-    label: 'Stock',
+    to: VARIETIES,
+    label: 'Variedades',
     icono: 'stock',
     placement: 'both',
     group: 'main',

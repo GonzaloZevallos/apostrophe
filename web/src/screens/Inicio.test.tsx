@@ -8,7 +8,7 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Outlet, Route, Routes, useLocation } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
@@ -360,7 +360,7 @@ test('a remount with a different answer never shows the first answer\'s figures'
   // `gcTime: 0` schedules the cache entry's removal for the next tick (TanStack's own
   // behaviour), the same gap a real navigation away and back leaves: this is what the
   // seam actually promises — a remount never shows a resolved mount's stale cache.
-  await new Promise((resolve) => setTimeout(resolve, 0))
+  await waitFor(() => expect(client.getQueryCache().find({ queryKey: ['panel'] })).toBeUndefined())
 
   const other: PanelAnswer = {
     ...PANEL,
@@ -398,5 +398,5 @@ test('shows the fixed pinned-catalog notice while the pin is out of date', async
   renderInicio()
 
   const notice = await screen.findByText(PINNED_CATALOG_OUT_OF_DATE)
-  expect(notice.closest('a')).toHaveAttribute('href', '/catalogo')
+  expect(notice.closest('a')).toHaveAttribute('href', '/varieties/catalog')
 })

@@ -7,7 +7,7 @@ their own `lots_and_draws` grouping, so neither repeats the decision or runs
 
 `pricing_rule` is read here, so stock's own domain stays unaware of gifts (ADR-0020's
 "considered and rejected": a gift is never told by a $0 line total). A draw's kind is
-decided only from `Draw.source` (ADR-0030), never from a missing `sale_id`, pricing
+decided only from `Draw.source` (ADR-0031), never from a missing `sale_id`, pricing
 rule or line total; an adjustment and a withdrawal carry no variety or sale — never a
 join by `sale_id`, `position` or any other key.
 """

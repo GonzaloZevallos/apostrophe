@@ -27,6 +27,8 @@ export type SuccessToast =
   | 'Cobro eliminado'
   | 'Prueba enviada'
   | 'Catálogo publicado'
+  | 'Entrada guardada'
+  | 'Entrada eliminada'
   | 'Retiro guardado'
   | 'Retiro eliminado'
 

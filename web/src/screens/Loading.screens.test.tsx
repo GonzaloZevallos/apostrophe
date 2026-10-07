@@ -30,7 +30,7 @@ import CatalogMessageGroup from './settings/CatalogMessageGroup'
 import ExpenseCategoriesGroup from './settings/ExpenseCategoriesGroup'
 import IntegrationsGroup from './settings/IntegrationsGroup'
 import UsersGroup from './settings/UsersGroup'
-import Stock from './Stock'
+import Variedades from './Variedades'
 import Ventas from './ventas/Ventas'
 import VentaDetalle from './ventas/VentaDetalle'
 
@@ -118,12 +118,12 @@ const SCREENS: Case[] = [
     dataRouter: true,
   },
   { name: 'Gastos', element: () => <Gastos />, route: '/gastos', path: '/gastos' },
-  { name: 'Stock', element: () => <Stock />, route: '/mi-stock', path: '/mi-stock' },
+  { name: 'Variedades', element: () => <Variedades />, route: '/varieties', path: '/varieties' },
   {
     name: 'EntradaStock editing',
     element: () => <EntradaStock mode="editar" />,
-    route: '/mi-stock/entradas/4',
-    path: '/mi-stock/entradas/:id',
+    route: '/varieties/entries/4',
+    path: '/varieties/entries/:id',
   },
 ]
 

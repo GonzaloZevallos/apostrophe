@@ -540,7 +540,7 @@ def test_the_domain_time_guard_runs_a_year_of_history_in_under_a_second() -> Non
     assert figures.since_first_record is not None
 
 
-# --- Stock withdrawals: Promoción and Consumo propio (ADR-0030) ---
+# --- Stock withdrawals: Promoción and Consumo propio (ADR-0031) ---
 
 YESTERDAY = TODAY - timedelta(days=1)
 

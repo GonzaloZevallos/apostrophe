@@ -1,0 +1,176 @@
+/**
+ * `PriceForm` (`PrecioNuevo.dc.html`): a new price entry for a variety
+ * (`POST /varieties/{id}/prices`). It knows nothing of the router: its host supplies the
+ * exits and learns whether something was typed. A refusal shows under the field it is
+ * about and keeps what was typed. A price has one code for several rules, so the code
+ * alone picks the field: a repeated date under "Rige desde", a rule of the amounts under
+ * "Precio de lista", a grams refusal under "Mínimo en gramos".
+ */
+
+import { type FormEvent, useEffect, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import { ApiError, NetworkError, UNKNOWN_CODE, post } from '../../api/client'
+import { invalidateResource } from '../../api/keys'
+import { isGone, kindOf, type RefusalCode } from '../../api/refusals'
+import type { SuccessToast } from '../../components/AvisoExito'
+import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
+import SinConexion from '../../components/SinConexion'
+import { parseGrams, parseMoney } from '../../format/parse'
+import { GENERIC_REFUSAL_MESSAGE } from '../Variedades'
+
+export const DUPLICATE_DATE_MESSAGE = 'Ya cargaste un precio con esa fecha'
+export const PRICE_INVALID_MESSAGE = 'Revisá los precios cargados'
+export const GRAMS_INVALID_MESSAGE = 'Revisá los gramos cargados'
+
+type Field = 'effectiveFrom' | 'listPrice' | 'bulkPrice' | 'bulkMinimum' | 'form'
+type Errors = Partial<Record<Field, string>>
+
+const FIELD_OF_CODE: Partial<Record<RefusalCode, { field: Field; message: string }>> = {
+  'variety.duplicate_effective_date': { field: 'effectiveFrom', message: DUPLICATE_DATE_MESSAGE },
+  'variety.price_entry_invalid': { field: 'listPrice', message: PRICE_INVALID_MESSAGE },
+  'grams.invalid': { field: 'bulkMinimum', message: GRAMS_INVALID_MESSAGE },
+}
+
+function fieldOfCode(code: string): { field: Field; message: string } | undefined {
+  return (FIELD_OF_CODE as Record<string, { field: Field; message: string } | undefined>)[code]
+}
+
+export interface PriceFormProps {
+  varietyId: number
+  today: string
+  onDone: (saved: SuccessToast) => void
+  onCancel: () => void
+  onDirtyChange: (dirty: boolean) => void
+  onGone: () => void
+}
+
+function FieldError({ message }: { message: string | undefined }) {
+  if (message === undefined) return null
+  return (
+    <span className="campo__error" role="alert">
+      {message}
+    </span>
+  )
+}
+
+export default function PriceForm({ varietyId, today, onDone, onCancel, onDirtyChange, onGone }: PriceFormProps) {
+  const queryClient = useQueryClient()
+  const [effectiveFrom, setEffectiveFrom] = useState(today)
+  const [listPrice, setListPrice] = useState('')
+  const [bulkPrice, setBulkPrice] = useState('')
+  const [bulkMinimum, setBulkMinimum] = useState('')
+  const [errors, setErrors] = useState<Errors>({})
+  const [offline, setOffline] = useState(false)
+  const [sending, setSending] = useState(false)
+
+  const dirty = effectiveFrom !== today || listPrice !== '' || bulkPrice !== '' || bulkMinimum !== ''
+  useEffect(() => {
+    onDirtyChange(dirty)
+  }, [dirty, onDirtyChange])
+
+  async function onSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
+    event.preventDefault()
+    setOffline(false)
+    const money = parseMoney(listPrice)
+    const hasBulk = bulkPrice.trim() !== '' || bulkMinimum.trim() !== ''
+    const bulkMoney = parseMoney(bulkPrice)
+    const bulkGrams = parseGrams(bulkMinimum)
+    const found: Errors = {}
+    if (!money.ok) found.listPrice = PRICE_INVALID_MESSAGE
+    if (hasBulk && !bulkMoney.ok) found.bulkPrice = PRICE_INVALID_MESSAGE
+    if (hasBulk && !bulkGrams.ok) found.bulkMinimum = GRAMS_INVALID_MESSAGE
+    setErrors(found)
+    if (!money.ok || (hasBulk && (!bulkMoney.ok || !bulkGrams.ok))) return
+    setSending(true)
+    try {
+      await post(`/varieties/${varietyId}/prices`, {
+        effective_from: effectiveFrom,
+        list_price: money.value,
+        bulk_price: hasBulk && bulkMoney.ok ? bulkMoney.value : undefined,
+        bulk_minimum: hasBulk && bulkGrams.ok ? bulkGrams.value : undefined,
+      })
+      invalidateResource(queryClient, 'varieties')
+      onDone('Precio guardado')
+    } catch (caught) {
+      if (caught instanceof ApiError && isGone(caught.code)) {
+        invalidateResource(queryClient, 'varieties')
+        onGone()
+      } else if (caught instanceof ApiError) {
+        const mapped = fieldOfCode(caught.code)
+        if (mapped !== undefined) setErrors({ [mapped.field]: mapped.message })
+        else if (caught.code !== UNKNOWN_CODE && kindOf(caught.code) === 'refusal') {
+          setErrors({ form: GENERIC_REFUSAL_MESSAGE })
+        } else setErrors({ form: ERROR_GENERICO_MENSAJE })
+      } else if (caught instanceof NetworkError) {
+        setOffline(true)
+      } else {
+        setErrors({ form: ERROR_GENERICO_MENSAJE })
+      }
+    } finally {
+      setSending(false)
+    }
+  }
+
+  return (
+    <div className="gasto-form">
+      <div className="gasto-form__cabecera">
+        <span className="gasto-form__titulo">Nuevo precio</span>
+        <button type="button" className="boton--enlace gasto-form__cerrar" onClick={onCancel}>
+          Cerrar
+        </button>
+      </div>
+      <form className="formulario" onSubmit={onSubmit}>
+        <label className="campo">
+          <span className="campo__rotulo">Rige desde</span>
+          <input
+            className="campo__input"
+            type="date"
+            value={effectiveFrom}
+            onChange={(event) => setEffectiveFrom(event.target.value)}
+            required
+          />
+          <FieldError message={errors.effectiveFrom} />
+        </label>
+        <label className="campo">
+          <span className="campo__rotulo">Precio de lista</span>
+          <input
+            className="campo__input campo__input--monto"
+            inputMode="numeric"
+            value={listPrice}
+            onChange={(event) => setListPrice(event.target.value)}
+            required
+          />
+          <span className="campo__ayuda">Por gramo, en pesos enteros</span>
+          <FieldError message={errors.listPrice} />
+        </label>
+        <label className="campo">
+          <span className="campo__rotulo">Precio por cantidad</span>
+          <input
+            className="campo__input"
+            inputMode="numeric"
+            value={bulkPrice}
+            onChange={(event) => setBulkPrice(event.target.value)}
+          />
+          <span className="campo__ayuda">Opcional · menor al precio de lista</span>
+          <FieldError message={errors.bulkPrice} />
+        </label>
+        <label className="campo">
+          <span className="campo__rotulo">Mínimo en gramos</span>
+          <input
+            className="campo__input"
+            inputMode="decimal"
+            value={bulkMinimum}
+            onChange={(event) => setBulkMinimum(event.target.value)}
+          />
+          <span className="campo__ayuda">Desde cuántos gramos aplica</span>
+          <FieldError message={errors.bulkMinimum} />
+        </label>
+        <FieldError message={errors.form} />
+        {offline && <SinConexion />}
+        <button className="boton" type="submit" disabled={sending}>
+          Guardá el precio
+        </button>
+      </form>
+    </div>
+  )
+}

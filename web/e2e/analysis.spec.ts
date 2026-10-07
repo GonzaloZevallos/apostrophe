@@ -11,12 +11,10 @@
  */
 
 import { expect, test } from '@playwright/test'
-import { newBusinessInvitationUrl } from './backend.js'
+import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { openGastos, openMas } from './helpers/openMas.js'
 import { fillSaleLine } from './helpers/sale.js'
-
-const PASSWORD = 'correcthorsebattery'
 
 test('a seller opens Análisis from Más, moves back a month and reads each section', async ({
   page,
@@ -27,28 +25,26 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   const ownerEmail = `duena-analisis-${Date.now()}@example.com`
   const businessName = `Flores del Análisis ${Date.now()}`
 
-  await page.goto(newBusinessInvitationUrl())
-  await page.getByLabel('Nombre del negocio').fill(businessName)
-  await page.getByLabel('Email').fill(ownerEmail)
-  await page.getByLabel('Contraseña').fill(PASSWORD)
-  await page.getByRole('button', { name: 'Creá el negocio' }).click()
+  await signUpNewBusiness(page, { businessName, email: ownerEmail })
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // A priced variety.
-  await page.goto('/variedades')
-  await page.getByRole('button', { name: 'Nueva variedad' }).click()
+  await page.goto('/varieties')
+  await page.getByRole('link', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Rosa')
-  await page.getByRole('button', { name: 'Guardar' }).click()
+  await page.getByRole('button', { name: 'Agregá la variedad' }).click()
   await expect(page.getByText('Variedad guardada')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()
-  await page.getByRole('button', { name: 'Nuevo precio' }).click()
-  await page.getByLabel('Precio de lista').fill('900')
-  await page.getByRole('button', { name: 'Guardar precio' }).click()
+  await page.getByRole('link', { name: 'Nuevo precio' }).click()
+  await page.getByLabel(/^Precio de lista/).fill('900')
+  await page.getByRole('button', { name: 'Guardá el precio' }).click()
   await expect(page.getByText('Precio guardado')).toBeVisible()
 
   // A stock entry (origin defaults to "Compra"), backdated into last month so the
   // business's first record — and so "Mes anterior" — is not this same month.
-  await page.goto('/mi-stock/nueva-entrada')
+  await page.goto('/varieties')
+  await page.getByRole('link', { name: '+ Entrada de stock' }).click()
+  await expect(page.getByLabel('Fecha')).toHaveValue(/^\d{4}-\d{2}-\d{2}$/)
   const todayIso = await page.getByLabel('Fecha').inputValue()
   const lastMonth = new Date(todayIso)
   lastMonth.setDate(1)
@@ -107,6 +103,7 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   await expect(page.getByText('Flete').first()).toBeVisible()
   await expect(page.getByText('Van aparte, se cargan en Stock').first()).toBeVisible()
 
+  await expect(page.locator('.gastos__mes-etiqueta').first()).toHaveText(/\S/)
   const monthLabelBefore = await page
     .locator('.gastos__mes-etiqueta')
     .first()

@@ -16,7 +16,7 @@ afterEach(() => {
 })
 
 async function openFromVariedades() {
-  const view = renderWithdrawals(['/variedades'], async () => jsonResponse(404, {}))
+  const view = renderWithdrawals(['/varieties'], async () => jsonResponse(404, {}))
   await userEvent.click(await screen.findByRole('link', { name: 'Sacar del stock' }))
   await screen.findByLabelText('Variedad 1')
   return view
@@ -36,7 +36,7 @@ test('closing it untouched leaves without asking', async () => {
 
   await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
 
-  await waitFor(() => expect(router.state.location.pathname).toBe('/variedades'))
+  await waitFor(() => expect(router.state.location.pathname).toBe('/varieties'))
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
 })
 
@@ -55,7 +55,7 @@ test('closing it with something typed asks first, and discarding leaves', async 
   await userEvent.click(
     within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Sí, descartalo' }),
   )
-  await waitFor(() => expect(router.state.location.pathname).toBe('/variedades'))
+  await waitFor(() => expect(router.state.location.pathname).toBe('/varieties'))
 })
 
 test('the reason has no default: saving stays off until one is chosen', async () => {
@@ -92,7 +92,7 @@ test('?variety= chooses the first line\'s variety', async () => {
 
 test('saves with every line, a trimmed note, then shows "Retiro guardado" where it goes back', async () => {
   const requests: { url: string; method: string | undefined; body: unknown }[] = []
-  const { router } = renderWithdrawals(['/variedades'], async (url, init) => {
+  const { router } = renderWithdrawals(['/varieties'], async (url, init) => {
     if (url === '/stock/withdrawals' && init?.method === 'POST') {
       requests.push({ url, method: init.method, body: JSON.parse(String(init.body)) })
       return jsonResponse(201, WITHDRAWAL)
@@ -111,7 +111,7 @@ test('saves with every line, a trimmed note, then shows "Retiro guardado" where 
   await userEvent.click(screen.getByRole('button', { name: 'Guardá el retiro' }))
 
   expect(await screen.findByText('Retiro guardado')).toBeInTheDocument()
-  expect(router.state.location.pathname).toBe('/variedades')
+  expect(router.state.location.pathname).toBe('/varieties')
   expect(requests).toEqual([
     {
       url: '/stock/withdrawals',
@@ -130,7 +130,7 @@ test('saves with every line, a trimmed note, then shows "Retiro guardado" where 
 })
 
 test('a refusal shows inline by its code and keeps everything typed', async () => {
-  renderWithdrawals(['/variedades'], async (url, init) => {
+  renderWithdrawals(['/varieties'], async (url, init) => {
     if (url === '/stock/withdrawals' && init?.method === 'POST') {
       return jsonResponse(422, { code: 'stock.withdrawal_grams_too_precise' })
     }
@@ -219,5 +219,5 @@ test('a send that finds the withdrawal gone goes to Variedades with the fixed no
   )
 
   expect(await screen.findByText('Eso ya no está. La lista ya está al día.')).toBeInTheDocument()
-  expect(router.state.location.pathname).toBe('/variedades')
+  expect(router.state.location.pathname).toBe('/varieties')
 })

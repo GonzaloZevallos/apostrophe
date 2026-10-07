@@ -1,5 +1,5 @@
 """`draw_source_of`: a withdrawal's reason decides its draw source, with no
-infrastructure (ADR-0030)."""
+infrastructure (ADR-0031)."""
 
 from __future__ import annotations
 

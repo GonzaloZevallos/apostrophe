@@ -24,6 +24,7 @@ import ErrorGenerico from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import Loading from '../../components/Loading'
 import SettingsGroup, { type LeaveWording } from './SettingsGroup'
+import { CATALOG } from '../../routes'
 
 const TITLE = 'Integraciones'
 const TEST_SENT_TOAST: SuccessToast = 'Prueba enviada'
@@ -34,7 +35,6 @@ const CHANNEL_CHAT_HELP = 'Es el @usuario o el enlace del canal donde se publica
 const OWN_CHAT_HELP =
   'Abrí tu bot en Telegram y tocá Iniciar. Tu número lo ves con @userinfobot, o tocá Buscar mi chat.'
 const LOAD_THE_TOKEN_FIRST = 'Cargá el token primero'
-const CATALOG_PATH = '/catalogo'
 
 const LEAVE: LeaveWording = {
   question: '¿Descartás el cambio?',
@@ -262,7 +262,7 @@ function IntegrationsForm({ initial }: { initial: PinnedCatalog }) {
         </button>
       </form>
 
-      <Link to={CATALOG_PATH} className="boton--enlace">
+      <Link to={CATALOG} className="boton--enlace">
         Ir al catálogo
       </Link>
     </SettingsGroup>

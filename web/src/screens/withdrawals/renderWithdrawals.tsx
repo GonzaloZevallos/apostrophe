@@ -5,21 +5,16 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { configure, render } from '@testing-library/react'
+import { render } from '@testing-library/react'
 import { Outlet, RouterProvider, createMemoryRouter } from 'react-router'
 import { vi } from 'vitest'
 import type { Me } from '../../api/me'
 import FlashProvider from '../../flash/FlashProvider'
-import { VARIETY_MOVEMENTS, WITHDRAWAL, WITHDRAWAL_EDIT, WITHDRAWAL_NEW, relative } from '../../routes'
+import { VARIETIES as VARIETIES_PATH, WITHDRAWAL, WITHDRAWAL_EDIT, WITHDRAWAL_NEW, relative } from '../../routes'
 import Shell from '../../shell/Shell'
-import VariedadMovimientos from '../VariedadMovimientos'
 import Variedades from '../Variedades'
 import WithdrawalDetail from './WithdrawalDetail'
 import WithdrawalFormRoute from './WithdrawalFormRoute'
-
-// A routed screen with several awaited reads is slow when the whole suite runs in parallel.
-configure({ asyncUtilTimeout: 8000 })
-vi.setConfig({ testTimeout: 30000 })
 
 export const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-06' }
 
@@ -63,12 +58,7 @@ export function renderWithdrawals(initialEntries: string[], fetchImpl: FetchImpl
           {
             element: <Shell />,
             children: [
-              { path: 'variedades', element: <Variedades /> },
-              {
-                path: relative(VARIETY_MOVEMENTS),
-                element: <VariedadMovimientos />,
-                handle: { chrome: 'card' },
-              },
+              { path: relative(VARIETIES_PATH), element: <Variedades /> },
               {
                 path: relative(WITHDRAWAL_NEW),
                 element: <WithdrawalFormRoute mode="new" />,

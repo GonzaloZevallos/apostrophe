@@ -103,6 +103,12 @@ export interface WithdrawalMovement {
 /** One row of a variety's "Stock y entradas"; matches `fixtures/movements.json`. */
 export type Movement = EntryMovement | WithdrawalMovement
 
+/** The entries of one variety, in the order the server sent them (newest first): the one
+ * place the front filters `entries` by variety. */
+export function entriesOf(stock: StockView, varietyId: number): StockEntry[] {
+  return stock.entries.filter((entry) => entry.variety_id === varietyId)
+}
+
 export function readStock(): Promise<StockView> {
   return get<StockView>('/stock')
 }
