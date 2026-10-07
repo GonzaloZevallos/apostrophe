@@ -17,7 +17,7 @@ from datetime import date, datetime, timedelta
 
 from app.spreadsheet_import.application import ports
 from app.spreadsheet_import.application.no_commit import NoCommit
-from app.spreadsheet_import.application.plan_import import has_any_records
+from app.spreadsheet_import.application.plan_import import PROVISIONAL_SETTINGS, has_any_records
 from app.spreadsheet_import.domain.plan import (
     ByPhone,
     CustomerIdentity,
@@ -228,4 +228,12 @@ def _write_sale(
         customer_ids[planned.customer_identity] if planned.customer_identity is not None else None
     )
     variety_id = variety_ids[planned.variety_key]
-    sales.write_sale(variety_id, customer_id, sale_input, recorded_at.next(), today, transaction)
+    sales.write_sale(
+        variety_id,
+        customer_id,
+        sale_input,
+        recorded_at.next(),
+        today,
+        transaction,
+        PROVISIONAL_SETTINGS,
+    )

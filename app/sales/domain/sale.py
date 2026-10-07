@@ -16,6 +16,7 @@ from typing import ClassVar
 
 from app.sales.domain.pricing import PriceQuote, PricingRule, SaleRuleBroken, price_line
 from app.shared.grams import Grams
+from app.shared.pricing_settings import PricingSettings
 
 NOTE_MAX_LENGTH = 200
 
@@ -206,6 +207,7 @@ class Sale:
         today: SaleDate,
         customer_id: int | None,
         customer: CustomerFact | None,
+        settings: PricingSettings,
         shipping_charged: int,
         note: str | None,
         lines: Sequence[LineRequest],
@@ -231,7 +233,7 @@ class Sale:
             raise NoteTooLong()
 
         vip = customer.vip if customer is not None else False
-        priced_lines = tuple(cls._price(request, vip=vip) for request in lines)
+        priced_lines = tuple(cls._price(request, vip=vip, settings=settings) for request in lines)
         total = sum((line.line_total for line in priced_lines), 0) + shipping_charged
 
         payment = cls._payment(
@@ -253,11 +255,12 @@ class Sale:
         )
 
     @staticmethod
-    def _price(request: LineRequest, *, vip: bool) -> SaleLine:
+    def _price(request: LineRequest, *, vip: bool, settings: PricingSettings) -> SaleLine:
         priced = price_line(
             gift=request.gift,
             special_price=request.special_price,
-            vip=vip,
+            customer_is_vip=vip,
+            settings=settings,
             quote=request.quote,
             grams=request.grams,
         )

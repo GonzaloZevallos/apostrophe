@@ -37,7 +37,9 @@ from app.sales.domain.sale import (
     SaleLine,
 )
 from app.shared.grams import Grams
+from app.shared.pricing_settings import PricingSettings
 
+BOTH_ON = PricingSettings(is_bulk_pricing=True, is_vip_customers=True)
 TODAY = date(2026, 6, 15)
 RECORDED_AT = datetime(2026, 6, 15, 12, 0, tzinfo=UTC)
 
@@ -76,6 +78,7 @@ def _record(
         today=TODAY,
         customer_id=customer_id,
         customer=customer,
+        settings=BOTH_ON,
         shipping_charged=shipping_charged,
         note=note,
         lines=lines if lines is not None else [_line()],
@@ -224,11 +227,16 @@ def test_bulk_minimum_is_measured_per_line_never_summed() -> None:
     assert [line.pricing_rule for line in sale.lines] == [PricingRule.LIST, PricingRule.LIST]
 
 
-def test_vip_prices_every_line_at_bulk_even_without_reaching_the_minimum() -> None:
+def test_vip_prices_every_line_at_its_vip_price_even_without_reaching_the_minimum() -> None:
+    with_vip = PriceQuote(
+        list_price=1_000,
+        bulk=BulkQuote(price=700, minimum=Grams.of(10)),
+        vip_price=700,
+    )
     sale = _record(
         customer=VIP,
         customer_id=1,
-        lines=[_line(quote=WITH_BULK, grams=Grams.of(1))],
+        lines=[_line(quote=with_vip, grams=Grams.of(1))],
         method=PaymentMethod.CASH,
     )
 

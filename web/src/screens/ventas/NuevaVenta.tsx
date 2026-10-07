@@ -55,6 +55,7 @@ import {
   type LineValidation,
   type PaymentChoice,
   type PriceQuote,
+  type PricingSettings,
   fromHundredths,
   hundredthsOfApiGrams,
   priceLine,
@@ -95,8 +96,14 @@ function quoteOf(variety: Variety): PriceQuote | null {
     price.bulk_price !== null && price.bulk_minimum !== null
       ? { price: price.bulk_price, minimumHundredths: hundredthsOfApiGrams(price.bulk_minimum) }
       : null
-  return { listPrice: price.list_price, bulk }
+  // Provisional until the price answers carry `vip_price` (subtask front-sales-customers):
+  // the migration set VIP price = bulk price on every entry that has a bulk price.
+  return { listPrice: price.list_price, bulk, vipPrice: price.bulk_price }
 }
+
+// Provisional until Nueva venta loads `GET /pricing-settings` (subtask
+// front-sales-customers): every existing business starts with both switches on.
+const SETTINGS_UNTIL_LOADED: PricingSettings = { bulk: true, vip: true }
 
 /** Whole pesos, zero or more — unlike `parseMoney` (money.ts), which rejects zero:
  * shipping charged is `$0` by default and that is a valid value to save with. */
@@ -344,7 +351,8 @@ function NuevaVentaForm() {
       const priced = priceLine({
         gift: line.gift,
         specialPrice,
-        vip: customer?.vip ?? false,
+        customerIsVip: customer?.vip ?? false,
+        settings: SETTINGS_UNTIL_LOADED,
         quote,
         gramsHundredths: toHundredths(grams.value),
       })

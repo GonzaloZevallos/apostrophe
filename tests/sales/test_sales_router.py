@@ -6,12 +6,14 @@ and persistence: status codes, the response shape, and the refusal order for
 assigning a customer (404 sale, then 422 customer, then 409 already assigned)."""
 
 from fastapi.testclient import TestClient
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app.payments.adapters.tables import PaymentRow
+from app.pricing_settings.adapters.tables import PricingSettingsRow
 from app.sales.adapters.tables import SaleLineRow, SaleRow
+from app.varieties.adapters.tables import PriceEntryRow
 from tests.conftest import TODAY
 from tests.contract_shapes import assert_matches_fixture
 from tests.pricing_switches import set_switches
@@ -555,3 +557,81 @@ def test_a_refused_sale_leaves_no_rows_in_sale_line_or_payment(
 
     assert response.status_code == 422, response.text
     assert _row_counts(engine) == before
+
+
+def _switches(engine: Engine, *, bulk: bool, vip: bool) -> None:
+    """Moves the business's two switches, standing in for `PUT /pricing-settings`
+    (the settings-routes subtask), which this branch does not carry yet."""
+    with Session(engine) as session:
+        session.execute(
+            update(PricingSettingsRow).values(is_bulk_pricing=bulk, is_vip_customers=vip)
+        )
+        session.commit()
+
+
+def _vip_price(engine: Engine, vip_price: int) -> None:
+    with Session(engine) as session:
+        session.execute(update(PriceEntryRow).values(vip_price=vip_price))
+        session.commit()
+
+
+def _line_of(client: TestClient, variety_id: int, customer_id: int | None) -> dict[str, object]:
+    body: dict[str, object] = {
+        "payment": "cash",
+        "lines": [{"variety_id": variety_id, "grams": "50"}],
+    }
+    if customer_id is not None:
+        body["customer_id"] = customer_id
+    created = client.post("/sales", json=body)
+    assert created.status_code == 201, created.text
+    line: dict[str, object] = created.json()["lines"][0]
+    return line
+
+
+def test_a_line_at_the_bulk_minimum_is_stored_as_list_once_bulk_is_switched_off(
+    client: TestClient, engine: Engine
+) -> None:
+    variety_id = _variety_with_bulk(client)
+    _switches(engine, bulk=True, vip=False)
+    assert _line_of(client, variety_id, None)["pricing_rule"] == "bulk"
+
+    _switches(engine, bulk=False, vip=False)
+    line = _line_of(client, variety_id, None)
+
+    assert (line["pricing_rule"], line["price_per_gram"]) == ("list", 10_000)
+
+
+def test_a_vip_customer_is_stored_as_vip_once_vip_is_switched_on(
+    client: TestClient, engine: Engine
+) -> None:
+    variety_id = _variety_with_bulk(client)
+    _vip_price(engine, 7_000)
+    customer_id = _customer(client)
+    client.patch(f"/customers/{customer_id}", json={"vip": True})
+    _switches(engine, bulk=True, vip=False)
+    assert _line_of(client, variety_id, customer_id)["pricing_rule"] == "bulk"
+
+    _switches(engine, bulk=True, vip=True)
+    line = _line_of(client, variety_id, customer_id)
+
+    assert (line["pricing_rule"], line["price_per_gram"]) == ("vip", 7_000)
+
+
+def test_switching_a_rule_off_leaves_a_recorded_sale_as_it_was(
+    client: TestClient, engine: Engine
+) -> None:
+    variety_id = _variety_with_bulk(client)
+    _switches(engine, bulk=True, vip=False)
+    created = client.post(
+        "/sales",
+        json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": "50"}]},
+    ).json()
+
+    _switches(engine, bulk=False, vip=False)
+    after = client.get(f"/sales/{created['id']}").json()
+
+    stored = ("pricing_rule", "price_per_gram", "line_total")
+    assert [{k: line[k] for k in stored} for line in after["lines"]] == [
+        {k: line[k] for k in stored} for line in created["lines"]
+    ]
+    assert after["total"] == created["total"]
