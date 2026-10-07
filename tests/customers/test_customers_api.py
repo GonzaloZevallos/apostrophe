@@ -4,9 +4,11 @@ from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy.engine import Engine
 
 from tests.conftest import TODAY
 from tests.contract_shapes import assert_matches_fixture
+from tests.pricing_switches import set_switches
 
 
 def _register(
@@ -119,7 +121,10 @@ def test_a_later_payment_lowers_the_balance_everywhere_it_is_read(client: TestCl
     assert sale_settled["still_owing"] is False
 
 
-def test_a_customer_can_be_registered_vip_with_a_channel(client: TestClient) -> None:
+def test_a_customer_can_be_registered_vip_with_a_channel(
+    client: TestClient, engine: Engine
+) -> None:
+    set_switches(engine, bulk=False, vip=True)
     customer = _register(client, channel="telegram", vip=True)
 
     assert customer["channel"] == "telegram"
@@ -201,7 +206,10 @@ def test_an_empty_query_lists_every_customer(client: TestClient) -> None:
     assert len(client.get("/customers").json()) == 1
 
 
-def test_editing_a_customer_keeps_fields_left_out_of_the_body(client: TestClient) -> None:
+def test_editing_a_customer_keeps_fields_left_out_of_the_body(
+    client: TestClient, engine: Engine
+) -> None:
+    set_switches(engine, bulk=False, vip=True)
     customer = _register(client, channel="telegram", vip=True)
 
     edited = client.patch(f"/customers/{customer['id']}", json={"name": "New Name"})
@@ -450,3 +458,66 @@ def test_a_no_phone_customer_can_be_chosen_for_a_sale_left_owing_and_paid(
     settled = client.get(f"/customers/{customer['id']}").json()
     assert settled["balance"] == 0
     assert settled["standing"] == "settled"
+
+
+def test_with_clientes_vip_off_a_customer_registered_vip_is_not_vip(
+    client: TestClient, engine: Engine
+) -> None:
+    set_switches(engine, bulk=False, vip=False)
+
+    customer = _register(client, vip=True)
+
+    assert customer["vip"] is False
+    assert client.get(f"/customers/{customer['id']}").json()["vip"] is False
+
+
+def test_with_clientes_vip_off_editing_a_vip_customer_never_changes_the_mark(
+    client: TestClient, engine: Engine
+) -> None:
+    set_switches(engine, bulk=False, vip=True)
+    customer = _register(client, vip=True)
+    set_switches(engine, bulk=False, vip=False)
+
+    cleared = client.patch(f"/customers/{customer['id']}", json={"vip": False, "name": "Fran B"})
+    left_out = client.patch(f"/customers/{customer['id']}", json={"channel": "telegram"})
+
+    assert cleared.status_code == 200
+    assert (cleared.json()["vip"], cleared.json()["name"]) == (True, "Fran B")
+    assert left_out.json()["vip"] is True
+
+
+def test_with_clientes_vip_off_editing_a_regular_customer_with_vip_true_keeps_them_regular(
+    client: TestClient, engine: Engine
+) -> None:
+    set_switches(engine, bulk=False, vip=False)
+    customer = _register(client)
+
+    edited = client.patch(f"/customers/{customer['id']}", json={"vip": True})
+
+    assert edited.status_code == 200
+    assert edited.json()["vip"] is False
+
+
+def test_switching_clientes_vip_back_on_shows_the_marks_stored_meanwhile(
+    client: TestClient, engine: Engine
+) -> None:
+    set_switches(engine, bulk=False, vip=True)
+    customer = _register(client, vip=True)
+    set_switches(engine, bulk=False, vip=False)
+    client.patch(f"/customers/{customer['id']}", json={"vip": False, "name": "Fran B"})
+
+    set_switches(engine, bulk=False, vip=True)
+
+    assert client.get(f"/customers/{customer['id']}").json()["vip"] is True
+    edited = client.patch(f"/customers/{customer['id']}", json={"vip": False})
+    assert edited.json()["vip"] is False
+
+
+def test_one_business_s_clientes_vip_switch_never_gates_another_business(
+    client: TestClient, other_client: TestClient, engine: Engine
+) -> None:
+    set_switches(engine, bulk=False, vip=False, business_name="Primer Negocio")
+    set_switches(engine, bulk=False, vip=True, business_name="Otro Negocio")
+
+    assert _register(client, vip=True)["vip"] is False
+    assert _register(other_client, vip=True)["vip"] is True

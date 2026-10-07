@@ -4,6 +4,7 @@ from datetime import date
 from typing import Literal, Protocol
 
 from app.customers.domain.customer import Customer, PhoneNumber
+from app.shared.pricing_settings import PricingSettings
 
 # The same three values `app.payments.domain.settlement.Standing` declares: customers
 # never imports `app.payments` (the plan's invariant), so this Protocol names its own
@@ -51,3 +52,10 @@ class Customers(Protocol):
     def save(self, customer: Customer) -> Customer: ...
 
     def phone_taken(self, phone: PhoneNumber, *, other_than: int | None = None) -> bool: ...
+
+
+class PricingSettingsReader(Protocol):
+    """The business's pricing switches, through the one port customers declares for them
+    (docs/adr/0006); the pricing_settings hexagon implements it, wired in `app/main.py`."""
+
+    def current(self) -> PricingSettings: ...
