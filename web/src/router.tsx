@@ -54,13 +54,25 @@ import CatalogMessageGroup from './screens/settings/CatalogMessageGroup'
 import ExpenseCategoriesGroup from './screens/settings/ExpenseCategoriesGroup'
 import IntegrationsGroup from './screens/settings/IntegrationsGroup'
 import UsersGroup from './screens/settings/UsersGroup'
+import WithdrawalDetail from './screens/withdrawals/WithdrawalDetail'
+import WithdrawalFormRoute from './screens/withdrawals/WithdrawalFormRoute'
 import NuevaVenta from './screens/ventas/NuevaVenta'
 import VentaDetalle from './screens/ventas/VentaDetalle'
 import Ventas from './screens/ventas/Ventas'
 import { redirectRoutes } from './redirects'
 import GatedLayout from './shell/GatedLayout'
 import Shell from './shell/Shell'
-import { ANALYSIS, EXPENSE_CATEGORIES, EXPENSE_NEW, EXPENSES, MORE, relative } from './routes'
+import {
+  ANALYSIS,
+  EXPENSE_CATEGORIES,
+  EXPENSE_NEW,
+  EXPENSES,
+  MORE,
+  WITHDRAWAL,
+  WITHDRAWAL_EDIT,
+  WITHDRAWAL_NEW,
+  relative,
+} from './routes'
 
 export const router = createBrowserRouter([
   {
@@ -96,6 +108,17 @@ export const router = createBrowserRouter([
                 element: <ExpenseNewRoute />,
                 handle: { chrome: 'none', tab: 'more' },
               },
+              {
+                path: relative(WITHDRAWAL_NEW),
+                element: <WithdrawalFormRoute mode="new" />,
+                handle: { chrome: 'none', tab: 'more' },
+              },
+              {
+                path: relative(WITHDRAWAL_EDIT),
+                element: <WithdrawalFormRoute mode="edit" />,
+                handle: { chrome: 'none', tab: 'more' },
+              },
+              { path: relative(WITHDRAWAL), element: <WithdrawalDetail />, handle: { chrome: 'card' } },
               { path: 'mi-stock', element: <Stock /> },
               { path: 'mi-stock/nueva-entrada', element: <EntradaStock mode="nuevo" /> },
               { path: 'mi-stock/entradas/:id', element: <EntradaStock mode="editar" /> },

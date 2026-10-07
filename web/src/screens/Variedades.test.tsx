@@ -21,6 +21,9 @@ vi.mock('../api/client', async () => {
   return { ...actual, get: vi.fn(), post: vi.fn() }
 })
 
+// Typing plus two awaited reads outlasts the default 5 s when the whole suite runs in parallel.
+vi.setConfig({ testTimeout: 20000 })
+
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
 
 const EMPTY_STOCK = { total: 0, varieties: [], entries: [] }
@@ -79,6 +82,16 @@ test('a variety links to its own detail, with no business id in the path', async
 
   const link = await screen.findByRole('link', { name: /Sir Jack/ })
   expect(link).toHaveAttribute('href', '/variedades/7')
+})
+
+test('a secondary "Sacar del stock" opens the withdrawal form with no variety chosen', async () => {
+  mockGet([{ id: 7, name: 'Sir Jack', current_price: null }])
+
+  renderScreen()
+
+  const link = await screen.findByRole('link', { name: 'Sacar del stock' })
+  expect(link).toHaveAttribute('href', '/withdrawals/new')
+  expect(link).toHaveClass('boton--suave')
 })
 
 describe('adding a variety', () => {

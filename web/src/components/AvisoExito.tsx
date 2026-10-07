@@ -27,6 +27,8 @@ export type SuccessToast =
   | 'Cobro eliminado'
   | 'Prueba enviada'
   | 'Catálogo publicado'
+  | 'Retiro guardado'
+  | 'Retiro eliminado'
 
 export default function AvisoExito({ texto }: { texto: SuccessToast }) {
   return (

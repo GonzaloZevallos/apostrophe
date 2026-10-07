@@ -8,7 +8,7 @@
 
 import { type FormEvent, useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link, useOutletContext } from 'react-router'
+import { Link, useLocation, useOutletContext } from 'react-router'
 import { ApiError, NetworkError, UNKNOWN_CODE, get, post } from '../api/client'
 import { invalidateResource, keys } from '../api/keys'
 import type { Me } from '../api/me'
@@ -17,8 +17,11 @@ import { readStock, type VarietyStock } from '../api/stock'
 import AvisoExito, { type SuccessToast } from '../components/AvisoExito'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import MarcaEstado from '../components/MarcaEstado'
+import Notice from '../components/Notice'
 import SinConexion from '../components/SinConexion'
+import { readFeedback } from '../components/feedback'
 import { formatGrams, formatMoney } from '../format/money'
+import { WITHDRAWAL_NEW } from '../routes'
 
 /** The warning line next to a variety's status mark (`stock.md`, "On screen"): told
  * from the same `GET /stock` row `MarcaEstado` already reads, never a figure the
@@ -56,6 +59,7 @@ const SAVE_OVERRIDES: Partial<Record<RefusalCode, string>> = {
 
 export default function Variedades() {
   useOutletContext<Me>()
+  const feedback = readFeedback(useLocation().state)
   const queryClient = useQueryClient()
   const { data, isError, error } = useQuery({
     queryKey: keys.varieties(),
@@ -145,6 +149,10 @@ export default function Variedades() {
             +
           </button>
         </div>
+        <Link to={WITHDRAWAL_NEW} className="boton boton--suave">
+          Sacar del stock
+        </Link>
+        {feedback !== null && <Notice kind={feedback.kind} message={feedback.message} />}
         {toast !== null && <AvisoExito texto={toast} />}
         {adding && (
           <form className="formulario" onSubmit={onSubmit}>
