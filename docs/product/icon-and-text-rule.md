@@ -68,7 +68,7 @@ The two lists are closed. Adding to either changes this file and the README, nev
 - Consequences the seller would not otherwise expect stay visible in short form: the old pinned message staying as it is, the grams on hand in the archive confirmation, the grams that return to stock on delete.
 - A confirmation question may be shortened, but keeps every fact it names today: date, amount, grams, reason.
 - Fixed security texts (the brake message, the Entrar hint, the dead-link texts) keep their meaning; shortening never adds information, such as an attempt count or why a link is dead.
-- Characters are counted on the Spanish copy as shown.
+- Characters are counted on the Spanish copy as shown, as code points after NFC. A placeholder is measured with `SAMPLES` (`web/src/copy/limits.ts`: date `28/09`, amount `$ 999.999` and `−$ 999.999`, grams `999,99 g`, a 24-character name, count `99`), the worst cases, never with fixture or API data. Each copy module (`messages.ts` or `*Messages.ts`) registers its always-visible strings in `LIMITED_COPY` and the refusals it keeps over 80 in `LONG_REFUSALS`; `web/src/copy/copyLimits.test.ts` fails for a module that has neither, an entry over its limit, or a long refusal not listed.
 
 ### More info
 

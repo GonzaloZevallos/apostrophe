@@ -4,6 +4,7 @@
  * is not here: its one home is `ERROR_GENERICO_MENSAJE` in `components/ErrorGenerico`.
  */
 
+import type { LimitedCopy } from '../../copy/limits'
 import type { SuccessToast } from '../../components/AvisoExito'
 
 export const RENAME_SUCCESS: SuccessToast = 'Negocio renombrado'
@@ -13,3 +14,8 @@ export const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
 export const CATALOG_SAVED: SuccessToast = 'Catálogo guardado'
 export const HEADER_TOO_LONG_MESSAGE = 'El encabezado es demasiado largo'
 export const FOOTER_TOO_LONG_MESSAGE = 'El pie es demasiado largo'
+
+/** No always-visible help line or notice lives here yet: the strings above are toasts and
+ * inline refusals, all within 80. Checked by `copy/copyLimits.test.ts`. */
+export const LIMITED_COPY: readonly LimitedCopy[] = []
+export const LONG_REFUSALS: readonly string[] = []

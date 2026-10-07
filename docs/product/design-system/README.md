@@ -148,7 +148,9 @@ esta regla, nunca una pantalla suelta.
 máximo. Estado vacío: título de 40 como máximo, una línea de 80 y su acción. Los
 rechazos en línea apuntan a 80 pero conservan lo que hay que corregir, y nunca van
 detrás de "Más info". Las consecuencias que el vendedor no esperaría quedan visibles,
-en corto.
+en corto. El largo se mide en la copia en español tal como se ve, con los datos de
+`SAMPLES` (`web/src/copy/limits.ts`: los peores casos) y lo comprueba
+[`copyLimits.test.ts`](../../../web/src/copy/copyLimits.test.ts).
 
 **Qué va detrás de "Más info".** Sólo el cómo o el porqué, en el lugar, bajo la línea
 que explica; nunca una consecuencia, el arreglo de un rechazo ni un estado. Siempre
