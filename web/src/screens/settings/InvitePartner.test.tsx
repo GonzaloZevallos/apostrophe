@@ -1,0 +1,82 @@
+/**
+ * `InvitePartner` at the component seam (the Onboarding's "partner" step reuses it): one tap
+ * is one `POST /invitations`, the link shows on screen, `onLinkCreated` fires, and the token
+ * reaches neither the console nor browser storage. The API is faked at `fetch`.
+ */
+
+import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { afterEach, expect, test, vi } from 'vitest'
+import { SIN_CONEXION_TITULO } from '../../components/SinConexion'
+import InvitePartner from './InvitePartner'
+
+vi.mock('../../clipboard', () => ({ copyText: vi.fn().mockResolvedValue(true) }))
+
+const URL_WITH_TOKEN = 'https://apostrophe.app/invitation/secret-token-123'
+
+function jsonResponse(status: number, body: unknown): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  })
+}
+
+afterEach(() => {
+  vi.unstubAllGlobals()
+  vi.restoreAllMocks()
+  localStorage.clear()
+  sessionStorage.clear()
+})
+
+test('a tap creates one link through the route and tells the parent', async () => {
+  const fetchMock = vi.fn().mockResolvedValue(
+    jsonResponse(201, { url: URL_WITH_TOKEN, expires_at: '2026-10-09T00:00:00Z' }),
+  )
+  vi.stubGlobal('fetch', fetchMock)
+  const onLinkCreated = vi.fn()
+  render(<InvitePartner onLinkCreated={onLinkCreated} />)
+
+  await userEvent.click(screen.getByRole('button', { name: 'Invitá a un socio' }))
+
+  expect(await screen.findByText(URL_WITH_TOKEN)).toBeInTheDocument()
+  expect(fetchMock).toHaveBeenCalledTimes(1)
+  expect(fetchMock.mock.calls[0][0]).toBe('/invitations')
+  expect(fetchMock.mock.calls[0][1]).toMatchObject({ method: 'POST' })
+  expect(onLinkCreated).toHaveBeenCalledTimes(1)
+  expect(screen.queryByText('Invitación lista')).not.toBeInTheDocument()
+})
+
+test('a failed tap does not tell the parent a link was created', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('network error')))
+  const onLinkCreated = vi.fn()
+  render(<InvitePartner onLinkCreated={onLinkCreated} />)
+
+  await userEvent.click(screen.getByRole('button', { name: 'Invitá a un socio' }))
+
+  expect(await screen.findByText(SIN_CONEXION_TITULO)).toBeInTheDocument()
+  expect(onLinkCreated).not.toHaveBeenCalled()
+})
+
+test('the token goes to no console and no browser storage', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockResolvedValue(jsonResponse(201, { url: URL_WITH_TOKEN, expires_at: '2026-10-09T00:00:00Z' })),
+  )
+  const spies = [
+    vi.spyOn(console, 'log'),
+    vi.spyOn(console, 'info'),
+    vi.spyOn(console, 'warn'),
+    vi.spyOn(console, 'error'),
+    vi.spyOn(console, 'debug'),
+  ]
+  render(<InvitePartner onLinkCreated={() => undefined} />)
+
+  await userEvent.click(screen.getByRole('button', { name: 'Invitá a un socio' }))
+  await screen.findByText(URL_WITH_TOKEN)
+
+  for (const spy of spies) {
+    expect(JSON.stringify(spy.mock.calls)).not.toContain('secret-token-123')
+  }
+  expect(JSON.stringify({ ...localStorage })).not.toContain('secret-token-123')
+  expect(JSON.stringify({ ...sessionStorage })).not.toContain('secret-token-123')
+})
