@@ -3184,9 +3184,8 @@ body {
 .variedad-archivada__restaurar {
   flex: 0 0 auto;
   width: auto;
-  height: 44px;
+  height: var(--alto-tocable);
   padding: 0 var(--espacio-lg);
-  font-size: 15px;
 }
 
 .variedad-fila__encabezado {

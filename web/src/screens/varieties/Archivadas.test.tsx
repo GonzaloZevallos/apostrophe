@@ -14,7 +14,10 @@ import type { Me } from '../../api/me'
 import FlashProvider from '../../flash/FlashProvider'
 import { ARCHIVED_VARIETIES, VARIETIES, VARIETY, relative } from '../../routes'
 import Variedades from '../Variedades'
+import ArchivedIndex from './ArchivedIndex'
 import ArchivedVarieties from './ArchivedVarieties'
+import VarietiesIndex from './VarietiesIndex'
+import VarietiesLayout from './VarietiesLayout'
 import VarietyPage from './VarietyPage'
 import VarietyRoute from './VarietyRoute'
 
@@ -189,5 +192,95 @@ describe("an archived variety's page", () => {
     expect(await screen.findByText('Variedad restaurada')).toBeTruthy()
     expect(await screen.findByRole('button', { name: 'Archivar variedad' })).toBeTruthy()
     expect(screen.getByRole('link', { name: '‹ Variedades' })).toBeTruthy()
+  })
+})
+
+describe('on a computer (two panes)', () => {
+  const LIVE_ROW = { variety_id: 4, grams: 7, status: 'ok', sold_out_since: null, threshold: null, days_left: null }
+
+  function renderComputer(path: string, overrides: Answers = {}) {
+    setComputer(true)
+    let restored = false
+    const answers: Answers = {
+      // The API answers Zeta first; by name Alfa is the first.
+      'GET /varieties?archived=true': () => json(200, restored ? [] : ARCHIVED),
+      'GET /varieties': () =>
+        json(200, restored ? [{ id: 4, name: 'Alfa Vieja', archived: false, current_price: null }] : []),
+      'GET /stock': () => json(200, { total: 7, varieties: restored ? [LIVE_ROW] : [], entries: [] }),
+      'GET /stock?archived=true': () => json(200, ARCHIVED_STOCK),
+      'GET /catalog': () => json(200, CATALOG),
+      'GET /varieties/4': () =>
+        json(200, { id: 4, name: 'Alfa Vieja', archived: !restored, removal: restored ? 'archive' : null, current_price: null }),
+      'GET /varieties/4/prices': () => json(200, []),
+      'POST /varieties/4/restore': () => {
+        restored = true
+        return json(200, { id: 4, name: 'Alfa Vieja', archived: false, removal: 'archive' })
+      },
+      ...overrides,
+    }
+    const fetchMock = vi.fn((url: string, init?: RequestInit) => {
+      const answer = answers[`${init?.method ?? 'GET'} ${url}`]
+      if (answer === undefined) return Promise.reject(new Error(`unexpected request: ${init?.method ?? 'GET'} ${url}`))
+      return Promise.resolve(answer())
+    })
+    vi.stubGlobal('fetch', fetchMock)
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    const router = createMemoryRouter(
+      [
+        {
+          element: (
+            <QueryClientProvider client={queryClient}>
+              <FlashProvider>
+                <Outlet context={ME} />
+              </FlashProvider>
+            </QueryClientProvider>
+          ),
+          children: [
+            {
+              path: VARIETIES,
+              element: <VarietiesLayout />,
+              children: [
+                { index: true, element: <VarietiesIndex /> },
+                { path: ARCHIVED_VARIETIES, element: <ArchivedIndex /> },
+                { path: VARIETY(':id'), element: <VarietyRoute render={(id) => <VarietyPage varietyId={id} />} /> },
+              ],
+            },
+          ],
+        },
+      ],
+      { initialEntries: [path] },
+    )
+    render(<RouterProvider router={router} />)
+    return router
+  }
+
+  test('Archivadas selects the first archived variety by name, not the first the API sent', async () => {
+    const router = renderComputer(ARCHIVED_VARIETIES)
+    await waitFor(() => expect(router.state.location.pathname).toBe(VARIETY(4)))
+    expect(await screen.findByRole('heading', { name: 'Alfa Vieja' })).toBeTruthy()
+    expect(router.state.location.pathname).not.toBe(VARIETY(5))
+  })
+
+  test('with none archived, Archivadas selects nothing and says so on the left', async () => {
+    const router = renderComputer(ARCHIVED_VARIETIES, { 'GET /varieties?archived=true': () => json(200, []) })
+    expect(await screen.findByText('No tenés variedades archivadas')).toBeTruthy()
+    expect(router.state.location.pathname).toBe(ARCHIVED_VARIETIES)
+  })
+
+  test('the left pane is the Archivadas card beside an archived variety, and the live list once it is restored', async () => {
+    const user = userEvent.setup()
+    renderComputer(VARIETY(4))
+    // The card: its rows carry the "Archivada" mark and its back link is "‹ Variedades".
+    expect(await screen.findByRole('link', { name: '‹ Variedades' })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'Archivadas' })).toBeTruthy()
+    expect(screen.getAllByText('Zeta Vieja')).toHaveLength(1)
+    expect(screen.queryByText('Todas las entradas')).toBeNull()
+
+    await user.click(screen.getAllByRole('button', { name: 'Restaurar' }).at(-1)!)
+    expect(await screen.findByText('Variedad restaurada')).toBeTruthy()
+    // The live list takes the left pane back, with the restored variety in it.
+    expect(await screen.findByText('Todas las entradas')).toBeTruthy()
+    expect(screen.queryByRole('heading', { name: 'Archivadas' })).toBeNull()
+    expect(screen.getAllByText('Alfa Vieja').length).toBeGreaterThan(0)
   })
 })

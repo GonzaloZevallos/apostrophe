@@ -228,7 +228,7 @@ export default function VarietyPage({ varietyId }: { varietyId: number }) {
           readOnly={archived}
         />
         {!archived && row !== undefined && <VarietyThresholdSection varietyId={varietyId} row={row} refreshing={stockQuery.isFetching} onGone={() => setGone(true)} />}
-        {catalogRow !== null && <VarietyCatalogSection row={catalogRow} />}
+        {!archived && catalogRow !== null && <VarietyCatalogSection row={catalogRow} />}
         {catalogQuery.isError && (catalogQuery.error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />)}
         {!archived && <VarietyRemoval varietyId={varietyId} removal={variety.removal} grams={row?.grams ?? null} />}
       </div>

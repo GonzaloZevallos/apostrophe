@@ -63,7 +63,12 @@ export default function PriceHistory({ varietyId }: { varietyId: number }) {
           </Link>
         </div>
         <span className="encabezado__titulo">Precios</span>
-        <PriceRows varietyId={varietyId} history={history} currentPriceId={variety.current_price?.id ?? null} />
+        <PriceRows
+          varietyId={varietyId}
+          history={history}
+          currentPriceId={variety.current_price?.id ?? null}
+          readOnly={variety.archived}
+        />
         <span className="campo__ayuda">Cada venta usa el precio que regía ese día, aunque lo cambies después.</span>
       </div>
     </main>

@@ -85,6 +85,9 @@ export default function VarietyRemoval({ varietyId, removal, grams }: Props) {
     // Mark stale without refetching now: the page still mounted would read the variety it
     // just deleted, a 404 the browser writes to its console (`invalidateResource`'s note).
     invalidateResource(queryClient, 'varieties', { refetchType: 'none' })
+    // The archived list is not the deleted page's own query: a mounted left pane ("Archivadas (N)")
+    // reads it again now.
+    if (removal === 'archive') void queryClient.invalidateQueries({ queryKey: keys.archivedVarieties() })
   }
 
   async function onConfirm(): Promise<void> {
