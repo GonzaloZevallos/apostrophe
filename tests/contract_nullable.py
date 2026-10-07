@@ -76,6 +76,12 @@ NULLABLE: Mapping[str, Mapping[str, JsonType | ShapeOf]] = {
     "debtors": {
         "debtors[].owing_since": "string",
     },
+    "movements": {
+        # The fixture is a bare list of `kind`-discriminated items.
+        "[entry].total_cost": "integer",
+        "[entry].cost_per_gram": "integer",
+        "[entry].note": "string",
+    },
     "panel": {
         "periods.today.average_sale": "integer",
         "periods.week.average_sale": "integer",
@@ -134,5 +140,8 @@ NULLABLE: Mapping[str, Mapping[str, JsonType | ShapeOf]] = {
         "customer": ShapeOf("sale-detail", "customer"),
         "note": "string",
         "lines[].cost.costed": "integer",
+    },
+    "withdrawal": {
+        "note": "string",
     },
 }

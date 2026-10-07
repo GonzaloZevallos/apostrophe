@@ -110,3 +110,8 @@ class VarietyCatalog(Protocol):
         """Every variety id of this business, for a use case that walks all of them
         (`read_stock`'s per-variety sweep) rather than looking one up at a time."""
         ...
+
+    def names(self) -> dict[int, str]:
+        """Every variety's name of this business by id, for an answer that names the
+        varieties of a record's lines."""
+        ...

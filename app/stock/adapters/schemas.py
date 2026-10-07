@@ -10,9 +10,12 @@ from typing import Literal
 
 from pydantic import BaseModel
 
+from app.stock.application.manage_withdrawals import Movement, WithdrawalView
+from app.stock.application.ports import WithdrawalMovement
 from app.stock.application.read_stock import StockView, VarietyStock
 from app.stock.domain.costing import cost_per_gram
 from app.stock.domain.entry import Origin, StockEntry
+from app.stock.domain.draw_source import WithdrawalReason
 from app.varieties.adapters.schemas import GramsOut
 
 # The four values `stock_level` (stock-domain) answers; declared here so every
@@ -112,3 +115,79 @@ class StockOut(BaseModel):
             varieties=[VarietyStockOut.of(variety) for variety in view.varieties],
             entries=[EntryOut.of(entry) for entry in view.entries],
         )
+
+
+class WithdrawalLineIn(BaseModel):
+    variety_id: int
+    grams: Decimal
+
+
+class WithdrawalIn(BaseModel):
+    """Bare (ADR-0005): `reason` is optional here so a missing one is the domain's
+    coded refusal, not a pydantic error that would echo the input."""
+
+    reason: str | None = None
+    date: EntryDate | None = None
+    note: str | None = None
+    lines: list[WithdrawalLineIn]
+
+
+class WithdrawalLineOut(BaseModel):
+    variety_id: int
+    variety_name: str
+    grams: GramsOut
+
+
+class WithdrawalOut(BaseModel):
+    id: int
+    reason: WithdrawalReason
+    date: EntryDate
+    note: str | None
+    total_grams: GramsOut
+    lines: list[WithdrawalLineOut]
+
+    @classmethod
+    def of(cls, view: WithdrawalView) -> "WithdrawalOut":
+        withdrawal = view.withdrawal
+        assert withdrawal.id is not None, "only stored withdrawals go out"
+        return cls(
+            id=withdrawal.id,
+            reason=withdrawal.reason,
+            date=withdrawal.withdrawn_on,
+            note=withdrawal.note,
+            total_grams=withdrawal.total_grams.as_decimal(),
+            lines=[
+                WithdrawalLineOut(
+                    variety_id=line.variety_id,
+                    variety_name=view.variety_names[line.variety_id],
+                    grams=line.grams.as_decimal(),
+                )
+                for line in withdrawal.lines
+            ],
+        )
+
+
+class EntryMovementOut(EntryOut):
+    kind: Literal["entry"] = "entry"
+
+
+class WithdrawalMovementOut(BaseModel):
+    kind: Literal["withdrawal"] = "withdrawal"
+    id: int
+    date: EntryDate
+    reason: WithdrawalReason
+    grams: GramsOut
+
+
+MovementOut = EntryMovementOut | WithdrawalMovementOut
+
+
+def movement_out(movement: Movement) -> MovementOut:
+    if isinstance(movement, WithdrawalMovement):
+        return WithdrawalMovementOut(
+            id=movement.withdrawal_id,
+            date=movement.withdrawn_on,
+            reason=movement.reason,
+            grams=movement.grams.as_decimal(),
+        )
+    return EntryMovementOut(**EntryOut.of(movement).model_dump())

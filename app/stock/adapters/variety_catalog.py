@@ -16,3 +16,10 @@ class SqlVarietyCatalog:
     def ids(self) -> list[int]:
         ids = [variety.id for variety in self._varieties.all()]
         return [variety_id for variety_id in ids if variety_id is not None]
+
+    def names(self) -> dict[int, str]:
+        return {
+            variety.id: variety.name.value
+            for variety in self._varieties.all()
+            if variety.id is not None
+        }

@@ -14,7 +14,7 @@ fixture `null` the declaration never names, both fail the check, and a declared 
 or array (`ShapeOf`) is checked recursively against the shape it points at, with the
 same strict rules.
 
-A list is matched item by item against the fixture's own single representative entry,
+A fixture may itself be a list (`movements.json`): its paths start at `[kind]`. A list is matched item by item against the fixture's own single representative entry,
 unless every fixture item carries `"kind"` (`AccountRow`'s three shapes) — then each
 answer item is matched against the fixture item sharing its own `kind`, and a `kind`
 the fixture never lists fails the check. An empty fixture list cannot describe an
@@ -212,9 +212,12 @@ def _lookup_path(root: object, path: str) -> tuple[_Found, object]:
         if current is None:
             return "null_ancestor", None
         name, index = _parse_segment(segment)
-        if not isinstance(current, dict) or name not in current:
+        if name == "" and index is not None and isinstance(current, list):
+            pass  # a fixture that is itself a list: the segment indexes the root.
+        elif not isinstance(current, dict) or name not in current:
             return "missing", None
-        current = current[name]
+        else:
+            current = current[name]
         if index is None:
             continue
         if current is None:
