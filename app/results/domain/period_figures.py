@@ -12,7 +12,7 @@ or `Decimal.quantize` anywhere here.
 from __future__ import annotations
 
 from collections.abc import Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import date, timedelta
 from typing import Literal, assert_never
 
@@ -457,6 +457,8 @@ def _month_figures(
             pending_grams=pending_sold_gifted,
         ),
         shortfall=buckets.shortfall(month.first_day, month.last_day),
+        promotion=buckets.promotion(month.first_day, month.last_day),
+        own_use=buckets.own_use(month.first_day, month.last_day),
         varieties=varieties,
     )
 
@@ -484,6 +486,8 @@ def _weeks(buckets: Buckets, today: date, first_record: date | None) -> tuple[We
                 sales=totals.sales,
                 grams=totals.grams_sold + totals.grams_gifted,
                 expenses=totals.expenses,
+                promotion=totals.promotion,
+                own_use=totals.own_use,
                 profit=totals.profit,
                 cash=totals.cash,
                 best=False,
@@ -491,16 +495,7 @@ def _weeks(buckets: Buckets, today: date, first_record: date | None) -> tuple[We
         )
     best_index = _best_index([row.sales for row in rows])
     if best_index is not None:
-        rows[best_index] = WeekFigures(
-            first_day=rows[best_index].first_day,
-            last_day=rows[best_index].last_day,
-            sales=rows[best_index].sales,
-            grams=rows[best_index].grams,
-            expenses=rows[best_index].expenses,
-            profit=rows[best_index].profit,
-            cash=rows[best_index].cash,
-            best=True,
-        )
+        rows[best_index] = replace(rows[best_index], best=True)
     return tuple(rows)
 
 
@@ -542,6 +537,8 @@ def _months(
                 sales=totals.sales,
                 grams=totals.grams_sold + totals.grams_gifted,
                 expenses=totals.expenses,
+                promotion=totals.promotion,
+                own_use=totals.own_use,
                 profit=totals.profit,
                 cash=totals.cash,
             )
@@ -617,6 +614,8 @@ def period_figures(
             profit=since_totals.profit,
             cash=since_totals.cash,
             shortfall=since_totals.shortfall,
+            promotion=since_totals.promotion,
+            own_use=since_totals.own_use,
         )
         since_first_record_expenses = _expense_breakdown(buckets, first_record, today)
 
