@@ -17,6 +17,12 @@ from app.catalog.adapters.sql_attributes import SqlCatalogAttributes
 from app.catalog.domain.attributes import CatalogAttributes
 from app.db import make_engine
 from app.migrations.runner import upgrade_to_head
+from app.sales.adapters.customer_facts import SqlCustomerFacts
+from app.sales.adapters.price_book import SqlPriceBook
+from app.sales.adapters.sql_sales import SqlSales
+from app.sales.application.record_sale import LineInput, record_sale
+from app.sales.domain.pricing import VarietyPricing
+from app.sales.domain.sale import UnknownVariety
 from app.shared.grams import Grams
 from app.stock.adapters.leaving import SqlStockLeaving
 from app.stock.adapters.sql_stock_entries import SqlStockEntries
@@ -312,3 +318,82 @@ class _ReadsStaleOnce(SqlVarieties):
     def get(self, variety_id: int) -> Variety | None:
         stale, self._stale = self._stale, None
         return stale if stale is not None else super().get(variety_id)
+
+
+def _record_sale(session: Session, price_book: SqlPriceBook, variety_id: int) -> None:
+    record_sale(
+        SqlSales(session, BUSINESS),
+        price_book,
+        SqlCustomerFacts(session, BUSINESS),
+        session,
+        sale_date=DAY,
+        today=DAY,
+        customer_id=None,
+        shipping_charged=0,
+        note=None,
+        lines=[LineInput(variety_id=variety_id, grams=Grams.of("1"), gift=True)],
+        method=None,
+        left_owing=False,
+        recorded_at=NOW,
+    )
+
+
+class _PricesStaleOnce(SqlPriceBook):
+    """The first lookup is the one the request made before the partner's delete."""
+
+    def __init__(self, session: Session, stale: VarietyPricing) -> None:
+        super().__init__(session, BUSINESS)
+        self._stale: VarietyPricing | None = stale
+
+    def for_variety(self, variety_id: int, day: date) -> VarietyPricing | None:
+        stale, self._stale = self._stale, None
+        return stale if stale is not None else super().for_variety(variety_id, day)
+
+
+class _SaleLandsAfterTheHistoryCheck(SqlVarieties):
+    """A partner's connection records a sale after this one found no history."""
+
+    engine: Engine
+
+    def has_history(self, variety_id: int) -> bool:
+        found = super().has_history(variety_id)
+        with Session(self.engine) as partner:
+            _record_sale(partner, SqlPriceBook(partner, BUSINESS), variety_id)
+        return found
+
+
+def test_a_sale_recorded_first_makes_the_delete_answer_has_history(engine: Engine) -> None:
+    variety_id = _seed_variety(engine)
+    _SaleLandsAfterTheHistoryCheck.engine = engine
+
+    with pytest.raises(VarietyHasHistory):
+        _delete(engine, variety_id, _SaleLandsAfterTheHistoryCheck)
+
+    assert _count(engine, "variety") == 1
+    assert _count(engine, "sale_line") == 1
+    assert [
+        _count(engine, t) for t in ("price_entry", "stock_threshold", "catalog_attributes")
+    ] == [
+        1,
+        1,
+        1,
+    ]
+    assert _orphans(engine) == 0
+
+
+def test_a_delete_committed_first_makes_the_sale_answer_gone_and_orphans_nothing(
+    engine: Engine,
+) -> None:
+    variety_id = _seed_variety(engine)
+
+    with Session(engine) as late:
+        stale = SqlPriceBook(late, BUSINESS).for_variety(variety_id, DAY)
+        assert stale is not None
+        _delete(engine, variety_id, SqlVarieties)
+
+        with pytest.raises(UnknownVariety):
+            _record_sale(late, _PricesStaleOnce(late, stale), variety_id)
+
+    assert _count(engine, "sale") == 0
+    assert _count(engine, "sale_line") == 0
+    assert _orphans(engine) == 0
