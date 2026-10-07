@@ -12,7 +12,7 @@ import InvitePartner from './InvitePartner'
 
 vi.mock('../../clipboard', () => ({ copyText: vi.fn().mockResolvedValue(true) }))
 
-const URL_WITH_TOKEN = 'https://apostrophe.app/invitation/secret-token-123'
+const LINK_URL = 'https://apostrophe.app/invitation/secret-token-123'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -30,7 +30,7 @@ afterEach(() => {
 
 test('a tap creates one link through the route and tells the parent', async () => {
   const fetchMock = vi.fn((_url: string, _init?: RequestInit) =>
-    Promise.resolve(jsonResponse(201, { url: URL_WITH_TOKEN, expires_at: '2026-10-09T00:00:00Z' })),
+    Promise.resolve(jsonResponse(201, { url: LINK_URL, expires_at: '2026-10-09T00:00:00Z' })),
   )
   vi.stubGlobal('fetch', fetchMock)
   const onLinkCreated = vi.fn()
@@ -38,7 +38,7 @@ test('a tap creates one link through the route and tells the parent', async () =
 
   await userEvent.click(screen.getByRole('button', { name: 'Invitá a un socio' }))
 
-  expect(await screen.findByText(URL_WITH_TOKEN)).toBeInTheDocument()
+  expect(await screen.findByText(LINK_URL)).toBeInTheDocument()
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock.mock.calls[0]?.[0]).toBe('/invitations')
   expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({ method: 'POST' })
@@ -60,7 +60,7 @@ test('a failed tap does not tell the parent a link was created', async () => {
 test('the token goes to no console and no browser storage', async () => {
   vi.stubGlobal(
     'fetch',
-    vi.fn().mockResolvedValue(jsonResponse(201, { url: URL_WITH_TOKEN, expires_at: '2026-10-09T00:00:00Z' })),
+    vi.fn().mockResolvedValue(jsonResponse(201, { url: LINK_URL, expires_at: '2026-10-09T00:00:00Z' })),
   )
   const spies = [
     vi.spyOn(console, 'log'),
@@ -72,7 +72,7 @@ test('the token goes to no console and no browser storage', async () => {
   render(<InvitePartner onLinkCreated={() => undefined} />)
 
   await userEvent.click(screen.getByRole('button', { name: 'Invitá a un socio' }))
-  await screen.findByText(URL_WITH_TOKEN)
+  await screen.findByText(LINK_URL)
 
   for (const spy of spies) {
     expect(JSON.stringify(spy.mock.calls)).not.toContain('secret-token-123')
