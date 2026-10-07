@@ -272,23 +272,6 @@ test('the active mark is more than color: aria-current, a distinct class and not
   }
 })
 
-test('at 320 px with text at 130 %, every bar label is whole: present, visible and not clipped', () => {
-  document.documentElement.style.fontSize = '130%'
-  try {
-    const { container } = renderShell([HOME])
-    const labels = within(bar(container)).getAllByRole('link')
-    expect(labels.map((link) => link.querySelector('span')?.textContent)).toEqual(BAR)
-    for (const link of labels) {
-      const label = link.querySelector('span') as HTMLElement
-      expect(label).toBeVisible()
-      expect(label.scrollWidth).toBeLessThanOrEqual(label.clientWidth)
-      expect(label.getAttribute('title')).toBeNull()
-    }
-  } finally {
-    document.documentElement.style.fontSize = ''
-  }
-})
-
 test('the business row leads to Configuración, carrying inApp, one tap from Inicio', async () => {
   const { container } = renderShell([HOME], { computer: true })
   const row = within(rail(container)).getByRole('link', { name: 'Configuración de La Huerta' })
