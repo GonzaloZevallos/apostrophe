@@ -11,6 +11,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useLocation, useNavigate, useOutletContext } from 'react-router'
 import { ApiError, NetworkError, get } from '../../api/client'
 import { keys } from '../../api/keys'
+import { pricingSettingsQueryOptions } from '../../api/pricingSettings'
 import type { Me } from '../../api/me'
 import { isGone } from '../../api/refusals'
 import type { SuccessToast } from '../../components/AvisoExito'
@@ -50,7 +51,9 @@ export default function PriceNew({ varietyId }: { varietyId: number }) {
     leave()
   }
 
-  const failure = varietyQuery.error
+  const settingsQuery = useQuery(pricingSettingsQueryOptions())
+
+  const failure = varietyQuery.error ?? settingsQuery.error
   if (gone || (failure instanceof ApiError && isGone(failure.code))) {
     return <GoneScreen label="Variedades" to={VARIETIES} />
   }
@@ -61,7 +64,7 @@ export default function PriceNew({ varietyId }: { varietyId: number }) {
       </main>
     )
   }
-  if (varietyQuery.data === undefined) {
+  if (varietyQuery.data === undefined || settingsQuery.data === undefined) {
     return (
       <main className="pantalla">
         <div className="cuerpo">
@@ -77,6 +80,7 @@ export default function PriceNew({ varietyId }: { varietyId: number }) {
         <PriceForm
           varietyId={varietyId}
           today={me.today}
+          settings={settingsQuery.data}
           onDone={onDone}
           onCancel={leave}
           onDirtyChange={onDirtyChange}
