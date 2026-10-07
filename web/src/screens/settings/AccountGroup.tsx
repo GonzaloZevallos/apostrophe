@@ -68,7 +68,7 @@ export default function AccountGroup() {
           >
             <span className="ajustes__item-rotulo">Cambiar contraseña</span>
             <span className="ajustes__item-flecha">
-              <Icono nombre="chevron" size={18} />
+              <Icono nombre="chevron" />
             </span>
           </button>
           <button

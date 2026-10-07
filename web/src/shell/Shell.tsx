@@ -138,7 +138,7 @@ export default function Shell() {
       <nav className="riel-lateral" aria-label="Navegación">
         {showRailNuevaVenta && (
           <InAppLink to={SALE_NEW} className="boton boton-nueva-venta--escritorio">
-            <Icono nombre="agregar" size={19} strokeWidth={2} />
+            <Icono nombre="agregar" />
             Nueva venta
           </InAppLink>
         )}
@@ -181,7 +181,7 @@ export default function Shell() {
         <Outlet context={me} />
         {showNuevaVenta && (
           <InAppLink to={SALE_NEW} className="boton boton-nueva-venta">
-            <Icono nombre="agregar" size={19} strokeWidth={2} />
+            <Icono nombre="agregar" />
             Nueva venta
           </InAppLink>
         )}

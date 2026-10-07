@@ -204,7 +204,7 @@ export default function Ventas() {
                       </span>
                       {sale.still_owing && <span className="fila-venta__te-debe monto-deuda">te debe</span>}
                     </span>
-                    <Icono nombre="chevron" size={18} />
+                    <Icono nombre="chevron" />
                   </InAppLink>
                 )
               })}

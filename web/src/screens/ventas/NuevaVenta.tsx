@@ -532,7 +532,7 @@ function NuevaVentaForm() {
               />
               <span className="fecha-pildora__texto" aria-hidden="true">
                 {date === me.today ? `Hoy ${formatDateShort(date)}` : formatDateLong(date)}
-                <Icono nombre="abajo" size={15} strokeWidth={1.8} />
+                <Icono nombre="abajo" />
               </span>
             </span>
             <button type="button" className="boton--enlace nueva-venta__cerrar" onClick={close}>

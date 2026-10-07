@@ -117,6 +117,51 @@ impreso no es el calculado. Si cambiás un color, cambiá la fila.
 | `--tenue` | ícono | — | — | — | `.mas__item-flecha`, `.fila-venta > svg` |
 <!-- contraste:fin -->
 
+## Íconos y texto
+
+La misma regla que [`docs/product/icon-and-text-rule.md`](../icon-and-text-rule.md),
+dicha igual. Decide cómo se rotula cada cosa, nunca qué hace: ninguna acción, ruta,
+orden, confirmación ni texto de aviso cambia por ella.
+
+**Qué forma toma cada control.** Las dos listas son cerradas: agregar a una cambia
+esta regla, nunca una pantalla suelta.
+
+- **Sólo ícono**: borrar ("Borrar…"), buscar ("Buscar"), cerrar ("Cerrar"), editar
+  ("Editar") y compartir ("Compartir") sólo donde no es la acción principal de la
+  pantalla.
+  - El nombre accesible es la palabra de hoy, exacta, y el blanco mide 44 px como
+    mínimo.
+  - Estar en la lista permite el ícono solo, no lo exige: la acción principal de una
+    pantalla lleva siempre su texto.
+  - Cerrar es una sola forma en todo formulario y hoja: el ícono, con el nombre
+    "Cerrar". Volver no es cerrar: sigue siendo "‹ <padre>".
+  - "Más info" (la "i") es el único ícono solo fuera de esta lista.
+- **Sólo texto**: enlaces, las dos respuestas de una confirmación, el envío de un
+  formulario u hoja, las opciones entre las que se elige (pestañas de período,
+  Efectivo · Transferencia · Debiendo, Claro · Oscuro…) y Deshacer.
+- **Ícono + texto**: todo lo demás. El ícono al lado de una palabra es decorativo
+  (`aria-hidden`), así que el nombre accesible sigue siendo la palabra.
+- La barra, la barra lateral, Más y la lista de Configuración llevan siempre ícono +
+  texto, y dos entradas de un mismo menú nunca comparten ícono.
+
+**Largo del texto siempre visible.** Ayuda o aviso: una frase de 80 caracteres como
+máximo. Estado vacío: título de 40 como máximo, una línea de 80 y su acción. Los
+rechazos en línea apuntan a 80 pero conservan lo que hay que corregir, y nunca van
+detrás de "Más info". Las consecuencias que el vendedor no esperaría quedan visibles,
+en corto.
+
+**Qué va detrás de "Más info".** Sólo el cómo o el porqué, en el lugar, bajo la línea
+que explica; nunca una consecuencia, el arreglo de un rechazo ni un estado. Siempre
+abre cerrado, no se recuerda y no cuenta como cambio sin guardar.
+
+**La familia.** Trazo de 1,6 y 22 px, siempre, dibujado una vez en
+`web/src/components/Icono.tsx`; el ícono no recibe tamaño ni trazo, y ningún trazo
+propone el suyo. Nunca emoji como ícono de interfaz. Cada ícono se nombra por su
+`NombreIcono` (en [`componentes.ts`](componentes.ts)); `Icono.tsx` y `componentes.ts`
+nombran el mismo conjunto, y `tests/test_design_icons.py` falla si difieren o si un
+trazo se sale de la regla. Un nombre ya dibujado se reutiliza antes de agregar otro,
+y uno nuevo entra sólo cuando una pantalla lo usa.
+
 ## Reglas de negocio que viven en el código
 
 - **Precios históricos.** Una venta usa el precio que regía el día de la venta,

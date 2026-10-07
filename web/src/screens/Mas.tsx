@@ -59,7 +59,7 @@ export default function Mas() {
                 )}
               </span>
               <span className="mas__item-flecha">
-                <Icono nombre="chevron" size={18} />
+                <Icono nombre="chevron" />
               </span>
             </InAppLink>
           ))}

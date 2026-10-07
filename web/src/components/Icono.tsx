@@ -1,42 +1,45 @@
 /**
- * `Icono` (`componentes.ts`'s `NombreIcono`/`IconoProps`, plan "Components"): the
- * app's one source of `<svg>` icons — no screen draws its own (plan, invariants).
+ * `Icono` (`componentes.ts`'s `NombreIcono`/`IconoProps`): the app's one source of
+ * `<svg>` icons — no screen draws its own. Every icon is 22 px at stroke 1.6, set once
+ * on the `<svg>` below: no caller passes a size or a stroke, and no glyph sets its own
+ * stroke, fill or transform (`tests/test_design_icons.py` checks both).
+ *
+ * `ICON_NAMES` is the one list of what is drawn; `componentes.ts` names the same set
+ * for the design and the same test fails when the two differ. `'agregar'`, `'stock'`,
+ * `'whatsapp'` and `'telegram'` are drawn here and named there too.
+ *
  * Decorative (`aria-hidden`) unless a caller passes `label`, which makes it
  * `role="img"` with that `aria-label` instead; a caller that wants the icon
  * announced (say, inside an icon-only `Boton`) passes the label there, never on a
  * wrapping element that duplicates it.
- *
- * Adds `'agregar'` to the design's own `NombreIcono` union (`docs/product/design-system/componentes.ts`)
- * for the "+" the plan calls out on "Nueva venta", "Nueva entrada" and the icon-only
- * `Boton` — the design draws it (`Componentes.dc.html`, `Inicio.dc.html`) but never
- * names it, so this is the one name this component adds to the contract's own set.
  */
 
 import type { ReactNode } from 'react'
 
-export type NombreIcono =
-  | 'inicio'
-  | 'ventas'
-  | 'clientes'
-  | 'stock'
-  | 'variedades'
-  | 'mas'
-  | 'atras'
-  | 'chevron'
-  | 'abajo'
-  | 'buscar'
-  | 'calendario'
-  | 'whatsapp'
-  | 'telegram'
-  | 'tacho'
-  | 'cobro'
-  | 'personaMas'
-  | 'agregar'
+export const ICON_NAMES = [
+  'inicio',
+  'ventas',
+  'clientes',
+  'stock',
+  'variedades',
+  'mas',
+  'atras',
+  'chevron',
+  'abajo',
+  'buscar',
+  'calendario',
+  'whatsapp',
+  'telegram',
+  'tacho',
+  'cobro',
+  'personaMas',
+  'agregar',
+] as const
+
+export type NombreIcono = (typeof ICON_NAMES)[number]
 
 export interface IconoProps {
   nombre: NombreIcono
-  size?: number
-  strokeWidth?: number
   /** When given, the icon itself carries the accessible name (`role="img"`).
    * Omitted, it is purely decorative. */
   label?: string
@@ -44,9 +47,9 @@ export interface IconoProps {
 
 const DOTS: ReactNode = (
   <>
-    <circle cx="5" cy="12" r="1.5" fill="currentColor" stroke="none" />
-    <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
-    <circle cx="19" cy="12" r="1.5" fill="currentColor" stroke="none" />
+    <circle cx="5" cy="12" r="0.75" />
+    <circle cx="12" cy="12" r="0.75" />
+    <circle cx="19" cy="12" r="0.75" />
   </>
 )
 
@@ -130,15 +133,15 @@ const TRAZOS: Record<NombreIcono, ReactNode> = {
   ),
 }
 
-export default function Icono({ nombre, size = 22, strokeWidth = 1.6, label }: IconoProps) {
+export default function Icono({ nombre, label }: IconoProps) {
   return (
     <svg
-      width={size}
-      height={size}
+      width={22}
+      height={22}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth={strokeWidth}
+      strokeWidth={1.6}
       strokeLinecap="round"
       strokeLinejoin="round"
       role={label !== undefined ? 'img' : undefined}

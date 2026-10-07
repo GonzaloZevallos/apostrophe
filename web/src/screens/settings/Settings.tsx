@@ -48,7 +48,7 @@ export default function Settings() {
             <InAppLink key={group.to} to={group.to} className="ajustes__item">
               <span className="ajustes__item-rotulo">{group.label}</span>
               <span className="ajustes__item-flecha">
-                <Icono nombre="chevron" size={18} />
+                <Icono nombre="chevron" />
               </span>
             </InAppLink>
           ))}

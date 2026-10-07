@@ -169,7 +169,7 @@ export default function Gastos() {
         <div className="gastos__cabecera">
           <span className="encabezado__titulo gastos__titulo">Gastos</span>
           <InAppLink to={EXPENSE_NEW} className="gastos__cargar" aria-label="Cargar gasto">
-            <Icono nombre="agregar" size={20} strokeWidth={1.8} />
+            <Icono nombre="agregar" />
             <span className="gastos__cargar-texto">Cargar gasto</span>
           </InAppLink>
           <div className="gastos__mes">
@@ -179,7 +179,7 @@ export default function Gastos() {
               aria-label="Mes anterior"
               onClick={() => moveMonth(-1)}
             >
-              <Icono nombre="atras" size={18} strokeWidth={1.8} />
+              <Icono nombre="atras" />
             </button>
             <span className="gastos__mes-etiqueta">{formatMonthLong(month)}</span>
             <button
@@ -188,7 +188,7 @@ export default function Gastos() {
               aria-label="Mes siguiente"
               onClick={() => moveMonth(1)}
             >
-              <Icono nombre="chevron" size={18} strokeWidth={1.8} />
+              <Icono nombre="chevron" />
             </button>
           </div>
         </div>

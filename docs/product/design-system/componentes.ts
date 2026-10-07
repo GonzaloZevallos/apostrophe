@@ -257,12 +257,15 @@ export interface EstadoVacioProps {
 /* Íconos                                                              */
 /* ------------------------------------------------------------------ */
 
-/** Trazo de 1,6 y 22px. Nunca emoji como ícono de interfaz: los emoji sólo
+/** Trazo de 1,6 y 22px, siempre: el ícono no recibe tamaño ni trazo. Los mismos
+ *  nombres los dibuja `web/src/components/Icono.tsx` (`tests/test_design_icons.py`
+ *  falla si difieren). Nunca emoji como ícono de interfaz: los emoji sólo
  *  aparecen dentro del texto del catálogo, que lo escribe el vendedor. */
 export type NombreIcono =
   | 'inicio'
   | 'ventas'
   | 'clientes'
+  | 'stock'
   | 'variedades'
   | 'mas'
   | 'atras'
@@ -270,12 +273,13 @@ export type NombreIcono =
   | 'abajo'
   | 'buscar'
   | 'calendario'
+  | 'whatsapp'
+  | 'telegram'
   | 'tacho'
   | 'cobro'
-  | 'personaMas';
+  | 'personaMas'
+  | 'agregar';
 
 export interface IconoProps {
   nombre: NombreIcono;
-  size?: number;
-  strokeWidth?: number;
 }

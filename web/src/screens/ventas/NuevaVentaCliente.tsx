@@ -132,7 +132,7 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
         <label className="campo campo--buscar">
           <span className="campo__rotulo visualmente-oculto">Buscar</span>
           <span className="campo--buscar__icono">
-            <Icono nombre="buscar" size={18} strokeWidth={1.8} />
+            <Icono nombre="buscar" />
           </span>
           <input
             className="campo__input campo--buscar__input"
