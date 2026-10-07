@@ -82,7 +82,7 @@ test.describe.serial('navigation', () => {
   })
 
   test('every built path of screens.json opens the app on a navigation, at the phone and at the computer', async () => {
-    const ids = { owing_sale: records.sale, debtor: records.customer, low: records.variety }
+    const ids = { owing_sale: records.sale, debtor: records.customer, low: records.variety, entry: records.entry }
     const paths = builtPaths()
     expect(paths.length).toBeGreaterThan(20)
     for (const size of [{ width: 390, height: 844 }, { width: 1280, height: 920 }]) {
@@ -157,7 +157,7 @@ test.describe.serial('navigation', () => {
   })
 
   test('signed out, every built path lands on Entrar', async ({ browser }) => {
-    const ids = { owing_sale: records.sale, debtor: records.customer, low: records.variety }
+    const ids = { owing_sale: records.sale, debtor: records.customer, low: records.variety, entry: records.entry }
     const context = await browser.newContext()
     const anonymous = await context.newPage()
     for (const template of builtPaths()) {

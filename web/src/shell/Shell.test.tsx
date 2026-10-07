@@ -169,11 +169,24 @@ test.each([
     const { container } = renderShell([path])
 
     expect(container.querySelector('.bar-inferior') !== null).toBe(hasBar)
-    expect(screen.queryAllByRole('link', { name: /Nueva venta/ }).length > 0).toBe(hasButton)
+    expect(container.querySelector('.boton-nueva-venta') !== null).toBe(hasButton)
     expect(screen.queryAllByRole('button', { name: /^‹ / }).length > 0).toBe(hasArrow)
     expect(container.querySelector('.riel-lateral')).not.toBeNull()
   },
 )
+
+test.each([
+  ['a root', HOME, true],
+  ['a card: a sale', pathTo(SALE, { id: 7 }), false],
+  ['a card: a customer, the detail pane of Clientes', pathTo(CUSTOMER, { id: 3 }), true],
+  ['a card: a variety, the detail pane of Variedades', pathTo(VARIETY, { id: 2 }), true],
+  ['a card: Configuración', SETTINGS, false],
+  ['a form: the sale', SALE_NEW, false],
+])('%s: the rail keeps "Nueva venta" %s, as the computer designs draw it', (_kind, path, inRail) => {
+  const { container } = renderShell([path])
+
+  expect(within(rail(container)).queryAllByRole('link', { name: /Nueva venta/ }).length > 0).toBe(inRail)
+})
 
 test.each([
   [HOME, 'Inicio', 'Inicio'],

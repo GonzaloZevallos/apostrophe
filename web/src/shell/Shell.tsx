@@ -125,12 +125,16 @@ export default function Shell() {
   const barPlace = placeOf(leaf.id, 'phone').bar
   const railPlace = placeOf(leaf.id, 'computer').rail
   const showNuevaVenta = leaf.kind === 'root'
+  // The computer draws a two-pane screen's detail inside its root's screen
+  // (`VariedadesCompu`, `ClientesCompu`), so the rail keeps its "Nueva venta" there; the
+  // phone's fixed button stays a root's alone, and the rail is not drawn on a phone.
+  const showRailNuevaVenta = showNuevaVenta || leaf.pane === 'detail'
   const showBar = leaf.kind !== 'form'
 
   return (
     <div className="disposicion">
       <nav className="riel-lateral" aria-label="Navegación">
-        {showNuevaVenta && (
+        {showRailNuevaVenta && (
           <InAppLink to={SALE_NEW} className="boton boton-nueva-venta--escritorio">
             <Icono nombre="agregar" size={19} strokeWidth={2} />
             Nueva venta
