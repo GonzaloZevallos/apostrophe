@@ -12,12 +12,18 @@
  * search list's own.
  */
 
-import { CUSTOMER_PAYMENT, CUSTOMERS, pathTo } from '../../routes'
+import { CUSTOMER, CUSTOMER_PAYMENT, CUSTOMERS, pathTo } from '../../routes'
+import { inAppState } from '../../components/inAppState'
+import { stubViewport } from '../../test-viewport'
+import { Outlet, createMemoryRouter, RouterProvider } from 'react-router'
+import FlashProvider from '../../flash/FlashProvider'
+import ClienteFicha from './ClienteFicha'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
+import paymentPreviewFixture from '../../api/fixtures/payment-preview.json'
 import customerFixture from '../../api/fixtures/customer.json'
 import customerNoPhoneFixture from '../../api/fixtures/customer-no-phone.json'
 import debtorsFixture from '../../api/fixtures/debtors.json'
@@ -277,4 +283,106 @@ test('a customer who owes shows the amber mark; one in credit shows the blue "A 
 
   expect(await screen.findByText('te debe desde 14/09')).toBeInTheDocument()
   expect(screen.getByText('A favor $ 2.000')).toBeInTheDocument()
+})
+
+// Opening a customer or a payment from the list (navigation.md, "In-app entries").
+const ANA = pathTo(CUSTOMER, { id: customerFixture.id })
+const ANA_PAYMENT = pathTo(CUSTOMER_PAYMENT, { id: customerFixture.id })
+
+function fetchApp(input: RequestInfo | URL): Promise<Response> {
+  const url = typeof input === 'string' ? input : input.toString()
+  if (url === '/payments/debtors') return Promise.resolve(jsonResponse(200, debtorsFixture))
+  if (url.includes('/preview')) return Promise.resolve(jsonResponse(200, paymentPreviewFixture))
+  if (url === `/customers/${customerFixture.id}`) return Promise.resolve(jsonResponse(200, customerFixture))
+  if (url === `/customers/${customerFixture.id}/account`) {
+    return Promise.resolve(
+      jsonResponse(200, { balance: 15000, owing_since: '2026-09-14', standing: 'owes', rows: [] }),
+    )
+  }
+  if (url.startsWith('/customers')) return Promise.resolve(jsonResponse(200, [customerFixture]))
+  return Promise.resolve(jsonResponse(404, {}))
+}
+
+async function openCustomerRow() {
+  const links = await screen.findAllByRole('link', { name: /Ana Pérez/ })
+  await userEvent.click(links.find((link) => link.getAttribute('href') === ANA)!)
+}
+
+function renderApp(entries: string[] = [CUSTOMERS]) {
+  const router = createMemoryRouter(
+    [
+      {
+        element: (
+          <FlashProvider>
+            <Outlet context={{ email: 'a@b.com', business_name: 'N', today: '2026-10-03' }} />
+          </FlashProvider>
+        ),
+        children: [
+          {
+            element: <ClientesLayout />,
+            children: [
+              { path: CUSTOMERS, element: <Clientes /> },
+              { path: CUSTOMER, element: <ClienteFicha /> },
+              { path: CUSTOMER_PAYMENT, element: <ClienteFicha payment /> },
+            ],
+          },
+        ],
+      },
+    ],
+    { initialEntries: entries },
+  )
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  render(
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>,
+  )
+  return router
+}
+
+test('"Cobrar a X" opens Registrar cobro for that customer as an in-app entry, and one Back returns to Clientes', async () => {
+  vi.mocked(fetch).mockImplementation(fetchApp)
+  const router = renderApp()
+
+  await userEvent.click((await screen.findAllByRole('link', { name: `Cobrar a ${customerFixture.name}` }))[0]!)
+
+  expect(await screen.findByRole('button', { name: 'Guardar' })).toBeInTheDocument()
+  expect(screen.getByText(customerFixture.name)).toBeInTheDocument()
+  expect(router.state.location.pathname).toBe(ANA_PAYMENT)
+  expect(router.state.location.state).toEqual(inAppState({ pathname: CUSTOMERS }))
+  await act(() => router.navigate(-1))
+  expect(router.state.location.pathname).toBe(CUSTOMERS)
+})
+
+test('Cerrar on Registrar cobro with nothing behind it goes to Clientes', async () => {
+  vi.mocked(fetch).mockImplementation(fetchApp)
+  const router = renderApp([ANA_PAYMENT])
+
+  await userEvent.click(await screen.findByRole('button', { name: 'Cerrar' }))
+
+  await waitFor(() => expect(router.state.location.pathname).toBe(CUSTOMERS))
+})
+
+test('on a computer, Clientes selects nobody by itself', async () => {
+  stubViewport('computer')
+  vi.mocked(fetch).mockImplementation(fetchApp)
+  const router = renderApp()
+
+  await screen.findAllByRole('link', { name: /Ana Pérez/ })
+  expect(router.state.location.pathname).toBe(CUSTOMERS)
+  expect(router.state.historyAction).toBe('POP')
+})
+
+test('on a phone, opening a customer pushes an entry, and Back returns to the list', async () => {
+  stubViewport('phone')
+  vi.mocked(fetch).mockImplementation(fetchApp)
+  const router = renderApp()
+
+  await openCustomerRow()
+
+  await waitFor(() => expect(router.state.location.pathname).toBe(ANA))
+  expect(router.state.historyAction).toBe('PUSH')
+  expect(router.state.location.state).toEqual(inAppState({ pathname: CUSTOMERS }))
+  await act(() => router.navigate(-1))
+  expect(router.state.location.pathname).toBe(CUSTOMERS)
 })
