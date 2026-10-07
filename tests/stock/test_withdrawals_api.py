@@ -134,7 +134,9 @@ def test_days_left_counts_withdrawn_grams(client: TestClient) -> None:
     _stock_in(client, variety_id, "100", date="2026-08-01")
     before = client.get("/stock").json()["varieties"][0]["days_left"]
 
-    _record(client, variety_id, date="2026-09-20", lines=[{"variety_id": variety_id, "grams": "30"}])
+    _record(
+        client, variety_id, date="2026-09-20", lines=[{"variety_id": variety_id, "grams": "30"}]
+    )
 
     after = client.get("/stock").json()["varieties"][0]["days_left"]
     assert before is None
@@ -154,11 +156,17 @@ def test_an_edit_with_the_same_line_count_and_with_reversed_lines_answers_200(
 
     same = client.put(
         f"/stock/withdrawals/{withdrawal['id']}",
-        json=_body(first, lines=[{"variety_id": first, "grams": "3"}, {"variety_id": second, "grams": "4"}]),
+        json=_body(
+            first,
+            lines=[{"variety_id": first, "grams": "3"}, {"variety_id": second, "grams": "4"}],
+        ),
     )
     reversed_ = client.put(
         f"/stock/withdrawals/{withdrawal['id']}",
-        json=_body(first, lines=[{"variety_id": second, "grams": "4"}, {"variety_id": first, "grams": "3"}]),
+        json=_body(
+            first,
+            lines=[{"variety_id": second, "grams": "4"}, {"variety_id": first, "grams": "3"}],
+        ),
     )
 
     assert same.status_code == 200, same.text

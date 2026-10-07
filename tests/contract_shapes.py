@@ -14,7 +14,9 @@ fixture `null` the declaration never names, both fail the check, and a declared 
 or array (`ShapeOf`) is checked recursively against the shape it points at, with the
 same strict rules.
 
-A fixture may itself be a list (`movements.json`): its paths start at `[kind]`. A list is matched item by item against the fixture's own single representative entry,
+A fixture may itself be a list (`movements.json`): its paths start at `[kind]`.
+
+A list is matched item by item against the fixture's own single representative entry,
 unless every fixture item carries `"kind"` (`AccountRow`'s three shapes) — then each
 answer item is matched against the fixture item sharing its own `kind`, and a `kind`
 the fixture never lists fails the check. An empty fixture list cannot describe an

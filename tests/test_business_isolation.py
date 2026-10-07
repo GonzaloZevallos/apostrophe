@@ -480,10 +480,11 @@ def test_a_withdrawal_naming_a_missing_or_foreign_variety_is_refused_the_same_wa
     assert own.status_code == 201, own.text
     path = f"/stock/withdrawals/{own.json()['id']}"
 
-    for send in (
+    sends: list[Callable[[int], Any]] = [
         lambda variety_id: business_b.post("/stock/withdrawals", json=body(variety_id)),
         lambda variety_id: business_b.put(path, json=body(variety_id)),
-    ):
+    ]
+    for send in sends:
         missing = send(999_999)
         other_business = send(seeded_b["variety_id"])
 
