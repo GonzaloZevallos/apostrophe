@@ -82,7 +82,9 @@ export default function VarietyRemoval({ varietyId, removal, grams }: Props) {
     }
     flash.armAfterLeaving(removal === 'delete' ? 'Variedad eliminada' : 'Variedad archivada')
     void navigate(next === null ? VARIETIES : VARIETY(next), { replace: true })
-    invalidateResource(queryClient, 'varieties')
+    // Mark stale without refetching now: the page still mounted would read the variety it
+    // just deleted, a 404 the browser writes to its console (`invalidateResource`'s note).
+    invalidateResource(queryClient, 'varieties', { refetchType: 'none' })
   }
 
   async function onConfirm(): Promise<void> {
