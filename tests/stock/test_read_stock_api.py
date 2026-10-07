@@ -9,9 +9,7 @@ from typing import Any
 
 from fastapi.testclient import TestClient
 from sqlalchemy.engine import Engine
-from sqlalchemy.orm import Session
 
-from app.varieties.adapters.tables import VarietyRow
 from tests.conftest import NOW, MovableClock
 from tests.fakes.archive import archive_by_hand
 
@@ -264,11 +262,7 @@ def test_an_archived_variety_leaves_the_rows_but_its_grams_stay_in_the_total(
     archived = _variety_id(client, "Archived")
     _record(client, kept, grams="30")
     _record(client, archived, grams="20")
-    with Session(engine) as session:
-        row = session.get(VarietyRow, archived)
-        assert row is not None
-        row.archived_at = NOW
-        session.commit()
+    archive_by_hand(engine, archived)
 
     stock = client.get("/stock").json()
 

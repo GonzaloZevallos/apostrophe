@@ -80,7 +80,8 @@ for (const viewport of VIEWPORTS) {
         await expect(page.getByRole('link', { name: '‹ Variedades' })).toBeVisible()
         await page.getByRole('link', { name: /Rosa/ }).click()
       }
-      await expect(page.getByRole('link', { name: /Rosa/ })).toBeVisible()
+      // The archived page's own heading, on both viewports (a phone has no Rosa link here).
+      await expect(page.getByRole('heading', { name: 'Rosa' })).toBeVisible()
       await expect(page.getByRole('link', { name: '‹ Archivadas' })).toBeVisible()
       await expect(page.locator('.variedad-resumen').getByText('Archivada', { exact: true })).toBeVisible()
       await expect(page.getByText('+ Entrada')).toHaveCount(0)
