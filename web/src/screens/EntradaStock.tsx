@@ -40,7 +40,7 @@ import { useGoneExit } from '../components/useGoneExit'
 import { useLeaveGuard } from '../components/useLeaveGuard'
 import { useFlash } from '../flash/useFlash'
 import { formatDate } from '../format/dates'
-import { formatGrams } from '../format/money'
+import { formatGrams, formatMoney } from '../format/money'
 import { parseMoney, parseSignedGrams } from '../format/parse'
 import { STOCK, VARIETIES } from '../routes'
 import type { Variety } from './Variedades'
@@ -378,7 +378,7 @@ function EntradaStockBody({ mode, entryId, today, initial, chosenVariety, hasEnt
               ))}
             </select>
             {varietyGrams !== null && (
-              <span className="campo__ayuda" data-copy="help">{onHandHelp(varietyGrams)}</span>
+              <span className="campo__ayuda" data-copy="help">{onHandHelp(formatGrams(varietyGrams))}</span>
             )}
           </label>
           <fieldset className="campo">
@@ -423,7 +423,7 @@ function EntradaStockBody({ mode, entryId, today, initial, chosenVariety, hasEnt
           )}
           {offline && <SinConexion />}
           {preview !== null && (
-            <span className="pie" data-copy="help">{perGramPreview(preview)}</span>
+            <span className="pie" data-copy="help">{perGramPreview(formatMoney(preview))}</span>
           )}
           <Boton textOnly="submit" type="submit" disabled={sending}>
             {mode === 'nuevo' ? 'Guardá la entrada' : 'Guardar'}
