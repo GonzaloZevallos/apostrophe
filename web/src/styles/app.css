@@ -2532,9 +2532,11 @@ body {
   min-width: 0;
 }
 
-.campo__fila > .boton-enlace:disabled {
-  color: var(--tinta2);
-  cursor: default;
+.campo__fila > .boton {
+  flex: none;
+  height: var(--alto-tocable);
+  padding: 0 var(--espacio-lg);
+  font-size: 15px;
 }
 
 .campo--casilla {
@@ -3998,3 +4000,10 @@ body {
   flex-shrink: 0;
 }
 /* ===== end area-customers ===== */
+
+/* GH-97 area-integrations-catalog: "Editar encabezado y pie" is `BotonLink`'s link kind,
+ * drawn as the design draws it on this screen: the accent word with no underline. */
+.catalogo__panel > .boton--enlace {
+  box-shadow: none;
+  align-self: flex-start;
+}

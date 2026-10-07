@@ -26,20 +26,19 @@ import { NetworkError } from '../api/client'
 import type { Me } from '../api/me'
 import { copyText } from '../clipboard'
 import { canShare, shareText } from '../share'
-import InAppLink from '../components/InAppLink'
+import BotonLink from '../components/BotonLink'
 import AvisoExito, { type SuccessToast } from '../components/AvisoExito'
 import Insignia, { type InsigniaTono } from '../components/Insignia'
 import ErrorGenerico from '../components/ErrorGenerico'
 import SinConexion from '../components/SinConexion'
 import PinPublish from './PinPublish'
+import { EMPTY_STATE_DETAIL, EMPTY_STATE_TITLE } from './catalogMessages'
 import { telegramPreview } from './telegramPreview'
 import { CATALOG_SECTION_ID, SETTINGS_CATALOG_MESSAGE, VARIETIES, VARIETY, pathTo } from '../routes'
 
 export const CATALOG_COPIED = 'Catálogo copiado'
 export const COPY_FAILED_MESSAGE = 'No se pudo copiar.'
 export const SHARE_FAILED_MESSAGE = 'No se pudo compartir.'
-export const EMPTY_STATE_TITLE = 'No hay nada en el catálogo hoy'
-export const EMPTY_STATE_DETAIL = 'No hay nada para copiar todavía'
 
 // The one table from GET /catalog's `state` to the word that says why a variety does not
 // go out (PRD criterion 4). The front never decides the reason, it only words the server's.
@@ -210,9 +209,9 @@ export default function Catalogo() {
               </div>
             )}
 
-            <InAppLink to={SETTINGS_CATALOG_MESSAGE} className="boton-enlace">
+            <BotonLink to={SETTINGS_CATALOG_MESSAGE} variant="link">
               Editar encabezado y pie
-            </InAppLink>
+            </BotonLink>
           </>
         )}
         </div>

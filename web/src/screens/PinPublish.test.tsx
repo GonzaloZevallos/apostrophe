@@ -10,7 +10,19 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
+import { PINNED_CATALOG_REASON_LABEL } from '../api/refusals'
+import { copyProblems, measure } from '../copy/limits'
 import PinPublish from './PinPublish'
+import * as pinPublishMessages from './pinPublishMessages'
+import type { PinReason } from '../api/refusals'
+import {
+  INTEGRATIONS_LINK_WORD,
+  LIMITED_COPY,
+  LONG_REFUSALS,
+  OUT_OF_DATE_LINES,
+  NOT_READY_LINE,
+  CHANNEL_MISSING_LINE,
+} from './pinPublishMessages'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -135,3 +147,57 @@ test('a failed Publicar shows its fixed reason', async () => {
 
   expect(await screen.findByRole('alert')).toHaveTextContent('El bot no puede publicar en el canal')
 })
+
+test('the blocked lines and the out-of-date reasons are the registered, measured bindings', async () => {
+  renderPin({ can_publish: false, publish_blocked_by: 'not_tested', status: null })
+  await screen.findByRole('button', { name: 'Publicar' })
+  expect(screen.getByText(/Probalo primero/).textContent).toBe(NOT_READY_LINE)
+
+  const registered = LIMITED_COPY.map((entry) => entry.text)
+  expect(registered).toContain(NOT_READY_LINE)
+  expect(registered).toContain(CHANNEL_MISSING_LINE)
+  for (const line of Object.values(OUT_OF_DATE_LINES)) {
+    expect(registered.includes(line) || LONG_REFUSALS.includes(line)).toBe(true)
+  }
+  for (const entry of LIMITED_COPY) expect(measure(entry.text)).toBeLessThanOrEqual(80)
+  expect(INTEGRATIONS_LINK_WORD).toBe('Integraciones')
+})
+
+test('channel_missing renders the registered line, link word included', async () => {
+  renderPin({ can_publish: false, publish_blocked_by: 'channel_missing', status: null })
+  await screen.findByRole('button', { name: 'Publicar' })
+  expect(screen.getByText(/Falta el canal/).textContent).toBe(CHANNEL_MISSING_LINE)
+})
+
+test.each(Object.keys(PINNED_CATALOG_REASON_LABEL) as PinReason[])(
+  'out_of_date with %s renders exactly its registered line, and that line fits or is listed',
+  async (reason) => {
+    renderOutOfDate(reason)
+    await screen.findByRole('button', { name: 'Publicar' })
+    const shown = document.querySelector('.catalogo__publicar-estado')?.textContent
+    const line = OUT_OF_DATE_LINES[reason]
+    expect(shown).toBe(line)
+    expect(line.startsWith('Desactualizado · ')).toBe(true)
+    if (measure(line) > 80) {
+      expect(LONG_REFUSALS).toContain(line)
+      expect(LIMITED_COPY.map((entry) => entry.text)).not.toContain(line)
+    } else {
+      expect(LIMITED_COPY.map((entry) => entry.text)).toContain(line)
+    }
+  },
+)
+
+test('the line a reason makes over 80 as shown is listed, not left out: too_long', () => {
+  const line = OUT_OF_DATE_LINES.too_long
+  expect(measure(line)).toBeGreaterThan(80)
+  expect(LONG_REFUSALS).toEqual([line])
+  expect(copyProblems('pinPublishMessages', pinPublishMessages)).toEqual([])
+})
+
+function renderOutOfDate(reason: PinReason) {
+  return renderPin({
+    can_publish: true,
+    publish_blocked_by: null,
+    status: { state: 'out_of_date', reason, last_published_on: null },
+  })
+}

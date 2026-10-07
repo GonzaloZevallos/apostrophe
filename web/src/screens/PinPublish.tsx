@@ -28,10 +28,16 @@ import {
 } from '../api/refusals'
 import AvisoExito, { type SuccessToast } from '../components/AvisoExito'
 import SinConexion from '../components/SinConexion'
+import Boton from '../components/Boton'
+import {
+  CHANNEL_MISSING_LEAD,
+  INTEGRATIONS_LINK_WORD,
+  OUT_OF_DATE_SEPARATOR,
+  OUT_OF_DATE_TITLE,
+} from './pinPublishMessages'
 
 const PUBLISHED_TOAST: SuccessToast = 'Catálogo publicado'
 const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
-const CHANNEL_MISSING_LEAD = 'Falta el canal: cargalo en '
 const INTEGRATIONS_PATH = SETTINGS_INTEGRATIONS
 
 interface PinStatus {
@@ -56,10 +62,13 @@ function StatusLine({ status }: { status: PinStatus }) {
   return (
     <div className="catalogo__publicar-estado">
       <span className="catalogo__publicar-titulo">
-        {status.state === 'up_to_date' ? 'Al día' : 'Desactualizado'}
+        {status.state === 'up_to_date' ? 'Al día' : OUT_OF_DATE_TITLE}
       </span>
       {status.state === 'out_of_date' && status.reason !== null && (
-        <span className="catalogo__publicar-detalle"> · {PINNED_CATALOG_REASON_LABEL[status.reason]}</span>
+        <span className="catalogo__publicar-detalle">
+          {OUT_OF_DATE_SEPARATOR}
+          {PINNED_CATALOG_REASON_LABEL[status.reason]}
+        </span>
       )}
       {status.last_published_on !== null && (
         <span className="catalogo__publicar-detalle">
@@ -74,7 +83,7 @@ function StatusLine({ status }: { status: PinStatus }) {
 function BlockedReason({ blockedBy }: { blockedBy: PublishBlockedBy }) {
   const link = (
     <InAppLink to={INTEGRATIONS_PATH} className="boton--enlace">
-      Integraciones
+      {INTEGRATIONS_LINK_WORD}
     </InAppLink>
   )
   if (blockedBy === 'not_tested') {
@@ -145,14 +154,13 @@ export default function PinPublish() {
     <div className={outOfDate ? 'catalogo__publicar catalogo__publicar--desactualizado' : 'catalogo__publicar'}>
       {toast !== null && <AvisoExito texto={toast} />}
       {data.status !== null && <StatusLine status={data.status} />}
-      <button
-        type="button"
-        className="boton"
+      <Boton
+        icon="telegram"
         disabled={blockedBy !== null || publishing}
         onClick={() => void onPublicar()}
       >
         Publicar
-      </button>
+      </Boton>
       {blockedBy !== null && <BlockedReason blockedBy={blockedBy} />}
       {publishError !== null && (
         <span className="campo__error" role="alert">

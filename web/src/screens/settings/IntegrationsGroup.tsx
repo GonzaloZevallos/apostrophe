@@ -24,17 +24,18 @@ import ErrorGenerico from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import Loading from '../../components/Loading'
 import SettingsGroup, { type LeaveWording } from './SettingsGroup'
+import Boton from '../../components/Boton'
 import { CATALOG } from '../../routes'
+import {
+  CHANNEL_CHAT_HELP,
+  LOAD_THE_TOKEN_FIRST,
+  OWN_CHAT_HELP,
+  PREVIOUS_PIN_NOTICE,
+} from './integrationsMessages'
 
 const TITLE = 'Integraciones'
 const TEST_SENT_TOAST: SuccessToast = 'Prueba enviada'
-const PREVIOUS_PIN_NOTICE =
-  'El mensaje fijado anterior queda como está; desfijalo vos en Telegram.'
 const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
-const CHANNEL_CHAT_HELP = 'Es el @usuario o el enlace del canal donde se publica el catálogo.'
-const OWN_CHAT_HELP =
-  'Abrí tu bot en Telegram y tocá Iniciar. Tu número lo ves con @userinfobot, o tocá Buscar mi chat.'
-const LOAD_THE_TOKEN_FIRST = 'Cargá el token primero'
 
 const LEAVE: LeaveWording = {
   question: '¿Descartás el cambio?',
@@ -189,9 +190,9 @@ function IntegrationsForm({ initial }: { initial: PinnedCatalog }) {
                 Guardado el {formatDate(accepted.tokenSavedOn as string)} · no se muestra más
               </span>
             </span>
-            <button type="button" className="boton-enlace" onClick={() => setTokenChanging(true)}>
+            <Boton variant="link" onClick={() => setTokenChanging(true)}>
               Cambiar
-            </button>
+            </Boton>
           </div>
         )}
 
@@ -225,15 +226,15 @@ function IntegrationsForm({ initial }: { initial: PinnedCatalog }) {
               value={ownChatInput}
               onChange={(event) => setOwnChatInput(event.target.value)}
             />
-            <button
-              type="button"
-              className="boton-enlace"
+            <Boton
+              variant="secondary"
+              icon="buscar"
               disabled={!canSearch || searching}
-              aria-describedby={canSearch ? undefined : `${fieldId}-search-help`}
+              ariaDescribedBy={canSearch ? undefined : `${fieldId}-search-help`}
               onClick={() => void onSearchOwnChat()}
             >
               Buscar mi chat
-            </button>
+            </Boton>
           </div>
           <span id={`${fieldId}-own-help`} className="campo__ayuda">
             {OWN_CHAT_HELP}
