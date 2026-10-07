@@ -28,6 +28,7 @@ from app.stock.adapters.variety_catalog import SqlVarietyCatalog
 from app.stock.application import manage_entries, manage_withdrawals
 from app.stock.application import read_stock as read_stock_uc
 from app.stock.application import set_threshold as set_threshold_uc
+from app.stock.application.errors import VarietyArchived as _ArchivedVariety
 from app.stock.application.errors import VarietyNotFound as _UnknownVariety
 from app.stock.domain.errors import (
     EntryCostInvalid,
@@ -47,7 +48,7 @@ from app.stock.domain.errors import (
     WithdrawalVarietyNotFound,
 )
 from app.stock.domain.threshold import ThresholdInvalid
-from app.varieties.application.errors import VarietyNotFound
+from app.varieties.application.errors import VarietyArchived, VarietyNotFound
 
 router = APIRouter(prefix="/stock", tags=["stock"])
 entries_router = APIRouter(prefix="/entries")
@@ -87,7 +88,16 @@ ThresholdsDep = Annotated[SqlThresholds, Depends(get_thresholds)]
 
 as_http = TranslateErrors(
     [
-        (404, (EntryNotFound, VarietyNotFound, WithdrawalNotFound, WithdrawalVarietyNotFound)),
+        (
+            404,
+            (
+                EntryNotFound,
+                VarietyNotFound,
+                VarietyArchived,
+                WithdrawalNotFound,
+                WithdrawalVarietyNotFound,
+            ),
+        ),
         (
             422,
             (
@@ -111,12 +121,16 @@ as_http = TranslateErrors(
 )
 
 
-def _or_variety_not_found(exc: _UnknownVariety, variety_id: int) -> VarietyNotFound:
+def _or_variety_not_found(
+    exc: _UnknownVariety | _ArchivedVariety, variety_id: int
+) -> VarietyNotFound | VarietyArchived:
     """`manage_entries` raises stock's own internal signal (its application layer
     cannot import `app.varieties`); the router, an adapter, translates it into the
     varieties hexagon's own class — the one class `variety.not_found` belongs to
     system-wide (`tests/test_refusal_codes.py`), so a foreign or missing variety_id
     answers the exact same 404 code whichever hexagon's use case found it."""
+    if isinstance(exc, _ArchivedVariety):
+        return VarietyArchived(variety_id)
     return VarietyNotFound(variety_id)
 
 
@@ -144,7 +158,7 @@ def record_entry(
                 today=today,
                 recorded_at=clock(),
             )
-        except _UnknownVariety as exc:
+        except (_UnknownVariety, _ArchivedVariety) as exc:
             raise _or_variety_not_found(exc, body.variety_id) from exc
         return EntryOut.of(entry)
 
@@ -179,7 +193,7 @@ def edit_entry(
                 note=body.note,
                 today=today,
             )
-        except _UnknownVariety as exc:
+        except (_UnknownVariety, _ArchivedVariety) as exc:
             raise _or_variety_not_found(exc, body.variety_id) from exc
         return EntryOut.of(entry)
 
@@ -262,8 +276,13 @@ def get_stock(
     catalog: CatalogDep,
     thresholds: ThresholdsDep,
     today: TodayDep,
+    archived: bool = False,
 ) -> StockOut:
-    view = read_stock_uc.read_stock(entries, draws, withdrawals, catalog, thresholds, today)
+    """`archived=true` answers the archived varieties' rows instead of the listed ones;
+    the total and the entries are the business's either way."""
+    view = read_stock_uc.read_stock(
+        entries, draws, withdrawals, catalog, thresholds, today, archived=archived
+    )
     return StockOut.of(view)
 
 
@@ -285,7 +304,7 @@ def set_threshold(
             view = set_threshold_uc.set_threshold(
                 entries, draws, withdrawals, thresholds, catalog, session, variety_id, grams, today
             )
-        except _UnknownVariety as exc:
+        except (_UnknownVariety, _ArchivedVariety) as exc:
             raise _or_variety_not_found(exc, variety_id) from exc
         return VarietyStockOut.of(view)
 

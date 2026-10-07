@@ -35,7 +35,11 @@ export default function FlashProvider({ children }: { children: ReactNode }) {
     (toast: SuccessToast) => dispatch({ type: 'showNow', toast, currentKey: key }),
     [key],
   )
-  const flash = useMemo<Flash>(() => ({ armAfterLeaving, showNow }), [armAfterLeaving, showNow])
+  const keepAcrossReplace = useCallback(() => dispatch({ type: 'keepAcrossReplace' }), [])
+  const flash = useMemo<Flash>(
+    () => ({ armAfterLeaving, showNow, keepAcrossReplace }),
+    [armAfterLeaving, showNow, keepAcrossReplace],
+  )
 
   return (
     <FlashContext.Provider value={flash}>

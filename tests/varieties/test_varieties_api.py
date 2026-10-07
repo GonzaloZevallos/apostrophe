@@ -4,8 +4,10 @@ from datetime import UTC, datetime
 from typing import Any
 
 from fastapi.testclient import TestClient
+from sqlalchemy.engine import Engine
 
 from tests.conftest import MovableClock
+from tests.fakes.archive import archive_by_hand
 
 GOLD_JANUARY = {
     "effective_from": "2026-01-01",
@@ -217,3 +219,23 @@ def test_refusal_bodies_carry_the_rule_s_code(client: TestClient) -> None:
     )
     assert bad_grams.status_code == 422
     assert bad_grams.json()["code"] == "grams.invalid"
+
+
+def test_an_archived_variety_is_absent_from_the_list_but_still_found_by_id(
+    client: TestClient, engine: Engine
+) -> None:
+    kept = _register(client, "Kept")
+    gone = _register(client, "Gone")
+    archive_by_hand(engine, gone["id"])
+
+    assert [v["id"] for v in client.get("/varieties").json()] == [kept["id"]]
+    assert client.get(f"/varieties/{gone['id']}").status_code == 200
+
+
+def test_an_archived_variety_still_holds_its_name(client: TestClient, engine: Engine) -> None:
+    gone = _register(client, "Gone")
+    archive_by_hand(engine, gone["id"])
+
+    assert client.post("/varieties", json={"name": " GONE "}).status_code == 409
+    other = _register(client, "Other")
+    assert client.patch(f"/varieties/{other['id']}", json={"name": "gone"}).status_code == 409

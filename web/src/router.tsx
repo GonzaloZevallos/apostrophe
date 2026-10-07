@@ -44,6 +44,7 @@ import ClientesLayout from './screens/clientes/ClientesLayout'
 import TeDeben from './screens/clientes/TeDeben'
 import PriceHistory from './screens/varieties/PriceHistory'
 import PriceNew from './screens/varieties/PriceNew'
+import ArchivedIndex from './screens/varieties/ArchivedIndex'
 import VarietyPage from './screens/varieties/VarietyPage'
 import VarietyRoute from './screens/varieties/VarietyRoute'
 import VarietiesIndex from './screens/varieties/VarietiesIndex'
@@ -69,6 +70,7 @@ import GatedLayout from './shell/GatedLayout'
 import Shell from './shell/Shell'
 import {
   ANALYSIS,
+  ARCHIVED_VARIETIES,
   CATALOG,
   ENTRIES,
   ENTRY,
@@ -121,6 +123,7 @@ export const router = createBrowserRouter([
                 children: [
                   { index: true, element: <VarietiesIndex /> },
                   { path: VARIETY_NEW, element: <VarietyNew />, handle: { chrome: 'none' } },
+                  { path: ARCHIVED_VARIETIES, element: <ArchivedIndex />, handle: { chrome: 'card' } },
                   {
                     path: VARIETY(':id'),
                     element: <VarietyRoute render={(varietyId) => <VarietyPage varietyId={varietyId} />} />,

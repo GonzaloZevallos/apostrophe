@@ -97,6 +97,19 @@ test('a taken name is refused under the name and keeps what was typed', async ()
   expect(screen.getByText(/state: open/)).toBeInTheDocument()
 })
 
+test('a name held by an archived variety is refused under the name with its own text', async () => {
+  const user = userEvent.setup()
+  renderHost(async () => jsonResponse(409, { code: 'variety.name_archived' }))
+
+  await user.type(screen.getByLabelText('Nombre'), ' 2')
+  await user.click(screen.getByRole('button', { name: 'Guardá el nombre' }))
+
+  const alert = await screen.findByRole('alert')
+  expect(alert.closest('label')).toHaveTextContent('Nombre')
+  expect(alert).toHaveTextContent('Ese nombre es de una variedad archivada. Buscala en Archivadas.')
+  expect(screen.getByLabelText(/^Nombre/)).toHaveValue('24K Gold 2')
+})
+
 test('an invalid name is refused under the name', async () => {
   const user = userEvent.setup()
   renderHost(async () => jsonResponse(422, { code: 'variety.name_invalid' }))

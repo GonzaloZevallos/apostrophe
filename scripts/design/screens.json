@@ -50,6 +50,7 @@
     { "screen": "Variedades", "route": "/varieties", "path": "/varieties" },
     { "screen": "VariedadesCompu", "route": "/varieties/{low}", "path": "/varieties/{low}", "viewport": [1280, 920] },
     { "screen": "VariedadDetalle", "route": "/varieties/{low}", "path": "/varieties/{low}" },
+    { "screen": "Archivadas", "design": "Variedades", "route": "/varieties/archived", "path": "/varieties/archived" },
     { "screen": "Gastos", "route": "/expenses", "path": "/expenses" },
     { "screen": "GastosCompu", "route": "/expenses", "path": "/expenses", "viewport": [1280, 920] },
     { "screen": "GastoNuevo", "route": "/expenses/new", "path": "/expenses/new" },

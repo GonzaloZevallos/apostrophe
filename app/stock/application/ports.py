@@ -104,11 +104,22 @@ class VarietyCatalog(Protocol):
     one (docs/adr/0004). Built for one business; stock's application layer never
     imports `app.varieties` (CODING_STANDARDS section 1) — only its adapters do."""
 
-    def exists(self, variety_id: int) -> bool: ...
+    def exists(self, variety_id: int) -> bool:
+        """The variety is this business's, archived or not."""
+        ...
 
-    def ids(self) -> list[int]:
-        """Every variety id of this business, for a use case that walks all of them
-        (`read_stock`'s per-variety sweep) rather than looking one up at a time."""
+    def usable(self, variety_id: int) -> bool:
+        """The variety is this business's and not archived: the only kind a new entry or
+        threshold may be recorded against (docs/adr/0032)."""
+        ...
+
+    def archived_ids(self) -> list[int]:
+        """The ids of this business's archived varieties, for the archived page's rows."""
+        ...
+
+    def listed_ids(self) -> list[int]:
+        """The ids of this business's unarchived varieties, for a use case that walks
+        them all (`read_stock`'s per-variety rows) rather than looking one up at a time."""
         ...
 
     def names(self) -> dict[int, str]:

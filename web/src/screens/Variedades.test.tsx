@@ -312,6 +312,61 @@ describe('on a computer: two panes', () => {
   })
 })
 
+describe('removing the selected variety on a computer', () => {
+  function removable(id: number, removal: 'delete' | 'archive') {
+    const found = VARIETIES.find((variety) => variety.id === id)
+    return { ...found, archived: false, removal }
+  }
+
+  test.each([
+    ['in the middle', 2, '/varieties/3'],
+    ['the last by name', 4, '/varieties/3'],
+  ])('archiving %s selects the next by name, else the previous one', async (_name, id, expected) => {
+    let archived = false
+    const { router } = renderApp(`/varieties/${id}`, {
+      computer: true,
+      answers: {
+        [`GET /varieties/${id}`]: () => json(200, removable(id, 'archive')),
+        [`GET /varieties/${id}/prices`]: () => json(200, []),
+        [`POST /varieties/${id}/archive`]: () => {
+          archived = true
+          return json(200, removable(id, 'archive'))
+        },
+        'GET /varieties': () => json(200, archived ? VARIETIES.filter((variety) => variety.id !== id) : VARIETIES),
+      },
+    })
+    await userEvent.click(await screen.findByRole('button', { name: 'Archivar variedad' }))
+
+    await userEvent.click(screen.getByRole('button', { name: 'Sí, archivala' }))
+
+    await waitFor(() => expect(router.state.location.pathname).toBe(expected))
+    await waitFor(() => expect(screen.queryByRole('link', { name: new RegExp(VARIETIES.find((v) => v.id === id)?.name ?? '') })).not.toBeInTheDocument())
+  })
+
+  test('removing the only variety leaves the list with nothing selected', async () => {
+    let deleted = false
+    const only = [VARIETIES[3]]
+    const { router } = renderApp('/varieties/1', {
+      computer: true,
+      answers: {
+        'GET /varieties/1': () => json(200, removable(1, 'delete')),
+        'DELETE /varieties/1': () => {
+          deleted = true
+          return new Response(null, { status: 204 })
+        },
+        'GET /varieties': () => json(200, deleted ? [] : only),
+        'GET /stock': () => json(200, { ...STOCK, varieties: deleted ? [] : [STOCK.varieties[0]] }),
+      },
+    })
+    await userEvent.click(await screen.findByRole('button', { name: 'Eliminar variedad' }))
+
+    await userEvent.click(screen.getByRole('button', { name: 'Sí, eliminala' }))
+
+    expect(await screen.findByText('Todavía no cargaste ninguna variedad')).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe('/varieties')
+  })
+})
+
 describe('Nueva variedad', () => {
   test('saves the name, says "Variedad guardada" and goes back to the list', async () => {
     const { router, fetchMock } = renderApp('/varieties', {
@@ -337,6 +392,20 @@ describe('Nueva variedad', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Agregá la variedad' }))
 
     expect(await screen.findByText('Ya existe una variedad con ese nombre')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Nombre de la variedad')).toHaveValue('Sir Jack')
+  })
+
+  test('a name held by an archived variety shows its own refusal under the name and keeps what was typed', async () => {
+    renderApp('/varieties/new', {
+      answers: { 'POST /varieties': () => json(409, { code: 'variety.name_archived' }) },
+    })
+
+    await userEvent.type(await screen.findByPlaceholderText('Nombre de la variedad'), 'Sir Jack')
+    await userEvent.click(screen.getByRole('button', { name: 'Agregá la variedad' }))
+
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent('Ese nombre es de una variedad archivada. Buscala en Archivadas.')
+    expect(alert.closest('label')).toHaveTextContent('Nombre')
     expect(screen.getByPlaceholderText('Nombre de la variedad')).toHaveValue('Sir Jack')
   })
 

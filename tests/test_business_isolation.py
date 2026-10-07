@@ -44,6 +44,7 @@ from app.results.domain.periods import periods as compute_periods
 from app.shared.calendar import Month
 from app.shared.transaction import Transaction
 from tests.conftest import SETTINGS, TEST_HASHER, TODAY, MovableClock, open_business, signed_in
+from tests.fakes.archive import archive_by_hand
 from tests.fakes.telegram import FakeTelegram
 
 MARKER = "zz-isolation-marker"
@@ -312,6 +313,8 @@ def _operations() -> list[tuple[str, str, bool]]:
 OPERATIONS = _operations()
 BY_ID = [(m, p) for m, p, _ in OPERATIONS if "{" in p]
 LISTS = [p for m, p, _ in OPERATIONS if m == "GET" and "{" not in p]
+# The same route with a query that reads other rows: the archived varieties' stock.
+LISTS.append("/stock?archived=true")
 # A non-GET route with no `{` in its path never names a record: the business it acts on
 # can only come from the session. B calling one must never move anything A can see
 # through `LISTS` (a `GET /business` with no path parameter is itself one of `LISTS`,
@@ -551,6 +554,18 @@ def test_assigning_a_customer_from_another_business_is_refused_the_same_way_as_m
     ).json()
     valid = business_b.put(f"/sales/{sale_id}/customer", json={"customer_id": own_customer["id"]})
     assert valid.status_code == 200, valid.text
+
+
+def test_another_business_reads_none_of_the_archived_stock_rows(
+    business_a: TestClient, business_b: TestClient, engine: Engine
+) -> None:
+    variety = business_a.post("/varieties", json={"name": "Archived here"}).json()
+    archive_by_hand(engine, variety["id"])
+    assert [
+        r["variety_id"] for r in business_a.get("/stock?archived=true").json()["varieties"]
+    ] == [variety["id"]]
+
+    assert business_b.get("/stock?archived=true").json()["varieties"] == []
 
 
 @pytest.mark.parametrize("path", LISTS)
@@ -932,3 +947,45 @@ def test_another_business_s_analysis_is_exactly_the_empty_shape(
         "month_expenses": {"categories": [], "total": 0, "purchases": 0},
         "since_first_record_expenses": {"categories": [], "total": 0, "purchases": 0},
     }
+
+
+@pytest.mark.parametrize(
+    ("method", "path"),
+    [
+        ("GET", "/varieties/{id}"),
+        ("POST", "/varieties/{id}/archive"),
+        ("POST", "/varieties/{id}/restore"),
+        ("PATCH", "/varieties/{id}"),
+        ("POST", "/varieties/{id}/prices"),
+        ("DELETE", "/varieties/{id}"),
+    ],
+)
+def test_another_business_cannot_reach_an_archived_variety(
+    business_a: TestClient, business_b: TestClient, method: str, path: str
+) -> None:
+    variety = business_a.post("/varieties", json={"name": f"{MARKER} archived"}).json()
+    business_a.post(f"/varieties/{variety['id']}/archive")
+    body = {"name": "Renamed", "effective_from": "2026-02-01", "list_price": 12_000}
+
+    response = business_b.request(method, path.format(id=variety["id"]), json=body)
+
+    assert response.status_code == 404, response.text
+    assert response.json()["code"] == "variety.not_found"
+    b_archived = business_b.get("/varieties", params={"archived": "true"}).json()
+    assert b_archived == []
+    assert business_a.get(f"/varieties/{variety['id']}").json()["archived"] is True
+
+
+@pytest.mark.parametrize("archived", [False, True])
+def test_another_business_cannot_delete_a_variety_with_no_history(
+    business_a: TestClient, business_b: TestClient, archived: bool
+) -> None:
+    variety = business_a.post("/varieties", json={"name": f"{MARKER} deletable"}).json()
+    if archived:
+        business_a.post(f"/varieties/{variety['id']}/archive")
+
+    response = business_b.delete(f"/varieties/{variety['id']}")
+
+    assert response.status_code == 404, response.text
+    assert response.json()["code"] == "variety.not_found"
+    assert business_a.get(f"/varieties/{variety['id']}").status_code == 200

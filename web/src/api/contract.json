@@ -17,7 +17,10 @@
     "customer.name_missing": { "kind": "refusal" },
     "customer.name_too_long": { "kind": "refusal" },
     "variety.not_found": { "kind": "gone" },
+    "variety.archived": { "kind": "gone" },
     "variety.name_taken": { "kind": "refusal" },
+    "variety.name_archived": { "kind": "refusal" },
+    "variety.has_history": { "kind": "refusal" },
     "variety.rule_broken": { "kind": "refusal" },
     "variety.name_invalid": { "kind": "refusal" },
     "variety.price_entry_invalid": { "kind": "refusal" },
@@ -124,6 +127,7 @@
   "sharedFrontRoutes": [
     "/varieties",
     "/varieties/new",
+    "/varieties/archived",
     "/varieties/catalog",
     "/varieties/entries",
     "/varieties/entries/new",

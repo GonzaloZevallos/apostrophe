@@ -9,7 +9,7 @@ Whether a business makes money and how much it actually has, over today, this we
 - payments, balances and settlement from payments (ADR-0012);
 - stock status and days left from stock.
 
-It computes nothing those capabilities already compute, beyond adding them up. Its period figures come from the one computation Análisis also reads (ADR-0020): Ganancia here and profit in Análisis are the same figure. Inicio also carries the first-run checklist and the after-import notice, defined in navigation.md; their place on Inicio is set here.
+It computes nothing those capabilities already compute, beyond adding them up. Its period figures come from the one computation Análisis also reads (ADR-0020): Ganancia here and profit in Análisis are the same figure. Inicio also carries the first-run checklist and the after-import notice, defined in navigation.md; their place on Inicio is set here. An archived variety (varieties.md) leaves Lo que te queda and "Arrancá por las variedades", while every period figure keeps it.
 
 ## Jobs
 
@@ -20,6 +20,8 @@ Ganancia and Caja exist nowhere else in the product, and they are why the panel 
 **When** I take grams out of my own stock without selling them (to share at a party so people get to know the business, or for my own use), **I want** to record them from my phone in a few taps (date, varieties and grams, the reason), **so I can** keep stock right and see in Ganancia what promoting the business and my own consumption cost me, without recording a sale nobody made or an adjustment that reads as lost flower. (Served here by the Promoción and Consumo propio lines of Semana and Mes; the withdrawal is defined in stock.md.)
 
 **When** I run my business from my phone between orders or mid-chat with a customer, several times a day, **I want** the app laid out around what I actually do and how often, **so I can** get back to the customer instead of hunting through menus. (The navigation job, navigation.md: served here by Hoy showing what can be acted on today, with "Cobrar" on each debtor.)
+
+**When** a variety I loaded by mistake, or one I no longer work with, keeps showing in my lists and pickers, **I want** to take it out from my phone in a few taps, deleting it if it never moved and archiving it if it has history, **so** my lists show only what I still sell, no past sale, stock, cost or profit figure changes, and I can bring it back exactly as it was if I start selling it again. (Served here by Lo que te queda leaving archived varieties out while every period figure stays the same; defined in varieties.md.)
 
 Success criteria:
 
@@ -40,7 +42,8 @@ Success criteria:
    - Flower lost to a negative adjustment lowers Ganancia on the adjustment's date.
    - Grams withdrawn for promotion or own use lower Ganancia on the withdrawal's date, each reason on its own line, never folded into cost of goods sold or stock shortfall.
    - Corrected stock entries and withdrawals show the next time the panel opens: a period has no closing date.
-4. **Who owes and what's left, at a glance**: money owed, each debtor one tap from collecting, and stock per variety with its status. Status is told by shape and word, never by color alone.
+   - Archiving or restoring a variety moves no figure.
+4. **Who owes and what's left, at a glance**: money owed, each debtor one tap from collecting, and stock per unarchived variety with its status. Status is told by shape and word, never by color alone.
 5. **Businesses never mix** (ADR-0004): every figure comes from the caller's business alone, and the panel route joins the isolation sweep. No figure goes to the console or browser storage.
 6. **Nothing invented, nothing computed in the browser**:
    - every figure comes from the server;
@@ -62,7 +65,7 @@ Success criteria:
 
 ### Figures per period
 
-Each figure is counted on its own date. Sales, cost of goods sold, stock shortfall, promotion and own-use cost, expenses, Ganancia and Caja come from the same period computation as Análisis (ADR-0020), never from a second sum.
+Each figure is counted on its own date. Sales, cost of goods sold, stock shortfall, promotion and own-use cost, expenses, Ganancia and Caja come from the same period computation as Análisis (ADR-0020), never from a second sum. They count every variety, archived ones included.
 
 - **Sales**: the sum of the period's sale totals, shipping included, paid or not. It is the same figure as Ventas' total. Its heading follows the tab: "Vendiste hoy", "Vendiste esta semana" or "Vendiste este mes". Withdrawals are never sales.
 - **Number of sales**: counts sales, not lines.
@@ -115,7 +118,7 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
 
 ### Lo que te queda
 
-- Every variety, sorted by name, including varieties with no entries.
+- Every unarchived variety, sorted by name, including varieties with no entries. Archived varieties are left out (varieties.md).
 - Each one shows what Variedades shows:
   - grams;
   - its status mark, told by shape and word;
@@ -130,7 +133,7 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
 - Inicio is the panel and a tab root (navigation.md), and remains the landing screen after login and after accepting an invitation.
 - **At its top**: the business's avatar, which opens Configuración.
 - **Top to bottom, above the figures**:
-  1. the first-run checklist while it shows (navigation.md). Once it is gone for good, "Arrancá por las variedades" takes its place whenever no variety has a current price today. The two never show together;
+  1. the first-run checklist while it shows (navigation.md). Once it is gone for good, "Arrancá por las variedades" takes its place whenever no unarchived variety has a current price today. The two never show together;
   2. "Tu catálogo en Telegram está desactualizado", while the pinned catalog is out of date (pinned-catalog.md). It opens the catalog screen (catalog.md);
   3. "Conectá el bot para que el catálogo fijado se actualice solo", for a business loaded by the spreadsheet import, until dismissed or the bot is first published (navigation.md);
   4. the tab's figures, as listed above.
@@ -168,6 +171,7 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
   - pending grams on a sale line leaving their sales out of Ganancia while "Vendiste" keeps the full sales;
   - pending cost showing the note under Costo de lo vendido, Faltante de stock, Promoción, Consumo propio and Ganancia as defined, and never under Caja;
   - negative Ganancia and Caja shown as "−$ X".
+- **Archiving moves nothing (criterion 3)**: every period figure is identical before archiving a variety with history, after archiving and after restoring; the archived variety is absent from Lo que te queda and does not count for "Arrancá por las variedades".
 - **Not a sale (criterion 7)**: after recording a withdrawal, 0 differences in sales, number of sales, average sale, grams sold, Regalaste, cost of goods sold, stock shortfall and Caja.
 - **Tabs**: front tests show Hoy with sales, Te deben and Lo que te queda only, and Ganancia, Caja, Costo de lo vendido, Faltante de stock, Promoción, Consumo propio, Gastos, Regalaste and Compras only on Semana and Mes, Promoción and Consumo propio right after Faltante de stock.
 - **Inicio's order**: front tests, phone and computer, show the checklist or "Arrancá por las variedades" (never both), then the out-of-date notice, then the after-import notice, then the figures.
@@ -187,3 +191,4 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
 - Margins per variety (#8), stock shortfall per variety, and promotion or own-use cost per variety.
 - Pending grams counted on the panel ("y N g sin costo"): the panel's note is fixed and carries no grams; Análisis shows the counts.
 - Stock's total grams on the panel.
+- Archived varieties on the panel.

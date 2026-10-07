@@ -36,6 +36,7 @@ SHARED_FRONT_PATHS = frozenset(
         "/expenses/new",
         "/varieties",
         "/varieties/new",
+        "/varieties/archived",
         "/varieties/catalog",
         "/varieties/entries",
         "/varieties/entries/new",

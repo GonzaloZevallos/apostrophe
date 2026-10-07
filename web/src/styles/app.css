@@ -3016,6 +3016,12 @@ body {
   text-decoration: none;
 }
 
+.variedad-retiro {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--espacio-lg);
+}
+
 .seccion-variedad {
   display: flex;
   flex-direction: column;
@@ -3171,6 +3177,26 @@ body {
   border-bottom: 1px solid var(--linea);
   text-decoration: none;
   color: var(--tinta);
+}
+
+.variedad-archivada {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+  border-bottom: 1px solid var(--linea);
+}
+
+.variedad-archivada .variedad-fila {
+  flex: 1;
+  min-width: 0;
+  border-bottom: 0;
+}
+
+.variedad-archivada__restaurar {
+  flex: 0 0 auto;
+  width: auto;
+  height: var(--alto-tocable);
+  padding: 0 var(--espacio-lg);
 }
 
 .variedad-fila__encabezado {

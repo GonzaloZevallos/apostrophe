@@ -1,6 +1,6 @@
 """The rules of a variety and its price history, with no infrastructure."""
 
-from datetime import date
+from datetime import UTC, date, datetime
 
 import pytest
 
@@ -12,6 +12,7 @@ from app.varieties.domain.variety import (
     PriceEntry,
     UnknownPriceEntry,
     Variety,
+    VarietyArchived,
     VarietyName,
 )
 
@@ -130,3 +131,66 @@ def test_the_price_history_lists_the_newest_entry_first() -> None:
     history = _gold().price_history()
 
     assert [e.effective_from for e in history] == [date(2026, 3, 1), date(2026, 1, 1)]
+
+
+def test_a_variety_is_live_until_it_carries_an_archived_instant() -> None:
+    from datetime import UTC, datetime
+
+    live = Variety(VarietyName.of("Gelato"))
+    archived = Variety(VarietyName.of("Gelato"), archived_at=datetime(2026, 1, 1, tzinfo=UTC))
+
+    assert live.archived_at is None
+    assert not live.is_archived
+    assert archived.is_archived
+
+
+def _bare_gold() -> Variety:
+    return Variety(VarietyName.of("24K Gold"), id=1)
+
+
+def test_archiving_sets_the_instant_once_and_a_second_archive_keeps_it() -> None:
+    variety = _bare_gold()
+
+    variety.archive(datetime(2026, 10, 6, 12, 0, tzinfo=UTC))
+    variety.archive(datetime(2026, 10, 7, 12, 0, tzinfo=UTC))
+
+    assert variety.is_archived
+    assert variety.archived_at == datetime(2026, 10, 6, 12, 0, tzinfo=UTC)
+
+
+def test_restoring_clears_the_instant_and_restoring_a_live_variety_changes_nothing() -> None:
+    variety = _bare_gold()
+    variety.restore()
+    assert not variety.is_archived
+
+    variety.archive(datetime(2026, 10, 6, 12, 0, tzinfo=UTC))
+    variety.restore()
+
+    assert not variety.is_archived
+    assert variety.archived_at is None
+
+
+def test_an_archived_variety_refuses_to_be_renamed_priced_or_unpriced() -> None:
+    variety = _bare_gold()
+    variety.record_price(PriceEntry.of(date(2026, 1, 1), 11_000, id=5))
+    variety.archive(datetime(2026, 10, 6, 12, 0, tzinfo=UTC))
+
+    with pytest.raises(VarietyArchived):
+        variety.rename(VarietyName.of("Silver"))
+    with pytest.raises(VarietyArchived):
+        variety.record_price(PriceEntry.of(date(2026, 2, 1), 12_000))
+    with pytest.raises(VarietyArchived):
+        variety.delete_price(5)
+
+    assert variety.name.value == "24K Gold"
+    assert len(variety.price_entries) == 1
+
+
+def test_a_restored_variety_can_be_renamed_again() -> None:
+    variety = _bare_gold()
+    variety.archive(datetime(2026, 10, 6, 12, 0, tzinfo=UTC))
+    variety.restore()
+
+    variety.rename(VarietyName.of("Silver"))
+
+    assert variety.name.value == "Silver"

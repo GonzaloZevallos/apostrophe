@@ -6,7 +6,7 @@ Where its pieces live (navigation.md): the bot settings, Buscar mi chat and Prob
 
 ## Jobs
 
-**When** something changes what my catalog says (a price is recorded or deleted, a variety sells out or comes back, I hide or edit a variety, I change the header or footer), **I want** the catalog pinned in my business's Telegram chat to update by itself, after I've seen a test copy in my own chat before customers do, **so** my customers never see a stale price or a variety I can't sell, and I never have to remember to copy, paste and pin it again.
+**When** something changes what my catalog says (a price is recorded or deleted, a variety sells out or comes back, I hide, archive, restore or edit a variety, I change the header or footer), **I want** the catalog pinned in my business's Telegram chat to update by itself, after I've seen a test copy in my own chat before customers do, **so** my customers never see a stale price or a variety I can't sell, and I never have to remember to copy, paste and pin it again.
 
 **When** I connect my bot in Configuración → Integraciones and tap Probarlo, **I want** it to tell me, if it fails, in one sentence what I have to fix (the token, my chat not started, or my chat number), **so I can** fix it from my phone, test again and get to publishing the catalog without guessing or asking anyone for help.
 
@@ -16,12 +16,14 @@ This refines the setup step of the first job (the test copy before customers see
 
 **When** I need to change how my business is set up (rename it, bring in a partner, connect or switch the Telegram bot, edit the catalog's header and footer, manage my expense categories, switch to dark, change my password or log out), **I want** every business-wide setting in one place, each in its own short screen, **so I can** change it in a few taps from my phone and get back to the customer, without wondering which screen holds it. (Served here by Integraciones: the bot's token, chats, Buscar mi chat and Probarlo, and a way forward to publish.)
 
+**When** a variety I loaded by mistake, or one I no longer work with, keeps showing in my lists and pickers, **I want** to take it out from my phone in a few taps, deleting it if it never moved and archiving it if it has history, **so** my lists show only what I still sell, no past sale, stock, cost or profit figure changes, and I can bring it back exactly as it was if I start selling it again. (Served here by archiving and restoring being upkeep triggers; defined in varieties.md.)
+
 Success criteria:
 
 1. **No step of my own**: once a change that affects the catalog is saved, the pin already shows it the next time anyone looks at Telegram. This includes a price entry whose date arrives with nobody saving anything.
 2. **One message, always the same one**: publishing or syncing edits the pinned message in place. The chat never fills with old catalogs. Switching the bot or the channel leaves the previous chat's pin untouched, and the seller is told so.
 3. **What customers read is the catalog**: the same text as the in-app preview and as Probarlo's test send, with real bold from the same left-to-right `**` pairing (ADR-0022).
-4. **Never surprised by a failure**: the save that triggered a sync (sale, price, stock, withdrawal, catalog edit) always succeeds on its own terms, and the sync happens after it. A stuck pin shows as "Desactualizado", with a one-line reason, on the catalog screen and on Inicio.
+4. **Never surprised by a failure**: the save that triggered a sync (sale, price, stock, withdrawal, catalog edit, archive or restore) always succeeds on its own terms, and the sync happens after it. A stuck pin shows as "Desactualizado", with a one-line reason, on the catalog screen and on Inicio.
 5. **Businesses never mix and the token stays secret**: one bot, token, channel chat and own chat per business. The token is never shown again once saved. Nothing about the settings or a sync leaks across businesses (ADR-0004, ADR-0005).
 6. **Done from the phone**: setup, Buscar mi chat and Probarlo in Integraciones, Publicar and seeing whether the pin is out of date on the catalog screen all work from the phone, with no API call by hand. From Integraciones a plain link leads on to the catalog screen to publish.
 7. **Each cause of a failed Probarlo has its own fixed reason**, with a concrete action.
@@ -124,6 +126,7 @@ Setup (token, chats, Buscar mi chat, first Probarlo and Publicar) is judged by c
   - price entries recorded or deleted;
   - catalog attributes, header or footer;
   - a variety renamed;
+  - a variety archived or restored (varieties.md);
   - stock entries recorded, edited or deleted;
   - stock withdrawals recorded, edited or deleted;
   - sales recorded or deleted, Deshacer included;
@@ -174,7 +177,7 @@ Setup (token, chats, Buscar mi chat, first Probarlo and Publicar) is judged by c
 
 ### The text
 
-- Exactly the catalog text from the one author (ADR-0022).
+- Exactly the catalog text from the one author (ADR-0022), which never includes an archived variety.
 - `**` markers become real Telegram bold, paired left to right. A final unpaired `**` shows as typed.
 - The test copy and the published copy are identical for the same data.
 - **Length**: measured as Telegram measures it, on the message as sent. Over Telegram's limit it is never split or cut; it is refused, as above.
@@ -190,7 +193,7 @@ Setup (token, chats, Buscar mi chat, first Probarlo and Publicar) is judged by c
 
 ## Metrics
 
-- **Trigger matrix (criterion 1)**: for every trigger, stock withdrawals and the day change included, an edit is attempted exactly when the built text differs from the last one published. A withdrawal that takes a variety's stock to zero or below edits the pin; one that leaves the text unchanged sends nothing. 100% passing.
+- **Trigger matrix (criterion 1)**: for every trigger, stock withdrawals, the day change and archiving and restoring a variety included, an edit is attempted exactly when the built text differs from the last one published. A withdrawal that takes a variety's stock to zero or below edits the pin; one that leaves the text unchanged sends nothing. 100% passing.
 - **One message per chat (criterion 2)**:
   - one post per channel chat, then edits only: 0 new posts while that message exists;
   - a channel or token change gives exactly one new post, and 0 later calls against the old message;
