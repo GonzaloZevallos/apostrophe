@@ -134,3 +134,39 @@ def test_a_sale_and_a_payment_on_the_same_date_put_the_sale_row_first() -> None:
     account = account_of([sale], [payment])
 
     assert [type(row).__name__ for row in account.rows] == ["SaleRow", "PaymentRow"]
+
+
+def test_an_on_the_spot_sale_never_gets_a_payment_or_credit_row() -> None:
+    """Only a later payment ever yields a `PaymentRow` or a `CreditRow`: the front
+    offers "Borrar cobro" on those rows, and an on-the-spot payment has none."""
+    on_the_spot = OwedSale(1, date(2026, 9, 1), AT, 100, on_the_spot_method=PaymentMethod.CASH)
+    owed = OwedSale(2, date(2026, 9, 2), AT, 50)
+    later = LaterPaymentEntry(10, date(2026, 9, 5), AT, 80, PaymentMethod.TRANSFER)
+
+    account = account_of([on_the_spot, owed], [later])
+
+    on_the_spot_rows = [
+        row for row in account.rows if isinstance(row, SaleRow) and row.sale_id == 1
+    ]
+    assert len(on_the_spot_rows) == 1
+    payment_ids = {
+        row.payment_id for row in account.rows if isinstance(row, (PaymentRow, CreditRow))
+    }
+    assert payment_ids == {10}
+    assert any(isinstance(row, CreditRow) for row in account.rows)
+
+
+def test_a_payments_split_row_comes_immediately_before_its_credit_row() -> None:
+    """The front puts "Borrar cobro" on the first row of each later payment; that
+    is the payment row only while splits are laid before the credit row."""
+    sale = OwedSale(1, date(2026, 9, 1), AT, 5000)
+    payment = LaterPaymentEntry(10, date(2026, 9, 5), AT, 8000, PaymentMethod.CASH)
+
+    account = account_of([sale], [payment])
+
+    rows_of_payment = [row for row in account.rows if isinstance(row, (PaymentRow, CreditRow))]
+    payment_row, credit_row = rows_of_payment
+    assert isinstance(payment_row, PaymentRow)
+    assert isinstance(credit_row, CreditRow)
+    assert credit_row.credit_amount == 3000
+    assert account.rows.index(credit_row) == account.rows.index(payment_row) + 1
