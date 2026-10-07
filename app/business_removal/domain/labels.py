@@ -36,7 +36,9 @@ LABEL_VIA: dict[str, str] = {
 
 # Tables with exactly one row per business and nothing of their own worth naming: the
 # business's own name stands in for them.
-LABEL_AS_BUSINESS: frozenset[str] = frozenset({"catalog_header_footer", "pinned_catalog"})
+LABEL_AS_BUSINESS: frozenset[str] = frozenset(
+    {"catalog_header_footer", "pinned_catalog", "onboarding"}
+)
 
 
 def owned_tables(schema: Schema) -> tuple[str, ...]:
