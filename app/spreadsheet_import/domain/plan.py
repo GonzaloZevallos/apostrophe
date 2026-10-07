@@ -40,6 +40,7 @@ from typing import Literal
 
 from app.shared.grams import Grams
 from app.shared.names import collapse_spaces
+from app.shared.pricing_settings import PricingSettings
 from app.spreadsheet_import.domain.rows import (
     CatalogRow,
     CategoryRow,
@@ -427,6 +428,9 @@ class Checks:
     customers: Mapping[str, CustomerKey | CustomerRefusal] = field(default_factory=dict)
     sales: Mapping[SheetRef, SaleCheck] = field(default_factory=dict)
     mapping_sheet: str = ""
+    # The business's switches as stored when the plan was made, read once at planning
+    # (docs/adr/0031): `ImportPlan.turns_on` is what `needs` has beyond them.
+    stored_settings: PricingSettings = PricingSettings(is_bulk_pricing=False, is_vip_customers=False)
 
 
 @dataclass(frozen=True)
@@ -498,6 +502,24 @@ class Counts:
     payments: int
 
 
+NO_SWITCHES = PricingSettings(is_bulk_pricing=False, is_vip_customers=False)
+
+
+def needed_settings(split: Split) -> PricingSettings:
+    """The switches the sheet itself needs, worked out from the sheet alone (ADR-0031):
+    Precio por cantidad when any imported price entry has a bulk price, Clientes VIP
+    when any customer is imported as VIP, which is a finished `Amigo` row with a
+    customer (`sale_inputs` refuses an `Amigo` row without one). Both
+    `application/plan_import.py` and `build_plan` call this one function, so the
+    switches rows are priced with and the ones the plan turns on always agree."""
+    return PricingSettings(
+        is_bulk_pricing=any(row.bulk_price is not None for row in split.price_history),
+        is_vip_customers=any(
+            row.kind == "Amigo" and row.customer is not None for row in split.ventas
+        ),
+    )
+
+
 @dataclass(frozen=True)
 class ImportPlan:
     """Every rule this import's domain owns, collected in one pass. Writable only
@@ -513,6 +535,10 @@ class ImportPlan:
     entrada_order: tuple[EntradaRow, ...]
     venta_order: tuple[VentaRow, ...]
     sales: tuple[PlannedSale, ...]
+    # The switches this sheet needs, and every row is priced with: `needs_settings`.
+    needs: PricingSettings = NO_SWITCHES
+    # What the write turns on: `needs` and off in the stored settings. Never an "off".
+    turns_on: PricingSettings = NO_SWITCHES
 
     @property
     def writable(self) -> bool:
@@ -555,6 +581,7 @@ def _check_variety_mention(
 
 def build_plan(split: Split, mapping: ParsedMapping, checks: Checks) -> ImportPlan:
     problems: list[CellProblem] = [*split.problems, *mapping.problems]
+    needs = needed_settings(split)
     mismatches: list[Mismatch] = []
 
     # -- Varieties: resolve keys, block duplicates, build the valid-key set. ---------
@@ -821,4 +848,9 @@ def build_plan(split: Split, mapping: ParsedMapping, checks: Checks) -> ImportPl
         entrada_order=tuple(sorted(split.entradas, key=_entrada_sort_key)),
         venta_order=tuple(sorted(split.ventas, key=_venta_sort_key)),
         sales=tuple(sorted(planned_sales, key=lambda sale: (sale.sale_date, sale.ref.row))),
+        needs=needs,
+        turns_on=PricingSettings(
+            is_bulk_pricing=needs.is_bulk_pricing and not checks.stored_settings.is_bulk_pricing,
+            is_vip_customers=needs.is_vip_customers and not checks.stored_settings.is_vip_customers,
+        ),
     )
