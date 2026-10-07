@@ -108,7 +108,6 @@ function errorOf(error: unknown) {
   return error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />
 }
 
-
 interface BodyProps {
   mode: 'nuevo' | 'editar'
   entryId: string

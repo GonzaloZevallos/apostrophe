@@ -133,7 +133,6 @@ export default function StockEntryForm({
     onGone?.()
   }
 
-
   const previewGrams = parseSignedGrams(grams)
   const previewCost = parseMoney(totalCost)
   // A negative adjustment carries no cost (stock.md): the preview only ever shows for
@@ -313,7 +312,7 @@ export default function StockEntryForm({
           )}
         </label>
         {fixedOrigin === undefined && (
-        <fieldset className="campo">
+          <fieldset className="campo">
             <legend className="campo__rotulo">Origen</legend>
             <div className="origen-pildoras">
               {ORIGIN_OPTIONS.map((option) => (
@@ -328,7 +327,7 @@ export default function StockEntryForm({
                 </button>
               ))}
             </div>
-        </fieldset>
+          </fieldset>
         )}
         <label className="campo">
           <span className="campo__rotulo">Costo total</span>
