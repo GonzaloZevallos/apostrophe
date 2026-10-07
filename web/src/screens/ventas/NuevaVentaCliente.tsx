@@ -168,6 +168,7 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
         {allowNone && (
           <Boton
             variant="secondary"
+            icon="clientes"
             onClick={() => {
               onChosen(null)
               chooser.closeAll()
@@ -194,7 +195,7 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
               </span>
             )}
             {offline && <SinConexion />}
-            <Boton type="submit" disabled={create.isPending}>
+            <Boton textOnly="submit" type="submit" disabled={create.isPending}>
               Crear cliente
             </Boton>
           </form>

@@ -360,7 +360,7 @@ function VentaDetalleScreen() {
             </Boton>
           )}
 
-          <Boton variant="link" icon="tacho" onClick={() => setConfirmingDelete(true)}>
+          <Boton variant="secondary" icon="tacho" onClick={() => setConfirmingDelete(true)}>
             Borrar venta
           </Boton>
         </div>
