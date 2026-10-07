@@ -42,8 +42,9 @@ Success criteria:
 - **Entry**: accepting a new-business invitation lands in the Onboarding, not on an empty Inicio. A join invitation still lands on Inicio. This is the only time the Onboarding opens by itself.
 - **The notice**: while the Onboarding is not over, Inicio shows "Seguí con la configuración" at the top, in position 1 of results.md's order, on the phone and on `InicioCompu`.
   - It shows progress in words ("2 de 6 pasos"), counting steps done or passed, and the resume step by its short name (e.g. "Falta: stock inicial").
+  - When every step is done or passed but "Listo" has not been reached yet (say, the only price was deleted while the optional steps were passed, and later added again from the variety's page), it reads "6 de 6 pasos" with no "Falta" line, and opens "Listo".
   - Adding more varieties never moves the count past steps 1–2.
-  - It opens the Onboarding at the resume step.
+  - Otherwise it opens the Onboarding at the resume step.
   - It cannot be dismissed. It goes for good when the Onboarding is over.
   - Partners see it too.
 - A seller who wants it gone sooner finishes the two required steps and taps "Saltar el resto".
@@ -95,14 +96,15 @@ Success criteria:
 | 6. Categories | "Seguir" only. Adding, renaming or removing a category saves at once but never passes the step |
 
 - **Data that already exists** shows "Hecho" and counts as passed: a bot saved earlier, a second user already in the business.
-- **Resume** lands on the first step that is neither done nor passed.
+- **Resume** lands on the first step that is neither done nor passed, or on "Listo" when there is none.
 - **Leaving** ("Cerrar", closing the app, a dropped connection) keeps everything saved and the resume point.
 - **"Saltar el resto"** passes every remaining optional step at once.
-- **No early end**: the Onboarding never ends before both required steps are met.
+- **No early end**: the Onboarding never ends before both required steps are met, and nothing outside it (a price added on the variety's page, say) ends it.
 
 ### "Listo"
 
-- The tap that passes the last optional step (the step's own action, or "Saltar el resto") ends the Onboarding and shows "Listo". From then on it is over for good: closing "Listo" by any means, or closing the app on it, never brings the Onboarding back, and the Inicio notice goes.
+- Once both required steps are done and every optional step is passed, the next screen the Onboarding shows is "Listo", and **reaching "Listo" ends the Onboarding**. Usually that is on the tap that passes the last optional step (its own action, or "Saltar el resto"); when every step became done or passed outside it, it is on tapping the Inicio notice.
+- From then on it is over for good: leaving "Listo" by any means, or closing the app on it, never brings the Onboarding back, and the Inicio notice goes. No tap on "Listo" itself is needed.
 - **One line per step**:
   - "Hecho" for a step whose data exists or that was saved;
   - "Para después — en Configuración → <grupo>" or "en Variedades" for a skipped step;
@@ -142,8 +144,9 @@ There is no telemetry.
     - required steps worked out from the data;
     - optional passes remembered;
     - "Hecho" for data that already exists;
-    - no end before both required steps are met;
-    - the end at the tap that shows "Listo".
+    - no end before both required steps are met, and none from a change made outside the Onboarding;
+    - every step done or passed outside it: the notice reads "6 de 6 pasos" with no "Falta" line, opens "Listo", and reaching "Listo" ends it;
+    - the end on reaching "Listo".
 - **One fact, one place (criterion 4)**: a value saved in each step reads the same in Configuración or on the variety's page, and the reverse.
 - **Only the sale is required (criterion 2)**: front tests show:
   - every optional step skipped in one tap;
@@ -176,6 +179,7 @@ There is no telemetry.
 - "Terminar por ahora" as a second exit.
 - Offering it to imported, joined or pre-existing businesses.
 - Building the first-run checklist, its side rules ("+ Nueva venta" saying what is missing, "Mandar catálogo" disabled) or the after-import notice: their own task (navigation.md).
+- Ending the Onboarding from outside it, without reaching "Listo".
 - Publishing the catalog from the Onboarding.
 - Waiting for a partner to join.
 - Usage tracking, a dashboard or an operator script for its metrics.
