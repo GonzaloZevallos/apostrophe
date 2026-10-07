@@ -32,6 +32,7 @@ export type NombreIcono =
   | 'cobro'
   | 'personaMas'
   | 'agregar'
+  | 'hecho'
 
 export interface IconoProps {
   nombre: NombreIcono
@@ -128,6 +129,7 @@ const TRAZOS: Record<NombreIcono, ReactNode> = {
       <path d="M5 12h14" />
     </>
   ),
+  hecho: <path d="m5 12.5 4.5 4.5L19 7.5" />,
 }
 
 export default function Icono({ nombre, size = 22, strokeWidth = 1.6, label }: IconoProps) {

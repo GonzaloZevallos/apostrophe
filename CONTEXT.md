@@ -390,8 +390,12 @@ The one place holding every business-wide setting, in groups: Negocio, Usuarios,
 _Avoid_: Ajustes (in the spreadsheet that held prices), preferences, admin, Negocio (that is one group)
 
 **First-run checklist**:
-Four steps on Inicio for a business that has not yet both priced a variety for today and recorded a stock entry: those two, plus publishing the pinned catalog and adding a second user, which are optional. Each step is worked out from the business's data and reads "Hecho" when met; the checklist goes for good the first time the two required steps are met and never returns.
-_Avoid_: onboarding, tour, wizard, setup guide, welcome
+Four steps on Inicio for a business that existed before the Onboarding shipped and has not yet both priced a variety for today and recorded a stock entry: those two, plus publishing the pinned catalog and adding a second user, which are optional. Each step is worked out from the business's data and reads "Hecho" when met; the checklist goes for good the first time the two required steps are met and never returns. A brand-new business gets the Onboarding instead.
+_Avoid_: tour, wizard, setup guide, welcome, Onboarding (that is a brand-new business's first run)
+
+**Onboarding**:
+The step-by-step setup a brand-new business is walked through after its new-business invitation is accepted, in place of the first-run checklist. It has two required steps (a variety priced today, its opening stock) and optional ones (catalog header and footer, Telegram bot, a partner, expense categories), each saving what Configuración or the variety's page saves. It resumes where it was left, is over for good once its closing screen "Listo" is reached or an import loads the business, and is never offered to a joined user's business or one that existed before it shipped.
+_Avoid_: tour, wizard, welcome screen, setup guide
 
 **Theme choice**:
 A device's choice of Claro or Oscuro. It is made only in Configuración → Apariencia, applies at once and is kept on that device alone. It is not tied to a user or a business, survives logging out and holds nothing else. With none stored, the app opens light whatever the system setting.

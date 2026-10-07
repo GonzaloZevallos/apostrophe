@@ -68,6 +68,7 @@ EXPORTED_KINDS = (
     "expense",
     "catalog_header_footer",
     "catalog_attributes",
+    "onboarding",
 )
 
 
@@ -187,6 +188,10 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
     threshold = kinds["stock_threshold"][0]
     assert threshold["variety_id"] == variety_ref
     assert threshold["threshold"] == f"{LOW_STOCK_THRESHOLD}.00"
+
+    onboarding = kinds["onboarding"][0]
+    assert onboarding["ended_at"] is None
+    assert onboarding["bot_pass"] is None
 
     header_footer = kinds["catalog_header_footer"][0]
     assert header_footer["header"] == CATALOG_HEADER
@@ -371,6 +376,7 @@ def test_a_dry_run_writes_no_file_and_deletes_nothing(
     captured = capsys.readouterr()
     assert "La Huerta" in output
     assert "customer: 1" in output
+    assert "onboarding: 1" in output
     for secret in (
         EMAIL_LEAVING,
         EMAIL_STAYING,

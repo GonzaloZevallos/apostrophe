@@ -54,6 +54,9 @@ export interface PriceFormProps {
   onCancel: () => void
   onDirtyChange: (dirty: boolean) => void
   onGone: () => void
+  /** A host with its own frame and its own "Cerrar" (the Onboarding) leaves the title row out
+   * and keeps the price effective today: no "Rige desde" to change. */
+  bare?: boolean
 }
 
 function FieldError({ message }: { message: string | undefined }) {
@@ -65,7 +68,16 @@ function FieldError({ message }: { message: string | undefined }) {
   )
 }
 
-export default function PriceForm({ varietyId, today, settings, onDone, onCancel, onDirtyChange, onGone }: PriceFormProps) {
+export default function PriceForm({
+  varietyId,
+  today,
+  settings,
+  onDone,
+  onCancel,
+  onDirtyChange,
+  onGone,
+  bare = false,
+}: PriceFormProps) {
   const queryClient = useQueryClient()
   const [effectiveFrom, setEffectiveFrom] = useState(today)
   const [listPrice, setListPrice] = useState('')
@@ -130,24 +142,30 @@ export default function PriceForm({ varietyId, today, settings, onDone, onCancel
 
   return (
     <div className="gasto-form">
-      <div className="gasto-form__cabecera">
-        <span className="gasto-form__titulo">Nuevo precio</span>
-        <button type="button" className="boton--enlace gasto-form__cerrar" onClick={onCancel}>
-          Cerrar
-        </button>
-      </div>
+      {!bare && (
+        <div className="gasto-form__cabecera">
+          <span className="gasto-form__titulo">Nuevo precio</span>
+          <button type="button" className="boton--enlace gasto-form__cerrar" onClick={onCancel}>
+            Cerrar
+          </button>
+        </div>
+      )}
       <form className="formulario" onSubmit={onSubmit}>
-        <label className="campo">
-          <span className="campo__rotulo">Rige desde</span>
-          <input
-            className="campo__input"
-            type="date"
-            value={effectiveFrom}
-            onChange={(event) => setEffectiveFrom(event.target.value)}
-            required
-          />
+        {bare ? (
           <FieldError message={errors.effectiveFrom} />
-        </label>
+        ) : (
+          <label className="campo">
+            <span className="campo__rotulo">Rige desde</span>
+            <input
+              className="campo__input"
+              type="date"
+              value={effectiveFrom}
+              onChange={(event) => setEffectiveFrom(event.target.value)}
+              required
+            />
+            <FieldError message={errors.effectiveFrom} />
+          </label>
+        )}
         <label className="campo">
           <span className="campo__rotulo">Precio de lista</span>
           <input

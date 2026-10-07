@@ -176,7 +176,7 @@ Success criteria, removing a business:
 
 - **New-business invitation**: printed by `scripts/invite-business.sh`. Accepting it takes a business name, an email and a password, and opens the business with that user in it.
 - **Join invitation**: any user creates one from the app (`POST /invitations`). Accepting it takes an email and a password and adds the user to the inviting business; a business name sent along is ignored.
-- **Accepting either invitation** signs the person in, as a login does. They land on Inicio of that business.
+- **Accepting either invitation** signs the person in, as a login does. Accepting a new-business invitation lands in the Onboarding of that business (onboarding.md); accepting a join invitation lands on Inicio of that business.
 - **Looking up an invitation** tells its kind, the business it leads to (join only) and when it expires. An unknown, used or expired invitation is not found.
 - **Email**: trimmed and lowercased; one user per email across the whole installation.
 - **Password**: at least 10 characters; stored only as a hash.

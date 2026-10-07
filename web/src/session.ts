@@ -7,7 +7,7 @@
  * with `credentials: 'include'`.
  */
 
-import { HOME, isPublicPath, LOGIN } from './routes'
+import { HOME, isPublicPath, LOGIN, ONBOARDING } from './routes'
 import type { QueryClient } from '@tanstack/react-query'
 import { get, post } from './api/client'
 
@@ -33,13 +33,17 @@ export interface AcceptBody {
   business_name?: string
 }
 
+/** A new-business accept lands in the Onboarding (`/onboarding` resolves to its resume
+ * step); a join accept still lands on Inicio. This is the only time the Onboarding opens
+ * by itself. */
 export async function acceptInvitation(
   actions: SessionActions,
   token: string,
   body: AcceptBody,
+  kind: InvitationView['kind'],
 ): Promise<void> {
   await post(`/invitations/${token}/accept`, body)
-  boundary(actions, HOME)
+  boundary(actions, kind === 'new_business' ? ONBOARDING : HOME)
 }
 
 export async function logOut(actions: SessionActions): Promise<void> {
