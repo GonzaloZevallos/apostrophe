@@ -43,7 +43,7 @@ const LEAVE: LeaveWording = {
   discardLabel: 'Sí, descartalo',
 }
 
-interface PinnedCatalog {
+export interface PinnedCatalog {
   token_saved_on: string | null
   own_chat: string | null
   channel_chat: string | null
@@ -76,7 +76,22 @@ function formatDate(iso: string): string {
   return `${day}/${month}`
 }
 
-function IntegrationsForm({ initial }: { initial: PinnedCatalog }) {
+interface IntegrationsFormProps {
+  initial: PinnedCatalog
+  /** Called after a successful Probarlo, the only save. */
+  onSaved?: () => void
+  /** Called whenever "something typed and not saved" changes. */
+  onDirtyChange?: (dirty: boolean) => void
+  /** The "Ir al catálogo" link: the group shows it, an Onboarding step does not. */
+  showCatalogLink: boolean
+}
+
+export function IntegrationsForm({
+  initial,
+  onSaved,
+  onDirtyChange,
+  showCatalogLink,
+}: IntegrationsFormProps) {
   const queryClient = useQueryClient()
   const fieldId = useId()
   const [accepted, setAccepted] = useState<Accepted>(() => acceptedFrom(initial))
@@ -103,6 +118,10 @@ function IntegrationsForm({ initial }: { initial: PinnedCatalog }) {
     tokenInput.trim() !== '' ||
     ownChatInput !== accepted.ownChat ||
     channelChatInput !== accepted.channelChat
+
+  useEffect(() => {
+    onDirtyChange?.(dirty)
+  }, [dirty, onDirtyChange])
 
   const typedToken = tokenFieldOpen && tokenInput.trim() !== '' ? tokenInput : null
   const canSearch = typedToken !== null || accepted.tokenSavedOn !== null
@@ -156,6 +175,7 @@ function IntegrationsForm({ initial }: { initial: PinnedCatalog }) {
       setTokenInput('')
       setPreviousPinLeft(result.previous_pin_left)
       setToast(TEST_SENT_TOAST)
+      onSaved?.()
     } catch (caught) {
       // A refusal saves nothing and keeps everything typed, the token included.
       showRefusal(caught)
@@ -166,7 +186,7 @@ function IntegrationsForm({ initial }: { initial: PinnedCatalog }) {
   }
 
   return (
-    <SettingsGroup title={TITLE} dirty={dirty} leave={LEAVE}>
+    <>
       {toast !== null && <AvisoExito texto={toast} />}
 
       <form className="formulario" onSubmit={(event) => void onProbarlo(event)}>
@@ -262,20 +282,29 @@ function IntegrationsForm({ initial }: { initial: PinnedCatalog }) {
         </button>
       </form>
 
-      <Link to={CATALOG} className="boton--enlace">
-        Ir al catálogo
-      </Link>
-    </SettingsGroup>
+      {showCatalogLink && (
+        <Link to={CATALOG} className="boton--enlace">
+          Ir al catálogo
+        </Link>
+      )}
+    </>
   )
 }
 
 export default function IntegrationsGroup() {
+  const [dirty, setDirty] = useState(false)
   const query = useQuery({
     queryKey: keys.pinnedCatalog(),
     queryFn: () => get<PinnedCatalog>('/pinned-catalog'),
   })
 
-  if (query.data !== undefined) return <IntegrationsForm initial={query.data} />
+  if (query.data !== undefined) {
+    return (
+      <SettingsGroup title={TITLE} dirty={dirty} leave={LEAVE}>
+        <IntegrationsForm initial={query.data} onDirtyChange={setDirty} showCatalogLink />
+      </SettingsGroup>
+    )
+  }
 
   return (
     <SettingsGroup title={TITLE} dirty={false} leave={LEAVE}>
