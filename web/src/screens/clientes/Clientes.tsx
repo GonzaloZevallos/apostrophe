@@ -36,8 +36,6 @@ import TeDeben from './TeDeben'
 export const SEARCH_LABEL = 'Buscar cliente'
 export const SEARCH_PLACEHOLDER = 'Teléfono o nombre'
 export const SEARCHING = 'Buscando…'
-export const EMPTY_LIST = EMPTY_CUSTOMERS
-
 export default function Clientes() {
   const { query, setQuery } = useCustomerSearch()
   const [debounced, setDebounced] = useState(query)
@@ -112,7 +110,7 @@ export default function Clientes() {
             {isPlaceholderData && <span className="campo__rotulo">{SEARCHING}</span>}
             {!isPlaceholderData && customers.length === 0 && (
               <span className="campo__rotulo" data-copy="emptyTitle">
-                {EMPTY_LIST}
+                {EMPTY_CUSTOMERS}
               </span>
             )}
             {customers.map((customer) => (

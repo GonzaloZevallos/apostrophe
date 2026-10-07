@@ -15,10 +15,7 @@ import { getDebtors } from '../../api/payments'
 import { salesCount } from '../../format/counts'
 import { formatDateShort } from '../../format/dates'
 import { formatMoney } from '../../format/money'
-
 import { NOBODY_OWES } from './messages'
-
-export const EMPTY_LIST = NOBODY_OWES
 
 export default function TeDeben() {
   const { data } = useQuery({
@@ -42,7 +39,7 @@ export default function TeDeben() {
       </div>
 
       {data.debtors.length === 0 && <span className="campo__rotulo" data-copy="emptyTitle">
-          {EMPTY_LIST}
+          {NOBODY_OWES}
         </span>}
 
       <div className="lista-clientes">
