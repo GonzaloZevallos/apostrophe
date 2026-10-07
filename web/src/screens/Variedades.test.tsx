@@ -21,6 +21,9 @@ vi.mock('../api/client', async () => {
   return { ...actual, get: vi.fn(), post: vi.fn() }
 })
 
+// Typing plus two awaited reads outlasts the default 5 s when the whole suite runs in parallel.
+vi.setConfig({ testTimeout: 20000 })
+
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
 
 const EMPTY_STOCK = { total: 0, varieties: [], entries: [] }
