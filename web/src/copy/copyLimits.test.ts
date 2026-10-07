@@ -13,6 +13,7 @@ import { copyProblems, LIMITS, measure, SAMPLES, type CopyModule } from './limit
  * creates it; the glob below fails until it is. */
 const KNOWN_MODULES = [
   '/src/screens/authMessages.ts',
+  '/src/screens/settings/integrationsMessages.ts',
   '/src/screens/settings/messages.ts',
   '/src/screens/varieties/thresholdMessages.ts',
 ]

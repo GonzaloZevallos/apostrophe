@@ -2535,9 +2535,11 @@ body {
   min-width: 0;
 }
 
-.campo__fila > .boton-enlace:disabled {
-  color: var(--tinta2);
-  cursor: default;
+.campo__fila > .boton {
+  flex: none;
+  height: var(--alto-tocable);
+  padding: 0 var(--espacio-lg);
+  font-size: 15px;
 }
 
 .campo--casilla {
