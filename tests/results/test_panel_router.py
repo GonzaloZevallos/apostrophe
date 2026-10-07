@@ -537,6 +537,15 @@ def _seed_small_panel_history(client: TestClient) -> None:
         json={"variety_id": variety_id, "origin": "adjustment", "grams": "-1", "date": day},
     )
     assert adjustment.status_code == 201, adjustment.text
+    withdrawal = client.post(
+        "/stock/withdrawals",
+        json={
+            "reason": "promotion",
+            "date": day,
+            "lines": [{"variety_id": variety_id, "grams": "1"}],
+        },
+    )
+    assert withdrawal.status_code == 201, withdrawal.text
 
 
 def _seed_bigger_panel_history(client: TestClient) -> None:
@@ -592,6 +601,15 @@ def _seed_bigger_panel_history(client: TestClient) -> None:
         },
     )
     assert adjustment.status_code == 201, adjustment.text
+    withdrawal = client.post(
+        "/stock/withdrawals",
+        json={
+            "reason": "own_use",
+            "date": TODAY.isoformat(),
+            "lines": [{"variety_id": variety_ids[0], "grams": "1"}],
+        },
+    )
+    assert withdrawal.status_code == 201, withdrawal.text
 
 
 def _statement_count(engine: Engine, client: TestClient) -> int:

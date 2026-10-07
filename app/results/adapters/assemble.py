@@ -47,7 +47,7 @@ def _amount_with_pending(figure: AmountWithPending) -> AmountWithPendingOut:
     )
 
 
-def _shortfall(figure: AmountWithPending | None) -> AmountWithPendingOut | None:
+def _optional(figure: AmountWithPending | None) -> AmountWithPendingOut | None:
     return None if figure is None else _amount_with_pending(figure)
 
 
@@ -77,7 +77,9 @@ def assemble(today: date, figures: AnalysisFigures) -> AnalysisOut:
             grams_sold=month.grams_sold.as_decimal(),
             grams_gifted=month.grams_gifted.as_decimal(),
             average_margin=_margin(month.average_margin),
-            shortfall=_shortfall(month.shortfall),
+            shortfall=_optional(month.shortfall),
+            promotion=_optional(month.promotion),
+            own_use=_optional(month.own_use),
             varieties=[
                 VarietyRowOut(
                     variety_id=v.variety_id,
@@ -99,6 +101,8 @@ def assemble(today: date, figures: AnalysisFigures) -> AnalysisOut:
                 sales=w.sales,
                 grams=w.grams.as_decimal(),
                 expenses=w.expenses,
+                promotion=_optional(w.promotion),
+                own_use=_optional(w.own_use),
                 profit=_amount_with_pending(w.profit),
                 cash=w.cash,
                 best=w.best,
@@ -113,6 +117,8 @@ def assemble(today: date, figures: AnalysisFigures) -> AnalysisOut:
                 sales=m.sales,
                 grams=m.grams.as_decimal(),
                 expenses=m.expenses,
+                promotion=_optional(m.promotion),
+                own_use=_optional(m.own_use),
                 profit=_amount_with_pending(m.profit),
                 cash=m.cash,
             )
@@ -130,7 +136,9 @@ def assemble(today: date, figures: AnalysisFigures) -> AnalysisOut:
                 expenses=since.expenses,
                 profit=_amount_with_pending(since.profit),
                 cash=since.cash,
-                shortfall=_shortfall(since.shortfall),
+                shortfall=_optional(since.shortfall),
+                promotion=_optional(since.promotion),
+                own_use=_optional(since.own_use),
             )
         ),
         month_expenses=_breakdown(figures.month_expenses),
