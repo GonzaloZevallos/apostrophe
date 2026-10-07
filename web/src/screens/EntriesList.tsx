@@ -141,12 +141,14 @@ export default function EntriesList({ varietyId }: Props) {
           {rows.map((entry) =>
             entry.kind === 'withdrawal' ? (
               <li key={`withdrawal-${entry.id}`} className="fila-entrada">
-                <Link to={withdrawalPath(entry.id)} className="fila-entrada__texto">
-                  <span className="fila-entrada__linea1">
-                    {formatDate(entry.date, me.today)} · {nameOf(varietyId ?? 0)}
-                  </span>
-                  <span className="fila-entrada__linea2">
-                    {REASON_LABEL[entry.reason]} · {`−${formatGrams(entry.grams)}`}
+                <Link to={withdrawalPath(entry.id)} className="fila-entrada__enlace">
+                  <span className="fila-entrada__texto">
+                    <span className="fila-entrada__linea1">
+                      {formatDate(entry.date, me.today)} · {nameOf(varietyId ?? 0)}
+                    </span>
+                    <span className="fila-entrada__linea2">
+                      {REASON_LABEL[entry.reason]} · {`−${formatGrams(entry.grams)}`}
+                    </span>
                   </span>
                 </Link>
               </li>

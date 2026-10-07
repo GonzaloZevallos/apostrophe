@@ -41,14 +41,16 @@ export default function VarietyStockSection({
         {rows.map((movement) =>
           movement.kind === 'withdrawal' ? (
             <li key={`withdrawal-${movement.id}`} className="fila-entrada">
-              <Link to={withdrawalPath(movement.id)} className="fila-entrada__texto">
-                <span className="fila-entrada__linea1">
-                  {formatDate(movement.date, today)} · {REASON_LABEL[movement.reason]}
+              <Link to={withdrawalPath(movement.id)} className="fila-entrada__enlace">
+                <span className="fila-entrada__texto">
+                  <span className="fila-entrada__linea1">
+                    {formatDate(movement.date, today)} · {REASON_LABEL[movement.reason]}
+                  </span>
+                </span>
+                <span className="fila-entrada__cifras">
+                  <span className="fila-entrada__costo">{`−${formatGrams(movement.grams)}`}</span>
                 </span>
               </Link>
-              <span className="fila-entrada__cifras">
-                <span className="fila-entrada__costo">{`−${formatGrams(movement.grams)}`}</span>
-              </span>
             </li>
           ) : (
             <li key={`entry-${movement.id}`} className="fila-entrada">
