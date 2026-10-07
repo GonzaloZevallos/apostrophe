@@ -12,6 +12,7 @@ import { RouterProvider, createMemoryRouter } from 'react-router'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import { router as appRouter } from '../router'
 import { renderWithViewport } from '../test-viewport'
+import { expectIconAndTextRule, iconAndTextProblems } from '../test/iconAndTextRule'
 import {
   CATALOG,
   STOCK as STOCK_PATH,
@@ -375,6 +376,41 @@ describe('removing the selected variety on a computer', () => {
 
     expect(await screen.findByText('Todavía no cargaste ninguna variedad')).toBeInTheDocument()
     expect(router.state.location.pathname).toBe(VARIETIES_PATH)
+  })
+})
+
+describe('the icon and text rule', () => {
+  test('the list screen follows the rule: its actions carry an icon and keep their word as name', async () => {
+    renderApp(VARIETIES_PATH)
+    await screen.findByText('24K Gold')
+
+    expectIconAndTextRule(screen.getByRole('main'), { optionClasses: ['variedad-fila', 'variedades__todas'] })
+    for (const name of ['Mandar catálogo', '+ Entrada de stock', 'Sacar del stock']) {
+      const link = screen.getByRole('link', { name })
+      expect(link.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+    }
+  })
+
+  test('the rule helper rejects the list screen when an action loses its icon', async () => {
+    renderApp(VARIETIES_PATH)
+    await screen.findByText('24K Gold')
+    screen.getByRole('link', { name: 'Sacar del stock' }).querySelector('svg')?.remove()
+
+    const problems = iconAndTextProblems(screen.getByRole('main'), { optionClasses: ['variedad-fila', 'variedades__todas'] })
+    expect(problems).toHaveLength(1)
+    expect(problems[0]).toContain('Sacar del stock')
+  })
+
+  test('the empty list screen follows the rule too', async () => {
+    renderApp(VARIETIES_PATH, {
+      answers: {
+        'GET /varieties': () => json(200, []),
+        'GET /stock': () => json(200, { total: 0, varieties: [], entries: [] }),
+      },
+    })
+    await screen.findByText('Todavía no cargaste ninguna variedad')
+
+    expectIconAndTextRule(screen.getByRole('main'), { optionClasses: ['variedades__todas'] })
   })
 })
 

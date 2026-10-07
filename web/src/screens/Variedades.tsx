@@ -22,6 +22,7 @@ import { catalogQueryOptions } from '../api/catalog'
 import { keys } from '../api/keys'
 import type { Me } from '../api/me'
 import { readStock, type VarietyStock } from '../api/stock'
+import BotonLink from '../components/BotonLink'
 import ErrorGenerico from '../components/ErrorGenerico'
 import GoneNotice from '../components/GoneNotice'
 import { useGoneNotice } from '../components/goneExit'
@@ -101,15 +102,15 @@ export default function Variedades() {
         <h1 className="encabezado__titulo">Variedades</h1>
         {summary !== null && <p className="pie variedades__resumen">{summary}</p>}
         <div className="variedades__acciones">
-          <InAppLink to={CATALOG} className="boton">
+          <BotonLink to={CATALOG} icon="telegram">
             Mandar catálogo
-          </InAppLink>
-          <InAppLink to={STOCK_ENTRY_NEW} className="boton boton--suave">
+          </BotonLink>
+          <BotonLink to={STOCK_ENTRY_NEW} variant="secondary" icon="agregar">
             + Entrada de stock
-          </InAppLink>
-          <InAppLink to={WITHDRAWAL_NEW} className="boton boton--suave">
+          </BotonLink>
+          <BotonLink to={WITHDRAWAL_NEW} variant="secondary" icon="stock">
             Sacar del stock
-          </InAppLink>
+          </BotonLink>
           <InAppLink to={VARIETY_NEW} className="boton--enlace variedades__nueva">
             Nueva variedad
           </InAppLink>
