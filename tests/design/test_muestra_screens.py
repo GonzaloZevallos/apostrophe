@@ -1,5 +1,5 @@
 """The design screens of every active family agree with `docs/product/design-system/muestra.md`
-(docs/adr/0033). A family is switched on by the piece that redraws it, listing its screens in
+(docs/adr/0035). A family is switched on by the piece that redraws it, listing its screens in
 `muestra_families.py`; with none listed there is nothing to read and the test passes."""
 
 from pathlib import Path

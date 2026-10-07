@@ -1,4 +1,4 @@
-"""Checks a design screen against `docs/product/design-system/muestra.md` (docs/adr/0033).
+"""Checks a design screen against `docs/product/design-system/muestra.md` (docs/adr/0035).
 
 A screen is read as visible text: comments, `<script>` and `<style>` are dropped, every tag
 becomes a break, and a line is split at ` · `, so each figure and each label is a "part".

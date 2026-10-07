@@ -79,6 +79,12 @@ def seed(api: Api, today: date) -> Sample:
         # Gastos shows one month: an expense must never fall into the previous one.
         return (today - timedelta(days=min(days, today.day - 1))).isoformat()
 
+    # A new business starts with both pricing rules off (docs/adr/0034); the design shows
+    # a bulk price and a VIP customer, so the sample switches both on before any price
+    # entry (an entry stores nothing for a rule that is off) and gives each bulk-priced
+    # variety VIP price = bulk price, as the migration did for existing businesses.
+    api.call("PUT", "/pricing-settings", {"is_bulk_pricing": True, "is_vip_customers": True})
+
     def variety(name: str, list_price: int, bulk: int | None = None) -> int:
         made: int = api.call("POST", "/varieties", {"name": name})["id"]
         api.call(
@@ -89,6 +95,7 @@ def seed(api: Api, today: date) -> Sample:
                 "list_price": list_price,
                 "bulk_price": bulk,
                 "bulk_minimum": 5 if bulk is not None else None,
+                "vip_price": bulk,
             },
         )
         return made

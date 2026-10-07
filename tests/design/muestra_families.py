@@ -1,5 +1,5 @@
 """The screen families the `muestra.md` guard (`muestra_guard.py`) checks, and what each one
-forbids (docs/adr/0033).
+forbids (docs/adr/0035).
 
 A family is switched on by the piece that redraws it: that piece lists its screens, and only
 then does the guard read them and apply the denylist. Each family is its own declaration, so

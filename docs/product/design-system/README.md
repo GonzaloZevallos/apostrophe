@@ -41,7 +41,7 @@ entrada al día. Las cifras de La Huerta que usan las pantallas (saldos, stock, 
 restantes, las cifras del panel) están todas en
 [`muestra.md`](muestra.md), la única fuente: ninguna pantalla inventa un número propio. Lo genera
 `scripts/design/capture_muestra.py` a una fecha fija y un test compara cada pantalla con él
-(ADR-0033).
+(ADR-0035).
 
 ## Dirección de diseño
 
