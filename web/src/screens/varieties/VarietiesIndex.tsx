@@ -4,7 +4,7 @@
  * once there is one, and shows nothing that could be read as data until then.
  */
 
-import { Navigate } from 'react-router'
+import ReplaceTo from '../../components/ReplaceTo'
 import { useIsComputer } from '../../components/useIsComputer'
 import { VARIETY } from '../../routes'
 import Variedades from '../Variedades'
@@ -15,5 +15,5 @@ export default function VarietiesIndex() {
   const selected = useSelectedVariety()
   if (!computer) return <Variedades />
   if (selected === null) return null
-  return <Navigate to={VARIETY(selected)} replace />
+  return <ReplaceTo to={VARIETY(selected)} />
 }

@@ -5,7 +5,7 @@
  */
 
 import { useQuery } from '@tanstack/react-query'
-import { Navigate } from 'react-router'
+import ReplaceTo from '../../components/ReplaceTo'
 import { useIsComputer } from '../../components/useIsComputer'
 import { VARIETY } from '../../routes'
 import { archivedVarietiesQueryOptions } from './archivedVarieties'
@@ -18,5 +18,5 @@ export default function ArchivedIndex() {
   if (!computer) return <ArchivedVarieties />
   const first = data === undefined ? undefined : varietiesByName(data)[0]
   if (first === undefined) return null
-  return <Navigate to={VARIETY(first.id)} replace />
+  return <ReplaceTo to={VARIETY(first.id)} />
 }

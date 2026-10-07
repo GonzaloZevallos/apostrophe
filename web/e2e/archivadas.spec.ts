@@ -56,8 +56,9 @@ test('a seller deletes a fresh variety, archives one with history, finds it and 
   // Found in Archivadas (1), its page is read-only, Restaurar is the one action.
   await page.goto('/varieties')
   await page.getByRole('link', { name: /Archivadas \(1\)/ }).click()
-  await expect(page).toHaveURL(/\/varieties\/archived$/)
-  await page.getByRole('link', { name: /Rosa/ }).click()
+  // The computer's two panes select the first archived variety by name on their own.
+  await expect(page).toHaveURL(/\/varieties\/[0-9]+$/)
+  await expect(page.getByRole('link', { name: /Rosa/ })).toBeVisible()
   await expect(page.getByRole('link', { name: '‹ Archivadas' })).toBeVisible()
   await expect(page.locator('.variedad-resumen').getByText('Archivada', { exact: true })).toBeVisible()
   await expect(page.getByText('+ Entrada')).toHaveCount(0)
