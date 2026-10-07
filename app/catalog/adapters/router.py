@@ -1,7 +1,8 @@
+from collections.abc import Callable
 from datetime import date
-from typing import Annotated
+from typing import Annotated, cast
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 
 from app.accounts.adapters.deps import CurrentBusinessId
@@ -13,6 +14,7 @@ from app.catalog.adapters.stock_status import StockStatusesFromStock
 from app.catalog.application import set_header_footer as set_header_footer_uc
 from app.catalog.application import set_variety_attributes as set_variety_attributes_uc
 from app.catalog.application.errors import CatalogVarietyNotFound
+from app.catalog.application.ports import CatalogPricingSettings
 from app.catalog.application.read_catalog import read_catalog
 from app.catalog.domain.errors import (
     AromaTooLong,
@@ -49,10 +51,23 @@ def get_header_footer(
     return SqlCatalogHeaderFooter(session, business_id)
 
 
+def get_pricing_settings(
+    request: Request, session: SessionDep, business_id: CurrentBusinessId
+) -> CatalogPricingSettings:
+    # The catalog reaches the switches only through its own port; `app/main.py` puts the
+    # real implementation on `app.state.catalog_pricing_settings` as a factory (ADR-0006).
+    factory = cast(
+        Callable[[Session, int], CatalogPricingSettings],
+        request.app.state.catalog_pricing_settings,
+    )
+    return factory(session, business_id)
+
+
 VarietiesDep = Annotated[SqlCatalogVarieties, Depends(get_varieties)]
 StockDep = Annotated[StockStatusesFromStock, Depends(get_stock)]
 AttributesDep = Annotated[SqlCatalogAttributes, Depends(get_attributes)]
 HeaderFooterDep = Annotated[SqlCatalogHeaderFooter, Depends(get_header_footer)]
+PricingSettingsDep = Annotated[CatalogPricingSettings, Depends(get_pricing_settings)]
 
 
 as_http = TranslateErrors(
@@ -69,9 +84,10 @@ def get_catalog(
     stock: StockDep,
     attributes: AttributesDep,
     header_footer: HeaderFooterDep,
+    pricing_settings: PricingSettingsDep,
     today: TodayDep,
 ) -> CatalogOut:
-    view = read_catalog(varieties, stock, attributes, header_footer, today)
+    view = read_catalog(varieties, stock, attributes, header_footer, pricing_settings, today)
     return CatalogOut.of(view)
 
 
@@ -83,6 +99,7 @@ def put_variety_attributes(
     stock: StockDep,
     attributes: AttributesDep,
     header_footer: HeaderFooterDep,
+    pricing_settings: PricingSettingsDep,
     session: SessionDep,
     today: TodayDep,
 ) -> CatalogOut:
@@ -92,6 +109,7 @@ def put_variety_attributes(
             stock,
             attributes,
             header_footer,
+            pricing_settings,
             session,
             variety_id,
             body.shown,
@@ -110,11 +128,20 @@ def put_header_footer(
     stock: StockDep,
     attributes: AttributesDep,
     header_footer: HeaderFooterDep,
+    pricing_settings: PricingSettingsDep,
     session: SessionDep,
     today: TodayDep,
 ) -> CatalogOut:
     with as_http:
         view = set_header_footer_uc.set_header_footer(
-            varieties, stock, attributes, header_footer, session, body.header, body.footer, today
+            varieties,
+            stock,
+            attributes,
+            header_footer,
+            pricing_settings,
+            session,
+            body.header,
+            body.footer,
+            today,
         )
         return CatalogOut.of(view)
