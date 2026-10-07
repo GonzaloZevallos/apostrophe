@@ -53,3 +53,12 @@ test('showNow shows in place, on the current key', () => {
 test('a location change while idle changes nothing', () => {
   expect(flashReducer(idle, { type: 'locationChanged', key: 'x' })).toBe(idle)
 })
+
+test('shown, then a redirect that follows the toast: still shown, on the new key; any other new key: idle', () => {
+  const showing: FlashState = { status: 'showing', toast: 'Gasto guardado', shownKey: 'b' }
+
+  const followed = flashReducer(showing, { type: 'locationChanged', key: 'c', follows: true })
+
+  expect(followed).toEqual({ status: 'showing', toast: 'Gasto guardado', shownKey: 'c' })
+  expect(flashReducer(followed, { type: 'locationChanged', key: 'd', follows: false })).toEqual(idle)
+})

@@ -8,18 +8,28 @@ import { useCallback, useEffect, useMemo, useReducer, type ReactNode } from 'rea
 import { useLocation } from 'react-router'
 import AvisoExito, { type SuccessToast } from '../components/AvisoExito'
 import { FlashContext, type Flash } from './flashContext'
-import { flashReducer } from './flashReducer'
+import { FOLLOWED_REDIRECT, flashReducer } from './flashReducer'
+
+function isFollowedRedirect(historyState: unknown): boolean {
+  return (
+    typeof historyState === 'object' &&
+    historyState !== null &&
+    'flashFollows' in historyState &&
+    historyState.flashFollows === FOLLOWED_REDIRECT.flashFollows
+  )
+}
 
 /** The same duration the other screens' toasts use. */
 const TOAST_MS = 2500
 
 export default function FlashProvider({ children }: { children: ReactNode }) {
-  const { key } = useLocation()
+  const { key, state: historyState } = useLocation()
+  const follows = isFollowedRedirect(historyState)
   const [state, dispatch] = useReducer(flashReducer, { status: 'idle' })
 
   useEffect(() => {
-    dispatch({ type: 'locationChanged', key })
-  }, [key])
+    dispatch({ type: 'locationChanged', key, follows })
+  }, [key, follows])
 
   useEffect(() => {
     if (state.status !== 'showing') return

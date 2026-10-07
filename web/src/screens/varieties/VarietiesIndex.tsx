@@ -5,6 +5,7 @@
  */
 
 import { Navigate } from 'react-router'
+import { FOLLOWED_REDIRECT } from '../../flash/flashReducer'
 import { useIsComputer } from '../../components/useIsComputer'
 import { VARIETY } from '../../legacyVarietyPaths'
 import Variedades from '../Variedades'
@@ -15,5 +16,5 @@ export default function VarietiesIndex() {
   const selected = useSelectedVariety()
   if (!computer) return <Variedades />
   if (selected === null) return null
-  return <Navigate to={VARIETY(selected)} replace />
+  return <Navigate to={VARIETY(selected)} replace state={FOLLOWED_REDIRECT} />
 }
