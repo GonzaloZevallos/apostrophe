@@ -18,7 +18,7 @@ import { Link, useLocation, useOutletContext } from 'react-router'
 import { NetworkError } from '../api/client'
 import { keys } from '../api/keys'
 import type { Me } from '../api/me'
-import { type Status, type StockEntry, readStock } from '../api/stock'
+import { type Status, readStock } from '../api/stock'
 import ErrorGenerico from '../components/ErrorGenerico'
 import { readFeedback } from '../components/feedback'
 import MarcaEstado from '../components/MarcaEstado'
@@ -28,18 +28,12 @@ import Loading from '../components/Loading'
 import { formatDate } from '../format/dates'
 import { formatGrams, formatMoney } from '../format/money'
 import { detailFor, sideNoteFor } from '../stock/detail'
+import { ORIGIN_LABEL } from '../stock/origin'
 import type { Variety } from './Variedades'
 import { get } from '../api/client'
 
 export const EMPTY_STATE_TITLE = 'Sin entradas de stock'
 export const EMPTY_STATE_DETAIL = 'Cargá tu stock inicial o una compra'
-
-const ORIGIN_LABEL: Record<StockEntry['origin'], string> = {
-  purchase: 'Compra',
-  harvest: 'Cosecha',
-  opening_stock: 'Stock inicial',
-  adjustment: 'Ajuste',
-}
 
 function statusClass(status: Status): string {
   return `fila-stock__insignia fila-stock__insignia--${status}`

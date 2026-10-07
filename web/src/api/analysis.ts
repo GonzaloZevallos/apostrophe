@@ -44,6 +44,8 @@ export interface AnalysisMonth {
   grams_gifted: number
   average_margin: MarginFigure
   shortfall: AmountWithPending | null
+  promotion: AmountWithPending | null
+  own_use: AmountWithPending | null
   varieties: VarietyRow[]
 }
 
@@ -53,6 +55,8 @@ export interface AnalysisWeek {
   sales: number
   grams: number
   expenses: number
+  promotion: AmountWithPending | null
+  own_use: AmountWithPending | null
   profit: AmountWithPending
   cash: number
   best: boolean
@@ -65,6 +69,8 @@ export interface AnalysisMonthRow {
   sales: number
   grams: number
   expenses: number
+  promotion: AmountWithPending | null
+  own_use: AmountWithPending | null
   profit: AmountWithPending
   cash: number
 }
@@ -82,6 +88,8 @@ export interface SinceFirstRecord {
   profit: AmountWithPending
   cash: number
   shortfall: AmountWithPending | null
+  promotion: AmountWithPending | null
+  own_use: AmountWithPending | null
 }
 
 export interface ExpenseCategoryTotal {
