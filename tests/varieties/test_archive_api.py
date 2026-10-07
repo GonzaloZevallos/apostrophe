@@ -83,9 +83,7 @@ def test_archiving_twice_and_restoring_a_live_variety_change_nothing(
 
 
 @pytest.mark.parametrize("action", ["archive", "restore"])
-def test_a_missing_variety_cannot_be_archived_or_restored(
-    client: TestClient, action: str
-) -> None:
+def test_a_missing_variety_cannot_be_archived_or_restored(client: TestClient, action: str) -> None:
     response = client.post(f"/varieties/999/{action}")
 
     assert response.status_code == 404

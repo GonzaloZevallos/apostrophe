@@ -6,11 +6,13 @@ When the lookup says the variety is still there, the signal is re-raised as it c
 any other foreign-key bug stays a 500. Fakes stand in for the repositories: only the
 use cases' own decisions are under test."""
 
-from collections.abc import Callable, Collection
+from collections.abc import Callable, Collection, Sequence
 from datetime import UTC, date, datetime
 
 import pytest
+from sqlalchemy.orm import Session
 
+from app.db import flush_or_refuse
 from app.sales.application.record_sale import LineInput, record_sale
 from app.sales.domain.pricing import PriceQuote, VarietyPricing
 from app.sales.domain.sale import Sale, UnknownVariety
@@ -286,3 +288,25 @@ def test_a_price_refused_with_the_variety_still_live_re_raises_the_signal() -> N
         _record_price(Variety(VarietyName.of("Gold"), id=7), transaction)
 
     assert (transaction.rollbacks, transaction.commits) == (1, 0)
+
+
+class _FlushRaises(Session):
+    def __init__(self, error: Exception) -> None:
+        super().__init__()
+        self._error = error
+
+    def flush(self, objects: Sequence[object] | None = None) -> None:
+        raise self._error
+
+
+def test_libsql_s_bare_foreign_key_error_becomes_the_signal() -> None:
+    with pytest.raises(ReferenceRefused) as raised:
+        flush_or_refuse(_FlushRaises(ValueError("FOREIGN KEY constraint failed")))
+
+    assert raised.value.__cause__ is None
+    assert "FOREIGN" not in str(raised.value)
+
+
+def test_any_other_value_error_is_not_swallowed_as_a_refusal() -> None:
+    with pytest.raises(ValueError, match="something else"):
+        flush_or_refuse(_FlushRaises(ValueError("something else")))

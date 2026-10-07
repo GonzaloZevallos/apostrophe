@@ -99,14 +99,22 @@ def get_session(request: Request) -> Iterator[Session]:
 
 
 def flush_or_refuse(session: Session) -> None:
-    """Flushes a write that references a variety. An `IntegrityError` is caught only to
-    set a flag; the code-less `ReferenceRefused` is raised outside the `except`, so
-    nothing of the driver's message stays reachable (docs/adr/0005). The use case that
-    caught it rolls back and asks its own lookup whether the variety is gone."""
+    """Flushes a write that references a variety. An `IntegrityError` (libsql's own
+    foreign-key error too) is caught only to set a flag; the code-less `ReferenceRefused`
+    is raised outside the `except`, so nothing of the driver's message stays reachable
+    (docs/adr/0005). The use case that caught it rolls back and asks its own lookup
+    whether the variety is gone."""
     refused = False
     try:
         session.flush()
     except IntegrityError:
+        refused = True
+    except ValueError as exc:
+        # The libsql driver (Turso, ADR-0016) does not map SQLite's errors to the DBAPI
+        # ones: a violated foreign key arrives as a bare `ValueError`. Any other
+        # `ValueError` is not this refusal and goes on as it was.
+        if "FOREIGN KEY constraint failed" not in str(exc):
+            raise
         refused = True
     if refused:
         raise ReferenceRefused
