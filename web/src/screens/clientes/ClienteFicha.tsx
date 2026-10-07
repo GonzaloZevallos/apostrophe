@@ -17,6 +17,7 @@ import { ApiError, NetworkError } from '../../api/client'
 import { type Channel, getCustomer } from '../../api/customers'
 import { invalidateResource, keys } from '../../api/keys'
 import type { Me } from '../../api/me'
+import { useIsVipCustomers } from '../../api/pricingSettings'
 import {
   type AccountRow,
   type HowPaid,
@@ -103,6 +104,7 @@ export default function ClienteFicha() {
   const feedback = readFeedback(location.state)
   const queryClient = useQueryClient()
   const me = useOutletContext<Me>()
+  const vipCustomers = useIsVipCustomers()
 
   const [showCobro, setShowCobro] = useState(false)
   const [savedNotice, setSavedNotice] = useState<string | null>(null)
@@ -246,10 +248,12 @@ export default function ClienteFicha() {
             <span className="campo__rotulo">Canal</span>
             <span>{data.channel !== null ? CHANNEL_LABEL[data.channel] : 'Sin canal'}</span>
           </div>
-          <div className="campo">
-            <span className="campo__rotulo">VIP</span>
-            <span>{data.vip ? 'Sí' : 'No'}</span>
-          </div>
+          {vipCustomers && (
+            <div className="campo">
+              <span className="campo__rotulo">VIP</span>
+              <span>{data.vip ? 'Sí' : 'No'}</span>
+            </div>
+          )}
         </div>
 
         {data.standing === 'owes' && (

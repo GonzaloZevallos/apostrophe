@@ -6,7 +6,7 @@
  * the switches a partner changed; a save's own answer becomes the query's data.
  */
 
-import { queryOptions, type QueryClient } from '@tanstack/react-query'
+import { queryOptions, useQuery, type QueryClient } from '@tanstack/react-query'
 import { get, put } from './client'
 import { keys } from './keys'
 
@@ -32,4 +32,11 @@ export function savePricingSettings(body: PricingSettings): Promise<PricingSetti
 
 export function writePricingSettings(queryClient: QueryClient, view: PricingSettings): void {
   queryClient.setQueryData(pricingSettingsQueryOptions().queryKey, view)
+}
+
+/** Whether Clientes VIP is on, for the screens that show a customer's VIP mark or field.
+ * Until the answer comes, and if it fails, the mark stays hidden: the safe side, since a
+ * mark for a rule that is off must never show (`pricing-settings.md`). */
+export function useIsVipCustomers(): boolean {
+  return useQuery(pricingSettingsQueryOptions()).data?.is_vip_customers === true
 }

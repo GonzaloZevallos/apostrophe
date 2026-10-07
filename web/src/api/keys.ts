@@ -53,6 +53,9 @@ export const keys = {
   // never mark them stale, and the form's own preview never renders a value another
   // screen's cache produced.
   saleFormVarieties: (on: string) => ['sale-form', 'varieties', on] as const,
+  // The switches Nueva venta prices with, loaded beside that day's prices and frozen the same way,
+  // so a date change reloads both and a partner's change is picked up (`pricing-settings.md`).
+  saleFormPricingSettings: (on: string) => ['sale-form', 'pricing-settings', on] as const,
   saleFormCustomer: (id: string) => ['sale-form', 'customer', id] as const,
   // "Elegir cliente"'s own search (`NuevaVentaCliente.tsx`): its results are where
   // the preview's `vip` comes from once a customer is chosen, so it is frozen the
