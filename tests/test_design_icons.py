@@ -102,13 +102,17 @@ def prop_problems(label: str, source: str) -> list[str]:
 
 
 def glyph_problems(icono_source: str) -> list[str]:
-    """Every glyph is bare geometry: the `<svg>` above it sets the stroke and the fill."""
+    """Every glyph is bare geometry: the `<svg>` of `Icono` sets the stroke and the fill.
+
+    Everything in the file except the `Icono` function itself is scanned, wherever the
+    glyphs are declared, so moving `TRAZOS` or adding a glyph above `ICON_NAMES` cannot
+    escape the check.
+    """
     source = _strip_comments(icono_source)
-    start = re.search(r"\] as const", source)
-    end = re.search(r"export default function Icono", source)
-    if start is None or end is None:
+    function = re.search(r"export default function Icono", source)
+    if function is None:
         return ["Icono.tsx: cannot find where the glyphs are"]
-    glyphs = source[start.end() : end.start()]
+    glyphs = source[: function.start()]
     problems = []
     if re.search(r"\bstroke[\w-]*\s*=", glyphs):
         problems.append("a glyph sets its own stroke")
@@ -116,6 +120,8 @@ def glyph_problems(icono_source: str) -> list[str]:
         problems.append('a glyph sets a fill other than "none"')
     if re.search(r"\btransform\s*=", glyphs):
         problems.append("a glyph sets a transform")
+    if re.search(r"\bstyle\s*=", glyphs):
+        problems.append("a glyph sets a style")
     if "<svg" in glyphs:
         problems.append("a glyph nests an <svg>")
     return problems
@@ -223,3 +229,14 @@ def test_a_glyph_may_say_fill_none() -> None:
         glyph_problems(_ICONO_OK.replace('<path d="M0 0" />', '<path d="M0 0" fill="none" />'))
         == []
     )
+
+
+def test_a_glyph_declared_above_the_name_list_or_with_a_style_is_refused() -> None:
+    above = 'const EXTRA = <path d="M1 1" strokeWidth="3" />\n' + _ICONO_OK
+    assert "a glyph sets its own stroke" in glyph_problems(above)
+    moved = _ICONO_OK.replace(
+        "const TRAZOS", 'const OTRO = <circle r="2" fill="red" />\nconst TRAZOS'
+    )
+    assert 'a glyph sets a fill other than "none"' in glyph_problems(moved)
+    styled = _ICONO_OK.replace('<path d="M0 0" />', '<path d="M0 0" style={{ stroke: "red" }} />')
+    assert "a glyph sets a style" in glyph_problems(styled)
