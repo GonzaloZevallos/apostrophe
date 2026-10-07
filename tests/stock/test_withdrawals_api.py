@@ -308,3 +308,91 @@ def test_movements_of_another_business_variety_answer_404(
 
     assert response.status_code == 404
     assert response.json()["code"] == "variety.not_found"
+
+
+def _priced_variety(client: TestClient, name: str) -> int:
+    variety_id = _variety(client, name)
+    client.post(
+        f"/varieties/{variety_id}/prices",
+        json={"effective_from": "2026-01-01", "list_price": 9_000},
+    )
+    return variety_id
+
+
+def test_a_sale_line_cost_moves_with_an_earlier_withdrawal_and_every_reader_agrees(
+    client: TestClient,
+) -> None:
+    variety_id = _priced_variety(client, "Flor")
+    _stock_in(client, variety_id, "5", date="2026-08-01", origin="purchase", total_cost=500)
+    _stock_in(client, variety_id, "5", date="2026-09-01", origin="purchase", total_cost=5_000)
+    sale = client.post(
+        "/sales",
+        json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": "5"}]},
+    ).json()
+
+    def line_cost() -> int:
+        detail = client.get(f"/sales/{sale['id']}").json()
+        cost = detail["lines"][0]["cost"]["costed"]
+        [analysed] = client.get("/analysis", params={"month": "2026-10"}).json()["month"][
+            "varieties"
+        ]
+        assert analysed["cost"]["costed"] == cost  # `GET /analysis` reads the same cost
+        assert isinstance(cost, int)
+        return cost
+
+    assert line_cost() == 500
+
+    withdrawal = _record(
+        client, variety_id, date="2026-08-15", lines=[{"variety_id": variety_id, "grams": "3"}]
+    )
+    assert line_cost() == 3_200  # 2 g from the first lot, 3 g from the second
+
+    client.put(
+        f"/stock/withdrawals/{withdrawal['id']}",
+        json=_body(variety_id, date="2026-08-15", lines=[{"variety_id": variety_id, "grams": "1"}]),
+    )
+    assert line_cost() == 1_400
+
+    client.delete(f"/stock/withdrawals/{withdrawal['id']}")
+    assert line_cost() == 500
+
+
+def test_a_withdrawal_is_never_a_sale_a_debt_or_money(client: TestClient) -> None:
+    variety_id = _priced_variety(client, "Flor")
+    customer = client.post("/customers", json={"name": "Ana", "phone": "11 2222-3333"}).json()
+    _stock_in(client, variety_id, "50", origin="purchase", total_cost=5_000)
+    client.post(
+        "/sales",
+        json={
+            "payment": "owing",
+            "customer_id": customer["id"],
+            "lines": [{"variety_id": variety_id, "grams": "2"}],
+        },
+    )
+    unchanged = (
+        "sales",
+        "sales_count",
+        "average_sale",
+        "grams_sold",
+        "grams_gifted",
+        "cost_of_goods",
+        "shortfall",
+        "expenses",
+        "purchases",
+        "cash",
+    )
+
+    def snapshot() -> tuple[object, ...]:
+        periods = client.get("/panel").json()["periods"]
+        return (
+            client.get("/sales").json(),
+            client.get(f"/customers/{customer['id']}/account").json(),
+            client.get("/payments/debtors").json(),
+            [[periods[name][key] for key in unchanged] for name in ("today", "week", "month")],
+        )
+
+    before = snapshot()
+    withdrawal = _record(client, variety_id, reason="own_use")
+    assert snapshot() == before
+    client.delete(f"/stock/withdrawals/{withdrawal['id']}")
+    assert snapshot() == before
