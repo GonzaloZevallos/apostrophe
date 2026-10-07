@@ -12,7 +12,7 @@ from app.catalog.adapters.sql_header_footer import SqlCatalogHeaderFooter
 from app.catalog.adapters.stock_status import StockStatusesFromStock
 from app.catalog.application import set_header_footer as set_header_footer_uc
 from app.catalog.application import set_variety_attributes as set_variety_attributes_uc
-from app.catalog.application.errors import CatalogVarietyNotFound
+from app.catalog.application.errors import CatalogVarietyArchived, CatalogVarietyNotFound
 from app.catalog.application.read_catalog import read_catalog
 from app.catalog.domain.errors import (
     AromaTooLong,
@@ -24,6 +24,7 @@ from app.catalog.domain.errors import (
 from app.clock import get_today
 from app.db import get_session
 from app.http_errors import TranslateErrors
+from app.varieties.application.errors import VarietyArchived
 
 router = APIRouter(prefix="/catalog", tags=["catalog"])
 
@@ -57,7 +58,7 @@ HeaderFooterDep = Annotated[SqlCatalogHeaderFooter, Depends(get_header_footer)]
 
 as_http = TranslateErrors(
     [
-        (404, (CatalogVarietyNotFound,)),
+        (404, (CatalogVarietyNotFound, VarietyArchived)),
         (422, (EmojiInvalid, IndicaShareInvalid, AromaTooLong, HeaderTooLong, FooterTooLong)),
     ]
 )
@@ -87,19 +88,22 @@ def put_variety_attributes(
     today: TodayDep,
 ) -> CatalogOut:
     with as_http:
-        view = set_variety_attributes_uc.set_variety_attributes(
-            varieties,
-            stock,
-            attributes,
-            header_footer,
-            session,
-            variety_id,
-            body.shown,
-            body.emoji,
-            body.indica_share,
-            body.aroma,
-            today,
-        )
+        try:
+            view = set_variety_attributes_uc.set_variety_attributes(
+                varieties,
+                stock,
+                attributes,
+                header_footer,
+                session,
+                variety_id,
+                body.shown,
+                body.emoji,
+                body.indica_share,
+                body.aroma,
+                today,
+            )
+        except CatalogVarietyArchived as exc:
+            raise VarietyArchived(variety_id) from exc
         return CatalogOut.of(view)
 
 

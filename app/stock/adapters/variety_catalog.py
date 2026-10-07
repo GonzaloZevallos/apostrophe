@@ -13,6 +13,14 @@ class SqlVarietyCatalog:
     def exists(self, variety_id: int) -> bool:
         return self._varieties.get(variety_id) is not None
 
+    def usable(self, variety_id: int) -> bool:
+        variety = self._varieties.get(variety_id)
+        return variety is not None and not variety.is_archived
+
     def listed_ids(self) -> list[int]:
         ids = [variety.id for variety in self._varieties.listed()]
+        return [variety_id for variety_id in ids if variety_id is not None]
+
+    def archived_ids(self) -> list[int]:
+        ids = [variety.id for variety in self._varieties.archived()]
         return [variety_id for variety_id in ids if variety_id is not None]

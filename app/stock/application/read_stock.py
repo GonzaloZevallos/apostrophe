@@ -36,6 +36,8 @@ def read_stock(
     catalog: VarietyCatalog,
     thresholds: Thresholds,
     today: date,
+    *,
+    archived: bool = False,
 ) -> StockView:
     all_entries = entries.for_varieties(None)
     sale_draws = draws.for_varieties(None)
@@ -47,8 +49,8 @@ def read_stock(
         return stock_level(lots, variety_draws, threshold_map.get(variety_id), today)
 
     # The total counts every variety, archived ones included: their grams are still on
-    # hand (docs/adr/0031). The rows are the listed varieties only; rows and total stop
-    # sharing a filter.
+    # hand (docs/adr/0031). The rows are the listed varieties, or the archived ones when
+    # asked; rows and total stop sharing a filter.
     levels = {variety_id: level_of(variety_id) for variety_id in grouped}
     total = sum(level.grams.hundredths for level in levels.values())
     varieties = [
@@ -57,7 +59,7 @@ def read_stock(
             levels[variety_id] if variety_id in levels else level_of(variety_id),
             threshold_map.get(variety_id),
         )
-        for variety_id in sorted(catalog.listed_ids())
+        for variety_id in sorted(catalog.archived_ids() if archived else catalog.listed_ids())
     ]
 
     sorted_entries = sorted(

@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 
 from app.varieties.adapters.tables import VarietyRow
 from tests.conftest import NOW, MovableClock
+from tests.fakes.archive import archive_by_hand
 
 TODAY = "2026-10-02"
 
@@ -273,3 +274,35 @@ def test_an_archived_variety_leaves_the_rows_but_its_grams_stay_in_the_total(
 
     assert [row["variety_id"] for row in stock["varieties"]] == [kept]
     assert stock["total"] == 50.0
+
+
+def test_the_archived_rows_are_read_with_archived_true_and_the_total_does_not_change(
+    client: TestClient, engine: Engine
+) -> None:
+    kept = _variety_id(client, "Kept")
+    archived = _variety_id(client, "Archived")
+    _record(client, kept, grams="30")
+    _record(client, archived, grams="20")
+    total_before = client.get("/stock").json()["total"]
+    archive_by_hand(engine, archived)
+
+    default = client.get("/stock").json()
+    only_archived = client.get("/stock?archived=true").json()
+
+    assert [row["variety_id"] for row in default["varieties"]] == [kept]
+    assert [row["variety_id"] for row in only_archived["varieties"]] == [archived]
+    assert only_archived["varieties"][0]["grams"] == 20.0
+    assert default["total"] == total_before == only_archived["total"]
+    assert [entry["variety_id"] for entry in only_archived["entries"]] == [
+        entry["variety_id"] for entry in default["entries"]
+    ]
+
+
+def test_archived_false_is_the_default_rows(client: TestClient, engine: Engine) -> None:
+    kept = _variety_id(client, "Kept")
+    archived = _variety_id(client, "Archived")
+    archive_by_hand(engine, archived)
+
+    rows = client.get("/stock?archived=false").json()["varieties"]
+
+    assert [row["variety_id"] for row in rows] == [kept]

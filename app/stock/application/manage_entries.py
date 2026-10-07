@@ -2,7 +2,7 @@ from datetime import date, datetime
 
 from app.shared.grams import Grams
 from app.shared.transaction import Transaction
-from app.stock.application.errors import VarietyNotFound
+from app.stock.application.errors import VarietyArchived, VarietyNotFound
 from app.stock.application.ports import StockEntries, VarietyCatalog
 from app.stock.domain.entry import Origin, StockEntry
 from app.stock.domain.errors import EntryNotFound
@@ -15,9 +15,14 @@ def get_entry(entries: StockEntries, entry_id: int) -> StockEntry:
     return entry
 
 
-def _check_variety(catalog: VarietyCatalog, variety_id: int) -> None:
+def _check_variety(catalog: VarietyCatalog, variety_id: int, *, keeps: bool = False) -> None:
+    """The variety is missing (404) or archived (also gone to the caller). An entry edit
+    that `keeps` its own variety may stay on it even when it is archived: existing
+    records stay workable (ADR-0009); only a new reference needs a usable variety."""
     if not catalog.exists(variety_id):
         raise VarietyNotFound()
+    if not keeps and not catalog.usable(variety_id):
+        raise VarietyArchived()
 
 
 def record_entry(
@@ -59,11 +64,11 @@ def edit_entry(
     note: str | None,
     today: date,
 ) -> StockEntry:
-    """Checks run in this order: the entry (404), then the variety (404), then the
-    domain rules (422). `recorded_at` carries through from the stored entry: an edit
+    """Checks run in this order: the entry (404), then the variety (404, or archived),
+    then the domain rules (422). `recorded_at` carries through from the stored entry: an edit
     never changes it, whatever the entry's grams were already drawn into (ADR-0009)."""
     existing = get_entry(entries, entry_id)
-    _check_variety(catalog, variety_id)
+    _check_variety(catalog, variety_id, keeps=variety_id == existing.variety_id)
     updated = StockEntry.of(
         entry_date,
         variety_id,

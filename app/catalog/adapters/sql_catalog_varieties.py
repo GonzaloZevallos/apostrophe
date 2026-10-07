@@ -33,6 +33,10 @@ class SqlCatalogVarieties:
     def exists(self, variety_id: int) -> bool:
         return self._varieties.get(variety_id) is not None
 
+    def usable(self, variety_id: int) -> bool:
+        variety = self._varieties.get(variety_id)
+        return variety is not None and not variety.is_archived
+
 
 def _catalog_price(entry: PriceEntry | None) -> CatalogPrice | None:
     if entry is None:
