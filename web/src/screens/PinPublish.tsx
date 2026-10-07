@@ -29,7 +29,12 @@ import {
 import AvisoExito, { type SuccessToast } from '../components/AvisoExito'
 import SinConexion from '../components/SinConexion'
 import Boton from '../components/Boton'
-import { CHANNEL_MISSING_LEAD, INTEGRATIONS_LINK_WORD } from './pinPublishMessages'
+import {
+  CHANNEL_MISSING_LEAD,
+  INTEGRATIONS_LINK_WORD,
+  OUT_OF_DATE_SEPARATOR,
+  OUT_OF_DATE_TITLE,
+} from './pinPublishMessages'
 
 const PUBLISHED_TOAST: SuccessToast = 'Catálogo publicado'
 const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
@@ -57,10 +62,13 @@ function StatusLine({ status }: { status: PinStatus }) {
   return (
     <div className="catalogo__publicar-estado">
       <span className="catalogo__publicar-titulo">
-        {status.state === 'up_to_date' ? 'Al día' : 'Desactualizado'}
+        {status.state === 'up_to_date' ? 'Al día' : OUT_OF_DATE_TITLE}
       </span>
       {status.state === 'out_of_date' && status.reason !== null && (
-        <span className="catalogo__publicar-detalle"> · {PINNED_CATALOG_REASON_LABEL[status.reason]}</span>
+        <span className="catalogo__publicar-detalle">
+          {OUT_OF_DATE_SEPARATOR}
+          {PINNED_CATALOG_REASON_LABEL[status.reason]}
+        </span>
       )}
       {status.last_published_on !== null && (
         <span className="catalogo__publicar-detalle">
