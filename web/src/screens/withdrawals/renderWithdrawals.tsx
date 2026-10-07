@@ -10,8 +10,9 @@ import { Outlet, RouterProvider, createMemoryRouter } from 'react-router'
 import { vi } from 'vitest'
 import type { Me } from '../../api/me'
 import FlashProvider from '../../flash/FlashProvider'
-import { WITHDRAWAL, WITHDRAWAL_EDIT, WITHDRAWAL_NEW, relative } from '../../routes'
+import { VARIETY_MOVEMENTS, WITHDRAWAL, WITHDRAWAL_EDIT, WITHDRAWAL_NEW, relative } from '../../routes'
 import Shell from '../../shell/Shell'
+import VariedadMovimientos from '../VariedadMovimientos'
 import Variedades from '../Variedades'
 import WithdrawalDetail from './WithdrawalDetail'
 import WithdrawalFormRoute from './WithdrawalFormRoute'
@@ -63,6 +64,11 @@ export function renderWithdrawals(initialEntries: string[], fetchImpl: FetchImpl
             element: <Shell />,
             children: [
               { path: 'variedades', element: <Variedades /> },
+              {
+                path: relative(VARIETY_MOVEMENTS),
+                element: <VariedadMovimientos />,
+                handle: { chrome: 'card' },
+              },
               {
                 path: relative(WITHDRAWAL_NEW),
                 element: <WithdrawalFormRoute mode="new" />,

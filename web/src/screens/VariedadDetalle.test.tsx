@@ -41,6 +41,7 @@ function renderScreen() {
         <Routes>
           <Route element={<Outlet context={ME} />}>
             <Route path="/variedades/:id" element={<VariedadDetalle />} />
+            <Route path="/variedades/:id/movimientos" element={<span>lista completa</span>} />
             <Route path="/withdrawals/new" element={<span>formulario de retiro</span>} />
             <Route path="/withdrawals/:id" element={<span>detalle de retiro</span>} />
           </Route>
@@ -323,7 +324,7 @@ describe('Sacar del stock and the movements', () => {
     expect(await screen.findByText('detalle de retiro')).toBeInTheDocument()
   })
 
-  test('only the last 3 movements show until "Ver todas"', async () => {
+  test('only the last 3 movements show, and "Ver todas" goes to the full list', async () => {
     const user = userEvent.setup()
     const withdrawal = (id: number, reason: 'promotion' | 'own_use') => ({
       kind: 'withdrawal',
@@ -342,8 +343,10 @@ describe('Sacar del stock and the movements', () => {
 
     await screen.findByText('21/09 · Promoción')
     expect(screen.queryByText('24/09 · Consumo propio')).not.toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: 'Ver todas' }))
-    expect(screen.getByText('24/09 · Consumo propio')).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Ver todas' })).not.toBeInTheDocument()
+    // "Ver todas" is a link to the variety's own movements page, never an inline expansion.
+    const all = screen.getByRole('link', { name: 'Ver todas' })
+    expect(all).toHaveAttribute('href', '/variedades/1/movimientos')
+    await user.click(all)
+    expect(await screen.findByText('lista completa')).toBeInTheDocument()
   })
 })

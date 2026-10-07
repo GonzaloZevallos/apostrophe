@@ -54,6 +54,7 @@ import CatalogMessageGroup from './screens/settings/CatalogMessageGroup'
 import ExpenseCategoriesGroup from './screens/settings/ExpenseCategoriesGroup'
 import IntegrationsGroup from './screens/settings/IntegrationsGroup'
 import UsersGroup from './screens/settings/UsersGroup'
+import VariedadMovimientos from './screens/VariedadMovimientos'
 import WithdrawalDetail from './screens/withdrawals/WithdrawalDetail'
 import WithdrawalFormRoute from './screens/withdrawals/WithdrawalFormRoute'
 import NuevaVenta from './screens/ventas/NuevaVenta'
@@ -68,6 +69,7 @@ import {
   EXPENSE_NEW,
   EXPENSES,
   MORE,
+  VARIETY_MOVEMENTS,
   WITHDRAWAL,
   WITHDRAWAL_EDIT,
   WITHDRAWAL_NEW,
@@ -102,6 +104,11 @@ export const router = createBrowserRouter([
               },
               { path: 'variedades', element: <Variedades /> },
               { path: 'variedades/:id', element: <VariedadDetalle /> },
+              {
+                path: relative(VARIETY_MOVEMENTS),
+                element: <VariedadMovimientos />,
+                handle: { chrome: 'card' },
+              },
               { path: relative(EXPENSES), element: <Gastos />, handle: { tab: 'more' } },
               {
                 path: relative(EXPENSE_NEW),

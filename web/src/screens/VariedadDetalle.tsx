@@ -22,8 +22,8 @@ import SinConexion from '../components/SinConexion'
 import { formatDateShort, sinceWhen } from '../format/dates'
 import { formatGrams, formatMoney } from '../format/money'
 import { parseGrams, parseMoney } from '../format/parse'
-import { withdrawalNewFor, withdrawalPath } from '../routes'
-import { ORIGIN_LABEL } from '../stock/origin'
+import MovementRows from './MovementRows'
+import { varietyMovementsPath, withdrawalNewFor } from '../routes'
 
 export const THRESHOLD_SAVED = 'Aviso guardado'
 export const THRESHOLD_INVALID_MESSAGE = 'Revisá el umbral cargado'
@@ -36,7 +36,6 @@ import {
   type Variety,
 } from './Variedades'
 
-const REASON_LABEL = { promotion: 'Promoción', own_use: 'Consumo propio' } as const
 const MOVEMENTS_SHOWN = 3
 
 export const PRICE_SAVED = 'Precio guardado'
@@ -65,53 +64,17 @@ const THRESHOLD_OVERRIDES: Partial<Record<RefusalCode, string>> = {
   'stock.threshold_invalid': THRESHOLD_INVALID_MESSAGE,
 }
 
-/** "Stock y entradas": the variety's last 3 movements, "Ver todas" for the rest, newest
- * first as the API sorts them. A withdrawal row is told by its reason word and a minus
- * sign, never by colour, and opens the withdrawal's detail. */
-function MovementsSection({
-  movements,
-  all,
-  onAll,
-}: {
-  movements: Movement[]
-  all: boolean
-  onAll: () => void
-}) {
-  const shown = all ? movements : movements.slice(0, MOVEMENTS_SHOWN)
+/** "Stock y entradas": the variety's last 3 movements; "Ver todas" opens the full list on
+ * its own page (`VariedadMovimientos`), never an inline expansion. */
+function MovementsSection({ movements, varietyId }: { movements: Movement[]; varietyId: string }) {
   return (
     <>
       <span className="campo__rotulo">Stock y entradas</span>
-      <div className="historial">
-        {shown.map((movement) =>
-          movement.kind === 'withdrawal' ? (
-            <Link
-              key={`withdrawal-${movement.id}`}
-              to={withdrawalPath(movement.id)}
-              className="historial-fila"
-            >
-              <span className="historial-fila__fecha">
-                {formatDateShort(movement.date)} · {REASON_LABEL[movement.reason]}
-              </span>
-              <span className="historial-fila__precio">{`−${formatGrams(movement.grams)}`}</span>
-            </Link>
-          ) : (
-            <Link
-              key={`entry-${movement.id}`}
-              to={`/mi-stock/entradas/${movement.id}`}
-              className="historial-fila"
-            >
-              <span className="historial-fila__fecha">
-                {formatDateShort(movement.date)} · {ORIGIN_LABEL[movement.origin]}
-              </span>
-              <span className="historial-fila__precio">{formatGrams(movement.grams)}</span>
-            </Link>
-          ),
-        )}
-      </div>
-      {!all && movements.length > MOVEMENTS_SHOWN && (
-        <button type="button" className="boton--enlace" onClick={onAll}>
+      <MovementRows movements={movements.slice(0, MOVEMENTS_SHOWN)} />
+      {movements.length > MOVEMENTS_SHOWN && (
+        <Link to={varietyMovementsPath(varietyId)} className="boton--enlace">
           Ver todas
-        </button>
+        </Link>
       )}
     </>
   )
@@ -136,7 +99,6 @@ export default function VariedadDetalle() {
     queryKey: keys.stockMovements(variedadId),
     queryFn: () => readMovements(variedadId),
   })
-  const [allMovements, setAllMovements] = useState(false)
   const currentThreshold =
     stockQuery.data?.varieties.find((row) => String(row.variety_id) === variedadId)?.threshold ?? null
 
@@ -550,11 +512,7 @@ export default function VariedadDetalle() {
           )}
         </form>
 
-        <MovementsSection
-          movements={movementsQuery.data ?? []}
-          all={allMovements}
-          onAll={() => setAllMovements(true)}
-        />
+        <MovementsSection movements={movementsQuery.data ?? []} varietyId={variedadId} />
 
         <span className="campo__rotulo">Historial</span>
         <div className="historial">

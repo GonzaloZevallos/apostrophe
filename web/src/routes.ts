@@ -15,10 +15,17 @@ export const EXPENSE_NEW = '/expenses/new'
 export const WITHDRAWAL_NEW = '/withdrawals/new'
 export const WITHDRAWAL = '/withdrawals/:id'
 export const WITHDRAWAL_EDIT = '/withdrawals/:id/edit'
+/** A variety's "Ver todas" of "Stock y entradas": its own page, under the variety's. */
+export const VARIETY_MOVEMENTS = '/variedades/:id/movimientos'
 
 /** A withdrawal's detail path, from its id alone: never a business id (ADR-0004). */
 export function withdrawalPath(id: number | string): string {
   return `/withdrawals/${id}`
+}
+
+/** The full list of one variety's movements (entries and withdrawals). */
+export function varietyMovementsPath(varietyId: number | string): string {
+  return `/variedades/${varietyId}/movimientos`
 }
 
 /** The edit form's path for a withdrawal. */
