@@ -4,8 +4,10 @@ from datetime import UTC, datetime
 from typing import Any
 
 from fastapi.testclient import TestClient
+from sqlalchemy.engine import Engine
 
 from tests.conftest import MovableClock
+from tests.pricing_switches import set_switches
 
 GOLD_JANUARY = {
     "effective_from": "2026-01-01",
@@ -82,17 +84,23 @@ def test_a_variety_that_does_not_exist_is_not_found(client: TestClient) -> None:
     assert client.post("/varieties/99/prices", json=GOLD_JANUARY).status_code == 404
 
 
-def test_a_price_entry_is_recorded_and_becomes_the_current_price(client: TestClient) -> None:
+def test_a_price_entry_is_recorded_and_becomes_the_current_price(
+    client: TestClient, engine: Engine
+) -> None:
+    set_switches(engine, bulk=True, vip=False)
     variety = _register(client)
 
     entry = _price(client, variety["id"], **GOLD_JANUARY)
 
-    assert entry == {"id": entry["id"], **GOLD_JANUARY}
+    assert entry == {"id": entry["id"], **GOLD_JANUARY, "vip_price": None}
     listed = client.get(f"/varieties/{variety['id']}").json()
     assert listed["current_price"] == entry
 
 
-def test_grams_with_two_decimals_go_in_and_out_as_numbers(client: TestClient) -> None:
+def test_grams_with_two_decimals_go_in_and_out_as_numbers(
+    client: TestClient, engine: Engine
+) -> None:
+    set_switches(engine, bulk=True, vip=False)
     variety = _register(client)
 
     entry = _price(client, variety["id"], **{**GOLD_JANUARY, "bulk_minimum": 7.25})
@@ -159,7 +167,10 @@ def test_a_second_entry_on_the_same_day_is_refused(client: TestClient) -> None:
     assert again.status_code == 409
 
 
-def test_a_broken_price_entry_is_refused_with_the_rule_it_breaks(client: TestClient) -> None:
+def test_a_broken_price_entry_is_refused_with_the_rule_it_breaks(
+    client: TestClient, engine: Engine
+) -> None:
+    set_switches(engine, bulk=True, vip=False)
     variety_id = _register(client)["id"]
 
     def refusal(**changes: Any) -> tuple[int, str]:
@@ -217,3 +228,142 @@ def test_refusal_bodies_carry_the_rule_s_code(client: TestClient) -> None:
     )
     assert bad_grams.status_code == 422
     assert bad_grams.json()["code"] == "grams.invalid"
+
+
+GOLD_WITH_VIP = {**GOLD_JANUARY, "vip_price": 9_000}
+
+
+def test_a_vip_price_is_stored_and_answered_on_the_entry_the_current_price_and_the_history(
+    client: TestClient, engine: Engine
+) -> None:
+    set_switches(engine, bulk=True, vip=True)
+    variety_id = _register(client)["id"]
+
+    entry = _price(client, variety_id, **GOLD_WITH_VIP)
+
+    assert entry["vip_price"] == 9_000
+    assert client.get(f"/varieties/{variety_id}").json()["current_price"]["vip_price"] == 9_000
+    assert client.get(f"/varieties/{variety_id}/current-price").json()["vip_price"] == 9_000
+    assert client.get(f"/varieties/{variety_id}/prices").json()[0]["vip_price"] == 9_000
+    assert client.get("/varieties").json()[0]["current_price"]["vip_price"] == 9_000
+
+
+def test_an_entry_without_a_vip_price_answers_null(client: TestClient, engine: Engine) -> None:
+    set_switches(engine, bulk=True, vip=True)
+    variety_id = _register(client)["id"]
+
+    assert _price(client, variety_id, **GOLD_JANUARY)["vip_price"] is None
+
+
+def test_a_vip_price_alone_and_a_bulk_price_alone_are_both_accepted(
+    client: TestClient, engine: Engine
+) -> None:
+    set_switches(engine, bulk=True, vip=True)
+    variety_id = _register(client)["id"]
+
+    only_vip = _price(
+        client, variety_id, effective_from="2026-01-01", list_price=11_000, vip_price=9_000
+    )
+    only_bulk = _price(client, variety_id, **{**GOLD_JANUARY, "effective_from": "2026-02-01"})
+
+    assert (only_vip["vip_price"], only_vip["bulk_price"]) == (9_000, None)
+    assert (only_bulk["vip_price"], only_bulk["bulk_price"]) == (None, 10_000)
+
+
+def test_a_vip_price_above_the_bulk_price_is_accepted(client: TestClient, engine: Engine) -> None:
+    set_switches(engine, bulk=True, vip=True)
+    variety_id = _register(client)["id"]
+
+    entry = _price(client, variety_id, **{**GOLD_JANUARY, "vip_price": 10_500})
+
+    assert (entry["bulk_price"], entry["vip_price"]) == (10_000, 10_500)
+
+
+def test_a_vip_price_at_or_above_list_is_refused_with_its_code_and_without_the_amount(
+    client: TestClient, engine: Engine
+) -> None:
+    set_switches(engine, bulk=True, vip=True)
+    variety_id = _register(client)["id"]
+
+    for vip_price in (11_000, 12_345):
+        response = client.post(
+            f"/varieties/{variety_id}/prices", json={**GOLD_JANUARY, "vip_price": vip_price}
+        )
+        assert response.status_code == 422
+        assert response.json()["code"] == "variety.vip_price_not_below_list"
+        assert str(vip_price) not in response.text
+        assert "11000" not in response.text
+    assert client.get(f"/varieties/{variety_id}/prices").json() == []
+
+
+def test_with_bulk_off_the_bulk_values_posted_are_not_stored(
+    client: TestClient, engine: Engine
+) -> None:
+    set_switches(engine, bulk=False, vip=True)
+    variety_id = _register(client)["id"]
+
+    entry = _price(client, variety_id, **GOLD_WITH_VIP)
+
+    assert (entry["bulk_price"], entry["bulk_minimum"], entry["vip_price"]) == (None, None, 9_000)
+
+
+def test_with_bulk_off_a_bulk_price_that_would_be_refused_is_dropped_before_any_rule(
+    client: TestClient, engine: Engine
+) -> None:
+    set_switches(engine, bulk=False, vip=False)
+    variety_id = _register(client)["id"]
+
+    entry = _price(client, variety_id, **{**GOLD_JANUARY, "bulk_price": 11_000})
+
+    assert (entry["bulk_price"], entry["bulk_minimum"]) == (None, None)
+
+
+def test_with_vip_off_the_vip_price_posted_is_not_stored_even_when_it_would_be_refused(
+    client: TestClient, engine: Engine
+) -> None:
+    set_switches(engine, bulk=True, vip=False)
+    variety_id = _register(client)["id"]
+
+    kept = _price(client, variety_id, **GOLD_WITH_VIP)
+    refused_amount = _price(
+        client, variety_id, **{**GOLD_JANUARY, "effective_from": "2026-02-01", "vip_price": 99_000}
+    )
+
+    assert kept["vip_price"] is None
+    assert kept["bulk_price"] == 10_000
+    assert refused_amount["vip_price"] is None
+
+
+def test_an_earlier_entry_keeps_its_stored_rules_when_a_later_one_is_recorded_with_them_off(
+    client: TestClient, engine: Engine
+) -> None:
+    set_switches(engine, bulk=True, vip=True)
+    variety_id = _register(client)["id"]
+    _price(client, variety_id, **GOLD_WITH_VIP)
+
+    set_switches(engine, bulk=False, vip=False)
+    later = _price(client, variety_id, **{**GOLD_WITH_VIP, "effective_from": "2026-06-01"})
+
+    assert (later["bulk_price"], later["vip_price"]) == (None, None)
+    history = {e["effective_from"]: e for e in client.get(f"/varieties/{variety_id}/prices").json()}
+    assert (history["2026-01-01"]["bulk_price"], history["2026-01-01"]["vip_price"]) == (
+        10_000,
+        9_000,
+    )
+
+    set_switches(engine, bulk=True, vip=True)
+    current = client.get(f"/varieties/{variety_id}/current-price").json()
+    assert (current["bulk_price"], current["vip_price"]) == (None, None)
+    assert history["2026-01-01"]["vip_price"] == 9_000
+
+
+def test_one_business_s_switches_never_gate_another_business_s_entries(
+    client: TestClient, other_client: TestClient, engine: Engine
+) -> None:
+    set_switches(engine, bulk=False, vip=False, business_name="Primer Negocio")
+    set_switches(engine, bulk=True, vip=True, business_name="Otro Negocio")
+    mine = _price(client, _register(client)["id"], **GOLD_WITH_VIP)
+    theirs = _price(other_client, _register(other_client)["id"], **GOLD_WITH_VIP)
+
+    assert (mine["bulk_price"], mine["vip_price"]) == (None, None)
+    assert (theirs["bulk_price"], theirs["vip_price"]) == (10_000, 9_000)

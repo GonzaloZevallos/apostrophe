@@ -205,3 +205,4 @@ def test_write_variety_then_write_price_entry_round_trips_through_a_real_session
         assert entry.bulk is not None
         assert entry.bulk.price == 700
         assert entry.bulk.minimum == Grams.of(5)
+        assert entry.vip_price == 700  # the import writes VIP price = bulk price

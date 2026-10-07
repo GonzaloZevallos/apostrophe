@@ -13,6 +13,7 @@ from app.varieties.domain.variety import (
     UnknownPriceEntry,
     Variety,
     VarietyName,
+    VipPriceNotBelowList,
 )
 
 
@@ -130,3 +131,41 @@ def test_the_price_history_lists_the_newest_entry_first() -> None:
     history = _gold().price_history()
 
     assert [e.effective_from for e in history] == [date(2026, 3, 1), date(2026, 1, 1)]
+
+
+def test_a_vip_price_below_the_list_price_is_kept() -> None:
+    entry = PriceEntry.of(date(2026, 1, 1), 11_000, vip_price=9_000)
+
+    assert entry.vip_price == 9_000
+
+
+def test_a_vip_price_needs_no_bulk_terms_and_a_bulk_price_needs_no_vip_price() -> None:
+    only_vip = PriceEntry.of(date(2026, 1, 1), 11_000, vip_price=9_000)
+    only_bulk = PriceEntry.of(date(2026, 1, 1), 11_000, 10_000, Grams.of(10))
+
+    assert only_vip.bulk is None
+    assert only_bulk.vip_price is None
+
+
+def test_a_vip_price_is_never_compared_with_the_bulk_price() -> None:
+    entry = PriceEntry.of(date(2026, 1, 1), 11_000, 8_000, Grams.of(10), vip_price=10_500)
+
+    assert (entry.bulk is not None and entry.bulk.price, entry.vip_price) == (8_000, 10_500)
+
+
+@pytest.mark.parametrize("vip_price", [11_000, 12_000])
+def test_a_vip_price_at_or_above_the_list_price_is_refused_with_its_own_code(
+    vip_price: int,
+) -> None:
+    with pytest.raises(VipPriceNotBelowList) as refused:
+        PriceEntry.of(date(2026, 1, 1), 11_000, vip_price=vip_price)
+
+    assert refused.value.code == "variety.vip_price_not_below_list"
+    assert str(vip_price) not in str(refused.value)
+    assert "11000" not in str(refused.value)
+
+
+@pytest.mark.parametrize("vip_price", [0, -5])
+def test_a_vip_price_must_be_positive(vip_price: int) -> None:
+    with pytest.raises(InvalidPriceEntry):
+        PriceEntry.of(date(2026, 1, 1), 11_000, vip_price=vip_price)

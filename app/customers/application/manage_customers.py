@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from enum import Enum, auto
 
 from app.customers.application.errors import CustomerNotFound, PhoneTaken
-from app.customers.application.ports import Customers
+from app.customers.application.ports import Customers, PricingSettingsReader
 from app.customers.domain.customer import Channel, Customer, CustomerName, PhoneNumber
 from app.shared.transaction import Transaction
 
@@ -29,6 +29,7 @@ class CustomerChanges:
 
 def register_customer(
     customers: Customers,
+    settings: PricingSettingsReader,
     transaction: Transaction,
     *,
     name: str,
@@ -36,12 +37,38 @@ def register_customer(
     channel: Channel | None,
     vip: bool,
 ) -> Customer:
+    # While Clientes VIP is off a customer is never created VIP (docs/adr/0031).
+    is_vip = vip and settings.current().is_vip_customers
+    return _register(customers, transaction, name, phone, channel, is_vip)
+
+
+def register_imported_customer(
+    customers: Customers,
+    transaction: Transaction,
+    *,
+    name: str,
+    phone: str | None,
+    vip: bool,
+) -> Customer:
+    """The spreadsheet import's own write: it has already switched Clientes VIP on when
+    the sheet has a VIP customer, so the mark is stored as the sheet says."""
+    return _register(customers, transaction, name, phone, None, vip)
+
+
+def _register(
+    customers: Customers,
+    transaction: Transaction,
+    name: str,
+    phone: str | None,
+    channel: Channel | None,
+    is_vip: bool,
+) -> Customer:
     customer_name = CustomerName.of(name)
     customer_phone = PhoneNumber.optional(phone)
     if customer_phone is not None and customers.phone_taken(customer_phone):
         raise PhoneTaken()
     customer = customers.add(
-        Customer(name=customer_name, phone=customer_phone, channel=channel, vip=vip)
+        Customer(name=customer_name, phone=customer_phone, channel=channel, vip=is_vip)
     )
     transaction.commit()
     return customer
@@ -56,6 +83,7 @@ def get_customer(customers: Customers, customer_id: int) -> Customer:
 
 def edit_customer(
     customers: Customers,
+    settings: PricingSettingsReader,
     transaction: Transaction,
     customer_id: int,
     changes: CustomerChanges,
@@ -72,7 +100,11 @@ def edit_customer(
             raise PhoneTaken()
 
     channel = customer.channel if isinstance(changes.channel, Unchanged) else changes.channel
-    vip = customer.vip if isinstance(changes.vip, Unchanged) else changes.vip
+    # While Clientes VIP is off the stored mark is left as it is, whatever was sent.
+    if isinstance(changes.vip, Unchanged) or not settings.current().is_vip_customers:
+        vip = customer.vip
+    else:
+        vip = changes.vip
 
     customer.name = name
     customer.phone = phone

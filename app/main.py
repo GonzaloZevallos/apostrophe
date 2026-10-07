@@ -44,6 +44,7 @@ from app.pinned_catalog.application.channel_telegram import ChannelTelegram
 from app.pinned_catalog.application.push import BusinessLocks
 from app.pricing_settings.adapters.opening import PricingSettingsOpening
 from app.pricing_settings.adapters.router import router as pricing_settings_router
+from app.pricing_settings.adapters.sql_pricing_settings import SqlPricingSettings
 from app.results.adapters.router import router as results_router
 from app.sales.adapters.router import router as sales_router
 from app.sales.adapters.sales_ledger import SqlSalesLedger
@@ -176,6 +177,11 @@ def create_app(
     # `app/sales/adapters/router.py` build these over the request's own `Session` and
     # business, the way `get_line_costs` already does for `line_costs`.
     app.state.balances = SqlBalances
+    # The same factory shape, once per reader: each hexagon declares its own
+    # `current() -> PricingSettings` port and none imports `app.pricing_settings`
+    # (docs/adr/0006, docs/adr/0031).
+    app.state.varieties_pricing_settings = SqlPricingSettings
+    app.state.customers_pricing_settings = SqlPricingSettings
     app.state.owing_sales = SqlOwingSales
     # Another factory of the same shape: results reaches stock's rows and draws only
     # through its own `StockFigures` port, never `app.stock` directly (ADR-0006). The

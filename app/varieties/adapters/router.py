@@ -1,7 +1,8 @@
+from collections.abc import Callable
 from datetime import date
-from typing import Annotated
+from typing import Annotated, cast
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
 from app.accounts.adapters.deps import CurrentBusinessId
@@ -13,10 +14,12 @@ from app.varieties.adapters.schemas import PriceEntryIn, PriceEntryOut, VarietyI
 from app.varieties.adapters.sql_varieties import SqlVarieties
 from app.varieties.application import manage_prices, manage_varieties
 from app.varieties.application.errors import NameTaken, VarietyNotFound
+from app.varieties.application.ports import PricingSettingsReader
 from app.varieties.domain.variety import (
     DuplicateEffectiveDate,
     UnknownPriceEntry,
     VarietyRuleBroken,
+    VipPriceNotBelowList,
 )
 
 router = APIRouter(prefix="/varieties", tags=["varieties"])
@@ -29,7 +32,20 @@ def get_varieties(session: SessionDep, business_id: CurrentBusinessId) -> SqlVar
     return SqlVarieties(session, business_id)
 
 
+def get_pricing_settings(
+    request: Request, session: SessionDep, business_id: CurrentBusinessId
+) -> PricingSettingsReader:
+    # Varieties never imports `app.pricing_settings`: `app/main.py` hangs the real
+    # reader on `app.state` as a `(Session, business_id)` factory (docs/adr/0006).
+    factory = cast(
+        Callable[[Session, int], PricingSettingsReader],
+        request.app.state.varieties_pricing_settings,
+    )
+    return factory(session, business_id)
+
+
 VarietiesDep = Annotated[SqlVarieties, Depends(get_varieties)]
+SettingsDep = Annotated[PricingSettingsReader, Depends(get_pricing_settings)]
 TodayDep = Annotated[date, Depends(get_today)]
 
 
@@ -37,7 +53,7 @@ as_http = TranslateErrors(
     [
         (404, (VarietyNotFound, UnknownPriceEntry)),
         (409, (NameTaken, DuplicateEffectiveDate)),
-        (422, (VarietyRuleBroken, InvalidGrams)),
+        (422, (VarietyRuleBroken, VipPriceNotBelowList, InvalidGrams)),
     ]
 )
 
@@ -89,18 +105,24 @@ def price_history(variety_id: int, varieties: VarietiesDep) -> list[PriceEntryOu
 
 @router.post("/{variety_id}/prices", status_code=201)
 def record_price_entry(
-    variety_id: int, body: PriceEntryIn, varieties: VarietiesDep, session: SessionDep
+    variety_id: int,
+    body: PriceEntryIn,
+    varieties: VarietiesDep,
+    settings: SettingsDep,
+    session: SessionDep,
 ) -> PriceEntryOut:
     with as_http:
         bulk_minimum = None if body.bulk_minimum is None else Grams.of(body.bulk_minimum)
         entry = manage_prices.record_price_entry(
             varieties,
+            settings,
             session,
             variety_id,
             effective_from=body.effective_from,
             list_price=body.list_price,
             bulk_price=body.bulk_price,
             bulk_minimum=bulk_minimum,
+            vip_price=body.vip_price,
         )
         return PriceEntryOut.of(entry)
 
