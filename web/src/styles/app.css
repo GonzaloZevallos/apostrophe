@@ -3953,3 +3953,10 @@ body {
   flex-direction: column;
   gap: var(--espacio-md);
 }
+
+/* GH-97 area-integrations-catalog: "Editar encabezado y pie" is `BotonLink`'s link kind,
+ * drawn as the design draws it on this screen: the accent word with no underline. */
+.catalogo__panel > .boton--enlace {
+  box-shadow: none;
+  align-self: flex-start;
+}

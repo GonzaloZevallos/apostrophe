@@ -28,6 +28,7 @@ import {
 } from '../api/refusals'
 import AvisoExito, { type SuccessToast } from '../components/AvisoExito'
 import SinConexion from '../components/SinConexion'
+import Boton from '../components/Boton'
 
 const PUBLISHED_TOAST: SuccessToast = 'Catálogo publicado'
 const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
@@ -145,14 +146,13 @@ export default function PinPublish() {
     <div className={outOfDate ? 'catalogo__publicar catalogo__publicar--desactualizado' : 'catalogo__publicar'}>
       {toast !== null && <AvisoExito texto={toast} />}
       {data.status !== null && <StatusLine status={data.status} />}
-      <button
-        type="button"
-        className="boton"
+      <Boton
+        icon="telegram"
         disabled={blockedBy !== null || publishing}
         onClick={() => void onPublicar()}
       >
         Publicar
-      </button>
+      </Boton>
       {blockedBy !== null && <BlockedReason blockedBy={blockedBy} />}
       {publishError !== null && (
         <span className="campo__error" role="alert">
