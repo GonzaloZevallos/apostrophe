@@ -1,3 +1,6 @@
+/// <reference types="node" />
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { isValidElement } from "react";
 import { matchRoutes, type RouteObject } from "react-router";
 import { describe, expect, test } from "vitest";
@@ -235,53 +238,65 @@ function normalise(path: string): string {
 interface RegistryRow {
   path: string;
   kind: string;
-  parent: string;
+  parent?: string;
+  /** The parent on a computer, when it is not the phone's. */
+  computer_parent?: string;
 }
 
-/** What is wrong between the design registry's rows and the front's screens: a row whose screen
- * is not declared, or that disagrees on kind or parent, on either viewport. */
+/** What is wrong between the design registry's rows and the front's screens: a screen with no
+ * row, a row whose screen is not declared, or a row that disagrees on kind or parent, on either
+ * viewport. Every screen is checked: there is no exemption. */
 function registryDisagreements(
   rows: readonly RegistryRow[],
   screens: readonly routes.Screen[],
 ): string[] {
-  return rows.flatMap((row) => {
+  const missing = screens
+    .filter((s) => !rows.some((row) => normalise(row.path) === normalise(s.path)))
+    .map((s) => `${s.path}: no registry row`);
+  const wrong = rows.flatMap((row) => {
     const entry = screens.find((s) => normalise(s.path) === normalise(row.path));
     if (entry === undefined) return [`${row.path}: no screen declares it`];
-    const wrong: string[] = [];
+    const found: string[] = [];
     if (entry.kind !== row.kind)
-      wrong.push(`${row.path}: kind ${entry.kind} is not ${row.kind}`);
+      found.push(`${row.path}: kind ${entry.kind} is not ${row.kind}`);
     for (const viewport of VIEWPORTS) {
       const parent = parentOf(entry.id, viewport);
       const have = parent === undefined ? undefined : normalise(parent.path);
-      if (have !== normalise(row.parent))
-        wrong.push(`${row.path}: parent ${have} on ${viewport} is not ${row.parent}`);
+      const want =
+        viewport === "computer" && row.computer_parent !== undefined
+          ? row.computer_parent
+          : row.parent;
+      if (have !== (want === undefined ? undefined : normalise(want)))
+        found.push(`${row.path}: parent ${have} on ${viewport} is not ${want}`);
     }
-    return wrong;
+    return found;
   });
+  return [...missing, ...wrong];
 }
 
 describe("the registry against screens.json", () => {
-  test("every screens.json registry row agrees with routes.ts on path, kind and parent", () => {
-    expect(screensJson.registry.length).toBeGreaterThanOrEqual(3);
+  test("every routes.ts screen has a registry row that agrees on path, kind and parent, on both viewports", () => {
+    expect(screensJson.registry.length).toBe(SCREENS.length);
     expect(registryDisagreements(screensJson.registry, SCREENS)).toEqual([]);
   });
 
-  test("a row that disagrees on kind or parent, or names no screen, is refused", () => {
-    expect(
-      registryDisagreements(
-        [
-          { path: "/customers/new", kind: "card", parent: "/customers" },
-          { path: "/customers/{debtor}/edit", kind: "form", parent: "/customers" },
-          { path: "/nowhere", kind: "form", parent: "/customers" },
-        ],
-        SCREENS,
-      ),
-    ).toEqual([
-      "/customers/new: kind form is not card",
-      "/customers/{debtor}/edit: parent /customers/{id} on phone is not /customers",
-      "/customers/{debtor}/edit: parent /customers/{id} on computer is not /customers",
-      "/nowhere: no screen declares it",
-    ]);
+  test("a row that disagrees on kind or parent, names no screen, or is missing, is refused", () => {
+    const rows: RegistryRow[] = [
+      { path: routes.CUSTOMER_NEW, kind: "card", parent: routes.CUSTOMERS },
+      { path: routes.CUSTOMER_EDIT, kind: "form", parent: routes.CUSTOMERS },
+      { path: routes.SETTINGS, kind: "card", parent: routes.MORE },
+      { path: "nowhere", kind: "form", parent: routes.CUSTOMERS },
+    ];
+    const refused = registryDisagreements(rows, SCREENS);
+    expect(refused).toContain(`${routes.CUSTOMER_NEW}: kind form is not card`);
+    expect(refused).toContain(
+      `${routes.CUSTOMER_EDIT}: parent ${normalise(routes.CUSTOMER)} on phone is not ${routes.CUSTOMERS}`,
+    );
+    expect(refused).toContain(
+      `${routes.SETTINGS}: parent ${routes.HOME} on computer is not ${routes.MORE}`,
+    );
+    expect(refused).toContain("nowhere: no screen declares it");
+    expect(refused).toContain(`${routes.SALES}: no registry row`);
   });
 });
 
@@ -298,11 +313,11 @@ describe("a path resolves to its own screen", () => {
 
   test("a literal wins over the id that would also match it", () => {
     for (const [literal, id] of [
-      ["/varieties/new", "variety-new"],
-      ["/varieties/entries", "stock"],
-      ["/varieties/catalog", "catalog"],
-      ["/customers/new", "customer-new"],
-      ["/sales/new", "sale-new"],
+      [routes.VARIETY_NEW, "variety-new"],
+      [routes.STOCK, "stock"],
+      [routes.CATALOG, "catalog"],
+      [routes.CUSTOMER_NEW, "customer-new"],
+      [routes.SALE_NEW, "sale-new"],
     ] as const) {
       const leaf = matchRoutes(router.routes, literal)?.at(-1);
       expect(screenIdOf(leaf?.route ?? {}), literal).toBe(id);
@@ -374,17 +389,15 @@ describe("screens.json against the English routes", () => {
     expect(Object.keys(routes).filter((name) => name.startsWith("LEGACY"))).toEqual([]);
   });
 
-  test("the old Spanish paths fall to the catch-all: no front code redirects them", () => {
-    for (const old of [
-      "/ventas",
-      "/clientes/3",
-      "/mi-stock",
-      "/catalogo",
-      "/negocio",
-      "/gastos/categorias",
-      "/entrar",
-    ]) {
-      expect(matchRoutes(router.routes, old)?.at(-1)?.route.path, old).toBe(
+  test("no old Spanish path of app/legacy_front_paths.json is a front route: the server redirects them", () => {
+    const rows: unknown = JSON.parse(
+      readFileSync(resolve(process.cwd(), "..", "app/legacy_front_paths.json"), "utf-8"),
+    );
+    if (!Array.isArray(rows)) throw new Error("legacy_front_paths.json is a list");
+    expect(rows.length).toBeGreaterThan(15);
+    for (const row of rows as { old: string }[]) {
+      const concrete = row.old.replace("{id}", "3");
+      expect(matchRoutes(router.routes, concrete)?.at(-1)?.route.path, concrete).toBe(
         routes.CATCH_ALL,
       );
     }
