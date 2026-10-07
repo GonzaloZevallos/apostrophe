@@ -10,6 +10,7 @@ from datetime import date
 from app.catalog.application.ports import (
     CatalogAttributesRepository,
     CatalogHeaderFooterRepository,
+    CatalogPricingSettings,
     CatalogStock,
     CatalogVarieties,
 )
@@ -18,16 +19,30 @@ from app.catalog.domain.header_footer import CatalogHeaderFooter
 from app.shared.transaction import Transaction
 
 
+def write_header_footer(
+    header_footer_repo: CatalogHeaderFooterRepository,
+    transaction: Transaction,
+    header: str,
+    footer: str,
+) -> None:
+    """The write alone, with no catalog read after it: what the spreadsheet import needs,
+    since it discards the answer."""
+    header_footer_repo.put(CatalogHeaderFooter.of(header, footer))
+    transaction.commit()
+
+
 def set_header_footer(
     varieties: CatalogVarieties,
     stock: CatalogStock,
     attributes_repo: CatalogAttributesRepository,
     header_footer_repo: CatalogHeaderFooterRepository,
+    pricing_settings: CatalogPricingSettings,
     transaction: Transaction,
     header: str,
     footer: str,
     today: date,
 ) -> CatalogView:
-    header_footer_repo.put(CatalogHeaderFooter.of(header, footer))
-    transaction.commit()
-    return read_catalog(varieties, stock, attributes_repo, header_footer_repo, today)
+    write_header_footer(header_footer_repo, transaction, header, footer)
+    return read_catalog(
+        varieties, stock, attributes_repo, header_footer_repo, pricing_settings, today
+    )

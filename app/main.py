@@ -174,6 +174,10 @@ def create_app(
     # The same shape again: sales reads the switches only through its own
     # `PricingSettingsReader` port, never `app.pricing_settings` (docs/adr/0031).
     app.state.pricing_settings = SqlPricingSettings
+    # The catalog reads the pricing switches only through its own `CatalogPricingSettings`
+    # port (ADR-0006); the same `(Session, business_id)` factory shape. The router and the
+    # pinned catalog's snapshot both build it from here.
+    app.state.catalog_pricing_settings = SqlPricingSettings
     # Two more factories of the same shape: customers reaches a balance, and sales a
     # "still owing" mark, only through `Balances`/`OwingSales`, never `app.payments`
     # directly (the plan's invariant). `app/customers/adapters/router.py` and

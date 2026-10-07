@@ -12,6 +12,7 @@ from typing import Protocol
 from app.catalog.domain.attributes import CatalogAttributes
 from app.catalog.domain.header_footer import CatalogHeaderFooter
 from app.catalog.domain.variety import CatalogVariety, StockStatus
+from app.shared.pricing_settings import PricingSettings
 
 
 class CatalogVarieties(Protocol):
@@ -42,3 +43,9 @@ class CatalogHeaderFooterRepository(Protocol):
     def get(self) -> CatalogHeaderFooter: ...
 
     def put(self, header_footer: CatalogHeaderFooter) -> None: ...
+
+
+class CatalogPricingSettings(Protocol):
+    def current(self) -> PricingSettings:
+        """The business's pricing switches. Read once per catalog read."""
+        ...

@@ -11,12 +11,13 @@ from datetime import date
 from app.catalog.application.ports import (
     CatalogAttributesRepository,
     CatalogHeaderFooterRepository,
+    CatalogPricingSettings,
     CatalogStock,
     CatalogVarieties,
 )
 from app.catalog.domain.attributes import CatalogAttributes
 from app.catalog.domain.text import CatalogEntry, catalog_text, pinned_catalog_text
-from app.catalog.domain.variety import CatalogState, catalog_state
+from app.catalog.domain.variety import CatalogPrice, CatalogState, catalog_state
 
 
 @dataclass(frozen=True)
@@ -42,6 +43,7 @@ def _qualify(
     varieties: CatalogVarieties,
     stock: CatalogStock,
     attributes_repo: CatalogAttributesRepository,
+    pricing_settings: CatalogPricingSettings,
     today: date,
 ) -> tuple[list[CatalogVarietyView], list[CatalogEntry]]:
     """Every variety with its catalog state, and the entries of the ones "in" — the one
@@ -50,6 +52,7 @@ def _qualify(
     all_varieties = varieties.on(today)
     attributes_by_id = attributes_repo.all()
     statuses = stock.statuses(today)
+    is_bulk_pricing = pricing_settings.current().is_bulk_pricing
 
     views: list[CatalogVarietyView] = []
     entries: list[CatalogEntry] = []
@@ -63,9 +66,7 @@ def _qualify(
                 name=variety.name,
                 emoji=attributes.emoji.value if attributes.emoji is not None else None,
                 indica_share=(
-                    attributes.indica_share.percent
-                    if attributes.indica_share is not None
-                    else None
+                    attributes.indica_share.percent if attributes.indica_share is not None else None
                 ),
                 aroma=attributes.aroma.text if attributes.aroma is not None else None,
                 shown=attributes.shown,
@@ -75,9 +76,21 @@ def _qualify(
         if state == "in":
             assert variety.price is not None, "a variety 'in' the catalog has a price"
             entries.append(
-                CatalogEntry(name=variety.name, attributes=attributes, price=variety.price)
+                CatalogEntry(
+                    name=variety.name,
+                    attributes=attributes,
+                    price=_shown_price(variety.price, is_bulk_pricing),
+                )
             )
     return views, entries
+
+
+def _shown_price(price: CatalogPrice, is_bulk_pricing: bool) -> CatalogPrice:
+    """The price as the text may show it: the bulk line only while Precio por cantidad
+    is on (CONTEXT.md: Bulk price). The VIP price is not part of `CatalogPrice` at all."""
+    if is_bulk_pricing:
+        return price
+    return CatalogPrice(list_price=price.list_price, bulk_price=None, bulk_minimum=None)
 
 
 def read_catalog(
@@ -85,9 +98,10 @@ def read_catalog(
     stock: CatalogStock,
     attributes_repo: CatalogAttributesRepository,
     header_footer_repo: CatalogHeaderFooterRepository,
+    pricing_settings: CatalogPricingSettings,
     today: date,
 ) -> CatalogView:
-    views, entries = _qualify(varieties, stock, attributes_repo, today)
+    views, entries = _qualify(varieties, stock, attributes_repo, pricing_settings, today)
     header_footer = header_footer_repo.get()
     text = catalog_text(header_footer.header, header_footer.footer, entries)
     return CatalogView(
@@ -100,10 +114,11 @@ def read_publishable_text(
     stock: CatalogStock,
     attributes_repo: CatalogAttributesRepository,
     header_footer_repo: CatalogHeaderFooterRepository,
+    pricing_settings: CatalogPricingSettings,
     today: date,
 ) -> str:
     """What Telegram needs (#10): `pinned_catalog_text` over the same qualification
     `read_catalog` uses, so a variety that counts for one always counts for the other."""
-    _, entries = _qualify(varieties, stock, attributes_repo, today)
+    _, entries = _qualify(varieties, stock, attributes_repo, pricing_settings, today)
     header_footer = header_footer_repo.get()
     return pinned_catalog_text(header_footer.header, header_footer.footer, entries)
