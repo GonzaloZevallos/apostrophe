@@ -15,6 +15,7 @@ import { useOutletContext } from 'react-router'
 import { NetworkError, get, post } from '../../api/client'
 import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
+import Boton from '../../components/Boton'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import Loading from '../../components/Loading'
@@ -95,9 +96,9 @@ export default function UsersGroup() {
           ))}
         </ul>
       )}
-      <button className="boton boton--suave" type="button" onClick={onInvite} disabled={invitePending}>
+      <Boton variant="secondary" icon="personaMas" onClick={onInvite} disabled={invitePending}>
         Invitá a un socio
-      </button>
+      </Boton>
       {invite !== null && (
         <div className="usuarios__invitacion">
           <div className="usuarios__link">{invite.url}</div>

@@ -15,6 +15,7 @@ import type { Me } from '../../api/me'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import { SIN_CONEXION_TITULO } from '../../components/SinConexion'
 import * as clipboard from '../../clipboard'
+import { iconAndTextProblems } from '../../test/iconAndTextRule'
 import UsersGroup from './UsersGroup'
 
 vi.mock('../../clipboard', () => ({ copyText: vi.fn().mockResolvedValue(true) }))
@@ -139,4 +140,13 @@ test('an untouched group closes at once, with no confirmation', async () => {
   await userEvent.click(await screen.findByRole('button', { name: 'Cerrar' }))
 
   expect(await screen.findByText('Lista de grupos')).toBeInTheDocument()
+})
+
+test('"Invitá a un socio" is an icon + text action: the icon is hidden, so the name stays the word', async () => {
+  renderUsers(vi.fn().mockResolvedValue(jsonResponse(200, BUSINESS)))
+
+  const invite = await screen.findByRole('button', { name: 'Invitá a un socio' })
+
+  expect(invite.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  expect(iconAndTextProblems(invite.parentElement as HTMLElement).filter((problem) => problem.includes('Invitá'))).toEqual([])
 })
