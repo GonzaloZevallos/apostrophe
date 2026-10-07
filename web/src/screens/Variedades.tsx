@@ -22,6 +22,7 @@ import { catalogQueryOptions } from '../api/catalog'
 import { keys } from '../api/keys'
 import type { Me } from '../api/me'
 import { readStock, type VarietyStock } from '../api/stock'
+import BotonLink from '../components/BotonLink'
 import ErrorGenerico from '../components/ErrorGenerico'
 import GoneNotice from '../components/GoneNotice'
 import { useGoneNotice } from '../components/goneExit'
@@ -38,6 +39,7 @@ import { detailFor } from '../stock/detail'
 import { summaryLine } from '../stock/summaryLine'
 import { archivedVarietiesQueryOptions } from './varieties/archivedVarieties'
 import { varietiesByName } from './varieties/varietiesByName'
+import { EMPTY_DETAIL, EMPTY_TITLE } from './varieties/varietiesMessages'
 import VarietyRowLink from './varieties/VarietyRowLink'
 
 export const VARIETY_SAVED = 'Variedad guardada'
@@ -45,8 +47,6 @@ export const NO_PRICE_TODAY = 'Sin precio: no se puede vender'
 export const NAME_TAKEN_MESSAGE = 'Ya existe una variedad con ese nombre'
 export const NAME_INVALID_MESSAGE = 'Ponele un nombre a la variedad, sin espacios de más'
 export const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
-export const EMPTY_TITLE = 'Todavía no cargaste ninguna variedad'
-export const EMPTY_DETAIL = 'Agregá la primera con su precio para poder vender y mandar tu catálogo.'
 
 interface PriceEntry {
   id: number
@@ -101,15 +101,15 @@ export default function Variedades() {
         <h1 className="encabezado__titulo">Variedades</h1>
         {summary !== null && <p className="pie variedades__resumen">{summary}</p>}
         <div className="variedades__acciones">
-          <InAppLink to={CATALOG} className="boton">
+          <BotonLink to={CATALOG} icon="telegram">
             Mandar catálogo
-          </InAppLink>
-          <InAppLink to={STOCK_ENTRY_NEW} className="boton boton--suave">
-            + Entrada de stock
-          </InAppLink>
-          <InAppLink to={WITHDRAWAL_NEW} className="boton boton--suave">
+          </BotonLink>
+          <BotonLink to={STOCK_ENTRY_NEW} variant="secondary" icon="agregar" ariaLabel="+ Entrada de stock">
+            Entrada de stock
+          </BotonLink>
+          <BotonLink to={WITHDRAWAL_NEW} variant="secondary" icon="stock">
             Sacar del stock
-          </InAppLink>
+          </BotonLink>
           <InAppLink to={VARIETY_NEW} className="boton--enlace variedades__nueva">
             Nueva variedad
           </InAppLink>
@@ -123,8 +123,8 @@ export default function Variedades() {
         {failure === null && !ready && <Loading />}
         {failure === null && ready && rows.length === 0 && (
           <div className="estado-vacio">
-            <span className="estado-vacio__titulo">{EMPTY_TITLE}</span>
-            <span className="estado-vacio__detalle">{EMPTY_DETAIL}</span>
+            <span className="estado-vacio__titulo" data-copy="emptyTitle">{EMPTY_TITLE}</span>
+            <span className="estado-vacio__detalle" data-copy="emptyLine">{EMPTY_DETAIL}</span>
           </div>
         )}
         {rows.length > 0 && (

@@ -3091,11 +3091,13 @@ body {
 
 .variedad-acciones {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--espacio-md);
 }
 
 .variedad-acciones .boton {
-  flex: 1;
+  flex: 1 1 auto;
+  white-space: nowrap;
   height: 52px;
   font-size: 15px;
   text-decoration: none;
@@ -3105,6 +3107,23 @@ body {
   display: flex;
   flex-direction: column;
   margin-top: var(--espacio-lg);
+}
+
+/* The icon-only delete (`Boton variant="icon"`) on a variety's page: the price row's is a
+ * bare icon in the row's own muted ink, "Eliminar variedad" sits at the start of its row. */
+.historial-fila .boton-icono {
+  background: none;
+  color: var(--tinta2);
+}
+
+.variedad-retiro .boton-icono {
+  align-self: flex-start;
+}
+
+/* "Ver todas" is a link (`BotonLink variant="link"`), drawn as the section's plain accent
+ * text: the underline of `.boton--enlace` is the design's look for links in a form, not here. */
+.seccion-variedad__cabecera .boton--enlace {
+  box-shadow: none;
 }
 
 .seccion-variedad {

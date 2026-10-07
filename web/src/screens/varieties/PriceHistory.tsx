@@ -18,6 +18,7 @@ import { useBackOr } from '../../components/useBackOr'
 import { VARIETIES, VARIETY, pathTo } from '../../routes'
 import type { Variety } from '../Variedades'
 import PriceRows, { type PriceRow } from './PriceRows'
+import { PRICE_HISTORY_HELP } from './varietiesMessages'
 
 export default function PriceHistory({ varietyId }: { varietyId: number }) {
   const id = String(varietyId)
@@ -68,7 +69,7 @@ export default function PriceHistory({ varietyId }: { varietyId: number }) {
           currentPriceId={variety.current_price?.id ?? null}
           readOnly={variety.archived}
         />
-        <span className="campo__ayuda">Cada venta usa el precio que regía ese día, aunque lo cambies después.</span>
+        <span className="campo__ayuda" data-copy="help">{PRICE_HISTORY_HELP}</span>
       </div>
     </main>
   )

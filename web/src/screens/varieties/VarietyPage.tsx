@@ -29,7 +29,7 @@ import type { VarietyDetail } from '../../api/varieties'
 import type { SuccessToast } from '../../components/AvisoExito'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import GoneScreen from '../../components/GoneScreen'
-import InAppLink from '../../components/InAppLink'
+import BotonLink from '../../components/BotonLink'
 import LeaveConfirm from '../../components/LeaveConfirm'
 import Loading from '../../components/Loading'
 import MarcaEstado from '../../components/MarcaEstado'
@@ -222,15 +222,15 @@ export default function VarietyPage({ varietyId }: { varietyId: number }) {
           </>
         ) : (
           <div className="variedad-acciones">
-            <InAppLink className="boton boton--suave" to={`${STOCK_ENTRY_NEW}?variety=${varietyId}`}>
-              + Entrada
-            </InAppLink>
-            <InAppLink className="boton boton--suave" to={pathTo(VARIETY_PRICE_NEW, { id: varietyId })}>
+            <BotonLink variant="secondary" icon="agregar" ariaLabel="+ Entrada" to={`${STOCK_ENTRY_NEW}?variety=${varietyId}`}>
+              Entrada
+            </BotonLink>
+            <BotonLink variant="secondary" icon="agregar" to={pathTo(VARIETY_PRICE_NEW, { id: varietyId })}>
               Nuevo precio
-            </InAppLink>
-            <InAppLink className="boton boton--suave" to={withdrawalNewFor(varietyId)}>
+            </BotonLink>
+            <BotonLink variant="secondary" icon="stock" to={withdrawalNewFor(varietyId)}>
               Sacar del stock
-            </InAppLink>
+            </BotonLink>
           </div>
         )}
 

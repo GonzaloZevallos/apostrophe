@@ -16,6 +16,7 @@ const KNOWN_MODULES = [
   '/src/screens/clientes/messages.ts',
   '/src/screens/settings/messages.ts',
   '/src/screens/varieties/thresholdMessages.ts',
+  '/src/screens/varieties/varietiesMessages.ts',
 ]
 
 const found = import.meta.glob<CopyModule>('/src/**/{messages,*Messages}.ts', { eager: true })

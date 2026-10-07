@@ -21,6 +21,7 @@ import { ApiError, NetworkError } from '../../api/client'
 import { invalidateResource, keys } from '../../api/keys'
 import { isGone } from '../../api/refusals'
 import { archiveVariety, deleteVariety, type Removal } from '../../api/varieties'
+import Boton from '../../components/Boton'
 import ConfirmDialog from '../../components/ConfirmDialog'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import GoneNotice from '../../components/GoneNotice'
@@ -122,9 +123,13 @@ export default function VarietyRemoval({ varietyId, removal, grams }: Props) {
       {offline && <SinConexion />}
       {failed && <ErrorGenerico />}
       <div className="variedad-retiro">
-        <button type="button" className="boton boton--suave" onClick={() => setAsking(true)}>
-          {deleting ? 'Eliminar variedad' : 'Archivar variedad'}
-        </button>
+        {deleting ? (
+          <Boton variant="icon" action="delete" ariaLabel="Eliminar variedad" onClick={() => setAsking(true)} />
+        ) : (
+          <button type="button" className="boton boton--suave" onClick={() => setAsking(true)}>
+            Archivar variedad
+          </button>
+        )}
       </div>
       {asking && (
         <ConfirmDialog
