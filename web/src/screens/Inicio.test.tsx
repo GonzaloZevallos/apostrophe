@@ -181,6 +181,44 @@ test('Semana: Faltante de stock shows with no note of its own when its cost isn\
   expect(noteAfterRow(container, 'Faltante de stock')).toBeNull()
 })
 
+test('Semana: Promoción and Consumo propio follow Faltante de stock and come before Gastos, each with its own note flag', async () => {
+  stubFetch(PANEL)
+  const { container } = renderInicio()
+  await screen.findByText('Vendiste hoy')
+  screen.getByRole('button', { name: 'Semana' }).click()
+  await screen.findByText('Vendiste esta semana')
+
+  const labels = Array.from(container.querySelectorAll('.panel-lista__fila > span:first-child')).map(
+    (node) => node.textContent,
+  )
+  expect(labels.slice(0, 5)).toEqual([
+    'Costo de lo vendido',
+    'Faltante de stock',
+    'Promoción',
+    'Consumo propio',
+    'Gastos',
+  ])
+  const promocion = screen.getByText('Promoción').closest<HTMLElement>('.panel-lista__fila')!
+  expect(within(promocion).getByText('$ 2.000')).toBeInTheDocument()
+  expect(noteAfterRow(container, 'Promoción')).toBe('incluye costo pendiente')
+  const consumo = screen.getByText('Consumo propio').closest<HTMLElement>('.panel-lista__fila')!
+  expect(within(consumo).getByText('$ 1.000')).toBeInTheDocument()
+  expect(noteAfterRow(container, 'Consumo propio')).toBeNull()
+})
+
+test('Hoy and a period with no withdrawal show neither Promoción nor Consumo propio', async () => {
+  stubFetch(PANEL)
+  renderInicio()
+  await screen.findByText('Vendiste hoy')
+  expect(screen.queryByText('Promoción')).not.toBeInTheDocument()
+  expect(screen.queryByText('Consumo propio')).not.toBeInTheDocument()
+
+  screen.getByRole('button', { name: 'Mes' }).click()
+  await screen.findByText('Vendiste este mes')
+  expect(screen.queryByText('Promoción')).not.toBeInTheDocument()
+  expect(screen.queryByText('Consumo propio')).not.toBeInTheDocument()
+})
+
 test('Mes: Costo de lo vendido\'s note and Ganancia\'s note show; there is no Faltante de stock row', async () => {
   stubFetch(PANEL)
   const { container } = renderInicio()
@@ -213,6 +251,8 @@ test('no sales shows no average, and the range reads with no year', async () => 
         cost_of_goods: 0,
         pending_cost: false,
         shortfall: null,
+        promotion: null,
+        own_use: null,
         expenses: 5000,
         purchases: 0,
         profit: -5000,

@@ -22,7 +22,7 @@
  * first Publicar").
  */
 
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useOutletContext } from 'react-router'
 import { get, NetworkError } from '../api/client'
@@ -50,6 +50,14 @@ export const EMPTY_DETAIL =
 export const PINNED_CATALOG_OUT_OF_DATE = 'Tu catálogo en Telegram está desactualizado'
 
 const PENDING_NOTE = 'incluye costo pendiente'
+
+/** Faltante de stock, then Promoción and Consumo propio, each on its own line and only
+ * when the period has one (`null` otherwise), right before Gastos. */
+const COST_LINES: Array<{ key: 'shortfall' | 'promotion' | 'own_use'; label: string }> = [
+  { key: 'shortfall', label: 'Faltante de stock' },
+  { key: 'promotion', label: 'Promoción' },
+  { key: 'own_use', label: 'Consumo propio' },
+]
 
 const TAB_LABEL: Record<PanelTab, string> = { today: 'Hoy', week: 'Semana', month: 'Mes' }
 const TABS: PanelTab[] = ['today', 'week', 'month']
@@ -205,15 +213,19 @@ function Panel({
           <span className="panel-lista__valor">{formatMoney(period.cost_of_goods)}</span>
         </div>
         {period.pending_cost && <span className="pie">{PENDING_NOTE}</span>}
-        {period.shortfall !== null && (
-          <>
-            <div className="panel-lista__fila">
-              <span>Faltante de stock</span>
-              <span className="panel-lista__valor">{formatMoney(period.shortfall.amount)}</span>
-            </div>
-            {period.shortfall.pending && <span className="pie">{PENDING_NOTE}</span>}
-          </>
-        )}
+        {COST_LINES.map(({ key, label }) => {
+          const line = period[key]
+          if (line === null) return null
+          return (
+            <Fragment key={key}>
+              <div className="panel-lista__fila">
+                <span>{label}</span>
+                <span className="panel-lista__valor">{formatMoney(line.amount)}</span>
+              </div>
+              {line.pending && <span className="pie">{PENDING_NOTE}</span>}
+            </Fragment>
+          )
+        })}
         <div className="panel-lista__fila">
           <span>Gastos</span>
           <span className="panel-lista__valor">{formatMoney(period.expenses)}</span>
