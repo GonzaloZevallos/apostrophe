@@ -23,7 +23,7 @@ import { formatDateShort, sinceWhen } from '../format/dates'
 import { formatGrams, formatMoney } from '../format/money'
 import { parseGrams, parseMoney } from '../format/parse'
 import { withdrawalNewFor, withdrawalPath } from '../routes'
-import { ORIGIN_LABEL } from './Stock'
+import { ORIGIN_LABEL } from '../stock/origin'
 
 export const THRESHOLD_SAVED = 'Aviso guardado'
 export const THRESHOLD_INVALID_MESSAGE = 'Revisá el umbral cargado'
@@ -36,7 +36,7 @@ import {
   type Variety,
 } from './Variedades'
 
-export const REASON_LABEL = { promotion: 'Promoción', own_use: 'Consumo propio' } as const
+const REASON_LABEL = { promotion: 'Promoción', own_use: 'Consumo propio' } as const
 const MOVEMENTS_SHOWN = 3
 
 export const PRICE_SAVED = 'Precio guardado'
