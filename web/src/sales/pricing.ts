@@ -108,18 +108,14 @@ export function priceLine(input: LineInput): LinePricing {
     }
   }
   if (quote === null) throw new NoPriceThatDay()
-  // Candidates in the order a tie is settled: VIP, then bulk, then list.
-  const candidates: { rule: PricingRule; price: number }[] = []
-  if (settings.vip && customerIsVip && quote.vipPrice !== null) {
-    candidates.push({ rule: 'vip', price: quote.vipPrice })
-  }
+  // Start from list; bulk replaces it only when strictly lower; VIP replaces whatever
+  // is best when not higher, so a VIP-bulk tie is stored as VIP.
+  let best: { rule: PricingRule; price: number } = { rule: 'list', price: quote.listPrice }
   if (settings.bulk && quote.bulk !== null && gramsHundredths >= quote.bulk.minimumHundredths) {
-    candidates.push({ rule: 'bulk', price: quote.bulk.price })
+    if (quote.bulk.price < best.price) best = { rule: 'bulk', price: quote.bulk.price }
   }
-  candidates.push({ rule: 'list', price: quote.listPrice })
-  let best = candidates[0]!
-  for (const candidate of candidates) {
-    if (candidate.price < best.price) best = candidate
+  if (settings.vip && customerIsVip && quote.vipPrice !== null) {
+    if (quote.vipPrice <= best.price) best = { rule: 'vip', price: quote.vipPrice }
   }
   return {
     rule: best.rule,
