@@ -30,6 +30,8 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
+    // Room for a test to finish when the whole suite runs in parallel (see test-setup.ts).
+    testTimeout: 30000,
     setupFiles: ['./src/test-setup.ts'],
     // `web/e2e/` is Playwright's own suite (`playwright.config.ts`'s `testDir`),
     // run by the `web-e2e` check; vitest's defaults would otherwise also try to
