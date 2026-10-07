@@ -34,7 +34,7 @@ import { get } from '../api/client'
 export const EMPTY_STATE_TITLE = 'Sin entradas de stock'
 export const EMPTY_STATE_DETAIL = 'Cargá tu stock inicial o una compra'
 
-const ORIGIN_LABEL: Record<StockEntry['origin'], string> = {
+export const ORIGIN_LABEL: Record<StockEntry['origin'], string> = {
   purchase: 'Compra',
   harvest: 'Cosecha',
   opening_stock: 'Stock inicial',

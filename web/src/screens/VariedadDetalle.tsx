@@ -13,7 +13,7 @@ import { ApiError, NetworkError, UNKNOWN_CODE, del, get, patch, post } from '../
 import { invalidateResource, keys } from '../api/keys'
 import type { Me } from '../api/me'
 import { GONE_DETAIL, isGone, kindOf, resolveOverride, type RefusalCode } from '../api/refusals'
-import { readStock, setThreshold } from '../api/stock'
+import { type Movement, readMovements, readStock, setThreshold } from '../api/stock'
 import AvisoExito, { type SuccessToast } from '../components/AvisoExito'
 import ConfirmDialog from '../components/ConfirmDialog'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
@@ -22,6 +22,8 @@ import SinConexion from '../components/SinConexion'
 import { formatDateShort, sinceWhen } from '../format/dates'
 import { formatGrams, formatMoney } from '../format/money'
 import { parseGrams, parseMoney } from '../format/parse'
+import { withdrawalNewFor, withdrawalPath } from '../routes'
+import { ORIGIN_LABEL } from './Stock'
 
 export const THRESHOLD_SAVED = 'Aviso guardado'
 export const THRESHOLD_INVALID_MESSAGE = 'Revisá el umbral cargado'
@@ -33,6 +35,9 @@ import {
   VARIETY_SAVED,
   type Variety,
 } from './Variedades'
+
+export const REASON_LABEL = { promotion: 'Promoción', own_use: 'Consumo propio' } as const
+const MOVEMENTS_SHOWN = 3
 
 export const PRICE_SAVED = 'Precio guardado'
 export const PRICE_DELETED = 'Precio eliminado'
@@ -60,6 +65,58 @@ const THRESHOLD_OVERRIDES: Partial<Record<RefusalCode, string>> = {
   'stock.threshold_invalid': THRESHOLD_INVALID_MESSAGE,
 }
 
+/** "Stock y entradas": the variety's last 3 movements, "Ver todas" for the rest, newest
+ * first as the API sorts them. A withdrawal row is told by its reason word and a minus
+ * sign, never by colour, and opens the withdrawal's detail. */
+function MovementsSection({
+  movements,
+  all,
+  onAll,
+}: {
+  movements: Movement[]
+  all: boolean
+  onAll: () => void
+}) {
+  const shown = all ? movements : movements.slice(0, MOVEMENTS_SHOWN)
+  return (
+    <>
+      <span className="campo__rotulo">Stock y entradas</span>
+      <div className="historial">
+        {shown.map((movement) =>
+          movement.kind === 'withdrawal' ? (
+            <Link
+              key={`withdrawal-${movement.id}`}
+              to={withdrawalPath(movement.id)}
+              className="historial-fila"
+            >
+              <span className="historial-fila__fecha">
+                {formatDateShort(movement.date)} · {REASON_LABEL[movement.reason]}
+              </span>
+              <span className="historial-fila__precio">{`−${formatGrams(movement.grams)}`}</span>
+            </Link>
+          ) : (
+            <Link
+              key={`entry-${movement.id}`}
+              to={`/mi-stock/entradas/${movement.id}`}
+              className="historial-fila"
+            >
+              <span className="historial-fila__fecha">
+                {formatDateShort(movement.date)} · {ORIGIN_LABEL[movement.origin]}
+              </span>
+              <span className="historial-fila__precio">{formatGrams(movement.grams)}</span>
+            </Link>
+          ),
+        )}
+      </div>
+      {!all && movements.length > MOVEMENTS_SHOWN && (
+        <button type="button" className="boton--enlace" onClick={onAll}>
+          Ver todas
+        </button>
+      )}
+    </>
+  )
+}
+
 export default function VariedadDetalle() {
   const { id } = useParams<{ id: string }>()
   const variedadId = id ?? ''
@@ -75,6 +132,11 @@ export default function VariedadDetalle() {
     queryFn: () => get<FullHistoryEntry[]>(`/varieties/${variedadId}/prices`),
   })
   const stockQuery = useQuery({ queryKey: keys.stock(), queryFn: readStock })
+  const movementsQuery = useQuery({
+    queryKey: keys.stockMovements(variedadId),
+    queryFn: () => readMovements(variedadId),
+  })
+  const [allMovements, setAllMovements] = useState(false)
   const currentThreshold =
     stockQuery.data?.varieties.find((row) => String(row.variety_id) === variedadId)?.threshold ?? null
 
@@ -394,6 +456,9 @@ export default function VariedadDetalle() {
         <button type="button" className="boton boton--suave" onClick={() => setAddingPrice(true)}>
           Nuevo precio
         </button>
+        <Link to={withdrawalNewFor(variedadId)} className="boton boton--suave">
+          Sacar del stock
+        </Link>
 
         {addingPrice && (
           <form className="formulario" onSubmit={onAddPrice}>
@@ -484,6 +549,12 @@ export default function VariedadDetalle() {
             </button>
           )}
         </form>
+
+        <MovementsSection
+          movements={movementsQuery.data ?? []}
+          all={allMovements}
+          onAll={() => setAllMovements(true)}
+        />
 
         <span className="campo__rotulo">Historial</span>
         <div className="historial">

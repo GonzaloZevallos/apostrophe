@@ -12,6 +12,7 @@ import { beforeEach, describe, expect, test, vi } from 'vitest'
 import * as client from '../api/client'
 import { ApiError, NetworkError } from '../api/client'
 import type { Me } from '../api/me'
+import movementsFixture from '../api/fixtures/movements.json'
 import { GONE_DETAIL, GONE_NOTICE } from '../api/refusals'
 import { SIN_CONEXION_TITULO } from '../components/SinConexion'
 import VariedadDetalle from './VariedadDetalle'
@@ -40,6 +41,8 @@ function renderScreen() {
         <Routes>
           <Route element={<Outlet context={ME} />}>
             <Route path="/variedades/:id" element={<VariedadDetalle />} />
+            <Route path="/withdrawals/new" element={<span>formulario de retiro</span>} />
+            <Route path="/withdrawals/:id" element={<span>detalle de retiro</span>} />
           </Route>
         </Routes>
       </MemoryRouter>
@@ -49,11 +52,12 @@ function renderScreen() {
 
 const EMPTY_STOCK = { total: 0, varieties: [], entries: [] }
 
-function mockGet(stock: unknown = EMPTY_STOCK) {
+function mockGet(stock: unknown = EMPTY_STOCK, movements: unknown = []) {
   vi.mocked(client.get).mockImplementation((path: string) => {
     if (path === '/varieties/1') return Promise.resolve(VARIETY)
     if (path === '/varieties/1/prices') return Promise.resolve(HISTORY)
     if (path === '/stock') return Promise.resolve(stock)
+    if (path === '/stock/varieties/1/movements') return Promise.resolve(movements)
     return Promise.reject(new Error(`unexpected path: ${path}`))
   })
 }
@@ -296,4 +300,50 @@ test('a variety that is gone shows the gone-detail state with a way back to the 
     'href',
     '/variedades',
   )
+})
+
+describe('Sacar del stock and the movements', () => {
+  test('"Sacar del stock" opens the withdrawal form with this variety already chosen', async () => {
+    mockGet()
+    renderScreen()
+    const link = await screen.findByRole('link', { name: 'Sacar del stock' })
+    expect(link).toHaveAttribute('href', '/withdrawals/new?variety=1')
+  })
+
+  test('a withdrawal row says its reason and a minus sign, mixed with entries, and opens its detail', async () => {
+    const user = userEvent.setup()
+    mockGet(EMPTY_STOCK, movementsFixture)
+    renderScreen()
+
+    expect(await screen.findByText('02/10 · Compra')).toBeInTheDocument()
+    expect(screen.getByText('20 g')).toBeInTheDocument()
+    const row = screen.getByText('01/10 · Promoción').closest('a')
+    expect(row).toHaveTextContent('−5,5 g')
+    await user.click(row as HTMLElement)
+    expect(await screen.findByText('detalle de retiro')).toBeInTheDocument()
+  })
+
+  test('only the last 3 movements show until "Ver todas"', async () => {
+    const user = userEvent.setup()
+    const withdrawal = (id: number, reason: 'promotion' | 'own_use') => ({
+      kind: 'withdrawal',
+      id,
+      date: '2026-09-2' + String(id),
+      reason,
+      grams: 1,
+    })
+    mockGet(EMPTY_STOCK, [
+      withdrawal(1, 'promotion'),
+      withdrawal(2, 'own_use'),
+      withdrawal(3, 'promotion'),
+      withdrawal(4, 'own_use'),
+    ])
+    renderScreen()
+
+    await screen.findByText('21/09 · Promoción')
+    expect(screen.queryByText('24/09 · Consumo propio')).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Ver todas' }))
+    expect(screen.getByText('24/09 · Consumo propio')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Ver todas' })).not.toBeInTheDocument()
+  })
 })
