@@ -20,7 +20,6 @@ const KNOWN_MODULES = [
   '/src/screens/settings/integrationsMessages.ts',
   '/src/components/estadosMessages.ts',
   '/src/screens/analisisMessages.ts',
-  '/src/screens/authMessages.ts',
   '/src/screens/gastosMessages.ts',
   '/src/screens/inicioMessages.ts',
   '/src/screens/settings/messages.ts',
