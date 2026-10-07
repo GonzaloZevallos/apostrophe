@@ -25,6 +25,11 @@ function isComputer(): boolean {
   return typeof window.matchMedia === 'function' && window.matchMedia(COMPUTER_QUERY).matches
 }
 
+/** The viewport now, for code that decides when the user acts rather than when it renders. */
+export function currentViewport(): Viewport {
+  return isComputer() ? 'computer' : 'phone'
+}
+
 export function useViewport(): Viewport {
   return useSyncExternalStore(subscribe, isComputer) ? 'computer' : 'phone'
 }
