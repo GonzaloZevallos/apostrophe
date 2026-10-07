@@ -38,6 +38,7 @@ import {
   type PanelTab,
 } from '../api/panel'
 import ErrorGenerico from '../components/ErrorGenerico'
+import Icono from '../components/Icono'
 import MarcaEstado from '../components/MarcaEstado'
 import SinConexion from '../components/SinConexion'
 import { salesCount } from '../format/counts'
@@ -45,11 +46,9 @@ import { formatDateShort } from '../format/dates'
 import { formatGrams, formatMoney, formatSignedMoney } from '../format/money'
 import { initialsOf } from '../shell/initials'
 import { detailFor, sideNoteFor } from '../stock/detail'
+import { EMPTY_DETAIL, EMPTY_TITLE, NOBODY_OWES, PINNED_CATALOG_OUT_OF_DATE } from './inicioMessages'
 
-export const EMPTY_TITLE = 'Arrancá por las variedades'
-export const EMPTY_DETAIL =
-  'Cargá tu primera variedad con su precio. Sin precio no se puede cargar una venta.'
-export const PINNED_CATALOG_OUT_OF_DATE = 'Tu catálogo en Telegram está desactualizado'
+export { EMPTY_DETAIL, EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE }
 
 const PENDING_NOTE = 'incluye costo pendiente'
 
@@ -285,7 +284,7 @@ function TeDebenBlock({ debts }: { debts: PanelDebts }) {
     return (
       <div className="bloque-deben">
         <span className="rotulo">Te deben</span>
-        <span className="pie">Nadie te debe</span>
+        <span className="pie">{NOBODY_OWES}</span>
       </div>
     )
   }
@@ -312,6 +311,7 @@ function TeDebenBlock({ debts }: { debts: PanelDebts }) {
             aria-label={`Cobrar a ${row.name}`}
             className="cobrar cobrar--acento"
           >
+            <Icono nombre="cobro" />
             Cobrar
           </InAppLink>
         </div>

@@ -34,8 +34,9 @@ import Loading from '../components/Loading'
 import { useFlash } from '../flash/useFlash'
 import { EXPENSE_CATEGORIES, EXPENSE_NEW } from '../routes'
 import ExpenseForm from './expenses/ExpenseForm'
+import { FLOWER_NOTICE } from './gastosMessages'
 
-export const FLOWER_NOTICE = 'Las compras de flores no van acá: se cargan en Stock.'
+export { FLOWER_NOTICE }
 export const NO_DISCARD_TITLE = 'No, dejala'
 export const YES_DELETE_TITLE = 'Sí, borrala'
 

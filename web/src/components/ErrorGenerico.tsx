@@ -5,7 +5,9 @@
  * unrecognised error body means.
  */
 
-export const ERROR_GENERICO_MENSAJE = 'Algo falló. Probá de nuevo.'
+import { ERROR_GENERICO_MENSAJE } from './estadosMessages'
+
+export { ERROR_GENERICO_MENSAJE }
 
 export default function ErrorGenerico() {
   return (

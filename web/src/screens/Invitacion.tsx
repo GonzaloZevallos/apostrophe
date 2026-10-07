@@ -22,16 +22,15 @@ import { ApiError, NetworkError, UNKNOWN_CODE } from '../api/client'
 import { kindOf, isGone, resolveOverride, type RefusalCode } from '../api/refusals'
 import { acceptInvitation, openInvitation, type InvitationView } from '../session'
 import AuthPage from '../components/AuthPage'
+import Boton from '../components/Boton'
 import Loading from '../components/Loading'
 import PasswordField from '../components/PasswordField'
 import SinConexion from '../components/SinConexion'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import { formatDateShort } from '../format/dates'
-import { WEAK_PASSWORD_MESSAGE } from './authMessages'
+import { expiryLine, NOT_USABLE_DETAIL, NOT_USABLE_TITLE, WEAK_PASSWORD_MESSAGE } from './authMessages'
 
-export const NOT_USABLE_TITLE = 'Esta invitación ya no sirve'
-export const NOT_USABLE_DETAIL =
-  'Venció o alguien la usó antes. Pedile al negocio que te manden una nueva.'
+export { NOT_USABLE_DETAIL, NOT_USABLE_TITLE }
 export const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
 export { ERROR_GENERICO_MENSAJE as RETRY_MESSAGE }
 export const EMAIL_TAKEN_MESSAGE = 'Ya hay una cuenta con ese email'
@@ -188,14 +187,12 @@ export default function Invitacion() {
           />
         </label>
         <PasswordField label="Contraseña" value={password} onChange={setPassword} error={error} />
-        <button className="boton" type="submit" disabled={sending}>
+        <Boton textOnly="submit" type="submit" disabled={sending}>
           {isNewBusiness ? 'Creá el negocio' : `Sumate a ${view.business_name}`}
-        </button>
+        </Boton>
       </form>
       <div className="pie">
-        {isNewBusiness
-          ? `La invitación se usa una sola vez y vence el ${expiry}.`
-          : `Esta invitación vence el ${expiry} y se usa una sola vez.`}
+        {expiryLine(isNewBusiness, expiry)}
       </div>
     </AuthPage>
   )

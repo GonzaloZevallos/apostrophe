@@ -16,7 +16,8 @@ import { afterEach, expect, test, vi } from 'vitest'
 import panelFixture from '../api/fixtures/panel.json'
 import type { PanelAnswer } from '../api/panel'
 import type { Me } from '../api/me'
-import Inicio, { EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE } from './Inicio'
+import { LIMITS } from '../copy/limits'
+import Inicio, { EMPTY_DETAIL, EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE } from './Inicio'
 
 const PANEL: PanelAnswer = panelFixture as PanelAnswer
 
@@ -323,6 +324,23 @@ test('the teaser\'s "Cobrar a X" opens Registrar cobro for that customer, from i
 
   expect(await screen.findByText('cobro de 1')).toBeInTheDocument()
   expect(screen.getByText('desde la app')).toBeInTheDocument()
+})
+
+test('"Cobrar" carries the cobro icon, hidden from assistive technology, and keeps its name', async () => {
+  stubFetch(PANEL)
+  renderInicio()
+  await screen.findByText('$ 37.000')
+
+  const link = screen.getByRole('link', { name: 'Cobrar a Ana Pérez' })
+  expect(link.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  expect(link).toHaveTextContent('Cobrar')
+})
+
+test('the empty-state line the screen renders is the registered binding and fits its limit', async () => {
+  stubFetch(PANEL, [{ current_price: null }])
+  renderInicio()
+
+  expect((await screen.findByText(EMPTY_DETAIL)).textContent?.length).toBeLessThanOrEqual(LIMITS.emptyLine)
 })
 
 test('tapping "Te deben" opens Clientes, where the debtors section is', async () => {

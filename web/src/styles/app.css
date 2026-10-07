@@ -1259,7 +1259,7 @@ body {
 }
 
 .nueva-venta .nueva-venta__cerrar,
-.gasto-form .gasto-form__cerrar {
+.gasto-form .gasto-form__cerrar .boton--enlace {
   box-shadow: none;
   color: var(--tinta2);
   font-weight: 600;
@@ -4033,3 +4033,17 @@ body {
   padding: 0 var(--espacio-xs);
 }
 /* ===== end ventas-reglas-icono ===== */
+
+/* GH-97 area e (Inicio, Gastos, Análisis, Estados, getting-in): Inicio's Cobrar pill
+ * draws its icon beside the word. */
+.bloque-deben .cobrar {
+  flex: none;
+  gap: var(--espacio-sm);
+}
+
+/* The wider pill must not push the row past the card on a phone: the customer's data
+ * gives up its width first and wraps whole items instead of squeezing them. */
+.bloque-deben__datos {
+  min-width: 0;
+  flex-wrap: wrap;
+}
