@@ -3,8 +3,8 @@
  * the tab root. Every variety, hidden ones included, sorted by name; each row tells its stock
  * status by shape and word (`MarcaEstado`), "Oculta" beside it when the catalog hides it,
  * grams and days left, and today's list price per gram or "Sin precio: no se puede vender".
- * Above the list: the summary line, "Mandar catálogo" and "+ Entrada de stock"; "Nueva
- * variedad" below them and "Todas las entradas" at the foot.
+ * Above the list: the summary line, "Mandar catálogo" and "+ Entrada de stock" and
+ * "Sacar del stock" (the withdrawal form, no variety chosen); "Nueva variedad" below them and "Todas las entradas" at the foot.
  *
  * Nothing here decides anything: statuses and days left are `GET /stock`'s, prices are
  * `GET /varieties`', "Oculta" is `GET /catalog`'s own `shown`, and the summary line is counted
@@ -15,7 +15,7 @@
  */
 
 import { useQuery } from '@tanstack/react-query'
-import { Link, NavLink, useOutletContext } from 'react-router'
+import { Link, NavLink, useLocation, useOutletContext } from 'react-router'
 import { NetworkError, get } from '../api/client'
 import { catalogQueryOptions } from '../api/catalog'
 import { keys } from '../api/keys'
@@ -24,9 +24,11 @@ import { readStock, type VarietyStock } from '../api/stock'
 import ErrorGenerico from '../components/ErrorGenerico'
 import Loading from '../components/Loading'
 import MarcaEstado from '../components/MarcaEstado'
+import Notice from '../components/Notice'
 import SinConexion from '../components/SinConexion'
+import { readFeedback } from '../components/feedback'
 import { formatGrams, formatMoney } from '../format/money'
-import { CATALOG, ENTRIES, ENTRY_NEW, VARIETY, VARIETY_NEW } from '../routes'
+import { CATALOG, ENTRIES, ENTRY_NEW, VARIETY, VARIETY_NEW, WITHDRAWAL_NEW } from '../routes'
 import { detailFor } from '../stock/detail'
 import { summaryLine } from '../stock/summaryLine'
 import { varietiesByName } from './varieties/varietiesByName'
@@ -63,6 +65,7 @@ function figuresOf(row: VarietyStock, today: string): string {
 
 export default function Variedades() {
   const me = useOutletContext<Me>()
+  const feedback = readFeedback(useLocation().state)
   const varietiesQuery = useQuery({
     queryKey: keys.varieties(),
     queryFn: () => get<Variety[]>('/varieties'),
@@ -93,10 +96,14 @@ export default function Variedades() {
           <Link to={ENTRY_NEW} className="boton boton--suave">
             + Entrada de stock
           </Link>
+          <Link to={WITHDRAWAL_NEW} className="boton boton--suave">
+            Sacar del stock
+          </Link>
           <Link to={VARIETY_NEW} className="boton--enlace variedades__nueva">
             Nueva variedad
           </Link>
         </div>
+        {feedback !== null && <Notice kind={feedback.kind} message={feedback.message} />}
         {failure !== null && (failure instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />)}
         {failure === null && !ready && <Loading />}
         {failure === null && ready && rows.length === 0 && (

@@ -1,6 +1,7 @@
 /**
  * The one place the front names the path of Más, Gastos, the expense form, the
- * expense categories (a Configuración group since #60), Análisis and every
+ * expense categories (a Configuración group since #60), Análisis, the stock withdrawal
+ * form and a withdrawal's detail, and every
  * `/varieties/*` path (Variedades, a variety's page, its lists, the catalog screen and
  * the stock entry form; ADR-0030). A variety or an entry is named by its integer id,
  * never by its name. Every constant under an API segment (`/varieties`, `/expenses`)
@@ -16,6 +17,24 @@ export const EXPENSES = '/expenses'
 export const EXPENSE_CATEGORIES = '/settings/expense-categories'
 export const ANALYSIS = '/analisis'
 export const EXPENSE_NEW = '/expenses/new'
+export const WITHDRAWAL_NEW = '/withdrawals/new'
+export const WITHDRAWAL = '/withdrawals/:id'
+export const WITHDRAWAL_EDIT = '/withdrawals/:id/edit'
+
+/** A withdrawal's detail path, from its id alone: never a business id (ADR-0004). */
+export function withdrawalPath(id: number | string): string {
+  return `/withdrawals/${id}`
+}
+
+/** The edit form's path for a withdrawal. */
+export function withdrawalEditPath(id: number | string): string {
+  return `${withdrawalPath(id)}/edit`
+}
+
+/** The form that opens with `variety` already chosen on its first line. */
+export function withdrawalNewFor(varietyId: number | string): string {
+  return `${WITHDRAWAL_NEW}?variety=${varietyId}`
+}
 
 type Id = string | number
 

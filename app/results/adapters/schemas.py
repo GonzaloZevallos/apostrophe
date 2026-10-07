@@ -22,7 +22,7 @@ from datetime import date
 from pydantic import BaseModel
 
 from app.results.application.ports import DebtorRow, StockRow
-from app.results.application.read_panel import DebtsSummary, Panel, PeriodFigures, ShortfallFigures
+from app.results.application.read_panel import CostLineFigures, DebtsSummary, Panel, PeriodFigures
 from app.stock.adapters.schemas import VarietyStockOut
 from app.varieties.adapters.schemas import GramsOut
 
@@ -81,17 +81,17 @@ class DebtsOut(BaseModel):
         )
 
 
-class ShortfallOut(BaseModel):
-    """A period's stock shortfall (CONTEXT.md: Stock shortfall), `null` exactly when
-    the period has no negative adjustment. `pending` is decided from the shortfall
-    figure's own pending grams (plan invariant); no grams cross the wire (PM)."""
+class CostLineOut(BaseModel):
+    """A period's stock shortfall, promotion or own-use cost (CONTEXT.md), `null`
+    exactly when the period has none of that line's records. `pending` is decided from
+    that line's own pending grams (plan invariant); no grams cross the wire (PM)."""
 
     amount: int
     pending: bool
 
     @classmethod
-    def of(cls, shortfall: ShortfallFigures) -> ShortfallOut:
-        return cls(amount=shortfall.amount, pending=shortfall.pending)
+    def of(cls, line: CostLineFigures | None) -> CostLineOut | None:
+        return None if line is None else cls(amount=line.amount, pending=line.pending)
 
 
 class PeriodOut(BaseModel):
@@ -104,7 +104,9 @@ class PeriodOut(BaseModel):
     grams_gifted: GramsOut
     cost_of_goods: int
     pending_cost: bool
-    shortfall: ShortfallOut | None
+    shortfall: CostLineOut | None
+    promotion: CostLineOut | None
+    own_use: CostLineOut | None
     expenses: int
     purchases: int
     profit: int
@@ -123,7 +125,9 @@ class PeriodOut(BaseModel):
             grams_gifted=figures.grams_gifted.as_decimal(),
             cost_of_goods=figures.cost_of_goods,
             pending_cost=figures.pending_cost,
-            shortfall=None if figures.shortfall is None else ShortfallOut.of(figures.shortfall),
+            shortfall=CostLineOut.of(figures.shortfall),
+            promotion=CostLineOut.of(figures.promotion),
+            own_use=CostLineOut.of(figures.own_use),
             expenses=figures.expenses,
             purchases=figures.purchases,
             profit=figures.profit,
@@ -173,8 +177,8 @@ class CostOut(BaseModel):
 
 
 class AmountWithPendingOut(BaseModel):
-    """A money figure (profit, or stock shortfall) together with the pending grams
-    behind it, for one period."""
+    """A money figure (profit, stock shortfall, promotion or own use) together with the
+    pending grams behind it, for one period."""
 
     amount: int
     pending_grams: GramsOut
@@ -201,6 +205,8 @@ class AnalysisMonthOut(BaseModel):
     grams_gifted: GramsOut
     average_margin: MarginOut
     shortfall: AmountWithPendingOut | None
+    promotion: AmountWithPendingOut | None
+    own_use: AmountWithPendingOut | None
     varieties: list[VarietyRowOut]
 
 
@@ -210,6 +216,8 @@ class WeekOut(BaseModel):
     sales: int
     grams: GramsOut
     expenses: int
+    promotion: AmountWithPendingOut | None
+    own_use: AmountWithPendingOut | None
     profit: AmountWithPendingOut
     cash: int
     best: bool
@@ -222,6 +230,8 @@ class MonthRowOut(BaseModel):
     sales: int
     grams: GramsOut
     expenses: int
+    promotion: AmountWithPendingOut | None
+    own_use: AmountWithPendingOut | None
     profit: AmountWithPendingOut
     cash: int
 
@@ -239,6 +249,8 @@ class SinceFirstRecordOut(BaseModel):
     profit: AmountWithPendingOut
     cash: int
     shortfall: AmountWithPendingOut | None
+    promotion: AmountWithPendingOut | None
+    own_use: AmountWithPendingOut | None
 
 
 class ExpenseCategoryTotalOut(BaseModel):

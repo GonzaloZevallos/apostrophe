@@ -1,9 +1,14 @@
 from collections.abc import Collection
+from dataclasses import dataclass
+from datetime import date, datetime
 from typing import Protocol
 
+from app.shared.grams import Grams
+from app.stock.domain.draw_source import WithdrawalReason
 from app.stock.domain.entry import StockEntry
-from app.stock.domain.lot_order import SaleLineDraw
+from app.stock.domain.lot_order import SaleLineDraw, WithdrawalLineDraw
 from app.stock.domain.threshold import Threshold
+from app.stock.domain.withdrawal import Withdrawal
 
 
 class StockEntries(Protocol):
@@ -37,6 +42,49 @@ class Draws(Protocol):
         ...
 
 
+class WithdrawalDraws(Protocol):
+    """Stock-withdrawal line draws on a variety's stock (CONTEXT.md: Draw, Stock
+    withdrawal), read only. Built for one business."""
+
+    def for_varieties(self, variety_ids: Collection[int] | None) -> list[WithdrawalLineDraw]:
+        """Every withdrawal-line draw of this business; `None` for every variety, a set
+        to narrow to just those."""
+        ...
+
+
+@dataclass(frozen=True)
+class WithdrawalMovement:
+    """One withdrawal as one variety's history shows it: the withdrawal's own date,
+    recording instant and reason, and that variety's grams summed over its lines in
+    it (the same variety may sit on several lines)."""
+
+    withdrawal_id: int
+    withdrawn_on: date
+    recorded_at: datetime
+    reason: WithdrawalReason
+    grams: Grams
+
+
+class Withdrawals(Protocol):
+    """The stock withdrawals of one business (docs/adr/0004): built for it, every
+    statement filters on it, and it never commits — the use case commits once, through
+    `Transaction`. `add` and `replace` write without committing and return the
+    withdrawal as stored; `replace` keeps `id` and `recorded_at` and swaps the lines."""
+
+    def by_id(self, withdrawal_id: int) -> Withdrawal | None: ...
+
+    def add(self, withdrawal: Withdrawal) -> Withdrawal: ...
+
+    def replace(self, withdrawal: Withdrawal) -> Withdrawal: ...
+
+    def remove(self, withdrawal_id: int) -> None: ...
+
+    def movements_of(self, variety_id: int) -> list[WithdrawalMovement]:
+        """The withdrawals of this business that touch `variety_id`, with that
+        variety's summed grams in each."""
+        ...
+
+
 class Thresholds(Protocol):
     """A business's low-stock thresholds (CONTEXT.md: Low-stock threshold). Built for
     one business; never commits — the use case commits once, through `Transaction`.
@@ -61,4 +109,9 @@ class VarietyCatalog(Protocol):
     def ids(self) -> list[int]:
         """Every variety id of this business, for a use case that walks all of them
         (`read_stock`'s per-variety sweep) rather than looking one up at a time."""
+        ...
+
+    def names(self) -> dict[int, str]:
+        """Every variety's name of this business by id, for an answer that names the
+        varieties of a record's lines."""
         ...

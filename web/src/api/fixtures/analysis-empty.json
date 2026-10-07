@@ -11,6 +11,8 @@
     "grams_gifted": 0.0,
     "average_margin": { "amount": 0, "percent": null, "pending_grams": 0.0 },
     "shortfall": null,
+    "promotion": null,
+    "own_use": null,
     "varieties": []
   },
   "weeks": [],

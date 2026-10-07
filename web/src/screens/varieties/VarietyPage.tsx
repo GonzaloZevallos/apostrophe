@@ -2,7 +2,8 @@
  * `VarietyPage` (`VariedadDetalle.dc.html`; varieties.md, "A variety's page"): one variety
  * on its own page. It receives its id only as a prop (`VarietyRoute` is the one reader of
  * the route's `:id`). A detail: "‹ Variedades", no "+ Nueva venta" (the route declares
- * `chrome: 'card'`). One summary line; "+ Entrada" and "Nuevo precio"; four read-only
+ * `chrome: 'card'`). One summary line; "+ Entrada", "Nuevo precio" and "Sacar del stock" (the
+ * withdrawal form with this variety chosen); four read-only
  * sections. Forms open over the page by history state (`varietyForms.ts`); the rename form
  * is rendered here, so are the other two (`ThresholdForm`, `CatalogAttributesForm`), and a state that
  * names no form renders nothing.
@@ -19,7 +20,7 @@ import { catalogQueryOptions } from '../../api/catalog'
 import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
 import { isGone } from '../../api/refusals'
-import { readStock } from '../../api/stock'
+import { readMovements, readStock } from '../../api/stock'
 import type { SuccessToast } from '../../components/AvisoExito'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import GoneScreen from '../../components/GoneScreen'
@@ -30,7 +31,7 @@ import SinConexion from '../../components/SinConexion'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
 import { useFlash } from '../../flash/useFlash'
 import { formatGrams, formatMoney } from '../../format/money'
-import { CATALOG_SECTION_ID, ENTRY_NEW, VARIETIES, VARIETY_PRICE_NEW } from '../../routes'
+import { CATALOG_SECTION_ID, ENTRY_NEW, VARIETIES, VARIETY_PRICE_NEW, withdrawalNewFor } from '../../routes'
 import { NO_PRICE_TODAY, type Variety } from '../Variedades'
 import type { PriceRow } from './PriceRows'
 import CatalogAttributesForm from './CatalogAttributesForm'
@@ -68,6 +69,7 @@ export default function VarietyPage({ varietyId }: { varietyId: number }) {
     queryFn: () => get<PriceRow[]>(`/varieties/${id}/prices`),
   })
   const stockQuery = useQuery({ queryKey: keys.stock(), queryFn: readStock })
+  const movementsQuery = useQuery({ queryKey: keys.stockMovements(id), queryFn: () => readMovements(id) })
   const catalogQuery = useQuery({
     ...catalogQueryOptions(),
     select: (catalog) => catalog.varieties.find((row) => row.id === varietyId) ?? null,
@@ -178,9 +180,12 @@ export default function VarietyPage({ varietyId }: { varietyId: number }) {
           <Link className="boton boton--suave" to={VARIETY_PRICE_NEW(varietyId)}>
             Nuevo precio
           </Link>
+          <Link className="boton boton--suave" to={withdrawalNewFor(varietyId)}>
+            Sacar del stock
+          </Link>
         </div>
 
-        <VarietyStockSection stock={stock} varietyId={varietyId} today={me.today} />
+        <VarietyStockSection stock={stock} movements={movementsQuery.data} varietyId={varietyId} today={me.today} />
         <VarietyPricesSection
           varietyId={varietyId}
           history={pricesQuery.data}
