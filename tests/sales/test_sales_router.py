@@ -591,8 +591,8 @@ def _line_of(client: TestClient, variety_id: int, customer_id: int | None) -> di
 def test_a_line_at_the_bulk_minimum_is_stored_as_list_once_bulk_is_switched_off(
     client: TestClient, engine: Engine
 ) -> None:
-    variety_id = _variety_with_bulk(client)
     _switches(engine, bulk=True, vip=False)
+    variety_id = _variety_with_bulk(client)
     assert _line_of(client, variety_id, None)["pricing_rule"] == "bulk"
 
     _switches(engine, bulk=False, vip=False)
@@ -604,6 +604,7 @@ def test_a_line_at_the_bulk_minimum_is_stored_as_list_once_bulk_is_switched_off(
 def test_a_vip_customer_is_stored_as_vip_once_vip_is_switched_on(
     client: TestClient, engine: Engine
 ) -> None:
+    _switches(engine, bulk=True, vip=True)
     variety_id = _variety_with_bulk(client)
     _vip_price(engine, 7_000)
     customer_id = _customer(client)
@@ -620,8 +621,8 @@ def test_a_vip_customer_is_stored_as_vip_once_vip_is_switched_on(
 def test_switching_a_rule_off_leaves_a_recorded_sale_as_it_was(
     client: TestClient, engine: Engine
 ) -> None:
-    variety_id = _variety_with_bulk(client)
     _switches(engine, bulk=True, vip=False)
+    variety_id = _variety_with_bulk(client)
     created = client.post(
         "/sales",
         json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": "50"}]},
