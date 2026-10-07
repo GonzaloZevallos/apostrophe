@@ -135,7 +135,7 @@ export default function Shell() {
 
   return (
     <div className="disposicion">
-      <nav className="riel-lateral" aria-label="Navegación">
+      <nav className="riel-lateral" aria-label="Navegación" data-menu>
         {showRailNuevaVenta && (
           <InAppLink to={SALE_NEW} className="boton boton-nueva-venta--escritorio">
             <Icono nombre="agregar" />
@@ -186,7 +186,7 @@ export default function Shell() {
           </InAppLink>
         )}
         {showBar && (
-          <nav className="bar-inferior" aria-label="Navegación">
+          <nav className="bar-inferior" aria-label="Navegación" data-menu>
             {BAR_ITEMS.map((item) => (
               <BarItem key={item.to} item={item} active={barPlace === item.place} />
             ))}
