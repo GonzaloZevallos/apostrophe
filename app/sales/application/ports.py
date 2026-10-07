@@ -36,7 +36,7 @@ class CustomerFacts(Protocol):
 
 
 class PricingSettingsReader(Protocol):
-    """The business's pricing switches (docs/adr/0031). Built for one business; read
+    """The business's pricing switches (docs/adr/0034). Built for one business; read
     once per save, and that one value prices every line of the save."""
 
     def current(self) -> PricingSettings: ...

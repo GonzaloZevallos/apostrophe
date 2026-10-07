@@ -126,7 +126,7 @@ def plan_import(
     }
 
     # The switches rows are priced with come from the sheet alone, never from the
-    # stored ones (docs/adr/0031); the stored ones are read once, to tell what to turn on.
+    # stored ones (docs/adr/0034); the stored ones are read once, to tell what to turn on.
     needs = domain_plan.needed_settings(split_result)
     sales_checks = _check_sales(
         split_result, variety_names, price_history_keys, sales, today, needs

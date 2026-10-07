@@ -35,9 +35,11 @@ interface Props {
   history: PriceRow[]
   currentPriceId: number | null
   limit?: number
+  /** An archived variety's price rows: no delete beside any of them. */
+  readOnly?: boolean
 }
 
-export default function PriceRows({ varietyId, history, currentPriceId, limit }: Props) {
+export default function PriceRows({ varietyId, history, currentPriceId, limit, readOnly = false }: Props) {
   const queryClient = useQueryClient()
   // Until the switches are known (or if they cannot be read) nothing about a rule shows.
   const settings = useQuery(pricingSettingsQueryOptions()).data
@@ -98,14 +100,16 @@ export default function PriceRows({ varietyId, history, currentPriceId, limit }:
                 <span className="historial-fila__detalle">Precio VIP · {formatMoney(entry.vip_price)}</span>
               )}
             </span>
-            <button
-              type="button"
-              className="historial-fila__borrar"
-              aria-label="Borrar este precio"
-              onClick={() => setDeleting(entry)}
-            >
-              Borrar
-            </button>
+            {!readOnly && (
+              <button
+                type="button"
+                className="historial-fila__borrar"
+                aria-label="Borrar este precio"
+                onClick={() => setDeleting(entry)}
+              >
+                Borrar
+              </button>
+            )}
           </div>
         ))}
       </div>

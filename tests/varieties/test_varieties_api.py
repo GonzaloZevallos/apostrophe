@@ -7,6 +7,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy.engine import Engine
 
 from tests.conftest import MovableClock
+from tests.fakes.archive import archive_by_hand
 from tests.pricing_switches import set_switches
 
 GOLD_JANUARY = {
@@ -367,3 +368,21 @@ def test_one_business_s_switches_never_gate_another_business_s_entries(
 
     assert (mine["bulk_price"], mine["vip_price"]) == (None, None)
     assert (theirs["bulk_price"], theirs["vip_price"]) == (10_000, 9_000)
+def test_an_archived_variety_is_absent_from_the_list_but_still_found_by_id(
+    client: TestClient, engine: Engine
+) -> None:
+    kept = _register(client, "Kept")
+    gone = _register(client, "Gone")
+    archive_by_hand(engine, gone["id"])
+
+    assert [v["id"] for v in client.get("/varieties").json()] == [kept["id"]]
+    assert client.get(f"/varieties/{gone['id']}").status_code == 200
+
+
+def test_an_archived_variety_still_holds_its_name(client: TestClient, engine: Engine) -> None:
+    gone = _register(client, "Gone")
+    archive_by_hand(engine, gone["id"])
+
+    assert client.post("/varieties", json={"name": " GONE "}).status_code == 409
+    other = _register(client, "Other")
+    assert client.patch(f"/varieties/{other['id']}", json={"name": "gone"}).status_code == 409

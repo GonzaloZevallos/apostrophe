@@ -148,6 +148,23 @@ def _seed_join_invitations(client: TestClient, engine: Engine, business_id: int)
     _issue_join_invitation(engine, business_id, NOW - timedelta(days=30))
 
 
+def _seed_withdrawal(client: TestClient, variety_id: int) -> None:
+    """A two-line stock withdrawal recorded through its route, so the removal meets both
+    tables with more than one line of one withdrawal."""
+    response = client.post(
+        "/stock/withdrawals",
+        json={
+            "reason": "promotion",
+            "date": "2026-01-01",
+            "lines": [
+                {"variety_id": variety_id, "grams": "5"},
+                {"variety_id": variety_id, "grams": "1.5"},
+            ],
+        },
+    )
+    assert response.status_code == 201, response.text
+
+
 @pytest.fixture
 def seeded(
     app: FastAPI, file_engine: Engine, leaving_token: str, staying_token: str
@@ -157,9 +174,11 @@ def seeded(
         leaving_records = _seed_everything(leaving, "leaving@example.com")
         leaving_business_id = _business_id(file_engine, "leaving@example.com")
         _seed_join_invitations(leaving, file_engine, leaving_business_id)
+        _seed_withdrawal(leaving, leaving_records["variety_id"])
 
         staying = signed_in(client, staying_token)
         staying_records = _seed_everything(staying, "staying@example.com")
+        _seed_withdrawal(staying, staying_records["variety_id"])
     return {"leaving": leaving_records, "staying": staying_records}
 
 

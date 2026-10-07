@@ -16,6 +16,7 @@ from app.sales.application.ports import (
 )
 from app.sales.domain.sale import LineRequest, PaymentMethod, Sale, UnknownCustomer, UnknownVariety
 from app.shared.grams import Grams
+from app.shared.reference import ReferenceRefused
 from app.shared.transaction import Transaction
 
 
@@ -69,7 +70,15 @@ def record_sale(
         left_owing=left_owing,
         recorded_at=recorded_at,
     )
-    stored = sales.add(sale)
+    try:
+        stored = sales.add(sale)
+    except ReferenceRefused:
+        # A variety deleted since it was priced: undo, then ask again. Gone is the
+        # sale's own refusal; any other cause is re-raised as it came.
+        transaction.rollback()
+        if any(price_book.for_variety(r.variety_id, sale_date) is None for r in requests):
+            raise UnknownVariety from None
+        raise
     transaction.commit()
     return stored
 

@@ -3,7 +3,7 @@
 Gift wins, then special price; otherwise the lowest of the rules that apply: list,
 bulk (Precio por cantidad on and the line reaches the bulk minimum, measured per line,
 never summed across a sale) and VIP (Clientes VIP on, a VIP customer and a VIP price) —
-always from the variety's current price on the sale's date (docs/adr/0031).
+always from the variety's current price on the sale's date (docs/adr/0034).
 
 `line_total` and `special_rate` are the only two roundings anywhere in sales, both half
 up and both integer arithmetic: no `round()`, `float` or `Decimal.quantize` in a sales

@@ -9,10 +9,11 @@
 import { get } from './client'
 import type { VarietyStock } from './stock'
 
-/** A period's stock shortfall (CONTEXT.md: Stock shortfall), `null` exactly when the
- * period has no negative adjustment. `pending` is decided from the shortfall figure's
- * own pending grams (plan invariant); no grams cross the wire (PM). */
-export interface PanelShortfall {
+/** A period's stock shortfall, promotion or own-use cost (CONTEXT.md), `null` exactly
+ * when the period has none of that line's records. `pending` is decided from that
+ * line's own pending grams (plan invariant); no grams cross the wire (PM). Twin of
+ * `CostLineOut`. */
+export interface PanelCostLine {
   amount: number
   pending: boolean
 }
@@ -27,7 +28,9 @@ export interface PanelPeriod {
   grams_gifted: number
   cost_of_goods: number
   pending_cost: boolean
-  shortfall: PanelShortfall | null
+  shortfall: PanelCostLine | null
+  promotion: PanelCostLine | null
+  own_use: PanelCostLine | null
   expenses: number
   purchases: number
   profit: number

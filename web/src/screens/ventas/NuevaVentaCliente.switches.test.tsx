@@ -10,6 +10,7 @@ import { afterEach, expect, test, vi } from 'vitest'
 import App from '../../App'
 import { queryClient } from '../../queryClient'
 import { router } from '../../router'
+import { HOME, SALE_NEW } from '../../routes'
 
 const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
 const VIP_ANA = { id: 7, name: 'Ana VIP', phone: '+5491100000001', channel: null, vip: true }
@@ -20,20 +21,20 @@ function json(body: unknown): Response {
 
 async function openChooser(vip: boolean): Promise<ReturnType<typeof userEvent.setup>> {
   const answers: Record<string, unknown> = {
-    '/auth/me': ME,
-    '/varieties?on=2026-10-02': [],
-    '/pricing-settings': { is_bulk_pricing: true, is_vip_customers: vip },
-    '/customers': [VIP_ANA],
+    'GET /auth/me': ME,
+    'GET /varieties?on=2026-10-02': [],
+    'GET /pricing-settings': { is_bulk_pricing: true, is_vip_customers: vip },
+    'GET /customers': [VIP_ANA],
   }
   vi.stubGlobal(
     'fetch',
     vi.fn((path: string) =>
-      path in answers
-        ? Promise.resolve(json(answers[path]))
+      `GET ${path}` in answers
+        ? Promise.resolve(json(answers[`GET ${path}`]))
         : Promise.reject(new Error(`unexpected request: ${path}`)),
     ),
   )
-  await act(() => router.navigate('/ventas/nueva'))
+  await act(() => router.navigate(SALE_NEW))
   render(<App />)
   const user = userEvent.setup()
   await user.click(await screen.findByRole('button', { name: 'Elegir cliente' }))
@@ -43,7 +44,7 @@ async function openChooser(vip: boolean): Promise<ReturnType<typeof userEvent.se
 afterEach(async () => {
   vi.unstubAllGlobals()
   queryClient.clear()
-  await act(() => router.navigate('/'))
+  await act(() => router.navigate(HOME))
 })
 
 test('Elegir cliente shows a VIP customer\'s mark and the new-customer form its VIP field while Clientes VIP is on', async () => {

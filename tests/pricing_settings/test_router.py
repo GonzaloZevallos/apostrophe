@@ -1,6 +1,6 @@
 """`GET` and `PUT /pricing-settings`, through `TestClient` (the subtask's declared seams):
 a business reads and changes only its own switches, and only a change that can alter the
-pinned catalog's text schedules upkeep (docs/adr/0014, docs/adr/0031)."""
+pinned catalog's text schedules upkeep (docs/adr/0014, docs/adr/0034)."""
 
 from typing import Any
 

@@ -429,7 +429,7 @@ class Checks:
     sales: Mapping[SheetRef, SaleCheck] = field(default_factory=dict)
     mapping_sheet: str = ""
     # The business's switches as stored when the plan was made, read once at planning
-    # (docs/adr/0031): `ImportPlan.turns_on` is what `needs` has beyond them.
+    # (docs/adr/0034): `ImportPlan.turns_on` is what `needs` has beyond them.
     stored_settings: PricingSettings = PricingSettings(
         is_bulk_pricing=False, is_vip_customers=False
     )
@@ -508,7 +508,7 @@ NO_SWITCHES = PricingSettings(is_bulk_pricing=False, is_vip_customers=False)
 
 
 def needed_settings(split: Split) -> PricingSettings:
-    """The switches the sheet itself needs, worked out from the sheet alone (ADR-0031):
+    """The switches the sheet itself needs, worked out from the sheet alone (ADR-0034):
     Precio por cantidad when any imported price entry has a bulk price, Clientes VIP
     when any customer is imported as VIP, which is a finished `Amigo` row with a
     customer (`sale_inputs` refuses an `Amigo` row without one). Both

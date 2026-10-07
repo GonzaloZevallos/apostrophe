@@ -16,6 +16,7 @@ from app.sales.adapters.tables import SaleLineRow, SaleRow
 from app.varieties.adapters.tables import PriceEntryRow
 from tests.conftest import TODAY
 from tests.contract_shapes import assert_matches_fixture
+from tests.fakes.archive import archive_by_hand
 from tests.pricing_switches import set_switches
 
 
@@ -636,3 +637,46 @@ def test_switching_a_rule_off_leaves_a_recorded_sale_as_it_was(
         {k: line[k] for k in stored} for line in created["lines"]
     ]
     assert after["total"] == created["total"]
+def _archived_variety(client: TestClient, engine: Engine) -> int:
+    variety_id = _variety(client)
+    archive_by_hand(engine, variety_id)
+    return variety_id
+
+
+def test_a_sale_line_on_an_archived_variety_is_refused_as_gone_and_writes_nothing(
+    client: TestClient, engine: Engine
+) -> None:
+    archived = _archived_variety(client, engine)
+
+    response = client.post(
+        "/sales",
+        json={"payment": "cash", "lines": [{"variety_id": archived, "grams": "10"}]},
+    )
+
+    assert response.status_code == 404
+    assert response.json()["code"] == "sale.variety_not_found"
+    assert _row_counts(engine) == (0, 0, 0)
+
+
+def test_a_sale_of_a_variety_archived_afterwards_can_still_be_deleted_and_assigned(
+    client: TestClient, engine: Engine
+) -> None:
+    variety_id = _variety(client)
+    customer_id = _customer(client)
+    sale_id = client.post(
+        "/sales",
+        json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": "10"}]},
+    ).json()["id"]
+    other_sale_id = client.post(
+        "/sales",
+        json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": "5"}]},
+    ).json()["id"]
+    archive_by_hand(engine, variety_id)
+
+    assigned = client.put(f"/sales/{sale_id}/customer", json={"customer_id": customer_id})
+    deleted = client.delete(f"/sales/{other_sale_id}")
+
+    assert assigned.status_code == 200, assigned.text
+    assert deleted.status_code == 200, deleted.text
+    assert deleted.json() == {"returned": [{"variety_id": variety_id, "grams": 5.0}]}
+    assert client.get(f"/sales/{sale_id}").json()["lines"][0]["variety_id"] == variety_id

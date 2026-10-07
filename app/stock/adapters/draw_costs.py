@@ -1,8 +1,8 @@
 """`DrawCosts`: results' one port for every draw, costed fresh (ADR-0009, ADR-0020).
 
-One query for every stock entry and every sale-line draw of the business (each
+One query each for every stock entry, sale-line draw and withdrawal-line draw of the business (each
 already filtered on it, and `Draws` carries `variety_name`, `line_total` and
-`pricing_rule` already attached to its row). `lots_and_draws` stays the one place a
+`pricing_rule` already attached to its row). `history` stays the one place a
 variety's lots and draws are assembled, grouped and sorted (`lot_order.py`); the
 grouping is handed to `build_draw_rows` (`app/stock/adapters/draw_rows.py`), the one
 function that runs `allocate` and decides a draw's `kind` for results (the plan's
@@ -18,16 +18,16 @@ from app.results.domain.ledger import DrawRow
 from app.stock.adapters.draw_rows import build_draw_rows
 from app.stock.adapters.sql_draws import SqlDraws
 from app.stock.adapters.sql_stock_entries import SqlStockEntries
-from app.stock.domain.lot_order import lots_and_draws
+from app.stock.adapters.sql_stock_withdrawals import SqlStockWithdrawals
+from app.stock.application.history import history
 
 
 class SqlDrawCosts(DrawCosts):
     def __init__(self, session: Session, business_id: int) -> None:
         self._entries = SqlStockEntries(session, business_id)
         self._draws = SqlDraws(session, business_id)
+        self._withdrawals = SqlStockWithdrawals(session, business_id)
 
     def rows(self) -> list[DrawRow]:
-        entries = self._entries.for_varieties(None)
-        sale_draws = self._draws.for_varieties(None)
-        grouped = lots_and_draws(entries, sale_draws)
+        grouped = history(self._entries, self._draws, self._withdrawals, None)
         return build_draw_rows(grouped)

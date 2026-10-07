@@ -19,6 +19,7 @@ from app.accounts.adapters.router import public_router as accounts_public_router
 from app.accounts.adapters.router import router as accounts_router
 from app.accounts.domain.password import PasswordHasher
 from app.accounts.domain.session_token import SessionSigner
+from app.catalog.adapters.leaving import SqlCatalogLeaving
 from app.catalog.adapters.opening import CatalogHeaderFooterOpening
 from app.catalog.adapters.router import router as catalog_router
 from app.clock import Clock, system_clock
@@ -51,6 +52,7 @@ from app.sales.adapters.sales_ledger import SqlSalesLedger
 from app.settings import Settings
 from app.static_spa import FrontNavigation, MissingBuiltFront, SpaStatic, api_segments
 from app.stock.adapters.draw_costs import SqlDrawCosts
+from app.stock.adapters.leaving import SqlStockLeaving
 from app.stock.adapters.line_costs import SqlLineCosts
 from app.stock.adapters.purchases import SqlPurchases
 from app.stock.adapters.router import router as stock_router
@@ -69,6 +71,31 @@ class _BoundComposite:
     def opened(self, business_id: int) -> None:
         for opening in self._openings:
             opening.opened(business_id)
+
+
+class _Leaving(Protocol):
+    def leaving(self, variety_id: int) -> None: ...
+
+
+class _BoundLeaving:
+    def __init__(self, parts: Sequence[_Leaving]) -> None:
+        self._parts = parts
+
+    def leaving(self, variety_id: int) -> None:
+        for part in self._parts:
+            part.leaving(variety_id)
+
+
+class CompositeLeaving:
+    """Combines the capabilities that keep something of their own about a variety, so
+    deleting one removes it all (docs/adr/0006): each factory is `(Session, business_id)`,
+    the shape of the other factories on `app.state`."""
+
+    def __init__(self, *factories: Callable[[Session, int], _Leaving]) -> None:
+        self._factories = factories
+
+    def __call__(self, session: Session, business_id: int) -> _BoundLeaving:
+        return _BoundLeaving([factory(session, business_id) for factory in self._factories])
 
 
 class CompositeOpening:
@@ -172,12 +199,14 @@ def create_app(
     # this line is the one seam the sales-costs subtask reaches it through.
     app.state.line_costs = SqlLineCosts
     # The same shape again: sales reads the switches only through its own
-    # `PricingSettingsReader` port, never `app.pricing_settings` (docs/adr/0031).
+    # `PricingSettingsReader` port, never `app.pricing_settings` (docs/adr/0034).
     app.state.pricing_settings = SqlPricingSettings
     # The catalog reads the pricing switches only through its own `CatalogPricingSettings`
     # port (ADR-0006); the same `(Session, business_id)` factory shape. The router and the
     # pinned catalog's snapshot both build it from here.
     app.state.catalog_pricing_settings = SqlPricingSettings
+    # Deleting a variety removes what stock and the catalog keep of it (docs/adr/0006).
+    app.state.variety_leaving = CompositeLeaving(SqlStockLeaving, SqlCatalogLeaving)
     # Two more factories of the same shape: customers reaches a balance, and sales a
     # "still owing" mark, only through `Balances`/`OwingSales`, never `app.payments`
     # directly (the plan's invariant). `app/customers/adapters/router.py` and
@@ -186,7 +215,7 @@ def create_app(
     app.state.balances = SqlBalances
     # The same factory shape, once per reader: each hexagon declares its own
     # `current() -> PricingSettings` port and none imports `app.pricing_settings`
-    # (docs/adr/0006, docs/adr/0031).
+    # (docs/adr/0006, docs/adr/0034).
     app.state.varieties_pricing_settings = SqlPricingSettings
     app.state.customers_pricing_settings = SqlPricingSettings
     app.state.owing_sales = SqlOwingSales

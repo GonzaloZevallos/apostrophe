@@ -1,4 +1,4 @@
-"""A business's pricing switches (CONTEXT.md: Pricing settings, docs/adr/0031).
+"""A business's pricing switches (CONTEXT.md: Pricing settings, docs/adr/0034).
 
 The value every reader speaks: sales, varieties, customers, the catalog and the import
 each declare their own `current() -> PricingSettings` port, and none imports the

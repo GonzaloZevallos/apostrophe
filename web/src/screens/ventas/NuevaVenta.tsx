@@ -39,6 +39,7 @@ import type { Me } from '../../api/me'
 import type { PricingSettings as ApiPricingSettings } from '../../api/pricingSettings'
 import { resolveOverride, type RefusalCode } from '../../api/refusals'
 import Boton from '../../components/Boton'
+import { SALE, SALES, pathTo } from '../../routes'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import { readNewSaleState, saleJustSaved } from '../../components/feedback'
 import Icono from '../../components/Icono'
@@ -46,6 +47,7 @@ import LeaveConfirm from '../../components/LeaveConfirm'
 import Loading, { LoadingAnuncio } from '../../components/Loading'
 import SelectorPago from '../../components/SelectorPago'
 import SinConexion from '../../components/SinConexion'
+import { useBackOr } from '../../components/useBackOr'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
 import { SheetStackProvider, useSheet } from '../../components/useSheetStack'
 import { useVisualViewport } from '../../components/useVisualViewport'
@@ -429,10 +431,7 @@ function NuevaVentaForm() {
     return 'variety'
   }
 
-  function goBack(): void {
-    if (location.key === 'default') navigate('/ventas')
-    else navigate(-1)
-  }
+  const close = useBackOr(SALES)
 
   async function onSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault()
@@ -486,7 +485,7 @@ function NuevaVentaForm() {
     try {
       const saved = await save.mutateAsync(body)
       disarm()
-      navigate(`/ventas/${saved.id}`, { replace: true, state: saleJustSaved() })
+      navigate(pathTo(SALE, { id: saved.id }), { replace: true, state: saleJustSaved() })
     } catch (caught) {
       if (caught instanceof ApiError && caught.status === 401) {
         // The session boundary already cleared the cache and is navigating to
@@ -542,7 +541,6 @@ function NuevaVentaForm() {
         <div className="nueva-venta__disposicion">
         <div className="nueva-venta__cuerpo" aria-busy={repricing || opening || undefined}>
           <div className="encabezado-fila nueva-venta__cabecera">
-            <Boton variant="icon" ariaLabel="Volver" icon="atras" onClick={goBack} />
             <span className="encabezado__titulo">Nueva venta</span>
             <span className="fecha-pildora">
               <input
@@ -559,6 +557,9 @@ function NuevaVentaForm() {
                 <Icono nombre="abajo" size={15} strokeWidth={1.8} />
               </span>
             </span>
+            <button type="button" className="boton--enlace nueva-venta__cerrar" onClick={close}>
+              Cerrar
+            </button>
           </div>
           {dateError !== null && (
             <span className="campo__error" role="alert">

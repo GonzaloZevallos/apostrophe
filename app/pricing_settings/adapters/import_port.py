@@ -1,6 +1,6 @@
 """`PricingSettingsImport` (`app/spreadsheet_import/application/ports.py`) over the
 `pricing_settings` row. The one writer outside this hexagon's PUT use case, and it can
-only turn a switch on (docs/adr/0031)."""
+only turn a switch on (docs/adr/0034)."""
 
 from __future__ import annotations
 

@@ -5,6 +5,7 @@
  * sum and the count of the sales the list itself renders.
  */
 
+import { SALE, SALES } from '../../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -34,11 +35,11 @@ function renderVentas(state?: unknown) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[{ pathname: '/ventas', state }]}>
+      <MemoryRouter initialEntries={[{ pathname: SALES, state }]}>
         <Routes>
           <Route element={<Context />}>
-            <Route path="/ventas" element={<Ventas />} />
-            <Route path="/ventas/:id" element={<span>detalle</span>} />
+            <Route path={SALES} element={<Ventas />} />
+            <Route path={SALE} element={<span>detalle</span>} />
           </Route>
         </Routes>
       </MemoryRouter>

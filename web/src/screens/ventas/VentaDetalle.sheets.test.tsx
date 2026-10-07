@@ -10,8 +10,9 @@ import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
-import SALE from '../../api/fixtures/sale-detail.json'
+import SALE_DETAIL from '../../api/fixtures/sale-detail.json'
 import { SheetRouterProvider, sheetDepth } from '../../components/useSheetStack'
+import { CUSTOMERS, pathTo, SALE, SALES } from '../../routes'
 import VentaDetalle from './VentaDetalle'
 
 function jsonResponse(status: number, body: unknown): Response {
@@ -23,7 +24,7 @@ beforeEach(() => {
     'fetch',
     vi.fn((path: string) =>
       Promise.resolve(
-        path.startsWith('/customers') ? jsonResponse(200, []) : jsonResponse(200, { ...SALE, customer: null }),
+        path.startsWith(pathTo(CUSTOMERS)) ? jsonResponse(200, []) : jsonResponse(200, { ...SALE_DETAIL, customer: null }),
       ),
     ),
   )
@@ -37,10 +38,10 @@ test('back with Asignar cliente open closes only the sheet and stays on the deta
   const user = userEvent.setup()
   const router = createMemoryRouter(
     [
-      { path: '/ventas', element: <h1>Lista de ventas</h1> },
-      { path: '/ventas/:id', element: <VentaDetalle /> },
+      { path: SALES, element: <h1>Lista de ventas</h1> },
+      { path: SALE, element: <VentaDetalle /> },
     ],
-    { initialEntries: ['/ventas', '/ventas/10'], initialIndex: 1 },
+    { initialEntries: [SALES, pathTo(SALE, { id: 10 })], initialIndex: 1 },
   )
   render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
@@ -58,14 +59,14 @@ test('back with Asignar cliente open closes only the sheet and stays on the deta
 
   expect(screen.queryByText('Elegir cliente')).not.toBeInTheDocument()
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
-  expect(router.state.location.pathname).toBe('/ventas/10')
+  expect(router.state.location.pathname).toBe(pathTo(SALE, { id: 10 }))
   expect(screen.getByRole('button', { name: 'Asignar cliente' })).toBeInTheDocument()
 })
 
 test('"Cerrar" on the sheet is the same move as back', async () => {
   const user = userEvent.setup()
-  const router = createMemoryRouter([{ path: '/ventas/:id', element: <VentaDetalle /> }], {
-    initialEntries: ['/ventas/10'],
+  const router = createMemoryRouter([{ path: SALE, element: <VentaDetalle /> }], {
+    initialEntries: [pathTo(SALE, { id: 10 })],
   })
   render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
@@ -80,5 +81,5 @@ test('"Cerrar" on the sheet is the same move as back', async () => {
 
   expect(screen.queryByText('Elegir cliente')).not.toBeInTheDocument()
   expect(sheetDepth(router.state.location.state)).toBe(0)
-  expect(router.state.location.pathname).toBe('/ventas/10')
+  expect(router.state.location.pathname).toBe(pathTo(SALE, { id: 10 }))
 })

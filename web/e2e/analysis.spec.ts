@@ -10,6 +10,8 @@
  * through the built front alone, against the real backend.
  */
 
+import { ANALYSIS, SALE_NEW, STOCK_ENTRY_NEW, VARIETIES } from '../src/routes.js'
+import { expectPath } from './helpers/url.js'
 import { expect, test } from '@playwright/test'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
@@ -29,7 +31,7 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // A priced variety.
-  await page.goto('/varieties')
+  await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Rosa')
   await page.getByRole('button', { name: 'Agregá la variedad' }).click()
@@ -42,9 +44,7 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
 
   // A stock entry (origin defaults to "Compra"), backdated into last month so the
   // business's first record — and so "Mes anterior" — is not this same month.
-  await page.goto('/varieties')
-  await page.getByRole('link', { name: '+ Entrada de stock' }).click()
-  await expect(page.getByLabel('Fecha')).toHaveValue(/^\d{4}-\d{2}-\d{2}$/)
+  await page.goto(STOCK_ENTRY_NEW)
   const todayIso = await page.getByLabel('Fecha').inputValue()
   const lastMonth = new Date(todayIso)
   lastMonth.setDate(1)
@@ -57,7 +57,7 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   await expect(page.getByText('Entrada guardada')).toBeVisible()
 
   // A cash sale, today.
-  await page.goto('/ventas/nueva')
+  await page.goto(SALE_NEW)
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '10' })
   await page.getByRole('radio', { name: 'Efectivo' }).check()
   await page.getByRole('button', { name: 'Guardá la venta' }).click()
@@ -77,7 +77,7 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   // Más → Análisis.
   await openMas(page)
   await page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /^Análisis/ }).click()
-  await expect(page).toHaveURL(/\/analisis$/)
+  await expectPath(page, ANALYSIS)
 
   // The current month: the variety row, week by week, by weekday and both expense
   // breakdowns all carry this month's activity. At this (desktop-sized) viewport,

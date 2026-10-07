@@ -20,6 +20,7 @@ LABEL_COLUMN: dict[str, str] = {
     "sale": "sale_date",
     "payment": "paid_on",
     "stock_entry": "entry_date",
+    "stock_withdrawal": "withdrawn_on",
     "price_entry": "effective_from",
     "expense": "spent_on",
     "app_user": "email",
@@ -30,6 +31,7 @@ LABEL_VIA: dict[str, str] = {
     "sale_line": "variety_id",
     "catalog_attributes": "variety_id",
     "stock_threshold": "variety_id",
+    "stock_withdrawal_line": "variety_id",
 }
 
 # Tables with exactly one row per business and nothing of their own worth naming: the

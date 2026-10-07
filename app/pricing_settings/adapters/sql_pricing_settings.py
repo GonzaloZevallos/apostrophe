@@ -1,5 +1,5 @@
 """The business's pricing switches over `pricing_settings`. Built for one business; a
-business with no row is `PricingSettingsMissing`, never a default (docs/adr/0031)."""
+business with no row is `PricingSettingsMissing`, never a default (docs/adr/0034)."""
 
 from __future__ import annotations
 

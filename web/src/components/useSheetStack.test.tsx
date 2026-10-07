@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { useEffect, useState } from 'react'
 import { createMemoryRouter, MemoryRouter, RouterProvider } from 'react-router'
 import { expect, test, vi } from 'vitest'
+import { HOME } from '../routes'
 import LeaveConfirm from './LeaveConfirm'
 import { useLeaveGuard } from './useLeaveGuard'
 import { SheetRouterProvider, SheetStackProvider, useSheet } from './useSheetStack'
@@ -61,7 +62,7 @@ function renderScreen(startDirty: boolean, initialState?: unknown) {
   const router = createMemoryRouter(
     [
       {
-        path: '/',
+        path: HOME,
         element: (
           <SheetStackProvider>
             <Screen startDirty={startDirty} />
@@ -100,7 +101,7 @@ test('back closes the top sheet only, level by level, without asking', async () 
   await act(() => router.navigate(-1))
   expect(sheets()).toEqual([null, null])
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
-  expect(router.state.location.pathname).toBe('/')
+  expect(router.state.location.pathname).toBe(HOME)
 })
 
 test('closeAll from level 2 leaves exactly the form entry, and the next back asks', async () => {
@@ -125,7 +126,7 @@ test('a dirty form asks on back, and asks again after keeping it', async () => {
   await act(() => router.navigate(-1))
   expect(screen.getByRole('alertdialog', { name: '¿Descartás la venta?' })).toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: 'No, seguí cargando' }))
-  expect(router.state.location.pathname).toBe('/')
+  expect(router.state.location.pathname).toBe(HOME)
 
   await act(() => router.navigate(-1))
   expect(screen.getByRole('alertdialog', { name: '¿Descartás la venta?' })).toBeInTheDocument()
@@ -142,7 +143,7 @@ test('an entry that already carries a sheet on mount opens nothing and loses the
   await user.click(screen.getByRole('button', { name: 'Escribir' }))
   await act(() => router.navigate(-1))
   expect(screen.getByRole('alertdialog')).toBeInTheDocument()
-  expect(router.state.location.pathname).toBe('/')
+  expect(router.state.location.pathname).toBe(HOME)
 })
 
 test('forward into a closed sheet entry does not reopen it', async () => {
@@ -177,7 +178,7 @@ test('a deferred closeAll after the user pressed back twice does not navigate at
   await act(() => Promise.resolve())
 
   expect(spy).not.toHaveBeenCalled()
-  expect(router.state.location.pathname).toBe('/')
+  expect(router.state.location.pathname).toBe(HOME)
 })
 
 test('a deferred closeAll after one back pops exactly one entry', async () => {
@@ -191,7 +192,7 @@ test('a deferred closeAll after one back pops exactly one entry', async () => {
   expect(spy).toHaveBeenCalledTimes(1)
   expect(spy).toHaveBeenCalledWith(-1)
   expect(sheets()).toEqual([null, null])
-  expect(router.state.location.pathname).toBe('/')
+  expect(router.state.location.pathname).toBe(HOME)
 })
 
 test('useSheet outside a provider throws', () => {

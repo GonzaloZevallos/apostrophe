@@ -31,7 +31,9 @@ class SqlPriceBook:
 
     def for_variety(self, variety_id: int, day: date) -> VarietyPricing | None:
         variety = self._varieties.get(variety_id)
-        if variety is None:
+        # An archived variety takes no new sale line: it answers as a missing one
+        # (docs/adr/0032).
+        if variety is None or variety.is_archived:
             return None
         entry = variety.current_price(day)
         return VarietyPricing(
@@ -87,7 +89,7 @@ def _planned_pricing(variety: Variety | None, variety_id: int, day: date) -> Var
         return None
     entry = variety.current_price(day)
     # The import writes every entry with a bulk price with VIP price = bulk price
-    # (docs/adr/0031), so the plan prices it the same way.
+    # (docs/adr/0034), so the plan prices it the same way.
     vip_price = None if entry is None or entry.bulk is None else entry.bulk.price
     return VarietyPricing(variety_id=variety_id, current=_quote(entry, vip_price))
 

@@ -1,4 +1,4 @@
-"""`cli.run` and the pricing switches (docs/adr/0031): the import switches on what its
+"""`cli.run` and the pricing switches (docs/adr/0034): the import switches on what its
 sheet needs, prices every row with it, never turns a switch off, and says in its report
 which switches it turned on. Real `.xlsx` fixtures over the `conftest` engine and clock;
 the switches and every price are read back through the HTTP API.

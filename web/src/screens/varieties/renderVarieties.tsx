@@ -6,11 +6,12 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render } from '@testing-library/react'
-import { Link, Outlet, RouterProvider, createMemoryRouter } from 'react-router'
+import { Outlet, RouterProvider, createMemoryRouter } from 'react-router'
 import { vi } from 'vitest'
 import type { Me } from '../../api/me'
+import InAppLink from '../../components/InAppLink'
 import FlashProvider from '../../flash/FlashProvider'
-import { VARIETIES, VARIETY, VARIETY_PRICES, VARIETY_PRICE_NEW, relative } from '../../routes'
+import { VARIETIES, VARIETY, VARIETY_PRICE_NEW, VARIETY_PRICES, pathTo, relative } from '../../routes'
 import PriceHistory from './PriceHistory'
 import PriceNew from './PriceNew'
 import VarietyRoute from './VarietyRoute'
@@ -75,21 +76,21 @@ export function renderVarieties(initialEntries: string[], fetchImpl: FetchImpl) 
             element: <main>Pantalla Variedades</main>,
           },
           {
-            path: relative(VARIETY(':id')),
+            path: relative(VARIETY),
             element: (
               <main>
                 <span>Página de la variedad</span>
-                <Link to={VARIETY_PRICES(1)}>Ver todos los precios</Link>
-                <Link to={VARIETY_PRICE_NEW(1)}>Nuevo precio</Link>
+                <InAppLink to={pathTo(VARIETY_PRICES, { id: 1 })}>Ver todos los precios</InAppLink>
+                <InAppLink to={pathTo(VARIETY_PRICE_NEW, { id: 1 })}>Nuevo precio</InAppLink>
               </main>
             ),
           },
           {
-            path: relative(VARIETY_PRICES(':id')),
+            path: relative(VARIETY_PRICES),
             element: <VarietyRoute render={(varietyId) => <PriceHistory varietyId={varietyId} />} />,
           },
           {
-            path: relative(VARIETY_PRICE_NEW(':id')),
+            path: relative(VARIETY_PRICE_NEW),
             element: <VarietyRoute render={(varietyId) => <PriceNew varietyId={varietyId} />} />,
           },
         ],

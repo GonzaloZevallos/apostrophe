@@ -127,6 +127,22 @@ def test_a_row_kind_the_fixture_never_lists_fails_the_checker() -> None:
         assert_matches_fixture(broken, "account")
 
 
+def test_a_fixture_that_is_a_list_rejects_a_wrong_kind_a_stray_key_and_an_undeclared_null() -> None:
+    movements = json.loads((FIXTURES_DIR / "movements.json").read_text())
+    assert isinstance(movements, list)
+    withdrawal = movements[1]
+
+    assert_matches_fixture(movements, "movements")
+    with pytest.raises(AssertionError, match="refund"):
+        assert_matches_fixture([{**withdrawal, "kind": "refund"}], "movements")
+    with pytest.raises(AssertionError, match="extra keys"):
+        assert_matches_fixture([{**withdrawal, "variety_id": 1}], "movements")
+    with pytest.raises(AssertionError, match="not declared nullable"):
+        assert_matches_fixture([{**withdrawal, "grams": None}], "movements")
+    with pytest.raises(AssertionError, match="missing from the fixture"):
+        check_shape(movements, movements, {"[entry].no_such_field": "string"})
+
+
 def test_an_empty_fixture_list_only_checks_that_the_answer_is_a_list() -> None:
     answer = _load("debtors") | {"debtors": []}
 
@@ -239,6 +255,7 @@ FIXTURE_ROUTES: Mapping[str, tuple[RouteShape, ...]] = {
         RouteShape("GET", "/customers", item=True),
     ),
     "debtors": (RouteShape("GET", "/payments/debtors"),),
+    "movements": (RouteShape("GET", "/stock/varieties/{variety_id}/movements"),),
     "panel": (RouteShape("GET", "/panel"),),
     "payment": (RouteShape("POST", "/customers/{customer_id}/payments"),),
     "payment-preview": (RouteShape("POST", "/customers/{customer_id}/payments/preview"),),
@@ -251,6 +268,11 @@ FIXTURE_ROUTES: Mapping[str, tuple[RouteShape, ...]] = {
     ),
     "sale-detail": (RouteShape("GET", "/sales/{sale_id}"),),
     "sale-detail-gift": (RouteShape("GET", "/sales/{sale_id}"),),
+    "withdrawal": (
+        RouteShape("POST", "/stock/withdrawals"),
+        RouteShape("GET", "/stock/withdrawals/{withdrawal_id}"),
+        RouteShape("PUT", "/stock/withdrawals/{withdrawal_id}"),
+    ),
 }
 
 

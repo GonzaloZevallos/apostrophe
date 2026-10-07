@@ -13,11 +13,19 @@
  * number.
  */
 
+import { CUSTOMER, CUSTOMER_PAYMENT, CUSTOMERS, HOME, SALE_NEW, pathTo } from '../../routes'
+import { inAppState } from '../../components/inAppState'
+import { useGoneNotice } from '../../components/goneExit'
+import { SheetRouterProvider } from '../../components/useSheetStack'
+import { GONE_NOTICE } from '../../api/refusals'
+import { stubViewport } from '../../test-viewport'
+import { StrictMode } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Outlet, useLocation } from 'react-router'
-import { MemoryRouter, Route, Routes } from 'react-router'
+import { RouterProvider, createMemoryRouter } from 'react-router'
+import FlashProvider from '../../flash/FlashProvider'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import accountFixture from '../../api/fixtures/account.json'
 import paymentFixture from '../../api/fixtures/payment.json'
@@ -49,21 +57,36 @@ function jsonResponse(status: number, body: unknown): Response {
   })
 }
 
-function renderFicha(id: string) {
+function Flash() {
+  return (
+    <FlashProvider>
+      <Context />
+    </FlashProvider>
+  )
+}
+
+function renderFicha(id: string, entries: string[] = [pathTo(CUSTOMER, { id })]) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  const router = createMemoryRouter(
+    [
+      {
+        element: <Flash />,
+        children: [
+          { path: CUSTOMER, element: <ClienteFicha /> },
+          { path: CUSTOMER_PAYMENT, element: <ClienteFicha payment /> },
+          { path: CUSTOMERS, element: <span>la lista</span> },
+          { path: SALE_NEW, element: <NuevaVentaStub /> },
+        ],
+      },
+    ],
+    { initialEntries: entries },
+  )
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[`/clientes/${id}`]}>
-        <Routes>
-          <Route element={<Context />}>
-            <Route path="/clientes/:id" element={<ClienteFicha />} />
-            <Route path="/clientes" element={<span>la lista</span>} />
-            <Route path="/ventas/nueva" element={<NuevaVentaStub />} />
-          </Route>
-        </Routes>
-      </MemoryRouter>
+      <RouterProvider router={router} />
     </QueryClientProvider>,
   )
+  return router
 }
 
 const SETTLED_CUSTOMER = {
@@ -110,7 +133,7 @@ test('a customer that is gone shows the gone screen, with a way back to the list
   expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Volver a Clientes' })).toHaveAttribute(
     'href',
-    '/clientes',
+    CUSTOMERS,
   )
   expect(screen.queryByText(/999/)).not.toBeInTheDocument()
 })
@@ -127,7 +150,7 @@ test('a settled customer shows their phone, channel and VIP, no balance and no R
   expect(await screen.findByText('+54 9 11 5842-3310')).toBeInTheDocument()
   expect(screen.getByText('Telegram')).toBeInTheDocument()
   expect(screen.queryByText(/te debe/i)).not.toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Registrar cobro' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: 'Registrar cobro' })).not.toBeInTheDocument()
 })
 
 const NO_PHONE_CUSTOMER = {
@@ -166,7 +189,7 @@ test('"Nueva venta a <name>" opens the sale form with this customer chosen, by i
   renderFicha('3')
 
   const link = await screen.findByRole('link', { name: 'Nueva venta a Fer' })
-  expect(link).toHaveAttribute('href', '/ventas/nueva')
+  expect(link).toHaveAttribute('href', SALE_NEW)
   await userEvent.click(link)
 
   expect(await screen.findByText('Nueva venta para 3')).toBeInTheDocument()
@@ -209,7 +232,7 @@ test('a customer who owes shows "Te debe" since the oldest debt, Registrar cobro
 
   expect(await screen.findByText('Te debe $ 11.000')).toBeInTheDocument()
   expect(screen.getByText('desde el 14/09')).toBeInTheDocument()
-  expect(screen.getByRole('button', { name: 'Registrar cobro' })).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Registrar cobro' })).toBeInTheDocument()
   expect(await screen.findByText('Quedó debiendo')).toBeInTheDocument()
 })
 
@@ -235,7 +258,7 @@ test('a customer in credit shows "A favor", never "Te debe", and no Registrar co
 
   expect(await screen.findByText('A favor $ 2.000')).toBeInTheDocument()
   expect(screen.queryByText(/te debe/i)).not.toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Registrar cobro' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: 'Registrar cobro' })).not.toBeInTheDocument()
 })
 
 test('the account labels a sale, a later payment\'s split and its leftover credit row only from kind/standing, never a sign on a number', async () => {
@@ -357,7 +380,7 @@ test('registering a payment shows "Cobro guardado · queda debiendo $ X" when so
   )
   renderFicha('1')
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Registrar cobro' }))
+  await userEvent.click(await screen.findByRole('link', { name: 'Registrar cobro' }))
   const sheet = (await screen.findByRole('button', { name: 'Guardar' })).closest('.capa__contenido')
   expect(sheet).not.toBeNull()
   await userEvent.clear(within(sheet as HTMLElement).getByLabelText('Monto'))
@@ -384,7 +407,7 @@ test('"Todo" fills the amount with the balance, and the debounced preview shows 
   )
   renderFicha('1')
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Registrar cobro' }))
+  await userEvent.click(await screen.findByRole('link', { name: 'Registrar cobro' }))
   const sheet = (await screen.findByRole('button', { name: 'Guardar' })).closest('.capa__contenido')
   expect(sheet).not.toBeNull()
   const within_ = within(sheet as HTMLElement)
@@ -409,7 +432,7 @@ test('a partial amount\'s preview shows "Le queda debiendo $ X", from the previe
   )
   renderFicha('1')
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Registrar cobro' }))
+  await userEvent.click(await screen.findByRole('link', { name: 'Registrar cobro' }))
   const sheet = (await screen.findByRole('button', { name: 'Guardar' })).closest('.capa__contenido')
   expect(sheet).not.toBeNull()
   const within_ = within(sheet as HTMLElement)
@@ -436,7 +459,7 @@ test('registering a payment that settles everything shows the plain "Cobro guard
   )
   renderFicha('1')
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Registrar cobro' }))
+  await userEvent.click(await screen.findByRole('link', { name: 'Registrar cobro' }))
   const sheet = (await screen.findByRole('button', { name: 'Guardar' })).closest('.capa__contenido')
   expect(sheet).not.toBeNull()
   await userEvent.click(within(sheet as HTMLElement).getByRole('button', { name: 'Todo: $ 11.000' }))
@@ -553,7 +576,7 @@ test('a payment above the balance shows the fixed refusal inline and keeps what 
   )
   renderFicha('1')
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Registrar cobro' }))
+  await userEvent.click(await screen.findByRole('link', { name: 'Registrar cobro' }))
   const sheet = (await screen.findByRole('button', { name: 'Guardar' })).closest('.capa__contenido')
   expect(sheet).not.toBeNull()
   await userEvent.clear(within(sheet as HTMLElement).getByLabelText('Monto'))
@@ -563,4 +586,209 @@ test('a payment above the balance shows the fixed refusal inline and keeps what 
 
   expect(await screen.findByText('El monto supera lo que te debe.')).toBeInTheDocument()
   expect(within(sheet as HTMLElement).getByLabelText('Monto')).toHaveValue('999000')
+})
+
+const OWING_FETCHES = {
+  'GET /customers/1': () => jsonResponse(200, OWING_CUSTOMER),
+  'GET /customers/1/account': () => jsonResponse(200, OWING_ACCOUNT),
+}
+
+test('the payment route opens the sheet by itself, from a typed address, and Cerrar leaves to Clientes, its parent', async () => {
+  api.mockImplementation(dispatchFetch(OWING_FETCHES))
+  const router = renderFicha('1', [pathTo(CUSTOMER_PAYMENT, { id: 1 })])
+
+  expect(await screen.findByRole('button', { name: 'Guardar' })).toBeInTheDocument()
+  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+
+  await waitFor(() => expect(router.state.location.pathname).toBe(CUSTOMERS))
+  expect(screen.queryByRole('button', { name: 'Guardar' })).not.toBeInTheDocument()
+})
+
+test('an untouched sheet leaves at once on history back', async () => {
+  api.mockImplementation(dispatchFetch(OWING_FETCHES))
+  const router = renderFicha('1')
+  await userEvent.click(await screen.findByRole('link', { name: 'Registrar cobro' }))
+  await screen.findByRole('button', { name: 'Guardar' })
+
+  await act(() => router.navigate(-1))
+
+  await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(CUSTOMER, { id: 1 })))
+  expect(screen.queryByText('¿Descartás el cobro?')).not.toBeInTheDocument()
+})
+
+test('a touched sheet asks before history back leaves, "No" keeps what was typed and "Sí" leaves to Clientes, its parent', async () => {
+  api.mockImplementation(dispatchFetch(OWING_FETCHES))
+  const router = renderFicha('1', [pathTo(CUSTOMER, { id: 1 }), pathTo(CUSTOMER_PAYMENT, { id: 1 })])
+  await userEvent.click(await screen.findByLabelText('Efectivo'))
+  await act(() => router.navigate(-1))
+
+  expect(await screen.findByText('¿Descartás el cobro?')).toBeInTheDocument()
+  expect(router.state.location.pathname).toBe(pathTo(CUSTOMER_PAYMENT, { id: 1 }))
+  await userEvent.click(screen.getByRole('button', { name: 'No, seguí cargando' }))
+  expect(screen.queryByText('¿Descartás el cobro?')).not.toBeInTheDocument()
+  expect(screen.getByLabelText('Efectivo')).toBeChecked()
+
+  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Sí, descartalo' }))
+  await waitFor(() => expect(router.state.location.pathname).toBe(CUSTOMERS))
+})
+
+test('after a save the sheet is not in history: back from the card goes to what was before it', async () => {
+  api.mockImplementation(
+    dispatchFetch({
+      ...OWING_FETCHES,
+      'POST /customers/1/payments': () => jsonResponse(201, paymentFixture),
+    }),
+  )
+  const router = renderFicha('1', [CUSTOMERS, pathTo(CUSTOMER, { id: 1 })])
+  await router.navigate(CUSTOMERS)
+  await router.navigate(pathTo(CUSTOMER, { id: 1 }), { state: inAppState({ pathname: CUSTOMERS }) })
+  await userEvent.click(await screen.findByRole('link', { name: 'Registrar cobro' }))
+  await userEvent.click(await screen.findByLabelText('Efectivo'))
+  await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+
+  await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(CUSTOMER, { id: 1 })))
+  expect(await screen.findByText('Cobro guardado · queda debiendo $ 6.000')).toBeInTheDocument()
+  await router.navigate(-1)
+  await waitFor(() => expect(router.state.location.pathname).toBe(CUSTOMERS))
+})
+
+// The gone exit of "Registrar cobro" (navigation.md, "A gone exit is the same move as
+// Cerrar"): its registered parent is Clientes.
+type HistoryEntry = string | { pathname: string; state: unknown }
+
+function ListWithNotice() {
+  const goneShown = useGoneNotice()
+  return (
+    <div>
+      <span>la lista</span>
+      {goneShown && <span>{GONE_NOTICE}</span>}
+    </div>
+  )
+}
+
+function fakeGonePayment() {
+  api.mockImplementation(
+    dispatchFetch({
+      ...OWING_FETCHES,
+      'POST /customers/1/payments': () =>
+        jsonResponse(404, { detail: 'no such customer', code: 'payment.customer_not_found' }),
+    }),
+  )
+}
+
+/** The real data router under StrictMode, with the router handle the gone notice follows. */
+function renderGone(entries: HistoryEntry[]) {
+  const router = createMemoryRouter(
+    [
+      {
+        element: <Flash />,
+        children: [
+          { path: CUSTOMER, element: <ClienteFicha /> },
+          { path: CUSTOMER_PAYMENT, element: <ClienteFicha payment /> },
+          { path: CUSTOMERS, element: <ListWithNotice /> },
+          { path: HOME, element: <span>Inicio</span> },
+        ],
+      },
+    ],
+    { initialEntries: entries, initialIndex: entries.length - 1 },
+  )
+  const app = (
+    <StrictMode>
+      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+        <SheetRouterProvider router={router}>
+          <RouterProvider router={router} />
+        </SheetRouterProvider>
+      </QueryClientProvider>
+    </StrictMode>
+  )
+  const view = render(app)
+  return { router, view, app }
+}
+
+async function saveTheGonePayment() {
+  await userEvent.click(await screen.findByLabelText('Efectivo'))
+  await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+}
+
+const PAYMENT = pathTo(CUSTOMER_PAYMENT, { id: 1 })
+
+test('a gone cobro opened from Clientes goes back to it: Clientes is in history once, with the notice once', async () => {
+  fakeGonePayment()
+  const { router } = renderGone([HOME, CUSTOMERS, { pathname: PAYMENT, state: inAppState({ pathname: CUSTOMERS }) }])
+
+  await saveTheGonePayment()
+
+  expect(await screen.findByText('la lista')).toBeInTheDocument()
+  expect(router.state.historyAction).toBe('POP')
+  expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
+  await act(() => router.navigate(-1))
+  expect(router.state.location.pathname).toBe(HOME)
+  expect(screen.queryByText(GONE_NOTICE)).not.toBeInTheDocument()
+})
+
+test("a gone cobro opened from Inicio's teaser replaces the sheet with Clientes and leaves Inicio alone", async () => {
+  fakeGonePayment()
+  const { router } = renderGone([HOME, { pathname: PAYMENT, state: inAppState({ pathname: HOME }) }])
+
+  await saveTheGonePayment()
+
+  expect(await screen.findByText('la lista')).toBeInTheDocument()
+  expect(router.state.historyAction).toBe('REPLACE')
+  expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
+  await act(() => router.navigate(-1))
+  expect(router.state.location.pathname).toBe(HOME)
+  expect(screen.queryByText(GONE_NOTICE)).not.toBeInTheDocument()
+})
+
+test('a gone cobro on a direct link replaces the sheet with Clientes and shows the notice', async () => {
+  fakeGonePayment()
+  const { router } = renderGone([PAYMENT])
+
+  await saveTheGonePayment()
+
+  expect(await screen.findByText('la lista')).toBeInTheDocument()
+  expect(router.state.historyAction).toBe('REPLACE')
+  expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
+})
+
+test('after a reload of the sheet, the gone exit still goes back once', async () => {
+  fakeGonePayment()
+  const { router, view, app } = renderGone([HOME, CUSTOMERS, { pathname: PAYMENT, state: inAppState({ pathname: CUSTOMERS }) }])
+  await screen.findByLabelText('Efectivo')
+  view.unmount()
+  render(app)
+
+  await saveTheGonePayment()
+
+  expect(await screen.findByText('la lista')).toBeInTheDocument()
+  expect(router.state.historyAction).toBe('POP')
+  expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
+})
+
+test('a resize across 900 px between opening and leaving does not change where the exit goes', async () => {
+  fakeGonePayment()
+  stubViewport('phone')
+  const { router } = renderGone([HOME, CUSTOMERS, { pathname: PAYMENT, state: inAppState({ pathname: CUSTOMERS }) }])
+  await screen.findByLabelText('Efectivo')
+  stubViewport('computer')
+
+  await saveTheGonePayment()
+
+  expect(await screen.findByText('la lista')).toBeInTheDocument()
+  expect(router.state.historyAction).toBe('POP')
+})
+
+test.each([
+  ['a query string', `${CUSTOMERS}?q=fer`],
+  ['a trailing slash', `${CUSTOMERS}/`],
+])('a from with %s still counts as the parent: the exit goes back', async (_name, from) => {
+  fakeGonePayment()
+  const { router } = renderGone([HOME, CUSTOMERS, { pathname: PAYMENT, state: inAppState({ pathname: from }) }])
+
+  await saveTheGonePayment()
+
+  expect(await screen.findByText('la lista')).toBeInTheDocument()
+  expect(router.state.historyAction).toBe('POP')
+  expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
 })

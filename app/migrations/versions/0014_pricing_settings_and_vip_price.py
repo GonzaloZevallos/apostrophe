@@ -1,4 +1,4 @@
-"""Pricing settings and the VIP price (docs/adr/0031, docs/product/pricing-settings.md).
+"""Pricing settings and the VIP price (docs/adr/0034, docs/product/pricing-settings.md).
 
 - `pricing_settings`: one row per business holding its two switches. Every business
   that exists now gets a row with both switches on, so nobody's pricing changes.
@@ -6,8 +6,8 @@
   no check constraint (the rule is the domain's). Every entry that has a bulk price
   gets VIP price = bulk price, which is exactly what a VIP customer paid until now.
 
-Revision ID: 0012
-Revises: 0011
+Revision ID: 0014
+Revises: 0013
 """
 
 from collections.abc import Sequence
@@ -15,8 +15,8 @@ from collections.abc import Sequence
 import sqlalchemy as sa
 from alembic import op
 
-revision: str = "0012"
-down_revision: str | None = "0011"
+revision: str = "0014"
+down_revision: str | None = "0013"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 

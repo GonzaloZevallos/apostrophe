@@ -44,10 +44,18 @@ NULLABLE: Mapping[str, Mapping[str, JsonType | ShapeOf]] = {
         "month.next": "string",
         "month.average_margin.percent": "integer",
         "month.shortfall": ShapeOf("analysis", "month.shortfall"),
+        "month.promotion": ShapeOf("analysis", "month.promotion"),
+        "month.own_use": ShapeOf("analysis", "month.own_use"),
         "month.varieties[].share_percent": "integer",
         "month.varieties[].margin.percent": "integer",
         "since_first_record": ShapeOf("analysis", "since_first_record"),
         "since_first_record.shortfall": ShapeOf("analysis", "since_first_record.shortfall"),
+        "since_first_record.promotion": ShapeOf("analysis", "since_first_record.promotion"),
+        "since_first_record.own_use": ShapeOf("analysis", "since_first_record.own_use"),
+        "weeks[].promotion": ShapeOf("analysis", "weeks[].promotion"),
+        "weeks[].own_use": ShapeOf("analysis", "weeks[].own_use"),
+        "months[].promotion": ShapeOf("analysis", "months[].promotion"),
+        "months[].own_use": ShapeOf("analysis", "months[].own_use"),
     },
     "analysis-empty": {
         # `analysis-empty.json` is a business with no record at all: every nullable
@@ -57,10 +65,18 @@ NULLABLE: Mapping[str, Mapping[str, JsonType | ShapeOf]] = {
         "month.next": "string",
         "month.average_margin.percent": "integer",
         "month.shortfall": ShapeOf("analysis", "month.shortfall"),
+        "month.promotion": ShapeOf("analysis", "month.promotion"),
+        "month.own_use": ShapeOf("analysis", "month.own_use"),
         "month.varieties[].share_percent": "integer",
         "month.varieties[].margin.percent": "integer",
         "since_first_record": ShapeOf("analysis", "since_first_record"),
         "since_first_record.shortfall": ShapeOf("analysis", "since_first_record.shortfall"),
+        "since_first_record.promotion": ShapeOf("analysis", "since_first_record.promotion"),
+        "since_first_record.own_use": ShapeOf("analysis", "since_first_record.own_use"),
+        "weeks[].promotion": ShapeOf("analysis", "weeks[].promotion"),
+        "weeks[].own_use": ShapeOf("analysis", "weeks[].own_use"),
+        "months[].promotion": ShapeOf("analysis", "months[].promotion"),
+        "months[].own_use": ShapeOf("analysis", "months[].own_use"),
     },
     "customer": {
         "phone": "string",
@@ -76,6 +92,12 @@ NULLABLE: Mapping[str, Mapping[str, JsonType | ShapeOf]] = {
     "debtors": {
         "debtors[].owing_since": "string",
     },
+    "movements": {
+        # The fixture is a bare list of `kind`-discriminated items.
+        "[entry].total_cost": "integer",
+        "[entry].cost_per_gram": "integer",
+        "[entry].note": "string",
+    },
     "panel": {
         "periods.today.average_sale": "integer",
         "periods.week.average_sale": "integer",
@@ -83,6 +105,12 @@ NULLABLE: Mapping[str, Mapping[str, JsonType | ShapeOf]] = {
         "periods.today.shortfall": ShapeOf("panel", "periods.week.shortfall"),
         "periods.week.shortfall": ShapeOf("panel", "periods.week.shortfall"),
         "periods.month.shortfall": ShapeOf("panel", "periods.week.shortfall"),
+        "periods.today.promotion": ShapeOf("panel", "periods.week.promotion"),
+        "periods.week.promotion": ShapeOf("panel", "periods.week.promotion"),
+        "periods.month.promotion": ShapeOf("panel", "periods.week.promotion"),
+        "periods.today.own_use": ShapeOf("panel", "periods.week.own_use"),
+        "periods.week.own_use": ShapeOf("panel", "periods.week.own_use"),
+        "periods.month.own_use": ShapeOf("panel", "periods.week.own_use"),
         "debts.oldest": "string",
         "stock[].sold_out_since": "string",
         "stock[].threshold": "number",
@@ -134,5 +162,8 @@ NULLABLE: Mapping[str, Mapping[str, JsonType | ShapeOf]] = {
         "customer": ShapeOf("sale-detail", "customer"),
         "note": "string",
         "lines[].cost.costed": "integer",
+    },
+    "withdrawal": {
+        "note": "string",
     },
 }

@@ -5,6 +5,7 @@
  * its computed `transform` and its fill change at once; a disabled button's do not.
  */
 
+import { MORE } from '../src/routes.js'
 import { expect, test, type Page } from '@playwright/test'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
@@ -56,7 +57,7 @@ for (const theme of ['claro', 'oscuro'] as const) {
 
     await signUpNewBusiness(page, { businessName: `Flores del Toque ${theme} ${Date.now()}`, email: `duena-toque-${theme}-${Date.now()}@example.com` })
 
-    await page.goto('/mas')
+    await page.goto(MORE)
     await page.evaluate((value) => {
       if (value === 'oscuro') document.documentElement.setAttribute('data-tema', value)
     }, theme)

@@ -15,7 +15,7 @@
 
 import { type FormEvent, useEffect, useId, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link } from 'react-router'
+import InAppLink from '../../components/InAppLink'
 import { ApiError, NetworkError, get, post } from '../../api/client'
 import { invalidateResource, keys } from '../../api/keys'
 import { PINNED_CATALOG_REFUSAL_OVERRIDES, resolveOverride } from '../../api/refusals'
@@ -262,9 +262,9 @@ function IntegrationsForm({ initial }: { initial: PinnedCatalog }) {
         </button>
       </form>
 
-      <Link to={CATALOG} className="boton--enlace">
+      <InAppLink to={CATALOG} className="boton--enlace">
         Ir al catálogo
-      </Link>
+      </InAppLink>
     </SettingsGroup>
   )
 }

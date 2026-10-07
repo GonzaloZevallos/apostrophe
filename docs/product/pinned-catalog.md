@@ -9,7 +9,7 @@ Where its pieces live (navigation.md):
 
 ## Jobs
 
-**When** something changes what my catalog says (a price is recorded or deleted, a variety sells out or comes back, I hide or edit a variety, I change the header or footer, I switch bulk pricing on or off), **I want** the catalog pinned in my business's Telegram chat to update by itself, after I've seen a test copy in my own chat before customers do, **so** my customers never see a stale price or a variety I can't sell, and I never have to remember to copy, paste and pin it again.
+**When** something changes what my catalog says (a price is recorded or deleted, a variety sells out or comes back, I hide, archive, restore or edit a variety, I change the header or footer, I switch bulk pricing on or off), **I want** the catalog pinned in my business's Telegram chat to update by itself, after I've seen a test copy in my own chat before customers do, **so** my customers never see a stale price or a variety I can't sell, and I never have to remember to copy, paste and pin it again.
 
 **When** I connect my bot in Configuración → Integraciones and tap Probarlo, **I want** it to tell me, if it fails, in one sentence what I have to fix (the token, my chat not started, or my chat number), **so I can** fix it from my phone, test again and get to publishing the catalog without guessing or asking anyone for help.
 
@@ -19,12 +19,14 @@ This refines the setup step of the first job (the test copy before customers see
 
 **When** I need to change how my business is set up (rename it, bring in a partner, connect or switch the Telegram bot, edit the catalog's header and footer, manage my expense categories, switch to dark, change my password or log out), **I want** every business-wide setting in one place, each in its own short screen, **so I can** change it in a few taps from my phone and get back to the customer, without wondering which screen holds it. (Served here by Integraciones: the bot's token, chats, Buscar mi chat and Probarlo, and a way forward to publish.)
 
+**When** a variety I loaded by mistake, or one I no longer work with, keeps showing in my lists and pickers, **I want** to take it out from my phone in a few taps, deleting it if it never moved and archiving it if it has history, **so** my lists show only what I still sell, no past sale, stock, cost or profit figure changes, and I can bring it back exactly as it was if I start selling it again. (Served here by archiving and restoring being upkeep triggers; defined in varieties.md.)
+
 Success criteria:
 
 1. **No step of my own**: once a change that affects the catalog is saved, the pin already shows it the next time anyone looks at Telegram. This includes a price entry whose date arrives with nobody saving anything.
 2. **One message, always the same one**: publishing or syncing edits the pinned message in place. The chat never fills with old catalogs. Switching the bot or the channel leaves the previous chat's pin untouched, and the seller is told so.
 3. **What customers read is the catalog**: the same text as the in-app preview and as Probarlo's test send, with real bold from the same left-to-right `**` pairing (ADR-0022).
-4. **Never surprised by a failure**: the save that triggered a sync (sale, price, stock, catalog edit, pricing settings) always succeeds on its own terms, and the sync happens after it. A stuck pin shows as "Desactualizado", with a one-line reason, on the catalog screen and on Inicio.
+4. **Never surprised by a failure**: the save that triggered a sync (sale, price, stock, withdrawal, catalog edit, archive or restore, pricing settings) always succeeds on its own terms, and the sync happens after it. A stuck pin shows as "Desactualizado", with a one-line reason, on the catalog screen and on Inicio.
 5. **Businesses never mix and the token stays secret**: one bot, token, channel chat and own chat per business. The token is never shown again once saved. Nothing about the settings or a sync leaks across businesses (ADR-0004, ADR-0005).
 6. **Done from the phone**: setup, Buscar mi chat and Probarlo in Integraciones, Publicar and seeing whether the pin is out of date on the catalog screen all work from the phone, with no API call by hand. From Integraciones a plain link leads on to the catalog screen to publish.
 7. **Each cause of a failed Probarlo has its own fixed reason**, with a concrete action.
@@ -127,11 +129,13 @@ Setup (token, chats, Buscar mi chat, first Probarlo and Publicar) is judged by c
   - price entries recorded or deleted;
   - catalog attributes, header or footer;
   - a variety renamed;
+  - a variety archived or restored (varieties.md);
   - stock entries recorded, edited or deleted;
+  - stock withdrawals recorded, edited or deleted;
   - sales recorded or deleted, Deshacer included;
   - a save of Configuración → Precios that changes either pricing switch (pricing-settings.md), since the bulk line depends on Precio por cantidad;
   - the start of a new day in Argentina time, for price entries that come into force that day.
-- **Rule**: the text is rebuilt on a trigger. The pinned message is edited only if the new text differs from the last text published. Topping up a variety already in the catalog sends nothing.
+- **Rule**: the text is rebuilt on a trigger. The pinned message is edited only if the new text differs from the last text published. Topping up a variety already in the catalog, or withdrawing grams that leave it with stock above zero, sends nothing.
 - **It only ever edits.** Upkeep never posts a new message, even when the old one was deleted by hand.
 - **The triggering save never waits for Telegram**:
   - it answers and shows its own toast on its own terms;
@@ -177,7 +181,7 @@ Setup (token, chats, Buscar mi chat, first Probarlo and Publicar) is judged by c
 
 ### The text
 
-- Exactly the catalog text from the one author (ADR-0022), which never carries a VIP price and carries the bulk line only while Precio por cantidad is on (catalog.md).
+- Exactly the catalog text from the one author (ADR-0022), which never includes an archived variety, never carries a VIP price and carries the bulk line only while Precio por cantidad is on (catalog.md).
 - `**` markers become real Telegram bold, paired left to right. A final unpaired `**` shows as typed.
 - The test copy and the published copy are identical for the same data.
 - **Length**: measured as Telegram measures it, on the message as sent. Over Telegram's limit it is never split or cut; it is refused, as above.
@@ -195,7 +199,7 @@ Setup (token, chats, Buscar mi chat, first Probarlo and Publicar) is judged by c
 
 ## Metrics
 
-- **Trigger matrix (criterion 1)**: for every trigger, the day change and a Precios save included, an edit is attempted exactly when the built text differs from the last one published. Switching Precio por cantidad on a business with a bulk price in force edits the pin; switching only Clientes VIP sends nothing, since the text does not change. 100% passing.
+- **Trigger matrix (criterion 1)**: for every trigger, stock withdrawals, the day change, archiving and restoring a variety and a Precios save included, an edit is attempted exactly when the built text differs from the last one published. A withdrawal that takes a variety's stock to zero or below edits the pin; one that leaves the text unchanged sends nothing. Switching Precio por cantidad on a business with a bulk price in force edits the pin; switching only Clientes VIP sends nothing, since the text does not change. 100% passing.
 - **One message per chat (criterion 2)**:
   - one post per channel chat, then edits only: 0 new posts while that message exists;
   - a channel or token change gives exactly one new post, and 0 later calls against the old message;
@@ -207,7 +211,7 @@ Setup (token, chats, Buscar mi chat, first Probarlo and Publicar) is judged by c
   - the test copy equals the published copy.
 - **Too long (criteria 3, 4)**: a text over Telegram's limit is never split or cut, and nothing is sent. Probarlo and Publicar refuse it inline. Upkeep leaves the pin as it was and reports the length reason. The triggering save succeeds. 100% passing.
 - **Resilience (criterion 4)**: with the fake adapter failing:
-  - every triggering save succeeds and answers normally;
+  - every triggering save, a withdrawal included, succeeds and answers normally;
   - the status reads "Desactualizado" with the right reason on the catalog screen, and Inicio shows its line, which opens the catalog screen;
   - the next successful trigger or Publicar clears it.
 

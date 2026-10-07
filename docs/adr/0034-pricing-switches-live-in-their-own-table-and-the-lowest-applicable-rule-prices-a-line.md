@@ -17,7 +17,7 @@ of its own.
   `business_id` (not null, unique, a foreign key to `business`), `is_bulk_pricing` and
   `is_vip_customers` (boolean, not null). One row per business, owned by
   `app/pricing_settings/`; only that hexagon writes it (its PUT use case, its
-  `BusinessOpening` seed, migration 0012 and the import's `switch_on`, which never turns
+  `BusinessOpening` seed, migration 0014 and the import's `switch_on`, which never turns
   a switch off). The shared value `app.shared.pricing_settings.PricingSettings` is what
   every reader speaks; sales, varieties, customers, the catalog and the import each
   declare their own `current() -> PricingSettings` port (docs/adr/0006) and
@@ -28,7 +28,7 @@ of its own.
   (a `LookupError` with a fixed message) when the business has no row. Every path that
   creates a business creates the row in the same commit: a `PricingSettingsOpening`
   inside `CompositeOpening`, in `accept_invitation`'s single commit.
-- **The defaults.** Migration 0012 gives every business that already exists a row with
+- **The defaults.** Migration 0014 gives every business that already exists a row with
   both switches **on**, and copies `vip_price = bulk_price` onto every price entry that
   has a bulk price, so each existing VIP customer pays exactly what they paid before
   (a bulk price is already below list, so the copy meets its own rule). A business that

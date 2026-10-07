@@ -32,23 +32,25 @@ import { invalidateResource, keys } from '../../api/keys'
 import {
   type PaymentIn,
   type PaymentMethod,
-  type RecordedPayment,
   previewPayment,
   recordPayment,
 } from '../../api/payments'
+import LeaveConfirm from '../../components/LeaveConfirm'
 import SinConexion from '../../components/SinConexion'
+import { useBackOr } from '../../components/useBackOr'
+import { useGoneExit } from '../../components/useGoneExit'
+import { useLeaveGuard } from '../../components/useLeaveGuard'
+import { useFlash } from '../../flash/useFlash'
 import { formatDateShort } from '../../format/dates'
 import { formatMoney } from '../../format/money'
 import { parseMoney } from '../../format/parse'
+import { CUSTOMERS } from '../../routes'
 import { GENERIC_REFUSAL } from './ClienteForm'
 
 export interface CobroProps {
   customerId: string
   balance: number
   today: string
-  onClose: () => void
-  onSaved: (recorded: RecordedPayment) => void
-  onGone: () => void
 }
 
 type PaymentRefusalCode =
@@ -84,7 +86,7 @@ function isPaymentGone(code: string): boolean {
   return (GONE_CODES as ReadonlySet<string>).has(code)
 }
 
-export default function Cobro({ customerId, balance, today, onClose, onSaved, onGone }: CobroProps) {
+export default function Cobro({ customerId, balance, today }: CobroProps) {
   const [amount, setAmount] = useState(String(balance))
   const [date, setDate] = useState(today)
   const [method, setMethod] = useState<PaymentMethod | null>(null)
@@ -92,6 +94,13 @@ export default function Cobro({ customerId, balance, today, onClose, onSaved, on
   const [methodError, setMethodError] = useState<string | null>(null)
   const [offline, setOffline] = useState(false)
   const queryClient = useQueryClient()
+  const flash = useFlash()
+
+  // Touched means any of the three fields differs from what the sheet opened with.
+  const dirty = amount !== String(balance) || date !== today || method !== null
+  const { blocker, disarm } = useLeaveGuard(dirty)
+  const close = useBackOr(CUSTOMERS)
+  const goneExit = useGoneExit('customer-payment', { id: customerId })
 
   const parsedAmount = parseMoney(amount)
 
@@ -138,10 +147,17 @@ export default function Cobro({ customerId, balance, today, onClose, onSaved, on
     try {
       const recorded = await record.mutateAsync({ paid_on: date, amount: parsedAmount.value, method })
       invalidateResource(queryClient, 'payments')
-      onSaved(recorded)
+      flash.armAfterLeaving(
+        recorded.after.standing === 'owes'
+          ? `Cobro guardado · queda debiendo ${formatMoney(recorded.after.balance)}`
+          : 'Cobro guardado',
+      )
+      disarm()
+      close()
     } catch (caught) {
       if (caught instanceof ApiError && isPaymentGone(caught.code)) {
-        onGone()
+        disarm()
+        goneExit()
       } else if (caught instanceof ApiError) {
         if (caught.code === 'payment.method_required') setMethodError(METHOD_REQUIRED_MESSAGE)
         else setAmountError(amountMessage(caught.code) ?? GENERIC_REFUSAL)
@@ -156,7 +172,12 @@ export default function Cobro({ customerId, balance, today, onClose, onSaved, on
   return (
     <div className="capa" role="presentation">
       <div className="capa__contenido">
-        <span className="panel__titulo">Registrar cobro</span>
+        <div className="encabezado-fila">
+          <span className="panel__titulo">Registrar cobro</span>
+          <button type="button" className="boton--enlace" onClick={close}>
+            Cerrar
+          </button>
+        </div>
         <form className="formulario" onSubmit={(event) => void onSubmit(event)}>
           <label className="campo">
             <span className="campo__rotulo">Monto</span>
@@ -236,10 +257,16 @@ export default function Cobro({ customerId, balance, today, onClose, onSaved, on
           <button className="boton" type="submit" disabled={record.isPending}>
             Guardar
           </button>
-          <button type="button" className="boton-enlace" onClick={onClose}>
-            Cancelar
-          </button>
         </form>
+        {blocker.state === 'blocked' && (
+          <LeaveConfirm
+            blocker={blocker}
+            question="¿Descartás el cobro?"
+            detail="Se pierde lo que cargaste: todavía no se guardó nada."
+            keepLabel="No, seguí cargando"
+            discardLabel="Sí, descartalo"
+          />
+        )}
       </div>
     </div>
   )

@@ -26,18 +26,18 @@ import { NetworkError } from '../api/client'
 import type { Me } from '../api/me'
 import { copyText } from '../clipboard'
 import { canShare, shareText } from '../share'
+import InAppLink from '../components/InAppLink'
 import AvisoExito, { type SuccessToast } from '../components/AvisoExito'
 import Insignia, { type InsigniaTono } from '../components/Insignia'
 import ErrorGenerico from '../components/ErrorGenerico'
 import SinConexion from '../components/SinConexion'
 import PinPublish from './PinPublish'
 import { telegramPreview } from './telegramPreview'
-import { CATALOG_SECTION_ID, VARIETIES, VARIETY } from '../routes'
+import { CATALOG_SECTION_ID, SETTINGS_CATALOG_MESSAGE, VARIETIES, VARIETY, pathTo } from '../routes'
 
 export const CATALOG_COPIED = 'Catálogo copiado'
 export const COPY_FAILED_MESSAGE = 'No se pudo copiar.'
 export const SHARE_FAILED_MESSAGE = 'No se pudo compartir.'
-const SETTINGS_CATALOG_MESSAGE = '/settings/catalog-message'
 export const EMPTY_STATE_TITLE = 'No hay nada en el catálogo hoy'
 export const EMPTY_STATE_DETAIL = 'No hay nada para copiar todavía'
 
@@ -196,7 +196,7 @@ export default function Catalogo() {
                       <li key={variety.id} className="catalogo__fila">
                         <span className="catalogo__fila-texto">
                           <Link
-                            to={{ pathname: VARIETY(variety.id), hash: CATALOG_SECTION_ID }}
+                            to={{ pathname: pathTo(VARIETY, { id: variety.id }), hash: CATALOG_SECTION_ID }}
                             className="catalogo__fila-nombre"
                           >
                             {variety.name}
@@ -210,9 +210,9 @@ export default function Catalogo() {
               </div>
             )}
 
-            <Link to={SETTINGS_CATALOG_MESSAGE} state={{ inApp: true }} className="boton-enlace">
+            <InAppLink to={SETTINGS_CATALOG_MESSAGE} className="boton-enlace">
               Editar encabezado y pie
-            </Link>
+            </InAppLink>
           </>
         )}
         </div>

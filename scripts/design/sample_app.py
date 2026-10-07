@@ -60,6 +60,7 @@ class Sample:
     sold_out: int
     low: int
     no_entries: int
+    withdrawal: int
     entry: int
 
 
@@ -67,8 +68,9 @@ def seed(api: Api, today: date) -> Sample:
     """Every state the design's screens show: sales today and earlier, a gift, a VIP,
     a sale without a customer, two customers owing, a later payment, a variety sold
     out, one under its threshold, one never entered, expenses in two categories and a
-    purchase this week. Week-dependent figures sit on `today`, so the week is never
-    empty whatever weekday it runs on."""
+    purchase this week, stock withdrawals of each reason (one past every lot of its
+    variety, so it carries pending cost). Week-dependent figures sit on `today`, so the
+    week is never empty whatever weekday it runs on."""
 
     def ago(days: int) -> str:
         return (today - timedelta(days=days)).isoformat()
@@ -179,6 +181,30 @@ def seed(api: Api, today: date) -> Sample:
     sale(ago(0), None, "cash", [Line(gold, "3")])
     sale(ago(0), lu, "cash", [Line(cookies, "2")])
 
+    def withdrawal(
+        when: str, reason: str, lines: list[tuple[int, str]], note: str | None = None
+    ) -> int:
+        made: int = api.call(
+            "POST",
+            "/stock/withdrawals",
+            {
+                "date": when,
+                "reason": reason,
+                "note": note,
+                "lines": [{"variety_id": v, "grams": grams} for v, grams in lines],
+            },
+        )["id"]
+        return made
+
+    # Stock withdrawals (GH-83): Golden Cookies, the variety the comparisons open, gets a
+    # promotion and an own use today, costed from its lot at $ 7.000/g, and an older
+    # promotion so its "Ver todas" has more than three rows; it stays under its threshold.
+    # Sir Jack is already sold out, so the own-use gram taken from it is beyond every lot:
+    # pending cost. Today is in this week and this month whatever weekday it runs on.
+    promotion = withdrawal(ago(0), "promotion", [(cookies, "3")], note="Fiesta de Caro")
+    withdrawal(ago(2), "promotion", [(cookies, "2")])
+    withdrawal(ago(0), "own_use", [(cookies, "2"), (jack, "1")])
+
     api.call(
         "POST",
         f"/customers/{nico}/payments",
@@ -230,6 +256,7 @@ def seed(api: Api, today: date) -> Sample:
         sold_out=jack,
         low=cookies,
         no_entries=mango,
+        withdrawal=promotion,
         entry=first_entry,
     )
 

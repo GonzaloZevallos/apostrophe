@@ -90,7 +90,7 @@ def get_owing_sales(
 def get_pricing_settings(
     request: Request, session: SessionDep, business_id: CurrentBusinessId
 ) -> PricingSettingsReader:
-    # Sales never imports `app.pricing_settings` (docs/adr/0031): `app/main.py` hangs
+    # Sales never imports `app.pricing_settings` (docs/adr/0034): `app/main.py` hangs
     # `SqlPricingSettings` on `app.state.pricing_settings` as a factory, the same shape
     # used for `line_costs`.
     factory = cast(

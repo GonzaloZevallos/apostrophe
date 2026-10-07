@@ -3,6 +3,7 @@ from collections.abc import Collection
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.db import flush_or_refuse
 from app.shared.grams import Grams
 from app.stock.adapters.tables import StockEntryRow
 from app.stock.domain.entry import Origin, StockEntry
@@ -33,7 +34,7 @@ class SqlStockEntries:
             recorded_at=entry.recorded_at,
         )
         self._session.add(row)
-        self._session.flush()
+        flush_or_refuse(self._session)
         return _entry(row)
 
     def save(self, entry: StockEntry) -> StockEntry:
@@ -46,7 +47,7 @@ class SqlStockEntries:
         row.grams_hundredths = entry.grams.hundredths
         row.total_cost = entry.total_cost
         row.note = entry.note
-        self._session.flush()
+        flush_or_refuse(self._session)
         return _entry(row)
 
     def remove(self, entry_id: int) -> None:

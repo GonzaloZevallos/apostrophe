@@ -1,5 +1,5 @@
 """The `pricing_settings` table: one row per business (CONTEXT.md: Pricing settings),
-holding the two switches. Only this hexagon writes it (docs/adr/0031)."""
+holding the two switches. Only this hexagon writes it (docs/adr/0034)."""
 
 from __future__ import annotations
 

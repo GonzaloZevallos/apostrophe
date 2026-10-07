@@ -10,7 +10,12 @@
 
 export type SuccessToast =
   | 'Cliente guardado'
+  | 'Entrada guardada'
+  | 'Entrada eliminada'
   | 'Variedad guardada'
+  | 'Variedad eliminada'
+  | 'Variedad archivada'
+  | 'Variedad restaurada'
   | 'Precio guardado'
   | 'Precio eliminado'
   | 'Gasto guardado'
@@ -26,10 +31,14 @@ export type SuccessToast =
   | 'Precios guardados'
   | 'Catálogo copiado'
   | 'Cobro eliminado'
+  | 'Cobro guardado'
+  | `Cobro guardado · queda debiendo ${string}`
   | 'Prueba enviada'
   | 'Catálogo publicado'
   | 'Entrada guardada'
   | 'Entrada eliminada'
+  | 'Retiro guardado'
+  | 'Retiro eliminado'
 
 export default function AvisoExito({ texto }: { texto: SuccessToast }) {
   return (

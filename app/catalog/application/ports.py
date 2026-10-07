@@ -21,7 +21,14 @@ class CatalogVarieties(Protocol):
         `day` or `None`."""
         ...
 
-    def exists(self, variety_id: int) -> bool: ...
+    def exists(self, variety_id: int) -> bool:
+        """The variety is this business's, archived or not."""
+        ...
+
+    def usable(self, variety_id: int) -> bool:
+        """The variety is this business's and not archived: only such a variety takes
+        attributes (docs/adr/0032)."""
+        ...
 
 
 class CatalogStock(Protocol):

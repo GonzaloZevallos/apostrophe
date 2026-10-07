@@ -4,12 +4,13 @@
  * prices, and shows no badge or mark for a rule that is off. Testing Library, `fetch` faked.
  */
 
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import App from '../../App'
 import { queryClient } from '../../queryClient'
 import { router } from '../../router'
+import { HOME, SALE_NEW } from '../../routes'
 
 const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
 const VIP_ANA = { id: 7, name: 'Ana VIP', phone: '+5491100000001', channel: null, vip: true }
@@ -50,7 +51,7 @@ function stubFetch(handlers: Record<string, () => Response>): ReturnType<typeof 
 
 async function openFor(handlers: Record<string, () => Response>): Promise<ReturnType<typeof vi.fn>> {
   const mock = stubFetch({ 'GET /auth/me': () => json(ME), 'GET /customers/7': () => json(VIP_ANA), ...handlers })
-  await act(() => router.navigate('/ventas/nueva', { state: { customerId: '7' } }))
+  await act(() => router.navigate(SALE_NEW, { state: { customerId: '7' } }))
   render(<App />)
   await screen.findByText('Nueva venta')
   await screen.findByText('Ana VIP')
@@ -59,14 +60,17 @@ async function openFor(handlers: Record<string, () => Response>): Promise<Return
 
 async function line(grams: string) {
   const user = userEvent.setup()
-  await user.selectOptions(await screen.findByLabelText('Variedad línea 1'), '3')
+  // The varieties arrive after the form mounts: wait until the line can offer them.
+  const picker = await screen.findByLabelText('Variedad línea 1')
+  await waitFor(() => expect(within(picker).getAllByRole('option').length).toBeGreaterThan(1))
+  await user.selectOptions(picker, '3')
   await user.type(screen.getByLabelText('Gramos línea 1'), grams)
 }
 
 afterEach(async () => {
   vi.unstubAllGlobals()
   queryClient.clear()
-  await act(() => router.navigate('/'))
+  await act(() => router.navigate(HOME))
 })
 
 test('a VIP customer below the bulk minimum is priced at the VIP price, with the VIP mark', async () => {

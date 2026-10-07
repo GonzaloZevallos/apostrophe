@@ -137,13 +137,13 @@ class VarietiesImport(Protocol):
     ) -> None:
         """Store the entry as the sheet says. `with_vip_price` is whether the import
         leaves Clientes VIP on: only then does an entry with a bulk price carry
-        VIP price = bulk price (a rule that is off stores nothing, docs/adr/0031)."""
+        VIP price = bulk price (a rule that is off stores nothing, docs/adr/0034)."""
         ...
 
 
 class PricingSettingsImport(Protocol):
     """The business's two pricing switches, read once at planning and switched on by
-    the write. It can never turn one off (docs/adr/0031)."""
+    the write. It can never turn one off (docs/adr/0034)."""
 
     def current(self) -> PricingSettings: ...
 

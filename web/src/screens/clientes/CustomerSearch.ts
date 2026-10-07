@@ -1,5 +1,5 @@
 /**
- * The search query the `/clientes` layout route holds (plan, "Search"): a React
+ * The search query the /clientes layout route holds (plan, "Search"): a React
  * context, never the URL and never storage, so it survives going from the list to
  * a card or a form and back without ever naming a business or a customer in a
  * link.

@@ -103,7 +103,7 @@ class VarietiesImport:
     ) -> None:
         # An imported entry with a bulk price carries VIP price = bulk price, so a VIP
         # customer keeps paying what the sheet charged — but only while the import
-        # leaves Clientes VIP on: a rule that is off stores nothing (docs/adr/0031).
+        # leaves Clientes VIP on: a rule that is off stores nothing (docs/adr/0034).
         record_imported_price_entry(
             self._varieties(),
             transaction,

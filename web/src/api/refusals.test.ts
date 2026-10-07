@@ -27,6 +27,7 @@ describe('kindOf', () => {
 describe('isGone', () => {
   test('agrees with kindOf', () => {
     expect(isGone('variety.price_entry_not_found')).toBe(true)
+    expect(isGone('variety.archived')).toBe(true)
     expect(isGone('variety.name_taken')).toBe(false)
   })
 })

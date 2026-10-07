@@ -37,7 +37,7 @@ def register_customer(
     channel: Channel | None,
     vip: bool,
 ) -> Customer:
-    # While Clientes VIP is off a customer is never created VIP (docs/adr/0031).
+    # While Clientes VIP is off a customer is never created VIP (docs/adr/0034).
     is_vip = vip and settings.current().is_vip_customers
     return _register(customers, transaction, name, phone, channel, is_vip)
 

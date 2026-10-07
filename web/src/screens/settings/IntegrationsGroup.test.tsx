@@ -4,12 +4,16 @@
  * the only save, a refusal keeps everything typed, and there is no pin status nor Publicar.
  */
 
+import { CATALOG, SETTINGS, SETTINGS_INTEGRATIONS } from '../../routes'
+import { inAppState } from '../../components/inAppState'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import IntegrationsGroup from './IntegrationsGroup'
+
+vi.mock('../../shell/useViewport', () => ({ useViewport: () => 'phone' }))
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -58,18 +62,18 @@ function renderGroup(
   vi.stubGlobal('fetch', fetchMock)
   const router = createMemoryRouter(
     [
-      { path: '/settings', element: <h1>Lista</h1> },
-      { path: '/varieties/catalog', element: <h1>Catálogo</h1> },
-      { path: '/settings/integrations', element: <IntegrationsGroup /> },
+      { path: SETTINGS, element: <h1>Lista</h1> },
+      { path: CATALOG, element: <h1>Catálogo</h1> },
+      { path: SETTINGS_INTEGRATIONS, element: <IntegrationsGroup /> },
     ],
-    { initialEntries: ['/settings', { pathname: '/settings/integrations', state: { inApp: true } }], initialIndex: 1 },
+    { initialEntries: [SETTINGS, { pathname: SETTINGS_INTEGRATIONS, state: inAppState({ pathname: SETTINGS }) }], initialIndex: 1 },
   )
   render(
     <QueryClientProvider client={new QueryClient()}>
       <RouterProvider router={router} />
     </QueryClientProvider>,
   )
-  return fetchMock
+  return Object.assign(fetchMock, { router })
 }
 
 afterEach(() => {
@@ -99,10 +103,19 @@ test('links to the catalog screen, with no pin status and no Publicar', async ()
   renderGroup(SAVED)
 
   await screen.findByLabelText('Tu chat')
-  expect(screen.getByRole('link', { name: 'Ir al catálogo' })).toHaveAttribute('href', '/varieties/catalog')
+  expect(screen.getByRole('link', { name: 'Ir al catálogo' })).toHaveAttribute('href', CATALOG)
   expect(screen.queryByRole('button', { name: 'Publicar' })).not.toBeInTheDocument()
   expect(screen.queryByText('Desactualizado')).not.toBeInTheDocument()
   expect(screen.queryByText('Al día')).not.toBeInTheDocument()
+})
+
+test('"Ir al catálogo" opens Catálogo as an in-app entry', async () => {
+  const { router } = renderGroup(SAVED)
+
+  await userEvent.click(await screen.findByRole('link', { name: 'Ir al catálogo' }))
+
+  expect(router.state.location.pathname).toBe(CATALOG)
+  expect(router.state.location.state).toEqual(inAppState({ pathname: SETTINGS_INTEGRATIONS }))
 })
 
 test('Probarlo saves, clears the token, shows the toast and the "desfijalo" line', async () => {

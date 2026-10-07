@@ -9,10 +9,12 @@
  * Telegram token or the network.
  */
 
+import { CATALOG, HOME, SETTINGS_INTEGRATIONS, VARIETIES } from '../src/routes.js'
+import { expectPath } from './helpers/url.js'
 import { expect, test } from '@playwright/test'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
-import { openMas } from './helpers/openMas.js'
+import { openCatalog } from './helpers/openMas.js'
 
 const TOKEN = '123456:fake-token-for-e2e'
 // The e2e bot's one started chat (`tests/e2e_app.py`): Buscar mi chat finds it.
@@ -33,7 +35,7 @@ test('a seller sets up the bot in Integraciones, then publishes from the catalog
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // A variety with a price, so the catalog has something to publish.
-  await page.goto('/varieties')
+  await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Rosa')
   await page.getByRole('button', { name: 'Agregá la variedad' }).click()
@@ -44,9 +46,8 @@ test('a seller sets up the bot in Integraciones, then publishes from the catalog
   await page.getByRole('button', { name: 'Guardá el precio' }).click()
   await expect(page.getByText('Precio guardado')).toBeVisible()
 
-  await openMas(page)
-  await page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /Catálogo/ }).click()
-  await expect(page).toHaveURL(/\/varieties\/catalog$/)
+  await openCatalog(page)
+  await expectPath(page, CATALOG)
 
   // The catalog screen has no bot settings; with no bot yet, Publicar is disabled and
   // says where to go. No pin yet, so it shows no status either.
@@ -55,7 +56,7 @@ test('a seller sets up the bot in Integraciones, then publishes from the catalog
   await expect(page.getByText('Al día')).toHaveCount(0)
   await expect(page.getByText('Desactualizado')).toHaveCount(0)
   await page.getByRole('link', { name: 'Integraciones' }).click()
-  await expect(page).toHaveURL(/\/settings\/integrations$/)
+  await expectPath(page, SETTINGS_INTEGRATIONS)
 
   // Enter the token and the seller's own chat; the channel is still blank, which
   // Probarlo allows (PRD, "Probarlo": "The channel chat may be blank").
@@ -99,14 +100,14 @@ test('a seller sets up the bot in Integraciones, then publishes from the catalog
 
   // Everything is saved, so leaving asks nothing: the link leads to the catalog screen.
   await page.getByRole('link', { name: 'Ir al catálogo' }).click()
-  await expect(page).toHaveURL(/\/varieties\/catalog$/)
+  await expectPath(page, CATALOG)
   await expect(page.getByRole('button', { name: 'Publicar' })).toBeEnabled()
 
   await page.getByRole('button', { name: 'Publicar' }).click()
   await expect(page.getByText('Catálogo publicado')).toBeVisible()
   await expect(page.getByText('Al día')).toBeVisible()
 
-  await page.goto('/')
+  await page.goto(HOME)
   await expect(page.getByText('Tu catálogo en Telegram está desactualizado')).toHaveCount(0)
 
   // The refused Probarlo answers 422, and Chromium logs every failed resource load by

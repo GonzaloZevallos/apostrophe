@@ -12,7 +12,9 @@ import { afterEach, expect, test, vi } from 'vitest'
 import { keys } from '../../api/keys'
 import type { PricingSettings } from '../../api/pricingSettings'
 import type { Me } from '../../api/me'
+import { inAppState } from '../../components/inAppState'
 import { SIN_CONEXION_TITULO } from '../../components/SinConexion'
+import { SETTINGS as SETTINGS_PATH, SETTINGS_PRICES } from '../../routes'
 import PricingGroup, { PAST_SALES_LINE, VIP_HELP_LINE } from './PricingGroup'
 
 function jsonResponse(status: number, body: unknown): Response {
@@ -38,13 +40,16 @@ function renderGroup(fetchMock: ReturnType<typeof vi.fn>): QueryClient {
       {
         element: <Outlet context={ME} />,
         children: [
-          { path: '/settings', element: <div>Lista de grupos</div> },
-          { path: '/settings/prices', element: <PricingGroup /> },
+          { path: SETTINGS_PATH, element: <div>Lista de grupos</div> },
+          { path: SETTINGS_PRICES, element: <PricingGroup /> },
         ],
       },
     ],
     {
-      initialEntries: ['/settings', { pathname: '/settings/prices', state: { inApp: true } }],
+      initialEntries: [
+        SETTINGS_PATH,
+        { pathname: SETTINGS_PRICES, state: inAppState({ pathname: SETTINGS_PATH }) },
+      ],
       initialIndex: 1,
     },
   )

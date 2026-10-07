@@ -22,9 +22,11 @@
  * first Publicar").
  */
 
-import { useState } from 'react'
+import { CATALOG, CUSTOMER, CUSTOMER_PAYMENT, CUSTOMERS, SETTINGS, pathTo } from '../routes'
+import { Fragment, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Link, useOutletContext } from 'react-router'
+import { useOutletContext } from 'react-router'
+import InAppLink from '../components/InAppLink'
 import { get, NetworkError } from '../api/client'
 import { keys } from '../api/keys'
 import type { Me } from '../api/me'
@@ -43,7 +45,6 @@ import { formatDateShort } from '../format/dates'
 import { formatGrams, formatMoney, formatSignedMoney } from '../format/money'
 import { initialsOf } from '../shell/initials'
 import { detailFor, sideNoteFor } from '../stock/detail'
-import { CATALOG } from '../routes'
 
 export const EMPTY_TITLE = 'Arrancá por las variedades'
 export const EMPTY_DETAIL =
@@ -51,6 +52,14 @@ export const EMPTY_DETAIL =
 export const PINNED_CATALOG_OUT_OF_DATE = 'Tu catálogo en Telegram está desactualizado'
 
 const PENDING_NOTE = 'incluye costo pendiente'
+
+/** Faltante de stock, then Promoción and Consumo propio, each on its own line and only
+ * when the period has one (`null` otherwise), right before Gastos. */
+const COST_LINES: Array<{ key: 'shortfall' | 'promotion' | 'own_use'; label: string }> = [
+  { key: 'shortfall', label: 'Faltante de stock' },
+  { key: 'promotion', label: 'Promoción' },
+  { key: 'own_use', label: 'Consumo propio' },
+]
 
 const TAB_LABEL: Record<PanelTab, string> = { today: 'Hoy', week: 'Semana', month: 'Mes' }
 const TABS: PanelTab[] = ['today', 'week', 'month']
@@ -116,20 +125,19 @@ export default function Inicio() {
             <span className="encabezado__negocio">{me.business_name}</span>
             <span className="encabezado__titulo">Inicio</span>
           </div>
-          <Link
-            to="/settings"
-            state={{ inApp: true }}
+          <InAppLink
+            to={SETTINGS}
             aria-label={`Configuración de ${me.business_name}`}
             className="inicio__avatar"
           >
             {initialsOf(me.business_name)}
-          </Link>
+          </InAppLink>
         </div>
 
         {pinOutOfDate && (
-          <Link to={CATALOG} className="aviso-ambar" role="status">
+          <InAppLink to={CATALOG} className="aviso-ambar" role="status">
             <span className="aviso-ambar__titulo">{PINNED_CATALOG_OUT_OF_DATE}</span>
-          </Link>
+          </InAppLink>
         )}
         {varietiesQuery.data !== undefined && !hasPricedVariety && (
           <div className="estado-vacio">
@@ -206,15 +214,22 @@ function Panel({
           <span className="panel-lista__valor">{formatMoney(period.cost_of_goods)}</span>
         </div>
         {period.pending_cost && <span className="pie">{PENDING_NOTE}</span>}
-        {period.shortfall !== null && (
-          <>
-            <div className="panel-lista__fila">
-              <span>Faltante de stock</span>
-              <span className="panel-lista__valor">{formatMoney(period.shortfall.amount)}</span>
-            </div>
-            {period.shortfall.pending && <span className="pie">{PENDING_NOTE}</span>}
-          </>
-        )}
+        {COST_LINES.map(({ key, label }) => {
+          // Hoy never shows the withdrawal lines, even when the API answers one for
+          // today (results.md): they belong to Semana and Mes.
+          if (tab === 'today' && key !== 'shortfall') return null
+          const line = period[key]
+          if (line === null) return null
+          return (
+            <Fragment key={key}>
+              <div className="panel-lista__fila">
+                <span>{label}</span>
+                <span className="panel-lista__valor">{formatMoney(line.amount)}</span>
+              </div>
+              {line.pending && <span className="pie">{PENDING_NOTE}</span>}
+            </Fragment>
+          )
+        })}
         <div className="panel-lista__fila">
           <span>Gastos</span>
           <span className="panel-lista__valor">{formatMoney(period.expenses)}</span>
@@ -277,20 +292,29 @@ function TeDebenBlock({ debts }: { debts: PanelDebts }) {
 
   return (
     <div className="bloque-deben">
-      <Link to="/clientes/deben" className="bloque-deben__titulo">
+      <InAppLink to={CUSTOMERS} className="bloque-deben__titulo">
         Te deben
-      </Link>
+      </InAppLink>
       <span className="cifra-xl">{formatMoney(debts.total_owed)}</span>
       <span className="pie">
         {salesCount(debts.sales_owing_count)}
         {debts.oldest !== null && ` · desde ${formatDateShort(debts.oldest)}`}
       </span>
       {debts.teaser.map((row) => (
-        <Link key={row.customer_id} to={`/clientes/${row.customer_id}`} className="bloque-deben__fila">
-          <span>{row.name}</span>
-          <span>{formatMoney(row.balance)}</span>
-          <span className="pie">{`desde ${formatDateShort(row.owing_since)}`}</span>
-        </Link>
+        <div key={row.customer_id} className="bloque-deben__fila">
+          <InAppLink to={pathTo(CUSTOMER, { id: row.customer_id })} className="bloque-deben__datos">
+            <span>{row.name}</span>
+            <span>{formatMoney(row.balance)}</span>
+            <span className="pie">{`desde ${formatDateShort(row.owing_since)}`}</span>
+          </InAppLink>
+          <InAppLink
+            to={pathTo(CUSTOMER_PAYMENT, { id: row.customer_id })}
+            aria-label={`Cobrar a ${row.name}`}
+            className="cobrar cobrar--acento"
+          >
+            Cobrar
+          </InAppLink>
+        </div>
       ))}
     </div>
   )

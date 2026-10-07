@@ -87,7 +87,7 @@ def write_import(
 
     # First, before any writer: the switches the sheet needs, stored OR needed, so
     # nothing is ever turned off and a switch turned on since the plan is no refusal.
-    # Every row is priced with what the plan was priced with (docs/adr/0031).
+    # Every row is priced with what the plan was priced with (docs/adr/0034).
     pricing_settings.switch_on(plan.needs.is_bulk_pricing, plan.needs.is_vip_customers)
     leaves_vip_on = pricing_settings.current().is_vip_customers
 

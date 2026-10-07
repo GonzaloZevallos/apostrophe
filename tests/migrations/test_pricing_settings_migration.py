@@ -1,5 +1,5 @@
-"""Migration 0012 (docs/adr/0031) through the real `upgrade_to_head` over a seeded
-0011 database: one settings row per existing business with both switches on, the VIP
+"""Migration 0014 (docs/adr/0034) through the real `upgrade_to_head` over a seeded
+0013 database: one settings row per existing business with both switches on, the VIP
 price copied from the bulk price, every stored sale line untouched, and the 0
 differences check for existing VIP pricing."""
 
@@ -85,7 +85,7 @@ def _new_rule_both_on(
     gift: bool = False,
     special_price: int | None = None,
 ) -> Outcome:
-    """The rule of docs/adr/0031 with both switches on, written out as data: gift, then
+    """The rule of docs/adr/0034 with both switches on, written out as data: gift, then
     special price, then the lowest of list, bulk (at the minimum) and VIP (a VIP customer
     with a VIP price); a VIP-bulk tie is stored as VIP."""
     first = _gift_or_special(gift, special_price, grams)
@@ -181,7 +181,7 @@ def _rows(engine: Engine, statement: str) -> list[tuple[object, ...]]:
 
 def _migrate_seeded(tmp_path: Path) -> Engine:
     engine = make_engine(f"sqlite:///{tmp_path / 'apostrophe.db'}")
-    _upgrade_to(engine, "0011")
+    _upgrade_to(engine, "0013")
     _seed(engine)
     return engine
 
@@ -307,7 +307,7 @@ def test_the_downgrade_drops_the_table_and_the_column(tmp_path: Path) -> None:
     engine = _migrate_seeded(tmp_path)
     upgrade_to_head(engine)
 
-    _downgrade_to(engine, "0011")
+    _downgrade_to(engine, "0013")
 
     inspector = inspect(engine)
     assert "pricing_settings" not in inspector.get_table_names()
@@ -323,7 +323,7 @@ def test_the_downgrade_drops_the_table_and_the_column(tmp_path: Path) -> None:
 def test_it_runs_over_libsql_too(tmp_path: Path) -> None:
     pytest.importorskip("sqlalchemy_libsql")
     engine = make_engine(f"sqlite+libsql:///{tmp_path / 'apostrophe.db'}")
-    _upgrade_to(engine, "0011")
+    _upgrade_to(engine, "0013")
     _seed(engine)
 
     upgrade_to_head(engine)
