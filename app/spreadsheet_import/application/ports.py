@@ -275,3 +275,13 @@ class BusinessDirectory(Protocol):
         """`None` when there is no such business; the refusal that stops the run
         before any sheet is read."""
         ...
+
+
+class OnboardingEnding(Protocol):
+    """The Onboarding's end (docs/adr/0032): a successful import ends it. Nothing else
+    of the Onboarding is touched, and eligibility never looks at its state."""
+
+    def imported(self, at: datetime, transaction: Transaction) -> None:
+        """Ends this business's Onboarding at `at` while it is open; does nothing when
+        it is over already or the business was never offered one. Never commits."""
+        ...
