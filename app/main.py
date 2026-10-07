@@ -15,6 +15,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app.accounts.adapters.deps import require_session
+from app.accounts.adapters.onboarding_facts import SqlUserFacts
 from app.accounts.adapters.router import public_router as accounts_public_router
 from app.accounts.adapters.router import router as accounts_router
 from app.accounts.domain.password import PasswordHasher
@@ -30,11 +31,13 @@ from app.expenses.adapters.router import router as expenses_router
 from app.http_errors import Refused
 from app.migrations.runner import upgrade_to_head
 from app.onboarding.adapters.opening import OnboardingOpening
+from app.onboarding.adapters.router import router as onboarding_router
 from app.payments.adapters.payments_ledger import SqlPaymentsLedger
 from app.payments.adapters.results_ports import SqlDebtSummary
 from app.payments.adapters.router import customers_router as payments_customers_router
 from app.payments.adapters.router import router as payments_router
 from app.payments.adapters.settlements import SqlBalances, SqlOwingSales
+from app.pinned_catalog.adapters.onboarding_facts import SqlBotFacts
 from app.pinned_catalog.adapters.router import router as pinned_catalog_router
 from app.pinned_catalog.adapters.telegram_holder import PinnedCatalogTelegram, TelegramBackend
 from app.pinned_catalog.adapters.telegram_http import HttpTelegram
@@ -50,9 +53,11 @@ from app.settings import Settings
 from app.static_spa import FrontNavigation, MissingBuiltFront, SpaStatic, api_segments
 from app.stock.adapters.draw_costs import SqlDrawCosts
 from app.stock.adapters.line_costs import SqlLineCosts
+from app.stock.adapters.onboarding_facts import SqlStockFacts
 from app.stock.adapters.purchases import SqlPurchases
 from app.stock.adapters.router import router as stock_router
 from app.stock.adapters.stock_figures import SqlStockFigures
+from app.varieties.adapters.onboarding_facts import SqlVarietyFacts
 from app.varieties.adapters.router import router as varieties_router
 
 
@@ -199,6 +204,13 @@ def create_app(
     app.state.payments_ledger = SqlPaymentsLedger
     app.state.expenses_ledger = SqlExpensesLedger
     app.state.purchases_ledger = SqlPurchases
+    # The Onboarding reads each owner's facts only through its own ports (ADR-0006,
+    # ADR-0032), the same `(Session, business_id)` factory shape as above; the varieties
+    # one also takes today, since "priced today" is a fact of the day.
+    app.state.onboarding_variety_facts = SqlVarietyFacts
+    app.state.onboarding_stock_facts = SqlStockFacts
+    app.state.onboarding_bot_facts = SqlBotFacts
+    app.state.onboarding_user_facts = SqlUserFacts
 
     @app.get("/health", tags=["health"])
     def health() -> dict[str, str]:
@@ -222,6 +234,7 @@ def create_app(
     app.include_router(payments_customers_router, dependencies=gated)
     app.include_router(pinned_catalog_router, dependencies=gated)
     app.include_router(results_router, dependencies=gated)
+    app.include_router(onboarding_router, dependencies=gated)
 
     if settings.web_dist is not None:
         if not (settings.web_dist / "index.html").is_file():
