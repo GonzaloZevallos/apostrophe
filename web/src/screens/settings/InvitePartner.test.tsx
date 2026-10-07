@@ -29,8 +29,8 @@ afterEach(() => {
 })
 
 test('a tap creates one link through the route and tells the parent', async () => {
-  const fetchMock = vi.fn().mockResolvedValue(
-    jsonResponse(201, { url: URL_WITH_TOKEN, expires_at: '2026-10-09T00:00:00Z' }),
+  const fetchMock = vi.fn((_url: string, _init?: RequestInit) =>
+    Promise.resolve(jsonResponse(201, { url: URL_WITH_TOKEN, expires_at: '2026-10-09T00:00:00Z' })),
   )
   vi.stubGlobal('fetch', fetchMock)
   const onLinkCreated = vi.fn()
@@ -40,8 +40,8 @@ test('a tap creates one link through the route and tells the parent', async () =
 
   expect(await screen.findByText(URL_WITH_TOKEN)).toBeInTheDocument()
   expect(fetchMock).toHaveBeenCalledTimes(1)
-  expect(fetchMock.mock.calls[0][0]).toBe('/invitations')
-  expect(fetchMock.mock.calls[0][1]).toMatchObject({ method: 'POST' })
+  expect(fetchMock.mock.calls[0]?.[0]).toBe('/invitations')
+  expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({ method: 'POST' })
   expect(onLinkCreated).toHaveBeenCalledTimes(1)
   expect(screen.queryByText('Invitación lista')).not.toBeInTheDocument()
 })
