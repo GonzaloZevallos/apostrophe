@@ -43,6 +43,7 @@ from app.pinned_catalog.adapters.upkeep_trigger import schedule_upkeep
 from app.pinned_catalog.application.channel_telegram import ChannelTelegram
 from app.pinned_catalog.application.push import BusinessLocks
 from app.pricing_settings.adapters.opening import PricingSettingsOpening
+from app.pricing_settings.adapters.sql_pricing_settings import SqlPricingSettings
 from app.results.adapters.router import router as results_router
 from app.sales.adapters.router import router as sales_router
 from app.sales.adapters.sales_ledger import SqlSalesLedger
@@ -169,6 +170,9 @@ def create_app(
     # `get_business_opening` already does for `business_opening` — not added here, so
     # this line is the one seam the sales-costs subtask reaches it through.
     app.state.line_costs = SqlLineCosts
+    # The same shape again: sales reads the switches only through its own
+    # `PricingSettingsReader` port, never `app.pricing_settings` (docs/adr/0031).
+    app.state.pricing_settings = SqlPricingSettings
     # Two more factories of the same shape: customers reaches a balance, and sales a
     # "still owing" mark, only through `Balances`/`OwingSales`, never `app.payments`
     # directly (the plan's invariant). `app/customers/adapters/router.py` and

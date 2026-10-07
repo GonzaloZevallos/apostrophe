@@ -15,6 +15,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from datetime import date
 
+from app.shared.pricing_settings import PricingSettings
 from app.spreadsheet_import.application import ports
 from app.spreadsheet_import.domain import plan as domain_plan
 from app.spreadsheet_import.domain.rows import (
@@ -187,9 +188,7 @@ def _customer_check_result(
     both are broken (ADR-0021: the import never reads a customer code string to
     decide where it goes)."""
     if isinstance(result, ports.CustomerRefusals):
-        return domain_plan.CustomerRefusal(
-            name_code=result.name_code, phone_code=result.phone_code
-        )
+        return domain_plan.CustomerRefusal(name_code=result.name_code, phone_code=result.phone_code)
     return domain_plan.CustomerKey(phone_key=result.phone_key)
 
 
@@ -254,6 +253,12 @@ def _check_category_names(
     return result
 
 
+# The switches every row is priced with until the plan works them out from the sheet
+# (docs/adr/0031): both on, with VIP price = bulk price on every imported entry, which
+# is the pricing the import has always applied (VIP pays bulk).
+PROVISIONAL_SETTINGS = PricingSettings(is_bulk_pricing=True, is_vip_customers=True)
+
+
 def _check_sales(
     split_result: domain_plan.Split,
     variety_names: Mapping[str, domain_plan.VarietyKey | domain_plan.Refusal],
@@ -271,7 +276,9 @@ def _check_sales(
         return {}
     price_history_rows, _ = _valid_price_history(split_result.price_history, variety_names)
     port_inputs = [_to_port_sale_input(sale_input) for _, sale_input in pairs]
-    results = sales.check_sales(price_history_rows, price_history_keys, port_inputs, today)
+    results = sales.check_sales(
+        price_history_rows, price_history_keys, port_inputs, today, PROVISIONAL_SETTINGS
+    )
     return {
         ref: domain_plan.SaleCheck(total=result.total, refusal=_opt_refusal(result.refusal))
         for (ref, _), result in zip(pairs, results, strict=True)

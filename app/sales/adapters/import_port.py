@@ -25,6 +25,7 @@ from app.sales.adapters.tables import SaleRow
 from app.sales.application.record_sale import LineInput, record_sale
 from app.sales.domain.pricing import SaleRuleBroken
 from app.sales.domain.sale import CustomerFact, LineRequest, PaymentMethod, Sale
+from app.shared.pricing_settings import PricingSettings
 from app.shared.transaction import Transaction
 from app.spreadsheet_import.application.ports import Refusal, SaleCheck, SaleCheckInput
 from app.spreadsheet_import.domain.plan import OnTheSpotMethod
@@ -77,6 +78,7 @@ class SalesImport:
         variety_keys: Mapping[str, str],
         sales: Sequence[SaleCheckInput],
         today: date,
+        settings: PricingSettings,
     ) -> Sequence[SaleCheck]:
         ordinals = _assign_ordinals(price_history, variety_keys, sales)
         book = PlannedPriceBook(price_history, variety_keys, ordinals)
@@ -90,6 +92,7 @@ class SalesImport:
                     sale_date=sale.sale_date,
                     today=today,
                     customer_id=_CHECK_CUSTOMER_ID if sale.has_customer else None,
+                    settings=settings,
                     customer=(
                         CustomerFact(id=_CHECK_CUSTOMER_ID, vip=sale.vip)
                         if sale.has_customer
@@ -124,11 +127,13 @@ class SalesImport:
         recorded_at: datetime,
         today: date,
         transaction: Transaction,
+        settings: PricingSettings,
     ) -> int:
         stored = record_sale(
             SqlSales(self._session, self._business_id),
             SqlPriceBook(self._session, self._business_id),
             _FixedVip(sale.vip),
+            _FixedSettings(settings),
             transaction,
             sale_date=sale.sale_date,
             today=today,
@@ -148,6 +153,17 @@ class SalesImport:
             recorded_at=recorded_at,
         )
         return stored.total
+
+
+class _FixedSettings:
+    """A `PricingSettingsReader` of one fixed answer: the switches the import leaves,
+    so the write prices exactly as the check did."""
+
+    def __init__(self, settings: PricingSettings) -> None:
+        self._settings = settings
+
+    def current(self) -> PricingSettings:
+        return self._settings
 
 
 class _FixedVip:

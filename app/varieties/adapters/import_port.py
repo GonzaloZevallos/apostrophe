@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
 from app.shared.transaction import Transaction
@@ -101,6 +101,18 @@ class VarietiesImport:
             row.bulk_price,
             row.bulk_minimum,
         )
+        if row.bulk_price is not None:
+            # An imported entry with a bulk price carries VIP price = bulk price
+            # (docs/adr/0031), so a VIP customer keeps paying what the sheet charged.
+            self._session.execute(
+                update(PriceEntryRow)
+                .where(
+                    PriceEntryRow.business_id == self._business_id,
+                    PriceEntryRow.variety_id == variety_id,
+                    PriceEntryRow.effective_from == row.effective,
+                )
+                .values(vip_price=row.bulk_price)
+            )
 
     def _varieties(self) -> Varieties:
         return SqlVarieties(self._session, self._business_id)

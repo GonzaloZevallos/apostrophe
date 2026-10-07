@@ -37,7 +37,9 @@ from app.sales.domain.sale import (
     SaleLine,
 )
 from app.shared.grams import Grams
+from app.shared.pricing_settings import PricingSettings
 
+BOTH_ON = PricingSettings(is_bulk_pricing=True, is_vip_customers=True)
 TODAY = date(2026, 6, 15)
 RECORDED_AT = datetime(2026, 6, 15, 12, 0, tzinfo=UTC)
 
@@ -76,6 +78,7 @@ def _record(
         today=TODAY,
         customer_id=customer_id,
         customer=customer,
+        settings=BOTH_ON,
         shipping_charged=shipping_charged,
         note=note,
         lines=lines if lines is not None else [_line()],
