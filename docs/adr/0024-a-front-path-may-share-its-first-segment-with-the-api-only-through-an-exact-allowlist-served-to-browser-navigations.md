@@ -61,3 +61,95 @@ A future `/expenses/:id` front route answers the API's 404 on reload until its e
 entry is added to `SHARED_FRONT_PATHS`; the entry belongs in the same change as the
 route. A screen moved without its entry is caught only by this ADR and the contract
 test above.
+
+## Amendment (2026-10-06, GH-59): whole-path templates, the English routes and every old Spanish path
+
+**Supersedes** the "An allowlist as data" and "A legacy table as data" bullets above, and
+the sentence "Nothing is matched by prefix, so `/expenses/5` ... keep being the API's".
+Everything else in the Decision (the `Accept` gate, the slash rule, the one layer outside
+routing, the replaced contract test) stands. The English routes of the navigation
+redesign put `/sales`, `/customers` and `/varieties` on first segments the API also
+names, and the details with an id (`/sales/{id}`, `/customers/{id}`, `/varieties/{id}`)
+need a pattern, not an exact path.
+
+### The template grammar
+
+A template is a path of `/`-separated segments. Each segment is a literal, or the single
+placeholder `{id}`, which matches one or more ASCII digits (`[0-9]+`) and nothing else.
+`matches_template(path, template)` in `app/static_spa.py` compares the whole path segment
+by segment: no prefix, no regex, no other placeholder. The same segment count is
+required, and an empty segment never matches. It returns the captured id (or `None` for
+no match), and it is the only place a request path is matched against a front path, for
+both tables below. The literals `new`, `catalog`, `entries`, `edit` and `payment` are
+never an id, so `/customers/new` is a form and never customer `new`.
+
+### `SHARED_FRONT_PATHS`
+
+A frozenset of templates, served the shell under the same gate as before (`GET`/`HEAD`
+with `Accept` containing `text/html`; the same path plus one slash is a 308 to the
+slashless path):
+
+- `/sales`, `/sales/new`, `/sales/{id}`
+- `/customers`, `/customers/new`, `/customers/{id}`, `/customers/{id}/edit`,
+  `/customers/{id}/payment`
+- `/varieties`, `/varieties/{id}`, `/varieties/catalog`, `/varieties/entries`,
+  `/varieties/entries/new`, `/varieties/entries/{id}`
+- `/expenses`, `/expenses/new`
+- `/analysis`
+
+### `LEGACY_FRONT_PATHS`
+
+A tuple of (old template, new template) pairs. A hit, or the old path plus one trailing
+slash, answers 308 for any method and any `Accept`, carries the captured id into the new
+path and keeps the query string. A Spanish path that matches no row (`/ventas/basura`) is
+not redirected: the front's own `*` route sends it to Inicio. The 20 rows:
+
+| Old | New |
+| --- | --- |
+| `/ventas` | `/sales` |
+| `/ventas/nueva` | `/sales/new` |
+| `/ventas/{id}` | `/sales/{id}` |
+| `/clientes` | `/customers` |
+| `/clientes/deben` | `/customers` |
+| `/clientes/nuevo` | `/customers/new` |
+| `/clientes/{id}` | `/customers/{id}` |
+| `/clientes/{id}/editar` | `/customers/{id}/edit` |
+| `/mi-stock` | `/varieties` |
+| `/mi-stock/nueva-entrada` | `/varieties/entries/new` |
+| `/mi-stock/entradas/{id}` | `/varieties/entries/{id}` |
+| `/variedades` | `/varieties` |
+| `/variedades/{id}` | `/varieties/{id}` |
+| `/analisis` | `/analysis` |
+| `/gastos` | `/expenses` |
+| `/gastos/categorias` | `/settings/expense-categories` |
+| `/mas` | `/more` |
+| `/catalogo` | `/varieties/catalog` |
+| `/negocio` | `/settings` |
+| `/entrar` | `/login` |
+
+Front code never redirects a Spanish path: this table is the only place one is.
+
+### What it widens (section 8)
+
+Anyone, signed in or not, who opens one of these API-shaped URLs in a browser's address
+bar now gets the static shell, which holds no data. No API consumer sends `text/html`:
+`api/client.ts` sends `application/json`, and TestClient, httpx and curl send `*/*`, so
+no JSON caller is shadowed and the API's answer to every other method or `Accept` is
+unchanged. The cost is constant, a few string comparisons per request, and does not grow
+with data. No route is added: the OpenAPI document is unchanged.
+
+### Rows that lose something
+
+A 308 is cached by browsers and cannot be undone from the server. Three rows send a
+whole old screen to a place that is not its twin, and stay as they are for good:
+
+- `/clientes/deben` → `/customers`: the old Te deben list is now Clientes.
+- `/mi-stock` → `/varieties`: the stock list now lives at `/varieties/entries`; the old
+  address lands on Variedades.
+- `/entrar` → `/login`: the sign-in screen's English path.
+
+### Contract test
+
+`tests/test_refusal_codes.py` keeps the rule: the API's first segments intersected with
+`contract.json`'s `frontSegments` must be first segments of `SHARED_FRONT_PATHS`.
+`sales`, `customers`, `varieties`, `analysis` and `login` join `frontSegments`.

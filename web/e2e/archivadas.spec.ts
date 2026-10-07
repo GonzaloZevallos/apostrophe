@@ -7,6 +7,7 @@
  */
 
 import { expect, test } from '@playwright/test'
+import { SALE_NEW, VARIETIES } from '../src/routes.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
 import { signUpNewBusiness } from './helpers/signup.js'
@@ -32,7 +33,7 @@ for (const viewport of VIEWPORTS) {
       })
 
       async function addVariety(name: string): Promise<void> {
-        await page.goto('/varieties')
+        await page.goto(VARIETIES)
         await page.getByRole('link', { name: 'Nueva variedad' }).click()
         await page.getByLabel('Nombre').fill(name)
         await page.getByRole('button', { name: 'Agregá la variedad' }).click()
@@ -41,7 +42,7 @@ for (const viewport of VIEWPORTS) {
 
       // A fresh variety has no history: Eliminar variedad, one confirmation.
       await addVariety('Nube')
-      await page.goto('/varieties')
+      await page.goto(VARIETIES)
       await page.getByRole('link', { name: /Nube/ }).click()
       await expect(page.getByRole('button', { name: 'Archivar variedad' })).toHaveCount(0)
       await page.getByRole('button', { name: 'Eliminar variedad' }).click()
@@ -51,17 +52,17 @@ for (const viewport of VIEWPORTS) {
 
       // One with a sale has history: Archivar variedad, one confirmation.
       await addVariety('Rosa')
-      await page.goto('/varieties')
+      await page.goto(VARIETIES)
       await page.getByRole('link', { name: /Rosa/ }).click()
       await page.getByRole('link', { name: 'Nuevo precio' }).click()
       await page.getByLabel(/^Precio de lista/).fill('9000')
       await page.getByRole('button', { name: 'Guardá el precio' }).click()
       await expect(page.getByText('Precio guardado')).toBeVisible()
-      await page.goto('/ventas/nueva')
+      await page.goto(SALE_NEW)
       await fillSaleLine(page, 1, { variety: 'Rosa', grams: '4', gift: true })
       await page.getByRole('button', { name: 'Guardá la venta' }).click()
       await expect(page.getByText('Venta guardada')).toBeVisible()
-      await page.goto('/varieties')
+      await page.goto(VARIETIES)
       await page.getByRole('link', { name: /Rosa/ }).click()
       await expect(page.getByRole('button', { name: 'Eliminar variedad' })).toHaveCount(0)
       await page.getByRole('button', { name: 'Archivar variedad' }).click()
@@ -70,7 +71,7 @@ for (const viewport of VIEWPORTS) {
       await expect(page.getByRole('link', { name: /Rosa/ })).toHaveCount(0)
 
       // Found in Archivadas (1); its page is read-only and Restaurar is the one action.
-      await page.goto('/varieties')
+      await page.goto(VARIETIES)
       await page.getByRole('link', { name: /Archivadas \(1\)/ }).click()
       if (computer) {
         // The two panes select the first archived variety by name on their own.
@@ -101,7 +102,7 @@ for (const viewport of VIEWPORTS) {
       await page.getByRole('button', { name: 'Restaurar' }).last().click()
       await expect(page.getByText('Variedad restaurada')).toBeVisible()
       await expect(page.getByRole('button', { name: 'Archivar variedad' })).toBeVisible()
-      await page.goto('/varieties')
+      await page.goto(VARIETIES)
       await expect(page.getByRole('link', { name: /Rosa/ })).toBeVisible()
       await expect(page.getByText(/Archivadas \(/)).toHaveCount(0)
 

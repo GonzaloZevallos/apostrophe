@@ -11,7 +11,7 @@
 
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link, useOutletContext } from 'react-router'
+import { useOutletContext } from 'react-router'
 import { ApiError, NetworkError, get } from '../api/client'
 import { invalidateResource, keys } from '../api/keys'
 import type { Me } from '../api/me'
@@ -20,14 +20,16 @@ import { type Movement, type StockEntry, deleteEntry, readMovements, readStock }
 import ConfirmDialog from '../components/ConfirmDialog'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import GoneNotice from '../components/GoneNotice'
+import { useGoneNotice } from '../components/goneExit'
 import GoneScreen from '../components/GoneScreen'
+import InAppLink from '../components/InAppLink'
 import Loading from '../components/Loading'
 import SinConexion from '../components/SinConexion'
-import { useHistoryBack } from '../components/useHistoryBack'
+import { useBackOr } from '../components/useBackOr'
 import { useFlash } from '../flash/useFlash'
 import { formatDate } from '../format/dates'
 import { formatGrams, formatMoney } from '../format/money'
-import { ENTRY, VARIETIES, VARIETY, withdrawalPath } from '../routes'
+import { STOCK_ENTRY, VARIETIES, VARIETY, WITHDRAWAL, pathTo } from '../routes'
 import type { Variety } from './Variedades'
 import { ORIGIN_LABEL } from './originLabel'
 import { REASON_LABEL } from './withdrawals/withdrawalReasons'
@@ -51,7 +53,7 @@ export default function EntriesList({ varietyId }: Props) {
   const me = useOutletContext<Me>()
   const queryClient = useQueryClient()
   const flash = useFlash()
-  const back = useHistoryBack(varietyId === undefined ? VARIETIES : VARIETY(varietyId))
+  const back = useBackOr(varietyId === undefined ? VARIETIES : pathTo(VARIETY, { id: varietyId }))
 
   const stockQuery = useQuery({ queryKey: keys.stock(), queryFn: readStock })
   const varietiesQuery = useQuery({
@@ -74,6 +76,7 @@ export default function EntriesList({ varietyId }: Props) {
   const [offline, setOffline] = useState(false)
   const [failed, setFailed] = useState(false)
   const [goneNotice, setGoneNotice] = useState(false)
+  const goneExited = useGoneNotice()
 
   const error = stockQuery.error ?? varietyQuery.error ?? movementsQuery.error
   if (varietyQuery.error instanceof ApiError && isGone(varietyQuery.error.code)) {
@@ -127,7 +130,7 @@ export default function EntriesList({ varietyId }: Props) {
       <h1 className="encabezado__titulo">
         {varietyId === undefined ? 'Todas las entradas' : 'Entradas'}
       </h1>
-      {goneNotice && <GoneNotice />}
+      {(goneNotice || goneExited) && <GoneNotice />}
       {offline && <SinConexion />}
       {failed && <span className="campo__error" role="alert">{ERROR_GENERICO_MENSAJE}</span>}
 
@@ -141,7 +144,7 @@ export default function EntriesList({ varietyId }: Props) {
           {rows.map((entry) =>
             entry.kind === 'withdrawal' ? (
               <li key={`withdrawal-${entry.id}`} className="fila-entrada">
-                <Link to={withdrawalPath(entry.id)} className="fila-entrada__enlace">
+                <InAppLink to={pathTo(WITHDRAWAL, { id: entry.id })} className="fila-entrada__enlace">
                   <span className="fila-entrada__texto">
                     <span className="fila-entrada__linea1">
                       {formatDate(entry.date, me.today)} · {nameOf(varietyId ?? 0)}
@@ -150,7 +153,7 @@ export default function EntriesList({ varietyId }: Props) {
                       {REASON_LABEL[entry.reason]} · {`−${formatGrams(entry.grams)}`}
                     </span>
                   </span>
-                </Link>
+                </InAppLink>
               </li>
             ) : (
               <li key={`entry-${entry.id}`} className="fila-entrada">
@@ -177,7 +180,7 @@ export default function EntriesList({ varietyId }: Props) {
                   )}
                 </span>
                 <span className="fila-entrada__acciones">
-                  <Link to={ENTRY(entry.id)}>Editar</Link>
+                  <InAppLink to={pathTo(STOCK_ENTRY, { id: entry.id })}>Editar</InAppLink>
                   <button type="button" className="boton--enlace" onClick={() => setConfirming(entry)}>
                     Borrar
                   </button>

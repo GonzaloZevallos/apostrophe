@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Precios en compu · formulario sobre el riel</title>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body { margin: 0 }
+a { color: #1B4FA8 } a:hover { color: #231E18 }
+</style>
+</helmet>
+
+<div style="width: 1280px; height: 920px; box-sizing: border-box; background: #FCFBF8; border: 1px solid #EBE5DA; border-radius: 12px; position: relative; display: flex; overflow: hidden; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: #231E18">
+  <div style="width: 256px; border-right: 1px solid #EBE5DA; opacity: 0.4; padding: 26px 16px; box-sizing: border-box">
+    <span style="display: block; font-size: 15px; font-weight: 600">apostrophe’</span>
+  </div>
+  <div style="flex: 1; opacity: 0.4; padding: 28px 32px">
+    <span style="font-size: 28px; font-weight: 600">Precios</span>
+  </div>
+  <div style="position: absolute; inset: 0; background: rgba(35,30,24,0.28)"></div>
+  <div style="position: absolute; top: 80px; left: 50%; transform: translateX(-50%); width: 480px; background: #FCFBF8; border-radius: 24px; box-shadow: 0 24px 48px rgba(35,30,24,0.22); overflow: hidden">
+    <div style="padding: 22px 24px 18px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #EBE5DA"><span style="flex: 1; font-size: 19px; font-weight: 600">Precios</span><span style="font-size: 15px; font-weight: 600; color: #706659">Cerrar</span></div>
+    <div style="padding: 20px 24px; display: flex; flex-direction: column; gap: 14px; max-height: 760px; overflow-y: auto">
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 44px"><span style="font-size: 16px">Precio por cantidad</span><span style="display: flex; align-items: center; width: 52px; height: 32px; box-sizing: border-box; padding: 4px; border-radius: 999px; border: 2px solid #1B4FA8; background: #1B4FA8"><span style="width: 20px; height: 20px; border-radius: 999px; background: #FCFBF8; margin-left: 20px"></span></span></div>
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 44px"><span style="font-size: 16px">Clientes VIP</span><span style="display: flex; align-items: center; width: 52px; height: 32px; box-sizing: border-box; padding: 4px; border-radius: 999px; border: 2px solid #706659; background: #FCFBF8"><span style="width: 20px; height: 20px; border-radius: 999px; background: #706659; margin-left: 0"></span></span></div>
+    <span style="font-size: 13px; color: #706659; line-height: 1.5">Cada variedad necesita su precio VIP: sin él, un cliente VIP paga como cualquiera.</span>
+    <span style="font-size: 13px; color: #706659; line-height: 1.5">Las ventas ya hechas conservan el precio con el que se registraron. Apagar una opción no borra nada.</span>
+  <span style="display: flex; align-items: center; justify-content: center; height: 54px; border-radius: 999px; background: #231E18; color: #FCFBF8; font-size: 16px; font-weight: 600">Guardá los precios</span>
+  <span style="display: block; font-size: 13px; color: #706659; margin: 20px 24px 6px">Al guardar</span>
+  <div style="background: #231E18; border-radius: 18px; padding: 15px 18px; display: flex; align-items: center; gap: 12px"><span style="flex: 1; font-size: 15px; font-weight: 500; color: #FCFBF8">Precios guardados</span></div>
+  <span style="display: block; font-size: 13px; color: #706659; margin: 20px 24px 6px">Al cerrar con cambios sin guardar</span>
+  <div style="background: #F2EEE6; border-radius: 24px; padding: 20px">
+    <span style="display: block; font-size: 18px; font-weight: 600">¿Descartás los precios?</span>
+    <span style="display: block; font-size: 15px; color: #706659; line-height: 1.5; margin-top: 6px">Se pierde lo que cargaste: todavía no se guardó nada.</span>
+    <div style="display: flex; gap: 10px; margin-top: 16px">
+      <span style="flex: 1; display: flex; align-items: center; justify-content: center; height: 50px; border-radius: 999px; background: #FCFBF8; font-size: 15px; font-weight: 600">No, seguí editando</span>
+      <span style="flex: 1; display: flex; align-items: center; justify-content: center; height: 50px; border-radius: 999px; background: #33281A; color: #F7EFE0; font-size: 15px; font-weight: 600">Sí, descartalo</span>
+    </div>
+  </div>
+    </div>
+  </div>
+</div>
+
+</x-dc>
+</body>
+</html>

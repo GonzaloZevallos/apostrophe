@@ -317,13 +317,16 @@ body {
 .bar-inferior {
   display: flex;
   margin-inline: calc(-1 * var(--inset-izquierda)) calc(-1 * var(--inset-derecha));
-  padding: 14px calc(16px + var(--inset-derecha)) calc(20px + var(--inset-abajo))
-    calc(16px + var(--inset-izquierda));
+  padding: 14px calc(var(--espacio-sm) + var(--inset-derecha)) calc(20px + var(--inset-abajo))
+    calc(var(--espacio-sm) + var(--inset-izquierda));
   border-top: 1px solid var(--linea);
 }
 
 .bar-inferior__item {
-  flex: 1;
+  /* Sized by the label, then the spare room shared out: the longest word ("Variedades")
+   * never has to give up a letter to the shortest ("Más"). */
+  flex: 1 1 auto;
+  min-width: min-content;
   min-height: var(--alto-tocable);
   display: flex;
   flex-direction: column;
@@ -332,8 +335,15 @@ body {
   gap: 5px;
   text-decoration: none;
   color: var(--nav-inactivo);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 500;
+}
+
+/* A label is never clipped, cut with an ellipsis or broken mid-word: at 320 px with text at
+ * 130 % the five words (the widest, "Variedades") fit side by side in the 304 px. */
+.bar-inferior__item > span {
+  text-align: center;
+  line-height: 1.15;
 }
 
 /* Not color alone (README, accessibility rule 2): the active item is also bold,
@@ -342,6 +352,34 @@ body {
 .bar-inferior__item--activo {
   color: var(--tinta);
   font-weight: 700;
+}
+
+/* The mark is more than color: the icon is drawn filled and the label underlined
+ * (`Variedades.dc.html`'s active tab). */
+.bar-inferior__item--activo svg {
+  fill: currentColor;
+  stroke: none;
+}
+
+.bar-inferior__item--activo > span {
+  box-shadow: 0 2px 0 var(--tinta);
+  padding-bottom: 2px;
+}
+
+/* The "‹ parent" arrow a card shows above its own header (`navigation.md`, "Chrome and back"). */
+.flecha-atras {
+  display: flex;
+  padding: var(--espacio-md) var(--margen-pantalla) 0;
+}
+
+/* The arrow is a thumb target (`ventasTelefono.spec.ts` measures every button at 44 px): its
+ * box is 44 px tall and the negative margin gives back what it adds, so the card's header
+ * does not move. */
+.flecha-atras .boton--enlace {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--alto-tocable);
+  margin-block: calc((19px - var(--alto-tocable)) / 2);
 }
 
 .riel-lateral {
@@ -899,6 +937,37 @@ body {
   flex-direction: column;
 }
 
+.lista-clientes__item {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid var(--linea);
+}
+
+.lista-clientes__item > .lista-clientes__fila {
+  border-bottom: 0;
+}
+
+/* The "Cobrar" pill of a debtor's row (Clientes) and of Inicio's teaser: a link to
+ * Registrar cobro with that customer chosen, beside the row's own link to the card. */
+.cobrar {
+  align-self: flex-end;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--alto-tocable);
+  padding: 0 var(--espacio-lg);
+  border-radius: var(--radio-pildora);
+  background: var(--boton);
+  color: var(--boton-texto);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.cobrar--acento {
+  background: var(--acento);
+}
+
 .lista-clientes__fila {
   display: flex;
   align-items: center;
@@ -1189,10 +1258,19 @@ body {
   align-self: flex-start;
 }
 
+.nueva-venta .nueva-venta__cerrar,
 .gasto-form .gasto-form__cerrar {
   box-shadow: none;
   color: var(--tinta2);
   font-weight: 600;
+}
+
+/* Nueva venta's "Cerrar" is a thumb target like every other control on the phone
+ * (`ventasTelefono.spec.ts` measures every button at 44 px). */
+.nueva-venta .nueva-venta__cerrar {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--alto-tocable);
 }
 
 .campo__input--monto {
@@ -1809,6 +1887,16 @@ body {
   margin-top: var(--espacio-sm);
   border-top: 1px solid var(--deuda-linea);
   color: var(--deuda);
+  text-decoration: none;
+}
+
+.bloque-deben__datos {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-sm);
+  color: inherit;
   text-decoration: none;
 }
 

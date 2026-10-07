@@ -31,6 +31,10 @@ class InvalidPriceEntry(VarietyRuleBroken):
     code: ClassVar[str] = "variety.price_entry_invalid"
 
 
+class VipPriceNotBelowList(VarietyRuleBroken):
+    code: ClassVar[str] = "variety.vip_price_not_below_list"
+
+
 class DuplicateEffectiveDate(VarietyRuleBroken):
     code: ClassVar[str] = "variety.duplicate_effective_date"
 
@@ -87,18 +91,28 @@ class PriceEntry:
     effective_from: date
     list_price: int
     bulk: BulkTerms | None = None
+    # For VIP customers (CONTEXT.md: VIP price). `None` means no VIP price; it is never
+    # compared with the bulk price.
+    vip_price: int | None = None
     id: int | None = None
 
     def __post_init__(self) -> None:
         if self.list_price <= 0:
             raise InvalidPriceEntry("the list price must be positive")
-        if self.bulk is None:
-            return
-        if self.bulk.price <= 0:
+        if self.bulk is not None:
+            self._check_bulk(self.bulk)
+        if self.vip_price is not None:
+            if self.vip_price <= 0:
+                raise InvalidPriceEntry("the VIP price must be positive")
+            if self.vip_price >= self.list_price:
+                raise VipPriceNotBelowList("the VIP price must be lower than the list price")
+
+    def _check_bulk(self, bulk: BulkTerms) -> None:
+        if bulk.price <= 0:
             raise InvalidPriceEntry("the bulk price must be positive")
-        if self.bulk.price >= self.list_price:
+        if bulk.price >= self.list_price:
             raise InvalidPriceEntry("the bulk price must be lower than the list price")
-        if not self.bulk.minimum.is_positive:
+        if not bulk.minimum.is_positive:
             raise InvalidPriceEntry("the bulk minimum must be more than zero grams")
 
     @classmethod
@@ -109,12 +123,13 @@ class PriceEntry:
         bulk_price: int | None = None,
         bulk_minimum: Grams | None = None,
         id: int | None = None,
+        vip_price: int | None = None,
     ) -> PriceEntry:
         if bulk_price is None and bulk_minimum is None:
-            return cls(effective_from, list_price, None, id)
+            return cls(effective_from, list_price, None, vip_price, id)
         if bulk_price is None or bulk_minimum is None:
             raise InvalidPriceEntry("a bulk price and a bulk minimum go together")
-        return cls(effective_from, list_price, BulkTerms(bulk_price, bulk_minimum), id)
+        return cls(effective_from, list_price, BulkTerms(bulk_price, bulk_minimum), vip_price, id)
 
 
 class NameHolder(Enum):

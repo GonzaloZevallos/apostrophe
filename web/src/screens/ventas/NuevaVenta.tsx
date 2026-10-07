@@ -36,8 +36,10 @@ import { ApiError, NetworkError, UNKNOWN_CODE, get, post } from '../../api/clien
 import type { Customer } from '../../api/customers'
 import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
+import type { PricingSettings as ApiPricingSettings } from '../../api/pricingSettings'
 import { resolveOverride, type RefusalCode } from '../../api/refusals'
 import Boton from '../../components/Boton'
+import { SALE, SALES, pathTo } from '../../routes'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import { readNewSaleState, saleJustSaved } from '../../components/feedback'
 import Icono from '../../components/Icono'
@@ -45,6 +47,7 @@ import LeaveConfirm from '../../components/LeaveConfirm'
 import Loading, { LoadingAnuncio } from '../../components/Loading'
 import SelectorPago from '../../components/SelectorPago'
 import SinConexion from '../../components/SinConexion'
+import { useBackOr } from '../../components/useBackOr'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
 import { SheetStackProvider, useSheet } from '../../components/useSheetStack'
 import { useVisualViewport } from '../../components/useVisualViewport'
@@ -55,6 +58,7 @@ import {
   type LineValidation,
   type PaymentChoice,
   type PriceQuote,
+  type PricingSettings,
   fromHundredths,
   hundredthsOfApiGrams,
   priceLine,
@@ -95,8 +99,12 @@ function quoteOf(variety: Variety): PriceQuote | null {
     price.bulk_price !== null && price.bulk_minimum !== null
       ? { price: price.bulk_price, minimumHundredths: hundredthsOfApiGrams(price.bulk_minimum) }
       : null
-  return { listPrice: price.list_price, bulk }
+  return { listPrice: price.list_price, bulk, vipPrice: price.vip_price }
 }
+
+/** Both rules off: what prices a line while the switches have not come, or could not be read.
+ * A rule that is off never shows, so the safe side is no rule (`pricing-settings.md`). */
+const NO_RULES: PricingSettings = { bulk: false, vip: false }
 
 /** Whole pesos, zero or more — unlike `parseMoney` (money.ts), which rejects zero:
  * shipping charged is `$0` by default and that is a valid value to save with. */
@@ -204,6 +212,17 @@ function NuevaVentaForm() {
     refetchOnReconnect: false,
   })
 
+  // The switches come with each day's prices: on opening and on every date change.
+  const settingsQuery = useQuery({
+    queryKey: keys.saleFormPricingSettings(date),
+    queryFn: () => get<ApiPricingSettings>('/pricing-settings'),
+    placeholderData: keepPreviousData,
+    gcTime: 0,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  })
+
   const customerByIdQuery = useQuery({
     queryKey: keys.saleFormCustomer(initialCustomerId ?? ''),
     queryFn: () => get<Customer>(`/customers/${initialCustomerId ?? ''}`),
@@ -219,8 +238,12 @@ function NuevaVentaForm() {
   const varieties = varietiesQuery.data ?? []
   // Until the first prices arrive the body is the shared loading state; after a date change
   // the form stays and every figure that depends on a price waits behind a compact bar.
-  const opening = varietiesQuery.isPending
-  const repricing = varietiesQuery.isPlaceholderData
+  const opening = varietiesQuery.isPending || settingsQuery.isPending
+  const repricing = varietiesQuery.isPlaceholderData || settingsQuery.isPlaceholderData
+  const settings: PricingSettings =
+    settingsQuery.data === undefined
+      ? NO_RULES
+      : { bulk: settingsQuery.data.is_bulk_pricing, vip: settingsQuery.data.is_vip_customers }
 
   function chooseCustomer(chosen: Customer | null): void {
     setCustomerOverride(chosen)
@@ -344,7 +367,8 @@ function NuevaVentaForm() {
       const priced = priceLine({
         gift: line.gift,
         specialPrice,
-        vip: customer?.vip ?? false,
+        customerIsVip: customer?.vip ?? false,
+        settings,
         quote,
         gramsHundredths: toHundredths(grams.value),
       })
@@ -407,10 +431,7 @@ function NuevaVentaForm() {
     return 'variety'
   }
 
-  function goBack(): void {
-    if (location.key === 'default') navigate('/ventas')
-    else navigate(-1)
-  }
+  const close = useBackOr(SALES)
 
   async function onSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault()
@@ -464,7 +485,7 @@ function NuevaVentaForm() {
     try {
       const saved = await save.mutateAsync(body)
       disarm()
-      navigate(`/ventas/${saved.id}`, { replace: true, state: saleJustSaved() })
+      navigate(pathTo(SALE, { id: saved.id }), { replace: true, state: saleJustSaved() })
     } catch (caught) {
       if (caught instanceof ApiError && caught.status === 401) {
         // The session boundary already cleared the cache and is navigating to
@@ -520,7 +541,6 @@ function NuevaVentaForm() {
         <div className="nueva-venta__disposicion">
         <div className="nueva-venta__cuerpo" aria-busy={repricing || opening || undefined}>
           <div className="encabezado-fila nueva-venta__cabecera">
-            <Boton variant="icon" ariaLabel="Volver" icon="atras" onClick={goBack} />
             <span className="encabezado__titulo">Nueva venta</span>
             <span className="fecha-pildora">
               <input
@@ -537,6 +557,9 @@ function NuevaVentaForm() {
                 <Icono nombre="abajo" size={15} strokeWidth={1.8} />
               </span>
             </span>
+            <button type="button" className="boton--enlace nueva-venta__cerrar" onClick={close}>
+              Cerrar
+            </button>
           </div>
           {dateError !== null && (
             <span className="campo__error" role="alert">
@@ -559,7 +582,7 @@ function NuevaVentaForm() {
                     <div className="nueva-venta__cliente-texto">
                       <span className="lista-clientes__nombre">
                         {customer.name}
-                        {customer.vip && <span className="vip-insignia">VIP</span>}
+                        {settings.vip && customer.vip && <span className="vip-insignia">VIP</span>}
                       </span>
                       {customer.phone !== null && (
                         <span className="nueva-venta__cliente-telefono">{customer.phone}</span>
@@ -664,7 +687,7 @@ function NuevaVentaForm() {
                 {totals.gramsGiftedHundredths > 0 &&
                   ` · ${formatGrams(fromHundredths(totals.gramsGiftedHundredths))} de regalo`}
               </span>
-              <Boton type="submit" disabled={save.isPending || varietiesQuery.isFetching}>
+              <Boton type="submit" disabled={save.isPending || varietiesQuery.isFetching || settingsQuery.isFetching}>
                 Guardá la venta
               </Boton>
             </div>

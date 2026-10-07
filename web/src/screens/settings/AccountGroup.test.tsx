@@ -3,6 +3,8 @@
  * and "Cerrar sesión". The API is faked at `fetch`, never mocked deeper (CODING_STANDARDS §10).
  */
 
+import { LOGIN, SETTINGS, SETTINGS_ACCOUNT } from '../../routes'
+import { inAppState } from '../../components/inAppState'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -50,14 +52,14 @@ function renderAccount(fetchMock: ReturnType<typeof vi.fn>): QueryClient {
       {
         element: <Provide />,
         children: [
-          { path: '/settings', element: <div>Lista de grupos</div> },
-          { path: '/settings/account', element: <AccountGroup /> },
+          { path: SETTINGS, element: <div>Lista de grupos</div> },
+          { path: SETTINGS_ACCOUNT, element: <AccountGroup /> },
         ],
       },
-      { path: '/entrar', element: <div>Pantalla de entrada</div> },
+      { path: LOGIN, element: <div>Pantalla de entrada</div> },
     ],
     {
-      initialEntries: ['/settings', { pathname: '/settings/account', state: { inApp: true } }],
+      initialEntries: [SETTINGS, { pathname: SETTINGS_ACCOUNT, state: inAppState({ pathname: SETTINGS }) }],
       initialIndex: 1,
     },
   )

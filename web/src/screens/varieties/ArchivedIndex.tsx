@@ -5,18 +5,19 @@
  */
 
 import { useQuery } from '@tanstack/react-query'
-import ReplaceTo from '../../components/ReplaceTo'
-import { useIsComputer } from '../../components/useIsComputer'
-import { VARIETY } from '../../routes'
+import { Navigate } from 'react-router'
+import { FOLLOWED_REDIRECT } from '../../flash/flashReducer'
+import { VARIETY, pathTo } from '../../routes'
+import { useViewport } from '../../shell/useViewport'
 import { archivedVarietiesQueryOptions } from './archivedVarieties'
 import ArchivedVarieties from './ArchivedVarieties'
 import { varietiesByName } from './varietiesByName'
 
 export default function ArchivedIndex() {
-  const computer = useIsComputer()
+  const computer = useViewport() === 'computer'
   const { data } = useQuery({ ...archivedVarietiesQueryOptions(), enabled: computer })
   if (!computer) return <ArchivedVarieties />
   const first = data === undefined ? undefined : varietiesByName(data)[0]
   if (first === undefined) return null
-  return <ReplaceTo to={VARIETY(first.id)} />
+  return <Navigate to={pathTo(VARIETY, { id: first.id })} replace state={FOLLOWED_REDIRECT} />
 }

@@ -54,15 +54,11 @@ test('a location change while idle changes nothing', () => {
   expect(flashReducer(idle, { type: 'locationChanged', key: 'x' })).toBe(idle)
 })
 
-const SHOWING: FlashState = { status: 'showing', toast: 'Entrada guardada', shownKey: 'a' }
+test('shown, then a redirect that follows the toast: still shown, on the new key; any other new key: idle', () => {
+  const showing: FlashState = { status: 'showing', toast: 'Gasto guardado', shownKey: 'b' }
 
-test('keepAcrossReplace: the toast on screen survives the one location change after it, the next dismisses it', () => {
-  const kept = flashReducer(flashReducer(SHOWING, { type: 'keepAcrossReplace' }), { type: 'locationChanged', key: 'b' })
-  expect(kept).toEqual({ status: 'showing', toast: 'Entrada guardada', shownKey: 'b' })
-  expect(flashReducer(kept, { type: 'locationChanged', key: 'c' })).toEqual({ status: 'idle' })
-})
+  const followed = flashReducer(showing, { type: 'locationChanged', key: 'c', follows: true })
 
-test('without keepAcrossReplace a location change dismisses the toast; with nothing showing it does nothing', () => {
-  expect(flashReducer(SHOWING, { type: 'locationChanged', key: 'b' })).toEqual({ status: 'idle' })
-  expect(flashReducer({ status: 'idle' }, { type: 'keepAcrossReplace' })).toEqual({ status: 'idle' })
+  expect(followed).toEqual({ status: 'showing', toast: 'Gasto guardado', shownKey: 'c' })
+  expect(flashReducer(followed, { type: 'locationChanged', key: 'd', follows: false })).toEqual(idle)
 })

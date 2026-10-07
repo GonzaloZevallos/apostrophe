@@ -9,7 +9,10 @@ import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import WITHDRAWAL from '../../api/fixtures/withdrawal.json'
+import { VARIETIES as VARIETIES_PATH, WITHDRAWAL as WITHDRAWAL_PATH, pathTo } from '../../routes'
 import { jsonResponse, renderWithdrawals, type FetchImpl } from './renderWithdrawals'
+
+const ONE = pathTo(WITHDRAWAL_PATH, { id: 1 })
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -27,7 +30,7 @@ function serving(body: unknown, extra?: FetchImpl): FetchImpl {
 }
 
 test('shows the date, the reason by word, every line and the note, with the bar and no "+ Nueva venta"', async () => {
-  renderWithdrawals(['/varieties', '/withdrawals/1'], serving(WITHDRAWAL))
+  renderWithdrawals([VARIETIES_PATH, ONE], serving(WITHDRAWAL))
 
   expect(await screen.findByText('Zkittlez')).toBeInTheDocument()
   expect(screen.getByText('Promoción')).toBeInTheDocument()
@@ -41,25 +44,25 @@ test('shows the date, the reason by word, every line and the note, with the bar 
 })
 
 test('the "‹" back goes to the page it was opened from', async () => {
-  const { router } = renderWithdrawals(['/varieties', '/withdrawals/1'], serving(WITHDRAWAL))
+  const { router } = renderWithdrawals([VARIETIES_PATH, ONE], serving(WITHDRAWAL))
 
   await userEvent.click(await screen.findByRole('button', { name: 'Volver' }))
 
-  await waitFor(() => expect(router.state.location.pathname).toBe('/varieties'))
+  await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES_PATH))
 })
 
 test('with no history, back goes to Variedades', async () => {
-  const { router } = renderWithdrawals(['/withdrawals/1'], serving(WITHDRAWAL))
+  const { router } = renderWithdrawals([ONE], serving(WITHDRAWAL))
 
   await userEvent.click(await screen.findByRole('button', { name: 'Volver' }))
 
-  await waitFor(() => expect(router.state.location.pathname).toBe('/varieties'))
+  await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES_PATH))
 })
 
 test('Borrar names the promotion, the date and the grams; confirming deletes and toasts "Retiro eliminado"', async () => {
   const deletes = vi.fn()
   const { router } = renderWithdrawals(
-    ['/varieties', '/withdrawals/1'],
+    [VARIETIES_PATH, ONE],
     serving(WITHDRAWAL, async (url, init) => {
       if (url === '/stock/withdrawals/1' && init?.method === 'DELETE') {
         deletes()
@@ -81,12 +84,12 @@ test('Borrar names the promotion, the date and the grams; confirming deletes and
   )
 
   expect(await screen.findByText('Retiro eliminado')).toBeInTheDocument()
-  expect(router.state.location.pathname).toBe('/varieties')
+  expect(router.state.location.pathname).toBe(VARIETIES_PATH)
   expect(deletes).toHaveBeenCalledTimes(1)
 })
 
 test('Borrar on an own-use withdrawal says "el consumo propio"', async () => {
-  renderWithdrawals(['/varieties', '/withdrawals/1'], serving(OWN_USE))
+  renderWithdrawals([VARIETIES_PATH, ONE], serving(OWN_USE))
 
   await userEvent.click(await screen.findByRole('button', { name: 'Borrar' }))
 
@@ -98,7 +101,7 @@ test('Borrar on an own-use withdrawal says "el consumo propio"', async () => {
 test('Editar opens the form filled in; saving is confirmed first and toasts "Retiro guardado"', async () => {
   const puts: unknown[] = []
   const { router } = renderWithdrawals(
-    ['/varieties', '/withdrawals/1'],
+    [VARIETIES_PATH, ONE],
     serving(WITHDRAWAL, async (url, init) => {
       if (url === '/stock/withdrawals/1' && init?.method === 'PUT') {
         puts.push(JSON.parse(String(init.body)))
@@ -125,7 +128,7 @@ test('Editar opens the form filled in; saving is confirmed first and toasts "Ret
   )
 
   expect(await screen.findByText('Retiro guardado')).toBeInTheDocument()
-  expect(router.state.location.pathname).toBe('/withdrawals/1')
+  expect(router.state.location.pathname).toBe(ONE)
   expect(puts).toEqual([
     {
       reason: 'promotion',
@@ -137,15 +140,15 @@ test('Editar opens the form filled in; saving is confirmed first and toasts "Ret
 })
 
 test('opening a withdrawal that is gone shows "Eso ya no está." and "Volver a Variedades"', async () => {
-  renderWithdrawals(['/withdrawals/1'], async () => jsonResponse(404, { code: 'stock.withdrawal_not_found' }))
+  renderWithdrawals([ONE], async () => jsonResponse(404, { code: 'stock.withdrawal_not_found' }))
 
   expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Volver a Variedades' })).toHaveAttribute('href', '/varieties')
+  expect(screen.getByRole('link', { name: 'Volver a Variedades' })).toHaveAttribute('href', VARIETIES_PATH)
 })
 
 test('deleting a withdrawal that is gone goes to Variedades with "Eso ya no está. La lista ya está al día."', async () => {
   const { router } = renderWithdrawals(
-    ['/varieties', '/withdrawals/1'],
+    [VARIETIES_PATH, ONE],
     serving(WITHDRAWAL, async (url, init) =>
       url === '/stock/withdrawals/1' && init?.method === 'DELETE'
         ? jsonResponse(404, { code: 'stock.withdrawal_not_found' })
@@ -158,5 +161,5 @@ test('deleting a withdrawal that is gone goes to Variedades with "Eso ya no est�
   )
 
   expect(await screen.findByText('Eso ya no está. La lista ya está al día.')).toBeInTheDocument()
-  expect(router.state.location.pathname).toBe('/varieties')
+  expect(router.state.location.pathname).toBe(VARIETIES_PATH)
 })

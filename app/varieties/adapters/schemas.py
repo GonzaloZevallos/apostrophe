@@ -19,6 +19,7 @@ class PriceEntryIn(BaseModel):
     list_price: int
     bulk_price: int | None = None
     bulk_minimum: Decimal | None = None
+    vip_price: int | None = None
 
 
 class PriceEntryOut(BaseModel):
@@ -27,6 +28,7 @@ class PriceEntryOut(BaseModel):
     list_price: int
     bulk_price: int | None
     bulk_minimum: GramsOut | None
+    vip_price: int | None
 
     @classmethod
     def of(cls, entry: PriceEntry) -> "PriceEntryOut":
@@ -37,6 +39,7 @@ class PriceEntryOut(BaseModel):
             list_price=entry.list_price,
             bulk_price=entry.bulk.price if entry.bulk else None,
             bulk_minimum=entry.bulk.minimum.as_decimal() if entry.bulk else None,
+            vip_price=entry.vip_price,
         )
 
 

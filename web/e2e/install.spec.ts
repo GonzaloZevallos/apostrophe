@@ -5,6 +5,7 @@
  * on localhost, finds nothing wrong. `watchConsole` is asserted empty as every spec does.
  */
 
+import { LOGIN } from '../src/routes.js'
 import { expect, test } from '@playwright/test'
 import { watchConsole } from './console.js'
 
@@ -19,7 +20,7 @@ test('the manifest and its icons are served at their declared size, and the app 
 }) => {
   const messages: string[] = []
   watchConsole(page, messages)
-  await page.goto('/entrar')
+  await page.goto(LOGIN)
 
   const response = await page.request.get('/manifest.webmanifest')
   expect(response.status()).toBe(200)

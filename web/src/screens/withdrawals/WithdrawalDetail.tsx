@@ -1,18 +1,19 @@
 /**
  * `WithdrawalDetail` (`/withdrawals/:id`, `RetiroDetalle`): a detail under the navigation
- * rule, with the bar or sidebar and a "‹" back to the variety's page it was opened from
- * (Variedades with no history to go back to), and no "+ Nueva venta" (the route's
- * `chrome: 'card'`). It shows the date, the reason by word, every line and the note, with
+ * rule, with the bar or sidebar and a "‹" back to the screen it was opened from
+ * (Variedades with no history to go back to, `useBackOr`), and no "+ Nueva venta" (a `card`
+ * in `routes.ts`). It shows the date, the reason by word, every line and the note, with
  * "Editar" (the same form, filled in) and "Borrar" ("Antes de borrar", naming the reason,
  * the date and the total grams: `stock.md`).
  *
  * A withdrawal that is gone shows "Eso ya no está." with "Volver a Variedades"; a delete
- * that finds it gone goes to Variedades with "Eso ya no está. La lista ya está al día."
+ * that finds it gone leaves by the gone exit (`useGoneExit`) to Variedades with "Eso ya no
+ * está. La lista ya está al día."
  */
 
 import { type QueryClient, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import { Link, useLocation, useNavigate, useOutletContext, useParams } from 'react-router'
+import { useOutletContext, useParams } from 'react-router'
 import { ApiError, NetworkError } from '../../api/client'
 import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
@@ -23,11 +24,13 @@ import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGen
 import GoneScreen from '../../components/GoneScreen'
 import Loading from '../../components/Loading'
 import SinConexion from '../../components/SinConexion'
-import { gone } from '../../components/feedback'
+import InAppLink from '../../components/InAppLink'
+import { useBackOr } from '../../components/useBackOr'
+import { useGoneExit } from '../../components/useGoneExit'
 import { useFlash } from '../../flash/useFlash'
 import { formatDate } from '../../format/dates'
 import { formatGrams } from '../../format/money'
-import { VARIETIES, withdrawalEditPath } from '../../routes'
+import { VARIETIES, WITHDRAWAL_EDIT, pathTo } from '../../routes'
 import { REASON_OPTIONS } from './withdrawalReasons'
 
 
@@ -52,8 +55,8 @@ export default function WithdrawalDetail() {
   const me = useOutletContext<Me>()
   const { id } = useParams<{ id: string }>()
   const withdrawalId = id ?? ''
-  const navigate = useNavigate()
-  const location = useLocation()
+  const back = useBackOr(VARIETIES)
+  const goneExit = useGoneExit('withdrawal', { id: withdrawalId })
   const queryClient = useQueryClient()
   const flash = useFlash()
   const [confirmingDelete, setConfirmingDelete] = useState(false)
@@ -65,11 +68,6 @@ export default function WithdrawalDetail() {
     queryFn: () => getWithdrawal(withdrawalId),
     retry: false,
   })
-
-  function back(): void {
-    if (location.key === 'default') void navigate(VARIETIES, { replace: true })
-    else void navigate(-1)
-  }
 
   async function onConfirmDelete(): Promise<void> {
     setDeleting(true)
@@ -84,7 +82,7 @@ export default function WithdrawalDetail() {
       setConfirmingDelete(false)
       if (caught instanceof ApiError && isGone(caught.code)) {
         invalidateStockAfterDeleting(queryClient, withdrawalId)
-        void navigate(VARIETIES, { replace: true, state: gone() })
+        goneExit()
       } else if (caught instanceof NetworkError) {
         setOffline(true)
       } else {
@@ -166,9 +164,9 @@ export default function WithdrawalDetail() {
           </span>
         )}
         <div className="retiro__acciones">
-          <Link className="boton" to={withdrawalEditPath(withdrawal.id)}>
+          <InAppLink className="boton" to={pathTo(WITHDRAWAL_EDIT, { id: withdrawal.id })}>
             Editar
-          </Link>
+          </InAppLink>
           <button type="button" className="boton boton--destructivo" onClick={() => setConfirmingDelete(true)}>
             Borrar
           </button>

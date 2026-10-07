@@ -136,6 +136,9 @@ def _walk(engine: Engine) -> None:
             == 0
         )
 
+    # Step back to 0013 first, so the refusal below is 0013's own and no later
+    # migration's downgrade runs ahead of it.
+    _downgrade_to(engine, "0013")
     with engine.begin() as connection:
         connection.execute(text("UPDATE variety SET archived_at = :now WHERE id = 1"), {"now": NOW})
     with pytest.raises(RuntimeError) as refused:

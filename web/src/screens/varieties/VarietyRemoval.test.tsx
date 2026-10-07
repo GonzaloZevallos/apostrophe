@@ -14,7 +14,7 @@ import { afterEach, describe, expect, test, vi } from 'vitest'
 import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
 import FlashProvider from '../../flash/FlashProvider'
-import { VARIETIES, VARIETY, relative } from '../../routes'
+import { VARIETIES, VARIETY, pathTo, relative } from '../../routes'
 import VarietyPage from './VarietyPage'
 import VarietyRoute from './VarietyRoute'
 
@@ -100,13 +100,13 @@ function renderPage({ removal = 'archive', grams = 12, overrides = {}, list, com
         children: [
           { path: relative(VARIETIES), element: <main>Pantalla Variedades</main> },
           {
-            path: relative(VARIETY(':id')),
+            path: relative(VARIETY),
             element: <VarietyRoute render={(varietyId) => <VarietyPage varietyId={varietyId} />} />,
           },
         ],
       },
     ],
-    { initialEntries: ['/varieties', '/varieties/2'], initialIndex: 1 },
+    { initialEntries: [VARIETIES, pathTo(VARIETY, { id: 2 })], initialIndex: 1 },
   )
   render(<RouterProvider router={router} />)
   return { router, fetchMock, queryClient }
@@ -300,7 +300,7 @@ describe('the computer', () => {
 
     await user.click(screen.getByRole('button', { name: 'Sí, archivala' }))
 
-    await waitFor(() => expect(screen.getByLabelText('ubicación')).toHaveTextContent('/varieties/3'))
+    await waitFor(() => expect(screen.getByLabelText('ubicación')).toHaveTextContent(pathTo(VARIETY, { id: 3 })))
   })
 
   test('the last one by name selects the previous one', async () => {
@@ -314,7 +314,7 @@ describe('the computer', () => {
 
     await user.click(screen.getByRole('button', { name: 'Sí, archivala' }))
 
-    await waitFor(() => expect(screen.getByLabelText('ubicación')).toHaveTextContent('/varieties/1'))
+    await waitFor(() => expect(screen.getByLabelText('ubicación')).toHaveTextContent(pathTo(VARIETY, { id: 1 })))
   })
 
   test('the only one left goes to the list with nothing selected', async () => {

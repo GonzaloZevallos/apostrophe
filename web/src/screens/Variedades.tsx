@@ -16,24 +16,29 @@
  */
 
 import { useQuery } from '@tanstack/react-query'
-import { Link, NavLink, useLocation, useOutletContext } from 'react-router'
+import { useLocation, useOutletContext } from 'react-router'
 import { NetworkError, get } from '../api/client'
 import { catalogQueryOptions } from '../api/catalog'
 import { keys } from '../api/keys'
 import type { Me } from '../api/me'
 import { readStock, type VarietyStock } from '../api/stock'
 import ErrorGenerico from '../components/ErrorGenerico'
+import GoneNotice from '../components/GoneNotice'
+import { useGoneNotice } from '../components/goneExit'
+import InAppLink from '../components/InAppLink'
 import Loading from '../components/Loading'
 import MarcaEstado from '../components/MarcaEstado'
 import Notice from '../components/Notice'
 import SinConexion from '../components/SinConexion'
 import { readFeedback } from '../components/feedback'
 import { formatGrams, formatMoney } from '../format/money'
-import { ARCHIVED_VARIETIES, CATALOG, ENTRIES, ENTRY_NEW, VARIETY, VARIETY_NEW, WITHDRAWAL_NEW } from '../routes'
+import { ARCHIVED_VARIETIES, CATALOG, STOCK, STOCK_ENTRY_NEW, VARIETY, VARIETY_NEW, WITHDRAWAL_NEW, pathTo } from '../routes'
+import { useViewport } from '../shell/useViewport'
 import { detailFor } from '../stock/detail'
 import { summaryLine } from '../stock/summaryLine'
 import { archivedVarietiesQueryOptions } from './varieties/archivedVarieties'
 import { varietiesByName } from './varieties/varietiesByName'
+import VarietyRowLink from './varieties/VarietyRowLink'
 
 export const VARIETY_SAVED = 'Variedad guardada'
 export const NO_PRICE_TODAY = 'Sin precio: no se puede vender'
@@ -49,6 +54,7 @@ interface PriceEntry {
   list_price: number
   bulk_price: number | null
   bulk_minimum: number | null
+  vip_price: number | null
 }
 
 export interface Variety {
@@ -68,7 +74,9 @@ function figuresOf(row: VarietyStock, today: string): string {
 
 export default function Variedades() {
   const me = useOutletContext<Me>()
+  const computer = useViewport() === 'computer'
   const feedback = readFeedback(useLocation().state)
+  const goneExited = useGoneNotice()
   const varietiesQuery = useQuery({
     queryKey: keys.varieties(),
     queryFn: () => get<Variety[]>('/varieties'),
@@ -94,20 +102,24 @@ export default function Variedades() {
         <h1 className="encabezado__titulo">Variedades</h1>
         {summary !== null && <p className="pie variedades__resumen">{summary}</p>}
         <div className="variedades__acciones">
-          <Link to={CATALOG} className="boton">
+          <InAppLink to={CATALOG} className="boton">
             Mandar catálogo
-          </Link>
-          <Link to={ENTRY_NEW} className="boton boton--suave">
+          </InAppLink>
+          <InAppLink to={STOCK_ENTRY_NEW} className="boton boton--suave">
             + Entrada de stock
-          </Link>
-          <Link to={WITHDRAWAL_NEW} className="boton boton--suave">
+          </InAppLink>
+          <InAppLink to={WITHDRAWAL_NEW} className="boton boton--suave">
             Sacar del stock
-          </Link>
-          <Link to={VARIETY_NEW} className="boton--enlace variedades__nueva">
+          </InAppLink>
+          <InAppLink to={VARIETY_NEW} className="boton--enlace variedades__nueva">
             Nueva variedad
-          </Link>
+          </InAppLink>
         </div>
-        {feedback !== null && <Notice kind={feedback.kind} message={feedback.message} />}
+        {feedback !== null ? (
+          <Notice kind={feedback.kind} message={feedback.message} />
+        ) : (
+          goneExited && <GoneNotice />
+        )}
         {failure !== null && (failure instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />)}
         {failure === null && !ready && <Loading />}
         {failure === null && ready && rows.length === 0 && (
@@ -119,11 +131,7 @@ export default function Variedades() {
         {rows.length > 0 && (
           <div className="lista-variedades">
             {rows.map(({ variety, row }) => (
-              <NavLink
-                key={variety.id}
-                to={VARIETY(variety.id)}
-                className={({ isActive }) => (isActive ? 'variedad-fila variedad-fila--activa' : 'variedad-fila')}
-              >
+              <VarietyRowLink key={variety.id} to={pathTo(VARIETY, { id: variety.id })} replace={computer}>
                 <span className="variedad-fila__encabezado">
                   <MarcaEstado estado={row.status} />
                   <span className="variedad-fila__nombre">{variety.name}</span>
@@ -137,19 +145,19 @@ export default function Variedades() {
                       : `${formatMoney(variety.current_price.list_price)} x g`}
                   </span>
                 </span>
-              </NavLink>
+              </VarietyRowLink>
             ))}
           </div>
         )}
-        <Link to={ENTRIES} className="variedades__todas">
+        <InAppLink to={STOCK} className="variedades__todas">
           <span>Todas las entradas</span>
           <span aria-hidden="true">›</span>
-        </Link>
+        </InAppLink>
         {archivedCount > 0 && (
-          <Link to={ARCHIVED_VARIETIES} className="variedades__todas">
+          <InAppLink to={ARCHIVED_VARIETIES} className="variedades__todas">
             <span>Archivadas ({archivedCount})</span>
             <span aria-hidden="true">›</span>
-          </Link>
+          </InAppLink>
         )}
       </div>
     </main>

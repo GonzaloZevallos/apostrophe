@@ -13,6 +13,7 @@ from typing import Protocol
 from app.sales.domain.pricing import VarietyPricing
 from app.sales.domain.sale import CustomerFact, Sale, SaleLine
 from app.shared.grams import Grams
+from app.shared.pricing_settings import PricingSettings
 
 
 class PriceBook(Protocol):
@@ -32,6 +33,13 @@ class CustomerFacts(Protocol):
     def get(self, customer_id: int) -> CustomerFact | None:
         """`None` when the customer does not exist in this business."""
         ...
+
+
+class PricingSettingsReader(Protocol):
+    """The business's pricing switches (docs/adr/0034). Built for one business; read
+    once per save, and that one value prices every line of the save."""
+
+    def current(self) -> PricingSettings: ...
 
 
 class Sales(Protocol):

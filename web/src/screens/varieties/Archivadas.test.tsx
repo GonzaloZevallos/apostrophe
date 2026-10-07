@@ -12,7 +12,7 @@ import { Outlet, RouterProvider, createMemoryRouter } from 'react-router'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import type { Me } from '../../api/me'
 import FlashProvider from '../../flash/FlashProvider'
-import { ARCHIVED_VARIETIES, VARIETIES, VARIETY, relative } from '../../routes'
+import { ARCHIVED_VARIETIES, VARIETIES, VARIETY, pathTo, relative } from '../../routes'
 import Variedades from '../Variedades'
 import ArchivedIndex from './ArchivedIndex'
 import ArchivedVarieties from './ArchivedVarieties'
@@ -87,7 +87,7 @@ function renderAt(path: string, overrides: Answers = {}) {
           { path: relative(VARIETIES), element: <Variedades /> },
           { path: relative(ARCHIVED_VARIETIES), element: <ArchivedVarieties /> },
           {
-            path: relative(VARIETY(':id')),
+            path: relative(VARIETY),
             element: <VarietyRoute render={(id) => <VarietyPage varietyId={id} />} />,
           },
         ],
@@ -139,8 +139,8 @@ describe('the Archivadas card', () => {
     await user.click(screen.getAllByRole('button', { name: 'Restaurar' })[0]!)
     expect(await screen.findByText('Variedad restaurada')).toBeTruthy()
     expect(screen.queryByRole('dialog')).toBeNull()
-    const posts = fetchMock.mock.calls.filter(([, init]) => init?.method === 'POST').map(([url]) => url)
-    expect(posts).toEqual(['/varieties/4/restore'])
+    const requested = fetchMock.mock.calls.filter(([, init]) => init?.method === 'POST').map(([url]) => url)
+    expect(requested).toEqual(['/varieties/4/restore'])
   })
 
   test('a variety already gone shows the generic gone notice', async () => {
@@ -156,7 +156,7 @@ describe('the Archivadas card', () => {
 
 describe("an archived variety's page", () => {
   test('is read-only: back to Archivadas, Archivada in words, and Restaurar the one action', async () => {
-    renderAt(VARIETY(4))
+    renderAt(pathTo(VARIETY, { id: 4 }))
     expect(await screen.findByRole('heading', { name: 'Alfa Vieja' })).toBeTruthy()
     expect(screen.getByRole('link', { name: '‹ Archivadas' }).getAttribute('href')).toBe(ARCHIVED_VARIETIES)
     expect(screen.getByText('Archivada')).toBeTruthy()
@@ -179,7 +179,7 @@ describe("an archived variety's page", () => {
   test('restores in one tap and then shows the live variety', async () => {
     const user = userEvent.setup()
     let restored = false
-    renderAt(VARIETY(4), {
+    renderAt(pathTo(VARIETY, { id: 4 }), {
       'GET /varieties/4': () =>
         json(200, restored
           ? { id: 4, name: 'Alfa Vieja', archived: false, removal: 'archive', current_price: null }
@@ -243,7 +243,7 @@ describe('on a computer (two panes)', () => {
               children: [
                 { index: true, element: <VarietiesIndex /> },
                 { path: ARCHIVED_VARIETIES, element: <ArchivedIndex /> },
-                { path: VARIETY(':id'), element: <VarietyRoute render={(id) => <VarietyPage varietyId={id} />} /> },
+                { path: VARIETY, element: <VarietyRoute render={(id) => <VarietyPage varietyId={id} />} /> },
               ],
             },
           ],
@@ -257,9 +257,9 @@ describe('on a computer (two panes)', () => {
 
   test('Archivadas selects the first archived variety by name, not the first the API sent', async () => {
     const router = renderComputer(ARCHIVED_VARIETIES)
-    await waitFor(() => expect(router.state.location.pathname).toBe(VARIETY(4)))
+    await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(VARIETY, { id: 4 })))
     expect(await screen.findByRole('heading', { name: 'Alfa Vieja' })).toBeTruthy()
-    expect(router.state.location.pathname).not.toBe(VARIETY(5))
+    expect(router.state.location.pathname).not.toBe(pathTo(VARIETY, { id: 5 }))
   })
 
   test('with none archived, Archivadas selects nothing and says so on the left', async () => {
@@ -270,7 +270,7 @@ describe('on a computer (two panes)', () => {
 
   test('the left pane is the Archivadas card beside an archived variety, and the live list once it is restored', async () => {
     const user = userEvent.setup()
-    renderComputer(VARIETY(4))
+    renderComputer(pathTo(VARIETY, { id: 4 }))
     // The card: its rows carry the "Archivada" mark and its back link is "‹ Variedades".
     expect(await screen.findByRole('link', { name: '‹ Variedades' })).toBeTruthy()
     expect(screen.getByRole('heading', { name: 'Archivadas' })).toBeTruthy()

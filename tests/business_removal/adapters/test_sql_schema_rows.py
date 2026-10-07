@@ -27,6 +27,7 @@ from app.main import create_app
 from app.settings import Settings
 from tests.conftest import NOW, PASSWORD, TEST_HASHER, MovableClock, open_business, signed_in
 from tests.fakes.telegram import FakeTelegram
+from tests.pricing_switches import set_switches
 
 SETTINGS = Settings(secret_key="removal-test-secret", database_url="sqlite://")
 
@@ -394,6 +395,7 @@ def test_rows_parses_bool_date_and_naive_datetime_columns(tmp_path: Path) -> Non
             client, engine, MovableClock(NOW), "Types Business", "types@example.com"
         )
         signed = signed_in(client, token)
+        set_switches(engine, bulk=False, vip=True, business_name="Types Business")
         customer = signed.post(
             "/customers", json={"name": "Vip customer", "phone": "11 2345-6789", "vip": True}
         ).json()

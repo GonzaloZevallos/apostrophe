@@ -22,6 +22,7 @@
  * or footer line.
  */
 
+import { LOGIN } from '../routes'
 import { type FormEvent, useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate, useParams } from 'react-router'
@@ -110,7 +111,7 @@ export default function Reset() {
   if (status === 'dead') {
     return (
       <AuthPage title={DEAD_LINK_MESSAGE}>
-        <Link className="boton" to="/entrar">
+        <Link className="boton" to={LOGIN}>
           Entrar
         </Link>
       </AuthPage>

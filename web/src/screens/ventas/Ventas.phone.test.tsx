@@ -11,6 +11,7 @@ import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import type { Me } from '../../api/me'
 import { COMPUTER_QUERY } from '../../format/breakpoints'
+import { SALES } from '../../routes'
 import Ventas, { EMPTY_LIST } from './Ventas'
 
 const ME: Me = { email: 'a@b.com', business_name: 'Negocio', today: '2026-10-03' }
@@ -23,10 +24,10 @@ function renderVentas() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={['/ventas']}>
+      <MemoryRouter initialEntries={[SALES]}>
         <Routes>
           <Route element={<Context />}>
-            <Route path="/ventas" element={<Ventas />} />
+            <Route path={SALES} element={<Ventas />} />
           </Route>
         </Routes>
       </MemoryRouter>

@@ -17,6 +17,7 @@ from app.sales.application.record_sale import LineInput, record_sale
 from app.sales.domain.pricing import PriceQuote, VarietyPricing
 from app.sales.domain.sale import Sale, UnknownVariety
 from app.shared.grams import Grams
+from app.shared.pricing_settings import PricingSettings
 from app.shared.reference import ReferenceRefused
 from app.stock.application import manage_entries
 from app.stock.application.errors import VarietyArchived as StockArchived
@@ -28,6 +29,13 @@ from app.varieties.domain.variety import NameHolder, Variety, VarietyName
 
 DAY = date(2026, 10, 6)
 NOW = datetime(2026, 10, 6, 12, tzinfo=UTC)
+
+
+class BothRulesOn:
+    """The pricing switches, both on: the rule the refusal under test never reads."""
+
+    def current(self) -> PricingSettings:
+        return PricingSettings(is_bulk_pricing=True, is_vip_customers=True)
 
 
 class CountingTransaction:
@@ -84,6 +92,7 @@ def _record_sale(present: bool, transaction: CountingTransaction) -> Sale:
         RefusingSales(),
         AskedAgainPriceBook(present),
         NoCustomers(),
+        BothRulesOn(),
         transaction,
         sale_date=DAY,
         today=DAY,
@@ -261,7 +270,12 @@ class RefusingVarieties:
 
 def _record_price(then: Variety | None, transaction: CountingTransaction) -> object:
     return manage_prices.record_price_entry(
-        RefusingVarieties(then), transaction, 7, effective_from=DAY, list_price=10_000
+        RefusingVarieties(then),
+        BothRulesOn(),
+        transaction,
+        7,
+        effective_from=DAY,
+        list_price=10_000,
     )
 
 

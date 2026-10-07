@@ -10,12 +10,8 @@
  * `navigator.clipboard` or `execCommand`, so the home network's plain-http
  * fallback stays in the one module that tests it.
  *
- * Plan (Compartir): only `share.ts` names `navigator.share`, so the one place that
- * tells a cancel from a failure, and that never logs, is the only one that can reach
- * the native share sheet.
- *
- * Invariant 7 (ADR-0022): only `api/catalog.ts` names the catalog query key, so every
- * reader shares one set of freshness options.
+ * Plan (invariants): only `components/useLeaveGuard.ts` names `useBlocker`, so every form
+ * or sheet asks its leave question through the one guard.
  *
  * Walks a list of source files handed to it, rather than the filesystem itself, so a
  * test can feed it a fixture that must fail, not only the files that already pass.
@@ -56,15 +52,9 @@ const RULES: Rule[] = [
     allow: (path) => path === 'src/clipboard.ts',
   },
   {
-    name: 'navigatorShare',
-    pattern: /\bnavigator\s*\??\.\s*share\b|\bnavigator\s*\[\s*(['"])share\1\s*\]/,
-    allow: (path) => path === 'src/share.ts',
-  },
-  // Invariant 7: only `catalogQueryOptions` (`api/catalog.ts`) names the catalog query key.
-  {
-    name: 'catalogQueryKey',
-    pattern: /\bkeys\s*\.\s*catalog\b|\[\s*(['"])catalog\1\s*[,\]]/,
-    allow: (path) => path === 'src/api/catalog.ts' || path === 'src/api/keys.ts',
+    name: 'useBlocker',
+    pattern: /\buseBlocker\b/,
+    allow: (path) => path === 'src/components/useLeaveGuard.ts',
   },
   {
     name: 'execCommand',

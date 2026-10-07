@@ -12,6 +12,7 @@
  * VIP customer, no customer at all).
  */
 
+import { SALE as SALE_ROUTE, SALES, pathTo } from '../../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -52,10 +53,10 @@ function renderDetalle(initialState?: unknown) {
   // history entry (ADR-0027) and its depth is read from the router's own state.
   const router = createMemoryRouter(
     [
-      { path: '/ventas', element: <VentasProbe /> },
-      { path: '/ventas/:id', element: <VentaDetalle /> },
+      { path: SALES, element: <VentasProbe /> },
+      { path: SALE_ROUTE, element: <VentaDetalle /> },
     ],
-    { initialEntries: [{ pathname: '/ventas/10', state: initialState }] },
+    { initialEntries: [{ pathname: pathTo(SALE_ROUTE, { id: 10 }), state: initialState }] },
   )
   render(
     <QueryClientProvider client={queryClient}>
@@ -145,7 +146,7 @@ test('a gone sale shows the plain gone-detail state, never the generic retry', a
   renderDetalle()
 
   expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Volver a Ventas' })).toHaveAttribute('href', '/ventas')
+  expect(screen.getByRole('link', { name: 'Volver a Ventas' })).toHaveAttribute('href', SALES)
 })
 
 test('Borrar venta asks "Antes de borrar" naming the date, the amount and the grams returning to stock, then deletes and returns to Ventas with the plain toast', async () => {
@@ -340,4 +341,28 @@ test('assigning a customer a partner deleted meanwhile shows the gone notice on 
   await userEvent.click(await screen.findByText('Nico'))
 
   expect(await screen.findByText('Eso ya no está. La lista ya está al día.')).toBeInTheDocument()
+})
+
+test('a sale keeps its recorded "VIP" and "por cantidad" badges while both pricing switches are off', async () => {
+  const line = SALE.lines[0]
+  const recorded = {
+    ...SALE,
+    customer: { id: 5, name: 'Ana Pérez', vip: true },
+    lines: [
+      { ...line, variety_id: 2, variety_name: 'Flor A', pricing_rule: 'vip' },
+      { ...line, variety_id: 3, variety_name: 'Flor B', pricing_rule: 'bulk' },
+    ],
+  }
+  vi.mocked(fetch).mockImplementation((input) =>
+    Promise.resolve(
+      input === '/pricing-settings'
+        ? jsonResponse(200, { is_bulk_pricing: false, is_vip_customers: false })
+        : jsonResponse(200, recorded),
+    ),
+  )
+  renderDetalle()
+
+  expect(await screen.findByText('Venta del 14/09')).toBeInTheDocument()
+  expect(screen.getByText('VIP')).toBeInTheDocument()
+  expect(screen.getByText('por cantidad')).toBeInTheDocument()
 })

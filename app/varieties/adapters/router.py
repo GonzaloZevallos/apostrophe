@@ -25,12 +25,13 @@ from app.varieties.application.errors import (
     VarietyHasHistory,
     VarietyNotFound,
 )
-from app.varieties.application.ports import VarietyLeaving
+from app.varieties.application.ports import PricingSettingsReader, VarietyLeaving
 from app.varieties.domain.variety import (
     DuplicateEffectiveDate,
     UnknownPriceEntry,
     VarietyArchived,
     VarietyRuleBroken,
+    VipPriceNotBelowList,
 )
 
 router = APIRouter(prefix="/varieties", tags=["varieties"])
@@ -41,6 +42,18 @@ SessionDep = Annotated[Session, Depends(get_session)]
 
 def get_varieties(session: SessionDep, business_id: CurrentBusinessId) -> SqlVarieties:
     return SqlVarieties(session, business_id)
+
+
+def get_pricing_settings(
+    request: Request, session: SessionDep, business_id: CurrentBusinessId
+) -> PricingSettingsReader:
+    # Varieties never imports `app.pricing_settings`: `app/main.py` hangs the real
+    # reader on `app.state` as a `(Session, business_id)` factory (docs/adr/0006).
+    factory = cast(
+        Callable[[Session, int], PricingSettingsReader],
+        request.app.state.varieties_pricing_settings,
+    )
+    return factory(session, business_id)
 
 
 def get_leaving(
@@ -54,6 +67,7 @@ def get_leaving(
 
 
 VarietiesDep = Annotated[SqlVarieties, Depends(get_varieties)]
+SettingsDep = Annotated[PricingSettingsReader, Depends(get_pricing_settings)]
 LeavingDep = Annotated[VarietyLeaving, Depends(get_leaving)]
 TodayDep = Annotated[date, Depends(get_today)]
 ClockDep = Annotated[Clock, Depends(get_clock)]
@@ -63,7 +77,7 @@ as_http = TranslateErrors(
     [
         (404, (VarietyNotFound, VarietyArchived, UnknownPriceEntry)),
         (409, (NameTaken, NameHeldByArchived, VarietyHasHistory, DuplicateEffectiveDate)),
-        (422, (VarietyRuleBroken, InvalidGrams)),
+        (422, (VarietyRuleBroken, VipPriceNotBelowList, InvalidGrams)),
     ]
 )
 
@@ -148,18 +162,24 @@ def price_history(variety_id: int, varieties: VarietiesDep) -> list[PriceEntryOu
 
 @router.post("/{variety_id}/prices", status_code=201)
 def record_price_entry(
-    variety_id: int, body: PriceEntryIn, varieties: VarietiesDep, session: SessionDep
+    variety_id: int,
+    body: PriceEntryIn,
+    varieties: VarietiesDep,
+    settings: SettingsDep,
+    session: SessionDep,
 ) -> PriceEntryOut:
     with as_http:
         bulk_minimum = None if body.bulk_minimum is None else Grams.of(body.bulk_minimum)
         entry = manage_prices.record_price_entry(
             varieties,
+            settings,
             session,
             variety_id,
             effective_from=body.effective_from,
             list_price=body.list_price,
             bulk_price=body.bulk_price,
             bulk_minimum=bulk_minimum,
+            vip_price=body.vip_price,
         )
         return PriceEntryOut.of(entry)
 

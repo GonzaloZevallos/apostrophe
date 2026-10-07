@@ -7,10 +7,11 @@
  * different answer never showing the first answer's figures (`gcTime: 0`).
  */
 
+import { CATALOG, CUSTOMER, CUSTOMER_PAYMENT, CUSTOMERS, HOME, SETTINGS } from '../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Outlet, Route, Routes, useLocation } from 'react-router'
+import { MemoryRouter, Outlet, Route, Routes, useLocation, useParams } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import panelFixture from '../api/fixtures/panel.json'
 import type { PanelAnswer } from '../api/panel'
@@ -54,18 +55,31 @@ function stubFetch(
   )
 }
 
+function PaymentStub() {
+  const { id } = useParams<{ id: string }>()
+  const state: unknown = useLocation().state
+  const inApp = typeof state === 'object' && state !== null && 'inApp' in state && state.inApp === true
+  return (
+    <>
+      <span>cobro de {id}</span>
+      {inApp && <span>desde la app</span>}
+    </>
+  )
+}
+
 function renderInicio(
   client: QueryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } }),
 ) {
   return render(
     <QueryClientProvider client={client}>
-      <MemoryRouter initialEntries={['/']}>
+      <MemoryRouter initialEntries={[HOME]}>
         <Routes>
           <Route element={<Provide />}>
             <Route index element={<Inicio />} />
-            <Route path="clientes/deben" element={<span>pantalla te deben</span>} />
-            <Route path="clientes/:id" element={<span>ficha de cliente</span>} />
-            <Route path="settings" element={<SettingsLanding />} />
+            <Route path={CUSTOMERS} element={<span>pantalla clientes</span>} />
+            <Route path={CUSTOMER} element={<span>ficha de cliente</span>} />
+            <Route path={CUSTOMER_PAYMENT} element={<PaymentStub />} />
+            <Route path={SETTINGS} element={<SettingsLanding />} />
           </Route>
         </Routes>
       </MemoryRouter>
@@ -82,7 +96,7 @@ test('the business avatar at the top opens Configuración in one tap, carrying i
   renderInicio()
 
   const avatar = await screen.findByRole('link', { name: 'Configuración de La Huerta' })
-  expect(avatar).toHaveAttribute('href', '/settings')
+  expect(avatar).toHaveAttribute('href', SETTINGS)
   expect(avatar).toHaveTextContent('LH')
   // The name stays above the title, as the design draws it.
   expect(screen.getByText('La Huerta')).toBeInTheDocument()
@@ -300,14 +314,25 @@ test('Te deben: total, count, oldest date, and the teaser opens a customer card'
   expect(await screen.findByText('ficha de cliente')).toBeInTheDocument()
 })
 
-test('tapping "Te deben" opens the Te deben screen', async () => {
+test('the teaser\'s "Cobrar a X" opens Registrar cobro for that customer, from inside the app', async () => {
+  stubFetch(PANEL)
+  renderInicio()
+  await screen.findByText('$ 37.000')
+
+  screen.getByRole('link', { name: 'Cobrar a Ana Pérez' }).click()
+
+  expect(await screen.findByText('cobro de 1')).toBeInTheDocument()
+  expect(screen.getByText('desde la app')).toBeInTheDocument()
+})
+
+test('tapping "Te deben" opens Clientes, where the debtors section is', async () => {
   stubFetch(PANEL)
   renderInicio()
   await screen.findByText('$ 37.000')
 
   screen.getByRole('link', { name: 'Te deben' }).click()
 
-  expect(await screen.findByText('pantalla te deben')).toBeInTheDocument()
+  expect(await screen.findByText('pantalla clientes')).toBeInTheDocument()
 })
 
 test('"Nadie te debe" with nothing to tap when nobody owes', async () => {
@@ -398,5 +423,5 @@ test('shows the fixed pinned-catalog notice while the pin is out of date', async
   renderInicio()
 
   const notice = await screen.findByText(PINNED_CATALOG_OUT_OF_DATE)
-  expect(notice.closest('a')).toHaveAttribute('href', '/varieties/catalog')
+  expect(notice.closest('a')).toHaveAttribute('href', CATALOG)
 })
