@@ -45,6 +45,8 @@ import { parseMoney, parseSignedGrams } from '../format/parse'
 import { STOCK, VARIETIES } from '../routes'
 import type { Variety } from './Variedades'
 import { varietiesByName } from './varieties/varietiesByName'
+import Boton from '../components/Boton'
+import { COST_REQUIRED_HELP, onHandHelp, perGramPreview } from './stockMessages'
 
 export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
 export const COST_REQUIRED = 'Una compra necesita un costo total'
@@ -376,7 +378,7 @@ function EntradaStockBody({ mode, entryId, today, initial, chosenVariety, hasEnt
               ))}
             </select>
             {varietyGrams !== null && (
-              <span className="campo__ayuda">Hoy tiene {formatGrams(varietyGrams)}</span>
+              <span className="campo__ayuda" data-copy="help">{onHandHelp(formatGrams(varietyGrams))}</span>
             )}
           </label>
           <fieldset className="campo">
@@ -403,7 +405,7 @@ function EntradaStockBody({ mode, entryId, today, initial, chosenVariety, hasEnt
               value={totalCost}
               onChange={(event) => setTotalCost(event.target.value)}
             />
-            <span className="campo__ayuda">Obligatorio cuando es una compra</span>
+            <span className="campo__ayuda" data-copy="help">{COST_REQUIRED_HELP}</span>
           </label>
           <label className="campo">
             <span className="campo__rotulo">Nota</span>
@@ -421,19 +423,18 @@ function EntradaStockBody({ mode, entryId, today, initial, chosenVariety, hasEnt
           )}
           {offline && <SinConexion />}
           {preview !== null && (
-            <span className="pie">Te queda en {formatMoney(preview)} el gramo</span>
+            <span className="pie" data-copy="help">{perGramPreview(formatMoney(preview))}</span>
           )}
-          <button className="boton" type="submit" disabled={sending}>
+          <Boton textOnly="submit" type="submit" disabled={sending}>
             {mode === 'nuevo' ? 'Guardá la entrada' : 'Guardar'}
-          </button>
+          </Boton>
           {mode === 'editar' && (
-            <button
-              type="button"
-              className="boton--enlace"
+            <Boton
+              variant="icon"
+              action="delete"
+              ariaLabel="Borrar entrada"
               onClick={() => setConfirmingDelete(true)}
-            >
-              Borrar entrada
-            </button>
+            />
           )}
         </form>
       </div>

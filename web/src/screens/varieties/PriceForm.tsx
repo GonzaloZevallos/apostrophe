@@ -17,6 +17,8 @@ import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import { parseGrams, parseMoney } from '../../format/parse'
 import { GENERIC_REFUSAL_MESSAGE } from '../Variedades'
+import { PRICE_DISCOUNT_HELP, PRICE_FROM_GRAMS_HELP, PRICE_PER_GRAM_HELP } from './priceMessages'
+import Boton from '../../components/Boton'
 
 export const DUPLICATE_DATE_MESSAGE = 'Ya cargaste un precio con esa fecha'
 export const PRICE_INVALID_MESSAGE = 'Revisá los precios cargados'
@@ -140,7 +142,7 @@ export default function PriceForm({ varietyId, today, onDone, onCancel, onDirtyC
             onChange={(event) => setListPrice(event.target.value)}
             required
           />
-          <span className="campo__ayuda">Por gramo, en pesos enteros</span>
+          <span className="campo__ayuda" data-copy="help">{PRICE_PER_GRAM_HELP}</span>
           <FieldError message={errors.listPrice} />
         </label>
         <label className="campo">
@@ -151,7 +153,7 @@ export default function PriceForm({ varietyId, today, onDone, onCancel, onDirtyC
             value={bulkPrice}
             onChange={(event) => setBulkPrice(event.target.value)}
           />
-          <span className="campo__ayuda">Opcional · menor al precio de lista</span>
+          <span className="campo__ayuda" data-copy="help">{PRICE_DISCOUNT_HELP}</span>
           <FieldError message={errors.bulkPrice} />
         </label>
         <label className="campo">
@@ -162,14 +164,14 @@ export default function PriceForm({ varietyId, today, onDone, onCancel, onDirtyC
             value={bulkMinimum}
             onChange={(event) => setBulkMinimum(event.target.value)}
           />
-          <span className="campo__ayuda">Desde cuántos gramos aplica</span>
+          <span className="campo__ayuda" data-copy="help">{PRICE_FROM_GRAMS_HELP}</span>
           <FieldError message={errors.bulkMinimum} />
         </label>
         <FieldError message={errors.form} />
         {offline && <SinConexion />}
-        <button className="boton" type="submit" disabled={sending}>
+        <Boton textOnly="submit" type="submit" disabled={sending}>
           Guardá el precio
-        </button>
+        </Boton>
       </form>
     </div>
   )

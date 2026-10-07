@@ -25,6 +25,8 @@ import GoneScreen from '../components/GoneScreen'
 import InAppLink from '../components/InAppLink'
 import Loading from '../components/Loading'
 import SinConexion from '../components/SinConexion'
+import Boton from '../components/Boton'
+import BotonLink from '../components/BotonLink'
 import { useBackOr } from '../components/useBackOr'
 import { useFlash } from '../flash/useFlash'
 import { formatDate } from '../format/dates'
@@ -32,10 +34,9 @@ import { formatGrams, formatMoney } from '../format/money'
 import { STOCK_ENTRY, VARIETIES, VARIETY, WITHDRAWAL, pathTo } from '../routes'
 import type { Variety } from './Variedades'
 import { ORIGIN_LABEL } from './originLabel'
+import { EMPTY_STATE_DETAIL, EMPTY_STATE_TITLE } from './stockMessages'
 import { REASON_LABEL } from './withdrawals/withdrawalReasons'
 
-export const EMPTY_STATE_TITLE = 'Sin entradas de stock'
-export const EMPTY_STATE_DETAIL = 'Cargá tu stock inicial o una compra'
 
 function Card({ children }: { children: React.ReactNode }) {
   return (
@@ -124,9 +125,11 @@ export default function EntriesList({ varietyId }: Props) {
 
   return (
     <Card>
-      <button type="button" className="boton--enlace fila-entrada__volver" onClick={back}>
-        {varietyId === undefined ? '‹ Variedades' : `‹ ${varietyQuery.data?.name ?? ''}`}
-      </button>
+      <div className="fila-entrada__volver">
+        <Boton variant="back" onClick={back}>
+          {varietyId === undefined ? '‹ Variedades' : `‹ ${varietyQuery.data?.name ?? ''}`}
+        </Boton>
+      </div>
       <h1 className="encabezado__titulo">
         {varietyId === undefined ? 'Todas las entradas' : 'Entradas'}
       </h1>
@@ -136,8 +139,8 @@ export default function EntriesList({ varietyId }: Props) {
 
       {rows.length === 0 ? (
         <div className="estado-vacio">
-          <span className="estado-vacio__titulo">{EMPTY_STATE_TITLE}</span>
-          <span className="estado-vacio__detalle">{EMPTY_STATE_DETAIL}</span>
+          <span className="estado-vacio__titulo" data-copy="emptyTitle">{EMPTY_STATE_TITLE}</span>
+          <span className="estado-vacio__detalle" data-copy="emptyLine">{EMPTY_STATE_DETAIL}</span>
         </div>
       ) : (
         <ul className="lista-entradas">
@@ -180,10 +183,15 @@ export default function EntriesList({ varietyId }: Props) {
                   )}
                 </span>
                 <span className="fila-entrada__acciones">
-                  <InAppLink to={pathTo(STOCK_ENTRY, { id: entry.id })}>Editar</InAppLink>
-                  <button type="button" className="boton--enlace" onClick={() => setConfirming(entry)}>
-                    Borrar
-                  </button>
+                  <BotonLink variant="link" to={pathTo(STOCK_ENTRY, { id: entry.id })}>
+                    Editar
+                  </BotonLink>
+                  <Boton
+                    variant="icon"
+                    action="delete"
+                    ariaLabel="Borrar"
+                    onClick={() => setConfirming(entry)}
+                  />
                 </span>
               </li>
             ),

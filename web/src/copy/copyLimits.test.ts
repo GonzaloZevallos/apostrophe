@@ -18,6 +18,8 @@ const KNOWN_MODULES = [
   '/src/screens/pinPublishMessages.ts',
   '/src/screens/settings/integrationsMessages.ts',
   '/src/screens/settings/messages.ts',
+  '/src/screens/stockMessages.ts',
+  '/src/screens/varieties/priceMessages.ts',
   '/src/screens/varieties/thresholdMessages.ts',
   '/src/screens/varieties/varietiesMessages.ts',
 ]

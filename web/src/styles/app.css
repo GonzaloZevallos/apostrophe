@@ -2483,8 +2483,20 @@ body {
   box-shadow: none;
 }
 
-.fila-entrada__volver {
+.fila-entrada__volver,
+.fila-entrada__volver .boton--enlace {
   align-self: flex-start;
+  text-decoration: none;
+  box-shadow: none;
+}
+
+/* The withdrawal detail's back keeps the 44 px target it had as a round button. */
+.retiro__volver .boton--enlace {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
   text-decoration: none;
   box-shadow: none;
 }

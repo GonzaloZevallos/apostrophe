@@ -18,6 +18,7 @@ import SinConexion from '../../components/SinConexion'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
 import { useFlash } from '../../flash/useFlash'
 import { VARIETIES } from '../../routes'
+import Boton from '../../components/Boton'
 import {
   GENERIC_REFUSAL_MESSAGE,
   NAME_INVALID_MESSAGE,
@@ -25,6 +26,7 @@ import {
   VARIETY_SAVED,
   type Variety,
 } from '../Variedades'
+import { VARIETY_NAME_HELP } from './priceMessages'
 
 const SAVE_OVERRIDES: Partial<Record<RefusalCode, string>> = {
   'variety.name_taken': NAME_TAKEN_MESSAGE,
@@ -96,7 +98,7 @@ export default function VarietyNew() {
                 onChange={(event) => setName(event.target.value)}
                 required
               />
-              <span className="pie">Hasta 60 caracteres · no puede repetir el nombre de otra variedad</span>
+              <span className="pie" data-copy="help">{VARIETY_NAME_HELP}</span>
               {error !== null && (
                 <span className="campo__error" role="alert">
                   {error}
@@ -104,9 +106,9 @@ export default function VarietyNew() {
               )}
             </label>
             {offline && <SinConexion />}
-            <button className="boton" type="submit" disabled={sending}>
+            <Boton textOnly="submit" type="submit" disabled={sending}>
               Agregá la variedad
-            </button>
+            </Boton>
           </form>
         </div>
       </div>
