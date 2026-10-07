@@ -29,6 +29,7 @@ from app.expenses.adapters.expenses_ledger import SqlExpensesLedger
 from app.expenses.adapters.router import router as expenses_router
 from app.http_errors import Refused
 from app.migrations.runner import upgrade_to_head
+from app.onboarding.adapters.opening import OnboardingOpening
 from app.payments.adapters.payments_ledger import SqlPaymentsLedger
 from app.payments.adapters.results_ports import SqlDebtSummary
 from app.payments.adapters.router import customers_router as payments_customers_router
@@ -159,7 +160,7 @@ def create_app(
     # at opening, so a new one joins here, not as a second keyword argument on
     # `accept_invitation` (docs/adr/0006).
     app.state.business_opening = CompositeOpening(
-        ExpenseCategoriesOpening, CatalogHeaderFooterOpening
+        ExpenseCategoriesOpening, CatalogHeaderFooterOpening, OnboardingOpening
     )
     # A factory, not an instance (the same shape as `business_opening` above): sales
     # reaches line cost only through its own `LineCosts` port, never `app.stock`

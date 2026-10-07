@@ -12,6 +12,7 @@ from app.catalog.adapters import tables as catalog_tables
 from app.customers.adapters import tables as customers_tables
 from app.db import Base
 from app.expenses.adapters import tables as expenses_tables
+from app.onboarding.adapters import tables as onboarding_tables
 from app.payments.adapters import tables as payments_tables
 from app.pinned_catalog.adapters import tables as pinned_catalog_tables
 from app.sales.adapters import tables as sales_tables
@@ -28,6 +29,7 @@ TABLE_MODULES = (
     catalog_tables,
     payments_tables,
     pinned_catalog_tables,
+    onboarding_tables,
 )
 
 metadata: MetaData = Base.metadata
