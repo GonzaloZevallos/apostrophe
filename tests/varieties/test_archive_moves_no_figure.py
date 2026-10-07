@@ -98,6 +98,15 @@ def _seed(client: TestClient, clock: MovableClock) -> Seed:
     _entry(client, a, "-150", "2026-10-02", origin="adjustment")
     # a sale line whose grams have no lot behind them
     sales.append(_sale(client, "2026-10-03", [{"variety_id": a, "grams": "10"}], payment="cash"))
+    # a sale on the clock's own day, so the panel's today and week are not empty either
+    sales.append(
+        _sale(
+            client,
+            "2026-10-15",
+            [{"variety_id": a, "grams": "1"}, {"variety_id": b, "grams": "1"}],
+            payment="cash",
+        )
+    )
     category = _ok(client.post("/expense-categories", json={"name": "Bolsitas"}), 201)
     _ok(
         client.post(
@@ -155,6 +164,10 @@ def test_no_figure_of_the_books_moves_when_a_variety_is_archived_and_restored(
     assert before["panel_periods"]["month"]["pending_cost"] is True
     assert before["analysis"]["2026-09"]["month"]["varieties"]
     assert before["account"]
+    # today and week hold the sale of the clock's day: a filter on archived varieties there
+    # would move them
+    for period in ("today", "week"):
+        assert before["panel_periods"][period]["sales_count"] >= 1, period
 
     _archive(client, seed.archived_id)
     while_archived = _books(client, seed)

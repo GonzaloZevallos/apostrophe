@@ -5,10 +5,9 @@ from typing import Any
 
 from fastapi.testclient import TestClient
 from sqlalchemy.engine import Engine
-from sqlalchemy.orm import Session
 
-from app.varieties.adapters.tables import VarietyRow
 from tests.conftest import MovableClock
+from tests.fakes.archive import archive_by_hand
 
 GOLD_JANUARY = {
     "effective_from": "2026-01-01",
@@ -222,20 +221,12 @@ def test_refusal_bodies_carry_the_rule_s_code(client: TestClient) -> None:
     assert bad_grams.json()["code"] == "grams.invalid"
 
 
-def _archive_by_hand(engine: Engine, variety_id: int) -> None:
-    with Session(engine) as session:
-        row = session.get(VarietyRow, variety_id)
-        assert row is not None
-        row.archived_at = datetime(2026, 10, 6, tzinfo=UTC)
-        session.commit()
-
-
 def test_an_archived_variety_is_absent_from_the_list_but_still_found_by_id(
     client: TestClient, engine: Engine
 ) -> None:
     kept = _register(client, "Kept")
     gone = _register(client, "Gone")
-    _archive_by_hand(engine, gone["id"])
+    archive_by_hand(engine, gone["id"])
 
     assert [v["id"] for v in client.get("/varieties").json()] == [kept["id"]]
     assert client.get(f"/varieties/{gone['id']}").status_code == 200
@@ -243,7 +234,7 @@ def test_an_archived_variety_is_absent_from_the_list_but_still_found_by_id(
 
 def test_an_archived_variety_still_holds_its_name(client: TestClient, engine: Engine) -> None:
     gone = _register(client, "Gone")
-    _archive_by_hand(engine, gone["id"])
+    archive_by_hand(engine, gone["id"])
 
     assert client.post("/varieties", json={"name": " GONE "}).status_code == 409
     other = _register(client, "Other")
