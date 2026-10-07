@@ -3955,5 +3955,13 @@ body {
 /* GH-97 area e (Inicio, Gastos, Análisis, Estados, getting-in): Inicio's Cobrar pill
  * draws its icon beside the word. */
 .bloque-deben .cobrar {
+  flex: none;
   gap: var(--espacio-sm);
+}
+
+/* The wider pill must not push the row past the card on a phone: the customer's data
+ * gives up its width first and wraps whole items instead of squeezing them. */
+.bloque-deben__datos {
+  min-width: 0;
+  flex-wrap: wrap;
 }
