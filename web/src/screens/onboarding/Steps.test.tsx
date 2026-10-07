@@ -131,8 +131,12 @@ test('step 1 with a price target shows the price form only and ends with one var
   const afterPrice = answer(['done', 'pending', 'pending', 'pending', 'pending', 'pending'], {
     stock_target: MANGO,
   })
+  const priceBodies: unknown[] = []
   stubFetch(answer(NONE, { price_target: MANGO }), {
-    'POST /varieties/7/prices': () => json({}),
+    'POST /varieties/7/prices': (body) => {
+      priceBodies.push(body)
+      return json({})
+    },
     'GET /onboarding-progress': () => json(calls.includes('POST /varieties/7/prices') ? afterPrice : answer(NONE, { price_target: MANGO })),
   })
   const user = userEvent.setup()
@@ -140,6 +144,8 @@ test('step 1 with a price target shows the price form only and ends with one var
 
   expect(await screen.findByText('Variedad: Mango Bomb')).toBeInTheDocument()
   expect(screen.queryByLabelText(/^Nombre/)).not.toBeInTheDocument()
+  // The price is effective today: there is no date to change.
+  expect(screen.queryByLabelText('Rige desde')).not.toBeInTheDocument()
   // One "Cerrar", the frame's own: the price form draws no title row here.
   expect(screen.getAllByRole('button', { name: 'Cerrar' })).toHaveLength(1)
   await user.type(screen.getByLabelText(/^Precio de lista/), '12000')
@@ -147,7 +153,7 @@ test('step 1 with a price target shows the price form only and ends with one var
 
   expect(await screen.findByRole('heading', { name: 'Cargá lo que tenés hoy' })).toBeInTheDocument()
   expect(calls).not.toContain('POST /varieties')
-  expect(calls.filter((call) => call === 'POST /varieties/7/prices')).toHaveLength(1)
+  expect(priceBodies).toEqual([{ effective_from: '2026-10-03', list_price: 12000 }])
 })
 
 test('step 1 with no target names the variety, then a refused price keeps what was typed and the retry sends only the price', async () => {

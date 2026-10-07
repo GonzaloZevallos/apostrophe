@@ -42,7 +42,8 @@ export interface PriceFormProps {
   onCancel: () => void
   onDirtyChange: (dirty: boolean) => void
   onGone: () => void
-  /** A host with its own frame and its own "Cerrar" (the Onboarding) leaves the title row out. */
+  /** A host with its own frame and its own "Cerrar" (the Onboarding) leaves the title row out
+   * and keeps the price effective today: no "Rige desde" to change. */
   bare?: boolean
 }
 
@@ -132,17 +133,21 @@ export default function PriceForm({
         </div>
       )}
       <form className="formulario" onSubmit={onSubmit}>
-        <label className="campo">
-          <span className="campo__rotulo">Rige desde</span>
-          <input
-            className="campo__input"
-            type="date"
-            value={effectiveFrom}
-            onChange={(event) => setEffectiveFrom(event.target.value)}
-            required
-          />
+        {bare ? (
           <FieldError message={errors.effectiveFrom} />
-        </label>
+        ) : (
+          <label className="campo">
+            <span className="campo__rotulo">Rige desde</span>
+            <input
+              className="campo__input"
+              type="date"
+              value={effectiveFrom}
+              onChange={(event) => setEffectiveFrom(event.target.value)}
+              required
+            />
+            <FieldError message={errors.effectiveFrom} />
+          </label>
+        )}
         <label className="campo">
           <span className="campo__rotulo">Precio de lista</span>
           <input
