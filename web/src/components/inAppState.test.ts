@@ -1,15 +1,16 @@
 import { expect, test } from 'vitest'
+import { CUSTOMERS } from '../routes'
 import { inAppState, findInAppLiterals } from './inAppState'
 
 test('inAppState marks the entry as in-app and carries the pathname it was opened from', () => {
-  expect(inAppState({ pathname: '/customers' })).toEqual({ inApp: true, from: '/customers' })
+  expect(inAppState({ pathname: CUSTOMERS })).toEqual({ inApp: true, from: CUSTOMERS })
 })
 
 test('inAppState keeps the extra state it is given and never lets it override the marker', () => {
-  expect(inAppState({ pathname: '/customers' }, { customerId: '7' })).toEqual({
+  expect(inAppState({ pathname: CUSTOMERS }, { customerId: '7' })).toEqual({
     customerId: '7',
     inApp: true,
-    from: '/customers',
+    from: CUSTOMERS,
   })
   expect(inAppState({ pathname: '/a' }, { inApp: false, from: '/b' })).toEqual({ inApp: true, from: '/a' })
 })

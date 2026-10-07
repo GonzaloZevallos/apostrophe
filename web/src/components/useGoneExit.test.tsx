@@ -133,6 +133,6 @@ test('the parent is the one of the viewport the user leaves in, not the one it o
 
 test('normalisePath drops the query, the hash and one trailing slash, and keeps the root', () => {
   expect(normalisePath('/a/b/?x=1#y')).toBe('/a/b')
-  expect(normalisePath('/')).toBe('/')
+  expect(normalisePath(HOME)).toBe(HOME)
   expect(normalisePath('/a//')).toBe('/a/')
 })

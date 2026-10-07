@@ -18,7 +18,7 @@ import { markGone } from './goneExit'
 /** A pathname without its query, hash and one trailing slash (the root stays `/`). */
 export function normalisePath(path: string): string {
   const bare = path.replace(/[?#].*$/, '')
-  return bare.length > 1 && bare.endsWith('/') ? bare.slice(0, -1) : bare
+  return bare.replace(/(.)\/$/, '$1')
 }
 
 function fromOf(state: unknown): string | null {
