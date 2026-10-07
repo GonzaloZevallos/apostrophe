@@ -99,6 +99,9 @@ test('a sale is recorded in under a minute from a phone: existing customer, new 
       await page.getByLabel('Teléfono').fill('+5491155550012')
       await page.getByLabel('Nombre').fill('Luz Díaz')
       await page.getByRole('button', { name: 'Crear cliente' }).click()
+      // The sheets close by history, a moment after the customer is saved; until then the
+      // picker's own list also names customers, so the chosen one is read once it is gone.
+      await expect(page.locator('.cliente-sheet')).toHaveCount(0)
       await expect(page.locator('.lista-clientes__nombre')).toHaveText('Luz Díaz')
     }
     await page.getByRole('radio', { name: 'Efectivo' }).check()
