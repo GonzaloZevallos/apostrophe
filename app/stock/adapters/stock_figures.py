@@ -44,7 +44,7 @@ class SqlStockFigures:
         threshold_map = self._thresholds.all()
 
         rows: list[StockRow] = []
-        for variety in self._varieties.all():
+        for variety in self._varieties.listed():
             assert variety.id is not None, "only a stored variety is read"
             lots, draws = grouped.get(variety.id, ([], []))
             threshold = threshold_map.get(variety.id)

@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime
 
 from sqlalchemy import ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db import Base
+from app.db import Base, UtcDateTime
 from app.varieties.domain.variety import NAME_MAX_LENGTH
 
 
@@ -18,6 +18,8 @@ class VarietyRow(Base):
     business_id: Mapped[int] = mapped_column(ForeignKey("business.id"))
     name: Mapped[str] = mapped_column(String(NAME_MAX_LENGTH))
     name_key: Mapped[str] = mapped_column(String(NAME_MAX_LENGTH))
+    # The only stored fact about archiving: `NULL` is a live variety (docs/product/varieties.md).
+    archived_at: Mapped[datetime | None] = mapped_column(UtcDateTime)
     price_entries: Mapped[list[PriceEntryRow]] = relationship(
         back_populates="variety", cascade="all, delete-orphan"
     )

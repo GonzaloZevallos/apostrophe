@@ -14,5 +14,6 @@ class SqlVarietyCatalog:
         return self._varieties.get(variety_id) is not None
 
     def ids(self) -> list[int]:
-        ids = [variety.id for variety in self._varieties.all()]
+        # Archived varieties keep their stock rows' ids here; hiding them is the reader's job.
+        ids = [variety.id for variety in (*self._varieties.listed(), *self._varieties.archived())]
         return [variety_id for variety_id in ids if variety_id is not None]

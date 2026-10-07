@@ -13,3 +13,12 @@ class NameTaken(ValueError):
 
     def __init__(self, name: str) -> None:
         super().__init__(f"there is already a variety called {name}")
+
+
+class NameHeldByArchived(ValueError):
+    """The name belongs to an archived variety: fixed text, nothing typed is repeated."""
+
+    code: ClassVar[str] = "variety.name_archived"
+
+    def __init__(self) -> None:
+        super().__init__("the name belongs to an archived variety")

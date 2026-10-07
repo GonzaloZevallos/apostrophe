@@ -19,7 +19,7 @@ class SqlCatalogVarieties:
 
     def on(self, day: date) -> list[CatalogVariety]:
         views = []
-        for variety in self._varieties.all():
+        for variety in self._varieties.listed():
             assert variety.id is not None, "only stored varieties are read here"
             views.append(
                 CatalogVariety(
