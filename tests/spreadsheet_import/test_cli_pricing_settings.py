@@ -10,13 +10,16 @@ import io
 from datetime import date
 from pathlib import Path
 
+import pytest
 from fastapi.testclient import TestClient
 from openpyxl import Workbook
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app.accounts.adapters.tables import BusinessRow
+from app.pricing_settings.adapters.import_port import PricingSettingsImport
+from app.pricing_settings.adapters.tables import PricingSettingsRow
 from app.spreadsheet_import.adapters import layout
 from app.spreadsheet_import.adapters.cli import run
 from tests.conftest import MovableClock
@@ -208,3 +211,37 @@ def test_a_lista_row_at_the_bulk_minimum_takes_the_bulk_price_with_the_switches_
 
     assert code == 0
     assert _only_sale(client)["total"] == 16_000
+
+
+def test_a_switch_turned_on_between_the_plan_and_the_write_still_succeeds_with_the_plans_prices(
+    client: TestClient,
+    engine: Engine,
+    clock: MovableClock,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A second writer switches Precio por cantidad on after the plan read the stored
+    switches (both off) and right before the write's own `switch_on`: the run is no
+    refusal, the switches end as stored OR needed, and the sale keeps the planned total."""
+    business_id = _business_id(engine)
+    original = PricingSettingsImport.switch_on
+
+    def _racing_switch_on(self: PricingSettingsImport, bulk: bool, vip: bool) -> None:
+        with Session(engine) as racer:
+            racer.execute(
+                update(PricingSettingsRow)
+                .where(PricingSettingsRow.business_id == business_id)
+                .values(is_bulk_pricing=True)
+            )
+            racer.commit()
+        original(self, bulk, vip)
+
+    monkeypatch.setattr(PricingSettingsImport, "switch_on", _racing_switch_on)
+    sheet = _workbook(bulk=True, kind="Amigo", grams=10, total=8000)
+
+    code, out = _import(client, engine, clock, tmp_path, sheet)
+
+    assert code == 0
+    assert "Switches turned on: Precio por cantidad, Clientes VIP" in out
+    assert _switches(client) == (True, True)
+    assert _only_sale(client)["total"] == 8000
