@@ -1,4 +1,4 @@
-"""`/onboarding-progress` over HTTP (docs/adr/0035): the Onboarding's one answer, read and
+"""`/onboarding-progress` over HTTP (docs/adr/0036): the Onboarding's one answer, read and
 written through the session's own business, over the real owners' adapters."""
 
 from typing import Any

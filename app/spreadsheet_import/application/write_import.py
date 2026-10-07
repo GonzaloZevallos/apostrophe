@@ -128,7 +128,7 @@ def write_import(
         )
 
     # After the last writer, under the same `NoCommit`: the import's one commit carries
-    # the end of the Onboarding with the records that made it over (docs/adr/0035).
+    # the end of the Onboarding with the records that made it over (docs/adr/0036).
     onboarding.imported(import_instant, transaction)
 
 

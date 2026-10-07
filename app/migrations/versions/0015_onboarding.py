@@ -1,4 +1,4 @@
-"""The Onboarding's state (CONTEXT.md: Onboarding; ADR-0035): one `onboarding` row per
+"""The Onboarding's state (CONTEXT.md: Onboarding; ADR-0036): one `onboarding` row per
 business that is offered it, carrying only the four optional steps' passes and its end.
 No backfill: a business that existed before has no row and is never offered one.
 

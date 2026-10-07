@@ -966,7 +966,7 @@ def test_another_business_s_analysis_is_exactly_the_empty_shape(
 def test_each_business_has_its_own_onboarding_row_and_reads_no_other(
     business_a: TestClient, business_b: TestClient, engine: Engine
 ) -> None:
-    # Opening each business through its invitation seeded its row (docs/adr/0035).
+    # Opening each business through its invitation seeded its row (docs/adr/0036).
     with Session(engine) as session:
         rows = session.scalars(select(OnboardingRow)).all()
         assert len(rows) == 2

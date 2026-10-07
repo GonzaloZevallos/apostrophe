@@ -302,7 +302,7 @@ class BusinessDirectory(Protocol):
 
 
 class OnboardingEnding(Protocol):
-    """The Onboarding's end (docs/adr/0035): a successful import ends it. Nothing else
+    """The Onboarding's end (docs/adr/0036): a successful import ends it. Nothing else
     of the Onboarding is touched, and eligibility never looks at its state."""
 
     def imported(self, at: datetime, transaction: Transaction) -> None:

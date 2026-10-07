@@ -252,7 +252,7 @@ def create_app(
     app.state.expenses_ledger = SqlExpensesLedger
     app.state.purchases_ledger = SqlPurchases
     # The Onboarding reads each owner's facts only through its own ports (ADR-0006,
-    # ADR-0035), the same `(Session, business_id)` factory shape as above; the varieties
+    # ADR-0036), the same `(Session, business_id)` factory shape as above; the varieties
     # one also takes today, since "priced today" is a fact of the day.
     app.state.onboarding_variety_facts = SqlVarietyFacts
     app.state.onboarding_stock_facts = SqlStockFacts

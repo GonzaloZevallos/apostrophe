@@ -1,4 +1,4 @@
-"""Implements the Onboarding's `VarietyFacts` port (docs/adr/0035) for one business:
+"""Implements the Onboarding's `VarietyFacts` port (docs/adr/0036) for one business:
 read-only, each listed (unarchived) variety's id and name and whether it has a price in
 force today.
 Varieties never imports the Onboarding; `app/main.py` wires this in."""

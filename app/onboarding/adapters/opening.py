@@ -1,6 +1,6 @@
 """Implements accounts' `BusinessOpening` port (docs/adr/0006): a new business is
 offered the Onboarding by inserting its row, inside the same transaction that opens it
-(docs/adr/0035). Accounts never imports this module; `app/main.py` is the composition
+(docs/adr/0036). Accounts never imports this module; `app/main.py` is the composition
 root that wires it in, through `CompositeOpening`. A joined business gets no row."""
 
 from __future__ import annotations

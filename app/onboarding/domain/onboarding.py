@@ -1,6 +1,6 @@
 """The Onboarding (CONTEXT.md: Onboarding): what the data cannot say about a brand-new
 business's first run -- how each optional step was passed, and when it ended
-(docs/adr/0035). Everything else (done, count, resume) is derived on every read."""
+(docs/adr/0036). Everything else (done, count, resume) is derived on every read."""
 
 from __future__ import annotations
 

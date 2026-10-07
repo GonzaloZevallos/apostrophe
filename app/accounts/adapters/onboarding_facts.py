@@ -1,4 +1,4 @@
-"""Implements the Onboarding's `UserFacts` port (docs/adr/0035) for one business:
+"""Implements the Onboarding's `UserFacts` port (docs/adr/0036) for one business:
 read-only, how many users it has. Filtered by `business_id`."""
 
 from __future__ import annotations

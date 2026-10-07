@@ -1,4 +1,4 @@
-"""Migration 0015's `onboarding` table (CONTEXT.md: Onboarding; ADR-0035), read from the
+"""Migration 0015's `onboarding` table (CONTEXT.md: Onboarding; ADR-0036), read from the
 schema `upgrade_to_head` really builds: one row per business, each pass limited to the
 values the domain knows, no backfill for a business that already existed."""
 

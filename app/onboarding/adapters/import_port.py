@@ -1,5 +1,5 @@
 """Implements the import's `OnboardingEnding` port
-(`app/spreadsheet_import/application/ports.py`) for one business (docs/adr/0035): a
+(`app/spreadsheet_import/application/ports.py`) for one business (docs/adr/0036): a
 successful import ends the Onboarding, through the domain's own `Onboarding.end`.
 
 Only the `onboarding` table, through this hexagon's own `SqlOnboardings`. It flushes and

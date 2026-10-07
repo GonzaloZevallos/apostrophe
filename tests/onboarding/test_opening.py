@@ -1,4 +1,4 @@
-"""Who gets the Onboarding (docs/adr/0035), through `POST /invitations/{token}/accept`:
+"""Who gets the Onboarding (docs/adr/0036), through `POST /invitations/{token}/accept`:
 accepting a new-business invitation leaves exactly one row for the new business, and
 accepting a join invitation adds none."""
 

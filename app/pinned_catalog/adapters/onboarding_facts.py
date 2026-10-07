@@ -1,4 +1,4 @@
-"""Implements the Onboarding's `BotFacts` port (docs/adr/0035) for one business:
+"""Implements the Onboarding's `BotFacts` port (docs/adr/0036) for one business:
 read-only, whether bot settings are saved. It reads presence only, never the token
 (CODING_STANDARDS section 9)."""
 

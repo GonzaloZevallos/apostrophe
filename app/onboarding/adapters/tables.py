@@ -1,4 +1,4 @@
-"""The `onboarding` table (CONTEXT.md: Onboarding; docs/adr/0035): one row per business
+"""The `onboarding` table (CONTEXT.md: Onboarding; docs/adr/0036): one row per business
 that is offered the Onboarding, inserted when its new-business invitation is accepted.
 A business with no row is never offered one: no backfill, and no row for a joined
 business. The four optional steps' passes are nullable (`done` or `skipped`); a required

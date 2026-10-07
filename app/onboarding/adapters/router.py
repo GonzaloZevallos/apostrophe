@@ -1,4 +1,4 @@
-"""`/onboarding-progress` (docs/adr/0035): the Onboarding's one answer, read and written
+"""`/onboarding-progress` (docs/adr/0036): the Onboarding's one answer, read and written
 for the session's own business only, which only ever comes from `CurrentBusinessId`
 (CODING_STANDARDS section 9). The only request input is the pass body's `step` and `as`.
 
