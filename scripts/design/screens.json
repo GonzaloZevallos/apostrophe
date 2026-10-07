@@ -62,6 +62,8 @@
     { "screen": "ConfiguracionNegocioCompu", "route": "/settings/business", "path": "/settings/business", "viewport": [1280, 920] },
     { "screen": "ConfiguracionUsuarios", "route": "/settings/users", "path": "/settings/users" },
     { "screen": "ConfiguracionUsuariosCompu", "route": "/settings/users", "path": "/settings/users", "viewport": [1280, 920] },
+    { "screen": "ConfiguracionPrecios", "route": "/settings/prices", "path": "/settings/prices" },
+    { "screen": "ConfiguracionPreciosCompu", "route": "/settings/prices", "path": "/settings/prices", "viewport": [1280, 920] },
     { "screen": "ConfiguracionIntegraciones", "route": "/settings/integrations", "path": "/settings/integrations" },
     { "screen": "ConfiguracionIntegracionesCompu", "route": "/settings/integrations", "path": "/settings/integrations", "viewport": [1280, 920] },
     { "screen": "ConfiguracionMensaje", "route": "/settings/catalog-message", "path": "/settings/catalog-message" },

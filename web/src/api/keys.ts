@@ -18,6 +18,7 @@ export type Resource =
   | 'catalog'
   | 'payments'
   | 'pinnedCatalog'
+  | 'pricingSettings'
 
 const PREFIX: Record<Resource, string> = {
   me: 'me',
@@ -31,6 +32,7 @@ const PREFIX: Record<Resource, string> = {
   catalog: 'catalog',
   payments: 'payments',
   pinnedCatalog: 'pinned-catalog',
+  pricingSettings: 'pricing-settings',
 }
 
 export const keys = {
@@ -71,6 +73,9 @@ export const keys = {
   // query in one call.
   pinnedCatalog: () => [PREFIX.pinnedCatalog] as const,
   pinnedCatalogStatus: () => [PREFIX.pinnedCatalog, 'status'] as const,
+  // Read by `api/pricingSettings.ts` only (frozen the same way `catalog` is); Precios' own save
+  // sets its data directly.
+  pricingSettings: () => [PREFIX.pricingSettings] as const,
   customerAccount: (id: string) => [PREFIX.payments, 'account', id] as const,
   debtors: () => [PREFIX.payments, 'debtors'] as const,
   // "Registrar cobro"'s own preview (plan, "keys.ts"): a dry-run of the settlement,

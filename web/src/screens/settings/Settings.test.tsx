@@ -16,6 +16,7 @@ import { router as appRouter } from '../../router'
 const GROUPS = [
   ['Negocio', '/settings/business'],
   ['Usuarios', '/settings/users'],
+  ['Precios', '/settings/prices'],
   ['Integraciones', '/settings/integrations'],
   ['Mensaje del catálogo', '/settings/catalog-message'],
   ['Categorías de gastos', '/settings/expense-categories'],
@@ -63,7 +64,7 @@ afterEach(() => {
   queryClient.clear()
 })
 
-test('lists exactly the seven groups in order, each a link to its own route', async () => {
+test('lists exactly the eight groups in order, each a link to its own route', async () => {
   stubComputer(false)
   renderApp(['/settings'])
 

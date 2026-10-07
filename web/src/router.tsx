@@ -58,6 +58,7 @@ import BusinessGroup from './screens/settings/BusinessGroup'
 import CatalogMessageGroup from './screens/settings/CatalogMessageGroup'
 import ExpenseCategoriesGroup from './screens/settings/ExpenseCategoriesGroup'
 import IntegrationsGroup from './screens/settings/IntegrationsGroup'
+import PricingGroup from './screens/settings/PricingGroup'
 import UsersGroup from './screens/settings/UsersGroup'
 import NuevaVenta from './screens/ventas/NuevaVenta'
 import VentaDetalle from './screens/ventas/VentaDetalle'
@@ -154,6 +155,7 @@ export const router = createBrowserRouter([
               { path: 'settings', element: <Settings />, handle: { chrome: 'card', tab: 'more' } },
               { path: 'settings/business', element: <BusinessGroup />, handle: { chrome: 'none', tab: 'more' } },
               { path: 'settings/users', element: <UsersGroup />, handle: { chrome: 'none', tab: 'more' } },
+              { path: 'settings/prices', element: <PricingGroup />, handle: { chrome: 'none', tab: 'more' } },
               {
                 path: 'settings/integrations',
                 element: <IntegrationsGroup />,

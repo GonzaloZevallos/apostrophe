@@ -23,6 +23,7 @@ export type SuccessToast =
   | 'Cliente asignado'
   | 'Aviso guardado'
   | 'Catálogo guardado'
+  | 'Precios guardados'
   | 'Catálogo copiado'
   | 'Cobro eliminado'
   | 'Prueba enviada'
