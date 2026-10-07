@@ -32,7 +32,7 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
 
   // A priced variety.
   await page.goto(VARIETIES)
-  await page.getByRole('button', { name: 'Nueva variedad' }).click()
+  await page.getByRole('link', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Rosa')
   await page.getByRole('button', { name: 'Agregá la variedad' }).click()
   await expect(page.getByText('Variedad guardada')).toBeVisible()

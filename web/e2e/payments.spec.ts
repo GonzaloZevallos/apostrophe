@@ -50,7 +50,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
 
   // One priced variety, $1.000/g — round figures for every assertion below.
   await page.goto(VARIETIES)
-  await page.getByRole('button', { name: 'Nueva variedad' }).click()
+  await page.getByRole('link', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Rosa')
   await page.getByRole('button', { name: 'Agregá la variedad' }).click()
   await expect(page.getByText('Variedad guardada')).toBeVisible()

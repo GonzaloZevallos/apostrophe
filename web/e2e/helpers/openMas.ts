@@ -1,4 +1,5 @@
-import { HOME } from '../../src/routes.js'
+import { CATALOG, HOME } from '../../src/routes.js'
+import { expectPath } from './url.js'
 import type { Page } from '@playwright/test'
 
 /** A phone: the bar, and so Más, only exists there; a computer's sidebar has no Más. */
@@ -30,5 +31,8 @@ export async function openCatalog(page: Page): Promise<void> {
   await page.goto(HOME)
   await page.getByRole('link', { name: 'Variedades', exact: true }).click()
   await page.getByRole('link', { name: 'Mandar catálogo' }).click()
+  // Wait for the move before the viewport changes back: on a computer Variedades would select its
+  // first variety and take the click's navigation over.
+  await expectPath(page, CATALOG)
   if (before !== null) await page.setViewportSize(before)
 }

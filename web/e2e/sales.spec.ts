@@ -133,7 +133,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   // desde" of today would leave those earlier dates with no price of their own.
   async function addVariety(name: string, listPrice?: string, effectiveFrom?: string): Promise<void> {
     await page.goto(VARIETIES)
-    await page.getByRole('button', { name: 'Nueva variedad' }).click()
+    await page.getByRole('link', { name: 'Nueva variedad' }).click()
     await page.getByLabel('Nombre').fill(name)
     await page.getByRole('button', { name: 'Agregá la variedad' }).click()
     await expect(page.getByText('Variedad guardada')).toBeVisible()

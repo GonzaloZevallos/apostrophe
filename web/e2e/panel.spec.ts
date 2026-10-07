@@ -174,7 +174,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
 
   // A priced variety.
   await page.goto(VARIETIES)
-  await page.getByRole('button', { name: 'Nueva variedad' }).click()
+  await page.getByRole('link', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Rosa')
   await page.getByRole('button', { name: 'Agregá la variedad' }).click()
   await expect(page.getByText('Variedad guardada')).toBeVisible()

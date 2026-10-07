@@ -26,7 +26,7 @@ test('Back on a dirty Registrar cobro and on a dirty Nueva venta asks, and "No" 
   await expect(page.locator('.encabezado__negocio')).toBeVisible()
 
   await page.goto(VARIETIES)
-  await page.getByRole('button', { name: 'Nueva variedad' }).click()
+  await page.getByRole('link', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Rosa')
   await page.getByRole('button', { name: 'Guardar' }).click()
   await expect(page.getByText('Variedad guardada')).toBeVisible()

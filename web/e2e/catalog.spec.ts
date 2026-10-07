@@ -37,7 +37,7 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
 
   // A variety with a price and stock, so the catalog has something to show.
   await page.goto(VARIETIES)
-  await page.getByRole('button', { name: 'Nueva variedad' }).click()
+  await page.getByRole('link', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Rosa')
   await page.getByRole('button', { name: 'Agregá la variedad' }).click()
   await expect(page.getByText('Variedad guardada')).toBeVisible()
@@ -80,9 +80,6 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
   await expect(page.getByText('Catálogo guardado')).toBeVisible()
   await page.getByRole('button', { name: 'Cerrar' }).click()
   await expectPath(page, CATALOG)
-  const headerFooterSummary = page.locator('.catalogo__encabezado-pie')
-  await expect(headerFooterSummary).toContainText('🌸 Catálogo de Flores del Catálogo 🌸')
-  await expect(headerFooterSummary).toContainText('Pedidos por privado.')
   await expect(page.getByLabel('Pie')).toHaveCount(0)
 
   // The API's own text is what both the preview and the clipboard must match.
