@@ -8,9 +8,10 @@
 
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { CUSTOMER, CUSTOMER_EDIT, HOME, LEGACY_REDIRECTS, LOGIN, SALE, STOCK_ENTRY, VARIETY, pathTo } from '../src/routes.js'
+import { CUSTOMER, CUSTOMER_EDIT, HOME, LOGIN, SALE, STOCK_ENTRY, VARIETY, pathTo } from '../src/routes.js'
 import { expect, test, type Page } from '@playwright/test'
 import { watchConsole } from './console.js'
+import { LEGACY_REDIRECTS } from './helpers/legacyPaths.js'
 import { seedRecords, signUp, type Records } from './helpers/seed.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
 

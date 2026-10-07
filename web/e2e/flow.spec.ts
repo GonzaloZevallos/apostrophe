@@ -13,7 +13,8 @@
  * browser console (CODING_STANDARDS.md section 9, in the browser too).
  */
 
-import { CUSTOMER, CUSTOMER_NEW, EXPENSES, EXPENSE_CATEGORIES, LEGACY_EXPENSES, LEGACY_MORE, MORE, SETTINGS_BUSINESS, SETTINGS_USERS, STOCK, STOCK_ENTRY, STOCK_ENTRY_NEW, VARIETIES, VARIETY } from '../src/routes.js'
+import { CUSTOMER, CUSTOMER_NEW, EXPENSES, EXPENSE_CATEGORIES, MORE, SETTINGS_BUSINESS, SETTINGS_USERS, STOCK, STOCK_ENTRY, STOCK_ENTRY_NEW, VARIETIES, VARIETY } from '../src/routes.js'
+import { legacyFor } from './helpers/legacyPaths.js'
 import { expectAnyPath, expectPath } from './helpers/url.js'
 import { expect, test } from '@playwright/test'
 import { signUpNewBusiness } from './helpers/signup.js'
@@ -152,15 +153,15 @@ test('a seller does everything the backend offers today, from the front alone', 
   await expect(page.getByText(/Las compras de flores no van acá/)).toBeVisible()
 
   // The Spanish paths stay on purpose here: the server answers them with a 308 and the
-  // app shows the English screen (the one `goto('/gastos')` and one `goto(LEGACY_MORE)` of
+  // app shows the English screen (the one old Gastos path and one old Más path of
   // the run; every other step reaches a screen through the nav or its real path).
-  await page.goto(`${LEGACY_EXPENSES}?month=2026-01`)
+  await page.goto(`${legacyFor(EXPENSES)}?month=2026-01`)
   await expectPath(page, EXPENSES, '?month=2026-01')
   await expect(page.getByText(/Las compras de flores no van acá/)).toBeVisible()
   await page.reload()
   await expectPath(page, EXPENSES, '?month=2026-01')
   await expect(page.getByText(/Las compras de flores no van acá/)).toBeVisible()
-  await page.goto(LEGACY_MORE)
+  await page.goto(legacyFor(MORE))
   await expectPath(page, MORE)
   await expect(
     page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /^Gastos/ }),

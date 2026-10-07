@@ -226,6 +226,90 @@ describe("the router against the registry", () => {
   });
 });
 
+/** One shape for a path template: `:name` on the front and `{name}` in screens.json are both
+ * `{id}`, so `/sales/{owing_sale}` and `/sales/:id` are the same path. */
+function normalise(path: string): string {
+  return path.replace(/:[A-Za-z_]+|\{[A-Za-z_]+\}/g, "{id}");
+}
+
+interface RegistryRow {
+  path: string;
+  kind: string;
+  parent: string;
+}
+
+/** What is wrong between the design registry's rows and the front's screens: a row whose screen
+ * is not declared, or that disagrees on kind or parent, on either viewport. */
+function registryDisagreements(
+  rows: readonly RegistryRow[],
+  screens: readonly routes.Screen[],
+): string[] {
+  return rows.flatMap((row) => {
+    const entry = screens.find((s) => normalise(s.path) === normalise(row.path));
+    if (entry === undefined) return [`${row.path}: no screen declares it`];
+    const wrong: string[] = [];
+    if (entry.kind !== row.kind)
+      wrong.push(`${row.path}: kind ${entry.kind} is not ${row.kind}`);
+    for (const viewport of VIEWPORTS) {
+      const parent = parentOf(entry.id, viewport);
+      const have = parent === undefined ? undefined : normalise(parent.path);
+      if (have !== normalise(row.parent))
+        wrong.push(`${row.path}: parent ${have} on ${viewport} is not ${row.parent}`);
+    }
+    return wrong;
+  });
+}
+
+describe("the registry against screens.json", () => {
+  test("every screens.json registry row agrees with routes.ts on path, kind and parent", () => {
+    expect(screensJson.registry.length).toBeGreaterThanOrEqual(3);
+    expect(registryDisagreements(screensJson.registry, SCREENS)).toEqual([]);
+  });
+
+  test("a row that disagrees on kind or parent, or names no screen, is refused", () => {
+    expect(
+      registryDisagreements(
+        [
+          { path: "/customers/new", kind: "card", parent: "/customers" },
+          { path: "/customers/{debtor}/edit", kind: "form", parent: "/customers" },
+          { path: "/nowhere", kind: "form", parent: "/customers" },
+        ],
+        SCREENS,
+      ),
+    ).toEqual([
+      "/customers/new: kind form is not card",
+      "/customers/{debtor}/edit: parent /customers/{id} on phone is not /customers",
+      "/customers/{debtor}/edit: parent /customers/{id} on computer is not /customers",
+      "/nowhere: no screen declares it",
+    ]);
+  });
+});
+
+describe("a path resolves to its own screen", () => {
+  const sample = (path: string): string => pathTo(path, { id: 7 });
+
+  test.each(SCREENS.map((entry) => [entry.id, entry.path] as const))(
+    "%s: %s",
+    (id, path) => {
+      const leaf = matchRoutes(router.routes, sample(path))?.at(-1);
+      expect(screenIdOf(leaf?.route ?? {})).toBe(id);
+    },
+  );
+
+  test("a literal wins over the id that would also match it", () => {
+    for (const [literal, id] of [
+      ["/varieties/new", "variety-new"],
+      ["/varieties/entries", "stock"],
+      ["/varieties/catalog", "catalog"],
+      ["/customers/new", "customer-new"],
+      ["/sales/new", "sale-new"],
+    ] as const) {
+      const leaf = matchRoutes(router.routes, literal)?.at(-1);
+      expect(screenIdOf(leaf?.route ?? {}), literal).toBe(id);
+    }
+  });
+});
+
 /** Screens whose route is still null or still the old shape: the screen is not built yet, or a later piece flips it. */
 const NOT_BUILT = [
   "InicioPrimeraVez",
@@ -252,31 +336,16 @@ describe("screens.json against the English routes", () => {
     ).toEqual([...NOT_BUILT].sort());
   });
 
-  test("every English path of the registry is in the path column (but the three with no design file), and the old Spanish ones are gone", () => {
-    const paths = new Set(
-      screensJson.screens.map((entry) =>
-        entry.path.replace(/\{[a-z_]+\}/g, ":id"),
-      ),
-    );
-    const registered = [...SCREENS, ...OUTSIDE].map((entry) =>
-      entry.path.replace(/:[a-z]+/g, ":id"),
-    );
-    // These three screens have no design file of their own, so screens.json has no entry for them.
-    const NO_DESIGN = [
-      "/customers/new",
-      "/customers/:id/edit",
-      "/varieties/entries/:id",
-    ];
-    for (const path of registered.filter(
-      (path) => path !== routes.CATCH_ALL && !NO_DESIGN.includes(path),
-    )) {
-      expect(
-        paths.has(path) ||
-          path.startsWith("/invitation") ||
-          path.startsWith("/reset"),
-        `${path} is not in screens.json`,
-      ).toBe(true);
-    }
+  test("every English path of the registry is a screens.json path, with no exemption, and the old Spanish ones are gone", () => {
+    const paths = new Set([
+      ...screensJson.screens.map((entry) => normalise(entry.path)),
+      ...screensJson.registry.map((entry) => normalise(entry.path)),
+    ]);
+    const registered = [...SCREENS, ...OUTSIDE]
+      .filter((entry) => entry.path !== routes.CATCH_ALL)
+      .map((entry) => normalise(entry.path));
+    expect(registered.filter((path) => !paths.has(path))).toEqual([]);
+    const everyPath = [...SCREENS, ...OUTSIDE].map((entry) => entry.path);
     for (const spanish of [
       "/ventas",
       "/clientes",
@@ -287,7 +356,7 @@ describe("screens.json against the English routes", () => {
       "/entrar",
     ]) {
       expect(
-        registered.some(
+        everyPath.some(
           (path) => path === spanish || path.startsWith(`${spanish}/`),
         ),
         spanish,
@@ -299,6 +368,10 @@ describe("screens.json against the English routes", () => {
     const leaf = matchRoutes(router.routes, "/varieties/entries")?.at(-1);
     expect(screenIdOf(leaf?.route ?? {})).toBe("stock");
     expect(parentOf("stock", "phone")?.title).toBe("Variedades");
+  });
+
+  test("routes.ts keeps no legacy list: the old paths live only in app/legacy_front_paths.json", () => {
+    expect(Object.keys(routes).filter((name) => name.startsWith("LEGACY"))).toEqual([]);
   });
 
   test("the old Spanish paths fall to the catch-all: no front code redirects them", () => {

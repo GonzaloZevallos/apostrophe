@@ -110,13 +110,6 @@ export const EXPENSES = '/expenses'
 export const EXPENSE_NEW = '/expenses/new'
 export const ANALYSIS = '/analysis'
 
-/** The old Spanish spellings: no front code uses them, only the server redirects them (308).
- * Kept here so a test or an e2e spec can open one without writing the literal. */
-export const LEGACY_BUSINESS = '/negocio'
-export const LEGACY_EXPENSE_CATEGORIES = '/gastos/categorias'
-export const LEGACY_MORE = '/mas'
-export const LEGACY_EXPENSES = '/gastos'
-
 export const SETTINGS = '/settings'
 export const SETTINGS_BUSINESS = '/settings/business'
 export const SETTINGS_USERS = '/settings/users'
@@ -125,31 +118,6 @@ export const SETTINGS_CATALOG_MESSAGE = '/settings/catalog-message'
 export const EXPENSE_CATEGORIES = '/settings/expense-categories'
 export const SETTINGS_APPEARANCE = '/settings/appearance'
 export const SETTINGS_ACCOUNT = '/settings/account'
-
-/** Every old Spanish path and the route it moved to, whole path (a `:id` carries across). The
- * server's `LEGACY_FRONT_PATHS` answers each with a 308; the e2e spec opens them one by one. */
-export const LEGACY_REDIRECTS: readonly (readonly [old: string, now: string])[] = [
-  ['/ventas', SALES],
-  ['/ventas/nueva', SALE_NEW],
-  ['/ventas/:id', SALE],
-  ['/clientes', CUSTOMERS],
-  ['/clientes/deben', CUSTOMERS],
-  ['/clientes/nuevo', CUSTOMER_NEW],
-  ['/clientes/:id', CUSTOMER],
-  ['/clientes/:id/editar', CUSTOMER_EDIT],
-  ['/mi-stock', VARIETIES],
-  ['/mi-stock/nueva-entrada', STOCK_ENTRY_NEW],
-  ['/mi-stock/entradas/:id', STOCK_ENTRY],
-  ['/variedades', VARIETIES],
-  ['/variedades/:id', VARIETY],
-  ['/analisis', ANALYSIS],
-  [LEGACY_EXPENSES, EXPENSES],
-  [LEGACY_EXPENSE_CATEGORIES, EXPENSE_CATEGORIES],
-  [LEGACY_MORE, MORE],
-  ['/catalogo', CATALOG],
-  [LEGACY_BUSINESS, SETTINGS],
-  ['/entrar', LOGIN],
-]
 
 /** Fills a template's `:name` segments: `pathTo(SALE, { id: 7 })` is `/ventas/7`. */
 export function pathTo(template: string, params: Readonly<Record<string, string | number>> = {}): string {

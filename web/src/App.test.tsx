@@ -10,7 +10,7 @@
  * is at that moment).
  */
 
-import { EXPENSES, HOME, LEGACY_EXPENSES, LEGACY_MORE, LOGIN, MORE, SALE, SALES, SALE_NEW, pathTo } from './routes'
+import { EXPENSES, HOME, LOGIN, MORE, SALE, SALES, SALE_NEW, pathTo } from './routes'
 import { act, render, screen, within } from '@testing-library/react'
 import { afterEach, expect, test, vi } from 'vitest'
 import SALE_DETAIL from './api/fixtures/sale-detail.json'
@@ -128,13 +128,13 @@ test('Gastos renders Gastos, with its month, under the gated shell', async () =>
   ).toBeInTheDocument()
 })
 
-test.each([LEGACY_MORE, LEGACY_EXPENSES])('the Spanish %s is not a front route: the server redirects it', async (path) => {
+test('an address the table does not mount is no front route: the catch-all sends it to Inicio', async () => {
   vi.stubGlobal('fetch', fetchFor({}))
-  await act(() => router.navigate(path))
+  await act(() => router.navigate('/no-such-screen'))
 
   render(<App />)
 
-  // The catch-all sends an unknown path to Inicio, never to Más or Gastos.
+  // The catch-all sends an unknown path to Inicio, never to a screen of the table (the server, not the front, redirects the old Spanish paths).
   const main = await screen.findByRole('main')
   expect(main).not.toHaveTextContent(/Las compras de flores/)
   expect(router.state.location.pathname).toBe(HOME)
