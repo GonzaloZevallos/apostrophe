@@ -88,7 +88,7 @@ test('opening shows the loading state in the body, with the header and its way o
 
   expect(screen.getAllByRole('progressbar')).toHaveLength(1)
   noFigure(screen.getByRole('progressbar'))
-  expect(screen.getByRole('button', { name: 'Volver' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Cerrar' })).toBeInTheDocument()
   expect(screen.getByLabelText('Fecha')).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Guardá la venta' })).not.toBeInTheDocument()
   expect(screen.queryByText('Total')).not.toBeInTheDocument()

@@ -11,6 +11,7 @@ import { afterEach, expect, test, vi } from 'vitest'
 import App from '../../App'
 import { queryClient } from '../../queryClient'
 import { router } from '../../router'
+import { SALES, SALE_NEW } from '../../routes'
 
 const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
 const ROSA = {
@@ -30,8 +31,8 @@ async function openForm(): Promise<ReturnType<typeof vi.fn>> {
     return Promise.reject(new Error(`unexpected request: ${path}`))
   })
   vi.stubGlobal('fetch', fetchMock)
-  await act(() => router.navigate('/ventas'))
-  await act(() => router.navigate('/ventas/nueva'))
+  await act(() => router.navigate(SALES))
+  await act(() => router.navigate(SALE_NEW))
   render(<App />)
   await screen.findByText('Nueva venta')
   await screen.findByRole('option', { name: 'Rosa' })
