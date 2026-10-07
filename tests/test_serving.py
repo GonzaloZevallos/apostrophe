@@ -17,7 +17,12 @@ from sqlalchemy.engine import Engine
 
 from app.main import create_app
 from app.settings import Settings
-from app.static_spa import SHARED_FRONT_PATHS, MissingBuiltFront
+from app.static_spa import (
+    LEGACY_FRONT_PATHS,
+    LEGACY_FRONT_PATHS_FILE,
+    SHARED_FRONT_PATHS,
+    MissingBuiltFront,
+)
 from tests.conftest import SETTINGS, TEST_HASHER, MovableClock
 from tests.fakes.telegram import FakeTelegram
 
@@ -236,27 +241,12 @@ def test_a_shared_front_path_is_the_shell_only_for_a_browser_navigation(
             assert "location" not in response.headers, cell
 
 
+# The legacy rows are the app's own file's (`app/legacy_front_paths.json`, docs/adr/0031):
+# this test walks whatever rows it holds. Which old paths must have a row is the hand-written
+# `tests/fixtures/legacy_front_paths.json`'s to say (`tests/test_static_spa.py`), so a row
+# deleted from the file fails there, not here. An id is carried across: `{id}` is 4821.
 LEGACY_CASES = [
-    ("/ventas", "/sales"),
-    ("/ventas/nueva", "/sales/new"),
-    ("/ventas/7", "/sales/7"),
-    ("/clientes", "/customers"),
-    ("/clientes/deben", "/customers"),
-    ("/clientes/nuevo", "/customers/new"),
-    ("/clientes/7", "/customers/7"),
-    ("/clientes/7/editar", "/customers/7/edit"),
-    ("/mi-stock", "/varieties"),
-    ("/mi-stock/nueva-entrada", "/varieties/entries/new"),
-    ("/mi-stock/entradas/7", "/varieties/entries/7"),
-    ("/variedades", "/varieties"),
-    ("/variedades/7", "/varieties/7"),
-    ("/analisis", "/analysis"),
-    ("/gastos", "/expenses"),
-    ("/gastos/categorias", "/settings/expense-categories"),
-    ("/mas", "/more"),
-    ("/catalogo", "/varieties/catalog"),
-    ("/negocio", "/settings"),
-    ("/entrar", "/login"),
+    (old.replace("{id}", "4821"), now.replace("{id}", "4821")) for old, now in LEGACY_FRONT_PATHS
 ]
 
 
@@ -277,6 +267,18 @@ def test_a_legacy_spanish_path_redirects_permanently_whatever_the_request(
             served_client, "GET", legacy + ("/" if slash else ""), HTML, "?month=2026-09&x=%C3%B1"
         )
         assert response.headers["location"] == f"{target}?month=2026-09&x=%C3%B1"
+
+
+def test_the_app_finds_the_legacy_rows_at_their_shipped_path(
+    served_client: TestClient,
+) -> None:
+    shipped = Path(__file__).resolve().parent.parent / "app" / "legacy_front_paths.json"
+
+    assert LEGACY_FRONT_PATHS_FILE == shipped
+    assert shipped.is_file()
+    response = _request(served_client, "GET", "/variedades/7", HTML)
+    assert response.status_code == 308
+    assert response.headers["location"] == "/varieties/7"
 
 
 def test_an_unmatched_spanish_path_is_not_redirected(served_client: TestClient) -> None:
@@ -458,7 +460,7 @@ def test_the_shell_on_a_shared_path_carries_the_same_headers_as_the_root(
     assert shared.headers["cache-control"] == "no-cache"
 
 
-# --- Parameterised shared paths and legacy patterns (docs/adr/0030) -----------------------
+# --- Parameterised shared paths and shared templates (docs/adr/0031) -----------------------
 
 SHARED_FRONT_ROUTES: list[str] = sorted(
     path.replace("{id}", "7")

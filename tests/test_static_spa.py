@@ -6,26 +6,25 @@ from __future__ import annotations
 
 import json
 import re
+from collections.abc import Iterable
 from pathlib import Path
 
 import pytest
 
 from app.main import create_app
-from app.static_spa import LEGACY_FRONT_PATHS, SHARED_FRONT_PATHS, matches_template
+from app.static_spa import (
+    LEGACY_FRONT_PATHS,
+    SHARED_FRONT_PATHS,
+    MalformedLegacyFrontPaths,
+    matches_template,
+    parse_legacy_front_paths,
+)
 from tests.conftest import SETTINGS, TEST_HASHER
 from tests.fakes.telegram import FakeTelegram
 
 ROOT = Path(__file__).resolve().parent.parent
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 SCREENS_JSON = ROOT / "scripts" / "design" / "screens.json"
-
-# Screens of the structure that have no design file of their own, so `screens.json` has no
-# entry for their route (a form reached from a card, a stock entry's edit form). Pinned
-# exactly: a route that gains a design entry leaves this set, a new one must be added here.
-NO_SCREEN_ENTRY = frozenset(
-    {"/customers/new", "/customers/{id}/edit"}
-)
-
 
 @pytest.mark.parametrize(
     ("path", "template", "expected"),
@@ -77,51 +76,153 @@ def test_a_template_with_no_placeholder_captures_nothing_but_still_matches() -> 
     assert result == {}
 
 
-def _normal(path: str) -> str:
+def normalise(path: str) -> str:
+    """The one normaliser: every `{name}` segment of a path, a template's or the design
+    registry's (`/sales/{owing_sale}`), becomes `{id}`."""
     return re.sub(r"\{[a-z_]+\}", "{id}", path)
 
 
 def _screen_paths() -> set[str]:
     document = json.loads(SCREENS_JSON.read_text())
-    return {_normal(entry["path"]) for entry in document["screens"] if entry.get("path")}
+    entries = [*document["screens"], *document["registry"]]
+    return {normalise(entry["path"]) for entry in entries if entry.get("path")}
 
 
-def test_every_old_router_path_is_a_legacy_row_or_on_the_removal_list() -> None:
+def without_screen(paths: Iterable[str], screens: set[str]) -> list[str]:
+    """The paths, normalised, that no screen of the design registry has: what the checks
+    below refuse. There is no exemption list."""
+    return sorted({normalise(path) for path in paths} - screens)
+
+
+def uncovered(old_paths: Iterable[str], rows: Iterable[tuple[str, str]]) -> list[str]:
+    """The old paths (an `{id}` read as 7) that no legacy row's `old` template matches."""
+    templates = [old for old, _ in rows]
+    return sorted(
+        path
+        for path in old_paths
+        if not any(
+            matches_template(path.replace("{id}", "7"), old) is not None for old in templates
+        )
+    )
+
+
+def test_the_normaliser_reads_every_placeholder_name_as_an_id() -> None:
+    assert normalise("/sales/{owing_sale}") == "/sales/{id}"
+    assert normalise("/customers/{debtor}/edit") == "/customers/{id}/edit"
+    assert normalise("/varieties/{low}/prices/new") == "/varieties/{id}/prices/new"
+    assert normalise("/sales/{id}") == "/sales/{id}"
+    assert normalise("/sales/new") == "/sales/new"
+
+
+def test_every_old_router_path_has_a_legacy_row() -> None:
     fixture = json.loads((FIXTURES / "legacy_front_paths.json").read_text())
-    rows = {old for old, _ in LEGACY_FRONT_PATHS}
 
-    unaccounted = set(fixture["paths"]) - rows - set(fixture["removed"])
-
-    assert not unaccounted
+    assert not uncovered(fixture["paths"], LEGACY_FRONT_PATHS)
     assert fixture["removed"] == []
 
 
-def test_the_legacy_table_has_the_twenty_rows_and_no_row_twice() -> None:
-    olds = [old for old, _ in LEGACY_FRONT_PATHS]
+def test_a_fixture_path_with_no_legacy_row_is_refused() -> None:
+    rows = [("/ventas", "/sales"), ("/ventas/{id}", "/sales/{id}")]
 
-    assert len(olds) == 20
-    assert len(set(olds)) == 20
+    assert uncovered(["/ventas", "/ventas/{id}", "/clientes/{id}"], rows) == ["/clientes/{id}"]
+    assert uncovered(["/ventas/nueva"], rows) == ["/ventas/nueva"]
 
 
 def test_every_legacy_target_is_a_screen_of_the_design() -> None:
-    targets = {new for _, new in LEGACY_FRONT_PATHS}
+    targets = [new for _, new in LEGACY_FRONT_PATHS]
 
-    missing = targets - _screen_paths() - NO_SCREEN_ENTRY
-
-    assert not missing, f"legacy targets with no entry in screens.json: {sorted(missing)}"
+    assert not without_screen(targets, _screen_paths())
 
 
 def test_every_shared_template_is_a_screen_of_the_design() -> None:
-    missing = set(SHARED_FRONT_PATHS) - _screen_paths() - NO_SCREEN_ENTRY
-
-    assert not missing, f"shared paths with no entry in screens.json: {sorted(missing)}"
+    assert not without_screen(SHARED_FRONT_PATHS, _screen_paths())
 
 
-def test_the_exemption_list_holds_only_routes_the_tables_really_name() -> None:
-    named = {new for _, new in LEGACY_FRONT_PATHS} | set(SHARED_FRONT_PATHS)
+def test_a_path_with_no_screen_in_the_design_is_refused() -> None:
+    screens = _screen_paths()
 
-    assert NO_SCREEN_ENTRY <= named
-    assert not NO_SCREEN_ENTRY & _screen_paths()
+    assert without_screen(["/sales", "/sales/{owing_sale}"], screens) == []
+    assert without_screen(["/sales/{debtor}/refund", "/nowhere"], screens) == [
+        "/nowhere",
+        "/sales/{id}/refund",
+    ]
+
+
+def test_the_registry_entries_of_screens_json_say_a_kind_and_a_parent_that_are_paths() -> None:
+    document = json.loads(SCREENS_JSON.read_text())
+    paths = _screen_paths()
+
+    for entry in document["registry"]:
+        assert entry["kind"] in {"root", "card", "form"}, entry
+        assert (entry["kind"] == "root") == (entry.get("parent") is None), entry
+        if entry.get("parent") is not None:
+            assert normalise(entry["parent"]) in paths, entry
+    registered = {normalise(entry["path"]) for entry in document["registry"]}
+    assert {"/customers/new", "/customers/{id}/edit", "/varieties/entries/{id}"} <= registered
+
+
+def _sample(template: str) -> str:
+    return template.replace("{id}", "7")
+
+
+@pytest.mark.parametrize("template", sorted(SHARED_FRONT_PATHS))
+def test_a_templates_sample_matches_that_template_and_no_other(template: str) -> None:
+    sample = _sample(template)
+    matching = [path for path in SHARED_FRONT_PATHS if matches_template(sample, path) is not None]
+
+    assert matching == [template]
+
+
+@pytest.mark.parametrize(
+    "template", sorted(path for path in SHARED_FRONT_PATHS if "{id}" in path)
+)
+def test_no_literal_shared_path_is_claimed_by_an_id_template(template: str) -> None:
+    literals = [path for path in SHARED_FRONT_PATHS if "{id}" not in path]
+
+    claimed = [path for path in literals if matches_template(path, template) is not None]
+
+    assert claimed == []
+
+
+def _rows_text(rows: object) -> str:
+    return json.dumps(rows)
+
+
+def test_the_shipped_legacy_rows_load_and_carry_the_id_across() -> None:
+    assert dict(LEGACY_FRONT_PATHS)["/variedades/{id}"] == "/varieties/{id}"
+    assert dict(LEGACY_FRONT_PATHS)["/mi-stock/entradas/{id}"] == "/varieties/entries/{id}"
+    assert parse_legacy_front_paths((ROOT / "app" / "legacy_front_paths.json").read_text()) == (
+        LEGACY_FRONT_PATHS
+    )
+
+
+def test_a_well_formed_rows_file_is_read_in_order() -> None:
+    rows = [{"old": "/a-b/{id}", "now": "/c/{id}"}, {"old": "/d", "now": "/e"}]
+
+    assert parse_legacy_front_paths(_rows_text(rows)) == (("/a-b/{id}", "/c/{id}"), ("/d", "/e"))
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "not json",
+        "{}",
+        _rows_text([{"old": "/a"}]),
+        _rows_text([{"old": "/a", "now": "/b", "extra": "/c"}]),
+        _rows_text([{"old": 7, "now": "/b"}]),
+        _rows_text([{"old": "a", "now": "/b"}]),
+        _rows_text([{"old": "/a//b", "now": "/b"}]),
+        _rows_text([{"old": "/a/", "now": "/b"}]),
+        _rows_text([{"old": "/a/{name}", "now": "/b/{name}"}]),
+        _rows_text([{"old": "/a/[0-9]+", "now": "/b"}]),
+        _rows_text([{"old": "/A", "now": "/b"}]),
+        _rows_text([{"old": "/a", "now": "/b/{id}"}]),
+        _rows_text([{"old": "/a", "now": "/b"}, {"old": "/a", "now": "/c"}]),
+    ],
+)
+def test_a_malformed_rows_file_is_refused(text: str) -> None:
+    with pytest.raises(MalformedLegacyFrontPaths):
+        parse_legacy_front_paths(text)
 
 
 def test_the_api_document_is_the_one_committed_before_the_english_routes() -> None:

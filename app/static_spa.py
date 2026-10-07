@@ -9,6 +9,8 @@ to a signed-out invitation link and turn an unknown API path into HTML.
 
 from __future__ import annotations
 
+import json
+import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -55,32 +57,52 @@ SHARED_FRONT_PATHS = frozenset(
     }
 )
 
-# The old Spanish front paths and where they live now, as (old, new) templates. Permanent,
-# whatever the method; the id an old template captures is carried into the new one.
-LEGACY_FRONT_PATHS: tuple[tuple[str, str], ...] = (
-    ("/ventas", "/sales"),
-    ("/ventas/nueva", "/sales/new"),
-    ("/ventas/{id}", "/sales/{id}"),
-    ("/clientes", "/customers"),
-    ("/clientes/deben", "/customers"),
-    ("/clientes/nuevo", "/customers/new"),
-    ("/clientes/{id}", "/customers/{id}"),
-    ("/clientes/{id}/editar", "/customers/{id}/edit"),
-    ("/mi-stock", "/varieties"),
-    ("/mi-stock/nueva-entrada", "/varieties/entries/new"),
-    ("/mi-stock/entradas/{id}", "/varieties/entries/{id}"),
-    ("/variedades", "/varieties"),
-    ("/variedades/{id}", "/varieties/{id}"),
-    ("/analisis", "/analysis"),
-    ("/gastos", "/expenses"),
-    ("/gastos/categorias", "/settings/expense-categories"),
-    ("/mas", "/more"),
-    ("/catalogo", "/varieties/catalog"),
-    ("/negocio", "/settings"),
-    ("/entrar", "/login"),
-)
-
 _ID = "{id}"
+
+# The old Spanish front paths and where they live now: one row each in
+# `legacy_front_paths.json` beside this module, the only home of the list (docs/adr/0031).
+LEGACY_FRONT_PATHS_FILE = Path(__file__).with_name("legacy_front_paths.json")
+_LITERAL_SEGMENT = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
+
+
+class MalformedLegacyFrontPaths(ValueError):
+    """The legacy rows file is not a list of `{old, now}` templates. Raised at import, so a
+    bad file fails the deploy instead of answering a wrong redirect."""
+
+
+def _check_template(template: object, role: str) -> str:
+    if not isinstance(template, str) or not template.startswith("/"):
+        raise MalformedLegacyFrontPaths(f"a legacy {role} path must be a string starting with /")
+    for segment in template[1:].split("/"):
+        if segment != _ID and not _LITERAL_SEGMENT.match(segment):
+            raise MalformedLegacyFrontPaths(
+                f"a legacy {role} path has a segment that is neither a literal nor {_ID}"
+            )
+    return template
+
+
+def parse_legacy_front_paths(text: str) -> tuple[tuple[str, str], ...]:
+    """The `(old, now)` templates of a rows file. Every segment is a literal or `{id}`, an
+    `{id}` in `now` needs one in `old` (there would be nothing to carry), and no old path
+    is listed twice. Anything else raises `MalformedLegacyFrontPaths`."""
+    try:
+        document = json.loads(text)
+    except json.JSONDecodeError as exc:
+        raise MalformedLegacyFrontPaths("the legacy rows file is not JSON") from exc
+    if not isinstance(document, list):
+        raise MalformedLegacyFrontPaths("the legacy rows file must be a list")
+    rows: list[tuple[str, str]] = []
+    for row in document:
+        if not isinstance(row, dict) or set(row) != {"old", "now"}:
+            raise MalformedLegacyFrontPaths("a legacy row has exactly `old` and `now`")
+        old = _check_template(row["old"], "old")
+        now = _check_template(row["now"], "now")
+        if _ID in now.split("/") and _ID not in old.split("/"):
+            raise MalformedLegacyFrontPaths(f"a legacy row's now has {_ID} but its old has none")
+        rows.append((old, now))
+    if len({old for old, _ in rows}) != len(rows):
+        raise MalformedLegacyFrontPaths("a legacy old path is listed twice")
+    return tuple(rows)
 
 
 def matches_template(path: str, template: str) -> dict[str, str] | None:
@@ -116,6 +138,11 @@ def _legacy_target(path: str) -> str | None:
         if captured is not None:
             return new.replace(_ID, captured.get("id", ""))
     return None
+
+
+LEGACY_FRONT_PATHS: tuple[tuple[str, str], ...] = parse_legacy_front_paths(
+    LEGACY_FRONT_PATHS_FILE.read_text(encoding="utf-8")
+)
 
 
 class MissingBuiltFront(RuntimeError):
@@ -164,7 +191,7 @@ class SpaStatic(StaticFiles):
 
 class FrontNavigation:
     """Pure ASGI, outside Starlette's routing and its `redirect_slashes`, so the raw path
-    decides before the API's router can claim it (docs/adr/0024, docs/adr/0030):
+    decides before the API's router can claim it (docs/adr/0024, docs/adr/0031):
 
     - a legacy Spanish path (or it plus one trailing slash) is a 308 to its new path, for
       any method and any `Accept`, keeping the query string;
