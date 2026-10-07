@@ -128,9 +128,11 @@ export default function WithdrawalDetail() {
     <main className="pantalla">
       <div className="cuerpo">
         <div className="encabezado-fila">
-          <Boton variant="back" ariaLabel="Volver" onClick={back}>
-            ‹
-          </Boton>
+          <div className="retiro__volver">
+            <Boton variant="back" ariaLabel="Volver" onClick={back}>
+              ‹
+            </Boton>
+          </div>
           <span className="encabezado__titulo">Retiro</span>
         </div>
         <dl className="retiro__datos">
