@@ -15,6 +15,7 @@ import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useLocation, useOutletContext, useParams } from 'react-router'
 import InAppLink from '../../components/InAppLink'
+import { useGoneNotice } from '../../components/goneExit'
 import { ApiError, NetworkError } from '../../api/client'
 import { type Channel, getCustomer } from '../../api/customers'
 import { invalidateResource, keys } from '../../api/keys'
@@ -106,7 +107,8 @@ export default function ClienteFicha({ payment = false }: ClienteFichaProps) {
   const { id } = useParams<{ id: string }>()
   const customerId = id ?? ''
   const location = useLocation()
-  const feedback = readFeedback(location.state)
+  const goneShown = useGoneNotice()
+  const feedback = readFeedback(location.state) ?? (goneShown ? { kind: 'notice' as const, message: GONE_NOTICE } : null)
   const queryClient = useQueryClient()
   const me = useOutletContext<Me>()
 

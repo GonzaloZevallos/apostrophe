@@ -138,7 +138,7 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
     vip !== (initial?.vip ?? false)
   const { blocker, disarm } = useLeaveGuard(dirty)
   const parent = parentOf(mode === 'nuevo' ? 'customer-new' : 'customer-edit', viewport)
-  const goneExit = useGoneExit('customer')
+  const goneExit = useGoneExit(mode === 'nuevo' ? 'customer-new' : 'customer-edit', { id: customerId })
   const close = useBackOr(
     parent === undefined ? CUSTOMERS : pathTo(parent.path, mode === 'editar' ? { id: customerId } : {}),
   )
