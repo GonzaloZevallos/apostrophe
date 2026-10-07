@@ -1,0 +1,54 @@
+"""The design screens of every active family agree with `docs/product/design-system/muestra.md`
+(docs/adr/0033). A family is switched on by the piece that redraws it, listing its screens in
+`muestra_families.py`; with none listed there is nothing to read and the test passes."""
+
+from pathlib import Path
+
+import pytest
+
+from tests.design.muestra_families import FAMILIES, OTRAS, Family
+from tests.design.muestra_guard import CHECKS, Muestra, check_screen, parse_muestra
+
+ROOT = Path(__file__).resolve().parents[2]
+DESIGN = ROOT / "docs" / "product" / "design-system"
+SCREENS = DESIGN / "pantallas"
+
+
+def real_muestra() -> Muestra:
+    return parse_muestra((DESIGN / "muestra.md").read_text(encoding="utf-8"))
+
+
+def test_the_five_families_are_declared_once_each() -> None:
+    names = [family.name for family in FAMILIES]
+
+    assert names == ["inicio", "variedades", "ventas", "analisis", "otras"]
+    assert set(CHECKS) == set(names)
+
+
+def test_otras_is_reserved_and_no_piece_fills_it() -> None:
+    assert OTRAS.screens == () and OTRAS.denylist == ()
+
+
+def test_no_screen_is_listed_in_two_families() -> None:
+    listed = [screen for family in FAMILIES for screen in family.screens]
+
+    assert len(listed) == len(set(listed))
+
+
+def test_the_real_muestra_has_every_table_each_check_needs() -> None:
+    muestra = real_muestra()
+    for family in FAMILIES:
+        problems = check_screen(family.name, "probe", "<span>x</span>", muestra, family.denylist)
+
+        assert [p for p in problems if "muestra.md has no" in p or "not exactly" in p] == []
+
+
+@pytest.mark.parametrize("family", [f for f in FAMILIES if f.active], ids=lambda f: f.name)
+def test_each_listed_screen_agrees_with_muestra(family: Family) -> None:
+    muestra = real_muestra()
+    problems: list[str] = []
+    for screen in family.screens:
+        page = (SCREENS / screen).read_text(encoding="utf-8")
+        problems += check_screen(family.name, screen, page, muestra, family.denylist)
+
+    assert problems == []
