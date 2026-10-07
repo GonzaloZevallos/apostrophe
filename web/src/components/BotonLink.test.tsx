@@ -6,6 +6,7 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { expect, test } from 'vitest'
+import { HOME, SALE_NEW, SALES } from '../routes'
 import BotonLink from './BotonLink'
 
 function renderLink(node: React.ReactElement) {
@@ -14,19 +15,19 @@ function renderLink(node: React.ReactElement) {
 
 test('an icon + text link is an anchor named by its word, with its icon hidden', () => {
   renderLink(
-    <BotonLink to="/ventas/nueva" variant="secondary" icon="agregar">
+    <BotonLink to={SALE_NEW} variant="secondary" icon="agregar">
       Nueva venta
     </BotonLink>,
   )
   const link = screen.getByRole('link', { name: 'Nueva venta' })
-  expect(link).toHaveAttribute('href', '/ventas/nueva')
+  expect(link).toHaveAttribute('href', SALE_NEW)
   expect(link.className).toBe('boton boton--suave')
   expect(link.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
   expect(link.getAttribute('aria-label')).toBeNull()
 })
 
 test('an icon-only link is named by its ariaLabel and is the 44 px icon control', () => {
-  renderLink(<BotonLink to="/buscar" variant="icon" action="search" ariaLabel="Buscar" />)
+  renderLink(<BotonLink to={HOME} variant="icon" action="search" ariaLabel="Buscar" />)
   const link = screen.getByRole('link', { name: 'Buscar' })
   expect(link.className).toBe('boton-icono')
   expect(link.textContent).toBe('')
@@ -35,7 +36,7 @@ test('an icon-only link is named by its ariaLabel and is the 44 px icon control'
 
 test('a text link has no icon and the underlined class', () => {
   renderLink(
-    <BotonLink to="/ventas" variant="link">
+    <BotonLink to={SALES} variant="link">
       Ver todas
     </BotonLink>,
   )

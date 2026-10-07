@@ -32,9 +32,9 @@ const iconOnlyWithAnIconProp: Rejected<{
 const primaryBare: Rejected<Children> = true
 const secondaryBare: Rejected<{ variant: 'secondary' } & Children> = true
 const destructiveBare: Rejected<{ variant: 'destructive' } & Children> = true
-const linkLinkWithIcon: RejectedLink<{ to: '/'; variant: 'link'; icon: 'tacho' } & Children> = true
-const linkSubmit: RejectedLink<{ to: '/'; textOnly: 'submit'; type: 'submit' } & Children> = true
-const linkIconOnlyWithoutLabel: RejectedLink<{ to: '/'; variant: 'icon'; action: 'search' }> = true
+const linkLinkWithIcon: RejectedLink<{ to: string; variant: 'link'; icon: 'tacho' } & Children> = true
+const linkSubmit: RejectedLink<{ to: string; textOnly: 'submit'; type: 'submit' } & Children> = true
+const linkIconOnlyWithoutLabel: RejectedLink<{ to: string; variant: 'icon'; action: 'search' }> = true
 
 const iconAndText: Rejected<{ icon: 'agregar' } & Children> = false
 const secondary: Rejected<{ variant: 'secondary'; icon: 'personaMas' } & Children> = false
@@ -42,9 +42,9 @@ const submit: Rejected<{ textOnly: 'submit'; type: 'submit' } & Children> = fals
 const iconOnly: Rejected<{ variant: 'icon'; action: 'delete'; ariaLabel: 'Borrar' }> = false
 const back: Rejected<{ variant: 'back' } & Children> = false
 const row: Rejected<{ variant: 'row' } & Children> = false
-const linkIconText: RejectedLink<{ to: '/'; icon: 'agregar' } & Children> = false
+const linkIconText: RejectedLink<{ to: string; icon: 'agregar' } & Children> = false
 const linkIconOnly: RejectedLink<{
-  to: '/'
+  to: string
   variant: 'icon'
   action: 'search'
   ariaLabel: 'Buscar'
