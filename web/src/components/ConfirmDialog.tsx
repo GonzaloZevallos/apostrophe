@@ -14,6 +14,29 @@ export interface ConfirmDialogProps {
   onCancel: () => void
 }
 
+/** One answer of the pair: the words of a confirmation are text only (`icon-and-text-rule.md`,
+ * the dialog answers). Unexported on purpose: no screen draws its own answer, and `Boton`
+ * does not offer a text-only secondary or destructive one. */
+function AnswerButton({
+  kind,
+  onClick,
+  children,
+}: {
+  kind: 'keep' | 'confirm'
+  onClick: () => void
+  children: string
+}) {
+  return (
+    <button
+      type="button"
+      className={kind === 'keep' ? 'boton boton--suave' : 'boton boton--destructivo'}
+      onClick={onClick}
+    >
+      {children}
+    </button>
+  )
+}
+
 export default function ConfirmDialog({
   title,
   detail,
@@ -27,12 +50,12 @@ export default function ConfirmDialog({
       <span className="confirmacion__titulo">{title}</span>
       <span className="confirmacion__detalle">{detail}</span>
       <div className="confirmacion__acciones">
-        <button type="button" className="boton boton--suave" onClick={onCancel}>
+        <AnswerButton kind="keep" onClick={onCancel}>
           {cancelText}
-        </button>
-        <button type="button" className="boton boton--destructivo" onClick={onConfirm}>
+        </AnswerButton>
+        <AnswerButton kind="confirm" onClick={onConfirm}>
           {confirmText}
-        </button>
+        </AnswerButton>
       </div>
     </div>
   )

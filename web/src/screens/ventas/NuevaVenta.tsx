@@ -551,7 +551,7 @@ function NuevaVentaForm() {
             <>
               {repricing && !customerSheet.isOpen && <LoadingAnuncio />}
               {customer === null ? (
-                <Boton variant="secondary" onClick={customerSheet.open}>
+                <Boton variant="secondary" icon="clientes" onClick={customerSheet.open}>
                   Elegir cliente
                 </Boton>
               ) : (
@@ -665,7 +665,7 @@ function NuevaVentaForm() {
                 {totals.gramsGiftedHundredths > 0 &&
                   ` · ${formatGrams(fromHundredths(totals.gramsGiftedHundredths))} de regalo`}
               </span>
-              <Boton type="submit" disabled={save.isPending || varietiesQuery.isFetching}>
+              <Boton textOnly="submit" type="submit" disabled={save.isPending || varietiesQuery.isFetching}>
                 Guardá la venta
               </Boton>
             </div>
