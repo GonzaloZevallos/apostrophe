@@ -183,9 +183,15 @@ test.each([
   ['a card: Configuración', SETTINGS, false],
   ['a form: the sale', SALE_NEW, false],
 ])('%s: the rail keeps "Nueva venta" %s, as the computer designs draw it', (_kind, path, inRail) => {
-  const { container } = renderShell([path])
+  const { container } = renderShell([path], { computer: true })
 
   expect(within(rail(container)).queryAllByRole('link', { name: /Nueva venta/ }).length > 0).toBe(inRail)
+})
+
+test('on a phone a detail pane has no "Nueva venta" at all', () => {
+  renderShell([pathTo(VARIETY, { id: 2 })])
+
+  expect(screen.queryAllByRole('link', { name: /Nueva venta/ })).toHaveLength(0)
 })
 
 test.each([

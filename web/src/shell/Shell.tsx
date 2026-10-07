@@ -42,6 +42,7 @@ import {
 } from '../routes'
 import BackArrow from './BackArrow'
 import { initialsOf } from './initials'
+import { useViewport } from './useViewport'
 
 type Placement = 'bar' | 'rail' | 'both'
 
@@ -127,8 +128,9 @@ export default function Shell() {
   const showNuevaVenta = leaf.kind === 'root'
   // The computer draws a two-pane screen's detail inside its root's screen
   // (`VariedadesCompu`, `ClientesCompu`), so the rail keeps its "Nueva venta" there; the
-  // phone's fixed button stays a root's alone, and the rail is not drawn on a phone.
-  const showRailNuevaVenta = showNuevaVenta || leaf.pane === 'detail'
+  // phone keeps the button to a root's alone.
+  const onComputer = useViewport() === 'computer'
+  const showRailNuevaVenta = showNuevaVenta || (leaf.pane === 'detail' && onComputer)
   const showBar = leaf.kind !== 'form'
 
   return (
