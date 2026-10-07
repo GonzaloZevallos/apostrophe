@@ -14,6 +14,7 @@ import { CUSTOMER, CUSTOMER_NEW, CUSTOMER_PAYMENT, pathTo } from '../../routes'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router'
+import BotonLink from '../../components/BotonLink'
 import InAppLink from '../../components/InAppLink'
 import { NetworkError } from '../../api/client'
 import { listCustomers } from '../../api/customers'
@@ -29,12 +30,13 @@ import { GONE_NOTICE } from '../../api/refusals'
 import Notice from '../../components/Notice'
 import SinConexion from '../../components/SinConexion'
 import { useCustomerSearch } from './CustomerSearch'
+import { EMPTY_CUSTOMERS } from './messages'
 import TeDeben from './TeDeben'
 
 export const SEARCH_LABEL = 'Buscar cliente'
 export const SEARCH_PLACEHOLDER = 'Teléfono o nombre'
 export const SEARCHING = 'Buscando…'
-export const EMPTY_LIST = 'Todavía no agregaste ningún cliente.'
+export const EMPTY_LIST = EMPTY_CUSTOMERS
 
 export default function Clientes() {
   const { query, setQuery } = useCustomerSearch()
@@ -94,9 +96,11 @@ export default function Clientes() {
             onChange={(event) => setQuery(event.target.value)}
           />
         </label>
-        <InAppLink className="boton" to={CUSTOMER_NEW}>
-          Nuevo cliente
-        </InAppLink>
+        <div className="clientes__accion">
+          <BotonLink to={CUSTOMER_NEW} icon="personaMas">
+            Nuevo cliente
+          </BotonLink>
+        </div>
         {isError && error instanceof NetworkError && <SinConexion />}
         {isError && !(error instanceof NetworkError) && <ErrorGenerico />}
         {!isError && (
@@ -107,7 +111,9 @@ export default function Clientes() {
           >
             {isPlaceholderData && <span className="campo__rotulo">{SEARCHING}</span>}
             {!isPlaceholderData && customers.length === 0 && (
-              <span className="campo__rotulo">{EMPTY_LIST}</span>
+              <span className="campo__rotulo" data-copy="emptyTitle">
+                {EMPTY_LIST}
+              </span>
             )}
             {customers.map((customer) => (
               <div key={customer.id} className="lista-clientes__item">
@@ -132,13 +138,13 @@ export default function Clientes() {
                   )}
                 </InAppLink>
                 {customer.standing === 'owes' && (
-                  <InAppLink
+                  <BotonLink
                     to={pathTo(CUSTOMER_PAYMENT, { id: customer.id })}
-                    aria-label={`Cobrar a ${customer.name}`}
-                    className="cobrar"
+                    icon="cobro"
+                    ariaLabel={`Cobrar a ${customer.name}`}
                   >
                     Cobrar
-                  </InAppLink>
+                  </BotonLink>
                 )}
               </div>
             ))}

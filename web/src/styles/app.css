@@ -3951,3 +3951,34 @@ body {
   flex-direction: column;
   gap: var(--espacio-md);
 }
+
+/* ===== area-customers ===== */
+/* "Cobrar" on a debtor's row (Clientes and Te deben): `BotonLink`'s `.boton` drawn as the
+ * compact pill the row has always had, at the end of the row, never the full-width button. */
+.lista-clientes__item > .boton {
+  align-self: flex-end;
+  width: auto;
+  height: auto;
+  min-height: var(--alto-tocable);
+  padding: 0 var(--espacio-lg);
+  font-size: 14px;
+  text-decoration: none;
+}
+
+/* The full-width actions of Clientes and a customer's card: a link drawn as `.boton`, with
+ * no underline. */
+.clientes__accion > .boton {
+  text-decoration: none;
+}
+
+/* "Editar" on a customer's card keeps its plain accent link look: no underline. */
+.ficha-cliente__encabezado .boton--enlace {
+  box-shadow: none;
+}
+
+/* "Borrar cobro" is the trash at the end of its account row. */
+.cuenta-cliente__fila .boton-icono {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+/* ===== end area-customers ===== */

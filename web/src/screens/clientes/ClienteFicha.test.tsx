@@ -20,6 +20,8 @@ import { SheetRouterProvider } from '../../components/useSheetStack'
 import { GONE_NOTICE } from '../../api/refusals'
 import { stubViewport } from '../../test-viewport'
 import { StrictMode } from 'react'
+import { LIMITS, SAMPLES } from '../../copy/limits'
+import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -787,4 +789,42 @@ test.each([
   expect(await screen.findByText('la lista')).toBeInTheDocument()
   expect(router.state.historyAction).toBe('POP')
   expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
+})
+
+const RULE = { limits: LIMITS, samples: { name: SAMPLES.name }, optionClasses: ['boton-enlace'] }
+
+test('the card and its sheet follow the icon and text rule: Borrar cobro is icon-only, the rest keep their words', async () => {
+  vi.mocked(fetch).mockImplementation(
+    dispatchFetch({
+      'GET /customers/1': () => jsonResponse(200, OWING_CUSTOMER),
+      'GET /customers/1/account': () =>
+        jsonResponse(200, {
+          balance: 6000,
+          owing_since: '2026-09-14',
+          standing: 'owes',
+          rows: [
+            {
+              kind: 'payment',
+              date: '2026-09-20',
+              running_balance: 6000,
+              standing: 'owes',
+              payment: { id: 5, paid_on: '2026-09-20', amount: 5000, method: 'cash' },
+              applied_to: { sale_id: 10, sale_date: '2026-09-14', amount: 5000 },
+            },
+          ],
+        }),
+    }),
+  )
+  renderFicha('1', [pathTo(CUSTOMER_PAYMENT, { id: 1 })])
+
+  const borrar = await screen.findByRole('button', { name: 'Borrar cobro' })
+  expect(borrar).toHaveClass('boton-icono')
+  expect(borrar).toHaveTextContent('')
+  expect(borrar.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  const registrar = screen.getByRole('link', { name: 'Registrar cobro' })
+  expect(registrar.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  const nueva = screen.getByRole('link', { name: /^Nueva venta a / })
+  expect(nueva.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  await screen.findByRole('button', { name: 'Guardar' })
+  expectIconAndTextRule(document.body, RULE)
 })

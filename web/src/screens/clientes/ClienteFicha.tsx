@@ -14,7 +14,8 @@ import { CUSTOMERS, CUSTOMER_EDIT, CUSTOMER_PAYMENT, SALE_NEW, pathTo } from '..
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useLocation, useOutletContext, useParams } from 'react-router'
-import InAppLink from '../../components/InAppLink'
+import Boton from '../../components/Boton'
+import BotonLink from '../../components/BotonLink'
 import { useGoneNotice } from '../../components/goneExit'
 import { ApiError, NetworkError } from '../../api/client'
 import { type Channel, getCustomer } from '../../api/customers'
@@ -198,11 +199,11 @@ export default function ClienteFicha({ payment = false }: ClienteFichaProps) {
   return (
     <main className="pantalla">
       <div className="cuerpo">
-        <div>
+        <div className="ficha-cliente__encabezado">
           <span className="encabezado__titulo">{data.name}</span>
-          <InAppLink to={pathTo(CUSTOMER_EDIT, { id: customerId })}>
+          <BotonLink variant="link" to={pathTo(CUSTOMER_EDIT, { id: customerId })}>
             Editar
-          </InAppLink>
+          </BotonLink>
         </div>
         {feedback !== null && <Notice kind={feedback.kind} message={feedback.message} />}
         {accountGone && <Notice kind="notice" message={GONE_NOTICE} />}
@@ -246,9 +247,11 @@ export default function ClienteFicha({ payment = false }: ClienteFichaProps) {
         </div>
 
         {data.standing === 'owes' && (
-          <InAppLink to={pathTo(CUSTOMER_PAYMENT, { id: customerId })} className="boton">
-            Registrar cobro
-          </InAppLink>
+          <div className="clientes__accion">
+            <BotonLink to={pathTo(CUSTOMER_PAYMENT, { id: customerId })} icon="cobro">
+              Registrar cobro
+            </BotonLink>
+          </div>
         )}
 
         <div className="cuenta-cliente">
@@ -264,9 +267,10 @@ export default function ClienteFicha({ payment = false }: ClienteFichaProps) {
                 <span className="cuenta-cliente__monto">{rowOwnAmount(row)}</span>
                 <span className="cuenta-cliente__saldo">{rowAmount(row)}</span>
                 {showDelete && (
-                  <button
-                    type="button"
-                    className="boton-enlace"
+                  <Boton
+                    variant="icon"
+                    action="delete"
+                    ariaLabel="Borrar cobro"
                     onClick={() =>
                       setConfirmingDelete({
                         id: row.payment.id,
@@ -275,18 +279,18 @@ export default function ClienteFicha({ payment = false }: ClienteFichaProps) {
                         paid_on: row.payment.paid_on,
                       })
                     }
-                  >
-                    Borrar cobro
-                  </button>
+                  />
                 )}
               </div>
             )
           })}
         </div>
 
-        <InAppLink to={SALE_NEW} state={newSaleFor(customerId)} className="boton">
-          Nueva venta a {data.name}
-        </InAppLink>
+        <div className="clientes__accion">
+          <BotonLink to={SALE_NEW} state={newSaleFor(customerId)} icon="agregar">
+            Nueva venta a {data.name}
+          </BotonLink>
+        </div>
       </div>
 
       {payment && <Cobro customerId={customerId} balance={data.balance} today={me.today} />}

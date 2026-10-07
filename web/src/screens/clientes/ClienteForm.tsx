@@ -20,6 +20,7 @@ import { CUSTOMER, CUSTOMERS, parentOf, pathTo } from '../../routes'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { type FormEvent, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
+import Boton from '../../components/Boton'
 import LeaveConfirm from '../../components/LeaveConfirm'
 import { useFlash } from '../../flash/useFlash'
 import { useBackOr } from '../../components/useBackOr'
@@ -208,9 +209,9 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
           <span className="encabezado__titulo">
             {mode === 'nuevo' ? 'Nuevo cliente' : 'Editar cliente'}
           </span>
-          <button type="button" className="boton--enlace" onClick={close}>
+          <Boton variant="link" onClick={close}>
             Cerrar
-          </button>
+          </Boton>
         </div>
         <form className="formulario" onSubmit={onSubmit}>
           <CustomerFields
@@ -230,9 +231,9 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
             </span>
           )}
           {offline && <SinConexion />}
-          <button className="boton" type="submit" disabled={save.isPending}>
+          <Boton textOnly="submit" type="submit" disabled={save.isPending}>
             Guardá y usá
-          </button>
+          </Boton>
         </form>
       </div>
       {blocker.state === 'blocked' && (

@@ -35,6 +35,7 @@ import {
   previewPayment,
   recordPayment,
 } from '../../api/payments'
+import Boton from '../../components/Boton'
 import LeaveConfirm from '../../components/LeaveConfirm'
 import SinConexion from '../../components/SinConexion'
 import { useBackOr } from '../../components/useBackOr'
@@ -174,9 +175,9 @@ export default function Cobro({ customerId, balance, today }: CobroProps) {
       <div className="capa__contenido">
         <div className="encabezado-fila">
           <span className="panel__titulo">Registrar cobro</span>
-          <button type="button" className="boton--enlace" onClick={close}>
+          <Boton variant="link" onClick={close}>
             Cerrar
-          </button>
+          </Boton>
         </div>
         <form className="formulario" onSubmit={(event) => void onSubmit(event)}>
           <label className="campo">
@@ -254,9 +255,9 @@ export default function Cobro({ customerId, balance, today }: CobroProps) {
 
           {offline && <SinConexion />}
 
-          <button className="boton" type="submit" disabled={record.isPending}>
+          <Boton textOnly="submit" type="submit" disabled={record.isPending}>
             Guardar
-          </button>
+          </Boton>
         </form>
         {blocker.state === 'blocked' && (
           <LeaveConfirm
