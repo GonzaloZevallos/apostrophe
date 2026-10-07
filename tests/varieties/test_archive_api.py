@@ -65,10 +65,13 @@ def test_an_archived_variety_is_restored_whether_or_not_it_has_history(
     assert _archived_names(client) == []
 
 
+@pytest.mark.parametrize("with_history", [True, False])
 def test_archiving_twice_and_restoring_a_live_variety_change_nothing(
-    client: TestClient,
+    client: TestClient, with_history: bool
 ) -> None:
     variety_id = _register(client)
+    if with_history:
+        _give_history(client, variety_id)
 
     assert client.post(f"/varieties/{variety_id}/restore").json()["archived"] is False
     first = client.post(f"/varieties/{variety_id}/archive")
