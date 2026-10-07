@@ -34,10 +34,10 @@ class SqlVarieties:
     def archived(self) -> list[Variety]:
         return self._by_name(VarietyRow.archived_at.is_not(None))
 
-    def _by_name(self, archival: ColumnElement[bool]) -> list[Variety]:
+    def _by_name(self, condition: ColumnElement[bool]) -> list[Variety]:
         statement = (
             select(VarietyRow)
-            .where(VarietyRow.business_id == self._business_id, archival)
+            .where(VarietyRow.business_id == self._business_id, condition)
             .options(selectinload(VarietyRow.price_entries))
             .order_by(VarietyRow.name_key)
         )
@@ -49,6 +49,7 @@ class SqlVarieties:
         assert row is not None, "save takes a variety of this business"
         row.name = variety.name.value
         row.name_key = variety.name.key
+        row.archived_at = variety.archived_at
         kept = {e.id for e in variety.price_entries if e.id is not None}
         row.price_entries = [
             *(r for r in row.price_entries if r.id in kept),
@@ -57,16 +58,18 @@ class SqlVarieties:
         self._session.flush()
         return _variety(row)
 
-    def name_holder(self, name: VarietyName, *, other_than: int | None = None) -> NameHolder | None:
+    def name_holder(
+        self, name: VarietyName, *, other_than: int | None = None
+    ) -> NameHolder | None:
         statement = select(VarietyRow.archived_at).where(
             VarietyRow.business_id == self._business_id, VarietyRow.name_key == name.key
         )
         if other_than is not None:
             statement = statement.where(VarietyRow.id != other_than)
-        found = self._session.execute(statement).first()
-        if found is None:
+        rows = self._session.execute(statement).all()
+        if not rows:
             return None
-        return NameHolder.LIVE if found.archived_at is None else NameHolder.ARCHIVED
+        return NameHolder.LIVE if rows[0].archived_at is None else NameHolder.ARCHIVED
 
     def _row(self, variety_id: int) -> VarietyRow | None:
         statement = select(VarietyRow).where(
