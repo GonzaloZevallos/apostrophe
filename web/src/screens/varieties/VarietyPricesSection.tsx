@@ -22,7 +22,9 @@ export default function VarietyPricesSection({
     <section className="seccion-variedad">
       <div className="seccion-variedad__cabecera">
         <h2 className="seccion-variedad__titulo">Precios</h2>
-        <InAppLink to={pathTo(VARIETY_PRICES, { id: varietyId })}>Ver todas</InAppLink>
+        <InAppLink to={pathTo(VARIETY_PRICES, { id: varietyId })} className="enlace-texto">
+          Ver todas
+        </InAppLink>
       </div>
       <PriceRows varietyId={varietyId} history={history} currentPriceId={currentPriceId} limit={3} readOnly={readOnly} />
     </section>

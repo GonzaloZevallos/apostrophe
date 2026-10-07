@@ -35,7 +35,9 @@ export default function VarietyStockSection({
     <section className="seccion-variedad">
       <div className="seccion-variedad__cabecera">
         <h2 className="seccion-variedad__titulo">Stock y entradas</h2>
-        <InAppLink to={pathTo(VARIETY_ENTRIES, { id: varietyId })}>Ver todas</InAppLink>
+        <InAppLink to={pathTo(VARIETY_ENTRIES, { id: varietyId })} className="enlace-texto">
+          Ver todas
+        </InAppLink>
       </div>
       <ul className="lista-entradas">
         {rows.map((movement) =>

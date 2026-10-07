@@ -180,7 +180,9 @@ export default function EntriesList({ varietyId }: Props) {
                   )}
                 </span>
                 <span className="fila-entrada__acciones">
-                  <InAppLink to={pathTo(STOCK_ENTRY, { id: entry.id })}>Editar</InAppLink>
+                  <InAppLink to={pathTo(STOCK_ENTRY, { id: entry.id })} className="enlace-texto">
+                    Editar
+                  </InAppLink>
                   <button type="button" className="boton--enlace" onClick={() => setConfirming(entry)}>
                     Borrar
                   </button>

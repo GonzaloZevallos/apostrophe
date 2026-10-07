@@ -202,7 +202,7 @@ export default function ClienteFicha({ payment = false }: ClienteFichaProps) {
       <div className="cuerpo">
         <div>
           <span className="encabezado__titulo">{data.name}</span>
-          <InAppLink to={pathTo(CUSTOMER_EDIT, { id: customerId })}>
+          <InAppLink to={pathTo(CUSTOMER_EDIT, { id: customerId })} className="enlace-texto">
             Editar
           </InAppLink>
         </div>
