@@ -8,6 +8,8 @@
  */
 
 import { expect, test, type Page } from '@playwright/test'
+import { CUSTOMER, CUSTOMER_NEW, CUSTOMERS, LOGIN, SALE, SALE_NEW, SALES, VARIETIES } from '../src/routes.js'
+import { expectPath } from './helpers/url.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
@@ -83,7 +85,7 @@ test('every screen, bar, sheet and toast keeps clear of the notch and the home b
   // Signed out: the sign-in screen is its own root, and owns all four sides.
   for (const viewport of VIEWPORTS) {
     await page.setViewportSize(viewport)
-    await page.goto('/entrar')
+    await page.goto(LOGIN)
     const moved = await shift(page, '.marca')
     expect(moved.top, `${viewport.name}: /entrar top`).toBe(TOP)
   }
@@ -91,7 +93,7 @@ test('every screen, bar, sheet and toast keeps clear of the notch and the home b
   await page.setViewportSize(VIEWPORTS[0])
   await signUpNewBusiness(page, { businessName: `Flores del Borde ${Date.now()}`, email: `duena-bordes-${Date.now()}@example.com` })
 
-  await page.goto('/varieties')
+  await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Rosa')
   await page.getByRole('button', { name: 'Agregá la variedad' }).click()
@@ -102,17 +104,16 @@ test('every screen, bar, sheet and toast keeps clear of the notch and the home b
   await page.getByRole('button', { name: 'Guardá el precio' }).click()
   await expect(page.getByText('Precio guardado')).toBeVisible()
 
-  await page.goto('/clientes/nuevo')
+  await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Teléfono').fill('+5491155550077')
   await page.getByLabel('Nombre').fill('Lucía Borde')
   await page.getByRole('button', { name: 'Guardá y usá' }).click()
-  await expect(page).toHaveURL(/\/clientes$/)
-  await page.getByRole('link', { name: 'Lucía Borde' }).click()
+  await expectPath(page, CUSTOMER)
   await page.getByRole('link', { name: 'Nueva venta a Lucía Borde' }).click()
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '5' })
   await page.getByRole('radio', { name: 'Debiendo' }).check()
   await page.getByRole('button', { name: 'Guardá la venta' }).click()
-  await expect(page).toHaveURL(/\/ventas\/\d+$/)
+  await expectPath(page, SALE)
   const saleUrl = new URL(page.url()).pathname
 
   for (const viewport of VIEWPORTS) {
@@ -120,10 +121,10 @@ test('every screen, bar, sheet and toast keeps clear of the notch and the home b
     const where = (what: string) => `${viewport.name}: ${what}`
 
     // The sales list: a nested `.pantalla` inside the shell, which owns the insets.
-    await page.goto('/ventas')
+    await page.goto(SALES)
     const list = await shift(page, '.encabezado__titulo')
-    expect(list.top, where('/ventas top')).toBe(TOP)
-    if (!viewport.wide) expect(list.left, where('/ventas left')).toBe(SIDE)
+    expect(list.top, where('sales top')).toBe(TOP)
+    if (!viewport.wide) expect(list.left, where('sales left')).toBe(SIDE)
     else expect((await shift(page, '.riel-lateral')).left, where('rail left')).toBe(SIDE)
 
     if (!viewport.wide) {
@@ -150,7 +151,7 @@ test('every screen, bar, sheet and toast keeps clear of the notch and the home b
     expect(detailEnd.bottom, where('detail bottom')).toBeLessThan(viewport.height - BOTTOM + 1)
 
     // Nueva venta: the save button, and the customer sheet over it.
-    await page.goto('/ventas/nueva')
+    await page.goto(SALE_NEW)
     // The row, not its title: the title is centered in a row whose height follows the
     // narrower content width, so it moves by less than the inset.
     const form = await shift(page, '.encabezado-fila')
@@ -166,7 +167,7 @@ test('every screen, bar, sheet and toast keeps clear of the notch and the home b
     expectInside(where('customer sheet button'), await box(page, '.cliente-sheet__contenido button', 'last'), viewport)
 
     // Registrar cobro over the customer's card.
-    await page.goto('/clientes')
+    await page.goto(CUSTOMERS)
     await page.getByRole('link', { name: 'Lucía Borde' }).click()
     await page.getByRole('button', { name: 'Registrar cobro' }).click()
     await setInsets(page, true)

@@ -6,6 +6,7 @@
  */
 
 import { expect, test } from 'vitest'
+import { HOME } from '../routes'
 
 const raw = import.meta.glob(
   ['/index.html', '/public/manifest.webmanifest', '/src/styles/tokens.css'],
@@ -104,8 +105,8 @@ test('the document never lets the system pick a color or draws an iOS splash', (
 })
 
 test('the manifest carries its identity fields and the light papel', () => {
-  expect(manifest.id).toBe('/')
-  expect(manifest.scope).toBe('/')
+  expect(manifest.id).toBe(HOME)
+  expect(manifest.scope).toBe(HOME)
   expect(manifest.lang).toBe('es')
   expect(manifest.display).toBe('standalone')
   expect(manifest.theme_color).toBe(lightPapel())

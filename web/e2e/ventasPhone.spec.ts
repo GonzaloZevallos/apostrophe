@@ -8,6 +8,7 @@
  * nothing overflows the page sideways. On a computer the tabs keep the plain list.
  */
 
+import { SALES, VARIETIES } from '../src/routes.js'
 import { expect, test, type Locator, type Page } from '@playwright/test'
 import { signUpNewBusiness } from './helpers/signup.js'
 
@@ -46,7 +47,7 @@ test('Ventas and a sale detail fit, and are thumb-sized, at 320, 430 and 130 % o
 }) => {
   await signUpNewBusiness(page, { businessName: `Vivero Telefono ${Date.now()}`, email: `duena-telefono-${Date.now()}@example.com` })
 
-  await page.goto('/varieties')
+  await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Jazmín')
   await page.getByRole('button', { name: 'Agregá la variedad' }).click()
@@ -58,7 +59,7 @@ test('Ventas and a sale detail fit, and are thumb-sized, at 320, 430 and 130 % o
   await page.getByRole('button', { name: 'Guardá el precio' }).click()
   await expect(page.getByText('Precio guardado')).toBeVisible()
 
-  await page.goto('/ventas')
+  await page.goto(SALES)
   const today = await page.evaluate(() => new Date().toISOString().slice(0, 10))
   const varieties: { id: number; name: string }[] = await (
     await page.request.get(`/varieties?on=${today}`)
@@ -79,7 +80,7 @@ test('Ventas and a sale detail fit, and are thumb-sized, at 320, 430 and 130 % o
 
   for (const phone of PHONES) {
     await page.setViewportSize({ width: phone.width, height: phone.height })
-    await page.goto('/ventas')
+    await page.goto(SALES)
     const tabs = page.getByRole('group', { name: 'Período' })
     await expect(tabs.getByRole('button')).toHaveCount(4)
 
@@ -125,7 +126,7 @@ test('Ventas and a sale detail fit, and are thumb-sized, at 320, 430 and 130 % o
 
   // The computer keeps the plain tab list, never the phone's grid.
   await page.setViewportSize({ width: 1280, height: 900 })
-  await page.goto('/ventas')
+  await page.goto(SALES)
   await expect(page.getByRole('group', { name: 'Período' }).getByRole('button')).toHaveCount(4)
   await expect(page.locator('.pestanas__celdas')).toHaveCount(0)
 })

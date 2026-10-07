@@ -13,7 +13,7 @@ import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { SheetRouterProvider, sheetDepth } from '../../components/useSheetStack'
-import { SALES, SALE_NEW } from '../../routes'
+import { CUSTOMERS, pathTo, SALES, SALE_NEW } from '../../routes'
 import NuevaVenta from './NuevaVenta'
 
 const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
@@ -41,7 +41,7 @@ beforeEach(() => {
       if (method === 'GET' && path === '/varieties?on=2026-10-02') {
         return Promise.resolve(jsonResponse(200, [ROSA]))
       }
-      if (method === 'GET' && path.startsWith('/customers')) {
+      if (method === 'GET' && path.startsWith(pathTo(CUSTOMERS))) {
         return Promise.resolve(jsonResponse(200, [ANA]))
       }
       if (method === 'POST' && path === '/customers') {

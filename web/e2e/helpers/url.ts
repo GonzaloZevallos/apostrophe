@@ -30,3 +30,13 @@ export async function expectPath(
 ): Promise<void> {
   await expect(page).toHaveURL(templateRegex(template, query));
 }
+
+/** Where the page is when either of two screens is right: Variedades on a computer opens its
+ * first variety, so `/varieties` and `/varieties/:id` are the same place for a seller. */
+export async function expectAnyPath(
+  page: Page,
+  templates: readonly string[],
+): Promise<void> {
+  const alternatives = templates.map((template) => templateRegex(template).source.replace(/\$$/, ""));
+  await expect(page).toHaveURL(new RegExp(`(?:${alternatives.join("|")})$`));
+}

@@ -11,7 +11,7 @@ import { afterEach, expect, test, vi } from 'vitest'
 import App from '../../App'
 import { queryClient } from '../../queryClient'
 import { router } from '../../router'
-import { SALES, SALE_NEW } from '../../routes'
+import { HOME, pathTo, SALES, SALE_NEW } from '../../routes'
 
 const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
 const ROSA = {
@@ -42,7 +42,7 @@ async function openForm(): Promise<ReturnType<typeof vi.fn>> {
 afterEach(async () => {
   vi.unstubAllGlobals()
   queryClient.clear()
-  await act(() => router.navigate('/'))
+  await act(() => router.navigate(HOME))
 })
 
 test('Regalo is a switch whose whole row toggles it, and it excludes Precio especial both ways', async () => {
@@ -83,7 +83,7 @@ test('the keyboard key moves from grams to Precio especial, then closes the keyb
 
   await user.type(screen.getByLabelText('Precio especial línea 1'), '500{Enter}')
   expect(screen.getByLabelText('Precio especial línea 1')).not.toBe(document.activeElement)
-  expect(fetchMock.mock.calls.map(([path]) => path)).not.toContain('/sales')
+  expect(fetchMock.mock.calls.map(([path]) => path)).not.toContain(pathTo(SALES))
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
 })
 

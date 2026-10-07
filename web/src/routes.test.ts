@@ -375,37 +375,6 @@ function withoutComments(content: string): string[] {
     .map((line) => line.replace(/(^|\s)\/\/.*$/, "$1"));
 }
 
-/** #47's files that still write a route literal. The migration subtask moves each onto `pathTo` and
- * deletes this list; until then it names them exactly, so a new file cannot join it unnoticed. */
-const PENDING_MIGRATION: readonly string[] = [
-  "e2e/catalog.spec.ts",
-  "e2e/flow.spec.ts",
-  "e2e/insets.spec.ts",
-  "e2e/install.spec.ts",
-  "e2e/nuevaVentaTelefono.spec.ts",
-  "e2e/pressed.spec.ts",
-  "e2e/theme.spec.ts",
-  "e2e/ventasLinea.spec.ts",
-  "e2e/ventasPhone.spec.ts",
-  "e2e/ventasTelefono.spec.ts",
-  "src/architecture/installShell.test.ts",
-  "src/components/useSheetStack.test.tsx",
-  "src/screens/Catalogo.test.tsx",
-  "src/screens/Catalogo.tsx",
-  "src/screens/EntradaStock.test.tsx",
-  "src/screens/EntriesList.test.tsx",
-  "src/screens/Variedades.test.tsx",
-  "src/screens/settings/IntegrationsGroup.test.tsx",
-  "src/screens/varieties/PriceHistory.test.tsx",
-  "src/screens/varieties/VarietyPage.test.tsx",
-  "src/screens/ventas/NuevaVenta.linea.test.tsx",
-  "src/screens/ventas/NuevaVenta.loading.test.tsx",
-  "src/screens/ventas/NuevaVenta.sheets.test.tsx",
-  "src/screens/ventas/NuevaVenta.shell.test.tsx",
-  "src/screens/ventas/VentaDetalle.sheets.test.tsx",
-  "src/screens/ventas/Ventas.phone.test.tsx",
-];
-
 /** Files that write a front path as a string literal instead of a constant of `routes.ts`. */
 function findPathLiterals(files: Source[]): string[] {
   return (
@@ -413,7 +382,6 @@ function findPathLiterals(files: Source[]): string[] {
       .filter(
         ({ path }) => path !== "src/routes.ts" && path !== "src/routes.test.ts",
       )
-      .filter(({ path }) => !PENDING_MIGRATION.includes(path))
       // `api/` names the server's own routes (`/expenses`), not front paths.
       .filter(({ path }) => !path.startsWith("src/api/"))
       .filter(({ content }) =>
@@ -445,19 +413,9 @@ function findPathLiterals(files: Source[]): string[] {
   );
 }
 
-/** #47's files that still call `matchMedia` themselves; the migration subtask moves them onto
- * `useViewport` (or deletes them) and removes this list. */
-const PENDING_MATCH_MEDIA: readonly string[] = [
-  "src/components/useIsComputer.ts",
-  "src/components/useVisualViewport.ts",
-  "src/screens/ventas/NuevaVentaLinea.tsx",
-  "src/screens/ventas/Ventas.tsx",
-];
-
 /** Files that call `matchMedia`, other than `useViewport.ts`, the one allowed to. */
 function findMatchMediaCalls(files: Source[]): string[] {
   return files
-    .filter(({ path }) => !PENDING_MATCH_MEDIA.includes(path))
     .filter(({ path }) => path !== "src/shell/useViewport.ts")
     .filter(({ path }) => !/\.test\.tsx?$/.test(path))
     .filter(({ content }) =>

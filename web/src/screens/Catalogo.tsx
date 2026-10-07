@@ -32,13 +32,11 @@ import ErrorGenerico from '../components/ErrorGenerico'
 import SinConexion from '../components/SinConexion'
 import PinPublish from './PinPublish'
 import { telegramPreview } from './telegramPreview'
-import { CATALOG_SECTION_ID, VARIETIES } from '../routes'
-import { VARIETY } from '../legacyVarietyPaths'
+import { CATALOG_SECTION_ID, SETTINGS_CATALOG_MESSAGE, VARIETIES, VARIETY, pathTo } from '../routes'
 
 export const CATALOG_COPIED = 'Catálogo copiado'
 export const COPY_FAILED_MESSAGE = 'No se pudo copiar.'
 export const SHARE_FAILED_MESSAGE = 'No se pudo compartir.'
-const SETTINGS_CATALOG_MESSAGE = '/settings/catalog-message'
 export const EMPTY_STATE_TITLE = 'No hay nada en el catálogo hoy'
 export const EMPTY_STATE_DETAIL = 'No hay nada para copiar todavía'
 
@@ -197,7 +195,7 @@ export default function Catalogo() {
                       <li key={variety.id} className="catalogo__fila">
                         <span className="catalogo__fila-texto">
                           <Link
-                            to={{ pathname: VARIETY(variety.id), hash: CATALOG_SECTION_ID }}
+                            to={{ pathname: pathTo(VARIETY, { id: variety.id }), hash: CATALOG_SECTION_ID }}
                             className="catalogo__fila-nombre"
                           >
                             {variety.name}

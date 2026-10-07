@@ -11,19 +11,18 @@
  */
 
 import { type RefObject, useEffect } from 'react'
-import { COMPUTER_QUERY } from '../format/breakpoints'
+import { useViewport } from '../shell/useViewport'
 
 const FIXED_FORM_CLASS = 'html--formulario-fijo'
 const KEYBOARD_GAP_PX = 120
 
 export function useVisualViewport(ref: RefObject<HTMLElement | null>): void {
+  const layout = useViewport()
   useEffect(() => {
     const element = ref.current
     const viewport = window.visualViewport
     if (!element || !viewport) return
-    if (typeof window.matchMedia === 'function' && window.matchMedia(COMPUTER_QUERY).matches) {
-      return
-    }
+    if (layout === 'computer') return
 
     const clear = () => {
       element.style.removeProperty('--vv-top')
@@ -56,5 +55,5 @@ export function useVisualViewport(ref: RefObject<HTMLElement | null>): void {
       document.documentElement.classList.remove(FIXED_FORM_CLASS)
       clear()
     }
-  }, [ref])
+  }, [ref, layout])
 }

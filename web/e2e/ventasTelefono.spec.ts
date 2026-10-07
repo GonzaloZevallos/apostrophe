@@ -7,6 +7,7 @@
  * tall, every input at least 16 px, and Ventas' tabs sit in two or four columns, never three.
  */
 
+import { SALE_NEW, SALES, VARIETIES } from '../src/routes.js'
 import { expect, test, type Page } from '@playwright/test'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { fillSaleLine } from './helpers/sale.js'
@@ -26,7 +27,7 @@ test.use({ isMobile: true, hasTouch: true, viewport: { width: 375, height: 812 }
 
 async function signUpWithAVariety(page: Page): Promise<void> {
   await signUpNewBusiness(page, { businessName: `Vivero Telefono ${Date.now()}`, email: `telefono-venta-${Date.now()}@example.com` })
-  await page.goto('/varieties')
+  await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Jazmín')
   await page.getByRole('button', { name: 'Agregá la variedad' }).click()
@@ -87,7 +88,7 @@ test('a sale is recorded in under a minute from a phone: existing customer, new 
 
   for (const customer of ['existing', 'new', 'none'] as const) {
     const started = Date.now()
-    await page.goto('/ventas/nueva')
+    await page.goto(SALE_NEW)
     await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '10' })
     if (customer === 'existing') {
       await page.getByRole('button', { name: 'Elegir cliente' }).click()
@@ -113,7 +114,7 @@ test('Nueva venta, Ventas and a sale detail fit and are thumb-sized at every pho
 }) => {
   test.setTimeout(240_000)
   await signUpWithAVariety(page)
-  await page.goto('/ventas/nueva')
+  await page.goto(SALE_NEW)
   await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '10' })
   await page.getByRole('radio', { name: 'Efectivo' }).check()
   await page.getByRole('button', { name: 'Guardá la venta' }).click()
@@ -122,7 +123,7 @@ test('Nueva venta, Ventas and a sale detail fit and are thumb-sized at every pho
   for (const phone of PHONES) {
     await page.setViewportSize({ width: phone.width, height: phone.height })
 
-    await page.goto('/ventas/nueva')
+    await page.goto(SALE_NEW)
     await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '10' })
     await page.getByRole('button', { name: 'Agregar otra variedad' }).click()
     await expectNoSidewaysOverflow(page, `${phone.name}: Nueva venta`)
@@ -132,7 +133,7 @@ test('Nueva venta, Ventas and a sale detail fit and are thumb-sized at every pho
     await expectThumbSized(page, `${phone.name}: the discard dialog`)
     await page.getByRole('button', { name: 'Sí, descartala' }).click()
 
-    await page.goto('/ventas')
+    await page.goto(SALES)
     const tabs = page.getByRole('group', { name: 'Período' })
     await expect(tabs.getByRole('button')).toHaveCount(4)
     const columns = await tabs

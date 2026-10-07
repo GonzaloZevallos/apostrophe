@@ -11,6 +11,15 @@ import userEvent from '@testing-library/user-event'
 import { RouterProvider, createMemoryRouter } from 'react-router'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import { router as appRouter } from '../router'
+import {
+  CATALOG,
+  STOCK as STOCK_PATH,
+  STOCK_ENTRY_NEW,
+  VARIETIES as VARIETIES_PATH,
+  VARIETY,
+  VARIETY_NEW,
+  pathTo,
+} from '../routes'
 import { NO_PRICE_TODAY } from './Variedades'
 
 const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
@@ -126,14 +135,14 @@ afterEach(() => {
 
 describe('the list', () => {
   test('lists every variety by name, each with its status by shape and word, detail and price', async () => {
-    renderApp('/varieties')
+    renderApp(VARIETIES_PATH)
 
     const rows = await screen.findAllByRole('link', { name: /x g|Sin precio/ })
     expect(rows.map((row) => row.getAttribute('href'))).toEqual([
-      '/varieties/1',
-      '/varieties/2',
-      '/varieties/3',
-      '/varieties/4',
+      pathTo(VARIETY, { id: 1 }),
+      pathTo(VARIETY, { id: 2 }),
+      pathTo(VARIETY, { id: 3 }),
+      pathTo(VARIETY, { id: 4 }),
     ])
     expect(rows[0]).toHaveTextContent('24K Gold')
     expect(rows[0]).toHaveTextContent('ok')
@@ -149,7 +158,7 @@ describe('the list', () => {
   })
 
   test('"Oculta" sits beside the status of a hidden variety, never in its place', async () => {
-    renderApp('/varieties', { answers: { 'GET /catalog': () => json(200, catalogOf([1])) } })
+    renderApp(VARIETIES_PATH, { answers: { 'GET /catalog': () => json(200, catalogOf([1])) } })
 
     const row = (await screen.findByText('24K Gold')).closest('a')
     expect(row).not.toBeNull()
@@ -159,13 +168,13 @@ describe('the list', () => {
   })
 
   test('the summary line counts what is not ok by word, in stock-status order', async () => {
-    renderApp('/varieties')
+    renderApp(VARIETIES_PATH)
 
     expect(await screen.findByText('1 sin entradas · 1 agotada · 1 baja')).toBeInTheDocument()
   })
 
   test('the summary line says everything is fine when every variety is ok', async () => {
-    renderApp('/varieties', {
+    renderApp(VARIETIES_PATH, {
       answers: {
         'GET /varieties': () => json(200, VARIETIES.slice(0, 2)),
         'GET /stock': () => json(200, { ...STOCK, varieties: [stockRow(4, {}), stockRow(2, {})] }),
@@ -176,7 +185,7 @@ describe('the list', () => {
   })
 
   test('with no varieties there is no summary line, the fixed empty state, and the actions stay', async () => {
-    renderApp('/varieties', {
+    renderApp(VARIETIES_PATH, {
       answers: {
         'GET /varieties': () => json(200, []),
         'GET /stock': () => json(200, { total: 0, varieties: [], entries: [] }),
@@ -185,22 +194,22 @@ describe('the list', () => {
 
     expect(await screen.findByText('Todavía no cargaste ninguna variedad')).toBeInTheDocument()
     expect(screen.queryByText(/todo ok|sin entradas ·/)).not.toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Mandar catálogo' })).toHaveAttribute('href', '/varieties/catalog')
+    expect(screen.getByRole('link', { name: 'Mandar catálogo' })).toHaveAttribute('href', CATALOG)
     expect(screen.getByRole('link', { name: 'Nueva variedad' })).toBeInTheDocument()
   })
 
   test('the actions lead to the catalog, the entry form, the new variety form and every entry', async () => {
-    renderApp('/varieties')
+    renderApp(VARIETIES_PATH)
 
     await screen.findByText('24K Gold')
-    expect(screen.getByRole('link', { name: 'Mandar catálogo' })).toHaveAttribute('href', '/varieties/catalog')
-    expect(screen.getByRole('link', { name: '+ Entrada de stock' })).toHaveAttribute('href', '/varieties/entries/new')
-    expect(screen.getByRole('link', { name: 'Nueva variedad' })).toHaveAttribute('href', '/varieties/new')
-    expect(screen.getByRole('link', { name: /Todas las entradas/ })).toHaveAttribute('href', '/varieties/entries')
+    expect(screen.getByRole('link', { name: 'Mandar catálogo' })).toHaveAttribute('href', CATALOG)
+    expect(screen.getByRole('link', { name: '+ Entrada de stock' })).toHaveAttribute('href', STOCK_ENTRY_NEW)
+    expect(screen.getByRole('link', { name: 'Nueva variedad' })).toHaveAttribute('href', VARIETY_NEW)
+    expect(screen.getByRole('link', { name: /Todas las entradas/ })).toHaveAttribute('href', STOCK_PATH)
   })
 
   test('the bar has no Stock tab: Inicio, Ventas, Clientes, Variedades and Más', async () => {
-    renderApp('/varieties')
+    renderApp(VARIETIES_PATH)
 
     await screen.findByText('24K Gold')
     const bar = screen.getAllByRole('navigation', { name: 'Navegación' }).at(-1) as HTMLElement
@@ -214,7 +223,7 @@ describe('the list', () => {
   })
 
   test('a failed read shows the generic retry, ', async () => {
-    renderApp('/varieties', { answers: { 'GET /stock': () => json(500, { code: 'unknown' }) } })
+    renderApp(VARIETIES_PATH, { answers: { 'GET /stock': () => json(500, { code: 'unknown' }) } })
 
     expect(await screen.findByText('Algo falló. Probá de nuevo.')).toBeInTheDocument()
   })
@@ -222,15 +231,15 @@ describe('the list', () => {
 
 describe('on the phone', () => {
   test('the list never opens a variety on its own', async () => {
-    const { router } = renderApp('/varieties', { computer: false })
+    const { router } = renderApp(VARIETIES_PATH, { computer: false })
 
     await screen.findByText('24K Gold')
     await act(() => Promise.resolve())
-    expect(router.state.location.pathname).toBe('/varieties')
+    expect(router.state.location.pathname).toBe(VARIETIES_PATH)
   })
 
   test('a variety\'s page is shown alone', async () => {
-    renderApp('/varieties/1', { computer: false })
+    renderApp(pathTo(VARIETY, { id: 1 }), { computer: false })
 
     expect(await screen.findByRole('heading', { name: '24K Gold' })).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Mandar catálogo' })).not.toBeInTheDocument()
@@ -239,26 +248,26 @@ describe('on the phone', () => {
 
 describe('on a computer: two panes', () => {
   test('opening the list selects the first variety by name, replacing the entry', async () => {
-    const { router } = renderApp('/varieties', { computer: true })
+    const { router } = renderApp(VARIETIES_PATH, { computer: true })
 
     expect(await screen.findByRole('heading', { name: '24K Gold' })).toBeInTheDocument()
-    expect(router.state.location.pathname).toBe('/varieties/1')
+    expect(router.state.location.pathname).toBe(pathTo(VARIETY, { id: 1 }))
     expect(screen.getByRole('link', { name: 'Mandar catálogo' })).toBeInTheDocument()
     expect(router.state.historyAction).toBe('REPLACE')
   })
 
   test('picking another variety replaces the selection, both panes stay', async () => {
-    const { router } = renderApp('/varieties', { computer: true })
+    const { router } = renderApp(VARIETIES_PATH, { computer: true })
     await screen.findByRole('heading', { name: '24K Gold' })
 
     await userEvent.click(screen.getByRole('link', { name: /Sir Jack/ }))
 
-    expect(router.state.location.pathname).toBe('/varieties/4')
+    expect(router.state.location.pathname).toBe(pathTo(VARIETY, { id: 4 }))
     expect(screen.getByRole('link', { name: 'Mandar catálogo' })).toBeInTheDocument()
   })
 
   test('a direct link to a variety shows the list beside its page', async () => {
-    renderApp('/varieties/7', { computer: true })
+    renderApp(pathTo(VARIETY, { id: 7 }), { computer: true })
 
     expect(await screen.findByRole('heading', { name: 'Sir Jack' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Mandar catálogo' })).toBeInTheDocument()
@@ -266,17 +275,17 @@ describe('on a computer: two panes', () => {
   })
 
   test('while the list loads nothing is selected', async () => {
-    const { router } = renderApp('/varieties', {
+    const { router } = renderApp(VARIETIES_PATH, {
       computer: true,
       answers: { 'GET /varieties': () => new Response(null, { status: 200 }) },
     })
 
     await act(() => Promise.resolve())
-    expect(router.state.location.pathname).toBe('/varieties')
+    expect(router.state.location.pathname).toBe(VARIETIES_PATH)
   })
 
   test('with no varieties nothing is selected and the right pane holds no figure', async () => {
-    const { router } = renderApp('/varieties', {
+    const { router } = renderApp(VARIETIES_PATH, {
       computer: true,
       answers: {
         'GET /varieties': () => json(200, []),
@@ -285,12 +294,12 @@ describe('on a computer: two panes', () => {
     })
 
     expect(await screen.findByText('Todavía no cargaste ninguna variedad')).toBeInTheDocument()
-    expect(router.state.location.pathname).toBe('/varieties')
+    expect(router.state.location.pathname).toBe(VARIETIES_PATH)
     expect(screen.getAllByRole('heading').map((heading) => heading.textContent)).toEqual(['Variedades'])
   })
 
   test('Back from a form opened over the page returns to the variety, both panes still there', async () => {
-    const { router } = renderApp('/varieties/7', { computer: true })
+    const { router } = renderApp(pathTo(VARIETY, { id: 7 }), { computer: true })
     await screen.findByRole('heading', { name: 'Sir Jack' })
 
     await userEvent.click(screen.getByRole('button', { name: 'Editar nombre' }))
@@ -298,14 +307,14 @@ describe('on a computer: two panes', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
 
     await waitFor(() => expect(screen.queryByRole('button', { name: 'Cerrar' })).not.toBeInTheDocument())
-    expect(router.state.location.pathname).toBe('/varieties/7')
+    expect(router.state.location.pathname).toBe(pathTo(VARIETY, { id: 7 }))
     expect(screen.getByRole('link', { name: 'Mandar catálogo' })).toBeInTheDocument()
   })
 })
 
 describe('Nueva variedad', () => {
   test('saves the name, says "Variedad guardada" and goes back to the list', async () => {
-    const { router, fetchMock } = renderApp('/varieties', {
+    const { router, fetchMock } = renderApp(VARIETIES_PATH, {
       answers: { 'POST /varieties': () => json(201, { id: 9, name: 'Sour Diesel', current_price: null }) },
     })
     await userEvent.click(await screen.findByRole('link', { name: 'Nueva variedad' }))
@@ -316,11 +325,11 @@ describe('Nueva variedad', () => {
 
     expect(await screen.findByText('Variedad guardada')).toBeInTheDocument()
     expect(writes(fetchMock)).toEqual([{ call: 'POST /varieties', body: { name: 'Sour Diesel' } }])
-    expect(router.state.location.pathname).toBe('/varieties')
+    expect(router.state.location.pathname).toBe(VARIETIES_PATH)
   })
 
   test('a refusal shows under the name and keeps what was typed', async () => {
-    renderApp('/varieties/new', {
+    renderApp(VARIETY_NEW, {
       answers: { 'POST /varieties': () => json(409, { code: 'variety.name_taken' }) },
     })
 
@@ -332,23 +341,23 @@ describe('Nueva variedad', () => {
   })
 
   test('"Cerrar" with something typed asks before discarding; with nothing, it just leaves', async () => {
-    const { router } = renderApp('/varieties')
+    const { router } = renderApp(VARIETIES_PATH)
     await userEvent.click(await screen.findByRole('link', { name: 'Nueva variedad' }))
     await userEvent.type(await screen.findByPlaceholderText('Nombre de la variedad'), 'Sour')
 
     await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
     expect(await screen.findByText('¿Descartás la variedad?')).toBeInTheDocument()
-    expect(router.state.location.pathname).toBe('/varieties/new')
+    expect(router.state.location.pathname).toBe(VARIETY_NEW)
 
     await userEvent.click(screen.getByRole('button', { name: 'Sí, descartalo' }))
-    await waitFor(() => expect(router.state.location.pathname).toBe('/varieties'))
+    await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES_PATH))
   })
 
   test('a direct link has no history: "Cerrar" goes to the list', async () => {
-    const { router } = renderApp('/varieties/new')
+    const { router } = renderApp(VARIETY_NEW)
 
     await userEvent.click(await screen.findByRole('button', { name: 'Cerrar' }))
 
-    await waitFor(() => expect(router.state.location.pathname).toBe('/varieties'))
+    await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES_PATH))
   })
 })

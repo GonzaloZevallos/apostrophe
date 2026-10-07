@@ -12,6 +12,14 @@ import { afterEach, expect, test, vi } from 'vitest'
 import { catalogQueryOptions } from '../api/catalog'
 import type { Me } from '../api/me'
 import FlashProvider from '../flash/FlashProvider'
+import {
+  STOCK as STOCK_PATH,
+  STOCK_ENTRY,
+  VARIETIES as VARIETIES_PATH,
+  VARIETY,
+  VARIETY_ENTRIES,
+  pathTo,
+} from '../routes'
 import EntriesList from './EntriesList'
 import VarietyRoute from './varieties/VarietyRoute'
 
@@ -92,15 +100,15 @@ function renderAt(
 ) {
   render(
     <QueryClientProvider client={client}>
-      <MemoryRouter initialEntries={['/varieties', path]} initialIndex={1}>
+      <MemoryRouter initialEntries={[VARIETIES_PATH, path]} initialIndex={1}>
         <FlashProvider>
           <Routes>
             <Route element={<Provide />}>
-              <Route path="/varieties" element={<Where />} />
-              <Route path="/varieties/entries" element={<EntriesList />} />
-              <Route path="/varieties/entries/:id" element={<Where />} />
-              <Route path="/varieties/:id/entries" element={<VarietyRoute render={(varietyId) => <EntriesList varietyId={varietyId} />} />} />
-              <Route path="/varieties/:id" element={<Where />} />
+              <Route path={VARIETIES_PATH} element={<Where />} />
+              <Route path={STOCK_PATH} element={<EntriesList />} />
+              <Route path={STOCK_ENTRY} element={<Where />} />
+              <Route path={VARIETY_ENTRIES} element={<VarietyRoute render={(varietyId) => <EntriesList varietyId={varietyId} />} />} />
+              <Route path={VARIETY} element={<Where />} />
             </Route>
           </Routes>
         </FlashProvider>
@@ -116,7 +124,7 @@ afterEach(() => {
 
 test('"Todas las entradas" lists every entry newest first with its variety, origin, grams and costs', async () => {
   fakeApi()
-  renderAt('/varieties/entries')
+  renderAt(STOCK_PATH)
 
   const rows = await screen.findAllByRole('listitem')
   expect(rows).toHaveLength(3)
@@ -132,26 +140,26 @@ test('"Todas las entradas" lists every entry newest first with its variety, orig
 
 test("a variety's list shows only its entries and goes back to the variety", async () => {
   fakeApi()
-  renderAt('/varieties/3/entries')
+  renderAt(pathTo(VARIETY_ENTRIES, { id: 3 }))
 
   const rows = await screen.findAllByRole('listitem')
   expect(rows).toHaveLength(2)
   expect(screen.queryByText('26/08 · Sir Jack')).not.toBeInTheDocument()
 
   await userEvent.click(screen.getByRole('button', { name: '‹ 24K Gold' }))
-  expect(await screen.findByTestId('where')).toHaveTextContent('/varieties')
+  expect(await screen.findByTestId('where')).toHaveTextContent(VARIETIES_PATH)
 })
 
 test('Back with no history goes to the variety, and "Todas las entradas" goes to Variedades', async () => {
   fakeApi()
   render(
     <QueryClientProvider client={new QueryClient()}>
-      <MemoryRouter initialEntries={['/varieties/3/entries']}>
+      <MemoryRouter initialEntries={[pathTo(VARIETY_ENTRIES, { id: 3 })]}>
         <FlashProvider>
           <Routes>
             <Route element={<Provide />}>
-              <Route path="/varieties/:id/entries" element={<VarietyRoute render={(varietyId) => <EntriesList varietyId={varietyId} />} />} />
-              <Route path="/varieties/:id" element={<Where />} />
+              <Route path={VARIETY_ENTRIES} element={<VarietyRoute render={(varietyId) => <EntriesList varietyId={varietyId} />} />} />
+              <Route path={VARIETY} element={<Where />} />
             </Route>
           </Routes>
         </FlashProvider>
@@ -159,21 +167,21 @@ test('Back with no history goes to the variety, and "Todas las entradas" goes to
     </QueryClientProvider>,
   )
   await userEvent.click(await screen.findByRole('button', { name: '‹ 24K Gold' }))
-  expect(await screen.findByTestId('where')).toHaveTextContent('/varieties/3')
+  expect(await screen.findByTestId('where')).toHaveTextContent(pathTo(VARIETY, { id: 3 }))
 })
 
 test('Editar links to the entry form', async () => {
   fakeApi()
-  renderAt('/varieties/entries')
+  renderAt(STOCK_PATH)
 
   const rows = await screen.findAllByRole('listitem')
   await userEvent.click(within(rows[1]!).getByRole('link', { name: 'Editar' }))
-  expect(await screen.findByTestId('where')).toHaveTextContent('/varieties/entries/11')
+  expect(await screen.findByTestId('where')).toHaveTextContent(pathTo(STOCK_ENTRY, { id: 11 }))
 })
 
 test('Borrar asks "Antes de borrar" naming date, variety and grams, then deletes and says so', async () => {
   fakeApi({ 'DELETE /stock/entries/12': () => new Response(null, { status: 204 }) })
-  renderAt('/varieties/entries')
+  renderAt(STOCK_PATH)
 
   const rows = await screen.findAllByRole('listitem')
   await userEvent.click(within(rows[0]!).getByRole('button', { name: 'Borrar' }))
@@ -187,7 +195,7 @@ test('Borrar asks "Antes de borrar" naming date, variety and grams, then deletes
 
 test('declining "Antes de borrar" deletes nothing', async () => {
   fakeApi()
-  renderAt('/varieties/entries')
+  renderAt(STOCK_PATH)
 
   const rows = await screen.findAllByRole('listitem')
   await userEvent.click(within(rows[0]!).getByRole('button', { name: 'Borrar' }))
@@ -201,7 +209,7 @@ test('deleting an entry that is already gone says so and refreshes the list', as
     'DELETE /stock/entries/12': () =>
       jsonResponse(404, { code: 'stock.entry_not_found', detail: 'x' }),
   })
-  renderAt('/varieties/entries')
+  renderAt(STOCK_PATH)
 
   const rows = await screen.findAllByRole('listitem')
   await userEvent.click(within(rows[0]!).getByRole('button', { name: 'Borrar' }))
@@ -219,7 +227,7 @@ test('with no entries the empty state shows, with no rows', async () => {
       return Promise.resolve(jsonResponse(200, VARIETIES))
     }),
   )
-  renderAt('/varieties/entries')
+  renderAt(STOCK_PATH)
 
   expect(await screen.findByText('Sin entradas de stock')).toBeInTheDocument()
   expect(screen.getByText('Cargá tu stock inicial o una compra')).toBeInTheDocument()
@@ -228,7 +236,7 @@ test('with no entries the empty state shows, with no rows', async () => {
 
 test('a variety that is gone, or an id that is not a number, shows "Eso ya no está."', async () => {
   fakeApi()
-  renderAt('/varieties/99/entries')
+  renderAt(pathTo(VARIETY_ENTRIES, { id: 99 }))
   expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Volver a Variedades' })).toBeInTheDocument()
 })
@@ -237,7 +245,7 @@ test('a delete marks the catalog stale and the stock list refetches', async () =
   fakeApi({ 'DELETE /stock/entries/12': () => new Response(null, { status: 204 }) })
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   client.setQueryData(catalogQueryOptions().queryKey, { text: null, header: '', footer: '', varieties: [] })
-  renderAt('/varieties/entries', client)
+  renderAt(STOCK_PATH, client)
 
   const rows = await screen.findAllByRole('listitem')
   await userEvent.click(within(rows[0]!).getByRole('button', { name: 'Borrar' }))

@@ -14,7 +14,7 @@
  */
 
 import { CUSTOMER, CUSTOMER_NEW, EXPENSES, EXPENSE_CATEGORIES, LEGACY_EXPENSES, LEGACY_MORE, MORE, SETTINGS_BUSINESS, SETTINGS_USERS, STOCK, STOCK_ENTRY, STOCK_ENTRY_NEW, VARIETIES, VARIETY } from '../src/routes.js'
-import { expectPath } from './helpers/url.js'
+import { expectAnyPath, expectPath } from './helpers/url.js'
 import { expect, test } from '@playwright/test'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
@@ -69,23 +69,25 @@ test('a seller does everything the backend offers today, from the front alone', 
   await expect(page.getByText('Precio eliminado')).toBeVisible()
   await expect(page.getByText('Sin precio: no se puede vender').first()).toBeVisible()
 
-  // Record a stock entry for Rosa from the Stock tab (stock.md: "Nueva entrada").
+  // Record a stock entry for Rosa from Variedades ("+ Entrada de stock"), then read it in
+  // "Todas las entradas" (stock.md).
   await page.goto(STOCK)
   await expect(page.getByText('Sin entradas de stock')).toBeVisible()
-  await page.getByRole('link', { name: 'Nueva entrada' }).click()
+  await page.goto(VARIETIES)
+  await page.getByRole('link', { name: '+ Entrada de stock' }).click()
   await expectPath(page, STOCK_ENTRY_NEW)
   await page.getByLabel('Gramos').fill('50')
   await page.getByLabel('Variedad').selectOption({ label: 'Rosa' })
   await page.getByLabel('Costo total').fill('45000')
   await expect(page.getByText('Te queda en $ 900 el gramo')).toBeVisible()
   await page.getByRole('button', { name: 'Guardá la entrada' }).click()
-  await expectPath(page, STOCK)
+  await expectAnyPath(page, [VARIETIES, VARIETY])
   await expect(page.getByText('Entrada guardada')).toBeVisible()
-  await page.goto('/varieties/entries')
+  await page.goto(STOCK)
   await expect(page.getByText('Compra · 50 g')).toBeVisible()
 
   // Edit it: editing confirms before saving (stock.md).
-  await page.getByText('Rosa · 50 g').click()
+  await page.getByRole('link', { name: 'Editar' }).click()
   await expectPath(page, STOCK_ENTRY)
   await expect(page.getByLabel('Gramos')).toHaveValue('50')
   await page.getByLabel('Gramos').fill('60')
@@ -104,10 +106,9 @@ test('a seller does everything the backend offers today, from the front alone', 
   await expect(page.getByText('Entrada eliminada')).toBeVisible()
   await expect(page.getByText('Compra · 60 g')).toHaveCount(0)
 
-  // Set Rosa's low-stock threshold from Variedades, then turn it off (varieties.md:
-  // "set or turn off the threshold from the variety").
+  // Rosa's page: set the low-stock warning through its form (turning it on only opens the
+  // form), then turn it off (saved at once).
   await page.goto(VARIETIES)
-  await expect(page.getByText('Aviso apagado')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()
   await expect(page.getByText('Aviso apagado')).toBeVisible()
   await page.getByRole('switch', { name: 'Avisar cuando quede poco' }).click()

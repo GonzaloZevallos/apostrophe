@@ -60,7 +60,7 @@ test('the status bar follows data-tema alone: light by default, dark with the at
 
   // The system is dark and no attribute is set: the meta must stay the light paper.
   await page.emulateMedia({ colorScheme: 'dark' })
-  await page.goto('/entrar')
+  await page.goto(LOGIN)
   await page.waitForLoadState('load')
   const light = await computedPapel(page)
   expect(light).not.toBe('')
