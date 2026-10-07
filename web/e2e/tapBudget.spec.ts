@@ -7,7 +7,7 @@
  */
 
 import { expectPath } from './helpers/url.js'
-import { CATALOG, CUSTOMERS, CUSTOMER_PAYMENT, EXPENSES, EXPENSE_NEW, HOME, MORE, SALES, SALE_NEW, STOCK_ENTRY_NEW, VARIETIES } from '../src/routes.js'
+import { CATALOG, CUSTOMERS, CUSTOMER_PAYMENT, EXPENSES, EXPENSE_NEW, HOME, MORE, SALES, SALE_NEW, STOCK_ENTRY_NEW, VARIETIES, VARIETY } from '../src/routes.js'
 import { expect, test, type Locator, type Page } from '@playwright/test'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
@@ -114,6 +114,12 @@ async function viaTab(page: Page, counter: Counter, computer: boolean, label: st
   await tap(counter, nav.getByRole('link', { name: label, exact: true }))
 }
 
+/** On a computer Variedades selects its first variety on its own (no tap): wait for that to land, so
+ * a tap on a link of the list is never overtaken by the automatic replace. */
+async function settled(page: Page, computer: boolean): Promise<void> {
+  if (computer) await expectPath(page, VARIETY)
+}
+
 test('the sale form, Registrar cobro, the catalog and a stock entry open within the tap budget', async ({ page }) => {
   test.setTimeout(120_000)
   const consoleMessages: string[] = []
@@ -150,6 +156,7 @@ test('the sale form, Registrar cobro, the catalog and a stock entry open within 
       await page.goto(root)
       counter = { taps: 0 }
       if (root !== VARIETIES) await viaTab(page, counter, computer, 'Variedades')
+      await settled(page, computer)
       await tap(counter, page.getByRole('link', { name: 'Mandar catálogo' }))
       await expectPath(page, CATALOG)
       measure(`catalog ${root}`, device, counter.taps)
@@ -157,6 +164,7 @@ test('the sale form, Registrar cobro, the catalog and a stock entry open within 
       await page.goto(root)
       counter = { taps: 0 }
       if (root !== VARIETIES) await viaTab(page, counter, computer, 'Variedades')
+      await settled(page, computer)
       await tap(counter, page.getByRole('link', { name: '+ Entrada de stock' }))
       await expectPath(page, STOCK_ENTRY_NEW)
       measure(`stock entry ${root}`, device, counter.taps)
