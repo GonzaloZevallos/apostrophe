@@ -6,7 +6,7 @@ The step-by-step setup a brand-new business is walked through after its new-busi
 
 **When** I have just opened my business and it is still empty, **I want** to be walked through what it needs, one short step at a time, with defaults already filled in, **so I can** record my first sale the same day without hunting through Configuración, Variedades and the catalog screen.
 
-Before it, the seller landed on an empty Inicio, read the first-run checklist, and opened Variedades, the catalog screen and Configuración one by one. Before the app, they did all of it in the spreadsheet's Ajustes sheet.
+Before it, the seller landed on an empty Inicio and opened Variedades, the catalog screen and Configuración one by one. Before the app, they did all of it in the spreadsheet's Ajustes sheet.
 
 **When** I run my business from my phone between orders or mid-chat with a customer, several times a day, **I want** the app laid out around what I actually do and how often, **so I can** get back to the customer instead of hunting through menus. (The navigation job, navigation.md: served here by the Onboarding as the one first-run element of a new business.)
 
@@ -24,19 +24,18 @@ Success criteria:
 
 - Only a business just opened by a new-business invitation, from the moment the invitation is accepted.
 - **Never offered to**:
-  - an imported business. Once the spreadsheet import loads a business, the Onboarding is over for it: its notice never shows, "Listo" is never shown, and the after-import notice takes over (navigation.md). Its remembered passes are not records for the import's eligibility check (import.md);
+  - an imported business. Once the spreadsheet import loads a business, the Onboarding is over for it: its notice never shows and "Listo" is never shown. Its remembered passes are not records for the import's eligibility check (import.md);
   - a business a user joined by a join invitation;
-  - a business that existed before the Onboarding shipped, which keeps the first-run checklist exactly as it is (navigation.md).
+  - a business that existed before the Onboarding shipped.
 - **No "run it again"**: once it is over, nothing in the app points back to it.
 - **One state per business**: a partner who joins midway sees the same notice and can carry on. No roles.
 
-### Relation to the first-run checklist
+### Relation to the first-run checklist and the after-import notice
 
 - For a brand-new business the Onboarding fully replaces the checklist; the two never both apply.
-- While it is not over, neither the checklist nor "Arrancá por las variedades" shows. "Arrancá por las variedades" takes over once it is over, as after the checklist.
-- **The side rules stay, tied to the data**:
-  - while no variety has a price today, "+ Nueva venta" says in words what is missing;
-  - while nothing qualifies for the catalog and the two required steps are unmet, "Mandar catálogo" is disabled with its reason in words.
+- While it is not over, neither the checklist nor "Arrancá por las variedades" shows. "Arrancá por las variedades" takes over once it is over.
+- **No side rules of its own**: "+ Nueva venta" and "Mandar catálogo" behave while the Onboarding runs as they do for any business. What is missing is told by the Inicio notice ("Falta: …"), by Nueva venta's own "<variety> no tiene precio para esa fecha" before saving, and by the catalog screen's own empty state. The checklist's side rules (navigation.md) belong to the checklist and are built with it.
+- **This capability builds neither the checklist nor the after-import notice** (navigation.md); they come with their own task. Until then, a business that existed before the Onboarding and an imported business see Inicio as they do today: "Arrancá por las variedades" when no variety has a price today, and the out-of-date pin notice.
 
 ### Entry and the Inicio notice
 
@@ -152,13 +151,13 @@ There is no telemetry.
   - "Listo" naming where each skipped step lives.
 - **Who gets it**:
   - a brand-new business gets it;
-  - an imported business (including one that landed in the Onboarding before the import) never sees it again and sees the after-import notice;
+  - an imported business (including one that landed in the Onboarding before the import) never sees it again;
   - a joined user's business and a pre-existing business never see it;
-  - the checklist never shows alongside it;
   - the remembered passes never make the import refuse.
 - **Inicio and chrome**, front tests on phone and computer:
   - the notice sits at the top with its words, cannot be dismissed, and keeps its count on steps 1–2 while varieties are added;
-  - neither "Arrancá por las variedades" nor the checklist shows with it;
+  - "Arrancá por las variedades" never shows with it;
+  - "+ Nueva venta" and "Mandar catálogo" behave as for any business while it runs;
   - the Onboarding has no bar and no "+ Nueva venta";
   - Nueva venta opened from "Listo" returns to Inicio.
 - **Isolation**: the routes are in the isolation sweep and the gated-route test; business removal leaves 0 rows of the state and exported count = deleted count.
@@ -176,6 +175,7 @@ There is no telemetry.
 - Running it again, or any entry pointing back to it once it is over.
 - "Terminar por ahora" as a second exit.
 - Offering it to imported, joined or pre-existing businesses.
+- Building the first-run checklist, its side rules ("+ Nueva venta" saying what is missing, "Mandar catálogo" disabled) or the after-import notice: their own task (navigation.md).
 - Publishing the catalog from the Onboarding.
 - Waiting for a partner to join.
 - Usage tracking, a dashboard or an operator script for its metrics.

@@ -117,15 +117,15 @@ Every screen is exactly one of three kinds, and gets its chrome only from its ki
   - **the first-run checklist**, for a business that existed before the Onboarding shipped;
   - **the after-import notice**, for a business loaded by the spreadsheet import. Once the import loads a business, its Onboarding is over.
 - There is no tour and no welcome screen beyond these.
+- The checklist and the after-import notice are built by their own task, not by the Onboarding's. Until they exist, a business that existed before the Onboarding and an imported business see Inicio as they do today: "Arrancá por las variedades" when no variety has a price today, and the pinned catalog's out-of-date notice.
 
 ### The Onboarding (first run of a brand-new business)
 
 - **Entry**: accepting a new-business invitation lands in the Onboarding instead of Inicio. That is the only time it opens by itself.
 - **The Inicio notice**: while it is not over, "Seguí con la configuración" sits at the top of Inicio, on the phone and on `InicioCompu`, in the checklist's place (results.md gives Inicio's order). It shows "N de 6 pasos" and what is next, opens the Onboarding at its resume step, and cannot be dismissed.
-- **While it is not over**, the checklist and "Arrancá por las variedades" do not show. The side rules stay, tied to the data:
-  - with no variety priced today, "+ Nueva venta" says in words what is missing;
-  - while nothing qualifies for the catalog and its two required steps are unmet, "Mandar catálogo" is disabled with its reason in words.
-- **Once it is over** ("Listo" reached, or the import loaded the business), neither it nor the checklist ever shows again; ongoing gaps are told by the standing notices.
+- **While it is not over**, the checklist and "Arrancá por las variedades" do not show.
+- **It adds no side rule**: "+ Nueva venta" and "Mandar catálogo" behave as for any business. What is missing is told by the notice, by Nueva venta's own no-price line before saving and by the catalog screen's empty state.
+- **Once it is over** ("Listo" reached, or the import loaded the business), it never shows again; ongoing gaps are told by the standing notices.
 - Its steps, passes, resume and closing screen are onboarding.md.
 
 ### First-run checklist (businesses that existed before the Onboarding)
@@ -141,7 +141,7 @@ Every screen is exactly one of three kinds, and gets its chrome only from its ki
 - **Where**: at the top of Inicio, on the phone and on `InicioCompu` alike (results.md gives Inicio's order).
 - **While it shows**:
   - with no variety priced today, "+ Nueva venta" stays visible and says in words what is missing;
-  - while nothing qualifies for the catalog, "Mandar catálogo" is disabled with its reason in words (e.g. "Cargá una variedad con precio y su stock"). Apart from the Onboarding's equivalent rule above, this is the only time it is ever disabled (catalog.md). Integraciones' link to the catalog screen is never disabled.
+  - while nothing qualifies for the catalog, "Mandar catálogo" is disabled with its reason in words (e.g. "Cargá una variedad con precio y su stock"). This is the only time it is ever disabled (catalog.md). Integraciones' link to the catalog screen is never disabled.
 - **An imported business** arrives with prices and stock, so it never sees the checklist.
 
 ### After-import notice
@@ -179,11 +179,14 @@ Every screen is exactly one of three kinds, and gets its chrome only from its ki
   - front tests: every group has "Cerrar" and no bar; unsaved changes ask; an untouched group closes at once; Apariencia shows no save, toast or warning;
   - Integraciones shows the link to the catalog screen, no pin status and no Publicar, and the "desfijalo vos en Telegram" line after a token or channel change;
   - one end-to-end front run from a phone viewport renames the business, creates a join link, runs Probarlo and follows the link to the catalog screen, edits the header and footer, adds, renames and removes a category (a refused removal included), switches Apariencia, changes the password and logs out.
-- **First-run matrix**: 100% passing, phone and computer:
-  - a brand-new business lands in the Onboarding on accepting its invitation, sees "Seguí con la configuración" while it is not over, and never sees the checklist or "Arrancá por las variedades" alongside it;
+- **First-run matrix, the Onboarding** (built with it): 100% passing, phone and computer:
+  - a brand-new business lands in the Onboarding on accepting its invitation and sees "Seguí con la configuración" while it is not over, never with "Arrancá por las variedades";
+  - while it runs, "+ Nueva venta" and "Mandar catálogo" behave as for any business;
+  - a pre-existing business, a joined user's business and an imported business (including one that landed in the Onboarding before the import) never see it.
+- **First-run matrix, the checklist and the after-import notice** (built with their own task): 100% passing, phone and computer:
   - a business that existed before the Onboarding sees the checklist; each met step shows "Hecho"; it goes the first time steps 1 and 2 are both met, whatever 3 and 4; deleting the only price entry afterwards never brings it back;
-  - an imported business never sees the checklist or the Onboarding (including one that landed in the Onboarding before the import) and sees the after-import notice until dismissed or published;
-  - "Mandar catálogo" is disabled only while the checklist shows, or the Onboarding's required steps are unmet, and nothing qualifies.
+  - an imported business never sees the checklist and sees the after-import notice until dismissed or published;
+  - "Mandar catálogo" is disabled only while the checklist shows and nothing qualifies.
 - **Redirects**: every old Spanish path that has moved answers a permanent redirect to its English route, tested one by one, including `/negocio`, `/gastos/categorias`, `/catalogo`, `/mi-stock/nueva-entrada` and `/mi-stock/entradas/{id}`.
 - **Reloads under `/varieties`**: a browser navigation to each Variedades route, parameterised ones included (`/varieties/{low}`, `/varieties/{low}/entries`, `/varieties/{low}/prices`, `/varieties/entries/{id}`), opens the screen, never the API's answer; the front's own API calls still reach the API.
 - **One structure (criterion 7)**: the docs, CONTEXT.md, `pantallas/` and `screens.json` name the same screens and routes, the withdrawal form and detail and the Onboarding's screens included; Zeta approves the pull request that states them.
@@ -194,6 +197,7 @@ Every screen is exactly one of three kinds, and gets its chrome only from its ki
 - Any operator or admin surface in the app; roles; listing or revoking invitations.
 - A tour or welcome screen beyond the Onboarding.
 - An entry to run the Onboarding again.
+- Side rules on "+ Nueva venta" or "Mandar catálogo" tied to the Onboarding.
 - Promotions (as campaigns or offers), automations, languages, and any entry for them before they exist. A stock withdrawal for promotion is a stock record, not this.
 - A "follow the system" theme.
 - The pin's status or Publicar in Integraciones.
