@@ -1,6 +1,9 @@
+import { isValidElement } from 'react'
 import { matchRoutes } from 'react-router'
 import { describe, expect, test } from 'vitest'
 import { router } from './router'
+import OnboardingLayout from './screens/onboarding/OnboardingLayout'
+import Shell from './shell/Shell'
 import * as routes from './routes'
 import contract from './api/contract.json'
 import routerSource from './router.tsx?raw'
@@ -17,6 +20,14 @@ describe('routes.ts against the route table', () => {
     CATALOG: routes.CATALOG,
     ENTRY_NEW: routes.ENTRY_NEW,
     ENTRY: routes.ENTRY('7'),
+    ONBOARDING: routes.ONBOARDING,
+    ONBOARDING_VARIETY: routes.ONBOARDING_VARIETY,
+    ONBOARDING_STOCK: routes.ONBOARDING_STOCK,
+    ONBOARDING_CATALOG_MESSAGE: routes.ONBOARDING_CATALOG_MESSAGE,
+    ONBOARDING_BOT: routes.ONBOARDING_BOT,
+    ONBOARDING_PARTNER: routes.ONBOARDING_PARTNER,
+    ONBOARDING_CATEGORIES: routes.ONBOARDING_CATEGORIES,
+    ONBOARDING_DONE: routes.ONBOARDING_DONE,
   }
 
   test.each(Object.entries(mounted))('%s resolves to a route in router.tsx', (_name, path) => {
@@ -32,6 +43,16 @@ describe('routes.ts against the route table', () => {
     const leaf = matchRoutes(router.routes, routes.CATALOG)?.at(-1)
 
     expect(leaf?.route.handle).toEqual({ chrome: 'card' })
+  })
+
+  test('every Onboarding path is outside the shell: no bar, no rail, no "+ Nueva venta"', () => {
+    for (const path of [routes.ONBOARDING_VARIETY, routes.ONBOARDING_DONE]) {
+      const matches = matchRoutes(router.routes, path) ?? []
+      const elementTypes = matches.map((match) => (isValidElement(match.route.element) ? match.route.element.type : null))
+
+      expect(elementTypes).not.toContain(Shell)
+      expect(elementTypes).toContain(OnboardingLayout)
+    }
   })
 
   test('a path the table does not mount falls through to the catch-all', () => {

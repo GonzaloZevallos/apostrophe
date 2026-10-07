@@ -6,8 +6,9 @@
  * Inicio, where the notice's tap sends `advance`.
  */
 
+import type { QueryClient } from '@tanstack/react-query'
 import type { NavigateFunction } from 'react-router'
-import type { OnboardingProgress } from '../../api/onboarding'
+import { keepProgress, type OnboardingProgress } from '../../api/onboarding'
 import { ONBOARDING_DONE } from '../../routes'
 import { stepInfo } from './steps'
 
@@ -19,15 +20,20 @@ export function isListoState(state: unknown): boolean {
   return typeof state === 'object' && state !== null && 'listo' in state && state.listo === true
 }
 
-export function afterProgress(answer: OnboardingProgress, navigate: NavigateFunction): void {
+/** Navigates first and only then keeps the answer: keeping an `over: true` answer while a
+ * step path is still showing would send that path to Inicio before "Listo" opens. */
+export async function afterProgress(
+  answer: OnboardingProgress,
+  navigate: NavigateFunction,
+  queryClient: QueryClient,
+): Promise<void> {
   if (answer.over) {
     const state: ListoState = { listo: true }
-    void navigate(ONBOARDING_DONE, { state })
-    return
+    await navigate(ONBOARDING_DONE, { state })
+  } else if (answer.resume === null || answer.resume === 'finish') {
+    await navigate('/')
+  } else {
+    await navigate(stepInfo(answer.resume).path)
   }
-  if (answer.resume === null || answer.resume === 'finish') {
-    void navigate('/')
-    return
-  }
-  void navigate(stepInfo(answer.resume).path)
+  keepProgress(queryClient, answer)
 }

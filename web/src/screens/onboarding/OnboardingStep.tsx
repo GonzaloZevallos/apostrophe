@@ -18,7 +18,6 @@ import { useNavigate } from 'react-router'
 import { ApiError, NetworkError } from '../../api/client'
 import type { Me } from '../../api/me'
 import {
-  keepProgress,
   sendPass,
   sendSkipRest,
   type OnboardingProgress,
@@ -65,9 +64,8 @@ export default function OnboardingStep({
   const [sending, setSending] = useState(false)
 
   function onAnswer(answer: OnboardingProgress): void {
-    keepProgress(queryClient, answer)
     disarm()
-    afterProgress(answer, navigate)
+    void afterProgress(answer, navigate, queryClient)
   }
 
   async function skip(kind: Skip): Promise<void> {

@@ -10,7 +10,7 @@ import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate } from 'react-router'
 import { ApiError, NetworkError } from '../../api/client'
-import { keepProgress, sendAdvance, type OnboardingProgress } from '../../api/onboarding'
+import { sendAdvance, type OnboardingProgress } from '../../api/onboarding'
 import { isGone } from '../../api/refusals'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import Icono from '../../components/Icono'
@@ -46,8 +46,7 @@ export default function OnboardingNotice({ progress }: { progress: OnboardingPro
     setFailure(null)
     try {
       const answer = await sendAdvance()
-      keepProgress(queryClient, answer)
-      afterProgress(answer, navigate)
+      await afterProgress(answer, navigate, queryClient)
     } catch (caught) {
       if (caught instanceof NetworkError) setFailure('offline')
       else if (caught instanceof ApiError && isGone(caught.code)) void navigate('/')

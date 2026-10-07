@@ -43,6 +43,9 @@ const NOT_OFFERED: OnboardingProgress = {
 /** Every call the stub saw on `/onboarding-progress`, as "METHOD url". */
 const calls: string[] = []
 
+/** What a POST to `/onboarding-progress/advance` answers; the read's answer when null. */
+let advanced: OnboardingProgress | null = null
+
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03' }
 
 function Provide() {
@@ -52,6 +55,11 @@ function Provide() {
 function SettingsLanding() {
   const location = useLocation()
   return <span>{`Configuración inApp=${String((location.state as { inApp?: boolean } | null)?.inApp)}`}</span>
+}
+
+function ListoLanding() {
+  const location = useLocation()
+  return <span>{`Listo listo=${String((location.state as { listo?: boolean } | null)?.listo)}`}</span>
 }
 
 function stubFetch(
@@ -66,7 +74,7 @@ function stubFetch(
       const url = String(input)
       if (url.includes('/onboarding-progress')) {
         calls.push(`${init?.method ?? 'GET'} ${url}`)
-        return Promise.resolve(jsonResponse(200, onboarding))
+        return Promise.resolve(jsonResponse(200, init?.method === 'POST' ? (advanced ?? onboarding) : onboarding))
       }
       if (url.includes('/pinned-catalog/status')) return Promise.resolve(jsonResponse(200, pinnedCatalogStatus))
       if (url.includes('/panel')) return Promise.resolve(jsonResponse(200, panel))
@@ -88,6 +96,8 @@ function renderInicio(
             <Route path="clientes/deben" element={<span>pantalla te deben</span>} />
             <Route path="clientes/:id" element={<span>ficha de cliente</span>} />
             <Route path="settings" element={<SettingsLanding />} />
+            <Route path="onboarding/done" element={<ListoLanding />} />
+            <Route path="onboarding/stock" element={<span>paso stock</span>} />
           </Route>
         </Routes>
       </MemoryRouter>
@@ -98,6 +108,7 @@ function renderInicio(
 afterEach(() => {
   vi.unstubAllGlobals()
   calls.length = 0
+  advanced = null
 })
 
 test('the business avatar at the top opens Configuración in one tap, carrying inApp', async () => {
@@ -510,4 +521,26 @@ test('the Onboarding notice goes once the Onboarding is over', async () => {
   await screen.findByText('Vendiste hoy')
 
   expect(screen.queryByText('Seguí con la configuración')).not.toBeInTheDocument()
+})
+
+test('tapping the finish notice sends advance, and "Listo" opens only from an answer with over: true', async () => {
+  advanced = { ...FINISH, over: true, resume: null }
+  stubFetch(PANEL, [{ current_price: { id: 1 } }], { status: null }, FINISH)
+  renderInicio()
+
+  await userEvent.click(await screen.findByRole('button', { name: /Seguí con la configuración/ }))
+
+  expect(await screen.findByText('Listo listo=true')).toBeInTheDocument()
+  expect(calls).toEqual(['GET /onboarding-progress', 'POST /onboarding-progress/advance'])
+})
+
+test('tapping the finish notice when advance answers over: false does not draw "Listo"', async () => {
+  advanced = { ...MID_ONBOARDING }
+  stubFetch(PANEL, [{ current_price: { id: 1 } }], { status: null }, FINISH)
+  renderInicio()
+
+  await userEvent.click(await screen.findByRole('button', { name: /Seguí con la configuración/ }))
+
+  expect(await screen.findByText('paso stock')).toBeInTheDocument()
+  expect(screen.queryByText(/Listo listo/)).not.toBeInTheDocument()
 })

@@ -4,11 +4,12 @@
  * `/onboarding-progress` once and hands the answer to the step below.
  *
  * Any Onboarding path goes to Inicio when the business is not offered the Onboarding or it
- * is over. The one exception is "Listo": it is over by definition, so it opens only when
+ * is over (judged when the Onboarding opened). The one exception is "Listo": it is over by definition, so it opens only when
  * entered with the bare `{ listo: true }` flag a write that answered `over: true` sets;
  * without it (a reload, a deep link) it goes to Inicio too.
  */
 
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Navigate, Outlet, useLocation, useOutletContext } from 'react-router'
 import { NetworkError } from '../../api/client'
@@ -25,6 +26,9 @@ export default function OnboardingLayout() {
   const me = useOutletContext<Me>()
   const location = useLocation()
   const query = useQuery(onboardingProgressQuery)
+  // Whether the business had no Onboarding to walk when this one opened: a write that ends
+  // it (`over: true`) must reach "Listo", not bounce off the step it came from.
+  const [closedOnEntry, setClosedOnEntry] = useState<boolean | null>(null)
 
   if (query.isError) {
     return (
@@ -38,10 +42,11 @@ export default function OnboardingLayout() {
   if (query.data === undefined) return <Loading />
 
   const progress = query.data
+  if (closedOnEntry === null) setClosedOnEntry(!progress.offered || progress.over)
   const isListo = location.pathname === ONBOARDING_DONE
   const leaves = isListo
     ? !isListoState(location.state) || !progress.offered
-    : !progress.offered || progress.over
+    : closedOnEntry !== false
   if (leaves) return <Navigate to="/" replace />
 
   const context: OnboardingContext = { me, progress }

@@ -16,15 +16,13 @@ export interface StepBodyProps {
   onProgress: (answer: OnboardingProgress) => void
 }
 
-function EmptySlot() {
-  return null
-}
+const emptySlot = (): null => null
 
 export const STEP_BODIES: Record<StepSlug, ComponentType<StepBodyProps>> = {
-  variety: EmptySlot,
-  stock: EmptySlot,
-  header_footer: EmptySlot,
-  bot: EmptySlot,
-  partner: EmptySlot,
-  categories: EmptySlot,
+  variety: emptySlot,
+  stock: emptySlot,
+  header_footer: emptySlot,
+  bot: emptySlot,
+  partner: emptySlot,
+  categories: emptySlot,
 }
