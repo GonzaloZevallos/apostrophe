@@ -21,6 +21,7 @@ type Id = string | number
 
 export const VARIETIES = '/varieties'
 export const VARIETY_NEW = '/varieties/new'
+export const ARCHIVED_VARIETIES = '/varieties/archived'
 export const CATALOG = '/varieties/catalog'
 export const ENTRIES = '/varieties/entries'
 export const ENTRY_NEW = '/varieties/entries/new'

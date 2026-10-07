@@ -33,9 +33,11 @@ interface Props {
   history: PriceRow[]
   currentPriceId: number | null
   limit?: number
+  /** An archived variety's price rows: no delete beside any of them. */
+  readOnly?: boolean
 }
 
-export default function PriceRows({ varietyId, history, currentPriceId, limit }: Props) {
+export default function PriceRows({ varietyId, history, currentPriceId, limit, readOnly = false }: Props) {
   const queryClient = useQueryClient()
   const flash = useFlash()
   const [deleting, setDeleting] = useState<PriceRow | null>(null)
@@ -89,14 +91,16 @@ export default function PriceRows({ varietyId, history, currentPriceId, limit }:
                 </span>
               )}
             </span>
-            <button
-              type="button"
-              className="historial-fila__borrar"
-              aria-label="Borrar este precio"
-              onClick={() => setDeleting(entry)}
-            >
-              Borrar
-            </button>
+            {!readOnly && (
+              <button
+                type="button"
+                className="historial-fila__borrar"
+                aria-label="Borrar este precio"
+                onClick={() => setDeleting(entry)}
+              >
+                Borrar
+              </button>
+            )}
           </div>
         ))}
       </div>

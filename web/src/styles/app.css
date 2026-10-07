@@ -3168,6 +3168,27 @@ body {
   color: var(--tinta);
 }
 
+.variedad-archivada {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+  border-bottom: 1px solid var(--linea);
+}
+
+.variedad-archivada .variedad-fila {
+  flex: 1;
+  min-width: 0;
+  border-bottom: 0;
+}
+
+.variedad-archivada__restaurar {
+  flex: 0 0 auto;
+  width: auto;
+  height: 44px;
+  padding: 0 var(--espacio-lg);
+  font-size: 15px;
+}
+
 .variedad-fila__encabezado {
   display: flex;
   align-items: center;

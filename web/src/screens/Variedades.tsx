@@ -1,10 +1,11 @@
 /**
  * `Variedades` (`Variedades.dc.html`, `VariedadesCompu.dc.html`; `varieties.md`, "The list"):
- * the tab root. Every variety, hidden ones included, sorted by name; each row tells its stock
+ * the tab root. Every unarchived variety, hidden ones included, sorted by name; each row tells its stock
  * status by shape and word (`MarcaEstado`), "Oculta" beside it when the catalog hides it,
  * grams and days left, and today's list price per gram or "Sin precio: no se puede vender".
  * Above the list: the summary line, "Mandar catálogo" and "+ Entrada de stock"; "Nueva
- * variedad" below them and "Todas las entradas" at the foot.
+ * variedad" below them and "Todas las entradas" and, when
+ * there are archived ones, "Archivadas (N)" at the foot.
  *
  * Nothing here decides anything: statuses and days left are `GET /stock`'s, prices are
  * `GET /varieties`', "Oculta" is `GET /catalog`'s own `shown`, and the summary line is counted
@@ -26,9 +27,10 @@ import Loading from '../components/Loading'
 import MarcaEstado from '../components/MarcaEstado'
 import SinConexion from '../components/SinConexion'
 import { formatGrams, formatMoney } from '../format/money'
-import { CATALOG, ENTRIES, ENTRY_NEW, VARIETY, VARIETY_NEW } from '../routes'
+import { ARCHIVED_VARIETIES, CATALOG, ENTRIES, ENTRY_NEW, VARIETY, VARIETY_NEW } from '../routes'
 import { detailFor } from '../stock/detail'
 import { summaryLine } from '../stock/summaryLine'
+import { archivedVarietiesQueryOptions } from './varieties/archivedVarieties'
 import { varietiesByName } from './varieties/varietiesByName'
 
 export const VARIETY_SAVED = 'Variedad guardada'
@@ -70,6 +72,7 @@ export default function Variedades() {
   })
   const stockQuery = useQuery({ queryKey: keys.stock(), queryFn: readStock })
   const catalogQuery = useQuery(catalogQueryOptions())
+  const archivedCount = useQuery(archivedVarietiesQueryOptions()).data?.length ?? 0
 
   const failure = varietiesQuery.error ?? stockQuery.error
   const ready = varietiesQuery.data !== undefined && stockQuery.data !== undefined
@@ -135,6 +138,12 @@ export default function Variedades() {
           <span>Todas las entradas</span>
           <span aria-hidden="true">›</span>
         </Link>
+        {archivedCount > 0 && (
+          <Link to={ARCHIVED_VARIETIES} className="variedades__todas">
+            <span>Archivadas ({archivedCount})</span>
+            <span aria-hidden="true">›</span>
+          </Link>
+        )}
       </div>
     </main>
   )

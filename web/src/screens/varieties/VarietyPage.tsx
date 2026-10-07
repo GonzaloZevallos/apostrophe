@@ -9,6 +9,10 @@
  *
  * Stock, status and days left are what `GET /stock` answered; whether the variety is shown
  * is the server's own `shown` from `GET /catalog`; nothing here decides a status or a reason.
+ *
+ * An archived variety (`archived` true) is the same page, read-only: "‹ Archivadas", "Archivada"
+ * in words, its stock from `GET /stock?archived=true`, no "+ Entrada", "Nuevo precio", price
+ * delete, threshold, "Editar", form or removal; its one action is "Restaurar".
  */
 
 import { useCallback, useEffect, useState } from 'react'
@@ -19,7 +23,7 @@ import { catalogQueryOptions } from '../../api/catalog'
 import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
 import { isGone } from '../../api/refusals'
-import { readStock } from '../../api/stock'
+import { readArchivedStock, readStock } from '../../api/stock'
 import type { VarietyDetail } from '../../api/varieties'
 import type { SuccessToast } from '../../components/AvisoExito'
 import ErrorGenerico from '../../components/ErrorGenerico'
@@ -31,7 +35,7 @@ import SinConexion from '../../components/SinConexion'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
 import { useFlash } from '../../flash/useFlash'
 import { formatGrams, formatMoney } from '../../format/money'
-import { CATALOG_SECTION_ID, ENTRY_NEW, VARIETIES, VARIETY_PRICE_NEW } from '../../routes'
+import { ARCHIVED_VARIETIES, CATALOG_SECTION_ID, ENTRY_NEW, VARIETIES, VARIETY_PRICE_NEW } from '../../routes'
 import { NO_PRICE_TODAY, type Variety } from '../Variedades'
 import type { PriceRow } from './PriceRows'
 import CatalogAttributesForm from './CatalogAttributesForm'
@@ -43,6 +47,7 @@ import VarietyRemoval from './VarietyRemoval'
 import VarietyPricesSection from './VarietyPricesSection'
 import VarietyStockSection from './VarietyStockSection'
 import VarietyThresholdSection from './VarietyThresholdSection'
+import { useRestore } from './useRestore'
 
 function Card({ children }: { children: React.ReactNode }) {
   return (
@@ -69,7 +74,15 @@ export default function VarietyPage({ varietyId }: { varietyId: number }) {
     queryKey: keys.varietyPrices(id),
     queryFn: () => get<PriceRow[]>(`/varieties/${id}/prices`),
   })
-  const stockQuery = useQuery({ queryKey: keys.stock(), queryFn: readStock })
+  const archived = varietyQuery.data?.archived === true
+  const liveStockQuery = useQuery({ queryKey: keys.stock(), queryFn: readStock })
+  const archivedStockQuery = useQuery({
+    queryKey: keys.archivedStock(),
+    queryFn: readArchivedStock,
+    enabled: archived,
+  })
+  const stockQuery = archived ? archivedStockQuery : liveStockQuery
+  const { restore, sending: restoring, notice: restoreNotice } = useRestore()
   const catalogQuery = useQuery({
     ...catalogQueryOptions(),
     select: (catalog) => catalog.varieties.find((row) => row.id === varietyId) ?? null,
@@ -122,27 +135,36 @@ export default function VarietyPage({ varietyId }: { varietyId: number }) {
     <main className="pantalla">
       <div className="cuerpo">
         <div className="encabezado__fila">
-          <Link to={VARIETIES} className="boton--enlace">
-            ‹ Variedades
-          </Link>
+          {archived ? (
+            <Link to={ARCHIVED_VARIETIES} className="boton--enlace">
+              ‹ Archivadas
+            </Link>
+          ) : (
+            <Link to={VARIETIES} className="boton--enlace">
+              ‹ Variedades
+            </Link>
+          )}
         </div>
         <div className="encabezado-fila">
           <h1 className="encabezado__titulo">{variety.name}</h1>
-          <button type="button" className="boton-enlace" aria-label="Editar nombre" onClick={() => openForm('rename')}>
-            Editar
-          </button>
+          {!archived && (
+            <button type="button" className="boton-enlace" aria-label="Editar nombre" onClick={() => openForm('rename')}>
+              Editar
+            </button>
+          )}
         </div>
         {row !== undefined && (
           <p className="variedad-resumen">
             {formatGrams(row.grams)} · <MarcaEstado estado={row.status} />
-            {catalogRow !== null && !catalogRow.shown && <> · <span className="variedad-resumen__oculta">Oculta</span></>}
+            {archived && <> · <span className="variedad-resumen__oculta">Archivada</span></>}
+            {!archived && catalogRow !== null && !catalogRow.shown && <> · <span className="variedad-resumen__oculta">Oculta</span></>}
             {row.days_left !== null && <> · {row.days_left} días</>}
             {' · '}
             {variety.current_price === null ? NO_PRICE_TODAY : `${formatMoney(variety.current_price.list_price)} x g`}
           </p>
         )}
 
-        {form === 'rename' && (
+        {!archived && form === 'rename' && (
           <RenameForm
             variety={variety}
             onDone={onSaved}
@@ -152,7 +174,7 @@ export default function VarietyPage({ varietyId }: { varietyId: number }) {
           />
         )}
 
-        {form === 'threshold' && row !== undefined && (
+        {!archived && form === 'threshold' && row !== undefined && (
           <ThresholdForm
             varietyId={varietyId}
             threshold={row.threshold}
@@ -163,7 +185,7 @@ export default function VarietyPage({ varietyId }: { varietyId: number }) {
           />
         )}
 
-        {form === 'catalog' && catalogRow !== null && (
+        {!archived && form === 'catalog' && catalogRow !== null && (
           <CatalogAttributesForm
             row={catalogRow}
             onDone={onSaved}
@@ -173,25 +195,42 @@ export default function VarietyPage({ varietyId }: { varietyId: number }) {
           />
         )}
 
-        <div className="variedad-acciones">
-          <Link className="boton boton--suave" to={`${ENTRY_NEW}?variety=${varietyId}`}>
-            + Entrada
-          </Link>
-          <Link className="boton boton--suave" to={VARIETY_PRICE_NEW(varietyId)}>
-            Nuevo precio
-          </Link>
-        </div>
+        {archived ? (
+          <>
+            {restoreNotice}
+            <div className="variedad-acciones">
+              <button
+                type="button"
+                className="boton boton--suave"
+                disabled={restoring}
+                onClick={() => void restore(varietyId)}
+              >
+                Restaurar
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="variedad-acciones">
+            <Link className="boton boton--suave" to={`${ENTRY_NEW}?variety=${varietyId}`}>
+              + Entrada
+            </Link>
+            <Link className="boton boton--suave" to={VARIETY_PRICE_NEW(varietyId)}>
+              Nuevo precio
+            </Link>
+          </div>
+        )}
 
         <VarietyStockSection stock={stock} varietyId={varietyId} today={me.today} />
         <VarietyPricesSection
           varietyId={varietyId}
           history={pricesQuery.data}
           currentPriceId={variety.current_price?.id ?? null}
+          readOnly={archived}
         />
-        {row !== undefined && <VarietyThresholdSection varietyId={varietyId} row={row} refreshing={stockQuery.isFetching} onGone={() => setGone(true)} />}
+        {!archived && row !== undefined && <VarietyThresholdSection varietyId={varietyId} row={row} refreshing={stockQuery.isFetching} onGone={() => setGone(true)} />}
         {catalogRow !== null && <VarietyCatalogSection row={catalogRow} />}
         {catalogQuery.isError && (catalogQuery.error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />)}
-        <VarietyRemoval varietyId={varietyId} removal={variety.removal} grams={row?.grams ?? null} />
+        {!archived && <VarietyRemoval varietyId={varietyId} removal={variety.removal} grams={row?.grams ?? null} />}
       </div>
       {blocker.state === 'blocked' && (
         <LeaveConfirm

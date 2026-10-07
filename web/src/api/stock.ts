@@ -67,6 +67,12 @@ export function readStock(): Promise<StockView> {
   return get<StockView>('/stock')
 }
 
+/** `GET /stock?archived=true`: the rows of the archived varieties (the read-only page's own
+ * stock); `total` and `entries` are the same unfiltered ones. */
+export function readArchivedStock(): Promise<StockView> {
+  return get<StockView>('/stock?archived=true')
+}
+
 export function getEntry(id: string): Promise<StockEntry> {
   return get<StockEntry>(`/stock/entries/${id}`)
 }

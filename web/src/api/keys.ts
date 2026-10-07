@@ -61,6 +61,7 @@ export const keys = {
   sales: (dateFrom: string, dateTo: string) => [PREFIX.sales, { dateFrom, dateTo }] as const,
   sale: (id: string) => [PREFIX.sales, id] as const,
   stock: () => [PREFIX.stock] as const,
+  archivedStock: () => [PREFIX.stock, 'archived'] as const,
   stockEntry: (id: string) => [PREFIX.stock, 'entries', id] as const,
   // Named only by `api/catalog.ts` (`catalogQueryOptions`, ADR-0022), which freezes its
   // freshness (`staleTime: 0`, `gcTime: 0`). A stock or varieties write invalidates it
