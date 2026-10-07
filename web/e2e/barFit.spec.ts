@@ -43,6 +43,9 @@ async function scaleText(page: Page, surface: string, scale: number): Promise<Sc
     ({ surface: selector, scale: factor }) => {
       const root = document.querySelector(selector)
       if (root === null) throw new Error(`no ${selector}`)
+      // A scale from an earlier call is undone first, so the baseline is the real one.
+      document.querySelectorAll('style[data-fit-style]').forEach((style) => style.remove())
+      document.querySelectorAll('[data-fit]').forEach((element) => element.removeAttribute('data-fit'))
       const targets = [...root.querySelectorAll('a, a span')]
       const rules: string[] = []
       const done: { tag: string; baseline: number; scaled: number }[] = []
@@ -55,6 +58,7 @@ async function scaleText(page: Page, surface: string, scale: number): Promise<Sc
         done.push({ tag, baseline, scaled })
       })
       const style = document.createElement('style')
+      style.setAttribute('data-fit-style', '')
       style.textContent = rules.join('\n')
       document.head.appendChild(style)
       return done
@@ -151,10 +155,9 @@ async function surfaceBox(page: Page, surface: string): Promise<{ left: number; 
   })
 }
 
-/** Opens Inicio, scales the surface's text by `scale`, and returns every way it does not fit. */
+/** Scales the bottom bar's text by `scale` on Inicio at 320 px, and returns every way it does not fit. */
 async function bottomBarProblems(page: Page, scale: number): Promise<{ problems: string[]; items: Item[] }> {
   await page.setViewportSize(PHONE)
-  await signUpNewBusiness(page)
   await page.goto(HOME)
   await expect(page.locator('.bar-inferior')).toBeVisible()
 
@@ -173,50 +176,55 @@ async function bottomBarProblems(page: Page, scale: number): Promise<{ problems:
   return { problems, items }
 }
 
-test('at 320 px with text at 130 %, every bottom-bar label is whole and the active tab says so', async ({
-  page,
-}) => {
+// One business for the three tests: signing up is the slow step, and each test only reads layout.
+test.describe.serial('bar and rail fit', () => {
+  let page: Page
   const consoleMessages: string[] = []
-  watchConsole(page, consoleMessages)
 
-  const { problems, items } = await bottomBarProblems(page, SCALE)
+  test.beforeAll(async ({ browser }) => {
+    page = await (await browser.newContext({ viewport: PHONE })).newPage()
+    watchConsole(page, consoleMessages)
+    await signUpNewBusiness(page)
+  })
 
-  expect(problems).toEqual([])
-  expect(items.filter((item) => item.current === 'page').map((item) => item.text)).toEqual(['Inicio'])
-  expect(consoleMessages).toEqual([])
-})
+  test.afterAll(async () => {
+    await page.context().close()
+  })
 
-test('the measurement rejects a bar that does not fit: at three times the text the labels overflow', async ({
-  page,
-}) => {
-  const { problems } = await bottomBarProblems(page, 3)
+  test('at 320 px with text at 130 %, every bottom-bar label is whole and the active tab says so', async () => {
+    const { problems, items } = await bottomBarProblems(page, SCALE)
 
-  expect(problems.length).toBeGreaterThan(0)
-})
+    expect(problems).toEqual([])
+    expect(items.filter((item) => item.current === 'page').map((item) => item.text)).toEqual(['Inicio'])
+  })
 
-test('with text at 130 %, every side-rail label is whole and the active tab says so', async ({ page }) => {
-  const consoleMessages: string[] = []
-  watchConsole(page, consoleMessages)
-  await page.setViewportSize(COMPUTER)
-  await signUpNewBusiness(page)
-  await page.goto(HOME)
-  await expect(page.locator('.riel-lateral')).toBeVisible()
+  test('the measurement rejects a bar that does not fit: at three times the text the labels overflow', async () => {
+    const { problems } = await bottomBarProblems(page, 3)
 
-  const scaled = await scaleText(page, '.riel-lateral', SCALE)
-  await expectScaled(page, scaled, SCALE)
+    expect(problems.length).toBeGreaterThan(0)
+  })
 
-  const rail = await surfaceBox(page, '.riel-lateral')
-  const items = (await measureItems(page, '.riel-lateral', '.riel-lateral__item')).filter((item) =>
-    RAIL_LABELS.includes(item.text),
-  )
-  const business = await measureItems(page, '.riel-lateral', '.riel-lateral__negocio')
+  test('with text at 130 %, every side-rail label is whole and the active tab says so', async () => {
+    await page.setViewportSize(COMPUTER)
+    await page.goto(HOME)
+    await expect(page.locator('.riel-lateral')).toBeVisible()
 
-  expect([
-    ...violations(items, RAIL_LABELS, rail),
-    ...violations(business, [business[0]?.text ?? ''], rail),
-    ...(rail.overflows ? ['the rail scrolls sideways'] : []),
-  ]).toEqual([])
-  expect(business).toHaveLength(1)
-  expect(items.filter((item) => item.current === 'page').map((item) => item.text)).toEqual(['Inicio'])
-  expect(consoleMessages).toEqual([])
+    const scaled = await scaleText(page, '.riel-lateral', SCALE)
+    await expectScaled(page, scaled, SCALE)
+
+    const rail = await surfaceBox(page, '.riel-lateral')
+    const items = (await measureItems(page, '.riel-lateral', '.riel-lateral__item')).filter((item) =>
+      RAIL_LABELS.includes(item.text),
+    )
+    const business = await measureItems(page, '.riel-lateral', '.riel-lateral__negocio')
+
+    expect([
+      ...violations(items, RAIL_LABELS, rail),
+      ...violations(business, [business[0]?.text ?? ''], rail),
+      ...(rail.overflows ? ['the rail scrolls sideways'] : []),
+    ]).toEqual([])
+    expect(business).toHaveLength(1)
+    expect(items.filter((item) => item.current === 'page').map((item) => item.text)).toEqual(['Inicio'])
+    expect(consoleMessages).toEqual([])
+  })
 })
