@@ -5,6 +5,7 @@
  * assertion reads a figure the fixture already carries — none is computed here.
  */
 
+import { ANALYSIS } from '../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -40,10 +41,10 @@ function renderAnalisis(fetchImpl: (url: string, init?: RequestInit) => Promise<
   vi.stubGlobal('fetch', vi.fn(fetchImpl))
   render(
     <QueryClientProvider client={new QueryClient()}>
-      <MemoryRouter initialEntries={['/analisis']}>
+      <MemoryRouter initialEntries={[ANALYSIS]}>
         <Routes>
           <Route element={<Provide />}>
-            <Route path="/analisis" element={<Analisis />} />
+            <Route path={ANALYSIS} element={<Analisis />} />
           </Route>
         </Routes>
       </MemoryRouter>

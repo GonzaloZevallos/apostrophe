@@ -10,6 +10,7 @@
  * before merge (ADR-0028).
  */
 
+import { SALE_NEW, VARIETIES } from '../src/routes.js'
 import { expect, test, type Locator, type Page } from '@playwright/test'
 import { signUpNewBusiness } from './helpers/signup.js'
 
@@ -33,7 +34,7 @@ async function box(locator: Locator): Promise<Box> {
 
 async function signInWithAPricedVariety(page: Page): Promise<void> {
   await signUpNewBusiness(page, { businessName: `Vivero Telefono ${Date.now()}`, email: `telefono-${Date.now()}@example.com` })
-  await page.goto('/varieties')
+  await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Jazmín')
   await page.getByRole('button', { name: 'Agregá la variedad' }).click()
@@ -67,7 +68,7 @@ test('the form is three zones at every phone width: footer in view, header fixed
 
   for (const width of WIDTHS) {
     await page.setViewportSize({ width, height: HEIGHT })
-    await page.goto('/ventas/nueva')
+    await page.goto(SALE_NEW)
     const save = page.getByRole('button', { name: 'Guardá la venta' })
     await expect(save).toBeVisible()
 
@@ -118,7 +119,7 @@ test('with the viewport shortened the footer stays in view, and the keyboard fla
   page,
 }) => {
   await signInWithAPricedVariety(page)
-  await page.goto('/ventas/nueva')
+  await page.goto(SALE_NEW)
   const save = page.getByRole('button', { name: 'Guardá la venta' })
   await expect(save).toBeVisible()
   const grams = page.getByText('vendidos')
@@ -165,19 +166,19 @@ test('the footer total keeps its phone size, line height and tracking, and the c
   await signInWithAPricedVariety(page)
 
   await page.setViewportSize({ width: 375, height: HEIGHT })
-  await page.goto('/ventas/nueva')
+  await page.goto(SALE_NEW)
   await expect(page.locator('.nueva-venta__pie > .cifra-xl')).toBeVisible()
   expectMetrics(await footerTotalMetrics(page), { fontSize: 25, lineHeight: 27.5, letterSpacing: -1.125 })
 
   await page.setViewportSize({ width: 1280, height: 800 })
-  await page.goto('/ventas/nueva')
+  await page.goto(SALE_NEW)
   await expect(page.locator('.nueva-venta__pie > .cifra-xl')).toBeVisible()
   expectMetrics(await footerTotalMetrics(page), { fontSize: 54, lineHeight: 56.7, letterSpacing: -2.43 })
 })
 
 test('the footer total takes its size and line height from the cifra-m custom properties', async ({ page }) => {
   await signInWithAPricedVariety(page)
-  await page.goto('/ventas/nueva')
+  await page.goto(SALE_NEW)
   await expect(page.locator('.nueva-venta__pie > .cifra-xl')).toBeVisible()
 
   const token = await page.evaluate(() => {

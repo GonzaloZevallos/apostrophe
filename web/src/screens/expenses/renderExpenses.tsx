@@ -7,7 +7,8 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render } from '@testing-library/react'
-import { Link, Outlet, RouterProvider, createMemoryRouter } from 'react-router'
+import InAppLink from '../../components/InAppLink'
+import { Outlet, RouterProvider, createMemoryRouter } from 'react-router'
 import { vi } from 'vitest'
 import type { Me } from '../../api/me'
 import FlashProvider from '../../flash/FlashProvider'
@@ -42,19 +43,23 @@ export function renderExpenses(initialEntries: string[], fetchImpl: FetchImpl) {
           {
             element: <Shell />,
             children: [
-              { path: relative(MORE), 
+              {
+                path: relative(MORE),
+                handle: { screen: 'more' },
                 element: (
                   <main>
                     <span>Pantalla Más</span>
-                    <Link to={EXPENSE_NEW}>Cargar gasto desde Más</Link>
+                    <InAppLink to={EXPENSE_NEW}>
+                      Cargar gasto desde Más
+                    </InAppLink>
                   </main>
                 ),
               },
-              { path: relative(EXPENSES), element: <Gastos />, handle: { tab: 'more' } },
+              { path: relative(EXPENSES), element: <Gastos />, handle: { screen: 'expenses' } },
               {
                 path: relative(EXPENSE_NEW),
                 element: <ExpenseNewRoute />,
-                handle: { chrome: 'none', tab: 'more' },
+                handle: { screen: 'expense-new' },
               },
             ],
           },

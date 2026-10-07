@@ -9,7 +9,7 @@ import { MemoryRouter } from 'react-router'
 import { expect, test } from 'vitest'
 import { matchRoutes } from 'react-router'
 import { router } from '../router'
-import { ANALYSIS, EXPENSE_NEW, EXPENSES, WITHDRAWAL_NEW } from '../routes'
+import { ANALYSIS, EXPENSES, EXPENSE_NEW, SETTINGS, WITHDRAWAL_NEW } from '../routes'
 import Mas from './Mas'
 
 function renderMas() {
@@ -21,7 +21,7 @@ function renderMas() {
   return screen.getByRole('navigation', { name: 'Más' })
 }
 
-test('lists "+ Cargar gasto", "Sacar del stock" second, Gastos and Análisis first, in that order, then the entries not moved yet, Configuración last', () => {
+test('lists "+ Cargar gasto", "Sacar del stock", Gastos and Análisis first, in that order, Configuración last, nothing else', () => {
   const entries = within(renderMas()).getAllByRole('link')
 
   expect(entries.map((entry) => entry.querySelector('.mas__item-rotulo')?.textContent)).toEqual([
@@ -29,18 +29,16 @@ test('lists "+ Cargar gasto", "Sacar del stock" second, Gastos and Análisis fir
     'Sacar del stock',
     'Gastos',
     'Análisis',
-    'Variedades',
-    'Catálogo',
     'Configuración',
   ])
   expect(entries[0]).toHaveTextContent('Categoría, monto y detalle')
   expect(entries[1]).toHaveAttribute('href', WITHDRAWAL_NEW)
   expect(entries[2]).toHaveTextContent('Por mes y por categoría')
   expect(entries[3]).toHaveTextContent('Variedades, semanas, meses y días')
-  expect(entries[6]).toHaveTextContent(
+  expect(entries[4]).toHaveTextContent(
     'Negocio, usuarios, bot, catálogo, categorías, apariencia y tu cuenta',
   )
-  expect(entries[6]).toHaveAttribute('href', '/settings')
+  expect(entries[4]).toHaveAttribute('href', SETTINGS)
 })
 
 test('every entry opens a route the table mounts: no placeholder, nothing not built', () => {

@@ -11,18 +11,18 @@ import { get } from '../../api/client'
 import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
 import type { VarietyDetail } from '../../api/varieties'
-import { useIsComputer } from '../../components/useIsComputer'
 import { ARCHIVED_VARIETIES, VARIETY } from '../../routes'
+import { useViewport } from '../../shell/useViewport'
 import Variedades from '../Variedades'
 import ArchivedVarieties from './ArchivedVarieties'
 
 export default function VarietiesLayout() {
   const me = useOutletContext<Me>()
-  const computer = useIsComputer()
+  const computer = useViewport() === 'computer'
   // The left pane is the Archivadas card on its own route and beside an archived variety's
   // page (the same query as the page's own, so no extra request); the live list otherwise.
   const onArchivedCard = useMatch(ARCHIVED_VARIETIES) !== null
-  const varietyId = useMatch(VARIETY(':id'))?.params.id
+  const varietyId = useMatch(VARIETY)?.params.id
   const { data: opened } = useQuery({
     queryKey: keys.variety(varietyId ?? ''),
     queryFn: () => get<VarietyDetail>(`/varieties/${varietyId}`),

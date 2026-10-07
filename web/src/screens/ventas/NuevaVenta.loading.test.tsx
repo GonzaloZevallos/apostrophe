@@ -13,6 +13,7 @@ import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { SheetRouterProvider } from '../../components/useSheetStack'
+import { CUSTOMERS, pathTo, SALE_NEW, VARIETIES } from '../../routes'
 import NuevaVenta from './NuevaVenta'
 
 const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
@@ -61,8 +62,8 @@ afterEach(() => {
 function renderForm() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   const router = createMemoryRouter(
-    [{ element: <Outlet context={ME} />, children: [{ path: '/ventas/nueva', element: <NuevaVenta /> }] }],
-    { initialEntries: ['/ventas/nueva'] },
+    [{ element: <Outlet context={ME} />, children: [{ path: SALE_NEW, element: <NuevaVenta /> }] }],
+    { initialEntries: [SALE_NEW] },
   )
   render(
     <QueryClientProvider client={queryClient}>
@@ -75,7 +76,7 @@ function renderForm() {
 
 async function openAndPriceToday() {
   renderForm()
-  answer('/varieties?on=2026-10-02', [ROSA_TODAY])
+  answer(`${pathTo(VARIETIES)}?on=2026-10-02`, [ROSA_TODAY])
   await screen.findByRole('button', { name: 'Guardá la venta' })
 }
 
@@ -88,7 +89,7 @@ test('opening shows the loading state in the body, with the header and its way o
 
   expect(screen.getAllByRole('progressbar')).toHaveLength(1)
   noFigure(screen.getByRole('progressbar'))
-  expect(screen.getByRole('button', { name: 'Volver' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Cerrar' })).toBeInTheDocument()
   expect(screen.getByLabelText('Fecha')).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Guardá la venta' })).not.toBeInTheDocument()
   expect(screen.queryByText('Total')).not.toBeInTheDocument()
@@ -132,7 +133,7 @@ test('a date change keeps what was typed and shows compact bars where prices wer
   // Grams stay: they are what was typed, not a price.
   expect(within(footer).getByText('2 g vendidos')).toBeInTheDocument()
 
-  answer('/varieties?on=2026-10-01', [ROSA_YESTERDAY])
+  answer(`${pathTo(VARIETIES)}?on=2026-10-01`, [ROSA_YESTERDAY])
 
   expect(await screen.findByText('$ 1.500 x g')).toBeInTheDocument()
   expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
@@ -154,7 +155,7 @@ test('Elegir cliente shows the loading state before its first answer', async () 
   noFigure(screen.getByRole('progressbar'))
   expect(screen.getByRole('button', { name: 'Sin cliente' })).toBeInTheDocument()
 
-  answer('/customers', [ANA])
+  answer(pathTo(CUSTOMERS), [ANA])
 
   expect(await screen.findByText('Ana')).toBeInTheDocument()
   expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()

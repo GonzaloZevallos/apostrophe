@@ -16,7 +16,8 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link, useOutletContext, useSearchParams } from 'react-router'
+import { useOutletContext, useSearchParams } from 'react-router'
+import InAppLink from '../components/InAppLink'
 import { ApiError, NetworkError } from '../api/client'
 import { type Expense, deleteExpense, monthlyView } from '../api/expenses'
 import { invalidateResource, keys } from '../api/keys'
@@ -167,10 +168,10 @@ export default function Gastos() {
       <div className="cuerpo gastos">
         <div className="gastos__cabecera">
           <span className="encabezado__titulo gastos__titulo">Gastos</span>
-          <Link to={EXPENSE_NEW} className="gastos__cargar" aria-label="Cargar gasto">
+          <InAppLink to={EXPENSE_NEW} className="gastos__cargar" aria-label="Cargar gasto">
             <Icono nombre="agregar" size={20} strokeWidth={1.8} />
             <span className="gastos__cargar-texto">Cargar gasto</span>
-          </Link>
+          </InAppLink>
           <div className="gastos__mes">
             <button
               type="button"
@@ -253,9 +254,9 @@ export default function Gastos() {
 
         <div className="gastos__pie">
           <span className="pie">{FLOWER_NOTICE}</span>
-          <Link to={EXPENSE_CATEGORIES} state={{ inApp: true }} className="boton--enlace">
+          <InAppLink to={EXPENSE_CATEGORIES} className="boton--enlace">
             Categorías
-          </Link>
+          </InAppLink>
         </div>
       </div>
 

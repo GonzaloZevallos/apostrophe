@@ -8,7 +8,7 @@
 
 import { useCallback, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { useLocation, useNavigate, useOutletContext } from 'react-router'
+import { useOutletContext } from 'react-router'
 import { ApiError, NetworkError, get } from '../../api/client'
 import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
@@ -19,16 +19,16 @@ import GoneScreen from '../../components/GoneScreen'
 import LeaveConfirm from '../../components/LeaveConfirm'
 import Loading from '../../components/Loading'
 import SinConexion from '../../components/SinConexion'
+import { useBackOr } from '../../components/useBackOr'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
 import { useFlash } from '../../flash/useFlash'
-import { VARIETIES, VARIETY } from '../../routes'
+import { VARIETIES, VARIETY, pathTo } from '../../routes'
 import type { Variety } from '../Variedades'
 import PriceForm from './PriceForm'
 
 export default function PriceNew({ varietyId }: { varietyId: number }) {
   const me = useOutletContext<Me>()
-  const navigate = useNavigate()
-  const location = useLocation()
+  const leave = useBackOr(pathTo(VARIETY, { id: varietyId }))
   const flash = useFlash()
   const [dirty, setDirty] = useState(false)
   const [gone, setGone] = useState(false)
@@ -38,11 +38,6 @@ export default function PriceNew({ varietyId }: { varietyId: number }) {
     queryKey: keys.variety(String(varietyId)),
     queryFn: () => get<Variety>(`/varieties/${varietyId}`),
   })
-
-  function leave(): void {
-    if (location.key === 'default') void navigate(VARIETY(varietyId), { replace: true })
-    else void navigate(-1)
-  }
 
   function onDone(saved: SuccessToast): void {
     disarm()

@@ -9,19 +9,22 @@
  */
 
 import { useQuery } from '@tanstack/react-query'
-import { Link, NavLink } from 'react-router'
+import { Link } from 'react-router'
 import { NetworkError } from '../../api/client'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import Loading from '../../components/Loading'
 import SinConexion from '../../components/SinConexion'
-import { VARIETIES, VARIETY } from '../../routes'
+import { VARIETIES, VARIETY, pathTo } from '../../routes'
+import { useViewport } from '../../shell/useViewport'
 import { archivedVarietiesQueryOptions } from './archivedVarieties'
 import { useRestore } from './useRestore'
+import VarietyRowLink from './VarietyRowLink'
 import { varietiesByName } from './varietiesByName'
 
 export const NO_ARCHIVED_MESSAGE = 'No tenés variedades archivadas'
 
 export default function ArchivedVarieties() {
+  const computer = useViewport() === 'computer'
   const query = useQuery(archivedVarietiesQueryOptions())
   const { restore, sending, notice } = useRestore()
   const failure = query.error
@@ -47,17 +50,12 @@ export default function ArchivedVarieties() {
           <div className="lista-variedades">
             {varietiesByName(query.data).map((variety) => (
               <div key={variety.id} className="variedad-archivada">
-                <NavLink
-                  to={VARIETY(variety.id)}
-                  className={({ isActive }) =>
-                    isActive ? 'variedad-fila variedad-fila--activa' : 'variedad-fila'
-                  }
-                >
+                <VarietyRowLink to={pathTo(VARIETY, { id: variety.id })} replace={computer}>
                   <span className="variedad-fila__encabezado">
                     <span className="variedad-fila__nombre">{variety.name}</span>
                     <span className="variedad-fila__oculta">Archivada</span>
                   </span>
-                </NavLink>
+                </VarietyRowLink>
                 <button
                   type="button"
                   className="boton boton--suave variedad-archivada__restaurar"

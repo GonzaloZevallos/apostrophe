@@ -58,21 +58,21 @@ export function renderWithdrawals(initialEntries: string[], fetchImpl: FetchImpl
           {
             element: <Shell />,
             children: [
-              { path: relative(VARIETIES_PATH), element: <Variedades /> },
+              { path: relative(VARIETIES_PATH), element: <Variedades />, handle: { screen: 'varieties' } },
               {
                 path: relative(WITHDRAWAL_NEW),
                 element: <WithdrawalFormRoute mode="new" />,
-                handle: { chrome: 'none', tab: 'more' },
+                handle: { screen: 'withdrawal-new' },
               },
               {
                 path: relative(WITHDRAWAL_EDIT),
                 element: <WithdrawalFormRoute mode="edit" />,
-                handle: { chrome: 'none', tab: 'more' },
+                handle: { screen: 'withdrawal-edit' },
               },
               {
                 path: relative(WITHDRAWAL),
                 element: <WithdrawalDetail />,
-                handle: { chrome: 'card' },
+                handle: { screen: 'withdrawal' },
               },
             ],
           },

@@ -1,6 +1,6 @@
 /**
  * "Back, or else the fixed parent" (plan, "Back"). Every in-app link into Configuración
- * carries `state: { inApp: true }`; only an entry that carries it is known to have the app
+ * carries the state `inAppState` writes; only an entry that carries it is known to have the app
  * behind it, so only then does back go through history. Anything else (a typed address, a
  * bookmark, a reload that dropped the state) goes to `fallback` with `replace`, so the
  * entry that is left does not stay behind to be walked back into.

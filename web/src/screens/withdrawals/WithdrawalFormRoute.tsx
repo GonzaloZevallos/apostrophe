@@ -3,18 +3,18 @@
  * (optionally `?variety=<id>`, which chooses the first line's variety) and
  * `/withdrawals/:id/edit` (the same form, filled in). It owns how the form is left:
  *
- * - Back goes by history to whichever screen opened it, or, with no history to go back
- *   to (`location.key === 'default'`: a direct link), to Variedades (new) or the
- *   withdrawal's detail (edit).
+ * - Back goes by history to whichever screen opened it (`useBackOr`), or, opened by a
+ *   direct link, to Variedades (new) or the withdrawal's detail (edit).
  * - A save arms "Retiro guardado" for the screen history returns to, then leaves.
  * - Leaving with something typed asks first (`useLeaveGuard`); a save never is blocked.
  * - A withdrawal that is gone shows "Eso ya no está." when opened for editing, and
- *   "Eso ya no está. La lista ya está al día." on Variedades when a save finds it gone.
+ *   "Eso ya no está. La lista ya está al día." on Variedades when a save finds it gone
+ *   (`useGoneExit`).
  */
 
 import { useQuery } from '@tanstack/react-query'
-import { type ReactNode, useCallback, useState } from 'react'
-import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router'
+import { type ReactNode, useState } from 'react'
+import { useParams, useSearchParams } from 'react-router'
 import { ApiError, NetworkError } from '../../api/client'
 import { keys } from '../../api/keys'
 import { isGone } from '../../api/refusals'
@@ -25,10 +25,11 @@ import GoneScreen from '../../components/GoneScreen'
 import LeaveConfirm from '../../components/LeaveConfirm'
 import Loading from '../../components/Loading'
 import SinConexion from '../../components/SinConexion'
-import { gone } from '../../components/feedback'
+import { useBackOr } from '../../components/useBackOr'
+import { useGoneExit } from '../../components/useGoneExit'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
 import { useFlash } from '../../flash/useFlash'
-import { VARIETIES, withdrawalPath } from '../../routes'
+import { VARIETIES, WITHDRAWAL, pathTo } from '../../routes'
 import WithdrawalForm, { type WithdrawalTarget } from './WithdrawalForm'
 
 
@@ -72,8 +73,6 @@ function EditHost() {
 }
 
 function FormHost({ target }: { target: WithdrawalTarget }) {
-  const navigate = useNavigate()
-  const location = useLocation()
   const flash = useFlash()
   const [params] = useSearchParams()
   const [dirty, setDirty] = useState(false)
@@ -82,13 +81,9 @@ function FormHost({ target }: { target: WithdrawalTarget }) {
   const varietyParam = params.get('variety') ?? ''
   const initialVarietyId = /^\d+$/.test(varietyParam) ? varietyParam : ''
 
-  const leave = useCallback((): void => {
-    if (location.key === 'default') {
-      void navigate(editing ? withdrawalPath(target.id) : VARIETIES, { replace: true })
-    } else {
-      void navigate(-1)
-    }
-  }, [location.key, navigate, editing, target])
+  const leave = useBackOr(editing ? pathTo(WITHDRAWAL, { id: target.id }) : VARIETIES)
+  // A gone withdrawal has no detail to go back to: an edit leaves for the detail's own parent.
+  const goneExit = useGoneExit(editing ? 'withdrawal' : 'withdrawal-new')
 
   function onDone(saved: SuccessToast): void {
     disarm()
@@ -98,7 +93,7 @@ function FormHost({ target }: { target: WithdrawalTarget }) {
 
   function onGone(): void {
     disarm()
-    void navigate(VARIETIES, { replace: true, state: gone() })
+    goneExit()
   }
 
   return (

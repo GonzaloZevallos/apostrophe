@@ -25,10 +25,10 @@ import ConfirmDialog from '../../components/ConfirmDialog'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import GoneNotice from '../../components/GoneNotice'
 import SinConexion from '../../components/SinConexion'
-import { useIsComputer } from '../../components/useIsComputer'
 import { useFlash } from '../../flash/useFlash'
 import { formatGrams } from '../../format/money'
-import { VARIETIES, VARIETY } from '../../routes'
+import { VARIETIES, VARIETY, pathTo } from '../../routes'
+import { useViewport } from '../../shell/useViewport'
 import type { Variety } from '../Variedades'
 import { varietiesByName } from './varietiesByName'
 
@@ -62,7 +62,7 @@ export default function VarietyRemoval({ varietyId, removal, grams }: Props) {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const flash = useFlash()
-  const computer = useIsComputer()
+  const computer = useViewport() === 'computer'
   const [asking, setAsking] = useState(false)
   const [sending, setSending] = useState(false)
   const [gone, setGone] = useState(false)
@@ -81,7 +81,7 @@ export default function VarietyRemoval({ varietyId, removal, grams }: Props) {
       )
     }
     flash.armAfterLeaving(removal === 'delete' ? 'Variedad eliminada' : 'Variedad archivada')
-    void navigate(next === null ? VARIETIES : VARIETY(next), { replace: true })
+    void navigate(next === null ? VARIETIES : pathTo(VARIETY, { id: next }), { replace: true })
     // Mark stale without refetching now: the page still mounted would read the variety it
     // just deleted, a 404 the browser writes to its console (`invalidateResource`'s note).
     invalidateResource(queryClient, 'varieties', { refetchType: 'none' })

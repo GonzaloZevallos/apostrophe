@@ -29,6 +29,7 @@ import type { VarietyDetail } from '../../api/varieties'
 import type { SuccessToast } from '../../components/AvisoExito'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import GoneScreen from '../../components/GoneScreen'
+import InAppLink from '../../components/InAppLink'
 import LeaveConfirm from '../../components/LeaveConfirm'
 import Loading from '../../components/Loading'
 import MarcaEstado from '../../components/MarcaEstado'
@@ -39,9 +40,10 @@ import { formatGrams, formatMoney } from '../../format/money'
 import {
   ARCHIVED_VARIETIES,
   CATALOG_SECTION_ID,
-  ENTRY_NEW,
+  STOCK_ENTRY_NEW,
   VARIETIES,
   VARIETY_PRICE_NEW,
+  pathTo,
   withdrawalNewFor,
 } from '../../routes'
 import { NO_PRICE_TODAY, type Variety } from '../Variedades'
@@ -220,15 +222,15 @@ export default function VarietyPage({ varietyId }: { varietyId: number }) {
           </>
         ) : (
           <div className="variedad-acciones">
-            <Link className="boton boton--suave" to={`${ENTRY_NEW}?variety=${varietyId}`}>
+            <InAppLink className="boton boton--suave" to={`${STOCK_ENTRY_NEW}?variety=${varietyId}`}>
               + Entrada
-            </Link>
-            <Link className="boton boton--suave" to={VARIETY_PRICE_NEW(varietyId)}>
+            </InAppLink>
+            <InAppLink className="boton boton--suave" to={pathTo(VARIETY_PRICE_NEW, { id: varietyId })}>
               Nuevo precio
-            </Link>
-            <Link className="boton boton--suave" to={withdrawalNewFor(varietyId)}>
+            </InAppLink>
+            <InAppLink className="boton boton--suave" to={withdrawalNewFor(varietyId)}>
               Sacar del stock
-            </Link>
+            </InAppLink>
           </div>
         )}
 

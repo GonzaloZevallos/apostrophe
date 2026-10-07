@@ -9,6 +9,8 @@
  * the console holds nothing.
  */
 
+import { CATALOG, HOME, LOGIN } from '../src/routes.js'
+import { expectPath } from './helpers/url.js'
 import { expect, test } from '@playwright/test'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
@@ -51,7 +53,7 @@ test('a seller goes through every Configuración group from the phone, with no c
     await page.getByRole('button', { name: 'Cerrar', exact: true }).click()
     await expect(page.getByRole('heading', { name: 'Configuración' })).toBeVisible()
   }
-  await page.goto('/')
+  await page.goto(HOME)
   await page.getByRole('link', { name: /^Configuración de / }).click()
   await expect(page.getByRole('heading', { name: 'Configuración' })).toBeVisible()
 
@@ -76,7 +78,7 @@ test('a seller goes through every Configuración group from the phone, with no c
   await page.getByRole('button', { name: 'Probarlo' }).click()
   await expect(page.getByText('Prueba enviada')).toBeVisible()
   await page.getByRole('link', { name: 'Ir al catálogo' }).click()
-  await expect(page).toHaveURL(/\/varieties\/catalog$/)
+  await expectPath(page, CATALOG)
   await page.goBack()
   await close()
 
@@ -126,7 +128,7 @@ test('a seller goes through every Configuración group from the phone, with no c
   await sheet.getByRole('button', { name: 'Guardar' }).click()
   await expect(page.getByText('Contraseña cambiada · cerramos tus otras sesiones')).toBeVisible()
   await page.getByRole('button', { name: 'Cerrar sesión' }).click()
-  await expect(page).toHaveURL(/\/entrar$/)
+  await expectPath(page, LOGIN)
 
   await page.getByLabel('Email').fill(ownerEmail)
   await page.getByLabel('Contraseña').fill(NEW_PASSWORD)

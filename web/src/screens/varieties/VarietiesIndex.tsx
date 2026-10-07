@@ -4,16 +4,17 @@
  * once there is one, and shows nothing that could be read as data until then.
  */
 
-import ReplaceTo from '../../components/ReplaceTo'
-import { useIsComputer } from '../../components/useIsComputer'
-import { VARIETY } from '../../routes'
+import { Navigate } from 'react-router'
+import { FOLLOWED_REDIRECT } from '../../flash/flashReducer'
+import { VARIETY, pathTo } from '../../routes'
+import { useViewport } from '../../shell/useViewport'
 import Variedades from '../Variedades'
 import { useSelectedVariety } from './useSelectedVariety'
 
 export default function VarietiesIndex() {
-  const computer = useIsComputer()
+  const computer = useViewport() === 'computer'
   const selected = useSelectedVariety()
   if (!computer) return <Variedades />
   if (selected === null) return null
-  return <ReplaceTo to={VARIETY(selected)} />
+  return <Navigate to={pathTo(VARIETY, { id: selected })} replace state={FOLLOWED_REDIRECT} />
 }

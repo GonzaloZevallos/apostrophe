@@ -14,9 +14,22 @@ import type { Me } from '../../api/me'
 import FlashProvider from '../../flash/FlashProvider'
 import { router as appRouter } from '../../router'
 import Shell from '../../shell/Shell'
-import { VARIETIES, VARIETY, relative } from '../../routes'
+import {
+  STOCK_ENTRY_NEW,
+  VARIETIES,
+  VARIETY,
+  VARIETY_ENTRIES,
+  VARIETY_PRICE_NEW,
+  VARIETY_PRICES,
+  WITHDRAWAL,
+  pathTo,
+  relative,
+  withdrawalNewFor,
+} from '../../routes'
 import VarietyPage from './VarietyPage'
 import VarietyRoute from './VarietyRoute'
+
+const VARIETY_ONE = pathTo(VARIETY, { id: 1 })
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
 
@@ -121,10 +134,10 @@ function renderPage(path: string, overrides: Answers = {}, state: unknown = null
             children: [
               { path: relative(VARIETIES), element: <main>Pantalla Variedades</main> },
               {
-                path: relative(VARIETY(':id')),
+                path: relative(VARIETY),
                 element: <VarietyRoute render={(varietyId) => <VarietyPage varietyId={varietyId} />} />,
                 // The handle the app's own route table declares, so the shell draws the same chrome.
-                handle: matchRoutes(appRouter.routes, VARIETY(1))?.at(-1)?.route.handle,
+                handle: matchRoutes(appRouter.routes, pathTo(VARIETY, { id: 1 }))?.at(-1)?.route.handle,
               },
               { path: '*', element: <main>Otra pantalla</main> },
             ],
@@ -132,7 +145,7 @@ function renderPage(path: string, overrides: Answers = {}, state: unknown = null
         ],
       },
     ],
-    { initialEntries: ['/varieties', { pathname: path, state }], initialIndex: 1 },
+    { initialEntries: [VARIETIES, { pathname: path, state }], initialIndex: 1 },
   )
   render(<RouterProvider router={router} />)
   return { router, fetchMock }
@@ -161,7 +174,7 @@ afterEach(() => {
 
 describe('the summary line', () => {
   test('tells grams, status by shape and word, days left and today\'s price', async () => {
-    renderPage('/varieties/1')
+    renderPage(VARIETY_ONE)
 
     const line = await screen.findByText(/24 días/)
     expect(line).toHaveTextContent('18 g · baja · 24 días · $ 11.000 x g')
@@ -173,21 +186,21 @@ describe('the summary line', () => {
     ['no_entries', { grams: 0, status: 'no_entries', days_left: null }, '0 g · sin entradas'],
     ['ok', { grams: 90, status: 'ok', days_left: 60 }, '90 g · ok · 60 días'],
   ])('a %s variety', async (_name, patch, expected) => {
-    renderPage('/varieties/1', { 'GET /stock': () => json(200, stockOf({ ...STOCK_ROW, ...patch })) })
+    renderPage(VARIETY_ONE, { 'GET /stock': () => json(200, stockOf({ ...STOCK_ROW, ...patch })) })
 
     const line = await screen.findByText(/\$ 11\.000 x g/)
     expect(line).toHaveTextContent(expected)
   })
 
   test('no price in force says it cannot be sold', async () => {
-    renderPage('/varieties/1', { 'GET /varieties/1': () => json(200, NO_PRICE_ROW) })
+    renderPage(VARIETY_ONE, { 'GET /varieties/1': () => json(200, NO_PRICE_ROW) })
 
     expect(await screen.findByText(/Sin precio: no se puede vender/)).toBeInTheDocument()
   })
 
   test('a variety left out of the catalog is marked "Oculta" beside its status', async () => {
     const hidden = { ...CATALOG, varieties: [{ ...CATALOG.varieties[0], shown: false, state: 'hidden' }] }
-    renderPage('/varieties/1', { 'GET /catalog': () => json(200, hidden) })
+    renderPage(VARIETY_ONE, { 'GET /catalog': () => json(200, hidden) })
 
     const line = (await screen.findByText('Oculta')).closest('p')
     expect(line).toHaveTextContent('18 g · baja · Oculta · 24 días')
@@ -196,22 +209,22 @@ describe('the summary line', () => {
 
 describe('the actions and the sections', () => {
   test('"+ Entrada" opens the entry form with this variety, "Nuevo precio" its price form', async () => {
-    renderPage('/varieties/1')
+    renderPage(VARIETY_ONE)
 
-    expect(await screen.findByRole('link', { name: '+ Entrada' })).toHaveAttribute('href', '/varieties/entries/new?variety=1')
-    expect(screen.getByRole('link', { name: 'Nuevo precio' })).toHaveAttribute('href', '/varieties/1/prices/new')
+    expect(await screen.findByRole('link', { name: '+ Entrada' })).toHaveAttribute('href', `${STOCK_ENTRY_NEW}?variety=1`)
+    expect(screen.getByRole('link', { name: 'Nuevo precio' })).toHaveAttribute('href', pathTo(VARIETY_PRICE_NEW, { id: 1 }))
   })
 
   test('the page is a detail: "‹ Variedades" and no "+ Nueva venta"', async () => {
-    renderPage('/varieties/1')
+    renderPage(VARIETY_ONE)
 
-    expect(await screen.findByRole('link', { name: '‹ Variedades' })).toHaveAttribute('href', '/varieties')
+    expect(await screen.findByRole('link', { name: '‹ Variedades' })).toHaveAttribute('href', VARIETIES)
     expect(screen.queryByText(/Nueva venta/)).not.toBeInTheDocument()
     expect(screen.getAllByRole('navigation').length).toBeGreaterThan(0)
   })
 
   test('Stock y entradas carries this variety\'s last 3 entries and "Ver todas"', async () => {
-    renderPage('/varieties/1')
+    renderPage(VARIETY_ONE)
 
     const section = (await screen.findByRole('heading', { name: 'Stock y entradas' })).closest('section')
     expect(section).not.toBeNull()
@@ -221,20 +234,20 @@ describe('the actions and the sections', () => {
     expect(inside.getByText('30 g')).toBeInTheDocument()
     expect(inside.queryByText('40 g')).not.toBeInTheDocument()
     expect(inside.queryByText('99 g')).not.toBeInTheDocument()
-    expect(inside.getByRole('link', { name: 'Ver todas' })).toHaveAttribute('href', '/varieties/1/entries')
+    expect(inside.getByRole('link', { name: 'Ver todas' })).toHaveAttribute('href', pathTo(VARIETY_ENTRIES, { id: 1 }))
   })
 
   test('"Sacar del stock" opens the withdrawal form with this variety already chosen', async () => {
-    renderPage('/varieties/1')
+    renderPage(pathTo(VARIETY, { id: 1 }))
 
     expect(await screen.findByRole('link', { name: 'Sacar del stock' })).toHaveAttribute(
       'href',
-      '/withdrawals/new?variety=1',
+      withdrawalNewFor(1),
     )
   })
 
   test('a withdrawal in Stock y entradas says its reason and a minus sign, mixed with entries, and opens its detail', async () => {
-    renderPage('/varieties/1', {
+    renderPage(pathTo(VARIETY, { id: 1 }), {
       'GET /stock/varieties/1/movements': () =>
         json(200, [
           { ...ENTRIES[0], kind: 'entry' },
@@ -248,32 +261,32 @@ describe('the actions and the sections', () => {
     const inside = within(section as HTMLElement)
     const reason = await inside.findByText(/Promoción/)
     expect(reason.closest('li')).toHaveTextContent('−5,5 g')
-    expect(reason.closest('a')).toHaveAttribute('href', '/withdrawals/5')
+    expect(reason.closest('a')).toHaveAttribute('href', pathTo(WITHDRAWAL, { id: 5 }))
     expect(inside.getByText('10 g')).toBeInTheDocument()
     expect(inside.getByText('20 g')).toBeInTheDocument()
     expect(inside.queryByText('30 g')).not.toBeInTheDocument()
   })
 
   test('Precios carries the last 3 prices, "Vigente hoy" and "Ver todas"', async () => {
-    renderPage('/varieties/1')
+    renderPage(VARIETY_ONE)
 
     const section = (await screen.findByRole('heading', { name: 'Precios' })).closest('section')
     const inside = within(section as HTMLElement)
     expect(inside.getAllByText(/Rige desde/)).toHaveLength(3)
     expect(inside.getByText('Vigente hoy')).toBeInTheDocument()
     expect(inside.queryByText('$ 9.800')).not.toBeInTheDocument()
-    expect(inside.getByRole('link', { name: 'Ver todas' })).toHaveAttribute('href', '/varieties/1/prices')
+    expect(inside.getByRole('link', { name: 'Ver todas' })).toHaveAttribute('href', pathTo(VARIETY_PRICES, { id: 1 }))
   })
 
   test('only those two sections carry "Ver todas"', async () => {
-    renderPage('/varieties/1')
+    renderPage(VARIETY_ONE)
 
     await screen.findByRole('heading', { name: 'Precios' })
     expect(screen.getAllByRole('link', { name: 'Ver todas' })).toHaveLength(2)
   })
 
   test('Aviso de stock bajo reads the saved threshold, with a switch and "Editar"', async () => {
-    renderPage('/varieties/1')
+    renderPage(VARIETY_ONE)
 
     const section = (await screen.findByRole('heading', { name: 'Aviso de stock bajo' })).closest('section')
     const inside = within(section as HTMLElement)
@@ -286,13 +299,13 @@ describe('the actions and the sections', () => {
     ['no threshold', { threshold: null, status: 'ok', grams: 90, days_left: 60 }, 'Aviso apagado'],
     ['a threshold not reached', { threshold: 15, status: 'ok', grams: 90, days_left: 60 }, 'Avisame abajo de 15 g'],
   ])('Aviso de stock bajo with %s', async (_name, patch, expected) => {
-    renderPage('/varieties/1', { 'GET /stock': () => json(200, stockOf({ ...STOCK_ROW, ...patch })) })
+    renderPage(VARIETY_ONE, { 'GET /stock': () => json(200, stockOf({ ...STOCK_ROW, ...patch })) })
 
     expect(await screen.findByText(expected)).toBeInTheDocument()
   })
 
   test('En el catálogo reads shown, emoji, % índica and aroma, with "Editar"', async () => {
-    renderPage('/varieties/1')
+    renderPage(VARIETY_ONE)
 
     const section = (await screen.findByRole('heading', { name: 'En el catálogo' })).closest('section')
     const inside = within(section as HTMLElement)
@@ -306,7 +319,7 @@ describe('the actions and the sections', () => {
 
   test('En el catálogo tells a hidden variety by word', async () => {
     const hidden = { ...CATALOG, varieties: [{ ...CATALOG.varieties[0], shown: false, state: 'hidden' }] }
-    renderPage('/varieties/1', { 'GET /catalog': () => json(200, hidden) })
+    renderPage(VARIETY_ONE, { 'GET /catalog': () => json(200, hidden) })
 
     const section = (await screen.findByRole('heading', { name: 'En el catálogo' })).closest('section')
     expect(await within(section as HTMLElement).findByText('No se muestra')).toBeInTheDocument()
@@ -315,17 +328,17 @@ describe('the actions and the sections', () => {
 
 describe('gone and foreign varieties', () => {
   test('a variety that is not there, or is another business\'s, shows "Eso ya no está."', async () => {
-    renderPage('/varieties/1', {
+    renderPage(VARIETY_ONE, {
       'GET /varieties/1': () => json(404, { code: 'variety.not_found' }),
       'GET /varieties/1/prices': () => json(404, { code: 'variety.not_found' }),
     })
 
     expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Volver a Variedades' })).toHaveAttribute('href', '/varieties')
+    expect(screen.getByRole('link', { name: 'Volver a Variedades' })).toHaveAttribute('href', VARIETIES)
   })
 
   test('VarietyRoute: an id that is not a whole number is gone, and the API is never asked', async () => {
-    const { fetchMock } = renderPage('/varieties/abc')
+    const { fetchMock } = renderPage(pathTo(VARIETY, { id: 'abc' }))
 
     expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
     expect(fetchMock).not.toHaveBeenCalled()
@@ -335,12 +348,12 @@ describe('gone and foreign varieties', () => {
 describe('the openers push a history entry, so Back closes the form', () => {
   test('"Editar" on Aviso de stock bajo pushes the threshold form', async () => {
     const user = userEvent.setup()
-    const { router } = renderPage('/varieties/1')
+    const { router } = renderPage(VARIETY_ONE)
 
     const section = (await screen.findByRole('heading', { name: 'Aviso de stock bajo' })).closest('section')
     await user.click(within(section as HTMLElement).getByRole('button', { name: /Editar/ }))
 
-    expect(router.state.location.pathname).toBe('/varieties/1')
+    expect(router.state.location.pathname).toBe(VARIETY_ONE)
     expect(router.state.location.state).toEqual({ form: 'threshold' })
     await router.navigate(-1)
     expect(router.state.location.state).toBeNull()
@@ -348,7 +361,7 @@ describe('the openers push a history entry, so Back closes the form', () => {
 
   test('"Editar" on En el catálogo pushes the catalog form', async () => {
     const user = userEvent.setup()
-    const { router } = renderPage('/varieties/1')
+    const { router } = renderPage(VARIETY_ONE)
 
     const section = (await screen.findByRole('heading', { name: 'En el catálogo' })).closest('section')
     await user.click(within(section as HTMLElement).getByRole('button', { name: /Editar/ }))
@@ -358,7 +371,7 @@ describe('the openers push a history entry, so Back closes the form', () => {
 
   test('turning the warning on opens the form and calls nothing', async () => {
     const user = userEvent.setup()
-    const { router, fetchMock } = renderPage('/varieties/1', {
+    const { router, fetchMock } = renderPage(VARIETY_ONE, {
       'GET /stock': () => json(200, stockOf({ ...STOCK_ROW, threshold: null, status: 'ok', grams: 90, days_left: 60 })),
     })
 
@@ -374,7 +387,7 @@ describe('the openers push a history entry, so Back closes the form', () => {
     ['a state with no form', { other: 'rename' }],
     ['a state that is not an object', 'rename'],
   ])('%s renders no form and no placeholder', async (_name, state) => {
-    const { router } = renderPage('/varieties/1')
+    const { router } = renderPage(VARIETY_ONE)
     await screen.findByRole('heading', { name: 'Precios' })
     await act(() => router.navigate('.', { state }))
 
@@ -387,7 +400,7 @@ describe('the openers push a history entry, so Back closes the form', () => {
 describe('renaming from the page', () => {
   test('"Editar" next to the name pushes {form: "rename"} and shows the rename form', async () => {
     const user = userEvent.setup()
-    const { router } = renderPage('/varieties/1')
+    const { router } = renderPage(VARIETY_ONE)
 
     await user.click(await screen.findByRole('button', { name: 'Editar nombre' }))
 
@@ -398,7 +411,7 @@ describe('renaming from the page', () => {
 
   test('"Cerrar" goes back by history and the form is gone', async () => {
     const user = userEvent.setup()
-    const { router } = renderPage('/varieties/1')
+    const { router } = renderPage(VARIETY_ONE)
     await user.click(await screen.findByRole('button', { name: 'Editar nombre' }))
 
     await user.click(await screen.findByRole('button', { name: 'Cerrar' }))
@@ -409,7 +422,7 @@ describe('renaming from the page', () => {
 
   test('Back closes the form', async () => {
     const user = userEvent.setup()
-    const { router } = renderPage('/varieties/1')
+    const { router } = renderPage(VARIETY_ONE)
     await user.click(await screen.findByRole('button', { name: 'Editar nombre' }))
     await screen.findByText('Renombrar variedad')
 
@@ -420,7 +433,7 @@ describe('renaming from the page', () => {
 
   test('saving renames, closes the form and toasts "Variedad guardada"', async () => {
     const user = userEvent.setup()
-    const { fetchMock } = renderPage('/varieties/1', {
+    const { fetchMock } = renderPage(VARIETY_ONE, {
       'PATCH /varieties/1': () => json(200, { ...VARIETY_ROW, name: 'Gold' }),
     })
     await user.click(await screen.findByRole('button', { name: 'Editar nombre' }))
@@ -436,7 +449,7 @@ describe('renaming from the page', () => {
 
   test('leaving with a changed name asks first, and keeping stays on the form', async () => {
     const user = userEvent.setup()
-    const { router } = renderPage('/varieties/1')
+    const { router } = renderPage(VARIETY_ONE)
     await user.click(await screen.findByRole('button', { name: 'Editar nombre' }))
     await user.type(await screen.findByLabelText('Nombre'), ' 2')
 
@@ -450,7 +463,7 @@ describe('renaming from the page', () => {
 
   test('discarding leaves the form without saving', async () => {
     const user = userEvent.setup()
-    const { router, fetchMock } = renderPage('/varieties/1')
+    const { router, fetchMock } = renderPage(VARIETY_ONE)
     await user.click(await screen.findByRole('button', { name: 'Editar nombre' }))
     await user.type(await screen.findByLabelText('Nombre'), ' 2')
     await user.click(screen.getByRole('button', { name: 'Cerrar' }))
@@ -463,7 +476,7 @@ describe('renaming from the page', () => {
 
   test('a name already taken is refused inline and keeps what was typed', async () => {
     const user = userEvent.setup()
-    renderPage('/varieties/1', { 'PATCH /varieties/1': () => json(409, { code: 'variety.name_taken' }) })
+    renderPage(VARIETY_ONE, { 'PATCH /varieties/1': () => json(409, { code: 'variety.name_taken' }) })
     await user.click(await screen.findByRole('button', { name: 'Editar nombre' }))
     const field = await screen.findByLabelText('Nombre')
     await user.clear(field)
@@ -480,7 +493,7 @@ describe('turning the warning off', () => {
     const user = userEvent.setup()
     let release: (response: Response) => void = () => undefined
     let stock = stockOf(STOCK_ROW)
-    const { fetchMock } = renderPage('/varieties/1', {
+    const { fetchMock } = renderPage(VARIETY_ONE, {
       'GET /stock': () => json(200, stock),
       'PUT /stock/varieties/1/threshold': () => {
         throw new Error('replaced below')
@@ -515,7 +528,7 @@ describe('turning the warning off', () => {
 
   test('a refusal leaves the switch on and says so inline', async () => {
     const user = userEvent.setup()
-    renderPage('/varieties/1', {
+    renderPage(VARIETY_ONE, {
       'PUT /stock/varieties/1/threshold': () => json(422, { code: 'stock.threshold_invalid' }),
     })
 
@@ -530,7 +543,7 @@ describe('turning the warning off', () => {
 
   test('a dropped network leaves the switch on and shows the no-network state', async () => {
     const user = userEvent.setup()
-    const { fetchMock } = renderPage('/varieties/1')
+    const { fetchMock } = renderPage(VARIETY_ONE)
     const base = fetchMock.getMockImplementation() as (u: string, i?: RequestInit) => Promise<Response>
     fetchMock.mockImplementation((url: string, init?: RequestInit) =>
       init?.method === 'PUT' ? Promise.reject(new TypeError('Failed to fetch')) : base(url, init),
@@ -548,7 +561,7 @@ describe('Aviso de stock bajo: the form', () => {
 
   test('the section is read-only until "Editar" opens the form with the saved amount', async () => {
     const user = userEvent.setup()
-    renderPage('/varieties/1')
+    renderPage(VARIETY_ONE)
 
     const section = (await screen.findByRole('heading', { name: 'Aviso de stock bajo' })).closest('section') as HTMLElement
     expect(screen.queryByLabelText('Avisar con menos de')).not.toBeInTheDocument()
@@ -561,7 +574,7 @@ describe('Aviso de stock bajo: the form', () => {
 
   test('turning the warning on opens an empty form, and closing it leaves the warning off', async () => {
     const user = userEvent.setup()
-    const { router, fetchMock } = renderPage('/varieties/1', { 'GET /stock': () => json(200, stockOf(OFF)) })
+    const { router, fetchMock } = renderPage(VARIETY_ONE, { 'GET /stock': () => json(200, stockOf(OFF)) })
 
     await user.click(await screen.findByRole('switch'))
     expect(await screen.findByLabelText('Avisar con menos de')).toHaveValue('')
@@ -577,7 +590,7 @@ describe('Aviso de stock bajo: the form', () => {
   test('saving puts the typed grams, closes the form, toasts and asks stock and the catalog again', async () => {
     const user = userEvent.setup()
     let stock = stockOf(OFF)
-    const { fetchMock } = renderPage('/varieties/1', {
+    const { fetchMock } = renderPage(VARIETY_ONE, {
       'GET /stock': () => json(200, stock),
       'PUT /stock/varieties/1/threshold': () => {
         stock = stockOf({ ...STOCK_ROW, threshold: 15.5 })
@@ -598,7 +611,7 @@ describe('Aviso de stock bajo: the form', () => {
 
   test('a refused amount shows under the field and keeps what was typed', async () => {
     const user = userEvent.setup()
-    renderPage('/varieties/1', { 'PUT /stock/varieties/1/threshold': () => json(422, { code: 'stock.threshold_invalid' }) })
+    renderPage(VARIETY_ONE, { 'PUT /stock/varieties/1/threshold': () => json(422, { code: 'stock.threshold_invalid' }) })
     await user.click(await screen.findByRole('button', { name: 'Editar aviso' }))
     const field = await screen.findByLabelText('Avisar con menos de')
     await user.clear(field)
@@ -613,7 +626,7 @@ describe('Aviso de stock bajo: the form', () => {
 
   test('text that is no amount is refused under the field without asking the server', async () => {
     const user = userEvent.setup()
-    const { fetchMock } = renderPage('/varieties/1')
+    const { fetchMock } = renderPage(VARIETY_ONE)
     await user.click(await screen.findByRole('button', { name: 'Editar aviso' }))
     const field = await screen.findByLabelText('Avisar con menos de')
     await user.clear(field)
@@ -626,7 +639,7 @@ describe('Aviso de stock bajo: the form', () => {
 
   test('a variety that is gone while saving shows "Eso ya no está."', async () => {
     const user = userEvent.setup()
-    renderPage('/varieties/1', { 'PUT /stock/varieties/1/threshold': () => json(404, { code: 'variety.not_found' }) })
+    renderPage(VARIETY_ONE, { 'PUT /stock/varieties/1/threshold': () => json(404, { code: 'variety.not_found' }) })
     await user.click(await screen.findByRole('button', { name: 'Editar aviso' }))
     await user.type(await screen.findByLabelText('Avisar con menos de'), '1')
     await user.click(screen.getByRole('button', { name: 'Guardá el aviso' }))
@@ -636,7 +649,7 @@ describe('Aviso de stock bajo: the form', () => {
 
   test('Back closes the form', async () => {
     const user = userEvent.setup()
-    const { router } = renderPage('/varieties/1')
+    const { router } = renderPage(VARIETY_ONE)
     await user.click(await screen.findByRole('button', { name: 'Editar aviso' }))
     await screen.findByLabelText('Avisar con menos de')
 
@@ -647,7 +660,7 @@ describe('Aviso de stock bajo: the form', () => {
 
   test('typed text is asked about before leaving; keeping stays, discarding closes', async () => {
     const user = userEvent.setup()
-    const { router, fetchMock } = renderPage('/varieties/1')
+    const { router, fetchMock } = renderPage(VARIETY_ONE)
     await user.click(await screen.findByRole('button', { name: 'Editar aviso' }))
     await user.type(await screen.findByLabelText('Avisar con menos de'), '5')
     await user.click(screen.getByRole('button', { name: 'Cerrar' }))
@@ -664,7 +677,7 @@ describe('Aviso de stock bajo: the form', () => {
 
   test('closing an untouched form does not ask', async () => {
     const user = userEvent.setup()
-    const { router } = renderPage('/varieties/1')
+    const { router } = renderPage(VARIETY_ONE)
     await user.click(await screen.findByRole('button', { name: 'Editar aviso' }))
     await user.click(await screen.findByRole('button', { name: 'Cerrar' }))
 
@@ -673,7 +686,7 @@ describe('Aviso de stock bajo: the form', () => {
   })
 
   test('a reload with the form open reopens it with the saved amount', async () => {
-    renderPage('/varieties/1', {}, { form: 'threshold' })
+    renderPage(VARIETY_ONE, {}, { form: 'threshold' })
 
     expect(await screen.findByLabelText('Avisar con menos de')).toHaveValue('20')
   })
@@ -685,7 +698,7 @@ describe('En el catálogo: the form', () => {
 
   test('the section is read-only until "Editar" opens one form holding the four saved values', async () => {
     const user = userEvent.setup()
-    renderPage('/varieties/1')
+    renderPage(VARIETY_ONE)
 
     const before = await section()
     expect(screen.queryByLabelText('Emoji')).not.toBeInTheDocument()
@@ -701,7 +714,7 @@ describe('En el catálogo: the form', () => {
 
   test('saving puts the four values, closes the form, toasts and asks the catalog again', async () => {
     const user = userEvent.setup()
-    const { fetchMock } = renderPage('/varieties/1', {
+    const { fetchMock } = renderPage(VARIETY_ONE, {
       'PUT /catalog/varieties/1': () => json(200, CATALOG),
     })
     await user.click(within(await section()).getByRole('button', { name: 'Editar catálogo' }))
@@ -723,7 +736,7 @@ describe('En el catálogo: the form', () => {
 
   test('a too-long aroma is refused under its own field and keeps everything typed', async () => {
     const user = userEvent.setup()
-    renderPage('/varieties/1', {
+    renderPage(VARIETY_ONE, {
       'PUT /catalog/varieties/1': () => json(422, { code: 'catalog.aroma_too_long' }),
     })
     await user.click(within(await section()).getByRole('button', { name: 'Editar catálogo' }))
@@ -747,7 +760,7 @@ describe('En el catálogo: the form', () => {
     ['catalog.indica_share_invalid', '% índica', 'El porcentaje de índica va de 0 a 100'],
   ])('%s is shown under %s only', async (code, label, message) => {
     const user = userEvent.setup()
-    renderPage('/varieties/1', { 'PUT /catalog/varieties/1': () => json(422, { code }) })
+    renderPage(VARIETY_ONE, { 'PUT /catalog/varieties/1': () => json(422, { code }) })
     await user.click(within(await section()).getByRole('button', { name: 'Editar catálogo' }))
     await user.type(screen.getByLabelText('Aroma/sabor'), '!')
     await user.click(screen.getByRole('button', { name: 'Guardá el catálogo' }))
@@ -759,7 +772,7 @@ describe('En el catálogo: the form', () => {
 
   test('an index that is not whole digits is refused under its field without asking the server', async () => {
     const user = userEvent.setup()
-    const { fetchMock } = renderPage('/varieties/1')
+    const { fetchMock } = renderPage(VARIETY_ONE)
     await user.click(within(await section()).getByRole('button', { name: 'Editar catálogo' }))
     await user.clear(screen.getByLabelText('% índica'))
     await user.type(screen.getByLabelText('% índica'), '7,5')
@@ -772,7 +785,7 @@ describe('En el catálogo: the form', () => {
 
   test('a variety that is gone while saving shows "Eso ya no está."', async () => {
     const user = userEvent.setup()
-    renderPage('/varieties/1', { 'PUT /catalog/varieties/1': () => json(404, { code: 'catalog.variety_not_found' }) })
+    renderPage(VARIETY_ONE, { 'PUT /catalog/varieties/1': () => json(404, { code: 'catalog.variety_not_found' }) })
     await user.click(within(await section()).getByRole('button', { name: 'Editar catálogo' }))
     await user.click(screen.getByRole('button', { name: 'Guardá el catálogo' }))
 
@@ -781,7 +794,7 @@ describe('En el catálogo: the form', () => {
 
   test('Back closes the form', async () => {
     const user = userEvent.setup()
-    const { router } = renderPage('/varieties/1')
+    const { router } = renderPage(VARIETY_ONE)
     await user.click(within(await section()).getByRole('button', { name: 'Editar catálogo' }))
     await screen.findByLabelText('Emoji')
 
@@ -792,7 +805,7 @@ describe('En el catálogo: the form', () => {
 
   test('typed text is asked about before leaving; keeping stays, discarding closes without saving', async () => {
     const user = userEvent.setup()
-    const { router, fetchMock } = renderPage('/varieties/1')
+    const { router, fetchMock } = renderPage(VARIETY_ONE)
     await user.click(within(await section()).getByRole('button', { name: 'Editar catálogo' }))
     await user.type(screen.getByLabelText('Aroma/sabor'), ' y menta')
     await user.click(screen.getByRole('button', { name: 'Cerrar' }))
@@ -809,7 +822,7 @@ describe('En el catálogo: the form', () => {
 
   test('closing an untouched form does not ask', async () => {
     const user = userEvent.setup()
-    const { router } = renderPage('/varieties/1')
+    const { router } = renderPage(VARIETY_ONE)
     await user.click(within(await section()).getByRole('button', { name: 'Editar catálogo' }))
     await user.click(await screen.findByRole('button', { name: 'Cerrar' }))
 
@@ -818,14 +831,14 @@ describe('En el catálogo: the form', () => {
   })
 
   test('a reload with the form open reopens it with the saved values', async () => {
-    renderPage('/varieties/1', {}, { form: 'catalog' })
+    renderPage(VARIETY_ONE, {}, { form: 'catalog' })
 
     expect(await screen.findByLabelText('Aroma/sabor')).toHaveValue('Galletita y vainilla')
     expect(screen.getByLabelText('Emoji')).toHaveValue('🍪')
   })
 
   test('the form never carries a maxLength: the length rule is the server\'s', async () => {
-    renderPage('/varieties/1', {}, { form: 'catalog' })
+    renderPage(VARIETY_ONE, {}, { form: 'catalog' })
     await screen.findByLabelText('Aroma/sabor')
 
     for (const input of screen.getAllByRole('textbox')) expect(input).not.toHaveAttribute('maxLength')

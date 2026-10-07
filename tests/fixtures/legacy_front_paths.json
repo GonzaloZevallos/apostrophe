@@ -1,0 +1,26 @@
+{
+  "_": "The front router's paths at da66651 (web/src/router.tsx and redirects.ts), before the English routes. ':id' stands for any id. Every one is a LEGACY_FRONT_PATHS row or on `removed`, which stays empty: nothing a seller could reach is dropped.",
+  "paths": [
+    "/entrar",
+    "/clientes",
+    "/clientes/nuevo",
+    "/clientes/deben",
+    "/clientes/{id}",
+    "/clientes/{id}/editar",
+    "/variedades",
+    "/variedades/{id}",
+    "/mi-stock",
+    "/mi-stock/nueva-entrada",
+    "/mi-stock/entradas/{id}",
+    "/ventas",
+    "/ventas/nueva",
+    "/ventas/{id}",
+    "/catalogo",
+    "/analisis",
+    "/mas",
+    "/gastos",
+    "/gastos/categorias",
+    "/negocio"
+  ],
+  "removed": []
+}

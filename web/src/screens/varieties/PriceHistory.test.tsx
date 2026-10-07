@@ -8,7 +8,7 @@ import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import { catalogQueryOptions } from '../../api/catalog'
-import { VARIETY, VARIETY_PRICES } from '../../routes'
+import { VARIETY, VARIETY_PRICES, pathTo } from '../../routes'
 import { VARIETY_ROW, api, jsonResponse, renderVarieties, writes } from './renderVarieties'
 
 afterEach(() => {
@@ -16,7 +16,7 @@ afterEach(() => {
 })
 
 test('lists every price newest first with "Rige desde", the one in force and its bulk tier', async () => {
-  renderVarieties([VARIETY_PRICES(1)], api())
+  renderVarieties([pathTo(VARIETY_PRICES, { id: 1 })], api())
 
   expect(await screen.findByRole('link', { name: '‹ 24K Gold' })).toBeInTheDocument()
   const rows = (await screen.findAllByText(/^Rige desde/)).map((node) => node.textContent)
@@ -30,29 +30,30 @@ test('lists every price newest first with "Rige desde", the one in force and its
 
 test('back goes by history to where the seller came from', async () => {
   const user = userEvent.setup()
-  const { router } = renderVarieties([VARIETY(1), VARIETY_PRICES(1)], api())
+  const { router } = renderVarieties([pathTo(VARIETY, { id: 1 })], api())
+  await user.click(await screen.findByRole('link', { name: 'Ver todos los precios' }))
 
   await user.click(await screen.findByRole('link', { name: '‹ 24K Gold' }))
 
   expect(await screen.findByText('Página de la variedad')).toBeInTheDocument()
-  expect(router.state.location.pathname).toBe(VARIETY(1))
+  expect(router.state.location.pathname).toBe(pathTo(VARIETY, { id: 1 }))
   expect(router.state.historyAction).toBe('POP')
 })
 
 test('back with no history goes to the variety\'s page', async () => {
   const user = userEvent.setup()
-  const { router } = renderVarieties([VARIETY_PRICES(1)], api())
+  const { router } = renderVarieties([pathTo(VARIETY_PRICES, { id: 1 })], api())
 
   await user.click(await screen.findByRole('link', { name: '‹ 24K Gold' }))
 
   expect(await screen.findByText('Página de la variedad')).toBeInTheDocument()
-  expect(router.state.location.pathname).toBe(VARIETY(1))
+  expect(router.state.location.pathname).toBe(pathTo(VARIETY, { id: 1 }))
 })
 
 test('deleting says what takes the entry\'s place, then toasts "Precio eliminado"', async () => {
   const user = userEvent.setup()
   const { fetchMock } = renderVarieties(
-    [VARIETY_PRICES(1)],
+    [pathTo(VARIETY_PRICES, { id: 1 })],
     api({ 'DELETE /varieties/1/prices/3': () => new Response(null, { status: 204 }) }),
   )
 
@@ -70,7 +71,7 @@ test('deleting says what takes the entry\'s place, then toasts "Precio eliminado
 test('a delete marks the catalog stale', async () => {
   const user = userEvent.setup()
   const { queryClient } = renderVarieties(
-    [VARIETY_PRICES(1)],
+    [pathTo(VARIETY_PRICES, { id: 1 })],
     api({ 'DELETE /varieties/1/prices/3': () => new Response(null, { status: 204 }) }),
   )
   queryClient.setQueryData(catalogQueryOptions().queryKey, { text: null, header: '', footer: '', varieties: [] })
@@ -85,7 +86,7 @@ test('a delete marks the catalog stale', async () => {
 
 test('a variety that is gone says "Eso ya no está." and goes back to Variedades', async () => {
   renderVarieties(
-    [VARIETY_PRICES(1)],
+    [pathTo(VARIETY_PRICES, { id: 1 })],
     api({
       'GET /varieties/1': () => jsonResponse(404, { code: 'variety.not_found' }),
       'GET /varieties/1/prices': () => jsonResponse(404, { code: 'variety.not_found' }),
@@ -97,7 +98,7 @@ test('a variety that is gone says "Eso ya no está." and goes back to Variedades
 })
 
 test('an id that is not a number is gone too, and asks the API nothing', async () => {
-  const { fetchMock } = renderVarieties(['/varieties/abc/prices'], api())
+  const { fetchMock } = renderVarieties([pathTo(VARIETY_PRICES, { id: 'abc' })], api())
 
   expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
   expect(fetchMock).not.toHaveBeenCalled()
@@ -106,7 +107,7 @@ test('an id that is not a number is gone too, and asks the API nothing', async (
 test('a delete that finds the price gone says so and refreshes the list', async () => {
   const user = userEvent.setup()
   renderVarieties(
-    [VARIETY_PRICES(1)],
+    [pathTo(VARIETY_PRICES, { id: 1 })],
     api({ 'DELETE /varieties/1/prices/3': () => jsonResponse(404, { code: 'variety.price_entry_not_found' }) }),
   )
 
@@ -119,7 +120,7 @@ test('a delete that finds the price gone says so and refreshes the list', async 
 
 test("an archived variety's price history is read-only: rows with no delete", async () => {
   renderVarieties(
-    [VARIETY_PRICES(1)],
+    [pathTo(VARIETY_PRICES, { id: 1 })],
     api({ 'GET /varieties/1': () => jsonResponse(200, { ...VARIETY_ROW, archived: true }) }),
   )
 

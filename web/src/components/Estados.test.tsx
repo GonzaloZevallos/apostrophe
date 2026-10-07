@@ -1,3 +1,4 @@
+import { SALES } from '../routes'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { expect, test } from 'vitest'
@@ -10,7 +11,7 @@ import SinConexion, { SIN_CONEXION_DETALLE, SIN_CONEXION_TITULO } from './SinCon
 test('the gone screen says one fixed line and offers one way back, with no data', () => {
   const { container } = render(
     <MemoryRouter>
-      <GoneScreen label="Ventas" to="/ventas" />
+      <GoneScreen label="Ventas" to={SALES} />
     </MemoryRouter>,
   )
 
@@ -18,7 +19,7 @@ test('the gone screen says one fixed line and offers one way back, with no data'
   const links = screen.getAllByRole('link')
   expect(links).toHaveLength(1)
   expect(links[0]).toHaveTextContent('Volver a Ventas')
-  expect(links[0]).toHaveAttribute('href', '/ventas')
+  expect(links[0]).toHaveAttribute('href', SALES)
   expect(screen.queryAllByRole('button')).toHaveLength(0)
   expect(container.textContent).not.toMatch(/\d/)
 })

@@ -4,24 +4,26 @@
  *
  * - `idle`: nothing to show.
  * - `armed`: set on `originKey`, waiting for the router to leave that location.
- * - `showing`: on screen on `shownKey`; moving to another location dismisses it, except the one
- *   move `keepAcrossReplace` announced (a screen replacing itself with the variety it selects).
+ * - `showing`: on screen on `shownKey`; moving to another location dismisses it.
  *
  * Pure: the provider feeds it the router's `location.key`.
  */
+
+/** The history state of a redirect that replaces the screen a toast was armed for with the
+ * screen the seller meant (Variedades' first variety on a computer): the toast follows it. */
+export const FOLLOWED_REDIRECT = { flashFollows: true } as const
 
 import type { SuccessToast } from '../components/AvisoExito'
 
 export type FlashState =
   | { status: 'idle' }
   | { status: 'armed'; originKey: string; toast: SuccessToast }
-  | { status: 'showing'; toast: SuccessToast; shownKey: string; keepNext?: boolean }
+  | { status: 'showing'; toast: SuccessToast; shownKey: string }
 
 export type FlashEvent =
   | { type: 'armAfterLeaving'; toast: SuccessToast; currentKey: string }
   | { type: 'showNow'; toast: SuccessToast; currentKey: string }
-  | { type: 'keepAcrossReplace' }
-  | { type: 'locationChanged'; key: string }
+  | { type: 'locationChanged'; key: string; follows?: boolean }
   | { type: 'expired' }
 
 export function flashReducer(state: FlashState, event: FlashEvent): FlashState {
@@ -30,14 +32,14 @@ export function flashReducer(state: FlashState, event: FlashEvent): FlashState {
       return { status: 'armed', originKey: event.currentKey, toast: event.toast }
     case 'showNow':
       return { status: 'showing', toast: event.toast, shownKey: event.currentKey }
-    case 'keepAcrossReplace':
-      return state.status === 'showing' ? { ...state, keepNext: true } : state
     case 'locationChanged':
       if (state.status === 'armed' && event.key !== state.originKey) {
         return { status: 'showing', toast: state.toast, shownKey: event.key }
       }
       if (state.status === 'showing' && event.key !== state.shownKey) {
-        if (state.keepNext === true) return { status: 'showing', toast: state.toast, shownKey: event.key }
+        // A redirect the router made on the toast's own behalf (`FOLLOWED_REDIRECT`) is not the
+        // seller leaving: the toast moves to the entry the redirect replaced it with.
+        if (event.follows === true) return { ...state, shownKey: event.key }
         return { status: 'idle' }
       }
       return state

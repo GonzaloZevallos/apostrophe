@@ -4,6 +4,7 @@
  * disables Publicar. The API is faked at `fetch`.
  */
 
+import { SETTINGS_INTEGRATIONS } from '../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -49,7 +50,7 @@ test('not_tested disables Publicar, says why and links to Integraciones', async 
   expect(screen.getByText(/Probalo primero para ver cómo queda/)).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Integraciones' })).toHaveAttribute(
     'href',
-    '/settings/integrations',
+    SETTINGS_INTEGRATIONS,
   )
 })
 
@@ -60,7 +61,7 @@ test('channel_missing disables Publicar, says the channel is missing and links t
   expect(screen.getByText(/Falta el canal: cargalo en/)).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Integraciones' })).toHaveAttribute(
     'href',
-    '/settings/integrations',
+    SETTINGS_INTEGRATIONS,
   )
 })
 

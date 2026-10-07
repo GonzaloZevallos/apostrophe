@@ -1,3 +1,5 @@
+import { inAppState } from './inAppState'
+import { HOME } from '../routes'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Link, RouterProvider } from 'react-router'
@@ -20,10 +22,10 @@ function renderAt(entries: { initialEntries: string[]; initialIndex?: number }) 
   const router = createMemoryRouter(
     [
       {
-        path: '/',
+        path: HOME,
         element: (
           <main>
-            <Link to="/hijo" state={{ inApp: true }}>
+            <Link to="/hijo" state={inAppState({ pathname: HOME })}>
               Ir marcado
             </Link>
             <Link to="/hijo">Ir sin marca</Link>
@@ -41,16 +43,16 @@ function renderAt(entries: { initialEntries: string[]; initialIndex?: number }) 
 
 test('goes back in history when the entry was reached by an in-app link', async () => {
   const user = userEvent.setup()
-  const router = renderAt({ initialEntries: ['/'] })
+  const router = renderAt({ initialEntries: [HOME] })
 
   await user.click(screen.getByRole('link', { name: 'Ir marcado' }))
   await user.click(screen.getByRole('button', { name: 'Volver' }))
 
-  expect(router.state.location.pathname).toBe('/')
+  expect(router.state.location.pathname).toBe(HOME)
 })
 
 test('goes to the fixed parent, replacing the entry, when the entry carries no inApp state', async () => {
-  const router = renderAt({ initialEntries: ['/', '/hijo'], initialIndex: 1 })
+  const router = renderAt({ initialEntries: [HOME, '/hijo'], initialIndex: 1 })
 
   await userEvent.setup().click(screen.getByRole('button', { name: 'Volver' }))
 
@@ -60,7 +62,7 @@ test('goes to the fixed parent, replacing the entry, when the entry carries no i
 
 test('a link without the in-app mark is not trusted: it goes to the parent even with history behind it', async () => {
   const user = userEvent.setup()
-  const router = renderAt({ initialEntries: ['/'] })
+  const router = renderAt({ initialEntries: [HOME] })
 
   await user.click(screen.getByRole('link', { name: 'Ir sin marca' }))
   await user.click(screen.getByRole('button', { name: 'Volver' }))

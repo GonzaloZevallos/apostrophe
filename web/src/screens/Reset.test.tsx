@@ -6,6 +6,7 @@
  * API is faked at `fetch`.
  */
 
+import { HOME, LOGIN, RESET, pathTo } from '../routes'
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -28,10 +29,10 @@ function noContent(): Response {
 function renderReset(token = 'tok123') {
   render(
     <QueryClientProvider client={new QueryClient()}>
-      <MemoryRouter initialEntries={[`/reset/${token}`]}>
+      <MemoryRouter initialEntries={[pathTo(RESET, { token })]}>
         <Routes>
-          <Route path="/reset/:token" element={<Reset />} />
-          <Route path="/" element={<div>Pantalla de inicio</div>} />
+          <Route path={RESET} element={<Reset />} />
+          <Route path={HOME} element={<div>Pantalla de inicio</div>} />
         </Routes>
       </MemoryRouter>
     </QueryClientProvider>,
@@ -84,10 +85,10 @@ test('the dead link offers a router link to Entrar, not a page reload', async ()
 
   render(
     <QueryClientProvider client={new QueryClient()}>
-      <MemoryRouter initialEntries={['/reset/tok123']}>
+      <MemoryRouter initialEntries={[pathTo(RESET, { token: 'tok123' })]}>
         <Routes>
-          <Route path="/reset/:token" element={<Reset />} />
-          <Route path="/entrar" element={<div>Pantalla de entrar</div>} />
+          <Route path={RESET} element={<Reset />} />
+          <Route path={LOGIN} element={<div>Pantalla de entrar</div>} />
         </Routes>
       </MemoryRouter>
     </QueryClientProvider>,
