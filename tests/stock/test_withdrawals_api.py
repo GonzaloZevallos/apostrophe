@@ -404,3 +404,15 @@ def test_a_withdrawal_is_never_a_sale_a_debt_or_money(client: TestClient) -> Non
     assert snapshot() == before
     client.delete(f"/stock/withdrawals/{withdrawal['id']}")
     assert snapshot() == before
+
+
+def test_the_business_wide_entries_list_holds_no_withdrawal(client: TestClient) -> None:
+    variety_id = _variety(client)
+    _stock_in(client, variety_id, "50")
+    _record(client, variety_id)
+
+    entries = client.get("/stock").json()["entries"]
+
+    assert len(entries) == 1
+    assert {entry["origin"] for entry in entries} == {"opening_stock"}
+    assert all("reason" not in entry for entry in entries)
