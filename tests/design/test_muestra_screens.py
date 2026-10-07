@@ -52,3 +52,15 @@ def test_each_listed_screen_agrees_with_muestra(family: Family) -> None:
         problems += check_screen(family.name, screen, page, muestra, family.denylist)
 
     assert problems == []
+
+
+def test_the_ventas_family_rejects_a_screen_that_kept_the_old_figures() -> None:
+    muestra = real_muestra()
+    page = (SCREENS / "Ventas.dc.html").read_text(encoding="utf-8")
+    stale = page.replace("4 ventas", "3 ventas").replace("$ 206.000", "$ 194.000")
+    stale = stale.replace("07/10", "05/10")
+
+    problems = check_screen("ventas", "Ventas.dc.html", stale, muestra, ())
+
+    assert any("'Ventas' reads 3" in p for p in problems)
+    assert any("05/10" in p and "not in muestra.md" in p for p in problems)
