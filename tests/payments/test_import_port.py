@@ -45,9 +45,7 @@ def test_has_records_is_false_for_a_business_with_no_payment(
         assert PaymentsImport(session, business_id).has_records() is False
 
 
-def test_has_records_is_true_for_an_on_the_spot_payment(
-    client: TestClient, engine: Engine
-) -> None:
+def test_has_records_is_true_for_an_on_the_spot_payment(client: TestClient, engine: Engine) -> None:
     variety_id = _variety(client)
     customer = client.post(
         "/customers", json={"name": "Cash Customer", "phone": "11 2222-4444"}

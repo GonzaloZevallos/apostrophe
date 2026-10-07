@@ -15,9 +15,10 @@ from __future__ import annotations
 
 from datetime import date, datetime, timedelta
 
+from app.shared.pricing_settings import PricingSettings
 from app.spreadsheet_import.application import ports
 from app.spreadsheet_import.application.no_commit import NoCommit
-from app.spreadsheet_import.application.plan_import import PROVISIONAL_SETTINGS, has_any_records
+from app.spreadsheet_import.application.plan_import import has_any_records
 from app.spreadsheet_import.domain.plan import (
     ByPhone,
     CustomerIdentity,
@@ -71,6 +72,7 @@ def write_import(
     customers: ports.CustomersImport,
     sales: ports.SalesImport,
     payments: ports.PaymentsImport,
+    pricing_settings: ports.PricingSettingsImport,
     import_instant: datetime,
     today: date,
 ) -> None:
@@ -83,10 +85,18 @@ def write_import(
     transaction = NoCommit()
     recorded_at = _RecordedAtSequence(import_instant)
 
+    # First, before any writer: the switches the sheet needs, stored OR needed, so
+    # nothing is ever turned off and a switch turned on since the plan is no refusal.
+    # Every row is priced with what the plan was priced with (docs/adr/0031).
+    pricing_settings.switch_on(plan.needs.is_bulk_pricing, plan.needs.is_vip_customers)
+    leaves_vip_on = pricing_settings.current().is_vip_customers
+
     variety_ids = _write_varieties(split_result.varieties, varieties, transaction)
     for price_row in split_result.price_history:
         variety_id = variety_ids[_variety_key(price_row.variety, varieties)]
-        varieties.write_price_entry(variety_id, price_row, transaction)
+        varieties.write_price_entry(
+            variety_id, price_row, transaction, with_vip_price=leaves_vip_on
+        )
     _write_thresholds(split_result.varieties, variety_ids, varieties, stock, transaction)
     _write_catalog(split_result.catalog, variety_ids, varieties, catalog, today, transaction)
     catalog.write_header_footer(split_result.header_footer, today, transaction)
@@ -113,6 +123,7 @@ def write_import(
             recorded_at,
             today,
             transaction,
+            plan.needs,
         )
 
 
@@ -208,6 +219,7 @@ def _write_sale(
     recorded_at: _RecordedAtSequence,
     today: date,
     transaction: NoCommit,
+    settings: PricingSettings,
 ) -> None:
     row = ventas_by_ref[planned.ref]
     assert row.grams is not None, "write_import takes only a writable plan"
@@ -235,5 +247,5 @@ def _write_sale(
         recorded_at.next(),
         today,
         transaction,
-        PROVISIONAL_SETTINGS,
+        settings,
     )

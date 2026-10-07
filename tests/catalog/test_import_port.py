@@ -63,9 +63,7 @@ def test_check_attributes_refuses_an_unknown_shown_value(
         assert refusal.code == "import.shown_unknown"
 
 
-def test_check_attributes_refuses_more_than_one_emoji(
-    client: TestClient, engine: Engine
-) -> None:
+def test_check_attributes_refuses_more_than_one_emoji(client: TestClient, engine: Engine) -> None:
     with Session(engine) as session:
         port = CatalogImport(session, business_id=1)
         refusal = port.check_attributes(_row(emoji="🌿🌿"))

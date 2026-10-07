@@ -430,7 +430,9 @@ class Checks:
     mapping_sheet: str = ""
     # The business's switches as stored when the plan was made, read once at planning
     # (docs/adr/0031): `ImportPlan.turns_on` is what `needs` has beyond them.
-    stored_settings: PricingSettings = PricingSettings(is_bulk_pricing=False, is_vip_customers=False)
+    stored_settings: PricingSettings = PricingSettings(
+        is_bulk_pricing=False, is_vip_customers=False
+    )
 
 
 @dataclass(frozen=True)

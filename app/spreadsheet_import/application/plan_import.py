@@ -58,6 +58,7 @@ def plan_import(
     customers: ports.CustomersImport,
     sales: ports.SalesImport,
     payments: ports.PaymentsImport,
+    pricing_settings: ports.PricingSettingsImport,
     today: date,
     mapping_sheet: str,
     header_footer_ref: SheetRef,
@@ -124,7 +125,12 @@ def plan_import(
         for mention in domain_plan.customer_mentions(split_result, mapping)
     }
 
-    sales_checks = _check_sales(split_result, variety_names, price_history_keys, sales, today)
+    # The switches rows are priced with come from the sheet alone, never from the
+    # stored ones (docs/adr/0031); the stored ones are read once, to tell what to turn on.
+    needs = domain_plan.needed_settings(split_result)
+    sales_checks = _check_sales(
+        split_result, variety_names, price_history_keys, sales, today, needs
+    )
 
     checks = domain_plan.Checks(
         variety_names=variety_names,
@@ -138,6 +144,7 @@ def plan_import(
         customers=customer_checks,
         sales=sales_checks,
         mapping_sheet=mapping_sheet,
+        stored_settings=pricing_settings.current(),
     )
     return domain_plan.build_plan(split_result, mapping, checks)
 
@@ -253,18 +260,13 @@ def _check_category_names(
     return result
 
 
-# The switches every row is priced with until the plan works them out from the sheet
-# (docs/adr/0031): both on, with VIP price = bulk price on every imported entry, which
-# is the pricing the import has always applied (VIP pays bulk).
-PROVISIONAL_SETTINGS = PricingSettings(is_bulk_pricing=True, is_vip_customers=True)
-
-
 def _check_sales(
     split_result: domain_plan.Split,
     variety_names: Mapping[str, domain_plan.VarietyKey | domain_plan.Refusal],
     price_history_keys: Mapping[str, str],
     sales: ports.SalesImport,
     today: date,
+    settings: PricingSettings,
 ) -> dict[SheetRef, domain_plan.SaleCheck]:
     sale_results = domain_plan.sale_inputs(split_result.ventas, variety_names)
     pairs = [
@@ -277,7 +279,7 @@ def _check_sales(
     price_history_rows, _ = _valid_price_history(split_result.price_history, variety_names)
     port_inputs = [_to_port_sale_input(sale_input) for _, sale_input in pairs]
     results = sales.check_sales(
-        price_history_rows, price_history_keys, port_inputs, today, PROVISIONAL_SETTINGS
+        price_history_rows, price_history_keys, port_inputs, today, settings
     )
     return {
         ref: domain_plan.SaleCheck(total=result.total, refusal=_opt_refusal(result.refusal))

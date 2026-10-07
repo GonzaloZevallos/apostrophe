@@ -301,9 +301,7 @@ def test_a_legacy_pattern_not_anchored_or_wider_than_a_captured_digits_is_refuse
         (r"^/varieties/[0-9]+\$", "end"),
     ],
 )
-def test_a_pattern_not_anchored_or_wider_than_digits_is_refused(
-    source: str, fragment: str
-) -> None:
+def test_a_pattern_not_anchored_or_wider_than_digits_is_refused(source: str, fragment: str) -> None:
     problems = pattern_problems(re.compile(source))
 
     assert any(fragment in problem for problem in problems)

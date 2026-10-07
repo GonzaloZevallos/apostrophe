@@ -128,8 +128,28 @@ class VarietiesImport(Protocol):
         ...
 
     def write_price_entry(
-        self, variety_id: int, row: PriceHistoryRow, transaction: Transaction
-    ) -> None: ...
+        self,
+        variety_id: int,
+        row: PriceHistoryRow,
+        transaction: Transaction,
+        *,
+        with_vip_price: bool = True,
+    ) -> None:
+        """Store the entry as the sheet says. `with_vip_price` is whether the import
+        leaves Clientes VIP on: only then does an entry with a bulk price carry
+        VIP price = bulk price (a rule that is off stores nothing, docs/adr/0031)."""
+        ...
+
+
+class PricingSettingsImport(Protocol):
+    """The business's two pricing switches, read once at planning and switched on by
+    the write. It can never turn one off (docs/adr/0031)."""
+
+    def current(self) -> PricingSettings: ...
+
+    def switch_on(self, bulk: bool, vip: bool) -> None:
+        """Store `stored OR given` for each switch."""
+        ...
 
 
 class StockImport(Protocol):

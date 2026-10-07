@@ -207,9 +207,7 @@ SHARED_CELLS = [
 ]
 
 
-def _request(
-    client: TestClient, method: str, path: str, accept: str, query: str = ""
-) -> Response:
+def _request(client: TestClient, method: str, path: str, accept: str, query: str = "") -> Response:
     return client.request(method, path + query, headers={"Accept": accept}, follow_redirects=False)
 
 

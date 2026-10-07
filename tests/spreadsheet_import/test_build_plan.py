@@ -143,9 +143,7 @@ def test_an_expense_under_a_listed_category_is_fine() -> None:
         categories=(category_row(21, "Insumos"),),
         gastos=(gasto_row(2, category="Insumos"),),
     )
-    checks = Checks(
-        category_names={"Insumos": "insumos"}, expenses={SheetRef("Gastos", 2): None}
-    )
+    checks = Checks(category_names={"Insumos": "insumos"}, expenses={SheetRef("Gastos", 2): None})
 
     plan = build_plan(split, mapping(), checks)
 
@@ -252,9 +250,7 @@ def test_a_mapped_long_name_gives_one_problem_only_at_the_ventas_row() -> None:
         sales={SheetRef("Ventas", 2): _ok_sale(SheetRef("Ventas", 2), 1000)},
     )
 
-    plan = build_plan(
-        split, mapping(entries=(MappingEntry(5, "Juana", "11-2345-6789"),)), checks
-    )
+    plan = build_plan(split, mapping(entries=(MappingEntry(5, "Juana", "11-2345-6789"),)), checks)
 
     assert not plan.writable
     [problem] = plan.problems
@@ -274,9 +270,7 @@ def test_a_malformed_mapped_number_gives_one_problem_at_the_mapping_line() -> No
         sales={SheetRef("Ventas", 2): _ok_sale(SheetRef("Ventas", 2), 1000)},
     )
 
-    plan = build_plan(
-        split, mapping(entries=(MappingEntry(5, "Juana", "123"),)), checks
-    )
+    plan = build_plan(split, mapping(entries=(MappingEntry(5, "Juana", "123"),)), checks)
 
     assert not plan.writable
     [problem] = plan.problems
@@ -300,9 +294,7 @@ def test_a_mapped_name_with_both_a_long_name_and_a_bad_phone_gives_two_problems(
         sales={SheetRef("Ventas", 2): _ok_sale(SheetRef("Ventas", 2), 1000)},
     )
 
-    plan = build_plan(
-        split, mapping(entries=(MappingEntry(5, "Juana", "123"),)), checks
-    )
+    plan = build_plan(split, mapping(entries=(MappingEntry(5, "Juana", "123"),)), checks)
 
     assert not plan.writable
     assert len(plan.problems) == 2
@@ -862,9 +854,7 @@ def test_a_mapping_phone_refusal_uses_the_caller_given_mapping_sheet_label() -> 
         mapping_sheet="Mapeo",
     )
 
-    plan = build_plan(
-        split, mapping(entries=(MappingEntry(5, "Juana", "123"),)), checks
-    )
+    plan = build_plan(split, mapping(entries=(MappingEntry(5, "Juana", "123"),)), checks)
 
     assert not plan.writable
     [problem] = plan.problems

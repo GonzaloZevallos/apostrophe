@@ -13,9 +13,7 @@ TOKEN = "123456789:top-secret-bot-token"
 
 
 def _put(client: TestClient, *, bulk: bool, vip: bool) -> Any:
-    return client.put(
-        "/pricing-settings", json={"is_bulk_pricing": bulk, "is_vip_customers": vip}
-    )
+    return client.put("/pricing-settings", json={"is_bulk_pricing": bulk, "is_vip_customers": vip})
 
 
 def _edits(telegram: FakeTelegram) -> list[tuple[str, ...]]:
@@ -111,9 +109,7 @@ def _leave_the_pin_failed(client: TestClient, telegram: FakeTelegram) -> None:
     telegram.calls.clear()
 
 
-def test_a_changed_switch_schedules_an_upkeep(
-    client: TestClient, telegram: FakeTelegram
-) -> None:
+def test_a_changed_switch_schedules_an_upkeep(client: TestClient, telegram: FakeTelegram) -> None:
     _put(client, bulk=True, vip=False)
     _publish_a_catalog_with_a_bulk_price(client)
     _leave_the_pin_failed(client, telegram)

@@ -62,9 +62,7 @@ def upgrade() -> None:
             name=op.f("fk_catalog_header_footer_business_id_business"),
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_catalog_header_footer")),
-        sa.UniqueConstraint(
-            "business_id", name=op.f("uq_catalog_header_footer_business_id")
-        ),
+        sa.UniqueConstraint("business_id", name=op.f("uq_catalog_header_footer_business_id")),
     )
 
     catalog_header_footer = sa.table(

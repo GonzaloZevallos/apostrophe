@@ -63,9 +63,7 @@ def _qualify(
                 name=variety.name,
                 emoji=attributes.emoji.value if attributes.emoji is not None else None,
                 indica_share=(
-                    attributes.indica_share.percent
-                    if attributes.indica_share is not None
-                    else None
+                    attributes.indica_share.percent if attributes.indica_share is not None else None
                 ),
                 aroma=attributes.aroma.text if attributes.aroma is not None else None,
                 shown=attributes.shown,

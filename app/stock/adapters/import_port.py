@@ -77,9 +77,7 @@ class SqlStockImport:
 
     def has_records(self) -> bool:
         statement = (
-            select(StockEntryRow.id)
-            .where(StockEntryRow.business_id == self._business_id)
-            .limit(1)
+            select(StockEntryRow.id).where(StockEntryRow.business_id == self._business_id).limit(1)
         )
         return self._session.scalar(statement) is not None
 

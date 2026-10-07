@@ -73,9 +73,7 @@ LEGACY_FRONT_PATTERNS: tuple[tuple[re.Pattern[str], str], ...] = (
 
 class MissingBuiltFront(RuntimeError):
     def __init__(self, directory: Path) -> None:
-        super().__init__(
-            f"{directory} has no index.html; run `npm run build` in web/ first"
-        )
+        super().__init__(f"{directory} has no index.html; run `npm run build` in web/ first")
 
 
 def api_segments(paths: dict[str, object]) -> frozenset[str]:

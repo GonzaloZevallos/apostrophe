@@ -59,9 +59,7 @@ def invite_partner(
 
 def look_up_invitation(accounts: Accounts, token: str, now: datetime) -> InvitationView:
     invitation = _usable(accounts, token, now)
-    business = None if invitation.business_id is None else accounts.business(
-        invitation.business_id
-    )
+    business = None if invitation.business_id is None else accounts.business(invitation.business_id)
     return InvitationView(
         kind=invitation.kind,
         business_name=None if business is None else business.name.value,

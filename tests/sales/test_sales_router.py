@@ -53,9 +53,7 @@ def _row_counts(engine: Engine) -> tuple[int, int, int]:
 
 
 def _customer(client: TestClient) -> int:
-    customer = client.post(
-        "/customers", json={"name": "Juana", "phone": "11 2345-6789"}
-    ).json()
+    customer = client.post("/customers", json={"name": "Juana", "phone": "11 2345-6789"}).json()
     return int(customer["id"])
 
 
@@ -164,9 +162,7 @@ def test_record_sale_with_no_payment_field_and_a_positive_total_needs_a_method(
     # missing required field.
     variety_id = _variety(client)
 
-    response = client.post(
-        "/sales", json={"lines": [{"variety_id": variety_id, "grams": "10"}]}
-    )
+    response = client.post("/sales", json={"lines": [{"variety_id": variety_id, "grams": "10"}]})
 
     assert response.status_code == 422, response.text
     assert response.json()["code"] == "sale.payment_required"
@@ -416,9 +412,7 @@ def test_list_sales_with_an_inverted_range_answers_an_empty_list(client: TestCli
         },
     )
 
-    response = client.get(
-        "/sales", params={"date_from": "2026-09-20", "date_to": "2026-09-01"}
-    )
+    response = client.get("/sales", params={"date_from": "2026-09-20", "date_to": "2026-09-01"})
 
     assert response.status_code == 200
     assert response.json() == []
@@ -591,8 +585,8 @@ def _line_of(client: TestClient, variety_id: int, customer_id: int | None) -> di
 def test_a_line_at_the_bulk_minimum_is_stored_as_list_once_bulk_is_switched_off(
     client: TestClient, engine: Engine
 ) -> None:
-    variety_id = _variety_with_bulk(client)
     _switches(engine, bulk=True, vip=False)
+    variety_id = _variety_with_bulk(client)
     assert _line_of(client, variety_id, None)["pricing_rule"] == "bulk"
 
     _switches(engine, bulk=False, vip=False)
@@ -604,6 +598,7 @@ def test_a_line_at_the_bulk_minimum_is_stored_as_list_once_bulk_is_switched_off(
 def test_a_vip_customer_is_stored_as_vip_once_vip_is_switched_on(
     client: TestClient, engine: Engine
 ) -> None:
+    _switches(engine, bulk=True, vip=True)
     variety_id = _variety_with_bulk(client)
     _vip_price(engine, 7_000)
     customer_id = _customer(client)

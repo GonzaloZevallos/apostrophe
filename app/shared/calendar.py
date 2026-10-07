@@ -57,15 +57,11 @@ class Month:
 
     @property
     def previous(self) -> Month:
-        return (
-            Month(self.year - 1, 12) if self.month == 1 else Month(self.year, self.month - 1)
-        )
+        return Month(self.year - 1, 12) if self.month == 1 else Month(self.year, self.month - 1)
 
     @property
     def next(self) -> Month:
-        return (
-            Month(self.year + 1, 1) if self.month == 12 else Month(self.year, self.month + 1)
-        )
+        return Month(self.year + 1, 1) if self.month == 12 else Month(self.year, self.month + 1)
 
     def __str__(self) -> str:
         return f"{self.year:04d}-{self.month:02d}"

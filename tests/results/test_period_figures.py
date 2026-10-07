@@ -168,8 +168,14 @@ def test_a_variety_only_gifted_has_a_negative_margin_and_no_percentage() -> None
 def test_a_mix_of_sold_and_gifted_sums_within_the_variety() -> None:
     draws = [
         _sold(
-            day=TODAY, variety_id=1, name="Flor", sale_id=1, line_total=10_000, grams="10",
-            costed=3_000, pending="0",
+            day=TODAY,
+            variety_id=1,
+            name="Flor",
+            sale_id=1,
+            line_total=10_000,
+            grams="10",
+            costed=3_000,
+            pending="0",
         ),
         _gifted(
             day=TODAY, variety_id=1, name="Flor", sale_id=2, grams="2", costed=600, pending="0"
@@ -188,12 +194,24 @@ def test_a_mix_of_sold_and_gifted_sums_within_the_variety() -> None:
 def test_pending_grams_are_marked_sorted_by_the_shown_figure() -> None:
     # 10 g sold for $10.000, 6 g costed $3.000, 4 g pending: $3.000 "y 4 g", 50%.
     pending_line = _sold(
-        day=TODAY, variety_id=1, name="Pending", sale_id=1, line_total=10_000, grams="10",
-        costed=3_000, pending="4",
+        day=TODAY,
+        variety_id=1,
+        name="Pending",
+        sale_id=1,
+        line_total=10_000,
+        grams="10",
+        costed=3_000,
+        pending="4",
     )
     clean_line = _sold(
-        day=TODAY, variety_id=2, name="Clean", sale_id=2, line_total=5_000, grams="5",
-        costed=1_000, pending="0",
+        day=TODAY,
+        variety_id=2,
+        name="Clean",
+        sale_id=2,
+        line_total=5_000,
+        grams="5",
+        costed=1_000,
+        pending="0",
     )
     sales = [SaleRecord(1, TODAY, 0, 10_000), SaleRecord(2, TODAY, 0, 5_000)]
     figures = _figures(draws=[pending_line, clean_line], sales=sales, earliest_entry_day=TODAY)
@@ -209,8 +227,14 @@ def test_pending_grams_are_marked_sorted_by_the_shown_figure() -> None:
 
 def test_a_negative_adjustment_is_kept_out_of_the_variety_table_and_counted_as_shortfall() -> None:
     sold = _sold(
-        day=TODAY, variety_id=1, name="Flor", sale_id=1, line_total=10_000, grams="10",
-        costed=3_000, pending="0",
+        day=TODAY,
+        variety_id=1,
+        name="Flor",
+        sale_id=1,
+        line_total=10_000,
+        grams="10",
+        costed=3_000,
+        pending="0",
     )
     shortfall = _shortfall(day=TODAY, costed=1_000, pending="0")
     figures = _figures(
@@ -240,8 +264,14 @@ def test_a_month_with_only_gifts_has_no_share_and_no_average_percentage() -> Non
 def test_variety_sales_without_shipping_plus_shipping_equal_the_month_s_sales() -> None:
     draws = [
         _sold(
-            day=TODAY, variety_id=1, name="A", sale_id=1, line_total=8_000, grams="8",
-            costed=2_000, pending="0",
+            day=TODAY,
+            variety_id=1,
+            name="A",
+            sale_id=1,
+            line_total=8_000,
+            grams="8",
+            costed=2_000,
+            pending="0",
         ),
     ]
     sales = [SaleRecord(1, TODAY, 1_500, 9_500)]
@@ -256,8 +286,14 @@ def test_variety_sales_without_shipping_plus_shipping_equal_the_month_s_sales() 
 
 def test_profit_s_pending_n_counts_sold_gifted_and_shortfall_grams_in_its_own_week() -> None:
     sold = _sold(
-        day=TODAY, variety_id=1, name="Flor", sale_id=1, line_total=4_000, grams="4",
-        costed=None, pending="4",
+        day=TODAY,
+        variety_id=1,
+        name="Flor",
+        sale_id=1,
+        line_total=4_000,
+        grams="4",
+        costed=None,
+        pending="4",
     )
     shortfall = _shortfall(day=TODAY, costed=None, pending="2")
     figures = _figures(
@@ -360,8 +396,14 @@ def test_a_business_with_no_records_answers_the_empty_shape() -> None:
 
 def test_totals_between_splits_sold_and_gifted_grams_and_counts_sales() -> None:
     sold = _sold(
-        day=TODAY, variety_id=1, name="Flor", sale_id=1, line_total=10_000, grams="10",
-        costed=3_000, pending="0",
+        day=TODAY,
+        variety_id=1,
+        name="Flor",
+        sale_id=1,
+        line_total=10_000,
+        grams="10",
+        costed=3_000,
+        pending="0",
     )
     gifted = _gifted(
         day=TODAY, variety_id=2, name="Regalo", sale_id=2, grams="2", costed=600, pending="0"
@@ -393,7 +435,11 @@ def test_totals_between_excludes_a_day_outside_the_window() -> None:
     outside = TODAY - timedelta(days=1)
     sale = SaleRecord(1, outside, 0, 5_000)
     buckets, _ = scan(
-        draws=[], sales=[sale], payments=[], expenses=[], purchases=[],
+        draws=[],
+        sales=[sale],
+        payments=[],
+        expenses=[],
+        purchases=[],
         earliest_entry_day=outside,
     )
 
@@ -405,12 +451,22 @@ def test_totals_between_excludes_a_day_outside_the_window() -> None:
 
 def test_totals_between_answers_shortfall_none_with_no_negative_adjustment() -> None:
     sold = _sold(
-        day=TODAY, variety_id=1, name="Flor", sale_id=1, line_total=5_000, grams="5",
-        costed=1_000, pending="0",
+        day=TODAY,
+        variety_id=1,
+        name="Flor",
+        sale_id=1,
+        line_total=5_000,
+        grams="5",
+        costed=1_000,
+        pending="0",
     )
     buckets, _ = scan(
-        draws=[sold], sales=[SaleRecord(1, TODAY, 0, 5_000)], payments=[], expenses=[],
-        purchases=[], earliest_entry_day=TODAY,
+        draws=[sold],
+        sales=[SaleRecord(1, TODAY, 0, 5_000)],
+        payments=[],
+        expenses=[],
+        purchases=[],
+        earliest_entry_day=TODAY,
     )
 
     totals = totals_between(buckets, TODAY, TODAY)
@@ -421,7 +477,11 @@ def test_totals_between_answers_shortfall_none_with_no_negative_adjustment() -> 
 def test_totals_between_carries_the_shortfall_s_own_amount_and_pending_grams() -> None:
     shortfall = _shortfall(day=TODAY, costed=1_000, pending="2")
     buckets, _ = scan(
-        draws=[shortfall], sales=[], payments=[], expenses=[], purchases=[],
+        draws=[shortfall],
+        sales=[],
+        payments=[],
+        expenses=[],
+        purchases=[],
         earliest_entry_day=TODAY,
     )
 
@@ -454,9 +514,7 @@ def test_the_domain_time_guard_runs_a_year_of_history_in_under_a_second() -> Non
     for i in range(100):
         day = TODAY - timedelta(days=i % 400)
         draws.append(_shortfall(day=day, costed=10, pending="0"))
-    payments = [
-        PaymentRecord(day=TODAY - timedelta(days=i % 400), amount=500) for i in range(100)
-    ]
+    payments = [PaymentRecord(day=TODAY - timedelta(days=i % 400), amount=500) for i in range(100)]
     expenses = [
         ExpenseRecord(
             day=TODAY - timedelta(days=i % 400),
