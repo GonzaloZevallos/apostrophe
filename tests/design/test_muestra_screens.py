@@ -64,3 +64,40 @@ def test_the_ventas_family_rejects_a_screen_that_kept_the_old_figures() -> None:
 
     assert any("'Ventas' reads 3" in p for p in problems)
     assert any("05/10" in p and "not in muestra.md" in p for p in problems)
+
+
+ANALISIS_SCREENS = ("Analisis.dc.html", "AnalisisCompu.dc.html")
+ANALISIS_STALE = (
+    ("the old month", "Octubre 2026", "Septiembre 2026"),
+    ("the old month total", "$ 369.000", "$ 2.684.000"),
+    ("a line muestra.md has, dropped", "Faltante de stock", "Faltante"),
+    ("a stale pending note", "y 1 g sin costo", "incluye costo pendiente"),
+    ("a week that muestra.md lacks", "24/08", "11/08"),
+    ("an old category", "Envíos", "Envíos y traslados"),
+)
+
+
+@pytest.mark.parametrize("screen", ANALISIS_SCREENS)
+@pytest.mark.parametrize(("what", "right", "wrong"), ANALISIS_STALE, ids=lambda v: str(v)[:24])
+def test_the_analisis_guard_rejects_a_screen_that_drifts(
+    screen: str, what: str, right: str, wrong: str
+) -> None:
+    page = (SCREENS / screen).read_text(encoding="utf-8")
+    assert right in page, what
+
+    problems = check_screen(
+        "analisis",
+        screen,
+        page.replace(right, wrong),
+        real_muestra(),
+        next(f for f in FAMILIES if f.name == "analisis").denylist,
+    )
+
+    assert problems != [], what
+
+
+def test_the_analisis_denylist_keeps_the_figures_muestra_has() -> None:
+    denylist = next(f for f in FAMILIES if f.name == "analisis").denylist
+    body = (DESIGN / "muestra.md").read_text(encoding="utf-8")
+
+    assert [literal for literal in denylist if literal in body] == []

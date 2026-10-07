@@ -64,14 +64,24 @@ VENTAS = Family(
 
 ANALISIS = Family(
     name="analisis",
-    screens=(),
+    screens=("Analisis.dc.html", "AnalisisCompu.dc.html"),
     denylist=(
         "Septiembre 2026",
         "$ 2.684.000",
+        "$ 1.284.000",
+        "$ 892.000",
+        "$ 508.000",
+        "223,5 g",
         "$ 62.000",
-        "$ 537.500",
+        "$ 41.800",
+        "$ 28.500",
+        "$ 16.000",
+        "Insumos de cultivo",
+        "Envíos y traslados",
         "$ 512.000",
         "$ 486.000",
+        "Tu mejor día es el sábado",
+        "mejor: sábado",
     ),
 )
 
