@@ -232,9 +232,7 @@ export default function NuevaVentaLinea({
         </div>
       )}
       {canRemove && (
-        <Boton variant="link" ariaLabel={`Quitar línea ${n}`} onClick={onRemove}>
-          Quitar
-        </Boton>
+        <Boton variant="icon" action="delete" ariaLabel={`Quitar línea ${n}`} onClick={onRemove} />
       )}
     </div>
   )

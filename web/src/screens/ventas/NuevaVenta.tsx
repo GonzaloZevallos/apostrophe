@@ -594,7 +594,7 @@ function NuevaVentaForm() {
                   />
                 ))}
               </div>
-              <Boton variant="link" onClick={addLine}>
+              <Boton variant="secondary" icon="agregar" onClick={addLine}>
                 Agregar otra variedad
               </Boton>
 

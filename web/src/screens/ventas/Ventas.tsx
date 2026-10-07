@@ -170,7 +170,9 @@ export default function Ventas() {
 
         {!isError && !isPending && (
           <>
-            {sales.length === 0 && <span className="campo__rotulo">{EMPTY_LIST}</span>}
+            {sales.length === 0 && <span className="campo__rotulo" data-copy="emptyLine">
+                {EMPTY_LIST}
+              </span>}
 
             <div className="lista-ventas">
               {sales.map((sale) => {
