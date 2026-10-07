@@ -1,4 +1,4 @@
-"""A write that names a variety deleted a moment ago (docs/adr/0005, docs/adr/0031).
+"""A write that names a variety deleted a moment ago (docs/adr/0005, docs/adr/0032).
 
 The repository's flush says so with the code-less `ReferenceRefused`; the use case rolls
 back, asks its own lookup, and answers its gone code when the variety is gone or archived.
@@ -156,6 +156,9 @@ class AskedAgainCatalog:
 
     def listed_ids(self) -> list[int]:
         return []
+
+    def names(self) -> dict[int, str]:
+        return {}
 
 
 def _record_entry(then: str, transaction: CountingTransaction) -> StockEntry:

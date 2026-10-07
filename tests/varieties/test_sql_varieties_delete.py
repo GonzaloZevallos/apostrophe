@@ -258,6 +258,9 @@ class _StaleCatalog:
     def listed_ids(self) -> list[int]:
         return self._real.listed_ids()
 
+    def names(self) -> dict[int, str]:
+        return self._real.names()
+
 
 def test_a_delete_committed_first_makes_the_entry_answer_gone_and_orphans_nothing(
     engine: Engine,

@@ -5,7 +5,7 @@ from app.db import flush_or_refuse
 from app.sales.adapters.tables import SaleLineRow
 from app.shared.grams import Grams
 from app.shared.reference import ReferenceRefused
-from app.stock.adapters.tables import StockEntryRow
+from app.stock.adapters.tables import StockEntryRow, StockWithdrawalLineRow
 from app.varieties.adapters.tables import PriceEntryRow, VarietyRow
 from app.varieties.domain.variety import NameHolder, PriceEntry, Variety, VarietyName
 
@@ -89,7 +89,7 @@ class SqlVarieties:
 
     def remove_unused(self, variety_id: int) -> bool:
         """One statement: the history check and the delete cannot be pulled apart by a
-        sale or an entry recorded in between (the foreign keys close the rest)."""
+        sale, an entry or a withdrawal recorded in between (the foreign keys close the rest)."""
         statement = (
             delete(VarietyRow)
             .where(
@@ -110,7 +110,11 @@ class SqlVarieties:
         entries = exists().where(
             StockEntryRow.variety_id == variety_id, StockEntryRow.business_id == self._business_id
         )
-        return lines | entries
+        withdrawn = exists().where(
+            StockWithdrawalLineRow.variety_id == variety_id,
+            StockWithdrawalLineRow.business_id == self._business_id,
+        )
+        return lines | entries | withdrawn
 
     def _row(self, variety_id: int) -> VarietyRow | None:
         statement = select(VarietyRow).where(

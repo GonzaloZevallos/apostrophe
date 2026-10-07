@@ -152,7 +152,16 @@ def seed_stock(client: TestClient) -> dict[str, int]:
         },
     )
     assert entry.status_code == 201, entry.text
-    return {"stock_entry_id": entry.json()["id"]}
+    withdrawal = client.post(
+        "/stock/withdrawals",
+        json={
+            "reason": "promotion",
+            "note": MARKER,
+            "lines": [{"variety_id": variety["id"], "grams": "5"}],
+        },
+    )
+    assert withdrawal.status_code == 201, withdrawal.text
+    return {"stock_entry_id": entry.json()["id"], "withdrawal_id": withdrawal.json()["id"]}
 
 
 def seed_pinned_catalog(client: TestClient) -> dict[str, int]:
@@ -246,6 +255,14 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
         "variety_id": 1,
         "origin": "opening_stock",
         "grams": "20",
+    },
+    ("POST", "/stock/withdrawals"): {
+        "reason": "own_use",
+        "lines": [{"variety_id": 1, "grams": "1"}],
+    },
+    ("PUT", "/stock/withdrawals/{withdrawal_id}"): {
+        "reason": "own_use",
+        "lines": [{"variety_id": 1, "grams": "2"}],
     },
     ("PUT", "/stock/varieties/{variety_id}/threshold"): {"grams": "15"},
     ("PUT", "/catalog/varieties/{variety_id}"): {
@@ -451,6 +468,32 @@ def test_a_body_reference_to_a_missing_or_foreign_variety_is_refused_the_same_wa
         "/sales", json=_sale_body(variety_id=own_variety["id"], customer_id=customer_id)
     )
     assert valid.status_code == 201, valid.text
+
+
+def test_a_withdrawal_naming_a_missing_or_foreign_variety_is_refused_the_same_way(
+    business_a: TestClient, business_b: TestClient, seeded_b: dict[str, int]
+) -> None:
+    def body(variety_id: int) -> dict[str, Any]:
+        return {"reason": "promotion", "lines": [{"variety_id": variety_id, "grams": "1"}]}
+
+    own_variety = business_b.post("/varieties", json={"name": "B withdrawal variety"}).json()
+    own = business_b.post("/stock/withdrawals", json=body(own_variety["id"]))
+    assert own.status_code == 201, own.text
+    path = f"/stock/withdrawals/{own.json()['id']}"
+
+    sends: list[Callable[[int], Any]] = [
+        lambda variety_id: business_b.post("/stock/withdrawals", json=body(variety_id)),
+        lambda variety_id: business_b.put(path, json=body(variety_id)),
+    ]
+    for send in sends:
+        missing = send(999_999)
+        other_business = send(seeded_b["variety_id"])
+
+        assert missing.status_code == 404, missing.text
+        assert other_business.status_code == 404, other_business.text
+        assert missing.json() == other_business.json()
+
+    assert business_b.get(f"/stock/varieties/{seeded_b['variety_id']}/movements").status_code == 404
 
 
 def test_a_body_reference_to_a_missing_or_foreign_customer_is_refused_the_same_way(
@@ -785,6 +828,8 @@ def test_another_business_reads_the_panel_as_zero_while_a_has_every_figure(
             "cost_of_goods": 0,
             "pending_cost": False,
             "shortfall": None,
+            "promotion": None,
+            "own_use": None,
             "expenses": 0,
             "purchases": 0,
             "profit": 0,
@@ -889,6 +934,8 @@ def test_another_business_s_analysis_is_exactly_the_empty_shape(
             "grams_gifted": 0.0,
             "average_margin": {"amount": 0, "percent": None, "pending_grams": 0.0},
             "shortfall": None,
+            "promotion": None,
+            "own_use": None,
             "varieties": [],
         },
         "weeks": [],

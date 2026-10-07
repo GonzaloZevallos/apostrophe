@@ -1,4 +1,4 @@
-# 0031. A variety is archived by a stored instant, and its history is computed
+# 0032. A variety is archived by a stored instant, and its history is computed
 
 Status: accepted (GH-117)
 
@@ -22,7 +22,7 @@ archive one that has, keeping every past sale, stock movement and figure unchang
   varieties, but its `total` is summed over the unfiltered `for_varieties(None)` load,
   since an archived variety's grams are still on hand. Rows and total stop sharing a
   filter.
-- **Migration 0012** is a native `ADD COLUMN` (no default, no backfill) and a native
+- **Migration 0013** is a native `ADD COLUMN` (no default, no backfill) and a native
   `DROP COLUMN`, with no table rebuild, so the five tables that reference `variety` are
   never copied. The downgrade refuses, with a message that names no data, while any
   variety is archived: dropping the column would silently bring it back to the lists.

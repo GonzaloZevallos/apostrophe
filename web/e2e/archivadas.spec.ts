@@ -86,6 +86,7 @@ for (const viewport of VIEWPORTS) {
       await expect(page.locator('.variedad-resumen').getByText('Archivada', { exact: true })).toBeVisible()
       await expect(page.getByText('+ Entrada')).toHaveCount(0)
       await expect(page.getByText('Nuevo precio')).toHaveCount(0)
+      await expect(page.getByText('Sacar del stock')).toHaveCount(0)
       await expect(page.getByRole('button', { name: 'Archivar variedad' })).toHaveCount(0)
       await page.getByRole('link', { name: 'Ver todas' }).first().click()
       await expect(page.getByRole('button', { name: 'Borrar este precio' })).toHaveCount(0)

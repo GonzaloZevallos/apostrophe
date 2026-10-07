@@ -2365,6 +2365,17 @@ body {
   white-space: nowrap;
 }
 
+/* A withdrawal's row in a variety's "Stock y entradas": the whole row opens its detail. */
+.fila-entrada__enlace {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+  color: inherit;
+  text-decoration: none;
+}
+
 .fila-entrada__costo--sin {
   color: var(--tinta2);
 }
@@ -3814,4 +3825,41 @@ body {
   ) {
   -webkit-user-select: none;
   user-select: none;
+}
+
+/* `RetiroDetalle`: a stock withdrawal's detail — its facts, lines and actions. */
+.retiro__datos,
+.retiro__lineas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-md);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.retiro__dato {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.retiro__dato dd {
+  margin: 0;
+  font-size: 17px;
+}
+
+.retiro__linea {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--espacio-md);
+  padding: var(--espacio-md) 0;
+  border-bottom: 1px solid var(--linea);
+  font-size: 17px;
+}
+
+.retiro__acciones {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-md);
 }

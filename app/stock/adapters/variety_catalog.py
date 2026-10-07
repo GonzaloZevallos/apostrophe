@@ -24,3 +24,8 @@ class SqlVarietyCatalog:
     def archived_ids(self) -> list[int]:
         ids = [variety.id for variety in self._varieties.archived()]
         return [variety_id for variety_id in ids if variety_id is not None]
+
+    def names(self) -> dict[int, str]:
+        """Archived varieties included: a past withdrawal still names its variety."""
+        every = [*self._varieties.listed(), *self._varieties.archived()]
+        return {variety.id: variety.name.value for variety in every if variety.id is not None}

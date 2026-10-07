@@ -28,7 +28,7 @@ class SqlPriceBook:
     def for_variety(self, variety_id: int, day: date) -> VarietyPricing | None:
         variety = self._varieties.get(variety_id)
         # An archived variety takes no new sale line: it answers as a missing one
-        # (docs/adr/0031).
+        # (docs/adr/0032).
         if variety is not None and variety.is_archived:
             return None
         return _pricing(variety, variety_id, day)

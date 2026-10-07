@@ -1,6 +1,6 @@
 """Archives a variety without a client in hand: through the domain's own `archive` and the
 real repository, the code the archive route runs, so a test of who reads or refuses an
-archived variety needs only the stored fact (docs/adr/0031)."""
+archived variety needs only the stored fact (docs/adr/0032)."""
 
 from datetime import UTC, datetime
 

@@ -1,10 +1,10 @@
-"""A variety can be archived (ADR-0031, docs/product/varieties.md): `variety.archived_at`
+"""A variety can be archived (ADR-0032, docs/product/varieties.md): `variety.archived_at`
 is the instant it left the lists, null while it is live. A native ADD COLUMN, with no
 default and no backfill, and a native DROP COLUMN: no table rebuild, so no row of the
 five tables that reference `variety` is copied.
 
-Revision ID: 0012
-Revises: 0011
+Revision ID: 0013
+Revises: 0012
 """
 
 from collections.abc import Sequence
@@ -14,8 +14,8 @@ from alembic import op
 
 from app.db import UtcDateTime
 
-revision: str = "0012"
-down_revision: str | None = "0011"
+revision: str = "0013"
+down_revision: str | None = "0012"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 

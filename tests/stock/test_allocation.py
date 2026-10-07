@@ -16,6 +16,7 @@ from fractions import Fraction
 
 from app.shared.grams import Grams
 from app.stock.domain.allocation import DrawCost, allocate
+from app.stock.domain.draw_source import DrawSource
 from app.stock.domain.lot_order import Draw, Lot, LotOrder
 
 DAY = date(2026, 9, 1)
@@ -27,7 +28,7 @@ def _lot(ref_id: int, grams: str, total_cost: int | None, day: date = DAY) -> Lo
 
 
 def _draw(ref_id: int, grams: str, day: date = DAY, position: int = 0) -> Draw:
-    return Draw(LotOrder(day, AT, 1, ref_id, position), 1, Grams.of(grams))
+    return Draw(LotOrder(day, AT, 1, ref_id, position), 1, Grams.of(grams), DrawSource.SALE_LINE)
 
 
 def test_a_draw_entirely_within_one_lot_is_costed_in_full() -> None:

@@ -61,6 +61,8 @@ class MonthFigures:
     grams_gifted: Grams
     average_margin: MarginFigure
     shortfall: AmountWithPending | None
+    promotion: AmountWithPending | None
+    own_use: AmountWithPending | None
     varieties: tuple[VarietyRow, ...]
 
 
@@ -71,6 +73,8 @@ class WeekFigures:
     sales: int
     grams: Grams
     expenses: int
+    promotion: AmountWithPending | None
+    own_use: AmountWithPending | None
     profit: AmountWithPending
     cash: int
     best: bool
@@ -84,6 +88,8 @@ class MonthRowFigures:
     sales: int
     grams: Grams
     expenses: int
+    promotion: AmountWithPending | None
+    own_use: AmountWithPending | None
     profit: AmountWithPending
     cash: int
 
@@ -103,6 +109,8 @@ class SinceFirstRecordFigures:
     profit: AmountWithPending
     cash: int
     shortfall: AmountWithPending | None
+    promotion: AmountWithPending | None
+    own_use: AmountWithPending | None
 
 
 @dataclass(frozen=True)
@@ -132,6 +140,8 @@ class PeriodTotals:
     grams_gifted: Grams
     cost_of_goods: CostFigure
     shortfall: AmountWithPending | None
+    promotion: AmountWithPending | None
+    own_use: AmountWithPending | None
     expenses: int
     purchases: int
     profit: AmountWithPending

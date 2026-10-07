@@ -26,7 +26,7 @@ class CatalogVarieties(Protocol):
 
     def usable(self, variety_id: int) -> bool:
         """The variety is this business's and not archived: only such a variety takes
-        attributes (docs/adr/0031)."""
+        attributes (docs/adr/0032)."""
         ...
 
 

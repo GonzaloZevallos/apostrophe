@@ -45,6 +45,15 @@ def _sale(client: TestClient, variety_id: int, **line: Any) -> int:
     return sale_id
 
 
+def _withdrawal(client: TestClient, variety_id: int, reason: str) -> int:
+    # A withdrawal is never refused for lack of stock, so it alone can be the history.
+    body = {"reason": reason, "lines": [{"variety_id": variety_id, "grams": "1"}]}
+    response = client.post("/stock/withdrawals", json=body)
+    assert response.status_code == 201, response.text
+    withdrawal_id: int = response.json()["id"]
+    return withdrawal_id
+
+
 def _removal(client: TestClient, variety_id: int) -> str | None:
     response = client.get(f"/varieties/{variety_id}")
     assert response.status_code == 200, response.text
@@ -61,6 +70,8 @@ HISTORY: dict[str, Callable[[TestClient, int], object]] = {
     "opening stock": lambda c, v: _entry(c, v, "opening_stock", "10"),
     "positive adjustment": lambda c, v: _entry(c, v, "adjustment", "3"),
     "negative adjustment": lambda c, v: _entry(c, v, "adjustment", "-3"),
+    "promotion withdrawal": lambda c, v: _withdrawal(c, v, "promotion"),
+    "own use withdrawal": lambda c, v: _withdrawal(c, v, "own_use"),
 }
 
 
@@ -120,6 +131,16 @@ def test_deleting_the_last_entry_offers_delete_again(client: TestClient) -> None
     assert _removal(client, variety_id) == "archive"
 
     assert client.delete(f"/stock/entries/{entry_id}").status_code == 204
+
+    assert _removal(client, variety_id) == "delete"
+
+
+def test_deleting_the_last_withdrawal_offers_delete_again(client: TestClient) -> None:
+    variety_id = _register(client)
+    withdrawal_id = _withdrawal(client, variety_id, "own_use")
+    assert _removal(client, variety_id) == "archive"
+
+    assert client.delete(f"/stock/withdrawals/{withdrawal_id}").status_code == 204
 
     assert _removal(client, variety_id) == "delete"
 

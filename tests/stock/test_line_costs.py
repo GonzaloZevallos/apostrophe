@@ -15,8 +15,9 @@ from app.sales.domain.pricing import PricingRule
 from app.sales.domain.sale import Sale, SaleLine
 from app.shared.grams import Grams
 from app.stock.adapters.line_costs import costs_for_sale
+from app.stock.domain.draw_source import WithdrawalReason
 from app.stock.domain.entry import Origin, StockEntry
-from app.stock.domain.lot_order import SaleLineDraw
+from app.stock.domain.lot_order import SaleLineDraw, WithdrawalLineDraw
 
 AT = datetime(2026, 9, 1, 10, 0)
 TODAY = date(2026, 10, 2)
@@ -52,6 +53,16 @@ class FakeDraws:
         self._draws = draws
 
     def for_varieties(self, variety_ids: Collection[int] | None) -> list[SaleLineDraw]:
+        if variety_ids is None:
+            return list(self._draws)
+        return [d for d in self._draws if d.variety_id in variety_ids]
+
+
+class FakeWithdrawalDraws:
+    def __init__(self, draws: list[WithdrawalLineDraw] | None = None) -> None:
+        self._draws = draws or []
+
+    def for_varieties(self, variety_ids: Collection[int] | None) -> list[WithdrawalLineDraw]:
         if variety_ids is None:
             return list(self._draws)
         return [d for d in self._draws if d.variety_id in variety_ids]
@@ -109,7 +120,7 @@ def test_a_line_fully_covered_by_one_lot_is_costed_from_it() -> None:
     sale = _sale(7, (_line(1, "10"),))
     draws = FakeDraws([_draw(1, 7, 0, "10")])
 
-    costs = costs_for_sale(entries, draws, sale)
+    costs = costs_for_sale(entries, draws, FakeWithdrawalDraws(), sale)
 
     assert costs == [LineCost(costed=10_000, pending_grams=Grams(0))]
 
@@ -122,19 +133,17 @@ def test_a_line_past_every_lot_is_pending_never_a_zero_cost() -> None:
     sale = _sale(7, (_line(1, "10"),))
     draws = FakeDraws([_draw(1, 7, 0, "10")])
 
-    costs = costs_for_sale(entries, draws, sale)
+    costs = costs_for_sale(entries, draws, FakeWithdrawalDraws(), sale)
 
     assert costs == [LineCost(costed=None, pending_grams=Grams.of("10"))]
 
 
 def test_a_line_spanning_two_lots_is_split_between_costed_and_pending() -> None:
-    entries = FakeEntries(
-        [_entry(1, "5", 5_000, entry_id=1), _entry(1, "3", 6_000, entry_id=2)]
-    )
+    entries = FakeEntries([_entry(1, "5", 5_000, entry_id=1), _entry(1, "3", 6_000, entry_id=2)])
     sale = _sale(7, (_line(1, "10"),))
     draws = FakeDraws([_draw(1, 7, 0, "10")])
 
-    costs = costs_for_sale(entries, draws, sale)
+    costs = costs_for_sale(entries, draws, FakeWithdrawalDraws(), sale)
 
     # 8 g drawn across both lots, $5 000 + $6 000 = $11 000 exactly; the other 2 g of
     # the 10 g line have no lot behind them, so they are pending, never a $0 cost.
@@ -148,9 +157,30 @@ def test_two_lines_of_different_varieties_are_matched_back_by_position() -> None
     sale = _sale(9, (_line(1, "10"), _line(2, "10")))
     draws = FakeDraws([_draw(1, 9, 0, "10"), _draw(2, 9, 1, "10")])
 
-    costs = costs_for_sale(entries, draws, sale)
+    costs = costs_for_sale(entries, draws, FakeWithdrawalDraws(), sale)
 
     assert costs == [
         LineCost(costed=10_000, pending_grams=Grams(0)),
         LineCost(costed=20_000, pending_grams=Grams(0)),
     ]
+
+
+def test_an_earlier_withdrawal_takes_the_lot_first_so_the_sale_line_is_pending() -> None:
+    """The withdrawal source reaches `costs_for_sale`: a withdrawal dated before the
+    sale draws the 10 g lot empty, so the whole sale line has no lot left behind it."""
+    entries = FakeEntries([_entry(1, "10", 10_000, entry_id=1)])
+    sale = _sale(7, (_line(1, "10"),))
+    draws = FakeDraws([_draw(1, 7, 0, "10")])
+    withdrawal = WithdrawalLineDraw(
+        variety_id=1,
+        day=date(2026, 9, 20),
+        recorded_at=AT,
+        withdrawal_id=3,
+        position=0,
+        grams=Grams.of("10"),
+        reason=WithdrawalReason.PROMOTION,
+    )
+
+    costs = costs_for_sale(entries, draws, FakeWithdrawalDraws([withdrawal]), sale)
+
+    assert costs == [LineCost(costed=None, pending_grams=Grams.of("10"))]

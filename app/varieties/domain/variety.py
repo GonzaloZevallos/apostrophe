@@ -119,7 +119,7 @@ class PriceEntry:
 
 class NameHolder(Enum):
     """Who holds a name within one business: a live variety, or an archived one that
-    keeps its name reserved (docs/adr/0031)."""
+    keeps its name reserved (docs/adr/0032)."""
 
     LIVE = "live"
     ARCHIVED = "archived"

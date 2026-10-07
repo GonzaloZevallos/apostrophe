@@ -14,6 +14,8 @@ fixture `null` the declaration never names, both fail the check, and a declared 
 or array (`ShapeOf`) is checked recursively against the shape it points at, with the
 same strict rules.
 
+A fixture may itself be a list (`movements.json`): its paths start at `[kind]`.
+
 A list is matched item by item against the fixture's own single representative entry,
 unless every fixture item carries `"kind"` (`AccountRow`'s three shapes) — then each
 answer item is matched against the fixture item sharing its own `kind`, and a `kind`
@@ -117,9 +119,7 @@ def _check_declared(
         _check_shape(_resolve_shape_of(declared), actual, path, nullable)
         return
     if not _matches_json_type(declared, actual):
-        raise AssertionError(
-            f"{path}: declared {declared!r} (nullable), got {_json_type(actual)}"
-        )
+        raise AssertionError(f"{path}: declared {declared!r} (nullable), got {_json_type(actual)}")
 
 
 def _check_items(
@@ -190,8 +190,7 @@ def _resolve_shape_of(declared: ShapeOf) -> object:
     status, value = _lookup_path(target, declared.path)
     if status != "found" or value is None:
         raise AssertionError(
-            f"ShapeOf({declared.fixture!r}, {declared.path!r}): that target is "
-            "missing or null"
+            f"ShapeOf({declared.fixture!r}, {declared.path!r}): that target is missing or null"
         )
     return value
 
@@ -212,9 +211,12 @@ def _lookup_path(root: object, path: str) -> tuple[_Found, object]:
         if current is None:
             return "null_ancestor", None
         name, index = _parse_segment(segment)
-        if not isinstance(current, dict) or name not in current:
+        if name == "" and index is not None and isinstance(current, list):
+            pass  # a fixture that is itself a list: the segment indexes the root.
+        elif not isinstance(current, dict) or name not in current:
             return "missing", None
-        current = current[name]
+        else:
+            current = current[name]
         if index is None:
             continue
         if current is None:

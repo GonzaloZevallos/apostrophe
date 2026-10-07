@@ -4,7 +4,7 @@ The varieties a business sells and the price history of each, seen only by that
 business (ADR-0004). Every other capability reads prices from here: a sale takes the
 current price of its day, the catalog shows today's. Variedades is the one screen for a
 variety: its list and each variety's page hold the variety's prices (here), its stock,
-entries and low-stock threshold (`stock.md`), and its catalog attributes (`catalog.md`).
+entries, withdrawals and low-stock threshold (`stock.md`), and its catalog attributes (`catalog.md`).
 It is a tab (navigation.md). It replaced the former Stock tab, the old Catálogo screen
 and the old Variedades screens; their paths redirect (navigation.md). It also covers the
 end of a variety's life: a variety with no history can be deleted, and one with history
@@ -25,6 +25,14 @@ taps, **so I can** know what I have of each variety, see one running out before 
 asks for it, and know what the grams I sell or gift cost me. (Served here by the list's
 status, the variety's page, its low-stock warning and "+ Entrada de stock"; defined in
 `stock.md`.)
+
+**When** I take grams out of my own stock without selling them (to share at a party so
+people get to know the business, or for my own use), **I want** to record them from my
+phone in a few taps (date, varieties and grams, the reason), **so I can** keep stock right
+and see in Ganancia what promoting the business and my own consumption cost me, without
+recording a sale nobody made or an adjustment that reads as lost flower. (Served here by
+"Sacar del stock" on the list and on a variety's page, and the withdrawals in its "Stock y
+entradas"; defined in `stock.md`.)
 
 **When** I run my business from my phone between orders or mid-chat with a customer,
 several times a day, **I want** the app laid out around what I actually do and how often,
@@ -69,7 +77,8 @@ Success criteria:
 5. Variedades says on its own, by shape and word and never by color alone, when a variety
    is sold out or below its threshold (`stock.md`, criterion 4). The summary line is
    never blank.
-6. **One variety, one page**: a variety's stock and entries, prices, low-stock warning and
+6. **One variety, one page**: a variety's stock and its movements (entries and
+   withdrawals), prices, low-stock warning and
    catalog attributes are seen and edited from its page, and from no other screen. Every
    edit there ends in an explicit save, so the seller always knows a change was kept.
 7. **Two taps at most**: from any tab root, the catalog screen ("Mandar catálogo") and
@@ -120,7 +129,8 @@ Success criteria:
 
 - **History** is any sale line of the variety (gifts and special prices included) or any
   stock entry of it (any origin: purchase, harvest, opening stock, or an adjustment of
-  either sign). It is worked out live and never stored.
+  either sign), or any stock withdrawal line of it (promotion or own use). It is worked
+  out live and never stored.
 - **Not history**: price entries, the low-stock threshold and catalog attributes. A
   deleted variety takes them with it.
 - **History decides which action is offered**, worked out when the page is read: Delete
@@ -188,7 +198,7 @@ Success criteria:
 - The routes are those in `scripts/design/screens.json`: `/varieties`,
   `/varieties/{low}`, `/varieties/catalog`, `/varieties/entries`,
   `/varieties/entries/new`, `/varieties/entries/{id}` (editing a stock entry),
-  `/varieties/{low}/entries` (a variety's "Ver todas" of entries),
+  `/varieties/{low}/entries` (a variety's "Ver todas" of entries and withdrawals),
   `/varieties/{low}/prices`, `/varieties/{low}/prices/new`, `/varieties/new` and
   `/varieties/archived` (the Archivadas card). An archived variety's page is the same
   `/varieties/{low}`, read-only.
@@ -217,7 +227,8 @@ Success criteria:
     circle = baja, empty circle = ok) and its word, with "Sin entradas" when it has none
     and its detail line (`stock.md`);
   - "Oculta" beside the status when the variety is hidden from the catalog. It never
-    replaces the stock status: a hidden variety can still be sold, gifted and restocked;
+    replaces the stock status: a hidden variety can still be sold, gifted, withdrawn and
+    restocked;
   - grams and days left;
   - today's list price per gram, or "Sin precio: no se puede vender" when it has none.
 - **The summary line**, above the list, counting unarchived varieties only:
@@ -232,8 +243,10 @@ Success criteria:
   qualifies (navigation.md).
 - **"+ Entrada de stock"**, a secondary button above the list (not a floating button),
   opening the stock entry form with the variety to be chosen (`stock.md`).
+- **"Sacar del stock"**, a secondary button next to "+ Entrada de stock", on phone and
+  computer, opening the stock withdrawal form with no variety chosen (`stock.md`).
 - **"Nueva variedad"**: adds a variety (a form).
-- **"Todas las entradas"** at the foot (`stock.md`), at `/varieties/entries`.
+- **"Todas las entradas"** at the foot (`stock.md`), at `/varieties/entries`. It lists entries only.
 - **"Archivadas (N)"** at the foot, next to "Todas las entradas", opening the Archivadas
   card. It is left out when there are none.
 
@@ -255,13 +268,18 @@ Success criteria:
   "+ Nueva venta".
 - **The summary line** at the top: grams, status, days left and today's list price (e.g.
   "64 g · ok · 21 días · $ 11.000 x g"), with "Oculta" when hidden.
-- **Two equal buttons**: "+ Entrada" (the stock entry form with this variety chosen, and
-  "Stock inicial" preselected only when it has no entries, `stock.md`) and "Nuevo precio"
-  (the price entry form).
+- **Three actions**: "+ Entrada" (the stock entry form with this variety chosen, and
+  "Stock inicial" preselected only when it has no entries, `stock.md`), "Nuevo precio"
+  (the price entry form) and "Sacar del stock" (the stock withdrawal form with this
+  variety chosen, `stock.md`).
 - **Sections**:
-  - **Stock y entradas**: the variety's last 3 stock entries and "Ver todas", which opens
-    `/varieties/{low}/entries`: the same list as "Todas las entradas", filtered to this
-    variety, where each entry can be edited or deleted (`stock.md`);
+  - **Stock y entradas**: the variety's last 3 movements (its stock entries and the
+    withdrawals that touch it, newest date first, then most recently recorded first) and
+    "Ver todas", which opens `/varieties/{low}/entries`: the same list as "Todas las
+    entradas", filtered to this variety, with its withdrawals, where each entry can be
+    edited or deleted (`stock.md`). A withdrawal row shows its date, "Promoción" or
+    "Consumo propio" and this variety's grams with a minus sign, and opens the
+    withdrawal's detail;
   - **Precios**: the last 3 price entries with "Rige desde", newest first, each row with
     its delete action, and "Ver todas" (`/varieties/{low}/prices`) for the full history;
   - **Aviso de stock bajo**: the current warning, read-only, with an on/off switch and an
@@ -297,14 +315,14 @@ Success criteria:
 - **An archived variety's page** is the same page, read-only, with the back arrow
   "‹ Archivadas" (with no history, back goes to Archivadas):
   - its summary line and sections show read-only, with "Archivada" in words;
-  - no "+ Entrada", "Nuevo precio", price delete, threshold switch, rename, Editar forms or
-    removal action; its one action is "Restaurar";
+  - no "+ Entrada", "Sacar del stock", "Nuevo precio", price delete, threshold switch,
+    rename, Editar forms or removal action; its one action is "Restaurar";
   - to delete an archived variety that has no history, the seller restores it first, then
     deletes it. There is no second path.
 - **"Ver todas" lists** are cards (navigation.md): the bar or sidebar and "‹ <variety>",
   without "+ Nueva venta"; back with no history goes to the variety's page.
 - **Renaming** the variety is done here.
-- **Forms** opened from here (Nuevo precio, + Entrada, rename, the low-stock warning, the
+- **Forms** opened from here (Nuevo precio, + Entrada, Sacar del stock, rename, the low-stock warning, the
   catalog attributes) have "Cerrar" and a confirmation when leaving with something typed;
   an untouched one closes at once.
 - **Deleting a price entry**: confirmed with "Antes de borrar" ("¿Borrás…? / No, dejala /
@@ -348,9 +366,9 @@ Success criteria:
 - **No curl (criterion 4)**: the end-to-end front run adds a variety, adds a price from its
   page, renames the variety, deletes a price entry, sets a low-stock threshold through
   "Editar", turns it off and on again through the switch, and edits the variety's catalog
-  attributes through "Editar" and "Guardá el catálogo", all from its page. It also
-  deletes a fresh variety, archives one with a sale, finds it in Archivadas, opens its
-  read-only page and restores it.
+  attributes through "Editar" and "Guardá el catálogo", all from its page, and records a
+  withdrawal from its page. It also deletes a fresh variety, archives one with a sale,
+  finds it in Archivadas, opens its read-only page and restores it.
 - **Status shown (criterion 5)**: the list and the page show the status mark and word for
   each status, "Oculta" beside (never instead of) the status of a hidden variety, and the
   summary line for no varieties, all ok and a mix; never by color alone; covered by the
@@ -358,7 +376,8 @@ Success criteria:
 - **One page (criterion 6)**: no other screen offers an edit of a variety's prices,
   entries' variety-level view, threshold or catalog attributes; checked against the docs
   and the design. Front tests show only Stock y entradas and Precios carry their last 3
-  rows and "Ver todas".
+  rows and "Ver todas". Withdrawal rows on the page are told apart from entries by word and
+  sign, covered by front tests.
 - **Saved, never guessed (criterion 6)**: front tests show:
   - Aviso de stock bajo and En el catálogo read-only until "Editar";
   - switching the warning on opens the threshold form, and "Cerrar" leaves it off;
@@ -429,6 +448,7 @@ Success criteria:
 ## Out of scope
 
 - The rules of catalog attributes: the catalog capability (they are edited here).
+- The rules of stock withdrawals: the stock capability (they are started and seen here).
 - Deleting a variety with history, by any path.
 - Deleting an archived variety without restoring it first.
 - Refusing an archive because the variety has no history.

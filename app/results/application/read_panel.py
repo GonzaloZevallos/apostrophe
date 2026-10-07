@@ -23,6 +23,7 @@ from app.results.application.ports import (
     StockRow,
 )
 from app.results.domain.arithmetic import average_sale
+from app.results.domain.figures import AmountWithPending
 from app.results.domain.period_figures import scan, totals_between
 from app.results.domain.periods import Period, periods
 from app.results.domain.sorting import oldest, sorted_by_name, teaser
@@ -30,10 +31,10 @@ from app.shared.grams import Grams
 
 
 @dataclass(frozen=True)
-class ShortfallFigures:
-    """The panel's own shortfall shape: an amount and one pending flag, decided from
-    the shortfall figure's own pending grams (plan invariant) — no grams cross the
-    wire (PM)."""
+class CostLineFigures:
+    """The panel's own shape for a cost line (stock shortfall, promotion, own use): an
+    amount and one pending flag, decided from that line's own pending grams (plan
+    invariant) — no grams cross the wire (PM)."""
 
     amount: int
     pending: bool
@@ -49,7 +50,9 @@ class PeriodFigures:
     grams_gifted: Grams
     cost_of_goods: int
     pending_cost: bool
-    shortfall: ShortfallFigures | None
+    shortfall: CostLineFigures | None
+    promotion: CostLineFigures | None
+    own_use: CostLineFigures | None
     expenses: int
     purchases: int
     profit: int
@@ -74,6 +77,14 @@ class Panel:
     stock: tuple[StockRow, ...]
 
 
+def _cost_line(figure: AmountWithPending | None) -> CostLineFigures | None:
+    return (
+        None
+        if figure is None
+        else CostLineFigures(amount=figure.amount, pending=figure.pending_grams.hundredths > 0)
+    )
+
+
 def read_panel(
     today: date,
     stock: StockFigures,
@@ -96,14 +107,6 @@ def read_panel(
 
     def figures_for(period: Period) -> PeriodFigures:
         totals = totals_between(buckets, period.start, period.end)
-        shortfall = (
-            None
-            if totals.shortfall is None
-            else ShortfallFigures(
-                amount=totals.shortfall.amount,
-                pending=totals.shortfall.pending_grams.hundredths > 0,
-            )
-        )
         return PeriodFigures(
             period=period,
             sales=totals.sales,
@@ -113,7 +116,9 @@ def read_panel(
             grams_gifted=totals.grams_gifted,
             cost_of_goods=totals.cost_of_goods.costed,
             pending_cost=totals.cost_of_goods.pending_grams.hundredths > 0,
-            shortfall=shortfall,
+            shortfall=_cost_line(totals.shortfall),
+            promotion=_cost_line(totals.promotion),
+            own_use=_cost_line(totals.own_use),
             expenses=totals.expenses,
             purchases=totals.purchases,
             profit=totals.profit.amount,

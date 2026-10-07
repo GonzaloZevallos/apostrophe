@@ -9,12 +9,23 @@ from app.clock import Clock, get_clock, get_today
 from app.db import get_session
 from app.http_errors import TranslateErrors
 from app.shared.grams import Grams, InvalidGrams
-from app.stock.adapters.schemas import EntryIn, EntryOut, StockOut, ThresholdIn, VarietyStockOut
+from app.stock.adapters.schemas import (
+    EntryIn,
+    EntryOut,
+    MovementOut,
+    StockOut,
+    ThresholdIn,
+    VarietyStockOut,
+    WithdrawalIn,
+    WithdrawalOut,
+    movement_out,
+)
 from app.stock.adapters.sql_draws import SqlDraws
 from app.stock.adapters.sql_stock_entries import SqlStockEntries
+from app.stock.adapters.sql_stock_withdrawals import SqlStockWithdrawals
 from app.stock.adapters.sql_thresholds import SqlThresholds
 from app.stock.adapters.variety_catalog import SqlVarietyCatalog
-from app.stock.application import manage_entries
+from app.stock.application import manage_entries, manage_withdrawals
 from app.stock.application import read_stock as read_stock_uc
 from app.stock.application import set_threshold as set_threshold_uc
 from app.stock.application.errors import VarietyArchived as _ArchivedVariety
@@ -27,12 +38,21 @@ from app.stock.domain.errors import (
     EntryGramsInvalid,
     EntryNoteTooLong,
     EntryNotFound,
+    WithdrawalDateInFuture,
+    WithdrawalGramsNotPositive,
+    WithdrawalGramsTooPrecise,
+    WithdrawalNoLines,
+    WithdrawalNoteTooLong,
+    WithdrawalNotFound,
+    WithdrawalReasonRequired,
+    WithdrawalVarietyNotFound,
 )
 from app.stock.domain.threshold import ThresholdInvalid
 from app.varieties.application.errors import VarietyArchived, VarietyNotFound
 
 router = APIRouter(prefix="/stock", tags=["stock"])
 entries_router = APIRouter(prefix="/entries")
+withdrawals_router = APIRouter(prefix="/withdrawals")
 varieties_router = APIRouter(prefix="/varieties")
 
 SessionDep = Annotated[Session, Depends(get_session)]
@@ -52,6 +72,10 @@ def get_draws(session: SessionDep, business_id: CurrentBusinessId) -> SqlDraws:
     return SqlDraws(session, business_id)
 
 
+def get_withdrawals(session: SessionDep, business_id: CurrentBusinessId) -> SqlStockWithdrawals:
+    return SqlStockWithdrawals(session, business_id)
+
+
 def get_thresholds(session: SessionDep, business_id: CurrentBusinessId) -> SqlThresholds:
     return SqlThresholds(session, business_id)
 
@@ -59,11 +83,21 @@ def get_thresholds(session: SessionDep, business_id: CurrentBusinessId) -> SqlTh
 EntriesDep = Annotated[SqlStockEntries, Depends(get_entries)]
 CatalogDep = Annotated[SqlVarietyCatalog, Depends(get_catalog)]
 DrawsDep = Annotated[SqlDraws, Depends(get_draws)]
+WithdrawalsDep = Annotated[SqlStockWithdrawals, Depends(get_withdrawals)]
 ThresholdsDep = Annotated[SqlThresholds, Depends(get_thresholds)]
 
 as_http = TranslateErrors(
     [
-        (404, (EntryNotFound, VarietyNotFound, VarietyArchived)),
+        (
+            404,
+            (
+                EntryNotFound,
+                VarietyNotFound,
+                VarietyArchived,
+                WithdrawalNotFound,
+                WithdrawalVarietyNotFound,
+            ),
+        ),
         (
             422,
             (
@@ -75,6 +109,12 @@ as_http = TranslateErrors(
                 EntryNoteTooLong,
                 InvalidGrams,
                 ThresholdInvalid,
+                WithdrawalReasonRequired,
+                WithdrawalDateInFuture,
+                WithdrawalNoLines,
+                WithdrawalGramsNotPositive,
+                WithdrawalGramsTooPrecise,
+                WithdrawalNoteTooLong,
             ),
         ),
     ]
@@ -164,10 +204,75 @@ def delete_entry(stock_entry_id: int, entries: EntriesDep, session: SessionDep) 
         manage_entries.delete_entry(entries, session, stock_entry_id)
 
 
+@withdrawals_router.post("", status_code=201)
+def record_withdrawal(
+    body: WithdrawalIn,
+    withdrawals: WithdrawalsDep,
+    catalog: CatalogDep,
+    session: SessionDep,
+    today: TodayDep,
+    clock: ClockDep,
+) -> WithdrawalOut:
+    with as_http:
+        view = manage_withdrawals.record_withdrawal(
+            withdrawals,
+            catalog,
+            session,
+            reason=body.reason,
+            withdrawn_on=body.date or today,
+            note=body.note,
+            lines=[(line.variety_id, line.grams) for line in body.lines],
+            today=today,
+            now=clock(),
+        )
+        return WithdrawalOut.of(view)
+
+
+@withdrawals_router.get("/{withdrawal_id}")
+def get_withdrawal(
+    withdrawal_id: int, withdrawals: WithdrawalsDep, catalog: CatalogDep
+) -> WithdrawalOut:
+    with as_http:
+        return WithdrawalOut.of(
+            manage_withdrawals.read_withdrawal(withdrawals, catalog, withdrawal_id)
+        )
+
+
+@withdrawals_router.put("/{withdrawal_id}")
+def edit_withdrawal(
+    withdrawal_id: int,
+    body: WithdrawalIn,
+    withdrawals: WithdrawalsDep,
+    catalog: CatalogDep,
+    session: SessionDep,
+    today: TodayDep,
+) -> WithdrawalOut:
+    with as_http:
+        view = manage_withdrawals.edit_withdrawal(
+            withdrawals,
+            catalog,
+            session,
+            withdrawal_id,
+            reason=body.reason,
+            withdrawn_on=body.date or today,
+            note=body.note,
+            lines=[(line.variety_id, line.grams) for line in body.lines],
+            today=today,
+        )
+        return WithdrawalOut.of(view)
+
+
+@withdrawals_router.delete("/{withdrawal_id}", status_code=204)
+def delete_withdrawal(withdrawal_id: int, withdrawals: WithdrawalsDep, session: SessionDep) -> None:
+    with as_http:
+        manage_withdrawals.delete_withdrawal(withdrawals, session, withdrawal_id)
+
+
 @router.get("")
 def get_stock(
     entries: EntriesDep,
     draws: DrawsDep,
+    withdrawals: WithdrawalsDep,
     catalog: CatalogDep,
     thresholds: ThresholdsDep,
     today: TodayDep,
@@ -175,7 +280,9 @@ def get_stock(
 ) -> StockOut:
     """`archived=true` answers the archived varieties' rows instead of the listed ones;
     the total and the entries are the business's either way."""
-    view = read_stock_uc.read_stock(entries, draws, catalog, thresholds, today, archived=archived)
+    view = read_stock_uc.read_stock(
+        entries, draws, withdrawals, catalog, thresholds, today, archived=archived
+    )
     return StockOut.of(view)
 
 
@@ -185,6 +292,7 @@ def set_threshold(
     body: ThresholdIn,
     entries: EntriesDep,
     draws: DrawsDep,
+    withdrawals: WithdrawalsDep,
     catalog: CatalogDep,
     thresholds: ThresholdsDep,
     session: SessionDep,
@@ -194,12 +302,28 @@ def set_threshold(
         grams = Grams.of(body.grams) if body.grams is not None else None
         try:
             view = set_threshold_uc.set_threshold(
-                entries, draws, thresholds, catalog, session, variety_id, grams, today
+                entries, draws, withdrawals, thresholds, catalog, session, variety_id, grams, today
             )
         except (_UnknownVariety, _ArchivedVariety) as exc:
             raise _or_variety_not_found(exc, variety_id) from exc
         return VarietyStockOut.of(view)
 
 
+@varieties_router.get("/{variety_id}/movements")
+def get_movements(
+    variety_id: int,
+    entries: EntriesDep,
+    withdrawals: WithdrawalsDep,
+    catalog: CatalogDep,
+) -> list[MovementOut]:
+    with as_http:
+        try:
+            movements = manage_withdrawals.read_movements(entries, withdrawals, catalog, variety_id)
+        except _UnknownVariety as exc:
+            raise _or_variety_not_found(exc, variety_id) from exc
+        return [movement_out(movement) for movement in movements]
+
+
 router.include_router(entries_router)
+router.include_router(withdrawals_router)
 router.include_router(varieties_router)

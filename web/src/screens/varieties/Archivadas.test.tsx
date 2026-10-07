@@ -164,6 +164,7 @@ describe("an archived variety's page", () => {
     for (const gone of [
       '+ Entrada',
       'Nuevo precio',
+      'Sacar del stock',
       'Eliminar variedad',
       'Archivar variedad',
       'Borrar',

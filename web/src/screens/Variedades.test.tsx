@@ -199,6 +199,15 @@ describe('the list', () => {
     expect(screen.getByRole('link', { name: /Todas las entradas/ })).toHaveAttribute('href', '/varieties/entries')
   })
 
+  test('a secondary "Sacar del stock" opens the withdrawal form with no variety chosen', async () => {
+    renderApp('/varieties')
+
+    await screen.findByText('24K Gold')
+    const link = screen.getByRole('link', { name: 'Sacar del stock' })
+    expect(link).toHaveAttribute('href', '/withdrawals/new')
+    expect(link).toHaveClass('boton--suave')
+  })
+
   test('the bar has no Stock tab: Inicio, Ventas, Clientes, Variedades and Más', async () => {
     renderApp('/varieties')
 

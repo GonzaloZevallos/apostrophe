@@ -1,4 +1,4 @@
-"""Migration 0012 adds `variety.archived_at` (ADR-0031) with a native ADD COLUMN and
+"""Migration 0013 adds `variety.archived_at` (ADR-0032) with a native ADD COLUMN and
 takes it away with a native DROP COLUMN, never a table rebuild: every row of the five
 tables that reference `variety` survives both directions, over a plain sqlite file and
 a libsql one (ADR-0016), and the downgrade refuses while any variety is archived."""
@@ -118,7 +118,7 @@ def _variety_columns(engine: Engine) -> list[str]:
 
 
 def _walk(engine: Engine) -> None:
-    _upgrade_to(engine, "0011")
+    _upgrade_to(engine, "0012")
     _seed(engine)
     before = _counts(engine)
     assert all(count == 2 for count in before.values())
@@ -139,14 +139,14 @@ def _walk(engine: Engine) -> None:
     with engine.begin() as connection:
         connection.execute(text("UPDATE variety SET archived_at = :now WHERE id = 1"), {"now": NOW})
     with pytest.raises(RuntimeError) as refused:
-        _downgrade_to(engine, "0011")
+        _downgrade_to(engine, "0012")
     assert "archived" in str(refused.value)
     assert "gelato" not in str(refused.value)
     assert "archived_at" in _variety_columns(engine)
 
     with engine.begin() as connection:
         connection.execute(text("UPDATE variety SET archived_at = NULL"))
-    _downgrade_to(engine, "0011")
+    _downgrade_to(engine, "0012")
 
     assert _counts(engine) == before
     assert "archived_at" not in _variety_columns(engine)

@@ -2,7 +2,8 @@
  * `VarietyPage` (`VariedadDetalle.dc.html`; varieties.md, "A variety's page"): one variety
  * on its own page. It receives its id only as a prop (`VarietyRoute` is the one reader of
  * the route's `:id`). A detail: "‹ Variedades", no "+ Nueva venta" (the route declares
- * `chrome: 'card'`). One summary line; "+ Entrada" and "Nuevo precio"; four read-only
+ * `chrome: 'card'`). One summary line; "+ Entrada", "Nuevo precio" and "Sacar del stock" (the
+ * withdrawal form with this variety chosen); four read-only
  * sections. Forms open over the page by history state (`varietyForms.ts`); the rename form
  * is rendered here, so are the other two (`ThresholdForm`, `CatalogAttributesForm`), and a state that
  * names no form renders nothing.
@@ -11,8 +12,8 @@
  * is the server's own `shown` from `GET /catalog`; nothing here decides a status or a reason.
  *
  * An archived variety (`archived` true) is the same page, read-only: "‹ Archivadas", "Archivada"
- * in words, its stock from `GET /stock?archived=true`, no "+ Entrada", "Nuevo precio", price
- * delete, threshold, "Editar", form or removal; its one action is "Restaurar".
+ * in words, its stock from `GET /stock?archived=true`, no "+ Entrada", "Nuevo precio", "Sacar
+ * del stock", price delete, threshold, "Editar", form or removal; its one action is "Restaurar".
  */
 
 import { useCallback, useEffect, useState } from 'react'
@@ -23,7 +24,7 @@ import { catalogQueryOptions } from '../../api/catalog'
 import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
 import { isGone } from '../../api/refusals'
-import { readArchivedStock, readStock } from '../../api/stock'
+import { readArchivedStock, readMovements, readStock } from '../../api/stock'
 import type { VarietyDetail } from '../../api/varieties'
 import type { SuccessToast } from '../../components/AvisoExito'
 import ErrorGenerico from '../../components/ErrorGenerico'
@@ -35,7 +36,14 @@ import SinConexion from '../../components/SinConexion'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
 import { useFlash } from '../../flash/useFlash'
 import { formatGrams, formatMoney } from '../../format/money'
-import { ARCHIVED_VARIETIES, CATALOG_SECTION_ID, ENTRY_NEW, VARIETIES, VARIETY_PRICE_NEW } from '../../routes'
+import {
+  ARCHIVED_VARIETIES,
+  CATALOG_SECTION_ID,
+  ENTRY_NEW,
+  VARIETIES,
+  VARIETY_PRICE_NEW,
+  withdrawalNewFor,
+} from '../../routes'
 import { NO_PRICE_TODAY, type Variety } from '../Variedades'
 import type { PriceRow } from './PriceRows'
 import CatalogAttributesForm from './CatalogAttributesForm'
@@ -82,6 +90,7 @@ export default function VarietyPage({ varietyId }: { varietyId: number }) {
     enabled: archived,
   })
   const stockQuery = archived ? archivedStockQuery : liveStockQuery
+  const movementsQuery = useQuery({ queryKey: keys.stockMovements(id), queryFn: () => readMovements(id) })
   const { restore, sending: restoring, notice: restoreNotice } = useRestore()
   const catalogQuery = useQuery({
     ...catalogQueryOptions(),
@@ -217,10 +226,13 @@ export default function VarietyPage({ varietyId }: { varietyId: number }) {
             <Link className="boton boton--suave" to={VARIETY_PRICE_NEW(varietyId)}>
               Nuevo precio
             </Link>
+            <Link className="boton boton--suave" to={withdrawalNewFor(varietyId)}>
+              Sacar del stock
+            </Link>
           </div>
         )}
 
-        <VarietyStockSection stock={stock} varietyId={varietyId} today={me.today} />
+        <VarietyStockSection stock={stock} movements={movementsQuery.data} varietyId={varietyId} today={me.today} />
         <VarietyPricesSection
           varietyId={varietyId}
           history={pricesQuery.data}

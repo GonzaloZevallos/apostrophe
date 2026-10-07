@@ -18,7 +18,7 @@ class VarietyRow(Base):
     business_id: Mapped[int] = mapped_column(ForeignKey("business.id"))
     name: Mapped[str] = mapped_column(String(NAME_MAX_LENGTH))
     name_key: Mapped[str] = mapped_column(String(NAME_MAX_LENGTH))
-    # The instant the variety left the lists; null while it is live (docs/adr/0031).
+    # The instant the variety left the lists; null while it is live (docs/adr/0032).
     archived_at: Mapped[datetime | None] = mapped_column(UtcDateTime)
     price_entries: Mapped[list[PriceEntryRow]] = relationship(
         back_populates="variety", cascade="all, delete-orphan"

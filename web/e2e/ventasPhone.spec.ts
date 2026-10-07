@@ -60,7 +60,9 @@ test('Ventas and a sale detail fit, and are thumb-sized, at 320, 430 and 130 % o
 
   await page.goto('/ventas')
   const today = await page.evaluate(() =>
-    new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' }),
+    new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' }).format(
+      new Date(),
+    ),
   )
   const varieties: { id: number; name: string }[] = await (
     await page.request.get(`/varieties?on=${today}`)
