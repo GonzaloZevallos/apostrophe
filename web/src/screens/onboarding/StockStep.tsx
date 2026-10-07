@@ -21,6 +21,7 @@ export default function StockStep({ me, progress, onDirtyChange, onProgress }: S
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const [saved, setSaved] = useState(false)
+  const [savedName, setSavedName] = useState<string | null>(null)
   const { run, sending, notice } = useOnboardingWrite(onProgress)
   const target = progress.stock_target
   const state = progress.steps.find((item) => item.step === 'stock')?.state
@@ -28,6 +29,7 @@ export default function StockStep({ me, progress, onDirtyChange, onProgress }: S
   async function stockSaved(): Promise<void> {
     onDirtyChange(false)
     setSaved(true)
+    setSavedName(target?.name ?? null)
     // The counts and targets moved: keep the fresh answer for what the step shows next.
     try {
       keepProgress(queryClient, await getOnboardingProgress())
@@ -39,8 +41,15 @@ export default function StockStep({ me, progress, onDirtyChange, onProgress }: S
   if (saved || (target === null && state === 'done')) {
     return (
       <>
-        <span className="onboarding__insignia">Hecho</span>
-        <p className="onboarding__porque">Ya podés vender esa variedad. ¿Tenés otra para cargar ahora?</p>
+        <p className="onboarding__porque">
+          ¿Tenés otra para cargar ahora? Cada una lleva su nombre, su precio y su stock inicial.
+        </p>
+        {savedName !== null && (
+          <div className="onboarding__tarjeta">
+            <span className="onboarding__tarjeta-nombre">{savedName}</span>
+            <span className="onboarding__tarjeta-detalle">Con precio de hoy y con su stock inicial</span>
+          </div>
+        )}
         <div className="onboarding__acciones">
           <button type="button" className="boton" disabled={sending} onClick={() => void run(sendAdvance)}>
             Seguir

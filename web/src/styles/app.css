@@ -3961,6 +3961,25 @@ body {
   line-height: 1.5;
 }
 
+.onboarding__tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--espacio-md);
+  border-radius: var(--radio-campo);
+  background: var(--superficie);
+}
+
+.onboarding__tarjeta-nombre {
+  font-weight: 600;
+  color: var(--tinta);
+}
+
+.onboarding__tarjeta-detalle {
+  font-size: 13px;
+  color: var(--tinta2);
+}
+
 .onboarding__cuerpo {
   display: flex;
   flex-direction: column;
