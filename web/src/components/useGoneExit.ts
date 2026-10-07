@@ -2,7 +2,7 @@
  * The exit of a form or sheet whose record turned out to be gone: the same move as "Cerrar",
  * with the gone notice on the parent. When the entry behind is the parent (the entry's `from`,
  * normalised, equals the parent's filled pathname) it pops, so history never holds the parent
- * twice, and leaves the notice in `goneNotice`. Otherwise (a direct link, a reload that dropped
+ * twice, and leaves the notice in the gone-notice store (`goneExit.ts`). Otherwise (a direct link, a reload that dropped
  * the state, an entry opened from elsewhere) it replaces the entry with the parent and carries
  * the notice in that entry's state. The viewport is read when the user leaves, because a
  * screen's parent can differ between phone and computer.

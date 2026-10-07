@@ -27,6 +27,24 @@ test('findInAppLiterals flags a source that writes the marker by hand, and passe
   ).toEqual(['src/screens/A.tsx', 'src/screens/B.tsx'])
 })
 
+test.each([
+  ["a single-quoted key", "state={{ 'inApp': true }}"],
+  ["a double-quoted key", 'state={{ "inApp": true }}'],
+  ["a computed key", 'state={{ ["inApp"]: true, from }}'],
+  ["a computed key in single quotes", "state={{ ['inApp'] : true }}"],
+  ["a backtick key", 'state={{ `inApp`: true }}'],
+])('findInAppLiterals flags %s', (_name, content) => {
+  expect(findInAppLiterals([{ path: 'src/screens/D.tsx', content }])).toEqual(['src/screens/D.tsx'])
+})
+
+test('findInAppLiterals leaves alone reading the marker and a different key', () => {
+  expect(
+    findInAppLiterals([
+      { path: 'src/screens/E.tsx', content: "if (state['inApp'] === true) {} const inAppNow = { inAppish: true }" },
+    ]),
+  ).toEqual([])
+})
+
 test('no file of web/src writes the in-app marker by hand: inAppState is its only producer', () => {
   const modules = import.meta.glob<string>('/src/**/*.{ts,tsx}', {
     query: '?raw',

@@ -15,7 +15,8 @@ export function inAppState(location: { pathname: string }, extra: object = {}): 
   return { ...extra, inApp: true, from: location.pathname }
 }
 
-const LITERAL = /\binApp\s*:\s*true\b/
+// The key bare, quoted (`'inApp'`, `"inApp"`, a backtick) or computed (`["inApp"]`), then `: true`.
+const LITERAL = /['"`]?\binApp['"`]?\s*\]?\s*:\s*true\b/
 
 /** The paths of the sources that write the marker by hand: all but this module and its test. */
 export function findInAppLiterals(files: readonly { path: string; content: string }[]): string[] {

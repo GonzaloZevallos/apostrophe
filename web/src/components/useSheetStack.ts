@@ -60,7 +60,7 @@ export function SheetRouterProvider({
   router: RouterHandle
   children: ReactNode
 }) {
-  // The gone notice follows the same router (`goneNotice.ts`).
+  // The gone notice follows the same router (`goneExit.ts`).
   useEffect(() => attachGoneNotice(router), [router])
   return createElement(RouterContext.Provider, { value: router }, children)
 }
