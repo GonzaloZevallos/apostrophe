@@ -35,14 +35,13 @@ import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGeneri
 import GoneScreen from '../components/GoneScreen'
 import SinConexion from '../components/SinConexion'
 import Loading from '../components/Loading'
-import { useHistoryBack } from '../components/useHistoryBack'
+import { useBackOr } from '../components/useBackOr'
 import { useLeaveGuard } from '../components/useLeaveGuard'
 import { useFlash } from '../flash/useFlash'
 import { formatDate } from '../format/dates'
 import { formatGrams, formatMoney } from '../format/money'
 import { parseMoney, parseSignedGrams } from '../format/parse'
-import { VARIETIES } from '../routes'
-import { ENTRIES } from '../legacyVarietyPaths'
+import { STOCK, VARIETIES } from '../routes'
 import type { Variety } from './Variedades'
 
 export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
@@ -159,7 +158,7 @@ interface BodyProps {
 function EntradaStockBody({ mode, entryId, today, initial, chosenVariety, hasEntries }: BodyProps) {
   const queryClient = useQueryClient()
   const flash = useFlash()
-  const back = useHistoryBack(mode === 'nuevo' ? VARIETIES : ENTRIES)
+  const back = useBackOr(mode === 'nuevo' ? VARIETIES : STOCK)
 
   const varietiesQuery = useQuery({
     queryKey: keys.varieties(),

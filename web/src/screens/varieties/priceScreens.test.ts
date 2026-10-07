@@ -6,15 +6,15 @@
 
 import { expect, test } from 'vitest'
 import screens from '../../../../scripts/design/screens.json'
-import { VARIETY_PRICES, VARIETY_PRICE_NEW } from '../../legacyVarietyPaths'
+import { VARIETY_PRICES, VARIETY_PRICE_NEW, pathTo } from '../../routes'
 
 /** `pathTo` percent-encodes the braces of the design file's `{low}` placeholder: undo it. */
 const designPath = (path: string): string => decodeURIComponent(path)
 
 const BUILT: Record<string, string> = {
-  VerTodas: designPath(VARIETY_PRICES('{low}')),
-  PrecioNuevo: designPath(VARIETY_PRICE_NEW('{low}')),
-  PrecioNuevoCompu: designPath(VARIETY_PRICE_NEW('{low}')),
+  VerTodas: designPath(pathTo(VARIETY_PRICES, { id: '{low}' })),
+  PrecioNuevo: designPath(pathTo(VARIETY_PRICE_NEW, { id: '{low}' })),
+  PrecioNuevoCompu: designPath(pathTo(VARIETY_PRICE_NEW, { id: '{low}' })),
 }
 
 test.each(Object.entries(BUILT))('%s: route = path = the routes.ts path', (name, expected) => {

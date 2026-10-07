@@ -11,6 +11,7 @@ import userEvent from '@testing-library/user-event'
 import { RouterProvider, createMemoryRouter } from 'react-router'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import { router as appRouter } from '../router'
+import { renderWithViewport } from '../test-viewport'
 import {
   CATALOG,
   STOCK as STOCK_PATH,
@@ -86,21 +87,7 @@ function defaults(): Answers {
   }
 }
 
-function stubViewport(computer: boolean) {
-  vi.stubGlobal(
-    'matchMedia',
-    (query: string) =>
-      ({
-        matches: computer,
-        media: query,
-        addEventListener: () => undefined,
-        removeEventListener: () => undefined,
-      }) as unknown as MediaQueryList,
-  )
-}
-
 function renderApp(path: string, { computer = false, answers = {} }: { computer?: boolean; answers?: Answers } = {}) {
-  stubViewport(computer)
   const table = { ...defaults(), ...answers }
   const fetchMock = vi.fn((url: string, init?: RequestInit) => {
     const key = `${init?.method ?? 'GET'} ${url}`
@@ -111,10 +98,12 @@ function renderApp(path: string, { computer = false, answers = {} }: { computer?
   vi.stubGlobal('fetch', fetchMock)
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   const router = createMemoryRouter(appRouter.routes, { initialEntries: [path] })
-  render(
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>,
+  renderWithViewport(computer ? 'computer' : 'phone', () =>
+    render(
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>,
+    ),
   )
   return { router, fetchMock }
 }
@@ -238,6 +227,17 @@ describe('on the phone', () => {
     expect(router.state.location.pathname).toBe(VARIETIES_PATH)
   })
 
+  test('opening a variety pushes an entry, and back returns to the list', async () => {
+    const { router } = renderApp(VARIETIES_PATH, { computer: false })
+
+    await userEvent.click(await screen.findByRole('link', { name: /Sir Jack/ }))
+
+    expect(router.state.location.pathname).toBe(pathTo(VARIETY, { id: 4 }))
+    expect(router.state.historyAction).toBe('PUSH')
+    await act(() => router.navigate(-1))
+    expect(router.state.location.pathname).toBe(VARIETIES_PATH)
+  })
+
   test('a variety\'s page is shown alone', async () => {
     renderApp(pathTo(VARIETY, { id: 1 }), { computer: false })
 
@@ -264,6 +264,7 @@ describe('on a computer: two panes', () => {
 
     expect(router.state.location.pathname).toBe(pathTo(VARIETY, { id: 4 }))
     expect(screen.getByRole('link', { name: 'Mandar catálogo' })).toBeInTheDocument()
+    expect(router.state.historyAction).toBe('REPLACE')
   })
 
   test('a direct link to a variety shows the list beside its page', async () => {

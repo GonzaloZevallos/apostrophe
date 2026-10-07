@@ -4,11 +4,11 @@
  * edited and deleted from that list, through the entry's own form.
  */
 
-import { Link } from 'react-router'
+import InAppLink from '../../components/InAppLink'
 import { type StockView, entriesOf } from '../../api/stock'
 import { formatDate } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
-import { VARIETY_ENTRIES } from '../../legacyVarietyPaths'
+import { VARIETY_ENTRIES, pathTo } from '../../routes'
 import { ORIGIN_LABEL } from '../originLabel'
 
 const LAST = 3
@@ -27,7 +27,7 @@ export default function VarietyStockSection({
     <section className="seccion-variedad">
       <div className="seccion-variedad__cabecera">
         <h2 className="seccion-variedad__titulo">Stock y entradas</h2>
-        <Link to={VARIETY_ENTRIES(varietyId)}>Ver todas</Link>
+        <InAppLink to={pathTo(VARIETY_ENTRIES, { id: varietyId })}>Ver todas</InAppLink>
       </div>
       <ul className="lista-entradas">
         {entries.map((entry) => (

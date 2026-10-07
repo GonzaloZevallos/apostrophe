@@ -7,12 +7,12 @@
 
 import { Outlet, useOutletContext } from 'react-router'
 import type { Me } from '../../api/me'
-import { useIsComputer } from '../../components/useIsComputer'
+import { useViewport } from '../../shell/useViewport'
 import Variedades from '../Variedades'
 
 export default function VarietiesLayout() {
   const me = useOutletContext<Me>()
-  const computer = useIsComputer()
+  const computer = useViewport() === 'computer'
   if (!computer) return <Outlet context={me} />
   return (
     <div className="variedades-paneles">

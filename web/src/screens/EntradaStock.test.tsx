@@ -13,6 +13,7 @@ import { createMemoryRouter, Outlet, RouterProvider, useLocation } from 'react-r
 import { afterEach, expect, test, vi } from 'vitest'
 import { catalogQueryOptions } from '../api/catalog'
 import type { Me } from '../api/me'
+import InAppLink from '../components/InAppLink'
 import FlashProvider from '../flash/FlashProvider'
 import { STOCK, STOCK_ENTRY, STOCK_ENTRY_NEW, VARIETIES as VARIETIES_PATH, VARIETY, pathTo } from '../routes'
 import EntradaStock from './EntradaStock'
@@ -26,16 +27,23 @@ function jsonResponse(status: number, body: unknown): Response {
   })
 }
 
-function Where({ label }: { label: string }) {
+function Where({ label, opens }: { label: string; opens?: string }) {
   const location = useLocation()
   const state = location.state as { notice?: string } | null
   return (
     <div>
       <span>{label}</span>
       <span data-testid="where">{location.pathname}</span>
+      {opens !== undefined && <InAppLink to={opens}>Abrir la entrada</InAppLink>}
       {state?.notice !== undefined && <span>{state.notice}</span>}
     </div>
   )
+}
+
+/** Opens the new-entry form from the variety's page, by its link, so the entry carries the in-app state. */
+async function renderFromVariety() {
+  renderForm(pathTo(VARIETY, { id: 3 }))
+  await userEvent.click(await screen.findByRole('link', { name: 'Abrir la entrada' }))
 }
 
 function Provide() {
@@ -59,7 +67,10 @@ function renderForm(
           { path: STOCK_ENTRY_NEW, element: <EntradaStock mode="nuevo" /> },
           { path: STOCK_ENTRY, element: <EntradaStock mode="editar" /> },
           { path: STOCK, element: <Where label="todas las entradas" /> },
-          { path: VARIETY, element: <Where label="la página de la variedad" /> },
+          {
+            path: VARIETY,
+            element: <Where label="la página de la variedad" opens={`${STOCK_ENTRY_NEW}?variety=3`} />,
+          },
           { path: VARIETIES_PATH, element: <Where label="la lista de variedades" /> },
         ],
       },
@@ -454,7 +465,7 @@ test('from "+ Entrada de stock" no variety is chosen and Compra is the origin', 
 
 test('Cerrar goes back by history to where the form was opened', async () => {
   fakeFor(stockOf([]))
-  renderForm([pathTo(VARIETY, { id: 3 }), `${STOCK_ENTRY_NEW}?variety=3`])
+  await renderFromVariety()
 
   await userEvent.click(await screen.findByRole('button', { name: 'Cerrar' }))
   expect(await screen.findByText('la página de la variedad')).toBeInTheDocument()
@@ -500,7 +511,7 @@ test('a save goes back by history too, and says "Entrada guardada" there', async
         note: null,
       }),
   })
-  renderForm([pathTo(VARIETY, { id: 3 }), `${STOCK_ENTRY_NEW}?variety=3`])
+  await renderFromVariety()
 
   await userEvent.type(await screen.findByLabelText('Gramos'), '30')
   await userEvent.click(screen.getByRole('button', { name: 'Guardá la entrada' }))
@@ -545,7 +556,7 @@ test('a save marks the catalog stale, since stock changes what it says', async (
 
 test('Cerrar with something typed asks before discarding, and leaving is refused until it is answered', async () => {
   fakeFor(stockOf([]))
-  renderForm([pathTo(VARIETY, { id: 3 }), `${STOCK_ENTRY_NEW}?variety=3`])
+  await renderFromVariety()
 
   await userEvent.type(await screen.findByLabelText('Gramos'), '30')
   await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))

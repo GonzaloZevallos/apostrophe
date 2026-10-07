@@ -30,7 +30,8 @@ test('lists every price newest first with "Rige desde", the one in force and its
 
 test('back goes by history to where the seller came from', async () => {
   const user = userEvent.setup()
-  const { router } = renderVarieties([pathTo(VARIETY, { id: 1 }), pathTo(VARIETY_PRICES, { id: 1 })], api())
+  const { router } = renderVarieties([pathTo(VARIETY, { id: 1 })], api())
+  await user.click(await screen.findByRole('link', { name: 'Ver todos los precios' }))
 
   await user.click(await screen.findByRole('link', { name: '‹ 24K Gold' }))
 

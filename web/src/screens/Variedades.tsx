@@ -15,22 +15,24 @@
  */
 
 import { useQuery } from '@tanstack/react-query'
-import { Link, NavLink, useOutletContext } from 'react-router'
+import { useOutletContext } from 'react-router'
 import { NetworkError, get } from '../api/client'
 import { catalogQueryOptions } from '../api/catalog'
 import { keys } from '../api/keys'
 import type { Me } from '../api/me'
 import { readStock, type VarietyStock } from '../api/stock'
 import ErrorGenerico from '../components/ErrorGenerico'
+import InAppLink from '../components/InAppLink'
 import Loading from '../components/Loading'
 import MarcaEstado from '../components/MarcaEstado'
 import SinConexion from '../components/SinConexion'
 import { formatGrams, formatMoney } from '../format/money'
-import { CATALOG, VARIETY_NEW } from '../routes'
-import { ENTRIES, ENTRY_NEW, VARIETY } from '../legacyVarietyPaths'
+import { CATALOG, STOCK, STOCK_ENTRY_NEW, VARIETY, VARIETY_NEW, pathTo } from '../routes'
+import { useViewport } from '../shell/useViewport'
 import { detailFor } from '../stock/detail'
 import { summaryLine } from '../stock/summaryLine'
 import { varietiesByName } from './varieties/varietiesByName'
+import VarietyRowLink from './varieties/VarietyRowLink'
 
 export const VARIETY_SAVED = 'Variedad guardada'
 export const NO_PRICE_TODAY = 'Sin precio: no se puede vender'
@@ -64,6 +66,7 @@ function figuresOf(row: VarietyStock, today: string): string {
 
 export default function Variedades() {
   const me = useOutletContext<Me>()
+  const computer = useViewport() === 'computer'
   const varietiesQuery = useQuery({
     queryKey: keys.varieties(),
     queryFn: () => get<Variety[]>('/varieties'),
@@ -88,15 +91,15 @@ export default function Variedades() {
         <h1 className="encabezado__titulo">Variedades</h1>
         {summary !== null && <p className="pie variedades__resumen">{summary}</p>}
         <div className="variedades__acciones">
-          <Link to={CATALOG} className="boton">
+          <InAppLink to={CATALOG} className="boton">
             Mandar catálogo
-          </Link>
-          <Link to={ENTRY_NEW} className="boton boton--suave">
+          </InAppLink>
+          <InAppLink to={STOCK_ENTRY_NEW} className="boton boton--suave">
             + Entrada de stock
-          </Link>
-          <Link to={VARIETY_NEW} className="boton--enlace variedades__nueva">
+          </InAppLink>
+          <InAppLink to={VARIETY_NEW} className="boton--enlace variedades__nueva">
             Nueva variedad
-          </Link>
+          </InAppLink>
         </div>
         {failure !== null && (failure instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />)}
         {failure === null && !ready && <Loading />}
@@ -109,11 +112,7 @@ export default function Variedades() {
         {rows.length > 0 && (
           <div className="lista-variedades">
             {rows.map(({ variety, row }) => (
-              <NavLink
-                key={variety.id}
-                to={VARIETY(variety.id)}
-                className={({ isActive }) => (isActive ? 'variedad-fila variedad-fila--activa' : 'variedad-fila')}
-              >
+              <VarietyRowLink key={variety.id} to={pathTo(VARIETY, { id: variety.id })} replace={computer}>
                 <span className="variedad-fila__encabezado">
                   <MarcaEstado estado={row.status} />
                   <span className="variedad-fila__nombre">{variety.name}</span>
@@ -127,14 +126,14 @@ export default function Variedades() {
                       : `${formatMoney(variety.current_price.list_price)} x g`}
                   </span>
                 </span>
-              </NavLink>
+              </VarietyRowLink>
             ))}
           </div>
         )}
-        <Link to={ENTRIES} className="variedades__todas">
+        <InAppLink to={STOCK} className="variedades__todas">
           <span>Todas las entradas</span>
           <span aria-hidden="true">›</span>
-        </Link>
+        </InAppLink>
       </div>
     </main>
   )

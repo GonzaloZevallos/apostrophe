@@ -23,6 +23,7 @@ import { readStock } from '../../api/stock'
 import type { SuccessToast } from '../../components/AvisoExito'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import GoneScreen from '../../components/GoneScreen'
+import InAppLink from '../../components/InAppLink'
 import LeaveConfirm from '../../components/LeaveConfirm'
 import Loading from '../../components/Loading'
 import MarcaEstado from '../../components/MarcaEstado'
@@ -30,8 +31,7 @@ import SinConexion from '../../components/SinConexion'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
 import { useFlash } from '../../flash/useFlash'
 import { formatGrams, formatMoney } from '../../format/money'
-import { CATALOG_SECTION_ID, VARIETIES } from '../../routes'
-import { ENTRY_NEW, VARIETY_PRICE_NEW } from '../../legacyVarietyPaths'
+import { CATALOG_SECTION_ID, STOCK_ENTRY_NEW, VARIETIES, VARIETY_PRICE_NEW, pathTo } from '../../routes'
 import { NO_PRICE_TODAY, type Variety } from '../Variedades'
 import type { PriceRow } from './PriceRows'
 import CatalogAttributesForm from './CatalogAttributesForm'
@@ -173,12 +173,12 @@ export default function VarietyPage({ varietyId }: { varietyId: number }) {
         )}
 
         <div className="variedad-acciones">
-          <Link className="boton boton--suave" to={`${ENTRY_NEW}?variety=${varietyId}`}>
+          <InAppLink className="boton boton--suave" to={`${STOCK_ENTRY_NEW}?variety=${varietyId}`}>
             + Entrada
-          </Link>
-          <Link className="boton boton--suave" to={VARIETY_PRICE_NEW(varietyId)}>
+          </InAppLink>
+          <InAppLink className="boton boton--suave" to={pathTo(VARIETY_PRICE_NEW, { id: varietyId })}>
             Nuevo precio
-          </Link>
+          </InAppLink>
         </div>
 
         <VarietyStockSection stock={stock} varietyId={varietyId} today={me.today} />

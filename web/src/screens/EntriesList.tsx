@@ -10,7 +10,7 @@
 
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link, useOutletContext } from 'react-router'
+import { useOutletContext } from 'react-router'
 import { ApiError, NetworkError, get } from '../api/client'
 import { invalidateResource, keys } from '../api/keys'
 import type { Me } from '../api/me'
@@ -20,14 +20,14 @@ import ConfirmDialog from '../components/ConfirmDialog'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import GoneNotice from '../components/GoneNotice'
 import GoneScreen from '../components/GoneScreen'
+import InAppLink from '../components/InAppLink'
 import Loading from '../components/Loading'
 import SinConexion from '../components/SinConexion'
-import { useHistoryBack } from '../components/useHistoryBack'
+import { useBackOr } from '../components/useBackOr'
 import { useFlash } from '../flash/useFlash'
 import { formatDate } from '../format/dates'
 import { formatGrams, formatMoney } from '../format/money'
-import { VARIETIES } from '../routes'
-import { ENTRY, VARIETY } from '../legacyVarietyPaths'
+import { STOCK_ENTRY, VARIETIES, VARIETY, pathTo } from '../routes'
 import type { Variety } from './Variedades'
 import { ORIGIN_LABEL } from './originLabel'
 
@@ -50,7 +50,7 @@ export default function EntriesList({ varietyId }: Props) {
   const me = useOutletContext<Me>()
   const queryClient = useQueryClient()
   const flash = useFlash()
-  const back = useHistoryBack(varietyId === undefined ? VARIETIES : VARIETY(varietyId))
+  const back = useBackOr(varietyId === undefined ? VARIETIES : pathTo(VARIETY, { id: varietyId }))
 
   const stockQuery = useQuery({ queryKey: keys.stock(), queryFn: readStock })
   const varietiesQuery = useQuery({
@@ -154,7 +154,7 @@ export default function EntriesList({ varietyId }: Props) {
                 )}
               </span>
               <span className="fila-entrada__acciones">
-                <Link to={ENTRY(entry.id)}>Editar</Link>
+                <InAppLink to={pathTo(STOCK_ENTRY, { id: entry.id })}>Editar</InAppLink>
                 <button type="button" className="boton--enlace" onClick={() => setConfirming(entry)}>
                   Borrar
                 </button>

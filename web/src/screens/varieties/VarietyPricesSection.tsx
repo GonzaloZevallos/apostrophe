@@ -3,8 +3,8 @@
  * borrar"), and "Ver todas" to the whole history.
  */
 
-import { Link } from 'react-router'
-import { VARIETY_PRICES } from '../../legacyVarietyPaths'
+import InAppLink from '../../components/InAppLink'
+import { VARIETY_PRICES, pathTo } from '../../routes'
 import PriceRows, { type PriceRow } from './PriceRows'
 
 export default function VarietyPricesSection({
@@ -20,7 +20,7 @@ export default function VarietyPricesSection({
     <section className="seccion-variedad">
       <div className="seccion-variedad__cabecera">
         <h2 className="seccion-variedad__titulo">Precios</h2>
-        <Link to={VARIETY_PRICES(varietyId)}>Ver todas</Link>
+        <InAppLink to={pathTo(VARIETY_PRICES, { id: varietyId })}>Ver todas</InAppLink>
       </div>
       <PriceRows varietyId={varietyId} history={history} currentPriceId={currentPriceId} limit={3} />
     </section>
