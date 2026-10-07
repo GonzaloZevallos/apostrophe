@@ -2486,7 +2486,8 @@ body {
   box-shadow: none;
 }
 
-.fila-entrada__volver {
+.fila-entrada__volver,
+.fila-entrada__volver .boton--enlace {
   align-self: flex-start;
   text-decoration: none;
   box-shadow: none;

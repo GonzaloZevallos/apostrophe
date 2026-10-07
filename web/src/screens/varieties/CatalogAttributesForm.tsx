@@ -20,6 +20,7 @@ import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import { GENERIC_REFUSAL_MESSAGE } from '../Variedades'
 import { INDICA_SHARE_INVALID_MESSAGE, fieldOfRefusal, type CatalogField } from './catalogFormErrors'
+import Boton from '../../components/Boton'
 
 export const CATALOG_ATTRIBUTES_SAVED: SuccessToast = 'Catálogo guardado'
 
@@ -172,9 +173,9 @@ export default function CatalogAttributesForm({ row, onDone, onCancel, onDirtyCh
           </span>
         )}
         {offline && <SinConexion />}
-        <button className="boton" type="submit" disabled={sending}>
+        <Boton textOnly="submit" type="submit" disabled={sending}>
           Guardá el catálogo
-        </button>
+        </Boton>
       </form>
     </div>
   )

@@ -19,6 +19,7 @@ import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
 import { isGone } from '../../api/refusals'
 import { deleteWithdrawal, getWithdrawal } from '../../api/stock'
+import Boton from '../../components/Boton'
 import ConfirmDialog from '../../components/ConfirmDialog'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import GoneScreen from '../../components/GoneScreen'
@@ -167,9 +168,9 @@ export default function WithdrawalDetail() {
           <InAppLink className="boton" to={pathTo(WITHDRAWAL_EDIT, { id: withdrawal.id })}>
             Editar
           </InAppLink>
-          <button type="button" className="boton boton--destructivo" onClick={() => setConfirmingDelete(true)}>
+          <Boton variant="destructive" icon="tacho" onClick={() => setConfirmingDelete(true)}>
             Borrar
-          </button>
+          </Boton>
         </div>
       </div>
       {confirmingDelete && (

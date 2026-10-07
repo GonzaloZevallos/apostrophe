@@ -19,6 +19,7 @@ import {
 import type { SuccessToast } from '../../components/AvisoExito'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
+import Boton from '../../components/Boton'
 import {
   GENERIC_REFUSAL_MESSAGE,
   NAME_INVALID_MESSAGE,
@@ -106,9 +107,9 @@ export default function RenameForm({ variety, onDone, onCancel, onDirtyChange, o
           )}
         </label>
         {offline && <SinConexion />}
-        <button className="boton" type="submit" disabled={sending}>
+        <Boton textOnly="submit" type="submit" disabled={sending}>
           Guardá el nombre
-        </button>
+        </Boton>
       </form>
     </div>
   )

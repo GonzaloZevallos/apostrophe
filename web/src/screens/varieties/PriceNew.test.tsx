@@ -11,6 +11,8 @@ import { afterEach, expect, test, vi } from 'vitest'
 import { catalogQueryOptions } from '../../api/catalog'
 import { VARIETY, VARIETY_PRICE_NEW, pathTo } from '../../routes'
 import { ME, api, jsonResponse, renderVarieties, writes, type FetchImpl } from './renderVarieties'
+import { LIMITS } from '../../copy/limits'
+import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 
 const VARIETY_PATH = pathTo(VARIETY, { id: 1 })
 const NEW_PATH = pathTo(VARIETY_PRICE_NEW, { id: 1 })
@@ -195,4 +197,12 @@ test('a variety that vanishes while saving shows the gone screen', async () => {
   await user.click(screen.getByRole('button', { name: 'Guardá el precio' }))
 
   expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
+})
+
+test('the form keeps the icon and text rule, its help lines within their limits', async () => {
+  await renderOpened(api({}))
+
+  await screen.findByLabelText('Rige desde')
+  expect(document.querySelectorAll('[data-copy="help"]')).toHaveLength(3)
+  expectIconAndTextRule(document.body, { limits: LIMITS })
 })
