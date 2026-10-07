@@ -20,6 +20,7 @@ from sqlalchemy.orm import InstrumentedAttribute, Session
 from sqlalchemy.sql.elements import ColumnElement
 
 from app.customers.adapters.tables import CustomerRow
+from app.db import flush_or_refuse
 from app.payments.adapters.tables import PaymentRow
 from app.sales.adapters.tables import SaleLineRow, SaleRow
 from app.sales.application.ports import SaleView, SaleViewCustomer, SaleViewLine
@@ -58,7 +59,7 @@ class SqlSales:
         if sale.payment is not None:
             self._session.add(self._payment_row(row.id, sale.payment, sale.recorded_at))
 
-        self._session.flush()
+        flush_or_refuse(self._session)
         return self._assemble(row)
 
     def get(self, sale_id: int) -> Sale | None:

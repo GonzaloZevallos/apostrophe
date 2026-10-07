@@ -1,7 +1,11 @@
-from sqlalchemy import ColumnElement, select
+from sqlalchemy import ColumnElement, delete, exists, select
 from sqlalchemy.orm import Session, selectinload
 
+from app.db import flush_or_refuse
+from app.sales.adapters.tables import SaleLineRow
 from app.shared.grams import Grams
+from app.shared.reference import ReferenceRefused
+from app.stock.adapters.tables import StockEntryRow
 from app.varieties.adapters.tables import PriceEntryRow, VarietyRow
 from app.varieties.domain.variety import NameHolder, PriceEntry, Variety, VarietyName
 
@@ -46,7 +50,9 @@ class SqlVarieties:
     def save(self, variety: Variety) -> Variety:
         assert variety.id is not None, "save takes a variety that was added"
         row = self._row(variety.id)
-        assert row is not None, "save takes a variety of this business"
+        if row is None:
+            # Deleted by a partner since it was read: the caller asks its own lookup.
+            raise ReferenceRefused
         row.name = variety.name.value
         row.name_key = variety.name.key
         row.archived_at = variety.archived_at
@@ -55,7 +61,7 @@ class SqlVarieties:
             *(r for r in row.price_entries if r.id in kept),
             *(self._entry_row(e) for e in variety.price_entries if e.id is None),
         ]
-        self._session.flush()
+        flush_or_refuse(self._session)
         return _variety(row)
 
     def name_holder(self, name: VarietyName, *, other_than: int | None = None) -> NameHolder | None:
@@ -68,6 +74,43 @@ class SqlVarieties:
         if found is None:
             return None
         return NameHolder.LIVE if found.archived_at is None else NameHolder.ARCHIVED
+
+    def has_history(self, variety_id: int) -> bool:
+        return bool(self._session.scalar(select(self._history_exists(variety_id))))
+
+    def remove_price_entries(self, variety_id: int) -> None:
+        self._session.execute(
+            delete(PriceEntryRow).where(
+                PriceEntryRow.variety_id == variety_id,
+                PriceEntryRow.business_id == self._business_id,
+            )
+        )
+        self._session.expire_all()
+
+    def remove_unused(self, variety_id: int) -> bool:
+        """One statement: the history check and the delete cannot be pulled apart by a
+        sale or an entry recorded in between (the foreign keys close the rest)."""
+        statement = (
+            delete(VarietyRow)
+            .where(
+                VarietyRow.id == variety_id,
+                VarietyRow.business_id == self._business_id,
+                ~self._history_exists(variety_id),
+            )
+            .returning(VarietyRow.id)
+        )
+        removed = self._session.execute(statement).first()
+        self._session.expire_all()
+        return removed is not None
+
+    def _history_exists(self, variety_id: int) -> ColumnElement[bool]:
+        lines = exists().where(
+            SaleLineRow.variety_id == variety_id, SaleLineRow.business_id == self._business_id
+        )
+        entries = exists().where(
+            StockEntryRow.variety_id == variety_id, StockEntryRow.business_id == self._business_id
+        )
+        return lines | entries
 
     def _row(self, variety_id: int) -> VarietyRow | None:
         statement = select(VarietyRow).where(

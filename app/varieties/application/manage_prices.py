@@ -1,7 +1,9 @@
 from datetime import date
 
 from app.shared.grams import Grams
+from app.shared.reference import ReferenceRefused
 from app.shared.transaction import Transaction
+from app.varieties.application.errors import VarietyArchived
 from app.varieties.application.manage_varieties import get_variety
 from app.varieties.application.ports import Varieties
 from app.varieties.domain.variety import PriceEntry
@@ -18,7 +20,15 @@ def record_price_entry(
 ) -> PriceEntry:
     variety = get_variety(varieties, variety_id)
     variety.record_price(PriceEntry.of(effective_from, list_price, bulk_price, bulk_minimum))
-    stored = varieties.save(variety)
+    try:
+        stored = varieties.save(variety)
+    except ReferenceRefused:
+        transaction.rollback()
+        # Gone or archived is the variety's own refusal (`get_variety` raises it for a
+        # missing one); a variety still live and present re-raises the signal as it came.
+        if get_variety(varieties, variety_id).is_archived:
+            raise VarietyArchived(variety_id) from None
+        raise
     transaction.commit()
     return next(e for e in stored.price_entries if e.effective_from == effective_from)
 
