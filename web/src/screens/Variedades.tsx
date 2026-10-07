@@ -50,6 +50,7 @@ interface PriceEntry {
 export interface Variety {
   id: number
   name: string
+  archived: boolean
   current_price: PriceEntry | null
 }
 

@@ -11,6 +11,8 @@
 export type SuccessToast =
   | 'Cliente guardado'
   | 'Variedad guardada'
+  | 'Variedad eliminada'
+  | 'Variedad archivada'
   | 'Precio guardado'
   | 'Precio eliminado'
   | 'Gasto guardado'

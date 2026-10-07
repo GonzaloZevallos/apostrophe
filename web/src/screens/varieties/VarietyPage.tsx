@@ -20,6 +20,7 @@ import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
 import { isGone } from '../../api/refusals'
 import { readStock } from '../../api/stock'
+import type { VarietyDetail } from '../../api/varieties'
 import type { SuccessToast } from '../../components/AvisoExito'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import GoneScreen from '../../components/GoneScreen'
@@ -38,6 +39,7 @@ import RenameForm from './RenameForm'
 import ThresholdForm from './ThresholdForm'
 import VarietyCatalogSection from './VarietyCatalogSection'
 import { readForm, useOpenForm } from './varietyForms'
+import VarietyRemoval from './VarietyRemoval'
 import VarietyPricesSection from './VarietyPricesSection'
 import VarietyStockSection from './VarietyStockSection'
 import VarietyThresholdSection from './VarietyThresholdSection'
@@ -62,7 +64,7 @@ export default function VarietyPage({ varietyId }: { varietyId: number }) {
   const { blocker, disarm } = useLeaveGuard(dirty)
   const onDirtyChange = useCallback((value: boolean) => setDirty(value), [])
 
-  const varietyQuery = useQuery({ queryKey: keys.variety(id), queryFn: () => get<Variety>(`/varieties/${id}`) })
+  const varietyQuery = useQuery({ queryKey: keys.variety(id), queryFn: () => get<VarietyDetail & Variety>(`/varieties/${id}`) })
   const pricesQuery = useQuery({
     queryKey: keys.varietyPrices(id),
     queryFn: () => get<PriceRow[]>(`/varieties/${id}/prices`),
@@ -189,6 +191,7 @@ export default function VarietyPage({ varietyId }: { varietyId: number }) {
         {row !== undefined && <VarietyThresholdSection varietyId={varietyId} row={row} refreshing={stockQuery.isFetching} onGone={() => setGone(true)} />}
         {catalogRow !== null && <VarietyCatalogSection row={catalogRow} />}
         {catalogQuery.isError && (catalogQuery.error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />)}
+        <VarietyRemoval varietyId={varietyId} removal={variety.removal} grams={row?.grams ?? null} />
       </div>
       {blocker.state === 'blocked' && (
         <LeaveConfirm
