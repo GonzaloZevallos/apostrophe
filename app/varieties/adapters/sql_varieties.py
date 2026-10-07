@@ -74,6 +74,7 @@ class SqlVarieties:
             list_price=entry.list_price,
             bulk_price=entry.bulk.price if entry.bulk else None,
             bulk_minimum_hundredths=entry.bulk.minimum.hundredths if entry.bulk else None,
+            vip_price=entry.vip_price,
         )
 
 
@@ -92,5 +93,6 @@ def _entry(row: PriceEntryRow) -> PriceEntry:
         list_price=row.list_price,
         bulk_price=row.bulk_price,
         bulk_minimum=None if minimum is None else Grams(minimum),
+        vip_price=row.vip_price,
         id=row.id,
     )
