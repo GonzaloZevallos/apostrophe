@@ -372,11 +372,14 @@ body {
   padding: var(--espacio-md) var(--margen-pantalla) 0;
 }
 
-/* The arrow is a thumb target (`ventasTelefono.spec.ts` measures every button at 44 px). */
+/* The arrow is a thumb target (`ventasTelefono.spec.ts` measures every button at 44 px): its
+ * box is 44 px tall and the negative margin gives back what it adds, so the card's header
+ * does not move. */
 .flecha-atras .boton--enlace {
   display: inline-flex;
   align-items: center;
   min-height: var(--alto-tocable);
+  margin-block: calc((19px - var(--alto-tocable)) / 2);
 }
 
 .riel-lateral {
