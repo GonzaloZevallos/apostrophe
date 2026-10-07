@@ -14,7 +14,7 @@ import type { Me } from '../../api/me'
 import FlashProvider from '../../flash/FlashProvider'
 import { router as appRouter } from '../../router'
 import Shell from '../../shell/Shell'
-import { VARIETIES, relative } from '../../routes'
+import { VARIETIES, VARIETY as VARIETY_TEMPLATE, relative } from '../../routes'
 import { VARIETY } from '../../legacyVarietyPaths'
 import VarietyPage from './VarietyPage'
 import VarietyRoute from './VarietyRoute'
@@ -117,7 +117,7 @@ function renderPage(path: string, overrides: Answers = {}, state: unknown = null
             children: [
               { path: relative(VARIETIES), element: <main>Pantalla Variedades</main> },
               {
-                path: relative(VARIETY(':id')),
+                path: relative(VARIETY_TEMPLATE),
                 element: <VarietyRoute render={(varietyId) => <VarietyPage varietyId={varietyId} />} />,
                 // The handle the app's own route table declares, so the shell draws the same chrome.
                 handle: matchRoutes(appRouter.routes, VARIETY(1))?.at(-1)?.route.handle,

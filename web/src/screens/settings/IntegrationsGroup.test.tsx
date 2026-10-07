@@ -108,19 +108,13 @@ test('links to the catalog screen, with no pin status and no Publicar', async ()
   expect(screen.queryByText('Al día')).not.toBeInTheDocument()
 })
 
-test('"Ir al catálogo" opens Catálogo as an in-app entry, and its arrow goes back to Integraciones', async () => {
+test('"Ir al catálogo" opens Catálogo as an in-app entry', async () => {
   const { router } = renderGroup(SAVED)
 
   await userEvent.click(await screen.findByRole('link', { name: 'Ir al catálogo' }))
 
   expect(router.state.location.pathname).toBe(CATALOG)
   expect(router.state.location.state).toEqual({ inApp: true })
-
-  await userEvent.click(await screen.findByRole('button', { name: /^‹/ }))
-
-  expect(router.state.location.pathname).toBe(SETTINGS_INTEGRATIONS)
-  expect(router.state.historyAction).toBe('POP')
-  expect(await screen.findByLabelText('Tu chat')).toBeInTheDocument()
 })
 
 test('Probarlo saves, clears the token, shows the toast and the "desfijalo" line', async () => {

@@ -109,7 +109,7 @@ const SCREENS: Case[] = [
     route: pathTo(CUSTOMER_EDIT, { id: 7 }),
     path: CUSTOMER_EDIT,
   },
-  { name: 'VentaDetalle', element: () => <VentaDetalle />, route: pathTo(SALE, { id: 9 }), path: SALE },
+  { name: 'VentaDetalle', element: () => <VentaDetalle />, route: pathTo(SALE, { id: 9 }), path: SALE, dataRouter: true },
   { name: 'Gastos', element: () => <Gastos />, route: EXPENSES, path: EXPENSES },
   { name: 'Todas las entradas', element: () => <EntriesList />, route: STOCK, path: STOCK },
   {

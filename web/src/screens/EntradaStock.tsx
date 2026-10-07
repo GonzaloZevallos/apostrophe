@@ -12,9 +12,9 @@
  * either what was typed or, after saving, the API's own answer.
  */
 
-import { type FormEvent, useEffect, useRef, useState } from 'react'
+import { type FormEvent, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useBlocker, useOutletContext, useParams, useSearchParams } from 'react-router'
+import { useOutletContext, useParams, useSearchParams } from 'react-router'
 import { ApiError, NetworkError, UNKNOWN_CODE, get } from '../api/client'
 import { invalidateResource, keys } from '../api/keys'
 import type { Me } from '../api/me'
@@ -36,6 +36,7 @@ import GoneScreen from '../components/GoneScreen'
 import SinConexion from '../components/SinConexion'
 import Loading from '../components/Loading'
 import { useHistoryBack } from '../components/useHistoryBack'
+import { useLeaveGuard } from '../components/useLeaveGuard'
 import { useFlash } from '../flash/useFlash'
 import { formatDate } from '../format/dates'
 import { formatGrams, formatMoney } from '../format/money'
@@ -159,9 +160,6 @@ function EntradaStockBody({ mode, entryId, today, initial, chosenVariety, hasEnt
   const queryClient = useQueryClient()
   const flash = useFlash()
   const back = useHistoryBack(mode === 'nuevo' ? VARIETIES : ENTRIES)
-  const leftRef = useRef(false)
-  const dirtyRef = useRef(false)
-  const blocker = useBlocker(() => dirtyRef.current && !leftRef.current)
 
   const varietiesQuery = useQuery({
     queryKey: keys.varieties(),
@@ -195,12 +193,10 @@ function EntradaStockBody({ mode, entryId, today, initial, chosenVariety, hasEnt
     grams !== (initial !== undefined ? String(initial.grams) : '') ||
     totalCost !== (initial?.total_cost != null ? String(initial.total_cost) : '') ||
     note !== (initial?.note ?? '')
-  useEffect(() => {
-    dirtyRef.current = dirty
-  }, [dirty])
+  const { blocker, disarm } = useLeaveGuard(dirty)
 
   function leave(toast: 'Entrada guardada' | 'Entrada eliminada'): void {
-    leftRef.current = true
+    disarm()
     flash.armAfterLeaving(toast)
     back()
   }

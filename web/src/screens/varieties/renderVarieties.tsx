@@ -10,8 +10,8 @@ import { Link, Outlet, RouterProvider, createMemoryRouter } from 'react-router'
 import { vi } from 'vitest'
 import type { Me } from '../../api/me'
 import FlashProvider from '../../flash/FlashProvider'
-import { VARIETIES, relative } from '../../routes'
-import { VARIETY, VARIETY_PRICES, VARIETY_PRICE_NEW } from '../../legacyVarietyPaths'
+import { VARIETIES, VARIETY as VARIETY_TEMPLATE, VARIETY_PRICE_NEW as PRICE_NEW_TEMPLATE, VARIETY_PRICES as PRICES_TEMPLATE, relative } from '../../routes'
+import { VARIETY_PRICES, VARIETY_PRICE_NEW } from '../../legacyVarietyPaths'
 import PriceHistory from './PriceHistory'
 import PriceNew from './PriceNew'
 import VarietyRoute from './VarietyRoute'
@@ -72,7 +72,7 @@ export function renderVarieties(initialEntries: string[], fetchImpl: FetchImpl) 
             element: <main>Pantalla Variedades</main>,
           },
           {
-            path: relative(VARIETY(':id')),
+            path: relative(VARIETY_TEMPLATE),
             element: (
               <main>
                 <span>Página de la variedad</span>
@@ -82,11 +82,11 @@ export function renderVarieties(initialEntries: string[], fetchImpl: FetchImpl) 
             ),
           },
           {
-            path: relative(VARIETY_PRICES(':id')),
+            path: relative(PRICES_TEMPLATE),
             element: <VarietyRoute render={(varietyId) => <PriceHistory varietyId={varietyId} />} />,
           },
           {
-            path: relative(VARIETY_PRICE_NEW(':id')),
+            path: relative(PRICE_NEW_TEMPLATE),
             element: <VarietyRoute render={(varietyId) => <PriceNew varietyId={varietyId} />} />,
           },
         ],
