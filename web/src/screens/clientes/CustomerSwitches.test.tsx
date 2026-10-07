@@ -11,6 +11,8 @@ import { afterEach, expect, test, vi } from 'vitest'
 import type { Me } from '../../api/me'
 import Ventas from '../ventas/Ventas'
 import ClienteFicha from './ClienteFicha'
+import Clientes from './Clientes'
+import ClientesLayout from './ClientesLayout'
 import ClienteForm from './ClienteForm'
 
 const ME: Me = { email: 'a@b.com', business_name: 'Negocio', today: '2026-10-03' }
@@ -39,6 +41,9 @@ function renderAt(path: string): void {
         <Routes>
           <Route element={<Outlet context={ME} />}>
             <Route path="/ventas" element={<Ventas />} />
+            <Route element={<ClientesLayout />}>
+              <Route path="/clientes" element={<Clientes />} />
+            </Route>
             <Route path="/clientes/nuevo" element={<ClienteForm mode="nuevo" />} />
             <Route path="/clientes/:id" element={<ClienteFicha />} />
           </Route>
@@ -112,5 +117,22 @@ test('the customer form has no VIP field while Clientes VIP is off', async () =>
   stub(false, {})
   renderAt('/clientes/nuevo')
   expect(await screen.findByText('Nombre')).toBeInTheDocument()
+  expect(screen.queryByText('VIP')).not.toBeInTheDocument()
+})
+
+const LIST_FER = { ...FER, id: 3, name: 'Fer', owing_since: null }
+const LIST_ANSWERS = { '/customers': [LIST_FER], '/payments/debtors': { total_owed: 0, sales_owing_count: 0, debtors: [] } }
+
+test('the Clientes list shows a VIP customer\'s mark only while Clientes VIP is on', async () => {
+  stub(true, LIST_ANSWERS)
+  renderAt('/clientes')
+  expect(await screen.findByText('Fer')).toBeInTheDocument()
+  expect(screen.getByText('VIP')).toBeInTheDocument()
+})
+
+test('the Clientes list hides a VIP customer\'s mark while Clientes VIP is off', async () => {
+  stub(false, LIST_ANSWERS)
+  renderAt('/clientes')
+  expect(await screen.findByText('Fer')).toBeInTheDocument()
   expect(screen.queryByText('VIP')).not.toBeInTheDocument()
 })
