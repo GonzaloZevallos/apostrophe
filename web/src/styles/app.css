@@ -3837,3 +3837,8 @@ body {
   flex-direction: column;
   gap: var(--espacio-md);
 }
+
+/* A host element that adds no box of its own: its children lay out as the parent's. */
+.sin-caja {
+  display: contents;
+}
