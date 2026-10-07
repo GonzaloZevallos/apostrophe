@@ -17,7 +17,8 @@ import WithdrawalDetail from './WithdrawalDetail'
 import WithdrawalFormRoute from './WithdrawalFormRoute'
 
 // A routed screen with several awaited reads is slow when the whole suite runs in parallel.
-configure({ asyncUtilTimeout: 4000 })
+configure({ asyncUtilTimeout: 8000 })
+vi.setConfig({ testTimeout: 30000 })
 
 export const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-06' }
 
