@@ -227,11 +227,16 @@ def test_bulk_minimum_is_measured_per_line_never_summed() -> None:
     assert [line.pricing_rule for line in sale.lines] == [PricingRule.LIST, PricingRule.LIST]
 
 
-def test_vip_prices_every_line_at_bulk_even_without_reaching_the_minimum() -> None:
+def test_vip_prices_every_line_at_its_vip_price_even_without_reaching_the_minimum() -> None:
+    with_vip = PriceQuote(
+        list_price=1_000,
+        bulk=BulkQuote(price=700, minimum=Grams.of(10)),
+        vip_price=700,
+    )
     sale = _record(
         customer=VIP,
         customer_id=1,
-        lines=[_line(quote=WITH_BULK, grams=Grams.of(1))],
+        lines=[_line(quote=with_vip, grams=Grams.of(1))],
         method=PaymentMethod.CASH,
     )
 
