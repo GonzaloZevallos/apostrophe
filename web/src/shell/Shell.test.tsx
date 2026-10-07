@@ -15,6 +15,7 @@ import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Outlet, RouterProvider, useLocation, type RouteObject } from 'react-router'
 import { expect, test, vi } from 'vitest'
 import type { Me } from '../api/me'
+import { inAppState } from '../components/inAppState'
 import InAppLink from '../components/InAppLink'
 import {
   ANALYSIS,
