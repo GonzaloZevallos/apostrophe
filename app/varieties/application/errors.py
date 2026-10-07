@@ -34,3 +34,13 @@ class NameHeldByArchived(ValueError):
 
     def __init__(self) -> None:
         super().__init__("the name belongs to an archived variety")
+
+
+class VarietyHasHistory(ValueError):
+    """A delete was refused because the variety has sale lines or stock entries: fixed
+    text, nothing of the variety is repeated."""
+
+    code: ClassVar[str] = "variety.has_history"
+
+    def __init__(self) -> None:
+        super().__init__("the variety has history, so it can only be archived")

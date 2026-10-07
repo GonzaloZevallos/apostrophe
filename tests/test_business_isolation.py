@@ -365,9 +365,7 @@ def _assert_another_business_cannot_reach_a_record(
     comparison against a deliberately broken route, instead of a copy of it."""
     before = _lists_snapshot(business_a)
 
-    response = business_b.request(
-        method, _concrete(path, seeded), json=BODIES.get((method, path))
-    )
+    response = business_b.request(method, _concrete(path, seeded), json=BODIES.get((method, path)))
 
     assert response.status_code == 404, response.text
     for read in [p for m, p in BY_ID if m == "GET"]:
@@ -665,9 +663,7 @@ def test_the_singleton_check_catches_a_write_that_always_touches_business_1(
     ) -> manage_business.BusinessProfile:
         return original_rename_business(accounts, transaction, 1, raw_name)
 
-    monkeypatch.setattr(
-        manage_business, "rename_business", renames_business_one_no_matter_who_asks
-    )
+    monkeypatch.setattr(manage_business, "rename_business", renames_business_one_no_matter_who_asks)
 
     with pytest.raises(AssertionError):
         _assert_a_business_s_write_touches_only_its_own_business(
@@ -898,8 +894,7 @@ def test_another_business_s_analysis_is_exactly_the_empty_shape(
         "weeks": [],
         "months": [],
         "weekdays": [
-            {"weekday": weekday, "sales": 0, "count": 0, "best": False}
-            for weekday in range(1, 8)
+            {"weekday": weekday, "sales": 0, "count": 0, "best": False} for weekday in range(1, 8)
         ],
         "since_first_record": None,
         "month_expenses": {"categories": [], "total": 0, "purchases": 0},
@@ -915,6 +910,7 @@ def test_another_business_s_analysis_is_exactly_the_empty_shape(
         ("POST", "/varieties/{id}/restore"),
         ("PATCH", "/varieties/{id}"),
         ("POST", "/varieties/{id}/prices"),
+        ("DELETE", "/varieties/{id}"),
     ],
 )
 def test_another_business_cannot_reach_an_archived_variety(
@@ -931,3 +927,18 @@ def test_another_business_cannot_reach_an_archived_variety(
     b_archived = business_b.get("/varieties", params={"archived": "true"}).json()
     assert b_archived == []
     assert business_a.get(f"/varieties/{variety['id']}").json()["archived"] is True
+
+
+@pytest.mark.parametrize("archived", [False, True])
+def test_another_business_cannot_delete_a_variety_with_no_history(
+    business_a: TestClient, business_b: TestClient, archived: bool
+) -> None:
+    variety = business_a.post("/varieties", json={"name": f"{MARKER} deletable"}).json()
+    if archived:
+        business_a.post(f"/varieties/{variety['id']}/archive")
+
+    response = business_b.delete(f"/varieties/{variety['id']}")
+
+    assert response.status_code == 404, response.text
+    assert response.json()["code"] == "variety.not_found"
+    assert business_a.get(f"/varieties/{variety['id']}").status_code == 200

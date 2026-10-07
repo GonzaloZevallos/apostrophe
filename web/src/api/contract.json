@@ -20,6 +20,7 @@
     "variety.archived": { "kind": "gone" },
     "variety.name_taken": { "kind": "refusal" },
     "variety.name_archived": { "kind": "refusal" },
+    "variety.has_history": { "kind": "refusal" },
     "variety.rule_broken": { "kind": "refusal" },
     "variety.name_invalid": { "kind": "refusal" },
     "variety.price_entry_invalid": { "kind": "refusal" },

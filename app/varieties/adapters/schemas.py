@@ -1,6 +1,6 @@
 from datetime import date
 from decimal import Decimal
-from typing import Annotated
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, PlainSerializer
 
@@ -58,3 +58,10 @@ class VarietyOut(BaseModel):
             current_price=None if price is None else PriceEntryOut.of(price),
             archived=variety.is_archived,
         )
+
+
+class VarietyDetailOut(VarietyOut):
+    """One variety's page: also the one removal action it offers, worked out from history
+    when it is read (`null` for an archived variety)."""
+
+    removal: Literal["delete", "archive"] | None

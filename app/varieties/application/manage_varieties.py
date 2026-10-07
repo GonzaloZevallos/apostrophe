@@ -1,8 +1,15 @@
 from datetime import datetime
+from typing import Literal
 
 from app.shared.transaction import Transaction
-from app.varieties.application.errors import NameHeldByArchived, NameTaken, VarietyNotFound
-from app.varieties.application.ports import Varieties
+from app.varieties.application.errors import (
+    NameHeldByArchived,
+    NameTaken,
+    VarietyArchived,
+    VarietyHasHistory,
+    VarietyNotFound,
+)
+from app.varieties.application.ports import Varieties, VarietyLeaving
 from app.varieties.domain.variety import NameHolder, Variety, VarietyName
 
 
@@ -62,3 +69,34 @@ def get_variety(varieties: Varieties, variety_id: int) -> Variety:
 
 def list_varieties(varieties: Varieties, *, archived: bool = False) -> list[Variety]:
     return varieties.archived() if archived else varieties.listed()
+
+
+def delete_variety(
+    varieties: Varieties,
+    leaving: VarietyLeaving,
+    transaction: Transaction,
+    variety_id: int,
+) -> None:
+    """Only a variety with no history is deleted: the common refusal writes nothing, and
+    the last word is one guarded delete after the dependents, in one transaction."""
+    variety = get_variety(varieties, variety_id)
+    if variety.is_archived:
+        raise VarietyArchived(variety_id)
+    if varieties.has_history(variety_id):
+        raise VarietyHasHistory
+    leaving.leaving(variety_id)
+    varieties.remove_price_entries(variety_id)
+    if not varieties.remove_unused(variety_id):
+        transaction.rollback()
+        raise VarietyHasHistory
+    transaction.commit()
+
+
+def removal_offered(
+    varieties: Varieties, variety: Variety
+) -> Literal["delete", "archive"] | None:
+    """`None` for an archived variety; otherwise the one removal its page offers."""
+    if variety.is_archived:
+        return None
+    assert variety.id is not None
+    return "archive" if varieties.has_history(variety.id) else "delete"

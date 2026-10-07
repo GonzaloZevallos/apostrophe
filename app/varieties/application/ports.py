@@ -32,3 +32,21 @@ class Varieties(Protocol):
     ) -> NameHolder | None:
         """Who holds `name` in this business, archived varieties included."""
         ...
+
+    def has_history(self, variety_id: int) -> bool:
+        """Any sale line or any stock entry of the variety, worked out live."""
+        ...
+
+    def remove_price_entries(self, variety_id: int) -> None: ...
+
+    def remove_unused(self, variety_id: int) -> bool:
+        """One guarded delete: the variety goes only while it still has no history, and
+        `False` says it did not."""
+        ...
+
+
+class VarietyLeaving(Protocol):
+    """What another capability removes of its own when a variety is deleted (a stock
+    threshold, catalog attributes): built for one business, writes without committing."""
+
+    def leaving(self, variety_id: int) -> None: ...
