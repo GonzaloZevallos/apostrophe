@@ -317,9 +317,8 @@ body {
 .bar-inferior {
   display: flex;
   margin-inline: calc(-1 * var(--inset-izquierda)) calc(-1 * var(--inset-derecha));
-  padding: 14px calc(16px + var(--inset-derecha)) calc(20px + var(--inset-abajo))
-    calc(16px + var(--inset-izquierda));
-  padding: 14px var(--espacio-sm) 20px;
+  padding: 14px calc(var(--espacio-sm) + var(--inset-derecha)) calc(20px + var(--inset-abajo))
+    calc(var(--espacio-sm) + var(--inset-izquierda));
   border-top: 1px solid var(--linea);
 }
 

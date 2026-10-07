@@ -166,10 +166,9 @@ test('every screen, bar, sheet and toast keeps clear of the notch and the home b
     await sheetButton.scrollIntoViewIfNeeded()
     expectInside(where('customer sheet button'), await box(page, '.cliente-sheet__contenido button', 'last'), viewport)
 
-    // Registrar cobro over the customer's card.
+    // Registrar cobro, opened from Clientes' "Cobrar a".
     await page.goto(CUSTOMERS)
-    await page.getByRole('link', { name: 'Lucía Borde' }).click()
-    await page.getByRole('button', { name: 'Registrar cobro' }).click()
+    await page.getByRole('link', { name: 'Cobrar a Lucía Borde' }).first().click()
     await setInsets(page, true)
     await page.locator('.capa__contenido button').last().scrollIntoViewIfNeeded()
     expectInside(where('cobro sheet button'), await box(page, '.capa__contenido button', 'last'), viewport)
