@@ -1,5 +1,7 @@
 from typing import ClassVar
 
+from app.varieties.domain.variety import VarietyArchived as VarietyArchived
+
 
 class VarietyNotFound(LookupError):
     code: ClassVar[str] = "variety.not_found"
@@ -15,11 +17,10 @@ class NameTaken(ValueError):
         super().__init__(f"there is already a variety called {name}")
 
 
-class VarietyArchived(LookupError):
-    """A variety that left the lists was referenced for something new: to the caller it
-    is as gone as a deleted one (docs/adr/0031)."""
+class NameHeldByArchived(ValueError):
+    """The name belongs to an archived variety: fixed text, nothing typed is repeated."""
 
-    code: ClassVar[str] = "variety.archived"
+    code: ClassVar[str] = "variety.name_archived"
 
-    def __init__(self, variety_id: int) -> None:
-        super().__init__(f"variety {variety_id} is archived")
+    def __init__(self) -> None:
+        super().__init__("the name belongs to an archived variety")

@@ -905,3 +905,29 @@ def test_another_business_s_analysis_is_exactly_the_empty_shape(
         "month_expenses": {"categories": [], "total": 0, "purchases": 0},
         "since_first_record_expenses": {"categories": [], "total": 0, "purchases": 0},
     }
+
+
+@pytest.mark.parametrize(
+    ("method", "path"),
+    [
+        ("GET", "/varieties/{id}"),
+        ("POST", "/varieties/{id}/archive"),
+        ("POST", "/varieties/{id}/restore"),
+        ("PATCH", "/varieties/{id}"),
+        ("POST", "/varieties/{id}/prices"),
+    ],
+)
+def test_another_business_cannot_reach_an_archived_variety(
+    business_a: TestClient, business_b: TestClient, method: str, path: str
+) -> None:
+    variety = business_a.post("/varieties", json={"name": f"{MARKER} archived"}).json()
+    business_a.post(f"/varieties/{variety['id']}/archive")
+    body = {"name": "Renamed", "effective_from": "2026-02-01", "list_price": 12_000}
+
+    response = business_b.request(method, path.format(id=variety["id"]), json=body)
+
+    assert response.status_code == 404, response.text
+    assert response.json()["code"] == "variety.not_found"
+    b_archived = business_b.get("/varieties", params={"archived": "true"}).json()
+    assert b_archived == []
+    assert business_a.get(f"/varieties/{variety['id']}").json()["archived"] is True

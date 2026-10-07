@@ -46,6 +46,7 @@ class VarietyOut(BaseModel):
     # The price in force on the day asked for (today, unless the caller asked for
     # another day, docs/adr/0011); `null` when the variety has none that day.
     current_price: PriceEntryOut | None
+    archived: bool
 
     @classmethod
     def of(cls, variety: Variety, day: date) -> "VarietyOut":
@@ -55,4 +56,5 @@ class VarietyOut(BaseModel):
             id=variety.id,
             name=variety.name.value,
             current_price=None if price is None else PriceEntryOut.of(price),
+            archived=variety.is_archived,
         )

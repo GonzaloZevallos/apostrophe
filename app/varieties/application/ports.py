@@ -6,7 +6,9 @@ from app.varieties.domain.variety import NameHolder, Variety, VarietyName
 class Varieties(Protocol):
     """The varieties of one business: the business is fixed when the store is built,
     so nothing here can reach another business's varieties (docs/adr/0004). `add` and
-    `save` write without committing and return the variety as stored, with every id."""
+    `save` write without committing and return the variety as stored, with every id.
+    There is no `all()`: a reader chooses `listed()` or `archived()`, or `get()` and
+    reads `is_archived` itself."""
 
     def add(self, variety: Variety) -> Variety: ...
 

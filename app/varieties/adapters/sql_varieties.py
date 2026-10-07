@@ -49,6 +49,7 @@ class SqlVarieties:
         assert row is not None, "save takes a variety of this business"
         row.name = variety.name.value
         row.name_key = variety.name.key
+        row.archived_at = variety.archived_at
         kept = {e.id for e in variety.price_entries if e.id is not None}
         row.price_entries = [
             *(r for r in row.price_entries if r.id in kept),
