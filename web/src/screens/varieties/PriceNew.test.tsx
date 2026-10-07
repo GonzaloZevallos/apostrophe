@@ -9,7 +9,7 @@ import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import { catalogQueryOptions } from '../../api/catalog'
-import { VARIETY, VARIETY_PRICE_NEW } from '../../routes'
+import { VARIETY, VARIETY_PRICE_NEW } from '../../legacyVarietyPaths'
 import { ME, api, jsonResponse, renderVarieties, writes } from './renderVarieties'
 
 afterEach(() => {

@@ -8,7 +8,7 @@ import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import { catalogQueryOptions } from '../../api/catalog'
-import { VARIETY, VARIETY_PRICES } from '../../routes'
+import { VARIETY, VARIETY_PRICES } from '../../legacyVarietyPaths'
 import { api, jsonResponse, renderVarieties, writes } from './renderVarieties'
 
 afterEach(() => {

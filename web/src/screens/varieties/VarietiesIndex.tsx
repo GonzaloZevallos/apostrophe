@@ -6,7 +6,7 @@
 
 import { Navigate } from 'react-router'
 import { useIsComputer } from '../../components/useIsComputer'
-import { VARIETY } from '../../routes'
+import { VARIETY } from '../../legacyVarietyPaths'
 import Variedades from '../Variedades'
 import { useSelectedVariety } from './useSelectedVariety'
 

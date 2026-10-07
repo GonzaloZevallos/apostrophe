@@ -22,6 +22,8 @@
  * forbids there.
  */
 
+import { CUSTOMER, CUSTOMERS, CUSTOMER_NEW, SALE, SALES, SALE_NEW, VARIETIES } from '../src/routes.js'
+import { expectPath } from './helpers/url.js'
 import { expect, test } from '@playwright/test'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
@@ -47,8 +49,8 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // One priced variety, $1.000/g — round figures for every assertion below.
-  await page.goto('/varieties')
-  await page.getByRole('link', { name: 'Nueva variedad' }).click()
+  await page.goto(VARIETIES)
+  await page.getByRole('button', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Rosa')
   await page.getByRole('button', { name: 'Agregá la variedad' }).click()
   await expect(page.getByText('Variedad guardada')).toBeVisible()
@@ -59,37 +61,33 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expect(page.getByText('Precio guardado')).toBeVisible()
 
   // A customer, left owing on its first sale.
-  await page.goto('/clientes/nuevo')
+  await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Teléfono').fill('+5491155550099')
   await page.getByLabel('Nombre').fill('Carla Pérez')
   await page.getByRole('button', { name: 'Guardá y usá' }).click()
-  await expect(page).toHaveURL(/\/clientes$/)
+  await expectPath(page, CUSTOMER)
   await expect(page.getByText('Cliente guardado')).toBeVisible()
-
-  await page.getByRole('link', { name: 'Carla Pérez' }).click()
-  await expect(page).toHaveURL(/\/clientes\/\d+$/)
 
   // Sale 1: 5 g of Rosa, left owing — $5.000.
   await page.getByRole('link', { name: 'Nueva venta a Carla Pérez' }).click()
-  await expect(page).toHaveURL(/\/ventas\/nueva$/)
-  await expect(page.getByLabel('Fecha')).toHaveValue(/^\d{4}-\d{2}-\d{2}$/)
+  await expectPath(page, SALE_NEW)
   const todayIso = await page.getByLabel('Fecha').inputValue()
   const today = shortDate(todayIso)
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '5' })
   await page.getByRole('radio', { name: 'Debiendo' }).check()
   await page.getByRole('button', { name: 'Guardá la venta' }).click()
-  await expect(page).toHaveURL(/\/ventas\/\d+$/)
+  await expectPath(page, SALE)
   await expect(page.getByText('Venta guardada')).toBeVisible()
 
   // The card shows the debt, straight from the API.
-  await page.goto('/clientes')
-  await page.getByRole('link', { name: 'Carla Pérez' }).click()
+  await page.goto(CUSTOMERS)
+  await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
   await expect(page.getByText('Te debe $ 5.000')).toBeVisible()
   await expect(page.getByText(`desde el ${today}`)).toBeVisible()
   // Clientes' own header already counts her (checked again, with the figure, below).
 
   // --- Registrar cobro: "Todo" fills and settles the whole balance. ---
-  await page.getByRole('button', { name: 'Registrar cobro' }).click()
+  await page.getByRole('link', { name: 'Registrar cobro' }).click()
   await page.getByRole('button', { name: 'Todo: $ 5.000' }).click()
   await page.getByRole('radio', { name: 'Efectivo' }).check()
   await expect(page.getByText('Se descuenta de la deuda más vieja')).toBeVisible()
@@ -102,27 +100,27 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   // how it was paid and the sale as "Quedó debiendo" no more — it reads the cash
   // cobro reaching that sale instead.
   await expect(page.getByText('Te debe', { exact: false })).toHaveCount(0)
-  await expect(page.getByRole('button', { name: 'Registrar cobro' })).toHaveCount(0)
+  await expect(page.getByRole('link', { name: 'Registrar cobro' })).toHaveCount(0)
   await expect(
     page.getByText(`Cobro · efectivo · A cuenta de la venta del ${today}`),
   ).toBeVisible()
 
   // Sale 2: 8 g of Rosa, also left owing — $8.000.
   await page.getByRole('link', { name: 'Nueva venta a Carla Pérez' }).click()
-  await expect(page).toHaveURL(/\/ventas\/nueva$/)
+  await expectPath(page, SALE_NEW)
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '8' })
   await page.getByRole('radio', { name: 'Debiendo' }).check()
   await page.getByRole('button', { name: 'Guardá la venta' }).click()
-  await expect(page).toHaveURL(/\/ventas\/\d+$/)
+  await expectPath(page, SALE)
   await expect(page.getByText('Venta guardada')).toBeVisible()
 
-  await page.goto('/clientes')
-  await page.getByRole('link', { name: 'Carla Pérez' }).click()
+  await page.goto(CUSTOMERS)
+  await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
   await expect(page.getByText('Te debe $ 8.000')).toBeVisible()
 
   // --- A partial payment, by transfer: the preview names what is left before
   // saving, and the toast after saving carries the same figure (PRD metric 2). ---
-  await page.getByRole('button', { name: 'Registrar cobro' }).click()
+  await page.getByRole('link', { name: 'Registrar cobro' }).click()
   await page.getByLabel('Monto').fill('3000')
   await page.getByRole('radio', { name: 'Transferencia' }).check()
   await expect(page.getByText(`$ 3.000 a la venta del ${today}`)).toBeVisible()
@@ -144,19 +142,17 @@ test('a seller records, settles, undoes and traces payments, from the front alon
 
   // --- Te deben: opened from the Clientes header, lists her with the same figure,
   // and the total/count head the view. ---
-  await page.goto('/clientes')
-  await expect(page.getByRole('link', { name: /te deben \$ 8\.000/ })).toBeVisible()
-  await page.getByRole('link', { name: /te deben \$ 8\.000/ }).click()
-  await expect(page).toHaveURL(/\/clientes\/deben$/)
-  await expect(page.locator('.cifra-xl')).toHaveText('$ 8.000')
-  await expect(page.getByText('1 venta debiendo')).toBeVisible()
-  await page.getByRole('link', { name: 'Carla Pérez' }).click()
-  await expect(page).toHaveURL(/\/clientes\/\d+$/)
+  await page.goto(CUSTOMERS)
+  const owing = page.getByRole('region', { name: 'Te deben' })
+  await expect(owing.locator('.cifra-xl')).toHaveText('$ 8.000')
+  await expect(owing.getByText('1 venta debiendo')).toBeVisible()
+  await owing.getByRole('link', { name: 'Carla Pérez' }).first().click()
+  await expectPath(page, CUSTOMER)
   await expect(page.getByText('Te debe $ 8.000')).toBeVisible()
 
   // --- Deleting a sale names the grams returning to stock (sales.md, left over
   // from #20), never the debt or the credit it leaves. ---
-  await page.goto('/ventas')
+  await page.goto(SALES)
   const saleTwoRow = page.locator('.fila-venta').filter({ hasText: '$ 8.000' })
   await expect(saleTwoRow.getByText('te debe')).toBeVisible()
   await saleTwoRow.click()
@@ -167,13 +163,13 @@ test('a seller records, settles, undoes and traces payments, from the front alon
     }),
   ).toBeVisible()
   await page.getByRole('button', { name: 'Sí, borrala' }).click()
-  await expect(page).toHaveURL(/\/ventas$/)
+  await expectPath(page, SALES)
   await expect(page.getByText('Venta eliminada')).toBeVisible()
 
   // Nothing left owing: the debt that sale carried is gone with it, never a
   // credit (recording never creates one, and this sale took no payment with it).
-  await page.goto('/clientes')
-  await page.getByRole('link', { name: 'Carla Pérez' }).click()
+  await page.goto(CUSTOMERS)
+  await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
   await expect(page.getByText('Te debe', { exact: false })).toHaveCount(0)
   await expect(page.getByText('A favor', { exact: false })).toHaveCount(0)
 
@@ -184,29 +180,27 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   // --- The plural form: two more sales left owing bring the count to "2 ventas
   // debiendo", and Te deben's header total is their sum (payments.md, Metrics
   // "Who-owes totals" and "No curl"). ---
-  await page.goto('/clientes')
-  await page.getByRole('link', { name: 'Carla Pérez' }).click()
+  await page.goto(CUSTOMERS)
+  await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
   await page.getByRole('link', { name: 'Nueva venta a Carla Pérez' }).click()
-  await expect(page).toHaveURL(/\/ventas\/nueva$/)
+  await expectPath(page, SALE_NEW)
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '2' })
   await page.getByRole('radio', { name: 'Debiendo' }).check()
   await page.getByRole('button', { name: 'Guardá la venta' }).click()
-  await expect(page).toHaveURL(/\/ventas\/\d+$/)
+  await expectPath(page, SALE)
   await expect(page.getByText('Venta guardada')).toBeVisible()
 
-  await page.goto('/clientes')
-  await page.getByRole('link', { name: 'Carla Pérez' }).click()
+  await page.goto(CUSTOMERS)
+  await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
   await page.getByRole('link', { name: 'Nueva venta a Carla Pérez' }).click()
-  await expect(page).toHaveURL(/\/ventas\/nueva$/)
+  await expectPath(page, SALE_NEW)
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '3' })
   await page.getByRole('radio', { name: 'Debiendo' }).check()
   await page.getByRole('button', { name: 'Guardá la venta' }).click()
-  await expect(page).toHaveURL(/\/ventas\/\d+$/)
+  await expectPath(page, SALE)
   await expect(page.getByText('Venta guardada')).toBeVisible()
 
-  await page.goto('/clientes')
-  await page.getByRole('link', { name: /te deben \$ 5\.000/ }).click()
-  await expect(page).toHaveURL(/\/clientes\/deben$/)
-  await expect(page.locator('.cifra-xl')).toHaveText('$ 5.000')
+  await page.goto(CUSTOMERS)
+  await expect(page.getByRole('region', { name: 'Te deben' }).locator('.cifra-xl')).toHaveText('$ 5.000')
   await expect(page.getByText('2 ventas debiendo')).toBeVisible()
 })

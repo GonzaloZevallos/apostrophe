@@ -7,6 +7,7 @@
  * with `credentials: 'include'`.
  */
 
+import { HOME, isPublicPath, LOGIN } from './routes'
 import type { QueryClient } from '@tanstack/react-query'
 import { get, post } from './api/client'
 
@@ -22,7 +23,7 @@ function boundary(actions: SessionActions, path: string): void {
 
 export async function login(actions: SessionActions, email: string, password: string): Promise<void> {
   await post('/auth/login', { email, password })
-  boundary(actions, '/')
+  boundary(actions, HOME)
 }
 
 export interface AcceptBody {
@@ -38,12 +39,12 @@ export async function acceptInvitation(
   body: AcceptBody,
 ): Promise<void> {
   await post(`/invitations/${token}/accept`, body)
-  boundary(actions, '/')
+  boundary(actions, HOME)
 }
 
 export async function logOut(actions: SessionActions): Promise<void> {
   await post('/auth/logout')
-  boundary(actions, '/entrar')
+  boundary(actions, LOGIN)
 }
 
 export interface InvitationView {
@@ -105,13 +106,7 @@ export async function openResetLink(
  * reads the response's `token`. */
 export async function submitReset(actions: SessionActions, token: string, new_password: string): Promise<void> {
   await post(`/reset-links/${token}`, { new_password })
-  boundary(actions, '/')
-}
-
-const PUBLIC_PATH_PREFIXES = ['/entrar', '/invitation/', '/reset/']
-
-function isPublicPath(path: string): boolean {
-  return PUBLIC_PATH_PREFIXES.some((prefix) => path.startsWith(prefix))
+  boundary(actions, HOME)
 }
 
 /** A 401 on a gated call clears the cache and sends the person back to Entrar
@@ -119,5 +114,5 @@ function isPublicPath(path: string): boolean {
  * does nothing: an invitation lookup, for one, answers signed out on purpose. */
 export function handleUnauthorized(actions: SessionActions, currentPath: string): void {
   if (isPublicPath(currentPath)) return
-  boundary(actions, '/entrar')
+  boundary(actions, LOGIN)
 }

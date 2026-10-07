@@ -1,3 +1,4 @@
+import { CUSTOMERS, HOME, INVITATION, LOGIN, RESET, pathTo } from './routes'
 import { QueryClient } from '@tanstack/react-query'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import * as client from './api/client'
@@ -37,7 +38,7 @@ describe('login', () => {
     await login(session, 'ana@x.com', 'secreta123')
 
     expect(session.queryClient.getQueryData(['me'])).toBeUndefined()
-    expect(session.navigate).toHaveBeenCalledWith('/')
+    expect(session.navigate).toHaveBeenCalledWith(HOME)
   })
 
   test('never returns the response body: the client never reads the token', async () => {
@@ -56,7 +57,7 @@ describe('acceptInvitation', () => {
     await acceptInvitation(session, 'tok123', { email: 'ana@x.com', password: 'secreta123' })
 
     expect(session.queryClient.getQueryData(['me'])).toBeUndefined()
-    expect(session.navigate).toHaveBeenCalledWith('/')
+    expect(session.navigate).toHaveBeenCalledWith(HOME)
   })
 })
 
@@ -67,7 +68,7 @@ describe('logOut', () => {
     await logOut(session)
 
     expect(session.queryClient.getQueryData(['me'])).toBeUndefined()
-    expect(session.navigate).toHaveBeenCalledWith('/entrar')
+    expect(session.navigate).toHaveBeenCalledWith(LOGIN)
   })
 })
 
@@ -118,18 +119,18 @@ describe('handleUnauthorized', () => {
   test('a 401 on a gated route clears the cache and sends the person to Entrar', () => {
     const session = actions()
 
-    handleUnauthorized(session, '/clientes')
+    handleUnauthorized(session, CUSTOMERS)
 
     expect(session.queryClient.getQueryData(['me'])).toBeUndefined()
-    expect(session.navigate).toHaveBeenCalledWith('/entrar')
+    expect(session.navigate).toHaveBeenCalledWith(LOGIN)
   })
 
   test('a 401 on a public route does nothing', () => {
     const session = actions()
 
-    handleUnauthorized(session, '/entrar')
-    handleUnauthorized(session, '/invitation/tok123')
-    handleUnauthorized(session, '/reset/tok123')
+    handleUnauthorized(session, LOGIN)
+    handleUnauthorized(session, pathTo(INVITATION, { token: 'tok123' }))
+    handleUnauthorized(session, pathTo(RESET, { token: 'tok123' }))
 
     expect(session.queryClient.getQueryData(['me'])).toEqual({ businessName: 'x' })
     expect(session.navigate).not.toHaveBeenCalled()
@@ -179,6 +180,6 @@ describe('submitReset', () => {
 
     expect(client.post).toHaveBeenCalledWith('/reset-links/tok123', { new_password: 'nueva123456' })
     expect(session.queryClient.getQueryData(['me'])).toBeUndefined()
-    expect(session.navigate).toHaveBeenCalledWith('/')
+    expect(session.navigate).toHaveBeenCalledWith(HOME)
   })
 })

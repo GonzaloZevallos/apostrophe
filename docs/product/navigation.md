@@ -1,6 +1,6 @@
 # Navigation
 
-The app's one structure for a business: the tabs on the phone, the sidebar on a computer, Más, Configuración, the one rule that gives every screen its chrome and its way back, the routes, and the first run. It says where every capability is reached from. What each capability does stays in its own file; nothing here changes a rule of pricing, settlement, stock, the catalog, isolation or feedback. Seen only by the session's business (ADR-0004).
+The app's one structure for a business: the tabs on the phone, the sidebar on a computer, Más, Configuración, the one rule that gives every screen its chrome and its way back, which place is marked, the routes and their redirects, and the first run. It says where every capability is reached from. What each capability does stays in its own file; nothing here changes a rule of pricing, settlement, stock, the catalog, isolation or feedback. Seen only by the session's business (ADR-0004).
 
 ## Jobs
 
@@ -72,10 +72,16 @@ Success criteria:
 - **One screen holding every business-wide setting, in groups, and nothing else.** The groups, in this order (each group's behaviour belongs to its owner):
   - **Negocio**: the business's name (accounts.md). Toast "Negocio renombrado".
   - **Usuarios**: the partners by email, sorted by email, the signed-in one marked "vos", and "Invitá a un socio", which creates one fresh join link per tap, to copy or share (accounts.md). No list of invitations, no revoking, no roles.
-  - **Integraciones**: the Telegram bot: token, channel chat, own chat, and Probarlo, the only way they are saved (pinned-catalog.md). After a token or channel change, "El mensaje fijado anterior queda como está; desfijalo vos en Telegram." A plain link to the catalog screen, for publishing, carrying no status. Publicar and the pin's status are only on the catalog screen.
+  - **Integraciones**: the Telegram bot (pinned-catalog.md):
+    - the token, the channel chat, the own chat, and Probarlo, the only way they are saved;
+    - after a token or channel change, "El mensaje fijado anterior queda como está; desfijalo vos en Telegram.";
+    - a plain link to the catalog screen, for publishing, carrying no status. Publicar and the pin's status are only on the catalog screen.
   - **Mensaje del catálogo**: the catalog's header and footer (catalog.md). Toast "Catálogo guardado".
   - **Categorías de gastos**: add, rename and remove, the refused removal included (expenses.md).
-  - **Apariencia**: the theme, Claro or Oscuro (accounts.md's theme rule: Oscuro sets `data-tema="oscuro"`, Claro removes it). A tap applies and remembers the choice on the device at once: no save, no toast, no unsaved-changes warning. The current choice is marked by word or shape and `aria-checked`, never color alone. Language has no entry until it exists.
+  - **Apariencia**: the theme, Claro or Oscuro, under accounts.md's theme rule (Oscuro sets `data-tema="oscuro"`, Claro removes it).
+    - A tap applies and remembers the choice on the device at once: no save, no toast, no unsaved-changes warning.
+    - The current choice is marked by word or shape and `aria-checked`, never color alone.
+    - Language has no entry until it exists.
   - **Tu cuenta**: "Cambiar contraseña" above "Cerrar sesión" (accounts.md). Nothing new.
 - **Reached from**: the business avatar at the top of Inicio; Más on the phone; the sidebar's business row on a computer. `/settings` marks Más as the active tab on the phone.
 - **The list of groups** is a card: the bar or sidebar and a back arrow, no "+ Nueva venta". Back follows history; with none, it goes to "‹ Más" on the phone and "‹ Inicio" on a computer.
@@ -128,6 +134,15 @@ Every screen is exactly one of three kinds, has one parent, and gets its chrome 
 - No route carries a business (ADR-0004); a record's own id in a path is allowed. `/invitation/{token}` and `/reset/{token}` stay as they are (accounts.md).
 - Screen text stays in Rioplatense Spanish; only the routes change.
 
+### Routes for screens still to be rebuilt
+
+This covers Configuración and its groups, the catalog screen and a variety's page, whose screens their own issues rebuild.
+
+- A route shows the existing screen or content that holds that function today, inside the new chrome. For example, `/settings/users` shows today's users list and "Invitá a un socio".
+- A route with nothing existing behind it is not registered. The issue that builds that screen adds it.
+- No route renders an empty page, a placeholder or "coming soon".
+- Every function a seller reaches today stays reachable from some registered route. If a function would lose its only way in, its route is registered with today's content.
+
 ### First-run checklist
 
 - **The steps**, each worked out from the business's data at the moment, never from a stored tick:
@@ -137,7 +152,9 @@ Every screen is exactly one of three kinds, has one parent, and gets its chrome 
   4. a second user in the business (optional).
 - A met step shows its box checked and the word "Hecho", never color alone.
 - **Who sees it**: a business that has not yet met both required steps. The optional steps never hold it on screen; they stay reachable in Configuración (Integraciones, Usuarios).
-- **When it goes**: for good, the first time steps 1 and 2 are both met. It never comes back, even if a required step's condition later becomes false again (say, the only price entry is deleted). Ongoing gaps are told by the standing notices: "Arrancá por las variedades" and the pinned catalog's out-of-date notice.
+- **When it goes**: for good, the first time steps 1 and 2 are both met.
+  - It never comes back, even if a required step's condition later becomes false again (say, the only price entry is deleted).
+  - Ongoing gaps are told by the standing notices: "Arrancá por las variedades" and the pinned catalog's out-of-date notice.
 - **Where**: at the top of Inicio, on the phone and on `InicioCompu` alike (results.md gives Inicio's order).
 - **While it shows**:
   - with no variety priced today, "+ Nueva venta" stays visible and says in words what is missing;
@@ -153,9 +170,13 @@ Every screen is exactly one of three kinds, has one parent, and gets its chrome 
 ### Constraints
 
 - Nothing here adds a route that answers business data; each screen reads its owner's routes, already in the isolation sweep and the gated-route test.
+- Serving a front path to a browser navigation never widens what the API answers to a JSON request, and adds no API route (ADR-0024).
 - Whatever decides the checklist and the after-import notice is answered by the server for the session's business only.
 - No business id in a URL; no personal data or money in the console or browser storage (accounts.md). The theme choice is the only thing kept on the device.
-- No network shows "Sin conexión", a server error a generic retry, and a record that is gone follows accounts.md's "Eso ya no está." rule, in Configuración as everywhere.
+- Feedback follows accounts.md, in Configuración as everywhere:
+  - no network shows "Sin conexión";
+  - a server error shows a generic retry;
+  - a record that is gone follows the "Eso ya no está." rule.
 
 ## Metrics
 
@@ -171,14 +192,22 @@ Every screen is exactly one of three kinds, has one parent, and gets its chrome 
   - tapping "Cobrar a <name>" on a Clientes row opens Registrar cobro with the customer chosen, carries the in-app history state, and back closes it in one move.
 - **Accessible bar (criterion 6)**: a Playwright test at 320 px with text at 130 % shows every tab label whole; the active tab carries `aria-current` and a non-color mark; no state is told by color alone.
 - **Configuración (criterion 8)**:
-  - front tests: every group has "Cerrar" and no bar; unsaved changes ask; an untouched group closes at once; Apariencia shows no save, toast or warning;
+  - front tests:
+    - every group has "Cerrar" and no bar;
+    - unsaved changes ask, and an untouched group closes at once;
+    - Apariencia shows no save, toast or warning;
   - Integraciones shows the link to the catalog screen, no pin status and no Publicar, and the "desfijalo vos en Telegram" line after a token or channel change;
-  - one end-to-end front run from a phone viewport renames the business, creates a join link, runs Probarlo and follows the link to the catalog screen, edits the header and footer, adds, renames and removes a category (a refused removal included), switches Apariencia, changes the password and logs out.
+  - one end-to-end front run from a phone viewport:
+    - renames the business and creates a join link;
+    - runs Probarlo and follows the link to the catalog screen;
+    - edits the header and footer;
+    - adds, renames and removes a category, a refused removal included;
+    - switches Apariencia, changes the password and logs out.
 - **First-run matrix**: 100% passing, phone and computer:
-  - a new business sees the checklist; each met step shows "Hecho";
+  - a new business sees the checklist, and each met step shows "Hecho";
   - it goes the first time steps 1 and 2 are both met, whatever 3 and 4;
   - deleting the only price entry afterwards never brings it back;
-  - an imported business never sees it and sees the after-import notice until dismissed or published;
+  - an imported business never sees it, and sees the after-import notice until dismissed or published;
   - "Mandar catálogo" is disabled only while the checklist shows and nothing qualifies.
 - **Redirects (criterion 11)**: every old Spanish path that has moved answers a permanent redirect to its English route, tested one by one, including `/negocio`, `/gastos/categorias`, `/catalogo`, `/mi-stock/nueva-entrada`, and `/variedades/{id}` and `/mi-stock/entradas/{id}` with the id carried across. A test shows every redirect target is a `screens.json` path, with no exemption. There is one redirect mechanism, on the server, and none in the front.
 - **Reloads under `/varieties` (criterion 11)**: a browser navigation to each Variedades route, parameterised ones included (`/varieties/{id}`, `/varieties/{id}/entries`, `/varieties/{id}/prices`, `/varieties/{id}/prices/new`, `/varieties/entries/{id}`), opens the screen, never the API's answer; the front's own API calls still reach the API.
@@ -188,6 +217,7 @@ Every screen is exactly one of three kinds, has one parent, and gets its chrome 
 ## Out of scope
 
 - English screen texts (#53); a language entry.
+- Rebuilding each area's screens (#45–#49, Configuración's groups): their routes show today's content until then.
 - Any operator or admin surface in the app; roles; listing or revoking invitations.
 - A tour or welcome screen.
 - Promotions, automations, languages, and any entry for them before they exist.
@@ -195,6 +225,9 @@ Every screen is exactly one of three kinds, has one parent, and gets its chrome 
 - The pin's status or Publicar in Integraciones.
 - Per-variety settings in Configuración (#47).
 - A redirect rule for removed paths with no counterpart; changing where unknown addresses go.
+- Marks or "‹ <parent>" labels that depend on how a screen was reached.
+- A back arrow that ignores history.
+- Changing the copy of any existing unsaved-changes question.
 - Live updates between partners.
 - Redirects in the front; a second redirect mechanism.
 - Auto-selecting a customer on Clientes' two panes.

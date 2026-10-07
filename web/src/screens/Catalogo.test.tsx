@@ -6,6 +6,7 @@
  * mocked deeper (CODING_STANDARDS §10).
  */
 
+import { SETTINGS_CATALOG_MESSAGE } from '../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -59,7 +60,7 @@ function renderCatalogo(
             <Route path="/varieties" element={<div>Aterrizaste en Variedades</div>} />
             <Route path="/varieties/:id" element={<VarietyLanding />} />
             <Route
-              path="/settings/catalog-message"
+              path={SETTINGS_CATALOG_MESSAGE}
               element={<div>Aterrizaste en el mensaje del catálogo</div>}
             />
           </Route>

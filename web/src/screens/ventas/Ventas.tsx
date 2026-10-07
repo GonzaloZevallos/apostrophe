@@ -20,9 +20,11 @@
  * own left-out list.
  */
 
+import { SALE, pathTo } from '../../routes'
 import { useState, useSyncExternalStore } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Link, useLocation, useOutletContext } from 'react-router'
+import { useLocation, useOutletContext } from 'react-router'
+import InAppLink from '../../components/InAppLink'
 import { NetworkError } from '../../api/client'
 import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
@@ -185,7 +187,7 @@ export default function Ventas() {
                 const names = varietyNames(sale.lines)
                 const gramos = formatGrams(saleGrams(sale.lines))
                 return (
-                  <Link key={sale.id} to={`/ventas/${sale.id}`} className="fila-venta">
+                  <InAppLink key={sale.id} to={pathTo(SALE, { id: sale.id })} className="fila-venta">
                     <span className="fila-venta__fecha">{formatDate(sale.date, me.today)}</span>
                     <span className="fila-venta__cuerpo">
                       <span className="fila-venta__nombre">
@@ -214,7 +216,7 @@ export default function Ventas() {
                       {sale.still_owing && <span className="fila-venta__te-debe monto-deuda">te debe</span>}
                     </span>
                     <Icono nombre="chevron" size={18} />
-                  </Link>
+                  </InAppLink>
                 )
               })}
             </div>

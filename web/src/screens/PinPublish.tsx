@@ -13,6 +13,7 @@
  * query and Inicio's status query (`keys.ts`), so Inicio's notice follows.
  */
 
+import { SETTINGS_INTEGRATIONS } from '../routes'
 import { useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router'
@@ -31,7 +32,7 @@ import SinConexion from '../components/SinConexion'
 const PUBLISHED_TOAST: SuccessToast = 'Catálogo publicado'
 const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
 const CHANNEL_MISSING_LEAD = 'Falta el canal: cargalo en '
-const INTEGRATIONS_PATH = '/settings/integrations'
+const INTEGRATIONS_PATH = SETTINGS_INTEGRATIONS
 
 interface PinStatus {
   state: 'up_to_date' | 'out_of_date'

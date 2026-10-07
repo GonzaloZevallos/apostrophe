@@ -4,7 +4,7 @@
  */
 
 import { Link } from 'react-router'
-import { VARIETY_PRICES } from '../../routes'
+import { VARIETY_PRICES } from '../../legacyVarietyPaths'
 import PriceRows, { type PriceRow } from './PriceRows'
 
 export default function VarietyPricesSection({

@@ -8,7 +8,7 @@ import { Link } from 'react-router'
 import { type StockView, entriesOf } from '../../api/stock'
 import { formatDate } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
-import { VARIETY_ENTRIES } from '../../routes'
+import { VARIETY_ENTRIES } from '../../legacyVarietyPaths'
 import { ORIGIN_LABEL } from '../originLabel'
 
 const LAST = 3

@@ -1,5 +1,5 @@
 /**
- * The `/clientes` layout route (plan, "Search"): holds the search query so it
+ * The /clientes layout route (plan, "Search"): holds the search query so it
  * survives going from the list to a card or a form and back, then forwards `me`
  * on to whichever child route is active (`Shell` already does the same for its
  * own `Outlet`).

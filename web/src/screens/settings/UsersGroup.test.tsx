@@ -4,6 +4,7 @@
  * never mocked deeper (CODING_STANDARDS §10).
  */
 
+import { LOGIN, SETTINGS, SETTINGS_USERS } from '../../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -47,14 +48,14 @@ function renderUsers(fetchMock: ReturnType<typeof vi.fn>): QueryClient {
       {
         element: <Provide />,
         children: [
-          { path: '/settings', element: <div>Lista de grupos</div> },
-          { path: '/settings/users', element: <UsersGroup /> },
+          { path: SETTINGS, element: <div>Lista de grupos</div> },
+          { path: SETTINGS_USERS, element: <UsersGroup /> },
         ],
       },
-      { path: '/entrar', element: <div>Pantalla de entrada</div> },
+      { path: LOGIN, element: <div>Pantalla de entrada</div> },
     ],
     {
-      initialEntries: ['/settings', { pathname: '/settings/users', state: { inApp: true } }],
+      initialEntries: [SETTINGS, { pathname: SETTINGS_USERS, state: { inApp: true } }],
       initialIndex: 1,
     },
   )

@@ -5,6 +5,7 @@
  * deeper (CODING_STANDARDS §10).
  */
 
+import { SETTINGS, SETTINGS_CATALOG_MESSAGE } from '../../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -47,13 +48,13 @@ function renderGroup(fetchMock: ReturnType<typeof vi.fn>): QueryClient {
       {
         element: <Provide />,
         children: [
-          { path: '/settings', element: <div>Lista de grupos</div> },
-          { path: '/settings/catalog-message', element: <CatalogMessageGroup /> },
+          { path: SETTINGS, element: <div>Lista de grupos</div> },
+          { path: SETTINGS_CATALOG_MESSAGE, element: <CatalogMessageGroup /> },
         ],
       },
     ],
     {
-      initialEntries: ['/settings', { pathname: '/settings/catalog-message', state: { inApp: true } }],
+      initialEntries: [SETTINGS, { pathname: SETTINGS_CATALOG_MESSAGE, state: { inApp: true } }],
       initialIndex: 1,
     },
   )

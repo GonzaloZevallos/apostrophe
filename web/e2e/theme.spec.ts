@@ -14,6 +14,7 @@
  * every `goto` and the sink asserted empty at the end, as every e2e spec does.
  */
 
+import { LOGIN, SETTINGS_APPEARANCE } from '../src/routes.js'
 import type { Page } from '@playwright/test'
 import { expect, test } from '@playwright/test'
 import { newBusinessInvitationUrl, resetLink } from './backend.js'
@@ -45,7 +46,7 @@ test('a dark system alone never gives the dark theme', async ({ page }) => {
   watchConsole(page, messages)
 
   await page.emulateMedia({ colorScheme: 'dark' })
-  await page.goto('/entrar')
+  await page.goto(LOGIN)
 
   expect(await htmlBackground(page)).toBe(PAPEL)
   expect(messages).toEqual([])
@@ -96,7 +97,7 @@ test('data-tema="oscuro" turns the theme dark on a light system too', async ({ p
     if (document.documentElement) apply()
     else document.addEventListener('DOMContentLoaded', apply, { once: true })
   })
-  await page.goto('/entrar')
+  await page.goto(LOGIN)
 
   expect(await htmlBackground(page)).toBe(PAPEL_OSCURO)
   expect(messages).toEqual([])
@@ -129,7 +130,7 @@ test('choosing Oscuro in Apariencia applies it, survives a reload and a logout, 
   await page.emulateMedia({ colorScheme: 'light' })
 
   const email = await signUp(page)
-  await page.goto('/settings/appearance')
+  await page.goto(SETTINGS_APPEARANCE)
   await expect(page.getByRole('radio', { name: 'Claro' })).toHaveAttribute('aria-checked', 'true')
 
   await page.getByRole('radio', { name: 'Oscuro' }).click()
@@ -143,7 +144,7 @@ test('choosing Oscuro in Apariencia applies it, survives a reload and a logout, 
   await expect(page.getByRole('radio', { name: 'Oscuro' })).toHaveAttribute('aria-checked', 'true')
 
   await logOut(page)
-  await page.goto('/entrar')
+  await page.goto(LOGIN)
   expect(await themeAttribute(page)).toBe('oscuro')
   expect(await htmlBackground(page)).toBe(PAPEL_OSCURO)
   await expectOnlyTheThemeStored(page)
@@ -154,7 +155,7 @@ test('choosing Oscuro in Apariencia applies it, survives a reload and a logout, 
   await page.getByRole('button', { name: 'Entrá' }).click()
   await expect(page.locator('.encabezado__negocio')).toBeVisible()
   expect(await themeAttribute(page)).toBe('oscuro')
-  await page.goto('/settings/appearance')
+  await page.goto(SETTINGS_APPEARANCE)
   await page.getByRole('radio', { name: 'Claro' }).click()
   expect(await themeAttribute(page)).toBeNull()
   expect(await page.evaluate(() => localStorage.getItem('tema'))).toBeNull()
@@ -179,7 +180,7 @@ test('with Oscuro stored, Entrar, the invitation screen and the reset screen are
   const email = await signUp(page)
   await logOut(page)
 
-  await page.goto('/entrar')
+  await page.goto(LOGIN)
   expect(await htmlBackground(page)).toBe(PAPEL_OSCURO)
 
   await page.goto(newBusinessInvitationUrl())
@@ -203,7 +204,7 @@ test('a tampered stored value reads as light and is left alone', async ({ page }
     localStorage.setItem('tema', 'claro')
   })
 
-  await page.goto('/entrar')
+  await page.goto(LOGIN)
 
   expect(await themeAttribute(page)).toBeNull()
   expect(await htmlBackground(page)).toBe(PAPEL)
@@ -212,7 +213,7 @@ test('a tampered stored value reads as light and is left alone', async ({ page }
 })
 
 test('the storage helper rejects a stored claro, a second key, session storage and an IndexedDB database', async ({ page }) => {
-  await page.goto('/entrar')
+  await page.goto(LOGIN)
   await expectOnlyTheThemeStored(page)
 
   await page.evaluate(() => localStorage.setItem('tema', 'claro'))

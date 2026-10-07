@@ -6,7 +6,7 @@
 
 import { expect, test } from 'vitest'
 import screens from '../../../../scripts/design/screens.json'
-import { VARIETY_PRICE_NEW, VARIETY_PRICES } from '../../routes'
+import { VARIETY_PRICES, VARIETY_PRICE_NEW } from '../../legacyVarietyPaths'
 
 const BUILT: Record<string, string> = {
   VerTodas: VARIETY_PRICES('{low}'),

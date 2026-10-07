@@ -167,7 +167,7 @@ export default function Gastos() {
       <div className="cuerpo gastos">
         <div className="gastos__cabecera">
           <span className="encabezado__titulo gastos__titulo">Gastos</span>
-          <Link to={EXPENSE_NEW} className="gastos__cargar" aria-label="Cargar gasto">
+          <Link to={EXPENSE_NEW} state={{ inApp: true }} className="gastos__cargar" aria-label="Cargar gasto">
             <Icono nombre="agregar" size={20} strokeWidth={1.8} />
             <span className="gastos__cargar-texto">Cargar gasto</span>
           </Link>
