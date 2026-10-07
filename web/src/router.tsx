@@ -36,6 +36,9 @@ import Gastos from './screens/Gastos'
 import Inicio from './screens/Inicio'
 import Invitacion from './screens/Invitacion'
 import Mas from './screens/Mas'
+import Listo from './screens/onboarding/Listo'
+import OnboardingLayout from './screens/onboarding/OnboardingLayout'
+import { OnboardingEntry, OnboardingStepRoute } from './screens/onboarding/OnboardingRoutes'
 import Catalogo from './screens/Catalogo'
 import ClienteFicha from './screens/clientes/ClienteFicha'
 import ClienteForm from './screens/clientes/ClienteForm'
@@ -77,6 +80,7 @@ import {
   EXPENSE_NEW,
   EXPENSES,
   MORE,
+  ONBOARDING,
   VARIETIES,
   VARIETY,
   VARIETY_ENTRIES,
@@ -99,6 +103,23 @@ export const router = createBrowserRouter([
       {
         element: <GatedLayout />,
         children: [
+          // Outside the shell on purpose: no bar, no side rail, no "+ Nueva venta"; one
+          // centred column on every viewport (onboarding.md).
+          {
+            path: relative(ONBOARDING),
+            element: <OnboardingLayout />,
+            handle: { chrome: 'none' },
+            children: [
+              { index: true, element: <OnboardingEntry /> },
+              { path: 'variety', element: <OnboardingStepRoute slug="variety" /> },
+              { path: 'stock', element: <OnboardingStepRoute slug="stock" /> },
+              { path: 'catalog-message', element: <OnboardingStepRoute slug="header_footer" /> },
+              { path: 'bot', element: <OnboardingStepRoute slug="bot" /> },
+              { path: 'partner', element: <OnboardingStepRoute slug="partner" /> },
+              { path: 'categories', element: <OnboardingStepRoute slug="categories" /> },
+              { path: 'done', element: <Listo /> },
+            ],
+          },
           {
             element: <Shell />,
             children: [

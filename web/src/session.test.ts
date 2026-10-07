@@ -50,13 +50,26 @@ describe('login', () => {
 })
 
 describe('acceptInvitation', () => {
-  test('clears the cache and lands on Inicio, already signed in', async () => {
+  test('a join accept clears the cache and lands on Inicio, already signed in', async () => {
     const session = actions()
 
-    await acceptInvitation(session, 'tok123', { email: 'ana@x.com', password: 'secreta123' })
+    await acceptInvitation(session, 'tok123', { email: 'ana@x.com', password: 'secreta123' }, 'join_business')
 
     expect(session.queryClient.getQueryData(['me'])).toBeUndefined()
     expect(session.navigate).toHaveBeenCalledWith('/')
+  })
+
+  test('a new-business accept lands in the Onboarding', async () => {
+    const session = actions()
+
+    await acceptInvitation(
+      session,
+      'tok123',
+      { email: 'ana@x.com', password: 'secreta123', business_name: 'La Huerta' },
+      'new_business',
+    )
+
+    expect(session.navigate).toHaveBeenCalledWith('/onboarding')
   })
 })
 

@@ -233,3 +233,47 @@ test('shows the Cargando progressbar, and no text of its own, while the lookup i
   expect(screen.getByRole('progressbar', { name: 'Cargando' })).toBeInTheDocument()
   expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
 })
+
+async function acceptAs(kind: 'new_business' | 'join_business'): Promise<void> {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((url: string) => {
+      if (url === '/auth/logout') return Promise.resolve(noContent())
+      if (url.endsWith('/accept')) return Promise.resolve(jsonResponse(200, {}))
+      return Promise.resolve(
+        jsonResponse(200, {
+          kind,
+          business_name: kind === 'join_business' ? 'La Esquina' : null,
+          expires_at: '2026-10-09T00:00:00Z',
+        }),
+      )
+    }),
+  )
+  render(
+    <QueryClientProvider client={new QueryClient()}>
+      <MemoryRouter initialEntries={['/invitation/tok123']}>
+        <Routes>
+          <Route path="/invitation/:token" element={<Invitacion />} />
+          <Route index element={<span>pantalla inicio</span>} />
+          <Route path="/onboarding" element={<span>pantalla onboarding</span>} />
+        </Routes>
+      </MemoryRouter>
+    </QueryClientProvider>,
+  )
+  await userEvent.type(await screen.findByLabelText('Email'), 'ana@x.com')
+  await userEvent.type(screen.getByLabelText('Contraseña'), 'secreta123')
+  if (kind === 'new_business') await userEvent.type(screen.getByLabelText('Nombre del negocio'), 'La Huerta')
+  await userEvent.click(screen.getByRole('button', { name: /Creá el negocio|Sumate a/ }))
+}
+
+test('accepting a new-business invitation lands in the Onboarding', async () => {
+  await acceptAs('new_business')
+
+  expect(await screen.findByText('pantalla onboarding')).toBeInTheDocument()
+})
+
+test('accepting a join invitation still lands on Inicio', async () => {
+  await acceptAs('join_business')
+
+  expect(await screen.findByText('pantalla inicio')).toBeInTheDocument()
+})

@@ -3842,3 +3842,245 @@ body {
 .sin-caja {
   display: contents;
 }
+
+/* The Onboarding (`OnboardingVariedad.dc.html`, `OnboardingListo.dc.html`): one centred
+ * phone-width column on every viewport, outside the shell. Tokens only. */
+.onboarding {
+  align-items: center;
+}
+
+.onboarding__columna {
+  width: 100%;
+  max-width: 430px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-xl);
+  padding: var(--espacio-sm) var(--margen-pantalla) var(--espacio-xxl);
+}
+
+.onboarding__cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.onboarding__cabecera--derecha {
+  justify-content: flex-end;
+}
+
+.onboarding__enlace {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-xs);
+  min-height: var(--alto-tocable);
+  padding: 0 var(--espacio-sm);
+  background: none;
+  border: 0;
+  color: var(--tinta2);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.onboarding__progreso {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.onboarding__progreso-fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.onboarding__paso {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--tinta2);
+}
+
+.onboarding__insignia {
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--superficie);
+  color: var(--tinta2);
+  padding: 3px 9px;
+  border-radius: var(--radio-pildora);
+}
+
+.indicador-pasos {
+  display: flex;
+  gap: var(--espacio-xs);
+}
+
+.indicador-pasos__tramo {
+  flex: 1;
+  height: 8px;
+  box-sizing: border-box;
+  border-radius: var(--radio-pildora);
+  background: var(--linea);
+}
+
+.indicador-pasos__tramo--hecho {
+  background: var(--tinta);
+}
+
+.indicador-pasos__tramo--actual {
+  background: transparent;
+  border: 2px solid var(--tinta);
+}
+
+.onboarding__titulos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-sm);
+}
+
+.onboarding__titulo {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+}
+
+.onboarding__titulo--grande {
+  font-size: 34px;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+}
+
+.onboarding__porque {
+  margin: 0;
+  font-size: 15px;
+  color: var(--tinta2);
+  line-height: 1.5;
+}
+
+.onboarding__cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-lg);
+}
+
+.onboarding__saltar,
+.onboarding__acciones {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-md);
+}
+
+.onboarding__boton-saltar {
+  min-height: 50px;
+  height: auto;
+  font-size: 15px;
+}
+
+.onboarding__boton-resto {
+  align-self: center;
+}
+
+.onboarding__pista {
+  padding: 0;
+}
+
+.aviso-onboarding {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: var(--alto-tocable);
+  padding: var(--espacio-lg) 18px;
+  border: 0;
+  border-radius: var(--radio-panel-grande);
+  background: var(--superficie);
+  color: var(--tinta);
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.aviso-onboarding__titulo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--tinta);
+}
+
+.aviso-onboarding__texto {
+  flex: 1;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.aviso-onboarding__conteo {
+  font-size: 14px;
+  color: var(--tinta2);
+  margin: 3px 0 var(--espacio-md);
+}
+
+.aviso-onboarding__falta {
+  font-size: 13px;
+  margin-top: 10px;
+}
+
+.listo__lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.listo__fila {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espacio-md);
+  padding: 13px 0;
+  border-bottom: 1px solid var(--linea);
+}
+
+.listo__fila:last-child {
+  border-bottom: 0;
+}
+
+.listo__marca {
+  width: 24px;
+  height: 24px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  border-radius: var(--radio-pildora);
+  border: 2px solid var(--tinta2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.listo__marca--hecha {
+  border: 0;
+  background: var(--tinta);
+  color: var(--papel);
+}
+
+.listo__texto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.listo__nombre {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.listo__detalle {
+  font-size: 14px;
+  color: var(--tinta2);
+  line-height: 1.4;
+}

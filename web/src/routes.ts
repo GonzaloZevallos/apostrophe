@@ -21,6 +21,19 @@ export const WITHDRAWAL_NEW = '/withdrawals/new'
 export const WITHDRAWAL = '/withdrawals/:id'
 export const WITHDRAWAL_EDIT = '/withdrawals/:id/edit'
 
+/** The Onboarding (docs/product/onboarding.md): `/onboarding` resolves to the resume step,
+ * each step has its own path, and "Listo" is `/onboarding/done`. The API's own segment is
+ * `onboarding-progress`, so none of these is a shared route. */
+export const ONBOARDING = '/onboarding'
+export const ONBOARDING_VARIETY = '/onboarding/variety'
+export const ONBOARDING_STOCK = '/onboarding/stock'
+export const ONBOARDING_CATALOG_MESSAGE = '/onboarding/catalog-message'
+export const ONBOARDING_BOT = '/onboarding/bot'
+export const ONBOARDING_PARTNER = '/onboarding/partner'
+export const ONBOARDING_CATEGORIES = '/onboarding/categories'
+export const ONBOARDING_DONE = '/onboarding/done'
+export const NEW_SALE = '/ventas/nueva'
+
 /** A withdrawal's detail path, from its id alone: never a business id (ADR-0004). */
 export function withdrawalPath(id: number | string): string {
   return `/withdrawals/${id}`
