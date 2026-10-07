@@ -5,7 +5,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useReducer, type ReactNode } from 'react'
-import { useLocation } from 'react-router'
+import { useLocation, useNavigationType } from 'react-router'
 import AvisoExito, { type SuccessToast } from '../components/AvisoExito'
 import { FlashContext, type Flash } from './flashContext'
 import { flashReducer } from './flashReducer'
@@ -15,11 +15,12 @@ const TOAST_MS = 2500
 
 export default function FlashProvider({ children }: { children: ReactNode }) {
   const { key } = useLocation()
+  const replaced = useNavigationType() === 'REPLACE'
   const [state, dispatch] = useReducer(flashReducer, { status: 'idle' })
 
   useEffect(() => {
-    dispatch({ type: 'locationChanged', key })
-  }, [key])
+    dispatch({ type: 'locationChanged', key, replaced })
+  }, [key, replaced])
 
   useEffect(() => {
     if (state.status !== 'showing') return

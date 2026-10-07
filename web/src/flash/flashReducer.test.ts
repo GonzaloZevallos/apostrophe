@@ -53,3 +53,17 @@ test('showNow shows in place, on the current key', () => {
 test('a location change while idle changes nothing', () => {
   expect(flashReducer(idle, { type: 'locationChanged', key: 'x' })).toBe(idle)
 })
+
+test('shown, then a replace to another key: still shown, now on that key', () => {
+  const showing: FlashState = { status: 'showing', toast: 'Variedad guardada', shownKey: 'b' }
+
+  // A redirect (`<Navigate replace>`) is the same screen settling, not the user leaving.
+  expect(flashReducer(showing, { type: 'locationChanged', key: 'c', replaced: true })).toEqual({
+    status: 'showing',
+    toast: 'Variedad guardada',
+    shownKey: 'c',
+  })
+  // The next real navigation still dismisses it.
+  const moved = flashReducer(showing, { type: 'locationChanged', key: 'c', replaced: true })
+  expect(flashReducer(moved, { type: 'locationChanged', key: 'd', replaced: false })).toEqual(idle)
+})

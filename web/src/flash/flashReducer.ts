@@ -19,7 +19,7 @@ export type FlashState =
 export type FlashEvent =
   | { type: 'armAfterLeaving'; toast: SuccessToast; currentKey: string }
   | { type: 'showNow'; toast: SuccessToast; currentKey: string }
-  | { type: 'locationChanged'; key: string }
+  | { type: 'locationChanged'; key: string; replaced?: boolean }
   | { type: 'expired' }
 
 export function flashReducer(state: FlashState, event: FlashEvent): FlashState {
@@ -32,7 +32,11 @@ export function flashReducer(state: FlashState, event: FlashEvent): FlashState {
       if (state.status === 'armed' && event.key !== state.originKey) {
         return { status: 'showing', toast: state.toast, shownKey: event.key }
       }
-      if (state.status === 'showing' && event.key !== state.shownKey) return { status: 'idle' }
+      if (state.status === 'showing' && event.key !== state.shownKey) {
+        // A replace is a redirect settling the same screen (`<Navigate replace>`), not the user
+        // moving on: the toast stays, on the new key. The next real navigation dismisses it.
+        return event.replaced === true ? { ...state, shownKey: event.key } : { status: 'idle' }
+      }
       return state
     case 'expired':
       return state.status === 'showing' ? { status: 'idle' } : state
