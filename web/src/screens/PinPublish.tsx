@@ -16,7 +16,7 @@
 import { SETTINGS_INTEGRATIONS } from '../routes'
 import { useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link } from 'react-router'
+import InAppLink from '../components/InAppLink'
 import { ApiError, NetworkError, get, post } from '../api/client'
 import { invalidateResource, keys } from '../api/keys'
 import {
@@ -73,9 +73,9 @@ function StatusLine({ status }: { status: PinStatus }) {
 
 function BlockedReason({ blockedBy }: { blockedBy: PublishBlockedBy }) {
   const link = (
-    <Link to={INTEGRATIONS_PATH} state={{ inApp: true }} className="boton--enlace">
+    <InAppLink to={INTEGRATIONS_PATH} className="boton--enlace">
       Integraciones
-    </Link>
+    </InAppLink>
   )
   if (blockedBy === 'not_tested') {
     return (

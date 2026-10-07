@@ -5,6 +5,7 @@
  */
 
 import { CATALOG, SETTINGS, SETTINGS_INTEGRATIONS } from '../../routes'
+import { inAppState } from '../../components/inAppState'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -65,7 +66,7 @@ function renderGroup(
       { path: CATALOG, element: <h1>Catálogo</h1> },
       { path: SETTINGS_INTEGRATIONS, element: <IntegrationsGroup /> },
     ],
-    { initialEntries: [SETTINGS, { pathname: SETTINGS_INTEGRATIONS, state: { inApp: true } }], initialIndex: 1 },
+    { initialEntries: [SETTINGS, { pathname: SETTINGS_INTEGRATIONS, state: inAppState({ pathname: SETTINGS }) }], initialIndex: 1 },
   )
   render(
     <QueryClientProvider client={new QueryClient()}>
@@ -114,7 +115,7 @@ test('"Ir al catálogo" opens Catálogo as an in-app entry', async () => {
   await userEvent.click(await screen.findByRole('link', { name: 'Ir al catálogo' }))
 
   expect(router.state.location.pathname).toBe(CATALOG)
-  expect(router.state.location.state).toEqual({ inApp: true })
+  expect(router.state.location.state).toEqual(inAppState({ pathname: SETTINGS_INTEGRATIONS }))
 })
 
 test('Probarlo saves, clears the token, shows the toast and the "desfijalo" line', async () => {

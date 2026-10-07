@@ -5,6 +5,7 @@
  */
 
 import { LOGIN, SETTINGS, SETTINGS_BUSINESS } from '../../routes'
+import { inAppState } from '../../components/inAppState'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -53,7 +54,7 @@ function renderBusiness(fetchMock: ReturnType<typeof vi.fn>): QueryClient {
       { path: LOGIN, element: <div>Pantalla de entrada</div> },
     ],
     {
-      initialEntries: [SETTINGS, { pathname: SETTINGS_BUSINESS, state: { inApp: true } }],
+      initialEntries: [SETTINGS, { pathname: SETTINGS_BUSINESS, state: inAppState({ pathname: SETTINGS }) }],
       initialIndex: 1,
     },
   )

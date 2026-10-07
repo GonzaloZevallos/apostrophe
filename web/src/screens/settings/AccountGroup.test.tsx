@@ -4,6 +4,7 @@
  */
 
 import { LOGIN, SETTINGS, SETTINGS_ACCOUNT } from '../../routes'
+import { inAppState } from '../../components/inAppState'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -58,7 +59,7 @@ function renderAccount(fetchMock: ReturnType<typeof vi.fn>): QueryClient {
       { path: LOGIN, element: <div>Pantalla de entrada</div> },
     ],
     {
-      initialEntries: [SETTINGS, { pathname: SETTINGS_ACCOUNT, state: { inApp: true } }],
+      initialEntries: [SETTINGS, { pathname: SETTINGS_ACCOUNT, state: inAppState({ pathname: SETTINGS }) }],
       initialIndex: 1,
     },
   )

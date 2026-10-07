@@ -9,6 +9,7 @@
  */
 
 import { HOME, SALE, SALES, SALE_NEW, pathTo } from '../../routes'
+import { inAppState } from '../../components/inAppState'
 import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
@@ -222,7 +223,7 @@ test('opened from inside the app, "Cerrar" goes back through history', async () 
     'GET /sales?date_from=2026-10-02&date_to=2026-10-02': () => jsonResponse(200, []),
   })
   await act(() => router.navigate(SALES))
-  await act(() => router.navigate(SALE_NEW, { state: { inApp: true } }))
+  await act(() => router.navigate(SALE_NEW, { state: inAppState({ pathname: SALES }) }))
   render(<App />)
   await screen.findByText('Nueva venta')
 

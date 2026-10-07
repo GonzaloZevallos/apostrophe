@@ -26,6 +26,7 @@ import { NetworkError } from '../api/client'
 import type { Me } from '../api/me'
 import { copyText } from '../clipboard'
 import { canShare, shareText } from '../share'
+import InAppLink from '../components/InAppLink'
 import AvisoExito, { type SuccessToast } from '../components/AvisoExito'
 import Insignia, { type InsigniaTono } from '../components/Insignia'
 import ErrorGenerico from '../components/ErrorGenerico'
@@ -209,9 +210,9 @@ export default function Catalogo() {
               </div>
             )}
 
-            <Link to={SETTINGS_CATALOG_MESSAGE} state={{ inApp: true }} className="boton-enlace">
+            <InAppLink to={SETTINGS_CATALOG_MESSAGE} className="boton-enlace">
               Editar encabezado y pie
-            </Link>
+            </InAppLink>
           </>
         )}
         </div>

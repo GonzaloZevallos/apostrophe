@@ -6,6 +6,7 @@
  */
 
 import { CUSTOMER, CUSTOMERS, CUSTOMER_EDIT, CUSTOMER_NEW, LOGIN, pathTo } from '../../routes'
+import { inAppState } from '../../components/inAppState'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -61,7 +62,7 @@ function renderForm(initialPath: string, previous?: string) {
             element: (
               <>
                 <ListStub />
-                <Link to={CUSTOMER_NEW} state={{ inApp: true }}>
+                <Link to={CUSTOMER_NEW} state={inAppState({ pathname: CUSTOMERS })}>
                   Abrir el formulario
                 </Link>
               </>
@@ -74,7 +75,7 @@ function renderForm(initialPath: string, previous?: string) {
             element: (
               <>
                 <FichaStub />
-                <Link to={pathTo(CUSTOMER_EDIT, { id: 7 })} state={{ inApp: true }}>
+                <Link to={pathTo(CUSTOMER_EDIT, { id: 7 })} state={inAppState({ pathname: CUSTOMERS })}>
                   Editar
                 </Link>
               </>

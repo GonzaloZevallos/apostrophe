@@ -5,6 +5,7 @@
  */
 
 import { SETTINGS, SETTINGS_BUSINESS } from '../../routes'
+import { inAppState } from '../../components/inAppState'
 import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Link, RouterProvider, useNavigate } from 'react-router'
@@ -49,7 +50,7 @@ function renderGroup(options: { dirty: boolean; inApp: boolean }) {
         element: (
           <main>
             <h1>Lista</h1>
-            <Link to={SETTINGS_BUSINESS} state={{ inApp: true }}>
+            <Link to={SETTINGS_BUSINESS} state={inAppState({ pathname: SETTINGS })}>
               Abrir
             </Link>
           </main>

@@ -1,3 +1,4 @@
+import { inAppState } from './inAppState'
 import { HOME } from '../routes'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -24,7 +25,7 @@ function renderAt(entries: { initialEntries: string[]; initialIndex?: number }) 
         path: HOME,
         element: (
           <main>
-            <Link to="/hijo" state={{ inApp: true }}>
+            <Link to="/hijo" state={inAppState({ pathname: HOME })}>
               Ir marcado
             </Link>
             <Link to="/hijo">Ir sin marca</Link>

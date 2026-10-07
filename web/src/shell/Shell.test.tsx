@@ -317,7 +317,7 @@ test('Inicio\'s teaser opens the card with inApp state; the card reads "‹ Clie
   const { router } = renderShell([HOME])
 
   await user.click(screen.getByRole('link', { name: 'Cobrar a Ana' }))
-  expect(router.state.location.state).toEqual({ inApp: true })
+  expect(router.state.location.state).toEqual(inAppState({ pathname: HOME }))
   await user.click(screen.getByRole('button', { name: '‹ Clientes' }))
 
   expect(router.state.location.pathname).toBe(HOME)
@@ -326,7 +326,7 @@ test('Inicio\'s teaser opens the card with inApp state; the card reads "‹ Clie
 test('a card opened from Clientes reads "‹ Clientes" and Back lands on Clientes', async () => {
   const user = userEvent.setup()
   const { router } = renderShell([CUSTOMERS])
-  await act(() => router.navigate(pathTo(CUSTOMER, { id: 3 }), { state: { inApp: true } }))
+  await act(() => router.navigate(pathTo(CUSTOMER, { id: 3 }), { state: inAppState({ pathname: HOME }) }))
 
   await user.click(screen.getByRole('button', { name: '‹ Clientes' }))
 

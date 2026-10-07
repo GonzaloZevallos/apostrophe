@@ -6,6 +6,7 @@
  */
 
 import { EXPENSE_CATEGORIES, HOME, MORE, SALES, SETTINGS, SETTINGS_ACCOUNT, SETTINGS_APPEARANCE, SETTINGS_BUSINESS, SETTINGS_CATALOG_MESSAGE, SETTINGS_INTEGRATIONS, SETTINGS_USERS } from '../../routes'
+import { inAppState } from '../../components/inAppState'
 import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { QueryClientProvider } from '@tanstack/react-query'
@@ -97,7 +98,7 @@ test.each(GROUPS)('"%s" opens its group, marking the entry as in-app', async (na
   await user.click(await screen.findByRole('link', { name }))
 
   expect(router.state.location.pathname).toBe(path)
-  expect(router.state.location.state).toEqual({ inApp: true })
+  expect(router.state.location.state).toEqual(inAppState({ pathname: SETTINGS }))
 })
 
 test('every group route exists and closes with "Cerrar"', async () => {
@@ -134,7 +135,7 @@ test('reached by an in-app link, back goes back in history', async () => {
   stubComputer(false)
   const user = userEvent.setup()
   const { router } = renderApp([SALES])
-  await act(() => router.navigate(SETTINGS, { state: { inApp: true } }))
+  await act(() => router.navigate(SETTINGS, { state: inAppState({ pathname: SALES }) }))
 
   await user.click(await screen.findByRole('button', { name: '‹ Más' }))
 

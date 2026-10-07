@@ -14,6 +14,7 @@
  */
 
 import { CUSTOMER, CUSTOMER_PAYMENT, CUSTOMERS, SALE_NEW, pathTo } from '../../routes'
+import { inAppState } from '../../components/inAppState'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -628,7 +629,7 @@ test('after a save the sheet is not in history: back from the card goes to what 
   )
   const router = renderFicha('1', [CUSTOMERS, pathTo(CUSTOMER, { id: 1 })])
   await router.navigate(CUSTOMERS)
-  await router.navigate(pathTo(CUSTOMER, { id: 1 }), { state: { inApp: true } })
+  await router.navigate(pathTo(CUSTOMER, { id: 1 }), { state: inAppState({ pathname: CUSTOMERS }) })
   await userEvent.click(await screen.findByRole('link', { name: 'Registrar cobro' }))
   await userEvent.click(await screen.findByLabelText('Efectivo'))
   await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))

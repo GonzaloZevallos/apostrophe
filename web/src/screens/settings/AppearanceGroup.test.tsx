@@ -5,6 +5,7 @@
  */
 
 import { SETTINGS, SETTINGS_APPEARANCE } from '../../routes'
+import { inAppState } from '../../components/inAppState'
 import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Link, RouterProvider } from 'react-router'
@@ -26,7 +27,7 @@ function renderGroup() {
         element: (
           <main>
             <h1>Lista</h1>
-            <Link to={SETTINGS_APPEARANCE} state={{ inApp: true }}>
+            <Link to={SETTINGS_APPEARANCE} state={inAppState({ pathname: SETTINGS })}>
               Abrir
             </Link>
           </main>

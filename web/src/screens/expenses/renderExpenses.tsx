@@ -7,7 +7,8 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render } from '@testing-library/react'
-import { Link, Outlet, RouterProvider, createMemoryRouter } from 'react-router'
+import InAppLink from '../../components/InAppLink'
+import { Outlet, RouterProvider, createMemoryRouter } from 'react-router'
 import { vi } from 'vitest'
 import type { Me } from '../../api/me'
 import FlashProvider from '../../flash/FlashProvider'
@@ -48,9 +49,9 @@ export function renderExpenses(initialEntries: string[], fetchImpl: FetchImpl) {
                 element: (
                   <main>
                     <span>Pantalla Más</span>
-                    <Link to={EXPENSE_NEW} state={{ inApp: true }}>
+                    <InAppLink to={EXPENSE_NEW}>
                       Cargar gasto desde Más
-                    </Link>
+                    </InAppLink>
                   </main>
                 ),
               },
