@@ -64,13 +64,14 @@ import {
   toHundredths,
   validateSale,
 } from '../../sales/pricing'
+import { OWING_HINT } from '../../sales/messages'
 import type { Variety } from '../Variedades'
 import NuevaVentaCliente from './NuevaVentaCliente'
 import NuevaVentaLinea, { type LinePreview, type LineState } from './NuevaVentaLinea'
 
 export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
 export const NO_LINES_MESSAGE = 'Cargá al menos una variedad.'
-export const OWING_HINT = 'Para dejar debiendo elegí un cliente'
+export { OWING_HINT }
 export const PAYMENT_REQUIRED_MESSAGE = 'Elegí cómo se pagó, o dejá la venta debiendo'
 export const SPECIAL_PRICE_INVALID_MESSAGE = 'El precio especial tiene que ser mayor a $0'
 export const LINE_GRAMS_INVALID = 'Cargá los gramos: coma, hasta dos decimales'

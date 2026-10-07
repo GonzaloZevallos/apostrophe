@@ -12,6 +12,7 @@ import { copyProblems, LIMITS, measure, SAMPLES, type CopyModule } from './limit
 /** Today's copy modules, written once. A new module is added here in the diff that
  * creates it; the glob below fails until it is. */
 const KNOWN_MODULES = [
+  '/src/sales/messages.ts',
   '/src/screens/authMessages.ts',
   '/src/screens/settings/messages.ts',
   '/src/screens/varieties/thresholdMessages.ts',
