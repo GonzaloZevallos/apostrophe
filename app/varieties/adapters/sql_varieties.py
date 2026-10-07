@@ -1,8 +1,10 @@
 from sqlalchemy import ColumnElement, delete, exists, select
 from sqlalchemy.orm import Session, selectinload
 
+from app.db import flush_or_refuse
 from app.sales.adapters.tables import SaleLineRow
 from app.shared.grams import Grams
+from app.shared.reference import ReferenceRefused
 from app.stock.adapters.tables import StockEntryRow
 from app.varieties.adapters.tables import PriceEntryRow, VarietyRow
 from app.varieties.domain.variety import NameHolder, PriceEntry, Variety, VarietyName
@@ -48,7 +50,9 @@ class SqlVarieties:
     def save(self, variety: Variety) -> Variety:
         assert variety.id is not None, "save takes a variety that was added"
         row = self._row(variety.id)
-        assert row is not None, "save takes a variety of this business"
+        if row is None:
+            # Deleted by a partner since it was read: the caller asks its own lookup.
+            raise ReferenceRefused
         row.name = variety.name.value
         row.name_key = variety.name.key
         row.archived_at = variety.archived_at
@@ -57,7 +61,7 @@ class SqlVarieties:
             *(r for r in row.price_entries if r.id in kept),
             *(self._entry_row(e) for e in variety.price_entries if e.id is None),
         ]
-        self._session.flush()
+        flush_or_refuse(self._session)
         return _variety(row)
 
     def name_holder(

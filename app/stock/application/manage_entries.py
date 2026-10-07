@@ -1,6 +1,7 @@
 from datetime import date, datetime
 
 from app.shared.grams import Grams
+from app.shared.reference import ReferenceRefused
 from app.shared.transaction import Transaction
 from app.stock.application.errors import VarietyArchived, VarietyNotFound
 from app.stock.application.ports import StockEntries, VarietyCatalog
@@ -45,7 +46,12 @@ def record_entry(
     entry = StockEntry.of(
         entry_date, variety_id, origin, grams, total_cost, note, today, recorded_at
     )
-    stored = entries.add(entry)
+    try:
+        stored = entries.add(entry)
+    except ReferenceRefused:
+        transaction.rollback()
+        _check_variety(catalog, variety_id)
+        raise
     transaction.commit()
     return stored
 
@@ -80,7 +86,12 @@ def edit_entry(
         existing.recorded_at,
         existing.id,
     )
-    stored = entries.save(updated)
+    try:
+        stored = entries.save(updated)
+    except ReferenceRefused:
+        transaction.rollback()
+        _check_variety(catalog, variety_id, keeps=variety_id == existing.variety_id)
+        raise
     transaction.commit()
     return stored
 
