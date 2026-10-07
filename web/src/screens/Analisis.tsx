@@ -35,17 +35,17 @@ import SinConexion from '../components/SinConexion'
 import { MORE } from '../routes'
 import {
   EMPTY_MONTH_LINE,
+  NO_BEST_WEEK_LINE,
   NO_HISTORY_LINE,
   PURCHASES_NOTE,
   SINCE_FIRST_RECORD_LABEL,
   VARIETY_TOTAL_NOTE,
 } from './analisisMessages'
 
-export { EMPTY_MONTH_LINE, NO_HISTORY_LINE, PURCHASES_NOTE, SINCE_FIRST_RECORD_LABEL, VARIETY_TOTAL_NOTE }
+export { EMPTY_MONTH_LINE, NO_BEST_WEEK_LINE, NO_HISTORY_LINE, PURCHASES_NOTE, SINCE_FIRST_RECORD_LABEL, VARIETY_TOTAL_NOTE }
 export const BEST_WEEK_MARK = 'Mejor semana'
 export const BEST_WEEKDAY_MARK = 'Mejor día'
 export const BEST_WEEK_TABLE_MARK = 'mejor'
-export const NO_BEST_WEEK_LINE = 'Ninguna se destacó'
 
 const WEEKDAY_LABEL: Record<number, string> = {
   1: 'Lun',

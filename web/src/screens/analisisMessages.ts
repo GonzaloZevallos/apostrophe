@@ -11,6 +11,7 @@ export const VARIETY_TOTAL_NOTE = 'La tabla de variedades suma las ventas del me
 export const SINCE_FIRST_RECORD_LABEL =
   'Movido desde tu primer registro, no es la plata que tenés en caja'
 export const PURCHASES_NOTE = 'Van aparte, se cargan en Stock'
+export const NO_BEST_WEEK_LINE = 'Ninguna se destacó'
 
 export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'emptyLine', text: NO_HISTORY_LINE },
@@ -18,5 +19,6 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'help', text: VARIETY_TOTAL_NOTE },
   { kind: 'help', text: SINCE_FIRST_RECORD_LABEL },
   { kind: 'help', text: PURCHASES_NOTE },
+  { kind: 'help', text: NO_BEST_WEEK_LINE },
 ]
 export const LONG_REFUSALS: readonly string[] = []

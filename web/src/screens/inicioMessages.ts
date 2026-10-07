@@ -7,11 +7,13 @@ import type { LimitedCopy } from '../copy/limits'
 
 export const EMPTY_TITLE = 'Arrancá por las variedades'
 export const EMPTY_DETAIL = 'Cargá tu primera variedad con su precio. Sin precio no se puede vender.'
+export const NOBODY_OWES = 'Nadie te debe'
 export const PINNED_CATALOG_OUT_OF_DATE = 'Tu catálogo en Telegram está desactualizado'
 
 export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'emptyTitle', text: EMPTY_TITLE },
   { kind: 'emptyLine', text: EMPTY_DETAIL },
+  { kind: 'emptyTitle', text: NOBODY_OWES },
   { kind: 'notice', text: PINNED_CATALOG_OUT_OF_DATE },
 ]
 export const LONG_REFUSALS: readonly string[] = []

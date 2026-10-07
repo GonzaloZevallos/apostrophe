@@ -46,7 +46,7 @@ import { formatDateShort } from '../format/dates'
 import { formatGrams, formatMoney, formatSignedMoney } from '../format/money'
 import { initialsOf } from '../shell/initials'
 import { detailFor, sideNoteFor } from '../stock/detail'
-import { EMPTY_DETAIL, EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE } from './inicioMessages'
+import { EMPTY_DETAIL, EMPTY_TITLE, NOBODY_OWES, PINNED_CATALOG_OUT_OF_DATE } from './inicioMessages'
 
 export { EMPTY_DETAIL, EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE }
 
@@ -284,7 +284,7 @@ function TeDebenBlock({ debts }: { debts: PanelDebts }) {
     return (
       <div className="bloque-deben">
         <span className="rotulo">Te deben</span>
-        <span className="pie">Nadie te debe</span>
+        <span className="pie">{NOBODY_OWES}</span>
       </div>
     )
   }

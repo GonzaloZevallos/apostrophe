@@ -25,11 +25,12 @@
 import { LOGIN } from '../routes'
 import { type FormEvent, useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { Link, useNavigate, useParams } from 'react-router'
+import { useNavigate, useParams } from 'react-router'
 import { ApiError, NetworkError } from '../api/client'
 import { openResetLink, submitReset } from '../session'
 import AuthPage from '../components/AuthPage'
 import Boton from '../components/Boton'
+import BotonLink from '../components/BotonLink'
 import Loading from '../components/Loading'
 import PasswordField from '../components/PasswordField'
 import SinConexion from '../components/SinConexion'
@@ -112,9 +113,9 @@ export default function Reset() {
   if (status === 'dead') {
     return (
       <AuthPage title={DEAD_LINK_MESSAGE}>
-        <Link className="boton" to={LOGIN}>
+        <BotonLink variant="link" to={LOGIN}>
           Entrar
-        </Link>
+        </BotonLink>
       </AuthPage>
     )
   }

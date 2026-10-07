@@ -336,7 +336,7 @@ test('"Cobrar" carries the cobro icon, hidden from assistive technology, and kee
   expect(link).toHaveTextContent('Cobrar')
 })
 
-test('the empty-state line and the out-of-date notice are the registered, limited bindings', async () => {
+test('the empty-state line the screen renders is the registered binding and fits its limit', async () => {
   stubFetch(PANEL, [{ current_price: null }])
   renderInicio()
 
