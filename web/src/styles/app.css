@@ -372,6 +372,13 @@ body {
   padding: var(--espacio-md) var(--margen-pantalla) 0;
 }
 
+/* The arrow is a thumb target (`ventasTelefono.spec.ts` measures every button at 44 px). */
+.flecha-atras .boton--enlace {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--alto-tocable);
+}
+
 .riel-lateral {
   display: none;
   flex-direction: column;
@@ -1253,6 +1260,14 @@ body {
   box-shadow: none;
   color: var(--tinta2);
   font-weight: 600;
+}
+
+/* Nueva venta's "Cerrar" is a thumb target like every other control on the phone
+ * (`ventasTelefono.spec.ts` measures every button at 44 px). */
+.nueva-venta .nueva-venta__cerrar {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--alto-tocable);
 }
 
 .campo__input--monto {

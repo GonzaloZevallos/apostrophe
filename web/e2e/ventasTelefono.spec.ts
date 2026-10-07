@@ -128,7 +128,7 @@ test('Nueva venta, Ventas and a sale detail fit and are thumb-sized at every pho
     await page.getByRole('button', { name: 'Agregar otra variedad' }).click()
     await expectNoSidewaysOverflow(page, `${phone.name}: Nueva venta`)
     await expectThumbSized(page, `${phone.name}: Nueva venta`)
-    await page.getByRole('button', { name: 'Volver' }).click()
+    await page.getByRole('button', { name: 'Cerrar' }).click()
     await expect(page.getByRole('alertdialog', { name: '¿Descartás la venta?' })).toBeVisible()
     await expectThumbSized(page, `${phone.name}: the discard dialog`)
     await page.getByRole('button', { name: 'Sí, descartala' }).click()
