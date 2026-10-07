@@ -37,3 +37,11 @@ test('an icon with a label is an image with that name', () => {
   const { getByRole } = render(<Icono nombre="tacho" label="Borrar" />)
   expect(getByRole('img', { name: 'Borrar' })).not.toHaveAttribute('aria-hidden')
 })
+
+test('no two names are drawn with the same glyph', () => {
+  const drawings = ICON_NAMES.map((nombre) => {
+    const { container } = render(<Icono nombre={nombre} />)
+    return container.querySelector('svg')?.innerHTML
+  })
+  expect(new Set(drawings).size).toBe(ICON_NAMES.length)
+})
