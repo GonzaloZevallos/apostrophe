@@ -44,8 +44,9 @@ class VarietyArchived(LookupError):
 
     code: ClassVar[str] = "variety.archived"
 
-    def __init__(self) -> None:
+    def __init__(self, variety_id: int | None = None) -> None:
         super().__init__("the variety is archived")
+        self.variety_id = variety_id
 
 
 @dataclass(frozen=True)

@@ -1,6 +1,6 @@
 from typing import ClassVar
 
-from app.varieties.domain.variety import VarietyArchived as ArchivedForNew
+from app.varieties.domain.variety import VarietyArchived as VarietyArchived
 
 
 class VarietyNotFound(LookupError):
@@ -15,16 +15,6 @@ class NameTaken(ValueError):
 
     def __init__(self, name: str) -> None:
         super().__init__(f"there is already a variety called {name}")
-
-
-class VarietyArchived(ArchivedForNew):
-    """A variety that left the lists was referenced for something new: to the caller it
-    is as gone as a deleted one (docs/adr/0031). The domain's own refusal is its base, so
-    one class in a router's table answers for both."""
-
-    def __init__(self, variety_id: int) -> None:
-        super().__init__()
-        self.variety_id = variety_id
 
 
 class NameHeldByArchived(ValueError):
