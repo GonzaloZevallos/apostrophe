@@ -290,7 +290,8 @@ def _panel(api: _ClientApi) -> list[str]:
 
 def _sales(api: _ClientApi) -> list[str]:
     listed = api.get("/sales")
-    rows, lines = [], []
+    rows: list[list[str]] = []
+    lines: list[list[str]] = []
     for sale in listed:
         who = sale["customer"]["name"] if sale["customer"] else _NONE
         key = f"{day_month(sale['date'])} · {who} · {money(sale['total'])}"
