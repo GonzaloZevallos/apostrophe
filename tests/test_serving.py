@@ -527,3 +527,21 @@ def test_a_path_a_legacy_pattern_does_not_fully_match_reaches_the_api(
 
     assert response.status_code == 200
     assert response.text == "the api"
+
+
+@pytest.mark.parametrize("path", ["/onboarding", "/onboarding/variety", "/onboarding/done"])
+def test_an_onboarding_front_path_is_the_shell_for_a_navigation(
+    served_client: TestClient, path: str
+) -> None:
+    response = _request(served_client, "GET", path, HTML)
+
+    assert response.status_code == 200
+    assert "the app shell" in response.text
+
+
+def test_the_onboarding_progress_api_is_never_the_shell(served_client: TestClient) -> None:
+    for accept in (JSON, HTML):
+        response = _request(served_client, "GET", "/onboarding-progress", accept)
+
+        assert response.status_code == 401
+        assert "the app shell" not in response.text

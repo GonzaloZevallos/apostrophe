@@ -8,7 +8,7 @@ from typing import Final, Literal
 
 from pydantic import BaseModel, Field
 
-from app.onboarding.domain.progress import FINISH, Progress, Resume, Target
+from app.onboarding.domain.progress import FINISH, Progress, Resume, StepState, Target
 from app.onboarding.domain.steps import Step
 
 StepSlug = Literal["variety", "stock", "header_footer", "bot", "partner", "categories"]
@@ -43,7 +43,7 @@ class TargetOut(BaseModel):
 
 class StepOut(BaseModel):
     step: StepSlug
-    state: Literal["done", "skipped", "pending"]
+    state: StepState
 
 
 class ProgressOut(BaseModel):

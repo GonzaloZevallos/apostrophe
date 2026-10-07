@@ -20,6 +20,7 @@ from app.customers.adapters.router import as_http as customers_as_http
 from app.expenses.adapters.router import as_http as expenses_as_http
 from app.http_errors import TranslateErrors
 from app.main import create_app
+from app.onboarding.adapters.router import as_http as onboarding_as_http
 from app.payments.adapters.router import as_http as payments_as_http
 from app.pinned_catalog.adapters.router import as_http as pinned_catalog_as_http
 from app.results.adapters.router import as_http as results_as_http
@@ -43,6 +44,7 @@ TRANSLATORS: list[TranslateErrors] = [
     payments_as_http,
     results_as_http,
     pinned_catalog_as_http,
+    onboarding_as_http,
 ]
 
 # Added by the app-wide 422 handler (ADR-0005), not by any `TranslateErrors`: still

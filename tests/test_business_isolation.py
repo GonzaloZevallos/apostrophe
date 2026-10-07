@@ -289,6 +289,7 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
         "amount": 100,
         "method": "cash",
     },
+    ("POST", "/onboarding-progress/passes"): {"step": "header_footer", "as": "done"},
     ("POST", "/auth/password"): {
         "current_password": "the wrong current password",
         "new_password": "a new password of some length",

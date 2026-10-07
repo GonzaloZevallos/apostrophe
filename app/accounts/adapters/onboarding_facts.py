@@ -16,6 +16,8 @@ class SqlUserFacts:
 
     def user_count(self) -> int:
         statement = (
-            select(func.count()).select_from(UserRow).where(UserRow.business_id == self._business_id)
+            select(func.count())
+            .select_from(UserRow)
+            .where(UserRow.business_id == self._business_id)
         )
         return self._session.scalar(statement) or 0
