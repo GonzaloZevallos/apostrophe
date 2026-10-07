@@ -61,6 +61,7 @@ export const keys = {
   sale: (id: string) => [PREFIX.sales, id] as const,
   stock: () => [PREFIX.stock] as const,
   stockEntry: (id: string) => [PREFIX.stock, 'entries', id] as const,
+  stockWithdrawal: (id: string) => [PREFIX.stock, 'withdrawals', id] as const,
   // Frozen at the call site (`gcTime: 0`, `staleTime: Infinity`, plan, "Front"), the
   // same way `saleFormVarieties` is: a save's own answer replaces this key's data
   // directly through `setQueryData`, so this prefix is never invalidated either.

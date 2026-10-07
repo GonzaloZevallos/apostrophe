@@ -1,5 +1,5 @@
 /**
- * `Mas`: "+ Cargar gasto", Gastos and Análisis first, in the design's order
+ * `Mas`: "+ Cargar gasto", "Sacar del stock" (the withdrawal form), Gastos and Análisis first, in the design's order
  * (`Mas.dc.html`), then the entries whose screens have not moved yet (Variedades,
  * Catálogo), which leave with the issues that move them, and Configuración last.
  * Paths come from `routes.ts`. The subtitles are the design's own words.
@@ -9,7 +9,7 @@
 
 import { Link } from 'react-router'
 import Icono from '../components/Icono'
-import { ANALYSIS, EXPENSE_NEW, EXPENSES } from '../routes'
+import { ANALYSIS, EXPENSE_NEW, EXPENSES, WITHDRAWAL_NEW } from '../routes'
 
 interface Item {
   to: string
@@ -24,6 +24,11 @@ const ITEMS: Item[] = [
     to: EXPENSE_NEW,
     label: '+ Cargar gasto',
     detail: 'Categoría, monto y detalle',
+  },
+  {
+    to: WITHDRAWAL_NEW,
+    label: 'Sacar del stock',
+    detail: 'Promoción o consumo propio',
   },
   { to: EXPENSES, label: 'Gastos', detail: 'Por mes y por categoría' },
   {

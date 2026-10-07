@@ -57,6 +57,52 @@ export interface StockEntryInput {
   note?: string
 }
 
+export type WithdrawalReason = 'promotion' | 'own_use'
+
+export interface WithdrawalLine {
+  variety_id: number
+  variety_name: string
+  grams: number
+}
+
+/** `GET/POST/PUT /stock/withdrawals…`'s answer; matches `fixtures/withdrawal.json`. */
+export interface Withdrawal {
+  id: number
+  reason: WithdrawalReason
+  date: string
+  note: string | null
+  total_grams: number
+  lines: WithdrawalLine[]
+}
+
+export interface WithdrawalLineInput {
+  variety_id: number
+  grams: string
+}
+
+/** `reason` stays optional on the wire: a missing one is the backend's own coded refusal. */
+export interface WithdrawalInput {
+  reason?: WithdrawalReason
+  date?: string
+  note?: string
+  lines: WithdrawalLineInput[]
+}
+
+export interface EntryMovement extends StockEntry {
+  kind: 'entry'
+}
+
+export interface WithdrawalMovement {
+  kind: 'withdrawal'
+  id: number
+  date: string
+  reason: WithdrawalReason
+  grams: number
+}
+
+/** One row of a variety's "Stock y entradas"; matches `fixtures/movements.json`. */
+export type Movement = EntryMovement | WithdrawalMovement
+
 export function readStock(): Promise<StockView> {
   return get<StockView>('/stock')
 }
@@ -79,4 +125,24 @@ export function deleteEntry(id: string): Promise<void> {
 
 export function setThreshold(varietyId: number, grams: number | null): Promise<VarietyStock> {
   return put<VarietyStock>(`/stock/varieties/${varietyId}/threshold`, { grams })
+}
+
+export function readMovements(varietyId: string): Promise<Movement[]> {
+  return get<Movement[]>(`/stock/varieties/${varietyId}/movements`)
+}
+
+export function getWithdrawal(id: string): Promise<Withdrawal> {
+  return get<Withdrawal>(`/stock/withdrawals/${id}`)
+}
+
+export function recordWithdrawal(body: WithdrawalInput): Promise<Withdrawal> {
+  return post<Withdrawal>('/stock/withdrawals', body)
+}
+
+export function editWithdrawal(id: string, body: WithdrawalInput): Promise<Withdrawal> {
+  return put<Withdrawal>(`/stock/withdrawals/${id}`, body)
+}
+
+export function deleteWithdrawal(id: string): Promise<void> {
+  return del<void>(`/stock/withdrawals/${id}`)
 }

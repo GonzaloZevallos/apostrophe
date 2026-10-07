@@ -12,6 +12,24 @@ export const EXPENSES = '/expenses'
 export const EXPENSE_CATEGORIES = '/settings/expense-categories'
 export const ANALYSIS = '/analisis'
 export const EXPENSE_NEW = '/expenses/new'
+export const WITHDRAWAL_NEW = '/withdrawals/new'
+export const WITHDRAWAL = '/withdrawals/:id'
+export const WITHDRAWAL_EDIT = '/withdrawals/:id/edit'
+
+/** A withdrawal's detail path, from its id alone: never a business id (ADR-0004). */
+export function withdrawalPath(id: number | string): string {
+  return `/withdrawals/${id}`
+}
+
+/** The edit form's path for a withdrawal. */
+export function withdrawalEditPath(id: number | string): string {
+  return `${withdrawalPath(id)}/edit`
+}
+
+/** The form that opens with `variety` already chosen on its first line. */
+export function withdrawalNewFor(varietyId: number | string): string {
+  return `${WITHDRAWAL_NEW}?variety=${varietyId}`
+}
 
 /** The path as a route-table segment (`'/more'` → `'more'`), for children of the root route. */
 export function relative(path: string): string {
