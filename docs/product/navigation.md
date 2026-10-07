@@ -1,6 +1,6 @@
 # Navigation
 
-The app's one structure for a business: the tabs on the phone, the sidebar on a computer, Más, Configuración, the one rule that gives every screen its chrome and its way back, the routes, and the first run. It says where every capability is reached from. What each capability does stays in its own file; nothing here changes a rule of pricing, settlement, stock, the catalog, isolation or feedback. Seen only by the session's business (ADR-0004).
+The app's one structure for a business: the tabs on the phone, the sidebar on a computer, Más, Configuración, the one rule that gives every screen its chrome and its way back, the routes, and the first run (the Onboarding for a brand-new business, the first-run checklist for a business that existed before it). It says where every capability is reached from. What each capability does stays in its own file; nothing here changes a rule of pricing, settlement, stock, the catalog, isolation or feedback. Seen only by the session's business (ADR-0004).
 
 ## Jobs
 
@@ -18,6 +18,8 @@ Configuración is rare and deliberate; the daily jobs never need it. It refines 
 
 **When** I take grams out of my own stock without selling them (to share at a party so people get to know the business, or for my own use), **I want** to record them from my phone in a few taps (date, varieties and grams, the reason), **so I can** keep stock right and see in Ganancia what promoting the business and my own consumption cost me, without recording a sale nobody made or an adjustment that reads as lost flower. (Served here by "Sacar del stock" in Más, on Variedades and on a variety's page, at most 2 taps from any tab root; defined in stock.md.)
 
+**When** I have just opened my business and it is still empty, **I want** to be walked through what it needs, one short step at a time, with defaults already filled in, **so I can** record my first sale the same day without hunting through Configuración, Variedades and the catalog screen. (Served here by the Onboarding as a brand-new business's one first-run element, opened on accepting the invitation and from Inicio's notice; defined in onboarding.md.)
+
 Before this structure: the bar was Inicio · Ventas · Clientes · Stock · Más; one variety was split across Stock, Variedades and Catálogo; collecting a debt took four taps from Clientes; settings were split across Negocio, Catálogo and Gastos → Categorías, and the bot was configured inside Catálogo. Nothing of it is kept but the redirects from its paths, and, until Configuración's Integraciones and Mensaje del catálogo exist, the temporary place for the bot and the header and footer reached from the catalog screen (catalog.md).
 
 Success criteria:
@@ -31,7 +33,7 @@ Success criteria:
    - an expense opens in at most 2 taps (Más → "+ Cargar gasto").
 
    On a computer, each takes no more taps than on the phone.
-2. **Every business-wide setting in one place.** Name, users and join links, the Telegram bot, the catalog header and footer, expense categories, appearance, and your account (password, log out) are all in Configuración and nowhere else. Configuración is reachable in at most 2 taps from any tab root: from the business avatar on Inicio and from Más on the phone, from the sidebar's business row on a computer. Settings that belong to one variety live on the variety, and nowhere else. The one temporary exception is the bot and the header and footer, reached from the catalog screen until their Configuración groups exist.
+2. **Every business-wide setting in one place.** Name, users and join links, the Telegram bot, the catalog header and footer, expense categories, appearance, and your account (password, log out) are all in Configuración and nowhere else. Configuración is reachable in at most 2 taps from any tab root: from the business avatar on Inicio and from Más on the phone, from the sidebar's business row on a computer. Settings that belong to one variety live on the variety, and nowhere else. The one temporary exception is the bot and the header and footer, reached from the catalog screen until their Configuración groups exist. The Onboarding's steps save these same settings through their owners and are not a second place for them (onboarding.md).
 3. **One variety, one page.** A variety's stock and its movements (entries and withdrawals), prices, low-stock warning and catalog attributes are seen and edited from its page. No fact is edited in two places under two names.
 4. **Nothing lost, nothing invented.** Everything a seller could do before stays reachable. The one deliberate exception is the customer channel, which is removed. No navigation entry or screen exists for something not yet built: no "coming soon", no promotions, automations or languages. No link points at a screen that does not exist.
 5. **One rule for chrome and back.** Every screen is one of three kinds: tab root, card or detail, form or sheet. Each kind gets its chrome by the rule. Back follows history, and the parent screen is the fallback.
@@ -60,7 +62,7 @@ Success criteria:
 
 - In order: "+ Cargar gasto" (it opens the expense form with today's date, expenses.md), "Sacar del stock" (it opens the stock withdrawal form with today's date and no variety chosen, stock.md), Gastos, Análisis, Configuración.
 - "+ Cargar gasto" and "Sacar del stock" are on top because they are the loads with no shorter path from every tab root.
-- Nothing else: an entry appears only once what it opens exists.
+- Nothing else: an entry appears only once what it opens exists. There is no entry for the Onboarding.
 
 ### Configuración
 
@@ -76,8 +78,8 @@ Success criteria:
 - **The list of groups** is a card: the bar or sidebar and a back arrow, no "+ Nueva venta". Back follows history; with none, it goes to "‹ Más" on the phone and "‹ Inicio" on a computer.
 - **Each group** is its own subscreen, a form: "Cerrar", no bar, no "+ Nueva venta"; unsaved changes ask before discarding, an untouched group closes at once. Apariencia never has unsaved changes, so it always closes at once.
 - **Empty business**: every group works. Usuarios lists at least the signed-in user; Categorías de gastos with none shows an empty list and the add action; Integraciones with nothing saved shows empty fields and no "Guardado" line.
-- **Never here**: a variety's own settings (catalog attributes, low-stock threshold), which live only on its page (varieties.md); anything for the operator (ADR-0002); a group or placeholder for anything not built.
-- **Nowhere else**: the old Negocio screen is gone; the catalog screen edits no header or footer (its "Editar encabezado y pie" opens Mensaje del catálogo); Gastos has no categories entry, apart from creating one inside the expense form (expenses.md).
+- **Never here**: a variety's own settings (catalog attributes, low-stock threshold), which live only on its page (varieties.md); anything for the operator (ADR-0002); a group or placeholder for anything not built; an entry to run the Onboarding again.
+- **Nowhere else**: the old Negocio screen is gone; the catalog screen edits no header or footer (its "Editar encabezado y pie" opens Mensaje del catálogo); Gastos has no categories entry, apart from creating one inside the expense form (expenses.md). The Onboarding's steps save the same settings through their owners, never a copy (onboarding.md).
 - **Temporary exception, until Integraciones and Mensaje del catálogo exist**: the bot settings and the header and footer stay editable, exactly as before, in one temporary place reached only from the catalog screen ("Editar encabezado y pie" and Publicar's "unavailable" link). It is a form ("Cerrar" back by history, else to the catalog screen; confirmation on unsaved leave), with no tab, Más entry, Configuración group or "coming soon" mark, and no pin status or Publicar. The catalog screen itself still edits nothing; it links out. Configuración's own issue retargets both links and removes the temporary place.
 
 ### Chrome and back: one rule
@@ -88,26 +90,45 @@ Every screen is exactly one of three kinds, and gets its chrome only from its ki
 - **Card or detail**: a customer's card, a variety's page, a sale's detail, an expense, a stock withdrawal's detail, the catalog screen, "Todas las entradas", every "Ver todas" list of a variety's page (its entries and withdrawals, and its prices), and Configuración's list of groups.
   - It shows the bar (or the sidebar) and a "‹ <parent>" back arrow naming the screen it returns to. A withdrawal's detail returns to the screen it was opened from, and to Variedades with no history.
   - It never shows "+ Nueva venta". A customer's card carries only "Nueva venta a <name>".
-- **Form or sheet**: Nueva venta and Elegir cliente, Registrar cobro, the stock entry form (new or editing, `/varieties/entries/{id}`), the stock withdrawal form ("Sacar del stock", new or editing), the price entry form, the expense form, a variety's add and rename, a variety's low-stock warning form and catalog attributes form, every Configuración group, and the temporary place for the bot and the header and footer while it exists.
+- **Form or sheet**: Nueva venta and Elegir cliente, Registrar cobro, the stock entry form (new or editing, `/varieties/entries/{id}`), the stock withdrawal form ("Sacar del stock", new or editing), the price entry form, the expense form, a variety's add and rename, a variety's low-stock warning form and catalog attributes form, every Configuración group, every Onboarding step and its closing screen "Listo", and the temporary place for the bot and the header and footer while it exists.
   - It shows neither the bar nor "+ Nueva venta". It closes with "Cerrar".
   - Leaving it with unsaved changes asks before discarding. Nueva venta keeps its own "¿Descartás la venta?" (sales.md); every other form or sheet asks the same way with its own fixed wording.
   - An untouched form or sheet closes at once.
-- **Back** follows the app's history. With no history (a link opened directly), it goes to the parent named by "‹", or for a form to the screen it belongs to (editing a stock entry: "Todas las entradas").
+  - The Onboarding's "Cerrar" lands on Inicio and keeps its resume point; Nueva venta opened from "Listo" goes back to Inicio, never to "Listo" or the Onboarding (onboarding.md).
+- **Back** follows the app's history. With no history (a link opened directly), it goes to the parent named by "‹", or for a form to the screen it belongs to (editing a stock entry: "Todas las entradas"; the Onboarding: Inicio).
 
 ### Routes
 
-- Every screen's route is in English: `/sales`, `/customers`, `/varieties`, `/expenses`, `/analysis`, `/settings`, `/more`, and the same for every other screen. The stock withdrawal form is `/withdrawals/new` (and `/withdrawals/{id}/edit`), a withdrawal's detail `/withdrawals/{id}`. The exact path of each screen, each Configuración group included, is fixed in `scripts/design/screens.json`.
+- Every screen's route is in English: `/sales`, `/customers`, `/varieties`, `/expenses`, `/analysis`, `/settings`, `/more`, and the same for every other screen. The stock withdrawal form is `/withdrawals/new` (and `/withdrawals/{id}/edit`), a withdrawal's detail `/withdrawals/{id}`. The exact path of each screen, each Configuración group and each Onboarding step and "Listo" included, is fixed in `scripts/design/screens.json`.
 - **Variedades** and its screens: `/varieties`, `/varieties/{low}`, `/varieties/catalog` (the catalog screen), `/varieties/entries` ("Todas las entradas"), `/varieties/entries/new`, `/varieties/entries/{id}` (editing a stock entry), `/varieties/{low}/entries` (a variety's entries, the same list filtered to it, with the withdrawals that touch it, "‹ <variety>"), `/varieties/{low}/prices`, `/varieties/{low}/prices/new` and `/varieties/new`. A reload on any of them opens the screen, never the API's answer; paths that share their first segment with the API are served under ADR-0024.
 - Every old Spanish path redirects permanently to its new route, each tested one by one:
   - `/ventas`, `/clientes`, `/mi-stock`, `/mi-stock/nueva-entrada`, `/mi-stock/entradas/{id}` (to `/varieties/entries/{id}`), `/variedades`, `/catalogo`, `/gastos`, `/mas`, and every other one, including the old Te deben screen's path, which goes to Clientes;
   - `/negocio` goes to Configuración;
   - the old Gastos → Categorías path (`/gastos/categorias`) goes to Configuración → Categorías de gastos.
 - The old Catálogo had no separate paths for the bot or the header and footer, so nothing redirects to Integraciones or Mensaje del catálogo.
-- An unknown or mistyped address goes to Inicio (`/`), as it always has. A later task that removes a path with no counterpart decides where that path goes.
+- An unknown or mistyped address goes to Inicio (`/`), as it always has. An Onboarding path opened for a business whose Onboarding is over, or that never had one, goes to Inicio too. A later task that removes a path with no counterpart decides where that path goes.
 - No route carries a business (ADR-0004); a record's own id in a path is allowed. `/invitation/{token}` and `/reset/{token}` stay as they are (accounts.md).
 - Screen text stays in Rioplatense Spanish; only the routes change.
 
-### First-run checklist
+### First run
+
+- **Three first-run elements, each for its own business, never two at once**:
+  - **the Onboarding**, for a business opened by a new-business invitation after it shipped (onboarding.md);
+  - **the first-run checklist**, for a business that existed before the Onboarding shipped;
+  - **the after-import notice**, for a business loaded by the spreadsheet import. Once the import loads a business, its Onboarding is over.
+- There is no tour and no welcome screen beyond these.
+
+### The Onboarding (first run of a brand-new business)
+
+- **Entry**: accepting a new-business invitation lands in the Onboarding instead of Inicio. That is the only time it opens by itself.
+- **The Inicio notice**: while it is not over, "Seguí con la configuración" sits at the top of Inicio, on the phone and on `InicioCompu`, in the checklist's place (results.md gives Inicio's order). It shows "N de 6 pasos" and what is next, opens the Onboarding at its resume step, and cannot be dismissed.
+- **While it is not over**, the checklist and "Arrancá por las variedades" do not show. The side rules stay, tied to the data:
+  - with no variety priced today, "+ Nueva venta" says in words what is missing;
+  - while nothing qualifies for the catalog and its two required steps are unmet, "Mandar catálogo" is disabled with its reason in words.
+- **Once it is over** ("Listo" reached, or the import loaded the business), neither it nor the checklist ever shows again; ongoing gaps are told by the standing notices.
+- Its steps, passes, resume and closing screen are onboarding.md.
+
+### First-run checklist (businesses that existed before the Onboarding)
 
 - **The steps**, each worked out from the business's data at the moment, never from a stored tick:
   1. a variety with a current price today (required);
@@ -115,14 +136,13 @@ Every screen is exactly one of three kinds, and gets its chrome only from its ki
   3. the pinned catalog published at least once (optional);
   4. a second user in the business (optional).
 - A met step shows its box checked and the word "Hecho", never color alone.
-- **Who sees it**: a business that has not yet met both required steps. The optional steps never hold it on screen; they stay reachable in Configuración (Integraciones, Usuarios).
+- **Who sees it**: a business that existed before the Onboarding shipped and has not yet met both required steps. A brand-new business gets the Onboarding instead and never sees the checklist. The optional steps never hold it on screen; they stay reachable in Configuración (Integraciones, Usuarios).
 - **When it goes**: for good, the first time steps 1 and 2 are both met. It never comes back, even if a required step's condition later becomes false again (say, the only price entry is deleted). Ongoing gaps are told by the standing notices: "Arrancá por las variedades" and the pinned catalog's out-of-date notice.
 - **Where**: at the top of Inicio, on the phone and on `InicioCompu` alike (results.md gives Inicio's order).
 - **While it shows**:
   - with no variety priced today, "+ Nueva venta" stays visible and says in words what is missing;
-  - while nothing qualifies for the catalog, "Mandar catálogo" is disabled with its reason in words (e.g. "Cargá una variedad con precio y su stock"). This is the only time it is ever disabled (catalog.md). Integraciones' link to the catalog screen is never disabled.
+  - while nothing qualifies for the catalog, "Mandar catálogo" is disabled with its reason in words (e.g. "Cargá una variedad con precio y su stock"). Apart from the Onboarding's equivalent rule above, this is the only time it is ever disabled (catalog.md). Integraciones' link to the catalog screen is never disabled.
 - **An imported business** arrives with prices and stock, so it never sees the checklist.
-- The checklist and the after-import notice are the only first-run elements: no tour, no welcome screen.
 
 ### After-import notice
 
@@ -131,38 +151,49 @@ Every screen is exactly one of three kinds, and gets its chrome only from its ki
 
 ### Constraints
 
-- Nothing here adds a route that answers business data; each screen reads its owner's routes, already in the isolation sweep and the gated-route test.
-- Whatever decides the checklist and the after-import notice is answered by the server for the session's business only.
+- Nothing here adds a route that answers business data; each screen reads its owner's routes, already in the isolation sweep and the gated-route test. The Onboarding's own routes join both (onboarding.md).
+- Whatever decides the Onboarding notice, the checklist and the after-import notice is answered by the server for the session's business only.
 - No business id in a URL; no personal data or money in the console or browser storage (accounts.md). The theme choice is the only thing kept on the device.
-- No network shows "Sin conexión", a server error a generic retry, and a record that is gone follows accounts.md's "Eso ya no está." rule, in Configuración as everywhere.
+- No network shows "Sin conexión", a server error a generic retry, and a record that is gone follows accounts.md's "Eso ya no está." rule, in Configuración and the Onboarding as everywhere.
 
 ## Metrics
 
 - **Tap budget (criterion 1)**: through the front, from each tab root, phone and computer viewports, the end-to-end run counts the taps to open: the sale form (1), Registrar cobro with the customer chosen from Clientes and from Inicio (≤2), the catalog screen (≤2), the stock entry form (≤2), the stock withdrawal form (≤2) and the expense form (≤2). 100% within budget.
-- **Settings in one place (criterion 2)**: every business-wide setting named in the product docs sits in exactly one Configuración group and on no other screen; the catalog screen edits no header or footer, Gastos has no categories entry, and the old Negocio screen does not exist; every per-variety setting sits only on the variety's page. Configuración opens in ≤2 taps from every tab root, phone and computer. While the temporary place stands in for Integraciones and Mensaje del catálogo, it is reached only from the catalog screen and from no tab, Más or Configuración entry.
+- **Settings in one place (criterion 2)**:
+  - every business-wide setting named in the product docs sits in exactly one Configuración group and on no other screen;
+  - the catalog screen edits no header or footer, Gastos has no categories entry, and the old Negocio screen does not exist;
+  - every per-variety setting sits only on the variety's page;
+  - Configuración opens in ≤2 taps from every tab root, phone and computer;
+  - while the temporary place stands in for Integraciones and Mensaje del catálogo, it is reached only from the catalog screen and from no tab, Más or Configuración entry;
+  - the Onboarding's steps write through the owners' routes, and a value saved there reads the same in Configuración.
 - **One fact, one place (criterion 3)**: no price, stock entry, withdrawal, threshold or catalog attribute is editable from two screens, checked against the docs and the design. A stock entry is edited through its one form, `/varieties/entries/{id}`, whichever list it was opened from.
-- **Nothing lost, nothing invented (criterion 4)**: every action a seller had before the redesign maps to a place in the new structure, except the customer channel; the bar, the sidebar, Más and Configuración show exactly the entries listed above, with no placeholder group; no link points at a missing screen.
-- **Chrome (criterion 5)**: every screen in the docs and in `scripts/design/screens.json` is classified as exactly one kind, and front tests check its chrome: tab roots with the bar and "+ Nueva venta", cards with "‹ <parent>" and no "+ Nueva venta", forms and sheets with neither and a confirmation on unsaved leave. Back with no history goes to the parent; from Configuración's list, to Más on the phone and Inicio on a computer; from a variety's entries list, to the variety's page; from editing an entry, to "Todas las entradas"; from a withdrawal's detail, to Variedades.
+- **Nothing lost, nothing invented (criterion 4)**: every action a seller had before the redesign maps to a place in the new structure, except the customer channel; the bar, the sidebar, Más and Configuración show exactly the entries listed above, with no placeholder group and no Onboarding entry; no link points at a missing screen.
+- **Chrome (criterion 5)**: every screen in the docs and in `scripts/design/screens.json` is classified as exactly one kind, the Onboarding's steps and "Listo" included, and front tests check its chrome:
+  - tab roots with the bar and "+ Nueva venta";
+  - cards with "‹ <parent>" and no "+ Nueva venta";
+  - forms and sheets with neither, and a confirmation on unsaved leave.
+
+  Back with no history goes to the parent: from Configuración's list, to Más on the phone and Inicio on a computer; from a variety's entries list, to the variety's page; from editing an entry, to "Todas las entradas"; from a withdrawal's detail, to Variedades; from the Onboarding, to Inicio.
 - **Accessible bar (criterion 6)**: a front test at 320 px with text at 130 % shows every tab label whole; the active tab carries `aria-current` and a non-color mark; no state is told by color alone.
 - **Configuración (criterion 8)**:
   - front tests: every group has "Cerrar" and no bar; unsaved changes ask; an untouched group closes at once; Apariencia shows no save, toast or warning;
   - Integraciones shows the link to the catalog screen, no pin status and no Publicar, and the "desfijalo vos en Telegram" line after a token or channel change;
   - one end-to-end front run from a phone viewport renames the business, creates a join link, runs Probarlo and follows the link to the catalog screen, edits the header and footer, adds, renames and removes a category (a refused removal included), switches Apariencia, changes the password and logs out.
 - **First-run matrix**: 100% passing, phone and computer:
-  - a new business sees the checklist; each met step shows "Hecho";
-  - it goes the first time steps 1 and 2 are both met, whatever 3 and 4;
-  - deleting the only price entry afterwards never brings it back;
-  - an imported business never sees it and sees the after-import notice until dismissed or published;
-  - "Mandar catálogo" is disabled only while the checklist shows and nothing qualifies.
+  - a brand-new business lands in the Onboarding on accepting its invitation, sees "Seguí con la configuración" while it is not over, and never sees the checklist or "Arrancá por las variedades" alongside it;
+  - a business that existed before the Onboarding sees the checklist; each met step shows "Hecho"; it goes the first time steps 1 and 2 are both met, whatever 3 and 4; deleting the only price entry afterwards never brings it back;
+  - an imported business never sees the checklist or the Onboarding (including one that landed in the Onboarding before the import) and sees the after-import notice until dismissed or published;
+  - "Mandar catálogo" is disabled only while the checklist shows, or the Onboarding's required steps are unmet, and nothing qualifies.
 - **Redirects**: every old Spanish path that has moved answers a permanent redirect to its English route, tested one by one, including `/negocio`, `/gastos/categorias`, `/catalogo`, `/mi-stock/nueva-entrada` and `/mi-stock/entradas/{id}`.
 - **Reloads under `/varieties`**: a browser navigation to each Variedades route, parameterised ones included (`/varieties/{low}`, `/varieties/{low}/entries`, `/varieties/{low}/prices`, `/varieties/entries/{id}`), opens the screen, never the API's answer; the front's own API calls still reach the API.
-- **One structure (criterion 7)**: the docs, CONTEXT.md, `pantallas/` and `screens.json` name the same screens and routes, the withdrawal form and detail included; Zeta approves the pull request that states them.
+- **One structure (criterion 7)**: the docs, CONTEXT.md, `pantallas/` and `screens.json` name the same screens and routes, the withdrawal form and detail and the Onboarding's screens included; Zeta approves the pull request that states them.
 
 ## Out of scope
 
 - English screen texts (#53); a language entry.
 - Any operator or admin surface in the app; roles; listing or revoking invitations.
-- A tour or welcome screen.
+- A tour or welcome screen beyond the Onboarding.
+- An entry to run the Onboarding again.
 - Promotions (as campaigns or offers), automations, languages, and any entry for them before they exist. A stock withdrawal for promotion is a stock record, not this.
 - A "follow the system" theme.
 - The pin's status or Publicar in Integraciones.

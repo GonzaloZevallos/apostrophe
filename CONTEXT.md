@@ -390,11 +390,11 @@ The one place holding every business-wide setting, in groups: Negocio, Usuarios,
 _Avoid_: Ajustes (in the spreadsheet that held prices), preferences, admin, Negocio (that is one group)
 
 **First-run checklist**:
-Four steps on Inicio for a business that has not yet both priced a variety for today and recorded a stock entry: those two, plus publishing the pinned catalog and adding a second user, which are optional. Each step is worked out from the business's data and reads "Hecho" when met; the checklist goes for good the first time the two required steps are met and never returns.
-_Avoid_: tour, wizard, setup guide, welcome (the Onboarding below is a different thing)
+Four steps on Inicio for a business that existed before the Onboarding shipped and has not yet both priced a variety for today and recorded a stock entry: those two, plus publishing the pinned catalog and adding a second user, which are optional. Each step is worked out from the business's data and reads "Hecho" when met; the checklist goes for good the first time the two required steps are met and never returns. A brand-new business gets the Onboarding instead.
+_Avoid_: tour, wizard, setup guide, welcome, Onboarding (that is a brand-new business's first run)
 
 **Onboarding**:
-The step-by-step setup a brand-new business is walked through after its new-business invitation is accepted. It replaces the first-run checklist for that business. Two required steps (a variety priced today, its opening stock) and optional ones (catalog header and footer, Telegram bot, a partner, expense categories), each saving what Configuración or the variety's page saves. It resumes where it was left, is over for good once the required steps are done and every optional one is passed, and is never offered to an imported business, a joined user's business or one that existed before it shipped.
+The step-by-step setup a brand-new business is walked through after its new-business invitation is accepted, in place of the first-run checklist. It has two required steps (a variety priced today, its opening stock) and optional ones (catalog header and footer, Telegram bot, a partner, expense categories), each saving what Configuración or the variety's page saves. It resumes where it was left, is over for good once its closing screen "Listo" is reached or an import loads the business, and is never offered to a joined user's business or one that existed before it shipped.
 _Avoid_: tour, wizard, welcome screen, setup guide
 
 **Theme choice**:
