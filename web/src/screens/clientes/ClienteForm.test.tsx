@@ -6,6 +6,11 @@
  */
 
 import { CUSTOMER, CUSTOMERS, CUSTOMER_EDIT, CUSTOMER_NEW, LOGIN, pathTo } from '../../routes'
+import { GONE_NOTICE } from '../../api/refusals'
+import { useGoneNotice } from '../../components/goneExit'
+import { SheetRouterProvider } from '../../components/useSheetStack'
+import { stubViewport } from '../../test-viewport'
+import { StrictMode } from 'react'
 import { inAppState } from '../../components/inAppState'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, render, screen, waitFor } from '@testing-library/react'
@@ -18,24 +23,26 @@ import ClienteForm from './ClienteForm'
 
 function ListStub() {
   const location = useLocation()
-  const state = location.state as { toast?: string; notice?: string } | null
+  const state = location.state as { toast?: string } | null
+  const goneShown = useGoneNotice()
   return (
     <div>
       <span>la lista</span>
       {state?.toast !== undefined && <span>{state.toast}</span>}
-      {state?.notice !== undefined && <span>{state.notice}</span>}
+      {goneShown && <span>{GONE_NOTICE}</span>}
     </div>
   )
 }
 
 function FichaStub() {
   const location = useLocation()
-  const state = location.state as { toast?: string; notice?: string } | null
+  const state = location.state as { toast?: string } | null
+  const goneShown = useGoneNotice()
   return (
     <div>
       <span>la ficha</span>
       {state?.toast !== undefined && <span>{state.toast}</span>}
-      {state?.notice !== undefined && <span>{state.notice}</span>}
+      {goneShown && <span>{GONE_NOTICE}</span>}
     </div>
   )
 }
@@ -47,43 +54,45 @@ function jsonResponse(status: number, body: unknown): Response {
   })
 }
 
-function renderForm(initialPath: string, previous?: string) {
-  const router = createMemoryRouter(
-    [
+const ROUTES = [
+  {
+    element: (
+      <FlashProvider>
+        <Outlet />
+      </FlashProvider>
+    ),
+    children: [
       {
+        path: CUSTOMERS,
         element: (
-          <FlashProvider>
-            <Outlet />
-          </FlashProvider>
+          <>
+            <ListStub />
+            <Link to={CUSTOMER_NEW} state={inAppState({ pathname: CUSTOMERS })}>
+              Abrir el formulario
+            </Link>
+          </>
         ),
-        children: [
-          {
-            path: CUSTOMERS,
-            element: (
-              <>
-                <ListStub />
-                <Link to={CUSTOMER_NEW} state={inAppState({ pathname: CUSTOMERS })}>
-                  Abrir el formulario
-                </Link>
-              </>
-            ),
-          },
-          { path: CUSTOMER_NEW, element: <ClienteForm mode="nuevo" /> },
-          { path: CUSTOMER_EDIT, element: <ClienteForm mode="editar" /> },
-          {
-            path: CUSTOMER,
-            element: (
-              <>
-                <FichaStub />
-                <Link to={pathTo(CUSTOMER_EDIT, { id: 7 })} state={inAppState({ pathname: CUSTOMERS })}>
-                  Editar
-                </Link>
-              </>
-            ),
-          },
-        ],
+      },
+      { path: CUSTOMER_NEW, element: <ClienteForm mode="nuevo" /> },
+      { path: CUSTOMER_EDIT, element: <ClienteForm mode="editar" /> },
+      {
+        path: CUSTOMER,
+        element: (
+          <>
+            <FichaStub />
+            <Link to={pathTo(CUSTOMER_EDIT, { id: 7 })} state={inAppState({ pathname: CUSTOMERS })}>
+              Editar
+            </Link>
+          </>
+        ),
       },
     ],
+  },
+]
+
+function renderForm(initialPath: string, previous?: string) {
+  const router = createMemoryRouter(
+    ROUTES,
     previous === undefined
       ? { initialEntries: [initialPath] }
       : { initialEntries: [previous, initialPath], initialIndex: 1 },
@@ -223,7 +232,7 @@ test('saving an edit on a customer that is gone shows the gone notice, not the t
   expect(await screen.findByLabelText('Nombre')).toHaveValue('Tincho')
   await userEvent.click(screen.getByRole('button', { name: 'Guardá y usá' }))
 
-  await waitFor(() => expect(screen.getByText('la lista')).toBeInTheDocument())
+  await waitFor(() => expect(screen.getByText('la ficha')).toBeInTheDocument())
   expect(screen.getByText('Eso ya no está. La lista ya está al día.')).toBeInTheDocument()
   expect(screen.queryByText('Cliente guardado')).not.toBeInTheDocument()
 })
@@ -356,4 +365,123 @@ test('after editing from the card, the save goes back by history: no second card
   expect(router.state.historyAction).toBe('POP')
   await act(() => router.navigate(-1))
   expect(router.state.location.pathname).toBe(CUSTOMERS)
+})
+
+// The gone exit (navigation.md, "A gone exit is the same move as Cerrar").
+type HistoryEntry = string | { pathname: string; state: unknown }
+
+function fakeGoneCustomer() {
+  vi.mocked(fetch).mockImplementation((input, init) => {
+    const method = init?.method ?? 'GET'
+    const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url
+    if (method === 'GET' && url === '/customers/7') {
+      return Promise.resolve(jsonResponse(200, { id: 7, name: 'Tincho', phone: null, channel: null, vip: false }))
+    }
+    return Promise.resolve(jsonResponse(404, { detail: 'no such customer', code: 'customer.not_found' }))
+  })
+}
+
+/** The real data router under StrictMode, with the router handle the gone notice follows. */
+function renderGone(entries: HistoryEntry[]) {
+  const router = createMemoryRouter(ROUTES, { initialEntries: entries, initialIndex: entries.length - 1 })
+  const app = (
+    <StrictMode>
+      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+        <SheetRouterProvider router={router}>
+          <RouterProvider router={router} />
+        </SheetRouterProvider>
+      </QueryClientProvider>
+    </StrictMode>
+  )
+  const view = render(app)
+  return { router, view, app }
+}
+
+async function saveTheGoneEdit() {
+  await userEvent.type(await screen.findByLabelText('Nombre'), ' R')
+  await userEvent.click(screen.getByRole('button', { name: 'Guardá y usá' }))
+}
+
+const CARD = pathTo(CUSTOMER, { id: 7 })
+const EDIT = pathTo(CUSTOMER_EDIT, { id: 7 })
+
+test('a gone edit opened from the card goes back to it: the card is in history once, with the notice once, and Clientes is not repeated', async () => {
+  fakeGoneCustomer()
+  const { router } = renderGone([CUSTOMERS, CARD, { pathname: EDIT, state: inAppState({ pathname: CARD }) }])
+
+  await saveTheGoneEdit()
+
+  expect(await screen.findByText('la ficha')).toBeInTheDocument()
+  expect(router.state.location.pathname).toBe(CARD)
+  expect(router.state.historyAction).toBe('POP')
+  expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
+  await act(() => router.navigate(-1))
+  expect(router.state.location.pathname).toBe(CUSTOMERS)
+  expect(screen.queryByText(GONE_NOTICE)).not.toBeInTheDocument()
+})
+
+test('a gone edit opened from a search replaces the form with the card and leaves the list behind alone', async () => {
+  fakeGoneCustomer()
+  const { router } = renderGone([CUSTOMERS, { pathname: EDIT, state: inAppState({ pathname: CUSTOMERS }) }])
+
+  await saveTheGoneEdit()
+
+  expect(await screen.findByText('la ficha')).toBeInTheDocument()
+  expect(router.state.historyAction).toBe('REPLACE')
+  expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
+  await act(() => router.navigate(-1))
+  expect(router.state.location.pathname).toBe(CUSTOMERS)
+  expect(screen.queryByText(GONE_NOTICE)).not.toBeInTheDocument()
+})
+
+test('a gone edit on a direct link replaces the form with the card and shows the notice', async () => {
+  fakeGoneCustomer()
+  const { router } = renderGone([EDIT])
+
+  await saveTheGoneEdit()
+
+  expect(await screen.findByText('la ficha')).toBeInTheDocument()
+  expect(router.state.historyAction).toBe('REPLACE')
+  expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
+})
+
+test('after a reload of the form, the gone exit still goes back once', async () => {
+  fakeGoneCustomer()
+  const { router, view, app } = renderGone([CUSTOMERS, CARD, { pathname: EDIT, state: inAppState({ pathname: CARD }) }])
+  await screen.findByLabelText('Nombre')
+  view.unmount()
+  render(app)
+
+  await saveTheGoneEdit()
+
+  expect(await screen.findByText('la ficha')).toBeInTheDocument()
+  expect(router.state.historyAction).toBe('POP')
+  expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
+})
+
+test('a resize across 900 px between opening and leaving does not change where the exit goes', async () => {
+  fakeGoneCustomer()
+  stubViewport('phone')
+  const { router } = renderGone([CUSTOMERS, CARD, { pathname: EDIT, state: inAppState({ pathname: CARD }) }])
+  await screen.findByLabelText('Nombre')
+  stubViewport('computer')
+
+  await saveTheGoneEdit()
+
+  expect(await screen.findByText('la ficha')).toBeInTheDocument()
+  expect(router.state.historyAction).toBe('POP')
+})
+
+test.each([
+  ['a query string', `${CARD}?x=1`],
+  ['a trailing slash', `${CARD}/`],
+])('a from with %s still counts as the parent: the exit goes back', async (_name, from) => {
+  fakeGoneCustomer()
+  const { router } = renderGone([CUSTOMERS, CARD, { pathname: EDIT, state: inAppState({ pathname: from }) }])
+
+  await saveTheGoneEdit()
+
+  expect(await screen.findByText('la ficha')).toBeInTheDocument()
+  expect(router.state.historyAction).toBe('POP')
+  expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
 })
