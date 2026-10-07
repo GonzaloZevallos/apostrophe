@@ -2348,6 +2348,17 @@
           "list_price": {
             "title": "List Price",
             "type": "integer"
+          },
+          "vip_price": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vip Price"
           }
         },
         "required": [
@@ -2393,6 +2404,17 @@
           "list_price": {
             "title": "List Price",
             "type": "integer"
+          },
+          "vip_price": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vip Price"
           }
         },
         "required": [
@@ -2400,7 +2422,8 @@
           "effective_from",
           "list_price",
           "bulk_price",
-          "bulk_minimum"
+          "bulk_minimum",
+          "vip_price"
         ],
         "title": "PriceEntryOut",
         "type": "object"
@@ -2415,6 +2438,25 @@
         ],
         "title": "PricingRule",
         "type": "string"
+      },
+      "PricingSettingsBody": {
+        "description": "The request and the answer of `/pricing-settings`: the same two switches.",
+        "properties": {
+          "is_bulk_pricing": {
+            "title": "Is Bulk Pricing",
+            "type": "boolean"
+          },
+          "is_vip_customers": {
+            "title": "Is Vip Customers",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "is_bulk_pricing",
+          "is_vip_customers"
+        ],
+        "title": "PricingSettingsBody",
+        "type": "object"
       },
       "RecordPaymentOut": {
         "properties": {
@@ -5155,6 +5197,76 @@
         "summary": "Post Pinned Catalog Test",
         "tags": [
           "pinned_catalog"
+        ]
+      }
+    },
+    "/pricing-settings": {
+      "get": {
+        "operationId": "get_pricing_settings_pricing_settings_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PricingSettingsBody"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Pricing Settings",
+        "tags": [
+          "pricing-settings"
+        ]
+      },
+      "put": {
+        "operationId": "put_pricing_settings_pricing_settings_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PricingSettingsBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PricingSettingsBody"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Put Pricing Settings",
+        "tags": [
+          "pricing-settings"
         ]
       }
     },

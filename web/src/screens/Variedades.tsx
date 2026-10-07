@@ -54,6 +54,7 @@ interface PriceEntry {
   list_price: number
   bulk_price: number | null
   bulk_minimum: number | null
+  vip_price: number | null
 }
 
 export interface Variety {

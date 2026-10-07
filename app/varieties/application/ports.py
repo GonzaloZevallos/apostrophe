@@ -1,5 +1,6 @@
 from typing import Protocol
 
+from app.shared.pricing_settings import PricingSettings
 from app.varieties.domain.variety import NameHolder, Variety, VarietyName
 
 
@@ -50,3 +51,11 @@ class VarietyLeaving(Protocol):
     threshold, catalog attributes): built for one business, writes without committing."""
 
     def leaving(self, variety_id: int) -> None: ...
+
+
+class PricingSettingsReader(Protocol):
+    """The business's pricing switches, read through the one port varieties declares for
+    them (docs/adr/0006); the pricing_settings hexagon implements it, wired in
+    `app/main.py`. A business with no row is an error, never a default (docs/adr/0034)."""
+
+    def current(self) -> PricingSettings: ...

@@ -8,7 +8,12 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date, datetime
 
-from app.sales.application.ports import CustomerFacts, PriceBook, Sales
+from app.sales.application.ports import (
+    CustomerFacts,
+    PriceBook,
+    PricingSettingsReader,
+    Sales,
+)
 from app.sales.domain.sale import LineRequest, PaymentMethod, Sale, UnknownCustomer, UnknownVariety
 from app.shared.grams import Grams
 from app.shared.reference import ReferenceRefused
@@ -30,6 +35,7 @@ def record_sale(
     sales: Sales,
     price_book: PriceBook,
     customer_facts: CustomerFacts,
+    pricing_settings: PricingSettingsReader,
     transaction: Transaction,
     *,
     sale_date: date,
@@ -48,6 +54,7 @@ def record_sale(
         if customer is None:
             raise UnknownCustomer()
 
+    settings = pricing_settings.current()
     requests = [_resolve_line(price_book, sale_date, line) for line in lines]
 
     sale = Sale.record(
@@ -55,6 +62,7 @@ def record_sale(
         today=today,
         customer_id=customer_id,
         customer=customer,
+        settings=settings,
         shipping_charged=shipping_charged,
         note=note,
         lines=requests,

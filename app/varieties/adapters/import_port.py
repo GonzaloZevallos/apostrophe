@@ -21,7 +21,7 @@ from app.spreadsheet_import.application.ports import Refusal, VarietyKey
 from app.spreadsheet_import.domain.rows import PriceHistoryRow
 from app.varieties.adapters.sql_varieties import SqlVarieties
 from app.varieties.adapters.tables import PriceEntryRow, VarietyRow
-from app.varieties.application.manage_prices import record_price_entry
+from app.varieties.application.manage_prices import record_imported_price_entry
 from app.varieties.application.manage_varieties import register_variety
 from app.varieties.application.ports import Varieties
 from app.varieties.domain.variety import (
@@ -75,7 +75,11 @@ class VarietiesImport:
                 varieties[key] = variety
             try:
                 entry = PriceEntry.of(
-                    row.effective, row.list_price, row.bulk_price, row.bulk_minimum
+                    row.effective,
+                    row.list_price,
+                    row.bulk_price,
+                    row.bulk_minimum,
+                    vip_price=row.bulk_price,
                 )
                 variety.record_price(entry)
             except VarietyRuleBroken as exc:
@@ -90,9 +94,17 @@ class VarietiesImport:
         return variety.id
 
     def write_price_entry(
-        self, variety_id: int, row: PriceHistoryRow, transaction: Transaction
+        self,
+        variety_id: int,
+        row: PriceHistoryRow,
+        transaction: Transaction,
+        *,
+        with_vip_price: bool = True,
     ) -> None:
-        record_price_entry(
+        # An imported entry with a bulk price carries VIP price = bulk price, so a VIP
+        # customer keeps paying what the sheet charged — but only while the import
+        # leaves Clientes VIP on: a rule that is off stores nothing (docs/adr/0034).
+        record_imported_price_entry(
             self._varieties(),
             transaction,
             variety_id,
@@ -100,6 +112,7 @@ class VarietiesImport:
             row.list_price,
             row.bulk_price,
             row.bulk_minimum,
+            vip_price=row.bulk_price if with_vip_price else None,
         )
 
     def _varieties(self) -> Varieties:

@@ -1,14 +1,25 @@
 # Catalog
 
-The text that offers today's sellable varieties to a business's customers. It is built from each variety's catalog attributes, its current price today (varieties.md) and its stock status right now (stock.md), between the business's own header and footer. It is seen only by its business (ADR-0004). The pinned catalog (pinned-catalog.md) sends exactly this text through the business's own Telegram bot and keeps it current. Compartir and Copiar stay for sending it by hand. An archived variety (varieties.md) is never part of it.
+The text that offers today's sellable varieties to a business's customers. It is seen only by its business (ADR-0004). It is built from:
+- each variety's catalog attributes;
+- its current price today (varieties.md);
+- its stock status right now (stock.md);
+- the business's pricing settings (pricing-settings.md), for the bulk line;
 
-Where its pieces live (navigation.md): the catalog screen (`/varieties/catalog`) opens from "Mandar catálogo" on Variedades; a variety's attributes are edited on its page, in "En el catálogo"; the header and footer are edited in Configuración → Mensaje del catálogo (or, until that group exists, in the temporary place reached from the catalog screen; see below).
+between the business's own header and footer. The pinned catalog (pinned-catalog.md) sends exactly this text through the business's own Telegram bot and keeps it current. Compartir and Copiar stay for sending it by hand. An archived variety (varieties.md) is never part of it.
+
+Where its pieces live (navigation.md):
+- the catalog screen (`/varieties/catalog`) opens from "Mandar catálogo" on Variedades;
+- a variety's attributes are edited on its page, in "En el catálogo";
+- the header and footer are edited in Configuración → Mensaje del catálogo (or, until that group exists, in the temporary place reached from the catalog screen; see below).
 
 ## Jobs
 
 **When** a price changes, a variety sells out or I start offering one, **I want to** open the catalog text the app has already built from today's current prices and stock, check it, and share or copy it in one tap, **so I can** send it to my customers myself (by WhatsApp, Telegram or Instagram) without retyping a price or a variety name, and my customers never see a stale price or a variety I can't sell.
 
 Setting the catalog attributes and the header and footer is the setup step of this same job. Keeping the pinned catalog current on its own (test send, publishing, pinning) is BRIEF.md's Telegram job, served by pinned-catalog.md, which reuses this text as it is.
+
+**When** I set up how my business prices, record a variety's price or hand over an order, **I want** the app to use only the pricing rules my business has, **so I can** charge every customer exactly what I mean to without seeing fields that don't apply to me. (Defined in pricing-settings.md: served here by the bulk line following Precio por cantidad and the VIP price never reaching customers.)
 
 **When** I run my business from my phone between orders or mid-chat with a customer, several times a day, **I want** the app laid out around what I actually do and how often, **so I can** get back to the customer instead of hunting through menus. (The navigation job, navigation.md: served here by the catalog screen, at most 2 taps from any tab root.)
 
@@ -23,7 +34,7 @@ Success criteria:
    - Each block has its emoji and bolded name, the indica/sativa share, the aroma, the list price per gram and the bulk line.
    - The `**bold**` markers stay in the text.
    - Money is written as `$11.000`.
-   - A line is left out when its data is missing (share, aroma, bulk).
+   - A line is left out when its data is missing (share, aroma, bulk), and the bulk line also while Precio por cantidad is off.
    - It is tested against a reference set with 0 mismatches.
 2. **Today, only what can be sold**: a variety appears only when it is unarchived, shown, has a current price on today's Argentina date and has stock above zero right now.
    - Archived, hidden, unpriced, sold-out and never-stocked varieties are out.
@@ -31,6 +42,7 @@ Success criteria:
 3. **Fast, from the phone**: from Variedades → "Mandar catálogo", a seller shares or copies today's text in a few seconds without typing anything. Compartir hands the native share sheet exactly the text Copiar copies; without a share sheet, Copiar remains. This includes the phone on the home network over plain http. There is no API call by hand.
 4. **No guessing why**: every unarchived variety that does not go out gives one reason, the first that applies: hidden, no price today, then sold out or no entries. It is told by word, never by color alone.
 5. **Businesses never mix** (ADR-0004): attributes, header and footer belong to one business. The text and the list never include another business's data.
+6. **Customers never see the VIP price**: the text never carries it, whatever the switches.
 
 ## Behaviour
 
@@ -70,10 +82,11 @@ Success criteria:
   - `• N% índica / M% sativa`, only with a share;
   - `• Aroma/sabor: <aroma>`, only with an aroma;
   - `• Precio x gramo: $X`, the list price;
-  - `• Desde N g: $Y c/u`, only with a bulk price: the bulk minimum and the bulk price. Whole grams show without decimals; otherwise a decimal comma is used (`2,5 g`).
+  - `• Desde N g: $Y c/u`: the bulk minimum and the bulk price. It shows only when the current price has a bulk price and Precio por cantidad is on. Whole grams show without decimals; otherwise a decimal comma is used (`2,5 g`).
+- **VIP price**: never in the text, whatever the switches (pricing-settings.md).
 - **Money**: `$` directly followed by the amount, with a dot for thousands (`$11.000`). This is the catalog's own format, not the app's `$ 11.000`.
 - **Stock in the text**: none. It never mentions grams, stock or low stock.
-- **Freshness**: the text is computed on every open from the data as it stands. Nothing is stored, and the screen does not update itself while open.
+- **Freshness**: the text is computed on every open from the data and the pricing settings as they stand. Nothing is stored, and the screen does not update itself while open. A save of Precios that changes either switch triggers the pinned catalog's upkeep (pinned-catalog.md).
 - **Nothing qualifies**: there is no text, and the screen says nothing is in the catalog today. The pinned catalog sends its own empty message instead (pinned-catalog.md).
 
 ### Bold markers
@@ -137,11 +150,13 @@ Success criteria:
   - share at 0, 50 and 100, or none;
   - aroma or none;
   - bulk or none, with a whole and a fractional bulk minimum;
+  - a bulk price with Precio por cantidad on and off;
   - amounts with thousands;
   - a blank header and a blank footer;
   - a seller's own `**` in the header, the aroma and a name, including an unpaired one.
 
   0 mismatches.
+- **No VIP price (criterion 6)**: across the reference set, with entries carrying a VIP price and every combination of switches, the VIP price never appears in the text. 100% passing.
 - **Bold pairing**: the preview, with markers removed, equals the copied text. Bold falls between pairs read left to right, and an unpaired final `**` shows as typed. 100% passing.
 - **Inclusion (criterion 2)**: a matrix of archived/unarchived × shown/hidden × price/no price today × no entries, sold out, low and ok. Only unarchived + shown + priced + stock above 0 appears. 100% passing.
 - **Reasons (criterion 4)**: exactly one reason per unarchived variety that does not go out, in priority order, told by word; archived varieties are not listed. 100% passing.
@@ -151,7 +166,7 @@ Success criteria:
 - **Temporary place**: while Configuración's groups do not exist, a front test shows the bot settings and the header and footer save from it, both links open it, it shows no pin status and no Publicar, and no tab, Más or Configuración entry points to it.
 - **No curl (criterion 3)**: the end-to-end front run edits a variety's attributes on its page and the header and footer (in Configuración, or the temporary place until it exists), opens Variedades → "Mandar catálogo" and taps Copiar. The clipboard equals the API's text.
 - **Speed (criterion 3)**: the screen answers in under 300 ms with a few dozen varieties, and opens in at most 2 taps from any tab root.
-- **Isolation (criterion 5)**: every catalog route is in the sweep and answers 404 or empty from another business.
+- **Isolation (criterion 5)**: every catalog route is in the sweep and answers 404 or empty from another business. One business's switches never change another's text.
 - **No echo**: no refusal or log line contains the header, footer, aroma or emoji typed; after a full front run, the console and browser storage hold no catalog text.
 - **Design**: `scripts/design/compare.sh` runs before and after for the catalog screen, phone and computer, attached to the PR.
 
@@ -166,4 +181,5 @@ Success criteria:
 - Editing catalog attributes or the header and footer from the catalog screen itself: it links to where they are edited.
 - A toast after sharing.
 - Redesigning the bot settings or the header and footer editing.
+- A VIP price in the catalog, or a separate catalog for VIP customers.
 - Listing archived varieties on the catalog screen.

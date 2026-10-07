@@ -86,6 +86,7 @@ const EXPECTED: Record<ScreenId, Expected> = {
   },
   "settings-business": expectation("form", "settings", SETTINGS_PLACE),
   "settings-users": expectation("form", "settings", SETTINGS_PLACE),
+  "settings-prices": expectation("form", "settings", SETTINGS_PLACE),
   "settings-integrations": expectation("form", "settings", SETTINGS_PLACE),
   "settings-catalog-message": expectation("form", "settings", SETTINGS_PLACE),
   "settings-expense-categories": expectation(

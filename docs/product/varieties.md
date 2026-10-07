@@ -1,30 +1,23 @@
 # Varieties
 
-The varieties a business sells and the price history of each, seen only by that
-business (ADR-0004). Every other capability reads prices from here: a sale takes the
-current price of its day, the catalog shows today's. Variedades is the one screen for a
-variety: its list and each variety's page hold the variety's prices (here), its stock,
-entries, withdrawals and low-stock threshold (`stock.md`), and its catalog attributes (`catalog.md`).
-It is a tab (navigation.md). It replaced the former Stock tab, the old Catálogo screen
-and the old Variedades screens; their paths redirect (navigation.md). It also covers the
-end of a variety's life: a variety with no history can be deleted, and one with history
-archived and later restored, with no past figure moving.
+The varieties a business sells and the price history of each, seen only by that business (ADR-0004). Every other capability reads prices from here: a sale takes the current price of its day, the catalog shows today's.
+
+Variedades is the one screen for a variety. Its list and each variety's page hold:
+- the variety's prices (here);
+- its stock, entries, withdrawals and low-stock threshold (`stock.md`);
+- its catalog attributes (`catalog.md`).
+
+Which price fields a price entry shows and stores follows the business's pricing settings (pricing-settings.md). Variedades is a tab (navigation.md). It replaced the former Stock tab, the old Catálogo screen and the old Variedades screens; their paths redirect (navigation.md). It also covers the end of a variety's life: a variety with no history can be deleted, and one with history archived and later restored, with no past figure moving.
 
 ## Jobs
 
-**When** I start selling a new variety or change what I charge, **I want** to record the
-variety once and each price with the date it starts to apply, **so I can** charge the
-right price on any day without remembering when it changed.
+**When** I start selling a new variety or change what I charge, **I want** to record the variety once and each price with the date it starts to apply, **so I can** charge the right price on any day without remembering when it changed.
 
-**When** I run my business from my phone, **I want to** keep my prices up to date from the
-phone, **so I can** stop keeping them in the spreadsheet and have real data in place when
-sales arrive.
+**When** I set up how my business prices, record a variety's price or hand over an order, **I want** the app to use only the pricing rules my business has (a bulk price if I sell by quantity, and a VIP price I set per variety if I have VIP customers), **so I can** charge every customer exactly what I mean to without typing a special price by hand, without seeing fields that don't apply to me, and without anyone's price changing by surprise. (Served here by the price entry's VIP price and by price fields that follow the switches; defined in pricing-settings.md.)
 
-**When** I buy, harvest or count flower, **I want** to record it from my phone in a few
-taps, **so I can** know what I have of each variety, see one running out before a customer
-asks for it, and know what the grams I sell or gift cost me. (Served here by the list's
-status, the variety's page, its low-stock warning and "+ Entrada de stock"; defined in
-`stock.md`.)
+**When** I run my business from my phone, **I want to** keep my prices up to date from the phone, **so I can** stop keeping them in the spreadsheet and have real data in place when sales arrive.
+
+**When** I buy, harvest or count flower, **I want** to record it from my phone in a few taps, **so I can** know what I have of each variety, see one running out before a customer asks for it, and know what the grams I sell or gift cost me. (Served here by the list's status, the variety's page, its low-stock warning and "+ Entrada de stock"; defined in `stock.md`.)
 
 **When** I take grams out of my own stock without selling them (to share at a party so
 people get to know the business, or for my own use), **I want** to record them from my
@@ -34,20 +27,9 @@ recording a sale nobody made or an adjustment that reads as lost flower. (Served
 "Sacar del stock" on the list and on a variety's page, and the withdrawals in its "Stock y
 entradas"; defined in `stock.md`.)
 
-**When** I run my business from my phone between orders or mid-chat with a customer,
-several times a day, **I want** the app laid out around what I actually do and how often,
-with everything about one variety in one place, **so I can** get back to the customer
-instead of hunting through menus, and never wonder which of several screens holds what I
-need. (The navigation job, navigation.md.)
+**When** I run my business from my phone between orders or mid-chat with a customer, several times a day, **I want** the app laid out around what I actually do and how often, with everything about one variety in one place, **so I can** get back to the customer instead of hunting through menus, and never wonder which of several screens holds what I need. (The navigation job, navigation.md.)
 
-**When** a customer asks me what I have or how much something costs, or flower comes in,
-runs out or gets a new price, **I want** to open one variety and find everything about it
-on its own page (its stock and entries, its prices, its low-stock warning and how it
-shows in the catalog), the list to tell me at a glance what I have, what is running out
-and what I can't sell, and today's catalog one tap from that list, ready to share from my
-phone, **so I can** answer the customer, record what came in and send an up-to-date
-catalog without moving between screens, and my customers never get a stale price or a
-variety I can't sell.
+**When** a customer asks me what I have or how much something costs, or flower comes in, runs out or gets a new price, **I want** to open one variety and find everything about it on its own page (its stock and entries, its prices, its low-stock warning and how it shows in the catalog), the list to tell me at a glance what I have, what is running out and what I can't sell, and today's catalog one tap from that list, ready to share from my phone, **so I can** answer the customer, record what came in and send an up-to-date catalog without moving between screens, and my customers never get a stale price or a variety I can't sell.
 
 This one is the navigation job applied to varieties, stock and the catalog, not a
 new job; its main situation is mid-chat, between orders. The stock and catalog jobs stay
@@ -105,25 +87,30 @@ Success criteria:
 14. **Nothing new in the rules that already hold**: businesses stay isolated (ADR-0004);
     every state is told by word and shape, never by colour alone, in both themes; toasts
     carry no data.
+15. **Only my rules show, and switching loses nothing** (pricing-settings.md):
+    - With Precio por cantidad off, no bulk price or bulk minimum shows in the price form or on the variety's page.
+    - With Clientes VIP off, no VIP price shows.
+    - Switched back on, every stored bulk and VIP price shows again.
 
 ## Behaviour
 
-- **Variety**: a name, trimmed, inner spaces collapsed, up to 60 characters. Renaming
-  keeps its prices. Varieties are listed by name.
-- **Price entry**: an effective date, a list price per gram in whole pesos, and optionally
-  a bulk price per gram with its bulk minimum in grams (up to two decimals). The bulk price
-  and the bulk minimum come together or not at all; the bulk price is lower than the list
-  price; every amount is above zero.
+- **Variety**: a name, trimmed, inner spaces collapsed, up to 60 characters. Renaming keeps its prices. Varieties are listed by name.
+- **Price entry**: an effective date and a list price per gram in whole pesos. Optionally, it also has:
+  - a bulk price per gram with its bulk minimum in grams (up to two decimals). The two come together or not at all, and the bulk price is lower than the list price;
+  - a VIP price per gram, in whole pesos, lower than the list price. It is independent of the bulk price and minimum (an entry may have either one alone) and is never compared with the bulk price.
+
+  Every amount is above zero.
+- **A VIP price at or above the list price** is refused with its own fixed message and its own refusal code (ADR-0008), which never repeats the amount (ADR-0005).
+- **Rules switched off** (pricing-settings.md):
+  - A price entry recorded while Precio por cantidad is off stores no bulk price or bulk minimum, and one recorded while Clientes VIP is off stores no VIP price, whatever the request sends. Nothing is copied forward from an earlier entry.
+  - Earlier entries keep what they stored.
+  - When a rule is switched back on, the current price shows no bulk or VIP line if its entry has none; the seller records a new entry if they want one.
 - One entry per variety per effective date; a second one on the same date is refused.
-- **Deleting a price entry** (`DELETE /varieties/{id}/prices/{entry_id}`, ADR-0003): any
-  entry may be deleted, the one in force today included. The entry before it applies
-  again.
-- A variety's own representation carries its current price **today**, `null` when it has
-  none. Today is the business day in Argentina time.
+- **No edits**: a price entry is never edited, its VIP price included. A new entry replaces it from its own date (ADR-0003).
+- **Deleting a price entry** (`DELETE /varieties/{id}/prices/{entry_id}`, ADR-0003): any entry may be deleted, the one in force today included. The entry before it applies again.
+- A variety's own representation carries its current price **today**, `null` when it has none. Today is the business day in Argentina time. Answers carry what is stored, together with the business's switches; screens hide what is switched off.
 - The price history lists the newest entry first.
-- **Low-stock threshold**: optional grams, above zero, up to two decimals, set or turned
-  off per variety. Turned off means the variety has none; no former amount is kept. Its
-  rules and the stock status are in `stock.md`.
+- **Low-stock threshold**: optional grams, above zero, up to two decimals, set or turned off per variety. Turned off means the variety has none; no former amount is kept. Its rules and the stock status are in `stock.md`.
 
 ### Deleting and archiving a variety
 
@@ -235,8 +222,7 @@ Success criteria:
   - with no varieties at all: no summary line, and a fixed empty state inviting the seller
     to add the first variety;
   - with every variety ok: "N variedades · todo ok";
-  - otherwise: every status that is not ok, counted by word, in stock-status order (e.g.
-    "1 sin entradas · 1 agotada · 1 baja"). It is never blank.
+  - otherwise: every status that is not ok, counted by word, in stock-status order (e.g. "1 sin entradas · 1 agotada · 1 baja"). It is never blank.
   - The exact wording is design's, as long as each state is told by word.
 - **"Mandar catálogo"** at the top, opening the catalog screen (`catalog.md`). It is
   disabled, with its reason in words, only while the first-run checklist shows and nothing
@@ -281,25 +267,25 @@ Success criteria:
     "Consumo propio" and this variety's grams with a minus sign, and opens the
     withdrawal's detail;
   - **Precios**: the last 3 price entries with "Rige desde", newest first, each row with
-    its delete action, and "Ver todas" (`/varieties/{low}/prices`) for the full history;
+    its delete action, and "Ver todas" (`/varieties/{low}/prices`) for the full history.
+    - Each row shows the list price.
+    - It shows the bulk price and minimum only while Precio por cantidad is on, and the VIP price ("Precio VIP") only while Clientes VIP is on, each only when the entry has one;
   - **Aviso de stock bajo**: the current warning, read-only, with an on/off switch and an
     "Editar" link, and nothing else (no "Ver todas"):
     - it reads "Avisame abajo de 15 g", "Avisando: quedan 18,5 g" or "Aviso apagado";
-    - "Editar" opens a small form: "Avisar con menos de" in grams, "Guardá el aviso" and
-      "Cerrar". A refused amount shows under the field and keeps what was typed;
-    - turning the switch on opens that same form (an off warning keeps no amount); closing
-      it without saving leaves the warning off;
+    - "Editar" opens a small form: "Avisar con menos de" in grams, "Guardá el aviso" and "Cerrar". A refused amount shows under the field and keeps what was typed;
+    - turning the switch on opens that same form (an off warning keeps no amount); closing it without saving leaves the warning off;
     - turning the switch off saves at once;
     - every save, the switch-off included, shows the toast "Aviso guardado";
-  - **En el catálogo**: the variety's catalog attributes, read-only (shown or hidden,
-    emoji, % índica, aroma/sabor), with an "Editar" link, and nothing else (no "Ver
-    todas"). It is the only place they are edited (`catalog.md`):
-    - "Editar" opens one form with "Mostrar en el catálogo", Emoji, % índica and
-      Aroma/sabor, ending in "Guardá el catálogo";
-    - each refusal (for example an aroma over 200 characters) shows under its own field
-      and keeps everything typed;
+  - **En el catálogo**: the variety's catalog attributes, read-only (shown or hidden, emoji, % índica, aroma/sabor), with an "Editar" link, and nothing else (no "Ver todas"). It is the only place they are edited (`catalog.md`):
+    - "Editar" opens one form with "Mostrar en el catálogo", Emoji, % índica and Aroma/sabor, ending in "Guardá el catálogo";
+    - each refusal (for example an aroma over 200 characters) shows under its own field and keeps everything typed;
     - leaving with something typed and not saved asks before discarding;
     - a save shows the toast "Catálogo guardado".
+- **The price entry form** ("Nuevo precio"):
+  - it holds the effective date and the list price;
+  - it adds the bulk price and bulk minimum only while Precio por cantidad is on, and "Precio VIP" only while Clientes VIP is on, each optional;
+  - it says nothing about a rule that is switched off.
 - **One removal action**, worked out from history when the page is read:
   - with no history: "Eliminar variedad", through a destructive ConfirmDialog, then the
     toast "Variedad eliminada" and back to Variedades;
@@ -314,13 +300,16 @@ Success criteria:
     variedad" still archives it, with no refusal.
 - **An archived variety's page** is the same page, read-only, with the back arrow
   "‹ Archivadas" (with no history, back goes to Archivadas):
-  - its summary line and sections show read-only, with "Archivada" in words;
+  - its summary line and sections show read-only, with "Archivada" in words; its prices
+    follow the same switch rule as the Precios section (no VIP price while Clientes VIP
+    is off);
   - no "+ Entrada", "Sacar del stock", "Nuevo precio", price delete, threshold switch,
     rename, Editar forms or removal action; its one action is "Restaurar";
   - to delete an archived variety that has no history, the seller restores it first, then
     deletes it. There is no second path.
 - **"Ver todas" lists** are cards (navigation.md): the bar or sidebar and "‹ <variety>",
-  without "+ Nueva venta"; back with no history goes to the variety's page.
+  without "+ Nueva venta"; back with no history goes to the variety's page. The full price
+  history follows the same switch rule as the Precios section.
 - **Renaming** the variety is done here.
 - **Forms** opened from here (Nuevo precio, + Entrada, Sacar del stock, rename, the low-stock warning, the
   catalog attributes) have "Cerrar" and a confirmation when leaving with something typed;
@@ -339,8 +328,9 @@ Success criteria:
   eliminada", "Variedad archivada" and "Variedad restaurada", with no names or amounts in
   them (plus "Aviso guardado", "Catálogo guardado" and the entry form's "Entrada
   guardada").
-- **Refusals**, such as a duplicate name, a name held by an archived variety or a
-  duplicate date, show inline and keep what was typed.
+- **Refusals**, such as a duplicate name, a name held by an archived variety, a
+  duplicate date or a VIP price at or above the list price, show inline and keep what was
+  typed.
 - **A variety that is gone**, or another business's variety (archived or not) opened by
   id, follows accounts.md's "Eso ya no está." rule, with "Volver a Variedades".
 - No network shows "Sin conexión"; a server error shows the generic retry (accounts.md).
@@ -363,12 +353,19 @@ Success criteria:
   covered by tests through the API and the front.
 - **Unique names (criterion 3)**: duplicates within a business, whatever the case or
   spacing, are 0, archived varieties included.
+- **VIP price validation**: 100% passing.
+  - At or above the list price is refused with its own code, which is in `contract.json` and checked by `tests/test_refusal_codes.py`.
+  - A VIP price with no bulk price, and a bulk price with no VIP price, are accepted.
+  - No refusal contains the amount.
+- **Switched-off rules store nothing (criterion 15)**: a price entry sent with bulk or VIP values while that rule is off stores none of them; earlier entries' values are unchanged.
+- **Switches on screen (criterion 15)**: front tests show the price form, the Precios section and the full history with no bulk fields while Precio por cantidad is off and no VIP price while Clientes VIP is off, and every stored value back once switched on.
 - **No curl (criterion 4)**: the end-to-end front run adds a variety, adds a price from its
-  page, renames the variety, deletes a price entry, sets a low-stock threshold through
-  "Editar", turns it off and on again through the switch, and edits the variety's catalog
-  attributes through "Editar" and "Guardá el catálogo", all from its page, and records a
-  withdrawal from its page. It also deletes a fresh variety, archives one with a sale,
-  finds it in Archivadas, opens its read-only page and restores it.
+  page (with a VIP price when Clientes VIP is on), renames the variety, deletes a price
+  entry, sets a low-stock threshold through "Editar", turns it off and on again through the
+  switch, and edits the variety's catalog attributes through "Editar" and "Guardá el
+  catálogo", all from its page, and records a withdrawal from its page. It also deletes a
+  fresh variety, archives one with a sale, finds it in Archivadas, opens its read-only page
+  and restores it.
 - **Status shown (criterion 5)**: the list and the page show the status mark and word for
   each status, "Oculta" beside (never instead of) the status of a hidden variety, and the
   summary line for no varieties, all ok and a mix; never by color alone; covered by the
@@ -458,5 +455,8 @@ Success criteria:
 - An "archivada" tag on past records.
 - Moving a stock entry onto an archived variety.
 - Live updates between partners while a screen is open.
-- Configuración and its groups.
+- Configuración and its groups, the pricing switches included (pricing-settings.md).
 - Editing catalog attributes or the threshold in place, without a form and a save.
+- Editing a price entry, its VIP price included (ADR-0003).
+- Copying a hidden rule's prices forward onto a new entry.
+- Other VIP rules (a percent off list); price promotions by date.

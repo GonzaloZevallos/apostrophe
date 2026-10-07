@@ -67,6 +67,7 @@ export type ScreenId =
   | 'settings'
   | 'settings-business'
   | 'settings-users'
+  | 'settings-prices'
   | 'settings-integrations'
   | 'settings-catalog-message'
   | 'settings-expense-categories'
@@ -127,6 +128,7 @@ export const ANALYSIS = '/analysis'
 export const SETTINGS = '/settings'
 export const SETTINGS_BUSINESS = '/settings/business'
 export const SETTINGS_USERS = '/settings/users'
+export const SETTINGS_PRICES = '/settings/prices'
 export const SETTINGS_INTEGRATIONS = '/settings/integrations'
 export const SETTINGS_CATALOG_MESSAGE = '/settings/catalog-message'
 export const EXPENSE_CATEGORIES = '/settings/expense-categories'
@@ -251,6 +253,7 @@ export const SCREENS: readonly Screen[] = [
   }),
   screen({ id: 'settings-business', path: SETTINGS_BUSINESS, kind: 'form', title: 'Negocio', parent: 'settings' }),
   screen({ id: 'settings-users', path: SETTINGS_USERS, kind: 'form', title: 'Usuarios', parent: 'settings' }),
+  screen({ id: 'settings-prices', path: SETTINGS_PRICES, kind: 'form', title: 'Precios', parent: 'settings' }),
   screen({
     id: 'settings-integrations',
     path: SETTINGS_INTEGRATIONS,

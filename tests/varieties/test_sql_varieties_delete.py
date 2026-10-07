@@ -24,6 +24,7 @@ from app.sales.application.record_sale import LineInput, record_sale
 from app.sales.domain.pricing import VarietyPricing
 from app.sales.domain.sale import UnknownVariety
 from app.shared.grams import Grams
+from app.shared.pricing_settings import PricingSettings
 from app.stock.adapters.leaving import SqlStockLeaving
 from app.stock.adapters.sql_stock_entries import SqlStockEntries
 from app.stock.adapters.sql_thresholds import SqlThresholds
@@ -52,6 +53,13 @@ def engine(request: pytest.FixtureRequest, tmp_path: Path) -> Iterator[Engine]:
         connection.execute(text("INSERT INTO business (id, name) VALUES (1, 'Negocio')"))
     yield engine
     engine.dispose()
+
+
+class BothRulesOn:
+    """The pricing switches, both on: the rule the refusal under test never reads."""
+
+    def current(self) -> PricingSettings:
+        return PricingSettings(is_bulk_pricing=True, is_vip_customers=True)
 
 
 def _seed_variety(engine: Engine) -> int:
@@ -301,6 +309,7 @@ def test_a_delete_committed_first_makes_the_price_answer_gone(engine: Engine) ->
         with pytest.raises(VarietyNotFound):
             manage_prices.record_price_entry(
                 _ReadsStaleOnce(late, stale),
+                BothRulesOn(),
                 late,
                 variety_id,
                 effective_from=date(2026, 2, 1),
@@ -328,6 +337,7 @@ def _record_sale(session: Session, price_book: SqlPriceBook, variety_id: int) ->
         SqlSales(session, BUSINESS),
         price_book,
         SqlCustomerFacts(session, BUSINESS),
+        BothRulesOn(),
         session,
         sale_date=DAY,
         today=DAY,

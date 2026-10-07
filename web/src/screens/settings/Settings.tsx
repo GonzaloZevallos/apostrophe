@@ -1,5 +1,5 @@
 /**
- * `Settings`, the list of Configuración's seven groups (`Configuracion.dc.html` on the
+ * `Settings`, the list of Configuración's eight groups (`Configuracion.dc.html` on the
  * phone, `ConfiguracionCompu.dc.html` on a computer): a card route, so the bar or the
  * rail shows and "+ Nueva venta" does not. Nothing else is listed (no language, no
  * placeholder): a group that does not exist is not drawn.
@@ -20,12 +20,14 @@ import {
   SETTINGS_BUSINESS,
   SETTINGS_CATALOG_MESSAGE,
   SETTINGS_INTEGRATIONS,
+  SETTINGS_PRICES,
   SETTINGS_USERS,
 } from '../../routes'
 
 const GROUPS = [
   { to: SETTINGS_BUSINESS, label: 'Negocio' },
   { to: SETTINGS_USERS, label: 'Usuarios' },
+  { to: SETTINGS_PRICES, label: 'Precios' },
   { to: SETTINGS_INTEGRATIONS, label: 'Integraciones' },
   { to: SETTINGS_CATALOG_MESSAGE, label: 'Mensaje del catálogo' },
   { to: EXPENSE_CATEGORIES, label: 'Categorías de gastos' },

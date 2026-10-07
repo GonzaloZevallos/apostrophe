@@ -35,6 +35,8 @@ import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import { readNewSaleState } from '../../components/feedback'
 import { SIN_CONEXION_TITULO } from '../../components/SinConexion'
 import ClienteFicha from './ClienteFicha'
+import { stubFetchWithSettings } from '../stubFetchWithSettings'
+
 
 const ME: Me = { email: 'a@b.com', business_name: 'Negocio', today: '2026-10-03' }
 
@@ -112,8 +114,10 @@ function dispatchFetch(
   }
 }
 
+let api: ReturnType<typeof stubFetchWithSettings>
+
 beforeEach(() => {
-  vi.stubGlobal('fetch', vi.fn())
+  api = stubFetchWithSettings()
 })
 
 afterEach(() => {
@@ -121,7 +125,7 @@ afterEach(() => {
 })
 
 test('a customer that is gone shows the gone screen, with a way back to the list', async () => {
-  vi.mocked(fetch).mockResolvedValue(
+  api.mockResolvedValue(
     jsonResponse(404, { detail: 'no such customer', code: 'customer.not_found' }),
   )
   renderFicha('999')
@@ -135,7 +139,7 @@ test('a customer that is gone shows the gone screen, with a way back to the list
 })
 
 test('a settled customer shows their phone, channel and VIP, no balance and no Registrar cobro', async () => {
-  vi.mocked(fetch).mockImplementation(
+  api.mockImplementation(
     dispatchFetch({
       'GET /customers/3': () => jsonResponse(200, SETTLED_CUSTOMER),
       'GET /customers/3/account': () => jsonResponse(200, EMPTY_ACCOUNT),
@@ -161,7 +165,7 @@ const NO_PHONE_CUSTOMER = {
 }
 
 test('a customer with no phone shows no phone element, no dash, no empty label', async () => {
-  vi.mocked(fetch).mockImplementation(
+  api.mockImplementation(
     dispatchFetch({
       'GET /customers/4': () => jsonResponse(200, NO_PHONE_CUSTOMER),
       'GET /customers/4/account': () => jsonResponse(200, EMPTY_ACCOUNT),
@@ -176,7 +180,7 @@ test('a customer with no phone shows no phone element, no dash, no empty label',
 })
 
 test('"Nueva venta a <name>" opens the sale form with this customer chosen, by id alone', async () => {
-  vi.mocked(fetch).mockImplementation(
+  api.mockImplementation(
     dispatchFetch({
       'GET /customers/3': () => jsonResponse(200, SETTLED_CUSTOMER),
       'GET /customers/3/account': () => jsonResponse(200, EMPTY_ACCOUNT),
@@ -218,7 +222,7 @@ const OWING_ACCOUNT = {
 }
 
 test('a customer who owes shows "Te debe" since the oldest debt, Registrar cobro, and the account row', async () => {
-  vi.mocked(fetch).mockImplementation(
+  api.mockImplementation(
     dispatchFetch({
       'GET /customers/1': () => jsonResponse(200, OWING_CUSTOMER),
       'GET /customers/1/account': () => jsonResponse(200, OWING_ACCOUNT),
@@ -244,7 +248,7 @@ const CREDIT_CUSTOMER = {
 }
 
 test('a customer in credit shows "A favor", never "Te debe", and no Registrar cobro', async () => {
-  vi.mocked(fetch).mockImplementation(
+  api.mockImplementation(
     dispatchFetch({
       'GET /customers/2': () => jsonResponse(200, CREDIT_CUSTOMER),
       'GET /customers/2/account': () => jsonResponse(200, { ...EMPTY_ACCOUNT, balance: -2000, standing: 'credit' }),
@@ -263,7 +267,7 @@ test('the account labels a sale, a later payment\'s split and its leftover credi
   // owing, a later payment's split, and the credit left over once every debt is
   // settled. `CREDIT_CUSTOMER`'s own balance/standing match the fixture's
   // overall balance, so the card and the account agree.
-  vi.mocked(fetch).mockImplementation(
+  api.mockImplementation(
     dispatchFetch({
       'GET /customers/2': () => jsonResponse(200, CREDIT_CUSTOMER),
       'GET /customers/2/account': () => jsonResponse(200, accountFixture),
@@ -319,7 +323,7 @@ test('the account labels a sale, a later payment\'s split and its leftover credi
 
 test('Borrar cobro asks before deleting, then shows "Cobro eliminado" and refreshes the account', async () => {
   let deleted = false
-  vi.mocked(fetch).mockImplementation(
+  api.mockImplementation(
     dispatchFetch({
       'GET /customers/1': () => jsonResponse(200, deleted ? SETTLED_CUSTOMER : OWING_CUSTOMER),
       'GET /customers/1/account': () =>
@@ -361,13 +365,13 @@ test('Borrar cobro asks before deleting, then shows "Cobro eliminado" and refres
   await userEvent.click(screen.getByRole('button', { name: 'Sí, borralo' }))
 
   await waitFor(() =>
-    expect(fetch).toHaveBeenCalledWith('/payments/5', expect.objectContaining({ method: 'DELETE' })),
+    expect(api).toHaveBeenCalledWith('/payments/5', expect.objectContaining({ method: 'DELETE' })),
   )
   expect(await screen.findByText('Cobro eliminado')).toBeInTheDocument()
 })
 
 test('registering a payment shows "Cobro guardado · queda debiendo $ X" when something remains', async () => {
-  vi.mocked(fetch).mockImplementation(
+  api.mockImplementation(
     dispatchFetch({
       'GET /customers/1': () => jsonResponse(200, OWING_CUSTOMER),
       'GET /customers/1/account': () => jsonResponse(200, OWING_ACCOUNT),
@@ -390,7 +394,7 @@ test('registering a payment shows "Cobro guardado · queda debiendo $ X" when so
 })
 
 test('"Todo" fills the amount with the balance, and the debounced preview shows the splits and what is left', async () => {
-  vi.mocked(fetch).mockImplementation(
+  api.mockImplementation(
     dispatchFetch({
       'GET /customers/1': () => jsonResponse(200, OWING_CUSTOMER),
       'GET /customers/1/account': () => jsonResponse(200, OWING_ACCOUNT),
@@ -417,7 +421,7 @@ test('"Todo" fills the amount with the balance, and the debounced preview shows 
 })
 
 test('a partial amount\'s preview shows "Le queda debiendo $ X", from the preview\'s own after.balance', async () => {
-  vi.mocked(fetch).mockImplementation(
+  api.mockImplementation(
     dispatchFetch({
       'GET /customers/1': () => jsonResponse(200, OWING_CUSTOMER),
       'GET /customers/1/account': () => jsonResponse(200, OWING_ACCOUNT),
@@ -441,7 +445,7 @@ test('a partial amount\'s preview shows "Le queda debiendo $ X", from the previe
 })
 
 test('registering a payment that settles everything shows the plain "Cobro guardado" toast', async () => {
-  vi.mocked(fetch).mockImplementation(
+  api.mockImplementation(
     dispatchFetch({
       'GET /customers/1': () => jsonResponse(200, OWING_CUSTOMER),
       'GET /customers/1/account': () => jsonResponse(200, OWING_ACCOUNT),
@@ -467,7 +471,7 @@ test('registering a payment that settles everything shows the plain "Cobro guard
 })
 
 test('a payment deleted by a partner meanwhile shows the gone notice, never the generic retry', async () => {
-  vi.mocked(fetch).mockImplementation(
+  api.mockImplementation(
     dispatchFetch({
       'GET /customers/1': () => jsonResponse(200, OWING_CUSTOMER),
       'GET /customers/1/account': () =>
@@ -522,7 +526,7 @@ test('Borrar cobro when the connection drops shows "Sin conexión", never the ge
   })
   // Same mechanism `client.test.ts` uses to turn a dropped connection into a
   // `NetworkError`: the fetch mock rejects, never resolves with a response.
-  vi.mocked(fetch).mockImplementation((input, init) => {
+  api.mockImplementation((input, init) => {
     const method = init?.method ?? 'GET'
     if (method === 'DELETE') return Promise.reject(new TypeError('Failed to fetch'))
     return base(input, init)
@@ -541,7 +545,7 @@ test('Borrar cobro when the connection drops shows "Sin conexión", never the ge
 })
 
 test('Borrar cobro refused for a reason other than "gone" shows the generic retry, never "Sin conexión" or the gone notice', async () => {
-  vi.mocked(fetch).mockImplementation(
+  api.mockImplementation(
     dispatchFetch({
       'GET /customers/1': () => jsonResponse(200, OWING_CUSTOMER),
       'GET /customers/1/account': () => jsonResponse(200, ACCOUNT_WITH_ONE_PAYMENT),
@@ -563,7 +567,7 @@ test('Borrar cobro refused for a reason other than "gone" shows the generic retr
 })
 
 test('a payment above the balance shows the fixed refusal inline and keeps what was typed', async () => {
-  vi.mocked(fetch).mockImplementation(
+  api.mockImplementation(
     dispatchFetch({
       'GET /customers/1': () => jsonResponse(200, OWING_CUSTOMER),
       'GET /customers/1/account': () => jsonResponse(200, OWING_ACCOUNT),
@@ -590,7 +594,7 @@ const OWING_FETCHES = {
 }
 
 test('the payment route opens the sheet by itself, from a typed address, and Cerrar leaves to Clientes, its parent', async () => {
-  vi.mocked(fetch).mockImplementation(dispatchFetch(OWING_FETCHES))
+  api.mockImplementation(dispatchFetch(OWING_FETCHES))
   const router = renderFicha('1', [pathTo(CUSTOMER_PAYMENT, { id: 1 })])
 
   expect(await screen.findByRole('button', { name: 'Guardar' })).toBeInTheDocument()
@@ -601,7 +605,7 @@ test('the payment route opens the sheet by itself, from a typed address, and Cer
 })
 
 test('an untouched sheet leaves at once on history back', async () => {
-  vi.mocked(fetch).mockImplementation(dispatchFetch(OWING_FETCHES))
+  api.mockImplementation(dispatchFetch(OWING_FETCHES))
   const router = renderFicha('1')
   await userEvent.click(await screen.findByRole('link', { name: 'Registrar cobro' }))
   await screen.findByRole('button', { name: 'Guardar' })
@@ -613,7 +617,7 @@ test('an untouched sheet leaves at once on history back', async () => {
 })
 
 test('a touched sheet asks before history back leaves, "No" keeps what was typed and "Sí" leaves to Clientes, its parent', async () => {
-  vi.mocked(fetch).mockImplementation(dispatchFetch(OWING_FETCHES))
+  api.mockImplementation(dispatchFetch(OWING_FETCHES))
   const router = renderFicha('1', [pathTo(CUSTOMER, { id: 1 }), pathTo(CUSTOMER_PAYMENT, { id: 1 })])
   await userEvent.click(await screen.findByLabelText('Efectivo'))
   await act(() => router.navigate(-1))
@@ -630,7 +634,7 @@ test('a touched sheet asks before history back leaves, "No" keeps what was typed
 })
 
 test('after a save the sheet is not in history: back from the card goes to what was before it', async () => {
-  vi.mocked(fetch).mockImplementation(
+  api.mockImplementation(
     dispatchFetch({
       ...OWING_FETCHES,
       'POST /customers/1/payments': () => jsonResponse(201, paymentFixture),
@@ -664,7 +668,7 @@ function ListWithNotice() {
 }
 
 function fakeGonePayment() {
-  vi.mocked(fetch).mockImplementation(
+  api.mockImplementation(
     dispatchFetch({
       ...OWING_FETCHES,
       'POST /customers/1/payments': () =>

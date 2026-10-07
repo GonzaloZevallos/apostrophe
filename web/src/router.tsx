@@ -58,6 +58,7 @@ import BusinessGroup from './screens/settings/BusinessGroup'
 import CatalogMessageGroup from './screens/settings/CatalogMessageGroup'
 import ExpenseCategoriesGroup from './screens/settings/ExpenseCategoriesGroup'
 import IntegrationsGroup from './screens/settings/IntegrationsGroup'
+import PricingGroup from './screens/settings/PricingGroup'
 import UsersGroup from './screens/settings/UsersGroup'
 import WithdrawalDetail from './screens/withdrawals/WithdrawalDetail'
 import WithdrawalFormRoute from './screens/withdrawals/WithdrawalFormRoute'
@@ -101,6 +102,7 @@ const ELEMENTS: Record<ScreenId, ReactElement> = {
   settings: <Settings />,
   'settings-business': <BusinessGroup />,
   'settings-users': <UsersGroup />,
+  'settings-prices': <PricingGroup />,
   'settings-integrations': <IntegrationsGroup />,
   'settings-catalog-message': <CatalogMessageGroup />,
   'settings-expense-categories': <ExpenseCategoriesGroup />,

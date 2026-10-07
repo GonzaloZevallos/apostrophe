@@ -212,3 +212,9 @@ daily copy's own 30-day retention is sized against.
       from network B, a correct login still succeeds.
 
 Nobody gets the public URL until every box above is checked.
+
+## 9. Deploying a release that changes pricing (docs/adr/0034)
+
+Deploy while no invitation is being accepted and no price is being recorded: migration
+0014 adds the `pricing_settings` row every business needs and the `price_entry.vip_price`
+column, and the previous release does neither, so the two versions must not run side by side.

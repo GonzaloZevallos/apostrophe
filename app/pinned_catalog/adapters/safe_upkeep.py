@@ -10,12 +10,15 @@ the product's first emitted log line (section 7).
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from datetime import date
 from typing import cast
 
 from sqlalchemy.engine import Engine
+from sqlalchemy.orm import Session
 from starlette.datastructures import State
 
+from app.catalog.application.ports import CatalogPricingSettings
 from app.clock import Clock
 from app.pinned_catalog.adapters.sql_recorder import SqlPinRecorder
 from app.pinned_catalog.adapters.sql_snapshot import SqlPinSnapshots
@@ -32,7 +35,10 @@ def run_upkeep_safely(state: State, business_id: int, today: date) -> None:
     telegram = cast(PinnedCatalogTelegram, state.pinned_catalog_telegram).channel
     locks = cast(BusinessLocks, state.pinned_catalog_locks)
     clock = cast(Clock, state.clock)
-    snapshots = SqlPinSnapshots(engine, cipher)
+    pricing_settings = cast(
+        Callable[[Session, int], CatalogPricingSettings], state.catalog_pricing_settings
+    )
+    snapshots = SqlPinSnapshots(engine, cipher, pricing_settings)
     recorder = SqlPinRecorder(engine)
     try:
         push(telegram, snapshots, recorder, locks, business_id, "upkeep", today, clock())

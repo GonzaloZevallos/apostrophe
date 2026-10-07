@@ -1,8 +1,9 @@
 """How a sale line is priced (CONTEXT.md: Pricing rule, Bulk price, Bulk minimum; ADR-0003).
 
-The first rule that applies wins: gift, then special price, then VIP, then bulk
-(measured per line, never summed across a sale), then list — always from the variety's
-current price on the sale's date.
+Gift wins, then special price; otherwise the lowest of the rules that apply: list,
+bulk (Precio por cantidad on and the line reaches the bulk minimum, measured per line,
+never summed across a sale) and VIP (Clientes VIP on, a VIP customer and a VIP price) —
+always from the variety's current price on the sale's date (docs/adr/0034).
 
 `line_total` and `special_rate` are the only two roundings anywhere in sales, both half
 up and both integer arithmetic: no `round()`, `float` or `Decimal.quantize` in a sales
@@ -16,6 +17,7 @@ from enum import StrEnum
 from typing import ClassVar
 
 from app.shared.grams import Grams
+from app.shared.pricing_settings import PricingSettings
 
 
 class SaleRuleBroken(ValueError):
@@ -87,15 +89,19 @@ class BulkQuote:
 @dataclass(frozen=True)
 class PriceQuote:
     """A variety's current price on some date (CONTEXT.md: Current price): a list
-    price, and optionally a bulk price lower than it."""
+    price, and optionally a bulk price lower than it and a VIP price lower than it. The
+    VIP price is never compared with the bulk price; `None` means no VIP price."""
 
     list_price: int
     bulk: BulkQuote | None = None
+    vip_price: int | None = None
 
     def __post_init__(self) -> None:
         if self.list_price <= 0:
             raise InvalidPriceQuote()
         if self.bulk is not None and self.bulk.price >= self.list_price:
+            raise InvalidPriceQuote()
+        if self.vip_price is not None and not 0 < self.vip_price < self.list_price:
             raise InvalidPriceQuote()
 
 
@@ -132,12 +138,16 @@ def price_line(
     *,
     gift: bool,
     special_price: int | None,
-    vip: bool,
+    customer_is_vip: bool,
+    settings: PricingSettings,
     quote: PriceQuote | None,
     grams: Grams,
 ) -> LinePricing:
     """Price one sale line. Refuses grams <= 0, a gift combined with a special price,
-    a special price <= 0, and a missing quote with no special price to replace it."""
+    a special price <= 0, and a missing quote with no special price to replace it.
+
+    Otherwise the lowest applicable rule names the line; a VIP price that ties with the
+    bulk price is stored as VIP, and any other strictly lowest rule keeps its name."""
     if not grams.is_positive:
         raise NonPositiveGrams()
     if gift and special_price is not None:
@@ -150,10 +160,16 @@ def price_line(
         return LinePricing(PricingRule.SPECIAL, special_rate(special_price, grams), special_price)
     if quote is None:
         raise NoPriceThatDay()
-    if vip and quote.bulk is not None:
-        price = quote.bulk.price
-        return LinePricing(PricingRule.VIP, price, line_total(price, grams))
-    if quote.bulk is not None and grams.hundredths >= quote.bulk.minimum.hundredths:
-        price = quote.bulk.price
-        return LinePricing(PricingRule.BULK, price, line_total(price, grams))
-    return LinePricing(PricingRule.LIST, quote.list_price, line_total(quote.list_price, grams))
+    # Candidates in the order a tie is settled: VIP, then bulk, then list.
+    candidates: list[tuple[PricingRule, int]] = []
+    if settings.is_vip_customers and customer_is_vip and quote.vip_price is not None:
+        candidates.append((PricingRule.VIP, quote.vip_price))
+    if (
+        settings.is_bulk_pricing
+        and quote.bulk is not None
+        and grams.hundredths >= quote.bulk.minimum.hundredths
+    ):
+        candidates.append((PricingRule.BULK, quote.bulk.price))
+    candidates.append((PricingRule.LIST, quote.list_price))
+    rule, price = min(candidates, key=lambda candidate: candidate[1])
+    return LinePricing(rule, price, line_total(price, grams))

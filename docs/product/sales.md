@@ -1,6 +1,11 @@
 # Sales
 
-What a customer takes in one go, each line priced from the day's prices and that price kept on the line (ADR-0003). Sales are seen only by their business (ADR-0004). Reads current prices from varieties, and customers (with their VIP status) from customers. Payments (`payments.md`) settle what a sale leaves owing and say whether each sale is still owing. Stock (`stock.md`) takes each line's grams out of its variety's lots and gives the line its cost of goods, which follows the lots and is never frozen (ADR-0009). This capability also covers the sales screens: Nueva venta, Ventas and a sale's detail, on the phone and on a computer. Where they sit is navigation.md.
+What a customer takes in one go, each line priced from the day's prices and the business's pricing settings, and that price kept on the line (ADR-0003). Sales are seen only by their business (ADR-0004). This capability reads:
+- current prices from varieties;
+- customers, with their VIP status, from customers;
+- which pricing rules the business uses from pricing settings (pricing-settings.md).
+
+Payments (`payments.md`) settle what a sale leaves owing and say whether each sale is still owing. Stock (`stock.md`) takes each line's grams out of its variety's lots and gives the line its cost of goods, which follows the lots and is never frozen (ADR-0009). This capability also covers the sales screens: Nueva venta, Ventas and a sale's detail, on the phone and on a computer. Where they sit is navigation.md.
 
 ## Jobs
 
@@ -9,6 +14,8 @@ What a customer takes in one go, each line priced from the day's prices and that
 **When** a customer orders over Telegram or WhatsApp and I'm handing it over, **I want** to load the order on my phone in a few taps (varieties, grams, who takes it, how they paid) and watch each line's price, rule and total, and the sale's total, update as I type, **so I can** confirm the total to the customer in the chat, never price from memory, and never have to redo a sale after saving it.
 
 **When** I'm handing over an order on my phone, mid-chat with the customer on Telegram or WhatsApp and often with one hand free, **I want** to fill in and save the sale with my thumb, with every field whole and readable, the total and "Guardá la venta" always in reach, and the keyboard never hiding what I'm typing, **so I can** confirm the total in the chat and get back to the customer in under a minute, without zooming, mis-tapping, losing the order or redoing the sale. (This refines the two jobs above for the phone; it is not a new job.)
+
+**When** I set up how my business prices, record a variety's price or hand over an order, **I want** the app to use only the pricing rules my business has (a bulk price if I sell by quantity, and a VIP price I set per variety if I have VIP customers), **so I can** charge every customer exactly what I mean to without typing a special price by hand, without seeing fields that don't apply to me, and without anyone's price changing by surprise. (This refines the first job; it is not a new job. Defined in pricing-settings.md.)
 
 **When** I want to check what I sold today, this week or this month, **I want** to see that period's sales with their total and count, **so I can** tell how it's going between orders and find a particular sale to fix.
 
@@ -29,8 +36,8 @@ Success criteria, recording (API):
    - It is one minute shared with customers.md's find-or-register budget, not a second minute on top.
 2. **One order is one sale**: an order is one sale however many varieties it has, with shipping charged once. Its total is the sum of its lines plus shipping. Counts and averages count sales, not lines.
 3. **Right price, kept**:
-   - Each line is priced by the rules below, from the variety's current price on the sale's date, and stores its price per gram and pricing rule.
-   - Later changes never alter what an existing sale charged: price entries, a change to a customer's VIP status, a customer assigned afterwards, any stock entry, or any payment.
+   - Each line is priced by the rules below, from the variety's current price on the sale's date and the business's pricing settings when it is saved. It stores its price per gram and pricing rule.
+   - Later changes never alter what an existing sale charged: price entries, the pricing settings, a change to a customer's VIP status, a customer assigned afterwards, any stock entry, or any payment.
    - A line whose variety has no price that day is refused, unless it has a special price.
 4. **No limbo, no lost debt**:
    - A sale with missing or invalid data is refused whole.
@@ -38,9 +45,15 @@ Success criteria, recording (API):
    - A customer can be added to it later, once, and never swapped for another.
 5. **Businesses never mix** (ADR-0004): a sale references only its own business's customers and varieties. Another business's sale answers 404, and lists show none of it. The note never appears in error answers or logs (ADR-0005).
 
+Success criteria, pricing rules (pricing-settings.md):
+
+17. **Only the business's rules apply.** With a rule switched off, a sale is priced as if the rule did not exist, and Nueva venta shows nothing about it. With both off, every line that is neither a gift nor a special price takes the list price.
+18. **A VIP never pays more than a regular customer.** A VIP customer is charged the lowest of the rules that apply to the line. A variety with no VIP price charges a VIP like anyone else.
+19. **Nobody's price moves by surprise.** After the migration, every existing VIP customer is charged exactly what they were charged before, for the same variety, day and grams.
+
 Success criteria, on screen:
 
-6. **What I see is what I get**: if prices don't change between preview and save, every line's price per gram, rule and total, and the sale's total, match what the API stores, with 0 differences. After saving, the screen shows what the API answered, not the preview.
+6. **What I see is what I get**: if prices and the pricing settings don't change between preview and save, every line's price per gram, rule and total, and the sale's total, match what the API stores, with 0 differences. After saving, the screen shows what the API answered, not the preview.
 7. **No surprises at save time**:
    - Debiendo is disabled with "Para dejar debiendo elegí un cliente", and a line with no price that day shows "<variety> no tiene precio para esa fecha", both before saving.
    - Any other refusal comes back with its code, shows in Spanish on its field, and everything typed stays.
@@ -71,17 +84,23 @@ Success criteria, on the phone:
   - A line may optionally be marked as a gift or given a special price.
   - The same variety may appear in several lines of one sale, each priced on its own, with no merging or warning.
 - **Stock**: recording a sale or gift is never refused because of stock (ADR-0009). Its grams leave its variety's stock, which may go negative.
-- **Pricing**: computed when the sale is recorded and stored on the line with its pricing rule (ADR-0003). The first rule that applies wins:
+- **Pricing**: computed when the sale is recorded, and stored on the line with its pricing rule (ADR-0003). It uses the variety's current price on the sale's date and the business's pricing settings at the moment of saving. The first step that applies wins:
   1. **Gift**: $0.
   2. **Special price**: the total typed for the line, in whole pesos and above $0.
-  3. **VIP**: the customer is VIP at recording time, so the line takes the bulk price.
-  4. **Bulk**: the line's grams are at or above the bulk minimum, so it takes the bulk price. The minimum is measured per line, never across lines.
-  5. **List**: the list price.
-
-  Rules 3 to 5 use the variety's current price on the sale's date.
-  - A VIP customer whose variety has no bulk price that day pays the list price.
-  - A line both marked as a gift and given a special price is refused.
-  - A line without a special price, whose variety has no current price that day, is refused.
+  3. **Otherwise, the lowest price per gram** among the rules that apply to the line:
+     - **List**: always applies.
+     - **Bulk**: Precio por cantidad is on, the current price has a bulk price, and the line's grams are at or above the bulk minimum. The minimum is measured per line, never across lines.
+     - **VIP**: Clientes VIP is on, the customer is VIP at recording time, and the current price has a VIP price.
+  - **Naming the rule**:
+    - On a tie between VIP and bulk, the line is stored as VIP.
+    - Otherwise the strictly lowest rule names the line.
+    - A bulk price and a VIP price are always below list, so list applies only when neither of the others does.
+  - **A VIP customer is priced like anyone else** when that day's price has no VIP price. A VIP price above the bulk price, on a line at or above the bulk minimum, gives the bulk price, stored as "por cantidad".
+  - **With both switches off**, every line that is neither a gift nor a special price takes the list price.
+  - **Refused**:
+    - a line both marked as a gift and given a special price;
+    - a line without a special price whose variety has no current price that day.
+  - **Switches changed while a form is open**: a sale is priced by the switches in force when it is saved, as it is by the price entries in force. The save goes through with no refusal and no notice.
 - **Line total**:
   - For list, bulk and VIP lines: grams × the stored price per gram, rounded to the nearest whole peso, with exactly half rounding up. For example, 1.55 g × $10 001 = $15 501.55 → $15 502, and $7 502.50 → $7 503.
   - A gift line is $0. A special price line is its typed total, so it needs no rounding.
@@ -159,8 +178,9 @@ Success criteria, on the phone:
 - **The sale's total** shows with the grams sold and the grams gifted.
 - **Live preview**:
   - Each line shows its price per gram, its rule badge (lista, por cantidad, VIP, regalo, especial) and its total. The sale's total updates as the seller types.
-  - It applies exactly the pricing, rounding and total rules above.
-  - Prices are loaded when the form opens and again when the date changes, which reprices every line from that day's current prices.
+  - It applies exactly the pricing, rounding and total rules above, with the business's pricing settings.
+  - It shows only rules that can apply now: with a rule switched off, its badge never appears.
+  - Prices and the pricing settings are loaded when the form opens and again when the date changes; a date change reprices every line from that day's current prices.
   - Prices are never re-checked live while the seller types.
 - **Waiting for prices**: while the form waits for prices on opening, it shows the shared loading state (accounts.md, `Estados`). On a date change the form stays on screen with everything typed; each line's price, rule and total show the loading state, never a placeholder figure, until that day's prices arrive, then every line is repriced.
 - **Regalo and Precio especial exclude each other**:
@@ -176,7 +196,7 @@ Success criteria, on the phone:
   - On success, the app opens the sale's detail as the API answered it, with the "Venta guardada" notice.
   - A refusal shows on its field in Spanish and keeps everything typed.
   - A price deleted by a partner before saving: the save is refused, and the line shows the no-price message.
-  - A price changed before saving: the save goes through, and the detail shows what was stored.
+  - A price or the pricing settings changed before saving: the save goes through, and the detail shows what was stored.
   - A customer or variety not found when saving shows the generic line and keeps the form.
 - **Leaving**:
   - "Cerrar", or the system back gesture, after a line, a customer, shipping or a note has been entered asks "¿Descartás la venta?", with "No, seguí cargando" and "Sí, descartala".
@@ -185,7 +205,9 @@ Success criteria, on the phone:
   - With a sheet open over the form (Elegir cliente, or Nuevo cliente inside it), back does exactly what that sheet's own "Cerrar" does: it closes only the top sheet, and the form keeps everything typed. It never asks "¿Descartás la venta?".
   - There are no drafts or autosave.
 - **Elegir cliente** (`NuevaVentaCliente`):
-  - A sheet over the sale. It offers search by phone or part of the name, "Sin cliente", and "Nuevo cliente" (the same form as in Clientes: only the name required; phone optional, plus VIP; no channel), which creates the customer and uses it.
+  - A sheet over the sale.
+  - It offers search by phone or part of the name, "Sin cliente", and "Nuevo cliente", which creates the customer and uses it. "Nuevo cliente" is the same form as in Clientes: only the name required; the phone optional; VIP only while Clientes VIP is on (customers.md); no channel.
+  - It shows a customer's VIP mark only while Clientes VIP is on.
   - Its results show the shared loading state before their first answer.
   - Closing the sheet only returns to the form.
 - **"Venta guardada"** (`Estados`):
@@ -221,12 +243,13 @@ The phone layout only; `NuevaVentaCompu` keeps its own.
 - **Each sale** shows:
   - its date;
   - its customer, or "Sin cliente" in grey;
-  - a VIP badge;
+  - a VIP badge, only while Clientes VIP is on;
   - its varieties and grams;
   - its total. A sale still owing, partially paid ones included, shows its total in amber with "te debe" under it, as the API answers it.
 - **The VIP badge shows the customer's current VIP status**, not how the sale was priced.
   - Each line's rule badge in the detail is the record of how it was priced.
   - A customer who stops being VIP loses the badge on past sales, while their lines still read "VIP". That is not a reprice (ADR-0003).
+  - While Clientes VIP is off, no row shows the badge, and the customers' marks stay stored (customers.md).
 - **Loading**: before its first answer, the list shows the shared loading state, never a blank screen.
 - **On the phone** (`VentasCompu` unchanged):
   - each period tab is at least 44 px tall;
@@ -242,6 +265,7 @@ The phone layout only; `NuevaVentaCompu` keeps its own.
   - the total;
   - each line's variety, grams, price per gram, rule badge and line total;
   - shipping, the note, how it was paid, and the customer or "Sin cliente".
+- **Recorded rule badges** ("VIP", "por cantidad") always show what was recorded, whatever the pricing settings say today. They are history (ADR-0003).
 - **Asignar cliente**:
   - It shows only when the sale has none, and opens Elegir cliente without "Sin cliente".
   - The system back gesture with its sheet open does what the sheet's own "Cerrar" does: it closes only the sheet and asks nothing.
@@ -264,20 +288,26 @@ The phone layout only; `NuevaVentaCompu` keeps its own.
 
 ## Metrics
 
-- **Pricing matrix**: 100% passing. (Criterion 3) It covers:
-  - each rule and the order they apply in;
+- **Pricing matrix**: 100% passing. (Criteria 3, 17, 18) It covers:
+  - both switches off, only bulk on, only VIP on, and both on;
+  - gift and special price first, and the order of the steps;
+  - the lowest-price rule below, at and above the bulk minimum;
+  - the VIP-bulk tie stored as "VIP";
+  - a VIP price above the bulk price, stored as "por cantidad" at the minimum;
+  - a variety with no VIP price, for a VIP;
   - bulk measured per line;
-  - VIP without a bulk price;
   - no price that day, with and without a special price;
   - gift plus special refused;
   - rounding below .50, exactly .50 and above .50;
   - a multi-line sale whose total is the sum of the rounded lines.
 - **Stored price immutability**: 100% passing. (Criterion 3) Existing lines' price, rule and total stay unchanged after:
-  - a price entry is added or deleted;
+  - a price entry is added or deleted, a VIP price included;
+  - either pricing switch is changed;
   - VIP is toggled;
   - a customer is assigned;
   - a stock entry is added, edited or deleted;
   - a payment is recorded or deleted.
+- **No surprise for existing VIPs (criterion 19)**: after the migration, for every existing VIP customer, a sale's price, rule and total equal what they were before, for the same variety, day and grams. 0 differences.
 - **One sale per order**: a multi-variety sale is one sale, with total = rounded lines + shipping once, through the API and the form. (Criteria 2, 8)
 - **Whole or nothing**: a refused sale leaves 0 new rows in sales, lines and payments. (Criterion 4)
 - **Owing without a customer**: 0 stored; the domain refuses it and a test covers it. (Criterion 4)
@@ -288,8 +318,9 @@ The phone layout only; `NuevaVentaCompu` keeps its own.
   - after a full front run, the console and browser storage hold none of them.
 - **Record time**: a sale is recorded through the front, from a phone viewport, in under 60 s with an existing, new (with or without a number) or no customer. Recording answers in under 300 ms with a few dozen varieties and customers. (Criteria 1, 14)
 - **Preview = stored**: (Criterion 6)
-  - the front preview passes the same pricing matrix as the domain;
+  - the front preview passes the same pricing matrix as the domain, for every combination of switches;
   - the end-to-end run compares the preview with the saved detail: 0 differences.
+- **Switches on screen (criterion 17)**: front tests show, for each switch off, no badge or field of that rule in Nueva venta, no VIP badge in Ventas and no VIP mark in Elegir cliente, while a sale's detail keeps its recorded badges.
 - **Caught before save**: (Criterion 7)
   - Debiendo is disabled with no customer, and removing the customer resets the method;
   - a no-price line shows its message before saving;
@@ -323,3 +354,5 @@ The phone layout only; `NuevaVentaCompu` keeps its own.
 - A measurement-driven switch between line layouts on the phone; horizontal scrolling or shortened labels for Ventas' period tabs.
 - Changes to the computer layouts as part of the phone redesign; English screen texts (#53); the bar and back rule (#59).
 - Building Nuevo cliente's unsaved-changes confirmation (customers.md): its own issue, with its own copy, for Clientes and Elegir cliente alike.
+- Other VIP rules (a percent off list); price promotions by date.
+- Refusing or warning a sale because the pricing settings changed mid-sale.

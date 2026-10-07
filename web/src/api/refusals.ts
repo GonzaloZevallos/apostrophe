@@ -146,6 +146,14 @@ export const PINNED_CATALOG_REFUSAL_OVERRIDES: Record<
   'pinned_catalog.updates_unreadable': LOOKUP_UPDATES_UNREADABLE_REASON,
 }
 
+/** The fixed Spanish text of the varieties refusal that has a field of its own: a VIP
+ * price at or above the list price. It carries no amount (ADR-0005). */
+export const VIP_PRICE_NOT_BELOW_LIST_MESSAGE = 'El precio VIP tiene que ser menor al precio de lista'
+
+export const VARIETY_REFUSAL_TEXT: Partial<Record<RefusalCode, string>> = {
+  'variety.vip_price_not_below_list': VIP_PRICE_NOT_BELOW_LIST_MESSAGE,
+}
+
 /** Fixed Spanish text for each coded refusal of a stock withdrawal (`stock.md`,
  * "Stock withdrawal"): the rule that was broken, never the note, the grams or an id
  * (ADR-0005). `stock.withdrawal_not_found` and `stock.withdrawal_variety_not_found`

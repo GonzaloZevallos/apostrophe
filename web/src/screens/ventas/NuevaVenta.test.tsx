@@ -471,18 +471,19 @@ test('a $0 special price is refused rather than silently priced at list, and Reg
   expect(screen.getByLabelText('Regalo línea 1')).toBeDisabled()
 })
 
-test('"Nueva venta a <name>" prices a VIP customer at the bulk rate below the bulk minimum', async () => {
+test('"Nueva venta a <name>" prices a VIP customer at the VIP price below the bulk minimum', async () => {
   const user = userEvent.setup()
   const VIP_ANA = { id: 7, name: 'Ana VIP', phone: '+5491100000001', channel: null, vip: true }
   const WITH_BULK = {
     id: 3,
     name: 'Jazmín',
-    current_price: { id: 11, effective_from: '2026-09-01', list_price: 1000, bulk_price: 700, bulk_minimum: 10 },
+    current_price: { id: 11, effective_from: '2026-09-01', list_price: 1000, bulk_price: 800, bulk_minimum: 10, vip_price: 700 },
   }
   setupFetch({
     'GET /auth/me': () => jsonResponse(200, ME),
     'GET /varieties?on=2026-10-02': () => jsonResponse(200, [WITH_BULK]),
     'GET /customers/7': () => jsonResponse(200, VIP_ANA),
+    'GET /pricing-settings': () => jsonResponse(200, { is_bulk_pricing: true, is_vip_customers: true }),
   })
   await act(() => router.navigate(SALE_NEW, { state: { customerId: '7' } }))
   render(<App />)
@@ -494,7 +495,7 @@ test('"Nueva venta a <name>" prices a VIP customer at the bulk rate below the bu
   await user.selectOptions(screen.getByLabelText('Variedad línea 1'), '3')
   await user.type(screen.getByLabelText('Gramos línea 1'), '1')
 
-  // Below the bulk minimum (10 g), but VIP takes the bulk price anyway (sales.md).
+  // Below the bulk minimum (10 g), the VIP price is still the lowest rule that applies (sales.md).
   // Two "VIP"s now: the customer's own badge, and the line's rule badge.
   await waitFor(() => expect(screen.getAllByText('VIP').length).toBeGreaterThanOrEqual(2))
   expect(screen.getByText('$ 700 x g')).toBeInTheDocument()
