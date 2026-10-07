@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from app.pinned_catalog.domain.errors import TelegramUnreachable
@@ -425,4 +426,122 @@ def test_nothing_is_attempted_after_a_channel_change_until_publicar(
         "state": "out_of_date",
         "reason": "missing_publish",
         "last_published_on": None,
+    }
+
+
+def _withdraw(client: TestClient, variety_id: int, grams: str, **extra: Any) -> dict[str, Any]:
+    body: dict[str, Any] = {
+        "reason": "promotion",
+        "lines": [{"variety_id": variety_id, "grams": grams}],
+    }
+    response = client.post("/stock/withdrawals", json=body | extra)
+    assert response.status_code == 201, response.text
+    created: dict[str, Any] = response.json()
+    return created
+
+
+def _pinned_text(telegram: FakeTelegram) -> str:
+    """The text of the last edit the channel's pin received."""
+    return _edits(telegram)[-1][3]
+
+
+def test_a_withdrawal_that_sells_a_variety_out_triggers_an_edit(
+    client: TestClient, telegram: FakeTelegram
+) -> None:
+    variety = _register_qualifying_variety(client, "Alfa")
+    _publish(client)
+    telegram.calls.clear()
+
+    _withdraw(client, variety["id"], "50")
+
+    assert len(_edits(telegram)) == 1
+    assert "Alfa" not in _pinned_text(telegram)
+
+
+def test_a_withdrawal_that_leaves_the_text_as_it_was_sends_nothing(
+    client: TestClient, telegram: FakeTelegram
+) -> None:
+    variety = _register_qualifying_variety(client, "Alfa")
+    _publish(client)
+    telegram.calls.clear()
+
+    _withdraw(client, variety["id"], "5")
+
+    assert _edits(telegram) == []
+
+
+def test_an_edit_moving_the_only_line_between_varieties_edits_the_pin_once(
+    client: TestClient, telegram: FakeTelegram
+) -> None:
+    alfa = _register_qualifying_variety(client, "Alfa")
+    beta = _register_qualifying_variety(client, "Beta")
+    withdrawal = _withdraw(client, alfa["id"], "50")
+    _publish(client)
+    telegram.calls.clear()
+
+    edited = client.put(
+        f"/stock/withdrawals/{withdrawal['id']}",
+        json={"reason": "promotion", "lines": [{"variety_id": beta["id"], "grams": "50"}]},
+    )
+    assert edited.status_code == 200, edited.text
+
+    assert len(_edits(telegram)) == 1
+    text = _pinned_text(telegram)
+    assert "Beta" not in text
+    assert "Alfa" in text
+
+
+def test_a_delete_that_brings_a_variety_back_above_zero_edits_the_pin(
+    client: TestClient, telegram: FakeTelegram
+) -> None:
+    variety = _register_qualifying_variety(client, "Alfa")
+    withdrawal = _withdraw(client, variety["id"], "50")
+    _publish(client)
+    telegram.calls.clear()
+
+    deleted = client.delete(f"/stock/withdrawals/{withdrawal['id']}")
+    assert deleted.status_code == 204, deleted.text
+
+    assert len(_edits(telegram)) == 1
+    assert "Alfa" in _pinned_text(telegram)
+
+
+def test_a_note_only_edit_sends_nothing(client: TestClient, telegram: FakeTelegram) -> None:
+    variety = _register_qualifying_variety(client, "Alfa")
+    withdrawal = _withdraw(client, variety["id"], "5")
+    _publish(client)
+    telegram.calls.clear()
+
+    edited = client.put(
+        f"/stock/withdrawals/{withdrawal['id']}",
+        json={
+            "reason": "promotion",
+            "note": "otra nota",
+            "lines": [{"variety_id": variety["id"], "grams": "5"}],
+        },
+    )
+    assert edited.status_code == 200, edited.text
+
+    assert _edits(telegram) == []
+
+
+def test_the_withdrawal_write_routes_are_exactly_the_three_the_tests_above_trigger(
+    app: FastAPI,
+) -> None:
+    """Every `/stock/withdrawals` write sits on `stock_router`, which `app.main` includes
+    with `schedule_upkeep`; each of these three is shown above to edit the pin. A fourth
+    write route fails here until it has its own trigger test."""
+    paths = app.openapi()["paths"]
+    writes = {
+        (method.upper(), path)
+        for path, item in paths.items()
+        if path.startswith("/stock/withdrawals")
+        for method in item
+        if method.upper() != "GET"
+    }
+
+    assert writes == {
+        ("POST", "/stock/withdrawals"),
+        ("PUT", "/stock/withdrawals/{withdrawal_id}"),
+        ("DELETE", "/stock/withdrawals/{withdrawal_id}"),
     }
