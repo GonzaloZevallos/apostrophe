@@ -41,7 +41,13 @@ INICIO = Family(
 
 VARIEDADES = Family(
     name="variedades",
-    screens=(),
+    screens=(
+        "Variedades.dc.html",
+        "VariedadesCompu.dc.html",
+        "VariedadDetalle.dc.html",
+        "EntradaStock.dc.html",
+        "EntradaStockCompu.dc.html",
+    ),
     denylist=("135 g", "270 días", "Hoy tiene 135 g"),
 )
 
