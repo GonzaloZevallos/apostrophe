@@ -214,6 +214,9 @@ function Panel({
         </div>
         {period.pending_cost && <span className="pie">{PENDING_NOTE}</span>}
         {COST_LINES.map(({ key, label }) => {
+          // Hoy never shows the withdrawal lines, even when the API answers one for
+          // today (results.md): they belong to Semana and Mes.
+          if (tab === 'today' && key !== 'shortfall') return null
           const line = period[key]
           if (line === null) return null
           return (

@@ -207,7 +207,20 @@ test('Semana: Promoción and Consumo propio follow Faltante de stock and come be
 })
 
 test('Hoy and a period with no withdrawal show neither Promoción nor Consumo propio', async () => {
-  stubFetch(PANEL)
+  // Today carries a withdrawal of each reason, as it does right after the form's
+  // default date is saved: Hoy still hides both lines.
+  const withdrawnToday: PanelAnswer = {
+    ...PANEL,
+    periods: {
+      ...PANEL.periods,
+      today: {
+        ...PANEL.periods.today,
+        promotion: { amount: 2000, pending: false },
+        own_use: { amount: 1000, pending: false },
+      },
+    },
+  }
+  stubFetch(withdrawnToday)
   renderInicio()
   await screen.findByText('Vendiste hoy')
   expect(screen.queryByText('Promoción')).not.toBeInTheDocument()
