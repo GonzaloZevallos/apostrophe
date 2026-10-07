@@ -29,6 +29,7 @@ import {
   useSyncExternalStore,
 } from 'react'
 import { type Location, useLocation, useNavigate } from 'react-router'
+import { attachGoneNotice } from './goneNotice'
 
 /** The `sheet` depth a history state carries: an integer, 0 when absent or not one. */
 export function sheetDepth(state: unknown): number {
@@ -47,6 +48,7 @@ function withSheet(state: unknown, sheet: number): Record<string, unknown> {
 /** What the stack needs of a data router: its current location, read synchronously. */
 export interface RouterHandle {
   state: { location: Location }
+  subscribe: (listener: (state: { location: Location }) => void) => () => void
 }
 
 const RouterContext = createContext<RouterHandle | null>(null)
@@ -58,6 +60,8 @@ export function SheetRouterProvider({
   router: RouterHandle
   children: ReactNode
 }) {
+  // The gone notice follows the same router (`goneNotice.ts`).
+  useEffect(() => attachGoneNotice(router), [router])
   return createElement(RouterContext.Provider, { value: router }, children)
 }
 
