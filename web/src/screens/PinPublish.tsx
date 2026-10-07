@@ -29,10 +29,10 @@ import {
 import AvisoExito, { type SuccessToast } from '../components/AvisoExito'
 import SinConexion from '../components/SinConexion'
 import Boton from '../components/Boton'
+import { CHANNEL_MISSING_LEAD, INTEGRATIONS_LINK_WORD } from './pinPublishMessages'
 
 const PUBLISHED_TOAST: SuccessToast = 'Catálogo publicado'
 const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
-const CHANNEL_MISSING_LEAD = 'Falta el canal: cargalo en '
 const INTEGRATIONS_PATH = SETTINGS_INTEGRATIONS
 
 interface PinStatus {
@@ -75,7 +75,7 @@ function StatusLine({ status }: { status: PinStatus }) {
 function BlockedReason({ blockedBy }: { blockedBy: PublishBlockedBy }) {
   const link = (
     <InAppLink to={INTEGRATIONS_PATH} className="boton--enlace">
-      Integraciones
+      {INTEGRATIONS_LINK_WORD}
     </InAppLink>
   )
   if (blockedBy === 'not_tested') {

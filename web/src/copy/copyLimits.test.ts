@@ -14,6 +14,7 @@ import { copyProblems, LIMITS, measure, SAMPLES, type CopyModule } from './limit
 const KNOWN_MODULES = [
   '/src/screens/authMessages.ts',
   '/src/screens/catalogMessages.ts',
+  '/src/screens/pinPublishMessages.ts',
   '/src/screens/settings/integrationsMessages.ts',
   '/src/screens/settings/messages.ts',
   '/src/screens/varieties/thresholdMessages.ts',

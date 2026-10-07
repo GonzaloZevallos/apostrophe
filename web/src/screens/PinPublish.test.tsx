@@ -10,7 +10,15 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
+import { PINNED_CATALOG_REASON_LABEL } from '../api/refusals'
+import { measure } from '../copy/limits'
 import PinPublish from './PinPublish'
+import {
+  INTEGRATIONS_LINK_WORD,
+  LIMITED_COPY,
+  NOT_READY_LINE,
+  CHANNEL_MISSING_LINE,
+} from './pinPublishMessages'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -134,4 +142,35 @@ test('a failed Publicar shows its fixed reason', async () => {
   await userEvent.click(await screen.findByRole('button', { name: 'Publicar' }))
 
   expect(await screen.findByRole('alert')).toHaveTextContent('El bot no puede publicar en el canal')
+})
+
+test('the blocked lines and the out-of-date reasons are the registered, measured bindings', async () => {
+  renderPin({ can_publish: false, publish_blocked_by: 'not_tested', status: null })
+  await screen.findByRole('button', { name: 'Publicar' })
+  expect(screen.getByText(/Probalo primero/).textContent).toBe(NOT_READY_LINE)
+
+  const registered = LIMITED_COPY.map((entry) => entry.text)
+  expect(registered).toContain(NOT_READY_LINE)
+  expect(registered).toContain(CHANNEL_MISSING_LINE)
+  for (const reason of Object.values(PINNED_CATALOG_REASON_LABEL)) {
+    expect(registered).toContain(reason)
+  }
+  for (const entry of LIMITED_COPY) expect(measure(entry.text)).toBeLessThanOrEqual(80)
+  expect(INTEGRATIONS_LINK_WORD).toBe('Integraciones')
+})
+
+test('channel_missing renders the registered line, link word included', async () => {
+  renderPin({ can_publish: false, publish_blocked_by: 'channel_missing', status: null })
+  await screen.findByRole('button', { name: 'Publicar' })
+  expect(screen.getByText(/Falta el canal/).textContent).toBe(CHANNEL_MISSING_LINE)
+})
+
+test('the out-of-date status shows its registered reason', async () => {
+  renderPin({
+    can_publish: true,
+    publish_blocked_by: null,
+    status: { state: 'out_of_date', reason: 'bot_cannot_post', last_published_on: null },
+  })
+  expect(await screen.findByText(/Desactualizado/)).toBeInTheDocument()
+  expect(screen.getByText(new RegExp(PINNED_CATALOG_REASON_LABEL.bot_cannot_post))).toBeInTheDocument()
 })
