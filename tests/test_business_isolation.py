@@ -195,6 +195,14 @@ def seed_payments(client: TestClient) -> dict[str, int]:
     return {"customer_id": customer_id, "payment_id": payment.json()["payment"]["id"]}
 
 
+def seed_pricing_settings(client: TestClient) -> dict[str, int]:
+    saved = client.put(
+        "/pricing-settings", json={"is_bulk_pricing": True, "is_vip_customers": True}
+    )
+    assert saved.status_code == 200, saved.text
+    return {}
+
+
 SEEDERS: list[Callable[[TestClient], dict[str, int]]] = [
     seed_varieties,
     seed_customers,
@@ -204,6 +212,7 @@ SEEDERS: list[Callable[[TestClient], dict[str, int]]] = [
     seed_catalog,
     seed_pinned_catalog,
     seed_payments,
+    seed_pricing_settings,
 ]
 
 BODIES: dict[tuple[str, str], dict[str, Any]] = {
@@ -269,6 +278,7 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
         "amount": 100,
         "method": "cash",
     },
+    ("PUT", "/pricing-settings"): {"is_bulk_pricing": False, "is_vip_customers": False},
     ("POST", "/auth/password"): {
         "current_password": "the wrong current password",
         "new_password": "a new password of some length",

@@ -16,12 +16,21 @@ class SqlPricingSettings:
         self._session = session
         self._business_id = business_id
 
-    def current(self) -> PricingSettings:
+    def _row(self) -> PricingSettingsRow:
         row = self._session.scalar(
             select(PricingSettingsRow).where(PricingSettingsRow.business_id == self._business_id)
         )
         if row is None:
             raise PricingSettingsMissing()
+        return row
+
+    def current(self) -> PricingSettings:
+        row = self._row()
         return PricingSettings(
             is_bulk_pricing=row.is_bulk_pricing, is_vip_customers=row.is_vip_customers
         )
+
+    def replace(self, settings: PricingSettings) -> None:
+        row = self._row()
+        row.is_bulk_pricing = settings.is_bulk_pricing
+        row.is_vip_customers = settings.is_vip_customers

@@ -43,6 +43,7 @@ from app.pinned_catalog.adapters.upkeep_trigger import schedule_upkeep
 from app.pinned_catalog.application.channel_telegram import ChannelTelegram
 from app.pinned_catalog.application.push import BusinessLocks
 from app.pricing_settings.adapters.opening import PricingSettingsOpening
+from app.pricing_settings.adapters.router import router as pricing_settings_router
 from app.results.adapters.router import router as results_router
 from app.sales.adapters.router import router as sales_router
 from app.sales.adapters.sales_ledger import SqlSalesLedger
@@ -222,6 +223,9 @@ def create_app(
     app.include_router(payments_customers_router, dependencies=gated)
     app.include_router(pinned_catalog_router, dependencies=gated)
     app.include_router(results_router, dependencies=gated)
+    # Not `upkeep_gated`: only a PUT that changed a switch may touch the pin, and its
+    # router decides that itself (ADR-0014).
+    app.include_router(pricing_settings_router, dependencies=gated)
 
     if settings.web_dist is not None:
         if not (settings.web_dist / "index.html").is_file():
