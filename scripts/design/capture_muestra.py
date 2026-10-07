@@ -299,6 +299,7 @@ def _sales(api: _ClientApi) -> list[str]:
                 day_month(sale["date"]),
                 who,
                 money(sale["total"]),
+                money(sale["shipping_charged"]),
                 yes_no(sale["still_owing"]),
                 _HOW_PAID[sale["payment"]],
             ]
@@ -314,7 +315,7 @@ def _sales(api: _ClientApi) -> list[str]:
             ]
             for line in sale["lines"]
         )
-    sale_header = ["Fecha", "Cliente", "Total", "Te debe", "Cómo se pagó"]
+    sale_header = ["Fecha", "Cliente", "Total", "Envío cobrado", "Te debe", "Cómo se pagó"]
     line_header = ["Venta", "Variedad", "Gramos", "Precio x g", "Regla", "Total"]
     return [
         "### Ventas",

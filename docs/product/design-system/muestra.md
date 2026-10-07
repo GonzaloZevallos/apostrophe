@@ -92,18 +92,18 @@ Total: $ 32.000
 
 ### Ventas
 
-| Fecha | Cliente | Total | Te debe | Cómo se pagó |
-| --- | --- | --- | --- | --- |
-| 07/10 | Lu Fernández | $ 28.000 | no | Efectivo |
-| 07/10 | — | $ 36.000 | no | Efectivo |
-| 07/10 | Mica Solano | $ 130.000 | no | Transferencia |
-| 06/10 | Tincho Aguirre | $ 12.000 | sí | Debiendo |
-| 04/10 | — | $ 108.000 | no | Efectivo |
-| 02/10 | — | $ 55.000 | no | Efectivo |
-| 27/09 | Lu Fernández | $ 33.000 | no | Transferencia |
-| 25/09 | Tincho Aguirre | $ 96.000 | no | Efectivo |
-| 18/09 | Nico Parra | $ 14.000 | no | Efectivo |
-| 18/09 | Nico Parra | $ 25.000 | sí | Debiendo |
+| Fecha | Cliente | Total | Envío cobrado | Te debe | Cómo se pagó |
+| --- | --- | --- | --- | --- | --- |
+| 07/10 | Lu Fernández | $ 28.000 | $ 0 | no | Efectivo |
+| 07/10 | — | $ 36.000 | $ 0 | no | Efectivo |
+| 07/10 | Mica Solano | $ 130.000 | $ 6.000 | no | Transferencia |
+| 06/10 | Tincho Aguirre | $ 12.000 | $ 1.000 | sí | Debiendo |
+| 04/10 | — | $ 108.000 | $ 0 | no | Efectivo |
+| 02/10 | — | $ 55.000 | $ 0 | no | Efectivo |
+| 27/09 | Lu Fernández | $ 33.000 | $ 0 | no | Transferencia |
+| 25/09 | Tincho Aguirre | $ 96.000 | $ 0 | no | Efectivo |
+| 18/09 | Nico Parra | $ 14.000 | $ 0 | no | Efectivo |
+| 18/09 | Nico Parra | $ 25.000 | $ 1.000 | sí | Debiendo |
 
 ### Líneas de venta
 

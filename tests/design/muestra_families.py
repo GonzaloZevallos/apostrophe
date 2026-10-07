@@ -48,7 +48,12 @@ VARIEDADES = Family(
 
 VENTAS = Family(
     name="ventas",
-    screens=(),
+    screens=(
+        "Ventas.dc.html",
+        "VentasCompu.dc.html",
+        "VentaDetalle.dc.html",
+        "ClienteFicha.dc.html",
+    ),
     denylist=(),
 )
 
