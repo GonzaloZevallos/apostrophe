@@ -244,4 +244,8 @@ def test_a_switch_turned_on_between_the_plan_and_the_write_still_succeeds_with_t
     assert code == 0
     assert "Switches turned on: Precio por cantidad, Clientes VIP" in out
     assert _switches(client) == (True, True)
-    assert _only_sale(client)["total"] == 8000
+    sale = _only_sale(client)
+    assert sale["total"] == 8000
+    lines = sale["lines"]
+    assert isinstance(lines, list)
+    assert lines[0]["pricing_rule"] == "vip"

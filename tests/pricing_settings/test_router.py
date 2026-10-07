@@ -13,9 +13,7 @@ TOKEN = "123456789:top-secret-bot-token"
 
 
 def _put(client: TestClient, *, bulk: bool, vip: bool) -> Any:
-    return client.put(
-        "/pricing-settings", json={"is_bulk_pricing": bulk, "is_vip_customers": vip}
-    )
+    return client.put("/pricing-settings", json={"is_bulk_pricing": bulk, "is_vip_customers": vip})
 
 
 def _edits(telegram: FakeTelegram) -> list[tuple[str, ...]]:
@@ -111,9 +109,7 @@ def _leave_the_pin_failed(client: TestClient, telegram: FakeTelegram) -> None:
     telegram.calls.clear()
 
 
-def test_a_changed_switch_schedules_an_upkeep(
-    client: TestClient, telegram: FakeTelegram
-) -> None:
+def test_a_changed_switch_schedules_an_upkeep(client: TestClient, telegram: FakeTelegram) -> None:
     _put(client, bulk=True, vip=False)
     _publish_a_catalog_with_a_bulk_price(client)
     _leave_the_pin_failed(client, telegram)
@@ -146,3 +142,42 @@ def test_a_put_with_unchanged_values_schedules_nothing(
     assert telegram.calls == []
     failed = client.get("/pinned-catalog/status").json()["status"]
     assert failed["reason"] == "telegram_unreachable"
+
+
+def test_turning_bulk_off_edits_the_pin_to_a_text_without_the_bulk_line(
+    client: TestClient, telegram: FakeTelegram
+) -> None:
+    """The brief's trigger row, with no failed pin to force the edit: the text itself
+    changes, because the pinned catalog builds it through the catalog's switch-aware
+    read (the integration of settings-routes with catalog)."""
+    _put(client, bulk=True, vip=False)
+    _publish_a_catalog_with_a_bulk_price(client)
+    sent = [call for call in telegram.calls if call[0] == "send"]
+    assert "Desde 10 g" in sent[-1][3]
+    telegram.calls.clear()
+
+    assert _put(client, bulk=False, vip=False).status_code == 200
+
+    edits = _edits(telegram)
+    assert len(edits) == 1
+    assert "Desde 10 g" not in edits[0][3]
+    assert "Precio x gramo: $9.000" in edits[0][3]
+
+
+def test_a_pin_published_while_bulk_is_off_has_no_bulk_line(
+    client: TestClient, telegram: FakeTelegram
+) -> None:
+    _put(client, bulk=True, vip=True)
+    _publish_a_catalog_with_a_bulk_price(client)
+    telegram.calls.clear()
+    _put(client, bulk=False, vip=True)
+    telegram.calls.clear()
+
+    variety_id = client.get("/varieties").json()[0]["id"]
+    client.patch(f"/varieties/{variety_id}", json={"name": "V1 Renamed"})
+
+    edits = _edits(telegram)
+    assert len(edits) == 1
+    assert "V1 Renamed" in edits[0][3]
+    assert "Desde" not in edits[0][3]
+    assert "VIP" not in edits[0][3]
