@@ -10,6 +10,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
+import { expectIconAndTextRule } from '../test/iconAndTextRule'
 import Entrar, { BRAKE_MESSAGE, CREDENTIALS_WRONG, LOGIN_HINT, RETRY_MESSAGE } from './Entrar'
 
 function jsonResponse(status: number, body: unknown): Response {
@@ -35,6 +36,13 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.unstubAllGlobals()
+})
+
+test('the submit is text only and the screen follows the icon and text rule', () => {
+  renderEntrar(new QueryClient())
+  expect(screen.getByRole('button', { name: 'Entrá' })).toHaveAttribute('type', 'submit')
+  // "Mostrar" is PasswordField's own show/hide toggle, an option control.
+  expectIconAndTextRule(document.body, { optionClasses: ['boton-enlace'] })
 })
 
 test('shows the fixed hint under the button, never a count of attempts', () => {

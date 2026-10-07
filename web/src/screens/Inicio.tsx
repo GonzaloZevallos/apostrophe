@@ -45,11 +45,9 @@ import { formatDateShort } from '../format/dates'
 import { formatGrams, formatMoney, formatSignedMoney } from '../format/money'
 import { initialsOf } from '../shell/initials'
 import { detailFor, sideNoteFor } from '../stock/detail'
+import { EMPTY_DETAIL, EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE } from './inicioMessages'
 
-export const EMPTY_TITLE = 'Arrancá por las variedades'
-export const EMPTY_DETAIL =
-  'Cargá tu primera variedad con su precio. Sin precio no se puede cargar una venta.'
-export const PINNED_CATALOG_OUT_OF_DATE = 'Tu catálogo en Telegram está desactualizado'
+export { EMPTY_DETAIL, EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE }
 
 const PENDING_NOTE = 'incluye costo pendiente'
 

@@ -5,9 +5,9 @@
  * toast, never the generic server-error retry.
  */
 
-export const SIN_CONEXION_TITULO = 'Te quedaste sin internet'
-export const SIN_CONEXION_DETALLE =
-  'apostrophe necesita conexión. Reintentamos solos cuando vuelva.'
+import { SIN_CONEXION_DETALLE, SIN_CONEXION_TITULO } from './estadosMessages'
+
+export { SIN_CONEXION_DETALLE, SIN_CONEXION_TITULO }
 
 export default function SinConexion() {
   return (

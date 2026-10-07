@@ -33,14 +33,15 @@ import { formatGrams, formatMoney } from '../format/money'
 import ErrorGenerico from '../components/ErrorGenerico'
 import SinConexion from '../components/SinConexion'
 import { MORE } from '../routes'
+import {
+  EMPTY_MONTH_LINE,
+  NO_HISTORY_LINE,
+  PURCHASES_NOTE,
+  SINCE_FIRST_RECORD_LABEL,
+  VARIETY_TOTAL_NOTE,
+} from './analisisMessages'
 
-export const NO_HISTORY_LINE = 'Todavía no hay nada para analizar.'
-export const EMPTY_MONTH_LINE = 'No vendiste ni regalaste nada este mes.'
-export const VARIETY_TOTAL_NOTE =
-  'La tabla de variedades suma las ventas del mes sin el envío.'
-export const SINCE_FIRST_RECORD_LABEL =
-  'Movido desde tu primer registro, no es la plata que tenés en caja'
-export const PURCHASES_NOTE = 'Van aparte, se cargan en Stock'
+export { EMPTY_MONTH_LINE, NO_HISTORY_LINE, PURCHASES_NOTE, SINCE_FIRST_RECORD_LABEL, VARIETY_TOTAL_NOTE }
 export const BEST_WEEK_MARK = 'Mejor semana'
 export const BEST_WEEKDAY_MARK = 'Mejor día'
 export const BEST_WEEK_TABLE_MARK = 'mejor'

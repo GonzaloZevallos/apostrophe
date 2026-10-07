@@ -1259,7 +1259,7 @@ body {
 }
 
 .nueva-venta .nueva-venta__cerrar,
-.gasto-form .gasto-form__cerrar {
+.gasto-form .gasto-form__cerrar .boton--enlace {
   box-shadow: none;
   color: var(--tinta2);
   font-weight: 600;

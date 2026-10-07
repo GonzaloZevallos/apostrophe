@@ -29,6 +29,7 @@ import { invalidateResource, keys } from '../../api/keys'
 import type { Me } from '../../api/me'
 import { isGone, kindOf, resolveOverride, type RefusalCode } from '../../api/refusals'
 import type { SuccessToast } from '../../components/AvisoExito'
+import Boton from '../../components/Boton'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import { parseMoney } from '../../format/parse'
@@ -193,9 +194,11 @@ export default function ExpenseForm({
   const header = (
     <div className="gasto-form__cabecera">
       <span className="gasto-form__titulo">{target === 'nuevo' ? 'Cargar gasto' : 'Editar gasto'}</span>
-      <button type="button" className="boton--enlace gasto-form__cerrar" onClick={onCancel}>
-        Cerrar
-      </button>
+      <span className="gasto-form__cerrar">
+        <Boton variant="link" onClick={onCancel}>
+          Cerrar
+        </Boton>
+      </span>
     </div>
   )
 
@@ -263,19 +266,18 @@ export default function ExpenseForm({
                 {newCategoryError}
               </span>
             )}
-            <button
-              type="button"
-              className="boton"
+            <Boton
+              icon="agregar"
               disabled={newCategorySending || newCategoryName.trim() === ''}
               onClick={onCreateCategory}
             >
               Crear categoría
-            </button>
+            </Boton>
           </div>
         ) : (
-          <button type="button" className="boton--enlace" onClick={() => setCreatingCategory(true)}>
+          <Boton variant="link" onClick={() => setCreatingCategory(true)}>
             Crear una categoría nueva
-          </button>
+          </Boton>
         )}
         <label className="campo">
           <span className="campo__rotulo">Monto</span>
@@ -303,13 +305,16 @@ export default function ExpenseForm({
           </span>
         )}
         {offline && <SinConexion />}
-        <button className="boton" type="submit" disabled={!canSubmit}>
+        <Boton textOnly="submit" type="submit" disabled={!canSubmit}>
           Guardá el gasto
-        </button>
+        </Boton>
         {target !== 'nuevo' && onRequestDelete !== undefined && (
-          <button type="button" className="boton--enlace" onClick={() => onRequestDelete(target)}>
-            Borrar gasto
-          </button>
+          <Boton
+            variant="icon"
+            action="delete"
+            ariaLabel="Borrar gasto"
+            onClick={() => onRequestDelete(target)}
+          />
         )}
       </form>
     </div>

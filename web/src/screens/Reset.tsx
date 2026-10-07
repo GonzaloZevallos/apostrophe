@@ -29,6 +29,7 @@ import { Link, useNavigate, useParams } from 'react-router'
 import { ApiError, NetworkError } from '../api/client'
 import { openResetLink, submitReset } from '../session'
 import AuthPage from '../components/AuthPage'
+import Boton from '../components/Boton'
 import Loading from '../components/Loading'
 import PasswordField from '../components/PasswordField'
 import SinConexion from '../components/SinConexion'
@@ -138,9 +139,9 @@ export default function Reset() {
     <AuthPage title="Elegí tu contraseña nueva">
       <form className="formulario" onSubmit={(event) => void onSubmit(event)}>
         <PasswordField label="Contraseña nueva" value={password} onChange={setPassword} error={error} />
-        <button className="boton" type="submit" disabled={sending}>
+        <Boton textOnly="submit" type="submit" disabled={sending}>
           Guardar y entrar
-        </button>
+        </Boton>
       </form>
     </AuthPage>
   )
