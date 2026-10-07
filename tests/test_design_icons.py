@@ -35,7 +35,9 @@ def _strip_comments(source: str) -> str:
 
 def drawn_names(icono_source: str) -> list[str]:
     """The names in `ICON_NAMES = [...] as const` of `Icono.tsx`."""
-    match = re.search(r"export const ICON_NAMES = \[([\s\S]*?)\] as const", _strip_comments(icono_source))
+    match = re.search(
+        r"export const ICON_NAMES = \[([\s\S]*?)\] as const", _strip_comments(icono_source)
+    )
     assert match is not None, "Icono.tsx has no `export const ICON_NAMES = [...] as const`"
     return _NAME.findall(match.group(1))
 
@@ -48,10 +50,22 @@ def contract_names(componentes_source: str) -> list[str]:
 
 
 def name_mismatches(drawn: list[str], contract: list[str]) -> list[str]:
-    problems = [f"{name} is drawn in Icono.tsx but missing from componentes.ts" for name in drawn if name not in contract]
-    problems += [f"{name} is in componentes.ts but not drawn in Icono.tsx" for name in contract if name not in drawn]
+    problems = [
+        f"{name} is drawn in Icono.tsx but missing from componentes.ts"
+        for name in drawn
+        if name not in contract
+    ]
+    problems += [
+        f"{name} is in componentes.ts but not drawn in Icono.tsx"
+        for name in contract
+        if name not in drawn
+    ]
     for label, names in (("Icono.tsx", drawn), ("componentes.ts", contract)):
-        problems += [f"{name} is listed twice in {label}" for name in sorted(set(names)) if names.count(name) > 1]
+        problems += [
+            f"{name} is listed twice in {label}"
+            for name in sorted(set(names))
+            if names.count(name) > 1
+        ]
     return problems
 
 
@@ -111,7 +125,10 @@ def glyph_problems(icono_source: str) -> list[str]:
 
 
 def test_icono_and_the_design_contract_name_the_same_icons() -> None:
-    assert name_mismatches(drawn_names(ICONO.read_text()), contract_names(COMPONENTES.read_text())) == []
+    assert (
+        name_mismatches(drawn_names(ICONO.read_text()), contract_names(COMPONENTES.read_text()))
+        == []
+    )
 
 
 def test_every_icon_is_drawn_once_at_22_px_and_stroke_1_6() -> None:
@@ -139,7 +156,8 @@ export interface IconoProps {
 const TRAZOS = { a: <path d="M0 0" />, b: <circle r="1" /> }
 export default function Icono({ nombre }: IconoProps) {
   return (
-    <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6}>
+    <svg width={22} height={22} viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" strokeWidth={1.6}>
       {TRAZOS[nombre]}
     </svg>
   )
@@ -149,8 +167,12 @@ export default function Icono({ nombre }: IconoProps) {
 
 def test_a_name_in_only_one_list_is_a_mismatch_in_both_directions() -> None:
     assert name_mismatches(["a", "b"], ["a", "b"]) == []
-    assert name_mismatches(["a", "b"], ["a"]) == ["b is drawn in Icono.tsx but missing from componentes.ts"]
-    assert name_mismatches(["a"], ["a", "c"]) == ["c is in componentes.ts but not drawn in Icono.tsx"]
+    assert name_mismatches(["a", "b"], ["a"]) == [
+        "b is drawn in Icono.tsx but missing from componentes.ts"
+    ]
+    assert name_mismatches(["a"], ["a", "c"]) == [
+        "c is in componentes.ts but not drawn in Icono.tsx"
+    ]
     assert name_mismatches(["a", "a"], ["a"]) == ["a is listed twice in Icono.tsx"]
 
 
@@ -166,7 +188,9 @@ def test_a_clean_icono_passes_every_check() -> None:
 
 
 def test_an_svg_without_the_one_size_and_stroke_is_refused() -> None:
-    wrong = _ICONO_OK.replace("strokeWidth={1.6}", "strokeWidth={2}").replace("width={22}", "width={size}")
+    wrong = _ICONO_OK.replace("strokeWidth={1.6}", "strokeWidth={2}").replace(
+        "width={22}", "width={size}"
+    )
     assert svg_problems(wrong) == [
         "Icono's <svg> does not state width 22 (width={22})",
         "Icono's <svg> does not state stroke width 1.6 (strokeWidth={1.6})",
@@ -175,7 +199,10 @@ def test_an_svg_without_the_one_size_and_stroke_is_refused() -> None:
 
 def test_a_size_or_stroke_prop_is_refused() -> None:
     wrong = _ICONO_OK.replace("label?: string", "size?: number\n  strokeWidth?: number")
-    assert prop_problems("x", wrong) == ["x's IconoProps still has `size`", "x's IconoProps still has `strokeWidth`"]
+    assert prop_problems("x", wrong) == [
+        "x's IconoProps still has `size`",
+        "x's IconoProps still has `strokeWidth`",
+    ]
 
 
 def test_a_glyph_that_sets_stroke_fill_transform_or_nests_an_svg_is_refused() -> None:
@@ -192,4 +219,7 @@ def test_a_glyph_that_sets_stroke_fill_transform_or_nests_an_svg_is_refused() ->
 
 
 def test_a_glyph_may_say_fill_none() -> None:
-    assert glyph_problems(_ICONO_OK.replace('<path d="M0 0" />', '<path d="M0 0" fill="none" />')) == []
+    assert (
+        glyph_problems(_ICONO_OK.replace('<path d="M0 0" />', '<path d="M0 0" fill="none" />'))
+        == []
+    )
