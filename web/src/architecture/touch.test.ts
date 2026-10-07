@@ -7,6 +7,7 @@
 
 import { expect, test } from 'vitest'
 import { productSources, scanControls, type ScanResult } from './controlScan'
+import { EXEMPT, type ExemptEntry } from './pressedExempt'
 
 const files = import.meta.glob('/src/**/*.css', {
   query: '?raw',
@@ -147,28 +148,6 @@ const FILL_LINEA = /background-color:\s*var\(--linea\)/
 function scannedControls(): ScanResult {
   return scanControls(productSources().filter((source) => !source.source.includes('@testing-library')))
 }
-
-/**
- * Controls left out for a design decision: no visible pressed state is possible from the
- * existing tokens, or it is unclear whether the control is tappable. Never a way round the
- * check for a control that simply lacks its rule.
- */
-export interface ExemptEntry {
-  classes: string[]
-  screen: string
-  variant: 'selected' | 'disabled' | 'none'
-  reason: string
-}
-
-const EXEMPT: ExemptEntry[] = [
-  {
-    classes: ['opcion-interruptor__input'],
-    screen: 'Configuración > Precios, Nueva venta',
-    variant: 'none',
-    reason:
-      'a visually hidden native switch: the person taps its label, `.opcion-interruptor`, which carries the pressed state',
-  },
-]
 
 /**
  * A control a person can tap (found in the markup by `controlScan`) that carries none of the
