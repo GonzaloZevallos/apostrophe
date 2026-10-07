@@ -23,6 +23,8 @@ import {
   pathTo,
 } from '../routes'
 import { NO_PRICE_TODAY } from './Variedades'
+import { LIMITS } from '../copy/limits'
+import { expectIconAndTextRule } from '../test/iconAndTextRule'
 
 const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
 
@@ -439,5 +441,15 @@ describe('Nueva variedad', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Cerrar' }))
 
     await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES_PATH))
+  })
+})
+
+describe('Nueva variedad and the icon and text rule', () => {
+  test('the form keeps its name help within the limit and the rule', async () => {
+    renderApp(VARIETY_NEW)
+
+    await screen.findByRole('button', { name: 'Agregá la variedad' })
+    expect(document.querySelectorAll('[data-copy="help"]')).toHaveLength(1)
+    expectIconAndTextRule(screen.getByRole('main'), { limits: LIMITS })
   })
 })
