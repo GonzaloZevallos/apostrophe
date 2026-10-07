@@ -2,9 +2,9 @@
  * The sale preview (plan, invariants): line totals and special-price rates are
  * computed only here, in integer hundredths of a gram, with no `Math.round`,
  * `toFixed` or float multiplication on grams anywhere in this module. It mirrors
- * `app/sales/domain/pricing.py` exactly (first rule that applies wins: gift, special
- * price, VIP, bulk — measured per line, never summed across a sale — then list), so
- * a rule change there is caught here too, through the one matrix both sides run
+ * `app/sales/domain/pricing.py` exactly (gift, then special price, then the lowest of
+ * list, bulk — measured per line, never summed across a sale — and VIP; a VIP-bulk tie
+ * is stored as VIP), so a rule change there is caught here too, through the one matrix both sides run
  * (`pricing-matrix.json`, read by this module's tests and by `tests/sales/test_pricing_matrix.py`).
  *
  * What the API answers after a save, an assign or a delete always wins (plan,
@@ -21,10 +21,19 @@ export interface BulkQuote {
 }
 
 /** CONTEXT.md: Current price — a variety's list price, and optionally a bulk price
- * lower than it, on the sale's date. `null` means the variety has no price that day. */
+ * lower than it and optionally a VIP price lower than it, on the sale's date. `null` means the variety has no price that day. */
 export interface PriceQuote {
   listPrice: number
   bulk: BulkQuote | null
+  /** The VIP price per gram, or `null` for none. Never 0 as a stand-in. */
+  vipPrice: number | null
+}
+
+/** CONTEXT.md: Pricing settings — which of Precio por cantidad and Clientes VIP the
+ * business uses. */
+export interface PricingSettings {
+  bulk: boolean
+  vip: boolean
 }
 
 export interface LinePricing {
@@ -62,7 +71,8 @@ export class NoPriceThatDay extends SaleRuleBroken {
 export interface LineInput {
   gift: boolean
   specialPrice: number | null
-  vip: boolean
+  customerIsVip: boolean
+  settings: PricingSettings
   quote: PriceQuote | null
   gramsHundredths: number
 }
@@ -85,7 +95,7 @@ export function specialRate(total: number, gramsHundredths: number): number {
  * exactly. Refuses grams <= 0, a gift combined with a special price, a special price
  * <= 0, and a missing quote with no special price to replace it. */
 export function priceLine(input: LineInput): LinePricing {
-  const { gift, specialPrice, vip, quote, gramsHundredths } = input
+  const { gift, specialPrice, customerIsVip, settings, quote, gramsHundredths } = input
   if (gramsHundredths <= 0) throw new NonPositiveGrams()
   if (gift && specialPrice !== null) throw new GiftWithSpecialPrice()
   if (gift) return { rule: 'gift', pricePerGram: 0, lineTotal: 0 }
@@ -98,18 +108,19 @@ export function priceLine(input: LineInput): LinePricing {
     }
   }
   if (quote === null) throw new NoPriceThatDay()
-  if (vip && quote.bulk !== null) {
-    const price = quote.bulk.price
-    return { rule: 'vip', pricePerGram: price, lineTotal: lineTotal(price, gramsHundredths) }
+  // Start from list; bulk replaces it only when strictly lower; VIP replaces whatever
+  // is best when not higher, so a VIP-bulk tie is stored as VIP.
+  let best: { rule: PricingRule; price: number } = { rule: 'list', price: quote.listPrice }
+  if (settings.bulk && quote.bulk !== null && gramsHundredths >= quote.bulk.minimumHundredths) {
+    if (quote.bulk.price < best.price) best = { rule: 'bulk', price: quote.bulk.price }
   }
-  if (quote.bulk !== null && gramsHundredths >= quote.bulk.minimumHundredths) {
-    const price = quote.bulk.price
-    return { rule: 'bulk', pricePerGram: price, lineTotal: lineTotal(price, gramsHundredths) }
+  if (settings.vip && customerIsVip && quote.vipPrice !== null) {
+    if (quote.vipPrice <= best.price) best = { rule: 'vip', price: quote.vipPrice }
   }
   return {
-    rule: 'list',
-    pricePerGram: quote.listPrice,
-    lineTotal: lineTotal(quote.listPrice, gramsHundredths),
+    rule: best.rule,
+    pricePerGram: best.price,
+    lineTotal: lineTotal(best.price, gramsHundredths),
   }
 }
 

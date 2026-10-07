@@ -2,12 +2,12 @@
  * The shared "Teléfono / Nombre / Canal / VIP" fields (`NuevaVentaCliente.dc.html`,
  * `ClienteForm.tsx`): split out of `ClienteForm` (plan, "Shape") so the "Nuevo
  * cliente" sub-form inside `NuevaVentaCliente`'s sheet renders exactly the same
- * markup, labels and structure as `/clientes/nuevo` — one place that knows what a
+ * markup, labels and structure as /clientes/nuevo — one place that knows what a
  * customer's fields look like, not two copies drifting apart.
  *
  * Purely controlled, and it never calls the API or navigates anywhere (plan,
  * invariants: "Embedding `CustomerFields` in the sheet never navigates; only the
- * `/clientes` route wrapper navigates or shows 'Cliente guardado'."): the caller
+ * /clientes route wrapper navigates or shows 'Cliente guardado'."): the caller
  * (`ClienteForm` or `NuevaVentaCliente`) owns the state, the save call and what
  * happens next.
  */
@@ -26,6 +26,8 @@ export interface CustomerFieldsProps {
   onChange: (value: CustomerFieldsValue) => void
   nameError: string | null
   phoneError: string | null
+  /** Clientes VIP is on: the VIP field shows only then, with nothing in its place. */
+  showVip: boolean
 }
 
 export default function CustomerFields({
@@ -33,6 +35,7 @@ export default function CustomerFields({
   onChange,
   nameError,
   phoneError,
+  showVip,
 }: CustomerFieldsProps) {
   return (
     <>
@@ -99,14 +102,16 @@ export default function CustomerFields({
           Telegram
         </label>
       </fieldset>
-      <label className="campo">
-        <span className="campo__rotulo">VIP</span>
-        <input
-          type="checkbox"
-          checked={value.vip}
-          onChange={(event) => onChange({ ...value, vip: event.target.checked })}
-        />
-      </label>
+      {showVip && (
+        <label className="campo">
+          <span className="campo__rotulo">VIP</span>
+          <input
+            type="checkbox"
+            checked={value.vip}
+            onChange={(event) => onChange({ ...value, vip: event.target.checked })}
+          />
+        </label>
+      )}
     </>
   )
 }

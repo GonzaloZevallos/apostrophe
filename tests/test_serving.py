@@ -6,8 +6,6 @@ right next to it (outside the served directory) and a symlink inside it that poi
 that secret. The mount must never answer with the secret's contents, whatever the path.
 """
 
-import json
-import re
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -16,13 +14,16 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from httpx2 import Response
 from sqlalchemy.engine import Engine
-from starlette.responses import PlainTextResponse
-from starlette.types import Receive, Scope, Send
 
 from app.main import create_app
 from app.settings import Settings
-from app.static_spa import FrontNavigation, MissingBuiltFront, SpaStatic
-from tests.conftest import SETTINGS, TEST_HASHER
+from app.static_spa import (
+    LEGACY_FRONT_PATHS,
+    LEGACY_FRONT_PATHS_FILE,
+    SHARED_FRONT_PATHS,
+    MissingBuiltFront,
+)
+from tests.conftest import SETTINGS, TEST_HASHER, MovableClock
 from tests.fakes.telegram import FakeTelegram
 
 SECRET = "sv-secret-only-outside-dist"
@@ -43,12 +44,17 @@ def dist(tmp_path: Path) -> Path:
 
 
 @pytest.fixture
-def served_app(dist: Path, engine: Engine) -> FastAPI:
+def served_app(dist: Path, engine: Engine, clock: MovableClock) -> FastAPI:
     settings = Settings(
         secret_key=SETTINGS.secret_key, database_url=SETTINGS.database_url, web_dist=dist
     )
     return create_app(
-        settings, engine=engine, hasher=TEST_HASHER, telegram=FakeTelegram(), upkeep_ticker=False
+        settings,
+        engine=engine,
+        clock=clock,
+        hasher=TEST_HASHER,
+        telegram=FakeTelegram(),
+        upkeep_ticker=False,
     )
 
 
@@ -74,7 +80,7 @@ def test_a_symlink_pointing_out_of_dist_is_not_followed(served_client: TestClien
     assert "the app shell" in response.text
 
 
-@pytest.mark.parametrize("path", ["/clientes/3", "/invitation/abc"])
+@pytest.mark.parametrize("path", ["/login", "/invitation/abc", "/reset/abc"])
 def test_a_front_route_answers_the_app_shell(served_client: TestClient, path: str) -> None:
     response = served_client.get(path)
 
@@ -213,102 +219,204 @@ def _request(
     return client.request(method, path + query, headers={"Accept": accept}, follow_redirects=False)
 
 
-@pytest.mark.parametrize(("path", "method", "accept", "slash"), SHARED_CELLS)
 def test_a_shared_front_path_is_the_shell_only_for_a_browser_navigation(
-    served_client: TestClient, path: str, method: str, accept: str, slash: bool
+    served_client: TestClient,
 ) -> None:
-    response = _request(served_client, method, path + ("/" if slash else ""), accept)
+    # One app, every cell of the grid: building an app per cell made the suite crawl.
+    for path, method, accept, slash in SHARED_CELLS:
+        response = _request(served_client, method, path + ("/" if slash else ""), accept)
 
-    outcome = SHARED_OUTCOME[(method, accept, slash)]
-    if outcome == SHELL:
-        assert response.status_code == 200
-        assert response.headers["content-type"].startswith("text/html")
-        assert method == "HEAD" or "the app shell" in response.text
-    elif outcome == REDIRECT:
-        assert response.status_code == 308
-        assert response.headers["location"] == path
-    else:
-        assert response.status_code == API_STATUS[(path, method, slash)]
-        assert "the app shell" not in response.text
-        assert "location" not in response.headers
-
-
-LEGACY_TARGETS = {
-    "/mas": "/more",
-    "/gastos": "/expenses",
-    "/variedades": "/varieties",
-    "/catalogo": "/varieties/catalog",
-    "/mi-stock": "/varieties",
-    "/mi-stock/nueva-entrada": "/varieties/entries/new",
-}
-LEGACY_ID_TARGETS = {
-    "/variedades/7": "/varieties/7",
-    "/mi-stock/entradas/7": "/varieties/entries/7",
-}
+        cell = (path, method, accept, slash)
+        outcome = SHARED_OUTCOME[(method, accept, slash)]
+        if outcome == SHELL:
+            assert response.status_code == 200, cell
+            assert response.headers["content-type"].startswith("text/html"), cell
+            assert method == "HEAD" or "the app shell" in response.text, cell
+        elif outcome == REDIRECT:
+            assert response.status_code == 308, cell
+            assert response.headers["location"] == path, cell
+        else:
+            assert response.status_code == API_STATUS[(path, method, slash)], cell
+            assert "the app shell" not in response.text, cell
+            assert "location" not in response.headers, cell
 
 
-@pytest.mark.parametrize("slash", [False, True])
-@pytest.mark.parametrize("accept", [HTML, JSON, ANY])
-@pytest.mark.parametrize("method", ["GET", "HEAD", "POST", "OPTIONS"])
-@pytest.mark.parametrize("legacy", sorted(LEGACY_TARGETS))
+# The legacy rows are the app's own file's (`app/legacy_front_paths.json`, docs/adr/0033):
+# this test walks whatever rows it holds. Which old paths must have a row is the hand-written
+# `tests/fixtures/legacy_front_paths.json`'s to say (`tests/test_static_spa.py`), so a row
+# deleted from the file fails there, not here. An id is carried across: `{id}` is 4821.
+LEGACY_CASES = [
+    (old.replace("{id}", "4821"), now.replace("{id}", "4821")) for old, now in LEGACY_FRONT_PATHS
+]
+
+
+@pytest.mark.parametrize(("legacy", "target"), LEGACY_CASES)
 def test_a_legacy_spanish_path_redirects_permanently_whatever_the_request(
-    served_client: TestClient, legacy: str, method: str, accept: str, slash: bool
+    served_client: TestClient, legacy: str, target: str
 ) -> None:
-    response = _request(served_client, method, legacy + ("/" if slash else ""), accept)
+    # One app per row, many cheap requests: the whole grid of method, Accept, trailing
+    # slash and query string, so each row is tested one by one without 700 app builds.
+    for method in ("GET", "HEAD", "POST", "OPTIONS"):
+        for accept in (HTML, JSON, ANY):
+            for slash in (False, True):
+                response = _request(served_client, method, legacy + ("/" if slash else ""), accept)
+                assert response.status_code == 308, (method, accept, slash)
+                assert response.headers["location"] == target, (method, accept, slash)
+    for slash in (False, True):
+        response = _request(
+            served_client, "GET", legacy + ("/" if slash else ""), HTML, "?month=2026-09&x=%C3%B1"
+        )
+        assert response.headers["location"] == f"{target}?month=2026-09&x=%C3%B1"
 
-    assert response.status_code == 308
-    assert response.headers["location"] == LEGACY_TARGETS[legacy]
 
-
-@pytest.mark.parametrize("slash", [False, True])
-@pytest.mark.parametrize("accept", [HTML, JSON, ANY])
-@pytest.mark.parametrize("method", ["GET", "HEAD", "POST", "OPTIONS"])
-@pytest.mark.parametrize("legacy", sorted(LEGACY_ID_TARGETS))
-def test_a_legacy_path_with_an_id_redirects_permanently_carrying_the_id(
-    served_client: TestClient, legacy: str, method: str, accept: str, slash: bool
+def test_the_app_finds_the_legacy_rows_at_their_shipped_path(
+    served_client: TestClient,
 ) -> None:
-    response = _request(served_client, method, legacy + ("/" if slash else ""), accept)
+    shipped = Path(__file__).resolve().parent.parent / "app" / "legacy_front_paths.json"
 
+    assert LEGACY_FRONT_PATHS_FILE == shipped
+    assert shipped.is_file()
+    response = _request(served_client, "GET", "/variedades/7", HTML)
     assert response.status_code == 308
-    assert response.headers["location"] == LEGACY_ID_TARGETS[legacy]
+    assert response.headers["location"] == "/varieties/7"
 
 
-@pytest.mark.parametrize(
-    "path",
-    [
-        "/variedades/abc",
-        "/variedades/7/prices",
-        "/variedades/7a",
-        "/mi-stock/entradas/x",
-        "/mi-stock/entradas/7/otra",
+def test_an_unmatched_spanish_path_is_not_redirected(served_client: TestClient) -> None:
+    for path in (
+        "/ventas/basura",
+        "/ventas/7/basura",
+        "/clientes/7/borrar",
+        "/clientes/nuevo/7",
         "/mi-stock/entradas",
-    ],
-)
-def test_a_near_miss_of_a_legacy_id_path_is_never_redirected(
-    served_client: TestClient, path: str
-) -> None:
-    response = _request(served_client, "GET", path, HTML)
+        "/mi-stock/entradas/abc",
+        "/gastos/categorias/7",
+        "/variedades/abc",
+        "/negocio/otro",
+    ):
+        response = _request(served_client, "GET", path, HTML)
 
-    assert response.status_code != 308
+        assert response.status_code == 200, path
+        assert "the app shell" in response.text, path
     assert "location" not in response.headers
 
 
-@pytest.mark.parametrize("legacy", sorted(LEGACY_TARGETS))
-def test_the_query_string_is_kept_on_a_legacy_redirect(
-    served_client: TestClient, legacy: str
-) -> None:
-    response = _request(served_client, "GET", legacy, HTML, "?month=2026-09&x=%C3%B1")
-
-    assert response.headers["location"] == f"{LEGACY_TARGETS[legacy]}?month=2026-09&x=%C3%B1"
+# What a shared template with {id} = 7 is, concretely: `/sales/{id}` -> `/sales/7`.
+SHARED_CONCRETE = sorted(path.replace("{id}", "7") for path in SHARED_FRONT_PATHS)
 
 
-def test_the_query_string_is_kept_on_a_trailing_slash_redirect(
+def test_the_shared_list_is_the_one_the_plan_names() -> None:
+    assert sorted(SHARED_FRONT_PATHS) == sorted(
+        [
+            "/sales",
+            "/sales/new",
+            "/sales/{id}",
+            "/customers",
+            "/customers/new",
+            "/customers/{id}",
+            "/customers/{id}/edit",
+            "/customers/{id}/payment",
+            "/varieties",
+            "/varieties/new",
+            "/varieties/archived",
+            "/varieties/{id}",
+            "/varieties/{id}/prices",
+            "/varieties/{id}/prices/new",
+            "/varieties/{id}/entries",
+            "/varieties/catalog",
+            "/varieties/entries",
+            "/varieties/entries/new",
+            "/varieties/entries/{id}",
+            "/expenses",
+            "/expenses/new",
+            "/analysis",
+        ]
+    )
+
+
+def test_a_shared_template_is_the_shell_for_a_navigation(served_client: TestClient) -> None:
+    browser_accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+
+    for path in SHARED_CONCRETE:
+        response = _request(served_client, "GET", path, browser_accept, "?month=2026-09")
+
+        assert response.status_code == 200, path
+        assert response.headers["content-type"].startswith("text/html"), path
+        assert "the app shell" in response.text, path
+
+
+def test_a_shared_template_plus_one_slash_is_a_308_to_the_slashless_path(
     served_client: TestClient,
 ) -> None:
-    response = _request(served_client, "GET", "/expenses/", HTML, "?month=2026-09")
+    for path in SHARED_CONCRETE:
+        response = _request(served_client, "GET", path + "/", HTML, "?a=1")
 
-    assert response.status_code == 308
-    assert response.headers["location"] == "/expenses?month=2026-09"
+        assert response.status_code == 308, path
+        assert response.headers["location"] == f"{path}?a=1", path
+
+
+def _assert_the_api_answered(through_the_front: Response, api_alone: Response) -> None:
+    """The request reached the API, not the shell: where the API alone has a GET route its
+    answer is the same, byte for byte; where it has none, the app that also mounts the
+    front says 404 instead of 405, and either way it is JSON, never the shell."""
+    assert "the app shell" not in through_the_front.text
+    assert "location" not in through_the_front.headers
+    if api_alone.status_code in (404, 405):
+        assert through_the_front.status_code in (404, 405)
+    else:
+        assert through_the_front.status_code == api_alone.status_code
+        assert through_the_front.json() == api_alone.json()
+
+
+def test_a_json_request_to_a_shared_path_reaches_the_api_signed_out(
+    served_client: TestClient, anonymous_client: TestClient
+) -> None:
+    for accept in (JSON, ANY):
+        for path in SHARED_CONCRETE:
+            through_the_front = _request(served_client, "GET", path, accept)
+            api_alone = _request(anonymous_client, "GET", path, accept)
+
+            _assert_the_api_answered(through_the_front, api_alone)
+
+
+def test_a_json_request_to_a_shared_path_reaches_the_api_signed_in(
+    served_client: TestClient, client: TestClient
+) -> None:
+    served_client.headers["Authorization"] = client.headers["Authorization"]
+
+    for path in SHARED_CONCRETE:
+        through_the_front = _request(served_client, "GET", path, JSON)
+        api_alone = _request(client, "GET", path, JSON)
+
+        _assert_the_api_answered(through_the_front, api_alone)
+
+
+def test_a_path_the_template_does_not_match_is_not_the_shell(
+    served_client: TestClient,
+) -> None:
+    for path in ("/sales/abc", "/customers/new/7", "/varieties/entries/abc"):
+        response = _request(served_client, "GET", path, HTML)
+
+        assert "the app shell" not in response.text, path
+
+
+def test_a_shared_path_is_never_the_shell_for_a_method_that_is_not_a_navigation(
+    served_client: TestClient,
+) -> None:
+    for method in ("POST", "PUT", "DELETE", "OPTIONS"):
+        for path in SHARED_CONCRETE:
+            response = _request(served_client, method, path, HTML)
+
+            assert "the app shell" not in response.text, (method, path)
+            assert response.status_code != 308, (method, path)
+
+
+def test_a_new_front_path_with_no_api_segment_is_served_through_the_mount(
+    served_client: TestClient,
+) -> None:
+    response = _request(served_client, "GET", "/settings/expense-categories", HTML)
+
+    assert response.status_code == 200
+    assert "the app shell" in response.text
 
 
 def test_a_shared_front_path_with_a_query_string_is_the_shell(
@@ -329,29 +437,13 @@ def test_a_browser_s_own_accept_header_gets_the_shell(served_client: TestClient)
     assert "the app shell" in response.text
 
 
-def test_an_expense_id_path_is_not_the_shell(served_client: TestClient) -> None:
-    response = _request(served_client, "GET", "/expenses/5", HTML)
-
-    assert "the app shell" not in response.text
-
-
-@pytest.mark.parametrize("path", ["/gastos/categorias", "/gastos/categorias/"])
-def test_the_categories_screen_keeps_answering_the_shell_through_the_mount(
-    served_client: TestClient, path: str
-) -> None:
-    response = _request(served_client, "GET", path, HTML)
-
-    assert response.status_code == 200
-    assert "the app shell" in response.text
-
-
-@pytest.mark.parametrize("path", ["/mas/", "/gastos/"])
 def test_a_double_trailing_slash_on_a_legacy_path_is_not_redirected(
-    served_client: TestClient, path: str
+    served_client: TestClient,
 ) -> None:
-    response = _request(served_client, "GET", path + "/", HTML)
+    for path in ("/mas/", "/gastos/"):
+        response = _request(served_client, "GET", path + "/", HTML)
 
-    assert response.status_code != 308
+        assert response.status_code != 308, path
 
 
 def test_the_shell_on_a_shared_path_carries_the_same_headers_as_the_root(
@@ -369,12 +461,13 @@ def test_the_shell_on_a_shared_path_carries_the_same_headers_as_the_root(
     assert shared.headers["cache-control"] == "no-cache"
 
 
-# --- Parameterised shared paths and legacy patterns (docs/adr/0030) -----------------------
+# --- Parameterised shared paths and shared templates (docs/adr/0033) -----------------------
 
-CONTRACT = json.loads(
-    (Path(__file__).resolve().parent.parent / "web" / "src" / "api" / "contract.json").read_text()
+SHARED_FRONT_ROUTES: list[str] = sorted(
+    path.replace("{id}", "7")
+    for path in SHARED_FRONT_PATHS
+    if path.startswith(("/varieties", "/expenses"))
 )
-SHARED_FRONT_ROUTES: list[str] = CONTRACT["sharedFrontRoutes"]
 
 
 @pytest.mark.parametrize("method", ["GET", "HEAD"])
@@ -478,55 +571,6 @@ def test_a_slashed_shared_path_is_redirected_only_for_a_html_navigation(
 
     assert response.status_code != 308
     assert "the app shell" not in response.text
-
-
-async def _api_answer(scope: Scope, receive: Receive, send: Send) -> None:
-    await PlainTextResponse("the api")(scope, receive, send)
-
-
-@pytest.fixture
-def patterned(dist: Path) -> TestClient:
-    """`FrontNavigation` over a stub API with an injected legacy table, since the
-    production table holds no pattern until the front's own redirects land."""
-    spa = SpaStatic(dist, frozenset())
-    legacy = (
-        (re.compile(r"^/viejo/([0-9]+)$"), r"/nuevo/\1"),
-        (re.compile(r"^/viejo/([0-9]+)/cosas$"), r"/nuevo/\1/things"),
-    )
-    return TestClient(FrontNavigation(_api_answer, spa, legacy_patterns=legacy))
-
-
-@pytest.mark.parametrize("slash", [False, True])
-@pytest.mark.parametrize("accept", [HTML, JSON])
-@pytest.mark.parametrize("method", ["GET", "HEAD", "POST", "PUT", "DELETE"])
-def test_a_legacy_pattern_is_a_308_that_carries_the_id_for_any_request(
-    patterned: TestClient, method: str, accept: str, slash: bool
-) -> None:
-    response = _request(patterned, method, "/viejo/42" + ("/" if slash else ""), accept)
-
-    assert response.status_code == 308
-    assert response.headers["location"] == "/nuevo/42"
-
-
-def test_a_legacy_pattern_keeps_the_query_string_and_each_row_its_own_target(
-    patterned: TestClient,
-) -> None:
-    response = _request(patterned, "GET", "/viejo/42/cosas", HTML, "?month=2026-09")
-
-    assert response.status_code == 308
-    assert response.headers["location"] == "/nuevo/42/things?month=2026-09"
-
-
-@pytest.mark.parametrize(
-    "path", ["/viejo/4a", "/viejo/", "/viejo/42/otra", "/viejo/42//", "/viejo/42%0A"]
-)
-def test_a_path_a_legacy_pattern_does_not_fully_match_reaches_the_api(
-    patterned: TestClient, path: str
-) -> None:
-    response = _request(patterned, "GET", path, HTML)
-
-    assert response.status_code == 200
-    assert response.text == "the api"
 
 
 @pytest.mark.parametrize("path", ["/onboarding", "/onboarding/variety", "/onboarding/done"])

@@ -34,6 +34,7 @@ import { afterProgress } from './afterProgress'
 import StepIndicator from './StepIndicator'
 import type { StepBodyProps } from './stepBodies'
 import { isOptional, laterHint, previousPath, STEP_COUNT, stepInfo, stepNumber } from './steps'
+import { HOME } from '../../routes'
 
 export const DISCARD_QUESTION = '¿Descartás lo que escribiste?'
 export const DISCARD_DETAIL = 'Se pierde lo que escribiste: todavía no se guardó nada.'
@@ -80,7 +81,7 @@ export default function OnboardingStep({
       if (caught instanceof NetworkError) setFailure('offline')
       else if (caught instanceof ApiError && isGone(caught.code)) {
         disarm()
-        void navigate('/')
+        void navigate(HOME)
       } else setFailure('error')
     } finally {
       setSending(false)
@@ -99,12 +100,12 @@ export default function OnboardingStep({
           <button
             type="button"
             className="onboarding__enlace"
-            onClick={() => void navigate(previousPath(slug) ?? '/')}
+            onClick={() => void navigate(previousPath(slug) ?? HOME)}
           >
             <Icono nombre="atras" size={18} strokeWidth={1.8} />
             Atrás
           </button>
-          <button type="button" className="onboarding__enlace" onClick={() => void navigate('/')}>
+          <button type="button" className="onboarding__enlace" onClick={() => void navigate(HOME)}>
             Cerrar
           </button>
         </div>

@@ -21,6 +21,7 @@ from sqlalchemy.engine import Engine
 from app.results.domain.periods import periods as compute_periods
 from tests.conftest import PASSWORD, TODAY, MovableClock, signed_in
 from tests.contract_shapes import assert_matches_fixture
+from tests.fakes.archive import archive_by_hand
 
 
 def _variety(client: TestClient, name: str, price: int = 10_000) -> int:
@@ -639,3 +640,27 @@ def test_get_panel_issues_the_same_number_of_statements_small_or_seeded(
     big_count = _statement_count(engine, other_client)
 
     assert small_count == big_count, (small_count, big_count)
+
+
+def test_an_archived_variety_leaves_the_panel_stock_rows_but_not_the_period_figures(
+    client: TestClient, engine: Engine
+) -> None:
+    kept = _variety(client, "Kept")
+    gone = _variety(client, "Gone")
+    for variety_id in (kept, gone):
+        _entry(client, variety_id, grams="100", total_cost=None, on="2026-10-01")
+        sold = client.post(
+            "/sales",
+            json={"payment": "cash", "lines": [{"variety_id": variety_id, "grams": "10"}]},
+        )
+        assert sold.status_code == 201, sold.text
+    before = client.get("/panel").json()
+    archive_by_hand(engine, gone)
+
+    after = client.get("/panel").json()
+
+    assert {row["variety_id"] for row in before["stock"]} == {kept, gone}
+    assert [row["variety_id"] for row in after["stock"]] == [kept]
+    assert {key: value for key, value in after.items() if key != "stock"} == {
+        key: value for key, value in before.items() if key != "stock"
+    }

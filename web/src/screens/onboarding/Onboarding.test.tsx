@@ -14,7 +14,6 @@ import {
   createMemoryRouter,
   Outlet,
   RouterProvider,
-  useNavigate,
   type RouteObject,
 } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
@@ -25,6 +24,17 @@ import OnboardingLayout from './OnboardingLayout'
 import { OnboardingEntry, OnboardingStepRoute } from './OnboardingRoutes'
 import OnboardingStep from './OnboardingStep'
 import { STEP_BODIES, type StepBodyProps } from './stepBodies'
+import {
+  HOME,
+  ONBOARDING,
+  ONBOARDING_BOT,
+  ONBOARDING_CATALOG_MESSAGE,
+  ONBOARDING_CATEGORIES,
+  ONBOARDING_DONE,
+  SALE_NEW,
+  SALES,
+} from '../../routes'
+import { useBackOr } from '../../components/useBackOr'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03' }
 const ORDER: StepSlug[] = ['variety', 'stock', 'header_footer', 'bot', 'partner', 'categories']
@@ -71,10 +81,11 @@ function stubProgress(read: OnboardingProgress): void {
   )
 }
 
+/** Closes the way Nueva venta does: back by history only when the entry is in-app. */
 function NewSaleStub() {
-  const navigate = useNavigate()
+  const close = useBackOr(SALES)
   return (
-    <button type="button" onClick={() => void navigate(-1)}>
+    <button type="button" onClick={close}>
       cerrar nueva venta
     </button>
   )
@@ -95,7 +106,7 @@ function renderAt(initial: string | { pathname: string; state: unknown }, index 
       element: <Provide />,
       children: [
         { index: true, element: <span>pantalla inicio</span> },
-        { path: 'ventas/nueva', element: <NewSaleStub /> },
+        { path: SALE_NEW, element: <NewSaleStub /> },
         {
           path: 'onboarding',
           element: <OnboardingLayout />,
@@ -145,9 +156,9 @@ afterEach(() => {
   expect(window.sessionStorage.length).toBe(0)
 })
 
-test('/onboarding opens the resume step with its title, "Paso N de 6" and its badge, and nothing to skip on a required step', async () => {
+test('the Onboarding entry opens the resume step with its title, "Paso N de 6" and its badge, and nothing to skip on a required step', async () => {
   stubProgress(answer(['done', 'pending', 'pending', 'pending', 'pending', 'pending']))
-  renderAt('/onboarding')
+  renderAt(ONBOARDING)
 
   expect(await screen.findByText('Paso 2 de 6')).toBeInTheDocument()
   expect(screen.getByRole('heading', { name: 'Cargá lo que tenés hoy' })).toBeInTheDocument()
@@ -162,14 +173,14 @@ test.each([
   ['over', { ...REQUIRED_DONE, over: true, resume: null }],
 ])('an Onboarding path of a business %s goes to Inicio', async (_name, read) => {
   stubProgress(read)
-  renderAt('/onboarding/bot')
+  renderAt(ONBOARDING_BOT)
 
   expect(await screen.findByText('pantalla inicio')).toBeInTheDocument()
 })
 
 test('a deep link to "Listo" without the flag goes to Inicio', async () => {
   stubProgress({ ...REQUIRED_DONE, over: true, resume: null })
-  renderAt('/onboarding/done')
+  renderAt(ONBOARDING_DONE)
 
   expect(await screen.findByText('pantalla inicio')).toBeInTheDocument()
 })
@@ -178,7 +189,7 @@ test('"Listo" entered with the flag has one line per step and never an amount', 
   stubProgress(
     answer(['done', 'done', 'done', 'skipped', 'skipped', 'done'], { over: true, resume: null }),
   )
-  renderAt({ pathname: '/onboarding/done', state: { listo: true } })
+  renderAt({ pathname: ONBOARDING_DONE, state: { listo: true } })
 
   expect(await screen.findByRole('heading', { name: 'Listo' })).toBeInTheDocument()
   expect(screen.getByText('6 de 6 pasos')).toBeInTheDocument()
@@ -191,7 +202,7 @@ test('"Listo" entered with the flag has one line per step and never an amount', 
 
 test('"Saltar el resto" is hidden until both required steps are done', async () => {
   stubProgress(answer(['done', 'pending', 'pending', 'pending', 'pending', 'pending']))
-  const { unmount } = renderHidden('/onboarding/bot')
+  const { unmount } = renderHidden(ONBOARDING_BOT)
   await screen.findByText('Paso 4 de 6')
   expect(screen.queryByRole('button', { name: 'Saltar el resto' })).not.toBeInTheDocument()
   unmount()
@@ -208,7 +219,7 @@ test('with both required steps done "Saltar el resto" sends skip-rest and "Listo
     over: true,
     resume: null,
   })
-  renderAt('/onboarding/bot')
+  renderAt(ONBOARDING_BOT)
 
   await userEvent.click(await screen.findByRole('button', { name: 'Saltar el resto' }))
 
@@ -219,7 +230,7 @@ test('with both required steps done "Saltar el resto" sends skip-rest and "Listo
 test('"Saltar" sends a skipped pass for the step and opens the step the answer resumes at', async () => {
   stubProgress(REQUIRED_DONE)
   writes['POST /onboarding-progress/passes'] = answer(['done', 'done', 'pending', 'skipped', 'pending', 'pending'])
-  renderAt('/onboarding/bot')
+  renderAt(ONBOARDING_BOT)
 
   await userEvent.click(await screen.findByRole('button', { name: 'Saltar' }))
 
@@ -231,7 +242,7 @@ test('"Saltar" sends a skipped pass for the step and opens the step the answer r
 test('a skip answered with required steps unmet does not draw "Listo"', async () => {
   stubProgress(REQUIRED_DONE)
   writes['POST /onboarding-progress/passes'] = answer(['pending', 'done', 'skipped', 'skipped', 'skipped', 'skipped'])
-  renderAt('/onboarding/categories')
+  renderAt(ONBOARDING_CATEGORIES)
 
   await userEvent.click(await screen.findByRole('button', { name: 'Saltar' }))
 
@@ -253,7 +264,7 @@ test('leaving a step with something typed asks first; an untouched step leaves a
   const original = STEP_BODIES.bot
   STEP_BODIES.bot = TypingBody
   try {
-    renderAt('/onboarding/bot')
+    renderAt(ONBOARDING_BOT)
     await screen.findByText('Paso 4 de 6')
 
     await userEvent.type(screen.getByLabelText('Algo'), 'x')
@@ -278,7 +289,7 @@ test('leaving a step with something typed asks first; an untouched step leaves a
 
 test('"Cerrar" on an untouched step leaves at once to Inicio and sends nothing', async () => {
   stubProgress(REQUIRED_DONE)
-  renderAt('/onboarding/bot')
+  renderAt(ONBOARDING_BOT)
 
   await userEvent.click(await screen.findByRole('button', { name: 'Cerrar' }))
 
@@ -288,7 +299,7 @@ test('"Cerrar" on an untouched step leaves at once to Inicio and sends nothing',
 
 test('"Atrás" opens the step before', async () => {
   stubProgress(REQUIRED_DONE)
-  renderAt('/onboarding/bot')
+  renderAt(ONBOARDING_BOT)
 
   await userEvent.click(await screen.findByRole('button', { name: 'Atrás' }))
 
@@ -307,7 +318,7 @@ test('a body that saved hands its answer to the frame, which follows it', async 
   const original = STEP_BODIES.header_footer
   STEP_BODIES.header_footer = SavingBody
   try {
-    renderAt('/onboarding/catalog-message')
+    renderAt(ONBOARDING_CATALOG_MESSAGE)
     await userEvent.click(await screen.findByRole('button', { name: 'Guardar' }))
     expect(await screen.findByText('Paso 4 de 6')).toBeInTheDocument()
   } finally {
@@ -317,7 +328,7 @@ test('a body that saved hands its answer to the frame, which follows it', async 
 
 test('Nueva venta opened from "Listo" goes back to Inicio when closed', async () => {
   stubProgress(answer(['done', 'done', 'done', 'done', 'done', 'done'], { over: true, resume: null }))
-  renderAt({ pathname: '/onboarding/done', state: { listo: true } }, 1, ['/'])
+  renderAt({ pathname: ONBOARDING_DONE, state: { listo: true } }, 1, [HOME])
 
   await userEvent.click(await screen.findByRole('button', { name: 'Cargar mi primera venta' }))
   await userEvent.click(await screen.findByRole('button', { name: 'cerrar nueva venta' }))
@@ -327,7 +338,7 @@ test('Nueva venta opened from "Listo" goes back to Inicio when closed', async ()
 
 test('"Ir a Inicio" opens Inicio', async () => {
   stubProgress(answer(['done', 'done', 'done', 'done', 'done', 'done'], { over: true, resume: null }))
-  renderAt({ pathname: '/onboarding/done', state: { listo: true } })
+  renderAt({ pathname: ONBOARDING_DONE, state: { listo: true } })
 
   await userEvent.click(await screen.findByRole('button', { name: 'Ir a Inicio' }))
 
@@ -338,7 +349,7 @@ test('the frame is a plain step: rendered alone it sends nothing', async () => {
   stubProgress(REQUIRED_DONE)
   const router = createMemoryRouter([
     {
-      path: '/',
+      path: HOME,
       element: <OnboardingStep slug="partner" me={ME} progress={REQUIRED_DONE} Body={() => <Spy onMount={() => undefined} />} />,
     },
   ])

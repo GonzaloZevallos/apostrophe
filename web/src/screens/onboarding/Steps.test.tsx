@@ -16,6 +16,7 @@ import type { OnboardingProgress, StepSlug, StepState } from '../../api/onboardi
 import Listo from './Listo'
 import OnboardingLayout from './OnboardingLayout'
 import { OnboardingEntry, OnboardingStepRoute } from './OnboardingRoutes'
+import { ONBOARDING_BOT, ONBOARDING_CATALOG_MESSAGE, ONBOARDING_CATEGORIES, ONBOARDING_PARTNER, ONBOARDING_STOCK, ONBOARDING_VARIETY } from '../../routes'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03' }
 const ORDER: StepSlug[] = ['variety', 'stock', 'header_footer', 'bot', 'partner', 'categories']
@@ -62,7 +63,12 @@ function json(body: unknown, status = 200): Response {
 }
 
 function stubFetch(read: OnboardingProgress, extra: Record<string, Handler>): void {
-  handlers = { 'GET /onboarding-progress': () => json(read), ...extra }
+  handlers = {
+    'GET /onboarding-progress': () => json(read),
+    // A new business starts with both pricing switches off (pricing-settings.md).
+    'GET /pricing-settings': () => json({ is_bulk_pricing: false, is_vip_customers: false }),
+    ...extra,
+  }
   vi.stubGlobal(
     'fetch',
     vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
@@ -140,12 +146,15 @@ test('step 1 with a price target shows the price form only and ends with one var
     'GET /onboarding-progress': () => json(calls.includes('POST /varieties/7/prices') ? afterPrice : answer(NONE, { price_target: MANGO })),
   })
   const user = userEvent.setup()
-  renderAt('/onboarding/variety')
+  renderAt(ONBOARDING_VARIETY)
 
   expect(await screen.findByText('Variedad: Mango Bomb')).toBeInTheDocument()
   expect(screen.queryByLabelText(/^Nombre/)).not.toBeInTheDocument()
   // The price is effective today: there is no date to change.
   expect(screen.queryByLabelText('Rige desde')).not.toBeInTheDocument()
+  // Both pricing switches are off: no bulk or VIP field, as on a variety's page.
+  expect(screen.queryByLabelText(/^Precio por cantidad/)).not.toBeInTheDocument()
+  expect(screen.queryByLabelText(/^Precio VIP/)).not.toBeInTheDocument()
   // One "Cerrar", the frame's own: the price form draws no title row here.
   expect(screen.getAllByRole('button', { name: 'Cerrar' })).toHaveLength(1)
   await user.type(screen.getByLabelText(/^Precio de lista/), '12000')
@@ -156,6 +165,18 @@ test('step 1 with a price target shows the price form only and ends with one var
   expect(priceBodies).toEqual([{ effective_from: '2026-10-03', list_price: 12000 }])
 })
 
+test('step 1 follows the pricing switches: with both on, the price form offers the bulk and VIP prices', async () => {
+  stubFetch(answer(NONE, { price_target: MANGO }), {
+    'GET /pricing-settings': () => json({ is_bulk_pricing: true, is_vip_customers: true }),
+  })
+  renderAt(ONBOARDING_VARIETY)
+
+  expect(await screen.findByLabelText(/^Precio por cantidad/)).toBeInTheDocument()
+  expect(screen.getByLabelText(/^Mínimo en gramos/)).toBeInTheDocument()
+  expect(screen.getByLabelText(/^Precio VIP/)).toBeInTheDocument()
+  expect(screen.queryByLabelText('Rige desde')).not.toBeInTheDocument()
+})
+
 test('step 1 with no target names the variety, then a refused price keeps what was typed and the retry sends only the price', async () => {
   let refuse = true
   stubFetch(answer(NONE), {
@@ -164,7 +185,7 @@ test('step 1 with no target names the variety, then a refused price keeps what w
       refuse ? json({ code: 'variety.price_entry_invalid' }, 422) : json({}),
   })
   const user = userEvent.setup()
-  renderAt('/onboarding/variety')
+  renderAt(ONBOARDING_VARIETY)
 
   await user.type(await screen.findByLabelText(/^Nombre/), 'Mango Bomb')
   await user.click(screen.getByRole('button', { name: 'Agregá la variedad' }))
@@ -199,7 +220,7 @@ test('step 2 saves the opening stock of the stock target through the owner, then
     'POST /onboarding-progress/advance': () => json(after),
   })
   const user = userEvent.setup()
-  renderAt('/onboarding/stock')
+  renderAt(ONBOARDING_STOCK)
 
   expect(await screen.findByText('Variedad: Mango Bomb')).toBeInTheDocument()
   expect(screen.getByText('Si no cargás el costo, el lote cuesta $ 0.')).toBeInTheDocument()
@@ -222,11 +243,11 @@ test('"Agregar otra variedad" goes back to step 1 with the progress still on ste
   const done = answer(REQUIRED, { stock_entries_count: 1 })
   stubFetch(done, {})
   const user = userEvent.setup()
-  const router = renderAt('/onboarding/stock')
+  const router = renderAt(ONBOARDING_STOCK)
 
   await user.click(await screen.findByRole('button', { name: 'Agregar otra variedad' }))
   expect(await screen.findByRole('heading', { name: 'Cargá tu primera variedad' })).toBeInTheDocument()
-  expect(router.state.location.pathname).toBe('/onboarding/variety')
+  expect(router.state.location.pathname).toBe(ONBOARDING_VARIETY)
   expect(screen.getByLabelText(/^Nombre/)).toBeInTheDocument()
   expect(calls.filter((call) => call.startsWith('POST'))).toEqual([])
 })
@@ -242,7 +263,7 @@ test('step 3 sends the pass done only after the save answered, and a refused sav
       json(answer(['done', 'done', 'done', 'pending', 'pending', 'pending'])),
   })
   const user = userEvent.setup()
-  renderAt('/onboarding/catalog-message')
+  renderAt(ONBOARDING_CATALOG_MESSAGE)
 
   const header = await screen.findByLabelText('Encabezado')
   await user.type(header, '!')
@@ -270,7 +291,7 @@ test('step 3 "Dejar así" passes it done with the defaults kept, and sends no ca
     },
   })
   const user = userEvent.setup()
-  renderAt('/onboarding/catalog-message')
+  renderAt(ONBOARDING_CATALOG_MESSAGE)
 
   await user.click(await screen.findByRole('button', { name: 'Dejar así' }))
   expect(await screen.findByRole('heading', { name: 'Conectá tu bot de Telegram' })).toBeInTheDocument()
@@ -293,7 +314,7 @@ test('step 4 passes done after a successful Probarlo, says where to publish and 
     },
   })
   const user = userEvent.setup()
-  renderAt('/onboarding/bot')
+  renderAt(ONBOARDING_BOT)
 
   expect(await screen.findByText('Cuando quieras, publicalo desde Variedades → Mandar catálogo')).toBeInTheDocument()
   expect(screen.queryByText('Ir al catálogo')).not.toBeInTheDocument()
@@ -320,7 +341,7 @@ test('step 5 offers Seguir only once a link is created, and passes done', async 
     },
   })
   const user = userEvent.setup()
-  renderAt('/onboarding/partner')
+  renderAt(ONBOARDING_PARTNER)
 
   expect(await screen.findByRole('heading', { name: 'Enviale el link a tu socio' })).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Seguir' })).not.toBeInTheDocument()
@@ -348,7 +369,7 @@ test('step 6 adding a category saves at once and passes nothing; only Seguir pas
     },
   })
   const user = userEvent.setup()
-  renderAt('/onboarding/categories')
+  renderAt(ONBOARDING_CATEGORIES)
 
   expect(await screen.findByText('Insumos')).toBeInTheDocument()
   await user.type(screen.getByLabelText('Nueva categoría'), 'Luz')
@@ -369,7 +390,7 @@ test('a failed Onboarding write after a saved step shows the retry and the same 
       fail ? json({}, 500) : json(answer(['done', 'done', 'done', 'done', 'done', 'done'], { over: true, resume: null })),
   })
   const user = userEvent.setup()
-  renderAt('/onboarding/categories')
+  renderAt(ONBOARDING_CATEGORIES)
 
   await user.click(await screen.findByRole('button', { name: 'Seguir' }))
   expect(await screen.findByText('Algo falló. Probá de nuevo.')).toBeInTheDocument()

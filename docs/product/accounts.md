@@ -1,13 +1,18 @@
 # Accounts
 
-Businesses, their users, the only way in (an invitation and a login), the way back in (a password change and an operator-issued reset link), and the only way out (an operator's command that exports a business and removes it). Every other capability reads one thing from here, the business of the user asking, and serves that business alone (ADR-0004). It also holds the app as a whole:
+Businesses, their users, and how people get in and out:
+- the only way in: an invitation and a login;
+- the way back in: a password change and an operator-issued reset link;
+- the only way out: an operator's command that exports a business and removes it.
+
+Every other capability reads one thing from here, the business of the user asking, and serves that business alone (ADR-0004). It also holds the app as a whole:
 
 - how it is served, installed and themed, including the theme choice each device remembers, and how the installed shell fills the phone's screen;
 - how the installation is published on the internet and backed up (ADR-0016);
 - the feedback rules every screen follows, and the shared states (`Estados`) that draw them;
 - the Negocio, Usuarios, Apariencia and Tu cuenta groups of Configuración.
 
-Where every screen sits (tabs, sidebar, Más, Configuración, the chrome and back rule, routes, first run) is navigation.md. Inicio, where the app opens, is the panel defined in results.md.
+Where every screen sits (tabs, sidebar, Más, Configuración, the chrome and back rule, routes, first run) is navigation.md. Inicio, where the app opens, is the panel defined in results.md. The Precios group is pricing-settings.md.
 
 ## Jobs
 
@@ -37,7 +42,10 @@ This refines the "log in once and stay in", "get in with the link I was sent" an
 
 This refines the "log in once and stay in" job above and criterion 5; it is not a new job. Its protagonist is the seller; the operator and Capacitor are not part of it.
 
-**When** a friend stops using the app, or asks to be taken out of it, **I want** to hand them everything the app holds of their business in one file and then remove that business from the installation completely, **so that** they keep their books and their customers' names, phone numbers and balances are no longer held by me or by anyone else on the installation. A business opened by mistake is covered by the same command. The business goes as a whole, every user included. The operator has agreed with every user of the business beforehand; the command does not check it.
+**When** a friend stops using the app, or asks to be taken out of it, **I want** to hand them everything the app holds of their business in one file and then remove that business from the installation completely, **so that** they keep their books and their customers' names, phone numbers and balances are no longer held by me or by anyone else on the installation.
+- A business opened by mistake is covered by the same command.
+- The business goes as a whole, every user included.
+- The operator has agreed with every user of the business beforehand; the command does not check it.
 
 **When** a seller needs the app away from my home network, **I want** the installation published on the internet over HTTPS, with every business's data copied off the server continuously, encrypted, and proven restorable, **so I can** let sellers work from anywhere without one lost server, disk or leaked backup costing anyone their books or exposing their customers.
 
@@ -115,7 +123,11 @@ Success criteria, the getting-in screens and shared states as redesigned (GH-49)
 27. **Getting in is fast.** From the phone, a seller opens an invitation link, or a reset link, and lands on Inicio signed in in under a minute, and logs in from Entrar in a few seconds. No step appears that the design does not draw.
 28. **Every state is told by word and shape, never by color alone**: the brake message, "Esta invitación ya no sirve", "Este enlace ya no sirve. Pedile uno nuevo a quien te lo pasó.", "Sin conexión", empty, loading, the generic server-error retry and "Eso ya no está.". All copy in Rioplatense Spanish with vos.
 29. **Phone and computer match the design.** Entrar, NegocioNuevo, Invitacion, the reset screen and Estados match `docs/product/design-system/pantallas/` on both, checked by eye; `scripts/design/compare.sh` runs before and after.
-30. **The look reveals nothing new.** No screen or state says whether an email has a user, which brake fired or how many attempts are left; a dead link never says why; "Eso ya no está." carries no id, name or date; no personal data or money reaches the console or browser storage.
+30. **The look reveals nothing new.**
+    - No screen or state says whether an email has a user, which brake fired or how many attempts are left.
+    - A dead link never says why.
+    - "Eso ya no está." carries no id, name or date.
+    - No personal data or money reaches the console or browser storage.
 31. **Both themes.** These screens follow the theme rule (criteria 23–25), with no token change.
 32. **No behaviour regresses.** Every accounts, navigation and feedback test passes unchanged.
 
@@ -144,10 +156,17 @@ Success criteria, the installed shell:
 
 Success criteria, removing a business:
 
-8. **The file is their books and stands on its own**: one JSON file holds every recorded fact of the business, opens without the app, identifies the business by its name, and names what each record refers to as well as its id. It holds no password hash, no stored secret, no invitation and no reset link.
+8. **The file is their books and stands on its own**:
+   - one JSON file holds every recorded fact of the business and opens without the app;
+   - it identifies the business by its name;
+   - it names what each record refers to as well as its id;
+   - it holds no password hash, no stored secret, no invitation and no reset link.
 9. **Named back before anything is lost**: the dry run names the business and counts by kind what would go, writing nothing. The real run asks for the business name typed exactly before it touches anything.
 10. **Nothing deleted until the export is safe**: the delete runs only after the file was written and read back in the same run, and the exported counts equal the deleted counts. Any failure or mismatch deletes nothing.
-11. **Nothing survives**: no row carrying the business's id is left in any table, including tables added later. Its invitations and its users' reset links, of every status, and its users' login-attempt history go too. The export is built from the same tables as the delete; invitations and reset links are deleted, never exported.
+11. **Nothing survives**:
+    - no row carrying the business's id is left in any table, including tables added later;
+    - its invitations and its users' reset links, of every status, go too, and so does its users' login-attempt history;
+    - the export is built from the same tables as the delete; invitations and reset links are deleted, never exported.
 12. **Every other business is untouched**: their record counts are the same before and after, and they keep working, are never slowed on purpose and are never told anything.
 13. **No personal data outside the file, and a clean slate**: the terminal and logs show only the business name, the file's path and counts. Afterwards the same email can open a new business with nothing carried over.
 
@@ -230,6 +249,7 @@ Success criteria, removing a business:
   - The name is trimmed, inner spaces are collapsed, it is up to 60 characters and it cannot be blank.
   - There is no uniqueness check across the installation, since a refusal would reveal another business.
 - Both routes take the business only from the session. They are in `tests/test_gated_routes.py` and the isolation sweep.
+- **Pricing settings**: each business also holds its two pricing switches, defined in pricing-settings.md.
 
 ### Removing a business (operator command)
 
@@ -258,7 +278,9 @@ Success criteria, removing a business:
   - It prints: "Commit outcome unknown; export kept at <path>. Run with --dry-run and the same email before anything else." With it: the business name and the counts exported, never counts deleted.
   - **Checking, then running again**: a rerun is allowed, with no lock or stored marker. The dry run with the same email tells which way it went:
     - "no business for that email": the removal happened. The kept file is the export to hand over.
-    - The business is named with its counts: nothing was deleted. A real run is then an ordinary run. It writes a new file under a new name, never overwriting the kept one. Only the newest file is handed over. The operator deletes the kept, out-of-date file by hand, since it holds personal data; the command never touches a file it did not create in the same run.
+    - The business is named with its counts: nothing was deleted. A real run is then an ordinary run.
+      - It writes a new file under a new name, never overwriting the kept one. Only the newest file is handed over.
+      - The operator deletes the kept, out-of-date file by hand, since it holds personal data. The command never touches a file it did not create in the same run.
 - **Other businesses** keep using the app during the run, are never slowed on purpose and are never told anything.
 - **The export file**:
   - one JSON file per real run, owner-only permissions, written to the server's file system and never anywhere the app serves;
@@ -266,11 +288,11 @@ Success criteria, removing a business:
   - plain values: ISO 8601 dates, whole pesos, grams as decimals with up to two places;
   - each record names what it refers to (customer, variety, category) as well as its id;
   - it holds every recorded fact as stored:
-    - the business name;
+    - the business name and its pricing settings (Precio por cantidad and Clientes VIP);
     - users (email and joining date);
     - customers (name, phone number, VIP);
     - varieties with their low-stock threshold and catalog attributes;
-    - price entries;
+    - price entries, with their VIP price;
     - stock entries (date, variety, grams, origin, total cost, note; a lot is its stock entry, not a separate record);
     - sales (date, customer, shipping charged, note, how it was paid);
     - sale lines (variety, grams, stored price per gram, pricing rule, line total);
@@ -320,7 +342,10 @@ Success criteria, removing a business:
 - **Getting in** (`Entrar`, `NegocioNuevo`, `Invitacion`, the reset screen):
   - **Drawn from the design** in `docs/product/design-system/pantallas/` (GH-49). Where the design's wording differs from this file, this file wins and the difference is a defect in the design.
   - **One centred, phone-width layout** on every viewport, the computer's included; there is no computer-only layout for these screens.
-  - **Entrar**: the labels "Email" and "Contraseña" and the button "Entrá". It shows a fixed hint under the button that five failed attempts lock the email for 15 minutes, and no count of attempts left. A wrong password and an unknown email show the same refusal; refusals show inline and keep what was typed.
+  - **Entrar**:
+    - the labels "Email" and "Contraseña" and the button "Entrá";
+    - a fixed hint under the button that five failed attempts lock the email for 15 minutes, and no count of attempts left;
+    - a wrong password and an unknown email show the same refusal; refusals show inline and keep what was typed.
   - Either lock shows the brake message. No copy names the address brake, and both locks look and read the same.
   - A request answered 401 goes to login.
   - An unknown, used or expired invitation shows "Esta invitación ya no sirve".
@@ -359,14 +384,20 @@ How the app fills a phone's screen and responds to touch once installed (criteri
   - `-webkit-tap-highlight-color` transparent; `touch-action: manipulation`;
   - `user-select: none` on buttons, tabs and the bar; text inside lists and fields stays selectable;
   - `.boton*`, rows and bar items get an `:active` state built from tokens, in both themes.
-- **Keyboard**: on iOS and Android, when the keyboard opens, the page and every sheet keep the focused field in view and can scroll, so "Guardar" or "Registrar" is reachable by scrolling. A save action pinned above the keyboard is not promised; that is each screen's own decision. The tab bar and "+ Nueva venta" need not stay above the keyboard, since forms and sheets don't show them (navigation.md).
-- **Manifest**: `id` `"/"` (never changed once shipped), `scope` `"/"`, `lang` `"es"`, `display` `"standalone"`, `theme_color` and `background_color` light `--papel`, no `orientation`. Icons: the existing 192 and 512 keep `"purpose": "any"` unchanged; a maskable 512 keeps today's look (same background and mark colours, full-bleed, the mark inside the safe zone), drawn by design.
+- **Keyboard**: on iOS and Android, when the keyboard opens, the page and every sheet keep the focused field in view and can scroll, so "Guardar" or "Registrar" is reachable by scrolling.
+  - A save action pinned above the keyboard is not promised; that is each screen's own decision.
+  - The tab bar and "+ Nueva venta" need not stay above the keyboard, since forms and sheets don't show them (navigation.md).
+- **Manifest**:
+  - `id` `"/"` (never changed once shipped), `scope` `"/"`, `lang` `"es"`, `display` `"standalone"`;
+  - `theme_color` and `background_color` light `--papel`, and no `orientation`;
+  - icons: the existing 192 and 512 keep `"purpose": "any"` unchanged;
+  - a maskable 512 keeps today's look (same background and mark colours, full-bleed, the mark inside the safe zone), drawn by design.
 - **Splash**: no `apple-touch-startup-image`; iOS shows its own blank launch screen, accepted. Android's splash comes from the manifest's `background_color` and icon.
 - **Accepted limitations**: on iOS the status strip stays light with dark text above the dark paper in the dark theme; on iOS the launch screen is blank until the app paints.
 
 ### In Configuración: Negocio, Usuarios, Apariencia, Tu cuenta
 
-These groups of Configuración (navigation.md) replace the former Negocio screen, which no longer exists; `/negocio` redirects to Configuración. Each is its own subscreen, a form: "Cerrar", and a confirmation when leaving with unsaved changes; an untouched one closes at once.
+These groups of Configuración (navigation.md) replace the former Negocio screen, which no longer exists; `/negocio` redirects to Configuración. Each is its own subscreen, a form: "Cerrar", and a confirmation when leaving with unsaved changes; an untouched one closes at once. (Precios, between Usuarios and Integraciones, is pricing-settings.md.)
 
 - **Negocio**: rename the business. Toast "Negocio renombrado"; refusals inline, keeping what was typed.
 - **Usuarios**:
@@ -420,7 +451,7 @@ These groups of Configuración (navigation.md) replace the former Negocio screen
 
 ### Feedback, on every screen
 
-These states are drawn by `Estados` (GH-49), restyled from the design with their wording unchanged; each is checked on the phone and inside every screen's own computer layout (InicioCompu, VentasCompu, the two-pane Clientes and Variedades), with the same words and shapes. `Estados` draws nothing for a state no capability defines.
+These states are drawn by `Estados` (GH-49), restyled from the design with their wording unchanged. Each is checked on the phone and inside every screen's own computer layout (InicioCompu, VentasCompu, the two-pane Clientes and Variedades), with the same words and shapes. `Estados` draws nothing for a state no capability defines.
 
 - **Success toasts** are short, fixed and carry no data, with one deliberate exception.
   - This capability's toasts:
@@ -442,7 +473,13 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
     - a fixed notice shows: "Eso ya no está. La lista ya está al día."
   - The notice is not a success toast. It has no data, no "Deshacer" and no "Reintentar", and it is announced like a toast.
   - Confirming the delete of a record already gone gives the same notice, not the delete's success toast.
-  - **Opening the detail of a record that is gone** (a variety, a customer, an expense, a sale or a stock entry) shows "Eso ya no está." with one button back to its list: "Volver a Variedades" (a variety or a stock entry), "Volver a Clientes", "Volver a Gastos" (the current month) or "Volver a Ventas". It carries no id, name or date.
+  - **Opening the detail of a record that is gone** (a variety, a customer, an expense, a sale or a stock entry) shows "Eso ya no está." with one button back to its list:
+    - "Volver a Variedades" (a variety or a stock entry);
+    - "Volver a Clientes";
+    - "Volver a Gastos" (the current month);
+    - "Volver a Ventas".
+
+    It carries no id, name or date.
 - No state is told by color alone (blue ↔ amber, never green ↔ red), in either theme.
 
 ## Metrics
@@ -477,7 +514,12 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
   - status bar, front test driving `data-tema` directly: `theme-color` is light `--papel` with no attribute, the dark paper token with `oscuro`, light again once the attribute is removed, and stays light with the system emulated dark and no attribute;
   - static checks: no screen-tied `vh` left in `app.css` (`dvh` instead); the four inset tokens exist, and the bar, the header, "+ Nueva venta", sheets and toasts use them; no existing token value changed;
   - regression: the accounts, navigation and feedback suites pass unchanged; the bar fits at 320 px with text at 130 %; the pressed state uses tokens only, in both themes;
-  - by eye, in portrait, on a real iPhone installed over the home network and a real Android phone on the published installation: criterion 33 (Nueva venta, Registrar cobro and the expense form with the keyboard open included), criterion 35 (the pressed state visible in both themes), the Android status bar in both themes, the iOS light strip with the top inset handled, and the maskable icon on the Android launcher.
+  - by eye, in portrait, on a real iPhone installed over the home network and a real Android phone on the published installation:
+    - criterion 33, with Nueva venta, Registrar cobro and the expense form open with the keyboard;
+    - criterion 35, with the pressed state visible in both themes;
+    - the Android status bar in both themes;
+    - the iOS light strip, with the top inset handled;
+    - the maskable icon on the Android launcher.
 - **Nothing invented (criterion 7)**:
   - the bar, the sidebar, Más and Configuración show exactly the entries navigation.md lists;
   - every figure on Inicio equals the API's answer, with real zeros for a period with no activity (results.md);
@@ -512,7 +554,10 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
   - fast: from a phone viewport, the end-to-end front run accepts an invitation, completes a reset from a printed link and logs in at Entrar, each landing on Inicio signed in, the links in under 60 s;
   - states: front tests show each fixed text (brake message, both dead-link texts, "Sin conexión", the retry, both "Eso ya no está." forms, loading); shape and color checked by eye in both themes;
   - loading is not data: a front test shows the loading state holds no digit, currency symbol or placeholder figure;
-  - design: `scripts/design/compare.sh` runs before and after for Entrar, NegocioNuevo, Invitacion, `/reset/{token}` and Estados, with the comparisons attached to the PR; a by-eye pass at phone and computer viewports covers the getting-in screens and Estados inside the computer layouts; every design-vs-docs wording difference is listed in the PR;
+  - design:
+    - `scripts/design/compare.sh` runs before and after for Entrar, NegocioNuevo, Invitacion, `/reset/{token}` and Estados, with the comparisons attached to the PR;
+    - a by-eye pass at phone and computer viewports covers the getting-in screens and Estados inside the computer layouts;
+    - every design-vs-docs wording difference is listed in the PR;
   - nothing revealed: the same refusal for a wrong password and an unknown email, no attempt count, no brake detail; dead-link and "Eso ya no está." carry no id, name, date or reason;
   - registry: `scripts/design/screens.json` holds `/reset/{token}` and `compare.sh` measures it;
   - no regression: the existing suite passes with no test edited to fit the new look.
@@ -524,7 +569,7 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
   - a table added to the schema later is covered without changing the command, proven by a test.
 - **Export = delete (criteria 8, 11)**:
   - for every exported kind, the count in the file equals the count deleted;
-  - every stored field listed above is present, and every reference carries a name and an id;
+  - every stored field listed above is present, the pricing settings and VIP prices included, and every reference carries a name and an id;
   - no password hash, invitation digest, reset-link digest or secret is in the file;
   - the dry run counts reset links among what is deleted only.
 - **Others untouched (criterion 12)**: every table's row count for the other business is identical before and after, and it reads all its data afterwards.
@@ -534,7 +579,9 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
   - a wrong name, a cancel or no answer at the prompt (and no file);
   - a forced failure writing the file, reading it back, at the count check, or during the delete.
   - After every forced failure before the commit, no export file is left in the export directory. This includes a failure of the real file adapter after the file was created on disk, partway through writing or syncing it.
-- **Commit outcome unknown**: a forced commit failure whose outcome is unknown keeps the export file, prints the fixed "Commit outcome unknown" line with the path, never prints "nothing deleted" or success, and exits with a failure status. A dry run afterwards answers "no business for that email" when the commit was applied, and names the business with unchanged counts when it was not.
+- **Commit outcome unknown**: a forced commit failure whose outcome is unknown:
+  - keeps the export file, prints the fixed "Commit outcome unknown" line with the path, never prints "nothing deleted" or success, and exits with a failure status;
+  - a dry run afterwards answers "no business for that email" when the commit was applied, and names the business with unchanged counts when it was not.
 - **File (criterion 8)**: owner-only permissions; an existing file of the same name is never overwritten; the name carries the business name, date and time.
 - **No echo (criterion 13)**: the captured terminal output and logs of both modes hold no email, customer name, phone number or amount, only the business name, the path and counts.
 - **Clean slate (criterion 13)**: after removal, a removed user's token answers 401, and a new-business invitation accepted with the same email opens an empty business with a clean brake count.

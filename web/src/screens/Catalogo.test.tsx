@@ -6,6 +6,7 @@
  * mocked deeper (CODING_STANDARDS §10).
  */
 
+import { CATALOG as CATALOG_PATH, SETTINGS_CATALOG_MESSAGE, VARIETIES, VARIETY } from '../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -52,14 +53,14 @@ function renderCatalogo(
   vi.stubGlobal('fetch', fetchMock)
   const { unmount } = render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={['/varieties/catalog']}>
+      <MemoryRouter initialEntries={[CATALOG_PATH]}>
         <Routes>
           <Route element={<Provide />}>
-            <Route path="/varieties/catalog" element={<Catalogo />} />
-            <Route path="/varieties" element={<div>Aterrizaste en Variedades</div>} />
-            <Route path="/varieties/:id" element={<VarietyLanding />} />
+            <Route path={CATALOG_PATH} element={<Catalogo />} />
+            <Route path={VARIETIES} element={<div>Aterrizaste en Variedades</div>} />
+            <Route path={VARIETY} element={<VarietyLanding />} />
             <Route
-              path="/settings/catalog-message"
+              path={SETTINGS_CATALOG_MESSAGE}
               element={<div>Aterrizaste en el mensaje del catálogo</div>}
             />
           </Route>
@@ -350,7 +351,7 @@ test('the catalog screen offers no header or footer editing, only the link out',
   expect(screen.queryByRole('button', { name: 'Guardá el mensaje' })).not.toBeInTheDocument()
 })
 
-test('"/varieties/catalog" still shows the preview, Copiar, the pin status and Publicar', async () => {
+test('the catalog screen still shows the preview, Copiar, the pin status and Publicar', async () => {
   const published = {
     ...DEFAULT_PINNED_CATALOG,
     can_publish: true,

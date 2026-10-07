@@ -6,6 +6,7 @@
  * nested under it.
  */
 
+import { HOME } from '../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
@@ -27,7 +28,7 @@ function renderGated() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={['/']}>
+      <MemoryRouter initialEntries={[HOME]}>
         <Routes>
           <Route element={<GatedLayout />}>
             <Route index element={<div>contenido del negocio</div>} />

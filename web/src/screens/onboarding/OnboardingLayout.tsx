@@ -18,7 +18,7 @@ import { onboardingProgressQuery } from '../../api/onboarding'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import Loading from '../../components/Loading'
 import SinConexion from '../../components/SinConexion'
-import { ONBOARDING_DONE } from '../../routes'
+import { HOME, ONBOARDING_DONE } from '../../routes'
 import { isListoState } from './afterProgress'
 import type { OnboardingContext } from './onboardingContext'
 
@@ -47,7 +47,7 @@ export default function OnboardingLayout() {
   const leaves = isListo
     ? !isListoState(location.state) || !progress.offered
     : closedOnEntry !== false
-  if (leaves) return <Navigate to="/" replace />
+  if (leaves) return <Navigate to={HOME} replace />
 
   const context: OnboardingContext = { me, progress }
   return <Outlet context={context} />

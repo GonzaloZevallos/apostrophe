@@ -1,5 +1,6 @@
-"""Implements the Onboarding's `VarietyFacts` port (docs/adr/0032) for one business:
-read-only, each variety's id and name and whether it has a price in force today.
+"""Implements the Onboarding's `VarietyFacts` port (docs/adr/0035) for one business:
+read-only, each listed (unarchived) variety's id and name and whether it has a price in
+force today.
 Varieties never imports the Onboarding; `app/main.py` wires this in."""
 
 from __future__ import annotations
@@ -24,6 +25,6 @@ class SqlVarietyFacts:
                 name=variety.name.value,
                 is_priced_today=variety.current_price(self._today) is not None,
             )
-            for variety in self._varieties.all()
+            for variety in self._varieties.listed()
             if variety.id is not None
         ]

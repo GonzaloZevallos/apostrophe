@@ -8,6 +8,7 @@
  * dispatched through `refusals.ts`, never a raw code comparison.
  */
 
+import { INVITATION, ONBOARDING, pathTo } from '../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -34,9 +35,9 @@ function noContent(): Response {
 function renderInvitacion(token = 'tok123') {
   render(
     <QueryClientProvider client={new QueryClient()}>
-      <MemoryRouter initialEntries={[`/invitation/${token}`]}>
+      <MemoryRouter initialEntries={[pathTo(INVITATION, { token })]}>
         <Routes>
-          <Route path="/invitation/:token" element={<Invitacion />} />
+          <Route path={INVITATION} element={<Invitacion />} />
         </Routes>
       </MemoryRouter>
     </QueryClientProvider>,
@@ -251,11 +252,11 @@ async function acceptAs(kind: 'new_business' | 'join_business'): Promise<void> {
   )
   render(
     <QueryClientProvider client={new QueryClient()}>
-      <MemoryRouter initialEntries={['/invitation/tok123']}>
+      <MemoryRouter initialEntries={[pathTo(INVITATION, { token: 'tok123' })]}>
         <Routes>
-          <Route path="/invitation/:token" element={<Invitacion />} />
+          <Route path={INVITATION} element={<Invitacion />} />
           <Route index element={<span>pantalla inicio</span>} />
-          <Route path="/onboarding" element={<span>pantalla onboarding</span>} />
+          <Route path={ONBOARDING} element={<span>pantalla onboarding</span>} />
         </Routes>
       </MemoryRouter>
     </QueryClientProvider>,

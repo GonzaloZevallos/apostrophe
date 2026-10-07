@@ -6,13 +6,14 @@ import { useOnboarding } from './onboardingContext'
 import OnboardingStep from './OnboardingStep'
 import { STEP_BODIES } from './stepBodies'
 import { stepInfo } from './steps'
+import { HOME } from '../../routes'
 
 /** `/onboarding`: resolves to the resume step. With nothing left to resume (every step
  * done or passed, not yet ended) it goes to Inicio, whose notice ends it on a tap: a
  * mount never sends `advance`. */
 export function OnboardingEntry() {
   const { progress } = useOnboarding()
-  if (progress.resume === null || progress.resume === 'finish') return <Navigate to="/" replace />
+  if (progress.resume === null || progress.resume === 'finish') return <Navigate to={HOME} replace />
   return <Navigate to={stepInfo(progress.resume).path} replace />
 }
 

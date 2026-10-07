@@ -33,6 +33,14 @@ export const GONE_NOTICE = 'Eso ya no está. La lista ya está al día.'
  * own (plan, "Gone records"). */
 export const GONE_DETAIL = 'Eso ya no está.'
 
+/** Fixed text for `variety.name_archived`: the name belongs to an archived variety. It
+ * repeats nothing the seller typed (ADR-0005). */
+export const NAME_ARCHIVED_MESSAGE = 'Ese nombre es de una variedad archivada. Buscala en Archivadas.'
+
+/** Fixed text for `variety.has_history`: a delete was refused because the variety has
+ * sales or stock. It repeats no name or amount (ADR-0005). */
+export const HAS_HISTORY_MESSAGE = 'Esta variedad ya tiene historia: archivala en vez de eliminarla.'
+
 /** A code's kind, from the shared contract. The parameter stays a plain `string`
  * because a code comes in untyped off the wire (`ApiError.code`); a code the
  * contract does not list is never read as `'gone'`: an unrecognised refusal must
@@ -136,6 +144,14 @@ export const PINNED_CATALOG_REFUSAL_OVERRIDES: Record<
   'pinned_catalog.no_messages': LOOKUP_NO_MESSAGES_REASON,
   'pinned_catalog.several_chats': LOOKUP_SEVERAL_CHATS_REASON,
   'pinned_catalog.updates_unreadable': LOOKUP_UPDATES_UNREADABLE_REASON,
+}
+
+/** The fixed Spanish text of the varieties refusal that has a field of its own: a VIP
+ * price at or above the list price. It carries no amount (ADR-0005). */
+export const VIP_PRICE_NOT_BELOW_LIST_MESSAGE = 'El precio VIP tiene que ser menor al precio de lista'
+
+export const VARIETY_REFUSAL_TEXT: Partial<Record<RefusalCode, string>> = {
+  'variety.vip_price_not_below_list': VIP_PRICE_NOT_BELOW_LIST_MESSAGE,
 }
 
 /** Fixed Spanish text for each coded refusal of a stock withdrawal (`stock.md`,

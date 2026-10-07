@@ -6,13 +6,15 @@
  * (the write that answered `over: true`), so nothing here writes.
  *
  * "Cargar mi primera venta" first swaps this entry of the history for Inicio and then
- * opens Nueva venta, so closing or saving that sale goes back to Inicio, never to "Listo".
+ * opens Nueva venta as an in-app entry (`inAppState`, from Inicio), so closing or saving that
+ * sale goes back to Inicio by history, never to "Listo".
  */
 
 import { useNavigate } from 'react-router'
 import type { StepSlug } from '../../api/onboarding'
 import Icono from '../../components/Icono'
-import { NEW_SALE } from '../../routes'
+import { inAppState } from '../../components/inAppState'
+import { HOME, SALE_NEW } from '../../routes'
 import { useOnboarding } from './onboardingContext'
 import StepIndicator from './StepIndicator'
 import { STEP_COUNT, STEPS, type StepInfo } from './steps'
@@ -38,15 +40,15 @@ export default function Listo() {
   }
 
   async function firstSale(): Promise<void> {
-    await navigate('/', { replace: true })
-    void navigate(NEW_SALE)
+    await navigate(HOME, { replace: true })
+    void navigate(SALE_NEW, { state: inAppState({ pathname: HOME }) })
   }
 
   return (
     <main className="pantalla onboarding">
       <div className="onboarding__columna">
         <div className="onboarding__cabecera onboarding__cabecera--derecha">
-          <button type="button" className="onboarding__enlace" onClick={() => void navigate('/', { replace: true })}>
+          <button type="button" className="onboarding__enlace" onClick={() => void navigate(HOME, { replace: true })}>
             Cerrar
           </button>
         </div>
@@ -84,7 +86,7 @@ export default function Listo() {
           <button
             type="button"
             className="boton boton--suave onboarding__boton-saltar"
-            onClick={() => void navigate('/', { replace: true })}
+            onClick={() => void navigate(HOME, { replace: true })}
           >
             Ir a Inicio
           </button>

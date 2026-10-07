@@ -6,6 +6,7 @@
  * shell's own spec, not to this one.
  */
 
+import { SALE_NEW, VARIETIES } from '../src/routes.js'
 import { expect, test, type Locator, type Page } from '@playwright/test'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { fillSaleLine } from './helpers/sale.js'
@@ -16,7 +17,7 @@ const MIN_INPUT_FONT = 16
 
 async function signUpWithAVariety(page: Page): Promise<void> {
   await signUpNewBusiness(page, { businessName: `Vivero Línea ${Date.now()}`, email: `duena-linea-${Date.now()}@example.com` })
-  await page.goto('/varieties')
+  await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Jazmín con un nombre bastante largo')
   await page.getByRole('button', { name: 'Agregá la variedad' }).click()
@@ -40,7 +41,7 @@ test('the open line fits and is thumb-sized at 320, 375, 430 and at 130 % text',
 
   for (const width of WIDTHS) {
     await page.setViewportSize({ width, height: 760 })
-    await page.goto('/ventas/nueva')
+    await page.goto(SALE_NEW)
     await fillSaleLine(page, 1, {
       variety: 'Jazmín con un nombre bastante largo',
       grams: '12,5',

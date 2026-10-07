@@ -1,0 +1,22 @@
+[
+  {"old": "/ventas", "now": "/sales"},
+  {"old": "/ventas/nueva", "now": "/sales/new"},
+  {"old": "/ventas/{id}", "now": "/sales/{id}"},
+  {"old": "/clientes", "now": "/customers"},
+  {"old": "/clientes/deben", "now": "/customers"},
+  {"old": "/clientes/nuevo", "now": "/customers/new"},
+  {"old": "/clientes/{id}", "now": "/customers/{id}"},
+  {"old": "/clientes/{id}/editar", "now": "/customers/{id}/edit"},
+  {"old": "/mi-stock", "now": "/varieties"},
+  {"old": "/mi-stock/nueva-entrada", "now": "/varieties/entries/new"},
+  {"old": "/mi-stock/entradas/{id}", "now": "/varieties/entries/{id}"},
+  {"old": "/variedades", "now": "/varieties"},
+  {"old": "/variedades/{id}", "now": "/varieties/{id}"},
+  {"old": "/analisis", "now": "/analysis"},
+  {"old": "/gastos", "now": "/expenses"},
+  {"old": "/gastos/categorias", "now": "/settings/expense-categories"},
+  {"old": "/mas", "now": "/more"},
+  {"old": "/catalogo", "now": "/varieties/catalog"},
+  {"old": "/negocio", "now": "/settings"},
+  {"old": "/entrar", "now": "/login"}
+]

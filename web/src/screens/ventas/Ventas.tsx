@@ -20,12 +20,15 @@
  * own left-out list.
  */
 
-import { useState, useSyncExternalStore } from 'react'
+import { SALE, pathTo } from '../../routes'
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Link, useLocation, useOutletContext } from 'react-router'
+import { useLocation, useOutletContext } from 'react-router'
+import InAppLink from '../../components/InAppLink'
 import { NetworkError } from '../../api/client'
 import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
+import { useIsVipCustomers } from '../../api/pricingSettings'
 import { listSales, type Sale } from '../../api/sales'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import { readFeedback } from '../../components/feedback'
@@ -35,11 +38,11 @@ import Loading from '../../components/Loading'
 import Notice from '../../components/Notice'
 import Pestanas from '../../components/Pestanas'
 import SinConexion from '../../components/SinConexion'
-import { COMPUTER_QUERY } from '../../format/breakpoints'
 import { salesCount } from '../../format/counts'
 import { type DateRange, formatDate, monthRange, todayRange, weekRange } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
 import { saleGrams } from '../../sales/grams'
+import { useViewport } from '../../shell/useViewport'
 
 export type Period = 'hoy' | 'semana' | 'mes' | 'fechas'
 
@@ -55,17 +58,6 @@ const PERIOD_LABEL: Record<Period, string> = {
 const PERIODS: Period[] = ['hoy', 'semana', 'mes', 'fechas']
 
 const PESTANA_ITEMS = PERIODS.map((item) => ({ value: item, label: PERIOD_LABEL[item] }))
-
-function subscribeToComputer(onChange: () => void): () => void {
-  if (typeof window.matchMedia !== 'function') return () => undefined
-  const query = window.matchMedia(COMPUTER_QUERY)
-  query.addEventListener('change', onChange)
-  return () => query.removeEventListener('change', onChange)
-}
-
-function onComputer(): boolean {
-  return typeof window.matchMedia === 'function' && window.matchMedia(COMPUTER_QUERY).matches
-}
 
 function rangeFor(period: Period, today: string, custom: DateRange): DateRange {
   if (period === 'hoy') return todayRange(today)
@@ -101,10 +93,11 @@ export default function Ventas() {
   const me = useOutletContext<Me>()
   const location = useLocation()
   const [feedback] = useState(() => readFeedback(location.state))
+  const vipCustomers = useIsVipCustomers()
   const [period, setPeriod] = useState<Period>('hoy')
   const [custom, setCustom] = useState<DateRange>(() => monthRange(me.today))
   // The phone's equal-cells fit is opt-in; the computer keeps `VentasCompu`'s plain tab list.
-  const computer = useSyncExternalStore(subscribeToComputer, onComputer)
+  const computer = useViewport() === 'computer'
 
   const range = rangeFor(period, me.today, custom)
 
@@ -185,7 +178,7 @@ export default function Ventas() {
                 const names = varietyNames(sale.lines)
                 const gramos = formatGrams(saleGrams(sale.lines))
                 return (
-                  <Link key={sale.id} to={`/ventas/${sale.id}`} className="fila-venta">
+                  <InAppLink key={sale.id} to={pathTo(SALE, { id: sale.id })} className="fila-venta">
                     <span className="fila-venta__fecha">{formatDate(sale.date, me.today)}</span>
                     <span className="fila-venta__cuerpo">
                       <span className="fila-venta__nombre">
@@ -194,7 +187,7 @@ export default function Ventas() {
                         ) : (
                           <>
                             {sale.customer.name}
-                            {sale.customer.vip && <Insignia tono="acento">VIP</Insignia>}
+                            {vipCustomers && sale.customer.vip && <Insignia tono="acento">VIP</Insignia>}
                           </>
                         )}
                       </span>
@@ -214,7 +207,7 @@ export default function Ventas() {
                       {sale.still_owing && <span className="fila-venta__te-debe monto-deuda">te debe</span>}
                     </span>
                     <Icono nombre="chevron" size={18} />
-                  </Link>
+                  </InAppLink>
                 )
               })}
             </div>

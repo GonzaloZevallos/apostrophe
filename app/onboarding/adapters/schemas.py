@@ -1,4 +1,4 @@
-"""The wire shape of `/onboarding-progress` (docs/adr/0032). A step is named by a slug,
+"""The wire shape of `/onboarding-progress` (docs/adr/0035). A step is named by a slug,
 never by its number: the contract does not change if the order does. No answer carries an
 amount, grams, token, phone number or customer name; a target is a variety's id and name."""
 

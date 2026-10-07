@@ -10,9 +10,9 @@
  * is `StockEntryForm`; this screen keeps the chrome, the leave guard and the navigation.
  */
 
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { useBlocker, useOutletContext, useParams, useSearchParams } from 'react-router'
+import { useOutletContext, useParams, useSearchParams } from 'react-router'
 import { ApiError, NetworkError } from '../api/client'
 import { keys } from '../api/keys'
 import type { Me } from '../api/me'
@@ -23,9 +23,11 @@ import ErrorGenerico from '../components/ErrorGenerico'
 import GoneScreen from '../components/GoneScreen'
 import SinConexion from '../components/SinConexion'
 import Loading from '../components/Loading'
-import { useHistoryBack } from '../components/useHistoryBack'
+import { useBackOr } from '../components/useBackOr'
+import { useGoneExit } from '../components/useGoneExit'
+import { useLeaveGuard } from '../components/useLeaveGuard'
 import { useFlash } from '../flash/useFlash'
-import { ENTRIES, VARIETIES } from '../routes'
+import { STOCK, VARIETIES } from '../routes'
 import StockEntryForm from './StockEntryForm'
 
 interface Props {
@@ -118,26 +120,30 @@ interface BodyProps {
 }
 
 function EntradaStockBody({ mode, entryId, today, initial, chosenVariety, hasEntries }: BodyProps) {
-  const back = useHistoryBack(mode === 'nuevo' ? VARIETIES : ENTRIES)
   const flash = useFlash()
-  const leftRef = useRef(false)
-  const dirtyRef = useRef(false)
-  const blocker = useBlocker(() => dirtyRef.current && !leftRef.current)
-  const [gone, setGone] = useState(false)
+  const back = useBackOr(mode === 'nuevo' ? VARIETIES : STOCK)
+  const goneExit = useGoneExit('stock-entry', { id: entryId })
+  const [dirty, setDirty] = useState(false)
+  const { blocker, disarm } = useLeaveGuard(dirty)
   // The form's dialogs sit after the body, as the screen always drew them.
   const [dialogHost, setDialogHost] = useState<HTMLElement | null>(null)
 
-  const onDirtyChange = useCallback((dirty: boolean) => {
-    dirtyRef.current = dirty
+  const onDirtyChange = useCallback((next: boolean) => {
+    setDirty(next)
   }, [])
 
   function leave(toast: 'Entrada guardada' | 'Entrada eliminada'): void {
-    leftRef.current = true
+    disarm()
     flash.armAfterLeaving(toast)
     back()
   }
 
-  if (gone) return <GoneScreen label="Variedades" to={VARIETIES} />
+  // The entry is no longer there (deleted elsewhere, or never this business's): the form
+  // already marked the stock stale.
+  function entryIsGone(): void {
+    disarm()
+    goneExit()
+  }
 
   return (
     <main className="pantalla">
@@ -159,7 +165,7 @@ function EntradaStockBody({ mode, entryId, today, initial, chosenVariety, hasEnt
           preselectedOrigin={chosenVariety !== undefined && hasEntries === false ? 'opening_stock' : undefined}
           onSaved={() => leave('Entrada guardada')}
           onDeleted={() => leave('Entrada eliminada')}
-          onGone={() => setGone(true)}
+          onGone={entryIsGone}
           onDirtyChange={onDirtyChange}
           dialogHost={dialogHost}
         />

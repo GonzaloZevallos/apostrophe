@@ -1,6 +1,6 @@
 """`progress()` (CONTEXT.md: Onboarding): where a business stands in its Onboarding, worked
 out on every read from read-only facts of the owners plus what the Onboarding stores
-(docs/adr/0032). Pure and total: any facts and any stored state give an answer, and
+(docs/adr/0035). Pure and total: any facts and any stored state give an answer, and
 `resume` is `None` exactly when the Onboarding is over, otherwise a step or `FINISH`.
 Facts carry no amount, grams, token, phone number or customer name: a target is a
 variety's id and name only."""

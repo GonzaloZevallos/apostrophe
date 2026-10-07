@@ -9,7 +9,13 @@ import { type FormEvent, useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { ApiError, NetworkError, UNKNOWN_CODE, patch } from '../../api/client'
 import { invalidateResource } from '../../api/keys'
-import { isGone, kindOf, resolveOverride, type RefusalCode } from '../../api/refusals'
+import {
+  NAME_ARCHIVED_MESSAGE,
+  isGone,
+  kindOf,
+  resolveOverride,
+  type RefusalCode,
+} from '../../api/refusals'
 import type { SuccessToast } from '../../components/AvisoExito'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
@@ -23,6 +29,7 @@ import {
 
 const RENAME_OVERRIDES: Partial<Record<RefusalCode, string>> = {
   'variety.name_taken': NAME_TAKEN_MESSAGE,
+  'variety.name_archived': NAME_ARCHIVED_MESSAGE,
   'variety.name_invalid': NAME_INVALID_MESSAGE,
 }
 

@@ -4,12 +4,18 @@
  * name form and then the price form for the variety it just created. The price is effective
  * today. A refused price keeps what was typed, and a retry sends only the price: the variety
  * is already saved. Once the price is saved the answer is read again and the step goes to
- * where the API says (the resume step, or the stock of the variety just added).
+ * where the API says (the resume step, or the stock of the variety just added). The price
+ * form follows the business's pricing switches (pricing-settings.md), as on a variety's page.
  */
 
 import { useState } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { NetworkError } from '../../api/client'
 import { getOnboardingProgress, refreshProgress, type OnboardingTarget } from '../../api/onboarding'
+import { pricingSettingsQueryOptions } from '../../api/pricingSettings'
+import ErrorGenerico from '../../components/ErrorGenerico'
+import Loading from '../../components/Loading'
+import SinConexion from '../../components/SinConexion'
 import { ONBOARDING_STOCK } from '../../routes'
 import PriceForm from '../varieties/PriceForm'
 import VarietyNameForm from '../varieties/VarietyNameForm'
@@ -21,6 +27,7 @@ export default function VarietyStep({ me, progress, onDirtyChange, onProgress }:
   const [created, setCreated] = useState<OnboardingTarget | null>(null)
   const { run, notice } = useOnboardingWrite(onProgress)
   const target = created ?? progress.price_target
+  const settingsQuery = useQuery(pricingSettingsQueryOptions())
 
   async function priceSaved(): Promise<void> {
     // A variety added after the first has its stock to load: the API names it.
@@ -32,6 +39,10 @@ export default function VarietyStep({ me, progress, onDirtyChange, onProgress }:
   if (target === null) {
     return <VarietyNameForm onSaved={(saved) => setCreated(saved)} onDirtyChange={onDirtyChange} />
   }
+  if (settingsQuery.isError) {
+    return settingsQuery.error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />
+  }
+  if (settingsQuery.data === undefined) return <Loading />
   return (
     <>
       <p className="pie">{`Variedad: ${target.name}`}</p>
@@ -39,6 +50,7 @@ export default function VarietyStep({ me, progress, onDirtyChange, onProgress }:
         bare
         varietyId={target.id}
         today={me.today}
+        settings={settingsQuery.data}
         onDone={() => void priceSaved()}
         onCancel={() => undefined}
         onDirtyChange={onDirtyChange}

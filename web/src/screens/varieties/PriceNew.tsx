@@ -8,9 +8,10 @@
 
 import { useCallback, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { useLocation, useNavigate, useOutletContext } from 'react-router'
+import { useOutletContext } from 'react-router'
 import { ApiError, NetworkError, get } from '../../api/client'
 import { keys } from '../../api/keys'
+import { pricingSettingsQueryOptions } from '../../api/pricingSettings'
 import type { Me } from '../../api/me'
 import { isGone } from '../../api/refusals'
 import type { SuccessToast } from '../../components/AvisoExito'
@@ -19,16 +20,16 @@ import GoneScreen from '../../components/GoneScreen'
 import LeaveConfirm from '../../components/LeaveConfirm'
 import Loading from '../../components/Loading'
 import SinConexion from '../../components/SinConexion'
+import { useBackOr } from '../../components/useBackOr'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
 import { useFlash } from '../../flash/useFlash'
-import { VARIETIES, VARIETY } from '../../routes'
+import { VARIETIES, VARIETY, pathTo } from '../../routes'
 import type { Variety } from '../Variedades'
 import PriceForm from './PriceForm'
 
 export default function PriceNew({ varietyId }: { varietyId: number }) {
   const me = useOutletContext<Me>()
-  const navigate = useNavigate()
-  const location = useLocation()
+  const leave = useBackOr(pathTo(VARIETY, { id: varietyId }))
   const flash = useFlash()
   const [dirty, setDirty] = useState(false)
   const [gone, setGone] = useState(false)
@@ -39,18 +40,15 @@ export default function PriceNew({ varietyId }: { varietyId: number }) {
     queryFn: () => get<Variety>(`/varieties/${varietyId}`),
   })
 
-  function leave(): void {
-    if (location.key === 'default') void navigate(VARIETY(varietyId), { replace: true })
-    else void navigate(-1)
-  }
-
   function onDone(saved: SuccessToast): void {
     disarm()
     flash.armAfterLeaving(saved)
     leave()
   }
 
-  const failure = varietyQuery.error
+  const settingsQuery = useQuery(pricingSettingsQueryOptions())
+
+  const failure = varietyQuery.error ?? settingsQuery.error
   if (gone || (failure instanceof ApiError && isGone(failure.code))) {
     return <GoneScreen label="Variedades" to={VARIETIES} />
   }
@@ -61,7 +59,7 @@ export default function PriceNew({ varietyId }: { varietyId: number }) {
       </main>
     )
   }
-  if (varietyQuery.data === undefined) {
+  if (varietyQuery.data === undefined || settingsQuery.data === undefined) {
     return (
       <main className="pantalla">
         <div className="cuerpo">
@@ -77,6 +75,7 @@ export default function PriceNew({ varietyId }: { varietyId: number }) {
         <PriceForm
           varietyId={varietyId}
           today={me.today}
+          settings={settingsQuery.data}
           onDone={onDone}
           onCancel={leave}
           onDirtyChange={onDirtyChange}

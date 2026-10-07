@@ -10,7 +10,7 @@ import { type FormEvent, useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { ApiError, NetworkError, UNKNOWN_CODE, post } from '../../api/client'
 import { invalidateResource } from '../../api/keys'
-import { kindOf, resolveOverride, type RefusalCode } from '../../api/refusals'
+import { NAME_ARCHIVED_MESSAGE, kindOf, resolveOverride, type RefusalCode } from '../../api/refusals'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import {
@@ -22,6 +22,7 @@ import {
 
 const SAVE_OVERRIDES: Partial<Record<RefusalCode, string>> = {
   'variety.name_taken': NAME_TAKEN_MESSAGE,
+  'variety.name_archived': NAME_ARCHIVED_MESSAGE,
   'variety.name_invalid': NAME_INVALID_MESSAGE,
 }
 

@@ -1,9 +1,9 @@
-"""The Onboarding's state (CONTEXT.md: Onboarding; ADR-0032): one `onboarding` row per
+"""The Onboarding's state (CONTEXT.md: Onboarding; ADR-0035): one `onboarding` row per
 business that is offered it, carrying only the four optional steps' passes and its end.
 No backfill: a business that existed before has no row and is never offered one.
 
-Revision ID: 0013
-Revises: 0012
+Revision ID: 0015
+Revises: 0014
 """
 
 from collections.abc import Sequence
@@ -11,8 +11,8 @@ from collections.abc import Sequence
 import sqlalchemy as sa
 from alembic import op
 
-revision: str = "0013"
-down_revision: str | None = "0012"
+revision: str = "0015"
+down_revision: str | None = "0014"
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
 

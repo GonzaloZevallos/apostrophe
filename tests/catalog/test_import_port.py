@@ -23,6 +23,7 @@ from app.catalog.adapters.sql_header_footer import SqlCatalogHeaderFooter
 from app.catalog.adapters.stock_status import StockStatusesFromStock
 from app.catalog.application.read_catalog import read_catalog
 from app.catalog.domain.errors import IndicaShareInvalid
+from app.pricing_settings.adapters.sql_pricing_settings import SqlPricingSettings
 from app.spreadsheet_import.application.no_commit import NoCommit
 from app.spreadsheet_import.domain.rows import CatalogRow, HeaderFooterCells, SheetRef
 
@@ -63,9 +64,7 @@ def test_check_attributes_refuses_an_unknown_shown_value(
         assert refusal.code == "import.shown_unknown"
 
 
-def test_check_attributes_refuses_more_than_one_emoji(
-    client: TestClient, engine: Engine
-) -> None:
+def test_check_attributes_refuses_more_than_one_emoji(client: TestClient, engine: Engine) -> None:
     with Session(engine) as session:
         port = CatalogImport(session, business_id=1)
         refusal = port.check_attributes(_row(emoji="🌿🌿"))
@@ -154,6 +153,7 @@ def test_write_attributes_writes_through_no_commit_and_reads_back(
             StockStatusesFromStock(session, business_id=1),
             SqlCatalogAttributes(session, business_id=1),
             SqlCatalogHeaderFooter(session, business_id=1),
+            SqlPricingSettings(session, business_id=1),
             TODAY,
         )
         written = next(v for v in view.varieties if v.id == variety_id)

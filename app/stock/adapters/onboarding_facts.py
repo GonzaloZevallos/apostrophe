@@ -1,4 +1,4 @@
-"""Implements the Onboarding's `StockFacts` port (docs/adr/0032) for one business:
+"""Implements the Onboarding's `StockFacts` port (docs/adr/0035) for one business:
 read-only, which varieties have a stock entry and how many entries there are. Every
 statement filters on the business; it reads no grams and no cost."""
 

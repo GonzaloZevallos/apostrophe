@@ -1,0 +1,7019 @@
+{
+  "components": {
+    "schemas": {
+      "AcceptIn": {
+        "properties": {
+          "business_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Business Name"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "password": {
+            "title": "Password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "AcceptIn",
+        "type": "object"
+      },
+      "AccountOut": {
+        "properties": {
+          "balance": {
+            "title": "Balance",
+            "type": "integer"
+          },
+          "owing_since": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owing Since"
+          },
+          "rows": {
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/SaleAccountRowOut"
+                },
+                {
+                  "$ref": "#/components/schemas/PaymentAccountRowOut"
+                },
+                {
+                  "$ref": "#/components/schemas/CreditAccountRowOut"
+                }
+              ]
+            },
+            "title": "Rows",
+            "type": "array"
+          },
+          "standing": {
+            "enum": [
+              "owes",
+              "credit",
+              "settled"
+            ],
+            "title": "Standing",
+            "type": "string"
+          }
+        },
+        "required": [
+          "balance",
+          "owing_since",
+          "standing",
+          "rows"
+        ],
+        "title": "AccountOut",
+        "type": "object"
+      },
+      "AfterOut": {
+        "properties": {
+          "balance": {
+            "title": "Balance",
+            "type": "integer"
+          },
+          "owing_since": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owing Since"
+          },
+          "standing": {
+            "enum": [
+              "owes",
+              "credit",
+              "settled"
+            ],
+            "title": "Standing",
+            "type": "string"
+          }
+        },
+        "required": [
+          "balance",
+          "owing_since",
+          "standing"
+        ],
+        "title": "AfterOut",
+        "type": "object"
+      },
+      "AmountWithPendingOut": {
+        "description": "A money figure (profit, stock shortfall, promotion or own use) together with the\npending grams behind it, for one period.",
+        "properties": {
+          "amount": {
+            "title": "Amount",
+            "type": "integer"
+          },
+          "pending_grams": {
+            "title": "Pending Grams",
+            "type": "number"
+          }
+        },
+        "required": [
+          "amount",
+          "pending_grams"
+        ],
+        "title": "AmountWithPendingOut",
+        "type": "object"
+      },
+      "AnalysisMonthOut": {
+        "properties": {
+          "average_margin": {
+            "$ref": "#/components/schemas/MarginOut"
+          },
+          "grams_gifted": {
+            "title": "Grams Gifted",
+            "type": "number"
+          },
+          "grams_sold": {
+            "title": "Grams Sold",
+            "type": "number"
+          },
+          "month": {
+            "title": "Month",
+            "type": "string"
+          },
+          "next": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next"
+          },
+          "own_use": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AmountWithPendingOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "previous": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous"
+          },
+          "promotion": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AmountWithPendingOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sales": {
+            "title": "Sales",
+            "type": "integer"
+          },
+          "sales_without_shipping": {
+            "title": "Sales Without Shipping",
+            "type": "integer"
+          },
+          "shortfall": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AmountWithPendingOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "varieties": {
+            "items": {
+              "$ref": "#/components/schemas/VarietyRowOut"
+            },
+            "title": "Varieties",
+            "type": "array"
+          }
+        },
+        "required": [
+          "month",
+          "previous",
+          "next",
+          "sales",
+          "sales_without_shipping",
+          "grams_sold",
+          "grams_gifted",
+          "average_margin",
+          "shortfall",
+          "promotion",
+          "own_use",
+          "varieties"
+        ],
+        "title": "AnalysisMonthOut",
+        "type": "object"
+      },
+      "AnalysisOut": {
+        "properties": {
+          "first_record": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Record"
+          },
+          "month": {
+            "$ref": "#/components/schemas/AnalysisMonthOut"
+          },
+          "month_expenses": {
+            "$ref": "#/components/schemas/ExpenseBreakdownOut"
+          },
+          "months": {
+            "items": {
+              "$ref": "#/components/schemas/MonthRowOut"
+            },
+            "title": "Months",
+            "type": "array"
+          },
+          "since_first_record": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SinceFirstRecordOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "since_first_record_expenses": {
+            "$ref": "#/components/schemas/ExpenseBreakdownOut"
+          },
+          "today": {
+            "format": "date",
+            "title": "Today",
+            "type": "string"
+          },
+          "weekdays": {
+            "items": {
+              "$ref": "#/components/schemas/WeekdayOut"
+            },
+            "title": "Weekdays",
+            "type": "array"
+          },
+          "weeks": {
+            "items": {
+              "$ref": "#/components/schemas/WeekOut"
+            },
+            "title": "Weeks",
+            "type": "array"
+          }
+        },
+        "required": [
+          "today",
+          "first_record",
+          "month",
+          "weeks",
+          "months",
+          "weekdays",
+          "since_first_record",
+          "month_expenses",
+          "since_first_record_expenses"
+        ],
+        "title": "AnalysisOut",
+        "type": "object"
+      },
+      "AppliedToOut": {
+        "properties": {
+          "amount": {
+            "title": "Amount",
+            "type": "integer"
+          },
+          "sale_date": {
+            "format": "date",
+            "title": "Sale Date",
+            "type": "string"
+          },
+          "sale_id": {
+            "title": "Sale Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "sale_id",
+          "sale_date",
+          "amount"
+        ],
+        "title": "AppliedToOut",
+        "type": "object"
+      },
+      "AssignCustomerIn": {
+        "properties": {
+          "customer_id": {
+            "title": "Customer Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "customer_id"
+        ],
+        "title": "AssignCustomerIn",
+        "type": "object"
+      },
+      "BusinessOut": {
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "users": {
+            "items": {
+              "$ref": "#/components/schemas/UserOut"
+            },
+            "title": "Users",
+            "type": "array"
+          }
+        },
+        "required": [
+          "name",
+          "users"
+        ],
+        "title": "BusinessOut",
+        "type": "object"
+      },
+      "BusinessPatchIn": {
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "BusinessPatchIn",
+        "type": "object"
+      },
+      "CatalogAttributesIn": {
+        "properties": {
+          "aroma": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Aroma"
+          },
+          "emoji": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Emoji"
+          },
+          "indica_share": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Indica Share"
+          },
+          "shown": {
+            "title": "Shown",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "shown",
+          "emoji",
+          "indica_share",
+          "aroma"
+        ],
+        "title": "CatalogAttributesIn",
+        "type": "object"
+      },
+      "CatalogOut": {
+        "properties": {
+          "footer": {
+            "title": "Footer",
+            "type": "string"
+          },
+          "header": {
+            "title": "Header",
+            "type": "string"
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          },
+          "varieties": {
+            "items": {
+              "$ref": "#/components/schemas/CatalogVarietyOut"
+            },
+            "title": "Varieties",
+            "type": "array"
+          }
+        },
+        "required": [
+          "text",
+          "header",
+          "footer",
+          "varieties"
+        ],
+        "title": "CatalogOut",
+        "type": "object"
+      },
+      "CatalogVarietyOut": {
+        "properties": {
+          "aroma": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Aroma"
+          },
+          "emoji": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Emoji"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "indica_share": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Indica Share"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "shown": {
+            "title": "Shown",
+            "type": "boolean"
+          },
+          "state": {
+            "enum": [
+              "in",
+              "hidden",
+              "no_price",
+              "sold_out",
+              "no_entries"
+            ],
+            "title": "State",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "emoji",
+          "indica_share",
+          "aroma",
+          "shown",
+          "state"
+        ],
+        "title": "CatalogVarietyOut",
+        "type": "object"
+      },
+      "CategoryIn": {
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "CategoryIn",
+        "type": "object"
+      },
+      "CategoryOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "CategoryOut",
+        "type": "object"
+      },
+      "CategorySubtotalOut": {
+        "properties": {
+          "expenses": {
+            "items": {
+              "$ref": "#/components/schemas/ExpenseOut"
+            },
+            "title": "Expenses",
+            "type": "array"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "subtotal": {
+            "title": "Subtotal",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "subtotal",
+          "expenses"
+        ],
+        "title": "CategorySubtotalOut",
+        "type": "object"
+      },
+      "ChangePasswordIn": {
+        "properties": {
+          "current_password": {
+            "title": "Current Password",
+            "type": "string"
+          },
+          "new_password": {
+            "title": "New Password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "current_password",
+          "new_password"
+        ],
+        "title": "ChangePasswordIn",
+        "type": "object"
+      },
+      "Channel": {
+        "enum": [
+          "telegram",
+          "whatsapp"
+        ],
+        "title": "Channel",
+        "type": "string"
+      },
+      "CostLineOut": {
+        "description": "A period's stock shortfall, promotion or own-use cost (CONTEXT.md), `null`\nexactly when the period has none of that line's records. `pending` is decided from\nthat line's own pending grams (plan invariant); no grams cross the wire (PM).",
+        "properties": {
+          "amount": {
+            "title": "Amount",
+            "type": "integer"
+          },
+          "pending": {
+            "title": "Pending",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "amount",
+          "pending"
+        ],
+        "title": "CostLineOut",
+        "type": "object"
+      },
+      "CostOut": {
+        "properties": {
+          "costed": {
+            "title": "Costed",
+            "type": "integer"
+          },
+          "pending_grams": {
+            "title": "Pending Grams",
+            "type": "number"
+          }
+        },
+        "required": [
+          "costed",
+          "pending_grams"
+        ],
+        "title": "CostOut",
+        "type": "object"
+      },
+      "CreditAccountRowOut": {
+        "properties": {
+          "amount": {
+            "title": "Amount",
+            "type": "integer"
+          },
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "kind": {
+            "const": "credit",
+            "default": "credit",
+            "title": "Kind",
+            "type": "string"
+          },
+          "payment": {
+            "$ref": "#/components/schemas/PaymentRefOut"
+          },
+          "running_balance": {
+            "title": "Running Balance",
+            "type": "integer"
+          },
+          "standing": {
+            "enum": [
+              "owes",
+              "credit",
+              "settled"
+            ],
+            "title": "Standing",
+            "type": "string"
+          }
+        },
+        "required": [
+          "date",
+          "running_balance",
+          "standing",
+          "payment",
+          "amount"
+        ],
+        "title": "CreditAccountRowOut",
+        "type": "object"
+      },
+      "CustomerIn": {
+        "properties": {
+          "channel": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Channel"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "vip": {
+            "default": false,
+            "title": "Vip",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "CustomerIn",
+        "type": "object"
+      },
+      "CustomerOut": {
+        "properties": {
+          "balance": {
+            "title": "Balance",
+            "type": "integer"
+          },
+          "channel": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Channel"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "owing_since": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owing Since"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "standing": {
+            "enum": [
+              "owes",
+              "credit",
+              "settled"
+            ],
+            "title": "Standing",
+            "type": "string"
+          },
+          "vip": {
+            "title": "Vip",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "phone",
+          "channel",
+          "vip",
+          "balance",
+          "owing_since",
+          "standing"
+        ],
+        "title": "CustomerOut",
+        "type": "object"
+      },
+      "CustomerPatchIn": {
+        "properties": {
+          "channel": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Channel"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          },
+          "vip": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vip"
+          }
+        },
+        "title": "CustomerPatchIn",
+        "type": "object"
+      },
+      "DebtorCustomerOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "DebtorCustomerOut",
+        "type": "object"
+      },
+      "DebtorsOut": {
+        "properties": {
+          "debtors": {
+            "items": {
+              "$ref": "#/components/schemas/app__payments__adapters__schemas__DebtorOut"
+            },
+            "title": "Debtors",
+            "type": "array"
+          },
+          "sales_owing_count": {
+            "title": "Sales Owing Count",
+            "type": "integer"
+          },
+          "total_owed": {
+            "title": "Total Owed",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total_owed",
+          "sales_owing_count",
+          "debtors"
+        ],
+        "title": "DebtorsOut",
+        "type": "object"
+      },
+      "DebtsOut": {
+        "properties": {
+          "oldest": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Oldest"
+          },
+          "sales_owing_count": {
+            "title": "Sales Owing Count",
+            "type": "integer"
+          },
+          "teaser": {
+            "items": {
+              "$ref": "#/components/schemas/app__results__adapters__schemas__DebtorOut"
+            },
+            "title": "Teaser",
+            "type": "array"
+          },
+          "total_owed": {
+            "title": "Total Owed",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "total_owed",
+          "sales_owing_count",
+          "oldest",
+          "teaser"
+        ],
+        "title": "DebtsOut",
+        "type": "object"
+      },
+      "DeleteSaleOut": {
+        "description": "`DELETE /sales/{id}`'s own response: the grams returned per variety, summed from\nthe sale's own lines and sorted by `variety_id`.",
+        "properties": {
+          "returned": {
+            "items": {
+              "$ref": "#/components/schemas/ReturnedGramsOut"
+            },
+            "title": "Returned",
+            "type": "array"
+          }
+        },
+        "required": [
+          "returned"
+        ],
+        "title": "DeleteSaleOut",
+        "type": "object"
+      },
+      "EntryIn": {
+        "properties": {
+          "date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date"
+          },
+          "grams": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Grams"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "origin": {
+            "$ref": "#/components/schemas/Origin"
+          },
+          "total_cost": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Cost"
+          },
+          "variety_id": {
+            "title": "Variety Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "variety_id",
+          "origin",
+          "grams"
+        ],
+        "title": "EntryIn",
+        "type": "object"
+      },
+      "EntryMovementOut": {
+        "properties": {
+          "cost_per_gram": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Per Gram"
+          },
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "grams": {
+            "title": "Grams",
+            "type": "number"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "kind": {
+            "const": "entry",
+            "default": "entry",
+            "title": "Kind",
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "origin": {
+            "$ref": "#/components/schemas/Origin"
+          },
+          "total_cost": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Cost"
+          },
+          "variety_id": {
+            "title": "Variety Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "date",
+          "variety_id",
+          "origin",
+          "grams",
+          "total_cost",
+          "cost_per_gram",
+          "note"
+        ],
+        "title": "EntryMovementOut",
+        "type": "object"
+      },
+      "EntryOut": {
+        "properties": {
+          "cost_per_gram": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Per Gram"
+          },
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "grams": {
+            "title": "Grams",
+            "type": "number"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "origin": {
+            "$ref": "#/components/schemas/Origin"
+          },
+          "total_cost": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Cost"
+          },
+          "variety_id": {
+            "title": "Variety Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "date",
+          "variety_id",
+          "origin",
+          "grams",
+          "total_cost",
+          "cost_per_gram",
+          "note"
+        ],
+        "title": "EntryOut",
+        "type": "object"
+      },
+      "ExpenseBreakdownOut": {
+        "description": "Categories ordered by the stored `name_key`, as Gastos does (ADR-0020).\n`purchases` is always present, $0 included, and never counted inside `total`.",
+        "properties": {
+          "categories": {
+            "items": {
+              "$ref": "#/components/schemas/ExpenseCategoryTotalOut"
+            },
+            "title": "Categories",
+            "type": "array"
+          },
+          "purchases": {
+            "title": "Purchases",
+            "type": "integer"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "categories",
+          "total",
+          "purchases"
+        ],
+        "title": "ExpenseBreakdownOut",
+        "type": "object"
+      },
+      "ExpenseCategoryTotalOut": {
+        "properties": {
+          "category_id": {
+            "title": "Category Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "category_id",
+          "name",
+          "total"
+        ],
+        "title": "ExpenseCategoryTotalOut",
+        "type": "object"
+      },
+      "ExpenseIn": {
+        "properties": {
+          "amount": {
+            "title": "Amount",
+            "type": "integer"
+          },
+          "category_id": {
+            "title": "Category Id",
+            "type": "integer"
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "spent_on": {
+            "format": "date",
+            "title": "Spent On",
+            "type": "string"
+          }
+        },
+        "required": [
+          "spent_on",
+          "category_id",
+          "amount",
+          "detail"
+        ],
+        "title": "ExpenseIn",
+        "type": "object"
+      },
+      "ExpenseOut": {
+        "properties": {
+          "amount": {
+            "title": "Amount",
+            "type": "integer"
+          },
+          "category_id": {
+            "title": "Category Id",
+            "type": "integer"
+          },
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "spent_on": {
+            "format": "date",
+            "title": "Spent On",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "spent_on",
+          "category_id",
+          "amount",
+          "detail"
+        ],
+        "title": "ExpenseOut",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "HeaderFooterIn": {
+        "properties": {
+          "footer": {
+            "title": "Footer",
+            "type": "string"
+          },
+          "header": {
+            "title": "Header",
+            "type": "string"
+          }
+        },
+        "required": [
+          "header",
+          "footer"
+        ],
+        "title": "HeaderFooterIn",
+        "type": "object"
+      },
+      "InvitationKind": {
+        "enum": [
+          "new_business",
+          "join_business"
+        ],
+        "title": "InvitationKind",
+        "type": "string"
+      },
+      "InvitationOut": {
+        "properties": {
+          "expires_at": {
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url",
+          "expires_at"
+        ],
+        "title": "InvitationOut",
+        "type": "object"
+      },
+      "InvitationViewOut": {
+        "properties": {
+          "business_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Business Name"
+          },
+          "expires_at": {
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/InvitationKind"
+          }
+        },
+        "required": [
+          "kind",
+          "business_name",
+          "expires_at"
+        ],
+        "title": "InvitationViewOut",
+        "type": "object"
+      },
+      "LineCostOut": {
+        "description": "A sale line's cost of goods (ADR-0009): `costed` is `None` exactly when none of\nthe line's grams is costed yet; `pending_grams` is the part with no lot behind it,\nnever folded into `costed` as a $0 cost.",
+        "properties": {
+          "costed": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Costed"
+          },
+          "pending_grams": {
+            "title": "Pending Grams",
+            "type": "number"
+          }
+        },
+        "required": [
+          "costed",
+          "pending_grams"
+        ],
+        "title": "LineCostOut",
+        "type": "object"
+      },
+      "LineIn": {
+        "properties": {
+          "gift": {
+            "default": false,
+            "title": "Gift",
+            "type": "boolean"
+          },
+          "grams": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Grams"
+          },
+          "special_price": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Special Price"
+          },
+          "variety_id": {
+            "title": "Variety Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "variety_id",
+          "grams"
+        ],
+        "title": "LineIn",
+        "type": "object"
+      },
+      "LoginIn": {
+        "properties": {
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "password": {
+            "title": "Password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "LoginIn",
+        "type": "object"
+      },
+      "MarginOut": {
+        "description": "A margin in pesos, worked out over costed grams only (ADR-0020): a variety's own\nmargin, or the chosen month's average margin. `percent` is `null` when the sales it\nis taken over are $0; `pending_grams` is the sold-or-gifted grams behind it that are\nnot costed yet.",
+        "properties": {
+          "amount": {
+            "title": "Amount",
+            "type": "integer"
+          },
+          "pending_grams": {
+            "title": "Pending Grams",
+            "type": "number"
+          },
+          "percent": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Percent"
+          }
+        },
+        "required": [
+          "amount",
+          "percent",
+          "pending_grams"
+        ],
+        "title": "MarginOut",
+        "type": "object"
+      },
+      "MeOut": {
+        "properties": {
+          "business_name": {
+            "title": "Business Name",
+            "type": "string"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "today": {
+            "format": "date",
+            "title": "Today",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "business_name",
+          "today"
+        ],
+        "title": "MeOut",
+        "type": "object"
+      },
+      "MonthRowOut": {
+        "properties": {
+          "cash": {
+            "title": "Cash",
+            "type": "integer"
+          },
+          "expenses": {
+            "title": "Expenses",
+            "type": "integer"
+          },
+          "first_day": {
+            "format": "date",
+            "title": "First Day",
+            "type": "string"
+          },
+          "grams": {
+            "title": "Grams",
+            "type": "number"
+          },
+          "last_day": {
+            "format": "date",
+            "title": "Last Day",
+            "type": "string"
+          },
+          "month": {
+            "title": "Month",
+            "type": "string"
+          },
+          "own_use": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AmountWithPendingOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "profit": {
+            "$ref": "#/components/schemas/AmountWithPendingOut"
+          },
+          "promotion": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AmountWithPendingOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sales": {
+            "title": "Sales",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "month",
+          "first_day",
+          "last_day",
+          "sales",
+          "grams",
+          "expenses",
+          "promotion",
+          "own_use",
+          "profit",
+          "cash"
+        ],
+        "title": "MonthRowOut",
+        "type": "object"
+      },
+      "MonthlyViewOut": {
+        "properties": {
+          "categories": {
+            "items": {
+              "$ref": "#/components/schemas/CategorySubtotalOut"
+            },
+            "title": "Categories",
+            "type": "array"
+          },
+          "month": {
+            "title": "Month",
+            "type": "string"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "month",
+          "total",
+          "categories"
+        ],
+        "title": "MonthlyViewOut",
+        "type": "object"
+      },
+      "Origin": {
+        "enum": [
+          "purchase",
+          "harvest",
+          "opening_stock",
+          "adjustment"
+        ],
+        "title": "Origin",
+        "type": "string"
+      },
+      "OwnChatLookupIn": {
+        "properties": {
+          "token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Token"
+          }
+        },
+        "required": [
+          "token"
+        ],
+        "title": "OwnChatLookupIn",
+        "type": "object"
+      },
+      "OwnChatLookupOut": {
+        "properties": {
+          "own_chat": {
+            "title": "Own Chat",
+            "type": "string"
+          }
+        },
+        "required": [
+          "own_chat"
+        ],
+        "title": "OwnChatLookupOut",
+        "type": "object"
+      },
+      "PanelOut": {
+        "properties": {
+          "debts": {
+            "$ref": "#/components/schemas/DebtsOut"
+          },
+          "periods": {
+            "$ref": "#/components/schemas/PeriodsOut"
+          },
+          "stock": {
+            "items": {
+              "$ref": "#/components/schemas/PanelVarietyOut"
+            },
+            "title": "Stock",
+            "type": "array"
+          }
+        },
+        "required": [
+          "periods",
+          "debts",
+          "stock"
+        ],
+        "title": "PanelOut",
+        "type": "object"
+      },
+      "PanelVarietyOut": {
+        "description": "`VarietyStockOut`'s own keys plus `name` (plan invariant: \"`PanelVarietyOut`\nsubclasses `VarietyStockOut` and adds only `name`\").",
+        "properties": {
+          "days_left": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Days Left"
+          },
+          "grams": {
+            "title": "Grams",
+            "type": "number"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "sold_out_since": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sold Out Since"
+          },
+          "status": {
+            "enum": [
+              "no_entries",
+              "sold_out",
+              "low",
+              "ok"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "threshold": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Threshold"
+          },
+          "variety_id": {
+            "title": "Variety Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "variety_id",
+          "grams",
+          "status",
+          "sold_out_since",
+          "threshold",
+          "days_left",
+          "name"
+        ],
+        "title": "PanelVarietyOut",
+        "type": "object"
+      },
+      "PassIn": {
+        "description": "Both are plain text here: a step that cannot be passed, or a way that does not\nexist, is the domain's `onboarding.step_invalid`, not a validation error.",
+        "properties": {
+          "as": {
+            "title": "As",
+            "type": "string"
+          },
+          "step": {
+            "title": "Step",
+            "type": "string"
+          }
+        },
+        "required": [
+          "step",
+          "as"
+        ],
+        "title": "PassIn",
+        "type": "object"
+      },
+      "PaymentAccountRowOut": {
+        "properties": {
+          "applied_to": {
+            "$ref": "#/components/schemas/AppliedToOut"
+          },
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "kind": {
+            "const": "payment",
+            "default": "payment",
+            "title": "Kind",
+            "type": "string"
+          },
+          "payment": {
+            "$ref": "#/components/schemas/PaymentRefOut"
+          },
+          "running_balance": {
+            "title": "Running Balance",
+            "type": "integer"
+          },
+          "standing": {
+            "enum": [
+              "owes",
+              "credit",
+              "settled"
+            ],
+            "title": "Standing",
+            "type": "string"
+          }
+        },
+        "required": [
+          "date",
+          "running_balance",
+          "standing",
+          "payment",
+          "applied_to"
+        ],
+        "title": "PaymentAccountRowOut",
+        "type": "object"
+      },
+      "PaymentIn": {
+        "properties": {
+          "amount": {
+            "title": "Amount",
+            "type": "integer"
+          },
+          "method": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentMethod"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "paid_on": {
+            "format": "date",
+            "title": "Paid On",
+            "type": "string"
+          }
+        },
+        "required": [
+          "paid_on",
+          "amount"
+        ],
+        "title": "PaymentIn",
+        "type": "object"
+      },
+      "PaymentMethod": {
+        "enum": [
+          "cash",
+          "transfer"
+        ],
+        "title": "PaymentMethod",
+        "type": "string"
+      },
+      "PaymentPreviewIn": {
+        "properties": {
+          "amount": {
+            "title": "Amount",
+            "type": "integer"
+          },
+          "paid_on": {
+            "format": "date",
+            "title": "Paid On",
+            "type": "string"
+          }
+        },
+        "required": [
+          "paid_on",
+          "amount"
+        ],
+        "title": "PaymentPreviewIn",
+        "type": "object"
+      },
+      "PaymentPreviewOut": {
+        "properties": {
+          "after": {
+            "$ref": "#/components/schemas/AfterOut"
+          },
+          "applied_to": {
+            "items": {
+              "$ref": "#/components/schemas/AppliedToOut"
+            },
+            "title": "Applied To",
+            "type": "array"
+          }
+        },
+        "required": [
+          "applied_to",
+          "after"
+        ],
+        "title": "PaymentPreviewOut",
+        "type": "object"
+      },
+      "PaymentRefOut": {
+        "properties": {
+          "amount": {
+            "title": "Amount",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "method": {
+            "$ref": "#/components/schemas/PaymentMethod"
+          },
+          "paid_on": {
+            "format": "date",
+            "title": "Paid On",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "paid_on",
+          "amount",
+          "method"
+        ],
+        "title": "PaymentRefOut",
+        "type": "object"
+      },
+      "PeriodOut": {
+        "properties": {
+          "average_sale": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Average Sale"
+          },
+          "cash": {
+            "title": "Cash",
+            "type": "integer"
+          },
+          "cost_of_goods": {
+            "title": "Cost Of Goods",
+            "type": "integer"
+          },
+          "end": {
+            "format": "date",
+            "title": "End",
+            "type": "string"
+          },
+          "expenses": {
+            "title": "Expenses",
+            "type": "integer"
+          },
+          "grams_gifted": {
+            "title": "Grams Gifted",
+            "type": "number"
+          },
+          "grams_sold": {
+            "title": "Grams Sold",
+            "type": "number"
+          },
+          "own_use": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CostLineOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "pending_cost": {
+            "title": "Pending Cost",
+            "type": "boolean"
+          },
+          "profit": {
+            "title": "Profit",
+            "type": "integer"
+          },
+          "profit_pending": {
+            "title": "Profit Pending",
+            "type": "boolean"
+          },
+          "promotion": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CostLineOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "purchases": {
+            "title": "Purchases",
+            "type": "integer"
+          },
+          "sales": {
+            "title": "Sales",
+            "type": "integer"
+          },
+          "sales_count": {
+            "title": "Sales Count",
+            "type": "integer"
+          },
+          "shortfall": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CostLineOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "start": {
+            "format": "date",
+            "title": "Start",
+            "type": "string"
+          }
+        },
+        "required": [
+          "start",
+          "end",
+          "sales",
+          "sales_count",
+          "average_sale",
+          "grams_sold",
+          "grams_gifted",
+          "cost_of_goods",
+          "pending_cost",
+          "shortfall",
+          "promotion",
+          "own_use",
+          "expenses",
+          "purchases",
+          "profit",
+          "profit_pending",
+          "cash"
+        ],
+        "title": "PeriodOut",
+        "type": "object"
+      },
+      "PeriodsOut": {
+        "properties": {
+          "month": {
+            "$ref": "#/components/schemas/PeriodOut"
+          },
+          "today": {
+            "$ref": "#/components/schemas/PeriodOut"
+          },
+          "week": {
+            "$ref": "#/components/schemas/PeriodOut"
+          }
+        },
+        "required": [
+          "today",
+          "week",
+          "month"
+        ],
+        "title": "PeriodsOut",
+        "type": "object"
+      },
+      "PinStatusOut": {
+        "properties": {
+          "last_published_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Published On"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "enum": [
+                  "telegram_unreachable",
+                  "bot_cannot_post",
+                  "message_gone",
+                  "missing_publish",
+                  "too_long"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "state": {
+            "enum": [
+              "up_to_date",
+              "out_of_date"
+            ],
+            "title": "State",
+            "type": "string"
+          }
+        },
+        "required": [
+          "state",
+          "reason",
+          "last_published_on"
+        ],
+        "title": "PinStatusOut",
+        "type": "object"
+      },
+      "PinnedCatalogOut": {
+        "properties": {
+          "can_publish": {
+            "title": "Can Publish",
+            "type": "boolean"
+          },
+          "channel_chat": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Channel Chat"
+          },
+          "own_chat": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Own Chat"
+          },
+          "publish_blocked_by": {
+            "anyOf": [
+              {
+                "enum": [
+                  "not_tested",
+                  "channel_missing"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Publish Blocked By"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PinStatusOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "token_saved_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Token Saved On"
+          }
+        },
+        "required": [
+          "token_saved_on",
+          "own_chat",
+          "channel_chat",
+          "can_publish",
+          "publish_blocked_by",
+          "status"
+        ],
+        "title": "PinnedCatalogOut",
+        "type": "object"
+      },
+      "PinnedCatalogStatusOut": {
+        "properties": {
+          "status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PinStatusOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "PinnedCatalogStatusOut",
+        "type": "object"
+      },
+      "PinnedCatalogTestIn": {
+        "properties": {
+          "channel_chat": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Channel Chat"
+          },
+          "own_chat": {
+            "title": "Own Chat",
+            "type": "string"
+          },
+          "token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Token"
+          }
+        },
+        "required": [
+          "token",
+          "own_chat",
+          "channel_chat"
+        ],
+        "title": "PinnedCatalogTestIn",
+        "type": "object"
+      },
+      "PinnedCatalogTestOut": {
+        "properties": {
+          "can_publish": {
+            "title": "Can Publish",
+            "type": "boolean"
+          },
+          "channel_chat": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Channel Chat"
+          },
+          "own_chat": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Own Chat"
+          },
+          "previous_pin_left": {
+            "title": "Previous Pin Left",
+            "type": "boolean"
+          },
+          "publish_blocked_by": {
+            "anyOf": [
+              {
+                "enum": [
+                  "not_tested",
+                  "channel_missing"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Publish Blocked By"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PinStatusOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "token_saved_on": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Token Saved On"
+          }
+        },
+        "required": [
+          "token_saved_on",
+          "own_chat",
+          "channel_chat",
+          "can_publish",
+          "publish_blocked_by",
+          "status",
+          "previous_pin_left"
+        ],
+        "title": "PinnedCatalogTestOut",
+        "type": "object"
+      },
+      "PriceEntryIn": {
+        "properties": {
+          "bulk_minimum": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bulk Minimum"
+          },
+          "bulk_price": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bulk Price"
+          },
+          "effective_from": {
+            "format": "date",
+            "title": "Effective From",
+            "type": "string"
+          },
+          "list_price": {
+            "title": "List Price",
+            "type": "integer"
+          },
+          "vip_price": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vip Price"
+          }
+        },
+        "required": [
+          "effective_from",
+          "list_price"
+        ],
+        "title": "PriceEntryIn",
+        "type": "object"
+      },
+      "PriceEntryOut": {
+        "properties": {
+          "bulk_minimum": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bulk Minimum"
+          },
+          "bulk_price": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bulk Price"
+          },
+          "effective_from": {
+            "format": "date",
+            "title": "Effective From",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "list_price": {
+            "title": "List Price",
+            "type": "integer"
+          },
+          "vip_price": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vip Price"
+          }
+        },
+        "required": [
+          "id",
+          "effective_from",
+          "list_price",
+          "bulk_price",
+          "bulk_minimum",
+          "vip_price"
+        ],
+        "title": "PriceEntryOut",
+        "type": "object"
+      },
+      "PricingRule": {
+        "enum": [
+          "list",
+          "bulk",
+          "vip",
+          "gift",
+          "special"
+        ],
+        "title": "PricingRule",
+        "type": "string"
+      },
+      "PricingSettingsBody": {
+        "description": "The request and the answer of `/pricing-settings`: the same two switches.",
+        "properties": {
+          "is_bulk_pricing": {
+            "title": "Is Bulk Pricing",
+            "type": "boolean"
+          },
+          "is_vip_customers": {
+            "title": "Is Vip Customers",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "is_bulk_pricing",
+          "is_vip_customers"
+        ],
+        "title": "PricingSettingsBody",
+        "type": "object"
+      },
+      "ProgressOut": {
+        "properties": {
+          "can_skip_rest": {
+            "title": "Can Skip Rest",
+            "type": "boolean"
+          },
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "offered": {
+            "title": "Offered",
+            "type": "boolean"
+          },
+          "over": {
+            "title": "Over",
+            "type": "boolean"
+          },
+          "price_target": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TargetOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "resume": {
+            "anyOf": [
+              {
+                "enum": [
+                  "variety",
+                  "stock",
+                  "header_footer",
+                  "bot",
+                  "partner",
+                  "categories"
+                ],
+                "type": "string"
+              },
+              {
+                "const": "finish",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resume"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/StepOut"
+            },
+            "title": "Steps",
+            "type": "array"
+          },
+          "stock_entries_count": {
+            "title": "Stock Entries Count",
+            "type": "integer"
+          },
+          "stock_target": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TargetOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "varieties_count": {
+            "title": "Varieties Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "offered",
+          "over",
+          "count",
+          "resume",
+          "steps",
+          "can_skip_rest",
+          "varieties_count",
+          "stock_entries_count",
+          "price_target",
+          "stock_target"
+        ],
+        "title": "ProgressOut",
+        "type": "object"
+      },
+      "RecordPaymentOut": {
+        "properties": {
+          "after": {
+            "$ref": "#/components/schemas/AfterOut"
+          },
+          "applied_to": {
+            "items": {
+              "$ref": "#/components/schemas/AppliedToOut"
+            },
+            "title": "Applied To",
+            "type": "array"
+          },
+          "payment": {
+            "$ref": "#/components/schemas/PaymentRefOut"
+          }
+        },
+        "required": [
+          "payment",
+          "applied_to",
+          "after"
+        ],
+        "title": "RecordPaymentOut",
+        "type": "object"
+      },
+      "ResetSubmitIn": {
+        "properties": {
+          "new_password": {
+            "title": "New Password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "new_password"
+        ],
+        "title": "ResetSubmitIn",
+        "type": "object"
+      },
+      "ReturnedGramsOut": {
+        "properties": {
+          "grams": {
+            "title": "Grams",
+            "type": "number"
+          },
+          "variety_id": {
+            "title": "Variety Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "variety_id",
+          "grams"
+        ],
+        "title": "ReturnedGramsOut",
+        "type": "object"
+      },
+      "SaleAccountRowOut": {
+        "properties": {
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "kind": {
+            "const": "sale",
+            "default": "sale",
+            "title": "Kind",
+            "type": "string"
+          },
+          "running_balance": {
+            "title": "Running Balance",
+            "type": "integer"
+          },
+          "sale": {
+            "$ref": "#/components/schemas/SaleRefOut"
+          },
+          "standing": {
+            "enum": [
+              "owes",
+              "credit",
+              "settled"
+            ],
+            "title": "Standing",
+            "type": "string"
+          }
+        },
+        "required": [
+          "date",
+          "running_balance",
+          "standing",
+          "sale"
+        ],
+        "title": "SaleAccountRowOut",
+        "type": "object"
+      },
+      "SaleCustomerOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "vip": {
+            "title": "Vip",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "vip"
+        ],
+        "title": "SaleCustomerOut",
+        "type": "object"
+      },
+      "SaleDetailOut": {
+        "description": "`GET /sales/{id}`'s own shape, never the list's: the same labelled read shape as\n`SaleOut` (docs/adr/0011), plus each line's cost of goods, allocated fresh on this\none read (ADR-0009), so `SaleOut` \u2014 used by the list and by every write \u2014 never\nallocates.",
+        "properties": {
+          "customer": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SaleCustomerOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/SaleLineDetailOut"
+            },
+            "title": "Lines",
+            "type": "array"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "payment": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentMethod"
+              },
+              {
+                "enum": [
+                  "owing",
+                  "none"
+                ],
+                "type": "string"
+              }
+            ],
+            "title": "Payment"
+          },
+          "shipping_charged": {
+            "title": "Shipping Charged",
+            "type": "integer"
+          },
+          "still_owing": {
+            "title": "Still Owing",
+            "type": "boolean"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          },
+          "total_grams": {
+            "title": "Total Grams",
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "date",
+          "customer",
+          "shipping_charged",
+          "note",
+          "payment",
+          "total",
+          "lines",
+          "total_grams",
+          "still_owing"
+        ],
+        "title": "SaleDetailOut",
+        "type": "object"
+      },
+      "SaleIn": {
+        "properties": {
+          "customer_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customer Id"
+          },
+          "date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/LineIn"
+            },
+            "title": "Lines",
+            "type": "array"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "payment": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentMethod"
+              },
+              {
+                "const": "owing",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payment"
+          },
+          "shipping_charged": {
+            "default": 0,
+            "title": "Shipping Charged",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "lines"
+        ],
+        "title": "SaleIn",
+        "type": "object"
+      },
+      "SaleLineDetailOut": {
+        "description": "`SaleLineOut`'s fields plus the line's cost of goods (ADR-0009).",
+        "properties": {
+          "cost": {
+            "$ref": "#/components/schemas/LineCostOut"
+          },
+          "grams": {
+            "title": "Grams",
+            "type": "number"
+          },
+          "line_total": {
+            "title": "Line Total",
+            "type": "integer"
+          },
+          "price_per_gram": {
+            "title": "Price Per Gram",
+            "type": "integer"
+          },
+          "pricing_rule": {
+            "$ref": "#/components/schemas/PricingRule"
+          },
+          "variety_id": {
+            "title": "Variety Id",
+            "type": "integer"
+          },
+          "variety_name": {
+            "title": "Variety Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "variety_id",
+          "variety_name",
+          "grams",
+          "pricing_rule",
+          "price_per_gram",
+          "line_total",
+          "cost"
+        ],
+        "title": "SaleLineDetailOut",
+        "type": "object"
+      },
+      "SaleLineOut": {
+        "properties": {
+          "grams": {
+            "title": "Grams",
+            "type": "number"
+          },
+          "line_total": {
+            "title": "Line Total",
+            "type": "integer"
+          },
+          "price_per_gram": {
+            "title": "Price Per Gram",
+            "type": "integer"
+          },
+          "pricing_rule": {
+            "$ref": "#/components/schemas/PricingRule"
+          },
+          "variety_id": {
+            "title": "Variety Id",
+            "type": "integer"
+          },
+          "variety_name": {
+            "title": "Variety Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "variety_id",
+          "variety_name",
+          "grams",
+          "pricing_rule",
+          "price_per_gram",
+          "line_total"
+        ],
+        "title": "SaleLineOut",
+        "type": "object"
+      },
+      "SaleOut": {
+        "properties": {
+          "customer": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SaleCustomerOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/SaleLineOut"
+            },
+            "title": "Lines",
+            "type": "array"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "payment": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentMethod"
+              },
+              {
+                "enum": [
+                  "owing",
+                  "none"
+                ],
+                "type": "string"
+              }
+            ],
+            "title": "Payment"
+          },
+          "shipping_charged": {
+            "title": "Shipping Charged",
+            "type": "integer"
+          },
+          "still_owing": {
+            "title": "Still Owing",
+            "type": "boolean"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "date",
+          "customer",
+          "shipping_charged",
+          "note",
+          "payment",
+          "total",
+          "lines",
+          "still_owing"
+        ],
+        "title": "SaleOut",
+        "type": "object"
+      },
+      "SaleRefOut": {
+        "properties": {
+          "how_paid": {
+            "enum": [
+              "cash",
+              "transfer",
+              "owing",
+              "none"
+            ],
+            "title": "How Paid",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "total",
+          "how_paid"
+        ],
+        "title": "SaleRefOut",
+        "type": "object"
+      },
+      "SessionOut": {
+        "properties": {
+          "token": {
+            "title": "Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "token"
+        ],
+        "title": "SessionOut",
+        "type": "object"
+      },
+      "SinceFirstRecordOut": {
+        "properties": {
+          "cash": {
+            "title": "Cash",
+            "type": "integer"
+          },
+          "expenses": {
+            "title": "Expenses",
+            "type": "integer"
+          },
+          "own_use": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AmountWithPendingOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "profit": {
+            "$ref": "#/components/schemas/AmountWithPendingOut"
+          },
+          "promotion": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AmountWithPendingOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sales": {
+            "title": "Sales",
+            "type": "integer"
+          },
+          "shortfall": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AmountWithPendingOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "sales",
+          "expenses",
+          "profit",
+          "cash",
+          "shortfall",
+          "promotion",
+          "own_use"
+        ],
+        "title": "SinceFirstRecordOut",
+        "type": "object"
+      },
+      "StepOut": {
+        "properties": {
+          "state": {
+            "$ref": "#/components/schemas/StepState"
+          },
+          "step": {
+            "enum": [
+              "variety",
+              "stock",
+              "header_footer",
+              "bot",
+              "partner",
+              "categories"
+            ],
+            "title": "Step",
+            "type": "string"
+          }
+        },
+        "required": [
+          "step",
+          "state"
+        ],
+        "title": "StepOut",
+        "type": "object"
+      },
+      "StepState": {
+        "enum": [
+          "done",
+          "skipped",
+          "pending"
+        ],
+        "title": "StepState",
+        "type": "string"
+      },
+      "StockOut": {
+        "description": "`GET /stock`'s own shape: the business's total grams, every variety's own row,\nand its entries, newest date first then most recently recorded first.",
+        "properties": {
+          "entries": {
+            "items": {
+              "$ref": "#/components/schemas/EntryOut"
+            },
+            "title": "Entries",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "number"
+          },
+          "varieties": {
+            "items": {
+              "$ref": "#/components/schemas/VarietyStockOut"
+            },
+            "title": "Varieties",
+            "type": "array"
+          }
+        },
+        "required": [
+          "total",
+          "varieties",
+          "entries"
+        ],
+        "title": "StockOut",
+        "type": "object"
+      },
+      "TargetOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "TargetOut",
+        "type": "object"
+      },
+      "ThresholdIn": {
+        "description": "`PUT /stock/varieties/{variety_id}/threshold`'s body: `None` turns the\nthreshold off, rather than storing a zero or negative one (`Threshold.of`\nrefuses both).",
+        "properties": {
+          "grams": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Grams"
+          }
+        },
+        "title": "ThresholdIn",
+        "type": "object"
+      },
+      "UserOut": {
+        "properties": {
+          "email": {
+            "title": "Email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "title": "UserOut",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      },
+      "VarietyDetailOut": {
+        "description": "One variety's page: also the one removal action it offers, worked out from history\nwhen it is read (`null` for an archived variety).",
+        "properties": {
+          "archived": {
+            "title": "Archived",
+            "type": "boolean"
+          },
+          "current_price": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PriceEntryOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "removal": {
+            "anyOf": [
+              {
+                "enum": [
+                  "delete",
+                  "archive"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Removal"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "current_price",
+          "archived",
+          "removal"
+        ],
+        "title": "VarietyDetailOut",
+        "type": "object"
+      },
+      "VarietyIn": {
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "VarietyIn",
+        "type": "object"
+      },
+      "VarietyOut": {
+        "properties": {
+          "archived": {
+            "title": "Archived",
+            "type": "boolean"
+          },
+          "current_price": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PriceEntryOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "current_price",
+          "archived"
+        ],
+        "title": "VarietyOut",
+        "type": "object"
+      },
+      "VarietyRowOut": {
+        "properties": {
+          "cost": {
+            "$ref": "#/components/schemas/CostOut"
+          },
+          "grams_gifted": {
+            "title": "Grams Gifted",
+            "type": "number"
+          },
+          "grams_sold": {
+            "title": "Grams Sold",
+            "type": "number"
+          },
+          "margin": {
+            "$ref": "#/components/schemas/MarginOut"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "sales_without_shipping": {
+            "title": "Sales Without Shipping",
+            "type": "integer"
+          },
+          "share_percent": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Share Percent"
+          },
+          "variety_id": {
+            "title": "Variety Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "variety_id",
+          "name",
+          "sales_without_shipping",
+          "share_percent",
+          "grams_sold",
+          "grams_gifted",
+          "cost",
+          "margin"
+        ],
+        "title": "VarietyRowOut",
+        "type": "object"
+      },
+      "VarietyStockOut": {
+        "description": "One variety's row in `GET /stock` (and the threshold route's own response):\ncomputed only by `stock_level` over `lots_and_draws` (stock-domain), never by a\nSQL aggregate or front code.",
+        "properties": {
+          "days_left": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Days Left"
+          },
+          "grams": {
+            "title": "Grams",
+            "type": "number"
+          },
+          "sold_out_since": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sold Out Since"
+          },
+          "status": {
+            "enum": [
+              "no_entries",
+              "sold_out",
+              "low",
+              "ok"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "threshold": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Threshold"
+          },
+          "variety_id": {
+            "title": "Variety Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "variety_id",
+          "grams",
+          "status",
+          "sold_out_since",
+          "threshold",
+          "days_left"
+        ],
+        "title": "VarietyStockOut",
+        "type": "object"
+      },
+      "WeekOut": {
+        "properties": {
+          "best": {
+            "title": "Best",
+            "type": "boolean"
+          },
+          "cash": {
+            "title": "Cash",
+            "type": "integer"
+          },
+          "expenses": {
+            "title": "Expenses",
+            "type": "integer"
+          },
+          "first_day": {
+            "format": "date",
+            "title": "First Day",
+            "type": "string"
+          },
+          "grams": {
+            "title": "Grams",
+            "type": "number"
+          },
+          "last_day": {
+            "format": "date",
+            "title": "Last Day",
+            "type": "string"
+          },
+          "own_use": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AmountWithPendingOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "profit": {
+            "$ref": "#/components/schemas/AmountWithPendingOut"
+          },
+          "promotion": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AmountWithPendingOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sales": {
+            "title": "Sales",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "first_day",
+          "last_day",
+          "sales",
+          "grams",
+          "expenses",
+          "promotion",
+          "own_use",
+          "profit",
+          "cash",
+          "best"
+        ],
+        "title": "WeekOut",
+        "type": "object"
+      },
+      "WeekdayOut": {
+        "properties": {
+          "best": {
+            "title": "Best",
+            "type": "boolean"
+          },
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "sales": {
+            "title": "Sales",
+            "type": "integer"
+          },
+          "weekday": {
+            "title": "Weekday",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "weekday",
+          "sales",
+          "count",
+          "best"
+        ],
+        "title": "WeekdayOut",
+        "type": "object"
+      },
+      "WithdrawalIn": {
+        "description": "Bare (ADR-0005): `reason` is optional here so a missing one is the domain's\ncoded refusal, not a pydantic error that would echo the input.",
+        "properties": {
+          "date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/WithdrawalLineIn"
+            },
+            "title": "Lines",
+            "type": "array"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "required": [
+          "lines"
+        ],
+        "title": "WithdrawalIn",
+        "type": "object"
+      },
+      "WithdrawalLineIn": {
+        "properties": {
+          "grams": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Grams"
+          },
+          "variety_id": {
+            "title": "Variety Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "variety_id",
+          "grams"
+        ],
+        "title": "WithdrawalLineIn",
+        "type": "object"
+      },
+      "WithdrawalLineOut": {
+        "properties": {
+          "grams": {
+            "title": "Grams",
+            "type": "number"
+          },
+          "variety_id": {
+            "title": "Variety Id",
+            "type": "integer"
+          },
+          "variety_name": {
+            "title": "Variety Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "variety_id",
+          "variety_name",
+          "grams"
+        ],
+        "title": "WithdrawalLineOut",
+        "type": "object"
+      },
+      "WithdrawalMovementOut": {
+        "properties": {
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "grams": {
+            "title": "Grams",
+            "type": "number"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "kind": {
+            "const": "withdrawal",
+            "default": "withdrawal",
+            "title": "Kind",
+            "type": "string"
+          },
+          "reason": {
+            "$ref": "#/components/schemas/WithdrawalReason"
+          }
+        },
+        "required": [
+          "id",
+          "date",
+          "reason",
+          "grams"
+        ],
+        "title": "WithdrawalMovementOut",
+        "type": "object"
+      },
+      "WithdrawalOut": {
+        "properties": {
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/WithdrawalLineOut"
+            },
+            "title": "Lines",
+            "type": "array"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "reason": {
+            "$ref": "#/components/schemas/WithdrawalReason"
+          },
+          "total_grams": {
+            "title": "Total Grams",
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "reason",
+          "date",
+          "note",
+          "total_grams",
+          "lines"
+        ],
+        "title": "WithdrawalOut",
+        "type": "object"
+      },
+      "WithdrawalReason": {
+        "description": "Why grams were taken out of stock with no sale (CONTEXT.md: Promotion, Own\nuse). The values are what the database stores.",
+        "enum": [
+          "promotion",
+          "own_use"
+        ],
+        "title": "WithdrawalReason",
+        "type": "string"
+      },
+      "app__payments__adapters__schemas__DebtorOut": {
+        "properties": {
+          "balance": {
+            "title": "Balance",
+            "type": "integer"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/DebtorCustomerOut"
+          },
+          "owing_since": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owing Since"
+          },
+          "standing": {
+            "enum": [
+              "owes",
+              "credit",
+              "settled"
+            ],
+            "title": "Standing",
+            "type": "string"
+          }
+        },
+        "required": [
+          "customer",
+          "balance",
+          "owing_since",
+          "standing"
+        ],
+        "title": "DebtorOut",
+        "type": "object"
+      },
+      "app__results__adapters__schemas__DebtorOut": {
+        "properties": {
+          "balance": {
+            "title": "Balance",
+            "type": "integer"
+          },
+          "customer_id": {
+            "title": "Customer Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "owing_since": {
+            "format": "date",
+            "title": "Owing Since",
+            "type": "string"
+          }
+        },
+        "required": [
+          "customer_id",
+          "name",
+          "balance",
+          "owing_since"
+        ],
+        "title": "DebtorOut",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "title": "apostrophe",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/analysis": {
+      "get": {
+        "operationId": "get_analysis_analysis_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "month",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Month"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalysisOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Analysis",
+        "tags": [
+          "results"
+        ]
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "operationId": "login_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Login",
+        "tags": [
+          "accounts"
+        ]
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "operationId": "logout_auth_logout_post",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Logout",
+        "tags": [
+          "accounts"
+        ]
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "operationId": "me_auth_me_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Me",
+        "tags": [
+          "accounts"
+        ]
+      }
+    },
+    "/auth/password": {
+      "post": {
+        "description": "Only a missing or invalid session answers 401 here (docs/adr/0019): a wrong\ncurrent password is a 422, never a 401.",
+        "operationId": "change_password_route_auth_password_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Change Password Route",
+        "tags": [
+          "accounts"
+        ]
+      }
+    },
+    "/business": {
+      "get": {
+        "operationId": "get_business_business_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Business",
+        "tags": [
+          "accounts"
+        ]
+      },
+      "patch": {
+        "operationId": "rename_business_business_patch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BusinessPatchIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Rename Business",
+        "tags": [
+          "accounts"
+        ]
+      }
+    },
+    "/catalog": {
+      "get": {
+        "operationId": "get_catalog_catalog_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Catalog",
+        "tags": [
+          "catalog"
+        ]
+      }
+    },
+    "/catalog/header-footer": {
+      "put": {
+        "operationId": "put_header_footer_catalog_header_footer_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HeaderFooterIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Put Header Footer",
+        "tags": [
+          "catalog"
+        ]
+      }
+    },
+    "/catalog/varieties/{variety_id}": {
+      "put": {
+        "operationId": "put_variety_attributes_catalog_varieties__variety_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "variety_id",
+            "required": true,
+            "schema": {
+              "title": "Variety Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CatalogAttributesIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Put Variety Attributes",
+        "tags": [
+          "catalog"
+        ]
+      }
+    },
+    "/customers": {
+      "get": {
+        "operationId": "list_customers_customers_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "default": "",
+              "title": "Q",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CustomerOut"
+                  },
+                  "title": "Response List Customers Customers Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Customers",
+        "tags": [
+          "customers"
+        ]
+      },
+      "post": {
+        "operationId": "register_customer_customers_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Register Customer",
+        "tags": [
+          "customers"
+        ]
+      }
+    },
+    "/customers/{customer_id}": {
+      "get": {
+        "operationId": "get_customer_customers__customer_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "customer_id",
+            "required": true,
+            "schema": {
+              "title": "Customer Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Customer",
+        "tags": [
+          "customers"
+        ]
+      },
+      "patch": {
+        "operationId": "edit_customer_customers__customer_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "customer_id",
+            "required": true,
+            "schema": {
+              "title": "Customer Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerPatchIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Edit Customer",
+        "tags": [
+          "customers"
+        ]
+      }
+    },
+    "/customers/{customer_id}/account": {
+      "get": {
+        "operationId": "get_account_customers__customer_id__account_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "customer_id",
+            "required": true,
+            "schema": {
+              "title": "Customer Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Account",
+        "tags": [
+          "payments"
+        ]
+      }
+    },
+    "/customers/{customer_id}/payments": {
+      "post": {
+        "operationId": "record_payment_customers__customer_id__payments_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "customer_id",
+            "required": true,
+            "schema": {
+              "title": "Customer Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecordPaymentOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Record Payment",
+        "tags": [
+          "payments"
+        ]
+      }
+    },
+    "/customers/{customer_id}/payments/preview": {
+      "post": {
+        "operationId": "preview_payment_customers__customer_id__payments_preview_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "customer_id",
+            "required": true,
+            "schema": {
+              "title": "Customer Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentPreviewIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentPreviewOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Preview Payment",
+        "tags": [
+          "payments"
+        ]
+      }
+    },
+    "/expense-categories": {
+      "get": {
+        "operationId": "list_categories_expense_categories_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CategoryOut"
+                  },
+                  "title": "Response List Categories Expense Categories Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Categories",
+        "tags": [
+          "expenses"
+        ]
+      },
+      "post": {
+        "operationId": "add_category_expense_categories_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CategoryIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Add Category",
+        "tags": [
+          "expenses"
+        ]
+      }
+    },
+    "/expense-categories/{category_id}": {
+      "delete": {
+        "operationId": "remove_category_expense_categories__category_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "category_id",
+            "required": true,
+            "schema": {
+              "title": "Category Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Remove Category",
+        "tags": [
+          "expenses"
+        ]
+      },
+      "patch": {
+        "operationId": "rename_category_expense_categories__category_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "category_id",
+            "required": true,
+            "schema": {
+              "title": "Category Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CategoryIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Rename Category",
+        "tags": [
+          "expenses"
+        ]
+      }
+    },
+    "/expenses": {
+      "get": {
+        "operationId": "monthly_view_expenses_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "month",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Month"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MonthlyViewOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Monthly View",
+        "tags": [
+          "expenses"
+        ]
+      },
+      "post": {
+        "operationId": "record_expense_expenses_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExpenseIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExpenseOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Record Expense",
+        "tags": [
+          "expenses"
+        ]
+      }
+    },
+    "/expenses/{expense_id}": {
+      "delete": {
+        "operationId": "delete_expense_expenses__expense_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "expense_id",
+            "required": true,
+            "schema": {
+              "title": "Expense Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Expense",
+        "tags": [
+          "expenses"
+        ]
+      },
+      "put": {
+        "operationId": "edit_expense_expenses__expense_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "expense_id",
+            "required": true,
+            "schema": {
+              "title": "Expense Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExpenseIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExpenseOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Edit Expense",
+        "tags": [
+          "expenses"
+        ]
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Health Health Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Health",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/invitations": {
+      "post": {
+        "description": "A link that adds one more user to the caller's own business.",
+        "operationId": "invite_partner_invitations_post",
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitationOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Invite Partner",
+        "tags": [
+          "accounts"
+        ]
+      }
+    },
+    "/invitations/{token}": {
+      "get": {
+        "operationId": "look_up_invitation_invitations__token__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "title": "Token",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitationViewOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Look Up Invitation",
+        "tags": [
+          "accounts"
+        ]
+      }
+    },
+    "/invitations/{token}/accept": {
+      "post": {
+        "operationId": "accept_invitation_invitations__token__accept_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "title": "Token",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Accept Invitation",
+        "tags": [
+          "accounts"
+        ]
+      }
+    },
+    "/onboarding-progress": {
+      "get": {
+        "operationId": "get_progress_onboarding_progress_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProgressOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Progress",
+        "tags": [
+          "onboarding"
+        ]
+      }
+    },
+    "/onboarding-progress/advance": {
+      "post": {
+        "operationId": "post_advance_onboarding_progress_advance_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProgressOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Post Advance",
+        "tags": [
+          "onboarding"
+        ]
+      }
+    },
+    "/onboarding-progress/passes": {
+      "post": {
+        "operationId": "post_pass_onboarding_progress_passes_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PassIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProgressOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Post Pass",
+        "tags": [
+          "onboarding"
+        ]
+      }
+    },
+    "/onboarding-progress/skip-rest": {
+      "post": {
+        "operationId": "post_skip_rest_onboarding_progress_skip_rest_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProgressOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Post Skip Rest",
+        "tags": [
+          "onboarding"
+        ]
+      }
+    },
+    "/panel": {
+      "get": {
+        "operationId": "get_panel_panel_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PanelOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Panel",
+        "tags": [
+          "results"
+        ]
+      }
+    },
+    "/payments/debtors": {
+      "get": {
+        "operationId": "get_debtors_payments_debtors_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DebtorsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Debtors",
+        "tags": [
+          "payments"
+        ]
+      }
+    },
+    "/payments/{payment_id}": {
+      "delete": {
+        "operationId": "delete_payment_payments__payment_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "payment_id",
+            "required": true,
+            "schema": {
+              "title": "Payment Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Payment",
+        "tags": [
+          "payments"
+        ]
+      }
+    },
+    "/pinned-catalog": {
+      "get": {
+        "operationId": "get_pinned_catalog_pinned_catalog_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PinnedCatalogOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Pinned Catalog",
+        "tags": [
+          "pinned_catalog"
+        ]
+      }
+    },
+    "/pinned-catalog/own-chat-lookup": {
+      "post": {
+        "operationId": "post_pinned_catalog_own_chat_lookup_pinned_catalog_own_chat_lookup_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OwnChatLookupIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OwnChatLookupOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Post Pinned Catalog Own Chat Lookup",
+        "tags": [
+          "pinned_catalog"
+        ]
+      }
+    },
+    "/pinned-catalog/publish": {
+      "post": {
+        "operationId": "post_pinned_catalog_publish_pinned_catalog_publish_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PinnedCatalogOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Post Pinned Catalog Publish",
+        "tags": [
+          "pinned_catalog"
+        ]
+      }
+    },
+    "/pinned-catalog/status": {
+      "get": {
+        "operationId": "get_pinned_catalog_status_pinned_catalog_status_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PinnedCatalogStatusOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Pinned Catalog Status",
+        "tags": [
+          "pinned_catalog"
+        ]
+      }
+    },
+    "/pinned-catalog/test": {
+      "post": {
+        "operationId": "post_pinned_catalog_test_pinned_catalog_test_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PinnedCatalogTestIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PinnedCatalogTestOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Post Pinned Catalog Test",
+        "tags": [
+          "pinned_catalog"
+        ]
+      }
+    },
+    "/pricing-settings": {
+      "get": {
+        "operationId": "get_pricing_settings_pricing_settings_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PricingSettingsBody"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Pricing Settings",
+        "tags": [
+          "pricing-settings"
+        ]
+      },
+      "put": {
+        "operationId": "put_pricing_settings_pricing_settings_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PricingSettingsBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PricingSettingsBody"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Put Pricing Settings",
+        "tags": [
+          "pricing-settings"
+        ]
+      }
+    },
+    "/reset-links/{token}": {
+      "get": {
+        "operationId": "look_up_reset_link_reset_links__token__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "title": "Token",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Look Up Reset Link",
+        "tags": [
+          "accounts"
+        ]
+      },
+      "post": {
+        "operationId": "submit_reset_link_reset_links__token__post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "title": "Token",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetSubmitIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Submit Reset Link",
+        "tags": [
+          "accounts"
+        ]
+      }
+    },
+    "/sales": {
+      "get": {
+        "operationId": "list_sales_sales_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "date_from",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date From"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date_to",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Date To"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SaleOut"
+                  },
+                  "title": "Response List Sales Sales Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Sales",
+        "tags": [
+          "sales"
+        ]
+      },
+      "post": {
+        "operationId": "record_sale_sales_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaleIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaleOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Record Sale",
+        "tags": [
+          "sales"
+        ]
+      }
+    },
+    "/sales/{sale_id}": {
+      "delete": {
+        "operationId": "delete_sale_sales__sale_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "sale_id",
+            "required": true,
+            "schema": {
+              "title": "Sale Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteSaleOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Sale",
+        "tags": [
+          "sales"
+        ]
+      },
+      "get": {
+        "operationId": "get_sale_sales__sale_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "sale_id",
+            "required": true,
+            "schema": {
+              "title": "Sale Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaleDetailOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Sale",
+        "tags": [
+          "sales"
+        ]
+      }
+    },
+    "/sales/{sale_id}/customer": {
+      "put": {
+        "operationId": "assign_customer_sales__sale_id__customer_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "sale_id",
+            "required": true,
+            "schema": {
+              "title": "Sale Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignCustomerIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaleOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Assign Customer",
+        "tags": [
+          "sales"
+        ]
+      }
+    },
+    "/stock": {
+      "get": {
+        "description": "`archived=true` answers the archived varieties' rows instead of the listed ones;\nthe total and the entries are the business's either way.",
+        "operationId": "get_stock_stock_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "archived",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Archived",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Stock",
+        "tags": [
+          "stock"
+        ]
+      }
+    },
+    "/stock/entries": {
+      "post": {
+        "operationId": "record_entry_stock_entries_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EntryIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntryOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Record Entry",
+        "tags": [
+          "stock"
+        ]
+      }
+    },
+    "/stock/entries/{stock_entry_id}": {
+      "delete": {
+        "operationId": "delete_entry_stock_entries__stock_entry_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "stock_entry_id",
+            "required": true,
+            "schema": {
+              "title": "Stock Entry Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Entry",
+        "tags": [
+          "stock"
+        ]
+      },
+      "get": {
+        "operationId": "get_entry_stock_entries__stock_entry_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "stock_entry_id",
+            "required": true,
+            "schema": {
+              "title": "Stock Entry Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntryOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Entry",
+        "tags": [
+          "stock"
+        ]
+      },
+      "put": {
+        "operationId": "edit_entry_stock_entries__stock_entry_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "stock_entry_id",
+            "required": true,
+            "schema": {
+              "title": "Stock Entry Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EntryIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntryOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Edit Entry",
+        "tags": [
+          "stock"
+        ]
+      }
+    },
+    "/stock/varieties/{variety_id}/movements": {
+      "get": {
+        "operationId": "get_movements_stock_varieties__variety_id__movements_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "variety_id",
+            "required": true,
+            "schema": {
+              "title": "Variety Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "anyOf": [
+                      {
+                        "$ref": "#/components/schemas/EntryMovementOut"
+                      },
+                      {
+                        "$ref": "#/components/schemas/WithdrawalMovementOut"
+                      }
+                    ]
+                  },
+                  "title": "Response Get Movements Stock Varieties  Variety Id  Movements Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Movements",
+        "tags": [
+          "stock"
+        ]
+      }
+    },
+    "/stock/varieties/{variety_id}/threshold": {
+      "put": {
+        "operationId": "set_threshold_stock_varieties__variety_id__threshold_put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "variety_id",
+            "required": true,
+            "schema": {
+              "title": "Variety Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ThresholdIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VarietyStockOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Set Threshold",
+        "tags": [
+          "stock"
+        ]
+      }
+    },
+    "/stock/withdrawals": {
+      "post": {
+        "operationId": "record_withdrawal_stock_withdrawals_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WithdrawalIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WithdrawalOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Record Withdrawal",
+        "tags": [
+          "stock"
+        ]
+      }
+    },
+    "/stock/withdrawals/{withdrawal_id}": {
+      "delete": {
+        "operationId": "delete_withdrawal_stock_withdrawals__withdrawal_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "withdrawal_id",
+            "required": true,
+            "schema": {
+              "title": "Withdrawal Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Withdrawal",
+        "tags": [
+          "stock"
+        ]
+      },
+      "get": {
+        "operationId": "get_withdrawal_stock_withdrawals__withdrawal_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "withdrawal_id",
+            "required": true,
+            "schema": {
+              "title": "Withdrawal Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WithdrawalOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Withdrawal",
+        "tags": [
+          "stock"
+        ]
+      },
+      "put": {
+        "operationId": "edit_withdrawal_stock_withdrawals__withdrawal_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "withdrawal_id",
+            "required": true,
+            "schema": {
+              "title": "Withdrawal Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WithdrawalIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WithdrawalOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Edit Withdrawal",
+        "tags": [
+          "stock"
+        ]
+      }
+    },
+    "/varieties": {
+      "get": {
+        "description": "Each variety's current price as of `on` (today when omitted, docs/adr/0011),\ninside the session's own business. Archived varieties only with `archived=true`.",
+        "operationId": "list_varieties_varieties_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "on",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "On"
+            }
+          },
+          {
+            "in": "query",
+            "name": "archived",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Archived",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/VarietyOut"
+                  },
+                  "title": "Response List Varieties Varieties Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Varieties",
+        "tags": [
+          "varieties"
+        ]
+      },
+      "post": {
+        "operationId": "register_variety_varieties_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VarietyIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VarietyOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Register Variety",
+        "tags": [
+          "varieties"
+        ]
+      }
+    },
+    "/varieties/{variety_id}": {
+      "delete": {
+        "operationId": "delete_variety_varieties__variety_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "variety_id",
+            "required": true,
+            "schema": {
+              "title": "Variety Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Variety",
+        "tags": [
+          "varieties"
+        ]
+      },
+      "get": {
+        "operationId": "get_variety_varieties__variety_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "variety_id",
+            "required": true,
+            "schema": {
+              "title": "Variety Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VarietyDetailOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Variety",
+        "tags": [
+          "varieties"
+        ]
+      },
+      "patch": {
+        "operationId": "rename_variety_varieties__variety_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "variety_id",
+            "required": true,
+            "schema": {
+              "title": "Variety Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VarietyIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VarietyOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Rename Variety",
+        "tags": [
+          "varieties"
+        ]
+      }
+    },
+    "/varieties/{variety_id}/archive": {
+      "post": {
+        "operationId": "archive_variety_varieties__variety_id__archive_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "variety_id",
+            "required": true,
+            "schema": {
+              "title": "Variety Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VarietyOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Archive Variety",
+        "tags": [
+          "varieties"
+        ]
+      }
+    },
+    "/varieties/{variety_id}/current-price": {
+      "get": {
+        "description": "The price entry in force on `on` (today when omitted); 404 when there is none.",
+        "operationId": "current_price_varieties__variety_id__current_price_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "variety_id",
+            "required": true,
+            "schema": {
+              "title": "Variety Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "on",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "On"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PriceEntryOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Current Price",
+        "tags": [
+          "varieties"
+        ]
+      }
+    },
+    "/varieties/{variety_id}/prices": {
+      "get": {
+        "operationId": "price_history_varieties__variety_id__prices_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "variety_id",
+            "required": true,
+            "schema": {
+              "title": "Variety Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PriceEntryOut"
+                  },
+                  "title": "Response Price History Varieties  Variety Id  Prices Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Price History",
+        "tags": [
+          "varieties"
+        ]
+      },
+      "post": {
+        "operationId": "record_price_entry_varieties__variety_id__prices_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "variety_id",
+            "required": true,
+            "schema": {
+              "title": "Variety Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PriceEntryIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PriceEntryOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Record Price Entry",
+        "tags": [
+          "varieties"
+        ]
+      }
+    },
+    "/varieties/{variety_id}/prices/{entry_id}": {
+      "delete": {
+        "operationId": "delete_price_entry_varieties__variety_id__prices__entry_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "variety_id",
+            "required": true,
+            "schema": {
+              "title": "Variety Id",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "entry_id",
+            "required": true,
+            "schema": {
+              "title": "Entry Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Price Entry",
+        "tags": [
+          "varieties"
+        ]
+      }
+    },
+    "/varieties/{variety_id}/restore": {
+      "post": {
+        "operationId": "restore_variety_varieties__variety_id__restore_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "variety_id",
+            "required": true,
+            "schema": {
+              "title": "Variety Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VarietyOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Restore Variety",
+        "tags": [
+          "varieties"
+        ]
+      }
+    }
+  }
+}

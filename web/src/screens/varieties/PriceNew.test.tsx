@@ -9,8 +9,18 @@ import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import { catalogQueryOptions } from '../../api/catalog'
-import { VARIETY, VARIETY_PRICE_NEW } from '../../routes'
-import { ME, api, jsonResponse, renderVarieties, writes } from './renderVarieties'
+import { VARIETY, VARIETY_PRICE_NEW, pathTo } from '../../routes'
+import { ME, api, jsonResponse, renderVarieties, writes, type FetchImpl } from './renderVarieties'
+
+const VARIETY_PATH = pathTo(VARIETY, { id: 1 })
+const NEW_PATH = pathTo(VARIETY_PRICE_NEW, { id: 1 })
+
+/** Opens the form the way the seller does: from the variety's page, by "Nuevo precio". */
+async function renderOpened(fetchImpl: FetchImpl) {
+  const rendered = renderVarieties([VARIETY_PATH], fetchImpl)
+  await userEvent.click(await screen.findByRole('link', { name: 'Nuevo precio' }))
+  return rendered
+}
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -26,9 +36,7 @@ const CREATED = jsonResponse(201, {
 
 test('the date starts as today and a save posts the amounts, goes back and toasts "Precio guardado" once', async () => {
   const user = userEvent.setup()
-  const { router, fetchMock } = renderVarieties(
-    [VARIETY(1), VARIETY_PRICE_NEW(1)],
-    api({ 'POST /varieties/1/prices': () => CREATED.clone() }),
+  const { router, fetchMock } = await renderOpened(api({ 'POST /varieties/1/prices': () => CREATED.clone() }),
   )
 
   expect(await screen.findByLabelText('Rige desde')).toHaveValue(ME.today)
@@ -36,7 +44,7 @@ test('the date starts as today and a save posts the amounts, goes back and toast
   await user.click(screen.getByRole('button', { name: 'Guardá el precio' }))
 
   expect(await screen.findByText('Página de la variedad')).toBeInTheDocument()
-  expect(router.state.location.pathname).toBe(VARIETY(1))
+  expect(router.state.location.pathname).toBe(VARIETY_PATH)
   expect(await screen.findAllByText('Precio guardado')).toHaveLength(1)
   expect(writes(fetchMock)).toEqual([
     { call: 'POST /varieties/1/prices', body: { effective_from: ME.today, list_price: 12000 } },
@@ -45,9 +53,7 @@ test('the date starts as today and a save posts the amounts, goes back and toast
 
 test('a save sends the bulk tier when one is typed', async () => {
   const user = userEvent.setup()
-  const { fetchMock } = renderVarieties(
-    [VARIETY(1), VARIETY_PRICE_NEW(1)],
-    api({ 'POST /varieties/1/prices': () => CREATED.clone() }),
+  const { fetchMock } = await renderOpened(api({ 'POST /varieties/1/prices': () => CREATED.clone() }),
   )
 
   await user.type(await screen.findByLabelText(/^Precio de lista/), '12000')
@@ -66,9 +72,7 @@ test('a save sends the bulk tier when one is typed', async () => {
 
 test('a save marks the catalog stale', async () => {
   const user = userEvent.setup()
-  const { queryClient } = renderVarieties(
-    [VARIETY(1), VARIETY_PRICE_NEW(1)],
-    api({ 'POST /varieties/1/prices': () => CREATED.clone() }),
+  const { queryClient } = await renderOpened(api({ 'POST /varieties/1/prices': () => CREATED.clone() }),
   )
   queryClient.setQueryData(catalogQueryOptions().queryKey, { text: null, header: '', footer: '', varieties: [] })
 
@@ -81,9 +85,7 @@ test('a save marks the catalog stale', async () => {
 
 test('a repeated date is refused under "Rige desde" and keeps what was typed', async () => {
   const user = userEvent.setup()
-  const { router } = renderVarieties(
-    [VARIETY(1), VARIETY_PRICE_NEW(1)],
-    api({
+  const { router } = await renderOpened(api({
       'POST /varieties/1/prices': () => jsonResponse(409, { code: 'variety.duplicate_effective_date' }),
     }),
   )
@@ -94,14 +96,12 @@ test('a repeated date is refused under "Rige desde" and keeps what was typed', a
   const alert = await screen.findByText('Ya cargaste un precio con esa fecha')
   expect(alert.closest('label')).toHaveTextContent('Rige desde')
   expect(screen.getByLabelText(/^Precio de lista/)).toHaveValue('12000')
-  expect(router.state.location.pathname).toBe(VARIETY_PRICE_NEW(1))
+  expect(router.state.location.pathname).toBe(NEW_PATH)
 })
 
 test('an invalid price set is refused under "Precio de lista"', async () => {
   const user = userEvent.setup()
-  renderVarieties(
-    [VARIETY(1), VARIETY_PRICE_NEW(1)],
-    api({ 'POST /varieties/1/prices': () => jsonResponse(422, { code: 'variety.price_entry_invalid' }) }),
+  await renderOpened(api({ 'POST /varieties/1/prices': () => jsonResponse(422, { code: 'variety.price_entry_invalid' }) }),
   )
 
   await user.type(await screen.findByLabelText(/^Precio de lista/), '12000')
@@ -113,9 +113,7 @@ test('an invalid price set is refused under "Precio de lista"', async () => {
 
 test('a grams refusal is shown under "Mínimo en gramos"', async () => {
   const user = userEvent.setup()
-  renderVarieties(
-    [VARIETY(1), VARIETY_PRICE_NEW(1)],
-    api({ 'POST /varieties/1/prices': () => jsonResponse(422, { code: 'grams.invalid' }) }),
+  await renderOpened(api({ 'POST /varieties/1/prices': () => jsonResponse(422, { code: 'grams.invalid' }) }),
   )
 
   await user.type(await screen.findByLabelText(/^Precio de lista/), '12000')
@@ -127,7 +125,7 @@ test('a grams refusal is shown under "Mínimo en gramos"', async () => {
 
 test('an amount that is not a number is refused under its field and nothing is sent', async () => {
   const user = userEvent.setup()
-  const { fetchMock } = renderVarieties([VARIETY(1), VARIETY_PRICE_NEW(1)], api())
+  const { fetchMock } = await renderOpened(api())
 
   await user.type(await screen.findByLabelText(/^Precio de lista/), 'abc')
   await user.click(screen.getByRole('button', { name: 'Guardá el precio' }))
@@ -140,27 +138,27 @@ test('an amount that is not a number is refused under its field and nothing is s
 
 test('an untouched form closes at once, back to the page that opened it', async () => {
   const user = userEvent.setup()
-  const { router } = renderVarieties([VARIETY(1), VARIETY_PRICE_NEW(1)], api())
+  const { router } = await renderOpened(api())
 
   await user.click(await screen.findByRole('button', { name: 'Cerrar' }))
 
   expect(await screen.findByText('Página de la variedad')).toBeInTheDocument()
-  expect(router.state.location.pathname).toBe(VARIETY(1))
+  expect(router.state.location.pathname).toBe(VARIETY_PATH)
 })
 
 test('with no history, "Cerrar" goes to the variety\'s page', async () => {
   const user = userEvent.setup()
-  const { router } = renderVarieties([VARIETY_PRICE_NEW(1)], api())
+  const { router } = renderVarieties([NEW_PATH], api())
 
   await user.click(await screen.findByRole('button', { name: 'Cerrar' }))
 
   expect(await screen.findByText('Página de la variedad')).toBeInTheDocument()
-  expect(router.state.location.pathname).toBe(VARIETY(1))
+  expect(router.state.location.pathname).toBe(VARIETY_PATH)
 })
 
 test('closing with something typed asks first; staying keeps it, discarding saves nothing', async () => {
   const user = userEvent.setup()
-  const { router, fetchMock } = renderVarieties([VARIETY(1), VARIETY_PRICE_NEW(1)], api())
+  const { router, fetchMock } = await renderOpened(api())
 
   await user.type(await screen.findByLabelText(/^Precio de lista/), '12000')
   await user.click(screen.getByRole('button', { name: 'Cerrar' }))
@@ -169,7 +167,7 @@ test('closing with something typed asks first; staying keeps it, discarding save
 
   expect(screen.queryByText('¿Descartás el precio?')).not.toBeInTheDocument()
   expect(screen.getByLabelText(/^Precio de lista/)).toHaveValue('12000')
-  expect(router.state.location.pathname).toBe(VARIETY_PRICE_NEW(1))
+  expect(router.state.location.pathname).toBe(NEW_PATH)
 
   await user.click(screen.getByRole('button', { name: 'Cerrar' }))
   await user.click(await screen.findByRole('button', { name: 'Sí, descartalo' }))
@@ -180,7 +178,7 @@ test('closing with something typed asks first; staying keeps it, discarding save
 
 test('a variety that is gone says "Eso ya no está." and goes back to Variedades', async () => {
   renderVarieties(
-    [VARIETY_PRICE_NEW(1)],
+    [NEW_PATH],
     api({ 'GET /varieties/1': () => jsonResponse(404, { code: 'variety.not_found' }) }),
   )
 
@@ -190,13 +188,113 @@ test('a variety that is gone says "Eso ya no está." and goes back to Variedades
 
 test('a variety that vanishes while saving shows the gone screen', async () => {
   const user = userEvent.setup()
-  renderVarieties(
-    [VARIETY(1), VARIETY_PRICE_NEW(1)],
-    api({ 'POST /varieties/1/prices': () => jsonResponse(404, { code: 'variety.not_found' }) }),
+  await renderOpened(api({ 'POST /varieties/1/prices': () => jsonResponse(404, { code: 'variety.not_found' }) }),
   )
 
   await user.type(await screen.findByLabelText(/^Precio de lista/), '12000')
   await user.click(screen.getByRole('button', { name: 'Guardá el precio' }))
 
   expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
+})
+
+const SETTINGS_URL = 'GET /pricing-settings'
+
+function switches(bulk: boolean, vip: boolean): Record<string, () => Response> {
+  return { [SETTINGS_URL]: () => jsonResponse(200, { is_bulk_pricing: bulk, is_vip_customers: vip }) }
+}
+
+test('with Clientes VIP on, a typed "Precio VIP" is sent beside the amounts', async () => {
+  const user = userEvent.setup()
+  const { fetchMock } = renderVarieties(
+    [pathTo(VARIETY, { id: 1 }), NEW_PATH],
+    api({ 'POST /varieties/1/prices': () => CREATED.clone() }),
+  )
+
+  await user.type(await screen.findByLabelText(/^Precio de lista/), '12000')
+  await user.type(screen.getByLabelText(/^Precio VIP/), '9000')
+  await user.click(screen.getByRole('button', { name: 'Guardá el precio' }))
+
+  await screen.findByText('Precio guardado')
+  expect(writes(fetchMock)[0]?.body).toEqual({
+    effective_from: ME.today,
+    list_price: 12000,
+    vip_price: 9000,
+  })
+})
+
+test('with Clientes VIP off the form has no "Precio VIP" and says nothing about it', async () => {
+  const user = userEvent.setup()
+  const { fetchMock } = renderVarieties(
+    [pathTo(VARIETY, { id: 1 }), NEW_PATH],
+    api({ ...switches(true, false), 'POST /varieties/1/prices': () => CREATED.clone() }),
+  )
+
+  await user.type(await screen.findByLabelText(/^Precio de lista/), '12000')
+  expect(screen.queryByLabelText(/Precio VIP/)).not.toBeInTheDocument()
+  expect(screen.queryByText(/VIP/)).not.toBeInTheDocument()
+  expect(screen.getByLabelText(/^Precio por cantidad/)).toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Guardá el precio' }))
+
+  await screen.findByText('Precio guardado')
+  expect(writes(fetchMock)[0]?.body).toEqual({ effective_from: ME.today, list_price: 12000 })
+})
+
+test('with Precio por cantidad off the form has no bulk price or minimum and says nothing about them', async () => {
+  const user = userEvent.setup()
+  const { fetchMock } = renderVarieties(
+    [pathTo(VARIETY, { id: 1 }), NEW_PATH],
+    api({ ...switches(false, true), 'POST /varieties/1/prices': () => CREATED.clone() }),
+  )
+
+  await user.type(await screen.findByLabelText(/^Precio de lista/), '12000')
+  expect(screen.queryByLabelText(/Precio por cantidad/)).not.toBeInTheDocument()
+  expect(screen.queryByLabelText(/Mínimo en gramos/)).not.toBeInTheDocument()
+  expect(screen.queryByText(/cantidad/i)).not.toBeInTheDocument()
+  expect(screen.getByLabelText(/^Precio VIP/)).toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Guardá el precio' }))
+
+  await screen.findByText('Precio guardado')
+  expect(writes(fetchMock)[0]?.body).toEqual({ effective_from: ME.today, list_price: 12000 })
+})
+
+test('with both rules off only the list price is asked for', async () => {
+  renderVarieties([pathTo(VARIETY, { id: 1 }), NEW_PATH], api(switches(false, false)))
+
+  await screen.findByLabelText(/^Precio de lista/)
+
+  expect(screen.queryByLabelText(/Precio VIP/)).not.toBeInTheDocument()
+  expect(screen.queryByLabelText(/Precio por cantidad/)).not.toBeInTheDocument()
+  expect(screen.queryByLabelText(/Mínimo en gramos/)).not.toBeInTheDocument()
+})
+
+test('a VIP price at or above list is refused inline under its field and keeps what was typed', async () => {
+  const user = userEvent.setup()
+  renderVarieties(
+    [pathTo(VARIETY, { id: 1 }), NEW_PATH],
+    api({
+      'POST /varieties/1/prices': () => jsonResponse(422, { code: 'variety.vip_price_not_below_list' }),
+    }),
+  )
+
+  await user.type(await screen.findByLabelText(/^Precio de lista/), '12000')
+  await user.type(screen.getByLabelText(/^Precio VIP/), '12000')
+  await user.click(screen.getByRole('button', { name: 'Guardá el precio' }))
+
+  const message = await screen.findByText('El precio VIP tiene que ser menor al precio de lista')
+  expect(message).toBeInTheDocument()
+  expect(message.textContent).not.toMatch(/\d/)
+  expect(screen.getByLabelText(/^Precio VIP/)).toHaveValue('12000')
+  expect(screen.getByLabelText(/^Precio de lista/)).toHaveValue('12000')
+})
+
+test('a VIP price that is not a whole amount is refused before sending', async () => {
+  const user = userEvent.setup()
+  const { fetchMock } = renderVarieties([pathTo(VARIETY, { id: 1 }), NEW_PATH], api())
+
+  await user.type(await screen.findByLabelText(/^Precio de lista/), '12000')
+  await user.type(screen.getByLabelText(/^Precio VIP/), 'abc')
+  await user.click(screen.getByRole('button', { name: 'Guardá el precio' }))
+
+  expect(await screen.findByText('Revisá los precios cargados')).toBeInTheDocument()
+  expect(writes(fetchMock)).toEqual([])
 })

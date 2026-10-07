@@ -47,6 +47,7 @@ from app.results.domain.periods import periods as compute_periods
 from app.shared.calendar import Month
 from app.shared.transaction import Transaction
 from tests.conftest import SETTINGS, TEST_HASHER, TODAY, MovableClock, open_business, signed_in
+from tests.fakes.archive import archive_by_hand
 from tests.fakes.telegram import FakeTelegram
 
 MARKER = "zz-isolation-marker"
@@ -207,6 +208,14 @@ def seed_payments(client: TestClient) -> dict[str, int]:
     return {"customer_id": customer_id, "payment_id": payment.json()["payment"]["id"]}
 
 
+def seed_pricing_settings(client: TestClient) -> dict[str, int]:
+    saved = client.put(
+        "/pricing-settings", json={"is_bulk_pricing": True, "is_vip_customers": True}
+    )
+    assert saved.status_code == 200, saved.text
+    return {}
+
+
 SEEDERS: list[Callable[[TestClient], dict[str, int]]] = [
     seed_varieties,
     seed_customers,
@@ -216,6 +225,7 @@ SEEDERS: list[Callable[[TestClient], dict[str, int]]] = [
     seed_catalog,
     seed_pinned_catalog,
     seed_payments,
+    seed_pricing_settings,
 ]
 
 BODIES: dict[tuple[str, str], dict[str, Any]] = {
@@ -290,6 +300,7 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
         "method": "cash",
     },
     ("POST", "/onboarding-progress/passes"): {"step": "header_footer", "as": "done"},
+    ("PUT", "/pricing-settings"): {"is_bulk_pricing": False, "is_vip_customers": False},
     ("POST", "/auth/password"): {
         "current_password": "the wrong current password",
         "new_password": "a new password of some length",
@@ -316,6 +327,8 @@ def _operations() -> list[tuple[str, str, bool]]:
 OPERATIONS = _operations()
 BY_ID = [(m, p) for m, p, _ in OPERATIONS if "{" in p]
 LISTS = [p for m, p, _ in OPERATIONS if m == "GET" and "{" not in p]
+# The same route with a query that reads other rows: the archived varieties' stock.
+LISTS.append("/stock?archived=true")
 # A non-GET route with no `{` in its path never names a record: the business it acts on
 # can only come from the session. B calling one must never move anything A can see
 # through `LISTS` (a `GET /business` with no path parameter is itself one of `LISTS`,
@@ -555,6 +568,18 @@ def test_assigning_a_customer_from_another_business_is_refused_the_same_way_as_m
     ).json()
     valid = business_b.put(f"/sales/{sale_id}/customer", json={"customer_id": own_customer["id"]})
     assert valid.status_code == 200, valid.text
+
+
+def test_another_business_reads_none_of_the_archived_stock_rows(
+    business_a: TestClient, business_b: TestClient, engine: Engine
+) -> None:
+    variety = business_a.post("/varieties", json={"name": "Archived here"}).json()
+    archive_by_hand(engine, variety["id"])
+    assert [
+        r["variety_id"] for r in business_a.get("/stock?archived=true").json()["varieties"]
+    ] == [variety["id"]]
+
+    assert business_b.get("/stock?archived=true").json()["varieties"] == []
 
 
 @pytest.mark.parametrize("path", LISTS)
@@ -941,7 +966,7 @@ def test_another_business_s_analysis_is_exactly_the_empty_shape(
 def test_each_business_has_its_own_onboarding_row_and_reads_no_other(
     business_a: TestClient, business_b: TestClient, engine: Engine
 ) -> None:
-    # Opening each business through its invitation seeded its row (docs/adr/0032).
+    # Opening each business through its invitation seeded its row (docs/adr/0035).
     with Session(engine) as session:
         rows = session.scalars(select(OnboardingRow)).all()
         assert len(rows) == 2
@@ -951,3 +976,45 @@ def test_each_business_has_its_own_onboarding_row_and_reads_no_other(
         assert SqlOnboardings(session, a_id).get() == Onboarding.opened()
         assert SqlOnboardings(session, b_id).get() == Onboarding.opened()
         assert SqlOnboardings(session, max(ids) + 1).get() is None
+
+
+@pytest.mark.parametrize(
+    ("method", "path"),
+    [
+        ("GET", "/varieties/{id}"),
+        ("POST", "/varieties/{id}/archive"),
+        ("POST", "/varieties/{id}/restore"),
+        ("PATCH", "/varieties/{id}"),
+        ("POST", "/varieties/{id}/prices"),
+        ("DELETE", "/varieties/{id}"),
+    ],
+)
+def test_another_business_cannot_reach_an_archived_variety(
+    business_a: TestClient, business_b: TestClient, method: str, path: str
+) -> None:
+    variety = business_a.post("/varieties", json={"name": f"{MARKER} archived"}).json()
+    business_a.post(f"/varieties/{variety['id']}/archive")
+    body = {"name": "Renamed", "effective_from": "2026-02-01", "list_price": 12_000}
+
+    response = business_b.request(method, path.format(id=variety["id"]), json=body)
+
+    assert response.status_code == 404, response.text
+    assert response.json()["code"] == "variety.not_found"
+    b_archived = business_b.get("/varieties", params={"archived": "true"}).json()
+    assert b_archived == []
+    assert business_a.get(f"/varieties/{variety['id']}").json()["archived"] is True
+
+
+@pytest.mark.parametrize("archived", [False, True])
+def test_another_business_cannot_delete_a_variety_with_no_history(
+    business_a: TestClient, business_b: TestClient, archived: bool
+) -> None:
+    variety = business_a.post("/varieties", json={"name": f"{MARKER} deletable"}).json()
+    if archived:
+        business_a.post(f"/varieties/{variety['id']}/archive")
+
+    response = business_b.delete(f"/varieties/{variety['id']}")
+
+    assert response.status_code == 404, response.text
+    assert response.json()["code"] == "variety.not_found"
+    assert business_a.get(f"/varieties/{variety['id']}").status_code == 200

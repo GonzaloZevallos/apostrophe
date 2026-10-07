@@ -1,4 +1,4 @@
-"""Migration 0013's `onboarding` table (CONTEXT.md: Onboarding; ADR-0032), read from the
+"""Migration 0015's `onboarding` table (CONTEXT.md: Onboarding; ADR-0035), read from the
 schema `upgrade_to_head` really builds: one row per business, each pass limited to the
 values the domain knows, no backfill for a business that already existed."""
 
@@ -81,7 +81,7 @@ def test_a_known_pass_is_stored(column: str) -> None:
 
 def test_a_business_that_existed_before_is_given_no_row() -> None:
     engine = make_engine("sqlite://")
-    _upgrade_to(engine, "0012")
+    _upgrade_to(engine, "0014")
     with engine.begin() as connection:
         connection.execute(text("INSERT INTO business (id, name) VALUES (1, 'Vieja Huerta')"))
 

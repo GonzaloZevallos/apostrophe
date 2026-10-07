@@ -11,7 +11,17 @@ import { MemoryRouter, Outlet, Route, Routes, useLocation } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import { catalogQueryOptions } from '../api/catalog'
 import type { Me } from '../api/me'
+import InAppLink from '../components/InAppLink'
 import FlashProvider from '../flash/FlashProvider'
+import {
+  STOCK as STOCK_PATH,
+  STOCK_ENTRY,
+  VARIETIES as VARIETIES_PATH,
+  VARIETY,
+  VARIETY_ENTRIES,
+  WITHDRAWAL,
+  pathTo,
+} from '../routes'
 import EntriesList from './EntriesList'
 import VarietyRoute from './varieties/VarietyRoute'
 
@@ -56,9 +66,14 @@ function Provide() {
   return <Outlet context={ME} />
 }
 
-function Where() {
+function Where({ opens }: { opens?: string }) {
   const location = useLocation()
-  return <span data-testid="where">{location.pathname}</span>
+  return (
+    <div>
+      <span data-testid="where">{location.pathname}</span>
+      {opens !== undefined && <InAppLink to={opens}>Abrir</InAppLink>}
+    </div>
+  )
 }
 
 function fakeApi(overrides: Record<string, () => Response> = {}) {
@@ -91,21 +106,23 @@ function fakeApi(overrides: Record<string, () => Response> = {}) {
   )
 }
 
+/** `entries` is the history, the last one current; `opens` is the link Variedades offers. */
 function renderAt(
   path: string,
   client = new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+  { entries = [VARIETIES_PATH, path], opens }: { entries?: string[]; opens?: string } = {},
 ) {
   render(
     <QueryClientProvider client={client}>
-      <MemoryRouter initialEntries={['/varieties', path]} initialIndex={1}>
+      <MemoryRouter initialEntries={entries} initialIndex={entries.length - 1}>
         <FlashProvider>
           <Routes>
             <Route element={<Provide />}>
-              <Route path="/varieties" element={<Where />} />
-              <Route path="/varieties/entries" element={<EntriesList />} />
-              <Route path="/varieties/entries/:id" element={<Where />} />
-              <Route path="/varieties/:id/entries" element={<VarietyRoute render={(varietyId) => <EntriesList varietyId={varietyId} />} />} />
-              <Route path="/varieties/:id" element={<Where />} />
+              <Route path={VARIETIES_PATH} element={<Where opens={opens} />} />
+              <Route path={STOCK_PATH} element={<EntriesList />} />
+              <Route path={STOCK_ENTRY} element={<Where />} />
+              <Route path={VARIETY_ENTRIES} element={<VarietyRoute render={(varietyId) => <EntriesList varietyId={varietyId} />} />} />
+              <Route path={VARIETY} element={<Where />} />
             </Route>
           </Routes>
         </FlashProvider>
@@ -121,7 +138,7 @@ afterEach(() => {
 
 test('"Todas las entradas" lists every entry newest first with its variety, origin, grams and costs', async () => {
   fakeApi()
-  renderAt('/varieties/entries')
+  renderAt(STOCK_PATH)
 
   const rows = await screen.findAllByRole('listitem')
   expect(rows).toHaveLength(3)
@@ -135,16 +152,13 @@ test('"Todas las entradas" lists every entry newest first with its variety, orig
   expect(screen.getByRole('heading', { name: 'Todas las entradas' })).toBeInTheDocument()
 })
 
-test("a variety's list shows only its entries and goes back to the variety", async () => {
+test("a variety's list shows only its entries", async () => {
   fakeApi()
-  renderAt('/varieties/3/entries')
+  renderAt(pathTo(VARIETY_ENTRIES, { id: 3 }))
 
   const rows = await screen.findAllByRole('listitem')
   expect(rows).toHaveLength(2)
   expect(screen.queryByText('26/08 · Sir Jack')).not.toBeInTheDocument()
-
-  await userEvent.click(screen.getByRole('button', { name: '‹ 24K Gold' }))
-  expect(await screen.findByTestId('where')).toHaveTextContent('/varieties')
 })
 
 test("a variety's list holds its withdrawals, told by reason word and minus sign, each opening its detail", async () => {
@@ -155,48 +169,65 @@ test("a variety's list holds its withdrawals, told by reason word and minus sign
         { ...STOCK.entries[0], kind: 'entry' },
       ]),
   })
-  renderAt('/varieties/3/entries')
+  renderAt(pathTo(VARIETY_ENTRIES, { id: 3 }))
 
   const rows = await screen.findAllByRole('listitem')
   expect(rows).toHaveLength(2)
   expect(within(rows[0]!).getByText('Promoción · −5,5 g')).toBeInTheDocument()
-  expect(within(rows[0]!).getByRole('link')).toHaveAttribute('href', '/withdrawals/9')
+  expect(within(rows[0]!).getByRole('link')).toHaveAttribute('href', pathTo(WITHDRAWAL, { id: 9 }))
   expect(within(rows[0]!).queryByRole('button', { name: 'Borrar' })).not.toBeInTheDocument()
   expect(within(rows[1]!).getByText('Compra · 30 g')).toBeInTheDocument()
 })
 
-test('Back with no history goes to the variety, and "Todas las entradas" goes to Variedades', async () => {
+/** Opens a list the way the seller does, from Variedades by a link, so the entry carries the in-app state. */
+async function openFromVariedades(path: string) {
   fakeApi()
-  render(
-    <QueryClientProvider client={new QueryClient()}>
-      <MemoryRouter initialEntries={['/varieties/3/entries']}>
-        <FlashProvider>
-          <Routes>
-            <Route element={<Provide />}>
-              <Route path="/varieties/:id/entries" element={<VarietyRoute render={(varietyId) => <EntriesList varietyId={varietyId} />} />} />
-              <Route path="/varieties/:id" element={<Where />} />
-            </Route>
-          </Routes>
-        </FlashProvider>
-      </MemoryRouter>
-    </QueryClientProvider>,
-  )
+  renderAt(VARIETIES_PATH, undefined, { entries: [VARIETIES_PATH], opens: path })
+  await userEvent.click(await screen.findByRole('link', { name: 'Abrir' }))
+}
+
+test("a variety's list goes back by history to where the seller came from", async () => {
+  await openFromVariedades(pathTo(VARIETY_ENTRIES, { id: 3 }))
+
   await userEvent.click(await screen.findByRole('button', { name: '‹ 24K Gold' }))
-  expect(await screen.findByTestId('where')).toHaveTextContent('/varieties/3')
+  expect((await screen.findByTestId('where')).textContent).toBe(VARIETIES_PATH)
+})
+
+test('"Todas las entradas" goes back by history to where the seller came from', async () => {
+  await openFromVariedades(STOCK_PATH)
+
+  await userEvent.click(await screen.findByRole('button', { name: /^‹ / }))
+  expect((await screen.findByTestId('where')).textContent).toBe(VARIETIES_PATH)
+})
+
+test("a variety's list with no history goes back to the variety's page", async () => {
+  fakeApi()
+  renderAt(pathTo(VARIETY_ENTRIES, { id: 3 }), undefined, { entries: [pathTo(VARIETY_ENTRIES, { id: 3 })] })
+
+  await userEvent.click(await screen.findByRole('button', { name: '‹ 24K Gold' }))
+  expect((await screen.findByTestId('where')).textContent).toBe(pathTo(VARIETY, { id: 3 }))
+})
+
+test('"Todas las entradas" with no history goes back to Variedades', async () => {
+  fakeApi()
+  renderAt(STOCK_PATH, undefined, { entries: [STOCK_PATH] })
+
+  await userEvent.click(await screen.findByRole('button', { name: /^‹ / }))
+  expect((await screen.findByTestId('where')).textContent).toBe(VARIETIES_PATH)
 })
 
 test('Editar links to the entry form', async () => {
   fakeApi()
-  renderAt('/varieties/entries')
+  renderAt(STOCK_PATH)
 
   const rows = await screen.findAllByRole('listitem')
   await userEvent.click(within(rows[1]!).getByRole('link', { name: 'Editar' }))
-  expect(await screen.findByTestId('where')).toHaveTextContent('/varieties/entries/11')
+  expect(await screen.findByTestId('where')).toHaveTextContent(pathTo(STOCK_ENTRY, { id: 11 }))
 })
 
 test('Borrar asks "Antes de borrar" naming date, variety and grams, then deletes and says so', async () => {
   fakeApi({ 'DELETE /stock/entries/12': () => new Response(null, { status: 204 }) })
-  renderAt('/varieties/entries')
+  renderAt(STOCK_PATH)
 
   const rows = await screen.findAllByRole('listitem')
   await userEvent.click(within(rows[0]!).getByRole('button', { name: 'Borrar' }))
@@ -210,7 +241,7 @@ test('Borrar asks "Antes de borrar" naming date, variety and grams, then deletes
 
 test('declining "Antes de borrar" deletes nothing', async () => {
   fakeApi()
-  renderAt('/varieties/entries')
+  renderAt(STOCK_PATH)
 
   const rows = await screen.findAllByRole('listitem')
   await userEvent.click(within(rows[0]!).getByRole('button', { name: 'Borrar' }))
@@ -224,7 +255,7 @@ test('deleting an entry that is already gone says so and refreshes the list', as
     'DELETE /stock/entries/12': () =>
       jsonResponse(404, { code: 'stock.entry_not_found', detail: 'x' }),
   })
-  renderAt('/varieties/entries')
+  renderAt(STOCK_PATH)
 
   const rows = await screen.findAllByRole('listitem')
   await userEvent.click(within(rows[0]!).getByRole('button', { name: 'Borrar' }))
@@ -242,7 +273,7 @@ test('with no entries the empty state shows, with no rows', async () => {
       return Promise.resolve(jsonResponse(200, VARIETIES))
     }),
   )
-  renderAt('/varieties/entries')
+  renderAt(STOCK_PATH)
 
   expect(await screen.findByText('Sin entradas de stock')).toBeInTheDocument()
   expect(screen.getByText('Cargá tu stock inicial o una compra')).toBeInTheDocument()
@@ -251,7 +282,7 @@ test('with no entries the empty state shows, with no rows', async () => {
 
 test('a variety that is gone, or an id that is not a number, shows "Eso ya no está."', async () => {
   fakeApi()
-  renderAt('/varieties/99/entries')
+  renderAt(pathTo(VARIETY_ENTRIES, { id: 99 }))
   expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Volver a Variedades' })).toBeInTheDocument()
 })
@@ -260,7 +291,7 @@ test('a delete marks the catalog stale and the stock list refetches', async () =
   fakeApi({ 'DELETE /stock/entries/12': () => new Response(null, { status: 204 }) })
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   client.setQueryData(catalogQueryOptions().queryKey, { text: null, header: '', footer: '', varieties: [] })
-  renderAt('/varieties/entries', client)
+  renderAt(STOCK_PATH, client)
 
   const rows = await screen.findAllByRole('listitem')
   await userEvent.click(within(rows[0]!).getByRole('button', { name: 'Borrar' }))

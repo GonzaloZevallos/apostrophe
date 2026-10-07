@@ -18,6 +18,7 @@ export type Resource =
   | 'catalog'
   | 'payments'
   | 'pinnedCatalog'
+  | 'pricingSettings'
 
 const PREFIX: Record<Resource, string> = {
   me: 'me',
@@ -31,12 +32,14 @@ const PREFIX: Record<Resource, string> = {
   catalog: 'catalog',
   payments: 'payments',
   pinnedCatalog: 'pinned-catalog',
+  pricingSettings: 'pricing-settings',
 }
 
 export const keys = {
   me: () => [PREFIX.me] as const,
   business: () => [PREFIX.business] as const,
   varieties: () => [PREFIX.varieties] as const,
+  archivedVarieties: () => [PREFIX.varieties, 'archived'] as const,
   variety: (id: string) => [PREFIX.varieties, id] as const,
   varietyPrices: (id: string) => [PREFIX.varieties, id, 'prices'] as const,
   customers: (q: string) => [PREFIX.customers, { q }] as const,
@@ -51,6 +54,9 @@ export const keys = {
   // never mark them stale, and the form's own preview never renders a value another
   // screen's cache produced.
   saleFormVarieties: (on: string) => ['sale-form', 'varieties', on] as const,
+  // The switches Nueva venta prices with, loaded beside that day's prices and frozen the same way,
+  // so a date change reloads both and a partner's change is picked up (`pricing-settings.md`).
+  saleFormPricingSettings: (on: string) => ['sale-form', 'pricing-settings', on] as const,
   saleFormCustomer: (id: string) => ['sale-form', 'customer', id] as const,
   // "Elegir cliente"'s own search (`NuevaVentaCliente.tsx`): its results are where
   // the preview's `vip` comes from once a customer is chosen, so it is frozen the
@@ -60,6 +66,7 @@ export const keys = {
   sales: (dateFrom: string, dateTo: string) => [PREFIX.sales, { dateFrom, dateTo }] as const,
   sale: (id: string) => [PREFIX.sales, id] as const,
   stock: () => [PREFIX.stock] as const,
+  archivedStock: () => [PREFIX.stock, 'archived'] as const,
   stockEntry: (id: string) => [PREFIX.stock, 'entries', id] as const,
   stockMovements: (varietyId: string) => [PREFIX.stock, 'movements', varietyId] as const,
   stockWithdrawal: (id: string) => [PREFIX.stock, 'withdrawals', id] as const,
@@ -73,6 +80,9 @@ export const keys = {
   // query in one call.
   pinnedCatalog: () => [PREFIX.pinnedCatalog] as const,
   pinnedCatalogStatus: () => [PREFIX.pinnedCatalog, 'status'] as const,
+  // Read by `api/pricingSettings.ts` only (frozen the same way `catalog` is); Precios' own save
+  // sets its data directly.
+  pricingSettings: () => [PREFIX.pricingSettings] as const,
   customerAccount: (id: string) => [PREFIX.payments, 'account', id] as const,
   debtors: () => [PREFIX.payments, 'debtors'] as const,
   // "Registrar cobro"'s own preview (plan, "keys.ts"): a dry-run of the settlement,

@@ -26,6 +26,7 @@ import { formatDate } from '../format/dates'
 import { formatGrams, formatMoney } from '../format/money'
 import { parseMoney, parseSignedGrams } from '../format/parse'
 import type { Variety } from './Variedades'
+import { varietiesByName } from './varieties/varietiesByName'
 
 export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
 export const COST_REQUIRED = 'Una compra necesita un costo total'
@@ -94,6 +95,20 @@ export default function StockEntryForm({
     queryFn: () => get<Variety[]>('/varieties'),
   })
   const stockQuery = useQuery({ queryKey: keys.stock(), queryFn: readStock })
+  // An entry of an archived variety keeps it: editing may keep that variety but the picker
+  // offers no other archived one. Its name comes from the archived list, asked only then.
+  const listedVarieties = varietiesQuery.data
+  const entryVarietyIsListed =
+    initial === undefined || listedVarieties === undefined || listedVarieties.some((v) => v.id === initial.variety_id)
+  const archivedQuery = useQuery({
+    queryKey: keys.archivedVarieties(),
+    queryFn: () => get<Variety[]>('/varieties?archived=true'),
+    enabled: !entryVarietyIsListed,
+  })
+  const pickable = [
+    ...(listedVarieties ?? []),
+    ...(archivedQuery.data ?? []).filter((v) => v.id === initial?.variety_id),
+  ]
 
   const [date, setDate] = useState(initial?.date ?? today)
   const [grams, setGrams] = useState(initial !== undefined ? String(initial.grams) : '')
@@ -233,7 +248,7 @@ export default function StockEntryForm({
   }
 
   const varietyName = (() => {
-    const found = (varietiesQuery.data ?? []).find((variety) => String(variety.id) === varietyId)
+    const found = pickable.find((variety) => String(variety.id) === varietyId)
     return found?.name ?? ''
   })()
 
@@ -301,7 +316,7 @@ export default function StockEntryForm({
             required
           >
             <option value="">Elegí una variedad</option>
-            {(varietiesQuery.data ?? []).map((variety) => (
+            {varietiesByName(pickable).map((variety) => (
               <option key={variety.id} value={variety.id}>
                 {variety.name}
               </option>

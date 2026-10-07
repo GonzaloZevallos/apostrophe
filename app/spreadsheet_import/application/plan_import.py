@@ -15,6 +15,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from datetime import date
 
+from app.shared.pricing_settings import PricingSettings
 from app.spreadsheet_import.application import ports
 from app.spreadsheet_import.domain import plan as domain_plan
 from app.spreadsheet_import.domain.rows import (
@@ -57,6 +58,7 @@ def plan_import(
     customers: ports.CustomersImport,
     sales: ports.SalesImport,
     payments: ports.PaymentsImport,
+    pricing_settings: ports.PricingSettingsImport,
     today: date,
     mapping_sheet: str,
     header_footer_ref: SheetRef,
@@ -123,7 +125,12 @@ def plan_import(
         for mention in domain_plan.customer_mentions(split_result, mapping)
     }
 
-    sales_checks = _check_sales(split_result, variety_names, price_history_keys, sales, today)
+    # The switches rows are priced with come from the sheet alone, never from the
+    # stored ones (docs/adr/0034); the stored ones are read once, to tell what to turn on.
+    needs = domain_plan.needed_settings(split_result)
+    sales_checks = _check_sales(
+        split_result, variety_names, price_history_keys, sales, today, needs
+    )
 
     checks = domain_plan.Checks(
         variety_names=variety_names,
@@ -137,6 +144,7 @@ def plan_import(
         customers=customer_checks,
         sales=sales_checks,
         mapping_sheet=mapping_sheet,
+        stored_settings=pricing_settings.current(),
     )
     return domain_plan.build_plan(split_result, mapping, checks)
 
@@ -187,9 +195,7 @@ def _customer_check_result(
     both are broken (ADR-0021: the import never reads a customer code string to
     decide where it goes)."""
     if isinstance(result, ports.CustomerRefusals):
-        return domain_plan.CustomerRefusal(
-            name_code=result.name_code, phone_code=result.phone_code
-        )
+        return domain_plan.CustomerRefusal(name_code=result.name_code, phone_code=result.phone_code)
     return domain_plan.CustomerKey(phone_key=result.phone_key)
 
 
@@ -260,6 +266,7 @@ def _check_sales(
     price_history_keys: Mapping[str, str],
     sales: ports.SalesImport,
     today: date,
+    settings: PricingSettings,
 ) -> dict[SheetRef, domain_plan.SaleCheck]:
     sale_results = domain_plan.sale_inputs(split_result.ventas, variety_names)
     pairs = [
@@ -271,7 +278,9 @@ def _check_sales(
         return {}
     price_history_rows, _ = _valid_price_history(split_result.price_history, variety_names)
     port_inputs = [_to_port_sale_input(sale_input) for _, sale_input in pairs]
-    results = sales.check_sales(price_history_rows, price_history_keys, port_inputs, today)
+    results = sales.check_sales(
+        price_history_rows, price_history_keys, port_inputs, today, settings
+    )
     return {
         ref: domain_plan.SaleCheck(total=result.total, refusal=_opt_refusal(result.refusal))
         for (ref, _), result in zip(pairs, results, strict=True)

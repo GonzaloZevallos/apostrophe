@@ -7,9 +7,10 @@
  */
 
 import { useState } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ApiError, NetworkError, del } from '../../api/client'
 import { invalidateResource } from '../../api/keys'
+import { pricingSettingsQueryOptions } from '../../api/pricingSettings'
 import { isGone } from '../../api/refusals'
 import ConfirmDialog from '../../components/ConfirmDialog'
 import ErrorGenerico from '../../components/ErrorGenerico'
@@ -26,6 +27,7 @@ export interface PriceRow {
   list_price: number
   bulk_price: number | null
   bulk_minimum: number | null
+  vip_price: number | null
 }
 
 interface Props {
@@ -33,10 +35,16 @@ interface Props {
   history: PriceRow[]
   currentPriceId: number | null
   limit?: number
+  /** An archived variety's price rows: no delete beside any of them. */
+  readOnly?: boolean
 }
 
-export default function PriceRows({ varietyId, history, currentPriceId, limit }: Props) {
+export default function PriceRows({ varietyId, history, currentPriceId, limit, readOnly = false }: Props) {
   const queryClient = useQueryClient()
+  // Until the switches are known (or if they cannot be read) nothing about a rule shows.
+  const settings = useQuery(pricingSettingsQueryOptions()).data
+  const showBulk = settings?.is_bulk_pricing === true
+  const showVip = settings?.is_vip_customers === true
   const flash = useFlash()
   const [deleting, setDeleting] = useState<PriceRow | null>(null)
   const [sending, setSending] = useState(false)
@@ -83,20 +91,25 @@ export default function PriceRows({ varietyId, history, currentPriceId, limit }:
             </span>
             <span>
               <span className="historial-fila__precio">{formatMoney(entry.list_price)}</span>
-              {entry.bulk_price !== null && entry.bulk_minimum !== null && (
+              {showBulk && entry.bulk_price !== null && entry.bulk_minimum !== null && (
                 <span className="historial-fila__detalle">
                   Desde {formatGrams(entry.bulk_minimum)} · {formatMoney(entry.bulk_price)}
                 </span>
               )}
+              {showVip && entry.vip_price !== null && (
+                <span className="historial-fila__detalle">Precio VIP · {formatMoney(entry.vip_price)}</span>
+              )}
             </span>
-            <button
-              type="button"
-              className="historial-fila__borrar"
-              aria-label="Borrar este precio"
-              onClick={() => setDeleting(entry)}
-            >
-              Borrar
-            </button>
+            {!readOnly && (
+              <button
+                type="button"
+                className="historial-fila__borrar"
+                aria-label="Borrar este precio"
+                onClick={() => setDeleting(entry)}
+              >
+                Borrar
+              </button>
+            )}
           </div>
         ))}
       </div>

@@ -20,6 +20,7 @@ from app.accounts.adapters.router import public_router as accounts_public_router
 from app.accounts.adapters.router import router as accounts_router
 from app.accounts.domain.password import PasswordHasher
 from app.accounts.domain.session_token import SessionSigner
+from app.catalog.adapters.leaving import SqlCatalogLeaving
 from app.catalog.adapters.opening import CatalogHeaderFooterOpening
 from app.catalog.adapters.router import router as catalog_router
 from app.clock import Clock, system_clock
@@ -46,12 +47,16 @@ from app.pinned_catalog.adapters.token_cipher import TokenCipher
 from app.pinned_catalog.adapters.upkeep_trigger import schedule_upkeep
 from app.pinned_catalog.application.channel_telegram import ChannelTelegram
 from app.pinned_catalog.application.push import BusinessLocks
+from app.pricing_settings.adapters.opening import PricingSettingsOpening
+from app.pricing_settings.adapters.router import router as pricing_settings_router
+from app.pricing_settings.adapters.sql_pricing_settings import SqlPricingSettings
 from app.results.adapters.router import router as results_router
 from app.sales.adapters.router import router as sales_router
 from app.sales.adapters.sales_ledger import SqlSalesLedger
 from app.settings import Settings
 from app.static_spa import FrontNavigation, MissingBuiltFront, SpaStatic, api_segments
 from app.stock.adapters.draw_costs import SqlDrawCosts
+from app.stock.adapters.leaving import SqlStockLeaving
 from app.stock.adapters.line_costs import SqlLineCosts
 from app.stock.adapters.onboarding_facts import SqlStockFacts
 from app.stock.adapters.purchases import SqlPurchases
@@ -72,6 +77,31 @@ class _BoundComposite:
     def opened(self, business_id: int) -> None:
         for opening in self._openings:
             opening.opened(business_id)
+
+
+class _Leaving(Protocol):
+    def leaving(self, variety_id: int) -> None: ...
+
+
+class _BoundLeaving:
+    def __init__(self, parts: Sequence[_Leaving]) -> None:
+        self._parts = parts
+
+    def leaving(self, variety_id: int) -> None:
+        for part in self._parts:
+            part.leaving(variety_id)
+
+
+class CompositeLeaving:
+    """Combines the capabilities that keep something of their own about a variety, so
+    deleting one removes it all (docs/adr/0006): each factory is `(Session, business_id)`,
+    the shape of the other factories on `app.state`."""
+
+    def __init__(self, *factories: Callable[[Session, int], _Leaving]) -> None:
+        self._factories = factories
+
+    def __call__(self, session: Session, business_id: int) -> _BoundLeaving:
+        return _BoundLeaving([factory(session, business_id) for factory in self._factories])
 
 
 class CompositeOpening:
@@ -165,7 +195,10 @@ def create_app(
     # at opening, so a new one joins here, not as a second keyword argument on
     # `accept_invitation` (docs/adr/0006).
     app.state.business_opening = CompositeOpening(
-        ExpenseCategoriesOpening, CatalogHeaderFooterOpening, OnboardingOpening
+        ExpenseCategoriesOpening,
+        CatalogHeaderFooterOpening,
+        PricingSettingsOpening,
+        OnboardingOpening,
     )
     # A factory, not an instance (the same shape as `business_opening` above): sales
     # reaches line cost only through its own `LineCosts` port, never `app.stock`
@@ -174,12 +207,26 @@ def create_app(
     # `get_business_opening` already does for `business_opening` — not added here, so
     # this line is the one seam the sales-costs subtask reaches it through.
     app.state.line_costs = SqlLineCosts
+    # The same shape again: sales reads the switches only through its own
+    # `PricingSettingsReader` port, never `app.pricing_settings` (docs/adr/0034).
+    app.state.pricing_settings = SqlPricingSettings
+    # The catalog reads the pricing switches only through its own `CatalogPricingSettings`
+    # port (ADR-0006); the same `(Session, business_id)` factory shape. The router and the
+    # pinned catalog's snapshot both build it from here.
+    app.state.catalog_pricing_settings = SqlPricingSettings
+    # Deleting a variety removes what stock and the catalog keep of it (docs/adr/0006).
+    app.state.variety_leaving = CompositeLeaving(SqlStockLeaving, SqlCatalogLeaving)
     # Two more factories of the same shape: customers reaches a balance, and sales a
     # "still owing" mark, only through `Balances`/`OwingSales`, never `app.payments`
     # directly (the plan's invariant). `app/customers/adapters/router.py` and
     # `app/sales/adapters/router.py` build these over the request's own `Session` and
     # business, the way `get_line_costs` already does for `line_costs`.
     app.state.balances = SqlBalances
+    # The same factory shape, once per reader: each hexagon declares its own
+    # `current() -> PricingSettings` port and none imports `app.pricing_settings`
+    # (docs/adr/0006, docs/adr/0034).
+    app.state.varieties_pricing_settings = SqlPricingSettings
+    app.state.customers_pricing_settings = SqlPricingSettings
     app.state.owing_sales = SqlOwingSales
     # Another factory of the same shape: results reaches stock's rows and draws only
     # through its own `StockFigures` port, never `app.stock` directly (ADR-0006). The
@@ -205,7 +252,7 @@ def create_app(
     app.state.expenses_ledger = SqlExpensesLedger
     app.state.purchases_ledger = SqlPurchases
     # The Onboarding reads each owner's facts only through its own ports (ADR-0006,
-    # ADR-0032), the same `(Session, business_id)` factory shape as above; the varieties
+    # ADR-0035), the same `(Session, business_id)` factory shape as above; the varieties
     # one also takes today, since "priced today" is a fact of the day.
     app.state.onboarding_variety_facts = SqlVarietyFacts
     app.state.onboarding_stock_facts = SqlStockFacts
@@ -235,6 +282,9 @@ def create_app(
     app.include_router(pinned_catalog_router, dependencies=gated)
     app.include_router(results_router, dependencies=gated)
     app.include_router(onboarding_router, dependencies=gated)
+    # Not `upkeep_gated`: only a PUT that changed a switch may touch the pin, and its
+    # router decides that itself (ADR-0014).
+    app.include_router(pricing_settings_router, dependencies=gated)
 
     if settings.web_dist is not None:
         if not (settings.web_dist / "index.html").is_file():

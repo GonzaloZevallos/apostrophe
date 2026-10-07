@@ -9,6 +9,10 @@
  * Pure: the provider feeds it the router's `location.key`.
  */
 
+/** The history state of a redirect that replaces the screen a toast was armed for with the
+ * screen the seller meant (Variedades' first variety on a computer): the toast follows it. */
+export const FOLLOWED_REDIRECT = { flashFollows: true } as const
+
 import type { SuccessToast } from '../components/AvisoExito'
 
 export type FlashState =
@@ -19,7 +23,7 @@ export type FlashState =
 export type FlashEvent =
   | { type: 'armAfterLeaving'; toast: SuccessToast; currentKey: string }
   | { type: 'showNow'; toast: SuccessToast; currentKey: string }
-  | { type: 'locationChanged'; key: string; replaced?: boolean }
+  | { type: 'locationChanged'; key: string; follows?: boolean }
   | { type: 'expired' }
 
 export function flashReducer(state: FlashState, event: FlashEvent): FlashState {
@@ -33,9 +37,10 @@ export function flashReducer(state: FlashState, event: FlashEvent): FlashState {
         return { status: 'showing', toast: state.toast, shownKey: event.key }
       }
       if (state.status === 'showing' && event.key !== state.shownKey) {
-        // A replace is a redirect settling the same screen (`<Navigate replace>`), not the user
-        // moving on: the toast stays, on the new key. The next real navigation dismisses it.
-        return event.replaced === true ? { ...state, shownKey: event.key } : { status: 'idle' }
+        // A redirect the router made on the toast's own behalf (`FOLLOWED_REDIRECT`) is not the
+        // seller leaving: the toast moves to the entry the redirect replaced it with.
+        if (event.follows === true) return { ...state, shownKey: event.key }
+        return { status: 'idle' }
       }
       return state
     case 'expired':

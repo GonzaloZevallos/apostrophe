@@ -8,7 +8,8 @@
 
 import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { Link, useNavigate } from 'react-router'
+import { useNavigate } from 'react-router'
+import InAppLink from '../../components/InAppLink'
 import { ApiError, NetworkError } from '../../api/client'
 import { sendAdvance, type OnboardingProgress } from '../../api/onboarding'
 import { isGone } from '../../api/refusals'
@@ -18,6 +19,7 @@ import SinConexion from '../../components/SinConexion'
 import { afterProgress } from './afterProgress'
 import StepIndicator from './StepIndicator'
 import { STEP_COUNT, stepInfo } from './steps'
+import { HOME } from '../../routes'
 
 export const NOTICE_TITLE = 'Seguí con la configuración'
 
@@ -49,7 +51,7 @@ export default function OnboardingNotice({ progress }: { progress: OnboardingPro
       await afterProgress(answer, navigate, queryClient)
     } catch (caught) {
       if (caught instanceof NetworkError) setFailure('offline')
-      else if (caught instanceof ApiError && isGone(caught.code)) void navigate('/')
+      else if (caught instanceof ApiError && isGone(caught.code)) void navigate(HOME)
       else setFailure('error')
     }
   }
@@ -57,9 +59,9 @@ export default function OnboardingNotice({ progress }: { progress: OnboardingPro
   return (
     <>
       {current !== null ? (
-        <Link to={stepInfo(current).path} className="aviso-onboarding">
+        <InAppLink to={stepInfo(current).path} className="aviso-onboarding">
           {body}
-        </Link>
+        </InAppLink>
       ) : (
         <button type="button" className="aviso-onboarding" onClick={() => void finish()}>
           {body}

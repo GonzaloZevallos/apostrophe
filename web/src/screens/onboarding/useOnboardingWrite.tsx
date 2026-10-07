@@ -14,6 +14,7 @@ import { isGone } from '../../api/refusals'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import type { StepBodyProps } from './stepBodies'
+import { HOME } from '../../routes'
 
 type Failure = 'offline' | 'error'
 
@@ -44,7 +45,7 @@ export function useOnboardingWrite(onProgress: StepBodyProps['onProgress']): Onb
       onProgress(answer, to?.(answer))
     } catch (caught) {
       if (caught instanceof NetworkError) setFailure('offline')
-      else if (caught instanceof ApiError && isGone(caught.code)) void navigate('/')
+      else if (caught instanceof ApiError && isGone(caught.code)) void navigate(HOME)
       else setFailure('error')
     } finally {
       setSending(false)

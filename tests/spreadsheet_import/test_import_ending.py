@@ -1,4 +1,4 @@
-"""A successful import ends the Onboarding in its single commit (docs/adr/0032), through
+"""A successful import ends the Onboarding in its single commit (docs/adr/0035), through
 `cli.run` (the plan's seam; `write_import` is reached only through it). The Onboarding's
 state is read back through its own repository, and the owner records through the HTTP API."""
 

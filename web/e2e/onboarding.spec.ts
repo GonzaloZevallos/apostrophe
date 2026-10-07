@@ -11,6 +11,8 @@ import { expect, test } from '@playwright/test'
 import { watchConsole } from './console.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
+import { expectPath } from './helpers/url.js'
+import { SALE_NEW, SETTINGS_CATALOG_MESSAGE } from '../src/routes.js'
 
 test.use({ isMobile: true, hasTouch: true, viewport: { width: 375, height: 812 } })
 
@@ -53,10 +55,10 @@ test('a new business goes from the invitation to Nueva venta from "Listo" in und
   await expect(page.getByRole('heading', { name: 'Listo' })).toBeVisible()
   await expect(page.getByText('Hecho · 1 variedad')).toBeVisible()
   await page.getByRole('button', { name: 'Cargar mi primera venta' }).click()
-  await expect(page).toHaveURL(/\/ventas\/nueva$/)
+  await expectPath(page, SALE_NEW)
   expect(Date.now() - started).toBeLessThan(5 * 60 * 1000)
 
-  await page.getByRole('button', { name: 'Volver' }).click()
+  await page.getByRole('button', { name: 'Cerrar' }).click()
   await expect(page.locator('.encabezado__negocio')).toBeVisible()
   await expect(page.getByText(NOTICE)).toHaveCount(0)
   await expectOnlyTheThemeStored(page)
@@ -90,6 +92,6 @@ test('the catalog message saved in step 3 reads the same in Configuración', asy
   await page.getByRole('button', { name: 'Guardá el mensaje' }).click()
   await expect(page.getByRole('heading', { name: 'Conectá tu bot de Telegram' })).toBeVisible()
 
-  await page.goto('/settings/catalog-message')
+  await page.goto(SETTINGS_CATALOG_MESSAGE)
   await expect(page.getByLabel('Encabezado')).toHaveValue('🌸 Catálogo de Jazmín 🌸')
 })

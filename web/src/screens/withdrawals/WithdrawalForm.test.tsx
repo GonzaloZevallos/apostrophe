@@ -9,6 +9,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import contract from '../../api/contract.json'
 import WITHDRAWAL from '../../api/fixtures/withdrawal.json'
+import { VARIETIES as VARIETIES_PATH, WITHDRAWAL_NEW, withdrawalNewFor } from '../../routes'
 import { jsonResponse, renderWithdrawals } from './renderWithdrawals'
 
 afterEach(() => {
@@ -16,7 +17,7 @@ afterEach(() => {
 })
 
 async function openFromVariedades() {
-  const view = renderWithdrawals(['/varieties'], async () => jsonResponse(404, {}))
+  const view = renderWithdrawals([VARIETIES_PATH], async () => jsonResponse(404, {}))
   await userEvent.click(await screen.findByRole('link', { name: 'Sacar del stock' }))
   await screen.findByLabelText('Variedad 1')
   return view
@@ -36,7 +37,7 @@ test('closing it untouched leaves without asking', async () => {
 
   await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
 
-  await waitFor(() => expect(router.state.location.pathname).toBe('/varieties'))
+  await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES_PATH))
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
 })
 
@@ -48,14 +49,14 @@ test('closing it with something typed asks first, and discarding leaves', async 
 
   const dialog = await screen.findByRole('alertdialog', { name: '¿Descartás el retiro?' })
   await userEvent.click(within(dialog).getByRole('button', { name: 'No, seguí cargando' }))
-  expect(router.state.location.pathname).toBe('/withdrawals/new')
+  expect(router.state.location.pathname).toBe(WITHDRAWAL_NEW)
   expect(screen.getByLabelText('Nota')).toHaveValue('Para la fiesta')
 
   await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
   await userEvent.click(
     within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Sí, descartalo' }),
   )
-  await waitFor(() => expect(router.state.location.pathname).toBe('/varieties'))
+  await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES_PATH))
 })
 
 test('the reason has no default: saving stays off until one is chosen', async () => {
@@ -83,7 +84,7 @@ test('grams ask for the decimal keypad and the date never goes past today', asyn
 })
 
 test('?variety= chooses the first line\'s variety', async () => {
-  renderWithdrawals(['/withdrawals/new?variety=2'], async () => jsonResponse(404, {}))
+  renderWithdrawals([withdrawalNewFor(2)], async () => jsonResponse(404, {}))
 
   expect(await screen.findByLabelText('Variedad 1')).toHaveValue('2')
   // chosen from the link, so nothing is typed yet: leaving asks nothing
@@ -92,7 +93,7 @@ test('?variety= chooses the first line\'s variety', async () => {
 
 test('saves with every line, a trimmed note, then shows "Retiro guardado" where it goes back', async () => {
   const requests: { url: string; method: string | undefined; body: unknown }[] = []
-  const { router } = renderWithdrawals(['/varieties'], async (url, init) => {
+  const { router } = renderWithdrawals([VARIETIES_PATH], async (url, init) => {
     if (url === '/stock/withdrawals' && init?.method === 'POST') {
       requests.push({ url, method: init.method, body: JSON.parse(String(init.body)) })
       return jsonResponse(201, WITHDRAWAL)
@@ -111,7 +112,7 @@ test('saves with every line, a trimmed note, then shows "Retiro guardado" where 
   await userEvent.click(screen.getByRole('button', { name: 'Guardá el retiro' }))
 
   expect(await screen.findByText('Retiro guardado')).toBeInTheDocument()
-  expect(router.state.location.pathname).toBe('/varieties')
+  expect(router.state.location.pathname).toBe(VARIETIES_PATH)
   expect(requests).toEqual([
     {
       url: '/stock/withdrawals',
@@ -130,7 +131,7 @@ test('saves with every line, a trimmed note, then shows "Retiro guardado" where 
 })
 
 test('a refusal shows inline by its code and keeps everything typed', async () => {
-  renderWithdrawals(['/varieties'], async (url, init) => {
+  renderWithdrawals([VARIETIES_PATH], async (url, init) => {
     if (url === '/stock/withdrawals' && init?.method === 'POST') {
       return jsonResponse(422, { code: 'stock.withdrawal_grams_too_precise' })
     }
@@ -170,7 +171,7 @@ test('every withdrawal refusal the contract lists is covered here, but its gone 
 })
 
 test.each(WITHDRAWAL_REFUSALS)('%s shows its fixed text inline, naming nothing typed', async (code, status, text) => {
-  renderWithdrawals(['/withdrawals/new'], async (url, init) => {
+  renderWithdrawals([WITHDRAWAL_NEW], async (url, init) => {
     if (url === '/stock/withdrawals' && init?.method === 'POST') return jsonResponse(status, { code })
     return jsonResponse(404, {})
   })
@@ -190,7 +191,7 @@ test.each(WITHDRAWAL_REFUSALS)('%s shows its fixed text inline, naming nothing t
 
 test('grams the front cannot read are refused inline without calling the API', async () => {
   const writes = vi.fn()
-  renderWithdrawals(['/withdrawals/new'], async (_url, init) => {
+  renderWithdrawals([WITHDRAWAL_NEW], async (_url, init) => {
     if (init?.method === 'POST') writes()
     return jsonResponse(404, {})
   })
@@ -219,5 +220,5 @@ test('a send that finds the withdrawal gone goes to Variedades with the fixed no
   )
 
   expect(await screen.findByText('Eso ya no está. La lista ya está al día.')).toBeInTheDocument()
-  expect(router.state.location.pathname).toBe('/varieties')
+  expect(router.state.location.pathname).toBe(VARIETIES_PATH)
 })

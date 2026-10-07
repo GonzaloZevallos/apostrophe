@@ -8,6 +8,8 @@
  * this subtask replaces.
  */
 
+import { HOME, SALE, SALES, SALE_NEW, pathTo } from '../../routes'
+import { inAppState } from '../../components/inAppState'
 import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
@@ -45,20 +47,26 @@ function setupFetch(handlers: Record<string, () => Response>): ReturnType<typeof
 
 async function openForm(handlers: Record<string, () => Response>): Promise<ReturnType<typeof vi.fn>> {
   const fetchMock = setupFetch(handlers)
-  // Via `/ventas` first, as the design's own "Nueva venta" button always does
+  // Via /ventas first, as the design's own "Nueva venta" button always does
   // (`Inicio.dc.html`/`Ventas.dc.html`): the back chevron's `navigate(-1)` then
   // has something real to land on, the same page a seller actually came from.
-  await act(() => router.navigate('/ventas'))
-  await act(() => router.navigate('/ventas/nueva'))
+  await act(() => router.navigate(SALES))
+  await act(() => router.navigate(SALE_NEW))
   render(<App />)
   await screen.findByText('Nueva venta')
+  // The varieties arrive after the form mounts; a test that picks one straight away
+  // races the fetch on a loaded machine, so wait until the first line can offer them.
+  if (Object.keys(handlers).some((key) => key.startsWith('GET /varieties'))) {
+    const picker = await screen.findByLabelText('Variedad línea 1')
+    await waitFor(() => expect(within(picker).getAllByRole('option').length).toBeGreaterThan(1))
+  }
   return fetchMock
 }
 
 afterEach(async () => {
   vi.unstubAllGlobals()
   queryClient.clear()
-  await act(() => router.navigate('/'))
+  await act(() => router.navigate(HOME))
 })
 
 test('the live preview prices a list line as the sale types, with no save call', async () => {
@@ -171,8 +179,57 @@ test('a successful save opens the sale the API answered with, replacing history'
   await user.click(screen.getByRole('radio', { name: 'Efectivo' }))
   await user.click(screen.getByRole('button', { name: 'Guardá la venta' }))
 
-  await waitFor(() => expect(router.state.location.pathname).toBe('/ventas/42'))
+  await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(SALE, { id: 42 })))
   expect(await screen.findByText('Venta guardada')).toBeInTheDocument()
+})
+
+test('the form closes with "Cerrar" and shows no back control named "Volver"', async () => {
+  await openForm({
+    'GET /auth/me': () => jsonResponse(200, ME),
+    'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
+  })
+
+  expect(screen.getByRole('button', { name: 'Cerrar' })).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Volver' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: 'Volver' })).not.toBeInTheDocument()
+})
+
+test('with no history behind it, "Cerrar" replaces the form with Ventas instead of pushing it', async () => {
+  const user = userEvent.setup()
+  setupFetch({
+    'GET /auth/me': () => jsonResponse(200, ME),
+    'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
+    'GET /sales?date_from=2026-10-02&date_to=2026-10-02': () => jsonResponse(200, []),
+  })
+  await act(() => router.navigate(SALE_NEW))
+  render(<App />)
+  await screen.findByText('Nueva venta')
+
+  await user.click(screen.getByRole('button', { name: 'Cerrar' }))
+  expect(
+    await screen.findByText('Ventas', { selector: '.encabezado__titulo' }),
+  ).toBeInTheDocument()
+  expect(router.state.location.pathname).toBe(SALES)
+
+  await act(() => router.navigate(-1))
+  expect(router.state.location.pathname).not.toBe(SALE_NEW)
+})
+
+test('opened from inside the app, "Cerrar" goes back through history', async () => {
+  const user = userEvent.setup()
+  setupFetch({
+    'GET /auth/me': () => jsonResponse(200, ME),
+    'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
+    'GET /sales?date_from=2026-10-02&date_to=2026-10-02': () => jsonResponse(200, []),
+  })
+  await act(() => router.navigate(SALES))
+  await act(() => router.navigate(SALE_NEW, { state: inAppState({ pathname: SALES }) }))
+  render(<App />)
+  await screen.findByText('Nueva venta')
+
+  await user.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await waitFor(() => expect(router.state.location.pathname).toBe(SALES))
+  expect(router.state.location.state).toBeNull()
 })
 
 test('an untouched form closes at once; a touched one asks "¿Descartás la venta?" first', async () => {
@@ -185,15 +242,15 @@ test('an untouched form closes at once; a touched one asks "¿Descartás la vent
     'GET /sales?date_from=2026-10-02&date_to=2026-10-02': () => jsonResponse(200, []),
   })
 
-  await user.click(screen.getByRole('button', { name: 'Volver' }))
+  await user.click(screen.getByRole('button', { name: 'Cerrar' }))
   expect(
     await screen.findByText('Ventas', { selector: '.encabezado__titulo' }),
   ).toBeInTheDocument()
 
-  await act(() => router.navigate('/ventas/nueva'))
+  await act(() => router.navigate(SALE_NEW))
   await screen.findByText('Nueva venta')
   await user.type(screen.getByLabelText('Gramos línea 1'), '2')
-  await user.click(screen.getByRole('button', { name: 'Volver' }))
+  await user.click(screen.getByRole('button', { name: 'Cerrar' }))
 
   const dialog = await screen.findByRole('alertdialog')
   expect(within(dialog).getByText('¿Descartás la venta?')).toBeInTheDocument()
@@ -201,7 +258,7 @@ test('an untouched form closes at once; a touched one asks "¿Descartás la vent
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
   expect(screen.getByText('Nueva venta')).toBeInTheDocument()
 
-  await user.click(screen.getByRole('button', { name: 'Volver' }))
+  await user.click(screen.getByRole('button', { name: 'Cerrar' }))
   const dialogAgain = await screen.findByRole('alertdialog')
   await user.click(within(dialogAgain).getByRole('button', { name: 'Sí, descartala' }))
   expect(
@@ -362,7 +419,7 @@ test('nothing an earlier mount cached ever renders: a remount with a different p
   // Leave (unmounting NuevaVenta — `gcTime: 0` evicts its frozen query right away)
   // and change what the next fetch answers with, as if a partner had repriced Rosa
   // meanwhile. The form is touched, so "Cerrar" asks first.
-  await user.click(screen.getByRole('button', { name: 'Volver' }))
+  await user.click(screen.getByRole('button', { name: 'Cerrar' }))
   await user.click(await screen.findByRole('button', { name: 'Sí, descartala' }))
   await screen.findByText('Ventas', { selector: '.encabezado__titulo' })
   listPrice = 5000
@@ -372,7 +429,7 @@ test('nothing an earlier mount cached ever renders: a remount with a different p
   // fetch — reading `listPrice` fresh — is the one this assertion prices, never
   // the one the previous mount already cached.
   queryClient.clear()
-  await act(() => router.navigate('/ventas/nueva'))
+  await act(() => router.navigate(SALE_NEW))
   await screen.findByText('Nueva venta')
   await user.selectOptions(await screen.findByLabelText('Variedad línea 1'), '1')
   await user.type(screen.getByLabelText('Gramos línea 1'), '2')
@@ -414,20 +471,21 @@ test('a $0 special price is refused rather than silently priced at list, and Reg
   expect(screen.getByLabelText('Regalo línea 1')).toBeDisabled()
 })
 
-test('"Nueva venta a <name>" prices a VIP customer at the bulk rate below the bulk minimum', async () => {
+test('"Nueva venta a <name>" prices a VIP customer at the VIP price below the bulk minimum', async () => {
   const user = userEvent.setup()
   const VIP_ANA = { id: 7, name: 'Ana VIP', phone: '+5491100000001', channel: null, vip: true }
   const WITH_BULK = {
     id: 3,
     name: 'Jazmín',
-    current_price: { id: 11, effective_from: '2026-09-01', list_price: 1000, bulk_price: 700, bulk_minimum: 10 },
+    current_price: { id: 11, effective_from: '2026-09-01', list_price: 1000, bulk_price: 800, bulk_minimum: 10, vip_price: 700 },
   }
   setupFetch({
     'GET /auth/me': () => jsonResponse(200, ME),
     'GET /varieties?on=2026-10-02': () => jsonResponse(200, [WITH_BULK]),
     'GET /customers/7': () => jsonResponse(200, VIP_ANA),
+    'GET /pricing-settings': () => jsonResponse(200, { is_bulk_pricing: true, is_vip_customers: true }),
   })
-  await act(() => router.navigate('/ventas/nueva', { state: { customerId: '7' } }))
+  await act(() => router.navigate(SALE_NEW, { state: { customerId: '7' } }))
   render(<App />)
   await screen.findByText('Nueva venta')
 
@@ -437,7 +495,7 @@ test('"Nueva venta a <name>" prices a VIP customer at the bulk rate below the bu
   await user.selectOptions(screen.getByLabelText('Variedad línea 1'), '3')
   await user.type(screen.getByLabelText('Gramos línea 1'), '1')
 
-  // Below the bulk minimum (10 g), but VIP takes the bulk price anyway (sales.md).
+  // Below the bulk minimum (10 g), the VIP price is still the lowest rule that applies (sales.md).
   // Two "VIP"s now: the customer's own badge, and the line's rule badge.
   await waitFor(() => expect(screen.getAllByText('VIP').length).toBeGreaterThanOrEqual(2))
   expect(screen.getByText('$ 700 x g')).toBeInTheDocument()

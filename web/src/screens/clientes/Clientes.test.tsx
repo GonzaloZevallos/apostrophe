@@ -1,10 +1,10 @@
 /**
  * `Clientes` at the screen seam (CODING_STANDARDS §10): Testing Library, `fetch`
- * faked. Search lives in the `/clientes` layout's context, never the URL
+ * faked. Search lives in the /clientes layout's context, never the URL
  * (plan, invariants); a stale answer is only ever shown marked pending, never as
  * the answer to the query currently typed (`customers.md`, "List and search").
  *
- * The header's "M te deben $ X" and each row's amber/blue mark come from
+ * The "Te deben" section and each row's amber/blue mark come from
  * `GET /payments/debtors` and the customer's own `balance`/`owing_since`/
  * `standing` (payments.md, "On screen") — `fetchStub` below dispatches on the
  * request's own path and query, never on call order, since the header's two
@@ -12,11 +12,18 @@
  * search list's own.
  */
 
+import { CUSTOMER, CUSTOMER_PAYMENT, CUSTOMERS, pathTo } from '../../routes'
+import { inAppState } from '../../components/inAppState'
+import { stubViewport } from '../../test-viewport'
+import { Outlet, createMemoryRouter, RouterProvider } from 'react-router'
+import FlashProvider from '../../flash/FlashProvider'
+import ClienteFicha from './ClienteFicha'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { act, render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
+import paymentPreviewFixture from '../../api/fixtures/payment-preview.json'
 import customerFixture from '../../api/fixtures/customer.json'
 import customerNoPhoneFixture from '../../api/fixtures/customer-no-phone.json'
 import debtorsFixture from '../../api/fixtures/debtors.json'
@@ -52,10 +59,10 @@ function renderClientes() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={['/clientes']}>
+      <MemoryRouter initialEntries={[CUSTOMERS]}>
         <Routes>
           <Route element={<ClientesLayout />}>
-            <Route path="/clientes" element={<Clientes />} />
+            <Route path={CUSTOMERS} element={<Clientes />} />
           </Route>
         </Routes>
       </MemoryRouter>
@@ -189,10 +196,11 @@ test('a server error on the list shows the generic retry, never the empty-list t
   expect(screen.queryByText('Todavía no agregaste ningún cliente.')).not.toBeInTheDocument()
 })
 
-test('the header reads "N clientes · M te deben $ X", and tapping the debt part opens Te deben', async () => {
+test('the header reads "N clientes", and the Te deben section sits above the list with the debtors', async () => {
   // `customer.json` and `debtors.json` (plan, invariants: "used by the front's
   // fetch fakes") drive this: the customer list carries the fixture's own owing
-  // entry plus a settled one, and the debt part reads straight off `debtors.json`.
+  // entry plus a settled one, and the section reads straight off `debtors.json`. The old
+  // Te deben screen is gone (`/clientes/deben` redirects here), so this is where it lives.
   vi.mocked(fetch).mockImplementation(
     fetchStub(
       () =>
@@ -206,18 +214,50 @@ test('the header reads "N clientes · M te deben $ X", and tapping the debt part
   renderClientes()
 
   expect(await screen.findByText('2 clientes')).toBeInTheDocument()
-  const link = screen.getByRole('link', {
-    name: `${debtorsFixture.debtors.length} te deben $ ${debtorsFixture.total_owed.toLocaleString('es-AR')}`,
-  })
-  expect(link).toHaveAttribute('href', '/clientes/deben')
+  expect(
+    await screen.findByText(
+      `· ${debtorsFixture.debtors.length} te deben $ ${debtorsFixture.total_owed.toLocaleString('es-AR')}`,
+    ),
+  ).toBeInTheDocument()
+  const section = await screen.findByRole('region', { name: 'Te deben' })
+  expect(
+    within(section).getByText(`$ ${debtorsFixture.total_owed.toLocaleString('es-AR')}`),
+  ).toBeInTheDocument()
+  expect(within(section).getAllByRole('link').map((link) => link.textContent)).toEqual([
+    'Ana Pérez$ 15.000desde 14/09',
+    'Cobrar',
+  ])
 })
 
-test('with no debtors, the header shows no debt part', async () => {
+test('"Cobrar a X" is on every row that owes, in the section and in the list, and never on one that does not', async () => {
+  vi.mocked(fetch).mockImplementation(
+    fetchStub(
+      () =>
+        jsonResponse(200, [
+          customerFixture,
+          { id: 2, name: 'Lu', phone: '+5491100000002', channel: null, vip: false, balance: 0, owing_since: null, standing: 'settled' },
+        ]),
+      () => jsonResponse(200, debtorsFixture),
+    ),
+  )
+  renderClientes()
+
+  await screen.findByRole('region', { name: 'Te deben' })
+  const links = await screen.findAllByRole('link', { name: `Cobrar a ${customerFixture.name}` })
+  expect(links).toHaveLength(2)
+  for (const link of links) {
+    expect(link).toHaveAttribute('href', pathTo(CUSTOMER_PAYMENT, { id: customerFixture.id }))
+  }
+  expect(screen.queryByRole('link', { name: 'Cobrar a Lu' })).not.toBeInTheDocument()
+})
+
+test('with no debtors, the header shows no debt part and the section says "Nadie te debe."', async () => {
   vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [])))
   renderClientes()
 
   expect(await screen.findByText('0 clientes')).toBeInTheDocument()
-  expect(screen.queryByText(/te deben/)).not.toBeInTheDocument()
+  expect(await screen.findByText('Nadie te debe.')).toBeInTheDocument()
+  expect(screen.queryByText(/ te deben \$/)).not.toBeInTheDocument()
 })
 
 test('a customer with no phone shows no phone element, no dash, no empty label', async () => {
@@ -243,4 +283,106 @@ test('a customer who owes shows the amber mark; one in credit shows the blue "A 
 
   expect(await screen.findByText('te debe desde 14/09')).toBeInTheDocument()
   expect(screen.getByText('A favor $ 2.000')).toBeInTheDocument()
+})
+
+// Opening a customer or a payment from the list (navigation.md, "In-app entries").
+const ANA = pathTo(CUSTOMER, { id: customerFixture.id })
+const ANA_PAYMENT = pathTo(CUSTOMER_PAYMENT, { id: customerFixture.id })
+
+function fetchApp(input: RequestInfo | URL): Promise<Response> {
+  const url = typeof input === 'string' ? input : input.toString()
+  if (url === '/payments/debtors') return Promise.resolve(jsonResponse(200, debtorsFixture))
+  if (url.includes('/preview')) return Promise.resolve(jsonResponse(200, paymentPreviewFixture))
+  if (url === `/customers/${customerFixture.id}`) return Promise.resolve(jsonResponse(200, customerFixture))
+  if (url === `/customers/${customerFixture.id}/account`) {
+    return Promise.resolve(
+      jsonResponse(200, { balance: 15000, owing_since: '2026-09-14', standing: 'owes', rows: [] }),
+    )
+  }
+  if (url.startsWith('/customers')) return Promise.resolve(jsonResponse(200, [customerFixture]))
+  return Promise.resolve(jsonResponse(404, {}))
+}
+
+async function openCustomerRow() {
+  const links = await screen.findAllByRole('link', { name: /Ana Pérez/ })
+  await userEvent.click(links.find((link) => link.getAttribute('href') === ANA)!)
+}
+
+function renderApp(entries: string[] = [CUSTOMERS]) {
+  const router = createMemoryRouter(
+    [
+      {
+        element: (
+          <FlashProvider>
+            <Outlet context={{ email: 'a@b.com', business_name: 'N', today: '2026-10-03' }} />
+          </FlashProvider>
+        ),
+        children: [
+          {
+            element: <ClientesLayout />,
+            children: [
+              { path: CUSTOMERS, element: <Clientes /> },
+              { path: CUSTOMER, element: <ClienteFicha /> },
+              { path: CUSTOMER_PAYMENT, element: <ClienteFicha payment /> },
+            ],
+          },
+        ],
+      },
+    ],
+    { initialEntries: entries },
+  )
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  render(
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>,
+  )
+  return router
+}
+
+test('"Cobrar a X" opens Registrar cobro for that customer as an in-app entry, and one Back returns to Clientes', async () => {
+  vi.mocked(fetch).mockImplementation(fetchApp)
+  const router = renderApp()
+
+  await userEvent.click((await screen.findAllByRole('link', { name: `Cobrar a ${customerFixture.name}` }))[0]!)
+
+  expect(await screen.findByRole('button', { name: 'Guardar' })).toBeInTheDocument()
+  expect(screen.getByText(customerFixture.name)).toBeInTheDocument()
+  expect(router.state.location.pathname).toBe(ANA_PAYMENT)
+  expect(router.state.location.state).toEqual(inAppState({ pathname: CUSTOMERS }))
+  await act(() => router.navigate(-1))
+  expect(router.state.location.pathname).toBe(CUSTOMERS)
+})
+
+test('Cerrar on Registrar cobro with nothing behind it goes to Clientes', async () => {
+  vi.mocked(fetch).mockImplementation(fetchApp)
+  const router = renderApp([ANA_PAYMENT])
+
+  await userEvent.click(await screen.findByRole('button', { name: 'Cerrar' }))
+
+  await waitFor(() => expect(router.state.location.pathname).toBe(CUSTOMERS))
+})
+
+test('on a computer, Clientes selects nobody by itself', async () => {
+  stubViewport('computer')
+  vi.mocked(fetch).mockImplementation(fetchApp)
+  const router = renderApp()
+
+  await screen.findAllByRole('link', { name: /Ana Pérez/ })
+  expect(router.state.location.pathname).toBe(CUSTOMERS)
+  expect(router.state.historyAction).toBe('POP')
+})
+
+test('on a phone, opening a customer pushes an entry, and Back returns to the list', async () => {
+  stubViewport('phone')
+  vi.mocked(fetch).mockImplementation(fetchApp)
+  const router = renderApp()
+
+  await openCustomerRow()
+
+  await waitFor(() => expect(router.state.location.pathname).toBe(ANA))
+  expect(router.state.historyAction).toBe('PUSH')
+  expect(router.state.location.state).toEqual(inAppState({ pathname: CUSTOMERS }))
+  await act(() => router.navigate(-1))
+  expect(router.state.location.pathname).toBe(CUSTOMERS)
 })

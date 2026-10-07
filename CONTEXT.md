@@ -24,14 +24,14 @@ _Avoid_: signup link, referral, code
 ## Catalog and prices
 
 **Variety**:
-A strain a business sells by the gram, identified by its name within that business. Its stock, entries, prices, low-stock warning and catalog attributes are all on its own page in the Variedades tab. In the app: Variedad; the tab is Variedades.
+A strain a business sells by the gram, identified by its name within that business. Its stock, entries, prices, low-stock warning and catalog attributes are all on its own page in the Variedades tab. A variety with no history can be deleted; one with history can be archived and restored. In the app: Variedad; the tab is Variedades.
 _Avoid_: product, strain, item, SKU
 _In the app_: Variedad
 
 **Price entry**:
-A variety's list price, bulk price and bulk minimum, effective from a date onwards. Never edited once recorded: a later entry supersedes it from its own date. A mistaken entry is deleted, never rewritten; a sale is unaffected because every sale line records the price it was sold at.
-_In the app_: Precio (historial de precios)
+A variety's list price, and optionally a bulk price with its bulk minimum, and optionally a VIP price, effective from a date onwards. Never edited once recorded: a later entry supersedes it from its own date. A mistaken entry is deleted, never rewritten; a sale is unaffected because every sale line records the price it was sold at. A rule switched off when it is recorded stores nothing for that rule. _In the app_: Precio (historial de precios).
 _Avoid_: price change, price update, tariff
+_In the app_: Precio (historial de precios)
 
 **Current price**:
 For a variety on a given date, the price entry with the latest effective date on or before that date. A variety with no such entry has no price that day.
@@ -44,9 +44,9 @@ _In the app_: Precio x g
 _Avoid_: base price, regular price
 
 **Bulk price**:
-A lower price per gram that applies from the bulk minimum upwards, and always for a VIP customer. Optional: a price entry has both bulk price and bulk minimum, or neither.
-_In the app_: Precio por cantidad
+A lower price per gram that applies from the bulk minimum upwards. Optional: a price entry has both bulk price and bulk minimum, or neither. Only in a business with bulk pricing (Precio por cantidad) switched on. _In the app_: Precio por cantidad.
 _Avoid_: discount, wholesale price
+_In the app_: Precio por cantidad
 
 **Bulk minimum**:
 The grams from which the bulk price applies.
@@ -66,9 +66,9 @@ _Avoid_: contact, handle, username, identifier
 _In the app_: Teléfono
 
 **VIP customer**:
-A customer who always pays the bulk price, whatever the grams.
-_In the app_: Cliente VIP
+A customer who pays a variety's VIP price when it has one and it is lower than what any other rule gives. Only in a business with Clientes VIP switched on; while it is off, the mark stays stored but neither shows nor applies. _In the app_: Cliente VIP.
 _Avoid_: friend, Amigo, preferred customer
+_In the app_: Cliente VIP
 
 **Sale**:
 Everything a customer takes in one go: a date, at most one customer, the shipping charged, an optional note, and one or more sale lines. A sale counts on its own date, paid or not. Its customer may be left out only when nothing stays owed.
@@ -96,9 +96,9 @@ _In the app_: Precio especial
 _Avoid_: override, custom price, discount
 
 **Pricing rule**:
-Which rule priced a sale line: list, bulk, VIP, gift or special price. Exactly one per line, stored with its price when the sale is recorded and never recomputed.
-_In the app_: lista, por cantidad, VIP, regalo, especial
+Which rule priced a sale line: list, bulk, VIP, gift or special price. Exactly one per line, stored with its price when the sale is recorded and never recomputed. VIP means the VIP price was charged, including when it equalled the bulk price. _In the app_: lista, por cantidad, VIP, regalo, especial.
 _Avoid_: type, price type, Amigo
+_In the app_: lista, por cantidad, VIP, regalo, especial
 
 **Shipping charged**:
 What the customer pays for delivery, added on top of what they bought.
@@ -197,7 +197,7 @@ _Avoid_: cash flow, balance, profit
 ## Telegram
 
 **Catalog**:
-The text that offers every shown variety with stock above zero and a current price today: its emoji, name, indica share, aroma and prices, between the business's header and footer. It keeps its **bold** markers and its own money format ($11.000). _In the app_: Catálogo.
+The text that offers every unarchived, shown variety with stock above zero and a current price today: its emoji, name, indica share, aroma and prices, between the business's header and footer. It keeps its **bold** markers and its own money format ($11.000). In the app: Catálogo.
 _Avoid_: menu, price list, flyer
 _In the app_: Catálogo
 
@@ -248,8 +248,8 @@ What a variety shows in the catalog: whether it is shown, its emoji, its indica 
 _Avoid_: catalog settings, metadata, tags
 
 **Hidden variety**:
-A variety the seller chose to leave out of the catalog, whatever its price or stock. Hidden means only that; a variety out for lack of price or stock is not hidden. _In the app_: Oculta.
-_Avoid_: inactive, archived, disabled
+A variety the seller chose to leave out of the catalog, whatever its price or stock. Hidden means only that: a hidden variety is still in Variedades and every picker. A variety out for lack of price or stock is not hidden, and an archived variety is a separate thing that keeps its hidden flag. In the app: Oculta.
+_Avoid_: inactive, disabled, archived (that is an archived variety)
 
 **Indica share**:
 A variety's indica percentage, a whole number from 0 to 100; sativa is the rest. Optional; unknown means the catalog leaves its line out. _In the app_: % índica.
@@ -386,7 +386,7 @@ A screen reached straight from the bar or the sidebar (Inicio, Ventas, Clientes,
 _Avoid_: home, main screen, section
 
 **Settings**:
-The one place holding every business-wide setting, in groups: Negocio, Usuarios, Integraciones, Mensaje del catálogo, Categorías de gastos, Apariencia and Tu cuenta. A setting of one variety lives on the variety, never here, and nothing of the operator's is here. In the app: Configuración.
+The one place holding every business-wide setting, in groups: Negocio, Usuarios, Precios, Integraciones, Mensaje del catálogo, Categorías de gastos, Apariencia and Tu cuenta. A setting of one variety lives on the variety, never here, and nothing of the operator's is here. _In the app_: Configuración.
 _Avoid_: Ajustes (in the spreadsheet that held prices), preferences, admin, Negocio (that is one group)
 
 **First-run checklist**:
@@ -404,6 +404,22 @@ _Avoid_: preference, dark mode setting, skin, user setting
 **Own chat lookup**:
 Finding the seller's own chat number among the private chats that wrote to the business's bot, using the token Probarlo would use. It fills the own chat field only when exactly one person wrote privately, shows only the number and saves nothing; settings are still saved only by a successful test send. In the app: Buscar mi chat.
 _Avoid_: auto-detect, discovery, getUpdates, chat search, sync
+
+**VIP price**:
+An optional price per gram in a price entry, for VIP customers: a whole peso above $0 and below that entry's list price, independent of the bulk price. Never shown in the catalog. _In the app_: Precio VIP.
+_Avoid_: friend price, discount, Amigo price
+
+**Pricing settings**:
+Which of bulk pricing (Precio por cantidad) and VIP customers (Clientes VIP) a business uses: two independent switches. A rule switched off is hidden and stops applying to new sales, while everything stored for it is kept. _In the app_: Precios, in Configuración.
+_Avoid_: price config, pricing mode, plan, tariff settings
+
+**Archived variety**:
+A variety the seller took out of every list and picker (Variedades, Lo que te queda, Nueva venta, the stock entry and price forms, the catalog and the pinned catalog), while every past record keeps its plain name and figures. Archive is the action offered for a variety with history, but an archived variety may have none. It keeps its name reserved and its hidden flag, is seen and restored only from Archivadas, has a read-only page, and restoring brings it back exactly as it was. In the app: Archivada.
+_Avoid_: deleted, hidden, inactive, disabled, oculta
+
+**Variety history**:
+Any sale line of a variety (gifts and special prices included) or any stock entry of it (any origin, an adjustment of either sign included), or any stock withdrawal line of it, worked out live and never stored. A variety with history can only be archived. A variety without history can be deleted for good, and its price entries, threshold and catalog attributes go with it.
+_Avoid_: usage, activity, movements, references
 
 **Promotion**:
 A stock withdrawal to make the business known, e.g. grams shared at a party for several people to try. Its cost is what the withdrawn grams cost from their lots as they stand today, shown as its own line that lowers profit. In the app: Promoción.

@@ -10,7 +10,7 @@
 import type { QueryClient } from '@tanstack/react-query'
 import type { NavigateFunction } from 'react-router'
 import { keepProgress, type OnboardingProgress } from '../../api/onboarding'
-import { ONBOARDING_DONE } from '../../routes'
+import { HOME, ONBOARDING_DONE } from '../../routes'
 import { stepInfo } from './steps'
 
 export interface ListoState {
@@ -35,7 +35,7 @@ export async function afterProgress(
   } else if (to !== undefined) {
     await navigate(to)
   } else if (answer.resume === null || answer.resume === 'finish') {
-    await navigate('/')
+    await navigate(HOME)
   } else {
     await navigate(stepInfo(answer.resume).path)
   }

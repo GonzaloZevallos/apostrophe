@@ -1,5 +1,5 @@
 /**
- * `/onboarding-progress` (docs/adr/0032): the one answer the front renders the Onboarding
+ * `/onboarding-progress` (docs/adr/0035): the one answer the front renders the Onboarding
  * from. The front decides no done, passed, count, resume, target or over; it shows what
  * this answers. Every write answers the same shape as the `GET`. No answer carries an
  * amount, grams, token, phone number or customer name: a target is `{id, name}` of a

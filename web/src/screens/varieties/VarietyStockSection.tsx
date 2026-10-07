@@ -7,11 +7,11 @@
  * detail. Read-only: an entry is edited and deleted from the list, through its own form.
  */
 
-import { Link } from 'react-router'
+import InAppLink from '../../components/InAppLink'
 import { type Movement, type StockView, entriesOf } from '../../api/stock'
 import { formatDate } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
-import { VARIETY_ENTRIES, withdrawalPath } from '../../routes'
+import { VARIETY_ENTRIES, WITHDRAWAL, pathTo } from '../../routes'
 import { ORIGIN_LABEL } from '../originLabel'
 import { REASON_LABEL } from '../withdrawals/withdrawalReasons'
 
@@ -35,13 +35,13 @@ export default function VarietyStockSection({
     <section className="seccion-variedad">
       <div className="seccion-variedad__cabecera">
         <h2 className="seccion-variedad__titulo">Stock y entradas</h2>
-        <Link to={VARIETY_ENTRIES(varietyId)}>Ver todas</Link>
+        <InAppLink to={pathTo(VARIETY_ENTRIES, { id: varietyId })}>Ver todas</InAppLink>
       </div>
       <ul className="lista-entradas">
         {rows.map((movement) =>
           movement.kind === 'withdrawal' ? (
             <li key={`withdrawal-${movement.id}`} className="fila-entrada">
-              <Link to={withdrawalPath(movement.id)} className="fila-entrada__enlace">
+              <InAppLink to={pathTo(WITHDRAWAL, { id: movement.id })} className="fila-entrada__enlace">
                 <span className="fila-entrada__texto">
                   <span className="fila-entrada__linea1">
                     {formatDate(movement.date, today)} · {REASON_LABEL[movement.reason]}
@@ -50,7 +50,7 @@ export default function VarietyStockSection({
                 <span className="fila-entrada__cifras">
                   <span className="fila-entrada__costo">{`−${formatGrams(movement.grams)}`}</span>
                 </span>
-              </Link>
+              </InAppLink>
             </li>
           ) : (
             <li key={`entry-${movement.id}`} className="fila-entrada">
