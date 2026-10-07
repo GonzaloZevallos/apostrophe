@@ -8,23 +8,11 @@ variety's id and name only."""
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import IntEnum, StrEnum
+from enum import StrEnum
 from typing import Final, Literal
 
 from app.onboarding.domain.onboarding import Onboarding, Pass
-
-
-class Step(IntEnum):
-    VARIETY = 1
-    STOCK = 2
-    CATALOG_MESSAGE = 3
-    BOT = 4
-    PARTNER = 5
-    CATEGORIES = 6
-
-
-REQUIRED_STEPS: Final = (Step.VARIETY, Step.STOCK)
-OPTIONAL_STEPS: Final = (Step.CATALOG_MESSAGE, Step.BOT, Step.PARTNER, Step.CATEGORIES)
+from app.onboarding.domain.steps import OPTIONAL_STEPS, REQUIRED_STEPS, Step
 
 FINISH: Final = "finish"
 """`resume` once every step is done or passed and the Onboarding has not ended."""

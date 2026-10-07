@@ -9,12 +9,12 @@ from app.onboarding.domain.onboarding import Onboarding, Pass
 from app.onboarding.domain.progress import (
     FINISH,
     Facts,
-    Step,
     StepState,
     Target,
     VarietyFact,
     progress,
 )
+from app.onboarding.domain.steps import Step
 
 ENDED = datetime(2026, 10, 7, 12, 0, tzinfo=UTC)
 
