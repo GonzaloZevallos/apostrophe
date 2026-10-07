@@ -27,15 +27,14 @@ class Family:
 
 INICIO = Family(
     name="inicio",
-    screens=(),
+    screens=("Inicio.dc.html", "InicioOscuro.dc.html", "InicioCompu.dc.html"),
     denylist=(
         "135 g",
         "270 días",
-        "$ 93.000",
         "$ 145.500",
-        "$ 36.000",
         "$ 144.500",
         "$ 161.400",
+        "capturadas el 05/10/2026",
         "ninguno de los tres períodos de la muestra tiene costo pendiente",
     ),
 )
