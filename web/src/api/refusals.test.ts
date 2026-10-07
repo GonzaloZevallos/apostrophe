@@ -1,10 +1,12 @@
 import { describe, expect, test } from 'vitest'
+import contract from './contract.json'
 import {
   GONE_DETAIL,
   GONE_NOTICE,
   isGone,
   kindOf,
   resolveOverride,
+  WITHDRAWAL_REFUSAL_MESSAGES,
   type RefusalCode,
 } from './refusals'
 
@@ -63,5 +65,20 @@ describe('resolveOverride', () => {
     const overrides = { 'account.invitation_not_usable': 'Esta invitación ya no sirve' }
 
     expect(resolveOverride(overrides, 'made_up.code')).toBeUndefined()
+  })
+})
+
+describe('the withdrawal refusals', () => {
+  test('every refusal-kind withdrawal code has its fixed Spanish text, naming no data', () => {
+    const codes = Object.keys(contract.refusalCodes).filter((code) => code.startsWith('stock.withdrawal_'))
+    expect(codes).toHaveLength(8)
+    for (const code of codes) {
+      const message = resolveOverride(WITHDRAWAL_REFUSAL_MESSAGES, code)
+      if (kindOf(code) === 'gone' && code === 'stock.withdrawal_not_found') {
+        expect(message).toBeUndefined()
+      } else {
+        expect(message, code).toBeTypeOf('string')
+      }
+    }
   })
 })

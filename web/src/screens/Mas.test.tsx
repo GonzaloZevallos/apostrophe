@@ -9,7 +9,7 @@ import { MemoryRouter } from 'react-router'
 import { expect, test } from 'vitest'
 import { matchRoutes } from 'react-router'
 import { router } from '../router'
-import { ANALYSIS, EXPENSE_NEW, EXPENSES } from '../routes'
+import { ANALYSIS, EXPENSE_NEW, EXPENSES, WITHDRAWAL_NEW } from '../routes'
 import Mas from './Mas'
 
 function renderMas() {
@@ -21,11 +21,12 @@ function renderMas() {
   return screen.getByRole('navigation', { name: 'Más' })
 }
 
-test('lists "+ Cargar gasto", Gastos and Análisis first, in that order, then the entries not moved yet, Configuración last', () => {
+test('lists "+ Cargar gasto", "Sacar del stock" second, Gastos and Análisis first, in that order, then the entries not moved yet, Configuración last', () => {
   const entries = within(renderMas()).getAllByRole('link')
 
   expect(entries.map((entry) => entry.querySelector('.mas__item-rotulo')?.textContent)).toEqual([
     '+ Cargar gasto',
+    'Sacar del stock',
     'Gastos',
     'Análisis',
     'Variedades',
@@ -33,12 +34,13 @@ test('lists "+ Cargar gasto", Gastos and Análisis first, in that order, then th
     'Configuración',
   ])
   expect(entries[0]).toHaveTextContent('Categoría, monto y detalle')
-  expect(entries[1]).toHaveTextContent('Por mes y por categoría')
-  expect(entries[2]).toHaveTextContent('Variedades, semanas, meses y días')
-  expect(entries[5]).toHaveTextContent(
+  expect(entries[1]).toHaveAttribute('href', WITHDRAWAL_NEW)
+  expect(entries[2]).toHaveTextContent('Por mes y por categoría')
+  expect(entries[3]).toHaveTextContent('Variedades, semanas, meses y días')
+  expect(entries[6]).toHaveTextContent(
     'Negocio, usuarios, bot, catálogo, categorías, apariencia y tu cuenta',
   )
-  expect(entries[5]).toHaveAttribute('href', '/settings')
+  expect(entries[6]).toHaveAttribute('href', '/settings')
 })
 
 test('every entry opens a route the table mounts: no placeholder, nothing not built', () => {
@@ -46,7 +48,7 @@ test('every entry opens a route the table mounts: no placeholder, nothing not bu
   const entries = within(nav).getAllByRole('link')
 
   const targets = entries.map((entry) => entry.getAttribute('href'))
-  expect(targets.slice(0, 3)).toEqual([EXPENSE_NEW, EXPENSES, ANALYSIS])
+  expect(targets.slice(0, 4)).toEqual([EXPENSE_NEW, WITHDRAWAL_NEW, EXPENSES, ANALYSIS])
   for (const target of targets) {
     const leaf = matchRoutes(router.routes, target ?? '')?.at(-1)
     expect(leaf?.route.path, `${target} reaches the catch-all`).not.toBe('*')

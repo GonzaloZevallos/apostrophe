@@ -81,6 +81,16 @@ test('a variety links to its own detail, with no business id in the path', async
   expect(link).toHaveAttribute('href', '/variedades/7')
 })
 
+test('a secondary "Sacar del stock" opens the withdrawal form with no variety chosen', async () => {
+  mockGet([{ id: 7, name: 'Sir Jack', current_price: null }])
+
+  renderScreen()
+
+  const link = await screen.findByRole('link', { name: 'Sacar del stock' })
+  expect(link).toHaveAttribute('href', '/withdrawals/new')
+  expect(link).toHaveClass('boton--suave')
+})
+
 describe('adding a variety', () => {
   test('saves it, toasts, and clears the form', async () => {
     const user = userEvent.setup()

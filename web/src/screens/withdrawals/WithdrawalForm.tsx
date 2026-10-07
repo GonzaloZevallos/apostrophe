@@ -34,15 +34,11 @@ import ConfirmDialog from '../../components/ConfirmDialog'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import { parseGrams } from '../../format/parse'
+import { REASON_OPTIONS } from './withdrawalReasons'
 import type { Variety } from '../Variedades'
 
 export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
 export const GRAMS_INVALID = 'Revisá los gramos cargados'
-
-export const REASON_OPTIONS: { value: WithdrawalReason; label: string }[] = [
-  { value: 'promotion', label: 'Promoción' },
-  { value: 'own_use', label: 'Consumo propio' },
-]
 
 const REFUSAL_MESSAGES: Partial<Record<RefusalCode, string>> = WITHDRAWAL_REFUSAL_MESSAGES
 

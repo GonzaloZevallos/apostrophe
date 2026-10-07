@@ -28,7 +28,7 @@ import { useFlash } from '../../flash/useFlash'
 import { formatDate } from '../../format/dates'
 import { formatGrams } from '../../format/money'
 import { withdrawalEditPath } from '../../routes'
-import { REASON_OPTIONS } from './WithdrawalForm'
+import { REASON_OPTIONS } from './withdrawalReasons'
 
 const VARIETIES = '/variedades'
 
