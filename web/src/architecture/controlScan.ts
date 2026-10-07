@@ -381,7 +381,7 @@ function parseTag(src: string, start: number): Tag | null {
     i = skipSpaces(src, i)
     const ch = src[i]
     if (ch === undefined) return null
-    if (ch === '>' || (ch === '/' && src[i + 1] === '>')) return { name, index: start, attrs }
+    if (ch === '>' || src.startsWith('/>', i)) return { name, index: start, attrs }
     if (ch === '{') {
       const end = skipBraces(src, i)
       const inner = src.slice(i + 1, end - 1).trim()
