@@ -13,6 +13,13 @@ import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { queryClient, setCurrentPath, setNavigate } from '../../queryClient'
 import ClienteForm from './ClienteForm'
 
+// Clientes VIP is on for these tests; the switches' own behaviour is tested at the Precios seam
+// (`NuevaVenta.pricing.test.tsx`, `CustomerSwitches.test.tsx`).
+vi.mock('../../api/pricingSettings', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../api/pricingSettings')>()),
+  useIsVipCustomers: () => true,
+}))
+
 function ListStub() {
   const location = useLocation()
   const state = location.state as { toast?: string; notice?: string } | null

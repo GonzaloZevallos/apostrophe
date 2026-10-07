@@ -15,6 +15,13 @@ import { GONE_NOTICE } from '../../api/refusals'
 import type { Me } from '../../api/me'
 import Ventas from './Ventas'
 
+// Clientes VIP is on for these tests; the switches' own behaviour is tested at the Precios seam
+// (`NuevaVenta.pricing.test.tsx`, `CustomerSwitches.test.tsx`).
+vi.mock('../../api/pricingSettings', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../api/pricingSettings')>()),
+  useIsVipCustomers: () => true,
+}))
+
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
     status,

@@ -28,6 +28,13 @@ import { readNewSaleState } from '../../components/feedback'
 import { SIN_CONEXION_TITULO } from '../../components/SinConexion'
 import ClienteFicha from './ClienteFicha'
 
+// Clientes VIP is on for these tests; the switches' own behaviour is tested at the Precios seam
+// (`NuevaVenta.pricing.test.tsx`, `CustomerSwitches.test.tsx`).
+vi.mock('../../api/pricingSettings', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../api/pricingSettings')>()),
+  useIsVipCustomers: () => true,
+}))
+
 const ME: Me = { email: 'a@b.com', business_name: 'Negocio', today: '2026-10-03' }
 
 function Context() {
