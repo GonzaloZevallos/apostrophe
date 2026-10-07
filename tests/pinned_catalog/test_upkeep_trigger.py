@@ -145,9 +145,7 @@ def test_catalog_attributes_change_triggers_an_edit(
     assert len(_edits(telegram)) == 1
 
 
-def test_header_footer_change_triggers_an_edit(
-    client: TestClient, telegram: FakeTelegram
-) -> None:
+def test_header_footer_change_triggers_an_edit(client: TestClient, telegram: FakeTelegram) -> None:
     _register_qualifying_variety(client, "V1")
     _publish(client)
     telegram.calls.clear()
@@ -330,9 +328,7 @@ def test_a_stock_entry_created_brings_a_variety_into_the_catalog(
     assert len(_edits(telegram)) == 1
 
 
-def test_editing_a_stock_entry_triggers_an_edit(
-    client: TestClient, telegram: FakeTelegram
-) -> None:
+def test_editing_a_stock_entry_triggers_an_edit(client: TestClient, telegram: FakeTelegram) -> None:
     """`PUT /stock/entries/{id}` (the brief's own "stock entries ... edited"): moving
     the entry to a different variety sells the first one out and brings the second
     one in, changing the text."""

@@ -249,9 +249,7 @@ def edit_withdrawal(
 
 
 @withdrawals_router.delete("/{withdrawal_id}", status_code=204)
-def delete_withdrawal(
-    withdrawal_id: int, withdrawals: WithdrawalsDep, session: SessionDep
-) -> None:
+def delete_withdrawal(withdrawal_id: int, withdrawals: WithdrawalsDep, session: SessionDep) -> None:
     with as_http:
         manage_withdrawals.delete_withdrawal(withdrawals, session, withdrawal_id)
 
@@ -301,9 +299,7 @@ def get_movements(
 ) -> list[MovementOut]:
     with as_http:
         try:
-            movements = manage_withdrawals.read_movements(
-                entries, withdrawals, catalog, variety_id
-            )
+            movements = manage_withdrawals.read_movements(entries, withdrawals, catalog, variety_id)
         except _UnknownVariety as exc:
             raise _or_variety_not_found(exc, variety_id) from exc
         return [movement_out(movement) for movement in movements]
