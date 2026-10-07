@@ -746,8 +746,11 @@ def test_since_the_first_record_carries_both_lines() -> None:
     earlier = TODAY - timedelta(days=40)
     promotion = _withdrawal(kind="promotion", day=earlier, grams="1", costed=100, pending="0")
     own_use = _withdrawal(kind="own_use", day=TODAY, grams="1", costed=300, pending="0")
-    figures = _figures(draws=[promotion, own_use], earliest_entry_day=earlier)
+    # The stock entry is dated after the withdrawal: only the withdrawal can start the
+    # history at `earlier`.
+    figures = _figures(draws=[promotion, own_use], earliest_entry_day=TODAY)
 
+    assert figures.first_record == earlier
     assert figures.since_first_record is not None
     assert figures.since_first_record.promotion == AmountWithPending(100, Grams.of("0"))
     assert figures.since_first_record.own_use == AmountWithPending(300, Grams.of("0"))
@@ -756,13 +759,15 @@ def test_since_the_first_record_carries_both_lines() -> None:
 
 def test_a_withdrawal_as_the_only_record_starts_the_history_with_zero_sales() -> None:
     promotion = _withdrawal(kind="promotion", day=YESTERDAY, grams="2", costed=600, pending="0")
-    figures = _figures(draws=[promotion], earliest_entry_day=YESTERDAY)
+    figures = _figures(draws=[promotion])
 
     assert figures.first_record == YESTERDAY
     assert figures.since_first_record is not None
     assert figures.since_first_record.sales == 0
     assert figures.since_first_record.profit == AmountWithPending(-600, Grams.of("0"))
-    assert figures.weeks and figures.months
+    assert figures.weeks[0].first_day <= YESTERDAY <= figures.weeks[0].last_day
+    assert figures.months[0].month == Month.containing(YESTERDAY)
+    assert figures.weeks[-1].profit == AmountWithPending(-600, Grams.of("0"))
 
 
 def test_a_withdrawal_moves_no_variety_row_share_average_margin_best_week_or_weekday() -> None:
