@@ -178,7 +178,7 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
           </Boton>
         )}
         {!creator.isOpen ? (
-          <Boton variant="link" onClick={creator.open}>
+          <Boton variant="secondary" icon="personaMas" onClick={creator.open}>
             Nuevo cliente
           </Boton>
         ) : (

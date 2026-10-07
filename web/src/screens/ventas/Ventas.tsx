@@ -41,11 +41,12 @@ import { salesCount } from '../../format/counts'
 import { type DateRange, formatDate, monthRange, todayRange, weekRange } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
 import { saleGrams } from '../../sales/grams'
+import { EMPTY_LIST } from '../../sales/messages'
 import { useViewport } from '../../shell/useViewport'
 
 export type Period = 'hoy' | 'semana' | 'mes' | 'fechas'
 
-export const EMPTY_LIST = 'Todavía no registraste ninguna venta en este período.'
+export { EMPTY_LIST }
 
 const PERIOD_LABEL: Record<Period, string> = {
   hoy: 'Hoy',
@@ -169,7 +170,9 @@ export default function Ventas() {
 
         {!isError && !isPending && (
           <>
-            {sales.length === 0 && <span className="campo__rotulo">{EMPTY_LIST}</span>}
+            {sales.length === 0 && <span className="campo__rotulo" data-copy="emptyLine">
+                {EMPTY_LIST}
+              </span>}
 
             <div className="lista-ventas">
               {sales.map((sale) => {

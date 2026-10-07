@@ -51,6 +51,7 @@ function resolveFacts(template) {
 async function run(page, step) {
   if (step.click) await page.getByText(step.click, { exact: true }).first().click()
   else if (step.fill) await page.getByLabel(step.fill.label).first().fill(resolveFacts(step.fill.value))
+  else if (step.select) await page.getByLabel(step.select.label).first().selectOption({ index: step.select.index })
   else if (step.wait) await page.getByText(step.wait, { exact: true }).first().waitFor()
   // The page has settled by now: only the network goes, the page is never reloaded.
   else if (step.offline) await page.context().setOffline(true)

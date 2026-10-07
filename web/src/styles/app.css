@@ -4019,3 +4019,17 @@ body {
   box-shadow: none;
   align-self: flex-start;
 }
+
+/* ===== ventas-reglas-icono ===== */
+/* Deshacer is `Boton`'s undo kind, drawn on the dark "Venta guardada" bar: the bar's
+ * own ink, no accent underline (the old `.venta-guardada__deshacer` look). */
+.venta-guardada .boton--enlace {
+  background: var(--boton);
+  color: var(--boton-texto);
+  box-shadow: none;
+  font-weight: 600;
+  opacity: 0.75;
+  min-height: var(--alto-tocable);
+  padding: 0 var(--espacio-xs);
+}
+/* ===== end ventas-reglas-icono ===== */

@@ -284,14 +284,9 @@ function VentaDetalleScreen() {
         {undoAvailable && (
           <div className="venta-guardada" role="status">
             <span className="venta-guardada__texto">{SALE_SAVED}</span>
-            <button
-              type="button"
-              className="venta-guardada__deshacer"
-              disabled={deleting}
-              onClick={() => void removeSale('deshacer')}
-            >
+            <Boton variant="undo" disabled={deleting} onClick={() => void removeSale('deshacer')}>
               Deshacer
-            </button>
+            </Boton>
           </div>
         )}
         {deleteOffline && <SinConexion />}
