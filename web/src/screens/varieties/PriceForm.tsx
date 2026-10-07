@@ -42,6 +42,8 @@ export interface PriceFormProps {
   onCancel: () => void
   onDirtyChange: (dirty: boolean) => void
   onGone: () => void
+  /** A host with its own frame and its own "Cerrar" (the Onboarding) leaves the title row out. */
+  bare?: boolean
 }
 
 function FieldError({ message }: { message: string | undefined }) {
@@ -53,7 +55,15 @@ function FieldError({ message }: { message: string | undefined }) {
   )
 }
 
-export default function PriceForm({ varietyId, today, onDone, onCancel, onDirtyChange, onGone }: PriceFormProps) {
+export default function PriceForm({
+  varietyId,
+  today,
+  onDone,
+  onCancel,
+  onDirtyChange,
+  onGone,
+  bare = false,
+}: PriceFormProps) {
   const queryClient = useQueryClient()
   const [effectiveFrom, setEffectiveFrom] = useState(today)
   const [listPrice, setListPrice] = useState('')
@@ -113,12 +123,14 @@ export default function PriceForm({ varietyId, today, onDone, onCancel, onDirtyC
 
   return (
     <div className="gasto-form">
-      <div className="gasto-form__cabecera">
-        <span className="gasto-form__titulo">Nuevo precio</span>
-        <button type="button" className="boton--enlace gasto-form__cerrar" onClick={onCancel}>
-          Cerrar
-        </button>
-      </div>
+      {!bare && (
+        <div className="gasto-form__cabecera">
+          <span className="gasto-form__titulo">Nuevo precio</span>
+          <button type="button" className="boton--enlace gasto-form__cerrar" onClick={onCancel}>
+            Cerrar
+          </button>
+        </div>
+      )}
       <form className="formulario" onSubmit={onSubmit}>
         <label className="campo">
           <span className="campo__rotulo">Rige desde</span>

@@ -63,9 +63,9 @@ export default function OnboardingStep({
   const [failure, setFailure] = useState<Failure | null>(null)
   const [sending, setSending] = useState(false)
 
-  function onAnswer(answer: OnboardingProgress): void {
+  function onAnswer(answer: OnboardingProgress, to?: string): void {
     disarm()
-    void afterProgress(answer, navigate, queryClient)
+    void afterProgress(answer, navigate, queryClient, to)
   }
 
   async function skip(kind: Skip): Promise<void> {

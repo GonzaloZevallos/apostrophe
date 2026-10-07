@@ -22,6 +22,8 @@ export interface SignUpOptions {
   businessName?: string
   email?: string
   password?: string
+  /** Stay in the Onboarding the accept lands in (the Onboarding's own specs). */
+  stayInOnboarding?: boolean
 }
 
 export interface SignedUpBusiness {
@@ -49,6 +51,7 @@ export async function signUpNewBusiness(
     businessName = `Negocio ${unique}`,
     email = `duena-${unique}@example.com`,
     password = DEFAULT_PASSWORD,
+    stayInOnboarding = false,
   } = options
 
   await page.goto(newBusinessInvitationUrl())
@@ -66,7 +69,7 @@ export async function signUpNewBusiness(
   const create = page.getByRole('button', { name: 'Creá el negocio' })
   await expect(create).toBeEnabled()
   await create.click()
-  await leaveOnboarding(page)
+  if (!stayInOnboarding) await leaveOnboarding(page)
 
   return { businessName, email, password }
 }

@@ -124,11 +124,18 @@ function renderAt(initial: string | { pathname: string; state: unknown }, index 
 const logs = ['log', 'warn', 'error', 'info', 'debug'] as const
 const spies = logs.map((name) => vi.spyOn(console, name).mockImplementation(() => undefined))
 
+// The frame is tested here on its own: the owners' forms in the step slots have their own
+// tests (`Steps.test.tsx`), so every slot holds nothing while these run.
+const realBodies = { ...STEP_BODIES }
+const emptyBody = (): null => null
+
 beforeEach(() => {
   spies.forEach((spy) => spy.mockClear())
+  for (const slug of ORDER) STEP_BODIES[slug] = emptyBody
 })
 
 afterEach(() => {
+  Object.assign(STEP_BODIES, realBodies)
   vi.unstubAllGlobals()
   calls.length = 0
   for (const key of Object.keys(writes)) delete writes[key]
