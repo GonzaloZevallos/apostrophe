@@ -69,7 +69,7 @@ export default function VarietyRemoval({ varietyId, removal, grams }: Props) {
   const [offline, setOffline] = useState(false)
   const [failed, setFailed] = useState(false)
 
-  if (removal === null) return null
+  if (removal !== 'delete' && removal !== 'archive') return null
 
   function leave(): void {
     const list = queryClient.getQueryData<Variety[]>(keys.varieties())
