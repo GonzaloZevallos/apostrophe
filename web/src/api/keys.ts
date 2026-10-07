@@ -37,6 +37,7 @@ export const keys = {
   me: () => [PREFIX.me] as const,
   business: () => [PREFIX.business] as const,
   varieties: () => [PREFIX.varieties] as const,
+  archivedVarieties: () => [PREFIX.varieties, 'archived'] as const,
   variety: (id: string) => [PREFIX.varieties, id] as const,
   varietyPrices: (id: string) => [PREFIX.varieties, id, 'prices'] as const,
   customers: (q: string) => [PREFIX.customers, { q }] as const,

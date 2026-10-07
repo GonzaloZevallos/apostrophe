@@ -35,7 +35,7 @@ import { varietiesByName } from './varietiesByName'
 const HAS_HISTORY_CODE = 'variety.has_history'
 
 /** The detail line of the archive confirmation: the grams on hand when there are any. */
-export function archiveDetail(grams: number | null): string {
+function archiveDetail(grams: number | null): string {
   const tail = 'dejan de verse en Inicio y en las listas, pero el stock queda guardado.'
   if (grams === null || grams === 0) return `Si la archivás, ${tail}`
   if (grams < 0) return `Tiene un faltante de ${formatGrams(-grams)}. Si la archivás, ${tail}`
