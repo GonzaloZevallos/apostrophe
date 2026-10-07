@@ -26,6 +26,7 @@ import {
 import { invalidateResource, keys } from '../../api/keys'
 import { isGone, kindOf, resolveOverride, type RefusalCode } from '../../api/refusals'
 import Aviso, { type SuccessToast } from '../../components/Aviso'
+import Boton from '../../components/Boton'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import GoneNotice from '../../components/GoneNotice'
 import SinConexion from '../../components/SinConexion'
@@ -186,9 +187,9 @@ function Categories({ initial }: { initial: ExpenseCategory[] }) {
           </span>
         )}
         {offline && <SinConexion />}
-        <button className="boton boton--suave" type="submit" disabled={sending || newName.trim() === ''}>
+        <Boton variant="secondary" textOnly="submit" type="submit" disabled={sending || newName.trim() === ''}>
           + Categoría
-        </button>
+        </Boton>
       </form>
 
       {toast !== null && <Aviso texto={toast} />}
@@ -275,9 +276,9 @@ function CategoryRow({
           onChange={(event) => onDraft(event.target.value)}
           aria-label={`Nombre de ${category.name}`}
         />
-        <button className="boton" type="submit" disabled={sending}>
+        <Boton textOnly="submit" type="submit" disabled={sending}>
           Guardar
-        </button>
+        </Boton>
         {error !== null && (
           <span className="campo__error" role="alert">
             {error}
@@ -298,13 +299,7 @@ function CategoryRow({
       >
         Renombrar
       </button>
-      <button
-        type="button"
-        className="boton--enlace categoria-fila__accion categoria-fila__accion--eliminar"
-        onClick={() => setConfirming(true)}
-      >
-        Eliminar
-      </button>
+      <Boton variant="icon" action="delete" ariaLabel="Eliminar" onClick={() => setConfirming(true)} />
       {error !== null && (
         <span className="campo__error" role="alert">
           {error}

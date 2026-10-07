@@ -1382,8 +1382,9 @@ body {
 }
 
 /* `ConfiguracionCategorias.dc.html`: a row is 13px of air, a hairline under every row but
- * the last, "Renombrar" in the accent and "Eliminar" in the amber, bold and not underlined
- * (their words tell them apart, not the color alone). */
+ * the last, "Renombrar" in the accent, bold and not underlined; "Eliminar" is the
+ * icon-only delete (`Boton`'s `.boton-icono`), named "Eliminar", so the word still tells
+ * them apart, not the color alone. */
 .ajustes-grupo__cuerpo .fila {
   flex-wrap: wrap;
   align-items: center;
@@ -1400,10 +1401,6 @@ body {
   font-size: 14px;
   font-weight: 600;
   box-shadow: none;
-}
-
-.boton--enlace.categoria-fila__accion--eliminar {
-  color: var(--deuda);
 }
 
 /* The design's link look (`Componentes.dc.html`'s "Agregar otra variedad"): an

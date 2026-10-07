@@ -15,12 +15,14 @@ import { useOutletContext } from 'react-router'
 import { NetworkError, get, post } from '../../api/client'
 import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
+import Boton from '../../components/Boton'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import Loading from '../../components/Loading'
 import { copyText } from '../../clipboard'
 import { canShare, shareText } from '../../share'
 import { formatDateShort } from '../../format/dates'
+import { inviteExpiry } from './messages'
 import SettingsGroup from './SettingsGroup'
 
 interface Business {
@@ -95,9 +97,9 @@ export default function UsersGroup() {
           ))}
         </ul>
       )}
-      <button className="boton boton--suave" type="button" onClick={onInvite} disabled={invitePending}>
+      <Boton variant="secondary" icon="personaMas" onClick={onInvite} disabled={invitePending}>
         Invitá a un socio
-      </button>
+      </Boton>
       {invite !== null && (
         <div className="usuarios__invitacion">
           <div className="usuarios__link">{invite.url}</div>
@@ -109,8 +111,8 @@ export default function UsersGroup() {
               Compartir
             </button>
           </div>
-          <span className="campo__rotulo">
-            Un link de un solo uso, vence el {formatDateShort(invite.expires_at.slice(0, 10))}
+          <span className="campo__rotulo" data-copy="help">
+            {inviteExpiry(formatDateShort(invite.expires_at.slice(0, 10)))}
           </span>
         </div>
       )}

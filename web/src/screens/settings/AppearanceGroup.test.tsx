@@ -10,6 +10,7 @@ import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Link, RouterProvider } from 'react-router'
 import { beforeEach, expect, test } from 'vitest'
+import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import AppearanceGroup from './AppearanceGroup'
 
 const html = document.documentElement
@@ -109,4 +110,11 @@ test('"Cerrar" closes at once after choosing, with no question', async () => {
   await act(async () => undefined)
   expect(router.state.location.pathname).toBe(SETTINGS)
   expect(screen.queryByText('¿Descartás el tema?')).not.toBeInTheDocument()
+})
+
+test('Claro and Oscuro are options (radios) and the group follows the icon and text rule', async () => {
+  renderGroup()
+  await open(userEvent.setup())
+  expect(screen.getAllByRole('radio')).toHaveLength(2)
+  expectIconAndTextRule(document.body)
 })
