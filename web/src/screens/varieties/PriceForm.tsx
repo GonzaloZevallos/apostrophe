@@ -117,9 +117,11 @@ export default function PriceForm({ varietyId, today, onDone, onCancel, onDirtyC
     <div className="gasto-form">
       <div className="gasto-form__cabecera">
         <span className="gasto-form__titulo">Nuevo precio</span>
-        <button type="button" className="boton--enlace gasto-form__cerrar" onClick={onCancel}>
-          Cerrar
-        </button>
+        <span className="gasto-form__cerrar">
+          <Boton variant="link" onClick={onCancel}>
+            Cerrar
+          </Boton>
+        </span>
       </div>
       <form className="formulario" onSubmit={onSubmit}>
         <label className="campo">

@@ -1258,7 +1258,7 @@ body {
   align-self: flex-start;
 }
 
-.nueva-venta .nueva-venta__cerrar,
+.nueva-venta .nueva-venta__cerrar .boton--enlace,
 .gasto-form .gasto-form__cerrar .boton--enlace {
   box-shadow: none;
   color: var(--tinta2);
@@ -1267,7 +1267,7 @@ body {
 
 /* Nueva venta's "Cerrar" is a thumb target like every other control on the phone
  * (`ventasTelefono.spec.ts` measures every button at 44 px). */
-.nueva-venta .nueva-venta__cerrar {
+.nueva-venta .nueva-venta__cerrar .boton--enlace {
   display: inline-flex;
   align-items: center;
   min-height: var(--alto-tocable);

@@ -118,9 +118,11 @@ export default function CatalogAttributesForm({ row, onDone, onCancel, onDirtyCh
     <div className="gasto-form">
       <div className="gasto-form__cabecera">
         <span className="gasto-form__titulo">En el catálogo</span>
-        <button type="button" className="boton--enlace gasto-form__cerrar" onClick={onCancel}>
-          Cerrar
-        </button>
+        <span className="gasto-form__cerrar">
+          <Boton variant="link" onClick={onCancel}>
+            Cerrar
+          </Boton>
+        </span>
       </div>
       <form className="formulario" onSubmit={onSubmit}>
         <div className="seccion-variedad__fila">

@@ -27,7 +27,6 @@ export const ICON_NAMES = [
   'chevron',
   'abajo',
   'buscar',
-  'calendario',
   'whatsapp',
   'telegram',
   'tacho',
@@ -90,14 +89,6 @@ const TRAZOS: Record<NombreIcono, ReactNode> = {
     <>
       <circle cx="10.5" cy="10.5" r="6.5" />
       <path d="M15.5 15.5 21 21" />
-    </>
-  ),
-  calendario: (
-    <>
-      <rect x="3.5" y="5" width="17" height="15.5" rx="2.5" />
-      <path d="M8 3v4" />
-      <path d="M16 3v4" />
-      <path d="M3.5 10h17" />
     </>
   ),
   whatsapp: (

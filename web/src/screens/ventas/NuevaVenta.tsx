@@ -536,9 +536,11 @@ function NuevaVentaForm() {
                 <Icono nombre="abajo" />
               </span>
             </span>
-            <button type="button" className="boton--enlace nueva-venta__cerrar" onClick={close}>
-              Cerrar
-            </button>
+            <span className="nueva-venta__cerrar">
+              <Boton variant="link" onClick={close}>
+                Cerrar
+              </Boton>
+            </span>
           </div>
           {dateError !== null && (
             <span className="campo__error" role="alert">

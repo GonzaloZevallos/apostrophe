@@ -83,9 +83,11 @@ export default function VarietyNew() {
         <div className="gasto-form">
           <div className="gasto-form__cabecera">
             <span className="gasto-form__titulo">Nueva variedad</span>
-            <button type="button" className="boton--enlace gasto-form__cerrar" onClick={leave}>
-              Cerrar
-            </button>
+            <span className="gasto-form__cerrar">
+              <Boton variant="link" onClick={leave}>
+                Cerrar
+              </Boton>
+            </span>
           </div>
           <form className="formulario" onSubmit={onSubmit}>
             <label className="campo">

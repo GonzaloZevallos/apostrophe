@@ -272,7 +272,6 @@ export type NombreIcono =
   | 'chevron'
   | 'abajo'
   | 'buscar'
-  | 'calendario'
   | 'whatsapp'
   | 'telegram'
   | 'tacho'
