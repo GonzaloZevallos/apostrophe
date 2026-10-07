@@ -24,6 +24,8 @@ import {
   pathTo,
 } from '../routes'
 import { NO_PRICE_TODAY } from './Variedades'
+import { EMPTY_DETAIL, EMPTY_TITLE } from './varieties/varietiesMessages'
+import { LIMITS, SAMPLES } from '../copy/limits'
 
 const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
 
@@ -410,7 +412,27 @@ describe('the icon and text rule', () => {
     })
     await screen.findByText('Todavía no cargaste ninguna variedad')
 
-    expectIconAndTextRule(screen.getByRole('main'), { optionClasses: ['variedades__todas'] })
+    expectIconAndTextRule(screen.getByRole('main'), {
+      optionClasses: ['variedades__todas'],
+      limits: LIMITS,
+      samples: SAMPLES,
+    })
+    expect(screen.getByText(EMPTY_TITLE)).toHaveAttribute('data-copy', 'emptyTitle')
+    expect(screen.getByText(EMPTY_DETAIL)).toHaveAttribute('data-copy', 'emptyLine')
+  })
+
+  test('the limits check rejects an empty state longer than its limit', async () => {
+    renderApp(VARIETIES_PATH, {
+      answers: {
+        'GET /varieties': () => json(200, []),
+        'GET /stock': () => json(200, { total: 0, varieties: [], entries: [] }),
+      },
+    })
+    const title = await screen.findByText(EMPTY_TITLE)
+    title.textContent = 'x'.repeat(LIMITS.emptyTitle + 1)
+
+    const problems = iconAndTextProblems(screen.getByRole('main'), { limits: LIMITS, samples: SAMPLES })
+    expect(problems.filter((problem) => problem.includes('emptyTitle'))).toHaveLength(1)
   })
 })
 
