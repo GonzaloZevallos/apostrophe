@@ -3951,3 +3951,9 @@ body {
   flex-direction: column;
   gap: var(--espacio-md);
 }
+
+/* GH-97 area e (Inicio, Gastos, Análisis, Estados, getting-in): Inicio's Cobrar pill
+ * draws its icon beside the word. */
+.bloque-deben .cobrar {
+  gap: var(--espacio-sm);
+}

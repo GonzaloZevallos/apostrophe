@@ -38,6 +38,7 @@ import {
   type PanelTab,
 } from '../api/panel'
 import ErrorGenerico from '../components/ErrorGenerico'
+import Icono from '../components/Icono'
 import MarcaEstado from '../components/MarcaEstado'
 import SinConexion from '../components/SinConexion'
 import { salesCount } from '../format/counts'
@@ -310,6 +311,7 @@ function TeDebenBlock({ debts }: { debts: PanelDebts }) {
             aria-label={`Cobrar a ${row.name}`}
             className="cobrar cobrar--acento"
           >
+            <Icono nombre="cobro" />
             Cobrar
           </InAppLink>
         </div>
