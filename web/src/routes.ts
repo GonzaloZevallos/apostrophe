@@ -57,6 +57,10 @@ export type ScreenId =
   | 'stock'
   | 'stock-entry-new'
   | 'stock-entry'
+  | 'varieties-archived'
+  | 'withdrawal-new'
+  | 'withdrawal'
+  | 'withdrawal-edit'
   | 'expenses'
   | 'expense-new'
   | 'analysis'
@@ -91,6 +95,7 @@ export const CUSTOMER_PAYMENT = '/customers/:id/payment'
 
 export const VARIETIES = '/varieties'
 export const VARIETY_NEW = '/varieties/new'
+export const ARCHIVED_VARIETIES = '/varieties/archived'
 export const VARIETY = '/varieties/:id'
 export const VARIETY_PRICES = '/varieties/:id/prices'
 export const VARIETY_PRICE_NEW = '/varieties/:id/prices/new'
@@ -104,6 +109,15 @@ export const STOCK_ENTRY = '/varieties/entries/:id'
 /** The anchor of a variety's "En el catálogo" section: the catalog screen links to it and
  * the variety's page honours it. Not a path. */
 export const CATALOG_SECTION_ID = 'en-el-catalogo'
+
+export const WITHDRAWAL_NEW = '/withdrawals/new'
+export const WITHDRAWAL = '/withdrawals/:id'
+export const WITHDRAWAL_EDIT = '/withdrawals/:id/edit'
+
+/** The withdrawal form with `varietyId` already chosen on its first line. */
+export function withdrawalNewFor(varietyId: number | string): string {
+  return `${WITHDRAWAL_NEW}?variety=${encodeURIComponent(String(varietyId))}`
+}
 
 export const MORE = '/more'
 export const EXPENSES = '/expenses'
@@ -199,6 +213,17 @@ export const SCREENS: readonly Screen[] = [
   screen({ id: 'stock', path: STOCK, kind: 'card', title: 'Todas las entradas', parent: 'varieties' }),
   screen({ id: 'stock-entry-new', path: STOCK_ENTRY_NEW, kind: 'form', title: 'Entrada de stock', parent: 'stock' }),
   screen({ id: 'stock-entry', path: STOCK_ENTRY, kind: 'form', title: 'Entrada de stock', parent: 'stock' }),
+  screen({
+    id: 'varieties-archived',
+    path: ARCHIVED_VARIETIES,
+    kind: 'card',
+    title: 'Archivadas',
+    pane: 'list',
+    parent: 'varieties',
+  }),
+  screen({ id: 'withdrawal-new', path: WITHDRAWAL_NEW, kind: 'form', title: 'Sacar del stock', parent: 'varieties' }),
+  screen({ id: 'withdrawal', path: WITHDRAWAL, kind: 'card', title: 'Retiro', parent: 'varieties' }),
+  screen({ id: 'withdrawal-edit', path: WITHDRAWAL_EDIT, kind: 'form', title: 'Sacar del stock', parent: 'withdrawal' }),
 
   screen({
     id: 'expenses',

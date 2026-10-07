@@ -241,7 +241,7 @@ def test_a_shared_front_path_is_the_shell_only_for_a_browser_navigation(
             assert "location" not in response.headers, cell
 
 
-# The legacy rows are the app's own file's (`app/legacy_front_paths.json`, docs/adr/0031):
+# The legacy rows are the app's own file's (`app/legacy_front_paths.json`, docs/adr/0033):
 # this test walks whatever rows it holds. Which old paths must have a row is the hand-written
 # `tests/fixtures/legacy_front_paths.json`'s to say (`tests/test_static_spa.py`), so a row
 # deleted from the file fails there, not here. An id is carried across: `{id}` is 4821.
@@ -317,6 +317,7 @@ def test_the_shared_list_is_the_one_the_plan_names() -> None:
             "/customers/{id}/payment",
             "/varieties",
             "/varieties/new",
+            "/varieties/archived",
             "/varieties/{id}",
             "/varieties/{id}/prices",
             "/varieties/{id}/prices/new",
@@ -460,7 +461,7 @@ def test_the_shell_on_a_shared_path_carries_the_same_headers_as_the_root(
     assert shared.headers["cache-control"] == "no-cache"
 
 
-# --- Parameterised shared paths and shared templates (docs/adr/0031) -----------------------
+# --- Parameterised shared paths and shared templates (docs/adr/0033) -----------------------
 
 SHARED_FRONT_ROUTES: list[str] = sorted(
     path.replace("{id}", "7")

@@ -65,6 +65,25 @@ def test_the_sample_business_has_every_state_the_design_shows(client: TestClient
     assert stock[sample.low] == "low"
     assert stock[sample.no_entries] == "no_entries"
 
+    # Stock withdrawals: both reasons this week and month, one with pending cost, on the
+    # variety the comparisons open, which stays under its threshold.
+    periods = client.get("/panel").json()["periods"]
+    for name in ("week", "month"):
+        assert periods[name]["promotion"] is not None
+        assert periods[name]["own_use"] is not None
+    assert periods["week"]["promotion"]["pending"] is False
+    assert periods["week"]["own_use"]["pending"] is True
+    assert client.get(f"/stock/withdrawals/{sample.withdrawal}").json()["reason"] == "promotion"
+    movements = client.get(f"/stock/varieties/{sample.low}/movements").json()
+    assert len(movements) > 3
+    assert {m["reason"] for m in movements if m["kind"] == "withdrawal"} == {
+        "promotion",
+        "own_use",
+    }
+    analysis = client.get("/analysis").json()
+    assert analysis["since_first_record"]["promotion"] is not None
+    assert analysis["since_first_record"]["own_use"]["pending_grams"] > 0
+
     expenses = client.get("/expenses").json()
     assert expenses["total"] > 0
     assert len(expenses["categories"]) >= 2

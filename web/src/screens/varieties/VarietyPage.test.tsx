@@ -21,8 +21,10 @@ import {
   VARIETY_ENTRIES,
   VARIETY_PRICE_NEW,
   VARIETY_PRICES,
+  WITHDRAWAL,
   pathTo,
   relative,
+  withdrawalNewFor,
 } from '../../routes'
 import VarietyPage from './VarietyPage'
 import VarietyRoute from './VarietyRoute'
@@ -93,6 +95,11 @@ function defaults(): Answers {
     'GET /varieties/1/prices': () => json(200, PRICES),
     'GET /stock': () => json(200, stockOf(STOCK_ROW)),
     'GET /catalog': () => json(200, CATALOG),
+    'GET /stock/varieties/1/movements': () =>
+      json(
+        200,
+        ENTRIES.filter((row) => row.variety_id === 1).map((row) => ({ ...row, kind: 'entry' })),
+      ),
   }
 }
 
@@ -228,6 +235,36 @@ describe('the actions and the sections', () => {
     expect(inside.queryByText('40 g')).not.toBeInTheDocument()
     expect(inside.queryByText('99 g')).not.toBeInTheDocument()
     expect(inside.getByRole('link', { name: 'Ver todas' })).toHaveAttribute('href', pathTo(VARIETY_ENTRIES, { id: 1 }))
+  })
+
+  test('"Sacar del stock" opens the withdrawal form with this variety already chosen', async () => {
+    renderPage(pathTo(VARIETY, { id: 1 }))
+
+    expect(await screen.findByRole('link', { name: 'Sacar del stock' })).toHaveAttribute(
+      'href',
+      withdrawalNewFor(1),
+    )
+  })
+
+  test('a withdrawal in Stock y entradas says its reason and a minus sign, mixed with entries, and opens its detail', async () => {
+    renderPage(pathTo(VARIETY, { id: 1 }), {
+      'GET /stock/varieties/1/movements': () =>
+        json(200, [
+          { ...ENTRIES[0], kind: 'entry' },
+          { kind: 'withdrawal', id: 5, date: '2026-09-25', reason: 'promotion', grams: 5.5 },
+          { ...ENTRIES[2], kind: 'entry' },
+          { ...ENTRIES[3], kind: 'entry' },
+        ]),
+    })
+
+    const section = (await screen.findByRole('heading', { name: 'Stock y entradas' })).closest('section')
+    const inside = within(section as HTMLElement)
+    const reason = await inside.findByText(/Promoción/)
+    expect(reason.closest('li')).toHaveTextContent('−5,5 g')
+    expect(reason.closest('a')).toHaveAttribute('href', pathTo(WITHDRAWAL, { id: 5 }))
+    expect(inside.getByText('10 g')).toBeInTheDocument()
+    expect(inside.getByText('20 g')).toBeInTheDocument()
+    expect(inside.queryByText('30 g')).not.toBeInTheDocument()
   })
 
   test('Precios carries the last 3 prices, "Vigente hoy" and "Ver todas"', async () => {

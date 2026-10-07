@@ -238,3 +238,35 @@ test('month navigation disables "Mes anterior" when there is no earlier month', 
   await screen.findByText('Octubre 2026', { selector: '.gastos__mes-etiqueta' })
   expect(screen.getByRole('button', { name: 'Mes anterior' })).toBeDisabled()
 })
+
+test('Promoción and Consumo propio show apart from Faltante de stock, each with only its own pending grams', async () => {
+  renderAnalisis(async () => jsonResponse(200, analysisFixture))
+
+  // The month header: a promotion with half a pending gram, an own use fully costed.
+  expect(await screen.findByText(/^Promoción \$ 4\.000 y 0,5 g sin costo$/)).toBeInTheDocument()
+  expect(screen.getByText(/^Consumo propio \$ 1\.500$/)).toBeInTheDocument()
+  expect(screen.getByText(/Faltante de stock \$ 3\.000 y 1 g sin costo/)).toBeInTheDocument()
+
+  // The since-the-first-record totals read the same two lines.
+  expect(screen.getByText(/^Promoción \$ 9\.000 y 0,5 g sin costo$/)).toBeInTheDocument()
+  expect(screen.getByText(/^Consumo propio \$ 2\.500$/)).toBeInTheDocument()
+})
+
+test('a week and a month row show a withdrawal line only when the period has one', async () => {
+  renderAnalisis(async () => jsonResponse(200, analysisFixture))
+  await screen.findByText(SINCE_FIRST_RECORD_LABEL)
+
+  // Phone rows: only the fixture's first week (10/8) has a promotion and an own use.
+  const weekRows = Array.from(document.querySelectorAll<HTMLElement>('.analisis__semana'))
+  expect(weekRows).toHaveLength(8)
+  expect(within(weekRows[0]!).getByText('Promoción $ 1.000')).toBeInTheDocument()
+  expect(within(weekRows[0]!).getByText('Consumo propio $ 500')).toBeInTheDocument()
+  for (const row of weekRows.slice(1)) {
+    expect(within(row).queryByText(/Promoción|Consumo propio/)).not.toBeInTheDocument()
+  }
+
+  // The month rows: the same, with the fixture's last month holding no promotion.
+  const monthRows = Array.from(document.querySelectorAll<HTMLElement>('.analisis__mes-fila'))
+  expect(within(monthRows[0]!).getByText('Promoción $ 1.000')).toBeInTheDocument()
+  expect(within(monthRows[monthRows.length - 1]!).queryByText(/Promoción/)).not.toBeInTheDocument()
+})

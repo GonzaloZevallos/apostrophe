@@ -1,6 +1,6 @@
 /**
  * The one reader of a variety route's `:id` parameter (a variety is named by its integer
- * id, ADR-0031). A screen under it receives `varietyId` as a prop only. A parameter that is
+ * id, ADR-0033). A screen under it receives `varietyId` as a prop only. A parameter that is
  * not a whole number is a variety that is not there: "Eso ya no está.", and the API is
  * never asked.
  */

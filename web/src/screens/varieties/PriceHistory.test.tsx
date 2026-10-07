@@ -9,7 +9,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import { catalogQueryOptions } from '../../api/catalog'
 import { VARIETY, VARIETY_PRICES, pathTo } from '../../routes'
-import { api, jsonResponse, renderVarieties, writes } from './renderVarieties'
+import { VARIETY_ROW, api, jsonResponse, renderVarieties, writes } from './renderVarieties'
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -116,4 +116,14 @@ test('a delete that finds the price gone says so and refreshes the list', async 
   await user.click(await screen.findByRole('button', { name: 'Sí, borrala' }))
 
   expect(await screen.findByText('Eso ya no está. La lista ya está al día.')).toBeInTheDocument()
+})
+
+test("an archived variety's price history is read-only: rows with no delete", async () => {
+  renderVarieties(
+    [pathTo(VARIETY_PRICES, { id: 1 })],
+    api({ 'GET /varieties/1': () => jsonResponse(200, { ...VARIETY_ROW, archived: true }) }),
+  )
+
+  expect(await screen.findAllByText(/^Rige desde/)).toHaveLength(3)
+  expect(screen.queryByRole('button', { name: 'Borrar este precio' })).toBeNull()
 })

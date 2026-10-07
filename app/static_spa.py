@@ -43,6 +43,7 @@ SHARED_FRONT_PATHS = frozenset(
         "/customers/{id}/payment",
         "/varieties",
         "/varieties/new",
+        "/varieties/archived",
         "/varieties/{id}",
         "/varieties/{id}/prices",
         "/varieties/{id}/prices/new",
@@ -60,7 +61,7 @@ SHARED_FRONT_PATHS = frozenset(
 _ID = "{id}"
 
 # The old Spanish front paths and where they live now: one row each in
-# `legacy_front_paths.json` beside this module, the only home of the list (docs/adr/0031).
+# `legacy_front_paths.json` beside this module, the only home of the list (docs/adr/0033).
 LEGACY_FRONT_PATHS_FILE = Path(__file__).with_name("legacy_front_paths.json")
 _LITERAL_SEGMENT = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 
@@ -191,7 +192,7 @@ class SpaStatic(StaticFiles):
 
 class FrontNavigation:
     """Pure ASGI, outside Starlette's routing and its `redirect_slashes`, so the raw path
-    decides before the API's router can claim it (docs/adr/0024, docs/adr/0031):
+    decides before the API's router can claim it (docs/adr/0024, docs/adr/0033):
 
     - a legacy Spanish path (or it plus one trailing slash) is a 308 to its new path, for
       any method and any `Accept`, keeping the query string;

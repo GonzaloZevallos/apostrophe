@@ -19,6 +19,7 @@ import {
   VARIETIES as VARIETIES_PATH,
   VARIETY,
   VARIETY_ENTRIES,
+  WITHDRAWAL,
   pathTo,
 } from '../routes'
 import EntriesList from './EntriesList'
@@ -86,6 +87,11 @@ function fakeApi(overrides: Record<string, () => Response> = {}) {
       if (override !== undefined) return Promise.resolve(override())
       if (key === 'GET /stock') return Promise.resolve(jsonResponse(200, STOCK))
       if (key === 'GET /varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+      const movements = /^GET \/stock\/varieties\/(\d+)\/movements$/.exec(key)
+      if (movements !== null) {
+        const own = STOCK.entries.filter((row) => String(row.variety_id) === movements[1])
+        return Promise.resolve(jsonResponse(200, own.map((row) => ({ ...row, kind: 'entry' }))))
+      }
       const one = /^GET \/varieties\/(\d+)$/.exec(key)
       if (one !== null) {
         const found = VARIETIES.find((variety) => String(variety.id) === one[1])
@@ -153,6 +159,24 @@ test("a variety's list shows only its entries", async () => {
   const rows = await screen.findAllByRole('listitem')
   expect(rows).toHaveLength(2)
   expect(screen.queryByText('26/08 · Sir Jack')).not.toBeInTheDocument()
+})
+
+test("a variety's list holds its withdrawals, told by reason word and minus sign, each opening its detail", async () => {
+  fakeApi({
+    'GET /stock/varieties/3/movements': () =>
+      jsonResponse(200, [
+        { kind: 'withdrawal', id: 9, date: '2026-10-06', reason: 'promotion', grams: 5.5 },
+        { ...STOCK.entries[0], kind: 'entry' },
+      ]),
+  })
+  renderAt(pathTo(VARIETY_ENTRIES, { id: 3 }))
+
+  const rows = await screen.findAllByRole('listitem')
+  expect(rows).toHaveLength(2)
+  expect(within(rows[0]!).getByText('Promoción · −5,5 g')).toBeInTheDocument()
+  expect(within(rows[0]!).getByRole('link')).toHaveAttribute('href', pathTo(WITHDRAWAL, { id: 9 }))
+  expect(within(rows[0]!).queryByRole('button', { name: 'Borrar' })).not.toBeInTheDocument()
+  expect(within(rows[1]!).getByText('Compra · 30 g')).toBeInTheDocument()
 })
 
 /** Opens a list the way the seller does, from Variedades by a link, so the entry carries the in-app state. */

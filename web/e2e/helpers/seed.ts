@@ -1,11 +1,23 @@
 /**
  * The records the navigation specs need to reach a detail by its id: one priced variety, one
- * customer owing a sale, and one stock entry, all made through the built front, never through
+ * customer owing a sale, one stock entry and one stock withdrawal, all made through the built front, never through
  * the API. `signUp` opens a fresh business; `seedRecords` returns the ids it read from the
  * address bar after each save.
  */
 
-import { CUSTOMER, CUSTOMER_NEW, SALE, STOCK, STOCK_ENTRY, STOCK_ENTRY_NEW, VARIETIES, VARIETY } from '../../src/routes.js'
+import {
+  CUSTOMER,
+  CUSTOMER_NEW,
+  SALE,
+  STOCK,
+  STOCK_ENTRY,
+  STOCK_ENTRY_NEW,
+  VARIETIES,
+  VARIETY,
+  WITHDRAWAL,
+  pathTo,
+  withdrawalNewFor,
+} from '../../src/routes.js'
 import { expect, type Page } from '@playwright/test'
 import { newBusinessInvitationUrl } from '../backend.js'
 import { expectPath } from './url.js'
@@ -18,6 +30,7 @@ export interface Records {
   customer: number
   sale: number
   entry: number
+  withdrawal: number
   customerName: string
 }
 
@@ -71,5 +84,14 @@ export async function seedRecords(page: Page, customerName: string): Promise<Rec
   await page.getByRole('link', { name: 'Editar' }).click()
   const entry = await idAt(page, STOCK_ENTRY)
 
-  return { variety, customer, sale, entry, customerName }
+  await page.goto(withdrawalNewFor(variety))
+  await page.getByLabel('Gramos 1', { exact: true }).fill('1')
+  await page.getByRole('button', { name: 'Promoción', exact: true }).click()
+  await page.getByRole('button', { name: 'Guardá el retiro' }).click()
+  await expect(page.getByText('Retiro guardado')).toBeVisible()
+  await page.goto(pathTo(VARIETY, { id: variety }))
+  await page.locator('.fila-entrada__enlace', { hasText: 'Promoción' }).click()
+  const withdrawal = await idAt(page, WITHDRAWAL)
+
+  return { variety, customer, sale, entry, withdrawal, customerName }
 }

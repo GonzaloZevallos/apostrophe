@@ -4,6 +4,9 @@ real database (CODING_STANDARDS section 5)."""
 from typing import Any
 
 from fastapi.testclient import TestClient
+from sqlalchemy.engine import Engine
+
+from tests.fakes.archive import archive_by_hand
 
 TODAY = "2026-10-02"
 
@@ -219,3 +222,93 @@ def test_a_malformed_grams_value_is_refused(client: TestClient) -> None:
 
     assert response.status_code == 422
     assert response.json()["code"] == "grams.invalid"
+
+
+def _archived_variety(client: TestClient, engine: Engine, name: str) -> int:
+    variety_id = _variety_id(client, name)
+    archive_by_hand(engine, variety_id)
+    return variety_id
+
+
+def test_an_entry_cannot_be_recorded_on_an_archived_variety(
+    client: TestClient, engine: Engine
+) -> None:
+    archived = _archived_variety(client, engine, "Gone")
+
+    response = client.post(
+        "/stock/entries",
+        json={"variety_id": archived, "origin": "opening_stock", "grams": "5"},
+    )
+
+    assert response.status_code == 404
+    assert response.json()["code"] == "variety.archived"
+    assert client.get("/stock").json()["entries"] == []
+
+
+def test_a_threshold_cannot_be_set_or_cleared_on_an_archived_variety(
+    client: TestClient, engine: Engine
+) -> None:
+    archived = _archived_variety(client, engine, "Gone")
+
+    setting = client.put(f"/stock/varieties/{archived}/threshold", json={"grams": "5"})
+    clearing = client.put(f"/stock/varieties/{archived}/threshold", json={"grams": None})
+
+    assert (setting.status_code, setting.json()["code"]) == (404, "variety.archived")
+    assert (clearing.status_code, clearing.json()["code"]) == (404, "variety.archived")
+
+
+def test_an_entry_edit_keeps_its_own_archived_variety_but_cannot_move_onto_another(
+    client: TestClient, engine: Engine
+) -> None:
+    mine = _variety_id(client, "Mine")
+    entry = _record(client, variety_id=mine, grams="10")
+    other = _archived_variety(client, engine, "Other")
+    archive_by_hand(engine, mine)
+
+    kept = client.put(
+        f"/stock/entries/{entry['id']}",
+        json={"variety_id": mine, "origin": "opening_stock", "grams": "12"},
+    )
+    moved = client.put(
+        f"/stock/entries/{entry['id']}",
+        json={"variety_id": other, "origin": "opening_stock", "grams": "12"},
+    )
+
+    assert kept.status_code == 200, kept.text
+    assert kept.json()["grams"] == 12.0
+    assert (moved.status_code, moved.json()["code"]) == (404, "variety.archived")
+    assert client.get(f"/stock/entries/{entry['id']}").json()["variety_id"] == mine
+
+
+def test_an_entry_cannot_move_onto_an_archived_variety_from_a_live_one(
+    client: TestClient, engine: Engine
+) -> None:
+    live = _variety_id(client, "Live")
+    entry = _record(client, variety_id=live, grams="10")
+    archived = _archived_variety(client, engine, "Gone")
+
+    moved = client.put(
+        f"/stock/entries/{entry['id']}",
+        json={"variety_id": archived, "origin": "opening_stock", "grams": "10"},
+    )
+
+    assert (moved.status_code, moved.json()["code"]) == (404, "variety.archived")
+
+
+def test_an_entry_of_an_archived_variety_can_still_be_deleted(
+    client: TestClient, engine: Engine
+) -> None:
+    variety_id = _variety_id(client, "Mine")
+    entry = _record(client, variety_id=variety_id, grams="10")
+    archive_by_hand(engine, variety_id)
+
+    assert client.delete(f"/stock/entries/{entry['id']}").status_code == 204
+    assert client.get(f"/stock/entries/{entry['id']}").status_code == 404
+
+
+def test_an_unknown_variety_is_still_not_found_rather_than_archived(client: TestClient) -> None:
+    response = client.post(
+        "/stock/entries", json={"variety_id": 9999, "origin": "opening_stock", "grams": "5"}
+    )
+
+    assert (response.status_code, response.json()["code"]) == (404, "variety.not_found")

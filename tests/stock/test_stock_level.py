@@ -7,6 +7,7 @@ from __future__ import annotations
 from datetime import date, datetime, timedelta
 
 from app.shared.grams import Grams
+from app.stock.domain.draw_source import DrawSource
 from app.stock.domain.lot_order import Draw, Lot, LotOrder
 from app.stock.domain.stock_level import stock_level
 from app.stock.domain.threshold import Threshold
@@ -19,8 +20,10 @@ def _lot(grams: str, day: date, ref_id: int = 1) -> Lot:
     return Lot(LotOrder(day, AT, 0, ref_id, 0), 1, Grams.of(grams), None)
 
 
-def _draw(grams: str, day: date, ref_id: int = 1, rank: int = 1) -> Draw:
-    return Draw(LotOrder(day, AT, rank, ref_id, 0), 1, Grams.of(grams))
+def _draw(
+    grams: str, day: date, ref_id: int = 1, source: DrawSource = DrawSource.SALE_LINE
+) -> Draw:
+    return Draw(LotOrder(day, AT, 1, ref_id, 0), 1, Grams.of(grams), source)
 
 
 def test_no_entries_when_nothing_has_ever_moved() -> None:
@@ -138,10 +141,36 @@ def test_days_left_excludes_sale_draws_outside_the_30_day_window() -> None:
 
 
 def test_days_left_excludes_negative_adjustments_from_the_pace() -> None:
-    adjustment = _draw("10", TODAY, rank=0)  # rank 0: a stock-entry draw, not a sale line
+    adjustment = _draw("10", TODAY, source=DrawSource.ADJUSTMENT)
     level = stock_level([_lot("100", date(2026, 9, 1))], [adjustment], None, TODAY)
 
     assert level.days_left is None
+
+
+def test_days_left_counts_both_withdrawal_sources_as_grams_going_out() -> None:
+    promotion = _draw("5", TODAY, ref_id=1, source=DrawSource.PROMOTION)
+    own_use = _draw("5", TODAY, ref_id=2, source=DrawSource.OWN_USE)
+    level = stock_level([_lot("100", date(2026, 9, 1))], [promotion, own_use], None, TODAY)
+
+    # Stock is 90; 10 g out in 30 days: 90 * 30 // 10 = 270.
+    assert level.days_left == 270
+
+
+def test_a_variety_with_only_a_withdrawal_is_sold_out_not_no_entries() -> None:
+    withdrawal = _draw("2", date(2026, 9, 20), source=DrawSource.OWN_USE)
+    level = stock_level([], [withdrawal], None, TODAY)
+
+    assert level.status == "sold_out"
+    assert level.grams == Grams.of("-2")
+    assert level.sold_out_since == date(2026, 9, 20)
+
+
+def test_sold_out_since_follows_a_withdrawals_date() -> None:
+    withdrawal = _draw("10", date(2026, 9, 25), source=DrawSource.PROMOTION)
+    level = stock_level([_lot("10", date(2026, 9, 1))], [withdrawal], None, TODAY)
+
+    assert level.status == "sold_out"
+    assert level.sold_out_since == date(2026, 9, 25)
 
 
 def test_days_left_is_none_when_stock_is_at_or_below_zero() -> None:

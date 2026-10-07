@@ -2453,6 +2453,17 @@ body {
   white-space: nowrap;
 }
 
+/* A withdrawal's row in a variety's "Stock y entradas": the whole row opens its detail. */
+.fila-entrada__enlace {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+  color: inherit;
+  text-decoration: none;
+}
+
 .fila-entrada__costo--sin {
   color: var(--tinta2);
 }
@@ -3093,6 +3104,12 @@ body {
   text-decoration: none;
 }
 
+.variedad-retiro {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--espacio-lg);
+}
+
 .seccion-variedad {
   display: flex;
   flex-direction: column;
@@ -3248,6 +3265,26 @@ body {
   border-bottom: 1px solid var(--linea);
   text-decoration: none;
   color: var(--tinta);
+}
+
+.variedad-archivada {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+  border-bottom: 1px solid var(--linea);
+}
+
+.variedad-archivada .variedad-fila {
+  flex: 1;
+  min-width: 0;
+  border-bottom: 0;
+}
+
+.variedad-archivada__restaurar {
+  flex: 0 0 auto;
+  width: auto;
+  height: var(--alto-tocable);
+  padding: 0 var(--espacio-lg);
 }
 
 .variedad-fila__encabezado {
@@ -3876,4 +3913,41 @@ body {
   ) {
   -webkit-user-select: none;
   user-select: none;
+}
+
+/* `RetiroDetalle`: a stock withdrawal's detail — its facts, lines and actions. */
+.retiro__datos,
+.retiro__lineas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-md);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.retiro__dato {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.retiro__dato dd {
+  margin: 0;
+  font-size: 17px;
+}
+
+.retiro__linea {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--espacio-md);
+  padding: var(--espacio-md) 0;
+  border-bottom: 1px solid var(--linea);
+  font-size: 17px;
+}
+
+.retiro__acciones {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-md);
 }

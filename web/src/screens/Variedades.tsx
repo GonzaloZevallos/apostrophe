@@ -1,10 +1,11 @@
 /**
  * `Variedades` (`Variedades.dc.html`, `VariedadesCompu.dc.html`; `varieties.md`, "The list"):
- * the tab root. Every variety, hidden ones included, sorted by name; each row tells its stock
+ * the tab root. Every unarchived variety, hidden ones included, sorted by name; each row tells its stock
  * status by shape and word (`MarcaEstado`), "Oculta" beside it when the catalog hides it,
  * grams and days left, and today's list price per gram or "Sin precio: no se puede vender".
- * Above the list: the summary line, "Mandar catálogo" and "+ Entrada de stock"; "Nueva
- * variedad" below them and "Todas las entradas" at the foot.
+ * Above the list: the summary line, "Mandar catálogo" and "+ Entrada de stock" and
+ * "Sacar del stock" (the withdrawal form, no variety chosen); "Nueva variedad" below them
+ * and "Todas las entradas" and, when there are archived ones, "Archivadas (N)" at the foot.
  *
  * Nothing here decides anything: statuses and days left are `GET /stock`'s, prices are
  * `GET /varieties`', "Oculta" is `GET /catalog`'s own `shown`, and the summary line is counted
@@ -15,22 +16,27 @@
  */
 
 import { useQuery } from '@tanstack/react-query'
-import { useOutletContext } from 'react-router'
+import { useLocation, useOutletContext } from 'react-router'
 import { NetworkError, get } from '../api/client'
 import { catalogQueryOptions } from '../api/catalog'
 import { keys } from '../api/keys'
 import type { Me } from '../api/me'
 import { readStock, type VarietyStock } from '../api/stock'
 import ErrorGenerico from '../components/ErrorGenerico'
+import GoneNotice from '../components/GoneNotice'
+import { useGoneNotice } from '../components/goneExit'
 import InAppLink from '../components/InAppLink'
 import Loading from '../components/Loading'
 import MarcaEstado from '../components/MarcaEstado'
+import Notice from '../components/Notice'
 import SinConexion from '../components/SinConexion'
+import { readFeedback } from '../components/feedback'
 import { formatGrams, formatMoney } from '../format/money'
-import { CATALOG, STOCK, STOCK_ENTRY_NEW, VARIETY, VARIETY_NEW, pathTo } from '../routes'
+import { ARCHIVED_VARIETIES, CATALOG, STOCK, STOCK_ENTRY_NEW, VARIETY, VARIETY_NEW, WITHDRAWAL_NEW, pathTo } from '../routes'
 import { useViewport } from '../shell/useViewport'
 import { detailFor } from '../stock/detail'
 import { summaryLine } from '../stock/summaryLine'
+import { archivedVarietiesQueryOptions } from './varieties/archivedVarieties'
 import { varietiesByName } from './varieties/varietiesByName'
 import VarietyRowLink from './varieties/VarietyRowLink'
 
@@ -53,6 +59,7 @@ interface PriceEntry {
 export interface Variety {
   id: number
   name: string
+  archived: boolean
   current_price: PriceEntry | null
 }
 
@@ -67,12 +74,15 @@ function figuresOf(row: VarietyStock, today: string): string {
 export default function Variedades() {
   const me = useOutletContext<Me>()
   const computer = useViewport() === 'computer'
+  const feedback = readFeedback(useLocation().state)
+  const goneExited = useGoneNotice()
   const varietiesQuery = useQuery({
     queryKey: keys.varieties(),
     queryFn: () => get<Variety[]>('/varieties'),
   })
   const stockQuery = useQuery({ queryKey: keys.stock(), queryFn: readStock })
   const catalogQuery = useQuery(catalogQueryOptions())
+  const archivedCount = useQuery(archivedVarietiesQueryOptions()).data?.length ?? 0
 
   const failure = varietiesQuery.error ?? stockQuery.error
   const ready = varietiesQuery.data !== undefined && stockQuery.data !== undefined
@@ -97,10 +107,18 @@ export default function Variedades() {
           <InAppLink to={STOCK_ENTRY_NEW} className="boton boton--suave">
             + Entrada de stock
           </InAppLink>
+          <InAppLink to={WITHDRAWAL_NEW} className="boton boton--suave">
+            Sacar del stock
+          </InAppLink>
           <InAppLink to={VARIETY_NEW} className="boton--enlace variedades__nueva">
             Nueva variedad
           </InAppLink>
         </div>
+        {feedback !== null ? (
+          <Notice kind={feedback.kind} message={feedback.message} />
+        ) : (
+          goneExited && <GoneNotice />
+        )}
         {failure !== null && (failure instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />)}
         {failure === null && !ready && <Loading />}
         {failure === null && ready && rows.length === 0 && (
@@ -134,6 +152,12 @@ export default function Variedades() {
           <span>Todas las entradas</span>
           <span aria-hidden="true">›</span>
         </InAppLink>
+        {archivedCount > 0 && (
+          <InAppLink to={ARCHIVED_VARIETIES} className="variedades__todas">
+            <span>Archivadas ({archivedCount})</span>
+            <span aria-hidden="true">›</span>
+          </InAppLink>
+        )}
       </div>
     </main>
   )

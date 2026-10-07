@@ -6,19 +6,19 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date
-from typing import Literal
+from typing import Literal, assert_never
 
 from app.shared.grams import Grams
 
-DrawKind = Literal["sold", "gifted", "shortfall"]
+DrawKind = Literal["sold", "gifted", "shortfall", "promotion", "own_use"]
 
 
 @dataclass(frozen=True)
 class DrawRow:
     """One draw, already allocated against its lots. `variety_id`, `variety_name`,
-    `sale_id` and `line_total` are `None` exactly when `kind` is `shortfall`: a
-    negative adjustment is never a sale line (CONTEXT.md: Stock shortfall) and never
-    carries a line total of its own."""
+    `sale_id` and `line_total` are `None` unless `kind` is `sold` or `gifted`: a
+    negative adjustment is never a sale line (CONTEXT.md: Stock shortfall) and a stock
+    withdrawal is never a sale, so neither carries a line total of its own."""
 
     kind: DrawKind
     day: date
@@ -31,14 +31,17 @@ class DrawRow:
     pending: Grams
 
     def __post_init__(self) -> None:
-        if self.kind == "shortfall":
-            if self.variety_id is not None or self.sale_id is not None:
-                raise ValueError("a shortfall draw carries no variety or sale")
-            if self.line_total is not None:
-                raise ValueError("a shortfall draw carries no line total")
-        else:
-            if self.variety_id is None or self.sale_id is None or self.line_total is None:
-                raise ValueError("a sale-line draw carries its variety, sale and line total")
+        match self.kind:
+            case "sold" | "gifted":
+                if self.variety_id is None or self.sale_id is None or self.line_total is None:
+                    raise ValueError("a sale-line draw carries its variety, sale and line total")
+            case "shortfall" | "promotion" | "own_use":
+                if self.variety_id is not None or self.sale_id is not None:
+                    raise ValueError("a shortfall or withdrawal draw carries no variety or sale")
+                if self.line_total is not None:
+                    raise ValueError("a shortfall or withdrawal draw carries no line total")
+            case _:
+                assert_never(self.kind)
 
 
 @dataclass(frozen=True)

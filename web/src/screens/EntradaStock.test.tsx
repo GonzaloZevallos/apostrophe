@@ -721,3 +721,39 @@ test.each([
   expect(router.state.historyAction).toBe('POP')
   expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
 })
+
+test('editing an entry of an archived variety shows it as the chosen one, and offers no other archived variety', async () => {
+  fakeFor(stockOf([]), {
+    'GET /stock/entries/10': () =>
+      jsonResponse(200, {
+        id: 10,
+        date: '2026-09-20',
+        variety_id: 8,
+        origin: 'harvest',
+        grams: 25,
+        total_cost: null,
+        cost_per_gram: null,
+        note: null,
+      }),
+    'GET /varieties?archived=true': () =>
+      jsonResponse(200, [
+        { id: 8, name: 'Vieja', archived: true, current_price: null },
+        { id: 9, name: 'Otra archivada', archived: true, current_price: null },
+      ]),
+  })
+  renderForm(pathTo(STOCK_ENTRY, { id: 10 }))
+
+  const select = await screen.findByRole('combobox', { name: /^Variedad/ })
+  await waitFor(() => expect(select).toHaveValue('8'))
+  expect(screen.getByRole('option', { name: 'Vieja' })).toBeInTheDocument()
+  expect(screen.getByRole('option', { name: 'Sir Jack' })).toBeInTheDocument()
+  expect(screen.queryByRole('option', { name: 'Otra archivada' })).not.toBeInTheDocument()
+})
+
+test('a new entry never asks for the archived varieties', async () => {
+  fakeFor(stockOf([]))
+  renderForm(STOCK_ENTRY_NEW)
+
+  await screen.findByRole('option', { name: 'Sir Jack' })
+  expect(fetch).not.toHaveBeenCalledWith('/varieties?archived=true', expect.anything())
+})

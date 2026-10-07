@@ -43,6 +43,7 @@ import Clientes from './screens/clientes/Clientes'
 import ClientesLayout from './screens/clientes/ClientesLayout'
 import PriceHistory from './screens/varieties/PriceHistory'
 import PriceNew from './screens/varieties/PriceNew'
+import ArchivedIndex from './screens/varieties/ArchivedIndex'
 import VarietyPage from './screens/varieties/VarietyPage'
 import VarietyRoute from './screens/varieties/VarietyRoute'
 import VarietiesIndex from './screens/varieties/VarietiesIndex'
@@ -58,6 +59,8 @@ import CatalogMessageGroup from './screens/settings/CatalogMessageGroup'
 import ExpenseCategoriesGroup from './screens/settings/ExpenseCategoriesGroup'
 import IntegrationsGroup from './screens/settings/IntegrationsGroup'
 import UsersGroup from './screens/settings/UsersGroup'
+import WithdrawalDetail from './screens/withdrawals/WithdrawalDetail'
+import WithdrawalFormRoute from './screens/withdrawals/WithdrawalFormRoute'
 import NuevaVenta from './screens/ventas/NuevaVenta'
 import VentaDetalle from './screens/ventas/VentaDetalle'
 import Ventas from './screens/ventas/Ventas'
@@ -88,6 +91,10 @@ const ELEMENTS: Record<ScreenId, ReactElement> = {
   stock: <EntriesList />,
   'stock-entry-new': <EntradaStock mode="nuevo" />,
   'stock-entry': <EntradaStock mode="editar" />,
+  'varieties-archived': <ArchivedIndex />,
+  'withdrawal-new': <WithdrawalFormRoute mode="new" />,
+  withdrawal: <WithdrawalDetail />,
+  'withdrawal-edit': <WithdrawalFormRoute mode="edit" />,
   expenses: <Gastos />,
   'expense-new': <ExpenseNewRoute />,
   analysis: <Analisis />,
@@ -102,7 +109,12 @@ const ELEMENTS: Record<ScreenId, ReactElement> = {
 }
 
 /** The customer screens share `ClientesLayout`, which keeps the search across them. */
-const WITH_VARIETIES_PANES: ReadonlySet<ScreenId> = new Set(['varieties', 'variety-new', 'variety'])
+const WITH_VARIETIES_PANES: ReadonlySet<ScreenId> = new Set([
+  'varieties',
+  'variety-new',
+  'variety',
+  'varieties-archived',
+])
 
 const WITH_CUSTOMER_SEARCH: ReadonlySet<ScreenId> = new Set([
   'customers',

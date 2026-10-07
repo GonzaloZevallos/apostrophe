@@ -33,6 +33,14 @@ export const GONE_NOTICE = 'Eso ya no está. La lista ya está al día.'
  * own (plan, "Gone records"). */
 export const GONE_DETAIL = 'Eso ya no está.'
 
+/** Fixed text for `variety.name_archived`: the name belongs to an archived variety. It
+ * repeats nothing the seller typed (ADR-0005). */
+export const NAME_ARCHIVED_MESSAGE = 'Ese nombre es de una variedad archivada. Buscala en Archivadas.'
+
+/** Fixed text for `variety.has_history`: a delete was refused because the variety has
+ * sales or stock. It repeats no name or amount (ADR-0005). */
+export const HAS_HISTORY_MESSAGE = 'Esta variedad ya tiene historia: archivala en vez de eliminarla.'
+
 /** A code's kind, from the shared contract. The parameter stays a plain `string`
  * because a code comes in untyped off the wire (`ApiError.code`); a code the
  * contract does not list is never read as `'gone'`: an unrecognised refusal must
@@ -136,4 +144,28 @@ export const PINNED_CATALOG_REFUSAL_OVERRIDES: Record<
   'pinned_catalog.no_messages': LOOKUP_NO_MESSAGES_REASON,
   'pinned_catalog.several_chats': LOOKUP_SEVERAL_CHATS_REASON,
   'pinned_catalog.updates_unreadable': LOOKUP_UPDATES_UNREADABLE_REASON,
+}
+
+/** Fixed Spanish text for each coded refusal of a stock withdrawal (`stock.md`,
+ * "Stock withdrawal"): the rule that was broken, never the note, the grams or an id
+ * (ADR-0005). `stock.withdrawal_not_found` and `stock.withdrawal_variety_not_found`
+ * are the two 404 codes: the form dispatches the first as a gone withdrawal and
+ * answers the second on its lines, since the withdrawal itself still has somewhere to go. */
+export const WITHDRAWAL_REFUSAL_MESSAGES: Record<
+  | 'stock.withdrawal_reason_required'
+  | 'stock.withdrawal_date_in_future'
+  | 'stock.withdrawal_no_lines'
+  | 'stock.withdrawal_grams_not_positive'
+  | 'stock.withdrawal_grams_too_precise'
+  | 'stock.withdrawal_note_too_long'
+  | 'stock.withdrawal_variety_not_found',
+  string
+> = {
+  'stock.withdrawal_reason_required': 'Elegí el motivo: Promoción o Consumo propio',
+  'stock.withdrawal_date_in_future': 'La fecha no puede ser futura',
+  'stock.withdrawal_no_lines': 'Agregá al menos una variedad con sus gramos',
+  'stock.withdrawal_grams_not_positive': 'Los gramos tienen que ser más que cero',
+  'stock.withdrawal_grams_too_precise': 'Los gramos admiten hasta dos decimales',
+  'stock.withdrawal_note_too_long': 'La nota admite hasta 200 caracteres',
+  'stock.withdrawal_variety_not_found': 'Alguna variedad ya no está: elegí otra',
 }

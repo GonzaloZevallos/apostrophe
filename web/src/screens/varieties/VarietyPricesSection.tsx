@@ -11,10 +11,12 @@ export default function VarietyPricesSection({
   varietyId,
   history,
   currentPriceId,
+  readOnly = false,
 }: {
   varietyId: number
   history: PriceRow[]
   currentPriceId: number | null
+  readOnly?: boolean
 }) {
   return (
     <section className="seccion-variedad">
@@ -22,7 +24,7 @@ export default function VarietyPricesSection({
         <h2 className="seccion-variedad__titulo">Precios</h2>
         <InAppLink to={pathTo(VARIETY_PRICES, { id: varietyId })}>Ver todas</InAppLink>
       </div>
-      <PriceRows varietyId={varietyId} history={history} currentPriceId={currentPriceId} limit={3} />
+      <PriceRows varietyId={varietyId} history={history} currentPriceId={currentPriceId} limit={3} readOnly={readOnly} />
     </section>
   )
 }

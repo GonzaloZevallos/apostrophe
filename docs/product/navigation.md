@@ -12,6 +12,10 @@ This is the navigation job underneath every capability's own "from my phone" job
 
 This refines the navigation job for varieties, stock and the catalog (varieties.md); it is not a new job.
 
+**When** a variety I loaded by mistake, or one I no longer work with, keeps showing in my lists and pickers, **I want** to take it out from my phone in a few taps, deleting it if it never moved and archiving it if it has history, **so** my lists show only what I still sell, no past sale, stock, cost or profit figure changes, and I can bring it back exactly as it was if I start selling it again.
+
+This refines the varieties and navigation job for the end of a variety's life (varieties.md); it is not a new job. Served here by the Archivadas card and the archived variety's page.
+
 **When** I need to change how my business is set up (rename it, bring in a partner, connect or switch the Telegram bot, edit the catalog's header and footer, manage my expense categories, switch to dark, change my password or log out), **I want** every business-wide setting in one place, each in its own short screen, **so I can** change it in a few taps from my phone and get back to the customer, without wondering which screen holds it.
 
 Configuración is rare and deliberate; the daily jobs never need it. It refines the navigation job's "every business setting in one other place". Settings that belong to one variety live on its page and are not part of this job. Before it, settings were split across Negocio (name, partners, password), Catálogo (bot, header and footer) and Gastos → Categorías, and the dark theme could not be chosen in the app.
@@ -19,6 +23,8 @@ Configuración is rare and deliberate; the daily jobs never need it. It refines 
 **When** I move between screens between orders or mid-chat with a customer (Variedades and a variety's page, its prices and entries, a stock entry, a customer's card, Registrar cobro), **I want** every screen to give me the same way out and back, and my old links to still open the right screen, **so I can** get back to the customer without hunting, losing my place or tapping back twice.
 
 This refines the navigation job and criterion 5; it is not a new job. Its protagonist is the seller, on the phone or a computer. Before it, the stock entry form said "Volver" where every other form said "Cerrar", a record that was gone left its parent twice in history so back took two taps, and Variedades and old paths behaved differently from the rest of the app on reload and redirect. The seller tapped back again or used the bar.
+
+**When** I take grams out of my own stock without selling them (to share at a party so people get to know the business, or for my own use), **I want** to record them from my phone in a few taps (date, varieties and grams, the reason), **so I can** keep stock right and see in Ganancia what promoting the business and my own consumption cost me, without recording a sale nobody made or an adjustment that reads as lost flower. (Served here by "Sacar del stock" in Más, on Variedades and on a variety's page, at most 2 taps from any tab root; defined in stock.md.)
 
 Before this structure: the bar was Inicio · Ventas · Clientes · Stock · Más; one variety was split across Stock, Variedades and Catálogo; collecting a debt took four taps from Clientes; settings were split across Negocio, Catálogo and Gastos → Categorías, and the bot was configured inside Catálogo. Nothing of it is kept but the redirects from its paths, and, until Configuración's Integraciones and Mensaje del catálogo exist, the temporary place for the bot and the header and footer reached from the catalog screen (catalog.md).
 
@@ -29,11 +35,12 @@ Success criteria:
    - the payment sheet with the customer already chosen opens in at most 2 taps (Clientes → "Cobrar", or "Cobrar" on Inicio directly);
    - the catalog screen opens in at most 2 taps (Variedades → "Mandar catálogo");
    - a stock entry opens in at most 2 taps (Variedades → "+ Entrada de stock");
+   - a stock withdrawal opens in at most 2 taps (Más → "Sacar del stock", or Variedades → "Sacar del stock");
    - an expense opens in at most 2 taps (Más → "+ Cargar gasto").
 
    On a computer, each takes no more taps than on the phone.
 2. **Every business-wide setting in one place.** Name, users and join links, the Telegram bot, the catalog header and footer, expense categories, appearance, and your account (password, log out) are all in Configuración and nowhere else. Configuración is reachable in at most 2 taps from any tab root: from the business avatar on Inicio and from Más on the phone, from the sidebar's business row on a computer. Settings that belong to one variety live on the variety, and nowhere else. The one temporary exception is the bot and the header and footer, reached from the catalog screen until their Configuración groups exist.
-3. **One variety, one page.** A variety's stock and entries, prices, low-stock warning and catalog attributes are seen and edited from its page. No fact is edited in two places under two names.
+3. **One variety, one page.** A variety's stock and its movements (entries and withdrawals), prices, low-stock warning and catalog attributes are seen and edited from its page. No fact is edited in two places under two names.
 4. **Nothing lost, nothing invented.** Everything a seller could do before stays reachable. The one deliberate exception is the customer channel, which is removed. No navigation entry or screen exists for something not yet built: no "coming soon", no promotions, automations or languages. No link points at a screen that does not exist.
 5. **One rule for chrome and back.** Every screen is one of three kinds: tab root, card or detail, form or sheet. Each kind gets its chrome by the rule. Back follows history, and the parent screen is the fallback.
 6. **Readable and accessible.** Tab labels are always visible. The active tab and every state are marked by shape or word, never color alone. The bar fits at 320 px with text at 130 %, measured in a real browser.
@@ -57,14 +64,14 @@ Success criteria:
 
 - From the top: "+ Nueva venta"; Inicio, Ventas, Clientes, Variedades; a divider; Gastos, Análisis.
 - At the bottom: the business's name with its avatar, which opens Configuración (as `InicioCompu` draws it).
-- There is no Más on a computer.
-- **Two panes**: Clientes and Variedades show the list on the left and the selected customer's card or variety's page on the right. Variedades opened with nothing selected selects the first variety by name (varieties.md); that counts as no tap. Clientes selects nothing on its own.
+- There is no Más on a computer. The withdrawal form is reached from Variedades' secondary "Sacar del stock" and from a variety's page.
+- **Two panes**: Clientes and Variedades show the list on the left and the selected customer's card or variety's page on the right. Variedades opened with nothing selected selects the first unarchived variety by name (varieties.md); that counts as no tap. Archivadas uses the same two panes, selecting the first archived variety by name. Clientes selects nothing on its own.
 - **Two panes and history**: on a computer, picking a row in the left pane replaces the current history entry, and so does Variedades' automatic selection of its first variety. Back from either screen leaves it in one step, never once per row looked at. On the phone, opening a variety or a customer pushes an entry, and back returns to the list.
 
 ### Más (phone)
 
-- In order: "+ Cargar gasto" (it opens the expense form with today's date, expenses.md), Gastos, Análisis, Configuración.
-- "+ Cargar gasto" is on top because it is the only load with no shorter path.
+- In order: "+ Cargar gasto" (it opens the expense form with today's date, expenses.md), "Sacar del stock" (it opens the stock withdrawal form with today's date and no variety chosen, stock.md), Gastos, Análisis, Configuración.
+- "+ Cargar gasto" and "Sacar del stock" are on top because they are the loads with no shorter path from every tab root.
 - Nothing else: an entry appears only once what it opens exists.
 
 ### Configuración
@@ -87,7 +94,7 @@ Success criteria:
 - **The list of groups** is a card: the bar or sidebar and a back arrow, no "+ Nueva venta". Back follows history; with none, it goes to "‹ Más" on the phone and "‹ Inicio" on a computer.
 - **Each group** is its own subscreen, a form: "Cerrar", no bar, no "+ Nueva venta"; unsaved changes ask before discarding, an untouched group closes at once. Apariencia never has unsaved changes, so it always closes at once.
 - **Empty business**: every group works. Usuarios lists at least the signed-in user; Categorías de gastos with none shows an empty list and the add action; Integraciones with nothing saved shows empty fields and no "Guardado" line.
-- **Never here**: a variety's own settings (catalog attributes, low-stock threshold), which live only on its page (varieties.md); anything for the operator (ADR-0002); a group or placeholder for anything not built.
+- **Never here**: a variety's own settings (catalog attributes, low-stock threshold) or its archiving, which live only on its page and in Archivadas (varieties.md); anything for the operator (ADR-0002); a group or placeholder for anything not built.
 - **Nowhere else**: the old Negocio screen is gone; the catalog screen edits no header or footer (its "Editar encabezado y pie" opens Mensaje del catálogo); Gastos has no categories entry, apart from creating one inside the expense form (expenses.md).
 - **Temporary exception, until Integraciones and Mensaje del catálogo exist**: the bot settings and the header and footer stay editable, exactly as before, in one temporary place reached only from the catalog screen ("Editar encabezado y pie" and Publicar's "unavailable" link). It is a form ("Cerrar" back by history, else to the catalog screen; confirmation on unsaved leave), with no tab, Más entry, Configuración group or "coming soon" mark, and no pin status or Publicar. The catalog screen itself still edits nothing; it links out. Configuración's own issue retargets both links and removes the temporary place.
 
@@ -96,10 +103,10 @@ Success criteria:
 Every screen is exactly one of three kinds, has one parent, and gets its chrome only from its kind.
 
 - **Tab root**: Inicio, Ventas, Clientes, Variedades, Gastos, Análisis and Más. It shows the bar (or the sidebar) and "+ Nueva venta". Gastos and Análisis are reached from Más on the phone and from the sidebar on a computer.
-- **Card or detail**: a customer's card, a variety's page, a sale's detail, an expense, the catalog screen, "Todas las entradas", every "Ver todas" list of a variety's page (its entries and its prices), and Configuración's list of groups.
-  - It shows the bar (or the sidebar) and a "‹ <parent>" back arrow naming the screen it returns to.
+- **Card or detail**: a customer's card, a variety's page, an archived variety's page ("‹ Archivadas"), the Archivadas card ("‹ Variedades"), a sale's detail, an expense, a stock withdrawal's detail, the catalog screen, "Todas las entradas", every "Ver todas" list of a variety's page (its entries and withdrawals, and its prices), and Configuración's list of groups.
+  - It shows the bar (or the sidebar) and a "‹ <parent>" back arrow naming the screen it returns to. A withdrawal's detail returns to the screen it was opened from, and to Variedades with no history.
   - It never shows "+ Nueva venta". A customer's card carries only "Nueva venta a <name>".
-- **Form or sheet**: Nueva venta and Elegir cliente, Registrar cobro, the customer form (new, `/customers/new`, and editing, `/customers/{id}/edit`), the stock entry form (new or editing, `/varieties/entries/{id}`), the price entry form, the expense form, a variety's add and rename, a variety's low-stock warning form and catalog attributes form, every Configuración group, and the temporary place for the bot and the header and footer while it exists.
+- **Form or sheet**: Nueva venta and Elegir cliente, Registrar cobro, the customer form (new, `/customers/new`, and editing, `/customers/{id}/edit`), the stock entry form (new or editing, `/varieties/entries/{id}`), the stock withdrawal form ("Sacar del stock", new or editing), the price entry form, the expense form, a variety's add and rename, a variety's low-stock warning form and catalog attributes form, every Configuración group, and the temporary place for the bot and the header and footer while it exists.
   - It shows neither the bar nor "+ Nueva venta". It closes with "Cerrar", never another word such as "Volver".
   - Leaving it with unsaved changes asks before discarding. Nueva venta keeps its own "¿Descartás la venta?" (sales.md); every other form or sheet asks the same way with its own fixed wording.
   - An untouched form or sheet closes at once.
@@ -116,14 +123,19 @@ Every screen is exactly one of three kinds, has one parent, and gets its chrome 
 | Registrar cobro | Clientes |
 | A variety's "Ver todas" of prices or entries | the variety's page |
 | "Todas las entradas" | Variedades |
+| Stock withdrawal form, new | Variedades |
+| Stock withdrawal form, editing | that withdrawal's detail |
+| A withdrawal's detail | Variedades |
+| Archivadas | Variedades |
+| An archived variety's page | Archivadas |
 
 - **A gone exit is the same move as "Cerrar".** When saving, deleting or undoing in the stock entry form, the customer form or Registrar cobro hits a record that no longer exists, the screen goes back one step in history when it was opened from inside the app, or to its parent when it was opened by a direct link. The list refreshes and "Eso ya no está. La lista ya está al día." shows, as accounts.md defines it. No history entry is ever duplicated.
 - **"Cobrar a <name>"** on a debtor row opens Registrar cobro with that customer chosen, as an entry in the app's history; back or "Cerrar" closes it in one move.
 
 ### Routes
 
-- Every screen's route is in English: `/sales`, `/customers`, `/varieties`, `/expenses`, `/analysis`, `/settings`, `/more`, and the same for every other screen. Every screen is registered once, with its kind and its parent, in `scripts/design/screens.json`, which fixes its exact path; each Configuración group is included, as are `/customers/new`, `/customers/{id}/edit` and `/varieties/entries/{id}`.
-- **Variedades** and its screens: `/varieties`, `/varieties/{id}`, `/varieties/catalog` (the catalog screen), `/varieties/entries` ("Todas las entradas"), `/varieties/entries/new`, `/varieties/entries/{id}` (editing a stock entry), `/varieties/{id}/entries` (a variety's entries, the same list filtered to it, "‹ <variety>"), `/varieties/{id}/prices`, `/varieties/{id}/prices/new` and `/varieties/new`. `{id}` is the variety's or entry's own id. A reload on any of them opens the screen, never the API's answer, and the front's own API calls still reach the API.
+- Every screen's route is in English: `/sales`, `/customers`, `/varieties`, `/expenses`, `/analysis`, `/settings`, `/more`, and the same for every other screen. The stock withdrawal form is `/withdrawals/new` (and `/withdrawals/{id}/edit`), a withdrawal's detail `/withdrawals/{id}`. Every screen is registered once, with its kind and its parent, in `scripts/design/screens.json`, which fixes its exact path; each Configuración group is included, as are `/customers/new`, `/customers/{id}/edit` and `/varieties/entries/{id}`.
+- **Variedades** and its screens: `/varieties`, `/varieties/{id}`, `/varieties/catalog` (the catalog screen), `/varieties/entries` ("Todas las entradas"), `/varieties/entries/new`, `/varieties/entries/{id}` (editing a stock entry), `/varieties/{id}/entries` (a variety's entries, the same list filtered to it, with the withdrawals that touch it, "‹ <variety>"), `/varieties/{id}/prices`, `/varieties/{id}/prices/new`, `/varieties/new` and `/varieties/archived` (the Archivadas card). A variety's page is read-only when the variety is archived. `{id}` is the variety's or entry's own id. A reload on any of them opens the screen, never the API's answer, and the front's own API calls still reach the API.
 - Every old Spanish path redirects permanently to its new route, each tested one by one, with a record's id carried across:
   - `/ventas`, `/clientes`, `/mi-stock`, `/mi-stock/nueva-entrada`, `/mi-stock/entradas/{id}` (to `/varieties/entries/{id}`), `/variedades`, `/variedades/{id}` (to `/varieties/{id}`), `/catalogo`, `/gastos`, `/mas`, and every other one, including the old Te deben screen's path, which goes to Clientes;
   - `/negocio` goes to Configuración;
@@ -180,14 +192,14 @@ This covers Configuración and its groups, the catalog screen and a variety's pa
 
 ## Metrics
 
-- **Tap budget (criterion 1)**: through the front, from each tab root, phone and computer viewports, the end-to-end run counts the taps to open: the sale form (1), Registrar cobro with the customer chosen from Clientes and from Inicio (≤2), the catalog screen (≤2), the stock entry form (≤2) and the expense form (≤2). 100% within budget.
+- **Tap budget (criterion 1)**: through the front, from each tab root, phone and computer viewports, the end-to-end run counts the taps to open: the sale form (1), Registrar cobro with the customer chosen from Clientes and from Inicio (≤2), the catalog screen (≤2), the stock entry form (≤2), the stock withdrawal form (≤2) and the expense form (≤2). 100% within budget.
 - **Settings in one place (criterion 2)**: every business-wide setting named in the product docs sits in exactly one Configuración group and on no other screen; the catalog screen edits no header or footer, Gastos has no categories entry, and the old Negocio screen does not exist; every per-variety setting sits only on the variety's page. Configuración opens in ≤2 taps from every tab root, phone and computer. While the temporary place stands in for Integraciones and Mensaje del catálogo, it is reached only from the catalog screen and from no tab, Más or Configuración entry.
-- **One fact, one place (criterion 3)**: no price, stock entry, threshold or catalog attribute is editable from two screens, checked against the docs and the design. A stock entry is edited through its one form, `/varieties/entries/{id}`, whichever list it was opened from.
+- **One fact, one place (criterion 3)**: no price, stock entry, withdrawal, threshold or catalog attribute is editable from two screens, checked against the docs and the design. A stock entry is edited through its one form, `/varieties/entries/{id}`, whichever list it was opened from.
 - **Nothing lost, nothing invented (criterion 4)**: every action a seller had before the redesign, and everything reachable on master or on #59, maps to a place in the new structure, except the customer channel; the bar, the sidebar, Más and Configuración show exactly the entries listed above, with no placeholder group; no link points at a missing screen. #47's end-to-end specs and #118's test waits pass without being edited to fit.
 - **Chrome (criteria 5, 9)**: every screen in the docs and in `scripts/design/screens.json` is classified as exactly one kind with a parent, and front tests check its chrome: tab roots with the bar and "+ Nueva venta", cards with "‹ <parent>" and no "+ Nueva venta", forms and sheets with neither, "Cerrar" and a confirmation on unsaved leave. The stock entry form reads "Cerrar", never "Volver"; the customer form shows "Cerrar".
 - **One move back (criterion 10)**:
   - each gone exit (stock entry form, customer form, Registrar cobro), opened from its parent, leaves history holding the parent once, and one back leaves; opened by a direct link, it goes to the named parent;
-  - each row of the back-with-no-history table is tested one by one; back with no history from Configuración's list goes to Más on the phone and Inicio on a computer;
+  - each row of the back-with-no-history table is tested one by one; back with no history from Configuración's list goes to Más on the phone and Inicio on a computer; from a withdrawal's detail, to Variedades; from an archived variety's page, to Archivadas; from Archivadas, to Variedades;
   - on a computer, picking rows in Variedades' and Clientes' two panes, and Variedades' auto-selected first variety, leave back at one step; on the phone, opening a record pushes an entry;
   - tapping "Cobrar a <name>" on a Clientes row opens Registrar cobro with the customer chosen, carries the in-app history state, and back closes it in one move.
 - **Accessible bar (criterion 6)**: a Playwright test at 320 px with text at 130 % shows every tab label whole; the active tab carries `aria-current` and a non-color mark; no state is told by color alone.
@@ -210,8 +222,8 @@ This covers Configuración and its groups, the catalog screen and a variety's pa
   - an imported business never sees it, and sees the after-import notice until dismissed or published;
   - "Mandar catálogo" is disabled only while the checklist shows and nothing qualifies.
 - **Redirects (criterion 11)**: every old Spanish path that has moved answers a permanent redirect to its English route, tested one by one, including `/negocio`, `/gastos/categorias`, `/catalogo`, `/mi-stock/nueva-entrada`, and `/variedades/{id}` and `/mi-stock/entradas/{id}` with the id carried across. A test shows every redirect target is a `screens.json` path, with no exemption. There is one redirect mechanism, on the server, and none in the front.
-- **Reloads under `/varieties` (criterion 11)**: a browser navigation to each Variedades route, parameterised ones included (`/varieties/{id}`, `/varieties/{id}/entries`, `/varieties/{id}/prices`, `/varieties/{id}/prices/new`, `/varieties/entries/{id}`), opens the screen, never the API's answer; the front's own API calls still reach the API.
-- **One structure (criterion 7)**: the docs, CONTEXT.md, `pantallas/` and `screens.json` name the same screens and routes; Zeta approves the pull request that states them.
+- **Reloads under `/varieties` (criterion 11)**: a browser navigation to each Variedades route, parameterised ones included (`/varieties/{id}`, `/varieties/{id}/entries`, `/varieties/{id}/prices`, `/varieties/{id}/prices/new`, `/varieties/entries/{id}`) and `/varieties/archived`, opens the screen, never the API's answer; the front's own API calls still reach the API.
+- **One structure (criterion 7)**: the docs, CONTEXT.md, `pantallas/` and `screens.json` name the same screens and routes, the withdrawal form and detail, the Archivadas card and the archived variety's page included; Zeta approves the pull request that states them.
 - **Design**: `scripts/design/compare.sh` runs before and after for the stock entry form, the customer form and Nueva venta, phone and computer, attached to the PR and judged by eye; `NuevaVentaCompu` comes out unchanged; any difference from the design is listed in the PR.
 
 ## Out of scope
@@ -220,10 +232,11 @@ This covers Configuración and its groups, the catalog screen and a variety's pa
 - Rebuilding each area's screens (#45–#49, Configuración's groups): their routes show today's content until then.
 - Any operator or admin surface in the app; roles; listing or revoking invitations.
 - A tour or welcome screen.
-- Promotions, automations, languages, and any entry for them before they exist.
+- Promotions (as campaigns or offers), automations, languages, and any entry for them before they exist. A stock withdrawal for promotion is a stock record, not this.
 - A "follow the system" theme.
 - The pin's status or Publicar in Integraciones.
 - Per-variety settings in Configuración (#47).
+- An Archivadas entry in the bar, the sidebar, Más or Configuración: it is reached only from Variedades.
 - A redirect rule for removed paths with no counterpart; changing where unknown addresses go.
 - Marks or "‹ <parent>" labels that depend on how a screen was reached.
 - A back arrow that ignores history.
@@ -232,3 +245,4 @@ This covers Configuración and its groups, the catalog screen and a variety's pa
 - Redirects in the front; a second redirect mechanism.
 - Auto-selecting a customer on Clientes' two panes.
 - Any token, wording or layout change to a screen beyond what the chrome rule gives it.
+- A business-wide list of stock withdrawals.

@@ -11,6 +11,8 @@
     "grams_gifted": 15.0,
     "average_margin": { "amount": 41000, "percent": 55, "pending_grams": 2.5 },
     "shortfall": { "amount": 3000, "pending_grams": 1.0 },
+    "promotion": { "amount": 4000, "pending_grams": 0.5 },
+    "own_use": { "amount": 1500, "pending_grams": 0.0 },
     "varieties": [
       {
         "variety_id": 1,
@@ -51,6 +53,8 @@
       "sales": 15000,
       "grams": 10.0,
       "expenses": 2000,
+      "promotion": { "amount": 1000, "pending_grams": 0.0 },
+      "own_use": { "amount": 500, "pending_grams": 0.0 },
       "profit": { "amount": 5000, "pending_grams": 0.0 },
       "cash": 13000,
       "best": false
@@ -61,6 +65,8 @@
       "sales": 18000,
       "grams": 12.0,
       "expenses": 1500,
+      "promotion": null,
+      "own_use": null,
       "profit": { "amount": 7000, "pending_grams": 0.0 },
       "cash": 16000,
       "best": false
@@ -71,6 +77,8 @@
       "sales": 20000,
       "grams": 13.0,
       "expenses": 2500,
+      "promotion": null,
+      "own_use": null,
       "profit": { "amount": 6000, "pending_grams": 0.0 },
       "cash": 17000,
       "best": false
@@ -81,6 +89,8 @@
       "sales": 22000,
       "grams": 14.0,
       "expenses": 1800,
+      "promotion": null,
+      "own_use": null,
       "profit": { "amount": 8000, "pending_grams": 0.0 },
       "cash": 19000,
       "best": false
@@ -91,6 +101,8 @@
       "sales": 19000,
       "grams": 12.5,
       "expenses": 2200,
+      "promotion": null,
+      "own_use": null,
       "profit": { "amount": 6500, "pending_grams": 0.0 },
       "cash": 17500,
       "best": false
@@ -101,6 +113,8 @@
       "sales": 24000,
       "grams": 16.0,
       "expenses": 2000,
+      "promotion": null,
+      "own_use": null,
       "profit": { "amount": 9000, "pending_grams": 6.0 },
       "cash": 21000,
       "best": false
@@ -111,6 +125,8 @@
       "sales": 21000,
       "grams": 13.5,
       "expenses": 1900,
+      "promotion": null,
+      "own_use": null,
       "profit": { "amount": 7500, "pending_grams": 0.0 },
       "cash": 19500,
       "best": false
@@ -121,6 +137,8 @@
       "sales": 30000,
       "grams": 18.0,
       "expenses": 2100,
+      "promotion": null,
+      "own_use": null,
       "profit": { "amount": 11000, "pending_grams": 0.0 },
       "cash": 27500,
       "best": true
@@ -134,6 +152,8 @@
       "sales": 40000,
       "grams": 25.0,
       "expenses": 6000,
+      "promotion": { "amount": 1000, "pending_grams": 0.0 },
+      "own_use": { "amount": 500, "pending_grams": 0.0 },
       "profit": { "amount": 12000, "pending_grams": 0.0 },
       "cash": 35000
     },
@@ -144,6 +164,8 @@
       "sales": 55000,
       "grams": 30.0,
       "expenses": 7000,
+      "promotion": null,
+      "own_use": null,
       "profit": { "amount": 18000, "pending_grams": 0.0 },
       "cash": 48000
     },
@@ -154,6 +176,8 @@
       "sales": 60000,
       "grams": 32.0,
       "expenses": 8000,
+      "promotion": null,
+      "own_use": null,
       "profit": { "amount": 20000, "pending_grams": 0.0 },
       "cash": 52000
     },
@@ -164,6 +188,8 @@
       "sales": 75000,
       "grams": 49.0,
       "expenses": 8200,
+      "promotion": null,
+      "own_use": null,
       "profit": { "amount": 26000, "pending_grams": 0.0 },
       "cash": 65000
     },
@@ -174,6 +200,8 @@
       "sales": 86000,
       "grams": 56.0,
       "expenses": 7600,
+      "promotion": null,
+      "own_use": null,
       "profit": { "amount": 30500, "pending_grams": 6.0 },
       "cash": 77000
     },
@@ -184,6 +212,8 @@
       "sales": 83818,
       "grams": 43.0,
       "expenses": 6500,
+      "promotion": null,
+      "own_use": null,
       "profit": { "amount": 33500, "pending_grams": 3.5 },
       "cash": 40000
     }
@@ -202,7 +232,9 @@
     "expenses": 43300,
     "profit": { "amount": 140000, "pending_grams": 9.5 },
     "cash": 317000,
-    "shortfall": { "amount": 8000, "pending_grams": 3.0 }
+    "shortfall": { "amount": 8000, "pending_grams": 3.0 },
+    "promotion": { "amount": 9000, "pending_grams": 0.5 },
+    "own_use": { "amount": 2500, "pending_grams": 0.0 }
   },
   "month_expenses": {
     "categories": [

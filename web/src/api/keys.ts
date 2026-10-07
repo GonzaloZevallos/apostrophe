@@ -37,6 +37,7 @@ export const keys = {
   me: () => [PREFIX.me] as const,
   business: () => [PREFIX.business] as const,
   varieties: () => [PREFIX.varieties] as const,
+  archivedVarieties: () => [PREFIX.varieties, 'archived'] as const,
   variety: (id: string) => [PREFIX.varieties, id] as const,
   varietyPrices: (id: string) => [PREFIX.varieties, id, 'prices'] as const,
   customers: (q: string) => [PREFIX.customers, { q }] as const,
@@ -60,7 +61,10 @@ export const keys = {
   sales: (dateFrom: string, dateTo: string) => [PREFIX.sales, { dateFrom, dateTo }] as const,
   sale: (id: string) => [PREFIX.sales, id] as const,
   stock: () => [PREFIX.stock] as const,
+  archivedStock: () => [PREFIX.stock, 'archived'] as const,
   stockEntry: (id: string) => [PREFIX.stock, 'entries', id] as const,
+  stockMovements: (varietyId: string) => [PREFIX.stock, 'movements', varietyId] as const,
+  stockWithdrawal: (id: string) => [PREFIX.stock, 'withdrawals', id] as const,
   // Named only by `api/catalog.ts` (`catalogQueryOptions`, ADR-0022), which freezes its
   // freshness (`staleTime: 0`, `gcTime: 0`). A stock or varieties write invalidates it
   // through `CROSS_INVALIDATES`; the catalog's own saves set its data directly.

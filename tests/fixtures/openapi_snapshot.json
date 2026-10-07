@@ -121,7 +121,7 @@
         "type": "object"
       },
       "AmountWithPendingOut": {
-        "description": "A money figure (profit, or stock shortfall) together with the pending grams\nbehind it, for one period.",
+        "description": "A money figure (profit, stock shortfall, promotion or own use) together with the\npending grams behind it, for one period.",
         "properties": {
           "amount": {
             "title": "Amount",
@@ -167,6 +167,16 @@
             ],
             "title": "Next"
           },
+          "own_use": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AmountWithPendingOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "previous": {
             "anyOf": [
               {
@@ -177,6 +187,16 @@
               }
             ],
             "title": "Previous"
+          },
+          "promotion": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AmountWithPendingOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "sales": {
             "title": "Sales",
@@ -214,6 +234,8 @@
           "grams_gifted",
           "average_margin",
           "shortfall",
+          "promotion",
+          "own_use",
           "varieties"
         ],
         "title": "AnalysisMonthOut",
@@ -610,6 +632,25 @@
         "title": "Channel",
         "type": "string"
       },
+      "CostLineOut": {
+        "description": "A period's stock shortfall, promotion or own-use cost (CONTEXT.md), `null`\nexactly when the period has none of that line's records. `pending` is decided from\nthat line's own pending grams (plan invariant); no grams cross the wire (PM).",
+        "properties": {
+          "amount": {
+            "title": "Amount",
+            "type": "integer"
+          },
+          "pending": {
+            "title": "Pending",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "amount",
+          "pending"
+        ],
+        "title": "CostLineOut",
+        "type": "object"
+      },
       "CostOut": {
         "properties": {
           "costed": {
@@ -996,6 +1037,81 @@
           "grams"
         ],
         "title": "EntryIn",
+        "type": "object"
+      },
+      "EntryMovementOut": {
+        "properties": {
+          "cost_per_gram": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Per Gram"
+          },
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "grams": {
+            "title": "Grams",
+            "type": "number"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "kind": {
+            "const": "entry",
+            "default": "entry",
+            "title": "Kind",
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "origin": {
+            "$ref": "#/components/schemas/Origin"
+          },
+          "total_cost": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Cost"
+          },
+          "variety_id": {
+            "title": "Variety Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "date",
+          "variety_id",
+          "origin",
+          "grams",
+          "total_cost",
+          "cost_per_gram",
+          "note"
+        ],
+        "title": "EntryMovementOut",
         "type": "object"
       },
       "EntryOut": {
@@ -1437,8 +1553,28 @@
             "title": "Month",
             "type": "string"
           },
+          "own_use": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AmountWithPendingOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "profit": {
             "$ref": "#/components/schemas/AmountWithPendingOut"
+          },
+          "promotion": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AmountWithPendingOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "sales": {
             "title": "Sales",
@@ -1452,6 +1588,8 @@
           "sales",
           "grams",
           "expenses",
+          "promotion",
+          "own_use",
           "profit",
           "cash"
         ],
@@ -1808,6 +1946,16 @@
             "title": "Grams Sold",
             "type": "number"
           },
+          "own_use": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CostLineOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "pending_cost": {
             "title": "Pending Cost",
             "type": "boolean"
@@ -1819,6 +1967,16 @@
           "profit_pending": {
             "title": "Profit Pending",
             "type": "boolean"
+          },
+          "promotion": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CostLineOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "purchases": {
             "title": "Purchases",
@@ -1835,7 +1993,7 @@
           "shortfall": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/ShortfallOut"
+                "$ref": "#/components/schemas/CostLineOut"
               },
               {
                 "type": "null"
@@ -1859,6 +2017,8 @@
           "cost_of_goods",
           "pending_cost",
           "shortfall",
+          "promotion",
+          "own_use",
           "expenses",
           "purchases",
           "profit",
@@ -2374,7 +2534,7 @@
         "type": "object"
       },
       "SaleDetailOut": {
-        "description": "`GET /sales/{id}`'s own shape, never the list's: the same labelled read shape as\n`SaleOut` (docs/adr/0011), plus each line's cost of goods, allocated fresh on this\none read (ADR-0009), so `SaleOut` \u2014 used by the list and by every write \u2014 never\nallocates.",
+        "description": "`GET /sales/{id}`'s own shape, never the list's: the same labelled read shape as\n`SaleOut` (docs/adr/0011), plus each line's cost of goods, allocated fresh on this\none read (ADR-0009), so `SaleOut` — used by the list and by every write — never\nallocates.",
         "properties": {
           "customer": {
             "anyOf": [
@@ -2732,25 +2892,6 @@
         "title": "SessionOut",
         "type": "object"
       },
-      "ShortfallOut": {
-        "description": "A period's stock shortfall (CONTEXT.md: Stock shortfall), `null` exactly when\nthe period has no negative adjustment. `pending` is decided from the shortfall\nfigure's own pending grams (plan invariant); no grams cross the wire (PM).",
-        "properties": {
-          "amount": {
-            "title": "Amount",
-            "type": "integer"
-          },
-          "pending": {
-            "title": "Pending",
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "amount",
-          "pending"
-        ],
-        "title": "ShortfallOut",
-        "type": "object"
-      },
       "SinceFirstRecordOut": {
         "properties": {
           "cash": {
@@ -2761,8 +2902,28 @@
             "title": "Expenses",
             "type": "integer"
           },
+          "own_use": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AmountWithPendingOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "profit": {
             "$ref": "#/components/schemas/AmountWithPendingOut"
+          },
+          "promotion": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AmountWithPendingOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "sales": {
             "title": "Sales",
@@ -2784,7 +2945,9 @@
           "expenses",
           "profit",
           "cash",
-          "shortfall"
+          "shortfall",
+          "promotion",
+          "own_use"
         ],
         "title": "SinceFirstRecordOut",
         "type": "object"
@@ -2894,6 +3057,57 @@
         "title": "ValidationError",
         "type": "object"
       },
+      "VarietyDetailOut": {
+        "description": "One variety's page: also the one removal action it offers, worked out from history\nwhen it is read (`null` for an archived variety).",
+        "properties": {
+          "archived": {
+            "title": "Archived",
+            "type": "boolean"
+          },
+          "current_price": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PriceEntryOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "removal": {
+            "anyOf": [
+              {
+                "enum": [
+                  "delete",
+                  "archive"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Removal"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "current_price",
+          "archived",
+          "removal"
+        ],
+        "title": "VarietyDetailOut",
+        "type": "object"
+      },
       "VarietyIn": {
         "properties": {
           "name": {
@@ -2909,6 +3123,10 @@
       },
       "VarietyOut": {
         "properties": {
+          "archived": {
+            "title": "Archived",
+            "type": "boolean"
+          },
           "current_price": {
             "anyOf": [
               {
@@ -2931,7 +3149,8 @@
         "required": [
           "id",
           "name",
-          "current_price"
+          "current_price",
+          "archived"
         ],
         "title": "VarietyOut",
         "type": "object"
@@ -3084,8 +3303,28 @@
             "title": "Last Day",
             "type": "string"
           },
+          "own_use": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AmountWithPendingOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "profit": {
             "$ref": "#/components/schemas/AmountWithPendingOut"
+          },
+          "promotion": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AmountWithPendingOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "sales": {
             "title": "Sales",
@@ -3098,6 +3337,8 @@
           "sales",
           "grams",
           "expenses",
+          "promotion",
+          "own_use",
           "profit",
           "cash",
           "best"
@@ -3132,6 +3373,197 @@
         ],
         "title": "WeekdayOut",
         "type": "object"
+      },
+      "WithdrawalIn": {
+        "description": "Bare (ADR-0005): `reason` is optional here so a missing one is the domain's\ncoded refusal, not a pydantic error that would echo the input.",
+        "properties": {
+          "date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/WithdrawalLineIn"
+            },
+            "title": "Lines",
+            "type": "array"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "required": [
+          "lines"
+        ],
+        "title": "WithdrawalIn",
+        "type": "object"
+      },
+      "WithdrawalLineIn": {
+        "properties": {
+          "grams": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+                "type": "string"
+              }
+            ],
+            "title": "Grams"
+          },
+          "variety_id": {
+            "title": "Variety Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "variety_id",
+          "grams"
+        ],
+        "title": "WithdrawalLineIn",
+        "type": "object"
+      },
+      "WithdrawalLineOut": {
+        "properties": {
+          "grams": {
+            "title": "Grams",
+            "type": "number"
+          },
+          "variety_id": {
+            "title": "Variety Id",
+            "type": "integer"
+          },
+          "variety_name": {
+            "title": "Variety Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "variety_id",
+          "variety_name",
+          "grams"
+        ],
+        "title": "WithdrawalLineOut",
+        "type": "object"
+      },
+      "WithdrawalMovementOut": {
+        "properties": {
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "grams": {
+            "title": "Grams",
+            "type": "number"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "kind": {
+            "const": "withdrawal",
+            "default": "withdrawal",
+            "title": "Kind",
+            "type": "string"
+          },
+          "reason": {
+            "$ref": "#/components/schemas/WithdrawalReason"
+          }
+        },
+        "required": [
+          "id",
+          "date",
+          "reason",
+          "grams"
+        ],
+        "title": "WithdrawalMovementOut",
+        "type": "object"
+      },
+      "WithdrawalOut": {
+        "properties": {
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/WithdrawalLineOut"
+            },
+            "title": "Lines",
+            "type": "array"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "reason": {
+            "$ref": "#/components/schemas/WithdrawalReason"
+          },
+          "total_grams": {
+            "title": "Total Grams",
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "reason",
+          "date",
+          "note",
+          "total_grams",
+          "lines"
+        ],
+        "title": "WithdrawalOut",
+        "type": "object"
+      },
+      "WithdrawalReason": {
+        "description": "Why grams were taken out of stock with no sale (CONTEXT.md: Promotion, Own\nuse). The values are what the database stores.",
+        "enum": [
+          "promotion",
+          "own_use"
+        ],
+        "title": "WithdrawalReason",
+        "type": "string"
       },
       "app__payments__adapters__schemas__DebtorOut": {
         "properties": {
@@ -5082,7 +5514,20 @@
     },
     "/stock": {
       "get": {
+        "description": "`archived=true` answers the archived varieties' rows instead of the listed ones;\nthe total and the entries are the business's either way.",
         "operationId": "get_stock_stock_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "archived",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Archived",
+              "type": "boolean"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -5093,6 +5538,16 @@
               }
             },
             "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
           }
         },
         "security": [
@@ -5292,6 +5747,64 @@
         ]
       }
     },
+    "/stock/varieties/{variety_id}/movements": {
+      "get": {
+        "operationId": "get_movements_stock_varieties__variety_id__movements_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "variety_id",
+            "required": true,
+            "schema": {
+              "title": "Variety Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "anyOf": [
+                      {
+                        "$ref": "#/components/schemas/EntryMovementOut"
+                      },
+                      {
+                        "$ref": "#/components/schemas/WithdrawalMovementOut"
+                      }
+                    ]
+                  },
+                  "title": "Response Get Movements Stock Varieties  Variety Id  Movements Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Movements",
+        "tags": [
+          "stock"
+        ]
+      }
+    },
     "/stock/varieties/{variety_id}/threshold": {
       "put": {
         "operationId": "set_threshold_stock_varieties__variety_id__threshold_put",
@@ -5349,9 +5862,195 @@
         ]
       }
     },
+    "/stock/withdrawals": {
+      "post": {
+        "operationId": "record_withdrawal_stock_withdrawals_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WithdrawalIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WithdrawalOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Record Withdrawal",
+        "tags": [
+          "stock"
+        ]
+      }
+    },
+    "/stock/withdrawals/{withdrawal_id}": {
+      "delete": {
+        "operationId": "delete_withdrawal_stock_withdrawals__withdrawal_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "withdrawal_id",
+            "required": true,
+            "schema": {
+              "title": "Withdrawal Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Withdrawal",
+        "tags": [
+          "stock"
+        ]
+      },
+      "get": {
+        "operationId": "get_withdrawal_stock_withdrawals__withdrawal_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "withdrawal_id",
+            "required": true,
+            "schema": {
+              "title": "Withdrawal Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WithdrawalOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Withdrawal",
+        "tags": [
+          "stock"
+        ]
+      },
+      "put": {
+        "operationId": "edit_withdrawal_stock_withdrawals__withdrawal_id__put",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "withdrawal_id",
+            "required": true,
+            "schema": {
+              "title": "Withdrawal Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WithdrawalIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WithdrawalOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Edit Withdrawal",
+        "tags": [
+          "stock"
+        ]
+      }
+    },
     "/varieties": {
       "get": {
-        "description": "Each variety's current price as of `on` (today when omitted, docs/adr/0011),\ninside the session's own business.",
+        "description": "Each variety's current price as of `on` (today when omitted, docs/adr/0011),\ninside the session's own business. Archived varieties only with `archived=true`.",
         "operationId": "list_varieties_varieties_get",
         "parameters": [
           {
@@ -5369,6 +6068,16 @@
                 }
               ],
               "title": "On"
+            }
+          },
+          {
+            "in": "query",
+            "name": "archived",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Archived",
+              "type": "boolean"
             }
           }
         ],
@@ -5454,6 +6163,44 @@
       }
     },
     "/varieties/{variety_id}": {
+      "delete": {
+        "operationId": "delete_variety_varieties__variety_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "variety_id",
+            "required": true,
+            "schema": {
+              "title": "Variety Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Variety",
+        "tags": [
+          "varieties"
+        ]
+      },
       "get": {
         "operationId": "get_variety_varieties__variety_id__get",
         "parameters": [
@@ -5472,7 +6219,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/VarietyOut"
+                  "$ref": "#/components/schemas/VarietyDetailOut"
                 }
               }
             },
@@ -5550,6 +6297,53 @@
           }
         ],
         "summary": "Rename Variety",
+        "tags": [
+          "varieties"
+        ]
+      }
+    },
+    "/varieties/{variety_id}/archive": {
+      "post": {
+        "operationId": "archive_variety_varieties__variety_id__archive_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "variety_id",
+            "required": true,
+            "schema": {
+              "title": "Variety Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VarietyOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Archive Variety",
         "tags": [
           "varieties"
         ]
@@ -5770,6 +6564,53 @@
           }
         ],
         "summary": "Delete Price Entry",
+        "tags": [
+          "varieties"
+        ]
+      }
+    },
+    "/varieties/{variety_id}/restore": {
+      "post": {
+        "operationId": "restore_variety_varieties__variety_id__restore_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "variety_id",
+            "required": true,
+            "schema": {
+              "title": "Variety Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VarietyOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Restore Variety",
         "tags": [
           "varieties"
         ]
