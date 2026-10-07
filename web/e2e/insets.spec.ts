@@ -8,7 +8,23 @@
  */
 
 import { expect, test, type Page } from '@playwright/test'
-import { CUSTOMER, CUSTOMER_NEW, CUSTOMERS, LOGIN, SALE, SALE_NEW, SALES, VARIETIES } from '../src/routes.js'
+import {
+  CUSTOMER,
+  CUSTOMER_NEW,
+  CUSTOMERS,
+  EXPENSE_CATEGORIES,
+  LOGIN,
+  SALE,
+  SALE_NEW,
+  SALES,
+  SETTINGS_ACCOUNT,
+  SETTINGS_APPEARANCE,
+  SETTINGS_BUSINESS,
+  SETTINGS_CATALOG_MESSAGE,
+  SETTINGS_INTEGRATIONS,
+  SETTINGS_USERS,
+  VARIETIES,
+} from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
@@ -181,6 +197,51 @@ test('every screen, bar, sheet and toast keeps clear of the notch and the home b
     expect(toast.left, where('toast left')).toBeGreaterThanOrEqual(SIDE + TOAST_MARGIN)
     expect(toast.right, where('toast right')).toBeLessThanOrEqual(viewport.width - SIDE - TOAST_MARGIN)
     await page.context().setOffline(false)
+  }
+
+  expect(consoleMessages).toEqual([])
+})
+
+/** `.ajustes-grupo`'s own top padding on a computer, `app.css`'s 80px: what `844942f` computed. */
+const SETTINGS_GROUP_TOP = '80px'
+
+test('a settings group on a computer keeps its 80px top padding at inset 0 and still clears the notch', async ({
+  page,
+}) => {
+  const consoleMessages: string[] = []
+  watchConsole(page, consoleMessages)
+
+  await page.setViewportSize(VIEWPORTS[2])
+  await signUpNewBusiness(page, {
+    businessName: `Flores del Margen ${Date.now()}`,
+    email: `duena-margen-${Date.now()}@example.com`,
+  })
+
+  const groups = [
+    SETTINGS_BUSINESS,
+    SETTINGS_USERS,
+    SETTINGS_INTEGRATIONS,
+    SETTINGS_CATALOG_MESSAGE,
+    EXPENSE_CATEGORIES,
+    SETTINGS_ACCOUNT,
+    SETTINGS_APPEARANCE,
+  ]
+  for (const group of groups) {
+    await page.goto(group)
+    await expect(page.locator('.ajustes-grupo__tarjeta')).toBeVisible()
+    await setInsets(page, false)
+    // Polled: a group that loads its data first swaps its card once, when the answer lands.
+    await expect
+      .poll(
+        () =>
+          page.locator('.ajustes-grupo').evaluate((element) => getComputedStyle(element).paddingTop),
+        { message: `${group}: padding-top at inset 0` },
+      )
+      .toBe(SETTINGS_GROUP_TOP)
+
+    // The shell owns the top inset: the card moves by the notch, no more and no less.
+    const moved = await shift(page, '.ajustes-grupo__tarjeta')
+    expect(moved.top, `${group}: card top`).toBe(TOP)
   }
 
   expect(consoleMessages).toEqual([])

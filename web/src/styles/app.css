@@ -2860,7 +2860,9 @@ body {
     max-width: 560px;
   }
 
-  .ajustes-grupo {
+  /* Under `.disposicion`, so it is not beaten by `.disposicion .pantalla { padding: 0 }`
+   * (GH-77): the shell owns the insets, this is the screen's own 80px. */
+  .disposicion .ajustes-grupo {
     align-items: center;
     padding-top: 80px;
   }
