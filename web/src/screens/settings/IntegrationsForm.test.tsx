@@ -20,7 +20,10 @@ function jsonResponse(status: number, body: unknown): Response {
 const EMPTY = { token_saved_on: null, own_chat: null, channel_chat: null }
 const SAVED = { token_saved_on: '2026-08-12', own_chat: '555', channel_chat: null }
 
-function renderForm(testAnswer: Response = jsonResponse(200, { ...SAVED, previous_pin_left: false })) {
+function renderForm(
+  testAnswer: Response = jsonResponse(200, { ...SAVED, previous_pin_left: false }),
+  initial: typeof EMPTY = EMPTY,
+) {
   vi.stubGlobal(
     'fetch',
     vi.fn((url: string, init?: RequestInit) => {
@@ -36,7 +39,7 @@ function renderForm(testAnswer: Response = jsonResponse(200, { ...SAVED, previou
   render(
     <QueryClientProvider client={new QueryClient()}>
       <IntegrationsForm
-        initial={EMPTY}
+        initial={initial}
         onSaved={onSaved}
         onDirtyChange={onDirtyChange}
         showCatalogLink={false}
@@ -75,14 +78,11 @@ test('a failed Probarlo shows its reason and does not call onSaved', async () =>
 })
 
 test('Buscar mi chat marks the form dirty', async () => {
-  const { onDirtyChange } = renderForm()
+  // A saved token enables the lookup with nothing typed: the looked-up chat is the only change.
+  const { onDirtyChange } = renderForm(undefined, { ...EMPTY, token_saved_on: '2026-08-12' })
+  expect(screen.getByLabelText('Tu chat')).toHaveValue('')
   expect(onDirtyChange).toHaveBeenLastCalledWith(false)
 
-  await userEvent.type(screen.getByLabelText('Token del bot'), '123:secret')
-  await userEvent.clear(screen.getByLabelText('Token del bot'))
-  expect(onDirtyChange).toHaveBeenLastCalledWith(false)
-
-  await userEvent.type(screen.getByLabelText('Token del bot'), '1')
   await userEvent.click(screen.getByRole('button', { name: 'Buscar mi chat' }))
 
   await waitFor(() => expect(screen.getByLabelText('Tu chat')).toHaveValue('777'))
