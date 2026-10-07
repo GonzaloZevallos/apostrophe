@@ -222,8 +222,8 @@ export default function VarietyPage({ varietyId }: { varietyId: number }) {
           </>
         ) : (
           <div className="variedad-acciones">
-            <BotonLink variant="secondary" icon="agregar" to={`${STOCK_ENTRY_NEW}?variety=${varietyId}`}>
-              + Entrada
+            <BotonLink variant="secondary" icon="agregar" ariaLabel="+ Entrada" to={`${STOCK_ENTRY_NEW}?variety=${varietyId}`}>
+              Entrada
             </BotonLink>
             <BotonLink variant="secondary" icon="agregar" to={pathTo(VARIETY_PRICE_NEW, { id: varietyId })}>
               Nuevo precio

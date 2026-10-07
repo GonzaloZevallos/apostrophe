@@ -104,8 +104,8 @@ export default function Variedades() {
           <BotonLink to={CATALOG} icon="telegram">
             Mandar catálogo
           </BotonLink>
-          <BotonLink to={STOCK_ENTRY_NEW} variant="secondary" icon="agregar">
-            + Entrada de stock
+          <BotonLink to={STOCK_ENTRY_NEW} variant="secondary" icon="agregar" ariaLabel="+ Entrada de stock">
+            Entrada de stock
           </BotonLink>
           <BotonLink to={WITHDRAWAL_NEW} variant="secondary" icon="stock">
             Sacar del stock
