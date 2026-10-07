@@ -7,6 +7,7 @@
 import { SAMPLES, type LimitedCopy } from '../copy/limits'
 
 export const EMPTY_LIST = 'Todavía no registraste ninguna venta en este período.'
+export const GRAMS_HELP = 'Coma, hasta dos decimales'
 export const OWING_HINT = 'Para dejar debiendo elegí un cliente'
 
 /** The line of a variety with no price on the sale's date. */
@@ -17,6 +18,7 @@ export function noPriceMessage(varietyName: string): string {
 export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'emptyLine', text: EMPTY_LIST },
   { kind: 'help', text: OWING_HINT },
+  { kind: 'help', text: GRAMS_HELP },
   { kind: 'help', text: noPriceMessage(SAMPLES.name) },
 ]
 

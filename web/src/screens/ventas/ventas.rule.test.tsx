@@ -15,9 +15,12 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, MemoryRouter, Outlet, Route, RouterProvider, Routes } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
+import { stubViewport } from '../../test-viewport'
+import type { Viewport } from '../../routes'
 import type { Me } from '../../api/me'
 import saleFixture from '../../api/fixtures/sale.json'
 import SALE_DETAIL from '../../api/fixtures/sale-detail.json'
+import { GRAMS_HELP } from '../../sales/messages'
 import { LIMITS, SAMPLES } from '../../copy/limits'
 import { saleJustSaved } from '../../components/feedback'
 import { SheetRouterProvider } from '../../components/useSheetStack'
@@ -46,6 +49,8 @@ function client() {
   return new QueryClient({ defaultOptions: { queries: { retry: false } } })
 }
 
+const VIEWPORTS: readonly Viewport[] = ['phone', 'computer']
+
 beforeEach(() => {
   vi.stubGlobal('fetch', vi.fn())
 })
@@ -54,7 +59,8 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-test('Ventas: an empty period shows its one line, within its limit, and the list rows are links', async () => {
+test.each(VIEWPORTS)("Ventas: an empty period shows its one line, within its limit, and the list rows are links (%s)", async (viewport) => {
+  stubViewport(viewport)
   vi.mocked(fetch).mockImplementation(() => Promise.resolve(json([])))
   const { container } = render(
     <QueryClientProvider client={client()}>
@@ -72,7 +78,8 @@ test('Ventas: an empty period shows its one line, within its limit, and the list
   expectIconAndTextRule(container, OPTIONS)
 })
 
-test('Ventas: a list of sales passes the rule with its rows kept as they are', async () => {
+test.each(VIEWPORTS)("Ventas: a list of sales passes the rule with its rows kept as they are (%s)", async (viewport) => {
+  stubViewport(viewport)
   vi.mocked(fetch).mockImplementation(() => Promise.resolve(json([saleFixture])))
   const { container } = render(
     <QueryClientProvider client={client()}>
@@ -102,7 +109,8 @@ function renderDetalle(state?: unknown) {
   )
 }
 
-test('VentaDetalle: Deshacer is an undo, the actions carry an icon and the Asignar cliente sheet passes', async () => {
+test.each(VIEWPORTS)("VentaDetalle: Deshacer is an undo, the actions carry an icon and the Asignar cliente sheet passes (%s)", async (viewport) => {
+  stubViewport(viewport)
   vi.mocked(fetch).mockImplementation((path) =>
     Promise.resolve(String(path).startsWith(pathTo(CUSTOMERS)) ? json([ANA]) : json({ ...SALE_DETAIL, customer: null })),
   )
@@ -120,7 +128,8 @@ test('VentaDetalle: Deshacer is an undo, the actions carry an icon and the Asign
   expectIconAndTextRule(container, OPTIONS)
 })
 
-test('NuevaVenta: with two lines, Elegir cliente and Nuevo cliente open, every control follows the rule', async () => {
+test.each(VIEWPORTS)("NuevaVenta: with two lines, Elegir cliente and Nuevo cliente open, every control follows the rule (%s)", async (viewport) => {
+  stubViewport(viewport)
   vi.mocked(fetch).mockImplementation((path) =>
     Promise.resolve(String(path).startsWith(pathTo(CUSTOMERS)) ? json([ANA]) : json([ROSA])),
   )
@@ -140,6 +149,7 @@ test('NuevaVenta: with two lines, Elegir cliente and Nuevo cliente open, every c
   await user.type(screen.getByLabelText('Gramos línea 1'), '2')
   await user.click(await screen.findByRole('button', { name: 'Agregar otra variedad' }))
   expect(screen.getByRole('button', { name: 'Quitar línea 2' })).toHaveClass('boton-icono')
+  expect(screen.getByText(GRAMS_HELP)).toHaveAttribute('data-copy', 'help')
   expectIconAndTextRule(container, FORM_OPTIONS)
 
   await user.click(screen.getByRole('button', { name: 'Elegir cliente' }))
