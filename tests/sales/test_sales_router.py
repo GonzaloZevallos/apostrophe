@@ -14,6 +14,7 @@ from app.payments.adapters.tables import PaymentRow
 from app.sales.adapters.tables import SaleLineRow, SaleRow
 from tests.conftest import TODAY
 from tests.contract_shapes import assert_matches_fixture
+from tests.pricing_switches import set_switches
 
 
 def _variety(client: TestClient, list_price: int = 10_000) -> int:
@@ -422,8 +423,9 @@ def test_list_sales_with_an_inverted_range_answers_an_empty_list(client: TestCli
 
 
 def test_get_and_list_label_the_sale_with_the_customer_s_current_name_and_vip_flag(
-    client: TestClient,
+    client: TestClient, engine: Engine
 ) -> None:
+    set_switches(engine, bulk=False, vip=True)
     variety_id = _variety(client)
     customer_id = _customer(client)
     sale_id = client.post(
@@ -469,8 +471,9 @@ def test_assigning_a_vip_customer_later_does_not_reprice_the_sale(client: TestCl
 
 
 def test_toggling_a_customers_vip_after_the_sale_changes_only_its_vip_badge(
-    client: TestClient,
+    client: TestClient, engine: Engine
 ) -> None:
+    set_switches(engine, bulk=True, vip=True)
     # The badge is the customer's current flag, not how the sale was priced
     # (docs/adr/0011): it is free to change on an unchanged sale, while every line
     # stays exactly as recorded.

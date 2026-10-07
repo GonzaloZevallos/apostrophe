@@ -1,7 +1,6 @@
 from typing import Protocol
 
 from app.shared.pricing_settings import PricingSettings
-
 from app.varieties.domain.variety import Variety, VarietyName
 
 

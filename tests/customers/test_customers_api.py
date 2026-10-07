@@ -152,9 +152,12 @@ def test_two_businesses_may_each_register_the_same_phone_number(
 ) -> None:
     _register(client, "Fran Araujo", "11 2345-6789")
 
-    assert other_client.post(
-        "/customers", json={"name": "Fran Araujo", "phone": "11 2345-6789"}
-    ).status_code == 201
+    assert (
+        other_client.post(
+            "/customers", json={"name": "Fran Araujo", "phone": "11 2345-6789"}
+        ).status_code
+        == 201
+    )
 
 
 def test_an_invalid_phone_number_is_refused_without_repeating_it(client: TestClient) -> None:
@@ -296,8 +299,7 @@ def test_clearing_the_phone_keeps_the_customers_sales_payments_and_balance(
     assert cleared.json()["balance"] == 6_000
     sales_after = client.get("/sales").json()
     assert any(
-        s["customer"] is not None and s["customer"]["id"] == customer["id"]
-        for s in sales_after
+        s["customer"] is not None and s["customer"]["id"] == customer["id"] for s in sales_after
     )
     sale_after = next(s for s in sales_after if s["id"] == sale["id"])
     assert sale_after["still_owing"] is True
@@ -322,9 +324,7 @@ def test_sending_a_customers_own_number_back_on_edit_is_not_a_conflict(
 ) -> None:
     customer = _register(client, "Fran Araujo", "11 2345-6789")
 
-    edited = client.patch(
-        f"/customers/{customer['id']}", json={"phone": "+54 9 11 2345 6789"}
-    )
+    edited = client.patch(f"/customers/{customer['id']}", json={"phone": "+54 9 11 2345 6789"})
 
     assert edited.status_code == 200
     assert edited.json()["phone"] == "+5491123456789"

@@ -261,8 +261,9 @@ def test_a_vip_price_alone_and_a_bulk_price_alone_are_both_accepted(
     set_switches(engine, bulk=True, vip=True)
     variety_id = _register(client)["id"]
 
-    only_vip = _price(client, variety_id, effective_from="2026-01-01", list_price=11_000,
-                      vip_price=9_000)
+    only_vip = _price(
+        client, variety_id, effective_from="2026-01-01", list_price=11_000, vip_price=9_000
+    )
     only_bulk = _price(client, variety_id, **{**GOLD_JANUARY, "effective_from": "2026-02-01"})
 
     assert (only_vip["vip_price"], only_vip["bulk_price"]) == (9_000, None)
@@ -341,9 +342,7 @@ def test_an_earlier_entry_keeps_its_stored_rules_when_a_later_one_is_recorded_wi
     _price(client, variety_id, **GOLD_WITH_VIP)
 
     set_switches(engine, bulk=False, vip=False)
-    later = _price(
-        client, variety_id, **{**GOLD_WITH_VIP, "effective_from": "2026-06-01"}
-    )
+    later = _price(client, variety_id, **{**GOLD_WITH_VIP, "effective_from": "2026-06-01"})
 
     assert (later["bulk_price"], later["vip_price"]) == (None, None)
     history = {e["effective_from"]: e for e in client.get(f"/varieties/{variety_id}/prices").json()}
