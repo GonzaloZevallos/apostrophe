@@ -15,6 +15,7 @@ import { afterEach, expect, test, vi } from 'vitest'
 import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
 import { SIN_CONEXION_TITULO } from '../../components/SinConexion'
+import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import CatalogMessageGroup from './CatalogMessageGroup'
 
 function jsonResponse(status: number, body: unknown): Response {
@@ -231,4 +232,16 @@ test('the header and footer fields never carry maxLength: the backend counts the
 
   expect(header).not.toHaveAttribute('maxlength')
   expect(screen.getByLabelText('Pie')).not.toHaveAttribute('maxlength')
+})
+
+test('the group follows the icon and text rule, with a saved header and footer and with none', async () => {
+  renderGroup(serving())
+  await screen.findByLabelText('Encabezado')
+  expectIconAndTextRule(document.body)
+})
+
+test('with no varieties and an empty header and footer the group still follows the rule', async () => {
+  renderGroup(vi.fn(() => Promise.resolve(jsonResponse(200, { ...CATALOG, header: '', footer: '' }))))
+  expect(await screen.findByLabelText('Encabezado')).toHaveValue('')
+  expectIconAndTextRule(document.body)
 })

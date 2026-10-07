@@ -15,7 +15,9 @@ import type { Me } from '../../api/me'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import { SIN_CONEXION_TITULO } from '../../components/SinConexion'
 import * as clipboard from '../../clipboard'
-import { iconAndTextProblems } from '../../test/iconAndTextRule'
+import { LIMITS, measure, SAMPLES } from '../../copy/limits'
+import { expectIconAndTextRule } from '../../test/iconAndTextRule'
+import { inviteExpiry, LIMITED_COPY } from './messages'
 import UsersGroup from './UsersGroup'
 
 vi.mock('../../clipboard', () => ({ copyText: vi.fn().mockResolvedValue(true) }))
@@ -148,5 +150,24 @@ test('"Invitá a un socio" is an icon + text action: the icon is hidden, so the 
   const invite = await screen.findByRole('button', { name: 'Invitá a un socio' })
 
   expect(invite.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
-  expect(iconAndTextProblems(invite.parentElement as HTMLElement).filter((problem) => problem.includes('Invitá'))).toEqual([])
+  expectIconAndTextRule(document.body)
+})
+
+test('the fresh link\'s expiry line is the registered binding, rendered as a help line within its limit', async () => {
+  const fetchMock = vi.fn((url: string, init?: RequestInit) => {
+    if (init?.method === 'POST' && url === '/invitations') {
+      return Promise.resolve(
+        jsonResponse(201, { url: 'https://apostrophe.app/invitation/abc123', expires_at: '2026-10-09T00:00:00Z' }),
+      )
+    }
+    return Promise.resolve(jsonResponse(200, BUSINESS))
+  })
+  renderUsers(fetchMock)
+
+  await userEvent.click(await screen.findByRole('button', { name: 'Invitá a un socio' }))
+
+  const line = await screen.findByText(inviteExpiry('09/10'))
+  expect(line).toHaveAttribute('data-copy', 'help')
+  expect(LIMITED_COPY).toContainEqual({ kind: 'help', text: inviteExpiry(SAMPLES.date) })
+  expect(measure(inviteExpiry(SAMPLES.date))).toBeLessThanOrEqual(LIMITS.help)
 })

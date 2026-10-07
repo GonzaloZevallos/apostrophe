@@ -364,7 +364,13 @@ test('the rail is a menu too, and no two of its entries share an icon', () => {
   const { container } = renderShell([HOME], { computer: true })
 
   expect(rail(container)).toHaveAttribute('data-menu')
-  expect(iconAndTextProblems(rail(container)).filter((problem) => problem.includes('shares its icon'))).toEqual([])
+  // Gastos and Análisis have no glyph yet (icon-glyphs) and the business row draws an
+  // avatar, not an icon: exactly these three, and nothing else, may be left over.
+  expect(iconAndTextProblems(rail(container))).toEqual([
+    expect.stringContaining('"Gastos" is text only'),
+    expect.stringContaining('"Análisis" is text only'),
+    expect.stringContaining('"Configuración de La Huerta" is text only'),
+  ])
 })
 
 test('a bar that repeats an icon is rejected by the rule', () => {

@@ -22,6 +22,7 @@ import Loading from '../../components/Loading'
 import { copyText } from '../../clipboard'
 import { canShare, shareText } from '../../share'
 import { formatDateShort } from '../../format/dates'
+import { inviteExpiry } from './messages'
 import SettingsGroup from './SettingsGroup'
 
 interface Business {
@@ -110,8 +111,8 @@ export default function UsersGroup() {
               Compartir
             </button>
           </div>
-          <span className="campo__rotulo">
-            Un link de un solo uso, vence el {formatDateShort(invite.expires_at.slice(0, 10))}
+          <span className="campo__rotulo" data-copy="help">
+            {inviteExpiry(formatDateShort(invite.expires_at.slice(0, 10)))}
           </span>
         </div>
       )}

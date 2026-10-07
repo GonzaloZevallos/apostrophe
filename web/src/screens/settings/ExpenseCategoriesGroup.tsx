@@ -299,13 +299,7 @@ function CategoryRow({
       >
         Renombrar
       </button>
-      <button
-        type="button"
-        className="boton--enlace categoria-fila__accion categoria-fila__accion--eliminar"
-        onClick={() => setConfirming(true)}
-      >
-        Eliminar
-      </button>
+      <Boton variant="icon" action="delete" ariaLabel="Eliminar" onClick={() => setConfirming(true)} />
       {error !== null && (
         <span className="campo__error" role="alert">
           {error}
