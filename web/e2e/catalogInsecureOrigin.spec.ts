@@ -34,6 +34,7 @@
 import { expect, test } from '@playwright/test'
 import { e2eBaseUrl } from './env.js'
 import { newBusinessInvitationUrl } from './backend.js'
+import { leaveOnboarding } from './helpers/signup.js'
 
 const PASSWORD = 'correcthorsebattery'
 const INSECURE_ORIGIN = 'http://apostrophe.test'
@@ -79,6 +80,7 @@ test('Copiar still works through the execCommand fallback on a plain-http, non-l
   const create = page.getByRole('button', { name: 'Creá el negocio' })
   await expect(create).toBeEnabled()
   await create.click()
+  await leaveOnboarding(page)
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   expect(await page.evaluate(() => window.isSecureContext)).toBe(false)

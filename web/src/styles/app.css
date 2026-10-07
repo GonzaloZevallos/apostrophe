@@ -4063,8 +4063,8 @@ body {
 
 .listo__marca--hecha {
   border: 0;
-  background: var(--tinta);
-  color: var(--papel);
+  background: var(--boton);
+  color: var(--boton-texto);
 }
 
 .listo__texto {
