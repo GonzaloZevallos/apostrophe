@@ -35,4 +35,5 @@ class PriceEntryRow(Base):
     list_price: Mapped[int]
     bulk_price: Mapped[int | None]
     bulk_minimum_hundredths: Mapped[int | None]
+    vip_price: Mapped[int | None]
     variety: Mapped[VarietyRow] = relationship(back_populates="price_entries")

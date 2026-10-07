@@ -42,6 +42,7 @@ from app.pinned_catalog.adapters.token_cipher import TokenCipher
 from app.pinned_catalog.adapters.upkeep_trigger import schedule_upkeep
 from app.pinned_catalog.application.channel_telegram import ChannelTelegram
 from app.pinned_catalog.application.push import BusinessLocks
+from app.pricing_settings.adapters.opening import PricingSettingsOpening
 from app.results.adapters.router import router as results_router
 from app.sales.adapters.router import router as sales_router
 from app.sales.adapters.sales_ledger import SqlSalesLedger
@@ -159,7 +160,7 @@ def create_app(
     # at opening, so a new one joins here, not as a second keyword argument on
     # `accept_invitation` (docs/adr/0006).
     app.state.business_opening = CompositeOpening(
-        ExpenseCategoriesOpening, CatalogHeaderFooterOpening
+        ExpenseCategoriesOpening, CatalogHeaderFooterOpening, PricingSettingsOpening
     )
     # A factory, not an instance (the same shape as `business_opening` above): sales
     # reaches line cost only through its own `LineCosts` port, never `app.stock`
