@@ -11,10 +11,7 @@ import pytest
 from app.pinned_catalog.domain.bold import fits_in_one_message, telegram_bold, utf16_length
 
 CASES_PATH = (
-    Path(__file__).resolve().parent.parent.parent
-    / "web"
-    / "src"
-    / "screens"
+    Path(__file__).resolve().parent.parent.parent / "web" / "src" / "screens"
     / "telegramPreview.cases.json"
 )
 CASES = json.loads(CASES_PATH.read_text(encoding="utf-8"))

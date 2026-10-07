@@ -49,14 +49,18 @@ def _price_row(
     )
 
 
-def test_has_records_is_false_for_a_fresh_business(client: TestClient, engine: Engine) -> None:
+def test_has_records_is_false_for_a_fresh_business(
+    client: TestClient, engine: Engine
+) -> None:
     business_id = _business_id(engine, "uno@example.com")
     with Session(engine) as session:
         imports = VarietiesImport(session, business_id)
         assert imports.has_records() is False
 
 
-def test_has_records_is_true_once_a_variety_is_written(client: TestClient, engine: Engine) -> None:
+def test_has_records_is_true_once_a_variety_is_written(
+    client: TestClient, engine: Engine
+) -> None:
     business_id = _business_id(engine, "uno@example.com")
     with Session(engine) as session:
         imports = VarietiesImport(session, business_id)
@@ -145,7 +149,9 @@ def test_check_price_history_flags_a_bulk_minimum_with_no_bulk_price(
     client: TestClient, engine: Engine
 ) -> None:
     business_id = _business_id(engine, "uno@example.com")
-    rows = [_price_row(row=37, list_price=1_000, bulk_price=None, bulk_minimum=Grams.of(10))]
+    rows = [
+        _price_row(row=37, list_price=1_000, bulk_price=None, bulk_minimum=Grams.of(10))
+    ]
     keys = {"Blue Dream": "blue dream"}
     with Session(engine) as session:
         imports = VarietiesImport(session, business_id)

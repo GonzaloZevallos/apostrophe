@@ -98,9 +98,9 @@ def test_a_burst_straddling_the_cutoff_counts_only_the_failures_after_it(
 ) -> None:
     digest = "address-straddling-the-window"
     before_cutoff = NOW
-    _count_address_failure(
-        file_engine, digest, before_cutoff, AddressGuard().window_cutoff(before_cutoff)
-    )
+    _count_address_failure(file_engine, digest, before_cutoff, AddressGuard().window_cutoff(
+        before_cutoff
+    ))
 
     after_window = NOW + timedelta(minutes=16)
     cutoff = AddressGuard().window_cutoff(after_window)

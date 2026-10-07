@@ -123,7 +123,9 @@ def _issue_join_invitation(engine: Engine, business_id: int, now: datetime) -> s
     """Issues a join invitation the way `POST /invitations` does, but lets the test
     pick `now` directly so an expired one needs no clock to move."""
     with Session(engine) as session:
-        issued = invite_partner(SqlAccounts(session), session, business_id=business_id, now=now)
+        issued = invite_partner(
+            SqlAccounts(session), session, business_id=business_id, now=now
+        )
         session.commit()
     return issued.token
 
@@ -347,7 +349,9 @@ def test_a_table_added_after_migrating_is_found_ordered_and_emptied(
 
     assert deleted.tables["later_table"] == {later_rows[0]["id"]}
     with file_engine.connect() as connection:
-        remaining = connection.execute(text("SELECT COUNT(*) FROM later_table")).scalar_one()
+        remaining = connection.execute(
+            text("SELECT COUNT(*) FROM later_table")
+        ).scalar_one()
     assert remaining == 0
 
 

@@ -128,7 +128,9 @@ def test_a_line_past_every_lot_is_pending_never_a_zero_cost() -> None:
 
 
 def test_a_line_spanning_two_lots_is_split_between_costed_and_pending() -> None:
-    entries = FakeEntries([_entry(1, "5", 5_000, entry_id=1), _entry(1, "3", 6_000, entry_id=2)])
+    entries = FakeEntries(
+        [_entry(1, "5", 5_000, entry_id=1), _entry(1, "3", 6_000, entry_id=2)]
+    )
     sale = _sale(7, (_line(1, "10"),))
     draws = FakeDraws([_draw(1, 7, 0, "10")])
 

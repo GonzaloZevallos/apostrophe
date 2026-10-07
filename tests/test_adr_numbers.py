@@ -34,7 +34,9 @@ def adr_number_problems(
         number = name[:4]
         by_number.setdefault(number, []).append(name)
 
-    duplicates = {number: sorted(files) for number, files in by_number.items() if len(files) > 1}
+    duplicates = {
+        number: sorted(files) for number, files in by_number.items() if len(files) > 1
+    }
     return malformed, duplicates
 
 

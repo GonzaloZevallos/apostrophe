@@ -137,7 +137,9 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
         ).fetchone()["id"]
     all_tables = _all_table_names(db_path)
     other_before = {name: row_counts(db_path, name, other_business_id) for name in all_tables}
-    leaving_before = {name: row_counts(db_path, name, leaving_business_id) for name in all_tables}
+    leaving_before = {
+        name: row_counts(db_path, name, leaving_business_id) for name in all_tables
+    }
     assert other_before["customer"] == 1  # the other business's own seed
 
     stdout = io.StringIO()
@@ -385,7 +387,9 @@ def test_a_dry_run_writes_no_file_and_deletes_nothing(
         assert secret not in captured.err
 
 
-def test_an_unknown_email_changes_nothing(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_an_unknown_email_changes_nothing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     db_path = tmp_path / "apostrophe.db"
     export_dir = tmp_path / "exports"
     seed(db_path)
@@ -416,7 +420,9 @@ def test_a_wrong_name_at_the_prompt_writes_no_file(
     assert row_counts(db_path, "customer", business_id) == 1
 
 
-def test_eof_at_the_prompt_writes_no_file(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_eof_at_the_prompt_writes_no_file(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     db_path = tmp_path / "apostrophe.db"
     export_dir = tmp_path / "exports"
     seed(db_path)
@@ -444,7 +450,9 @@ def test_secure_delete_scrubs_the_removed_customers_bytes_from_the_database_file
     assert b"Otro Negocio" in raw
 
 
-def test_the_export_file_is_owner_only(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_the_export_file_is_owner_only(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     db_path = tmp_path / "apostrophe.db"
     export_dir = tmp_path / "exports"
     seed(db_path)
@@ -664,7 +672,9 @@ def test_a_broken_pipe_on_the_report_keeps_the_commit_through_main(
         ).fetchone()[0]
     stdout = _BreaksAfterExportWritten()
 
-    result = main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=cast(TextIO, stdout))
+    result = main(
+        [EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=cast(TextIO, stdout)
+    )
 
     assert result == 1
     assert "nothing deleted" not in stdout.text.lower()

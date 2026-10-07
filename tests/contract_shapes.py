@@ -117,7 +117,9 @@ def _check_declared(
         _check_shape(_resolve_shape_of(declared), actual, path, nullable)
         return
     if not _matches_json_type(declared, actual):
-        raise AssertionError(f"{path}: declared {declared!r} (nullable), got {_json_type(actual)}")
+        raise AssertionError(
+            f"{path}: declared {declared!r} (nullable), got {_json_type(actual)}"
+        )
 
 
 def _check_items(
@@ -188,7 +190,8 @@ def _resolve_shape_of(declared: ShapeOf) -> object:
     status, value = _lookup_path(target, declared.path)
     if status != "found" or value is None:
         raise AssertionError(
-            f"ShapeOf({declared.fixture!r}, {declared.path!r}): that target is missing or null"
+            f"ShapeOf({declared.fixture!r}, {declared.path!r}): that target is "
+            "missing or null"
         )
     return value
 

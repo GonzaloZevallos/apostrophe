@@ -54,7 +54,9 @@ class _SizableWorksheet(Protocol):
     structurally rather than by that one concrete class."""
 
     def reset_dimensions(self) -> None: ...
-    def iter_rows(self, *, values_only: Literal[True]) -> Generator[tuple[_CellGetValue, ...]]: ...
+    def iter_rows(
+        self, *, values_only: Literal[True]
+    ) -> Generator[tuple[_CellGetValue, ...]]: ...
 
 
 class _CellError(Exception):

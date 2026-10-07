@@ -209,7 +209,9 @@ def _floatify_numeric_cells(xml: str) -> str:
         cell_type = type_match.group(1) if type_match else "n"
         if cell_type != "n":
             return match.group(0)
-        new_inner = _INTEGER_VALUE.sub(lambda m: f"{m.group(1)}{m.group(2)}.0{m.group(3)}", inner)
+        new_inner = _INTEGER_VALUE.sub(
+            lambda m: f"{m.group(1)}{m.group(2)}.0{m.group(3)}", inner
+        )
         return f"<c{attributes}>{new_inner}</c>"
 
     return _CELL.sub(cell, xml)

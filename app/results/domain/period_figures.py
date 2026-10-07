@@ -378,7 +378,9 @@ def _month_figures(
         pending_sold_gifted = pending_sold_gifted + v.margin.pending_grams
 
     previous = (
-        None if first_month is None else (month.previous if month.previous >= first_month else None)
+        None
+        if first_month is None
+        else (month.previous if month.previous >= first_month else None)
     )
     following = month.next if month.next <= current_month else None
 
@@ -534,7 +536,9 @@ def period_figures(
     purchases: Sequence[PurchaseRecord],
     earliest_entry_day: date | None,
 ) -> AnalysisFigures:
-    buckets, first_record = scan(draws, sales, payments, expenses, purchases, earliest_entry_day)
+    buckets, first_record = scan(
+        draws, sales, payments, expenses, purchases, earliest_entry_day
+    )
 
     first_month = None if first_record is None else Month.containing(first_record)
     current_month = Month.containing(today)

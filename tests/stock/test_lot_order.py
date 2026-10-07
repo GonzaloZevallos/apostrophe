@@ -50,7 +50,9 @@ def test_a_positive_entry_is_a_lot() -> None:
 
 
 def test_a_negative_adjustment_is_a_draw_carried_as_a_positive_magnitude() -> None:
-    grouped = lots_and_draws([_entry(id=1, grams="-4", origin=Origin.ADJUSTMENT)], [])
+    grouped = lots_and_draws(
+        [_entry(id=1, grams="-4", origin=Origin.ADJUSTMENT)], []
+    )
 
     lots, draws = grouped[1]
     assert lots == []

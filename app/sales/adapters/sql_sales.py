@@ -157,13 +157,16 @@ class SqlSales:
             )
             .outerjoin(
                 PaymentRow,
-                (PaymentRow.sale_id == SaleRow.id) & (PaymentRow.business_id == self._business_id),
+                (PaymentRow.sale_id == SaleRow.id)
+                & (PaymentRow.business_id == self._business_id),
             )
             .where(SaleRow.business_id == self._business_id)
         )
         if sale_ids is not None:
             statement = statement.where(SaleRow.id.in_(sale_ids))
-        statement = statement.where(*_dated_conditions(SaleRow.sale_date, date_from, date_to))
+        statement = statement.where(
+            *_dated_conditions(SaleRow.sale_date, date_from, date_to)
+        )
         statement = statement.order_by(SaleRow.sale_date.desc(), SaleRow.id.desc())
 
         rows = self._session.execute(statement).all()

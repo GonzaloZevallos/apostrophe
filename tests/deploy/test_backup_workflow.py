@@ -151,7 +151,7 @@ def find_workflow_violations(workflow: dict[str, Any]) -> list[str]:
 # -- A minimal, good fixture every bad fixture below is a one-field mutation of. --
 
 _GOOD_STEPS: list[dict[str, Any]] = [
-    {"name": "Encrypt", "run": 'age -R deploy/age-recipient.txt -o "$BACKUP_FILE" backup.db'},
+    {"name": "Encrypt", "run": "age -R deploy/age-recipient.txt -o \"$BACKUP_FILE\" backup.db"},
     {"name": "Remove the plaintext copy", "run": "rm backup.db"},
     {
         "name": "Upload",
@@ -295,7 +295,7 @@ def test_the_forbidden_shell_checker_flags_tee() -> None:
 def test_the_forbidden_shell_checker_flags_print_call() -> None:
     # Isolated to `print(` alone: `print` is not itself a forbidden shell word, and
     # `printf` never matches `print(`'s literal parenthesis.
-    bad = [{"run": "python -c \"print('x')\""}]
+    bad = [{"run": 'python -c "print(\'x\')"'}]
 
     assert check_forbidden_shell(bad) == ["step 0: forbidden text 'print('"]
 

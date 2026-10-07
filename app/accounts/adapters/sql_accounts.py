@@ -186,7 +186,9 @@ class SqlAccounts:
         self._session.flush()
 
     def set_password_hash(self, user_id: int, password_hash: str) -> None:
-        statement = update(UserRow).where(UserRow.id == user_id).values(password_hash=password_hash)
+        statement = (
+            update(UserRow).where(UserRow.id == user_id).values(password_hash=password_hash)
+        )
         self._session.execute(statement)
         self._session.flush()
 

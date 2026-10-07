@@ -22,7 +22,9 @@ def test_accepted_vectors_are_stored_as_expected(vector: dict[str, str]) -> None
     assert CatalogEmoji.of(vector["input"]).value == vector["stored"]
 
 
-@pytest.mark.parametrize("raw", VECTORS["refused"], ids=[repr(v) for v in VECTORS["refused"]])
+@pytest.mark.parametrize(
+    "raw", VECTORS["refused"], ids=[repr(v) for v in VECTORS["refused"]]
+)
 def test_refused_vectors_are_rejected(raw: str) -> None:
     """The enforcement artefact: every refused vector, two emoji side by side and text
     mixed with an emoji included, is rejected by the grammar, with its own code."""
