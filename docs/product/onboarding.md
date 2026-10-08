@@ -137,7 +137,7 @@ Success criteria:
 
 There is no telemetry.
 
-- **Under 5 minutes (criterion 1)**: an end-to-end front run from a phone viewport accepts a new-business invitation, prices a variety, loads its opening stock, passes the optional steps and opens Nueva venta from "Listo", in under 5 minutes.
+- **Under 5 minutes (criterion 1)**: an end-to-end front run from a phone viewport accepts a new-business invitation, prices a variety, loads its opening stock, passes the optional steps and opens Nueva venta from "Listo" (`web/e2e/onboarding.spec.ts`); its duration is not measured by any test.
 - **Nothing lost (criterion 3)**:
   - a second end-to-end run leaves halfway, resumes from Inicio's notice and lands on the first step neither done nor passed;
   - a resume matrix, 100 % passing, covers:
