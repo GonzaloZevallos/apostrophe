@@ -2,7 +2,7 @@
 /**
  * The Onboarding's own end-to-end runs (GH-86, "Metrics"), from a phone viewport, through the
  * built front and the real backend: a full run from accepting a new-business invitation to
- * Nueva venta opened from "Listo" in under five minutes; a resume from Inicio's notice; a
+ * Nueva venta opened from "Listo" (its duration is not measured, docs/adr/0037); a resume from Inicio's notice; a
  * value saved in step 3 reading the same in Configuración; and, at the end of each, the
  * browser holding only the theme.
  */
@@ -26,12 +26,11 @@ async function priceAVariety(page: import('@playwright/test').Page, name: string
   await page.getByRole('button', { name: 'Guardá el precio' }).click()
 }
 
-test('a new business goes from the invitation to Nueva venta from "Listo" in under five minutes, with no notice left', async ({
+test('a new business goes from the invitation to Nueva venta from "Listo", with no notice left', async ({
   page,
 }) => {
   const consoleMessages: string[] = []
   watchConsole(page, consoleMessages)
-  const started = Date.now()
 
   await signUpNewBusiness(page, { stayInOnboarding: true })
   await expect(page).toHaveURL(/\/onboarding\/variety$/)
@@ -56,7 +55,6 @@ test('a new business goes from the invitation to Nueva venta from "Listo" in und
   await expect(page.getByText('Hecho · 1 variedad')).toBeVisible()
   await page.getByRole('button', { name: 'Cargar mi primera venta' }).click()
   await expectPath(page, SALE_NEW)
-  expect(Date.now() - started).toBeLessThan(5 * 60 * 1000)
 
   await page.getByRole('button', { name: 'Cerrar' }).click()
   await expect(page.locator('.encabezado__negocio')).toBeVisible()
