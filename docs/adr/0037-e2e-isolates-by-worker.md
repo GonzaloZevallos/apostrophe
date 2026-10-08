@@ -56,9 +56,8 @@ Looked for state a second worker could race on, and found none to change:
   its own, so the address brake of one worker never counts another's attempts.
 - Module-level `let`, or a collecting `const` (array, map, set) in the specs: none. The
   `let page`/`consoleMessages` state lives inside each file's own `describe`.
-- Wall-clock `Date.now()` inside an `expect`: `sales.spec.ts` (300 ms list check, 10 s-scale
-  record budgets), `customers`, `passwords`, `ventasTelefono` and `onboarding` (60 s and
-  5 min budgets). Only `sales.spec.ts`'s 300 ms check is tight; the next step pins it to a
+- Wall-clock `Date.now()` inside an `expect`: `sales.spec.ts` (300 ms list check, 60 s record
+  budgets), `customers`, `passwords`, `ventasTelefono` (60 s) and `onboarding` (5 min). Only `sales.spec.ts`'s 300 ms check is tight; the next step pins it to a
   timed phase.
 
 ## Worker-restart proof
