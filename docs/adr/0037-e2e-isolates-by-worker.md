@@ -110,3 +110,56 @@ worst; about 20 s for `vite build` and the workers' first backends) the floor is
 75 + 117 + 20 = **210 s**. N is the smallest worker count whose loaded full run lands within
 about 10% of the floor measured in that same run; a loaded run must finish well inside the
 agentic system's 600 s check timeout (300 s is the sanity margin reported).
+
+### Choosing N: full runs of `npm run e2e` (wall time, `vite build` included)
+
+Machine: 16 cores, shared with other work. "Loaded" = `uv run --no-project pytest -n auto -q`
+looping in another shell (load average 17-32 during the runs). All green (86 + 1 tests).
+
+| run | workers | seconds | phase 1 | phase 2 | longest phase-1 file / `sales.spec.ts` (same run) |
+|---|---|---|---|---|---|
+| idle | 3 | 111 | 1.5 min | 19 s | tapBudget 21 s / 17 s |
+| loaded | 2 | 327 | 4.6 min | 41 s | ventasTelefono 46 s / 35 s |
+| loaded | 3 | 260 | 3.4 min | 50 s | tapBudget 65 s / 45 s |
+| loaded | 4 | 235 | 3.1 min | 40 s | tapBudget 50 s / 40 s |
+
+The floor (longest file + `sales.spec.ts` + ~20 s) was about 107, 135 and 110 s in those
+runs, so no N lands within 10% of it: with 86 tests and 3 or 4 workers the bound is the
+total work divided by N, not the longest file. The rule could not be applied as written;
+the chosen N is the smallest whose loaded run is under the 300 s sanity margin (N = 2 took
+327 s). **N = 3.** Going to 4 saved about 25 s. The "before" figure (`workers: 1`) is the
+five runs recorded above, 3m49s to 6m01s on a shared machine; a loaded `workers: 1` run was
+not repeated, the issue records it past 600 s. CI (2 vCPU) was not run from this
+checkout: the chosen N must be green once on the PR's own e2e job.
+
+Five consecutive loaded green runs at N = 3: 285, 269, 269, 281 and 276 s. Longest passing
+test per spec over them: sales 54 s, tapBudget 45 s, flow 30 s, insets 28 s, payments 23 s.
+
+### Accept-invitation POST under load (N = 3, 175 signups through `signUpNewBusiness`)
+
+Max 1_949 ms, p95 1_669 ms. `expect` (17 s) is unchanged: still at least 2x the largest
+max ever recorded (8_458 ms, one worker).
+
+### Wall-clock maxima across the five loaded runs
+
+- `customers.spec.ts` 60 s checks: 1_466 ms and 2_323 ms.
+- `passwords.spec.ts` 60 s check: 4_042 ms. `ventasTelefono.spec.ts` 60 s check: 1_991 ms.
+- `onboarding.spec.ts` 5-minute check: 10_582 ms.
+- `sales.spec.ts` record checks (60 s): 2_120, 813 and 991 ms; list check (300 ms): 161 ms.
+
+None exceeds half its budget except the list check, which already runs alone in `timed`.
+No file moved to `timed`.
+
+### Cold timed phase
+
+`npx playwright test --project=timed`, five separate invocations with the backend suite
+looping. List check `elapsedMs`: 83, 50, 98, 68, 76. Record durations (new customer,
+existing, none) in ms: 957/288/385, 902/304/466, 696/386/352, 692/376/579, 755/323/288.
+Every list check is under 200 ms, so `sales.spec.ts` needs no warm-up request and no
+budget moved.
+
+### Exit-status proof (throwaway failing specs, not committed)
+
+- Only phase 1 red: exit 1, phase 2 still ran and reported (1 failed, 86 passed; 1 passed).
+- Only phase 2 red: exit 1 (86 passed; 1 failed, 1 passed).
+- Both green: exit 0 (the five runs above).
