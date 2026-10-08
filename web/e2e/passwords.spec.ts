@@ -14,8 +14,8 @@
  * edit once the backend lands: it starts finding the real command and the
  * skip stops firing on its own.
  *
- * A phone viewport (PRD metric 1: "from the phone... in under a minute"), the
- * same breakpoint `sales.spec.ts` uses.
+ * A phone viewport (PRD metric 1: "from the phone"), the same breakpoint
+ * `sales.spec.ts` uses. No test measures how long the change takes (docs/adr/0038).
  */
 
 import { HOME, LOGIN, SETTINGS_ACCOUNT } from '../src/routes.js'
@@ -31,7 +31,7 @@ const NEW_PASSWORD = 'unanuevaclave99'
 
 test.use({ viewport: { width: 390, height: 844 } })
 
-test('changes a password from Configuración → Tu cuenta in under a minute, signing an older device out and keeping this one', async ({
+test('changes a password from Configuración → Tu cuenta, signing an older device out and keeping this one', async ({
   page,
   browser,
 }) => {
@@ -59,8 +59,6 @@ test('changes a password from Configuración → Tu cuenta in under a minute, si
   await otherPage.getByRole('button', { name: 'Entrá' }).click()
   await expect(otherPage.locator('.encabezado__negocio')).toHaveText(businessName)
 
-  const startedAt = Date.now()
-
   await page.goto(SETTINGS_ACCOUNT)
   await page.getByRole('button', { name: 'Cambiar contraseña' }).click()
   const sheet = page.locator('.capa')
@@ -68,8 +66,6 @@ test('changes a password from Configuración → Tu cuenta in under a minute, si
   await sheet.getByLabel('Contraseña nueva').fill(NEW_PASSWORD)
   await sheet.getByRole('button', { name: 'Guardar' }).click()
   await expect(page.getByText('Contraseña cambiada · cerramos tus otras sesiones')).toBeVisible()
-
-  expect(Date.now() - startedAt).toBeLessThan(60_000)
 
   // This device stays signed in: `.encabezado__negocio` only renders on Inicio
   // (`Inicio.tsx`), never on a Configuración group itself, so the check navigates home rather

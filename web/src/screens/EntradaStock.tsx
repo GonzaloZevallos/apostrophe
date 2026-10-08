@@ -28,6 +28,7 @@ import { useGoneExit } from '../components/useGoneExit'
 import { useLeaveGuard } from '../components/useLeaveGuard'
 import { useFlash } from '../flash/useFlash'
 import { STOCK, VARIETIES } from '../routes'
+import Boton from '../components/Boton'
 import StockEntryForm from './StockEntryForm'
 
 interface Props {
@@ -152,9 +153,9 @@ function EntradaStockBody({ mode, entryId, today, initial, chosenVariety, hasEnt
           <span className="gasto-form__titulo">
             {mode === 'nuevo' ? 'Nueva entrada' : 'Editar entrada'}
           </span>
-          <button type="button" className="boton--enlace gasto-form__cerrar" onClick={back}>
-            Cerrar
-          </button>
+          <span className="gasto-form__cerrar">
+            <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={back} />
+          </span>
         </div>
         <StockEntryForm
           mode={mode}

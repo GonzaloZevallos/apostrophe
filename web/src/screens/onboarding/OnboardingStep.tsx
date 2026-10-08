@@ -102,7 +102,7 @@ export default function OnboardingStep({
             className="onboarding__enlace"
             onClick={() => void navigate(previousPath(slug) ?? HOME)}
           >
-            <Icono nombre="atras" size={18} strokeWidth={1.8} />
+            <Icono nombre="atras" />
             Atrás
           </button>
           <button type="button" className="onboarding__enlace" onClick={() => void navigate(HOME)}>

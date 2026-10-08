@@ -12,7 +12,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router'
 import { NetworkError } from '../../api/client'
 import AvisoExito from '../../components/AvisoExito'
-import Icono from '../../components/Icono'
+import Boton from '../../components/Boton'
 import SinConexion from '../../components/SinConexion'
 import { logOut } from '../../session'
 import CambiarContrasena from '../CambiarContrasena'
@@ -61,24 +61,12 @@ export default function AccountGroup() {
               <AvisoExito texto={PASSWORD_CHANGED_SUCCESS} />
             </div>
           )}
-          <button
-            className="ajustes__item ajustes__item--boton"
-            type="button"
-            onClick={() => setChangingPassword(true)}
-          >
-            <span className="ajustes__item-rotulo">Cambiar contraseña</span>
-            <span className="ajustes__item-flecha">
-              <Icono nombre="chevron" size={18} />
-            </span>
-          </button>
-          <button
-            className="ajustes__item ajustes__item--boton"
-            type="button"
-            onClick={() => void onLogOut(disarm)}
-            disabled={loggingOut}
-          >
-            <span className="ajustes__item-rotulo">Cerrar sesión</span>
-          </button>
+          <Boton variant="secondary" icon="candado" onClick={() => setChangingPassword(true)}>
+            Cambiar contraseña
+          </Boton>
+          <Boton variant="secondary" icon="salirSesion" onClick={() => void onLogOut(disarm)} disabled={loggingOut}>
+            Cerrar sesión
+          </Boton>
           {logoutOffline && <SinConexion />}
           {changingPassword && (
             <CambiarContrasena

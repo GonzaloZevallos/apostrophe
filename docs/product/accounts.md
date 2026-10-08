@@ -527,7 +527,7 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
 - **Password change (criterion 18)**:
   - after a Change, every earlier token of the user answers 401;
   - the acting device's fresh token works, and a partner's token in the same business still works;
-  - through the front, from a phone viewport, a Change takes under 60 s.
+  - through the front, from a phone viewport, a Change completes (`web/e2e/passwords.spec.ts`); its duration is not measured by any test.
 - **Reset matrix (criterion 19)**, 100% passing:
   - a link works once;
   - it is dead after 24 hours (fake clock);
@@ -551,7 +551,7 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
   - completes a reset from a printed link through to Inicio;
   - sees the dead-link state for a used link.
 - **Getting in, redesigned (criteria 27–32)**:
-  - fast: from a phone viewport, the end-to-end front run accepts an invitation, completes a reset from a printed link and logs in at Entrar, each landing on Inicio signed in, the links in under 60 s;
+  - fast: from a phone viewport, the end-to-end front run accepts an invitation, completes a reset from a printed link and logs in at Entrar, each landing on Inicio signed in (`web/e2e/passwords.spec.ts`); the duration of the links is not measured by any test;
   - states: front tests show each fixed text (brake message, both dead-link texts, "Sin conexión", the retry, both "Eso ya no está." forms, loading); shape and color checked by eye in both themes;
   - loading is not data: a front test shows the loading state holds no digit, currency symbol or placeholder figure;
   - design:

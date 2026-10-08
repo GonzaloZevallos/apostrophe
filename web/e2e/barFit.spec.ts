@@ -93,6 +93,41 @@ function violations(items: Item[], labels: string[], within: { left: number; rig
   return found
 }
 
+/** Every icon of the surface is drawn whole, 22 px wide, inside the item that holds it. */
+async function iconProblems(
+  page: Page,
+  surface: string,
+  itemSelector: string,
+  required: boolean,
+): Promise<string[]> {
+  return page.evaluate(
+    ({ surface: selector, itemSelector: items, tolerance, mustHave }) => {
+      const root = document.querySelector(selector)
+      if (root === null) throw new Error(`no ${selector}`)
+      const found: string[] = []
+      for (const item of root.querySelectorAll<HTMLElement>(items)) {
+        const icon = item.querySelector('svg')
+        const name = (item.textContent ?? '').trim()
+        if (icon === null) {
+          if (mustHave) found.push(`${name} has no icon`)
+          continue
+        }
+        const box = icon.getBoundingClientRect()
+        const around = item.getBoundingClientRect()
+        if (Math.abs(box.width - 22) > tolerance) found.push(`${name}'s icon is ${box.width} px wide`)
+        if (box.left < around.left - tolerance || box.right > around.right + tolerance) {
+          found.push(`${name}'s icon is clipped sideways`)
+        }
+        if (box.top < around.top - tolerance || box.bottom > around.bottom + tolerance) {
+          found.push(`${name}'s icon is clipped vertically`)
+        }
+      }
+      return found
+    },
+    { surface, itemSelector, tolerance: TOLERANCE, mustHave: required },
+  )
+}
+
 /** Neighbours side by side never overlap. */
 function overlaps(items: Item[]): string[] {
   return items.flatMap((item, index) => {
@@ -124,6 +159,7 @@ async function bottomBarProblems(page: Page, scale: number): Promise<{ problems:
   const problems = [
     ...violations(items, BAR_LABELS, bar),
     ...overlaps(items),
+    ...(await iconProblems(page, '.bar-inferior', '.bar-inferior__item', true)),
     ...(bar.overflows ? ['the bar scrolls sideways'] : []),
     ...(pageOverflows ? ['the page scrolls sideways'] : []),
   ]
@@ -176,6 +212,9 @@ test.describe.serial('bar and rail fit', () => {
     expect([
       ...violations(items, RAIL_LABELS, rail),
       ...violations(business, [business[0]?.text ?? ''], rail),
+      // The rail's Gastos and Análisis have no design icon yet (GH-97 open finding), so a rail
+      // item without one is not failed here; one that has an icon must show it whole.
+      ...(await iconProblems(page, '.riel-lateral', '.riel-lateral__item', false)),
       ...(rail.overflows ? ['the rail scrolls sideways'] : []),
     ]).toEqual([])
     expect(business).toHaveLength(1)

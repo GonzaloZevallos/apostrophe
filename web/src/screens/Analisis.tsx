@@ -17,8 +17,9 @@
 
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Link, useOutletContext } from 'react-router'
+import { useOutletContext } from 'react-router'
 import { NetworkError } from '../api/client'
+import BotonLink from '../components/BotonLink'
 import {
   type Analysis,
   type AmountWithPending,
@@ -33,18 +34,19 @@ import { formatGrams, formatMoney } from '../format/money'
 import ErrorGenerico from '../components/ErrorGenerico'
 import SinConexion from '../components/SinConexion'
 import { MORE } from '../routes'
+import {
+  EMPTY_MONTH_LINE,
+  NO_BEST_WEEK_LINE,
+  NO_HISTORY_LINE,
+  PURCHASES_NOTE,
+  SINCE_FIRST_RECORD_LABEL,
+  VARIETY_TOTAL_NOTE,
+} from './analisisMessages'
 
-export const NO_HISTORY_LINE = 'Todavía no hay nada para analizar.'
-export const EMPTY_MONTH_LINE = 'No vendiste ni regalaste nada este mes.'
-export const VARIETY_TOTAL_NOTE =
-  'La tabla de variedades suma las ventas del mes sin el envío.'
-export const SINCE_FIRST_RECORD_LABEL =
-  'Movido desde tu primer registro, no es la plata que tenés en caja'
-export const PURCHASES_NOTE = 'Van aparte, se cargan en Stock'
+export { EMPTY_MONTH_LINE, NO_BEST_WEEK_LINE, NO_HISTORY_LINE, PURCHASES_NOTE, SINCE_FIRST_RECORD_LABEL, VARIETY_TOTAL_NOTE }
 export const BEST_WEEK_MARK = 'Mejor semana'
 export const BEST_WEEKDAY_MARK = 'Mejor día'
 export const BEST_WEEK_TABLE_MARK = 'mejor'
-export const NO_BEST_WEEK_LINE = 'Ninguna se destacó'
 
 const WEEKDAY_LABEL: Record<number, string> = {
   1: 'Lun',
@@ -492,9 +494,9 @@ export default function Analisis() {
     <main className="pantalla">
       <div className="cuerpo">
         <div className="encabezado__fila">
-          <Link to={MORE} aria-label="Volver" className="encabezado__volver">
+          <BotonLink variant="back" to={MORE} ariaLabel="Volver">
             ‹
-          </Link>
+          </BotonLink>
           <span className="encabezado__titulo">Análisis</span>
         </div>
 

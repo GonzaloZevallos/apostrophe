@@ -40,6 +40,8 @@ import {
   type RailPlace,
   type Screen,
 } from '../routes'
+import BotonLink from '../components/BotonLink'
+import { NUEVA_VENTA_CLASS, NUEVA_VENTA_ESCRITORIO_CLASS } from '../components/botonVisual'
 import BackArrow from './BackArrow'
 import { initialsOf } from './initials'
 import { useViewport } from './useViewport'
@@ -79,8 +81,8 @@ const ITEMS: Item[] = [
     group: 'main',
     place: 'varieties',
   },
-  { to: EXPENSES, label: 'Gastos', placement: 'rail', group: 'more', place: 'expenses' },
-  { to: ANALYSIS, label: 'Análisis', placement: 'rail', group: 'more', place: 'analysis' },
+  { to: EXPENSES, label: 'Gastos', icono: 'gastos', placement: 'rail', group: 'more', place: 'expenses' },
+  { to: ANALYSIS, label: 'Análisis', icono: 'analisis', placement: 'rail', group: 'more', place: 'analysis' },
   { to: MORE, label: 'Más', icono: 'mas', placement: 'bar', group: 'more', place: 'more' },
 ]
 
@@ -135,12 +137,11 @@ export default function Shell() {
 
   return (
     <div className="disposicion">
-      <nav className="riel-lateral" aria-label="Navegación">
+      <nav className="riel-lateral" aria-label="Navegación" data-menu>
         {showRailNuevaVenta && (
-          <InAppLink to={SALE_NEW} className="boton boton-nueva-venta--escritorio">
-            <Icono nombre="agregar" size={19} strokeWidth={2} />
+          <BotonLink to={SALE_NEW} icon="agregar" className={NUEVA_VENTA_ESCRITORIO_CLASS}>
             Nueva venta
-          </InAppLink>
+          </BotonLink>
         )}
         {RAIL_ITEMS.map((item, index) => {
           const active = railPlace === item.place
@@ -154,7 +155,7 @@ export default function Shell() {
                 aria-current={active ? 'page' : undefined}
                 className={railClassName(item, active)}
               >
-                {item.group === 'main' && item.icono !== undefined && <Icono nombre={item.icono} />}
+                {item.icono !== undefined && <Icono nombre={item.icono} />}
                 {item.label}
               </Link>
             </Fragment>
@@ -180,13 +181,12 @@ export default function Shell() {
         {leaf.kind === 'card' && <BackArrow id={leaf.id} />}
         <Outlet context={me} />
         {showNuevaVenta && (
-          <InAppLink to={SALE_NEW} className="boton boton-nueva-venta">
-            <Icono nombre="agregar" size={19} strokeWidth={2} />
+          <BotonLink to={SALE_NEW} icon="agregar" className={NUEVA_VENTA_CLASS}>
             Nueva venta
-          </InAppLink>
+          </BotonLink>
         )}
         {showBar && (
-          <nav className="bar-inferior" aria-label="Navegación">
+          <nav className="bar-inferior" aria-label="Navegación" data-menu>
             {BAR_ITEMS.map((item) => (
               <BarItem key={item.to} item={item} active={barPlace === item.place} />
             ))}

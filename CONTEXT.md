@@ -428,3 +428,15 @@ _Avoid_: gift (a gift is a sale line, to someone, inside a sale), sample, freebi
 **Own use**:
 A stock withdrawal the seller consumes personally. Its cost is what the withdrawn grams cost from their lots as they stand today, shown as its own line that lowers profit. In the app: Consumo propio.
 _Avoid_: personal, shrinkage
+
+**More info**:
+The longer how-or-why behind a shortened line, one tap away on an "i" at the end of that line, expanded in place and collapsed on a second tap; it always opens closed and is never remembered. Never a consequence, a refusal's fix or a state. In the app: Más info (its accessible name, with aria-expanded).
+_Avoid_: tooltip, popover, help modal, info sheet, details
+
+**Icon and text rule**:
+The one written rule for how every screen labels its entries, actions and notices: a closed list of icon-only actions, a closed list of text-only controls, icon + text for everything else, the length limits of always-visible text, and what may move behind More info. It decides how things are labelled, never what they do. In the app: no word of its own.
+_Avoid_: style guide, UI guidelines, icon policy
+
+**Attention icon**:
+The one icon, the same everywhere, set next to the sentence of a notice or status that asks the seller to act or says something failed; the sentence still carries the state. Informational lines never carry it. In the app: no word of its own.
+_Avoid_: warning icon, alert icon, badge, error icon

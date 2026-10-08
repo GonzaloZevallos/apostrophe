@@ -135,15 +135,6 @@ body {
   color: var(--tinta);
 }
 
-.boton-enlace {
-  background: none;
-  border: 0;
-  color: var(--acento);
-  font-size: 15px;
-  cursor: pointer;
-  min-height: var(--alto-tocable);
-}
-
 .boton--destructivo {
   background: var(--critico);
   color: var(--critico-texto);
@@ -1258,8 +1249,8 @@ body {
   align-self: flex-start;
 }
 
-.nueva-venta .nueva-venta__cerrar,
-.gasto-form .gasto-form__cerrar {
+.nueva-venta .nueva-venta__cerrar .boton--enlace,
+.gasto-form .gasto-form__cerrar .boton--enlace {
   box-shadow: none;
   color: var(--tinta2);
   font-weight: 600;
@@ -1267,7 +1258,7 @@ body {
 
 /* Nueva venta's "Cerrar" is a thumb target like every other control on the phone
  * (`ventasTelefono.spec.ts` measures every button at 44 px). */
-.nueva-venta .nueva-venta__cerrar {
+.nueva-venta .nueva-venta__cerrar .boton--enlace {
   display: inline-flex;
   align-items: center;
   min-height: var(--alto-tocable);
@@ -1382,8 +1373,9 @@ body {
 }
 
 /* `ConfiguracionCategorias.dc.html`: a row is 13px of air, a hairline under every row but
- * the last, "Renombrar" in the accent and "Eliminar" in the amber, bold and not underlined
- * (their words tell them apart, not the color alone). */
+ * the last, "Renombrar" in the accent, bold and not underlined; "Eliminar" is the
+ * icon-only delete (`Boton`'s `.boton-icono`), named "Eliminar", so the word still tells
+ * them apart, not the color alone. */
 .ajustes-grupo__cuerpo .fila {
   flex-wrap: wrap;
   align-items: center;
@@ -1396,14 +1388,10 @@ body {
   border-bottom: 0;
 }
 
-.boton--enlace.categoria-fila__accion {
+.categoria-fila__accion .boton--enlace {
   font-size: 14px;
   font-weight: 600;
   box-shadow: none;
-}
-
-.boton--enlace.categoria-fila__accion--eliminar {
-  color: var(--deuda);
 }
 
 /* The design's link look (`Componentes.dc.html`'s "Agregar otra variedad"): an
@@ -2486,8 +2474,20 @@ body {
   box-shadow: none;
 }
 
-.fila-entrada__volver {
+.fila-entrada__volver,
+.fila-entrada__volver .boton--enlace {
   align-self: flex-start;
+  text-decoration: none;
+  box-shadow: none;
+}
+
+/* The withdrawal detail's back keeps the 44 px target it had as a round button. */
+.retiro__volver .boton--enlace {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
   text-decoration: none;
   box-shadow: none;
 }
@@ -2535,9 +2535,11 @@ body {
   min-width: 0;
 }
 
-.campo__fila > .boton-enlace:disabled {
-  color: var(--tinta2);
-  cursor: default;
+.campo__fila > .boton {
+  flex: none;
+  height: var(--alto-tocable);
+  padding: 0 var(--espacio-lg);
+  font-size: 15px;
 }
 
 .campo--casilla {
@@ -3062,8 +3064,24 @@ body {
 
 /* The reveal ("Mostrar"/"Ocultar") is not in the design: it sits at the field's right
  * edge so it reads as the field's own, not as a third button. */
-.auth-page .boton-enlace {
+.auth-page .campo__mostrar {
   align-self: flex-end;
+}
+
+/* Mostrar/Ocultar, Cancelar, "Todo: $ X" and the variety's Editar were `.boton-enlace`: accent
+ * text, no underline, `min-height: var(--alto-tocable)`. As `.boton--enlace` they keep that
+ * look and tap height in these places, and a form's own links shrink to their words instead of
+ * stretching their underline across the sheet. */
+.campo__mostrar .boton--enlace,
+.formulario > .boton--enlace,
+.encabezado-fila .boton--enlace,
+.seccion-variedad__cabecera .boton--enlace {
+  box-shadow: none;
+  min-height: var(--alto-tocable);
+}
+
+.formulario > .boton--enlace {
+  align-self: center;
 }
 
 .auth-page__pastilla {
@@ -3094,11 +3112,13 @@ body {
 
 .variedad-acciones {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--espacio-md);
 }
 
 .variedad-acciones .boton {
-  flex: 1;
+  flex: 1 1 auto;
+  white-space: nowrap;
   height: 52px;
   font-size: 15px;
   text-decoration: none;
@@ -3108,6 +3128,23 @@ body {
   display: flex;
   flex-direction: column;
   margin-top: var(--espacio-lg);
+}
+
+/* The icon-only delete (`Boton variant="icon"`) on a variety's page: the price row's is a
+ * bare icon in the row's own muted ink, "Eliminar variedad" sits at the start of its row. */
+.historial-fila .boton-icono {
+  background: none;
+  color: var(--tinta2);
+}
+
+.variedad-retiro .boton-icono {
+  align-self: flex-start;
+}
+
+/* "Ver todas" is a link (`BotonLink variant="link"`), drawn as the section's plain accent
+ * text: the underline of `.boton--enlace` is the design's look for links in a form, not here. */
+.seccion-variedad__cabecera .boton--enlace {
+  box-shadow: none;
 }
 
 .seccion-variedad {
@@ -3278,13 +3315,6 @@ body {
   flex: 1;
   min-width: 0;
   border-bottom: 0;
-}
-
-.variedad-archivada__restaurar {
-  flex: 0 0 auto;
-  width: auto;
-  height: var(--alto-tocable);
-  padding: 0 var(--espacio-lg);
 }
 
 .variedad-fila__encabezado {
@@ -3836,7 +3866,7 @@ body {
  *   themes): .boton (with .boton--suave, .boton--destructivo and .boton-nueva-venta),
  *   .boton-icono, .periodos__boton, .pildora, .gastos__cargar, .aviso-ambar,
  *   .venta-guardada__deshacer;
- *   transparent, so --superficie is the fill cue: .boton-enlace, .boton--enlace,
+ *   transparent, so --superficie is the fill cue: .boton--enlace,
  *   .boton--fila, .bar-inferior__item, .riel-lateral__item, .mas__item, .fila-venta,
  *   .fila-gasto, .fila-entrada, .lista-clientes__fila, .bloque-deben__titulo, .bloque-deben__fila,
  *   .variedad-item, .pestanas__opcion, .selector-pago__opcion, .gastos__mes-boton,
@@ -3858,7 +3888,6 @@ body {
 }
 
 :is(
-    .boton-enlace,
     .boton--enlace,
     .boton--fila,
     .bar-inferior__item,
@@ -3898,7 +3927,6 @@ body {
     .gastos__cargar,
     .aviso-ambar,
     .venta-guardada__deshacer,
-    .boton-enlace,
     .boton--enlace,
     .boton--fila,
     .bloque-deben__titulo,
@@ -3952,6 +3980,209 @@ body {
   gap: var(--espacio-md);
 }
 
+/* ===== area-customers ===== */
+/* "Cobrar" on a debtor's row (Clientes and Te deben): `BotonLink`'s `.boton` drawn as the
+ * compact pill the row has always had, at the end of the row, never the full-width button. */
+.lista-clientes__item > .boton {
+  align-self: flex-end;
+  width: auto;
+  height: auto;
+  min-height: var(--alto-tocable);
+  padding: 0 var(--espacio-lg);
+  font-size: 14px;
+  text-decoration: none;
+}
+
+/* The full-width actions of Clientes and a customer's card: a link drawn as `.boton`, with
+ * no underline. */
+.clientes__accion > .boton {
+  text-decoration: none;
+}
+
+/* "Editar" on a customer's card keeps its plain accent link look: no underline. */
+.ficha-cliente__encabezado .boton--enlace {
+  box-shadow: none;
+}
+
+/* "Borrar cobro" is the trash at the end of its account row. */
+.cuenta-cliente__fila .boton-icono {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+/* ===== end area-customers ===== */
+
+/* GH-97 area-integrations-catalog: "Editar encabezado y pie" is `BotonLink`'s link kind,
+ * drawn as the design draws it on this screen: the accent word with no underline. */
+.catalogo__panel > .boton--enlace {
+  box-shadow: none;
+  align-self: flex-start;
+}
+
+/* ===== ventas-reglas-icono ===== */
+/* Deshacer is `Boton`'s undo kind, drawn on the dark "Venta guardada" bar: the bar's
+ * own ink, no accent underline (the old `.venta-guardada__deshacer` look). */
+.venta-guardada .boton--enlace {
+  background: var(--boton);
+  color: var(--boton-texto);
+  box-shadow: none;
+  font-weight: 600;
+  opacity: 0.75;
+  min-height: var(--alto-tocable);
+  padding: 0 var(--espacio-xs);
+}
+/* ===== end ventas-reglas-icono ===== */
+
+/* GH-97 area e (Inicio, Gastos, Análisis, Estados, getting-in): Inicio's Cobrar pill
+ * draws its icon beside the word. */
+.bloque-deben .cobrar {
+  flex: none;
+  gap: var(--espacio-sm);
+}
+
+/* The wider pill must not push the row past the card on a phone: the customer's data
+ * gives up its width first and wraps whole items instead of squeezing them. */
+.bloque-deben__datos {
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+/* ===== gh97-integration: More info and the attention icon ===== */
+.mas-info__linea {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-sm);
+}
+
+.mas-info__texto {
+  flex: 1;
+  font-size: 13px;
+  color: var(--tinta2);
+  line-height: 1.4;
+}
+
+.mas-info__boton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--alto-tocable);
+  height: var(--alto-tocable);
+  border: 0;
+  background: none;
+  color: var(--tinta2);
+  cursor: pointer;
+}
+
+.mas-info__detalle {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--tinta2);
+}
+
+.mas-info__detalle[hidden] {
+  display: none;
+}
+
+.aviso-ambar--atencion {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.aviso-ambar__icono {
+  display: flex;
+  flex: none;
+  color: var(--deuda);
+}
+
+.aviso-ambar__cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.mas__item-icono,
+.ajustes__item-icono {
+  display: flex;
+  flex: none;
+  color: var(--tinta2);
+}
+/* ===== end gh97-integration ===== */
+
+/* ===== gh97-varieties-stock ===== */
+.variedad-archivada > .boton {
+  flex: 0 0 auto;
+  width: auto;
+  height: var(--alto-tocable);
+  padding: 0 var(--espacio-lg);
+}
+/* ===== end gh97-varieties-stock ===== */
+
+/* ===== gh97-settings-catalog ===== */
+.catalogo__acciones .boton {
+  flex: 1;
+}
+
+.catalogo__publicar-estado--atencion {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.catalogo__publicar-estado--atencion .aviso-ambar__cuerpo {
+  display: block;
+}
+
+.ajustes-grupo__encabezado .boton-icono {
+  flex: none;
+}
+/* ===== end gh97-settings-catalog ===== */
+
+/* ===== gh97-sales-home ===== */
+/* Inicio's Cobrar is a `BotonLink` in the debtor's row: the 44 px accent pill it was,
+ * not the full-width Boton. */
+.bloque-deben__fila .boton {
+  flex: none;
+  align-self: flex-end;
+  height: auto;
+  min-height: var(--alto-tocable);
+  padding: 0 var(--espacio-lg);
+  background: var(--acento);
+  font-size: 14px;
+  text-decoration: none;
+}
+
+/* "Arrancá por las variedades": the attention icon beside its title and line. */
+.estado-vacio--atencion {
+  flex-direction: row;
+  align-items: flex-start;
+  text-align: left;
+  gap: 12px;
+}
+
+.estado-vacio--atencion .aviso-ambar__cuerpo {
+  gap: 10px;
+}
+
+.estado-vacio--atencion .estado-vacio__detalle {
+  max-width: none;
+}
+
+/* Análisis's back keeps the 44 px chevron square it had. */
+.encabezado__fila .boton--enlace[aria-label='Volver'] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--alto-tocable);
+  height: var(--alto-tocable);
+  margin-left: calc(-1 * var(--espacio-sm));
+  color: var(--tinta);
+  font-size: 20px;
+  box-shadow: none;
+}
+/* ===== end gh97-sales-home ===== */
 /* A host element that adds no box of its own: its children lay out as the parent's. */
 .sin-caja {
   display: contents;

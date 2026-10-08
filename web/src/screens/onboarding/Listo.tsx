@@ -69,7 +69,7 @@ export default function Listo() {
                   className={line.done ? 'listo__marca listo__marca--hecha' : 'listo__marca'}
                   aria-hidden="true"
                 >
-                  {line.done && <Icono nombre="hecho" size={14} strokeWidth={2.4} />}
+                  {line.done && <Icono nombre="hecho" />}
                 </span>
                 <span className="listo__texto">
                   <span className="listo__nombre">{info.name}</span>

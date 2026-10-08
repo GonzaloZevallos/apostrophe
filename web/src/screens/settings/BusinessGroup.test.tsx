@@ -14,6 +14,7 @@ import { afterEach, expect, test, vi } from 'vitest'
 import type { Me } from '../../api/me'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import { SIN_CONEXION_TITULO } from '../../components/SinConexion'
+import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import BusinessGroup from './BusinessGroup'
 import { BUSINESS_NAME_INVALID_MESSAGE, RENAME_SUCCESS } from './messages'
 
@@ -180,4 +181,11 @@ test('an untouched name closes at once', async () => {
   await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
 
   expect(await screen.findByText('Lista de grupos')).toBeInTheDocument()
+})
+
+test('the group follows the icon and text rule: a text-only submit and a link close', async () => {
+  renderBusiness(vi.fn().mockResolvedValue(jsonResponse(200, BUSINESS)))
+  await screen.findByDisplayValue('La Huerta')
+
+  expectIconAndTextRule(document.body)
 })

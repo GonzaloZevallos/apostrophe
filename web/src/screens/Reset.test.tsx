@@ -12,6 +12,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
+import { expectIconAndTextRule } from '../test/iconAndTextRule'
 import Reset, { DEAD_LINK_MESSAGE } from './Reset'
 import { WEAK_PASSWORD_MESSAGE } from './Invitacion'
 
@@ -95,6 +96,9 @@ test('the dead link offers a router link to Entrar, not a page reload', async ()
   )
 
   await screen.findByText(DEAD_LINK_MESSAGE)
+  // "Entrar" is a link kind drawn by BotonLink, never a raw action-styled link.
+  expect(screen.getByRole('link', { name: 'Entrar' })).toHaveClass('boton--enlace')
+  expectIconAndTextRule(document.body)
   const user = userEvent.setup()
   await user.click(screen.getByRole('link', { name: 'Entrar' }))
   expect(await screen.findByText('Pantalla de entrar')).toBeInTheDocument()

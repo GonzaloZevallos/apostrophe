@@ -15,6 +15,9 @@ import type { Me } from '../../api/me'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import { SIN_CONEXION_TITULO } from '../../components/SinConexion'
 import * as clipboard from '../../clipboard'
+import { LIMITS, measure, SAMPLES } from '../../copy/limits'
+import { expectIconAndTextRule } from '../../test/iconAndTextRule'
+import { inviteExpiry, LIMITED_COPY } from './messages'
 import UsersGroup from './UsersGroup'
 
 vi.mock('../../clipboard', () => ({ copyText: vi.fn().mockResolvedValue(true) }))
@@ -139,4 +142,55 @@ test('an untouched group closes at once, with no confirmation', async () => {
   await userEvent.click(await screen.findByRole('button', { name: 'Cerrar' }))
 
   expect(await screen.findByText('Lista de grupos')).toBeInTheDocument()
+})
+
+test('"Invitá a un socio" is an icon + text action: the icon is hidden, so the name stays the word', async () => {
+  renderUsers(vi.fn().mockResolvedValue(jsonResponse(200, BUSINESS)))
+
+  const invite = await screen.findByRole('button', { name: 'Invitá a un socio' })
+
+  expect(invite.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  expectIconAndTextRule(document.body)
+})
+
+test('the fresh link\'s expiry line is the registered binding, rendered as a help line within its limit', async () => {
+  const fetchMock = vi.fn((url: string, init?: RequestInit) => {
+    if (init?.method === 'POST' && url === '/invitations') {
+      return Promise.resolve(
+        jsonResponse(201, { url: 'https://apostrophe.app/invitation/abc123', expires_at: '2026-10-09T00:00:00Z' }),
+      )
+    }
+    return Promise.resolve(jsonResponse(200, BUSINESS))
+  })
+  renderUsers(fetchMock)
+
+  await userEvent.click(await screen.findByRole('button', { name: 'Invitá a un socio' }))
+
+  const line = await screen.findByText(inviteExpiry('09/10'))
+  expect(line).toHaveAttribute('data-copy', 'help')
+  expect(LIMITED_COPY).toContainEqual({ kind: 'help', text: inviteExpiry(SAMPLES.date) })
+  expect(measure(inviteExpiry(SAMPLES.date))).toBeLessThanOrEqual(LIMITS.help)
+})
+
+test('Copiar is icon + text and Compartir under the fresh link is the icon-only share, both with their words as names', async () => {
+  const fetchMock = vi.fn((url: string, init?: RequestInit) => {
+    if (init?.method === 'POST' && url === '/invitations') {
+      return Promise.resolve(
+        jsonResponse(201, { url: 'https://apostrophe.app/invitation/abc123', expires_at: '2026-10-09T00:00:00Z' }),
+      )
+    }
+    return Promise.resolve(jsonResponse(200, BUSINESS))
+  })
+  renderUsers(fetchMock)
+  await userEvent.click(await screen.findByRole('button', { name: 'Invitá a un socio' }))
+
+  const copy = await screen.findByRole('button', { name: 'Copiar' })
+  const share = screen.getByRole('button', { name: 'Compartir' })
+
+  expect(copy).toHaveTextContent('Copiar')
+  expect(copy.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  expect(share).toHaveClass('boton-icono')
+  expect(share).toHaveTextContent('')
+  expect(screen.getByRole('button', { name: 'Cerrar' })).toHaveClass('boton-icono')
+  expectIconAndTextRule(document.body)
 })
