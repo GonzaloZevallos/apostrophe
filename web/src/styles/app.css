@@ -3068,6 +3068,22 @@ body {
   align-self: flex-end;
 }
 
+/* Mostrar/Ocultar, Cancelar, "Todo: $ X" and the variety's Editar were `.boton-enlace`: accent
+ * text, no underline, `min-height: var(--alto-tocable)`. As `.boton--enlace` they keep that
+ * look and tap height in these places, and a form's own links shrink to their words instead of
+ * stretching their underline across the sheet. */
+.campo__mostrar .boton--enlace,
+.formulario > .boton--enlace,
+.encabezado-fila .boton--enlace,
+.seccion-variedad__cabecera .boton--enlace {
+  box-shadow: none;
+  min-height: var(--alto-tocable);
+}
+
+.formulario > .boton--enlace {
+  align-self: center;
+}
+
 .auth-page__pastilla {
   display: block;
   font-size: 14px;
