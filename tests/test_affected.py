@@ -43,9 +43,13 @@ class FakeRunner:
         self.selected = list(selected)
         self.list_code = list_code
         self.commands: list[list[str]] = []
+        self.directories: list[Path] = []
 
-    def __call__(self, command: Sequence[str], *, capture: bool) -> CommandResult:
+    def __call__(
+        self, command: Sequence[str], *, capture: bool, cwd: Path = REPO_ROOT
+    ) -> CommandResult:
         self.commands.append(list(command))
+        self.directories.append(cwd)
         if command[0] == "git":
             if self.git_code != 0:
                 return CommandResult(self.git_code, "")
@@ -67,7 +71,7 @@ class FakeRunner:
         return [
             command
             for command in self.commands
-            if command[0] == "npm" and not any(word in command for word in listings)
+            if command[0] in ("npm", "npx") and not any(word in command for word in listings)
         ]
 
 
@@ -202,17 +206,9 @@ def test_e2e_lists_the_selection_without_building() -> None:
     runner = FakeRunner(diff=["web/e2e/flow.spec.ts"], npm_codes=[0])
     main(["e2e", BASE], runner)
 
-    assert [
-        "npm",
-        "--prefix",
-        "web",
-        "exec",
-        "--",
-        "playwright",
-        "test",
-        "--list",
-        f"--only-changed={BASE}",
-    ] in runner.commands
+    listing = ["npx", "--no-install", "playwright", "test", "--list", f"--only-changed={BASE}"]
+    assert listing in runner.commands
+    assert runner.directories[runner.commands.index(listing)] == REPO_ROOT / "web"
 
 
 def test_e2e_with_nothing_changed_never_builds_and_exits_one() -> None:
@@ -281,17 +277,9 @@ def test_vitest_lists_the_selection_the_way_it_will_run_it() -> None:
     runner = FakeRunner(diff=["web/src/a.ts"])
     main(["vitest", BASE], runner)
 
-    assert [
-        "npm",
-        "--prefix",
-        "web",
-        "exec",
-        "--",
-        "vitest",
-        "list",
-        f"--changed={BASE}",
-        "--filesOnly",
-    ] in runner.commands
+    listing = ["npx", "--no-install", "vitest", "list", f"--changed={BASE}", "--filesOnly"]
+    assert listing in runner.commands
+    assert runner.directories[runner.commands.index(listing)] == REPO_ROOT / "web"
 
 
 def test_vitest_with_nothing_changed_runs_no_npm() -> None:

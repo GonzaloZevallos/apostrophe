@@ -26,6 +26,7 @@ from pathlib import Path, PurePosixPath
 from typing import Protocol
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+WEB = REPO_ROOT / "web"
 
 # The files this wrapper depends on: a change to any of them can change what it selects,
 # so each must be matched by an `affected_fallback` glob in `.agentic/stack.yaml`.
@@ -62,15 +63,18 @@ class CommandResult:
 
 
 class Runner(Protocol):
-    def __call__(self, command: Sequence[str], *, capture: bool) -> CommandResult: ...
+    def __call__(
+        self, command: Sequence[str], *, capture: bool, cwd: Path = REPO_ROOT
+    ) -> CommandResult: ...
 
 
-def run_command(command: Sequence[str], *, capture: bool) -> CommandResult:
-    """Runs `command` from the checkout root. Captured output is returned; otherwise it
-    goes straight to the terminal, so a runner's own report is never rewritten."""
+def run_command(command: Sequence[str], *, capture: bool, cwd: Path = REPO_ROOT) -> CommandResult:
+    """Runs `command` from `cwd` (the checkout root unless a tool must run inside `web/`).
+    Captured output is returned; otherwise it goes straight to the terminal, so a runner's
+    own report is never rewritten."""
     completed = subprocess.run(
         list(command),
-        cwd=REPO_ROOT,
+        cwd=cwd,
         capture_output=capture,
         text=True,
         check=False,
@@ -153,18 +157,9 @@ def _vitest(base: str, run: Runner) -> int:
     # `vitest run --changed` exits 0 when it selects no test file ("No test files found,
     # exiting with code 0"), so the selection is listed first and an empty one exits 1.
     listed = run(
-        [
-            "npm",
-            "--prefix",
-            "web",
-            "exec",
-            "--",
-            "vitest",
-            "list",
-            f"--changed={base}",
-            "--filesOnly",
-        ],
+        ["npx", "--no-install", "vitest", "list", f"--changed={base}", "--filesOnly"],
         capture=True,
+        cwd=WEB,
     )
     if listed.returncode != 0:
         return listed.returncode
@@ -188,18 +183,9 @@ def _e2e(base: str, run: Runner) -> int:
     # `playwright test --only-changed` exits 0 when it selects no test, so the selection is
     # listed first (no build, no server) and an empty one exits 1.
     listed = run(
-        [
-            "npm",
-            "--prefix",
-            "web",
-            "exec",
-            "--",
-            "playwright",
-            "test",
-            "--list",
-            f"--only-changed={base}",
-        ],
+        ["npx", "--no-install", "playwright", "test", "--list", f"--only-changed={base}"],
         capture=True,
+        cwd=WEB,
     )
     if listed.returncode != 0:
         return listed.returncode
