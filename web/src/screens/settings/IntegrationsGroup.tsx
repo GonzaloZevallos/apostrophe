@@ -30,8 +30,7 @@ import { CATALOG } from '../../routes'
 import {
   CHANNEL_CHAT_HELP,
   LOAD_THE_TOKEN_FIRST,
-  OWN_CHAT_HELP,
-  OWN_CHAT_MORE,
+  OWN_CHAT_INFO,
   PREVIOUS_PIN_NOTICE,
 } from './integrationsMessages'
 
@@ -250,7 +249,7 @@ function IntegrationsForm({ initial }: { initial: PinnedCatalog }) {
             </Boton>
           </div>
           <div id={`${fieldId}-own-help`}>
-            <MasInfo line={OWN_CHAT_HELP} more={OWN_CHAT_MORE} />
+            <MasInfo line={OWN_CHAT_INFO.line} more={OWN_CHAT_INFO.more} />
           </div>
           {!canSearch && (
             <span id={`${fieldId}-search-help`} className="campo__ayuda">

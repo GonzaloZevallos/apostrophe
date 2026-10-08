@@ -13,7 +13,7 @@ import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import IntegrationsGroup from './IntegrationsGroup'
 import { iconAndTextProblems } from '../../test/iconAndTextRule'
-import { LIMITED_COPY, OWN_CHAT_HELP, OWN_CHAT_MORE, PREVIOUS_PIN_NOTICE } from './integrationsMessages'
+import { LIMITED_COPY, OWN_CHAT_HELP, OWN_CHAT_INFO, PREVIOUS_PIN_NOTICE } from './integrationsMessages'
 import { LIMITS } from '../../copy/limits'
 
 vi.mock('../../shell/useViewport', () => ({ useViewport: () => 'phone' }))
@@ -444,15 +444,15 @@ test('the own-chat help is a MasInfo: closed at mount, "Más info" opens the lon
   const more = screen.getByRole('button', { name: 'Más info' })
   expect(more).toHaveAttribute('aria-expanded', 'false')
   expect(screen.getByText(OWN_CHAT_HELP)).toBeVisible()
-  expect(screen.getByText(OWN_CHAT_MORE)).not.toBeVisible()
+  expect(screen.getByText(OWN_CHAT_INFO.more)).not.toBeVisible()
 
   await userEvent.click(more)
   expect(more).toHaveAttribute('aria-expanded', 'true')
-  expect(screen.getByText(OWN_CHAT_MORE)).toBeVisible()
+  expect(screen.getByText(OWN_CHAT_INFO.more)).toBeVisible()
 
   await userEvent.click(more)
   expect(more).toHaveAttribute('aria-expanded', 'false')
-  expect(screen.getByText(OWN_CHAT_MORE)).not.toBeVisible()
+  expect(screen.getByText(OWN_CHAT_INFO.more)).not.toBeVisible()
 })
 
 test('opening More info is not an unsaved change: Cerrar leaves without asking', async () => {
@@ -471,7 +471,7 @@ test('the own-chat line and the consequence line are registered and within their
   expect(LIMITED_COPY).toContainEqual({ kind: 'notice', text: PREVIOUS_PIN_NOTICE })
   expect(Array.from(OWN_CHAT_HELP).length).toBeLessThanOrEqual(LIMITS.help)
   expect(Array.from(PREVIOUS_PIN_NOTICE).length).toBeLessThanOrEqual(LIMITS.notice)
-  expect(LIMITED_COPY.some(({ text }) => text === OWN_CHAT_MORE)).toBe(false)
+  expect(LIMITED_COPY.some(({ text }) => text === OWN_CHAT_INFO.more)).toBe(false)
 })
 
 test('the group follows the icon and text rule: Cerrar icon-only, Probarlo and Buscar mi chat icon + text', async () => {

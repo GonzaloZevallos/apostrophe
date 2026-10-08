@@ -51,7 +51,7 @@ Setup (token, chats, Buscar mi chat, first Probarlo and Publicar) is judged by c
   - shown in plain text and editable in place;
   - never sent to logs, the console or browser storage;
   - each field has a short fixed help line.
-- **The own chat's help line**: "Tocá Iniciar en tu bot; tu número lo ves con @userinfobot." (80 characters at most, GH-97; it dropped "Abrí tu bot en Telegram" and "o tocá Buscar mi chat", which the button beside the field already says.) It replaced "Abrí tu chat con el bot y escribile cualquier cosa para verlo acá.", which promised something the screen did not do. The channel chat's help line is unchanged.
+- **The own chat's help line**: "Tocá Iniciar en tu bot; tu número lo ves con @userinfobot." (80 characters at most, GH-97; it dropped "Abrí tu bot en Telegram" and "o tocá Buscar mi chat", which the button beside the field already says.) It replaced "Abrí tu chat con el bot y escribile cualquier cosa para verlo acá.", which promised something the screen did not do. The channel chat's help line is unchanged. The longer how (open the bot, tap Iniciar, then Buscar mi chat fills the number, or look it up with @userinfobot) is behind More info ("Más info") on that line, closed at every open.
 - **Nothing saved yet**: empty fields and no "Guardado" line.
 - **Saved only through Probarlo**: settings are saved only when a test of the typed values succeeds, so the saved settings have always been tested.
 - **Changing any of the three** re-arms the test gate. The successful Probarlo that saves the change satisfies it again.
