@@ -128,15 +128,11 @@ describe('the Archivadas card', () => {
     expect(iconAndTextProblems(screen.getByRole('main'), { limits: LIMITS, samples: SAMPLES })).toHaveLength(1)
   })
 
-  test('with archived varieties, the only thing the rule finds is Restaurar, still text only', async () => {
+  test('with archived varieties, Restaurar has its icon and the screen follows the rule', async () => {
     renderAt(ARCHIVED_VARIETIES)
     await screen.findByText('Alfa Vieja')
 
-    // Restaurar waits for its icon (`restaurar` is not in ICON_NAMES): when it lands this
-    // list empties and the test is to call `expectIconAndTextRule` plainly.
-    const problems = iconAndTextProblems(screen.getByRole('main'), { optionClasses: ['variedad-fila'] })
-    expect(problems.filter((problem) => !problem.includes('"Restaurar"'))).toEqual([])
-    expect(problems).toHaveLength(2)
+    expectIconAndTextRule(screen.getByRole('main'), { optionClasses: ['variedad-fila'] })
   })
 
   test('lists the archived varieties by name, each marked Archivada with Restaurar', async () => {
