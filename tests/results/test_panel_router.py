@@ -15,13 +15,13 @@ from datetime import UTC, date, datetime, timedelta
 from typing import Any
 
 from fastapi.testclient import TestClient
-from sqlalchemy import event
 from sqlalchemy.engine import Engine
 
 from app.results.domain.periods import periods as compute_periods
 from tests.conftest import PASSWORD, TODAY, MovableClock, signed_in
 from tests.contract_shapes import assert_matches_fixture
 from tests.fakes.archive import archive_by_hand
+from tests.statement_log import captured_statements
 
 
 def _variety(client: TestClient, name: str, price: int = 10_000) -> int:
@@ -614,19 +614,9 @@ def _seed_bigger_panel_history(client: TestClient) -> None:
 
 
 def _statement_count(engine: Engine, client: TestClient) -> int:
-    statements: list[str] = []
-
-    def _record(
-        conn: object, cursor: object, statement: str, parameters: object, *args: object
-    ) -> None:
-        statements.append(statement)
-
-    event.listen(engine, "before_cursor_execute", _record)
-    try:
+    with captured_statements(engine) as statements:
         response = client.get("/panel")
         assert response.status_code == 200, response.text
-    finally:
-        event.remove(engine, "before_cursor_execute", _record)
     return len(statements)
 
 
