@@ -510,6 +510,69 @@ def test_the_panel_agrees_with_analysis_on_shortfall_and_pending_grams(
     assert (analysis_month_shortfall["pending_grams"] > 0) == month_figures["shortfall"]["pending"]
 
 
+def test_cost_of_goods_follows_each_period(client: TestClient) -> None:
+    """The clock is the pinned `TODAY`, Friday 2026-10-02 (`tests/conftest.py`): Hoy is
+    02/10, the week 28/09-04/10, the month 01/10-31/10. A's sales fall one in each of
+    September (outside the week), the week before Hoy, and Hoy, so a cost of goods that
+    ignored the period (or took only one sale's cost) would differ in each window."""
+    a_id = _variety(client, "A", price=1_000)
+    b_id = _variety(client, "B", price=1_000)
+    # A: 100 g for $10.000 = $100/g. B has no entry at all, so all B's sales are pending.
+    _entry(client, a_id, grams="100", total_cost=10_000, on="2026-09-01")
+    _sale(client, a_id, grams="1", on="2026-09-15")
+    _sale(client, a_id, grams="2", on="2026-09-29")
+    _sale(client, a_id, grams="3", on=TODAY.isoformat())
+    _sale(client, b_id, grams="1", on="2026-09-29")
+
+    panel = client.get("/panel").json()["periods"]
+    analysis = client.get("/analysis").json()
+    today, week, month = panel["today"], panel["week"], panel["month"]
+
+    # The dates first: the windows are the ones the figures below are worked out for.
+    week_row = analysis["weeks"][-1]
+    month_row = analysis["months"][-1]
+    assert week_row["first_day"] == week["start"] == "2026-09-28"
+    assert week_row["last_day"] == week["end"] == "2026-10-04"
+    assert month_row["month"] == analysis["month"]["month"] == "2026-10"
+
+    # Hoy: A's 3 g at $100/g = $300, nothing pending.
+    assert today["cost_of_goods"] == 300
+    assert today["pending_cost"] is False
+    # Week: A's 2 g (29/09) + 3 g (Hoy) = 5 g at $100/g = $500; B's 1 g sale on 29/09 is
+    # pending (never counted as $0 cost). Sales: A $2.000 + $3.000 + B $1.000 = $6.000.
+    # Profit leaves the pending sale out: A's $5.000 - $500.
+    assert week["cost_of_goods"] == 500
+    assert week["pending_cost"] is True
+    assert week["sales"] == 6_000
+    assert week["profit"] == 5_000 - 500
+    assert week["profit_pending"] is True
+    # October: only Hoy's sale, A's 3 g: sales $3.000, cost 3 g * $100 = $300.
+    assert month["cost_of_goods"] == 300
+    assert month["pending_cost"] is False
+    assert month["sales"] == 3_000
+    assert month["profit"] == 3_000 - 300
+    assert month["profit_pending"] is False
+
+    # Análisis agrees on what it carries for the same windows.
+    assert week_row["sales"] == 6_000
+    assert week_row["profit"]["amount"] == 5_000 - 500
+    assert week_row["profit"]["pending_grams"] > 0
+    assert month_row["sales"] == 3_000
+    assert month_row["profit"]["amount"] == 3_000 - 300
+    assert month_row["profit"]["pending_grams"] == 0
+    header_varieties = analysis["month"]["varieties"]
+    assert sum(v["cost"]["costed"] for v in header_varieties) == month["cost_of_goods"] == 300
+    assert not any(v["cost"]["pending_grams"] > 0 for v in header_varieties)
+
+    # Since the first record: sales are the full $7.000 (1.000 + 2.000 + 3.000 of A, B's
+    # 1.000 pending but kept in the figure); A's 6 g cost $600, B's sale is left out of
+    # profit: $6.000 - $600, with B's 1 g pending.
+    since = analysis["since_first_record"]
+    assert since["sales"] == 7_000
+    assert since["expenses"] == 0
+    assert since["profit"] == {"amount": 6_000 - 600, "pending_grams": 1.0}
+
+
 # -- Statement count (plan invariant: the same number of SQL statements for a small
 # business as for a seeded one, in the style of Análisis's own
 # `test_one_get_analysis_issues_the_same_number_of_statements_small_or_seeded`) ------
