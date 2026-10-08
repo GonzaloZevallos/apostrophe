@@ -177,6 +177,36 @@ test.describe('phone sales sweep', () => {
       await context.close()
     })
 
+    // The guards pass in these: only the measurement itself can fail.
+    async function inMain(
+      browser: Browser,
+      html: string, measure: (page: Page) => Promise<void>,
+      pattern: RegExp,
+    ): Promise<void> {
+      const { context, page } = await onVentas(browser, { phone: true })
+      await page.evaluate((markup) => document.querySelector('main')?.insertAdjacentHTML('beforeend', markup), html)
+      await expect(measure(page)).rejects.toThrow(pattern)
+      await context.close()
+    }
+
+    test('an element wider than the screen', async ({ browser }) => {
+      await inMain(
+        browser,
+        '<div style="width: 2000px; height: 5px"></div>', (page) => expectNoSidewaysOverflow(page, 'wide', 1), /overflow/)
+    })
+
+    test('a control under 44 px', async ({ browser }) => {
+      await inMain(
+        browser,
+        '<button type="button" style="display: block; height: 30px">Corto</button>', (page) => expectThumbSized(page, 'short', 1), /small controls/)
+    })
+
+    test('an input under 16 px, and one under 16 px × the scale', async ({ browser }) => {
+      const field = '<input aria-label="Chico" style="display: block; height: 48px; font-size: 15px" />'
+      await inMain(browser, field, (page) => expectThumbSized(page, 'unscaled', 1), /font under 16/)
+      await inMain(browser, field, (page) => expectThumbSized(page, 'scaled', TEXT_SCALE), /font under 20\.8/)
+    })
+
     test('a page without a coarse pointer', async ({ browser }) => {
       const { context, page } = await onVentas(browser, { phone: false })
       await expect(expectNoSidewaysOverflow(page, 'desktop', 1)).rejects.toThrow(/coarse pointer/)

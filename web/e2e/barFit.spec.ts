@@ -182,4 +182,28 @@ test.describe.serial('bar and rail fit', () => {
     expect(items.filter((item) => item.current === 'page').map((item) => item.text)).toEqual(['Inicio'])
     expect(consoleMessages).toEqual([])
   })
+
+  test('the scaling check rejects a label that did not take the scale, and one that is gone', async () => {
+    await page.setViewportSize(PHONE)
+    await page.goto(HOME)
+    await expect(page.locator('.bar-inferior')).toBeVisible()
+
+    const stale = await applyTextScale(page, '.bar-inferior', TEXT_SCALE)
+    await page.locator('.bar-inferior a').first().evaluate((link) => link.setAttribute('style', 'font-size: 10px !important'))
+    await expect(expectTextScaled(page, stale, TEXT_SCALE)).rejects.toThrow(/font-size of the scaled elements/)
+
+    const lost = await applyTextScale(page, '.bar-inferior', TEXT_SCALE)
+    await page.locator('.bar-inferior a').first().evaluate((link) => link.removeAttribute('data-fit'))
+    await expect(expectTextScaled(page, lost, TEXT_SCALE)).rejects.toThrow(/gone/)
+    await expect(expectTextScaled(page, [], TEXT_SCALE)).rejects.toThrow()
+  })
+})
+
+test('the pointer check rejects a page whose pointer is not coarse', async ({ browser }) => {
+  // `test.use` is the default of every context, so the desktop one says so itself.
+  const context = await browser.newContext({ isMobile: false, hasTouch: false, viewport: PHONE })
+  const desktop = await context.newPage()
+  await desktop.goto('about:blank')
+  await expect(expectCoarsePointer(desktop, 'a desktop')).rejects.toThrow(/coarse pointer/)
+  await context.close()
 })

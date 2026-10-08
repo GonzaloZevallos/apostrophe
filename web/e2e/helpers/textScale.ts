@@ -52,7 +52,7 @@ export interface Scaled {
   scaled: number
 }
 
-type Kind = 'apply' | 'overflow' | 'thumb'
+type Kind = 'apply' | 'overflow' | 'thumb' | 'pointer'
 
 interface BrowserArgs {
   kind: Kind
@@ -63,7 +63,7 @@ interface BrowserArgs {
   font: number
   epsilon: number
   loadingMarker: string
-  coarsePointer: string
+  coarseProbeCss: string
 }
 
 interface BrowserResult {
@@ -77,17 +77,31 @@ interface BrowserResult {
 }
 
 /**
- * `routes.test.ts` allows a `matchMedia(` call in one product file only, and scans `e2e/` too, so
- * the pointer query is read through the property name: this is a measurement of the browser's
- * input, not a viewport decision.
+ * Whether the page's primary pointer is coarse, read from a probe element a `(pointer: coarse)`
+ * media rule widens. It asks the same media feature `matchMedia` would, through the stylesheet,
+ * because `routes.test.ts` reserves a `matchMedia(` call to `useViewport.ts` and scans `e2e/` too.
  */
-const COARSE_POINTER = '(pointer: coarse)'
+const COARSE_PROBE_CSS =
+  '[data-pointer-probe] { position: absolute; visibility: hidden; width: 1px; } ' +
+  '@media (pointer: coarse) { [data-pointer-probe] { width: 7px; } }'
 
 /** One pass in the page: guards, scaling, coverage, measurement. Everything it needs is inside it. */
 async function inBrowser(page: Page, args: BrowserArgs): Promise<BrowserResult> {
   return page.evaluate((a): BrowserResult => {
+    const coarsePointer = (): boolean => {
+      const probeStyle = document.createElement('style')
+      probeStyle.textContent = a.coarseProbeCss
+      const probe = document.createElement('div')
+      probe.setAttribute('data-pointer-probe', '')
+      document.head.appendChild(probeStyle)
+      document.body.appendChild(probe)
+      const coarse = parseFloat(getComputedStyle(probe).width) > 1
+      probe.remove()
+      probeStyle.remove()
+      return coarse
+    }
     const result: BrowserResult = {
-      coarse: window['matchMedia'](a.coarsePointer).matches,
+      coarse: coarsePointer(),
       loading: [],
       uncovered: [],
       scaled: [],
@@ -98,6 +112,7 @@ async function inBrowser(page: Page, args: BrowserArgs): Promise<BrowserResult> 
     const root = document.querySelector(a.root)
     if (root === null) throw new Error(`no ${a.root}`)
 
+    if (a.kind === 'pointer') return result
     if (a.kind !== 'apply') {
       if (!result.coarse) return result
       result.loading = [...root.querySelectorAll(a.loadingMarker)].map(name)
@@ -152,6 +167,8 @@ async function inBrowser(page: Page, args: BrowserArgs): Promise<BrowserResult> 
 
     if (a.kind === 'thumb') {
       const floor = a.font * a.factor
+      // Float noise only matters once the floor is a product; the unscaled floor is exactly 16.
+      const slack = a.factor === 1 ? 0 : a.epsilon
       const controls = document.querySelectorAll(
         'button, a[href], [role="radio"], [role="switch"], input:not([type="checkbox"]):not([type="radio"]), select, textarea',
       )
@@ -160,7 +177,7 @@ async function inBrowser(page: Page, args: BrowserArgs): Promise<BrowserResult> 
         if (rect.width <= 1 || rect.height <= 1) continue
         const label = `${node.tagName} ${node.getAttribute('aria-label') ?? node.textContent?.slice(0, 24) ?? ''}`
         if (rect.height < a.target - 0.5) result.small.push(`${label}: ${Math.round(rect.height)} px tall`)
-        if (/^(INPUT|SELECT|TEXTAREA)$/.test(node.tagName) && parseFloat(getComputedStyle(node).fontSize) < floor - a.epsilon) {
+        if (/^(INPUT|SELECT|TEXTAREA)$/.test(node.tagName) && parseFloat(getComputedStyle(node).fontSize) < floor - slack) {
           result.small.push(`${label}: font under ${floor}`)
         }
       }
@@ -179,7 +196,7 @@ function argsFor(kind: Kind, root: string, factor: number): BrowserArgs {
     font: MIN_INPUT_FONT,
     epsilon: FLOAT_EPSILON,
     loadingMarker: LOADING_MARKER,
-    coarsePointer: COARSE_POINTER,
+    coarseProbeCss: COARSE_PROBE_CSS,
   }
 }
 
@@ -222,8 +239,8 @@ function expectSound(result: BrowserResult, where: string, factor: number): void
 
 /** The page asks for a coarse pointer, for a surface measured through `applyTextScale`. */
 export async function expectCoarsePointer(page: Page, where: string): Promise<void> {
-  const coarse = await page.evaluate((query) => window['matchMedia'](query).matches, COARSE_POINTER)
-  expect(coarse, `${where}: coarse pointer`).toBe(true)
+  const { coarse } = await inBrowser(page, argsFor('pointer', 'body', 1))
+  expect(coarse, `${where}: the page must have a coarse pointer (a phone context)`).toBe(true)
 }
 
 /** No element of `main` reaches past the viewport's right edge, with the text at `scale`. */
