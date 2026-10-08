@@ -160,9 +160,7 @@ export default function VarietyPage({ varietyId }: { varietyId: number }) {
         <div className="encabezado-fila">
           <h1 className="encabezado__titulo">{variety.name}</h1>
           {!archived && (
-            <Boton variant="link" ariaLabel="Editar nombre" onClick={() => openForm('rename')}>
-              Editar
-            </Boton>
+            <Boton variant="icon" action="edit" ariaLabel="Editar nombre" onClick={() => openForm('rename')} />
           )}
         </div>
         {row !== undefined && (
@@ -211,14 +209,9 @@ export default function VarietyPage({ varietyId }: { varietyId: number }) {
           <>
             {restoreNotice}
             <div className="variedad-acciones">
-              <button
-                type="button"
-                className="boton boton--suave"
-                disabled={restoring}
-                onClick={() => void restore(varietyId)}
-              >
+              <Boton variant="secondary" icon="restaurar" disabled={restoring} onClick={() => void restore(varietyId)}>
                 Restaurar
-              </button>
+              </Boton>
             </div>
           </>
         ) : (
@@ -226,10 +219,10 @@ export default function VarietyPage({ varietyId }: { varietyId: number }) {
             <BotonLink variant="secondary" icon="agregar" ariaLabel="+ Entrada" to={`${STOCK_ENTRY_NEW}?variety=${varietyId}`}>
               Entrada
             </BotonLink>
-            <BotonLink variant="secondary" icon="agregar" to={pathTo(VARIETY_PRICE_NEW, { id: varietyId })}>
+            <BotonLink variant="secondary" icon="precio" to={pathTo(VARIETY_PRICE_NEW, { id: varietyId })}>
               Nuevo precio
             </BotonLink>
-            <BotonLink variant="secondary" icon="stock" to={withdrawalNewFor(varietyId)}>
+            <BotonLink variant="secondary" icon="salidaStock" to={withdrawalNewFor(varietyId)}>
               Sacar del stock
             </BotonLink>
           </div>

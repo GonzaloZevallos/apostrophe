@@ -6,10 +6,10 @@
  */
 
 import { useQuery } from '@tanstack/react-query'
-import { Link } from 'react-router'
 import { ApiError, NetworkError, get } from '../../api/client'
 import { keys } from '../../api/keys'
 import { isGone } from '../../api/refusals'
+import Boton from '../../components/Boton'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import GoneScreen from '../../components/GoneScreen'
 import Loading from '../../components/Loading'
@@ -49,18 +49,13 @@ export default function PriceHistory({ varietyId }: { varietyId: number }) {
   const variety = varietyQuery.data
   const history = pricesQuery.data
 
-  function goBack(event: { preventDefault: () => void }): void {
-    event.preventDefault()
-    back()
-  }
-
   return (
     <main className="pantalla">
       <div className="cuerpo">
         <div className="encabezado__fila">
-          <Link to={pathTo(VARIETY, { id: varietyId })} onClick={goBack} className="boton--enlace">
+          <Boton variant="back" onClick={back}>
             ‹ {variety.name}
-          </Link>
+          </Boton>
         </div>
         <span className="encabezado__titulo">Precios</span>
         <PriceRows

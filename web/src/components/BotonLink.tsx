@@ -14,7 +14,10 @@ import InAppLink from './InAppLink'
 type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never
 
 export type BotonLinkProps = DistributiveOmit<BotonVisualProps, 'disabled' | 'type'> &
-  Pick<LinkProps, 'to' | 'replace' | 'state'>
+  Pick<LinkProps, 'to' | 'replace' | 'state'> & {
+    /** Placement only (a margin, a fixed position): never a button look of its own. */
+    className?: string
+  }
 
 export default function BotonLink(props: BotonLinkProps) {
   const { className, ariaLabel, content } = botonVisual({ ...props, disabled: false })
@@ -23,7 +26,7 @@ export default function BotonLink(props: BotonLinkProps) {
       to={props.to}
       replace={props.replace}
       state={props.state}
-      className={className}
+      className={props.className === undefined ? className : `${className} ${props.className}`}
       onClick={props.onClick}
       aria-label={ariaLabel}
       aria-describedby={props.ariaDescribedBy}

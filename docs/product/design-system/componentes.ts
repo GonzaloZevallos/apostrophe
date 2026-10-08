@@ -276,7 +276,42 @@ export type NombreIcono =
   | 'tacho'
   | 'cobro'
   | 'personaMas'
-  | 'agregar';
+  | 'agregar'
+  | 'lapiz'
+  | 'cerrar'
+  | 'info'
+  | 'compartir'
+  | 'candado'
+  | 'salirSesion'
+  | 'archivar'
+  | 'restaurar'
+  | 'probar'
+  | 'salidaStock'
+  | 'atencion'
+  | 'copiar'
+  | 'publicar'
+  | 'precio'
+  | 'reintentar'
+  | 'gastos'
+  | 'analisis'
+  | 'configuracion'
+  | 'negocio'
+  | 'usuarios'
+  | 'integraciones'
+  | 'mensaje'
+  | 'categorias'
+  | 'apariencia'
+  | 'cuenta';
+
+/** Más info: una línea corta con una "i" al final que despliega, en su lugar y debajo de la
+ *  línea, la explicación larga (el cómo o el porqué, nunca una consecuencia ni la salida de un
+ *  rechazo). Nombre accesible fijo "Más info", `aria-expanded`, blanco de 44 px; el estado
+ *  abierto es local del componente: nunca en el historial ni en el almacenamiento, nunca un
+ *  cambio sin guardar. Siempre nace cerrado. */
+export interface MasInfoProps {
+  linea: string;
+  detalle: string;
+}
 
 export interface IconoProps {
   nombre: NombreIcono;

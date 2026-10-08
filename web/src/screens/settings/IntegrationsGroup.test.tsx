@@ -12,6 +12,9 @@ import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import IntegrationsGroup from './IntegrationsGroup'
+import { expectIconAndTextRule } from '../../test/iconAndTextRule'
+import { LIMITED_COPY, OWN_CHAT_HELP, OWN_CHAT_MORE, PREVIOUS_PIN_NOTICE } from './integrationsMessages'
+import { LIMITS } from '../../copy/limits'
 
 vi.mock('../../shell/useViewport', () => ({ useViewport: () => 'phone' }))
 
@@ -432,4 +435,63 @@ test('the help lines, the token hint and the consequence line each fit their lim
   await userEvent.click(screen.getByRole('button', { name: 'Probarlo' }))
   const notice = await screen.findByText(/El mensaje fijado anterior/)
   expect(Array.from(notice.textContent ?? '').length).toBeLessThanOrEqual(80)
+})
+
+test('the own-chat help is a MasInfo: closed at mount, "Más info" opens the longer how and a second tap closes it', async () => {
+  renderGroup(SAVED)
+  await screen.findByLabelText('Tu chat')
+
+  const more = screen.getByRole('button', { name: 'Más info' })
+  expect(more).toHaveAttribute('aria-expanded', 'false')
+  expect(screen.getByText(OWN_CHAT_HELP)).toBeVisible()
+  expect(screen.getByText(OWN_CHAT_MORE)).not.toBeVisible()
+
+  await userEvent.click(more)
+  expect(more).toHaveAttribute('aria-expanded', 'true')
+  expect(screen.getByText(OWN_CHAT_MORE)).toBeVisible()
+
+  await userEvent.click(more)
+  expect(more).toHaveAttribute('aria-expanded', 'false')
+  expect(screen.getByText(OWN_CHAT_MORE)).not.toBeVisible()
+})
+
+test('opening More info is not an unsaved change: Cerrar leaves without asking', async () => {
+  renderGroup(SAVED)
+  await screen.findByLabelText('Tu chat')
+
+  await userEvent.click(screen.getByRole('button', { name: 'Más info' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+
+  expect(await screen.findByRole('heading', { name: 'Lista' })).toBeInTheDocument()
+  expect(screen.queryByText('¿Descartás el cambio?')).not.toBeInTheDocument()
+})
+
+test('the own-chat line and the consequence line are registered and within their limits; the long how is behind More info only', () => {
+  expect(LIMITED_COPY).toContainEqual({ kind: 'help', text: OWN_CHAT_HELP })
+  expect(LIMITED_COPY).toContainEqual({ kind: 'notice', text: PREVIOUS_PIN_NOTICE })
+  expect(Array.from(OWN_CHAT_HELP).length).toBeLessThanOrEqual(LIMITS.help)
+  expect(Array.from(PREVIOUS_PIN_NOTICE).length).toBeLessThanOrEqual(LIMITS.notice)
+  expect(LIMITED_COPY.some(({ text }) => text === OWN_CHAT_MORE)).toBe(false)
+})
+
+test('the group follows the icon and text rule: Cerrar icon-only, Probarlo and Buscar mi chat icon + text', async () => {
+  renderGroup(SAVED)
+  await screen.findByLabelText('Tu chat')
+
+  const close = screen.getByRole('button', { name: 'Cerrar' })
+  expect(close).toHaveClass('boton-icono')
+  expect(close).toHaveTextContent('')
+  expect(screen.queryByText('Volver')).not.toBeInTheDocument()
+  const probarlo = screen.getByRole('button', { name: 'Probarlo' })
+  expect(probarlo).toHaveTextContent('Probarlo')
+  expect(probarlo.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  expectIconAndTextRule(document.body, { limits: LIMITS })
+})
+
+test('Enter in a field still runs Probarlo', async () => {
+  const fetchMock = renderGroup(SAVED)
+
+  await userEvent.type(await screen.findByLabelText('Tu chat'), '1{Enter}')
+
+  await waitFor(() => expect(saveCalls(fetchMock)).toHaveLength(1))
 })

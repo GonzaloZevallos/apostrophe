@@ -18,9 +18,7 @@ export default function VarietyCatalogSection({ row }: { row: CatalogVariety }) 
     <section id={CATALOG_SECTION_ID} className="seccion-variedad">
       <div className="seccion-variedad__cabecera">
         <h2 className="seccion-variedad__titulo">En el catálogo</h2>
-        <Boton variant="link" ariaLabel="Editar catálogo" onClick={() => openForm('catalog')}>
-          Editar
-        </Boton>
+        <Boton variant="icon" action="edit" ariaLabel="Editar catálogo" onClick={() => openForm('catalog')} />
       </div>
       <dl className="seccion-variedad__datos">
         <div className="seccion-variedad__dato">

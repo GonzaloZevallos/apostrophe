@@ -7,12 +7,13 @@
  */
 
 import InAppLink from '../components/InAppLink'
-import Icono from '../components/Icono'
+import Icono, { type NombreIcono } from '../components/Icono'
 import { ANALYSIS, EXPENSES, EXPENSE_NEW, SETTINGS, WITHDRAWAL_NEW } from '../routes'
 
 interface Item {
   to: string
   label: string
+  icon: NombreIcono
   detail?: string
 }
 
@@ -20,22 +21,26 @@ const ITEMS: Item[] = [
   {
     to: EXPENSE_NEW,
     label: '+ Cargar gasto',
+    icon: 'agregar',
     detail: 'Categoría, monto y detalle',
   },
   {
     to: WITHDRAWAL_NEW,
     label: 'Sacar del stock',
+    icon: 'salidaStock',
     detail: 'Promoción o consumo propio',
   },
-  { to: EXPENSES, label: 'Gastos', detail: 'Por mes y por categoría' },
+  { to: EXPENSES, label: 'Gastos', icon: 'gastos', detail: 'Por mes y por categoría' },
   {
     to: ANALYSIS,
     label: 'Análisis',
+    icon: 'analisis',
     detail: 'Variedades, semanas, meses y días',
   },
   {
     to: SETTINGS,
     label: 'Configuración',
+    icon: 'configuracion',
     detail: 'Negocio, usuarios, bot, catálogo, categorías, apariencia y tu cuenta',
   },
 ]
@@ -45,13 +50,16 @@ export default function Mas() {
     <main className="pantalla">
       <div className="cuerpo">
         <span className="encabezado__titulo">Más</span>
-        <nav className="mas__lista" aria-label="Más">
+        <nav className="mas__lista" aria-label="Más" data-menu>
           {ITEMS.map((item) => (
             <InAppLink
               key={item.to}
               to={item.to}
               className="mas__item"
             >
+              <span className="mas__item-icono">
+                <Icono nombre={item.icon} />
+              </span>
               <span className="mas__item-texto">
                 <span className="mas__item-rotulo">{item.label}</span>
                 {item.detail !== undefined && (

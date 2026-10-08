@@ -240,14 +240,25 @@ describe('the icon and text rule', () => {
     expect(button.textContent).toBe('')
   })
 
-  test('what the live page keeps as text is only its links, the switch and the Editar buttons', async () => {
-    renderPage(VARIETY_ONE)
+  test('what the live page keeps as text is only its links and the switch; Archivar variedad has its icon', async () => {
+    renderPage(VARIETY_ONE, { 'GET /varieties/1': () => json(200, { ...VARIETY_ROW, removal: 'archive' }) })
 
     await screen.findByRole('link', { name: '+ Entrada' })
+    expect(await screen.findByRole('button', { name: 'Archivar variedad' })).toBeInTheDocument()
     const problems = iconAndTextProblems(screen.getByRole('main'))
     // The low-stock switch is a switch with its label beside it, no icon and no visible text
     // of its own (the rule's helper reads any text-less button as an icon-only control).
     expect(problems.filter((problem) => !problem.includes('Avisar cuando quede poco'))).toEqual([])
+  })
+
+  test('an archived variety keeps only Restaurar, with its icon', async () => {
+    renderPage(VARIETY_ONE, {
+      'GET /varieties/1': () => json(200, { ...VARIETY_ROW, archived: true, removal: null }),
+      'GET /stock?archived=true': () => json(200, stockOf(STOCK_ROW)),
+    })
+
+    expect(await screen.findByRole('button', { name: 'Restaurar' })).toBeInTheDocument()
+    expect(iconAndTextProblems(screen.getByRole('main'))).toEqual([])
   })
 })
 

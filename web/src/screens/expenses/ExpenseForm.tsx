@@ -195,9 +195,7 @@ export default function ExpenseForm({
     <div className="gasto-form__cabecera">
       <span className="gasto-form__titulo">{target === 'nuevo' ? 'Cargar gasto' : 'Editar gasto'}</span>
       <span className="gasto-form__cerrar">
-        <Boton variant="link" onClick={onCancel}>
-          Cerrar
-        </Boton>
+        <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={onCancel} />
       </span>
     </div>
   )

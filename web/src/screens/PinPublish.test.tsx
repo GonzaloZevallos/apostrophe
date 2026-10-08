@@ -13,6 +13,7 @@ import { afterEach, expect, test, vi } from 'vitest'
 import { PINNED_CATALOG_REASON_LABEL } from '../api/refusals'
 import { copyProblems, measure } from '../copy/limits'
 import PinPublish from './PinPublish'
+import { expectIconAndTextRule } from '../test/iconAndTextRule'
 import * as pinPublishMessages from './pinPublishMessages'
 import type { PinReason } from '../api/refusals'
 import {
@@ -201,3 +202,24 @@ function renderOutOfDate(reason: PinReason) {
     status: { state: 'out_of_date', reason, last_published_on: null },
   })
 }
+
+test('"Desactualizado" carries the hidden attention icon beside its reason; "Al día" carries none', async () => {
+  renderOutOfDate('message_gone')
+  const title = await screen.findByText('Desactualizado')
+  const box = title.closest('.catalogo__publicar-estado') as HTMLElement
+
+  expect(box.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  expect(box).toHaveTextContent(`Desactualizado · ${PINNED_CATALOG_REASON_LABEL.message_gone}`)
+  expectIconAndTextRule(document.body)
+})
+
+test('Al día has no attention icon, and Publicar is icon + text with its icon hidden', async () => {
+  renderPin({ can_publish: true, publish_blocked_by: null, status: UP_TO_DATE })
+
+  const title = await screen.findByText('Al día')
+  expect(title.closest('.catalogo__publicar-estado')?.querySelector('svg')).toBeNull()
+  const publish = screen.getByRole('button', { name: 'Publicar' })
+  expect(publish).toHaveTextContent('Publicar')
+  expect(publish.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  expectIconAndTextRule(document.body)
+})

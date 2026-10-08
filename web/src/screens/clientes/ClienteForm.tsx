@@ -209,9 +209,7 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
           <span className="encabezado__titulo">
             {mode === 'nuevo' ? 'Nuevo cliente' : 'Editar cliente'}
           </span>
-          <Boton variant="link" onClick={close}>
-            Cerrar
-          </Boton>
+          <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={close} />
         </div>
         <form className="formulario" onSubmit={onSubmit}>
           <CustomerFields

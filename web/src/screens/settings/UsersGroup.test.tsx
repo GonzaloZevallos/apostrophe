@@ -171,3 +171,26 @@ test('the fresh link\'s expiry line is the registered binding, rendered as a hel
   expect(LIMITED_COPY).toContainEqual({ kind: 'help', text: inviteExpiry(SAMPLES.date) })
   expect(measure(inviteExpiry(SAMPLES.date))).toBeLessThanOrEqual(LIMITS.help)
 })
+
+test('Copiar is icon + text and Compartir under the fresh link is the icon-only share, both with their words as names', async () => {
+  const fetchMock = vi.fn((url: string, init?: RequestInit) => {
+    if (init?.method === 'POST' && url === '/invitations') {
+      return Promise.resolve(
+        jsonResponse(201, { url: 'https://apostrophe.app/invitation/abc123', expires_at: '2026-10-09T00:00:00Z' }),
+      )
+    }
+    return Promise.resolve(jsonResponse(200, BUSINESS))
+  })
+  renderUsers(fetchMock)
+  await userEvent.click(await screen.findByRole('button', { name: 'Invitá a un socio' }))
+
+  const copy = await screen.findByRole('button', { name: 'Copiar' })
+  const share = screen.getByRole('button', { name: 'Compartir' })
+
+  expect(copy).toHaveTextContent('Copiar')
+  expect(copy.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  expect(share).toHaveClass('boton-icono')
+  expect(share).toHaveTextContent('')
+  expect(screen.getByRole('button', { name: 'Cerrar' })).toHaveClass('boton-icono')
+  expectIconAndTextRule(document.body)
+})

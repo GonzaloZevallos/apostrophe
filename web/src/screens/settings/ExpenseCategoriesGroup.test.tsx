@@ -329,3 +329,16 @@ test('"Eliminar" is the icon-only delete: no visible word, a 44 px control named
   expect(remove.querySelector('svg')).not.toBeNull()
   expectIconAndTextRule(document.body)
 })
+
+test('"Renombrar" is the icon-only edit: a 44 px control named "Renombrar" with no visible word', async () => {
+  renderGroup(serving())
+
+  const rename = await screen.findByRole('button', { name: 'Renombrar' })
+
+  expect(rename).toHaveClass('boton-icono')
+  expect(rename).toHaveTextContent('')
+  expect(rename.querySelector('svg')).not.toBeNull()
+  expect(screen.getByRole('button', { name: 'Cerrar' })).toHaveClass('boton-icono')
+  expect(screen.queryByText('Volver')).not.toBeInTheDocument()
+  expectIconAndTextRule(document.body)
+})

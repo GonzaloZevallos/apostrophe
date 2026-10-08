@@ -338,9 +338,7 @@ function EntradaStockBody({ mode, entryId, today, initial, chosenVariety, hasEnt
             {mode === 'nuevo' ? 'Nueva entrada' : 'Editar entrada'}
           </span>
           <span className="gasto-form__cerrar">
-            <Boton variant="link" onClick={back}>
-              Cerrar
-            </Boton>
+            <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={back} />
           </span>
         </div>
         <form className="formulario" onSubmit={onSubmit}>

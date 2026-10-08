@@ -84,9 +84,7 @@ export default function VarietyNew() {
           <div className="gasto-form__cabecera">
             <span className="gasto-form__titulo">Nueva variedad</span>
             <span className="gasto-form__cerrar">
-              <Boton variant="link" onClick={leave}>
-                Cerrar
-              </Boton>
+              <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={leave} />
             </span>
           </div>
           <form className="formulario" onSubmit={onSubmit}>

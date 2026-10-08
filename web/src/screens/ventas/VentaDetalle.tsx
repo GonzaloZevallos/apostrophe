@@ -355,9 +355,7 @@ function VentaDetalleScreen() {
             </Boton>
           )}
 
-          <Boton variant="secondary" icon="tacho" onClick={() => setConfirmingDelete(true)}>
-            Borrar venta
-          </Boton>
+          <Boton variant="icon" action="delete" ariaLabel="Borrar venta" onClick={() => setConfirmingDelete(true)} />
         </div>
       </div>
 

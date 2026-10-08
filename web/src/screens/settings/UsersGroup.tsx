@@ -104,12 +104,10 @@ export default function UsersGroup() {
         <div className="usuarios__invitacion">
           <div className="usuarios__link">{invite.url}</div>
           <div className="usuarios__acciones">
-            <button type="button" className="boton" onClick={onCopy}>
+            <Boton variant="primary" icon="copiar" onClick={onCopy}>
               Copiar
-            </button>
-            <button type="button" className="boton" onClick={onShare}>
-              Compartir
-            </button>
+            </Boton>
+            <Boton variant="icon" action="share" ariaLabel="Compartir" onClick={onShare} />
           </div>
           <span className="campo__rotulo" data-copy="help">
             {inviteExpiry(formatDateShort(invite.expires_at.slice(0, 10)))}

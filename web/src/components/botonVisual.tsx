@@ -1,8 +1,7 @@
 /**
  * What `Boton` and `BotonLink` both draw from one `BotonProps`: the class, the
  * `aria-label` (if any) and the content, the icon hidden next to a word. `ACTION_ICON` is
- * the closed map of the icon-only actions to their icons (`Boton.tsx` says why it lists
- * two names today).
+ * the closed map of the icon-only actions to their icons.
  */
 
 import type { ReactNode } from 'react'
@@ -12,6 +11,9 @@ import Icono, { type NombreIcono } from './Icono'
 const ACTION_ICON: Record<IconOnlyAction, NombreIcono> = {
   delete: 'tacho',
   search: 'buscar',
+  close: 'cerrar',
+  edit: 'lapiz',
+  share: 'compartir',
 }
 
 const CLASS = {
@@ -24,6 +26,12 @@ const CLASS = {
   icon: 'boton-icono',
   row: 'boton--fila',
 } as const
+
+/** The class string of a variant, for a component that draws a choice (an option tab) over a
+ * button look without writing a `boton*` literal itself. */
+export function botonClass(variant: keyof typeof CLASS): string {
+  return CLASS[variant]
+}
 
 export function botonVisual(props: BotonProps): {
   className: string

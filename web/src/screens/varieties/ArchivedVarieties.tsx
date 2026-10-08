@@ -10,6 +10,7 @@
 
 import { useQuery } from '@tanstack/react-query'
 
+import Boton from '../../components/Boton'
 import BotonLink from '../../components/BotonLink'
 import { NetworkError } from '../../api/client'
 import ErrorGenerico from '../../components/ErrorGenerico'
@@ -57,14 +58,9 @@ export default function ArchivedVarieties() {
                     <span className="variedad-fila__oculta">Archivada</span>
                   </span>
                 </VarietyRowLink>
-                <button
-                  type="button"
-                  className="boton boton--suave variedad-archivada__restaurar"
-                  disabled={sending}
-                  onClick={() => void restore(variety.id)}
-                >
+                <Boton variant="secondary" icon="restaurar" disabled={sending} onClick={() => void restore(variety.id)}>
                   Restaurar
-                </button>
+                </Boton>
               </div>
             ))}
           </div>

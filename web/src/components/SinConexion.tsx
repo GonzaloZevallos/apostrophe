@@ -5,15 +5,16 @@
  * toast, never the generic server-error retry.
  */
 
+import AvisoAmbar from './AvisoAmbar'
 import { SIN_CONEXION_DETALLE, SIN_CONEXION_TITULO } from './estadosMessages'
 
 export { SIN_CONEXION_DETALLE, SIN_CONEXION_TITULO }
 
 export default function SinConexion() {
   return (
-    <div className="aviso-ambar" role="status">
+    <AvisoAmbar attention role="status">
       <span className="aviso-ambar__titulo">{SIN_CONEXION_TITULO}</span>
       <span className="aviso-ambar__detalle">{SIN_CONEXION_DETALLE}</span>
-    </div>
+    </AvisoAmbar>
   )
 }

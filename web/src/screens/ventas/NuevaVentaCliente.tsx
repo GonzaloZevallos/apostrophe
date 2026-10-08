@@ -125,9 +125,7 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
         <span className="cliente-sheet__manija" aria-hidden="true" />
         <div className="cliente-sheet__encabezado">
           <span className="panel__titulo">Elegir cliente</span>
-          <Boton variant="link" onClick={chooser.close}>
-            Cerrar
-          </Boton>
+          <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={chooser.close} />
         </div>
         <label className="campo campo--buscar">
           <span className="campo__rotulo visualmente-oculto">Buscar</span>

@@ -167,9 +167,7 @@ export default function WithdrawalDetail() {
           </span>
         )}
         <div className="retiro__acciones">
-          <BotonLink variant="link" to={pathTo(WITHDRAWAL_EDIT, { id: withdrawal.id })}>
-            Editar
-          </BotonLink>
+          <BotonLink variant="icon" action="edit" ariaLabel="Editar" to={pathTo(WITHDRAWAL_EDIT, { id: withdrawal.id })} />
           <Boton variant="destructive" icon="tacho" onClick={() => setConfirmingDelete(true)}>
             Borrar
           </Boton>

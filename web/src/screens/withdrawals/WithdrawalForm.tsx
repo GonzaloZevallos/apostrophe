@@ -216,9 +216,7 @@ export default function WithdrawalForm({
     <div className="gasto-form__cabecera">
       <span className="gasto-form__titulo">Sacar del stock</span>
       <span className="gasto-form__cerrar">
-        <Boton variant="link" onClick={onCancel}>
-          Cerrar
-        </Boton>
+        <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={onCancel} />
       </span>
     </div>
   )

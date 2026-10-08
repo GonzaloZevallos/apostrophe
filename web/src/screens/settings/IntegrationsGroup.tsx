@@ -13,7 +13,7 @@
  * bot's messages and saves nothing, so the number it fills is a typed change like any other.
  */
 
-import { type FormEvent, useEffect, useId, useState } from 'react'
+import { type FormEvent, type KeyboardEvent, useEffect, useId, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ApiError, NetworkError, get, post } from '../../api/client'
 import { invalidateResource, keys } from '../../api/keys'
@@ -25,11 +25,13 @@ import Loading from '../../components/Loading'
 import SettingsGroup, { type LeaveWording } from './SettingsGroup'
 import Boton from '../../components/Boton'
 import BotonLink from '../../components/BotonLink'
+import MasInfo from '../../components/MasInfo'
 import { CATALOG } from '../../routes'
 import {
   CHANNEL_CHAT_HELP,
   LOAD_THE_TOKEN_FIRST,
   OWN_CHAT_HELP,
+  OWN_CHAT_MORE,
   PREVIOUS_PIN_NOTICE,
 } from './integrationsMessages'
 
@@ -137,8 +139,7 @@ function IntegrationsForm({ initial }: { initial: PinnedCatalog }) {
     }
   }
 
-  async function onProbarlo(event: FormEvent<HTMLFormElement>): Promise<void> {
-    event.preventDefault()
+  async function onProbarlo(): Promise<void> {
     setTestError(null)
     setTestOffline(false)
     setPreviousPinLeft(false)
@@ -166,11 +167,23 @@ function IntegrationsForm({ initial }: { initial: PinnedCatalog }) {
     }
   }
 
+  // Probarlo is icon + text, so it is not a submit button: the form still submits on Enter
+  // from a field, exactly as it did, through the same handler.
+  function onFormSubmit(event: FormEvent<HTMLFormElement>): void {
+    event.preventDefault()
+  }
+
+  function onFormKeyDown(event: KeyboardEvent<HTMLFormElement>): void {
+    if (event.key !== 'Enter' || !(event.target instanceof HTMLInputElement)) return
+    event.preventDefault()
+    if (!testing) void onProbarlo()
+  }
+
   return (
     <SettingsGroup title={TITLE} dirty={dirty} leave={LEAVE}>
       {toast !== null && <AvisoExito texto={toast} />}
 
-      <form className="formulario" onSubmit={(event) => void onProbarlo(event)}>
+      <form className="formulario" onSubmit={onFormSubmit} onKeyDown={onFormKeyDown}>
         {tokenFieldOpen ? (
           <label className="campo">
             <span className="campo__rotulo">Token del bot</span>
@@ -236,9 +249,9 @@ function IntegrationsForm({ initial }: { initial: PinnedCatalog }) {
               Buscar mi chat
             </Boton>
           </div>
-          <span id={`${fieldId}-own-help`} className="campo__ayuda">
-            {OWN_CHAT_HELP}
-          </span>
+          <div id={`${fieldId}-own-help`}>
+            <MasInfo line={OWN_CHAT_HELP} more={OWN_CHAT_MORE} />
+          </div>
           {!canSearch && (
             <span id={`${fieldId}-search-help`} className="campo__ayuda">
               {LOAD_THE_TOKEN_FIRST}
@@ -258,7 +271,7 @@ function IntegrationsForm({ initial }: { initial: PinnedCatalog }) {
           </div>
         )}
 
-        <Boton textOnly="submit" type="submit" disabled={testing}>
+        <Boton icon="probar" disabled={testing} onClick={() => void onProbarlo()}>
           Probarlo
         </Boton>
       </form>

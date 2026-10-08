@@ -26,6 +26,7 @@ import { NetworkError } from '../api/client'
 import type { Me } from '../api/me'
 import { copyText } from '../clipboard'
 import { canShare, shareText } from '../share'
+import Boton from '../components/Boton'
 import BotonLink from '../components/BotonLink'
 import AvisoExito, { type SuccessToast } from '../components/AvisoExito'
 import Insignia, { type InsigniaTono } from '../components/Insignia'
@@ -150,23 +151,22 @@ export default function Catalogo() {
           <>
             <div className="catalogo__acciones">
               {canShare() && (
-                <button
-                  type="button"
-                  className="boton catalogo__compartir"
+                <Boton
+                  icon="compartir"
                   disabled={!settled || sharing}
                   onClick={() => void onShare(catalog.text as string)}
                 >
                   Compartir
-                </button>
+                </Boton>
               )}
-              <button
-                type="button"
-                className="boton boton--suave catalogo__copiar"
+              <Boton
+                variant="secondary"
+                icon="copiar"
                 disabled={!settled || copying}
                 onClick={() => void onCopy(catalog.text as string)}
               >
                 Copiar
-              </button>
+              </Boton>
             </div>
             {shareFailed && (
               <span className="campo__error" role="alert">

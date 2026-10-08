@@ -28,6 +28,7 @@ import {
 import AvisoExito, { type SuccessToast } from '../components/AvisoExito'
 import SinConexion from '../components/SinConexion'
 import Boton from '../components/Boton'
+import { AvisoCuerpo } from '../components/AvisoAmbar'
 import BotonLink from '../components/BotonLink'
 import {
   CHANNEL_MISSING_LEAD,
@@ -60,22 +61,30 @@ function formatDate(iso: string): string {
 
 function StatusLine({ status }: { status: PinStatus }) {
   return (
-    <div className="catalogo__publicar-estado">
-      <span className="catalogo__publicar-titulo">
-        {status.state === 'up_to_date' ? 'Al día' : OUT_OF_DATE_TITLE}
-      </span>
-      {status.state === 'out_of_date' && status.reason !== null && (
-        <span className="catalogo__publicar-detalle">
-          {OUT_OF_DATE_SEPARATOR}
-          {PINNED_CATALOG_REASON_LABEL[status.reason]}
+    <div
+      className={
+        status.state === 'out_of_date'
+          ? 'catalogo__publicar-estado catalogo__publicar-estado--atencion'
+          : 'catalogo__publicar-estado'
+      }
+    >
+      <AvisoCuerpo attention={status.state === 'out_of_date'}>
+        <span className="catalogo__publicar-titulo">
+          {status.state === 'up_to_date' ? 'Al día' : OUT_OF_DATE_TITLE}
         </span>
-      )}
-      {status.last_published_on !== null && (
-        <span className="catalogo__publicar-detalle">
-          {' '}
-          · El último fue el {formatDate(status.last_published_on)}
-        </span>
-      )}
+        {status.state === 'out_of_date' && status.reason !== null && (
+          <span className="catalogo__publicar-detalle">
+            {OUT_OF_DATE_SEPARATOR}
+            {PINNED_CATALOG_REASON_LABEL[status.reason]}
+          </span>
+        )}
+        {status.last_published_on !== null && (
+          <span className="catalogo__publicar-detalle">
+            {' '}
+            · El último fue el {formatDate(status.last_published_on)}
+          </span>
+        )}
+      </AvisoCuerpo>
     </div>
   )
 }
@@ -155,7 +164,7 @@ export default function PinPublish() {
       {toast !== null && <AvisoExito texto={toast} />}
       {data.status !== null && <StatusLine status={data.status} />}
       <Boton
-        icon="telegram"
+        icon="publicar"
         disabled={blockedBy !== null || publishing}
         onClick={() => void onPublicar()}
       >

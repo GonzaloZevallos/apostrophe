@@ -201,9 +201,7 @@ export default function ClienteFicha({ payment = false }: ClienteFichaProps) {
       <div className="cuerpo">
         <div className="ficha-cliente__encabezado">
           <span className="encabezado__titulo">{data.name}</span>
-          <BotonLink variant="link" to={pathTo(CUSTOMER_EDIT, { id: customerId })}>
-            Editar
-          </BotonLink>
+          <BotonLink variant="icon" action="edit" ariaLabel="Editar" to={pathTo(CUSTOMER_EDIT, { id: customerId })} />
         </div>
         {feedback !== null && <Notice kind={feedback.kind} message={feedback.message} />}
         {accountGone && <Notice kind="notice" message={GONE_NOTICE} />}

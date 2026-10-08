@@ -183,9 +183,7 @@ export default function EntriesList({ varietyId }: Props) {
                   )}
                 </span>
                 <span className="fila-entrada__acciones">
-                  <BotonLink variant="link" to={pathTo(STOCK_ENTRY, { id: entry.id })}>
-                    Editar
-                  </BotonLink>
+                  <BotonLink variant="icon" action="edit" ariaLabel="Editar" to={pathTo(STOCK_ENTRY, { id: entry.id })} />
                   <Boton
                     variant="icon"
                     action="delete"

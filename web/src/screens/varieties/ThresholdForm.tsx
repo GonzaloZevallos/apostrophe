@@ -87,9 +87,7 @@ export default function ThresholdForm({ varietyId, threshold, onDone, onCancel, 
       <div className="gasto-form__cabecera">
         <span className="gasto-form__titulo">Aviso de stock bajo</span>
         <span className="gasto-form__cerrar">
-          <Boton variant="link" onClick={onCancel}>
-            Cerrar
-          </Boton>
+          <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={onCancel} />
         </span>
       </div>
       <form className="formulario" onSubmit={onSubmit}>

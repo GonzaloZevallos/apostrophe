@@ -16,6 +16,7 @@ import type { Me } from '../api/me'
 import * as clipboard from '../clipboard'
 import * as share from '../share'
 import Catalogo from './Catalogo'
+import { expectIconAndTextRule } from '../test/iconAndTextRule'
 import { EMPTY_STATE_DETAIL, EMPTY_STATE_TITLE } from './catalogMessages'
 
 vi.mock('../clipboard', () => ({ copyText: vi.fn().mockResolvedValue(true) }))
@@ -425,4 +426,22 @@ test('the empty state shows the registered title and line, each within its limit
   expect(screen.getByText(EMPTY_STATE_DETAIL)).toBeInTheDocument()
   expect(Array.from(EMPTY_STATE_TITLE).length).toBeLessThanOrEqual(40)
   expect(Array.from(EMPTY_STATE_DETAIL).length).toBeLessThanOrEqual(80)
+})
+
+test('Compartir keeps its word and Copiar is icon + text, the icons hidden; "Editar encabezado y pie" stays a text link', async () => {
+  renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
+
+  const share = await screen.findByRole('button', { name: 'Compartir' })
+  const copy = screen.getByRole('button', { name: 'Copiar' })
+
+  for (const button of [share, copy]) {
+    expect(button.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+    expect(button).not.toHaveClass('boton-icono')
+  }
+  expect(share).toHaveTextContent('Compartir')
+  expect(copy).toHaveTextContent('Copiar')
+  const edit = screen.getByRole('link', { name: 'Editar encabezado y pie' })
+  expect(edit.querySelector('svg')).toBeNull()
+  expect(screen.queryByText('Volver')).not.toBeInTheDocument()
+  expectIconAndTextRule(document.body)
 })

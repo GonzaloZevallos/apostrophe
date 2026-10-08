@@ -17,6 +17,7 @@ import panelFixture from '../api/fixtures/panel.json'
 import type { PanelAnswer } from '../api/panel'
 import type { Me } from '../api/me'
 import { LIMITS } from '../copy/limits'
+import { expectIconAndTextRule } from '../test/iconAndTextRule'
 import Inicio, { EMPTY_DETAIL, EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE } from './Inicio'
 
 const PANEL: PanelAnswer = panelFixture as PanelAnswer
@@ -442,4 +443,29 @@ test('shows the fixed pinned-catalog notice while the pin is out of date', async
 
   const notice = await screen.findByText(PINNED_CATALOG_OUT_OF_DATE)
   expect(notice.closest('a')).toHaveAttribute('href', CATALOG)
+})
+
+test('the stale-catalog notice and the "Arrancá por las variedades" state carry the decorative attention icon; a fresh pin has none', async () => {
+  stubFetch(PANEL, [{ current_price: null }], {
+    status: { state: 'out_of_date', reason: 'telegram_unreachable', last_published_on: '2026-09-29' },
+  })
+  const { container, unmount } = renderInicio()
+
+  const notice = (await screen.findByText(PINNED_CATALOG_OUT_OF_DATE)).closest('a')!
+  expect(notice).toHaveClass('aviso-ambar')
+  expect(notice).toHaveAttribute('role', 'status')
+  expect(notice.querySelectorAll('svg')).toHaveLength(1)
+  expect(notice.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  const empty = screen.getByText(EMPTY_TITLE).closest('.estado-vacio')!
+  expect(empty.querySelectorAll('svg')).toHaveLength(1)
+  expect(empty.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  expect(empty).toHaveTextContent(EMPTY_DETAIL)
+  expectIconAndTextRule(container, { limits: LIMITS })
+  unmount()
+
+  stubFetch(PANEL, [{ current_price: { id: 1 } }])
+  const fresh = renderInicio()
+  await screen.findByText('Vendiste hoy')
+  expect(fresh.container.querySelector('.aviso-ambar')).toBeNull()
+  expect(fresh.container.querySelector('.estado-vacio')).toBeNull()
 })

@@ -73,9 +73,7 @@ export default function VarietyThresholdSection({
     <section className="seccion-variedad">
       <div className="seccion-variedad__cabecera">
         <h2 className="seccion-variedad__titulo">Aviso de stock bajo</h2>
-        <Boton variant="link" ariaLabel="Editar aviso" onClick={() => openForm('threshold')}>
-          Editar
-        </Boton>
+        <Boton variant="icon" action="edit" ariaLabel="Editar aviso" onClick={() => openForm('threshold')} />
       </div>
       <div className="seccion-variedad__fila">
         <span className={row.status === 'low' ? 'seccion-variedad__valor seccion-variedad__valor--aviso' : 'seccion-variedad__valor'}>

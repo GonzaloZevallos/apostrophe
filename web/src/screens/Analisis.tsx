@@ -17,8 +17,9 @@
 
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Link, useOutletContext } from 'react-router'
+import { useOutletContext } from 'react-router'
 import { NetworkError } from '../api/client'
+import BotonLink from '../components/BotonLink'
 import {
   type Analysis,
   type AmountWithPending,
@@ -493,9 +494,9 @@ export default function Analisis() {
     <main className="pantalla">
       <div className="cuerpo">
         <div className="encabezado__fila">
-          <Link to={MORE} aria-label="Volver" className="encabezado__volver">
+          <BotonLink variant="back" to={MORE} ariaLabel="Volver">
             ‹
-          </Link>
+          </BotonLink>
           <span className="encabezado__titulo">Análisis</span>
         </div>
 

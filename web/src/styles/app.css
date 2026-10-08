@@ -4052,3 +4052,141 @@ body {
   min-width: 0;
   flex-wrap: wrap;
 }
+
+/* ===== gh97-integration: More info and the attention icon ===== */
+.mas-info__linea {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-sm);
+}
+
+.mas-info__texto {
+  flex: 1;
+  font-size: 13px;
+  color: var(--tinta2);
+  line-height: 1.4;
+}
+
+.mas-info__boton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--alto-tocable);
+  height: var(--alto-tocable);
+  border: 0;
+  background: none;
+  color: var(--tinta2);
+  cursor: pointer;
+}
+
+.mas-info__detalle {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--tinta2);
+}
+
+.mas-info__detalle[hidden] {
+  display: none;
+}
+
+.aviso-ambar--atencion {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.aviso-ambar__icono {
+  display: flex;
+  flex: none;
+  color: var(--deuda);
+}
+
+.aviso-ambar__cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.mas__item-icono,
+.ajustes__item-icono {
+  display: flex;
+  flex: none;
+  color: var(--tinta2);
+}
+/* ===== end gh97-integration ===== */
+
+/* ===== gh97-varieties-stock ===== */
+.variedad-archivada > .boton {
+  flex: 0 0 auto;
+  width: auto;
+  height: var(--alto-tocable);
+  padding: 0 var(--espacio-lg);
+}
+/* ===== end gh97-varieties-stock ===== */
+
+/* ===== gh97-settings-catalog ===== */
+.catalogo__acciones .boton {
+  flex: 1;
+}
+
+.catalogo__publicar-estado--atencion {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.catalogo__publicar-estado--atencion .aviso-ambar__cuerpo {
+  display: block;
+}
+
+.ajustes-grupo__encabezado .boton-icono {
+  flex: none;
+}
+/* ===== end gh97-settings-catalog ===== */
+
+/* ===== gh97-sales-home ===== */
+/* Inicio's Cobrar is a `BotonLink` in the debtor's row: the 44 px accent pill it was,
+ * not the full-width Boton. */
+.bloque-deben__fila .boton {
+  flex: none;
+  align-self: flex-end;
+  height: auto;
+  min-height: var(--alto-tocable);
+  padding: 0 var(--espacio-lg);
+  background: var(--acento);
+  font-size: 14px;
+  text-decoration: none;
+}
+
+/* "Arrancá por las variedades": the attention icon beside its title and line. */
+.estado-vacio--atencion {
+  flex-direction: row;
+  align-items: flex-start;
+  text-align: left;
+  gap: 12px;
+}
+
+.estado-vacio--atencion .aviso-ambar__cuerpo {
+  gap: 10px;
+}
+
+.estado-vacio--atencion .estado-vacio__detalle {
+  max-width: none;
+}
+
+/* Análisis's back keeps the 44 px chevron square it had. */
+.encabezado__fila .boton--enlace[aria-label='Volver'] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--alto-tocable);
+  height: var(--alto-tocable);
+  margin-left: calc(-1 * var(--espacio-sm));
+  color: var(--tinta);
+  font-size: 20px;
+  box-shadow: none;
+}
+/* ===== end gh97-sales-home ===== */

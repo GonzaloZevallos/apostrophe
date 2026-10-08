@@ -364,11 +364,9 @@ test('the rail is a menu too, and no two of its entries share an icon', () => {
   const { container } = renderShell([HOME], { computer: true })
 
   expect(rail(container)).toHaveAttribute('data-menu')
-  // Gastos and Análisis have no glyph yet (icon-glyphs) and the business row draws an
-  // avatar, not an icon: exactly these three, and nothing else, may be left over.
+  // Every entry draws its icon, Gastos and Análisis included; only the business row draws an
+  // avatar, not an icon, so it is the one thing that may be left over.
   expect(iconAndTextProblems(rail(container))).toEqual([
-    expect.stringContaining('"Gastos" is text only'),
-    expect.stringContaining('"Análisis" is text only'),
     expect.stringContaining('"Configuración de La Huerta" is text only'),
   ])
 })

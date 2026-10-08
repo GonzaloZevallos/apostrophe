@@ -537,9 +537,7 @@ function NuevaVentaForm() {
               </span>
             </span>
             <span className="nueva-venta__cerrar">
-              <Boton variant="link" onClick={close}>
-                Cerrar
-              </Boton>
+              <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={close} />
             </span>
           </div>
           {dateError !== null && (

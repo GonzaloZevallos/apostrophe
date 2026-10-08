@@ -15,6 +15,7 @@
  */
 
 import type { ReactNode } from 'react'
+import { botonClass } from './botonVisual'
 
 export interface PestanaItem<T extends string> {
   value: T
@@ -42,8 +43,8 @@ export default function Pestanas<T extends string>({
       type="button"
       className={
         item.value === value
-          ? 'boton--enlace pestanas__opcion pestanas__opcion--activa'
-          : 'boton--enlace pestanas__opcion'
+          ? `${botonClass('link')} pestanas__opcion pestanas__opcion--activa`
+          : `${botonClass('link')} pestanas__opcion`
       }
       aria-pressed={item.value === value}
       onClick={() => onChange(item.value)}

@@ -294,9 +294,7 @@ function CategoryRow({
     <div className="fila">
       <span className="categoria-fila__nombre">{category.name}</span>
       <span className="categoria-fila__accion">
-        <Boton variant="link" onClick={() => onDraft(category.name)}>
-          Renombrar
-        </Boton>
+        <Boton variant="icon" action="edit" ariaLabel="Renombrar" onClick={() => onDraft(category.name)} />
       </span>
       <Boton variant="icon" action="delete" ariaLabel="Eliminar" onClick={() => setConfirming(true)} />
       {error !== null && (

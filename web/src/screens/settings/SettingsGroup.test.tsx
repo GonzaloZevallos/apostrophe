@@ -11,6 +11,7 @@ import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Link, RouterProvider, useNavigate } from 'react-router'
 import { expect, test } from 'vitest'
 import SettingsGroup from './SettingsGroup'
+import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 
 const LEAVE = {
   question: '¿Descartás el nombre?',
@@ -142,4 +143,17 @@ test('a save that disarms the guard leaves without asking even while dirty', asy
 
   expect(router.state.location.pathname).toBe('/afuera')
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+})
+
+test('"Cerrar" is the icon-only close: a 44 px control named "Cerrar" with no visible word, never "Volver"', async () => {
+  await open(true, false)
+
+  const close = screen.getByRole('button', { name: 'Cerrar' })
+
+  expect(close).toHaveClass('boton-icono')
+  expect(close).toHaveTextContent('')
+  expect(close.querySelector('svg')).not.toBeNull()
+  expect(screen.queryByText('Volver')).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Volver' })).not.toBeInTheDocument()
+  expectIconAndTextRule(document.body)
 })

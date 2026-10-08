@@ -38,7 +38,8 @@ import {
   type PanelTab,
 } from '../api/panel'
 import ErrorGenerico from '../components/ErrorGenerico'
-import Icono from '../components/Icono'
+import BotonLink from '../components/BotonLink'
+import { AvisoCuerpo } from '../components/AvisoAmbar'
 import MarcaEstado from '../components/MarcaEstado'
 import SinConexion from '../components/SinConexion'
 import { salesCount } from '../format/counts'
@@ -134,14 +135,18 @@ export default function Inicio() {
         </div>
 
         {pinOutOfDate && (
-          <InAppLink to={CATALOG} className="aviso-ambar" role="status">
-            <span className="aviso-ambar__titulo">{PINNED_CATALOG_OUT_OF_DATE}</span>
+          <InAppLink to={CATALOG} className="aviso-ambar aviso-ambar--atencion" role="status">
+            <AvisoCuerpo attention>
+              <span className="aviso-ambar__titulo">{PINNED_CATALOG_OUT_OF_DATE}</span>
+            </AvisoCuerpo>
           </InAppLink>
         )}
         {varietiesQuery.data !== undefined && !hasPricedVariety && (
-          <div className="estado-vacio">
-            <span className="estado-vacio__titulo">{EMPTY_TITLE}</span>
-            <span className="estado-vacio__detalle">{EMPTY_DETAIL}</span>
+          <div className="estado-vacio estado-vacio--atencion">
+            <AvisoCuerpo attention>
+              <span className="estado-vacio__titulo">{EMPTY_TITLE}</span>
+              <span className="estado-vacio__detalle">{EMPTY_DETAIL}</span>
+            </AvisoCuerpo>
           </div>
         )}
 
@@ -306,14 +311,13 @@ function TeDebenBlock({ debts }: { debts: PanelDebts }) {
             <span>{formatMoney(row.balance)}</span>
             <span className="pie">{`desde ${formatDateShort(row.owing_since)}`}</span>
           </InAppLink>
-          <InAppLink
+          <BotonLink
+            icon="cobro"
             to={pathTo(CUSTOMER_PAYMENT, { id: row.customer_id })}
-            aria-label={`Cobrar a ${row.name}`}
-            className="cobrar cobrar--acento"
+            ariaLabel={`Cobrar a ${row.name}`}
           >
-            <Icono nombre="cobro" />
             Cobrar
-          </InAppLink>
+          </BotonLink>
         </div>
       ))}
     </div>

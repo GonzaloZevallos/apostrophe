@@ -175,9 +175,7 @@ export default function Cobro({ customerId, balance, today }: CobroProps) {
       <div className="capa__contenido">
         <div className="encabezado-fila">
           <span className="panel__titulo">Registrar cobro</span>
-          <Boton variant="link" onClick={close}>
-            Cerrar
-          </Boton>
+          <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={close} />
         </div>
         <form className="formulario" onSubmit={(event) => void onSubmit(event)}>
           <label className="campo">
