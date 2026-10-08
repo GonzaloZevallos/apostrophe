@@ -16,6 +16,11 @@ const ACTION_ICON: Record<IconOnlyAction, NombreIcono> = {
   share: 'compartir',
 }
 
+/** Placement classes of the fixed "Nueva venta" button (phone and computer), kept here so no
+ * other file writes a `boton*` literal. */
+export const NUEVA_VENTA_CLASS = 'boton-nueva-venta'
+export const NUEVA_VENTA_ESCRITORIO_CLASS = 'boton-nueva-venta--escritorio'
+
 const CLASS = {
   primary: 'boton',
   secondary: 'boton boton--suave',

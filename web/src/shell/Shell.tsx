@@ -41,6 +41,7 @@ import {
   type Screen,
 } from '../routes'
 import BotonLink from '../components/BotonLink'
+import { NUEVA_VENTA_CLASS, NUEVA_VENTA_ESCRITORIO_CLASS } from '../components/botonVisual'
 import BackArrow from './BackArrow'
 import { initialsOf } from './initials'
 import { useViewport } from './useViewport'
@@ -138,7 +139,7 @@ export default function Shell() {
     <div className="disposicion">
       <nav className="riel-lateral" aria-label="Navegación" data-menu>
         {showRailNuevaVenta && (
-          <BotonLink to={SALE_NEW} icon="agregar" className="boton-nueva-venta--escritorio">
+          <BotonLink to={SALE_NEW} icon="agregar" className={NUEVA_VENTA_ESCRITORIO_CLASS}>
             Nueva venta
           </BotonLink>
         )}
@@ -180,7 +181,7 @@ export default function Shell() {
         {leaf.kind === 'card' && <BackArrow id={leaf.id} />}
         <Outlet context={me} />
         {showNuevaVenta && (
-          <BotonLink to={SALE_NEW} icon="agregar" className="boton-nueva-venta">
+          <BotonLink to={SALE_NEW} icon="agregar" className={NUEVA_VENTA_CLASS}>
             Nueva venta
           </BotonLink>
         )}

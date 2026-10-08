@@ -5,7 +5,7 @@
  * stroke, fill or transform (`tests/test_design_icons.py` checks both).
  *
  * `ICON_NAMES` is the one list of what is drawn; `componentes.ts` names the same set
- * for the design and the same test fails when the two differ. `'agregar'`, `'stock'`
+ * for the design and the same test fails when the two differ. `'agregar'`
  * and `'telegram'` are drawn here and named there too.
  *
  * Decorative (`aria-hidden`) unless a caller passes `label`, which makes it
@@ -20,7 +20,6 @@ export const ICON_NAMES = [
   'inicio',
   'ventas',
   'clientes',
-  'stock',
   'variedades',
   'mas',
   'atras',
@@ -46,7 +45,6 @@ export const ICON_NAMES = [
   'copiar',
   'publicar',
   'precio',
-  'reintentar',
   'gastos',
   'analisis',
   'configuracion',
@@ -95,13 +93,6 @@ const TRAZOS: Record<NombreIcono, ReactNode> = {
       <circle cx="9" cy="8" r="3.2" />
       <path d="M3.5 19.5c0-3 2.5-5.2 5.5-5.2s5.5 2.2 5.5 5.2" />
       <path d="M16 6.4a3 3 0 0 1 0 5.4" />
-    </>
-  ),
-  stock: (
-    <>
-      <path d="M4 8.5 12 4l8 4.5v7L12 20l-8-4.5z" />
-      <path d="M4 8.5 12 13l8-4.5" />
-      <path d="M12 13v7" />
     </>
   ),
   variedades: <path d="M4 8.5 12 4l8 4.5v7L12 20l-8-4.5z" />,
@@ -184,9 +175,6 @@ const TRAZOS: Record<NombreIcono, ReactNode> = {
   ),
   precio: (
     <><path d="M3.5 12.2V4.5a1 1 0 0 1 1-1h7.7l8.3 8.3a1 1 0 0 1 0 1.4l-7.4 7.4a1 1 0 0 1-1.4 0z" /><circle cx="8" cy="8" r="1" /></>
-  ),
-  reintentar: (
-    <><path d="M20 12a8 8 0 1 1-2.3-5.6" /><path d="M20 4v4.5h-4.5" /></>
   ),
   gastos: (
     <><rect x="3.5" y="7" width="17" height="12.5" rx="2.5" /><path d="M20.5 11.5h-4a1.8 1.8 0 0 0 0 3.6h4" /><path d="M6 7l9.5-3 1 3" /></>
