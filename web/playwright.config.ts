@@ -28,7 +28,9 @@ export default defineConfig({
   expect: { timeout: 17_000 },
   retries: 0,
   fullyParallel: false,
-  workers: 1,
+  // A fixed constant, never derived from the machine (ADR-0037): the same figure everywhere,
+  // so a run on a 2-vCPU CI box and on a 16-core one are the same shape.
+  workers: 3,
   reporter: 'list',
   // `catalogInsecureOrigin.spec.ts` (review finding, carried from the clipboard
   // subtask: the `execCommand` fallback was only proven in jsdom) needs a base URL
@@ -37,12 +39,21 @@ export default defineConfig({
   // own project with its own `baseURL`, instead of running under the default one
   // every other spec shares. It needs no real DNS entry: the spec itself proxies
   // every request for that host to its own worker's real server.
+  //
+  // `sales.spec.ts` measures wall-clock time (a 300 ms list check, #120), so it runs alone,
+  // in the `timed` project, after the others: `scripts/e2e.sh` runs the two phases, and
+  // `timed` has no `dependencies` so a red phase 1 never skips it. The supported full run is
+  // `npm run e2e`; `npx playwright test sales.spec.ts` runs only the `timed` project.
   projects: [
-    { name: 'secure-origin', testIgnore: /catalogInsecureOrigin\.spec\.ts/ },
+    {
+      name: 'secure-origin',
+      testIgnore: [/catalogInsecureOrigin\.spec\.ts/, /sales\.spec\.ts/],
+    },
     {
       name: 'insecure-origin',
       testMatch: /catalogInsecureOrigin\.spec\.ts/,
       use: { baseURL: 'http://apostrophe.test' },
     },
+    { name: 'timed', testMatch: /sales\.spec\.ts/ },
   ],
 })

@@ -88,3 +88,25 @@ throwaway files and runs oxlint: a spec importing `test` and `expect` from
 The fixture retries only when the child exits before it is ready (a lost port race). A child
 silent for 30 s fails the fixture at once with a fixed message, so three slow attempts can
 never run past the fixture's own 100 s timeout.
+
+## N workers and the timed phase (the second step)
+
+`web/playwright.config.ts` now sets `workers` to a fixed constant (never
+`os.availableParallelism()`; `fullyParallel` stays `false`, so parallelism is by file).
+`sales.spec.ts` alone runs in a `timed` project with no `dependencies`, and
+`web/scripts/e2e.sh` (the `e2e` script) runs two phases: `vite build` (exit 1 if it fails),
+then phase 1, every other spec (`--project=secure-origin --project=insecure-origin`), then
+phase 2, `--project=timed`. There is no `set -e`: phase 2 always runs, so a red phase 1 never
+hides a red 300 ms check, and the script exits non-zero if either phase is red. A
+`dependencies` entry would skip `timed` whenever phase 1 failed. `npx playwright test
+sales.spec.ts` alone runs only the `timed` project; the supported full run is `npm run e2e`.
+
+### Floor estimate (written before measuring)
+
+A run can never be shorter than its longest phase-1 file, plus `sales.spec.ts`, plus build
+and startup. From the loaded figures recorded in the config before this step (longest
+passing test per spec under backend-suite load: payments 75 s; `sales.spec.ts` 117 s at
+worst; about 20 s for `vite build` and the workers' first backends) the floor is about
+75 + 117 + 20 = **210 s**. N is the smallest worker count whose loaded full run lands within
+about 10% of the floor measured in that same run; a loaded run must finish well inside the
+agentic system's 600 s check timeout (300 s is the sanity margin reported).
