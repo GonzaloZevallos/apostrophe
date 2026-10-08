@@ -44,7 +44,7 @@ const MIN_INPUT_FONT = 16
 /** Float noise only: 16 × 1.3 is not exactly what the browser resolves. */
 const FLOAT_EPSILON = 0.01
 /** What is on screen only while something is loading: the skeleton, the compact marker, the announcer. */
-const LOADING_MARKER = '.cargando, .cargando__anuncio'
+export const LOADING_MARKER = '.cargando, .cargando__anuncio'
 
 export interface Scaled {
   tag: string
