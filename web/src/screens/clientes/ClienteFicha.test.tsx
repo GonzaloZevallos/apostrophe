@@ -752,7 +752,7 @@ test('the payment route opens the sheet by itself, from a typed address, and Cer
   await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
 
   await waitFor(() => expect(router.state.location.pathname).toBe(CUSTOMERS))
-  expect(screen.queryByRole('button', { name: 'Guardar' })).not.toBeInTheDocument()
+  await waitFor(() => expect(screen.queryByRole('button', { name: 'Guardar' })).not.toBeInTheDocument())
 })
 
 test('an untouched sheet leaves at once on history back', async () => {
@@ -776,10 +776,15 @@ test('a touched sheet asks before history back leaves, "No" keeps what was typed
   expect(await screen.findByText('¿Descartás el cobro?')).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(pathTo(CUSTOMER_PAYMENT, { id: 1 }))
   await userEvent.click(screen.getByRole('button', { name: 'No, seguí cargando' }))
-  expect(screen.queryByText('¿Descartás el cobro?')).not.toBeInTheDocument()
-  expect(screen.getByLabelText('Efectivo')).toBeChecked()
+  // React takes the dialog off the screen after the click, not inside it: wait for it
+  // before reading anything else (`waitFor`, not `waitForElementToBeRemoved`, which
+  // throws when the element is already gone).
+  await waitFor(() => expect(screen.queryByText('¿Descartás el cobro?')).not.toBeInTheDocument())
+  // A regression check that "No" did not navigate, not a sync point.
+  await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(CUSTOMER_PAYMENT, { id: 1 })))
+  expect(await screen.findByLabelText('Efectivo')).toBeChecked()
 
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Cerrar' }))
   await userEvent.click(await screen.findByRole('button', { name: 'Sí, descartalo' }))
   await waitFor(() => expect(router.state.location.pathname).toBe(CUSTOMERS))
 })
@@ -874,8 +879,8 @@ test('a gone cobro opened from Clientes goes back to it: Clientes is in history 
   expect(router.state.historyAction).toBe('POP')
   expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
   await act(() => router.navigate(-1))
-  expect(router.state.location.pathname).toBe(HOME)
-  expect(screen.queryByText(GONE_NOTICE)).not.toBeInTheDocument()
+  await waitFor(() => expect(router.state.location.pathname).toBe(HOME))
+  await waitFor(() => expect(screen.queryByText(GONE_NOTICE)).not.toBeInTheDocument())
 })
 
 test("a gone cobro opened from Inicio's teaser replaces the sheet with Clientes and leaves Inicio alone", async () => {
@@ -888,8 +893,8 @@ test("a gone cobro opened from Inicio's teaser replaces the sheet with Clientes 
   expect(router.state.historyAction).toBe('REPLACE')
   expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
   await act(() => router.navigate(-1))
-  expect(router.state.location.pathname).toBe(HOME)
-  expect(screen.queryByText(GONE_NOTICE)).not.toBeInTheDocument()
+  await waitFor(() => expect(router.state.location.pathname).toBe(HOME))
+  await waitFor(() => expect(screen.queryByText(GONE_NOTICE)).not.toBeInTheDocument())
 })
 
 test('a gone cobro on a direct link replaces the sheet with Clientes and shows the notice', async () => {
