@@ -68,3 +68,23 @@ new backend on a new DB. Throwaway failing tests (not committed) were put in the
 `barFit` (2) and `navigation` (3) skipped their remaining tests (5 did not run, 3 failed,
 41 passed); `ventasTelefono`'s remaining 6 tests reran its `beforeAll` against the new
 worker's server and passed.
+
+## Five consecutive green runs at `workers: 1`
+
+`npm --prefix web run e2e` (87 tests), on a shared machine with other work running, five
+runs in a row, all green: 5m06s, 6m01s, 3m55s, 4m13s and 3m49s (wall time of the whole
+command, including `vite build`). The spread is the machine's load, not the suite. These
+are the runs of the server model alone; the per-N times and the loaded/idle comparison
+belong to the step that turns on N workers.
+
+## What enforces the import rule
+
+`web/src/architecture/e2eImportRule.test.ts` copies the real `web/.oxlintrc.json` next to
+throwaway files and runs oxlint: a spec importing `test` and `expect` from
+`@playwright/test` is rejected, a type-only import and `fixtures.ts` are accepted.
+
+## A silent backend is not retried
+
+The fixture retries only when the child exits before it is ready (a lost port race). A child
+silent for 30 s fails the fixture at once with a fixed message, so three slow attempts can
+never run past the fixture's own 100 s timeout.
