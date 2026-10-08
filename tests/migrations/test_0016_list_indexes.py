@@ -1,4 +1,4 @@
-"""Migration 0016 adds the three indexes the Ventas list needs (ADR-0037) and takes
+"""Migration 0016 adds the three indexes the Ventas list needs (ADR-0038) and takes
 them away again, never touching a row: every `sale`, `sale_line` and `payment` row of
 two businesses survives both directions, over a plain sqlite file and a libsql one
 (ADR-0016)."""

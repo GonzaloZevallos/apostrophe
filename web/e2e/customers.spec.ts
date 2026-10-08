@@ -12,7 +12,7 @@
  * Covers the PRD's own lifecycle for a customer with no number: registered, edited,
  * found by name, chosen for a sale left owing, paid through Registrar cobro, and
  * shown in Te deben — plus a new no-number customer created from Elegir cliente
- * and sold to (its duration is not measured, docs/adr/0037), and that nothing personal reaches the console or the
+ * and sold to (its duration is not measured, docs/adr/0038), and that nothing personal reaches the console or the
  * browser's own storage.
  */
 

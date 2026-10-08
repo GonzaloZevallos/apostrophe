@@ -16,7 +16,7 @@
  *   variety has no price that day, both shown before any save is attempted.
  * - "Under a minute" (1): each of the three sales below — a new customer, an
  *   existing one, none — is recorded from the form to "Venta guardada". Its
- *   duration is not measured by any test (docs/adr/0037): the run proves the flow
+ *   duration is not measured by any test (docs/adr/0038): the run proves the flow
  *   completes, `tapBudget.spec.ts` its tap budget.
  * - "One sale" (4) and "What I see is what I get" (2): a two-variety order with
  *   shipping charged once, where the live preview's price per gram, rule and total
@@ -35,7 +35,7 @@
  *   Semana, one dated the Sunday right before it does not.
  * - The list answering in under 300 ms with a few hundred sales (metric 6) is not
  *   checked here: `tests/sales/test_list_cost.py` guards it by the query plan and
- *   the statement count of `GET /sales`, never by time (docs/adr/0037).
+ *   the statement count of `GET /sales`, never by time (docs/adr/0038).
  * - Isolation (ADR-0004): a second business opening the first one's sale by its own
  *   id sees "Eso ya no está.", never the sale itself.
  *

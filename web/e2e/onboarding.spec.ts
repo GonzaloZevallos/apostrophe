@@ -2,7 +2,7 @@
 /**
  * The Onboarding's own end-to-end runs (GH-86, "Metrics"), from a phone viewport, through the
  * built front and the real backend: a full run from accepting a new-business invitation to
- * Nueva venta opened from "Listo" (its duration is not measured, docs/adr/0037); a resume from Inicio's notice; a
+ * Nueva venta opened from "Listo" (its duration is not measured, docs/adr/0038); a resume from Inicio's notice; a
  * value saved in step 3 reading the same in Configuración; and, at the end of each, the
  * browser holding only the theme.
  */

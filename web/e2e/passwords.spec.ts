@@ -15,7 +15,7 @@
  * skip stops firing on its own.
  *
  * A phone viewport (PRD metric 1: "from the phone"), the same breakpoint
- * `sales.spec.ts` uses. No test measures how long the change takes (docs/adr/0037).
+ * `sales.spec.ts` uses. No test measures how long the change takes (docs/adr/0038).
  */
 
 import { HOME, LOGIN, SETTINGS_ACCOUNT } from '../src/routes.js'
