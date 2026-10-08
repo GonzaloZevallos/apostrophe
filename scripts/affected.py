@@ -8,7 +8,8 @@ is sound for this codebase alone, so this wrapper adds what each one cannot see:
   exits 0 on an empty selection), then the guard set: the tests that read the whole tree
   (found from the tree itself on every run, never listed by hand).
 - `e2e` runs Playwright's `--only-changed=<base>` only when every changed path is a spec
-  or a spec helper; any other path exits 1 without building, so the gate runs the full form.
+  or a spec helper and the selection is not empty (Playwright exits 0 on an empty one); any
+  other path exits 1 without building, so the gate runs the full form.
 
 An empty change list, a git failure and an empty selection all exit non-zero: the gate then
 runs the full check. The wrapper never passes a flag that accepts an empty selection.
@@ -49,6 +50,7 @@ GUARD_PATTERNS = (
 )
 _GUARD = re.compile("|".join(GUARD_PATTERNS))
 _RELATIVE_IMPORT = re.compile(r"""(?:from|import)\s*\(?\s*["'](\.{1,2}/[^"']+)["']""")
+_PLAYWRIGHT_TOTAL = re.compile(r"^Total: (\d+) tests? in", re.MULTILINE)
 _TEST_FILE = re.compile(r"\.test\.tsx?$")
 _HELPER_SUFFIXES = ("", ".ts", ".tsx", "/index.ts")
 
@@ -182,6 +184,28 @@ def _e2e(base: str, run: Runner) -> int:
     paths = changed_paths(base, run)
     if not all(is_e2e_sound(path) for path in paths):
         _say("affected: unsound -> full")
+        return 1
+    # `playwright test --only-changed` exits 0 when it selects no test, so the selection is
+    # listed first (no build, no server) and an empty one exits 1.
+    listed = run(
+        [
+            "npm",
+            "--prefix",
+            "web",
+            "exec",
+            "--",
+            "playwright",
+            "test",
+            "--list",
+            f"--only-changed={base}",
+        ],
+        capture=True,
+    )
+    if listed.returncode != 0:
+        return listed.returncode
+    total = _PLAYWRIGHT_TOTAL.search(listed.stdout)
+    if total is None or int(total.group(1)) == 0:
+        _say("affected: nothing selected -> full")
         return 1
     _say("affected: e2e-only -> playwright --only-changed")
     return run(

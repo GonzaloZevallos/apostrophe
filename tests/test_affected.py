@@ -51,15 +51,23 @@ class FakeRunner:
                 return CommandResult(self.git_code, "")
             lines = self.diff if command[1] == "diff" else self.untracked
             return CommandResult(0, "".join(f"{line}\n" for line in lines))
+        if "--list" in command:
+            return CommandResult(
+                self.list_code,
+                f"Listing tests:\nTotal: {len(self.selected)} tests in 1 file\n",
+            )
         if "list" in command:
             return CommandResult(self.list_code, "".join(f"{line}\n" for line in self.selected))
         return CommandResult(self.npm_codes.pop(0), "")
 
     @property
     def npm_commands(self) -> list[list[str]]:
-        """The runs that execute tests or a build, not the vitest selection listing."""
+        """The runs that execute tests or a build, not the selection listings."""
+        listings = ("list", "--list")
         return [
-            command for command in self.commands if command[0] == "npm" and "list" not in command
+            command
+            for command in self.commands
+            if command[0] == "npm" and not any(word in command for word in listings)
         ]
 
 
@@ -167,6 +175,44 @@ def test_e2e_with_only_sound_paths_returns_playwrights_code(
         ["npm", "--prefix", "web", "run", "e2e", "--", f"--only-changed={BASE}"]
     ]
     assert "affected: e2e-only -> playwright --only-changed" in capsys.readouterr().err
+
+
+def test_e2e_exits_one_when_playwright_selects_no_test(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    # `playwright test --only-changed` itself exits 0 here; the wrapper must not, and
+    # must not build.
+    runner = FakeRunner(diff=["web/e2e/helpers/unused.ts"], selected=[])
+
+    assert main(["e2e", BASE], runner) == 1
+
+    assert runner.npm_commands == []
+    assert "affected: nothing selected -> full" in capsys.readouterr().err
+
+
+def test_e2e_returns_the_code_of_a_failing_selection_listing() -> None:
+    runner = FakeRunner(diff=["web/e2e/flow.spec.ts"], list_code=5)
+
+    assert main(["e2e", BASE], runner) == 5
+
+    assert runner.npm_commands == []
+
+
+def test_e2e_lists_the_selection_without_building() -> None:
+    runner = FakeRunner(diff=["web/e2e/flow.spec.ts"], npm_codes=[0])
+    main(["e2e", BASE], runner)
+
+    assert [
+        "npm",
+        "--prefix",
+        "web",
+        "exec",
+        "--",
+        "playwright",
+        "test",
+        "--list",
+        f"--only-changed={BASE}",
+    ] in runner.commands
 
 
 def test_e2e_with_nothing_changed_never_builds_and_exits_one() -> None:
