@@ -189,14 +189,16 @@ export async function expectTextScaled(page: Page, scaled: Scaled[], factor: num
     (tags) =>
       tags.map((tag) => {
         const element = document.querySelector(`[data-fit="${tag}"]`)
-        return element === null ? null : parseFloat(getComputedStyle(element).fontSize)
+        if (element === null) return null
+        return { name: `${element.tagName.toLowerCase()}.${element.getAttribute('class') ?? ''}`, size: parseFloat(getComputedStyle(element).fontSize) }
       }),
     scaled.map((entry) => entry.tag),
   )
   const off = scaled.flatMap((entry, index) => {
     const read = actual[index]
-    return read === null || read === undefined || Math.abs(read - entry.baseline * factor) > TOLERANCE
-      ? [`${entry.tag}: ${read ?? 'gone'} px, expected ${entry.baseline * factor}`]
+    if (read === null || read === undefined) return [`${entry.tag}: gone`]
+    return Math.abs(read.size - entry.baseline * factor) > TOLERANCE
+      ? [`${read.name}: ${read.size} px, expected ${entry.baseline * factor}`]
       : []
   })
   expect(off, 'font-size of the scaled elements').toEqual([])
