@@ -4,7 +4,8 @@
 `{base}` (the task's base sha) and reads only the exit code. Neither runner's own selection
 is sound for this codebase alone, so this wrapper adds what each one cannot see:
 
-- `vitest` runs `--changed=<base>`, then the guard set: the tests that read the whole tree
+- `vitest` runs `--changed=<base>` (after checking that it selects something: vitest itself
+  exits 0 on an empty selection), then the guard set: the tests that read the whole tree
   (found from the tree itself on every run, never listed by hand).
 - `e2e` runs Playwright's `--only-changed=<base>` only when every changed path is a spec
   or a spec helper; any other path exits 1 without building, so the gate runs the full form.
@@ -142,17 +143,34 @@ def discover_guards(web_src: Path) -> list[str]:
         for path in web_src.rglob("*.test.ts*")
         if _TEST_FILE.search(path.name) and path.is_file()
     ]
-    return sorted(
-        path.relative_to(web).as_posix() for path in tests if _reads_the_tree(path)
-    )
+    return sorted(path.relative_to(web).as_posix() for path in tests if _reads_the_tree(path))
 
 
 def _vitest(base: str, run: Runner) -> int:
     changed_paths(base, run)
-    _say("affected: changed")
-    selected = run(
-        ["npm", "--prefix", "web", "test", "--", f"--changed={base}"], capture=False
+    # `vitest run --changed` exits 0 when it selects no test file ("No test files found,
+    # exiting with code 0"), so the selection is listed first and an empty one exits 1.
+    listed = run(
+        [
+            "npm",
+            "--prefix",
+            "web",
+            "exec",
+            "--",
+            "vitest",
+            "list",
+            f"--changed={base}",
+            "--filesOnly",
+        ],
+        capture=True,
     )
+    if listed.returncode != 0:
+        return listed.returncode
+    if not listed.stdout.strip():
+        _say("affected: nothing selected -> full")
+        return 1
+    _say("affected: changed")
+    selected = run(["npm", "--prefix", "web", "test", "--", f"--changed={base}"], capture=False)
     if selected.returncode != 0:
         return selected.returncode
     guards = discover_guards(REPO_ROOT / "web" / "src")

@@ -33,11 +33,15 @@ class FakeRunner:
         untracked: Sequence[str] = (),
         git_code: int = 0,
         npm_codes: Sequence[int] = (0, 0),
+        selected: Sequence[str] = ("src/a.test.ts",),
+        list_code: int = 0,
     ) -> None:
         self.diff = list(diff)
         self.untracked = list(untracked)
         self.git_code = git_code
         self.npm_codes = list(npm_codes)
+        self.selected = list(selected)
+        self.list_code = list_code
         self.commands: list[list[str]] = []
 
     def __call__(self, command: Sequence[str], *, capture: bool) -> CommandResult:
@@ -47,11 +51,16 @@ class FakeRunner:
                 return CommandResult(self.git_code, "")
             lines = self.diff if command[1] == "diff" else self.untracked
             return CommandResult(0, "".join(f"{line}\n" for line in lines))
+        if "list" in command:
+            return CommandResult(self.list_code, "".join(f"{line}\n" for line in self.selected))
         return CommandResult(self.npm_codes.pop(0), "")
 
     @property
     def npm_commands(self) -> list[list[str]]:
-        return [command for command in self.commands if command[0] == "npm"]
+        """The runs that execute tests or a build, not the vitest selection listing."""
+        return [
+            command for command in self.commands if command[0] == "npm" and "list" not in command
+        ]
 
 
 # --- changed_paths ---------------------------------------------------------------------
@@ -180,9 +189,7 @@ def test_vitest_stops_at_a_failing_changed_run_and_skips_the_guards(
 
     assert main(["vitest", BASE], runner) == 1
 
-    assert runner.npm_commands == [
-        ["npm", "--prefix", "web", "test", "--", f"--changed={BASE}"]
-    ]
+    assert runner.npm_commands == [["npm", "--prefix", "web", "test", "--", f"--changed={BASE}"]]
     err = capsys.readouterr().err
     assert "affected: changed" in err
     assert "affected: guards" not in err
@@ -202,6 +209,43 @@ def test_vitest_runs_the_guards_after_a_passing_changed_run(
     guards = second[5:]
     assert "src/routes.test.ts" in guards
     assert f"affected: guards ({len(guards)} files)" in capsys.readouterr().err
+
+
+def test_vitest_exits_one_when_changed_selects_no_test_file(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    # `vitest run --changed` itself exits 0 here; the wrapper must not.
+    runner = FakeRunner(diff=["app/main.py"], selected=[])
+
+    assert main(["vitest", BASE], runner) == 1
+
+    assert runner.npm_commands == []
+    assert "affected: nothing selected -> full" in capsys.readouterr().err
+
+
+def test_vitest_returns_the_code_of_a_failing_selection_listing() -> None:
+    runner = FakeRunner(diff=["web/src/a.ts"], list_code=3)
+
+    assert main(["vitest", BASE], runner) == 3
+
+    assert runner.npm_commands == []
+
+
+def test_vitest_lists_the_selection_the_way_it_will_run_it() -> None:
+    runner = FakeRunner(diff=["web/src/a.ts"])
+    main(["vitest", BASE], runner)
+
+    assert [
+        "npm",
+        "--prefix",
+        "web",
+        "exec",
+        "--",
+        "vitest",
+        "list",
+        f"--changed={BASE}",
+        "--filesOnly",
+    ] in runner.commands
 
 
 def test_vitest_with_nothing_changed_runs_no_npm() -> None:
@@ -263,9 +307,7 @@ def _tree(root: Path, files: dict[str, str]) -> Path:
         "import url from './a.svg?url'",
     ],
 )
-def test_a_test_with_a_guard_pattern_of_its_own_is_found(
-    tmp_path: Path, text: str
-) -> None:
+def test_a_test_with_a_guard_pattern_of_its_own_is_found(tmp_path: Path, text: str) -> None:
     web_src = _tree(tmp_path, {"a.test.ts": text})
 
     assert discover_guards(web_src) == ["src/a.test.ts"]
