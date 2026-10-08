@@ -1,4 +1,4 @@
-"""The three indexes the Ventas list needs (ADR-0037): `sale` by business and date,
+"""The three indexes the Ventas list needs (ADR-0038): `sale` by business and date,
 `sale_line` and `payment` by sale. An index changes what a read costs, never what it
 returns; no row is touched.
 

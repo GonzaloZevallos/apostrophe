@@ -331,7 +331,7 @@ The phone layout only; `NuevaVentaCompu` keeps its own.
   - each period's total and count equal the sum and number of the sales shown;
   - the week runs Monday to Sunday;
   - the "te debe" mark matches the API's settlement;
-  - the list answers in under 300 ms with a few hundred sales: checked by `tests/sales/test_list_cost.py` through the query plan of the list statements (the indexes are searched, no table is scanned) and the statement count at 30 and 300 sales, never by time (docs/adr/0037).
+  - the list answers in under 300 ms with a few hundred sales: checked by `tests/sales/test_list_cost.py` through the query plan of the list statements (the indexes are searched, no table is scanned) and the statement count at 30 and 300 sales, never by time (docs/adr/0038).
 - **Fixing**: the end-to-end run assigns a customer to a sale that had none (Asignar cliente then disappears) and deletes a sale through its confirmation. (Criterion 11)
 - **No overflow on the phone (criterion 12)**: front tests at 320, 375 and 430 px and at 130 % text, for Nueva venta, Ventas and the sale's detail, show nothing clipped or overflowing horizontally, "Precio especial", shipping and Fechas' inputs included; Ventas' tabs covered on one row and wrapped two by two.
 - **Save in reach (criterion 12)**: at those widths the footer's total and "Guardá la venta" are visible on load; the header stays while the body scrolls; with a simulated keyboard the footer stays visible; the payment options and the Debiendo hint (with side margin) scroll fully above the footer.

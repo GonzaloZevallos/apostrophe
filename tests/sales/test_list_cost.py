@@ -1,4 +1,4 @@
-"""What `GET /sales` costs, guarded without a clock (docs/adr/0037).
+"""What `GET /sales` costs, guarded without a clock (docs/adr/0038).
 
 PRD metric 6 says the list answers in under 300 ms with a few hundred sales. No test
 here measures a duration: a duration depends on how busy the machine is. The two
@@ -18,7 +18,7 @@ so a cost inside it is outside what either check sees.
 
 The plan test runs on the stdlib `sqlite3` driver and on libsql. No `ANALYZE` is run: if
 a driver picks another plan on an un-analysed database, the test fails and that calls
-for a decision (ADR-0037), not for tuning the query around it.
+for a decision (ADR-0038), not for tuning the query around it.
 """
 
 from __future__ import annotations
