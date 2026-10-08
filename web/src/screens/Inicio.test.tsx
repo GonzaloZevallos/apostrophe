@@ -7,7 +7,16 @@
  * different answer never showing the first answer's figures (`gcTime: 0`).
  */
 
-import { CATALOG, CUSTOMER, CUSTOMER_PAYMENT, CUSTOMERS, HOME, SETTINGS } from '../routes'
+import {
+  CATALOG,
+  CUSTOMER,
+  CUSTOMER_PAYMENT,
+  CUSTOMERS,
+  HOME,
+  ONBOARDING_DONE,
+  ONBOARDING_STOCK,
+  SETTINGS,
+} from '../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -17,6 +26,7 @@ import panelFixture from '../api/fixtures/panel.json'
 import type { PanelAnswer } from '../api/panel'
 import type { Me } from '../api/me'
 import { LIMITS } from '../copy/limits'
+import type { OnboardingProgress } from '../api/onboarding'
 import Inicio, { EMPTY_DETAIL, EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE } from './Inicio'
 
 const PANEL: PanelAnswer = panelFixture as PanelAnswer
@@ -27,6 +37,25 @@ function jsonResponse(status: number, body: unknown): Response {
     headers: { 'Content-Type': 'application/json' },
   })
 }
+
+const NOT_OFFERED: OnboardingProgress = {
+  offered: false,
+  over: false,
+  count: 0,
+  resume: null,
+  steps: [],
+  can_skip_rest: false,
+  varieties_count: 0,
+  stock_entries_count: 0,
+  price_target: null,
+  stock_target: null,
+}
+
+/** Every call the stub saw on `/onboarding-progress`, as "METHOD url". */
+const calls: string[] = []
+
+/** What a POST to `/onboarding-progress/advance` answers; the read's answer when null. */
+let advanced: OnboardingProgress | null = null
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03' }
 
@@ -39,15 +68,25 @@ function SettingsLanding() {
   return <span>{`Configuración inApp=${String((location.state as { inApp?: boolean } | null)?.inApp)}`}</span>
 }
 
+function ListoLanding() {
+  const location = useLocation()
+  return <span>{`Listo listo=${String((location.state as { listo?: boolean } | null)?.listo)}`}</span>
+}
+
 function stubFetch(
   panel: PanelAnswer,
   varieties: Array<{ current_price: unknown }> = [{ current_price: { id: 1 } }],
   pinnedCatalogStatus: unknown = { status: null },
+  onboarding: OnboardingProgress = NOT_OFFERED,
 ) {
   vi.stubGlobal(
     'fetch',
-    vi.fn((input: RequestInfo | URL) => {
+    vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input)
+      if (url.includes('/onboarding-progress')) {
+        calls.push(`${init?.method ?? 'GET'} ${url}`)
+        return Promise.resolve(jsonResponse(200, init?.method === 'POST' ? (advanced ?? onboarding) : onboarding))
+      }
       if (url.includes('/pinned-catalog/status')) return Promise.resolve(jsonResponse(200, pinnedCatalogStatus))
       if (url.includes('/panel')) return Promise.resolve(jsonResponse(200, panel))
       if (url.includes('/varieties')) return Promise.resolve(jsonResponse(200, varieties))
@@ -81,6 +120,8 @@ function renderInicio(
             <Route path={CUSTOMER} element={<span>ficha de cliente</span>} />
             <Route path={CUSTOMER_PAYMENT} element={<PaymentStub />} />
             <Route path={SETTINGS} element={<SettingsLanding />} />
+            <Route path={ONBOARDING_DONE} element={<ListoLanding />} />
+            <Route path={ONBOARDING_STOCK} element={<span>paso stock</span>} />
           </Route>
         </Routes>
       </MemoryRouter>
@@ -90,6 +131,8 @@ function renderInicio(
 
 afterEach(() => {
   vi.unstubAllGlobals()
+  calls.length = 0
+  advanced = null
 })
 
 test('the business avatar at the top opens Configuración in one tap, carrying inApp', async () => {
@@ -466,4 +509,114 @@ test('the stale-catalog notice and the "Arrancá por las variedades" state carry
   await screen.findByText('Vendiste hoy')
   expect(fresh.container.querySelector('.aviso-ambar')).toBeNull()
   expect(fresh.container.querySelector('.estado-vacio')).toBeNull()
+})
+
+const STEPS_AFTER_ONE: OnboardingProgress['steps'] = [
+  { step: 'variety', state: 'done' },
+  { step: 'stock', state: 'pending' },
+  { step: 'header_footer', state: 'pending' },
+  { step: 'bot', state: 'pending' },
+  { step: 'partner', state: 'pending' },
+  { step: 'categories', state: 'pending' },
+]
+
+const MID_ONBOARDING: OnboardingProgress = {
+  ...NOT_OFFERED,
+  offered: true,
+  count: 1,
+  resume: 'stock',
+  steps: STEPS_AFTER_ONE,
+  varieties_count: 1,
+}
+
+const FINISH: OnboardingProgress = {
+  ...MID_ONBOARDING,
+  count: 6,
+  resume: 'finish',
+  steps: STEPS_AFTER_ONE.map((item) => ({ ...item, state: 'done' as const })),
+}
+
+test('an Onboarding business sees the notice at the top with its count and what is missing, and never Arrancá', async () => {
+  stubFetch(PANEL, [], { status: null }, MID_ONBOARDING)
+  renderInicio()
+
+  const notice = await screen.findByRole('link', { name: /Seguí con la configuración/ })
+  expect(within(notice).getByText('1 de 6 pasos')).toBeInTheDocument()
+  expect(within(notice).getByText('Falta: stock inicial')).toBeInTheDocument()
+  expect(notice).toHaveAttribute('href', ONBOARDING_STOCK)
+  await screen.findByText('Vendiste hoy')
+  expect(screen.queryByText(EMPTY_TITLE)).not.toBeInTheDocument()
+})
+
+test('with the Onboarding answer last, Arrancá never flashes for an Onboarding business', async () => {
+  let release: (response: Response) => void = () => undefined
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: RequestInfo | URL) => {
+      const url = String(input)
+      if (url.includes('/onboarding-progress'))
+        return new Promise<Response>((resolve) => {
+          release = resolve
+        })
+      if (url.includes('/pinned-catalog/status')) return Promise.resolve(jsonResponse(200, { status: null }))
+      if (url.includes('/panel')) return Promise.resolve(jsonResponse(200, PANEL))
+      return Promise.resolve(jsonResponse(200, []))
+    }),
+  )
+  renderInicio()
+  await screen.findByText('Vendiste hoy')
+
+  expect(screen.queryByText(EMPTY_TITLE)).not.toBeInTheDocument()
+  release(jsonResponse(200, MID_ONBOARDING))
+  expect(await screen.findByText('Seguí con la configuración')).toBeInTheDocument()
+  expect(screen.queryByText(EMPTY_TITLE)).not.toBeInTheDocument()
+})
+
+test('a business never offered the Onboarding keeps Arrancá and sees no notice', async () => {
+  stubFetch(PANEL, [])
+  renderInicio()
+
+  expect(await screen.findByText(EMPTY_TITLE)).toBeInTheDocument()
+  expect(screen.queryByText('Seguí con la configuración')).not.toBeInTheDocument()
+})
+
+test('the finish notice reads 6 de 6 with no Falta line and sends advance only on a tap', async () => {
+  stubFetch(PANEL, [{ current_price: { id: 1 } }], { status: null }, FINISH)
+  renderInicio()
+
+  const notice = await screen.findByRole('button', { name: /Seguí con la configuración/ })
+  expect(within(notice).getByText('6 de 6 pasos')).toBeInTheDocument()
+  expect(screen.queryByText(/Falta:/)).not.toBeInTheDocument()
+  await screen.findByText('Vendiste hoy')
+  expect(calls).toEqual(['GET /onboarding-progress'])
+})
+
+test('the Onboarding notice goes once the Onboarding is over', async () => {
+  stubFetch(PANEL, [{ current_price: { id: 1 } }], { status: null }, { ...FINISH, over: true, resume: null })
+  renderInicio()
+  await screen.findByText('Vendiste hoy')
+
+  expect(screen.queryByText('Seguí con la configuración')).not.toBeInTheDocument()
+})
+
+test('tapping the finish notice sends advance, and "Listo" opens only from an answer with over: true', async () => {
+  advanced = { ...FINISH, over: true, resume: null }
+  stubFetch(PANEL, [{ current_price: { id: 1 } }], { status: null }, FINISH)
+  renderInicio()
+
+  await userEvent.click(await screen.findByRole('button', { name: /Seguí con la configuración/ }))
+
+  expect(await screen.findByText('Listo listo=true')).toBeInTheDocument()
+  expect(calls).toEqual(['GET /onboarding-progress', 'POST /onboarding-progress/advance'])
+})
+
+test('tapping the finish notice when advance answers over: false does not draw "Listo"', async () => {
+  advanced = { ...MID_ONBOARDING }
+  stubFetch(PANEL, [{ current_price: { id: 1 } }], { status: null }, FINISH)
+  renderInicio()
+
+  await userEvent.click(await screen.findByRole('button', { name: /Seguí con la configuración/ }))
+
+  expect(await screen.findByText('paso stock')).toBeInTheDocument()
+  expect(screen.queryByText(/Listo listo/)).not.toBeInTheDocument()
 })

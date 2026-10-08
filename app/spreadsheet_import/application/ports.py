@@ -22,6 +22,7 @@ from datetime import date, datetime
 from typing import Protocol
 
 from app.shared.grams import Grams
+from app.shared.pricing_settings import PricingSettings
 from app.shared.transaction import Transaction
 from app.spreadsheet_import.domain.plan import OnTheSpotMethod
 from app.spreadsheet_import.domain.rows import (
@@ -127,8 +128,28 @@ class VarietiesImport(Protocol):
         ...
 
     def write_price_entry(
-        self, variety_id: int, row: PriceHistoryRow, transaction: Transaction
-    ) -> None: ...
+        self,
+        variety_id: int,
+        row: PriceHistoryRow,
+        transaction: Transaction,
+        *,
+        with_vip_price: bool = True,
+    ) -> None:
+        """Store the entry as the sheet says. `with_vip_price` is whether the import
+        leaves Clientes VIP on: only then does an entry with a bulk price carry
+        VIP price = bulk price (a rule that is off stores nothing, docs/adr/0034)."""
+        ...
+
+
+class PricingSettingsImport(Protocol):
+    """The business's two pricing switches, read once at planning and switched on by
+    the write. It can never turn one off (docs/adr/0034)."""
+
+    def current(self) -> PricingSettings: ...
+
+    def switch_on(self, bulk: bool, vip: bool) -> None:
+        """Store `stored OR given` for each switch."""
+        ...
 
 
 class StockImport(Protocol):
@@ -238,10 +259,12 @@ class SalesImport(Protocol):
         variety_keys: Mapping[str, str],
         sales: Sequence[SaleCheckInput],
         today: date,
+        settings: PricingSettings,
     ) -> Sequence[SaleCheck]:
         """One `SaleCheck` per entry of `sales`, in the same order, batched so
         sales' adapter builds its `PlannedPriceBook` once per run from the plain
-        `price_history` rows rather than once per row."""
+        `price_history` rows rather than once per row. `settings` are the switches the
+        import will leave: every row is priced with them."""
         ...
 
     def write_sale(
@@ -252,9 +275,10 @@ class SalesImport(Protocol):
         recorded_at: datetime,
         today: date,
         transaction: Transaction,
+        settings: PricingSettings,
     ) -> int:
         """Record the sale and its on-the-spot payment, if any; return the stored
-        total."""
+        total, priced with `settings` (the switches the import leaves)."""
         ...
 
 
@@ -274,4 +298,14 @@ class BusinessDirectory(Protocol):
     def name_of(self, business_id: int) -> str | None:
         """`None` when there is no such business; the refusal that stops the run
         before any sheet is read."""
+        ...
+
+
+class OnboardingEnding(Protocol):
+    """The Onboarding's end (docs/adr/0036): a successful import ends it. Nothing else
+    of the Onboarding is touched, and eligibility never looks at its state."""
+
+    def imported(self, at: datetime, transaction: Transaction) -> None:
+        """Ends this business's Onboarding at `at` while it is open; does nothing when
+        it is over already or the business was never offered one. Never commits."""
         ...

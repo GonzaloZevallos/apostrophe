@@ -37,15 +37,15 @@ const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10
 const VARIETY_ROW = {
   id: 1,
   name: '24K Gold',
-  current_price: { id: 3, effective_from: '2026-09-25', list_price: 11000, bulk_price: 10000, bulk_minimum: 10 },
+  current_price: { id: 3, effective_from: '2026-09-25', list_price: 11000, bulk_price: 10000, bulk_minimum: 10, vip_price: 9000 },
 }
 const NO_PRICE_ROW = { id: 1, name: '24K Gold', current_price: null }
 
 const PRICES = [
-  { id: 4, effective_from: '2026-10-01', list_price: 12000, bulk_price: null, bulk_minimum: null },
-  { id: 3, effective_from: '2026-09-25', list_price: 11000, bulk_price: 10000, bulk_minimum: 10 },
-  { id: 2, effective_from: '2026-09-01', list_price: 10500, bulk_price: null, bulk_minimum: null },
-  { id: 1, effective_from: '2026-07-05', list_price: 9800, bulk_price: null, bulk_minimum: null },
+  { id: 4, effective_from: '2026-10-01', list_price: 12000, bulk_price: null, bulk_minimum: null, vip_price: null },
+  { id: 3, effective_from: '2026-09-25', list_price: 11000, bulk_price: 10000, bulk_minimum: 10, vip_price: 9000 },
+  { id: 2, effective_from: '2026-09-01', list_price: 10500, bulk_price: null, bulk_minimum: null, vip_price: null },
+  { id: 1, effective_from: '2026-07-05', list_price: 9800, bulk_price: null, bulk_minimum: null, vip_price: null },
 ]
 
 function entry(id: number, varietyId: number, date: string, grams: number) {
@@ -96,6 +96,7 @@ function defaults(): Answers {
     'GET /varieties/1/prices': () => json(200, PRICES),
     'GET /stock': () => json(200, stockOf(STOCK_ROW)),
     'GET /catalog': () => json(200, CATALOG),
+    'GET /pricing-settings': () => json(200, { is_bulk_pricing: true, is_vip_customers: true }),
     'GET /stock/varieties/1/movements': () =>
       json(
         200,
@@ -333,6 +334,45 @@ describe('the actions and the sections', () => {
     expect(inside.getByRole('link', { name: 'Ver todas' })).toHaveAttribute('href', pathTo(VARIETY_PRICES, { id: 1 }))
   })
 
+
+  test('Precios follows the switches: each rule shows only while it is on, and comes back when on again', async () => {
+    renderPage(pathTo(VARIETY, { id: 1 }), {
+      'GET /pricing-settings': () => json(200, { is_bulk_pricing: false, is_vip_customers: true }),
+      'GET /varieties/1/prices': () =>
+        json(200, [{ ...PRICES[1], vip_price: 9000 }, { ...PRICES[0], vip_price: null }]),
+    })
+
+    const section = (await screen.findByRole('heading', { name: 'Precios' })).closest('section')
+    const inside = within(section as HTMLElement)
+    expect(await inside.findByText('Precio VIP · $ 9.000')).toBeInTheDocument()
+    expect(inside.queryByText(/Desde/)).not.toBeInTheDocument()
+  })
+
+  test('Precios shows no VIP price while Clientes VIP is off', async () => {
+    renderPage(pathTo(VARIETY, { id: 1 }), {
+      'GET /pricing-settings': () => json(200, { is_bulk_pricing: true, is_vip_customers: false }),
+    })
+
+    const section = (await screen.findByRole('heading', { name: 'Precios' })).closest('section')
+    const inside = within(section as HTMLElement)
+    expect(await inside.findByText('Desde 10 g · $ 10.000')).toBeInTheDocument()
+    expect(inside.queryByText(/VIP/)).not.toBeInTheDocument()
+  })
+
+  test("an archived variety's Precios follows the switches too, read-only", async () => {
+    renderPage(pathTo(VARIETY, { id: 1 }), {
+      'GET /varieties/1': () => json(200, { ...VARIETY_ROW, archived: true }),
+      'GET /stock?archived=true': () => json(200, stockOf(STOCK_ROW)),
+      'GET /pricing-settings': () => json(200, { is_bulk_pricing: true, is_vip_customers: false }),
+      'GET /varieties/1/prices': () => json(200, [{ ...PRICES[1], vip_price: 9000 }, PRICES[0]]),
+    })
+
+    const section = (await screen.findByRole('heading', { name: 'Precios' })).closest('section')
+    const inside = within(section as HTMLElement)
+    expect(await inside.findAllByText(/Rige desde/)).not.toHaveLength(0)
+    expect(inside.queryByText(/VIP/)).not.toBeInTheDocument()
+    expect(inside.queryByRole('button', { name: 'Borrar este precio' })).toBeNull()
+  })
   test('only those two sections carry "Ver todas"', async () => {
     renderPage(VARIETY_ONE)
 

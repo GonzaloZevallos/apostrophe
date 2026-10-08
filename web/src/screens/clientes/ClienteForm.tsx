@@ -37,6 +37,7 @@ import {
   registerCustomer,
 } from '../../api/customers'
 import { invalidateResource, keys } from '../../api/keys'
+import { useIsVipCustomers } from '../../api/pricingSettings'
 import { isGone, resolveOverride, type RefusalCode } from '../../api/refusals'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import { toast } from '../../components/feedback'
@@ -122,6 +123,7 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
   const queryClient = useQueryClient()
   const viewport = useViewport()
   const flash = useFlash()
+  const vipCustomers = useIsVipCustomers()
 
   const [name, setName] = useState(initial?.name ?? '')
   const [phone, setPhone] = useState(initial?.phone ?? '')
@@ -222,6 +224,7 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
             }}
             nameError={nameError}
             phoneError={phoneError}
+            showVip={vipCustomers}
           />
           {formError !== null && (
             <span className="campo__error" role="alert">

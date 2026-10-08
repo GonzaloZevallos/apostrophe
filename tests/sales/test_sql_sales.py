@@ -19,8 +19,10 @@ from app.sales.adapters.sql_sales import SqlSales
 from app.sales.domain.pricing import PriceQuote, PricingRule
 from app.sales.domain.sale import CustomerAlreadyAssigned, LineRequest, PaymentMethod, Sale
 from app.shared.grams import Grams
+from app.shared.pricing_settings import PricingSettings
 from app.varieties.adapters.tables import VarietyRow
 
+BOTH_ON = PricingSettings(is_bulk_pricing=True, is_vip_customers=True)
 TODAY = date(2026, 6, 15)
 RECORDED_AT = datetime(2026, 6, 15, 12, 0, tzinfo=UTC)
 QUOTE = PriceQuote(list_price=1_000)
@@ -67,6 +69,7 @@ def _sale(
         today=TODAY,
         customer_id=customer_id,
         customer=None,
+        settings=BOTH_ON,
         shipping_charged=100,
         note="a note",
         lines=[LineRequest(variety_id=variety_id, grams=grams, quote=QUOTE)],
@@ -378,6 +381,7 @@ def test_list_views_reads_exactly_two_statements_whatever_the_number_of_sales(
                 today=TODAY,
                 customer_id=None,
                 customer=None,
+                settings=BOTH_ON,
                 shipping_charged=0,
                 note=None,
                 lines=two_lines,

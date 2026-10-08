@@ -19,6 +19,7 @@ import {
   type ScreenId,
   type Viewport,
 } from "./routes";
+import OnboardingLayout from "./screens/onboarding/OnboardingLayout";
 import Shell from "./shell/Shell";
 
 const VIEWPORTS: Viewport[] = ["phone", "computer"];
@@ -86,6 +87,7 @@ const EXPECTED: Record<ScreenId, Expected> = {
   },
   "settings-business": expectation("form", "settings", SETTINGS_PLACE),
   "settings-users": expectation("form", "settings", SETTINGS_PLACE),
+  "settings-prices": expectation("form", "settings", SETTINGS_PLACE),
   "settings-integrations": expectation("form", "settings", SETTINGS_PLACE),
   "settings-catalog-message": expectation("form", "settings", SETTINGS_PLACE),
   "settings-expense-categories": expectation(
@@ -95,6 +97,15 @@ const EXPECTED: Record<ScreenId, Expected> = {
   ),
   "settings-appearance": expectation("form", "settings", SETTINGS_PLACE),
   "settings-account": expectation("form", "settings", SETTINGS_PLACE),
+  // The Onboarding's steps and "Listo": forms whose parent is Inicio (onboarding.md).
+  onboarding: expectation("form", "home", HOME_PLACE),
+  "onboarding-variety": expectation("form", "home", HOME_PLACE),
+  "onboarding-stock": expectation("form", "home", HOME_PLACE),
+  "onboarding-catalog-message": expectation("form", "home", HOME_PLACE),
+  "onboarding-bot": expectation("form", "home", HOME_PLACE),
+  "onboarding-partner": expectation("form", "home", HOME_PLACE),
+  "onboarding-categories": expectation("form", "home", HOME_PLACE),
+  "onboarding-done": expectation("form", "home", HOME_PLACE),
 };
 
 const ids = SCREENS.map((entry) => entry.id);
@@ -155,18 +166,24 @@ describe("parentOf and placeOf, every screen on both viewports", () => {
   });
 });
 
-/** Every leaf of the route table, with whether it sits under `Shell`. */
+/** Every leaf of the route table, with whether it sits under `Shell` or under the
+ * Onboarding's own frame, `OnboardingLayout`. */
 function leaves(
   table: readonly RouteObject[],
   underShell: boolean,
-): { route: RouteObject; underShell: boolean }[] {
+  underOnboarding = false,
+): { route: RouteObject; underShell: boolean; underOnboarding: boolean }[] {
   return table.flatMap((route) => {
     const shell =
       underShell ||
       (isValidElement(route.element) && route.element.type === Shell);
+    const onboarding =
+      underOnboarding ||
+      (isValidElement(route.element) &&
+        route.element.type === OnboardingLayout);
     return route.children === undefined
-      ? [{ route, underShell: shell }]
-      : leaves(route.children, shell);
+      ? [{ route, underShell: shell, underOnboarding: onboarding }]
+      : leaves(route.children, shell, onboarding);
   });
 }
 
@@ -180,8 +197,8 @@ function screenIdOf(route: RouteObject): unknown {
 describe("the router against the registry", () => {
   const all = leaves(router.routes, false);
 
-  test("every leaf under Shell is a registered screen at its registered path", () => {
-    const inShell = all.filter((leaf) => leaf.underShell);
+  test("every leaf under Shell or OnboardingLayout is a registered screen at its registered path", () => {
+    const inShell = all.filter((leaf) => leaf.underShell || leaf.underOnboarding);
     expect(inShell.map((leaf) => screenIdOf(leaf.route)).sort()).toEqual(
       [...ids].sort(),
     );
@@ -195,13 +212,31 @@ describe("the router against the registry", () => {
 
   test("every other leaf is a declared outside route, and none is both", () => {
     const outsidePaths = OUTSIDE.map((entry) => entry.path);
-    const elsewhere = all.filter((leaf) => !leaf.underShell);
+    const elsewhere = all.filter(
+      (leaf) => !leaf.underShell && !leaf.underOnboarding,
+    );
     expect(elsewhere.map((leaf) => leaf.route.path).sort()).toEqual(
       [...outsidePaths].sort(),
     );
     for (const { route } of elsewhere)
       expect(screenIdOf(route)).toBeUndefined();
     for (const entry of SCREENS) expect(outsidePaths).not.toContain(entry.path);
+  });
+
+  test("the Onboarding's screens, and only they, are outside Shell: no bar, no rail, no \"+ Nueva venta\"", () => {
+    for (const leaf of all.filter((candidate) => candidate.underOnboarding)) {
+      expect(leaf.underShell).toBe(false);
+      expect(routes.ONBOARDING_SCREENS.has(screenIdOf(leaf.route) as ScreenId)).toBe(true);
+    }
+    for (const id of routes.ONBOARDING_SCREENS) {
+      const entry = SCREENS.find((candidate) => candidate.id === id);
+      const matches = matchRoutes(router.routes, entry?.path ?? "") ?? [];
+      const types = matches.map((match) =>
+        isValidElement(match.route.element) ? match.route.element.type : null,
+      );
+      expect(types, id).not.toContain(Shell);
+      expect(types, id).toContain(OnboardingLayout);
+    }
   });
 
   test("registered paths and ids are unique", () => {
@@ -337,9 +372,17 @@ const NOT_BUILT = [
   "InicioPrimeraVezCompu",
 ];
 
+/** Screens compare.sh reaches by steps from another route: "Listo" opens only from the write
+ * that ended the Onboarding, never by loading its own path (onboarding.md). */
+const REACHED_BY_STEPS = ["OnboardingListo"];
+
 describe("screens.json against the English routes", () => {
   test("route is path for every screen, but the ones not built", () => {
     const wrong = screensJson.screens.flatMap((entry) => {
+      if (REACHED_BY_STEPS.includes(entry.screen))
+        return "steps" in entry && entry.route !== null
+          ? []
+          : [`${entry.screen}: reached by steps, so it needs a route and steps`];
       if (NOT_BUILT.includes(entry.screen))
         return entry.route === null
           ? []

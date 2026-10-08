@@ -1,6 +1,10 @@
 # Customers
 
-The people a business sells to, each identified within that business by their own record, and seen only by that business (ADR-0004). The name is how a user recognises a customer; the phone number is optional contact data. Sales and payments build on this capability: every sale and every debt belongs to one customer here, and a VIP customer gets the bulk price on each sale. A customer's balance, owing since and account are defined in `payments.md` and shown on their card and in Clientes' Te deben section.
+The people a business sells to, each identified within that business by their own record, and seen only by that business (ADR-0004). The name is how a user recognises a customer; the phone number is optional contact data.
+
+Sales and payments build on this capability: every sale and every debt belongs to one customer here. A VIP customer pays a variety's VIP price when it has one and it is lower than what any other rule gives. This applies only in a business with Clientes VIP switched on (pricing-settings.md, sales.md).
+
+A customer's balance, owing since and account are defined in `payments.md` and shown on their card and in Clientes' Te deben section.
 
 ## Jobs
 
@@ -8,7 +12,9 @@ The people a business sells to, each identified within that business by their ow
 
 **When** I register a customer (from Clientes, in the middle of a sale, or through the one-time spreadsheet import) and I don't have their phone number, **I want** to save them under their name anyway and add the number later if I ever get it, **so I can** record every sale and every debt against the person who actually owes it, without inventing a number or keeping that person outside the app.
 
-VIP and fixing a customer's details serve the same jobs. A customer marked VIP once gets the bulk price on every sale, so the seller never has to remember who is a friend.
+VIP and fixing a customer's details serve the same jobs. In a business with VIP customers, a customer marked VIP once is charged their VIP price on every sale where it is the lowest, so the seller never has to remember who is a friend.
+
+**When** I set up how my business prices, record a variety's price or hand over an order, **I want** the app to use only the pricing rules my business has (a bulk price if I sell by quantity, and a VIP price I set per variety if I have VIP customers), **so I can** charge every customer exactly what I mean to without typing a special price by hand, without seeing fields that don't apply to me, and without anyone's price changing by surprise. (Served here by the VIP mark following Clientes VIP; defined in pricing-settings.md.)
 
 **When** I run my business from my phone, **I want to** keep my customers up to date from the phone, **so I can** stop keeping them in the spreadsheet and have real data in place when sales arrive.
 
@@ -29,6 +35,9 @@ Success criteria:
    - Normalisation, the malformed-number refusal, uniqueness (on registering and on editing), search by number and refusals that never echo the number or the name all stay as they are.
    - A number can be removed from a customer, and their sales, payments and balance stay with them.
 7. **No channel.** A customer has no channel (Telegram or WhatsApp): not in the API, the forms, the card or the database. Removing it changes nothing else about any customer.
+8. **VIP follows the switch and is never lost.**
+   - While Clientes VIP is off, no VIP mark or field shows on any customer screen.
+   - Switched back on, every stored VIP mark is back as it was, including for customers edited while it was off.
 
 ## Behaviour
 
@@ -38,6 +47,11 @@ Success criteria:
 - **VIP**: yes or no, `false` by default. It can be edited.
   - A change applies to sales recorded from then on; sales already recorded keep their stored prices (ADR-0003).
   - In the Ventas list, a sale's VIP badge shows the customer's current status, not how that sale was priced (sales.md).
+  - It counts only while Clientes VIP is on (pricing-settings.md). How a VIP's line is priced is sales.md's.
+  - **While Clientes VIP is off**:
+    - the mark stays stored;
+    - saving a customer never changes it, whatever the request sends;
+    - a customer created then is not VIP.
 - **Phone number**: optional, unique within the business among customers who have one, stored in one international form.
   - **None**: a missing value, `null`, or one blank after trimming means the customer has no number. It is stored as no number, never as an empty string.
   - **With `+` and a country code other than 54**: a foreign number. It is stored as `+` and its digits, and must be 8 to 15 digits long.
@@ -47,7 +61,7 @@ Success criteria:
   - **Refused**: a non-blank value that fits none of these rules, such as too short, too long, or without an area code. The refusal reads like "that doesn't look like a phone number with its area code" and never repeats what was typed.
   - `11 2345-6789`, `011 15 2345-6789`, `+54 9 11 2345 6789`, `5491123456789` and `541123456789` all become `+5491123456789`.
 - **Uniqueness**: a number already used by another customer of the same business is refused, both on register and on edit. The refusal never repeats the number or the name. Any number of customers may have no number. Numbers in other businesses never collide and are never revealed.
-- **Edit**: name, phone number and VIP.
+- **Edit**: name, phone number and VIP (VIP only while Clientes VIP is on).
   - The phone number goes through the same normalisation, uniqueness check and refusal as when registering.
   - It can be cleared, leaving the customer with no number.
   - Sales, payments and balance belong to the customer, not to the number, so they stay attached when it changes or is removed.
@@ -74,13 +88,15 @@ Success criteria:
 - **Every row of a customer who owes**, in either section and in search results, shows the amount in amber with "te debe desde dd/mm" under it, never as a chip, and a "Cobrar" button (accessible name "Cobrar a <name>") that opens Registrar cobro with that customer already chosen. Tapping the rest of the row opens the customer's card.
 - **A customer in credit** shows "A favor $ X" in the neutral/blue treatment.
 - **A customer without a number** shows nothing in the number's place: no dash, no empty label, no "Sin teléfono".
+- **The VIP mark** shows on the list and the card only while Clientes VIP is on. While it is off, nothing shows in its place.
 - **Search** by part of the name or of the phone number: while a query is typed, both sections collapse into one flat list sorted by name, matched as above. Clearing the query brings the two sections back.
 - **A customer's card** (`ClienteFicha`), a card with "‹ Clientes":
-  - phone (only when there is one; with none, the line is left out entirely) and VIP;
+  - phone (only when there is one; with none, the line is left out entirely) and VIP (only while Clientes VIP is on);
   - "Te debe $ X desde dd/mm" or "A favor $ X", the account, "Registrar cobro" when the balance is above $0, and "Borrar cobro" on later payments (`payments.md`);
   - **"Nueva venta a <name>"**, which opens Nueva venta with that customer already chosen (sales.md). The card shows no "+ Nueva venta".
   - Adding a number later is the card's ordinary edit; there is no prompt to fill it in.
-- **Add and edit**: the one "Nuevo cliente" form of `NuevaVentaCliente`, the same from Clientes and from "Elegir cliente" in Nueva venta. Its fields are "Nombre" (the only one marked required), the phone (optional, and it can be cleared when editing) and VIP. There is no channel field.
+- **Add and edit**: the one "Nuevo cliente" form of `NuevaVentaCliente`, the same from Clientes and from "Elegir cliente" in Nueva venta.
+  - Its fields are "Nombre" (the only one marked required), the phone (optional, and it can be cleared when editing) and VIP. VIP shows only while Clientes VIP is on. There is no channel field.
   - The same form registers a customer from inside a sale, through the "Elegir cliente" sheet, and that customer is used for the sale.
   - It is a form: "Cerrar", and a confirmation when leaving with unsaved changes.
 - **On success**, the toast "Cliente guardado". It never carries a name or a number.
@@ -104,6 +120,10 @@ Success criteria:
 - **Number removed**: clearing a customer's number keeps their sales, payments and balance unchanged, tested. (Criterion 6)
 - **Migration**: every customer's number is unchanged after the migration that made it optional, tested. (Criterion 6)
 - **No channel (criterion 7)**: after the migration that drops it, no customer answer, form, card or export carries a channel; every customer's name, number, VIP, sales, payments and balance are unchanged, tested.
+- **VIP follows the switch (criterion 8)**:
+  - front tests show no VIP mark on the list or the card, and no VIP field in the form, while Clientes VIP is off;
+  - an edit or a request sending VIP while it is off leaves the stored mark unchanged, and a customer created then is not VIP;
+  - switching it back on shows every stored mark as before.
 - **Clientes' layout**: front tests show Te deben above everyone A–Z, "Nadie te debe" with nobody owing, "Cobrar" with its accessible name on every debtor row (sections and search results), the search collapsing into one list and the sections returning when it is cleared.
 - **No curl**: the end-to-end front run adds, finds and edits a customer, adds one without a number, opens Registrar cobro from "Cobrar" with the customer chosen, and opens "Nueva venta a <name>" with that customer chosen. (Criterion 4)
 - Balance, account and Te deben figure metrics live in `payments.md`.
@@ -115,3 +135,4 @@ Success criteria:
 - A new unique key for customers.
 - A VIP filter; a filter, list, badge, sort or prompt for customers without a number.
 - A customer channel, or any replacement for it.
+- Other VIP rules (a percent off list); turning Clientes VIP on or off (pricing-settings.md).

@@ -7,7 +7,8 @@
  * they type-check under the node project, which has no JSX. `router.tsx` binds each declared
  * screen to its element (`bind`) and each public page through `outside`.
  *
- * Every screen under `Shell` is declared once with `screen()` and is exactly one `kind`:
+ * Every screen under `Shell` is declared once with `screen()` and is exactly one `kind` (the
+ * Onboarding's forms too, though `OnboardingLayout` draws them instead of `Shell`):
  *   - `root`: a place of its own (the bar or the rail marks it); shows the bar and "+ Nueva venta".
  *   - `card`: a detail; shows the bar and a "‹ parent" arrow, no "+ Nueva venta".
  *   - `form`: a form or sheet; shows neither, and closes with "Cerrar".
@@ -67,11 +68,20 @@ export type ScreenId =
   | 'settings'
   | 'settings-business'
   | 'settings-users'
+  | 'settings-prices'
   | 'settings-integrations'
   | 'settings-catalog-message'
   | 'settings-expense-categories'
   | 'settings-appearance'
   | 'settings-account'
+  | 'onboarding'
+  | 'onboarding-variety'
+  | 'onboarding-stock'
+  | 'onboarding-catalog-message'
+  | 'onboarding-bot'
+  | 'onboarding-partner'
+  | 'onboarding-categories'
+  | 'onboarding-done'
 
 /** A screen's parent: one id, or one per viewport. */
 export type Parent = ScreenId | { phone: ScreenId; computer: ScreenId }
@@ -127,11 +137,24 @@ export const ANALYSIS = '/analysis'
 export const SETTINGS = '/settings'
 export const SETTINGS_BUSINESS = '/settings/business'
 export const SETTINGS_USERS = '/settings/users'
+export const SETTINGS_PRICES = '/settings/prices'
 export const SETTINGS_INTEGRATIONS = '/settings/integrations'
 export const SETTINGS_CATALOG_MESSAGE = '/settings/catalog-message'
 export const EXPENSE_CATEGORIES = '/settings/expense-categories'
 export const SETTINGS_APPEARANCE = '/settings/appearance'
 export const SETTINGS_ACCOUNT = '/settings/account'
+
+/** The Onboarding (docs/product/onboarding.md): `/onboarding` resolves to the resume step,
+ * each step has its own path, and "Listo" is `/onboarding/done`. The API's own segment is
+ * `onboarding-progress`, so none of these is a shared route. */
+export const ONBOARDING = '/onboarding'
+export const ONBOARDING_VARIETY = '/onboarding/variety'
+export const ONBOARDING_STOCK = '/onboarding/stock'
+export const ONBOARDING_CATALOG_MESSAGE = '/onboarding/catalog-message'
+export const ONBOARDING_BOT = '/onboarding/bot'
+export const ONBOARDING_PARTNER = '/onboarding/partner'
+export const ONBOARDING_CATEGORIES = '/onboarding/categories'
+export const ONBOARDING_DONE = '/onboarding/done'
 
 /** Fills a template's `:name` segments: `pathTo(SALE, { id: 7 })` is `/ventas/7`. */
 export function pathTo(template: string, params: Readonly<Record<string, string | number>> = {}): string {
@@ -251,6 +274,7 @@ export const SCREENS: readonly Screen[] = [
   }),
   screen({ id: 'settings-business', path: SETTINGS_BUSINESS, kind: 'form', title: 'Negocio', parent: 'settings' }),
   screen({ id: 'settings-users', path: SETTINGS_USERS, kind: 'form', title: 'Usuarios', parent: 'settings' }),
+  screen({ id: 'settings-prices', path: SETTINGS_PRICES, kind: 'form', title: 'Precios', parent: 'settings' }),
   screen({
     id: 'settings-integrations',
     path: SETTINGS_INTEGRATIONS,
@@ -280,7 +304,43 @@ export const SCREENS: readonly Screen[] = [
     parent: 'settings',
   }),
   screen({ id: 'settings-account', path: SETTINGS_ACCOUNT, kind: 'form', title: 'Tu cuenta', parent: 'settings' }),
+
+  // The Onboarding's steps and "Listo" are forms whose parent is Inicio: "Cerrar" and back
+  // with no history land there. `router.tsx` draws them in `OnboardingLayout`, the
+  // Onboarding's own frame (one centred column, no bar, no rail), not in `Shell`.
+  screen({ id: 'onboarding', path: ONBOARDING, kind: 'form', title: 'Onboarding', parent: 'home' }),
+  screen({ id: 'onboarding-variety', path: ONBOARDING_VARIETY, kind: 'form', title: 'Variedad con precio', parent: 'home' }),
+  screen({ id: 'onboarding-stock', path: ONBOARDING_STOCK, kind: 'form', title: 'Stock inicial', parent: 'home' }),
+  screen({
+    id: 'onboarding-catalog-message',
+    path: ONBOARDING_CATALOG_MESSAGE,
+    kind: 'form',
+    title: 'Mensaje del catálogo',
+    parent: 'home',
+  }),
+  screen({ id: 'onboarding-bot', path: ONBOARDING_BOT, kind: 'form', title: 'Bot de Telegram', parent: 'home' }),
+  screen({ id: 'onboarding-partner', path: ONBOARDING_PARTNER, kind: 'form', title: 'Socio', parent: 'home' }),
+  screen({
+    id: 'onboarding-categories',
+    path: ONBOARDING_CATEGORIES,
+    kind: 'form',
+    title: 'Categorías de gastos',
+    parent: 'home',
+  }),
+  screen({ id: 'onboarding-done', path: ONBOARDING_DONE, kind: 'form', title: 'Listo', parent: 'home' }),
 ]
+
+/** The Onboarding's screens: drawn by `OnboardingLayout`, outside `Shell` (onboarding.md). */
+export const ONBOARDING_SCREENS: ReadonlySet<ScreenId> = new Set<ScreenId>([
+  'onboarding',
+  'onboarding-variety',
+  'onboarding-stock',
+  'onboarding-catalog-message',
+  'onboarding-bot',
+  'onboarding-partner',
+  'onboarding-categories',
+  'onboarding-done',
+])
 
 /** The public pages and the catch-all: every route outside `Shell`. No front code redirects a
  * Spanish path; the server's `LEGACY_FRONT_PATHS` does (308). */

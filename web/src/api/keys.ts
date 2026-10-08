@@ -18,6 +18,7 @@ export type Resource =
   | 'catalog'
   | 'payments'
   | 'pinnedCatalog'
+  | 'pricingSettings'
 
 const PREFIX: Record<Resource, string> = {
   me: 'me',
@@ -31,6 +32,7 @@ const PREFIX: Record<Resource, string> = {
   catalog: 'catalog',
   payments: 'payments',
   pinnedCatalog: 'pinned-catalog',
+  pricingSettings: 'pricing-settings',
 }
 
 export const keys = {
@@ -52,6 +54,9 @@ export const keys = {
   // never mark them stale, and the form's own preview never renders a value another
   // screen's cache produced.
   saleFormVarieties: (on: string) => ['sale-form', 'varieties', on] as const,
+  // The switches Nueva venta prices with, loaded beside that day's prices and frozen the same way,
+  // so a date change reloads both and a partner's change is picked up (`pricing-settings.md`).
+  saleFormPricingSettings: (on: string) => ['sale-form', 'pricing-settings', on] as const,
   saleFormCustomer: (id: string) => ['sale-form', 'customer', id] as const,
   // "Elegir cliente"'s own search (`NuevaVentaCliente.tsx`): its results are where
   // the preview's `vip` comes from once a customer is chosen, so it is frozen the
@@ -75,6 +80,9 @@ export const keys = {
   // query in one call.
   pinnedCatalog: () => [PREFIX.pinnedCatalog] as const,
   pinnedCatalogStatus: () => [PREFIX.pinnedCatalog, 'status'] as const,
+  // Read by `api/pricingSettings.ts` only (frozen the same way `catalog` is); Precios' own save
+  // sets its data directly.
+  pricingSettings: () => [PREFIX.pricingSettings] as const,
   customerAccount: (id: string) => [PREFIX.payments, 'account', id] as const,
   debtors: () => [PREFIX.payments, 'debtors'] as const,
   // "Registrar cobro"'s own preview (plan, "keys.ts"): a dry-run of the settlement,
@@ -93,6 +101,9 @@ export const keys = {
   // `Resource`/`PREFIX` system — the current mount's own fetch is always the
   // answer shown, never a write elsewhere in the app replaying a stale one.
   panel: () => ['panel'] as const,
+  // The Onboarding's one read (`api/onboarding.ts`), frozen the same way and for the same
+  // reason: outside the `Resource`/`PREFIX` system, set by its own writes.
+  onboardingProgress: () => ['onboarding-progress'] as const,
 }
 
 // A write on one resource that also stales another, beyond its own prefix (plan,

@@ -24,6 +24,7 @@
     "variety.rule_broken": { "kind": "refusal" },
     "variety.name_invalid": { "kind": "refusal" },
     "variety.price_entry_invalid": { "kind": "refusal" },
+    "variety.vip_price_not_below_list": { "kind": "refusal" },
     "variety.duplicate_effective_date": { "kind": "refusal" },
     "variety.price_entry_not_found": { "kind": "gone" },
     "grams.invalid": { "kind": "refusal" },
@@ -98,6 +99,9 @@
     "pinned_catalog.no_messages": { "kind": "refusal" },
     "pinned_catalog.several_chats": { "kind": "refusal" },
     "pinned_catalog.updates_unreadable": { "kind": "refusal" },
+    "onboarding.step_invalid": { "kind": "refusal" },
+    "onboarding.required_steps_unmet": { "kind": "refusal" },
+    "onboarding.not_found": { "kind": "gone" },
     "RequestInvalid": { "kind": "refusal" }
   },
   "frontSegments": [
@@ -111,6 +115,7 @@
     "analysis",
     "login",
     "more",
+    "onboarding",
     "settings",
     "assets",
     "fonts",

@@ -55,6 +55,7 @@ export const ICON_NAMES = [
   'categorias',
   'apariencia',
   'cuenta',
+  'hecho',
 ] as const
 
 export type NombreIcono = (typeof ICON_NAMES)[number]
@@ -204,6 +205,7 @@ const TRAZOS: Record<NombreIcono, ReactNode> = {
   cuenta: (
     <><circle cx="12" cy="12" r="9" /><circle cx="12" cy="10" r="3" /><path d="M6.2 18.2c1.2-2.3 3.2-3.4 5.8-3.4s4.6 1.1 5.8 3.4" /></>
   ),
+  hecho: <path d="m5 12.5 4.5 4.5L19 7.5" />,
 }
 
 export default function Icono({ nombre, label }: IconoProps) {

@@ -7,10 +7,12 @@ rejecting one.
 
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import date
 from decimal import Decimal
 
 from app.shared.grams import Grams
+from app.shared.pricing_settings import PricingSettings
 from app.spreadsheet_import.domain.plan import (
     ByName,
     Checks,
@@ -950,3 +952,70 @@ def test_a_sale_refusal_blocks_with_its_code() -> None:
 
     assert not plan.writable
     assert any(p.kind == "sale.no_price_that_day" for p in plan.problems)
+
+
+# -- The switches the sheet needs, and the ones the plan turns on ------------------------
+
+
+def _bulk_and_amigo_split() -> Split:
+    return _split(
+        varieties=(variety_row(7, "Variedad A"),),
+        price_history=(price_row(2, "Variedad A", date(2026, 1, 1), 1000, 800, Grams.of(10)),),
+        ventas=(venta_row(2, customer="Juana", kind="Amigo", total=1000),),
+    )
+
+
+def _bulk_and_amigo_checks() -> Checks:
+    return Checks(
+        variety_names={"Variedad A": VARIEDAD_A},
+        customers={"Juana": CustomerKey("549111")},
+        sales={SheetRef("Ventas", 2): _ok_sale(SheetRef("Ventas", 2), 1000)},
+    )
+
+
+def test_a_sheet_with_a_bulk_price_and_an_amigo_row_needs_both_switches_and_turns_both_on() -> None:
+    plan = build_plan(_bulk_and_amigo_split(), mapping(), _bulk_and_amigo_checks())
+
+    assert plan.needs == PricingSettings(is_bulk_pricing=True, is_vip_customers=True)
+    assert plan.turns_on == PricingSettings(is_bulk_pricing=True, is_vip_customers=True)
+
+
+def test_a_sheet_with_neither_needs_and_turns_on_nothing() -> None:
+    split = _split(
+        varieties=(variety_row(7, "Variedad A"),),
+        price_history=(price_row(2, "Variedad A", date(2026, 1, 1), 1000),),
+        ventas=(venta_row(2, customer="Juana", kind="Lista", total=1000),),
+    )
+    checks = Checks(
+        variety_names={"Variedad A": VARIEDAD_A},
+        customers={"Juana": CustomerKey("549111")},
+        sales={SheetRef("Ventas", 2): _ok_sale(SheetRef("Ventas", 2), 1000)},
+    )
+
+    plan = build_plan(split, mapping(), checks)
+
+    assert plan.needs == PricingSettings(is_bulk_pricing=False, is_vip_customers=False)
+    assert plan.turns_on == PricingSettings(is_bulk_pricing=False, is_vip_customers=False)
+
+
+def test_an_amigo_row_that_is_unfinished_needs_no_vip_switch() -> None:
+    split = _split(
+        varieties=(variety_row(7, "Variedad A"),),
+        ventas=(venta_row(3, customer="Juana", kind="Amigo", total="Falta pago"),),
+    )
+
+    plan = build_plan(split, mapping(), Checks(variety_names={"Variedad A": VARIEDAD_A}))
+
+    assert plan.needs.is_vip_customers is False
+
+
+def test_a_switch_already_on_in_the_stored_settings_is_not_turned_on_again() -> None:
+    checks = replace(
+        _bulk_and_amigo_checks(),
+        stored_settings=PricingSettings(is_bulk_pricing=True, is_vip_customers=False),
+    )
+
+    plan = build_plan(_bulk_and_amigo_split(), mapping(), checks)
+
+    assert plan.needs == PricingSettings(is_bulk_pricing=True, is_vip_customers=True)
+    assert plan.turns_on == PricingSettings(is_bulk_pricing=False, is_vip_customers=True)

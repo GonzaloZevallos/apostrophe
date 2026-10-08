@@ -35,7 +35,9 @@ from app.customers.adapters.import_port import CustomersImport
 from app.db import make_engine
 from app.expenses.adapters.import_port import ExpensesImport
 from app.migrations.runner import upgrade_to_head
+from app.onboarding.adapters.import_port import OnboardingEnding
 from app.payments.adapters.import_port import PaymentsImport
+from app.pricing_settings.adapters.import_port import PricingSettingsImport
 from app.sales.adapters.import_port import SalesImport
 from app.settings import Settings
 from app.spreadsheet_import.adapters import layout
@@ -115,6 +117,8 @@ def _run(args: argparse.Namespace, engine: Engine, clock: Clock, out: TextIO) ->
         customers = CustomersImport(session, args.business_id)
         sales = SalesImport(session, args.business_id)
         payments = PaymentsImport(session, args.business_id)
+        onboarding = OnboardingEnding(session, args.business_id)
+        pricing_settings = PricingSettingsImport(session, args.business_id)
 
         ineligible = has_any_records(varieties, stock, expenses, customers, sales, payments)
         if ineligible:
@@ -135,6 +139,7 @@ def _run(args: argparse.Namespace, engine: Engine, clock: Clock, out: TextIO) ->
             customers=customers,
             sales=sales,
             payments=payments,
+            pricing_settings=pricing_settings,
             today=today,
             mapping_sheet=layout.MAPPING_FILE,
             header_footer_ref=SheetRef(layout.CATALOGO_SHEET, layout.HEADER_ROW),
@@ -158,6 +163,8 @@ def _run(args: argparse.Namespace, engine: Engine, clock: Clock, out: TextIO) ->
             customers=customers,
             sales=sales,
             payments=payments,
+            onboarding=onboarding,
+            pricing_settings=pricing_settings,
             import_instant=instant,
             today=today,
         )

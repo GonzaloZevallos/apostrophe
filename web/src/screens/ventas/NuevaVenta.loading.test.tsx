@@ -48,9 +48,11 @@ beforeEach(() => {
     'fetch',
     vi.fn(
       (path: string) =>
-        new Promise<Response>((resolve) => {
-          pending.set(path, (body) => resolve(jsonResponse(body)))
-        }),
+        path === '/pricing-settings'
+          ? Promise.resolve(jsonResponse({ is_bulk_pricing: true, is_vip_customers: true }))
+          : new Promise<Response>((resolve) => {
+              pending.set(path, (body) => resolve(jsonResponse(body)))
+            }),
     ),
   )
 })

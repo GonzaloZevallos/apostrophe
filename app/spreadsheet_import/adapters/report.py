@@ -26,6 +26,18 @@ def _problem_message(kind: str) -> str:
     return f"{kind}: {hint}" if hint else kind
 
 
+def _switches_turned_on(plan: ImportPlan) -> str:
+    names = [
+        name
+        for name, on in (
+            ("Precio por cantidad", plan.turns_on.is_bulk_pricing),
+            ("Clientes VIP", plan.turns_on.is_vip_customers),
+        )
+        if on
+    ]
+    return ", ".join(names) if names else "none"
+
+
 def print_report(plan: ImportPlan, *, business_name: str, dry_run: bool, out: TextIO) -> None:
     kind = "Dry run" if dry_run else "Import"
     out.write(f"{kind}: {business_name}\n")
@@ -42,6 +54,8 @@ def print_report(plan: ImportPlan, *, business_name: str, dry_run: bool, out: Te
     out.write(f"  Customers without a phone number: {counts.customers_without_phone}\n")
     out.write(f"  Sales: {counts.sales}\n")
     out.write(f"  Payments: {counts.payments}\n")
+
+    out.write(f"Switches turned on: {_switches_turned_on(plan)}\n")
 
     if plan.problems:
         out.write("Blocking problems:\n")

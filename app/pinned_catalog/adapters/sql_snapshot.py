@@ -6,12 +6,14 @@ then closes the session — so no database session stays open while Telegram is 
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from datetime import date
 
 from sqlalchemy import select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
+from app.catalog.application.ports import CatalogPricingSettings
 from app.pinned_catalog.adapters.publishable_catalog import publishable_text
 from app.pinned_catalog.adapters.sql_settings import settings_from_row
 from app.pinned_catalog.adapters.tables import PinnedCatalogRow
@@ -43,9 +45,15 @@ def _facts_from_row(row: PinnedCatalogRow | None) -> PinFacts:
 
 
 class SqlPinSnapshots:
-    def __init__(self, engine: Engine, cipher: TokenCipher) -> None:
+    def __init__(
+        self,
+        engine: Engine,
+        cipher: TokenCipher,
+        pricing_settings: Callable[[Session, int], CatalogPricingSettings],
+    ) -> None:
         self._engine = engine
         self._cipher = cipher
+        self._pricing_settings = pricing_settings
 
     def snapshot(self, business_id: int, today: date) -> PinSnapshot:
         with Session(self._engine) as session:
@@ -54,5 +62,5 @@ class SqlPinSnapshots:
             )
             settings = settings_from_row(row, self._cipher)
             facts = _facts_from_row(row)
-            text = publishable_text(session, business_id, today)
+            text = publishable_text(session, business_id, today, self._pricing_settings)
             return PinSnapshot(settings=settings, pin=facts, text=text)

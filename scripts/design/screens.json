@@ -1,5 +1,5 @@
 {
-  "_": "Each design screen and how to reach the same state in the built app (agentic-system ADR-0040, Tech Lead's plan for GH-58). route: where the built app shows a screen of that name today, even an old version of it; null only when no screen of that name is built yet. path: the decided English route (navigation.md). A build issue sets route = path in the diff that ships the screen. A redrawn screen's comparison deliberately shows the old-built screen next to the new design: that mismatch is expected until its build issue lands. Each subtask adds a screen's entry only in the diff that creates its .dc.html; only the chrome subtask removes entries, together with the file. {name} placeholders come from the sample app's facts. Steps: click (exact text), fill (label + value, which takes {email} and the ids too), wait (text). tema: 'oscuro' forces the dark theme on the built capture via data-tema, the only value the app recognises (the system's own color scheme never picks it; both captures always run with colorScheme: 'light'). screen is the unique key of an entry: its PNG name, its --only key and its heading; assertScreens refuses a repeat. design (optional) names the file pantallas/<design>.dc.html to compare against, default screen; it must exist. section (optional) is the exact label text of one block inside a design file that draws several states: the design column is cropped to that block, and the text must occur in the file. Steps also take { offline: true }: once the screen has loaded and settled it takes the browser offline, with no reload. Dark twins (EntrarOscuro, ResetOscuro) are compared against the light design file, so they check structure only; their dark colors are checked by eye against tokens.css. Reset has no design file of its own: it reuses Invitacion's. EstadosGone has no section because no label in Estados.dc.html draws 'Eso ya no está.': the whole file is the design column. Checked by eye, with the steps written in the PR, because no entry here can reach them: loading, the server-error retry, the transient notices ('Eso ya no está. La lista ya está al día.', 'Venta guardada' with Deshacer) and the empty lists. Main and Componentes are the design system itself, not screens, so they have no entry. registry lists every screen of the front, whether or not it has a design file: each is its path, its kind (the navigation.md kind: root, card or form) and its parent's path (a root has none; computer_parent is the parent on a computer when it differs from the phone's), and a kind or a parent changes here and in web/src/routes.ts in the same diff. A screen with a design file is also in screens, which says only where it is built; a screen with none (the customer form, a stock entry) is only here. Every path of screens and of registry is a front path the server may serve or redirect to (tests/test_static_spa.py), `{name}` read as `{id}`.",
+  "_": "Each design screen and how to reach the same state in the built app (agentic-system ADR-0040, Tech Lead's plan for GH-58). route: where the built app shows a screen of that name today, even an old version of it; null only when no screen of that name is built yet. path: the decided English route (navigation.md). A build issue sets route = path in the diff that ships the screen. A redrawn screen's comparison deliberately shows the old-built screen next to the new design: that mismatch is expected until its build issue lands. Each subtask adds a screen's entry only in the diff that creates its .dc.html; only the chrome subtask removes entries, together with the file. {name} placeholders come from the sample app's facts. Steps: click (exact text), fill (label + value, which takes {email} and the ids too), wait (text). tema: 'oscuro' forces the dark theme on the built capture via data-tema, the only value the app recognises (the system's own color scheme never picks it; both captures always run with colorScheme: 'light'). screen is the unique key of an entry: its PNG name, its --only key and its heading; assertScreens refuses a repeat. design (optional) names the file pantallas/<design>.dc.html to compare against, default screen; it must exist. section (optional) is the exact label text of one block inside a design file that draws several states: the design column is cropped to that block, and the text must occur in the file. Steps also take { offline: true }: once the screen has loaded and settled it takes the browser offline, with no reload. An Estados<State> entry may compare one block of an existing .dc.html with that state reached on an existing screen through steps, added in the diff that needs the comparison (EstadosConfirmar opens the delete dialog and never confirms it). Dark twins (EntrarOscuro, ResetOscuro) are compared against the light design file, so they check structure only; their dark colors are checked by eye against tokens.css. Reset has no design file of its own: it reuses Invitacion's. EstadosGone has no section because no label in Estados.dc.html draws 'Eso ya no está.': the whole file is the design column. Checked by eye, with the steps written in the PR, because no entry here can reach them: loading, the server-error retry, the transient notices ('Eso ya no está. La lista ya está al día.', 'Venta guardada' with Deshacer) and the empty lists. Main and Componentes are the design system itself, not screens, so they have no entry. registry lists every screen of the front, whether or not it has a design file: each is its path, its kind (the navigation.md kind: root, card or form) and its parent's path (a root has none; computer_parent is the parent on a computer when it differs from the phone's), and a kind or a parent changes here and in web/src/routes.ts in the same diff. A screen with a design file is also in screens, which says only where it is built; a screen with none (the customer form, a stock entry) is only here. Every path of screens and of registry is a front path the server may serve or redirect to (tests/test_static_spa.py), `{name}` read as `{id}`.",
   "screens": [
     { "screen": "Entrar", "route": "/login", "path": "/login", "signed_out": true,
       "steps": [
@@ -77,6 +77,8 @@
     { "screen": "ConfiguracionNegocioCompu", "route": "/settings/business", "path": "/settings/business", "viewport": [1280, 920] },
     { "screen": "ConfiguracionUsuarios", "route": "/settings/users", "path": "/settings/users" },
     { "screen": "ConfiguracionUsuariosCompu", "route": "/settings/users", "path": "/settings/users", "viewport": [1280, 920] },
+    { "screen": "ConfiguracionPrecios", "route": "/settings/prices", "path": "/settings/prices" },
+    { "screen": "ConfiguracionPreciosCompu", "route": "/settings/prices", "path": "/settings/prices", "viewport": [1280, 920] },
     { "screen": "ConfiguracionIntegraciones", "route": "/settings/integrations", "path": "/settings/integrations" },
     { "screen": "ConfiguracionIntegracionesCompu", "route": "/settings/integrations", "path": "/settings/integrations", "viewport": [1280, 920] },
     { "screen": "ConfiguracionMensaje", "route": "/settings/catalog-message", "path": "/settings/catalog-message" },
@@ -87,11 +89,27 @@
     { "screen": "ConfiguracionAparienciaCompu", "route": "/settings/appearance", "path": "/settings/appearance", "viewport": [1280, 920] },
     { "screen": "ConfiguracionCuenta", "route": "/settings/account", "path": "/settings/account" },
     { "screen": "ConfiguracionCuentaCompu", "route": "/settings/account", "path": "/settings/account", "viewport": [1280, 920] },
+    { "screen": "OnboardingVariedad", "route": "/onboarding/variety", "path": "/onboarding/variety" },
+    { "screen": "OnboardingStock", "route": "/onboarding/stock", "path": "/onboarding/stock" },
+    { "screen": "OnboardingMensaje", "route": "/onboarding/catalog-message", "path": "/onboarding/catalog-message" },
+    { "screen": "OnboardingBot", "route": "/onboarding/bot", "path": "/onboarding/bot" },
+    { "screen": "OnboardingSocio", "route": "/onboarding/partner", "path": "/onboarding/partner" },
+    { "screen": "OnboardingCategorias", "route": "/onboarding/categories", "path": "/onboarding/categories" },
+    { "screen": "OnboardingVariedadOscuro", "design": "OnboardingVariedad", "route": "/onboarding/variety", "path": "/onboarding/variety", "tema": "oscuro" },
+    { "screen": "OnboardingStockOscuro", "design": "OnboardingStock", "route": "/onboarding/stock", "path": "/onboarding/stock", "tema": "oscuro" },
+    { "screen": "OnboardingMensajeOscuro", "design": "OnboardingMensaje", "route": "/onboarding/catalog-message", "path": "/onboarding/catalog-message", "tema": "oscuro" },
+    { "screen": "OnboardingBotOscuro", "design": "OnboardingBot", "route": "/onboarding/bot", "path": "/onboarding/bot", "tema": "oscuro" },
+    { "screen": "OnboardingSocioOscuro", "design": "OnboardingSocio", "route": "/onboarding/partner", "path": "/onboarding/partner", "tema": "oscuro" },
+    { "screen": "OnboardingCategoriasOscuro", "design": "OnboardingCategorias", "route": "/onboarding/categories", "path": "/onboarding/categories", "tema": "oscuro" },
+    { "screen": "OnboardingListo", "route": "/onboarding/categories", "path": "/onboarding/done",
+      "steps": [{ "click": "Saltar el resto" }, { "wait": "Esto quedó armado en tu negocio." }] },
     { "screen": "EstadosSinConexion", "design": "Estados", "section": "Sin conexión", "route": "/sales", "path": "/sales",
       "steps": [{ "offline": true }, { "wait": "Te quedaste sin internet" }] },
     { "screen": "EstadosSinConexionCompu", "design": "Estados", "section": "Sin conexión", "route": "/sales", "path": "/sales", "viewport": [1280, 920],
       "steps": [{ "offline": true }, { "wait": "Te quedaste sin internet" }] },
-    { "screen": "EstadosGone", "design": "Estados", "route": "/sales/999999", "path": "/sales/999999" }
+    { "screen": "EstadosGone", "design": "Estados", "route": "/sales/999999", "path": "/sales/999999" },
+    { "screen": "EstadosConfirmar", "design": "Estados", "section": "Antes de borrar", "route": "/sales/{owing_sale}", "path": "/sales/{owing_sale}",
+      "steps": [{ "click": "Borrar venta" }] }
   ],
   "registry": [
     { "path": "/customers/new", "kind": "form", "parent": "/customers" },
@@ -124,10 +142,19 @@
     { "path": "/settings", "kind": "card", "parent": "/more", "computer_parent": "/" },
     { "path": "/settings/business", "kind": "form", "parent": "/settings" },
     { "path": "/settings/users", "kind": "form", "parent": "/settings" },
+    { "path": "/settings/prices", "kind": "form", "parent": "/settings" },
     { "path": "/settings/integrations", "kind": "form", "parent": "/settings" },
     { "path": "/settings/catalog-message", "kind": "form", "parent": "/settings" },
     { "path": "/settings/expense-categories", "kind": "form", "parent": "/settings" },
     { "path": "/settings/appearance", "kind": "form", "parent": "/settings" },
-    { "path": "/settings/account", "kind": "form", "parent": "/settings" }
+    { "path": "/settings/account", "kind": "form", "parent": "/settings" },
+    { "path": "/onboarding", "kind": "form", "parent": "/" },
+    { "path": "/onboarding/variety", "kind": "form", "parent": "/" },
+    { "path": "/onboarding/stock", "kind": "form", "parent": "/" },
+    { "path": "/onboarding/catalog-message", "kind": "form", "parent": "/" },
+    { "path": "/onboarding/bot", "kind": "form", "parent": "/" },
+    { "path": "/onboarding/partner", "kind": "form", "parent": "/" },
+    { "path": "/onboarding/categories", "kind": "form", "parent": "/" },
+    { "path": "/onboarding/done", "kind": "form", "parent": "/" }
   ]
 }

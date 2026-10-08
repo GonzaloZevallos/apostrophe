@@ -36,6 +36,9 @@ import Gastos from './screens/Gastos'
 import Inicio from './screens/Inicio'
 import Invitacion from './screens/Invitacion'
 import Mas from './screens/Mas'
+import Listo from './screens/onboarding/Listo'
+import OnboardingLayout from './screens/onboarding/OnboardingLayout'
+import { OnboardingEntry, OnboardingStepRoute } from './screens/onboarding/OnboardingRoutes'
 import Catalogo from './screens/Catalogo'
 import ClienteFicha from './screens/clientes/ClienteFicha'
 import ClienteForm from './screens/clientes/ClienteForm'
@@ -58,6 +61,7 @@ import BusinessGroup from './screens/settings/BusinessGroup'
 import CatalogMessageGroup from './screens/settings/CatalogMessageGroup'
 import ExpenseCategoriesGroup from './screens/settings/ExpenseCategoriesGroup'
 import IntegrationsGroup from './screens/settings/IntegrationsGroup'
+import PricingGroup from './screens/settings/PricingGroup'
 import UsersGroup from './screens/settings/UsersGroup'
 import WithdrawalDetail from './screens/withdrawals/WithdrawalDetail'
 import WithdrawalFormRoute from './screens/withdrawals/WithdrawalFormRoute'
@@ -66,7 +70,17 @@ import VentaDetalle from './screens/ventas/VentaDetalle'
 import Ventas from './screens/ventas/Ventas'
 import GatedLayout from './shell/GatedLayout'
 import Shell from './shell/Shell'
-import { CATCH_ALL, HOME, INVITATION, LOGIN, RESET, SCREENS, type Screen, type ScreenId } from './routes'
+import {
+  CATCH_ALL,
+  HOME,
+  INVITATION,
+  LOGIN,
+  ONBOARDING_SCREENS,
+  RESET,
+  SCREENS,
+  type Screen,
+  type ScreenId,
+} from './routes'
 
 /** The element each declared screen renders. A screen with no element, or an element with no
  * screen, does not type-check. */
@@ -101,11 +115,20 @@ const ELEMENTS: Record<ScreenId, ReactElement> = {
   settings: <Settings />,
   'settings-business': <BusinessGroup />,
   'settings-users': <UsersGroup />,
+  'settings-prices': <PricingGroup />,
   'settings-integrations': <IntegrationsGroup />,
   'settings-catalog-message': <CatalogMessageGroup />,
   'settings-expense-categories': <ExpenseCategoriesGroup />,
   'settings-appearance': <AppearanceGroup />,
   'settings-account': <AccountGroup />,
+  onboarding: <OnboardingEntry />,
+  'onboarding-variety': <OnboardingStepRoute slug="variety" />,
+  'onboarding-stock': <OnboardingStepRoute slug="stock" />,
+  'onboarding-catalog-message': <OnboardingStepRoute slug="header_footer" />,
+  'onboarding-bot': <OnboardingStepRoute slug="bot" />,
+  'onboarding-partner': <OnboardingStepRoute slug="partner" />,
+  'onboarding-categories': <OnboardingStepRoute slug="categories" />,
+  'onboarding-done': <Listo />,
 }
 
 /** The customer screens share `ClientesLayout`, which keeps the search across them. */
@@ -131,7 +154,10 @@ function bind(entry: Screen): RouteObject {
 
 /** `Shell`'s children: every one is a `Screen` of the registry, so none is declared twice. */
 const shellChildren: RouteObject[] = [
-  ...SCREENS.filter((entry) => !WITH_CUSTOMER_SEARCH.has(entry.id) && !WITH_VARIETIES_PANES.has(entry.id)).map(bind),
+  ...SCREENS.filter(
+    (entry) =>
+      !WITH_CUSTOMER_SEARCH.has(entry.id) && !WITH_VARIETIES_PANES.has(entry.id) && !ONBOARDING_SCREENS.has(entry.id),
+  ).map(bind),
   {
     element: <VarietiesLayout />,
     children: SCREENS.filter((entry) => WITH_VARIETIES_PANES.has(entry.id)).map(bind),
@@ -151,7 +177,12 @@ export const router = createBrowserRouter([
       { path: RESET, element: <Reset /> },
       {
         element: <GatedLayout />,
-        children: [{ element: <Shell />, children: shellChildren }],
+        children: [
+          // The Onboarding's forms sit outside `Shell` on purpose: no bar, no side rail, no
+          // "+ Nueva venta"; one centred column on every viewport (onboarding.md).
+          { element: <OnboardingLayout />, children: SCREENS.filter((entry) => ONBOARDING_SCREENS.has(entry.id)).map(bind) },
+          { element: <Shell />, children: shellChildren },
+        ],
       },
       { path: CATCH_ALL, element: <Navigate to={HOME} replace /> },
     ],

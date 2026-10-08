@@ -203,6 +203,108 @@ test('the form keeps the icon and text rule, its help lines within their limits'
   await renderOpened(api({}))
 
   await screen.findByLabelText('Rige desde')
-  expect(document.querySelectorAll('[data-copy="help"]')).toHaveLength(3)
+  expect(document.querySelectorAll('[data-copy="help"]')).toHaveLength(4)
   expectIconAndTextRule(document.body, { limits: LIMITS })
+})
+
+const SETTINGS_URL = 'GET /pricing-settings'
+
+function switches(bulk: boolean, vip: boolean): Record<string, () => Response> {
+  return { [SETTINGS_URL]: () => jsonResponse(200, { is_bulk_pricing: bulk, is_vip_customers: vip }) }
+}
+
+test('with Clientes VIP on, a typed "Precio VIP" is sent beside the amounts', async () => {
+  const user = userEvent.setup()
+  const { fetchMock } = renderVarieties(
+    [pathTo(VARIETY, { id: 1 }), NEW_PATH],
+    api({ 'POST /varieties/1/prices': () => CREATED.clone() }),
+  )
+
+  await user.type(await screen.findByLabelText(/^Precio de lista/), '12000')
+  await user.type(screen.getByLabelText(/^Precio VIP/), '9000')
+  await user.click(screen.getByRole('button', { name: 'Guardá el precio' }))
+
+  await screen.findByText('Precio guardado')
+  expect(writes(fetchMock)[0]?.body).toEqual({
+    effective_from: ME.today,
+    list_price: 12000,
+    vip_price: 9000,
+  })
+})
+
+test('with Clientes VIP off the form has no "Precio VIP" and says nothing about it', async () => {
+  const user = userEvent.setup()
+  const { fetchMock } = renderVarieties(
+    [pathTo(VARIETY, { id: 1 }), NEW_PATH],
+    api({ ...switches(true, false), 'POST /varieties/1/prices': () => CREATED.clone() }),
+  )
+
+  await user.type(await screen.findByLabelText(/^Precio de lista/), '12000')
+  expect(screen.queryByLabelText(/Precio VIP/)).not.toBeInTheDocument()
+  expect(screen.queryByText(/VIP/)).not.toBeInTheDocument()
+  expect(screen.getByLabelText(/^Precio por cantidad/)).toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Guardá el precio' }))
+
+  await screen.findByText('Precio guardado')
+  expect(writes(fetchMock)[0]?.body).toEqual({ effective_from: ME.today, list_price: 12000 })
+})
+
+test('with Precio por cantidad off the form has no bulk price or minimum and says nothing about them', async () => {
+  const user = userEvent.setup()
+  const { fetchMock } = renderVarieties(
+    [pathTo(VARIETY, { id: 1 }), NEW_PATH],
+    api({ ...switches(false, true), 'POST /varieties/1/prices': () => CREATED.clone() }),
+  )
+
+  await user.type(await screen.findByLabelText(/^Precio de lista/), '12000')
+  expect(screen.queryByLabelText(/Precio por cantidad/)).not.toBeInTheDocument()
+  expect(screen.queryByLabelText(/Mínimo en gramos/)).not.toBeInTheDocument()
+  expect(screen.queryByText(/cantidad/i)).not.toBeInTheDocument()
+  expect(screen.getByLabelText(/^Precio VIP/)).toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Guardá el precio' }))
+
+  await screen.findByText('Precio guardado')
+  expect(writes(fetchMock)[0]?.body).toEqual({ effective_from: ME.today, list_price: 12000 })
+})
+
+test('with both rules off only the list price is asked for', async () => {
+  renderVarieties([pathTo(VARIETY, { id: 1 }), NEW_PATH], api(switches(false, false)))
+
+  await screen.findByLabelText(/^Precio de lista/)
+
+  expect(screen.queryByLabelText(/Precio VIP/)).not.toBeInTheDocument()
+  expect(screen.queryByLabelText(/Precio por cantidad/)).not.toBeInTheDocument()
+  expect(screen.queryByLabelText(/Mínimo en gramos/)).not.toBeInTheDocument()
+})
+
+test('a VIP price at or above list is refused inline under its field and keeps what was typed', async () => {
+  const user = userEvent.setup()
+  renderVarieties(
+    [pathTo(VARIETY, { id: 1 }), NEW_PATH],
+    api({
+      'POST /varieties/1/prices': () => jsonResponse(422, { code: 'variety.vip_price_not_below_list' }),
+    }),
+  )
+
+  await user.type(await screen.findByLabelText(/^Precio de lista/), '12000')
+  await user.type(screen.getByLabelText(/^Precio VIP/), '12000')
+  await user.click(screen.getByRole('button', { name: 'Guardá el precio' }))
+
+  const message = await screen.findByText('El precio VIP tiene que ser menor al precio de lista')
+  expect(message).toBeInTheDocument()
+  expect(message.textContent).not.toMatch(/\d/)
+  expect(screen.getByLabelText(/^Precio VIP/)).toHaveValue('12000')
+  expect(screen.getByLabelText(/^Precio de lista/)).toHaveValue('12000')
+})
+
+test('a VIP price that is not a whole amount is refused before sending', async () => {
+  const user = userEvent.setup()
+  const { fetchMock } = renderVarieties([pathTo(VARIETY, { id: 1 }), NEW_PATH], api())
+
+  await user.type(await screen.findByLabelText(/^Precio de lista/), '12000')
+  await user.type(screen.getByLabelText(/^Precio VIP/), 'abc')
+  await user.click(screen.getByRole('button', { name: 'Guardá el precio' }))
+
+  expect(await screen.findByText('Revisá los precios cargados')).toBeInTheDocument()
+  expect(writes(fetchMock)).toEqual([])
 })

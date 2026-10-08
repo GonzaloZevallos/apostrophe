@@ -2,11 +2,12 @@
  * The bar fits at 320 px with text at 130 % (PRD criterion 4, Behaviour 9), measured in a real
  * browser: jsdom lays nothing out, so the jsdom test that stood in for it measured nothing.
  *
- * Browser text zoom is not something a Playwright page can switch on, and the bar's and the
- * rail's labels are sized in px/rem of their own, so the spec does what the zoom does: it
- * measures every label's computed `font-size`, injects a stylesheet that sets it to 1.3 times
- * that baseline, asserts the scale took before it measures anything, and then asks the layout
- * (`getBoundingClientRect`, `scrollWidth <= clientWidth`) whether each label is whole.
+ * Browser text zoom is not something a Playwright page can switch on, so the spec scales the
+ * text with `helpers/textScale.ts` (every element of the bar or rail and `<html>`, as its header
+ * says), asserts the scale took before it measures anything, and then asks the layout
+ * (`getBoundingClientRect`, `scrollWidth <= clientWidth`) whether each label is whole. The bar
+ * and the rail never re-render between the scaling and the measurement, which is the one case
+ * the helper allows its two steps to be called apart.
  *
  * The bottom bar exists below 900 px and the side rail from 900 px up (`app.css`), so the bar is
  * measured on the phone at 320 px and the rail on the computer, where its own 212 px column is
@@ -15,57 +16,24 @@
 
 import { expect, test, type Page } from '@playwright/test'
 import { watchConsole } from './console.js'
+import {
+  PHONE_CONTEXT,
+  TEXT_SCALE,
+  TOLERANCE,
+  applyTextScale,
+  expectCoarsePointer,
+  expectTextScaled,
+} from './helpers/textScale.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { HOME } from '../src/routes.js'
 
 const PHONE = { width: 320, height: 700 }
 const COMPUTER = { width: 1280, height: 920 }
-const SCALE = 1.3
-/** Sub-pixel layout rounds; a label is clipped by pixels, not by a fraction of one. */
-const TOLERANCE = 0.5
+
+test.use(PHONE_CONTEXT)
 
 const BAR_LABELS = ['Inicio', 'Ventas', 'Clientes', 'Variedades', 'Más']
 const RAIL_LABELS = ['Inicio', 'Ventas', 'Clientes', 'Variedades', 'Gastos', 'Análisis']
-
-interface Scaled {
-  tag: string
-  baseline: number
-  scaled: number
-}
-
-/**
- * Tags every text-bearing element of `surface` (the surface's own links and the spans inside
- * them, the avatar included), injects a stylesheet that sets each one's `font-size` to
- * `scale` times its measured baseline, and returns what it did.
- */
-async function scaleText(page: Page, surface: string, scale: number): Promise<Scaled[]> {
-  return page.evaluate(
-    ({ surface: selector, scale: factor }) => {
-      const root = document.querySelector(selector)
-      if (root === null) throw new Error(`no ${selector}`)
-      // A scale from an earlier call is undone first, so the baseline is the real one.
-      document.querySelectorAll('style[data-fit-style]').forEach((style) => style.remove())
-      document.querySelectorAll('[data-fit]').forEach((element) => element.removeAttribute('data-fit'))
-      const targets = [...root.querySelectorAll('a, a span')]
-      const rules: string[] = []
-      const done: { tag: string; baseline: number; scaled: number }[] = []
-      targets.forEach((element, index) => {
-        const baseline = parseFloat(getComputedStyle(element).fontSize)
-        const scaled = baseline * factor
-        const tag = `fit-${index}`
-        element.setAttribute('data-fit', tag)
-        rules.push(`[data-fit="${tag}"] { font-size: ${scaled}px !important; }`)
-        done.push({ tag, baseline, scaled })
-      })
-      const style = document.createElement('style')
-      style.setAttribute('data-fit-style', '')
-      style.textContent = rules.join('\n')
-      document.head.appendChild(style)
-      return done
-    },
-    { surface, scale },
-  )
-}
 
 interface Item {
   text: string
@@ -107,21 +75,6 @@ async function measureItems(page: Page, surface: string, itemSelector: string): 
     },
     { surface, itemSelector },
   )
-}
-
-async function expectScaled(page: Page, scaled: Scaled[], scale: number): Promise<void> {
-  expect(scaled.length).toBeGreaterThan(0)
-  for (const entry of scaled) {
-    const actual = await page.evaluate(
-      (tag) => {
-        const element = document.querySelector(`[data-fit="${tag}"]`)
-        if (element === null) throw new Error(`no ${tag}`)
-        return parseFloat(getComputedStyle(element).fontSize)
-      },
-      entry.tag,
-    )
-    expect(Math.abs(actual - entry.baseline * scale), `font-size of ${entry.tag}`).toBeLessThanOrEqual(TOLERANCE)
-  }
 }
 
 /** What is wrong with the items' fit, one line each; empty when every label is whole. */
@@ -196,8 +149,9 @@ async function bottomBarProblems(page: Page, scale: number): Promise<{ problems:
   await page.goto(HOME)
   await expect(page.locator('.bar-inferior')).toBeVisible()
 
-  const scaled = await scaleText(page, '.bar-inferior', scale)
-  await expectScaled(page, scaled, scale)
+  await expectCoarsePointer(page, 'the bottom bar')
+  const scaled = await applyTextScale(page, '.bar-inferior', scale)
+  await expectTextScaled(page, scaled, scale)
 
   const items = await measureItems(page, '.bar-inferior', '.bar-inferior__item')
   const bar = await surfaceBox(page, '.bar-inferior')
@@ -218,7 +172,7 @@ test.describe.serial('bar and rail fit', () => {
   const consoleMessages: string[] = []
 
   test.beforeAll(async ({ browser }) => {
-    page = await (await browser.newContext({ viewport: PHONE })).newPage()
+    page = await (await browser.newContext({ ...PHONE_CONTEXT, viewport: PHONE })).newPage()
     watchConsole(page, consoleMessages)
     await signUpNewBusiness(page)
   })
@@ -228,7 +182,7 @@ test.describe.serial('bar and rail fit', () => {
   })
 
   test('at 320 px with text at 130 %, every bottom-bar label is whole and the active tab says so', async () => {
-    const { problems, items } = await bottomBarProblems(page, SCALE)
+    const { problems, items } = await bottomBarProblems(page, TEXT_SCALE)
 
     expect(problems).toEqual([])
     expect(items.filter((item) => item.current === 'page').map((item) => item.text)).toEqual(['Inicio'])
@@ -245,8 +199,9 @@ test.describe.serial('bar and rail fit', () => {
     await page.goto(HOME)
     await expect(page.locator('.riel-lateral')).toBeVisible()
 
-    const scaled = await scaleText(page, '.riel-lateral', SCALE)
-    await expectScaled(page, scaled, SCALE)
+    await expectCoarsePointer(page, 'the side rail')
+    const scaled = await applyTextScale(page, '.riel-lateral', TEXT_SCALE)
+    await expectTextScaled(page, scaled, TEXT_SCALE)
 
     const rail = await surfaceBox(page, '.riel-lateral')
     const items = (await measureItems(page, '.riel-lateral', '.riel-lateral__item')).filter((item) =>
@@ -266,4 +221,28 @@ test.describe.serial('bar and rail fit', () => {
     expect(items.filter((item) => item.current === 'page').map((item) => item.text)).toEqual(['Inicio'])
     expect(consoleMessages).toEqual([])
   })
+
+  test('the scaling check rejects a label that did not take the scale, and one that is gone', async () => {
+    await page.setViewportSize(PHONE)
+    await page.goto(HOME)
+    await expect(page.locator('.bar-inferior')).toBeVisible()
+
+    const stale = await applyTextScale(page, '.bar-inferior', TEXT_SCALE)
+    await page.locator('.bar-inferior a').first().evaluate((link) => link.setAttribute('style', 'font-size: 10px !important'))
+    await expect(expectTextScaled(page, stale, TEXT_SCALE)).rejects.toThrow(/font-size of the scaled elements/)
+
+    const lost = await applyTextScale(page, '.bar-inferior', TEXT_SCALE)
+    await page.locator('.bar-inferior a').first().evaluate((link) => link.removeAttribute('data-fit'))
+    await expect(expectTextScaled(page, lost, TEXT_SCALE)).rejects.toThrow(/gone/)
+    await expect(expectTextScaled(page, [], TEXT_SCALE)).rejects.toThrow()
+  })
+})
+
+test('the pointer check rejects a page whose pointer is not coarse', async ({ browser }) => {
+  // `test.use` is the default of every context, so the desktop one says so itself.
+  const context = await browser.newContext({ isMobile: false, hasTouch: false, viewport: PHONE })
+  const desktop = await context.newPage()
+  await desktop.goto('about:blank')
+  await expect(expectCoarsePointer(desktop, 'a desktop')).rejects.toThrow(/coarse pointer/)
+  await context.close()
 })

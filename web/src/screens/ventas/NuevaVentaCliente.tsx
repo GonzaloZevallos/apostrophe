@@ -23,6 +23,7 @@ import { type FormEvent, useState } from 'react'
 import { ApiError, NetworkError } from '../../api/client'
 import { type Customer, type CustomerIn, listCustomers, registerCustomer } from '../../api/customers'
 import { keys } from '../../api/keys'
+import { useIsVipCustomers } from '../../api/pricingSettings'
 import { resolveOverride, type RefusalCode } from '../../api/refusals'
 import Boton from '../../components/Boton'
 import Icono from '../../components/Icono'
@@ -62,6 +63,7 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
   // Elegir cliente is the screen's first sheet and Nuevo cliente the second (ADR-0027):
   // both are history entries, so back and "Cerrar" are the same `close()`, and a choice or a
   // saved customer leaves every sheet at once with `closeAll()`.
+  const vipCustomers = useIsVipCustomers()
   const chooser = useSheet(1)
   const creator = useSheet(2)
   const [query, setQuery] = useState('')
@@ -154,7 +156,7 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
               <span className="lista-clientes__fila-contenido">
                 <span className="lista-clientes__nombre">
                   {customer.name}
-                  {customer.vip && <span className="vip-insignia">VIP</span>}
+                  {vipCustomers && customer.vip && <span className="vip-insignia">VIP</span>}
                 </span>
                 {customer.phone !== null && (
                   <span className="lista-clientes__telefono">{customer.phone}</span>
@@ -186,6 +188,7 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
               onChange={setNewCustomer}
               nameError={nameError}
               phoneError={phoneError}
+              showVip={vipCustomers}
             />
             {formError !== null && (
               <span className="campo__error" role="alert">

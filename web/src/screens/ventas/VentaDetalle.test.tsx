@@ -342,3 +342,27 @@ test('assigning a customer a partner deleted meanwhile shows the gone notice on 
 
   expect(await screen.findByText('Eso ya no está. La lista ya está al día.')).toBeInTheDocument()
 })
+
+test('a sale keeps its recorded "VIP" and "por cantidad" badges while both pricing switches are off', async () => {
+  const line = SALE.lines[0]
+  const recorded = {
+    ...SALE,
+    customer: { id: 5, name: 'Ana Pérez', vip: true },
+    lines: [
+      { ...line, variety_id: 2, variety_name: 'Flor A', pricing_rule: 'vip' },
+      { ...line, variety_id: 3, variety_name: 'Flor B', pricing_rule: 'bulk' },
+    ],
+  }
+  vi.mocked(fetch).mockImplementation((input) =>
+    Promise.resolve(
+      input === '/pricing-settings'
+        ? jsonResponse(200, { is_bulk_pricing: false, is_vip_customers: false })
+        : jsonResponse(200, recorded),
+    ),
+  )
+  renderDetalle()
+
+  expect(await screen.findByText('Venta del 14/09')).toBeInTheDocument()
+  expect(screen.getByText('VIP')).toBeInTheDocument()
+  expect(screen.getByText('por cantidad')).toBeInTheDocument()
+})

@@ -21,6 +21,7 @@ import { ApiError, NetworkError } from '../../api/client'
 import { type Channel, getCustomer } from '../../api/customers'
 import { invalidateResource, keys } from '../../api/keys'
 import type { Me } from '../../api/me'
+import { useIsVipCustomers } from '../../api/pricingSettings'
 import {
   type AccountRow,
   type HowPaid,
@@ -47,6 +48,7 @@ import Loading from '../../components/Loading'
 import { formatDateShort } from '../../format/dates'
 import { formatMoney, formatMoneyMagnitude } from '../../format/money'
 import { formatPhone } from '../../format/phone'
+import { deleteRowIndices } from './accountRows'
 import Cobro from './Cobro'
 
 const CHANNEL_LABEL: Record<Channel, string> = {
@@ -99,6 +101,14 @@ function rowOwnAmount(row: AccountRow): string {
   return formatMoneyMagnitude(row.amount)
 }
 
+/** A row's React key, from the ids its own kind carries (never its index). A
+ * payment settles a given sale in at most one split, so `payment`+`sale` is unique. */
+function rowKey(row: AccountRow): string {
+  if (row.kind === 'sale') return `sale-${row.sale.id}`
+  if (row.kind === 'payment') return `payment-${row.payment.id}-${row.applied_to.sale_id}`
+  return `credit-${row.payment.id}`
+}
+
 export interface ClienteFichaProps {
   /** The payment route: the card with "Registrar cobro" open over it. */
   payment?: boolean
@@ -112,6 +122,7 @@ export default function ClienteFicha({ payment = false }: ClienteFichaProps) {
   const feedback = readFeedback(location.state) ?? (goneShown ? { kind: 'notice' as const, message: GONE_NOTICE } : null)
   const queryClient = useQueryClient()
   const me = useOutletContext<Me>()
+  const vipCustomers = useIsVipCustomers()
 
   const [deletedToast, setDeletedToast] = useState(false)
   const [confirmingDelete, setConfirmingDelete] = useState<
@@ -194,7 +205,8 @@ export default function ClienteFicha({ payment = false }: ClienteFichaProps) {
     )
   }
 
-  const seenPaymentIds = new Set<number>()
+  const rows = account.data?.rows ?? []
+  const deleteIndices = deleteRowIndices(rows)
 
   return (
     <main className="pantalla">
@@ -238,10 +250,12 @@ export default function ClienteFicha({ payment = false }: ClienteFichaProps) {
             <span className="campo__rotulo">Canal</span>
             <span>{data.channel !== null ? CHANNEL_LABEL[data.channel] : 'Sin canal'}</span>
           </div>
-          <div className="campo">
-            <span className="campo__rotulo">VIP</span>
-            <span>{data.vip ? 'Sí' : 'No'}</span>
-          </div>
+          {vipCustomers && (
+            <div className="campo">
+              <span className="campo__rotulo">VIP</span>
+              <span>{data.vip ? 'Sí' : 'No'}</span>
+            </div>
+          )}
         </div>
 
         {data.standing === 'owes' && (
@@ -253,18 +267,15 @@ export default function ClienteFicha({ payment = false }: ClienteFichaProps) {
         )}
 
         <div className="cuenta-cliente">
-          {(account.data?.rows ?? []).map((row, index) => {
+          {rows.map((row, index) => {
             const label = rowLabel(row)
-            const showDelete =
-              row.kind === 'payment' && !seenPaymentIds.has(row.payment.id)
-            if (row.kind === 'payment') seenPaymentIds.add(row.payment.id)
             return (
-              <div key={index} className="cuenta-cliente__fila">
+              <div key={rowKey(row)} className="cuenta-cliente__fila">
                 <span className="cuenta-cliente__fecha">{formatDateShort(row.date)}</span>
                 {label !== '' && <span>{label}</span>}
                 <span className="cuenta-cliente__monto">{rowOwnAmount(row)}</span>
                 <span className="cuenta-cliente__saldo">{rowAmount(row)}</span>
-                {showDelete && (
+                {deleteIndices.has(index) && row.kind !== 'sale' && (
                   <Boton
                     variant="icon"
                     action="delete"

@@ -4,8 +4,8 @@ price lookup inherits that business's filter.
 `PlannedPriceBook` answers the same shape from the plain `PriceHistoryRow`s of an
 import's plan phase, before anything is written: no database, no variety id, a
 caller-assigned local ordinal instead (the plan's invariant: ids inside an owner check
-are local ordinals that never leave that call). Both books share `_pricing`, so neither
-reimplements "latest on or before" — that stays `Variety.current_price`'s job alone.
+are local ordinals that never leave that call). Neither book reimplements "latest on or
+before" — that stays `Variety.current_price`'s job alone.
 """
 
 from __future__ import annotations
@@ -13,25 +13,43 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from datetime import date
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.sales.domain.pricing import BulkQuote, PriceQuote, VarietyPricing
 from app.spreadsheet_import.domain.rows import PriceHistoryRow
 from app.varieties.adapters.sql_varieties import SqlVarieties
+from app.varieties.adapters.tables import PriceEntryRow
 from app.varieties.domain.variety import PriceEntry, Variety, VarietyName, VarietyRuleBroken
 
 
 class SqlPriceBook:
     def __init__(self, session: Session, business_id: int) -> None:
+        self._session = session
+        self._business_id = business_id
         self._varieties = SqlVarieties(session, business_id)
 
     def for_variety(self, variety_id: int, day: date) -> VarietyPricing | None:
         variety = self._varieties.get(variety_id)
         # An archived variety takes no new sale line: it answers as a missing one
         # (docs/adr/0032).
-        if variety is not None and variety.is_archived:
+        if variety is None or variety.is_archived:
             return None
-        return _pricing(variety, variety_id, day)
+        entry = variety.current_price(day)
+        return VarietyPricing(
+            variety_id=variety_id, current=_quote(entry, self._vip_price_of(entry))
+        )
+
+    def _vip_price_of(self, entry: PriceEntry | None) -> int | None:
+        """The stored VIP price of the current entry, read from its row until the
+        varieties domain carries it: `None` when the entry has none."""
+        if entry is None or entry.id is None:
+            return None
+        return self._session.scalar(
+            select(PriceEntryRow.vip_price).where(
+                PriceEntryRow.id == entry.id, PriceEntryRow.business_id == self._business_id
+            )
+        )
 
 
 class PlannedPriceBook:
@@ -63,13 +81,17 @@ class PlannedPriceBook:
         }
 
     def for_variety(self, variety_id: int, day: date) -> VarietyPricing | None:
-        return _pricing(self._varieties.get(variety_id), variety_id, day)
+        return _planned_pricing(self._varieties.get(variety_id), variety_id, day)
 
 
-def _pricing(variety: Variety | None, variety_id: int, day: date) -> VarietyPricing | None:
+def _planned_pricing(variety: Variety | None, variety_id: int, day: date) -> VarietyPricing | None:
     if variety is None:
         return None
-    return VarietyPricing(variety_id=variety_id, current=_quote(variety.current_price(day)))
+    entry = variety.current_price(day)
+    # The import writes every entry with a bulk price with VIP price = bulk price
+    # (docs/adr/0034), so the plan prices it the same way.
+    vip_price = None if entry is None or entry.bulk is None else entry.bulk.price
+    return VarietyPricing(variety_id=variety_id, current=_quote(entry, vip_price))
 
 
 def _build_variety(name_source: str, rows: Sequence[PriceHistoryRow]) -> Variety:
@@ -83,8 +105,8 @@ def _build_variety(name_source: str, rows: Sequence[PriceHistoryRow]) -> Variety
     return variety
 
 
-def _quote(entry: PriceEntry | None) -> PriceQuote | None:
+def _quote(entry: PriceEntry | None, vip_price: int | None) -> PriceQuote | None:
     if entry is None:
         return None
     bulk = None if entry.bulk is None else BulkQuote(entry.bulk.price, entry.bulk.minimum)
-    return PriceQuote(list_price=entry.list_price, bulk=bulk)
+    return PriceQuote(list_price=entry.list_price, bulk=bulk, vip_price=vip_price)

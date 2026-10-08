@@ -3,13 +3,16 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from datetime import date
 from typing import Annotated, cast
 
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy.engine import Engine
+from sqlalchemy.orm import Session
 
 from app.accounts.adapters.deps import CurrentBusinessId
+from app.catalog.application.ports import CatalogPricingSettings
 from app.clock import Clock, get_clock, get_today
 from app.http_errors import TranslateErrors
 from app.pinned_catalog.adapters.schemas import (
@@ -88,8 +91,24 @@ LocksDep = Annotated[BusinessLocks, Depends(get_locks)]
 CipherDep = Annotated[TokenCipher, Depends(get_cipher)]
 
 
-def get_snapshots(engine: EngineDep, cipher: CipherDep) -> SqlPinSnapshots:
-    return SqlPinSnapshots(engine, cipher)
+def get_pricing_settings(
+    request: Request,
+) -> Callable[[Session, int], CatalogPricingSettings]:
+    return cast(
+        Callable[[Session, int], CatalogPricingSettings],
+        request.app.state.catalog_pricing_settings,
+    )
+
+
+PricingSettingsDep = Annotated[
+    Callable[[Session, int], CatalogPricingSettings], Depends(get_pricing_settings)
+]
+
+
+def get_snapshots(
+    engine: EngineDep, cipher: CipherDep, pricing_settings: PricingSettingsDep
+) -> SqlPinSnapshots:
+    return SqlPinSnapshots(engine, cipher, pricing_settings)
 
 
 def get_recorder(engine: EngineDep) -> SqlPinRecorder:

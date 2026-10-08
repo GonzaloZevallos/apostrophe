@@ -21,9 +21,8 @@ from sqlalchemy.orm import Session
 from app.catalog.adapters.sql_attributes import SqlCatalogAttributes
 from app.catalog.adapters.sql_catalog_varieties import SqlCatalogVarieties
 from app.catalog.adapters.sql_header_footer import SqlCatalogHeaderFooter
-from app.catalog.adapters.stock_status import StockStatusesFromStock
-from app.catalog.application.set_header_footer import set_header_footer
-from app.catalog.application.set_variety_attributes import set_variety_attributes
+from app.catalog.application.set_header_footer import write_header_footer
+from app.catalog.application.set_variety_attributes import write_variety_attributes
 from app.catalog.domain.attributes import CatalogAttributes
 from app.catalog.domain.errors import (
     AromaTooLong,
@@ -62,7 +61,6 @@ def _attributes_of(row: CatalogRow) -> CatalogAttributes:
 class CatalogImport:
     def __init__(self, session: Session, business_id: int) -> None:
         self._varieties = SqlCatalogVarieties(session, business_id)
-        self._stock = StockStatusesFromStock(session, business_id)
         self._attributes_repo = SqlCatalogAttributes(session, business_id)
         self._header_footer_repo = SqlCatalogHeaderFooter(session, business_id)
 
@@ -91,30 +89,18 @@ class CatalogImport:
             # `assert`, which `python -O` would strip) keeps the guard live if
             # `write_import` is ever called out of order.
             raise IndicaShareInvalid()
-        set_variety_attributes(
+        write_variety_attributes(
             self._varieties,
-            self._stock,
             self._attributes_repo,
-            self._header_footer_repo,
             transaction,
             variety_id,
             SHOWN_WORDS[row.shown],
             row.emoji,
             indica,
             row.aroma,
-            today,
         )
 
     def write_header_footer(
         self, cells: HeaderFooterCells, today: date, transaction: Transaction
     ) -> None:
-        set_header_footer(
-            self._varieties,
-            self._stock,
-            self._attributes_repo,
-            self._header_footer_repo,
-            transaction,
-            cells.header,
-            cells.footer,
-            today,
-        )
+        write_header_footer(self._header_footer_repo, transaction, cells.header, cells.footer)

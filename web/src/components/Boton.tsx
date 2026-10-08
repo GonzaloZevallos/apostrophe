@@ -1,6 +1,6 @@
 /**
  * `Boton`: the one button the app draws, and the closed lists of the icon and text rule
- * (`docs/product/icon-and-text-rule.md`, ADR-0034) written as a type. The union below
+ * (`docs/product/icon-and-text-rule.md`, ADR-0037) written as a type. The union below
  * is the rule: what it forbids does not compile (`Boton.types.test.tsx`).
  *
  * - **Icon + text** (`variant` primary, secondary or destructive, with an `icon`): an

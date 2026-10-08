@@ -28,6 +28,7 @@ import InAppLink from '../../components/InAppLink'
 import { NetworkError } from '../../api/client'
 import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
+import { useIsVipCustomers } from '../../api/pricingSettings'
 import { listSales, type Sale } from '../../api/sales'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import { readFeedback } from '../../components/feedback'
@@ -93,6 +94,7 @@ export default function Ventas() {
   const me = useOutletContext<Me>()
   const location = useLocation()
   const [feedback] = useState(() => readFeedback(location.state))
+  const vipCustomers = useIsVipCustomers()
   const [period, setPeriod] = useState<Period>('hoy')
   const [custom, setCustom] = useState<DateRange>(() => monthRange(me.today))
   // The phone's equal-cells fit is opt-in; the computer keeps `VentasCompu`'s plain tab list.
@@ -188,7 +190,7 @@ export default function Ventas() {
                         ) : (
                           <>
                             {sale.customer.name}
-                            {sale.customer.vip && <Insignia tono="acento">VIP</Insignia>}
+                            {vipCustomers && sale.customer.vip && <Insignia tono="acento">VIP</Insignia>}
                           </>
                         )}
                       </span>

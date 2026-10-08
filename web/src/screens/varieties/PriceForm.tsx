@@ -11,7 +11,13 @@ import { type FormEvent, useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { ApiError, NetworkError, UNKNOWN_CODE, post } from '../../api/client'
 import { invalidateResource } from '../../api/keys'
-import { isGone, kindOf, type RefusalCode } from '../../api/refusals'
+import type { PricingSettings } from '../../api/pricingSettings'
+import {
+  isGone,
+  kindOf,
+  VARIETY_REFUSAL_TEXT,
+  type RefusalCode,
+} from '../../api/refusals'
 import type { SuccessToast } from '../../components/AvisoExito'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
@@ -24,13 +30,17 @@ export const DUPLICATE_DATE_MESSAGE = 'Ya cargaste un precio con esa fecha'
 export const PRICE_INVALID_MESSAGE = 'Revisá los precios cargados'
 export const GRAMS_INVALID_MESSAGE = 'Revisá los gramos cargados'
 
-type Field = 'effectiveFrom' | 'listPrice' | 'bulkPrice' | 'bulkMinimum' | 'form'
+type Field = 'effectiveFrom' | 'listPrice' | 'bulkPrice' | 'bulkMinimum' | 'vipPrice' | 'form'
 type Errors = Partial<Record<Field, string>>
 
 const FIELD_OF_CODE: Partial<Record<RefusalCode, { field: Field; message: string }>> = {
   'variety.duplicate_effective_date': { field: 'effectiveFrom', message: DUPLICATE_DATE_MESSAGE },
   'variety.price_entry_invalid': { field: 'listPrice', message: PRICE_INVALID_MESSAGE },
   'grams.invalid': { field: 'bulkMinimum', message: GRAMS_INVALID_MESSAGE },
+  'variety.vip_price_not_below_list': {
+    field: 'vipPrice',
+    message: VARIETY_REFUSAL_TEXT['variety.vip_price_not_below_list'] ?? PRICE_INVALID_MESSAGE,
+  },
 }
 
 function fieldOfCode(code: string): { field: Field; message: string } | undefined {
@@ -40,10 +50,15 @@ function fieldOfCode(code: string): { field: Field; message: string } | undefine
 export interface PriceFormProps {
   varietyId: number
   today: string
+  /** The switches in force: a rule that is off has no field and nothing about it is sent. */
+  settings: PricingSettings
   onDone: (saved: SuccessToast) => void
   onCancel: () => void
   onDirtyChange: (dirty: boolean) => void
   onGone: () => void
+  /** A host with its own frame and its own "Cerrar" (the Onboarding) leaves the title row out
+   * and keeps the price effective today: no "Rige desde" to change. */
+  bare?: boolean
 }
 
 function FieldError({ message }: { message: string | undefined }) {
@@ -55,17 +70,27 @@ function FieldError({ message }: { message: string | undefined }) {
   )
 }
 
-export default function PriceForm({ varietyId, today, onDone, onCancel, onDirtyChange, onGone }: PriceFormProps) {
+export default function PriceForm({
+  varietyId,
+  today,
+  settings,
+  onDone,
+  onCancel,
+  onDirtyChange,
+  onGone,
+  bare = false,
+}: PriceFormProps) {
   const queryClient = useQueryClient()
   const [effectiveFrom, setEffectiveFrom] = useState(today)
   const [listPrice, setListPrice] = useState('')
   const [bulkPrice, setBulkPrice] = useState('')
   const [bulkMinimum, setBulkMinimum] = useState('')
+  const [vipPrice, setVipPrice] = useState('')
   const [errors, setErrors] = useState<Errors>({})
   const [offline, setOffline] = useState(false)
   const [sending, setSending] = useState(false)
 
-  const dirty = effectiveFrom !== today || listPrice !== '' || bulkPrice !== '' || bulkMinimum !== ''
+  const dirty = effectiveFrom !== today || listPrice !== '' || bulkPrice !== '' || bulkMinimum !== '' || vipPrice !== ''
   useEffect(() => {
     onDirtyChange(dirty)
   }, [dirty, onDirtyChange])
@@ -74,15 +99,18 @@ export default function PriceForm({ varietyId, today, onDone, onCancel, onDirtyC
     event.preventDefault()
     setOffline(false)
     const money = parseMoney(listPrice)
-    const hasBulk = bulkPrice.trim() !== '' || bulkMinimum.trim() !== ''
+    const hasBulk = settings.is_bulk_pricing && (bulkPrice.trim() !== '' || bulkMinimum.trim() !== '')
+    const hasVip = settings.is_vip_customers && vipPrice.trim() !== ''
+    const vipMoney = parseMoney(vipPrice)
     const bulkMoney = parseMoney(bulkPrice)
     const bulkGrams = parseGrams(bulkMinimum)
     const found: Errors = {}
     if (!money.ok) found.listPrice = PRICE_INVALID_MESSAGE
     if (hasBulk && !bulkMoney.ok) found.bulkPrice = PRICE_INVALID_MESSAGE
     if (hasBulk && !bulkGrams.ok) found.bulkMinimum = GRAMS_INVALID_MESSAGE
+    if (hasVip && !vipMoney.ok) found.vipPrice = PRICE_INVALID_MESSAGE
     setErrors(found)
-    if (!money.ok || (hasBulk && (!bulkMoney.ok || !bulkGrams.ok))) return
+    if (!money.ok || (hasBulk && (!bulkMoney.ok || !bulkGrams.ok)) || (hasVip && !vipMoney.ok)) return
     setSending(true)
     try {
       await post(`/varieties/${varietyId}/prices`, {
@@ -90,6 +118,7 @@ export default function PriceForm({ varietyId, today, onDone, onCancel, onDirtyC
         list_price: money.value,
         bulk_price: hasBulk && bulkMoney.ok ? bulkMoney.value : undefined,
         bulk_minimum: hasBulk && bulkGrams.ok ? bulkGrams.value : undefined,
+        vip_price: hasVip && vipMoney.ok ? vipMoney.value : undefined,
       })
       invalidateResource(queryClient, 'varieties')
       onDone('Precio guardado')
@@ -115,24 +144,30 @@ export default function PriceForm({ varietyId, today, onDone, onCancel, onDirtyC
 
   return (
     <div className="gasto-form">
-      <div className="gasto-form__cabecera">
-        <span className="gasto-form__titulo">Nuevo precio</span>
-        <span className="gasto-form__cerrar">
-          <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={onCancel} />
-        </span>
-      </div>
+      {!bare && (
+        <div className="gasto-form__cabecera">
+          <span className="gasto-form__titulo">Nuevo precio</span>
+          <span className="gasto-form__cerrar">
+            <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={onCancel} />
+          </span>
+        </div>
+      )}
       <form className="formulario" onSubmit={onSubmit}>
-        <label className="campo">
-          <span className="campo__rotulo">Rige desde</span>
-          <input
-            className="campo__input"
-            type="date"
-            value={effectiveFrom}
-            onChange={(event) => setEffectiveFrom(event.target.value)}
-            required
-          />
+        {bare ? (
           <FieldError message={errors.effectiveFrom} />
-        </label>
+        ) : (
+          <label className="campo">
+            <span className="campo__rotulo">Rige desde</span>
+            <input
+              className="campo__input"
+              type="date"
+              value={effectiveFrom}
+              onChange={(event) => setEffectiveFrom(event.target.value)}
+              required
+            />
+            <FieldError message={errors.effectiveFrom} />
+          </label>
+        )}
         <label className="campo">
           <span className="campo__rotulo">Precio de lista</span>
           <input
@@ -145,28 +180,45 @@ export default function PriceForm({ varietyId, today, onDone, onCancel, onDirtyC
           <span className="campo__ayuda" data-copy="help">{PRICE_PER_GRAM_HELP}</span>
           <FieldError message={errors.listPrice} />
         </label>
-        <label className="campo">
-          <span className="campo__rotulo">Precio por cantidad</span>
-          <input
-            className="campo__input"
-            inputMode="numeric"
-            value={bulkPrice}
-            onChange={(event) => setBulkPrice(event.target.value)}
-          />
-          <span className="campo__ayuda" data-copy="help">{PRICE_DISCOUNT_HELP}</span>
-          <FieldError message={errors.bulkPrice} />
-        </label>
-        <label className="campo">
-          <span className="campo__rotulo">Mínimo en gramos</span>
-          <input
-            className="campo__input"
-            inputMode="decimal"
-            value={bulkMinimum}
-            onChange={(event) => setBulkMinimum(event.target.value)}
-          />
-          <span className="campo__ayuda" data-copy="help">{PRICE_FROM_GRAMS_HELP}</span>
-          <FieldError message={errors.bulkMinimum} />
-        </label>
+        {settings.is_bulk_pricing && (
+          <>
+          <label className="campo">
+            <span className="campo__rotulo">Precio por cantidad</span>
+            <input
+              className="campo__input"
+              inputMode="numeric"
+              value={bulkPrice}
+              onChange={(event) => setBulkPrice(event.target.value)}
+            />
+            <span className="campo__ayuda" data-copy="help">{PRICE_DISCOUNT_HELP}</span>
+            <FieldError message={errors.bulkPrice} />
+          </label>
+          <label className="campo">
+            <span className="campo__rotulo">Mínimo en gramos</span>
+            <input
+              className="campo__input"
+              inputMode="decimal"
+              value={bulkMinimum}
+              onChange={(event) => setBulkMinimum(event.target.value)}
+            />
+            <span className="campo__ayuda" data-copy="help">{PRICE_FROM_GRAMS_HELP}</span>
+            <FieldError message={errors.bulkMinimum} />
+          </label>
+          </>
+        )}
+        {settings.is_vip_customers && (
+          <label className="campo">
+            <span className="campo__rotulo">Precio VIP</span>
+            <input
+              className="campo__input"
+              inputMode="numeric"
+              value={vipPrice}
+              onChange={(event) => setVipPrice(event.target.value)}
+            />
+            <span className="campo__ayuda" data-copy="help">{PRICE_DISCOUNT_HELP}</span>
+            <FieldError message={errors.vipPrice} />
+          </label>
+        )}
         <FieldError message={errors.form} />
         {offline && <SinConexion />}
         <Boton textOnly="submit" type="submit" disabled={sending}>

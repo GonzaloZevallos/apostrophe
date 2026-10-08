@@ -20,6 +20,7 @@ import { NetworkError } from '../../api/client'
 import { listCustomers } from '../../api/customers'
 import { keys } from '../../api/keys'
 import { getDebtors } from '../../api/payments'
+import { useIsVipCustomers } from '../../api/pricingSettings'
 import { formatPhone } from '../../format/phone'
 import { formatDateShort } from '../../format/dates'
 import { formatMoney, formatMoneyMagnitude } from '../../format/money'
@@ -43,6 +44,7 @@ export default function Clientes() {
   const [stateFeedback] = useState(() => readFeedback(location.state))
   const goneShown = useGoneNotice()
   const feedback = stateFeedback ?? (goneShown ? { kind: 'notice' as const, message: GONE_NOTICE } : null)
+  const vipCustomers = useIsVipCustomers()
 
   useEffect(() => {
     const id = setTimeout(() => setDebounced(query), 150)
@@ -118,7 +120,7 @@ export default function Clientes() {
                 <InAppLink to={pathTo(CUSTOMER, { id: customer.id })} className="lista-clientes__fila">
                   <span className="lista-clientes__nombre">
                     {customer.name}
-                    {customer.vip && <span className="vip-insignia">VIP</span>}
+                    {vipCustomers && customer.vip && <span className="vip-insignia">VIP</span>}
                   </span>
                   {customer.phone !== null && (
                     <span className="lista-clientes__telefono">{formatPhone(customer.phone)}</span>

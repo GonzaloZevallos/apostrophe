@@ -25,7 +25,12 @@ from app.sales.application import view_sales
 from app.sales.application.assign_customer import assign_customer as assign_customer_use_case
 from app.sales.application.delete_sale import delete_sale as delete_sale_use_case
 from app.sales.application.errors import SaleNotFound
-from app.sales.application.ports import LineCosts, OwingSales, SaleView
+from app.sales.application.ports import (
+    LineCosts,
+    OwingSales,
+    PricingSettingsReader,
+    SaleView,
+)
 from app.sales.application.record_sale import LineInput
 from app.sales.application.record_sale import record_sale as record_sale_use_case
 from app.sales.domain.pricing import SaleRuleBroken
@@ -70,6 +75,8 @@ def get_line_costs(
 SalesDep = Annotated[SqlSales, Depends(get_sales)]
 PriceBookDep = Annotated[SqlPriceBook, Depends(get_price_book)]
 CustomerFactsDep = Annotated[SqlCustomerFacts, Depends(get_customer_facts)]
+
+
 def get_owing_sales(
     request: Request, session: SessionDep, business_id: CurrentBusinessId
 ) -> OwingSales:
@@ -80,7 +87,20 @@ def get_owing_sales(
     return factory(session, business_id)
 
 
+def get_pricing_settings(
+    request: Request, session: SessionDep, business_id: CurrentBusinessId
+) -> PricingSettingsReader:
+    # Sales never imports `app.pricing_settings` (docs/adr/0034): `app/main.py` hangs
+    # `SqlPricingSettings` on `app.state.pricing_settings` as a factory, the same shape
+    # used for `line_costs`.
+    factory = cast(
+        Callable[[Session, int], PricingSettingsReader], request.app.state.pricing_settings
+    )
+    return factory(session, business_id)
+
+
 LineCostsDep = Annotated[LineCosts, Depends(get_line_costs)]
+PricingSettingsDep = Annotated[PricingSettingsReader, Depends(get_pricing_settings)]
 OwingSalesDep = Annotated[OwingSales, Depends(get_owing_sales)]
 
 
@@ -108,6 +128,7 @@ def record_sale(
     sales: SalesDep,
     price_book: PriceBookDep,
     customer_facts: CustomerFactsDep,
+    pricing_settings: PricingSettingsDep,
     owing_sales: OwingSalesDep,
     session: SessionDep,
     today: TodayDep,
@@ -119,6 +140,7 @@ def record_sale(
             sales,
             price_book,
             customer_facts,
+            pricing_settings,
             session,
             sale_date=body.date or today,
             today=today,

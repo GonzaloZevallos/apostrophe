@@ -12,7 +12,7 @@ import { PRICE_HISTORY_HELP } from './varietiesMessages'
 import { LIMITS, SAMPLES } from '../../copy/limits'
 import { VARIETY, VARIETY_PRICES, pathTo } from '../../routes'
 import { expectIconAndTextRule, iconAndTextProblems } from '../../test/iconAndTextRule'
-import { VARIETY_ROW, api, jsonResponse, renderVarieties, writes } from './renderVarieties'
+import { HISTORY, VARIETY_ROW, api, jsonResponse, renderVarieties, writes } from './renderVarieties'
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -121,6 +121,49 @@ test('a delete that finds the price gone says so and refreshes the list', async 
   expect(await screen.findByText('Eso ya no está. La lista ya está al día.')).toBeInTheDocument()
 })
 
+function switches(bulk: boolean, vip: boolean): Record<string, () => Response> {
+  return { 'GET /pricing-settings': () => jsonResponse(200, { is_bulk_pricing: bulk, is_vip_customers: vip }) }
+}
+
+test('with both rules on, an entry shows its bulk tier and its "Precio VIP"', async () => {
+  renderVarieties([pathTo(VARIETY_PRICES, { id: 1 })], api())
+
+  expect(await screen.findByText('Precio VIP · $ 9.000')).toBeInTheDocument()
+  expect(screen.getByText('Desde 10 g · $ 10.000')).toBeInTheDocument()
+  expect(screen.getAllByText(/Precio VIP/)).toHaveLength(1)
+})
+
+test('with Clientes VIP off there is no trace of the VIP price, the bulk tier stays', async () => {
+  renderVarieties([pathTo(VARIETY_PRICES, { id: 1 })], api(switches(true, false)))
+
+  expect(await screen.findByText('Desde 10 g · $ 10.000')).toBeInTheDocument()
+  expect(screen.queryByText(/VIP/)).not.toBeInTheDocument()
+  expect(screen.queryByText(/9\.000/)).not.toBeInTheDocument()
+})
+
+test('with Precio por cantidad off there is no trace of the bulk tier, the VIP price stays', async () => {
+  renderVarieties([pathTo(VARIETY_PRICES, { id: 1 })], api(switches(false, true)))
+
+  expect(await screen.findByText('Precio VIP · $ 9.000')).toBeInTheDocument()
+  expect(screen.queryByText(/Desde/)).not.toBeInTheDocument()
+  expect(screen.queryByText(/10\.000/)).not.toBeInTheDocument()
+})
+
+test('with both rules off only list prices show, and an entry without a VIP price shows no VIP line', async () => {
+  renderVarieties([pathTo(VARIETY_PRICES, { id: 1 })], api(switches(false, false)))
+
+  expect(await screen.findByText('$ 11.000')).toBeInTheDocument()
+  expect(screen.queryByText(/VIP|Desde/)).not.toBeInTheDocument()
+})
+
+test('an entry with no VIP price shows no VIP line even with Clientes VIP on', async () => {
+  const bare = HISTORY.map((entry) => ({ ...entry, vip_price: null }))
+  renderVarieties([pathTo(VARIETY_PRICES, { id: 1 })], api({ 'GET /varieties/1/prices': () => jsonResponse(200, bare) }))
+
+  await screen.findByText('Desde 10 g · $ 10.000')
+  expect(screen.queryByText(/VIP/)).not.toBeInTheDocument()
+})
+
 test("an archived variety's price history is read-only: rows with no delete", async () => {
   renderVarieties(
     [pathTo(VARIETY_PRICES, { id: 1 })],
@@ -140,4 +183,13 @@ test('the history follows the rule: its help line is measured copy and each dele
   expectIconAndTextRule(main, { limits: LIMITS, samples: SAMPLES })
   help.textContent = 'x'.repeat(LIMITS.help + 1)
   expect(iconAndTextProblems(main, { limits: LIMITS, samples: SAMPLES })).toHaveLength(1)
+})
+
+test("an archived variety's price history follows the switches like a live one", async () => {
+  const archived = { 'GET /varieties/1': () => jsonResponse(200, { ...VARIETY_ROW, archived: true }) }
+  renderVarieties([pathTo(VARIETY_PRICES, { id: 1 })], api({ ...archived, ...switches(true, false) }))
+
+  expect(await screen.findByText('Desde 10 g · $ 10.000')).toBeInTheDocument()
+  expect(screen.getAllByText(/^Rige desde/)).toHaveLength(3)
+  expect(screen.queryByText(/VIP/)).not.toBeInTheDocument()
 })

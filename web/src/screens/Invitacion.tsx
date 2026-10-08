@@ -98,6 +98,7 @@ export default function Invitacion() {
         view.kind === 'new_business'
           ? { email, password, business_name: businessName }
           : { email, password },
+        view.kind,
       )
     } catch (caught) {
       if (caught instanceof ApiError) {

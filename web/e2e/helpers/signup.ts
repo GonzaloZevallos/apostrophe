@@ -22,12 +22,24 @@ export interface SignUpOptions {
   businessName?: string
   email?: string
   password?: string
+  /** Stay in the Onboarding the accept lands in (the Onboarding's own specs). */
+  stayInOnboarding?: boolean
 }
 
 export interface SignedUpBusiness {
   businessName: string
   email: string
   password: string
+}
+
+/**
+ * A new-business accept lands in the Onboarding (GH-86); the specs that sign up are
+ * about something else, so they close it to reach Inicio, the way a seller who skips it
+ * does. "Cerrar" on an untouched step sends nothing.
+ */
+export async function leaveOnboarding(page: Page): Promise<void> {
+  await page.getByRole('button', { name: 'Cerrar' }).click()
+  await expect(page.locator('.encabezado__negocio')).toBeVisible()
 }
 
 export async function signUpNewBusiness(
@@ -39,6 +51,7 @@ export async function signUpNewBusiness(
     businessName = `Negocio ${unique}`,
     email = `duena-${unique}@example.com`,
     password = DEFAULT_PASSWORD,
+    stayInOnboarding = false,
   } = options
 
   await page.goto(newBusinessInvitationUrl())
@@ -56,7 +69,7 @@ export async function signUpNewBusiness(
   const create = page.getByRole('button', { name: 'Creá el negocio' })
   await expect(create).toBeEnabled()
   await create.click()
-  await expect(page.locator('.encabezado__negocio')).toBeVisible()
+  if (!stayInOnboarding) await leaveOnboarding(page)
 
   return { businessName, email, password }
 }

@@ -29,9 +29,9 @@ _Avoid_: product, strain, item, SKU
 _In the app_: Variedad
 
 **Price entry**:
-A variety's list price, bulk price and bulk minimum, effective from a date onwards. Never edited once recorded: a later entry supersedes it from its own date. A mistaken entry is deleted, never rewritten; a sale is unaffected because every sale line records the price it was sold at.
-_In the app_: Precio (historial de precios)
+A variety's list price, and optionally a bulk price with its bulk minimum, and optionally a VIP price, effective from a date onwards. Never edited once recorded: a later entry supersedes it from its own date. A mistaken entry is deleted, never rewritten; a sale is unaffected because every sale line records the price it was sold at. A rule switched off when it is recorded stores nothing for that rule. _In the app_: Precio (historial de precios).
 _Avoid_: price change, price update, tariff
+_In the app_: Precio (historial de precios)
 
 **Current price**:
 For a variety on a given date, the price entry with the latest effective date on or before that date. A variety with no such entry has no price that day.
@@ -44,9 +44,9 @@ _In the app_: Precio x g
 _Avoid_: base price, regular price
 
 **Bulk price**:
-A lower price per gram that applies from the bulk minimum upwards, and always for a VIP customer. Optional: a price entry has both bulk price and bulk minimum, or neither.
-_In the app_: Precio por cantidad
+A lower price per gram that applies from the bulk minimum upwards. Optional: a price entry has both bulk price and bulk minimum, or neither. Only in a business with bulk pricing (Precio por cantidad) switched on. _In the app_: Precio por cantidad.
 _Avoid_: discount, wholesale price
+_In the app_: Precio por cantidad
 
 **Bulk minimum**:
 The grams from which the bulk price applies.
@@ -66,9 +66,9 @@ _Avoid_: contact, handle, username, identifier
 _In the app_: Teléfono
 
 **VIP customer**:
-A customer who always pays the bulk price, whatever the grams.
-_In the app_: Cliente VIP
+A customer who pays a variety's VIP price when it has one and it is lower than what any other rule gives. Only in a business with Clientes VIP switched on; while it is off, the mark stays stored but neither shows nor applies. _In the app_: Cliente VIP.
 _Avoid_: friend, Amigo, preferred customer
+_In the app_: Cliente VIP
 
 **Sale**:
 Everything a customer takes in one go: a date, at most one customer, the shipping charged, an optional note, and one or more sale lines. A sale counts on its own date, paid or not. Its customer may be left out only when nothing stays owed.
@@ -96,9 +96,9 @@ _In the app_: Precio especial
 _Avoid_: override, custom price, discount
 
 **Pricing rule**:
-Which rule priced a sale line: list, bulk, VIP, gift or special price. Exactly one per line, stored with its price when the sale is recorded and never recomputed.
-_In the app_: lista, por cantidad, VIP, regalo, especial
+Which rule priced a sale line: list, bulk, VIP, gift or special price. Exactly one per line, stored with its price when the sale is recorded and never recomputed. VIP means the VIP price was charged, including when it equalled the bulk price. _In the app_: lista, por cantidad, VIP, regalo, especial.
 _Avoid_: type, price type, Amigo
+_In the app_: lista, por cantidad, VIP, regalo, especial
 
 **Shipping charged**:
 What the customer pays for delivery, added on top of what they bought.
@@ -386,12 +386,16 @@ A screen reached straight from the bar or the sidebar (Inicio, Ventas, Clientes,
 _Avoid_: home, main screen, section
 
 **Settings**:
-The one place holding every business-wide setting, in groups: Negocio, Usuarios, Integraciones, Mensaje del catálogo, Categorías de gastos, Apariencia and Tu cuenta. A setting of one variety lives on the variety, never here, and nothing of the operator's is here. In the app: Configuración.
+The one place holding every business-wide setting, in groups: Negocio, Usuarios, Precios, Integraciones, Mensaje del catálogo, Categorías de gastos, Apariencia and Tu cuenta. A setting of one variety lives on the variety, never here, and nothing of the operator's is here. _In the app_: Configuración.
 _Avoid_: Ajustes (in the spreadsheet that held prices), preferences, admin, Negocio (that is one group)
 
 **First-run checklist**:
-Four steps on Inicio for a business that has not yet both priced a variety for today and recorded a stock entry: those two, plus publishing the pinned catalog and adding a second user, which are optional. Each step is worked out from the business's data and reads "Hecho" when met; the checklist goes for good the first time the two required steps are met and never returns.
-_Avoid_: onboarding, tour, wizard, setup guide, welcome
+Four steps on Inicio for a business that existed before the Onboarding shipped and has not yet both priced a variety for today and recorded a stock entry: those two, plus publishing the pinned catalog and adding a second user, which are optional. Each step is worked out from the business's data and reads "Hecho" when met; the checklist goes for good the first time the two required steps are met and never returns. A brand-new business gets the Onboarding instead.
+_Avoid_: tour, wizard, setup guide, welcome, Onboarding (that is a brand-new business's first run)
+
+**Onboarding**:
+The step-by-step setup a brand-new business is walked through after its new-business invitation is accepted, in place of the first-run checklist. It has two required steps (a variety priced today, its opening stock) and optional ones (catalog header and footer, Telegram bot, a partner, expense categories), each saving what Configuración or the variety's page saves. It resumes where it was left, is over for good once its closing screen "Listo" is reached or an import loads the business, and is never offered to a joined user's business or one that existed before it shipped.
+_Avoid_: tour, wizard, welcome screen, setup guide
 
 **Theme choice**:
 A device's choice of Claro or Oscuro. It is made only in Configuración → Apariencia, applies at once and is kept on that device alone. It is not tied to a user or a business, survives logging out and holds nothing else. With none stored, the app opens light whatever the system setting.
@@ -400,6 +404,14 @@ _Avoid_: preference, dark mode setting, skin, user setting
 **Own chat lookup**:
 Finding the seller's own chat number among the private chats that wrote to the business's bot, using the token Probarlo would use. It fills the own chat field only when exactly one person wrote privately, shows only the number and saves nothing; settings are still saved only by a successful test send. In the app: Buscar mi chat.
 _Avoid_: auto-detect, discovery, getUpdates, chat search, sync
+
+**VIP price**:
+An optional price per gram in a price entry, for VIP customers: a whole peso above $0 and below that entry's list price, independent of the bulk price. Never shown in the catalog. _In the app_: Precio VIP.
+_Avoid_: friend price, discount, Amigo price
+
+**Pricing settings**:
+Which of bulk pricing (Precio por cantidad) and VIP customers (Clientes VIP) a business uses: two independent switches. A rule switched off is hidden and stops applying to new sales, while everything stored for it is kept. _In the app_: Precios, in Configuración.
+_Avoid_: price config, pricing mode, plan, tariff settings
 
 **Archived variety**:
 A variety the seller took out of every list and picker (Variedades, Lo que te queda, Nueva venta, the stock entry and price forms, the catalog and the pinned catalog), while every past record keeps its plain name and figures. Archive is the action offered for a variety with history, but an archived variety may have none. It keeps its name reserved and its hidden flag, is seen and restored only from Archivadas, has a read-only page, and restoring brings it back exactly as it was. In the app: Archivada.

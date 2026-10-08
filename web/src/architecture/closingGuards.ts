@@ -1,6 +1,6 @@
 /**
  * The closing guards of the icon and text rule (GH-97, `docs/product/icon-and-text-rule.md`,
- * ADR-0034): each returns one line per offence, empty when the tree is clean, and is fed
+ * ADR-0037): each returns one line per offence, empty when the tree is clean, and is fed
  * input it must reject in `closingGuards.test.ts` before `closingGuards.real.test.ts` runs
  * it over the real tree. They are what ends the old shapes: after them nothing is exempt
  * beyond the closed lists written here.

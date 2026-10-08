@@ -26,6 +26,8 @@ export interface CustomerFieldsProps {
   onChange: (value: CustomerFieldsValue) => void
   nameError: string | null
   phoneError: string | null
+  /** Clientes VIP is on: the VIP field shows only then, with nothing in its place. */
+  showVip: boolean
 }
 
 export default function CustomerFields({
@@ -33,6 +35,7 @@ export default function CustomerFields({
   onChange,
   nameError,
   phoneError,
+  showVip,
 }: CustomerFieldsProps) {
   return (
     <>
@@ -99,14 +102,16 @@ export default function CustomerFields({
           Telegram
         </label>
       </fieldset>
-      <label className="campo">
-        <span className="campo__rotulo">VIP</span>
-        <input
-          type="checkbox"
-          checked={value.vip}
-          onChange={(event) => onChange({ ...value, vip: event.target.checked })}
-        />
-      </label>
+      {showVip && (
+        <label className="campo">
+          <span className="campo__rotulo">VIP</span>
+          <input
+            type="checkbox"
+            checked={value.vip}
+            onChange={(event) => onChange({ ...value, vip: event.target.checked })}
+          />
+        </label>
+      )}
     </>
   )
 }
