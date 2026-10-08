@@ -14,7 +14,8 @@
  * the same at every width.
  */
 
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test } from './fixtures.js'
+import type { Page } from '@playwright/test'
 import { watchConsole } from './console.js'
 import {
   PHONE_CONTEXT,
@@ -135,8 +136,8 @@ test.describe.serial('bar and rail fit', () => {
   let page: Page
   const consoleMessages: string[] = []
 
-  test.beforeAll(async ({ browser }) => {
-    page = await (await browser.newContext({ ...PHONE_CONTEXT, viewport: PHONE })).newPage()
+  test.beforeAll(async ({ browser, workerServer }) => {
+    page = await (await browser.newContext({ ...PHONE_CONTEXT, baseURL: workerServer.url, viewport: PHONE })).newPage()
     watchConsole(page, consoleMessages)
     await signUpNewBusiness(page)
   })
@@ -199,9 +200,14 @@ test.describe.serial('bar and rail fit', () => {
   })
 })
 
-test('the pointer check rejects a page whose pointer is not coarse', async ({ browser }) => {
+test('the pointer check rejects a page whose pointer is not coarse', async ({ browser, workerServer }) => {
   // `test.use` is the default of every context, so the desktop one says so itself.
-  const context = await browser.newContext({ isMobile: false, hasTouch: false, viewport: PHONE })
+  const context = await browser.newContext({
+    baseURL: workerServer.url,
+    isMobile: false,
+    hasTouch: false,
+    viewport: PHONE,
+  })
   const desktop = await context.newPage()
   await desktop.goto('about:blank')
   await expect(expectCoarsePointer(desktop, 'a desktop')).rejects.toThrow(/coarse pointer/)

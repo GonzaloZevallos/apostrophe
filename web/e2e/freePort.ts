@@ -1,10 +1,10 @@
 /**
- * Picks one free TCP port on `host` (plan, "Build": `web/playwright.config.ts` is the
- * only caller, and only when `APOSTROPHE_E2E_PORT` is unset). Binds to port 0 — the
+ * Picks one free TCP port on `host` (`web/e2e/fixtures.ts` is the only caller, once
+ * per attempt to start a worker's backend). Binds to port 0 — the
  * OS assigns an unused ephemeral port — reads it back, releases the socket and
- * resolves the port so the caller can bind it again itself. No retry: a port taken
- * between this release and the real bind fails loudly instead (plan, "Known risks,
- * accepted").
+ * resolves the port so the caller can bind it again itself. No retry here: a port taken
+ * between this release and the real bind makes the child exit, and the fixture retries
+ * with a new port (ADR-0037).
  */
 
 import * as net from 'node:net'

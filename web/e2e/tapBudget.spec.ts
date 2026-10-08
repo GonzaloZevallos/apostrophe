@@ -8,7 +8,8 @@
 
 import { expectPath } from './helpers/url.js'
 import { CATALOG, CUSTOMERS, CUSTOMER_PAYMENT, EXPENSES, EXPENSE_NEW, HOME, MORE, SALES, SALE_NEW, STOCK_ENTRY_NEW, VARIETIES, VARIETY } from '../src/routes.js'
-import { expect, test, type Locator, type Page } from '@playwright/test'
+import { expect, test } from './fixtures.js'
+import type { Locator, Page } from '@playwright/test'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { seedRecords, signUp } from './helpers/seed.js'

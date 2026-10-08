@@ -6,7 +6,8 @@
  */
 
 import { MORE } from '../src/routes.js'
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test } from './fixtures.js'
+import type { Page } from '@playwright/test'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 

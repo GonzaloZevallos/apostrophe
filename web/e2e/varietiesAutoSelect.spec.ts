@@ -9,7 +9,7 @@
 
 import { CATALOG, VARIETIES } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
-import { expect, test } from '@playwright/test'
+import { expect, test } from './fixtures.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 
 const PHONE = { width: 390, height: 844 }

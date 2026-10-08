@@ -20,7 +20,7 @@
 
 import { HOME, LOGIN, SETTINGS_ACCOUNT } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
-import { expect, test } from '@playwright/test'
+import { expect, test } from './fixtures.js'
 import { resetLink, supportsPasswordReset } from './backend.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
@@ -34,6 +34,7 @@ test.use({ viewport: { width: 390, height: 844 } })
 test('changes a password from Configuración → Tu cuenta in under a minute, signing an older device out and keeping this one', async ({
   page,
   browser,
+  workerServer,
 }) => {
   test.skip(
     !supportsPasswordReset(),
@@ -50,7 +51,7 @@ test('changes a password from Configuración → Tu cuenta in under a minute, si
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // A second device, signed in as the same user.
-  const otherContext = await browser.newContext()
+  const otherContext = await browser.newContext({ baseURL: workerServer.url })
   const otherPage = await otherContext.newPage()
   watchConsole(otherPage, consoleMessages)
   await otherPage.goto(LOGIN)

@@ -7,7 +7,8 @@
  * element that each check can add and remove.
  */
 
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test } from './fixtures.js'
+import type { Page } from '@playwright/test'
 import { CUSTOMER, CUSTOMER_NEW, CUSTOMERS, LOGIN, SALE, SALE_NEW, SALES, VARIETIES } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
 import { signUpNewBusiness } from './helpers/signup.js'

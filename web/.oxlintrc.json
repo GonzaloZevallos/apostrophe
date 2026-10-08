@@ -4,5 +4,31 @@
   "rules": {
     "react/rules-of-hooks": "error",
     "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
+  },
+  "overrides": [
+    {
+      "files": ["e2e/**/*.ts"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "paths": [
+              {
+                "name": "@playwright/test",
+                "importNames": ["test", "expect"],
+                "allowTypeImports": true,
+                "message": "Import test and expect from the e2e fixtures (./fixtures.js): they start the worker's own backend."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["e2e/fixtures.ts"],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    }
+  ]
 }

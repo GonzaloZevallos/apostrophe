@@ -48,7 +48,7 @@
 
 import { CUSTOMERS, SALE, SALES, SALE_NEW, VARIETIES } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
-import { expect, test } from '@playwright/test'
+import { expect, test } from './fixtures.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
@@ -109,6 +109,7 @@ function countLabel(count: number): string {
 test('a seller records, undoes, fixes and isolates sales, from the front alone', async ({
   page,
   browser,
+  workerServer,
 }) => {
   // Seeding a few hundred sales one at a time (below, for the 300 ms list check)
   // comfortably clears a 30 s budget on its own; this test's own journey
@@ -391,7 +392,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   expect(elapsedMs, `list took ${elapsedMs} ms`).toBeLessThan(LIST_BUDGET_MS)
 
   // --- Isolation: a second business can never reach the first one's sale. ---
-  const otherContext = await browser.newContext()
+  const otherContext = await browser.newContext({ baseURL: workerServer.url })
   const otherPage = await otherContext.newPage()
   watchConsole(otherPage, consoleMessages)
   await signUpNewBusiness(otherPage, {

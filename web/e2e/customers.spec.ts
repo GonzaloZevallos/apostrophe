@@ -18,7 +18,7 @@
 
 import { CUSTOMER, CUSTOMERS, CUSTOMER_NEW, SALE, SALE_NEW, VARIETIES } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
-import { expect, test } from '@playwright/test'
+import { expect, test } from './fixtures.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'

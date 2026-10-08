@@ -26,7 +26,7 @@
 
 import { CUSTOMER, CUSTOMERS, CUSTOMER_NEW, HOME, SALES, SALE_NEW, STOCK_ENTRY_NEW, VARIETIES, pathTo } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
-import { expect, test } from '@playwright/test'
+import { expect, test } from './fixtures.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { openGastos } from './helpers/openMas.js'
