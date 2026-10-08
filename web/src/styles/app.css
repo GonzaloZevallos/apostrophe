@@ -3317,13 +3317,6 @@ body {
   border-bottom: 0;
 }
 
-.variedad-archivada__restaurar {
-  flex: 0 0 auto;
-  width: auto;
-  height: var(--alto-tocable);
-  padding: 0 var(--espacio-lg);
-}
-
 .variedad-fila__encabezado {
   display: flex;
   align-items: center;

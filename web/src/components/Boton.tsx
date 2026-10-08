@@ -23,7 +23,7 @@
  * `BotonLink` draws the same union as an in-app link, from `botonVisual.tsx`.
  */
 
-import type { ReactNode } from 'react'
+import type { MouseEvent, ReactNode } from 'react'
 import { botonVisual } from './botonVisual'
 import type { NombreIcono } from './Icono'
 
@@ -32,7 +32,8 @@ import type { NombreIcono } from './Icono'
 export type IconOnlyAction = 'delete' | 'search' | 'close' | 'edit' | 'share'
 
 interface BotonCommon {
-  onClick?: () => void
+  /** Receives the click, so a link kind can `preventDefault` and go back by history. */
+  onClick?: (event: MouseEvent<HTMLElement>) => void
   disabled?: boolean
   ariaDescribedBy?: string
 }

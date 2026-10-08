@@ -9,7 +9,7 @@ import { useQuery } from '@tanstack/react-query'
 import { ApiError, NetworkError, get } from '../../api/client'
 import { keys } from '../../api/keys'
 import { isGone } from '../../api/refusals'
-import Boton from '../../components/Boton'
+import BotonLink from '../../components/BotonLink'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import GoneScreen from '../../components/GoneScreen'
 import Loading from '../../components/Loading'
@@ -53,9 +53,16 @@ export default function PriceHistory({ varietyId }: { varietyId: number }) {
     <main className="pantalla">
       <div className="cuerpo">
         <div className="encabezado__fila">
-          <Boton variant="back" onClick={back}>
+          <BotonLink
+            variant="back"
+            to={pathTo(VARIETY, { id: varietyId })}
+            onClick={(event) => {
+              event.preventDefault()
+              back()
+            }}
+          >
             ‹ {variety.name}
-          </Boton>
+          </BotonLink>
         </div>
         <span className="encabezado__titulo">Precios</span>
         <PriceRows

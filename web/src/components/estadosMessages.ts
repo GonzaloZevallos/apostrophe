@@ -7,7 +7,7 @@
 import type { LimitedCopy } from '../copy/limits'
 
 export const SIN_CONEXION_TITULO = 'Te quedaste sin internet'
-export const SIN_CONEXION_DETALLE = 'apostrophe necesita conexión. Reintentamos solos cuando vuelva.'
+export const SIN_CONEXION_DETALLE = 'apostrophe necesita conexión y reintenta solo cuando vuelva.'
 export const ERROR_GENERICO_MENSAJE = 'Algo falló. Probá de nuevo.'
 
 export const LIMITED_COPY: readonly LimitedCopy[] = [

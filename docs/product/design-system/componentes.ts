@@ -307,8 +307,8 @@ export type NombreIcono =
  *  abierto es local del componente: nunca en el historial ni en el almacenamiento, nunca un
  *  cambio sin guardar. Siempre nace cerrado. */
 export interface MasInfoProps {
-  linea: string;
-  detalle: string;
+  line: string;
+  more: string;
 }
 
 export interface IconoProps {

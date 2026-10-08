@@ -29,6 +29,10 @@ const iconOnlyWithAnIconProp: Rejected<{
   icon: 'tacho'
   ariaLabel: 'x'
 }> = true
+const closeWithoutLabel: Rejected<{ variant: 'icon'; action: 'close' }> = true
+const editWithoutLabel: Rejected<{ variant: 'icon'; action: 'edit' }> = true
+const shareWithoutLabel: Rejected<{ variant: 'icon'; action: 'share' }> = true
+const iconOnlyWithAnUnlistedAction: Rejected<{ variant: 'icon'; action: 'copy'; ariaLabel: 'Copiar' }> = true
 const primaryBare: Rejected<Children> = true
 const secondaryBare: Rejected<{ variant: 'secondary' } & Children> = true
 const destructiveBare: Rejected<{ variant: 'destructive' } & Children> = true
@@ -42,6 +46,9 @@ const submit: Rejected<{ textOnly: 'submit'; type: 'submit' } & Children> = fals
 const iconOnly: Rejected<{ variant: 'icon'; action: 'delete'; ariaLabel: 'Borrar' }> = false
 const back: Rejected<{ variant: 'back' } & Children> = false
 const row: Rejected<{ variant: 'row' } & Children> = false
+const closeIcon: Rejected<{ variant: 'icon'; action: 'close'; ariaLabel: 'Cerrar' }> = false
+const editIcon: Rejected<{ variant: 'icon'; action: 'edit'; ariaLabel: 'Editar' }> = false
+const shareIcon: Rejected<{ variant: 'icon'; action: 'share'; ariaLabel: 'Compartir' }> = false
 const linkIconText: RejectedLink<{ to: string; icon: 'agregar' } & Children> = false
 const linkIconOnly: RejectedLink<{
   to: string
@@ -60,6 +67,10 @@ test('the closed lists are enforced by tsc, not at run time', () => {
     iconOnlyWithoutLabel,
     iconOnlyOutsideTheMap,
     iconOnlyWithAnIconProp,
+    closeWithoutLabel,
+    editWithoutLabel,
+    shareWithoutLabel,
+    iconOnlyWithAnUnlistedAction,
     primaryBare,
     secondaryBare,
     destructiveBare,
@@ -67,7 +78,19 @@ test('the closed lists are enforced by tsc, not at run time', () => {
     linkSubmit,
     linkIconOnlyWithoutLabel,
   ]
-  const accepted = [iconAndText, secondary, submit, iconOnly, back, row, linkIconText, linkIconOnly]
+  const accepted = [
+    iconAndText,
+    secondary,
+    submit,
+    iconOnly,
+    back,
+    row,
+    closeIcon,
+    editIcon,
+    shareIcon,
+    linkIconText,
+    linkIconOnly,
+  ]
   expect(checks.every(Boolean)).toBe(true)
   expect(accepted.some(Boolean)).toBe(false)
 })

@@ -27,11 +27,11 @@ rule has to live where a screen cannot get around it: the types of the one butto
   - `row` stays for a tappable list row.
 - **Back is not close.** `back` is text ("‹ <parent>"); close is the `cerrar` icon with
   the name "Cerrar" and never takes the back kind.
-- **The map lists what has a glyph.** `cerrar`, `lapiz` and `compartir` are not in
-  `Icono.tsx`: `icon-glyphs` shipped no glyph, the design having no path for them, and a
-  Developer never invents one. Until that subtask delivers, the map and `IconOnlyAction`
-  list delete and search only; the three other entries are one line each in
-  `botonVisual.tsx` and in the type, and the type-level tests then grow with them.
+- **The map lists what has a glyph.** `cerrar`, `lapiz` and `compartir` were drawn in
+  `Icono.tsx` by the integration pass of GH-97 (the design gave no path for them), so the
+  map and `IconOnlyAction` list all five actions: delete, search, close, edit and share. A
+  sixth is one line in `botonVisual.tsx` and in the type, together with its glyph in both
+  icon files, and the type-level tests grow with it.
 - **Tests.** `Boton.types.test.tsx` makes `tsc` the test (a rejected shape must be
   `true`, an accepted one `false`, no suppression comment). `expectIconAndTextRule`
   (`web/src/test/`) reads the rendered DOM, and a real-tree test keeps every non-test
