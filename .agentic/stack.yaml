@@ -45,3 +45,8 @@ forbidden:
     reason: >-
       this silences TypeScript or the linter. CODING_STANDARDS.md section 6: fix the
       code instead; nothing is silenced in this product, front included.
+# `ci`: the check-run names of ci.yml that gate a merge (agentic-system ADR-0045, GH-216
+# amendment): with it, `agentic merge` decides from GitHub's CI on the reviewed head instead of
+# rerunning every check locally. The three jobs of `.github/workflows/ci.yml` together run every
+# check above in full (pytest, ruff, mypy; web typecheck, lint, test, build; e2e).
+ci: [test, web, e2e]
