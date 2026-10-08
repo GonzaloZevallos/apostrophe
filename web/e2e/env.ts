@@ -5,7 +5,7 @@
  * (`fixtures.ts`'s `workerServer`) and the `invite-business` CLI call
  * (`newBusinessInvitationUrl`) always agree on the same database and secret).
  *
- * The port is decided only by `web/e2e/fixtures.ts` (ADR-0037): each Playwright worker
+ * The port is decided only by `web/e2e/fixtures.ts` (ADR-0040): each Playwright worker
  * picks its own free port and writes it to `APOSTROPHE_E2E_WORKER_PORT` in its own
  * process. This module never reads the environment when it loads — only when `e2ePort()`,
  * `e2eBaseUrl()`, `e2eDbPath()` or `e2eEnv()` are called — so every caller in a worker

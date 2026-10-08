@@ -62,7 +62,7 @@ npm --prefix web run e2e                       # the browser against the real ba
 ```
 
 Each e2e Playwright worker starts its own backend on its own free port, over its own
-database (`web/e2e/fixtures.ts`, docs/adr/0037), so two checkouts can run it at the same
+database (`web/e2e/fixtures.ts`, docs/adr/0040), so two checkouts can run it at the same
 time and there is no variable to set. Run only one e2e at a time per checkout, though:
 `web/dist` is shared. A port grabbed between picking it and binding it is retried three
 times by the fixture; after that, rerun.

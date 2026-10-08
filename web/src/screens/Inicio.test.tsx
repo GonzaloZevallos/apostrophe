@@ -25,8 +25,9 @@ import { afterEach, expect, test, vi } from 'vitest'
 import panelFixture from '../api/fixtures/panel.json'
 import type { PanelAnswer } from '../api/panel'
 import type { Me } from '../api/me'
+import { LIMITS } from '../copy/limits'
 import type { OnboardingProgress } from '../api/onboarding'
-import Inicio, { EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE } from './Inicio'
+import Inicio, { EMPTY_DETAIL, EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE } from './Inicio'
 
 const PANEL: PanelAnswer = panelFixture as PanelAnswer
 
@@ -368,6 +369,23 @@ test('the teaser\'s "Cobrar a X" opens Registrar cobro for that customer, from i
   expect(screen.getByText('desde la app')).toBeInTheDocument()
 })
 
+test('"Cobrar" carries the cobro icon, hidden from assistive technology, and keeps its name', async () => {
+  stubFetch(PANEL)
+  renderInicio()
+  await screen.findByText('$ 37.000')
+
+  const link = screen.getByRole('link', { name: 'Cobrar a Ana Pérez' })
+  expect(link.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  expect(link).toHaveTextContent('Cobrar')
+})
+
+test('the empty-state line the screen renders is the registered binding and fits its limit', async () => {
+  stubFetch(PANEL, [{ current_price: null }])
+  renderInicio()
+
+  expect((await screen.findByText(EMPTY_DETAIL)).textContent?.length).toBeLessThanOrEqual(LIMITS.emptyLine)
+})
+
 test('tapping "Te deben" opens Clientes, where the debtors section is', async () => {
   stubFetch(PANEL)
   renderInicio()
@@ -467,6 +485,30 @@ test('shows the fixed pinned-catalog notice while the pin is out of date', async
 
   const notice = await screen.findByText(PINNED_CATALOG_OUT_OF_DATE)
   expect(notice.closest('a')).toHaveAttribute('href', CATALOG)
+})
+
+test('the stale-catalog notice and the "Arrancá por las variedades" state carry the decorative attention icon; a fresh pin has none', async () => {
+  stubFetch(PANEL, [{ current_price: null }], {
+    status: { state: 'out_of_date', reason: 'telegram_unreachable', last_published_on: '2026-09-29' },
+  })
+  const { unmount } = renderInicio()
+
+  const notice = (await screen.findByText(PINNED_CATALOG_OUT_OF_DATE)).closest('a')!
+  expect(notice).toHaveClass('aviso-ambar')
+  expect(notice).toHaveAttribute('role', 'status')
+  expect(notice.querySelectorAll('svg')).toHaveLength(1)
+  expect(notice.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  const empty = screen.getByText(EMPTY_TITLE).closest('.estado-vacio')!
+  expect(empty.querySelectorAll('svg')).toHaveLength(1)
+  expect(empty.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  expect(empty).toHaveTextContent(EMPTY_DETAIL)
+  unmount()
+
+  stubFetch(PANEL, [{ current_price: { id: 1 } }])
+  const fresh = renderInicio()
+  await screen.findByText('Vendiste hoy')
+  expect(fresh.container.querySelector('.aviso-ambar')).toBeNull()
+  expect(fresh.container.querySelector('.estado-vacio')).toBeNull()
 })
 
 const STEPS_AFTER_ONE: OnboardingProgress['steps'] = [

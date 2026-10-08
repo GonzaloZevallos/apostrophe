@@ -12,11 +12,13 @@
 
 import { useState } from 'react'
 import { NetworkError, post } from '../../api/client'
+import Boton from '../../components/Boton'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import { copyText } from '../../clipboard'
 import { canShare, shareText } from '../../share'
 import { formatDateShort } from '../../format/dates'
+import { inviteExpiry } from './messages'
 
 interface Invite {
   url: string
@@ -63,22 +65,20 @@ export default function InvitePartner({ onLinkCreated }: { onLinkCreated: () => 
 
   return (
     <>
-      <button className="boton boton--suave" type="button" onClick={onInvite} disabled={invitePending}>
+      <Boton variant="secondary" icon="personaMas" onClick={onInvite} disabled={invitePending}>
         Invitá a un socio
-      </button>
+      </Boton>
       {invite !== null && (
         <div className="usuarios__invitacion">
           <div className="usuarios__link">{invite.url}</div>
           <div className="usuarios__acciones">
-            <button type="button" className="boton" onClick={onCopy}>
+            <Boton variant="primary" icon="copiar" onClick={onCopy}>
               Copiar
-            </button>
-            <button type="button" className="boton" onClick={onShare}>
-              Compartir
-            </button>
+            </Boton>
+            <Boton variant="icon" action="share" ariaLabel="Compartir" onClick={onShare} />
           </div>
-          <span className="campo__rotulo">
-            Un link de un solo uso, vence el {formatDateShort(invite.expires_at.slice(0, 10))}
+          <span className="campo__rotulo" data-copy="help">
+            {inviteExpiry(formatDateShort(invite.expires_at.slice(0, 10)))}
           </span>
         </div>
       )}

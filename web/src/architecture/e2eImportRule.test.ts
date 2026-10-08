@@ -1,5 +1,5 @@
 /**
- * The lint rule that keeps every e2e file on the worker's own backend (ADR-0037, GH-152):
+ * The lint rule that keeps every e2e file on the worker's own backend (ADR-0040, GH-152):
  * under `e2e/`, only `fixtures.ts` may import the values `test` and `expect` from
  * `@playwright/test`. The real `.oxlintrc.json` is copied next to throwaway files, so the
  * rule is exercised on an input it must reject and on the inputs it must accept, without

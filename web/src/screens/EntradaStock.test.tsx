@@ -23,6 +23,8 @@ import { stubViewport } from '../test-viewport'
 import FlashProvider from '../flash/FlashProvider'
 import { STOCK, STOCK_ENTRY, STOCK_ENTRY_NEW, VARIETIES as VARIETIES_PATH, VARIETY, pathTo } from '../routes'
 import EntradaStock from './EntradaStock'
+import { LIMITS } from '../copy/limits'
+import { expectIconAndTextRule } from '../test/iconAndTextRule'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03' }
 
@@ -756,4 +758,23 @@ test('a new entry never asks for the archived varieties', async () => {
 
   await screen.findByRole('option', { name: 'Sir Jack' })
   expect(fetch).not.toHaveBeenCalledWith('/varieties?archived=true', expect.anything())
+})
+
+test('the form keeps the icon and text rule, its help lines within their limits', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: string | URL | Request) => {
+      const url = typeof input === 'string' ? input : input.toString()
+      if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/stock') return Promise.resolve(jsonResponse(200, STOCK_VIEW))
+      return Promise.resolve(jsonResponse(500, {}))
+    }),
+  )
+  renderForm(STOCK_ENTRY_NEW)
+  await screen.findByRole('option', { name: 'Sir Jack' })
+  await userEvent.selectOptions(screen.getByLabelText('Variedad'), 'Sir Jack')
+  await screen.findByText('Hoy tiene 18,5 g')
+
+  expect(document.querySelectorAll('[data-copy="help"]').length).toBeGreaterThanOrEqual(2)
+  expectIconAndTextRule(document.body, { limits: LIMITS, optionClasses: ['pildora'] })
 })

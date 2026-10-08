@@ -19,6 +19,7 @@ import { formatGramsInput } from '../../format/money'
 import { parseGrams } from '../../format/parse'
 import { GENERIC_REFUSAL_MESSAGE } from '../Variedades'
 import { THRESHOLD_INVALID_MESSAGE, THRESHOLD_OVERRIDES, THRESHOLD_SAVED } from './thresholdMessages'
+import Boton from '../../components/Boton'
 
 /** The saved amount as a person types it: a comma, no unit. */
 function typedFrom(threshold: number | null): string {
@@ -85,9 +86,9 @@ export default function ThresholdForm({ varietyId, threshold, onDone, onCancel, 
     <div className="gasto-form">
       <div className="gasto-form__cabecera">
         <span className="gasto-form__titulo">Aviso de stock bajo</span>
-        <button type="button" className="boton--enlace gasto-form__cerrar" onClick={onCancel}>
-          Cerrar
-        </button>
+        <span className="gasto-form__cerrar">
+          <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={onCancel} />
+        </span>
       </div>
       <form className="formulario" onSubmit={onSubmit}>
         <label className="campo">
@@ -106,9 +107,9 @@ export default function ThresholdForm({ varietyId, threshold, onDone, onCancel, 
           )}
         </label>
         {offline && <SinConexion />}
-        <button className="boton" type="submit" disabled={sending}>
+        <Boton textOnly="submit" type="submit" disabled={sending}>
           Guardá el aviso
-        </button>
+        </Boton>
       </form>
     </div>
   )

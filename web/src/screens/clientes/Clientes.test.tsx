@@ -14,6 +14,8 @@
 
 import { CUSTOMER, CUSTOMER_PAYMENT, CUSTOMERS, pathTo } from '../../routes'
 import { inAppState } from '../../components/inAppState'
+import { LIMITS, SAMPLES } from '../../copy/limits'
+import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import { stubViewport } from '../../test-viewport'
 import { Outlet, createMemoryRouter, RouterProvider } from 'react-router'
 import FlashProvider from '../../flash/FlashProvider'
@@ -29,6 +31,7 @@ import customerNoPhoneFixture from '../../api/fixtures/customer-no-phone.json'
 import debtorsFixture from '../../api/fixtures/debtors.json'
 import Clientes from './Clientes'
 import ClientesLayout from './ClientesLayout'
+import { EMPTY_CUSTOMERS, NOBODY_OWES } from './messages'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -385,4 +388,34 @@ test('on a phone, opening a customer pushes an entry, and Back returns to the li
   expect(router.state.location.state).toEqual(inAppState({ pathname: CUSTOMERS }))
   await act(() => router.navigate(-1))
   expect(router.state.location.pathname).toBe(CUSTOMERS)
+})
+
+// A customer's row is a record row: it keeps its layout and takes no icon (the rule's out of scope).
+const RULE = { limits: LIMITS, samples: { name: SAMPLES.name }, optionClasses: ['lista-clientes__fila'] }
+
+test('every action on the list and in Te deben is icon + text, and Cobrar keeps its accessible name', async () => {
+  vi.mocked(fetch).mockImplementation(
+    fetchStub(() => jsonResponse(200, [customerFixture]), () => jsonResponse(200, debtorsFixture)),
+  )
+  renderClientes()
+
+  const links = await screen.findAllByRole('link', { name: `Cobrar a ${customerFixture.name}` })
+  for (const link of links) {
+    expect(link.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+    expect(link).toHaveTextContent('Cobrar')
+  }
+  const nuevo = screen.getByRole('link', { name: 'Nuevo cliente' })
+  expect(nuevo.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  expectIconAndTextRule(document.body, RULE)
+})
+
+test('the two empty states are the registered strings, mounted and within their limit', async () => {
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [])))
+  renderClientes()
+
+  const empty = await screen.findByText(EMPTY_CUSTOMERS)
+  expect(empty).toHaveAttribute('data-copy', 'emptyTitle')
+  const nobody = await screen.findByText(NOBODY_OWES)
+  expect(nobody).toHaveAttribute('data-copy', 'emptyTitle')
+  expectIconAndTextRule(document.body, RULE)
 })

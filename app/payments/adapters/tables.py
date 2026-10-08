@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from datetime import date, datetime
 
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import ForeignKey, Index, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base, UtcDateTime
@@ -21,6 +21,7 @@ PAYMENT_METHOD_MAX_LENGTH = 10
 
 class PaymentRow(Base):
     __tablename__ = "payment"
+    __table_args__ = (Index(None, "sale_id"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
     business_id: Mapped[int] = mapped_column(ForeignKey("business.id"))

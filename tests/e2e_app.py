@@ -73,7 +73,7 @@ def watch_parent(
     sleep: Callable[[float], object],
 ) -> None:
     """Ends this server once its Playwright worker `pid` is gone, so a crashed worker never
-    leaves a uvicorn alive (ADR-0037)."""
+    leaves a uvicorn alive (ADR-0040)."""
     while not gone(pid):
         sleep(interval)
     exit(0)

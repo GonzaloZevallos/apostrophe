@@ -24,6 +24,7 @@
 import { type FormEvent, useState } from 'react'
 import { ApiError, NetworkError, UNKNOWN_CODE } from '../api/client'
 import { kindOf, resolveOverride, type RefusalCode } from '../api/refusals'
+import Boton from '../components/Boton'
 import SinConexion from '../components/SinConexion'
 import { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import { changePassword } from '../session'
@@ -123,21 +124,23 @@ export default function CambiarContrasena({ onClose, onSaved }: CambiarContrasen
               </span>
             )}
           </label>
-          <button type="button" className="boton-enlace" onClick={() => setReveal((shown) => !shown)}>
-            {reveal ? 'Ocultar' : 'Mostrar'}
-          </button>
+          <span className="campo__mostrar">
+            <Boton variant="link" onClick={() => setReveal((shown) => !shown)}>
+              {reveal ? 'Ocultar' : 'Mostrar'}
+            </Boton>
+          </span>
           {formError !== null && (
             <span className="campo__error" role="alert">
               {formError}
             </span>
           )}
           {offline && <SinConexion />}
-          <button className="boton" type="submit" disabled={sending}>
+          <Boton textOnly="submit" type="submit" disabled={sending}>
             Guardar
-          </button>
-          <button type="button" className="boton-enlace" onClick={onClose}>
+          </Boton>
+          <Boton variant="link" onClick={onClose}>
             Cancelar
-          </button>
+          </Boton>
         </form>
       </div>
     </div>

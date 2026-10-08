@@ -4,7 +4,7 @@
  * OS assigns an unused ephemeral port — reads it back, releases the socket and
  * resolves the port so the caller can bind it again itself. No retry here: a port taken
  * between this release and the real bind makes the child exit, and the fixture retries
- * with a new port (ADR-0037).
+ * with a new port (ADR-0040).
  */
 
 import * as net from 'node:net'

@@ -1,5 +1,5 @@
 /**
- * The e2e check's one fixture file (ADR-0037, GH-152). Each Playwright worker owns its
+ * The e2e check's one fixture file (ADR-0040, GH-152). Each Playwright worker owns its
  * own backend: its own uvicorn running `tests.e2e_app:create_e2e_app` (the real app with
  * `E2eTelegram` and no upkeep ticker), on its own free port, over its own throwaway SQLite
  * file — never `scripts/serve.sh`, which sources `.env`. So two workers never share an

@@ -13,6 +13,7 @@ import { useLeaveGuard } from '../../components/useLeaveGuard'
 import { useFlash } from '../../flash/useFlash'
 import { VARIETIES } from '../../routes'
 import { VARIETY_SAVED } from '../Variedades'
+import Boton from '../../components/Boton'
 import VarietyNameForm from './VarietyNameForm'
 
 export default function VarietyNew() {
@@ -39,9 +40,9 @@ export default function VarietyNew() {
         <div className="gasto-form">
           <div className="gasto-form__cabecera">
             <span className="gasto-form__titulo">Nueva variedad</span>
-            <button type="button" className="boton--enlace gasto-form__cerrar" onClick={leave}>
-              Cerrar
-            </button>
+            <span className="gasto-form__cerrar">
+              <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={leave} />
+            </span>
           </div>
           <VarietyNameForm onSaved={onSaved} onDirtyChange={setDirty} />
         </div>

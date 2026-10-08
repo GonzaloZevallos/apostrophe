@@ -5,12 +5,15 @@
  * unrecognised error body means.
  */
 
-export const ERROR_GENERICO_MENSAJE = 'Algo falló. Probá de nuevo.'
+import AvisoAmbar from './AvisoAmbar'
+import { ERROR_GENERICO_MENSAJE } from './estadosMessages'
+
+export { ERROR_GENERICO_MENSAJE }
 
 export default function ErrorGenerico() {
   return (
-    <div className="aviso-ambar" role="alert">
+    <AvisoAmbar attention role="alert">
       <span className="aviso-ambar__titulo">{ERROR_GENERICO_MENSAJE}</span>
-    </div>
+    </AvisoAmbar>
   )
 }

@@ -16,6 +16,8 @@ import type { Me } from '../api/me'
 import * as clipboard from '../clipboard'
 import * as share from '../share'
 import Catalogo from './Catalogo'
+import { iconAndTextProblems } from '../test/iconAndTextRule'
+import { EMPTY_STATE_DETAIL, EMPTY_STATE_TITLE } from './catalogMessages'
 
 vi.mock('../clipboard', () => ({ copyText: vi.fn().mockResolvedValue(true) }))
 vi.mock('../share', () => ({
@@ -395,4 +397,53 @@ test('the catalog screen edits no variety attribute: no Editar button and no fie
   expect(screen.queryByText('Atributos en el catálogo')).not.toBeInTheDocument()
   expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Guardar' })).not.toBeInTheDocument()
+})
+
+test('Publicar is icon + text: the icon is hidden, so the name stays the word', async () => {
+  renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
+
+  const publish = await screen.findByRole('button', { name: 'Publicar' })
+  const icon = publish.querySelector('svg')
+  expect(icon).not.toBeNull()
+  expect(icon).toHaveAttribute('aria-hidden', 'true')
+})
+
+test('"Editar encabezado y pie" is a text link with no icon', async () => {
+  renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
+
+  const link = await screen.findByRole('link', { name: 'Editar encabezado y pie' })
+  expect(link.querySelector('svg')).toBeNull()
+})
+
+test('the empty state shows the registered title and line, each within its limit', async () => {
+  renderCatalogo(
+    vi.fn((url: string) =>
+      Promise.resolve(jsonResponse(200, url === '/pinned-catalog' ? DEFAULT_PINNED_CATALOG : { ...CATALOG, text: null })),
+    ),
+  )
+
+  expect(await screen.findByText(EMPTY_STATE_TITLE)).toBeInTheDocument()
+  expect(screen.getByText(EMPTY_STATE_DETAIL)).toBeInTheDocument()
+  expect(Array.from(EMPTY_STATE_TITLE).length).toBeLessThanOrEqual(40)
+  expect(Array.from(EMPTY_STATE_DETAIL).length).toBeLessThanOrEqual(80)
+})
+
+test('Compartir keeps its word and Copiar is icon + text, the icons hidden; "Editar encabezado y pie" stays a text link', async () => {
+  renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
+
+  const share = await screen.findByRole('button', { name: 'Compartir' })
+  const copy = screen.getByRole('button', { name: 'Copiar' })
+
+  for (const button of [share, copy]) {
+    expect(button.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+    expect(button).not.toHaveClass('boton-icono')
+  }
+  expect(share).toHaveTextContent('Compartir')
+  expect(copy).toHaveTextContent('Copiar')
+  const edit = screen.getByRole('link', { name: 'Editar encabezado y pie' })
+  expect(edit.querySelector('svg')).toBeNull()
+  expect(screen.queryByText('Volver')).not.toBeInTheDocument()
+  // The variety name links of "Qué no sale y por qué" are plain row links, not controls of the rule.
+  const problems = iconAndTextProblems(document.body).filter((problem) => !problem.includes('catalogo__fila-nombre'))
+  expect(problems).toEqual([])
 })
