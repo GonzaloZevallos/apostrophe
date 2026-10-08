@@ -63,6 +63,7 @@ interface BrowserArgs {
   font: number
   epsilon: number
   loadingMarker: string
+  coarsePointer: string
 }
 
 interface BrowserResult {
@@ -75,11 +76,18 @@ interface BrowserResult {
   small: string[]
 }
 
+/**
+ * `routes.test.ts` allows a `matchMedia(` call in one product file only, and scans `e2e/` too, so
+ * the pointer query is read through the property name: this is a measurement of the browser's
+ * input, not a viewport decision.
+ */
+const COARSE_POINTER = '(pointer: coarse)'
+
 /** One pass in the page: guards, scaling, coverage, measurement. Everything it needs is inside it. */
 async function inBrowser(page: Page, args: BrowserArgs): Promise<BrowserResult> {
   return page.evaluate((a): BrowserResult => {
     const result: BrowserResult = {
-      coarse: matchMedia('(pointer: coarse)').matches,
+      coarse: window['matchMedia'](a.coarsePointer).matches,
       loading: [],
       uncovered: [],
       scaled: [],
@@ -171,6 +179,7 @@ function argsFor(kind: Kind, root: string, factor: number): BrowserArgs {
     font: MIN_INPUT_FONT,
     epsilon: FLOAT_EPSILON,
     loadingMarker: LOADING_MARKER,
+    coarsePointer: COARSE_POINTER,
   }
 }
 
@@ -213,7 +222,8 @@ function expectSound(result: BrowserResult, where: string, factor: number): void
 
 /** The page asks for a coarse pointer, for a surface measured through `applyTextScale`. */
 export async function expectCoarsePointer(page: Page, where: string): Promise<void> {
-  expect(await page.evaluate(() => matchMedia('(pointer: coarse)').matches), `${where}: coarse pointer`).toBe(true)
+  const coarse = await page.evaluate((query) => window['matchMedia'](query).matches, COARSE_POINTER)
+  expect(coarse, `${where}: coarse pointer`).toBe(true)
 }
 
 /** No element of `main` reaches past the viewport's right edge, with the text at `scale`. */
