@@ -26,6 +26,7 @@ import {
   relative,
   withdrawalNewFor,
 } from '../../routes'
+import { iconAndTextProblems } from '../../test/iconAndTextRule'
 import VarietyPage from './VarietyPage'
 import VarietyRoute from './VarietyRoute'
 
@@ -205,6 +206,60 @@ describe('the summary line', () => {
 
     const line = (await screen.findByText('Oculta')).closest('p')
     expect(line).toHaveTextContent('18 g · baja · Oculta · 24 días')
+  })
+})
+
+describe('the icon and text rule', () => {
+  test("a live page's actions carry an icon hidden from assistive technology, their names stay the words", async () => {
+    renderPage(VARIETY_ONE)
+
+    await screen.findByRole('link', { name: '+ Entrada' })
+    for (const name of ['+ Entrada', 'Nuevo precio', 'Sacar del stock']) {
+      const link = screen.getByRole('link', { name })
+      expect(link.querySelectorAll('svg')).toHaveLength(1)
+      expect(link.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+    }
+  })
+
+  test("a price row's delete is the icon-only delete: no word, a 44 px class and its current name", async () => {
+    renderPage(VARIETY_ONE)
+
+    const deletes = await screen.findAllByRole('button', { name: 'Borrar este precio' })
+    expect(deletes.length).toBeGreaterThan(0)
+    for (const button of deletes) {
+      expect(button).toHaveClass('boton-icono')
+      expect(button.textContent).toBe('')
+      expect(button.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+    }
+  })
+
+  test('"Eliminar variedad" is the icon-only delete with its current word as its name', async () => {
+    renderPage(VARIETY_ONE, { 'GET /varieties/1': () => json(200, { ...VARIETY_ROW, removal: 'delete' }) })
+
+    const button = await screen.findByRole('button', { name: 'Eliminar variedad' })
+    expect(button).toHaveClass('boton-icono')
+    expect(button.textContent).toBe('')
+  })
+
+  test('what the live page keeps as text is only its links and the switch; Archivar variedad has its icon', async () => {
+    renderPage(VARIETY_ONE, { 'GET /varieties/1': () => json(200, { ...VARIETY_ROW, removal: 'archive' }) })
+
+    await screen.findByRole('link', { name: '+ Entrada' })
+    expect(await screen.findByRole('button', { name: 'Archivar variedad' })).toBeInTheDocument()
+    const problems = iconAndTextProblems(screen.getByRole('main'))
+    // The low-stock switch is a switch with its label beside it, no icon and no visible text
+    // of its own (the rule's helper reads any text-less button as an icon-only control).
+    expect(problems.filter((problem) => !problem.includes('Avisar cuando quede poco'))).toEqual([])
+  })
+
+  test('an archived variety keeps only Restaurar, with its icon', async () => {
+    renderPage(VARIETY_ONE, {
+      'GET /varieties/1': () => json(200, { ...VARIETY_ROW, archived: true, removal: null }),
+      'GET /stock?archived=true': () => json(200, stockOf(STOCK_ROW)),
+    })
+
+    expect(await screen.findByRole('button', { name: 'Restaurar' })).toBeInTheDocument()
+    expect(iconAndTextProblems(screen.getByRole('main'))).toEqual([])
   })
 })
 

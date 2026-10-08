@@ -12,6 +12,7 @@ import { ApiError, NetworkError, del } from '../../api/client'
 import { invalidateResource } from '../../api/keys'
 import { pricingSettingsQueryOptions } from '../../api/pricingSettings'
 import { isGone } from '../../api/refusals'
+import Boton from '../../components/Boton'
 import ConfirmDialog from '../../components/ConfirmDialog'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import GoneNotice from '../../components/GoneNotice'
@@ -101,14 +102,7 @@ export default function PriceRows({ varietyId, history, currentPriceId, limit, r
               )}
             </span>
             {!readOnly && (
-              <button
-                type="button"
-                className="historial-fila__borrar"
-                aria-label="Borrar este precio"
-                onClick={() => setDeleting(entry)}
-              >
-                Borrar
-              </button>
+              <Boton variant="icon" action="delete" ariaLabel="Borrar este precio" onClick={() => setDeleting(entry)} />
             )}
           </div>
         ))}

@@ -18,6 +18,8 @@ import { useEffect, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useOutletContext, useSearchParams } from 'react-router'
 import InAppLink from '../components/InAppLink'
+import AnswerButton from '../components/AnswerButton'
+import BotonLink from '../components/BotonLink'
 import { ApiError, NetworkError } from '../api/client'
 import { type Expense, deleteExpense, monthlyView } from '../api/expenses'
 import { invalidateResource, keys } from '../api/keys'
@@ -34,8 +36,9 @@ import Loading from '../components/Loading'
 import { useFlash } from '../flash/useFlash'
 import { EXPENSE_CATEGORIES, EXPENSE_NEW } from '../routes'
 import ExpenseForm from './expenses/ExpenseForm'
+import { FLOWER_NOTICE } from './gastosMessages'
 
-export const FLOWER_NOTICE = 'Las compras de flores no van acá: se cargan en Stock.'
+export { FLOWER_NOTICE }
 export const NO_DISCARD_TITLE = 'No, dejala'
 export const YES_DELETE_TITLE = 'Sí, borrala'
 
@@ -103,12 +106,12 @@ function DeleteConfirm({
           </span>
         )}
         <div className="panel__botones">
-          <button type="button" className="boton boton--suave" onClick={onCancel}>
+          <AnswerButton kind="keep" onClick={onCancel}>
             {NO_DISCARD_TITLE}
-          </button>
-          <button type="button" className="boton boton--destructivo" disabled={sending} onClick={confirm}>
+          </AnswerButton>
+          <AnswerButton kind="confirm" disabled={sending} onClick={confirm}>
             {YES_DELETE_TITLE}
-          </button>
+          </AnswerButton>
         </div>
       </div>
     </div>
@@ -169,7 +172,7 @@ export default function Gastos() {
         <div className="gastos__cabecera">
           <span className="encabezado__titulo gastos__titulo">Gastos</span>
           <InAppLink to={EXPENSE_NEW} className="gastos__cargar" aria-label="Cargar gasto">
-            <Icono nombre="agregar" size={20} strokeWidth={1.8} />
+            <Icono nombre="agregar" />
             <span className="gastos__cargar-texto">Cargar gasto</span>
           </InAppLink>
           <div className="gastos__mes">
@@ -179,7 +182,7 @@ export default function Gastos() {
               aria-label="Mes anterior"
               onClick={() => moveMonth(-1)}
             >
-              <Icono nombre="atras" size={18} strokeWidth={1.8} />
+              <Icono nombre="atras" />
             </button>
             <span className="gastos__mes-etiqueta">{formatMonthLong(month)}</span>
             <button
@@ -188,7 +191,7 @@ export default function Gastos() {
               aria-label="Mes siguiente"
               onClick={() => moveMonth(1)}
             >
-              <Icono nombre="chevron" size={18} strokeWidth={1.8} />
+              <Icono nombre="chevron" />
             </button>
           </div>
         </div>
@@ -254,9 +257,9 @@ export default function Gastos() {
 
         <div className="gastos__pie">
           <span className="pie">{FLOWER_NOTICE}</span>
-          <InAppLink to={EXPENSE_CATEGORIES} className="boton--enlace">
+          <BotonLink to={EXPENSE_CATEGORIES} variant="link">
             Categorías
-          </InAppLink>
+          </BotonLink>
         </div>
       </div>
 

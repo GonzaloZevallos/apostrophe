@@ -13,9 +13,8 @@
  * bot's messages and saves nothing, so the number it fills is a typed change like any other.
  */
 
-import { type FormEvent, useEffect, useId, useState } from 'react'
+import { type FormEvent, type KeyboardEvent, useEffect, useId, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import InAppLink from '../../components/InAppLink'
 import { ApiError, NetworkError, get, post } from '../../api/client'
 import { invalidateResource, keys } from '../../api/keys'
 import { PINNED_CATALOG_REFUSAL_OVERRIDES, resolveOverride } from '../../api/refusals'
@@ -24,17 +23,20 @@ import ErrorGenerico from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import Loading from '../../components/Loading'
 import SettingsGroup, { type LeaveWording } from './SettingsGroup'
+import Boton from '../../components/Boton'
+import BotonLink from '../../components/BotonLink'
+import MasInfo from '../../components/MasInfo'
 import { CATALOG } from '../../routes'
+import {
+  CHANNEL_CHAT_HELP,
+  LOAD_THE_TOKEN_FIRST,
+  OWN_CHAT_INFO,
+  PREVIOUS_PIN_NOTICE,
+} from './integrationsMessages'
 
 const TITLE = 'Integraciones'
 const TEST_SENT_TOAST: SuccessToast = 'Prueba enviada'
-const PREVIOUS_PIN_NOTICE =
-  'El mensaje fijado anterior queda como está; desfijalo vos en Telegram.'
 const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
-const CHANNEL_CHAT_HELP = 'Es el @usuario o el enlace del canal donde se publica el catálogo.'
-const OWN_CHAT_HELP =
-  'Abrí tu bot en Telegram y tocá Iniciar. Tu número lo ves con @userinfobot, o tocá Buscar mi chat.'
-const LOAD_THE_TOKEN_FIRST = 'Cargá el token primero'
 
 const LEAVE: LeaveWording = {
   question: '¿Descartás el cambio?',
@@ -155,8 +157,7 @@ export function IntegrationsForm({
     }
   }
 
-  async function onProbarlo(event: FormEvent<HTMLFormElement>): Promise<void> {
-    event.preventDefault()
+  async function onProbarlo(): Promise<void> {
     setTestError(null)
     setTestOffline(false)
     setPreviousPinLeft(false)
@@ -185,11 +186,23 @@ export function IntegrationsForm({
     }
   }
 
+  // Probarlo is icon + text, so it is not a submit button: the form still submits on Enter
+  // from a field, exactly as it did, through the same handler.
+  function onFormSubmit(event: FormEvent<HTMLFormElement>): void {
+    event.preventDefault()
+  }
+
+  function onFormKeyDown(event: KeyboardEvent<HTMLFormElement>): void {
+    if (event.key !== 'Enter' || !(event.target instanceof HTMLInputElement)) return
+    event.preventDefault()
+    if (!testing) void onProbarlo()
+  }
+
   return (
     <>
       {toast !== null && <AvisoExito texto={toast} />}
 
-      <form className="formulario" onSubmit={(event) => void onProbarlo(event)}>
+      <form className="formulario" onSubmit={onFormSubmit} onKeyDown={onFormKeyDown}>
         {tokenFieldOpen ? (
           <label className="campo">
             <span className="campo__rotulo">Token del bot</span>
@@ -209,9 +222,9 @@ export function IntegrationsForm({
                 Guardado el {formatDate(accepted.tokenSavedOn as string)} · no se muestra más
               </span>
             </span>
-            <button type="button" className="boton-enlace" onClick={() => setTokenChanging(true)}>
+            <Boton variant="link" onClick={() => setTokenChanging(true)}>
               Cambiar
-            </button>
+            </Boton>
           </div>
         )}
 
@@ -245,19 +258,19 @@ export function IntegrationsForm({
               value={ownChatInput}
               onChange={(event) => setOwnChatInput(event.target.value)}
             />
-            <button
-              type="button"
-              className="boton-enlace"
+            <Boton
+              variant="secondary"
+              icon="buscar"
               disabled={!canSearch || searching}
-              aria-describedby={canSearch ? undefined : `${fieldId}-search-help`}
+              ariaDescribedBy={canSearch ? undefined : `${fieldId}-search-help`}
               onClick={() => void onSearchOwnChat()}
             >
               Buscar mi chat
-            </button>
+            </Boton>
           </div>
-          <span id={`${fieldId}-own-help`} className="campo__ayuda">
-            {OWN_CHAT_HELP}
-          </span>
+          <div id={`${fieldId}-own-help`}>
+            <MasInfo line={OWN_CHAT_INFO.line} more={OWN_CHAT_INFO.more} />
+          </div>
           {!canSearch && (
             <span id={`${fieldId}-search-help`} className="campo__ayuda">
               {LOAD_THE_TOKEN_FIRST}
@@ -277,15 +290,15 @@ export function IntegrationsForm({
           </div>
         )}
 
-        <button className="boton" type="submit" disabled={testing}>
+        <Boton icon="probar" disabled={testing} onClick={() => void onProbarlo()}>
           Probarlo
-        </button>
+        </Boton>
       </form>
 
       {showCatalogLink && (
-        <InAppLink to={CATALOG} className="boton--enlace">
+        <BotonLink to={CATALOG} variant="link">
           Ir al catálogo
-        </InAppLink>
+        </BotonLink>
       )}
     </>
   )

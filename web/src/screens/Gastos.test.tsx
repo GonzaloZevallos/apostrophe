@@ -13,6 +13,7 @@ import { GONE_NOTICE } from '../api/refusals'
 import { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import { SIN_CONEXION_TITULO } from '../components/SinConexion'
 import { EXPENSES, EXPENSE_CATEGORIES } from '../routes'
+import { expectIconAndTextRule } from '../test/iconAndTextRule'
 import { FLOWER_NOTICE } from './Gastos'
 import { CATEGORY_GONE } from './expenses/ExpenseForm'
 import { type FetchImpl, ME, jsonResponse, renderExpenses } from './expenses/renderExpenses'
@@ -258,6 +259,20 @@ test('closing the edit with changes asks before discarding; an untouched close i
   await userEvent.click(screen.getByRole('button', { name: 'Sí, descartalos' }))
   expect(screen.queryByLabelText('Detalle')).not.toBeInTheDocument()
   expect(fetch).not.toHaveBeenCalledWith('/expenses/9', expect.objectContaining({ method: 'PUT' }))
+})
+
+test('the edit form follows the icon and text rule: delete icon-only, create-category with its icon', async () => {
+  renderExpenses([EXPENSES], store([...SEED]))
+
+  await userEvent.click(await screen.findByText('Bolsas'))
+  const del = await screen.findByRole('button', { name: 'Borrar gasto' })
+  expect(del).toHaveClass('boton-icono')
+  await userEvent.click(screen.getByRole('button', { name: 'Crear una categoría nueva' }))
+  expect(screen.getByRole('button', { name: 'Crear categoría' }).querySelector('svg')).toHaveAttribute(
+    'aria-hidden',
+    'true',
+  )
+  expectIconAndTextRule(document.querySelector<HTMLElement>('.gasto-form') ?? document.body)
 })
 
 test('deleting names its date, category and amount, toasts in place, and the empty category goes', async () => {

@@ -16,7 +16,7 @@ export default function BackArrow({ id }: { id: ScreenId }) {
   if (parent === undefined) return null
   return (
     <div className="flecha-atras">
-      <Boton variant="link" onClick={back}>
+      <Boton variant="back" onClick={back}>
         {`‹ ${parent.title}`}
       </Boton>
     </div>

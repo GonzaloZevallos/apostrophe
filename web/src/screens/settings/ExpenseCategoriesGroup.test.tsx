@@ -15,6 +15,7 @@ import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import { GONE_NOTICE } from '../../api/refusals'
 import { SIN_CONEXION_TITULO } from '../../components/SinConexion'
+import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import ExpenseCategoriesGroup, { CANNOT_REMOVE } from './ExpenseCategoriesGroup'
 
 function jsonResponse(status: number, body: unknown): Response {
@@ -310,4 +311,34 @@ test('a partner changing the list behind the screen does not make a clean group 
   await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
 
   expect(await screen.findByText('Lista de grupos')).toBeInTheDocument()
+})
+
+test('with no categories the group follows the icon and text rule', async () => {
+  renderGroup(async () => jsonResponse(200, []))
+  await screen.findByLabelText('Nueva categoría')
+  expectIconAndTextRule(document.body)
+})
+
+test('"Eliminar" is the icon-only delete: no visible word, a 44 px control named "Eliminar"', async () => {
+  renderGroup(serving())
+
+  const remove = await screen.findByRole('button', { name: 'Eliminar' })
+
+  expect(remove).toHaveClass('boton-icono')
+  expect(remove).toHaveTextContent('')
+  expect(remove.querySelector('svg')).not.toBeNull()
+  expectIconAndTextRule(document.body)
+})
+
+test('"Renombrar" is the icon-only edit: a 44 px control named "Renombrar" with no visible word', async () => {
+  renderGroup(serving())
+
+  const rename = await screen.findByRole('button', { name: 'Renombrar' })
+
+  expect(rename).toHaveClass('boton-icono')
+  expect(rename).toHaveTextContent('')
+  expect(rename.querySelector('svg')).not.toBeNull()
+  expect(screen.getByRole('button', { name: 'Cerrar' })).toHaveClass('boton-icono')
+  expect(screen.queryByText('Volver')).not.toBeInTheDocument()
+  expectIconAndTextRule(document.body)
 })

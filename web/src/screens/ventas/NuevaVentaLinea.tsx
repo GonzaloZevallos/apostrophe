@@ -14,6 +14,7 @@ import OpcionInterruptor from '../../components/OpcionInterruptor'
 import ReglaInsignia from '../../components/ReglaInsignia'
 import { formatGrams, formatMoney } from '../../format/money'
 import { type priceLine, fromHundredths } from '../../sales/pricing'
+import { GRAMS_HELP } from '../../sales/messages'
 import { useViewport } from '../../shell/useViewport'
 import type { Variety } from '../Variedades'
 
@@ -173,7 +174,9 @@ export default function NuevaVentaLinea({
           onFocus={(event) => scrollFieldIntoView(event.currentTarget)}
           onChange={(event) => onChange({ grams: event.target.value })}
         />
-        <span className="campo__ayuda">Coma, hasta dos decimales</span>
+        <span className="campo__ayuda" data-copy="help">
+          {GRAMS_HELP}
+        </span>
       </label>
       <div className="nueva-venta__linea-opciones">
         {isComputer ? (
@@ -232,9 +235,7 @@ export default function NuevaVentaLinea({
         </div>
       )}
       {canRemove && (
-        <Boton variant="link" ariaLabel={`Quitar línea ${n}`} onClick={onRemove}>
-          Quitar
-        </Boton>
+        <Boton variant="icon" action="delete" ariaLabel={`Quitar línea ${n}`} onClick={onRemove} />
       )}
     </div>
   )

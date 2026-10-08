@@ -5,6 +5,8 @@
  * screen builds its own dialog markup.
  */
 
+import AnswerButton from './AnswerButton'
+
 export interface ConfirmDialogProps {
   title: string
   detail: string
@@ -27,12 +29,12 @@ export default function ConfirmDialog({
       <span className="confirmacion__titulo">{title}</span>
       <span className="confirmacion__detalle">{detail}</span>
       <div className="confirmacion__acciones">
-        <button type="button" className="boton boton--suave" onClick={onCancel}>
+        <AnswerButton kind="keep" onClick={onCancel}>
           {cancelText}
-        </button>
-        <button type="button" className="boton boton--destructivo" onClick={onConfirm}>
+        </AnswerButton>
+        <AnswerButton kind="confirm" onClick={onConfirm}>
           {confirmText}
-        </button>
+        </AnswerButton>
       </div>
     </div>
   )

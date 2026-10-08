@@ -9,7 +9,9 @@
  */
 
 import { useQuery } from '@tanstack/react-query'
-import { Link } from 'react-router'
+
+import Boton from '../../components/Boton'
+import BotonLink from '../../components/BotonLink'
 import { NetworkError } from '../../api/client'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import Loading from '../../components/Loading'
@@ -18,10 +20,10 @@ import { VARIETIES, VARIETY, pathTo } from '../../routes'
 import { useViewport } from '../../shell/useViewport'
 import { archivedVarietiesQueryOptions } from './archivedVarieties'
 import { useRestore } from './useRestore'
+import { NO_ARCHIVED_MESSAGE } from './varietiesMessages'
 import VarietyRowLink from './VarietyRowLink'
 import { varietiesByName } from './varietiesByName'
 
-export const NO_ARCHIVED_MESSAGE = 'No tenés variedades archivadas'
 
 export default function ArchivedVarieties() {
   const computer = useViewport() === 'computer'
@@ -33,9 +35,9 @@ export default function ArchivedVarieties() {
     <main className="pantalla variedades">
       <div className="cuerpo">
         <div className="encabezado__fila">
-          <Link to={VARIETIES} className="boton--enlace">
+          <BotonLink to={VARIETIES} variant="back">
             ‹ Variedades
-          </Link>
+          </BotonLink>
         </div>
         <h1 className="encabezado__titulo">Archivadas</h1>
         {notice}
@@ -43,7 +45,7 @@ export default function ArchivedVarieties() {
         {failure === null && query.data === undefined && <Loading />}
         {query.data !== undefined && query.data.length === 0 && (
           <div className="estado-vacio">
-            <span className="estado-vacio__titulo">{NO_ARCHIVED_MESSAGE}</span>
+            <span className="estado-vacio__titulo" data-copy="emptyTitle">{NO_ARCHIVED_MESSAGE}</span>
           </div>
         )}
         {query.data !== undefined && query.data.length > 0 && (
@@ -56,14 +58,9 @@ export default function ArchivedVarieties() {
                     <span className="variedad-fila__oculta">Archivada</span>
                   </span>
                 </VarietyRowLink>
-                <button
-                  type="button"
-                  className="boton boton--suave variedad-archivada__restaurar"
-                  disabled={sending}
-                  onClick={() => void restore(variety.id)}
-                >
+                <Boton variant="secondary" icon="restaurar" disabled={sending} onClick={() => void restore(variety.id)}>
                   Restaurar
-                </button>
+                </Boton>
               </div>
             ))}
           </div>

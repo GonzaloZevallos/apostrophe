@@ -20,13 +20,13 @@ import { login } from '../session'
 import SinConexion from '../components/SinConexion'
 import { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import AuthPage from '../components/AuthPage'
+import Boton from '../components/Boton'
 import PasswordField from '../components/PasswordField'
-import { BRAKE_MESSAGE } from './authMessages'
+import { BRAKE_MESSAGE, INVITE_ONLY_LINE, LOGIN_HINT } from './authMessages'
 
 export const CREDENTIALS_WRONG = 'Email o contraseña incorrectos'
-export const LOGIN_HINT = 'Después de 5 intentos fallidos, el email queda bloqueado 15 minutos'
 export const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
-export { BRAKE_MESSAGE, ERROR_GENERICO_MENSAJE as RETRY_MESSAGE }
+export { BRAKE_MESSAGE, LOGIN_HINT, ERROR_GENERICO_MENSAJE as RETRY_MESSAGE }
 
 const LOGIN_OVERRIDES: Partial<Record<RefusalCode, 'locked'>> = {
   'account.login_locked': 'locked',
@@ -87,9 +87,9 @@ export default function Entrar() {
           />
         </label>
         <PasswordField label="Contraseña" value={password} onChange={setPassword} error={error} />
-        <button className="boton" type="submit" disabled={sending}>
+        <Boton textOnly="submit" type="submit" disabled={sending}>
           Entrá
-        </button>
+        </Boton>
         {locked ? (
           <span className="campo__error" role="alert">
             {BRAKE_MESSAGE}
@@ -99,7 +99,7 @@ export default function Entrar() {
         )}
         {offline && <SinConexion />}
       </form>
-      <div className="pie">Para usar apostrophe te tiene que invitar un negocio.</div>
+      <div className="pie">{INVITE_ONLY_LINE}</div>
     </AuthPage>
   )
 }

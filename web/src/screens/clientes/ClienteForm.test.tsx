@@ -12,6 +12,7 @@ import { SheetRouterProvider } from '../../components/useSheetStack'
 import { stubViewport } from '../../test-viewport'
 import { StrictMode } from 'react'
 import { inAppState } from '../../components/inAppState'
+import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -488,4 +489,11 @@ test.each([
   expect(await screen.findByText('la ficha')).toBeInTheDocument()
   expect(router.state.historyAction).toBe('POP')
   expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
+})
+
+test('the form follows the icon and text rule: its submit and its Cerrar are text controls of the closed kinds', () => {
+  renderForm(CUSTOMER_NEW)
+
+  expect(screen.getByRole('button', { name: 'Guardá y usá' })).toHaveAttribute('type', 'submit')
+  expectIconAndTextRule(document.body)
 })

@@ -34,7 +34,7 @@ export default function OnboardingNotice({ progress }: { progress: OnboardingPro
     <>
       <span className="aviso-onboarding__titulo">
         <span className="aviso-onboarding__texto">{NOTICE_TITLE}</span>
-        <Icono nombre="chevron" size={18} strokeWidth={1.8} />
+        <Icono nombre="chevron" />
       </span>
       <span className="aviso-onboarding__conteo">{`${progress.count} de ${STEP_COUNT} pasos`}</span>
       <StepIndicator steps={progress.steps} current={current} />

@@ -23,6 +23,7 @@ import { catalogQueryOptions, writeCatalog, type Catalog } from '../../api/catal
 import { ApiError, NetworkError, UNKNOWN_CODE, put } from '../../api/client'
 import { kindOf, resolveOverride, type RefusalCode } from '../../api/refusals'
 import AvisoExito from '../../components/AvisoExito'
+import Boton from '../../components/Boton'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import Loading from '../../components/Loading'
@@ -181,9 +182,9 @@ function MessageForm({ initial, onSaved, onDirtyChange }: MessageFormProps) {
           </span>
         )}
         {offline && <SinConexion />}
-        <button className="boton" type="submit" disabled={saving}>
+        <Boton textOnly="submit" type="submit" disabled={saving}>
           Guardá el mensaje
-        </button>
+        </Boton>
       </form>
     </>
   )

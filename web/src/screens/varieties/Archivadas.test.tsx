@@ -13,6 +13,8 @@ import { afterEach, describe, expect, test, vi } from 'vitest'
 import type { Me } from '../../api/me'
 import FlashProvider from '../../flash/FlashProvider'
 import { ARCHIVED_VARIETIES, VARIETIES, VARIETY, pathTo, relative } from '../../routes'
+import { LIMITS, SAMPLES } from '../../copy/limits'
+import { iconAndTextProblems, expectIconAndTextRule } from '../../test/iconAndTextRule'
 import Variedades from '../Variedades'
 import ArchivedIndex from './ArchivedIndex'
 import ArchivedVarieties from './ArchivedVarieties'
@@ -116,6 +118,23 @@ describe('Archivadas (N) on Variedades', () => {
 })
 
 describe('the Archivadas card', () => {
+  test('its empty state is measured copy and the screen follows the rule', async () => {
+    renderAt(ARCHIVED_VARIETIES, { 'GET /varieties?archived=true': () => json(200, []) })
+    const title = await screen.findByText('No tenés variedades archivadas')
+
+    expect(title).toHaveAttribute('data-copy', 'emptyTitle')
+    expectIconAndTextRule(screen.getByRole('main'), { limits: LIMITS, samples: SAMPLES })
+    title.textContent = 'x'.repeat(LIMITS.emptyTitle + 1)
+    expect(iconAndTextProblems(screen.getByRole('main'), { limits: LIMITS, samples: SAMPLES })).toHaveLength(1)
+  })
+
+  test('with archived varieties, Restaurar has its icon and the screen follows the rule', async () => {
+    renderAt(ARCHIVED_VARIETIES)
+    await screen.findByText('Alfa Vieja')
+
+    expectIconAndTextRule(screen.getByRole('main'), { optionClasses: ['variedad-fila'] })
+  })
+
   test('lists the archived varieties by name, each marked Archivada with Restaurar', async () => {
     renderAt(ARCHIVED_VARIETIES)
     await screen.findByText('Alfa Vieja')

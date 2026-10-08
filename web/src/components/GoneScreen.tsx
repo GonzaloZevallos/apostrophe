@@ -5,7 +5,7 @@
  * name only the list to go back to, e.g. "Clientes" / /clientes.
  */
 
-import { Link } from 'react-router'
+import BotonLink from './BotonLink'
 import { GONE_DETAIL } from '../api/refusals'
 
 export default function GoneScreen({ label, to }: { label: string; to: string }) {
@@ -14,9 +14,9 @@ export default function GoneScreen({ label, to }: { label: string; to: string })
       <div className="cuerpo">
         <div className="estado-vacio">
           <span className="estado-vacio__titulo">{GONE_DETAIL}</span>
-          <Link className="boton" to={to}>
+          <BotonLink variant="primary" icon="atras" to={to}>
             Volver a {label}
-          </Link>
+          </BotonLink>
         </div>
       </div>
     </main>

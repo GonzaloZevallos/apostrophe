@@ -127,14 +127,12 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
         <span className="cliente-sheet__manija" aria-hidden="true" />
         <div className="cliente-sheet__encabezado">
           <span className="panel__titulo">Elegir cliente</span>
-          <Boton variant="link" onClick={chooser.close}>
-            Cerrar
-          </Boton>
+          <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={chooser.close} />
         </div>
         <label className="campo campo--buscar">
           <span className="campo__rotulo visualmente-oculto">Buscar</span>
           <span className="campo--buscar__icono">
-            <Icono nombre="buscar" size={18} strokeWidth={1.8} />
+            <Icono nombre="buscar" />
           </span>
           <input
             className="campo__input campo--buscar__input"
@@ -170,6 +168,7 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
         {allowNone && (
           <Boton
             variant="secondary"
+            icon="clientes"
             onClick={() => {
               onChosen(null)
               chooser.closeAll()
@@ -179,7 +178,7 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
           </Boton>
         )}
         {!creator.isOpen ? (
-          <Boton variant="link" onClick={creator.open}>
+          <Boton variant="secondary" icon="personaMas" onClick={creator.open}>
             Nuevo cliente
           </Boton>
         ) : (
@@ -197,7 +196,7 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
               </span>
             )}
             {offline && <SinConexion />}
-            <Boton type="submit" disabled={create.isPending}>
+            <Boton textOnly="submit" type="submit" disabled={create.isPending}>
               Crear cliente
             </Boton>
           </form>

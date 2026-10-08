@@ -14,6 +14,7 @@ import { invalidateResource } from '../../api/keys'
 import { isGone, kindOf, resolveOverride } from '../../api/refusals'
 import { type VarietyStock, setThreshold } from '../../api/stock'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
+import Boton from '../../components/Boton'
 import SinConexion from '../../components/SinConexion'
 import { useFlash } from '../../flash/useFlash'
 import { warningFor } from '../../stock/detail'
@@ -72,9 +73,7 @@ export default function VarietyThresholdSection({
     <section className="seccion-variedad">
       <div className="seccion-variedad__cabecera">
         <h2 className="seccion-variedad__titulo">Aviso de stock bajo</h2>
-        <button type="button" className="boton-enlace" aria-label="Editar aviso" onClick={() => openForm('threshold')}>
-          Editar
-        </button>
+        <Boton variant="icon" action="edit" ariaLabel="Editar aviso" onClick={() => openForm('threshold')} />
       </div>
       <div className="seccion-variedad__fila">
         <span className={row.status === 'low' ? 'seccion-variedad__valor seccion-variedad__valor--aviso' : 'seccion-variedad__valor'}>

@@ -11,6 +11,8 @@ import { afterEach, expect, test, vi } from 'vitest'
 import WITHDRAWAL from '../../api/fixtures/withdrawal.json'
 import { VARIETIES as VARIETIES_PATH, WITHDRAWAL as WITHDRAWAL_PATH, pathTo } from '../../routes'
 import { jsonResponse, renderWithdrawals, type FetchImpl } from './renderWithdrawals'
+import { LIMITS } from '../../copy/limits'
+import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 
 const ONE = pathTo(WITHDRAWAL_PATH, { id: 1 })
 
@@ -162,4 +164,13 @@ test('deleting a withdrawal that is gone goes to Variedades with "Eso ya no est�
 
   expect(await screen.findByText('Eso ya no está. La lista ya está al día.')).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(VARIETIES_PATH)
+})
+
+test('the detail keeps the icon and text rule: Borrar carries its icon and word, Volver keeps its name', async () => {
+  renderWithdrawals([VARIETIES_PATH, ONE], serving(WITHDRAWAL))
+
+  const borrar = await screen.findByRole('button', { name: 'Borrar' })
+  expect(borrar.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  expect(screen.getByRole('button', { name: 'Volver' })).toBeInTheDocument()
+  expectIconAndTextRule(screen.getByRole('main'), { limits: LIMITS })
 })
