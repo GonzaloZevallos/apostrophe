@@ -20,25 +20,23 @@ const modules = import.meta.glob(['/src/**/*.{ts,tsx}'], { query: '?raw', import
 const files = Object.entries(modules).map(([path, content]) => ({ path, content }))
 
 const OLD_SHAPES: Record<string, { buttons: number; classes: number }> = {
-  '/src/components/ConfirmDialog.tsx': { buttons: 0, classes: 4 },
-  '/src/components/GoneScreen.tsx': { buttons: 0, classes: 1 },
-  '/src/components/PasswordField.tsx': { buttons: 0, classes: 1 },
+  // The option tabs of Ventas/Clientes: `Pestanas.test.tsx` finds them by `boton--enlace`, and
+  // Boton has no tab shape.
   '/src/components/Pestanas.tsx': { buttons: 0, classes: 2 },
-  '/src/screens/CambiarContrasena.tsx': { buttons: 3, classes: 3 },
-  '/src/screens/Catalogo.tsx': { buttons: 2, classes: 4 },
-  '/src/screens/Gastos.tsx': { buttons: 2, classes: 5 },
-  '/src/screens/PinPublish.tsx': { buttons: 0, classes: 1 },
-  '/src/screens/Variedades.tsx': { buttons: 0, classes: 1 },
-  '/src/screens/clientes/Cobro.tsx': { buttons: 1, classes: 1 },
-  '/src/screens/settings/ExpenseCategoriesGroup.tsx': { buttons: 3, classes: 5 },
-  '/src/screens/settings/IntegrationsGroup.tsx': { buttons: 1, classes: 2 },
+  // Compartir and Copiar need the `compartir` and copy glyphs (never shipped by icon-glyphs).
+  '/src/screens/Catalogo.tsx': { buttons: 2, classes: 3 },
+  // Copiar and Compartir the invitation link: same missing glyphs.
   '/src/screens/settings/UsersGroup.tsx': { buttons: 2, classes: 2 },
-  '/src/screens/varieties/ArchivedVarieties.tsx': { buttons: 1, classes: 3 },
+  // Restaurar needs the `restaurar` glyph.
+  '/src/screens/varieties/ArchivedVarieties.tsx': { buttons: 1, classes: 2 },
+  // Its back handler calls `preventDefault` on the event; BotonLink's onClick has no event.
   '/src/screens/varieties/PriceHistory.tsx': { buttons: 0, classes: 1 },
-  '/src/screens/varieties/VarietyCatalogSection.tsx': { buttons: 1, classes: 1 },
-  '/src/screens/varieties/VarietyPage.tsx': { buttons: 2, classes: 5 },
+  // Archivar needs the `archivar` glyph.
+  '/src/screens/varieties/VarietyPage.tsx': { buttons: 1, classes: 2 },
+  // Restaurar / Archivar answers inside the removal flow: `archivar` and `restaurar` glyphs.
   '/src/screens/varieties/VarietyRemoval.tsx': { buttons: 1, classes: 2 },
-  '/src/screens/varieties/VarietyThresholdSection.tsx': { buttons: 1, classes: 1 },
+  // "Nueva venta" is selected by `.boton-nueva-venta` in Shell.test.tsx and placed by that class;
+  // BotonLink takes no className.
   '/src/shell/Shell.tsx': { buttons: 0, classes: 4 },
 }
 

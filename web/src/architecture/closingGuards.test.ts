@@ -64,6 +64,7 @@ describe('findBotonClasses', () => {
       { path: '/src/shell/B.tsx', content: "className={`boton-nueva-venta`}" },
       { path: '/src/components/Boton.tsx', content: 'const c = "boton"' },
       { path: '/src/components/botonVisual.tsx', content: "const c = 'boton--enlace'" },
+      { path: '/src/components/AnswerButton.tsx', content: "const c = 'boton boton--suave'" },
       { path: '/src/screens/C.tsx', content: 'const c = "botones-extra"; import Boton from "./Boton"' },
       { path: '/src/screens/A.test.tsx', content: 'const c = "boton"' },
     ]
@@ -98,6 +99,23 @@ describe('findUnusedIcons', () => {
       { path: '/src/shell/C.tsx', content: '<Notice attention>x</Notice>' },
     ]
     expect(findUnusedIcons(files)).toEqual([])
+  })
+
+  test('does not count a route key, a label or a comment that merely equals a name', () => {
+    const files = [
+      ...base,
+      { path: '/src/screens/A.tsx', content: "const KEY = 'inicio'\nconst LABEL = ['tacho', 'buscar']" },
+      { path: '/src/screens/B.tsx', content: "// <Icono nombre=\"info\" /> and nombre: 'atencion' in a comment" },
+    ]
+    expect(findUnusedIcons(files)).toHaveLength(5)
+  })
+
+  test('counts a name given as an icon on a line, in a map or a ternary', () => {
+    const files = [
+      ...base,
+      { path: '/src/shell/A.tsx', content: "{ to: HOME, icon: 'inicio' }\n<Icono nombre={on ? 'tacho' : 'buscar'} />" },
+    ]
+    expect(findUnusedIcons(files).map((line) => line.split(':')[0])).toEqual(['info', 'atencion'])
   })
 
   test('does not count a name only Icono or Boton write', () => {

@@ -18,6 +18,8 @@ import { useEffect, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useOutletContext, useSearchParams } from 'react-router'
 import InAppLink from '../components/InAppLink'
+import AnswerButton from '../components/AnswerButton'
+import BotonLink from '../components/BotonLink'
 import { ApiError, NetworkError } from '../api/client'
 import { type Expense, deleteExpense, monthlyView } from '../api/expenses'
 import { invalidateResource, keys } from '../api/keys'
@@ -104,12 +106,12 @@ function DeleteConfirm({
           </span>
         )}
         <div className="panel__botones">
-          <button type="button" className="boton boton--suave" onClick={onCancel}>
+          <AnswerButton kind="keep" onClick={onCancel}>
             {NO_DISCARD_TITLE}
-          </button>
-          <button type="button" className="boton boton--destructivo" disabled={sending} onClick={confirm}>
+          </AnswerButton>
+          <AnswerButton kind="confirm" disabled={sending} onClick={confirm}>
             {YES_DELETE_TITLE}
-          </button>
+          </AnswerButton>
         </div>
       </div>
     </div>
@@ -255,9 +257,9 @@ export default function Gastos() {
 
         <div className="gastos__pie">
           <span className="pie">{FLOWER_NOTICE}</span>
-          <InAppLink to={EXPENSE_CATEGORIES} className="boton--enlace">
+          <BotonLink to={EXPENSE_CATEGORIES} variant="link">
             Categorías
-          </InAppLink>
+          </BotonLink>
         </div>
       </div>
 

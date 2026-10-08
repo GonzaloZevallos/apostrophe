@@ -5,8 +5,8 @@
  * stroke, fill or transform (`tests/test_design_icons.py` checks both).
  *
  * `ICON_NAMES` is the one list of what is drawn; `componentes.ts` names the same set
- * for the design and the same test fails when the two differ. `'agregar'`, `'stock'`,
- * `'whatsapp'` and `'telegram'` are drawn here and named there too.
+ * for the design and the same test fails when the two differ. `'agregar'`, `'stock'`
+ * and `'telegram'` are drawn here and named there too.
  *
  * Decorative (`aria-hidden`) unless a caller passes `label`, which makes it
  * `role="img"` with that `aria-label` instead; a caller that wants the icon
@@ -27,7 +27,6 @@ export const ICON_NAMES = [
   'chevron',
   'abajo',
   'buscar',
-  'whatsapp',
   'telegram',
   'tacho',
   'cobro',
@@ -90,9 +89,6 @@ const TRAZOS: Record<NombreIcono, ReactNode> = {
       <circle cx="10.5" cy="10.5" r="6.5" />
       <path d="M15.5 15.5 21 21" />
     </>
-  ),
-  whatsapp: (
-    <path d="M12 3.5c-4.7 0-8.5 3.4-8.5 7.6 0 2.4 1.2 4.5 3.1 5.9L5.5 20.5l3.9-1.5c.8.2 1.7.3 2.6.3 4.7 0 8.5-3.4 8.5-7.6S16.7 3.5 12 3.5z" />
   ),
   telegram: <path d="M21 4.5 3.8 11.2l5 1.7 1.7 5.6 3-3.6 4.6 3.2z" />,
   tacho: (

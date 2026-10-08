@@ -191,9 +191,9 @@ export default function Cobro({ customerId, balance, today }: CobroProps) {
               required
             />
           </label>
-          <button type="button" className="boton-enlace" onClick={() => setAmount(String(balance))}>
+          <Boton variant="link" onClick={() => setAmount(String(balance))}>
             Todo: {formatMoney(balance)}
-          </button>
+          </Boton>
           {amountError !== null && (
             <span className="campo__error" role="alert">
               {amountError}

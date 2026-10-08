@@ -38,8 +38,6 @@ const ROSA = {
 }
 const ANA = { id: 5, name: 'Ana', phone: '+5491100000000', channel: null, vip: false }
 const OPTIONS = { limits: LIMITS, samples: SAMPLES }
-/** Raw "Cerrar" of the sale form, until the `cerrar` glyph exists (see the header). */
-const FORM_OPTIONS = { ...OPTIONS, optionClasses: ['nueva-venta__cerrar'] }
 
 function json(body: unknown): Response {
   return new Response(JSON.stringify(body), { status: 200, headers: { 'Content-Type': 'application/json' } })
@@ -150,14 +148,14 @@ test.each(VIEWPORTS)("NuevaVenta: with two lines, Elegir cliente and Nuevo clien
   await user.click(await screen.findByRole('button', { name: 'Agregar otra variedad' }))
   expect(screen.getByRole('button', { name: 'Quitar línea 2' })).toHaveClass('boton-icono')
   expect(screen.getByText(GRAMS_HELP)).toHaveAttribute('data-copy', 'help')
-  expectIconAndTextRule(container, FORM_OPTIONS)
+  expectIconAndTextRule(container, OPTIONS)
 
   await user.click(screen.getByRole('button', { name: 'Elegir cliente' }))
   await screen.findByRole('button', { name: 'Nuevo cliente' })
-  expectIconAndTextRule(container, FORM_OPTIONS)
+  expectIconAndTextRule(container, OPTIONS)
 
   await user.click(screen.getByRole('button', { name: 'Nuevo cliente' }))
-  expectIconAndTextRule(container, FORM_OPTIONS)
+  expectIconAndTextRule(container, OPTIONS)
 })
 
 test('the helper rejects a text-only action on these screens (a link-styled "Agregar otra variedad" would fail)', () => {

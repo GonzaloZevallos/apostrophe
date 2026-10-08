@@ -9,7 +9,8 @@
  */
 
 import { useQuery } from '@tanstack/react-query'
-import { Link } from 'react-router'
+
+import BotonLink from '../../components/BotonLink'
 import { NetworkError } from '../../api/client'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import Loading from '../../components/Loading'
@@ -33,9 +34,9 @@ export default function ArchivedVarieties() {
     <main className="pantalla variedades">
       <div className="cuerpo">
         <div className="encabezado__fila">
-          <Link to={VARIETIES} className="boton--enlace">
+          <BotonLink to={VARIETIES} variant="back">
             ‹ Variedades
-          </Link>
+          </BotonLink>
         </div>
         <h1 className="encabezado__titulo">Archivadas</h1>
         {notice}

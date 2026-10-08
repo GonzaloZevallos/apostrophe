@@ -42,7 +42,7 @@ test('the submit is text only and the screen follows the icon and text rule', ()
   renderEntrar(new QueryClient())
   expect(screen.getByRole('button', { name: 'Entrá' })).toHaveAttribute('type', 'submit')
   // "Mostrar" is PasswordField's own show/hide toggle, an option control.
-  expectIconAndTextRule(document.body, { optionClasses: ['boton-enlace'] })
+  expectIconAndTextRule(document.body)
 })
 
 test('shows the fixed hint under the button, never a count of attempts', () => {

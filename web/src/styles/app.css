@@ -135,15 +135,6 @@ body {
   color: var(--tinta);
 }
 
-.boton-enlace {
-  background: none;
-  border: 0;
-  color: var(--acento);
-  font-size: 15px;
-  cursor: pointer;
-  min-height: var(--alto-tocable);
-}
-
 .boton--destructivo {
   background: var(--critico);
   color: var(--critico-texto);
@@ -1397,7 +1388,7 @@ body {
   border-bottom: 0;
 }
 
-.boton--enlace.categoria-fila__accion {
+.categoria-fila__accion .boton--enlace {
   font-size: 14px;
   font-weight: 600;
   box-shadow: none;
@@ -3073,7 +3064,7 @@ body {
 
 /* The reveal ("Mostrar"/"Ocultar") is not in the design: it sits at the field's right
  * edge so it reads as the field's own, not as a third button. */
-.auth-page .boton-enlace {
+.auth-page .campo__mostrar {
   align-self: flex-end;
 }
 
@@ -3866,7 +3857,7 @@ body {
  *   themes): .boton (with .boton--suave, .boton--destructivo and .boton-nueva-venta),
  *   .boton-icono, .periodos__boton, .pildora, .gastos__cargar, .aviso-ambar,
  *   .venta-guardada__deshacer;
- *   transparent, so --superficie is the fill cue: .boton-enlace, .boton--enlace,
+ *   transparent, so --superficie is the fill cue: .boton--enlace,
  *   .boton--fila, .bar-inferior__item, .riel-lateral__item, .mas__item, .fila-venta,
  *   .fila-gasto, .fila-entrada, .lista-clientes__fila, .bloque-deben__titulo, .bloque-deben__fila,
  *   .variedad-item, .pestanas__opcion, .selector-pago__opcion, .gastos__mes-boton,
@@ -3888,7 +3879,6 @@ body {
 }
 
 :is(
-    .boton-enlace,
     .boton--enlace,
     .boton--fila,
     .bar-inferior__item,
@@ -3928,7 +3918,6 @@ body {
     .gastos__cargar,
     .aviso-ambar,
     .venta-guardada__deshacer,
-    .boton-enlace,
     .boton--enlace,
     .boton--fila,
     .bloque-deben__titulo,

@@ -114,9 +114,9 @@ export default function Catalogo() {
     <main className="pantalla">
       <div className="cuerpo">
         <div className="encabezado__fila">
-          <Link to={VARIETIES} className="boton-enlace">
+          <BotonLink to={VARIETIES} variant="back">
             ‹ Variedades
-          </Link>
+          </BotonLink>
         </div>
         <h1 className="encabezado__titulo">Catálogo</h1>
 

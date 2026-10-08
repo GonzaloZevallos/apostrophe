@@ -6,6 +6,7 @@
  */
 
 import { type CatalogVariety } from '../../api/catalog'
+import Boton from '../../components/Boton'
 import { CATALOG_SECTION_ID } from '../../routes'
 import { useOpenForm } from './varietyForms'
 
@@ -17,9 +18,9 @@ export default function VarietyCatalogSection({ row }: { row: CatalogVariety }) 
     <section id={CATALOG_SECTION_ID} className="seccion-variedad">
       <div className="seccion-variedad__cabecera">
         <h2 className="seccion-variedad__titulo">En el catálogo</h2>
-        <button type="button" className="boton-enlace" aria-label="Editar catálogo" onClick={() => openForm('catalog')}>
+        <Boton variant="link" ariaLabel="Editar catálogo" onClick={() => openForm('catalog')}>
           Editar
-        </button>
+        </Boton>
       </div>
       <dl className="seccion-variedad__datos">
         <div className="seccion-variedad__dato">

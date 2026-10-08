@@ -15,7 +15,6 @@
 
 import { type FormEvent, useEffect, useId, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import InAppLink from '../../components/InAppLink'
 import { ApiError, NetworkError, get, post } from '../../api/client'
 import { invalidateResource, keys } from '../../api/keys'
 import { PINNED_CATALOG_REFUSAL_OVERRIDES, resolveOverride } from '../../api/refusals'
@@ -25,6 +24,7 @@ import SinConexion from '../../components/SinConexion'
 import Loading from '../../components/Loading'
 import SettingsGroup, { type LeaveWording } from './SettingsGroup'
 import Boton from '../../components/Boton'
+import BotonLink from '../../components/BotonLink'
 import { CATALOG } from '../../routes'
 import {
   CHANNEL_CHAT_HELP,
@@ -258,14 +258,14 @@ function IntegrationsForm({ initial }: { initial: PinnedCatalog }) {
           </div>
         )}
 
-        <button className="boton" type="submit" disabled={testing}>
+        <Boton textOnly="submit" type="submit" disabled={testing}>
           Probarlo
-        </button>
+        </Boton>
       </form>
 
-      <InAppLink to={CATALOG} className="boton--enlace">
+      <BotonLink to={CATALOG} variant="link">
         Ir al catálogo
-      </InAppLink>
+      </BotonLink>
     </SettingsGroup>
   )
 }

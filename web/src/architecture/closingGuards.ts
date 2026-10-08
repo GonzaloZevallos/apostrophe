@@ -38,11 +38,13 @@ export const OPTION_CLASSES = [
 /** The roles that make a raw `<button>` a choice (a switch or a radio). */
 export const OPTION_ROLES = ['switch', 'radio'] as const
 
-/** The files that draw `.boton*`: the two components and what they both draw from. */
+/** The files that draw `.boton*`: the two components, what they both draw from, and the dialog
+ * answers' one author (`AnswerButton`, the text-only answers the rule lists). */
 const BOTON_AUTHORS = [
   inSrc('components', 'Boton.tsx'),
   inSrc('components', 'BotonLink.tsx'),
   inSrc('components', 'botonVisual.tsx'),
+  inSrc('components', 'AnswerButton.tsx'),
 ]
 
 const ICONO = inSrc('components', 'Icono.tsx')
@@ -170,36 +172,46 @@ function seen(files: readonly SourceFile[], inside: readonly string[]): SourceFi
   return sources(files).filter(({ path }) => inside.some((folder) => path.includes(folder)))
 }
 
+/** The source with its comments blanked, so a name in prose is not a use. */
+function withoutComments(content: string): string {
+  return content.replace(/\/\*[\s\S]*?\*\//g, (block) => block.replace(/[^\n]/g, ' ')).replace(/(^|\s)\/\/.*$/gm, '$1')
+}
+
+/** A line that hands an icon name to `Icono` or to a control: `nombre=`, `icon=`, `icono:`… */
+const ICON_POSITION = /\b(?:nombre|icon|icono)\b\s*[=:]/
+
 /**
  * A name is used when a screen, the shell or a component other than `Icono` and `Boton`
- * writes it as a string; one reached only through `Boton`'s action map counts when a screen
- * passes that `action`; `info` and `atencion` count when `MasInfo` and `attention` have a
- * caller under `screens/` or `shell/`.
+ * writes it as the icon of something (`nombre="x"`, `icon="x"`, `icon: 'x'`, on one line,
+ * comments blanked): a route key or a label that merely equals it is not a use. A name that
+ * `Boton`'s action map reaches counts only when some screen passes that `action`. `info` and
+ * `atencion` count when `MasInfo` and `attention` have a caller under `screens/` or `shell/`.
  */
 export function findUnusedIcons(files: readonly SourceFile[]): string[] {
   const all = files.map(({ path, content }) => ({ path: slashed(path), content }))
   const iconoSource = all.find(({ path }) => path === ICONO)?.content ?? ''
   const botonVisualSource = all.find(({ path }) => path === inSrc('components', 'botonVisual.tsx'))?.content ?? ''
   const actions = actionIcons(botonVisualSource)
-  const users = seen(all, [inSrc('screens', ''), inSrc('shell', ''), inSrc('components', '')]).filter(
-    ({ path }) => path !== ICONO && path !== BOTON && path !== inSrc('components', 'botonVisual.tsx'),
-  )
-  const screens = seen(all, [inSrc('screens', ''), inSrc('shell', '')])
-  const quoted = (name: string) => new RegExp(`['"\`]${name}['"\`]`)
-  const passesAction = (action: string) => screens.some(({ content }) => new RegExp(`action=["{']+${action}\\b`).test(content))
+  const users = seen(all, [inSrc('screens', ''), inSrc('shell', ''), inSrc('components', '')])
+    .filter(({ path }) => path !== ICONO && path !== BOTON && path !== inSrc('components', 'botonVisual.tsx'))
+    .map(({ content }) => withoutComments(content))
+  const screens = seen(all, [inSrc('screens', ''), inSrc('shell', '')]).map(({ content }) => withoutComments(content))
+  const iconOf = (name: string) => new RegExp(`['"\`]${name}['"\`]`)
+  const writes = (name: string) =>
+    users.some((content) => content.split('\n').some((line) => ICON_POSITION.test(line) && iconOf(name).test(line)))
+  const passesAction = (action: string) =>
+    screens.some((content) => new RegExp(`\\baction=(?:["']|\\{["'])${action}["']`).test(content))
   const iconHandle = (name: string) =>
     name === 'info'
-      ? screens.some(({ content }) => /<MasInfo[\s>]/.test(content))
+      ? screens.some((content) => /<MasInfo[\s>]/.test(content))
       : name === 'atencion'
-        ? screens.some(({ content }) => /\battention\b/.test(content))
+        ? screens.some((content) => /\battention\b/.test(content))
         : undefined
 
   return listedIcons(iconoSource).flatMap((name) => {
     const handled = iconHandle(name)
     if (handled !== undefined) return handled ? [] : [`${name}: no screen uses it`]
-    const actionsOfName = [...actions].filter(([, icon]) => icon === name).map(([action]) => action)
-    const throughAction = actionsOfName.some(passesAction)
-    const written = users.some(({ content }) => quoted(name).test(content))
-    return written || throughAction ? [] : [`${name}: no screen uses it`]
+    const throughAction = [...actions].some(([action, icon]) => icon === name && passesAction(action))
+    return writes(name) || throughAction ? [] : [`${name}: no screen uses it`]
   })
 }

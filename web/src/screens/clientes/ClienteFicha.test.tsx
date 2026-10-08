@@ -791,7 +791,7 @@ test.each([
   expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
 })
 
-const RULE = { limits: LIMITS, samples: { name: SAMPLES.name }, optionClasses: ['boton-enlace'] }
+const RULE = { limits: LIMITS, samples: { name: SAMPLES.name } }
 
 test('the card and its sheet follow the icon and text rule: Borrar cobro is icon-only, the rest keep their words', async () => {
   vi.mocked(fetch).mockImplementation(

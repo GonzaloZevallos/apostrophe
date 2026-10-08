@@ -16,7 +16,6 @@
 import { SETTINGS_INTEGRATIONS } from '../routes'
 import { useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import InAppLink from '../components/InAppLink'
 import { ApiError, NetworkError, get, post } from '../api/client'
 import { invalidateResource, keys } from '../api/keys'
 import {
@@ -29,6 +28,7 @@ import {
 import AvisoExito, { type SuccessToast } from '../components/AvisoExito'
 import SinConexion from '../components/SinConexion'
 import Boton from '../components/Boton'
+import BotonLink from '../components/BotonLink'
 import {
   CHANNEL_MISSING_LEAD,
   INTEGRATIONS_LINK_WORD,
@@ -82,9 +82,9 @@ function StatusLine({ status }: { status: PinStatus }) {
 
 function BlockedReason({ blockedBy }: { blockedBy: PublishBlockedBy }) {
   const link = (
-    <InAppLink to={INTEGRATIONS_PATH} className="boton--enlace">
+    <BotonLink to={INTEGRATIONS_PATH} variant="link">
       {INTEGRATIONS_LINK_WORD}
-    </InAppLink>
+    </BotonLink>
   )
   if (blockedBy === 'not_tested') {
     return (

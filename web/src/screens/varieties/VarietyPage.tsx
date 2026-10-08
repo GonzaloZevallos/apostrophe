@@ -18,7 +18,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Link, useLocation, useNavigate, useOutletContext } from 'react-router'
+import { useLocation, useNavigate, useOutletContext } from 'react-router'
 import { ApiError, NetworkError, get } from '../../api/client'
 import { catalogQueryOptions } from '../../api/catalog'
 import { keys } from '../../api/keys'
@@ -30,6 +30,7 @@ import type { SuccessToast } from '../../components/AvisoExito'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import GoneScreen from '../../components/GoneScreen'
 import BotonLink from '../../components/BotonLink'
+import Boton from '../../components/Boton'
 import LeaveConfirm from '../../components/LeaveConfirm'
 import Loading from '../../components/Loading'
 import MarcaEstado from '../../components/MarcaEstado'
@@ -147,21 +148,21 @@ export default function VarietyPage({ varietyId }: { varietyId: number }) {
       <div className="cuerpo">
         <div className="encabezado__fila">
           {archived ? (
-            <Link to={ARCHIVED_VARIETIES} className="boton--enlace">
+            <BotonLink to={ARCHIVED_VARIETIES} variant="back">
               ‹ Archivadas
-            </Link>
+            </BotonLink>
           ) : (
-            <Link to={VARIETIES} className="boton--enlace">
+            <BotonLink to={VARIETIES} variant="back">
               ‹ Variedades
-            </Link>
+            </BotonLink>
           )}
         </div>
         <div className="encabezado-fila">
           <h1 className="encabezado__titulo">{variety.name}</h1>
           {!archived && (
-            <button type="button" className="boton-enlace" aria-label="Editar nombre" onClick={() => openForm('rename')}>
+            <Boton variant="link" ariaLabel="Editar nombre" onClick={() => openForm('rename')}>
               Editar
-            </button>
+            </Boton>
           )}
         </div>
         {row !== undefined && (

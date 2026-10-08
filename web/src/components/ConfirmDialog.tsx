@@ -5,6 +5,8 @@
  * screen builds its own dialog markup.
  */
 
+import AnswerButton from './AnswerButton'
+
 export interface ConfirmDialogProps {
   title: string
   detail: string
@@ -12,29 +14,6 @@ export interface ConfirmDialogProps {
   cancelText: string
   onConfirm: () => void
   onCancel: () => void
-}
-
-/** One answer of the pair: the words of a confirmation are text only (`icon-and-text-rule.md`,
- * the dialog answers). Unexported on purpose: no screen draws its own answer, and `Boton`
- * does not offer a text-only secondary or destructive one. */
-function AnswerButton({
-  kind,
-  onClick,
-  children,
-}: {
-  kind: 'keep' | 'confirm'
-  onClick: () => void
-  children: string
-}) {
-  return (
-    <button
-      type="button"
-      className={kind === 'keep' ? 'boton boton--suave' : 'boton boton--destructivo'}
-      onClick={onClick}
-    >
-      {children}
-    </button>
-  )
 }
 
 export default function ConfirmDialog({

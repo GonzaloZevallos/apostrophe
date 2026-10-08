@@ -244,7 +244,7 @@ describe('the icon and text rule', () => {
     renderPage(VARIETY_ONE)
 
     await screen.findByRole('link', { name: '+ Entrada' })
-    const problems = iconAndTextProblems(screen.getByRole('main'), { optionClasses: ['boton-enlace'] })
+    const problems = iconAndTextProblems(screen.getByRole('main'))
     // The low-stock switch is a switch with its label beside it, no icon and no visible text
     // of its own (the rule's helper reads any text-less button as an icon-only control).
     expect(problems.filter((problem) => !problem.includes('Avisar cuando quede poco'))).toEqual([])

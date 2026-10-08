@@ -110,9 +110,11 @@ export default function Variedades() {
           <BotonLink to={WITHDRAWAL_NEW} variant="secondary" icon="stock">
             Sacar del stock
           </BotonLink>
-          <InAppLink to={VARIETY_NEW} className="boton--enlace variedades__nueva">
-            Nueva variedad
-          </InAppLink>
+          <span className="variedades__nueva">
+            <BotonLink to={VARIETY_NEW} variant="link">
+              Nueva variedad
+            </BotonLink>
+          </span>
         </div>
         {feedback !== null ? (
           <Notice kind={feedback.kind} message={feedback.message} />
