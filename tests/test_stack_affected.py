@@ -1,4 +1,4 @@
-"""The affected forms declared in `.agentic/stack.yaml` (ADR-0037): structure only. The
+"""The affected forms declared in `.agentic/stack.yaml` (ADR-0039): structure only. The
 gate that reads them is another system's; what this product owes is that every form can
 be substituted and exits non-zero on an empty selection (never `--passWithNoTests`), and
 that the fallback globs never swallow what the e2e wrapper judges sound."""

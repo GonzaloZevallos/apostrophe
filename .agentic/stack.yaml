@@ -19,7 +19,7 @@ checks:
   web-lint: npm --prefix web run lint
   web-tests: npm --prefix web test
   web-e2e: npm --prefix web run e2e
-# Affected-only forms (agentic-system ADR-0046, ours ADR-0037): the Developer's and the
+# Affected-only forms (agentic-system ADR-0046, ours ADR-0039): the Developer's and the
 # reviewer's gates run these with `{base}` replaced by the task base sha, and rerun the
 # check in full when one fails. The merge gate and CI always run the full commands above.
 # Each form exits non-zero when it selects nothing. `tests` (pytest) has none, on purpose.

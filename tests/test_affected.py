@@ -1,4 +1,4 @@
-"""`scripts/affected.py` (ADR-0037): the wrapper behind the affected forms of `web-tests`
+"""`scripts/affected.py` (ADR-0039): the wrapper behind the affected forms of `web-tests`
 and `web-e2e`. Every call goes through an injected command runner, so no test runs git
 or npm; the discovery tests read fixture trees under `tmp_path` and the real `web/src`.
 """

@@ -1,4 +1,4 @@
-"""Affected-only forms of `web-tests` and `web-e2e` (ADR-0037, agentic-system ADR-0046).
+"""Affected-only forms of `web-tests` and `web-e2e` (ADR-0039, agentic-system ADR-0046).
 
 `uv run --no-project python scripts/affected.py <vitest|e2e> <base>`: a gate substitutes
 `{base}` (the task's base sha) and reads only the exit code. Neither runner's own selection
