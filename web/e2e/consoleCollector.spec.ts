@@ -9,7 +9,7 @@
  */
 
 import { LOGIN } from '../src/routes.js'
-import { expect, test } from '@playwright/test'
+import { expect, test } from './fixtures.js'
 import { watchConsole } from './console.js'
 
 test('the shared console collector records a message it must later reject', async ({ page }) => {

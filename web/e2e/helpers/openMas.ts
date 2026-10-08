@@ -1,6 +1,7 @@
 import { CATALOG, HOME } from '../../src/routes.js'
 import { expectPath } from './url.js'
-import { expect, type Page } from '@playwright/test'
+import { expect } from '../fixtures.js'
+import type { Page } from '@playwright/test'
 
 /** A phone: the bar, and so Más, only exists there; a computer's sidebar has no Más. */
 const PHONE = { width: 390, height: 844 }

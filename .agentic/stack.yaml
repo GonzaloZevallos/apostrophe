@@ -39,6 +39,10 @@ affected_fallback:
   - web/src/test-setup.ts
   - web/e2e/env.ts
   - web/e2e/freePort.ts
+  - web/e2e/fixtures.ts
+  - web/e2e/backend.ts
+  - web/scripts/e2e.sh
+  - tests/e2e_app.py
   - app/legacy_front_paths.json
   - app/migrations/*
   - tests/conftest.py

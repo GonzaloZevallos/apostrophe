@@ -49,7 +49,7 @@
 
 import { CUSTOMERS, SALE, SALES, SALE_NEW, VARIETIES } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
-import { expect, test } from '@playwright/test'
+import { expect, test } from './fixtures.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
@@ -106,6 +106,7 @@ function countLabel(count: number): string {
 test('a seller records, undoes, fixes and isolates sales, from the front alone', async ({
   page,
   browser,
+  workerServer,
 }) => {
   // This test's own journey is long. Under load (backend suite looping beside it) it
   // ran past its former 90 s, so the ceiling is 240 s: raised, never lowered (GH-110).
@@ -364,7 +365,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   await expect(page.locator('.ventas__total')).toHaveText(pesos(mes.total))
 
   // --- Isolation: a second business can never reach the first one's sale. ---
-  const otherContext = await browser.newContext()
+  const otherContext = await browser.newContext({ baseURL: workerServer.url })
   const otherPage = await otherContext.newPage()
   watchConsole(otherPage, consoleMessages)
   await signUpNewBusiness(otherPage, {

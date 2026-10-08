@@ -14,7 +14,8 @@
  */
 
 import { SALE_NEW, SALES, VARIETIES } from '../src/routes.js'
-import { expect, test, type Browser, type BrowserContext, type Page } from '@playwright/test'
+import { expect, test, type WorkerServer } from './fixtures.js'
+import type { Browser, BrowserContext, Page } from '@playwright/test'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { fillSaleLine } from './helpers/sale.js'
 import {
@@ -114,8 +115,12 @@ async function settled(page: Page): Promise<void> {
 test.describe('phone sales sweep', () => {
   let session: Awaited<ReturnType<BrowserContext['storageState']>>
 
-  test.beforeAll(async ({ browser }) => {
-    const context = await browser.newContext({ ...PHONE_CONTEXT, viewport: { width: 375, height: 812 } })
+  test.beforeAll(async ({ browser, workerServer }) => {
+    const context = await browser.newContext({
+      ...PHONE_CONTEXT,
+      baseURL: workerServer.url,
+      viewport: { width: 375, height: 812 },
+    })
     const page = await context.newPage()
     await signUpWithAVariety(page)
     await page.goto(SALE_NEW)
@@ -128,9 +133,10 @@ test.describe('phone sales sweep', () => {
   })
 
   for (const phoneCase of CASES) {
-    test(`Nueva venta, Ventas and a sale detail fit and are thumb-sized at ${phoneCase.name}`, async ({ browser }) => {
+    test(`Nueva venta, Ventas and a sale detail fit and are thumb-sized at ${phoneCase.name}`, async ({ browser, workerServer }) => {
       const context = await browser.newContext({
         ...PHONE_CONTEXT,
+        baseURL: workerServer.url,
         viewport: { width: phoneCase.width, height: phoneCase.height },
         storageState: session,
       })
@@ -143,8 +149,13 @@ test.describe('phone sales sweep', () => {
   }
 
   test.describe('the measurement rejects what it must', () => {
-    async function onVentas(browser: Browser, options: { phone: boolean }): Promise<{ context: BrowserContext; page: Page }> {
+    async function onVentas(
+      browser: Browser,
+      server: WorkerServer,
+      options: { phone: boolean },
+    ): Promise<{ context: BrowserContext; page: Page }> {
       const context = await browser.newContext({
+        baseURL: server.url,
         // `test.use` is the default of every context, so the desktop one says so itself.
         ...(options.phone ? PHONE_CONTEXT : { isMobile: false, hasTouch: false }),
         viewport: { width: 375, height: 812 },
@@ -157,16 +168,16 @@ test.describe('phone sales sweep', () => {
       return { context, page }
     }
 
-    test('a screen that is still loading', async ({ browser }) => {
-      const { context, page } = await onVentas(browser, { phone: true })
+    test('a screen that is still loading', async ({ browser, workerServer }) => {
+      const { context, page } = await onVentas(browser, workerServer, { phone: true })
       await page.evaluate(() => document.querySelector('main')?.insertAdjacentHTML('beforeend', '<div class="cargando"></div>'))
       await expect(expectNoSidewaysOverflow(page, 'loading', TEXT_SCALE)).rejects.toThrow(/still loading/)
       await expect(expectThumbSized(page, 'loading', 1)).rejects.toThrow(/still loading/)
       await context.close()
     })
 
-    test('an element the scaling did not reach', async ({ browser }) => {
-      const { context, page } = await onVentas(browser, { phone: true })
+    test('an element the scaling did not reach', async ({ browser, workerServer }) => {
+      const { context, page } = await onVentas(browser, workerServer, { phone: true })
       await page.evaluate(() =>
         document.querySelector('main *')?.setAttribute('style', 'font-size: 10px !important'),
       )
@@ -177,35 +188,38 @@ test.describe('phone sales sweep', () => {
     // The guards pass in these: only the measurement itself can fail.
     async function inMain(
       browser: Browser,
+      server: WorkerServer,
       html: string, measure: (page: Page) => Promise<void>,
       pattern: RegExp,
     ): Promise<void> {
-      const { context, page } = await onVentas(browser, { phone: true })
+      const { context, page } = await onVentas(browser, server, { phone: true })
       await page.evaluate((markup) => document.querySelector('main')?.insertAdjacentHTML('beforeend', markup), html)
       await expect(measure(page)).rejects.toThrow(pattern)
       await context.close()
     }
 
-    test('an element wider than the screen', async ({ browser }) => {
+    test('an element wider than the screen', async ({ browser, workerServer }) => {
       await inMain(
         browser,
+        workerServer,
         '<div style="width: 2000px; height: 5px"></div>', (page) => expectNoSidewaysOverflow(page, 'wide', 1), /overflow/)
     })
 
-    test('a control under 44 px', async ({ browser }) => {
+    test('a control under 44 px', async ({ browser, workerServer }) => {
       await inMain(
         browser,
+        workerServer,
         '<button type="button" style="display: block; height: 30px">Corto</button>', (page) => expectThumbSized(page, 'short', 1), /small controls/)
     })
 
-    test('an input under 16 px, and one under 16 px × the scale', async ({ browser }) => {
+    test('an input under 16 px, and one under 16 px × the scale', async ({ browser, workerServer }) => {
       const field = '<input aria-label="Chico" style="display: block; height: 48px; font-size: 15px" />'
-      await inMain(browser, field, (page) => expectThumbSized(page, 'unscaled', 1), /font under 16/)
-      await inMain(browser, field, (page) => expectThumbSized(page, 'scaled', TEXT_SCALE), /font under 20\.8/)
+      await inMain(browser, workerServer, field, (page) => expectThumbSized(page, 'unscaled', 1), /font under 16/)
+      await inMain(browser, workerServer, field, (page) => expectThumbSized(page, 'scaled', TEXT_SCALE), /font under 20\.8/)
     })
 
-    test('a page without a coarse pointer', async ({ browser }) => {
-      const { context, page } = await onVentas(browser, { phone: false })
+    test('a page without a coarse pointer', async ({ browser, workerServer }) => {
+      const { context, page } = await onVentas(browser, workerServer, { phone: false })
       await expect(expectNoSidewaysOverflow(page, 'desktop', 1)).rejects.toThrow(/coarse pointer/)
       await context.close()
     })

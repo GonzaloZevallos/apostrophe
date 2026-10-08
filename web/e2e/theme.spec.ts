@@ -16,7 +16,7 @@
 
 import { LOGIN, SETTINGS_APPEARANCE } from '../src/routes.js'
 import type { Page } from '@playwright/test'
-import { expect, test } from '@playwright/test'
+import { expect, test } from './fixtures.js'
 import { newBusinessInvitationUrl, resetLink } from './backend.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'

@@ -13,7 +13,8 @@
  * opens the invitation on an origin other than the project's base URL on purpose.
  */
 
-import { expect, type Page } from '@playwright/test'
+import { expect } from '../fixtures.js'
+import type { Page } from '@playwright/test'
 import { newBusinessInvitationUrl } from '../backend.js'
 
 export const DEFAULT_PASSWORD = 'correcthorsebattery'

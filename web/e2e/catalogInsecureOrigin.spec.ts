@@ -31,7 +31,7 @@
  * here just as directly as reading the clipboard back would.
  */
 
-import { expect, test } from '@playwright/test'
+import { expect, test } from './fixtures.js'
 import { e2eBaseUrl } from './env.js'
 import { newBusinessInvitationUrl } from './backend.js'
 import { leaveOnboarding } from './helpers/signup.js'

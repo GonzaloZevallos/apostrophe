@@ -7,7 +7,7 @@
  * browser holding only the theme.
  */
 
-import { expect, test } from '@playwright/test'
+import { expect, test } from './fixtures.js'
 import { watchConsole } from './console.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'

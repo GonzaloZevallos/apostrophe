@@ -30,7 +30,8 @@
  * A scale of 1 injects nothing: the measurement reads the page as it is.
  */
 
-import { expect, type Page } from '@playwright/test'
+import { expect } from '../fixtures.js'
+import type { Page } from '@playwright/test'
 
 /** The text scale the sales sweep asks for ("130 %"). */
 export const TEXT_SCALE = 1.3
