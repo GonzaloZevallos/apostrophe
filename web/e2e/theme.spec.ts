@@ -111,6 +111,32 @@ async function signUp(page: Page): Promise<string> {
   return email
 }
 
+/**
+ * Signs up and stays in the Onboarding, then waits until the page has stopped reading.
+ * The accept leads to a chain of reads, each started after the one before has answered:
+ * `/auth/me`, `/onboarding-progress`, then `/pricing-settings`. The last one's 200 proves
+ * the chain is done (the name field is drawn while it is still in flight, so it proves
+ * nothing). Leaving for `about:blank` then means no app page is mounted — and so none can
+ * read again on focus or reconnect — when the cookie drops: a read answered 401 after
+ * `logOut` would put a `Failed to load resource` entry in the console sink.
+ */
+async function signUpAndSettleInOnboarding(page: Page): Promise<string> {
+  const settled = page.waitForResponse(
+    (response) =>
+      new URL(response.url()).pathname === '/pricing-settings' &&
+      response.request().method() === 'GET',
+  )
+  const { email } = await signUpNewBusiness(page, {
+    businessName: `Tema ${Date.now()}`,
+    email: `tema-${Date.now()}-${Math.floor(Math.random() * 1e6)}@example.com`,
+    stayInOnboarding: true,
+  })
+  const response = await settled
+  expect(response.status()).toBe(200)
+  await page.goto('about:blank')
+  return email
+}
+
 async function logOut(page: Page): Promise<void> {
   // The seam under test is the theme, not the logout control (Tu cuenta has its own run):
   // the cookie lives in the page's context, so this signs the same device out.
@@ -174,13 +200,18 @@ test('with Oscuro stored, Entrar, the invitation screen and the reset screen are
   watchConsole(page, messages)
   await page.emulateMedia({ colorScheme: 'light' })
   await page.addInitScript(() => {
-    localStorage.setItem('tema', 'oscuro')
+    try {
+      localStorage.setItem('tema', 'oscuro')
+    } catch {
+      // `about:blank` has an opaque origin and no storage: the write only matters on the app's.
+    }
   })
 
-  const email = await signUp(page)
+  const email = await signUpAndSettleInOnboarding(page)
   await logOut(page)
 
   await page.goto(LOGIN)
+  await expect(page.getByLabel('Email')).toBeVisible()
   expect(await htmlBackground(page)).toBe(PAPEL_OSCURO)
 
   await page.goto(newBusinessInvitationUrl())
