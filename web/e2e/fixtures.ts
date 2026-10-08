@@ -58,10 +58,17 @@ async function stop(child: ChildProcess): Promise<void> {
   signalGroup(child, 'SIGKILL')
 }
 
+/** The child stayed silent for `READY_TIMEOUT_MS`: not a lost port race, so never retried. */
+class ReadyTimeout extends Error {
+  constructor() {
+    super(`The e2e backend was not ready within ${READY_TIMEOUT_MS / 1000} s.`)
+  }
+}
+
 /**
  * Starts one backend on a fresh port; resolves with the child once it announced itself on
- * stderr, rejects if it exits or stays silent for `READY_TIMEOUT_MS` (the child is then
- * stopped). No URL is polled: another checkout's server answering on this port must never
+ * stderr, rejects if it exits (a lost port race: the caller retries) or stays silent for
+ * `READY_TIMEOUT_MS` (a `ReadyTimeout`, not retried). The child is stopped either way. No URL is polled: another checkout's server answering on this port must never
  * pass for this worker's own.
  */
 async function startOnce(): Promise<ChildProcess> {
@@ -86,7 +93,7 @@ async function startOnce(): Promise<ChildProcess> {
   try {
     await new Promise<void>((resolve, reject) => {
       let seen = ''
-      const timer = setTimeout(() => reject(new Error('timeout')), READY_TIMEOUT_MS)
+      const timer = setTimeout(() => reject(new ReadyTimeout()), READY_TIMEOUT_MS)
       child.stdout?.resume()
       child.stderr?.on('data', (chunk: Buffer) => {
         seen = (seen + chunk.toString()).slice(-4096)
@@ -126,8 +133,9 @@ export const test = base.extend<object, { workerServer: WorkerServer }>({
       for (let attempt = 1; child === undefined && attempt <= ATTEMPTS; attempt += 1) {
         try {
           child = await startOnce()
-        } catch {
-          // A lost port race, or a slow start: try again with a new port.
+        } catch (error) {
+          // A lost port race (the child exited): try again with a new port.
+          if (error instanceof ReadyTimeout) throw error
         }
       }
       if (child === undefined) {
