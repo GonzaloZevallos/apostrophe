@@ -5,9 +5,8 @@
  * option or an answer, or an icon-only control with its exact name; the always-visible
  * copy fits its limit as rendered.
  *
- * "Cerrar" on the sale form is the one control this cannot yet hold for: the `cerrar`
- * glyph does not exist (icon-glyphs shipped none, ADR-0034), so it stays its word and is
- * named as an allowed option class below until it becomes the icon-only close.
+ * "Cerrar" on the sale form and its sheets is the icon-only close (`.boton-icono`, its
+ * exact name kept).
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'

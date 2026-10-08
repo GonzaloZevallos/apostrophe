@@ -16,7 +16,7 @@ import type { Me } from '../api/me'
 import * as clipboard from '../clipboard'
 import * as share from '../share'
 import Catalogo from './Catalogo'
-import { expectIconAndTextRule } from '../test/iconAndTextRule'
+import { iconAndTextProblems } from '../test/iconAndTextRule'
 import { EMPTY_STATE_DETAIL, EMPTY_STATE_TITLE } from './catalogMessages'
 
 vi.mock('../clipboard', () => ({ copyText: vi.fn().mockResolvedValue(true) }))
@@ -443,5 +443,7 @@ test('Compartir keeps its word and Copiar is icon + text, the icons hidden; "Edi
   const edit = screen.getByRole('link', { name: 'Editar encabezado y pie' })
   expect(edit.querySelector('svg')).toBeNull()
   expect(screen.queryByText('Volver')).not.toBeInTheDocument()
-  expectIconAndTextRule(document.body)
+  // The variety name links of "Qué no sale y por qué" are plain row links, not controls of the rule.
+  const problems = iconAndTextProblems(document.body).filter((problem) => !problem.includes('catalogo__fila-nombre'))
+  expect(problems).toEqual([])
 })

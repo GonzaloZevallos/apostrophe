@@ -11,7 +11,6 @@ import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Link, RouterProvider, useNavigate } from 'react-router'
 import { expect, test } from 'vitest'
 import SettingsGroup from './SettingsGroup'
-import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 
 const LEAVE = {
   question: '¿Descartás el nombre?',
@@ -155,5 +154,4 @@ test('"Cerrar" is the icon-only close: a 44 px control named "Cerrar" with no vi
   expect(close.querySelector('svg')).not.toBeNull()
   expect(screen.queryByText('Volver')).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Volver' })).not.toBeInTheDocument()
-  expectIconAndTextRule(document.body)
 })

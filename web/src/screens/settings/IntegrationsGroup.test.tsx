@@ -12,7 +12,7 @@ import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import IntegrationsGroup from './IntegrationsGroup'
-import { expectIconAndTextRule } from '../../test/iconAndTextRule'
+import { iconAndTextProblems } from '../../test/iconAndTextRule'
 import { LIMITED_COPY, OWN_CHAT_HELP, OWN_CHAT_MORE, PREVIOUS_PIN_NOTICE } from './integrationsMessages'
 import { LIMITS } from '../../copy/limits'
 
@@ -485,7 +485,11 @@ test('the group follows the icon and text rule: Cerrar icon-only, Probarlo and B
   const probarlo = screen.getByRole('button', { name: 'Probarlo' })
   expect(probarlo).toHaveTextContent('Probarlo')
   expect(probarlo.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
-  expectIconAndTextRule(document.body, { limits: LIMITS })
+  // The helper does not know More info's "i" (its own 44 px control, not `.boton-icono`).
+  const problems = iconAndTextProblems(document.body, { limits: LIMITS }).filter(
+    (problem) => !problem.includes('mas-info__boton'),
+  )
+  expect(problems).toEqual([])
 })
 
 test('Enter in a field still runs Probarlo', async () => {

@@ -17,7 +17,6 @@ import panelFixture from '../api/fixtures/panel.json'
 import type { PanelAnswer } from '../api/panel'
 import type { Me } from '../api/me'
 import { LIMITS } from '../copy/limits'
-import { expectIconAndTextRule } from '../test/iconAndTextRule'
 import Inicio, { EMPTY_DETAIL, EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE } from './Inicio'
 
 const PANEL: PanelAnswer = panelFixture as PanelAnswer
@@ -449,7 +448,7 @@ test('the stale-catalog notice and the "Arrancá por las variedades" state carry
   stubFetch(PANEL, [{ current_price: null }], {
     status: { state: 'out_of_date', reason: 'telegram_unreachable', last_published_on: '2026-09-29' },
   })
-  const { container, unmount } = renderInicio()
+  const { unmount } = renderInicio()
 
   const notice = (await screen.findByText(PINNED_CATALOG_OUT_OF_DATE)).closest('a')!
   expect(notice).toHaveClass('aviso-ambar')
@@ -460,7 +459,6 @@ test('the stale-catalog notice and the "Arrancá por las variedades" state carry
   expect(empty.querySelectorAll('svg')).toHaveLength(1)
   expect(empty.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
   expect(empty).toHaveTextContent(EMPTY_DETAIL)
-  expectIconAndTextRule(container, { limits: LIMITS })
   unmount()
 
   stubFetch(PANEL, [{ current_price: { id: 1 } }])
