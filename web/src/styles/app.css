@@ -2527,7 +2527,7 @@ body {
 .campo__fila {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--espacio-sm);
 }
 
 .campo__fila > .campo__input {
