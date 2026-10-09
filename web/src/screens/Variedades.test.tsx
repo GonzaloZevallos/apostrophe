@@ -327,57 +327,92 @@ describe('on a computer: two panes', () => {
 })
 
 describe('removing the selected variety on a computer', () => {
-  function removable(id: number, removal: 'delete' | 'archive') {
-    const found = VARIETIES.find((variety) => variety.id === id)
-    return { ...found, archived: false, removal }
+  type Action = 'archive' | 'delete'
+  type Position = 'in the middle' | 'the last by name' | 'the only one'
+
+  // Ids do not follow name order, and Spanish order (Ácido, bubba, Critical, Zkittlez) differs
+  // from code-unit order, so a sort or id-order bug shows.
+  const ACIDO = { id: 3, name: 'Ácido', current_price: null }
+  const BUBBA = { id: 1, name: 'bubba', current_price: null }
+  const CRITICAL = { id: 4, name: 'Critical', current_price: null }
+  const ZKITTLEZ = { id: 2, name: 'Zkittlez', current_price: null }
+  const BY_NAME = [ACIDO, BUBBA, CRITICAL, ZKITTLEZ]
+
+  const WORDS = {
+    archive: { button: 'Archivar variedad', confirm: 'Sí, archivala', toast: 'Variedad archivada' },
+    delete: { button: 'Eliminar variedad', confirm: 'Sí, eliminala', toast: 'Variedad eliminada' },
   }
 
-  test.each([
-    ['in the middle', 2, pathTo(VARIETY, { id: 3 })],
-    ['the last by name', 4, pathTo(VARIETY, { id: 3 })],
-  ])('archiving %s selects the next by name, else the previous one', async (_name, id, expected) => {
-    let archived = false
-    const { router } = renderApp(pathTo(VARIETY, { id }), {
+  function linkOf(variety: { name: string }) {
+    return { name: new RegExp(`^${variety.name}`) }
+  }
+
+  /** The faked API for one removal: the list before the write, the same list without the removed
+   * variety after it (never reordered), and the write itself. */
+  function answersFor(action: Action, list: typeof BY_NAME, removed: { id: number; name: string }): Answers {
+    let written = false
+    const remaining = () => (written ? list.filter((variety) => variety.id !== removed.id) : list)
+    const answers: Answers = {
+      'GET /varieties': () => json(200, remaining()),
+      'GET /stock': () => json(200, { total: 0, varieties: remaining().map((variety) => stockRow(variety.id, { status: 'no_entries' })), entries: [] }),
+      'GET /varieties?archived=true': () => json(200, written && action === 'archive' ? [{ ...removed, archived: true, current_price: null }] : []),
+    }
+    for (const variety of list) {
+      answers[`GET /varieties/${variety.id}`] = () => json(200, { ...variety, archived: false, removal: action })
+      answers[`GET /varieties/${variety.id}/prices`] = () => json(200, [])
+    }
+    if (action === 'archive') {
+      answers[`POST /varieties/${removed.id}/archive`] = () => {
+        written = true
+        return json(200, { ...removed, current_price: null, archived: true, removal: null })
+      }
+    } else {
+      answers[`DELETE /varieties/${removed.id}`] = () => {
+        written = true
+        return new Response(null, { status: 204 })
+      }
+    }
+    return answers
+  }
+
+  const ROWS: [Action, Position][] = [
+    ['archive', 'in the middle'],
+    ['archive', 'the last by name'],
+    ['archive', 'the only one'],
+    ['delete', 'in the middle'],
+    ['delete', 'the last by name'],
+    ['delete', 'the only one'],
+  ]
+
+  test.each(ROWS)('%s %s selects the next by name, else the previous one, else nothing', async (action, position) => {
+    const removed = position === 'in the middle' ? BUBBA : position === 'the last by name' ? ZKITTLEZ : ACIDO
+    const list = position === 'the only one' ? [ACIDO] : BY_NAME
+    const { router } = renderApp(pathTo(VARIETY, { id: removed.id }), {
       computer: true,
-      answers: {
-        [`GET /varieties/${id}`]: () => json(200, removable(id, 'archive')),
-        [`GET /varieties/${id}/prices`]: () => json(200, []),
-        [`POST /varieties/${id}/archive`]: () => {
-          archived = true
-          return json(200, removable(id, 'archive'))
-        },
-        'GET /varieties': () => json(200, archived ? VARIETIES.filter((variety) => variety.id !== id) : VARIETIES),
-      },
+      answers: answersFor(action, list, removed),
     })
-    await userEvent.click(await screen.findByRole('button', { name: 'Archivar variedad' }))
 
-    await userEvent.click(screen.getByRole('button', { name: 'Sí, archivala' }))
+    // On a computer the left pane's mounted GET /varieties query is the cache `leave()` reads, so
+    // waiting for every row here is what makes the next-by-name branch the one under test.
+    await waitFor(() => {
+      const paths = list.map((variety) => pathTo(VARIETY, { id: variety.id }))
+      const shown = screen.getAllByRole('link').filter((link) => paths.includes(link.getAttribute('href') ?? ''))
+      expect(shown.map((link) => link.getAttribute('href'))).toEqual(list.map((variety) => pathTo(VARIETY, { id: variety.id })))
+    })
+    await userEvent.click(await screen.findByRole('button', { name: WORDS[action].button }))
+    await userEvent.click(screen.getByRole('button', { name: WORDS[action].confirm }))
 
+    const expected = position === 'the only one' ? VARIETIES_PATH : pathTo(VARIETY, { id: CRITICAL.id })
     await waitFor(() => expect(router.state.location.pathname).toBe(expected))
-    await waitFor(() => expect(screen.queryByRole('link', { name: new RegExp(VARIETIES.find((v) => v.id === id)?.name ?? '') })).not.toBeInTheDocument())
-  })
 
-  test('removing the only variety leaves the list with nothing selected', async () => {
-    let deleted = false
-    const only = [VARIETIES[3]]
-    const { router } = renderApp(pathTo(VARIETY, { id: 1 }), {
-      computer: true,
-      answers: {
-        'GET /varieties/1': () => json(200, removable(1, 'delete')),
-        'DELETE /varieties/1': () => {
-          deleted = true
-          return new Response(null, { status: 204 })
-        },
-        'GET /varieties': () => json(200, deleted ? [] : only),
-        'GET /stock': () => json(200, { ...STOCK, varieties: deleted ? [] : [STOCK.varieties[0]] }),
-      },
-    })
-    await userEvent.click(await screen.findByRole('button', { name: 'Eliminar variedad' }))
-
-    await userEvent.click(screen.getByRole('button', { name: 'Sí, eliminala' }))
-
-    expect(await screen.findByText('Todavía no cargaste ninguna variedad')).toBeInTheDocument()
-    expect(router.state.location.pathname).toBe(VARIETIES_PATH)
+    if (position === 'the only one') {
+      expect(await screen.findByText(EMPTY_TITLE)).toBeInTheDocument()
+    } else {
+      expect(screen.queryByRole('link', linkOf(removed))).not.toBeInTheDocument()
+    }
+    expect(router.state.historyAction).toBe('REPLACE')
+    expect(await screen.findByText(WORDS[action].toast)).toBeInTheDocument()
+    expect(screen.queryByText(/Eso ya no está/)).not.toBeInTheDocument()
   })
 })
 
