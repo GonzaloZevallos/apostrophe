@@ -530,7 +530,7 @@ def test_a_week_that_draws_lines_draws_the_ones_muestra_has() -> None:
 
 
 def week_only(items: list[str]) -> list[str]:
-    """The screen as Analisis draws it before its rows show the two new lines."""
+    """The screen as Analisis drew it before its rows showed the two new lines."""
     at = items.index("Costo de lo vendido")
     return [*items[:at], *items[at + 4 :]]
 
@@ -555,8 +555,11 @@ def test_a_row_that_draws_cost_of_goods_also_draws_the_shortfall_muestra_has() -
     assert any("week 05/10 – 11/10: 'Faltante de stock' is missing" in p for p in problems)
 
 
-def test_a_screen_not_yet_redrawn_is_not_asked_for_the_two_new_lines() -> None:
-    assert analisis_problems(week_only(ANALISIS)) == []
+def test_a_row_that_draws_lines_but_not_cost_of_goods_is_refused() -> None:
+    problems = analisis_problems(week_only(ANALISIS))
+
+    assert any("week 05/10 – 11/10: 'Costo de lo vendido' is missing" in p for p in problems)
+    assert any("week 05/10 – 11/10: 'Faltante de stock' is missing" in p for p in problems)
 
 
 def test_a_figure_entirely_pending_is_read_as_grams_only() -> None:

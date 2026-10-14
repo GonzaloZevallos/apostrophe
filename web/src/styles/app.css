@@ -2778,6 +2778,8 @@ body {
    never both at once (PM: "the computer gets the phone's cards" was the bug). */
 .analisis__tabla-contenedor {
   display: none;
+  /* Ten columns on the week and month tables: a narrow desktop scrolls, never clips. */
+  overflow-x: auto;
 }
 
 .analisis__tabla {

@@ -10,7 +10,7 @@
  * through the built front alone, against the real backend.
  */
 
-import { ANALYSIS, SALE_NEW, STOCK_ENTRY_NEW, VARIETIES } from '../src/routes.js'
+import { ANALYSIS, HOME, SALE_NEW, STOCK_ENTRY_NEW, VARIETIES } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
 import { expect, test } from './fixtures.js'
 import { signUpNewBusiness } from './helpers/signup.js'
@@ -121,6 +121,38 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   await expect(weekRows.first()).toBeVisible()
   await expect(page.getByText('Por día de la semana')).toBeVisible()
   await expect(page.getByText('Van aparte, se cargan en Stock').first()).toBeVisible()
+
+  // Costo de lo vendido on the rows, from the phone (Más → Análisis) and from the computer's
+  // sidebar. The 10 g sold today came from a 20.000 entry of 50 g: $ 4.000 of cost, and no
+  // negative adjustment, so no Faltante de stock line anywhere.
+  const phone = { width: 390, height: 844 }
+  await page.setViewportSize(phone)
+  await page.goto(HOME)
+  await page.getByRole('link', { name: 'Más', exact: true }).click()
+  await page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /^Análisis/ }).click()
+  await expectPath(page, ANALYSIS)
+  const phoneWeek = page.locator('.analisis__semana').last()
+  await expect(phoneWeek).toContainText('Costo de lo vendido $ 4.000')
+  await expect(phoneWeek).not.toContainText('Faltante de stock')
+  const phoneMonth = page.locator('.analisis__mes-fila').last()
+  await expect(phoneMonth).toContainText('Costo de lo vendido $ 4.000')
+  await expect(phoneMonth).not.toContainText('Faltante de stock')
+
+  await page.setViewportSize({ width: 1280, height: 920 })
+  await page.goto(HOME)
+  await page.getByRole('link', { name: /^Análisis/ }).click()
+  await expectPath(page, ANALYSIS)
+  const computerWeek = page.locator('.analisis__tabla-contenedor--semanas tbody tr').last()
+  await expect(computerWeek).toContainText('$ 4.000')
+  await expect(page.locator('.analisis__tabla-contenedor--semanas thead')).toContainText(
+    'Costo de lo vendido',
+  )
+  await expect(page.locator('.analisis__tabla-contenedor--semanas thead')).toContainText(
+    'Faltante de stock',
+  )
+  await expect(page.locator('.analisis__tabla-contenedor--meses tbody tr').last()).toContainText(
+    '$ 4.000',
+  )
 
   expect(consoleMessages).toEqual([])
 })

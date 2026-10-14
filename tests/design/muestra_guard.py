@@ -666,7 +666,6 @@ HEADER_LABELS = ("Vendiste en el mes", "Faltante de stock", "Promoción", "Consu
 COST_LINES = ("Faltante de stock", "Promoción", "Consumo propio")
 COST_OF_GOODS = "Costo de lo vendido"
 ROW_LABELS = ("Ventas", "Gramos", "Gastos", "Ganancia", "Caja", COST_OF_GOODS, *COST_LINES)
-OLDER_ROW_LINES = ("Promoción", "Consumo propio")  # a week or month row's lines before GH-141
 
 
 def _analysis_header_heading(muestra: Muestra) -> str:
@@ -776,22 +775,17 @@ def _row_block_problems(name: str, screen: Screen, muestra: Muestra) -> list[str
         where = f"{kind} {shown}"
         problems += _compare_found(name, where, found, table, True, ())
         if found:
-            problems += _order_and_presence(
-                name, where, found, list(table), _lines_asked(kind, found)
-            )
+            problems += _order_and_presence(name, where, found, list(table), _lines_asked(kind))
     return problems
 
 
-def _lines_asked(kind: str, found: list[Found]) -> tuple[str, ...]:
-    """The cost lines a block must draw when `muestra.md` has them. A week or month row that
-    draws Costo de lo vendido is one the screen redrew with its two new lines, so it draws
-    every line `muestra.md` has; one that does not is not asked for them (a screen is checked
-    only where it shows them)."""
+def _lines_asked(kind: str) -> tuple[str, ...]:
+    """The cost lines a block must draw when `muestra.md` has them: every week or month row
+    that draws labelled figures draws Costo de lo vendido and the cost lines, as the header
+    and the since-first-record block draw the cost lines."""
     if kind == "since":
         return COST_LINES
-    if any(f.label == COST_OF_GOODS for f in found):
-        return (COST_OF_GOODS, *COST_LINES)
-    return OLDER_ROW_LINES
+    return (COST_OF_GOODS, *COST_LINES)
 
 
 def _variety_row_problems(name: str, screen: Screen, muestra: Muestra) -> list[str]:

@@ -12,6 +12,8 @@ export const SINCE_FIRST_RECORD_LABEL =
   'Movido desde tu primer registro, no es la plata que tenés en caja'
 export const PURCHASES_NOTE = 'Van aparte, se cargan en Stock'
 export const NO_BEST_WEEK_LINE = 'Ninguna se destacó'
+export const COST_OF_GOODS_LABEL = 'Costo de lo vendido'
+export const SHORTFALL_LABEL = 'Faltante de stock'
 
 export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'emptyLine', text: NO_HISTORY_LINE },
@@ -20,5 +22,7 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'help', text: SINCE_FIRST_RECORD_LABEL },
   { kind: 'help', text: PURCHASES_NOTE },
   { kind: 'help', text: NO_BEST_WEEK_LINE },
+  { kind: 'help', text: COST_OF_GOODS_LABEL },
+  { kind: 'help', text: SHORTFALL_LABEL },
 ]
 export const LONG_REFUSALS: readonly string[] = []
