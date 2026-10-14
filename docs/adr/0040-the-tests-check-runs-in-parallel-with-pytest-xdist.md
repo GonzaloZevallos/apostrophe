@@ -90,4 +90,4 @@ Pytest outlasted mypy in every run, so mypy ran against a busy machine for its w
 | 3 | `rm -rf .mypy_cache; /usr/bin/time -f %e uv run --no-project mypy app tests` | 33.93 |
 | median | the runs above | 33.93 |
 
-The spread of this set, (max - min) / median, is above 20 %: runs on an otherwise idle machine did not agree closely, so the median is the figure to read and even it is indicative only. Its slowest run is as slow as the concurrent runs, so the table does not show that running pytest beside mypy slows mypy down.
+The spread of this set, (max - min) / median, is above 20 %: runs on an otherwise idle machine did not agree closely, so the median is the figure to read and even it is indicative only. Its slowest run is as slow as the concurrent runs and the concurrent median is above this one, so the table is inconclusive on whether running pytest beside mypy slows mypy down.
