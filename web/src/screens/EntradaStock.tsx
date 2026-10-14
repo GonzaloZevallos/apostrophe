@@ -27,7 +27,8 @@ import { useBackOr } from '../components/useBackOr'
 import { useGoneExit } from '../components/useGoneExit'
 import { useLeaveGuard } from '../components/useLeaveGuard'
 import { useFlash } from '../flash/useFlash'
-import { STOCK, VARIETIES } from '../routes'
+import { useViewport } from '../shell/useViewport'
+import { STOCK, VARIETIES, parentOf } from '../routes'
 import Boton from '../components/Boton'
 import StockEntryForm from './StockEntryForm'
 
@@ -122,7 +123,8 @@ interface BodyProps {
 
 function EntradaStockBody({ mode, entryId, today, initial, chosenVariety, hasEntries }: BodyProps) {
   const flash = useFlash()
-  const back = useBackOr(mode === 'nuevo' ? VARIETIES : STOCK)
+  const viewport = useViewport()
+  const back = useBackOr(parentOf(mode === 'nuevo' ? 'stock-entry-new' : 'stock-entry', viewport)?.path ?? STOCK)
   const goneExit = useGoneExit('stock-entry', { id: entryId })
   const [dirty, setDirty] = useState(false)
   const { blocker, disarm } = useLeaveGuard(dirty)

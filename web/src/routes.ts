@@ -83,8 +83,11 @@ export type ScreenId =
   | 'onboarding-categories'
   | 'onboarding-done'
 
-/** A screen's parent: one id, or one per viewport. */
-export type Parent = ScreenId | { phone: ScreenId; computer: ScreenId }
+/**
+ * A screen's parent: one id, one per viewport, or one per state of the record it shows
+ * (`{ live, archived }`: only an archived variety's page, whose back goes to Archivadas).
+ */
+export type Parent = ScreenId | { phone: ScreenId; computer: ScreenId } | { live: ScreenId; archived: ScreenId }
 
 // Paths. A `:name` segment is a parameter; `pathTo` fills it.
 export const HOME = '/'
@@ -198,7 +201,7 @@ export function outside<O extends Outside>(declaration: O): O {
   return declaration
 }
 
-export const SCREENS: readonly Screen[] = [
+const DECLARED = [
   screen({ id: 'home', path: HOME, kind: 'root', title: 'Inicio', place: { bar: 'home', rail: 'home' } }),
   screen({ id: 'more', path: MORE, kind: 'root', title: 'Más', place: { bar: 'more', rail: 'more' } }),
 
@@ -227,14 +230,21 @@ export const SCREENS: readonly Screen[] = [
     pane: 'list',
     place: { bar: 'varieties', rail: 'varieties' },
   }),
-  screen({ id: 'variety', path: VARIETY, kind: 'card', title: 'Variedad', pane: 'detail', parent: 'varieties' }),
+  screen({
+    id: 'variety',
+    path: VARIETY,
+    kind: 'card',
+    title: 'Variedad',
+    pane: 'detail',
+    parent: { live: 'varieties', archived: 'varieties-archived' },
+  }),
   screen({ id: 'variety-new', path: VARIETY_NEW, kind: 'form', title: 'Nueva variedad', parent: 'varieties' }),
   screen({ id: 'variety-prices', path: VARIETY_PRICES, kind: 'card', title: 'Precios', parent: 'variety' }),
   screen({ id: 'variety-price-new', path: VARIETY_PRICE_NEW, kind: 'form', title: 'Nuevo precio', parent: 'variety' }),
   screen({ id: 'variety-entries', path: VARIETY_ENTRIES, kind: 'card', title: 'Entradas', parent: 'variety' }),
   screen({ id: 'catalog', path: CATALOG, kind: 'card', title: 'Catálogo', parent: 'varieties' }),
   screen({ id: 'stock', path: STOCK, kind: 'card', title: 'Todas las entradas', parent: 'varieties' }),
-  screen({ id: 'stock-entry-new', path: STOCK_ENTRY_NEW, kind: 'form', title: 'Entrada de stock', parent: 'stock' }),
+  screen({ id: 'stock-entry-new', path: STOCK_ENTRY_NEW, kind: 'form', title: 'Entrada de stock', parent: 'varieties' }),
   screen({ id: 'stock-entry', path: STOCK_ENTRY, kind: 'form', title: 'Entrada de stock', parent: 'stock' }),
   screen({
     id: 'varieties-archived',
@@ -328,7 +338,16 @@ export const SCREENS: readonly Screen[] = [
     parent: 'home',
   }),
   screen({ id: 'onboarding-done', path: ONBOARDING_DONE, kind: 'form', title: 'Listo', parent: 'home' }),
-]
+] as const
+
+export const SCREENS: readonly Screen[] = DECLARED
+
+/** The ids whose parent depends on the record's state (today only `variety`), read off the
+ * declarations, never listed by hand. */
+type StateDependentId = Extract<(typeof DECLARED)[number], { parent: { live: ScreenId } }>['id']
+
+/** The ids `parentOf` answers: every one whose parent does not depend on state. */
+export type StaticParentId = Exclude<ScreenId, StateDependentId>
 
 /** The Onboarding's screens: drawn by `OnboardingLayout`, outside `Shell` (onboarding.md). */
 export const ONBOARDING_SCREENS: ReadonlySet<ScreenId> = new Set<ScreenId>([
@@ -358,9 +377,26 @@ export function screenOf(id: ScreenId): Screen {
   return found
 }
 
-function parentIdOf(entry: Screen, viewport: Viewport): ScreenId | undefined {
-  if (entry.parent === undefined) return undefined
-  return typeof entry.parent === 'string' ? entry.parent : entry.parent[viewport]
+/** What the record behind a screen says about its parent. */
+export interface ScreenFacts {
+  /** Whether the screen's record is archived; `'unknown'` while no source says. */
+  archived: 'yes' | 'no' | 'unknown'
+  /** The record's name, for a "‹ <name>" label; null while unknown. */
+  varietyName: string | null
+}
+
+function isStateDependent(parent: Parent): parent is { live: ScreenId; archived: ScreenId } {
+  return typeof parent === 'object' && 'live' in parent
+}
+
+/** The parent id on one side: the phone/computer split and the live side, or the archived
+ * one when `archived`. */
+function parentIdOf(entry: Screen, viewport: Viewport, archived = false): ScreenId | undefined {
+  const parent = entry.parent
+  if (parent === undefined) return undefined
+  if (typeof parent === 'string') return parent
+  if (isStateDependent(parent)) return archived ? parent.archived : parent.live
+  return parent[viewport]
 }
 
 export interface ParentRef {
@@ -371,12 +407,27 @@ export interface ParentRef {
   title: string
 }
 
-/** The screen's fixed parent: the "‹ parent" label and the back fallback, from one result. */
-export function parentOf(id: ScreenId, viewport: Viewport): ParentRef | undefined {
-  const parentId = parentIdOf(screenOf(id), viewport)
+function refOf(parentId: ScreenId | undefined, facts: ScreenFacts | null): ParentRef | undefined {
   if (parentId === undefined) return undefined
   const parent = screenOf(parentId)
-  return { id: parent.id, path: parent.path, title: parent.title }
+  const title = parent.id === 'variety' && facts !== null ? (facts.varietyName ?? parent.title) : parent.title
+  return { id: parent.id, path: parent.path, title }
+}
+
+/** The screen's fixed parent: the "‹ parent" label and the back fallback, from one result.
+ * Only for an id whose parent does not depend on state; `resolveParent` answers the rest. */
+export function parentOf(id: StaticParentId, viewport: Viewport): ParentRef | undefined {
+  return refOf(parentIdOf(screenOf(id), viewport), null)
+}
+
+/**
+ * The parent of any screen given what its record says. Archived resolves to the archived
+ * side; not archived and unknown both resolve to the live side, and that rule is written here
+ * and nowhere else. A parent that is the variety's page is labelled with the variety's name,
+ * or with the registry title while the name is unknown.
+ */
+export function resolveParent(id: ScreenId, viewport: Viewport, facts: ScreenFacts): ParentRef | undefined {
+  return refOf(parentIdOf(screenOf(id), viewport, facts.archived === 'yes'), facts)
 }
 
 /** The bar's and the rail's mark for the screen: its own, else its nearest ancestor's. */
@@ -392,6 +443,38 @@ export function placeOf(id: ScreenId, viewport: Viewport): Place {
   }
   throw new Error(`routes: ${id} has no place in its parent chain`)
 }
+
+/** Every state-dependent parent whose two sides mark different items: they must give the same
+ * `Place`, since `placeOf` climbs the live side only. Empty when sound. */
+export function parentSidesDisagree(screens: readonly Screen[]): string[] {
+  const placeVia = (start: ScreenId, viewport: Viewport): Place | undefined => {
+    const seen = new Set<ScreenId>()
+    let entry = screens.find((candidate) => candidate.id === start)
+    while (entry !== undefined && !seen.has(entry.id)) {
+      if (entry.place !== undefined) return entry.place
+      seen.add(entry.id)
+      const next = parentIdOf(entry, viewport)
+      entry = screens.find((candidate) => candidate.id === next)
+    }
+    return undefined
+  }
+  return screens.flatMap((entry) => {
+    const parent = entry.parent
+    if (parent === undefined || !isStateDependent(parent)) return []
+    return VIEWPORTS.flatMap((viewport) => {
+      const live = placeVia(parent.live, viewport)
+      const archived = placeVia(parent.archived, viewport)
+      return live?.bar === archived?.bar && live?.rail === archived?.rail
+        ? []
+        : [`${entry.id}: archived marks ${archived?.rail}, live marks ${live?.rail}`]
+    })
+  })
+}
+
+const VIEWPORTS: readonly Viewport[] = ['phone', 'computer']
+
+const disagreeing = parentSidesDisagree(SCREENS)
+if (disagreeing.length > 0) throw new Error(`routes: ${disagreeing.join('; ')}`)
 
 /** Whether `value` names a declared screen; a route's `handle.screen` is checked with it. */
 export function isScreenId(value: unknown): value is ScreenId {

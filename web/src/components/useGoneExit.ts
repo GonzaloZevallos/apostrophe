@@ -10,7 +10,7 @@
 
 import { useCallback } from 'react'
 import { useLocation, useNavigate } from 'react-router'
-import { type ScreenId, parentOf, pathTo } from '../routes'
+import { type StaticParentId, parentOf, pathTo } from '../routes'
 import { currentViewport } from '../shell/useViewport'
 import { gone } from './feedback'
 import { markGone } from './goneExit'
@@ -27,7 +27,7 @@ function fromOf(state: unknown): string | null {
 }
 
 export function useGoneExit(
-  screenId: ScreenId,
+  screenId: StaticParentId,
   params: Readonly<Record<string, string | number>> = {},
 ): () => void {
   const navigate = useNavigate()
