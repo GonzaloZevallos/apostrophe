@@ -20,6 +20,7 @@ import account from '../api/fixtures/account.json'
 import customer from '../api/fixtures/customer.json'
 import sale from '../api/fixtures/sale-detail.json'
 import withdrawal from '../api/fixtures/withdrawal.json'
+import { inAppState } from '../components/inAppState'
 import { SheetRouterProvider } from '../components/useSheetStack'
 import FlashProvider from '../flash/FlashProvider'
 import { router as appRouter } from '../router'
@@ -77,27 +78,27 @@ const PINNED = {
 /** The answers every card's page needs to reach its loaded header; one variety, 24K Gold. */
 function api(archived: boolean) {
   const variety = { id: 1, name: '24K Gold', archived, removal: 'archive', current_price: archived ? null : PRICE }
-  const answers: Record<string, unknown> = {
-    '/varieties/1': variety,
-    '/varieties': archived ? [] : [variety],
-    '/varieties?archived=true': archived ? [variety] : [],
-    '/varieties/1/prices': [PRICE],
-    '/stock': { total: 30, varieties: [], entries: [ENTRY] },
-    '/stock?archived=true': { total: 30, varieties: [], entries: [ENTRY] },
-    '/stock/varieties/1/movements': [{ ...ENTRY, kind: 'entry' }],
-    '/stock/withdrawals/1': withdrawal,
-    '/catalog': CATALOG,
-    '/pinned-catalog': PINNED,
-    '/pricing-settings': { is_bulk_pricing: true, is_vip_customers: true },
-    '/sales/1': sale,
-    '/customers/1': customer,
-    '/customers/1/account': account,
-    '/customers': [customer],
-    '/payments/debtors': { total: 0, rows: [] },
-  }
+  const answers = new Map<string, unknown>()
+  const get = (url: string, body: unknown) => answers.set(url, body)
+  get('/varieties/1', variety)
+  get('/varieties', archived ? [] : [variety])
+  get('/varieties?archived=true', archived ? [variety] : [])
+  get('/varieties/1/prices', [PRICE])
+  get('/stock', { total: 30, varieties: [], entries: [ENTRY] })
+  get('/stock?archived=true', { total: 30, varieties: [], entries: [ENTRY] })
+  get('/stock/varieties/1/movements', [{ ...ENTRY, kind: 'entry' }])
+  get('/stock/withdrawals/1', withdrawal)
+  get('/catalog', CATALOG)
+  get('/pinned-catalog', PINNED)
+  get('/pricing-settings', { is_bulk_pricing: true, is_vip_customers: true })
+  get('/sales/1', sale)
+  get('/customers/1', customer)
+  get('/customers/1/account', account)
+  get('/customers', [customer])
+  get('/payments/debtors', { total: 0, rows: [] })
   return (input: string | URL | Request): Promise<Response> => {
     const url = typeof input === 'string' ? input : input.toString()
-    const found = answers[url] ?? (url.startsWith('/customers?') ? [customer] : undefined)
+    const found = answers.get(url) ?? (url.startsWith('/customers?') ? [customer] : undefined)
     return Promise.resolve(found === undefined ? json({}, 404) : json(found))
   }
 }
@@ -248,7 +249,7 @@ const HISTORY: { id: ScreenId; path: string; from: string; parent: string }[] = 
 ]
 
 test.each(HISTORY)('$id: the arrow goes back by history when the entry is in-app', async ({ id, path, from }) => {
-  const memory = mount(id, { entries: [from, { pathname: path, state: { inApp: true, from } }] })
+  const memory = mount(id, { entries: [from, { pathname: path, state: inAppState({ pathname: from }) }] })
 
   await LOADED[id]?.()
   await userEvent.click(screen.getByRole('button', { name: /^‹/ }))
