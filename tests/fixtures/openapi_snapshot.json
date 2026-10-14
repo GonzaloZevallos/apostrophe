@@ -121,7 +121,7 @@
         "type": "object"
       },
       "AmountWithPendingOut": {
-        "description": "A money figure (profit, stock shortfall, promotion or own use) together with the\npending grams behind it, for one period.",
+        "description": "Profit together with the pending grams behind it, for one period. It carries no\n`all_pending`: Ganancia is always a real figure, worked out over the costed part.",
         "properties": {
           "amount": {
             "title": "Amount",
@@ -137,6 +137,30 @@
           "pending_grams"
         ],
         "title": "AmountWithPendingOut",
+        "type": "object"
+      },
+      "AnalysisCostOut": {
+        "description": "A cost figure on An\u00e1lisis (cost of goods, stock shortfall, promotion or own use)\nwith the grams behind it not costed yet. `all_pending` is the domain's answer\n(`CostAmount.all_pending`, ADR-0020 amendment GH-141): nothing here infers it from\n`amount`, since a lot with no cost costs $0 too.",
+        "properties": {
+          "all_pending": {
+            "title": "All Pending",
+            "type": "boolean"
+          },
+          "amount": {
+            "title": "Amount",
+            "type": "integer"
+          },
+          "pending_grams": {
+            "title": "Pending Grams",
+            "type": "number"
+          }
+        },
+        "required": [
+          "amount",
+          "pending_grams",
+          "all_pending"
+        ],
+        "title": "AnalysisCostOut",
         "type": "object"
       },
       "AnalysisMonthOut": {
@@ -170,7 +194,7 @@
           "own_use": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/AmountWithPendingOut"
+                "$ref": "#/components/schemas/AnalysisCostOut"
               },
               {
                 "type": "null"
@@ -191,7 +215,7 @@
           "promotion": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/AmountWithPendingOut"
+                "$ref": "#/components/schemas/AnalysisCostOut"
               },
               {
                 "type": "null"
@@ -209,7 +233,7 @@
           "shortfall": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/AmountWithPendingOut"
+                "$ref": "#/components/schemas/AnalysisCostOut"
               },
               {
                 "type": "null"
@@ -653,6 +677,10 @@
       },
       "CostOut": {
         "properties": {
+          "all_pending": {
+            "title": "All Pending",
+            "type": "boolean"
+          },
           "costed": {
             "title": "Costed",
             "type": "integer"
@@ -664,7 +692,8 @@
         },
         "required": [
           "costed",
-          "pending_grams"
+          "pending_grams",
+          "all_pending"
         ],
         "title": "CostOut",
         "type": "object"
@@ -1531,6 +1560,9 @@
             "title": "Cash",
             "type": "integer"
           },
+          "cost_of_goods": {
+            "$ref": "#/components/schemas/AnalysisCostOut"
+          },
           "expenses": {
             "title": "Expenses",
             "type": "integer"
@@ -1556,7 +1588,7 @@
           "own_use": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/AmountWithPendingOut"
+                "$ref": "#/components/schemas/AnalysisCostOut"
               },
               {
                 "type": "null"
@@ -1569,7 +1601,7 @@
           "promotion": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/AmountWithPendingOut"
+                "$ref": "#/components/schemas/AnalysisCostOut"
               },
               {
                 "type": "null"
@@ -1579,6 +1611,16 @@
           "sales": {
             "title": "Sales",
             "type": "integer"
+          },
+          "shortfall": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnalysisCostOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -1588,6 +1630,8 @@
           "sales",
           "grams",
           "expenses",
+          "cost_of_goods",
+          "shortfall",
           "promotion",
           "own_use",
           "profit",
@@ -3058,7 +3102,7 @@
           "own_use": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/AmountWithPendingOut"
+                "$ref": "#/components/schemas/AnalysisCostOut"
               },
               {
                 "type": "null"
@@ -3071,7 +3115,7 @@
           "promotion": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/AmountWithPendingOut"
+                "$ref": "#/components/schemas/AnalysisCostOut"
               },
               {
                 "type": "null"
@@ -3085,7 +3129,7 @@
           "shortfall": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/AmountWithPendingOut"
+                "$ref": "#/components/schemas/AnalysisCostOut"
               },
               {
                 "type": "null"
@@ -3490,6 +3534,9 @@
             "title": "Cash",
             "type": "integer"
           },
+          "cost_of_goods": {
+            "$ref": "#/components/schemas/AnalysisCostOut"
+          },
           "expenses": {
             "title": "Expenses",
             "type": "integer"
@@ -3511,7 +3558,7 @@
           "own_use": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/AmountWithPendingOut"
+                "$ref": "#/components/schemas/AnalysisCostOut"
               },
               {
                 "type": "null"
@@ -3524,7 +3571,7 @@
           "promotion": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/AmountWithPendingOut"
+                "$ref": "#/components/schemas/AnalysisCostOut"
               },
               {
                 "type": "null"
@@ -3534,6 +3581,16 @@
           "sales": {
             "title": "Sales",
             "type": "integer"
+          },
+          "shortfall": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnalysisCostOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -3542,6 +3599,8 @@
           "sales",
           "grams",
           "expenses",
+          "cost_of_goods",
+          "shortfall",
           "promotion",
           "own_use",
           "profit",

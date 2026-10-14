@@ -90,16 +90,16 @@ def test_the_seed_at_the_capture_date_has_the_states_the_screens_draw(
     assert periods["week"]["promotion"]["pending"] is False
 
     analysis = client.get("/analysis").json()
-    # The analysis spells the shortfall on the month's header and on the total since the
-    # first record; its week and month rows carry it only inside their profit.
+    # The analysis spells the shortfall on the month's header, on the total since the
+    # first record and on its week and month rows.
     assert analysis["month"]["shortfall"] is not None
     assert analysis["since_first_record"]["shortfall"] is not None
     assert amounts(analysis["month"]["shortfall"]) == amounts(periods["month"]["shortfall"])
     assert amounts(analysis["since_first_record"]["shortfall"]) == amounts(
         periods["month"]["shortfall"]
     )
-    assert "shortfall" not in analysis["weeks"][-1]
-    assert "shortfall" not in analysis["months"][-1]
+    assert amounts(analysis["weeks"][-1]["shortfall"]) == amounts(periods["week"]["shortfall"])
+    assert amounts(analysis["months"][-1]["shortfall"]) == amounts(periods["month"]["shortfall"])
 
 
 def test_the_panel_and_the_analysis_agree_on_the_current_week_and_month(

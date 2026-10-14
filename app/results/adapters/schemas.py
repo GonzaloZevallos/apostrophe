@@ -174,14 +174,26 @@ class MarginOut(BaseModel):
 class CostOut(BaseModel):
     costed: int
     pending_grams: GramsOut
+    all_pending: bool
 
 
 class AmountWithPendingOut(BaseModel):
-    """A money figure (profit, stock shortfall, promotion or own use) together with the
-    pending grams behind it, for one period."""
+    """Profit together with the pending grams behind it, for one period. It carries no
+    `all_pending`: Ganancia is always a real figure, worked out over the costed part."""
 
     amount: int
     pending_grams: GramsOut
+
+
+class AnalysisCostOut(BaseModel):
+    """A cost figure on Análisis (cost of goods, stock shortfall, promotion or own use)
+    with the grams behind it not costed yet. `all_pending` is the domain's answer
+    (`CostAmount.all_pending`, ADR-0020 amendment GH-141): nothing here infers it from
+    `amount`, since a lot with no cost costs $0 too."""
+
+    amount: int
+    pending_grams: GramsOut
+    all_pending: bool
 
 
 class VarietyRowOut(BaseModel):
@@ -204,9 +216,9 @@ class AnalysisMonthOut(BaseModel):
     grams_sold: GramsOut
     grams_gifted: GramsOut
     average_margin: MarginOut
-    shortfall: AmountWithPendingOut | None
-    promotion: AmountWithPendingOut | None
-    own_use: AmountWithPendingOut | None
+    shortfall: AnalysisCostOut | None
+    promotion: AnalysisCostOut | None
+    own_use: AnalysisCostOut | None
     varieties: list[VarietyRowOut]
 
 
@@ -216,8 +228,10 @@ class WeekOut(BaseModel):
     sales: int
     grams: GramsOut
     expenses: int
-    promotion: AmountWithPendingOut | None
-    own_use: AmountWithPendingOut | None
+    cost_of_goods: AnalysisCostOut
+    shortfall: AnalysisCostOut | None
+    promotion: AnalysisCostOut | None
+    own_use: AnalysisCostOut | None
     profit: AmountWithPendingOut
     cash: int
     best: bool
@@ -230,8 +244,10 @@ class MonthRowOut(BaseModel):
     sales: int
     grams: GramsOut
     expenses: int
-    promotion: AmountWithPendingOut | None
-    own_use: AmountWithPendingOut | None
+    cost_of_goods: AnalysisCostOut
+    shortfall: AnalysisCostOut | None
+    promotion: AnalysisCostOut | None
+    own_use: AnalysisCostOut | None
     profit: AmountWithPendingOut
     cash: int
 
@@ -248,9 +264,9 @@ class SinceFirstRecordOut(BaseModel):
     expenses: int
     profit: AmountWithPendingOut
     cash: int
-    shortfall: AmountWithPendingOut | None
-    promotion: AmountWithPendingOut | None
-    own_use: AmountWithPendingOut | None
+    shortfall: AnalysisCostOut | None
+    promotion: AnalysisCostOut | None
+    own_use: AnalysisCostOut | None
 
 
 class ExpenseCategoryTotalOut(BaseModel):

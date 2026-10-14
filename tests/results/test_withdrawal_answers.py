@@ -147,17 +147,17 @@ def test_the_panel_and_analysis_agree_on_every_withdrawal_figure(client: TestCli
     header = analysis["month"]
     assert header["promotion"] == month_row["promotion"]
     assert header["own_use"] == month_row["own_use"]
-    assert header["shortfall"] == {"amount": 0, "pending_grams": 1.0}
+    assert header["shortfall"] == {"amount": 0, "pending_grams": 1.0, "all_pending": True}
     assert sum(v["cost"]["costed"] for v in header["varieties"]) == month["cost_of_goods"] == 500
 
     # Since the first record: every promotion ($100 + $400, B's 2 g pending) and own use.
     since = analysis["since_first_record"]
-    assert since["promotion"] == {"amount": 500, "pending_grams": 2.0}
-    assert since["own_use"] == {"amount": 300, "pending_grams": 0.0}
+    assert since["promotion"] == {"amount": 500, "pending_grams": 2.0, "all_pending": False}
+    assert since["own_use"] == {"amount": 300, "pending_grams": 0.0, "all_pending": False}
 
     # A month with only one reason shows no line for the other (September: no own use).
     september = next(m for m in analysis["months"] if m["month"] == "2026-09")
-    assert september["promotion"] == {"amount": 500, "pending_grams": 0.0}
+    assert september["promotion"] == {"amount": 500, "pending_grams": 0.0, "all_pending": False}
     assert september["own_use"] is None
 
 
@@ -174,8 +174,16 @@ def test_a_withdrawal_dated_before_every_other_record_starts_the_history(
 
     assert analysis["first_record"] == "2026-10-01"
     # The later entry settles the withdrawn grams at its $100/g.
-    assert analysis["weeks"][-1]["promotion"] == {"amount": 200, "pending_grams": 0.0}
-    assert analysis["months"][-1]["promotion"] == {"amount": 200, "pending_grams": 0.0}
+    assert analysis["weeks"][-1]["promotion"] == {
+        "amount": 200,
+        "pending_grams": 0.0,
+        "all_pending": False,
+    }
+    assert analysis["months"][-1]["promotion"] == {
+        "amount": 200,
+        "pending_grams": 0.0,
+        "all_pending": False,
+    }
     for period, row in (
         (panel["week"], analysis["weeks"][-1]),
         (panel["month"], analysis["months"][-1]),
@@ -194,10 +202,22 @@ def test_a_business_whose_only_record_is_a_withdrawal_has_a_history(client: Test
     assert analysis["first_record"] == HOY
     assert len(analysis["weeks"]) >= 1
     assert analysis["weeks"][-1]["sales"] == 0
-    assert analysis["weeks"][-1]["own_use"] == {"amount": 0, "pending_grams": 3.0}
+    assert analysis["weeks"][-1]["own_use"] == {
+        "amount": 0,
+        "pending_grams": 3.0,
+        "all_pending": True,
+    }
     assert analysis["weeks"][-1]["promotion"] is None
-    assert analysis["months"][-1]["own_use"] == {"amount": 0, "pending_grams": 3.0}
-    assert analysis["since_first_record"]["own_use"] == {"amount": 0, "pending_grams": 3.0}
+    assert analysis["months"][-1]["own_use"] == {
+        "amount": 0,
+        "pending_grams": 3.0,
+        "all_pending": True,
+    }
+    assert analysis["since_first_record"]["own_use"] == {
+        "amount": 0,
+        "pending_grams": 3.0,
+        "all_pending": True,
+    }
     assert analysis["since_first_record"]["profit"]["pending_grams"] == 3.0
     assert panel["month"]["own_use"] == {"amount": 0, "pending": True}
     assert panel["month"]["profit_pending"] is True

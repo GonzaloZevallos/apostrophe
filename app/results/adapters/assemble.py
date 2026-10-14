@@ -8,6 +8,7 @@ from datetime import date
 
 from app.results.adapters.schemas import (
     AmountWithPendingOut,
+    AnalysisCostOut,
     AnalysisMonthOut,
     AnalysisOut,
     CostOut,
@@ -39,7 +40,19 @@ def _margin(figure: MarginFigure) -> MarginOut:
 
 
 def _cost(figure: CostFigure) -> CostOut:
-    return CostOut(costed=figure.costed, pending_grams=figure.pending_grams.as_decimal())
+    return CostOut(
+        costed=figure.costed,
+        pending_grams=figure.pending_grams.as_decimal(),
+        all_pending=figure.all_pending,
+    )
+
+
+def _cost_of_goods(figure: CostFigure) -> AnalysisCostOut:
+    return AnalysisCostOut(
+        amount=figure.costed,
+        pending_grams=figure.pending_grams.as_decimal(),
+        all_pending=figure.all_pending,
+    )
 
 
 def _amount_with_pending(figure: AmountWithPending) -> AmountWithPendingOut:
@@ -48,12 +61,14 @@ def _amount_with_pending(figure: AmountWithPending) -> AmountWithPendingOut:
     )
 
 
-def _optional(figure: CostAmount | None) -> AmountWithPendingOut | None:
+def _optional(figure: CostAmount | None) -> AnalysisCostOut | None:
     return (
         None
         if figure is None
-        else AmountWithPendingOut(
-            amount=figure.amount, pending_grams=figure.pending_grams.as_decimal()
+        else AnalysisCostOut(
+            amount=figure.amount,
+            pending_grams=figure.pending_grams.as_decimal(),
+            all_pending=figure.all_pending,
         )
     )
 
@@ -108,6 +123,8 @@ def assemble(today: date, figures: AnalysisFigures) -> AnalysisOut:
                 sales=w.sales,
                 grams=w.grams.as_decimal(),
                 expenses=w.expenses,
+                cost_of_goods=_cost_of_goods(w.cost_of_goods),
+                shortfall=_optional(w.shortfall),
                 promotion=_optional(w.promotion),
                 own_use=_optional(w.own_use),
                 profit=_amount_with_pending(w.profit),
@@ -124,6 +141,8 @@ def assemble(today: date, figures: AnalysisFigures) -> AnalysisOut:
                 sales=m.sales,
                 grams=m.grams.as_decimal(),
                 expenses=m.expenses,
+                cost_of_goods=_cost_of_goods(m.cost_of_goods),
+                shortfall=_optional(m.shortfall),
                 promotion=_optional(m.promotion),
                 own_use=_optional(m.own_use),
                 profit=_amount_with_pending(m.profit),

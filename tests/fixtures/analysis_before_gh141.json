@@ -1,0 +1,338 @@
+{
+  "first_record": "2026-07-01",
+  "month": {
+    "average_margin": {
+      "amount": 900,
+      "pending_grams": 0.0,
+      "percent": 90
+    },
+    "grams_gifted": 0.0,
+    "grams_sold": 1.0,
+    "month": "2026-10",
+    "next": null,
+    "own_use": {
+      "amount": 100,
+      "pending_grams": 0.0
+    },
+    "previous": "2026-09",
+    "promotion": null,
+    "sales": 1000,
+    "sales_without_shipping": 1000,
+    "shortfall": {
+      "amount": 100,
+      "pending_grams": 0.0
+    },
+    "varieties": [
+      {
+        "cost": {
+          "costed": 100,
+          "pending_grams": 0.0
+        },
+        "grams_gifted": 0.0,
+        "grams_sold": 1.0,
+        "margin": {
+          "amount": 900,
+          "pending_grams": 0.0,
+          "percent": 90
+        },
+        "name": "A",
+        "sales_without_shipping": 1000,
+        "share_percent": 100,
+        "variety_id": 1
+      }
+    ]
+  },
+  "month_expenses": {
+    "categories": [
+      {
+        "category_id": 5,
+        "name": "Varios",
+        "total": 800
+      }
+    ],
+    "purchases": 0,
+    "total": 800
+  },
+  "months": [
+    {
+      "cash": 0,
+      "expenses": 0,
+      "first_day": "2026-07-01",
+      "grams": 0.0,
+      "last_day": "2026-07-31",
+      "month": "2026-07",
+      "own_use": null,
+      "profit": {
+        "amount": 0,
+        "pending_grams": 0.0
+      },
+      "promotion": null,
+      "sales": 0
+    },
+    {
+      "cash": 16000,
+      "expenses": 0,
+      "first_day": "2026-08-01",
+      "grams": 13.0,
+      "last_day": "2026-08-31",
+      "month": "2026-08",
+      "own_use": null,
+      "profit": {
+        "amount": 6500,
+        "pending_grams": 8.0
+      },
+      "promotion": null,
+      "sales": 16000
+    },
+    {
+      "cash": 7000,
+      "expenses": 0,
+      "first_day": "2026-09-01",
+      "grams": 15.0,
+      "last_day": "2026-09-30",
+      "month": "2026-09",
+      "own_use": {
+        "amount": 100,
+        "pending_grams": 0.0
+      },
+      "profit": {
+        "amount": 4900,
+        "pending_grams": 2.0
+      },
+      "promotion": {
+        "amount": 300,
+        "pending_grams": 0.0
+      },
+      "sales": 7000
+    },
+    {
+      "cash": 200,
+      "expenses": 800,
+      "first_day": "2026-10-01",
+      "grams": 1.0,
+      "last_day": "2026-10-31",
+      "month": "2026-10",
+      "own_use": {
+        "amount": 100,
+        "pending_grams": 0.0
+      },
+      "profit": {
+        "amount": -100,
+        "pending_grams": 0.0
+      },
+      "promotion": null,
+      "sales": 1000
+    }
+  ],
+  "since_first_record": {
+    "cash": 23200,
+    "expenses": 800,
+    "own_use": {
+      "amount": 200,
+      "pending_grams": 0.0
+    },
+    "profit": {
+      "amount": 11300,
+      "pending_grams": 10.0
+    },
+    "promotion": {
+      "amount": 300,
+      "pending_grams": 0.0
+    },
+    "sales": 24000,
+    "shortfall": {
+      "amount": 500,
+      "pending_grams": 2.0
+    }
+  },
+  "since_first_record_expenses": {
+    "categories": [
+      {
+        "category_id": 5,
+        "name": "Varios",
+        "total": 800
+      }
+    ],
+    "purchases": 0,
+    "total": 800
+  },
+  "today": "2026-10-02",
+  "weekdays": [
+    {
+      "best": false,
+      "count": 0,
+      "sales": 0,
+      "weekday": 1
+    },
+    {
+      "best": true,
+      "count": 6,
+      "sales": 23000,
+      "weekday": 2
+    },
+    {
+      "best": false,
+      "count": 1,
+      "sales": 0,
+      "weekday": 3
+    },
+    {
+      "best": false,
+      "count": 0,
+      "sales": 0,
+      "weekday": 4
+    },
+    {
+      "best": false,
+      "count": 1,
+      "sales": 1000,
+      "weekday": 5
+    },
+    {
+      "best": false,
+      "count": 0,
+      "sales": 0,
+      "weekday": 6
+    },
+    {
+      "best": false,
+      "count": 0,
+      "sales": 0,
+      "weekday": 7
+    }
+  ],
+  "weeks": [
+    {
+      "best": false,
+      "cash": 5000,
+      "expenses": 0,
+      "first_day": "2026-08-10",
+      "grams": 5.0,
+      "last_day": "2026-08-16",
+      "own_use": null,
+      "profit": {
+        "amount": 2000,
+        "pending_grams": 3.0
+      },
+      "promotion": null,
+      "sales": 5000
+    },
+    {
+      "best": false,
+      "cash": 5000,
+      "expenses": 0,
+      "first_day": "2026-08-17",
+      "grams": 5.0,
+      "last_day": "2026-08-23",
+      "own_use": null,
+      "profit": {
+        "amount": 4500,
+        "pending_grams": 2.0
+      },
+      "promotion": null,
+      "sales": 5000
+    },
+    {
+      "best": true,
+      "cash": 6000,
+      "expenses": 0,
+      "first_day": "2026-08-24",
+      "grams": 3.0,
+      "last_day": "2026-08-30",
+      "own_use": null,
+      "profit": {
+        "amount": 0,
+        "pending_grams": 3.0
+      },
+      "promotion": null,
+      "sales": 6000
+    },
+    {
+      "best": false,
+      "cash": 0,
+      "expenses": 0,
+      "first_day": "2026-08-31",
+      "grams": 0.0,
+      "last_day": "2026-09-06",
+      "own_use": {
+        "amount": 100,
+        "pending_grams": 0.0
+      },
+      "profit": {
+        "amount": -300,
+        "pending_grams": 0.0
+      },
+      "promotion": {
+        "amount": 200,
+        "pending_grams": 0.0
+      },
+      "sales": 0
+    },
+    {
+      "best": false,
+      "cash": 0,
+      "expenses": 0,
+      "first_day": "2026-09-07",
+      "grams": 5.0,
+      "last_day": "2026-09-13",
+      "own_use": null,
+      "profit": {
+        "amount": -500,
+        "pending_grams": 2.0
+      },
+      "promotion": null,
+      "sales": 0
+    },
+    {
+      "best": false,
+      "cash": 5000,
+      "expenses": 0,
+      "first_day": "2026-09-14",
+      "grams": 5.0,
+      "last_day": "2026-09-20",
+      "own_use": null,
+      "profit": {
+        "amount": 4300,
+        "pending_grams": 0.0
+      },
+      "promotion": null,
+      "sales": 5000
+    },
+    {
+      "best": false,
+      "cash": 0,
+      "expenses": 0,
+      "first_day": "2026-09-21",
+      "grams": 3.0,
+      "last_day": "2026-09-27",
+      "own_use": null,
+      "profit": {
+        "amount": -300,
+        "pending_grams": 0.0
+      },
+      "promotion": null,
+      "sales": 0
+    },
+    {
+      "best": false,
+      "cash": 2200,
+      "expenses": 800,
+      "first_day": "2026-09-28",
+      "grams": 3.0,
+      "last_day": "2026-10-04",
+      "own_use": {
+        "amount": 100,
+        "pending_grams": 0.0
+      },
+      "profit": {
+        "amount": 1600,
+        "pending_grams": 0.0
+      },
+      "promotion": {
+        "amount": 100,
+        "pending_grams": 0.0
+      },
+      "sales": 3000
+    }
+  ]
+}
