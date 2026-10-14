@@ -194,7 +194,8 @@ function PeriodTabs({
   )
 }
 
-/** The only place the notices' order is drawn, from `inicioNotices()`'s answer: the
+/** The only place the notices' order is drawn (phone and computer alike: the design draws
+ * them in the full-width body under the tabs), from `inicioNotices()`'s answer: the
  * Onboarding notice or "Arrancá por las variedades" (never both), then the out-of-date
  * link. It sits right after the period tabs, so Semana and Mes keep it above their own
  * figures (results.md). */
