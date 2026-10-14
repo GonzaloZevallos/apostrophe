@@ -49,9 +49,15 @@ const OVERRIDES: Record<Field, Partial<Record<RefusalCode, string>>> = {
 export interface CatalogMessageFormProps {
   onSaved?: () => void
   onDirtyChange: (dirty: boolean) => void
+  /** The submit's label; Configuración keeps the default, the Onboarding's step 3 asks "Guardar". */
+  submitLabel?: 'Guardá el mensaje' | 'Guardar'
 }
 
-export default function CatalogMessageForm({ onSaved, onDirtyChange }: CatalogMessageFormProps) {
+export default function CatalogMessageForm({
+  onSaved,
+  onDirtyChange,
+  submitLabel = 'Guardá el mensaje',
+}: CatalogMessageFormProps) {
   const { data, isPending, isError, error } = useQuery(catalogQueryOptions())
 
   if (isPending) return <Loading />
@@ -61,6 +67,7 @@ export default function CatalogMessageForm({ onSaved, onDirtyChange }: CatalogMe
       initial={{ header: data.header, footer: data.footer }}
       onSaved={onSaved}
       onDirtyChange={onDirtyChange}
+      submitLabel={submitLabel}
     />
   )
 }
@@ -69,7 +76,7 @@ interface MessageFormProps extends CatalogMessageFormProps {
   initial: HeaderFooter
 }
 
-function MessageForm({ initial, onSaved, onDirtyChange }: MessageFormProps) {
+function MessageForm({ initial, onSaved, onDirtyChange, submitLabel }: MessageFormProps) {
   const queryClient = useQueryClient()
   const [accepted, setAccepted] = useState(initial)
   const [header, setHeader] = useState(initial.header)
@@ -183,7 +190,7 @@ function MessageForm({ initial, onSaved, onDirtyChange }: MessageFormProps) {
         )}
         {offline && <SinConexion />}
         <Boton textOnly="submit" type="submit" disabled={saving}>
-          Guardá el mensaje
+          {submitLabel}
         </Boton>
       </form>
     </>

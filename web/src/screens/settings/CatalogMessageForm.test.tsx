@@ -34,7 +34,7 @@ interface Sent {
   footer: string
 }
 
-function renderForm(put?: (body: Sent) => Response) {
+function renderForm(put?: (body: Sent) => Response, submitLabel?: 'Guardar') {
   const puts: Sent[] = []
   const fetchMock = vi.fn((url: string, init?: RequestInit) => {
     if (init?.method === 'PUT' && url === '/catalog/header-footer' && put !== undefined) {
@@ -49,7 +49,7 @@ function renderForm(put?: (body: Sent) => Response) {
   const onDirtyChange = vi.fn()
   render(
     <QueryClientProvider client={new QueryClient()}>
-      <CatalogMessageForm onSaved={onSaved} onDirtyChange={onDirtyChange} />
+      <CatalogMessageForm onSaved={onSaved} onDirtyChange={onDirtyChange} submitLabel={submitLabel} />
     </QueryClientProvider>,
   )
   return { puts, onSaved, onDirtyChange }
@@ -94,4 +94,20 @@ test('a refusal shows inline, keeps what was typed and does not call onSaved', a
   expect(header).toHaveValue(`${CATALOG.header} de más`)
   expect(onSaved).not.toHaveBeenCalled()
   expect(onDirtyChange).toHaveBeenLastCalledWith(true)
+})
+
+test('the submit reads "Guardá el mensaje" by default and "Guardar" when the host asks', async () => {
+  renderForm()
+  expect(await screen.findByRole('button', { name: 'Guardá el mensaje' })).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Guardar' })).not.toBeInTheDocument()
+})
+
+test('with submitLabel "Guardar" the submit reads Guardar and still saves through the owner route', async () => {
+  const { puts, onSaved } = renderForm((body) => jsonResponse(200, { ...CATALOG, ...body }), 'Guardar')
+  const user = userEvent.setup()
+  await user.type(await screen.findByLabelText('Encabezado'), '!')
+  expect(screen.queryByRole('button', { name: 'Guardá el mensaje' })).not.toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Guardar' }))
+  await waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1))
+  expect(puts).toHaveLength(1)
 })

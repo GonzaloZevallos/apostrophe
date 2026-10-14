@@ -268,13 +268,13 @@ test('step 3 sends the pass done only after the save answered, and a refused sav
   const header = await screen.findByLabelText('Encabezado')
   await user.type(header, '!')
   expect(screen.queryByRole('button', { name: 'Dejar así' })).not.toBeInTheDocument()
-  await user.click(screen.getByRole('button', { name: 'Guardá el mensaje' }))
+  await user.click(screen.getByRole('button', { name: 'Guardar' }))
   expect(await screen.findByRole('alert')).toBeInTheDocument()
   expect(header).toHaveValue('H!')
   expect(calls).not.toContain('POST /onboarding-progress/passes')
 
   refuse = false
-  await user.click(screen.getByRole('button', { name: 'Guardá el mensaje' }))
+  await user.click(screen.getByRole('button', { name: 'Guardar' }))
   expect(await screen.findByRole('heading', { name: 'Conectá tu bot de Telegram' })).toBeInTheDocument()
   expect(calls.indexOf('PUT /catalog/header-footer')).toBeLessThan(
     calls.indexOf('POST /onboarding-progress/passes'),
@@ -299,7 +299,7 @@ test('step 3 "Dejar así" passes it done with the defaults kept, and sends no ca
   expect(calls.filter((call) => call.startsWith('PUT'))).toEqual([])
 })
 
-test('step 4 passes done after a successful Probarlo, says where to publish and shows no catalog link; a failed Probarlo sends no pass', async () => {
+test('step 4 passes done after a successful Probarlo, shows no catalog link and no publish line before it; a failed Probarlo sends no pass', async () => {
   const bodies: unknown[] = []
   let refuse = true
   stubFetch(answer(['done', 'done', 'done', 'pending', 'pending', 'pending'], { stock_entries_count: 1 }), {
@@ -316,12 +316,12 @@ test('step 4 passes done after a successful Probarlo, says where to publish and 
   const user = userEvent.setup()
   renderAt(ONBOARDING_BOT)
 
-  expect(await screen.findByText('Cuando quieras, publicalo desde Variedades → Mandar catálogo')).toBeInTheDocument()
+  await user.type(await screen.findByLabelText('Token del bot'), '123:abc')
   expect(screen.queryByText('Ir al catálogo')).not.toBeInTheDocument()
-  await user.type(screen.getByLabelText('Token del bot'), '123:abc')
   await user.type(screen.getByLabelText('Tu chat'), '555')
   await user.click(screen.getByRole('button', { name: 'Probarlo' }))
   expect(await screen.findByRole('alert')).toBeInTheDocument()
+  expect(screen.queryByText('Cuando quieras, publicalo desde Variedades → Mandar catálogo')).not.toBeInTheDocument()
   expect(bodies).toEqual([])
   expect(screen.getByLabelText('Tu chat')).toHaveValue('555')
 
