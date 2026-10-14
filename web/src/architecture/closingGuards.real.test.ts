@@ -25,7 +25,7 @@ const OLD_SHAPES: Record<string, { buttons: number; classes: number }> = {
   '/src/screens/onboarding/OnboardingNotice.tsx': { buttons: 1, classes: 0 },
   '/src/screens/onboarding/OnboardingStep.tsx': { buttons: 2, classes: 0 },
   '/src/screens/onboarding/PartnerStep.tsx': { buttons: 1, classes: 1 },
-  '/src/screens/onboarding/StockStep.tsx': { buttons: 3, classes: 4 },
+  '/src/screens/onboarding/StockStep.tsx': { buttons: 2, classes: 2 },
   '/src/screens/settings/PricingGroup.tsx': { buttons: 1, classes: 1 },
 }
 

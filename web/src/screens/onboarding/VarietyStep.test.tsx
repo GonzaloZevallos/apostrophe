@@ -8,7 +8,7 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { act, render, screen, waitFor, within } from '@testing-library/react'
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Outlet, RouterProvider, type RouteObject } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
@@ -395,6 +395,21 @@ test('the add-another flag opens the empty form, a reload keeps it, and the vari
   expect(await screen.findByText('Hecho')).toBeInTheDocument()
   expect(router.state.location.state).toBeNull()
   expect(screen.queryByLabelText(/^Nombre/)).not.toBeInTheDocument()
+})
+
+test('a reload with the add-another flag and nothing written draws the name field again and writes nothing', async () => {
+  varieties = [{ id: 1, name: 'Amapola', price: 9000 }]
+  nextId = 2
+  const entry = inAppState({ pathname: ONBOARDING_STOCK }, { anotherVariety: true })
+  renderStep(entry)
+  expect(await screen.findByLabelText(/^Nombre/)).toBeInTheDocument()
+
+  cleanup()
+  renderStep(entry)
+
+  expect(await screen.findByLabelText(/^Nombre/)).toBeInTheDocument()
+  expect(screen.queryByText('Hecho')).not.toBeInTheDocument()
+  expect(calls.filter((call) => call.startsWith('POST'))).toEqual([])
 })
 
 test('with the frame, nothing written and a name typed: "Cerrar" asks with the discard detail', async () => {

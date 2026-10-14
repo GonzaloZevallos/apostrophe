@@ -60,12 +60,11 @@ export default function VarietyForm({ seed, today, settings, onDirtyChange, onPr
           <input
             className="campo__input"
             type="text"
-            placeholder="Nombre de la variedad"
             value={name}
             onChange={(event) => setName(event.target.value)}
             required
           />
-          <span className="pie" data-copy="help">{VARIETY_NAME_HELP}</span>
+          <span className="campo__ayuda" data-copy="help">{VARIETY_NAME_HELP}</span>
           <FieldError message={nameError ?? undefined} />
         </label>
       ) : (
