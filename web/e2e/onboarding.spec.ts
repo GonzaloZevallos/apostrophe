@@ -74,6 +74,9 @@ test('leaving after step 1 keeps it, and Inicio\'s notice resumes at step 2', as
 
   await page.getByRole('button', { name: 'Cerrar' }).click()
   await expect(page.getByText(NOTICE)).toBeVisible()
+  const tabsBox = await page.getByRole('group', { name: 'Período' }).boundingBox()
+  const noticeBox = await page.getByText(NOTICE).boundingBox()
+  expect(noticeBox?.y).toBeGreaterThan((tabsBox?.y ?? Infinity) + (tabsBox?.height ?? 0) - 1)
   await page.getByText(NOTICE).click()
   await expect(page.getByRole('heading', { name: 'Cargá lo que tenés hoy' })).toBeVisible()
   await expect(page.getByText('Paso 2 de 6')).toBeVisible()
