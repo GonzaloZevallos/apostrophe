@@ -4212,6 +4212,12 @@ body {
   justify-content: flex-end;
 }
 
+/* A step's text-only submit sits in its own form; the form adds no box, so the button
+ * stays the layout child of the container it sits in. */
+.onboarding__envio {
+  display: contents;
+}
+
 .onboarding__enlace {
   display: inline-flex;
   align-items: center;
