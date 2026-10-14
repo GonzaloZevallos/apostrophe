@@ -15,7 +15,9 @@ export default function CategoriesStep({ onDirtyChange, onProgress }: StepBodyPr
   return (
     <>
       <ExpenseCategoriesEditor addCollapsed onDirtyChange={onDirtyChange} />
-      <p className="pie">{CATEGORIES_SAVE_LINE}</p>
+      <span className="campo__rotulo" data-copy="help">
+        {CATEGORIES_SAVE_LINE}
+      </span>
       <button
         type="button"
         className="boton"
