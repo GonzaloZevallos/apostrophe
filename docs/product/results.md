@@ -9,13 +9,23 @@ Whether a business makes money and how much it actually has, over today, this we
 - payments, balances and settlement from payments (ADR-0012);
 - stock status and days left from stock.
 
-It computes nothing those capabilities already compute, beyond adding them up. Its period figures come from the one computation Análisis also reads (ADR-0020): Ganancia here and profit in Análisis are the same figure. Inicio also carries the Onboarding's notice (onboarding.md), the first-run checklist and the after-import notice (navigation.md); their place on Inicio is set here. An archived variety (varieties.md) leaves Lo que te queda and "Arrancá por las variedades", while every period figure keeps it.
+It computes nothing those capabilities already compute, beyond adding them up.
+
+**One computation per period** (ADR-0020):
+- Every period figure on Inicio and every week and month row of Análisis come from one computation.
+- Ganancia here and profit in Análisis are the same figure.
+- So are Inicio's Costo de lo vendido and Faltante de stock and the same lines on Análisis's week and month rows.
+- No screen sums a period figure a second time.
+
+Inicio also carries the Onboarding's notice (onboarding.md), the first-run checklist and the after-import notice (navigation.md); their place on Inicio is set here. An archived variety (varieties.md) leaves Lo que te queda and "Arrancá por las variedades", while every period figure keeps it.
 
 ## Jobs
 
 **When** I open the app, or stop between orders or at the end of the day to see how today, this week or this month is going, **I want to** see on one screen what I sold, what it cost me, what I spent, what I earned (Ganancia), the money that actually moved (Caja), who owes me and what I have left of each variety, **so I can** tell whether I'm making money and how much I actually have, and know whether to restock or chase a debt, without opening Ventas, Clientes and Variedades one by one or doing any arithmetic myself.
 
 Ganancia and Caja exist nowhere else in the product, and they are why the panel exists. The spreadsheet's Panel got profit wrong: its profit dropped the week flower was bought. Showing debt and stock on the same screen is a convenience on top of that.
+
+**When** I review a week or month in Análisis and its Ganancia is not what I expected, **I want to** see that period's Costo de lo vendido and Faltante de stock on its own row, next to Promoción, Consumo propio and Gastos, **so I can** tell what moved my profit without leaving the screen or doing the arithmetic myself. (Served here by the one computation per period, which makes Análisis's rows equal Inicio's Semana and Mes; the rows are defined in analysis.md.)
 
 **When** I take grams out of my own stock without selling them (to share at a party so people get to know the business, or for my own use), **I want** to record them from my phone in a few taps (date, varieties and grams, the reason), **so I can** keep stock right and see in Ganancia what promoting the business and my own consumption cost me, without recording a sale nobody made or an adjustment that reads as lost flower. (Served here by the Promoción and Consumo propio lines of Semana and Mes; the withdrawal is defined in stock.md.)
 
@@ -33,6 +43,9 @@ Success criteria:
    - Te deben's total, count and oldest date equal Clientes' Te deben section;
    - each variety's grams, status and days left equal Variedades;
    - Semana's and Mes's Ganancia, cost of goods sold, stock shortfall, Promoción, Consumo propio, expenses and Caja equal Análisis's row for the same week and month.
+     - Costo de lo vendido and Faltante de stock are shown on that row too (analysis.md).
+     - Their costed amounts are equal.
+     - Inicio's pending note shows exactly when the row carries pending grams.
 
    Any figure that disagrees is a defect.
 3. **Ganancia and Caja are honest**:
@@ -67,20 +80,23 @@ Success criteria:
 
 ### Figures per period
 
-Each figure is counted on its own date. Sales, cost of goods sold, stock shortfall, promotion and own-use cost, expenses, Ganancia and Caja come from the same period computation as Análisis (ADR-0020), never from a second sum. They count every variety, archived ones included.
+Each figure is counted on its own date. Sales, cost of goods sold, stock shortfall, promotion and own-use cost, expenses, Ganancia and Caja come from the same period computation as Análisis's week and month rows (ADR-0020), never from a second sum. They count every variety, archived ones included.
 
 - **Sales**: the sum of the period's sale totals, shipping included, paid or not. It is the same figure as Ventas' total. Its heading follows the tab: "Vendiste hoy", "Vendiste esta semana" or "Vendiste este mes". Withdrawals are never sales.
 - **Number of sales**: counts sales, not lines.
 - **Average sale**: sales ÷ number of sales, rounded half up to the whole peso. Nothing shows when there are no sales.
 - **Grams sold**: the grams of the period's lines that are not gifts.
 - **Grams gifted** ("Regalaste"): the grams of the period's gift lines. Withdrawn grams are never gifted grams.
-- **Cost of goods sold** ("Costo de lo vendido"): what the grams of the period's sale lines (gifts included) cost, from their lots as the lots stand now (ADR-0009, ADR-0010). Neither a negative adjustment's cost nor a withdrawal's is part of it.
-- **Stock shortfall** ("Faltante de stock"): what the grams taken out by the period's negative adjustments cost, on the adjustment's date, from their lots as they stand now, oldest first (CONTEXT.md: Stock shortfall). It shows as "Faltante de stock $ X" only when the period has any negative adjustment; otherwise the line is left out. It never includes a withdrawal.
+- **Cost of goods sold** ("Costo de lo vendido"): what the grams of the period's sale lines (gifts included) cost, from their lots as the lots stand now (ADR-0009, ADR-0010). Neither a negative adjustment's cost nor a withdrawal's is part of it. It is the same figure as Análisis's row for the same week or month.
+- **Stock shortfall** ("Faltante de stock"): what the grams taken out by the period's negative adjustments cost, on the adjustment's date, from their lots as they stand now, oldest first (CONTEXT.md: Stock shortfall).
+  - It shows as "Faltante de stock $ X" only when the period has any negative adjustment; otherwise the line is left out.
+  - It never includes a withdrawal.
+  - It is the same figure as Análisis's row for the same week or month.
 - **Promotion cost** ("Promoción") and **own-use cost** ("Consumo propio"): what the grams of the period's withdrawals of that reason cost, on the withdrawal's date, from their lots as they stand now, oldest first. Each shows as "Promoción $ X" or "Consumo propio $ X" only when the period has a withdrawal of that reason; otherwise its line is left out.
 - **Expenses** ("Gastos"): the sum of the period's expenses.
 - **Purchases** ("Compras de flores"): the total cost of the period's purchase stock entries.
 - **Ganancia**: sales − cost of goods sold − stock shortfall − promotion cost − own-use cost − expenses.
-  - When any of its cost is pending, it is worked out over the costed part: the sales of pending grams are left out (sales − (sales without shipping − sales of costed grams) − costed cost of goods − costed shortfall − costed promotion cost − costed own-use cost − expenses), with sales of costed grams per line as CONTEXT.md's Margin defines them (line total × costed grams ÷ line grams, half up). The sales figure shown stays the full sales.
+  - When any of its cost is pending, it is worked out over the costed part: the sales of pending grams are left out (sales − (sales without shipping − sales of costed grams) − costed cost of goods − costed shortfall − costed promotion cost − costed own-use cost − expenses). Sales of costed grams are worked out per line, as CONTEXT.md's Margin defines them (line total × costed grams ÷ line grams, half up). The sales figure shown stays the full sales.
   - It is the same figure Análisis shows as profit for the same week or month.
   - It takes the design's accent treatment whatever its sign: the accent marks the headline figure, not whether it is good or bad.
 - **Caja**: payments received − expenses − purchases. Payments received are every payment dated in the period, on-the-spot and later ones alike, each on its own payment date. Caja is shown side by side with Ganancia. A withdrawal never touches it.
@@ -88,7 +104,13 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
 ### What each tab shows
 
 - **Hoy** shows what can be acted on today: what was sold today (sales, number of sales, average sale and grams sold), then the Te deben block, then Lo que te queda.
-- **Semana and Mes** show sales, number of sales, average sale, grams sold, Regalaste, Costo de lo vendido, Faltante de stock (when the period has one), Promoción and Consumo propio (each when the period has one), Gastos, Compras de flores, Ganancia and Caja, then the Te deben block and Lo que te queda. Promoción and Consumo propio sit right after Faltante de stock and before Gastos.
+- **Semana and Mes** show these, then the Te deben block and Lo que te queda:
+  - sales, number of sales, average sale, grams sold and Regalaste;
+  - Costo de lo vendido;
+  - Faltante de stock, when the period has one;
+  - Promoción and Consumo propio, each when the period has one, right after Faltante de stock and before Gastos;
+  - Gastos and Compras de flores;
+  - Ganancia and Caja.
 - Ganancia, Caja, Costo de lo vendido, Faltante de stock, Promoción, Consumo propio, Gastos, Regalaste and Compras never show on Hoy.
 
 ### Pending cost
@@ -100,6 +122,7 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
   - under Ganancia, when any of those applies.
 - Caja never carries it: pending cost is not money that moved.
 - With nothing pending, no figure shows the note.
+- Análisis's rows show the same pending as "y N g sin costo" (analysis.md). The panel's note shows exactly when the matching row carries pending grams.
 
 ### Negative figures
 
@@ -148,7 +171,7 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
 - It follows the light and dark themes.
 - It is not an action menu:
   - it records nothing itself and has no toasts;
-  - its one main action is the shell's "+ Nueva venta"; "Cobrar" on debtor rows is the only other direct action, besides the Onboarding notice, which only opens the Onboarding.
+  - its one main action is the shell's "+ Nueva venta". The only other direct action is "Cobrar" on debtor rows, besides the Onboarding notice, which only opens the Onboarding.
 - The figures are read when the panel is opened, with no live updates.
 - A dropped network shows "Sin conexión" (accounts.md).
 
@@ -157,6 +180,7 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
 - The business comes from the session.
 - The panel route joins the isolation sweep and the gated-route test.
 - Every figure is computed on the server, and so is whether the Onboarding notice shows, its count and what is next.
+- The panel's answer carries pending as a flag per figure, never grams (ADR-0013).
 - No figure or name goes to logs, the console or browser storage.
 
 ## Metrics
@@ -166,28 +190,58 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
   - sales total and count against Ventas;
   - Te deben figures against Clientes' Te deben section;
   - each variety's grams, status, days left and detail against Variedades;
-  - Semana's and Mes's Ganancia, cost of goods sold, stock shortfall, Promoción, Consumo propio, expenses and Caja against `GET /analysis`'s row for the same week and month, over a seeded history that includes a negative adjustment with costed grams, one with pending grams, a sale line with pending grams, a costed withdrawal of each reason and a withdrawal with pending grams.
+  - Semana's and Mes's figures against `GET /analysis`'s row for the same week and month: Ganancia, cost of goods sold, stock shortfall, Promoción, Consumo propio, expenses and Caja.
+    - The seeded history includes a negative adjustment with costed grams, one with pending grams, a sale line with pending grams, a costed withdrawal of each reason and a withdrawal with pending grams.
+    - For cost of goods sold and stock shortfall, the costed amounts are equal, and the panel's pending flag is set exactly when the row's pending grams are above 0.
+    - A period with no negative adjustment has `shortfall` `null` in both.
 - **Formulas (criterion 3)**: a matrix, 100% passing, covering:
   - Ganancia and Caja;
   - payments counted on their own date, not the sale's;
   - a backdated purchase or an edited stock entry moving cost of goods sold and Ganancia;
-  - a negative adjustment lowering Ganancia by its costed shortfall on its own date, showing "Faltante de stock $ X", and leaving cost of goods sold and Caja unchanged;
-  - a withdrawal of each reason lowering Ganancia on its own date, showing its own line, and leaving cost of goods sold, stock shortfall and Caja unchanged;
+  - a negative adjustment that:
+    - lowers Ganancia by its costed shortfall on its own date;
+    - shows "Faltante de stock $ X";
+    - leaves cost of goods sold and Caja unchanged;
+  - a withdrawal of each reason that:
+    - lowers Ganancia on its own date;
+    - shows its own line;
+    - leaves cost of goods sold, stock shortfall and Caja unchanged;
   - a period with no negative adjustment showing no Faltante de stock line, and one with no withdrawal of a reason showing no line for it;
   - pending grams on a sale line leaving their sales out of Ganancia while "Vendiste" keeps the full sales;
   - pending cost showing the note under Costo de lo vendido, Faltante de stock, Promoción, Consumo propio and Ganancia as defined, and never under Caja;
   - negative Ganancia and Caja shown as "−$ X".
-- **Archiving moves nothing (criterion 3)**: every period figure is identical before archiving a variety with history, after archiving and after restoring; the archived variety is absent from Lo que te queda and does not count for "Arrancá por las variedades".
+- **Archiving moves nothing (criterion 3)**:
+  - every period figure is identical before archiving a variety with history, after archiving it and after restoring it;
+  - the archived variety is absent from Lo que te queda and does not count for "Arrancá por las variedades".
 - **Not a sale (criterion 7)**: after recording a withdrawal, 0 differences in sales, number of sales, average sale, grams sold, Regalaste, cost of goods sold, stock shortfall and Caja.
-- **Tabs**: front tests show Hoy with sales, Te deben and Lo que te queda only, and Ganancia, Caja, Costo de lo vendido, Faltante de stock, Promoción, Consumo propio, Gastos, Regalaste and Compras only on Semana and Mes, Promoción and Consumo propio right after Faltante de stock.
-- **Inicio's order**: front tests, phone and computer, show at most one of the Onboarding notice, the checklist or "Arrancá por las variedades" (never two), then the out-of-date notice, then the after-import notice, then the figures.
+- **Tabs**: front tests show:
+  - Hoy with sales, Te deben and Lo que te queda only;
+  - Ganancia, Caja, Costo de lo vendido, Faltante de stock, Promoción, Consumo propio, Gastos, Regalaste and Compras only on Semana and Mes;
+  - Promoción and Consumo propio right after Faltante de stock.
+- **Inicio's order**: front tests, phone and computer, show:
+  - at most one of the Onboarding notice, the checklist or "Arrancá por las variedades", never two;
+  - then the out-of-date notice;
+  - then the after-import notice;
+  - then the figures.
 - **Period edges**: a week that crosses a month and a year, Monday as the first day, and a day boundary in Argentina time. 100% passing.
-- **Debtors teaser (criterion 4)**: ordered by balance, then owing since, then name; credits excluded; "Nadie te debe" when nobody owes; "Cobrar" with its accessible name on every row. No state is told by color alone.
-- **Isolation (criterion 5)**: from another business, the panel route shows none of the first business's figures or Onboarding state. After a full front run, the console and browser storage hold no figures or names.
+- **Debtors teaser (criterion 4)**:
+  - ordered by balance, then owing since, then name;
+  - credits excluded;
+  - "Nadie te debe" when nobody owes;
+  - "Cobrar" with its accessible name on every row;
+  - no state told by color alone.
+- **Isolation (criterion 5)**:
+  - from another business, the panel route shows none of the first business's figures or Onboarding state;
+  - after a full front run, the console and browser storage hold no figures or names.
 - **Nothing invented (criterion 6)**:
   - an empty business shows $ 0 and 0 g, with no average sale and no Faltante de stock, Promoción or Consumo propio line;
   - every figure on screen equals the API's answer.
-- **No curl**: the end-to-end front run opens Inicio, switches across the three periods, reads Promoción and Consumo propio after recording a withdrawal of each reason, opens Clientes from the block's heading, a customer from the teaser, and Registrar cobro from a teaser row's "Cobrar".
+- **Sample screen (ADR-0035)**: `tests/design/test_muestra_seed.py` checks Análisis's current week and month rows against `/panel`'s week and month for cost of goods sold and stock shortfall. The seed holds a costed shortfall, a pending figure and a period with no negative adjustment.
+- **No curl**: the end-to-end front run:
+  - opens Inicio and switches across the three periods;
+  - reads Promoción and Consumo propio after recording a withdrawal of each reason;
+  - opens Clientes from the block's heading and a customer from the teaser;
+  - opens Registrar cobro from a teaser row's "Cobrar".
 
 ## Out of scope
 
