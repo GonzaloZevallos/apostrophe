@@ -3922,6 +3922,14 @@ body {
   background-color: var(--linea);
 }
 
+/* The Regalo switch is a <label>, which :disabled never matches: its disabled look carries
+ * its own class, and a press on it keeps the resting look. The selector has the groups'
+ * specificity and comes after them. */
+.opcion-interruptor--inactiva:active:not(:disabled):not([aria-disabled='true']) {
+  transform: none;
+  background-color: transparent;
+}
+
 /* A tap on a button, tab or the bar selects no text; text in lists and fields stays
  * selectable, since only these classes opt out. Rows whose text is the business's data
  * (.fila-venta, .variedad-fila and the like) are in the test's SELECTABLE table instead. */

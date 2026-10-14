@@ -185,14 +185,41 @@ export function coverageViolations(css: string, scan: ScanResult, exempt: Exempt
 // bar or period button, `--activa` for a tab or option). A new convention is added here.
 const SELECTED_SUFFIX = /--(activo|activa)$/
 
-function restingFill(css: string, cls: string): string | null {
+// The last compound of a selector part is the element it paints (`.lista .fila--activa`
+// paints `.fila--activa`).
+function subjectOf(part: string): string {
+  return part.trim().split(/\s*[>+~]\s*|\s+/).at(-1) ?? ''
+}
+
+function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+type Resting = { fill: string | null } | { unreadable: string }
+
+/**
+ * The fill `cls` rests on, from the rules before the pressed block whose subject is exactly
+ * `.cls` (alone or under an ancestor). A rule that paints it through a compound subject
+ * (`.a.cls`, `.cls[x]`, `.cls:not(.y)`) is not read: the answer is "unreadable", never a
+ * silent `transparent`.
+ */
+function restingFill(css: string, cls: string): Resting {
   const at = css.indexOf('/* pressed */')
   const resting = at === -1 ? css : css.slice(0, at)
-  const own = rules(resting)
-    .filter((rule) => rule.selector.split(',').some((part) => part.trim() === `.${cls}`))
-    .flatMap((rule) => [...rule.body.matchAll(/(?:^|;|\s)background(?:-color)?:\s*([^;]+)/g)])
-    .map((match) => (match[1] ?? '').trim())
-  return own.at(-1) ?? null
+  const mention = new RegExp(`\\.${escapeRegExp(cls)}(?![A-Za-z0-9_-])`)
+  const own: string[] = []
+  for (const rule of rules(resting)) {
+    const fills = [...rule.body.matchAll(/(?:^|;|\s)background(?:-color)?:\s*([^;]+)/g)].map((match) => (match[1] ?? '').trim())
+    if (fills.length === 0) continue
+    for (const part of rule.selector.split(',')) {
+      const subject = subjectOf(part)
+      if (subject === `.${cls}`) own.push(...fills)
+      else if (mention.test(subject) && !subject.includes('::')) {
+        return { unreadable: `${part.trim()} paints it through a compound selector` }
+      }
+    }
+  }
+  return { fill: own.at(-1) ?? null }
 }
 
 function tokenOf(fill: string): string | null {
@@ -211,8 +238,18 @@ export function selectedVariantViolations(css: string, scan: ScanResult): string
   const out: string[] = []
   for (const variant of [...variants].sort()) {
     const base = variant.replace(SELECTED_SUFFIX, '')
+    const own1 = restingFill(css, variant)
+    if ('unreadable' in own1) {
+      out.push(`.${variant}: its resting fill cannot be read (${own1.unreadable})`)
+      continue
+    }
+    const own2 = own1.fill === null ? restingFill(css, base) : own1
+    if ('unreadable' in own2) {
+      out.push(`.${variant}: the resting fill of its base .${base} cannot be read (${own2.unreadable})`)
+      continue
+    }
     // No background declared on the variant or its base: it paints nothing of its own.
-    const fill = restingFill(css, variant) ?? restingFill(css, base) ?? 'transparent'
+    const fill = own2.fill ?? 'transparent'
     const token = tokenOf(fill)
     if (token === null && !/^(transparent|none)$/.test(fill)) {
       out.push(`.${variant}: its resting fill "${fill}" cannot be read as a token, transparent or none`)
@@ -441,6 +478,17 @@ test('a selected variant must show a pressed fill that differs from its resting 
   ])
   expect(selectedVariantViolations(filled('.pildora--activa { background: linear-gradient(red, blue); }'), scan)).toEqual([
     '.pildora--activa: its resting fill "linear-gradient(red, blue)" cannot be read as a token, transparent or none',
+  ])
+
+  // A resting fill painted under an ancestor is read; one painted through a compound
+  // subject cannot be read, and that fails instead of reading as transparent.
+  expect(
+    selectedVariantViolations(filled('.lista .pildora--activa { background: var(--superficie); }'), scan),
+  ).toEqual([])
+  expect(
+    selectedVariantViolations(filled('.pildora.pildora--activa:not(.x) { background: var(--superficie); }'), scan),
+  ).toEqual([
+    '.pildora--activa: its resting fill cannot be read (.pildora.pildora--activa:not(.x) paints it through a compound selector)',
   ])
 
   const own = scanOf(control(['mas__item', 'mas__item--activo']))
