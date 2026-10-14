@@ -30,17 +30,16 @@ import InAppLink from '../components/InAppLink'
 import Loading from '../components/Loading'
 import MarcaEstado from '../components/MarcaEstado'
 import Notice from '../components/Notice'
+import PaneRowLink from '../components/PaneRowLink'
 import SinConexion from '../components/SinConexion'
 import { readFeedback } from '../components/feedback'
 import { formatGrams, formatMoney } from '../format/money'
 import { ARCHIVED_VARIETIES, CATALOG, STOCK, STOCK_ENTRY_NEW, VARIETY, VARIETY_NEW, WITHDRAWAL_NEW, pathTo } from '../routes'
-import { useViewport } from '../shell/useViewport'
 import { detailFor } from '../stock/detail'
 import { summaryLine } from '../stock/summaryLine'
 import { archivedVarietiesQueryOptions } from './varieties/archivedVarieties'
 import { varietiesByName } from './varieties/varietiesByName'
 import { EMPTY_DETAIL, EMPTY_TITLE } from './varieties/varietiesMessages'
-import VarietyRowLink from './varieties/VarietyRowLink'
 
 export const VARIETY_SAVED = 'Variedad guardada'
 export const NO_PRICE_TODAY = 'Sin precio: no se puede vender'
@@ -74,7 +73,6 @@ function figuresOf(row: VarietyStock, today: string): string {
 
 export default function Variedades() {
   const me = useOutletContext<Me>()
-  const computer = useViewport() === 'computer'
   const feedback = readFeedback(useLocation().state)
   const goneExited = useGoneNotice()
   const varietiesQuery = useQuery({
@@ -133,7 +131,12 @@ export default function Variedades() {
         {rows.length > 0 && (
           <div className="lista-variedades">
             {rows.map(({ variety, row }) => (
-              <VarietyRowLink key={variety.id} to={pathTo(VARIETY, { id: variety.id })} replace={computer}>
+              <PaneRowLink
+                key={variety.id}
+                to={pathTo(VARIETY, { id: variety.id })}
+                className="variedad-fila"
+                activeClassName="variedad-fila variedad-fila--activa"
+              >
                 <span className="variedad-fila__encabezado">
                   <MarcaEstado estado={row.status} />
                   <span className="variedad-fila__nombre">{variety.name}</span>
@@ -147,7 +150,7 @@ export default function Variedades() {
                       : `${formatMoney(variety.current_price.list_price)} x g`}
                   </span>
                 </span>
-              </VarietyRowLink>
+              </PaneRowLink>
             ))}
           </div>
         )}
