@@ -5,8 +5,7 @@
  * glyph (`architecture/backControl.ts`).
  *
  * With an `onClick` it is a button (the shell goes back by history); with a `to` it is an
- * in-app link. It keeps the look the old `Boton variant="back"` had: the same class, from
- * `botonVisual`. `ariaLabel` is for the bare arrow only (Análisis's "Volver"), where there
+ * in-app link. It keeps the look the old `Boton variant="back"` had: the same class (`botonClass`). `ariaLabel` is for the bare arrow only (Análisis's "Volver"), where there
  * is no parent word to name it.
  */
 

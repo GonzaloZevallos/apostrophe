@@ -2,9 +2,8 @@
  * `EntriesList` (`stock.md`, "Todas las entradas"; `TodasLasEntradas.dc.html`): every stock
  * entry, newest first, and no withdrawal; or with a `varietyId` that variety's movements as
  * `GET /stock/varieties/{id}/movements` answers them: its entries and the withdrawals that
- * touch it, a withdrawal told by its reason word and a minus sign and opening its detail. It is a card: the shell draws its one back arrow (
- * "‹ Variedades", or "‹ <variety>" for a variety's list). Each row
- * links to the entry's form to edit it and deletes it after "Antes de borrar", naming the
+ * touch it, a withdrawal told by its reason word and a minus sign and opening its detail. It is a card: the shell draws its one back arrow ("‹ Variedades", or
+ * "‹ <variety>" for a variety's list). Each row links to the entry's form to edit it and deletes it after "Antes de borrar", naming the
  * date, variety and grams. Every figure is what `GET /stock` answered; a variety's name
  * comes from `GET /varieties`, joined by id.
  */
