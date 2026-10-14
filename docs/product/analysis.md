@@ -22,7 +22,7 @@ Success criteria:
 2. **One computation**: every figure equals what Results (#7) shows for the same period and a direct computation over the same sales, stock entries, withdrawals, payments and expenses: sales, cost of goods sold, stock shortfall, promotion cost, own-use cost, expenses, profit and cash, per week, per month and since the first record. 0 differences. The rule is stated once in results.md.
 3. **Honest cost** (ADR-0009, ADR-0010):
    - Margins come from each lot's actual cost as the lots stand today.
-   - When a variety's or a period's cost includes pending grams, it says so and never treats them as costing $0.
+   - When a variety's or a period's cost includes pending grams, it says so and never treats them as costing $0. A cost figure that is entirely pending never shows "$ 0".
    - Flower lost to a negative adjustment lowers profit.
    - Grams withdrawn for promotion or own use lower profit on their own lines, never inside cost of goods sold, stock shortfall or a margin.
    - A stock entry or withdrawal corrected later shows in every affected past week and month the next time the screen is opened. No period is ever closed.
@@ -32,7 +32,8 @@ Success criteria:
    - Every week and month row shows Costo de lo vendido, and Faltante de stock when the period has a negative adjustment.
    - Together with sales, Promoción, Consumo propio and Gastos, worked out over the costed part, those lines give the row's Ganancia, so no arithmetic is needed outside the row.
    - Each figure carries its own pending mark and is never shown as $0 while pending.
-   - Nothing else on the screen moves.
+   - The same figure reads the same wherever it appears on the screen.
+   - No other figure on the screen moves.
 
 ## Behaviour
 
@@ -61,11 +62,19 @@ Success criteria:
   - It carries "y N g sin costo", where N adds every pending gram behind it: grams sold or gifted, grams taken out by negative adjustments and grams withdrawn, each counted in the period of its own date.
   - Example: a week sold 4 g with no cost yet, its count took out 2 g with no cost yet, and it withdrew 1 g for promotion with no cost yet. It reads profit "y 7 g sin costo", Faltante de stock "y 2 g sin costo" and Promoción "y 1 g sin costo".
   - The sales figure shown next to it stays the full sales.
+  - Profit is a real figure, so it always shows its amount, with its mark when it applies.
 - **Pending grams** are never costed $0 anywhere. Every figure they touch carries "y N g sin costo", with N counting only the grams behind that figure.
-- **Pending forms**, the same everywhere on this screen (variety rows, month header, week and month rows, since the first record):
-  - all of a figure pending: "N g sin costo" only, with no peso amount, never "$ 0";
-  - part of it pending: the costed amount, then "y N g sin costo";
-  - nothing pending: the amount alone.
+- **Pending forms**: one form everywhere on this screen.
+  - **Where**: every cost figure and every variety margin:
+    - a variety's Costo de lo vendido and margin;
+    - the month header's Faltante de stock, Promoción and Consumo propio;
+    - a week or month row's Costo de lo vendido, Faltante de stock, Promoción and Consumo propio;
+    - the same lines since the first record.
+  - **All of a figure pending**: "N g sin costo" only, with no peso amount. Never "$ 0", and never "$ 0 y N g sin costo".
+  - **Part of it pending**: the costed amount, then "y N g sin costo".
+  - **Nothing pending**: the amount alone.
+  - The form changes how a figure reads, never the figure itself. The API answers the costed amount and the pending grams; the screen picks the form.
+  - **Not under this rule**: profit, which always shows its amount, and the average margin, which is a percentage.
 
 ### The chosen month, by variety
 
@@ -73,16 +82,19 @@ Success criteria:
 - **Sales without shipping**: the sum of the variety's stored line totals that month; gifts $0, a special price its typed total.
 - **Share of the month**: its sales without shipping over the month's sales without shipping. Not shown when the month's sales without shipping are $0.
 - **Grams**: grams sold and grams gifted, as two figures. A negative adjustment and a withdrawal are neither, and stay out of every variety's grams, cost and margin.
-- **Cost of goods sold**: what its sold and gifted grams cost, from their lots as they stand today, with the pending mark when it applies.
+- **Cost of goods sold**: what its sold and gifted grams cost, from their lots as they stand today, in the screen's pending form.
 - **Margin**: sales of costed grams − costed cost of goods sold, in pesos; it can be negative. With no pending grams, sales of costed grams equal sales without shipping.
 - **Margin percentage**: margin over the variety's sales of costed grams; not shown when those are $0 (only gifted, or every gram pending).
-- **Pending grams**: margin and percentage carry "y N g sin costo", N counting only that variety's sold and gifted pending grams. Example: 10 g sold for $10.000, 6 g from a $3.000 purchase and 4 g pending show sales $10.000, margin $3.000 "y 4 g sin costo", 50%.
-- **Sorting**: by margin in pesos, highest first; a marked margin sorts by its shown figure and keeps its mark.
+- **Pending grams**:
+  - Margin and percentage carry "y N g sin costo", N counting only that variety's sold and gifted pending grams.
+  - Example: 10 g sold for $10.000, 6 g from a $3.000 purchase and 4 g pending show sales $10.000, margin $3.000 "y 4 g sin costo", 50%.
+  - A variety with every gram pending shows its cost and margin as "N g sin costo" only, with no percentage.
+- **Sorting**: by margin in pesos, highest first. A marked margin sorts by its computed amount and keeps its mark; a margin shown as grams only sorts as $ 0.
 - **Month header**:
   - sales (shipping included), grams sold or gifted, and the average margin;
   - the average margin is the month's total margin over its sales of costed grams. It is marked (sold and gifted grams only) when any variety carries pending grams, and has no percentage when those sales are $0;
-  - "Faltante de stock $ X" when the month has any stock shortfall, with its own pending mark. It is the same figure as that month's row in Month by month, with 0 differences;
-  - "Promoción $ X" and "Consumo propio $ X" when the month has a withdrawal of that reason, each with its own pending mark, apart from Faltante de stock;
+  - "Faltante de stock" when the month has any stock shortfall, in the screen's pending form. It is the same figure as that month's row in Month by month, read the same, with 0 differences;
+  - "Promoción" and "Consumo propio" when the month has a withdrawal of that reason, each in the screen's pending form, apart from Faltante de stock;
   - the screen states that the variety table adds up to the month's sales minus shipping.
 - **A month with no sales or gifts**: totals at $0, no variety rows, and a fixed line saying nothing was sold that month. Its Faltante de stock, Promoción and Consumo propio still show when it has them.
 
@@ -107,7 +119,7 @@ Success criteria:
   - It shows always when the period has at least one negative adjustment, even with nothing costed, and never otherwise.
   - It never includes a withdrawal.
   - Its pending N counts only grams taken out by negative adjustments.
-- **Pending forms**: both lines follow the screen's pending forms above. Profit's own mark is unchanged.
+- **Pending forms**: every cost line on a row follows the screen's pending forms above. Profit's own mark is unchanged.
 - **The row adds up**: worked out over the costed part, the row's sales, Costo de lo vendido, Faltante de stock, Promoción, Consumo propio and Gastos give its profit, as Profit is defined above.
 - **Agreement**: the current week's and current month's rows equal Inicio's Semana and Mes (results.md):
   - the same costed amounts;
@@ -122,7 +134,8 @@ Success criteria:
 
 ### Since the first record
 
-- Sales, expenses, profit and cash, with the same definitions as the week and month rows, plus "Faltante de stock $ X", "Promoción $ X" and "Consumo propio $ X" when there is any.
+- Sales, expenses, profit and cash, with the same definitions as the week and month rows.
+- "Faltante de stock", "Promoción" and "Consumo propio" when there is any, in the screen's pending form.
 - Labelled as money moved since the first record, never as money on hand: the app has no opening cash balance.
 
 ### Expenses by category: the chosen month, and since the first record
@@ -139,7 +152,7 @@ Success criteria:
 - **Row layout**: how Costo de lo vendido and Faltante de stock fit on the phone row (wrapping, truncation) is design's call, within the icon and text rule's length limits.
 - **Charts**: the accent and the tokens only; every bar carries its figure. Best marks, pending marks and negatives are told by word or shape, never by color alone.
 - **Language and formats**: Rioplatense Spanish with vos; money `$ 11.000`, grams `3,5 g`, dates `dd/mm`.
-- **Read only**: no forms and no toasts. Figures come from the API on every open; the browser computes nothing.
+- **Read only**: no forms and no toasts. Figures come from the API on every open; the browser computes nothing beyond choosing a figure's pending form from its amount and pending grams.
 - **Feedback**: network loss and server errors follow accounts.md.
 
 ### API
@@ -179,12 +192,17 @@ Success criteria:
     - the best week or the best weekday;
     - cost of goods sold or stock shortfall.
   - A week with 4 g sold pending, 2 g adjusted out pending and 1 g withdrawn for promotion pending reads profit "y 7 g sin costo", Faltante de stock "y 2 g sin costo" and Promoción "y 1 g sin costo".
+- **One pending form (criteria 3, 6)**: front tests over a seeded history, 100% passing.
+  - Every cost figure and variety margin that is entirely pending reads "N g sin costo" with no peso amount. This covers a variety's cost and margin, the month header's, the rows' and since the first record's Faltante de stock, Promoción and Consumo propio, and the rows' Costo de lo vendido.
+  - No figure on the screen reads "$ 0 y … g sin costo".
+  - Profit still shows its amount with its mark.
+  - `GET /analysis` answers the same figures before and after the change: 0 differences.
 - **Rows explain Ganancia (criterion 6)**: 100% passing.
   - **Against Inicio**: for the current week and month, each row's `cost_of_goods` and `shortfall` equal `/panel`'s `periods.week` and `periods.month`, with 0 differences:
     - the costed amounts are equal;
     - the panel's pending flag is set exactly when the row has pending grams.
   - **Against a direct computation**: for every seeded week and month, both figures equal a direct computation over the period's sale lines and negative adjustments. 0 differences.
-  - **Header equals row**: the month header's shortfall equals that month's row. 0 differences.
+  - **Header equals row**: the month header's shortfall equals that month's row and reads the same. 0 differences.
   - **Absence and zeros**:
     - no negative adjustment: `shortfall` is `null` and the line does not show;
     - no sale lines: Costo de lo vendido is $ 0;
@@ -194,9 +212,9 @@ Success criteria:
     - a figure that is all pending shows grams only and no peso amount;
     - a partly pending one shows the amount and the mark;
     - a fully costed one shows the amount alone;
-    - each N counts only its own grams, and nothing pending ever shows "$ 0".
+    - each N counts only its own grams.
   - **Adds up**: for every seeded period, the row's lines, over the costed part, give its profit.
-  - **Nothing else moves**: these are identical before and after the change: variety rows, margins, shares, best week, best weekday, Caja, the expense breakdowns and the since-the-first-record figures.
+  - **Nothing else moves**: these figures are identical before and after the change: variety rows, margins, shares, best week, best weekday, Caja, the expense breakdowns and the since-the-first-record figures.
 - **Sample screen (ADR-0035)**:
   - The seed holds, inside the captured weeks and months:
     - a period with a costed shortfall;
@@ -208,7 +226,8 @@ Success criteria:
 - **Margin matrix**: 100% passing. It covers:
   - a variety only gifted (negative margin, no percentage);
   - a mix of sold and gifted;
-  - pending grams: 10 g for $10.000 with 6 g costing $3.000 shows $3.000 "y 4 g sin costo" and 50%, sorted by shown figure;
+  - pending grams: 10 g for $10.000 with 6 g costing $3.000 shows $3.000 "y 4 g sin costo" and 50%, sorted by its computed amount;
+  - a variety with every gram pending: cost and margin read "N g sin costo" only, no percentage, sorted as $ 0;
   - a line split across costed and pending grams, with the half-up rounding of its costed sales;
   - a negative adjustment kept out of the variety table and counted as shortfall;
   - a withdrawal kept out of the variety table and counted on its reason's line;
@@ -239,7 +258,8 @@ Success criteria:
 - Editing anything from Análisis.
 - An opening cash balance or money on hand.
 - Stock shortfall per variety; promotion or own-use cost per variety.
-- Changing the month header or the since-first-record block, beyond the rule that the header's shortfall equals its row.
+- Changing the month header or the since-first-record block beyond two things: the header's shortfall equals its row, and the screen's one pending form applies.
+- Changing how Inicio shows pending cost: it keeps its fixed note.
 - Importing the spreadsheet's history: #11.
 - Exporting, printing or sharing the analysis.
 - Live updates between partners while the screen is open.
