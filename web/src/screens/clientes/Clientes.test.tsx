@@ -311,7 +311,9 @@ async function openCustomerRow() {
   await userEvent.click(links.find((link) => link.getAttribute('href') === ANA)!)
 }
 
-function renderApp(entries: string[] = [CUSTOMERS]) {
+const BEFORE_CLIENTES = '/inicio'
+
+function renderApp(entries: string[] = [CUSTOMERS], twoPane = false) {
   const router = createMemoryRouter(
     [
       {
@@ -321,11 +323,22 @@ function renderApp(entries: string[] = [CUSTOMERS]) {
           </FlashProvider>
         ),
         children: [
+          { path: BEFORE_CLIENTES, element: <p>antes</p> },
           {
             element: <ClientesLayout />,
             children: [
               { path: CUSTOMERS, element: <Clientes /> },
-              { path: CUSTOMER, element: <ClienteFicha /> },
+              {
+                path: CUSTOMER,
+                element: twoPane ? (
+                  <>
+                    <Clientes />
+                    <ClienteFicha />
+                  </>
+                ) : (
+                  <ClienteFicha />
+                ),
+              },
               { path: CUSTOMER_PAYMENT, element: <ClienteFicha payment /> },
             ],
           },
@@ -388,6 +401,29 @@ test('on a phone, opening a customer pushes an entry, and Back returns to the li
   expect(router.state.location.state).toEqual(inAppState({ pathname: CUSTOMERS }))
   await act(() => router.navigate(-1))
   expect(router.state.location.pathname).toBe(CUSTOMERS)
+})
+
+test('on a computer, picking one customer from Te deben and another from A–Z, one Back leaves Clientes', async () => {
+  stubViewport('computer')
+  const beto = { ...customerFixture, id: 2, name: 'Beto Gómez', standing: 'ok', balance: 0, owing_since: null }
+  vi.mocked(fetch).mockImplementation((input) => {
+    const url = typeof input === 'string' ? input : input.toString()
+    if (url === '/payments/debtors') return Promise.resolve(jsonResponse(200, debtorsFixture))
+    if (url === '/customers') return Promise.resolve(jsonResponse(200, [customerFixture, beto]))
+    return Promise.resolve(jsonResponse(200, customerFixture))
+  })
+  const router = renderApp([BEFORE_CLIENTES, CUSTOMERS], true)
+
+  const [fromTeDeben] = await screen.findAllByRole('link', { name: /Ana Pérez/ })
+  await userEvent.click(fromTeDeben!)
+  await waitFor(() => expect(router.state.location.pathname).toBe(ANA))
+  await userEvent.click(await screen.findByRole('link', { name: /Beto Gómez/ }))
+  await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(CUSTOMER, { id: 2 })))
+  expect(router.state.historyAction).toBe('REPLACE')
+
+  await act(() => router.navigate(-1))
+
+  expect(router.state.location.pathname).toBe(BEFORE_CLIENTES)
 })
 
 // A customer's row is a record row: it keeps its layout and takes no icon (the rule's out of scope).

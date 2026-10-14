@@ -9,7 +9,7 @@
 import { CUSTOMER, CUSTOMER_PAYMENT, pathTo } from '../../routes'
 import { useQuery } from '@tanstack/react-query'
 import BotonLink from '../../components/BotonLink'
-import InAppLink from '../../components/InAppLink'
+import PaneRowLink from '../../components/PaneRowLink'
 import { keys } from '../../api/keys'
 import { getDebtors } from '../../api/payments'
 import { salesCount } from '../../format/counts'
@@ -45,13 +45,17 @@ export default function TeDeben() {
       <div className="lista-clientes">
         {data.debtors.map((debtor) => (
           <div key={debtor.customer.id} className="lista-clientes__item">
-            <InAppLink to={pathTo(CUSTOMER, { id: debtor.customer.id })} className="lista-clientes__fila">
+            <PaneRowLink
+              to={pathTo(CUSTOMER, { id: debtor.customer.id })}
+              className="lista-clientes__fila"
+              activeClassName="lista-clientes__fila"
+            >
               <span className="lista-clientes__nombre">{debtor.customer.name}</span>
               <span className="monto-deuda">{formatMoney(debtor.balance)}</span>
               {debtor.owing_since !== null && (
                 <span className="monto-deuda">{`desde ${formatDateShort(debtor.owing_since)}`}</span>
               )}
-            </InAppLink>
+            </PaneRowLink>
             <BotonLink
               to={pathTo(CUSTOMER_PAYMENT, { id: debtor.customer.id })}
               icon="cobro"

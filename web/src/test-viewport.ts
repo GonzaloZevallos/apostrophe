@@ -4,6 +4,7 @@
  * mocks `useViewport` or stubs `matchMedia` itself.
  */
 
+import { act } from '@testing-library/react'
 import { vi } from 'vitest'
 import type { Viewport } from './routes'
 
@@ -26,4 +27,30 @@ export function stubViewport(viewport: Viewport): void {
 export function renderWithViewport<T>(viewport: Viewport, render: () => T): T {
   stubViewport(viewport)
   return render()
+}
+
+/** Like `stubViewport`, but the viewport can cross the breakpoint later: `set` tells whoever listens. */
+export function stubMovableViewport(initial: Viewport): { set: (viewport: Viewport) => void } {
+  let matches = initial === 'computer'
+  const listeners = new Set<() => void>()
+  vi.stubGlobal(
+    'matchMedia',
+    (query: string) =>
+      ({
+        get matches() {
+          return matches
+        },
+        media: query,
+        addEventListener: (_type: string, listener: () => void) => listeners.add(listener),
+        removeEventListener: (_type: string, listener: () => void) => listeners.delete(listener),
+      }) as unknown as MediaQueryList,
+  )
+  return {
+    set(viewport) {
+      matches = viewport === 'computer'
+      act(() => {
+        listeners.forEach((listener) => listener())
+      })
+    },
+  }
 }
