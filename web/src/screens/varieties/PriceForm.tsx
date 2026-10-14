@@ -16,14 +16,12 @@ import { isGone, kindOf } from '../../api/refusals'
 import type { SuccessToast } from '../../components/AvisoExito'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
-import { parseGrams, parseMoney } from '../../format/parse'
 import { GENERIC_REFUSAL_MESSAGE } from '../Variedades'
 import Boton from '../../components/Boton'
 import PriceFields, { FieldError } from './PriceFields'
 import {
-  GRAMS_INVALID_MESSAGE,
-  PRICE_INVALID_MESSAGE,
   fieldOfCode,
+  readPriceValues,
   type PriceErrors,
   type PriceValues,
 } from './priceFieldRules'
@@ -37,9 +35,6 @@ export interface PriceFormProps {
   onCancel: () => void
   onDirtyChange: (dirty: boolean) => void
   onGone: () => void
-  /** A host with its own frame and its own "Cerrar" (the Onboarding) leaves the title row out
-   * and keeps the price effective today: no "Rige desde" to change. */
-  bare?: boolean
 }
 
 export default function PriceForm({
@@ -50,7 +45,6 @@ export default function PriceForm({
   onCancel,
   onDirtyChange,
   onGone,
-  bare = false,
 }: PriceFormProps) {
   const queryClient = useQueryClient()
   const [effectiveFrom, setEffectiveFrom] = useState(today)
@@ -73,27 +67,17 @@ export default function PriceForm({
   async function onSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault()
     setOffline(false)
-    const money = parseMoney(listPrice)
-    const hasBulk = settings.is_bulk_pricing && (bulkPrice.trim() !== '' || bulkMinimum.trim() !== '')
-    const hasVip = settings.is_vip_customers && vipPrice.trim() !== ''
-    const vipMoney = parseMoney(vipPrice)
-    const bulkMoney = parseMoney(bulkPrice)
-    const bulkGrams = parseGrams(bulkMinimum)
-    const found: PriceErrors = {}
-    if (!money.ok) found.listPrice = PRICE_INVALID_MESSAGE
-    if (hasBulk && !bulkMoney.ok) found.bulkPrice = PRICE_INVALID_MESSAGE
-    if (hasBulk && !bulkGrams.ok) found.bulkMinimum = GRAMS_INVALID_MESSAGE
-    if (hasVip && !vipMoney.ok) found.vipPrice = PRICE_INVALID_MESSAGE
-    setErrors(found)
-    if (!money.ok || (hasBulk && (!bulkMoney.ok || !bulkGrams.ok)) || (hasVip && !vipMoney.ok)) return
+    const read = readPriceValues(values, settings)
+    if (!read.ok) {
+      setErrors(read.errors)
+      return
+    }
+    setErrors({})
     setSending(true)
     try {
       await post(`/varieties/${varietyId}/prices`, {
         effective_from: effectiveFrom,
-        list_price: money.value,
-        bulk_price: hasBulk && bulkMoney.ok ? bulkMoney.value : undefined,
-        bulk_minimum: hasBulk && bulkGrams.ok ? bulkGrams.value : undefined,
-        vip_price: hasVip && vipMoney.ok ? vipMoney.value : undefined,
+        ...read.amounts,
       })
       invalidateResource(queryClient, 'varieties')
       onDone('Precio guardado')
@@ -119,30 +103,24 @@ export default function PriceForm({
 
   return (
     <div className="gasto-form">
-      {!bare && (
-        <div className="gasto-form__cabecera">
-          <span className="gasto-form__titulo">Nuevo precio</span>
-          <span className="gasto-form__cerrar">
-            <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={onCancel} />
-          </span>
-        </div>
-      )}
+      <div className="gasto-form__cabecera">
+        <span className="gasto-form__titulo">Nuevo precio</span>
+        <span className="gasto-form__cerrar">
+          <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={onCancel} />
+        </span>
+      </div>
       <form className="formulario" onSubmit={onSubmit}>
-        {bare ? (
+        <label className="campo">
+          <span className="campo__rotulo">Rige desde</span>
+          <input
+            className="campo__input"
+            type="date"
+            value={effectiveFrom}
+            onChange={(event) => setEffectiveFrom(event.target.value)}
+            required
+          />
           <FieldError message={errors.effectiveFrom} />
-        ) : (
-          <label className="campo">
-            <span className="campo__rotulo">Rige desde</span>
-            <input
-              className="campo__input"
-              type="date"
-              value={effectiveFrom}
-              onChange={(event) => setEffectiveFrom(event.target.value)}
-              required
-            />
-            <FieldError message={errors.effectiveFrom} />
-          </label>
-        )}
+        </label>
         <PriceFields
           settings={settings}
           values={values}

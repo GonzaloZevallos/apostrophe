@@ -5,7 +5,9 @@
  * "Mínimo en gramos". Kept apart from `PriceFields` so that file exports only components.
  */
 
+import type { PricingSettings } from '../../api/pricingSettings'
 import { VARIETY_REFUSAL_TEXT, type RefusalCode } from '../../api/refusals'
+import { parseGrams, parseMoney } from '../../format/parse'
 
 export const DUPLICATE_DATE_MESSAGE = 'Ya cargaste un precio con esa fecha'
 export const PRICE_INVALID_MESSAGE = 'Revisá los precios cargados'
@@ -33,4 +35,43 @@ const FIELD_OF_CODE: Partial<Record<RefusalCode, { field: PriceField; message: s
 
 export function fieldOfCode(code: string): { field: PriceField; message: string } | undefined {
   return (FIELD_OF_CODE as Record<string, { field: PriceField; message: string } | undefined>)[code]
+}
+
+/** What a price entry carries besides its date: the amounts that were typed and are in force. */
+export interface PriceAmounts {
+  list_price: number
+  bulk_price: number | undefined
+  bulk_minimum: string | undefined
+  vip_price: number | undefined
+}
+
+export type PriceRead = { ok: true; amounts: PriceAmounts } | { ok: false; errors: PriceErrors }
+
+/** Reads what was typed under the pricing switches: a rule that is off has no field and
+ * nothing about it is sent. A bad amount is an error under its field and nothing is read. */
+export function readPriceValues(values: PriceValues, settings: PricingSettings): PriceRead {
+  const { listPrice, bulkPrice, bulkMinimum, vipPrice } = values
+  const money = parseMoney(listPrice)
+  const hasBulk = settings.is_bulk_pricing && (bulkPrice.trim() !== '' || bulkMinimum.trim() !== '')
+  const hasVip = settings.is_vip_customers && vipPrice.trim() !== ''
+  const vipMoney = parseMoney(vipPrice)
+  const bulkMoney = parseMoney(bulkPrice)
+  const bulkGrams = parseGrams(bulkMinimum)
+  const errors: PriceErrors = {}
+  if (!money.ok) errors.listPrice = PRICE_INVALID_MESSAGE
+  if (hasBulk && !bulkMoney.ok) errors.bulkPrice = PRICE_INVALID_MESSAGE
+  if (hasBulk && !bulkGrams.ok) errors.bulkMinimum = GRAMS_INVALID_MESSAGE
+  if (hasVip && !vipMoney.ok) errors.vipPrice = PRICE_INVALID_MESSAGE
+  if (!money.ok || (hasBulk && (!bulkMoney.ok || !bulkGrams.ok)) || (hasVip && !vipMoney.ok)) {
+    return { ok: false, errors }
+  }
+  return {
+    ok: true,
+    amounts: {
+      list_price: money.value,
+      bulk_price: hasBulk && bulkMoney.ok ? bulkMoney.value : undefined,
+      bulk_minimum: hasBulk && bulkGrams.ok ? bulkGrams.value : undefined,
+      vip_price: hasVip && vipMoney.ok ? vipMoney.value : undefined,
+    },
+  }
 }
