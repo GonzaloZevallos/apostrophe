@@ -343,8 +343,10 @@ describe('removing the selected variety on a computer', () => {
     delete: { button: 'Eliminar variedad', confirm: 'Sí, eliminala', toast: 'Variedad eliminada' },
   }
 
-  function linkOf(variety: { name: string }) {
-    return { name: new RegExp(`^${variety.name}`) }
+  /** The left pane's links to the given variety. By href: a row's accessible name starts with its
+   * status word, so a name matcher anchored on the variety's name would never find it. */
+  function linksTo(variety: { id: number }) {
+    return screen.queryAllByRole('link').filter((link) => link.getAttribute('href') === pathTo(VARIETY, { id: variety.id }))
   }
 
   /** The faked API for one removal: the list before the write, the same list without the removed
@@ -405,6 +407,8 @@ describe('removing the selected variety on a computer', () => {
       const shown = screen.getAllByRole('link').filter((link) => paths.includes(link.getAttribute('href') ?? ''))
       expect(shown.map((link) => link.getAttribute('href'))).toEqual(list.map((variety) => pathTo(VARIETY, { id: variety.id })))
     })
+    // The matcher must be able to see the row before its absence means anything.
+    expect(linksTo(removed)).toHaveLength(1)
     await userEvent.click(await screen.findByRole('button', { name: WORDS[action].button }))
     await userEvent.click(screen.getByRole('button', { name: WORDS[action].confirm }))
 
@@ -414,7 +418,7 @@ describe('removing the selected variety on a computer', () => {
     if (position === 'the only one') {
       expect(await screen.findByText(EMPTY_TITLE)).toBeInTheDocument()
     } else {
-      expect(screen.queryByRole('link', linkOf(removed))).not.toBeInTheDocument()
+      expect(linksTo(removed)).toHaveLength(0)
     }
     expect(router.state.historyAction).toBe('REPLACE')
     expect(await screen.findByText(WORDS[action].toast)).toBeInTheDocument()
