@@ -8,7 +8,12 @@ from typing import Literal
 
 import pytest
 
-from app.results.domain.figures import AmountWithPending, AnalysisFigures, CostFigure
+from app.results.domain.figures import (
+    AmountWithPending,
+    AnalysisFigures,
+    CostAmount,
+    CostFigure,
+)
 from app.results.domain.ledger import (
     DrawRow,
     ExpenseRecord,
@@ -566,10 +571,10 @@ def test_a_promotion_and_an_own_use_each_lower_profit_by_their_costed_amount_on_
     on_today = totals_between(buckets, TODAY, TODAY)
 
     assert on_yesterday.profit.amount == -600
-    assert on_yesterday.promotion == AmountWithPending(600, Grams.of("0"))
+    assert on_yesterday.promotion == CostAmount(600, Grams.of("0"), Grams.of("2"))
     assert on_yesterday.own_use is None
     assert on_today.profit.amount == 10_000 - 3_000 - 300
-    assert on_today.own_use == AmountWithPending(300, Grams.of("0"))
+    assert on_today.own_use == CostAmount(300, Grams.of("0"), Grams.of("1"))
     assert on_today.promotion is None
 
 
@@ -640,8 +645,8 @@ def test_a_pending_only_withdrawal_gives_profit_a_pending_count_and_cost_of_good
     totals = totals_between(buckets, TODAY, TODAY)
 
     assert totals.profit == AmountWithPending(0, Grams.of("4"))
-    assert totals.promotion == AmountWithPending(0, Grams.of("4"))
-    assert totals.cost_of_goods == CostFigure(0, Grams.of("0"))
+    assert totals.promotion == CostAmount(0, Grams.of("4"), Grams.of("0"))
+    assert totals.cost_of_goods == CostFigure(0, Grams.of("0"), Grams.of("0"))
 
 
 def test_each_reason_counts_only_its_own_pending_grams_and_profit_adds_every_one() -> None:
@@ -719,7 +724,7 @@ def test_the_month_header_shows_each_reason_only_when_present_with_its_own_pendi
     promotion = _withdrawal(kind="promotion", day=TODAY, grams="2", costed=600, pending="1")
     figures = _figures(draws=[promotion], earliest_entry_day=TODAY)
 
-    assert figures.month.promotion == AmountWithPending(600, Grams.of("1"))
+    assert figures.month.promotion == CostAmount(600, Grams.of("1"), Grams.of("1"))
     assert figures.month.own_use is None
 
 
@@ -734,8 +739,8 @@ def test_a_week_and_a_month_row_carry_the_lines_and_profit_equals_totals_between
     week_totals = totals_between(buckets, week.first_day, week.last_day)
     month_totals = totals_between(buckets, month_row.first_day, month_row.last_day)
 
-    assert week.promotion == AmountWithPending(600, Grams.of("0"))
-    assert week.own_use == AmountWithPending(0, Grams.of("3"))
+    assert week.promotion == CostAmount(600, Grams.of("0"), Grams.of("2"))
+    assert week.own_use == CostAmount(0, Grams.of("3"), Grams.of("0"))
     assert week.profit == week_totals.profit == AmountWithPending(-600, Grams.of("3"))
     assert month_row.promotion == week.promotion
     assert month_row.own_use == week.own_use
@@ -752,8 +757,8 @@ def test_since_the_first_record_carries_both_lines() -> None:
 
     assert figures.first_record == earlier
     assert figures.since_first_record is not None
-    assert figures.since_first_record.promotion == AmountWithPending(100, Grams.of("0"))
-    assert figures.since_first_record.own_use == AmountWithPending(300, Grams.of("0"))
+    assert figures.since_first_record.promotion == CostAmount(100, Grams.of("0"), Grams.of("1"))
+    assert figures.since_first_record.own_use == CostAmount(300, Grams.of("0"), Grams.of("1"))
     assert figures.since_first_record.profit == AmountWithPending(-400, Grams.of("0"))
 
 
@@ -803,6 +808,173 @@ def test_a_week_with_7_g_sold_2_g_promoted_and_1_g_own_use_pending_reads_exactly
     )
 
     [week] = [w for w in figures.weeks if w.first_day <= TODAY <= w.last_day]
-    assert week.promotion == AmountWithPending(0, Grams.of("2"))
-    assert week.own_use == AmountWithPending(0, Grams.of("1"))
+    assert week.promotion == CostAmount(0, Grams.of("2"), Grams.of("0"))
+    assert week.own_use == CostAmount(0, Grams.of("1"), Grams.of("0"))
     assert week.profit.pending_grams == Grams.of("10")
+
+
+# --- GH-141: each cost figure counts only its own pending grams ---
+
+
+def test_a_pending_shortfall_and_a_pending_sale_line_each_count_only_their_own_grams() -> None:
+    sold = _sold(
+        day=TODAY, variety_id=1, name="Flor", sale_id=1, line_total=3_000, grams="3",
+        costed=None, pending="3",
+    )
+    shortfall = _shortfall(day=TODAY, costed=None, pending="2")
+    buckets, _ = _scan([sold, shortfall], [SaleRecord(1, TODAY, 0, 3_000)], TODAY)
+
+    totals = totals_between(buckets, TODAY, TODAY)
+
+    assert totals.shortfall is not None
+    assert totals.cost_of_goods.pending_grams == Grams.of("3")
+    assert totals.shortfall.pending_grams == Grams.of("2")
+
+
+def test_all_pending_is_true_only_when_pending_grams_exist_and_none_were_costed() -> None:
+    for figure in (
+        CostAmount(0, Grams.of("2"), Grams.of("0")),
+        CostFigure(0, Grams.of("2"), Grams.of("0")),
+    ):
+        assert figure.all_pending is True
+    for figure in (
+        CostAmount(500, Grams.of("1"), Grams.of("3")),
+        CostFigure(500, Grams.of("1"), Grams.of("3")),
+        CostAmount(500, Grams.of("0"), Grams.of("3")),
+        CostFigure(500, Grams.of("0"), Grams.of("3")),
+        CostAmount(0, Grams.of("0"), Grams.of("0")),
+        CostFigure(0, Grams.of("0"), Grams.of("0")),
+    ):
+        assert figure.all_pending is False
+
+
+def test_a_zero_cost_lot_with_pending_grams_beside_it_is_not_all_pending() -> None:
+    free = _sold(
+        day=TODAY, variety_id=1, name="Flor", sale_id=1, line_total=2_000, grams="2",
+        costed=0, pending="0",
+    )
+    pending = _sold(
+        day=TODAY, variety_id=1, name="Flor", sale_id=2, line_total=1_000, grams="1",
+        costed=None, pending="1",
+    )
+    buckets, _ = _scan([free, pending], [SaleRecord(1, TODAY, 0, 3_000)], TODAY)
+
+    cost = totals_between(buckets, TODAY, TODAY).cost_of_goods
+
+    assert cost.costed == 0
+    assert cost.pending_grams == Grams.of("1")
+    assert cost.costed_grams == Grams.of("2")
+    assert cost.all_pending is False
+
+
+def test_a_variety_sold_at_cost_with_pending_grams_has_margin_zero_and_is_not_all_pending() -> None:
+    sold = _sold(
+        day=TODAY, variety_id=1, name="Flor", sale_id=1, line_total=2_000, grams="4",
+        costed=1_000, pending="2",
+    )
+    figures = _figures(
+        draws=[sold], sales=[SaleRecord(1, TODAY, 0, 2_000)], earliest_entry_day=TODAY
+    )
+
+    [row] = figures.month.varieties
+    assert row.margin.amount == 0
+    assert row.cost.pending_grams == Grams.of("2")
+    assert row.cost.costed_grams == Grams.of("2")
+    assert row.cost.all_pending is False
+
+
+def test_a_variety_with_every_gram_pending_has_an_all_pending_cost() -> None:
+    sold = _sold(
+        day=TODAY, variety_id=1, name="Flor", sale_id=1, line_total=2_000, grams="4",
+        costed=None, pending="4",
+    )
+    figures = _figures(
+        draws=[sold], sales=[SaleRecord(1, TODAY, 0, 2_000)], earliest_entry_day=TODAY
+    )
+
+    [row] = figures.month.varieties
+    assert row.cost.costed_grams == Grams.of("0")
+    assert row.cost.all_pending is True
+
+
+def test_costed_grams_of_a_withdrawal_line_is_its_draw_grams_minus_its_pending() -> None:
+    promotion = _withdrawal(kind="promotion", day=TODAY, grams="5", costed=300, pending="2")
+    buckets, _ = _scan([promotion], earliest_entry_day=TODAY)
+
+    totals = totals_between(buckets, TODAY, TODAY)
+
+    assert totals.promotion == CostAmount(300, Grams.of("2"), Grams.of("3"))
+
+
+def test_every_week_and_month_row_copies_cost_of_goods_and_shortfall_from_totals_between() -> None:
+    sold = _sold(
+        day=TODAY, variety_id=1, name="Flor", sale_id=1, line_total=3_000, grams="3",
+        costed=900, pending="1",
+    )
+    shortfall = _shortfall(day=YESTERDAY, costed=200, pending="1")
+    old = TODAY - timedelta(days=45)
+    old_sold = _sold(
+        day=old, variety_id=1, name="Flor", sale_id=2, line_total=1_000, grams="1",
+        costed=300, pending="0",
+    )
+    draws = [sold, shortfall, old_sold]
+    sales = [SaleRecord(1, TODAY, 0, 3_000), SaleRecord(2, old, 0, 1_000)]
+    figures = _figures(draws=draws, sales=sales, earliest_entry_day=old)
+    buckets, _ = _scan(draws, sales, old)
+
+    assert len(figures.weeks) > 1
+    assert len(figures.months) > 1
+    for week in figures.weeks:
+        totals = totals_between(buckets, week.first_day, week.last_day)
+        assert week.cost_of_goods == totals.cost_of_goods
+        assert week.shortfall == totals.shortfall
+    for row in figures.months:
+        totals = totals_between(buckets, row.first_day, row.last_day)
+        assert row.cost_of_goods == totals.cost_of_goods
+        assert row.shortfall == totals.shortfall
+    assert figures.weeks[-1].shortfall == CostAmount(200, Grams.of("1"), Grams.of("1"))
+    assert figures.weeks[0].shortfall is None
+
+
+def test_a_week_with_only_gifts_carries_their_cost_and_no_shortfall() -> None:
+    gift = _gifted(
+        day=TODAY, variety_id=1, name="Flor", sale_id=1, grams="2", costed=700, pending="0"
+    )
+    figures = _figures(draws=[gift], earliest_entry_day=TODAY)
+
+    week = figures.weeks[-1]
+    assert week.cost_of_goods.costed == 700
+    assert week.shortfall is None
+    assert week.promotion is None
+
+
+def test_a_week_with_only_withdrawals_and_adjustments_has_zero_cost_of_goods() -> None:
+    promotion = _withdrawal(kind="promotion", day=TODAY, grams="2", costed=600, pending="0")
+    own_use = _withdrawal(kind="own_use", day=TODAY, grams="1", costed=300, pending="0")
+    withdrawals_only = _figures(draws=[promotion, own_use], earliest_entry_day=TODAY)
+    shortfall = _shortfall(day=TODAY, costed=250, pending="0")
+    adjustment_only = _figures(draws=[shortfall], earliest_entry_day=TODAY)
+
+    week = withdrawals_only.weeks[-1]
+    assert week.cost_of_goods == CostFigure(0, Grams.of("0"), Grams.of("0"))
+    assert week.promotion == CostAmount(600, Grams.of("0"), Grams.of("2"))
+    assert week.own_use == CostAmount(300, Grams.of("0"), Grams.of("1"))
+    assert week.shortfall is None
+    adjusted = adjustment_only.weeks[-1]
+    assert adjusted.cost_of_goods == CostFigure(0, Grams.of("0"), Grams.of("0"))
+    assert adjusted.shortfall == CostAmount(250, Grams.of("0"), Grams.of("2"))
+
+
+def test_the_month_header_shortfall_equals_that_months_row_for_none_costed_and_all_pending() -> (
+    None
+):
+    for draws in (
+        [],
+        [_shortfall(day=TODAY, costed=250, pending="0")],
+        [_shortfall(day=TODAY, costed=None, pending="2")],
+    ):
+        figures = _figures(draws=draws, earliest_entry_day=TODAY)
+        [row] = [m for m in figures.months if m.month == MONTH]
+        assert figures.month.shortfall == row.shortfall
+    assert figures.month.shortfall is not None
+    assert figures.month.shortfall.all_pending is True

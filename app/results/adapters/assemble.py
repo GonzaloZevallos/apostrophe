@@ -23,6 +23,7 @@ from app.results.adapters.schemas import (
 from app.results.domain.figures import (
     AmountWithPending,
     AnalysisFigures,
+    CostAmount,
     CostFigure,
     ExpenseBreakdown,
     MarginFigure,
@@ -47,8 +48,14 @@ def _amount_with_pending(figure: AmountWithPending) -> AmountWithPendingOut:
     )
 
 
-def _optional(figure: AmountWithPending | None) -> AmountWithPendingOut | None:
-    return None if figure is None else _amount_with_pending(figure)
+def _optional(figure: CostAmount | None) -> AmountWithPendingOut | None:
+    return (
+        None
+        if figure is None
+        else AmountWithPendingOut(
+            amount=figure.amount, pending_grams=figure.pending_grams.as_decimal()
+        )
+    )
 
 
 def _breakdown(breakdown: ExpenseBreakdown) -> ExpenseBreakdownOut:

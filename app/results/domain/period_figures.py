@@ -20,6 +20,7 @@ from app.results.domain.costed_sales import costed_sales
 from app.results.domain.figures import (
     AmountWithPending,
     AnalysisFigures,
+    CostAmount,
     CostFigure,
     ExpenseBreakdown,
     ExpenseCategoryTotal,
@@ -65,6 +66,7 @@ class _DayTotals:
     costed_cost: int = 0
     sales_of_costed: int = 0
     pending_grams: Grams = ZERO
+    costed_grams: Grams = field(kw_only=True)
 
 
 @dataclass
@@ -75,6 +77,7 @@ class _VarietyDayTotals:
     costed_cost: int = 0
     sales_of_costed: int = 0
     pending_grams: Grams = ZERO
+    costed_grams: Grams = field(kw_only=True)
 
 
 @dataclass
@@ -84,6 +87,7 @@ class _CostDayTotals:
 
     costed: int = 0
     pending_grams: Grams = ZERO
+    costed_grams: Grams = field(kw_only=True)
 
 
 @dataclass
@@ -182,7 +186,15 @@ class Buckets:
                 total = total + totals.pending_grams
         return total
 
-    def _cost_line(self, line: CostLine, start: date, end: date) -> AmountWithPending | None:
+    def costed_grams(self, start: date, end: date) -> Grams:
+        total = ZERO
+        for d in _days(start, end):
+            totals = self.day_totals.get(d)
+            if totals is not None:
+                total = total + totals.costed_grams
+        return total
+
+    def _cost_line(self, line: CostLine, start: date, end: date) -> CostAmount | None:
         """One cost line's costed amount and pending grams in `[start, end]`, `None`
         exactly when no draw of that kind falls in the window."""
         days: list[_CostDayTotals] = []
@@ -199,17 +211,19 @@ class Buckets:
         if not days:
             return None
         pending = ZERO
+        costed_grams = ZERO
         for day_totals in days:
             pending = pending + day_totals.pending_grams
-        return AmountWithPending(sum(t.costed for t in days), pending)
+            costed_grams = costed_grams + day_totals.costed_grams
+        return CostAmount(sum(t.costed for t in days), pending, costed_grams)
 
-    def shortfall(self, start: date, end: date) -> AmountWithPending | None:
+    def shortfall(self, start: date, end: date) -> CostAmount | None:
         return self._cost_line("shortfall", start, end)
 
-    def promotion(self, start: date, end: date) -> AmountWithPending | None:
+    def promotion(self, start: date, end: date) -> CostAmount | None:
         return self._cost_line("promotion", start, end)
 
-    def own_use(self, start: date, end: date) -> AmountWithPending | None:
+    def own_use(self, start: date, end: date) -> CostAmount | None:
         return self._cost_line("own_use", start, end)
 
     def profit(self, start: date, end: date) -> AmountWithPending:
@@ -257,7 +271,7 @@ def _add_sale_line(buckets: Buckets, row: DrawRow, kind: Literal["sold", "gifted
         buckets.variety_names[row.variety_id] = row.variety_name
     sold_amount = costed_sales(row.line_total, row.grams, row.pending)
 
-    day = buckets.day_totals.setdefault(row.day, _DayTotals())
+    day = buckets.day_totals.setdefault(row.day, _DayTotals(costed_grams=ZERO))
     day.sales_without_shipping += row.line_total
     day.grams = day.grams + row.grams
     match kind:
@@ -270,8 +284,11 @@ def _add_sale_line(buckets: Buckets, row: DrawRow, kind: Literal["sold", "gifted
     day.costed_cost += row.costed or 0
     day.sales_of_costed += sold_amount
     day.pending_grams = day.pending_grams + row.pending
+    day.costed_grams = day.costed_grams + (row.grams - row.pending)
 
-    vday = buckets.variety_day_totals.setdefault((row.day, row.variety_id), _VarietyDayTotals())
+    vday = buckets.variety_day_totals.setdefault(
+        (row.day, row.variety_id), _VarietyDayTotals(costed_grams=ZERO)
+    )
     vday.sales_without_shipping += row.line_total
     match kind:
         case "sold":
@@ -283,6 +300,7 @@ def _add_sale_line(buckets: Buckets, row: DrawRow, kind: Literal["sold", "gifted
     vday.costed_cost += row.costed or 0
     vday.sales_of_costed += sold_amount
     vday.pending_grams = vday.pending_grams + row.pending
+    vday.costed_grams = vday.costed_grams + (row.grams - row.pending)
 
 
 def scan(
@@ -303,17 +321,21 @@ def scan(
     for row in draws:
         match row.kind:
             case "shortfall":
-                agg = buckets.shortfall_totals.setdefault(row.day, _CostDayTotals())
+                agg = buckets.shortfall_totals.setdefault(
+                    row.day, _CostDayTotals(costed_grams=ZERO)
+                )
                 agg.costed += row.costed or 0
                 agg.pending_grams = agg.pending_grams + row.pending
+                agg.costed_grams = agg.costed_grams + (row.grams - row.pending)
             case "promotion" | "own_use":
                 # A withdrawal is neither a sale nor a shortfall: it writes only its
                 # own bucket, and its date counts as a first record.
                 withdrawn = buckets.withdrawal_totals.setdefault(
-                    (row.day, row.kind), _CostDayTotals()
+                    (row.day, row.kind), _CostDayTotals(costed_grams=ZERO)
                 )
                 withdrawn.costed += row.costed or 0
                 withdrawn.pending_grams = withdrawn.pending_grams + row.pending
+                withdrawn.costed_grams = withdrawn.costed_grams + (row.grams - row.pending)
                 if first_record is None or row.day < first_record:
                     first_record = row.day
             case "sold" | "gifted":
@@ -374,6 +396,7 @@ def totals_between(buckets: Buckets, start: date, end: date) -> PeriodTotals:
         cost_of_goods=CostFigure(
             costed=buckets.costed_cost(start, end),
             pending_grams=buckets.pending_grams(start, end),
+            costed_grams=buckets.costed_grams(start, end),
         ),
         shortfall=buckets.shortfall(start, end),
         promotion=buckets.promotion(start, end),
@@ -390,13 +413,14 @@ def _variety_rows(buckets: Buckets, month: Month) -> tuple[VarietyRow, ...]:
     for (day, variety_id), vday in buckets.variety_day_totals.items():
         if not (month.first_day <= day <= month.last_day):
             continue
-        totals = totals_by_variety.setdefault(variety_id, _VarietyDayTotals())
+        totals = totals_by_variety.setdefault(variety_id, _VarietyDayTotals(costed_grams=ZERO))
         totals.sales_without_shipping += vday.sales_without_shipping
         totals.grams_sold = totals.grams_sold + vday.grams_sold
         totals.grams_gifted = totals.grams_gifted + vday.grams_gifted
         totals.costed_cost += vday.costed_cost
         totals.sales_of_costed += vday.sales_of_costed
         totals.pending_grams = totals.pending_grams + vday.pending_grams
+        totals.costed_grams = totals.costed_grams + vday.costed_grams
 
     month_sales_without_shipping = sum(t.sales_without_shipping for t in totals_by_variety.values())
 
@@ -411,7 +435,7 @@ def _variety_rows(buckets: Buckets, month: Month) -> tuple[VarietyRow, ...]:
                 share_percent=percent(totals.sales_without_shipping, month_sales_without_shipping),
                 grams_sold=totals.grams_sold,
                 grams_gifted=totals.grams_gifted,
-                cost=CostFigure(totals.costed_cost, totals.pending_grams),
+                cost=CostFigure(totals.costed_cost, totals.pending_grams, totals.costed_grams),
                 margin=MarginFigure(
                     amount=margin_amount,
                     percent=percent(margin_amount, totals.sales_of_costed),
@@ -486,6 +510,8 @@ def _weeks(buckets: Buckets, today: date, first_record: date | None) -> tuple[We
                 sales=totals.sales,
                 grams=totals.grams_sold + totals.grams_gifted,
                 expenses=totals.expenses,
+                cost_of_goods=totals.cost_of_goods,
+                shortfall=totals.shortfall,
                 promotion=totals.promotion,
                 own_use=totals.own_use,
                 profit=totals.profit,
@@ -537,6 +563,8 @@ def _months(
                 sales=totals.sales,
                 grams=totals.grams_sold + totals.grams_gifted,
                 expenses=totals.expenses,
+                cost_of_goods=totals.cost_of_goods,
+                shortfall=totals.shortfall,
                 promotion=totals.promotion,
                 own_use=totals.own_use,
                 profit=totals.profit,

@@ -84,3 +84,29 @@ decided it (stock shortfall, CONTEXT.md).
 - **Telling a gift by a $0 line total**: 0,01 g at $10 rounds to a $0 list line.
 - **Leaving a negative adjustment out of profit**: the lots it uses up would leave the
   books without ever reaching a profit figure.
+
+## Amendment (GH-141): "entirely pending" is decided from costed grams
+
+Análisis shows a cost figure that is entirely pending as "N g sin costo" alone, never
+with a peso amount. The domain decides that, not the screen:
+
+- A cost figure is **entirely pending exactly when its pending grams are above 0 and
+  none of its draws' grams were costed**. It is decided from costed grams, never from an
+  amount of $0: a lot with no recorded cost costs $0 (CONTEXT.md: Harvest, Opening
+  stock), and a margin can be a real $0.
+- `costed_grams` (a draw's grams minus its pending grams) is accumulated only in `scan`,
+  next to where `pending` is added, and has no default in any domain type. The windows
+  only roll the buckets up.
+- The `all_pending` property of `CostAmount` (the stock shortfall, promotion and own-use
+  lines) and of `CostFigure` (cost of goods, a variety's cost) is its **only author**.
+  Adapters copy it; nothing infers it from an amount.
+- The API sends it as `all_pending` on Análisis cost lines (`AnalysisCostOut`) and on a
+  variety's cost (`CostOut`) only.
+- A variety's margin covers the same draws as its cost, so it shares that flag.
+- Profit and the average margin carry no `costed_grams` and no flag, and never show grams
+  alone (PM, GH-141): they are real figures worked out over the costed part.
+- The panel keeps its fixed pending flag (`CostLineOut {amount, pending}`) and gets no
+  `all_pending` (ADR-0013 amendment): no grams cross its wire.
+- Week and month rows copy `cost_of_goods` and `shortfall` from `totals_between`, like
+  the panel; `shortfall` is `None` exactly when the window has no negative-adjustment
+  draw, decided only in `Buckets._cost_line`.
