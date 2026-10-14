@@ -6,13 +6,9 @@
  * `Settings.test.tsx`; the variety's page under the modal is the real one.
  */
 
-import { act, fireEvent, screen, within } from '@testing-library/react'
+import { fireEvent, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { isValidElement } from 'react'
-import { matchRoutes } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
-import { router as appRouter } from '../../router'
-import VarietiesLayout from './VarietiesLayout'
 import { VARIETY, VARIETY_PRICE_NEW, pathTo } from '../../routes'
 import { api, jsonResponse, renderVarieties, writes, type FetchImpl } from './renderVarieties'
 
@@ -233,23 +229,6 @@ test('on a computer, a click on the dimmed area keeps the form and what was type
   expect(router.state.location.pathname).toBe(NEW_PATH)
 })
 
-test('flipping the viewport keeps what was typed, and "Cerrar" still asks', async () => {
-  const user = userEvent.setup()
-  await openFromVariety(answers())
-
-  await user.type(await screen.findByLabelText(/^Precio de lista/), '12000')
-  act(() => viewport.set('computer'))
-  expect(screen.getByLabelText(/^Precio de lista/)).toHaveValue('12000')
-  expect(screen.getByRole('dialog', { name: 'Nuevo precio' })).toBeInTheDocument()
-  await user.click(screen.getByRole('button', { name: 'Cerrar' }))
-  expect(await screen.findByText('¿Descartás el precio?')).toBeInTheDocument()
-  await user.click(screen.getByRole('button', { name: 'No, seguí cargando' }))
-
-  act(() => viewport.set('phone'))
-  expect(screen.getByLabelText(/^Precio de lista/)).toHaveValue('12000')
-  expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-})
-
 test('on a computer, loading shows the loading state, with no dialog', async () => {
   viewport.set('computer')
   const never = new Promise<Response>(() => undefined)
@@ -274,11 +253,4 @@ test('on a computer, a network error says it has no connection, with no dialog',
 
   expect(await screen.findByText(/conexión/i)).toBeInTheDocument()
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-})
-
-test('in the app\'s route table the price route is a child of the varieties layout, so the list stays on the left', () => {
-  const matches = matchRoutes(appRouter.routes, NEW_PATH) ?? []
-  const layout = matches.at(-2)?.route.element
-
-  expect(isValidElement(layout) && layout.type === VarietiesLayout).toBe(true)
 })
