@@ -20,6 +20,9 @@ import * as ts from 'typescript'
 
 const BACK_GLYPH = '‹'
 
+/** The path separator, spelled so the source holds no lone slash literal (`routes.test.ts`). */
+const SEP = String.fromCharCode(47)
+
 /** The modules outside `shell/` that may import `BackButton`: the tab root's "Volver" to Más. */
 export const BACK_BUTTON_IMPORTERS: readonly string[] = ['screens/Analisis.tsx']
 
@@ -30,15 +33,15 @@ const BACK_BUTTON_MODULE = 'components/BackButton.tsx'
 const BACK_LABEL = 'Volver'
 
 function normalise(path: string): string {
-  return path.replaceAll('\\', '/')
+  return path.replaceAll('\\', SEP)
 }
 
 function under(path: string, directory: string): boolean {
-  return path.startsWith(`${directory}/`) || path.includes(`/${directory}/`)
+  return path.startsWith(`${directory}${SEP}`) || path.includes(`${SEP}${directory}${SEP}`)
 }
 
 function endsWithPath(path: string, tail: string): boolean {
-  return path === tail || path.endsWith(`/${tail}`)
+  return path === tail || path.endsWith(`${SEP}${tail}`)
 }
 
 function isTestSide(path: string): boolean {

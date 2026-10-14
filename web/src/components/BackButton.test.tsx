@@ -8,6 +8,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { expect, test, vi } from 'vitest'
+import { ARCHIVED_VARIETIES, MORE } from '../routes'
 import BackButton, { BACK_GLYPH } from './BackButton'
 
 test('with an onClick it is a button named "‹ <parent>" that calls it', async () => {
@@ -23,13 +24,13 @@ test('with an onClick it is a button named "‹ <parent>" that calls it', async 
 test('with a `to` it is an in-app link to the parent, named the same way', () => {
   render(
     <MemoryRouter>
-      <BackButton title="Archivadas" to="/variedades/archivadas" />
+      <BackButton title="Archivadas" to={ARCHIVED_VARIETIES} />
     </MemoryRouter>,
   )
 
   expect(screen.getByRole('link', { name: '‹ Archivadas' })).toHaveAttribute(
     'href',
-    '/variedades/archivadas',
+    ARCHIVED_VARIETIES,
   )
 })
 
@@ -44,7 +45,7 @@ test('it keeps the look the back variant of Boton had', () => {
 test('a bare arrow is named by its ariaLabel, not by the glyph', () => {
   render(
     <MemoryRouter>
-      <BackButton to="/mas" ariaLabel="Volver" />
+      <BackButton to={MORE} ariaLabel="Volver" />
     </MemoryRouter>,
   )
 
