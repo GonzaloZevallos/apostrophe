@@ -405,7 +405,7 @@ describe('removing the selected variety on a computer', () => {
     await waitFor(() => {
       const paths = list.map((variety) => pathTo(VARIETY, { id: variety.id }))
       const shown = screen.getAllByRole('link').filter((link) => paths.includes(link.getAttribute('href') ?? ''))
-      expect(shown.map((link) => link.getAttribute('href'))).toEqual(list.map((variety) => pathTo(VARIETY, { id: variety.id })))
+      expect(shown.map((link) => link.getAttribute('href'))).toEqual(paths)
     })
     // The matcher must be able to see the row before its absence means anything.
     expect(linksTo(removed)).toHaveLength(1)
