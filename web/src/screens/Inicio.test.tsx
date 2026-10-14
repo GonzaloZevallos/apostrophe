@@ -27,6 +27,7 @@ import type { PanelAnswer } from '../api/panel'
 import type { Me } from '../api/me'
 import { LIMITS } from '../copy/limits'
 import type { OnboardingProgress } from '../api/onboarding'
+import { COMPUTER_QUERY } from '../format/breakpoints'
 import Inicio, { EMPTY_DETAIL, EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE } from './Inicio'
 
 const PANEL: PanelAnswer = panelFixture as PanelAnswer
@@ -426,14 +427,13 @@ test('"Arrancá por las variedades" shows above the panel, which still shows its
   expect(screen.getByText('Vendiste hoy')).toBeInTheDocument()
   expect(within(container.querySelector<HTMLElement>('.panel-ventas')!).getByText('$ 15.000')).toBeInTheDocument()
 
-  // The banner sits above the panel, not in place of it.
-  const titleIndex = Array.from(container.querySelectorAll('.cuerpo > *')).findIndex((el) =>
-    el.textContent?.includes(EMPTY_TITLE),
-  )
-  const panelIndex = Array.from(container.querySelectorAll('.cuerpo > *')).findIndex((el) =>
-    el.classList.contains('periodos'),
-  )
-  expect(titleIndex).toBeLessThan(panelIndex)
+  // The banner sits below the period tabs and above the figures, not in place of them.
+  const children = Array.from(container.querySelectorAll('.cuerpo > *'))
+  const titleIndex = children.findIndex((el) => el.textContent?.includes(EMPTY_TITLE))
+  const tabsIndex = children.findIndex((el) => el.classList.contains('periodos'))
+  const figuresIndex = children.findIndex((el) => el.classList.contains('panel-ventas'))
+  expect(tabsIndex).toBeLessThan(titleIndex)
+  expect(titleIndex).toBeLessThan(figuresIndex)
 })
 
 test('a remount with a different answer never shows the first answer\'s figures', async () => {
@@ -619,4 +619,81 @@ test('tapping the finish notice when advance answers over: false does not draw "
 
   expect(await screen.findByText('paso stock')).toBeInTheDocument()
   expect(screen.queryByText(/Listo listo/)).not.toBeInTheDocument()
+})
+
+const OUT_OF_DATE = { status: { state: 'out_of_date' } }
+
+function stubViewport(computer: boolean) {
+  vi.stubGlobal('matchMedia', (query: string) => ({
+    matches: query === COMPUTER_QUERY && computer,
+    media: query,
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined,
+  }))
+}
+
+function bodyOrder(container: HTMLElement, onboarding: boolean): string[] {
+  const names = [
+    ['periodos', (el: Element) => el.classList.contains('periodos')],
+    [
+      'notice',
+      (el: Element) =>
+        onboarding
+          ? (el.textContent ?? '').includes('Seguí con la configuración')
+          : (el.textContent ?? '').includes(EMPTY_TITLE),
+    ],
+    ['stale', (el: Element) => el.getAttribute('role') === 'status'],
+    ['figures', (el: Element) => el.classList.contains('panel-ventas')],
+  ] as const
+  return Array.from(container.querySelectorAll('.cuerpo > *')).flatMap((el) => {
+    const found = names.find(([, matches]) => matches(el))
+    return found === undefined ? [] : [found[0]]
+  })
+}
+
+test.each([
+  ['phone', false],
+  ['computer', true],
+])('on the %s the tabs come first, then the notice, the out-of-date notice and the figures', async (_name, computer) => {
+  stubViewport(computer)
+  stubFetch(PANEL, [{ current_price: { id: 1 } }], OUT_OF_DATE, MID_ONBOARDING)
+  const onboarding = renderInicio()
+  await screen.findByText('Vendiste hoy')
+  expect(bodyOrder(onboarding.container, true)).toEqual(['periodos', 'notice', 'stale', 'figures'])
+  onboarding.unmount()
+
+  stubFetch(PANEL, [], OUT_OF_DATE)
+  const start = renderInicio()
+  await screen.findByText('Vendiste hoy')
+  expect(bodyOrder(start.container, false)).toEqual(['periodos', 'notice', 'stale', 'figures'])
+})
+
+test('the notice stays the same node when the tab changes', async () => {
+  stubFetch(PANEL, [{ current_price: { id: 1 } }], { status: null }, MID_ONBOARDING)
+  renderInicio()
+  const notice = await screen.findByRole('link', { name: /Seguí con la configuración/ })
+
+  await userEvent.click(screen.getByRole('button', { name: 'Semana' }))
+
+  expect(await screen.findByText('Vendiste esta semana')).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: /Seguí con la configuración/ })).toBe(notice)
+})
+
+test('with /panel failing the generic error and the out-of-date notice show, and the Onboarding notice does not', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: RequestInfo | URL) => {
+      const url = String(input)
+      if (url.includes('/onboarding-progress')) return Promise.resolve(jsonResponse(200, MID_ONBOARDING))
+      if (url.includes('/pinned-catalog/status')) return Promise.resolve(jsonResponse(200, OUT_OF_DATE))
+      if (url.includes('/panel')) return Promise.resolve(jsonResponse(500, { detail: 'x' }))
+      return Promise.resolve(jsonResponse(200, [{ current_price: { id: 1 } }]))
+    }),
+  )
+  const { container } = renderInicio()
+
+  expect(await screen.findByRole('status')).toHaveTextContent(PINNED_CATALOG_OUT_OF_DATE)
+  expect(await screen.findByRole('alert')).toBeInTheDocument()
+  expect(screen.queryByText('Seguí con la configuración')).not.toBeInTheDocument()
+  expect(container.querySelector('.periodos')).toBeNull()
 })

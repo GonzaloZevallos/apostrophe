@@ -12,8 +12,8 @@
  * figures shown are always the current mount's own resolved answer, never a
  * stale one left behind by an earlier mount or another business.
  *
- * "Arrancá por las variedades" sits above the panel instead of replacing it (PM,
- * adjustment 5): a business can have history and no price today, and its figures
+ * "Arrancá por las variedades" sits below the period tabs and above the figures instead of
+ * replacing them (PM, adjustment 5): a business can have history and no price today, and its figures
  * are real.
  *
  * Slot 1 is `inicioNotices`' call (results.md's order): "Seguí con la configuración" while
@@ -151,43 +151,83 @@ export default function Inicio() {
           </InAppLink>
         </div>
 
-        {notices.first?.kind === 'onboarding' && <OnboardingNotice progress={notices.first.progress} />}
-        {notices.first?.kind === 'start' && (
-          <div className="estado-vacio estado-vacio--atencion">
-            <AvisoCuerpo attention>
-              <span className="estado-vacio__titulo">{EMPTY_TITLE}</span>
-              <span className="estado-vacio__detalle">{EMPTY_DETAIL}</span>
-            </AvisoCuerpo>
-          </div>
+        {panelQuery.data !== undefined && (
+          <PeriodTabs tab={tab} onTab={setTab} period={panelQuery.data.periods[tab]} />
         )}
-        {notices.pinOutOfDate && (
-          <InAppLink to={CATALOG} className="aviso-ambar aviso-ambar--atencion" role="status">
-            <AvisoCuerpo attention>
-              <span className="aviso-ambar__titulo">{PINNED_CATALOG_OUT_OF_DATE}</span>
-            </AvisoCuerpo>
-          </InAppLink>
-        )}
+        <InicioNotices notices={notices} />
 
         {failed !== undefined && failed.error instanceof NetworkError && <SinConexion />}
         {failed !== undefined && !(failed.error instanceof NetworkError) && <ErrorGenerico />}
 
         {panelQuery.data !== undefined && (
-          <Panel panel={panelQuery.data} tab={tab} onTab={setTab} today={me.today} />
+          <PanelFigures panel={panelQuery.data} tab={tab} today={me.today} />
         )}
       </div>
     </main>
   )
 }
 
-function Panel({
-  panel,
+function PeriodTabs({
   tab,
   onTab,
+  period,
+}: {
+  tab: PanelTab
+  onTab: (tab: PanelTab) => void
+  period: PanelPeriod
+}) {
+  return (
+    <div className="periodos" role="group" aria-label="Período">
+      {TABS.map((item) => (
+        <button
+          key={item}
+          type="button"
+          className={tab === item ? 'periodos__boton periodos__boton--activo' : 'periodos__boton'}
+          aria-pressed={tab === item}
+          onClick={() => onTab(item)}
+        >
+          {TAB_LABEL[item]}
+        </button>
+      ))}
+      <span className="pie">{rangeLabel(tab, period)}</span>
+    </div>
+  )
+}
+
+/** The only place the notices' order is drawn, from `inicioNotices()`'s answer: the
+ * Onboarding notice or "Arrancá por las variedades" (never both), then the out-of-date
+ * link. It sits right after the period tabs, so Semana and Mes keep it above their own
+ * figures (results.md). */
+function InicioNotices({ notices }: { notices: ReturnType<typeof inicioNotices> }) {
+  return (
+    <>
+      {notices.first?.kind === 'onboarding' && <OnboardingNotice progress={notices.first.progress} />}
+      {notices.first?.kind === 'start' && (
+        <div className="estado-vacio estado-vacio--atencion">
+          <AvisoCuerpo attention>
+            <span className="estado-vacio__titulo">{EMPTY_TITLE}</span>
+            <span className="estado-vacio__detalle">{EMPTY_DETAIL}</span>
+          </AvisoCuerpo>
+        </div>
+      )}
+      {notices.pinOutOfDate && (
+        <InAppLink to={CATALOG} className="aviso-ambar aviso-ambar--atencion" role="status">
+          <AvisoCuerpo attention>
+            <span className="aviso-ambar__titulo">{PINNED_CATALOG_OUT_OF_DATE}</span>
+          </AvisoCuerpo>
+        </InAppLink>
+      )}
+    </>
+  )
+}
+
+function PanelFigures({
+  panel,
+  tab,
   today,
 }: {
   panel: PanelAnswer
   tab: PanelTab
-  onTab: (tab: PanelTab) => void
   today: string
 }) {
   const period = panel.periods[tab]
@@ -195,21 +235,6 @@ function Panel({
 
   return (
     <>
-      <div className="periodos" role="group" aria-label="Período">
-        {TABS.map((item) => (
-          <button
-            key={item}
-            type="button"
-            className={tab === item ? 'periodos__boton periodos__boton--activo' : 'periodos__boton'}
-            aria-pressed={tab === item}
-            onClick={() => onTab(item)}
-          >
-            {TAB_LABEL[item]}
-          </button>
-        ))}
-        <span className="pie">{rangeLabel(tab, period)}</span>
-      </div>
-
       <div className="panel-ventas">
         <span className="rotulo">{SALES_HEADING[tab]}</span>
         <span className="cifra-xl">{formatMoney(period.sales)}</span>
