@@ -5,8 +5,10 @@
  * cost-per-gram preview, the owner's refusals, the edit confirmation and the delete
  * confirmation, all through the owner's routes (`api/stock`). It owns no chrome and no
  * navigation: the host learns what happened through `onSaved`, `onDeleted`, `onGone` and
- * `onDirtyChange`. A `fixedVarietyId` locks the variety and a `fixedOrigin` removes the
- * choice of origin; a host that only wants a starting point passes the `preselected*` ones.
+ * `onDirtyChange`. An `initialStock` makes it the Onboarding's entry: the variety is named
+ * and locked, the origin is a fixed "Stock inicial" chip, and there is no date, variety select
+ * or note; the origin, the date (`today`) and the absent note are decided when it is sent. A
+ * host that only wants a starting point passes the `preselected*` ones.
  * Its dialogs sit inline after the form, or in `dialogHost` when the host wants them
  * elsewhere in its own markup.
  */
@@ -28,7 +30,7 @@ import { parseMoney, parseSignedGrams } from '../format/parse'
 import type { Variety } from './Variedades'
 import { varietiesByName } from './varieties/varietiesByName'
 import Boton from '../components/Boton'
-import { COST_REQUIRED_HELP, onHandHelp, perGramPreview } from './stockMessages'
+import { COST_REQUIRED_HELP, NO_COST_HELP, onHandHelp, perGramPreview } from './stockMessages'
 
 export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
 export const COST_REQUIRED = 'Una compra necesita un costo total'
@@ -52,7 +54,7 @@ const FIELD_OVERRIDES: Partial<Record<RefusalCode, string>> = {
   'stock.note_too_long': GENERIC_REFUSAL,
 }
 
-export interface StockEntryFormProps {
+interface StockEntryFormBase {
   mode: 'nuevo' | 'editar'
   today: string
   /** The entry being edited (`mode="editar"`). */
@@ -61,9 +63,6 @@ export interface StockEntryFormProps {
   /** A starting choice the person can still change. */
   preselectedVarietyId?: number
   preselectedOrigin?: Origin
-  /** A choice the person cannot change: the variety is locked, the origin is not offered. */
-  fixedVarietyId?: number
-  fixedOrigin?: 'opening_stock'
   /** Called after the entry is saved (and the stock queries marked stale). */
   onSaved: () => void
   /** Called after the entry is deleted (and the stock queries marked stale). */
@@ -76,6 +75,20 @@ export interface StockEntryFormProps {
   dialogHost?: HTMLElement | null
 }
 
+/** An edit, a new entry with a starting point, or the Onboarding's initial stock, which is
+ * never an edit and never mixed with a preselection. */
+export type StockEntryFormProps =
+  | (StockEntryFormBase & { initialStock?: undefined })
+  | (StockEntryFormBase & {
+      mode: 'nuevo'
+      /** The Onboarding's entry: this variety, origin Stock inicial, dated today, no note. */
+      initialStock: { variety: { id: number; name: string } }
+      initial?: never
+      entryId?: never
+      preselectedVarietyId?: never
+      preselectedOrigin?: never
+    })
+
 export default function StockEntryForm({
   mode,
   today,
@@ -83,8 +96,7 @@ export default function StockEntryForm({
   entryId = '',
   preselectedVarietyId,
   preselectedOrigin,
-  fixedVarietyId,
-  fixedOrigin,
+  initialStock,
   onSaved,
   onDeleted,
   onGone,
@@ -117,13 +129,13 @@ export default function StockEntryForm({
   const [varietyId, setVarietyId] = useState(
     initial !== undefined
       ? String(initial.variety_id)
-      : fixedVarietyId !== undefined
-        ? String(fixedVarietyId)
+      : initialStock !== undefined
+        ? String(initialStock.variety.id)
         : preselectedVarietyId !== undefined
           ? String(preselectedVarietyId)
           : '',
   )
-  const [origin, setOrigin] = useState<Origin>(initial?.origin ?? fixedOrigin ?? preselectedOrigin ?? 'purchase')
+  const [origin, setOrigin] = useState<Origin>(initial?.origin ?? preselectedOrigin ?? 'purchase')
   const [totalCost, setTotalCost] = useState(
     initial?.total_cost !== null && initial?.total_cost !== undefined ? String(initial.total_cost) : '',
   )
@@ -172,13 +184,16 @@ export default function StockEntryForm({
     if (!Number.isInteger(variety) || varietyId === '') return null
     const parsedCost = totalCost.trim() === '' ? undefined : parseMoney(totalCost)
     if (parsedCost !== undefined && !parsedCost.ok) return null
+    // An initial stock is decided here, never kept in state: origin Stock inicial, dated
+    // `today`, and no note.
+    const isInitialStock = initialStock !== undefined
     return {
-      date,
+      date: isInitialStock ? today : date,
       variety_id: variety,
-      origin,
+      origin: isInitialStock ? 'opening_stock' : origin,
       grams: previewGrams.value,
       total_cost: parsedCost?.ok ? parsedCost.value : undefined,
-      note: note.trim() === '' ? undefined : note.trim(),
+      note: isInitialStock || note.trim() === '' ? undefined : note.trim(),
     }
   }
 
@@ -288,16 +303,24 @@ export default function StockEntryForm({
   return (
     <>
       <form className="formulario" onSubmit={onSubmit}>
-        <label className="campo">
-          <span className="campo__rotulo">Fecha</span>
-          <input
-            className="campo__input"
-            type="date"
-            value={date}
-            onChange={(event) => setDate(event.target.value)}
-            required
-          />
-        </label>
+        {initialStock !== undefined && (
+          <div className="campo">
+            <span className="campo__rotulo">Variedad</span>
+            <span className="campo__input campo__input--fijo">{initialStock.variety.name}</span>
+          </div>
+        )}
+        {initialStock === undefined && (
+          <label className="campo">
+            <span className="campo__rotulo">Fecha</span>
+            <input
+              className="campo__input"
+              type="date"
+              value={date}
+              onChange={(event) => setDate(event.target.value)}
+              required
+            />
+          </label>
+        )}
         <label className="campo">
           <span className="campo__rotulo">Gramos</span>
           <input
@@ -308,27 +331,32 @@ export default function StockEntryForm({
             required
           />
         </label>
-        <label className="campo">
-          <span className="campo__rotulo">Variedad</span>
-          <select
-            className="campo__input"
-            value={varietyId}
-            onChange={(event) => setVarietyId(event.target.value)}
-            disabled={fixedVarietyId !== undefined}
-            required
-          >
-            <option value="">Elegí una variedad</option>
-            {varietiesByName(pickable).map((variety) => (
-              <option key={variety.id} value={variety.id}>
-                {variety.name}
-              </option>
-            ))}
-          </select>
-          {varietyGrams !== null && (
-            <span className="campo__ayuda" data-copy="help">{onHandHelp(formatGrams(varietyGrams))}</span>
-          )}
-        </label>
-        {fixedOrigin === undefined && (
+        {initialStock === undefined && (
+          <label className="campo">
+            <span className="campo__rotulo">Variedad</span>
+            <select
+              className="campo__input"
+              value={varietyId}
+              onChange={(event) => setVarietyId(event.target.value)}
+              required
+            >
+              <option value="">Elegí una variedad</option>
+              {varietiesByName(pickable).map((variety) => (
+                <option key={variety.id} value={variety.id}>
+                  {variety.name}
+                </option>
+              ))}
+            </select>
+            {varietyGrams !== null && (
+              <span className="campo__ayuda" data-copy="help">{onHandHelp(formatGrams(varietyGrams))}</span>
+            )}
+          </label>
+        )}
+        {initialStock !== undefined ? (
+          <div className="origen-pildoras">
+            <span className="pildora pildora--activa pildora--fija">Stock inicial</span>
+          </div>
+        ) : (
           <fieldset className="campo">
             <legend className="campo__rotulo">Origen</legend>
             <div className="origen-pildoras">
@@ -354,17 +382,21 @@ export default function StockEntryForm({
             value={totalCost}
             onChange={(event) => setTotalCost(event.target.value)}
           />
-          <span className="campo__ayuda" data-copy="help">{COST_REQUIRED_HELP}</span>
+          <span className="campo__ayuda" data-copy="help">
+            {initialStock !== undefined ? NO_COST_HELP : COST_REQUIRED_HELP}
+          </span>
         </label>
-        <label className="campo">
-          <span className="campo__rotulo">Nota</span>
-          <input
-            className="campo__input"
-            value={note}
-            maxLength={200}
-            onChange={(event) => setNote(event.target.value)}
-          />
-        </label>
+        {initialStock === undefined && (
+          <label className="campo">
+            <span className="campo__rotulo">Nota</span>
+            <input
+              className="campo__input"
+              value={note}
+              maxLength={200}
+              onChange={(event) => setNote(event.target.value)}
+            />
+          </label>
+        )}
         {formError !== null && (
           <span className="campo__error" role="alert">
             {formError}

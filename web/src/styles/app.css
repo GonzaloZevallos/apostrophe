@@ -105,6 +105,12 @@ body {
   font-size: 17px;
 }
 
+.campo__input--fijo {
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+}
+
 .campo__error {
   font-size: 13px;
   color: var(--deuda);
@@ -2516,6 +2522,11 @@ body {
   background: var(--boton);
   color: var(--boton-texto);
   font-weight: 600;
+}
+
+/* The origin an entry is fixed to: drawn as the chip, but not a choice. */
+.pildora--fija {
+  cursor: default;
 }
 
 .campo__ayuda {

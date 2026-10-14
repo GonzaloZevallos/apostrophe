@@ -15,8 +15,6 @@ import StockEntryForm from '../StockEntryForm'
 import { useOnboardingWrite } from './useOnboardingWrite'
 import type { StepBodyProps } from './stepBodies'
 
-export const NO_COST_LINE = 'Si no cargás el costo, el lote cuesta $ 0.'
-
 export default function StockStep({ me, progress, onDirtyChange, onProgress }: StepBodyProps) {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
@@ -79,16 +77,13 @@ export default function StockStep({ me, progress, onDirtyChange, onProgress }: S
   }
   return (
     <>
-      <p className="pie">{`Variedad: ${target.name}`}</p>
       <StockEntryForm
         mode="nuevo"
         today={me.today}
-        fixedVarietyId={target.id}
-        fixedOrigin="opening_stock"
+        initialStock={{ variety: target }}
         onSaved={() => void stockSaved()}
         onDirtyChange={onDirtyChange}
       />
-      <p className="pie">{NO_COST_LINE}</p>
     </>
   )
 }
