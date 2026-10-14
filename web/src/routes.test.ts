@@ -373,7 +373,8 @@ const NOT_BUILT = [
 ];
 
 /** Screens compare.sh reaches by steps from another route: "Listo" opens only from the write
- * that ended the Onboarding, never by loading its own path (onboarding.md). */
+ * that ended the Onboarding, never by loading its own path (onboarding.md). Its dark and
+ * computer rows copy the same route and path, so they are listed too. */
 const REACHED_BY_STEPS = ["OnboardingListo", "OnboardingListoOscuro", "OnboardingListoCompu"];
 
 describe("screens.json against the English routes", () => {
