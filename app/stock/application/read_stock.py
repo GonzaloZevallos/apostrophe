@@ -1,6 +1,8 @@
 """`GET /stock`'s use case: a business's total grams, every variety's own stock level
 and its entries (CONTEXT.md: Stock, Stock status, Days left; ADR-0009). Computed only
-through `stock_level` over `history` (stock-application) — never a SQL aggregate.
+through `stock_level` over `business_history` (stock-application) — never a SQL aggregate.
+`business_history` hands back the stock entry rows it read, so the entries list reuses
+them and `GET /stock` reads `stock_entry` once (GH-125).
 """
 
 from __future__ import annotations
@@ -9,7 +11,7 @@ from dataclasses import dataclass
 from datetime import date
 
 from app.shared.grams import Grams
-from app.stock.application.history import history
+from app.stock.application.history import business_history, history
 from app.stock.application.ports import (
     Draws,
     StockEntries,
@@ -46,7 +48,8 @@ def read_stock(
     *,
     archived: bool = False,
 ) -> StockView:
-    grouped = history(entries, draws, withdrawals, None)
+    business = business_history(entries, draws, withdrawals)
+    grouped = business.grouped
     threshold_map = thresholds.all()
 
     def level_of(variety_id: int) -> StockLevel:
@@ -68,7 +71,7 @@ def read_stock(
     ]
 
     sorted_entries = sorted(
-        entries.for_varieties(None),
+        business.entries,
         key=lambda entry: (entry.entry_date, entry.recorded_at, entry.id),
         reverse=True,
     )

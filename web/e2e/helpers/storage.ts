@@ -6,7 +6,8 @@
  * `claro` — fails.
  */
 
-import { expect, type Page } from '@playwright/test'
+import { expect } from '../fixtures.js'
+import type { Page } from '@playwright/test'
 
 export async function expectOnlyTheThemeStored(page: Page): Promise<void> {
   const storage = await page.evaluate(async () => ({

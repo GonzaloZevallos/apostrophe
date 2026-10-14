@@ -7,7 +7,7 @@
 
 import { CUSTOMER, CUSTOMER_NEW, CUSTOMERS, SALE_NEW, VARIETIES } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
-import { expect, test } from '@playwright/test'
+import { expect, test } from './fixtures.js'
 import { newBusinessInvitationUrl } from './backend.js'
 import { fillSaleLine } from './helpers/sale.js'
 import { leaveOnboarding } from './helpers/signup.js'

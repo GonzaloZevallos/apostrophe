@@ -4,7 +4,8 @@
  * numeric id; `expectPath(page, EXPENSES, '?month=2026-01')` also pins the query string.
  */
 
-import { expect, type Page } from "@playwright/test";
+import { expect } from '../fixtures.js'
+import type { Page } from '@playwright/test'
 
 function escaped(text: string): string {
   return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

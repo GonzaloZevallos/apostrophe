@@ -300,3 +300,39 @@ def test_archived_false_is_the_default_rows(client: TestClient, engine: Engine) 
     rows = client.get("/stock?archived=false").json()["varieties"]
 
     assert [row["variety_id"] for row in rows] == [kept]
+
+
+def test_entries_sort_by_date_then_recorded_at_then_id_newest_first(
+    client: TestClient, engine: Engine, clock: MovableClock
+) -> None:
+    """Characterises the entries list's order (date, recorded_at, id, all descending)
+    and that an archived variety's grams stay in the total and its entry in the list."""
+    kept = _variety_id(client, "Kept")
+    archived = _variety_id(client, "Archived")
+    day = "2026-10-02"
+
+    # The session was issued at NOW, so the clock never goes before it: the recordings
+    # are placed at NOW + n hours, the later one recorded first where the test needs it.
+    def at(hours: int) -> None:
+        clock.set(NOW + timedelta(hours=hours))
+
+    at(2)
+    b = _record(client, kept, grams="1", date=day)["id"]
+    at(1)
+    c = _record(client, kept, grams="2", date=day)["id"]
+    at(0)
+    e = _record(client, kept, grams="3", date=day)["id"]
+    f = _record(client, kept, grams="4", date=day)["id"]
+    at(3)
+    a = _record(client, kept, grams="5", date="2026-10-01")["id"]
+    archived_entry = _record(client, archived, grams="20", date="2026-09-30")["id"]
+    archive_by_hand(engine, archived)
+
+    stock = client.get("/stock").json()
+
+    # (i) the date decides: a, a day earlier, comes after every entry of `day` even
+    # though it was recorded last; (ii) recorded_at decides: b (latest) before c
+    # though c has the higher id; (iii) the id decides: f before e, both recorded at NOW.
+    assert [entry["id"] for entry in stock["entries"]] == [b, c, f, e, a, archived_entry]
+    assert stock["total"] == 35.0
+    assert [row["variety_id"] for row in stock["varieties"]] == [kept]

@@ -1,5 +1,6 @@
 """The e2e app factory for the pinned-catalog front (plan, "Front", "End to end"):
-`web/playwright.config.ts`'s `webServer` runs this with `uvicorn --factory`, the same
+`web/e2e/fixtures.ts`'s `workerServer` fixture runs this, once per Playwright worker, with
+`uvicorn --factory`, the same
 way `scripts/serve.sh` runs `app.main:create_app`, except `telegram` is always
 `tests.fakes.telegram.FakeTelegram` (here its `E2eTelegram` subclass) — the plan's invariant
 that no test but `test_telegram_http.py` ever constructs the real adapter holds for the e2e
@@ -13,7 +14,10 @@ its own (`APOSTROPHE_SECRET_KEY`, `APOSTROPHE_DATABASE_URL`, ...), so
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+import os
+import threading
+import time
+from collections.abc import Callable, Sequence
 
 from fastapi import FastAPI
 
@@ -26,6 +30,12 @@ from tests.fakes.telegram import FakeTelegram
 # only a send to it (or to a channel `@name`) is accepted, as Telegram forbids a bot to
 # write first to anyone else.
 E2E_STARTED_CHAT = "111111"
+
+
+# The thread `create_e2e_app` starts when `APOSTROPHE_E2E_PARENT_PID` is set (GH-152).
+WATCHER_THREAD_NAME = "e2e-parent-watcher"
+_PARENT_PID_VARIABLE = "APOSTROPHE_E2E_PARENT_PID"
+_WATCH_INTERVAL_SECONDS = 1.0
 
 
 class E2eTelegram(FakeTelegram):
@@ -42,5 +52,47 @@ class E2eTelegram(FakeTelegram):
         return frozenset({E2E_STARTED_CHAT})
 
 
+def parent_gone(pid: int, kill: Callable[[int, int], None] = os.kill) -> bool:
+    """Whether process `pid` no longer exists: signal 0 delivers nothing, it only checks.
+    A process that exists but is not ours to signal is alive."""
+    try:
+        kill(pid, 0)
+    except ProcessLookupError:
+        return True
+    except PermissionError:
+        return False
+    return False
+
+
+def watch_parent(
+    pid: int,
+    *,
+    gone: Callable[[int], bool],
+    exit: Callable[[int], object],
+    interval: float,
+    sleep: Callable[[float], object],
+) -> None:
+    """Ends this server once its Playwright worker `pid` is gone, so a crashed worker never
+    leaves a uvicorn alive (ADR-0040)."""
+    while not gone(pid):
+        sleep(interval)
+    exit(0)
+
+
 def create_e2e_app() -> FastAPI:
-    return create_app(Settings.from_env(), telegram=E2eTelegram(), upkeep_ticker=False)
+    app = create_app(Settings.from_env(), telegram=E2eTelegram(), upkeep_ticker=False)
+    parent = os.environ.get(_PARENT_PID_VARIABLE)
+    if parent:
+        threading.Thread(
+            target=watch_parent,
+            args=(int(parent),),
+            kwargs={
+                "gone": parent_gone,
+                "exit": os._exit,
+                "interval": _WATCH_INTERVAL_SECONDS,
+                "sleep": time.sleep,
+            },
+            name=WATCHER_THREAD_NAME,
+            daemon=True,
+        ).start()
+    return app

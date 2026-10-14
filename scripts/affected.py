@@ -36,6 +36,7 @@ WRAPPER_INPUTS = (
     "web/package.json",
     "web/vite.config.ts",
     "web/playwright.config.ts",
+    "web/scripts/e2e.sh",
     "web/src/test-setup.ts",
 )
 

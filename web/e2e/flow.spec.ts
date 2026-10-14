@@ -16,7 +16,7 @@
 import { CUSTOMER, CUSTOMER_NEW, EXPENSES, EXPENSE_CATEGORIES, MORE, SETTINGS_BUSINESS, SETTINGS_USERS, STOCK, STOCK_ENTRY, STOCK_ENTRY_NEW, VARIETIES, VARIETY } from '../src/routes.js'
 import { legacyFor } from './helpers/legacyPaths.js'
 import { expectAnyPath, expectPath } from './helpers/url.js'
-import { expect, test } from '@playwright/test'
+import { expect, test } from './fixtures.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { openGastos } from './helpers/openMas.js'
@@ -27,6 +27,7 @@ const PHONE = '+5491155550001'
 test('a seller does everything the backend offers today, from the front alone', async ({
   page,
   browser,
+  workerServer,
 }) => {
   const consoleMessages: string[] = []
   watchConsole(page, consoleMessages)
@@ -201,7 +202,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   const inviteUrl = await page.locator('.usuarios__link').textContent()
   if (inviteUrl === null || inviteUrl === '') throw new Error('no invitation link shown')
 
-  const partnerContext = await browser.newContext()
+  const partnerContext = await browser.newContext({ baseURL: workerServer.url })
   const partnerPage = await partnerContext.newPage()
   watchConsole(partnerPage, consoleMessages)
   await partnerPage.goto(inviteUrl)

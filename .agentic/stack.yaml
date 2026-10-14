@@ -39,6 +39,10 @@ affected_fallback:
   - web/src/test-setup.ts
   - web/e2e/env.ts
   - web/e2e/freePort.ts
+  - web/e2e/fixtures.ts
+  - web/e2e/backend.ts
+  - web/scripts/e2e.sh
+  - tests/e2e_app.py
   - app/legacy_front_paths.json
   - app/migrations/*
   - tests/conftest.py
@@ -76,4 +80,6 @@ forbidden:
 # amendment): with it, `agentic merge` decides from GitHub's CI on the reviewed head instead of
 # rerunning every check locally. The three jobs of `.github/workflows/ci.yml` together run every
 # check above in full (pytest, ruff, mypy; web typecheck, lint, test, build; e2e).
-ci: [test, web, e2e]
+# Off while GitHub Actions is blocked by billing (Zeta, 2026-10-14): merges decide from the
+# local checks above. Uncomment when CI runs again.
+# ci: [test, web, e2e]

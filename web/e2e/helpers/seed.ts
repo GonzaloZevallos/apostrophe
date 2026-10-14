@@ -18,7 +18,8 @@ import {
   pathTo,
   withdrawalNewFor,
 } from '../../src/routes.js'
-import { expect, type Page } from '@playwright/test'
+import { expect } from '../fixtures.js'
+import type { Page } from '@playwright/test'
 import { newBusinessInvitationUrl } from '../backend.js'
 import { expectPath } from './url.js'
 import { fillSaleLine } from './sale.js'

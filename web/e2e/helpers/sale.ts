@@ -10,7 +10,8 @@
  * Only then are its fields filled.
  */
 
-import { expect, type Page } from '@playwright/test'
+import { expect } from '../fixtures.js'
+import type { Page } from '@playwright/test'
 
 export interface SaleLineInput {
   variety: string
