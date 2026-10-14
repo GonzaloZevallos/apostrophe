@@ -36,6 +36,14 @@ several times a day, **I want** the app laid out around what I actually do and h
 job, navigation.md: served here by "+ Entrada de stock" and "Sacar del stock" on
 Variedades, at most 2 taps from any tab root, and a variety's stock on its own page.)
 
+**When** a variety I loaded by mistake, or one I no longer work with, keeps showing in my
+lists and pickers, **I want** to take it out from my phone in a few taps, deleting it if
+it never moved and archiving it if it has history, **so** my lists show only what I still
+sell, no past sale, stock, cost or profit figure changes, and I can bring it back exactly
+as it was if I start selling it again. (Served here by refusing new stock entries and
+withdrawal lines on an archived variety while existing ones stay workable; defined in
+varieties.md.)
+
 Success criteria:
 
 1. **Exact stock**: a variety's stock always equals its entries minus the grams sold,
@@ -72,6 +80,9 @@ Success criteria:
    shortfall never includes a withdrawal. Its cost shows only as Promoción or Consumo
    propio (results.md, analysis.md).
 10. **Businesses never mix** (ADR-0004), for withdrawals as for entries.
+11. **Nothing new on an archived variety** (varieties.md): no new stock entry or
+    withdrawal line is recorded against an archived variety, while an existing entry or
+    withdrawal that already names it stays editable and deletable.
 
 ## Behaviour
 
@@ -82,6 +93,9 @@ Success criteria:
 - **Date**: defaults to today in Argentina time. Earlier days are allowed; a future date
   is refused.
 - **Variety**: must be one of the business's own. Any other id answers 404.
+  - An archived variety is refused as gone (`variety.archived`), except on an edit that
+    keeps the entry's own variety; an edit never moves an entry onto a different archived
+    variety (varieties.md).
 - **Grams**: up to two decimals, never zero.
   - Above zero for purchase, harvest and opening stock.
   - An adjustment may be positive or negative.
@@ -113,6 +127,15 @@ Success criteria:
 - **Lines**: each a variety of the business (any other id answers 404) and grams above
   zero with at most two decimals. The same variety may appear in several lines, with no
   merging. A withdrawal with no lines is refused.
+- **Archived varieties** (varieties.md: nothing new is recorded against one):
+  - recording a withdrawal with any line on an archived variety is refused whole, as gone
+    (`variety.archived`, 404), repeating no name, grams or amount;
+  - an edit may name an archived variety only when the withdrawal as stored already has a
+    line on that variety: such a line stays, and its grams may change, along with the
+    date, reason, note and the other lines;
+  - an edit that adds a line on an archived variety the withdrawal had no line on, or
+    moves a line onto a different archived variety, is refused the same way;
+  - deleting a withdrawal with a line on an archived variety works as for any other.
 - **Note**: optional, trimmed, up to 200 characters; empty means none. Never logged,
   searched or repeated in errors.
 - **Never refused for lack of stock** (ADR-0009). Stock may go negative and then shows
@@ -226,8 +249,17 @@ Success criteria:
     already chosen.
   - reason (Promoción · Consumo propio, required, no default), date (filled with today),
     one or more lines of variety and grams, and note.
+  - Its variety pickers offer unarchived varieties only (varieties.md).
+  - **Opened with a variety that is archived** (or unknown), for example through an old
+    link: it opens as from Más, with no variety chosen, and says nothing about it.
   - Editing opens the same form with the withdrawal filled in; saving an edit is
     confirmed first.
+  - **Editing a withdrawal with a line on a variety archived since**: that line shows the
+    variety's plain name and its grams stay editable, and the withdrawal saves. The
+    pickers of the other lines still offer unarchived varieties only.
+  - **A variety archived while the form is open** (a partner archived it): saving is
+    refused under varieties.md's rule, as for a stock entry. The form stays open, the
+    line shows the gone message, and the rest of what was typed is kept.
 - **A withdrawal's detail**, opened from its row: a detail (navigation.md), with the bar
   or sidebar and a "‹" back to the variety's page it came from (Variedades when there is
   no history), and no "+ Nueva venta". It shows the date, the reason, every line and the
@@ -257,7 +289,8 @@ Success criteria:
 - Business removal exports and deletes withdrawals and their lines through ADR-0015's
   schema reflection.
 - Refusals carry codes from `contract.json` (ADR-0008) and never repeat the note, grams,
-  amounts or names (ADR-0005).
+  amounts or names (ADR-0005). A line on an archived variety reuses `variety.archived`
+  (kind `gone`); no new code is added.
 - No note, grams or amount goes to logs, the console or browser storage.
 - Copy is in Rioplatense Spanish with vos.
 
@@ -288,6 +321,17 @@ Success criteria:
 - **Withdrawal validation matrix**: grams at or below zero, more than two decimals, a
   future date, a missing reason, no lines, a note over 200 characters and another
   business's variety each give their own coded refusal, which never repeats the input.
+- **Archived varieties (criterion 11)**: 100% passing, through the HTTP API.
+  - Recording a withdrawal with a line on an archived variety, an edit adding a line on
+    one, and an edit moving a line onto a different archived variety are each refused
+    with `variety.archived` (404), writing nothing.
+  - An edit keeping a line on a variety archived after the withdrawal was recorded, with
+    its grams changed, is accepted; deleting that withdrawal works.
+  - An unknown or another business's variety still answers its existing 404.
+  - Front tests (Testing Library): the form opened with an archived variety's id has no
+    variety chosen; the edit form of a withdrawal with an archived line shows its name and
+    saves; a save refused with `variety.archived` keeps the form open with the rest of
+    what was typed and shows the gone message on the line.
 - **Isolation (criterion 10)**: every stock and withdrawal route sits in the sweep and
   answers 404 or empty from another business, including a reference to another business's
   variety.
@@ -324,3 +368,5 @@ Success criteria:
 - Planned or draft withdrawals; splitting one withdrawal across two reasons.
 - Who attended a party or how many tried; tying a promotion to later sales; money spent
   on a party (an expense).
+- Recording a new withdrawal line on an archived variety by any path; telling the seller
+  why a preselected variety was not chosen.
