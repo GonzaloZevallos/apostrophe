@@ -22,8 +22,9 @@ import { NetworkError } from '../api/client'
 import BotonLink from '../components/BotonLink'
 import {
   type Analysis,
-  type AmountWithPending,
+  type AnalysisCostOut,
   type AnalysisMonth,
+  type VarietyRow,
   type ExpenseBreakdown as ExpenseBreakdownT,
   readAnalysis,
 } from '../api/analysis'
@@ -31,6 +32,7 @@ import { keys } from '../api/keys'
 import type { Me } from '../api/me'
 import { formatDateShort, formatMonthLong } from '../format/dates'
 import { formatGrams, formatMoney } from '../format/money'
+import { pendingFigure } from '../format/pendingFigure'
 import ErrorGenerico from '../components/ErrorGenerico'
 import SinConexion from '../components/SinConexion'
 import { MORE } from '../routes'
@@ -58,35 +60,44 @@ const WEEKDAY_LABEL: Record<number, string> = {
   7: 'Dom',
 }
 
-/** "y N g sin costo" (PM, round 1): never shown for a figure with nothing pending. */
+/** "y N g sin costo" after Ganancia and the average margin, the two figures that are
+ * always a real amount over the costed part and so never read as grams alone. Every
+ * cost figure goes through `pendingFigure` instead. */
 function pendingSuffix(grams: number): string {
   return grams > 0 ? ` y ${formatGrams(grams)} sin costo` : ''
 }
 
+/** A cost figure as the backend answered it, written by the one `pendingFigure`. */
+function figure(line: AnalysisCostOut): string {
+  return pendingFigure({
+    amount: line.amount,
+    pendingGrams: line.pending_grams,
+    allPending: line.all_pending,
+  })
+}
+
 /** Promoción and Consumo propio (CONTEXT.md), each apart from Faltante de stock and
- * each with only its own reason's "y N g sin costo". `null` when the period has none
+ * each with only its own reason's pending note. `null` when the period has none
  * of that reason's records: nothing is shown. */
 function CostLines({
   promotion,
   ownUse,
   className,
 }: {
-  promotion: AmountWithPending | null
-  ownUse: AmountWithPending | null
+  promotion: AnalysisCostOut | null
+  ownUse: AnalysisCostOut | null
   className?: string
 }) {
   return (
     <>
       {promotion !== null && (
         <span className={className}>
-          Promoción {formatMoney(promotion.amount)}
-          {pendingSuffix(promotion.pending_grams)}
+          Promoción {figure(promotion)}
         </span>
       )}
       {ownUse !== null && (
         <span className={className}>
-          Consumo propio {formatMoney(ownUse.amount)}
-          {pendingSuffix(ownUse.pending_grams)}
+          Consumo propio {figure(ownUse)}
         </span>
       )}
     </>
@@ -94,8 +105,27 @@ function CostLines({
 }
 
 /** A table cell's twin of `CostLines` for one reason: empty when the period has none. */
-function costCell(line: AmountWithPending | null): string {
-  return line === null ? '' : `${formatMoney(line.amount)}${pendingSuffix(line.pending_grams)}`
+function costCell(line: AnalysisCostOut | null): string {
+  return line === null ? '' : figure(line)
+}
+
+/** A variety's cost, from its own `all_pending`. */
+function varietyCost(variety: VarietyRow): string {
+  return pendingFigure({
+    amount: variety.cost.costed,
+    pendingGrams: variety.cost.pending_grams,
+    allPending: variety.cost.all_pending,
+  })
+}
+
+/** A variety's margin covers the same draws as its cost (ADR-0020 amendment, GH-141),
+ * so it reads the cost's `all_pending`: entirely pending, it is grams alone. */
+function varietyMargin(variety: VarietyRow): string {
+  return pendingFigure({
+    amount: variety.margin.amount,
+    pendingGrams: variety.margin.pending_grams,
+    allPending: variety.cost.all_pending,
+  })
 }
 
 /** A bar's fill, purely a rendering proportion against the widest value in its own
@@ -208,8 +238,7 @@ function AnalisisContenido({
         </span>
         {m.shortfall !== null && (
           <span className="pie">
-            Faltante de stock {formatMoney(m.shortfall.amount)}
-            {pendingSuffix(m.shortfall.pending_grams)}
+            Faltante de stock {figure(m.shortfall)}
           </span>
         )}
         <CostLines className="pie" promotion={m.promotion} ownUse={m.own_use} />
@@ -246,14 +275,12 @@ function AnalisisContenido({
                       )}
                       <span>{formatGrams(variety.grams_sold)} vendidos</span>
                       <span>{formatGrams(variety.grams_gifted)} regalados</span>
-                      <span>
-                        costo {formatMoney(variety.cost.costed)}
-                        {pendingSuffix(variety.cost.pending_grams)}
-                      </span>
+                      <span>costo {varietyCost(variety)}</span>
                       <span className="analisis__variedad-margen">
-                        margen {formatMoney(variety.margin.amount)}
-                        {variety.margin.percent !== null && ` (${variety.margin.percent}%)`}
-                        {pendingSuffix(variety.margin.pending_grams)}
+                        margen {varietyMargin(variety)}
+                        {variety.margin.percent !== null &&
+                          !variety.cost.all_pending &&
+                          ` (${variety.margin.percent}%)`}
                       </span>
                     </div>
                   </div>
@@ -290,16 +317,10 @@ function AnalisisContenido({
                         </td>
                         <td className="analisis__num">{formatGrams(variety.grams_sold)}</td>
                         <td className="analisis__num">{formatGrams(variety.grams_gifted)}</td>
-                        <td className="analisis__num">
-                          {formatMoney(variety.cost.costed)}
-                          {pendingSuffix(variety.cost.pending_grams)}
-                        </td>
+                        <td className="analisis__num">{varietyCost(variety)}</td>
                         <td className="analisis__num analisis__celda-margen">
-                          <span>
-                            {formatMoney(variety.margin.amount)}
-                            {pendingSuffix(variety.margin.pending_grams)}
-                          </span>
-                          {variety.margin.percent !== null && (
+                          <span>{varietyMargin(variety)}</span>
+                          {variety.margin.percent !== null && !variety.cost.all_pending && (
                             <span>{variety.margin.percent}%</span>
                           )}
                         </td>
@@ -455,8 +476,7 @@ function AnalisisContenido({
               <span>caja {formatMoney(data.since_first_record.cash)}</span>
               {data.since_first_record.shortfall !== null && (
                 <span>
-                  Faltante de stock {formatMoney(data.since_first_record.shortfall.amount)}
-                  {pendingSuffix(data.since_first_record.shortfall.pending_grams)}
+                  Faltante de stock {figure(data.since_first_record.shortfall)}
                 </span>
               )}
               <CostLines

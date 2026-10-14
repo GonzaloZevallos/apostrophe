@@ -16,11 +16,22 @@ export interface MarginFigure {
 export interface CostFigure {
   costed: number
   pending_grams: number
+  /** The backend's answer (ADR-0020 amendment, GH-141): every gram behind this figure
+   * is pending. Never inferred from `costed`, since a lot with no cost costs $0 too. */
+  all_pending: boolean
 }
 
+/** Profit: always a real figure over the costed part, so it carries no `all_pending`. */
 export interface AmountWithPending {
   amount: number
   pending_grams: number
+}
+
+/** A cost figure that may read as grams alone: `all_pending` is the backend's answer. */
+export interface AnalysisCostOut {
+  amount: number
+  pending_grams: number
+  all_pending: boolean
 }
 
 export interface VarietyRow {
@@ -43,9 +54,9 @@ export interface AnalysisMonth {
   grams_sold: number
   grams_gifted: number
   average_margin: MarginFigure
-  shortfall: AmountWithPending | null
-  promotion: AmountWithPending | null
-  own_use: AmountWithPending | null
+  shortfall: AnalysisCostOut | null
+  promotion: AnalysisCostOut | null
+  own_use: AnalysisCostOut | null
   varieties: VarietyRow[]
 }
 
@@ -55,8 +66,10 @@ export interface AnalysisWeek {
   sales: number
   grams: number
   expenses: number
-  promotion: AmountWithPending | null
-  own_use: AmountWithPending | null
+  cost_of_goods: AnalysisCostOut
+  shortfall: AnalysisCostOut | null
+  promotion: AnalysisCostOut | null
+  own_use: AnalysisCostOut | null
   profit: AmountWithPending
   cash: number
   best: boolean
@@ -69,8 +82,10 @@ export interface AnalysisMonthRow {
   sales: number
   grams: number
   expenses: number
-  promotion: AmountWithPending | null
-  own_use: AmountWithPending | null
+  cost_of_goods: AnalysisCostOut
+  shortfall: AnalysisCostOut | null
+  promotion: AnalysisCostOut | null
+  own_use: AnalysisCostOut | null
   profit: AmountWithPending
   cash: number
 }
@@ -87,9 +102,9 @@ export interface SinceFirstRecord {
   expenses: number
   profit: AmountWithPending
   cash: number
-  shortfall: AmountWithPending | null
-  promotion: AmountWithPending | null
-  own_use: AmountWithPending | null
+  shortfall: AnalysisCostOut | null
+  promotion: AnalysisCostOut | null
+  own_use: AnalysisCostOut | null
 }
 
 export interface ExpenseCategoryTotal {
