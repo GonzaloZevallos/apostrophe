@@ -159,15 +159,52 @@ def test_the_registry_entries_of_screens_json_say_a_kind_and_a_parent_that_are_p
             assert normalise(entry["parent"]) in paths, entry
         if entry.get("computer_parent") is not None:
             assert normalise(entry["computer_parent"]) in paths, entry
-        if entry.get("archived_parent") is not None:
-            assert normalise(entry["archived_parent"]) in paths, entry
-            assert entry["archived_parent"] != entry["parent"], entry
     registered = {normalise(entry["path"]) for entry in document["registry"]}
     assert {"/customers/new", "/customers/{id}/edit", "/varieties/entries/{id}"} <= registered
-    with_archived_parent = {
-        entry["path"] for entry in document["registry"] if "archived_parent" in entry
-    }
-    assert with_archived_parent == {"/varieties/{id}"}
+    assert archived_parent_problems(document["registry"], paths) == []
+
+
+STATE_DEPENDENT_PARENTS = {"/varieties/{id}"}
+
+
+def archived_parent_problems(registry: list[dict[str, str]], paths: set[str]) -> list[str]:
+    """What is wrong with the registry's `archived_parent` fields: one on a row whose parent
+    does not depend on state, a path no screen has, one equal to the row's own `parent`, or a
+    state-dependent row without one. Empty when sound."""
+    problems: list[str] = []
+    for entry in registry:
+        archived = entry.get("archived_parent")
+        path = entry["path"]
+        if archived is None:
+            if path in STATE_DEPENDENT_PARENTS:
+                problems.append(f"{path}: no archived_parent")
+            continue
+        if path not in STATE_DEPENDENT_PARENTS:
+            problems.append(f"{path}: archived_parent on a row whose parent is not state-dependent")
+        if normalise(archived) not in paths:
+            problems.append(f"{path}: archived_parent {archived} is not a registered path")
+        if archived == entry.get("parent"):
+            problems.append(f"{path}: archived_parent equals parent")
+    return problems
+
+
+def test_a_registry_with_a_wrong_archived_parent_is_refused() -> None:
+    paths = _screen_paths()
+    rows = [
+        {"path": "/varieties/{id}", "kind": "card", "parent": "/varieties"},
+        {"path": "/varieties/catalog", "kind": "card", "parent": "/varieties"},
+    ]
+
+    assert archived_parent_problems(rows, paths) == ["/varieties/{id}: no archived_parent"]
+    assert archived_parent_problems([{**rows[0], "archived_parent": "/nowhere"}], paths) == [
+        "/varieties/{id}: archived_parent /nowhere is not a registered path"
+    ]
+    assert archived_parent_problems([{**rows[0], "archived_parent": "/varieties"}], paths) == [
+        "/varieties/{id}: archived_parent equals parent"
+    ]
+    assert archived_parent_problems(
+        [{**rows[1], "archived_parent": "/varieties/archived"}], paths
+    ) == ["/varieties/catalog: archived_parent on a row whose parent is not state-dependent"]
 
 
 def _sample(template: str) -> str:
