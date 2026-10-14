@@ -92,8 +92,12 @@ Success criteria:
 - **Two writes through the owners**: that one action may save the variety and then its price entry effective today, each through its owner's route and refusals (varieties.md). Nothing is restated here.
   - A refused name saves nothing and keeps everything typed.
   - A refused price leaves the variety saved, keeps everything typed and shows the refusal on its field. The retry sends only the price and never adds a second variety.
-- **A variety saved without a price** (a refused price, then left): coming back to step 1 shows that variety's name kept and only the price to fill in.
-- **Returning to a done step 1** ("Atrás" from step 2, or any return once a variety has a price today): the step shows the saved variety, its name and today's list price, marked "Hecho", never an empty form. With several, it shows the first by name that has a price today. Its primary action moves on to step 2 and saves nothing. A further variety is added only through "Agregar otra variedad".
+- **What step 1 shows on a return**, the first that fits:
+  1. **A variety saved with no price entry** (a refused price, then left; on the first variety or on one added through "Agregar otra variedad"): step 1 shows that variety's name kept and only the price to fill in, whether or not another variety already has a price today. With several, it shows the first by name, and each saved price moves on to the next. Saving the price carries on exactly as any save of step 1 does, and sends only the price.
+  2. **Otherwise, a done step 1** (a variety has a price today): the step shows the saved variety, its name and today's list price, marked "Hecho", never an empty form. With several, it shows the first by name that has a price today. Its primary action moves on to step 2 and saves nothing.
+  3. **Otherwise** (no variety yet): the empty form.
+- In every case step 1 counts as done from the data alone (a variety with a price today): showing an unpriced variety's price form never moves the progress count or the resume point, and "Cerrar" leaves at once with everything kept.
+- A further variety is added only through "Agregar otra variedad".
 
 ### Done and passed
 
@@ -169,7 +173,8 @@ There is no telemetry.
 - **Step 1**: front tests show:
   - one primary action, saving the variety and its price;
   - a refused price keeping everything typed, with the retry sending only the price and no second variety created;
-  - returning to step 1 after a variety is priced today showing that variety marked "Hecho", and moving on to step 2 adding no variety.
+  - returning to step 1 after a variety is priced today showing that variety marked "Hecho", and moving on to step 2 adding no variety;
+  - with one variety priced today and a second saved with no price, returning to step 1 showing the second's name kept and only its price to fill in, saving only the price, with the progress count unchanged.
 - **Who gets it**:
   - a brand-new business gets it;
   - an imported business (including one that landed in the Onboarding before the import) never sees it again;
