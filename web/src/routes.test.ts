@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { isValidElement } from "react";
 import { matchRoutes, type RouteObject } from "react-router";
-import { describe, expect, test } from "vitest";
+import { describe, expect, expectTypeOf, test } from "vitest";
 import screensJson from "../../scripts/design/screens.json";
 import { router } from "./router";
 import * as routes from "./routes";
@@ -12,11 +12,15 @@ import {
   OUTSIDE,
   parentOf,
   pathTo,
+  parentSidesDisagree,
   placeOf,
+  resolveParent,
   SCREENS,
   type Kind,
   type Place,
+  type ScreenFacts,
   type ScreenId,
+  type StaticParentId,
   type Viewport,
 } from "./routes";
 import OnboardingLayout from "./screens/onboarding/OnboardingLayout";
@@ -70,7 +74,7 @@ const EXPECTED: Record<ScreenId, Expected> = {
   "variety-entries": expectation("card", "variety", VARIETIES_PLACE),
   catalog: expectation("card", "varieties", VARIETIES_PLACE),
   stock: expectation("card", "varieties", VARIETIES_PLACE),
-  "stock-entry-new": expectation("form", "stock", VARIETIES_PLACE),
+  "stock-entry-new": expectation("form", "varieties", VARIETIES_PLACE),
   "stock-entry": expectation("form", "stock", VARIETIES_PLACE),
   "varieties-archived": expectation("card", "varieties", VARIETIES_PLACE),
   "withdrawal-new": expectation("form", "varieties", VARIETIES_PLACE),
@@ -110,6 +114,8 @@ const EXPECTED: Record<ScreenId, Expected> = {
 
 const ids = SCREENS.map((entry) => entry.id);
 
+const UNKNOWN: ScreenFacts = { archived: "unknown", varietyName: null };
+
 describe("parentOf and placeOf, every screen on both viewports", () => {
   test("the table says something about exactly the declared screens", () => {
     expect([...ids].sort()).toEqual(Object.keys(EXPECTED).sort());
@@ -120,7 +126,7 @@ describe("parentOf and placeOf, every screen on both viewports", () => {
   )("%s on the %s", (id, viewport) => {
     const expected = EXPECTED[id];
     const parentId = expected.parent?.[viewport];
-    const parent = parentOf(id, viewport);
+    const parent = resolveParent(id, viewport, UNKNOWN);
 
     expect(parent?.id).toBe(parentId);
     if (parentId !== undefined) {
@@ -138,7 +144,7 @@ describe("parentOf and placeOf, every screen on both viewports", () => {
   test("a card and a form have a parent, a root none; every chain ends at a root", () => {
     for (const entry of SCREENS) {
       for (const viewport of VIEWPORTS) {
-        expect(parentOf(entry.id, viewport) === undefined).toBe(
+        expect(resolveParent(entry.id, viewport, UNKNOWN) === undefined).toBe(
           entry.kind === "root",
         );
         let hops = 0;
@@ -148,7 +154,7 @@ describe("parentOf and placeOf, every screen on both viewports", () => {
             hops++,
             `${entry.id} on the ${viewport}: a parent cycle`,
           ).toBeLessThan(ids.length);
-          current = parentOf(current, viewport)?.id;
+          current = resolveParent(current, viewport, UNKNOWN)?.id;
         }
       }
     }
@@ -280,6 +286,8 @@ interface RegistryRow {
   parent?: string;
   /** The parent on a computer, when it is not the phone's. */
   computer_parent?: string;
+  /** The parent when the screen's record is archived, for a screen whose parent depends on it. */
+  archived_parent?: string;
 }
 
 /** What is wrong between the design registry's rows and the front's screens: a screen with no
@@ -299,7 +307,7 @@ function registryDisagreements(
     if (entry.kind !== row.kind)
       found.push(`${row.path}: kind ${entry.kind} is not ${row.kind}`);
     for (const viewport of VIEWPORTS) {
-      const parent = parentOf(entry.id, viewport);
+      const parent = resolveParent(entry.id, viewport, UNKNOWN);
       const have = parent === undefined ? undefined : normalise(parent.path);
       const want =
         viewport === "computer" && row.computer_parent !== undefined
@@ -308,10 +316,109 @@ function registryDisagreements(
       if (have !== (want === undefined ? undefined : normalise(want)))
         found.push(`${row.path}: parent ${have} on ${viewport} is not ${want}`);
     }
+    const archived = resolveParent(entry.id, "phone", {
+      archived: "yes",
+      varietyName: null,
+    });
+    const live = resolveParent(entry.id, "phone", UNKNOWN);
+    const hasVariant = archived?.path !== live?.path;
+    if (hasVariant && row.archived_parent === undefined)
+      found.push(`${row.path}: archived parent ${archived?.path} has no archived_parent`);
+    if (!hasVariant && row.archived_parent !== undefined)
+      found.push(`${row.path}: archived_parent ${row.archived_parent} but the screen has no archived parent`);
+    if (hasVariant && row.archived_parent !== undefined && normalise(row.archived_parent) !== normalise(archived?.path ?? ""))
+      found.push(`${row.path}: archived parent ${archived?.path} is not ${row.archived_parent}`);
     return found;
   });
   return [...missing, ...wrong];
 }
+
+describe("resolveParent: a parent that depends on the record's state", () => {
+  const table: ReadonlyArray<[ScreenFacts["archived"], Viewport, string]> = [
+    ["yes", "phone", "varieties-archived"],
+    ["yes", "computer", "varieties-archived"],
+    ["no", "phone", "varieties"],
+    ["no", "computer", "varieties"],
+    ["unknown", "phone", "varieties"],
+    ["unknown", "computer", "varieties"],
+  ];
+
+  test.each(table)("a variety, archived %s, on the %s: its parent is %s", (archived, viewport, parentId) => {
+    expect(resolveParent("variety", viewport, { archived, varietyName: null })?.id).toBe(parentId);
+  });
+
+  test("the archived parent reads Archivadas, the live one Variedades", () => {
+    expect(resolveParent("variety", "phone", { archived: "yes", varietyName: null })).toEqual({
+      id: "varieties-archived",
+      path: routes.ARCHIVED_VARIETIES,
+      title: "Archivadas",
+    });
+    expect(resolveParent("variety", "phone", UNKNOWN)).toMatchObject({ title: "Variedades" });
+  });
+
+  test("a screen whose parent is the variety's page is labelled with its name, or Variedad while the name is unknown", () => {
+    for (const id of ["variety-prices", "variety-entries"] as const) {
+      for (const viewport of VIEWPORTS) {
+        for (const archived of ["yes", "no", "unknown"] as const) {
+          expect(resolveParent(id, viewport, { archived, varietyName: "Blue Dream" })).toEqual({
+            id: "variety",
+            path: routes.VARIETY,
+            title: "Blue Dream",
+          });
+          expect(resolveParent(id, viewport, { archived, varietyName: null })?.title).toBe("Variedad");
+        }
+      }
+    }
+  });
+
+  test("a screen with a static parent ignores the facts", () => {
+    const facts: ScreenFacts = { archived: "yes", varietyName: "Blue Dream" };
+    for (const entry of SCREENS) {
+      if (entry.id === "variety" || entry.parent === undefined || entry.parent === "variety") continue;
+      for (const viewport of VIEWPORTS) {
+        expect(resolveParent(entry.id, viewport, facts)).toEqual(
+          resolveParent(entry.id, viewport, UNKNOWN),
+        );
+      }
+    }
+  });
+
+  test("parentOf takes only ids whose parent does not depend on state", () => {
+    expectTypeOf<"variety">().not.toExtend<StaticParentId>();
+    expectTypeOf<"stock-entry-new">().toExtend<StaticParentId>();
+    expectTypeOf<StaticParentId>().toEqualTypeOf<Exclude<ScreenId, "variety">>();
+    expectTypeOf(parentOf).parameter(0).toEqualTypeOf<StaticParentId>();
+  });
+
+  test("Variedades and Archivadas mark the same item, so the variety's mark never depends on its state", () => {
+    for (const viewport of VIEWPORTS) {
+      expect(placeOf("varieties-archived", viewport)).toEqual(placeOf("varieties", viewport));
+      expect(placeOf("variety", viewport)).toEqual(placeOf("varieties", viewport));
+    }
+    expect(parentSidesDisagree(SCREENS)).toEqual([]);
+  });
+
+  test("a state-dependent parent whose two sides mark different items is refused", () => {
+    const bad: routes.Screen[] = [
+      ...SCREENS.filter((entry) => entry.id !== "varieties-archived" && entry.id !== "variety"),
+      routes.screen({
+        id: "varieties-archived",
+        path: routes.ARCHIVED_VARIETIES,
+        kind: "card",
+        title: "Archivadas",
+        parent: "sales",
+      }),
+      routes.screen({
+        id: "variety",
+        path: routes.VARIETY,
+        kind: "card",
+        title: "Variedad",
+        parent: { live: "varieties", archived: "varieties-archived" },
+      }),
+    ];
+    expect(parentSidesDisagree(bad)).toEqual(["variety: archived marks sales, live marks varieties", "variety: archived marks sales, live marks varieties"]);
+  });
+});
 
 describe("the registry against screens.json", () => {
   test("every routes.ts screen has a registry row that agrees on path, kind and parent, on both viewports", () => {
@@ -335,6 +442,26 @@ describe("the registry against screens.json", () => {
       `${routes.SETTINGS}: parent ${routes.HOME} on computer is not ${routes.MORE}`,
     );
     expect(refused).toContain("nowhere: no screen declares it");
+
+    const withoutField = screensJson.registry.map((row) => {
+      const { archived_parent: _dropped, ...rest } = row as RegistryRow;
+      return rest;
+    });
+    expect(registryDisagreements(withoutField, SCREENS)).toContain(
+      `/varieties/{id}: archived parent ${routes.ARCHIVED_VARIETIES} has no archived_parent`,
+    );
+    const withExtraField = screensJson.registry.map((row) =>
+      row.path === routes.CATALOG ? { ...row, archived_parent: routes.VARIETIES } : row,
+    );
+    expect(registryDisagreements(withExtraField, SCREENS)).toContain(
+      `${routes.CATALOG}: archived_parent ${routes.VARIETIES} but the screen has no archived parent`,
+    );
+    const wrongField = screensJson.registry.map((row) =>
+      row.path === "/varieties/{id}" ? { ...row, archived_parent: routes.VARIETIES } : row,
+    );
+    expect(registryDisagreements(wrongField, SCREENS)).toContain(
+      `/varieties/{id}: archived parent ${routes.ARCHIVED_VARIETIES} is not ${routes.VARIETIES}`,
+    );
     expect(refused).toContain(`${routes.SALES}: no registry row`);
   });
 });
