@@ -11,6 +11,12 @@ export interface ExemptEntry {
   screen: string
   variant: 'selected' | 'disabled' | 'none'
   reason: string
+  /**
+   * The class whose pressed rule shows this control's state, for a control the scan finds
+   * inside another element: the `<input role="switch">` is returned, never the `<label>` it is
+   * stretched over, so `touch.test.ts` checks the label through this field.
+   */
+  pressedOn?: string
 }
 
 export const EXEMPT: ExemptEntry[] = [
@@ -18,6 +24,7 @@ export const EXEMPT: ExemptEntry[] = [
     classes: ['opcion-interruptor__input'],
     screen: 'Configuración > Precios, Nueva venta',
     variant: 'none',
+    pressedOn: 'opcion-interruptor',
     reason:
       'a visually hidden native switch: the person taps its label, `.opcion-interruptor`, which carries the pressed state',
   },

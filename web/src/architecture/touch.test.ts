@@ -8,6 +8,7 @@
 import { expect, test } from 'vitest'
 import { productSources, scanControls, type ScanResult } from './controlScan'
 import { EXEMPT, type ExemptEntry } from './pressedExempt'
+import { PRESSED_BLOCK_AT_BDC2945 } from './pressedBlock.bdc2945'
 
 const files = import.meta.glob('/src/**/*.css', {
   query: '?raw',
@@ -119,6 +120,7 @@ test('the pressed block is one token-only rule', () => {
 
 /** One rule of the pressed block, as `:is(...):active` over a list of classes. */
 interface PressedRule {
+  selector: string
   classes: string[]
   body: string
 }
@@ -138,18 +140,22 @@ function withoutNot(selector: string): string {
   return out
 }
 
-/** The classes of the element a selector presses: its last compound, `:not(...)` aside. */
-function classesIn(selector: string): string[] {
-  const text = withoutNot(selector)
+/** The last compound of a selector (`.a .b.c:x` -> `.b.c:x`), outside parentheses and brackets. */
+function lastCompound(selector: string): string {
   let depth = 0
   let start = 0
-  for (let at = 0; at < text.length; at += 1) {
-    const ch = text[at] ?? ''
-    if ('([' .includes(ch)) depth += 1
+  for (let at = 0; at < selector.length; at += 1) {
+    const ch = selector[at] ?? ''
+    if ('(['.includes(ch)) depth += 1
     else if (')]'.includes(ch)) depth -= 1
     else if (depth === 0 && /[\s>+~]/.test(ch)) start = at + 1
   }
-  return [...text.slice(start).matchAll(/\.[A-Za-z0-9_-]+/g)].map((match) => match[0])
+  return selector.slice(start)
+}
+
+/** The classes of the element a selector presses: its last compound, `:not(...)` aside. */
+function classesIn(selector: string): string[] {
+  return [...lastCompound(withoutNot(selector)).matchAll(/\.[A-Za-z0-9_-]+/g)].map((match) => match[0])
 }
 
 /** The block's `:active` rules, in the order the stylesheet gives them. */
@@ -158,7 +164,7 @@ function pressedRules(css: string): PressedRule[] {
   if (block === null) return []
   return rules(block)
     .filter((rule) => rule.selector.includes(':active'))
-    .map((rule) => ({ classes: classesIn(rule.selector), body: rule.body }))
+    .map((rule) => ({ selector: rule.selector, classes: classesIn(rule.selector), body: rule.body }))
 }
 
 function pressedClasses(css: string): Set<string> {
@@ -210,48 +216,181 @@ export function coverageViolations(css: string, scan: ScanResult, exempt: Exempt
 // bar or period button, `--activa` for a tab or option). A new convention is added here.
 const SELECTED_SUFFIX = /--(activo|activa)$/
 
-function restingFill(css: string, cls: string): string | null {
-  const at = css.indexOf('/* pressed */')
-  const resting = at === -1 ? css : css.slice(0, at)
-  const own = rules(resting)
-    .filter((rule) => rule.selector.split(',').some((part) => part.trim() === `.${cls}`))
-    .flatMap((rule) => [...rule.body.matchAll(/(?:^|;|\s)background(?:-color)?:\s*([^;]+)/g)])
-    .map((match) => (match[1] ?? '').trim())
-  return own.at(-1) ?? null
-}
-
 function tokenOf(fill: string): string | null {
   return /^var\((--[a-z0-9-]+)\)$/.exec(fill)?.[1] ?? null
 }
 
+interface FlatRule {
+  selector: string
+  body: string
+  /** The at-rule preludes around it (`@media (min-width: 900px)`). */
+  media: string[]
+}
+
+/** Every style rule of a sheet, with the at-rules it sits in. */
+function flatRules(css: string): FlatRule[] {
+  const text = stripComments(css)
+  const out: FlatRule[] = []
+  const stack: string[] = []
+  let start = 0
+  for (let i = 0; i < text.length; i += 1) {
+    if (text[i] === '{') {
+      const prelude = (text.slice(start, i).split(';').at(-1) ?? '').trim()
+      if (prelude.startsWith('@')) {
+        stack.push(prelude)
+        start = i + 1
+      } else {
+        const end = text.indexOf('}', i)
+        out.push({ selector: prelude, body: text.slice(i + 1, end), media: [...stack] })
+        i = end
+        start = end + 1
+      }
+    } else if (text[i] === '}') {
+      stack.pop()
+      start = i + 1
+    }
+  }
+  return out
+}
+
+function splitTop(selector: string): string[] {
+  const parts: string[] = []
+  let depth = 0
+  let from = 0
+  for (let at = 0; at < selector.length; at += 1) {
+    const ch = selector[at] ?? ''
+    if ('(['.includes(ch)) depth += 1
+    else if (')]'.includes(ch)) depth -= 1
+    else if (ch === ',' && depth === 0) {
+      parts.push(selector.slice(from, at))
+      from = at + 1
+    }
+  }
+  parts.push(selector.slice(from))
+  return parts.map((part) => part.replace(/\s+/g, ' ').trim())
+}
+
+/** A place where a control rests: the part of a selector that paints it, and its fill. */
+export type RestingContext = { selector: string; fill: string } | { selector: string; unreadable: true }
+
+const STATE_PSEUDO = /:(hover|focus|focus-visible|focus-within|checked|active|disabled)(?![\w-])/
+
 /**
- * A selected control must show a pressed fill that differs from its resting fill: either
- * its own `:active` rule sets another token, or it is in the filled group (the `--papel`
- * ring) and rests on a token that is not `--papel`.
+ * Every comma-part before the pressed block whose last compound contains `.cls` and declares a
+ * background: bare, compound, descendant, or inside a width `@media`. A part in a state
+ * (`:hover`, `:checked`, `:disabled`...) is not resting. A fill that is not `var(--token)`,
+ * `transparent` or `none`, or that is scoped to a theme (`[data-tema`, `prefers-color-scheme`),
+ * is `unreadable`: it is named, never read as transparent.
+ */
+export function restingContexts(css: string, cls: string): RestingContext[] {
+  const at = css.indexOf('/* pressed */')
+  const named = new RegExp(`\\.${cls}(?![\\w-])`)
+  const out: RestingContext[] = []
+  for (const rule of flatRules(at === -1 ? css : css.slice(0, at))) {
+    for (const part of splitTop(rule.selector)) {
+      const subject = lastCompound(withoutNot(part))
+      if (!named.test(subject) || STATE_PSEUDO.test(subject) || subject.includes('::')) continue
+      const declared = [...rule.body.matchAll(/(?:^|;|\s)background(?:-color)?:\s*([^;]+)/g)].at(-1)?.[1]
+      if (declared === undefined) continue
+      const fill = declared.trim()
+      const themed = part.includes('[data-tema') || rule.media.some((prelude) => /prefers-color-scheme/.test(prelude))
+      const readable = tokenOf(fill) !== null || /^(transparent|none)$/.test(fill)
+      out.push(themed || !readable ? { selector: part, unreadable: true } : { selector: part, fill })
+    }
+  }
+  return out
+}
+
+/** The resting contexts of a class; `transparent` only when no part of the sheet gives it a background. */
+export function restingFill(css: string, cls: string): RestingContext[] {
+  const found = restingContexts(css, cls)
+  return found.length > 0 ? found : [{ selector: `.${cls}`, fill: 'transparent' }]
+}
+
+/**
+ * Whether one of the pressed rules shows a fill that differs from `fill`: the `--papel` ring
+ * differs unless the control rests on `--papel` (and, for a selected variant, unless it paints
+ * nothing, since a ring needs a token under it), a `background-color` token differs unless it is
+ * the resting one.
+ */
+function pressedDiffers(rulesFor: PressedRule[], fill: string, ringNeedsToken: boolean): boolean {
+  const token = tokenOf(fill)
+  return rulesFor.some((rule) => {
+    if (RING.test(rule.body) && token !== '--papel' && (!ringNeedsToken || token !== null)) return true
+    const pressedToken = tokenOf(/background-color:\s*([^;]+)/.exec(rule.body)?.[1]?.trim() ?? '')
+    return pressedToken !== null && pressedToken !== token
+  })
+}
+
+function contextViolations(cls: string, contexts: RestingContext[], rulesFor: PressedRule[], ringNeedsToken: boolean): string[] {
+  const out: string[] = []
+  for (const context of contexts) {
+    if ('unreadable' in context) {
+      out.push(`.${cls}: the resting fill of "${context.selector}" cannot be read (not a token, transparent or none, or theme-scoped)`)
+    } else if (!pressedDiffers(rulesFor, context.fill, ringNeedsToken)) {
+      out.push(`.${cls} rests on ${context.fill} in "${context.selector}" and its pressed fill does not differ from it`)
+    }
+  }
+  return out
+}
+
+/**
+ * A selected control must show a pressed fill that differs from its resting fill in every
+ * context the stylesheet gives it (its own and its base class's): either its own `:active` rule
+ * sets another token, or it is in the filled group (the `--papel` ring) and rests on a token that
+ * is not `--papel`. A context that cannot be read is a violation, never `transparent`.
  */
 export function selectedVariantViolations(css: string, scan: ScanResult): string[] {
   const pressed = pressedRules(css)
-  const ringed = new Set(pressed.filter((rule) => RING.test(rule.body)).flatMap((rule) => rule.classes))
   const variants = new Set(scan.controls.flatMap((control) => control.classes).filter((cls) => SELECTED_SUFFIX.test(cls)))
-  const out: string[] = []
-  for (const variant of [...variants].sort()) {
+  return [...variants].sort().flatMap((variant) => {
     const base = variant.replace(SELECTED_SUFFIX, '')
-    // No background declared on the variant or its base: it paints nothing of its own.
-    const fill = restingFill(css, variant) ?? restingFill(css, base) ?? 'transparent'
-    const token = tokenOf(fill)
-    if (token === null && !/^(transparent|none)$/.test(fill)) {
-      out.push(`.${variant}: its resting fill "${fill}" cannot be read as a token, transparent or none`)
-      continue
+    const found = [...restingContexts(css, variant), ...restingContexts(css, base)]
+    const contexts: RestingContext[] = found.length > 0 ? found : [{ selector: `.${variant}`, fill: 'transparent' }]
+    const rulesFor = pressed.filter(
+      (rule) => rule.classes.includes(`.${variant}`) || (RING.test(rule.body) && rule.classes.includes(`.${base}`)),
+    )
+    return contextViolations(variant, contexts, rulesFor, true)
+  })
+}
+
+/**
+ * An ordinary covered control must not rest on the fill its own pressed rule paints, in any
+ * context: one in the `--superficie` group on `--superficie`, one in the `--linea` group on
+ * `--linea`, a ringed one on `--papel`. Selected variants have their own check.
+ */
+export function controlFillViolations(css: string, scan: ScanResult): string[] {
+  const pressed = pressedRules(css)
+  const covered = pressedClasses(css)
+  const classes = new Set(
+    scan.controls.flatMap((control) => control.classes).filter((cls) => !SELECTED_SUFFIX.test(cls) && covered.has(`.${cls}`)),
+  )
+  return [...classes].sort().flatMap((cls) =>
+    contextViolations(cls, restingFill(css, cls), pressed.filter((rule) => rule.classes.includes(`.${cls}`)), false),
+  )
+}
+
+/**
+ * A control behind a label (`pressedOn`, the label a stretched native input sits in) must be in
+ * the pressed block, in no rule that sets `transform` (the label would move from under the
+ * finger), and only in rules that exclude its `--inactiva` class (the label never matches
+ * `:disabled`).
+ */
+export function pressedOnViolations(css: string, scan: ScanResult, exempt: ExemptEntry[]): string[] {
+  const pressed = pressedRules(css)
+  const scanned = new Set(scan.controls.flatMap((control) => control.classes))
+  const out: string[] = []
+  for (const entry of exempt) {
+    if (entry.pressedOn === undefined) continue
+    const label = `.${entry.pressedOn}`
+    const named = `EXEMPT .${entry.classes.join(' .')} presses ${label}`
+    if (!entry.classes.some((cls) => scanned.has(cls))) out.push(`${named}, but no scanned control carries its classes`)
+    const rulesOn = pressed.filter((rule) => rule.classes.includes(label))
+    if (rulesOn.length === 0) out.push(`${named}, which is in no pressed rule`)
+    for (const rule of rulesOn) {
+      if (/transform:/.test(rule.body)) out.push(`${named}, which is in a pressed rule that sets transform`)
+      if (!rule.selector.includes(`:not(${label}--inactiva)`)) out.push(`${named}, whose pressed rule does not exclude :not(${label}--inactiva)`)
     }
-    const inFilledGroup = ringed.has(`.${variant}`) || ringed.has(`.${base}`)
-    if (inFilledGroup && token !== null && token !== '--papel') continue
-    const own = pressed.some((rule) => {
-      if (!rule.classes.includes(`.${variant}`)) return false
-      const pressedToken = tokenOf(/background-color:\s*([^;]+)/.exec(rule.body)?.[1]?.trim() ?? '')
-      return pressedToken !== null && pressedToken !== token
-    })
-    if (own) continue
-    out.push(`.${variant} rests on ${fill} and its pressed fill does not differ from it`)
   }
   return out
 }
@@ -342,6 +481,15 @@ test('every tappable control the markup renders has a pressed state', () => {
 
 test('a selected control shows a pressed fill that differs from its resting one', () => {
   expect(selectedVariantViolations(file(APP_CSS), scannedControls())).toEqual([])
+})
+
+test('an ordinary control shows a pressed fill that differs from its resting one, in every context', () => {
+  expect(controlFillViolations(file(APP_CSS), scannedControls())).toEqual([])
+})
+
+test('a label-wrapped control is pressed by fill only, and never when disabled', () => {
+  expect(EXEMPT.some((entry) => entry.pressedOn === 'opcion-interruptor')).toBe(true)
+  expect(pressedOnViolations(file(APP_CSS), scannedControls(), EXEMPT)).toEqual([])
 })
 
 test('the --linea pressed rules come after the --superficie ones', () => {
@@ -459,26 +607,26 @@ test('a selected variant must show a pressed fill that differs from its resting 
   const filled = (resting: string): string => sheet(resting, RING_RULE)
   expect(selectedVariantViolations(filled('.pildora--activa { background: var(--acento); }'), scan)).toEqual([])
   expect(selectedVariantViolations(filled('.pildora--activa { background: var(--papel); }'), scan)).toEqual([
-    '.pildora--activa rests on var(--papel) and its pressed fill does not differ from it',
+    '.pildora--activa rests on var(--papel) in ".pildora--activa" and its pressed fill does not differ from it',
   ])
   expect(selectedVariantViolations(filled('.pildora--activa { background-color: transparent; }'), scan)).toEqual([
-    '.pildora--activa rests on transparent and its pressed fill does not differ from it',
+    '.pildora--activa rests on transparent in ".pildora--activa" and its pressed fill does not differ from it',
   ])
   expect(selectedVariantViolations(filled('.pildora--activa { background: linear-gradient(red, blue); }'), scan)).toEqual([
-    '.pildora--activa: its resting fill "linear-gradient(red, blue)" cannot be read as a token, transparent or none',
+    '.pildora--activa: the resting fill of ".pildora--activa" cannot be read (not a token, transparent or none, or theme-scoped)',
   ])
 
   const own = scanOf(control(['mas__item', 'mas__item--activo']))
   const resting = (token: string): string => `.mas__item--activo { background: var(${token}); }`
   expect(selectedVariantViolations(sheet(resting('--superficie'), SUPERFICIE_RULE, LINEA_RULE), own)).toEqual([])
   expect(selectedVariantViolations(sheet(resting('--linea'), SUPERFICIE_RULE, LINEA_RULE), own)).toEqual([
-    '.mas__item--activo rests on var(--linea) and its pressed fill does not differ from it',
+    '.mas__item--activo rests on var(--linea) in ".mas__item--activo" and its pressed fill does not differ from it',
   ])
   expect(selectedVariantViolations(sheet(resting('--superficie'), SUPERFICIE_RULE), own)).toEqual([
-    '.mas__item--activo rests on var(--superficie) and its pressed fill does not differ from it',
+    '.mas__item--activo rests on var(--superficie) in ".mas__item--activo" and its pressed fill does not differ from it',
   ])
   expect(selectedVariantViolations(sheet('.mas__item--activo { color: red; }', SUPERFICIE_RULE), own)).toEqual([
-    '.mas__item--activo rests on transparent and its pressed fill does not differ from it',
+    '.mas__item--activo rests on transparent in ".mas__item--activo" and its pressed fill does not differ from it',
   ])
 })
 
@@ -512,4 +660,126 @@ test('user-select: none lists single classes, and every pressed class is listed,
       `user-select: none lists "${bad}", which is not a single class`,
     ])
   }
+})
+
+// ---- resting contexts, the fill checks and the pressedOn check reject what they must ---------
+
+const LIGHT_RING = ruleFor(['.boton'], 'box-shadow: inset 0 0 0 3px var(--papel);')
+const SUPERFICIE_ROW = ruleFor(['.fila'], 'background-color: var(--superficie);')
+const LINEA_BLOCK = ruleFor(['.aviso'], 'background-color: var(--linea);')
+
+test('restingFill lists every context a class rests in, and never reads an unreadable one as transparent', () => {
+  const fills = (css: string, cls: string): unknown => restingFill(css, cls)
+  // a class nobody paints is transparent, and that is the only way to get transparent
+  expect(fills('.x { color: red; }', 'x')).toEqual([{ selector: '.x', fill: 'transparent' }])
+  expect(fills('.x { background: none; }', 'x')).toEqual([{ selector: '.x', fill: 'none' }])
+  // a descendant part and a compound part
+  expect(fills('.lista .x { background: var(--superficie); }', 'x')).toEqual([{ selector: '.lista .x', fill: 'var(--superficie)' }])
+  expect(fills('.a.x { background-color: var(--linea); }', 'x')).toEqual([{ selector: '.a.x', fill: 'var(--linea)' }])
+  // two agreeing contexts and two differing ones are all listed
+  expect(fills('.x { background: var(--papel); } .lista .x { background: var(--papel); }', 'x')).toEqual([
+    { selector: '.x', fill: 'var(--papel)' },
+    { selector: '.lista .x', fill: 'var(--papel)' },
+  ])
+  expect(fills('.x, .y { background: var(--papel); } .lista .x { background: var(--superficie); }', 'x')).toEqual([
+    { selector: '.x', fill: 'var(--papel)' },
+    { selector: '.lista .x', fill: 'var(--superficie)' },
+  ])
+  // inside a width @media it is one more context
+  expect(fills('@media (min-width: 900px) { .x { background: var(--linea); } }', 'x')).toEqual([
+    { selector: '.x', fill: 'var(--linea)' },
+  ])
+  // unreadable, naming the selector: a literal, a theme attribute, a colour-scheme query
+  expect(fills('.x { background: #fff; }', 'x')).toEqual([{ selector: '.x', unreadable: true }])
+  expect(fills('[data-tema=oscuro] .x { background: var(--papel); }', 'x')).toEqual([
+    { selector: '[data-tema=oscuro] .x', unreadable: true },
+  ])
+  expect(fills('@media (prefers-color-scheme: dark) { .x { background: var(--papel); } }', 'x')).toEqual([
+    { selector: '.x', unreadable: true },
+  ])
+  // a state, a pseudo-element, a :not() class and the pressed block are not resting
+  expect(fills('.x:hover, .x:checked, .x:disabled { background: var(--linea); } .x::before { background: red; }', 'x')).toEqual([
+    { selector: '.x', fill: 'transparent' },
+  ])
+  expect(fills('.y:not(.x) { background: var(--linea); }', 'x')).toEqual([{ selector: '.x', fill: 'transparent' }])
+  expect(fills(`.x { color: red; }\n/* pressed */\n.x { background: var(--linea); }`, 'x')).toEqual([
+    { selector: '.x', fill: 'transparent' },
+  ])
+})
+
+test('a selected variant is checked in every resting context, and an unreadable one is named', () => {
+  const scan = scanOf(control(['mas__item', 'mas__item--activo']))
+  const pressed = [SUPERFICIE_RULE, LINEA_RULE]
+  expect(selectedVariantViolations(sheet('.lista .mas__item--activo { background: var(--superficie); }', ...pressed), scan)).toEqual([])
+  expect(selectedVariantViolations(sheet('.lista .mas__item--activo { background: var(--linea); }', ...pressed), scan)).toEqual([
+    '.mas__item--activo rests on var(--linea) in ".lista .mas__item--activo" and its pressed fill does not differ from it',
+  ])
+  // both contexts are checked, so the differing one that collides is the one reported
+  expect(
+    selectedVariantViolations(
+      sheet('.mas__item--activo { background: var(--superficie); } .lista .mas__item--activo { background: var(--linea); }', ...pressed),
+      scan,
+    ),
+  ).toEqual(['.mas__item--activo rests on var(--linea) in ".lista .mas__item--activo" and its pressed fill does not differ from it'])
+  const unreadable = '.mas__item--activo: the resting fill of "[data-tema=oscuro] .mas__item--activo" cannot be read (not a token, transparent or none, or theme-scoped)'
+  expect(
+    selectedVariantViolations(sheet('[data-tema=oscuro] .mas__item--activo { background: var(--superficie); }', ...pressed), scan),
+  ).toEqual([unreadable])
+  expect(
+    selectedVariantViolations(sheet('.mas__item--activo { background: #fff; }', ...pressed), scan),
+  ).toEqual(['.mas__item--activo: the resting fill of ".mas__item--activo" cannot be read (not a token, transparent or none, or theme-scoped)'])
+})
+
+test('an ordinary control must not rest on its own pressed fill in any context', () => {
+  const scan = scanOf(control(['fila']), control(['aviso']), control(['boton']))
+  const css = (resting: string): string => sheet(resting, SUPERFICIE_ROW, LINEA_BLOCK, LIGHT_RING)
+  expect(controlFillViolations(css('.fila { background: none; } .aviso { background: var(--superficie); } .boton { background: var(--boton); }'), scan)).toEqual([])
+  expect(controlFillViolations(css('.fila { background: var(--superficie); }'), scan)).toEqual([
+    '.fila rests on var(--superficie) in ".fila" and its pressed fill does not differ from it',
+  ])
+  expect(controlFillViolations(css('.aviso { background: var(--linea); }'), scan)).toEqual([
+    '.aviso rests on var(--linea) in ".aviso" and its pressed fill does not differ from it',
+  ])
+  expect(controlFillViolations(css('.boton { background: var(--papel); }'), scan)).toEqual([
+    '.boton rests on var(--papel) in ".boton" and its pressed fill does not differ from it',
+  ])
+  // only one of its contexts collides
+  expect(controlFillViolations(css('.fila { background: none; } .lista .fila { background: var(--superficie); }'), scan)).toEqual([
+    '.fila rests on var(--superficie) in ".lista .fila" and its pressed fill does not differ from it',
+  ])
+  expect(controlFillViolations(css('.fila { background: rgb(1, 2, 3); }'), scan)).toEqual([
+    '.fila: the resting fill of ".fila" cannot be read (not a token, transparent or none, or theme-scoped)',
+  ])
+})
+
+test('classesIn counts the pressed element only', () => {
+  expect(classesIn(".venta-guardada .boton--enlace:active:not(:disabled):not([aria-disabled='true'])")).toEqual(['.boton--enlace'])
+  expect(classesIn('.opcion-interruptor:not(.opcion-interruptor--inactiva):active')).toEqual(['.opcion-interruptor'])
+  expect(classesIn(':is(.a, .b.c):active:not(:disabled)')).toEqual(['.a', '.b', '.c'])
+  expect(classesIn('.lista > .fila + .otra:active')).toEqual(['.otra'])
+})
+
+test('the pressedOn check rejects the switch as #102 left it, and a rule without the --inactiva exclusion', () => {
+  const switchScan = scanControls(productSources().filter((source) => source.path.endsWith('OpcionInterruptor.tsx')))
+  expect(switchScan.errors).toEqual([])
+  expect(switchScan.controls.flatMap((found) => found.classes)).toContain('opcion-interruptor__input')
+  expect(pressedOnViolations(file(APP_CSS), switchScan, EXEMPT)).toEqual([])
+
+  const label = '.opcion-interruptor'
+  const named = 'EXEMPT .opcion-interruptor__input presses .opcion-interruptor'
+  expect(pressedOnViolations(PRESSED_BLOCK_AT_BDC2945, switchScan, EXEMPT)).toEqual([
+    `${named}, which is in a pressed rule that sets transform`,
+    `${named}, whose pressed rule does not exclude :not(${label}--inactiva)`,
+  ])
+  expect(pressedOnViolations(sheet('', ruleFor(['.fila'], 'background-color: var(--superficie);')), switchScan, EXEMPT)).toEqual([
+    `${named}, which is in no pressed rule`,
+  ])
+  const fillOnly = (selector: string): string => sheet('', `${selector} { background-color: var(--superficie); transition: none; }`)
+  expect(pressedOnViolations(fillOnly('.opcion-interruptor:active'), switchScan, EXEMPT)).toEqual([
+    `${named}, whose pressed rule does not exclude :not(${label}--inactiva)`,
+  ])
+  expect(pressedOnViolations(fillOnly('.opcion-interruptor:not(.opcion-interruptor--inactiva):active'), switchScan, EXEMPT)).toEqual([])
+  expect(pressedOnViolations(fillOnly('.opcion-interruptor:not(.opcion-interruptor--inactiva):active'), scanOf(control(['boton'])), EXEMPT)).toEqual([
+    `${named}, but no scanned control carries its classes`,
+  ])
 })

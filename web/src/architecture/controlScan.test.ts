@@ -221,3 +221,65 @@ test('the real sources scan with no errors and find the controls the issue names
     expect(classes.has(name), name).toBe(true)
   }
 })
+
+test('a className constant imported from another file is read there, and an unreadable one is an error', () => {
+  const files = [
+    { path: 'src/clases.tsx', source: "export const CLASE_UNA = 'fija fija--grande'\nexport const CLASE_DOS = cond ? 'a' : 'b'" },
+    {
+      path: 'src/shell/Uso.tsx',
+      source: `import { CLASE_UNA } from '../clases'
+export default function Uso() {
+  return <button className={CLASE_UNA}>x</button>
+}`,
+    },
+  ]
+  const found = scanControls(files)
+  expect(found.errors).toEqual([])
+  expect(found.controls.map((control) => control.classes)).toEqual([['fija', 'fija--grande']])
+
+  const missing = scanControls([
+    files[1] ?? { path: '', source: '' },
+  ])
+  expect(missing.errors).toEqual(['src/shell/Uso.tsx:3 className expression cannot be read: CLASE_UNA'])
+
+  const notImported = scanControls([
+    files[0] ?? { path: '', source: '' },
+    { path: 'src/shell/Otro.tsx', source: "export default function Otro() {\n  return <button className={CLASE_UNA}>x</button>\n}" },
+  ])
+  expect(notImported.errors).toEqual(['src/shell/Otro.tsx:2 className expression cannot be read: CLASE_UNA'])
+})
+
+const VISUAL = [
+  {
+    path: 'src/components/botonVisual.tsx',
+    source: "const CLASS = {\n  primary: 'boton',\n  secondary: 'boton boton--suave',\n  link: 'boton--enlace',\n} as const",
+  },
+  {
+    path: 'src/components/Boton.tsx',
+    source: 'export default function Boton(props: object) {\n  const { className } = botonVisual(props)\n  return <button className={className} />\n}',
+  },
+]
+
+function useBoton(markup: string): ReturnType<typeof scanControls> {
+  return scanControls([
+    ...VISUAL,
+    { path: 'src/Pantalla.tsx', source: `export default function Pantalla() {\n  return ${markup}\n}` },
+  ])
+}
+
+test('a Boton call site draws the classes of its variant, primary when it names none', () => {
+  const found = useBoton('<div><Boton>a</Boton><Boton variant="secondary">b</Boton><Boton variant={x ? \'link\' : \'primary\'}>c</Boton></div>')
+  expect(found.errors).toEqual([])
+  expect(found.controls.map((control) => control.classes)).toEqual([
+    ['boton'],
+    ['boton', 'boton--suave'],
+    ['boton--enlace', 'boton'],
+  ])
+})
+
+test('a Boton variant the table does not have, or one that cannot be read, is an error', () => {
+  expect(useBoton('<Boton variant="inventada">a</Boton>').errors).toEqual([
+    'src/Pantalla.tsx:2 variant "inventada" is not in botonVisual\'s table',
+  ])
+  expect(useBoton('<Boton variant={elegida}>a</Boton>').errors).toEqual(['src/Pantalla.tsx:2 variant cannot be read'])
+})
