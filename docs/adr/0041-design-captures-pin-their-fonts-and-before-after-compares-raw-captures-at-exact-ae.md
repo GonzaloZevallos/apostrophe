@@ -64,3 +64,15 @@ arrived over the network, and whether it did varied from run to run.
 - Design sheets may differ in glyph shape from sheets captured before this change, since the
   fonts are now fontsource's. Nothing compares against old sheets.
 - The built side keeps the app's own `swap` and relies on the applied-check.
+
+## Amendment: the `ae-gate` shape
+
+- `scripts/design/ae.mjs <before-dir> <after-dir> [--only A,B]` prints one line per screen and
+  side (`<screen> built: AE 0`, `<screen> design: FAIL different dimensions`, and so on) and
+  exits 1 when any side fails or has an AE above 0, 2 on bad usage. No pixel data is printed.
+- A name in `--only` that is in neither `index.json` is a failure (`FAIL in neither index`),
+  so a typo cannot pass by comparing nothing. A screen missing on one side is one `FAIL
+  missing in <side>` line.
+- `ae(a, b)`, `decode(buffer)` and `compareIndexes(before, after, only, load)` are exported
+  and pure apart from `decode`'s use of `pngjs`; the command runs only when the file is the
+  entry point. `@types/pngjs` is a dev dependency so the test file type-checks.
