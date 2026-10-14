@@ -354,8 +354,14 @@ describe('removing the selected variety on a computer', () => {
     const remaining = () => (written ? list.filter((variety) => variety.id !== removed.id) : list)
     const answers: Answers = {
       'GET /varieties': () => json(200, remaining()),
-      'GET /stock': () => json(200, { total: 0, varieties: remaining().map((variety) => stockRow(variety.id, { status: 'no_entries' })), entries: [] }),
-      'GET /varieties?archived=true': () => json(200, written && action === 'archive' ? [{ ...removed, archived: true, current_price: null }] : []),
+      'GET /stock': () =>
+        json(200, {
+          total: 0,
+          varieties: remaining().map((variety) => stockRow(variety.id, { status: 'no_entries' })),
+          entries: [],
+        }),
+      'GET /varieties?archived=true': () =>
+        json(200, written && action === 'archive' ? [{ ...removed, archived: true, current_price: null }] : []),
     }
     for (const variety of list) {
       answers[`GET /varieties/${variety.id}`] = () => json(200, { ...variety, archived: false, removal: action })
