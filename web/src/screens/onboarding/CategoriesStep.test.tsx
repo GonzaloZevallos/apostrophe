@@ -9,6 +9,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
+import { HOME } from '../../routes'
 import type { Me } from '../../api/me'
 import type { OnboardingProgress, StepSlug } from '../../api/onboarding'
 import CategoriesStep from './CategoriesStep'
@@ -45,11 +46,11 @@ function renderStep(onDirtyChange: (dirty: boolean) => void = () => undefined) {
   const router = createMemoryRouter(
     [
       {
-        path: '/',
+        path: HOME,
         element: <CategoriesStep me={ME} progress={PROGRESS} onDirtyChange={onDirtyChange} onProgress={() => undefined} />,
       },
     ],
-    { initialEntries: ['/'] },
+    { initialEntries: [HOME] },
   )
   render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>

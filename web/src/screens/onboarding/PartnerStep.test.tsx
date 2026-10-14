@@ -8,6 +8,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
+import { HOME } from '../../routes'
 import type { Me } from '../../api/me'
 import type { OnboardingProgress, StepSlug, StepState } from '../../api/onboarding'
 import PartnerStep from './PartnerStep'
@@ -46,11 +47,11 @@ function renderStep(partner: StepState, onProgress = vi.fn()) {
   const router = createMemoryRouter(
     [
       {
-        path: '/',
+        path: HOME,
         element: <PartnerStep me={ME} progress={progress(partner)} onDirtyChange={() => undefined} onProgress={onProgress} />,
       },
     ],
-    { initialEntries: ['/'] },
+    { initialEntries: [HOME] },
   )
   render(<RouterProvider router={router} />)
   return { fetchMock, onProgress }
