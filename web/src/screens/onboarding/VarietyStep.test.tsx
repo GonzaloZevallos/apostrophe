@@ -82,12 +82,13 @@ function record(key: string, raw: RequestInit | undefined): void {
 function fakeApi(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
   const path = String(input)
   const method = init?.method ?? 'GET'
-  record(`${method} ${path}`, init)
-  if (method === 'GET' && path === '/onboarding-progress') return Promise.resolve(json(progress()))
-  if (method === 'GET' && path === '/pricing-settings') {
+  const key = `${method} ${path}`
+  record(key, init)
+  if (key === 'GET /onboarding-progress') return Promise.resolve(json(progress()))
+  if (key === 'GET /pricing-settings') {
     return Promise.resolve(json({ is_bulk_pricing: false, is_vip_customers: false }))
   }
-  if (method === 'POST' && path === '/varieties') {
+  if (key === 'POST /varieties') {
     if (nameRefusal !== null) return Promise.resolve(json({ code: nameRefusal }, 422))
     const body = JSON.parse(String(init?.body)) as { name: string }
     const created: Stored = { id: nextId++, name: body.name, price: null }
@@ -355,7 +356,7 @@ test('a "Hecho" read that answers no price today refetches the progress and show
   vi.stubGlobal(
     'fetch',
     vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
-      if (String(input) === '/varieties/1' && served === 0) {
+      if (`${init?.method ?? 'GET'} ${String(input)}` === 'GET /varieties/1' && served === 0) {
         served += 1
         calls.push('GET /varieties/1')
         // The price went away between the two reads (a partner removed it).
