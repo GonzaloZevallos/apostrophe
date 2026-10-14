@@ -74,7 +74,7 @@ EXPORTED_KINDS = (
 
 def _accept(client: TestClient, engine: Engine, name: str, email: str) -> str:
     accepted = client.post(
-        f"/invitations/{invite(engine, NOW)}/accept",
+        f"/invitations/{invite(engine, system_clock())}/accept",
         json={"business_name": name, "email": email, "password": PASSWORD},
     )
     assert accepted.status_code == 201, accepted.text
