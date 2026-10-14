@@ -4,7 +4,7 @@
  * reaches neither the console nor browser storage. The API is faked at `fetch`.
  */
 
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import { SIN_CONEXION_TITULO } from '../../components/SinConexion'
@@ -79,4 +79,28 @@ test('the token goes to no console and no browser storage', async () => {
   }
   expect(JSON.stringify({ ...localStorage })).not.toContain('secret-token-123')
   expect(JSON.stringify({ ...sessionStorage })).not.toContain('secret-token-123')
+})
+
+test("with action 'createLink' the primary 'Crear el link' posts once per tap and the other word is gone", async () => {
+  const fetchMock = vi.fn((_url: string, _init?: RequestInit) =>
+    Promise.resolve(jsonResponse(201, { url: LINK_URL, expires_at: '2026-10-09T00:00:00Z' })),
+  )
+  vi.stubGlobal('fetch', fetchMock)
+  const onLinkCreated = vi.fn()
+  render(<InvitePartner action="createLink" onLinkCreated={onLinkCreated} />)
+
+  expect(screen.queryByRole('button', { name: 'Invitá a un socio' })).not.toBeInTheDocument()
+  const button = screen.getByRole('button', { name: 'Crear el link' })
+  expect(button).toHaveClass('boton')
+  expect(button).not.toHaveClass('boton--suave')
+
+  await userEvent.click(button)
+  expect(await screen.findByText(LINK_URL)).toBeInTheDocument()
+  expect(fetchMock).toHaveBeenCalledTimes(1)
+  expect(fetchMock.mock.calls[0]?.[0]).toBe('/invitations')
+  expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({ method: 'POST' })
+
+  await userEvent.click(screen.getByRole('button', { name: 'Crear el link' }))
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2))
+  expect(onLinkCreated).toHaveBeenCalledTimes(2)
 })

@@ -6,6 +6,7 @@
 
 import { sendPass } from '../../api/onboarding'
 import ExpenseCategoriesEditor from '../settings/ExpenseCategoriesEditor'
+import { CATEGORIES_SAVE_LINE } from './onboardingMessages'
 import { useOnboardingWrite } from './useOnboardingWrite'
 import type { StepBodyProps } from './stepBodies'
 
@@ -13,7 +14,10 @@ export default function CategoriesStep({ onDirtyChange, onProgress }: StepBodyPr
   const { run, sending, notice } = useOnboardingWrite(onProgress)
   return (
     <>
-      <ExpenseCategoriesEditor onDirtyChange={onDirtyChange} />
+      <ExpenseCategoriesEditor addCollapsed onDirtyChange={onDirtyChange} />
+      <span className="campo__rotulo" data-copy="help">
+        {CATEGORIES_SAVE_LINE}
+      </span>
       <button
         type="button"
         className="boton"

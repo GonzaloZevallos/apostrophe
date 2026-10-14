@@ -13,6 +13,10 @@
  * a partner's edit can move under the form. The query is frozen for the same reason: the list
  * on screen is `accepted`, not whatever a refetch brings. The parent hears `dirty` through
  * `onDirtyChange`, and keeps its own chrome and its own leave question.
+ *
+ * `addCollapsed` (default `false`, Configuración's own screen) is the Onboarding's draw
+ * (`OnboardingCategorias.dc.html`): the "Nueva categoría" form waits behind the "+ Categoría"
+ * action until it is tapped. Opening it is not an unsaved change; typing into it is.
  */
 
 import { type FormEvent, useEffect, useState } from 'react'
@@ -48,8 +52,10 @@ function isRefusal(caught: unknown): caught is ApiError {
 
 export default function ExpenseCategoriesEditor({
   onDirtyChange,
+  addCollapsed = false,
 }: {
   onDirtyChange: (dirty: boolean) => void
+  addCollapsed?: boolean
 }) {
   const { data, isPending, isError, error } = useQuery({
     queryKey: keys.expenseCategories(),
@@ -68,7 +74,7 @@ export default function ExpenseCategoriesEditor({
       </>
     )
   }
-  return <Categories initial={data} onDirtyChange={onDirtyChange} />
+  return <Categories initial={data} onDirtyChange={onDirtyChange} addCollapsed={addCollapsed} />
 }
 
 /** The server orders by the case-folded name (binary); the list keeps that order after an add or a rename. */
@@ -80,14 +86,17 @@ function byNameKey(categories: ExpenseCategory[]): ExpenseCategory[] {
 function Categories({
   initial,
   onDirtyChange,
+  addCollapsed,
 }: {
   initial: ExpenseCategory[]
   onDirtyChange: (dirty: boolean) => void
+  addCollapsed: boolean
 }) {
   const queryClient = useQueryClient()
   const [accepted, setAccepted] = useState(initial)
   const [drafts, setDrafts] = useState<Record<number, string>>({})
   const [newName, setNewName] = useState('')
+  const [addOpen, setAddOpen] = useState(!addCollapsed)
   const [error, setError] = useState<string | null>(null)
   const [offline, setOffline] = useState(false)
   const [toast, setToast] = useState<SuccessToast | null>(null)
@@ -179,25 +188,32 @@ function Categories({
         ))}
       </div>
 
-      <form className="formulario" onSubmit={onAdd}>
-        <label className="campo">
-          <span className="campo__rotulo">Nueva categoría</span>
-          <input
-            className="campo__input"
-            value={newName}
-            onChange={(event) => setNewName(event.target.value)}
-          />
-        </label>
-        {error !== null && (
-          <span className="campo__error" role="alert">
-            {error}
-          </span>
-        )}
-        {offline && <SinConexion />}
-        <Boton variant="secondary" textOnly="submit" type="submit" disabled={sending || newName.trim() === ''}>
-          + Categoría
+      {!addOpen && (
+        <Boton variant="secondary" icon="agregar" ariaLabel="+ Categoría" onClick={() => setAddOpen(true)}>
+          Categoría
         </Boton>
-      </form>
+      )}
+      {addOpen && (
+        <form className="formulario" onSubmit={onAdd}>
+          <label className="campo">
+            <span className="campo__rotulo">Nueva categoría</span>
+            <input
+              className="campo__input"
+              value={newName}
+              onChange={(event) => setNewName(event.target.value)}
+            />
+          </label>
+          {error !== null && (
+            <span className="campo__error" role="alert">
+              {error}
+            </span>
+          )}
+          {offline && <SinConexion />}
+          <Boton variant="secondary" textOnly="submit" type="submit" disabled={sending || newName.trim() === ''}>
+            + Categoría
+          </Boton>
+        </form>
+      )}
 
       {toast !== null && <Aviso texto={toast} />}
       {goneNotice && (
