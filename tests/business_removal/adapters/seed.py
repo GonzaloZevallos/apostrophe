@@ -17,7 +17,7 @@ from sqlalchemy.engine import Engine
 from app.db import make_engine
 from app.main import create_app
 from app.settings import Settings
-from tests.conftest import PASSWORD, TEST_HASHER, invite
+from tests.conftest import PASSWORD, TEST_HASHER, MovableClock, invite
 from tests.fakes.telegram import FakeTelegram
 
 EMAIL_LEAVING = "closing@example.com"
@@ -60,6 +60,7 @@ def seed(db_path: Path) -> tuple[str, str]:
     app = create_app(
         settings,
         engine=engine,
+        clock=MovableClock(NOW),
         hasher=TEST_HASHER,
         telegram=FakeTelegram(),
         upkeep_ticker=False,

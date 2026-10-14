@@ -99,6 +99,7 @@ def app(file_engine: Engine) -> FastAPI:
     return create_app(
         SETTINGS,
         engine=file_engine,
+        clock=MovableClock(NOW),
         hasher=TEST_HASHER,
         telegram=FakeTelegram(),
         upkeep_ticker=False,
