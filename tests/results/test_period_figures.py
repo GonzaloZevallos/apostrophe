@@ -2,6 +2,7 @@
 margin matrix, best-and-ties, profit's pending N, sparse/empty history and the
 variety-identity (docs/product/analysis.md's metrics)."""
 
+import dataclasses
 import time
 from datetime import date, timedelta
 from typing import Literal
@@ -978,3 +979,12 @@ def test_the_month_header_shortfall_equals_that_months_row_for_none_costed_and_a
         assert figures.month.shortfall == row.shortfall
     assert figures.month.shortfall is not None
     assert figures.month.shortfall.all_pending is True
+
+
+def test_no_domain_cost_type_gives_costed_grams_a_default() -> None:
+    """`costed_grams` has no default in any domain type (ADR-0020 amendment GH-141), so a
+    construction that forgets it cannot compile."""
+    for cls in (CostAmount, CostFigure):
+        [costed_grams] = [f for f in dataclasses.fields(cls) if f.name == "costed_grams"]
+        assert costed_grams.default is dataclasses.MISSING
+        assert costed_grams.default_factory is dataclasses.MISSING
