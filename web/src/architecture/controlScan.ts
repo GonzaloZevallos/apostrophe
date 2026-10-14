@@ -188,6 +188,8 @@ interface Context {
   file: string
   masked: string
   errors: string[]
+  /** Every scanned file's masked text by path, to follow an imported constant. */
+  sources: ReadonlyMap<string, string>
 }
 
 function fail(ctx: Context, line: number, reason: string): void {
@@ -267,6 +269,30 @@ function declarationRegion(src: string, name: string): string | null {
   }
 }
 
+/** `src/shell/Shell.tsx` + `../components/x` -> `src/components/x`. */
+function relativePath(from: string, spec: string): string {
+  const parts = from.split('/').slice(0, -1)
+  for (const step of spec.split('/')) {
+    if (step === '..') parts.pop()
+    else if (step !== '.') parts.push(step)
+  }
+  return parts.join('/')
+}
+
+/** The declaration of `name` in the relative module this file imports it from, or null. */
+function importedRegion(ctx: Context, name: string): string | null {
+  for (const match of ctx.masked.matchAll(/import\s*\{([^}]*)\}\s*from\s*['"](\.[^'"]*)['"]/g)) {
+    const names = (match[1] ?? '').split(',').map((item) => item.trim().split(/\s+as\s+/).at(-1))
+    if (!names.includes(name)) continue
+    const target = relativePath(ctx.file, match[2] ?? '')
+    for (const candidate of [`${target}.tsx`, `${target}/index.tsx`]) {
+      const masked = ctx.sources.get(candidate)
+      if (masked !== undefined) return declarationRegion(masked, name)
+    }
+  }
+  return null
+}
+
 function splitOn(text: string, operators: string[]): string[] {
   const pieces: string[] = []
   let from = 0
@@ -321,7 +347,7 @@ function resolve(expr: string, ctx: Context, line: number): string[] {
   if (text[0] === '(' && skipBalanced(text, 0) === text.length) return resolve(text.slice(1, -1), ctx, line)
   const name = matchAt(/[A-Za-z_$][\w$]*/, text, 0)
   if (name === null || !isAccessChain(text.slice(name.length))) return unreadable()
-  const region = declarationRegion(ctx.masked, name)
+  const region = declarationRegion(ctx.masked, name) ?? importedRegion(ctx, name)
   if (region === null) return unreadable()
   return literalsIn(region, ctx, line)
 }
@@ -472,6 +498,33 @@ function classesOf(tag: Tag, ctx: Context): string[] {
 
 // ---- the scan ------------------------------------------------------------------------
 
+/** The components that draw a `variant` of `botonVisual.tsx`'s class table. */
+const VISUAL_WRAPPERS = new Set(['Boton', 'BotonLink'])
+
+/** `variant` -> classes, from the `CLASS` table of `botonVisual.tsx`; null when there is none. */
+function variantClasses(masked: string | undefined): Map<string, string[]> | null {
+  const region = masked === undefined ? null : declarationRegion(masked, 'CLASS')
+  if (region === null) return null
+  const table = new Map<string, string[]>()
+  for (const match of region.matchAll(/([A-Za-z]+):\s*'([^']*)'/g)) table.set(match[1] ?? '', tokensOf(match[2] ?? ''))
+  return table
+}
+
+/** The classes a `Boton` call site draws: its `variant` (primary when absent), or an error. */
+function variantOf(tag: Tag, table: Map<string, string[]>, ctx: Context, line: number): string[] {
+  const variant = attr(tag, 'variant')
+  const named = variant === undefined ? ['primary'] : variant.kind === 'string' ? [variant.value] : variant.kind === 'expr' ? [...variant.value.matchAll(/'([A-Za-z]+)'/g)].map((m) => m[1] ?? '') : []
+  if (named.length === 0) {
+    fail(ctx, line, 'variant cannot be read')
+    return []
+  }
+  return named.flatMap((item) => {
+    const classes = table.get(item)
+    if (classes === undefined) fail(ctx, line, `variant "${item}" is not in botonVisual's table`)
+    return classes ?? []
+  })
+}
+
 export function scanControls(files: ReadonlyArray<SourceFile>): ScanResult {
   const controls: Control[] = []
   const errors: string[] = []
@@ -479,6 +532,11 @@ export function scanControls(files: ReadonlyArray<SourceFile>): ScanResult {
     const masked = mask(file.source)
     return { file, masked, tags: tagsOf(masked) }
   })
+
+  const sources = new Map(parsed.map(({ file, masked }) => [file.path, masked]))
+
+  // The classes `Boton` and `BotonLink` draw per `variant`, read from the table they share.
+  const visual = variantClasses(parsed.find(({ file }) => file.path.endsWith('components/botonVisual.tsx'))?.masked)
 
   // Components defined in the sources: a click handler passed to one is checked where the
   // component puts it on an element.
@@ -503,7 +561,7 @@ export function scanControls(files: ReadonlyArray<SourceFile>): ScanResult {
   }
 
   for (const { file, masked, tags } of parsed) {
-    const ctx: Context = { file: file.path, masked, errors }
+    const ctx: Context = { file: file.path, masked, errors, sources }
     for (const { tag, index, name } of tags) {
       const line = lineAt(masked, index)
       if (tag === null) {
@@ -512,7 +570,9 @@ export function scanControls(files: ReadonlyArray<SourceFile>): ScanResult {
       }
       if (isControl(tag, wrappers)) {
         if (wrapperInner.has(`${file.path}:${index}`)) continue
-        controls.push({ file: file.path, line, tag: name, classes: [...new Set(classesOf(tag, ctx))] })
+        const own = classesOf(tag, ctx)
+        const drawn = visual !== null && VISUAL_WRAPPERS.has(name) ? variantOf(tag, visual, ctx, line) : []
+        controls.push({ file: file.path, line, tag: name, classes: [...new Set([...drawn, ...own])] })
         continue
       }
       const handler = tag.attrs.find((candidate) => HANDLERS.has(candidate.name))

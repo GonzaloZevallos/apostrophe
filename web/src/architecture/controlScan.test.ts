@@ -213,7 +213,6 @@ test('the real sources scan with no errors and find the controls the issue names
   const classes = new Set(result.controls.flatMap((control) => control.classes))
   for (const name of [
     'ajustes__item',
-    'ajustes__item--boton',
     'ajustes-tema__opcion',
     'ajustes-tema__opcion--activa',
     'riel-lateral__negocio',

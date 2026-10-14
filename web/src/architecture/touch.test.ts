@@ -123,8 +123,33 @@ interface PressedRule {
   body: string
 }
 
+/** The selector with its `:not(...)` groups removed: what they exclude is never pressed. */
+function withoutNot(selector: string): string {
+  let out = selector
+  for (let at = out.indexOf(':not('); at !== -1; at = out.indexOf(':not(')) {
+    let depth = 0
+    let end = at
+    for (; end < out.length; end += 1) {
+      if (out[end] === '(') depth += 1
+      if (out[end] === ')' && (depth -= 1) === 0) break
+    }
+    out = out.slice(0, at) + out.slice(end + 1)
+  }
+  return out
+}
+
+/** The classes of the element a selector presses: its last compound, `:not(...)` aside. */
 function classesIn(selector: string): string[] {
-  return [...selector.matchAll(/\.[A-Za-z0-9_-]+/g)].map((match) => match[0])
+  const text = withoutNot(selector)
+  let depth = 0
+  let start = 0
+  for (let at = 0; at < text.length; at += 1) {
+    const ch = text[at] ?? ''
+    if ('([' .includes(ch)) depth += 1
+    else if (')]'.includes(ch)) depth -= 1
+    else if (depth === 0 && /[\s>+~]/.test(ch)) start = at + 1
+  }
+  return [...text.slice(start).matchAll(/\.[A-Za-z0-9_-]+/g)].map((match) => match[0])
 }
 
 /** The block's `:active` rules, in the order the stylesheet gives them. */
