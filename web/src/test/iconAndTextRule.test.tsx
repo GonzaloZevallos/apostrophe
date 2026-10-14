@@ -6,6 +6,7 @@
 import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { expect, test } from 'vitest'
+import BackButton from '../components/BackButton'
 import Boton from '../components/Boton'
 import BotonLink from '../components/BotonLink'
 import ConfirmDialog from '../components/ConfirmDialog'
@@ -28,7 +29,7 @@ test('what the rule allows passes: every kind, the answers, an icon-only control
       </Boton>
       <Boton variant="link">Ver todas</Boton>
       <Boton variant="undo">Deshacer</Boton>
-      <Boton variant="back">‹ Ventas</Boton>
+      <BackButton title="Ventas" onClick={() => {}} />
       <Boton variant="icon" action="delete" ariaLabel="Borrar venta" />
       <BotonLink to="/x" variant="icon" action="search" ariaLabel="Buscar" />
       <ConfirmDialog

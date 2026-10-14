@@ -1,6 +1,6 @@
 /**
- * `Archivadas` (`/varieties/archived`; `varieties.md`, "Archivadas"): a card, "‹ Variedades"
- * and no "+ Nueva venta", listing the archived varieties by name. Each row is marked
+ * `Archivadas` (`/varieties/archived`; `varieties.md`, "Archivadas"): a card (the shell draws
+ * its one back arrow), no "+ Nueva venta", listing the archived varieties by name. Each row is marked
  * "Archivada" in words and has "Restaurar", one tap with no confirmation. A row opens the
  * variety's own page, read-only. With none, a fixed line says so.
  *
@@ -11,13 +11,12 @@
 import { useQuery } from '@tanstack/react-query'
 
 import Boton from '../../components/Boton'
-import BotonLink from '../../components/BotonLink'
 import { NetworkError } from '../../api/client'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import Loading from '../../components/Loading'
 import PaneRowLink from '../../components/PaneRowLink'
 import SinConexion from '../../components/SinConexion'
-import { VARIETIES, VARIETY, pathTo } from '../../routes'
+import { VARIETY, pathTo } from '../../routes'
 import { archivedVarietiesQueryOptions } from './archivedVarieties'
 import { useRestore } from './useRestore'
 import { NO_ARCHIVED_MESSAGE } from './varietiesMessages'
@@ -32,11 +31,6 @@ export default function ArchivedVarieties() {
   return (
     <main className="pantalla variedades">
       <div className="cuerpo">
-        <div className="encabezado__fila">
-          <BotonLink to={VARIETIES} variant="back">
-            ‹ Variedades
-          </BotonLink>
-        </div>
         <h1 className="encabezado__titulo">Archivadas</h1>
         {notice}
         {failure !== null && (failure instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />)}

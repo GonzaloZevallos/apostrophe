@@ -18,6 +18,8 @@ type Children = { children: ReactNode }
 
 const linkWithIcon: Rejected<{ variant: 'link'; icon: 'tacho' } & Children> = true
 const undoWithIcon: Rejected<{ variant: 'undo'; icon: 'tacho' } & Children> = true
+const backRejected: Rejected<{ variant: 'back' } & Children> = true
+const linkBackRejected: RejectedLink<{ to: string; variant: 'back' } & Children> = true
 const backWithIcon: Rejected<{ variant: 'back'; icon: 'atras' } & Children> = true
 const submitWithoutType: Rejected<{ textOnly: 'submit' } & Children> = true
 const submitWithButtonType: Rejected<{ textOnly: 'submit'; type: 'button' } & Children> = true
@@ -44,7 +46,6 @@ const iconAndText: Rejected<{ icon: 'agregar' } & Children> = false
 const secondary: Rejected<{ variant: 'secondary'; icon: 'personaMas' } & Children> = false
 const submit: Rejected<{ textOnly: 'submit'; type: 'submit' } & Children> = false
 const iconOnly: Rejected<{ variant: 'icon'; action: 'delete'; ariaLabel: 'Borrar' }> = false
-const back: Rejected<{ variant: 'back' } & Children> = false
 const row: Rejected<{ variant: 'row' } & Children> = false
 const closeIcon: Rejected<{ variant: 'icon'; action: 'close'; ariaLabel: 'Cerrar' }> = false
 const editIcon: Rejected<{ variant: 'icon'; action: 'edit'; ariaLabel: 'Editar' }> = false
@@ -61,6 +62,8 @@ test('the closed lists are enforced by tsc, not at run time', () => {
   const checks = [
     linkWithIcon,
     undoWithIcon,
+    backRejected,
+    linkBackRejected,
     backWithIcon,
     submitWithoutType,
     submitWithButtonType,
@@ -83,7 +86,6 @@ test('the closed lists are enforced by tsc, not at run time', () => {
     secondary,
     submit,
     iconOnly,
-    back,
     row,
     closeIcon,
     editIcon,

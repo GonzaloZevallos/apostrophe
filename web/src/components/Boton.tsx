@@ -6,8 +6,8 @@
  * - **Icon + text** (`variant` primary, secondary or destructive, with an `icon`): an
  *   action. The icon is decorative (`aria-hidden`), so the accessible name is the word.
  * - **Text only**, and only these kinds: `textOnly="submit"` with `type="submit"` (the
- *   submit of a form or sheet), `link` (enlace), `undo` (Deshacer) and `back`
- *   ("‹ <parent>"). They accept no `icon`. Back is never close.
+ *   submit of a form or sheet), `link` (enlace) and `undo` (Deshacer). They
+ *   accept no `icon`. A back control is not a `Boton` kind: `BackButton` draws it (ADR-0041).
  * - **Icon only** (`variant="icon"`): an obvious action from the closed `ACTION_ICON`
  *   map (`botonVisual.tsx`: delete, search, close, edit, share), with a required `ariaLabel`
  *   (the exact current word, never a new one) and a 44 px target (`.boton-icono`).
@@ -60,7 +60,7 @@ export interface BotonSubmit extends BotonWithText {
 }
 
 export interface BotonTextKind extends BotonWithText {
-  variant: 'link' | 'undo' | 'back'
+  variant: 'link' | 'undo'
   icon?: undefined
   textOnly?: undefined
   type?: 'button'

@@ -5,14 +5,14 @@
  * glyph (`architecture/backControl.ts`).
  *
  * With an `onClick` it is a button (the shell goes back by history); with a `to` it is an
- * in-app link. It looks like the old `Boton variant="back"`: the same class, from
+ * in-app link. It keeps the look the old `Boton variant="back"` had: the same class, from
  * `botonVisual`. `ariaLabel` is for the bare arrow only (Análisis's "Volver"), where there
  * is no parent word to name it.
  */
 
 import type { MouseEvent } from 'react'
 import type { LinkProps } from 'react-router'
-import { botonVisual } from './botonVisual'
+import { botonClass } from './botonVisual'
 import InAppLink from './InAppLink'
 
 /** The glyph every back control starts with. */
@@ -37,15 +37,11 @@ export type BackButtonProps = BackAsButton | BackAsLink
 
 export default function BackButton(props: BackButtonProps) {
   const label = props.title === undefined ? BACK_GLYPH : `${BACK_GLYPH} ${props.title}`
-  const { className, ariaLabel, content } = botonVisual({
-    variant: 'back',
-    children: label,
-    ariaLabel: props.ariaLabel,
-  })
+  const className = botonClass('back')
   if (props.to === undefined) {
     return (
-      <button type="button" className={className} onClick={props.onClick} aria-label={ariaLabel}>
-        {content}
+      <button type="button" className={className} onClick={props.onClick} aria-label={props.ariaLabel}>
+        {label}
       </button>
     )
   }
@@ -56,9 +52,9 @@ export default function BackButton(props: BackButtonProps) {
       state={props.state}
       className={className}
       onClick={props.onClick}
-      aria-label={ariaLabel}
+      aria-label={props.ariaLabel}
     >
-      {content}
+      {label}
     </InAppLink>
   )
 }

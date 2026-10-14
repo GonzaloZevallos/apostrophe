@@ -182,40 +182,12 @@ test("a variety's list holds its withdrawals, told by reason word and minus sign
 })
 
 /** Opens a list the way the seller does, from Variedades by a link, so the entry carries the in-app state. */
-async function openFromVariedades(path: string) {
-  fakeApi()
-  renderAt(VARIETIES_PATH, undefined, { entries: [VARIETIES_PATH], opens: path })
-  await userEvent.click(await screen.findByRole('link', { name: 'Abrir' }))
-}
-
-test("a variety's list goes back by history to where the seller came from", async () => {
-  await openFromVariedades(pathTo(VARIETY_ENTRIES, { id: 3 }))
-
-  await userEvent.click(await screen.findByRole('button', { name: '‹ 24K Gold' }))
-  expect((await screen.findByTestId('where')).textContent).toBe(VARIETIES_PATH)
-})
-
-test('"Todas las entradas" goes back by history to where the seller came from', async () => {
-  await openFromVariedades(STOCK_PATH)
-
-  await userEvent.click(await screen.findByRole('button', { name: /^‹ / }))
-  expect((await screen.findByTestId('where')).textContent).toBe(VARIETIES_PATH)
-})
-
-test("a variety's list with no history goes back to the variety's page", async () => {
+test('it draws no back arrow of its own: the shell draws the one', async () => {
   fakeApi()
   renderAt(pathTo(VARIETY_ENTRIES, { id: 3 }), undefined, { entries: [pathTo(VARIETY_ENTRIES, { id: 3 })] })
 
-  await userEvent.click(await screen.findByRole('button', { name: '‹ 24K Gold' }))
-  expect((await screen.findByTestId('where')).textContent).toBe(pathTo(VARIETY, { id: 3 }))
-})
-
-test('"Todas las entradas" with no history goes back to Variedades', async () => {
-  fakeApi()
-  renderAt(STOCK_PATH, undefined, { entries: [STOCK_PATH] })
-
-  await userEvent.click(await screen.findByRole('button', { name: /^‹ / }))
-  expect((await screen.findByTestId('where')).textContent).toBe(VARIETIES_PATH)
+  expect(await screen.findByRole('heading', { name: 'Entradas' })).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: /^‹/ })).toBeNull()
 })
 
 test('Editar links to the entry form', async () => {

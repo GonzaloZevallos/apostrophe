@@ -1,7 +1,7 @@
 /**
  * `Catalogo` at `/varieties/catalog` (`Catalogo.dc.html`, `CatalogoCompu.dc.html`): today's
  * catalog text, built by the backend alone from today's prices and stock. A detail, so
- * "‹ Variedades" and no "+ Nueva venta". "Cómo se ve en Telegram" comes only from
+ * the shell draws its one back arrow and there is no "+ Nueva venta". "Cómo se ve en Telegram" comes only from
  * `telegramPreview(data.text)` (plan, invariants: "No component splits on `**`").
  * Compartir hands the native share sheet (`share.ts`, the only module naming it) and
  * Copiar copies (`clipboard.ts`, the one path that works over the home network's plain
@@ -35,7 +35,7 @@ import SinConexion from '../components/SinConexion'
 import PinPublish from './PinPublish'
 import { EMPTY_STATE_DETAIL, EMPTY_STATE_TITLE } from './catalogMessages'
 import { telegramPreview } from './telegramPreview'
-import { CATALOG_SECTION_ID, SETTINGS_CATALOG_MESSAGE, VARIETIES, VARIETY, pathTo } from '../routes'
+import { CATALOG_SECTION_ID, SETTINGS_CATALOG_MESSAGE, VARIETY, pathTo } from '../routes'
 
 export const CATALOG_COPIED = 'Catálogo copiado'
 export const COPY_FAILED_MESSAGE = 'No se pudo copiar.'
@@ -114,11 +114,6 @@ export default function Catalogo() {
   return (
     <main className="pantalla">
       <div className="cuerpo">
-        <div className="encabezado__fila">
-          <BotonLink to={VARIETIES} variant="back">
-            ‹ Variedades
-          </BotonLink>
-        </div>
         <h1 className="encabezado__titulo">Catálogo</h1>
 
         {toast !== null && <AvisoExito texto={toast} />}
