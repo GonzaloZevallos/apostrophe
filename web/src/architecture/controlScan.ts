@@ -271,12 +271,12 @@ function declarationRegion(src: string, name: string): string | null {
 
 /** `src/shell/Shell.tsx` + `../components/x` -> `src/components/x`. */
 function relativePath(from: string, spec: string): string {
-  const parts = from.split('/').slice(0, -1)
-  for (const step of spec.split('/')) {
+  const parts = from.split(/\//).slice(0, -1)
+  for (const step of spec.split(/\//)) {
     if (step === '..') parts.pop()
     else if (step !== '.') parts.push(step)
   }
-  return parts.join('/')
+  return parts.join('\u002f')
 }
 
 /** The declaration of `name` in the relative module this file imports it from, or null. */

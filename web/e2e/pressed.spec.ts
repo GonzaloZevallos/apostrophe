@@ -169,15 +169,15 @@ test.describe('on a phone', () => {
 
       await openIn(page, SETTINGS_ACCOUNT, theme)
       await page.evaluate(() => {
-        const row = document.querySelector('.ajustes__item--boton')
-        if (row === null) throw new Error('no .ajustes__item--boton to clone')
+        const row = document.querySelector('button.boton--suave')
+        if (row === null) throw new Error('no button.boton--suave to clone')
         const disabled = row.cloneNode(true) as HTMLButtonElement
         disabled.id = 'prueba-fila-inactiva'
         disabled.disabled = true
         row.parentElement?.append(disabled)
       })
       const inactive = await whilePressed(page, '#prueba-fila-inactiva')
-      expect(inactive.pressed.transform, 'a disabled row stays unscaled').toBe('none')
+      expect(inactive.pressed.transform, 'a disabled button stays unscaled').toBe('none')
       expect(inactive.pressed.boxShadow).toBe(inactive.resting.boxShadow)
       expect(inactive.pressed.fill).toBe(inactive.resting.fill)
 
