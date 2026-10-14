@@ -30,7 +30,7 @@ import { parseMoney, parseSignedGrams } from '../format/parse'
 import type { Variety } from './Variedades'
 import { varietiesByName } from './varieties/varietiesByName'
 import Boton from '../components/Boton'
-import { COST_REQUIRED_HELP, NO_COST_HELP, onHandHelp, perGramPreview } from './stockMessages'
+import { COST_REQUIRED_HELP, NO_COST_HELP, NO_STOCK_HELP, onHandHelp, perGramPreview } from './stockMessages'
 
 export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
 export const COST_REQUIRED = 'Una compra necesita un costo total'
@@ -269,6 +269,27 @@ export default function StockEntryForm({
     return found?.name ?? ''
   })()
 
+  const gramsField = (
+    <label className="campo">
+      <span className="campo__rotulo">Gramos</span>
+      <input
+        className="campo__input"
+        inputMode="decimal"
+        value={grams}
+        onChange={(event) => setGrams(event.target.value)}
+        required
+      />
+    </label>
+  )
+
+  // The Onboarding's variety box says what it holds: nothing yet, or the grams on hand.
+  const initialStockLine =
+    initialStock === undefined || stockQuery.data === undefined
+      ? null
+      : varietyGrams !== null && Number(varietyGrams) > 0
+        ? onHandHelp(formatGrams(varietyGrams))
+        : NO_STOCK_HELP
+
   const dialogs = (
     <>
       {confirmingSave && (
@@ -306,7 +327,12 @@ export default function StockEntryForm({
         {initialStock !== undefined && (
           <div className="campo">
             <span className="campo__rotulo">Variedad</span>
-            <span className="campo__input campo__input--fijo">{initialStock.variety.name}</span>
+            <span className="campo__input campo__input--fijo campo__input--doble">
+              <span>{initialStock.variety.name}</span>
+              {initialStockLine !== null && (
+                <span className="campo__ayuda" data-copy="help">{initialStockLine}</span>
+              )}
+            </span>
           </div>
         )}
         {initialStock === undefined && (
@@ -321,16 +347,17 @@ export default function StockEntryForm({
             />
           </label>
         )}
-        <label className="campo">
-          <span className="campo__rotulo">Gramos</span>
-          <input
-            className="campo__input"
-            inputMode="decimal"
-            value={grams}
-            onChange={(event) => setGrams(event.target.value)}
-            required
-          />
-        </label>
+        {initialStock !== undefined ? (
+          <div className="campo__fila-datos">
+            <div className="campo">
+              <span className="campo__rotulo">Fecha</span>
+              <span className="campo__input campo__input--fijo">{`Hoy ${formatDate(today, today)}`}</span>
+            </div>
+            {gramsField}
+          </div>
+        ) : (
+          gramsField
+        )}
         {initialStock === undefined && (
           <label className="campo">
             <span className="campo__rotulo">Variedad</span>
@@ -403,11 +430,11 @@ export default function StockEntryForm({
           </span>
         )}
         {offline && <SinConexion />}
-        {preview !== null && (
+        {preview !== null && initialStock === undefined && (
           <span className="pie" data-copy="help">{perGramPreview(formatMoney(preview))}</span>
         )}
         <Boton textOnly="submit" type="submit" disabled={sending}>
-          {mode === 'nuevo' ? 'Guardá la entrada' : 'Guardar'}
+          {mode === 'editar' ? 'Guardar' : initialStock !== undefined ? 'Guardá el stock' : 'Guardá la entrada'}
         </Boton>
         {mode === 'editar' && (
           <Boton

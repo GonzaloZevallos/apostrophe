@@ -70,13 +70,22 @@ test('names the variety, draws the Stock inicial chip and the $ 0 hint on the co
   renderStep()
 
   expect(screen.getByText('Mango Bomb')).toBeInTheDocument()
+  expect(screen.getByText('Hoy 03/10')).toBeInTheDocument()
   expect(screen.getByText('Stock inicial')).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Stock inicial' })).not.toBeInTheDocument()
   expect(screen.getByText('Opcional · si no lo cargás, el lote cuesta $ 0')).toBeInTheDocument()
   expect(screen.queryByLabelText('Fecha')).not.toBeInTheDocument()
   expect(screen.queryByLabelText('Nota')).not.toBeInTheDocument()
   expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
-  expect(screen.getAllByRole('textbox')).toHaveLength(2)
+  expect(screen.getByLabelText('Gramos')).toBeInTheDocument()
+  expect(screen.getByLabelText(/^Costo total/)).toBeInTheDocument()
+})
+
+test('says under the variety that it has no stock yet', async () => {
+  stub()
+  renderStep()
+
+  expect(await screen.findByText('Todavía no tiene stock')).toBeInTheDocument()
 })
 
 test('leaves no line about the cost under the button and no "Variedad: …" line', () => {
@@ -93,7 +102,7 @@ test('saves the opening stock of the target dated today through the owner, with 
 
   await userEvent.type(screen.getByLabelText('Gramos'), '500')
   await userEvent.type(screen.getByLabelText(/^Costo total/), '9000')
-  await userEvent.click(screen.getByRole('button', { name: 'Guardá la entrada' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Guardá el stock' }))
 
   expect(await screen.findByRole('button', { name: 'Agregar otra variedad' })).toBeInTheDocument()
   await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/stock/entries', expect.anything()))

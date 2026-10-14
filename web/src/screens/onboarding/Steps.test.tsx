@@ -225,7 +225,7 @@ test('step 2 saves the opening stock of the stock target through the owner, then
   expect(await screen.findByText('Mango Bomb')).toBeInTheDocument()
   expect(screen.getByText('Opcional · si no lo cargás, el lote cuesta $ 0')).toBeInTheDocument()
   await user.type(screen.getByLabelText('Gramos'), '500')
-  await user.click(screen.getByRole('button', { name: 'Guardá la entrada' }))
+  await user.click(screen.getByRole('button', { name: 'Guardá el stock' }))
 
   expect(await screen.findByRole('button', { name: 'Agregar otra variedad' })).toBeInTheDocument()
   expect(bodies).toEqual([

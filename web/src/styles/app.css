@@ -111,6 +111,29 @@ body {
   font-weight: 600;
 }
 
+.campo__input--doble {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  height: auto;
+  min-height: var(--alto-boton);
+  padding-block: 8px;
+}
+
+/* The Onboarding's date (static) beside the narrow grams field. */
+.campo__fila-datos {
+  display: flex;
+  gap: 10px;
+}
+
+.campo__fila-datos > .campo:first-child {
+  flex: 1;
+}
+
+.campo__fila-datos > .campo:last-child {
+  width: 120px;
+}
+
 .campo__error {
   font-size: 13px;
   color: var(--deuda);

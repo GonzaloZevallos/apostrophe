@@ -10,7 +10,7 @@ import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import StockEntryForm, { DATE_IN_FUTURE } from './StockEntryForm'
-import { COST_REQUIRED_HELP, NO_COST_HELP } from './stockMessages'
+import { COST_REQUIRED_HELP, NO_COST_HELP, NO_STOCK_HELP } from './stockMessages'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -75,7 +75,7 @@ test('as an initial stock it posts the opening stock and offers no origin choice
   expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
 
   await userEvent.type(screen.getByLabelText('Gramos'), '30')
-  await userEvent.click(screen.getByRole('button', { name: 'Guardá la entrada' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Guardá el stock' }))
 
   await waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1))
   const post = fetchMock.mock.calls.find(([url]) => String(url) === '/stock/entries')
@@ -104,7 +104,7 @@ test('the owner refuses the entry inline and the form does not report it saved',
   renderForm(onSaved)
 
   await userEvent.type(screen.getByLabelText('Gramos'), '30')
-  await userEvent.click(screen.getByRole('button', { name: 'Guardá la entrada' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Guardá el stock' }))
 
   expect(await screen.findByText('La fecha no puede ser futura')).toBeInTheDocument()
   expect(onSaved).not.toHaveBeenCalled()
@@ -146,7 +146,7 @@ test('as an initial stock the post carries opening_stock, the today prop and no 
 
   await userEvent.type(screen.getByLabelText('Gramos'), '12,5')
   await userEvent.type(screen.getByLabelText(/^Costo total/), '4000')
-  await userEvent.click(screen.getByRole('button', { name: 'Guardá la entrada' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Guardá el stock' }))
 
   await waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1))
   const post = fetchMock.mock.calls.find(([url]) => String(url) === '/stock/entries')
@@ -176,7 +176,7 @@ test('as an initial stock a date_in_future refusal shows in the form alert and k
 
   await userEvent.type(screen.getByLabelText('Gramos'), '30')
   await userEvent.type(screen.getByLabelText(/^Costo total/), '900')
-  await userEvent.click(screen.getByRole('button', { name: 'Guardá la entrada' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Guardá el stock' }))
 
   const alert = await screen.findByRole('alert')
   expect(alert).toHaveTextContent(DATE_IN_FUTURE)
@@ -184,4 +184,21 @@ test('as an initial stock a date_in_future refusal shows in the form alert and k
   expect(screen.getByLabelText('Gramos')).toHaveValue('30')
   expect(screen.getByLabelText(/^Costo total/)).toHaveValue('900')
   expect(onSaved).not.toHaveBeenCalled()
+})
+
+test('as an initial stock the cost-per-gram preview is not drawn and the stock line is', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: string | URL | Request) => {
+      const url = typeof input === 'string' ? input : input.toString()
+      if (url === '/varieties') return Promise.resolve(jsonResponse(200, VARIETIES))
+      return Promise.resolve(jsonResponse(200, STOCK_VIEW))
+    }),
+  )
+  renderForm(vi.fn())
+
+  expect(await screen.findByText(NO_STOCK_HELP)).toBeInTheDocument()
+  await userEvent.type(screen.getByLabelText('Gramos'), '30')
+  await userEvent.type(screen.getByLabelText(/^Costo total/), '900')
+  expect(screen.queryByText(/Te queda en/)).not.toBeInTheDocument()
 })
