@@ -14,10 +14,9 @@ import ErrorGenerico from '../../components/ErrorGenerico'
 import Loading from '../../components/Loading'
 import SinConexion from '../../components/SinConexion'
 import { IntegrationsForm, type PinnedCatalog } from '../settings/IntegrationsGroup'
+import { PUBLISH_LINE } from './onboardingMessages'
 import { useOnboardingWrite } from './useOnboardingWrite'
 import type { StepBodyProps } from './stepBodies'
-
-export const PUBLISH_LINE = 'Cuando quieras, publicalo desde Variedades → Mandar catálogo'
 
 export default function BotStep({ progress, onDirtyChange, onProgress }: StepBodyProps) {
   const query = useQuery({
