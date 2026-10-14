@@ -12,6 +12,8 @@
  *    link/undo/back (`.boton--enlace`), a row (`.boton--fila`), an option control (a
  *    tab, radio, switch or checkbox role, or a class in `options.optionClasses`), or an
  *    answer inside a `dialog` or `alertdialog`;
+ *    A tappable notice (`.boton-aviso`) is also known, but must be named by its visible
+ *    text, with no `aria-label` of its own;
  * 5. two entries inside one `[data-menu]` share an icon (a drawing, compared by its
  *    markup);
  * 6. an element marked `data-copy="<kind>"` is longer than `options.limits[<kind>]`, its
@@ -56,6 +58,9 @@ function problemsOf(control: Element, options: RuleOptions): string[] {
   const hasText = visibleText(control) !== ''
   const svgs = Array.from(control.querySelectorAll('svg'))
   if (accessibleName(control) === '') problems.push(`${describe(control)} has no accessible name`)
+  if (control.classList.contains('boton-aviso') && accessibleName(control) !== visibleText(control)) {
+    problems.push(`${describe(control)} notice must be named by its visible text`)
+  }
   if (hasText) {
     for (const svg of svgs) {
       if (svg.getAttribute('aria-hidden') !== 'true') {
@@ -67,6 +72,7 @@ function problemsOf(control: Element, options: RuleOptions): string[] {
       control.getAttribute('type') === 'submit' ||
       control.classList.contains('boton--enlace') ||
       control.classList.contains('boton--fila') ||
+      control.classList.contains('boton-aviso') ||
       OPTION_ROLES.includes(role) ||
       (options.optionClasses ?? []).some((name) => control.classList.contains(name)) ||
       isAnswer(control)
