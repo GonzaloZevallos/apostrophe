@@ -37,9 +37,9 @@ test('a new business goes from the invitation to Nueva venta from "Listo", with 
   await priceAVariety(page, 'Rosa')
 
   await expect(page.getByRole('heading', { name: 'Cargá lo que tenés hoy' })).toBeVisible()
-  await expect(page.getByText('Variedad: Rosa')).toBeVisible()
+  await expect(page.getByText('Rosa', { exact: true })).toBeVisible()
   await page.getByLabel('Gramos').fill('500')
-  await page.getByRole('button', { name: 'Guardá la entrada' }).click()
+  await page.getByRole('button', { name: 'Guardá el stock' }).click()
   await page.getByRole('button', { name: 'Seguir' }).click()
 
   await expect(page.getByRole('heading', { name: 'Cómo sale tu catálogo' })).toBeVisible()
@@ -80,9 +80,9 @@ test('the catalog message saved in step 3 reads the same in Configuración', asy
   await signUpNewBusiness(page, { stayInOnboarding: true })
   await priceAVariety(page, 'Jazmín')
   await expect(page.getByRole('heading', { name: 'Cargá lo que tenés hoy' })).toBeVisible()
-  await expect(page.getByText('Variedad: Jazmín')).toBeVisible()
+  await expect(page.getByText('Jazmín', { exact: true })).toBeVisible()
   await page.getByLabel('Gramos').fill('300')
-  await page.getByRole('button', { name: 'Guardá la entrada' }).click()
+  await page.getByRole('button', { name: 'Guardá el stock' }).click()
   await page.getByRole('button', { name: 'Seguir' }).click()
 
   await expect(page.getByRole('heading', { name: 'Cómo sale tu catálogo' })).toBeVisible()
