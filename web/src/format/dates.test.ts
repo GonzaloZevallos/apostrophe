@@ -4,6 +4,7 @@ import {
   formatDateLong,
   formatDateShort,
   formatMonthLong,
+  chipDate,
   maxSaleDate,
   monthRange,
   parseMonth,
@@ -46,6 +47,18 @@ describe('formatDateLong', () => {
 describe('sinceWhen', () => {
   test('wraps formatDate for a price\'s "Rige desde"', () => {
     expect(sinceWhen('2026-09-12', '2026-10-02')).toBe('desde el 12/09')
+  })
+})
+
+describe('chipDate', () => {
+  test('reads "Hoy dd/mm" for today and "dd/mm" for another day of the year', () => {
+    expect(chipDate('2026-10-05', '2026-10-05')).toBe('Hoy 05/10')
+    expect(chipDate('2026-10-12', '2026-10-05')).toBe('12/10')
+    expect(chipDate('2026-09-30', '2026-10-05')).toBe('30/09')
+  })
+
+  test('keeps the year of a date in another year, so the chip never lies', () => {
+    expect(chipDate('2027-01-03', '2026-10-05')).toBe('03/01/2027')
   })
 })
 

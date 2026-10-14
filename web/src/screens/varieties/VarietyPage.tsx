@@ -18,7 +18,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { useLocation, useNavigate, useOutletContext } from 'react-router'
+import { type Blocker, useLocation, useNavigate, useOutletContext } from 'react-router'
 import { ApiError, NetworkError, get } from '../../api/client'
 import { catalogQueryOptions } from '../../api/catalog'
 import { keys } from '../../api/keys'
@@ -68,17 +68,45 @@ function Card({ children }: { children: React.ReactNode }) {
   )
 }
 
-export default function VarietyPage({ varietyId }: { varietyId: number }) {
+/** What the page needs of a leave guard: the router's blocker, `disarm`, and how a form tells it
+ * something was typed. */
+interface PageGuard {
+  blocker: Blocker
+  disarm: () => void
+  onDirtyChange: (dirty: boolean) => void
+}
+
+/** The guard of a page that is only a backdrop (under `PriceNew`'s modal): it never has a form
+ * open, and must not register a blocker of its own, because the router consults only the last
+ * blocker registered and a backdrop mounting late would silence the modal's. */
+const NO_GUARD: PageGuard = {
+  blocker: { state: 'unblocked', reset: undefined, proceed: undefined, location: undefined },
+  disarm: () => undefined,
+  onDirtyChange: () => undefined,
+}
+
+/** `background`: the page is drawn beneath `PriceNew`'s modal on a computer. It owns no leave
+ * guard then, so the modal's is the only one in the router. */
+export default function VarietyPage({ varietyId, background = false }: { varietyId: number; background?: boolean }) {
+  return background ? <VarietyPageView varietyId={varietyId} guard={NO_GUARD} /> : <GuardedVarietyPage varietyId={varietyId} />
+}
+
+function GuardedVarietyPage({ varietyId }: { varietyId: number }) {
+  const [dirty, setDirty] = useState(false)
+  const { blocker, disarm } = useLeaveGuard(dirty)
+  const onDirtyChange = useCallback((value: boolean) => setDirty(value), [])
+  return <VarietyPageView varietyId={varietyId} guard={{ blocker, disarm, onDirtyChange }} />
+}
+
+function VarietyPageView({ varietyId, guard }: { varietyId: number; guard: PageGuard }) {
   const id = String(varietyId)
   const me = useOutletContext<Me>()
   const location = useLocation()
   const navigate = useNavigate()
   const flash = useFlash()
   const openForm = useOpenForm()
-  const [dirty, setDirty] = useState(false)
   const [gone, setGone] = useState(false)
-  const { blocker, disarm } = useLeaveGuard(dirty)
-  const onDirtyChange = useCallback((value: boolean) => setDirty(value), [])
+  const { blocker, disarm, onDirtyChange } = guard
 
   const varietyQuery = useQuery({ queryKey: keys.variety(id), queryFn: () => get<VarietyDetail & Variety>(`/varieties/${id}`) })
   const pricesQuery = useQuery({

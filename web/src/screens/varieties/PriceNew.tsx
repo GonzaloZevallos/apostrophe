@@ -4,6 +4,12 @@
  * does: "Cerrar" and a save go back by history, or to the variety's page when there is no
  * history (a direct link); a save arms the saved-price toast (`PRICE_SAVED`) for the screen history returns
  * to; leaving with something typed asks first ("¿Descartás el precio?").
+ *
+ * On a computer the same tree draws the design's modal (`PrecioNuevoCompu`) over the
+ * variety's page, which stays beneath it, inert and hidden from assistive technology. The
+ * modal's only exits are "Cerrar", history back and a save: no Escape handler and no
+ * clickable backdrop (the scrim is CSS). The tree is the same on both viewports, so a
+ * viewport flip keeps what was typed.
  */
 
 import { useCallback, useState } from 'react'
@@ -25,12 +31,15 @@ import { useLeaveGuard } from '../../components/useLeaveGuard'
 import { useFlash } from '../../flash/useFlash'
 import { VARIETIES, VARIETY, pathTo } from '../../routes'
 import type { Variety } from '../Variedades'
+import { useViewport } from '../../shell/useViewport'
 import PriceForm from './PriceForm'
+import VarietyPage from './VarietyPage'
 
 export default function PriceNew({ varietyId }: { varietyId: number }) {
   const me = useOutletContext<Me>()
   const leave = useBackOr(pathTo(VARIETY, { id: varietyId }))
   const flash = useFlash()
+  const computer = useViewport() === 'computer'
   const [dirty, setDirty] = useState(false)
   const [gone, setGone] = useState(false)
   const { blocker, disarm } = useLeaveGuard(dirty)
@@ -70,21 +79,33 @@ export default function PriceNew({ varietyId }: { varietyId: number }) {
   }
 
   return (
-    <main className="pantalla">
-      <div className="cuerpo">
-        <PriceForm
-          varietyId={varietyId}
-          today={me.today}
-          settings={settingsQuery.data}
-          onDone={onDone}
-          onCancel={leave}
-          onDirtyChange={onDirtyChange}
-          onGone={() => {
-            disarm()
-            setGone(true)
-          }}
-        />
-      </div>
+    <>
+      {computer && (
+        <div className="precio-nuevo__pagina" inert aria-hidden="true">
+          <VarietyPage varietyId={varietyId} background />
+        </div>
+      )}
+      <main className={computer ? 'pantalla precio-nuevo' : 'pantalla'}>
+        <div
+          className="cuerpo"
+          role={computer ? 'dialog' : undefined}
+          aria-modal={computer ? true : undefined}
+          aria-label={computer ? 'Nuevo precio' : undefined}
+        >
+          <PriceForm
+            varietyId={varietyId}
+            today={me.today}
+            settings={settingsQuery.data}
+            onDone={onDone}
+            onCancel={leave}
+            onDirtyChange={onDirtyChange}
+            onGone={() => {
+              disarm()
+              setGone(true)
+            }}
+          />
+        </div>
+      </main>
       {blocker.state === 'blocked' && (
         <LeaveConfirm
           blocker={blocker}
@@ -94,6 +115,6 @@ export default function PriceNew({ varietyId }: { varietyId: number }) {
           discardLabel="Sí, descartalo"
         />
       )}
-    </main>
+    </>
   )
 }

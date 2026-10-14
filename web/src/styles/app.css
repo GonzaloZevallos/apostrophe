@@ -3425,9 +3425,10 @@ body {
   background: var(--superficie);
 }
 
-/* VariedadNuevaCompu: on a computer the form is the design's modal over the panes. */
+/* VariedadNuevaCompu, PrecioNuevoCompu: on a computer the form is the design's modal over the panes. */
 @media (min-width: 900px) {
-  .variedad-nueva {
+  .variedad-nueva,
+  .precio-nuevo {
     position: fixed;
     inset: 0;
     z-index: 20;
@@ -3437,11 +3438,13 @@ body {
     padding-top: calc(var(--inset-arriba) + 80px);
   }
 
-  .variedad-nueva .pie {
+  .variedad-nueva .pie,
+  .precio-nuevo .pie {
     text-align: left;
   }
 
-  .variedad-nueva::before {
+  .variedad-nueva::before,
+  .precio-nuevo::before {
     content: '';
     position: absolute;
     inset: 0;
@@ -3449,7 +3452,8 @@ body {
     opacity: 0.28;
   }
 
-  .variedad-nueva .cuerpo {
+  .variedad-nueva .cuerpo,
+  .precio-nuevo .cuerpo {
     position: relative;
     flex: 0 0 auto;
     align-self: flex-start;
@@ -3462,6 +3466,88 @@ body {
     border-radius: var(--radio-panel-grande);
     padding: var(--espacio-xxl);
   }
+}
+
+/* PrecioNuevoCompu: the price modal's card casts the design's shadow. */
+@media (min-width: 900px) {
+  .precio-nuevo .cuerpo {
+    box-shadow: 0 24px 48px color-mix(in srgb, var(--tinta) 22%, transparent);
+  }
+}
+
+/* PrecioNuevo: "Rige desde" is a chip. The date input is the real control, laid over the chip,
+ * invisible and 44 px tall at least, so a tap opens the browser's calendar. */
+.campo--fecha {
+  position: relative;
+}
+
+.campo--fecha > label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fecha-chip__input {
+  position: relative;
+  z-index: 1;
+  height: var(--alto-boton);
+  min-height: var(--alto-tocable);
+  box-sizing: border-box;
+  width: 100%;
+  opacity: 0;
+  font: inherit;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.fecha-chip {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(20px + 6px);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: var(--alto-boton);
+  box-sizing: border-box;
+  padding: 0 16px;
+  border-radius: var(--radio-campo);
+  background: var(--superficie);
+  color: var(--tinta);
+  font-size: 17px;
+  font-weight: 500;
+  pointer-events: none;
+}
+
+.campo--fecha:focus-within .fecha-chip {
+  outline: 2px solid var(--tinta);
+  outline-offset: 2px;
+}
+
+.campo--fecha .campo__rotulo,
+.campo--monto .campo__rotulo {
+  line-height: 20px;
+}
+
+/* PrecioNuevo: the "$" of an amount sits inside the field, outside the label. */
+.campo--monto {
+  position: relative;
+}
+
+.campo--monto .campo__input {
+  padding-left: 34px;
+}
+
+.campo__prefijo {
+  position: absolute;
+  left: 16px;
+  top: calc(20px + 6px);
+  display: flex;
+  align-items: center;
+  height: var(--alto-boton);
+  color: var(--tinta2);
+  font-size: 17px;
+  pointer-events: none;
 }
 
 /* ===== primitivas-telefono ===== */

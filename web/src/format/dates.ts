@@ -52,6 +52,11 @@ export function sinceWhen(iso: string, todayIso: string): string {
   return `desde el ${formatDate(iso, todayIso)}`
 }
 
+/** The "Rige desde" chip: `"Hoy 05/10"` when the day is today, `"12/10"` otherwise. */
+export function chipDate(iso: string, todayIso: string): string {
+  return iso === todayIso ? `Hoy ${formatDateShort(iso)}` : formatDate(iso, todayIso)
+}
+
 const MONTH_NAMES = [
   'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',

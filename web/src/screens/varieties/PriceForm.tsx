@@ -7,7 +7,7 @@
  * "Precio de lista", a grams refusal under "Mínimo en gramos".
  */
 
-import { type FormEvent, useEffect, useState } from 'react'
+import { type FormEvent, type MouseEvent, useEffect, useId, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { ApiError, NetworkError, UNKNOWN_CODE, post } from '../../api/client'
 import { invalidateResource } from '../../api/keys'
@@ -20,7 +20,9 @@ import {
 } from '../../api/refusals'
 import type { SuccessToast } from '../../components/AvisoExito'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
+import Icono from '../../components/Icono'
 import SinConexion from '../../components/SinConexion'
+import { chipDate } from '../../format/dates'
 import { parseGrams, parseMoney } from '../../format/parse'
 import { GENERIC_REFUSAL_MESSAGE } from '../Variedades'
 import { GRAMS_INVALID_MESSAGE } from '../stockMessages'
@@ -67,6 +69,68 @@ function FieldError({ message }: { message: string | undefined }) {
     <span className="campo__error" role="alert">
       {message}
     </span>
+  )
+}
+
+/** The chip's input: on a computer the browser opens its calendar on a click on the input,
+ * when it can; a browser that refuses leaves the input to its own behaviour. */
+function openPicker(event: MouseEvent<HTMLInputElement>): void {
+  const input = event.currentTarget
+  if (typeof input.showPicker !== 'function') return
+  try {
+    input.showPicker()
+  } catch {
+    // The browser would not open its calendar here: the input still works by itself.
+  }
+}
+
+/** "Rige desde" as the design's chip: the input is the real control, laid over the chip by
+ * CSS and transparent; the chip only shows the date ("Hoy 05/10", else "05/10"). */
+function EffectiveFromField({
+  value,
+  today,
+  error,
+  onChange,
+}: {
+  value: string
+  today: string
+  error: string | undefined
+  onChange: (value: string) => void
+}) {
+  const chipId = useId()
+  return (
+    <div className="campo campo--fecha">
+      <label>
+        <span className="campo__rotulo">Rige desde</span>
+        <input
+          className="fecha-chip__input"
+          type="date"
+          value={value}
+          aria-describedby={chipId}
+          onChange={(event) => onChange(event.target.value)}
+          onClick={openPicker}
+          required
+        />
+        <FieldError message={error} />
+      </label>
+      <span id={chipId} className="fecha-chip" aria-hidden="true">
+        <Icono nombre="calendario" />
+        {value === '' ? '' : chipDate(value, today)}
+      </span>
+    </div>
+  )
+}
+
+/** A money field: its "$" is presentation, outside the label and hidden from assistive
+ * technology; CSS draws it inside the field. What is typed stays whole pesos. */
+function AmountField({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="campo--monto">
+      {children}
+      <span className="campo__prefijo" aria-hidden="true">
+        $
+      </span>
+    </div>
   )
 }
 
@@ -156,43 +220,42 @@ export default function PriceForm({
         {bare ? (
           <FieldError message={errors.effectiveFrom} />
         ) : (
+          <EffectiveFromField
+            value={effectiveFrom}
+            today={today}
+            error={errors.effectiveFrom}
+            onChange={setEffectiveFrom}
+          />
+        )}
+        <AmountField>
           <label className="campo">
-            <span className="campo__rotulo">Rige desde</span>
+            <span className="campo__rotulo">Precio de lista</span>
             <input
-              className="campo__input"
-              type="date"
-              value={effectiveFrom}
-              onChange={(event) => setEffectiveFrom(event.target.value)}
+              className="campo__input campo__input--monto"
+              inputMode="numeric"
+              value={listPrice}
+              onChange={(event) => setListPrice(event.target.value)}
               required
             />
-            <FieldError message={errors.effectiveFrom} />
+            <span className="campo__ayuda" data-copy="help">{PRICE_PER_GRAM_HELP}</span>
+            <FieldError message={errors.listPrice} />
           </label>
-        )}
-        <label className="campo">
-          <span className="campo__rotulo">Precio de lista</span>
-          <input
-            className="campo__input campo__input--monto"
-            inputMode="numeric"
-            value={listPrice}
-            onChange={(event) => setListPrice(event.target.value)}
-            required
-          />
-          <span className="campo__ayuda" data-copy="help">{PRICE_PER_GRAM_HELP}</span>
-          <FieldError message={errors.listPrice} />
-        </label>
+        </AmountField>
         {settings.is_bulk_pricing && (
           <>
-          <label className="campo">
-            <span className="campo__rotulo">Precio por cantidad</span>
-            <input
-              className="campo__input"
-              inputMode="numeric"
-              value={bulkPrice}
-              onChange={(event) => setBulkPrice(event.target.value)}
-            />
-            <span className="campo__ayuda" data-copy="help">{PRICE_DISCOUNT_HELP}</span>
-            <FieldError message={errors.bulkPrice} />
-          </label>
+          <AmountField>
+            <label className="campo">
+              <span className="campo__rotulo">Precio por cantidad</span>
+              <input
+                className="campo__input"
+                inputMode="numeric"
+                value={bulkPrice}
+                onChange={(event) => setBulkPrice(event.target.value)}
+              />
+              <span className="campo__ayuda" data-copy="help">{PRICE_DISCOUNT_HELP}</span>
+              <FieldError message={errors.bulkPrice} />
+            </label>
+          </AmountField>
           <label className="campo">
             <span className="campo__rotulo">Mínimo en gramos</span>
             <input
@@ -207,17 +270,19 @@ export default function PriceForm({
           </>
         )}
         {settings.is_vip_customers && (
-          <label className="campo">
-            <span className="campo__rotulo">Precio VIP</span>
-            <input
-              className="campo__input"
-              inputMode="numeric"
-              value={vipPrice}
-              onChange={(event) => setVipPrice(event.target.value)}
-            />
-            <span className="campo__ayuda" data-copy="help">{PRICE_DISCOUNT_HELP}</span>
-            <FieldError message={errors.vipPrice} />
-          </label>
+          <AmountField>
+            <label className="campo">
+              <span className="campo__rotulo">Precio VIP</span>
+              <input
+                className="campo__input"
+                inputMode="numeric"
+                value={vipPrice}
+                onChange={(event) => setVipPrice(event.target.value)}
+              />
+              <span className="campo__ayuda" data-copy="help">{PRICE_DISCOUNT_HELP}</span>
+              <FieldError message={errors.vipPrice} />
+            </label>
+          </AmountField>
         )}
         <FieldError message={errors.form} />
         {offline && <SinConexion />}
