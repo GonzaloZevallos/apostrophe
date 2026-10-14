@@ -6,7 +6,7 @@ proven to reach every table the schema holds and nothing of the other business.
 
 from __future__ import annotations
 
-from datetime import date, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any, cast
 
@@ -107,14 +107,14 @@ def app(file_engine: Engine) -> FastAPI:
 
 @pytest.fixture
 def leaving_token(app: FastAPI, file_engine: Engine) -> str:
-    clock = MovableClock(NOW)
+    clock = MovableClock(datetime.now(UTC))  # the app runs on the real clock
     with TestClient(app) as client:
         return open_business(client, file_engine, clock, "Leaving Business", "leaving@example.com")
 
 
 @pytest.fixture
 def staying_token(app: FastAPI, file_engine: Engine, leaving_token: str) -> str:
-    clock = MovableClock(NOW)
+    clock = MovableClock(datetime.now(UTC))  # the app runs on the real clock
     with TestClient(app) as client:
         return open_business(client, file_engine, clock, "Staying Business", "staying@example.com")
 
@@ -134,18 +134,19 @@ def _seed_join_invitations(client: TestClient, engine: Engine, business_id: int)
     """A pending, a used and an expired join invitation for one business (round-3
     Q1's three statuses), so the delete is proven to sweep all of them, whatever their
     status."""
-    _issue_join_invitation(engine, business_id, NOW)  # left pending, never accepted.
+    today = datetime.now(UTC)  # the app under test runs on the real clock.
+    _issue_join_invitation(engine, business_id, today)  # left pending, never accepted.
 
-    used_token = _issue_join_invitation(engine, business_id, NOW)
+    used_token = _issue_join_invitation(engine, business_id, today)
     accepted = client.post(
         f"/invitations/{used_token}/accept",
         json={"email": "partner@example.com", "password": PASSWORD},
     )
     assert accepted.status_code == 201, accepted.text
 
-    # Issued well before its 7-day lifetime, so it is already expired as of NOW,
+    # Issued well before its 7-day lifetime, so it is already expired as of today,
     # without moving any clock.
-    _issue_join_invitation(engine, business_id, NOW - timedelta(days=30))
+    _issue_join_invitation(engine, business_id, today - timedelta(days=30))
 
 
 def _seed_withdrawal(client: TestClient, variety_id: int) -> None:
