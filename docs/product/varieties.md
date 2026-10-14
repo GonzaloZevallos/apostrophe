@@ -91,6 +91,9 @@ Success criteria:
     - With Precio por cantidad off, no bulk price or bulk minimum shows in the price form or on the variety's page.
     - With Clientes VIP off, no VIP price shows.
     - Switched back on, every stored bulk and VIP price shows again.
+16. **The price form looks as designed**: Nuevo precio matches `PrecioNuevo` on the phone
+    and `PrecioNuevoCompu` on a computer: a modal over the variety's page on a computer,
+    "$" on every amount field, and "Rige desde" as the "Hoy dd/mm" chip.
 
 ## Behaviour
 
@@ -190,7 +193,8 @@ Success criteria:
   `/varieties/archived` (the Archivadas card). An archived variety's page is the same
   `/varieties/{low}`, read-only.
 - A reload on any of them opens the screen, never the API's answer (ADR-0024 and
-  ADR-0030 govern paths shared with the API).
+  ADR-0030 govern paths shared with the API). On a computer, a reload of
+  `/varieties/{low}/prices/new` opens the price form's modal over that variety's page.
 - Old paths (`/variedades`, `/mi-stock`, `/mi-stock/nueva-entrada`,
   `/mi-stock/entradas/{id}`, `/catalogo` and every other former Stock, Variedades or
   Catálogo path) redirect permanently (navigation.md).
@@ -285,7 +289,25 @@ Success criteria:
 - **The price entry form** ("Nuevo precio"):
   - it holds the effective date and the list price;
   - it adds the bulk price and bulk minimum only while Precio por cantidad is on, and "Precio VIP" only while Clientes VIP is on, each optional;
-  - it says nothing about a rule that is switched off.
+  - it says nothing about a rule that is switched off;
+  - **it looks as its design draws it**: `PrecioNuevo` on the phone and `PrecioNuevoCompu`
+    on a computer;
+  - **on a computer it is a modal**, centred over the variety's page, which stays dimmed
+    behind it, with the title "Nuevo precio" and "Cerrar". It is not a page of its own.
+    It is still a form under navigation.md's chrome rule: no "+ Nueva venta", a
+    confirmation when leaving with something typed, an untouched one closing at once, and
+    with no history back goes to the variety's page;
+  - **every amount field** ("Precio x g", "Precio por cantidad", "Precio VIP") shows a
+    "$" prefix inside the field, as the design draws it (e.g. "$ 12.000"). The prefix is
+    never part of what is typed or stored: amounts stay whole pesos;
+  - **"Rige desde" is a chip**, with the calendar icon, reading "Hoy dd/mm" by default.
+    Tapping it lets the seller choose another date, which the chip then shows as dd/mm.
+    Any effective date stays allowed, as before; the chip changes only how it is chosen
+    and shown. A bare native date field in its place is a defect;
+  - inputs are at least 16 px and controls at least 44 px tall, on the phone and in the
+    modal;
+  - on success, the toast "Precio guardado", and the form closes back to the variety's
+    page.
 - **One removal action**, worked out from history when the page is read:
   - with no history: "Eliminar variedad", through a destructive ConfirmDialog, then the
     toast "Variedad eliminada" and back to Variedades;
@@ -359,6 +381,16 @@ Success criteria:
   - No refusal contains the amount.
 - **Switched-off rules store nothing (criterion 15)**: a price entry sent with bulk or VIP values while that rule is off stores none of them; earlier entries' values are unchanged.
 - **Switches on screen (criterion 15)**: front tests show the price form, the Precios section and the full history with no bulk fields while Precio por cantidad is off and no VIP price while Clientes VIP is off, and every stored value back once switched on.
+- **Price form as designed (criterion 16)**: front tests show:
+  - on a computer viewport, Nuevo precio opens as a modal over the variety's page (which
+    stays rendered behind it), with "Cerrar" and no "+ Nueva venta"; a reload of
+    `/varieties/{low}/prices/new` opens the same modal over that variety's page;
+  - every amount field shows the "$" prefix, and what is sent is the whole-peso amount
+    without it;
+  - "Rige desde" reads "Hoy dd/mm" by default, and choosing another date shows it as
+    dd/mm and records the entry from that date;
+  - the discard confirmation, the untouched close and "Precio guardado" work in the modal
+    as on the phone.
 - **No curl (criterion 4)**: the end-to-end front run adds a variety, adds a price from its
   page (with a VIP price when Clientes VIP is on), renames the variety, deletes a price
   entry, sets a low-stock threshold through "Editar", turns it off and on again through the
@@ -436,10 +468,11 @@ Success criteria:
   included, is in the sweep and the gated-route test; after a full front run, the console
   and browser storage hold no names or amounts, and no refusal or toast carries a name or
   an amount.
-- **Design**: `scripts/design/compare.sh` runs before and after for the list, the page,
-  Archivadas and the archived page, phone and computer, both themes, attached to the PR
-  and judged by eye. The PR lists the two agreed departures from the drawing (the
-  "Editar" forms of Aviso de stock bajo and En el catálogo).
+- **Design (criteria 14, 16)**: `scripts/design/compare.sh` runs before and after for the
+  list, the page, Archivadas, the archived page and the price form (Nuevo precio), phone
+  and computer, both themes, attached to the PR and judged by eye. The PR lists the two
+  agreed departures from the drawing (the "Editar" forms of Aviso de stock bajo and En el
+  catálogo); the price form has none.
 - **Speed**: Variedades answers in under 300 ms with a few dozen varieties.
 
 ## Out of scope
@@ -460,3 +493,5 @@ Success criteria:
 - Editing a price entry, its VIP price included (ADR-0003).
 - Copying a hidden rule's prices forward onto a new entry.
 - Other VIP rules (a percent off list); price promotions by date.
+- Limiting the price entry's effective date: the chip changes how a date is chosen, not
+  which dates are allowed.
