@@ -57,8 +57,8 @@ describe('chipDate', () => {
     expect(chipDate('2026-09-30', '2026-10-05')).toBe('30/09')
   })
 
-  test('keeps the year of a date in another year, so the chip never lies', () => {
-    expect(chipDate('2027-01-03', '2026-10-05')).toBe('03/01/2027')
+  test('is always day and month, whatever the year', () => {
+    expect(chipDate('2027-01-03', '2026-10-05')).toBe('03/01')
   })
 })
 

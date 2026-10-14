@@ -3470,6 +3470,11 @@ body {
 
 /* PrecioNuevoCompu: the price modal's card casts the design's shadow. */
 @media (min-width: 900px) {
+  /* The overlay lets the variety page and the list show through, dimmed by the scrim. */
+  .precio-nuevo {
+    background: transparent;
+  }
+
   .precio-nuevo .cuerpo {
     box-shadow: 0 24px 48px color-mix(in srgb, var(--tinta) 22%, transparent);
   }

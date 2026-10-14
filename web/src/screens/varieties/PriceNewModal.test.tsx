@@ -8,7 +8,11 @@
 
 import { act, fireEvent, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { isValidElement } from 'react'
+import { matchRoutes } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
+import { router as appRouter } from '../../router'
+import VarietiesLayout from './VarietiesLayout'
 import { VARIETY, VARIETY_PRICE_NEW, pathTo } from '../../routes'
 import { api, jsonResponse, renderVarieties, writes, type FetchImpl } from './renderVarieties'
 
@@ -270,4 +274,11 @@ test('on a computer, a network error says it has no connection, with no dialog',
 
   expect(await screen.findByText(/conexión/i)).toBeInTheDocument()
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+})
+
+test('in the app\'s route table the price route is a child of the varieties layout, so the list stays on the left', () => {
+  const matches = matchRoutes(appRouter.routes, NEW_PATH) ?? []
+  const layout = matches.at(-2)?.route.element
+
+  expect(isValidElement(layout) && layout.type === VarietiesLayout).toBe(true)
 })
