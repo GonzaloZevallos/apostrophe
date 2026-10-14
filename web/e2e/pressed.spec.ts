@@ -22,6 +22,7 @@ import {
   SETTINGS,
   SETTINGS_ACCOUNT,
   SETTINGS_APPEARANCE,
+  SETTINGS_PRICES,
   VARIETIES,
 } from '../src/routes.js'
 import { EXEMPT } from '../src/architecture/pressedExempt.js'
@@ -31,6 +32,7 @@ import type { Page } from '@playwright/test'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
+import { whilePressed, type Look } from './helpers/pressed.js'
 
 const PHONE = { width: 390, height: 844 }
 const COMPUTER = { width: 1280, height: 920 }
@@ -39,65 +41,26 @@ const CONTROLS = 'button, a[href], [role=button], [role=tab], [role=radio], [rol
 const EXEMPT_CLASSES = EXEMPT.flatMap((entry) => entry.classes)
 const THEMES = ['claro', 'oscuro'] as const
 
-interface Look {
-  transform: string
-  boxShadow: string
-  /** The element's own fill, or the first non-transparent ancestor's when its own is transparent. */
-  fill: string
-}
-
-interface Probe {
-  look: Look
-  x: number
-  y: number
-  covered: boolean
-}
-
-/**
- * One round trip: the first match of `selector`, optionally scrolled to the centre of the
- * view, with its transform, ring and effective resting fill, where a press on it would land,
- * and whether something else covers that point.
- */
-async function probe(page: Page, selector: string, scroll: boolean): Promise<Probe> {
-  return page.locator(selector).first().evaluate((element, scrollFirst) => {
-    if (scrollFirst) element.scrollIntoView({ block: 'center', inline: 'center' })
-    const { transform, boxShadow } = getComputedStyle(element)
-    let fill = 'rgba(0, 0, 0, 0)'
-    for (let node: Element | null = element; node !== null; node = node.parentElement) {
-      const own = getComputedStyle(node).backgroundColor
-      if (own !== 'rgba(0, 0, 0, 0)' && own !== 'transparent') {
-        fill = own
-        break
-      }
-    }
-    const box = element.getBoundingClientRect()
-    const x = box.x + box.width / 2
-    const y = box.y + box.height / 2
-    return { look: { transform, boxShadow, fill }, x, y, covered: !element.contains(document.elementFromPoint(x, y)) }
-  }, scroll)
-}
-
-/**
- * The look of `selector` at rest and with the pointer down on it (moved away before the
- * release, so no click fires). A press on something that covers it is an error.
- */
-async function whilePressed(page: Page, selector: string): Promise<{ resting: Look; pressed: Look }> {
-  const resting = await probe(page, selector, true)
-  if (resting.covered) throw new Error(`${selector} is covered at its centre, so a press would land on something else`)
-  await page.mouse.move(resting.x, resting.y)
-  await page.mouse.down()
-  const pressed = await probe(page, selector, false)
-  await page.mouse.move(0, 0)
-  await page.mouse.up()
-  return { resting: resting.look, pressed: pressed.look }
+function expectFillChanged(name: string, found: { resting: Look; pressed: Look }): void {
+  const fillChanged =
+    found.pressed.boxShadow !== found.resting.boxShadow || found.pressed.fill !== found.resting.fill
+  expect(fillChanged, `${name} changes its fill while pressed`).toBe(true)
 }
 
 function expectPressed(name: string, found: { resting: Look; pressed: Look }): void {
   expect(found.resting.transform, `${name} rests unscaled`).toBe('none')
   expect(found.pressed.transform, `${name} shrinks while pressed`).toBe('matrix(0.98, 0, 0, 0.98, 0, 0)')
-  const fillChanged =
-    found.pressed.boxShadow !== found.resting.boxShadow || found.pressed.fill !== found.resting.fill
-  expect(fillChanged, `${name} changes its fill while pressed`).toBe(true)
+  expectFillChanged(name, found)
+}
+
+/**
+ * A label-wrapped control (an EXEMPT entry's `pressedOn`) answers a press with its fill alone:
+ * its input is stretched over it, and a scaled label would move the input off the finger.
+ */
+function expectFillOnly(name: string, found: { resting: Look; pressed: Look }): void {
+  expect(found.resting.transform, `${name} rests unscaled`).toBe('none')
+  expect(found.pressed.transform, `${name} stays unscaled while pressed`).toBe('none')
+  expectFillChanged(name, found)
 }
 
 async function openIn(page: Page, route: string, theme: (typeof THEMES)[number]): Promise<void> {
@@ -148,6 +111,14 @@ async function expectEveryControlPressed(page: Page, route: string): Promise<voi
   }
 }
 
+const SWITCH = '.opcion-interruptor'
+
+async function switchStates(page: Page): Promise<boolean[]> {
+  return page.locator(`${SWITCH}:not(#prueba-interruptor-inactivo) input`).evaluateAll((inputs) =>
+    inputs.map((input) => (input as HTMLInputElement).checked),
+  )
+}
+
 const PHONE_ROUTES = [HOME, SALES, CUSTOMERS, VARIETIES, MORE, SETTINGS, SETTINGS_ACCOUNT, SETTINGS_APPEARANCE]
 
 test.describe('on a phone', () => {
@@ -180,6 +151,52 @@ test.describe('on a phone', () => {
       expect(inactive.pressed.transform, 'a disabled button stays unscaled').toBe('none')
       expect(inactive.pressed.boxShadow).toBe(inactive.resting.boxShadow)
       expect(inactive.pressed.fill).toBe(inactive.resting.fill)
+
+      expect(messages).toEqual([])
+    })
+  }
+})
+
+test.describe('a switch on a phone', () => {
+  test.use({ viewport: PHONE })
+
+  for (const theme of THEMES) {
+    test(`answers a press with its fill alone, and does not flip (${theme})`, async ({ page }) => {
+      const messages: string[] = []
+      watchConsole(page, messages)
+      await signUpNewBusiness(page, {
+        businessName: `Flores del Interruptor ${theme} ${Date.now()}`,
+        email: `duena-interruptor-${theme}-${Date.now()}@example.com`,
+      })
+      await openIn(page, SETTINGS_PRICES, theme)
+
+      const switches = await page.locator(`${SWITCH}:visible`).count()
+      expect(switches, `${SETTINGS_PRICES} has switches to press`).toBeGreaterThan(0)
+      const before = await switchStates(page)
+      for (let at = 0; at < switches; at += 1) {
+        const target = `${SWITCH}:visible >> nth=${at}`
+        expectFillOnly(`switch ${at} on ${SETTINGS_PRICES}`, await whilePressed(page, target))
+        expect(await switchStates(page), `releasing outside leaves switch ${at} as it was`).toEqual(before)
+      }
+
+      await page.evaluate((selector) => {
+        const row = document.querySelector(selector)
+        if (row === null) throw new Error('no switch to clone')
+        const disabled = row.cloneNode(true) as HTMLElement
+        disabled.id = 'prueba-interruptor-inactivo'
+        disabled.removeAttribute('for')
+        disabled.classList.add('opcion-interruptor--inactiva')
+        const input = disabled.querySelector('input')
+        if (input === null) throw new Error('the switch has no input')
+        input.removeAttribute('id')
+        input.disabled = true
+        row.parentElement?.append(disabled)
+      }, SWITCH)
+      const inactive = await whilePressed(page, '#prueba-interruptor-inactivo')
+      expect(inactive.pressed.transform, 'a disabled switch stays unscaled').toBe('none')
+      expect(inactive.pressed.boxShadow).toBe(inactive.resting.boxShadow)
+      expect(inactive.pressed.fill).toBe(inactive.resting.fill)
+      expect(await switchStates(page)).toEqual(before)
 
       expect(messages).toEqual([])
     })
