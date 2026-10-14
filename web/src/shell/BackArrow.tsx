@@ -5,7 +5,7 @@
  * the fallback are one registry answer, so they cannot disagree.
  */
 
-import Boton from '../components/Boton'
+import BackButton from '../components/BackButton'
 import { useBackOr } from '../components/useBackOr'
 import { HOME, parentOf, type ScreenId } from '../routes'
 import { useViewport } from './useViewport'
@@ -16,9 +16,7 @@ export default function BackArrow({ id }: { id: ScreenId }) {
   if (parent === undefined) return null
   return (
     <div className="flecha-atras">
-      <Boton variant="back" onClick={back}>
-        {`‹ ${parent.title}`}
-      </Boton>
+      <BackButton title={parent.title} onClick={back} />
     </div>
   )
 }
