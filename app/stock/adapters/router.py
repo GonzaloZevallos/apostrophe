@@ -1,4 +1,5 @@
 from datetime import date
+from types import TracebackType
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
@@ -134,6 +135,30 @@ def _or_variety_not_found(
     return VarietyNotFound(variety_id)
 
 
+class _StockSignals:
+    """Turns stock's internal, code-less `VarietyArchived` into the varieties hexagon's
+    own `VarietyArchived()` — the one class `variety.archived` belongs to. It carries no
+    id and no cause, so the answer repeats nothing of the request. Used inside `as_http`
+    (`with as_http, stock_signals:`), never registered in it: a second class claiming the
+    code is refused by `tests/test_refusal_codes.py`. A class, not `@contextmanager`, so
+    the type checker sees it never swallows an exception."""
+
+    def __enter__(self) -> None:
+        return None
+
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
+        if isinstance(exc, _ArchivedVariety):
+            raise VarietyArchived() from None
+
+
+stock_signals = _StockSignals()
+
+
 @entries_router.post("", status_code=201)
 def record_entry(
     body: EntryIn,
@@ -213,7 +238,7 @@ def record_withdrawal(
     today: TodayDep,
     clock: ClockDep,
 ) -> WithdrawalOut:
-    with as_http:
+    with as_http, stock_signals:
         view = manage_withdrawals.record_withdrawal(
             withdrawals,
             catalog,
@@ -247,7 +272,7 @@ def edit_withdrawal(
     session: SessionDep,
     today: TodayDep,
 ) -> WithdrawalOut:
-    with as_http:
+    with as_http, stock_signals:
         view = manage_withdrawals.edit_withdrawal(
             withdrawals,
             catalog,

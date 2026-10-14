@@ -416,3 +416,154 @@ def test_the_business_wide_entries_list_holds_no_withdrawal(client: TestClient) 
     assert len(entries) == 1
     assert {entry["origin"] for entry in entries} == {"opening_stock"}
     assert all("reason" not in entry for entry in entries)
+
+
+def _archive(client: TestClient, variety_id: int) -> None:
+    response = client.post(f"/varieties/{variety_id}/archive")
+    assert response.status_code == 200, response.text
+
+
+def _put(client: TestClient, withdrawal_id: int, variety_id: int, **overrides: Any) -> Any:
+    return client.put(f"/stock/withdrawals/{withdrawal_id}", json=_body(variety_id, **overrides))
+
+
+def test_a_withdrawal_cannot_be_recorded_on_an_archived_variety(client: TestClient) -> None:
+    archived = _variety(client, "Secreta")
+    _stock_in(client, archived, "50")
+    _archive(client, archived)
+    movements_before = client.get(f"/stock/varieties/{archived}/movements").json()
+    stock_before = client.get("/stock?archived=true").json()
+
+    response = client.post(
+        "/stock/withdrawals",
+        json=_body(archived, lines=[{"variety_id": archived, "grams": "7.5"}]),
+    )
+
+    assert response.status_code == 404
+    assert response.json()["code"] == "variety.archived"
+    for echoed in ("Secreta", "7.5", str(archived)):
+        assert echoed not in response.text
+    assert client.get(f"/stock/varieties/{archived}/movements").json() == movements_before
+    assert client.get("/stock?archived=true").json() == stock_before
+
+
+def test_an_edit_cannot_add_a_line_on_an_archived_variety_the_withdrawal_never_had(
+    client: TestClient,
+) -> None:
+    mine = _variety(client)
+    archived = _variety(client, "Gone")
+    withdrawal = _record(client, mine)
+    _archive(client, archived)
+
+    response = _put(
+        client,
+        withdrawal["id"],
+        mine,
+        lines=[{"variety_id": mine, "grams": "5"}, {"variety_id": archived, "grams": "1"}],
+    )
+
+    assert response.status_code == 404
+    assert response.json()["code"] == "variety.archived"
+    assert client.get(f"/stock/withdrawals/{withdrawal['id']}").json() == withdrawal
+
+
+def test_an_edit_cannot_move_a_line_onto_a_different_archived_variety(
+    client: TestClient,
+) -> None:
+    kept = _variety(client, "Kept")
+    other = _variety(client, "Other")
+    withdrawal = _record(client, kept)
+    _archive(client, kept)
+    _archive(client, other)
+
+    response = _put(client, withdrawal["id"], kept, lines=[{"variety_id": other, "grams": "5"}])
+
+    assert response.status_code == 404
+    assert response.json()["code"] == "variety.archived"
+    assert client.get(f"/stock/withdrawals/{withdrawal['id']}").json() == withdrawal
+
+
+def test_an_edit_keeps_a_line_on_a_variety_archived_since_and_may_change_its_grams(
+    client: TestClient,
+) -> None:
+    variety_id = _variety(client, "Kept")
+    withdrawal = _record(client, variety_id)
+    _archive(client, variety_id)
+
+    edited = _put(
+        client,
+        withdrawal["id"],
+        variety_id,
+        date="2026-09-20",
+        note="corregido",
+        lines=[{"variety_id": variety_id, "grams": "9"}],
+    )
+    second_line = _put(
+        client,
+        withdrawal["id"],
+        variety_id,
+        lines=[
+            {"variety_id": variety_id, "grams": "9"},
+            {"variety_id": variety_id, "grams": "1"},
+        ],
+    )
+
+    assert edited.status_code == 200, edited.text
+    assert edited.json()["lines"][0]["grams"] == 9.0
+    assert edited.json()["date"] == "2026-09-20"
+    assert second_line.status_code == 200, second_line.text
+    assert len(second_line.json()["lines"]) == 2
+
+
+def test_a_withdrawal_on_a_variety_archived_since_is_still_read_and_deleted(
+    client: TestClient,
+) -> None:
+    variety_id = _variety(client, "Kept")
+    withdrawal = _record(client, variety_id)
+    _archive(client, variety_id)
+
+    read = client.get(f"/stock/withdrawals/{withdrawal['id']}")
+    movements = client.get(f"/stock/varieties/{variety_id}/movements")
+    deleted = client.delete(f"/stock/withdrawals/{withdrawal['id']}")
+
+    assert read.status_code == 200
+    assert read.json()["lines"][0]["variety_name"] == "Kept"
+    assert movements.status_code == 200
+    assert [row["id"] for row in movements.json()] == [withdrawal["id"]]
+    assert deleted.status_code == 204
+
+
+def test_an_unknown_or_foreign_variety_is_still_not_found_on_record_and_edit(
+    client: TestClient, other_client: TestClient
+) -> None:
+    mine = _variety(client)
+    foreign = _variety(other_client, "Ajena")
+    withdrawal = _record(client, mine)
+
+    for variety_id in (foreign, foreign + 1000):
+        recorded = client.post("/stock/withdrawals", json=_body(variety_id))
+        edited = _put(client, withdrawal["id"], variety_id)
+        for response in (recorded, edited):
+            assert response.status_code == 404
+            assert response.json()["code"] == "stock.withdrawal_variety_not_found"
+
+
+def test_an_unknown_line_wins_over_an_archived_line_in_the_same_request(
+    client: TestClient,
+) -> None:
+    archived = _variety(client, "Gone")
+    _archive(client, archived)
+
+    response = client.post(
+        "/stock/withdrawals",
+        json=_body(
+            archived,
+            lines=[
+                {"variety_id": archived, "grams": "1"},
+                {"variety_id": archived + 1000, "grams": "1"},
+            ],
+        ),
+    )
+
+    assert response.status_code == 404
+    assert response.json()["code"] == "stock.withdrawal_variety_not_found"
