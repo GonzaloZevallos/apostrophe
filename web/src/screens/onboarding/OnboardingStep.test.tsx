@@ -34,6 +34,7 @@ function progress(canSkipRest: boolean): OnboardingProgress {
     varieties_count: 1,
     stock_entries_count: 1,
     price_target: null,
+    priced_target: null,
     stock_target: null,
   }
 }
