@@ -270,3 +270,144 @@ test('a week and a month row show a withdrawal line only when the period has one
   expect(within(monthRows[0]!).getByText('Promoción $ 1.000')).toBeInTheDocument()
   expect(within(monthRows[monthRows.length - 1]!).queryByText(/Promoción/)).not.toBeInTheDocument()
 })
+
+// ---- Entirely pending figures (GH-141): "N g sin costo" alone, decided by `all_pending` ----
+
+const FLOR_B_ALL_PENDING = {
+  cost: { costed: 0, pending_grams: 8.0, all_pending: true },
+  // A non-null percent: the screen, not the fixture, must leave a grams-only margin bare.
+  margin: { amount: 0, percent: 0, pending_grams: 8.0 },
+}
+
+function withVarietyAllPending() {
+  return {
+    ...analysisFixture,
+    month: {
+      ...analysisFixture.month,
+      varieties: analysisFixture.month.varieties.map((variety) =>
+        variety.name === 'Flor B' ? { ...variety, ...FLOR_B_ALL_PENDING } : variety,
+      ),
+    },
+  }
+}
+
+test('an entirely pending variety reads grams only for cost and margin, with no percentage, on the phone cards', async () => {
+  renderAnalisis(async () => jsonResponse(200, withVarietyAllPending()))
+
+  const card = (await screen.findAllByText('Flor B'))
+    .map((node) => node.closest('.analisis__variedad'))
+    .find((node) => node !== null) as HTMLElement
+  expect(within(card).getByText(/^costo 8 g sin costo$/)).toBeInTheDocument()
+  const margin = within(card).getByText(/^margen/)
+  expect(margin).toHaveTextContent(/^margen 8 g sin costo$/)
+  expect(margin.textContent).not.toMatch(/%|\$/)
+})
+
+test('an entirely pending variety reads grams only for cost and margin, with no percentage, in the computer table', async () => {
+  renderAnalisis(async () => jsonResponse(200, withVarietyAllPending()))
+
+  const varietyTable = (await screen.findAllByText('Variedad'))
+    .map((node) => node.closest('table'))
+    .find((t) => t !== null) as HTMLElement
+  const headers = within(varietyTable)
+    .getAllByRole('columnheader')
+    .map((header) => header.textContent)
+  const row = within(varietyTable).getByText('Flor B').closest('tr') as HTMLElement
+  const cells = within(row).getAllByRole('cell')
+  expect(cells[headers.indexOf('Costo')]).toHaveTextContent(/^8 g sin costo$/)
+  const marginCell = cells[headers.indexOf('Margen')] as HTMLElement
+  expect(marginCell).toHaveTextContent(/^8 g sin costo$/)
+  expect(marginCell.textContent).not.toMatch(/%|\$/)
+})
+
+test('a $0 lot with pending grams reads "$ 0 y N g sin costo", since it is not entirely pending', async () => {
+  const zeroLot = {
+    ...analysisFixture,
+    month: {
+      ...analysisFixture.month,
+      varieties: analysisFixture.month.varieties.map((variety) =>
+        variety.name === 'Flor B'
+          ? {
+              ...variety,
+              cost: { costed: 0, pending_grams: 3.0, all_pending: false },
+              margin: { amount: 8000, percent: 100, pending_grams: 3.0 },
+            }
+          : variety,
+      ),
+    },
+  }
+  renderAnalisis(async () => jsonResponse(200, zeroLot))
+
+  expect(await screen.findByText(/^costo \$ 0 y 3 g sin costo$/)).toBeInTheDocument()
+})
+
+const ALL_PENDING_FIGURE = { amount: 0, pending_grams: 2.0, all_pending: true }
+
+function withEveryFigureAllPending() {
+  const week = analysisFixture.weeks[0]!
+  const monthRow = analysisFixture.months[0]!
+  return {
+    ...withVarietyAllPending(),
+    month: {
+      ...withVarietyAllPending().month,
+      shortfall: ALL_PENDING_FIGURE,
+      promotion: ALL_PENDING_FIGURE,
+      own_use: ALL_PENDING_FIGURE,
+    },
+    weeks: [
+      {
+        ...week,
+        promotion: ALL_PENDING_FIGURE,
+        own_use: ALL_PENDING_FIGURE,
+        // Ganancia is a real figure over the costed part: its amount stays, with its mark.
+        profit: { amount: 7000, pending_grams: 5.0 },
+      },
+      ...analysisFixture.weeks.slice(1),
+    ],
+    months: [
+      { ...monthRow, promotion: ALL_PENDING_FIGURE, own_use: ALL_PENDING_FIGURE },
+      ...analysisFixture.months.slice(1),
+    ],
+    since_first_record: {
+      ...analysisFixture.since_first_record,
+      shortfall: ALL_PENDING_FIGURE,
+      promotion: ALL_PENDING_FIGURE,
+      own_use: ALL_PENDING_FIGURE,
+    },
+  }
+}
+
+test('every entirely pending cost figure reads grams alone, in the header, the rows and since the first record', async () => {
+  renderAnalisis(async () => jsonResponse(200, withEveryFigureAllPending()))
+  await screen.findByText(SINCE_FIRST_RECORD_LABEL)
+
+  // Month header (a `.pie` span each) and the since-first-record block.
+  expect(screen.getAllByText(/^Faltante de stock 2 g sin costo$/)).toHaveLength(2)
+  expect(screen.getAllByText(/^Promoción 2 g sin costo$/).length).toBeGreaterThanOrEqual(3)
+  expect(screen.getAllByText(/^Consumo propio 2 g sin costo$/).length).toBeGreaterThanOrEqual(3)
+
+  // The computer tables' promotion and own-use cells of the first week and month.
+  const weekCells = Array.from(
+    document.querySelectorAll('.analisis__tabla-contenedor--semanas tbody tr:first-child td'),
+  ).map((cell) => cell.textContent)
+  expect(weekCells).toContain('2 g sin costo')
+  const monthCells = Array.from(
+    document.querySelectorAll('.analisis__tabla-contenedor--meses tbody tr:first-child td'),
+  ).map((cell) => cell.textContent)
+  expect(monthCells).toContain('2 g sin costo')
+
+  // Nothing on the screen pairs a $ 0 with pending grams.
+  expect(document.body.textContent).not.toMatch(/\$ 0 y [\d,]+ g sin costo/)
+})
+
+test('Ganancia with every draw pending still shows its amount and its mark', async () => {
+  renderAnalisis(async () => jsonResponse(200, withEveryFigureAllPending()))
+  await screen.findByText(SINCE_FIRST_RECORD_LABEL)
+
+  const firstWeek = document.querySelector<HTMLElement>('.analisis__semana') as HTMLElement
+  expect(within(firstWeek).getByText(/^ganancia \$ 7\.000 y 5 g sin costo$/)).toBeInTheDocument()
+  const weekRow = document.querySelector(
+    '.analisis__tabla-contenedor--semanas tbody tr:first-child',
+  ) as HTMLElement
+  expect(weekRow).toHaveTextContent('$ 7.000 y 5 g sin costo')
+})
