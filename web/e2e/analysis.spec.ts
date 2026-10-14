@@ -63,6 +63,14 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   await page.getByRole('button', { name: 'Guardá la venta' }).click()
   await expect(page.getByText('Venta guardada')).toBeVisible()
 
+  // A negative adjustment, today: 2 g out of that entry, costed at its $ 400 a gram.
+  await page.goto(STOCK_ENTRY_NEW)
+  await page.getByLabel('Gramos').fill('-2')
+  await page.getByLabel('Variedad').selectOption({ label: 'Rosa' })
+  await page.getByRole('button', { name: 'Ajuste', exact: true }).click()
+  await page.getByRole('button', { name: 'Guardá la entrada' }).click()
+  await expect(page.getByText('Entrada guardada')).toBeVisible()
+
   // An expense, today, with a category created inline.
   await openGastos(page)
   await page.getByRole('link', { name: 'Cargar gasto' }).click()
@@ -122,37 +130,31 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   await expect(page.getByText('Por día de la semana')).toBeVisible()
   await expect(page.getByText('Van aparte, se cargan en Stock').first()).toBeVisible()
 
-  // Costo de lo vendido on the rows, from the phone (Más → Análisis) and from the computer's
-  // sidebar. The 10 g sold today came from a 20.000 entry of 50 g: $ 4.000 of cost, and no
-  // negative adjustment, so no Faltante de stock line anywhere.
+  // Costo de lo vendido and Faltante de stock on the rows, from the phone (Más → Análisis)
+  // and from the computer's sidebar. The 10 g sold today came from a 20.000 entry of 50 g:
+  // $ 4.000 of cost; the 2 g adjusted out of it are a $ 800 shortfall; the expense is $ 1.500.
   const phone = { width: 390, height: 844 }
   await page.setViewportSize(phone)
   await page.goto(HOME)
   await page.getByRole('link', { name: 'Más', exact: true }).click()
   await page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /^Análisis/ }).click()
   await expectPath(page, ANALYSIS)
-  const phoneWeek = page.locator('.analisis__semana').last()
-  await expect(phoneWeek).toContainText('Costo de lo vendido $ 4.000')
-  await expect(phoneWeek).not.toContainText('Faltante de stock')
-  const phoneMonth = page.locator('.analisis__mes-fila').last()
-  await expect(phoneMonth).toContainText('Costo de lo vendido $ 4.000')
-  await expect(phoneMonth).not.toContainText('Faltante de stock')
+  for (const row of [page.locator('.analisis__semana').last(), page.locator('.analisis__mes-fila').last()]) {
+    await expect(row).toContainText('Costo de lo vendido $ 4.000')
+    await expect(row).toContainText('Faltante de stock $ 800')
+    await expect(row).toContainText('Gastos $ 1.500')
+  }
 
   await page.setViewportSize({ width: 1280, height: 920 })
   await page.goto(HOME)
   await page.getByRole('link', { name: /^Análisis/ }).click()
   await expectPath(page, ANALYSIS)
-  const computerWeek = page.locator('.analisis__tabla-contenedor--semanas tbody tr').last()
-  await expect(computerWeek).toContainText('$ 4.000')
-  await expect(page.locator('.analisis__tabla-contenedor--semanas thead')).toContainText(
-    'Costo de lo vendido',
-  )
-  await expect(page.locator('.analisis__tabla-contenedor--semanas thead')).toContainText(
-    'Faltante de stock',
-  )
-  await expect(page.locator('.analisis__tabla-contenedor--meses tbody tr').last()).toContainText(
-    '$ 4.000',
-  )
+  for (const section of ['semanas', 'meses']) {
+    const lines = page.locator(`.analisis__tabla-contenedor--${section} .analisis__fila-costos`).last()
+    await expect(lines.getByText('Costo de lo vendido $ 4.000', { exact: true })).toBeVisible()
+    await expect(lines.getByText('Faltante de stock $ 800', { exact: true })).toBeVisible()
+    await expect(lines.getByText('Gastos $ 1.500', { exact: true })).toBeVisible()
+  }
 
   expect(consoleMessages).toEqual([])
 })

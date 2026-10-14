@@ -2778,8 +2778,6 @@ body {
    never both at once (PM: "the computer gets the phone's cards" was the bug). */
 .analisis__tabla-contenedor {
   display: none;
-  /* Ten columns on the week and month tables: a narrow desktop scrolls, never clips. */
-  overflow-x: auto;
 }
 
 .analisis__tabla {
@@ -2820,6 +2818,24 @@ body {
    "mejor" tag at once. */
 .analisis__fila-actual {
   background: var(--superficie);
+}
+
+/* A row's second line on the computer: its cost lines, small, under its figures. The
+   figures' own row gives up its rule so the two read as one row. */
+.analisis__tabla tr:has(+ tr > .analisis__fila-costos) td {
+  border-bottom: 0;
+}
+
+.analisis__tabla td.analisis__fila-costos {
+  padding-top: 0;
+  font-size: 13px;
+}
+
+.analisis__costos-linea {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
 }
 
 .analisis__celda-margen {

@@ -15,7 +15,7 @@
  * read only, no forms, no toasts (PRD, "Read only").
  */
 
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useOutletContext } from 'react-router'
 import { NetworkError } from '../api/client'
@@ -131,44 +131,38 @@ function rowCostTexts(row: AnalysisWeek | AnalysisMonthRow): (string | null)[] {
   ]
 }
 
-/** The one row-cost component: a week's or a month's cost lines, as phone lines or as
- * the computer table's cells, from the same list in the same order, each cost figure
- * through `pendingFigure`. A missing line is no span on the phone and an empty cell in
- * the table, so the columns keep their place. */
-function RowCosts({
-  row,
-  layout,
-}: {
-  row: AnalysisWeek | AnalysisMonthRow
-  layout: 'lines' | 'cells'
-}) {
+/** The one row-cost component: a week's or a month's five lines, from one list in one
+ * order, each cost figure through `pendingFigure`. The phone draws it inside the row; the
+ * computer draws it in the row's own sub-row (`AnalisisCompu.dc.html`), since ten columns
+ * do not fit beside the sidebar. A line the period does not have is not drawn. */
+function RowCosts({ row }: { row: AnalysisWeek | AnalysisMonthRow }) {
   const texts = rowCostTexts(row)
   return (
     <>
       {ROW_COST_LABELS.map((label, index) => {
         const text = texts[index] ?? null
-        if (layout === 'cells') {
-          return (
-            <td key={label} className="analisis__num">
-              {text ?? ''}
-            </td>
-          )
-        }
         return text === null ? null : <span key={label}>{`${label} ${text}`}</span>
       })}
     </>
   )
 }
 
-function RowCostHeaders() {
+/** The computer table's second line of a row, under its figures, spanning every column. */
+function RowCostsSubRow({
+  row,
+  className,
+}: {
+  row: AnalysisWeek | AnalysisMonthRow
+  className?: string
+}) {
   return (
-    <>
-      {ROW_COST_LABELS.map((label) => (
-        <th key={label} className="analisis__num">
-          {label}
-        </th>
-      ))}
-    </>
+    <tr className={className}>
+      <td colSpan={5} className="analisis__fila-costos">
+        <div className="analisis__costos-linea">
+          <RowCosts row={row} />
+        </div>
+      </td>
+    </tr>
   )
 }
 
@@ -403,7 +397,7 @@ function AnalisisContenido({
                 <Bar value={week.sales} max={maxWeekSales} />
                 <span>{formatMoney(week.sales)}</span>
                 <span>{formatGrams(week.grams)}</span>
-                <RowCosts row={week} layout="lines" />
+                <RowCosts row={week} />
                 <span>
                   ganancia {formatMoney(week.profit.amount)}
                   {pendingSuffix(week.profit.pending_grams)}
@@ -421,33 +415,33 @@ function AnalisisContenido({
                   <th>Semana</th>
                   <th className="analisis__num">Ventas</th>
                   <th className="analisis__num">Gramos</th>
-                  <RowCostHeaders />
                   <th className="analisis__num">Ganancia</th>
                   <th className="analisis__num">Caja</th>
                 </tr>
               </thead>
               <tbody>
-                {data.weeks.map((week, index) => (
-                  <tr
-                    key={week.first_day}
-                    className={
-                      index === data.weeks.length - 1 ? 'analisis__fila-actual' : undefined
-                    }
-                  >
-                    <td>{formatDateShort(week.first_day)}</td>
-                    <td className="analisis__num">{formatMoney(week.sales)}</td>
-                    <td className="analisis__num">{formatGrams(week.grams)}</td>
-                    <RowCosts row={week} layout="cells" />
-                    <td className="analisis__num">
-                      {formatMoney(week.profit.amount)}
-                      {pendingSuffix(week.profit.pending_grams)}
-                      {week.best && (
-                        <span className="analisis__etiqueta-mejor">{BEST_WEEK_TABLE_MARK}</span>
-                      )}
-                    </td>
-                    <td className="analisis__num">{formatMoney(week.cash)}</td>
-                  </tr>
-                ))}
+                {data.weeks.map((week, index) => {
+                  const current =
+                    index === data.weeks.length - 1 ? 'analisis__fila-actual' : undefined
+                  return (
+                    <Fragment key={week.first_day}>
+                      <tr className={current}>
+                        <td>{formatDateShort(week.first_day)}</td>
+                        <td className="analisis__num">{formatMoney(week.sales)}</td>
+                        <td className="analisis__num">{formatGrams(week.grams)}</td>
+                        <td className="analisis__num">
+                          {formatMoney(week.profit.amount)}
+                          {pendingSuffix(week.profit.pending_grams)}
+                          {week.best && (
+                            <span className="analisis__etiqueta-mejor">{BEST_WEEK_TABLE_MARK}</span>
+                          )}
+                        </td>
+                        <td className="analisis__num">{formatMoney(week.cash)}</td>
+                      </tr>
+                      <RowCostsSubRow row={week} className={current} />
+                    </Fragment>
+                  )
+                })}
               </tbody>
             </table>
             {data.weeks.length > 0 && data.weeks.every((week) => !week.best) && (
@@ -462,7 +456,7 @@ function AnalisisContenido({
                 <span>{formatMonthLong(row.month)}</span>
                 <span>{formatMoney(row.sales)}</span>
                 <span>{formatGrams(row.grams)}</span>
-                <RowCosts row={row} layout="lines" />
+                <RowCosts row={row} />
                 <span>
                   ganancia {formatMoney(row.profit.amount)}
                   {pendingSuffix(row.profit.pending_grams)}
@@ -479,24 +473,25 @@ function AnalisisContenido({
                   <th>Mes</th>
                   <th className="analisis__num">Ventas</th>
                   <th className="analisis__num">Gramos</th>
-                  <RowCostHeaders />
                   <th className="analisis__num">Ganancia</th>
                   <th className="analisis__num">Caja</th>
                 </tr>
               </thead>
               <tbody>
                 {data.months.map((row) => (
-                  <tr key={row.month}>
-                    <td>{formatMonthLong(row.month)}</td>
-                    <td className="analisis__num">{formatMoney(row.sales)}</td>
-                    <td className="analisis__num">{formatGrams(row.grams)}</td>
-                    <RowCosts row={row} layout="cells" />
-                    <td className="analisis__num">
-                      {formatMoney(row.profit.amount)}
-                      {pendingSuffix(row.profit.pending_grams)}
-                    </td>
-                    <td className="analisis__num">{formatMoney(row.cash)}</td>
-                  </tr>
+                  <Fragment key={row.month}>
+                    <tr>
+                      <td>{formatMonthLong(row.month)}</td>
+                      <td className="analisis__num">{formatMoney(row.sales)}</td>
+                      <td className="analisis__num">{formatGrams(row.grams)}</td>
+                      <td className="analisis__num">
+                        {formatMoney(row.profit.amount)}
+                        {pendingSuffix(row.profit.pending_grams)}
+                      </td>
+                      <td className="analisis__num">{formatMoney(row.cash)}</td>
+                    </tr>
+                    <RowCostsSubRow row={row} />
+                  </Fragment>
                 ))}
               </tbody>
             </table>

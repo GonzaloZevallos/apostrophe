@@ -199,7 +199,10 @@ test('the computer table carries headers, the margin stack, pending marks and th
 
   const weekTables = (await screen.findAllByText('Semana')).map((node) => node.closest('table'))
   const weekTable = weekTables.find((t) => t !== null) as HTMLElement
-  const rows = within(weekTable).getAllByRole('row').slice(1) // drop the header row
+  const rows = within(weekTable)
+    .getAllByRole('row')
+    .slice(1) // drop the header row
+    .filter((row) => row.querySelector('.analisis__fila-costos') === null) // and the sub-rows
   const lastRow = rows.at(-1)
   expect(lastRow).not.toBeUndefined()
   expect((lastRow as HTMLElement).className).toContain('analisis__fila-actual')
@@ -386,15 +389,13 @@ test('every entirely pending cost figure reads grams alone, in the header, the r
   expect(screen.getAllByText(/^Promoción 2 g sin costo$/).length).toBeGreaterThanOrEqual(3)
   expect(screen.getAllByText(/^Consumo propio 2 g sin costo$/).length).toBeGreaterThanOrEqual(3)
 
-  // The computer tables' promotion and own-use cells of the first week and month.
-  const weekCells = Array.from(
-    document.querySelectorAll('.analisis__tabla-contenedor--semanas tbody tr:first-child td'),
-  ).map((cell) => cell.textContent)
-  expect(weekCells).toContain('2 g sin costo')
-  const monthCells = Array.from(
-    document.querySelectorAll('.analisis__tabla-contenedor--meses tbody tr:first-child td'),
-  ).map((cell) => cell.textContent)
-  expect(monthCells).toContain('2 g sin costo')
+  // The computer tables' sub-rows of the first week and month carry the same lines.
+  expect(subRowLines('semanas', 0)).toEqual(
+    expect.arrayContaining(['Promoción 2 g sin costo', 'Consumo propio 2 g sin costo']),
+  )
+  expect(subRowLines('meses', 0)).toEqual(
+    expect.arrayContaining(['Promoción 2 g sin costo', 'Consumo propio 2 g sin costo']),
+  )
 
   // Nothing on the screen pairs a $ 0 with pending grams.
   expect(document.body.textContent).not.toMatch(/\$ 0 y [\d,]+ g sin costo/)
@@ -423,24 +424,12 @@ function costLines(row: HTMLElement): string[] {
     .filter((text) => /^(Costo de lo vendido|Faltante de stock|Promoción|Consumo propio|Gastos) /.test(text))
 }
 
-function tableRow(section: 'semanas' | 'meses', index: number): HTMLElement {
-  return document.querySelectorAll<HTMLElement>(
-    `.analisis__tabla-contenedor--${section} tbody tr`,
-  )[index] as HTMLElement
-}
-
-function tableHeaders(section: 'semanas' | 'meses'): string[] {
-  return Array.from(
-    document.querySelectorAll(`.analisis__tabla-contenedor--${section} thead th`),
-  ).map((header) => header.textContent ?? '')
-}
-
-function cellsByHeader(section: 'semanas' | 'meses', index: number): Record<string, string> {
-  const headers = tableHeaders(section)
-  const cells = Array.from(tableRow(section, index).querySelectorAll('td')).map(
-    (cell) => cell.textContent ?? '',
+/** The lines a computer table draws in a row's sub-row, in order. */
+function subRowLines(section: 'semanas' | 'meses', index: number): string[] {
+  const subRows = document.querySelectorAll<HTMLElement>(
+    `.analisis__tabla-contenedor--${section} .analisis__fila-costos`,
   )
-  return Object.fromEntries(headers.map((header, i) => [header, cells[i] ?? '']))
+  return costLines(subRows[index] as HTMLElement)
 }
 
 const PART_PENDING = { amount: 9000, pending_grams: 2.0, all_pending: false }
@@ -523,32 +512,37 @@ test('a phone row reads each of the three pending forms for both new lines', asy
   expect(document.body.textContent).not.toMatch(/\$ 0 y [\d,]+ g sin costo/)
 })
 
-test('a computer table draws the same lines, in the same order, with the same words', async () => {
+test('a computer table draws the same lines, in the same order, with the same words, under each row', async () => {
   renderAnalisis(async () => jsonResponse(200, withRowCosts()))
   await screen.findByText(SINCE_FIRST_RECORD_LABEL)
 
   for (const section of ['semanas', 'meses'] as const) {
-    expect(tableHeaders(section)).toEqual([
-      section === 'semanas' ? 'Semana' : 'Mes',
-      'Ventas',
-      'Gramos',
-      'Costo de lo vendido',
-      'Faltante de stock',
-      'Promoción',
-      'Consumo propio',
-      'Gastos',
-      'Ganancia',
-      'Caja',
+    const headers = Array.from(
+      document.querySelectorAll(`.analisis__tabla-contenedor--${section} thead th`),
+    ).map((header) => header.textContent)
+    expect(headers).toEqual([section === 'semanas' ? 'Semana' : 'Mes', 'Ventas', 'Gramos', 'Ganancia', 'Caja'])
+
+    // Part of it, then all of it, then none: each of the three pending forms.
+    expect(subRowLines(section, 0).slice(0, 2)).toEqual([
+      'Costo de lo vendido $ 9.000 y 2 g sin costo',
+      'Faltante de stock 2 g sin costo',
     ])
-    expect(cellsByHeader(section, 0)['Costo de lo vendido']).toBe('$ 9.000 y 2 g sin costo')
-    expect(cellsByHeader(section, 0)['Faltante de stock']).toBe('2 g sin costo')
-    expect(cellsByHeader(section, 1)['Costo de lo vendido']).toBe('2 g sin costo')
-    expect(cellsByHeader(section, 1)['Faltante de stock']).toBe('$ 9.000 y 2 g sin costo')
-    // No negative adjustment: the cell is empty.
-    expect(cellsByHeader(section, 2)['Faltante de stock']).toBe('')
+    expect(subRowLines(section, 1).slice(0, 2)).toEqual([
+      'Costo de lo vendido 2 g sin costo',
+      'Faltante de stock $ 9.000 y 2 g sin costo',
+    ])
+    // No negative adjustment: no Faltante de stock line at all.
+    const third = subRowLines(section, 2)
+    expect(third[0]).toMatch(/^Costo de lo vendido \$ [\d.]+$/)
+    expect(third.some((line) => line.startsWith('Faltante de stock'))).toBe(false)
   }
-  expect(cellsByHeader('semanas', 0)['Gastos']).toBe('$ 2.000')
-  expect(cellsByHeader('semanas', 0)['Promoción']).toBe('$ 1.000')
+  expect(subRowLines('semanas', 0)).toEqual([
+    'Costo de lo vendido $ 9.000 y 2 g sin costo',
+    'Faltante de stock 2 g sin costo',
+    'Promoción $ 1.000',
+    'Consumo propio $ 500',
+    'Gastos $ 2.000',
+  ])
 })
 
 test('the month header and the same month row read the same text for Faltante de stock, Promoción and Consumo propio', async () => {
@@ -578,5 +572,31 @@ test('the month header and the same month row read the same text for Faltante de
   ]) {
     expect(lines).toContain(line)
     expect(screen.getAllByText(line).some((node) => node.closest('.analisis__mes-fila') === null)).toBe(true)
+  }
+})
+
+test('on the computer, the month header and the same month\'s sub-row read the same text', async () => {
+  const header = analysisFixture.month
+  const aligned = {
+    ...analysisFixture,
+    months: analysisFixture.months.map((row, i, all) =>
+      i === all.length - 1
+        ? { ...row, shortfall: header.shortfall, promotion: header.promotion, own_use: header.own_use }
+        : row,
+    ),
+  }
+  renderAnalisis(async () => jsonResponse(200, aligned))
+  await screen.findByText(SINCE_FIRST_RECORD_LABEL)
+
+  const lines = subRowLines('meses', aligned.months.length - 1)
+  for (const line of [
+    'Faltante de stock $ 3.000 y 1 g sin costo',
+    'Promoción $ 4.000 y 0,5 g sin costo',
+    'Consumo propio $ 1.500',
+  ]) {
+    expect(lines).toContain(line)
+    expect(
+      screen.getAllByText(line).some((node) => node.closest('.analisis__tabla-contenedor') === null),
+    ).toBe(true)
   }
 })
