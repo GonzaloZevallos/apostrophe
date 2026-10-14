@@ -2227,18 +2227,6 @@ body {
   padding-left: 42px;
 }
 
-.venta-guardada__deshacer {
-  background: var(--boton);
-  border: 0;
-  color: var(--boton-texto);
-  font-size: 15px;
-  font-weight: 600;
-  opacity: 0.75;
-  min-height: var(--alto-tocable);
-  padding: 0 var(--espacio-xs);
-  cursor: pointer;
-}
-
 /* `Stock` and `EntradaStock` (stock.md, "On screen"). The status mark is told by
  * shape and word, never by color alone: a square for agotada (the inverted chip,
  * never red), a filled circle for baja, an empty circle for ok/no entries. */
@@ -2527,7 +2515,7 @@ body {
 .campo__fila {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--espacio-sm);
 }
 
 .campo__fila > .campo__input {
@@ -3864,13 +3852,14 @@ body {
  * Controls rendered on a <button>, <a> or <Link> (each checked against its component):
  *   filled, so a --papel ring is the fill cue (it differs from the resting fill in both
  *   themes): .boton (with .boton--suave, .boton--destructivo and .boton-nueva-venta),
- *   .boton-icono, .periodos__boton, .pildora, .gastos__cargar, .aviso-ambar,
- *   .venta-guardada__deshacer;
+ *   .boton-icono, .periodos__boton, .pildora, .gastos__cargar, .aviso-ambar;
  *   transparent, so --superficie is the fill cue: .boton--enlace,
  *   .boton--fila, .bar-inferior__item, .riel-lateral__item, .mas__item, .fila-venta,
  *   .fila-gasto, .fila-entrada, .lista-clientes__fila, .bloque-deben__titulo, .bloque-deben__fila,
  *   .variedad-item, .pestanas__opcion, .selector-pago__opcion, .gastos__mes-boton,
  *   .encabezado__volver, .historial-fila__borrar.
+ * A .boton--enlace inside .venta-guardada sits on the bar's own --boton fill, so it takes
+ * the filled cue (the --papel ring) in its own scoped rule, in ventas-reglas-icono.
  * Display-only rows (.encabezado-fila, .historial-fila and its other children, the
  * children of .fila-gasto) are left out: nothing happens when they are touched. */
 :is(
@@ -3879,8 +3868,7 @@ body {
     .periodos__boton,
     .pildora,
     .gastos__cargar,
-    .aviso-ambar,
-    .venta-guardada__deshacer
+    .aviso-ambar
   ):active:not(:disabled):not([aria-disabled='true']) {
   transform: scale(0.98);
   box-shadow: inset 0 0 0 3px var(--papel);
@@ -3926,7 +3914,6 @@ body {
     .pildora,
     .gastos__cargar,
     .aviso-ambar,
-    .venta-guardada__deshacer,
     .boton--enlace,
     .boton--fila,
     .bloque-deben__titulo,
@@ -4020,7 +4007,7 @@ body {
 
 /* ===== ventas-reglas-icono ===== */
 /* Deshacer is `Boton`'s undo kind, drawn on the dark "Venta guardada" bar: the bar's
- * own ink, no accent underline (the old `.venta-guardada__deshacer` look). */
+ * own ink, no accent underline (the look the old Deshacer class had). */
 .venta-guardada .boton--enlace {
   background: var(--boton);
   color: var(--boton-texto);
@@ -4029,6 +4016,17 @@ body {
   opacity: 0.75;
   min-height: var(--alto-tocable);
   padding: 0 var(--espacio-xs);
+}
+/* Pressed Deshacer keeps the bar's --boton fill (GH-113). `.boton--enlace` is in the
+ * transparent `:active` group, whose --superficie fill would put --boton-texto ink on a
+ * light panel in both themes (about 1.6:1 and 2.0:1 measured). This rule's specificity,
+ * (0,5,0), beats that group's (0,4,0) whatever the source order, and gives the filled
+ * cue: the --papel ring. */
+.venta-guardada .boton--enlace:active:not(:disabled):not([aria-disabled='true']) {
+  background-color: var(--boton);
+  box-shadow: inset 0 0 0 3px var(--papel);
+  transform: scale(0.98);
+  transition: none;
 }
 /* ===== end ventas-reglas-icono ===== */
 
