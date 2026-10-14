@@ -14,6 +14,7 @@ import {
   type OnboardingProgress,
   type StepState,
 } from '../../api/onboarding'
+import { HOME } from '../../routes'
 import BotStep from './BotStep'
 
 const PUBLISH = 'Cuando quieras, publicalo desde Variedades → Mandar catálogo'
@@ -95,7 +96,7 @@ function setup(initialBot: StepState, faked: Faked = {}) {
     }),
   )
   const onProgress = vi.fn()
-  const router = createMemoryRouter([{ path: '/', element: <Harness onProgress={onProgress} /> }])
+  const router = createMemoryRouter([{ path: HOME, element: <Harness onProgress={onProgress} /> }])
   render(
     <QueryClientProvider
       client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}

@@ -10,6 +10,7 @@ import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import type { OnboardingProgress } from '../../api/onboarding'
+import { HOME } from '../../routes'
 import CatalogMessageStep from './CatalogMessageStep'
 
 const CATALOG = { text: null, header: 'H', footer: 'F', varieties: [] }
@@ -66,7 +67,7 @@ function setup() {
   const onProgress = vi.fn()
   const router = createMemoryRouter([
     {
-      path: '/',
+      path: HOME,
       element: (
         <CatalogMessageStep
           me={ME}
