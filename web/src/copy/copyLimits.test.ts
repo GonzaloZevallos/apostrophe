@@ -22,6 +22,7 @@ const KNOWN_MODULES = [
   '/src/screens/analisisMessages.ts',
   '/src/screens/gastosMessages.ts',
   '/src/screens/inicioMessages.ts',
+  '/src/screens/onboarding/onboardingMessages.ts',
   '/src/screens/settings/messages.ts',
   '/src/screens/stockMessages.ts',
   '/src/screens/varieties/priceMessages.ts',

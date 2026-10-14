@@ -108,6 +108,16 @@ export function isOptional(slug: StepSlug): slug is OptionalStepSlug {
   return !stepInfo(slug).required
 }
 
+/** The first step has no step before it: no "Atrás". */
+export function isFirst(slug: StepSlug): boolean {
+  return stepNumber(slug) === 1
+}
+
+/** The last step has no step after it: no "Saltar el resto". */
+export function isLast(slug: StepSlug): boolean {
+  return stepNumber(slug) === STEP_COUNT
+}
+
 /** The step path before this one, or `undefined` on the first. */
 export function previousPath(slug: StepSlug): string | undefined {
   return STEPS[stepNumber(slug) - 2]?.path
