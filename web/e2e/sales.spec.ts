@@ -15,8 +15,9 @@
  * - "Caught before save" (3): Debiendo disabled with no customer, and a line whose
  *   variety has no price that day, both shown before any save is attempted.
  * - "Under a minute" (1): each of the three sales below — a new customer, an
- *   existing one, none — is saved in under 60 s, timed from the moment the form
- *   opens to "Venta guardada".
+ *   existing one, none — is recorded from the form to "Venta guardada". Its
+ *   duration is not measured by any test (docs/adr/0038): the run proves the flow
+ *   completes, `tapBudget.spec.ts` its tap budget.
  * - "One sale" (4) and "What I see is what I get" (2): a two-variety order with
  *   shipping charged once, where the live preview's price per gram, rule and total
  *   for *every* line match the saved detail's, figure for figure, not only the
@@ -32,9 +33,9 @@
  *   actually show, not just one sale's own figure, and the week runs Monday to
  *   Sunday, not "the last 7 days" — a sale dated the Monday of this week counts in
  *   Semana, one dated the Sunday right before it does not.
- * - The list answers in under 300 ms with a few hundred sales (metric 6), seeded
- *   directly through the API: driving the form three hundred times would only time
- *   Playwright's own clicking, not the backend.
+ * - The list answering in under 300 ms with a few hundred sales (metric 6) is not
+ *   checked here: `tests/sales/test_list_cost.py` guards it by the query plan and
+ *   the statement count of `GET /sales`, never by time (docs/adr/0038).
  * - Isolation (ADR-0004): a second business opening the first one's sale by its own
  *   id sees "Eso ya no está.", never the sale itself.
  *
@@ -48,17 +49,13 @@
 
 import { CUSTOMERS, SALE, SALES, SALE_NEW, VARIETIES } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
-import { expect, test } from '@playwright/test'
+import { expect, test } from './fixtures.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
 
 test.use({ viewport: { width: 390, height: 844 } }) // a phone (PRD metric 1).
-
-const RECORD_BUDGET_MS = 60_000 // PRD metric 1: "under a minute".
-const LIST_BUDGET_MS = 300 // PRD metric 6.
-const SEEDED_SALES_FOR_PERF = 300 // "a few hundred sales".
 
 interface VarietyAnswer {
   id: number
@@ -109,11 +106,10 @@ function countLabel(count: number): string {
 test('a seller records, undoes, fixes and isolates sales, from the front alone', async ({
   page,
   browser,
+  workerServer,
 }) => {
-  // Seeding a few hundred sales one at a time (below, for the 300 ms list check)
-  // comfortably clears a 30 s budget on its own; this test's own journey
-  // around it needs the room too. Under load (backend suite looping beside it) it ran past
-  // its former 90 s, so the ceiling is 240 s: raised, never lowered (GH-110).
+  // This test's own journey is long. Under load (backend suite looping beside it) it
+  // ran past its former 90 s, so the ceiling is 240 s: raised, never lowered (GH-110).
   test.setTimeout(240_000)
 
   const consoleMessages: string[] = []
@@ -177,8 +173,6 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   if (jazmin === undefined) throw new Error('Jazmín missing from GET /varieties?on=')
   const jazminId = jazmin.id
 
-  const saleAStart = Date.now()
-
   // Debiendo is disabled and explained while there is no customer.
   await expect(page.getByRole('radio', { name: 'Debiendo' })).toBeDisabled()
   await expect(page.getByText('Para dejar debiendo elegí un cliente')).toBeVisible()
@@ -227,7 +221,6 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   await page.getByRole('button', { name: 'Guardá la venta' }).click()
   await expectPath(page, SALE)
   await expect(page.getByText('Venta guardada')).toBeVisible()
-  expect(Date.now() - saleAStart).toBeLessThan(RECORD_BUDGET_MS) // a new customer.
 
   // What is shown now is what the API answered, not the preview — but it is the
   // same figures, line for line, since nothing changed in between.
@@ -257,7 +250,6 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
   await page.getByRole('link', { name: 'Nueva venta a Carla Pérez' }).click()
   await expectPath(page, SALE_NEW)
-  const saleBStart = Date.now()
   // Already chosen, no picking needed: fetched by id (keys.saleFormCustomer), not
   // carried along in history state (plan, invariants).
   await expect(page.locator('.lista-clientes__nombre')).toHaveText('Carla Pérez')
@@ -275,20 +267,17 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   await expectPath(page, SALE)
   const saleBUrl = page.url()
   await expect(page.getByText('Venta guardada')).toBeVisible()
-  expect(Date.now() - saleBStart).toBeLessThan(RECORD_BUDGET_MS) // an existing customer.
   await expect(page.locator('.cifra-xl')).toHaveText('$ 0')
   await expect(page.getByRole('button', { name: 'Asignar cliente' })).toHaveCount(0) // already has one.
 
   // --- Sale C: no customer, assigned afterwards, then deleted. ---
   await page.goto(SALES)
   await page.getByRole('link', { name: 'Nueva venta' }).last().click()
-  const saleCStart = Date.now()
   await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '2' })
   await page.getByRole('radio', { name: 'Efectivo' }).check()
   await page.getByRole('button', { name: 'Guardá la venta' }).click()
   await expectPath(page, SALE)
   await expect(page.getByText('Venta guardada')).toBeVisible()
-  expect(Date.now() - saleCStart).toBeLessThan(RECORD_BUDGET_MS) // no customer: the fastest.
   await expect(page.getByText('Sin cliente')).toBeVisible()
 
   // Assigning a customer: the sheet never offers "Sin cliente" here.
@@ -375,23 +364,8 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   await expect(page.locator('.ventas__rango')).toContainText(countLabel(mes.count))
   await expect(page.locator('.ventas__total')).toHaveText(pesos(mes.total))
 
-  // --- The list still answers fast with a few hundred sales (PRD metric 6): seeded
-  // directly, then timed on the exact request `listSales` makes. ---
-  // Sequential, not `Promise.all`: this is a single SQLite file (the e2e run's own
-  // throwaway one, `env.ts`), and three hundred concurrent writers would only time
-  // how long they spend queued behind each other's write lock, not the one request
-  // this section actually measures below.
-  for (let i = 0; i < SEEDED_SALES_FOR_PERF; i += 1) {
-    await seedSale(todayIso, '1')
-  }
-  const perfStart = Date.now()
-  const perfResponse = await page.request.get(`/sales?date_from=${todayIso}&date_to=${todayIso}`)
-  const elapsedMs = Date.now() - perfStart
-  expect(perfResponse.ok()).toBe(true)
-  expect(elapsedMs, `list took ${elapsedMs} ms`).toBeLessThan(LIST_BUDGET_MS)
-
   // --- Isolation: a second business can never reach the first one's sale. ---
-  const otherContext = await browser.newContext()
+  const otherContext = await browser.newContext({ baseURL: workerServer.url })
   const otherPage = await otherContext.newPage()
   watchConsole(otherPage, consoleMessages)
   await signUpNewBusiness(otherPage, {

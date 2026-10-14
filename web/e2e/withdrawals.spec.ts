@@ -8,7 +8,7 @@
  * times 400: the promotion ends at 4 g ($ 1.600) and the own use at 2 g ($ 800).
  */
 
-import { expect, test } from '@playwright/test'
+import { expect, test } from './fixtures.js'
 import { ANALYSIS, HOME, VARIETIES, WITHDRAWAL_NEW } from '../src/routes.js'
 import { watchConsole } from './console.js'
 import { openMas } from './helpers/openMas.js'

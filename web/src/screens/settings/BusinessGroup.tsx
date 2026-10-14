@@ -19,6 +19,7 @@ import { ApiError, NetworkError, UNKNOWN_CODE, get, patch } from '../../api/clie
 import { invalidateResource, keys } from '../../api/keys'
 import { kindOf, resolveOverride, type RefusalCode } from '../../api/refusals'
 import AvisoExito from '../../components/AvisoExito'
+import Boton from '../../components/Boton'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import Loading from '../../components/Loading'
@@ -128,9 +129,9 @@ function BusinessForm({ initialName }: { initialName: string }) {
             </span>
           )}
         </label>
-        <button className="boton" type="submit" disabled={saving}>
+        <Boton textOnly="submit" type="submit" disabled={saving}>
           Guardá el nombre
-        </button>
+        </Boton>
         {offline && <SinConexion />}
       </form>
     </SettingsGroup>

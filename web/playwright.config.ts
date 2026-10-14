@@ -4,96 +4,57 @@
  * front — `web/dist`, the same artefact `scripts/serve.sh` serves — never a mock of
  * either side (PRD, M1: "no `curl` at any point").
  *
- * The server is started here, with its own throwaway SQLite file and secret key, by
- * calling `uvicorn` and the `invite-business` CLI directly with explicit environment
- * variables — never `scripts/serve.sh` or `scripts/invite-business.sh`, which source
- * `.env` (plan, "Old shapes kept": the e2e run calls neither).
- *
- * The port is decided only here (plan, "Shape": "the port is decided only in
- * `web/playwright.config.ts`"): `APOSTROPHE_E2E_PORT` when set, else a free port from
- * `freePort.ts`, written back into the environment so every worker this config
- * spawns inherits the same one. `env.ts`'s functions read it back; nothing else picks
- * or hardcodes a port.
+ * No server starts here (ADR-0040, GH-152): each Playwright worker starts its own
+ * uvicorn, on its own free port and over its own throwaway SQLite file, from the
+ * worker-scoped `workerServer` fixture in `e2e/fixtures.ts`, and every spec takes `test`
+ * from there. This file is also loaded inside every worker, so it never resolves a port
+ * and sets no top-level `baseURL`: the fixture supplies it per worker.
  */
 
 import { defineConfig } from '@playwright/test'
-import { freePort } from './e2e/freePort.js'
-import { E2E_HOST, e2eBaseUrl, e2eDbPath, e2eEnv, e2ePort } from './e2e/env.js'
-
-if (process.env.APOSTROPHE_E2E_PORT === undefined) {
-  process.env.APOSTROPHE_E2E_PORT = String(await freePort(E2E_HOST))
-}
-// Validates the variable whether it was already set or was just picked above —
-// `e2ePort()` never picks a port itself, by decision.
-e2ePort()
-
-const envAssignments = Object.entries(e2eEnv())
-  .map(([key, value]) => `${key}=${value}`)
-  .join(' ')
-
-// Playwright races a `url` poll against `wait` (`node_modules/playwright/lib/runner/
-// index.js:946-951`), so keeping `url` set would let another worktree's server,
-// already answering on the same port, win that race and mark this run ready against
-// a server it never started. The only readiness signal is this run's own uvicorn
-// announcing itself on its own port.
-const readyPattern = new RegExp(
-  `Uvicorn running on http://${E2E_HOST.replace(/\./g, '\\.')}:${e2ePort()}\\b`,
-)
 
 export default defineConfig({
   testDir: './e2e',
   // Wait ceilings, set here once (GH-110); a call site never sets a shorter one.
   // Measured with the backend suite (`uv run --no-project pytest -n auto -q`) looping in
-  // another shell. Accept-invitation POST (scrypt, ADR-0002): max 8_458 ms and p95 7_299 ms
-  // in the heaviest run (29 signups), max 5_197 ms and p95 3_195 ms over the 5 final-config
-  // runs (150 signups). `expect` is at least 2x the largest max.
+  // another shell, 3 workers (ADR-0040). Accept-invitation POST (scrypt, ADR-0002): max
+  // 1_949 ms and p95 1_669 ms over the 5 final-config runs (175 signups); the heaviest
+  // earlier run on one worker had max 8_458 ms. `expect` stays at least 2x the largest max.
   // A test's timeout is at least 2x its own longest duration under that load. Longest
-  // passing, in the heaviest run: payments 75 s, panel 69 s, passwords 67 s, insets 62 s;
-  // over the 5 final-config runs: passwords 41 s, insets 39 s, flow 37 s, payments 36 s.
-  // So the default is 160 s; `sales.spec.ts` (117 s at worst) sets 240 s itself.
+  // passing per spec over the 5 runs at 3 workers: sales 54 s (alone, in `timed`), tapBudget
+  // 45 s, flow 30 s, insets 28 s, payments 23 s (before, on one worker: payments 75 s,
+  // panel 69 s, passwords 67 s, insets 62 s, sales 117 s). So the default is 160 s;
+  // `sales.spec.ts` sets 240 s itself. Not measured: the CI box (2 vCPU).
   timeout: 160_000,
   expect: { timeout: 17_000 },
   retries: 0,
   fullyParallel: false,
-  workers: 1,
+  // A fixed constant, never derived from the machine (ADR-0040): the same figure everywhere,
+  // so a run on a 2-vCPU CI box and on a 16-core one are the same shape.
+  workers: 3,
   reporter: 'list',
-  use: {
-    baseURL: e2eBaseUrl(),
-  },
   // `catalogInsecureOrigin.spec.ts` (review finding, carried from the clipboard
   // subtask: the `execCommand` fallback was only proven in jsdom) needs a base URL
   // that is neither `https` nor `localhost`/`127.0.0.1` — the one combination
   // Chromium's own secure-context rule still treats as insecure — so it gets its
   // own project with its own `baseURL`, instead of running under the default one
   // every other spec shares. It needs no real DNS entry: the spec itself proxies
-  // every request for that host to the one real server this config starts below.
+  // every request for that host to its own worker's real server.
+  //
+  // `sales.spec.ts` measures wall-clock time (a 300 ms list check, #120), so it runs alone,
+  // in the `timed` project, after the others: `scripts/e2e.sh` runs the two phases, and
+  // `timed` has no `dependencies` so a red phase 1 never skips it. The supported full run is
+  // `npm run e2e`; `npx playwright test sales.spec.ts` runs only the `timed` project.
   projects: [
-    { name: 'secure-origin', testIgnore: /catalogInsecureOrigin\.spec\.ts/ },
+    {
+      name: 'secure-origin',
+      testIgnore: [/catalogInsecureOrigin\.spec\.ts/, /sales\.spec\.ts/],
+    },
     {
       name: 'insecure-origin',
       testMatch: /catalogInsecureOrigin\.spec\.ts/,
       use: { baseURL: 'http://apostrophe.test' },
     },
+    { name: 'timed', testMatch: /sales\.spec\.ts/ },
   ],
-  webServer: {
-    // A throwaway SQLite file, keyed on the port so two runs never share one,
-    // removed before every run; `cwd: '..'` so the paths in `e2eEnv()`
-    // (repo-root-relative, matching `scripts/serve.sh`'s own) resolve the same way.
-    // Never `scripts/serve.sh`: that one sources `.env`.
-    //
-    // `tests.e2e_app:create_e2e_app`, not `app.main:create_app` (GH-10, front
-    // subtask): the plan's own invariant — "the test app always injects
-    // FakeTelegram and upkeep_ticker=False" — holds for the e2e run too, so no
-    // spec here ever reaches a real Telegram token or the network.
-    command:
-      `mkdir -p "$(dirname '${e2eDbPath()}')" && rm -f '${e2eDbPath()}' && ` +
-      `${envAssignments} uv run --no-project uvicorn tests.e2e_app:create_e2e_app --factory ` +
-      `--host ${E2E_HOST} --port ${e2ePort()} --no-access-log`,
-    cwd: '..',
-    reuseExistingServer: false,
-    timeout: 30_000,
-    stdout: 'pipe',
-    stderr: 'pipe',
-    wait: { stderr: readyPattern },
-  },
 })

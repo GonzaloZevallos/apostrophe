@@ -19,12 +19,13 @@ import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
 import { isGone } from '../../api/refusals'
 import { deleteWithdrawal, getWithdrawal } from '../../api/stock'
+import Boton from '../../components/Boton'
+import BotonLink from '../../components/BotonLink'
 import ConfirmDialog from '../../components/ConfirmDialog'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import GoneScreen from '../../components/GoneScreen'
 import Loading from '../../components/Loading'
 import SinConexion from '../../components/SinConexion'
-import InAppLink from '../../components/InAppLink'
 import { useBackOr } from '../../components/useBackOr'
 import { useGoneExit } from '../../components/useGoneExit'
 import { useFlash } from '../../flash/useFlash'
@@ -127,9 +128,11 @@ export default function WithdrawalDetail() {
     <main className="pantalla">
       <div className="cuerpo">
         <div className="encabezado-fila">
-          <button type="button" className="boton-icono" aria-label="Volver" onClick={back}>
-            ‹
-          </button>
+          <div className="retiro__volver">
+            <Boton variant="back" ariaLabel="Volver" onClick={back}>
+              ‹
+            </Boton>
+          </div>
           <span className="encabezado__titulo">Retiro</span>
         </div>
         <dl className="retiro__datos">
@@ -164,12 +167,10 @@ export default function WithdrawalDetail() {
           </span>
         )}
         <div className="retiro__acciones">
-          <InAppLink className="boton" to={pathTo(WITHDRAWAL_EDIT, { id: withdrawal.id })}>
-            Editar
-          </InAppLink>
-          <button type="button" className="boton boton--destructivo" onClick={() => setConfirmingDelete(true)}>
+          <BotonLink variant="icon" action="edit" ariaLabel="Editar" to={pathTo(WITHDRAWAL_EDIT, { id: withdrawal.id })} />
+          <Boton variant="destructive" icon="tacho" onClick={() => setConfirmingDelete(true)}>
             Borrar
-          </button>
+          </Boton>
         </div>
       </div>
       {confirmingDelete && (

@@ -14,7 +14,8 @@ import { CUSTOMERS, CUSTOMER_EDIT, CUSTOMER_PAYMENT, SALE_NEW, pathTo } from '..
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useLocation, useOutletContext, useParams } from 'react-router'
-import InAppLink from '../../components/InAppLink'
+import Boton from '../../components/Boton'
+import BotonLink from '../../components/BotonLink'
 import { useGoneNotice } from '../../components/goneExit'
 import { ApiError, NetworkError } from '../../api/client'
 import { type Channel, getCustomer } from '../../api/customers'
@@ -47,6 +48,7 @@ import Loading from '../../components/Loading'
 import { formatDateShort } from '../../format/dates'
 import { formatMoney, formatMoneyMagnitude } from '../../format/money'
 import { formatPhone } from '../../format/phone'
+import { deleteRowIndices } from './accountRows'
 import Cobro from './Cobro'
 
 const CHANNEL_LABEL: Record<Channel, string> = {
@@ -97,6 +99,14 @@ function rowOwnAmount(row: AccountRow): string {
   if (row.kind === 'sale') return formatMoney(row.sale.total)
   if (row.kind === 'payment') return formatMoney(row.applied_to.amount)
   return formatMoneyMagnitude(row.amount)
+}
+
+/** A row's React key, from the ids its own kind carries (never its index). A
+ * payment settles a given sale in at most one split, so `payment`+`sale` is unique. */
+function rowKey(row: AccountRow): string {
+  if (row.kind === 'sale') return `sale-${row.sale.id}`
+  if (row.kind === 'payment') return `payment-${row.payment.id}-${row.applied_to.sale_id}`
+  return `credit-${row.payment.id}`
 }
 
 export interface ClienteFichaProps {
@@ -195,16 +205,15 @@ export default function ClienteFicha({ payment = false }: ClienteFichaProps) {
     )
   }
 
-  const seenPaymentIds = new Set<number>()
+  const rows = account.data?.rows ?? []
+  const deleteIndices = deleteRowIndices(rows)
 
   return (
     <main className="pantalla">
       <div className="cuerpo">
-        <div>
+        <div className="ficha-cliente__encabezado">
           <span className="encabezado__titulo">{data.name}</span>
-          <InAppLink to={pathTo(CUSTOMER_EDIT, { id: customerId })}>
-            Editar
-          </InAppLink>
+          <BotonLink variant="icon" action="edit" ariaLabel="Editar" to={pathTo(CUSTOMER_EDIT, { id: customerId })} />
         </div>
         {feedback !== null && <Notice kind={feedback.kind} message={feedback.message} />}
         {accountGone && <Notice kind="notice" message={GONE_NOTICE} />}
@@ -250,27 +259,27 @@ export default function ClienteFicha({ payment = false }: ClienteFichaProps) {
         </div>
 
         {data.standing === 'owes' && (
-          <InAppLink to={pathTo(CUSTOMER_PAYMENT, { id: customerId })} className="boton">
-            Registrar cobro
-          </InAppLink>
+          <div className="clientes__accion">
+            <BotonLink to={pathTo(CUSTOMER_PAYMENT, { id: customerId })} icon="cobro">
+              Registrar cobro
+            </BotonLink>
+          </div>
         )}
 
         <div className="cuenta-cliente">
-          {(account.data?.rows ?? []).map((row, index) => {
+          {rows.map((row, index) => {
             const label = rowLabel(row)
-            const showDelete =
-              row.kind === 'payment' && !seenPaymentIds.has(row.payment.id)
-            if (row.kind === 'payment') seenPaymentIds.add(row.payment.id)
             return (
-              <div key={index} className="cuenta-cliente__fila">
+              <div key={rowKey(row)} className="cuenta-cliente__fila">
                 <span className="cuenta-cliente__fecha">{formatDateShort(row.date)}</span>
                 {label !== '' && <span>{label}</span>}
                 <span className="cuenta-cliente__monto">{rowOwnAmount(row)}</span>
                 <span className="cuenta-cliente__saldo">{rowAmount(row)}</span>
-                {showDelete && (
-                  <button
-                    type="button"
-                    className="boton-enlace"
+                {deleteIndices.has(index) && row.kind !== 'sale' && (
+                  <Boton
+                    variant="icon"
+                    action="delete"
+                    ariaLabel="Borrar cobro"
                     onClick={() =>
                       setConfirmingDelete({
                         id: row.payment.id,
@@ -279,18 +288,18 @@ export default function ClienteFicha({ payment = false }: ClienteFichaProps) {
                         paid_on: row.payment.paid_on,
                       })
                     }
-                  >
-                    Borrar cobro
-                  </button>
+                  />
                 )}
               </div>
             )
           })}
         </div>
 
-        <InAppLink to={SALE_NEW} state={newSaleFor(customerId)} className="boton">
-          Nueva venta a {data.name}
-        </InAppLink>
+        <div className="clientes__accion">
+          <BotonLink to={SALE_NEW} state={newSaleFor(customerId)} icon="agregar">
+            Nueva venta a {data.name}
+          </BotonLink>
+        </div>
       </div>
 
       {payment && <Cobro customerId={customerId} balance={data.balance} today={me.today} />}

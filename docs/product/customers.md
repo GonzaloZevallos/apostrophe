@@ -110,9 +110,9 @@ Success criteria:
 - **No echo**: no refusal body or toast contains the submitted number, any of its digit runs, or a customer's name. (Criteria 2, 6)
 - **Isolation coverage**: every customer route sits in the isolation sweep and answers 404 or empty from another business. (Criterion 3)
 - **Find-or-register time**:
-  - registering a new customer from the phone takes under 60 s through the front;
+  - registering a new customer from the phone is run through the front (`web/e2e/customers.spec.ts`) and the tap budget holds (`web/e2e/tapBudget.spec.ts`); its duration is not measured by any test;
   - a search answers in under 300 ms with a few dozen customers;
-  - a sale with a new customer, registered from "Elegir cliente" with or without a number, is recorded in under 60 s through the front.
+  - a sale with a new customer, registered from "Elegir cliente" with or without a number, is recorded by the same front run (`web/e2e/customers.spec.ts`); its duration is not measured by any test.
 
   (Criterion 1)
 - **No-number lifecycle**: through the API and the end-to-end front run, a customer without a number is registered, edited, found by name, chosen for a sale left owing, paid and shown in Clientes' Te deben section. 100% passing. (Criterion 5)

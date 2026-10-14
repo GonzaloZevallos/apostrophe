@@ -9,7 +9,8 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { CUSTOMER, CUSTOMER_EDIT, HOME, LOGIN, SALE, STOCK_ENTRY, VARIETY, pathTo } from '../src/routes.js'
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test } from './fixtures.js'
+import type { Page } from '@playwright/test'
 import { watchConsole } from './console.js'
 import { LEGACY_REDIRECTS } from './helpers/legacyPaths.js'
 import { seedRecords, signUp, type Records } from './helpers/seed.js'
@@ -70,9 +71,9 @@ test.describe.serial('navigation', () => {
   let records: Records
   const consoleMessages: string[] = []
 
-  test.beforeAll(async ({ browser }) => {
+  test.beforeAll(async ({ browser, workerServer }) => {
     test.setTimeout(180_000)
-    page = await (await browser.newContext({ viewport: { width: 390, height: 844 } })).newPage()
+    page = await (await browser.newContext({ baseURL: workerServer.url, viewport: { width: 390, height: 844 } })).newPage()
     watchConsole(page, consoleMessages)
     await signUp(page, 'Rutas')
     records = await seedRecords(page, 'Carla Rutas')
@@ -134,10 +135,11 @@ test.describe.serial('navigation', () => {
 
   test("an old link to another business's sale lands on the English route and says \"Eso ya no está.\"", async ({
     browser,
+    workerServer,
   }) => {
     const old = LEGACY_REDIRECTS.find(([, now]) => now === SALE)
     expect(old).toBeDefined()
-    const context = await browser.newContext({ viewport: { width: 390, height: 844 } })
+    const context = await browser.newContext({ baseURL: workerServer.url, viewport: { width: 390, height: 844 } })
     const other = await context.newPage()
     await signUp(other, 'Ajena')
     await other.goto(pathTo(old?.[0] ?? '', { id: records.sale }))
@@ -163,7 +165,7 @@ test.describe.serial('navigation', () => {
     expect(consoleMessages.filter((message) => !API_NOT_FOUND.test(message))).toEqual([])
   })
 
-  test('signed out, every built path lands on Entrar', async ({ browser }) => {
+  test('signed out, every built path lands on Entrar', async ({ browser, workerServer }) => {
     const ids = {
       owing_sale: records.sale,
       debtor: records.customer,
@@ -171,7 +173,7 @@ test.describe.serial('navigation', () => {
       entry: records.entry,
       withdrawal: records.withdrawal,
     }
-    const context = await browser.newContext()
+    const context = await browser.newContext({ baseURL: workerServer.url })
     const anonymous = await context.newPage()
     for (const template of builtPaths()) {
       await anonymous.goto(filled(template, ids))

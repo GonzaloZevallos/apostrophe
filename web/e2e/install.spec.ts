@@ -6,7 +6,7 @@
  */
 
 import { LOGIN } from '../src/routes.js'
-import { expect, test } from '@playwright/test'
+import { expect, test } from './fixtures.js'
 import { watchConsole } from './console.js'
 
 interface ManifestIcon {

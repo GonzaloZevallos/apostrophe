@@ -9,7 +9,8 @@
  */
 
 import { SALES, VARIETIES } from '../src/routes.js'
-import { expect, test, type Locator, type Page } from '@playwright/test'
+import { expect, test } from './fixtures.js'
+import type { Locator, Page } from '@playwright/test'
 import { signUpNewBusiness } from './helpers/signup.js'
 
 const TOUCH_TARGET = 44

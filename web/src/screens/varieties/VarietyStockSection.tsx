@@ -7,6 +7,7 @@
  * detail. Read-only: an entry is edited and deleted from the list, through its own form.
  */
 
+import BotonLink from '../../components/BotonLink'
 import InAppLink from '../../components/InAppLink'
 import { type Movement, type StockView, entriesOf } from '../../api/stock'
 import { formatDate } from '../../format/dates'
@@ -35,7 +36,7 @@ export default function VarietyStockSection({
     <section className="seccion-variedad">
       <div className="seccion-variedad__cabecera">
         <h2 className="seccion-variedad__titulo">Stock y entradas</h2>
-        <InAppLink to={pathTo(VARIETY_ENTRIES, { id: varietyId })}>Ver todas</InAppLink>
+        <BotonLink variant="link" to={pathTo(VARIETY_ENTRIES, { id: varietyId })}>Ver todas</BotonLink>
       </div>
       <ul className="lista-entradas">
         {rows.map((movement) =>

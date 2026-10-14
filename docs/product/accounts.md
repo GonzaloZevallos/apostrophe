@@ -176,7 +176,7 @@ Success criteria, removing a business:
 
 - **New-business invitation**: printed by `scripts/invite-business.sh`. Accepting it takes a business name, an email and a password, and opens the business with that user in it.
 - **Join invitation**: any user creates one from the app (`POST /invitations`). Accepting it takes an email and a password and adds the user to the inviting business; a business name sent along is ignored.
-- **Accepting either invitation** signs the person in, as a login does. They land on Inicio of that business.
+- **Accepting either invitation** signs the person in, as a login does. Accepting a new-business invitation lands in the Onboarding of that business (onboarding.md); accepting a join invitation lands on Inicio of that business.
 - **Looking up an invitation** tells its kind, the business it leads to (join only) and when it expires. An unknown, used or expired invitation is not found.
 - **Email**: trimmed and lowercased; one user per email across the whole installation.
 - **Password**: at least 10 characters; stored only as a hash.
@@ -527,7 +527,7 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
 - **Password change (criterion 18)**:
   - after a Change, every earlier token of the user answers 401;
   - the acting device's fresh token works, and a partner's token in the same business still works;
-  - through the front, from a phone viewport, a Change takes under 60 s.
+  - through the front, from a phone viewport, a Change completes (`web/e2e/passwords.spec.ts`); its duration is not measured by any test.
 - **Reset matrix (criterion 19)**, 100% passing:
   - a link works once;
   - it is dead after 24 hours (fake clock);
@@ -551,7 +551,7 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
   - completes a reset from a printed link through to Inicio;
   - sees the dead-link state for a used link.
 - **Getting in, redesigned (criteria 27–32)**:
-  - fast: from a phone viewport, the end-to-end front run accepts an invitation, completes a reset from a printed link and logs in at Entrar, each landing on Inicio signed in, the links in under 60 s;
+  - fast: from a phone viewport, the end-to-end front run accepts an invitation, completes a reset from a printed link and logs in at Entrar, each landing on Inicio signed in (`web/e2e/passwords.spec.ts`); the duration of the links is not measured by any test;
   - states: front tests show each fixed text (brake message, both dead-link texts, "Sin conexión", the retry, both "Eso ya no está." forms, loading); shape and color checked by eye in both themes;
   - loading is not data: a front test shows the loading state holds no digit, currency symbol or placeholder figure;
   - design:

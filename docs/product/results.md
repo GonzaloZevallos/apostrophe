@@ -9,7 +9,7 @@ Whether a business makes money and how much it actually has, over today, this we
 - payments, balances and settlement from payments (ADR-0012);
 - stock status and days left from stock.
 
-It computes nothing those capabilities already compute, beyond adding them up. Its period figures come from the one computation Análisis also reads (ADR-0020): Ganancia here and profit in Análisis are the same figure. Inicio also carries the first-run checklist and the after-import notice, defined in navigation.md; their place on Inicio is set here. An archived variety (varieties.md) leaves Lo que te queda and "Arrancá por las variedades", while every period figure keeps it.
+It computes nothing those capabilities already compute, beyond adding them up. Its period figures come from the one computation Análisis also reads (ADR-0020): Ganancia here and profit in Análisis are the same figure. Inicio also carries the Onboarding's notice (onboarding.md), the first-run checklist and the after-import notice (navigation.md); their place on Inicio is set here. An archived variety (varieties.md) leaves Lo que te queda and "Arrancá por las variedades", while every period figure keeps it.
 
 ## Jobs
 
@@ -20,6 +20,8 @@ Ganancia and Caja exist nowhere else in the product, and they are why the panel 
 **When** I take grams out of my own stock without selling them (to share at a party so people get to know the business, or for my own use), **I want** to record them from my phone in a few taps (date, varieties and grams, the reason), **so I can** keep stock right and see in Ganancia what promoting the business and my own consumption cost me, without recording a sale nobody made or an adjustment that reads as lost flower. (Served here by the Promoción and Consumo propio lines of Semana and Mes; the withdrawal is defined in stock.md.)
 
 **When** I run my business from my phone between orders or mid-chat with a customer, several times a day, **I want** the app laid out around what I actually do and how often, **so I can** get back to the customer instead of hunting through menus. (The navigation job, navigation.md: served here by Hoy showing what can be acted on today, with "Cobrar" on each debtor.)
+
+**When** I have just opened my business and it is still empty, **I want** to be walked through what it needs, one short step at a time, with defaults already filled in, **so I can** record my first sale the same day without hunting through Configuración, Variedades and the catalog screen. (Served here by the "Seguí con la configuración" notice at the top of Inicio, the only way back into the Onboarding; defined in onboarding.md.)
 
 **When** a variety I loaded by mistake, or one I no longer work with, keeps showing in my lists and pickers, **I want** to take it out from my phone in a few taps, deleting it if it never moved and archiving it if it has history, **so** my lists show only what I still sell, no past sale, stock, cost or profit figure changes, and I can bring it back exactly as it was if I start selling it again. (Served here by Lo que te queda leaving archived varieties out while every period figure stays the same; defined in varieties.md.)
 
@@ -130,10 +132,14 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
 
 ### On screen (Inicio, InicioOscuro, InicioCompu)
 
-- Inicio is the panel and a tab root (navigation.md), and remains the landing screen after login and after accepting an invitation.
+- Inicio is the panel and a tab root (navigation.md), and remains the landing screen after login and after accepting a join invitation. Accepting a new-business invitation lands in the Onboarding instead (onboarding.md).
 - **At its top**: the business's avatar, which opens Configuración.
 - **Top to bottom, above the figures**:
-  1. the first-run checklist while it shows (navigation.md). Once it is gone for good, "Arrancá por las variedades" takes its place whenever no unarchived variety has a current price today. The two never show together;
+  1. the first-run element of the business, at most one of:
+     - "Seguí con la configuración", while the Onboarding is not over (onboarding.md): "N de 6 pasos" and what is next, not dismissible;
+     - the first-run checklist while it shows (navigation.md), for a business that existed before the Onboarding.
+
+     Once neither applies, "Arrancá por las variedades" takes this place whenever no unarchived variety has a current price today. It never shows together with the Onboarding notice or the checklist;
   2. "Tu catálogo en Telegram está desactualizado", while the pinned catalog is out of date (pinned-catalog.md). It opens the catalog screen (catalog.md);
   3. "Conectá el bot para que el catálogo fijado se actualice solo", for a business loaded by the spreadsheet import, until dismissed or the bot is first published (navigation.md);
   4. the tab's figures, as listed above.
@@ -142,7 +148,7 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
 - It follows the light and dark themes.
 - It is not an action menu:
   - it records nothing itself and has no toasts;
-  - its one main action is the shell's "+ Nueva venta"; "Cobrar" on debtor rows is the only other direct action.
+  - its one main action is the shell's "+ Nueva venta"; "Cobrar" on debtor rows is the only other direct action, besides the Onboarding notice, which only opens the Onboarding.
 - The figures are read when the panel is opened, with no live updates.
 - A dropped network shows "Sin conexión" (accounts.md).
 
@@ -150,7 +156,7 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
 
 - The business comes from the session.
 - The panel route joins the isolation sweep and the gated-route test.
-- Every figure is computed on the server.
+- Every figure is computed on the server, and so is whether the Onboarding notice shows, its count and what is next.
 - No figure or name goes to logs, the console or browser storage.
 
 ## Metrics
@@ -174,10 +180,10 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
 - **Archiving moves nothing (criterion 3)**: every period figure is identical before archiving a variety with history, after archiving and after restoring; the archived variety is absent from Lo que te queda and does not count for "Arrancá por las variedades".
 - **Not a sale (criterion 7)**: after recording a withdrawal, 0 differences in sales, number of sales, average sale, grams sold, Regalaste, cost of goods sold, stock shortfall and Caja.
 - **Tabs**: front tests show Hoy with sales, Te deben and Lo que te queda only, and Ganancia, Caja, Costo de lo vendido, Faltante de stock, Promoción, Consumo propio, Gastos, Regalaste and Compras only on Semana and Mes, Promoción and Consumo propio right after Faltante de stock.
-- **Inicio's order**: front tests, phone and computer, show the checklist or "Arrancá por las variedades" (never both), then the out-of-date notice, then the after-import notice, then the figures.
+- **Inicio's order**: front tests, phone and computer, show at most one of the Onboarding notice, the checklist or "Arrancá por las variedades" (never two), then the out-of-date notice, then the after-import notice, then the figures.
 - **Period edges**: a week that crosses a month and a year, Monday as the first day, and a day boundary in Argentina time. 100% passing.
 - **Debtors teaser (criterion 4)**: ordered by balance, then owing since, then name; credits excluded; "Nadie te debe" when nobody owes; "Cobrar" with its accessible name on every row. No state is told by color alone.
-- **Isolation (criterion 5)**: from another business, the panel route shows none of the first business's figures. After a full front run, the console and browser storage hold no figures or names.
+- **Isolation (criterion 5)**: from another business, the panel route shows none of the first business's figures or Onboarding state. After a full front run, the console and browser storage hold no figures or names.
 - **Nothing invented (criterion 6)**:
   - an empty business shows $ 0 and 0 g, with no average sale and no Faltante de stock, Promoción or Consumo propio line;
   - every figure on screen equals the API's answer.
@@ -191,4 +197,5 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
 - Margins per variety (#8), stock shortfall per variety, and promotion or own-use cost per variety.
 - Pending grams counted on the panel ("y N g sin costo"): the panel's note is fixed and carries no grams; Análisis shows the counts.
 - Stock's total grams on the panel.
+- Dismissing the Onboarding notice.
 - Archived varieties on the panel.

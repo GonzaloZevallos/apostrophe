@@ -18,10 +18,12 @@ import {
   pathTo,
   withdrawalNewFor,
 } from '../../src/routes.js'
-import { expect, type Page } from '@playwright/test'
+import { expect } from '../fixtures.js'
+import type { Page } from '@playwright/test'
 import { newBusinessInvitationUrl } from '../backend.js'
 import { expectPath } from './url.js'
 import { fillSaleLine } from './sale.js'
+import { leaveOnboarding } from './signup.js'
 
 export const PASSWORD = 'correcthorsebattery'
 
@@ -40,7 +42,8 @@ export async function signUp(page: Page, label: string): Promise<void> {
   await page.getByLabel('Email').fill(`duena-${label}-${Date.now()}@example.com`)
   await page.getByLabel('Contraseña').fill(PASSWORD)
   await page.getByRole('button', { name: 'Creá el negocio' }).click()
-  await expect(page.locator('.encabezado__negocio')).toBeVisible()
+  // A new business lands in the Onboarding; this spec is about something else.
+  await leaveOnboarding(page)
 }
 
 /** The id the address bar ends in, once it matches `template`. */

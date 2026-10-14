@@ -17,6 +17,7 @@ import { WEAK_PASSWORD_MESSAGE } from '../Invitacion'
 import { BRAKE_MESSAGE } from '../Entrar'
 import AccountGroup from './AccountGroup'
 import { PASSWORD_CHANGED_SUCCESS } from './messages'
+import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 
 function noContent(): Response {
   return new Response(null, { status: 204 })
@@ -204,4 +205,27 @@ test('an untouched group closes at once, with no confirmation, and "Cerrar" neve
 
   expect(await screen.findByText('Lista de grupos')).toBeInTheDocument()
   expect(fetchMock).not.toHaveBeenCalled()
+})
+
+test('Cambiar contraseña and Cerrar sesión are icon + text, "Cerrar" the icon-only close', async () => {
+  renderAccount(vi.fn().mockResolvedValue(jsonResponse(200, BUSINESS)))
+
+  for (const name of ['Cambiar contraseña', 'Cerrar sesión']) {
+    const button = await screen.findByRole('button', { name })
+    expect(button).toHaveTextContent(name)
+    expect(button.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  }
+  const close = screen.getByRole('button', { name: 'Cerrar' })
+  expect(close).toHaveClass('boton-icono')
+  expect(close).toHaveTextContent('')
+  expect(screen.queryByText('Volver')).not.toBeInTheDocument()
+  expectIconAndTextRule(document.body)
+})
+
+test('the password sheet follows the icon and text rule', async () => {
+  renderAccount(vi.fn().mockResolvedValue(jsonResponse(200, BUSINESS)))
+  await userEvent.click(await screen.findByRole('button', { name: 'Cambiar contraseña' }))
+  await screen.findByLabelText('Contraseña actual')
+
+  expectIconAndTextRule(document.body)
 })

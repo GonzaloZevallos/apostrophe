@@ -7,9 +7,10 @@
 
 import { CUSTOMER, CUSTOMER_NEW, CUSTOMERS, SALE_NEW, VARIETIES } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
-import { expect, test } from '@playwright/test'
+import { expect, test } from './fixtures.js'
 import { newBusinessInvitationUrl } from './backend.js'
 import { fillSaleLine } from './helpers/sale.js'
+import { leaveOnboarding } from './helpers/signup.js'
 
 const PASSWORD = 'correcthorsebattery'
 
@@ -23,7 +24,8 @@ test('Back on a dirty Registrar cobro and on a dirty Nueva venta asks, and "No" 
   await page.getByLabel('Email').fill(`duena-volver-${Date.now()}@example.com`)
   await page.getByLabel('Contraseña').fill(PASSWORD)
   await page.getByRole('button', { name: 'Creá el negocio' }).click()
-  await expect(page.locator('.encabezado__negocio')).toBeVisible()
+  // A new business lands in the Onboarding; this spec is about something else.
+  await leaveOnboarding(page)
 
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'Nueva variedad' }).click()

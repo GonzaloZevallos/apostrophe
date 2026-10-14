@@ -24,7 +24,7 @@
 
 import { CUSTOMER, CUSTOMERS, CUSTOMER_NEW, SALE, SALES, SALE_NEW, VARIETIES } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
-import { expect, test } from '@playwright/test'
+import { expect, test } from './fixtures.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
@@ -172,6 +172,52 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
   await expect(page.getByText('Te debe', { exact: false })).toHaveCount(0)
   await expect(page.getByText('A favor', { exact: false })).toHaveCount(0)
+
+  // --- A payment that is only "A favor" can still be deleted: sell on credit,
+  // collect it later, delete the sale (the cobro becomes a credit), then delete
+  // that cobro (payments.md: a credit that should not exist is fixed by deleting
+  // the mistaken payment). The card still holds the first sale and its cobro. ---
+  await page.getByRole('link', { name: 'Nueva venta a Carla Pérez' }).click()
+  await expectPath(page, SALE_NEW)
+  await fillSaleLine(page, 1, { variety: 'Rosa', grams: '5' })
+  await page.getByRole('radio', { name: 'Debiendo' }).check()
+  await page.getByRole('button', { name: 'Guardá la venta' }).click()
+  await expectPath(page, SALE)
+  await expect(page.getByText('Venta guardada')).toBeVisible()
+  const creditSaleUrl = page.url()
+
+  await page.goto(CUSTOMERS)
+  await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
+  await page.getByRole('link', { name: 'Registrar cobro' }).click()
+  await page.getByRole('button', { name: 'Todo: $ 5.000' }).click()
+  await page.getByRole('radio', { name: 'Efectivo' }).check()
+  await page.getByRole('button', { name: 'Guardar' }).click()
+  await expect(page.getByText('Cobro guardado', { exact: true })).toBeVisible()
+
+  await page.goto(creditSaleUrl)
+  await page.getByRole('button', { name: 'Borrar venta' }).click()
+  await page.getByRole('button', { name: 'Sí, borrala' }).click()
+  await expectPath(page, SALES)
+  await expect(page.getByText('Venta eliminada')).toBeVisible()
+
+  await page.goto(CUSTOMERS)
+  await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
+  // Three rows: the first sale, its cobro, and the new cobro left as a credit.
+  await expect(page.locator('.cuenta-cliente__fila')).toHaveCount(3)
+  const creditRow = page.locator('.cuenta-cliente__fila').filter({ hasText: 'A favor' })
+  await expect(creditRow).toHaveCount(1)
+  // Every cobro offers "Borrar cobro" once: the first's, and the credit's.
+  await expect(page.getByRole('button', { name: 'Borrar cobro' })).toHaveCount(2)
+  await expect(creditRow.getByRole('button', { name: 'Borrar cobro' })).toHaveCount(1)
+  await creditRow.getByRole('button', { name: 'Borrar cobro' }).click()
+  await expect(
+    page.getByText(`¿Borrás el cobro de $ 5.000 (efectivo) del ${today}?`),
+  ).toBeVisible()
+  await page.getByRole('button', { name: 'Sí, borralo' }).click()
+  await expect(page.getByText('Cobro eliminado')).toBeVisible()
+  await expect(page.getByText('Te debe', { exact: false })).toHaveCount(0)
+  await expect(page.getByText('A favor', { exact: false })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Borrar cobro' })).toHaveCount(1)
 
   // Nothing personal or technical reaches the console or the browser's own storage.
   await expectOnlyTheThemeStored(page)

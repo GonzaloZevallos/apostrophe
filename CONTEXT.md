@@ -390,8 +390,12 @@ The one place holding every business-wide setting, in groups: Negocio, Usuarios,
 _Avoid_: Ajustes (in the spreadsheet that held prices), preferences, admin, Negocio (that is one group)
 
 **First-run checklist**:
-Four steps on Inicio for a business that has not yet both priced a variety for today and recorded a stock entry: those two, plus publishing the pinned catalog and adding a second user, which are optional. Each step is worked out from the business's data and reads "Hecho" when met; the checklist goes for good the first time the two required steps are met and never returns.
-_Avoid_: onboarding, tour, wizard, setup guide, welcome
+Four steps on Inicio for a business that existed before the Onboarding shipped and has not yet both priced a variety for today and recorded a stock entry: those two, plus publishing the pinned catalog and adding a second user, which are optional. Each step is worked out from the business's data and reads "Hecho" when met; the checklist goes for good the first time the two required steps are met and never returns. A brand-new business gets the Onboarding instead.
+_Avoid_: tour, wizard, setup guide, welcome, Onboarding (that is a brand-new business's first run)
+
+**Onboarding**:
+The step-by-step setup a brand-new business is walked through after its new-business invitation is accepted, in place of the first-run checklist. It has two required steps (a variety priced today, its opening stock) and optional ones (catalog header and footer, Telegram bot, a partner, expense categories), each saving what Configuración or the variety's page saves. It resumes where it was left, is over for good once its closing screen "Listo" is reached or an import loads the business, and is never offered to a joined user's business or one that existed before it shipped.
+_Avoid_: tour, wizard, welcome screen, setup guide
 
 **Theme choice**:
 A device's choice of Claro or Oscuro. It is made only in Configuración → Apariencia, applies at once and is kept on that device alone. It is not tied to a user or a business, survives logging out and holds nothing else. With none stored, the app opens light whatever the system setting.
@@ -424,3 +428,15 @@ _Avoid_: gift (a gift is a sale line, to someone, inside a sale), sample, freebi
 **Own use**:
 A stock withdrawal the seller consumes personally. Its cost is what the withdrawn grams cost from their lots as they stand today, shown as its own line that lowers profit. In the app: Consumo propio.
 _Avoid_: personal, shrinkage
+
+**More info**:
+The longer how-or-why behind a shortened line, one tap away on an "i" at the end of that line, expanded in place and collapsed on a second tap; it always opens closed and is never remembered. Never a consequence, a refusal's fix or a state. In the app: Más info (its accessible name, with aria-expanded).
+_Avoid_: tooltip, popover, help modal, info sheet, details
+
+**Icon and text rule**:
+The one written rule for how every screen labels its entries, actions and notices: a closed list of icon-only actions, a closed list of text-only controls, icon + text for everything else, the length limits of always-visible text, and what may move behind More info. It decides how things are labelled, never what they do. In the app: no word of its own.
+_Avoid_: style guide, UI guidelines, icon policy
+
+**Attention icon**:
+The one icon, the same everywhere, set next to the sentence of a notice or status that asks the seller to act or says something failed; the sentence still carries the state. Informational lines never carry it. In the app: no word of its own.
+_Avoid_: warning icon, alert icon, badge, error icon

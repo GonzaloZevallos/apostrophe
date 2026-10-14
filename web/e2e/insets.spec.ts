@@ -7,7 +7,8 @@
  * element that each check can add and remove.
  */
 
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test } from './fixtures.js'
+import type { Page } from '@playwright/test'
 import {
   CUSTOMER,
   CUSTOMER_NEW,
@@ -22,6 +23,7 @@ import {
   SETTINGS_BUSINESS,
   SETTINGS_CATALOG_MESSAGE,
   SETTINGS_INTEGRATIONS,
+  SETTINGS_PRICES,
   SETTINGS_USERS,
   VARIETIES,
 } from '../src/routes.js'
@@ -221,6 +223,7 @@ test('a settings group on a computer keeps its 80px top padding at inset 0 and s
     SETTINGS_BUSINESS,
     SETTINGS_USERS,
     SETTINGS_INTEGRATIONS,
+    SETTINGS_PRICES,
     SETTINGS_CATALOG_MESSAGE,
     EXPENSE_CATEGORIES,
     SETTINGS_ACCOUNT,

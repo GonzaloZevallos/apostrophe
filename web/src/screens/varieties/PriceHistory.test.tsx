@@ -8,7 +8,10 @@ import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import { catalogQueryOptions } from '../../api/catalog'
+import { PRICE_HISTORY_HELP } from './varietiesMessages'
+import { LIMITS, SAMPLES } from '../../copy/limits'
 import { VARIETY, VARIETY_PRICES, pathTo } from '../../routes'
+import { expectIconAndTextRule, iconAndTextProblems } from '../../test/iconAndTextRule'
 import { HISTORY, VARIETY_ROW, api, jsonResponse, renderVarieties, writes } from './renderVarieties'
 
 afterEach(() => {
@@ -169,6 +172,17 @@ test("an archived variety's price history is read-only: rows with no delete", as
 
   expect(await screen.findAllByText(/^Rige desde/)).toHaveLength(3)
   expect(screen.queryByRole('button', { name: 'Borrar este precio' })).toBeNull()
+})
+
+test('the history follows the rule: its help line is measured copy and each delete is icon-only', async () => {
+  renderVarieties([pathTo(VARIETY_PRICES, { id: 1 })], api())
+  const help = await screen.findByText(PRICE_HISTORY_HELP)
+  const main = screen.getByRole('main')
+
+  expect(help).toHaveAttribute('data-copy', 'help')
+  expectIconAndTextRule(main, { limits: LIMITS, samples: SAMPLES })
+  help.textContent = 'x'.repeat(LIMITS.help + 1)
+  expect(iconAndTextProblems(main, { limits: LIMITS, samples: SAMPLES })).toHaveLength(1)
 })
 
 test("an archived variety's price history follows the switches like a live one", async () => {

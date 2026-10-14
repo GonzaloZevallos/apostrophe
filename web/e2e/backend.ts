@@ -4,6 +4,9 @@
  * real seller — a CLI command, never `curl` (PRD, M1: "no `curl` at any point" rules
  * out the HTTP shortcut, not the install step every business already needs once).
  * Everything after this runs through the browser alone.
+ *
+ * `e2eEnv()` names the calling worker's own database and port, which only
+ * `web/e2e/fixtures.ts` decides, so these CLI calls reach that worker's server's data.
  */
 
 import { execFileSync } from 'node:child_process'

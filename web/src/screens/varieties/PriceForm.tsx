@@ -23,6 +23,8 @@ import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import { parseGrams, parseMoney } from '../../format/parse'
 import { GENERIC_REFUSAL_MESSAGE } from '../Variedades'
+import { PRICE_DISCOUNT_HELP, PRICE_FROM_GRAMS_HELP, PRICE_PER_GRAM_HELP } from './priceMessages'
+import Boton from '../../components/Boton'
 
 export const DUPLICATE_DATE_MESSAGE = 'Ya cargaste un precio con esa fecha'
 export const PRICE_INVALID_MESSAGE = 'Revisá los precios cargados'
@@ -54,6 +56,9 @@ export interface PriceFormProps {
   onCancel: () => void
   onDirtyChange: (dirty: boolean) => void
   onGone: () => void
+  /** A host with its own frame and its own "Cerrar" (the Onboarding) leaves the title row out
+   * and keeps the price effective today: no "Rige desde" to change. */
+  bare?: boolean
 }
 
 function FieldError({ message }: { message: string | undefined }) {
@@ -65,7 +70,16 @@ function FieldError({ message }: { message: string | undefined }) {
   )
 }
 
-export default function PriceForm({ varietyId, today, settings, onDone, onCancel, onDirtyChange, onGone }: PriceFormProps) {
+export default function PriceForm({
+  varietyId,
+  today,
+  settings,
+  onDone,
+  onCancel,
+  onDirtyChange,
+  onGone,
+  bare = false,
+}: PriceFormProps) {
   const queryClient = useQueryClient()
   const [effectiveFrom, setEffectiveFrom] = useState(today)
   const [listPrice, setListPrice] = useState('')
@@ -130,24 +144,30 @@ export default function PriceForm({ varietyId, today, settings, onDone, onCancel
 
   return (
     <div className="gasto-form">
-      <div className="gasto-form__cabecera">
-        <span className="gasto-form__titulo">Nuevo precio</span>
-        <button type="button" className="boton--enlace gasto-form__cerrar" onClick={onCancel}>
-          Cerrar
-        </button>
-      </div>
+      {!bare && (
+        <div className="gasto-form__cabecera">
+          <span className="gasto-form__titulo">Nuevo precio</span>
+          <span className="gasto-form__cerrar">
+            <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={onCancel} />
+          </span>
+        </div>
+      )}
       <form className="formulario" onSubmit={onSubmit}>
-        <label className="campo">
-          <span className="campo__rotulo">Rige desde</span>
-          <input
-            className="campo__input"
-            type="date"
-            value={effectiveFrom}
-            onChange={(event) => setEffectiveFrom(event.target.value)}
-            required
-          />
+        {bare ? (
           <FieldError message={errors.effectiveFrom} />
-        </label>
+        ) : (
+          <label className="campo">
+            <span className="campo__rotulo">Rige desde</span>
+            <input
+              className="campo__input"
+              type="date"
+              value={effectiveFrom}
+              onChange={(event) => setEffectiveFrom(event.target.value)}
+              required
+            />
+            <FieldError message={errors.effectiveFrom} />
+          </label>
+        )}
         <label className="campo">
           <span className="campo__rotulo">Precio de lista</span>
           <input
@@ -157,7 +177,7 @@ export default function PriceForm({ varietyId, today, settings, onDone, onCancel
             onChange={(event) => setListPrice(event.target.value)}
             required
           />
-          <span className="campo__ayuda">Por gramo, en pesos enteros</span>
+          <span className="campo__ayuda" data-copy="help">{PRICE_PER_GRAM_HELP}</span>
           <FieldError message={errors.listPrice} />
         </label>
         {settings.is_bulk_pricing && (
@@ -170,7 +190,7 @@ export default function PriceForm({ varietyId, today, settings, onDone, onCancel
               value={bulkPrice}
               onChange={(event) => setBulkPrice(event.target.value)}
             />
-            <span className="campo__ayuda">Opcional · menor al precio de lista</span>
+            <span className="campo__ayuda" data-copy="help">{PRICE_DISCOUNT_HELP}</span>
             <FieldError message={errors.bulkPrice} />
           </label>
           <label className="campo">
@@ -181,7 +201,7 @@ export default function PriceForm({ varietyId, today, settings, onDone, onCancel
               value={bulkMinimum}
               onChange={(event) => setBulkMinimum(event.target.value)}
             />
-            <span className="campo__ayuda">Desde cuántos gramos aplica</span>
+            <span className="campo__ayuda" data-copy="help">{PRICE_FROM_GRAMS_HELP}</span>
             <FieldError message={errors.bulkMinimum} />
           </label>
           </>
@@ -195,15 +215,15 @@ export default function PriceForm({ varietyId, today, settings, onDone, onCancel
               value={vipPrice}
               onChange={(event) => setVipPrice(event.target.value)}
             />
-            <span className="campo__ayuda">Opcional · menor al precio de lista</span>
+            <span className="campo__ayuda" data-copy="help">{PRICE_DISCOUNT_HELP}</span>
             <FieldError message={errors.vipPrice} />
           </label>
         )}
         <FieldError message={errors.form} />
         {offline && <SinConexion />}
-        <button className="boton" type="submit" disabled={sending}>
+        <Boton textOnly="submit" type="submit" disabled={sending}>
           Guardá el precio
-        </button>
+        </Boton>
       </form>
     </div>
   )
