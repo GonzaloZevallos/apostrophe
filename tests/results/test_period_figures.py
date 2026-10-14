@@ -9,6 +9,7 @@ from typing import Literal
 
 import pytest
 
+from app.results.domain import period_figures as period_figures_module
 from app.results.domain.figures import (
     AmountWithPending,
     AnalysisFigures,
@@ -981,10 +982,41 @@ def test_the_month_header_shortfall_equals_that_months_row_for_none_costed_and_a
     assert figures.month.shortfall.all_pending is True
 
 
-def test_no_domain_cost_type_gives_costed_grams_a_default() -> None:
+def _types_with_a_defaulted_costed_grams(cls: type) -> bool:
+    """Whether `cls` gives `costed_grams` a default or a default factory."""
+    [costed_grams] = [f for f in dataclasses.fields(cls) if f.name == "costed_grams"]
+    return (
+        costed_grams.default is not dataclasses.MISSING
+        or costed_grams.default_factory is not dataclasses.MISSING
+    )
+
+
+def test_no_domain_type_gives_costed_grams_a_default() -> None:
     """`costed_grams` has no default in any domain type (ADR-0020 amendment GH-141), so a
     construction that forgets it cannot compile."""
-    for cls in (CostAmount, CostFigure):
-        [costed_grams] = [f for f in dataclasses.fields(cls) if f.name == "costed_grams"]
-        assert costed_grams.default is dataclasses.MISSING
-        assert costed_grams.default_factory is dataclasses.MISSING
+    for cls in (
+        CostAmount,
+        CostFigure,
+        period_figures_module._DayTotals,
+        period_figures_module._VarietyDayTotals,
+        period_figures_module._CostDayTotals,
+    ):
+        assert not _types_with_a_defaulted_costed_grams(cls), cls.__name__
+
+
+def test_the_default_check_flags_a_costed_grams_with_a_default_or_a_default_factory() -> None:
+    @dataclasses.dataclass
+    class WithDefault:
+        costed_grams: Grams = Grams(0)
+
+    @dataclasses.dataclass
+    class WithFactory:
+        costed_grams: Grams = dataclasses.field(default_factory=lambda: Grams(0))
+
+    @dataclasses.dataclass
+    class WithNone:
+        costed_grams: Grams
+
+    assert _types_with_a_defaulted_costed_grams(WithDefault)
+    assert _types_with_a_defaulted_costed_grams(WithFactory)
+    assert not _types_with_a_defaulted_costed_grams(WithNone)
