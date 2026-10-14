@@ -9,13 +9,14 @@
  * JS number. Editing confirms before saving. The form saves, but never navigates or toasts.
  */
 
-import { type FormEvent, useEffect, useRef, useState } from 'react'
+import { type FormEvent, useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useOutletContext } from 'react-router'
 import { ApiError, NetworkError, UNKNOWN_CODE, get } from '../../api/client'
 import { invalidateResource, keys } from '../../api/keys'
 import type { Me } from '../../api/me'
 import {
+  GONE_DETAIL,
   WITHDRAWAL_REFUSAL_MESSAGES,
   isGone,
   kindOf,
@@ -34,6 +35,7 @@ import ConfirmDialog from '../../components/ConfirmDialog'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import { parseGrams } from '../../format/parse'
+import { goneLines } from './goneLines'
 import { REASON_OPTIONS } from './withdrawalReasons'
 import type { Variety } from '../Variedades'
 import Boton from '../../components/Boton'
@@ -42,6 +44,9 @@ export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
 export const GRAMS_INVALID = 'Revisá los gramos cargados'
 
 const REFUSAL_MESSAGES: Partial<Record<RefusalCode, string>> = WITHDRAWAL_REFUSAL_MESSAGES
+
+/** The form-level text when no line can be told gone: "Alguna variedad ya no está: elegí otra". */
+const SOME_VARIETY_GONE = WITHDRAWAL_REFUSAL_MESSAGES['stock.withdrawal_variety_not_found']
 
 export type WithdrawalTarget = 'new' | Withdrawal
 
@@ -58,12 +63,12 @@ interface FormState {
   note: string
 }
 
-function initialState(target: WithdrawalTarget, today: string, varietyId: string): FormState {
+function initialState(target: WithdrawalTarget, today: string): FormState {
   if (target === 'new') {
     return {
       reason: '',
       date: today,
-      lines: [{ key: 0, varietyId, grams: '' }],
+      lines: [{ key: 0, varietyId: '', grams: '' }],
       note: '',
     }
   }
@@ -95,7 +100,8 @@ function sameForm(a: FormState, b: FormState): boolean {
 
 export interface WithdrawalFormProps {
   target: WithdrawalTarget
-  /** The variety the first line starts with (`?variety=`); only read for a new withdrawal. */
+  /** The variety the first line is given (`?variety=`) once the list of varieties arrives, if
+   * it is listed; only read for a new withdrawal. */
   initialVarietyId?: string
   onDone: (saved: SuccessToast) => void
   onCancel: () => void
@@ -117,9 +123,21 @@ export default function WithdrawalForm({
     queryKey: keys.varieties(),
     queryFn: () => get<Variety[]>('/varieties'),
   })
-  const [initial] = useState<FormState>(() => initialState(target, me.today, initialVarietyId))
+  const [initial, setInitial] = useState<FormState>(() => initialState(target, me.today))
   const [form, setForm] = useState<FormState>(initial)
   const nextKey = useRef(initial.lines.length)
+  const [preselected, setPreselected] = useState(false)
+  const [goneKeys, setGoneKeys] = useState<number[]>([])
+  // The varieties the stored withdrawal already has a line on, and their names: the only
+  // archived ones a line may keep (`stock.md`), labelled from the stored answer alone.
+  const kept = useMemo(() => {
+    const names = new Map<string, string>()
+    if (target !== 'new') {
+      for (const line of target.lines) names.set(String(line.variety_id), line.variety_name)
+    }
+    return names
+  }, [target])
+  const keptIds = useMemo<ReadonlySet<string>>(() => new Set(kept.keys()), [kept])
   const [formError, setFormError] = useState<string | null>(null)
   const [offline, setOffline] = useState(false)
   const [sending, setSending] = useState(false)
@@ -130,13 +148,41 @@ export default function WithdrawalForm({
     onDirtyChange(dirty)
   }, [dirty, onDirtyChange])
 
-  const varieties = varietiesQuery.data ?? []
+  const varieties = varietiesQuery.data
+  const listedIds = useMemo<ReadonlySet<string>>(
+    () => new Set((varieties ?? []).map((variety) => String(variety.id))),
+    [varieties],
+  )
+
+  // `?variety=` is applied once, when the list first arrives, and only if the id is listed and
+  // the first line is still empty. It goes to the baseline and the form together: not typed.
+  if (!preselected && varieties !== undefined) {
+    setPreselected(true)
+    const first = form.lines[0]
+    if (
+      target === 'new' &&
+      initialVarietyId !== '' &&
+      listedIds.has(initialVarietyId) &&
+      first !== undefined &&
+      first.varietyId === ''
+    ) {
+      const withVariety = (state: FormState): FormState => ({
+        ...state,
+        lines: state.lines.map((line, index) =>
+          index === 0 ? { ...line, varietyId: initialVarietyId } : line,
+        ),
+      })
+      setInitial(withVariety)
+      setForm(withVariety)
+    }
+  }
   const complete =
     form.reason !== '' &&
     form.lines.every((line) => line.varietyId !== '' && line.grams.trim() !== '')
   const canSubmit = complete && !sending
 
   function setLine(key: number, change: Partial<LineState>): void {
+    if (change.varietyId !== undefined) setGoneKeys((previous) => previous.filter((k) => k !== key))
     setForm((previous) => ({
       ...previous,
       lines: previous.lines.map((line) => (line.key === key ? { ...line, ...change } : line)),
@@ -170,6 +216,7 @@ export default function WithdrawalForm({
     }
     setFormError(null)
     setOffline(false)
+    setGoneKeys([])
     setSending(true)
     try {
       if (target === 'new') await recordWithdrawal(body)
@@ -181,7 +228,11 @@ export default function WithdrawalForm({
         setOffline(true)
       } else if (caught instanceof ApiError) {
         const message = resolveOverride(REFUSAL_MESSAGES, caught.code)
-        if (caught.code === 'stock.withdrawal_variety_not_found') {
+        if (caught.code === 'variety.archived') {
+          // A partner archived a variety while this form was open: it never leaves. It waits
+          // for the fresh list to tell which lines are guilty, then keeps everything typed.
+          await tellGoneLines()
+        } else if (caught.code === 'stock.withdrawal_variety_not_found') {
           // The withdrawal itself still has somewhere to go: only a line's variety is gone.
           invalidateResource(queryClient, 'varieties')
           setFormError(message ?? GENERIC_REFUSAL)
@@ -205,6 +256,32 @@ export default function WithdrawalForm({
     }
   }
 
+  async function tellGoneLines(): Promise<void> {
+    try {
+      const fresh = await queryClient.fetchQuery({
+        queryKey: keys.varieties(),
+        queryFn: () => get<Variety[]>('/varieties'),
+        staleTime: 0,
+      })
+      const gone = goneLines(form.lines, new Set(fresh.map((variety) => String(variety.id))), keptIds)
+      if (gone.length === 0) {
+        setFormError(SOME_VARIETY_GONE)
+        return
+      }
+      setGoneKeys(gone)
+      // The variety is no longer on offer: the line asks for another, its grams stay.
+      setForm((previous) => ({
+        ...previous,
+        lines: previous.lines.map((line) =>
+          gone.includes(line.key) ? { ...line, varietyId: '' } : line,
+        ),
+      }))
+    } catch (refetchError) {
+      if (refetchError instanceof NetworkError) setOffline(true)
+      else setFormError(SOME_VARIETY_GONE)
+    }
+  }
+
   function onSubmit(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault()
     if (!canSubmit) return
@@ -221,7 +298,7 @@ export default function WithdrawalForm({
     </div>
   )
 
-  if (varietiesQuery.isError) {
+  if (varietiesQuery.isError && varietiesQuery.data === undefined) {
     return (
       <div className="gasto-form">
         {header}
@@ -229,7 +306,7 @@ export default function WithdrawalForm({
       </div>
     )
   }
-  if (varietiesQuery.data === undefined) return <div className="gasto-form">{header}</div>
+  if (varieties === undefined) return <div className="gasto-form">{header}</div>
 
   return (
     <div className="gasto-form">
@@ -267,20 +344,25 @@ export default function WithdrawalForm({
             <legend className="campo__rotulo">
               {form.lines.length === 1 ? 'Variedad y gramos' : `Variedad y gramos ${index + 1}`}
             </legend>
-            <select
-              className="campo__input"
-              aria-label={`Variedad ${index + 1}`}
-              value={line.varietyId}
-              onChange={(event) => setLine(line.key, { varietyId: event.target.value })}
-              required
-            >
-              <option value="">Elegí una variedad</option>
-              {varieties.map((variety) => (
-                <option key={variety.id} value={variety.id}>
-                  {variety.name}
-                </option>
-              ))}
-            </select>
+            {keptIds.has(line.varietyId) && !listedIds.has(line.varietyId) ? (
+              <div className="campo__input">{kept.get(line.varietyId)}</div>
+            ) : (
+              <select
+                className="campo__input"
+                aria-label={`Variedad ${index + 1}`}
+                value={line.varietyId}
+                onChange={(event) => setLine(line.key, { varietyId: event.target.value })}
+                required
+              >
+                <option value="">Elegí una variedad</option>
+                {varieties.map((variety) => (
+                  <option key={variety.id} value={variety.id}>
+                    {variety.name}
+                  </option>
+                ))}
+              </select>
+            )}
+            {goneKeys.includes(line.key) && <span className="campo__error">{GONE_DETAIL}</span>}
             <input
               className="campo__input"
               aria-label={`Gramos ${index + 1}`}

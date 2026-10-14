@@ -1,6 +1,6 @@
 /**
  * `WithdrawalFormRoute`: the host of the withdrawal form on its own routes, `/withdrawals/new`
- * (optionally `?variety=<id>`, which chooses the first line's variety) and
+ * (optionally `?variety=<id>`, which chooses the first line's variety only if it is listed) and
  * `/withdrawals/:id/edit` (the same form, filled in). It owns how the form is left:
  *
  * - Back goes by history to whichever screen opened it (`useBackOr`), or, opened by a

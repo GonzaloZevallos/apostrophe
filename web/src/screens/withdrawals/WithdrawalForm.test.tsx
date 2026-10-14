@@ -162,11 +162,14 @@ const WITHDRAWAL_REFUSALS = [
   ['stock.withdrawal_grams_too_precise', 422, 'Los gramos admiten hasta dos decimales'],
   ['stock.withdrawal_note_too_long', 422, 'La nota admite hasta 200 caracteres'],
   ['stock.withdrawal_variety_not_found', 404, 'Alguna variedad ya no está: elegí otra'],
+  ['variety.archived', 404, 'Alguna variedad ya no está: elegí otra'],
 ] as const
 
 test('every withdrawal refusal the contract lists is covered here, but its gone form', () => {
   const listed = Object.keys(contract.refusalCodes).filter(
-    (code) => code.startsWith('stock.withdrawal_') && code !== 'stock.withdrawal_not_found',
+    (code) =>
+      (code.startsWith('stock.withdrawal_') && code !== 'stock.withdrawal_not_found') ||
+      code === 'variety.archived',
   )
 
   expect(WITHDRAWAL_REFUSALS.map(([code]) => code).sort()).toEqual(listed.sort())
