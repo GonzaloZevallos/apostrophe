@@ -2,7 +2,11 @@
  * always on screen. The screens render these same bindings; `LIMITED_COPY` lists them
  * for `copy/copyLimits.test.ts`. */
 
+import type { SuccessToast } from '../../components/AvisoExito'
 import type { LimitedCopy } from '../../copy/limits'
+
+/** The toast armed after a price is saved; the price form hands it to its host. */
+export const PRICE_SAVED: SuccessToast = 'Precio guardado'
 
 export const PRICE_PER_GRAM_HELP = 'Por gramo, en pesos enteros'
 export const PRICE_DISCOUNT_HELP = 'Opcional · menor al precio de lista'

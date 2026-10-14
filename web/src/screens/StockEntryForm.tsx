@@ -28,13 +28,12 @@ import { parseMoney, parseSignedGrams } from '../format/parse'
 import type { Variety } from './Variedades'
 import { varietiesByName } from './varieties/varietiesByName'
 import Boton from '../components/Boton'
-import { COST_REQUIRED_HELP, onHandHelp, perGramPreview } from './stockMessages'
+import { COST_REQUIRED_HELP, GRAMS_INVALID_MESSAGE, onHandHelp, perGramPreview } from './stockMessages'
 
 export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
 export const COST_REQUIRED = 'Una compra necesita un costo total'
 export const COST_ON_NEGATIVE = 'Un ajuste negativo no lleva costo'
 export const DATE_IN_FUTURE = 'La fecha no puede ser futura'
-export const GRAMS_INVALID = 'Revisá los gramos cargados'
 
 const ORIGIN_OPTIONS: { value: Origin; label: string }[] = [
   { value: 'purchase', label: 'Compra' },
@@ -47,7 +46,7 @@ const FIELD_OVERRIDES: Partial<Record<RefusalCode, string>> = {
   'stock.cost_required': COST_REQUIRED,
   'stock.cost_on_negative_adjustment': COST_ON_NEGATIVE,
   'stock.date_in_future': DATE_IN_FUTURE,
-  'stock.grams_invalid': GRAMS_INVALID,
+  'stock.grams_invalid': GRAMS_INVALID_MESSAGE,
   'stock.cost_invalid': GENERIC_REFUSAL,
   'stock.note_too_long': GENERIC_REFUSAL,
 }

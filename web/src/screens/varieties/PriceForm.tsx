@@ -23,12 +23,12 @@ import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import { parseGrams, parseMoney } from '../../format/parse'
 import { GENERIC_REFUSAL_MESSAGE } from '../Variedades'
-import { PRICE_DISCOUNT_HELP, PRICE_FROM_GRAMS_HELP, PRICE_PER_GRAM_HELP } from './priceMessages'
+import { GRAMS_INVALID_MESSAGE } from '../stockMessages'
+import { PRICE_DISCOUNT_HELP, PRICE_FROM_GRAMS_HELP, PRICE_PER_GRAM_HELP, PRICE_SAVED } from './priceMessages'
 import Boton from '../../components/Boton'
 
 export const DUPLICATE_DATE_MESSAGE = 'Ya cargaste un precio con esa fecha'
 export const PRICE_INVALID_MESSAGE = 'Revisá los precios cargados'
-export const GRAMS_INVALID_MESSAGE = 'Revisá los gramos cargados'
 
 type Field = 'effectiveFrom' | 'listPrice' | 'bulkPrice' | 'bulkMinimum' | 'vipPrice' | 'form'
 type Errors = Partial<Record<Field, string>>
@@ -121,7 +121,7 @@ export default function PriceForm({
         vip_price: hasVip && vipMoney.ok ? vipMoney.value : undefined,
       })
       invalidateResource(queryClient, 'varieties')
-      onDone('Precio guardado')
+      onDone(PRICE_SAVED)
     } catch (caught) {
       if (caught instanceof ApiError && isGone(caught.code)) {
         invalidateResource(queryClient, 'varieties')

@@ -1,5 +1,6 @@
 /** The fixed Spanish of the stock entry form and the entries list that is always on
- * screen: help lines, the preview line and the empty state. The screens render these
+ * screen: help lines, the preview line and the empty state; also the grams refusal the
+ * stock entry, withdrawal and price forms share. The screens render these
  * same bindings, and `LIMITED_COPY` lists them for `copy/copyLimits.test.ts`, which
  * measures each with `SAMPLES` (never fixture or API data). */
 
@@ -9,6 +10,11 @@ export const EMPTY_STATE_TITLE = 'Sin entradas de stock'
 export const EMPTY_STATE_DETAIL = 'Cargá tu stock inicial o una compra'
 
 export const COST_REQUIRED_HELP = 'Obligatorio cuando es una compra'
+
+/** The grams refusal shared by the stock entry, withdrawal and price forms. A refusal, not
+ * always-visible copy, so it is not in `LIMITED_COPY`; `copyLimits.test.ts` still measures it
+ * as an exported string. */
+export const GRAMS_INVALID_MESSAGE = 'Revisá los gramos cargados'
 
 /** The grams on hand under the variety picker; `grams` is already formatted from what
  * the API answered (`formatGrams`), so the registry can measure it with `SAMPLES.grams`. */

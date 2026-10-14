@@ -36,10 +36,10 @@ import SinConexion from '../../components/SinConexion'
 import { parseGrams } from '../../format/parse'
 import { REASON_OPTIONS } from './withdrawalReasons'
 import type { Variety } from '../Variedades'
+import { GRAMS_INVALID_MESSAGE } from '../stockMessages'
 import Boton from '../../components/Boton'
 
 export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
-export const GRAMS_INVALID = 'Revisá los gramos cargados'
 
 const REFUSAL_MESSAGES: Partial<Record<RefusalCode, string>> = WITHDRAWAL_REFUSAL_MESSAGES
 
@@ -165,7 +165,7 @@ export default function WithdrawalForm({
     setConfirmingSave(false)
     const body = buildBody()
     if (body === null) {
-      setFormError(GRAMS_INVALID)
+      setFormError(GRAMS_INVALID_MESSAGE)
       return
     }
     setFormError(null)

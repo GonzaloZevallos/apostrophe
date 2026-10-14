@@ -2,7 +2,7 @@
  * `PriceNew` (`PrecioNuevo`): the host of the price form on its own route, opened from a
  * variety's page by "Nuevo precio". It owns how the form is left, as `ExpenseNewRoute`
  * does: "Cerrar" and a save go back by history, or to the variety's page when there is no
- * history (a direct link); a save arms "Precio guardado" for the screen history returns
+ * history (a direct link); a save arms the saved-price toast (`PRICE_SAVED`) for the screen history returns
  * to; leaving with something typed asks first ("¿Descartás el precio?").
  */
 
