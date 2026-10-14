@@ -19,7 +19,7 @@ export default function PartnerStep({ progress, onProgress }: StepBodyProps) {
   return (
     <>
       {done && <span className="onboarding__insignia">Hecho</span>}
-      <InvitePartner onLinkCreated={() => setCreated(true)} />
+      <InvitePartner action="createLink" onLinkCreated={() => setCreated(true)} />
       {(created || done) && (
         <button
           type="button"

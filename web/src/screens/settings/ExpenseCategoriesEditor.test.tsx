@@ -73,3 +73,43 @@ test('a category still in use cannot be removed, and the refusal shows', async (
   expect(await screen.findByText(CANNOT_REMOVE)).toBeInTheDocument()
   expect(screen.getByText('Packaging')).toBeInTheDocument()
 })
+
+test('with addCollapsed the new-name input waits behind "+ Categoría"; opening it is not dirty, typing is', async () => {
+  const onDirtyChange = vi.fn()
+  const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+    if (url === '/expense-categories' && init?.method === 'POST') {
+      return jsonResponse(201, { id: 2, name: 'Insumos' })
+    }
+    if (url === '/expense-categories') return jsonResponse(200, [{ id: 1, name: 'Packaging' }])
+    throw new Error(`unexpected ${url}`)
+  })
+  vi.stubGlobal('fetch', fetchMock)
+  render(
+    <QueryClientProvider client={new QueryClient()}>
+      <ExpenseCategoriesEditor addCollapsed onDirtyChange={onDirtyChange} />
+    </QueryClientProvider>,
+  )
+
+  await screen.findByText('Packaging')
+  expect(screen.queryByLabelText('Nueva categoría')).not.toBeInTheDocument()
+
+  await userEvent.click(screen.getByRole('button', { name: '+ Categoría' }))
+  expect(screen.getByLabelText('Nueva categoría')).toBeInTheDocument()
+  expect(onDirtyChange).not.toHaveBeenCalledWith(true)
+
+  await userEvent.type(screen.getByLabelText('Nueva categoría'), 'Insumos')
+  expect(onDirtyChange).toHaveBeenLastCalledWith(true)
+  await userEvent.click(screen.getByRole('button', { name: '+ Categoría' }))
+
+  expect(await screen.findByText('Categoría guardada')).toBeInTheDocument()
+  const post = fetchMock.mock.calls.find(([, init]) => init?.method === 'POST')
+  expect(JSON.parse(String(post?.[1]?.body))).toEqual({ name: 'Insumos' })
+  expect(onDirtyChange).toHaveBeenLastCalledWith(false)
+})
+
+test('by default the new-name input is already there (Configuración is unchanged)', async () => {
+  renderEditor(async () => jsonResponse(200, [{ id: 1, name: 'Packaging' }]))
+
+  await screen.findByText('Packaging')
+  expect(screen.getByLabelText('Nueva categoría')).toBeInTheDocument()
+})

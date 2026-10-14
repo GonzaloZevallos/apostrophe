@@ -6,6 +6,10 @@
  * network shows "Sin conexión", never the generic retry. Nothing typed is held here, so
  * there is nothing to lose when the screen is left.
  *
+ * `action` is only the word and weight of the one button: `'invite'` (default) is the soft
+ * "Invitá a un socio"; `'createLink'` is the Onboarding's primary "Crear el link"
+ * (`OnboardingSocio.dc.html`). Either way a tap is one `POST /invitations`.
+ *
  * `onLinkCreated` tells the parent a link now exists; the link itself stays here and is never
  * logged or stored in the browser.
  */
@@ -25,7 +29,13 @@ interface Invite {
   expires_at: string
 }
 
-export default function InvitePartner({ onLinkCreated }: { onLinkCreated: () => void }) {
+export default function InvitePartner({
+  onLinkCreated,
+  action = 'invite',
+}: {
+  onLinkCreated: () => void
+  action?: 'invite' | 'createLink'
+}) {
   const [invite, setInvite] = useState<Invite | null>(null)
   const [invitePending, setInvitePending] = useState(false)
   const [inviteError, setInviteError] = useState(false)
@@ -65,8 +75,13 @@ export default function InvitePartner({ onLinkCreated }: { onLinkCreated: () => 
 
   return (
     <>
-      <Boton variant="secondary" icon="personaMas" onClick={onInvite} disabled={invitePending}>
-        Invitá a un socio
+      <Boton
+        variant={action === 'createLink' ? 'primary' : 'secondary'}
+        icon="personaMas"
+        onClick={onInvite}
+        disabled={invitePending}
+      >
+        {action === 'createLink' ? 'Crear el link' : 'Invitá a un socio'}
       </Boton>
       {invite !== null && (
         <div className="usuarios__invitacion">
