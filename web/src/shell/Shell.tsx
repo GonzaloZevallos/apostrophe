@@ -5,15 +5,13 @@
  * same first four, a divider, Gastos and Análisis, and the business row (avatar and name) at
  * the bottom, which opens Configuración. There is no Más on a computer.
  *
- * Everything the shell decides comes from the leaf route's registry entry (`routes.ts`),
- * found through the route's `handle.screen`: its kind sets the chrome (a root shows the bar
- * and "+ Nueva venta", a card the bar and a "‹ parent" arrow, a form neither), and
- * `placeOf(id, viewport)` says which entry each surface marks. Never the pathname, never
- * history, so a reload or a saved link marks the same entry. At most one entry per surface
- * carries `aria-current="page"`, and it is also bold and drawn filled and underlined (or, on
- * the rail, with its accent rule): never color alone. The bar marks with `placeOf(id,
- * 'phone').bar`, the rail with `placeOf(id, 'computer').rail`, since both are in the DOM and
- * CSS picks one.
+ * Everything the shell decides comes from `chromeOf(leaf, viewport, facts)` (`chrome.ts`),
+ * which works from the leaf route's registry entry (found through the route's
+ * `handle.screen`), the viewport and what the record says (`useScreenFacts`). Shell only
+ * renders the result: the bar, the rail's and the phone's "+ Nueva venta", the "‹ parent"
+ * arrow, and which entry each surface marks (`aria-current="page"`, also bold and drawn
+ * filled and underlined, or on the rail with its accent rule: never color alone). Never the
+ * pathname, never history, so a reload or a saved link marks the same entry.
  *
  * `useOutletContext` passes `me` on to whatever the active route renders, so none of them
  * has to re-run `GET /auth/me`.
@@ -30,7 +28,6 @@ import {
   HOME,
   isScreenId,
   MORE,
-  placeOf,
   SALE_NEW,
   SALES,
   screenOf,
@@ -43,7 +40,9 @@ import {
 import BotonLink from '../components/BotonLink'
 import { NUEVA_VENTA_CLASS, NUEVA_VENTA_ESCRITORIO_CLASS } from '../components/botonVisual'
 import BackArrow from './BackArrow'
+import { chromeOf } from './chrome'
 import { initialsOf } from './initials'
+import { useScreenFacts } from './useScreenFacts'
 import { useViewport } from './useViewport'
 
 type Placement = 'bar' | 'rail' | 'both'
@@ -125,20 +124,14 @@ function BarItem({ item, active }: { item: Item; active: boolean }) {
 export default function Shell() {
   const me = useOutletContext<Me>()
   const leaf = leafScreen(useMatches())
-  const barPlace = placeOf(leaf.id, 'phone').bar
-  const railPlace = placeOf(leaf.id, 'computer').rail
-  const showNuevaVenta = leaf.kind === 'root'
-  // The computer draws a two-pane screen's detail inside its root's screen
-  // (`VariedadesCompu`, `ClientesCompu`), so the rail keeps its "Nueva venta" there; the
-  // phone keeps the button to a root's alone.
-  const onComputer = useViewport() === 'computer'
-  const showRailNuevaVenta = showNuevaVenta || (leaf.pane === 'detail' && onComputer)
-  const showBar = leaf.kind !== 'form'
+  const chrome = chromeOf(leaf, useViewport(), useScreenFacts(leaf))
+  const barPlace = chrome.place.bar
+  const railPlace = chrome.place.rail
 
   return (
     <div className="disposicion">
       <nav className="riel-lateral" aria-label="Navegación" data-menu>
-        {showRailNuevaVenta && (
+        {chrome.nuevaVenta && (
           <BotonLink to={SALE_NEW} icon="agregar" className={NUEVA_VENTA_ESCRITORIO_CLASS}>
             Nueva venta
           </BotonLink>
@@ -178,14 +171,14 @@ export default function Shell() {
         </InAppLink>
       </nav>
       <div className="columna-principal">
-        {leaf.kind === 'card' && <BackArrow id={leaf.id} />}
+        {chrome.backArrow !== null && <BackArrow parent={chrome.backArrow} />}
         <Outlet context={me} />
-        {showNuevaVenta && (
+        {chrome.nuevaVenta && (
           <BotonLink to={SALE_NEW} icon="agregar" className={NUEVA_VENTA_CLASS}>
             Nueva venta
           </BotonLink>
         )}
-        {showBar && (
+        {chrome.bar && (
           <nav className="bar-inferior" aria-label="Navegación" data-menu>
             {BAR_ITEMS.map((item) => (
               <BarItem key={item.to} item={item} active={barPlace === item.place} />

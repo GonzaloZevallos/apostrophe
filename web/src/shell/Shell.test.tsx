@@ -10,11 +10,15 @@
  * `useViewport` is mocked per case for the viewport (its own test owns `matchMedia`).
  */
 
-import { act, render, screen, within } from '@testing-library/react'
+import { onlineManager, QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { createMemoryRouter, Outlet, RouterProvider, useLocation, type RouteObject } from 'react-router'
-import { expect, test, vi } from 'vitest'
+import { createMemoryRouter, Outlet, RouterProvider, useLocation, useParams, type RouteObject } from 'react-router'
+import { afterEach, expect, test, vi } from 'vitest'
+import { get } from '../api/client'
+import { keys } from '../api/keys'
 import type { Me } from '../api/me'
+import type { VarietyDetail } from '../api/varieties'
 import { expectIconAndTextRule, iconAndTextProblems } from '../test/iconAndTextRule'
 import { inAppState } from '../components/inAppState'
 import InAppLink from '../components/InAppLink'
@@ -32,11 +36,14 @@ import {
   SCREENS,
   SETTINGS,
   SETTINGS_USERS,
+  ARCHIVED_VARIETIES,
   VARIETIES,
   VARIETY,
+  VARIETY_ENTRIES,
   pathTo,
   type Screen,
 } from '../routes'
+import type { Variety } from '../screens/Variedades'
 import Mas from '../screens/Mas'
 import Shell from './Shell'
 
@@ -71,6 +78,16 @@ function Teaser() {
   return <InAppLink to={pathTo(CUSTOMER, { id: 3 })}>Cobrar a Ana</InAppLink>
 }
 
+/**
+ * A variety's page stand-in: it runs the detail query the real page runs (the same key and
+ * function), which is how `useScreenFacts` learns the record's state once it resolves.
+ */
+function VarietyStub({ title }: { title: string }) {
+  const { id } = useParams()
+  useQuery({ queryKey: keys.variety(id ?? ''), queryFn: () => get<VarietyDetail>(`/varieties/${id}`) })
+  return <div>{title}</div>
+}
+
 /** Every registered screen as a leaf; Inicio holds the teaser, Más its real list. */
 function leaf(entry: Screen): RouteObject {
   const element =
@@ -78,21 +95,46 @@ function leaf(entry: Screen): RouteObject {
       <Teaser />
     ) : entry.id === 'more' ? (
       <Mas />
+    ) : entry.id === 'variety' ? (
+      <VarietyStub title={entry.title} />
     ) : (
       <Landed />
     )
   return { path: entry.path, element, handle: { screen: entry.id } }
 }
 
-function renderShell(entries: string[], options: { computer?: boolean; index?: number } = {}) {
+type FetchImpl = (url: string) => Promise<Response>
+
+/** The default network: nothing answers, so a query stays loading. */
+const NEVER: FetchImpl = () => new Promise<Response>(() => undefined)
+
+function json(status: number, body: unknown): Response {
+  return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
+}
+
+function renderShell(
+  entries: string[],
+  options: { computer?: boolean; index?: number; client?: QueryClient; fetchImpl?: FetchImpl } = {},
+) {
   viewport.current = options.computer === true ? 'computer' : 'phone'
+  vi.stubGlobal('fetch', vi.fn(options.fetchImpl ?? NEVER))
+  const client = options.client ?? new QueryClient({ defaultOptions: { queries: { retry: false } } })
   const router = createMemoryRouter(
     [{ element: <Outlet context={ME} />, children: [{ element: <Shell />, children: SCREENS.map(leaf) }] }],
     { initialEntries: entries, initialIndex: options.index ?? entries.length - 1 },
   )
-  const view = render(<RouterProvider router={router} />)
-  return { router, ...view }
+  const view = render(
+    <QueryClientProvider client={client}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>,
+  )
+  return { router, client, ...view }
 }
+
+afterEach(() => {
+  vi.unstubAllGlobals()
+  onlineManager.setOnline(true)
+})
 
 function bar(container: HTMLElement): HTMLElement {
   return container.querySelector('.bar-inferior') as HTMLElement
@@ -389,4 +431,215 @@ test('a bar that repeats an icon is rejected by the rule', () => {
     </nav>,
   )
   expect(iconAndTextProblems(container)).toEqual([expect.stringContaining('shares its icon with "Uno"')])
+})
+
+// ---------------------------------------------------------------------------------------
+// Chrome from the host (GH-135): `chromeOf` resolved through `useScreenFacts`, drawn by Shell.
+// ---------------------------------------------------------------------------------------
+
+const CHERRY = { id: 5, name: 'Cherry', archived: false, current_price: null } satisfies Variety
+const BEEFSTEAK = { id: 6, name: 'Beefsteak', archived: false, current_price: null } satisfies Variety
+const ARCHIVED_5 = { ...CHERRY, archived: true }
+const ARCHIVED_6 = { ...BEEFSTEAK, archived: true }
+
+function detailOf(variety: Variety): VarietyDetail {
+  return { id: variety.id, name: variety.name, archived: variety.archived, removal: null }
+}
+
+/** A client whose caches hold the two lists exactly as the screens key them. */
+function clientWith(live: Variety[], archived: Variety[]): QueryClient {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  client.setQueryData(keys.varieties(), live)
+  client.setQueryData(keys.archivedVarieties(), archived)
+  return client
+}
+
+function arrows(): HTMLElement[] {
+  return screen.queryAllByRole('button', { name: /^‹/ })
+}
+
+function railNuevaVenta(container: HTMLElement): HTMLElement[] {
+  return within(rail(container)).queryAllByRole('link', { name: /Nueva venta/ })
+}
+
+/** Watches the DOM: every node the shell adds or removes that is an arrow or a "Nueva venta". */
+function watchChrome(container: HTMLElement) {
+  const flickers: string[] = []
+  const observer = new MutationObserver((records) => {
+    for (const record of records) {
+      for (const node of [...record.addedNodes, ...record.removedNodes]) {
+        const text = node.textContent ?? ''
+        if (text.includes('‹') || text.includes('Nueva venta')) flickers.push(text)
+      }
+    }
+  })
+  observer.observe(container, { childList: true, subtree: true })
+  return { flickers, stop: () => observer.disconnect() }
+}
+
+test.each([
+  ['Clientes', pathTo(CUSTOMER, { id: 3 })],
+  ['Variedades', pathTo(VARIETY, { id: 5 })],
+])('on a computer %s with a row selected keeps the rail\'s "Nueva venta" and draws no arrow', (_host, path) => {
+  const { container } = renderShell([path], { computer: true, client: clientWith([CHERRY], []) })
+
+  expect(railNuevaVenta(container)).toHaveLength(1)
+  expect(arrows()).toHaveLength(0)
+})
+
+test('on the phone a card shows exactly one arrow and no "Nueva venta"', () => {
+  for (const path of [pathTo(CUSTOMER, { id: 3 }), pathTo(VARIETY, { id: 5 }), pathTo(SALE, { id: 7 })]) {
+    const view = renderShell([path], { client: clientWith([CHERRY], []) })
+    expect(arrows()).toHaveLength(1)
+    expect(screen.queryAllByRole('link', { name: /Nueva venta/ })).toHaveLength(0)
+    view.unmount()
+  }
+})
+
+test('Archivadas on a computer, alone, shows its one "‹ Variedades" and no "Nueva venta"', () => {
+  const { container } = renderShell([ARCHIVED_VARIETIES], { computer: true })
+
+  expect(arrows().map((arrow) => arrow.textContent)).toEqual(['‹ Variedades'])
+  expect(railNuevaVenta(container)).toHaveLength(0)
+})
+
+test('Archivadas on a computer beside an archived variety keeps the one "‹ Variedades" and no "Nueva venta"', () => {
+  const { container } = renderShell([pathTo(VARIETY, { id: 5 })], {
+    computer: true,
+    client: clientWith([], [ARCHIVED_5]),
+  })
+
+  expect(arrows().map((arrow) => arrow.textContent)).toEqual(['‹ Variedades'])
+  expect(railNuevaVenta(container)).toHaveLength(0)
+  expect(current(bar(container))).toEqual(['Variedades'])
+  expect(current(rail(container))).toEqual(['Variedades'])
+})
+
+test('an archived variety on the phone reads "‹ Archivadas", and Back with no history goes there', async () => {
+  const { router } = renderShell([SALES, pathTo(VARIETY, { id: 5 })], {
+    index: 1,
+    client: clientWith([], [ARCHIVED_5]),
+  })
+
+  expect(arrows().map((arrow) => arrow.textContent)).toEqual(['‹ Archivadas'])
+  await userEvent.click(screen.getByRole('button', { name: '‹ Archivadas' }))
+
+  expect(router.state.location.pathname).toBe(ARCHIVED_VARIETIES)
+})
+
+test('archived row to archived row on a computer, the new detail pending, keeps Archivadas\' chrome at every render', async () => {
+  const { router, container } = renderShell([pathTo(VARIETY, { id: 5 })], {
+    computer: true,
+    client: clientWith([], [ARCHIVED_5, ARCHIVED_6]),
+  })
+  const watch = watchChrome(container)
+
+  await act(() => router.navigate(pathTo(VARIETY, { id: 6 }), { replace: true }))
+
+  expect(router.state.location.pathname).toBe(pathTo(VARIETY, { id: 6 }))
+  expect(arrows().map((arrow) => arrow.textContent)).toEqual(['‹ Variedades'])
+  expect(railNuevaVenta(container)).toHaveLength(0)
+  expect(watch.flickers).toEqual([])
+  watch.stop()
+})
+
+test('live row to live row on a computer keeps Variedades\' chrome at every render', async () => {
+  const { router, container } = renderShell([pathTo(VARIETY, { id: 5 })], {
+    computer: true,
+    client: clientWith([CHERRY, BEEFSTEAK], []),
+  })
+  const watch = watchChrome(container)
+
+  await act(() => router.navigate(pathTo(VARIETY, { id: 6 }), { replace: true }))
+
+  expect(arrows()).toHaveLength(0)
+  expect(railNuevaVenta(container)).toHaveLength(1)
+  expect(watch.flickers).toEqual([])
+  watch.stop()
+})
+
+test('a deep link to an archived variety with no list loaded is live until the detail resolves, then archived', async () => {
+  let answer: (response: Response) => void = () => undefined
+  const pending = new Promise<Response>((resolve) => {
+    answer = resolve
+  })
+  const { container } = renderShell([pathTo(VARIETY, { id: 5 })], {
+    computer: true,
+    fetchImpl: () => pending,
+  })
+
+  expect(arrows()).toHaveLength(0)
+  expect(railNuevaVenta(container)).toHaveLength(1)
+  expect(current(rail(container))).toEqual(['Variedades'])
+
+  await act(async () => {
+    answer(json(200, detailOf(ARCHIVED_5)))
+    await pending
+  })
+
+  await waitFor(() => expect(arrows().map((arrow) => arrow.textContent)).toEqual(['‹ Variedades']))
+  expect(railNuevaVenta(container)).toHaveLength(0)
+  expect(current(rail(container))).toEqual(['Variedades'])
+})
+
+test('on the phone the same deep link reads "‹ Variedades" first and "‹ Archivadas" once the detail resolves', async () => {
+  let answer: (response: Response) => void = () => undefined
+  const pending = new Promise<Response>((resolve) => {
+    answer = resolve
+  })
+  renderShell([pathTo(VARIETY, { id: 5 })], { fetchImpl: () => pending })
+
+  expect(arrows().map((arrow) => arrow.textContent)).toEqual(['‹ Variedades'])
+  await act(async () => {
+    answer(json(200, detailOf(ARCHIVED_5)))
+    await pending
+  })
+
+  await waitFor(() => expect(arrows().map((arrow) => arrow.textContent)).toEqual(['‹ Archivadas']))
+})
+
+test.each([
+  ['loading', () => NEVER, () => undefined],
+  [
+    'paused offline',
+    () => NEVER,
+    () => {
+      onlineManager.setOnline(false)
+    },
+  ],
+  ['an error', () => () => Promise.resolve(json(500, { detail: 'boom' })), () => undefined],
+])('while the variety is %s the phone shows exactly one arrow, at the live parent', async (_state, fetchOf, before) => {
+  before()
+  renderShell([pathTo(VARIETY, { id: 5 })], { fetchImpl: fetchOf() })
+
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 20))
+  })
+
+  expect(arrows().map((arrow) => arrow.textContent)).toEqual(['‹ Variedades'])
+})
+
+test('"Ver todas" reads the variety\'s name at once when its list is cached, with no flash of "Variedad"', () => {
+  const { container } = renderShell([pathTo(VARIETY_ENTRIES, { id: 5 })], { client: clientWith([CHERRY], []) })
+
+  expect(arrows().map((arrow) => arrow.textContent)).toEqual(['‹ Cherry'])
+  expect(container).not.toHaveTextContent('‹ Variedad')
+})
+
+test('"Ver todas" reads "‹ Variedad" while neither the detail nor a list knows the name', () => {
+  renderShell([pathTo(VARIETY_ENTRIES, { id: 5 })])
+
+  expect(arrows().map((arrow) => arrow.textContent)).toEqual(['‹ Variedad'])
+})
+
+test('a variety\'s facts never come from another id: a cached list without it leaves it unknown', () => {
+  renderShell([pathTo(VARIETY, { id: 9 })], { client: clientWith([CHERRY], [ARCHIVED_6]) })
+
+  expect(arrows().map((arrow) => arrow.textContent)).toEqual(['‹ Variedades'])
+})
+
+test('a non-numeric id is unknown, not a lookup', () => {
+  renderShell([pathTo(VARIETY, { id: 'abc' })], { client: clientWith([], [ARCHIVED_5]) })
+
+  expect(arrows().map((arrow) => arrow.textContent)).toEqual(['‹ Variedades'])
 })
