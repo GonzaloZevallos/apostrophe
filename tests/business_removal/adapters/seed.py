@@ -60,6 +60,7 @@ def seed(db_path: Path) -> tuple[str, str]:
     app = create_app(
         settings,
         engine=engine,
+        clock=lambda: NOW,
         hasher=TEST_HASHER,
         telegram=FakeTelegram(),
         upkeep_ticker=False,

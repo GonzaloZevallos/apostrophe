@@ -27,7 +27,7 @@ from app.accounts.application.reset_password import issue_reset_link
 from app.accounts.domain.invitation import token_digest
 from app.business_removal.adapters.cli import main
 from app.business_removal.application.remove_business import BUSY_MESSAGE
-from app.clock import business_day, system_clock
+from app.clock import business_day
 from app.db import make_engine
 from app.main import create_app
 from app.settings import Settings
@@ -118,6 +118,7 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
     app = create_app(
         Settings(secret_key="test-secret", database_url=f"sqlite:///{db_path}"),
         engine=engine,
+        clock=lambda: NOW,
         hasher=TEST_HASHER,
         telegram=FakeTelegram(),
         upkeep_ticker=False,
@@ -177,8 +178,8 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
     assert stock_entry["total_cost"] == 300000
     assert stock_entry["note"] == "stock seed"
     # `seed()` never passes a `date`, so the entry is recorded on the business day
-    # the entry was made -- the same one `main`'s own real clock sees now.
-    assert stock_entry["entry_date"] == business_day(system_clock()).isoformat()
+    # the entry was made -- the seeding app's frozen clock, `NOW`.
+    assert stock_entry["entry_date"] == business_day(NOW).isoformat()
 
     price_entry = kinds["price_entry"][0]
     assert price_entry["variety_id"] == variety_ref
@@ -292,6 +293,7 @@ def test_the_other_business_still_reads_its_own_data_after_the_run(
     app = create_app(
         settings,
         engine=engine,
+        clock=lambda: NOW,
         hasher=TEST_HASHER,
         telegram=FakeTelegram(),
         upkeep_ticker=False,
@@ -574,6 +576,7 @@ def test_a_clean_slate_lets_the_same_email_open_a_new_business(
     app = create_app(
         settings,
         engine=engine,
+        clock=lambda: NOW,
         hasher=TEST_HASHER,
         telegram=FakeTelegram(),
         upkeep_ticker=False,
@@ -632,6 +635,7 @@ def test_an_nfd_typed_name_matches_through_main(
     app = create_app(
         settings,
         engine=engine,
+        clock=lambda: NOW,
         hasher=TEST_HASHER,
         telegram=FakeTelegram(),
         upkeep_ticker=False,
