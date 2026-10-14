@@ -23,8 +23,10 @@ is eventually decided two ways.
   caller can forget it. `'yes'` resolves to the archived side; `'no'` and `'unknown'` resolve
   to the live side, and that rule is written there and nowhere else. When the resolved parent
   is the variety's page its label is the variety's name, or the registry title ("Variedad")
-  while the name is unknown. Only `chromeOf` (`web/src/shell/chrome.ts`) calls it. Until the chrome subtask lands, `shell/BackArrow.tsx` calls it with unknown
-  facts as a bridge, so that `parentOf` can refuse `'variety'`; `chromeOf` replaces that call.
+  while the name is unknown. Only `chromeOf` (`web/src/shell/chrome.ts`) calls it. `BackArrow` receives the resolved parent and
+  resolves nothing itself. `useScreenFacts` (`web/src/shell/useScreenFacts.ts`) reads the facts
+  without fetching: the succeeded detail query, then the `keys.varieties()` and
+  `keys.archivedVarieties()` caches, then `'unknown'`.
 - **`placeOf` climbs the live side.** A load-time assertion (`parentSidesDisagree`, run when
   `routes.ts` loads) requires both sides of a state-dependent parent to give the same `Place`,
   so a variety's mark never depends on its state. It returns its violations, so a test can
