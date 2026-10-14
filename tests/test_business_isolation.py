@@ -978,6 +978,23 @@ def test_each_business_has_its_own_onboarding_row_and_reads_no_other(
         assert SqlOnboardings(session, max(ids) + 1).get() is None
 
 
+def test_another_business_has_no_priced_target_while_a_has_one(
+    business_a: TestClient, business_b: TestClient
+) -> None:
+    variety = business_a.post("/varieties", json={"name": "Priced variety"}).json()
+    business_a.post(
+        f"/varieties/{variety['id']}/prices",
+        json={"effective_from": "2026-01-01", "list_price": 11_000},
+    )
+
+    mine = business_a.get("/onboarding-progress").json()
+    theirs = business_b.get("/onboarding-progress").json()
+
+    assert mine["priced_target"] == {"id": variety["id"], "name": "Priced variety"}
+    assert theirs["priced_target"] is None
+    assert theirs["price_target"] is None
+
+
 @pytest.mark.parametrize(
     ("method", "path"),
     [

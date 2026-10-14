@@ -69,6 +69,7 @@ class Progress:
     varieties_count: int
     stock_entries_count: int
     price_target: Target | None
+    priced_target: Target | None
     stock_target: Target | None
 
     def state_of(self, step: Step) -> StepState:
@@ -100,9 +101,11 @@ def _done_when(condition: bool) -> StepState:
 
 
 def progress(facts: Facts, onboarding: Onboarding) -> Progress:
-    priced = sorted((v for v in facts.varieties if v.is_priced_today), key=lambda v: v.id)
-    unpriced = sorted((v for v in facts.varieties if not v.is_priced_today), key=lambda v: v.id)
-    unstocked = [v for v in priced if v.id not in facts.stocked_variety_ids]
+    # The facts come in Variedades' name order (the `VarietyFacts` port): step 1's two
+    # targets keep it, and this module never sorts by name.
+    priced = [v for v in facts.varieties if v.is_priced_today]
+    unpriced = [v for v in facts.varieties if not v.is_priced_today]
+    unstocked = sorted((v for v in priced if v.id not in facts.stocked_variety_ids), key=_id)
 
     states = {
         Step.VARIETY: _done_when(bool(priced)),
@@ -126,8 +129,13 @@ def progress(facts: Facts, onboarding: Onboarding) -> Progress:
         varieties_count=len(facts.varieties),
         stock_entries_count=facts.stock_entries_count,
         price_target=_target(unpriced),
+        priced_target=_target(priced),
         stock_target=_target(unstocked),
     )
+
+
+def _id(variety: VarietyFact) -> int:
+    return variety.id
 
 
 def _target(candidates: list[VarietyFact]) -> Target | None:
