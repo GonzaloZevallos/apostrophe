@@ -21,7 +21,8 @@ afterEach(() => {
 test('lists every price newest first with "Rige desde", the one in force and its bulk tier', async () => {
   renderVarieties([pathTo(VARIETY_PRICES, { id: 1 })], api())
 
-  const rows = (await screen.findAllByText(/^Rige desde/)).map((node) => node.textContent)
+  await screen.findByText('Desde 10 g · $ 10.000')
+  const rows = screen.getAllByText(/^Rige desde/).map((node) => node.textContent)
   expect(screen.queryByRole('link', { name: /^‹/ })).toBeNull()
   expect(rows).toEqual(['Rige desde 25/09Vigente hoy', 'Rige desde 01/09', 'Rige desde 05/07'])
   expect(screen.getByText('Vigente hoy')).toBeInTheDocument()
