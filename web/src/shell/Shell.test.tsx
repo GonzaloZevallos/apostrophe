@@ -20,6 +20,7 @@ import { inAppState } from '../components/inAppState'
 import InAppLink from '../components/InAppLink'
 import {
   ANALYSIS,
+  CATALOG,
   CUSTOMER,
   CUSTOMERS,
   EXPENSES,
@@ -161,6 +162,7 @@ test.each([
   ['a card: a sale', pathTo(SALE, { id: 7 }), true, false, true],
   ['a card: a customer', pathTo(CUSTOMER, { id: 3 }), true, false, true],
   ['a card: a variety', pathTo(VARIETY, { id: 2 }), true, false, true],
+  ['a card: the catalog', CATALOG, true, false, true],
   ['a card: Configuración', SETTINGS, true, false, true],
   ['a form: the sale', SALE_NEW, false, false, false],
   ['a form: a Configuración group', SETTINGS_USERS, false, false, false],
@@ -189,6 +191,23 @@ test.each([
 
   expect(within(rail(container)).queryAllByRole('link', { name: /Nueva venta/ }).length > 0).toBe(inRail)
 })
+
+test.each(SCREENS.filter((entry) => entry.kind === 'card').map((entry) => [entry.id, entry] as const))(
+  'card %s: no "+ Nueva venta" on the phone; on a computer the rail keeps it only for a detail pane',
+  (_id, entry) => {
+    const params = Object.fromEntries([...entry.path.matchAll(/:([A-Za-z]+)/g)].map((match) => [match[1] ?? '', 7]))
+    const path = pathTo(entry.path, params)
+
+    const phone = renderShell([path])
+    expect(phone.container.querySelector('.boton-nueva-venta')).toBeNull()
+    phone.unmount()
+
+    const computer = renderShell([path], { computer: true })
+    expect(
+      within(rail(computer.container)).queryAllByRole('link', { name: /Nueva venta/ }).length > 0,
+    ).toBe(entry.pane === 'detail')
+  },
+)
 
 test('on a phone a detail pane has no "Nueva venta" at all', () => {
   renderShell([pathTo(VARIETY, { id: 2 })])
