@@ -42,6 +42,22 @@ describe('the copy modules', () => {
   })
 })
 
+describe('the Onboarding copy module', () => {
+  const mod = found['/src/screens/onboarding/onboardingMessages.ts']
+
+  test('registers the publish line and the categories line as help, each within 80', () => {
+    const entries = (mod?.LIMITED_COPY ?? []).map((entry) => entry.text)
+    expect(entries).toEqual([
+      'Cuando quieras, publicalo desde Variedades → Mandar catálogo',
+      'Agregar, renombrar o sacar una categoría se guarda al toque.',
+    ])
+    for (const entry of mod?.LIMITED_COPY ?? []) {
+      expect(entry.kind).toBe('help')
+      expect(measure(entry.text)).toBeLessThanOrEqual(LIMITS.help)
+    }
+  })
+})
+
 describe('measure', () => {
   test('counts code points after NFC, not UTF-16 units or decomposed marks', () => {
     expect(measure('á')).toBe(1)
