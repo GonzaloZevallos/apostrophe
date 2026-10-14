@@ -47,3 +47,19 @@ it never does, is fixed here.
   separate transactions. The result is recoverable: the Onboarding lands in `finish`, and
   `advance` ends it from Inicio's notice.
 - Cost of a read is about four statements, O(varieties + entries) of one business.
+
+## Amendment (GH-143): `priced_target`, and step 1's targets in Variedades' name order
+
+- **A third target, `priced_target`**, is the first variety priced today. Step 1's "Hecho"
+  view draws it when no variety is left without a price. Like the other two it is a
+  variety's id and name only.
+- **Both step-1 targets follow Variedades' name order**, as the `VarietyFacts` port gives
+  it: the port's contract is the listed varieties in that order, and `progress()` keeps it
+  and never sorts by name. `price_target` stops being the lowest id.
+- **`stock_target` keeps the lowest-id rule.** The difference is known and accepted: it can
+  only show for varieties made outside the Onboarding, whose ids and names disagree.
+- **The answer still carries no amount.** The "Hecho" view reads today's list price from
+  the owner's `GET /varieties/{id}`.
+- **"Agregar otra variedad" reaches step 1 through a data-free history flag**
+  (`anotherVariety: true`), cleared by replacing the entry once `POST /varieties`
+  succeeds. No name, amount or id goes to history state.

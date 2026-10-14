@@ -54,6 +54,7 @@ function answer(
     varieties_count: 2,
     stock_entries_count: 2,
     price_target: null,
+    priced_target: null,
     stock_target: null,
     ...overrides,
   }

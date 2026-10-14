@@ -2505,6 +2505,16 @@
               }
             ]
           },
+          "priced_target": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TargetOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "resume": {
             "anyOf": [
               {
@@ -2564,6 +2574,7 @@
           "varieties_count",
           "stock_entries_count",
           "price_target",
+          "priced_target",
           "stock_target"
         ],
         "title": "ProgressOut",
