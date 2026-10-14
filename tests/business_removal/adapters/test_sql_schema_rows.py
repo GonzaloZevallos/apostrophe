@@ -101,6 +101,7 @@ def app(file_engine: Engine) -> FastAPI:
         engine=file_engine,
         hasher=TEST_HASHER,
         telegram=FakeTelegram(),
+        clock=lambda: NOW,
         upkeep_ticker=False,
     )
 

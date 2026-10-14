@@ -62,6 +62,7 @@ def seed(db_path: Path) -> tuple[str, str]:
         engine=engine,
         hasher=TEST_HASHER,
         telegram=FakeTelegram(),
+        clock=lambda: NOW,
         upkeep_ticker=False,
     )
     with TestClient(app) as client:
