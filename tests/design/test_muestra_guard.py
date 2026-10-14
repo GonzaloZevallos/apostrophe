@@ -92,6 +92,8 @@ def muestra_text(*, drop: str = "") -> str:
             "| Período | Rango | Etiqueta | Valor | Pendiente |",
             "| Semana | 28/09 – 04/10 | Ventas | $ 163.000 | no |",
             "| Semana | 05/10 – 11/10 | Ventas | $ 206.000 | no |",
+            "| Semana | 05/10 – 11/10 | Costo de lo vendido | $ 93.000 | no |",
+            "| Semana | 05/10 – 11/10 | Faltante de stock | $ 10.000 | no |",
             "| Semana | 05/10 – 11/10 | Consumo propio | $ 14.000 | y 1 g sin costo |",
             "| Semana | 05/10 – 11/10 | Mejor semana | sí | no |",
         ),
@@ -434,6 +436,10 @@ ANALISIS = [
     "05/10 – 11/10",
     "Ventas",
     "$ 206.000",
+    "Costo de lo vendido",
+    "$ 93.000",
+    "Faltante de stock",
+    "$ 10.000",
     "Consumo propio",
     "$ 14.000",
     "y 1 g sin costo",
@@ -521,6 +527,52 @@ def test_a_week_that_draws_lines_draws_the_ones_muestra_has() -> None:
     lines = [p for p in ANALISIS if p != "y 1 g sin costo"]  # drops the notes of both
     problems = analisis_problems(lines)
     assert any("week 05/10 – 11/10: 'Consumo propio' note is None" in p for p in problems)
+
+
+def week_only(items: list[str]) -> list[str]:
+    """The screen as Analisis draws it before its rows show the two new lines."""
+    at = items.index("Costo de lo vendido")
+    return [*items[:at], *items[at + 4 :]]
+
+
+def test_a_row_that_draws_the_two_new_lines_draws_the_values_muestra_has() -> None:
+    wrong_cost = analisis_problems(replaced(ANALISIS, "$ 93.000", "$ 63.000"))
+    wrong_shortfall = analisis_problems(replaced(ANALISIS, "$ 10.000", "$ 14.000", nth=1))
+
+    assert any("week 05/10 – 11/10: 'Costo de lo vendido' reads $ 63.000" in p for p in wrong_cost)
+    assert any(
+        "week 05/10 – 11/10: 'Faltante de stock' reads $ 14.000" in p for p in wrong_shortfall
+    )
+
+
+def test_a_row_that_draws_cost_of_goods_also_draws_the_shortfall_muestra_has() -> None:
+    items = list(ANALISIS)
+    at = items.index("Faltante de stock", items.index("Costo de lo vendido"))
+    del items[at : at + 2]
+
+    problems = analisis_problems(items)
+
+    assert any("week 05/10 – 11/10: 'Faltante de stock' is missing" in p for p in problems)
+
+
+def test_a_screen_not_yet_redrawn_is_not_asked_for_the_two_new_lines() -> None:
+    assert analisis_problems(week_only(ANALISIS)) == []
+
+
+def test_a_figure_entirely_pending_is_read_as_grams_only() -> None:
+    text = muestra_text().replace(
+        "| Semana | 05/10 – 11/10 | Costo de lo vendido | $ 93.000 | no |",
+        "| Semana | 05/10 – 11/10 | Costo de lo vendido | 2 g sin costo | no |",
+    )
+    muestra = parse_muestra(text)
+    right = replaced(ANALISIS, "$ 93.000", "2 g sin costo")
+    peso = replaced(ANALISIS, "$ 93.000", "$ 0")
+
+    assert check_screen("analisis", "Analisis", page(*right), muestra, ()) == []
+    assert any(
+        "'Costo de lo vendido' reads $ 0, muestra.md says 2 g sin costo" in p
+        for p in check_screen("analisis", "Analisis", page(*peso), muestra, ())
+    )
 
 
 def test_the_variety_rows_the_weekdays_and_the_expenses_are_checked() -> None:

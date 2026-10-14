@@ -90,6 +90,15 @@ def pending_grams(value: float) -> str:
     return f"y {grams(value)} sin costo" if value > 0 else "no"
 
 
+def cost_figure(line: Json) -> tuple[str, str]:
+    """A cost figure of Análisis as (value, pending), in the screen's pending form: grams
+    only when the domain says it is entirely pending (`all_pending`, never inferred from the
+    amount), the amount then "y N g sin costo" when part of it is, the amount alone otherwise."""
+    if line["all_pending"]:
+        return f"{grams(line['pending_grams'])} sin costo", "no"
+    return money(line["amount"]), pending_grams(line["pending_grams"])
+
+
 def days(count: int | None) -> str:
     if count is None:
         return _NONE
@@ -356,17 +365,19 @@ def _accounts(api: _ClientApi) -> list[str]:
     return ["### Cuentas", "", *table(header, rows)]
 
 
-def _cost_rows(add: Any, figures: Json, *, shortfall: bool = True) -> None:
+def _cost_rows(add: Any, figures: Json, *, cost_of_goods: bool = False) -> None:
+    """The cost lines of a figure, in the order of Inicio: Costo de lo vendido (a week or
+    month row only, never null), Faltante de stock, Promoción, Consumo propio."""
     for field, label in (
+        ("cost_of_goods", "Costo de lo vendido"),
         ("shortfall", "Faltante de stock"),
         ("promotion", "Promoción"),
         ("own_use", "Consumo propio"),
     ):
-        if field == "shortfall" and not shortfall:
+        if field == "cost_of_goods" and not cost_of_goods:
             continue
         if figures.get(field) is not None:
-            line = figures[field]
-            add(label, money(line["amount"]), pending_grams(line["pending_grams"]))
+            add(label, *cost_figure(figures[field]))
 
 
 def _analysis(api: _ClientApi) -> list[str]:
@@ -437,7 +448,7 @@ def _analysis(api: _ClientApi) -> list[str]:
 
         add("Ventas", money(row["sales"]))
         add("Gramos", grams(row["grams"]))
-        _cost_rows(add, row, shortfall=False)
+        _cost_rows(add, row, cost_of_goods=True)
         add("Gastos", money(row["expenses"]))
         profit = row["profit"]
         add("Ganancia", money(profit["amount"]), pending_grams(profit["pending_grams"]))

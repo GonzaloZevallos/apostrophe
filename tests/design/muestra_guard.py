@@ -45,6 +45,7 @@ GRAMS = re.compile(r"^[−-]?\d+(?:,\d+)? g$")
 DATE_PART = re.compile(r"^\d\d/\d\d$")
 DATE_LITERAL = re.compile(r"(?<![\d/])\d{1,2}/\d{1,2}(?![\d/])")
 FULL_DATE_LITERAL = re.compile(r"(?<![\d/])\d{1,2}/\d{1,2}/\d{4}(?!\d)")
+ALL_PENDING = re.compile(r"^\d+(?:,\d+)? g sin costo$")  # a cost entirely pending: grams only
 NOTE_PART = re.compile(r"^(?:incluye costo pendiente|y \d+(?:,\d+)? g sin costo)$")
 DESDE = re.compile(r"\bdesde (?:el )?(\d\d/\d\d)\b")
 
@@ -218,7 +219,7 @@ def labelled(parts: tuple[str, ...], start: int, end: int, labels: tuple[str, ..
         if parts[i] not in labels or i + 1 >= len(parts):
             continue
         value = parts[i + 1]
-        if not (MONEY.match(value) or GRAMS.match(value)):
+        if not (MONEY.match(value) or GRAMS.match(value) or ALL_PENDING.match(value)):
             continue
         after = parts[i + 2] if i + 2 < len(parts) else ""
         note = after if NOTE_PART.match(after) else None
@@ -663,7 +664,9 @@ def _line_problems(name: str, screen: Screen, muestra: Muestra) -> list[str]:
 
 HEADER_LABELS = ("Vendiste en el mes", "Faltante de stock", "Promoción", "Consumo propio")
 COST_LINES = ("Faltante de stock", "Promoción", "Consumo propio")
-ROW_LABELS = ("Ventas", "Gramos", "Gastos", "Ganancia", "Caja", *COST_LINES)
+COST_OF_GOODS = "Costo de lo vendido"
+ROW_LABELS = ("Ventas", "Gramos", "Gastos", "Ganancia", "Caja", COST_OF_GOODS, *COST_LINES)
+OLDER_ROW_LINES = ("Promoción", "Consumo propio")  # a week or month row's lines before GH-141
 
 
 def _analysis_header_heading(muestra: Muestra) -> str:
@@ -773,8 +776,22 @@ def _row_block_problems(name: str, screen: Screen, muestra: Muestra) -> list[str
         where = f"{kind} {shown}"
         problems += _compare_found(name, where, found, table, True, ())
         if found:
-            problems += _order_and_presence(name, where, found, list(table), COST_LINES)
+            problems += _order_and_presence(
+                name, where, found, list(table), _lines_asked(kind, found)
+            )
     return problems
+
+
+def _lines_asked(kind: str, found: list[Found]) -> tuple[str, ...]:
+    """The cost lines a block must draw when `muestra.md` has them. A week or month row that
+    draws Costo de lo vendido is one the screen redrew with its two new lines, so it draws
+    every line `muestra.md` has; one that does not is not asked for them (a screen is checked
+    only where it shows them)."""
+    if kind == "since":
+        return COST_LINES
+    if any(f.label == COST_OF_GOODS for f in found):
+        return (COST_OF_GOODS, *COST_LINES)
+    return OLDER_ROW_LINES
 
 
 def _variety_row_problems(name: str, screen: Screen, muestra: Muestra) -> list[str]:
