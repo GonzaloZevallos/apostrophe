@@ -33,6 +33,9 @@ The two lists are closed. Adding to either changes this file and the README, nev
   - Being on the list allows icon-only; it never requires it. A screen's main action always carries its text (Compartir on the catalog screen keeps its word).
   - **Close is one form everywhere**: every form and sheet closes with the same icon-only control, accessible name "Cerrar". No form shows the word while another shows the icon.
   - Back is not on the list: it is navigation and stays "‹ <parent>" (navigation.md).
+    - The parent is the fixed one navigation.md names for that screen (its "‹ <parent>" and its back-with-no-history table), whatever screen it was reached from. Back still follows history.
+    - A screen shows exactly one back, the one its chrome gives it (the shell's); a screen never draws a second one of its own.
+    - Back is never "‹" alone and never a generic word such as "Volver": its visible text and its accessible name both name the parent.
   - More info's "i" is the one icon-only control outside this list, defined by its own term below.
 - **Text only**:
   - links (`enlace`), such as "Editar encabezado y pie" and "Ver todas";
@@ -41,6 +44,8 @@ The two lists are closed. Adding to either changes this file and the README, nev
   - choices among options, which are not actions: the period tabs (Hoy · Semana · Mes · Fechas), Efectivo · Transferencia · Debiendo, Promoción · Consumo propio, an entry's origin, Claro · Oscuro, "Todo: $ X";
   - Deshacer inside "Venta guardada".
 - **Icon + text**: everything else, e.g. "+ Nueva venta", "+ Entrada de stock", "Sacar del stock", "Mandar catálogo", Cobrar (accessible name still "Cobrar a <name>"), Publicar, Probarlo, Buscar mi chat, Archivar, Restaurar, "Invitá a un socio", Cambiar contraseña, Cerrar sesión, Copiar and the main Compartir. A new action that fits neither list is icon + text. The icon next to a word is decorative and hidden from assistive technology, so the accessible name stays the word.
+  - **The "+" in the docs is the icon**: in "+ Nueva venta", "+ Cargar gasto", "+ Entrada de stock", "+ Entrada" and any other label written with a leading "+", the "+" stands for the `agregar` icon. On screen the icon draws it and the visible text is the word alone, never a literal "+" beside the icon. The accessible name is unchanged.
+- **An action never looks like a link**: only a link (`enlace`) is drawn as one (underlined, in the link style). An action, in any form, including one that opens another screen such as "Nueva venta" or "Nueva venta a <name>", is drawn as the action it is.
 - No action is removed or renamed while it gains an icon.
 
 ### Navigation, menus and rows
@@ -107,6 +112,9 @@ The two lists are closed. Adding to either changes this file and the README, nev
 No telemetry; from tests and the design check.
 
 - **Found at a glance (criterion 1)**: a front test over every screen in `scripts/design/screens.json`: every entry row, action row and action outside the closed lists has an icon and its text; every icon-only control has its exact current accessible name and a 44 px target; the icon next to a word is hidden from assistive technology; no menu repeats an icon; every form and sheet closes with the same icon-only "Cerrar". 0 exceptions.
+- **Icon and word not doubled**: no visible label carries a literal "+" beside an `agregar` icon, and every such control keeps its accessible name. 0 exceptions.
+- **One back per screen**: every card and detail in `scripts/design/screens.json` shows exactly one back control, reading "‹ <parent>" with the fixed parent navigation.md names, its accessible name naming that parent; none reads "‹" alone or "Volver". 0 exceptions.
+- **Actions are not links**: no action is drawn in the link style; checked by eye in the design check.
 - **One rule (criterion 2)**: this file and the README state the same lists and limits; `componentes.ts` and `Icono.tsx` name the same set; every `NombreIcono` name added by this rule is used by a screen. 0 unused new names, 0 mismatches.
 - **Short by default (criterion 3)**:
   - help lines and notices ≤ 80 characters, empty-state titles ≤ 40 with one line ≤ 80, asserted over the fixed copy; refusals over 80 are listed for review;
@@ -124,4 +132,5 @@ No telemetry; from tests and the design check.
 - An optional icon on notices; icons no screen uses.
 - Moving a consequence, a refusal's fix or a state behind More info.
 - Remembering whether More info was opened.
+- A back label that depends on how a screen was reached (navigation.md).
 - A dashboard or any business metric.
