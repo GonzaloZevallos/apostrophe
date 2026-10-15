@@ -11,6 +11,8 @@ import InvitePartner from '../settings/InvitePartner'
 import { useOnboardingWrite } from './useOnboardingWrite'
 import type { StepBodyProps } from './stepBodies'
 
+const CREATE_LINK = { label: 'Crear el link', variant: 'primary' } as const
+
 export default function PartnerStep({ progress, onProgress }: StepBodyProps) {
   const [created, setCreated] = useState(false)
   const { run, sending, notice } = useOnboardingWrite(onProgress)
@@ -19,7 +21,7 @@ export default function PartnerStep({ progress, onProgress }: StepBodyProps) {
   return (
     <>
       {done && <span className="onboarding__insignia">Hecho</span>}
-      <InvitePartner onLinkCreated={() => setCreated(true)} />
+      <InvitePartner onLinkCreated={() => setCreated(true)} action={CREATE_LINK} />
       {(created || done) && (
         <button
           type="button"
