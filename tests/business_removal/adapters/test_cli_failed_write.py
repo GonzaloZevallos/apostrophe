@@ -16,7 +16,7 @@ from pathlib import Path
 import pytest
 
 from app.business_removal.adapters.cli import main
-from tests.business_removal.adapters.seed import EMAIL_LEAVING, row_counts, seed, set_env
+from tests.business_removal.adapters.seed import CLOCK, EMAIL_LEAVING, row_counts, seed, set_env
 
 FAILED_MESSAGE = "Failed: nothing deleted."
 
@@ -80,7 +80,7 @@ def test_a_write_that_fails_partway_leaves_no_file_and_changes_no_row(
     }
     stdout = io.StringIO()
 
-    result = main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=stdout)
+    result = main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=stdout, clock=CLOCK)
 
     assert result == 1
     assert stdout.getvalue().endswith(FAILED_MESSAGE + "\n")
@@ -104,9 +104,11 @@ def test_a_blob_column_added_later_refuses_both_modes_with_no_file_and_no_change
         connection.commit()
     set_env(monkeypatch, db_path, export_dir)
 
-    dry = main([EMAIL_LEAVING, "--dry-run"], stdin=io.StringIO(""), stdout=io.StringIO())
+    dry = main(
+        [EMAIL_LEAVING, "--dry-run"], stdin=io.StringIO(""), stdout=io.StringIO(), clock=CLOCK
+    )
     real_stdout = io.StringIO()
-    real = main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=real_stdout)
+    real = main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=real_stdout, clock=CLOCK)
 
     assert dry == 1
     assert real == 1

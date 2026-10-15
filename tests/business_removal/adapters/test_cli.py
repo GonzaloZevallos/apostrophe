@@ -27,12 +27,12 @@ from app.accounts.application.reset_password import issue_reset_link
 from app.accounts.domain.invitation import token_digest
 from app.business_removal.adapters.cli import main
 from app.business_removal.application.remove_business import BUSY_MESSAGE
-from app.clock import business_day, system_clock
+from app.clock import business_day
 from app.db import make_engine
 from app.main import create_app
 from app.settings import Settings
 from tests.business_removal.adapters.seed import row_counts, seed, set_env
-from tests.conftest import PASSWORD, TEST_HASHER, invite
+from tests.conftest import PASSWORD, TEST_HASHER, MovableClock, invite
 from tests.fakes.telegram import FakeTelegram
 
 EMAIL_LEAVING = "closing@example.com"
@@ -47,6 +47,7 @@ PAYMENT_AMOUNT = 54321
 EXPENSE_AMOUNT = 112233
 SHIPPING_CHARGED = 98765
 NOW = datetime(2026, 10, 3, 12, 0, tzinfo=UTC)
+CLOCK = MovableClock(NOW)  # the one clock the seeded app and every `main` run on
 
 LOW_STOCK_THRESHOLD = 15
 CATALOG_HEADER = "Catalogo de La Huerta"
@@ -74,7 +75,7 @@ EXPORTED_KINDS = (
 
 def _accept(client: TestClient, engine: Engine, name: str, email: str) -> str:
     accepted = client.post(
-        f"/invitations/{invite(engine, datetime.now(UTC))}/accept",
+        f"/invitations/{invite(engine, CLOCK())}/accept",
         json={"business_name": name, "email": email, "password": PASSWORD},
     )
     assert accepted.status_code == 201, accepted.text
@@ -121,6 +122,7 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
         hasher=TEST_HASHER,
         telegram=FakeTelegram(),
         upkeep_ticker=False,
+        clock=CLOCK,
     )
     with TestClient(app) as extra_client:
         extra_client.headers["Authorization"] = f"Bearer {token_a}"
@@ -138,13 +140,11 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
         ).fetchone()["id"]
     all_tables = _all_table_names(db_path)
     other_before = {name: row_counts(db_path, name, other_business_id) for name in all_tables}
-    leaving_before = {
-        name: row_counts(db_path, name, leaving_business_id) for name in all_tables
-    }
+    leaving_before = {name: row_counts(db_path, name, leaving_business_id) for name in all_tables}
     assert other_before["customer"] == 1  # the other business's own seed
 
     stdout = io.StringIO()
-    result = main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=stdout)
+    result = main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=stdout, clock=CLOCK)
 
     assert result == 0
     files = list(export_dir.glob("*.json"))
@@ -177,8 +177,8 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
     assert stock_entry["total_cost"] == 300000
     assert stock_entry["note"] == "stock seed"
     # `seed()` never passes a `date`, so the entry is recorded on the business day
-    # the entry was made -- the same one `main`'s own real clock sees now.
-    assert stock_entry["entry_date"] == business_day(system_clock()).isoformat()
+    # the entry was made -- the same one `main`'s own clock sees.
+    assert stock_entry["entry_date"] == business_day(CLOCK()).isoformat()
 
     price_entry = kinds["price_entry"][0]
     assert price_entry["variety_id"] == variety_ref
@@ -284,7 +284,10 @@ def test_the_other_business_still_reads_its_own_data_after_the_run(
     _token_a, token_b = seed(db_path)
     set_env(monkeypatch, db_path, export_dir)
 
-    assert main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=io.StringIO()) == 0
+    assert (
+        main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=io.StringIO(), clock=CLOCK)
+        == 0
+    )
 
     url = f"sqlite:///{db_path}"
     engine = make_engine(url)
@@ -295,6 +298,7 @@ def test_the_other_business_still_reads_its_own_data_after_the_run(
         hasher=TEST_HASHER,
         telegram=FakeTelegram(),
         upkeep_ticker=False,
+        clock=CLOCK,
     )
     with TestClient(app) as client:
         client.headers["Authorization"] = f"Bearer {token_b}"
@@ -327,7 +331,9 @@ def test_removal_withholds_a_live_reset_link(
     leaving_digest = token_digest(leaving_issued.token)
 
     dry_stdout = io.StringIO()
-    dry_result = main([EMAIL_LEAVING, "--dry-run"], stdin=io.StringIO(""), stdout=dry_stdout)
+    dry_result = main(
+        [EMAIL_LEAVING, "--dry-run"], stdin=io.StringIO(""), stdout=dry_stdout, clock=CLOCK
+    )
     assert dry_result == 0
     assert "reset_link: 1 (deleted only)" in dry_stdout.getvalue()
 
@@ -336,7 +342,9 @@ def test_removal_withholds_a_live_reset_link(
             "SELECT id FROM business WHERE name = 'Otro Negocio'"
         ).fetchone()[0]
 
-    real_result = main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=io.StringIO())
+    real_result = main(
+        [EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=io.StringIO(), clock=CLOCK
+    )
     assert real_result == 0
 
     files = list(export_dir.glob("*.json"))
@@ -363,7 +371,7 @@ def test_a_dry_run_writes_no_file_and_deletes_nothing(
     set_env(monkeypatch, db_path, export_dir)
     stdout = io.StringIO()
 
-    result = main([EMAIL_LEAVING, "--dry-run"], stdin=io.StringIO(""), stdout=stdout)
+    result = main([EMAIL_LEAVING, "--dry-run"], stdin=io.StringIO(""), stdout=stdout, clock=CLOCK)
 
     assert result == 0
     assert not export_dir.exists() or list(export_dir.glob("*")) == []
@@ -393,15 +401,13 @@ def test_a_dry_run_writes_no_file_and_deletes_nothing(
         assert secret not in captured.err
 
 
-def test_an_unknown_email_changes_nothing(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_an_unknown_email_changes_nothing(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     db_path = tmp_path / "apostrophe.db"
     export_dir = tmp_path / "exports"
     seed(db_path)
     set_env(monkeypatch, db_path, export_dir)
 
-    result = main(["nobody@example.com"], stdin=io.StringIO(""), stdout=io.StringIO())
+    result = main(["nobody@example.com"], stdin=io.StringIO(""), stdout=io.StringIO(), clock=CLOCK)
 
     assert result == 1
     assert not export_dir.exists() or list(export_dir.glob("*")) == []
@@ -415,7 +421,9 @@ def test_a_wrong_name_at_the_prompt_writes_no_file(
     seed(db_path)
     set_env(monkeypatch, db_path, export_dir)
 
-    result = main([EMAIL_LEAVING], stdin=io.StringIO("Not The Name\n"), stdout=io.StringIO())
+    result = main(
+        [EMAIL_LEAVING], stdin=io.StringIO("Not The Name\n"), stdout=io.StringIO(), clock=CLOCK
+    )
 
     assert result == 1
     assert not export_dir.exists() or list(export_dir.glob("*")) == []
@@ -426,15 +434,13 @@ def test_a_wrong_name_at_the_prompt_writes_no_file(
     assert row_counts(db_path, "customer", business_id) == 1
 
 
-def test_eof_at_the_prompt_writes_no_file(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_eof_at_the_prompt_writes_no_file(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     db_path = tmp_path / "apostrophe.db"
     export_dir = tmp_path / "exports"
     seed(db_path)
     set_env(monkeypatch, db_path, export_dir)
 
-    result = main([EMAIL_LEAVING], stdin=io.StringIO(""), stdout=io.StringIO())
+    result = main([EMAIL_LEAVING], stdin=io.StringIO(""), stdout=io.StringIO(), clock=CLOCK)
 
     assert result == 1
     assert not export_dir.exists() or list(export_dir.glob("*")) == []
@@ -448,7 +454,10 @@ def test_secure_delete_scrubs_the_removed_customers_bytes_from_the_database_file
     seed(db_path)
     set_env(monkeypatch, db_path, export_dir)
 
-    assert main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=io.StringIO()) == 0
+    assert (
+        main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=io.StringIO(), clock=CLOCK)
+        == 0
+    )
 
     raw = db_path.read_bytes()
     assert PHONE.encode() not in raw
@@ -456,15 +465,16 @@ def test_secure_delete_scrubs_the_removed_customers_bytes_from_the_database_file
     assert b"Otro Negocio" in raw
 
 
-def test_the_export_file_is_owner_only(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_the_export_file_is_owner_only(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     db_path = tmp_path / "apostrophe.db"
     export_dir = tmp_path / "exports"
     seed(db_path)
     set_env(monkeypatch, db_path, export_dir)
 
-    assert main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=io.StringIO()) == 0
+    assert (
+        main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=io.StringIO(), clock=CLOCK)
+        == 0
+    )
 
     files = list(export_dir.glob("*.json"))
     mode = stat.S_IMODE(files[0].stat().st_mode)
@@ -503,11 +513,13 @@ def test_a_table_added_later_by_raw_ddl_is_exported_with_a_name_reference_and_em
     set_env(monkeypatch, db_path, export_dir)
     stdout = io.StringIO()
 
-    dry = main([EMAIL_LEAVING, "--dry-run"], stdin=io.StringIO(""), stdout=stdout)
+    dry = main([EMAIL_LEAVING, "--dry-run"], stdin=io.StringIO(""), stdout=stdout, clock=CLOCK)
     assert dry == 0
     assert "loyalty_point: 1" in stdout.getvalue()
 
-    result = main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=io.StringIO())
+    result = main(
+        [EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=io.StringIO(), clock=CLOCK
+    )
     assert result == 0
 
     files = list(export_dir.glob("*.json"))
@@ -531,8 +543,8 @@ def test_a_secret_like_column_added_later_by_raw_ddl_refuses_both_modes(
     dry_stdout = io.StringIO()
     real_stdout = io.StringIO()
 
-    dry = main([EMAIL_LEAVING, "--dry-run"], stdin=io.StringIO(""), stdout=dry_stdout)
-    real = main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=real_stdout)
+    dry = main([EMAIL_LEAVING, "--dry-run"], stdin=io.StringIO(""), stdout=dry_stdout, clock=CLOCK)
+    real = main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=real_stdout, clock=CLOCK)
 
     assert dry == 1
     assert real == 1
@@ -560,7 +572,10 @@ def test_a_clean_slate_lets_the_same_email_open_a_new_business(
         ).fetchone()[0]
     assert brake_rows_before == 1  # the one failed login `_seed` recorded
 
-    assert main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=io.StringIO()) == 0
+    assert (
+        main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=io.StringIO(), clock=CLOCK)
+        == 0
+    )
 
     with sqlite3.connect(db_path) as connection:
         brake_rows_after = connection.execute(
@@ -577,6 +592,7 @@ def test_a_clean_slate_lets_the_same_email_open_a_new_business(
         hasher=TEST_HASHER,
         telegram=FakeTelegram(),
         upkeep_ticker=False,
+        clock=CLOCK,
     )
     with TestClient(app) as client:
         client.headers["Authorization"] = f"Bearer {token_a}"
@@ -611,7 +627,7 @@ def test_a_refused_export_directory_ends_in_a_fixed_message_with_no_traceback(
     set_env(monkeypatch, db_path, export_dir)
     stdout = io.StringIO()
 
-    result = main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=stdout)
+    result = main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=stdout, clock=CLOCK)
 
     assert result == 1
     assert stdout.getvalue() == "Failed: nothing deleted.\n"
@@ -635,6 +651,7 @@ def test_an_nfd_typed_name_matches_through_main(
         hasher=TEST_HASHER,
         telegram=FakeTelegram(),
         upkeep_ticker=False,
+        clock=CLOCK,
     )
     stored_name = "Café Central"
     with TestClient(app) as client:
@@ -643,7 +660,9 @@ def test_an_nfd_typed_name_matches_through_main(
     set_env(monkeypatch, db_path, export_dir)
     typed_nfd = unicodedata.normalize("NFD", stored_name) + "\n"
 
-    result = main(["cafe@example.com"], stdin=io.StringIO(typed_nfd), stdout=io.StringIO())
+    result = main(
+        ["cafe@example.com"], stdin=io.StringIO(typed_nfd), stdout=io.StringIO(), clock=CLOCK
+    )
 
     assert result == 0
     assert list(export_dir.glob("*.json"))
@@ -679,7 +698,7 @@ def test_a_broken_pipe_on_the_report_keeps_the_commit_through_main(
     stdout = _BreaksAfterExportWritten()
 
     result = main(
-        [EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=cast(TextIO, stdout)
+        [EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=cast(TextIO, stdout), clock=CLOCK
     )
 
     assert result == 1
@@ -736,7 +755,7 @@ def test_a_locked_database_ends_on_the_busy_line_through_main(
     stdout = io.StringIO()
 
     try:
-        result = main([EMAIL_LEAVING], stdin=cast(TextIO, stdin), stdout=stdout)
+        result = main([EMAIL_LEAVING], stdin=cast(TextIO, stdin), stdout=stdout, clock=CLOCK)
     finally:
         stdin.release()
 
