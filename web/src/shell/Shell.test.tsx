@@ -160,7 +160,8 @@ test.each([
   ['a root that is Gastos', EXPENSES, true, true, false],
   ['a card: a sale', pathTo(SALE, { id: 7 }), true, false, true],
   ['a card: a customer', pathTo(CUSTOMER, { id: 3 }), true, false, true],
-  ['a card: a variety', pathTo(VARIETY, { id: 2 }), true, false, true],
+  // A variety's back names the loaded record, so it shows no arrow until its screen declares one.
+  ['a card: a variety', pathTo(VARIETY, { id: 2 }), true, false, false],
   ['a card: Configuración', SETTINGS, true, false, true],
   ['a form: the sale', SALE_NEW, false, false, false],
   ['a form: a Configuración group', SETTINGS_USERS, false, false, false],
@@ -328,13 +329,13 @@ test('a card opened directly reads "‹ Clientes" and Back goes to Clientes, rep
   expect(router.state.historyAction).toBe('REPLACE')
 })
 
-test('a sale and a variety read "‹ Ventas" and "‹ Variedades"', () => {
+test('a sale reads "‹ Ventas"; a variety, whose word is the record\'s, shows no back until declared', () => {
   const sale = renderShell([pathTo(SALE, { id: 7 })])
   expect(screen.getByRole('button', { name: '‹ Ventas' })).toBeInTheDocument()
   sale.unmount()
 
   renderShell([pathTo(VARIETY, { id: 2 })])
-  expect(screen.getByRole('button', { name: '‹ Variedades' })).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: /^‹ / })).not.toBeInTheDocument()
 })
 
 test('Configuración\'s list opened directly reads "‹ Más" on the phone and "‹ Inicio" on a computer', async () => {
