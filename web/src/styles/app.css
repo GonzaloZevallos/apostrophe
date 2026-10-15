@@ -122,6 +122,9 @@ body {
   border: 0;
   font-size: 17px;
   font-weight: 600;
+  /* An action is never drawn as a link (icon-and-text-rule.md): on an <a> (BotonLink) the
+   * browser's underline would read as one. */
+  text-decoration: none;
   cursor: pointer;
 }
 
