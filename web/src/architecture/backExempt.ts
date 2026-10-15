@@ -9,25 +9,13 @@ import type { ScreenId } from '../routes'
  * screen's own back and empties the list; the guard then fails if one stays. */
 export const CARDS_EXEMPT: { id: ScreenId; reason: string }[] = []
 
-const ONBOARDING_ATRAS =
-  'the Onboarding step frame\'s "Atrás" goes to the step before (onboarding.md), not to a fixed parent; the steps are kind \'form\', not cards'
-
 /** Files allowed to carry a literal '‹' for something that is not a back. */
 export const CHEVRON_EXEMPT: { path: string; reason: string }[] = [
   {
     path: '/src/screens/Analisis.tsx',
     reason: "the month stepper's 'Mes anterior' draws a '‹' glyph; it is a stepper, not a back (Gastos draws its own with an icon)",
   },
-  {
-    path: '/src/screens/onboarding/OnboardingStep.tsx',
-    reason: ONBOARDING_ATRAS,
-  },
 ]
 
 /** Files allowed to draw `variant="back"` outside the shell. */
-export const BACK_VARIANT_EXEMPT: { path: string; reason: string }[] = [
-  {
-    path: '/src/screens/onboarding/OnboardingStep.tsx',
-    reason: ONBOARDING_ATRAS,
-  },
-]
+export const BACK_VARIANT_EXEMPT: { path: string; reason: string }[] = []
