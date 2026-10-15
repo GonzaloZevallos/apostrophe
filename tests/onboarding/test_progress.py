@@ -178,12 +178,41 @@ def test_the_counts_are_the_varieties_and_the_stock_entries() -> None:
     assert result.stock_entries_count == 5
 
 
-def test_the_price_target_is_the_lowest_id_variety_with_no_price_today() -> None:
-    unsorted = (VarietyFact(9, "Zkittlez", False), PRICED, VarietyFact(4, "Runtz", False))
+def test_the_price_target_is_the_first_unpriced_variety_in_the_order_the_facts_give() -> None:
+    in_name_order = (
+        VarietyFact(2, "Almendra", False),
+        VarietyFact(3, "Nuez", False),
+        VarietyFact(1, "Zapallo", False),
+    )
 
-    assert progress(facts(unsorted), onboarding()).price_target == Target(4, "Runtz")
+    assert progress(facts(in_name_order), onboarding()).price_target == Target(2, "Almendra")
     assert progress(facts((PRICED,)), onboarding()).price_target is None
     assert progress(facts(), onboarding()).price_target is None
+
+
+def test_the_priced_target_is_the_first_priced_variety_in_the_order_the_facts_give() -> None:
+    in_name_order = (
+        VarietyFact(9, "Almendra", True),
+        VarietyFact(4, "Nuez", False),
+        VarietyFact(1, "Zapallo", True),
+    )
+
+    result = progress(facts(in_name_order), onboarding())
+
+    assert result.priced_target == Target(9, "Almendra")
+    assert result.price_target == Target(4, "Nuez")
+
+
+def test_the_priced_target_is_none_when_no_variety_is_priced_today() -> None:
+    assert progress(facts(), onboarding()).priced_target is None
+    assert progress(facts((UNPRICED,)), onboarding()).priced_target is None
+
+
+def test_one_priced_variety_is_the_priced_target_and_no_price_target() -> None:
+    result = progress(facts((PRICED,)), onboarding())
+
+    assert result.priced_target == Target(1, "Amnesia")
+    assert result.price_target is None
 
 
 def test_the_stock_target_is_the_lowest_id_priced_variety_with_no_entry() -> None:

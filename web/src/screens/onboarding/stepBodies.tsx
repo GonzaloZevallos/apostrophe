@@ -17,7 +17,9 @@ import VarietyStep from './VarietyStep'
 export interface StepBodyProps {
   me: Me
   progress: OnboardingProgress
-  onDirtyChange: (dirty: boolean) => void
+  /** `partlySaved` says part of the work is already saved (step 1's variety, before its
+   * price), so leaving asks `PARTLY_SAVED_DETAIL` instead of "nothing was saved". */
+  onDirtyChange: (dirty: boolean, partlySaved?: boolean) => void
   /** `to` names where a not-over answer leads, instead of the resume step. */
   onProgress: (answer: OnboardingProgress, to?: string) => void
 }

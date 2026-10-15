@@ -4338,14 +4338,19 @@ body {
   gap: var(--espacio-md);
 }
 
+.onboarding__saltar-fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  column-gap: var(--espacio-xxl);
+}
+
+/* "Ir a Inicio" on Listo: the only button left that wears this class. */
 .onboarding__boton-saltar {
   min-height: 50px;
   height: auto;
   font-size: 15px;
-}
-
-.onboarding__boton-resto {
-  align-self: center;
 }
 
 .onboarding__pista {

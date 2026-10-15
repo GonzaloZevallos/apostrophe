@@ -85,6 +85,7 @@ def test_a_new_business_is_offered_the_onboarding_at_its_first_step(client: Test
         "varieties_count": 0,
         "stock_entries_count": 0,
         "price_target": None,
+        "priced_target": None,
         "stock_target": None,
     }
 
@@ -175,6 +176,23 @@ def test_an_unpriced_variety_is_the_price_target_and_priced_it_becomes_the_stock
     assert after["stock_target"] == {"id": variety_id, "name": "Lemon Haze"}
     assert after["varieties_count"] == 1
     assert _states(after)["variety"] == "done"
+
+
+def test_the_priced_target_is_the_first_priced_variety_in_name_order_and_carries_no_amount(
+    client: TestClient,
+) -> None:
+    zapallo = _variety(client, "Zapallo")
+    almendra = _variety(client, "almendra")
+    _price(client, zapallo)
+    _price(client, almendra)
+    nuez = _variety(client, "Nuez")
+
+    answer = client.get("/onboarding-progress").json()
+
+    assert answer["priced_target"] == {"id": almendra, "name": "almendra"}
+    assert answer["price_target"] == {"id": nuez, "name": "Nuez"}
+    assert "11000" not in str(answer["priced_target"])
+    assert set(answer["priced_target"]) == {"id", "name"}
 
 
 def test_a_partner_session_in_the_same_business_sees_the_same_targets(
@@ -301,5 +319,6 @@ def test_the_state_is_the_session_s_business_only(
     assert other["count"] == 0
     assert other["varieties_count"] == 0
     assert other["price_target"] is None
+    assert other["priced_target"] is None
     assert other_client.post("/onboarding-progress/skip-rest").status_code == 409
     assert client.get("/onboarding-progress").json()["count"] == 3
