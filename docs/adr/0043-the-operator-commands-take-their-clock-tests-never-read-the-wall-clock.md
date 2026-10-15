@@ -115,5 +115,10 @@ is no allowlist.
 4. **An unshifted browser covers less.** If the browser has to stay unshifted, that run
    covers only "today comes from `me.today`", not cookies or session expiry, which
    `tests/accounts` cover under the pytest shift.
+   On the machine that ran it, `FAKETIME_SKIP_CMDS` made the Playwright Chromium crash at
+   launch, so the browser ran shifted, and its canary shows the shifted date.
+5. **A failure that also appears at `+0d` is not about the date.** A spec that fails with the
+   preload in place and no shift is recorded as a setup artifact of the shifting tool, not
+   fixed in the spec, and not counted against the date result.
 
 Evidence: GH-211's task evidence (the close-out document).
