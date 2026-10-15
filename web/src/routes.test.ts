@@ -374,8 +374,15 @@ const NOT_BUILT = [
 ];
 
 /** Screens compare.sh reaches by steps from another route: "Listo" opens only from the write
- * that ended the Onboarding, never by loading its own path (onboarding.md). */
-const REACHED_BY_STEPS = ["OnboardingListo", "OnboardingVariedad", "OnboardingVariedadOscuro"];
+ * that ended the Onboarding, never by loading its own path (onboarding.md). An archived variety's
+ * page is reached only by archiving a live one and opening it from "Archivadas" (varieties.md). */
+const REACHED_BY_STEPS = [
+  "OnboardingListo",
+  "OnboardingVariedad",
+  "OnboardingVariedadOscuro",
+  "VariedadArchivada",
+  "VariedadArchivadaOscuro",
+];
 
 describe("screens.json against the English routes", () => {
   test("route is path for every screen, but the ones not built", () => {
