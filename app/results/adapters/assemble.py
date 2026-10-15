@@ -26,6 +26,7 @@ from app.results.domain.figures import (
     CostFigure,
     ExpenseBreakdown,
     MarginFigure,
+    RowCost,
 )
 
 
@@ -41,13 +42,13 @@ def _cost(figure: CostFigure) -> CostOut:
     return CostOut(costed=figure.costed, pending_grams=figure.pending_grams.as_decimal())
 
 
-def _amount_with_pending(figure: AmountWithPending) -> AmountWithPendingOut:
+def _amount_with_pending(figure: AmountWithPending | RowCost) -> AmountWithPendingOut:
     return AmountWithPendingOut(
         amount=figure.amount, pending_grams=figure.pending_grams.as_decimal()
     )
 
 
-def _optional(figure: AmountWithPending | None) -> AmountWithPendingOut | None:
+def _optional(figure: AmountWithPending | RowCost | None) -> AmountWithPendingOut | None:
     return None if figure is None else _amount_with_pending(figure)
 
 
