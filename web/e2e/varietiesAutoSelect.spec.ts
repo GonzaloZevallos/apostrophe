@@ -11,6 +11,7 @@ import { CATALOG, VARIETIES } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
 import { expect, test } from './fixtures.js'
 import { signUpNewBusiness } from './helpers/signup.js'
+import { uniqueTag } from './helpers/unique.js'
 
 const PHONE = { width: 390, height: 844 }
 const COMPUTER = { width: 1280, height: 720 }
@@ -20,8 +21,8 @@ test('a tap that leaves Variedades on the phone is not replaced when the viewpor
   context,
 }) => {
   await signUpNewBusiness(page, {
-    businessName: `Selección ${Date.now()}`,
-    email: `seleccion-${Date.now()}@example.com`,
+    businessName: `Selección ${uniqueTag()}`,
+    email: `seleccion-${uniqueTag()}@example.com`,
   })
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'Nueva variedad' }).click()

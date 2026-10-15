@@ -33,6 +33,7 @@ import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
 import { whilePressed, type Look } from './helpers/pressed.js'
+import { uniqueTag } from './helpers/unique.js'
 
 const PHONE = { width: 390, height: 844 }
 const COMPUTER = { width: 1280, height: 920 }
@@ -40,6 +41,8 @@ const PER_CLASS_SET = 3
 const CONTROLS = 'button, a[href], [role=button], [role=tab], [role=radio], [role=switch]'
 const EXEMPT_CLASSES = EXEMPT.flatMap((entry) => entry.classes)
 const THEMES = ['claro', 'oscuro'] as const
+/** The instant the page's fake clock starts at: a literal, so the spec reads no real clock. */
+const PAGE_CLOCK_START = new Date('2030-01-01T12:00:00Z')
 
 function expectFillChanged(name: string, found: { resting: Look; pressed: Look }): void {
   const fillChanged =
@@ -129,8 +132,8 @@ test.describe('on a phone', () => {
       const messages: string[] = []
       watchConsole(page, messages)
       await signUpNewBusiness(page, {
-        businessName: `Flores del Toque ${theme} ${Date.now()}`,
-        email: `duena-toque-${theme}-${Date.now()}@example.com`,
+        businessName: `Flores del Toque ${theme} ${uniqueTag()}`,
+        email: `duena-toque-${theme}-${uniqueTag()}@example.com`,
       })
 
       for (const route of PHONE_ROUTES) {
@@ -165,8 +168,8 @@ test.describe('a switch on a phone', () => {
       const messages: string[] = []
       watchConsole(page, messages)
       await signUpNewBusiness(page, {
-        businessName: `Flores del Interruptor ${theme} ${Date.now()}`,
-        email: `duena-interruptor-${theme}-${Date.now()}@example.com`,
+        businessName: `Flores del Interruptor ${theme} ${uniqueTag()}`,
+        email: `duena-interruptor-${theme}-${uniqueTag()}@example.com`,
       })
       await openIn(page, SETTINGS_PRICES, theme)
 
@@ -211,8 +214,8 @@ test.describe('on a computer', () => {
       const messages: string[] = []
       watchConsole(page, messages)
       await signUpNewBusiness(page, {
-        businessName: `Flores del Riel ${theme} ${Date.now()}`,
-        email: `duena-riel-${theme}-${Date.now()}@example.com`,
+        businessName: `Flores del Riel ${theme} ${uniqueTag()}`,
+        email: `duena-riel-${theme}-${uniqueTag()}@example.com`,
       })
 
       await openIn(page, HOME, theme)
@@ -273,8 +276,8 @@ test.describe('Deshacer', () => {
   for (const theme of THEMES) {
     test(`keeps 4.5:1 at rest and while pressed (${theme})`, async ({ page }) => {
       await signUpNewBusiness(page, {
-        businessName: `Flores del Deshacer ${theme} ${Date.now()}`,
-        email: `duena-deshacer-${theme}-${Date.now()}@example.com`,
+        businessName: `Flores del Deshacer ${theme} ${uniqueTag()}`,
+        email: `duena-deshacer-${theme}-${uniqueTag()}@example.com`,
       })
       await page.goto(VARIETIES)
       await page.getByRole('link', { name: 'Nueva variedad' }).click()
@@ -293,12 +296,15 @@ test.describe('Deshacer', () => {
       }, theme)
       // The notice lasts 5 s (`UNDO_WINDOW_MS`): time runs for the save, then stops once the
       // notice is up, so it cannot go while the button is read.
-      await page.clock.install()
+      await page.clock.install({ time: PAGE_CLOCK_START })
       await fillSaleLine(page, 1, { variety: 'Rosa', grams: '2' })
       await page.getByRole('radio', { name: 'Efectivo' }).check()
       await page.getByRole('button', { name: 'Guardá la venta' }).click()
       await expect(page.getByText('Venta guardada')).toBeVisible()
-      await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 50)
+      // `performance.now()` counts the fake milliseconds since the install, so the page's
+      // clock is read from the start instant the spec chose, never from the real one.
+      const sinceInstall = await page.evaluate(() => performance.now())
+      await page.clock.pauseAt(new Date(PAGE_CLOCK_START.getTime() + sinceInstall + 50))
 
       const deshacer = '.venta-guardada .boton--enlace'
       const backdrop = await page.locator('.venta-guardada').evaluate((bar) => getComputedStyle(bar).backgroundColor)

@@ -36,7 +36,7 @@ function field(parentClass: string | null, tag: 'input' | 'textarea' | 'select' 
 }
 
 beforeEach(() => {
-  vi.useFakeTimers()
+  vi.useFakeTimers({ now: new Date('2026-01-05T12:00:00Z') })
   viewport = new FakeViewport()
   Object.defineProperty(window, 'visualViewport', { value: viewport, configurable: true })
   scrollIntoView.mockClear()

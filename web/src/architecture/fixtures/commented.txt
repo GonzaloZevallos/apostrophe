@@ -1,0 +1,5 @@
+// the old code said Date.now() here
+/* and new Date() here, and
+   Date() on a second line */
+const hidden = 'https://example.com'; const lost = Date.now()
+const stamp = Date.now()

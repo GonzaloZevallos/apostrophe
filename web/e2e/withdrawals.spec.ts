@@ -13,6 +13,7 @@ import { ANALYSIS, HOME, VARIETIES, WITHDRAWAL_NEW } from '../src/routes.js'
 import { watchConsole } from './console.js'
 import { openMas } from './helpers/openMas.js'
 import { signUpNewBusiness } from './helpers/signup.js'
+import { uniqueTag } from './helpers/unique.js'
 
 test('a seller records, edits and deletes withdrawals and reads Promoción and Consumo propio', async ({
   page,
@@ -20,8 +21,8 @@ test('a seller records, edits and deletes withdrawals and reads Promoción and C
   const consoleMessages: string[] = []
   watchConsole(page, consoleMessages)
 
-  const businessName = `Flores del Retiro ${Date.now()}`
-  await signUpNewBusiness(page, { businessName, email: `duena-retiro-${Date.now()}@example.com` })
+  const businessName = `Flores del Retiro ${uniqueTag()}`
+  await signUpNewBusiness(page, { businessName, email: `duena-retiro-${uniqueTag()}@example.com` })
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // A variety with one lot: 50 g for $ 20.000.
