@@ -105,6 +105,40 @@ body {
   font-size: 17px;
 }
 
+/* An amount field: the "$" sits inside the input's left padding, drawn over it, so the
+ * input keeps its full width and height and the sign is never part of its value. */
+.campo__monto {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.campo__prefijo {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 16px;
+  display: flex;
+  align-items: center;
+  color: var(--tinta2);
+  font-size: 17px;
+  pointer-events: none;
+}
+
+.campo__monto > .campo__input {
+  padding-left: 34px;
+}
+
+/* The list price is drawn large (`campo__input--monto`): its sign follows. */
+.campo__monto:has(.campo__input--monto) .campo__prefijo {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.campo__monto > .campo__input--monto {
+  padding-left: 38px;
+}
+
 .campo__error {
   font-size: 13px;
   color: var(--deuda);
