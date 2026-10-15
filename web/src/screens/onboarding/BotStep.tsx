@@ -1,8 +1,9 @@
 /**
  * Step 4, "Conectá tu bot de Telegram": the owner's integrations form without its link to
- * the catalog, and the line that says where the catalog is published. A successful Probarlo
- * (the only save) passes the step as `done`; a failed one shows its reason and sends
- * nothing. A bot saved earlier shows "Hecho" and "Seguir". "Saltar" belongs to the frame.
+ * the catalog, and the line that says where the catalog is published, shown only once the bot
+ * is saved. A successful Probarlo (the only save) passes the step as `done`; a failed one
+ * shows its reason and sends nothing. A bot saved earlier shows "Hecho", the line and
+ * "Seguir". "Saltar" belongs to the frame.
  */
 
 import { useState } from 'react'
@@ -45,7 +46,7 @@ export default function BotStep({ progress, onDirtyChange, onProgress }: StepBod
           void send()
         }}
       />
-      <p className="pie">{PUBLISH_LINE}</p>
+      {(done || tested) && <p className="pie">{PUBLISH_LINE}</p>}
       {(done || tested) && (
         <button type="button" className="boton" disabled={sending} onClick={() => void send()}>
           Seguir

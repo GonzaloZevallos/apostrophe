@@ -86,7 +86,7 @@ test('the catalog message saved in step 3 reads the same in Configuración', asy
 
   await expect(page.getByRole('heading', { name: 'Cómo sale tu catálogo' })).toBeVisible()
   await page.getByLabel('Encabezado').fill('🌸 Catálogo de Jazmín 🌸')
-  await page.getByRole('button', { name: 'Guardá el mensaje' }).click()
+  await page.getByRole('button', { name: 'Guardar' }).click()
   await expect(page.getByRole('heading', { name: 'Conectá tu bot de Telegram' })).toBeVisible()
 
   await page.goto(SETTINGS_CATALOG_MESSAGE)
