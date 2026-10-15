@@ -346,7 +346,8 @@ describe('removing the selected variety on a computer', () => {
   /** The left pane's links to the given variety. By href: a row's accessible name starts with its
    * status word, so a name matcher anchored on the variety's name would never find it. */
   function linksTo(variety: { id: number }) {
-    return screen.queryAllByRole('link').filter((link) => link.getAttribute('href') === pathTo(VARIETY, { id: variety.id }))
+    const href = pathTo(VARIETY, { id: variety.id })
+    return screen.queryAllByRole('link').filter((link) => link.getAttribute('href') === href)
   }
 
   /** The faked API for one removal: the list before the write, the same list without the removed
