@@ -28,6 +28,7 @@ import type { Me } from '../api/me'
 import { LIMITS } from '../copy/limits'
 import type { OnboardingProgress } from '../api/onboarding'
 import Inicio, { EMPTY_DETAIL, EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE } from './Inicio'
+import { SIN_CONEXION_MENSAJE } from '../components/estadosMessages'
 
 const PANEL: PanelAnswer = panelFixture as PanelAnswer
 
@@ -474,7 +475,7 @@ test('shows "Sin conexión" when the panel fetch fails, with no figures', async 
   )
   renderInicio()
 
-  expect(await screen.findByText('Te quedaste sin internet')).toBeInTheDocument()
+  expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
   expect(screen.queryByText('Vendiste hoy')).not.toBeInTheDocument()
 })
 

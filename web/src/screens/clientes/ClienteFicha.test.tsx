@@ -35,7 +35,7 @@ import paymentPreviewFixture from '../../api/fixtures/payment-preview.json'
 import type { Me } from '../../api/me'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import { readNewSaleState } from '../../components/feedback'
-import { SIN_CONEXION_TITULO } from '../../components/SinConexion'
+import { SIN_CONEXION_MENSAJE } from '../../components/estadosMessages'
 import ClienteFicha from './ClienteFicha'
 import { stubFetchWithSettings } from '../stubFetchWithSettings'
 
@@ -690,7 +690,7 @@ test('Borrar cobro when the connection drops shows "Sin conexión", never the ge
   await userEvent.click(borrar)
   await userEvent.click(screen.getByRole('button', { name: 'Sí, borralo' }))
 
-  expect(await screen.findByText(SIN_CONEXION_TITULO)).toBeInTheDocument()
+  expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
   expect(screen.queryByText(ERROR_GENERICO_MENSAJE)).not.toBeInTheDocument()
   expect(screen.queryByText('Eso ya no está. La lista ya está al día.')).not.toBeInTheDocument()
   expect(screen.queryByText('Cobro eliminado')).not.toBeInTheDocument()
@@ -713,7 +713,7 @@ test('Borrar cobro refused for a reason other than "gone" shows the generic retr
   await userEvent.click(screen.getByRole('button', { name: 'Sí, borralo' }))
 
   expect(await screen.findByText(ERROR_GENERICO_MENSAJE)).toBeInTheDocument()
-  expect(screen.queryByText(SIN_CONEXION_TITULO)).not.toBeInTheDocument()
+  expect(screen.queryByText(SIN_CONEXION_MENSAJE)).not.toBeInTheDocument()
   expect(screen.queryByText('Eso ya no está. La lista ya está al día.')).not.toBeInTheDocument()
   expect(screen.queryByText('Cobro eliminado')).not.toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Borrar cobro' })).toBeInTheDocument()

@@ -32,6 +32,7 @@ import debtorsFixture from '../../api/fixtures/debtors.json'
 import Clientes from './Clientes'
 import ClientesLayout from './ClientesLayout'
 import { EMPTY_CUSTOMERS, NOBODY_OWES } from './messages'
+import { SIN_CONEXION_MENSAJE } from '../../components/estadosMessages'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -187,7 +188,7 @@ test('a dropped network on the list shows Sin conexión, never the empty-list te
   vi.mocked(fetch).mockRejectedValue(new TypeError('network error'))
   renderClientes()
 
-  expect(await screen.findByText('Te quedaste sin internet')).toBeInTheDocument()
+  expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
   expect(screen.queryByText('Todavía no agregaste ningún cliente.')).not.toBeInTheDocument()
 })
 
