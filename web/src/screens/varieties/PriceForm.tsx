@@ -7,7 +7,7 @@
  * "Precio de lista", a grams refusal under "Mínimo en gramos".
  */
 
-import { type FormEvent, useEffect, useId, useState } from 'react'
+import { type FormEvent, type Ref, useEffect, useId, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { ApiError, NetworkError, UNKNOWN_CODE, post } from '../../api/client'
 import { invalidateResource } from '../../api/keys'
@@ -37,6 +37,11 @@ export interface PriceFormProps {
   onCancel: () => void
   onDirtyChange: (dirty: boolean) => void
   onGone: () => void
+  /** Told whether the save is in flight, so the host can hold every way out meanwhile. */
+  onSendingChange: (sending: boolean) => void
+  /** The id and ref of the title: the host names its dialog by it and puts focus on it. */
+  titleId: string
+  titleRef: Ref<HTMLSpanElement>
 }
 
 export default function PriceForm({
@@ -47,6 +52,9 @@ export default function PriceForm({
   onCancel,
   onDirtyChange,
   onGone,
+  onSendingChange,
+  titleId,
+  titleRef,
 }: PriceFormProps) {
   const queryClient = useQueryClient()
   const [effectiveFrom, setEffectiveFrom] = useState(today)
@@ -69,6 +77,10 @@ export default function PriceForm({
   useEffect(() => {
     onDirtyChange(dirty)
   }, [dirty, onDirtyChange])
+
+  useEffect(() => {
+    onSendingChange(sending)
+  }, [sending, onSendingChange])
 
   async function onSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault()
@@ -110,9 +122,11 @@ export default function PriceForm({
   return (
     <div className="gasto-form">
       <div className="gasto-form__cabecera">
-        <span className="gasto-form__titulo">Nuevo precio</span>
+        <span id={titleId} ref={titleRef} tabIndex={-1} className="gasto-form__titulo">
+          Nuevo precio
+        </span>
         <span className="gasto-form__cerrar">
-          <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={onCancel} />
+          <Boton variant="icon" action="close" ariaLabel="Cerrar" disabled={sending} onClick={onCancel} />
         </span>
       </div>
       <form className="formulario" onSubmit={onSubmit}>

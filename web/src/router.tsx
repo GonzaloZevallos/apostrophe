@@ -136,6 +136,7 @@ const WITH_VARIETIES_PANES: ReadonlySet<ScreenId> = new Set([
   'varieties',
   'variety-new',
   'variety',
+  'variety-price-new',
   'varieties-archived',
 ])
 

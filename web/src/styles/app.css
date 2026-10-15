@@ -4584,3 +4584,54 @@ body {
   color: var(--tinta2);
   line-height: 1.4;
 }
+
+/* The price form's modal on a computer (`PrecioNuevoCompu.dc.html`, ADR-0043): the host's
+ * frame is a fixed backdrop and the form's `.cuerpo` is the 480 px dialog; the panes behind
+ * it are inert. On a phone `.variedades-paneles--solo` adds no box of its own. */
+.variedades-paneles--solo {
+  display: contents;
+}
+
+@media (min-width: 900px) {
+  .precio-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: var(--espacio-lg);
+    padding-top: calc(var(--inset-arriba) + 80px);
+    background: transparent;
+  }
+
+  .precio-modal::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--tinta);
+    opacity: 0.28;
+  }
+
+  .precio-modal > .cuerpo {
+    position: relative;
+    flex: 0 0 auto;
+    min-height: 0;
+    height: auto;
+    box-sizing: border-box;
+    width: 480px;
+    max-width: calc(100% - 2 * var(--espacio-xl));
+    background: var(--papel);
+    border-radius: var(--radio-panel-grande);
+    padding: var(--espacio-xxl);
+    box-shadow: 0 20px 60px color-mix(in srgb, var(--tinta) 28%, transparent);
+  }
+
+  .precio-modal > .confirmacion {
+    position: relative;
+    width: 480px;
+    max-width: calc(100% - 2 * var(--espacio-xl));
+    box-sizing: border-box;
+  }
+}
