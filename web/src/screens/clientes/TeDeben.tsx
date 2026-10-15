@@ -8,14 +8,14 @@
 
 import { CUSTOMER, CUSTOMER_PAYMENT, pathTo } from '../../routes'
 import { useQuery } from '@tanstack/react-query'
+import BotonLink from '../../components/BotonLink'
 import InAppLink from '../../components/InAppLink'
 import { keys } from '../../api/keys'
 import { getDebtors } from '../../api/payments'
 import { salesCount } from '../../format/counts'
 import { formatDateShort } from '../../format/dates'
 import { formatMoney } from '../../format/money'
-
-export const EMPTY_LIST = 'Nadie te debe.'
+import { NOBODY_OWES } from './messages'
 
 export default function TeDeben() {
   const { data } = useQuery({
@@ -38,7 +38,9 @@ export default function TeDeben() {
         <span className="rotulo">{`${salesCount(data.sales_owing_count)} debiendo`}</span>
       </div>
 
-      {data.debtors.length === 0 && <span className="campo__rotulo">{EMPTY_LIST}</span>}
+      {data.debtors.length === 0 && <span className="campo__rotulo" data-copy="emptyTitle">
+          {NOBODY_OWES}
+        </span>}
 
       <div className="lista-clientes">
         {data.debtors.map((debtor) => (
@@ -50,13 +52,13 @@ export default function TeDeben() {
                 <span className="monto-deuda">{`desde ${formatDateShort(debtor.owing_since)}`}</span>
               )}
             </InAppLink>
-            <InAppLink
+            <BotonLink
               to={pathTo(CUSTOMER_PAYMENT, { id: debtor.customer.id })}
-              aria-label={`Cobrar a ${debtor.customer.name}`}
-              className="cobrar"
+              icon="cobro"
+              ariaLabel={`Cobrar a ${debtor.customer.name}`}
             >
               Cobrar
-            </InAppLink>
+            </BotonLink>
           </div>
         ))}
       </div>

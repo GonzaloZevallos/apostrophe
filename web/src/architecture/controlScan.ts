@@ -188,6 +188,8 @@ interface Context {
   file: string
   masked: string
   errors: string[]
+  /** Declarations other files `export const`, by name: an imported class constant reads from here. */
+  exported: ReadonlyMap<string, string>
 }
 
 function fail(ctx: Context, line: number, reason: string): void {
@@ -321,7 +323,7 @@ function resolve(expr: string, ctx: Context, line: number): string[] {
   if (text[0] === '(' && skipBalanced(text, 0) === text.length) return resolve(text.slice(1, -1), ctx, line)
   const name = matchAt(/[A-Za-z_$][\w$]*/, text, 0)
   if (name === null || !isAccessChain(text.slice(name.length))) return unreadable()
-  const region = declarationRegion(ctx.masked, name)
+  const region = declarationRegion(ctx.masked, name) ?? ctx.exported.get(name) ?? null
   if (region === null) return unreadable()
   return literalsIn(region, ctx, line)
 }
@@ -470,6 +472,33 @@ function classesOf(tag: Tag, ctx: Context): string[] {
   return []
 }
 
+/**
+ * The classes a wrapper's `variant` prop selects from its visual map: the named entry for a
+ * literal, the default entry when the prop is absent, every entry when it is an expression.
+ */
+function visualClasses(
+  tag: Tag,
+  visual: { entries: ReadonlyMap<string, string[]>; fallback: string | null },
+  ctx: Context,
+  line: number,
+): string[] {
+  const variant = attr(tag, 'variant')
+  const all = [...visual.entries.values()].flat()
+  if (variant === undefined) {
+    const entry = visual.fallback === null ? undefined : visual.entries.get(visual.fallback)
+    return entry ?? all
+  }
+  const literal =
+    variant.kind === 'string' ? variant.value : variant.kind === 'expr' ? /^(['"])([\w$]+)\1$/.exec(variant.value.trim())?.[2] : undefined
+  if (literal === undefined) return all
+  const entry = visual.entries.get(literal)
+  if (entry === undefined) {
+    fail(ctx, line, `variant "${literal}" is not in the wrapper's class map`)
+    return []
+  }
+  return entry
+}
+
 // ---- the scan ------------------------------------------------------------------------
 
 export function scanControls(files: ReadonlyArray<SourceFile>): ScanResult {
@@ -489,6 +518,33 @@ export function scanControls(files: ReadonlyArray<SourceFile>): ScanResult {
     }
   }
 
+  // Constants other files export (`export const NUEVA_VENTA_CLASS = '...'`): a className that
+  // names an import reads the declaration where it is made.
+  const exported = new Map<string, string>()
+  for (const { masked } of parsed) {
+    for (const match of masked.matchAll(/\bexport\s+const\s+([A-Za-z_$][\w$]*)/g)) {
+      const name = match[1] ?? ''
+      const region = declarationRegion(masked, name)
+      if (region !== null) exported.set(name, region)
+    }
+  }
+
+  // Visual maps: a module that holds a `const CLASS = { variant: 'classes' }` record. A wrapper
+  // whose file imports from one (`Boton` and `BotonLink` draw from `botonVisual`) puts the
+  // record's class for its `variant` prop on the element, so its call sites carry that class.
+  const visualMaps = new Map<string, { entries: Map<string, string[]>; fallback: string | null }>()
+  for (const { file, masked } of parsed) {
+    const region = declarationRegion(masked, 'CLASS')
+    if (region === null || !/\bCLASS\s*\[/.test(masked)) continue
+    const entries = new Map<string, string[]>()
+    for (const entry of region.matchAll(/([A-Za-z_$][\w$]*)\s*:\s*(['"])([^'"]*)\2/g)) {
+      entries.set(entry[1] ?? '', tokensOf(entry[3] ?? ''))
+    }
+    const fallback = /\bCLASS\s*\[[^\]]*\?\?\s*['"]([\w$]+)['"]\s*\]/.exec(masked)?.[1] ?? null
+    if (entries.size > 0) visualMaps.set(file.path.replace(/\.tsx?$/, ''), { entries, fallback })
+  }
+  const wrapperVisual = new Map<string, { entries: Map<string, string[]>; fallback: string | null }>()
+
   // Wrappers: the control tag inside is not reported, its call sites are.
   const wrapperInner = new Set<string>()
   const wrappers = new Set<string>()
@@ -499,11 +555,16 @@ export function scanControls(files: ReadonlyArray<SourceFile>): ScanResult {
       if (component === null) continue
       wrapperInner.add(`${file.path}:${index}`)
       wrappers.add(component)
+      for (const imported of masked.matchAll(/\bfrom\s+['"]\.\/([\w$-]+)['"]/g)) {
+        const dir = file.path.slice(0, file.path.lastIndexOf('/') + 1)
+        const visual = visualMaps.get(`${dir}${imported[1] ?? ''}`)
+        if (visual !== undefined) wrapperVisual.set(component, visual)
+      }
     }
   }
 
   for (const { file, masked, tags } of parsed) {
-    const ctx: Context = { file: file.path, masked, errors }
+    const ctx: Context = { file: file.path, masked, errors, exported }
     for (const { tag, index, name } of tags) {
       const line = lineAt(masked, index)
       if (tag === null) {
@@ -512,7 +573,10 @@ export function scanControls(files: ReadonlyArray<SourceFile>): ScanResult {
       }
       if (isControl(tag, wrappers)) {
         if (wrapperInner.has(`${file.path}:${index}`)) continue
-        controls.push({ file: file.path, line, tag: name, classes: [...new Set(classesOf(tag, ctx))] })
+        const own = classesOf(tag, ctx)
+        const visual = wrapperVisual.get(name)
+        const drawn = visual === undefined ? [] : visualClasses(tag, visual, ctx, line)
+        controls.push({ file: file.path, line, tag: name, classes: [...new Set([...own, ...drawn])] })
         continue
       }
       const handler = tag.attrs.find((candidate) => HANDLERS.has(candidate.name))

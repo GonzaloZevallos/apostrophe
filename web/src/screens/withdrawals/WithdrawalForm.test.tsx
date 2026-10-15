@@ -11,6 +11,8 @@ import contract from '../../api/contract.json'
 import WITHDRAWAL from '../../api/fixtures/withdrawal.json'
 import { VARIETIES as VARIETIES_PATH, WITHDRAWAL_NEW, withdrawalNewFor } from '../../routes'
 import { jsonResponse, renderWithdrawals } from './renderWithdrawals'
+import { LIMITS } from '../../copy/limits'
+import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -221,4 +223,24 @@ test('a send that finds the withdrawal gone goes to Variedades with the fixed no
 
   expect(await screen.findByText('Eso ya no está. La lista ya está al día.')).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(VARIETIES_PATH)
+})
+
+test('with two lines the form keeps the icon and text rule: Quitar is icon-only, Agregar carries its icon and word', async () => {
+  await openFromVariedades()
+  await userEvent.click(screen.getByRole('button', { name: 'Agregar otra variedad' }))
+  await screen.findByLabelText('Variedad 2')
+
+  const quitar = screen.getByRole('button', { name: 'Quitar variedad 1' })
+  expect(quitar).toHaveClass('boton-icono')
+  expect(quitar).toHaveTextContent('')
+  expect(quitar.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  expect(screen.getByRole('button', { name: 'Quitar variedad 2' })).toHaveClass('boton-icono')
+
+  const agregar = screen.getByRole('button', { name: 'Agregar otra variedad' })
+  expect(agregar.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  expectIconAndTextRule(screen.getByRole('main'), { limits: LIMITS, optionClasses: ['pildora'] })
+
+  await userEvent.click(quitar)
+  expect(screen.queryByLabelText('Variedad 2')).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: /^Quitar variedad/ })).not.toBeInTheDocument()
 })

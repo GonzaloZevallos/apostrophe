@@ -11,7 +11,7 @@
 
 import { useOutletContext } from 'react-router'
 import type { Me } from '../../api/me'
-import Icono from '../../components/Icono'
+import Icono, { type NombreIcono } from '../../components/Icono'
 import InAppLink from '../../components/InAppLink'
 import {
   EXPENSE_CATEGORIES,
@@ -24,16 +24,16 @@ import {
   SETTINGS_USERS,
 } from '../../routes'
 
-const GROUPS = [
-  { to: SETTINGS_BUSINESS, label: 'Negocio' },
-  { to: SETTINGS_USERS, label: 'Usuarios' },
-  { to: SETTINGS_PRICES, label: 'Precios' },
-  { to: SETTINGS_INTEGRATIONS, label: 'Integraciones' },
-  { to: SETTINGS_CATALOG_MESSAGE, label: 'Mensaje del catálogo' },
-  { to: EXPENSE_CATEGORIES, label: 'Categorías de gastos' },
-  { to: SETTINGS_APPEARANCE, label: 'Apariencia' },
-  { to: SETTINGS_ACCOUNT, label: 'Tu cuenta' },
-] as const
+const GROUPS: readonly { to: string; label: string; icon: NombreIcono }[] = [
+  { to: SETTINGS_BUSINESS, label: 'Negocio', icon: 'negocio' },
+  { to: SETTINGS_USERS, label: 'Usuarios', icon: 'usuarios' },
+  { to: SETTINGS_PRICES, label: 'Precios', icon: 'precio' },
+  { to: SETTINGS_INTEGRATIONS, label: 'Integraciones', icon: 'integraciones' },
+  { to: SETTINGS_CATALOG_MESSAGE, label: 'Mensaje del catálogo', icon: 'mensaje' },
+  { to: EXPENSE_CATEGORIES, label: 'Categorías de gastos', icon: 'categorias' },
+  { to: SETTINGS_APPEARANCE, label: 'Apariencia', icon: 'apariencia' },
+  { to: SETTINGS_ACCOUNT, label: 'Tu cuenta', icon: 'cuenta' },
+]
 
 export default function Settings() {
   const me = useOutletContext<Me>()
@@ -45,12 +45,15 @@ export default function Settings() {
           <span className="encabezado__negocio ajustes__negocio">{me.business_name}</span>
           <h1 className="ajustes__titulo">Configuración</h1>
         </div>
-        <nav className="ajustes__lista" aria-label="Configuración">
+        <nav className="ajustes__lista" aria-label="Configuración" data-menu>
           {GROUPS.map((group) => (
             <InAppLink key={group.to} to={group.to} className="ajustes__item">
+              <span className="ajustes__item-icono">
+                <Icono nombre={group.icon} />
+              </span>
               <span className="ajustes__item-rotulo">{group.label}</span>
               <span className="ajustes__item-flecha">
-                <Icono nombre="chevron" size={18} />
+                <Icono nombre="chevron" />
               </span>
             </InAppLink>
           ))}

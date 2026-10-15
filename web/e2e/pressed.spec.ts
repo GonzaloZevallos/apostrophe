@@ -17,6 +17,7 @@ import {
   HOME,
   LOGIN,
   MORE,
+  SALE_NEW,
   SALES,
   SETTINGS,
   SETTINGS_ACCOUNT,
@@ -24,9 +25,12 @@ import {
   VARIETIES,
 } from '../src/routes.js'
 import { EXEMPT } from '../src/architecture/pressedExempt.js'
-import { expect, test, type Page } from '@playwright/test'
+import { composite, contrastRatio, parseColour } from '../src/test/contrast.js'
+import { expect, test } from './fixtures.js'
+import type { Page } from '@playwright/test'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
+import { fillSaleLine } from './helpers/sale.js'
 
 const PHONE = { width: 390, height: 844 }
 const COMPUTER = { width: 1280, height: 920 }
@@ -40,6 +44,10 @@ interface Look {
   boxShadow: string
   /** The element's own fill, or the first non-transparent ancestor's when its own is transparent. */
   fill: string
+  /** Its own computed fill, ink and opacity, for the contrast reading of a pressed control. */
+  backgroundColor: string
+  color: string
+  opacity: string
 }
 
 interface Probe {
@@ -57,7 +65,7 @@ interface Probe {
 async function probe(page: Page, selector: string, scroll: boolean): Promise<Probe> {
   return page.locator(selector).first().evaluate((element, scrollFirst) => {
     if (scrollFirst) element.scrollIntoView({ block: 'center', inline: 'center' })
-    const { transform, boxShadow } = getComputedStyle(element)
+    const { transform, boxShadow, backgroundColor, color, opacity } = getComputedStyle(element)
     let fill = 'rgba(0, 0, 0, 0)'
     for (let node: Element | null = element; node !== null; node = node.parentElement) {
       const own = getComputedStyle(node).backgroundColor
@@ -69,7 +77,7 @@ async function probe(page: Page, selector: string, scroll: boolean): Promise<Pro
     const box = element.getBoundingClientRect()
     const x = box.x + box.width / 2
     const y = box.y + box.height / 2
-    return { look: { transform, boxShadow, fill }, x, y, covered: !element.contains(document.elementFromPoint(x, y)) }
+    return { look: { transform, boxShadow, fill, backgroundColor, color, opacity }, x, y, covered: !element.contains(document.elementFromPoint(x, y)) }
   }, scroll)
 }
 
@@ -94,6 +102,18 @@ function expectPressed(name: string, found: { resting: Look; pressed: Look }): v
   const fillChanged =
     found.pressed.boxShadow !== found.resting.boxShadow || found.pressed.fill !== found.resting.fill
   expect(fillChanged, `${name} changes its fill while pressed`).toBe(true)
+}
+
+/**
+ * The ratio the eye gets from a control that rests on `backdrop` (the computed, opaque
+ * background of its parent): its fill and its ink both shown at the control's `opacity`.
+ */
+function effectiveRatio(look: Look, backdrop: string): number {
+  const opacity = Number(look.opacity)
+  const ground = parseColour(backdrop)
+  const fill = composite(parseColour(look.backgroundColor), opacity, ground)
+  const ink = composite(parseColour(look.color), opacity, fill)
+  return contrastRatio(ink, fill)
 }
 
 async function openIn(page: Page, route: string, theme: (typeof THEMES)[number]): Promise<void> {
@@ -165,15 +185,15 @@ test.describe('on a phone', () => {
 
       await openIn(page, SETTINGS_ACCOUNT, theme)
       await page.evaluate(() => {
-        const row = document.querySelector('.ajustes__item--boton')
-        if (row === null) throw new Error('no .ajustes__item--boton to clone')
+        const row = document.querySelector('button.boton')
+        if (row === null) throw new Error('no button.boton to clone')
         const disabled = row.cloneNode(true) as HTMLButtonElement
         disabled.id = 'prueba-fila-inactiva'
         disabled.disabled = true
         row.parentElement?.append(disabled)
       })
       const inactive = await whilePressed(page, '#prueba-fila-inactiva')
-      expect(inactive.pressed.transform, 'a disabled row stays unscaled').toBe('none')
+      expect(inactive.pressed.transform, 'a disabled button stays unscaled').toBe('none')
       expect(inactive.pressed.boxShadow).toBe(inactive.resting.boxShadow)
       expect(inactive.pressed.fill).toBe(inactive.resting.fill)
 
@@ -220,6 +240,48 @@ test.describe('signed out', () => {
       await openIn(page, LOGIN, theme)
       await expectEveryControlPressed(page, LOGIN)
       expect(messages).toEqual([])
+    })
+  }
+})
+
+test.describe('Deshacer', () => {
+  test.use({ viewport: PHONE })
+
+  for (const theme of THEMES) {
+    test(`Deshacer keeps 4.5:1 at rest and while pressed (${theme})`, async ({ page }) => {
+      await signUpNewBusiness(page, { businessName: `Flores del Deshacer ${theme} ${Date.now()}`, email: `duena-deshacer-${theme}-${Date.now()}@example.com` })
+      await page.goto(VARIETIES)
+      await page.getByRole('link', { name: 'Nueva variedad' }).click()
+      await page.getByLabel('Nombre').fill('Rosa')
+      await page.getByRole('button', { name: 'Agregá la variedad' }).click()
+      await expect(page.getByText('Variedad guardada')).toBeVisible()
+      await page.getByRole('link', { name: /Rosa/ }).click()
+      await page.getByRole('link', { name: 'Nuevo precio' }).click()
+      await page.getByLabel(/^Precio de lista/).fill('1000')
+      await page.getByRole('button', { name: 'Guardá el precio' }).click()
+      await expect(page.getByText('Precio guardado')).toBeVisible()
+
+      await page.goto(SALE_NEW)
+      await page.evaluate((value) => {
+        if (value === 'oscuro') document.documentElement.setAttribute('data-tema', value)
+      }, theme)
+      // The notice lasts 5 s (`UNDO_WINDOW_MS`): time runs for the save, then stops once the
+      // notice is up, so it cannot go while the button is read.
+      await page.clock.install()
+      await fillSaleLine(page, 1, { variety: 'Rosa', grams: '2' })
+      await page.getByRole('radio', { name: 'Efectivo' }).check()
+      await page.getByRole('button', { name: 'Guardá la venta' }).click()
+      await expect(page.getByText('Venta guardada')).toBeVisible()
+      await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 50)
+
+      const found = await whilePressed(page, '.venta-guardada .boton--enlace')
+      const backdrop = await page.locator('.venta-guardada').evaluate((bar) => getComputedStyle(bar).backgroundColor)
+      expect(effectiveRatio(found.resting, backdrop), 'Deshacer at rest').toBeGreaterThanOrEqual(4.5)
+      expect(effectiveRatio(found.pressed, backdrop), 'Deshacer while pressed').toBeGreaterThanOrEqual(4.5)
+      expectPressed('Deshacer', found)
+
+      await expect(page.getByText('Venta guardada')).toBeVisible()
+      await expect(page.getByText('Venta eliminada · los gramos vuelven al stock')).toHaveCount(0)
     })
   }
 })

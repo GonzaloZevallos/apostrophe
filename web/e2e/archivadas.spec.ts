@@ -6,7 +6,7 @@
  * No console message at any point.
  */
 
-import { expect, test } from '@playwright/test'
+import { expect, test } from './fixtures.js'
 import { SALE_NEW, VARIETIES } from '../src/routes.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'

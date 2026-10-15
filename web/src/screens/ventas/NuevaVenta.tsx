@@ -66,13 +66,14 @@ import {
   toHundredths,
   validateSale,
 } from '../../sales/pricing'
+import { OWING_HINT } from '../../sales/messages'
 import type { Variety } from '../Variedades'
 import NuevaVentaCliente from './NuevaVentaCliente'
 import NuevaVentaLinea, { type LinePreview, type LineState } from './NuevaVentaLinea'
 
 export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
 export const NO_LINES_MESSAGE = 'Cargá al menos una variedad.'
-export const OWING_HINT = 'Para dejar debiendo elegí un cliente'
+export { OWING_HINT }
 export const PAYMENT_REQUIRED_MESSAGE = 'Elegí cómo se pagó, o dejá la venta debiendo'
 export const SPECIAL_PRICE_INVALID_MESSAGE = 'El precio especial tiene que ser mayor a $0'
 export const LINE_GRAMS_INVALID = 'Cargá los gramos: coma, hasta dos decimales'
@@ -554,12 +555,12 @@ function NuevaVentaForm() {
               />
               <span className="fecha-pildora__texto" aria-hidden="true">
                 {date === me.today ? `Hoy ${formatDateShort(date)}` : formatDateLong(date)}
-                <Icono nombre="abajo" size={15} strokeWidth={1.8} />
+                <Icono nombre="abajo" />
               </span>
             </span>
-            <button type="button" className="boton--enlace nueva-venta__cerrar" onClick={close}>
-              Cerrar
-            </button>
+            <span className="nueva-venta__cerrar">
+              <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={close} />
+            </span>
           </div>
           {dateError !== null && (
             <span className="campo__error" role="alert">
@@ -573,7 +574,7 @@ function NuevaVentaForm() {
             <>
               {repricing && !customerSheet.isOpen && <LoadingAnuncio />}
               {customer === null ? (
-                <Boton variant="secondary" onClick={customerSheet.open}>
+                <Boton variant="secondary" icon="clientes" onClick={customerSheet.open}>
                   Elegir cliente
                 </Boton>
               ) : (
@@ -615,7 +616,7 @@ function NuevaVentaForm() {
                   />
                 ))}
               </div>
-              <Boton variant="link" onClick={addLine}>
+              <Boton variant="secondary" icon="agregar" onClick={addLine}>
                 Agregar otra variedad
               </Boton>
 
@@ -687,7 +688,7 @@ function NuevaVentaForm() {
                 {totals.gramsGiftedHundredths > 0 &&
                   ` · ${formatGrams(fromHundredths(totals.gramsGiftedHundredths))} de regalo`}
               </span>
-              <Boton type="submit" disabled={save.isPending || varietiesQuery.isFetching || settingsQuery.isFetching}>
+              <Boton textOnly="submit" type="submit" disabled={save.isPending || varietiesQuery.isFetching || settingsQuery.isFetching}>
                 Guardá la venta
               </Boton>
             </div>

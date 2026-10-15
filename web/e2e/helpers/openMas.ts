@@ -1,5 +1,6 @@
 import { CATALOG, HOME } from '../../src/routes.js'
 import { expectPath } from './url.js'
+import { expect } from '../fixtures.js'
 import type { Page } from '@playwright/test'
 
 /** A phone: the bar, and so Más, only exists there; a computer's sidebar has no Más. */
@@ -32,7 +33,11 @@ export async function openCatalog(page: Page): Promise<void> {
   await page.getByRole('link', { name: 'Variedades', exact: true }).click()
   await page.getByRole('link', { name: 'Mandar catálogo' }).click()
   // Wait for the move before the viewport changes back: on a computer Variedades would select its
-  // first variety and take the click's navigation over.
+  // first variety and take the click's navigation over. The address changes before React commits
+  // the new screen (the router renders a navigation in a transition), and a viewport change in
+  // between re-renders the screen still on show: Variedades, which on a computer selects its first
+  // variety. So wait for the catalog's own heading too, not only the address.
   await expectPath(page, CATALOG)
+  await expect(page.getByRole('heading', { name: 'Catálogo', level: 1 })).toBeVisible()
   if (before !== null) await page.setViewportSize(before)
 }

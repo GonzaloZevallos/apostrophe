@@ -20,6 +20,8 @@ import { SheetRouterProvider } from '../../components/useSheetStack'
 import { GONE_NOTICE } from '../../api/refusals'
 import { stubViewport } from '../../test-viewport'
 import { StrictMode } from 'react'
+import { LIMITS, SAMPLES } from '../../copy/limits'
+import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -370,6 +372,157 @@ test('Borrar cobro asks before deleting, then shows "Cobro eliminado" and refres
   expect(await screen.findByText('Cobro eliminado')).toBeInTheDocument()
 })
 
+const CREDIT_ONLY_CUSTOMER = {
+  ...SETTLED_CUSTOMER,
+  id: 1,
+  name: 'Ana',
+  balance: -44000,
+  standing: 'credit',
+}
+
+const CREDIT_ONLY_ACCOUNT = {
+  balance: -44000,
+  owing_since: null,
+  standing: 'credit',
+  rows: [
+    {
+      kind: 'credit',
+      date: '2026-10-06',
+      running_balance: -44000,
+      standing: 'credit',
+      payment: { id: 7, paid_on: '2026-10-06', amount: 44000, method: 'cash' },
+      amount: 44000,
+    },
+  ],
+}
+
+test('a payment that shows only as "A favor" offers Borrar cobro, and deleting it brings the balance back to nothing', async () => {
+  let deleted = false
+  api.mockImplementation(
+    dispatchFetch({
+      'GET /customers/1': () => jsonResponse(200, deleted ? SETTLED_CUSTOMER : CREDIT_ONLY_CUSTOMER),
+      'GET /customers/1/account': () => jsonResponse(200, deleted ? EMPTY_ACCOUNT : CREDIT_ONLY_ACCOUNT),
+      'DELETE /payments/7': () => {
+        deleted = true
+        return new Response(null, { status: 204 })
+      },
+    }),
+  )
+  renderFicha('1')
+
+  const borrar = await screen.findByRole('button', { name: 'Borrar cobro' })
+  expect(screen.getAllByRole('button', { name: 'Borrar cobro' })).toHaveLength(1)
+  await userEvent.click(borrar)
+
+  expect(
+    screen.getByText('¿Borrás el cobro de $ 44.000 (efectivo) del 06/10?'),
+  ).toBeInTheDocument()
+
+  await userEvent.click(screen.getByRole('button', { name: 'Sí, borralo' }))
+
+  expect(await screen.findByText('Cobro eliminado')).toBeInTheDocument()
+  await waitFor(() => expect(screen.queryByText(/A favor/)).not.toBeInTheDocument())
+  expect(screen.queryByText(/Te debe/)).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Borrar cobro' })).not.toBeInTheDocument()
+})
+
+test('Borrar cobro on a credit-only payment already gone closes the dialog and shows the gone notice', async () => {
+  api.mockImplementation(
+    dispatchFetch({
+      'GET /customers/1': () => jsonResponse(200, CREDIT_ONLY_CUSTOMER),
+      'GET /customers/1/account': () => jsonResponse(200, CREDIT_ONLY_ACCOUNT),
+      'DELETE /payments/7': () => jsonResponse(404, { code: 'payment.not_found' }),
+    }),
+  )
+  renderFicha('1')
+
+  await userEvent.click(await screen.findByRole('button', { name: 'Borrar cobro' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Sí, borralo' }))
+
+  expect(await screen.findByText('Eso ya no está. La lista ya está al día.')).toBeInTheDocument()
+  expect(screen.queryByText('¿Borrás el cobro de $ 44.000 (efectivo) del 06/10?')).not.toBeInTheDocument()
+  expect(screen.queryByText('Cobro eliminado')).not.toBeInTheDocument()
+})
+
+test('a payment split between a sale and a credit offers one Borrar cobro, on its payment row', async () => {
+  api.mockImplementation(
+    dispatchFetch({
+      'GET /customers/1': () => jsonResponse(200, CREDIT_ONLY_CUSTOMER),
+      'GET /customers/1/account': () =>
+        jsonResponse(200, {
+          balance: -3000,
+          owing_since: null,
+          standing: 'credit',
+          rows: [
+            {
+              kind: 'sale',
+              date: '2026-10-01',
+              running_balance: 5000,
+              standing: 'owes',
+              sale: { id: 10, total: 5000, how_paid: 'owing' },
+            },
+            {
+              kind: 'payment',
+              date: '2026-10-05',
+              running_balance: 0,
+              standing: 'settled',
+              payment: { id: 8, paid_on: '2026-10-05', amount: 8000, method: 'cash' },
+              applied_to: { sale_id: 10, sale_date: '2026-10-01', amount: 5000 },
+            },
+            {
+              kind: 'credit',
+              date: '2026-10-05',
+              running_balance: -3000,
+              standing: 'credit',
+              payment: { id: 8, paid_on: '2026-10-05', amount: 8000, method: 'cash' },
+              amount: 3000,
+            },
+          ],
+        }),
+    }),
+  )
+  renderFicha('1')
+
+  await screen.findByRole('button', { name: 'Borrar cobro' })
+  expect(screen.getAllByRole('button', { name: 'Borrar cobro' })).toHaveLength(1)
+  const filas = Array.from(document.querySelectorAll<HTMLElement>('.cuenta-cliente__fila'))
+  expect(filas).toHaveLength(3)
+  const [saleFila, paymentFila, creditFila] = filas
+  if (saleFila === undefined || paymentFila === undefined || creditFila === undefined) {
+    throw new Error('expected three account rows')
+  }
+  expect(within(saleFila).queryByRole('button', { name: 'Borrar cobro' })).not.toBeInTheDocument()
+  expect(within(paymentFila).getByRole('button', { name: 'Borrar cobro' })).toBeInTheDocument()
+  expect(within(creditFila).queryByRole('button', { name: 'Borrar cobro' })).not.toBeInTheDocument()
+})
+
+test('a sale paid on the spot offers no Borrar cobro', async () => {
+  api.mockImplementation(
+    dispatchFetch({
+      'GET /customers/1': () => jsonResponse(200, SETTLED_CUSTOMER),
+      'GET /customers/1/account': () =>
+        jsonResponse(200, {
+          balance: 0,
+          owing_since: null,
+          standing: 'settled',
+          rows: [
+            {
+              kind: 'sale',
+              date: '2026-10-01',
+              running_balance: 0,
+              standing: 'settled',
+              sale: { id: 10, total: 5000, how_paid: 'cash' },
+            },
+          ],
+        }),
+    }),
+  )
+  renderFicha('1')
+
+  expect(await screen.findByText('Pagada por efectivo')).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Borrar cobro' })).not.toBeInTheDocument()
+})
+
 test('registering a payment shows "Cobro guardado · queda debiendo $ X" when something remains', async () => {
   api.mockImplementation(
     dispatchFetch({
@@ -601,7 +754,7 @@ test('the payment route opens the sheet by itself, from a typed address, and Cer
   await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
 
   await waitFor(() => expect(router.state.location.pathname).toBe(CUSTOMERS))
-  expect(screen.queryByRole('button', { name: 'Guardar' })).not.toBeInTheDocument()
+  await waitFor(() => expect(screen.queryByRole('button', { name: 'Guardar' })).not.toBeInTheDocument())
 })
 
 test('an untouched sheet leaves at once on history back', async () => {
@@ -625,10 +778,15 @@ test('a touched sheet asks before history back leaves, "No" keeps what was typed
   expect(await screen.findByText('¿Descartás el cobro?')).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(pathTo(CUSTOMER_PAYMENT, { id: 1 }))
   await userEvent.click(screen.getByRole('button', { name: 'No, seguí cargando' }))
-  expect(screen.queryByText('¿Descartás el cobro?')).not.toBeInTheDocument()
-  expect(screen.getByLabelText('Efectivo')).toBeChecked()
+  // React takes the dialog off the screen after the click, not inside it: wait for it
+  // before reading anything else (`waitFor`, not `waitForElementToBeRemoved`, which
+  // throws when the element is already gone).
+  await waitFor(() => expect(screen.queryByText('¿Descartás el cobro?')).not.toBeInTheDocument())
+  // A regression check that "No" did not navigate, not a sync point.
+  await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(CUSTOMER_PAYMENT, { id: 1 })))
+  expect(await screen.findByLabelText('Efectivo')).toBeChecked()
 
-  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Cerrar' }))
   await userEvent.click(await screen.findByRole('button', { name: 'Sí, descartalo' }))
   await waitFor(() => expect(router.state.location.pathname).toBe(CUSTOMERS))
 })
@@ -723,8 +881,8 @@ test('a gone cobro opened from Clientes goes back to it: Clientes is in history 
   expect(router.state.historyAction).toBe('POP')
   expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
   await act(() => router.navigate(-1))
-  expect(router.state.location.pathname).toBe(HOME)
-  expect(screen.queryByText(GONE_NOTICE)).not.toBeInTheDocument()
+  await waitFor(() => expect(router.state.location.pathname).toBe(HOME))
+  await waitFor(() => expect(screen.queryByText(GONE_NOTICE)).not.toBeInTheDocument())
 })
 
 test("a gone cobro opened from Inicio's teaser replaces the sheet with Clientes and leaves Inicio alone", async () => {
@@ -737,8 +895,8 @@ test("a gone cobro opened from Inicio's teaser replaces the sheet with Clientes 
   expect(router.state.historyAction).toBe('REPLACE')
   expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
   await act(() => router.navigate(-1))
-  expect(router.state.location.pathname).toBe(HOME)
-  expect(screen.queryByText(GONE_NOTICE)).not.toBeInTheDocument()
+  await waitFor(() => expect(router.state.location.pathname).toBe(HOME))
+  await waitFor(() => expect(screen.queryByText(GONE_NOTICE)).not.toBeInTheDocument())
 })
 
 test('a gone cobro on a direct link replaces the sheet with Clientes and shows the notice', async () => {
@@ -791,4 +949,42 @@ test.each([
   expect(await screen.findByText('la lista')).toBeInTheDocument()
   expect(router.state.historyAction).toBe('POP')
   expect(screen.getAllByText(GONE_NOTICE)).toHaveLength(1)
+})
+
+const RULE = { limits: LIMITS, samples: { name: SAMPLES.name } }
+
+test('the card and its sheet follow the icon and text rule: Borrar cobro is icon-only, the rest keep their words', async () => {
+  api.mockImplementation(
+    dispatchFetch({
+      'GET /customers/1': () => jsonResponse(200, OWING_CUSTOMER),
+      'GET /customers/1/account': () =>
+        jsonResponse(200, {
+          balance: 6000,
+          owing_since: '2026-09-14',
+          standing: 'owes',
+          rows: [
+            {
+              kind: 'payment',
+              date: '2026-09-20',
+              running_balance: 6000,
+              standing: 'owes',
+              payment: { id: 5, paid_on: '2026-09-20', amount: 5000, method: 'cash' },
+              applied_to: { sale_id: 10, sale_date: '2026-09-14', amount: 5000 },
+            },
+          ],
+        }),
+    }),
+  )
+  renderFicha('1', [pathTo(CUSTOMER_PAYMENT, { id: 1 })])
+
+  const borrar = await screen.findByRole('button', { name: 'Borrar cobro' })
+  expect(borrar).toHaveClass('boton-icono')
+  expect(borrar).toHaveTextContent('')
+  expect(borrar.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  const registrar = screen.getByRole('link', { name: 'Registrar cobro' })
+  expect(registrar.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  const nueva = screen.getByRole('link', { name: /^Nueva venta a / })
+  expect(nueva.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  await screen.findByRole('button', { name: 'Guardar' })
+  expectIconAndTextRule(document.body, RULE)
 })

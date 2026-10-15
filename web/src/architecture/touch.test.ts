@@ -127,13 +127,23 @@ function classesIn(selector: string): string[] {
   return [...selector.matchAll(/\.[A-Za-z0-9_-]+/g)].map((match) => match[0])
 }
 
+/**
+ * The classes a rule presses: those of the element it paints. In `:is(a, b)` that is every
+ * listed class; in `.ancestor .control:active` it is `.control` alone (`.ancestor` is only
+ * where the rule applies, and is no pressed control of its own).
+ */
+function subjectClasses(selector: string): string[] {
+  if (selector.startsWith(':is(')) return classesIn(selector)
+  return selector.split(',').flatMap((part) => classesIn(subjectOf(part)))
+}
+
 /** The block's `:active` rules, in the order the stylesheet gives them. */
 function pressedRules(css: string): PressedRule[] {
   const block = pressedBlock(css)
   if (block === null) return []
   return rules(block)
     .filter((rule) => rule.selector.includes(':active'))
-    .map((rule) => ({ classes: classesIn(rule.selector), body: rule.body }))
+    .map((rule) => ({ classes: subjectClasses(rule.selector), body: rule.body }))
 }
 
 function pressedClasses(css: string): Set<string> {
@@ -530,6 +540,9 @@ test('user-select: none lists single classes, and every pressed class is listed,
   expect(userSelectViolations(`${pressedRules}\n${none('.mas__item')}`, { '.fila': 'row text is data' })).toEqual([
     'SELECTABLE .fila is not a pressed class',
   ])
+  // A scoped rule presses its subject, not the ancestor that scopes it.
+  const scoped = `${pressedRules}\n.barra .mas__item:active:not(:disabled):not([aria-disabled='true']) { background-color: var(--boton); }`
+  expect(userSelectViolations(`${scoped}\n${none('.mas__item', '.mas__item--activo')}`, {})).toEqual([])
   for (const bad of ['input', 'textarea', 'label', 'p', '*', '.mas__item input', "[contenteditable='true']"]) {
     expect(userSelectViolations(`${pressedRules}\n${none('.mas__item', bad)}`, {})).toEqual([
       `user-select: none lists "${bad}", which is not a single class`,

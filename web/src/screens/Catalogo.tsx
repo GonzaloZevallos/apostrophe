@@ -26,20 +26,20 @@ import { NetworkError } from '../api/client'
 import type { Me } from '../api/me'
 import { copyText } from '../clipboard'
 import { canShare, shareText } from '../share'
-import InAppLink from '../components/InAppLink'
+import Boton from '../components/Boton'
+import BotonLink from '../components/BotonLink'
 import AvisoExito, { type SuccessToast } from '../components/AvisoExito'
 import Insignia, { type InsigniaTono } from '../components/Insignia'
 import ErrorGenerico from '../components/ErrorGenerico'
 import SinConexion from '../components/SinConexion'
 import PinPublish from './PinPublish'
+import { EMPTY_STATE_DETAIL, EMPTY_STATE_TITLE } from './catalogMessages'
 import { telegramPreview } from './telegramPreview'
 import { CATALOG_SECTION_ID, SETTINGS_CATALOG_MESSAGE, VARIETIES, VARIETY, pathTo } from '../routes'
 
 export const CATALOG_COPIED = 'Catálogo copiado'
 export const COPY_FAILED_MESSAGE = 'No se pudo copiar.'
 export const SHARE_FAILED_MESSAGE = 'No se pudo compartir.'
-export const EMPTY_STATE_TITLE = 'No hay nada en el catálogo hoy'
-export const EMPTY_STATE_DETAIL = 'No hay nada para copiar todavía'
 
 // The one table from GET /catalog's `state` to the word that says why a variety does not
 // go out (PRD criterion 4). The front never decides the reason, it only words the server's.
@@ -115,9 +115,9 @@ export default function Catalogo() {
     <main className="pantalla">
       <div className="cuerpo">
         <div className="encabezado__fila">
-          <Link to={VARIETIES} className="boton-enlace">
+          <BotonLink to={VARIETIES} variant="back">
             ‹ Variedades
-          </Link>
+          </BotonLink>
         </div>
         <h1 className="encabezado__titulo">Catálogo</h1>
 
@@ -151,23 +151,22 @@ export default function Catalogo() {
           <>
             <div className="catalogo__acciones">
               {canShare() && (
-                <button
-                  type="button"
-                  className="boton catalogo__compartir"
+                <Boton
+                  icon="compartir"
                   disabled={!settled || sharing}
                   onClick={() => void onShare(catalog.text as string)}
                 >
                   Compartir
-                </button>
+                </Boton>
               )}
-              <button
-                type="button"
-                className="boton boton--suave catalogo__copiar"
+              <Boton
+                variant="secondary"
+                icon="copiar"
                 disabled={!settled || copying}
                 onClick={() => void onCopy(catalog.text as string)}
               >
                 Copiar
-              </button>
+              </Boton>
             </div>
             {shareFailed && (
               <span className="campo__error" role="alert">
@@ -210,9 +209,9 @@ export default function Catalogo() {
               </div>
             )}
 
-            <InAppLink to={SETTINGS_CATALOG_MESSAGE} className="boton-enlace">
+            <BotonLink to={SETTINGS_CATALOG_MESSAGE} variant="link">
               Editar encabezado y pie
-            </InAppLink>
+            </BotonLink>
           </>
         )}
         </div>

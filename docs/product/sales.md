@@ -316,7 +316,7 @@ The phone layout only; `NuevaVentaCompu` keeps its own.
 - **No echo**: (Criterion 5)
   - no refusal body or log line contains the note, a customer's name or a submitted amount;
   - after a full front run, the console and browser storage hold none of them.
-- **Record time**: a sale is recorded through the front, from a phone viewport, in under 60 s with an existing, new (with or without a number) or no customer. Recording answers in under 300 ms with a few dozen varieties and customers. (Criteria 1, 14)
+- **Record time**: the front run records a sale from a phone viewport with an existing, new (with or without a number) or no customer (`web/e2e/sales.spec.ts`, `web/e2e/ventasTelefono.spec.ts`), and the tap budget holds (`web/e2e/tapBudget.spec.ts`); its duration is not measured by any test. Recording answers in under 300 ms with a few dozen varieties and customers. (Criteria 1, 14)
 - **Preview = stored**: (Criterion 6)
   - the front preview passes the same pricing matrix as the domain, for every combination of switches;
   - the end-to-end run compares the preview with the saved detail: 0 differences.
@@ -331,7 +331,7 @@ The phone layout only; `NuevaVentaCompu` keeps its own.
   - each period's total and count equal the sum and number of the sales shown;
   - the week runs Monday to Sunday;
   - the "te debe" mark matches the API's settlement;
-  - the list answers in under 300 ms with a few hundred sales.
+  - the list answers in under 300 ms with a few hundred sales: checked by `tests/sales/test_list_cost.py` through the query plan of the list statements (the indexes are searched, no table is scanned) and the statement count at 30 and 300 sales, never by time (docs/adr/0038).
 - **Fixing**: the end-to-end run assigns a customer to a sale that had none (Asignar cliente then disappears) and deletes a sale through its confirmation. (Criterion 11)
 - **No overflow on the phone (criterion 12)**: front tests at 320, 375 and 430 px and at 130 % text, for Nueva venta, Ventas and the sale's detail, show nothing clipped or overflowing horizontally, "Precio especial", shipping and Fechas' inputs included; Ventas' tabs covered on one row and wrapped two by two.
 - **Save in reach (criterion 12)**: at those widths the footer's total and "Guardá la venta" are visible on load; the header stays while the body scrolls; with a simulated keyboard the footer stays visible; the payment options and the Debiendo hint (with side margin) scroll fully above the footer.

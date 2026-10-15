@@ -68,6 +68,25 @@ export default function A({ v }: { v: string }) {
   expect(result.controls[0]?.classes).toEqual(['boton', 'boton--suave'])
 })
 
+test('a constant another file exports is read where it is declared; one nobody exports is an error', () => {
+  const user = `import { PLACEMENT, MISSING } from './clases'
+export default function A() {
+  return (
+    <>
+      <button className={PLACEMENT}>x</button>
+      <button className={MISSING}>y</button>
+    </>
+  )
+}`
+  const result = scanControls([
+    { path: 'src/clases.ts', source: "export const PLACEMENT = 'boton-nueva-venta'" },
+    { path: 'src/User.tsx', source: user },
+  ])
+  expect(result.controls[0]?.classes).toEqual(['boton-nueva-venta'])
+  expect(result.errors).toHaveLength(1)
+  expect(result.errors[0]).toMatch(/^src\/User\.tsx:6 className expression cannot be read: MISSING/)
+})
+
 test('a helper function of the same file, ignoring the literals it compares with', () => {
   const result = scan(`function railClassName(group: string, active: boolean): string {
   const base = group === 'more' ? 'item item--secundario' : 'item'
@@ -213,7 +232,7 @@ test('the real sources scan with no errors and find the controls the issue names
   const classes = new Set(result.controls.flatMap((control) => control.classes))
   for (const name of [
     'ajustes__item',
-    'ajustes__item--boton',
+    'boton--fila',
     'ajustes-tema__opcion',
     'ajustes-tema__opcion--activa',
     'riel-lateral__negocio',

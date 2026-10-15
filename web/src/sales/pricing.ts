@@ -11,6 +11,8 @@
  * invariants): nothing here runs again once a sale is saved.
  */
 
+import { noPriceMessage, OWING_HINT } from './messages'
+
 export type PricingRule = 'list' | 'bulk' | 'vip' | 'gift' | 'special'
 
 /** CONTEXT.md: Bulk price, Bulk minimum. `minimumHundredths` is the bulk minimum in
@@ -232,12 +234,12 @@ export function validateSale(input: {
     if (pricedFromTheDay && line.quote === null) {
       errors.push({
         field: `line:${line.id}`,
-        message: `${line.varietyName} no tiene precio para esa fecha`,
+        message: noPriceMessage(line.varietyName),
       })
     }
   }
   if (input.method === 'owing' && !input.hasCustomer) {
-    errors.push({ field: 'customer', message: 'Para dejar debiendo elegí un cliente' })
+    errors.push({ field: 'customer', message: OWING_HINT })
   }
   return errors
 }

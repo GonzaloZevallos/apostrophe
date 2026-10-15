@@ -16,6 +16,12 @@
  * adjustment 5): a business can have history and no price today, and its figures
  * are real.
  *
+ * Slot 1 is `inicioNotices`' call (results.md's order): "Seguí con la configuración" while
+ * the Onboarding is offered and not over, otherwise "Arrancá por las variedades". It stays
+ * empty until `/panel` and `/onboarding-progress` have both answered, so an Onboarding
+ * business never flashes "Arrancá" whichever answer comes first; a failure of either shows
+ * the existing "Sin conexión" or the generic retry.
+ *
  * The pinned-catalog notice (plan, "Front"; accounts.md's Inicio rule): a fixed
  * line, never a figure, while `GET /pinned-catalog/status` reads `out_of_date` —
  * before the first Publicar `status` is `null` and nothing shows (PRD, "Before the
@@ -28,6 +34,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useOutletContext } from 'react-router'
 import InAppLink from '../components/InAppLink'
 import { get, NetworkError } from '../api/client'
+import { onboardingProgressQuery } from '../api/onboarding'
 import { keys } from '../api/keys'
 import type { Me } from '../api/me'
 import {
@@ -38,6 +45,8 @@ import {
   type PanelTab,
 } from '../api/panel'
 import ErrorGenerico from '../components/ErrorGenerico'
+import BotonLink from '../components/BotonLink'
+import { AvisoCuerpo } from '../components/AvisoAmbar'
 import MarcaEstado from '../components/MarcaEstado'
 import SinConexion from '../components/SinConexion'
 import { salesCount } from '../format/counts'
@@ -45,11 +54,11 @@ import { formatDateShort } from '../format/dates'
 import { formatGrams, formatMoney, formatSignedMoney } from '../format/money'
 import { initialsOf } from '../shell/initials'
 import { detailFor, sideNoteFor } from '../stock/detail'
+import { EMPTY_DETAIL, EMPTY_TITLE, NOBODY_OWES, PINNED_CATALOG_OUT_OF_DATE } from './inicioMessages'
+import { inicioNotices } from './inicioNotices'
+import OnboardingNotice from './onboarding/OnboardingNotice'
 
-export const EMPTY_TITLE = 'Arrancá por las variedades'
-export const EMPTY_DETAIL =
-  'Cargá tu primera variedad con su precio. Sin precio no se puede cargar una venta.'
-export const PINNED_CATALOG_OUT_OF_DATE = 'Tu catálogo en Telegram está desactualizado'
+export { EMPTY_DETAIL, EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE }
 
 const PENDING_NOTE = 'incluye costo pendiente'
 
@@ -117,6 +126,14 @@ export default function Inicio() {
   })
   const pinOutOfDate = pinnedCatalog.data?.status?.state === 'out_of_date'
 
+  const onboardingQuery = useQuery(onboardingProgressQuery)
+  const notices = inicioNotices({
+    onboarding: panelQuery.data === undefined ? undefined : onboardingQuery.data,
+    pricedToday: varietiesQuery.data === undefined ? undefined : hasPricedVariety,
+    pinOutOfDate,
+  })
+  const failed = [panelQuery, onboardingQuery].find((query) => query.isError)
+
   return (
     <main className="pantalla">
       <div className="cuerpo">
@@ -134,20 +151,25 @@ export default function Inicio() {
           </InAppLink>
         </div>
 
-        {pinOutOfDate && (
-          <InAppLink to={CATALOG} className="aviso-ambar" role="status">
-            <span className="aviso-ambar__titulo">{PINNED_CATALOG_OUT_OF_DATE}</span>
-          </InAppLink>
-        )}
-        {varietiesQuery.data !== undefined && !hasPricedVariety && (
-          <div className="estado-vacio">
-            <span className="estado-vacio__titulo">{EMPTY_TITLE}</span>
-            <span className="estado-vacio__detalle">{EMPTY_DETAIL}</span>
+        {notices.first?.kind === 'onboarding' && <OnboardingNotice progress={notices.first.progress} />}
+        {notices.first?.kind === 'start' && (
+          <div className="estado-vacio estado-vacio--atencion">
+            <AvisoCuerpo attention>
+              <span className="estado-vacio__titulo">{EMPTY_TITLE}</span>
+              <span className="estado-vacio__detalle">{EMPTY_DETAIL}</span>
+            </AvisoCuerpo>
           </div>
         )}
+        {notices.pinOutOfDate && (
+          <InAppLink to={CATALOG} className="aviso-ambar aviso-ambar--atencion" role="status">
+            <AvisoCuerpo attention>
+              <span className="aviso-ambar__titulo">{PINNED_CATALOG_OUT_OF_DATE}</span>
+            </AvisoCuerpo>
+          </InAppLink>
+        )}
 
-        {panelQuery.isError && panelQuery.error instanceof NetworkError && <SinConexion />}
-        {panelQuery.isError && !(panelQuery.error instanceof NetworkError) && <ErrorGenerico />}
+        {failed !== undefined && failed.error instanceof NetworkError && <SinConexion />}
+        {failed !== undefined && !(failed.error instanceof NetworkError) && <ErrorGenerico />}
 
         {panelQuery.data !== undefined && (
           <Panel panel={panelQuery.data} tab={tab} onTab={setTab} today={me.today} />
@@ -285,7 +307,7 @@ function TeDebenBlock({ debts }: { debts: PanelDebts }) {
     return (
       <div className="bloque-deben">
         <span className="rotulo">Te deben</span>
-        <span className="pie">Nadie te debe</span>
+        <span className="pie">{NOBODY_OWES}</span>
       </div>
     )
   }
@@ -307,13 +329,13 @@ function TeDebenBlock({ debts }: { debts: PanelDebts }) {
             <span>{formatMoney(row.balance)}</span>
             <span className="pie">{`desde ${formatDateShort(row.owing_since)}`}</span>
           </InAppLink>
-          <InAppLink
+          <BotonLink
+            icon="cobro"
             to={pathTo(CUSTOMER_PAYMENT, { id: row.customer_id })}
-            aria-label={`Cobrar a ${row.name}`}
-            className="cobrar cobrar--acento"
+            ariaLabel={`Cobrar a ${row.name}`}
           >
             Cobrar
-          </InAppLink>
+          </BotonLink>
         </div>
       ))}
     </div>

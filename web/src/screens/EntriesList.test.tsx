@@ -24,6 +24,8 @@ import {
 } from '../routes'
 import EntriesList from './EntriesList'
 import VarietyRoute from './varieties/VarietyRoute'
+import { LIMITS } from '../copy/limits'
+import { expectIconAndTextRule } from '../test/iconAndTextRule'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-06' }
 
@@ -300,4 +302,32 @@ test('a delete marks the catalog stale and the stock list refetches', async () =
   const stockCalls = vi.mocked(fetch).mock.calls.filter(([url]) => url === '/stock')
   expect(stockCalls.length).toBeGreaterThanOrEqual(2)
   expect(client.getQueryState(catalogQueryOptions().queryKey)?.isInvalidated).toBe(true)
+})
+
+test('the list keeps the icon and text rule: Borrar is the icon-only control with its word as name', async () => {
+  fakeApi()
+  renderAt(STOCK_PATH)
+
+  const rows = await screen.findAllByRole('listitem')
+  const borrar = within(rows[0]!).getByRole('button', { name: 'Borrar' })
+  expect(borrar).toHaveClass('boton-icono')
+  expect(borrar).toHaveTextContent('')
+  expect(borrar.querySelector('svg')).not.toBeNull()
+  expectIconAndTextRule(document.body, { limits: LIMITS })
+})
+
+test('the empty state keeps the title and the line within their limits', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: string | URL | Request) => {
+      const url = typeof input === 'string' ? input : input.toString()
+      if (url === '/stock') return Promise.resolve(jsonResponse(200, { total: 0, varieties: [], entries: [] }))
+      return Promise.resolve(jsonResponse(200, VARIETIES))
+    }),
+  )
+  renderAt(STOCK_PATH)
+
+  await screen.findByText('Sin entradas de stock')
+  expect(document.querySelectorAll('[data-copy="emptyTitle"], [data-copy="emptyLine"]')).toHaveLength(2)
+  expectIconAndTextRule(document.body, { limits: LIMITS })
 })

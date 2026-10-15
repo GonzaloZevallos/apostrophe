@@ -36,6 +36,7 @@ import SinConexion from '../../components/SinConexion'
 import { parseGrams } from '../../format/parse'
 import { REASON_OPTIONS } from './withdrawalReasons'
 import type { Variety } from '../Variedades'
+import Boton from '../../components/Boton'
 
 export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
 export const GRAMS_INVALID = 'Revisá los gramos cargados'
@@ -214,9 +215,9 @@ export default function WithdrawalForm({
   const header = (
     <div className="gasto-form__cabecera">
       <span className="gasto-form__titulo">Sacar del stock</span>
-      <button type="button" className="boton--enlace gasto-form__cerrar" onClick={onCancel}>
-        Cerrar
-      </button>
+      <span className="gasto-form__cerrar">
+        <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={onCancel} />
+      </span>
     </div>
   )
 
@@ -290,24 +291,23 @@ export default function WithdrawalForm({
               required
             />
             {form.lines.length > 1 && (
-              <button
-                type="button"
-                className="boton--enlace"
+              <Boton
+                variant="icon"
+                action="delete"
+                ariaLabel={`Quitar variedad ${index + 1}`}
                 onClick={() =>
                   setForm((previous) => ({
                     ...previous,
                     lines: previous.lines.filter((other) => other.key !== line.key),
                   }))
                 }
-              >
-                Quitar variedad {index + 1}
-              </button>
+              />
             )}
           </fieldset>
         ))}
-        <button
-          type="button"
-          className="boton--enlace"
+        <Boton
+          variant="secondary"
+          icon="agregar"
           onClick={() => {
             const key = nextKey.current
             nextKey.current += 1
@@ -318,7 +318,7 @@ export default function WithdrawalForm({
           }}
         >
           Agregar otra variedad
-        </button>
+        </Boton>
         <label className="campo">
           <span className="campo__rotulo">Nota</span>
           <input
@@ -335,9 +335,9 @@ export default function WithdrawalForm({
           </span>
         )}
         {offline && <SinConexion />}
-        <button className="boton" type="submit" disabled={!canSubmit}>
+        <Boton textOnly="submit" type="submit" disabled={!canSubmit}>
           {target === 'new' ? 'Guardá el retiro' : 'Guardar'}
-        </button>
+        </Boton>
       </form>
       {confirmingSave && (
         <ConfirmDialog

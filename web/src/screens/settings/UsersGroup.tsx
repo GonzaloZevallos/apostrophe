@@ -3,33 +3,24 @@
  * the business's users by email (sorted the way the backend already answers them), the
  * signed-in one marked "vos", and "Invitá a un socio".
  *
- * "Invitá a un socio" shows the fresh link right on the screen, which is why it gets no
- * toast of its own ("Invitación lista", unless the link is shown on the screen). A dropped
- * network shows "Sin conexión", never the generic retry. The group is never dirty: a link is
- * issued by the server the moment it is asked for, so there is nothing typed to lose.
+ * "Invitá a un socio" is `InvitePartner` (shared with the Onboarding's partner step). The group
+ * is never dirty: a link is issued by the server the moment it is asked for, so there is
+ * nothing typed to lose.
  */
 
-import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useOutletContext } from 'react-router'
-import { NetworkError, get, post } from '../../api/client'
+import { NetworkError, get } from '../../api/client'
 import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import Loading from '../../components/Loading'
-import { copyText } from '../../clipboard'
-import { canShare, shareText } from '../../share'
-import { formatDateShort } from '../../format/dates'
+import InvitePartner from './InvitePartner'
 import SettingsGroup from './SettingsGroup'
 
 interface Business {
   users: { email: string }[]
-}
-
-interface Invite {
-  url: string
-  expires_at: string
 }
 
 const LEAVE = {
@@ -45,41 +36,6 @@ export default function UsersGroup() {
     queryKey: keys.business(),
     queryFn: () => get<Business>('/business'),
   })
-  const [invite, setInvite] = useState<Invite | null>(null)
-  const [invitePending, setInvitePending] = useState(false)
-  const [inviteError, setInviteError] = useState(false)
-  const [inviteOffline, setInviteOffline] = useState(false)
-
-  async function onInvite(): Promise<void> {
-    setInviteError(false)
-    setInviteOffline(false)
-    setInvitePending(true)
-    try {
-      setInvite(await post<Invite>('/invitations'))
-    } catch (caught) {
-      if (caught instanceof NetworkError) {
-        setInviteOffline(true)
-      } else {
-        setInviteError(true)
-      }
-    } finally {
-      setInvitePending(false)
-    }
-  }
-
-  async function onCopy(): Promise<void> {
-    if (invite === null) return
-    // A failed copy (or the home network's plain http, ADR-0002) stays silent
-    // here: the link is already readable right on the screen.
-    await copyText(invite.url)
-  }
-
-  async function onShare(): Promise<void> {
-    if (invite === null || !canShare()) return
-    // `share.ts` is the only module that names the share sheet; a cancel and a failure
-    // both stay silent here, the link is already readable right on the screen.
-    await shareText(invite.url)
-  }
 
   return (
     <SettingsGroup title="Usuarios" dirty={false} leave={LEAVE}>
@@ -95,27 +51,7 @@ export default function UsersGroup() {
           ))}
         </ul>
       )}
-      <button className="boton boton--suave" type="button" onClick={onInvite} disabled={invitePending}>
-        Invitá a un socio
-      </button>
-      {invite !== null && (
-        <div className="usuarios__invitacion">
-          <div className="usuarios__link">{invite.url}</div>
-          <div className="usuarios__acciones">
-            <button type="button" className="boton" onClick={onCopy}>
-              Copiar
-            </button>
-            <button type="button" className="boton" onClick={onShare}>
-              Compartir
-            </button>
-          </div>
-          <span className="campo__rotulo">
-            Un link de un solo uso, vence el {formatDateShort(invite.expires_at.slice(0, 10))}
-          </span>
-        </div>
-      )}
-      {inviteOffline && <SinConexion />}
-      {inviteError && <ErrorGenerico />}
+      <InvitePartner onLinkCreated={() => undefined} />
     </SettingsGroup>
   )
 }

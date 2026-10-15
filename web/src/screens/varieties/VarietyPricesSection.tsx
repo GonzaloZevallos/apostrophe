@@ -3,7 +3,7 @@
  * borrar"), and "Ver todas" to the whole history.
  */
 
-import InAppLink from '../../components/InAppLink'
+import BotonLink from '../../components/BotonLink'
 import { VARIETY_PRICES, pathTo } from '../../routes'
 import PriceRows, { type PriceRow } from './PriceRows'
 
@@ -22,9 +22,7 @@ export default function VarietyPricesSection({
     <section className="seccion-variedad">
       <div className="seccion-variedad__cabecera">
         <h2 className="seccion-variedad__titulo">Precios</h2>
-        <InAppLink to={pathTo(VARIETY_PRICES, { id: varietyId })} className="enlace-texto">
-          Ver todas
-        </InAppLink>
+        <BotonLink variant="link" to={pathTo(VARIETY_PRICES, { id: varietyId })}>Ver todas</BotonLink>
       </div>
       <PriceRows varietyId={varietyId} history={history} currentPriceId={currentPriceId} limit={3} readOnly={readOnly} />
     </section>

@@ -15,6 +15,7 @@ import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Outlet, RouterProvider, useLocation, type RouteObject } from 'react-router'
 import { expect, test, vi } from 'vitest'
 import type { Me } from '../api/me'
+import { expectIconAndTextRule, iconAndTextProblems } from '../test/iconAndTextRule'
 import { inAppState } from '../components/inAppState'
 import InAppLink from '../components/InAppLink'
 import {
@@ -350,4 +351,42 @@ test('Configuración\'s list opened directly reads "‹ Más" on the phone and "
 test('a root has no arrow', () => {
   renderShell([CUSTOMERS])
   expect(screen.queryByRole('button', { name: /^‹ / })).not.toBeInTheDocument()
+})
+
+test('the bar is a menu of icon + text tabs, none sharing an icon (icon and text rule)', () => {
+  const { container } = renderShell([HOME])
+
+  expect(bar(container)).toHaveAttribute('data-menu')
+  expectIconAndTextRule(bar(container))
+})
+
+test('the rail is a menu too, and no two of its entries share an icon', () => {
+  const { container } = renderShell([HOME], { computer: true })
+
+  expect(rail(container)).toHaveAttribute('data-menu')
+  // Every entry draws its icon, Gastos and Análisis included; only the business row draws an
+  // avatar, not an icon, so it is the one thing that may be left over.
+  expect(iconAndTextProblems(rail(container))).toEqual([
+    expect.stringContaining('"Configuración de La Huerta" is text only'),
+  ])
+})
+
+test('a bar that repeats an icon is rejected by the rule', () => {
+  const { container } = render(
+    <nav data-menu>
+      <a href="/a">
+        <svg aria-hidden="true">
+          <path d="M1 1" />
+        </svg>
+        <span>Uno</span>
+      </a>
+      <a href="/b">
+        <svg aria-hidden="true">
+          <path d="M1 1" />
+        </svg>
+        <span>Dos</span>
+      </a>
+    </nav>,
+  )
+  expect(iconAndTextProblems(container)).toEqual([expect.stringContaining('shares its icon with "Uno"')])
 })

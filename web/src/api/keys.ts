@@ -101,6 +101,9 @@ export const keys = {
   // `Resource`/`PREFIX` system — the current mount's own fetch is always the
   // answer shown, never a write elsewhere in the app replaying a stale one.
   panel: () => ['panel'] as const,
+  // The Onboarding's one read (`api/onboarding.ts`), frozen the same way and for the same
+  // reason: outside the `Resource`/`PREFIX` system, set by its own writes.
+  onboardingProgress: () => ['onboarding-progress'] as const,
 }
 
 // A write on one resource that also stales another, beyond its own prefix (plan,

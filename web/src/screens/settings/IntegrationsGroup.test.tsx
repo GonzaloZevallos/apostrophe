@@ -12,6 +12,9 @@ import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import IntegrationsGroup from './IntegrationsGroup'
+import { iconAndTextProblems } from '../../test/iconAndTextRule'
+import { LIMITED_COPY, OWN_CHAT_HELP, OWN_CHAT_INFO, PREVIOUS_PIN_NOTICE } from './integrationsMessages'
+import { LIMITS } from '../../copy/limits'
 
 vi.mock('../../shell/useViewport', () => ({ useViewport: () => 'phone' }))
 
@@ -234,8 +237,7 @@ test('after saving, Cerrar closes at once even while the refetch is pending', as
   expect(screen.queryByText('¿Descartás el cambio?')).not.toBeInTheDocument()
 })
 
-const OWN_CHAT_HELP_LINE =
-  'Abrí tu bot en Telegram y tocá Iniciar. Tu número lo ves con @userinfobot, o tocá Buscar mi chat.'
+const OWN_CHAT_HELP_LINE = 'Tocá Iniciar en tu bot; tu número lo ves con @userinfobot.'
 const CHANNEL_HELP_LINE = 'Es el @usuario o el enlace del canal donde se publica el catálogo.'
 
 function lookupCalls(fetchMock: ReturnType<typeof renderGroup>) {
@@ -246,7 +248,7 @@ function saveCalls(fetchMock: ReturnType<typeof renderGroup>) {
   return fetchMock.mock.calls.filter(([url]) => url === '/pinned-catalog/test')
 }
 
-test('the own-chat help line names Iniciar, @userinfobot and Buscar mi chat; the channel line is unchanged', async () => {
+test('the own-chat help line names Iniciar and @userinfobot; the channel line is unchanged', async () => {
   renderGroup(SAVED)
 
   await screen.findByLabelText('Tu chat')
@@ -402,4 +404,98 @@ test('a lookup reason clears when Probarlo runs, and a Probarlo reason clears wh
     expect(screen.getByRole('alert')).toHaveTextContent('Todavía no vemos mensajes'),
   )
   expect(screen.getAllByRole('alert')).toHaveLength(1)
+})
+
+test('Buscar mi chat is icon + text: the icon is hidden, so the name stays the words', async () => {
+  renderGroup(SAVED)
+
+  await screen.findByLabelText('Tu chat')
+  const button = screen.getByRole('button', { name: 'Buscar mi chat' })
+  const icon = button.querySelector('svg')
+  expect(icon).not.toBeNull()
+  expect(icon).toHaveAttribute('aria-hidden', 'true')
+  expect(button).toHaveTextContent('Buscar mi chat')
+})
+
+test('Cambiar stays a text link named Cambiar, with no icon', async () => {
+  renderGroup(SAVED)
+
+  const change = await screen.findByRole('button', { name: 'Cambiar' })
+  expect(change.querySelector('svg')).toBeNull()
+})
+
+test('the help lines, the token hint and the consequence line each fit their limit', async () => {
+  renderGroup(SAVED, () => jsonResponse(200, { ...SAVED, previous_pin_left: true }))
+
+  await screen.findByLabelText('Tu chat')
+  for (const copy of [OWN_CHAT_HELP_LINE, CHANNEL_HELP_LINE]) {
+    expect(Array.from(copy).length).toBeLessThanOrEqual(80)
+  }
+  await userEvent.type(screen.getByLabelText('Tu chat'), '1')
+  await userEvent.click(screen.getByRole('button', { name: 'Probarlo' }))
+  const notice = await screen.findByText(/El mensaje fijado anterior/)
+  expect(Array.from(notice.textContent ?? '').length).toBeLessThanOrEqual(80)
+})
+
+test('the own-chat help is a MasInfo: closed at mount, "Más info" opens the longer how and a second tap closes it', async () => {
+  renderGroup(SAVED)
+  await screen.findByLabelText('Tu chat')
+
+  const more = screen.getByRole('button', { name: 'Más info' })
+  expect(more).toHaveAttribute('aria-expanded', 'false')
+  expect(screen.getByText(OWN_CHAT_HELP)).toBeVisible()
+  expect(screen.getByText(OWN_CHAT_INFO.more)).not.toBeVisible()
+
+  await userEvent.click(more)
+  expect(more).toHaveAttribute('aria-expanded', 'true')
+  expect(screen.getByText(OWN_CHAT_INFO.more)).toBeVisible()
+
+  await userEvent.click(more)
+  expect(more).toHaveAttribute('aria-expanded', 'false')
+  expect(screen.getByText(OWN_CHAT_INFO.more)).not.toBeVisible()
+})
+
+test('opening More info is not an unsaved change: Cerrar leaves without asking', async () => {
+  renderGroup(SAVED)
+  await screen.findByLabelText('Tu chat')
+
+  await userEvent.click(screen.getByRole('button', { name: 'Más info' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
+
+  expect(await screen.findByRole('heading', { name: 'Lista' })).toBeInTheDocument()
+  expect(screen.queryByText('¿Descartás el cambio?')).not.toBeInTheDocument()
+})
+
+test('the own-chat line and the consequence line are registered and within their limits; the long how is behind More info only', () => {
+  expect(LIMITED_COPY).toContainEqual({ kind: 'help', text: OWN_CHAT_HELP })
+  expect(LIMITED_COPY).toContainEqual({ kind: 'notice', text: PREVIOUS_PIN_NOTICE })
+  expect(Array.from(OWN_CHAT_HELP).length).toBeLessThanOrEqual(LIMITS.help)
+  expect(Array.from(PREVIOUS_PIN_NOTICE).length).toBeLessThanOrEqual(LIMITS.notice)
+  expect(LIMITED_COPY.some(({ text }) => text === OWN_CHAT_INFO.more)).toBe(false)
+})
+
+test('the group follows the icon and text rule: Cerrar icon-only, Probarlo and Buscar mi chat icon + text', async () => {
+  renderGroup(SAVED)
+  await screen.findByLabelText('Tu chat')
+
+  const close = screen.getByRole('button', { name: 'Cerrar' })
+  expect(close).toHaveClass('boton-icono')
+  expect(close).toHaveTextContent('')
+  expect(screen.queryByText('Volver')).not.toBeInTheDocument()
+  const probarlo = screen.getByRole('button', { name: 'Probarlo' })
+  expect(probarlo).toHaveTextContent('Probarlo')
+  expect(probarlo.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  // The helper does not know More info's "i" (its own 44 px control, not `.boton-icono`).
+  const problems = iconAndTextProblems(document.body, { limits: LIMITS }).filter(
+    (problem) => !problem.includes('mas-info__boton'),
+  )
+  expect(problems).toEqual([])
+})
+
+test('Enter in a field still runs Probarlo', async () => {
+  const fetchMock = renderGroup(SAVED)
+
+  await userEvent.type(await screen.findByLabelText('Tu chat'), '1{Enter}')
+
+  await waitFor(() => expect(saveCalls(fetchMock)).toHaveLength(1))
 })

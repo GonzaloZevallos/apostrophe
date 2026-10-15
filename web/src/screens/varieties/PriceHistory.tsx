@@ -6,10 +6,10 @@
  */
 
 import { useQuery } from '@tanstack/react-query'
-import { Link } from 'react-router'
 import { ApiError, NetworkError, get } from '../../api/client'
 import { keys } from '../../api/keys'
 import { isGone } from '../../api/refusals'
+import BotonLink from '../../components/BotonLink'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import GoneScreen from '../../components/GoneScreen'
 import Loading from '../../components/Loading'
@@ -18,6 +18,7 @@ import { useBackOr } from '../../components/useBackOr'
 import { VARIETIES, VARIETY, pathTo } from '../../routes'
 import type { Variety } from '../Variedades'
 import PriceRows, { type PriceRow } from './PriceRows'
+import { PRICE_HISTORY_HELP } from './varietiesMessages'
 
 export default function PriceHistory({ varietyId }: { varietyId: number }) {
   const id = String(varietyId)
@@ -48,18 +49,20 @@ export default function PriceHistory({ varietyId }: { varietyId: number }) {
   const variety = varietyQuery.data
   const history = pricesQuery.data
 
-  function goBack(event: { preventDefault: () => void }): void {
-    event.preventDefault()
-    back()
-  }
-
   return (
     <main className="pantalla">
       <div className="cuerpo">
         <div className="encabezado__fila">
-          <Link to={pathTo(VARIETY, { id: varietyId })} onClick={goBack} className="boton--enlace">
+          <BotonLink
+            variant="back"
+            to={pathTo(VARIETY, { id: varietyId })}
+            onClick={(event) => {
+              event.preventDefault()
+              back()
+            }}
+          >
             ‹ {variety.name}
-          </Link>
+          </BotonLink>
         </div>
         <span className="encabezado__titulo">Precios</span>
         <PriceRows
@@ -68,7 +71,7 @@ export default function PriceHistory({ varietyId }: { varietyId: number }) {
           currentPriceId={variety.current_price?.id ?? null}
           readOnly={variety.archived}
         />
-        <span className="campo__ayuda">Cada venta usa el precio que regía ese día, aunque lo cambies después.</span>
+        <span className="campo__ayuda" data-copy="help">{PRICE_HISTORY_HELP}</span>
       </div>
     </main>
   )

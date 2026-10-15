@@ -37,6 +37,9 @@ from app.expenses.adapters.tables import ExpenseCategoryRow
 from app.expenses.application import manage_categories
 from app.expenses.domain.category import CategoryNotFound
 from app.main import create_app
+from app.onboarding.adapters.sql_onboardings import SqlOnboardings
+from app.onboarding.adapters.tables import OnboardingRow
+from app.onboarding.domain.onboarding import Onboarding
 from app.payments.adapters import router as payments_router_module
 from app.payments.adapters.sql_payments import SqlPayments
 from app.payments.adapters.tables import PaymentRow
@@ -296,6 +299,7 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
         "amount": 100,
         "method": "cash",
     },
+    ("POST", "/onboarding-progress/passes"): {"step": "header_footer", "as": "done"},
     ("PUT", "/pricing-settings"): {"is_bulk_pricing": False, "is_vip_customers": False},
     ("POST", "/auth/password"): {
         "current_password": "the wrong current password",
@@ -957,6 +961,21 @@ def test_another_business_s_analysis_is_exactly_the_empty_shape(
         "month_expenses": {"categories": [], "total": 0, "purchases": 0},
         "since_first_record_expenses": {"categories": [], "total": 0, "purchases": 0},
     }
+
+
+def test_each_business_has_its_own_onboarding_row_and_reads_no_other(
+    business_a: TestClient, business_b: TestClient, engine: Engine
+) -> None:
+    # Opening each business through its invitation seeded its row (docs/adr/0036).
+    with Session(engine) as session:
+        rows = session.scalars(select(OnboardingRow)).all()
+        assert len(rows) == 2
+        ids = {row.business_id for row in rows}
+        assert len(ids) == 2
+        a_id, b_id = sorted(ids)
+        assert SqlOnboardings(session, a_id).get() == Onboarding.opened()
+        assert SqlOnboardings(session, b_id).get() == Onboarding.opened()
+        assert SqlOnboardings(session, max(ids) + 1).get() is None
 
 
 @pytest.mark.parametrize(

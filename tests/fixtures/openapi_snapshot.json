@@ -1761,6 +1761,25 @@
         "title": "PanelVarietyOut",
         "type": "object"
       },
+      "PassIn": {
+        "description": "Both are plain text here: a step that cannot be passed, or a way that does not\nexist, is the domain's `onboarding.step_invalid`, not a validation error.",
+        "properties": {
+          "as": {
+            "title": "As",
+            "type": "string"
+          },
+          "step": {
+            "title": "Step",
+            "type": "string"
+          }
+        },
+        "required": [
+          "step",
+          "as"
+        ],
+        "title": "PassIn",
+        "type": "object"
+      },
       "PaymentAccountRowOut": {
         "properties": {
           "applied_to": {
@@ -2458,6 +2477,98 @@
         "title": "PricingSettingsBody",
         "type": "object"
       },
+      "ProgressOut": {
+        "properties": {
+          "can_skip_rest": {
+            "title": "Can Skip Rest",
+            "type": "boolean"
+          },
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "offered": {
+            "title": "Offered",
+            "type": "boolean"
+          },
+          "over": {
+            "title": "Over",
+            "type": "boolean"
+          },
+          "price_target": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TargetOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "resume": {
+            "anyOf": [
+              {
+                "enum": [
+                  "variety",
+                  "stock",
+                  "header_footer",
+                  "bot",
+                  "partner",
+                  "categories"
+                ],
+                "type": "string"
+              },
+              {
+                "const": "finish",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resume"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/StepOut"
+            },
+            "title": "Steps",
+            "type": "array"
+          },
+          "stock_entries_count": {
+            "title": "Stock Entries Count",
+            "type": "integer"
+          },
+          "stock_target": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TargetOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "varieties_count": {
+            "title": "Varieties Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "offered",
+          "over",
+          "count",
+          "resume",
+          "steps",
+          "can_skip_rest",
+          "varieties_count",
+          "stock_entries_count",
+          "price_target",
+          "stock_target"
+        ],
+        "title": "ProgressOut",
+        "type": "object"
+      },
       "RecordPaymentOut": {
         "properties": {
           "after": {
@@ -2576,7 +2687,7 @@
         "type": "object"
       },
       "SaleDetailOut": {
-        "description": "`GET /sales/{id}`'s own shape, never the list's: the same labelled read shape as\n`SaleOut` (docs/adr/0011), plus each line's cost of goods, allocated fresh on this\none read (ADR-0009), so `SaleOut` — used by the list and by every write — never\nallocates.",
+        "description": "`GET /sales/{id}`'s own shape, never the list's: the same labelled read shape as\n`SaleOut` (docs/adr/0011), plus each line's cost of goods, allocated fresh on this\none read (ADR-0009), so `SaleOut` \u2014 used by the list and by every write \u2014 never\nallocates.",
         "properties": {
           "customer": {
             "anyOf": [
@@ -2994,6 +3105,40 @@
         "title": "SinceFirstRecordOut",
         "type": "object"
       },
+      "StepOut": {
+        "properties": {
+          "state": {
+            "$ref": "#/components/schemas/StepState"
+          },
+          "step": {
+            "enum": [
+              "variety",
+              "stock",
+              "header_footer",
+              "bot",
+              "partner",
+              "categories"
+            ],
+            "title": "Step",
+            "type": "string"
+          }
+        },
+        "required": [
+          "step",
+          "state"
+        ],
+        "title": "StepOut",
+        "type": "object"
+      },
+      "StepState": {
+        "enum": [
+          "done",
+          "skipped",
+          "pending"
+        ],
+        "title": "StepState",
+        "type": "string"
+      },
       "StockOut": {
         "description": "`GET /stock`'s own shape: the business's total grams, every variety's own row,\nand its entries, newest date first then most recently recorded first.",
         "properties": {
@@ -3022,6 +3167,24 @@
           "entries"
         ],
         "title": "StockOut",
+        "type": "object"
+      },
+      "TargetOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "TargetOut",
         "type": "object"
       },
       "ThresholdIn": {
@@ -4935,6 +5098,130 @@
         "summary": "Accept Invitation",
         "tags": [
           "accounts"
+        ]
+      }
+    },
+    "/onboarding-progress": {
+      "get": {
+        "operationId": "get_progress_onboarding_progress_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProgressOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Progress",
+        "tags": [
+          "onboarding"
+        ]
+      }
+    },
+    "/onboarding-progress/advance": {
+      "post": {
+        "operationId": "post_advance_onboarding_progress_advance_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProgressOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Post Advance",
+        "tags": [
+          "onboarding"
+        ]
+      }
+    },
+    "/onboarding-progress/passes": {
+      "post": {
+        "operationId": "post_pass_onboarding_progress_passes_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PassIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProgressOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Post Pass",
+        "tags": [
+          "onboarding"
+        ]
+      }
+    },
+    "/onboarding-progress/skip-rest": {
+      "post": {
+        "operationId": "post_skip_rest_onboarding_progress_skip_rest_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProgressOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Post Skip Rest",
+        "tags": [
+          "onboarding"
         ]
       }
     },

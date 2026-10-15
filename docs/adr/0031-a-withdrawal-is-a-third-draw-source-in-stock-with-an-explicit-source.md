@@ -33,3 +33,7 @@ ADR-0010), but they are never a sale and never a shortfall.
 
 - A fourth source is one edit in `history()` and one in each `match`.
 - Days left counts sale lines and both withdrawal sources, never adjustments.
+
+## Amendment
+
+`history.py` also exposes `business_history`, which reads the three sources for the whole business once and answers the stock entry rows it read with the grouped lots and draws, so `GET /stock` reads `stock_entry` once (GH-125).
