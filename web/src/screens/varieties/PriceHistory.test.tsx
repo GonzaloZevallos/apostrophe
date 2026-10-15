@@ -4,7 +4,7 @@
  * The API is faked at `fetch`.
  */
 
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import { catalogQueryOptions } from '../../api/catalog'
@@ -41,6 +41,36 @@ test('back goes by history to where the seller came from', async () => {
   expect(await screen.findByText('Página de la variedad')).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(pathTo(VARIETY, { id: 1 }))
   expect(router.state.historyAction).toBe('POP')
+})
+
+test('while the variety loads there is no back, not even a placeholder; once it loads the back names it', async () => {
+  let release: (response: Response) => void = () => undefined
+  const pending = new Promise<Response>((resolve) => {
+    release = resolve
+  })
+  const served = api()
+  renderVarieties([pathTo(VARIETY_PRICES, { id: 1 })], (url, init) =>
+    url === '/varieties/1' ? pending : served(url, init),
+  )
+
+  await waitFor(() => expect(screen.getAllByRole('navigation').length).toBeGreaterThan(0))
+  expect(screen.queryByText(/‹/)).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: /^‹/ })).not.toBeInTheDocument()
+
+  release(jsonResponse(200, VARIETY_ROW))
+
+  expect(await screen.findByRole('button', { name: '‹ 24K Gold' })).toBeInTheDocument()
+})
+
+test('a variety that is gone shows no back, only its own way out', async () => {
+  const gone = () => jsonResponse(404, { code: 'variety.not_found', detail: 'No existe' })
+  renderVarieties(
+    [pathTo(VARIETY_PRICES, { id: 1 })],
+    api({ 'GET /varieties/1': gone, 'GET /varieties/1/prices': gone }),
+  )
+
+  expect(await screen.findByRole('link', { name: 'Volver a Variedades' })).toBeInTheDocument()
+  expect(screen.queryByText(/‹/)).not.toBeInTheDocument()
 })
 
 test('back with no history goes to the variety\'s page', async () => {

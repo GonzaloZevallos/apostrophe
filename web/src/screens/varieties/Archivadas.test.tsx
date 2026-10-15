@@ -182,7 +182,7 @@ describe('the Archivadas card', () => {
 
 describe("an archived variety's page", () => {
   test('is read-only: back to Archivadas, Archivada in words, and Restaurar the one action', async () => {
-    renderAt(pathTo(VARIETY, { id: 4 }))
+    const { router } = renderAt(pathTo(VARIETY, { id: 4 }))
     expect(await screen.findByRole('heading', { name: 'Alfa Vieja' })).toBeTruthy()
     expect(screen.getByRole('button', { name: '‹ Archivadas' })).toBeTruthy()
     expect(screen.getByText('Archivada')).toBeTruthy()
@@ -200,6 +200,9 @@ describe("an archived variety's page", () => {
     }
     expect(screen.queryByRole('button', { name: /Editar|Borrar/ })).toBeNull()
     expect(screen.getAllByRole('button').map((button) => button.textContent)).toEqual(['‹ Archivadas', 'Restaurar'])
+    // With no history to go back to, the one back goes to Archivadas.
+    await userEvent.click(screen.getByRole('button', { name: '‹ Archivadas' }))
+    await waitFor(() => expect(router.state.location.pathname).toBe(ARCHIVED_VARIETIES))
   })
 
   test('restores in one tap and then shows the live variety', async () => {
@@ -264,12 +267,21 @@ describe('on a computer (two panes)', () => {
           ),
           children: [
             {
-              path: VARIETIES,
-              element: <VarietiesLayout />,
+              element: <Shell />,
               children: [
-                { index: true, element: <VarietiesIndex /> },
-                { path: ARCHIVED_VARIETIES, element: <ArchivedIndex /> },
-                { path: VARIETY, element: <VarietyRoute render={(id) => <VarietyPage varietyId={id} />} /> },
+                {
+                  path: VARIETIES,
+                  element: <VarietiesLayout />,
+                  children: [
+                    { index: true, element: <VarietiesIndex />, handle: { screen: 'varieties' } },
+                    { path: ARCHIVED_VARIETIES, element: <ArchivedIndex />, handle: { screen: 'varieties-archived' } },
+                    {
+                      path: VARIETY,
+                      element: <VarietyRoute render={(id) => <VarietyPage varietyId={id} />} />,
+                      handle: { screen: 'variety' },
+                    },
+                  ],
+                },
               ],
             },
           ],
@@ -299,6 +311,8 @@ describe('on a computer (two panes)', () => {
     renderComputer(pathTo(VARIETY, { id: 4 }))
     // The card: its rows carry the "Archivada" mark (its back is the shell's, not the screen's).
     expect(await screen.findByRole('heading', { name: 'Archivadas' })).toBeTruthy()
+    expect(await screen.findAllByRole('button', { name: /^‹ / })).toHaveLength(1)
+    expect(screen.getByRole('button', { name: '‹ Archivadas' })).toBeTruthy()
     expect(screen.getAllByText('Zeta Vieja')).toHaveLength(1)
     expect(screen.queryByText('Todas las entradas')).toBeNull()
 
