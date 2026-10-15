@@ -18,7 +18,7 @@ from app.db import make_engine
 from app.main import create_app
 from app.pinned_catalog.application.ports import DueBusinesses
 from app.settings import Settings
-from tests.conftest import TEST_HASHER
+from tests.conftest import NOW, TEST_HASHER, MovableClock
 from tests.fakes.telegram import FakeTelegram
 
 
@@ -37,6 +37,7 @@ def test_ticker_runs_once_at_startup_and_stops_on_shutdown(
     app = create_app(
         settings,
         engine=engine,
+        clock=MovableClock(NOW),
         hasher=TEST_HASHER,
         telegram=FakeTelegram(),
         upkeep_ticker=True,
