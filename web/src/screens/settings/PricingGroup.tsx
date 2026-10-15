@@ -25,6 +25,7 @@ import {
 } from '../../api/pricingSettings'
 import { kindOf } from '../../api/refusals'
 import AvisoExito from '../../components/AvisoExito'
+import Boton from '../../components/Boton'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import Loading from '../../components/Loading'
 import OpcionInterruptor from '../../components/OpcionInterruptor'
@@ -137,9 +138,9 @@ function PricingForm({ initial }: { initial: PricingSettings }) {
           </span>
         )}
         {offline && <SinConexion />}
-        <button className="boton" type="submit" disabled={saving}>
+        <Boton textOnly="submit" type="submit" disabled={saving}>
           Guardá los precios
-        </button>
+        </Boton>
       </form>
     </SettingsGroup>
   )

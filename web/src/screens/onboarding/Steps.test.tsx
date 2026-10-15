@@ -13,6 +13,7 @@ import { createMemoryRouter, Outlet, RouterProvider, type RouteObject } from 're
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import type { Me } from '../../api/me'
 import type { OnboardingProgress, StepSlug, StepState } from '../../api/onboarding'
+import { expectIconAndTextRule, iconAndTextProblems } from '../../test/iconAndTextRule'
 import Listo from './Listo'
 import OnboardingLayout from './OnboardingLayout'
 import { OnboardingEntry, OnboardingStepRoute } from './OnboardingRoutes'
@@ -398,4 +399,85 @@ test('a failed Onboarding write after a saved step shows the retry and the same 
   fail = false
   await user.click(screen.getByRole('button', { name: 'Seguir' }))
   expect(await screen.findByRole('heading', { name: 'Listo' })).toBeInTheDocument()
+})
+
+const errorSpy = spies[logs.indexOf('error')]
+
+/** React reports a form inside a form as a validateDOMNesting error on the console. */
+function expectNoNestedForm(): void {
+  const messages = errorSpy?.mock.calls.map((args) => args.map(String).join(' ')) ?? []
+  expect(messages.filter((message) => /cannot be a descendant of|validateDOMNesting/.test(message))).toEqual([])
+  for (const form of Array.from(document.querySelectorAll('form'))) {
+    expect(form.parentElement?.closest('form') ?? null).toBeNull()
+  }
+}
+
+test('step 3 draws "Dejar así" as a form submit that is not inside another form, under the icon and text rule', async () => {
+  stubFetch(answer(REQUIRED, { stock_entries_count: 1 }), {
+    'GET /catalog': () => json({ text: null, header: 'H', footer: 'F', varieties: [] }),
+  })
+  renderAt(ONBOARDING_CATALOG_MESSAGE)
+
+  const button = await screen.findByRole('button', { name: 'Dejar así' })
+  expect(button).toHaveAttribute('type', 'submit')
+  expect(button.closest('form')).not.toBeNull()
+  expectNoNestedForm()
+  expectIconAndTextRule(document.body)
+})
+
+test('step 4 draws "Seguir" as a form submit that is not inside another form, under the icon and text rule', async () => {
+  stubFetch(answer(['done', 'done', 'done', 'done', 'pending', 'pending'], { stock_entries_count: 1 }), {
+    'GET /pinned-catalog': () => json({ token_saved_on: '2026-10-03', own_chat: '555', channel_chat: null }),
+  })
+  renderAt(ONBOARDING_BOT)
+
+  const button = await screen.findByRole('button', { name: 'Seguir' })
+  expect(button).toHaveAttribute('type', 'submit')
+  expectNoNestedForm()
+  // Más info is a shared component the integrations form owns (IntegrationsGroup.test.tsx
+  // filters it the same way); every other control of the step obeys the rule.
+  expect(iconAndTextProblems(document.body).filter((problem) => !problem.includes('mas-info__boton'))).toEqual([])
+})
+
+test('step 5 draws "Seguir" as a form submit that is not inside another form, under the icon and text rule', async () => {
+  stubFetch(answer(['done', 'done', 'done', 'done', 'done', 'pending'], { stock_entries_count: 1 }), {})
+  renderAt(ONBOARDING_PARTNER)
+
+  const button = await screen.findByRole('button', { name: 'Seguir' })
+  expect(button).toHaveAttribute('type', 'submit')
+  expectNoNestedForm()
+  expectIconAndTextRule(document.body)
+})
+
+test('step 6 draws "Seguir" as a form submit that is not inside another form, under the icon and text rule', async () => {
+  stubFetch(answer(['done', 'done', 'done', 'done', 'done', 'pending'], { stock_entries_count: 1 }), {
+    'GET /expense-categories': () => json([{ id: 1, name: 'Insumos' }]),
+  })
+  renderAt(ONBOARDING_CATEGORIES)
+
+  const button = await screen.findByRole('button', { name: 'Seguir' })
+  expect(button).toHaveAttribute('type', 'submit')
+  expectNoNestedForm()
+  expectIconAndTextRule(document.body)
+})
+
+test('step 2 once saved draws "Seguir" as a submit and "Agregar otra variedad" with its icon, under the rule', async () => {
+  stubFetch(answer(REQUIRED, { stock_entries_count: 1 }), {})
+  renderAt(ONBOARDING_STOCK)
+
+  const next = await screen.findByRole('button', { name: 'Seguir' })
+  expect(next).toHaveAttribute('type', 'submit')
+  const other = screen.getByRole('button', { name: 'Agregar otra variedad' })
+  expect(other.querySelector('svg')).not.toBeNull()
+  expectNoNestedForm()
+  expectIconAndTextRule(document.body)
+})
+
+test('step 2 with no variety yet draws "Cargar una variedad" with its icon, under the rule', async () => {
+  stubFetch(answer(['pending', 'pending', 'pending', 'pending', 'pending', 'pending']), {})
+  renderAt(ONBOARDING_STOCK)
+
+  const button = await screen.findByRole('button', { name: 'Cargar una variedad' })
+  expect(button.querySelector('svg')).not.toBeNull()
+  expectIconAndTextRule(document.body)
 })

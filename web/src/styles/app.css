@@ -3862,10 +3862,10 @@ body {
  *   filled, so a --papel ring is the fill cue (it differs from the resting fill in both
  *   themes): .boton (with .boton--suave, .boton--destructivo and .boton-nueva-venta),
  *   .boton-icono, .periodos__boton, .pildora, .gastos__cargar, .aviso-ambar,
- *   .cobrar, .interruptor, .onboarding__boton-resto;
+ *   .cobrar, .interruptor, .boton-aviso;
  *   transparent, so --superficie is the fill cue: .boton--enlace,
  *   .boton--fila, .enlace-texto, .bar-inferior__item, .riel-lateral__item,
- *   .riel-lateral__negocio, .mas__item, .ajustes__item, .onboarding__enlace, .mas-info__boton, .fila-venta,
+ *   .riel-lateral__negocio, .mas__item, .ajustes__item, .mas-info__boton, .fila-venta,
  *   .fila-gasto, .fila-entrada, .fila-entrada__enlace, .lista-clientes__fila,
  *   .bloque-deben__titulo, .bloque-deben__fila, .bloque-deben__datos, .variedad-item,
  *   .variedad-fila, .variedades__todas, .catalogo__fila-nombre, .pestanas__opcion,
@@ -3891,7 +3891,7 @@ body {
     .aviso-ambar,
     .cobrar,
     .interruptor,
-    .onboarding__boton-resto
+    .boton-aviso
   ):active:not(:disabled):not([aria-disabled='true']) {
   transform: scale(0.98);
   box-shadow: inset 0 0 0 3px var(--papel);
@@ -3907,7 +3907,6 @@ body {
     .riel-lateral__negocio,
     .mas__item,
     .ajustes__item,
-    .onboarding__enlace,
     .mas-info__boton,
     .fila-venta,
     .fila-gasto,
@@ -3979,6 +3978,7 @@ body {
     .aviso-ambar,
     .cobrar,
     .interruptor,
+    .boton-aviso,
     .boton--enlace,
     .boton--fila,
     .enlace-texto,
@@ -3990,8 +3990,6 @@ body {
     .ajustes__item,
     .ajustes-tema__opcion,
     .opcion-interruptor,
-    .onboarding__enlace,
-    .onboarding__boton-resto,
     .mas-info__boton,
     .aviso-onboarding,
     .inicio__avatar,
@@ -4288,19 +4286,10 @@ body {
   justify-content: flex-end;
 }
 
-.onboarding__enlace {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--espacio-xs);
-  min-height: var(--alto-tocable);
-  padding: 0 var(--espacio-sm);
-  background: none;
-  border: 0;
-  color: var(--tinta2);
-  font: inherit;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
+/* A step's text-only submit sits in its own form; the form adds no box, so the button
+ * stays the layout child of the container it sits in. */
+.onboarding__envio {
+  display: contents;
 }
 
 .onboarding__progreso {
@@ -4420,20 +4409,16 @@ body {
   column-gap: var(--espacio-xxl);
 }
 
-/* "Ir a Inicio" on Listo: the only button left that wears this class. */
-.onboarding__boton-saltar {
-  min-height: 50px;
-  height: auto;
-  font-size: 15px;
-}
-
 .onboarding__pista {
   padding: 0;
 }
 
-.aviso-onboarding {
+/* `Boton`'s `notice` kind: a tappable notice drawn as its designed card, with no row
+ * spacing and no divider. Its own class; never `.boton--fila`. */
+.boton-aviso {
   display: flex;
   flex-direction: column;
+  gap: 0;
   box-sizing: border-box;
   width: 100%;
   min-height: var(--alto-tocable);
