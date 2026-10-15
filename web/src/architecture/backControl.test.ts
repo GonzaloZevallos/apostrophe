@@ -106,12 +106,6 @@ describe('checkBackControl: what it accepts', () => {
     expect(checkBackControl('src/screens/Analisis.tsx', source)).toEqual([])
   })
 
-  test('screens/onboarding/OnboardingStep.tsx importing BackButton, while its sibling step may not', () => {
-    const source = "import BackButton from '../../components/BackButton'"
-    expect(checkBackControl('src/screens/onboarding/OnboardingStep.tsx', source)).toEqual([])
-    expect(checkBackControl('src/screens/onboarding/OnboardingRoutes.tsx', source)).toHaveLength(1)
-  })
-
   test('the BackButton module itself, which defines the glyph', () => {
     const source = "export const BACK_GLYPH = '‹'"
     expect(checkBackControl('src/components/BackButton.tsx', source)).toEqual([])

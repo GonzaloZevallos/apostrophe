@@ -49,10 +49,9 @@ is eventually decided two ways.
   through observers with `enabled: false`, so nothing is fetched; then `'unknown'`. It never
   uses another id's data, `placeholderData` or `keepPreviousData`.
 - **The back control is a type** (amends ADR-0037): `components/BackButton.tsx` is the only
-  renderer of a back control, imported only by modules under `web/src/shell/`, by
-  `screens/Analisis.tsx` and by `screens/onboarding/OnboardingStep.tsx` (the Onboarding sits
-  outside `Shell` on purpose, so the shell cannot draw its "Atrás"; added when main brought
-  that screen in). The `back` kind leaves `Boton` and `BotonLink`, and an AST guard
+  renderer of a back control, imported only by modules under `web/src/shell/` and by
+  `screens/Analisis.tsx`. The Onboarding sits outside `Shell` on purpose and draws its
+  "Atrás" as a plain text `Boton` of kind `link`, with no glyph. The `back` kind leaves `Boton` and `BotonLink`, and an AST guard
   catches a `‹` written outside the shell.
 
 ## Consequences

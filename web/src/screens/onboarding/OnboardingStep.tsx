@@ -24,7 +24,6 @@ import {
   type StepSlug,
 } from '../../api/onboarding'
 import { isGone } from '../../api/refusals'
-import BackButton from '../../components/BackButton'
 import Boton from '../../components/Boton'
 import ConfirmDialog from '../../components/ConfirmDialog'
 import ErrorGenerico from '../../components/ErrorGenerico'
@@ -117,7 +116,9 @@ export default function OnboardingStep({
       <div className="onboarding__columna">
         <div className={`onboarding__cabecera${previous === undefined ? ' onboarding__cabecera--derecha' : ''}`}>
           {previous !== undefined && (
-            <BackButton title="Atrás" ariaLabel="Atrás" onClick={() => void navigate(previous)} />
+            <Boton variant="link" onClick={() => void navigate(previous)}>
+              Atrás
+            </Boton>
           )}
           <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={() => void navigate(HOME)} />
         </div>

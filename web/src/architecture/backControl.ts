@@ -23,15 +23,8 @@ const BACK_GLYPH = '‹'
 /** The path separator, spelled so the source holds no lone slash literal (`routes.test.ts`). */
 const SEP = String.fromCharCode(47)
 
-/**
- * The modules outside `shell/` that may import `BackButton`: the tab root's "Volver" to Más,
- * and the Onboarding's "Atrás", which sits outside `Shell` on purpose (router.tsx), so the
- * shell cannot draw it.
- */
-export const BACK_BUTTON_IMPORTERS: readonly string[] = [
-  'screens/Analisis.tsx',
-  'screens/onboarding/OnboardingStep.tsx',
-]
+/** The modules outside `shell/` that may import `BackButton`: the tab root's "Volver" to Más. */
+export const BACK_BUTTON_IMPORTERS: readonly string[] = ['screens/Analisis.tsx']
 
 /** The module that defines the glyph and the button. */
 const BACK_BUTTON_MODULE = 'components/BackButton.tsx'
@@ -133,7 +126,7 @@ export function checkBackControl(path: string, source: string): string[] {
       ts.isStringLiteralLike(specifier) &&
       importsBackButton(specifier.text)
     ) {
-      report(node, 'imports components/BackButton, only shell/, screens/Analisis.tsx and screens/onboarding/OnboardingStep.tsx may')
+      report(node, 'imports components/BackButton, only shell/ and screens/Analisis.tsx may')
     }
     ts.forEachChild(node, visit)
   }
