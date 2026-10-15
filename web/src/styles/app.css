@@ -2500,6 +2500,23 @@ body {
   cursor: pointer;
 }
 
+.pildora--fija {
+  cursor: default;
+}
+
+/* The locked stock form names its variety instead of offering a picker. */
+.campo__valor {
+  display: flex;
+  align-items: center;
+  min-height: var(--alto-boton);
+  box-sizing: border-box;
+  padding: 8px 16px;
+  border-radius: var(--radio-campo);
+  background: var(--superficie);
+  font-size: 17px;
+  font-weight: 600;
+}
+
 .pildora--activa {
   background: var(--boton);
   color: var(--boton-texto);

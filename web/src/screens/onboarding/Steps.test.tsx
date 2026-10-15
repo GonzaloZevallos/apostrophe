@@ -221,8 +221,11 @@ test('step 2 saves the opening stock of the stock target through the owner, then
   const user = userEvent.setup()
   renderAt(ONBOARDING_STOCK)
 
-  expect(await screen.findByText('Variedad: Mango Bomb')).toBeInTheDocument()
-  expect(screen.getByText('Si no cargás el costo, el lote cuesta $ 0.')).toBeInTheDocument()
+  expect(await screen.findByText('Mango Bomb')).toBeInTheDocument()
+  expect(screen.getByLabelText(/^Costo total/).closest('label')).toHaveTextContent(
+    'Opcional · si no lo cargás, el lote cuesta $ 0',
+  )
+  expect(screen.queryByLabelText('Fecha')).not.toBeInTheDocument()
   await user.type(screen.getByLabelText('Gramos'), '500')
   await user.click(screen.getByRole('button', { name: 'Guardá la entrada' }))
 
