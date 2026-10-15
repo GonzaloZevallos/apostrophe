@@ -19,6 +19,7 @@ import SinConexion from '../../components/SinConexion'
 import { GENERIC_REFUSAL_MESSAGE } from '../Variedades'
 import Boton from '../../components/Boton'
 import PriceFields, { FieldError } from './PriceFields'
+import { PRICE_SAVED } from './priceMessages'
 import {
   fieldOfCode,
   readPriceValues,
@@ -80,7 +81,7 @@ export default function PriceForm({
         ...read.amounts,
       })
       invalidateResource(queryClient, 'varieties')
-      onDone('Precio guardado')
+      onDone(PRICE_SAVED)
     } catch (caught) {
       if (caught instanceof ApiError && isGone(caught.code)) {
         invalidateResource(queryClient, 'varieties')

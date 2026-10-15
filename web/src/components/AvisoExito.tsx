@@ -8,6 +8,8 @@
  * typo or an invented message fails `tsc` instead of rendering silently.
  */
 
+import type { PRICE_SAVED } from '../screens/varieties/priceMessages'
+
 export type SuccessToast =
   | 'Cliente guardado'
   | 'Entrada guardada'
@@ -16,7 +18,7 @@ export type SuccessToast =
   | 'Variedad eliminada'
   | 'Variedad archivada'
   | 'Variedad restaurada'
-  | 'Precio guardado'
+  | typeof PRICE_SAVED
   | 'Precio eliminado'
   | 'Gasto guardado'
   | 'Gasto eliminado'
