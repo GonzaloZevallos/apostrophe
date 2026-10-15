@@ -543,6 +543,11 @@ test('user-select: none lists single classes, and every pressed class is listed,
   // A scoped rule presses its subject, not the ancestor that scopes it.
   const scoped = `${pressedRules}\n.barra .mas__item:active:not(:disabled):not([aria-disabled='true']) { background-color: var(--boton); }`
   expect(userSelectViolations(`${scoped}\n${none('.mas__item', '.mas__item--activo')}`, {})).toEqual([])
+  // ... and a scoped rule whose subject is not listed fails, naming the subject.
+  const scopedUnlisted = `${pressedRules}\n.barra .nuevo:active:not(:disabled):not([aria-disabled='true']) { background-color: var(--boton); }`
+  expect(userSelectViolations(`${scopedUnlisted}\n${none('.mas__item', '.mas__item--activo')}`, {})).toEqual([
+    '.nuevo is pressed but is neither in user-select: none nor in SELECTABLE',
+  ])
   for (const bad of ['input', 'textarea', 'label', 'p', '*', '.mas__item input', "[contenteditable='true']"]) {
     expect(userSelectViolations(`${pressedRules}\n${none('.mas__item', bad)}`, {})).toEqual([
       `user-select: none lists "${bad}", which is not a single class`,

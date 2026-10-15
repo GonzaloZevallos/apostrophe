@@ -152,6 +152,63 @@ export default function Use() {
   ])
 })
 
+const VISUAL = {
+  path: 'src/visual.tsx',
+  source: `const CLASS = { primary: 'boton', secondary: 'boton boton--suave', link: 'boton--enlace' } as const
+export function visual(props: { variant?: keyof typeof CLASS }) {
+  return { className: CLASS[props.variant ?? 'primary'] }
+}`,
+}
+const WRAPPER = {
+  path: 'src/Wrap.tsx',
+  source: `import { visual } from './visual'
+export default function Wrap(props: { variant?: string }) {
+  const { className } = visual(props)
+  return <button type="button" className={className}>x</button>
+}`,
+}
+
+test('a wrapper that draws from a visual map: a literal variant, the default and an expression', () => {
+  const result = scanControls([
+    VISUAL,
+    WRAPPER,
+    {
+      path: 'src/Use.tsx',
+      source: `export default function Use({ v }: { v: string }) {
+  return (
+    <>
+      <Wrap variant="secondary" />
+      <Wrap variant={'link'} />
+      <Wrap />
+      <Wrap variant={v} />
+    </>
+  )
+}`,
+    },
+  ])
+  expect(result.errors).toEqual([])
+  expect(result.controls.map((control) => [control.line, control.classes])).toEqual([
+    [4, ['boton', 'boton--suave']],
+    [5, ['boton--enlace']],
+    [6, ['boton']],
+    [7, ['boton', 'boton--suave', 'boton--enlace']],
+  ])
+})
+
+test('a wrapper call site with a variant the map does not have is an error with file:line', () => {
+  const result = scanControls([
+    VISUAL,
+    WRAPPER,
+    {
+      path: 'src/Use.tsx',
+      source: `export default function Use() {
+  return <Wrap variant="nope" />
+}`,
+    },
+  ])
+  expect(result.errors).toEqual(['src/Use.tsx:2 variant "nope" is not in the wrapper\'s class map'])
+})
+
 test('a wrapper that spreads its props is a wrapper too', () => {
   const result = scanControls([
     {
