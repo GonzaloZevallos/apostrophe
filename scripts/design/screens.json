@@ -85,6 +85,8 @@
     { "screen": "ConfiguracionPreciosCompu", "route": "/settings/prices", "path": "/settings/prices", "viewport": [1280, 920] },
     { "screen": "ConfiguracionIntegraciones", "route": "/settings/integrations", "path": "/settings/integrations" },
     { "screen": "ConfiguracionIntegracionesCompu", "route": "/settings/integrations", "path": "/settings/integrations", "viewport": [1280, 920] },
+    { "screen": "ConfiguracionIntegracionesOscuro", "design": "ConfiguracionIntegraciones", "route": "/settings/integrations", "path": "/settings/integrations", "tema": "oscuro" },
+    { "screen": "ConfiguracionIntegracionesCompuOscuro", "design": "ConfiguracionIntegracionesCompu", "route": "/settings/integrations", "path": "/settings/integrations", "tema": "oscuro", "viewport": [1280, 920] },
     { "screen": "ConfiguracionMensaje", "route": "/settings/catalog-message", "path": "/settings/catalog-message" },
     { "screen": "ConfiguracionMensajeCompu", "route": "/settings/catalog-message", "path": "/settings/catalog-message", "viewport": [1280, 920] },
     { "screen": "ConfiguracionCategorias", "route": "/settings/expense-categories", "path": "/settings/expense-categories" },
