@@ -6,15 +6,12 @@
  */
 
 import AvisoAmbar from './AvisoAmbar'
-import { SIN_CONEXION_DETALLE, SIN_CONEXION_TITULO } from './estadosMessages'
-
-export { SIN_CONEXION_DETALLE, SIN_CONEXION_TITULO }
+import { SIN_CONEXION_MENSAJE } from './estadosMessages'
 
 export default function SinConexion() {
   return (
     <AvisoAmbar attention role="status">
-      <span className="aviso-ambar__titulo">{SIN_CONEXION_TITULO}</span>
-      <span className="aviso-ambar__detalle">{SIN_CONEXION_DETALLE}</span>
+      <span className="aviso-ambar__titulo">{SIN_CONEXION_MENSAJE}</span>
     </AvisoAmbar>
   )
 }

@@ -108,9 +108,9 @@
     { "screen": "OnboardingListo", "route": "/onboarding/categories", "path": "/onboarding/done",
       "steps": [{ "click": "Saltar el resto" }, { "wait": "Esto quedó armado en tu negocio." }] },
     { "screen": "EstadosSinConexion", "design": "Estados", "section": "Sin conexión", "route": "/sales", "path": "/sales",
-      "steps": [{ "offline": true }, { "wait": "Te quedaste sin internet" }] },
+      "steps": [{ "offline": true }, { "wait": "Sin conexión: revisá tu internet y probá de nuevo." }] },
     { "screen": "EstadosSinConexionCompu", "design": "Estados", "section": "Sin conexión", "route": "/sales", "path": "/sales", "viewport": [1280, 920],
-      "steps": [{ "offline": true }, { "wait": "Te quedaste sin internet" }] },
+      "steps": [{ "offline": true }, { "wait": "Sin conexión: revisá tu internet y probá de nuevo." }] },
     { "screen": "EstadosGone", "design": "Estados", "route": "/sales/999999", "path": "/sales/999999" },
     { "screen": "EstadosConfirmar", "design": "Estados", "section": "Antes de borrar", "route": "/sales/{owing_sale}", "path": "/sales/{owing_sale}",
       "steps": [{ "click": "Borrar venta" }] }
