@@ -727,6 +727,27 @@ def test_a_zero_cost_lot_with_pending_overflow_is_not_fully_pending(client: Test
     }
 
 
+def test_a_current_week_and_month_without_a_negative_adjustment_read_shortfall_null_like_the_panel(
+    client: TestClient,
+) -> None:
+    """No negative adjustment anywhere: the panel's week and month shortfall are null, and
+    so are the Análisis rows' and the header's (absent, never a $0 line), while cost of
+    goods still reads a real figure."""
+    a_id = _variety(client, "A", price=1_000)
+    _entry(client, a_id, grams="10", total_cost=1_000, on="2026-09-01")
+    _sale(client, a_id, grams="2", on=TODAY.isoformat())
+
+    panel = client.get("/panel").json()["periods"]
+    analysis = client.get("/analysis").json()
+
+    assert panel["week"]["shortfall"] is None
+    assert panel["month"]["shortfall"] is None
+    assert analysis["weeks"][-1]["shortfall"] is None
+    assert analysis["months"][-1]["shortfall"] is None
+    assert analysis["month"]["shortfall"] is None
+    assert analysis["weeks"][-1]["cost_of_goods"]["amount"] == panel["week"]["cost_of_goods"] == 200
+
+
 # -- Statement count (plan invariant: the same number of SQL statements for a small
 # business as for a seeded one, in the style of Análisis's own
 # `test_one_get_analysis_issues_the_same_number_of_statements_small_or_seeded`) ------
