@@ -11,13 +11,14 @@ import { expect, test } from './fixtures.js'
 import type { Locator, Page } from '@playwright/test'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { fillSaleLine } from './helpers/sale.js'
+import { uniqueTag } from './helpers/unique.js'
 
 const WIDTHS = [320, 375, 430, 246] as const
 const TOUCH_TARGET = 44
 const MIN_INPUT_FONT = 16
 
 async function signUpWithAVariety(page: Page): Promise<void> {
-  await signUpNewBusiness(page, { businessName: `Vivero Línea ${Date.now()}`, email: `duena-linea-${Date.now()}@example.com` })
+  await signUpNewBusiness(page, { businessName: `Vivero Línea ${uniqueTag()}`, email: `duena-linea-${uniqueTag()}@example.com` })
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Jazmín con un nombre bastante largo')

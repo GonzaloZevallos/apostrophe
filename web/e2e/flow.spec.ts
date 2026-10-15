@@ -20,6 +20,7 @@ import { expect, test } from './fixtures.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { openGastos } from './helpers/openMas.js'
+import { uniqueTag } from './helpers/unique.js'
 
 const PASSWORD = 'correcthorsebattery'
 const PHONE = '+5491155550001'
@@ -32,8 +33,8 @@ test('a seller does everything the backend offers today, from the front alone', 
   const consoleMessages: string[] = []
   watchConsole(page, consoleMessages)
 
-  const ownerEmail = `duena-${Date.now()}@example.com`
-  const businessName = `Flores del Centro ${Date.now()}`
+  const ownerEmail = `duena-${uniqueTag()}@example.com`
+  const businessName = `Flores del Centro ${uniqueTag()}`
 
   // Accept a new-business invitation.
   await signUpNewBusiness(page, { businessName, email: ownerEmail })
@@ -207,7 +208,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   watchConsole(partnerPage, consoleMessages)
   await partnerPage.goto(inviteUrl)
   await expect(partnerPage.locator('.invitacion__titulo')).toHaveText(renamedTo)
-  await partnerPage.getByLabel('Email').fill(`socio-${Date.now()}@example.com`)
+  await partnerPage.getByLabel('Email').fill(`socio-${uniqueTag()}@example.com`)
   await partnerPage.getByLabel('Contraseña').fill(PASSWORD)
   await partnerPage.getByRole('button', { name: `Sumate a ${renamedTo}` }).click()
   await expect(partnerPage.locator('.encabezado__negocio')).toHaveText(renamedTo)

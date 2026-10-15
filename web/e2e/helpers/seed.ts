@@ -24,6 +24,7 @@ import { newBusinessInvitationUrl } from '../backend.js'
 import { expectPath } from './url.js'
 import { fillSaleLine } from './sale.js'
 import { leaveOnboarding } from './signup.js'
+import { uniqueTag } from './unique.js'
 
 export const PASSWORD = 'correcthorsebattery'
 
@@ -38,8 +39,8 @@ export interface Records {
 
 export async function signUp(page: Page, label: string): Promise<void> {
   await page.goto(newBusinessInvitationUrl())
-  await page.getByLabel('Nombre del negocio').fill(`Flores de ${label} ${Date.now()}`)
-  await page.getByLabel('Email').fill(`duena-${label}-${Date.now()}@example.com`)
+  await page.getByLabel('Nombre del negocio').fill(`Flores de ${label} ${uniqueTag()}`)
+  await page.getByLabel('Email').fill(`duena-${label}-${uniqueTag()}@example.com`)
   await page.getByLabel('Contraseña').fill(PASSWORD)
   await page.getByRole('button', { name: 'Creá el negocio' }).click()
   // A new business lands in the Onboarding; this spec is about something else.
