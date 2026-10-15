@@ -374,8 +374,16 @@ const NOT_BUILT = [
 
 /** Screens compare.sh reaches by steps from another route: "Listo" opens only from the write
  * that ended the Onboarding, never by loading its own path (onboarding.md). Its dark and
- * computer rows copy the same route and path, so they are listed too. */
-const REACHED_BY_STEPS = ["OnboardingListo", "OnboardingListoOscuro", "OnboardingListoCompu"];
+ * computer rows copy the same route and path, so they are listed too. The Variedad rows
+ * reach their step from the stock one by steps. */
+const REACHED_BY_STEPS = [
+  "OnboardingListo",
+  "OnboardingListoOscuro",
+  "OnboardingListoCompu",
+  "OnboardingVariedad",
+  "OnboardingVariedadOscuro",
+  "OnboardingVariedadCompu",
+];
 
 describe("screens.json against the English routes", () => {
   test("route is path for every screen, but the ones not built", () => {

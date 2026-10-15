@@ -40,8 +40,12 @@ def _open_business(settings: Settings, engine: Engine, client: TestClient) -> No
 def _login_set_cookie(settings: Settings) -> str:
     engine = make_engine(settings.database_url)
     app = create_app(
-        settings, engine=engine, hasher=TEST_HASHER, telegram=FakeTelegram(),
-        clock=MovableClock(NOW), upkeep_ticker=False
+        settings,
+        engine=engine,
+        clock=MovableClock(NOW),
+        hasher=TEST_HASHER,
+        telegram=FakeTelegram(),
+        upkeep_ticker=False,
     )
     with TestClient(app) as client:
         _open_business(settings, engine, client)
@@ -60,8 +64,12 @@ def _login_set_cookie(settings: Settings) -> str:
 def _logout_set_cookie(settings: Settings) -> str:
     engine = make_engine(settings.database_url)
     app = create_app(
-        settings, engine=engine, hasher=TEST_HASHER, telegram=FakeTelegram(),
-        clock=MovableClock(NOW), upkeep_ticker=False
+        settings,
+        engine=engine,
+        clock=MovableClock(NOW),
+        hasher=TEST_HASHER,
+        telegram=FakeTelegram(),
+        upkeep_ticker=False,
     )
     with TestClient(app) as client:
         _open_business(settings, engine, client)

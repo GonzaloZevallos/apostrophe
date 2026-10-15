@@ -99,6 +99,18 @@ def _seed_the_history(client: TestClient) -> None:
     _sale(client, b, grams="1", on=HOY)
 
 
+def _same_line(panel_line: dict[str, Any] | None, analysis_line: dict[str, Any] | None) -> bool:
+    """The panel's `{amount, pending}` and Análisis's `{amount, pending_grams}` say the
+    same thing: both absent, or the same amount with pending exactly where grams are.
+    A null line and a zero amount are different answers, so they never match."""
+    if panel_line is None or analysis_line is None:
+        return panel_line is None and analysis_line is None
+    return bool(
+        panel_line["amount"] == analysis_line["amount"]
+        and panel_line["pending"] == (analysis_line["pending_grams"] > 0)
+    )
+
+
 def test_the_panel_and_analysis_agree_on_every_withdrawal_figure(client: TestClient) -> None:
     _seed_the_history(client)
 
@@ -120,6 +132,14 @@ def test_the_panel_and_analysis_agree_on_every_withdrawal_figure(client: TestCli
     assert today["own_use"] is None
     # The shortfall stays the adjustments' own: $200 costed on 30/09, B's pending on Hoy.
     assert week["shortfall"] == {"amount": 200, "pending": True}
+    # October's only adjustment is B's -1 g on 02/10, wholly pending: $0 costed.
+    assert month["shortfall"] == {"amount": 0, "pending": True}
+    # Cost of goods is the sales' own: the week holds A's 5 g sale at $100/g = $500, and
+    # B's 1 g sale is pending, never counted as $0. This literal does NOT prove period
+    # scoping (the week and the month hold the same sales here):
+    # `test_cost_of_goods_follows_each_period` in test_panel_router.py does.
+    assert week["cost_of_goods"] == 500
+    assert week["pending_cost"] is True
     # Week profit: A's costed sale $5.000 - cost $500 - shortfall $200 - promotion $400
     # - own use $300 (B's wholly pending sale is out of it, as for any pending sale).
     assert week["profit"] == 5_000 - 500 - 200 - 400 - 300
@@ -137,8 +157,7 @@ def test_the_panel_and_analysis_agree_on_every_withdrawal_figure(client: TestCli
         assert row["expenses"] == panel_period["expenses"]
         assert row["cash"] == panel_period["cash"]
         for line in ("promotion", "own_use"):
-            assert row[line]["amount"] == panel_period[line]["amount"]
-            assert (row[line]["pending_grams"] > 0) == panel_period[line]["pending"]
+            assert _same_line(panel_period[line], row[line]), line
     assert week_row["promotion"]["pending_grams"] == 2.0
     assert month_row["own_use"]["pending_grams"] == 0.0
 
@@ -149,9 +168,21 @@ def test_the_panel_and_analysis_agree_on_every_withdrawal_figure(client: TestCli
     assert header["own_use"] == month_row["own_use"]
     assert header["shortfall"] == {"amount": 0, "pending_grams": 1.0}
     assert sum(v["cost"]["costed"] for v in header["varieties"]) == month["cost_of_goods"] == 500
+    # The panel's month shortfall is the header's, amount and pending flag.
+    assert _same_line(month["shortfall"], header["shortfall"])
+    assert month["pending_cost"] is True
+    assert month["pending_cost"] == any(v["cost"]["pending_grams"] > 0 for v in header["varieties"])
+    # B's row holds the sale's 1 g only: its 2 g promotion is not a sale (ADR-0031), so
+    # it must not add to the variety's pending cost (that would read 3.0).
+    b_row = next(v for v in header["varieties"] if v["name"] == "B")
+    assert b_row["cost"] == {"costed": 0, "pending_grams": 1.0}
 
     # Since the first record: every promotion ($100 + $400, B's 2 g pending) and own use.
     since = analysis["since_first_record"]
+    # The shortfall is the adjustments' own: A's lot is 100 g for $10.000 = $100/g, so the
+    # -2 g on 30/09 costs $200; B's -1 g has no lot, so it is pending. Withdrawals never
+    # count.
+    assert since["shortfall"] == {"amount": 200, "pending_grams": 1.0}
     assert since["promotion"] == {"amount": 500, "pending_grams": 2.0}
     assert since["own_use"] == {"amount": 300, "pending_grams": 0.0}
 
@@ -173,6 +204,11 @@ def test_a_withdrawal_dated_before_every_other_record_starts_the_history(
     analysis = client.get("/analysis").json()
 
     assert analysis["first_record"] == "2026-10-01"
+    # No adjustment anywhere: the shortfall is absent from both, not a zero.
+    assert panel["month"]["shortfall"] is None
+    assert analysis["month"]["shortfall"] is None
+    assert _same_line(panel["month"]["shortfall"], analysis["month"]["shortfall"])
+    assert not _same_line({"amount": 0, "pending": False}, None)
     # The later entry settles the withdrawn grams at its $100/g.
     assert analysis["weeks"][-1]["promotion"] == {"amount": 200, "pending_grams": 0.0}
     assert analysis["months"][-1]["promotion"] == {"amount": 200, "pending_grams": 0.0}

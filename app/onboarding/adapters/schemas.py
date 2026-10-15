@@ -56,6 +56,7 @@ class ProgressOut(BaseModel):
     varieties_count: int
     stock_entries_count: int
     price_target: TargetOut | None
+    priced_target: TargetOut | None
     stock_target: TargetOut | None
 
     @classmethod
@@ -70,6 +71,7 @@ class ProgressOut(BaseModel):
             varieties_count=0,
             stock_entries_count=0,
             price_target=None,
+            priced_target=None,
             stock_target=None,
         )
 
@@ -89,6 +91,7 @@ class ProgressOut(BaseModel):
             varieties_count=progress.varieties_count,
             stock_entries_count=progress.stock_entries_count,
             price_target=TargetOut.of(progress.price_target),
+            priced_target=TargetOut.of(progress.priced_target),
             stock_target=TargetOut.of(progress.stock_target),
         )
 

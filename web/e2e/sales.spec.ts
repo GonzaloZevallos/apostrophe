@@ -53,6 +53,7 @@ import { expect, test } from './fixtures.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
+import { whilePressed } from './helpers/pressed.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
 
 test.use({ viewport: { width: 390, height: 844 } }) // a phone (PRD metric 1).
@@ -394,4 +395,62 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   // merged), so "Sale B"'s customer card above no longer 404s on its own account view.
   const RESOURCE_404 = 'error: Failed to load resource: the server responded with a status of 404 (Not Found)'
   expect(consoleMessages).toEqual([RESOURCE_404])
+})
+
+test('the Regalo switch is checked by a real tap, shows a press without flipping, and is inert when disabled', async ({
+  page,
+}) => {
+  await signUpNewBusiness(page, {
+    businessName: `Vivero del Regalo ${Date.now()}`,
+    email: `duena-regalo-${Date.now()}@example.com`,
+  })
+  await page.goto(VARIETIES)
+  await page.getByRole('link', { name: 'Nueva variedad' }).click()
+  await page.getByLabel('Nombre').fill('Rosa')
+  await page.getByRole('button', { name: 'Agregá la variedad' }).click()
+  await expect(page.getByText('Variedad guardada')).toBeVisible()
+  await page.getByRole('link', { name: /Rosa/ }).click()
+  await page.getByRole('link', { name: 'Nuevo precio' }).click()
+  await page.getByLabel(/^Precio de lista/).fill('1000')
+  await page.getByRole('button', { name: 'Guardá el precio' }).click()
+  await expect(page.getByText('Precio guardado')).toBeVisible()
+
+  await page.goto(SALE_NEW)
+  await fillSaleLine(page, 1, { variety: 'Rosa', grams: '2' })
+
+  const regalo = page.getByRole('switch', { name: 'Regalo línea 1' })
+  const row = page.locator('.opcion-interruptor')
+  await expect(row).toHaveCount(1)
+  await expect(regalo).not.toBeChecked()
+
+  // A real tap, never forced: once on the track, once on the end of the label's text.
+  async function tapAt(selector: string, fromRight: number | null): Promise<void> {
+    const box = await page.locator(selector).boundingBox()
+    if (box === null) throw new Error(`${selector} has no box`)
+    const x = fromRight === null ? box.x + box.width / 2 : box.x + box.width - fromRight
+    await page.mouse.click(x, box.y + box.height / 2)
+  }
+  await tapAt('.opcion-interruptor__pista', null)
+  await expect(regalo).toBeChecked()
+  await tapAt('.opcion-interruptor__texto', 2)
+  await expect(regalo).not.toBeChecked()
+
+  const enabled = await whilePressed(page, '.opcion-interruptor')
+  expect(enabled.resting.transform).toBe('none')
+  expect(enabled.pressed.transform, 'the switch is not scaled while pressed').toBe('none')
+  expect(
+    enabled.pressed.fill !== enabled.resting.fill || enabled.pressed.boxShadow !== enabled.resting.boxShadow,
+    'the switch changes its fill while pressed',
+  ).toBe(true)
+  await expect(regalo).not.toBeChecked()
+
+  // A special price makes the gift inert: pressing it shows nothing and changes nothing.
+  await page.getByLabel('Precio especial línea 1').fill('500')
+  await expect(regalo).toBeDisabled()
+  const inactive = await whilePressed(page, '.opcion-interruptor')
+  expect(inactive.pressed.transform).toBe('none')
+  expect(inactive.pressed.fill, 'a disabled switch keeps its fill').toBe(inactive.resting.fill)
+  expect(inactive.pressed.boxShadow).toBe(inactive.resting.boxShadow)
+  await expect(regalo).toBeDisabled()
+  await expect(regalo).not.toBeChecked()
 })

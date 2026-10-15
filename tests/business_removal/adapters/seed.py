@@ -38,7 +38,7 @@ CATALOG_FOOTER = "Gracias por tu compra"
 
 def _accept(client: TestClient, engine: Engine, name: str, email: str) -> str:
     accepted = client.post(
-        f"/invitations/{invite(engine, NOW)}/accept",
+        f"/invitations/{invite(engine, datetime.now(UTC))}/accept",
         json={"business_name": name, "email": email, "password": PASSWORD},
     )
     assert accepted.status_code == 201, accepted.text

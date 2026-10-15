@@ -48,6 +48,7 @@ const NOT_OFFERED: OnboardingProgress = {
   varieties_count: 0,
   stock_entries_count: 0,
   price_target: null,
+  priced_target: null,
   stock_target: null,
 }
 
