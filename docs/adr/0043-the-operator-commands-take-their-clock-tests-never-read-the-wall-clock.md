@@ -121,4 +121,4 @@ is no allowlist.
    preload in place and no shift is recorded as a setup artifact of the shifting tool, not
    fixed in the spec, and not counted against the date result.
 
-Evidence: GH-211's task evidence (the close-out document).
+Evidence: `docs/evidence/GH-211-gate-clock.md` (GH-211's close-out document).
