@@ -127,6 +127,19 @@ def test_the_captured_weeks_and_months_hold_the_three_kinds_of_period(
         assert any(r["shortfall"] is None for r in rows), name
         assert all(r["cost_of_goods"] is not None for r in rows), name
 
+        # The two named periods, not just any: today's 24K Gold -2 g is the current
+        # period's costed shortfall ($ 10.000, nothing pending), and Sir Jack's gram of
+        # own use, beyond every lot, is its pending figure (the cookies' share is costed).
+        current = rows[-1]
+        assert current["shortfall"] == {
+            "amount": 10_000,
+            "pending_grams": 0,
+            "all_pending": False,
+        }, name
+        assert current["own_use"]["pending_grams"] == 1, name
+        assert current["own_use"]["all_pending"] is False, name
+        assert current["own_use"]["amount"] > 0, name
+
 
 def test_the_panel_and_the_analysis_agree_on_the_current_week_and_month(
     client: TestClient, clock: MovableClock
