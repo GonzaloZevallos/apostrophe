@@ -38,3 +38,27 @@ commands did not follow it.
 - The command tests no longer depend on the date they run on: the expiry the commands print
   is the injected instant plus seven days or 24 hours, and a test asserts exactly that.
 - No elapsed-time check is added and nothing waits (ADR-0038, ADR-0041).
+
+## Amendment (py-wall-clock-guard): the pytest guard
+
+1. **No Python test reads the wall clock.** `tests/architecture/test_no_wall_clock.py` walks
+   the AST of every `.py` under `tests/`, `tests/architecture/fixtures/` excluded, and its
+   pure helper `wall_clock_reads(module)` returns `path:line: <what>` for each read. Import
+   aliases are resolved (`from datetime import datetime as dt`, `import datetime as d`,
+   `from time import time`). It flags `datetime.now`, `datetime.utcnow`, `datetime.today`,
+   `date.today`, `time.time`, `time.time_ns`, and any import of `system_clock` from
+   `app.clock`.
+2. **Elapsed time is not this guard's business.** `time.monotonic`, `time.perf_counter` and
+   `sleep` are not flagged: they measure no date. ADR-0038 governs elapsed-time checks.
+3. **`ALLOWED` is shrink-only** and maps an exact path to its reason. It holds one entry,
+   `tests/e2e_app.py`: the e2e backend shares the real clock with the CLI subprocess and the
+   browser by design (ADR-0040). Another entry is allowed only for a test of the app's own
+   clock whose verdict is the same on any date and at any hour. A test that does not meet
+   that is fixed with a controlled clock. A test that cannot be fixed is reported, never
+   deleted. A test fails when an `ALLOWED` entry no longer reads the clock, so the list only
+   shrinks.
+4. **Every test app names its clock.** `CREATE_APP_REQUIRED_KEYWORDS` in
+   `tests/architecture/test_architecture.py` is now `telegram`, `upkeep_ticker` and `clock`,
+   so a `create_app(...)` call under `tests/` that omits `clock=` fails the gate instead of
+   falling back to `system_clock`. A test passes a `MovableClock`; `tests/e2e_app.py` passes
+   `system_clock` by name.

@@ -125,21 +125,21 @@ def test_no_test_but_telegram_http_s_own_reaches_the_real_adapter() -> None:
     assert violators == []
 
 
-CREATE_APP_REQUIRED_KEYWORDS = frozenset({"telegram", "upkeep_ticker"})
+CREATE_APP_REQUIRED_KEYWORDS = frozenset({"telegram", "upkeep_ticker", "clock"})
 
 
 def create_app_calls_missing_keywords(module: Path) -> list[str]:
-    """Every `create_app(...)` call in `module` that omits `telegram` or
-    `upkeep_ticker`, named `module:line: missing [...]` — a static stand-in for "every
-    test app injects `FakeTelegram` and sets `upkeep_ticker=False`" (the plan's
-    invariant), proven below against a call that must be flagged and one that must
+    """Every `create_app(...)` call in `module` that omits `telegram`, `upkeep_ticker` or
+    `clock`, named `module:line: missing [...]` — a static stand-in for "every
+    test app injects `FakeTelegram`, sets `upkeep_ticker=False` and names its clock"
+    (the plan's invariant), proven below against a call that must be flagged and one that must
     not, the same way `reaches_telegram_http` is proven above.
 
     Presence of the keyword is all that is checked, not its value: `test_ticker.py`
     legitimately passes `upkeep_ticker=True` to exercise the ticker itself, over its
     own `FakeTelegram`. What this guard rules out is a call that forgets the keyword
     entirely and so falls through to `create_app`'s production defaults — the real
-    `HttpTelegram` and the ticker on — inside a test.
+    `HttpTelegram`, the ticker on and `system_clock` — inside a test (ADR-0043).
     """
     tree = ast.parse(module.read_text(), filename=str(module))
     return [
@@ -161,15 +161,19 @@ def test_the_create_app_guard_flags_a_call_naming_neither_keyword() -> None:
     assert create_app_calls_missing_keywords(FIXTURES / "unguarded_create_app.py") != []
 
 
-def test_the_create_app_guard_does_not_flag_a_call_naming_both_keywords() -> None:
+def test_the_create_app_guard_flags_a_call_that_names_everything_but_the_clock() -> None:
+    assert create_app_calls_missing_keywords(FIXTURES / "clockless_create_app.py") != []
+
+
+def test_the_create_app_guard_does_not_flag_a_call_naming_every_keyword() -> None:
     assert create_app_calls_missing_keywords(FIXTURES / "guarded_create_app.py") == []
 
 
-def test_every_create_app_call_under_tests_names_telegram_and_upkeep_ticker() -> None:
+def test_every_create_app_call_under_tests_names_telegram_upkeep_ticker_and_clock() -> None:
     """The plan's own invariant, over every call site rather than trusting each one:
-    a `create_app(...)` call under `tests/` that forgets `telegram` or `upkeep_ticker`
-    falls through to the real adapter and the live ticker (Tech Lead: review
-    integration, blocking)."""
+    a `create_app(...)` call under `tests/` that forgets `telegram`, `upkeep_ticker` or
+    `clock` falls through to the real adapter, the live ticker or the wall clock (Tech
+    Lead: review integration, blocking; ADR-0043)."""
     violators = [
         violation
         for module in sorted((REPO_ROOT / "tests").rglob("*.py"))
