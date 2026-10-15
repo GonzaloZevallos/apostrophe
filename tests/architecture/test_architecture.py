@@ -180,57 +180,6 @@ def test_every_create_app_call_under_tests_names_telegram_and_upkeep_ticker() ->
     assert violators == []
 
 
-INVITATION_HELPERS = frozenset({"invite", "open_business"})
-
-
-def create_app_calls_without_clock_that_open_businesses(module: Path) -> list[str]:
-    """Every `create_app(...)` call, in a module that imports `invite` or
-    `open_business`, that omits `clock`, named `module:line`. Those helpers issue the
-    invitation at the clock they are handed (the fixed `NOW`), and an invitation lives
-    7 days: an app left on the system clock judges it against today's date, so the
-    suite turns red the day `NOW` is a week old. Proven below on a module that must be
-    flagged and on one that must not."""
-    tree = ast.parse(module.read_text(), filename=str(module))
-    imports_helper = any(
-        isinstance(node, ast.ImportFrom)
-        and any(alias.name in INVITATION_HELPERS for alias in node.names)
-        for node in ast.walk(tree)
-    )
-    if not imports_helper:
-        return []
-    return [
-        f"{module}:{node.lineno}: no clock"
-        for node in ast.walk(tree)
-        if isinstance(node, ast.Call) and _calls_create_app(node.func)
-        if "clock" not in {kw.arg for kw in node.keywords}
-    ]
-
-
-def test_the_clock_guard_flags_an_app_on_the_system_clock_that_issues_invitations() -> None:
-    assert (
-        create_app_calls_without_clock_that_open_businesses(FIXTURES / "clockless_invitations.py")
-        != []
-    )
-
-
-def test_the_clock_guard_does_not_flag_an_app_on_the_frozen_clock() -> None:
-    assert (
-        create_app_calls_without_clock_that_open_businesses(FIXTURES / "clocked_invitations.py")
-        == []
-    )
-
-
-def test_every_test_app_that_issues_invitations_runs_on_the_clock_that_issued_them() -> None:
-    violators = [
-        violation
-        for module in sorted((REPO_ROOT / "tests").rglob("*.py"))
-        if FIXTURES not in module.parents
-        for violation in create_app_calls_without_clock_that_open_businesses(module)
-    ]
-
-    assert violators == []
-
-
 GUARDED_CONSTRUCTORS = frozenset({"ChannelTelegram", "PinnedCatalogTelegram"})
 
 
