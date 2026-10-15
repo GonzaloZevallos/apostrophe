@@ -93,6 +93,44 @@ body {
   color: var(--tinta2);
 }
 
+/* The price form's "Rige desde" chip (`PrecioNuevoCompu.dc.html`): a 52 px rounded surface
+ * with a calendar and the date, left-aligned, over `Boton`'s secondary look. */
+.precio-chip .boton {
+  width: 100%;
+  height: 52px;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 0 var(--espacio-lg);
+  border-radius: var(--radio-campo);
+  font-weight: 500;
+}
+
+.precio-chip .boton svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* The date choice, mounted only while the chip is open. */
+.precio-fecha {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--espacio-sm);
+}
+
+.precio-fecha .boton--enlace {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--alto-tocable);
+}
+
+.precio-fecha__campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-self: stretch;
+}
+
 .campo__input {
   height: var(--alto-boton);
   box-sizing: border-box;

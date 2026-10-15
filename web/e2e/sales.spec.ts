@@ -51,6 +51,7 @@ import { CUSTOMERS, SALE, SALES, SALE_NEW, VARIETIES } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
 import { expect, test } from './fixtures.js'
 import { signUpNewBusiness } from './helpers/signup.js'
+import { setPriceDate } from './helpers/priceDate.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
 import { whilePressed } from './helpers/pressed.js'
@@ -137,7 +138,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
     if (listPrice === undefined) return
     await page.getByRole('link', { name: new RegExp(name) }).click()
     await page.getByRole('link', { name: 'Nuevo precio' }).click()
-    if (effectiveFrom !== undefined) await page.getByLabel('Rige desde').fill(effectiveFrom)
+    if (effectiveFrom !== undefined) await setPriceDate(page, effectiveFrom)
     await page.getByLabel(/^Precio de lista/).fill(listPrice)
     await page.getByRole('button', { name: 'Guardá el precio' }).click()
     await expect(page.getByText('Precio guardado')).toBeVisible()

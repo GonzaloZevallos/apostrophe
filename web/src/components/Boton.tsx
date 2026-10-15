@@ -40,6 +40,9 @@ interface BotonCommon {
   onClick?: (event: MouseEvent<HTMLElement>) => void
   disabled?: boolean
   ariaDescribedBy?: string
+  /** For a button that opens and closes what `ariaControls` names (the price form's date chip). */
+  ariaExpanded?: boolean
+  ariaControls?: string
 }
 
 interface BotonWithText extends BotonCommon {
@@ -114,6 +117,8 @@ export default function Boton(props: BotonProps) {
       disabled={props.disabled ?? false}
       aria-label={ariaLabel}
       aria-describedby={props.ariaDescribedBy}
+      aria-expanded={props.ariaExpanded}
+      aria-controls={props.ariaControls}
     >
       {content}
     </button>

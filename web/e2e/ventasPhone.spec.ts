@@ -12,6 +12,7 @@ import { SALES, VARIETIES } from '../src/routes.js'
 import { expect, test } from './fixtures.js'
 import type { Locator, Page } from '@playwright/test'
 import { signUpNewBusiness } from './helpers/signup.js'
+import { setPriceDate } from './helpers/priceDate.js'
 
 const TOUCH_TARGET = 44
 const MIN_INPUT_FONT = 16
@@ -55,7 +56,7 @@ test('Ventas and a sale detail fit, and are thumb-sized, at 320, 430 and 130 % o
   await expect(page.getByText('Variedad guardada')).toBeVisible()
   await page.getByRole('link', { name: /Jazmín/ }).click()
   await page.getByRole('link', { name: 'Nuevo precio' }).click()
-  await page.getByLabel('Rige desde').fill('2000-01-01')
+  await setPriceDate(page, '2000-01-01')
   await page.getByLabel(/^Precio de lista/).fill('500')
   await page.getByRole('button', { name: 'Guardá el precio' }).click()
   await expect(page.getByText('Precio guardado')).toBeVisible()
