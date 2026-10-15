@@ -18,13 +18,13 @@ from sqlalchemy.engine import Engine
 from app.main import create_app
 from app.settings import Settings
 from app.static_spa import (
-    LEGACY_FRONT_PATHS,
     LEGACY_FRONT_PATHS_FILE,
     SHARED_FRONT_PATHS,
     MissingBuiltFront,
 )
 from tests.conftest import SETTINGS, TEST_HASHER, MovableClock
 from tests.fakes.telegram import FakeTelegram
+from tests.legacy_pin import PINNED_LEGACY_ROWS
 
 SECRET = "sv-secret-only-outside-dist"
 
@@ -241,12 +241,13 @@ def test_a_shared_front_path_is_the_shell_only_for_a_browser_navigation(
             assert "location" not in response.headers, cell
 
 
-# The legacy rows are the app's own file's (`app/legacy_front_paths.json`, docs/adr/0033):
-# this test walks whatever rows it holds. Which old paths must have a row is the hand-written
-# `tests/fixtures/legacy_front_paths.json`'s to say (`tests/test_static_spa.py`), so a row
-# deleted from the file fails there, not here. An id is carried across: `{id}` is 4821.
+# The expected target of every row is the hand-written fixture's
+# (`tests/fixtures/legacy_front_paths.json`, read through `tests/legacy_pin.py`), never the
+# app's own file's: a wrong target in `app/legacy_front_paths.json` fails here. That the
+# app holds exactly these rows is `tests/test_static_spa.py`'s to check. An id is carried
+# across: `{id}` is 4821.
 LEGACY_CASES = [
-    (old.replace("{id}", "4821"), now.replace("{id}", "4821")) for old, now in LEGACY_FRONT_PATHS
+    (old.replace("{id}", "4821"), now.replace("{id}", "4821")) for old, now in PINNED_LEGACY_ROWS
 ]
 
 
