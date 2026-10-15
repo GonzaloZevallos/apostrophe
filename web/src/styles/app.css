@@ -3518,10 +3518,15 @@ body {
 
 .opcion-interruptor__input {
   position: absolute;
-  width: 1px;
-  height: 1px;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   margin: 0;
+  z-index: 1;
   opacity: 0;
+  cursor: inherit;
+  /* Covers the label now, so it is a field to the 16 px rule (no zoom on focus). */
+  font-size: 16px;
 }
 
 .opcion-interruptor__pista {
@@ -3845,21 +3850,34 @@ body {
 /* ===== end ventas-telefono-carga ===== */
 
 /* pressed */
-/* The pressed state (GH-77): of every control a finger can tap, from tokens only.
+/* The pressed state (GH-77, GH-102): of every control a finger can tap, from tokens only.
  * Two cues, neither colour alone: the control shrinks a little (`transform`), and its
  * fill changes. `transition: none` so it shows the moment the finger lands. Never a
  * bare `button`, `a` or `*` rule: `PasswordField`'s reveal and the auth screens keep
  * the browser's own behaviour unless they wear one of these classes.
+ * `src/architecture/touch.test.ts` finds every tappable control in the markup and fails
+ * on one with no class in this block, so a new control lands here, or in its EXEMPT table.
  *
  * Controls rendered on a <button>, <a> or <Link> (each checked against its component):
  *   filled, so a --papel ring is the fill cue (it differs from the resting fill in both
  *   themes): .boton (with .boton--suave, .boton--destructivo and .boton-nueva-venta),
- *   .boton-icono, .periodos__boton, .pildora, .gastos__cargar, .aviso-ambar;
+ *   .boton-icono, .periodos__boton, .pildora, .gastos__cargar, .aviso-ambar,
+ *   .cobrar, .interruptor, .onboarding__boton-resto;
  *   transparent, so --superficie is the fill cue: .boton--enlace,
- *   .boton--fila, .bar-inferior__item, .riel-lateral__item, .mas__item, .fila-venta,
- *   .fila-gasto, .fila-entrada, .lista-clientes__fila, .bloque-deben__titulo, .bloque-deben__fila,
- *   .variedad-item, .pestanas__opcion, .selector-pago__opcion, .gastos__mes-boton,
- *   .encabezado__volver, .historial-fila__borrar.
+ *   .boton--fila, .enlace-texto, .bar-inferior__item, .riel-lateral__item,
+ *   .riel-lateral__negocio, .mas__item, .ajustes__item, .onboarding__enlace, .mas-info__boton, .fila-venta,
+ *   .fila-gasto, .fila-entrada, .fila-entrada__enlace, .lista-clientes__fila,
+ *   .bloque-deben__titulo, .bloque-deben__fila, .bloque-deben__datos, .variedad-item,
+ *   .variedad-fila, .variedades__todas, .catalogo__fila-nombre, .pestanas__opcion,
+ *   .selector-pago__opcion, .gastos__mes-boton, .encabezado__volver, .historial-fila__borrar;
+ *   resting on --superficie or --papel itself, so --linea is the fill cue (these come after
+ *   the --superficie group): .inicio__avatar and .ajustes-tema__opcion, plain and --activa (the track is
+ *   --superficie, the selected option --papel), and the selected variants
+ *   .riel-lateral__item--activo, .riel-lateral__negocio--activo, .bar-inferior__item--activo,
+ *   .pestanas__opcion--activa, .variedad-fila--activa and .selector-pago__opcion--activa;
+ *   with the --linea cue and the scale as well, .aviso-onboarding (rests on --superficie).
+ * .opcion-interruptor is label-wrapped (its checkbox is stretched over it and must keep the
+ * tap), so its cue is the fill only: its own rule below, with no `transform`.
  * A .boton--enlace inside .venta-guardada sits on the bar's own --boton fill, so it takes
  * the filled cue (the --papel ring) in its own scoped rule, in ventas-reglas-icono.
  * Display-only rows (.encabezado-fila, .historial-fila and its other children, the
@@ -3870,7 +3888,10 @@ body {
     .periodos__boton,
     .pildora,
     .gastos__cargar,
-    .aviso-ambar
+    .aviso-ambar,
+    .cobrar,
+    .interruptor,
+    .onboarding__boton-resto
   ):active:not(:disabled):not([aria-disabled='true']) {
   transform: scale(0.98);
   box-shadow: inset 0 0 0 3px var(--papel);
@@ -3880,16 +3901,26 @@ body {
 :is(
     .boton--enlace,
     .boton--fila,
+    .enlace-texto,
     .bar-inferior__item,
     .riel-lateral__item,
+    .riel-lateral__negocio,
     .mas__item,
+    .ajustes__item,
+    .onboarding__enlace,
+    .mas-info__boton,
     .fila-venta,
     .fila-gasto,
     .fila-entrada,
+    .fila-entrada__enlace,
     .lista-clientes__fila,
     .bloque-deben__titulo,
     .bloque-deben__fila,
+    .bloque-deben__datos,
     .variedad-item,
+    .variedad-fila,
+    .variedades__todas,
+    .catalogo__fila-nombre,
     .pestanas__opcion,
     .selector-pago__opcion,
     .gastos__mes-boton,
@@ -3901,14 +3932,44 @@ body {
   transition: none;
 }
 
-/* The one already selected rests on --superficie, so its fill cue is --linea instead:
- * it differs from the resting fill in both themes. */
-:is(.riel-lateral__item--activo, .selector-pago__opcion--activa):active:not(:disabled):not([aria-disabled='true']) {
+/* The Regalo and Precios switches are label-wrapped: the real checkbox inside is stretched
+ * over the label to take the tap, so scaling the label would move it under the finger.
+ * Their cue is the fill alone (no `transform`), and a disabled one shows none; the label
+ * never matches `:disabled`, so `--inactiva` (set from the same `disabled` prop) excludes it. */
+.opcion-interruptor:not(.opcion-interruptor--inactiva):active {
+  background-color: var(--superficie);
+  transition: none;
+}
+
+/* These rest on --superficie or --papel (or paint nothing and sit on --superficie), so
+ * their fill cue is --linea instead: it differs from the resting fill in both themes. The
+ * rule comes after the --superficie group, which would otherwise win on source order. */
+:is(
+    .ajustes-tema__opcion,
+    .ajustes-tema__opcion--activa,
+    .inicio__avatar,
+    /* a whole-block control; nothing tappable may be nested in it (it would scale with it). */
+    .aviso-onboarding
+  ):active:not(:disabled):not([aria-disabled='true']) {
+  transform: scale(0.98);
+  background-color: var(--linea);
+  transition: none;
+}
+
+:is(
+    .riel-lateral__item--activo,
+    .riel-lateral__negocio--activo,
+    .bar-inferior__item--activo,
+    .pestanas__opcion--activa,
+    .variedad-fila--activa,
+    .selector-pago__opcion--activa
+  ):active:not(:disabled):not([aria-disabled='true']) {
   background-color: var(--linea);
 }
 
 /* A tap on a button, tab or the bar selects no text; text in lists and fields stays
- * selectable, since only these classes opt out. */
+ * selectable, since only these classes opt out. Rows whose text is the business's data
+ * (.fila-venta, .variedad-fila and the like) are in the test's SELECTABLE table instead. */
 :is(
     .boton,
     .boton-icono,
@@ -3916,12 +3977,25 @@ body {
     .pildora,
     .gastos__cargar,
     .aviso-ambar,
+    .cobrar,
+    .interruptor,
     .boton--enlace,
     .boton--fila,
+    .enlace-texto,
     .bloque-deben__titulo,
     .bar-inferior,
     .riel-lateral,
+    .riel-lateral__negocio,
     .mas__item,
+    .ajustes__item,
+    .ajustes-tema__opcion,
+    .opcion-interruptor,
+    .onboarding__enlace,
+    .onboarding__boton-resto,
+    .mas-info__boton,
+    .aviso-onboarding,
+    .inicio__avatar,
+    .variedades__todas,
     .pestanas,
     .selector-pago__opcion,
     .gastos__mes-boton,
