@@ -12,7 +12,9 @@ import { createMemoryRouter, Outlet, RouterProvider, useParams, type RouteObject
 import { afterEach, expect, test, vi } from 'vitest'
 import type { Me } from '../api/me'
 import {
+  ANALYSIS,
   ARCHIVED_VARIETIES,
+  SALE,
   SCREENS,
   VARIETIES,
   VARIETY,
@@ -52,7 +54,7 @@ function json(body: unknown, status = 200): Response {
 /** The API faked at `fetch`: `GET /varieties/{id}` answers what `answers[id]` holds. */
 function fakeApi(answers: Record<number, Response | Deferred>) {
   const fetchMock = vi.fn((input: RequestInfo | URL) => {
-    const id = Number(String(input).split('/').at(-1))
+    const id = Number(String(input).slice(pathTo(VARIETY, { id: '' }).length))
     const answer = answers[id]
     if (answer === undefined) return Promise.resolve(json({ detail: 'not found' }, 404))
     return 'promise' in answer ? answer.promise : Promise.resolve(answer.clone())
@@ -75,7 +77,7 @@ function RecordStub({ screen: id }: { screen: RecordLabelledScreen }) {
   const [loaded, setLoaded] = useState<{ param: string | undefined; detail: Detail | null }>()
   useEffect(() => {
     let current = true
-    void fetch(`/varieties/${param}`).then(async (response) => {
+    void fetch(pathTo(VARIETY, { id: param ?? '' })).then(async (response) => {
       const detail = response.ok ? ((await response.json()) as Detail) : null
       if (current) setLoaded({ param, detail })
     })
@@ -263,10 +265,10 @@ test("an archived variety's back with no history goes to Archivadas; an active p
 
 test('an unmarked card still prints its registry parent, a tab root no back', () => {
   fakeApi({})
-  const card = renderAt(['/sales/7'])
+  const card = renderAt([pathTo(SALE, { id: 7 })])
   expect(backs()).toEqual(['‹ Ventas'])
   card.unmount()
-  renderAt(['/analysis'])
+  renderAt([ANALYSIS])
   expect(backs()).toEqual([])
 })
 
