@@ -15,16 +15,16 @@
  * read only, no forms, no toasts (PRD, "Read only").
  */
 
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useOutletContext } from 'react-router'
 import { NetworkError } from '../api/client'
 import BotonLink from '../components/BotonLink'
 import {
   type Analysis,
-  type AmountWithPending,
   type AnalysisMonth,
   type ExpenseBreakdown as ExpenseBreakdownT,
+  type RowCost,
   readAnalysis,
 } from '../api/analysis'
 import { keys } from '../api/keys'
@@ -34,16 +34,32 @@ import { formatGrams, formatMoney } from '../format/money'
 import ErrorGenerico from '../components/ErrorGenerico'
 import SinConexion from '../components/SinConexion'
 import { MORE } from '../routes'
+import { formatRowCost } from './analisisCost'
 import {
+  COST_OF_GOODS_LABEL,
   EMPTY_MONTH_LINE,
   NO_BEST_WEEK_LINE,
   NO_HISTORY_LINE,
+  OWN_USE_LABEL,
+  PROMOTION_LABEL,
   PURCHASES_NOTE,
+  SHORTFALL_LABEL,
   SINCE_FIRST_RECORD_LABEL,
   VARIETY_TOTAL_NOTE,
 } from './analisisMessages'
 
-export { EMPTY_MONTH_LINE, NO_BEST_WEEK_LINE, NO_HISTORY_LINE, PURCHASES_NOTE, SINCE_FIRST_RECORD_LABEL, VARIETY_TOTAL_NOTE }
+export {
+  COST_OF_GOODS_LABEL,
+  EMPTY_MONTH_LINE,
+  NO_BEST_WEEK_LINE,
+  NO_HISTORY_LINE,
+  OWN_USE_LABEL,
+  PROMOTION_LABEL,
+  PURCHASES_NOTE,
+  SHORTFALL_LABEL,
+  SINCE_FIRST_RECORD_LABEL,
+  VARIETY_TOTAL_NOTE,
+}
 export const BEST_WEEK_MARK = 'Mejor semana'
 export const BEST_WEEKDAY_MARK = 'Mejor día'
 export const BEST_WEEK_TABLE_MARK = 'mejor'
@@ -63,39 +79,84 @@ function pendingSuffix(grams: number): string {
   return grams > 0 ? ` y ${formatGrams(grams)} sin costo` : ''
 }
 
-/** Promoción and Consumo propio (CONTEXT.md), each apart from Faltante de stock and
- * each with only its own reason's "y N g sin costo". `null` when the period has none
- * of that reason's records: nothing is shown. */
-function CostLines({
+/** One cost line, "Faltante de stock $ 3.000 y 1 g sin costo": the label and
+ * `formatRowCost`, in one node. */
+function CostLine({ label, cost, className }: { label: string; cost: RowCost; className?: string }) {
+  return (
+    <span className={className}>
+      {label} {formatRowCost(cost)}
+    </span>
+  )
+}
+
+/** Faltante de stock, Promoción and Consumo propio (CONTEXT.md), each apart and each
+ * with only its own "y N g sin costo" (or only its grams when all of it is pending).
+ * `null` when the period has none of that reason's records: nothing is shown. */
+function WithdrawalLines({
+  shortfall,
   promotion,
   ownUse,
   className,
 }: {
-  promotion: AmountWithPending | null
-  ownUse: AmountWithPending | null
+  shortfall: RowCost | null
+  promotion: RowCost | null
+  ownUse: RowCost | null
   className?: string
 }) {
   return (
     <>
-      {promotion !== null && (
-        <span className={className}>
-          Promoción {formatMoney(promotion.amount)}
-          {pendingSuffix(promotion.pending_grams)}
-        </span>
-      )}
-      {ownUse !== null && (
-        <span className={className}>
-          Consumo propio {formatMoney(ownUse.amount)}
-          {pendingSuffix(ownUse.pending_grams)}
-        </span>
-      )}
+      {shortfall !== null && <CostLine className={className} label={SHORTFALL_LABEL} cost={shortfall} />}
+      {promotion !== null && <CostLine className={className} label={PROMOTION_LABEL} cost={promotion} />}
+      {ownUse !== null && <CostLine className={className} label={OWN_USE_LABEL} cost={ownUse} />}
     </>
   )
 }
 
-/** A table cell's twin of `CostLines` for one reason: empty when the period has none. */
-function costCell(line: AmountWithPending | null): string {
-  return line === null ? '' : `${formatMoney(line.amount)}${pendingSuffix(line.pending_grams)}`
+/** What a week or month row's sales cost and lost, in the PRD order: Costo de lo
+ * vendido always, then Faltante de stock, Promoción and Consumo propio when present. */
+function RowCostLines({
+  period,
+  className,
+}: {
+  period: {
+    cost_of_goods: RowCost
+    shortfall: RowCost | null
+    promotion: RowCost | null
+    own_use: RowCost | null
+  }
+  className?: string
+}) {
+  return (
+    <>
+      <CostLine className={className} label={COST_OF_GOODS_LABEL} cost={period.cost_of_goods} />
+      <WithdrawalLines
+        className={className}
+        shortfall={period.shortfall}
+        promotion={period.promotion}
+        ownUse={period.own_use}
+      />
+    </>
+  )
+}
+
+/** The computer tables' sub-row under a week or month: the same cost lines the phone's
+ * card shows, spanning the row's columns (`AnalisisCompu.dc.html`). */
+function CostSubRow({
+  period,
+  current,
+}: {
+  period: Parameters<typeof RowCostLines>[0]['period']
+  current: boolean
+}) {
+  return (
+    <tr className={current ? 'analisis__fila-costos analisis__fila-actual' : 'analisis__fila-costos'}>
+      <td colSpan={6}>
+        <div className="analisis__costos">
+          <RowCostLines period={period} />
+        </div>
+      </td>
+    </tr>
+  )
 }
 
 /** A bar's fill, purely a rendering proportion against the widest value in its own
@@ -206,13 +267,12 @@ function AnalisisContenido({
             m.average_margin.pending_grams > 0 &&
             ` · margen promedio${pendingSuffix(m.average_margin.pending_grams)}`}
         </span>
-        {m.shortfall !== null && (
-          <span className="pie">
-            Faltante de stock {formatMoney(m.shortfall.amount)}
-            {pendingSuffix(m.shortfall.pending_grams)}
-          </span>
-        )}
-        <CostLines className="pie" promotion={m.promotion} ownUse={m.own_use} />
+        <WithdrawalLines
+          className="pie"
+          shortfall={m.shortfall}
+          promotion={m.promotion}
+          ownUse={m.own_use}
+        />
       </div>
 
       <span className="pie">{VARIETY_TOTAL_NOTE}</span>
@@ -319,8 +379,10 @@ function AnalisisContenido({
                 <Bar value={week.sales} max={maxWeekSales} />
                 <span>{formatMoney(week.sales)}</span>
                 <span>{formatGrams(week.grams)}</span>
+                <div className="analisis__costos">
+                  <RowCostLines period={week} />
+                </div>
                 <span>gastos {formatMoney(week.expenses)}</span>
-                <CostLines promotion={week.promotion} ownUse={week.own_use} />
                 <span>
                   ganancia {formatMoney(week.profit.amount)}
                   {pendingSuffix(week.profit.pending_grams)}
@@ -339,16 +401,14 @@ function AnalisisContenido({
                   <th className="analisis__num">Ventas</th>
                   <th className="analisis__num">Gramos</th>
                   <th className="analisis__num">Gastos</th>
-                  <th className="analisis__num">Promoción</th>
-                  <th className="analisis__num">Consumo propio</th>
                   <th className="analisis__num">Ganancia</th>
                   <th className="analisis__num">Caja</th>
                 </tr>
               </thead>
               <tbody>
                 {data.weeks.map((week, index) => (
+                  <Fragment key={week.first_day}>
                   <tr
-                    key={week.first_day}
                     className={
                       index === data.weeks.length - 1 ? 'analisis__fila-actual' : undefined
                     }
@@ -357,8 +417,6 @@ function AnalisisContenido({
                     <td className="analisis__num">{formatMoney(week.sales)}</td>
                     <td className="analisis__num">{formatGrams(week.grams)}</td>
                     <td className="analisis__num">{formatMoney(week.expenses)}</td>
-                    <td className="analisis__num">{costCell(week.promotion)}</td>
-                    <td className="analisis__num">{costCell(week.own_use)}</td>
                     <td className="analisis__num">
                       {formatMoney(week.profit.amount)}
                       {pendingSuffix(week.profit.pending_grams)}
@@ -368,6 +426,8 @@ function AnalisisContenido({
                     </td>
                     <td className="analisis__num">{formatMoney(week.cash)}</td>
                   </tr>
+                  <CostSubRow period={week} current={index === data.weeks.length - 1} />
+                  </Fragment>
                 ))}
               </tbody>
             </table>
@@ -383,8 +443,10 @@ function AnalisisContenido({
                 <span>{formatMonthLong(row.month)}</span>
                 <span>{formatMoney(row.sales)}</span>
                 <span>{formatGrams(row.grams)}</span>
+                <div className="analisis__costos">
+                  <RowCostLines period={row} />
+                </div>
                 <span>gastos {formatMoney(row.expenses)}</span>
-                <CostLines promotion={row.promotion} ownUse={row.own_use} />
                 <span>
                   ganancia {formatMoney(row.profit.amount)}
                   {pendingSuffix(row.profit.pending_grams)}
@@ -402,27 +464,26 @@ function AnalisisContenido({
                   <th className="analisis__num">Ventas</th>
                   <th className="analisis__num">Gramos</th>
                   <th className="analisis__num">Gastos</th>
-                  <th className="analisis__num">Promoción</th>
-                  <th className="analisis__num">Consumo propio</th>
                   <th className="analisis__num">Ganancia</th>
                   <th className="analisis__num">Caja</th>
                 </tr>
               </thead>
               <tbody>
                 {data.months.map((row) => (
-                  <tr key={row.month}>
+                  <Fragment key={row.month}>
+                  <tr>
                     <td>{formatMonthLong(row.month)}</td>
                     <td className="analisis__num">{formatMoney(row.sales)}</td>
                     <td className="analisis__num">{formatGrams(row.grams)}</td>
                     <td className="analisis__num">{formatMoney(row.expenses)}</td>
-                    <td className="analisis__num">{costCell(row.promotion)}</td>
-                    <td className="analisis__num">{costCell(row.own_use)}</td>
                     <td className="analisis__num">
                       {formatMoney(row.profit.amount)}
                       {pendingSuffix(row.profit.pending_grams)}
                     </td>
                     <td className="analisis__num">{formatMoney(row.cash)}</td>
                   </tr>
+                  <CostSubRow period={row} current={false} />
+                  </Fragment>
                 ))}
               </tbody>
             </table>
@@ -453,13 +514,8 @@ function AnalisisContenido({
                 {pendingSuffix(data.since_first_record.profit.pending_grams)}
               </span>
               <span>caja {formatMoney(data.since_first_record.cash)}</span>
-              {data.since_first_record.shortfall !== null && (
-                <span>
-                  Faltante de stock {formatMoney(data.since_first_record.shortfall.amount)}
-                  {pendingSuffix(data.since_first_record.shortfall.pending_grams)}
-                </span>
-              )}
-              <CostLines
+              <WithdrawalLines
+                shortfall={data.since_first_record.shortfall}
                 promotion={data.since_first_record.promotion}
                 ownUse={data.since_first_record.own_use}
               />
