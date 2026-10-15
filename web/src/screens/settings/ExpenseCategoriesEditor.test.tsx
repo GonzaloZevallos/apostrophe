@@ -157,3 +157,41 @@ test('collapsed, text typed and not saved counts as unsaved', async () => {
   await userEvent.type(screen.getByLabelText('Nueva categoría'), 'Luz')
   expect(onDirtyChange).toHaveBeenLastCalledWith(true)
 })
+
+test('collapsed, a rename saves at once through the owner route, with no other write', async () => {
+  const fetchMock = renderCollapsed(async (url, init) => {
+    if (url === '/expense-categories/1' && init?.method === 'PATCH') return jsonResponse(200, { id: 1, name: 'Embalaje' })
+    return listOnly(url, init)
+  })
+  await screen.findByText('Packaging')
+  await userEvent.click(screen.getByRole('button', { name: 'Renombrar' }))
+  const input = screen.getByLabelText('Nombre de Packaging')
+  await userEvent.clear(input)
+  await userEvent.type(input, 'Embalaje')
+  await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+
+  expect(await screen.findByText('Embalaje')).toBeInTheDocument()
+  expect(screen.queryByText('Packaging')).not.toBeInTheDocument()
+  const requests = fetchMock.mock.calls
+    .filter(([, init]) => init?.method !== undefined && init.method !== 'GET')
+    .map(([url, init]) => `${init?.method} ${url}`)
+  expect(requests).toEqual(['PATCH /expense-categories/1'])
+  expect(JSON.parse(String(fetchMock.mock.calls.find(([, init]) => init?.method === 'PATCH')?.[1]?.body))).toEqual({ name: 'Embalaje' })
+})
+
+test('collapsed, a removal saves at once through the owner route, with no other write', async () => {
+  const fetchMock = renderCollapsed(async (url, init) => {
+    if (url === '/expense-categories/1' && init?.method === 'DELETE') return new Response(null, { status: 204 })
+    return listOnly(url, init)
+  })
+  await screen.findByText('Packaging')
+  await userEvent.click(screen.getByRole('button', { name: 'Eliminar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Sí, borrala' }))
+
+  expect(await screen.findByText('Categoría eliminada')).toBeInTheDocument()
+  expect(screen.queryByText('Packaging')).not.toBeInTheDocument()
+  const requests = fetchMock.mock.calls
+    .filter(([, init]) => init?.method !== undefined && init.method !== 'GET')
+    .map(([url, init]) => `${init?.method} ${url}`)
+  expect(requests).toEqual(['DELETE /expense-categories/1'])
+})
