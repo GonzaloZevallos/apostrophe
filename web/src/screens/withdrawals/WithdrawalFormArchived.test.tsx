@@ -11,7 +11,15 @@ import userEvent from '@testing-library/user-event'
 import { Outlet, RouterProvider, createMemoryRouter } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import WITHDRAWAL from '../../api/fixtures/withdrawal.json'
-import { VARIETIES as VARIETIES_PATH, WITHDRAWAL_NEW, withdrawalNewFor } from '../../routes'
+import {
+  HOME,
+  VARIETIES as VARIETIES_PATH,
+  WITHDRAWAL as WITHDRAWAL_PATH,
+  WITHDRAWAL_EDIT,
+  WITHDRAWAL_NEW,
+  pathTo,
+  withdrawalNewFor,
+} from '../../routes'
 import WithdrawalForm from './WithdrawalForm'
 import { ME, jsonResponse, renderWithdrawals } from './renderWithdrawals'
 
@@ -119,7 +127,7 @@ function archiveEvent(): void {
 test.each([
   ['archived', 1],
   ['unknown', 99],
-])('/withdrawals/new?variety=<%s id> opens with no variety chosen and nothing dirty', async (_kind, id) => {
+])('a new withdrawal opened with an %s variety preselected opens with no variety chosen and nothing dirty', async (_kind, id) => {
   const state = world([GELATO])
   const { router } = render_([withdrawalNewFor(id)], state)
 
@@ -137,7 +145,7 @@ test.each([
 test('editing a line on a variety archived since keeps its id and name, also while the list is pending', async () => {
   const state = world([GELATO])
   state.listGate = gate()
-  const { router } = render_(['/withdrawals/1/edit'], state)
+  const { router } = render_([pathTo(WITHDRAWAL_EDIT, { id: 1 })], state)
 
   const select = await screen.findByLabelText('Variedad 1')
   expect(select).toHaveValue('1')
@@ -158,7 +166,7 @@ test('editing a line on a variety archived since keeps its id and name, also whi
     within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Sí, guardar' }),
   )
 
-  await waitFor(() => expect(router.state.location.pathname).toBe('/withdrawals/1'))
+  await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(WITHDRAWAL_PATH, { id: 1 })))
   expect(state.writes).toEqual([
     {
       method: 'PUT',
@@ -244,7 +252,7 @@ test('the list changing twice before the save still leaves the guilty line named
 
 /** An edit of withdrawal 1 (stored line: Zkittlez, archived since) plus two added lines. */
 async function editWithTwoAddedLines(state: World) {
-  render_(['/withdrawals/1/edit'], state)
+  render_([pathTo(WITHDRAWAL_EDIT, { id: 1 })], state)
   await screen.findByLabelText('Variedad 1')
   await waitFor(() => expect(screen.getByRole('button', { name: 'Guardar' })).toBeEnabled())
   for (const [position, name] of [
@@ -386,7 +394,7 @@ test('the form never calls onGone on variety.archived', async () => {
       element: <Outlet context={ME} />,
       children: [
         {
-          path: '/',
+          path: HOME,
           element: (
             <WithdrawalForm
               target="new"
