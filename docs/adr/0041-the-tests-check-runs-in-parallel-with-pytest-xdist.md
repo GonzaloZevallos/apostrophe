@@ -38,8 +38,11 @@ already runs with `-n auto`").
 
 ## Verification
 
-Every row quotes the command that produced it. All of it ran on the tree that carries this
-ADR as its only change, from one session, with no other check running on the machine.
+Every row quotes the command that produced it. All of it was measured on 2026-10-08, from
+one session, with no other check running on the machine, on master at `bc9f4e1` (this
+task's base) plus this ADR as the only change. Master has moved since: a later master
+collects more tests, so the collected count below describes `bc9f4e1` and is not a claim
+about any later commit.
 
 ### Machine
 
@@ -49,7 +52,7 @@ ADR as its only change, from one session, with no other check running on the mac
 | CPU model | `grep -m1 'model name' /proc/cpuinfo` | AMD Ryzen 7 5700U with Radeon Graphics |
 | Other checkouts running checks | `pgrep -af '(^\|/)(pytest\|mypy\|ruff\|vitest)'` before each set | None: it matched no process before the collect, the consecutive runs and the mypy sets (the Developer session's own command line aside) |
 
-### Collected on master (this task's base)
+### Collected on master at `bc9f4e1` (this task's base)
 
 | Command | N tests collected |
 |---|---|
