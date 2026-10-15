@@ -11,9 +11,8 @@
  * 4. a control with visible text and no svg is none of: the submit (`type="submit"`),
  *    link/undo/back (`.boton--enlace`), a row (`.boton--fila`), an option control (a
  *    tab, radio, switch or checkbox role, or a class in `options.optionClasses`), or an
- *    answer inside a `dialog` or `alertdialog`;
- *    A tappable notice (`.boton-aviso`) is also known, but must be named by its visible
- *    text, with no `aria-label` of its own;
+ *    answer inside a `dialog` or `alertdialog`, or a tappable notice (`.boton-aviso`), which
+ *    must also be named by its visible text, with no `aria-label` of its own;
  * 5. two entries inside one `[data-menu]` share an icon (a drawing, compared by its
  *    markup);
  * 6. an element marked `data-copy="<kind>"` is longer than `options.limits[<kind>]`, its
