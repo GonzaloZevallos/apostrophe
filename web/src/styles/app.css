@@ -3944,6 +3944,18 @@ body {
   background-color: var(--linea);
 }
 
+/* The Regalo switch is a <label> around a 1px native input that stays where it is: scaling
+ * the label would carry that input out from under a pointer that went down on it (a
+ * keyboard-free test driver, a screen-reader click), so the shrink moves to the track. */
+.opcion-interruptor:active:not(:disabled):not([aria-disabled='true']) {
+  transform: none;
+}
+
+.opcion-interruptor:active:not(.opcion-interruptor--inactiva) .opcion-interruptor__pista {
+  transform: scale(0.94);
+  transition: none;
+}
+
 /* The Regalo switch is a <label>, which :disabled never matches: its disabled look carries
  * its own class, and a press on it keeps the resting look. The selector has the groups'
  * specificity and comes after them. */
@@ -3979,6 +3991,7 @@ body {
     .ajustes__item,
     .ajustes-tema__opcion,
     .opcion-interruptor,
+    .opcion-interruptor__pista,
     .inicio__avatar,
     .variedades__todas,
     .pestanas,
