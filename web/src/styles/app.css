@@ -4220,21 +4220,6 @@ body {
   display: contents;
 }
 
-.onboarding__enlace {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--espacio-xs);
-  min-height: var(--alto-tocable);
-  padding: 0 var(--espacio-sm);
-  background: none;
-  border: 0;
-  color: var(--tinta2);
-  font: inherit;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
 .onboarding__progreso {
   display: flex;
   flex-direction: column;
@@ -4344,13 +4329,7 @@ body {
   gap: var(--espacio-md);
 }
 
-.onboarding__boton-saltar {
-  min-height: 50px;
-  height: auto;
-  font-size: 15px;
-}
-
-.onboarding__boton-resto {
+.onboarding__resto {
   align-self: center;
 }
 

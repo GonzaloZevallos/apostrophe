@@ -300,7 +300,8 @@ export type NombreIcono =
   | 'categorias'
   | 'apariencia'
   | 'cuenta'
-  | 'hecho';
+  | 'hecho'
+  | 'saltar';
 
 /** Más info: una línea corta con una "i" al final que despliega, en su lugar y debajo de la
  *  línea, la explicación larga (el cómo o el porqué, nunca una consecuencia ni la salida de un

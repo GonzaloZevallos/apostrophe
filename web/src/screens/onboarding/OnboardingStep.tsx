@@ -24,9 +24,9 @@ import {
   type StepSlug,
 } from '../../api/onboarding'
 import { isGone } from '../../api/refusals'
+import Boton from '../../components/Boton'
 import ConfirmDialog from '../../components/ConfirmDialog'
 import ErrorGenerico from '../../components/ErrorGenerico'
-import Icono from '../../components/Icono'
 import LeaveConfirm from '../../components/LeaveConfirm'
 import SinConexion from '../../components/SinConexion'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
@@ -97,17 +97,14 @@ export default function OnboardingStep({
     <main className="pantalla onboarding">
       <div className="onboarding__columna">
         <div className="onboarding__cabecera">
-          <button
-            type="button"
-            className="onboarding__enlace"
+          <Boton
+            variant="back"
+            ariaLabel="Atrás"
             onClick={() => void navigate(previousPath(slug) ?? HOME)}
           >
-            <Icono nombre="atras" />
-            Atrás
-          </button>
-          <button type="button" className="onboarding__enlace" onClick={() => void navigate(HOME)}>
-            Cerrar
-          </button>
+            ‹ Atrás
+          </Boton>
+          <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={() => void navigate(HOME)} />
         </div>
 
         <div className="onboarding__progreso">
@@ -132,23 +129,15 @@ export default function OnboardingStep({
 
         {!info.required && (
           <div className="onboarding__saltar">
-            <button
-              type="button"
-              className="boton boton--suave onboarding__boton-saltar"
-              disabled={sending}
-              onClick={() => requestSkip('one')}
-            >
+            <Boton variant="secondary" icon="saltar" disabled={sending} onClick={() => requestSkip('one')}>
               Saltar
-            </button>
+            </Boton>
             {progress.can_skip_rest && (
-              <button
-                type="button"
-                className="boton-enlace onboarding__boton-resto"
-                disabled={sending}
-                onClick={() => requestSkip('rest')}
-              >
-                Saltar el resto
-              </button>
+              <div className="onboarding__resto">
+                <Boton variant="secondary" icon="saltar" disabled={sending} onClick={() => requestSkip('rest')}>
+                  Saltar el resto
+                </Boton>
+              </div>
             )}
             <span className="pie onboarding__pista">{laterHint(info)}</span>
           </div>
