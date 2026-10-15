@@ -96,6 +96,19 @@ def test_the_analisis_guard_rejects_a_screen_that_drifts(
     assert problems != [], what
 
 
+@pytest.mark.parametrize("screen", ANALISIS_SCREENS)
+def test_the_analisis_guard_still_requires_the_other_cost_lines_on_the_rows(screen: str) -> None:
+    page = (SCREENS / screen).read_text(encoding="utf-8")
+    # Every Consumo propio the screen draws, rows included, loses its label.
+    drawn = "<span>Consumo propio</span>"
+    assert drawn in page
+    broken = page.replace(drawn, "<span>Consumo</span>")
+
+    problems = check_screen("analisis", screen, broken, real_muestra(), ())
+
+    assert any("'Consumo propio' is missing" in p for p in problems)
+
+
 def test_the_analisis_denylist_keeps_the_figures_muestra_has() -> None:
     denylist = next(f for f in FAMILIES if f.name == "analisis").denylist
     body = (DESIGN / "muestra.md").read_text(encoding="utf-8")

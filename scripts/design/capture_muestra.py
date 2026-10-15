@@ -90,6 +90,15 @@ def pending_grams(value: float) -> str:
     return f"y {grams(value)} sin costo" if value > 0 else "no"
 
 
+def row_cost(line: Json) -> str:
+    """The Valor of an Análisis cost line. Everything behind it pending reads as grams
+    alone (`formatRowCost`), never `$ 0`; otherwise the amount, with a partly pending
+    figure's grams in the Pendiente column."""
+    if line["all_pending"]:
+        return f"{grams(line['pending_grams'])} sin costo"
+    return money(line["amount"])
+
+
 def days(count: int | None) -> str:
     if count is None:
         return _NONE
@@ -356,17 +365,18 @@ def _accounts(api: _ClientApi) -> list[str]:
     return ["### Cuentas", "", *table(header, rows)]
 
 
-def _cost_rows(add: Any, figures: Json, *, shortfall: bool = True) -> None:
-    for field, label in (
+def _cost_rows(add: Any, figures: Json, *, cost_of_goods: bool = False) -> None:
+    fields = [
         ("shortfall", "Faltante de stock"),
         ("promotion", "Promoción"),
         ("own_use", "Consumo propio"),
-    ):
-        if field == "shortfall" and not shortfall:
-            continue
+    ]
+    if cost_of_goods:
+        fields.insert(0, ("cost_of_goods", "Costo de lo vendido"))
+    for field, label in fields:
         if figures.get(field) is not None:
             line = figures[field]
-            add(label, money(line["amount"]), pending_grams(line["pending_grams"]))
+            add(label, row_cost(line), pending_grams(line["pending_grams"]))
 
 
 def _analysis(api: _ClientApi) -> list[str]:
@@ -437,7 +447,7 @@ def _analysis(api: _ClientApi) -> list[str]:
 
         add("Ventas", money(row["sales"]))
         add("Gramos", grams(row["grams"]))
-        _cost_rows(add, row, shortfall=False)
+        _cost_rows(add, row, cost_of_goods=True)
         add("Gastos", money(row["expenses"]))
         profit = row["profit"]
         add("Ganancia", money(profit["amount"]), pending_grams(profit["pending_grams"]))
