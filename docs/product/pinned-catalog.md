@@ -21,7 +21,7 @@ This refines the setup step of the first job (the test copy before customers see
 
 **When** a variety I loaded by mistake, or one I no longer work with, keeps showing in my lists and pickers, **I want** to take it out from my phone in a few taps, deleting it if it never moved and archiving it if it has history, **so** my lists show only what I still sell, no past sale, stock, cost or profit figure changes, and I can bring it back exactly as it was if I start selling it again. (Served here by archiving and restoring being upkeep triggers; defined in varieties.md.)
 
-**When** a restyle of a screen like Integraciones is up for approval, **I want** a before and after comparison of that screen, captured the same way from the code before and after the change, **so I can** tell that only the intended thing changed, and that what the seller does there (token, chats, Buscar mi chat, Probarlo, the help lines and reasons, the link to the catalog screen) still reads and works as before, and approve with confidence.
+**When** a restyle of a screen like Integraciones is up for approval, **I want** a before and after comparison of that screen, captured the same way from the code without and with the change, **so I can** tell that only the intended thing changed, and that what the seller does there (token, chats, Buscar mi chat, Probarlo, the help lines and reasons, the link to the catalog screen) still reads and works as before, and approve with confidence.
 
 This refines the "looks as designed" criteria (icon-and-text-rule.md criterion 6, navigation.md's design metric); it is not a new product job. Its protagonist is whoever approves the restyle (the reviewer, and in the end Zeta), not the seller. Its purpose is to find unintended differences, not to judge whether the screen looks good. It came from GH-116's restyle of Integraciones, whose approval rested on an "after" capture alone.
 
@@ -196,14 +196,18 @@ Setup (token, chats, Buscar mi chat, first Probarlo and Publicar) is judged by c
 
 ### Restyling Integraciones
 
-- **Comparison**: a restyle of Integraciones is approved on a before and after comparison:
-  - "before" is captured from the code just before the restyle, "after" from the head that merges;
-  - both are taken by the head's own `scripts/design/comparisons.mjs`, from one install, on the same Argentina day, with fonts pinned and `--strict` (ADR-0041);
-  - the PR records the installed `@fontsource/plus-jakarta-sans` version.
+- **Comparison**: a restyle of Integraciones is approved on a before and after comparison.
+  - "After" is captured from the head that merges.
+  - "Before" is captured from the code without the restyle:
+    - while the restyle is unmerged, the code just before it;
+    - once later changes have landed on the same files, that same merging head with only the restyle's own change undone. The PR shows that undo diff.
+  - If undoing the restyle alone changes more than the restyle did (later changes rely on it), the PR says so and lists the extra differences for Zeta. Nothing more is undone.
+  - Both are taken by the head's own `scripts/design/comparisons.mjs`, from one install, on the same Argentina day, with fonts pinned and `--strict` (ADR-0041).
+  - The PR records the installed `@fontsource/plus-jakarta-sans` version.
 - **Coverage**: phone and computer, light and dark. A missing screen, side or one-sided `null` is a failure, never AE 0.
 - **Measure**: the raw captures are compared by exact AE with `scripts/design/ae.mjs`, never the composed sheet.
 - **Every non-zero difference** is listed in the PR, with its screen and side, as intended by the restyle's brief or fixed. A design-side difference is listed with its reason. A difference the brief and the docs cannot settle goes to Zeta in the PR.
-- **A fix** is CSS only, within the existing tokens; no token value changes. The captures are retaken and compared again after it.
+- **A fix** is CSS only, within the existing tokens; no token value changes. After it, both sides are retaken from the fixed head and compared again.
 - **Nothing the seller reads or does changes**: the token, the chats, Buscar mi chat, Probarlo, its reasons and help lines, the "desfijalo vos en Telegram" line, the link to the catalog screen, the absence of pin status and Publicar, and no state told by color alone.
 
 ### Constraints
@@ -270,7 +274,7 @@ Setup (token, chats, Buscar mi chat, first Probarlo and Publicar) is judged by c
   - follows Integraciones' link to the catalog screen, sees Publicar enabled and runs it;
   - sees "Al día" on the catalog screen and no line on Inicio.
 - **Integraciones looks as designed (criterion 11)**, read from the PR, with no telemetry:
-  - before and after captures attached, recording the script, the single install, the date and the fontsource version;
+  - before and after captures are attached, with the undo diff that defines "before" when the restyle had already merged; the PR records the script, the single install, the date and the fontsource version;
   - four sides (phone and computer, light and dark), each with a result in `index.json` and in `ae.mjs`'s output: 0 missing;
   - `ae.mjs` exits 0, or every non-zero line is matched in the PR to "intended" or to a fix: 0 unlisted, unfixed differences on the head that merges;
   - the pinned-catalog, navigation, icon-and-text and feedback suites pass with 0 edited tests.
