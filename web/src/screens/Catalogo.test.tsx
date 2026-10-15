@@ -253,14 +253,6 @@ test('a variety left out opens its "En el catálogo" section on its page', async
   expect(await screen.findByText('Aterrizaste en /varieties/7#en-el-catalogo')).toBeInTheDocument()
 })
 
-test('"‹ Variedades" goes back to the list', async () => {
-  renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
-
-  await userEvent.click(await screen.findByRole('link', { name: '‹ Variedades' }))
-
-  expect(await screen.findByText('Aterrizaste en Variedades')).toBeInTheDocument()
-})
-
 test('Compartir hands the share sheet exactly the API text, byte for byte, and shows nothing after', async () => {
   const text = '🌿 **CATÁLOGO** 🌿\n\n  🥇 **24K Gold**  \n• Precio x gramo: $11.000\n\n'
   renderCatalogo(catalogFetch({ ...CATALOG, text }))

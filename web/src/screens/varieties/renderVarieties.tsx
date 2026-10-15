@@ -1,7 +1,9 @@
 /**
  * Test harness for a variety's price screens: the real data router with the gated
  * layout's flash provider, the three routes mounted as `router.tsx` mounts them, a
- * stand-in for a variety's page (built by another subtask), and `fetch` faked.
+ * stand-in for a variety's page (built by another subtask), and `fetch` faked. The routes sit
+ * under `Shell` with their registry ids, as `router.tsx` has them: the card's one back is the
+ * shell's.
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -12,6 +14,7 @@ import type { Me } from '../../api/me'
 import InAppLink from '../../components/InAppLink'
 import FlashProvider from '../../flash/FlashProvider'
 import { VARIETIES, VARIETY, VARIETY_PRICE_NEW, VARIETY_PRICES, pathTo, relative } from '../../routes'
+import Shell from '../../shell/Shell'
 import PriceHistory from './PriceHistory'
 import PriceNew from './PriceNew'
 import VarietyRoute from './VarietyRoute'
@@ -72,26 +75,35 @@ export function renderVarieties(initialEntries: string[], fetchImpl: FetchImpl) 
         ),
         children: [
           {
-            path: relative(VARIETIES),
-            element: <main>Pantalla Variedades</main>,
-          },
-          {
-            path: relative(VARIETY),
-            element: (
-              <main>
-                <span>Página de la variedad</span>
-                <InAppLink to={pathTo(VARIETY_PRICES, { id: 1 })}>Ver todos los precios</InAppLink>
-                <InAppLink to={pathTo(VARIETY_PRICE_NEW, { id: 1 })}>Nuevo precio</InAppLink>
-              </main>
-            ),
-          },
-          {
-            path: relative(VARIETY_PRICES),
-            element: <VarietyRoute render={(varietyId) => <PriceHistory varietyId={varietyId} />} />,
-          },
-          {
-            path: relative(VARIETY_PRICE_NEW),
-            element: <VarietyRoute render={(varietyId) => <PriceNew varietyId={varietyId} />} />,
+            element: <Shell />,
+            children: [
+              {
+                path: relative(VARIETIES),
+                handle: { screen: 'varieties' },
+                element: <main>Pantalla Variedades</main>,
+              },
+              {
+                path: relative(VARIETY),
+                handle: { screen: 'variety' },
+                element: (
+                  <main>
+                    <span>Página de la variedad</span>
+                    <InAppLink to={pathTo(VARIETY_PRICES, { id: 1 })}>Ver todos los precios</InAppLink>
+                    <InAppLink to={pathTo(VARIETY_PRICE_NEW, { id: 1 })}>Nuevo precio</InAppLink>
+                  </main>
+                ),
+              },
+              {
+                path: relative(VARIETY_PRICES),
+                handle: { screen: 'variety-prices' },
+                element: <VarietyRoute render={(varietyId) => <PriceHistory varietyId={varietyId} />} />,
+              },
+              {
+                path: relative(VARIETY_PRICE_NEW),
+                handle: { screen: 'variety-price-new' },
+                element: <VarietyRoute render={(varietyId) => <PriceNew varietyId={varietyId} />} />,
+              },
+            ],
           },
         ],
       },

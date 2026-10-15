@@ -14,6 +14,7 @@ import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import Boton from '../components/Boton'
 import { SheetRouterProvider } from '../components/useSheetStack'
+import WITHDRAWAL from '../api/fixtures/withdrawal.json'
 import { router } from '../router'
 import { SALE as SALE_PATH, SCREENS, pathTo, type ScreenId } from '../routes'
 import { HISTORY, SETTINGS_ON, VARIETY_ROW, jsonResponse } from '../screens/varieties/renderVarieties'
@@ -68,7 +69,29 @@ const LOADED: Partial<Record<ScreenId, string>> = {
   sale: 'Líneas',
   customer: 'Ana Pérez',
   settings: 'Configuración',
+  variety: '24K Gold',
+  'variety-prices': 'Precios',
+  'variety-entries': 'Entradas',
+  stock: 'Todas las entradas',
+  catalog: 'Sir Jack',
+  'varieties-archived': 'Archivada',
+  withdrawal: 'Zkittlez',
 }
+
+const CATALOG = {
+  text: '**24K Gold**',
+  header: '',
+  footer: '',
+  varieties: [{ id: 2, name: 'Sir Jack', emoji: '👑', indica_share: null, aroma: null, shown: false, state: 'hidden' }],
+}
+
+const STOCK = {
+  total: 18,
+  varieties: [{ variety_id: 1, grams: 18, status: 'ok', sold_out_since: null, threshold: null, days_left: null }],
+  entries: [],
+}
+
+const ARCHIVED = { ...VARIETY_ROW, id: 2, name: 'Sir Jack', archived: true }
 
 /** The API faked at `fetch`: the session, a sale, a customer and variety 1 with its prices;
  * anything else is not found. */
@@ -85,6 +108,13 @@ function fakeApi(): void {
         'GET /sales/1': SALE,
         'GET /customers/1': CUSTOMER,
         'GET /customers/1/account': ACCOUNT,
+        'GET /stock': STOCK,
+        'GET /stock?archived=true': STOCK,
+        'GET /stock/varieties/1/movements': [],
+        'GET /stock/withdrawals/1': WITHDRAWAL,
+        'GET /varieties': [VARIETY_ROW],
+        'GET /varieties?archived=true': [ARCHIVED],
+        'GET /catalog': CATALOG,
       }
       return Promise.resolve(key in answers ? jsonResponse(200, answers[key]) : jsonResponse(404, { detail: 'No existe' }))
     }),
@@ -123,7 +153,7 @@ test.each(cards.filter((card) => !exempt.has(card.id)).map((card) => [card.id, c
       </QueryClientProvider>,
     )
 
-    expect(await screen.findByText(LOADED[id] ?? '')).toBeInTheDocument()
+    expect((await screen.findAllByText(LOADED[id] ?? '')).length).toBeGreaterThan(0)
     await screen.findAllByRole('button', { name: /^‹ / })
 
     expect(backs()).toHaveLength(1)

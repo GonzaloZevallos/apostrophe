@@ -7,7 +7,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Outlet, Route, Routes, useLocation } from 'react-router'
+import { Outlet, RouterProvider, createMemoryRouter, useLocation } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import { catalogQueryOptions } from '../api/catalog'
 import type { Me } from '../api/me'
@@ -26,6 +26,7 @@ import EntriesList from './EntriesList'
 import VarietyRoute from './varieties/VarietyRoute'
 import { LIMITS } from '../copy/limits'
 import { expectIconAndTextRule } from '../test/iconAndTextRule'
+import Shell from '../shell/Shell'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-06' }
 
@@ -114,21 +115,37 @@ function renderAt(
   client = new QueryClient({ defaultOptions: { queries: { retry: false } } }),
   { entries = [VARIETIES_PATH, path], opens }: { entries?: string[]; opens?: string } = {},
 ) {
+  const router = createMemoryRouter(
+    [
+      {
+        element: (
+          <FlashProvider>
+            <Provide />
+          </FlashProvider>
+        ),
+        children: [
+          {
+            element: <Shell />,
+            children: [
+              { path: VARIETIES_PATH, element: <Where opens={opens} />, handle: { screen: 'varieties' } },
+              { path: STOCK_PATH, element: <EntriesList />, handle: { screen: 'stock' } },
+              { path: STOCK_ENTRY, element: <Where />, handle: { screen: 'stock-entry' } },
+              {
+                path: VARIETY_ENTRIES,
+                element: <VarietyRoute render={(varietyId) => <EntriesList varietyId={varietyId} />} />,
+                handle: { screen: 'variety-entries' },
+              },
+              { path: VARIETY, element: <Where />, handle: { screen: 'variety' } },
+            ],
+          },
+        ],
+      },
+    ],
+    { initialEntries: entries, initialIndex: entries.length - 1 },
+  )
   render(
     <QueryClientProvider client={client}>
-      <MemoryRouter initialEntries={entries} initialIndex={entries.length - 1}>
-        <FlashProvider>
-          <Routes>
-            <Route element={<Provide />}>
-              <Route path={VARIETIES_PATH} element={<Where opens={opens} />} />
-              <Route path={STOCK_PATH} element={<EntriesList />} />
-              <Route path={STOCK_ENTRY} element={<Where />} />
-              <Route path={VARIETY_ENTRIES} element={<VarietyRoute render={(varietyId) => <EntriesList varietyId={varietyId} />} />} />
-              <Route path={VARIETY} element={<Where />} />
-            </Route>
-          </Routes>
-        </FlashProvider>
-      </MemoryRouter>
+      <RouterProvider router={router} />
     </QueryClientProvider>,
   )
   return client
@@ -343,7 +360,7 @@ test('the list keeps the icon and text rule: Borrar is the icon-only control wit
   expect(borrar).toHaveClass('boton-icono')
   expect(borrar).toHaveTextContent('')
   expect(borrar.querySelector('svg')).not.toBeNull()
-  expectIconAndTextRule(document.body, { limits: LIMITS })
+  expectIconAndTextRule(screen.getByRole('main'), { limits: LIMITS })
 })
 
 test('the empty state keeps the title and the line within their limits', async () => {
@@ -359,5 +376,5 @@ test('the empty state keeps the title and the line within their limits', async (
 
   await screen.findByText('Sin entradas de stock')
   expect(document.querySelectorAll('[data-copy="emptyTitle"], [data-copy="emptyLine"]')).toHaveLength(2)
-  expectIconAndTextRule(document.body, { limits: LIMITS })
+  expectIconAndTextRule(screen.getByRole('main'), { limits: LIMITS })
 })

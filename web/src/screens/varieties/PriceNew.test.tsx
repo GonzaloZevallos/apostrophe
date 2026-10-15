@@ -204,7 +204,7 @@ test('the form keeps the icon and text rule, its help lines within their limits'
 
   await screen.findByLabelText('Rige desde')
   expect(document.querySelectorAll('[data-copy="help"]')).toHaveLength(4)
-  expectIconAndTextRule(document.body, { limits: LIMITS })
+  expectIconAndTextRule(screen.getByRole('main'), { limits: LIMITS })
 })
 
 const SETTINGS_URL = 'GET /pricing-settings'

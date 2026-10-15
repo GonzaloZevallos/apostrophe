@@ -135,7 +135,7 @@ function renderPage(path: string, overrides: Answers = {}, state: unknown = null
           {
             element: <Shell />,
             children: [
-              { path: relative(VARIETIES), element: <main>Pantalla Variedades</main> },
+              { path: relative(VARIETIES), element: <main>Pantalla Variedades</main>, handle: { screen: 'varieties' } },
               {
                 path: relative(VARIETY),
                 element: <VarietyRoute render={(varietyId) => <VarietyPage varietyId={varietyId} />} />,
@@ -273,11 +273,13 @@ describe('the actions and the sections', () => {
   })
 
   test('the page is a detail: "‹ Variedades" and no "+ Nueva venta"', async () => {
-    renderPage(VARIETY_ONE)
+    const { router } = renderPage(VARIETY_ONE)
 
-    expect(await screen.findByRole('link', { name: '‹ Variedades' })).toHaveAttribute('href', VARIETIES)
+    const back = await screen.findByRole('button', { name: '‹ Variedades' })
     expect(screen.queryByText(/Nueva venta/)).not.toBeInTheDocument()
     expect(screen.getAllByRole('navigation').length).toBeGreaterThan(0)
+    await userEvent.click(back)
+    await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES))
   })
 
   test('Stock y entradas carries this variety\'s last 3 entries and "Ver todas"', async () => {

@@ -15,6 +15,7 @@ import FlashProvider from '../../flash/FlashProvider'
 import { ARCHIVED_VARIETIES, VARIETIES, VARIETY, pathTo, relative } from '../../routes'
 import { LIMITS, SAMPLES } from '../../copy/limits'
 import { iconAndTextProblems, expectIconAndTextRule } from '../../test/iconAndTextRule'
+import Shell from '../../shell/Shell'
 import Variedades from '../Variedades'
 import ArchivedIndex from './ArchivedIndex'
 import ArchivedVarieties from './ArchivedVarieties'
@@ -86,11 +87,17 @@ function renderAt(path: string, overrides: Answers = {}) {
           </QueryClientProvider>
         ),
         children: [
-          { path: relative(VARIETIES), element: <Variedades /> },
-          { path: relative(ARCHIVED_VARIETIES), element: <ArchivedVarieties /> },
           {
-            path: relative(VARIETY),
-            element: <VarietyRoute render={(id) => <VarietyPage varietyId={id} />} />,
+            element: <Shell />,
+            children: [
+              { path: relative(VARIETIES), element: <Variedades />, handle: { screen: 'varieties' } },
+              { path: relative(ARCHIVED_VARIETIES), element: <ArchivedVarieties />, handle: { screen: 'varieties-archived' } },
+              {
+                path: relative(VARIETY),
+                element: <VarietyRoute render={(id) => <VarietyPage varietyId={id} />} />,
+                handle: { screen: 'variety' },
+              },
+            ],
           },
         ],
       },
@@ -142,7 +149,7 @@ describe('the Archivadas card', () => {
     expect(names).toEqual(['Alfa Vieja', 'Zeta Vieja'])
     expect(screen.getAllByText('Archivada')).toHaveLength(2)
     expect(screen.getAllByRole('button', { name: 'Restaurar' })).toHaveLength(2)
-    expect(screen.getByRole('link', { name: '‹ Variedades' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: '‹ Variedades' })).toBeTruthy()
     expect(screen.queryByText('+ Nueva venta')).toBeNull()
   })
 
@@ -177,7 +184,7 @@ describe("an archived variety's page", () => {
   test('is read-only: back to Archivadas, Archivada in words, and Restaurar the one action', async () => {
     renderAt(pathTo(VARIETY, { id: 4 }))
     expect(await screen.findByRole('heading', { name: 'Alfa Vieja' })).toBeTruthy()
-    expect(screen.getByRole('link', { name: '‹ Archivadas' }).getAttribute('href')).toBe(ARCHIVED_VARIETIES)
+    expect(screen.getByRole('button', { name: '‹ Archivadas' })).toBeTruthy()
     expect(screen.getByText('Archivada')).toBeTruthy()
     expect(screen.getByText('7 g', { exact: false })).toBeTruthy()
     for (const gone of [
@@ -192,7 +199,7 @@ describe("an archived variety's page", () => {
       expect(screen.queryByText(gone)).toBeNull()
     }
     expect(screen.queryByRole('button', { name: /Editar|Borrar/ })).toBeNull()
-    expect(screen.getAllByRole('button').map((button) => button.textContent)).toEqual(['Restaurar'])
+    expect(screen.getAllByRole('button').map((button) => button.textContent)).toEqual(['‹ Archivadas', 'Restaurar'])
   })
 
   test('restores in one tap and then shows the live variety', async () => {
@@ -211,7 +218,7 @@ describe("an archived variety's page", () => {
     await user.click(await screen.findByRole('button', { name: 'Restaurar' }))
     expect(await screen.findByText('Variedad restaurada')).toBeTruthy()
     expect(await screen.findByRole('button', { name: 'Archivar variedad' })).toBeTruthy()
-    expect(screen.getByRole('link', { name: '‹ Variedades' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: '‹ Variedades' })).toBeTruthy()
   })
 })
 
@@ -290,9 +297,8 @@ describe('on a computer (two panes)', () => {
   test('the left pane is the Archivadas card beside an archived variety, and the live list once it is restored', async () => {
     const user = userEvent.setup()
     renderComputer(pathTo(VARIETY, { id: 4 }))
-    // The card: its rows carry the "Archivada" mark and its back link is "‹ Variedades".
-    expect(await screen.findByRole('link', { name: '‹ Variedades' })).toBeTruthy()
-    expect(screen.getByRole('heading', { name: 'Archivadas' })).toBeTruthy()
+    // The card: its rows carry the "Archivada" mark (its back is the shell's, not the screen's).
+    expect(await screen.findByRole('heading', { name: 'Archivadas' })).toBeTruthy()
     expect(screen.getAllByText('Zeta Vieja')).toHaveLength(1)
     expect(screen.queryByText('Todas las entradas')).toBeNull()
 

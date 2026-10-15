@@ -9,6 +9,8 @@
  * slot is still its own, so a late cleanup never wipes the next record's label. `BackArrow`
  * uses an override only when its screen and param are the current leaf's.
  *
+ * An `undefined` override declares nothing (the record has not loaded, or is gone).
+ *
  * `screen` is typed `RecordLabelledScreen`: a call from an unmarked screen does not compile
  * (`useBackParent.types.test.ts`), so no runtime check stands in for it.
  */
@@ -36,17 +38,18 @@ export interface BackParentStore {
 
 export const BackParentContext = createContext<BackParentStore | undefined>(undefined)
 
-export function useBackParent(screen: RecordLabelledScreen, override: BackOverride): void {
+export function useBackParent(screen: RecordLabelledScreen, override: BackOverride | undefined): void {
   const store = useContext(BackParentContext)
   const param = useParams<{ id: string }>().id
   // The effect depends on the override's primitives, so a fresh object each render re-writes nothing.
-  const parent = 'parent' in override ? override.parent : undefined
-  const title = 'title' in override ? override.title : undefined
+  const declares = override !== undefined
+  const parent = override !== undefined && 'parent' in override ? override.parent : undefined
+  const title = override !== undefined && 'title' in override ? override.title : undefined
   const write = store?.write
   const clearIf = store?.clearIf
   useLayoutEffect(() => {
-    if (write === undefined || clearIf === undefined) return undefined
+    if (write === undefined || clearIf === undefined || !declares) return undefined
     write({ screen, param, override: parent === undefined ? { title: title ?? '' } : { parent } })
     return () => clearIf({ screen, param })
-  }, [write, clearIf, screen, param, parent, title])
+  }, [write, clearIf, declares, screen, param, parent, title])
 }

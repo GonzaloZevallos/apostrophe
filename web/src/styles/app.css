@@ -2465,13 +2465,6 @@ body {
   box-shadow: none;
 }
 
-.fila-entrada__volver,
-.fila-entrada__volver .boton--enlace {
-  align-self: flex-start;
-  text-decoration: none;
-  box-shadow: none;
-}
-
 /* The withdrawal detail's back keeps the 44 px target it had as a round button. */
 .retiro__volver .boton--enlace {
   display: inline-flex;
@@ -4247,18 +4240,6 @@ body {
   max-width: none;
 }
 
-/* Análisis's back keeps the 44 px chevron square it had. */
-.encabezado__fila .boton--enlace[aria-label='Volver'] {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--alto-tocable);
-  height: var(--alto-tocable);
-  margin-left: calc(-1 * var(--espacio-sm));
-  color: var(--tinta);
-  font-size: 20px;
-  box-shadow: none;
-}
 /* ===== end gh97-sales-home ===== */
 /* A host element that adds no box of its own: its children lay out as the parent's. */
 .sin-caja {
