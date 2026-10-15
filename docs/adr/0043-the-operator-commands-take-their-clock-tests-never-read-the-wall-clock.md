@@ -96,3 +96,24 @@ is no allowlist.
   `performance.now()`.
 - **No pinned e2e clock.** The e2e backend runs on the real clock by design, so a spec
   takes "today" from `GET /auth/me`, never from the browser.
+
+## Amendment (shifted-run): the one-off shifted-date verification
+
+1. **Forward only.** The gate's suites are run once under `faketime` at `+8d` and from a
+   start one minute before Argentina midnight (03:00 UTC), with time running, so pytest
+   (`-n auto`) and vitest each cross the midnight while running. The clock never moves
+   backward.
+2. **A one-off, never a gate step.** The result is recorded in GH-211's evidence. The shifted
+   run is never added to `.agentic/stack.yaml`, `.github/workflows/ci.yml` or
+   `affected_fallback`. `faketime` is a dev tool on the machine that runs it, not a product
+   dependency.
+3. **Canaries decide whether a result counts.** Each kind of process is checked under the
+   exact wrapper its suite uses: `python` (`datetime.now(UTC)`), `node` (`new Date()`),
+   `scripts/invite-business.sh` ("Valid once, until …" equals shifted now + 7 days), the
+   e2e backend's `GET /auth/me` `today`, and `Date.now()` in the browser. A suite whose
+   canary shows the real date is void, never reported as a pass.
+4. **An unshifted browser covers less.** If the browser has to stay unshifted, that run
+   covers only "today comes from `me.today`", not cookies or session expiry, which
+   `tests/accounts` cover under the pytest shift.
+
+Evidence: GH-211's task evidence (the close-out document).
