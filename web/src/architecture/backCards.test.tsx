@@ -15,7 +15,7 @@ import { afterEach, expect, test, vi } from 'vitest'
 import Boton from '../components/Boton'
 import { SheetRouterProvider } from '../components/useSheetStack'
 import { router } from '../router'
-import { SALE, SCREENS, pathTo } from '../routes'
+import { SALE as SALE_PATH, SCREENS, pathTo, type ScreenId } from '../routes'
 import { HISTORY, SETTINGS_ON, VARIETY_ROW, jsonResponse } from '../screens/varieties/renderVarieties'
 import Shell from '../shell/Shell'
 import { CARDS_EXEMPT } from './backExempt'
@@ -26,7 +26,52 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-/** The API faked at `fetch`: the session, and variety 1 with its prices; anything else is not found. */
+const SALE = {
+  id: 1,
+  date: '2026-10-01',
+  customer: null,
+  shipping_charged: 0,
+  note: null,
+  payment: 'cash',
+  total: 11000,
+  still_owing: false,
+  total_grams: 1,
+  lines: [
+    {
+      variety_id: 1,
+      variety_name: '24K Gold',
+      grams: 1,
+      pricing_rule: 'list',
+      price_per_gram: 11000,
+      line_total: 11000,
+      cost: { costed: 5000, pending_grams: 0 },
+    },
+  ],
+}
+
+const CUSTOMER = {
+  id: 1,
+  name: 'Ana Pérez',
+  phone: null,
+  channel: null,
+  vip: false,
+  balance: 0,
+  owing_since: null,
+  standing: 'settled',
+}
+
+const ACCOUNT = { balance: 0, owing_since: null, standing: 'settled', rows: [] }
+
+/** What only a card's loaded screen shows, awaited before its backs are counted, so a card
+ * left in its not-found state (`GoneScreen`) cannot pass for the real one. */
+const LOADED: Partial<Record<ScreenId, string>> = {
+  sale: 'Líneas',
+  customer: 'Ana Pérez',
+  settings: 'Configuración',
+}
+
+/** The API faked at `fetch`: the session, a sale, a customer and variety 1 with its prices;
+ * anything else is not found. */
 function fakeApi(): void {
   vi.stubGlobal(
     'fetch',
@@ -37,6 +82,9 @@ function fakeApi(): void {
         'GET /pricing-settings': SETTINGS_ON,
         'GET /varieties/1': VARIETY_ROW,
         'GET /varieties/1/prices': HISTORY,
+        'GET /sales/1': SALE,
+        'GET /customers/1': CUSTOMER,
+        'GET /customers/1/account': ACCOUNT,
       }
       return Promise.resolve(key in answers ? jsonResponse(200, answers[key]) : jsonResponse(404, { detail: 'No existe' }))
     }),
@@ -57,9 +105,14 @@ test('the exemption list names only cards, each with a reason', () => {
   }
 })
 
+test('every card that is rendered says what its loaded screen shows', () => {
+  const rendered = cards.filter((card) => !exempt.has(card.id)).map((card) => card.id)
+  expect(Object.keys(LOADED).sort()).toEqual([...rendered].sort())
+})
+
 test.each(cards.filter((card) => !exempt.has(card.id)).map((card) => [card.id, card.path] as const))(
   '%s: exactly one "‹ <parent>" and no "Volver"',
-  async (_id, path) => {
+  async (id, path) => {
     fakeApi()
     const memory = createMemoryRouter(router.routes, { initialEntries: [pathTo(path, { id: 1 })] })
     render(
@@ -70,6 +123,7 @@ test.each(cards.filter((card) => !exempt.has(card.id)).map((card) => [card.id, c
       </QueryClientProvider>,
     )
 
+    expect(await screen.findByText(LOADED[id] ?? '')).toBeInTheDocument()
     await screen.findAllByRole('button', { name: /^‹ / })
 
     expect(backs()).toHaveLength(1)
@@ -88,7 +142,7 @@ test('the count catches a card that draws its own back next to the shell\'s', as
             element: <Shell />,
             children: [
               {
-                path: SALE,
+                path: SALE_PATH,
                 handle: { screen: 'sale' },
                 element: (
                   <Boton variant="back" onClick={() => undefined}>
@@ -101,7 +155,7 @@ test('the count catches a card that draws its own back next to the shell\'s', as
         ],
       },
     ],
-    { initialEntries: [pathTo(SALE, { id: 1 })] },
+    { initialEntries: [pathTo(SALE_PATH, { id: 1 })] },
   )
   render(<RouterProvider router={memory} />)
 
