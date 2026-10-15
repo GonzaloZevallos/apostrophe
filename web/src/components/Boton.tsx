@@ -14,6 +14,10 @@
  * - `row`: a full-width, left-aligned, stacked-content button for a tappable list row,
  *   reset only through its own `boton--fila` class.
  *
+ * - `notice`: a tappable notice drawn as its designed card (`.boton-aviso`), named by its
+ *   own visible text. It accepts no `icon`, no `ariaLabel` and no `textOnly`; a chevron
+ *   inside its children is a decorative mark, not an icon of the control.
+ *
  * No screen writes its own button base styles: every variant is one of `app.css`'s
  * `.boton*` classes, never an inline style or a one-off class. Variant names are
  * English (CODING_STANDARDS §10); only the rendered word is Spanish.
@@ -73,6 +77,17 @@ export interface BotonRow extends BotonWithText {
   type?: 'button'
 }
 
+/** A tappable notice: a card that opens what it points to. Its sentence is its name. */
+export interface BotonNotice extends BotonCommon {
+  variant: 'notice'
+  children: ReactNode
+  icon?: undefined
+  ariaLabel?: undefined
+  textOnly?: undefined
+  action?: undefined
+  type?: 'button'
+}
+
 export interface BotonIconOnly extends BotonCommon {
   variant: 'icon'
   action: IconOnlyAction
@@ -85,7 +100,7 @@ export interface BotonIconOnly extends BotonCommon {
 }
 
 /** Every shape but the submit, which a link cannot be. */
-export type BotonVisualProps = BotonIconText | BotonTextKind | BotonRow | BotonIconOnly
+export type BotonVisualProps = BotonIconText | BotonTextKind | BotonRow | BotonNotice | BotonIconOnly
 
 export type BotonProps = BotonVisualProps | BotonSubmit
 

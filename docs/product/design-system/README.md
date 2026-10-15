@@ -143,6 +143,14 @@ esta regla, nunca una pantalla suelta.
   Efectivo · Transferencia · Debiendo, Claro · Oscuro…) y Deshacer.
 - **Ícono + texto**: todo lo demás. El ícono al lado de una palabra es decorativo
   (`aria-hidden`), así que el nombre accesible sigue siendo la palabra.
+- **Aviso tocable**: un aviso que el vendedor toca para abrir lo que señala, como
+  "Seguí con la configuración" en Inicio. No es una fila de acción ni un control de
+  ninguna de las dos listas, y no las cambia.
+  - Conserva su tarjeta tal como está diseñada: su fondo, sus esquinas redondeadas y
+    su propio relleno, sin el espaciado ni el divisor de una fila.
+  - Su frase lleva el significado, y su nombre accesible es su texto visible.
+  - Su flecha es la marca decorativa de que abre algo; no lleva otro ícono, y el ícono
+    de atención sólo si la lista de avisos de la regla lo nombra.
 - La barra, la barra lateral, Más y la lista de Configuración llevan siempre ícono +
   texto, y dos entradas de un mismo menú nunca comparten ícono.
 

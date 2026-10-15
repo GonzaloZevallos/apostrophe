@@ -44,3 +44,15 @@ test('a text link has no icon and the underlined class', () => {
   expect(link.className).toBe('boton--enlace')
   expect(link.querySelector('svg')).toBeNull()
 })
+
+test('a notice link is the card class, named by its visible text, with no aria-label', () => {
+  renderLink(
+    <BotonLink to={HOME} variant="notice">
+      Seguí con la configuración
+    </BotonLink>,
+  )
+  const link = screen.getByRole('link', { name: 'Seguí con la configuración' })
+  expect(link).toHaveAttribute('href', HOME)
+  expect(link.className).toBe('boton-aviso')
+  expect(link.getAttribute('aria-label')).toBeNull()
+})

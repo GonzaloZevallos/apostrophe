@@ -30,13 +30,14 @@ its time.
 
 | Test file | Was | Now |
 | --- | --- | --- |
-| `tests/business_removal/adapters/seed.py` | `invite(engine, datetime.now(UTC))` | one `CLOCK = MovableClock(NOW)` for `create_app(clock=)` and `invite(engine, CLOCK())` |
-| `tests/business_removal/adapters/test_cli.py` (the GH-142 finding at line 182) | `invite(engine, datetime.now(UTC))`, `business_day(system_clock())`, `main(...)` on the real clock | the same `CLOCK`, `business_day(CLOCK())`, `main(..., clock=CLOCK)` |
+| `tests/business_removal/adapters/seed.py` | `invite(engine, datetime.now(UTC))` | master's GH-212 shape (`seed(db_path, clock)`, `build_app`, `accept_invitation`, `PINNED`): one `MovableClock` per test for `create_app(clock=)` and `invite(engine, clock())` |
+| `tests/business_removal/adapters/test_cli.py` (the GH-142 finding at line 182) | `invite(engine, datetime.now(UTC))`, `business_day(system_clock())`, `main(...)` on the real clock | the test's own `clock`, `business_day(...)` on it, `main(..., clock=clock)` (GH-212's `pin_cli_clock` monkeypatch of `system_clock` is gone: `main` binds its default at definition, so only the keyword reaches it) |
 | `tests/business_removal/adapters/test_sql_schema_rows.py` | three `datetime.now(UTC)` ("the app runs on the real clock") | one `clock` fixture shared by the app, the token fixtures and `_seed_join_invitations` |
-| `tests/business_removal/adapters/test_cli_failed_write.py`, `tests/pricing_settings/test_removal.py` | `main(...)` on the real clock | `main(..., clock=seed.CLOCK)` |
+| `tests/business_removal/adapters/test_cli_failed_write.py`, `tests/pricing_settings/test_removal.py` | `main(...)` on the real clock | `main(..., clock=clock)` with a `MovableClock(PINNED)` |
 | `tests/accounts/test_cli.py`, `tests/accounts/test_reset_password_cli.py` | `main(...)` on the real clock | one `CLOCK` for every `main` and `create_app`; two new seam tests assert the printed expiry is exactly the injected instant plus 7 days (invitation) and plus 24 hours (reset link) |
+| `tests/spreadsheet_import/test_cli.py` | no test drove the spreadsheet import `main(...)`; its `clock` keyword was untested | `test_main_takes_its_business_day_from_the_clock_it_is_given`: `main(..., clock=)` on a file-backed database, "Writable: yes" on the app's clock and "Writable: no" on a clock set the day before the sheet's dates |
 | `tests/accounts/test_cookie_secure.py` | (one of the four e73ecf4 files) | already on a clock it controls; needed no edit |
-| `tests/design/test_sample_app.py`, `tests/pinned_catalog/test_ticker.py`, `tests/pricing_settings/test_removal.py`, `tests/test_business_isolation.py`, `tests/test_gated_routes.py`, `tests/test_refusal_codes.py`, `tests/test_serving.py`, `tests/test_static_spa.py` | `create_app(...)` with no `clock=`, so the app fell back to `system_clock` | `clock=MovableClock(NOW)` (or the shared fixture) passed by name; `CREATE_APP_REQUIRED_KEYWORDS` now includes `clock`, so an omission fails the gate |
+| `tests/design/test_sample_app.py`, `tests/pinned_catalog/test_ticker.py`, `tests/test_business_isolation.py`, `tests/test_gated_routes.py`, `tests/test_refusal_codes.py`, `tests/test_serving.py`, `tests/test_static_spa.py` | `create_app(...)` with no `clock=`, so the app fell back to `system_clock` | `clock=MovableClock(NOW)` (or the shared fixture) passed by name; `CREATE_APP_REQUIRED_KEYWORDS` now includes `clock`, so an omission fails the gate |
 | `tests/e2e_app.py` | `create_app(...)` on the default clock | `clock=system_clock` by name: **the one ALLOWED entry** (see section 5) |
 
 Tests that already set their own time (`MovableClock(NOW)` through the `client` fixtures in
@@ -208,9 +209,6 @@ outside the gate.
 - `web/e2e/varietiesAutoSelect.spec.ts:19` is not covered under a shifted browser (section 3).
   Covering it needs the browser launched without the preload: a new subtask.
 - The shifted `e73ecf4^` proof is weak by construction (section 3).
-- `app/spreadsheet_import/adapters/cli.py:175` gained the `clock` keyword but no test drives
-  `main(..., clock=...)` (open Tech Lead finding, `cli-clock`); the import use case itself is
-  tested with `run(..., clock=...)`.
 - `tests/design/test_sample_app.py`: the app runs on `MovableClock(NOW)` (2026-10-02), but the
   `sample_app` helper subprocess still issues its links on the real clock. The verdict holds for
   any machine date from `NOW` minus 7 days on, so it is safe going forward (the only direction

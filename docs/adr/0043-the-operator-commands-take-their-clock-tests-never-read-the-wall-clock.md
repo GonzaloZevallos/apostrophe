@@ -73,7 +73,7 @@ is no allowlist.
 - **What it flags.** `Date.now(`, a bare `new Date()` (no arguments) and `Date(` called
   without `new`. `new Date('2026-01-01')`, `Date.UTC(...)` and `performance.now()` are not
   reads of the real clock and pass; `performance.now()` is monotonic and measures no date,
-  so an e2e deadline uses it.
+  so a deadline built in an e2e helper would use it.
 - **The one exemption.** A whole file is exempt only when it pins a literal fake instant:
   `vi.useFakeTimers({ now: <literal> })` or `vi.setSystemTime(<literal>)`, the literal
   being a number, a string or `new Date(<number or string>)`. A bare `useFakeTimers()`, or

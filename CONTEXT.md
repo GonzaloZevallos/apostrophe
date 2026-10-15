@@ -444,3 +444,7 @@ _Avoid_: warning icon, alert icon, badge, error icon
 **Gate**:
 The checks every change must pass before it merges: pytest, vitest and e2e. A red gate must mean a product regression, never the calendar moving past an expiry or a day boundary. In the app: no word of its own.
 _Avoid_: pipeline, build, test run
+
+**Tappable notice**:
+A notice the seller taps to open what it points to, such as Inicio's "Seguí con la configuración". It keeps its designed card (no row spacing or divider), its sentence carries the meaning and is its accessible name, and its chevron is decorative. It is neither an action row nor a control of the icon and text rule's closed lists.
+_Avoid_: banner, card button, row, callout, alert

@@ -2,10 +2,8 @@
  * The closing guards over the real tree (GH-97, ADR-0037): no `<svg>` outside `Icono`, no raw
  * action button, no `.boton*` class outside `Boton`/`BotonLink`, no icon name nobody uses.
  *
- * `OLD_SHAPES` lists the only files that still draw a raw action button or a `.boton*` class
- * themselves: the Onboarding and the Precios group, which reached master while GH-97 was open
- * and are brought under the rule by their own issue. The list only shrinks: no other file may
- * be added to it.
+ * `OLD_SHAPES` is empty and stays empty: every action in the Onboarding and the Precios group is
+ * drawn through `Boton`, `BotonLink` or `StepSubmit` (GH-164). No file may be added to it.
  *
  * `ACTION_LINKS_LEFT` lists the only link that still draws an action itself, by identity (its
  * file and its `to=`), so a second one in the same file is a new entry and fails.
@@ -28,17 +26,7 @@ const modules = import.meta.glob(['/src/**/*.{ts,tsx}'], { query: '?raw', import
 >
 const files = Object.entries(modules).map(([path, content]) => ({ path, content }))
 
-const OLD_SHAPES: Record<string, { buttons: number; classes: number }> = {
-  '/src/screens/onboarding/BotStep.tsx': { buttons: 1, classes: 1 },
-  '/src/screens/onboarding/CatalogMessageStep.tsx': { buttons: 1, classes: 2 },
-  '/src/screens/onboarding/CategoriesStep.tsx': { buttons: 1, classes: 1 },
-  '/src/screens/onboarding/Listo.tsx': { buttons: 3, classes: 3 },
-  '/src/screens/onboarding/OnboardingNotice.tsx': { buttons: 1, classes: 0 },
-  '/src/screens/onboarding/OnboardingStep.tsx': { buttons: 2, classes: 0 },
-  '/src/screens/onboarding/PartnerStep.tsx': { buttons: 1, classes: 1 },
-  '/src/screens/onboarding/StockStep.tsx': { buttons: 2, classes: 2 },
-  '/src/screens/settings/PricingGroup.tsx': { buttons: 1, classes: 1 },
-}
+const OLD_SHAPES: Record<string, { buttons: number; classes: number }> = {}
 
 /**
  * The links that hold an icon and a word outside `BotonLink`. It only shrinks: no entry may be
