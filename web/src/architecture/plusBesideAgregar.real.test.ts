@@ -3,7 +3,7 @@
 import { expect, test } from 'vitest'
 import { findPlusBesideAgregar } from './plusBesideAgregar'
 
-const modules = import.meta.glob(['/src/**/*.tsx'], {
+const modules = import.meta.glob(['/src/**/*.{ts,tsx}'], {
   query: '?raw',
   import: 'default',
   eager: true,
