@@ -501,7 +501,7 @@ const NOT_BUILT = [
 
 /** Screens compare.sh reaches by steps from another route: "Listo" opens only from the write
  * that ended the Onboarding, never by loading its own path (onboarding.md). */
-const REACHED_BY_STEPS = ["OnboardingListo"];
+const REACHED_BY_STEPS = ["OnboardingListo", "OnboardingVariedad", "OnboardingVariedadOscuro"];
 
 describe("screens.json against the English routes", () => {
   test("route is path for every screen, but the ones not built", () => {

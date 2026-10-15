@@ -30,6 +30,13 @@ test('what the rule allows passes: every kind, the answers, an icon-only control
       <Boton variant="link">Ver todas</Boton>
       <Boton variant="undo">Deshacer</Boton>
       <BackButton title="Ventas" onClick={() => {}} />
+      <Boton variant="notice">
+        Seguí con la configuración
+        <Icono nombre="atras" />
+      </Boton>
+      <BotonLink to="/n" variant="notice">
+        Falta el stock
+      </BotonLink>
       <Boton variant="icon" action="delete" ariaLabel="Borrar venta" />
       <BotonLink to="/x" variant="icon" action="search" ariaLabel="Buscar" />
       <ConfirmDialog
@@ -109,4 +116,13 @@ test('a data-copy text over its limit, measured with the samples, is rejected', 
     expect.stringContaining('over the 20 of "help"'),
   ])
   expect(problemsOf(node, { limits: { help: 40 }, samples: { gramos: '1.000.000,00' } })).toEqual([])
+})
+
+test('a notice whose accessible name differs from its visible text is rejected', () => {
+  const problems = problemsOf(
+    <button type="button" className="boton-aviso" aria-label="Otra cosa">
+      Seguí con la configuración
+    </button>,
+  )
+  expect(problems).toEqual([expect.stringContaining('notice must be named by its visible text')])
 })

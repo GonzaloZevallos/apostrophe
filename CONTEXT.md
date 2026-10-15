@@ -440,3 +440,7 @@ _Avoid_: style guide, UI guidelines, icon policy
 **Attention icon**:
 The one icon, the same everywhere, set next to the sentence of a notice or status that asks the seller to act or says something failed; the sentence still carries the state. Informational lines never carry it. In the app: no word of its own.
 _Avoid_: warning icon, alert icon, badge, error icon
+
+**Tappable notice**:
+A notice the seller taps to open what it points to, such as Inicio's "Seguí con la configuración". It keeps its designed card (no row spacing or divider), its sentence carries the meaning and is its accessible name, and its chevron is decorative. It is neither an action row nor a control of the icon and text rule's closed lists.
+_Avoid_: banner, card button, row, callout, alert

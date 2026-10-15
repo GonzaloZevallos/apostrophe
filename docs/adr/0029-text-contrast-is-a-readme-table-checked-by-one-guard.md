@@ -62,3 +62,9 @@ This amendment supersedes the parenthetical of the "Three kinds of token" bullet
 `test_only_the_bottom_bar_label_skips_its_paired_background` in
 `tests/test_design_contrast.py` pins that single exemption on purpose: a new one changes
 the README row, that test and this ADR in one diff.
+
+(GH-113, 2026-10-14) `.venta-guardada__deshacer` styled no element since GH-97 (`Boton`'s
+`undo` kind draws `boton--enlace`); the class is removed. Deshacer is
+`.venta-guardada .boton--enlace`, which declares `--boton` and `--boton-texto` in one
+rule, so the table's existing `--boton-texto` row covers it at rest. Its `opacity` and its
+`:active` state are outside this check; `web/e2e/pressed.spec.ts` covers both for Deshacer.

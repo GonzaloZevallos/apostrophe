@@ -35,6 +35,7 @@ import {
   SALES,
 } from '../../routes'
 import { useBackOr } from '../../components/useBackOr'
+import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03' }
 const ORDER: StepSlug[] = ['variety', 'stock', 'header_footer', 'bot', 'partner', 'categories']
@@ -54,6 +55,7 @@ function answer(
     varieties_count: 2,
     stock_entries_count: 2,
     price_target: null,
+    priced_target: null,
     stock_target: null,
     ...overrides,
   }
@@ -210,8 +212,10 @@ test('"Saltar el resto" is hidden until both required steps are done', async () 
 
 function renderHidden(path: string) {
   const router = renderAt(path)
-  return { unmount: () => router.dispose() }
+  return { container: document.body, unmount: () => router.dispose() }
 }
+
+const renderOptional = () => renderHidden(ONBOARDING_BOT)
 
 test('with both required steps done "Saltar el resto" sends skip-rest and "Listo" opens only after over: true', async () => {
   stubProgress(REQUIRED_DONE)
@@ -297,15 +301,6 @@ test('"Cerrar" on an untouched step leaves at once to Inicio and sends nothing',
   expect(calls.filter((call) => call.startsWith('POST'))).toEqual([])
 })
 
-test('"Atrás" opens the step before', async () => {
-  stubProgress(REQUIRED_DONE)
-  renderAt(ONBOARDING_BOT)
-
-  await userEvent.click(await screen.findByRole('button', { name: 'Atrás' }))
-
-  expect(await screen.findByText('Paso 3 de 6')).toBeInTheDocument()
-})
-
 test('a body that saved hands its answer to the frame, which follows it', async () => {
   stubProgress(REQUIRED_DONE)
   function SavingBody({ onProgress }: StepBodyProps) {
@@ -361,4 +356,54 @@ test('the frame is a plain step: rendered alone it sends nothing', async () => {
 
   expect(await screen.findByText('Paso 5 de 6')).toBeInTheDocument()
   expect(calls).toEqual([])
+})
+
+test('"Cerrar" is the icon-only close and "Atrás" keeps its word', async () => {
+  stubProgress(REQUIRED_DONE)
+  renderAt(ONBOARDING_BOT)
+
+  const close = await screen.findByRole('button', { name: 'Cerrar' })
+  expect(close).toHaveClass('boton-icono')
+  expect(close).toHaveTextContent('')
+  const back = screen.getByRole('button', { name: 'Atrás' })
+  expect(back).not.toHaveClass('boton-icono')
+  expect(back).toHaveTextContent('Atrás')
+})
+
+test('"Atrás" asks first when something typed would be lost', async () => {
+  stubProgress(REQUIRED_DONE)
+  const original = STEP_BODIES.bot
+  STEP_BODIES.bot = function TypingBody({ onDirtyChange }: StepBodyProps) {
+    return <input aria-label="Algo" onChange={(event) => onDirtyChange(event.target.value !== '')} />
+  }
+  try {
+    renderAt(ONBOARDING_BOT)
+    await screen.findByText('Paso 4 de 6')
+    await userEvent.type(screen.getByLabelText('Algo'), 'x')
+    await userEvent.click(screen.getByRole('button', { name: 'Atrás' }))
+    expect(await screen.findByRole('alertdialog')).toBeInTheDocument()
+  } finally {
+    STEP_BODIES.bot = original
+  }
+})
+
+test('an optional step and "Listo" obey the icon and text rule', async () => {
+  stubProgress(REQUIRED_DONE)
+  const { container, unmount } = renderOptional()
+  await screen.findByText('Paso 4 de 6')
+  expect(screen.getByRole('button', { name: 'Saltar' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Saltar el resto' })).toBeInTheDocument()
+  expectIconAndTextRule(container)
+  unmount()
+})
+
+test('"Listo" obeys the icon and text rule and closes with the icon-only "Cerrar"', async () => {
+  stubProgress(answer(['done', 'done', 'done', 'skipped', 'skipped', 'done'], { over: true, resume: null }))
+  renderAt({ pathname: ONBOARDING_DONE, state: { listo: true } })
+  await screen.findByRole('heading', { name: 'Listo' })
+
+  expect(screen.getByRole('button', { name: 'Cerrar' })).toHaveClass('boton-icono')
+  expect(screen.getByRole('button', { name: 'Cargar mi primera venta' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Ir a Inicio' })).toBeInTheDocument()
+  expectIconAndTextRule(document.body)
 })

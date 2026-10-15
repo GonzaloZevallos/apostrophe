@@ -12,6 +12,7 @@ import { afterEach, expect, test, vi } from 'vitest'
 import { keys } from '../../api/keys'
 import type { PricingSettings } from '../../api/pricingSettings'
 import type { Me } from '../../api/me'
+import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import { inAppState } from '../../components/inAppState'
 import { SIN_CONEXION_TITULO } from '../../components/SinConexion'
 import { SETTINGS as SETTINGS_PATH, SETTINGS_PRICES } from '../../routes'
@@ -186,4 +187,14 @@ test('after saving, dirty is measured against what the server accepted, not the 
 
   await waitFor(() => expect(screen.getByText('Lista de grupos')).toBeInTheDocument())
   expect(screen.queryByText('¿Descartás los precios?')).not.toBeInTheDocument()
+})
+
+test('the group obeys the icon and text rule: "Guardá los precios" is a text-only submit and Cerrar is icon-only', async () => {
+  renderGroup(serving())
+
+  const save = await screen.findByRole('button', { name: 'Guardá los precios' })
+  expect(save).toHaveAttribute('type', 'submit')
+  expect(save.querySelector('svg')).toBeNull()
+  expect(screen.getByRole('button', { name: 'Cerrar' }).textContent).toBe('')
+  expectIconAndTextRule(document.body)
 })

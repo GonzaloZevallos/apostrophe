@@ -8,11 +8,10 @@ from fastapi.testclient import TestClient
 from sqlalchemy.engine import Engine
 
 from app.accounts.adapters.deps import SESSION_COOKIE
-from app.clock import system_clock
 from app.db import make_engine
 from app.main import create_app
 from app.settings import Settings
-from tests.conftest import PASSWORD, TEST_HASHER, invite
+from tests.conftest import NOW, PASSWORD, TEST_HASHER, MovableClock, invite
 from tests.fakes.telegram import FakeTelegram
 
 HTTP_SETTINGS = Settings(secret_key="k", database_url="sqlite://", public_url="http://example.com")
@@ -32,8 +31,7 @@ def _attributes(set_cookie_header: str) -> SimpleCookie:
 
 
 def _open_business(settings: Settings, engine: Engine, client: TestClient) -> None:
-    # The app under test runs on the real clock, so the invitation is issued on it too.
-    token = invite(engine, system_clock())
+    token = invite(engine, NOW)
     response = client.post(f"/invitations/{token}/accept", json=NEW_USER)
     assert response.status_code == 201, response.text
 
@@ -41,7 +39,12 @@ def _open_business(settings: Settings, engine: Engine, client: TestClient) -> No
 def _login_set_cookie(settings: Settings) -> str:
     engine = make_engine(settings.database_url)
     app = create_app(
-        settings, engine=engine, hasher=TEST_HASHER, telegram=FakeTelegram(), upkeep_ticker=False
+        settings,
+        engine=engine,
+        clock=MovableClock(NOW),
+        hasher=TEST_HASHER,
+        telegram=FakeTelegram(),
+        upkeep_ticker=False,
     )
     with TestClient(app) as client:
         _open_business(settings, engine, client)
@@ -60,7 +63,12 @@ def _login_set_cookie(settings: Settings) -> str:
 def _logout_set_cookie(settings: Settings) -> str:
     engine = make_engine(settings.database_url)
     app = create_app(
-        settings, engine=engine, hasher=TEST_HASHER, telegram=FakeTelegram(), upkeep_ticker=False
+        settings,
+        engine=engine,
+        clock=MovableClock(NOW),
+        hasher=TEST_HASHER,
+        telegram=FakeTelegram(),
+        upkeep_ticker=False,
     )
     with TestClient(app) as client:
         _open_business(settings, engine, client)

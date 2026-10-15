@@ -26,6 +26,7 @@ import panelFixture from '../api/fixtures/panel.json'
 import type { PanelAnswer } from '../api/panel'
 import type { Me } from '../api/me'
 import { LIMITS } from '../copy/limits'
+import { expectIconAndTextRule } from '../test/iconAndTextRule'
 import type { OnboardingProgress } from '../api/onboarding'
 import Inicio, { EMPTY_DETAIL, EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE } from './Inicio'
 
@@ -48,6 +49,7 @@ const NOT_OFFERED: OnboardingProgress = {
   varieties_count: 0,
   stock_entries_count: 0,
   price_target: null,
+  priced_target: null,
   stock_target: null,
 }
 
@@ -619,4 +621,33 @@ test('tapping the finish notice when advance answers over: false does not draw "
 
   expect(await screen.findByText('paso stock')).toBeInTheDocument()
   expect(screen.queryByText(/Listo listo/)).not.toBeInTheDocument()
+})
+
+test('the resume notice keeps its words and its card: boton-aviso, never a row, named by its visible text, with no icon of its own', async () => {
+  stubFetch(PANEL, [], { status: null }, MID_ONBOARDING)
+  renderInicio()
+
+  const notice = await screen.findByRole('link', { name: /Seguí con la configuración/ })
+  expect(notice).toHaveClass('boton-aviso')
+  expect(notice).not.toHaveClass('boton--fila')
+  expect(notice).not.toHaveAttribute('aria-label')
+  expect(notice.textContent).toContain('Seguí con la configuración')
+  expect(notice.textContent).toContain('1 de 6 pasos')
+  expect(notice.textContent).toContain('Falta: stock inicial')
+  // Only the title's decorative chevron: no attention icon, and it is hidden from the name.
+  expect(notice.querySelectorAll('svg')).toHaveLength(1)
+  expect(notice.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  expectIconAndTextRule(notice)
+})
+
+test('the finish notice is the same card as a button, named by its visible text', async () => {
+  stubFetch(PANEL, [{ current_price: { id: 1 } }], { status: null }, FINISH)
+  renderInicio()
+
+  const notice = await screen.findByRole('button', { name: /Seguí con la configuración/ })
+  expect(notice).toHaveClass('boton-aviso')
+  expect(notice).not.toHaveClass('boton--fila')
+  expect(notice).not.toHaveAttribute('aria-label')
+  expect(notice.querySelectorAll('svg')).toHaveLength(1)
+  expectIconAndTextRule(notice)
 })
