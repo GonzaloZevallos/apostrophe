@@ -6,6 +6,7 @@ from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
+from httpx2 import Response
 
 from tests.conftest import MovableClock
 from tests.contract_shapes import assert_matches_fixture
@@ -423,7 +424,7 @@ def _archive(client: TestClient, variety_id: int) -> None:
     assert response.status_code == 200, response.text
 
 
-def _put(client: TestClient, withdrawal_id: int, variety_id: int, **overrides: Any) -> Any:
+def _put(client: TestClient, withdrawal_id: int, variety_id: int, **overrides: Any) -> Response:
     return client.put(f"/stock/withdrawals/{withdrawal_id}", json=_body(variety_id, **overrides))
 
 
