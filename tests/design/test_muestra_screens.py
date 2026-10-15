@@ -109,6 +109,22 @@ def test_the_analisis_guard_still_requires_the_other_cost_lines_on_the_rows(scre
     assert any("'Consumo propio' is missing" in p for p in problems)
 
 
+@pytest.mark.parametrize("screen", ANALISIS_SCREENS)
+def test_the_analisis_guard_requires_faltante_in_the_since_the_first_record_block(
+    screen: str,
+) -> None:
+    page = (SCREENS / screen).read_text(encoding="utf-8")
+    label = "Faltante de stock</span>"
+    # The header draws it first; the last one is the since-the-first-record block's.
+    assert page.count(label) == 2
+    head, last = page.rsplit(label, 1)
+    broken = head + "Faltante</span>" + last
+
+    problems = check_screen("analisis", screen, broken, real_muestra(), ())
+
+    assert any("since 28/08 – 07/10: 'Faltante de stock' is missing" in p for p in problems)
+
+
 def test_the_analisis_denylist_keeps_the_figures_muestra_has() -> None:
     denylist = next(f for f in FAMILIES if f.name == "analisis").denylist
     body = (DESIGN / "muestra.md").read_text(encoding="utf-8")
