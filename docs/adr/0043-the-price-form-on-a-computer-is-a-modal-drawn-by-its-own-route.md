@@ -39,7 +39,9 @@ constant number of requests, each costing what the variety page already costs
 
 ## Where it differs from the design
 
-- The design dims a sidebar behind the scrim. The app has no sidebar on a form screen
-  (the form keeps its `form` kind), so none is drawn.
+- The design dims a sidebar behind the scrim. `Shell` draws its side rail for every form on
+  a computer and the scrim dims it, as the design does; `Shell` is unchanged. The rail is
+  outside both panes, so it is not made inert: `aria-modal` keeps it from assistive
+  technology, and a keyboard user can still Tab to it.
 - The design writes "Cerrar" as a word. The icon-and-text rule keeps the app's icon
   button named "Cerrar".

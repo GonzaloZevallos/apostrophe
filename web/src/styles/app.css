@@ -4635,3 +4635,9 @@ body {
     box-sizing: border-box;
   }
 }
+
+/* The dialog's title takes focus when the modal opens so a screen reader reads it; it is
+ * not a control, so it draws no ring. */
+.gasto-form__titulo:focus {
+  outline: none;
+}
