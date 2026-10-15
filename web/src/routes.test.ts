@@ -370,23 +370,49 @@ describe("a path resolves to its own screen", () => {
  * that ended the Onboarding, never by loading its own path (onboarding.md). */
 const REACHED_BY_STEPS = ["OnboardingListo", "OnboardingVariedad", "OnboardingVariedadOscuro"];
 
+interface RouteEntry {
+  readonly screen: string;
+  readonly route: string | null;
+  readonly path: string;
+  readonly steps?: unknown;
+}
+
+/** What is wrong with the routes of these entries: a null route, or a route that is not the path. */
+function routeProblems(entries: readonly RouteEntry[]): string[] {
+  return entries.flatMap((entry) => {
+    if (entry.route === null) return [`${entry.screen}: route is null, so it is not built`];
+    if (REACHED_BY_STEPS.includes(entry.screen))
+      return "steps" in entry ? [] : [`${entry.screen}: reached by steps, so it needs steps`];
+    return entry.route === entry.path
+      ? []
+      : [`${entry.screen}: route ${entry.route} is not path ${entry.path}`];
+  });
+}
+
 describe("screens.json against the English routes", () => {
-  test("route is path for every screen", () => {
-    const wrong = screensJson.screens.flatMap((entry) => {
-      if (REACHED_BY_STEPS.includes(entry.screen))
-        return "steps" in entry && entry.route !== null
-          ? []
-          : [`${entry.screen}: reached by steps, so it needs a route and steps`];
-      return entry.route === entry.path
-        ? []
-        : [`${entry.screen}: route ${entry.route} is not path ${entry.path}`];
-    });
-    expect(wrong).toEqual([]);
+  test("route is path for every screen, and none is null", () => {
+    expect(routeProblems(screensJson.screens)).toEqual([]);
+  });
+
+  test("the route check reports a null route, a route that is not the path, and a step-reached screen with no steps", () => {
     expect(
-      screensJson.screens
-        .filter((entry) => entry.route === null)
-        .map((entry) => entry.screen),
-    ).toEqual([]);
+      routeProblems([
+        { screen: "Inicio", route: "/", path: "/" },
+        { screen: "InicioPrimeraVez", route: null, path: "/" },
+        { screen: "Ventas", route: "/sales", path: "/sales/new" },
+        { screen: "OnboardingListo", route: "/onboarding/categories", path: "/onboarding/done" },
+        {
+          screen: "OnboardingVariedad",
+          route: "/onboarding/stock",
+          path: "/onboarding/variety",
+          steps: [],
+        },
+      ]),
+    ).toEqual([
+      "InicioPrimeraVez: route is null, so it is not built",
+      "Ventas: route /sales is not path /sales/new",
+      "OnboardingListo: reached by steps, so it needs steps",
+    ]);
   });
 
   test("every English path of the registry is a screens.json path, with no exemption, and the old Spanish ones are gone", () => {
