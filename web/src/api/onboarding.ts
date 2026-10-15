@@ -39,6 +39,7 @@ export interface OnboardingProgress {
   varieties_count: number
   stock_entries_count: number
   price_target: OnboardingTarget | null
+  priced_target: OnboardingTarget | null
   stock_target: OnboardingTarget | null
 }
 

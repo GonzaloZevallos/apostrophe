@@ -23,7 +23,9 @@ class VarietyFacts(Protocol):
     """Read-only, implemented in `varieties`' adapters."""
 
     def varieties(self) -> list[VarietyFact]:
-        """Every variety of the business: id, name and whether it has a price today."""
+        """The listed (unarchived) varieties of the business, in Variedades' name order:
+        id, name and whether it has a price today. The order is part of the contract: the
+        Onboarding's step-1 targets follow it and the domain never sorts by name."""
         ...
 
 

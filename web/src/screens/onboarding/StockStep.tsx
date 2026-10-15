@@ -8,10 +8,13 @@
 
 import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { useNavigate } from 'react-router'
+import { useLocation, useNavigate } from 'react-router'
 import { getOnboardingProgress, keepProgress, sendAdvance } from '../../api/onboarding'
+import Boton from '../../components/Boton'
+import { inAppState } from '../../components/inAppState'
 import { ONBOARDING_VARIETY } from '../../routes'
 import StockEntryForm from '../StockEntryForm'
+import { anotherVarietyState } from './anotherVariety'
 import { useOnboardingWrite } from './useOnboardingWrite'
 import type { StepBodyProps } from './stepBodies'
 
@@ -20,6 +23,7 @@ export const NO_COST_LINE = 'Si no cargás el costo, el lote cuesta $ 0.'
 export default function StockStep({ me, progress, onDirtyChange, onProgress }: StepBodyProps) {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
+  const location = useLocation()
   const [saved, setSaved] = useState(false)
   const [savedName, setSavedName] = useState<string | null>(null)
   const { run, sending, notice } = useOnboardingWrite(onProgress)
@@ -54,14 +58,14 @@ export default function StockStep({ me, progress, onDirtyChange, onProgress }: S
           <button type="button" className="boton" disabled={sending} onClick={() => void run(sendAdvance)}>
             Seguir
           </button>
-          <button
-            type="button"
-            className="boton boton--suave"
+          <Boton
+            variant="secondary"
+            icon="agregar"
             disabled={sending}
-            onClick={() => void navigate(ONBOARDING_VARIETY)}
+            onClick={() => void navigate(ONBOARDING_VARIETY, { state: inAppState(location, anotherVarietyState()) })}
           >
             Agregar otra variedad
-          </button>
+          </Boton>
         </div>
         {notice}
       </>

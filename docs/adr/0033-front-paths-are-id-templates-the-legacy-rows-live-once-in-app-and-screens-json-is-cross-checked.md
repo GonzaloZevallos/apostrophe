@@ -81,3 +81,25 @@ A front route under an API segment added without its template answers the API's 
 reload. The `screens.json` cross-check and the shell-or-API grid in `tests/test_serving.py`
 catch a template that is missing from `SHARED_FRONT_PATHS` on the server side; the front's
 registry check catches one that is missing from the front.
+
+## Amendment (GH-134): the fixture pins each old path and its target
+
+**Supersedes** the bullet "A hand-written fixture says what must have a row". A fixture that
+only listed old paths left a wrong target passing: the redirect test walked the app's own
+rows and compared each with the target the same file names.
+
+- `tests/fixtures/legacy_front_paths.json` pins every old path **and its target**, as
+  `rows` of `{old, now}` with `{id}` kept literal. It is written by hand from the 20-row
+  table of ADR-0024's amendment and is never generated from the app file.
+- Only tests read it, through `tests/legacy_pin.py` (standard library only, never `app.*`),
+  whose parser refuses a duplicate `old`, a missing or extra key, a non-string value and a
+  non-empty `removed`.
+- `tests/test_static_spa.py` compares it row for row with the app's rows, on the raw
+  templates before any id is substituted.
+- `tests/test_serving.py` compares the served `Location` against it.
+- `app/legacy_front_paths.json` stays the only list the server serves and the e2e spec
+  reads.
+
+Risk: one commit that edits a target in both files passes. Review, guided by this
+amendment, is the guard. A mistake made in both ADR-0024's table and the app file would be
+pinned wrongly.

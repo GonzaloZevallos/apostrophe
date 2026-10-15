@@ -181,6 +181,36 @@ test("a variety's list holds its withdrawals, told by reason word and minus sign
   expect(within(rows[1]!).getByText('Compra · 30 g')).toBeInTheDocument()
 })
 
+/**
+ * "Todas las entradas" renders what `GET /stock` answers and never reaches for the movements
+ * that carry withdrawals; that `GET /stock` itself holds no withdrawal is pinned by
+ * `test_the_business_wide_entries_list_holds_no_withdrawal`.
+ */
+test('"Todas las entradas" shows the entry and no withdrawal, and never asks for movements', async () => {
+  const recorded = entry(12, '2026-10-05', 3, 30, 150000)
+  fakeApi({
+    'GET /stock': () => jsonResponse(200, { total: 30, varieties: [], entries: [recorded] }),
+    'GET /stock/varieties/3/movements': () =>
+      jsonResponse(200, [
+        { kind: 'withdrawal', id: 9, date: '2026-10-06', reason: 'promotion', grams: 5.5 },
+        { ...recorded, kind: 'entry' },
+      ]),
+  })
+  renderAt(STOCK_PATH)
+
+  const rows = await screen.findAllByRole('listitem')
+  expect(within(rows[0]!).getByText('05/10 · 24K Gold')).toBeInTheDocument()
+  expect(within(rows[0]!).getByText('Compra · 30 g')).toBeInTheDocument()
+  expect(rows).toHaveLength(1)
+
+  const asked = vi.mocked(fetch).mock.calls.map(([url]) => String(url))
+  expect(asked.filter((url) => url.includes('/movements'))).toEqual([])
+
+  const list = screen.getByRole('list')
+  expect(within(list).queryByText(/Promoción|Consumo propio/)).toBeNull()
+  expect(within(list).queryByText(/−/)).toBeNull()
+})
+
 /** Opens a list the way the seller does, from Variedades by a link, so the entry carries the in-app state. */
 async function openFromVariedades(path: string) {
   fakeApi()

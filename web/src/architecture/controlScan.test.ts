@@ -68,25 +68,6 @@ export default function A({ v }: { v: string }) {
   expect(result.controls[0]?.classes).toEqual(['boton', 'boton--suave'])
 })
 
-test('a constant another file exports is read where it is declared; one nobody exports is an error', () => {
-  const user = `import { PLACEMENT, MISSING } from './clases'
-export default function A() {
-  return (
-    <>
-      <button className={PLACEMENT}>x</button>
-      <button className={MISSING}>y</button>
-    </>
-  )
-}`
-  const result = scanControls([
-    { path: 'src/clases.ts', source: "export const PLACEMENT = 'boton-nueva-venta'" },
-    { path: 'src/User.tsx', source: user },
-  ])
-  expect(result.controls[0]?.classes).toEqual(['boton-nueva-venta'])
-  expect(result.errors).toHaveLength(1)
-  expect(result.errors[0]).toMatch(/^src\/User\.tsx:6 className expression cannot be read: MISSING/)
-})
-
 test('a helper function of the same file, ignoring the literals it compares with', () => {
   const result = scan(`function railClassName(group: string, active: boolean): string {
   const base = group === 'more' ? 'item item--secundario' : 'item'
@@ -150,63 +131,6 @@ export default function Use() {
   expect(result.controls).toEqual([
     { file: 'src/Use.tsx', line: 3, tag: 'Chip', classes: ['chip', 'chip--activo'] },
   ])
-})
-
-const VISUAL = {
-  path: 'src/visual.tsx',
-  source: `const CLASS = { primary: 'boton', secondary: 'boton boton--suave', link: 'boton--enlace' } as const
-export function visual(props: { variant?: keyof typeof CLASS }) {
-  return { className: CLASS[props.variant ?? 'primary'] }
-}`,
-}
-const WRAPPER = {
-  path: 'src/Wrap.tsx',
-  source: `import { visual } from './visual'
-export default function Wrap(props: { variant?: string }) {
-  const { className } = visual(props)
-  return <button type="button" className={className}>x</button>
-}`,
-}
-
-test('a wrapper that draws from a visual map: a literal variant, the default and an expression', () => {
-  const result = scanControls([
-    VISUAL,
-    WRAPPER,
-    {
-      path: 'src/Use.tsx',
-      source: `export default function Use({ v }: { v: string }) {
-  return (
-    <>
-      <Wrap variant="secondary" />
-      <Wrap variant={'link'} />
-      <Wrap />
-      <Wrap variant={v} />
-    </>
-  )
-}`,
-    },
-  ])
-  expect(result.errors).toEqual([])
-  expect(result.controls.map((control) => [control.line, control.classes])).toEqual([
-    [4, ['boton', 'boton--suave']],
-    [5, ['boton--enlace']],
-    [6, ['boton']],
-    [7, ['boton', 'boton--suave', 'boton--enlace']],
-  ])
-})
-
-test('a wrapper call site with a variant the map does not have is an error with file:line', () => {
-  const result = scanControls([
-    VISUAL,
-    WRAPPER,
-    {
-      path: 'src/Use.tsx',
-      source: `export default function Use() {
-  return <Wrap variant="nope" />
-}`,
-    },
-  ])
-  expect(result.errors).toEqual(['src/Use.tsx:2 variant "nope" is not in the wrapper\'s class map'])
 })
 
 test('a wrapper that spreads its props is a wrapper too', () => {
@@ -289,7 +213,6 @@ test('the real sources scan with no errors and find the controls the issue names
   const classes = new Set(result.controls.flatMap((control) => control.classes))
   for (const name of [
     'ajustes__item',
-    'boton--fila',
     'ajustes-tema__opcion',
     'ajustes-tema__opcion--activa',
     'riel-lateral__negocio',
@@ -297,4 +220,66 @@ test('the real sources scan with no errors and find the controls the issue names
   ]) {
     expect(classes.has(name), name).toBe(true)
   }
+})
+
+test('a className constant imported from another file is read there, and an unreadable one is an error', () => {
+  const files = [
+    { path: 'src/clases.tsx', source: "export const CLASE_UNA = 'fija fija--grande'\nexport const CLASE_DOS = cond ? 'a' : 'b'" },
+    {
+      path: 'src/shell/Uso.tsx',
+      source: `import { CLASE_UNA } from '../clases'
+export default function Uso() {
+  return <button className={CLASE_UNA}>x</button>
+}`,
+    },
+  ]
+  const found = scanControls(files)
+  expect(found.errors).toEqual([])
+  expect(found.controls.map((control) => control.classes)).toEqual([['fija', 'fija--grande']])
+
+  const missing = scanControls([
+    files[1] ?? { path: '', source: '' },
+  ])
+  expect(missing.errors).toEqual(['src/shell/Uso.tsx:3 className expression cannot be read: CLASE_UNA'])
+
+  const notImported = scanControls([
+    files[0] ?? { path: '', source: '' },
+    { path: 'src/shell/Otro.tsx', source: "export default function Otro() {\n  return <button className={CLASE_UNA}>x</button>\n}" },
+  ])
+  expect(notImported.errors).toEqual(['src/shell/Otro.tsx:2 className expression cannot be read: CLASE_UNA'])
+})
+
+const VISUAL = [
+  {
+    path: 'src/components/botonVisual.tsx',
+    source: "const CLASS = {\n  primary: 'boton',\n  secondary: 'boton boton--suave',\n  link: 'boton--enlace',\n} as const",
+  },
+  {
+    path: 'src/components/Boton.tsx',
+    source: 'export default function Boton(props: object) {\n  const { className } = botonVisual(props)\n  return <button className={className} />\n}',
+  },
+]
+
+function useBoton(markup: string): ReturnType<typeof scanControls> {
+  return scanControls([
+    ...VISUAL,
+    { path: 'src/Pantalla.tsx', source: `export default function Pantalla() {\n  return ${markup}\n}` },
+  ])
+}
+
+test('a Boton call site draws the classes of its variant, primary when it names none', () => {
+  const found = useBoton('<div><Boton>a</Boton><Boton variant="secondary">b</Boton><Boton variant={x ? \'link\' : \'primary\'}>c</Boton></div>')
+  expect(found.errors).toEqual([])
+  expect(found.controls.map((control) => control.classes)).toEqual([
+    ['boton'],
+    ['boton', 'boton--suave'],
+    ['boton--enlace', 'boton'],
+  ])
+})
+
+test('a Boton variant the table does not have, or one that cannot be read, is an error', () => {
+  expect(useBoton('<Boton variant="inventada">a</Boton>').errors).toEqual([
+    'src/Pantalla.tsx:2 variant "inventada" is not in botonVisual\'s table',
+  ])
+  expect(useBoton('<Boton variant={elegida}>a</Boton>').errors).toEqual(['src/Pantalla.tsx:2 variant cannot be read'])
 })

@@ -21,9 +21,8 @@ const NOTICE = 'Seguí con la configuración'
 async function priceAVariety(page: import('@playwright/test').Page, name: string): Promise<void> {
   await expect(page.getByRole('heading', { name: 'Cargá tu primera variedad' })).toBeVisible()
   await page.getByLabel(/^Nombre/).fill(name)
-  await page.getByRole('button', { name: 'Agregá la variedad' }).click()
   await page.getByLabel(/^Precio de lista/).fill('9000')
-  await page.getByRole('button', { name: 'Guardá el precio' }).click()
+  await page.getByRole('button', { name: 'Guardá la variedad' }).click()
 }
 
 test('a new business goes from the invitation to Nueva venta from "Listo", with no notice left', async ({

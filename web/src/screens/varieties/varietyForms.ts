@@ -7,6 +7,8 @@
 
 import { useCallback } from 'react'
 import { useNavigate } from 'react-router'
+import { NAME_ARCHIVED_MESSAGE, type RefusalCode } from '../../api/refusals'
+import { NAME_INVALID_MESSAGE, NAME_TAKEN_MESSAGE } from '../Variedades'
 
 export type VarietyForm = 'rename' | 'threshold' | 'catalog'
 
@@ -23,4 +25,11 @@ export function readForm(state: unknown): VarietyForm | null {
 export function useOpenForm(): (form: VarietyForm) => void {
   const navigate = useNavigate()
   return useCallback((form) => void navigate('.', { state: { form } }), [navigate])
+}
+
+/** The messages of the refusals of a variety's name on save (`POST /varieties`). */
+export const SAVE_OVERRIDES: Partial<Record<RefusalCode, string>> = {
+  'variety.name_taken': NAME_TAKEN_MESSAGE,
+  'variety.name_archived': NAME_ARCHIVED_MESSAGE,
+  'variety.name_invalid': NAME_INVALID_MESSAGE,
 }

@@ -22,6 +22,7 @@ import {
   SETTINGS,
   SETTINGS_ACCOUNT,
   SETTINGS_APPEARANCE,
+  SETTINGS_PRICES,
   VARIETIES,
 } from '../src/routes.js'
 import { EXEMPT } from '../src/architecture/pressedExempt.js'
@@ -31,6 +32,7 @@ import type { Page } from '@playwright/test'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
+import { whilePressed, type Look } from './helpers/pressed.js'
 
 const PHONE = { width: 390, height: 844 }
 const COMPUTER = { width: 1280, height: 920 }
@@ -39,81 +41,26 @@ const CONTROLS = 'button, a[href], [role=button], [role=tab], [role=radio], [rol
 const EXEMPT_CLASSES = EXEMPT.flatMap((entry) => entry.classes)
 const THEMES = ['claro', 'oscuro'] as const
 
-interface Look {
-  transform: string
-  boxShadow: string
-  /** The element's own fill, or the first non-transparent ancestor's when its own is transparent. */
-  fill: string
-  /** Its own computed fill, ink and opacity, for the contrast reading of a pressed control. */
-  backgroundColor: string
-  color: string
-  opacity: string
-}
-
-interface Probe {
-  look: Look
-  x: number
-  y: number
-  covered: boolean
-}
-
-/**
- * One round trip: the first match of `selector`, optionally scrolled to the centre of the
- * view, with its transform, ring and effective resting fill, where a press on it would land,
- * and whether something else covers that point.
- */
-async function probe(page: Page, selector: string, scroll: boolean): Promise<Probe> {
-  return page.locator(selector).first().evaluate((element, scrollFirst) => {
-    if (scrollFirst) element.scrollIntoView({ block: 'center', inline: 'center' })
-    const { transform, boxShadow, backgroundColor, color, opacity } = getComputedStyle(element)
-    let fill = 'rgba(0, 0, 0, 0)'
-    for (let node: Element | null = element; node !== null; node = node.parentElement) {
-      const own = getComputedStyle(node).backgroundColor
-      if (own !== 'rgba(0, 0, 0, 0)' && own !== 'transparent') {
-        fill = own
-        break
-      }
-    }
-    const box = element.getBoundingClientRect()
-    const x = box.x + box.width / 2
-    const y = box.y + box.height / 2
-    return { look: { transform, boxShadow, fill, backgroundColor, color, opacity }, x, y, covered: !element.contains(document.elementFromPoint(x, y)) }
-  }, scroll)
-}
-
-/**
- * The look of `selector` at rest and with the pointer down on it (moved away before the
- * release, so no click fires). A press on something that covers it is an error.
- */
-async function whilePressed(page: Page, selector: string): Promise<{ resting: Look; pressed: Look }> {
-  const resting = await probe(page, selector, true)
-  if (resting.covered) throw new Error(`${selector} is covered at its centre, so a press would land on something else`)
-  await page.mouse.move(resting.x, resting.y)
-  await page.mouse.down()
-  const pressed = await probe(page, selector, false)
-  await page.mouse.move(0, 0)
-  await page.mouse.up()
-  return { resting: resting.look, pressed: pressed.look }
-}
-
-function expectPressed(name: string, found: { resting: Look; pressed: Look }): void {
-  expect(found.resting.transform, `${name} rests unscaled`).toBe('none')
-  expect(found.pressed.transform, `${name} shrinks while pressed`).toBe('matrix(0.98, 0, 0, 0.98, 0, 0)')
+function expectFillChanged(name: string, found: { resting: Look; pressed: Look }): void {
   const fillChanged =
     found.pressed.boxShadow !== found.resting.boxShadow || found.pressed.fill !== found.resting.fill
   expect(fillChanged, `${name} changes its fill while pressed`).toBe(true)
 }
 
+function expectPressed(name: string, found: { resting: Look; pressed: Look }): void {
+  expect(found.resting.transform, `${name} rests unscaled`).toBe('none')
+  expect(found.pressed.transform, `${name} shrinks while pressed`).toBe('matrix(0.98, 0, 0, 0.98, 0, 0)')
+  expectFillChanged(name, found)
+}
+
 /**
- * The ratio the eye gets from a control that rests on `backdrop` (the computed, opaque
- * background of its parent): its fill and its ink both shown at the control's `opacity`.
+ * A label-wrapped control (an EXEMPT entry's `pressedOn`) answers a press with its fill alone:
+ * its input is stretched over it, and a scaled label would move the input off the finger.
  */
-function effectiveRatio(look: Look, backdrop: string): number {
-  const opacity = Number(look.opacity)
-  const ground = parseColour(backdrop)
-  const fill = composite(parseColour(look.backgroundColor), opacity, ground)
-  const ink = composite(parseColour(look.color), opacity, fill)
-  return contrastRatio(ink, fill)
+function expectFillOnly(name: string, found: { resting: Look; pressed: Look }): void {
+  expect(found.resting.transform, `${name} rests unscaled`).toBe('none')
+  expect(found.pressed.transform, `${name} stays unscaled while pressed`).toBe('none')
+  expectFillChanged(name, found)
 }
 
 async function openIn(page: Page, route: string, theme: (typeof THEMES)[number]): Promise<void> {
@@ -164,6 +111,14 @@ async function expectEveryControlPressed(page: Page, route: string): Promise<voi
   }
 }
 
+const SWITCH = '.opcion-interruptor'
+
+async function switchStates(page: Page): Promise<boolean[]> {
+  return page.locator(`${SWITCH}:not(#prueba-interruptor-inactivo) input`).evaluateAll((inputs) =>
+    inputs.map((input) => (input as HTMLInputElement).checked),
+  )
+}
+
 const PHONE_ROUTES = [HOME, SALES, CUSTOMERS, VARIETIES, MORE, SETTINGS, SETTINGS_ACCOUNT, SETTINGS_APPEARANCE]
 
 test.describe('on a phone', () => {
@@ -185,8 +140,8 @@ test.describe('on a phone', () => {
 
       await openIn(page, SETTINGS_ACCOUNT, theme)
       await page.evaluate(() => {
-        const row = document.querySelector('button.boton')
-        if (row === null) throw new Error('no button.boton to clone')
+        const row = document.querySelector('button.boton--suave')
+        if (row === null) throw new Error('no button.boton--suave to clone')
         const disabled = row.cloneNode(true) as HTMLButtonElement
         disabled.id = 'prueba-fila-inactiva'
         disabled.disabled = true
@@ -196,6 +151,52 @@ test.describe('on a phone', () => {
       expect(inactive.pressed.transform, 'a disabled button stays unscaled').toBe('none')
       expect(inactive.pressed.boxShadow).toBe(inactive.resting.boxShadow)
       expect(inactive.pressed.fill).toBe(inactive.resting.fill)
+
+      expect(messages).toEqual([])
+    })
+  }
+})
+
+test.describe('a switch on a phone', () => {
+  test.use({ viewport: PHONE })
+
+  for (const theme of THEMES) {
+    test(`answers a press with its fill alone, and does not flip (${theme})`, async ({ page }) => {
+      const messages: string[] = []
+      watchConsole(page, messages)
+      await signUpNewBusiness(page, {
+        businessName: `Flores del Interruptor ${theme} ${Date.now()}`,
+        email: `duena-interruptor-${theme}-${Date.now()}@example.com`,
+      })
+      await openIn(page, SETTINGS_PRICES, theme)
+
+      const switches = await page.locator(`${SWITCH}:visible`).count()
+      expect(switches, `${SETTINGS_PRICES} has switches to press`).toBeGreaterThan(0)
+      const before = await switchStates(page)
+      for (let at = 0; at < switches; at += 1) {
+        const target = `${SWITCH}:visible >> nth=${at}`
+        expectFillOnly(`switch ${at} on ${SETTINGS_PRICES}`, await whilePressed(page, target))
+        expect(await switchStates(page), `releasing outside leaves switch ${at} as it was`).toEqual(before)
+      }
+
+      await page.evaluate((selector) => {
+        const row = document.querySelector(selector)
+        if (row === null) throw new Error('no switch to clone')
+        const disabled = row.cloneNode(true) as HTMLElement
+        disabled.id = 'prueba-interruptor-inactivo'
+        disabled.removeAttribute('for')
+        disabled.classList.add('opcion-interruptor--inactiva')
+        const input = disabled.querySelector('input')
+        if (input === null) throw new Error('the switch has no input')
+        input.removeAttribute('id')
+        input.disabled = true
+        row.parentElement?.append(disabled)
+      }, SWITCH)
+      const inactive = await whilePressed(page, '#prueba-interruptor-inactivo')
+      expect(inactive.pressed.transform, 'a disabled switch stays unscaled').toBe('none')
+      expect(inactive.pressed.boxShadow).toBe(inactive.resting.boxShadow)
+      expect(inactive.pressed.fill).toBe(inactive.resting.fill)
+      expect(await switchStates(page)).toEqual(before)
 
       expect(messages).toEqual([])
     })
@@ -244,12 +245,37 @@ test.describe('signed out', () => {
   }
 })
 
+/** What the eye gets from a control: its fill and its ink, both shown at its `opacity`. */
+interface Ink {
+  backgroundColor: string
+  color: string
+  opacity: string
+}
+
+async function ink(page: Page, selector: string): Promise<Ink> {
+  return page.locator(selector).first().evaluate((element) => {
+    const { backgroundColor, color, opacity } = getComputedStyle(element)
+    return { backgroundColor, color, opacity }
+  })
+}
+
+/** The ratio the eye gets from a control that rests on `backdrop` (an opaque background). */
+function effectiveRatio(look: Ink, backdrop: string): number {
+  const opacity = Number(look.opacity)
+  const fill = composite(parseColour(look.backgroundColor), opacity, parseColour(backdrop))
+  const text = composite(parseColour(look.color), opacity, fill)
+  return contrastRatio(text, fill)
+}
+
 test.describe('Deshacer', () => {
   test.use({ viewport: PHONE })
 
   for (const theme of THEMES) {
-    test(`Deshacer keeps 4.5:1 at rest and while pressed (${theme})`, async ({ page }) => {
-      await signUpNewBusiness(page, { businessName: `Flores del Deshacer ${theme} ${Date.now()}`, email: `duena-deshacer-${theme}-${Date.now()}@example.com` })
+    test(`keeps 4.5:1 at rest and while pressed (${theme})`, async ({ page }) => {
+      await signUpNewBusiness(page, {
+        businessName: `Flores del Deshacer ${theme} ${Date.now()}`,
+        email: `duena-deshacer-${theme}-${Date.now()}@example.com`,
+      })
       await page.goto(VARIETIES)
       await page.getByRole('link', { name: 'Nueva variedad' }).click()
       await page.getByLabel('Nombre').fill('Rosa')
@@ -274,11 +300,21 @@ test.describe('Deshacer', () => {
       await expect(page.getByText('Venta guardada')).toBeVisible()
       await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 50)
 
-      const found = await whilePressed(page, '.venta-guardada .boton--enlace')
+      const deshacer = '.venta-guardada .boton--enlace'
       const backdrop = await page.locator('.venta-guardada').evaluate((bar) => getComputedStyle(bar).backgroundColor)
-      expect(effectiveRatio(found.resting, backdrop), 'Deshacer at rest').toBeGreaterThanOrEqual(4.5)
-      expect(effectiveRatio(found.pressed, backdrop), 'Deshacer while pressed').toBeGreaterThanOrEqual(4.5)
+      const found = await whilePressed(page, deshacer)
       expectPressed('Deshacer', found)
+
+      const resting = await ink(page, deshacer)
+      expect(effectiveRatio(resting, backdrop), 'Deshacer at rest').toBeGreaterThanOrEqual(4.5)
+      const box = await page.locator(deshacer).boundingBox()
+      if (box === null) throw new Error('Deshacer has no box')
+      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
+      await page.mouse.down()
+      const pressed = await ink(page, deshacer)
+      await page.mouse.move(0, 0)
+      await page.mouse.up()
+      expect(effectiveRatio(pressed, backdrop), 'Deshacer while pressed').toBeGreaterThanOrEqual(4.5)
 
       await expect(page.getByText('Venta guardada')).toBeVisible()
       await expect(page.getByText('Venta eliminada · los gramos vuelven al stock')).toHaveCount(0)

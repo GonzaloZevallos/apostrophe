@@ -1,0 +1,78 @@
+---
+status: accepted
+date: 2026-10-14
+---
+
+# Design captures pin their fonts, and a before/after compares raw captures at exact AE
+
+GH-156 (follow-up of #106 / PR #154). The before/after evidence for #106 gated on a
+whole-sheet `compare -metric AE`. The first pair gave AE 4239 although the design file was
+byte-identical on both sides, and the difference lay wholly in the design half of the sheet.
+
+## Cause
+
+`settle()` in `scripts/design/comparisons.mjs` already awaits `document.fonts.ready`, so
+waiting for fonts was never the missing piece. The design files load Plus Jakarta Sans from
+Google Fonts with `display=swap`: the capture could paint the fallback face before the font
+arrived over the network, and whether it did varied from run to run.
+
+## Decision
+
+1. **A design capture never touches the network.** `captureDesign` routes its context
+   (`context.route('**')`): `file://` continues; the Google Fonts stylesheet and font files
+   are answered from the app's own `@fontsource/plus-jakarta-sans` package
+   (`scripts/design/fonts.mjs`); every other request is aborted. This holds with and without
+   `--strict`.
+2. **The stylesheet is built locally** from `@fontsource/plus-jakarta-sans/<weight>.css`
+   for the weights the request names, with `font-display: block` in place of `swap` and each
+   `./files/<name>` URL rewritten to a fixed `fonts.gstatic.com` prefix. A gstatic request is
+   served from `files/` only for names matching `^[a-z0-9-]+\.woff2?$`. A weight with no local
+   CSS throws: there is no fallback to the network. The files come from the version installed
+   under `web/node_modules`; a before/after PR records that version.
+3. **The applied-check.** After the final `settle()`, both captures verify in the page: a
+   loaded `FontFace` of the page's own first family, no face with status `error`, and
+   `document.fonts.check` true for weights 400 to 700 with latin sample text. The family is
+   the first one of `document.body`'s computed `font-family`; a design file sets its font on
+   an inner block, not on the body (its body is the browser default), so for the design it is
+   the first element that draws text. Weights the page does not draw are loaded first, so
+   `check` means "this weight is available". The built app keeps its own `font-display: swap`
+   (`web/src/main.tsx`, product code): the check guards it.
+4. **Lenient by default, `--strict` on demand.** A font failure (missing font root or file, a
+   throw from `fontCss`, an aborted font request, a failed applied-check) is a note on the
+   sheet and in that screen's `index.json` entry; the exit code does not change. With
+   `--strict` the run finishes the remaining screens, writes `index.json`, and exits non-zero.
+   Each screen runs in its own `try` (an unexpected throw is a note and the next screen still
+   runs), and `index.json` is written in a `finally`. Under `--strict` a screen-level failure
+   also exits non-zero.
+5. **Raw captures.** Besides `<screen>.png`, whose composition is unchanged, the exact buffers
+   are written as `<screen>.design.png` and `<screen>.built.png` (the DPR 2 full-page capture,
+   not resampled). `index.json` lists them as `design` and `built`: an absolute path, or `null`
+   when there is no capture.
+6. **A before/after is captured by one script from one install**: the head's
+   `comparisons.mjs`, against each commit's own app and sample data, on the same Argentina day
+   (the sample data carries dates).
+7. **The comparison is exact AE over the raw captures**, never over the composed sheet: images
+   of different dimensions, a missing screen, a one-sided `null` and an unreadable PNG are
+   failures, never AE 0. PNGs are decoded with `pngjs` (a dev dependency of `web`); decoding in
+   the browser is out of vitest's reach and Playwright's bundled decoder is private. Detailed
+   by subtask `ae-gate`, which amends this ADR if needed.
+
+## Known risks
+
+- The browser wiring (routing, applied-check, `--strict`) has no unit test; only `fonts.mjs`
+  does. The evidence run exercises it, including a missing font root.
+- Design sheets may differ in glyph shape from sheets captured before this change, since the
+  fonts are now fontsource's. Nothing compares against old sheets.
+- The built side keeps the app's own `swap` and relies on the applied-check.
+
+## Amendment: the `ae-gate` shape
+
+- `scripts/design/ae.mjs <before-dir> <after-dir> [--only A,B]` prints one line per screen and
+  side (`<screen> built: AE 0`, `<screen> design: FAIL different dimensions`, and so on) and
+  exits 1 when any side fails or has an AE above 0, 2 on bad usage. No pixel data is printed.
+- A name in `--only` that is in neither `index.json` is a failure (`FAIL in neither index`),
+  so a typo cannot pass by comparing nothing. A screen missing on one side is one `FAIL
+  missing in <side>` line.
+- `ae(a, b)`, `decode(buffer)` and `compareIndexes(before, after, only, load)` are exported
+  and pure apart from `decode`'s use of `pngjs`; the command runs only when the file is the
+  entry point. `@types/pngjs` is a dev dependency so the test file type-checks.
