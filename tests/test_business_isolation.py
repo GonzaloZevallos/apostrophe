@@ -319,6 +319,8 @@ PUBLIC_PATHS = {"/health", "/auth/login", "/auth/logout"}
 
 
 def _operations() -> list[tuple[str, str, bool]]:
+    # Only the OpenAPI document is read; the frozen clock keeps this app on the same
+    # time as every other test app, whose invitations are issued at `NOW`.
     document = create_app(
         SETTINGS,
         clock=MovableClock(NOW),
