@@ -440,3 +440,7 @@ _Avoid_: style guide, UI guidelines, icon policy
 **Attention icon**:
 The one icon, the same everywhere, set next to the sentence of a notice or status that asks the seller to act or says something failed; the sentence still carries the state. Informational lines never carry it. In the app: no word of its own.
 _Avoid_: warning icon, alert icon, badge, error icon
+
+**Gate**:
+The checks every change must pass before it merges: pytest, vitest and e2e. A red gate must mean a product regression, never the calendar moving past an expiry or a day boundary. In the app: no word of its own.
+_Avoid_: pipeline, build, test run
