@@ -80,7 +80,7 @@ export default function InvitePartner({
 
   return (
     <>
-      <Boton variant={action.variant} icon="personaMas" onClick={onInvite} disabled={invitePending}>
+      <Boton variant={action.variant === 'primary' ? 'primary' : 'secondary'} icon="personaMas" onClick={onInvite} disabled={invitePending}>
         {action.label}
       </Boton>
       {invite !== null && (
