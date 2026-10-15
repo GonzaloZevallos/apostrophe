@@ -13,6 +13,7 @@ import { createMemoryRouter, Outlet, RouterProvider, type RouteObject } from 're
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import type { Me } from '../../api/me'
 import type { OnboardingProgress, StepSlug, StepState } from '../../api/onboarding'
+import { PUBLISH_LINE } from './BotStep'
 import Listo from './Listo'
 import OnboardingLayout from './OnboardingLayout'
 import { OnboardingEntry, OnboardingStepRoute } from './OnboardingRoutes'
@@ -270,13 +271,14 @@ test('step 3 sends the pass done only after the save answered, and a refused sav
   const header = await screen.findByLabelText('Encabezado')
   await user.type(header, '!')
   expect(screen.queryByRole('button', { name: 'Dejar así' })).not.toBeInTheDocument()
-  await user.click(screen.getByRole('button', { name: 'Guardá el mensaje' }))
+  expect(screen.queryByRole('button', { name: 'Guardá el mensaje' })).not.toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Guardar' }))
   expect(await screen.findByRole('alert')).toBeInTheDocument()
   expect(header).toHaveValue('H!')
   expect(calls).not.toContain('POST /onboarding-progress/passes')
 
   refuse = false
-  await user.click(screen.getByRole('button', { name: 'Guardá el mensaje' }))
+  await user.click(screen.getByRole('button', { name: 'Guardar' }))
   expect(await screen.findByRole('heading', { name: 'Conectá tu bot de Telegram' })).toBeInTheDocument()
   expect(calls.indexOf('PUT /catalog/header-footer')).toBeLessThan(
     calls.indexOf('POST /onboarding-progress/passes'),
@@ -301,7 +303,7 @@ test('step 3 "Dejar así" passes it done with the defaults kept, and sends no ca
   expect(calls.filter((call) => call.startsWith('PUT'))).toEqual([])
 })
 
-test('step 4 passes done after a successful Probarlo, says where to publish and shows no catalog link; a failed Probarlo sends no pass', async () => {
+test('step 4 passes done after a successful Probarlo and shows no catalog link; a failed Probarlo sends no pass', async () => {
   const bodies: unknown[] = []
   let refuse = true
   stubFetch(answer(['done', 'done', 'done', 'pending', 'pending', 'pending'], { stock_entries_count: 1 }), {
@@ -318,9 +320,8 @@ test('step 4 passes done after a successful Probarlo, says where to publish and 
   const user = userEvent.setup()
   renderAt(ONBOARDING_BOT)
 
-  expect(await screen.findByText('Cuando quieras, publicalo desde Variedades → Mandar catálogo')).toBeInTheDocument()
+  await user.type(await screen.findByLabelText('Token del bot'), '123:abc')
   expect(screen.queryByText('Ir al catálogo')).not.toBeInTheDocument()
-  await user.type(screen.getByLabelText('Token del bot'), '123:abc')
   await user.type(screen.getByLabelText('Tu chat'), '555')
   await user.click(screen.getByRole('button', { name: 'Probarlo' }))
   expect(await screen.findByRole('alert')).toBeInTheDocument()
@@ -331,6 +332,41 @@ test('step 4 passes done after a successful Probarlo, says where to publish and 
   await user.click(screen.getByRole('button', { name: 'Probarlo' }))
   expect(await screen.findByRole('heading', { name: 'Enviale el link a tu socio' })).toBeInTheDocument()
   expect(bodies).toEqual([{ step: 'bot', as: 'done' }])
+})
+
+test('step 4 says where to publish only after a successful Probarlo, not before and not after a failed one', async () => {
+  let refuse = true
+  stubFetch(answer(['done', 'done', 'done', 'pending', 'pending', 'pending'], { stock_entries_count: 1 }), {
+    'GET /pinned-catalog': () => json({ token_saved_on: null, own_chat: null, channel_chat: null }),
+    'POST /pinned-catalog/test': () =>
+      refuse
+        ? json({ code: 'pinned_catalog.telegram_refused' }, 422)
+        : json({ token_saved_on: '2026-10-03', own_chat: '555', channel_chat: null, previous_pin_left: false }),
+    'POST /onboarding-progress/passes': () => new Response('{}', { status: 500 }),
+  })
+  const user = userEvent.setup()
+  renderAt(ONBOARDING_BOT)
+
+  await user.type(await screen.findByLabelText('Token del bot'), '123:abc')
+  expect(screen.queryByText(PUBLISH_LINE)).not.toBeInTheDocument()
+  await user.type(screen.getByLabelText('Tu chat'), '555')
+  await user.click(screen.getByRole('button', { name: 'Probarlo' }))
+  expect(await screen.findByRole('alert')).toBeInTheDocument()
+  expect(screen.queryByText(PUBLISH_LINE)).not.toBeInTheDocument()
+
+  refuse = false
+  await user.click(screen.getByRole('button', { name: 'Probarlo' }))
+  expect(await screen.findByText(PUBLISH_LINE)).toBeInTheDocument()
+})
+
+test('step 4 shows the publish line at once on a step already done, a bot saved earlier', async () => {
+  stubFetch(answer(['done', 'done', 'done', 'done', 'pending', 'pending'], { stock_entries_count: 1 }), {
+    'GET /pinned-catalog': () => json({ token_saved_on: '2026-10-01', own_chat: '555', channel_chat: null }),
+  })
+  renderAt(ONBOARDING_BOT)
+
+  expect(await screen.findByText(PUBLISH_LINE)).toBeInTheDocument()
+  expect(screen.getByText('Hecho')).toBeInTheDocument()
 })
 
 test('step 5 offers Seguir only once a link is created, and passes done', async () => {
