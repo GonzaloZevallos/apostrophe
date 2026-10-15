@@ -59,6 +59,11 @@ describe('checkBackControl: what it rejects', () => {
     expect(checkBackControl('src/components/index.ts', source)).toHaveLength(1)
   })
 
+  test('a dynamic import of BackButton from a screen outside the closed set', () => {
+    const source = "export const load = () => import('../components/BackButton')"
+    expect(checkBackControl('src/screens/Catalogo.tsx', source)).toHaveLength(1)
+  })
+
   test('a star re-export of BackButton', () => {
     const source = "export * from './BackButton'"
     expect(checkBackControl('src/components/index.ts', source)).toHaveLength(1)

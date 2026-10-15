@@ -21,6 +21,7 @@ describe('keys', () => {
   test('builds hierarchical keys by resource', () => {
     expect(keys.customers('ana')).toEqual(['customers', { q: 'ana' }])
     expect(keys.varieties()).toEqual(['varieties'])
+    expect(keys.archivedVarieties()).toEqual(['varieties', 'archived'])
     expect(keys.variety('v1')).toEqual(['varieties', 'v1'])
     expect(keys.varietyPrices('v1')).toEqual(['varieties', 'v1', 'prices'])
     expect(keys.expenseCategories()).toEqual(['expense-categories'])
