@@ -127,7 +127,7 @@ function openingTags(content: string, tag: string): OpeningTag[] {
       line: content.slice(0, match.index).split('\n').length,
       index: match.index,
       end,
-      selfClosing: end < content.length && content.charAt(end - 1) === '/',
+      selfClosing: end < content.length && content.charAt(end - 1) === SEP,
     })
   }
   return found
