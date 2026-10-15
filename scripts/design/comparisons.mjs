@@ -1,12 +1,20 @@
 // Comparisons (agentic-system ADR-0040): each design screen next to the same screen of the
 // sample app, at the same width, one PNG per screen.
 //
-//   node scripts/design/comparisons.mjs --facts <sample.json> --out <dir> [--only A,B]
+//   node scripts/design/comparisons.mjs --facts <sample.json> --out <dir> [--only A,B] [--strict]
 //
 // `--facts` is what `scripts/design/sample-app.sh` wrote. Screens and how to reach each
 // state come from `scripts/design/screens.json`. A step that fails, a screen not built
 // yet and a page wider than its viewport are written on the image and in `index.json`,
 // never thrown: one broken screen must not hide the others.
+//
+// A design capture never touches the network (ADR-0041): its Google Fonts requests are
+// served from @fontsource/plus-jakarta-sans, every other non-file request is aborted. Both
+// captures check, after their final settle, that the page's own font family is applied.
+// A font failure (or a screen that threw) is a note on the sheet and in `index.json`; with
+// `--strict` the run also exits non-zero, after writing everything. Besides `<screen>.png`
+// the raw captures go to `<screen>.design.png` and `<screen>.built.png`, listed in
+// `index.json` as `design` and `built` (an absolute path, or null when there is none).
 
 import { createRequire } from 'node:module'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
@@ -14,18 +22,25 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
 import { assertScreens } from './screens.mjs'
+import { fontCss, fontRoute } from './fonts.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO = resolve(HERE, '..', '..')
 const PROTOTYPE = join(REPO, 'docs', 'product', 'design-system', 'pantallas')
 const require = createRequire(join(REPO, 'web', 'package.json'))
 const { chromium } = require('playwright')
+const FONT_ROOT = join(REPO, 'web', 'node_modules', '@fontsource', 'plus-jakarta-sans')
 
 const { values } = parseArgs({
-  options: { facts: { type: 'string' }, out: { type: 'string' }, only: { type: 'string' } },
+  options: {
+    facts: { type: 'string' },
+    out: { type: 'string' },
+    only: { type: 'string' },
+    strict: { type: 'boolean', default: false },
+  },
 })
 if (!values.facts || !values.out) {
-  console.error('usage: comparisons.mjs --facts <sample.json> --out <dir> [--only A,B]')
+  console.error('usage: comparisons.mjs --facts <sample.json> --out <dir> [--only A,B] [--strict]')
   process.exit(2)
 }
 const facts = JSON.parse(readFileSync(values.facts, 'utf-8'))
@@ -63,26 +78,118 @@ async function settle(page) {
   await page.evaluate(() => document.fonts.ready)
 }
 
+const firstLine = (error) => String(error?.code ?? error?.message ?? error).split('\n')[0]
+
+// A failure that is a note on the sheet and, under `--strict`, a non-zero exit. `ctx` is the
+// screen's `{ notes, failures }`; the same message is written once.
+function fail(ctx, message) {
+  if (ctx.failures.includes(message)) return
+  ctx.failures.push(message)
+  ctx.notes.push(message)
+}
+
+const readFontCss = (weight) => readFileSync(join(FONT_ROOT, `${weight}.css`), 'utf-8')
+
+// The design context's network: file:// goes through, Google Fonts is answered from the
+// local package, everything else is aborted and never reaches the network.
+async function routeDesign(context, ctx) {
+  await context.route('**', async (route) => {
+    const url = route.request().url()
+    if (url.startsWith('file://')) return route.continue()
+    const target = fontRoute(url)
+    try {
+      if (target.kind === 'stylesheet') {
+        return await route.fulfill({ contentType: 'text/css', body: fontCss(target.weights, readFontCss) })
+      }
+      if (target.kind === 'file') {
+        const body = readFileSync(join(FONT_ROOT, 'files', target.name))
+        return await route.fulfill({ contentType: target.name.endsWith('.woff2') ? 'font/woff2' : 'font/woff', body })
+      }
+    } catch (error) {
+      fail(ctx, `tipografía local no disponible: ${firstLine(error)}`)
+    }
+    if (/^https?:\/\/fonts\.(googleapis|gstatic)\.com\//.test(url)) {
+      fail(ctx, 'se abortó un pedido de tipografía que no se sirve en local')
+    }
+    await route.abort()
+  })
+}
+
+// The page's own font family is applied: a loaded face of it, no face in error, and the
+// weights 400 to 700 available for latin text. Returns a reason (no data in it) or null.
+// The family is the first one of `document.body`; a design file sets its font on an inner
+// block, not on the body, so there it is the first element that draws text.
+async function appliedCheck(page, ofFirstText) {
+  return page.evaluate(async (ofFirstText) => {
+    const unquote = (name) => name.trim().replace(/^["']|["']$/g, '')
+    const skipped = new Set(['SCRIPT', 'STYLE', 'TITLE', 'NOSCRIPT', 'TEMPLATE', 'HELMET'])
+    const drawsText = (node) =>
+      node.nodeType === Node.TEXT_NODE && node.textContent.trim() !== '' && !skipped.has(node.parentElement?.tagName ?? 'SCRIPT')
+    let source = document.body
+    if (ofFirstText) {
+      const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT)
+      for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+        if (drawsText(node)) {
+          source = node.parentElement
+          break
+        }
+      }
+    }
+    const family = unquote(getComputedStyle(source).fontFamily.split(',')[0])
+    const sample = 'Nueva venta'
+    const weights = [400, 500, 600, 700]
+    // A face the page does not use yet stays unloaded; asking for it makes `check` mean
+    // "this weight is available", not "this page happens to draw it".
+    await Promise.all(weights.map((w) => document.fonts.load(`${w} 16px '${family}'`, sample).catch(() => [])))
+    const faces = [...document.fonts]
+    if (faces.some((face) => face.status === 'error')) return 'una tipografía de la página quedó en error'
+    if (!faces.some((face) => unquote(face.family) === family && face.status === 'loaded')) {
+      return 'ninguna cara cargada de la tipografía de la página'
+    }
+    const missing = weights.filter((w) => !document.fonts.check(`${w} 16px '${family}'`, sample))
+    if (missing.length) return `la tipografía de la página no está aplicada en los pesos ${missing.join(', ')}`
+    return null
+  }, ofFirstText)
+}
+
+async function checkApplied(page, ctx, ofFirstText) {
+  const reason = await appliedCheck(page, ofFirstText)
+  if (reason) fail(ctx, reason)
+}
+
 // The design file an entry is compared against: `design`, else the entry's own name.
 const designOf = (s) => s.design ?? s.screen
 
-async function captureDesign(browser, s, options) {
+async function captureDesign(browser, s, options, ctx) {
   const context = await browser.newContext(options)
-  const page = await context.newPage()
-  await page.goto(pathToFileURL(join(PROTOTYPE, `${designOf(s)}.dc.html`)).href)
-  await settle(page)
-  // A file that draws several states: only the block under the entry's `section` label.
-  const png = s.section
-    ? await page.getByText(s.section, { exact: true }).first().locator('xpath=..').screenshot()
-    : await page.screenshot({ fullPage: true })
-  await context.close()
-  return png
+  try {
+    await routeDesign(context, ctx)
+    const page = await context.newPage()
+    await page.goto(pathToFileURL(join(PROTOTYPE, `${designOf(s)}.dc.html`)).href)
+    await settle(page)
+    await checkApplied(page, ctx, true)
+    // A file that draws several states: only the block under the entry's `section` label.
+    return s.section
+      ? await page.getByText(s.section, { exact: true }).first().locator('xpath=..').screenshot()
+      : await page.screenshot({ fullPage: true })
+  } finally {
+    await context.close()
+  }
 }
 
 // The built screen in the state its entry asks for; what could not be reached, or a page
 // wider than its viewport, goes into `notes`.
-async function captureBuilt(browser, s, options, notes) {
+async function captureBuilt(browser, s, options, ctx) {
+  const { notes } = ctx
   const context = await browser.newContext(options)
+  try {
+    return await captureBuiltIn(context, s, options, ctx, notes)
+  } finally {
+    await context.close()
+  }
+}
+
+async function captureBuiltIn(context, s, options, ctx, notes) {
   if (s.tema) {
     // `document.documentElement` does not exist yet when this init script
     // runs (proven against this build), so it waits for the parser to
@@ -114,12 +221,11 @@ async function captureBuilt(browser, s, options, notes) {
       break
     }
   }
+  await checkApplied(page, ctx, false)
   const width = options.viewport.width
   const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth)
   if (scrollWidth > width) notes.push(`desborda: ${scrollWidth}px de ancho en ${width}px`)
-  const png = await page.screenshot({ fullPage: true })
-  await context.close()
-  return png
+  return page.screenshot({ fullPage: true })
 }
 
 async function composeSheet(browser, s, width, design, built, notes, file) {
@@ -140,8 +246,19 @@ async function composeSheet(browser, s, width, design, built, notes, file) {
   await context.close()
 }
 
+// The capture of one side: what it could not do is a failure of the screen, not a throw.
+async function attempt(label, ctx, capture) {
+  try {
+    return await capture()
+  } catch (error) {
+    fail(ctx, `${label} no se pudo capturar: ${firstLine(error)}`)
+    return null
+  }
+}
+
 const browser = await chromium.launch()
 const results = []
+let failed = false
 try {
   for (const s of screens) {
     if (only && !only.has(s.screen)) continue
@@ -152,17 +269,37 @@ try {
       colorScheme: 'light',
       baseURL: facts.url,
     }
-    const notes = []
-    const design = await captureDesign(browser, s, options)
-    let built = null
-    if (s.route === null) notes.push('todavía no existe en la app')
-    else built = await captureBuilt(browser, s, options, notes)
-    const file = join(out, `${s.screen}.png`)
-    await composeSheet(browser, s, width, design, built, notes, file)
-    results.push({ screen: s.screen, file, notes })
+    const ctx = { notes: [], failures: [] }
+    const { notes } = ctx
+    const entry = { screen: s.screen, file: null, notes, design: null, built: null }
+    try {
+      const design = await attempt('el diseño', ctx, () => captureDesign(browser, s, options, ctx))
+      let built = null
+      if (s.route === null) notes.push('todavía no existe en la app')
+      else built = await attempt('lo construido', ctx, () => captureBuilt(browser, s, options, ctx))
+      if (design) {
+        entry.design = join(out, `${s.screen}.design.png`)
+        writeFileSync(entry.design, design)
+      }
+      if (built) {
+        entry.built = join(out, `${s.screen}.built.png`)
+        writeFileSync(entry.built, built)
+      }
+      const file = join(out, `${s.screen}.png`)
+      await composeSheet(browser, s, width, design, built, notes, file)
+      entry.file = file
+    } catch (error) {
+      fail(ctx, `la pantalla falló: ${firstLine(error)}`)
+    }
+    if (ctx.failures.length) failed = true
+    results.push(entry)
     console.log(`${s.screen}: ${notes.length ? notes.join('; ') : 'ok'}`)
   }
 } finally {
   await browser.close()
+  writeFileSync(join(out, 'index.json'), JSON.stringify(results, null, 2))
 }
-writeFileSync(join(out, 'index.json'), JSON.stringify(results, null, 2))
+if (values.strict && failed) {
+  console.error('comparisons: --strict and a capture failed (a font, or a screen that threw)')
+  process.exitCode = 1
+}
