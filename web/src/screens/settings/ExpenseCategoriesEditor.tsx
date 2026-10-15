@@ -15,7 +15,7 @@
  * `onDirtyChange`, and keeps its own chrome and its own leave question.
  */
 
-import { type FormEvent, useEffect, useState } from 'react'
+import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ApiError, NetworkError, UNKNOWN_CODE } from '../../api/client'
 import {
@@ -105,14 +105,32 @@ function Categories({
     onDirtyChange(dirty)
   }, [dirty, onDirtyChange])
 
+  // The notices' timers die with the screen: one that fires after it is gone sets state on nothing.
+  const timers = useRef(new Set<ReturnType<typeof setTimeout>>())
+  useEffect(() => {
+    const pending = timers.current
+    return () => {
+      for (const timer of pending) clearTimeout(timer)
+      pending.clear()
+    }
+  }, [])
+
+  function later(action: () => void): void {
+    const timer = setTimeout(() => {
+      timers.current.delete(timer)
+      action()
+    }, 2500)
+    timers.current.add(timer)
+  }
+
   function flash(message: SuccessToast): void {
     setToast(message)
-    setTimeout(() => setToast(null), 2500)
+    later(() => setToast(null))
   }
 
   function flashGone(): void {
     setGoneNotice(true)
-    setTimeout(() => setGoneNotice(false), 2500)
+    later(() => setGoneNotice(false))
   }
 
   function setDraft(id: number, name: string | undefined): void {
