@@ -25,7 +25,22 @@ interface Invite {
   expires_at: string
 }
 
-export default function InvitePartner({ onLinkCreated }: { onLinkCreated: () => void }) {
+/** The button that creates a link: its word and weight. The Onboarding's step 5 passes its own
+ * ("Crear el link", primary); with none, Configuración → Usuarios keeps today's. */
+export interface InviteAction {
+  label: string
+  variant: 'primary' | 'secondary'
+}
+
+const DEFAULT_ACTION: InviteAction = { label: 'Invitá a un socio', variant: 'secondary' }
+
+export default function InvitePartner({
+  onLinkCreated,
+  action = DEFAULT_ACTION,
+}: {
+  onLinkCreated: () => void
+  action?: InviteAction
+}) {
   const [invite, setInvite] = useState<Invite | null>(null)
   const [invitePending, setInvitePending] = useState(false)
   const [inviteError, setInviteError] = useState(false)
@@ -65,8 +80,8 @@ export default function InvitePartner({ onLinkCreated }: { onLinkCreated: () => 
 
   return (
     <>
-      <Boton variant="secondary" icon="personaMas" onClick={onInvite} disabled={invitePending}>
-        Invitá a un socio
+      <Boton variant={action.variant} icon="personaMas" onClick={onInvite} disabled={invitePending}>
+        {action.label}
       </Boton>
       {invite !== null && (
         <div className="usuarios__invitacion">

@@ -13,7 +13,7 @@ export default function CategoriesStep({ onDirtyChange, onProgress }: StepBodyPr
   const { run, sending, notice } = useOnboardingWrite(onProgress)
   return (
     <>
-      <ExpenseCategoriesEditor onDirtyChange={onDirtyChange} />
+      <ExpenseCategoriesEditor onDirtyChange={onDirtyChange} addCollapsed />
       <button
         type="button"
         className="boton"

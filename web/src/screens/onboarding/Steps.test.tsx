@@ -344,7 +344,8 @@ test('step 5 offers Seguir only once a link is created, and passes done', async 
 
   expect(await screen.findByRole('heading', { name: 'Enviale el link a tu socio' })).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Seguir' })).not.toBeInTheDocument()
-  await user.click(screen.getByRole('button', { name: 'Invitá a un socio' }))
+  expect(screen.queryByRole('button', { name: 'Invitá a un socio' })).not.toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Crear el link' }))
   await user.click(await screen.findByRole('button', { name: 'Seguir' }))
 
   expect(await screen.findByRole('heading', { name: 'Categorías de gastos' })).toBeInTheDocument()
@@ -371,6 +372,8 @@ test('step 6 adding a category saves at once and passes nothing; only Seguir pas
   renderAt(ONBOARDING_CATEGORIES)
 
   expect(await screen.findByText('Insumos')).toBeInTheDocument()
+  expect(screen.queryByLabelText('Nueva categoría')).not.toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Categoría' }))
   await user.type(screen.getByLabelText('Nueva categoría'), 'Luz')
   await user.click(screen.getByRole('button', { name: '+ Categoría' }))
   await waitFor(() => expect(calls).toContain('POST /expense-categories'))

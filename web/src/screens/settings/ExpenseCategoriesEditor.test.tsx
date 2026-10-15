@@ -9,6 +9,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import ExpenseCategoriesEditor, { CANNOT_REMOVE } from './ExpenseCategoriesEditor'
+import { CATEGORIES_SAVE_AT_ONCE } from './messages'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -72,4 +73,87 @@ test('a category still in use cannot be removed, and the refusal shows', async (
 
   expect(await screen.findByText(CANNOT_REMOVE)).toBeInTheDocument()
   expect(screen.getByText('Packaging')).toBeInTheDocument()
+})
+
+function renderCollapsed(fetchImpl: Fetch) {
+  const fetchMock = vi.fn(fetchImpl)
+  vi.stubGlobal('fetch', fetchMock)
+  render(
+    <QueryClientProvider client={new QueryClient()}>
+      <ExpenseCategoriesEditor onDirtyChange={() => undefined} addCollapsed />
+    </QueryClientProvider>,
+  )
+  return fetchMock
+}
+
+const listOnly: Fetch = async (url) => {
+  if (url === '/expense-categories') return jsonResponse(200, [{ id: 1, name: 'Packaging' }])
+  throw new Error(`unexpected ${url}`)
+}
+
+test('with no props the "Nueva categoría" field is always there and no save line shows', async () => {
+  renderEditor(listOnly)
+  await screen.findByText('Packaging')
+  expect(screen.getByLabelText('Nueva categoría')).toBeInTheDocument()
+  expect(screen.queryByText(CATEGORIES_SAVE_AT_ONCE)).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Categoría' })).not.toBeInTheDocument()
+})
+
+test('collapsed, only the add action and the save line show; the add action opens the field and focuses it', async () => {
+  renderCollapsed(listOnly)
+  await screen.findByText('Packaging')
+
+  expect(screen.queryByLabelText('Nueva categoría')).not.toBeInTheDocument()
+  expect(screen.getByText(CATEGORIES_SAVE_AT_ONCE)).toBeInTheDocument()
+
+  await userEvent.click(screen.getByRole('button', { name: 'Categoría' }))
+  expect(screen.getByLabelText('Nueva categoría')).toHaveFocus()
+})
+
+test('collapsed, a submit saves with no other action, collapses the field and gives focus back to the add action', async () => {
+  const fetchMock = renderCollapsed(async (url, init) => {
+    if (url === '/expense-categories' && init?.method === 'POST') return jsonResponse(201, { id: 2, name: 'Luz' })
+    return listOnly(url, init)
+  })
+  await screen.findByText('Packaging')
+  await userEvent.click(screen.getByRole('button', { name: 'Categoría' }))
+  await userEvent.type(screen.getByLabelText('Nueva categoría'), 'Luz')
+  await userEvent.click(screen.getByRole('button', { name: '+ Categoría' }))
+
+  expect(await screen.findByText('Categoría guardada')).toBeInTheDocument()
+  const post = fetchMock.mock.calls.find(([, init]) => init?.method === 'POST')
+  expect(JSON.parse(String(post?.[1]?.body))).toEqual({ name: 'Luz' })
+  expect(screen.getByText('Luz')).toBeInTheDocument()
+  expect(screen.queryByLabelText('Nueva categoría')).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Categoría' })).toHaveFocus()
+})
+
+test('collapsed, a refusal keeps the field open with what was typed', async () => {
+  renderCollapsed(async (url, init) => {
+    if (url === '/expense-categories' && init?.method === 'POST') {
+      return jsonResponse(422, { detail: 'invalid', code: 'expense_category.name_invalid' })
+    }
+    return listOnly(url, init)
+  })
+  await screen.findByText('Packaging')
+  await userEvent.click(screen.getByRole('button', { name: 'Categoría' }))
+  await userEvent.type(screen.getByLabelText('Nueva categoría'), 'Luz')
+  await userEvent.click(screen.getByRole('button', { name: '+ Categoría' }))
+
+  expect(await screen.findByRole('alert')).toBeInTheDocument()
+  expect(screen.getByLabelText('Nueva categoría')).toHaveValue('Luz')
+})
+
+test('collapsed, text typed and not saved counts as unsaved', async () => {
+  const onDirtyChange = vi.fn()
+  vi.stubGlobal('fetch', vi.fn(listOnly))
+  render(
+    <QueryClientProvider client={new QueryClient()}>
+      <ExpenseCategoriesEditor onDirtyChange={onDirtyChange} addCollapsed />
+    </QueryClientProvider>,
+  )
+  await screen.findByText('Packaging')
+  await userEvent.click(screen.getByRole('button', { name: 'Categoría' }))
+  await userEvent.type(screen.getByLabelText('Nueva categoría'), 'Luz')
+  expect(onDirtyChange).toHaveBeenLastCalledWith(true)
 })
