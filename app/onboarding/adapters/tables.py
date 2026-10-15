@@ -8,11 +8,12 @@ cleared.
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime
 
 from sqlalchemy import CheckConstraint, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
 
+from app.clock import system_clock
 from app.db import Base, UtcDateTime
 from app.onboarding.domain.onboarding import Pass
 
@@ -21,7 +22,7 @@ _PASS_VALUES = ", ".join(f"'{value.value}'" for value in Pass)
 
 
 def _now() -> datetime:
-    return datetime.now(UTC)
+    return system_clock()
 
 
 class OnboardingRow(Base):
