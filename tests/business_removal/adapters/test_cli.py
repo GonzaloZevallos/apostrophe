@@ -13,13 +13,12 @@ import re
 import sqlite3
 import stat
 import unicodedata
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta, timezone
 from pathlib import Path
 from typing import TextIO, cast
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app.accounts.adapters.sql_accounts import SqlAccounts
@@ -27,30 +26,36 @@ from app.accounts.application.reset_password import issue_reset_link
 from app.accounts.domain.invitation import token_digest
 from app.business_removal.adapters.cli import main
 from app.business_removal.application.remove_business import BUSY_MESSAGE
-from app.clock import business_day, system_clock
+from app.clock import business_day
 from app.db import make_engine
-from app.main import create_app
-from app.settings import Settings
-from tests.business_removal.adapters.seed import row_counts, seed, set_env
-from tests.conftest import PASSWORD, TEST_HASHER, invite
-from tests.fakes.telegram import FakeTelegram
+from tests.business_removal.adapters.seed import (
+    CATALOG_FOOTER,
+    CATALOG_HEADER,
+    CUSTOMER_NAME,
+    EMAIL_LEAVING,
+    EMAIL_STAYING,
+    EXPENSE_AMOUNT,
+    EXPENSE_DETAIL,
+    LOW_STOCK_THRESHOLD,
+    PAYMENT_AMOUNT,
+    PHONE,
+    PINNED,
+    SALE_NOTE,
+    SHIPPING_CHARGED,
+    accept_invitation,
+    build_app,
+    pin_cli_clock,
+    row_counts,
+    seed,
+    seeded_days,
+    set_env,
+)
+from tests.conftest import MovableClock
 
-EMAIL_LEAVING = "closing@example.com"
-EMAIL_STAYING = "staying@example.com"
-PHONE = "+5491122334455"
-CUSTOMER_NAME = "Marta Gimenez"
 NO_PHONE_CUSTOMER_NAME = "Sin Numero"  # exported only in the export test; not counted
 # elsewhere, so the shared `seed()`'s own row counts stay untouched.
-SALE_NOTE = "Entrega el sabado por la tarde"
-EXPENSE_DETAIL = "Factura de electricidad de septiembre"
-PAYMENT_AMOUNT = 54321
-EXPENSE_AMOUNT = 112233
-SHIPPING_CHARGED = 98765
-NOW = datetime(2026, 10, 3, 12, 0, tzinfo=UTC)
 
-LOW_STOCK_THRESHOLD = 15
-CATALOG_HEADER = "Catalogo de La Huerta"
-CATALOG_FOOTER = "Gracias por tu compra"
+ARGENTINA = timezone(timedelta(hours=-3))
 
 # Every kind the export holds, as the brief lists it. `business` is checked on its
 # own since the document carries it outside `kinds`, by a fixed shape.
@@ -70,17 +75,6 @@ EXPORTED_KINDS = (
     "catalog_attributes",
     "onboarding",
 )
-
-
-def _accept(client: TestClient, engine: Engine, name: str, email: str) -> str:
-    accepted = client.post(
-        f"/invitations/{invite(engine, datetime.now(UTC))}/accept",
-        json={"business_name": name, "email": email, "password": PASSWORD},
-    )
-    assert accepted.status_code == 201, accepted.text
-    token: str = accepted.json()["token"]
-    client.cookies.clear()
-    return token
 
 
 def _all_table_names(db_path: Path) -> list[str]:
@@ -103,25 +97,47 @@ def _has_business_id(connection: sqlite3.Connection, table: str) -> bool:
     return any(column[1] == "business_id" for column in columns)
 
 
+# (seed instant, removal instant): the Argentina day, the UTC day, the month and the
+# year each differ between the two instants in at least one case.
+REMOVAL_CASES = {
+    "pinned": (PINNED, PINNED),
+    "year-at-seed": (
+        datetime(2026, 12, 31, 23, 30, tzinfo=ARGENTINA),
+        datetime(2027, 1, 1, 0, 30, tzinfo=ARGENTINA),
+    ),
+    "month": (
+        datetime(2026, 10, 31, 23, 30, tzinfo=ARGENTINA),
+        datetime(2026, 11, 1, 0, 30, tzinfo=ARGENTINA),
+    ),
+    "year-at-removal": (
+        datetime(2026, 12, 31, 12, 0, tzinfo=ARGENTINA),
+        datetime(2026, 12, 31, 22, 30, tzinfo=ARGENTINA),
+    ),
+}
+
+
+@pytest.mark.parametrize(
+    ("seed_instant", "removal_instant"), REMOVAL_CASES.values(), ids=REMOVAL_CASES.keys()
+)
 def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    seed_instant: datetime,
+    removal_instant: datetime,
 ) -> None:
     db_path = tmp_path / "apostrophe.db"
     export_dir = tmp_path / "exports"
-    token_a, _token_b = seed(db_path)
+    clock = MovableClock(seed_instant)
+    token_a, _token_b = seed(db_path, clock)
     set_env(monkeypatch, db_path, export_dir)
+    pin_cli_clock(monkeypatch, clock)
+    days = seeded_days(clock)
 
     # One customer with no phone (ADR-0021), added only to this test: the shared
     # `seed()` keeps its row counts, which other tests in this module pin at exactly
     # one customer. `leaving_before`, captured below, counts it dynamically.
-    engine = make_engine(f"sqlite:///{db_path}")
-    app = create_app(
-        Settings(secret_key="test-secret", database_url=f"sqlite:///{db_path}"),
-        engine=engine,
-        hasher=TEST_HASHER,
-        telegram=FakeTelegram(),
-        upkeep_ticker=False,
-    )
+    app, engine = build_app(db_path, clock)
     with TestClient(app) as extra_client:
         extra_client.headers["Authorization"] = f"Bearer {token_a}"
         no_phone = extra_client.post("/customers", json={"name": NO_PHONE_CUSTOMER_NAME})
@@ -144,11 +160,14 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
     assert other_before["customer"] == 1  # the other business's own seed
 
     stdout = io.StringIO()
+    clock.set(removal_instant)
     result = main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=stdout)
 
     assert result == 0
     files = list(export_dir.glob("*.json"))
     assert len(files) == 1
+    removed_at = removal_instant.astimezone(UTC)
+    assert files[0].name.endswith(removed_at.strftime("%Y%m%d-%H%M%S") + ".json")
     document = json.loads(files[0].read_text())
     assert document["business"]["name"] == "La Huerta"
     business_id = document["business"]["id"]
@@ -160,7 +179,7 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
 
     user = next(record for record in kinds["app_user"] if record["email"] == EMAIL_LEAVING)
     assert "password_hash" not in user
-    assert user["joined_at"]  # stamped at acceptance; never null for a fresh business
+    assert user["joined_at"] == seed_instant.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     customers = {record["name"]: record for record in kinds["customer"]}
     assert customers[CUSTOMER_NAME]["phone"] == PHONE
@@ -177,12 +196,12 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
     assert stock_entry["total_cost"] == 300000
     assert stock_entry["note"] == "stock seed"
     # `seed()` never passes a `date`, so the entry is recorded on the business day
-    # the entry was made -- the same one `main`'s own real clock sees now.
-    assert stock_entry["entry_date"] == business_day(system_clock()).isoformat()
+    # of the seed instant.
+    assert stock_entry["entry_date"] == business_day(seed_instant).isoformat()
 
     price_entry = kinds["price_entry"][0]
     assert price_entry["variety_id"] == variety_ref
-    assert price_entry["effective_from"] == "2026-01-01"
+    assert price_entry["effective_from"] == days.price.isoformat()
     assert price_entry["list_price"] == 5000
 
     threshold = kinds["stock_threshold"][0]
@@ -213,15 +232,18 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
 
     payment = kinds["payment"][0]
     assert payment["amount"] == PAYMENT_AMOUNT
+    assert payment["paid_on"] == days.payment.isoformat()
     assert payment["customer_id"] == {"id": customers[CUSTOMER_NAME]["id"], "name": CUSTOMER_NAME}
 
     categories = {record["name"]: record for record in kinds["expense_category"]}
     expense = kinds["expense"][0]
     assert expense["amount"] == EXPENSE_AMOUNT
+    assert expense["spent_on"] == days.expense.isoformat()
     assert expense["detail"] == EXPENSE_DETAIL
     assert expense["category_id"] == {"id": categories["Servicios"]["id"], "name": "Servicios"}
 
     sale_line_total = sale_line["line_total"]
+    assert document["exported_at"] == removed_at.strftime("%Y-%m-%dT%H:%M:%SZ")
 
     dumped = json.dumps(document)
     assert "password_hash" not in dumped
@@ -280,22 +302,15 @@ def test_the_other_business_still_reads_its_own_data_after_the_run(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     db_path = tmp_path / "apostrophe.db"
+    clock = MovableClock(PINNED)
     export_dir = tmp_path / "exports"
-    _token_a, token_b = seed(db_path)
+    _token_a, token_b = seed(db_path, clock)
     set_env(monkeypatch, db_path, export_dir)
+    pin_cli_clock(monkeypatch, clock)
 
     assert main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=io.StringIO()) == 0
 
-    url = f"sqlite:///{db_path}"
-    engine = make_engine(url)
-    settings = Settings(secret_key="test-secret", database_url=url)
-    app = create_app(
-        settings,
-        engine=engine,
-        hasher=TEST_HASHER,
-        telegram=FakeTelegram(),
-        upkeep_ticker=False,
-    )
+    app, engine = build_app(db_path, clock)
     with TestClient(app) as client:
         client.headers["Authorization"] = f"Bearer {token_b}"
         listed = client.get("/customers")
@@ -314,15 +329,17 @@ def test_removal_withholds_a_live_reset_link(
     row of the leaving business's link is gone afterwards, and the other business's
     own link is untouched."""
     db_path = tmp_path / "apostrophe.db"
+    clock = MovableClock(PINNED)
     export_dir = tmp_path / "exports"
-    seed(db_path)
+    seed(db_path, clock)
     set_env(monkeypatch, db_path, export_dir)
+    pin_cli_clock(monkeypatch, clock)
     url = f"sqlite:///{db_path}"
 
     with Session(make_engine(url)) as session:
         accounts = SqlAccounts(session)
-        leaving_issued = issue_reset_link(accounts, session, EMAIL_LEAVING, NOW)
-        staying_issued = issue_reset_link(accounts, session, EMAIL_STAYING, NOW)
+        leaving_issued = issue_reset_link(accounts, session, EMAIL_LEAVING, clock())
+        staying_issued = issue_reset_link(accounts, session, EMAIL_STAYING, clock())
     assert leaving_issued is not None and staying_issued is not None
     leaving_digest = token_digest(leaving_issued.token)
 
@@ -358,9 +375,11 @@ def test_a_dry_run_writes_no_file_and_deletes_nothing(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     db_path = tmp_path / "apostrophe.db"
+    clock = MovableClock(PINNED)
     export_dir = tmp_path / "exports"
-    seed(db_path)
+    seed(db_path, clock)
     set_env(monkeypatch, db_path, export_dir)
+    pin_cli_clock(monkeypatch, clock)
     stdout = io.StringIO()
 
     result = main([EMAIL_LEAVING, "--dry-run"], stdin=io.StringIO(""), stdout=stdout)
@@ -397,9 +416,11 @@ def test_an_unknown_email_changes_nothing(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     db_path = tmp_path / "apostrophe.db"
+    clock = MovableClock(PINNED)
     export_dir = tmp_path / "exports"
-    seed(db_path)
+    seed(db_path, clock)
     set_env(monkeypatch, db_path, export_dir)
+    pin_cli_clock(monkeypatch, clock)
 
     result = main(["nobody@example.com"], stdin=io.StringIO(""), stdout=io.StringIO())
 
@@ -411,9 +432,11 @@ def test_a_wrong_name_at_the_prompt_writes_no_file(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     db_path = tmp_path / "apostrophe.db"
+    clock = MovableClock(PINNED)
     export_dir = tmp_path / "exports"
-    seed(db_path)
+    seed(db_path, clock)
     set_env(monkeypatch, db_path, export_dir)
+    pin_cli_clock(monkeypatch, clock)
 
     result = main([EMAIL_LEAVING], stdin=io.StringIO("Not The Name\n"), stdout=io.StringIO())
 
@@ -430,9 +453,11 @@ def test_eof_at_the_prompt_writes_no_file(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     db_path = tmp_path / "apostrophe.db"
+    clock = MovableClock(PINNED)
     export_dir = tmp_path / "exports"
-    seed(db_path)
+    seed(db_path, clock)
     set_env(monkeypatch, db_path, export_dir)
+    pin_cli_clock(monkeypatch, clock)
 
     result = main([EMAIL_LEAVING], stdin=io.StringIO(""), stdout=io.StringIO())
 
@@ -444,9 +469,11 @@ def test_secure_delete_scrubs_the_removed_customers_bytes_from_the_database_file
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     db_path = tmp_path / "apostrophe.db"
+    clock = MovableClock(PINNED)
     export_dir = tmp_path / "exports"
-    seed(db_path)
+    seed(db_path, clock)
     set_env(monkeypatch, db_path, export_dir)
+    pin_cli_clock(monkeypatch, clock)
 
     assert main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=io.StringIO()) == 0
 
@@ -460,9 +487,11 @@ def test_the_export_file_is_owner_only(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     db_path = tmp_path / "apostrophe.db"
+    clock = MovableClock(PINNED)
     export_dir = tmp_path / "exports"
-    seed(db_path)
+    seed(db_path, clock)
     set_env(monkeypatch, db_path, export_dir)
+    pin_cli_clock(monkeypatch, clock)
 
     assert main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=io.StringIO()) == 0
 
@@ -475,8 +504,9 @@ def test_a_table_added_later_by_raw_ddl_is_exported_with_a_name_reference_and_em
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     db_path = tmp_path / "apostrophe.db"
+    clock = MovableClock(PINNED)
     export_dir = tmp_path / "exports"
-    seed(db_path)
+    seed(db_path, clock)
     with sqlite3.connect(db_path) as connection:
         # A table added later needs its own `name` (or a declared label) like every
         # owned table does: that is `unlabelled_tables`'s own guard, proven over the
@@ -501,6 +531,7 @@ def test_a_table_added_later_by_raw_ddl_is_exported_with_a_name_reference_and_em
         )
         connection.commit()
     set_env(monkeypatch, db_path, export_dir)
+    pin_cli_clock(monkeypatch, clock)
     stdout = io.StringIO()
 
     dry = main([EMAIL_LEAVING, "--dry-run"], stdin=io.StringIO(""), stdout=stdout)
@@ -522,12 +553,14 @@ def test_a_secret_like_column_added_later_by_raw_ddl_refuses_both_modes(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     db_path = tmp_path / "apostrophe.db"
+    clock = MovableClock(PINNED)
     export_dir = tmp_path / "exports"
-    seed(db_path)
+    seed(db_path, clock)
     with sqlite3.connect(db_path) as connection:
         connection.execute("ALTER TABLE app_user ADD COLUMN bot_token_encrypted TEXT")
         connection.commit()
     set_env(monkeypatch, db_path, export_dir)
+    pin_cli_clock(monkeypatch, clock)
     dry_stdout = io.StringIO()
     real_stdout = io.StringIO()
 
@@ -547,9 +580,11 @@ def test_a_clean_slate_lets_the_same_email_open_a_new_business(
     # `_seed` opens the staying business first, then the leaving one: the one this
     # removes (EMAIL_LEAVING) is the newest, as the brief's clean-slate scenario asks.
     db_path = tmp_path / "apostrophe.db"
+    clock = MovableClock(PINNED)
     export_dir = tmp_path / "exports"
-    token_a, _token_b = seed(db_path)
+    token_a, _token_b = seed(db_path, clock)
     set_env(monkeypatch, db_path, export_dir)
+    pin_cli_clock(monkeypatch, clock)
 
     with sqlite3.connect(db_path) as connection:
         old_user_id = connection.execute(
@@ -568,23 +603,14 @@ def test_a_clean_slate_lets_the_same_email_open_a_new_business(
         ).fetchone()[0]
     assert brake_rows_after == 0  # the brake count is clean
 
-    url = f"sqlite:///{db_path}"
-    engine = make_engine(url)
-    settings = Settings(secret_key="test-secret", database_url=url)
-    app = create_app(
-        settings,
-        engine=engine,
-        hasher=TEST_HASHER,
-        telegram=FakeTelegram(),
-        upkeep_ticker=False,
-    )
+    app, engine = build_app(db_path, clock)
     with TestClient(app) as client:
         client.headers["Authorization"] = f"Bearer {token_a}"
         rejected = client.get("/customers")
         assert rejected.status_code == 401
         del client.headers["Authorization"]
 
-        reopened = _accept(client, engine, "La Huerta Nueva", EMAIL_LEAVING)
+        reopened = accept_invitation(client, engine, clock, "La Huerta Nueva", EMAIL_LEAVING)
         client.headers["Authorization"] = f"Bearer {reopened}"
         listed = client.get("/customers")
         assert listed.status_code == 200
@@ -605,10 +631,12 @@ def test_a_refused_export_directory_ends_in_a_fixed_message_with_no_traceback(
     # module; a directory open to group or other must still end in one fixed line,
     # never a traceback on the real stderr `capsys` observes.
     db_path = tmp_path / "apostrophe.db"
+    clock = MovableClock(PINNED)
     export_dir = tmp_path / "exports"
     export_dir.mkdir(mode=0o755)
-    seed(db_path)
+    seed(db_path, clock)
     set_env(monkeypatch, db_path, export_dir)
+    pin_cli_clock(monkeypatch, clock)
     stdout = io.StringIO()
 
     result = main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=stdout)
@@ -625,22 +653,15 @@ def test_an_nfd_typed_name_matches_through_main(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     db_path = tmp_path / "apostrophe.db"
+    clock = MovableClock(PINNED)
     export_dir = tmp_path / "exports"
-    url = f"sqlite:///{db_path}"
-    engine = make_engine(url)
-    settings = Settings(secret_key="test-secret", database_url=url)
-    app = create_app(
-        settings,
-        engine=engine,
-        hasher=TEST_HASHER,
-        telegram=FakeTelegram(),
-        upkeep_ticker=False,
-    )
+    app, engine = build_app(db_path, clock)
     stored_name = "Café Central"
     with TestClient(app) as client:
-        _accept(client, engine, stored_name, "cafe@example.com")
+        accept_invitation(client, engine, clock, stored_name, "cafe@example.com")
     engine.dispose()
     set_env(monkeypatch, db_path, export_dir)
+    pin_cli_clock(monkeypatch, clock)
     typed_nfd = unicodedata.normalize("NFD", stored_name) + "\n"
 
     result = main(["cafe@example.com"], stdin=io.StringIO(typed_nfd), stdout=io.StringIO())
@@ -669,9 +690,11 @@ def test_a_broken_pipe_on_the_report_keeps_the_commit_through_main(
             pass
 
     db_path = tmp_path / "apostrophe.db"
+    clock = MovableClock(PINNED)
     export_dir = tmp_path / "exports"
-    seed(db_path)
+    seed(db_path, clock)
     set_env(monkeypatch, db_path, export_dir)
+    pin_cli_clock(monkeypatch, clock)
     with sqlite3.connect(db_path) as connection:
         business_id = connection.execute(
             "SELECT id FROM business WHERE name = 'La Huerta'"
@@ -722,9 +745,11 @@ def test_a_locked_database_ends_on_the_busy_line_through_main(
     # Slow on purpose: a real "database is locked" only surfaces once SQLite's own
     # 5 s `busy_timeout` gives up. No hook, no setting shortens it (the brief).
     db_path = tmp_path / "apostrophe.db"
+    clock = MovableClock(PINNED)
     export_dir = tmp_path / "exports"
-    seed(db_path)
+    seed(db_path, clock)
     set_env(monkeypatch, db_path, export_dir)
+    pin_cli_clock(monkeypatch, clock)
     with sqlite3.connect(db_path) as connection:
         leaving_id = connection.execute(
             "SELECT id FROM business WHERE name = 'La Huerta'"

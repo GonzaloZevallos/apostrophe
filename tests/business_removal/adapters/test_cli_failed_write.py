@@ -16,7 +16,15 @@ from pathlib import Path
 import pytest
 
 from app.business_removal.adapters.cli import main
-from tests.business_removal.adapters.seed import EMAIL_LEAVING, row_counts, seed, set_env
+from tests.business_removal.adapters.seed import (
+    EMAIL_LEAVING,
+    PINNED,
+    pin_cli_clock,
+    row_counts,
+    seed,
+    set_env,
+)
+from tests.conftest import MovableClock
 
 FAILED_MESSAGE = "Failed: nothing deleted."
 
@@ -53,7 +61,8 @@ def test_a_write_that_fails_partway_leaves_no_file_and_changes_no_row(
 ) -> None:
     db_path = tmp_path / "apostrophe.db"
     export_dir = tmp_path / "exports"
-    seed(db_path)
+    clock = MovableClock(PINNED)
+    seed(db_path, clock)
     leaving_id = _business_id(db_path, "La Huerta")
     with sqlite3.connect(db_path) as connection:
         # `value` is declared INTEGER, so this table passes every schema check
@@ -72,6 +81,7 @@ def test_a_write_that_fails_partway_leaves_no_file_and_changes_no_row(
         )
         connection.commit()
     set_env(monkeypatch, db_path, export_dir)
+    pin_cli_clock(monkeypatch, clock)
     all_tables = _all_business_owned_table_names(db_path)
     staying_id = _business_id(db_path, "Otro Negocio")
     before = {
@@ -97,12 +107,14 @@ def test_a_blob_column_added_later_refuses_both_modes_with_no_file_and_no_change
 ) -> None:
     db_path = tmp_path / "apostrophe.db"
     export_dir = tmp_path / "exports"
-    seed(db_path)
+    clock = MovableClock(PINNED)
+    seed(db_path, clock)
     leaving_id = _business_id(db_path, "La Huerta")
     with sqlite3.connect(db_path) as connection:
         connection.execute("ALTER TABLE customer ADD COLUMN raw_blob BLOB")
         connection.commit()
     set_env(monkeypatch, db_path, export_dir)
+    pin_cli_clock(monkeypatch, clock)
 
     dry = main([EMAIL_LEAVING, "--dry-run"], stdin=io.StringIO(""), stdout=io.StringIO())
     real_stdout = io.StringIO()
