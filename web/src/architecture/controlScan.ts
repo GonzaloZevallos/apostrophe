@@ -501,6 +501,9 @@ function classesOf(tag: Tag, ctx: Context): string[] {
 /** The components that draw a `variant` of `botonVisual.tsx`'s class table. */
 const VISUAL_WRAPPERS = new Set(['Boton', 'BotonLink'])
 
+/** A wrapper that always draws one variant of that table and takes no `variant` prop: `BackButton`. */
+const FIXED_VARIANT: ReadonlyMap<string, string> = new Map([['BackButton', 'back']])
+
 /** `variant` -> classes, from the `CLASS` table of `botonVisual.tsx`; null when there is none. */
 function variantClasses(masked: string | undefined): Map<string, string[]> | null {
   const region = masked === undefined ? null : declarationRegion(masked, 'CLASS')
@@ -513,7 +516,8 @@ function variantClasses(masked: string | undefined): Map<string, string[]> | nul
 /** The classes a `Boton` call site draws: its `variant` (primary when absent), or an error. */
 function variantOf(tag: Tag, table: Map<string, string[]>, ctx: Context, line: number): string[] {
   const variant = attr(tag, 'variant')
-  const named = variant === undefined ? ['primary'] : variant.kind === 'string' ? [variant.value] : variant.kind === 'expr' ? [...variant.value.matchAll(/'([A-Za-z]+)'/g)].map((m) => m[1] ?? '') : []
+  const fixed = FIXED_VARIANT.get(tag.name)
+  const named = fixed !== undefined ? [fixed] : variant === undefined ? ['primary'] : variant.kind === 'string' ? [variant.value] : variant.kind === 'expr' ? [...variant.value.matchAll(/'([A-Za-z]+)'/g)].map((m) => m[1] ?? '') : []
   if (named.length === 0) {
     fail(ctx, line, 'variant cannot be read')
     return []
@@ -571,7 +575,7 @@ export function scanControls(files: ReadonlyArray<SourceFile>): ScanResult {
       if (isControl(tag, wrappers)) {
         if (wrapperInner.has(`${file.path}:${index}`)) continue
         const own = classesOf(tag, ctx)
-        const drawn = visual !== null && VISUAL_WRAPPERS.has(name) ? variantOf(tag, visual, ctx, line) : []
+        const drawn = visual !== null && (VISUAL_WRAPPERS.has(name) || FIXED_VARIANT.has(name)) ? variantOf(tag, visual, ctx, line) : []
         controls.push({ file: file.path, line, tag: name, classes: [...new Set([...drawn, ...own])] })
         continue
       }

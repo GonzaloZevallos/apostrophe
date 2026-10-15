@@ -283,3 +283,30 @@ test('a Boton variant the table does not have, or one that cannot be read, is an
   ])
   expect(useBoton('<Boton variant={elegida}>a</Boton>').errors).toEqual(['src/Pantalla.tsx:2 variant cannot be read'])
 })
+
+const BACK_BUTTON = {
+  path: 'src/components/BackButton.tsx',
+  source: 'export default function BackButton(props: object) {\n  const className = botonClass(props)\n  return <button className={className} />\n}',
+}
+
+test('a BackButton call site draws the classes of the back variant', () => {
+  const found = scanControls([
+    {
+      path: 'src/components/botonVisual.tsx',
+      source: "const CLASS = {\n  primary: 'boton',\n  back: 'boton--enlace',\n} as const",
+    },
+    BACK_BUTTON,
+    { path: 'src/shell/Flecha.tsx', source: 'export default function Flecha() {\n  return <BackButton title="x" onClick={go} />\n}' },
+  ])
+  expect(found.errors).toEqual([])
+  expect(found.controls.map((control) => control.classes)).toEqual([['boton--enlace']])
+})
+
+test('a BackButton call site is an error when the table has no back variant', () => {
+  const found = scanControls([
+    { path: 'src/components/botonVisual.tsx', source: "const CLASS = {\n  primary: 'boton',\n} as const" },
+    BACK_BUTTON,
+    { path: 'src/shell/Flecha.tsx', source: 'export default function Flecha() {\n  return <BackButton title="x" onClick={go} />\n}' },
+  ])
+  expect(found.errors).toEqual(['src/shell/Flecha.tsx:2 variant "back" is not in botonVisual\'s table'])
+})

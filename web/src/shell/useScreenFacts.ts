@@ -1,5 +1,5 @@
 /**
- * `useScreenFacts`: what the record behind the leaf says about its chrome (GH-135, ADR-0041).
+ * `useScreenFacts`: what the record behind the leaf says about its chrome (GH-135, ADR-0043).
  * Only a leaf under a variety's path (`/varieties/:id…`) has facts; any other gets
  * `{ archived: 'unknown', varietyName: null }`.
  *

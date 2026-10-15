@@ -1,5 +1,5 @@
 /**
- * `BackButton`: the one renderer of a back control, "‹ <parent>" (GH-135, ADR-0041, amends
+ * `BackButton`: the one renderer of a back control, "‹ <parent>" (GH-135, ADR-0043, amends
  * ADR-0037's `back` kind). The shell's `BackArrow` draws it for every card; Análisis draws
  * it for its tab root's "Volver" to Más. Nothing else imports it and nothing else writes the
  * glyph (`architecture/backControl.ts`).

@@ -1,5 +1,5 @@
 /**
- * The guard of the back control (GH-135, ADR-0041): one component draws "‹ <parent>"
+ * The guard of the back control (GH-135, ADR-0043): one component draws "‹ <parent>"
  * (`components/BackButton.tsx`), and only the shell and Análisis's "Volver" may import it.
  * Fed a module's path and source, `checkBackControl` returns one line per offence, empty
  * when the module is clean. `backControl.test.ts` feeds it what it must reject before
@@ -23,8 +23,15 @@ const BACK_GLYPH = '‹'
 /** The path separator, spelled so the source holds no lone slash literal (`routes.test.ts`). */
 const SEP = String.fromCharCode(47)
 
-/** The modules outside `shell/` that may import `BackButton`: the tab root's "Volver" to Más. */
-export const BACK_BUTTON_IMPORTERS: readonly string[] = ['screens/Analisis.tsx']
+/**
+ * The modules outside `shell/` that may import `BackButton`: the tab root's "Volver" to Más,
+ * and the Onboarding's "Atrás", which sits outside `Shell` on purpose (router.tsx), so the
+ * shell cannot draw it.
+ */
+export const BACK_BUTTON_IMPORTERS: readonly string[] = [
+  'screens/Analisis.tsx',
+  'screens/onboarding/OnboardingStep.tsx',
+]
 
 /** The module that defines the glyph and the button. */
 const BACK_BUTTON_MODULE = 'components/BackButton.tsx'
@@ -126,7 +133,7 @@ export function checkBackControl(path: string, source: string): string[] {
       ts.isStringLiteralLike(specifier) &&
       importsBackButton(specifier.text)
     ) {
-      report(node, 'imports components/BackButton, only shell/ and screens/Analisis.tsx may')
+      report(node, 'imports components/BackButton, only shell/, screens/Analisis.tsx and screens/onboarding/OnboardingStep.tsx may')
     }
     ts.forEachChild(node, visit)
   }

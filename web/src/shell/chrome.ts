@@ -1,5 +1,5 @@
 /**
- * `chromeOf`: the one place the shell's chrome is decided (GH-135, ADR-0041, invariant 1).
+ * `chromeOf`: the one place the shell's chrome is decided (GH-135, ADR-0043, invariant 1).
  * A back arrow, the rail's "+ Nueva venta" and the bar and rail marks all come from the
  * result, which `Shell` only renders; no component works them out from `kind`, `pane` or the
  * viewport.

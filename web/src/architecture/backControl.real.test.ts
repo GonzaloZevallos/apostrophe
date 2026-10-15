@@ -1,5 +1,5 @@
 /**
- * The back control over the real tree (GH-135, ADR-0041): every module under `src/` goes
+ * The back control over the real tree (GH-135, ADR-0043): every module under `src/` goes
  * through `checkBackControl` and none may write the back glyph itself or import
  * `components/BackButton` outside the shell and `screens/Analisis.tsx`. The checker's own
  * test (`backControl.test.ts`) feeds it what it must reject; this one proves the product

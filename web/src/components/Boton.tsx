@@ -7,7 +7,7 @@
  *   action. The icon is decorative (`aria-hidden`), so the accessible name is the word.
  * - **Text only**, and only these kinds: `textOnly="submit"` with `type="submit"` (the
  *   submit of a form or sheet), `link` (enlace) and `undo` (Deshacer). They
- *   accept no `icon`. A back control is not a `Boton` kind: `BackButton` draws it (ADR-0041).
+ *   accept no `icon`. A back control is not a `Boton` kind: `BackButton` draws it (ADR-0043).
  * - **Icon only** (`variant="icon"`): an obvious action from the closed `ACTION_ICON`
  *   map (`botonVisual.tsx`: delete, search, close, edit, share), with a required `ariaLabel`
  *   (the exact current word, never a new one) and a 44 px target (`.boton-icono`).
