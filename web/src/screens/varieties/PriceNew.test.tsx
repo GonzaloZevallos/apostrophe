@@ -308,3 +308,24 @@ test('a VIP price that is not a whole amount is refused before sending', async (
   expect(await screen.findByText('Revisá los precios cargados')).toBeInTheDocument()
   expect(writes(fetchMock)).toEqual([])
 })
+
+test('a "$" goes before the list, bulk and VIP price and never before the minimum, outside the name and the value', async () => {
+  const user = userEvent.setup()
+  await renderOpened(api({}))
+
+  const amounts = [/^Precio de lista/, /^Precio por cantidad/, /^Precio VIP/]
+  for (const label of amounts) {
+    const input = await screen.findByLabelText(label)
+    const prefix = input.previousElementSibling
+    expect(prefix).toHaveTextContent('$')
+    expect(prefix).toHaveAttribute('aria-hidden', 'true')
+    expect(input.parentElement).toHaveClass('campo__monto')
+    await user.type(input, '1500')
+    expect(input).toHaveValue('1500')
+    expect(screen.getByRole('textbox', { name: label })).toBe(input)
+    expect(input).not.toHaveAccessibleName(/\$/)
+  }
+  const minimum = screen.getByLabelText(/^Mínimo en gramos/)
+  expect(minimum.parentElement).not.toHaveClass('campo__monto')
+  expect(minimum.closest('.campo')).not.toHaveTextContent('$')
+})
