@@ -4357,23 +4357,6 @@ body {
   cursor: pointer;
 }
 
-.aviso-onboarding {
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-  width: 100%;
-  min-height: var(--alto-tocable);
-  padding: var(--espacio-lg) 18px;
-  border: 0;
-  border-radius: var(--radio-panel-grande);
-  background: var(--superficie);
-  color: var(--tinta);
-  font: inherit;
-  text-align: left;
-  text-decoration: none;
-  cursor: pointer;
-}
-
 .aviso-onboarding__titulo {
   display: flex;
   align-items: center;

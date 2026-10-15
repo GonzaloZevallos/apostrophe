@@ -11,7 +11,9 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router'
 import { getOnboardingProgress, keepProgress, sendAdvance } from '../../api/onboarding'
 import { ONBOARDING_VARIETY } from '../../routes'
+import Boton from '../../components/Boton'
 import StockEntryForm from '../StockEntryForm'
+import StepSubmit from './StepSubmit'
 import { useOnboardingWrite } from './useOnboardingWrite'
 import type { StepBodyProps } from './stepBodies'
 
@@ -51,17 +53,17 @@ export default function StockStep({ me, progress, onDirtyChange, onProgress }: S
           </div>
         )}
         <div className="onboarding__acciones">
-          <button type="button" className="boton" disabled={sending} onClick={() => void run(sendAdvance)}>
+          <StepSubmit disabled={sending} onSubmit={() => void run(sendAdvance)}>
             Seguir
-          </button>
-          <button
-            type="button"
-            className="boton boton--suave"
+          </StepSubmit>
+          <Boton
+            variant="secondary"
+            icon="agregar"
             disabled={sending}
             onClick={() => void navigate(ONBOARDING_VARIETY)}
           >
             Agregar otra variedad
-          </button>
+          </Boton>
         </div>
         {notice}
       </>
@@ -71,9 +73,9 @@ export default function StockStep({ me, progress, onDirtyChange, onProgress }: S
     return (
       <>
         <p className="onboarding__porque">Primero cargá una variedad con su precio de hoy.</p>
-        <button type="button" className="boton" onClick={() => void navigate(ONBOARDING_VARIETY)}>
+        <Boton icon="agregar" onClick={() => void navigate(ONBOARDING_VARIETY)}>
           Cargar una variedad
-        </button>
+        </Boton>
       </>
     )
   }
