@@ -3,7 +3,8 @@
  * own around its next action, so this wraps one `Boton textOnly="submit"` in a form
  * whose `onSubmit` calls the same write the button used to call on click. Never rendered
  * inside another form. `.onboarding__envio` is `display: contents`, so the button stays
- * the layout child of the container it sits in.
+ * the layout child of the container it sits in. The variant is spelled out as literals so the
+ * control scan (`controlScan.ts`) can read which classes it draws.
  */
 
 import type { ReactNode } from 'react'
@@ -20,7 +21,7 @@ export default function StepSubmit({
   children,
   onSubmit,
   disabled,
-  variant = 'primary',
+  variant,
 }: StepSubmitProps) {
   return (
     <form
@@ -30,7 +31,7 @@ export default function StepSubmit({
         onSubmit()
       }}
     >
-      <Boton variant={variant} textOnly="submit" type="submit" disabled={disabled}>
+      <Boton variant={variant === 'secondary' ? 'secondary' : 'primary'} textOnly="submit" type="submit" disabled={disabled}>
         {children}
       </Boton>
     </form>

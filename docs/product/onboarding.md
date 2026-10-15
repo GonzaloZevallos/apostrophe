@@ -56,10 +56,12 @@ Success criteria:
   - one short title and one sentence on why it matters;
   - its fields and one primary action;
   - progress in words as well as shape ("Paso 2 de 6"), never by colour alone;
-  - "Atrás";
+  - "Atrás", to the step before, on every step but step 1. Step 1 has no step before it: it shows no "Atrás", and "Cerrar" is its way out;
   - "Saltar", on optional steps only;
-  - "Saltar el resto", on optional steps only and only once both required steps are done;
+  - "Saltar el resto", on optional steps only, only once both required steps are done, and never on the last step (step 6), where it would pass nothing "Saltar" does not;
   - "Cerrar", which lands on Inicio and keeps everything saved and the resume point.
+- **The skip controls**: "Saltar" and, when it shows, "Saltar el resto" sit together on one line as text links, as the design draws them; neither is a button.
+- **The step frame follows the drawn design** (`docs/product/design-system/pantallas/Onboarding*.dc.html`); where this file and the drawing disagree on what a step shows, this file wins and the difference is a defect in the design.
 - **Unsaved changes**: leaving a step with something typed and not saved, by "Cerrar", "Atrás" or "Saltar", asks before discarding. An untouched step leaves at once.
 - **Inside the steps**, the owners' own behaviour applies unchanged: field rules, refusals inline keeping what was typed, toasts, Probarlo's and Buscar mi chat's reasons, "Sin conexión", the generic retry and "Eso ya no está.".
 
@@ -79,9 +81,23 @@ Success criteria:
   - There is no cap, and each variety is saved the moment its step is saved.
   - One variety is enough to continue.
   - Progress stays on steps 1–2 while varieties are being added.
+  - "Agregar otra variedad" is the only way the Onboarding adds a further variety.
 - **Step 4** ends at the saved bot and says: "Cuando quieras, publicalo desde Variedades → Mandar catálogo". Publicar and the pin's status stay on the catalog screen.
 - **Step 5** reads "Enviale el link a tu socio" and never waits for the partner to join.
 - **A skipped step** says where it can be done later: Configuración → Integraciones, Usuarios, Mensaje del catálogo or Categorías de gastos. Skipping step 3 or 6 keeps the defaults.
+
+### Step 1
+
+- **One form, one primary action**: the variety's name, its list price and the price form's optional fields as Variedades shows them under the pricing switches (pricing-settings.md), saved by one primary action. There is no separate save for the name and for the price.
+- **Two writes through the owners**: that one action may save the variety and then its price entry effective today, each through its owner's route and refusals (varieties.md). Nothing is restated here.
+  - A refused name saves nothing and keeps everything typed.
+  - A refused price leaves the variety saved, keeps everything typed and shows the refusal on its field. The retry sends only the price and never adds a second variety.
+- **What step 1 shows on a return**, the first that fits:
+  1. **A variety saved with no price entry** (a refused price, then left; on the first variety or on one added through "Agregar otra variedad"): step 1 shows that variety's name kept and only the price to fill in, whether or not another variety already has a price today. With several, it shows the first by name, and each saved price moves on to the next. Saving the price carries on exactly as any save of step 1 does, and sends only the price.
+  2. **Otherwise, a done step 1** (a variety has a price today): the step shows the saved variety, its name and today's list price, marked "Hecho", never an empty form. With several, it shows the first by name that has a price today. Its primary action moves on to step 2 and saves nothing.
+  3. **Otherwise** (no variety yet): the empty form.
+- In every case step 1 counts as done from the data alone (a variety with a price today): showing an unpriced variety's price form never moves the progress count or the resume point, and "Cerrar" leaves at once with everything kept.
+- A further variety is added only through "Agregar otra variedad".
 
 ### Done and passed
 
@@ -95,7 +111,7 @@ Success criteria:
 | 5. Partner | "Seguir" once a link has been created, or "Saltar" |
 | 6. Categories | "Seguir" only. Adding, renaming or removing a category saves at once but never passes the step |
 
-- **Data that already exists** shows "Hecho" and counts as passed: a bot saved earlier, a second user already in the business.
+- **Data that already exists** shows "Hecho" and counts as passed: a bot saved earlier, a second user already in the business. A done required step shows "Hecho" the same way (step 1 as above).
 - **Resume** lands on the first step that is neither done nor passed, or on "Listo" when there is none.
 - **Leaving** ("Cerrar", closing the app, a dropped connection) keeps everything saved and the resume point.
 - **"Saltar el resto"** passes every remaining optional step at once.
@@ -114,7 +130,7 @@ Success criteria:
 
 ### Empty states and errors
 
-- Step 1 starts with empty fields. No step shows a figure, a placeholder or sample data.
+- Step 1 starts with empty fields while the business has no variety. No step shows a figure, a placeholder or sample data.
 - Refusals and failures belong to each setting's owner: inline, keeping what was typed, carrying no data. No network shows "Sin conexión", a server error the generic retry.
 - A record that is gone follows accounts.md's "Eso ya no está." rule.
 - Data a partner created shows "Hecho" on the next open. No live updates.
@@ -150,8 +166,15 @@ There is no telemetry.
 - **One fact, one place (criterion 4)**: a value saved in each step reads the same in Configuración or on the variety's page, and the reverse.
 - **Only the sale is required (criterion 2)**: front tests show:
   - every optional step skipped in one tap;
-  - "Saltar el resto" only once both required steps are done;
+  - "Saltar el resto" only once both required steps are done, and never on step 6;
+  - "Saltar" and "Saltar el resto" as text links on one line;
   - "Listo" naming where each skipped step lives.
+- **The step frame**: front tests show no "Atrás" on step 1 and "Atrás" opening the step before on steps 2–6.
+- **Step 1**: front tests show:
+  - one primary action, saving the variety and its price;
+  - a refused price keeping everything typed, with the retry sending only the price and no second variety created;
+  - returning to step 1 after a variety is priced today showing that variety marked "Hecho", and moving on to step 2 adding no variety;
+  - with one variety priced today and a second saved with no price, returning to step 1 showing the second's name kept and only its price to fill in, saving only the price, with the progress count unchanged.
 - **Who gets it**:
   - a brand-new business gets it;
   - an imported business (including one that landed in the Onboarding before the import) never sees it again;
@@ -164,7 +187,7 @@ There is no telemetry.
   - the Onboarding has no bar and no "+ Nueva venta";
   - Nueva venta opened from "Listo" returns to Inicio.
 - **Isolation**: the routes are in the isolation sweep and the gated-route test; business removal leaves 0 rows of the state and exported count = deleted count.
-- **Design (criterion 5)**: every screen in `screens.json`, `compare.sh` before and after, and a by-eye pass on phone and computer in both themes.
+- **Design (criterion 5)**: every screen in `screens.json`, `compare.sh` before and after, and a by-eye pass on phone and computer in both themes; the step frame and step 1 match `OnboardingVariedad` and `OnboardingCategorias`.
 - **Business metrics**, read by the operator from existing records only (no tool, no dashboard, never shown in the app):
   - the share of brand-new businesses with a priced variety and a stock entry;
   - the share whose first sale falls on the day they were opened.
@@ -182,6 +205,7 @@ There is no telemetry.
 - Ending the Onboarding from outside it, without reaching "Listo".
 - Publishing the catalog from the Onboarding.
 - Waiting for a partner to join.
+- Editing or renaming a saved variety from step 1: that is the variety's page.
 - Usage tracking, a dashboard or an operator script for its metrics.
 - Illustrations, animation, marketing copy, new colours or new components.
 - Live updates between partners while it is open.

@@ -21,10 +21,12 @@ from app.static_spa import (
 )
 from tests.conftest import SETTINGS, TEST_HASHER
 from tests.fakes.telegram import FakeTelegram
+from tests.legacy_pin import PINNED_LEGACY_ROWS
 
 ROOT = Path(__file__).resolve().parent.parent
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 SCREENS_JSON = ROOT / "scripts" / "design" / "screens.json"
+
 
 @pytest.mark.parametrize(
     ("path", "template", "expected"),
@@ -94,18 +96,6 @@ def without_screen(paths: Iterable[str], screens: set[str]) -> list[str]:
     return sorted({normalise(path) for path in paths} - screens)
 
 
-def uncovered(old_paths: Iterable[str], rows: Iterable[tuple[str, str]]) -> list[str]:
-    """The old paths (an `{id}` read as 7) that no legacy row's `old` template matches."""
-    templates = [old for old, _ in rows]
-    return sorted(
-        path
-        for path in old_paths
-        if not any(
-            matches_template(path.replace("{id}", "7"), old) is not None for old in templates
-        )
-    )
-
-
 def test_the_normaliser_reads_every_placeholder_name_as_an_id() -> None:
     assert normalise("/sales/{owing_sale}") == "/sales/{id}"
     assert normalise("/customers/{debtor}/edit") == "/customers/{id}/edit"
@@ -114,18 +104,12 @@ def test_the_normaliser_reads_every_placeholder_name_as_an_id() -> None:
     assert normalise("/sales/new") == "/sales/new"
 
 
-def test_every_old_router_path_has_a_legacy_row() -> None:
-    fixture = json.loads((FIXTURES / "legacy_front_paths.json").read_text())
-
-    assert not uncovered(fixture["paths"], LEGACY_FRONT_PATHS)
-    assert fixture["removed"] == []
-
-
-def test_a_fixture_path_with_no_legacy_row_is_refused() -> None:
-    rows = [("/ventas", "/sales"), ("/ventas/{id}", "/sales/{id}")]
-
-    assert uncovered(["/ventas", "/ventas/{id}", "/clientes/{id}"], rows) == ["/clientes/{id}"]
-    assert uncovered(["/ventas/nueva"], rows) == ["/ventas/nueva"]
+def test_every_legacy_row_is_pinned_old_and_target() -> None:
+    # The raw templates, `{id}` still literal, before any id is substituted.
+    assert len(PINNED_LEGACY_ROWS) == 20
+    assert len(LEGACY_FRONT_PATHS) == 20
+    assert {old for old, _ in LEGACY_FRONT_PATHS} == {old for old, _ in PINNED_LEGACY_ROWS}
+    assert dict(LEGACY_FRONT_PATHS) == dict(PINNED_LEGACY_ROWS)
 
 
 def test_every_legacy_target_is_a_screen_of_the_design() -> None:
@@ -190,9 +174,7 @@ def _rows_text(rows: object) -> str:
     return json.dumps(rows)
 
 
-def test_the_shipped_legacy_rows_load_and_carry_the_id_across() -> None:
-    assert dict(LEGACY_FRONT_PATHS)["/variedades/{id}"] == "/varieties/{id}"
-    assert dict(LEGACY_FRONT_PATHS)["/mi-stock/entradas/{id}"] == "/varieties/entries/{id}"
+def test_the_shipped_legacy_rows_load_from_their_file() -> None:
     assert parse_legacy_front_paths((ROOT / "app" / "legacy_front_paths.json").read_text()) == (
         LEGACY_FRONT_PATHS
     )

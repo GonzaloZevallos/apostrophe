@@ -12,7 +12,7 @@
  * once. Closing keeps everything saved and the resume point: it sends nothing.
  */
 
-import { type ComponentType, useState } from 'react'
+import { type ComponentType, useCallback, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router'
 import { ApiError, NetworkError } from '../../api/client'
@@ -33,11 +33,21 @@ import { useLeaveGuard } from '../../components/useLeaveGuard'
 import { afterProgress } from './afterProgress'
 import StepIndicator from './StepIndicator'
 import type { StepBodyProps } from './stepBodies'
-import { isOptional, laterHint, previousPath, STEP_COUNT, stepInfo, stepNumber } from './steps'
+import { DISCARD_DETAIL, PARTLY_SAVED_DETAIL } from './onboardingMessages'
+import {
+  isFirst,
+  isLast,
+  isOptional,
+  laterHint,
+  previousPath,
+  STEP_COUNT,
+  stepInfo,
+  stepNumber,
+} from './steps'
 import { HOME } from '../../routes'
 
+export { DISCARD_DETAIL, PARTLY_SAVED_DETAIL }
 export const DISCARD_QUESTION = '¿Descartás lo que escribiste?'
-export const DISCARD_DETAIL = 'Se pierde lo que escribiste: todavía no se guardó nada.'
 export const KEEP_TYPING = 'No, seguí escribiendo'
 export const DISCARD = 'Sí, descartalo'
 
@@ -59,10 +69,18 @@ export default function OnboardingStep({
   const queryClient = useQueryClient()
   const info = stepInfo(slug)
   const [dirty, setDirty] = useState(false)
+  const [partlySaved, setPartlySaved] = useState(false)
   const { blocker, disarm } = useLeaveGuard(dirty)
   const [askingSkip, setAskingSkip] = useState<Skip | null>(null)
   const [failure, setFailure] = useState<Failure | null>(null)
   const [sending, setSending] = useState(false)
+  const previous = isFirst(slug) ? undefined : previousPath(slug)
+  const leaveDetail = partlySaved ? PARTLY_SAVED_DETAIL : DISCARD_DETAIL
+  // A stable setter: the bodies list it in their effects' dependencies.
+  const onDirtyChange = useCallback((value: boolean, saved = false) => {
+    setDirty(value)
+    setPartlySaved(saved)
+  }, [])
 
   function onAnswer(answer: OnboardingProgress, to?: string): void {
     disarm()
@@ -96,14 +114,12 @@ export default function OnboardingStep({
   return (
     <main className="pantalla onboarding">
       <div className="onboarding__columna">
-        <div className="onboarding__cabecera">
-          <Boton
-            variant="back"
-            ariaLabel="Atrás"
-            onClick={() => void navigate(previousPath(slug) ?? HOME)}
-          >
-            ‹ Atrás
-          </Boton>
+        <div className={`onboarding__cabecera${previous === undefined ? ' onboarding__cabecera--derecha' : ''}`}>
+          {previous !== undefined && (
+            <Boton variant="back" ariaLabel="Atrás" onClick={() => void navigate(previous)}>
+              ‹ Atrás
+            </Boton>
+          )}
           <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={() => void navigate(HOME)} />
         </div>
 
@@ -121,7 +137,7 @@ export default function OnboardingStep({
         </div>
 
         <div className="onboarding__cuerpo">
-          <Body me={me} progress={progress} onDirtyChange={setDirty} onProgress={onAnswer} />
+          <Body me={me} progress={progress} onDirtyChange={onDirtyChange} onProgress={onAnswer} />
         </div>
 
         {failure === 'offline' && <SinConexion />}
@@ -129,16 +145,16 @@ export default function OnboardingStep({
 
         {!info.required && (
           <div className="onboarding__saltar">
-            <Boton variant="secondary" icon="saltar" disabled={sending} onClick={() => requestSkip('one')}>
-              Saltar
-            </Boton>
-            {progress.can_skip_rest && (
-              <div className="onboarding__resto">
-                <Boton variant="secondary" icon="saltar" disabled={sending} onClick={() => requestSkip('rest')}>
+            <div className="onboarding__saltar-fila">
+              <Boton variant="link" disabled={sending} onClick={() => requestSkip('one')}>
+                Saltar
+              </Boton>
+              {progress.can_skip_rest && !isLast(slug) && (
+                <Boton variant="link" disabled={sending} onClick={() => requestSkip('rest')}>
                   Saltar el resto
                 </Boton>
-              </div>
-            )}
+              )}
+            </div>
             <span className="pie onboarding__pista">{laterHint(info)}</span>
           </div>
         )}
@@ -148,7 +164,7 @@ export default function OnboardingStep({
         <LeaveConfirm
           blocker={blocker}
           question={DISCARD_QUESTION}
-          detail={DISCARD_DETAIL}
+          detail={leaveDetail}
           keepLabel={KEEP_TYPING}
           discardLabel={DISCARD}
         />
@@ -156,7 +172,7 @@ export default function OnboardingStep({
       {askingSkip !== null && (
         <ConfirmDialog
           title={DISCARD_QUESTION}
-          detail={DISCARD_DETAIL}
+          detail={leaveDetail}
           confirmText={DISCARD}
           cancelText={KEEP_TYPING}
           onConfirm={() => void skip(askingSkip)}

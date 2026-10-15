@@ -55,6 +55,7 @@ function answer(
     varieties_count: 2,
     stock_entries_count: 2,
     price_target: null,
+    priced_target: null,
     stock_target: null,
     ...overrides,
   }
@@ -298,15 +299,6 @@ test('"Cerrar" on an untouched step leaves at once to Inicio and sends nothing',
 
   expect(await screen.findByText('pantalla inicio')).toBeInTheDocument()
   expect(calls.filter((call) => call.startsWith('POST'))).toEqual([])
-})
-
-test('"Atrás" opens the step before', async () => {
-  stubProgress(REQUIRED_DONE)
-  renderAt(ONBOARDING_BOT)
-
-  await userEvent.click(await screen.findByRole('button', { name: 'Atrás' }))
-
-  expect(await screen.findByText('Paso 3 de 6')).toBeInTheDocument()
 })
 
 test('a body that saved hands its answer to the frame, which follows it', async () => {

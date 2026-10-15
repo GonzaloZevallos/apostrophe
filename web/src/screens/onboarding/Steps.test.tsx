@@ -45,6 +45,7 @@ function answer(
     varieties_count: 1,
     stock_entries_count: 0,
     price_target: null,
+    priced_target: null,
     stock_target: null,
     ...overrides,
   }
@@ -159,7 +160,7 @@ test('step 1 with a price target shows the price form only and ends with one var
   // One "Cerrar", the frame's own: the price form draws no title row here.
   expect(screen.getAllByRole('button', { name: 'Cerrar' })).toHaveLength(1)
   await user.type(screen.getByLabelText(/^Precio de lista/), '12000')
-  await user.click(screen.getByRole('button', { name: 'Guardá el precio' }))
+  await user.click(screen.getByRole('button', { name: 'Guardá la variedad' }))
 
   expect(await screen.findByRole('heading', { name: 'Cargá lo que tenés hoy' })).toBeInTheDocument()
   expect(calls).not.toContain('POST /varieties')
@@ -178,7 +179,7 @@ test('step 1 follows the pricing switches: with both on, the price form offers t
   expect(screen.queryByLabelText('Rige desde')).not.toBeInTheDocument()
 })
 
-test('step 1 with no target names the variety, then a refused price keeps what was typed and the retry sends only the price', async () => {
+test('step 1 with no target saves the variety and its price with one action; a refused price keeps what was typed and the retry sends only the price', async () => {
   let refuse = true
   stubFetch(answer(NONE), {
     'POST /varieties': () => json({ id: 7, name: 'Mango Bomb', current_price: null }, 201),
@@ -189,16 +190,14 @@ test('step 1 with no target names the variety, then a refused price keeps what w
   renderAt(ONBOARDING_VARIETY)
 
   await user.type(await screen.findByLabelText(/^Nombre/), 'Mango Bomb')
-  await user.click(screen.getByRole('button', { name: 'Agregá la variedad' }))
-  const list = await screen.findByLabelText(/^Precio de lista/)
-  await user.type(list, '12000')
-  await user.click(screen.getByRole('button', { name: 'Guardá el precio' }))
+  await user.type(screen.getByLabelText(/^Precio de lista/), '12000')
+  await user.click(screen.getByRole('button', { name: 'Guardá la variedad' }))
 
   expect(await screen.findByRole('alert')).toHaveTextContent('Revisá los precios cargados')
   expect(screen.getByLabelText(/^Precio de lista/)).toHaveValue('12000')
 
   refuse = false
-  await user.click(screen.getByRole('button', { name: 'Guardá el precio' }))
+  await user.click(screen.getByRole('button', { name: 'Guardá la variedad' }))
   await waitFor(() => expect(calls.filter((call) => call === 'POST /varieties/7/prices')).toHaveLength(2))
   expect(calls.filter((call) => call === 'POST /varieties')).toHaveLength(1)
 })
