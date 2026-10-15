@@ -113,3 +113,17 @@ test('disabled passes through to the native button', () => {
   )
   expect(screen.getByRole('button', { name: 'Guardá la venta' })).toBeDisabled()
 })
+
+test('a notice is the card class, named by its whole visible text, with no aria-label', () => {
+  render(
+    <Boton variant="notice">
+      <span>Seguí con la configuración</span>
+      <span>Falta: Categorías</span>
+    </Boton>,
+  )
+  const button = screen.getByRole('button', {
+    name: 'Seguí con la configuraciónFalta: Categorías',
+  })
+  expect(button.className).toBe('boton-aviso')
+  expect(button.getAttribute('aria-label')).toBeNull()
+})
