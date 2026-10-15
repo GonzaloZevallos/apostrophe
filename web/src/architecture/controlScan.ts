@@ -555,8 +555,8 @@ export function scanControls(files: ReadonlyArray<SourceFile>): ScanResult {
       if (component === null) continue
       wrapperInner.add(`${file.path}:${index}`)
       wrappers.add(component)
-      for (const imported of masked.matchAll(/\bfrom\s+['"]\.\/([\w$-]+)['"]/g)) {
-        const dir = file.path.slice(0, file.path.lastIndexOf('/') + 1)
+      for (const imported of masked.matchAll(/\bfrom\s+['"]\.\x2f([\w$-]+)['"]/g)) {
+        const dir = /^.*\x2f/.exec(file.path)?.[0] ?? ''
         const visual = visualMaps.get(`${dir}${imported[1] ?? ''}`)
         if (visual !== undefined) wrapperVisual.set(component, visual)
       }
