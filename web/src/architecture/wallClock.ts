@@ -20,9 +20,9 @@ export interface WallClockRead {
 }
 
 const READS: { pattern: string; regex: RegExp }[] = [
-  { pattern: 'Date.now()', regex: /\bDate\s*\.\s*now\s*\(/g },
-  { pattern: 'new Date()', regex: /\bnew\s+Date\s*\(\s*\)/g },
-  { pattern: 'Date()', regex: /(?<![\w$.])(?<!\bnew\s+)Date\s*\(/g },
+  { pattern: 'Date.now', regex: /\bDate\s*\.\s*now\s*\(/g },
+  { pattern: 'new Date', regex: /\bnew\s+Date\s*\(\s*\)/g },
+  { pattern: 'Date call', regex: /(?<![\w$.])(?<!\bnew\s+)Date\s*\(/g },
 ]
 
 // A literal instant: a number, a string, or `new Date(<number or string>)`.
@@ -39,9 +39,15 @@ function blankComments(text: string): string {
     .replace(/\/\/[^\n]*/g, (comment) => ' '.repeat(comment.length))
 }
 
+/** True when the file pins a literal fake instant, which exempts the whole file. */
+export function pinsFakeInstant(text: string): boolean {
+  const code = blankComments(text)
+  return PINNED.some((pinned) => pinned.test(code))
+}
+
 export function findWallClockReads(text: string): WallClockRead[] {
   const code = blankComments(text)
-  if (PINNED.some((pinned) => pinned.test(code))) return []
+  if (pinsFakeInstant(text)) return []
   const found: WallClockRead[] = []
   for (const { pattern, regex } of READS) {
     for (const match of code.matchAll(regex)) {

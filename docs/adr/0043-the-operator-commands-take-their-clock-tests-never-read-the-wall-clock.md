@@ -56,9 +56,10 @@ is no allowlist.
   one with only `shouldAdvanceTime`, exempts nothing, because it still starts at the real
   instant.
 - **Proof inputs are `.txt` files** under `web/src/architecture/fixtures/`, read with
-  `?raw` and run through the same function. The scan glob cannot match them, so the guard
-  needs no entry for itself, and its own patterns are regular expressions, so their source
-  never matches itself.
+  `?raw` and run through the same function. The scan glob cannot match them. The guard's own test files hold no
+  proof input and pin no fake instant (`noWallClock.test.ts` asserts it), and its own
+  patterns are regular expressions, so their source never matches itself. The guard needs
+  no entry for itself.
 - **Comments are blanked first**, newlines kept, the way `findActionLinks` does it
   (ADR-0037 amendment). Known limits: a `//` inside a string hides the rest of that line
   (`commented.txt` shows it stops there), and an aliased `const n = Date.now` is not
