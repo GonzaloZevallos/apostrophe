@@ -74,6 +74,8 @@
     { "screen": "CatalogoCompu", "route": "/varieties/catalog", "path": "/varieties/catalog", "viewport": [1280, 920] },
     { "screen": "Analisis", "route": "/analysis", "path": "/analysis" },
     { "screen": "AnalisisCompu", "route": "/analysis", "path": "/analysis", "viewport": [1280, 920] },
+    { "screen": "AnalisisOscuro", "design": "Analisis", "route": "/analysis", "path": "/analysis", "tema": "oscuro" },
+    { "screen": "AnalisisCompuOscuro", "design": "AnalisisCompu", "route": "/analysis", "path": "/analysis", "tema": "oscuro", "viewport": [1280, 920] },
     { "screen": "Mas", "route": "/more", "path": "/more" },
     { "screen": "Configuracion", "route": "/settings", "path": "/settings" },
     { "screen": "ConfiguracionCompu", "route": "/settings", "path": "/settings", "viewport": [1280, 920] },
