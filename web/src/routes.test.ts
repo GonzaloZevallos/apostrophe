@@ -14,6 +14,7 @@ import {
   pathTo,
   placeOf,
   SCREENS,
+  screenOf,
   type Kind,
   type Place,
   type ScreenId,
@@ -450,6 +451,16 @@ describe("screens.json against the English routes", () => {
         routes.CATCH_ALL,
       );
     }
+  });
+});
+
+describe("the screens whose back names the record", () => {
+  test("a variety's page, its prices and its entries are marked backLabel record, and nothing else", () => {
+    const marked = SCREENS.filter((entry) => "backLabel" in entry && entry.backLabel === "record").map(
+      (entry) => entry.id,
+    );
+    expect(marked.sort()).toEqual(["variety", "variety-entries", "variety-prices"]);
+    for (const id of marked) expect(screenOf(id).kind).toBe("card");
   });
 });
 
