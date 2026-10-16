@@ -19,6 +19,32 @@ export function FieldError({ message }: { message: string | undefined }) {
   )
 }
 
+interface AmountInputProps {
+  className: string
+  value: string
+  onChange: (value: string) => void
+  required?: boolean
+}
+
+/**
+ * A pesos input with the "$" before it. The sign is drawn, not typed: it is hidden from the
+ * accessible name and never part of the value, so a fill and a payload see digits only.
+ */
+function AmountInput({ className, value, onChange, required }: AmountInputProps) {
+  return (
+    <span className="campo__monto">
+      <span className="campo__prefijo" aria-hidden="true">$</span>
+      <input
+        className={className}
+        inputMode="numeric"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        required={required}
+      />
+    </span>
+  )
+}
+
 export interface PriceFieldsProps {
   /** The switches in force: a rule that is off has no field. */
   settings: PricingSettings
@@ -32,11 +58,10 @@ export default function PriceFields({ settings, values, errors, onChange }: Pric
     <>
       <label className="campo">
         <span className="campo__rotulo">Precio de lista</span>
-        <input
+        <AmountInput
           className="campo__input campo__input--monto"
-          inputMode="numeric"
           value={values.listPrice}
-          onChange={(event) => onChange('listPrice', event.target.value)}
+          onChange={(value) => onChange('listPrice', value)}
           required
         />
         <span className="campo__ayuda" data-copy="help">{PRICE_PER_GRAM_HELP}</span>
@@ -46,11 +71,10 @@ export default function PriceFields({ settings, values, errors, onChange }: Pric
         <>
           <label className="campo">
             <span className="campo__rotulo">Precio por cantidad</span>
-            <input
+            <AmountInput
               className="campo__input"
-              inputMode="numeric"
               value={values.bulkPrice}
-              onChange={(event) => onChange('bulkPrice', event.target.value)}
+              onChange={(value) => onChange('bulkPrice', value)}
             />
             <span className="campo__ayuda" data-copy="help">{PRICE_DISCOUNT_HELP}</span>
             <FieldError message={errors.bulkPrice} />
@@ -71,11 +95,10 @@ export default function PriceFields({ settings, values, errors, onChange }: Pric
       {settings.is_vip_customers && (
         <label className="campo">
           <span className="campo__rotulo">Precio VIP</span>
-          <input
+          <AmountInput
             className="campo__input"
-            inputMode="numeric"
             value={values.vipPrice}
-            onChange={(event) => onChange('vipPrice', event.target.value)}
+            onChange={(value) => onChange('vipPrice', value)}
           />
           <span className="campo__ayuda" data-copy="help">{PRICE_DISCOUNT_HELP}</span>
           <FieldError message={errors.vipPrice} />

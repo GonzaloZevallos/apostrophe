@@ -178,6 +178,15 @@ test('step 1 follows the pricing switches: with both on, the price form offers t
   expect(screen.getByLabelText(/^Mínimo en gramos/)).toBeInTheDocument()
   expect(screen.getByLabelText(/^Precio VIP/)).toBeInTheDocument()
   expect(screen.queryByLabelText('Rige desde')).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: /^Hoy / })).not.toBeInTheDocument()
+  // The "$" is drawn before the list, bulk and VIP price, never before the minimum in grams.
+  for (const label of [/^Precio de lista/, /^Precio por cantidad/, /^Precio VIP/]) {
+    const prefix = screen.getByLabelText(label).previousElementSibling
+    expect(prefix).toHaveTextContent('$')
+    expect(prefix).toHaveAttribute('aria-hidden', 'true')
+  }
+  expect(screen.getByLabelText(/^Mínimo en gramos/).parentElement).not.toHaveClass('campo__monto')
+  expect(screen.getByLabelText(/^Mínimo en gramos/).closest('.campo')).not.toHaveTextContent('$')
 })
 
 test('step 1 with no target saves the variety and its price with one action; a refused price keeps what was typed and the retry sends only the price', async () => {

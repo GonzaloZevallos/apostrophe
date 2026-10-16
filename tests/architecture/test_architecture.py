@@ -218,3 +218,51 @@ def test_only_app_main_constructs_channel_telegram_or_the_holder() -> None:
     ]
 
     assert violators == []
+
+
+def invite_calls_passing_bare_now(module: Path) -> list[str]:
+    """Every `invite(...)` call in `module` that passes the bare name `NOW` as its second
+    argument, positional or by keyword (`now=`), named `module:line`. An invitation minted
+    at the fixed `NOW` and accepted by an app on another clock expires between the two;
+    the test passes `clock()` from the same `MovableClock` given to `create_app`."""
+    tree = ast.parse(module.read_text(), filename=str(module))
+    return [
+        f"{module}:{node.lineno}"
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Call) and _calls_invite(node.func)
+        for instant in [_invite_instant(node)]
+        if isinstance(instant, ast.Name) and instant.id == "NOW"
+    ]
+
+
+def _calls_invite(func: ast.expr) -> bool:
+    return (isinstance(func, ast.Name) and func.id == "invite") or (
+        isinstance(func, ast.Attribute) and func.attr == "invite"
+    )
+
+
+def _invite_instant(call: ast.Call) -> ast.expr | None:
+    if len(call.args) >= 2:
+        return call.args[1]
+    return next((kw.value for kw in call.keywords if kw.arg == "now"), None)
+
+
+def test_the_invite_guard_flags_an_invitation_minted_at_the_bare_now() -> None:
+    violations = invite_calls_passing_bare_now(FIXTURES / "invite_at_now.py")
+
+    assert len(violations) == 2
+
+
+def test_the_invite_guard_does_not_flag_an_invitation_minted_at_the_clock() -> None:
+    assert invite_calls_passing_bare_now(FIXTURES / "invite_at_clock.py") == []
+
+
+def test_no_invite_call_under_tests_passes_the_bare_now() -> None:
+    violators = [
+        violation
+        for module in sorted((REPO_ROOT / "tests").rglob("*.py"))
+        if FIXTURES not in module.parents
+        for violation in invite_calls_passing_bare_now(module)
+    ]
+
+    assert violators == []

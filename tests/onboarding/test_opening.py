@@ -2,6 +2,8 @@
 accepting a new-business invitation leaves exactly one row for the new business, and
 accepting a join invitation adds none."""
 
+from datetime import UTC, datetime
+
 from fastapi.testclient import TestClient
 from sqlalchemy import func, select
 from sqlalchemy.engine import Engine
@@ -50,3 +52,18 @@ def test_accepting_a_join_invitation_adds_no_row(
 
     assert accepted.status_code == 201
     assert _rows(engine) == before
+
+
+def test_the_opening_stamps_created_at_from_the_injected_clock(
+    anonymous_client: TestClient, engine: Engine, clock: MovableClock
+) -> None:
+    opened_at = datetime(2020, 1, 1, 18, 0, tzinfo=UTC)
+    clock.set(opened_at)
+
+    accepted = anonymous_client.post(
+        f"/invitations/{invite(engine, clock())}/accept", json=NEW_USER
+    )
+
+    assert accepted.status_code == 201
+    with Session(engine) as session:
+        assert session.scalars(select(OnboardingRow.created_at)).one() == opened_at

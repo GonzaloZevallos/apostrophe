@@ -12,7 +12,7 @@ from app.pricing_settings.adapters.sql_pricing_settings import SqlPricingSetting
 from app.pricing_settings.adapters.tables import PricingSettingsRow
 from app.pricing_settings.domain.errors import PricingSettingsMissing
 from app.shared.pricing_settings import PricingSettings
-from tests.conftest import NOW, PASSWORD, invite
+from tests.conftest import PASSWORD, MovableClock, invite
 
 
 def _business_id(session: Session, name: str) -> int:
@@ -20,10 +20,10 @@ def _business_id(session: Session, name: str) -> int:
 
 
 def test_a_new_business_opens_with_exactly_one_row_both_switches_off(
-    anonymous_client: TestClient, engine: Engine
+    anonymous_client: TestClient, engine: Engine, clock: MovableClock
 ) -> None:
     accepted = anonymous_client.post(
-        f"/invitations/{invite(engine, NOW)}/accept",
+        f"/invitations/{invite(engine, clock())}/accept",
         json={"business_name": "La Huerta", "email": "nueva@example.com", "password": PASSWORD},
     )
     assert accepted.status_code == 201, accepted.text

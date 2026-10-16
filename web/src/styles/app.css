@@ -93,16 +93,88 @@ body {
   color: var(--tinta2);
 }
 
+/* The price form's "Rige desde" chip (`PrecioNuevoCompu.dc.html`): a 52 px rounded surface
+ * with a calendar and the date, left-aligned, over `Boton`'s secondary look. */
+.precio-chip .boton {
+  width: 100%;
+  height: 52px;
+  justify-content: flex-start;
+  gap: var(--espacio-md);
+  padding: 0 var(--espacio-lg);
+  border-radius: var(--radio-campo);
+  font-weight: 500;
+}
+
+.precio-chip .boton svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* The date choice, mounted only while the chip is open. */
+.precio-fecha {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--espacio-sm);
+}
+
+.precio-fecha .boton--enlace {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--alto-tocable);
+}
+
+.precio-fecha__campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-sm);
+  align-self: stretch;
+}
+
 .campo__input {
   height: var(--alto-boton);
   box-sizing: border-box;
-  padding: 0 16px;
+  padding: 0 var(--espacio-lg);
   border-radius: var(--radio-campo);
   border: 0;
   background: var(--superficie);
   color: var(--tinta);
   font: inherit;
   font-size: 17px;
+}
+
+/* An amount field: the "$" sits inside the input's left padding, drawn over it, so the
+ * input keeps its full width and height and the sign is never part of its value. */
+.campo__monto {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.campo__prefijo {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--espacio-lg);
+  display: flex;
+  align-items: center;
+  color: var(--tinta2);
+  font-size: 17px;
+  pointer-events: none;
+}
+
+.campo__monto > .campo__input {
+  padding-left: calc(var(--espacio-lg) + var(--espacio-xl));
+}
+
+/* The list price is drawn large (`campo__input--monto`): its sign follows. */
+.campo__monto:has(.campo__input--monto) .campo__prefijo {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.campo__monto > .campo__input--monto {
+  padding-left: calc(var(--espacio-lg) + var(--espacio-xxl));
 }
 
 .campo__error {
@@ -4528,4 +4600,61 @@ body {
   font-size: 14px;
   color: var(--tinta2);
   line-height: 1.4;
+}
+
+/* The price form's modal on a computer (`PrecioNuevoCompu.dc.html`): the host's
+ * frame is a fixed backdrop and the form's `.cuerpo` is the 480 px dialog; the panes behind
+ * it are inert. On a phone `.variedades-paneles--solo` adds no box of its own. */
+.variedades-paneles--solo {
+  display: contents;
+}
+
+@media (min-width: 900px) {
+  .precio-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: var(--espacio-lg);
+    padding-top: calc(var(--inset-arriba) + 80px);
+    background: transparent;
+  }
+
+  .precio-modal::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--tinta);
+    opacity: 0.28;
+  }
+
+  .precio-modal > .cuerpo {
+    position: relative;
+    flex: 0 0 auto;
+    min-height: 0;
+    height: auto;
+    box-sizing: border-box;
+    width: 480px;
+    max-width: calc(100% - 2 * var(--espacio-xl));
+    background: var(--papel);
+    border-radius: var(--radio-panel-grande);
+    padding: var(--espacio-xxl);
+    box-shadow: 0 20px 60px color-mix(in srgb, var(--tinta) 28%, transparent);
+  }
+
+  .precio-modal > .confirmacion {
+    position: relative;
+    width: 480px;
+    max-width: calc(100% - 2 * var(--espacio-xl));
+    box-sizing: border-box;
+  }
+}
+
+/* The dialog's title takes focus when the modal opens so a screen reader reads it; it is
+ * not a control, so it draws no ring. */
+.gasto-form__titulo:focus {
+  outline: none;
 }

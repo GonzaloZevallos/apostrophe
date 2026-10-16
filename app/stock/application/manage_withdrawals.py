@@ -3,8 +3,9 @@ read one, and read a variety's movements (its entries and withdrawals mixed).
 
 A withdrawal is never refused for lack of stock, nor because its grams were already
 drawn from lots (ADR-0009): the lots after it are worked out again on the next read.
-Checks run in this order: the withdrawal (404), every line's variety (404), then the
-domain rules (422), so a foreign variety never reaches the grams, date or reason rules.
+Checks run in this order: the withdrawal (404), every line's variety (404, a missing one
+before an archived one), then the domain rules (422), so a foreign variety never reaches
+the grams, date or reason rules.
 Each use case that writes commits once, at its end, through `Transaction`
 (CODING_STANDARDS section 9).
 """
@@ -24,6 +25,7 @@ from app.stock.application.ports import (
     WithdrawalMovement,
     Withdrawals,
 )
+from app.stock.application.variety_use import require_usable
 from app.stock.domain.draw_source import WithdrawalReason
 from app.stock.domain.entry import StockEntry
 from app.stock.domain.errors import WithdrawalNotFound, WithdrawalVarietyNotFound
@@ -53,10 +55,16 @@ def _built(
     today: date,
     recorded_at: datetime,
     withdrawal_id: int | None,
+    kept: frozenset[int],
 ) -> Withdrawal:
-    for variety_id, _ in lines:
+    """`kept` holds the varieties the stored withdrawal already has on a line: only those
+    may be archived (ADR-0032). A missing variety is refused before any archived one."""
+    distinct = list(dict.fromkeys(variety_id for variety_id, _ in lines))
+    for variety_id in distinct:
         if not catalog.exists(variety_id):
             raise WithdrawalVarietyNotFound()
+    for variety_id in distinct:
+        require_usable(catalog, variety_id, keeps=variety_id in kept)
     return Withdrawal.of(
         reason,
         withdrawn_on,
@@ -94,7 +102,7 @@ def record_withdrawal(
     today: date,
     now: datetime,
 ) -> WithdrawalView:
-    withdrawal = _built(catalog, reason, withdrawn_on, note, lines, today, now, None)
+    withdrawal = _built(catalog, reason, withdrawn_on, note, lines, today, now, None, frozenset())
     stored = withdrawals.add(withdrawal)
     transaction.commit()
     return _viewed(catalog, stored)
@@ -116,7 +124,15 @@ def edit_withdrawal(
     changes either."""
     existing = _stored(withdrawals, withdrawal_id)
     updated = _built(
-        catalog, reason, withdrawn_on, note, lines, today, existing.recorded_at, existing.id
+        catalog,
+        reason,
+        withdrawn_on,
+        note,
+        lines,
+        today,
+        existing.recorded_at,
+        existing.id,
+        frozenset(line.variety_id for line in existing.lines),
     )
     stored = withdrawals.replace(updated)
     transaction.commit()

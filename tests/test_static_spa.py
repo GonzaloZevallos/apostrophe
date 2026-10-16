@@ -19,7 +19,7 @@ from app.static_spa import (
     matches_template,
     parse_legacy_front_paths,
 )
-from tests.conftest import NOW, SETTINGS, TEST_HASHER, MovableClock
+from tests.conftest import SETTINGS, TEST_HASHER, MovableClock
 from tests.fakes.telegram import FakeTelegram
 from tests.legacy_pin import PINNED_LEGACY_ROWS
 
@@ -209,14 +209,16 @@ def test_a_malformed_rows_file_is_refused(text: str) -> None:
         parse_legacy_front_paths(text)
 
 
-def test_the_api_document_is_the_one_committed_before_the_english_routes() -> None:
+def test_the_api_document_is_the_one_committed_before_the_english_routes(
+    clock: MovableClock,
+) -> None:
     snapshot = json.loads((FIXTURES / "openapi_snapshot.json").read_text())
     document = create_app(
         SETTINGS,
+        clock=clock,
         hasher=TEST_HASHER,
         telegram=FakeTelegram(),
         upkeep_ticker=False,
-        clock=MovableClock(NOW),
     ).openapi()
 
     assert json.loads(json.dumps(document)) == snapshot
