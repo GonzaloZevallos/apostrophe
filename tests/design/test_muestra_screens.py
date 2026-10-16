@@ -96,6 +96,53 @@ def test_the_analisis_guard_rejects_a_screen_that_drifts(
     assert problems != [], what
 
 
+@pytest.mark.parametrize("screen", ANALISIS_SCREENS)
+def test_the_analisis_guard_still_requires_the_other_cost_lines_on_the_rows(screen: str) -> None:
+    page = (SCREENS / screen).read_text(encoding="utf-8")
+    # Every Consumo propio the screen draws, rows included, loses its label.
+    drawn = "<span>Consumo propio</span>"
+    assert drawn in page
+    broken = page.replace(drawn, "<span>Consumo</span>")
+
+    problems = check_screen("analisis", screen, broken, real_muestra(), ())
+
+    assert any("'Consumo propio' is missing" in p for p in problems)
+
+
+@pytest.mark.parametrize("screen", ANALISIS_SCREENS)
+def test_the_analisis_guard_requires_faltante_in_the_since_the_first_record_block(
+    screen: str,
+) -> None:
+    page = (SCREENS / screen).read_text(encoding="utf-8")
+    label = "Faltante de stock</span>"
+    # The header draws it first, then the current week's and month's rows; the last one is
+    # the since-the-first-record block's.
+    assert page.count(label) == 4
+    head, last = page.rsplit(label, 1)
+    broken = head + "Faltante</span>" + last
+
+    problems = check_screen("analisis", screen, broken, real_muestra(), ())
+
+    assert any("since 28/08 – 07/10: 'Faltante de stock' is missing" in p for p in problems)
+
+
+@pytest.mark.parametrize("screen", ANALISIS_SCREENS)
+@pytest.mark.parametrize("cost", ["$ 93.000", "$ 156.000"])
+def test_the_analisis_guard_requires_faltante_on_the_current_week_and_month_rows(
+    screen: str, cost: str
+) -> None:
+    page = (SCREENS / screen).read_text(encoding="utf-8")
+    bold = '<span style="color: #231E18; font-weight: 600">'
+    after = f"{cost}</span><span>Faltante de stock</span>{bold}$ 10.000</span>"
+    assert page.count(after) == 1
+    gone = page.replace(after, f"{cost}</span>")
+    wrong = page.replace(after, after.replace("$ 10.000", "$ 9.000"))
+
+    for broken, expected in ((gone, "'Faltante de stock' is missing"), (wrong, "$ 9.000")):
+        problems = check_screen("analisis", screen, broken, real_muestra(), ())
+        assert any(expected in p for p in problems)
+
+
 def test_the_analisis_denylist_keeps_the_figures_muestra_has() -> None:
     denylist = next(f for f in FAMILIES if f.name == "analisis").denylist
     body = (DESIGN / "muestra.md").read_text(encoding="utf-8")

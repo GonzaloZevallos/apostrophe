@@ -8,7 +8,7 @@ from typing import Literal
 
 import pytest
 
-from app.results.domain.figures import AmountWithPending, AnalysisFigures, CostFigure
+from app.results.domain.figures import AmountWithPending, AnalysisFigures, CostFigure, RowCost
 from app.results.domain.ledger import (
     DrawRow,
     ExpenseRecord,
@@ -566,10 +566,10 @@ def test_a_promotion_and_an_own_use_each_lower_profit_by_their_costed_amount_on_
     on_today = totals_between(buckets, TODAY, TODAY)
 
     assert on_yesterday.profit.amount == -600
-    assert on_yesterday.promotion == AmountWithPending(600, Grams.of("0"))
+    assert on_yesterday.promotion == RowCost(600, Grams.of("0"), False)
     assert on_yesterday.own_use is None
     assert on_today.profit.amount == 10_000 - 3_000 - 300
-    assert on_today.own_use == AmountWithPending(300, Grams.of("0"))
+    assert on_today.own_use == RowCost(300, Grams.of("0"), False)
     assert on_today.promotion is None
 
 
@@ -640,7 +640,7 @@ def test_a_pending_only_withdrawal_gives_profit_a_pending_count_and_cost_of_good
     totals = totals_between(buckets, TODAY, TODAY)
 
     assert totals.profit == AmountWithPending(0, Grams.of("4"))
-    assert totals.promotion == AmountWithPending(0, Grams.of("4"))
+    assert totals.promotion == RowCost(0, Grams.of("4"), True)
     assert totals.cost_of_goods == CostFigure(0, Grams.of("0"))
 
 
@@ -719,7 +719,7 @@ def test_the_month_header_shows_each_reason_only_when_present_with_its_own_pendi
     promotion = _withdrawal(kind="promotion", day=TODAY, grams="2", costed=600, pending="1")
     figures = _figures(draws=[promotion], earliest_entry_day=TODAY)
 
-    assert figures.month.promotion == AmountWithPending(600, Grams.of("1"))
+    assert figures.month.promotion == RowCost(600, Grams.of("1"), False)
     assert figures.month.own_use is None
 
 
@@ -734,8 +734,8 @@ def test_a_week_and_a_month_row_carry_the_lines_and_profit_equals_totals_between
     week_totals = totals_between(buckets, week.first_day, week.last_day)
     month_totals = totals_between(buckets, month_row.first_day, month_row.last_day)
 
-    assert week.promotion == AmountWithPending(600, Grams.of("0"))
-    assert week.own_use == AmountWithPending(0, Grams.of("3"))
+    assert week.promotion == RowCost(600, Grams.of("0"), False)
+    assert week.own_use == RowCost(0, Grams.of("3"), True)
     assert week.profit == week_totals.profit == AmountWithPending(-600, Grams.of("3"))
     assert month_row.promotion == week.promotion
     assert month_row.own_use == week.own_use
@@ -752,8 +752,8 @@ def test_since_the_first_record_carries_both_lines() -> None:
 
     assert figures.first_record == earlier
     assert figures.since_first_record is not None
-    assert figures.since_first_record.promotion == AmountWithPending(100, Grams.of("0"))
-    assert figures.since_first_record.own_use == AmountWithPending(300, Grams.of("0"))
+    assert figures.since_first_record.promotion == RowCost(100, Grams.of("0"), False)
+    assert figures.since_first_record.own_use == RowCost(300, Grams.of("0"), False)
     assert figures.since_first_record.profit == AmountWithPending(-400, Grams.of("0"))
 
 
@@ -803,6 +803,6 @@ def test_a_week_with_7_g_sold_2_g_promoted_and_1_g_own_use_pending_reads_exactly
     )
 
     [week] = [w for w in figures.weeks if w.first_day <= TODAY <= w.last_day]
-    assert week.promotion == AmountWithPending(0, Grams.of("2"))
-    assert week.own_use == AmountWithPending(0, Grams.of("1"))
+    assert week.promotion == RowCost(0, Grams.of("2"), True)
+    assert week.own_use == RowCost(0, Grams.of("1"), True)
     assert week.profit.pending_grams == Grams.of("10")

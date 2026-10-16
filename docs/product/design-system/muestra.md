@@ -179,36 +179,44 @@ Total: $ 32.000
 | --- | --- | --- | --- | --- |
 | Semana | 24/08 – 30/08 | Ventas | $ 0 | no |
 | Semana | 24/08 – 30/08 | Gramos | 0 g | no |
+| Semana | 24/08 – 30/08 | Costo de lo vendido | $ 0 | no |
 | Semana | 24/08 – 30/08 | Gastos | $ 0 | no |
 | Semana | 24/08 – 30/08 | Ganancia | $ 0 | no |
 | Semana | 24/08 – 30/08 | Caja | −$ 880.000 | no |
 | Semana | 31/08 – 06/09 | Ventas | $ 0 | no |
 | Semana | 31/08 – 06/09 | Gramos | 0 g | no |
+| Semana | 31/08 – 06/09 | Costo de lo vendido | $ 0 | no |
 | Semana | 31/08 – 06/09 | Gastos | $ 0 | no |
 | Semana | 31/08 – 06/09 | Ganancia | $ 0 | no |
 | Semana | 31/08 – 06/09 | Caja | $ 0 | no |
 | Semana | 07/09 – 13/09 | Ventas | $ 0 | no |
 | Semana | 07/09 – 13/09 | Gramos | 0 g | no |
+| Semana | 07/09 – 13/09 | Costo de lo vendido | $ 0 | no |
 | Semana | 07/09 – 13/09 | Gastos | $ 0 | no |
 | Semana | 07/09 – 13/09 | Ganancia | $ 0 | no |
 | Semana | 07/09 – 13/09 | Caja | $ 0 | no |
 | Semana | 14/09 – 20/09 | Ventas | $ 39.000 | no |
 | Semana | 14/09 – 20/09 | Gramos | 3 g | no |
+| Semana | 14/09 – 20/09 | Costo de lo vendido | $ 17.000 | no |
 | Semana | 14/09 – 20/09 | Gastos | $ 0 | no |
 | Semana | 14/09 – 20/09 | Ganancia | $ 22.000 | no |
 | Semana | 14/09 – 20/09 | Caja | $ 14.000 | no |
 | Semana | 21/09 – 27/09 | Ventas | $ 129.000 | no |
 | Semana | 21/09 – 27/09 | Gramos | 11 g | no |
+| Semana | 21/09 – 27/09 | Costo de lo vendido | $ 56.000 | no |
 | Semana | 21/09 – 27/09 | Gastos | $ 0 | no |
 | Semana | 21/09 – 27/09 | Ganancia | $ 73.000 | no |
 | Semana | 21/09 – 27/09 | Caja | $ 129.000 | no |
 | Semana | 28/09 – 04/10 | Ventas | $ 163.000 | no |
 | Semana | 28/09 – 04/10 | Gramos | 14 g | no |
+| Semana | 28/09 – 04/10 | Costo de lo vendido | $ 63.000 | no |
 | Semana | 28/09 – 04/10 | Gastos | $ 0 | no |
 | Semana | 28/09 – 04/10 | Ganancia | $ 100.000 | no |
 | Semana | 28/09 – 04/10 | Caja | $ 163.000 | no |
 | Semana | 05/10 – 11/10 | Ventas | $ 206.000 | no |
 | Semana | 05/10 – 11/10 | Gramos | 19 g | no |
+| Semana | 05/10 – 11/10 | Costo de lo vendido | $ 93.000 | no |
+| Semana | 05/10 – 11/10 | Faltante de stock | $ 10.000 | no |
 | Semana | 05/10 – 11/10 | Promoción | $ 35.000 | no |
 | Semana | 05/10 – 11/10 | Consumo propio | $ 14.000 | y 1 g sin costo |
 | Semana | 05/10 – 11/10 | Gastos | $ 12.500 | no |
@@ -222,16 +230,20 @@ Total: $ 32.000
 | --- | --- | --- | --- | --- |
 | Mes | 01/08 – 31/08 | Ventas | $ 0 | no |
 | Mes | 01/08 – 31/08 | Gramos | 0 g | no |
+| Mes | 01/08 – 31/08 | Costo de lo vendido | $ 0 | no |
 | Mes | 01/08 – 31/08 | Gastos | $ 0 | no |
 | Mes | 01/08 – 31/08 | Ganancia | $ 0 | no |
 | Mes | 01/08 – 31/08 | Caja | −$ 880.000 | no |
 | Mes | 01/09 – 30/09 | Ventas | $ 168.000 | no |
 | Mes | 01/09 – 30/09 | Gramos | 14 g | no |
+| Mes | 01/09 – 30/09 | Costo de lo vendido | $ 73.000 | no |
 | Mes | 01/09 – 30/09 | Gastos | $ 0 | no |
 | Mes | 01/09 – 30/09 | Ganancia | $ 95.000 | no |
 | Mes | 01/09 – 30/09 | Caja | $ 143.000 | no |
 | Mes | 01/10 – 31/10 | Ventas | $ 369.000 | no |
 | Mes | 01/10 – 31/10 | Gramos | 33 g | no |
+| Mes | 01/10 – 31/10 | Costo de lo vendido | $ 156.000 | no |
+| Mes | 01/10 – 31/10 | Faltante de stock | $ 10.000 | no |
 | Mes | 01/10 – 31/10 | Promoción | $ 35.000 | no |
 | Mes | 01/10 – 31/10 | Consumo propio | $ 14.000 | y 1 g sin costo |
 | Mes | 01/10 – 31/10 | Gastos | $ 12.500 | no |

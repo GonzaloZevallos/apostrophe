@@ -23,7 +23,7 @@ from app.results.application.ports import (
     StockRow,
 )
 from app.results.domain.arithmetic import average_sale
-from app.results.domain.figures import AmountWithPending
+from app.results.domain.figures import RowCost
 from app.results.domain.period_figures import scan, totals_between
 from app.results.domain.periods import Period, periods
 from app.results.domain.sorting import oldest, sorted_by_name, teaser
@@ -77,7 +77,7 @@ class Panel:
     stock: tuple[StockRow, ...]
 
 
-def _cost_line(figure: AmountWithPending | None) -> CostLineFigures | None:
+def _cost_line(figure: RowCost | None) -> CostLineFigures | None:
     return (
         None
         if figure is None

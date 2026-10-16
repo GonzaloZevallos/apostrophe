@@ -113,7 +113,8 @@ def assert_seed_states(client: TestClient) -> None:
     week, month = analysis["weeks"][-1], analysis["months"][-1]
 
     # Own use: Sir Jack's gram goes beyond every lot, so only it is pending.
-    assert week["own_use"] == {"amount": OWN_USE_AMOUNT, "pending_grams": 1}, "own use" + HINT
+    own_use = {"amount": OWN_USE_AMOUNT, "pending_grams": 1, "all_pending": False}
+    assert week["own_use"] == own_use, "own use" + HINT
     assert periods["week"]["own_use"] == {"amount": OWN_USE_AMOUNT, "pending": True}, HINT
     stock = {row["variety_id"]: row["status"] for row in client.get("/stock").json()["varieties"]}
     assert stock[jack] == "sold_out", "Sir Jack sold out" + HINT
@@ -130,7 +131,8 @@ def assert_seed_states(client: TestClient) -> None:
 
     # The shortfall is 24K Gold's costed 2 g adjustment, and nobody else's.
     for where in (analysis["month"], analysis["since_first_record"]):
-        assert where["shortfall"] == {"amount": SHORTFALL_AMOUNT, "pending_grams": 0}, HINT
+        costed = {"amount": SHORTFALL_AMOUNT, "pending_grams": 0, "all_pending": False}
+        assert where["shortfall"] == costed, HINT
     for name in ("today", "week", "month"):
         assert amounts(periods[name]["shortfall"]) == (SHORTFALL_AMOUNT, False), name + HINT
     adjustments = {
@@ -156,16 +158,21 @@ def test_the_seed_at_the_capture_date_has_the_states_the_screens_draw(
 
     assert_seed_states(client)
 
-    # The analysis spells the shortfall on the month's header and on the total since the
-    # first record; its week and month rows carry it only inside their profit.
     analysis = client.get("/analysis").json()
     periods = client.get("/panel").json()["periods"]
+    # The analysis spells the shortfall on the month's header, on the total since the
+    # first record and on the current week and month rows.
+    assert analysis["month"]["shortfall"] is not None
+    assert analysis["since_first_record"]["shortfall"] is not None
     assert amounts(analysis["month"]["shortfall"]) == amounts(periods["month"]["shortfall"])
     assert amounts(analysis["since_first_record"]["shortfall"]) == amounts(
         periods["month"]["shortfall"]
     )
-    assert "shortfall" not in analysis["weeks"][-1]
-    assert "shortfall" not in analysis["months"][-1]
+    assert amounts(analysis["weeks"][-1]["shortfall"]) == amounts(periods["week"]["shortfall"])
+    assert amounts(analysis["months"][-1]["shortfall"]) == amounts(periods["month"]["shortfall"])
+    # The current month's shortfall is one figure in the header, on the row and on Inicio.
+    assert analysis["month"]["shortfall"] == analysis["months"][-1]["shortfall"]
+    assert amounts(analysis["months"][-1]["shortfall"]) == amounts(periods["month"]["shortfall"])
 
 
 def test_the_panel_and_the_analysis_agree_on_the_current_week_and_month(
@@ -181,6 +188,9 @@ def test_the_panel_and_the_analysis_agree_on_the_current_week_and_month(
         assert row["first_day"] == panel["start"] and row["last_day"] == panel["end"]
         assert row["profit"]["amount"] == panel["profit"]
         assert (row["profit"]["pending_grams"] > 0) == panel["profit_pending"]
+        assert row["cost_of_goods"]["amount"] == panel["cost_of_goods"]
+        assert (row["cost_of_goods"]["pending_grams"] > 0) == panel["pending_cost"]
+        assert amounts(row["shortfall"]) == amounts(panel["shortfall"])
         assert amounts(row["promotion"]) == amounts(panel["promotion"])
         assert amounts(row["own_use"]) == amounts(panel["own_use"])
         assert row["expenses"] == panel["expenses"]
@@ -189,6 +199,30 @@ def test_the_panel_and_the_analysis_agree_on_the_current_week_and_month(
     varieties = analysis["month"]["varieties"]
     assert sum(v["cost"]["costed"] for v in varieties) == periods["month"]["cost_of_goods"]
     assert analysis["month"]["sales"] == periods["month"]["sales"]
+
+
+def test_every_analysis_week_and_month_row_prints_its_cost_of_goods() -> None:
+    capture = load_capture()
+    text: str = capture.render_muestra(captured_on(MUESTRA.read_text(encoding="utf-8")))
+    weeks = generated_section(text + "§", "### Análisis · semanas", "### Análisis · meses")
+    months = generated_section(text + "§", "### Análisis · meses", "### Análisis · días")
+    # Periods before the first record are absent, so each table has as many rows of
+    # Ventas as it has periods, and every one of them prints its cost of goods.
+    for table in (weeks, months):
+        periods = table.count(" | Ventas |")
+        assert periods > 1
+        assert table.count(" | Costo de lo vendido |") == periods
+        # Faltante de stock appears only on the periods that have one.
+        assert 0 < table.count(" | Faltante de stock |") < periods
+
+
+def test_a_row_cost_reads_grams_alone_only_when_everything_behind_it_is_pending() -> None:
+    row_cost = load_capture().row_cost
+    assert row_cost({"amount": 0, "pending_grams": 4.0, "all_pending": True}) == "4 g sin costo"
+    # A partly pending figure keeps its amount; its grams are the Pendiente column.
+    assert row_cost({"amount": 9000, "pending_grams": 2.5, "all_pending": False}) == "$ 9.000"
+    # Costed at zero with nothing pending is a real $ 0, not a missing cost.
+    assert row_cost({"amount": 0, "pending_grams": 0, "all_pending": False}) == "$ 0"
 
 
 @dataclass

@@ -15,6 +15,7 @@ from app.results.adapters.schemas import (
     ExpenseCategoryTotalOut,
     MarginOut,
     MonthRowOut,
+    RowCostOut,
     SinceFirstRecordOut,
     VarietyRowOut,
     WeekdayOut,
@@ -26,6 +27,7 @@ from app.results.domain.figures import (
     CostFigure,
     ExpenseBreakdown,
     MarginFigure,
+    RowCost,
 )
 
 
@@ -47,8 +49,17 @@ def _amount_with_pending(figure: AmountWithPending) -> AmountWithPendingOut:
     )
 
 
-def _optional(figure: AmountWithPending | None) -> AmountWithPendingOut | None:
-    return None if figure is None else _amount_with_pending(figure)
+def _row_cost(figure: RowCost) -> RowCostOut:
+    """Copies `all_pending`; only `row_cost` in the domain decides it."""
+    return RowCostOut(
+        amount=figure.amount,
+        pending_grams=figure.pending_grams.as_decimal(),
+        all_pending=figure.all_pending,
+    )
+
+
+def _optional(figure: RowCost | None) -> RowCostOut | None:
+    return None if figure is None else _row_cost(figure)
 
 
 def _breakdown(breakdown: ExpenseBreakdown) -> ExpenseBreakdownOut:
@@ -100,9 +111,11 @@ def assemble(today: date, figures: AnalysisFigures) -> AnalysisOut:
                 last_day=w.last_day,
                 sales=w.sales,
                 grams=w.grams.as_decimal(),
-                expenses=w.expenses,
+                cost_of_goods=_row_cost(w.cost_of_goods),
+                shortfall=_optional(w.shortfall),
                 promotion=_optional(w.promotion),
                 own_use=_optional(w.own_use),
+                expenses=w.expenses,
                 profit=_amount_with_pending(w.profit),
                 cash=w.cash,
                 best=w.best,
@@ -116,9 +129,11 @@ def assemble(today: date, figures: AnalysisFigures) -> AnalysisOut:
                 last_day=m.last_day,
                 sales=m.sales,
                 grams=m.grams.as_decimal(),
-                expenses=m.expenses,
+                cost_of_goods=_row_cost(m.cost_of_goods),
+                shortfall=_optional(m.shortfall),
                 promotion=_optional(m.promotion),
                 own_use=_optional(m.own_use),
+                expenses=m.expenses,
                 profit=_amount_with_pending(m.profit),
                 cash=m.cash,
             )
