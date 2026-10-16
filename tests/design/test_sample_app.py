@@ -14,7 +14,7 @@ from fastapi.testclient import TestClient
 from app.db import make_engine
 from app.main import create_app
 from app.settings import Settings
-from tests.conftest import PASSWORD, TEST_HASHER, TODAY
+from tests.conftest import NOW, PASSWORD, TEST_HASHER, TODAY, MovableClock
 from tests.fakes.telegram import FakeTelegram
 
 SCRIPT = Path(__file__).resolve().parents[2] / "scripts" / "design" / "sample_app.py"
@@ -102,8 +102,12 @@ def test_reset_token_opens_a_live_reset_link(tmp_path: Path) -> None:
     }
     invite = sample_app.new_business_token(env)
     app = create_app(
-        Settings("sample-secret", url), engine=make_engine(url), hasher=TEST_HASHER,
-        telegram=FakeTelegram(), upkeep_ticker=False,
+        Settings("sample-secret", url),
+        engine=make_engine(url),
+        hasher=TEST_HASHER,
+        telegram=FakeTelegram(),
+        upkeep_ticker=False,
+        clock=MovableClock(NOW),
     )
     with TestClient(app) as web:
         accepted = web.post(

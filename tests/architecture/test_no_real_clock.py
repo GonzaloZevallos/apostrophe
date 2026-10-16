@@ -33,10 +33,14 @@ REAL_CLOCK_ALLOWED: dict[str, str] = {
     "app/accounts/adapters/cli.py": "composition root of the accounts command line",
     "app/business_removal/adapters/cli.py": "composition root of the removal command line",
     "app/spreadsheet_import/adapters/cli.py": "composition root of the import command line",
+    "tests/e2e_app.py": (
+        "the e2e backend shares the real clock with the CLI subprocess and the browser "
+        "by design (ADR-0040)"
+    ),
 }
 
 CLOCK_GLOBAL = "system_clock"
-DATETIME_READS = frozenset({"now", "utcnow"})
+DATETIME_READS = frozenset({"now", "utcnow", "today"})
 DATE_READS = frozenset({"today"})
 TIME_READS = frozenset({"time", "time_ns"})
 
@@ -174,6 +178,9 @@ def test_the_scan_names_a_read_outside_the_allowed_paths_and_lets_an_allowed_one
         "import time as t\nx = t.time()\n",
         "from time import time as t\nx = t()\n",
         "from time import time_ns\nx = time_ns()\n",
+        "from time import time\n",
+        "from time import time_ns\n",
+        "from datetime import datetime\nx = datetime.today()\n",
         "def f():\n    from datetime import datetime\n    return datetime.now()\n",
         "def f():\n    import time\n    return time.time()\n",
         "from app.clock import system_clock\n",

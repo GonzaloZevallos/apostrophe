@@ -38,7 +38,7 @@ from app.business_removal.application.remove_business import (
 from app.business_removal.application.schema_rows import DeletedIds, SchemaRows
 from app.business_removal.domain.business_ref import BusinessRef
 from app.business_removal.domain.schema import Schema
-from app.clock import system_clock
+from app.clock import Clock, system_clock
 from app.db import make_engine
 from app.migrations.runner import upgrade_to_head
 from app.settings import Settings
@@ -140,6 +140,8 @@ def main(
     argv: Sequence[str] | None = None,
     stdin: TextIO = sys.stdin,
     stdout: TextIO = sys.stdout,
+    *,
+    clock: Clock = system_clock,
 ) -> int:
     parser = argparse.ArgumentParser(prog="remove-business")
     parser.add_argument("email")
@@ -166,7 +168,7 @@ def main(
                     return dry_run(schema_rows, output, args.email)
                 confirm = _StdinConfirm(stdin, stdout)
                 return remove_business(
-                    schema_rows, export_file, confirm, session, output, system_clock, args.email
+                    schema_rows, export_file, confirm, session, output, clock, args.email
                 )
         except SystemExit:
             raise

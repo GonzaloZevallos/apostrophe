@@ -172,7 +172,7 @@ def _run(args: argparse.Namespace, engine: Engine, clock: Clock, out: TextIO) ->
         return 0
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(argv: list[str] | None = None, *, clock: Clock = system_clock) -> int:
     settings = Settings.from_env()
     engine = make_engine(settings.database_url)
     upgrade_to_head(engine)
@@ -180,7 +180,7 @@ def main(argv: list[str] | None = None) -> int:
     return run(
         argv if argv is not None else sys.argv[1:],
         engine=engine,
-        clock=system_clock,
+        clock=clock,
         out=sys.stdout,
         err=sys.stderr,
     )

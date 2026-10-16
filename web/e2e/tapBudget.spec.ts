@@ -13,6 +13,7 @@ import type { Locator, Page } from '@playwright/test'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { seedRecords, signUp } from './helpers/seed.js'
+import { uniqueTag } from './helpers/unique.js'
 
 
 const PHONE = { width: 390, height: 844 }
@@ -57,7 +58,7 @@ test('the expense form opens within the tap budget from every tab root, phone an
   const consoleMessages: string[] = []
   watchConsole(page, consoleMessages)
 
-  await signUpNewBusiness(page, { businessName: `Flores del Gasto ${Date.now()}`, email: `duena-gasto-${Date.now()}@example.com` })
+  await signUpNewBusiness(page, { businessName: `Flores del Gasto ${uniqueTag()}`, email: `duena-gasto-${uniqueTag()}@example.com` })
 
   const taps: Record<'phone' | 'computer', Record<string, number>> = { phone: {}, computer: {} }
   for (const [device, size] of [
@@ -89,7 +90,7 @@ test('a seller records an expense from Más and Cerrar goes back to where the fo
   watchConsole(page, consoleMessages)
   await page.setViewportSize(PHONE)
 
-  await signUpNewBusiness(page, { businessName: `Flores de Más ${Date.now()}`, email: `duena-mas-${Date.now()}@example.com` })
+  await signUpNewBusiness(page, { businessName: `Flores de Más ${uniqueTag()}`, email: `duena-mas-${uniqueTag()}@example.com` })
 
   await page.goto(MORE)
   await page.getByRole('link', { name: /^\+ Cargar gasto/ }).click()

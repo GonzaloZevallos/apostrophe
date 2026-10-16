@@ -19,7 +19,6 @@ from app.business_removal.adapters.cli import main
 from tests.business_removal.adapters.seed import (
     EMAIL_LEAVING,
     PINNED,
-    pin_cli_clock,
     row_counts,
     seed,
     set_env,
@@ -81,7 +80,6 @@ def test_a_write_that_fails_partway_leaves_no_file_and_changes_no_row(
         )
         connection.commit()
     set_env(monkeypatch, db_path, export_dir)
-    pin_cli_clock(monkeypatch, clock)
     all_tables = _all_business_owned_table_names(db_path)
     staying_id = _business_id(db_path, "Otro Negocio")
     before = {
@@ -90,7 +88,7 @@ def test_a_write_that_fails_partway_leaves_no_file_and_changes_no_row(
     }
     stdout = io.StringIO()
 
-    result = main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=stdout)
+    result = main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=stdout, clock=clock)
 
     assert result == 1
     assert stdout.getvalue().endswith(FAILED_MESSAGE + "\n")
@@ -114,11 +112,12 @@ def test_a_blob_column_added_later_refuses_both_modes_with_no_file_and_no_change
         connection.execute("ALTER TABLE customer ADD COLUMN raw_blob BLOB")
         connection.commit()
     set_env(monkeypatch, db_path, export_dir)
-    pin_cli_clock(monkeypatch, clock)
 
-    dry = main([EMAIL_LEAVING, "--dry-run"], stdin=io.StringIO(""), stdout=io.StringIO())
+    dry = main(
+        [EMAIL_LEAVING, "--dry-run"], stdin=io.StringIO(""), stdout=io.StringIO(), clock=clock
+    )
     real_stdout = io.StringIO()
-    real = main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=real_stdout)
+    real = main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=real_stdout, clock=clock)
 
     assert dry == 1
     assert real == 1

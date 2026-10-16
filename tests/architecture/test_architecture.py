@@ -127,58 +127,28 @@ def test_no_test_but_telegram_http_s_own_reaches_the_real_adapter() -> None:
 
 CREATE_APP_REQUIRED_KEYWORDS = frozenset({"telegram", "upkeep_ticker", "clock"})
 
-# Exact repo-relative paths whose `create_app` calls need not name `clock`, each with
-# its reason. Exemption is for `clock` only: `telegram` and `upkeep_ticker` are always
-# required.
-CLOCK_EXEMPT: dict[str, str] = {
-    "tests/accounts/test_cli.py": (
-        "mints through the accounts command line, which reads the real clock"
-    ),
-    "tests/accounts/test_reset_password_cli.py": (
-        "mints and resets through the accounts command line, which reads the real clock"
-    ),
-    "tests/design/test_sample_app.py": (
-        "mints through scripts/design/sample_app.py, which reads the real clock through "
-        "the accounts CLI"
-    ),
-    "tests/e2e_app.py": (
-        "the end-to-end server: its invitations come from the accounts command line, "
-        "which reads the real clock"
-    ),
-}
 
-
-def create_app_calls_missing_keywords(
-    module: Path, clock_exempt: dict[str, str] = CLOCK_EXEMPT
-) -> list[str]:
-    """Every `create_app(...)` call in `module` that omits `telegram`, `upkeep_ticker`
-    or `clock` (the last unless `module` is a path in `clock_exempt`), named
-    `module:line: missing [...]` — a static stand-in for "every test app injects
-    `FakeTelegram`, sets `upkeep_ticker=False` and is given its clock" (the plan's
-    invariant), proven below against a call that must be flagged and one that must
+def create_app_calls_missing_keywords(module: Path) -> list[str]:
+    """Every `create_app(...)` call in `module` that omits `telegram`, `upkeep_ticker` or
+    `clock`, named `module:line: missing [...]` — a static stand-in for "every
+    test app injects `FakeTelegram`, sets `upkeep_ticker=False` and names its clock"
+    (the plan's invariant), proven below against a call that must be flagged and one that must
     not, the same way `reaches_telegram_http` is proven above.
 
     Presence of the keyword is all that is checked, not its value: `test_ticker.py`
     legitimately passes `upkeep_ticker=True` to exercise the ticker itself, over its
     own `FakeTelegram`. What this guard rules out is a call that forgets the keyword
     entirely and so falls through to `create_app`'s production defaults — the real
-    `HttpTelegram` and the ticker on — inside a test.
+    `HttpTelegram`, the ticker on and `system_clock` — inside a test (ADR-0043).
     """
     tree = ast.parse(module.read_text(), filename=str(module))
-    required = CREATE_APP_REQUIRED_KEYWORDS
-    if _repo_relative(module) in clock_exempt:
-        required = required - {"clock"}
     return [
-        f"{module}:{node.lineno}: missing {sorted(required - given)}"
+        f"{module}:{node.lineno}: missing {sorted(CREATE_APP_REQUIRED_KEYWORDS - given)}"
         for node in ast.walk(tree)
         if isinstance(node, ast.Call) and _calls_create_app(node.func)
         for given in [{kw.arg for kw in node.keywords if kw.arg is not None}]
-        if not required <= given
+        if not CREATE_APP_REQUIRED_KEYWORDS <= given
     ]
-
-
-def _repo_relative(module: Path) -> str:
-    return module.relative_to(REPO_ROOT).as_posix() if module.is_relative_to(REPO_ROOT) else ""
 
 
 def _calls_create_app(func: ast.expr) -> bool:
@@ -191,44 +161,19 @@ def test_the_create_app_guard_flags_a_call_naming_neither_keyword() -> None:
     assert create_app_calls_missing_keywords(FIXTURES / "unguarded_create_app.py") != []
 
 
-def test_the_create_app_guard_does_not_flag_a_call_naming_both_keywords() -> None:
+def test_the_create_app_guard_flags_a_call_that_names_everything_but_the_clock() -> None:
+    assert create_app_calls_missing_keywords(FIXTURES / "clockless_create_app.py") != []
+
+
+def test_the_create_app_guard_does_not_flag_a_call_naming_every_keyword() -> None:
     assert create_app_calls_missing_keywords(FIXTURES / "guarded_create_app.py") == []
-
-
-def test_the_create_app_guard_flags_a_call_naming_telegram_and_upkeep_ticker_but_not_clock() -> (
-    None
-):
-    violations = create_app_calls_missing_keywords(FIXTURES / "create_app_without_clock.py")
-
-    assert len(violations) == 1
-    assert "missing ['clock']" in violations[0]
-
-
-def test_the_create_app_guard_lets_an_exempt_path_omit_clock_only() -> None:
-    fixture = FIXTURES / "create_app_without_clock.py"
-    exempt = {fixture.relative_to(REPO_ROOT).as_posix(): "the fixture mints on the real clock"}
-
-    assert create_app_calls_missing_keywords(fixture, exempt) == []
-    # The exemption is for `clock` alone: the neutral-keyword fixture is still flagged.
-    unguarded = FIXTURES / "unguarded_create_app.py"
-    exempt_unguarded = {unguarded.relative_to(REPO_ROOT).as_posix(): "x"}
-    assert "telegram" in create_app_calls_missing_keywords(unguarded, exempt_unguarded)[0]
-
-
-def test_every_clock_exemption_names_an_existing_test_file_and_a_reason() -> None:
-    missing = [path for path in CLOCK_EXEMPT if not (REPO_ROOT / path).is_file()]
-
-    assert missing == []
-    assert all(CLOCK_EXEMPT.values())
 
 
 def test_every_create_app_call_under_tests_names_telegram_upkeep_ticker_and_clock() -> None:
     """The plan's own invariant, over every call site rather than trusting each one:
-    a `create_app(...)` call under `tests/` that forgets `telegram` or `upkeep_ticker`
-    falls through to the real adapter and the live ticker (Tech Lead: review
-    integration, blocking); one that forgets `clock` mints on one clock and reads on
-    another, the red GH-134 left. `CLOCK_EXEMPT` lists the only paths that may, each with
-    its reason."""
+    a `create_app(...)` call under `tests/` that forgets `telegram`, `upkeep_ticker` or
+    `clock` falls through to the real adapter, the live ticker or the wall clock (Tech
+    Lead: review integration, blocking; ADR-0043)."""
     violators = [
         violation
         for module in sorted((REPO_ROOT / "tests").rglob("*.py"))

@@ -22,5 +22,6 @@ class VarietyArchived(LookupError):
     `VarietyNotFound`, code-less: the router raises varieties' own `VarietyArchived`
     (`variety.archived`) in its place."""
 
-    def __init__(self) -> None:
+    def __init__(self, variety_id: int) -> None:
         super().__init__("variety is archived")
+        self.variety_id = variety_id

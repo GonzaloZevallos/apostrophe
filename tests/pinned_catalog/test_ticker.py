@@ -37,10 +37,10 @@ def test_ticker_runs_once_at_startup_and_stops_on_shutdown(
     app = create_app(
         settings,
         engine=engine,
-        clock=MovableClock(NOW),
         hasher=TEST_HASHER,
         telegram=FakeTelegram(),
         upkeep_ticker=True,
+        clock=MovableClock(NOW),
     )
 
     with TestClient(app) as test_client:
