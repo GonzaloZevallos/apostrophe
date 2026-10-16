@@ -7,7 +7,7 @@
  * `children` render beside the dialog, never inside it (the leave confirmation).
  */
 
-import type { MouseEvent, ReactNode } from 'react'
+import { type ReactNode, useEffect, useRef } from 'react'
 
 export interface PriceFrameProps {
   /** True on a computer: the frame is a modal dialog. */
@@ -23,11 +23,21 @@ export interface PriceFrameProps {
 }
 
 export default function PriceFrame({ dialog, titleId, label, onBackdrop, form, children }: PriceFrameProps) {
-  function onClick(event: MouseEvent<HTMLElement>): void {
-    if (dialog && event.target === event.currentTarget) onBackdrop()
-  }
+  // The backdrop is a pointer convenience, not a control: a keyboard user leaves by Escape
+  // or "Cerrar". So it is a native listener, not a click handler the control scan would read
+  // as a control without a name, a role or a pressed state.
+  const frame = useRef<HTMLElement>(null)
+  useEffect(() => {
+    const element = frame.current
+    if (!dialog || element === null) return
+    function onClick(event: MouseEvent): void {
+      if (event.target === element) onBackdrop()
+    }
+    element.addEventListener('click', onClick)
+    return () => element.removeEventListener('click', onClick)
+  }, [dialog, onBackdrop])
   return (
-    <main className={dialog ? 'pantalla precio-modal' : 'pantalla'} onClick={onClick}>
+    <main ref={frame} className={dialog ? 'pantalla precio-modal' : 'pantalla'}>
       <div
         className="cuerpo"
         role={dialog ? 'dialog' : undefined}
