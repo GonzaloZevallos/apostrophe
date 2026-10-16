@@ -98,3 +98,23 @@ predates the registry's newest rows is captured.
   relies on. `assertScreens` refuses a `needs` that names no earlier screen, and
   `assertSelectedNeeds` makes `comparisons.mjs` exit 2 before capturing when a selection keeps
   a row and drops the one it needs.
+
+## Amendment: every registry row reaches its screen (GH-254)
+
+Narrows points 3 and 4. A whole-registry `--strict` run exits 0 only if every row reaches its
+screen and passes the applied-check; three rows did neither.
+
+- **`offline` loads the fonts first.** Before the network goes, the step loads every face of
+  `document.fonts` that is still `unloaded`, whatever its family, waits for `document.fonts.ready`
+  and only then calls `setOffline(true)`. A face the page had not drawn yet (a weight, a
+  unicode-range subset) would otherwise be fetched offline and end in `error`. The preload records
+  no failure and no note: the applied-check, unchanged, is the only verdict on fonts, so a face
+  that still errors is reported once, by it.
+- **`press` for an icon-only control.** `{ "press": "<name>" }` finds a button by role and exact
+  accessible name, with no `.first()`: zero matches or two fail the row. `click` keeps matching
+  exact text, so no other row changes what it targets. `EstadosConfirmar` uses `press`, because
+  "Borrar venta" is only the accessible name of an icon button.
+- **A closed list of step shapes.** `assertScreens` refuses a step that is not an object with
+  exactly one key of `click`, `press`, `wait` (a non-empty string), `fill` (`label` and `value`,
+  strings), `select` (`label` string, `index` a non-negative integer) or `offline` (`true`). The
+  message names the entry and the step's index, never the step's data.
