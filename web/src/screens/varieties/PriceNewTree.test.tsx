@@ -125,6 +125,7 @@ describe('leaving an untouched form', () => {
     ['a click on the backdrop', async (user: ReturnType<typeof userEvent.setup>) => user.click(backdrop())],
     ['Cerrar', async (user: ReturnType<typeof userEvent.setup>) => user.click(screen.getByRole('button', { name: 'Cerrar' }))],
   ])('%s lands on the variety page at once, a direct link included', async (_name, gesture) => {
+    const warn = vi.spyOn(console, 'warn')
     const user = userEvent.setup()
     const { router } = renderApp([NEW_PATH], 'computer')
     await screen.findByRole('dialog', { name: 'Nuevo precio' })
@@ -135,6 +136,9 @@ describe('leaving an untouched form', () => {
     expect(router.state.location.pathname).toBe(VARIETY_PATH)
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(screen.queryByText(DISCARD_QUESTION)).not.toBeInTheDocument()
+    // A router supports one blocker, and warns at a navigation when two are registered: the
+    // page behind the dialog holds none of its own.
+    expect(warn).not.toHaveBeenCalled()
   })
 
   test('a click inside the dialog is not a click on the backdrop', async () => {

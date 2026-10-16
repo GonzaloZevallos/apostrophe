@@ -20,7 +20,7 @@ import { ARCHIVED_VARIETIES, VARIETY, VARIETY_PRICE_NEW } from '../../routes'
 import { useViewport } from '../../shell/useViewport'
 import Variedades from '../Variedades'
 import ArchivedVarieties from './ArchivedVarieties'
-import VarietyPage from './VarietyPage'
+import { VarietyPageBehind } from './VarietyPage'
 
 export default function VarietiesLayout() {
   const me = useOutletContext<Me>()
@@ -48,7 +48,7 @@ export default function VarietiesLayout() {
         )}
         {computer && (
           <div className="variedades-paneles__detalle" inert aria-hidden="true">
-            {behind !== null && <VarietyPage varietyId={behind} />}
+            {behind !== null && <VarietyPageBehind varietyId={behind} />}
           </div>
         )}
         <Outlet context={me} />
