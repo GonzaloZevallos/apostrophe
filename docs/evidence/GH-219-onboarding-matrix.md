@@ -16,8 +16,8 @@ Review evidence only: nothing here is a gate, CI or `.agentic/stack.yaml` step (
  5 files changed, 58 insertions(+), 9 deletions(-)
 ```
 
-- Captures: `scripts/design/compare.sh --strict` over the whole registry (136 rows, file order, no `--only`), each side on a fresh sample, the same Argentina day (2026-10-16).
-- The pressed "Stock inicial" pill of `EntradaStockSinEntrada*` is proven by `web/src/screens/EntradaStock.test.tsx:455-472`.
+- Captures: `scripts/design/compare.sh --strict` (a wrapper of `comparisons.mjs --strict`) over the whole registry (136 rows, file order, no `--only`), each side on a fresh sample, the same Argentina day (2026-10-16).
+- The pressed "Stock inicial" pill of `EntradaStockSinEntradas*` is proven by `web/src/screens/EntradaStock.test.tsx:455-464`.
 - Edited tests: `StockEntryForm.test.tsx` (line-75 assertion, present to absent), `EntradaStock.test.tsx`, `web/src/design/screens.test.ts`, `web/src/routes.test.ts` (the declared seams; by `origin-chip` and `matrix-rows`).
 
 ## Strict runs
