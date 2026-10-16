@@ -188,8 +188,8 @@ test('Análisis reads Costo de lo vendido, Faltante de stock, Promoción and Con
   const consoleMessages: string[] = []
   watchConsole(page, consoleMessages)
   await signUpNewBusiness(page, {
-    businessName: `Flores del Costo ${Date.now()}`,
-    email: `duena-costo-${Date.now()}@example.com`,
+    businessName: `Flores del Costo ${uniqueTag()}`,
+    email: `duena-costo-${uniqueTag()}@example.com`,
   })
 
   for (const name of ['Rosa', 'Lirio']) {
