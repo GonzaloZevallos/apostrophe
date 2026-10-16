@@ -1,62 +1,101 @@
-"""A criterion-37 regression check of the accept path (docs/adr/0001: the clock is
-injected): an invitation issued at the app's clock and accepted on the same clock opens
-a session that `GET /auth/me` answers, with the same statuses and the same body whatever
-the day, across a month end and a year end (Argentina days, UTC-3).
+"""Accept, login and `GET /auth/me` give the same verdicts whatever the day (accounts.md
+criterion 37; docs/adr/0001: the clock is injected, business time is Argentina, UTC-3).
 
-It is not the proof for the Onboarding's `created_at`: `tests/onboarding/test_opening.py`
-is."""
+One `MovableClock` issues the invitation (`invite(engine, clock())`) and runs inside the
+app, so the verdict depends on the offsets between instants and never on the date the suite
+runs on. `tests/business_removal/adapters/test_cli.py::
+test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole` already moves the
+clock across a month and a year boundary for the removal flow; this file covers only
+accept, login and `/auth/me`."""
 
-from datetime import UTC, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy.engine import Engine
 
-from app.db import make_engine
-from app.main import create_app
-from tests.conftest import NOW, PASSWORD, SETTINGS, TEST_HASHER, MovableClock, invite
-from tests.fakes.telegram import FakeTelegram
+from app.accounts.domain.invitation import INVITATION_LIFETIME
+from tests.conftest import NOW, PASSWORD, MovableClock, invite
 
+ARGENTINA = timezone(timedelta(hours=-3))
 NEW_USER = {"email": "nueva@example.com", "password": PASSWORD, "business_name": "La Huerta"}
 
-DAYS = [
-    pytest.param(NOW, id="NOW"),
-    pytest.param(datetime(2026, 10, 31, 18, 0, tzinfo=UTC), id="last day of a month"),
-    pytest.param(datetime(2026, 11, 1, 18, 0, tzinfo=UTC), id="first day of the next month"),
-    pytest.param(datetime(2026, 11, 1, 2, 30, tzinfo=UTC), id="31/10 at 23:30 in Argentina"),
-    pytest.param(datetime(2026, 11, 1, 3, 30, tzinfo=UTC), id="01/11 at 00:30 in Argentina"),
-    pytest.param(datetime(2026, 12, 31, 18, 0, tzinfo=UTC), id="31/12"),
-    pytest.param(datetime(2027, 1, 1, 18, 0, tzinfo=UTC), id="01/01"),
+
+def _open_and_sign_in(
+    client: TestClient, engine: Engine, clock: MovableClock, issued: datetime, accepted: datetime
+) -> tuple[int, int, int, str | None]:
+    """Issues at `issued`, accepts and logs in at `accepted`: the accept status, the login
+    status, `/auth/me`'s status and its `today`."""
+    clock.set(issued)
+    token = invite(engine, clock())
+    clock.set(accepted)
+    accept = client.post(f"/invitations/{token}/accept", json=NEW_USER)
+    login = client.post(
+        "/auth/login", json={"email": NEW_USER["email"], "password": NEW_USER["password"]}
+    )
+    if login.status_code != 200:
+        return accept.status_code, login.status_code, 0, None
+    me = client.get("/auth/me", headers={"Authorization": f"Bearer {login.json()['token']}"})
+    return accept.status_code, login.status_code, me.status_code, me.json().get("today")
+
+
+@pytest.mark.parametrize(
+    ("instant", "today"),
+    [
+        pytest.param(
+            datetime(2026, 12, 31, 23, 30, tzinfo=ARGENTINA), date(2026, 12, 31), id="31/12 23:30"
+        ),
+        pytest.param(
+            datetime(2027, 1, 1, 0, 30, tzinfo=ARGENTINA), date(2027, 1, 1), id="01/01 00:30"
+        ),
+    ],
+)
+def test_the_argentina_day_edge_decides_today_and_nothing_else(
+    anonymous_client: TestClient,
+    engine: Engine,
+    clock: MovableClock,
+    instant: datetime,
+    today: date,
+) -> None:
+    result = _open_and_sign_in(anonymous_client, engine, clock, instant, instant)
+
+    assert result == (201, 200, 200, today.isoformat())
+
+
+# (issued, accepted): month end, year end, and the same offsets from conftest's NOW.
+SIX_DAYS = timedelta(days=6)
+SIX_AND_A_HALF = timedelta(days=6, hours=12, minutes=30)
+ISSUED_MONTH = datetime(2026, 10, 28, 12, 0, tzinfo=ARGENTINA)
+ISSUED_YEAR = datetime(2026, 12, 28, 12, 0, tzinfo=ARGENTINA)
+INSIDE_THE_LIFETIME = [
+    pytest.param(ISSUED_MONTH, datetime(2026, 11, 3, 12, 0, tzinfo=ARGENTINA), id="month end"),
+    pytest.param(ISSUED_YEAR, datetime(2027, 1, 4, 0, 30, tzinfo=ARGENTINA), id="year end"),
+    pytest.param(NOW, NOW + SIX_DAYS, id="baseline, month offset"),
+    pytest.param(NOW, NOW + SIX_AND_A_HALF, id="baseline, year offset"),
 ]
 
 
-@pytest.mark.parametrize("instant", DAYS)
-def test_invite_accept_and_me_answer_the_same_on_every_day(instant: datetime) -> None:
-    """Same statuses and same body on every day; the one field that follows the day,
-    `today`, is that day's Argentina date."""
-    engine = make_engine("sqlite://")
-    clock = MovableClock(NOW)
-    app = create_app(
-        SETTINGS,
-        engine=engine,
-        clock=clock,
-        hasher=TEST_HASHER,
-        telegram=FakeTelegram(),
-        upkeep_ticker=False,
-    )
-    clock.set(instant)
-    expected_today = (instant - timedelta(hours=3)).date().isoformat()
+@pytest.mark.parametrize(("issued", "accepted"), INSIDE_THE_LIFETIME)
+def test_an_invitation_accepted_inside_its_lifetime_opens_a_session_on_any_day(
+    anonymous_client: TestClient,
+    engine: Engine,
+    clock: MovableClock,
+    issued: datetime,
+    accepted: datetime,
+) -> None:
+    assert accepted - issued < INVITATION_LIFETIME
+    accept, login, me, today = _open_and_sign_in(anonymous_client, engine, clock, issued, accepted)
 
-    try:
-        with TestClient(app) as client:
-            accepted = client.post(f"/invitations/{invite(engine, clock())}/accept", json=NEW_USER)
-            token = accepted.json()["token"]
-            me = client.get("/auth/me", headers={"Authorization": f"Bearer {token}"})
-    finally:
-        engine.dispose()
+    assert (accept, login, me) == (201, 200, 200)
+    assert today == (accepted.astimezone(ARGENTINA)).date().isoformat()
 
-    assert (accepted.status_code, me.status_code) == (201, 200)
-    assert me.json() == {
-        "email": "nueva@example.com",
-        "business_name": "La Huerta",
-        "today": expected_today,
-    }
+
+@pytest.mark.parametrize("issued", [ISSUED_MONTH, ISSUED_YEAR, NOW], ids=["month", "year", "NOW"])
+def test_an_invitation_accepted_just_past_its_lifetime_is_refused_on_any_day(
+    anonymous_client: TestClient, engine: Engine, clock: MovableClock, issued: datetime
+) -> None:
+    accepted = issued + timedelta(days=7, seconds=1)
+
+    accept, login, _me, _today = _open_and_sign_in(anonymous_client, engine, clock, issued, accepted)
+
+    assert (accept, login) == (404, 401)

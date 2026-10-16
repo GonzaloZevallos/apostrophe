@@ -41,22 +41,23 @@ commands did not follow it.
 
 ## Amendment (py-wall-clock-guard): the pytest guard
 
-1. **No Python test reads the wall clock.** `tests/architecture/test_no_wall_clock.py` walks
-   the AST of every `.py` under `tests/`, `tests/architecture/fixtures/` excluded, and its
-   pure helper `wall_clock_reads(module)` returns `path:line: <what>` for each read. Import
-   aliases are resolved (`from datetime import datetime as dt`, `import datetime as d`,
-   `from time import time`). It flags `datetime.now`, `datetime.utcnow`, `datetime.today`,
-   `date.today`, `time.time`, `time.time_ns`, and any import of `system_clock` from
-   `app.clock`.
+1. **No Python file under `tests/` or `app/` reads the wall clock.**
+   `tests/architecture/test_no_real_clock.py` walks the AST of every `.py` under both trees and
+   resolves each name through the module's import table, aliases included, so a name counts
+   for what it is bound to. Its pure helper `real_clock_reads(source)` names each read, with
+   the function that holds it; it flags calls and bare references alike
+   (`default_factory=datetime.now`) to `datetime.now`, `utcnow`, `today`, `date.today`,
+   `time.time`, `time.time_ns` and `app.clock.system_clock`.
 2. **Elapsed time is not this guard's business.** `time.monotonic`, `time.perf_counter` and
    `sleep` are not flagged: they measure no date. ADR-0038 governs elapsed-time checks.
-3. **`ALLOWED` is shrink-only** and maps an exact path to its reason. It holds one entry,
-   `tests/e2e_app.py`: the e2e backend shares the real clock with the CLI subprocess and the
-   browser by design (ADR-0040). Another entry is allowed only for a test of the app's own
-   clock whose verdict is the same on any date and at any hour. A test that does not meet
-   that is fixed with a controlled clock. A test that cannot be fixed is reported, never
-   deleted. A test fails when an `ALLOWED` entry no longer reads the clock, so the list only
-   shrinks.
+3. **The allowlists are closed.** A wall-clock read is allowed by path and enclosing function:
+   `app/clock.py::system_clock`. Naming `system_clock` is allowed by exact path, no glob: the
+   composition roots `app/main.py` and the three command lines, and `tests/e2e_app.py`, which
+   shares the real clock with the CLI subprocess and the browser by design (ADR-0040). Each
+   entry has a one-line reason, a test fails when an entry no longer matches a read, and
+   another entry is added only with a decision of its own. A test that reads the clock is
+   fixed with a controlled clock. Out of reach, by design: patching by string, and an alias
+   imported from another test module (it is caught where it is defined).
 4. **Every test app names its clock.** `CREATE_APP_REQUIRED_KEYWORDS` in
    `tests/architecture/test_architecture.py` is now `telegram`, `upkeep_ticker` and `clock`,
    so a `create_app(...)` call under `tests/` that omits `clock=` fails the gate instead of
