@@ -112,3 +112,174 @@ outside the tree whose own `web/dist` a sample app serves, and it never touched 
 the repository's worktree list, the config or any other worktree. If the clone is removed
 before the capture, redo 1.2 from the same head with the same command and the same six
 resolutions.
+
+## 2. The two captures
+
+Made by the `capture-compare` subtask. No tooling or test was written; both runs use this
+branch's `scripts/design/comparisons.mjs` and `ae.mjs`, unchanged.
+
+### 2.1 The run
+
+| Item | Value |
+| --- | --- |
+| Argentina day | 2026-10-16 for both captures (`TZ=America/Argentina/Buenos_Aires date +%F`) |
+| Install | one `web/node_modules`; `@fontsource/plus-jakarta-sans` **5.3.0** |
+| "Before" app | started from `/tmp/GH-224-before.3eEfP3/repo` (1.2), fresh sample `/tmp/GH-224-evidence/before-app`, serving bundle `assets/index-DS_Twmsb.js`; run with `VIRTUAL_ENV` set to this worktree's `.venv`, because the clone has none (it is the same Python install) |
+| "After" app | started from this branch's worktree after `npm --prefix web run build`, fresh sample `/tmp/GH-224-evidence/after-app`, bundle `assets/index-jfeT3zyR.js` |
+| `web/dist/index.html` sha256 | before `67fa01f79d5f8f26…`, after `db0c87f0f7598c96…`: they differ, the run is valid |
+| Outputs | `--out /tmp/GH-224-evidence/before-out` and `.../after-out` (attach the sheets and raw captures to the PR) |
+| Exit codes | before 0, after 0, both with `--strict` |
+
+Command of each capture: `node scripts/design/comparisons.mjs --facts <app>/sample.json --out <out> --only "$ONLY" --strict`.
+Each printed 35 lines, every one `<screen>: ok`; no line had a note. In both `index.json`
+files all 35 entries have a `design` and a `built` path and empty `notes`.
+
+### 2.2 The `--only` list (the same for both captures and for `ae.mjs`)
+
+35 rows: `OnboardingStock, OnboardingMensaje, OnboardingBot, OnboardingSocio, OnboardingCategorias`
+and the same five with the suffixes `Oscuro`, `Compu`, `CompuOscuro` and `Texto130`;
+`OnboardingVariedad, OnboardingVariedadOscuro, OnboardingVariedadCompu, OnboardingVariedadTexto130,
+OnboardingVariedadCompuOscuro`; `OnboardingListo, OnboardingListoCompu, OnboardingListoOscuro,
+OnboardingListoCompuOscuro, OnboardingListoTexto130`.
+
+### 2.3 The artboard check (Texto130)
+
+The design raw capture of every `…Texto130` row is 828 px wide (414 CSS px: the artboard is
+wider than the 320 px viewport by construction), but **no "wider than its viewport" note was
+raised on either side**. The built raw capture is 640 px wide (exactly 320 CSS px). So the
+rule "judge built overflow against the design's own width" was not needed: the built side
+does not overflow its viewport, and no note exists to compare.
+
+### 2.4 `ae.mjs` before against after (exit 1, as expected: GH-164 changed things)
+
+`node scripts/design/ae.mjs before-out after-out --only "$ONLY"`, full output:
+
+```
+OnboardingStock built: AE 6415
+OnboardingStock design: AE 0
+OnboardingMensaje built: AE 6415
+OnboardingMensaje design: AE 0
+OnboardingBot built: AE 6415
+OnboardingBot design: AE 0
+OnboardingSocio built: AE 6415
+OnboardingSocio design: AE 0
+OnboardingCategorias built: AE 6415
+OnboardingCategorias design: AE 0
+OnboardingStockOscuro built: AE 6396
+OnboardingStockOscuro design: AE 0
+OnboardingMensajeOscuro built: AE 6396
+OnboardingMensajeOscuro design: AE 0
+OnboardingBotOscuro built: AE 6396
+OnboardingBotOscuro design: AE 0
+OnboardingSocioOscuro built: AE 6396
+OnboardingSocioOscuro design: AE 0
+OnboardingCategoriasOscuro built: AE 6396
+OnboardingCategoriasOscuro design: AE 0
+OnboardingStockCompu built: AE 6415
+OnboardingStockCompu design: AE 0
+OnboardingMensajeCompu built: AE 6415
+OnboardingMensajeCompu design: AE 0
+OnboardingBotCompu built: AE 6415
+OnboardingBotCompu design: AE 0
+OnboardingSocioCompu built: AE 6415
+OnboardingSocioCompu design: AE 0
+OnboardingCategoriasCompu built: AE 6415
+OnboardingCategoriasCompu design: AE 0
+OnboardingStockCompuOscuro built: AE 6396
+OnboardingStockCompuOscuro design: AE 0
+OnboardingMensajeCompuOscuro built: AE 6396
+OnboardingMensajeCompuOscuro design: AE 0
+OnboardingBotCompuOscuro built: AE 6396
+OnboardingBotCompuOscuro design: AE 0
+OnboardingSocioCompuOscuro built: AE 6396
+OnboardingSocioCompuOscuro design: AE 0
+OnboardingCategoriasCompuOscuro built: AE 6396
+OnboardingCategoriasCompuOscuro design: AE 0
+OnboardingStockTexto130 built: AE 6833
+OnboardingStockTexto130 design: AE 0
+OnboardingMensajeTexto130 built: AE 6833
+OnboardingMensajeTexto130 design: AE 0
+OnboardingBotTexto130 built: AE 6833
+OnboardingBotTexto130 design: AE 0
+OnboardingSocioTexto130 built: AE 6833
+OnboardingSocioTexto130 design: AE 0
+OnboardingCategoriasTexto130 built: AE 6833
+OnboardingCategoriasTexto130 design: AE 0
+OnboardingVariedad built: AE 6415
+OnboardingVariedad design: AE 0
+OnboardingVariedadOscuro built: AE 6396
+OnboardingVariedadOscuro design: AE 0
+OnboardingVariedadCompu built: AE 6415
+OnboardingVariedadCompu design: AE 0
+OnboardingVariedadTexto130 built: AE 6833
+OnboardingVariedadTexto130 design: AE 0
+OnboardingVariedadCompuOscuro built: AE 6396
+OnboardingVariedadCompuOscuro design: AE 0
+OnboardingListo built: FAIL different dimensions
+OnboardingListo design: AE 0
+OnboardingListoCompu built: AE 25916
+OnboardingListoCompu design: AE 0
+OnboardingListoOscuro built: FAIL different dimensions
+OnboardingListoOscuro design: AE 0
+OnboardingListoCompuOscuro built: AE 25892
+OnboardingListoCompuOscuro design: AE 0
+OnboardingListoTexto130 built: FAIL different dimensions
+OnboardingListoTexto130 design: AE 0
+ae: the before/after differ, or could not be compared
+```
+
+Every `design` side is AE 0 (the design files and the pinned fonts did not move).
+
+## 3. The differences, one line each
+
+Judged by eye: the Stock sheet (design next to built, light and dark, after), Stock before and
+after built, the seven 320 px / 130 % built captures (after). The other rows were judged by
+their AE: every step row has the same AE for the same capture kind, which says the same
+region of the same size changed on all of them (the other steps' before/after pairs were not
+read one by one).
+
+| Screen and side | Difference | Verdict |
+| --- | --- | --- |
+| `OnboardingStock`, `Mensaje`, `Bot`, `Socio`, `Categorias`, `Variedad` built, phone light | AE 6415 on each | **intended**: the step frame's "Cerrar" text link is now a `Boton` icon button with an X (seen on Stock before/after); GH-164's brief, the step frame's `Boton` |
+| same six, built, phone dark and computer dark | AE 6396 on each | **intended**, same cause |
+| same six, built, computer light | AE 6415 | **intended**, same cause |
+| same six `…Texto130`, built | AE 6833 on each | **intended**, same cause, at 130 % |
+| `OnboardingListo`, `OnboardingListoOscuro`, `OnboardingListoTexto130`, built | `FAIL different dimensions` (Listo phone light: 1706 px before, 1718 px after, 6 CSS px taller) | **for Zeta**: not read by eye before against after in this run; the height change is real |
+| `OnboardingListoCompu`, built | AE 25916 | **for Zeta**, same reason |
+| `OnboardingListoCompuOscuro`, built | AE 25892 | **for Zeta**, same reason |
+| every row, design side | AE 0 | nothing changed |
+
+Design against the docs and the build (from the Stock sheet; the "Atrás" and the step frame
+repeat on the other steps):
+
+- The design draws "Atrás" and "Cerrar" as text links; the build has a secondary `Boton` with
+  the `atras` icon (GH-166, not GH-164) and the X icon button (GH-164). For Zeta.
+- The primary of step 2 reads "Guardá el stock" in the design and "Guardá la entrada" in the
+  build; the build also shows "Hoy tiene 0 g", which the design does not. A copy difference:
+  never fixed here, the doc wins. For Zeta, split into its own bug.
+- The design draws the step inside a rounded card on a grey page; the build is full-bleed.
+  Not read against the docs. For Zeta.
+
+### 3.1 At 320 px with text at 130 %, after (the seven captures)
+
+- Nothing is clipped: no line, control or crop is cut in `Variedad`, `Stock`, `Mensaje`,
+  `Bot`, `Socio`, `Categorias` or `Listo`. The built page is exactly 320 CSS px wide on all seven.
+- The "Cerrar" X button is 88 px at DPR 2 (44 CSS px); "Atrás", the primaries and the secondary
+  buttons are taller. The small `i` icon next to the hint in step 4 (Bot) and the narrow
+  "Tu chat" field were not measured: **for Zeta**.
+- In `Mensaje` the two text areas show one or two lines of their content with their own
+  scroll; that is the field, not a cropped screen.
+- In `Listo` the primary "Cargar mi primera venta" wraps to two lines and grows; it is not cut.
+
+## 4. What follows
+
+**`css-fixes` may take:** nothing. No built-side note, no clip at 320–430 px or 130 %, and no
+step frame straying from `OnboardingVariedad` / `OnboardingCategorias` was found (Variedad has
+no "Atrás" because it is step 1; the frame is otherwise the same on all six).
+
+**Split into their own bugs / for Zeta:** the copy difference of step 2 and the "Hoy tiene
+0 g" line; the design's "Atrás" and "Cerrar" text links against the built buttons; the card
+frame; the three Listo rows with different dimensions and the two Listo computer AEs, not
+classified; the `i` icon's tap size in step 4.
+
+Not every non-zero AE is a defect: the six steps' lines are the intended close control.
