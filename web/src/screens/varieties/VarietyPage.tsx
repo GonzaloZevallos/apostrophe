@@ -1,7 +1,7 @@
 /**
  * `VarietyPage` (`VariedadDetalle.dc.html`; varieties.md, "A variety's page"): one variety
  * on its own page. It receives its id only as a prop (`VarietyRoute` is the one reader of
- * the route's `:id`). A detail: "‹ Variedades", no "+ Nueva venta" (the route declares
+ * the route's `:id`). A detail (the shell draws its back: "‹ Variedades", or "‹ Archivadas"), no "+ Nueva venta" (the route declares
  * `chrome: 'card'`). One summary line; "+ Entrada", "Nuevo precio" and "Sacar del stock" (the
  * withdrawal form with this variety chosen); four read-only
  * sections. Forms open over the page by history state (`varietyForms.ts`); the rename form
@@ -11,7 +11,7 @@
  * Stock, status and days left are what `GET /stock` answered; whether the variety is shown
  * is the server's own `shown` from `GET /catalog`; nothing here decides a status or a reason.
  *
- * An archived variety (`archived` true) is the same page, read-only: "‹ Archivadas", "Archivada"
+ * An archived variety (`archived` true) is the same page, read-only: "Archivada"
  * in words, its stock from `GET /stock?archived=true`, no "+ Entrada", "Nuevo precio", "Sacar
  * del stock", price delete, threshold, "Editar", form or removal; its one action is "Restaurar".
  */
@@ -37,7 +37,6 @@ import MarcaEstado from '../../components/MarcaEstado'
 import SinConexion from '../../components/SinConexion'
 import { type LeaveGuard, useLeaveGuard } from '../../components/useLeaveGuard'
 import { useFlash } from '../../flash/useFlash'
-import { useCardRecord } from '../../shell/useCardRecord'
 import { formatGrams, formatMoney } from '../../format/money'
 import {
   CATALOG_SECTION_ID,
@@ -57,6 +56,7 @@ import { readForm, useOpenForm } from './varietyForms'
 import VarietyRemoval from './VarietyRemoval'
 import VarietyPricesSection from './VarietyPricesSection'
 import VarietyStockSection from './VarietyStockSection'
+import { useBackParent } from '../../shell/useBackParent'
 import VarietyThresholdSection from './VarietyThresholdSection'
 import { useRestore } from './useRestore'
 
@@ -114,12 +114,7 @@ function VarietyPageView({
     queryFn: () => get<PriceRow[]>(`/varieties/${id}/prices`),
   })
   const archived = varietyQuery.data?.archived === true
-  const loaded = varietyQuery.data
-  useCardRecord(
-    publishRecord && loaded !== undefined
-      ? { id: varietyId, archived: loaded.archived === true, name: loaded.name }
-      : undefined,
-  )
+  useBackParent('variety', !publishRecord || varietyQuery.data === undefined ? undefined : archived ? { parent: 'varieties-archived' } : { title: 'Variedades' })
   const liveStockQuery = useQuery({ queryKey: keys.stock(), queryFn: readStock })
   const archivedStockQuery = useQuery({
     queryKey: keys.archivedStock(),

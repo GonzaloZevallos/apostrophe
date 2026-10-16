@@ -1,6 +1,6 @@
 /**
- * `Archivadas` (`/varieties/archived`; `varieties.md`, "Archivadas"): a card, "‹ Variedades"
- * and no "+ Nueva venta", listing the archived varieties by name. Each row is marked
+ * `Archivadas` (`/varieties/archived`; `varieties.md`, "Archivadas"): a card (the shell draws its
+ * "‹ Variedades") and no "+ Nueva venta", listing the archived varieties by name. Each row is marked
  * "Archivada" in words and has "Restaurar", one tap with no confirmation. A row opens the
  * variety's own page, read-only. With none, a fixed line says so.
  *

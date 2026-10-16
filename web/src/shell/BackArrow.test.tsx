@@ -1,232 +1,274 @@
 /**
- * The shell's "‹ <parent>" arrow on the cards that read a record (`cardRecord.tsx`), through
- * the real `Shell` and the varieties screens with `fetch` faked, some answers held back by
- * `deferredAnswer`: an archived variety's page goes back to Archivadas, a variety's two "Ver
- * todas" lists to the variety by name, and while the record loads, fails or is gone the arrow
- * is there all the same with the registry's static parent.
- *
- * The arrow is found where the shell draws it (`.flecha-atras`), so a card that still draws
- * its own does not change what these tests count.
+ * `BackArrow` and `useBackParent` at the shell seam: a real data router, `Shell`, and stand-in
+ * screens that load a variety through `fetch` and then declare their back word the way a
+ * record-labelled screen does. Nothing waits on a timer (ADR-0038): a fetch is held open by a
+ * deferred promise, and `findBy*` waits for what it settles.
  */
 
-import { act, render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
-import { beforeEach, describe, expect, test, vi } from 'vitest'
-import { useCardRecord } from './useCardRecord'
-import Shell from './Shell'
-import { ARCHIVED_VARIETIES, VARIETIES, VARIETY, VARIETY_ENTRIES, VARIETY_PRICES, pathTo, relative } from '../routes'
+import { useContext, useEffect, useLayoutEffect, useState } from 'react'
+import { createMemoryRouter, Outlet, RouterProvider, useParams, type RouteObject } from 'react-router'
+import { afterEach, expect, test, vi } from 'vitest'
+import type { Me } from '../api/me'
 import {
-  ME,
-  deferredAnswer,
-  jsonResponse,
-  renderVarietiesInShell,
-  type FetchImpl,
-} from '../screens/varieties/renderVarieties'
+  ANALYSIS,
+  ARCHIVED_VARIETIES,
+  SALE,
+  SCREENS,
+  VARIETIES,
+  VARIETY,
+  VARIETY_ENTRIES,
+  VARIETY_PRICES,
+  pathTo,
+  type RecordLabelledScreen,
+} from '../routes'
+import Shell from './Shell'
+import { BackParentContext, useBackParent } from './useBackParent'
 
-const viewport = vi.hoisted(() => ({ current: 'phone' as 'phone' | 'computer' }))
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03' }
 
-vi.mock('./useViewport', () => ({ useViewport: () => viewport.current }))
-
-beforeEach(() => {
-  viewport.current = 'phone'
-})
-
-const LIVE = { id: 1, name: '24K Gold', archived: false, current_price: null }
-const ARCHIVED = { id: 2, name: 'Vieja', archived: true, current_price: null }
-const STOCK = { total: 0, varieties: [], entries: [] }
-const CATALOG = { text: '', header: '', footer: '', varieties: [] }
-
-type Answer = Response | Promise<Response>
-
-/** The faked API for varieties 1 (live) and 2 (archived); `overrides` replaces any answer. */
-function api(overrides: Record<string, () => Answer> = {}): FetchImpl {
-  const answers: Record<string, () => Answer> = {
-    'GET /varieties/1': () => jsonResponse(200, LIVE),
-    'GET /varieties/2': () => jsonResponse(200, ARCHIVED),
-    'GET /varieties/1/prices': () => jsonResponse(200, []),
-    'GET /varieties/2/prices': () => jsonResponse(200, []),
-    'GET /varieties': () => jsonResponse(200, [LIVE]),
-    'GET /stock': () => jsonResponse(200, STOCK),
-    'GET /stock?archived=true': () => jsonResponse(200, STOCK),
-    'GET /stock/varieties/1/movements': () => jsonResponse(200, []),
-    'GET /stock/varieties/2/movements': () => jsonResponse(200, []),
-    'GET /catalog': () => jsonResponse(200, CATALOG),
-    'GET /pricing-settings': () => jsonResponse(200, { is_bulk_pricing: true, is_vip_customers: true }),
-    ...overrides,
-  }
-  return (url, init) => {
-    const answer = answers[`${init?.method ?? 'GET'} ${url}`]
-    if (answer === undefined) return Promise.reject(new Error(`unexpected request: ${url}`))
-    return Promise.resolve(answer())
-  }
+interface Detail {
+  id: number
+  name: string
+  archived: boolean
 }
 
-/** The arrows the shell draws, as their labels. */
-function shellArrows(): string[] {
-  return [...document.querySelectorAll('.flecha-atras button')].map((button) => button.textContent ?? '')
+interface Deferred {
+  promise: Promise<Response>
+  settle: (response: Response) => void
 }
 
-async function tapShellArrow() {
-  const button = document.querySelector('.flecha-atras button')
-  if (button === null) throw new Error('the shell drew no arrow')
-  await userEvent.setup().click(button)
+function deferred(): Deferred {
+  let settle: (response: Response) => void = () => undefined
+  const promise = new Promise<Response>((resolve) => {
+    settle = resolve
+  })
+  return { promise, settle }
 }
 
-const VARIETY_ONE = pathTo(VARIETY, { id: 1 })
-const VARIETY_TWO = pathTo(VARIETY, { id: 2 })
+function json(body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
+}
 
-describe("a variety's page", () => {
-  test('an archived variety reads "‹ Archivadas" once loaded, and back with no history lands on Archivadas', async () => {
-    const { router } = renderVarietiesInShell([VARIETY_TWO], api())
-
-    await screen.findByRole('heading', { name: 'Vieja' })
-    await waitFor(() => expect(shellArrows()).toEqual(['‹ Archivadas']))
-    await tapShellArrow()
-
-    expect(router.state.location.pathname).toBe(ARCHIVED_VARIETIES)
-    expect(screen.getByText('Pantalla Archivadas')).toBeInTheDocument()
+/** The API faked at `fetch`: `GET /varieties/{id}` answers what `answers[id]` holds. */
+function fakeApi(answers: Record<number, Response | Deferred>) {
+  const fetchMock = vi.fn((input: RequestInfo | URL) => {
+    const id = Number(String(input).slice(pathTo(VARIETY, { id: '' }).length))
+    const answer = answers[id]
+    if (answer === undefined) return Promise.resolve(json({ detail: 'not found' }, 404))
+    return 'promise' in answer ? answer.promise : Promise.resolve(answer.clone())
   })
+  vi.stubGlobal('fetch', fetchMock)
+}
 
-  test('a live variety reads "‹ Variedades", and back with no history lands on Variedades', async () => {
-    const { router } = renderVarietiesInShell([VARIETY_ONE], api())
+/** Declares the back word once the record is known: the archived page goes to Archivadas, any
+ * other says its name. */
+function Declare({ screen: id, detail }: { screen: RecordLabelledScreen; detail: Detail }) {
+  useBackParent(id, detail.archived ? { parent: 'varieties-archived' } : { title: detail.name })
+  return <p>{`Cargada ${detail.name}`}</p>
+}
 
-    await screen.findByRole('heading', { name: '24K Gold' })
-    expect(shellArrows()).toEqual(['‹ Variedades'])
-    await tapShellArrow()
-
-    expect(router.state.location.pathname).toBe(VARIETIES)
-  })
-
-  test('with the variety still loading the arrow is there with the static label', async () => {
-    const held = deferredAnswer()
-    renderVarietiesInShell([VARIETY_TWO], api({ 'GET /varieties/2': () => held.promise }))
-
-    expect(shellArrows()).toEqual(['‹ Variedades'])
-    await act(async () => {
-      held.resolve(jsonResponse(200, ARCHIVED))
+/** A record screen: it asks the API for its variety and shows "Cargando" while it waits, also
+ * when the route's `:id` changes under it (a query under a new key is pending again). A 404
+ * declares nothing. */
+function RecordStub({ screen: id }: { screen: RecordLabelledScreen }) {
+  const { id: param } = useParams<{ id: string }>()
+  const [loaded, setLoaded] = useState<{ param: string | undefined; detail: Detail | null }>()
+  useEffect(() => {
+    let current = true
+    void fetch(pathTo(VARIETY, { id: param ?? '' })).then(async (response) => {
+      const detail = response.ok ? ((await response.json()) as Detail) : null
+      if (current) setLoaded({ param, detail })
     })
-    await waitFor(() => expect(shellArrows()).toEqual(['‹ Archivadas']))
-  })
-
-  test('with the variety failing the arrow is there beside the generic retry', async () => {
-    const held = deferredAnswer()
-    renderVarietiesInShell([VARIETY_TWO], api({ 'GET /varieties/2': () => held.promise }))
-
-    await act(async () => {
-      held.resolve(jsonResponse(500, { code: 'server_error' }))
-    })
-
-    expect(await screen.findByRole('alert')).toBeInTheDocument()
-    expect(shellArrows()).toEqual(['‹ Variedades'])
-  })
-
-  test('a variety that is gone keeps the arrow beside "Volver a Variedades"', async () => {
-    renderVarietiesInShell(
-      [VARIETY_ONE],
-      api({
-        'GET /varieties/1': () => jsonResponse(404, { code: 'variety.not_found' }),
-        'GET /varieties/1/prices': () => jsonResponse(404, { code: 'variety.not_found' }),
-      }),
-    )
-
-    expect(await screen.findByRole('link', { name: /Volver a Variedades/ })).toBeInTheDocument()
-    expect(shellArrows()).toEqual(['‹ Variedades'])
-  })
-
-  test('on a computer, archived A then live B in the same page never shows A\'s parent while B loads', async () => {
-    viewport.current = 'computer'
-    const held = deferredAnswer()
-    const { router } = renderVarietiesInShell(
-      [VARIETY_TWO],
-      api({ 'GET /varieties/1': () => held.promise }),
-    )
-    await waitFor(() => expect(shellArrows()).toEqual(['‹ Archivadas']))
-
-    // Every state the DOM passes through while B is held, not only the one it ends in.
-    const seen: string[][] = []
-    const observer = new MutationObserver(() => seen.push(shellArrows()))
-    observer.observe(document.body, { childList: true, subtree: true, characterData: true })
-    await act(async () => {
-      await router.navigate(VARIETY_ONE)
-    })
-    seen.push(shellArrows())
-    observer.disconnect()
-
-    for (const labels of seen) {
-      expect(labels).toEqual(['‹ Variedades'])
+    return () => {
+      current = false
     }
-    await act(async () => {
-      held.resolve(jsonResponse(200, LIVE))
-    })
-    await screen.findByRole('heading', { name: '24K Gold' })
-    expect(shellArrows()).toEqual(['‹ Variedades'])
-  })
-})
+  }, [param])
+  const shown = loaded?.param === param ? loaded : undefined
+  if (shown === undefined) return <p>Cargando</p>
+  return shown.detail === null ? <p>Eso ya no está.</p> : <Declare screen={id} detail={shown.detail} />
+}
 
-describe("a variety's 'Ver todas' lists", () => {
-  test.each([
-    ['prices', pathTo(VARIETY_PRICES, { id: 1 })],
-    ['entries', pathTo(VARIETY_ENTRIES, { id: 1 })],
-  ])('%s: "‹ <variety>" once loaded, and back with no history lands on the variety\'s page', async (_name, path) => {
-    const { router } = renderVarietiesInShell([path], api())
-
-    await waitFor(() => expect(shellArrows()).toEqual(['‹ 24K Gold']))
-    await tapShellArrow()
-
-    expect(router.state.location.pathname).toBe(VARIETY_ONE)
-  })
-
-  test.each([
-    ['prices', pathTo(VARIETY_PRICES, { id: 1 })],
-    ['entries', pathTo(VARIETY_ENTRIES, { id: 1 })],
-  ])('%s: with the variety pending the arrow is there with the static label, and back goes to the variety', async (_name, path) => {
-    const held = deferredAnswer()
-    const { router } = renderVarietiesInShell([path], api({ 'GET /varieties/1': () => held.promise }))
-
-    expect(shellArrows()).toEqual(['‹ Variedad'])
-    await tapShellArrow()
-
-    expect(router.state.location.pathname).toBe(VARIETY_ONE)
-  })
-})
-
-describe('a record published for another route', () => {
-  /** A card that publishes variety 2 (archived) whatever the route's `:id` is. */
-  function PublishesTwo() {
-    useCardRecord({ id: 2, archived: true, name: 'Vieja' })
-    return <main>Pantalla de otra variedad</main>
+function renderAt(entries: string[]) {
+  const leaf = (path: string, id: string): RouteObject => {
+    const marked = id === 'variety' || id === 'variety-prices' || id === 'variety-entries'
+    return {
+      path,
+      handle: { screen: id },
+      element: marked ? <RecordStub screen={id} /> : <p>{id}</p>,
+    }
   }
+  const router = createMemoryRouter(
+    [
+      {
+        element: <Outlet context={ME} />,
+        children: [{ element: <Shell />, children: SCREENS.map((entry) => leaf(entry.path, entry.id)) }],
+      },
+    ],
+    { initialEntries: entries },
+  )
+  const view = render(<RouterProvider router={router} />)
+  return { router, ...view }
+}
 
-  function renderAt(path: string) {
-    const router = createMemoryRouter(
-      [
-        {
-          element: <Outlet context={ME} />,
-          children: [
-            {
-              element: <Shell />,
-              children: [{ path: relative(VARIETY), element: <PublishesTwo />, handle: { screen: 'variety' } }],
-            },
-          ],
-        },
-      ],
-      { initialEntries: [path] },
-    )
-    render(<RouterProvider router={router} />)
-  }
+const backs = (): string[] => screen.queryAllByRole('button', { name: /^‹ / }).map((back) => back.textContent ?? '')
 
-  test("is not used: the arrow reads the registry's parent when the published id is not the route's", async () => {
-    renderAt(VARIETY_ONE)
-
-    await screen.findByText('Pantalla de otra variedad')
-    expect(shellArrows()).toEqual(['‹ Variedades'])
-  })
-
-  test('is used when the published id is the route\'s', async () => {
-    renderAt(VARIETY_TWO)
-
-    await screen.findByText('Pantalla de otra variedad')
-    await waitFor(() => expect(shellArrows()).toEqual(['‹ Archivadas']))
-  })
+afterEach(() => {
+  vi.unstubAllGlobals()
 })
+
+test('a marked leaf shows no back, and no placeholder word, until its screen declares one', async () => {
+  const pending = deferred()
+  fakeApi({ 1: pending })
+  renderAt([pathTo(VARIETY_PRICES, { id: 1 })])
+
+  expect(await screen.findByText('Cargando')).toBeInTheDocument()
+  expect(backs()).toEqual([])
+  expect(screen.queryByText('‹')).not.toBeInTheDocument()
+  expect(screen.queryByText(/Variedad$/)).not.toBeInTheDocument()
+
+  await act(async () => pending.settle(json({ id: 1, name: '24K Gold', archived: false })))
+  expect(await screen.findAllByRole('button', { name: /^‹ / })).toHaveLength(1)
+  expect(backs()).toEqual(['‹ 24K Gold'])
+})
+
+test('the accessible name is the visible text', async () => {
+  fakeApi({ 1: json({ id: 1, name: '24K Gold', archived: false }) })
+  renderAt([pathTo(VARIETY_ENTRIES, { id: 1 })])
+
+  const back = await screen.findByRole('button', { name: '‹ 24K Gold' })
+  expect(back).toHaveTextContent('‹ 24K Gold')
+  expect(back).not.toHaveAttribute('aria-label')
+  expect(screen.queryByRole('button', { name: 'Volver' })).not.toBeInTheDocument()
+})
+
+test("from variety A's prices to variety B's entries, '‹ A' is gone while B loads and exactly '‹ B' shows after", async () => {
+  const b = deferred()
+  fakeApi({ 1: json({ id: 1, name: 'Alpha', archived: false }), 2: b })
+  const { router } = renderAt([pathTo(VARIETY_PRICES, { id: 1 })])
+  expect(await screen.findByRole('button', { name: '‹ Alpha' })).toBeInTheDocument()
+
+  await act(async () => router.navigate(pathTo(VARIETY_ENTRIES, { id: 2 })))
+  expect(await screen.findByText('Cargando')).toBeInTheDocument()
+  expect(backs()).toEqual([])
+
+  await act(async () => b.settle(json({ id: 2, name: 'Beta', archived: false })))
+  expect(await screen.findByRole('button', { name: '‹ Beta' })).toBeInTheDocument()
+  expect(backs()).toEqual(['‹ Beta'])
+})
+
+test("from variety A to variety B on the same screen, '‹ A' is gone while B loads and exactly '‹ B' shows after", async () => {
+  const b = deferred()
+  fakeApi({ 1: json({ id: 1, name: 'Alpha', archived: false }), 2: b })
+  const { router } = renderAt([pathTo(VARIETY, { id: 1 })])
+  expect(await screen.findByRole('button', { name: '‹ Alpha' })).toBeInTheDocument()
+
+  await act(async () => router.navigate(pathTo(VARIETY, { id: 2 })))
+  expect(await screen.findByText('Cargando')).toBeInTheDocument()
+  expect(backs()).toEqual([])
+
+  await act(async () => b.settle(json({ id: 2, name: 'Beta', archived: false })))
+  expect(await screen.findByRole('button', { name: '‹ Beta' })).toBeInTheDocument()
+  expect(backs()).toEqual(['‹ Beta'])
+})
+
+test("an archived variety shows only '‹ Archivadas', never a flash of '‹ Variedades'", async () => {
+  const pending = deferred()
+  fakeApi({ 5: pending })
+  const seen: string[] = []
+  const watch = new MutationObserver(() => {
+    for (const back of screen.queryAllByRole('button', { name: /^‹ / })) seen.push(back.textContent ?? '')
+  })
+  watch.observe(document.body, { childList: true, subtree: true, characterData: true })
+  renderAt([pathTo(VARIETY, { id: 5 })])
+  expect(await screen.findByText('Cargando')).toBeInTheDocument()
+
+  await act(async () => pending.settle(json({ id: 5, name: 'Vieja', archived: true })))
+  expect(await screen.findByRole('button', { name: '‹ Archivadas' })).toBeInTheDocument()
+  watch.disconnect()
+
+  expect(backs()).toEqual(['‹ Archivadas'])
+  expect(seen.filter((word) => word !== '‹ Archivadas')).toEqual([])
+})
+
+/** Writes the slot for variety 1 once and never clears it: a declaration left behind. */
+function LeftBehind({ screen: id }: { screen: RecordLabelledScreen }) {
+  const write = useContext(BackParentContext)?.write
+  useLayoutEffect(() => write?.({ screen: id, param: '1', override: { title: 'Alpha' } }), [write, id])
+  return <p>Left behind</p>
+}
+
+test("a declaration for another record or another screen is ignored, even if it was left in the slot", async () => {
+  const router = createMemoryRouter(
+    [
+      {
+        element: <Outlet context={ME} />,
+        children: [
+          {
+            element: <Shell />,
+            children: [
+              { path: VARIETY, handle: { screen: 'variety' }, element: <LeftBehind screen="variety" /> },
+              { path: VARIETY_PRICES, handle: { screen: 'variety-prices' }, element: <p>Precios</p> },
+            ],
+          },
+        ],
+      },
+    ],
+    { initialEntries: [pathTo(VARIETY, { id: 1 })] },
+  )
+  render(<RouterProvider router={router} />)
+  expect(await screen.findByRole('button', { name: '‹ Alpha' })).toBeInTheDocument()
+
+  await act(async () => router.navigate(pathTo(VARIETY, { id: 2 })))
+  expect(await screen.findByText('Left behind')).toBeInTheDocument()
+  expect(backs()).toEqual([])
+
+  await act(async () => router.navigate(pathTo(VARIETY_PRICES, { id: 1 })))
+  expect(await screen.findByText('Precios')).toBeInTheDocument()
+  expect(backs()).toEqual([])
+})
+
+test('a marked screen whose fetch answers 404 shows no back', async () => {
+  fakeApi({})
+  renderAt([pathTo(VARIETY_ENTRIES, { id: 9 })])
+
+  expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
+  expect(backs()).toEqual([])
+})
+
+test("back with no history goes to the parent's path with its params filled, never ':id'", async () => {
+  const user = userEvent.setup()
+  fakeApi({ 1: json({ id: 1, name: '24K Gold', archived: false }) })
+  const { router } = renderAt([pathTo(VARIETY_PRICES, { id: 1 })])
+
+  await user.click(await screen.findByRole('button', { name: '‹ 24K Gold' }))
+
+  expect(router.state.location.pathname).toBe(pathTo(VARIETY, { id: 1 }))
+})
+
+test("an archived variety's back with no history goes to Archivadas; an active page's to Variedades", async () => {
+  const user = userEvent.setup()
+  fakeApi({
+    5: json({ id: 5, name: 'Vieja', archived: true }),
+    6: json({ id: 6, name: 'Nueva', archived: false }),
+  })
+  const first = renderAt([pathTo(VARIETY, { id: 5 })])
+  await user.click(await screen.findByRole('button', { name: '‹ Archivadas' }))
+  expect(first.router.state.location.pathname).toBe(ARCHIVED_VARIETIES)
+  first.unmount()
+
+  const second = renderAt([pathTo(VARIETY, { id: 6 })])
+  await user.click(await screen.findByRole('button', { name: '‹ Nueva' }))
+  expect(second.router.state.location.pathname).toBe(VARIETIES)
+})
+
+test('an unmarked card still prints its registry parent, a tab root no back', () => {
+  fakeApi({})
+  const card = renderAt([pathTo(SALE, { id: 7 })])
+  expect(backs()).toEqual(['‹ Ventas'])
+  card.unmount()
+  renderAt([ANALYSIS])
+  expect(backs()).toEqual([])
+})
+

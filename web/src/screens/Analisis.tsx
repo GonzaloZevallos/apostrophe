@@ -19,7 +19,6 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useOutletContext } from 'react-router'
 import { NetworkError } from '../api/client'
-import BotonLink from '../components/BotonLink'
 import {
   type Analysis,
   type AmountWithPending,
@@ -33,7 +32,6 @@ import { formatDateShort, formatMonthLong } from '../format/dates'
 import { formatGrams, formatMoney } from '../format/money'
 import ErrorGenerico from '../components/ErrorGenerico'
 import SinConexion from '../components/SinConexion'
-import { MORE } from '../routes'
 import {
   EMPTY_MONTH_LINE,
   NO_BEST_WEEK_LINE,
@@ -494,9 +492,6 @@ export default function Analisis() {
     <main className="pantalla">
       <div className="cuerpo">
         <div className="encabezado__fila">
-          <BotonLink variant="back" to={MORE} ariaLabel="Volver">
-            ‹
-          </BotonLink>
           <span className="encabezado__titulo">Análisis</span>
         </div>
 

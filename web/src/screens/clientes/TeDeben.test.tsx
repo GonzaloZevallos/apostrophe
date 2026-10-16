@@ -12,6 +12,7 @@ import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import debtorsFixture from '../../api/fixtures/debtors.json'
 import TeDeben from './TeDeben'
+import { SIN_CONEXION_MENSAJE } from '../../components/estadosMessages'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -103,5 +104,5 @@ test('a dropped network shows nothing here: Clientes shows Sin conexión on its 
 
   await waitFor(() => expect(fetch).toHaveBeenCalled())
   expect(screen.queryByRole('region', { name: 'Te deben' })).not.toBeInTheDocument()
-  expect(screen.queryByText('Te quedaste sin internet')).not.toBeInTheDocument()
+  expect(screen.queryByText(SIN_CONEXION_MENSAJE)).not.toBeInTheDocument()
 })

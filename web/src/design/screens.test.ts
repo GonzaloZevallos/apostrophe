@@ -67,7 +67,7 @@ describe('assertScreens', () => {
           screen: 'EstadosSinConexion',
           design: 'Estados',
           section: 'Sin conexión',
-          steps: [{ offline: true }, { wait: 'Te quedaste sin internet' }],
+          steps: [{ offline: true }, { wait: 'Sin conexión: revisá tu internet y probá de nuevo.' }],
         },
       ]),
     ).not.toThrow()

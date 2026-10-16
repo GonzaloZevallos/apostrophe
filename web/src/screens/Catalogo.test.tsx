@@ -10,11 +10,12 @@ import { CATALOG as CATALOG_PATH, SETTINGS_CATALOG_MESSAGE, VARIETIES, VARIETY }
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Outlet, Route, Routes, useLocation } from 'react-router'
+import { MemoryRouter, Outlet, RouterProvider, Route, Routes, createMemoryRouter, useLocation } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import type { Me } from '../api/me'
 import * as clipboard from '../clipboard'
 import * as share from '../share'
+import Shell from '../shell/Shell'
 import Catalogo from './Catalogo'
 import { iconAndTextProblems } from '../test/iconAndTextRule'
 import { EMPTY_STATE_DETAIL, EMPTY_STATE_TITLE } from './catalogMessages'
@@ -253,11 +254,37 @@ test('a variety left out opens its "En el catálogo" section on its page', async
   expect(await screen.findByText('Aterrizaste en /varieties/7#en-el-catalogo')).toBeInTheDocument()
 })
 
-test('the page draws no "‹" arrow of its own: the shell draws the one back arrow', async () => {
-  renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
+test('the shell\'s "‹ Variedades" is the only back and goes to the list, by history and with none', async () => {
+  vi.stubGlobal('fetch', vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
+  const router = createMemoryRouter(
+    [
+      {
+        element: <Provide />,
+        children: [
+          {
+            element: <Shell />,
+            children: [
+              { path: CATALOG_PATH, element: <Catalogo />, handle: { screen: 'catalog' } },
+              { path: VARIETIES, element: <div>Aterrizaste en Variedades</div>, handle: { screen: 'varieties' } },
+            ],
+          },
+        ],
+      },
+    ],
+    { initialEntries: [CATALOG_PATH] },
+  )
+  render(
+    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>,
+  )
 
-  expect(await screen.findByRole('heading', { name: 'Catálogo' })).toBeInTheDocument()
-  expect(screen.queryByText(/^‹/)).toBeNull()
+  const backs = await screen.findAllByRole('button', { name: /^‹ / })
+  expect(backs.map((back) => back.textContent)).toEqual(['‹ Variedades'])
+  await userEvent.click(backs[0]!)
+
+  expect(await screen.findByText('Aterrizaste en Variedades')).toBeInTheDocument()
+  expect(router.state.location.pathname).toBe(VARIETIES)
 })
 
 test('Compartir hands the share sheet exactly the API text, byte for byte, and shows nothing after', async () => {

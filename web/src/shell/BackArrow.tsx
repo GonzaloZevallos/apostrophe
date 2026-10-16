@@ -1,45 +1,61 @@
 /**
- * The "‹ <parent>" arrow every card shows. The word is the screen's parent from
- * `parentOf(id, viewport, record)`; tapping it goes back through history when the entry is
- * in-app, and to that same parent (replacing the entry) when it is not (`useBackOr`). The
- * label and the fallback are one `parentOf` answer, so they cannot disagree.
+ * The "‹ <parent>" arrow every card shows, and the only place the app draws one. The word is
+ * the screen's fixed parent, from `parentOf(id, viewport)`; tapping it goes back through
+ * history when the entry is in-app, and to that same parent (replacing the entry) when it is
+ * not (`useBackOr`). The label and the fallback are one registry answer, so they cannot
+ * disagree, and the fallback's path template is filled with the leaf's route params, so it is
+ * never a literal `:id`. The accessible name is the visible text, nothing else.
  *
- * A parent varies only by the card's record, matched on the route's `:id`, never by how the
- * screen was reached: the published record (`useCardRecord.ts`) is used only when its id is the
- * route's, so a switch from variety A to B never shows A's archived parent or name while B
- * loads. Otherwise (loading, error, gone) the static registry parent is drawn, so the arrow is
- * always there, from the first render. The fallback path is read when the arrow is tapped,
- * from the latest answer, because the record may arrive after the render the seller saw (ADR-0045).
+ * A leaf the registry marks `backLabel: 'record'` (a variety's page, its prices, its entries)
+ * names a word only the loaded record knows. It draws only an override its screen declared
+ * through `useBackParent` for this very screen and route param, and nothing before: no "‹"
+ * alone, no registry word standing in for the record.
  */
 
-import { useEffect, useRef } from 'react'
+import { useContext } from 'react'
 import { useParams } from 'react-router'
 import Boton from '../components/Boton'
 import { useBackOr } from '../components/useBackOr'
-import { HOME, parentOf, pathTo, type ScreenId } from '../routes'
-import { usePublishedCardRecord } from './useCardRecord'
+import { HOME, parentOf, pathTo, screenOf, type ScreenId } from '../routes'
+import { BackParentContext, type BackOverride } from './useBackParent'
 import { useViewport } from './useViewport'
 
+/** The route params that carry a value; `useParams` types the missing ones as `undefined`. */
+function filled(params: Readonly<Record<string, string | undefined>>): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(params).flatMap(([name, value]) => (value === undefined ? [] : [[name, value]])),
+  )
+}
+
+interface Target {
+  path: string
+  title: string
+}
+
+/** Where a declared override points: another screen (its path and word), or the registry
+ * parent's path under a new visible word. */
+function targetOf(declared: BackOverride, registryPath: string | undefined): Target | undefined {
+  if ('parent' in declared) {
+    const parent = screenOf(declared.parent)
+    return { path: parent.path, title: parent.title }
+  }
+  return registryPath === undefined ? undefined : { path: registryPath, title: declared.title }
+}
+
 export default function BackArrow({ id }: { id: ScreenId }) {
-  const published = usePublishedCardRecord()
-  const params = useParams()
-  const record = published !== undefined && published.id === Number(params.id) ? published : undefined
-  const parent = parentOf(id, useViewport(), record)
-  const target = useRef<() => string>(() => HOME)
-  useEffect(() => {
-    target.current = () => {
-      if (parent === undefined) return HOME
-      const filled: Record<string, string> = {}
-      for (const [name, value] of Object.entries(params)) if (value !== undefined) filled[name] = value
-      return pathTo(parent.path, filled)
-    }
-  })
-  const back = useBackOr(() => target.current())
-  if (parent === undefined) return null
+  const params = filled(useParams())
+  const slot = useContext(BackParentContext)?.slot
+  const registryParent = parentOf(id, useViewport())
+  const registryPath = registryParent === undefined ? undefined : pathTo(registryParent.path, params)
+  const declared = slot !== undefined && slot.screen === id && slot.param === params.id ? slot.override : undefined
+  const override = declared === undefined ? undefined : targetOf(declared, registryPath)
+  const back = useBackOr(override?.path ?? registryPath ?? HOME)
+  const word = screenOf(id).backLabel === 'record' ? override?.title : registryParent?.title
+  if (word === undefined) return null
   return (
     <div className="flecha-atras">
       <Boton variant="back" onClick={back}>
-        {`‹ ${parent.title}`}
+        {`‹ ${word}`}
       </Boton>
     </div>
   )

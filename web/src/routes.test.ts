@@ -14,8 +14,8 @@ import {
   pathTo,
   placeOf,
   SCREENS,
+  screenOf,
   type Kind,
-  type ParentRecord,
   type ParentRef,
   type Place,
   type ScreenId,
@@ -168,51 +168,13 @@ describe("parentOf and placeOf, every screen on both viewports", () => {
   });
 });
 
-describe("parentOf with a record, a hand-written table", () => {
-  const ARCHIVADAS: ParentRef = { id: "varieties-archived", path: "/varieties/archived", title: "Archivadas" };
+describe("the new stock entry form's parent", () => {
   const VARIEDADES: ParentRef = { id: "varieties", path: "/varieties", title: "Variedades" };
-  const VARIEDAD: ParentRef = { id: "variety", path: "/varieties/:id", title: "Variedad" };
 
-  type Row = [
-    string,
-    ScreenId,
-    Viewport,
-    ParentRecord | undefined,
-    ParentRef | undefined,
-  ];
-  const rows: Row[] = [
-    ["static, no record", "variety", "phone", undefined, VARIEDADES],
-    ["static, no record, computer", "variety", "computer", undefined, VARIEDADES],
-    ["archived record on the phone", "variety", "phone", { archived: true, name: "Sir Jack" }, ARCHIVADAS],
-    ["archived record on a computer", "variety", "computer", { archived: true, name: "Sir Jack" }, ARCHIVADAS],
-    ["a record that is not archived", "variety", "phone", { archived: false, name: "Sir Jack" }, VARIEDADES],
-    ["prices, no record", "variety-prices", "phone", undefined, VARIEDAD],
-    ["prices, titled by the record", "variety-prices", "phone", { archived: false, name: "Sir Jack" }, { ...VARIEDAD, title: "Sir Jack" }],
-    ["entries, no record", "variety-entries", "computer", undefined, VARIEDAD],
-    ["entries, titled by the record", "variety-entries", "computer", { archived: true, name: "Sir Jack" }, { ...VARIEDAD, title: "Sir Jack" }],
-    ["a card with no recordParent ignores a record", "catalog", "phone", { archived: true, name: "Sir Jack" }, VARIEDADES],
-    ["a root has no parent, record or not", "home", "phone", { archived: true, name: "Sir Jack" }, undefined],
-    ["settings on the phone", "settings", "phone", undefined, { id: "more", path: "/more", title: "Más" }],
-    ["settings on a computer", "settings", "computer", undefined, { id: "home", path: "/", title: "Inicio" }],
-    ["settings ignores a record", "settings", "computer", { archived: true, name: "x" }, { id: "home", path: "/", title: "Inicio" }],
-  ];
-
-  test.each(rows)("%s", (_label, id, viewport, record, expected) => {
-    expect(parentOf(id, viewport, record)).toEqual(expected);
-  });
-
-  test("the new stock entry form's parent is Variedades, and editing keeps Todas las entradas", () => {
+  test("is Variedades, and editing an entry keeps Todas las entradas", () => {
     expect(parentOf("stock-entry-new", "phone")).toEqual(VARIEDADES);
     expect(parentOf("stock-entry-new", "computer")).toEqual(VARIEDADES);
     expect(parentOf("stock-entry", "phone")).toEqual({ id: "stock", path: "/varieties/entries", title: "Todas las entradas" });
-  });
-
-  test("only the three declared screens carry a recordParent", () => {
-    expect(
-      SCREENS.filter((entry) => entry.recordParent !== undefined)
-        .map((entry) => entry.id)
-        .sort(),
-    ).toEqual(["variety", "variety-entries", "variety-prices"]);
   });
 });
 
@@ -330,8 +292,6 @@ interface RegistryRow {
   parent?: string;
   /** The parent on a computer, when it is not the phone's. */
   computer_parent?: string;
-  /** The parent when the record says it is archived (a variety's page). */
-  archived_parent?: string;
 }
 
 /** What is wrong between the design registry's rows and the front's screens: a screen with no
@@ -360,18 +320,6 @@ function registryDisagreements(
       if (have !== (want === undefined ? undefined : normalise(want)))
         found.push(`${row.path}: parent ${have} on ${viewport} is not ${want}`);
     }
-    const rule = entry.recordParent;
-    const declaredArchived =
-      rule !== undefined && "archived" in rule
-        ? screens.find((s) => s.id === rule.archived)?.path
-        : undefined;
-    if (
-      (declaredArchived === undefined ? undefined : normalise(declaredArchived)) !==
-      (row.archived_parent === undefined ? undefined : normalise(row.archived_parent))
-    )
-      found.push(
-        `${row.path}: archived parent ${declaredArchived} is not ${row.archived_parent}`,
-      );
     return found;
   });
   return [...missing, ...wrong];
@@ -403,37 +351,6 @@ describe("the registry against screens.json", () => {
   });
 });
 
-describe("the archived parent against screens.json", () => {
-  const rowOf = (path: string): RegistryRow => {
-    const found = screensJson.registry.find((row) => row.path === path);
-    if (found === undefined) throw new Error(`no registry row ${path}`);
-    return found;
-  };
-
-  test("the real variety row says archived_parent and the others none", () => {
-    expect(rowOf("/varieties/{id}")).toMatchObject({ archived_parent: "/varieties/archived" });
-    expect(
-      screensJson.registry.filter((row) => "archived_parent" in row).map((row) => row.path),
-    ).toEqual(["/varieties/{id}"]);
-  });
-
-  test("a row that lacks it, names another one, or adds one the front does not declare is refused", () => {
-    const without: RegistryRow = { path: "/varieties/{id}", kind: "card", parent: "/varieties" };
-    expect(registryDisagreements([without], SCREENS)).toContain(
-      "/varieties/{id}: archived parent /varieties/archived is not undefined",
-    );
-    expect(
-      registryDisagreements([{ ...without, archived_parent: "/varieties" }], SCREENS),
-    ).toContain("/varieties/{id}: archived parent /varieties/archived is not /varieties");
-    expect(
-      registryDisagreements(
-        [{ ...rowOf("/varieties/catalog"), archived_parent: "/varieties/archived" }],
-        SCREENS,
-      ),
-    ).toContain("/varieties/catalog: archived parent undefined is not /varieties/archived");
-  });
-});
-
 describe("a path resolves to its own screen", () => {
   const sample = (path: string): string => pathTo(path, { id: 7 });
 
@@ -462,8 +379,15 @@ describe("a path resolves to its own screen", () => {
 });
 
 /** Screens compare.sh reaches by steps from another route: "Listo" opens only from the write
- * that ended the Onboarding, never by loading its own path (onboarding.md). */
-const REACHED_BY_STEPS = ["OnboardingListo", "OnboardingVariedad", "OnboardingVariedadOscuro"];
+ * that ended the Onboarding, never by loading its own path (onboarding.md). An archived variety's
+ * page is reached only by archiving a live one and opening it from "Archivadas" (varieties.md). */
+const REACHED_BY_STEPS = [
+  "OnboardingListo",
+  "OnboardingVariedad",
+  "OnboardingVariedadOscuro",
+  "VariedadArchivada",
+  "VariedadArchivadaOscuro",
+];
 
 interface RouteEntry {
   readonly screen: string;
@@ -560,6 +484,16 @@ describe("screens.json against the English routes", () => {
         routes.CATCH_ALL,
       );
     }
+  });
+});
+
+describe("the screens whose back names the record", () => {
+  test("a variety's page, its prices and its entries are marked backLabel record, and nothing else", () => {
+    const marked = SCREENS.filter((entry) => "backLabel" in entry && entry.backLabel === "record").map(
+      (entry) => entry.id,
+    );
+    expect(marked.sort()).toEqual(["variety", "variety-entries", "variety-prices"]);
+    for (const id of marked) expect(screenOf(id).kind).toBe("card");
   });
 });
 

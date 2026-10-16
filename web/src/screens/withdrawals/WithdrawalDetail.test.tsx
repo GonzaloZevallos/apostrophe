@@ -5,7 +5,7 @@
  * "Eso ya no está." forms (`stock.md`, "A withdrawal's detail").
  */
 
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import WITHDRAWAL from '../../api/fixtures/withdrawal.json'
@@ -43,6 +43,22 @@ test('shows the date, the reason by word, every line and the note, with the bar 
   expect(screen.getByRole('button', { name: 'Borrar' })).toBeInTheDocument()
   expect(screen.queryByRole('link', { name: /Nueva venta/ })).not.toBeInTheDocument()
   expect(document.querySelector('.bar-inferior')).not.toBeNull()
+})
+
+test('the "‹" back goes to the page it was opened from', async () => {
+  const { router } = renderWithdrawals([VARIETIES_PATH, ONE], serving(WITHDRAWAL))
+
+  await userEvent.click(await screen.findByRole('button', { name: '‹ Variedades' }))
+
+  await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES_PATH))
+})
+
+test('with no history, back goes to Variedades', async () => {
+  const { router } = renderWithdrawals([ONE], serving(WITHDRAWAL))
+
+  await userEvent.click(await screen.findByRole('button', { name: '‹ Variedades' }))
+
+  await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES_PATH))
 })
 
 test('Borrar names the promotion, the date and the grams; confirming deletes and toasts "Retiro eliminado"', async () => {
@@ -150,11 +166,11 @@ test('deleting a withdrawal that is gone goes to Variedades with "Eso ya no est�
   expect(router.state.location.pathname).toBe(VARIETIES_PATH)
 })
 
-test('the detail keeps the icon and text rule: Borrar carries its icon and word, and the page draws no Volver of its own', async () => {
+test('the detail keeps the icon and text rule: Borrar carries its icon and word, the back keeps its name', async () => {
   renderWithdrawals([VARIETIES_PATH, ONE], serving(WITHDRAWAL))
 
   const borrar = await screen.findByRole('button', { name: 'Borrar' })
   expect(borrar.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
-  expect(screen.queryByRole('button', { name: 'Volver' })).toBeNull()
+  expect(screen.getByRole('button', { name: '‹ Variedades' })).toBeInTheDocument()
   expectIconAndTextRule(screen.getByRole('main'), { limits: LIMITS })
 })
