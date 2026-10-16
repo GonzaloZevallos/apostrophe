@@ -142,9 +142,21 @@ test('the sale form, Registrar cobro, the catalog and a stock entry open within 
 
       await page.goto(root)
       let counter: Counter = { taps: 0 }
-      await tap(counter, page.getByRole('link', { name: /Nueva venta$/ }).filter({ visible: true }).first())
-      await expectPath(page, SALE_NEW)
-      measure(`sale ${root}`, device, counter.taps)
+      if (computer && root === VARIETIES) {
+        // Variedades selects its first variety on its own, and a variety's page is a card: a
+        // card never shows "+ Nueva venta" (navigation.md, "Chrome and back"), the rail
+        // included. So the sale is not one tap from here on a computer; the tab roots that
+        // stay roots (the others) are measured below.
+        await settled(page, computer)
+        await expect(
+          page.locator('.riel-lateral').getByRole('link', { name: /Nueva venta$/ }),
+          label,
+        ).toHaveCount(0)
+      } else {
+        await tap(counter, page.getByRole('link', { name: /Nueva venta$/ }).filter({ visible: true }).first())
+        await expectPath(page, SALE_NEW)
+        measure(`sale ${root}`, device, counter.taps)
+      }
 
       if (root === HOME || root === CUSTOMERS) {
         await page.goto(root)

@@ -193,6 +193,9 @@ interface ScreenBase {
   pane?: 'list' | 'detail'
   /** How the parent changes with the card's record; see `RecordParent`. Cards only. */
   recordParent?: RecordParent
+  /** The route is a modal on a computer: the shell draws no side rail behind its scrim. The
+   * only thing that hides the rail; it is never inferred from `pane` or `kind`. */
+  modalOnComputer?: true
 }
 
 export type Screen =
@@ -261,7 +264,14 @@ export const SCREENS: readonly Screen[] = [
     parent: 'variety',
     recordParent: { titleFromRecord: true },
   }),
-  screen({ id: 'variety-price-new', path: VARIETY_PRICE_NEW, kind: 'form', title: 'Nuevo precio', parent: 'variety' }),
+  screen({
+    id: 'variety-price-new',
+    path: VARIETY_PRICE_NEW,
+    kind: 'form',
+    title: 'Nuevo precio',
+    parent: 'variety',
+    modalOnComputer: true,
+  }),
   screen({
     id: 'variety-entries',
     path: VARIETY_ENTRIES,
