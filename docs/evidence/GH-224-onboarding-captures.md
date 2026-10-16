@@ -327,3 +327,20 @@ recapture. It rebuilt `web/dist` and ran `compare.sh --strict` over the seven sc
 
 The `Oscuro`, `Compu`, `CompuOscuro` and `Texto130` sheets listed in 3.1 as not read one by one
 were not each opened; if the reviewer wants them read, the images are in the attached output.
+
+## 6. Merge with master after the captures (cd137c4)
+
+Master moved on while this task was open: GH-219 (the Onboarding matrix, `needs`, rows for
+`OnboardingListoCompuOscuro` and `OnboardingVariedadCompuOscuro`, its own evidence in
+`docs/evidence/GH-219-onboarding-matrix.md`), GH-229 and a product change (`3764531`) that
+drops the "Origen" label over the fixed "Stock inicial" chip on step 2.
+
+- **Registry.** Both sides' rows are kept. The two rows both tasks added are one row each
+  (same text); `OnboardingVariedadTexto130` carries `"needs": "OnboardingVariedad"` like the
+  other Variedad twins, and `assertSelectedNeeds` now guards it. `sample_app.py` keeps the five
+  accounts. `screens.d.mts`, `routes.test.ts` and the ADR keep both sides' additions.
+- **Method difference.** GH-219's ADR amendment says `--only` is for `ae.mjs`, never for a
+  capture; this task's invariant 10 used one explicit `--only` list for both captures and
+  `ae.mjs`. Sections 2 and 3 were captured before the merge under invariant 10 and are not redone.
+- **Staleness.** `3764531` changes step 2 (`OnboardingStock*`) after the "after" captures of
+  sections 2 and 3, so those rows' AE figures describe the head before the merge, not the merged head.

@@ -86,7 +86,8 @@ arrived over the network, and whether it did varied from run to run.
   reads, sets or branches on it. `screens.mjs` validates the field (the `registry-checks`
   subtask), `comparisons.mjs` only reads it.
 - **Verify twice.** The apply is one `page.evaluate` and the first verify a second one right
-  after it (a late-mounted element still shows up untagged); the screenshot is taken; a second verify runs in the same page. Between the scaling and the screenshot a React
+  after it (a late-mounted element still shows up untagged); the screenshot is taken; a
+  second verify runs in the same page. Between the scaling and the screenshot a React
   re-render can mount elements the stylesheet never saw, and the second verify is what makes
   that a failure instead of a screenshot that says "130 %" over unscaled text. A miss in
   either verify is a note on the sheet and in that screen's `index.json` entry, and a non-zero
@@ -108,3 +109,25 @@ arrived over the network, and whether it did varied from run to run.
   `sectionOccurrences` (a count of `>label<` in the design file, in `screens.mjs`) is only an
   earlier, weaker static guard: when the two disagree the run stops, and a crop never moves
   silently.
+
+## Amendment: before-run tooling (GH-219)
+
+Narrows point 6. Point 6 says one script from one install; it does not say how a base that
+predates the registry's newest rows is captured.
+
+- **The overlay.** A before-run takes head's whole `scripts/design/` (the capture script, the
+  sample app, `screens.json`) and head's font install, and puts them over the base's own `app/`
+  and `web/`, which are what gets served and captured. The seed speaks only HTTP, so head's
+  sample app seeds the base's server; the two sides still capture the same registry by the same
+  script.
+- **How it runs.** Each side captures the whole registry in file order with `--strict` and no
+  `--only`, each on a fresh sample, on the same Argentina day. `--only` is for `ae.mjs`, never
+  for a capture.
+- **What the evidence records.** The base and head SHAs, the overlay's diff stat (it must equal
+  `git diff --stat <base>..<head> -- scripts/design`) and the installed fontsource version.
+- **A seed the base cannot run.** A head seed that needs an API the base lacks makes the
+  before-run fail. That escalates: the base is never patched and no exception is recorded.
+- **Guards on a partial run.** A registry row may name `needs`, the earlier row whose state it
+  relies on. `assertScreens` refuses a `needs` that names no earlier screen, and
+  `assertSelectedNeeds` makes `comparisons.mjs` exit 2 before capturing when a selection keeps
+  a row and drops the one it needs.
