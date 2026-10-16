@@ -148,21 +148,50 @@ def test_a_path_with_no_screen_in_the_design_is_refused() -> None:
     ]
 
 
+def registry_violations(rows: Iterable[dict[str, str]], paths: set[str]) -> list[str]:
+    """What is wrong in the registry rows: a kind that is not root, card or form, a root
+    with a parent or a non-root with none, and a parent, computer parent or archived parent
+    that is not a registered path. There is no exemption list."""
+    found: list[str] = []
+    for entry in rows:
+        path = entry["path"]
+        if entry["kind"] not in {"root", "card", "form"}:
+            found.append(f"{path}: kind {entry['kind']}")
+        if (entry["kind"] == "root") != (entry.get("parent") is None):
+            found.append(f"{path}: kind {entry['kind']} against its parent")
+        for field in ("parent", "computer_parent", "archived_parent"):
+            value = entry.get(field)
+            if value is not None and normalise(value) not in paths:
+                found.append(f"{path}: {field} {value} is not a registered path")
+    return found
+
+
 def test_the_registry_entries_of_screens_json_say_a_kind_and_a_parent_that_are_paths() -> None:
     document = json.loads(SCREENS_JSON.read_text())
-    paths = _screen_paths()
 
-    for entry in document["registry"]:
-        assert entry["kind"] in {"root", "card", "form"}, entry
-        assert (entry["kind"] == "root") == (entry.get("parent") is None), entry
-        if entry.get("parent") is not None:
-            assert normalise(entry["parent"]) in paths, entry
-        if entry.get("computer_parent") is not None:
-            assert normalise(entry["computer_parent"]) in paths, entry
-        if entry.get("archived_parent") is not None:
-            assert normalise(entry["archived_parent"]) in paths, entry
+    assert registry_violations(document["registry"], _screen_paths()) == []
     registered = {normalise(entry["path"]) for entry in document["registry"]}
     assert {"/customers/new", "/customers/{id}/edit", "/varieties/entries/{id}"} <= registered
+
+
+def test_a_registry_row_naming_a_parent_that_is_no_path_is_refused() -> None:
+    paths = _screen_paths()
+    row = {"path": "/varieties/{id}", "kind": "card", "parent": "/varieties"}
+
+    assert registry_violations([row], paths) == []
+    assert registry_violations([{**row, "archived_parent": "/varieties/archived"}], paths) == []
+    assert registry_violations([{**row, "archived_parent": "/nowhere"}], paths) == [
+        "/varieties/{id}: archived_parent /nowhere is not a registered path"
+    ]
+    assert registry_violations([{**row, "computer_parent": "/nowhere"}], paths) == [
+        "/varieties/{id}: computer_parent /nowhere is not a registered path"
+    ]
+    assert registry_violations([{**row, "parent": "/nowhere"}], paths) == [
+        "/varieties/{id}: parent /nowhere is not a registered path"
+    ]
+    assert registry_violations([{"path": "/x", "kind": "card"}], paths) == [
+        "/x: kind card against its parent"
+    ]
 
 
 def _sample(template: str) -> str:
