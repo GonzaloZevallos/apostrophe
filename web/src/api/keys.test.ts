@@ -184,3 +184,24 @@ describe('invalidateResource refetchType', () => {
     await waitFor(() => expect(calls).toHaveLength(2)) // the default every other mutation still relies on.
   })
 })
+
+describe('the catalog read of one variety', () => {
+  test('keys under the catalog prefix, so every catalog invalidation reaches it', () => {
+    expect(keys.catalogVariety('7')).toEqual(['catalog', 'variety', '7'])
+    const queryClient = clientWithData()
+    queryClient.setQueryData(keys.catalogVariety('7'), { shown: true })
+
+    invalidateResource(queryClient, 'catalog')
+
+    expect(isInvalidated(queryClient, keys.catalogVariety('7'))).toBe(true)
+  })
+
+  test.each(['stock', 'varieties'] as const)('a %s write invalidates it', (resource) => {
+    const queryClient = clientWithData()
+    queryClient.setQueryData(keys.catalogVariety('7'), { shown: true })
+
+    invalidateResource(queryClient, resource)
+
+    expect(isInvalidated(queryClient, keys.catalogVariety('7'))).toBe(true)
+  })
+})

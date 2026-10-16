@@ -45,3 +45,28 @@ export function catalogQueryOptions() {
 export function writeCatalog(queryClient: QueryClient, view: Catalog): void {
   queryClient.setQueryData(catalogQueryOptions().queryKey, view)
 }
+
+/** The stored catalog values of one variety, archived or not (`GET /catalog/varieties/{id}`):
+ * plain facts, the same four fields `GET /catalog` lists for a live variety. */
+export interface VarietyAttributes {
+  shown: boolean
+  emoji: string | null
+  indica_share: number | null
+  aroma: string | null
+}
+
+export function readVarietyAttributes(id: string): Promise<VarietyAttributes> {
+  return get<VarietyAttributes>(`/catalog/varieties/${id}`)
+}
+
+/** Frozen like `catalogQueryOptions`: each mount asks the server again, never a cached copy. */
+export function varietyAttributesQueryOptions(id: string) {
+  return queryOptions({
+    queryKey: keys.catalogVariety(id),
+    queryFn: () => readVarietyAttributes(id),
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  })
+}

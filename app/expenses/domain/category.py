@@ -67,13 +67,9 @@ class CategoryName:
         if problem is NameProblem.EMPTY:
             raise InvalidCategoryName("a category needs a name")
         if problem is NameProblem.UNTRIMMED:
-            raise InvalidCategoryName(
-                "a category name has no leading, trailing or repeated spaces"
-            )
+            raise InvalidCategoryName("a category name has no leading, trailing or repeated spaces")
         if problem is NameProblem.TOO_LONG:
-            raise InvalidCategoryName(
-                f"a category name has at most {NAME_MAX_LENGTH} characters"
-            )
+            raise InvalidCategoryName(f"a category name has at most {NAME_MAX_LENGTH} characters")
 
     @classmethod
     def of(cls, raw: str) -> CategoryName:

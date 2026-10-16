@@ -43,6 +43,11 @@ class CatalogAttributesRepository(Protocol):
         here reads as `CatalogAttributes.default()`."""
         ...
 
+    def for_variety(self, variety_id: int) -> CatalogAttributes | None:
+        """The stored attributes of one variety, or `None` when it has no row (the caller
+        then applies `CatalogAttributes.default()`)."""
+        ...
+
     def put(self, variety_id: int, attributes: CatalogAttributes) -> None: ...
 
 

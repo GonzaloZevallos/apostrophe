@@ -45,3 +45,22 @@ archive one that has, keeping every past sale, stock movement and figure unchang
   `Varieties.name_holder` says whether a live or an archived variety holds a name.
 - The business export picks `archived_at` up through ADR-0015's reflection, as an ISO
   instant with no secret flag, with no change to the command.
+
+## Amendment (GH-131): one read-only route for a variety's stored catalog values
+
+`GET /catalog/varieties/{variety_id}` answers `{shown, emoji, indica_share, aroma}` for
+one variety of the session's business, archived or not, so the archived page can show
+what `GET /catalog` never lists for it.
+
+- **Stored facts only.** It returns the stored row, or `CatalogAttributes.default()` when
+  the variety has none. That default has one owner, the one `read_catalog` applies. It
+  builds no catalog text, writes nothing and unlocks nothing: an archived variety's
+  attributes are still edited nowhere, and the existing `PUT` on the same path still
+  refuses it.
+- **Isolation.** A variety that is gone or another business's answers 404
+  `catalog.variety_not_found` (already in `contract.json`), the same body shape for both.
+- **Who reads it.** Only the archived page. No list, picker, catalog or pinned-catalog
+  builder calls it, and an archived variety still never qualifies for the catalog.
+- **Cost.** One primary-key read plus one existence check; it does not grow with data.
+- **Front.** Its query key is `keys.catalogVariety(id)`, under the `catalog` prefix, so the
+  catalog save, stock and varieties writes, archive and restore all invalidate it.
