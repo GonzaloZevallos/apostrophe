@@ -209,9 +209,13 @@ def _varieties(api: _ClientApi) -> list[str]:
 
 def _archived(api: _ClientApi) -> list[str]:
     names = {v["id"]: v["name"] for v in api.get("/varieties?archived=true")}
-    hidden = not api.sample_app.ARCHIVED_SHOWN
     rows = [
-        [names[row["variety_id"]], grams(row["grams"]), "Archivada", yes_no(hidden)]
+        [
+            names[row["variety_id"]],
+            grams(row["grams"]),
+            "Archivada",
+            yes_no(not api.get(f"/catalog/varieties/{row['variety_id']}")["shown"]),
+        ]
         for row in api.get("/stock?archived=true")["varieties"]
     ]
     return ["### Archivadas", "", *table(["Variedad", "Gramos", "Estado", "Oculta"], rows)]
