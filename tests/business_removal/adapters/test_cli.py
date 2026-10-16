@@ -27,12 +27,12 @@ from app.accounts.application.reset_password import issue_reset_link
 from app.accounts.domain.invitation import token_digest
 from app.business_removal.adapters.cli import main
 from app.business_removal.application.remove_business import BUSY_MESSAGE
-from app.clock import business_day, system_clock
+from app.clock import business_day
 from app.db import make_engine
 from app.main import create_app
 from app.settings import Settings
 from tests.business_removal.adapters.seed import row_counts, seed, set_env
-from tests.conftest import PASSWORD, TEST_HASHER, invite
+from tests.conftest import PASSWORD, TEST_HASHER, MovableClock, invite
 from tests.fakes.telegram import FakeTelegram
 
 EMAIL_LEAVING = "closing@example.com"
@@ -118,6 +118,7 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
     app = create_app(
         Settings(secret_key="test-secret", database_url=f"sqlite:///{db_path}"),
         engine=engine,
+        clock=MovableClock(NOW),
         hasher=TEST_HASHER,
         telegram=FakeTelegram(),
         upkeep_ticker=False,
@@ -138,9 +139,7 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
         ).fetchone()["id"]
     all_tables = _all_table_names(db_path)
     other_before = {name: row_counts(db_path, name, other_business_id) for name in all_tables}
-    leaving_before = {
-        name: row_counts(db_path, name, leaving_business_id) for name in all_tables
-    }
+    leaving_before = {name: row_counts(db_path, name, leaving_business_id) for name in all_tables}
     assert other_before["customer"] == 1  # the other business's own seed
 
     stdout = io.StringIO()
@@ -177,8 +176,8 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
     assert stock_entry["total_cost"] == 300000
     assert stock_entry["note"] == "stock seed"
     # `seed()` never passes a `date`, so the entry is recorded on the business day
-    # the entry was made -- the same one `main`'s own real clock sees now.
-    assert stock_entry["entry_date"] == business_day(system_clock()).isoformat()
+    # the entry was made, on the clock `seed()` runs its app under.
+    assert stock_entry["entry_date"] == business_day(NOW).isoformat()
 
     price_entry = kinds["price_entry"][0]
     assert price_entry["variety_id"] == variety_ref
@@ -292,6 +291,7 @@ def test_the_other_business_still_reads_its_own_data_after_the_run(
     app = create_app(
         settings,
         engine=engine,
+        clock=MovableClock(NOW),
         hasher=TEST_HASHER,
         telegram=FakeTelegram(),
         upkeep_ticker=False,
@@ -393,9 +393,7 @@ def test_a_dry_run_writes_no_file_and_deletes_nothing(
         assert secret not in captured.err
 
 
-def test_an_unknown_email_changes_nothing(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_an_unknown_email_changes_nothing(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     db_path = tmp_path / "apostrophe.db"
     export_dir = tmp_path / "exports"
     seed(db_path)
@@ -426,9 +424,7 @@ def test_a_wrong_name_at_the_prompt_writes_no_file(
     assert row_counts(db_path, "customer", business_id) == 1
 
 
-def test_eof_at_the_prompt_writes_no_file(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_eof_at_the_prompt_writes_no_file(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     db_path = tmp_path / "apostrophe.db"
     export_dir = tmp_path / "exports"
     seed(db_path)
@@ -456,9 +452,7 @@ def test_secure_delete_scrubs_the_removed_customers_bytes_from_the_database_file
     assert b"Otro Negocio" in raw
 
 
-def test_the_export_file_is_owner_only(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_the_export_file_is_owner_only(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     db_path = tmp_path / "apostrophe.db"
     export_dir = tmp_path / "exports"
     seed(db_path)
@@ -574,6 +568,7 @@ def test_a_clean_slate_lets_the_same_email_open_a_new_business(
     app = create_app(
         settings,
         engine=engine,
+        clock=MovableClock(NOW),
         hasher=TEST_HASHER,
         telegram=FakeTelegram(),
         upkeep_ticker=False,
@@ -632,6 +627,7 @@ def test_an_nfd_typed_name_matches_through_main(
     app = create_app(
         settings,
         engine=engine,
+        clock=MovableClock(NOW),
         hasher=TEST_HASHER,
         telegram=FakeTelegram(),
         upkeep_ticker=False,
@@ -678,9 +674,7 @@ def test_a_broken_pipe_on_the_report_keeps_the_commit_through_main(
         ).fetchone()[0]
     stdout = _BreaksAfterExportWritten()
 
-    result = main(
-        [EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=cast(TextIO, stdout)
-    )
+    result = main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=cast(TextIO, stdout))
 
     assert result == 1
     assert "nothing deleted" not in stdout.text.lower()
