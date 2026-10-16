@@ -6,8 +6,9 @@
  * the bottom, which opens Configuración. There is no Más on a computer.
  *
  * Everything the shell decides comes from the leaf route's registry entry (`routes.ts`),
- * found through the route's `handle.screen`: its kind sets the chrome (a root shows the bar
- * and "+ Nueva venta", a card the bar and a "‹ parent" arrow, a form neither), and
+ * found through the route's `handle.screen`: `chromeOf` (`chrome.ts`) turns it into the
+ * chrome (a root shows the bar and "+ Nueva venta", a card the bar and a "‹ parent" arrow, a
+ * form neither; the rail goes only for a registry `modalOnComputer`), and
  * `placeOf(id, viewport)` says which entry each surface marks. Never the pathname, never
  * history, so a reload or a saved link marks the same entry. At most one entry per surface
  * carries `aria-current="page"`, and it is also bold and drawn filled and underlined (or, on
@@ -43,6 +44,7 @@ import {
 import BotonLink from '../components/BotonLink'
 import { NUEVA_VENTA_CLASS, NUEVA_VENTA_ESCRITORIO_CLASS } from '../components/botonVisual'
 import BackArrow from './BackArrow'
+import { chromeOf } from './chrome'
 import { initialsOf } from './initials'
 import { BackParentContext, type BackParentSlot, type BackParentStore } from './useBackParent'
 import { useViewport } from './useViewport'
@@ -140,24 +142,15 @@ export default function Shell() {
   const leaf = leafScreen(useMatches())
   const barPlace = placeOf(leaf.id, 'phone').bar
   const railPlace = placeOf(leaf.id, 'computer').rail
-  const showNuevaVenta = leaf.kind === 'root'
-  // The computer draws a two-pane screen's detail inside its root's screen
-  // (`VariedadesCompu`, `ClientesCompu`), so the rail keeps its "Nueva venta" there; the
-  // phone keeps the button to a root's alone.
-  const onComputer = useViewport() === 'computer'
-  const showRailNuevaVenta = showNuevaVenta || (leaf.pane === 'detail' && onComputer)
-  const showBar = leaf.kind !== 'form'
+  const chrome = chromeOf(leaf, useViewport())
   const backParent = useBackParentStore()
-  // The price form is a modal on a computer and draws the form kind's chrome: no rail at all
-  // (invariant 8), so there is nothing behind its scrim for Tab or a click to reach.
-  const noRail = onComputer && leaf.id === 'variety-price-new'
 
   return (
     <BackParentContext.Provider value={backParent}>
     <div className="disposicion">
-      {!noRail && (
+      {chrome.rail && (
         <nav className="riel-lateral" aria-label="Navegación" data-menu>
-          {showRailNuevaVenta && (
+          {chrome.railNuevaVenta && (
             <BotonLink to={SALE_NEW} icon="agregar" className={NUEVA_VENTA_ESCRITORIO_CLASS}>
               Nueva venta
             </BotonLink>
@@ -198,20 +191,20 @@ export default function Shell() {
         </nav>
       )}
       <div className="columna-principal">
-        {leaf.kind === 'card' && <BackArrow id={leaf.id} />}
-        <Outlet context={me} />
-        {showNuevaVenta && (
-          <BotonLink to={SALE_NEW} icon="agregar" className={NUEVA_VENTA_CLASS}>
-            Nueva venta
-          </BotonLink>
-        )}
-        {showBar && (
-          <nav className="bar-inferior" aria-label="Navegación" data-menu>
-            {BAR_ITEMS.map((item) => (
-              <BarItem key={item.to} item={item} active={barPlace === item.place} />
-            ))}
-          </nav>
-        )}
+          {chrome.backArrow && <BackArrow id={leaf.id} />}
+          <Outlet context={me} />
+          {chrome.barNuevaVenta && (
+            <BotonLink to={SALE_NEW} icon="agregar" className={NUEVA_VENTA_CLASS}>
+              Nueva venta
+            </BotonLink>
+          )}
+          {chrome.bar && (
+            <nav className="bar-inferior" aria-label="Navegación" data-menu>
+              {BAR_ITEMS.map((item) => (
+                <BarItem key={item.to} item={item} active={barPlace === item.place} />
+              ))}
+            </nav>
+          )}
       </div>
     </div>
     </BackParentContext.Provider>

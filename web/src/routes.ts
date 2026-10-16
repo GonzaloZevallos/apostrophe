@@ -183,6 +183,9 @@ interface ScreenBase {
    * (`useBackParent`), and nothing until then. Only a screen marked here may call the hook.
    */
   backLabel?: 'record'
+  /** The route is a modal on a computer: the shell draws no side rail behind its scrim. The
+   * only thing that hides the rail; it is never inferred from `pane` or `kind`. */
+  modalOnComputer?: true
 }
 
 export type Screen =
@@ -236,11 +239,11 @@ export const SCREENS = [
   screen({ id: 'variety', path: VARIETY, kind: 'card', title: 'Variedad', pane: 'detail', parent: 'varieties', backLabel: 'record' }),
   screen({ id: 'variety-new', path: VARIETY_NEW, kind: 'form', title: 'Nueva variedad', parent: 'varieties' }),
   screen({ id: 'variety-prices', path: VARIETY_PRICES, kind: 'card', title: 'Precios', parent: 'variety', backLabel: 'record' }),
-  screen({ id: 'variety-price-new', path: VARIETY_PRICE_NEW, kind: 'form', title: 'Nuevo precio', parent: 'variety' }),
+  screen({ id: 'variety-price-new', path: VARIETY_PRICE_NEW, kind: 'form', title: 'Nuevo precio', parent: 'variety', modalOnComputer: true }),
   screen({ id: 'variety-entries', path: VARIETY_ENTRIES, kind: 'card', title: 'Entradas', parent: 'variety', backLabel: 'record' }),
   screen({ id: 'catalog', path: CATALOG, kind: 'card', title: 'Catálogo', parent: 'varieties' }),
   screen({ id: 'stock', path: STOCK, kind: 'card', title: 'Todas las entradas', parent: 'varieties' }),
-  screen({ id: 'stock-entry-new', path: STOCK_ENTRY_NEW, kind: 'form', title: 'Entrada de stock', parent: 'stock' }),
+  screen({ id: 'stock-entry-new', path: STOCK_ENTRY_NEW, kind: 'form', title: 'Entrada de stock', parent: 'varieties' }),
   screen({ id: 'stock-entry', path: STOCK_ENTRY, kind: 'form', title: 'Entrada de stock', parent: 'stock' }),
   screen({
     id: 'varieties-archived',

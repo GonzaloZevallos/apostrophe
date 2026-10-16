@@ -16,6 +16,7 @@ import {
   SCREENS,
   screenOf,
   type Kind,
+  type ParentRef,
   type Place,
   type ScreenId,
   type Viewport,
@@ -71,7 +72,7 @@ const EXPECTED: Record<ScreenId, Expected> = {
   "variety-entries": expectation("card", "variety", VARIETIES_PLACE),
   catalog: expectation("card", "varieties", VARIETIES_PLACE),
   stock: expectation("card", "varieties", VARIETIES_PLACE),
-  "stock-entry-new": expectation("form", "stock", VARIETIES_PLACE),
+  "stock-entry-new": expectation("form", "varieties", VARIETIES_PLACE),
   "stock-entry": expectation("form", "stock", VARIETIES_PLACE),
   "varieties-archived": expectation("card", "varieties", VARIETIES_PLACE),
   "withdrawal-new": expectation("form", "varieties", VARIETIES_PLACE),
@@ -164,6 +165,16 @@ describe("parentOf and placeOf, every screen on both viewports", () => {
       title: "Inicio",
       path: routes.HOME,
     });
+  });
+});
+
+describe("the new stock entry form's parent", () => {
+  const VARIEDADES: ParentRef = { id: "varieties", path: "/varieties", title: "Variedades" };
+
+  test("is Variedades, and editing an entry keeps Todas las entradas", () => {
+    expect(parentOf("stock-entry-new", "phone")).toEqual(VARIEDADES);
+    expect(parentOf("stock-entry-new", "computer")).toEqual(VARIEDADES);
+    expect(parentOf("stock-entry", "phone")).toEqual({ id: "stock", path: "/varieties/entries", title: "Todas las entradas" });
   });
 });
 

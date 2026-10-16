@@ -1,0 +1,12 @@
+<div className="encabezado__fila">
+  <BotonLink
+    variant="back"
+    to={pathTo(VARIETY, { id: varietyId })}
+    onClick={(event) => {
+      event.preventDefault()
+      back()
+    }}
+  >
+    ‹ {variety.name}
+  </BotonLink>
+</div>

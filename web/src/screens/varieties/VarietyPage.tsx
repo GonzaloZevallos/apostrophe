@@ -79,20 +79,23 @@ function useNoGuard(): LeaveGuard {
 }
 
 export default function VarietyPage({ varietyId }: { varietyId: number }) {
-  return <VarietyPageView varietyId={varietyId} useGuard={useLeaveGuard} />
+  return <VarietyPageView varietyId={varietyId} useGuard={useLeaveGuard} publishRecord />
 }
 
 /** The page drawn behind the price modal (`VarietiesLayout`), with no leave guard of its own. */
 export function VarietyPageBehind({ varietyId }: { varietyId: number }) {
-  return <VarietyPageView varietyId={varietyId} useGuard={useNoGuard} />
+  return <VarietyPageView varietyId={varietyId} useGuard={useNoGuard} publishRecord={false} />
 }
 
 function VarietyPageView({
   varietyId,
   useGuard,
+  publishRecord,
 }: {
   varietyId: number
   useGuard: (dirty: boolean) => LeaveGuard
+  /** The routed page tells the shell's arrow about its variety; the copy behind the modal has no arrow. */
+  publishRecord: boolean
 }) {
   const id = String(varietyId)
   const me = useOutletContext<Me>()
@@ -111,7 +114,7 @@ function VarietyPageView({
     queryFn: () => get<PriceRow[]>(`/varieties/${id}/prices`),
   })
   const archived = varietyQuery.data?.archived === true
-  useBackParent('variety', varietyQuery.data === undefined ? undefined : archived ? { parent: 'varieties-archived' } : { title: 'Variedades' })
+  useBackParent('variety', !publishRecord || varietyQuery.data === undefined ? undefined : archived ? { parent: 'varieties-archived' } : { title: 'Variedades' })
   const liveStockQuery = useQuery({ queryKey: keys.stock(), queryFn: readStock })
   const archivedStockQuery = useQuery({
     queryKey: keys.archivedStock(),

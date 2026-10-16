@@ -1,0 +1,11 @@
+<div className="encabezado__fila">
+  {archived ? (
+    <BotonLink to={ARCHIVED_VARIETIES} variant="back">
+      ‹ Archivadas
+    </BotonLink>
+  ) : (
+    <BotonLink to={VARIETIES} variant="back">
+      ‹ Variedades
+    </BotonLink>
+  )}
+</div>
