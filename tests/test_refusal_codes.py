@@ -27,7 +27,7 @@ from app.sales.adapters.router import as_http as sales_as_http
 from app.static_spa import SHARED_FRONT_PATHS
 from app.stock.adapters.router import as_http as stock_as_http
 from app.varieties.adapters.router import as_http as varieties_as_http
-from tests.conftest import NOW, SETTINGS, TEST_HASHER, MovableClock
+from tests.conftest import SETTINGS, TEST_HASHER, MovableClock
 from tests.fakes.telegram import FakeTelegram
 
 CONTRACT_PATH = Path(__file__).resolve().parent.parent / "web" / "src" / "api" / "contract.json"
@@ -183,16 +183,18 @@ def check_front_segment_overlap(
     assert not unserved, f"the API and the front both claim {sorted(unserved)} with no shared entry"
 
 
-def test_an_api_path_segment_is_a_front_segment_only_through_a_shared_front_path() -> None:
+def test_an_api_path_segment_is_a_front_segment_only_through_a_shared_front_path(
+    clock: MovableClock,
+) -> None:
     contract = json.loads(CONTRACT_PATH.read_text())
     front_segments: set[str] = set(contract["frontSegments"])
 
     document = create_app(
         SETTINGS,
+        clock=clock,
         hasher=TEST_HASHER,
         telegram=FakeTelegram(),
         upkeep_ticker=False,
-        clock=MovableClock(NOW),
     ).openapi()
     api_first_segments = {
         path.strip("/").split("/", 1)[0] for path in document["paths"] if path != "/"

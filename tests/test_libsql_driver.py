@@ -52,11 +52,11 @@ def engine(tmp_path: Path) -> Iterator[Engine]:
 
 
 @pytest.fixture
-def app(engine: Engine) -> FastAPI:
+def app(engine: Engine, clock: MovableClock) -> FastAPI:
     return create_app(
         Settings(secret_key="test-secret-key"),
         engine=engine,
-        clock=MovableClock(NOW),
+        clock=clock,
         hasher=TEST_HASHER,
         telegram=FakeTelegram(),
         upkeep_ticker=False,
@@ -64,11 +64,9 @@ def app(engine: Engine) -> FastAPI:
 
 
 @pytest.fixture
-def client(app: FastAPI, engine: Engine) -> Iterator[TestClient]:
+def client(app: FastAPI, engine: Engine, clock: MovableClock) -> Iterator[TestClient]:
     with TestClient(app) as test_client:
-        token = open_business(
-            test_client, engine, MovableClock(NOW), "Negocio libsql", "libsql@example.com"
-        )
+        token = open_business(test_client, engine, clock, "Negocio libsql", "libsql@example.com")
         yield signed_in(test_client, token)
 
 

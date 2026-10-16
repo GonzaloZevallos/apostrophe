@@ -22,7 +22,7 @@ from app.static_spa import (
     SHARED_FRONT_PATHS,
     MissingBuiltFront,
 )
-from tests.conftest import NOW, SETTINGS, TEST_HASHER, MovableClock
+from tests.conftest import SETTINGS, TEST_HASHER, MovableClock
 from tests.fakes.telegram import FakeTelegram
 from tests.legacy_pin import PINNED_LEGACY_ROWS
 
@@ -130,7 +130,9 @@ def test_index_manifest_and_service_worker_are_never_cached(
     assert response.headers["cache-control"] == "no-cache"
 
 
-def test_startup_fails_without_an_index_html(tmp_path: Path, engine: Engine) -> None:
+def test_startup_fails_without_an_index_html(
+    tmp_path: Path, engine: Engine, clock: MovableClock
+) -> None:
     empty_dist = tmp_path / "empty"
     empty_dist.mkdir()
     settings = Settings(
@@ -141,7 +143,7 @@ def test_startup_fails_without_an_index_html(tmp_path: Path, engine: Engine) -> 
         create_app(
             settings,
             engine=engine,
-            clock=MovableClock(NOW),
+            clock=clock,
             hasher=TEST_HASHER,
             telegram=FakeTelegram(),
             upkeep_ticker=False,
