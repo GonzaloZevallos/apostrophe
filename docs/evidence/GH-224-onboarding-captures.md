@@ -232,54 +232,91 @@ Every `design` side is AE 0 (the design files and the pinned fonts did not move)
 
 ## 3. The differences, one line each
 
-Judged by eye: the Stock sheet (design next to built, light and dark, after), Stock before and
-after built, the seven 320 px / 130 % built captures (after). The other rows were judged by
-their AE: every step row has the same AE for the same capture kind, which says the same
-region of the same size changed on all of them (the other steps' before/after pairs were not
-read one by one).
+### 3.1 What was read by eye
+
+Every "after" capture was judged against its design file, in this way:
+
+- **Sheets read** (design and built side by side, `after-out/<Screen>.png`): the phone light sheet of
+  all seven screens (`Stock`, `Variedad`, `Mensaje`, `Bot`, `Socio`, `Categorias`, `Listo`); the
+  dark sheets of `Stock`, `Variedad`, `Bot`, `Socio` and `Listo`; the computer sheets
+  `BotCompu`, `MensajeCompuOscuro`, `CategoriasCompuOscuro` and `ListoCompuOscuro`; the seven
+  320 px / 130 % built captures.
+- **Sheets not read one by one:** the remaining `Oscuro`, `Compu`, `CompuOscuro` and `Texto130`
+  sheets of the six steps and of `Listo`. Each is the same design file and the same built
+  component as a sheet read above, in another theme or viewport; no theme-specific or
+  viewport-specific difference showed on any of the sheets that were read, so each one carries
+  the differences of its read sibling. This is an inference, not a reading.
+- **Before/after pair read:** `Stock` and `Listo` (phone light), `before-out` against `after-out`
+  raw built captures.
+
+### 3.2 Before against after (the non-zero AE lines)
 
 | Screen and side | Difference | Verdict |
 | --- | --- | --- |
-| `OnboardingStock`, `Mensaje`, `Bot`, `Socio`, `Categorias`, `Variedad` built, phone light | AE 6415 on each | **intended**: the step frame's "Cerrar" text link is now a `Boton` icon button with an X (seen on Stock before/after); GH-164's brief, the step frame's `Boton` |
-| same six, built, phone dark and computer dark | AE 6396 on each | **intended**, same cause |
-| same six, built, computer light | AE 6415 | **intended**, same cause |
-| same six `…Texto130`, built | AE 6833 on each | **intended**, same cause, at 130 % |
-| `OnboardingListo`, `OnboardingListoOscuro`, `OnboardingListoTexto130`, built | `FAIL different dimensions` (Listo phone light: 1706 px before, 1718 px after, 6 CSS px taller) | **for Zeta**: not read by eye before against after in this run; the height change is real |
-| `OnboardingListoCompu`, built | AE 25916 | **for Zeta**, same reason |
-| `OnboardingListoCompuOscuro`, built | AE 25892 | **for Zeta**, same reason |
-| every row, design side | AE 0 | nothing changed |
+| the six steps, built: phone light, computer light | AE 6415 on each | **intended**: the step frame's "Cerrar" text link is now the icon-only `Boton` close (an X, accessible name "Cerrar"), seen on `Stock` and `Listo` before and after. GH-164's brief; icon-and-text-rule.md: "Close is one form everywhere" |
+| the six steps, built: phone dark, computer dark | AE 6396 on each | **intended**, same cause |
+| the five `…Texto130`, built | AE 6833 on each | **intended**, same cause, at 130 % |
+| `OnboardingListo`, `OnboardingListoOscuro`, `OnboardingListoTexto130`, built | `FAIL different dimensions`: the page is 6 CSS px taller after (1706 px against 1718 px at DPR 2) | **intended**. Read on `Listo` before and after: the "Cerrar" text link became the X icon button, "Cargar mi primera venta" gained the `+` icon and "Ir a Inicio" gained the house icon (the icon is taller than the text, which is the 6 CSS px). icon-and-text-rule.md: an action that is not icon-only is icon + text ("+ Nueva venta"). Nothing a seller reads changed: the words are the same |
+| `OnboardingListoCompu`, `OnboardingListoCompuOscuro`, built | AE 25916 and 25892 | **intended**, same three controls at the computer viewport (read on `ListoCompuOscuro` after; the before side of the computer pair was not read, the cause is the same components) |
+| every row, design side | AE 0 | the design files and the fonts did not move |
 
-Design against the docs and the build (from the Stock sheet; the "Atrás" and the step frame
-repeat on the other steps):
+Nothing else changed between before and after: the step rows' AE is the same for every step of a
+kind, which a close control alone explains, and "Atrás" is the same on both sides (GH-166, see 1.3).
 
-- The design draws "Atrás" and "Cerrar" as text links; the build has a secondary `Boton` with
-  the `atras` icon (GH-166, not GH-164) and the X icon button (GH-164). For Zeta.
-- The primary of step 2 reads "Guardá el stock" in the design and "Guardá la entrada" in the
-  build; the build also shows "Hoy tiene 0 g", which the design does not. A copy difference:
-  never fixed here, the doc wins. For Zeta, split into its own bug.
-- The design draws the step inside a rounded card on a grey page; the build is full-bleed.
-  Not read against the docs. For Zeta.
+### 3.3 Design against docs and build (after captures)
 
-### 3.1 At 320 px with text at 130 %, after (the seven captures)
+"Doc wins" means onboarding.md or the owner's doc, as the design README and design-capture.md say.
+The mark is **doc** (the drawing is the defect), **intended** (by GH-164's brief or the
+icon-and-text rule), or **Zeta** (no doc settles it). Copy is never changed here.
 
-- Nothing is clipped: no line, control or crop is cut in `Variedad`, `Stock`, `Mensaje`,
-  `Bot`, `Socio`, `Categorias` or `Listo`. The built page is exactly 320 CSS px wide on all seven.
-- The "Cerrar" X button is 88 px at DPR 2 (44 CSS px); "Atrás", the primaries and the secondary
-  buttons are taller. The small `i` icon next to the hint in step 4 (Bot) and the narrow
-  "Tu chat" field were not measured: **for Zeta**.
-- In `Mensaje` the two text areas show one or two lines of their content with their own
-  scroll; that is the field, not a cropped screen.
+| Screen | Design | Build | Mark |
+| --- | --- | --- | --- |
+| all steps | "Cerrar" and "Atrás" as text links | icon-only X close; "Atrás" as a secondary `Boton` with the `atras` icon | **intended** (X: GH-164; "Atrás": GH-166, same on both sides) |
+| `Variedad` | draws "Atrás" on step 1 | no "Atrás" on step 1 | **doc**: onboarding.md "Step 1 has no step before it: it shows no Atrás" |
+| `Variedad` | price fields with no "$", no "Precio VIP" field | "$" before list, bulk and VIP price, a "Precio VIP" field, no "$" before the minimum | **doc**: onboarding.md "the list price, the bulk price and the VIP price each show $" |
+| `Variedad` | "Opcional · desde cuántos gramos aplica" | "Desde cuántos gramos aplica" (`PRICE_FROM_GRAMS_HELP`) | **Zeta**: the owner's help line (varieties) differs from the drawing and no doc in `docs/product` says which; copy is not changed here |
+| `Variedad` | a second state, "¿Descartás la variedad?" | not captured (the row shows the empty form only) | not a difference: the capture shows one state per row |
+| `Stock` | primary "Guardá el stock"; no "Hoy tiene 0 g" line | primary "Guardá la entrada"; "Hoy tiene 0 g" under the variety | "Hoy tiene N g": **doc** (stock.md, the entry form's variety line). "Guardá la entrada": **Zeta**, the entry form's own button (its tests expect it); the drawing says another word and no doc settles it |
+| `Stock` | a second state, "Ya podés vender esa variedad" | not captured | not a difference (one state per row) |
+| `Mensaje` | "Saltar" blue, "Saltar el resto" grey; footer ends "… Queda como está."; text areas three lines tall | both skips blue underlined text links; no "Queda como está."; text areas two lines | skips: **intended** (GH-164's brief: both skips are text links, onboarding.md "as text links on one line"). Footer sentence: **Zeta** (no doc has it). Height of the fields: **Zeta** (small, the owner's field) |
+| `Bot` | hint under the token "Se guarda cifrado y no se muestra más." | not shown | **Zeta**: no doc and no screen text in `web/src` carries it |
+| `Bot` | "Tu chat" help "Abrí tu chat con el bot y escribile cualquier cosa para verlo acá." | "Tocá Iniciar en tu bot; tu número lo ves con @userinfobot." with an `i` ("Más info") | **doc**: pinned-catalog.md, the own chat's help line replaced the drawn one (GH-97) |
+| `Bot` | nothing under the help line; "Probarlo" with no icon | "Cargá el token primero" under the help while the token is empty; "Probarlo" with a flask icon | "Cargá el token primero": **doc** (pinned-catalog.md, no token: the button says it in words). The icon: **intended** (icon-and-text-rule.md lists Probarlo as icon + text) |
+| `Bot` | a second state, "Hecho" and "Prueba enviada" | not captured | not a difference (one state per row) |
+| `Bot`, `Mensaje`, `Socio`, `Categorias` | "Saltar" blue, "Saltar el resto" grey | both skips blue underlined text links; on step 6 only "Saltar" | **intended**, and step 6 is **doc** ("never on the last step") |
+| `Socio` | a second state with the link and "Copiar", "Compartir", "Seguir" | not captured; "Crear el link" carries the `user-plus` icon | not a difference (one state per row); the icon is **intended** (icon + text) |
+| `Categorias` | each row "Renombrar" and "Eliminar" as text links; "+ Categoría" with no icon; four rows; footer ends "Quedan las que están."; all six progress segments filled but the last | edit and delete as icon-only buttons; "+ Categoría" with an icon; five rows; footer without "Quedan las que están." | icon-only edit and delete, and the `+` icon: **intended** (icon-and-text-rule.md). Rows and progress segments: sample data, not a difference. Footer sentence: **Zeta** (no doc has it) |
+| `Listo` | 2 varieties, 2 entries, three lines marked "Hecho"; "Cerrar" text; actions with no icon | 4 varieties, 5 entries, three lines "Para después"; X icon; `+` and house icons | counts and lines: sample data. Icons: **intended**. Same words, same steps, same actions |
+| every step in dark | tokens and layout of the drawing's dark theme | the same structure in the dark tokens, with the same differences as the light sheet | nothing theme-specific |
+| every step at the computer viewport | a phone column at the left of the sheet | the same column centered in the computer viewport | as the plan says: "computer" is the phone-width column |
+
+### 3.4 At 320 px with text at 130 %, after (the seven captures)
+
+- Nothing is clipped: no line, control or crop is cut in `Variedad`, `Stock`, `Mensaje`, `Bot`,
+  `Socio`, `Categorias` or `Listo`. The built page is exactly 320 CSS px wide on all seven.
+- The X close button is 88 px at DPR 2 (44 CSS px); "Atrás", the primaries and the secondary
+  buttons are taller. The small `i` icon beside the help line of step 4 and the narrow "Tu chat"
+  field were not measured against 44 px, and are listed for Zeta.
+- In `Mensaje` the two text areas show one or two lines of their content with their own scroll;
+  that is the field, not a cropped screen.
 - In `Listo` the primary "Cargar mi primera venta" wraps to two lines and grows; it is not cut.
 
 ## 4. What follows
 
-**`css-fixes` may take:** nothing. No built-side note, no clip at 320–430 px or 130 %, and no
-step frame straying from `OnboardingVariedad` / `OnboardingCategorias` was found (Variedad has
-no "Atrás" because it is step 1; the frame is otherwise the same on all six).
+**`css-fixes` may take:** nothing. The step frame is the same on all six steps and "Listo" (the X
+close, "Atrás" from step 2, none on step 1) and agrees with `OnboardingVariedad` and
+`OnboardingCategorias`; the one frame difference from the drawing is the doc's own (no "Atrás"
+on step 1). There is no clip at 320–430 px or at 130 % text, and no built-side note. Every
+non-zero before/after line is intended.
 
-**Split into their own bugs / for Zeta:** the copy difference of step 2 and the "Hoy tiene
-0 g" line; the design's "Atrás" and "Cerrar" text links against the built buttons; the card
-frame; the three Listo rows with different dimensions and the two Listo computer AEs, not
-classified; the `i` icon's tap size in step 4.
+**For Zeta, or split into their own bugs (copy and drawing, none fixed here):**
+1. `Stock`: "Guardá la entrada" (the entry form's button) against "Guardá el stock" in the drawing.
+2. `Variedad`: "Desde cuántos gramos aplica" against "Opcional · desde cuántos gramos aplica".
+3. `Bot`: the drawn hint "Se guarda cifrado y no se muestra más." that no screen carries.
+4. `Mensaje` and `Categorias`: the drawn footer sentences "Queda como está." and "Quedan las que están.".
+5. `Mensaje`: the text areas are two lines tall, the drawing's three.
+6. `Bot`: the `i` icon's tap size and the narrow "Tu chat" field at 130 %.
+7. The drawings that disagree with their docs (step 1 "Atrás", the "$" and VIP price, the own chat's help line, "Hoy tiene N g", "Saltar el resto" on step 6): the drawing is the defect, as design-capture.md says.
 
-Not every non-zero AE is a defect: the six steps' lines are the intended close control.
+The `Oscuro`, `Compu`, `CompuOscuro` and `Texto130` sheets listed in 3.1 as not read one by one
+were not each opened; if the reviewer wants them read, the images are in the attached output.
