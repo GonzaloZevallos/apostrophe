@@ -4,7 +4,7 @@
  * card the bar and a "‹ parent" arrow, a form neither), plus the registry's explicit
  * `modalOnComputer`, which is the only thing that hides the side rail. Nothing is inferred
  * from a screen's `pane` or from its id, so `Shell` compares no screen id and a new modal
- * route says so in its own registry entry.
+ * route says so in its own registry entry (ADR-0045).
  */
 
 import type { Screen, Viewport } from '../routes'

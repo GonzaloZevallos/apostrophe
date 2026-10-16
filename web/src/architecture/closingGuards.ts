@@ -329,7 +329,7 @@ function seen(files: readonly SourceFile[], inside: readonly string[]): SourceFi
 }
 
 /** The source with its comments blanked, so a name in prose is not a use. */
-function withoutComments(content: string): string {
+export function withoutComments(content: string): string {
   return content.replace(/\/\*[\s\S]*?\*\//g, (block) => block.replace(/[^\n]/g, ' ')).replace(/(^|\s)\/\/.*$/gm, '$1')
 }
 

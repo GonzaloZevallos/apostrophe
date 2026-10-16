@@ -3,6 +3,9 @@
  * what kind of screen each path is. No other file in `web/src` or `web/e2e` carries a route
  * literal (a source scan in `routes.test.ts` fails if one does).
  *
+ * A parent may vary by the card's record (`recordParent`), never by how the screen was reached
+ * (ADR-0045).
+ *
  * Pure data and functions, with no import of any screen: the e2e specs import it too, and
  * they type-check under the node project, which has no JSX. `router.tsx` binds each declared
  * screen to its element (`bind`) and each public page through `outside`.

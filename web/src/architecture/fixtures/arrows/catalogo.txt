@@ -1,0 +1,5 @@
+<div className="encabezado__fila">
+  <BotonLink to={VARIETIES} variant="back">
+    ‹ Variedades
+  </BotonLink>
+</div>

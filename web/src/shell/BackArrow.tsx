@@ -9,7 +9,7 @@
  * route's, so a switch from variety A to B never shows A's archived parent or name while B
  * loads. Otherwise (loading, error, gone) the static registry parent is drawn, so the arrow is
  * always there, from the first render. The fallback path is read when the arrow is tapped,
- * from the latest answer, because the record may arrive after the render the seller saw.
+ * from the latest answer, because the record may arrive after the render the seller saw (ADR-0045).
  */
 
 import { useEffect, useRef } from 'react'
