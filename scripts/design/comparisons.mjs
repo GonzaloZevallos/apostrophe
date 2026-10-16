@@ -21,7 +21,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
-import { assertScreens, assertSelectedAccounts } from './screens.mjs'
+import { assertScreens, assertSelectedAccounts, assertSelectedNeeds } from './screens.mjs'
 import { fontCss, fontRoute } from './fonts.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -51,10 +51,9 @@ const only = values.only ? new Set(values.only.split(',')) : null
 const accounts = facts.accounts ?? {}
 // A configuration error, like bad usage: nothing is captured, and no credential is printed.
 try {
-  assertSelectedAccounts(
-    screens.filter((s) => !only || only.has(s.screen)),
-    Object.keys(accounts),
-  )
+  const selected = screens.filter((s) => !only || only.has(s.screen))
+  assertSelectedAccounts(selected, Object.keys(accounts))
+  assertSelectedNeeds(selected, screens)
 } catch (error) {
   console.error(`comparisons: ${error.message}`)
   process.exit(2)

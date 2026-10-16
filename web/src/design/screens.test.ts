@@ -1,7 +1,8 @@
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { assertScreens, assertSelectedAccounts } from '../../../scripts/design/screens.mjs'
+import { assertScreens, assertSelectedAccounts, assertSelectedNeeds } from '../../../scripts/design/screens.mjs'
+import { COMPUTER_MIN_WIDTH } from '../shell/useViewport'
 import screens from '../../../scripts/design/screens.json'
 
 describe('assertScreens', () => {
@@ -150,8 +151,99 @@ describe('assertScreens', () => {
     ).not.toThrow()
   })
 
+  it('refuses a needs that is not a non-empty string', () => {
+    expect(() => assertScreens([{ screen: 'A' }, { screen: 'B', needs: 7 }])).toThrow(
+      /^B: needs must be a non-empty string$/,
+    )
+    expect(() => assertScreens([{ screen: 'A' }, { screen: 'B', needs: '' }])).toThrow(
+      /B: needs must be a non-empty string/,
+    )
+  })
+
+  it('refuses a needs that names no screen, and one that is not earlier in the file', () => {
+    expect(() => assertScreens([{ screen: 'A' }, { screen: 'B', needs: 'Z' }])).toThrow(
+      /^B: needs names Z, which is not a screen of the file$/,
+    )
+    expect(() => assertScreens([{ screen: 'A', needs: 'B' }, { screen: 'B' }])).toThrow(
+      /^A: needs names B, which is not earlier in the file$/,
+    )
+    expect(() => assertScreens([{ screen: 'A', needs: 'A' }])).toThrow(
+      /A: needs names A, which is not earlier in the file/,
+    )
+  })
+
+  it('accepts a needs that names an earlier screen', () => {
+    expect(() => assertScreens([{ screen: 'A' }, { screen: 'B', needs: 'A' }])).not.toThrow()
+  })
+
   it('accepts the real screens.json, imported, never copied', () => {
     expect(() => assertScreens(screens.screens)).not.toThrow()
+  })
+})
+
+describe('assertSelectedNeeds', () => {
+  const all = [{ screen: 'A' }, { screen: 'B', needs: 'A' }, { screen: 'C' }]
+
+  it('refuses a selection that drops the row a selected one needs, naming both', () => {
+    expect(() => assertSelectedNeeds([all[1]!, all[2]!], all)).toThrow(
+      /^B: needs A, which is not in the selection$/,
+    )
+  })
+
+  it('accepts a selection with the needed row, and one with no row that needs another', () => {
+    expect(() => assertSelectedNeeds([all[0]!, all[1]!], all)).not.toThrow()
+    expect(() => assertSelectedNeeds([all[2]!], all)).not.toThrow()
+    expect(() => assertSelectedNeeds(all, all)).not.toThrow()
+  })
+
+  it('accepts the real screens.json whole, and refuses it without OnboardingVariedad', () => {
+    expect(() => assertSelectedNeeds(screens.screens, screens.screens)).not.toThrow()
+    const without = screens.screens.filter((s) => s.screen !== 'OnboardingVariedad')
+    expect(() => assertSelectedNeeds(without, screens.screens)).toThrow(
+      /OnboardingVariedadOscuro: needs OnboardingVariedad, which is not in the selection/,
+    )
+  })
+})
+
+describe('the real registry covers its evidence', () => {
+  const names = screens.screens.map((s) => s.screen)
+
+  it('puts every {no_entries} row before OnboardingVariedad, which gives Mango an entry', () => {
+    const variedad = names.indexOf('OnboardingVariedad')
+    expect(variedad).toBeGreaterThan(-1)
+    const rows = screens.screens.filter((s) => s.route?.includes('{no_entries}'))
+    expect(rows.length).toBeGreaterThan(0)
+    for (const row of rows) expect(names.indexOf(row.screen)).toBeLessThan(variedad)
+  })
+
+  it('has a row for every Onboarding design, phone and computer, light and dark', () => {
+    const pantallas = resolve(process.cwd(), '..', 'docs/product/design-system/pantallas')
+    const designs = readdirSync(pantallas)
+      .filter((file) => /^Onboarding.*\.dc\.html$/.test(file))
+      .map((file) => file.replace('.dc.html', ''))
+    expect(designs.length).toBeGreaterThan(0)
+    const has = (design: string, computer: boolean, dark: boolean) =>
+      screens.screens.some((s) => {
+        const isComputer = s.viewport !== undefined && s.viewport[0]! >= COMPUTER_MIN_WIDTH
+        const isPhone = s.viewport === undefined
+        return (s.design ?? s.screen) === design && (computer ? isComputer : isPhone) && (s.tema === 'oscuro') === dark
+      })
+    for (const design of designs) {
+      expect(has(design, false, false), `${design}: phone light`).toBe(true)
+      expect(has(design, false, true), `${design}: phone dark`).toBe(true)
+      expect(has(design, true, false), `${design}: computer light`).toBe(true)
+      expect(has(design, true, true), `${design}: computer dark`).toBe(true)
+    }
+  })
+
+  it('has the stock entry form from a variety with no entries, in the four combinations', () => {
+    const rows = screens.screens.filter((s) => s.route?.includes('{no_entries}'))
+    expect(rows.map((s) => s.screen)).toEqual([
+      'EntradaStockSinEntradas',
+      'EntradaStockSinEntradasOscuro',
+      'EntradaStockSinEntradasCompu',
+      'EntradaStockSinEntradasCompuOscuro',
+    ])
   })
 })
 
