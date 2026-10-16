@@ -30,6 +30,7 @@ const CLASS = {
   back: 'boton--enlace',
   icon: 'boton-icono',
   row: 'boton--fila',
+  notice: 'boton-aviso',
 } as const
 
 /** The class string of a variant, for a component that draws a choice (an option tab) over a

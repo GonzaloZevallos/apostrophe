@@ -39,6 +39,17 @@ const destructiveBare: Rejected<{ variant: 'destructive' } & Children> = true
 const linkLinkWithIcon: RejectedLink<{ to: string; variant: 'link'; icon: 'tacho' } & Children> = true
 const linkSubmit: RejectedLink<{ to: string; textOnly: 'submit'; type: 'submit' } & Children> = true
 const linkIconOnlyWithoutLabel: RejectedLink<{ to: string; variant: 'icon'; action: 'search' }> = true
+const noticeWithIcon: Rejected<{ variant: 'notice'; icon: 'atras' } & Children> = true
+const noticeWithAriaLabel: Rejected<{ variant: 'notice'; ariaLabel: 'x' } & Children> = true
+const noticeTextOnlySubmit: Rejected<{ variant: 'notice'; textOnly: 'submit'; type: 'submit' } & Children> =
+  true
+const noticeWithoutChildren: Rejected<{ variant: 'notice' }> = true
+const linkNoticeWithIcon: RejectedLink<{ to: string; variant: 'notice'; icon: 'atras' } & Children> = true
+const linkNoticeWithAriaLabel: RejectedLink<{ to: string; variant: 'notice'; ariaLabel: 'x' } & Children> =
+  true
+const linkNoticeWithTextOnly: RejectedLink<{ to: string; variant: 'notice'; textOnly: 'submit' } & Children> =
+  true
+const linkNoticeWithoutChildren: RejectedLink<{ to: string; variant: 'notice' }> = true
 
 const iconAndText: Rejected<{ icon: 'agregar' } & Children> = false
 const secondary: Rejected<{ variant: 'secondary'; icon: 'personaMas' } & Children> = false
@@ -46,6 +57,8 @@ const submit: Rejected<{ textOnly: 'submit'; type: 'submit' } & Children> = fals
 const iconOnly: Rejected<{ variant: 'icon'; action: 'delete'; ariaLabel: 'Borrar' }> = false
 const back: Rejected<{ variant: 'back' } & Children> = false
 const row: Rejected<{ variant: 'row' } & Children> = false
+const notice: Rejected<{ variant: 'notice' } & Children> = false
+const linkNotice: RejectedLink<{ to: string; variant: 'notice' } & Children> = false
 const closeIcon: Rejected<{ variant: 'icon'; action: 'close'; ariaLabel: 'Cerrar' }> = false
 const editIcon: Rejected<{ variant: 'icon'; action: 'edit'; ariaLabel: 'Editar' }> = false
 const shareIcon: Rejected<{ variant: 'icon'; action: 'share'; ariaLabel: 'Compartir' }> = false
@@ -77,6 +90,14 @@ test('the closed lists are enforced by tsc, not at run time', () => {
     linkLinkWithIcon,
     linkSubmit,
     linkIconOnlyWithoutLabel,
+    noticeWithIcon,
+    noticeWithAriaLabel,
+    noticeTextOnlySubmit,
+    noticeWithoutChildren,
+    linkNoticeWithIcon,
+    linkNoticeWithAriaLabel,
+    linkNoticeWithTextOnly,
+    linkNoticeWithoutChildren,
   ]
   const accepted = [
     iconAndText,
@@ -85,6 +106,8 @@ test('the closed lists are enforced by tsc, not at run time', () => {
     iconOnly,
     back,
     row,
+    notice,
+    linkNotice,
     closeIcon,
     editIcon,
     shareIcon,

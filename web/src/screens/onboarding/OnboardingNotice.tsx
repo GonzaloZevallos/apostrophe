@@ -9,7 +9,8 @@
 import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router'
-import InAppLink from '../../components/InAppLink'
+import Boton from '../../components/Boton'
+import BotonLink from '../../components/BotonLink'
 import { ApiError, NetworkError } from '../../api/client'
 import { sendAdvance, type OnboardingProgress } from '../../api/onboarding'
 import { isGone } from '../../api/refusals'
@@ -59,13 +60,13 @@ export default function OnboardingNotice({ progress }: { progress: OnboardingPro
   return (
     <>
       {current !== null ? (
-        <InAppLink to={stepInfo(current).path} className="aviso-onboarding">
+        <BotonLink variant="notice" to={stepInfo(current).path}>
           {body}
-        </InAppLink>
+        </BotonLink>
       ) : (
-        <button type="button" className="aviso-onboarding" onClick={() => void finish()}>
+        <Boton variant="notice" onClick={() => void finish()}>
           {body}
-        </button>
+        </Boton>
       )}
       {failure === 'offline' && <SinConexion />}
       {failure === 'error' && <ErrorGenerico />}

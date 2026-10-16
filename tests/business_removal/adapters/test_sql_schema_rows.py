@@ -6,7 +6,7 @@ proven to reach every table the schema holds and nothing of the other business.
 
 from __future__ import annotations
 
-from datetime import UTC, date, datetime, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any, cast
 
@@ -95,27 +95,33 @@ def file_engine(tmp_path: Path) -> Engine:
 
 
 @pytest.fixture
-def app(file_engine: Engine) -> FastAPI:
+def clock() -> MovableClock:
+    """The one clock the app, its invitations and the seeded rows all run on."""
+    return MovableClock(NOW)
+
+
+@pytest.fixture
+def app(file_engine: Engine, clock: MovableClock) -> FastAPI:
     return create_app(
         SETTINGS,
         engine=file_engine,
         hasher=TEST_HASHER,
         telegram=FakeTelegram(),
-        clock=MovableClock(NOW),
+        clock=clock,
         upkeep_ticker=False,
     )
 
 
 @pytest.fixture
-def leaving_token(app: FastAPI, file_engine: Engine) -> str:
-    clock = MovableClock(datetime.now(UTC))  # the app runs on the real clock
+def leaving_token(app: FastAPI, file_engine: Engine, clock: MovableClock) -> str:
     with TestClient(app) as client:
         return open_business(client, file_engine, clock, "Leaving Business", "leaving@example.com")
 
 
 @pytest.fixture
-def staying_token(app: FastAPI, file_engine: Engine, leaving_token: str) -> str:
-    clock = MovableClock(datetime.now(UTC))  # the app runs on the real clock
+def staying_token(
+    app: FastAPI, file_engine: Engine, clock: MovableClock, leaving_token: str
+) -> str:
     with TestClient(app) as client:
         return open_business(client, file_engine, clock, "Staying Business", "staying@example.com")
 
@@ -124,18 +130,18 @@ def _issue_join_invitation(engine: Engine, business_id: int, now: datetime) -> s
     """Issues a join invitation the way `POST /invitations` does, but lets the test
     pick `now` directly so an expired one needs no clock to move."""
     with Session(engine) as session:
-        issued = invite_partner(
-            SqlAccounts(session), session, business_id=business_id, now=now
-        )
+        issued = invite_partner(SqlAccounts(session), session, business_id=business_id, now=now)
         session.commit()
     return issued.token
 
 
-def _seed_join_invitations(client: TestClient, engine: Engine, business_id: int) -> None:
+def _seed_join_invitations(
+    client: TestClient, engine: Engine, business_id: int, clock: MovableClock
+) -> None:
     """A pending, a used and an expired join invitation for one business (round-3
     Q1's three statuses), so the delete is proven to sweep all of them, whatever their
     status."""
-    today = datetime.now(UTC)  # the app under test runs on the real clock.
+    today = clock()
     _issue_join_invitation(engine, business_id, today)  # left pending, never accepted.
 
     used_token = _issue_join_invitation(engine, business_id, today)
@@ -146,7 +152,7 @@ def _seed_join_invitations(client: TestClient, engine: Engine, business_id: int)
     assert accepted.status_code == 201, accepted.text
 
     # Issued well before its 7-day lifetime, so it is already expired as of today,
-    # without moving any clock.
+    # without moving the clock.
     _issue_join_invitation(engine, business_id, today - timedelta(days=30))
 
 
@@ -169,13 +175,17 @@ def _seed_withdrawal(client: TestClient, variety_id: int) -> None:
 
 @pytest.fixture
 def seeded(
-    app: FastAPI, file_engine: Engine, leaving_token: str, staying_token: str
+    app: FastAPI,
+    file_engine: Engine,
+    clock: MovableClock,
+    leaving_token: str,
+    staying_token: str,
 ) -> dict[str, Any]:
     with TestClient(app) as client:
         leaving = signed_in(client, leaving_token)
         leaving_records = _seed_everything(leaving, "leaving@example.com")
         leaving_business_id = _business_id(file_engine, "leaving@example.com")
-        _seed_join_invitations(leaving, file_engine, leaving_business_id)
+        _seed_join_invitations(leaving, file_engine, leaving_business_id, clock)
         _seed_withdrawal(leaving, leaving_records["variety_id"])
 
         staying = signed_in(client, staying_token)
@@ -370,9 +380,7 @@ def test_a_table_added_after_migrating_is_found_ordered_and_emptied(
 
     assert deleted.tables["later_table"] == {later_rows[0]["id"]}
     with file_engine.connect() as connection:
-        remaining = connection.execute(
-            text("SELECT COUNT(*) FROM later_table")
-        ).scalar_one()
+        remaining = connection.execute(text("SELECT COUNT(*) FROM later_table")).scalar_one()
     assert remaining == 0
 
 

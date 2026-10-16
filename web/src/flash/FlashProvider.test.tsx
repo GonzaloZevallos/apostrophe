@@ -67,7 +67,7 @@ function renderApp() {
 }
 
 beforeEach(() => {
-  vi.useFakeTimers({ shouldAdvanceTime: true })
+  vi.useFakeTimers({ now: new Date('2026-01-05T12:00:00Z'), shouldAdvanceTime: true })
 })
 
 afterEach(() => {

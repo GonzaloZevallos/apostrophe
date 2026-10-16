@@ -15,6 +15,7 @@ import { inAppState } from '../../components/inAppState'
 import { ONBOARDING_VARIETY } from '../../routes'
 import StockEntryForm from '../StockEntryForm'
 import { anotherVarietyState } from './anotherVariety'
+import StepSubmit from './StepSubmit'
 import { useOnboardingWrite } from './useOnboardingWrite'
 import type { StepBodyProps } from './stepBodies'
 
@@ -53,9 +54,9 @@ export default function StockStep({ me, progress, onDirtyChange, onProgress }: S
           </div>
         )}
         <div className="onboarding__acciones">
-          <button type="button" className="boton" disabled={sending} onClick={() => void run(sendAdvance)}>
+          <StepSubmit disabled={sending} onSubmit={() => void run(sendAdvance)}>
             Seguir
-          </button>
+          </StepSubmit>
           <Boton
             variant="secondary"
             icon="agregar"
@@ -73,9 +74,9 @@ export default function StockStep({ me, progress, onDirtyChange, onProgress }: S
     return (
       <>
         <p className="onboarding__porque">Primero cargá una variedad con su precio de hoy.</p>
-        <button type="button" className="boton" onClick={() => void navigate(ONBOARDING_VARIETY)}>
+        <Boton icon="agregar" onClick={() => void navigate(ONBOARDING_VARIETY)}>
           Cargar una variedad
-        </button>
+        </Boton>
       </>
     )
   }

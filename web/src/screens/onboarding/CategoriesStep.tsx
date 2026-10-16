@@ -6,6 +6,7 @@
 
 import { sendPass } from '../../api/onboarding'
 import ExpenseCategoriesEditor from '../settings/ExpenseCategoriesEditor'
+import StepSubmit from './StepSubmit'
 import { useOnboardingWrite } from './useOnboardingWrite'
 import type { StepBodyProps } from './stepBodies'
 
@@ -14,14 +15,9 @@ export default function CategoriesStep({ onDirtyChange, onProgress }: StepBodyPr
   return (
     <>
       <ExpenseCategoriesEditor onDirtyChange={onDirtyChange} addCollapsed />
-      <button
-        type="button"
-        className="boton"
-        disabled={sending}
-        onClick={() => void run(() => sendPass('categories', 'done'))}
-      >
+      <StepSubmit disabled={sending} onSubmit={() => void run(() => sendPass('categories', 'done'))}>
         Seguir
-      </button>
+      </StepSubmit>
       {notice}
     </>
   )

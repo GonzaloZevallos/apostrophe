@@ -15,6 +15,7 @@ import ErrorGenerico from '../../components/ErrorGenerico'
 import Loading from '../../components/Loading'
 import SinConexion from '../../components/SinConexion'
 import { IntegrationsForm, type PinnedCatalog } from '../settings/IntegrationsGroup'
+import StepSubmit from './StepSubmit'
 import { useOnboardingWrite } from './useOnboardingWrite'
 import type { StepBodyProps } from './stepBodies'
 
@@ -48,9 +49,9 @@ export default function BotStep({ progress, onDirtyChange, onProgress }: StepBod
       />
       {(done || tested) && <p className="pie">{PUBLISH_LINE}</p>}
       {(done || tested) && (
-        <button type="button" className="boton" disabled={sending} onClick={() => void send()}>
+        <StepSubmit disabled={sending} onSubmit={() => void send()}>
           Seguir
-        </button>
+        </StepSubmit>
       )}
       {notice}
     </>

@@ -32,6 +32,7 @@ import { watchConsole } from './console.js'
 import { openGastos } from './helpers/openMas.js'
 import { fillSaleLine } from './helpers/sale.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
+import { uniqueTag } from './helpers/unique.js'
 
 interface PanelPeriod {
   start: string
@@ -165,8 +166,8 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   const consoleMessages: string[] = []
   watchConsole(page, consoleMessages)
 
-  const ownerEmail = `duena-panel-${Date.now()}@example.com`
-  const businessName = `Flores del Panel ${Date.now()}`
+  const ownerEmail = `duena-panel-${uniqueTag()}@example.com`
+  const businessName = `Flores del Panel ${uniqueTag()}`
 
   // Accept a new-business invitation.
   await signUpNewBusiness(page, { businessName, email: ownerEmail })

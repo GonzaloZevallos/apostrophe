@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from app.main import create_app
-from tests.conftest import SETTINGS, TEST_HASHER
+from tests.conftest import NOW, SETTINGS, TEST_HASHER, MovableClock
 from tests.fakes.telegram import FakeTelegram
 
 PUBLIC = {
@@ -31,7 +31,13 @@ def _routes(app: FastAPI) -> list[tuple[str, str]]:
 
 
 ROUTES = _routes(
-    create_app(SETTINGS, hasher=TEST_HASHER, telegram=FakeTelegram(), upkeep_ticker=False)
+    create_app(
+        SETTINGS,
+        hasher=TEST_HASHER,
+        telegram=FakeTelegram(),
+        upkeep_ticker=False,
+        clock=MovableClock(NOW),
+    )
 )
 GATED = [route for route in ROUTES if route not in PUBLIC]
 

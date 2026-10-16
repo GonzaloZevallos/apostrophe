@@ -21,6 +21,7 @@ import { newBusinessInvitationUrl, resetLink } from './backend.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
+import { uniqueTag } from './helpers/unique.js'
 
 const PAPEL = 'rgb(252, 251, 248)'
 const PAPEL_OSCURO = 'rgb(16, 19, 26)'
@@ -106,8 +107,8 @@ test('data-tema="oscuro" turns the theme dark on a light system too', async ({ p
 const PASSWORD = 'correcthorsebattery'
 
 async function signUp(page: Page): Promise<string> {
-  const email = `tema-${Date.now()}-${Math.floor(Math.random() * 1e6)}@example.com`
-  await signUpNewBusiness(page, { businessName: `Tema ${Date.now()}`, email })
+  const email = `tema-${uniqueTag()}@example.com`
+  await signUpNewBusiness(page, { businessName: `Tema ${uniqueTag()}`, email })
   return email
 }
 
@@ -127,8 +128,8 @@ async function signUpAndSettleInOnboarding(page: Page): Promise<string> {
       response.request().method() === 'GET',
   )
   const { email } = await signUpNewBusiness(page, {
-    businessName: `Tema ${Date.now()}`,
-    email: `tema-${Date.now()}-${Math.floor(Math.random() * 1e6)}@example.com`,
+    businessName: `Tema ${uniqueTag()}`,
+    email: `tema-${uniqueTag()}@example.com`,
     stayInOnboarding: true,
   })
   const response = await settled
