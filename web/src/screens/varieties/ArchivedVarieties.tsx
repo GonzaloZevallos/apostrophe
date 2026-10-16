@@ -11,13 +11,12 @@
 import { useQuery } from '@tanstack/react-query'
 
 import Boton from '../../components/Boton'
-import BotonLink from '../../components/BotonLink'
 import { NetworkError } from '../../api/client'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import Loading from '../../components/Loading'
 import PaneRowLink from '../../components/PaneRowLink'
 import SinConexion from '../../components/SinConexion'
-import { VARIETIES, VARIETY, pathTo } from '../../routes'
+import { VARIETY, pathTo } from '../../routes'
 import { useViewport } from '../../shell/useViewport'
 import { archivedVarietiesQueryOptions } from './archivedVarieties'
 import { useRestore } from './useRestore'
@@ -34,11 +33,6 @@ export default function ArchivedVarieties() {
   return (
     <main className="pantalla variedades">
       <div className="cuerpo">
-        <div className="encabezado__fila">
-          <BotonLink to={VARIETIES} variant="back">
-            ‹ Variedades
-          </BotonLink>
-        </div>
         <h1 className="encabezado__titulo">Archivadas</h1>
         {notice}
         {failure !== null && (failure instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />)}

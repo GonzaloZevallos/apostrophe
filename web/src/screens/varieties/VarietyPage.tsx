@@ -40,7 +40,6 @@ import { useFlash } from '../../flash/useFlash'
 import { useCardRecord } from '../../shell/useCardRecord'
 import { formatGrams, formatMoney } from '../../format/money'
 import {
-  ARCHIVED_VARIETIES,
   CATALOG_SECTION_ID,
   STOCK_ENTRY_NEW,
   VARIETIES,
@@ -181,17 +180,6 @@ function VarietyPageView({
   return (
     <main className="pantalla">
       <div className="cuerpo">
-        <div className="encabezado__fila">
-          {archived ? (
-            <BotonLink to={ARCHIVED_VARIETIES} variant="back">
-              ‹ Archivadas
-            </BotonLink>
-          ) : (
-            <BotonLink to={VARIETIES} variant="back">
-              ‹ Variedades
-            </BotonLink>
-          )}
-        </div>
         <div className="encabezado-fila">
           <h1 className="encabezado__titulo">{variety.name}</h1>
           {!archived && (

@@ -271,10 +271,11 @@ describe('the actions and the sections', () => {
     expect(screen.getByRole('link', { name: 'Nuevo precio' })).toHaveAttribute('href', pathTo(VARIETY_PRICE_NEW, { id: 1 }))
   })
 
-  test('the page is a detail: "‹ Variedades" and no "+ Nueva venta"', async () => {
+  test('the page is a detail with exactly one "‹" (the shell's) and no "+ Nueva venta"', async () => {
     renderPage(VARIETY_ONE)
 
-    expect(await screen.findByRole('link', { name: '‹ Variedades' })).toHaveAttribute('href', VARIETIES)
+    expect(await screen.findByRole('heading', { name: '24K Gold' })).toBeInTheDocument()
+    expect(screen.getAllByRole('button', { name: /^‹ / })).toHaveLength(1)
     expect(screen.queryByText(/Nueva venta/)).not.toBeInTheDocument()
     expect(screen.getAllByRole('navigation').length).toBeGreaterThan(0)
   })

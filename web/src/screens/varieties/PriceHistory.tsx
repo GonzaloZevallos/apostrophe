@@ -9,13 +9,11 @@ import { useQuery } from '@tanstack/react-query'
 import { ApiError, NetworkError, get } from '../../api/client'
 import { keys } from '../../api/keys'
 import { isGone } from '../../api/refusals'
-import BotonLink from '../../components/BotonLink'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import GoneScreen from '../../components/GoneScreen'
 import Loading from '../../components/Loading'
 import SinConexion from '../../components/SinConexion'
-import { useBackOr } from '../../components/useBackOr'
-import { VARIETIES, VARIETY, pathTo } from '../../routes'
+import { VARIETIES } from '../../routes'
 import { useCardRecord } from '../../shell/useCardRecord'
 import type { Variety } from '../Variedades'
 import PriceRows, { type PriceRow } from './PriceRows'
@@ -23,7 +21,6 @@ import { PRICE_HISTORY_HELP } from './varietiesMessages'
 
 export default function PriceHistory({ varietyId }: { varietyId: number }) {
   const id = String(varietyId)
-  const back = useBackOr(pathTo(VARIETY, { id: varietyId }))
   const varietyQuery = useQuery({ queryKey: keys.variety(id), queryFn: () => get<Variety>(`/varieties/${id}`) })
   const pricesQuery = useQuery({
     queryKey: keys.varietyPrices(id),
@@ -57,18 +54,6 @@ export default function PriceHistory({ varietyId }: { varietyId: number }) {
   return (
     <main className="pantalla">
       <div className="cuerpo">
-        <div className="encabezado__fila">
-          <BotonLink
-            variant="back"
-            to={pathTo(VARIETY, { id: varietyId })}
-            onClick={(event) => {
-              event.preventDefault()
-              back()
-            }}
-          >
-            ‹ {variety.name}
-          </BotonLink>
-        </div>
         <span className="encabezado__titulo">Precios</span>
         <PriceRows
           varietyId={varietyId}

@@ -10,7 +10,7 @@ import { afterEach, expect, test, vi } from 'vitest'
 import { catalogQueryOptions } from '../../api/catalog'
 import { PRICE_HISTORY_HELP } from './varietiesMessages'
 import { LIMITS, SAMPLES } from '../../copy/limits'
-import { VARIETY, VARIETY_PRICES, pathTo } from '../../routes'
+import { VARIETY_PRICES, pathTo } from '../../routes'
 import { expectIconAndTextRule, iconAndTextProblems } from '../../test/iconAndTextRule'
 import { HISTORY, VARIETY_ROW, api, jsonResponse, renderVarieties, writes } from './renderVarieties'
 
@@ -21,36 +21,14 @@ afterEach(() => {
 test('lists every price newest first with "Rige desde", the one in force and its bulk tier', async () => {
   renderVarieties([pathTo(VARIETY_PRICES, { id: 1 })], api())
 
-  expect(await screen.findByRole('link', { name: '‹ 24K Gold' })).toBeInTheDocument()
   const rows = (await screen.findAllByText(/^Rige desde/)).map((node) => node.textContent)
+  expect(screen.queryByText(/^‹/)).toBeNull()
   expect(rows).toEqual(['Rige desde 25/09Vigente hoy', 'Rige desde 01/09', 'Rige desde 05/07'])
   expect(screen.getByText('Vigente hoy')).toBeInTheDocument()
   expect(screen.getByText('Desde 10 g · $ 10.000')).toBeInTheDocument()
   expect(screen.getByText('$ 11.000')).toBeInTheDocument()
   expect(screen.getAllByRole('button', { name: 'Borrar este precio' })).toHaveLength(3)
   expect(screen.getByText('Cada venta usa el precio que regía ese día, aunque lo cambies después.')).toBeInTheDocument()
-})
-
-test('back goes by history to where the seller came from', async () => {
-  const user = userEvent.setup()
-  const { router } = renderVarieties([pathTo(VARIETY, { id: 1 })], api())
-  await user.click(await screen.findByRole('link', { name: 'Ver todos los precios' }))
-
-  await user.click(await screen.findByRole('link', { name: '‹ 24K Gold' }))
-
-  expect(await screen.findByText('Página de la variedad')).toBeInTheDocument()
-  expect(router.state.location.pathname).toBe(pathTo(VARIETY, { id: 1 }))
-  expect(router.state.historyAction).toBe('POP')
-})
-
-test('back with no history goes to the variety\'s page', async () => {
-  const user = userEvent.setup()
-  const { router } = renderVarieties([pathTo(VARIETY_PRICES, { id: 1 })], api())
-
-  await user.click(await screen.findByRole('link', { name: '‹ 24K Gold' }))
-
-  expect(await screen.findByText('Página de la variedad')).toBeInTheDocument()
-  expect(router.state.location.pathname).toBe(pathTo(VARIETY, { id: 1 }))
 })
 
 test('deleting says what takes the entry\'s place, then toasts "Precio eliminado"', async () => {
