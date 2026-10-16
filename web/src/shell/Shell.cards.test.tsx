@@ -89,6 +89,13 @@ function arrows(): string[] {
   return screen.queryAllByRole('button', { name: /^‹ / }).map((button) => button.textContent ?? '')
 }
 
+/** Every control that reads as a way back, whatever its role: a "‹ …" link or button, or a "Volver". */
+function backControls(): string[] {
+  return [...screen.queryAllByRole('button'), ...screen.queryAllByRole('link')]
+    .map((control) => control.textContent?.trim() ?? '')
+    .filter((text) => text.startsWith('‹') || /^Volver\b/.test(text))
+}
+
 /** Waits for the card's data to be in, so a card that draws a second arrow once loaded is caught. */
 async function settled(): Promise<void> {
   await waitFor(() => expect(arrows().length).toBeGreaterThan(0))
@@ -119,6 +126,7 @@ describe.each(['phone', 'computer'] as const)('on a %s', (size) => {
     if (size === 'computer' && label === '‹ Más') expect(arrows()).toHaveLength(1)
     else await waitFor(() => expect(arrows()).toEqual([label]))
     expect(document.querySelectorAll('.flecha-atras')).toHaveLength(1)
+    expect(backControls()).toHaveLength(1)
   })
 })
 
@@ -128,6 +136,7 @@ test('the price form on a computer, behind its modal, shows no "‹" at all', as
   await waitFor(() => expect(queryClient.isFetching()).toBe(0))
 
   expect(arrows()).toEqual([])
+  expect(backControls()).toEqual([])
   expect(document.querySelectorAll('.flecha-atras')).toHaveLength(0)
 })
 
