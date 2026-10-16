@@ -458,6 +458,7 @@ test('an entry started from a variety has it chosen and "Stock inicial" preselec
 
   const select = await screen.findByRole('combobox', { name: /^Variedad/ })
   await waitFor(() => expect(select).toHaveValue('3'))
+  expect(screen.getByRole('group', { name: 'Origen' })).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Stock inicial' })).toHaveAttribute('aria-pressed', 'true')
   expect(screen.getByRole('button', { name: 'Compra' })).toHaveAttribute('aria-pressed', 'false')
 })
@@ -486,6 +487,7 @@ test('from "+ Entrada de stock" no variety is chosen and Compra is the origin', 
   renderForm(STOCK_ENTRY_NEW)
 
   expect(await screen.findByRole('combobox', { name: /^Variedad/ })).toHaveValue('')
+  expect(screen.getByRole('group', { name: 'Origen' })).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Compra' })).toHaveAttribute('aria-pressed', 'true')
 })
 
