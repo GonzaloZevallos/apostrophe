@@ -1,7 +1,7 @@
 /**
  * `PriceNew` (`PrecioNuevo`, `PrecioNuevoCompu`): the host of the price form on its own
  * route, opened from a variety's page by "Nuevo precio". On a computer the frame is a modal
- * over the variety's page (ADR-0043: drawn by its own route, so a direct link opens it); on
+ * over the variety's page (ADR-0044: drawn by its own route, so a direct link opens it); on
  * a phone it is a full form screen. The host owns how the form is left, as `ExpenseNewRoute`
  * does, and it is one leave for every way out: "Cerrar", Escape, the backdrop and a save go
  * back by history, or to the variety's page when there is no history (a direct link). A
