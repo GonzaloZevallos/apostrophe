@@ -11,6 +11,12 @@ The evidence a reviewer uses to judge that a screen looks as designed: the desig
 - It also serves when a design guard or a registry test fails and the maintainer must tell a real defect from a broken registry row.
 - Before it (GH-142's follow-up): a one-test edit broke the plan's own invariant, the OnboardingListo row could not reach Listo, the OnboardingListoOscuro crop was clipped, and those two defects had no issue.
 
+**When** I am about to approve the Onboarding restyle from GH-164 and the evidence on the PR covers only some of its screens, **I want** every Onboarding step and "Listo" compared with its design (phone and computer viewports, light and dark, the narrowest phone at 130 % text) and a before/after pair of the restyle, **so I can** approve knowing that only the intended things changed and that nothing a seller reads or taps there moved, without approving on partial evidence or holding the PR.
+
+- Its protagonist is the maintainer, or the reviewer acting for them; the seller is affected only indirectly.
+- It refines onboarding.md criterion 5 and icon-and-text-rule.md criterion 6; it is not a new product job.
+- Before it (GH-164's follow-up): approval rested on two of the seven screens (Bot and Listo); Socio and Categorías were never read; there was no dark theme, no 320 px / 130 % check and no before/after pair.
+
 Success criteria:
 
 1. **One green run.** One `--strict` call over Inicio* and the Onboarding block exits 0.
@@ -18,6 +24,14 @@ Success criteria:
 3. **Registry, tests and plan agree.** The change needs no recorded exception and no test edited outside a declared seam.
 4. **Nothing a seller sees changes.** onboarding.md, navigation.md and every screen read and behave as before, and every test passes. The only edited tests are the two registry tests; the only other edited files are design tooling (`scripts/design/screens.json`, `scripts/design/screens.mjs`, `scripts/design/sample_app.py`, `scripts/design/comparisons.mjs`); no file under `app/` or `web/src/` changes beyond those two tests.
 5. **No test loosened.** A changed registry or enforcement test keeps everything it guarded and states the corrected rule.
+
+Success criteria, the Onboarding restyle's evidence (GH-164 follow-up):
+
+6. **Every Onboarding screen covered.** Each of the six steps and "Listo" has captures for the phone and computer viewports, in light and dark, plus one phone capture at 320 px with text at 130 %, in light only, all from one `--strict` run that exits 0. A missing screen, a missing side or a one-sided `null` is a failure, never a pass.
+7. **A before/after pair of the restyle.** "Before" is the code without GH-164's change (once it has merged, the merging head with only that change undone, the undo diff in the PR); "after" is the head that merges. Both come from the head's own `comparisons.mjs`, one install, the same Argentina day, fonts pinned, and are compared as raw captures by exact AE with `ae.mjs`. The PR records the installed `@fontsource/plus-jakarta-sans` version.
+8. **Every difference accounted for.** Each non-zero difference, and each difference between the design and the docs, is listed in the PR with its screen and side, as intended (by GH-164's brief) or fixed. Where onboarding.md and the drawing disagree, onboarding.md wins and the drawing is the defect. A difference neither the brief nor the docs can settle goes to Zeta in the PR.
+9. **Nothing clipped.** At 320 px with text at 130 %, no line, control or crop of any step or "Listo" is clipped, and controls stay at least 44 px.
+10. **No seller-visible change beyond a listed fix.** Every suite passes; no test is edited to fit, the two registry tests excepted when rows are added.
 
 ## Behaviour
 
@@ -71,6 +85,18 @@ Success criteria:
 - The installed `@fontsource/plus-jakarta-sans` version (ADR-0042).
 - No before/after AE pair is required for a change with no seller-visible difference whose "before" row never reached its screen.
 
+### The Onboarding restyle's evidence (GH-164 follow-up)
+
+- **Screens**: the six Onboarding steps (variety and price, opening stock, header and footer, Telegram bot, partner, expense categories) and "Listo", which keeps its three rows (light, dark, Compu), each reached as above.
+- **Computer** means the Onboarding's one phone-width column captured at the computer viewport; the Onboarding has no computer layout of its own (onboarding.md).
+- **Per screen**: phone and computer, light and dark; plus one phone capture at 320 px with text at 130 %, light only. Each shows its named section whole.
+- **Registry**: every capture is a row of `scripts/design/screens.json`. A missing row is added as design tooling, with the two registry tests as its seams; a row that cannot reach its screen is a defect, never an exemption. Any mechanism for the 130 % text lives in `scripts/design/` only, never in product code.
+- **Before/after**: "before" is the code without GH-164's change; once GH-164 has merged, it is the merging head with only GH-164's own change undone, and the PR shows that undo diff. If undoing it alone changes more than GH-164 did, the PR says so and lists the extra differences for Zeta; nothing more is undone. "After" is the merging head. Both are taken by the head's own `comparisons.mjs`, from one install, on the same Argentina day, fonts pinned, `--strict`; raw captures are compared by exact AE with `ae.mjs`, never the composed sheet.
+- **Judging**: every capture by eye against its design file; every non-zero AE line and every design-vs-docs difference listed with its screen and side as intended (by GH-164's brief) or fixed. Where onboarding.md and the drawing disagree, onboarding.md wins and the drawing is the defect. What neither the brief nor the docs can settle goes to Zeta in the PR.
+- **Mismatches fixed here** only when the fix is CSS only, within the existing tokens (no token value changed), adds no component or colour, and changes nothing a seller reads or does: a clip at 320–430 px or 130 % text, or a step frame that strays from `OnboardingVariedad` and `OnboardingCategorias`. After a fix, both sides are captured again from the fixed head and compared again.
+- **Never fixed here**: a wording difference is never fixed by changing copy (the doc wins, the difference is listed); anything that changes behaviour, copy, steps, actions or routes is split into its own bug and only listed in the PR.
+- **Everything matches**: the PR says so with the evidence; that is a valid outcome.
+
 ## Metrics
 
 No telemetry; read from the PR evidence and from tests.
@@ -81,6 +107,11 @@ No telemetry; read from the PR evidence and from tests.
 - **Nothing a seller sees changes (criterion 4)**: every suite passes; the only edited tests are the two registry tests; the only other edited files are `screens.json`, `screens.mjs`, `sample_app.py` and `comparisons.mjs`; nothing else under `app/` or `web/src/` changes.
 - **No test loosened (criterion 5)**: the real-registry test keeps every guard, and each of these is a tested case: an account on an entry that does not reach Listo fails; a Listo entry with an unwritten account fails; two entries on one account fail.
 - **Run B closed**: the clipped OnboardingListoOscuro crop and the unreachable OnboardingListo row are fixed by the same task; no issue is left open for either.
+- **Onboarding coverage (criterion 6)**: the `--strict` output, exit 0; `index.json` holds a result for each of the seven screens at phone and computer in light and dark, and each one's 320 px / 130 % capture in light; 0 missing sides.
+- **Onboarding before/after (criterion 7)**: `ae.mjs` output for every screen and side is attached, with the undo diff when GH-164 had merged; the PR records the script, the single install, the date and the fontsource version.
+- **Differences accounted for (criterion 8)**: every non-zero `ae.mjs` line and every design-vs-docs difference is matched in the PR to "intended" or "fixed": 0 unlisted. Items sent to Zeta are named.
+- **Nothing clipped (criterion 9)**: 0 clipped crops, judged by eye on the seven 320 px / 130 % captures.
+- **No seller-visible change (criterion 10)**: every suite passes; the only edited tests are the two registry tests; each CSS fix is listed with its screen; each behaviour, copy, step, action or route mismatch is reported with its own bug.
 
 ## Out of scope
 
@@ -89,3 +120,5 @@ No telemetry; read from the PR evidence and from tests.
 - Making the design comparison a gate step, or any new automated check of a capture.
 - A before/after AE pair for a change with nothing seller-visible to compare.
 - Judging whether a screen looks good: the capture finds unintended differences.
+- A dark capture at 320 px / 130 % text for the Onboarding.
+- Fixing an Onboarding mismatch that changes behaviour, copy, steps, actions or routes inside the evidence task: it is its own bug.
