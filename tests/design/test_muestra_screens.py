@@ -108,6 +108,10 @@ ARCHIVED_SCREENS = (
     "VariedadArchivadaCompu.dc.html",
     "Archivadas.dc.html",
     "ArchivadasCompu.dc.html",
+    "VariedadArchivadaOscuro.dc.html",
+    "VariedadArchivadaCompuOscuro.dc.html",
+    "ArchivadasOscuro.dc.html",
+    "ArchivadasCompuOscuro.dc.html",
 )
 
 
