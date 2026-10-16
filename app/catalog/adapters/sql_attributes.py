@@ -25,6 +25,14 @@ class SqlCatalogAttributes:
         )
         return {row.variety_id: _attributes(row) for row in self._session.scalars(statement)}
 
+    def for_variety(self, variety_id: int) -> CatalogAttributes | None:
+        statement = select(CatalogAttributesRow).where(
+            CatalogAttributesRow.business_id == self._business_id,
+            CatalogAttributesRow.variety_id == variety_id,
+        )
+        row = self._session.scalars(statement).one_or_none()
+        return _attributes(row) if row is not None else None
+
     def put(self, variety_id: int, attributes: CatalogAttributes) -> None:
         values = {
             "business_id": self._business_id,

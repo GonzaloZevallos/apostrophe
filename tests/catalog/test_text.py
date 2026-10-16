@@ -112,9 +112,7 @@ def test_an_aroma_is_written_on_its_own_line() -> None:
 
     text = catalog_text("", "", [entry])
 
-    assert text == (
-        "**Blue Dream**\n• Aroma/sabor: dulce y terroso\n• Precio x gramo: $9.000"
-    )
+    assert text == ("**Blue Dream**\n• Aroma/sabor: dulce y terroso\n• Precio x gramo: $9.000")
 
 
 def test_no_bulk_price_leaves_out_the_bulk_line() -> None:
@@ -130,9 +128,7 @@ def test_a_whole_bulk_minimum_has_no_decimals() -> None:
 
     text = catalog_text("", "", [entry])
 
-    assert text == (
-        "**A**\n• Precio x gramo: $11.000\n• Desde 10 g: $10.000 c/u"
-    )
+    assert text == ("**A**\n• Precio x gramo: $11.000\n• Desde 10 g: $10.000 c/u")
 
 
 def test_a_half_gram_bulk_minimum_uses_a_comma() -> None:
@@ -140,9 +136,7 @@ def test_a_half_gram_bulk_minimum_uses_a_comma() -> None:
 
     text = catalog_text("", "", [entry])
 
-    assert text == (
-        "**A**\n• Precio x gramo: $11.000\n• Desde 2,5 g: $10.000 c/u"
-    )
+    assert text == ("**A**\n• Precio x gramo: $11.000\n• Desde 2,5 g: $10.000 c/u")
 
 
 def test_a_two_decimal_bulk_minimum_keeps_both_decimals() -> None:
@@ -150,9 +144,7 @@ def test_a_two_decimal_bulk_minimum_keeps_both_decimals() -> None:
 
     text = catalog_text("", "", [entry])
 
-    assert text == (
-        "**A**\n• Precio x gramo: $11.000\n• Desde 2,25 g: $10.000 c/u"
-    )
+    assert text == ("**A**\n• Precio x gramo: $11.000\n• Desde 2,25 g: $10.000 c/u")
 
 
 def test_money_under_a_thousand_has_no_separator() -> None:
@@ -202,9 +194,7 @@ def test_seller_markers_in_the_aroma_pass_through_untouched() -> None:
 
     text = catalog_text("", "", [entry])
 
-    assert text == (
-        "**A**\n• Aroma/sabor: **very** strong\n• Precio x gramo: $1.000"
-    )
+    assert text == ("**A**\n• Aroma/sabor: **very** strong\n• Precio x gramo: $1.000")
 
 
 def test_seller_markers_in_the_name_pass_through_untouched() -> None:
@@ -269,6 +259,4 @@ def test_entries_are_written_in_the_order_given() -> None:
 
     text = catalog_text("", "", [second, first])
 
-    assert text == (
-        "**B**\n• Precio x gramo: $2.000\n\n**A**\n• Precio x gramo: $1.000"
-    )
+    assert text == ("**B**\n• Precio x gramo: $2.000\n\n**A**\n• Precio x gramo: $1.000")

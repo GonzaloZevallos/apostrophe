@@ -1006,6 +1006,28 @@ def test_another_business_cannot_reach_an_archived_variety(
 
 
 @pytest.mark.parametrize("archived", [False, True])
+def test_another_business_cannot_read_the_catalog_values_of_a_variety(
+    business_a: TestClient, business_b: TestClient, archived: bool
+) -> None:
+    variety = business_a.post("/varieties", json={"name": f"{MARKER} catalog read"}).json()
+    stored = business_a.put(
+        f"/catalog/varieties/{variety['id']}",
+        json={"shown": False, "emoji": None, "indica_share": 40, "aroma": MARKER},
+    )
+    assert stored.status_code == 200, stored.text
+    if archived:
+        business_a.post(f"/varieties/{variety['id']}/archive")
+
+    foreign = business_b.get(f"/catalog/varieties/{variety['id']}")
+    missing = business_b.get("/catalog/varieties/999999")
+
+    assert foreign.status_code == 404, foreign.text
+    assert foreign.json()["code"] == missing.json()["code"] == "catalog.variety_not_found"
+    assert MARKER not in foreign.text
+    assert business_a.get(f"/catalog/varieties/{variety['id']}").json()["aroma"] == MARKER
+
+
+@pytest.mark.parametrize("archived", [False, True])
 def test_another_business_cannot_delete_a_variety_with_no_history(
     business_a: TestClient, business_b: TestClient, archived: bool
 ) -> None:
