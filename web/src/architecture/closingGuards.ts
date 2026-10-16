@@ -199,7 +199,7 @@ const ROW_CHEVRON = /<Icono\s+nombre="chevron"\s*\/>/g
 
 const LINK_FOLDERS = [inSrc('screens', ''), inSrc('shell', ''), inSrc('components', '')]
 const IN_APP_LINK = inSrc('components', 'InAppLink.tsx')
-const LINK_TAGS = ['InAppLink', 'Link', 'a']
+const LINK_TAGS = ['InAppLink', 'PaneRowLink', 'Link', 'a']
 
 /** The sources the link guards read: the three folders, minus the .boton* authors and InAppLink. */
 function linkSources(files: readonly SourceFile[]): SourceFile[] {

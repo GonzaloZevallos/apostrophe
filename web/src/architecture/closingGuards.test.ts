@@ -148,6 +148,13 @@ describe('findActionLinks', () => {
     expect(findActionLinks(at('<a href="/x"><Icono nombre="a" />Ir</a>'))).toEqual([offence('<unreadable>')])
   })
 
+  test('rejects a PaneRowLink that holds an icon other than the trailing chevron', () => {
+    const row = '<PaneRowLink to={A} className="fila" activeClassName="fila fila--activa"><Icono nombre="agregar" />Ir</PaneRowLink>'
+    expect(findActionLinks(at(row))).toEqual([offence('{A}')])
+    const chevron = '<PaneRowLink to={A} className="fila" activeClassName="fila"><span>t</span><Icono nombre="chevron" /></PaneRowLink>'
+    expect(findActionLinks(at(chevron))).toEqual([])
+  })
+
   test('rejects a tag that spans several lines, at the line it opens', () => {
     const content = '\n\n<InAppLink\n  to={pathTo(X, { id: a })}\n  className="x"\n>\n<Icono nombre="a"/>\n</InAppLink>'
     expect(findActionLinks(at(content))).toEqual([offence('{pathTo(X, { id: a })}', 3)])

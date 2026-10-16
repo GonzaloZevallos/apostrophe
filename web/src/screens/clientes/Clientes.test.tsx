@@ -323,7 +323,6 @@ function renderApp(entries: string[] = [CUSTOMERS]) {
           </FlashProvider>
         ),
         children: [
-          { path: BEFORE, element: <p>Pantalla anterior</p> },
           {
             element: <ClientesLayout />,
             children: [
