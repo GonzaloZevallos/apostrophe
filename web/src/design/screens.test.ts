@@ -278,7 +278,8 @@ describe('an entry whose path names a record names the same placeholders in its 
   }
 
   it('refuses an entry whose path names a record its route does not, naming the screen and the two lists', () => {
-    const uncorrected = { ...real('VariedadArchivada'), path: '/varieties/{low}' }
+    // The dark twin's path names {low}, the record the light row's did before it was corrected.
+    const uncorrected = { ...real('VariedadArchivada'), path: real('VariedadArchivadaOscuro').path }
     expect(pathRecordMismatches([uncorrected])).toEqual([
       { screen: 'VariedadArchivada', path: ['low'], route: ['sold_out'] },
     ])
@@ -286,8 +287,8 @@ describe('an entry whose path names a record names the same placeholders in its 
 
   it('accepts an entry whose path names no record, though its route does', () => {
     const entry = real('EntradaStockSinEntradas')
-    expect(entry.route).toBe('/varieties/{no_entries}')
-    expect(entry.path).toBe('/varieties/entries/new')
+    expect(placeholders(entry.route)).toEqual(['no_entries'])
+    expect(placeholders(entry.path)).toEqual([])
     expect(pathRecordMismatches([entry])).toEqual([])
   })
 
