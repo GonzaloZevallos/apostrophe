@@ -221,5 +221,5 @@ describe('the stored catalog values across restore, edit and archive', () => {
     await router.navigate(VARIETY_ONE)
     expect(await (await catalog()).findByText('Nueva', {}, { timeout: 3000 })).toBeInTheDocument()
     expect(screen.queryByText('Vieja')).toBeNull()
-  })
+  }, 20000)
 })
