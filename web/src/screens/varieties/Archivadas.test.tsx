@@ -142,7 +142,7 @@ describe('the Archivadas card', () => {
     expect(names).toEqual(['Alfa Vieja', 'Zeta Vieja'])
     expect(screen.getAllByText('Archivada')).toHaveLength(2)
     expect(screen.getAllByRole('button', { name: 'Restaurar' })).toHaveLength(2)
-    expect(screen.getByRole('link', { name: '‹ Variedades' })).toBeTruthy()
+    expect(screen.queryByText(/^‹/)).toBeNull()
     expect(screen.queryByText('+ Nueva venta')).toBeNull()
   })
 
@@ -177,7 +177,7 @@ describe("an archived variety's page", () => {
   test('is read-only: back to Archivadas, Archivada in words, and Restaurar the one action', async () => {
     renderAt(pathTo(VARIETY, { id: 4 }))
     expect(await screen.findByRole('heading', { name: 'Alfa Vieja' })).toBeTruthy()
-    expect(screen.getByRole('link', { name: '‹ Archivadas' }).getAttribute('href')).toBe(ARCHIVED_VARIETIES)
+    expect(screen.queryByText(/^‹/)).toBeNull()
     expect(screen.getByText('Archivada')).toBeTruthy()
     expect(screen.getByText('7 g', { exact: false })).toBeTruthy()
     for (const gone of [
@@ -211,7 +211,6 @@ describe("an archived variety's page", () => {
     await user.click(await screen.findByRole('button', { name: 'Restaurar' }))
     expect(await screen.findByText('Variedad restaurada')).toBeTruthy()
     expect(await screen.findByRole('button', { name: 'Archivar variedad' })).toBeTruthy()
-    expect(screen.getByRole('link', { name: '‹ Variedades' })).toBeTruthy()
   })
 })
 
@@ -290,9 +289,9 @@ describe('on a computer (two panes)', () => {
   test('the left pane is the Archivadas card beside an archived variety, and the live list once it is restored', async () => {
     const user = userEvent.setup()
     renderComputer(pathTo(VARIETY, { id: 4 }))
-    // The card: its rows carry the "Archivada" mark and its back link is "‹ Variedades".
-    expect(await screen.findByRole('link', { name: '‹ Variedades' })).toBeTruthy()
-    expect(screen.getByRole('heading', { name: 'Archivadas' })).toBeTruthy()
+    // The card: its rows carry the "Archivada" mark; the "‹" arrow is the shell's, not the card's.
+    expect(await screen.findByRole('heading', { name: 'Archivadas' })).toBeTruthy()
+    expect(screen.queryByText(/^‹/)).toBeNull()
     expect(screen.getAllByText('Zeta Vieja')).toHaveLength(1)
     expect(screen.queryByText('Todas las entradas')).toBeNull()
 

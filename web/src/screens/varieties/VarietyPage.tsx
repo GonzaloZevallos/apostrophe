@@ -37,9 +37,9 @@ import MarcaEstado from '../../components/MarcaEstado'
 import SinConexion from '../../components/SinConexion'
 import { type LeaveGuard, useLeaveGuard } from '../../components/useLeaveGuard'
 import { useFlash } from '../../flash/useFlash'
+import { useCardRecord } from '../../shell/useCardRecord'
 import { formatGrams, formatMoney } from '../../format/money'
 import {
-  ARCHIVED_VARIETIES,
   CATALOG_SECTION_ID,
   STOCK_ENTRY_NEW,
   VARIETIES,
@@ -79,20 +79,23 @@ function useNoGuard(): LeaveGuard {
 }
 
 export default function VarietyPage({ varietyId }: { varietyId: number }) {
-  return <VarietyPageView varietyId={varietyId} useGuard={useLeaveGuard} />
+  return <VarietyPageView varietyId={varietyId} useGuard={useLeaveGuard} publishRecord />
 }
 
 /** The page drawn behind the price modal (`VarietiesLayout`), with no leave guard of its own. */
 export function VarietyPageBehind({ varietyId }: { varietyId: number }) {
-  return <VarietyPageView varietyId={varietyId} useGuard={useNoGuard} />
+  return <VarietyPageView varietyId={varietyId} useGuard={useNoGuard} publishRecord={false} />
 }
 
 function VarietyPageView({
   varietyId,
   useGuard,
+  publishRecord,
 }: {
   varietyId: number
   useGuard: (dirty: boolean) => LeaveGuard
+  /** The routed page tells the shell's arrow about its variety; the copy behind the modal has no arrow. */
+  publishRecord: boolean
 }) {
   const id = String(varietyId)
   const me = useOutletContext<Me>()
@@ -111,6 +114,12 @@ function VarietyPageView({
     queryFn: () => get<PriceRow[]>(`/varieties/${id}/prices`),
   })
   const archived = varietyQuery.data?.archived === true
+  const loaded = varietyQuery.data
+  useCardRecord(
+    publishRecord && loaded !== undefined
+      ? { id: varietyId, archived: loaded.archived === true, name: loaded.name }
+      : undefined,
+  )
   const liveStockQuery = useQuery({ queryKey: keys.stock(), queryFn: readStock })
   const archivedStockQuery = useQuery({
     queryKey: keys.archivedStock(),
@@ -171,17 +180,6 @@ function VarietyPageView({
   return (
     <main className="pantalla">
       <div className="cuerpo">
-        <div className="encabezado__fila">
-          {archived ? (
-            <BotonLink to={ARCHIVED_VARIETIES} variant="back">
-              ‹ Archivadas
-            </BotonLink>
-          ) : (
-            <BotonLink to={VARIETIES} variant="back">
-              ‹ Variedades
-            </BotonLink>
-          )}
-        </div>
         <div className="encabezado-fila">
           <h1 className="encabezado__titulo">{variety.name}</h1>
           {!archived && (

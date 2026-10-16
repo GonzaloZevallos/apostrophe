@@ -182,11 +182,13 @@ test.each([
 test.each([
   ['a root', HOME, true],
   ['a card: a sale', pathTo(SALE, { id: 7 }), false],
-  ['a card: a customer, the detail pane of Clientes', pathTo(CUSTOMER, { id: 3 }), true],
-  ['a card: a variety, the detail pane of Variedades', pathTo(VARIETY, { id: 2 }), true],
+  ['a card: a customer, the detail pane of Clientes', pathTo(CUSTOMER, { id: 3 }), false],
+  ['a card: a variety, the detail pane of Variedades', pathTo(VARIETY, { id: 2 }), false],
+  ['a root: Clientes', CUSTOMERS, true],
+  ['a root: Variedades', VARIETIES, true],
   ['a card: Configuración', SETTINGS, false],
   ['a form: the sale', SALE_NEW, false],
-])('%s: the rail keeps "Nueva venta" %s, as the computer designs draw it', (_kind, path, inRail) => {
+])('%s: the rail shows "Nueva venta" %s, by the screen\'s kind alone', (_kind, path, inRail) => {
   const { container } = renderShell([path], { computer: true })
 
   expect(within(rail(container)).queryAllByRole('link', { name: /Nueva venta/ }).length > 0).toBe(inRail)

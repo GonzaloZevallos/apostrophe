@@ -35,7 +35,7 @@ import SinConexion from '../components/SinConexion'
 import PinPublish from './PinPublish'
 import { EMPTY_STATE_DETAIL, EMPTY_STATE_TITLE } from './catalogMessages'
 import { telegramPreview } from './telegramPreview'
-import { CATALOG_SECTION_ID, SETTINGS_CATALOG_MESSAGE, VARIETIES, VARIETY, pathTo } from '../routes'
+import { CATALOG_SECTION_ID, SETTINGS_CATALOG_MESSAGE, VARIETY, pathTo } from '../routes'
 
 export const CATALOG_COPIED = 'Catálogo copiado'
 export const COPY_FAILED_MESSAGE = 'No se pudo copiar.'
@@ -114,11 +114,6 @@ export default function Catalogo() {
   return (
     <main className="pantalla">
       <div className="cuerpo">
-        <div className="encabezado__fila">
-          <BotonLink to={VARIETIES} variant="back">
-            ‹ Variedades
-          </BotonLink>
-        </div>
         <h1 className="encabezado__titulo">Catálogo</h1>
 
         {toast !== null && <AvisoExito texto={toast} />}
