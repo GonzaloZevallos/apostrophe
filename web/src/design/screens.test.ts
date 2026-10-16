@@ -3,6 +3,7 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { assertScreens, assertSelectedAccounts, sectionOccurrences } from '../../../scripts/design/screens.mjs'
 import screens from '../../../scripts/design/screens.json'
+import { TEXT_SCALE } from '../../../scripts/design/textScale.mjs'
 
 describe('assertScreens', () => {
   it('refuses an entry with color_scheme', () => {
@@ -180,6 +181,69 @@ describe('assertScreens', () => {
 
   it('accepts the real screens.json, imported, never copied', () => {
     expect(() => assertScreens(screens.screens)).not.toThrow()
+  })
+})
+
+describe('the Onboarding rows of the real screens.json', () => {
+  type Row = {
+    screen: string
+    design?: string
+    account?: string
+    path?: string
+    tema?: string
+    viewport?: number[]
+    text_scale?: number
+  }
+  const rows = screens.screens as Row[]
+  const designOf = (row: Row): string => row.design ?? row.screen
+  const SCREENS = [
+    'OnboardingVariedad',
+    'OnboardingStock',
+    'OnboardingMensaje',
+    'OnboardingBot',
+    'OnboardingSocio',
+    'OnboardingCategorias',
+    'OnboardingListo',
+  ]
+  const isComputer = (row: Row): boolean => row.viewport?.[0] === 1280
+  const isNarrowScaled = (row: Row): boolean =>
+    row.viewport?.[0] === 320 && row.viewport[1] === 844 && row.text_scale === TEXT_SCALE
+  const isPlain = (row: Row): boolean => row.viewport === undefined && row.text_scale === undefined
+
+  it.each(SCREENS)('%s is captured on phone and computer, light and dark, and at 320 px with 130 % text', (name) => {
+    const own = rows.filter((row) => designOf(row) === name)
+    const dark = (row: Row): boolean => row.tema === 'oscuro'
+    expect(own.filter((row) => isPlain(row) && !dark(row))).toHaveLength(1)
+    expect(own.filter((row) => isPlain(row) && dark(row))).toHaveLength(1)
+    expect(own.filter((row) => isComputer(row) && !dark(row))).toHaveLength(1)
+    expect(own.filter((row) => isComputer(row) && dark(row))).toHaveLength(1)
+    expect(own.filter((row) => isNarrowScaled(row) && !dark(row))).toHaveLength(1)
+  })
+
+  // OnboardingVariedad saves the first stock entry on La Huerta, the one default-account
+  // row that changes the Onboarding's state; everything else on that account reads the
+  // state as it was before, so it has to run first, and its twins after it.
+  it('puts every other default-account Onboarding row before OnboardingVariedad, and its twins after', () => {
+    const at = rows.findIndex((row) => row.screen === 'OnboardingVariedad')
+    expect(at).toBeGreaterThan(-1)
+    rows.forEach((row, index) => {
+      if (row.account !== undefined || !(row.path ?? '').startsWith('/onboarding/')) return
+      if (row.screen === 'OnboardingVariedad') return
+      if (designOf(row) === 'OnboardingVariedad') expect(index, row.screen).toBeGreaterThan(at)
+      else expect(index, row.screen).toBeLessThan(at)
+    })
+  })
+
+  it('gives each Listo row an account of its own, and none skips the rest from step 6', () => {
+    const listo = rows.filter((row) => designOf(row) === 'OnboardingListo')
+    expect(listo).toHaveLength(5)
+    const accounts = listo.map((row) => row.account)
+    expect(accounts.every((account) => typeof account === 'string')).toBe(true)
+    expect(new Set(accounts).size).toBe(listo.length)
+    for (const row of listo) {
+      const route = (row as Row & { route?: string }).route
+      expect(route, row.screen).not.toBe('/onboarding/categories')
+    }
   })
 })
 
