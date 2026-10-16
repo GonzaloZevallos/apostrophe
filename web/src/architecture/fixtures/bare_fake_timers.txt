@@ -1,0 +1,3 @@
+vi.useFakeTimers()
+vi.useFakeTimers({ shouldAdvanceTime: true })
+const started = Date.now()

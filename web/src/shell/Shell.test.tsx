@@ -20,6 +20,7 @@ import { inAppState } from '../components/inAppState'
 import InAppLink from '../components/InAppLink'
 import {
   ANALYSIS,
+  CATALOG,
   CUSTOMER,
   CUSTOMERS,
   EXPENSES,
@@ -34,6 +35,7 @@ import {
   SETTINGS_USERS,
   VARIETIES,
   VARIETY,
+  VARIETY_PRICE_NEW,
   pathTo,
   type Screen,
 } from '../routes'
@@ -189,6 +191,51 @@ test.each([
   const { container } = renderShell([path], { computer: true })
 
   expect(within(rail(container)).queryAllByRole('link', { name: /Nueva venta/ }).length > 0).toBe(inRail)
+})
+
+// The chrome rule by what the seller can find: "+ Nueva venta" only on a tab root, a "‹ parent"
+// arrow on a card, neither on a form. Controls are found by role and accessible name.
+test.each([
+  ['Inicio', HOME],
+  ['Variedades', VARIETIES],
+])('a root (%s) shows the "+ Nueva venta" control and no arrow', (_name, path) => {
+  renderShell([path])
+
+  expect(screen.getAllByRole('link', { name: /Nueva venta/ }).length).toBeGreaterThan(0)
+  expect(screen.queryByRole('button', { name: /^‹ / })).not.toBeInTheDocument()
+})
+
+test.each([
+  ['the catalog on a phone', CATALOG, false, '‹ Variedades'],
+  ['the catalog on a computer', CATALOG, true, '‹ Variedades'],
+  ['a variety on a phone', pathTo(VARIETY, { id: 2 }), false, '‹ Variedades'],
+])('a card (%s) shows its "‹ parent" arrow and never "+ Nueva venta"', (_name, path, computer, arrow) => {
+  renderShell([path], { computer })
+
+  expect(screen.getByRole('button', { name: arrow })).toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: /Nueva venta/ })).not.toBeInTheDocument()
+})
+
+test.each([
+  ['phone', false],
+  ['computer', true],
+])('the price form (a form) on a %s shows neither the bar, an arrow nor "+ Nueva venta"', (_name, computer) => {
+  const { container } = renderShell([pathTo(VARIETY_PRICE_NEW, { id: 2 })], { computer })
+
+  expect(container.querySelector('.bar-inferior')).toBeNull()
+  expect(screen.queryByRole('button', { name: /^‹ / })).not.toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: /Nueva venta/ })).not.toBeInTheDocument()
+})
+
+test('the price form on a computer draws no side rail, and on a phone the rail stays in the markup', () => {
+  const computer = renderShell([pathTo(VARIETY_PRICE_NEW, { id: 2 })], { computer: true })
+  expect(computer.container.querySelector('.riel-lateral')).toBeNull()
+  computer.unmount()
+
+  // The rail is hidden by CSS on a phone; every other form still renders it, so only the
+  // price modal's route drops it.
+  const other = renderShell([EXPENSE_NEW], { computer: true })
+  expect(other.container.querySelector('.riel-lateral')).not.toBeNull()
 })
 
 test('on a phone a detail pane has no "Nueva venta" at all', () => {

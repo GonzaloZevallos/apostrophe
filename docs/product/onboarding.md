@@ -10,6 +10,8 @@ Before it, the seller landed on an empty Inicio and opened Variedades, the catal
 
 **When** I run my business from my phone between orders or mid-chat with a customer, several times a day, **I want** the app laid out around what I actually do and how often, **so I can** get back to the customer instead of hunting through menus. (The navigation job, navigation.md: served here by the Onboarding as the one first-run element of a new business.)
 
+**When** a price changes mid-day and I'm on my phone between orders or mid-chat with a customer, **I want** to record the new price and the day it applies from in a short form that reads as pesos and starts on today, without leaving the variety I was looking at, **so I can** get back to the customer sure the right price is in force, without second-guessing the amount or the date. (Defined in varieties.md; served here as its secondary situation: step 1 shares the price fields, so its amounts read as pesos with "$". Step 1 always saves a price effective today and shows no date.)
+
 Success criteria:
 
 1. **Fast, from the phone**: from accepting the invitation to a business ready for its first sale (a variety priced today, with opening stock) in under 5 minutes, from the phone alone.
@@ -89,6 +91,8 @@ Success criteria:
 ### Step 1
 
 - **One form, one primary action**: the variety's name, its list price and the price form's optional fields as Variedades shows them under the pricing switches (pricing-settings.md), saved by one primary action. There is no separate save for the name and for the price.
+- **Amounts in pesos**: the price fields are the ones the price entry form shares (varieties.md), so the list price, the bulk price and the VIP price each show "$" before the amount, and the bulk minimum, in grams, never does.
+- **No date**: step 1 always saves a price effective today. It shows no date field and no date chip; the price form's "Rige desde" chip (varieties.md) is not part of it.
 - **Two writes through the owners**: that one action may save the variety and then its price entry effective today, each through its owner's route and refusals (varieties.md). Nothing is restated here.
   - A refused name saves nothing and keeps everything typed.
   - A refused price leaves the variety saved, keeps everything typed and shows the refusal on its field. The retry sends only the price and never adds a second variety.
@@ -174,7 +178,8 @@ There is no telemetry.
   - one primary action, saving the variety and its price;
   - a refused price keeping everything typed, with the retry sending only the price and no second variety created;
   - returning to step 1 after a variety is priced today showing that variety marked "Hecho", and moving on to step 2 adding no variety;
-  - with one variety priced today and a second saved with no price, returning to step 1 showing the second's name kept and only its price to fill in, saving only the price, with the progress count unchanged.
+  - with one variety priced today and a second saved with no price, returning to step 1 showing the second's name kept and only its price to fill in, saving only the price, with the progress count unchanged;
+  - the "$" before the list, bulk and VIP price and never before the bulk minimum, and no date field or date chip.
 - **Who gets it**:
   - a brand-new business gets it;
   - an imported business (including one that landed in the Onboarding before the import) never sees it again;
@@ -187,7 +192,7 @@ There is no telemetry.
   - the Onboarding has no bar and no "+ Nueva venta";
   - Nueva venta opened from "Listo" returns to Inicio.
 - **Isolation**: the routes are in the isolation sweep and the gated-route test; business removal leaves 0 rows of the state and exported count = deleted count.
-- **Design (criterion 5)**: every screen in `screens.json`, `compare.sh` before and after, and a by-eye pass on phone and computer in both themes; the step frame and step 1 match `OnboardingVariedad` and `OnboardingCategorias`.
+- **Design (criterion 5)**: every screen in `screens.json`, `compare.sh` before and after, and a by-eye pass on phone and computer in both themes; the step frame and step 1 match `OnboardingVariedad` and `OnboardingCategorias`. Step 1's price step is registered in `screens.json` and captured before and after the "$" reaches it (varieties.md).
 - **Business metrics**, read by the operator from existing records only (no tool, no dashboard, never shown in the app):
   - the share of brand-new businesses with a priced variety and a stock entry;
   - the share whose first sale falls on the day they were opened.
@@ -206,6 +211,7 @@ There is no telemetry.
 - Publishing the catalog from the Onboarding.
 - Waiting for a partner to join.
 - Editing or renaming a saved variety from step 1: that is the variety's page.
+- A date field or date chip in step 1: it always saves a price effective today.
 - Usage tracking, a dashboard or an operator script for its metrics.
 - Illustrations, animation, marketing copy, new colours or new components.
 - Live updates between partners while it is open.

@@ -7,12 +7,17 @@ from __future__ import annotations
 
 from sqlalchemy.orm import Session
 
+from app.clock import Clock
 from app.onboarding.adapters.tables import OnboardingRow
 
 
 class OnboardingOpening:
-    def __init__(self, session: Session) -> None:
+    """`created_at` is this opening's own read of the injected clock; it is not asserted
+    equal to the acceptance instant, which the accept use case reads on its own."""
+
+    def __init__(self, session: Session, *, clock: Clock) -> None:
         self._session = session
+        self._clock = clock
 
     def opened(self, business_id: int) -> None:
-        self._session.add(OnboardingRow(business_id=business_id))
+        self._session.add(OnboardingRow(business_id=business_id, created_at=self._clock()))

@@ -8,7 +8,7 @@ cleared.
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime
 
 from sqlalchemy import CheckConstraint, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
@@ -18,10 +18,6 @@ from app.onboarding.domain.onboarding import Pass
 
 PASS_MAX_LENGTH = 7
 _PASS_VALUES = ", ".join(f"'{value.value}'" for value in Pass)
-
-
-def _now() -> datetime:
-    return datetime.now(UTC)
 
 
 class OnboardingRow(Base):
@@ -42,4 +38,4 @@ class OnboardingRow(Base):
     partner_pass: Mapped[str | None] = mapped_column(String(PASS_MAX_LENGTH))
     categories_pass: Mapped[str | None] = mapped_column(String(PASS_MAX_LENGTH))
     ended_at: Mapped[datetime | None] = mapped_column(UtcDateTime)
-    created_at: Mapped[datetime] = mapped_column(UtcDateTime, default=_now)
+    created_at: Mapped[datetime] = mapped_column(UtcDateTime)

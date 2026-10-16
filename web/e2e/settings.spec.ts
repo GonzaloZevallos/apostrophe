@@ -16,6 +16,7 @@ import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
 import { openGastos } from './helpers/openMas.js'
+import { uniqueTag } from './helpers/unique.js'
 
 const PASSWORD = 'correcthorsebattery'
 const NEW_PASSWORD = 'unanuevaclave99'
@@ -28,8 +29,8 @@ test('a seller goes through every Configuración group from the phone, with no c
   const consoleMessages: string[] = []
   watchConsole(page, consoleMessages)
 
-  const ownerEmail = `duena-config-${Date.now()}@example.com`
-  const businessName = `Flores de Ajustes ${Date.now()}`
+  const ownerEmail = `duena-config-${uniqueTag()}@example.com`
+  const businessName = `Flores de Ajustes ${uniqueTag()}`
 
   await signUpNewBusiness(page, { businessName, email: ownerEmail })
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)

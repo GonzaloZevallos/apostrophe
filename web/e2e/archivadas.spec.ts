@@ -11,6 +11,7 @@ import { SALE_NEW, VARIETIES } from '../src/routes.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
 import { signUpNewBusiness } from './helpers/signup.js'
+import { uniqueTag } from './helpers/unique.js'
 
 const VIEWPORTS = [
   { name: 'phone', width: 390, height: 844 },
@@ -28,8 +29,8 @@ for (const viewport of VIEWPORTS) {
       const consoleMessages: string[] = []
       watchConsole(page, consoleMessages)
       await signUpNewBusiness(page, {
-        businessName: `Archivo ${viewport.name} ${Date.now()}`,
-        email: `archivo-${viewport.name}-${Date.now()}@example.com`,
+        businessName: `Archivo ${viewport.name} ${uniqueTag()}`,
+        email: `archivo-${viewport.name}-${uniqueTag()}@example.com`,
       })
 
       async function addVariety(name: string): Promise<void> {

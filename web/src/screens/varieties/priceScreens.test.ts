@@ -15,6 +15,8 @@ const BUILT: Record<string, string> = {
   VerTodas: designPath(pathTo(VARIETY_PRICES, { id: '{low}' })),
   PrecioNuevo: designPath(pathTo(VARIETY_PRICE_NEW, { id: '{low}' })),
   PrecioNuevoCompu: designPath(pathTo(VARIETY_PRICE_NEW, { id: '{low}' })),
+  PrecioNuevoOscuro: designPath(pathTo(VARIETY_PRICE_NEW, { id: '{low}' })),
+  PrecioNuevoCompuOscuro: designPath(pathTo(VARIETY_PRICE_NEW, { id: '{low}' })),
 }
 
 test.each(Object.entries(BUILT))('%s: route = path = the routes.ts path', (name, expected) => {

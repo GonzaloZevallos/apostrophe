@@ -143,7 +143,7 @@ describe('invalidateResource refetchType', () => {
     const queryClient = new QueryClient()
     const calls: number[] = []
     const queryFn = (): Promise<string> => {
-      calls.push(Date.now())
+      calls.push(calls.length)
       return Promise.resolve('data')
     }
     const key = keys.sale('1')
@@ -167,7 +167,7 @@ describe('invalidateResource refetchType', () => {
 
     // A refetch that must never happen cannot be waited for: the fake clock is advanced
     // explicitly instead, so the "nothing happened" check holds at any machine speed.
-    vi.useFakeTimers()
+    vi.useFakeTimers({ now: new Date('2026-01-05T12:00:00Z') })
     invalidateResource(queryClient, 'sales', { refetchType: 'none' })
     await vi.advanceTimersByTimeAsync(1000)
 

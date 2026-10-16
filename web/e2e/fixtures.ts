@@ -3,7 +3,7 @@
  * own backend: its own uvicorn running `tests.e2e_app:create_e2e_app` (the real app with
  * `E2eTelegram` and no upkeep ticker), on its own free port, over its own throwaway SQLite
  * file — never `scripts/serve.sh`, which sources `.env`. So two workers never share an
- * installation, and a spec's `Date.now()`-built identities cannot collide with another
+ * installation, and a spec's `uniqueTag()`-built identities cannot collide with another
  * worker's.
  *
  * This is the only module that picks a port, starts a backend, or writes
