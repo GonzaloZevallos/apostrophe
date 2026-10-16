@@ -663,12 +663,6 @@ def _line_problems(name: str, screen: Screen, muestra: Muestra) -> list[str]:
 
 HEADER_LABELS = ("Vendiste en el mes", "Faltante de stock", "Promoción", "Consumo propio")
 COST_LINES = ("Faltante de stock", "Promoción", "Consumo propio")
-# The Análisis week and month rows of the screens do not draw Faltante de stock yet
-# (GH-141, subtask `rows`): until they do it is checked when drawn and not required there.
-# The since-the-first-record block draws it already and stays on COST_LINES. `rows`
-# empties this tuple.
-ROW_LINES_NOT_DRAWN_YET = ("Faltante de stock",)
-ROW_LINES_REQUIRED = tuple(line for line in COST_LINES if line not in ROW_LINES_NOT_DRAWN_YET)
 ROW_LABELS = ("Ventas", "Gramos", "Gastos", "Ganancia", "Caja", *COST_LINES)
 
 
@@ -779,8 +773,7 @@ def _row_block_problems(name: str, screen: Screen, muestra: Muestra) -> list[str
         where = f"{kind} {shown}"
         problems += _compare_found(name, where, found, table, True, ())
         if found:
-            required = COST_LINES if kind == "since" else ROW_LINES_REQUIRED
-            problems += _order_and_presence(name, where, found, list(table), required)
+            problems += _order_and_presence(name, where, found, list(table), COST_LINES)
     return problems
 
 
