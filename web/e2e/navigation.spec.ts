@@ -8,11 +8,24 @@
 
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { CUSTOMER, CUSTOMER_EDIT, HOME, LOGIN, SALE, STOCK_ENTRY, VARIETY, pathTo } from '../src/routes.js'
+import {
+  ARCHIVED_VARIETIES,
+  CUSTOMER,
+  CUSTOMER_EDIT,
+  HOME,
+  LOGIN,
+  SALE,
+  SALE_NEW,
+  STOCK_ENTRY,
+  VARIETIES,
+  VARIETY,
+  pathTo,
+} from '../src/routes.js'
 import { expect, test } from './fixtures.js'
 import type { Page } from '@playwright/test'
 import { watchConsole } from './console.js'
 import { LEGACY_REDIRECTS } from './helpers/legacyPaths.js'
+import { fillSaleLine } from './helpers/sale.js'
 import { seedRecords, signUp, type Records } from './helpers/seed.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
 
@@ -31,6 +44,34 @@ function builtPaths(): string[] {
   if (!hasScreens(parsed)) throw new Error('screens.json has no screens')
   const paths = parsed.screens.filter((entry) => entry.route === entry.path && entry.signed_out !== true).map((entry) => entry.path)
   return [...new Set(paths)]
+}
+
+/** Archives a variety with a gift sale (its history) and returns its id, read from its own page. */
+async function archivedVarietyId(page: Page): Promise<number> {
+  await page.goto(VARIETIES)
+  await page.getByRole('link', { name: 'Nueva variedad' }).click()
+  await page.getByLabel('Nombre').fill('Menta')
+  await page.getByRole('button', { name: 'Agregá la variedad' }).click()
+  await expect(page.getByText('Variedad guardada')).toBeVisible()
+  await page.getByRole('link', { name: /Menta/ }).click()
+  await page.getByRole('link', { name: 'Nuevo precio' }).click()
+  await page.getByLabel(/^Precio de lista/).fill('900')
+  await page.getByRole('button', { name: 'Guardá el precio' }).click()
+  await expect(page.getByText('Precio guardado')).toBeVisible()
+  await page.goto(SALE_NEW)
+  await fillSaleLine(page, 1, { variety: 'Menta', grams: '1', gift: true })
+  await page.getByRole('button', { name: 'Guardá la venta' }).click()
+  await expect(page.getByText('Venta guardada')).toBeVisible()
+  await page.goto(VARIETIES)
+  await page.getByRole('link', { name: /Menta/ }).click()
+  await page.getByRole('button', { name: 'Archivar variedad' }).click()
+  await page.getByRole('button', { name: 'Sí, archivala' }).click()
+  await expect(page.getByText('Variedad archivada')).toBeVisible()
+  await page.goto(ARCHIVED_VARIETIES)
+  await page.getByRole('link', { name: /Menta/ }).click()
+  const found = /\/(\d+)$/.exec(new URL(page.url()).pathname)
+  if (found?.[1] === undefined) throw new Error('no archived variety id in the address')
+  return Number(found[1])
 }
 
 const GONE_ID = 999999
@@ -69,6 +110,7 @@ async function expectAppScreen(page: Page): Promise<void> {
 test.describe.serial('navigation', () => {
   let page: Page
   let records: Records
+  let archivedLow: number
   const consoleMessages: string[] = []
 
   test.beforeAll(async ({ browser, workerServer }) => {
@@ -77,6 +119,7 @@ test.describe.serial('navigation', () => {
     watchConsole(page, consoleMessages)
     await signUp(page, 'Rutas')
     records = await seedRecords(page, 'Carla Rutas')
+    archivedLow = await archivedVarietyId(page)
   })
 
   test.afterAll(async () => {
@@ -88,6 +131,7 @@ test.describe.serial('navigation', () => {
       owing_sale: records.sale,
       debtor: records.customer,
       low: records.variety,
+      archived_low: archivedLow,
       entry: records.entry,
       withdrawal: records.withdrawal,
     }
@@ -170,6 +214,7 @@ test.describe.serial('navigation', () => {
       owing_sale: records.sale,
       debtor: records.customer,
       low: records.variety,
+      archived_low: archivedLow,
       entry: records.entry,
       withdrawal: records.withdrawal,
     }
