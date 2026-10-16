@@ -448,3 +448,7 @@ _Avoid_: pipeline, build, test run
 **Tappable notice**:
 A notice the seller taps to open what it points to, such as Inicio's "Seguí con la configuración". It keeps its designed card (no row spacing or divider), its sentence carries the meaning and is its accessible name, and its chevron is decorative. It is neither an action row nor a control of the icon and text rule's closed lists.
 _Avoid_: banner, card button, row, callout, alert
+
+**Design capture**:
+The side-by-side capture of a screen's design file and the built app, taken from the screens registry with pinned fonts, attached to a PR as review evidence and judged by eye. A row of the registry reaches its screen the way a seller does, and the capture shows its named section whole. It is never a step of the gate.
+_Avoid_: screenshot test, visual regression test, snapshot, gate step
