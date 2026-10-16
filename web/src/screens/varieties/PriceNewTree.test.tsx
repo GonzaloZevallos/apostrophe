@@ -82,9 +82,8 @@ describe('on a computer', () => {
       expect(pane).toHaveAttribute('aria-hidden', 'true')
       expect(pane).not.toContainElement(dialog)
     }
-    const rail = document.querySelector('nav.riel-lateral')
-    expect(rail).toHaveAttribute('inert')
-    expect(rail).toHaveAttribute('aria-hidden', 'true')
+    // The form kind's chrome: no side rail at all on a computer (invariant 8).
+    expect(document.querySelector('nav.riel-lateral')).toBeNull()
     expect(await within(detail as HTMLElement).findByText('Precios')).toBeInTheDocument()
   })
 })
@@ -106,7 +105,7 @@ describe('on a phone', () => {
     expect(document.querySelector('.variedades-paneles__lista')).toBeNull()
     expect(document.querySelector('.variedades-paneles__detalle')).toBeNull()
     expect(document.querySelector('[inert]')).toBeNull()
-    expect(document.querySelector('nav.riel-lateral')).not.toHaveAttribute('aria-hidden')
+    expect(document.querySelector('nav.riel-lateral')).not.toBeNull()
   })
 
   test('Escape does nothing: the phone has no dialog to dismiss', async () => {

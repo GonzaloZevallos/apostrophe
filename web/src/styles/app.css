@@ -99,7 +99,7 @@ body {
   width: 100%;
   height: 52px;
   justify-content: flex-start;
-  gap: 10px;
+  gap: var(--espacio-md);
   padding: 0 var(--espacio-lg);
   border-radius: var(--radio-campo);
   font-weight: 500;
@@ -127,14 +127,14 @@ body {
 .precio-fecha__campo {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--espacio-sm);
   align-self: stretch;
 }
 
 .campo__input {
   height: var(--alto-boton);
   box-sizing: border-box;
-  padding: 0 16px;
+  padding: 0 var(--espacio-lg);
   border-radius: var(--radio-campo);
   border: 0;
   background: var(--superficie);
@@ -155,7 +155,7 @@ body {
   position: absolute;
   top: 0;
   bottom: 0;
-  left: 16px;
+  left: var(--espacio-lg);
   display: flex;
   align-items: center;
   color: var(--tinta2);
@@ -164,7 +164,7 @@ body {
 }
 
 .campo__monto > .campo__input {
-  padding-left: 34px;
+  padding-left: calc(var(--espacio-lg) + var(--espacio-xl));
 }
 
 /* The list price is drawn large (`campo__input--monto`): its sign follows. */
@@ -174,7 +174,7 @@ body {
 }
 
 .campo__monto > .campo__input--monto {
-  padding-left: 38px;
+  padding-left: calc(var(--espacio-lg) + var(--espacio-xxl));
 }
 
 .campo__error {

@@ -38,6 +38,8 @@ async function openPriceModal(page: Page): Promise<number> {
 
 test('Tab cycled through the dialog never focuses anything in the list, the variety page or the side rail', async ({ page }) => {
   await openPriceModal(page)
+  // The form kind's chrome: no side rail is drawn at all behind the modal.
+  await expect(page.locator('nav.riel-lateral')).toHaveCount(0)
 
   for (let press = 0; press < 20; press++) {
     await page.keyboard.press('Tab')

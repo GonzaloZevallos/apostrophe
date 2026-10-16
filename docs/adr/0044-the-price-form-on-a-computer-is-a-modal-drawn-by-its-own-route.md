@@ -22,7 +22,7 @@ the variety's page; until now the app drew it as a page of its own.
    leave confirmation is showing.
 4. **What sits behind.** On a computer `VarietiesLayout` renders the list pane and that
    variety's page, both `inert` and `aria-hidden="true"`, with the host as their sibling;
-   `Shell` marks its side rail the same way on this route.
+   `Shell` draws no side rail on this route on a computer (the form kind has none).
    This is the first use of `inert` in `web/src`. jsdom proves only the attribute; one
    Playwright test proves the panes cannot be reached.
 5. **One tree shape on both viewports.** The phone renders the same wrapper, the same
@@ -40,8 +40,8 @@ constant number of requests, each costing what the variety page already costs
 
 ## Where it differs from the design
 
-- The design dims a sidebar behind the scrim. `Shell` draws its side rail and the scrim
-  dims it, as the design does. On this route on a computer `Shell` makes the rail `inert`
-  and `aria-hidden` too, so nothing behind the dialog can be reached by Tab or a click.
+- The design dims a sidebar behind the scrim. The form keeps its `form` kind, which has no
+  sidebar, so on this route on a computer `Shell` does not draw the side rail at all and
+  there is none to dim. The list and the variety's page behind the dialog are `inert`.
 - The design writes "Cerrar" as a word. The icon-and-text rule keeps the app's icon
   button named "Cerrar".

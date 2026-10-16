@@ -226,6 +226,17 @@ test.each([
   expect(screen.queryByRole('link', { name: /Nueva venta/ })).not.toBeInTheDocument()
 })
 
+test('the price form on a computer draws no side rail, and on a phone the rail stays in the markup', () => {
+  const computer = renderShell([pathTo(VARIETY_PRICE_NEW, { id: 2 })], { computer: true })
+  expect(computer.container.querySelector('.riel-lateral')).toBeNull()
+  computer.unmount()
+
+  // The rail is hidden by CSS on a phone; every other form still renders it, so only the
+  // price modal's route drops it.
+  const other = renderShell([EXPENSE_NEW], { computer: true })
+  expect(other.container.querySelector('.riel-lateral')).not.toBeNull()
+})
+
 test('on a phone a detail pane has no "Nueva venta" at all', () => {
   renderShell([pathTo(VARIETY, { id: 2 })])
 
