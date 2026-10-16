@@ -75,7 +75,8 @@ export const keys = {
   // through `CROSS_INVALIDATES`; the catalog's own saves set its data directly.
   catalog: () => [PREFIX.catalog] as const,
   // One variety's stored catalog values (`GET /catalog/varieties/{id}`, read only by the
-  // archived page), under the `catalog` prefix so every invalidation of `catalog` (a
+  // archived page and by Archivadas' rows for "Oculta"; no live list, picker, catalog or
+  // pinned catalog reads it), under the `catalog` prefix so every invalidation of `catalog` (a
   // catalog save, a stock or varieties write, archive and restore) reaches it too.
   catalogVariety: (id: string) => [PREFIX.catalog, 'variety', id] as const,
   // Both share `pinned-catalog`'s own prefix (plan, "Front": "invalidate the
