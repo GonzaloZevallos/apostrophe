@@ -96,6 +96,8 @@ def test_an_invitation_accepted_just_past_its_lifetime_is_refused_on_any_day(
 ) -> None:
     accepted = issued + timedelta(days=7, seconds=1)
 
-    accept, login, _me, _today = _open_and_sign_in(anonymous_client, engine, clock, issued, accepted)
+    accept, login, _me, _today = _open_and_sign_in(
+        anonymous_client, engine, clock, issued, accepted
+    )
 
     assert (accept, login) == (404, 401)

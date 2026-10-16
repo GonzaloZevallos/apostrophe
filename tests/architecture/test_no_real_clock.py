@@ -287,7 +287,7 @@ def test_the_checker_flags_a_read_of_the_real_clock(source: str) -> None:
         "import time\nx = time.monotonic()\n",
         "from time import monotonic\nx = monotonic()\n",
         "x = response.time\n",
-        "x = vector[\"today\"]\n",
+        'x = vector["today"]\n',
         "x = clock()\n",
         "x = obj.now()\n",
         'monkeypatch.setattr(m, "system_clock", clock)\n',
