@@ -172,7 +172,7 @@ describe('assertSelectedAccounts', () => {
     ).not.toThrow()
   })
 
-  it('accepts the real screens.json with no accounts', () => {
-    expect(() => assertSelectedAccounts(screens.screens, [])).not.toThrow()
+  it("accepts the real screens.json with the sample's accounts", () => {
+    expect(() => assertSelectedAccounts(screens.screens, accounts)).not.toThrow()
   })
 })

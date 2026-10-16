@@ -383,8 +383,11 @@ describe("a path resolves to its own screen", () => {
  * page is reached only by archiving a live one and opening it from "Archivadas" (varieties.md). */
 const REACHED_BY_STEPS = [
   "OnboardingListo",
+  "OnboardingListoCompu",
+  "OnboardingListoOscuro",
   "OnboardingVariedad",
   "OnboardingVariedadOscuro",
+  "OnboardingVariedadCompu",
   "VariedadArchivada",
   "VariedadArchivadaOscuro",
 ];
@@ -394,6 +397,38 @@ interface RouteEntry {
   readonly route: string | null;
   readonly path: string;
   readonly steps?: unknown;
+}
+
+/** How many businesses the design sample leaves in Onboarding: La Huerta, plus one per name of
+ * `ONBOARDING_ACCOUNTS` in scripts/design/sample_app.py (#237), read from that file so the bound
+ * moves in the same diff as the seed. */
+function sampleOnboardingBusinesses(): number {
+  const source = readFileSync(
+    resolve(process.cwd(), "..", "scripts/design/sample_app.py"),
+    "utf-8",
+  );
+  const declared = /^ONBOARDING_ACCOUNTS = \(([^)]*)\)/m.exec(source)?.[1];
+  if (declared === undefined) throw new Error("sample_app.py declares no ONBOARDING_ACCOUNTS");
+  return 1 + (declared.match(/"[^"]+"/g) ?? []).length;
+}
+
+/** What is wrong with the rows that end the Onboarding: reaching "Listo" ends a business's
+ * Onboarding for good, so one capture can do it per business of the sample (ADR-0036 §7). */
+function listoRowsOverBound(
+  rows: readonly { readonly screen: string; readonly steps?: readonly unknown[] }[],
+  businesses: number,
+): string[] {
+  const ending = rows.filter((row) =>
+    (row.steps ?? []).some(
+      (step) =>
+        typeof step === "object" && step !== null && "click" in step && step.click === "Saltar el resto",
+    ),
+  );
+  return ending.length <= businesses
+    ? []
+    : [
+        `${ending.length} rows click "Saltar el resto" but the sample has ${businesses} ${businesses === 1 ? "business" : "businesses"} in Onboarding: "Listo" ends a business's Onboarding for good, so it is reached once per business (ADR-0036 §7). Rows: ${ending.map((row) => row.screen).join(", ")}`,
+      ];
 }
 
 /** What is wrong with the routes of these entries: a null route, or a route that is not the path. */
@@ -432,6 +467,25 @@ describe("screens.json against the English routes", () => {
       "Ventas: route /sales is not path /sales/new",
       "OnboardingListo: reached by steps, so it needs steps",
     ]);
+  });
+
+  test("no more rows end the Onboarding with \"Saltar el resto\" than the sample has businesses in Onboarding", () => {
+    expect(listoRowsOverBound(screensJson.screens, sampleOnboardingBusinesses())).toEqual([]);
+  });
+
+  test("the Listo bound refuses a row that ends the Onboarding of a business that is already finished, and counts La Huerta plus the sample's extra businesses", () => {
+    const skip = [{ click: "Saltar el resto" }];
+    const rows = [
+      { screen: "A", steps: skip },
+      { screen: "B", steps: skip },
+      { screen: "C", steps: [{ click: "Otra cosa" }] },
+    ];
+    expect(listoRowsOverBound(rows, 2)).toEqual([]);
+    expect(listoRowsOverBound(rows, 1)).toEqual([
+      expect.stringContaining("2 rows click \"Saltar el resto\" but the sample has 1 business in Onboarding"),
+    ]);
+    expect(listoRowsOverBound(rows, 1)[0]).toContain("ADR-0036");
+    expect(sampleOnboardingBusinesses()).toBeGreaterThanOrEqual(2);
   });
 
   test("every English path of the registry is a screens.json path, with no exemption, and the old Spanish ones are gone", () => {
