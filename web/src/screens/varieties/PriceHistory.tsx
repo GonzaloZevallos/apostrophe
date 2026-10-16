@@ -16,6 +16,7 @@ import Loading from '../../components/Loading'
 import SinConexion from '../../components/SinConexion'
 import { useBackOr } from '../../components/useBackOr'
 import { VARIETIES, VARIETY, pathTo } from '../../routes'
+import { useCardRecord } from '../../shell/useCardRecord'
 import type { Variety } from '../Variedades'
 import PriceRows, { type PriceRow } from './PriceRows'
 import { PRICE_HISTORY_HELP } from './varietiesMessages'
@@ -28,6 +29,10 @@ export default function PriceHistory({ varietyId }: { varietyId: number }) {
     queryKey: keys.varietyPrices(id),
     queryFn: () => get<PriceRow[]>(`/varieties/${id}/prices`),
   })
+  const loaded = varietyQuery.data
+  useCardRecord(
+    loaded === undefined ? undefined : { id: varietyId, archived: loaded.archived === true, name: loaded.name },
+  )
   const failure = varietyQuery.error ?? pricesQuery.error
   if (failure !== null) {
     if (failure instanceof ApiError && isGone(failure.code)) return <GoneScreen label="Variedades" to={VARIETIES} />

@@ -28,6 +28,7 @@ import SinConexion from '../components/SinConexion'
 import Boton from '../components/Boton'
 import BotonLink from '../components/BotonLink'
 import { useBackOr } from '../components/useBackOr'
+import { useCardRecord } from '../shell/useCardRecord'
 import { useFlash } from '../flash/useFlash'
 import { formatDate } from '../format/dates'
 import { formatGrams, formatMoney } from '../format/money'
@@ -71,6 +72,13 @@ export default function EntriesList({ varietyId }: Props) {
     queryFn: () => readMovements(String(varietyId)),
     enabled: varietyId !== undefined,
   })
+
+  const loaded = varietyQuery.data
+  useCardRecord(
+    varietyId === undefined || loaded === undefined
+      ? undefined
+      : { id: varietyId, archived: loaded.archived === true, name: loaded.name },
+  )
 
   const [confirming, setConfirming] = useState<StockEntry | null>(null)
   const [deleting, setDeleting] = useState(false)

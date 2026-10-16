@@ -44,6 +44,7 @@ import {
 import BotonLink from '../components/BotonLink'
 import { NUEVA_VENTA_CLASS, NUEVA_VENTA_ESCRITORIO_CLASS } from '../components/botonVisual'
 import BackArrow from './BackArrow'
+import { CardRecordProvider } from './cardRecord'
 import { chromeOf } from './chrome'
 import { initialsOf } from './initials'
 import { useViewport } from './useViewport'
@@ -176,20 +177,22 @@ export default function Shell() {
         </nav>
       )}
       <div className="columna-principal">
-        {chrome.backArrow && <BackArrow id={leaf.id} />}
-        <Outlet context={me} />
-        {chrome.barNuevaVenta && (
-          <BotonLink to={SALE_NEW} icon="agregar" className={NUEVA_VENTA_CLASS}>
-            Nueva venta
-          </BotonLink>
-        )}
-        {chrome.bar && (
-          <nav className="bar-inferior" aria-label="Navegación" data-menu>
-            {BAR_ITEMS.map((item) => (
-              <BarItem key={item.to} item={item} active={barPlace === item.place} />
-            ))}
-          </nav>
-        )}
+        <CardRecordProvider>
+          {chrome.backArrow && <BackArrow id={leaf.id} />}
+          <Outlet context={me} />
+          {chrome.barNuevaVenta && (
+            <BotonLink to={SALE_NEW} icon="agregar" className={NUEVA_VENTA_CLASS}>
+              Nueva venta
+            </BotonLink>
+          )}
+          {chrome.bar && (
+            <nav className="bar-inferior" aria-label="Navegación" data-menu>
+              {BAR_ITEMS.map((item) => (
+                <BarItem key={item.to} item={item} active={barPlace === item.place} />
+              ))}
+            </nav>
+          )}
+        </CardRecordProvider>
       </div>
     </div>
   )
