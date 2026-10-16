@@ -16,7 +16,7 @@ test.use({ viewport: { width: 1280, height: 720 } })
 async function addVariety(page: Page, name: string): Promise<void> {
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'Nueva variedad' }).click()
-  await page.getByLabel('Nombre', { exact: true }).fill(name)
+  await page.getByPlaceholder('Nombre de la variedad').fill(name)
   await page.getByRole('button', { name: 'Agregá la variedad' }).click()
   await expect(page.getByText('Variedad guardada')).toBeVisible()
 }
