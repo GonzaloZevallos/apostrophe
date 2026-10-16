@@ -197,8 +197,7 @@ describe('Restaurar on an Archivadas row, on a computer', () => {
 
     expect(await screen.findByText('Variedad restaurada')).toBeTruthy()
     expect(router.state.location.pathname).toBe(path(4))
-    const posted = fetchMock.mock.calls.filter(([, init]) => init?.method === 'POST')
-    expect(posted).toHaveLength(1)
-    expect(posted[0]?.[0]).toBe(`/varieties/${5}/restore`)
+    const requested = fetchMock.mock.calls.filter(([, init]) => init?.method === 'POST').map(([url]) => url)
+    expect(requested).toEqual(['/varieties/5/restore'])
   })
 })
