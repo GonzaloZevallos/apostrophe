@@ -11,6 +11,12 @@ The evidence a reviewer uses to judge that a screen looks as designed: the desig
 - It also serves when a design guard or a registry test fails and the maintainer must tell a real defect from a broken registry row.
 - Before it (GH-142's follow-up): a one-test edit broke the plan's own invariant, the OnboardingListo row could not reach Listo, the OnboardingListoOscuro crop was clipped, and those two defects had no issue.
 
+**When** I review a change to how Análisis looks, **I want** current before and after captures of Análisis, a comparison over every other screen in the registry, and a plan that names every file the change edits, **so I can** approve or reject from the PR's evidence alone, without retaking captures, hand-checking screens or carrying an open finding into the next task.
+
+- Its protagonist is the maintainer, or the reviewer acting for them (in the end Zeta). The seller is affected only indirectly: a change nobody can approve holds up the Costo de lo vendido and Faltante de stock rows they are waiting for.
+- It refines analysis.md's design metric and the job above; it is not a new product job and adds no product behaviour.
+- Before it (GH-141's follow-up): the muestra guard was edited outside the plan's declared seam, and the design evidence was missing or stale. The same spec-scope finding was raised three times on one head.
+
 Success criteria:
 
 1. **One green run.** One `--strict` call over Inicio* and the Onboarding block exits 0.
@@ -18,6 +24,16 @@ Success criteria:
 3. **Registry, tests and plan agree.** The change needs no recorded exception and no test edited outside a declared seam.
 4. **Nothing a seller sees changes.** onboarding.md, navigation.md and every screen read and behave as before, and every test passes. The only edited tests are the two registry tests; the only other edited files are design tooling (`scripts/design/screens.json`, `scripts/design/screens.mjs`, `scripts/design/sample_app.py`, `scripts/design/comparisons.mjs`); no file under `app/` or `web/src/` changes beyond those two tests.
 5. **No test loosened.** A changed registry or enforcement test keeps everything it guarded and states the corrected rule.
+
+Success criteria, reviewing GH-141's change to Análisis:
+
+6. **Current captures of Análisis.** The PR has before and after captures of Análisis on phone and computer, in light and dark.
+   - "After" is the head that merges the change; "before" is that same head with only GH-141's change undone (pinned-catalog.md's "Restyling Integraciones" rule), with the undo diff in the PR.
+   - If undoing GH-141 alone changes more than GH-141 did, the PR says so and lists the extra differences for Zeta; nothing more is undone.
+   - Both sides come from head's `comparisons.mjs --strict`, one install, one Argentina day, fonts pinned (ADR-0042). The PR records the fontsource version.
+7. **Every other screen compared, every difference explained.** `ae.mjs` runs over the raw captures of every other screen in the registry, with its output attached. AE 0 is expected; every non-zero line is accounted for (see Behaviour). A missing side, a one-sided `null` or an unreadable capture is a failure, never AE 0.
+8. **The guard edit is declared, not loosened.** The plan's seam for `muestra` names `tests/design/test_muestra_screens.py` and `tests/design/muestra_guard.py`, for that plan only, and the guard keeps everything it checked before.
+9. **Nothing a seller sees changes** beyond GH-141's decided intent: analysis.md and ADR-0020's GH-141 amendment stand, and every suite passes.
 
 ## Behaviour
 
@@ -56,6 +72,7 @@ Success criteria:
 
 - A change to `scripts/design/screens.json` rows declares both registry enforcement tests, `web/src/design/screens.test.ts` and `routes.test.ts`, as its seams. Its invariants read "screens.json plus the two registry tests", with the design tooling the change needs named alongside.
 - Any other edited test means the implementation is wrong.
+- The muestra guard seam of GH-141's follow-up (below) is declared for that plan only and does not change this rule.
 
 ### Failures
 
@@ -71,6 +88,22 @@ Success criteria:
 - The installed `@fontsource/plus-jakarta-sans` version (ADR-0042).
 - No before/after AE pair is required for a change with no seller-visible difference whose "before" row never reached its screen.
 
+### Reviewing GH-141's change to Análisis (criteria 6–9)
+
+- **The Análisis cells**: four, each captured before and after: phone and computer, light and dark. A cell missing on either side means the work is not done.
+- **Before and after**: "after" is the merging head; "before" is the merging head with only GH-141's change undone, the undo diff shown in the PR. Extra differences the undo causes because later changes rely on GH-141 are listed for Zeta; nothing more is undone.
+- **How both sides are taken**: head's `comparisons.mjs --strict`, one install, one Argentina day, pinned fonts. The PR records the head SHA, the undo diff, the fontsource version, and the overlay's diff stat only if ADR-0042's GH-219 overlay is used.
+- **Every other screen**: `ae.mjs` runs over the raw captures of every other screen in the registry, output attached. Each non-zero line is listed with its screen and side as one of:
+  - intended by GH-141's decided intent;
+  - a defect caused by GH-141's change or its drawing edits, fixed in this task (existing tokens only, no token value changes), after which both sides are retaken from the fixed head and compared again;
+  - an extra difference from the undo, listed for Zeta;
+  - a difference GH-141 did not cause, filed as a follow-up issue the PR links, not fixed here.
+- A difference the brief and the docs cannot settle goes to Zeta in the PR. A missing screen or side, a one-sided `null` or an unreadable capture is a failure, never AE 0.
+- **Where and how long**: all the evidence is in the PR description, in one place. A set is valid only for the SHA it was taken on; a later commit editing an Análisis drawing, or any merge of master, makes it stale (a stale capture counts as missing), and it is retaken. Approval is given only on a set whose SHA is the merging head.
+- **The seam**: that plan declares `tests/design/test_muestra_screens.py` and `tests/design/muestra_guard.py` as seams for `muestra`, for that plan only. The guard keeps every check it had; any other edited test means the implementation is wrong.
+- **Escalation**: a cell that cannot be captured, or a head seed the undone state cannot run, stops the work and escalates. The undone state is never patched and no exception is recorded.
+- If nothing differs, `ae.mjs` exits 0 and the PR says so.
+
 ## Metrics
 
 No telemetry; read from the PR evidence and from tests.
@@ -81,6 +114,11 @@ No telemetry; read from the PR evidence and from tests.
 - **Nothing a seller sees changes (criterion 4)**: every suite passes; the only edited tests are the two registry tests; the only other edited files are `screens.json`, `screens.mjs`, `sample_app.py` and `comparisons.mjs`; nothing else under `app/` or `web/src/` changes.
 - **No test loosened (criterion 5)**: the real-registry test keeps every guard, and each of these is a tested case: an account on an entry that does not reach Listo fails; a Listo entry with an unwritten account fails; two entries on one account fail.
 - **Run B closed**: the clipped OnboardingListoOscuro crop and the unreachable OnboardingListo row are fixed by the same task; no issue is left open for either.
+- **Current Análisis captures (criterion 6)**: all 4 cells attached on both sides, 0 missing; the recorded SHA equals the merging head; the undo diff and the fontsource version are present.
+- **Every difference explained (criterion 7)**: `ae.mjs` exits 0, or every non-zero line is matched to intended, a fix, an undo extra for Zeta, or a linked follow-up; 0 unlisted differences; 0 failures from a missing or unreadable side.
+- **Guard declared, not loosened (criterion 8)**: the plan's seam names the two muestra files; the only edited tests are those two; the guard's existing checks all still run.
+- **Nothing a seller sees changes (criterion 9)**: every suite passes; no capture or comparison step is added to `.agentic/stack.yaml`, CI or the gate.
+- **Business measure**: spec-scope findings for missing or stale design evidence on the merging head: goal 0 (GH-141 had 3).
 
 ## Out of scope
 
@@ -89,3 +127,6 @@ No telemetry; read from the PR evidence and from tests.
 - Making the design comparison a gate step, or any new automated check of a capture.
 - A before/after AE pair for a change with nothing seller-visible to compare.
 - Judging whether a screen looks good: the capture finds unintended differences.
+- Widening the standing seam rule so every registry change declares the muestra guard files.
+- Fixing, in GH-141's follow-up, design differences GH-141 did not cause: they are filed as follow-ups.
+- Any change to Análisis's behaviour, figures or copy.
