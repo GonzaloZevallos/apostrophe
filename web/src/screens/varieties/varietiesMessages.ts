@@ -7,12 +7,14 @@ import type { LimitedCopy } from '../../copy/limits'
 export const EMPTY_TITLE = 'Todavía no cargaste ninguna variedad'
 export const EMPTY_DETAIL = 'Agregá la primera con su precio para poder vender y mandar tu catálogo.'
 export const NO_ARCHIVED_MESSAGE = 'No tenés variedades archivadas'
+export const NO_ARCHIVED_LINE = 'Lo que archives aparece acá y lo podés restaurar cuando quieras.'
 export const PRICE_HISTORY_HELP = 'Cada venta usa el precio que regía ese día, aunque lo cambies después.'
 
 export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'emptyTitle', text: EMPTY_TITLE },
   { kind: 'emptyLine', text: EMPTY_DETAIL },
   { kind: 'emptyTitle', text: NO_ARCHIVED_MESSAGE },
+  { kind: 'emptyLine', text: NO_ARCHIVED_LINE },
   { kind: 'help', text: PRICE_HISTORY_HELP },
 ]
 export const LONG_REFUSALS: readonly string[] = []
