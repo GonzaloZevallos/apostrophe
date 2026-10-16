@@ -1,24 +1,26 @@
 /**
- * "En el catálogo" on a variety's page, read-only: shown or not, emoji, % índica and
- * aroma/sabor as `GET /catalog` answered them, and "Editar". It is the anchor the catalog
+ * "En el catálogo" on a variety's page: shown or not, emoji, % índica and
+ * aroma/sabor as `GET /catalog` answered them, and "Editar". `readOnly` (an archived
+ * variety, whose values come from `GET /catalog/varieties/{id}`) draws the same values as
+ * plain text and no "Editar". It is the anchor the catalog
  * screen links to (`CATALOG_SECTION_ID`). Shown or hidden is the server's own `shown`; the
  * reason a variety is left out is never worked out here.
  */
 
-import { type CatalogVariety } from '../../api/catalog'
+import { type VarietyAttributes } from '../../api/catalog'
 import Boton from '../../components/Boton'
 import { CATALOG_SECTION_ID } from '../../routes'
 import { useOpenForm } from './varietyForms'
 
 const NONE = '—'
 
-export default function VarietyCatalogSection({ row }: { row: CatalogVariety }) {
+export default function VarietyCatalogSection({ row, readOnly = false }: { row: VarietyAttributes; readOnly?: boolean }) {
   const openForm = useOpenForm()
   return (
     <section id={CATALOG_SECTION_ID} className="seccion-variedad">
       <div className="seccion-variedad__cabecera">
         <h2 className="seccion-variedad__titulo">En el catálogo</h2>
-        <Boton variant="icon" action="edit" ariaLabel="Editar catálogo" onClick={() => openForm('catalog')} />
+        {!readOnly && <Boton variant="icon" action="edit" ariaLabel="Editar catálogo" onClick={() => openForm('catalog')} />}
       </div>
       <dl className="seccion-variedad__datos">
         <div className="seccion-variedad__dato">

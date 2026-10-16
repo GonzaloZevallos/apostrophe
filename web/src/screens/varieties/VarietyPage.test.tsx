@@ -941,3 +941,137 @@ describe('En el catálogo: the form', () => {
     for (const input of screen.getAllByRole('textbox')) expect(input).not.toHaveAttribute('maxLength')
   })
 })
+
+describe("an archived variety's page, read-only", () => {
+  const STORED = { shown: true, emoji: '🍪', indica_share: 70, aroma: 'Galletita y vainilla' }
+
+  function renderArchived(stored: Record<string, unknown> = STORED, stock: Record<string, unknown> = STOCK_ROW) {
+    return renderPage(VARIETY_ONE, {
+      'GET /varieties/1': () => json(200, { ...VARIETY_ROW, archived: true, removal: null }),
+      'GET /stock?archived=true': () => json(200, stockOf(stock)),
+      'GET /catalog/varieties/1': () => json(200, stored),
+    })
+  }
+
+  test('"Archivada" is a neutral Insignia with its word and no attention icon', async () => {
+    renderArchived()
+
+    const badge = await screen.findByText('Archivada')
+    expect(badge).toHaveClass('insignia')
+    expect(badge).not.toHaveClass('insignia--acento', 'insignia--deuda', 'insignia--critico', 'variedad-resumen__oculta')
+    expect(badge.querySelector('svg')).toBeNull()
+    expect(badge.closest('p')?.querySelector('svg')).toBeNull()
+  })
+
+  test('the summary line is the plain grams and the badge: no status mark, detail, days left or price', async () => {
+    renderArchived()
+
+    const line = (await screen.findByText('Archivada')).closest('p')
+    expect(line).toHaveTextContent(/^18 g · Archivada$/)
+  })
+
+  test('"Oculta" shows beside "Archivada" only when the stored values say hidden, and is its own word', async () => {
+    renderArchived({ ...STORED, shown: false })
+
+    const oculta = await screen.findByText('Oculta')
+    expect(oculta).toHaveClass('variedad-resumen__oculta')
+    expect(screen.getByText('Archivada')).not.toBe(oculta)
+    expect(oculta.closest('p')).toHaveTextContent(/^18 g · Archivada · Oculta$/)
+  })
+
+  test('a shown archived variety has no "Oculta"', async () => {
+    renderArchived()
+
+    await screen.findByText('Archivada')
+    await screen.findByText('Se muestra')
+    expect(screen.queryByText('Oculta')).not.toBeInTheDocument()
+  })
+
+  test.each([
+    ['zero', { grams: 0, status: 'sold_out', days_left: null, sold_out_since: '2026-09-30' }, /^0 g · Archivada$/],
+    ['below zero', { grams: -3, status: 'sold_out', days_left: null }, /^-3 g · Archivada$/],
+  ])('the grams show at %s', async (_name, patch, expected) => {
+    renderArchived(STORED, { ...STOCK_ROW, ...patch })
+
+    expect((await screen.findByText('Archivada')).closest('p')).toHaveTextContent(expected)
+  })
+
+  test('Aviso de stock bajo reads its saved amount in words, with no switch and no Editar', async () => {
+    renderArchived()
+
+    const section = (await screen.findByRole('heading', { name: 'Aviso de stock bajo' })).closest('section')
+    const inside = within(section as HTMLElement)
+    expect(inside.getByText('Avisame abajo de 20 g')).toBeInTheDocument()
+    expect(inside.queryByText(/Avisando/)).not.toBeInTheDocument()
+    expect(inside.queryByRole('switch')).toBeNull()
+    expect(inside.queryByRole('button')).toBeNull()
+  })
+
+  test('Aviso de stock bajo with no threshold says it is off', async () => {
+    renderArchived(STORED, { ...STOCK_ROW, threshold: null })
+
+    const section = (await screen.findByRole('heading', { name: 'Aviso de stock bajo' })).closest('section')
+    expect(within(section as HTMLElement).getByText('Aviso apagado')).toBeInTheDocument()
+  })
+
+  test('En el catálogo shows the stored values as plain text, with no field and no Editar', async () => {
+    renderArchived({ shown: false, emoji: '🍪', indica_share: 70, aroma: 'Galletita y vainilla' })
+
+    const section = (await screen.findByRole('heading', { name: 'En el catálogo' })).closest('section')
+    const inside = within(section as HTMLElement)
+    expect(await inside.findByText('No se muestra')).toBeInTheDocument()
+    expect(inside.getByText('🍪')).toBeInTheDocument()
+    expect(inside.getByText('70 %')).toBeInTheDocument()
+    expect(inside.getByText('Galletita y vainilla')).toBeInTheDocument()
+    expect(inside.queryByRole('button')).toBeNull()
+    expect(inside.queryByRole('textbox')).toBeNull()
+  })
+
+  test('a variety with no stored values reads the defaults as plain values', async () => {
+    renderArchived({ shown: true, emoji: null, indica_share: null, aroma: null })
+
+    const section = (await screen.findByRole('heading', { name: 'En el catálogo' })).closest('section')
+    expect(await within(section as HTMLElement).findByText('Se muestra')).toBeInTheDocument()
+    expect(within(section as HTMLElement).getAllByText('—')).toHaveLength(3)
+  })
+
+  test('Restaurar is the only button, and there is no switch or field', async () => {
+    renderArchived()
+
+    await screen.findByText('Se muestra')
+    // The shell's own "‹ parent" arrow is navigation, not an action of the variety.
+    const actions = screen.getAllByRole('button').filter((button) => !button.textContent.startsWith('‹'))
+    expect(actions.map((button) => button.textContent)).toEqual(['Restaurar'])
+    expect(screen.queryByRole('switch')).toBeNull()
+    expect(screen.queryByRole('textbox')).toBeNull()
+    expect(iconAndTextProblems(screen.getByRole('main'))).toEqual([])
+  })
+
+  test('the stored values come from the one variety route, never from the catalog list', async () => {
+    const { fetchMock } = renderArchived()
+
+    await screen.findByText('Se muestra')
+    expect(reads(fetchMock, 'GET /catalog')).toBe(0)
+    expect(reads(fetchMock, 'GET /catalog/varieties/1')).toBe(1)
+  })
+
+  test('a failed read of the stored values says so in place and keeps the page', async () => {
+    renderPage(VARIETY_ONE, {
+      'GET /varieties/1': () => json(200, { ...VARIETY_ROW, archived: true, removal: null }),
+      'GET /stock?archived=true': () => json(200, stockOf(STOCK_ROW)),
+      'GET /catalog/varieties/1': () => json(500, { detail: 'x' }),
+    })
+
+    expect(await screen.findByRole('alert')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Restaurar' })).toBeInTheDocument()
+    expect(screen.queryByText('Oculta')).not.toBeInTheDocument()
+  })
+
+  test('the live page still reads GET /catalog and never the variety route', async () => {
+    const { fetchMock } = renderPage(VARIETY_ONE)
+
+    await screen.findByText('Se muestra')
+    expect(reads(fetchMock, 'GET /catalog')).toBe(1)
+    expect(fetchMock.mock.calls.some(([url]) => (url as string).startsWith('/catalog/varieties'))).toBe(false)
+  })
+})

@@ -11,16 +11,20 @@
  * Stock, status and days left are what `GET /stock` answered; whether the variety is shown
  * is the server's own `shown` from `GET /catalog`; nothing here decides a status or a reason.
  *
- * An archived variety (`archived` true) is the same page, read-only: "‹ Archivadas", "Archivada"
- * in words, its stock from `GET /stock?archived=true`, no "+ Entrada", "Nuevo precio", "Sacar
- * del stock", price delete, threshold, "Editar", form or removal; its one action is "Restaurar".
+ * An archived variety (`archived` true) is the same page, read-only: "‹ Archivadas" (the
+ * registry's `archivedParent`), its summary line is the plain grams, the neutral "Archivada"
+ * Insignia and "Oculta" when its stored values say hidden (`GET /catalog/varieties/{id}`),
+ * with no status mark, days left or price. Its stock is `GET /stock?archived=true`; the
+ * threshold and catalog sections are plain values, with no "+ Entrada", "Nuevo precio",
+ * "Sacar del stock", price delete, switch, "Editar", form or removal; its one action is
+ * "Restaurar".
  */
 
 import { useCallback, useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useLocation, useNavigate, useOutletContext } from 'react-router'
 import { ApiError, NetworkError, get } from '../../api/client'
-import { catalogQueryOptions } from '../../api/catalog'
+import { catalogQueryOptions, varietyAttributesQueryOptions } from '../../api/catalog'
 import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
 import { isGone } from '../../api/refusals'
@@ -32,6 +36,7 @@ import GoneScreen from '../../components/GoneScreen'
 import BotonLink from '../../components/BotonLink'
 import Boton from '../../components/Boton'
 import LeaveConfirm from '../../components/LeaveConfirm'
+import Insignia from '../../components/Insignia'
 import Loading from '../../components/Loading'
 import MarcaEstado from '../../components/MarcaEstado'
 import SinConexion from '../../components/SinConexion'
@@ -101,7 +106,11 @@ export default function VarietyPage({ varietyId }: { varietyId: number }) {
   const catalogQuery = useQuery({
     ...catalogQueryOptions(),
     select: (catalog) => catalog.varieties.find((row) => row.id === varietyId) ?? null,
+    enabled: varietyQuery.data !== undefined && !archived,
   })
+  // An archived variety is not in `GET /catalog`: its stored values come from their own read.
+  const attributesQuery = useQuery({ ...varietyAttributesQueryOptions(id), enabled: archived })
+  const attributes = archived ? (attributesQuery.data ?? null) : null
 
   const catalogRow = catalogQuery.data ?? null
   const ready = varietyQuery.data !== undefined && pricesQuery.data !== undefined && stockQuery.data !== undefined
@@ -163,14 +172,20 @@ export default function VarietyPage({ varietyId }: { varietyId: number }) {
           )}
         </div>
         {row !== undefined && (
-          <p className="variedad-resumen">
-            {formatGrams(row.grams)} · <MarcaEstado estado={row.status} />
-            {archived && <> · <span className="variedad-resumen__oculta">Archivada</span></>}
-            {!archived && catalogRow !== null && !catalogRow.shown && <> · <span className="variedad-resumen__oculta">Oculta</span></>}
-            {row.days_left !== null && <> · {row.days_left} días</>}
-            {' · '}
-            {variety.current_price === null ? NO_PRICE_TODAY : `${formatMoney(variety.current_price.list_price)} x g`}
-          </p>
+          archived ? (
+            <p className="variedad-resumen">
+              {formatGrams(row.grams)} · <Insignia>Archivada</Insignia>
+              {attributes !== null && !attributes.shown && <> · <span className="variedad-resumen__oculta">Oculta</span></>}
+            </p>
+          ) : (
+            <p className="variedad-resumen">
+              {formatGrams(row.grams)} · <MarcaEstado estado={row.status} />
+              {catalogRow !== null && !catalogRow.shown && <> · <span className="variedad-resumen__oculta">Oculta</span></>}
+              {row.days_left !== null && <> · {row.days_left} días</>}
+              {' · '}
+              {variety.current_price === null ? NO_PRICE_TODAY : `${formatMoney(variety.current_price.list_price)} x g`}
+            </p>
+          )
         )}
 
         {!archived && form === 'rename' && (
@@ -234,9 +249,19 @@ export default function VarietyPage({ varietyId }: { varietyId: number }) {
           currentPriceId={variety.current_price?.id ?? null}
           readOnly={archived}
         />
-        {!archived && row !== undefined && <VarietyThresholdSection varietyId={varietyId} row={row} refreshing={stockQuery.isFetching} onGone={() => setGone(true)} />}
+        {row !== undefined && (
+          <VarietyThresholdSection
+            varietyId={varietyId}
+            row={row}
+            refreshing={stockQuery.isFetching}
+            readOnly={archived}
+            onGone={() => setGone(true)}
+          />
+        )}
         {!archived && catalogRow !== null && <VarietyCatalogSection row={catalogRow} />}
+        {archived && attributes !== null && <VarietyCatalogSection row={attributes} readOnly />}
         {catalogQuery.isError && (catalogQuery.error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />)}
+        {attributesQuery.isError && (attributesQuery.error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />)}
         {!archived && <VarietyRemoval varietyId={varietyId} removal={variety.removal} grams={row?.grams ?? null} />}
       </div>
       {blocker.state === 'blocked' && (
