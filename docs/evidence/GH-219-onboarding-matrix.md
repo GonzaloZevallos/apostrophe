@@ -50,3 +50,8 @@ OnboardingStockCompuOscuro built: AE 178839
 | Every other Onboarding step, Listo, InicioPrimeraVez, ...Oscuro, ...Compu | built | 0 | no difference |
 
 No regression found; no other difference. The only pre-existing difference found is the three strict failures, #254.
+
+## Notes added at integration
+
+- Captured code: head `39130bb`. The later commits on the branch change only `docs/evidence`, so the captured code is the branch head's.
+- `web/src/routes.test.ts` gains six names in `REACHED_BY_STEPS` (the four `EntradaStockSinEntradas*` rows, `OnboardingVariedadCompuOscuro`, `OnboardingListoCompuOscuro`). Without them its "route is path for every screen" check fails on those six rows. It is the registry seam the plan declares, though plan invariant 3 does not list it.
