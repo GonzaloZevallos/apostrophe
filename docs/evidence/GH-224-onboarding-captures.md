@@ -279,6 +279,7 @@ icon-and-text rule), or **Zeta** (no doc settles it). Copy is never changed here
 | `Variedad` | "Opcional · desde cuántos gramos aplica" | "Desde cuántos gramos aplica" (`PRICE_FROM_GRAMS_HELP`) | **Zeta**: the owner's help line (varieties) differs from the drawing and no doc in `docs/product` says which; copy is not changed here |
 | `Variedad` | a second state, "¿Descartás la variedad?" | not captured (the row shows the empty form only) | not a difference: the capture shows one state per row |
 | `Stock` | primary "Guardá el stock"; no "Hoy tiene 0 g" line | primary "Guardá la entrada"; "Hoy tiene 0 g" under the variety | "Hoy tiene N g": **doc** (stock.md, the entry form's variety line). "Guardá la entrada": **Zeta**, the entry form's own button (its tests expect it); the drawing says another word and no doc settles it |
+| `Stock` | draws an "Origen" label over the "Stock inicial" chip | no label: the fixed chip stands alone (master's `3764531`, in the merged head) | **doc**: onboarding.md "Step 2's origin … with no 'Origen' label above it … a known defect of the drawing"; seen on `after2-out/OnboardingStock.png` |
 | `Stock` | a second state, "Ya podés vender esa variedad" | not captured | not a difference (one state per row) |
 | `Mensaje` | "Saltar" blue, "Saltar el resto" grey; footer ends "… Queda como está."; text areas three lines tall | both skips blue underlined text links; no "Queda como está."; text areas two lines | skips: **intended** (GH-164's brief: both skips are text links, onboarding.md "as text links on one line"). Footer sentence: **Zeta** (no doc has it). Height of the fields: **Zeta** (small, the owner's field) |
 | `Bot` | hint under the token "Se guarda cifrado y no se muestra más." | not shown | **Zeta**: no doc and no screen text in `web/src` carries it |
@@ -342,5 +343,40 @@ drops the "Origen" label over the fixed "Stock inicial" chip on step 2.
 - **Method difference.** GH-219's ADR amendment says `--only` is for `ae.mjs`, never for a
   capture; this task's invariant 10 used one explicit `--only` list for both captures and
   `ae.mjs`. Sections 2 and 3 were captured before the merge under invariant 10 and are not redone.
-- **Staleness.** `3764531` changes step 2 (`OnboardingStock*`) after the "after" captures of
-  sections 2 and 3, so those rows' AE figures describe the head before the merge, not the merged head.
+- **Recapture of the five `OnboardingStock*` rows (§6.1).** `3764531` changes step 2 after the
+  captures of sections 2 and 3, so those five rows were captured again from the merged head
+  (below). The other 30 rows' figures stand: `3764531` touches only `StockEntryForm.tsx`, one
+  line, rendered only by step 2.
+
+### 6.1 The Stock rows from the merged head (`6283c12`)
+
+| Item | Value |
+| --- | --- |
+| Rows (`--only`, the same for both captures and `ae.mjs`) | `OnboardingStock, OnboardingStockOscuro, OnboardingStockCompu, OnboardingStockCompuOscuro, OnboardingStockTexto130` |
+| Argentina day | 2026-10-16, install `@fontsource/plus-jakarta-sans` 5.3.0, one `web/node_modules` |
+| "After" app | started from this worktree at `6283c12`, built (`assets/index-Bpkrxe89.js`), fresh sample `/tmp/GH-224-evidence/after2-app`, `--out after2-out`, `--strict` exit 0, five lines `ok` |
+| "Before" app | the clone of 1.6 with the same six undo resolutions, plus master's one-line `StockEntryForm.tsx` change applied (`git diff 78c3084 6283c12 -- web/src/screens/StockEntryForm.tsx`, the only product file master changed under `web/src`), head's `scripts/design/` copied over it; its `web/node_modules` link pointed at a removed worktree, so it was relinked to this worktree's install; built (`assets/index-C9KyDBrz.js`), fresh sample `/tmp/GH-224-evidence/before2-app`, `--out before2-out`, exit 0, five lines `ok` |
+| `web/dist/index.html` sha256 | before `7681b590d71634df…`, after `1f6a506dc352dc1c…`: they differ |
+
+`ae.mjs before2-out after2-out --only <the five>`, full output (exit 1, as in 2.4):
+
+```
+OnboardingStock built: AE 6415
+OnboardingStock design: AE 0
+OnboardingStockOscuro built: AE 6396
+OnboardingStockOscuro design: AE 0
+OnboardingStockCompu built: AE 6415
+OnboardingStockCompu design: AE 0
+OnboardingStockCompuOscuro built: AE 6396
+OnboardingStockCompuOscuro design: AE 0
+OnboardingStockTexto130 built: AE 6833
+OnboardingStockTexto130 design: AE 0
+```
+
+The figures equal §2.4's for the same five rows, so the 2.4 and 3.2 lines for `Stock` stand for
+the merged head: the "Origen" removal is on both sides (it is not GH-164's), and the only
+before/after difference is still the close control. The `Stock` after sheet, read again, shows the
+step with the chip and no "Origen" label, against the drawing's label: listed in 3.3 as **doc**.
+The 320 px / 130 % capture is still not clipped. Nothing for `css-fixes`, nothing new for Zeta.
+Servers of the "before" side started from the clone could not be stopped by this role (its
+working directory is outside the checkout); they hold only throwaway sample databases.

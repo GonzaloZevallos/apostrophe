@@ -131,3 +131,9 @@ predates the registry's newest rows is captured.
   relies on. `assertScreens` refuses a `needs` that names no earlier screen, and
   `assertSelectedNeeds` makes `comparisons.mjs` exit 2 before capturing when a selection keeps
   a row and drops the one it needs.
+
+**Which rule governs a later before-run.** GH-219's: the whole registry in file order, with no
+`--only`, on each side; `--only` stays for `ae.mjs`. GH-224's evidence (docs/evidence/GH-224-onboarding-captures.md)
+captured one explicit `--only` list for both sides, as its plan required; that is safe only
+because `assertSelectedNeeds` refuses a selection that drops a row another one needs, and it is
+not a precedent. The two before-run methods are not mixed within one evidence note.
