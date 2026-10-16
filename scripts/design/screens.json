@@ -141,8 +141,6 @@
     { "screen": "TodasLasEntradasOscuro", "design": "TodasLasEntradas", "route": "/varieties/entries", "path": "/varieties/entries", "tema": "oscuro" },
     { "screen": "TodasLasEntradasVariedadOscuro", "design": "TodasLasEntradas", "route": "/varieties/{low}/entries", "path": "/varieties/{low}/entries", "tema": "oscuro" },
     { "screen": "RetiroDetalleOscuro", "design": "VentaDetalle", "route": "/withdrawals/{withdrawal}", "path": "/withdrawals/{withdrawal}", "tema": "oscuro" },
-    { "screen": "AnalisisOscuro", "design": "Analisis", "route": "/analysis", "path": "/analysis", "tema": "oscuro" },
-    { "screen": "AnalisisCompuOscuro", "design": "AnalisisCompu", "route": "/analysis", "path": "/analysis", "tema": "oscuro", "viewport": [1280, 920] },
     { "screen": "EstadosSinConexionOscuro", "design": "Estados", "section": "Sin conexión", "route": "/sales", "path": "/sales", "tema": "oscuro", "steps": [{ "offline": true }, { "wait": "Sin conexión: revisá tu internet y probá de nuevo." }] },
     { "screen": "EstadosSinConexionCompuOscuro", "design": "Estados", "section": "Sin conexión", "route": "/sales", "path": "/sales", "tema": "oscuro", "viewport": [1280, 920], "steps": [{ "offline": true }, { "wait": "Sin conexión: revisá tu internet y probá de nuevo." }] },
     { "screen": "VariedadArchivada", "design": "VariedadDetalle", "route": "/varieties/{sold_out}", "path": "/varieties/{low}",

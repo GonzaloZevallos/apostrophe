@@ -208,11 +208,19 @@ test.each([
 test.each([
   ['the catalog on a phone', CATALOG, false, '‹ Variedades'],
   ['the catalog on a computer', CATALOG, true, '‹ Variedades'],
-  ['a variety on a phone', pathTo(VARIETY, { id: 2 }), false, '‹ Variedades'],
 ])('a card (%s) shows its "‹ parent" arrow and never "+ Nueva venta"', (_name, path, computer, arrow) => {
   renderShell([path], { computer })
 
   expect(screen.getByRole('button', { name: arrow })).toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: /Nueva venta/ })).not.toBeInTheDocument()
+})
+
+// A variety's back names the loaded record, so the shell shows no arrow for it until its screen
+// declares one (never a bare '‹' or the registry's 'Variedad'); it still shows no "Nueva venta".
+test('a card that is a variety on a phone shows no arrow before its screen declares one, and no "Nueva venta"', () => {
+  renderShell([pathTo(VARIETY, { id: 2 })])
+
+  expect(screen.queryByRole('button', { name: /^‹ / })).not.toBeInTheDocument()
   expect(screen.queryByRole('link', { name: /Nueva venta/ })).not.toBeInTheDocument()
 })
 
