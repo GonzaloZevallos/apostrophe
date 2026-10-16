@@ -1,35 +1,66 @@
-"""No code under `app/` or `tests/` reads the real clock (ADR-0001: the clock is
-injected), except the exact paths in `REAL_CLOCK_ALLOWED`. The scan parses every `.py`
-file, resolves what each import binds, and names `path:line` for each read of the real
-clock; the snippet tests prove the checker on sources it must flag and sources it must
-let through.
+"""No file under `tests/` or `app/` reads the real clock (ADR-0001: the clock is injected,
+ADR-0043), except the few named in `REAL_CLOCK_SYMBOLS` and `CLOCK_NAMING_PATHS`, each with
+its reason. A test that reasons about an instant takes it from the `MovableClock` the app
+under test was built with.
 
-Flagged, however the names are imported (the module, the class or an alias, at the top
-of the file or re-imported inside a function), whether called or only referenced
-(`default_factory=datetime.now`): `datetime.now`, `datetime.utcnow`, `date.today`,
-`time.time`, `time.time_ns`, and any use or import of `system_clock`.
+The checker parses each file and resolves every name through the module's import table
+(`import` and `from ... import`, aliases included, wherever the import sits): a name
+counts for what it is bound to, not for how it is spelled. It flags references as well as
+calls (`default_factory=datetime.now`) to `datetime.datetime.now`, `utcnow` and `today`,
+`datetime.date.today`, `time.time`, `time.time_ns` and `app.clock.system_clock`, which it
+flags as a bare name, an import or an attribute. `time.monotonic` and `time.sleep` measure
+no date and pass, and so does any attribute that merely shares a name (`answer.today`).
 
-Allowed on purpose: `time.monotonic` and `time.sleep` (a wait deadline measures
-elapsed time, it is not a wall clock) and any attribute that merely shares a name
-(`answer.today`). `scripts/` is out of scope.
+One concession, for a source with no import to resolve: a bare `datetime`, `date` or
+`system_clock` that nothing in the module binds (no import, assignment, definition or
+parameter) is read as the standard library's or the app's own.
+
+Two limits, by design:
+
+- Patching by string (`monkeypatch.setattr(mod, "system_clock", clock)`) is outside the
+  scan: its target must be a `MovableClock`.
+- A real-clock alias imported from another test module is caught where it is defined, not
+  where it is used.
 """
 
 from __future__ import annotations
 
 import ast
-from pathlib import Path
+from collections.abc import Iterable
+from dataclasses import dataclass
+from pathlib import Path, PurePosixPath
 
 import pytest
 
-ROOT = Path(__file__).parent.parent.parent
-SCANNED = ("app", "tests")
-FIXTURES = Path("tests/architecture/fixtures")
+REPO_ROOT = Path(__file__).resolve().parents[2]
+SCANNED = ("tests", "app")
 
-# Exact paths, as data: the clock itself and the composition roots, which hand
-# `system_clock` to the app. Never a directory, never a pattern.
-REAL_CLOCK_ALLOWED: dict[str, str] = {
-    "app/clock.py": "defines system_clock",
-    "app/main.py": "create_app's default clock",
+SYSTEM_CLOCK = "app.clock.system_clock"
+WALL_CLOCK_READS = frozenset(
+    {
+        "datetime.datetime.now",
+        "datetime.datetime.utcnow",
+        "datetime.datetime.today",
+        "datetime.date.today",
+        "time.time",
+        "time.time_ns",
+    }
+)
+TARGETS = WALL_CLOCK_READS | {SYSTEM_CLOCK}
+# What a name no import and no statement binds stands for (a source with no imports).
+UNBOUND_NAMES = {
+    "datetime": "datetime.datetime",
+    "date": "datetime.date",
+    "system_clock": SYSTEM_CLOCK,
+}
+
+# Closed. A read of the wall clock that stays, keyed by path and the function that holds it.
+REAL_CLOCK_SYMBOLS: dict[str, str] = {
+    "app/clock.py::system_clock": "the production clock: the one function that asks the machine",
+}
+# Closed, one path each, no glob. Where `system_clock` may be named, to hand it to the app.
+CLOCK_NAMING_PATHS: dict[str, str] = {
+    "app/main.py": "composition root: create_app's default clock",
     "app/accounts/adapters/cli.py": "composition root of the accounts command line",
     "app/business_removal/adapters/cli.py": "composition root of the removal command line",
     "app/spreadsheet_import/adapters/cli.py": "composition root of the import command line",
@@ -39,124 +70,214 @@ REAL_CLOCK_ALLOWED: dict[str, str] = {
     ),
 }
 
-CLOCK_GLOBAL = "system_clock"
-DATETIME_READS = frozenset({"now", "utcnow", "today"})
-DATE_READS = frozenset({"today"})
-TIME_READS = frozenset({"time", "time_ns"})
+
+@dataclass(frozen=True)
+class Read:
+    path: str
+    line: int
+    symbol: str
+    target: str
+
+    def where(self) -> str:
+        return f"{self.path}:{self.line}"
 
 
-class _Bindings:
-    """What the names a file imports stand for, wherever the import sits."""
-
-    def __init__(self, tree: ast.AST) -> None:
-        self.time_modules: set[str] = set()
-        self.datetime_modules: set[str] = set()
-        self.datetime_classes: set[str] = set()
-        self.date_classes: set[str] = set()
-        self.time_functions: set[str] = set()
-        imported: set[str] = set()
-        for node in ast.walk(tree):
-            if isinstance(node, ast.Import):
-                for alias in node.names:
-                    bound = alias.asname or alias.name
-                    imported.add(bound.split(".")[0])
-                    if alias.name == "time":
-                        self.time_modules.add(bound)
-                    elif alias.name == "datetime":
-                        self.datetime_modules.add(bound)
-            elif isinstance(node, ast.ImportFrom):
-                for alias in node.names:
-                    bound = alias.asname or alias.name
-                    imported.add(bound)
-                    if node.module == "datetime" and alias.name == "datetime":
-                        self.datetime_classes.add(bound)
-                    elif node.module == "datetime" and alias.name == "date":
-                        self.date_classes.add(bound)
-                    elif node.module == "time" and alias.name in TIME_READS:
-                        self.time_functions.add(bound)
-        # A bare `datetime` or `date` that no import binds (a star import, a re-export) is
-        # still the standard library's.
-        if "datetime" not in imported:
-            self.datetime_classes.add("datetime")
-        if "date" not in imported:
-            self.date_classes.add("date")
-
-    def reads_the_real_clock(self, node: ast.Attribute) -> bool:
-        owner = node.value
-        if isinstance(owner, ast.Name):
-            return (
-                (node.attr in DATETIME_READS and owner.id in self.datetime_classes)
-                or (node.attr in DATE_READS and owner.id in self.date_classes)
-                or (node.attr in TIME_READS and owner.id in self.time_modules)
-            )
-        if (
-            isinstance(owner, ast.Attribute)
-            and isinstance(owner.value, ast.Name)
-            and owner.value.id in self.datetime_modules
-        ):
-            return (owner.attr == "datetime" and node.attr in DATETIME_READS) or (
-                owner.attr == "date" and node.attr in DATE_READS
-            )
-        return False
-
-
-def real_clock_lines(source: str) -> list[int]:
-    """The line of every read of the real clock in `source`, in order."""
+def real_clock_reads(source: str, path: str = "") -> list[Read]:
+    """Every read of the real clock in `source`, with the function that holds it."""
     tree = ast.parse(source)
-    bindings = _Bindings(tree)
-    lines: set[int] = set()
-    for node in ast.walk(tree):
+    package = PurePosixPath(path).parent.parts
+    table = _import_table(tree, package)
+    bound = _bound_names(tree)
+    reads: set[Read] = set()
+
+    def resolve(node: ast.expr) -> str | None:
+        if isinstance(node, ast.Name):
+            if node.id in table:
+                return table[node.id]
+            return None if node.id in bound else UNBOUND_NAMES.get(node.id)
         if isinstance(node, ast.Attribute):
-            if node.attr == CLOCK_GLOBAL or bindings.reads_the_real_clock(node):
-                lines.add(node.lineno)
-        elif isinstance(node, ast.Name):
-            if node.id == CLOCK_GLOBAL or node.id in bindings.time_functions:
-                lines.add(node.lineno)
+            owner = resolve(node.value)
+            return None if owner is None else f"{owner}.{node.attr}"
+        return None
+
+    def visit(node: ast.AST, symbol: str) -> None:
+        if isinstance(node, ast.ImportFrom):
+            module = _imported_module(node, package)
+            for alias in node.names:
+                if module is not None and f"{module}.{alias.name}" in TARGETS:
+                    reads.add(Read(path, node.lineno, symbol, f"{module}.{alias.name}"))
+        elif isinstance(node, ast.Name | ast.Attribute) and isinstance(node.ctx, ast.Load):
+            target = resolve(node)
+            if target in TARGETS:
+                reads.add(Read(path, node.lineno, symbol, target))
+        inner = node.name if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef) else symbol
+        for child in ast.iter_child_nodes(node):
+            visit(child, inner)
+
+    visit(tree, "")
+    return sorted(reads, key=lambda read: (read.line, read.target))
+
+
+def real_clock_lines(source: str, path: str = "") -> list[int]:
+    """The line of every read of the real clock in `source`, in order."""
+    return sorted({read.line for read in real_clock_reads(source, path)})
+
+
+def _imported_module(node: ast.ImportFrom, package: tuple[str, ...]) -> str | None:
+    """The absolute dotted module a `from` import names; a relative one is resolved
+    against `package`, the dotted directory of the file that holds it."""
+    if not node.level:
+        return node.module
+    if node.level - 1 > len(package):
+        return None
+    base = package[: len(package) - (node.level - 1)]
+    return ".".join([*base, *([node.module] if node.module else [])])
+
+
+def _import_table(tree: ast.AST, package: tuple[str, ...]) -> dict[str, str]:
+    """local name -> the dotted thing it stands for ("dt" -> "datetime")."""
+    table: dict[str, str] = {}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                if alias.asname:
+                    table[alias.asname] = alias.name
+                else:
+                    top = alias.name.split(".")[0]
+                    table[top] = top
         elif isinstance(node, ast.ImportFrom):
-            imported = {alias.name for alias in node.names}
-            if CLOCK_GLOBAL in imported or (node.module == "time" and imported & TIME_READS):
-                lines.add(node.lineno)
-    return sorted(lines)
+            module = _imported_module(node, package)
+            for alias in node.names:
+                if module is not None:
+                    table[alias.asname or alias.name] = f"{module}.{alias.name}"
+    return table
 
 
-def unexpected_reads(root: Path, allowed: dict[str, str]) -> list[str]:
-    """`path:line` of every read of the real clock under `root`'s scanned trees that is
-    not in an allowed path."""
-    hits: list[str] = []
-    for tree in SCANNED:
-        for path in sorted((root / tree).rglob("*.py")):
-            relative = path.relative_to(root)
-            if relative.as_posix() in allowed or relative.is_relative_to(FIXTURES):
-                continue
-            hits.extend(
-                f"{relative.as_posix()}:{line}" for line in real_clock_lines(path.read_text())
-            )
-    return hits
+def _bound_names(tree: ast.AST) -> set[str]:
+    names: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store | ast.Del):
+            names.add(node.id)
+        elif isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef):
+            names.add(node.name)
+        elif isinstance(node, ast.arg):
+            names.add(node.arg)
+    return names
 
 
-def test_no_file_under_app_or_tests_reads_the_real_clock() -> None:
-    assert unexpected_reads(ROOT, REAL_CLOCK_ALLOWED) == []
+def tree_reads(directory: Path, base: Path) -> list[Read]:
+    """Every read in every `.py` file under `directory`, paths relative to `base`."""
+    return [
+        read
+        for file in sorted(directory.rglob("*.py"))
+        for read in real_clock_reads(file.read_text(), file.relative_to(base).as_posix())
+    ]
 
 
-def test_every_allowed_path_exists_and_has_a_reason() -> None:
-    missing = [path for path in REAL_CLOCK_ALLOWED if not (ROOT / path).is_file()]
+def is_allowed(read: Read) -> bool:
+    if f"{read.path}::{read.symbol}" in REAL_CLOCK_SYMBOLS:
+        return True
+    return read.target == SYSTEM_CLOCK and read.path in CLOCK_NAMING_PATHS
 
-    assert missing == []
-    assert all(REAL_CLOCK_ALLOWED.values())
+
+def tree_hits(directory: Path, base: Path) -> list[str]:
+    """`path:line` of every read under `directory` that the allowlists do not cover."""
+    return [read.where() for read in tree_reads(directory, base) if not is_allowed(read)]
 
 
-def test_the_scan_names_a_read_outside_the_allowed_paths_and_lets_an_allowed_one_through(
+def stale_entries(reads: Iterable[Read]) -> list[str]:
+    """Allowlist entries that no read matches any more."""
+    seen = list(reads)
+    symbols = {f"{read.path}::{read.symbol}" for read in seen if read.target in WALL_CLOCK_READS}
+    paths = {read.path for read in seen if read.target == SYSTEM_CLOCK}
+    return [entry for entry in REAL_CLOCK_SYMBOLS if entry not in symbols] + [
+        entry for entry in CLOCK_NAMING_PATHS if entry not in paths
+    ]
+
+
+def test_no_file_under_tests_or_app_reads_the_real_clock() -> None:
+    hits = [hit for tree in SCANNED for hit in tree_hits(REPO_ROOT / tree, REPO_ROOT)]
+
+    assert hits == []
+
+
+def test_every_allowlist_entry_still_matches_a_read() -> None:
+    reads = [read for tree in SCANNED for read in tree_reads(REPO_ROOT / tree, REPO_ROOT)]
+
+    assert stale_entries(reads) == []
+
+
+def test_every_allowlist_entry_has_a_reason() -> None:
+    assert all([*REAL_CLOCK_SYMBOLS.values(), *CLOCK_NAMING_PATHS.values()])
+
+
+def test_a_stale_allowlist_entry_is_reported() -> None:
+    assert stale_entries([]) == [*REAL_CLOCK_SYMBOLS, *CLOCK_NAMING_PATHS]
+
+
+def test_the_scan_names_the_path_and_line_of_a_test_that_reads_the_real_clock(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "test_reads.py").write_text(
+        "from datetime import UTC, datetime\ninvite(engine, datetime.now(UTC))\n"
+    )
+
+    assert tree_hits(tmp_path, tmp_path) == ["test_reads.py:2"]
+
+
+def test_the_scan_names_a_module_outside_the_allowed_paths_that_names_system_clock(
     tmp_path: Path,
 ) -> None:
     (tmp_path / "app").mkdir()
-    (tmp_path / "tests").mkdir()
-    (tmp_path / "app" / "reads.py").write_text("import time\nx = time.time()\n")
-    (tmp_path / "app" / "allowed.py").write_text("import time\nx = time.time()\n")
-    (tmp_path / "tests" / "reads.py").write_text("from app.clock import system_clock\n")
+    (tmp_path / "app" / "main.py").write_text("from app.clock import system_clock\n")
+    (tmp_path / "app" / "service.py").write_text("from app.clock import system_clock\n")
 
-    hits = unexpected_reads(tmp_path, {"app/allowed.py": "composition root"})
+    assert tree_hits(tmp_path, tmp_path) == ["app/service.py:1"]
 
-    assert hits == ["app/reads.py:2", "tests/reads.py:1"]
+
+def test_the_scan_names_a_wall_clock_read_outside_its_allowed_function(tmp_path: Path) -> None:
+    (tmp_path / "app").mkdir()
+    (tmp_path / "app" / "clock.py").write_text(
+        "from datetime import UTC, datetime\n"
+        "def system_clock():\n    return datetime.now(UTC)\n"
+        "def other():\n    return datetime.now(UTC)\n"
+    )
+
+    assert tree_hits(tmp_path, tmp_path) == ["app/clock.py:5"]
+
+
+@pytest.mark.parametrize(
+    ("source", "path"),
+    [
+        ("from .clock import system_clock as sc\nx = sc()\n", "app/service.py"),
+        ("from . import clock\nx = clock.system_clock\n", "app/service.py"),
+        ("from .. import clock as c\nx = c.system_clock\n", "app/accounts/service.py"),
+        ("from ..clock import system_clock\n", "app/accounts/service.py"),
+    ],
+)
+def test_the_checker_flags_a_relative_import_of_the_system_clock(source: str, path: str) -> None:
+    assert real_clock_lines(source, path) != []
+
+
+def test_a_relative_import_that_is_not_the_system_clock_passes() -> None:
+    source = "from .clock import business_day\nfrom . import clock\nx = clock.business_day\n"
+
+    assert real_clock_lines(source, "app/accounts/service.py") == []
+
+
+def test_the_scan_names_a_relative_import_of_system_clock_outside_the_allowed_paths(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "app" / "accounts" / "adapters").mkdir(parents=True)
+    (tmp_path / "app" / "main.py").write_text("from .clock import system_clock as sc\n")
+    (tmp_path / "app" / "accounts" / "adapters" / "cli.py").write_text(
+        "from ... import clock\nx = clock.system_clock\n"
+    )
+    (tmp_path / "app" / "accounts" / "service.py").write_text(
+        "from . import clock\nfrom .. import clock as c\nx = c.system_clock\n"
+    )
+
+    assert tree_hits(tmp_path, tmp_path) == ["app/accounts/service.py:3"]
 
 
 @pytest.mark.parametrize(
@@ -186,6 +307,11 @@ def test_the_scan_names_a_read_outside_the_allowed_paths_and_lets_an_allowed_one
         "from app.clock import system_clock\n",
         "import app.clock\nx = app.clock.system_clock\n",
         "x = system_clock()\n",
+        "import datetime as dt\nx = dt.datetime.now()\n",
+        "from datetime import datetime as D\nx = D.now()\n",
+        "from time import time\nx = time()\n",
+        "from app.clock import system_clock as sc\nx = sc()\n",
+        "from app import clock\nx = clock.system_clock\n",
     ],
 )
 def test_the_checker_flags_a_read_of_the_real_clock(source: str) -> None:
@@ -210,6 +336,11 @@ def test_the_checker_flags_a_read_of_the_real_clock(source: str) -> None:
         "import time\nx = time.monotonic()\n",
         "from time import monotonic\nx = monotonic()\n",
         "x = response.time\n",
+        'x = vector["today"]\n',
+        "x = clock()\n",
+        "x = obj.now()\n",
+        'monkeypatch.setattr(m, "system_clock", clock)\n',
+        "def f(date):\n    return date.today()\n",
     ],
 )
 def test_the_checker_lets_a_source_with_no_real_clock_through(source: str) -> None:

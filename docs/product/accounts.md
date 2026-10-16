@@ -598,7 +598,7 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
 - **Removal tests and the date (criterion 37)**:
   - the removal suite passes on its pinned Argentina day;
   - one check moves the clock across a month boundary and a year boundary and gives the same verdict on each day. It is never skipped or loosened;
-  - a scan finds 0 reads of the real clock under `tests/business_removal/` (`datetime.now`, `datetime.utcnow`, `date.today`, `time.time`, or a default that resolves to one of them), `adapters/seed.py` and `adapters/test_cli.py` included;
+  - the scan (`tests/architecture/test_no_real_clock.py`) covers every file under `tests/` and `app/` and resolves imports, so an alias or a default that resolves to `datetime.now`, `utcnow`, `date.today` or `time.time` is found too. Its only exceptions are the production clock (`app/clock.py::system_clock`), the composition roots that wire the clock (`app/main.py` and the three CLIs) and the e2e backend (`tests/e2e_app.py`, ADR-0040);
   - no assertion on elapsed time is added (ADR-0038).
 - **Publishing (criteria 14–17)**: no test reaches the network, Render, Turso or GitHub.
   - **Brakes (criteria 3, 15)**: tested at the HTTP seam with a fake clock, 100% passing. They cover:
