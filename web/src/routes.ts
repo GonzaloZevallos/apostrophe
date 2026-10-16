@@ -180,9 +180,9 @@ interface ScreenBase {
 }
 
 export type Screen =
-  | (ScreenBase & { kind: 'root'; place: Place; parent?: undefined })
-  | (ScreenBase & { kind: 'card'; parent: Parent; place?: Place })
-  | (ScreenBase & { kind: 'form'; parent: Parent; place?: undefined })
+  | (ScreenBase & { kind: 'root'; place: Place; parent?: undefined; archivedParent?: undefined })
+  | (ScreenBase & { kind: 'card'; parent: Parent; place?: Place; archivedParent?: ScreenId })
+  | (ScreenBase & { kind: 'form'; parent: Parent; place?: undefined; archivedParent?: undefined })
 
 /** Declares a screen under `Shell`. Returns it as given: the type is the check. */
 export function screen<S extends Screen>(declaration: S): S {
@@ -227,7 +227,15 @@ export const SCREENS: readonly Screen[] = [
     pane: 'list',
     place: { bar: 'varieties', rail: 'varieties' },
   }),
-  screen({ id: 'variety', path: VARIETY, kind: 'card', title: 'Variedad', pane: 'detail', parent: 'varieties' }),
+  screen({
+    id: 'variety',
+    path: VARIETY,
+    kind: 'card',
+    title: 'Variedad',
+    pane: 'detail',
+    parent: 'varieties',
+    archivedParent: 'varieties-archived',
+  }),
   screen({ id: 'variety-new', path: VARIETY_NEW, kind: 'form', title: 'Nueva variedad', parent: 'varieties' }),
   screen({ id: 'variety-prices', path: VARIETY_PRICES, kind: 'card', title: 'Precios', parent: 'variety' }),
   screen({ id: 'variety-price-new', path: VARIETY_PRICE_NEW, kind: 'form', title: 'Nuevo precio', parent: 'variety' }),
@@ -371,9 +379,12 @@ export interface ParentRef {
   title: string
 }
 
-/** The screen's fixed parent: the "‹ parent" label and the back fallback, from one result. */
-export function parentOf(id: ScreenId, viewport: Viewport): ParentRef | undefined {
-  const parentId = parentIdOf(screenOf(id), viewport)
+/** The screen's fixed parent: the "‹ parent" label and the back fallback, from one result.
+ * `archived` is true for a screen showing an archived variety: a screen that declares an
+ * `archivedParent` answers it, every other screen ignores the flag. */
+export function parentOf(id: ScreenId, viewport: Viewport, archived = false): ParentRef | undefined {
+  const entry = screenOf(id)
+  const parentId = archived && entry.archivedParent !== undefined ? entry.archivedParent : parentIdOf(entry, viewport)
   if (parentId === undefined) return undefined
   const parent = screenOf(parentId)
   return { id: parent.id, path: parent.path, title: parent.title }

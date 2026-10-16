@@ -159,6 +159,8 @@ def test_the_registry_entries_of_screens_json_say_a_kind_and_a_parent_that_are_p
             assert normalise(entry["parent"]) in paths, entry
         if entry.get("computer_parent") is not None:
             assert normalise(entry["computer_parent"]) in paths, entry
+        if entry.get("archived_parent") is not None:
+            assert normalise(entry["archived_parent"]) in paths, entry
     registered = {normalise(entry["path"]) for entry in document["registry"]}
     assert {"/customers/new", "/customers/{id}/edit", "/varieties/entries/{id}"} <= registered
 
