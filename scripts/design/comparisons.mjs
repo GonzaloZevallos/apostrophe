@@ -87,11 +87,23 @@ function resolveFacts(template, placeholders) {
 
 async function run(page, step, placeholders) {
   if (step.click) await page.getByText(step.click, { exact: true }).first().click()
+  // An icon-only control has an accessible name and no text: found by role and exact name,
+  // and strict, so zero matches or two fail the row instead of picking one.
+  else if (step.press) await page.getByRole('button', { name: step.press, exact: true }).click()
   else if (step.fill) await page.getByLabel(step.fill.label).first().fill(resolveFacts(step.fill.value, placeholders))
   else if (step.select) await page.getByLabel(step.select.label).first().selectOption({ index: step.select.index })
   else if (step.wait) await page.getByText(step.wait, { exact: true }).first().waitFor()
-  // The page has settled by now: only the network goes, the page is never reloaded.
-  else if (step.offline) await page.context().setOffline(true)
+  // The page has settled by now: only the network goes, the page is never reloaded. Every
+  // font face it has not loaded yet is loaded first, since offline it could never be. The
+  // preload records nothing: `appliedCheck` stays the only verdict on fonts.
+  else if (step.offline) {
+    await page.evaluate(async () => {
+      const unloaded = [...document.fonts].filter((face) => face.status === 'unloaded')
+      await Promise.allSettled(unloaded.map((face) => face.load()))
+      await document.fonts.ready
+    })
+    await page.context().setOffline(true)
+  }
   else throw new Error(`unknown step ${JSON.stringify(step)}`)
 }
 

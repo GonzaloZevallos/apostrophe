@@ -292,6 +292,97 @@ describe('sectionOccurrences', () => {
   })
 })
 
+describe('assertScreens checks every step against one closed list of shapes', () => {
+  const withSteps = (steps: unknown) => [{ screen: 'Paso', steps }] as const
+
+  it('accepts each shape: click, press, wait, fill, select and offline', () => {
+    expect(() =>
+      assertScreens(
+        withSteps([
+          { click: 'Semana' },
+          { press: 'Borrar venta' },
+          { wait: 'Stock y entradas' },
+          { fill: { label: 'Gramos', value: '{email}' } },
+          { select: { label: 'Variedad línea 1', index: 0 } },
+          { offline: true },
+        ]),
+      ),
+    ).not.toThrow()
+  })
+
+  it('refuses a step with an unknown key, naming the entry and the step index', () => {
+    expect(() => assertScreens(withSteps([{ click: 'A' }, { hover: 'B' }]))).toThrow(
+      /^Paso: step 1 is not one of click, press, wait, fill, select, offline$/,
+    )
+  })
+
+  it('refuses a step with no key or with two keys', () => {
+    expect(() => assertScreens(withSteps([{}]))).toThrow(/^Paso: step 0 must have exactly one key$/)
+    expect(() => assertScreens(withSteps([{ click: 'A', wait: 'B' }]))).toThrow(
+      /^Paso: step 0 must have exactly one key$/,
+    )
+  })
+
+  it('refuses a step that is not an object, and steps that are not a list', () => {
+    expect(() => assertScreens(withSteps(['click']))).toThrow(/^Paso: step 0 must be an object$/)
+    expect(() => assertScreens(withSteps([null]))).toThrow(/^Paso: step 0 must be an object$/)
+    expect(() => assertScreens(withSteps({ click: 'A' }))).toThrow(/^Paso: steps must be a list$/)
+  })
+
+  it.each(['click', 'press', 'wait'])('refuses %s with anything but a non-empty string', (key) => {
+    for (const value of ['', 7, true, null, { label: 'A' }]) {
+      expect(() => assertScreens(withSteps([{ [key]: value }]))).toThrow(
+        new RegExp(`^Paso: step 0 ${key} must be a non-empty string$`),
+      )
+    }
+  })
+
+  it('refuses fill without exactly a string label and a string value', () => {
+    const message = /^Paso: step 0 fill must be exactly \{label, value\}, both strings$/
+    for (const fill of ['x', null, {}, { label: 'A' }, { label: 'A', value: 1 }, { label: 7, value: 'a' }]) {
+      expect(() => assertScreens(withSteps([{ fill }]))).toThrow(message)
+    }
+    expect(() => assertScreens(withSteps([{ fill: { label: 'A', value: 'a', extra: 'b' } }]))).toThrow(message)
+  })
+
+  it('refuses select without exactly a string label and a non-negative integer index', () => {
+    const message = /^Paso: step 0 select must be exactly \{label, index\}, a string and a non-negative integer$/
+    for (const select of [
+      'x',
+      null,
+      {},
+      { label: 'A' },
+      { label: 'A', index: '1' },
+      { label: 'A', index: -1 },
+      { label: 'A', index: 1.5 },
+      { label: 7, index: 1 },
+    ]) {
+      expect(() => assertScreens(withSteps([{ select }]))).toThrow(message)
+    }
+    expect(() => assertScreens(withSteps([{ select: { label: 'A', index: 1, extra: 'b' } }]))).toThrow(message)
+  })
+
+  it('refuses offline with anything but true', () => {
+    for (const offline of [false, 1, 'true', null, {}]) {
+      expect(() => assertScreens(withSteps([{ offline }]))).toThrow(/^Paso: step 0 offline must be true$/)
+    }
+  })
+
+  it('does not put the step data in a refusal', () => {
+    expect(() => assertScreens(withSteps([{ fill: { label: 'Secreto', value: 'clave-1234', extra: 1 } }]))).toThrow(
+      /^(?!.*(Secreto|clave-1234))/,
+    )
+  })
+
+  it('scans a press step for placeholders in an account entry', () => {
+    expect(() =>
+      assertScreens([
+        { screen: 'Paso', design: 'OnboardingListo', route: 'ruta', account: 'a_b', steps: [{ press: '{sale_id}' }] },
+      ]),
+    ).toThrow(/Paso: an account entry can only use/)
+  })
+})
+
 describe('assertSelectedNeeds', () => {
   const all = [{ screen: 'A' }, { screen: 'B', needs: 'A' }, { screen: 'C' }]
 
