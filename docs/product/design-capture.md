@@ -16,6 +16,11 @@ The evidence a reviewer uses to judge that a screen looks as designed: the desig
 - This refines the job above and its criterion 2; it is not a new job. Its protagonist is the same maintainer or reviewer.
 - Before it (GH-166's follow-up): the light `VariedadArchivada` row declared `/varieties/{low}` while it navigated to `/varieties/{sold_out}` and captured Sir Jack. ADR-0033's cross-check reads both placeholders as `{id}`, so no test saw it, and the reviewer reconciled the row by hand.
 
+**When** I run the design capture over the whole registry, as a before/after run does (ADR-0042), **I want** every row to reach its screen and every capture to pass its font check, **so I can** read a non-zero exit as a real failure and attach the run as evidence without explaining away rows that always fail.
+
+- This refines the first job and its criterion 1 for the whole registry; it is not a new job. Its protagonist is the same maintainer or reviewer.
+- Before it (GH-219's and GH-150's evidence): `EstadosConfirmar` never reached "Borrar venta", and `EstadosSinConexionCompu` and `EstadosSinConexionCompuOscuro` failed the font check on their offline step, on base and head alike, so every whole-registry `--strict` run exited 1 with every other row ok.
+
 Success criteria:
 
 1. **One green run.** One `--strict` call over Inicio* and the Onboarding block exits 0.
@@ -27,6 +32,9 @@ Success criteria:
 7. **The registry, its tests and navigation.md agree on the archived variety's page** and its parent "‹ Archivadas", with no recorded exception and no loosened test.
 8. **Truthfulness costs the seller nothing.** Fixing a row's declaration changes no capability doc, nothing under `app/`, and nothing under `web/src/` but `web/src/design/screens.test.ts` within its declared seam. No row's steps change to make it truthful.
 9. **A wrong record never passes unnoticed again.** An entry whose path names a record different from the one its route names fails the registry test in the diff that introduces it.
+10. **The whole registry runs green.** One `--strict` call over the whole registry, with no `--only`, exits 0. No row is removed, skipped, excused or listed as a known failure to get there.
+11. **Offline captures keep their fonts.** A row that takes the app offline is captured with the page's own fonts applied, and the applied-check runs on it exactly as on every other row.
+12. **Reaching every row costs the seller nothing.** Making a row reach its screen changes only that row's steps, the sample data and the capture tooling under `scripts/design/`, plus the two registry tests within their declared seams. No screen, copy, capability doc or the app's own font loading changes.
 
 ## Behaviour
 
@@ -35,6 +43,15 @@ Success criteria:
 - Fonts are pinned and the design capture never touches the network; `--strict` turns a font or screen-level failure into a non-zero exit, after every screen ran and `index.json` was written (ADR-0042).
 - Each screen writes its composed sheet and its raw design and built captures; a before/after compares the raw captures by exact AE, never the sheet (ADR-0042).
 - A capture is review evidence, judged by eye in the PR. It is never a gate step, and no new automated check is added for it.
+
+### Every row reaches its screen
+
+- Every row of the registry, not only Inicio* and the Onboarding, reaches its screen the way a seller does and captures its named section whole. A whole-registry `--strict` run exits non-zero only when a row truly fails.
+- **`EstadosConfirmar`** reaches Antes de borrar on a sale's detail as a seller does: it opens a sale that exists in the sample and taps "Borrar venta". Its capture shows the confirmation whole: the question naming the sale's date, amount and grams that return, and "No, dejala / Sí, borrala" (sales.md).
+- **`EstadosSinConexionCompu` and `EstadosSinConexionCompuOscuro`** show "Sin conexión" in the computer layout, light and dark. The page's own fonts are in place before the network drops, so going offline never leaves a page font in error. The capture's fonts stay pinned and local (ADR-0042).
+- The applied-check is unchanged and covers every row, offline rows included: a font in error stays a failure, never a pass.
+- A row is made to reach its screen by its steps, the sample data or the capture tooling alone. Never by changing the screen, its copy, the app's own `font-display`, or the applied-check, and never by dropping or excusing the row.
+- A row that fails because the app itself no longer shows the seller's path is a product defect: it is escalated to the PM, never excused in the registry.
 
 ### A row names what it reaches
 
@@ -84,7 +101,8 @@ Success criteria:
 
 ### Failures
 
-- A row that cannot reach its screen fails while it steps there, so `--strict` exits non-zero.
+- A row that cannot reach its screen fails while it steps there, so `--strict` exits non-zero. That row is a defect to fix, never a known failure to report around.
+- A font left in error on a capture, an offline step included, fails the applied-check, so `--strict` exits non-zero.
 - A capture that shows a screen other than its row names, or a clipped section, is caught by eye in review and blocks approval. Neither is ever accepted as a pass.
 - A Listo entry naming an account the sample does not write fails the registry test.
 - An entry whose path names placeholders different from its route's fails the registry test.
@@ -92,6 +110,7 @@ Success criteria:
 ### Evidence in the PR
 
 - The output of one `--strict` call over Inicio* and the Onboarding block, exit 0.
+- For a change that makes a row reach its screen: the output of one `--strict` call over the whole registry with no `--only`, exit 0, and the captures of every row it fixed, judged by eye.
 - The Listo captures in light, dark and Compu, judged by eye.
 - The list of crops whose result changed: only ones that were clipped.
 - The installed `@fontsource/plus-jakarta-sans` version (ADR-0042).
@@ -113,6 +132,10 @@ No telemetry; read from the PR evidence and from tests.
 - **Nothing a seller sees changes (criterion 8)**: the diff touches only `scripts/design/screens.json`, `web/src/design/screens.test.ts` and this file; every suite passes; no row's steps change.
 - **Audit**: the PR lists every row checked and every mismatch found, each fixed there or linked to a follow-up issue: 0 unexplained. The GH-166 finding is linked as closed, with the light and dark captures of the corrected row attached.
 - **Recurrence (criterion 9)**: an entry whose path names placeholders different from its route's fails the registry test in the diff that adds it; the blind spot (a path with no placeholder) is named in the test's description and the PR.
+- **Whole registry green (criterion 10)**: the PR holds one whole-registry `--strict` output, no `--only`, exit 0; the registry has the same rows as before the fix, `EstadosConfirmar`, `EstadosSinConexionCompu` and `EstadosSinConexionCompuOscuro` included.
+- **Offline fonts (criterion 11)**: the two `EstadosSinConexionCompu*` rows pass the applied-check with no note; the applied-check's code and its weights are unchanged; their captures show "Sin conexión" in the computer layout in the app's own font, judged by eye in both themes.
+- **Reached as a seller does**: the `EstadosConfirmar` capture shows Antes de borrar whole, with the sale's date, amount and grams and both answers, judged by eye.
+- **Costs the seller nothing (criterion 12)**: the diff touches only `scripts/design/` and, if needed, the two registry tests within their seams; every suite passes with no other test edited; nothing under `app/` or `web/src/` (outside those tests) changes.
 
 ## Out of scope
 
@@ -122,6 +145,8 @@ No telemetry; read from the PR evidence and from tests.
 - A before/after AE pair for a change with nothing seller-visible to compare.
 - Judging whether a screen looks good: the capture finds unintended differences.
 - Making a light row and its dark twin show the same record.
-- Changing a row's route, steps or sample data to make its declaration truthful: that is a follow-up issue.
+- Changing a row's route, steps or sample data to make its declaration truthful: that is a follow-up issue. Changing a row's steps or sample data so it reaches its screen as a seller does is in scope.
 - Any change to ADR-0033's normalisation, or any exemption in the registry cross-check.
 - Checking, by rule, a row whose path names no record while its route does.
+- Removing, skipping or excusing a row, or keeping a list of rows known to fail, to make a `--strict` run exit 0.
+- Loosening the applied-check, letting a capture load fonts from the network, or changing the app's own font loading to make a capture pass.
