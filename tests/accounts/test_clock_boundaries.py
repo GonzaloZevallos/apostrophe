@@ -8,7 +8,7 @@ test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole` alread
 clock across a month and a year boundary for the removal flow; this file covers only
 accept, login and `/auth/me`."""
 
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta, timezone
 
 import pytest
 from fastapi.testclient import TestClient
@@ -90,11 +90,23 @@ def test_an_invitation_accepted_inside_its_lifetime_opens_a_session_on_any_day(
     assert today == (accepted.astimezone(ARGENTINA)).date().isoformat()
 
 
-@pytest.mark.parametrize("issued", [ISSUED_MONTH, ISSUED_YEAR, NOW], ids=["month", "year", "NOW"])
+# (issued, accepted): `accepted` is `issued` + 7 days + 1 second, written out.
+JUST_PAST_THE_LIFETIME = [
+    pytest.param(ISSUED_MONTH, datetime(2026, 11, 4, 12, 0, 1, tzinfo=ARGENTINA), id="month end"),
+    pytest.param(ISSUED_YEAR, datetime(2027, 1, 4, 12, 0, 1, tzinfo=ARGENTINA), id="year end"),
+    pytest.param(NOW, datetime(2026, 10, 9, 18, 0, 1, tzinfo=UTC), id="NOW"),
+]
+
+
+@pytest.mark.parametrize(("issued", "accepted"), JUST_PAST_THE_LIFETIME)
 def test_an_invitation_accepted_just_past_its_lifetime_is_refused_on_any_day(
-    anonymous_client: TestClient, engine: Engine, clock: MovableClock, issued: datetime
+    anonymous_client: TestClient,
+    engine: Engine,
+    clock: MovableClock,
+    issued: datetime,
+    accepted: datetime,
 ) -> None:
-    accepted = issued + timedelta(days=7, seconds=1)
+    assert accepted - issued == INVITATION_LIFETIME + timedelta(seconds=1)
 
     accept, login, _me, _today = _open_and_sign_in(
         anonymous_client, engine, clock, issued, accepted

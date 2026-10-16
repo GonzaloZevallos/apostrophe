@@ -28,7 +28,7 @@ from __future__ import annotations
 import ast
 from collections.abc import Iterable
 from dataclasses import dataclass
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 import pytest
 
@@ -85,7 +85,8 @@ class Read:
 def real_clock_reads(source: str, path: str = "") -> list[Read]:
     """Every read of the real clock in `source`, with the function that holds it."""
     tree = ast.parse(source)
-    table = _import_table(tree)
+    package = PurePosixPath(path).parent.parts
+    table = _import_table(tree, package)
     bound = _bound_names(tree)
     reads: set[Read] = set()
 
@@ -100,10 +101,11 @@ def real_clock_reads(source: str, path: str = "") -> list[Read]:
         return None
 
     def visit(node: ast.AST, symbol: str) -> None:
-        if isinstance(node, ast.ImportFrom) and node.module and not node.level:
+        if isinstance(node, ast.ImportFrom):
+            module = _imported_module(node, package)
             for alias in node.names:
-                if f"{node.module}.{alias.name}" in TARGETS:
-                    reads.add(Read(path, node.lineno, symbol, f"{node.module}.{alias.name}"))
+                if module is not None and f"{module}.{alias.name}" in TARGETS:
+                    reads.add(Read(path, node.lineno, symbol, f"{module}.{alias.name}"))
         elif isinstance(node, ast.Name | ast.Attribute) and isinstance(node.ctx, ast.Load):
             target = resolve(node)
             if target in TARGETS:
@@ -116,12 +118,23 @@ def real_clock_reads(source: str, path: str = "") -> list[Read]:
     return sorted(reads, key=lambda read: (read.line, read.target))
 
 
-def real_clock_lines(source: str) -> list[int]:
+def real_clock_lines(source: str, path: str = "") -> list[int]:
     """The line of every read of the real clock in `source`, in order."""
-    return sorted({read.line for read in real_clock_reads(source)})
+    return sorted({read.line for read in real_clock_reads(source, path)})
 
 
-def _import_table(tree: ast.AST) -> dict[str, str]:
+def _imported_module(node: ast.ImportFrom, package: tuple[str, ...]) -> str | None:
+    """The absolute dotted module a `from` import names; a relative one is resolved
+    against `package`, the dotted directory of the file that holds it."""
+    if not node.level:
+        return node.module
+    if node.level - 1 > len(package):
+        return None
+    base = package[: len(package) - (node.level - 1)]
+    return ".".join([*base, *([node.module] if node.module else [])])
+
+
+def _import_table(tree: ast.AST, package: tuple[str, ...]) -> dict[str, str]:
     """local name -> the dotted thing it stands for ("dt" -> "datetime")."""
     table: dict[str, str] = {}
     for node in ast.walk(tree):
@@ -132,9 +145,11 @@ def _import_table(tree: ast.AST) -> dict[str, str]:
                 else:
                     top = alias.name.split(".")[0]
                     table[top] = top
-        elif isinstance(node, ast.ImportFrom) and node.module and not node.level:
+        elif isinstance(node, ast.ImportFrom):
+            module = _imported_module(node, package)
             for alias in node.names:
-                table[alias.asname or alias.name] = f"{node.module}.{alias.name}"
+                if module is not None:
+                    table[alias.asname or alias.name] = f"{module}.{alias.name}"
     return table
 
 
@@ -229,6 +244,40 @@ def test_the_scan_names_a_wall_clock_read_outside_its_allowed_function(tmp_path:
     )
 
     assert tree_hits(tmp_path, tmp_path) == ["app/clock.py:5"]
+
+
+@pytest.mark.parametrize(
+    ("source", "path"),
+    [
+        ("from .clock import system_clock as sc\nx = sc()\n", "app/service.py"),
+        ("from . import clock\nx = clock.system_clock\n", "app/service.py"),
+        ("from .. import clock as c\nx = c.system_clock\n", "app/accounts/service.py"),
+        ("from ..clock import system_clock\n", "app/accounts/service.py"),
+    ],
+)
+def test_the_checker_flags_a_relative_import_of_the_system_clock(source: str, path: str) -> None:
+    assert real_clock_lines(source, path) != []
+
+
+def test_a_relative_import_that_is_not_the_system_clock_passes() -> None:
+    source = "from .clock import business_day\nfrom . import clock\nx = clock.business_day\n"
+
+    assert real_clock_lines(source, "app/accounts/service.py") == []
+
+
+def test_the_scan_names_a_relative_import_of_system_clock_outside_the_allowed_paths(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "app" / "accounts" / "adapters").mkdir(parents=True)
+    (tmp_path / "app" / "main.py").write_text("from .clock import system_clock as sc\n")
+    (tmp_path / "app" / "accounts" / "adapters" / "cli.py").write_text(
+        "from ... import clock\nx = clock.system_clock\n"
+    )
+    (tmp_path / "app" / "accounts" / "service.py").write_text(
+        "from . import clock\nfrom .. import clock as c\nx = c.system_clock\n"
+    )
+
+    assert tree_hits(tmp_path, tmp_path) == ["app/accounts/service.py:3"]
 
 
 @pytest.mark.parametrize(
