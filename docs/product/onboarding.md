@@ -88,7 +88,7 @@ Success criteria:
 | 6 | Expense categories | No | Add, rename and remove, as Categorías de gastos (expenses.md) |
 
 - **Step 2** says plainly that with no cost the lot costs $0.
-- **Step 2's origin** shows as the fixed text-only chip "Stock inicial", with no "Origen" label above it: the step's title already says it is the opening stock, and the origin cannot change there. The "Origen" label in `Onboarding*.dc.html` is a known defect of the drawing, corrected by design in its own work. The full stock entry form keeps its origin choice as stock.md defines it.
+- **Step 2's origin** shows as the fixed text-only chip "Stock inicial", with no "Origen" label above it: the step's title already says it is the opening stock, and the origin cannot change there. The "Origen" label in `Onboarding*.dc.html` is a known defect of the drawing, corrected by design in its own work. This applies only where the origin is the fixed chip: the full stock entry form keeps its origin choice, and whatever label it draws over it, as stock.md defines it.
 - **More varieties**: after a variety and its opening stock, the seller sees "Agregar otra variedad" (another name, price and opening stock) or "Seguir".
   - There is no cap, and each variety is saved the moment its step is saved.
   - One variety is enough to continue.
@@ -170,7 +170,7 @@ Success criteria:
   - the two registry tests are declared as seams;
   - every guard of those tests is kept.
 - **Every difference is listed** in the PR as intended, as a known design defect (such as the drawing's "Origen" label on step 2), or as a defect.
-  - A difference the change introduced compared with the task base is a regression, and it is fixed in the same task.
+  - A difference the change introduced compared with the task base is a regression, and it is fixed in the same task, unless it is the change's own decided intent.
   - A difference already present on the task base is filed as a new follow-up issue, which the PR links, and is not fixed there.
   - No difference is left unexplained.
 - **A missing capture**: a cell that cannot be captured, on either side, means the change is not done. There is no exception (design-capture.md).
@@ -210,7 +210,11 @@ There is no telemetry.
   - returning to step 1 after a variety is priced today showing that variety marked "Hecho", and moving on to step 2 adding no variety;
   - with one variety priced today and a second saved with no price, returning to step 1 showing the second's name kept and only its price to fill in, saving only the price, with the progress count unchanged;
   - the "$" before the list, bulk and VIP price and never before the bulk minimum, and no date field or date chip.
-- **Step 2's chip**: `web/src/screens/StockEntryForm.test.tsx` asserts no "Origen" label is drawn over the "Stock inicial" chip; that assertion is not edited. 0 open findings on the label.
+- **Step 2's chip**: front tests (`web/src/screens/StockEntryForm.test.tsx`) show:
+  - no "Origen" label over the fixed "Stock inicial" chip on step 2. The assertion that it was present changes to absent in the same diff as this doc, and the PR lists it (icon-and-text-rule.md criterion 5);
+  - the full stock entry form's origin choice unchanged, with every assertion about it unedited.
+
+  0 open findings on the label.
 - **Who gets it**:
   - a brand-new business gets it;
   - an imported business (including one that landed in the Onboarding before the import) never sees it again;
@@ -228,7 +232,7 @@ There is no telemetry.
   - before and after captures are attached for every cell of the matrix: 0 cells missing;
   - every difference is listed as intended, a known design defect or a defect: 0 unlisted;
   - 0 regressions left on the head that merges, and every pre-existing difference is linked to a follow-up issue;
-  - every suite passes, and the only edited tests are the registry tests within their declared seams;
+  - every suite passes, and the only edited tests are the registry tests within their declared seams and any assertion changed in the same diff as the doc that decides it;
   - no capture or comparison step is added to `.agentic/stack.yaml`, CI or the gate.
 - **Business metrics**, read by the operator from existing records only (no tool, no dashboard, never shown in the app):
   - the share of brand-new businesses with a priced variety and a stock entry;
@@ -249,7 +253,7 @@ There is no telemetry.
 - Waiting for a partner to join.
 - Editing or renaming a saved variety from step 1: that is the variety's page.
 - A date field or date chip in step 1: it always saves a price effective today.
-- An "Origen" label over step 2's chip.
+- An "Origen" label over step 2's chip; any change to the full stock entry form's origin choice or its label.
 - Correcting `Onboarding*.dc.html` as part of a change's review: design corrects its own drawings.
 - Fixing, in the change under review, a design difference already present on its task base: it goes to a follow-up.
 - Making the design comparison a gate step, or any automated check of a capture.
