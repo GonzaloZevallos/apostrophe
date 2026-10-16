@@ -23,6 +23,12 @@ Capturada: 2026-10-07
 | Sir Jack | −1 g | agotada | Sin gramos desde el 07/10 | — | $ 11.000 x g |
 | Mango Bomb | 0 g | sin entradas | Cargale la primera entrada | — | $ 15.000 x g |
 
+### Archivadas
+
+| Variedad | Gramos | Estado | Oculta |
+| --- | --- | --- | --- |
+| Purple Haze | 17 g | Archivada | sí |
+
 ### Movimientos
 
 | Variedad | Fecha | Tipo | Gramos |
@@ -100,6 +106,7 @@ Total: $ 32.000
 | 06/10 | Tincho Aguirre | $ 12.000 | $ 1.000 | sí | Debiendo |
 | 04/10 | — | $ 108.000 | $ 0 | no | Efectivo |
 | 02/10 | — | $ 55.000 | $ 0 | no | Efectivo |
+| 30/09 | — | $ 39.000 | $ 0 | no | Efectivo |
 | 27/09 | Lu Fernández | $ 33.000 | $ 0 | no | Transferencia |
 | 25/09 | Tincho Aguirre | $ 96.000 | $ 0 | no | Efectivo |
 | 18/09 | Nico Parra | $ 14.000 | $ 0 | no | Efectivo |
@@ -117,6 +124,7 @@ Total: $ 32.000
 | 06/10 · Tincho Aguirre · $ 12.000 | Sir Jack | 1 g | $ 11.000 x g | Lista | $ 11.000 |
 | 04/10 · — · $ 108.000 | Golden Cookies | 9 g | $ 12.000 x g | Por mayor | $ 108.000 |
 | 02/10 · — · $ 55.000 | Sir Jack | 5 g | $ 11.000 x g | Lista | $ 55.000 |
+| 30/09 · — · $ 39.000 | Purple Haze | 3 g | $ 13.000 x g | Lista | $ 39.000 |
 | 27/09 · Lu Fernández · $ 33.000 | Sir Jack | 3 g | $ 11.000 x g | Lista | $ 33.000 |
 | 25/09 · Tincho Aguirre · $ 96.000 | Golden Cookies | 8 g | $ 12.000 x g | Por mayor | $ 96.000 |
 | 18/09 · Nico Parra · $ 14.000 | Golden Cookies | 1 g | $ 14.000 x g | Lista | $ 14.000 |
@@ -202,11 +210,11 @@ Total: $ 32.000
 | Semana | 21/09 – 27/09 | Gastos | $ 0 | no |
 | Semana | 21/09 – 27/09 | Ganancia | $ 73.000 | no |
 | Semana | 21/09 – 27/09 | Caja | $ 129.000 | no |
-| Semana | 28/09 – 04/10 | Ventas | $ 163.000 | no |
-| Semana | 28/09 – 04/10 | Gramos | 14 g | no |
+| Semana | 28/09 – 04/10 | Ventas | $ 202.000 | no |
+| Semana | 28/09 – 04/10 | Gramos | 17 g | no |
 | Semana | 28/09 – 04/10 | Gastos | $ 0 | no |
-| Semana | 28/09 – 04/10 | Ganancia | $ 100.000 | no |
-| Semana | 28/09 – 04/10 | Caja | $ 163.000 | no |
+| Semana | 28/09 – 04/10 | Ganancia | $ 127.000 | no |
+| Semana | 28/09 – 04/10 | Caja | $ 202.000 | no |
 | Semana | 05/10 – 11/10 | Ventas | $ 206.000 | no |
 | Semana | 05/10 – 11/10 | Gramos | 19 g | no |
 | Semana | 05/10 – 11/10 | Promoción | $ 35.000 | no |
@@ -225,11 +233,11 @@ Total: $ 32.000
 | Mes | 01/08 – 31/08 | Gastos | $ 0 | no |
 | Mes | 01/08 – 31/08 | Ganancia | $ 0 | no |
 | Mes | 01/08 – 31/08 | Caja | −$ 880.000 | no |
-| Mes | 01/09 – 30/09 | Ventas | $ 168.000 | no |
-| Mes | 01/09 – 30/09 | Gramos | 14 g | no |
+| Mes | 01/09 – 30/09 | Ventas | $ 207.000 | no |
+| Mes | 01/09 – 30/09 | Gramos | 17 g | no |
 | Mes | 01/09 – 30/09 | Gastos | $ 0 | no |
-| Mes | 01/09 – 30/09 | Ganancia | $ 95.000 | no |
-| Mes | 01/09 – 30/09 | Caja | $ 143.000 | no |
+| Mes | 01/09 – 30/09 | Ganancia | $ 122.000 | no |
+| Mes | 01/09 – 30/09 | Caja | $ 182.000 | no |
 | Mes | 01/10 – 31/10 | Ventas | $ 369.000 | no |
 | Mes | 01/10 – 31/10 | Gramos | 33 g | no |
 | Mes | 01/10 – 31/10 | Promoción | $ 35.000 | no |
@@ -244,7 +252,7 @@ Total: $ 32.000
 | --- | --- | --- | --- |
 | Lun | $ 0 | 0 | no |
 | Mar | $ 12.000 | 1 | no |
-| Mié | $ 194.000 | 3 | sí |
+| Mié | $ 233.000 | 4 | sí |
 | Jue | $ 0 | 0 | no |
 | Vie | $ 190.000 | 4 | no |
 | Sáb | $ 0 | 0 | no |
@@ -254,13 +262,13 @@ Total: $ 32.000
 
 | Período | Rango | Etiqueta | Valor | Pendiente |
 | --- | --- | --- | --- | --- |
-| Desde el primer registro | 28/08 – 07/10 | Ventas | $ 537.000 | no |
+| Desde el primer registro | 28/08 – 07/10 | Ventas | $ 576.000 | no |
 | Desde el primer registro | 28/08 – 07/10 | Faltante de stock | $ 10.000 | no |
 | Desde el primer registro | 28/08 – 07/10 | Promoción | $ 35.000 | no |
 | Desde el primer registro | 28/08 – 07/10 | Consumo propio | $ 14.000 | y 1 g sin costo |
 | Desde el primer registro | 28/08 – 07/10 | Gastos | $ 12.500 | no |
-| Desde el primer registro | 28/08 – 07/10 | Ganancia | $ 236.500 | y 1 g sin costo |
-| Desde el primer registro | 28/08 – 07/10 | Caja | −$ 537.500 | no |
+| Desde el primer registro | 28/08 – 07/10 | Ganancia | $ 263.500 | y 1 g sin costo |
+| Desde el primer registro | 28/08 – 07/10 | Caja | −$ 498.500 | no |
 
 ## Cómo se obtuvo
 

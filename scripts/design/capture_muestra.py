@@ -124,8 +124,9 @@ def _load_sample_app() -> ModuleType:
 class _ClientApi:
     """The seed's `Api`, and the capture's reader, over a signed-in TestClient."""
 
-    def __init__(self, client: Any) -> None:
+    def __init__(self, client: Any, sample_app: ModuleType) -> None:
         self.client = client
+        self.sample_app = sample_app
 
     def call(self, method: str, path: str, body: object | None = None) -> Json:
         response = self.client.request(method, path, json=body)
@@ -169,8 +170,9 @@ def _seeded(day: date) -> _ClientApi:
     )
     assert accepted.status_code == 201, accepted.status_code
     client.headers["Authorization"] = f"Bearer {accepted.json()['token']}"
-    api = _ClientApi(client)
-    _load_sample_app().seed(api, day)
+    sample_app = _load_sample_app()
+    api = _ClientApi(client, sample_app)
+    sample_app.seed(api, day)
     return api
 
 
@@ -203,6 +205,16 @@ def _varieties(api: _ClientApi) -> list[str]:
         )
     header = ["Variedad", "Gramos", "Estado", "Detalle", "Días restantes", "Precio hoy"]
     return ["### Variedades", "", *table(header, rows)]
+
+
+def _archived(api: _ClientApi) -> list[str]:
+    names = {v["id"]: v["name"] for v in api.get("/varieties?archived=true")}
+    hidden = not api.sample_app.ARCHIVED_SHOWN
+    rows = [
+        [names[row["variety_id"]], grams(row["grams"]), "Archivada", yes_no(hidden)]
+        for row in api.get("/stock?archived=true")["varieties"]
+    ]
+    return ["### Archivadas", "", *table(["Variedad", "Gramos", "Estado", "Oculta"], rows)]
 
 
 def _movements(api: _ClientApi) -> list[str]:
@@ -494,6 +506,7 @@ def render_muestra(day: date) -> str:
         lines = [f"Capturada: {day.isoformat()}", ""]
         for part in (
             _varieties,
+            _archived,
             _movements,
             _customers,
             _debtors,

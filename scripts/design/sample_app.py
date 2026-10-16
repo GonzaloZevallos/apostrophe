@@ -37,6 +37,9 @@ REPO = Path(__file__).resolve().parents[2]
 EMAIL = "vos@lahuerta.com"
 PASSWORD = "muestra-de-la-huerta"
 BUSINESS = "La Huerta"
+# The archived variety is hidden from the catalog; no stored route says so once it is
+# archived, so the capture reads this one fact from here rather than guessing it.
+ARCHIVED_SHOWN = False
 
 
 class Api(Protocol):
@@ -62,15 +65,30 @@ class Sample:
     no_entries: int
     withdrawal: int
     entry: int
+    archived_low: int | None = None
 
 
-def seed(api: Api, today: date) -> Sample:
+def before_current_periods(today: date) -> date:
+    """The day before the earlier of this week's Monday and the first of this month: a
+    date that falls in neither Hoy, Semana nor Mes, whatever day it runs on."""
+    if str(REPO) not in sys.path:
+        sys.path.insert(0, str(REPO))
+    from app.shared.calendar import Month, Week
+
+    start = min(Week.containing(today).first_day, Month.containing(today).first_day)
+    return start - timedelta(days=1)
+
+
+def seed(api: Api, today: date, *, with_archived: bool = True) -> Sample:
     """Every state the design's screens show: sales today and earlier, a gift, a VIP,
     a sale without a customer, two customers owing, a later payment, a variety sold
     out, one under its threshold, one never entered, expenses in two categories and a
     purchase this week, stock withdrawals of each reason (one past every lot of its
     variety, so it carries pending cost). Week-dependent figures sit on `today`, so the
-    week is never empty whatever weekday it runs on."""
+    week is never empty whatever weekday it runs on. One variety, hidden and archived, with
+    its stock, price entry, threshold and one cash sale, all dated before the current
+    week and month so no live figure moves (`with_archived=False` leaves it out, to prove
+    that)."""
 
     def ago(days: int) -> str:
         return (today - timedelta(days=days)).isoformat()
@@ -256,6 +274,8 @@ def seed(api: Api, today: date) -> Sample:
             {"shown": True, "emoji": emoji, "indica_share": indica, "aroma": aroma},
         )
 
+    archived_low = _archived_variety(api, today) if with_archived else None
+
     return Sample(
         debtor=nico,
         owing_sale=owing,
@@ -265,7 +285,59 @@ def seed(api: Api, today: date) -> Sample:
         no_entries=mango,
         withdrawal=promotion,
         entry=first_entry,
+        archived_low=archived_low,
     )
+
+
+def _archived_variety(api: Api, today: date) -> int:
+    """Created only through the API, archived last. Its opening stock and price entry sit
+    40 days back; its one sale sits before the week and the month, so Hoy, Semana and Mes
+    never see it, and some of its lot is left on hand."""
+    ago_40 = (today - timedelta(days=40)).isoformat()
+    made: int = api.call("POST", "/varieties", {"name": "Purple Haze"})["id"]
+    api.call(
+        "POST",
+        f"/varieties/{made}/prices",
+        {
+            "effective_from": ago_40,
+            "list_price": 13_000,
+            "bulk_price": 11_000,
+            "bulk_minimum": 5,
+            "vip_price": 11_000,
+        },
+    )
+    api.call(
+        "POST",
+        "/stock/entries",
+        {
+            "date": ago_40,
+            "variety_id": made,
+            "origin": "opening_stock",
+            "grams": "20",
+            "total_cost": 80_000,
+            "note": None,
+        },
+    )
+    api.call("PUT", f"/stock/varieties/{made}/threshold", {"grams": "5"})
+    api.call(
+        "PUT",
+        f"/catalog/varieties/{made}",
+        {"shown": ARCHIVED_SHOWN, "emoji": "💜", "indica_share": 80, "aroma": "Uva y tierra"},
+    )
+    api.call(
+        "POST",
+        "/sales",
+        {
+            "date": before_current_periods(today).isoformat(),
+            "customer_id": None,
+            "shipping_charged": 0,
+            "note": None,
+            "payment": "cash",
+            "lines": [{"variety_id": made, "grams": "3", "gift": False, "special_price": None}],
+        },
+    )
+    api.call("POST", f"/varieties/{made}/archive")
+    return made
 
 
 class HttpApi:
