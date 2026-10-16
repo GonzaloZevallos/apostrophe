@@ -176,6 +176,33 @@ async function checkApplied(page, ctx, ofFirstText) {
 // The design file an entry is compared against: `design`, else the entry's own name.
 const designOf = (s) => s.design ?? s.screen
 
+// A section is cropped to its parent block. When a direct child sticks out of that block
+// (a fixed-width card inside a padded column), the crop is the union of the block and its
+// children, in page coordinates, so no line of the section is cut; a block that holds its
+// children is cropped exactly as `locator.screenshot()` does.
+async function captureSection(page, block) {
+  const union = await block.evaluate((el) => {
+    const box = (e) => {
+      const r = e.getBoundingClientRect()
+      return { left: r.left + scrollX, top: r.top + scrollY, right: r.right + scrollX, bottom: r.bottom + scrollY }
+    }
+    const own = box(el)
+    const all = [own, ...[...el.children].map(box)]
+    const left = Math.min(...all.map((b) => b.left))
+    const top = Math.min(...all.map((b) => b.top))
+    const right = Math.max(...all.map((b) => b.right))
+    const bottom = Math.max(...all.map((b) => b.bottom))
+    const slack = 0.5
+    const fits = own.left - left < slack && own.top - top < slack && right - own.right < slack && bottom - own.bottom < slack
+    if (fits) return null
+    // Whole pixels outward, as `locator.screenshot()` rounds its own box.
+    const x = Math.floor(left)
+    const y = Math.floor(top)
+    return { x, y, width: Math.ceil(right) - x, height: Math.ceil(bottom) - y }
+  })
+  return union ? await page.screenshot({ fullPage: true, clip: union }) : await block.screenshot()
+}
+
 async function captureDesign(browser, s, options, ctx) {
   const context = await browser.newContext(options)
   try {
@@ -185,9 +212,8 @@ async function captureDesign(browser, s, options, ctx) {
     await settle(page)
     await checkApplied(page, ctx, true)
     // A file that draws several states: only the block under the entry's `section` label.
-    return s.section
-      ? await page.getByText(s.section, { exact: true }).first().locator('xpath=..').screenshot()
-      : await page.screenshot({ fullPage: true })
+    if (!s.section) return await page.screenshot({ fullPage: true })
+    return await captureSection(page, page.getByText(s.section, { exact: true }).first().locator('xpath=..'))
   } finally {
     await context.close()
   }
