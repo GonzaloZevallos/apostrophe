@@ -187,7 +187,9 @@ async function captureSection(page, block) {
       return { left: r.left + scrollX, top: r.top + scrollY, right: r.right + scrollX, bottom: r.bottom + scrollY }
     }
     const own = box(el)
-    const all = [own, ...[...el.children].map(box)]
+    // A child with no box (display:none, display:contents) sits at the origin: not a part of the section.
+    const drawn = [...el.children].filter((c) => c.getBoundingClientRect().width > 0 || c.getBoundingClientRect().height > 0)
+    const all = [own, ...drawn.map(box)]
     const left = Math.min(...all.map((b) => b.left))
     const top = Math.min(...all.map((b) => b.top))
     const right = Math.max(...all.map((b) => b.right))
