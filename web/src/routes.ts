@@ -177,6 +177,9 @@ interface ScreenBase {
   title: string
   /** Which pane a two-pane screen fills; inert until the area issues build the panes. */
   pane?: 'list' | 'detail'
+  /** The route is a modal on a computer: the shell draws no side rail behind its scrim. The
+   * only thing that hides the rail; it is never inferred from `pane` or `kind`. */
+  modalOnComputer?: true
 }
 
 export type Screen =
@@ -230,7 +233,14 @@ export const SCREENS: readonly Screen[] = [
   screen({ id: 'variety', path: VARIETY, kind: 'card', title: 'Variedad', pane: 'detail', parent: 'varieties' }),
   screen({ id: 'variety-new', path: VARIETY_NEW, kind: 'form', title: 'Nueva variedad', parent: 'varieties' }),
   screen({ id: 'variety-prices', path: VARIETY_PRICES, kind: 'card', title: 'Precios', parent: 'variety' }),
-  screen({ id: 'variety-price-new', path: VARIETY_PRICE_NEW, kind: 'form', title: 'Nuevo precio', parent: 'variety' }),
+  screen({
+    id: 'variety-price-new',
+    path: VARIETY_PRICE_NEW,
+    kind: 'form',
+    title: 'Nuevo precio',
+    parent: 'variety',
+    modalOnComputer: true,
+  }),
   screen({ id: 'variety-entries', path: VARIETY_ENTRIES, kind: 'card', title: 'Entradas', parent: 'variety' }),
   screen({ id: 'catalog', path: CATALOG, kind: 'card', title: 'Catálogo', parent: 'varieties' }),
   screen({ id: 'stock', path: STOCK, kind: 'card', title: 'Todas las entradas', parent: 'varieties' }),
