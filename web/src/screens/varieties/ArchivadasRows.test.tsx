@@ -39,7 +39,22 @@ interface Fake {
 }
 
 const HIDDEN: Stored = { shown: false, emoji: '🍪', indica_share: 70, aroma: 'Galletita' }
-const SHOWN: Stored = { shown: true, emoji: null, indica_share: null, aroma: null }
+const SHOWN: Stored = { shown: true, emoji: '🍋', indica_share: 30, aroma: 'Limón' }
+const BARE: Stored = { shown: true, emoji: null, indica_share: null, aroma: null }
+
+/** One price entry in force and one stock entry: stored with the variety, never changed by a restore. */
+const PRICE = { id: 11, effective_from: '2026-09-06', list_price: 13000, bulk_price: null, bulk_minimum: null, vip_price: null }
+const ENTRY = {
+  kind: 'entry',
+  id: 21,
+  date: '2026-09-06',
+  variety_id: 0,
+  origin: 'opening_stock',
+  grams: 20,
+  total_cost: 80000,
+  cost_per_gram: 4000,
+  note: null,
+}
 
 /** A small stateful API: the archived flag lives in it, the rest never changes on a restore. */
 function fakeApi(fakes: Fake[]) {
@@ -49,7 +64,7 @@ function fakeApi(fakes: Fake[]) {
     name: fake.name,
     archived: !restored.has(fake.id),
     removal: restored.has(fake.id) ? 'archive' : null,
-    current_price: null,
+    current_price: PRICE,
   })
   const row = (fake: Fake) => ({
     variety_id: fake.id,
@@ -77,8 +92,8 @@ function fakeApi(fakes: Fake[]) {
   }
   for (const fake of fakes) {
     answers[`GET /varieties/${fake.id}`] = () => json(200, detail(fake))
-    answers[`GET /varieties/${fake.id}/prices`] = () => json(200, [])
-    answers[`GET /stock/varieties/${fake.id}/movements`] = () => json(200, [])
+    answers[`GET /varieties/${fake.id}/prices`] = () => json(200, [PRICE])
+    answers[`GET /stock/varieties/${fake.id}/movements`] = () => json(200, [{ ...ENTRY, variety_id: fake.id }])
     answers[`GET /catalog/varieties/${fake.id}`] = () => json(200, fake.stored)
     answers[`POST /varieties/${fake.id}/restore`] = () => {
       restored.add(fake.id)
@@ -139,7 +154,7 @@ describe('an Archivadas row', () => {
   test('shows the neutral Archivada badge, Oculta only when hidden, and the plain grams', async () => {
     renderAt(ARCHIVED_VARIETIES, [
       { id: 4, name: 'Alfa Vieja', grams: 17, stored: HIDDEN },
-      { id: 5, name: 'Beta Vieja', grams: 9, stored: SHOWN },
+      { id: 5, name: 'Beta Vieja', grams: 9, stored: BARE },
     ])
     await screen.findByText('Alfa Vieja')
     const hidden = rowOf('Alfa Vieja')
@@ -157,8 +172,8 @@ describe('an Archivadas row', () => {
 
   test('shows the grams at zero and below zero with a minus sign, and no status, days left or price', async () => {
     renderAt(ARCHIVED_VARIETIES, [
-      { id: 4, name: 'Alfa Vieja', grams: 0, stored: SHOWN },
-      { id: 5, name: 'Beta Vieja', grams: -3, stored: SHOWN },
+      { id: 4, name: 'Alfa Vieja', grams: 0, stored: BARE },
+      { id: 5, name: 'Beta Vieja', grams: -3, stored: BARE },
     ])
     await screen.findByText('Alfa Vieja')
     expect(await within(rowOf('Alfa Vieja')).findByText('0 g')).toBeTruthy()
@@ -184,16 +199,26 @@ describe.each([
     await router.navigate(pathTo(VARIETY, { id: 4 }))
 
     expect(await screen.findByRole('button', { name: 'Archivar variedad' })).toBeTruthy()
+    // Stock and the threshold: the grams on hand and the warning stored with them.
     expect(await screen.findByText('Avisando: quedan 18 g')).toBeTruthy()
+    expect(screen.getAllByText('18 g', { exact: false }).length).toBeGreaterThan(0)
+    // The stock entry and the price entry, as stored.
+    const stock = (await screen.findByRole('heading', { name: 'Stock y entradas' })).closest('section') as HTMLElement
+    expect(await within(stock).findByText('06/09 · Stock inicial')).toBeTruthy()
+    expect(within(stock).getByText('20 g')).toBeTruthy()
+    expect(within(stock).getByText('$ 4.000 el gramo')).toBeTruthy()
+    expect(within(stock).getByText('$ 80.000')).toBeTruthy()
+    const prices = (await screen.findByRole('heading', { name: 'Precios' })).closest('section') as HTMLElement
+    expect(within(prices).getByText('Rige desde 06/09', { exact: false })).toBeTruthy()
+    expect(within(prices).getByText('Vigente hoy')).toBeTruthy()
+    expect(within(prices).getByText('$ 13.000')).toBeTruthy()
+    // The hidden flag and the catalog attributes.
     const catalog = (await screen.findByRole('heading', { name: 'En el catálogo' })).closest('section') as HTMLElement
-    if (stored.shown) {
-      expect(screen.queryByText('Oculta')).toBeNull()
-      expect(within(catalog).queryByText('Galletita')).toBeNull()
-    } else {
-      expect(screen.getByText('Oculta')).toBeTruthy()
-      expect(within(catalog).getByText('Galletita')).toBeTruthy()
-      expect(within(catalog).getByText('🍪')).toBeTruthy()
-      expect(within(catalog).getByText('70 %')).toBeTruthy()
-    }
+    expect(within(catalog).getByText(stored.shown ? 'Se muestra' : 'No se muestra')).toBeTruthy()
+    expect(within(catalog).getByText(stored.emoji as string)).toBeTruthy()
+    expect(within(catalog).getByText(`${stored.indica_share} %`)).toBeTruthy()
+    expect(within(catalog).getByText(stored.aroma as string)).toBeTruthy()
+    if (stored.shown) expect(screen.queryByText('Oculta')).toBeNull()
+    else expect(screen.getByText('Oculta')).toBeTruthy()
   })
 })
