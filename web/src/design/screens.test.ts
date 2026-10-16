@@ -247,6 +247,55 @@ describe('the real registry covers its evidence', () => {
   })
 })
 
+describe('an entry whose path names a record names the same placeholders in its route, as written (a path with no placeholder makes no claim, so a route that names a record through it is not checked)', () => {
+  interface Declared {
+    screen: string
+    path?: string | null
+    route?: string | null
+  }
+  interface Mismatch {
+    screen: string
+    path: string[]
+    route: string[]
+  }
+
+  const placeholders = (text: string | null | undefined): string[] =>
+    Array.from((text ?? '').matchAll(/\{([^{}]+)\}/g), (match) => match[1]!)
+
+  const pathRecordMismatches = (entries: readonly Declared[]): Mismatch[] =>
+    entries.flatMap((entry) => {
+      const path = placeholders(entry.path)
+      const route = placeholders(entry.route)
+      if (path.length === 0) return []
+      const same = path.length === route.length && path.every((name, index) => name === route[index])
+      return same ? [] : [{ screen: entry.screen, path, route }]
+    })
+
+  const real = (screen: string): Declared => {
+    const entry = screens.screens.find((s) => s.screen === screen)
+    if (entry === undefined) throw new Error(`screens.json has no ${screen} entry`)
+    return entry
+  }
+
+  it('refuses an entry whose path names a record its route does not, naming the screen and the two lists', () => {
+    const uncorrected = { ...real('VariedadArchivada'), path: '/varieties/{low}' }
+    expect(pathRecordMismatches([uncorrected])).toEqual([
+      { screen: 'VariedadArchivada', path: ['low'], route: ['sold_out'] },
+    ])
+  })
+
+  it('accepts an entry whose path names no record, though its route does', () => {
+    const entry = real('EntradaStockSinEntradas')
+    expect(entry.route).toBe('/varieties/{no_entries}')
+    expect(entry.path).toBe('/varieties/entries/new')
+    expect(pathRecordMismatches([entry])).toEqual([])
+  })
+
+  it('accepts the real screens.json, imported, never copied', () => {
+    expect(pathRecordMismatches(screens.screens)).toEqual([])
+  })
+})
+
 describe('assertSelectedAccounts', () => {
   const accounts = ['listo', 'listo_compu', 'listo_oscuro']
 
