@@ -309,6 +309,11 @@ close, "Atrás" from step 2, none on step 1) and agrees with `OnboardingVariedad
 on step 1). There is no clip at 320–430 px or at 130 % text, and no built-side note. Every
 non-zero before/after line is intended.
 
+`css-fixes` closed with no diff: its candidate list is empty, so there was nothing to fix and no
+recapture. It rebuilt `web/dist` and ran `compare.sh --strict` over the seven screens and
+`OnboardingBotTexto130`: exit 0, every row ok. It re-read the Bot phone sheet and the Bot
+320 px / 130 % sheet, which agree with 3.3 and 3.4.
+
 **For Zeta, or split into their own bugs (copy and drawing, none fixed here):**
 1. `Stock`: "Guardá la entrada" (the entry form's button) against "Guardá el stock" in the drawing.
 2. `Variedad`: "Desde cuántos gramos aplica" against "Opcional · desde cuántos gramos aplica".
