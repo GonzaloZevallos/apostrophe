@@ -15,6 +15,7 @@ import { expect, test } from './fixtures.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { openCatalog } from './helpers/openMas.js'
+import { uniqueTag } from './helpers/unique.js'
 
 const TOKEN = '123456:fake-token-for-e2e'
 // The e2e bot's one started chat (`tests/e2e_app.py`): Buscar mi chat finds it.
@@ -28,8 +29,8 @@ test('a seller sets up the bot in Integraciones, then publishes from the catalog
   const consoleMessages: string[] = []
   watchConsole(page, consoleMessages)
 
-  const ownerEmail = `duena-bot-${Date.now()}@example.com`
-  const businessName = `Flores del Bot ${Date.now()}`
+  const ownerEmail = `duena-bot-${uniqueTag()}@example.com`
+  const businessName = `Flores del Bot ${uniqueTag()}`
 
   await signUpNewBusiness(page, { businessName, email: ownerEmail })
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)

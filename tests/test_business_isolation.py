@@ -46,7 +46,15 @@ from app.payments.adapters.tables import PaymentRow
 from app.results.domain.periods import periods as compute_periods
 from app.shared.calendar import Month
 from app.shared.transaction import Transaction
-from tests.conftest import SETTINGS, TEST_HASHER, TODAY, MovableClock, open_business, signed_in
+from tests.conftest import (
+    NOW,
+    SETTINGS,
+    TEST_HASHER,
+    TODAY,
+    MovableClock,
+    open_business,
+    signed_in,
+)
 from tests.fakes.archive import archive_by_hand
 from tests.fakes.telegram import FakeTelegram
 
@@ -312,7 +320,11 @@ PUBLIC_PATHS = {"/health", "/auth/login", "/auth/logout"}
 
 def _operations() -> list[tuple[str, str, bool]]:
     document = create_app(
-        SETTINGS, hasher=TEST_HASHER, telegram=FakeTelegram(), upkeep_ticker=False
+        SETTINGS,
+        hasher=TEST_HASHER,
+        telegram=FakeTelegram(),
+        upkeep_ticker=False,
+        clock=MovableClock(NOW),
     ).openapi()
     return sorted(
         (method.upper(), path, "requestBody" in operation)
