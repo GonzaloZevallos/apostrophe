@@ -200,8 +200,9 @@ def test_onboarding_accounts_are_isolated_businesses_still_in_onboarding(tmp_pat
             assert mine.isdisjoint(huerta_customers)
 
         # Ending one account's Onboarding leaves La Huerta's and the other account's open.
-        first, second = list(apis)
+        first, *others = list(apis)
         assert apis[first].call("POST", "/onboarding-progress/skip-rest")["over"] is True
         assert apis[first].call("GET", "/onboarding-progress")["over"] is True
-        assert apis[second].call("GET", "/onboarding-progress")["over"] is False
+        for other in others:
+            assert apis[other].call("GET", "/onboarding-progress")["over"] is False
         assert huerta.call("GET", "/onboarding-progress")["over"] is False
