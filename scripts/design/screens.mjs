@@ -18,12 +18,14 @@ const PANTALLAS = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'doc
  * @returns {void}
  */
 export function assertScreens(screens) {
+  const all = new Set(screens.map((s) => s.screen))
   const seen = new Set()
   for (const s of screens) {
     if ('color_scheme' in s) throw new Error(`${s.screen}: color_scheme is retired, use tema: 'oscuro'`)
     if ('tema' in s && s.tema !== 'oscuro') throw new Error(`${s.screen}: unknown tema ${JSON.stringify(s.tema)}`)
     if (seen.has(s.screen)) throw new Error(`${s.screen}: screen is not unique across the file`)
     seen.add(s.screen)
+    if ('needs' in s) assertNeeds(s, all, seen)
     if ('design' in s || 'section' in s) assertDesign(s)
     if ('account' in s) assertAccount(s)
     if ('account' in s && !reachesListo(s)) {
@@ -31,6 +33,43 @@ export function assertScreens(screens) {
     }
     if (reachesListo(s) && !('account' in s)) {
       throw new Error(`${s.screen}: an entry that reaches ${LISTO} must name an account of its own`)
+    }
+  }
+}
+
+// `needs` names the earlier entry whose state this one relies on (a capture runs the whole
+// file in order over one sample). `seen` holds the entries up to and including `s`, so a
+// target outside it is later in the file, or `s` itself.
+/**
+ * @param {Readonly<Record<string, unknown>>} s
+ * @param {ReadonlySet<unknown>} all
+ * @param {ReadonlySet<unknown>} seen
+ */
+function assertNeeds(s, all, seen) {
+  if (typeof s.needs !== 'string' || s.needs === '') {
+    throw new Error(`${s.screen}: needs must be a non-empty string`)
+  }
+  if (!all.has(s.needs)) throw new Error(`${s.screen}: needs names ${s.needs}, which is not a screen of the file`)
+  if (s.needs === s.screen || !seen.has(s.needs)) {
+    throw new Error(`${s.screen}: needs names ${s.needs}, which is not earlier in the file`)
+  }
+}
+
+// A selection (`--only`) that keeps an entry but drops the one it needs would capture it
+// over the wrong state, so it is refused before any capture. `all` is the whole file.
+/**
+ * @param {ReadonlyArray<Readonly<Record<string, unknown>>>} selected
+ * @param {ReadonlyArray<Readonly<Record<string, unknown>>>} all
+ * @returns {void}
+ */
+export function assertSelectedNeeds(selected, all) {
+  const names = new Set(selected.map((s) => s.screen))
+  const known = new Set(all.map((s) => s.screen))
+  for (const s of selected) {
+    if (typeof s.needs !== 'string') continue
+    if (!known.has(s.needs)) throw new Error(`${s.screen}: needs names ${s.needs}, which is not a screen of the file`)
+    if (!names.has(s.needs)) {
+      throw new Error(`${s.screen}: needs ${s.needs}, which is not in the selection`)
     }
   }
 }

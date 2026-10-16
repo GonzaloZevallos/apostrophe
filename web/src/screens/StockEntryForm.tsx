@@ -324,7 +324,6 @@ export default function StockEntryForm({
           />
         </label>
         <div className="campo">
-          <span className="campo__rotulo">Origen</span>
           <div className="origen-pildoras">
             <span className="pildora pildora--activa pildora--fija">Stock inicial</span>
           </div>

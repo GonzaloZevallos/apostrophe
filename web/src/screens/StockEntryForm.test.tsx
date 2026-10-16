@@ -70,9 +70,10 @@ test('with a fixed variety and origin it posts the opening stock and offers no o
   vi.stubGlobal('fetch', fetchMock)
   renderForm(onSaved)
 
-  // The design draws "Origen" over a static chip: not a button, not a radio, no other origin.
+  // The step's title already says it is opening stock, so no "Origen" label is drawn over the
+  // static chip: not a button, not a radio, no other origin.
   const chip = screen.getByText('Stock inicial')
-  expect(screen.getByText('Origen')).toBeInTheDocument()
+  expect(screen.queryByText('Origen')).not.toBeInTheDocument()
   expect(chip.closest('button')).toBeNull()
   expect(screen.queryByRole('radio')).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Compra' })).not.toBeInTheDocument()
