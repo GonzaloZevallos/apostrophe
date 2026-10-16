@@ -18,6 +18,7 @@ import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { openGastos, openMas } from './helpers/openMas.js'
 import { fillSaleLine } from './helpers/sale.js'
+import { setPriceDate } from './helpers/priceDate.js'
 import { uniqueTag } from './helpers/unique.js'
 
 test('a seller opens Análisis from Más, moves back a month and reads each section', async ({
@@ -205,7 +206,7 @@ test('Análisis reads Costo de lo vendido, Faltante de stock, Promoción and Con
   await page.getByRole('link', { name: /Lirio/ }).click()
   await page.getByRole('link', { name: 'Nuevo precio' }).click()
   // The sale below is two weeks old, so the price has to be in force by then.
-  await page.getByLabel('Rige desde').fill(firstOfMonth(today, 2))
+  await setPriceDate(page, firstOfMonth(today, 2))
   await page.getByLabel(/^Precio de lista/).fill('900')
   await page.getByRole('button', { name: 'Guardá el precio' }).click()
   await expect(page.getByText('Precio guardado')).toBeVisible()
