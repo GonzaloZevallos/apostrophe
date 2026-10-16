@@ -5,16 +5,21 @@ state the design's screens show has to exist after seeding."""
 import importlib.util
 import os
 import sys
+import threading
+import time
+from collections.abc import Iterator
+from contextlib import contextmanager
 from pathlib import Path
 from types import ModuleType
 from typing import Any
 
+import uvicorn
 from fastapi.testclient import TestClient
 
 from app.db import make_engine
 from app.main import create_app
 from app.settings import Settings
-from tests.conftest import PASSWORD, TEST_HASHER, TODAY
+from tests.conftest import NOW, PASSWORD, TEST_HASHER, TODAY, MovableClock
 from tests.fakes.telegram import FakeTelegram
 
 SCRIPT = Path(__file__).resolve().parents[2] / "scripts" / "design" / "sample_app.py"
@@ -115,3 +120,88 @@ def test_reset_token_opens_a_live_reset_link(tmp_path: Path) -> None:
         token = sample_app.reset_token(env, sample_app.EMAIL)
 
         assert web.get(f"/reset-links/{token}").status_code == 204
+
+
+@contextmanager
+def running_sample(tmp_path: Path) -> Iterator[tuple[ModuleType, dict[str, str], str]]:
+    """The sample app's own arrangement in miniature: a real server on a real port over a
+    database file, and the env the operator CLI needs to mint invitations against it."""
+    sample_app = load_script()
+    url = f"sqlite:///{tmp_path / 'sample.db'}"
+    port = sample_app.free_port()
+    base = f"http://127.0.0.1:{port}"
+    env = {
+        **{k: v for k, v in os.environ.items() if not k.startswith("APOSTROPHE_")},
+        "APOSTROPHE_SECRET_KEY": "sample-secret",
+        "APOSTROPHE_DATABASE_URL": url,
+        "APOSTROPHE_PUBLIC_URL": base,
+    }
+    app = create_app(
+        Settings("sample-secret", url), engine=make_engine(url), hasher=TEST_HASHER,
+        telegram=FakeTelegram(), clock=MovableClock(NOW), upkeep_ticker=False,
+    )
+    server = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1", port=port, log_level="error"))
+    thread = threading.Thread(target=server.run, daemon=True)
+    thread.start()
+    try:
+        while not server.started:
+            assert thread.is_alive(), "the test server stopped before it started"
+            time.sleep(0.05)
+        yield sample_app, env, base
+    finally:
+        server.should_exit = True
+        thread.join(timeout=10)
+
+
+def sign_in(sample_app: ModuleType, base: str, email: str, password: str) -> Any:
+    api = sample_app.HttpApi(base)
+    api.call("POST", "/auth/login", {"email": email, "password": password})
+    return api
+
+
+def test_onboarding_accounts_are_isolated_businesses_still_in_onboarding(tmp_path: Path) -> None:
+    with running_sample(tmp_path) as (sample_app, env, base):
+        # La Huerta, as `main()` opens it, seeded and with its own onboarding open.
+        token = sample_app.new_business_token(env)
+        huerta = sample_app.HttpApi(base)
+        huerta.call(
+            "POST",
+            f"/invitations/{token}/accept",
+            {
+                "email": sample_app.EMAIL,
+                "password": sample_app.PASSWORD,
+                "business_name": sample_app.BUSINESS,
+            },
+        )
+        huerta.call(
+            "POST", "/auth/login", {"email": sample_app.EMAIL, "password": sample_app.PASSWORD}
+        )
+        sample_app.seed(huerta, TODAY)
+        huerta_customers = {c["id"] for c in huerta.call("GET", "/customers")}
+
+        accounts = sample_app.onboarding_accounts(env, base, TODAY)
+
+        assert set(accounts) == set(sample_app.ONBOARDING_ACCOUNTS)
+        assert len(accounts) >= 2
+        optional_steps = {"bot", "partner", "categories", "header_footer"}
+        apis = {
+            name: sign_in(sample_app, base, account.email, account.password)
+            for name, account in accounts.items()
+        }
+        for name, account in accounts.items():
+            api = apis[name]
+            progress = api.call("GET", "/onboarding-progress")
+            assert progress["offered"] is True
+            assert progress["over"] is False
+            assert progress["resume"] in optional_steps
+            assert api.call("GET", "/auth/me")["email"] == account.email
+            mine = {c["id"] for c in api.call("GET", "/customers")}
+            assert mine
+            assert mine.isdisjoint(huerta_customers)
+
+        # Ending one account's Onboarding leaves La Huerta's and the other account's open.
+        first, second = list(apis)
+        assert apis[first].call("POST", "/onboarding-progress/skip-rest")["over"] is True
+        assert apis[first].call("GET", "/onboarding-progress")["over"] is True
+        assert apis[second].call("GET", "/onboarding-progress")["over"] is False
+        assert huerta.call("GET", "/onboarding-progress")["over"] is False
