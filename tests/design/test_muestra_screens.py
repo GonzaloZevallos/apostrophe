@@ -101,3 +101,48 @@ def test_the_analisis_denylist_keeps_the_figures_muestra_has() -> None:
     body = (DESIGN / "muestra.md").read_text(encoding="utf-8")
 
     assert [literal for literal in denylist if literal in body] == []
+
+
+ARCHIVED_SCREENS = (
+    "VariedadArchivada.dc.html",
+    "VariedadArchivadaCompu.dc.html",
+    "Archivadas.dc.html",
+    "ArchivadasCompu.dc.html",
+)
+
+
+def test_the_archived_drawings_are_in_the_variedades_family() -> None:
+    family = next(f for f in FAMILIES if f.name == "variedades")
+
+    assert set(ARCHIVED_SCREENS) <= set(family.screens)
+
+
+@pytest.mark.parametrize("screen", ARCHIVED_SCREENS)
+def test_the_archived_drawings_say_what_muestra_says_of_the_archived_variety(screen: str) -> None:
+    row = real_muestra().table("Archivadas")[0]
+    page = (SCREENS / screen).read_text(encoding="utf-8")
+
+    assert row["Variedad"] in page
+    assert row["Gramos"] in page
+    assert row["Estado"] in page
+    assert (row["Oculta"] == "sí") == ("Oculta" in page)
+
+
+@pytest.mark.parametrize("screen", ARCHIVED_SCREENS)
+def test_the_variedades_guard_rejects_an_archived_drawing_that_kept_a_stale_figure(
+    screen: str,
+) -> None:
+    family = next(f for f in FAMILIES if f.name == "variedades")
+    row = real_muestra().table("Archivadas")[0]
+    page = (SCREENS / screen).read_text(encoding="utf-8")
+    assert row["Gramos"] in page
+
+    problems = check_screen(
+        "variedades",
+        screen,
+        page.replace(row["Gramos"], "135 g"),
+        real_muestra(),
+        family.denylist,
+    )
+
+    assert problems != []

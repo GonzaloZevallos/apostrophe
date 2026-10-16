@@ -295,8 +295,9 @@ Success criteria:
 - **The empty state**, when no archived variety is left (or Archivadas is opened by a
   direct link with none): a fixed title of at most 40 characters and one line of at most
   80 saying there are no archived varieties, with "Volver a Variedades" (icon and text).
-  It is never blank and shows no figure. Its exact wording is design's, within those
-  limits (icon-and-text-rule.md).
+  It is never blank and shows no figure. Its words, drawn in `Archivadas.dc.html`, are the
+  title "No tenés variedades archivadas" and the line "Lo que archives aparece acá y lo
+  podés restaurar cuando quieras." (icon-and-text-rule.md).
 
 ### On screen: a variety's page (`VariedadDetalle`)
 
