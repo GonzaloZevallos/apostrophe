@@ -3110,6 +3110,16 @@ body {
   font-weight: 600;
 }
 
+/* The archived page's line (VariedadArchivada): grams, the badge and "Oculta" side by side
+   in the plain secondary ink, not the live line's status colour. */
+.variedad-resumen--archivada {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-sm);
+  color: var(--tinta2);
+}
+
 .variedad-acciones {
   display: flex;
   flex-wrap: wrap;

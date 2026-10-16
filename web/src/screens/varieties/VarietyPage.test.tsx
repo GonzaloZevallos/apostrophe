@@ -967,7 +967,7 @@ describe("an archived variety's page, read-only", () => {
     renderArchived()
 
     const line = (await screen.findByText('Archivada')).closest('p')
-    expect(line).toHaveTextContent(/^18 g · Archivada$/)
+    expect(line).toHaveTextContent(/^18 g Archivada$/)
   })
 
   test('"Oculta" shows beside "Archivada" only when the stored values say hidden, and is its own word', async () => {
@@ -976,7 +976,7 @@ describe("an archived variety's page, read-only", () => {
     const oculta = await screen.findByText('Oculta')
     expect(oculta).toHaveClass('variedad-resumen__oculta')
     expect(screen.getByText('Archivada')).not.toBe(oculta)
-    expect(oculta.closest('p')).toHaveTextContent(/^18 g · Archivada · Oculta$/)
+    expect(oculta.closest('p')).toHaveTextContent(/^18 g Archivada Oculta$/)
   })
 
   test('a shown archived variety has no "Oculta"', async () => {
@@ -988,8 +988,8 @@ describe("an archived variety's page, read-only", () => {
   })
 
   test.each([
-    ['zero', { grams: 0, status: 'sold_out', days_left: null, sold_out_since: '2026-09-30' }, /^0 g · Archivada$/],
-    ['below zero', { grams: -3, status: 'sold_out', days_left: null }, /^-3 g · Archivada$/],
+    ['zero', { grams: 0, status: 'sold_out', days_left: null, sold_out_since: '2026-09-30' }, /^0 g Archivada$/],
+    ['below zero', { grams: -3, status: 'sold_out', days_left: null }, /^-3 g Archivada$/],
   ])('the grams show at %s', async (_name, patch, expected) => {
     renderArchived(STORED, { ...STOCK_ROW, ...patch })
 

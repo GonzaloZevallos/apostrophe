@@ -173,9 +173,9 @@ export default function VarietyPage({ varietyId }: { varietyId: number }) {
         </div>
         {row !== undefined && (
           archived ? (
-            <p className="variedad-resumen">
-              {formatGrams(row.grams)} · <Insignia>Archivada</Insignia>
-              {attributes !== null && !attributes.shown && <> · <span className="variedad-resumen__oculta">Oculta</span></>}
+            <p className="variedad-resumen variedad-resumen--archivada">
+              <span>{formatGrams(row.grams)}</span> <Insignia>Archivada</Insignia>
+              {attributes !== null && !attributes.shown && <> <span className="variedad-resumen__oculta">Oculta</span></>}
             </p>
           ) : (
             <p className="variedad-resumen">
