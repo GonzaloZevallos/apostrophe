@@ -280,6 +280,8 @@ interface RegistryRow {
   parent?: string;
   /** The parent on a computer, when it is not the phone's. */
   computer_parent?: string;
+  /** The parent when the screen shows an archived variety, when it differs. */
+  archived_parent?: string;
 }
 
 /** What is wrong between the design registry's rows and the front's screens: a screen with no
@@ -307,6 +309,14 @@ function registryDisagreements(
           : row.parent;
       if (have !== (want === undefined ? undefined : normalise(want)))
         found.push(`${row.path}: parent ${have} on ${viewport} is not ${want}`);
+      const archivedHave =
+        entry.archivedParent === undefined
+          ? undefined
+          : normalise(routes.screenOf(entry.archivedParent).path);
+      if (archivedHave !== (row.archived_parent === undefined ? undefined : normalise(row.archived_parent)))
+        found.push(
+          `${row.path}: archived parent ${archivedHave} is not ${row.archived_parent}`,
+        );
     }
     return found;
   });
@@ -336,6 +346,40 @@ describe("the registry against screens.json", () => {
     );
     expect(refused).toContain("nowhere: no screen declares it");
     expect(refused).toContain(`${routes.SALES}: no registry row`);
+  });
+
+  test("a row whose archived_parent differs from the front's, or is missing on either side, is refused", () => {
+    const row = { path: routes.VARIETY, kind: "card", parent: routes.VARIETIES };
+    const differs = registryDisagreements(
+      [{ ...row, archived_parent: routes.VARIETIES }],
+      SCREENS,
+    );
+    expect(differs).toContain(
+      `${routes.VARIETY}: archived parent ${routes.ARCHIVED_VARIETIES} is not ${routes.VARIETIES}`,
+    );
+    const missingOnRow = registryDisagreements([row], SCREENS);
+    expect(missingOnRow).toContain(
+      `${routes.VARIETY}: archived parent ${routes.ARCHIVED_VARIETIES} is not undefined`,
+    );
+    const missingOnFront = registryDisagreements(
+      [{ path: routes.CUSTOMER, kind: "card", parent: routes.CUSTOMERS, archived_parent: routes.VARIETIES }],
+      SCREENS,
+    );
+    expect(missingOnFront).toContain(
+      `${routes.CUSTOMER}: archived parent undefined is not ${routes.VARIETIES}`,
+    );
+  });
+
+  test("parentOf names Archivadas for an archived variety's page and Variedades otherwise", () => {
+    for (const viewport of VIEWPORTS) {
+      expect(parentOf("variety", viewport, true)).toMatchObject({
+        path: routes.ARCHIVED_VARIETIES,
+        title: "Archivadas",
+      });
+      expect(parentOf("variety", viewport)?.path).toBe(routes.VARIETIES);
+      expect(parentOf("variety", viewport, false)?.title).toBe("Variedades");
+      expect(parentOf("customer", viewport, true)?.path).toBe(routes.CUSTOMERS);
+    }
   });
 });
 
