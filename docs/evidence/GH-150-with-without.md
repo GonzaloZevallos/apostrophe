@@ -112,45 +112,47 @@ All 127 `design` hashes are identical across the four runs, so the two sides wer
 Command, in the scratch clone at `279af14`: `npm --prefix web run e2e -- insets.spec.ts` (own log: `/tmp/gh150r/insets-without.txt`). The notch test passed; the new settings-group test failed, which also shows the spec was present on that side:
 
 ```
-> apostrophe-web@0.0.0 e2e
-> sh scripts/e2e.sh insets.spec.ts
-vite v8.3.2 building client environment for production...
-transforming...
-✓ 346 modules transformed.
-rendering chunks...
-computing gzip size...
-dist/index.html                                                       0.95 kB │ gzip:   0.43 kB
-dist/assets/plus-jakarta-sans-vietnamese-400-normal-Cg2kxhWu.woff2    4.09 kB
-dist/assets/plus-jakarta-sans-vietnamese-600-normal-Y4VTTRme.woff2    4.19 kB
-dist/assets/plus-jakarta-sans-vietnamese-700-normal-CV6qDkkj.woff2    4.26 kB
-dist/assets/plus-jakarta-sans-vietnamese-500-normal-DiU8zqi-.woff2    4.28 kB
-dist/assets/plus-jakarta-sans-vietnamese-400-normal-B8TCSmUq.woff     5.59 kB
-dist/assets/plus-jakarta-sans-vietnamese-600-normal-5YsyKbU1.woff     5.74 kB
-dist/assets/plus-jakarta-sans-vietnamese-700-normal-BCh_uG_5.woff     5.77 kB
-dist/assets/plus-jakarta-sans-vietnamese-500-normal-CvE5C8T-.woff     5.78 kB
-dist/assets/plus-jakarta-sans-latin-ext-400-normal-D127hM_v.woff2    10.59 kB
-dist/assets/plus-jakarta-sans-latin-ext-500-normal-9VZagAe1.woff2    10.86 kB
-dist/assets/plus-jakarta-sans-latin-ext-600-normal-DQgPU_Cg.woff2    10.89 kB
-dist/assets/plus-jakarta-sans-latin-ext-700-normal-BajbvANd.woff2    11.00 kB
-dist/assets/plus-jakarta-sans-latin-400-normal-Dhut76fR.woff2        11.81 kB
-dist/assets/plus-jakarta-sans-latin-600-normal-DLTa1BUW.woff2        12.18 kB
-dist/assets/plus-jakarta-sans-latin-700-normal-CfpNZvy6.woff2        12.24 kB
-dist/assets/plus-jakarta-sans-latin-500-normal-Bf-nb4oT.woff2        12.31 kB
-dist/assets/plus-jakarta-sans-latin-ext-400-normal-2ppkqaOR.woff     15.31 kB
-dist/assets/plus-jakarta-sans-latin-ext-600-normal-B0WRRYJ1.woff     15.60 kB
-dist/assets/plus-jakarta-sans-latin-ext-700-normal-8-d-IyIQ.woff     15.61 kB
-dist/assets/plus-jakarta-sans-latin-ext-500-normal-CqEEAICU.woff     15.62 kB
-dist/assets/plus-jakarta-sans-latin-400-normal-BDKaGhyp.woff         15.72 kB
-dist/assets/plus-jakarta-sans-latin-600-normal-BR_Ojra4.woff         16.08 kB
-dist/assets/plus-jakarta-sans-latin-500-normal-DYtqi0QS.woff         16.12 kB
-dist/assets/plus-jakarta-sans-latin-700-normal-DqEcQeE5.woff         16.13 kB
-dist/assets/index-XTi-nVHY.css                                       82.55 kB │ gzip:  20.59 kB
-dist/assets/index-C1Y1KjPj.js                                       602.10 kB │ gzip: 171.40 kB
-[plugin builtin:vite-reporter] 
-(!
+Running 2 tests using 1 worker
+
+  ✓  1 [secure-origin] › e2e/insets.spec.ts:98:1 › every screen, bar, sheet and toast keeps clear of the notch and the home bar (27.1s)
+  ✘  2 [secure-origin] › e2e/insets.spec.ts:211:1 › a settings group on a computer keeps its 80px top padding at inset 0 and still clears the notch (24.1s)
+
+
+  1) [secure-origin] › e2e/insets.spec.ts:211:1 › a settings group on a computer keeps its 80px top padding at inset 0 and still clears the notch
+
+    Error: /settings/business: padding-top at inset 0
+
+    /settings/business: padding-top at inset 0
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "80px"
+    Received: "0px"
+
+    Call Log:
+    - Timeout 17000ms exceeded while waiting on the predicate
+
+      242 |         { message: `${group}: padding-top at inset 0` },
+      243 |       )
+    > 244 |       .toBe(SETTINGS_GROUP_TOP)
+          |        ^
+      245 |
+      246 |     // The shell owns the top inset: the card moves by the notch, no more and no less.
+      247 |     const moved = await shift(page, '.ajustes-grupo__tarjeta')
+        at /tmp/gh150r/without/web/e2e/insets.spec.ts:244:8
+
+    Error Context: test-results/insets-a-settings-group-on-459c7--and-still-clears-the-notch-secure-origin/error-context.md
+
+  1 failed
+    [secure-origin] › e2e/insets.spec.ts:211:1 › a settings group on a computer keeps its 80px top padding at inset 0 and still clears the notch
+  1 passed (1.0m)
+Error: No tests found.
+Make sure that arguments are regular expressions matching test files.
+You may need to escape symbols like "$" or "*" and quote the arguments.
+
 ```
 
-(`No tests found` is the `timed` project, which has no test in this spec.)
+(`No tests found` is the `timed` project, which has no test in this spec; the vite build output that precedes the run is left out.)
 
 ## #101 record
 
