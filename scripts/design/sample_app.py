@@ -8,6 +8,14 @@ Builds nothing itself (the shell wrapper builds `web/` first), starts the server
 it through the API alone, prints the address and the user, and serves until stopped.
 `sample.json` in its directory is written only once the seeding is done: a caller that
 runs this in the background waits for that file, then reads the address and the ids.
+
+    {"url": ..., "email": ..., "password": ..., "ids": {...},
+     "accounts": {"<name>": {"email": ..., "password": ...}}}
+
+The top-level `email`, `password` and `ids` are La Huerta's. `accounts` is always present
+(`{}` when `ONBOARDING_ACCOUNTS` is empty): one extra business per name, seeded like La
+Huerta and still in Onboarding, so a screen that ends the Onboarding ("Listo") can be
+reached once per business in one run. An account carries no `ids`: the ids are La Huerta's.
 The data goes in over HTTP, never through the front: the front is what this app exists
 to compare, so a redesigned screen must never break the seeding. Never touches the
 human's own `apostrophe.db` or `.env`.
@@ -37,6 +45,9 @@ REPO = Path(__file__).resolve().parents[2]
 EMAIL = "vos@lahuerta.com"
 PASSWORD = "muestra-de-la-huerta"
 BUSINESS = "La Huerta"
+# One extra business per "Listo" row of `screens.json`: reaching "Listo" ends a business's
+# Onboarding for good (docs/adr/0036), so each capture of it needs a business of its own.
+ONBOARDING_ACCOUNTS = ("listo_compu", "listo_oscuro")
 
 
 class Api(Protocol):
@@ -48,6 +59,14 @@ class Line:
     variety: int
     grams: str
     gift: bool = False
+
+
+@dataclass(frozen=True)
+class Account:
+    """The sign-in of one extra business, written to `sample.json`'s `accounts`."""
+
+    email: str
+    password: str
 
 
 @dataclass(frozen=True)
@@ -321,6 +340,26 @@ def reset_token(env: dict[str, str], email: str) -> str:
     return operator_link(env, "reset-password", email)
 
 
+def onboarding_accounts(env: dict[str, str], base: str, today: date) -> dict[str, Account]:
+    """One extra business per `ONBOARDING_ACCOUNTS` name, each opened the way a new user
+    opens one (the operator's invitation, then accepting it over HTTP), seeded exactly like
+    La Huerta, and left with its Onboarding open. Each signs in on its own `HttpApi`, so
+    its session cookie never mixes with another business's."""
+    accounts: dict[str, Account] = {}
+    for name in ONBOARDING_ACCOUNTS:
+        account = Account(email=name.replace("_", "-") + "@lahuerta.com", password=PASSWORD)
+        api = HttpApi(base)
+        api.call(
+            "POST",
+            f"/invitations/{new_business_token(env)}/accept",
+            {"email": account.email, "password": account.password, "business_name": BUSINESS},
+        )
+        api.call("POST", "/auth/login", {"email": account.email, "password": account.password})
+        seed(api, today)
+        accounts[name] = account
+    return accounts
+
+
 def free_port() -> int:
     with socket.socket() as probe:
         probe.bind(("127.0.0.1", 0))
@@ -403,6 +442,7 @@ def main(argv: list[str] | None = None) -> int:
             # A live reset link for the sample's user, so the reset screen can be compared.
             "reset_token": reset_token(env, EMAIL),
         }
+        accounts = onboarding_accounts(env, base, date.today())
     except BaseException:
         server.terminate()
         raise
@@ -412,6 +452,7 @@ def main(argv: list[str] | None = None) -> int:
         "email": EMAIL,
         "password": PASSWORD,
         "ids": {**asdict(sample), **links},
+        "accounts": {name: asdict(account) for name, account in accounts.items()},
     }
     (workdir / "sample.json").write_text(json.dumps(facts, indent=2), encoding="utf-8")
     print(f"url: {base}")

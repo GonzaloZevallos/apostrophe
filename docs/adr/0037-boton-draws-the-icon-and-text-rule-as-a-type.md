@@ -44,3 +44,66 @@ rule has to live where a screen cannot get around it: the types of the one butto
 - A new kind of control is a change to this union and to the rule document first.
 - The raw `<button>`s and action-styled links that screens still draw are migrated by
   each area; the closing subtask's guards end that state.
+
+## Amendment (GH-164): a fourth kind, the tappable notice
+
+`row` could not draw a tappable notice such as Inicio's "Seguí con la configuración".
+`.boton--fila` is a list row: it adds `padding: var(--espacio-lg) 0` and a
+`border-bottom`, and PM ruled (GH-164, round 3) that a notice keeps its designed card
+(surface, rounded corners, its own padding) with no row spacing and no row divider.
+The rule document defines the control first (`icon-and-text-rule.md`, "Tappable notice";
+the design-system README says the same), and the union follows it:
+
+- **`variant="notice"`** on `Boton` and, through `BotonVisualProps`, on `BotonLink`.
+  `children` is required. `icon`, `ariaLabel` and `textOnly` are typed `undefined`, so
+  an icon, a name of its own or a text-only submit does not compile. The accessible name
+  is the visible text. A chevron inside the children is a decorative mark of the screen,
+  not an icon of the control.
+- **Its look lives under its own class**, `boton-aviso` (`botonVisual.tsx`, `app.css`),
+  never as a selector on or a reuse of `.boton--fila`. It takes the pressed cue of the
+  filled controls (the `--papel` ring), since it rests on `--superficie`.
+- **The closed lists are unchanged.** A tappable notice is neither an icon-only control
+  nor a text-only one; `IconOnlyAction` and the text-only kinds do not grow.
+- `expectIconAndTextRule` accepts the kind and rejects one whose accessible name is not
+  its visible text. The type-level tests grow with it.
+
+## Amendment: action links (GH-165)
+
+The closing guards could not see an action drawn as a raw link. `findActionLinks` in
+`web/src/architecture/closingGuards.ts` now does, and `findLinkAliases` keeps it honest.
+
+- **Only `Boton` and `BotonLink` draw an action, links included.**
+- **The marker is structural, not a class name.** A link (`InAppLink`, react-router `Link` or
+  `<a>`) that does not close itself and holds a literal `<Icono` between its opening and its own
+  matching close is an action. No `boton*` or `cobrar*` class catches today's offender
+  (`gastos__cargar`), so a class cannot be the marker. A row's trailing `<Icono nombre="chevron" />`
+  says "opens", not "do", and is not counted (`Ventas` draws one on every sale row).
+- **Scope.** `screens/`, `shell/` and `components/`, minus the authors of `.boton*`
+  (`BOTON_AUTHORS`) and `components/InAppLink.tsx`, which draws a link tag by definition, and minus
+  test-side files. Comments are blanked first, newlines kept, so prose is not a tag.
+- **`ENTRY_CLASSES`** is the closed list of entries that carry an icon and are not actions:
+  `mas__item` and `ajustes__item`. It does not grow.
+- **`aria-current` under `shell/` only.** The bottom bar and the sidebar are navigation entries that
+  carry `aria-current` on their opening tag; that exempts a link under `shell/`. The same attribute
+  under `screens/` or `components/` exempts nothing, and a shell class is never added to
+  `ENTRY_CLASSES`.
+- **One shrink-only list, keyed by identity** (file plus the link's `to=`): `ACTION_LINKS_LEFT`
+  holds exactly Gastos' "Cargar gasto" (`/src/screens/Gastos.tsx to={EXPENSE_NEW}`). A count per
+  file would hide a second action link in the same file. On the phone it is a 40 px round control
+  with only an icon, a shape that is not in the closed icon-only map and that `BotonLink` cannot
+  draw, so moving it would change what users see. A design and product issue about that shape is
+  what empties the list. `OLD_SHAPES` (raw buttons and `boton*` classes) stays a separate list.
+- **`findLinkAliases`** rejects an import that renames `Link` or `InAppLink`, which would hide a
+  link from the scan.
+
+### Known risks
+
+The guard reads source with regular expressions. It does not see:
+
+- an icon drawn by a helper component, or passed as `children`;
+- a link re-exported under another name through a third module;
+- an action link with no icon, styled by CSS.
+
+It is a ratchet, not a proof. The follow-up that would close the hole is to make `BotonLink` and a
+typed text-only link the only link components a screen may import.
+`docs/product/icon-and-text-rule.md` does not change.

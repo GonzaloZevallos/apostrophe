@@ -15,7 +15,7 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router'
 import BotonLink from '../../components/BotonLink'
-import InAppLink from '../../components/InAppLink'
+import PaneRowLink from '../../components/PaneRowLink'
 import { NetworkError } from '../../api/client'
 import { listCustomers } from '../../api/customers'
 import { keys } from '../../api/keys'
@@ -33,6 +33,7 @@ import SinConexion from '../../components/SinConexion'
 import { useCustomerSearch } from './CustomerSearch'
 import { EMPTY_CUSTOMERS } from './messages'
 import TeDeben from './TeDeben'
+import { useViewport } from '../../shell/useViewport'
 
 export const SEARCH_LABEL = 'Buscar cliente'
 export const SEARCH_PLACEHOLDER = 'Teléfono o nombre'
@@ -45,6 +46,7 @@ export default function Clientes() {
   const goneShown = useGoneNotice()
   const feedback = stateFeedback ?? (goneShown ? { kind: 'notice' as const, message: GONE_NOTICE } : null)
   const vipCustomers = useIsVipCustomers()
+  const computer = useViewport() === 'computer'
 
   useEffect(() => {
     const id = setTimeout(() => setDebounced(query), 150)
@@ -117,7 +119,12 @@ export default function Clientes() {
             )}
             {customers.map((customer) => (
               <div key={customer.id} className="lista-clientes__item">
-                <InAppLink to={pathTo(CUSTOMER, { id: customer.id })} className="lista-clientes__fila">
+                <PaneRowLink
+                  to={pathTo(CUSTOMER, { id: customer.id })}
+                  replace={computer}
+                  className="lista-clientes__fila"
+                  activeClassName="lista-clientes__fila"
+                >
                   <span className="lista-clientes__nombre">
                     {customer.name}
                     {vipCustomers && customer.vip && <span className="vip-insignia">VIP</span>}
@@ -136,7 +143,7 @@ export default function Clientes() {
                   {customer.standing === 'credit' && (
                     <span className="monto-credito">A favor {formatMoneyMagnitude(customer.balance)}</span>
                   )}
-                </InAppLink>
+                </PaneRowLink>
                 {customer.standing === 'owes' && (
                   <BotonLink
                     to={pathTo(CUSTOMER_PAYMENT, { id: customer.id })}

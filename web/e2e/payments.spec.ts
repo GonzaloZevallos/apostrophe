@@ -29,6 +29,7 @@ import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
+import { uniqueTag } from './helpers/unique.js'
 
 function shortDate(iso: string): string {
   const [, month, day] = iso.split('-')
@@ -41,8 +42,8 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   const consoleMessages: string[] = []
   watchConsole(page, consoleMessages)
 
-  const ownerEmail = `duena-pagos-${Date.now()}@example.com`
-  const businessName = `Flores del Sur ${Date.now()}`
+  const ownerEmail = `duena-pagos-${uniqueTag()}@example.com`
+  const businessName = `Flores del Sur ${uniqueTag()}`
 
   // Accept a new-business invitation.
   await signUpNewBusiness(page, { businessName, email: ownerEmail })

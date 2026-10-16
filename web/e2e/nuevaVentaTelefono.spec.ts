@@ -14,6 +14,8 @@ import { SALE_NEW, VARIETIES } from '../src/routes.js'
 import { expect, test } from './fixtures.js'
 import type { Locator, Page } from '@playwright/test'
 import { signUpNewBusiness } from './helpers/signup.js'
+import { setPriceDate } from './helpers/priceDate.js'
+import { uniqueTag } from './helpers/unique.js'
 
 const WIDTHS = [320, 375, 430, 246] as const
 const HEIGHT = 700
@@ -34,7 +36,7 @@ async function box(locator: Locator): Promise<Box> {
 }
 
 async function signInWithAPricedVariety(page: Page): Promise<void> {
-  await signUpNewBusiness(page, { businessName: `Vivero Telefono ${Date.now()}`, email: `telefono-${Date.now()}@example.com` })
+  await signUpNewBusiness(page, { businessName: `Vivero Telefono ${uniqueTag()}`, email: `telefono-${uniqueTag()}@example.com` })
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Jazmín')
@@ -42,7 +44,7 @@ async function signInWithAPricedVariety(page: Page): Promise<void> {
   await expect(page.getByText('Variedad guardada')).toBeVisible()
   await page.getByRole('link', { name: /Jazmín/ }).click()
   await page.getByRole('link', { name: 'Nuevo precio' }).click()
-  await page.getByLabel('Rige desde').fill('2000-01-01')
+  await setPriceDate(page, '2000-01-01')
   await page.getByLabel(/^Precio de lista/).fill('500')
   await page.getByRole('button', { name: 'Guardá el precio' }).click()
   await expect(page.getByText('Precio guardado')).toBeVisible()

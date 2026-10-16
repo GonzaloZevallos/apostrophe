@@ -19,7 +19,6 @@ import { Fragment, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useOutletContext } from 'react-router'
 import { NetworkError } from '../api/client'
-import BotonLink from '../components/BotonLink'
 import {
   type Analysis,
   type AnalysisMonth,
@@ -33,7 +32,6 @@ import { formatDateShort, formatMonthLong } from '../format/dates'
 import { formatGrams, formatMoney } from '../format/money'
 import ErrorGenerico from '../components/ErrorGenerico'
 import SinConexion from '../components/SinConexion'
-import { MORE } from '../routes'
 import { formatRowCost } from './analisisCost'
 import {
   COST_OF_GOODS_LABEL,
@@ -550,9 +548,6 @@ export default function Analisis() {
     <main className="pantalla">
       <div className="cuerpo">
         <div className="encabezado__fila">
-          <BotonLink variant="back" to={MORE} ariaLabel="Volver">
-            ‹
-          </BotonLink>
           <span className="encabezado__titulo">Análisis</span>
         </div>
 

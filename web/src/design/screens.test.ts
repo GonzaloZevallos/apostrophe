@@ -1,5 +1,7 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { assertScreens } from '../../../scripts/design/screens.mjs'
+import { assertScreens, assertSelectedAccounts } from '../../../scripts/design/screens.mjs'
 import screens from '../../../scripts/design/screens.json'
 
 describe('assertScreens', () => {
@@ -67,13 +69,117 @@ describe('assertScreens', () => {
           screen: 'EstadosSinConexion',
           design: 'Estados',
           section: 'Sin conexión',
-          steps: [{ offline: true }, { wait: 'Te quedaste sin internet' }],
+          steps: [{ offline: true }, { wait: 'Sin conexión: revisá tu internet y probá de nuevo.' }],
         },
+      ]),
+    ).not.toThrow()
+  })
+
+  it('refuses an account that is not a non-empty string', () => {
+    expect(() => assertScreens([{ screen: 'Listo', route: 'ruta', account: 7 }])).toThrow(
+      /Listo: account must be a non-empty string/,
+    )
+    expect(() => assertScreens([{ screen: 'Listo', route: 'ruta', account: '' }])).toThrow(
+      /Listo: account must be a non-empty string/,
+    )
+  })
+
+  it('refuses an account on a signed-out entry', () => {
+    expect(() =>
+      assertScreens([{ screen: 'Entrar', route: 'ruta', account: 'a_b', signed_out: true }]),
+    ).toThrow(/Entrar: account cannot be used with signed_out/)
+  })
+
+  it('refuses an account entry that uses a placeholder other than {email}', () => {
+    expect(() =>
+      assertScreens([{ screen: 'Ficha', route: 'ruta/{customer_id}', account: 'a_b' }]),
+    ).toThrow(/Ficha: an account entry can only use \{email\}, not \{customer_id\}/)
+    expect(() =>
+      assertScreens([
+        { screen: 'Paso', route: 'ruta', account: 'a_b', steps: [{ fill: { label: 'Cliente', value: '{customer_id}' } }] },
+      ]),
+    ).toThrow(/Paso: an account entry can only use \{email\}, not \{customer_id\}/)
+    expect(() =>
+      assertScreens([{ screen: 'Click', route: 'ruta', account: 'a_b', steps: [{ click: '{sale_id}' }] }]),
+    ).toThrow(/Click: an account entry can only use/)
+    expect(() =>
+      assertScreens([{ screen: 'Wait', route: 'ruta', account: 'a_b', steps: [{ wait: '{sale_id}' }] }]),
+    ).toThrow(/Wait: an account entry can only use/)
+  })
+
+  it('accepts an account entry that uses {email} only, and a default entry that uses ids', () => {
+    expect(() =>
+      assertScreens([
+        {
+          screen: 'ListoCompu',
+          route: 'ruta',
+          account: 'listo_compu',
+          steps: [{ fill: { label: 'Email', value: '{email}' } }, { click: 'Listo' }, { wait: 'Listo' }],
+        },
+        { screen: 'Ficha', route: 'ruta/{customer_id}' },
       ]),
     ).not.toThrow()
   })
 
   it('accepts the real screens.json, imported, never copied', () => {
     expect(() => assertScreens(screens.screens)).not.toThrow()
+  })
+})
+
+describe('assertSelectedAccounts', () => {
+  const accounts = ['listo_compu', 'listo_oscuro']
+
+  it('refuses an account the sample did not write, without naming a credential', () => {
+    expect(() =>
+      assertSelectedAccounts([{ screen: 'ListoX', account: 'listo_otro' }], accounts),
+    ).toThrow(/^ListoX: account is not one of the sample's accounts$/)
+    expect(() => assertSelectedAccounts([{ screen: 'ListoX', account: 'listo_compu' }], [])).toThrow(
+      /ListoX: account is not one of/,
+    )
+  })
+
+  it('refuses two Listo entries on the same account, the default one included', () => {
+    expect(() =>
+      assertSelectedAccounts(
+        [
+          { screen: 'OnboardingListo' },
+          { screen: 'ListoOscuro', design: 'OnboardingListo', tema: 'oscuro' },
+        ],
+        accounts,
+      ),
+    ).toThrow(/ListoOscuro: reaches OnboardingListo with the same account as OnboardingListo/)
+    expect(() =>
+      assertSelectedAccounts(
+        [
+          { screen: 'A', design: 'OnboardingListo', account: 'listo_compu' },
+          { screen: 'B', design: 'OnboardingListo', account: 'listo_compu' },
+        ],
+        accounts,
+      ),
+    ).toThrow(/B: reaches OnboardingListo with the same account as A/)
+  })
+
+  it('accepts one Listo per business, and other entries sharing an account', () => {
+    expect(() =>
+      assertSelectedAccounts(
+        [
+          { screen: 'OnboardingListo' },
+          { screen: 'ListoCompu', design: 'OnboardingListo', account: 'listo_compu' },
+          { screen: 'ListoOscuro', design: 'OnboardingListo', account: 'listo_oscuro', tema: 'oscuro' },
+          { screen: 'Inicio', account: 'listo_compu' },
+          { screen: 'Ventas', account: 'listo_compu' },
+        ],
+        accounts,
+      ),
+    ).not.toThrow()
+  })
+
+  it("accepts the real screens.json with the accounts sample_app.py seeds", () => {
+    const source = readFileSync(resolve(process.cwd(), '..', 'scripts/design/sample_app.py'), 'utf-8')
+    const declared = /^ONBOARDING_ACCOUNTS = \(([^)]*)\)/m.exec(source)?.[1]
+    if (declared === undefined) throw new Error('sample_app.py declares no ONBOARDING_ACCOUNTS')
+    const seeded = declared.match(/"[^"]+"/g)?.map((name) => name.slice(1, -1)) ?? []
+    expect(seeded.length).toBeGreaterThan(0)
+    expect(() => assertSelectedAccounts(screens.screens, seeded)).not.toThrow()
   })
 })

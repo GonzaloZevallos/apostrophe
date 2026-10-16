@@ -34,7 +34,7 @@ interface Sent {
   footer: string
 }
 
-function renderForm(put?: (body: Sent) => Response) {
+function renderForm(put?: (body: Sent) => Response, submitLabel?: string) {
   const puts: Sent[] = []
   const fetchMock = vi.fn((url: string, init?: RequestInit) => {
     if (init?.method === 'PUT' && url === '/catalog/header-footer' && put !== undefined) {
@@ -49,11 +49,29 @@ function renderForm(put?: (body: Sent) => Response) {
   const onDirtyChange = vi.fn()
   render(
     <QueryClientProvider client={new QueryClient()}>
-      <CatalogMessageForm onSaved={onSaved} onDirtyChange={onDirtyChange} />
+      <CatalogMessageForm onSaved={onSaved} onDirtyChange={onDirtyChange} submitLabel={submitLabel} />
     </QueryClientProvider>,
   )
   return { puts, onSaved, onDirtyChange }
 }
+
+test('with no submitLabel the button reads "Guardá el mensaje", as Configuración draws it', async () => {
+  renderForm()
+
+  expect(await screen.findByRole('button', { name: 'Guardá el mensaje' })).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Guardar' })).not.toBeInTheDocument()
+})
+
+test('a submitLabel renames the button and it still saves through the owner route', async () => {
+  const { puts, onSaved } = renderForm((body) => jsonResponse(200, { ...CATALOG, ...body }), 'Guardar')
+
+  await userEvent.type(await screen.findByLabelText('Pie'), '!')
+  expect(screen.queryByRole('button', { name: 'Guardá el mensaje' })).not.toBeInTheDocument()
+  await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+
+  await waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1))
+  expect(puts).toEqual([{ header: CATALOG.header, footer: `${CATALOG.footer}!` }])
+})
 
 test('saves through the owner route, calls onSaved and shows the toast', async () => {
   const { puts, onSaved } = renderForm((body) => jsonResponse(200, { ...CATALOG, ...body }))

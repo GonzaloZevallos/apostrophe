@@ -25,6 +25,60 @@ export function assertScreens(screens) {
     if (seen.has(s.screen)) throw new Error(`${s.screen}: screen is not unique across the file`)
     seen.add(s.screen)
     if ('design' in s || 'section' in s) assertDesign(s)
+    if ('account' in s) assertAccount(s)
+  }
+}
+
+// `account` names one of the sample's extra businesses (`facts.accounts`, written by the
+// sample app). Its ids are La Huerta's, so an account entry may only use `{email}`.
+/** @param {Readonly<Record<string, unknown>>} s */
+function assertAccount(s) {
+  if (typeof s.account !== 'string' || s.account === '') {
+    throw new Error(`${s.screen}: account must be a non-empty string`)
+  }
+  if (s.signed_out) throw new Error(`${s.screen}: account cannot be used with signed_out`)
+  const steps = Array.isArray(s.steps) ? s.steps : []
+  const templates = [
+    s.route,
+    ...steps.flatMap((step) => [step?.fill?.value, step?.click, step?.wait]),
+  ]
+  for (const template of templates) {
+    if (typeof template !== 'string') continue
+    for (const [, name] of template.matchAll(/\{(\w+)\}/g)) {
+      if (name !== 'email') throw new Error(`${s.screen}: an account entry can only use {email}, not {${name}}`)
+    }
+  }
+}
+
+// The entry that reaches the closing screen "Listo" ends its business's Onboarding for
+// good (ADR-0036), so each business can serve one such entry per sample run.
+const LISTO = 'OnboardingListo'
+const DEFAULT_ACCOUNT = 'La Huerta'
+
+// Checks the selected entries against the account names the sample wrote, before any
+// capture. The messages are fixed text: they name the screens, never a credential.
+/**
+ * @param {ReadonlyArray<Readonly<Record<string, unknown>>>} selected
+ * @param {ReadonlyArray<string>} accountNames
+ * @returns {void}
+ */
+export function assertSelectedAccounts(selected, accountNames) {
+  const known = new Set(accountNames)
+  for (const s of selected) {
+    if (typeof s.account === 'string' && !known.has(s.account)) {
+      throw new Error(`${s.screen}: account is not one of the sample's accounts`)
+    }
+  }
+  /** @type {Map<string, unknown>} */
+  const listoBy = new Map()
+  for (const s of selected) {
+    if (s.screen !== LISTO && s.design !== LISTO) continue
+    const owner = typeof s.account === 'string' ? s.account : DEFAULT_ACCOUNT
+    const other = listoBy.get(owner)
+    if (other !== undefined) {
+      throw new Error(`${s.screen}: reaches ${LISTO} with the same account as ${other}, and one business reaches it once per run`)
+    }
+    listoBy.set(owner, s.screen)
   }
 }
 

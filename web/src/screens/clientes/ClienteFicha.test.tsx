@@ -35,8 +35,9 @@ import paymentPreviewFixture from '../../api/fixtures/payment-preview.json'
 import type { Me } from '../../api/me'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import { readNewSaleState } from '../../components/feedback'
-import { SIN_CONEXION_TITULO } from '../../components/SinConexion'
+import { SIN_CONEXION_MENSAJE } from '../../components/estadosMessages'
 import ClienteFicha from './ClienteFicha'
+import Shell from '../../shell/Shell'
 import { stubFetchWithSettings } from '../stubFetchWithSettings'
 
 
@@ -195,6 +196,39 @@ test('"Nueva venta a <name>" opens the sale form with this customer chosen, by i
   await userEvent.click(link)
 
   expect(await screen.findByText('Nueva venta para 3')).toBeInTheDocument()
+})
+
+test('on a computer the customer\'s card under the real shell keeps "Nueva venta a <name>" and the rail has no "+ Nueva venta"', async () => {
+  stubViewport('computer')
+  api.mockImplementation(
+    dispatchFetch({
+      'GET /customers/3': () => jsonResponse(200, SETTLED_CUSTOMER),
+      'GET /customers/3/account': () => jsonResponse(200, EMPTY_ACCOUNT),
+    }),
+  )
+  const router = createMemoryRouter(
+    [
+      {
+        element: <Flash />,
+        children: [
+          {
+            element: <Shell />,
+            children: [{ path: CUSTOMER, handle: { screen: 'customer' }, element: <ClienteFicha /> }],
+          },
+        ],
+      },
+    ],
+    { initialEntries: [pathTo(CUSTOMER, { id: 3 })] },
+  )
+  const { container } = render(
+    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>,
+  )
+
+  expect(await screen.findByRole('link', { name: 'Nueva venta a Fer' })).toHaveAttribute('href', SALE_NEW)
+  const rail = container.querySelector('.riel-lateral') as HTMLElement
+  expect(within(rail).queryByRole('link', { name: /^Nueva venta/ })).not.toBeInTheDocument()
 })
 
 const OWING_CUSTOMER = {
@@ -690,7 +724,7 @@ test('Borrar cobro when the connection drops shows "Sin conexión", never the ge
   await userEvent.click(borrar)
   await userEvent.click(screen.getByRole('button', { name: 'Sí, borralo' }))
 
-  expect(await screen.findByText(SIN_CONEXION_TITULO)).toBeInTheDocument()
+  expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
   expect(screen.queryByText(ERROR_GENERICO_MENSAJE)).not.toBeInTheDocument()
   expect(screen.queryByText('Eso ya no está. La lista ya está al día.')).not.toBeInTheDocument()
   expect(screen.queryByText('Cobro eliminado')).not.toBeInTheDocument()
@@ -713,7 +747,7 @@ test('Borrar cobro refused for a reason other than "gone" shows the generic retr
   await userEvent.click(screen.getByRole('button', { name: 'Sí, borralo' }))
 
   expect(await screen.findByText(ERROR_GENERICO_MENSAJE)).toBeInTheDocument()
-  expect(screen.queryByText(SIN_CONEXION_TITULO)).not.toBeInTheDocument()
+  expect(screen.queryByText(SIN_CONEXION_MENSAJE)).not.toBeInTheDocument()
   expect(screen.queryByText('Eso ya no está. La lista ya está al día.')).not.toBeInTheDocument()
   expect(screen.queryByText('Cobro eliminado')).not.toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Borrar cobro' })).toBeInTheDocument()

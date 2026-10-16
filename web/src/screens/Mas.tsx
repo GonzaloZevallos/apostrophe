@@ -1,5 +1,5 @@
 /**
- * `Mas`: "+ Cargar gasto", "Sacar del stock" (the withdrawal form), Gastos, Análisis and
+ * `Mas`: "Cargar gasto" (the docs' "+ Cargar gasto": the `agregar` icon is the plus), "Sacar del stock" (the withdrawal form), Gastos, Análisis and
  * Configuración, in the design's order (`Mas.dc.html`) and nothing else (navigation.md):
  * Variedades is a bar tab, and the catalog is reached from it.
  * Paths come from `routes.ts`. The subtitles are the design's own words.
@@ -20,7 +20,7 @@ interface Item {
 const ITEMS: Item[] = [
   {
     to: EXPENSE_NEW,
-    label: '+ Cargar gasto',
+    label: 'Cargar gasto',
     icon: 'agregar',
     detail: 'Categoría, monto y detalle',
   },
@@ -45,6 +45,17 @@ const ITEMS: Item[] = [
   },
 ]
 
+/**
+ * The docs' "+ Cargar gasto" stands for the `agregar` icon, which draws the plus: the screen
+ * shows the word alone, and the accessible name keeps the "+" (icon-and-text-rule.md,
+ * criterion 5). It is built from the item's own fields, so the two cannot drift. An entry
+ * with another icon is named by its content, as before.
+ */
+function accessibleName(item: Item): string | undefined {
+  if (item.icon !== 'agregar') return undefined
+  return `+ ${item.label}${item.detail === undefined ? '' : ` ${item.detail}`}`
+}
+
 export default function Mas() {
   return (
     <main className="pantalla">
@@ -56,6 +67,7 @@ export default function Mas() {
               key={item.to}
               to={item.to}
               className="mas__item"
+              aria-label={accessibleName(item)}
             >
               <span className="mas__item-icono">
                 <Icono nombre={item.icon} />

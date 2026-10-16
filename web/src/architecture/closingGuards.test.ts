@@ -1,7 +1,16 @@
 /** Each closing guard is fed input it must reject, and input it must accept. */
 
 import { describe, expect, test } from 'vitest'
-import { findBotonClasses, findRawButtons, findRawSvg, findUnusedIcons, listedIcons } from './closingGuards'
+import {
+  ENTRY_CLASSES,
+  findActionLinks,
+  findBotonClasses,
+  findLinkAliases,
+  findRawButtons,
+  findRawSvg,
+  findUnusedIcons,
+  listedIcons,
+} from './closingGuards'
 
 const ICONO = `export const ICON_NAMES = [
   'inicio',
@@ -124,5 +133,148 @@ describe('findUnusedIcons', () => {
       { path: '/src/components/Boton.tsx', content: "'inicio' 'tacho' 'buscar' 'info' 'atencion'" },
     ]
     expect(findUnusedIcons(files)).toHaveLength(5)
+  })
+})
+
+describe('findActionLinks', () => {
+  const at = (content: string, path = '/src/screens/X.tsx') => [{ path, content }]
+  const offence = (to: string, line = 1, path = '/src/screens/X.tsx') =>
+    `${path}:${line}: an action drawn as a link (to=${to}), use BotonLink`
+
+  test('rejects an InAppLink, a Link and an <a> that hold an icon', () => {
+    const inApp = '<InAppLink to={EXPENSE_NEW} className="gastos__cargar">\n  <Icono nombre="agregar" />\n  <span>Cargar gasto</span>\n</InAppLink>'
+    expect(findActionLinks(at(inApp))).toEqual([offence('{EXPENSE_NEW}')])
+    expect(findActionLinks(at('<Link to="/x"><Icono nombre="a"/>Ir</Link>'))).toEqual([offence('"/x"')])
+    expect(findActionLinks(at('<a href="/x"><Icono nombre="a" />Ir</a>'))).toEqual([offence('<unreadable>')])
+  })
+
+  test('rejects a PaneRowLink that holds an icon other than the trailing chevron', () => {
+    const row = '<PaneRowLink to={A} className="fila" activeClassName="fila fila--activa"><Icono nombre="agregar" />Ir</PaneRowLink>'
+    expect(findActionLinks(at(row))).toEqual([offence('{A}')])
+    const chevron = '<PaneRowLink to={A} className="fila" activeClassName="fila"><span>t</span><Icono nombre="chevron" /></PaneRowLink>'
+    expect(findActionLinks(at(chevron))).toEqual([])
+  })
+
+  test('rejects a tag that spans several lines, at the line it opens', () => {
+    const content = '\n\n<InAppLink\n  to={pathTo(X, { id: a })}\n  className="x"\n>\n<Icono nombre="a"/>\n</InAppLink>'
+    expect(findActionLinks(at(content))).toEqual([offence('{pathTo(X, { id: a })}', 3)])
+  })
+
+  test('rejects a template-literal className with a token outside the list', () => {
+    const content = '<InAppLink to={A} className={`fila ${on ? \'on\' : \'\'}`}><Icono nombre="a" /></InAppLink>'
+    expect(findActionLinks(at(content))).toEqual([offence('{A}')])
+  })
+
+  test('reads a body only for a tag that does not close itself', () => {
+    const content = '<Link to={A} />\n<Link to={B}>\n<Icono nombre="a" />\n</Link>'
+    expect(findActionLinks(at(content))).toEqual([offence('{B}', 2)])
+  })
+
+  test('ends a body at its own close, counting same-name openings', () => {
+    const nested = '<Link to={A}><Link to={B}>x</Link><Icono nombre="a"/></Link>'
+    expect(findActionLinks(at(nested))).toEqual([offence('{A}')])
+    const twice = '<a href="x"><span>t</span></a><a href="y"><Icono nombre="a"/></a>'
+    expect(findActionLinks(at(twice))).toEqual([offence('<unreadable>')])
+  })
+
+  test('rejects an icon inside an arrow function in the body', () => {
+    const content = '<Link to={A}>{items.map((i) => <Icono nombre={i}/>)}</Link>'
+    expect(findActionLinks(at(content))).toEqual([offence('{A}')])
+  })
+
+  test('exempts aria-current only under shell/, so a screen link that carries it is still flagged', () => {
+    const content = '<Link to={A} aria-current="page"><Icono nombre="a" /></Link>'
+    expect(findActionLinks(at(content))).toEqual([offence('{A}')])
+    expect(findActionLinks(at(content, '/src/components/X.tsx'))).toEqual([offence('{A}', 1, '/src/components/X.tsx')])
+  })
+
+  test('reports a tag that is never closed as its own offence', () => {
+    expect(findActionLinks(at('\n<Link to={A}>\n<Icono nombre="a" />'))).toEqual([
+      '/src/screens/X.tsx:2: cannot read the body of a link (to={A}), close it',
+    ])
+  })
+
+  test('accepts a row link with no icon', () => {
+    const content = '<InAppLink to={X} className="fila-venta"><span>t</span></InAppLink>'
+    expect(findActionLinks(at(content))).toEqual([])
+  })
+
+  test('accepts the closed entry classes, which are exactly mas__item and ajustes__item', () => {
+    expect([...ENTRY_CLASSES]).toEqual(['mas__item', 'ajustes__item'])
+    for (const name of ENTRY_CLASSES) {
+      expect(findActionLinks(at(`<InAppLink to={A} className="${name}"><Icono nombre="a" /></InAppLink>`))).toEqual([])
+    }
+  })
+
+  test('accepts a shell/ Link with a dynamic className and aria-current', () => {
+    const content =
+      "<Link\n  to={item.to}\n  aria-current={active ? 'page' : undefined}\n  className={active ? 'bar__item bar__item--activo' : 'bar__item'}\n>\n  {item.icono !== undefined && <Icono nombre={item.icono} />}\n</Link>"
+    expect(findActionLinks(at(content, '/src/shell/Shell.tsx'))).toEqual([])
+  })
+
+  test('accepts an iconless link then a self-closing one, and a self-closing link at the end of a file', () => {
+    expect(findActionLinks(at('<Link to={A}>x</Link>\n<Link to={B} />\n<Icono nombre="a" />'))).toEqual([])
+    expect(findActionLinks(at('<InAppLink to={A} />'))).toEqual([])
+  })
+
+  test('accepts an icon outside the link body and in tags that only look like a link', () => {
+    expect(findActionLinks(at('<InAppLink to={A}>x</InAppLink><span><Icono nombre="a"/></span>'))).toEqual([])
+    expect(findActionLinks(at('<abbr><Icono nombre="a"/></abbr><aside><Icono nombre="a"/></aside>'))).toEqual([])
+  })
+
+  test('accepts a row whose only icon is the trailing chevron, and rejects one that also draws another icon', () => {
+    const row = '<InAppLink to={A} className="fila-venta"><span>t</span><Icono nombre="chevron" /></InAppLink>'
+    expect(findActionLinks(at(row))).toEqual([])
+    const action = '<InAppLink to={A}><Icono nombre="agregar" /><Icono nombre="chevron" /></InAppLink>'
+    expect(findActionLinks(at(action))).toEqual([offence('{A}')])
+  })
+
+  test('accepts a link written inside a comment', () => {
+    const content = '// <a href="x"><Icono nombre="a"/></a>\n/* <Link to={A}>\n<Icono nombre="a"/></Link> */'
+    expect(findActionLinks(at(content))).toEqual([])
+  })
+
+  test('accepts the authors of .boton*, InAppLink, test-side files and files outside the three folders', () => {
+    const content = '<Link to={A}><Icono nombre="a" /></Link>'
+    const paths = [
+      '/src/components/BotonLink.tsx',
+      '/src/components/Boton.tsx',
+      '/src/components/botonVisual.tsx',
+      '/src/components/AnswerButton.tsx',
+      '/src/components/InAppLink.tsx',
+      '/src/screens/X.test.tsx',
+      '/src/architecture/x.tsx',
+      '/src/App.tsx',
+    ]
+    for (const path of paths) expect(findActionLinks(at(content, path))).toEqual([])
+  })
+
+  test('names a link by its to= value, whatever shape it takes, and never leaves it empty', () => {
+    const icon = '<Icono nombre="a" />'
+    const named = (to: string) => findActionLinks(at(`<Link to=${to}>${icon}</Link>`))
+    expect(named('{pathTo(X, { id: a })}')).toEqual([offence('{pathTo(X, { id: a })}')])
+    expect(named('{{ pathname: p, hash: h }}')).toEqual([offence('{{ pathname: p, hash: h }}')])
+    expect(named('"/x"')).toEqual([offence('"/x"')])
+    expect(named("{'a}b'}")).toEqual([offence("{'a}b'}")])
+    expect(findActionLinks(at(`<Link {...props}>${icon}</Link>`))).toEqual([offence('<unreadable>')])
+  })
+})
+
+describe('findLinkAliases', () => {
+  const at = (content: string) => [{ path: '/src/screens/X.tsx', content }]
+
+  test('rejects an import that renames Link, and a default import of InAppLink under another name', () => {
+    expect(findLinkAliases(at("import { Link as RouterLink } from 'react-router'"))).toEqual([
+      '/src/screens/X.tsx:1: renames a link import (Link as RouterLink), use its own name',
+    ])
+    expect(findLinkAliases(at("\nimport Enlace from '../components/InAppLink'"))).toEqual([
+      '/src/screens/X.tsx:2: renames the InAppLink import (as Enlace), use its own name',
+    ])
+  })
+
+  test('accepts the plain imports and a rename of something else', () => {
+    const content =
+      "import { Link, useMatch as match } from 'react-router'\nimport InAppLink from '../components/InAppLink'"
+    expect(findLinkAliases(at(content))).toEqual([])
   })
 })

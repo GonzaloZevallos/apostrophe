@@ -7,7 +7,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Outlet, Route, Routes, useLocation } from 'react-router'
+import { Outlet, RouterProvider, createMemoryRouter, useLocation } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import { catalogQueryOptions } from '../api/catalog'
 import type { Me } from '../api/me'
@@ -26,6 +26,7 @@ import EntriesList from './EntriesList'
 import VarietyRoute from './varieties/VarietyRoute'
 import { LIMITS } from '../copy/limits'
 import { expectIconAndTextRule } from '../test/iconAndTextRule'
+import Shell from '../shell/Shell'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-06' }
 
@@ -114,21 +115,37 @@ function renderAt(
   client = new QueryClient({ defaultOptions: { queries: { retry: false } } }),
   { entries = [VARIETIES_PATH, path], opens }: { entries?: string[]; opens?: string } = {},
 ) {
+  const router = createMemoryRouter(
+    [
+      {
+        element: (
+          <FlashProvider>
+            <Provide />
+          </FlashProvider>
+        ),
+        children: [
+          {
+            element: <Shell />,
+            children: [
+              { path: VARIETIES_PATH, element: <Where opens={opens} />, handle: { screen: 'varieties' } },
+              { path: STOCK_PATH, element: <EntriesList />, handle: { screen: 'stock' } },
+              { path: STOCK_ENTRY, element: <Where />, handle: { screen: 'stock-entry' } },
+              {
+                path: VARIETY_ENTRIES,
+                element: <VarietyRoute render={(varietyId) => <EntriesList varietyId={varietyId} />} />,
+                handle: { screen: 'variety-entries' },
+              },
+              { path: VARIETY, element: <Where />, handle: { screen: 'variety' } },
+            ],
+          },
+        ],
+      },
+    ],
+    { initialEntries: entries, initialIndex: entries.length - 1 },
+  )
   render(
     <QueryClientProvider client={client}>
-      <MemoryRouter initialEntries={entries} initialIndex={entries.length - 1}>
-        <FlashProvider>
-          <Routes>
-            <Route element={<Provide />}>
-              <Route path={VARIETIES_PATH} element={<Where opens={opens} />} />
-              <Route path={STOCK_PATH} element={<EntriesList />} />
-              <Route path={STOCK_ENTRY} element={<Where />} />
-              <Route path={VARIETY_ENTRIES} element={<VarietyRoute render={(varietyId) => <EntriesList varietyId={varietyId} />} />} />
-              <Route path={VARIETY} element={<Where />} />
-            </Route>
-          </Routes>
-        </FlashProvider>
-      </MemoryRouter>
+      <RouterProvider router={router} />
     </QueryClientProvider>,
   )
   return client
@@ -209,43 +226,6 @@ test('"Todas las entradas" shows the entry and no withdrawal, and never asks for
   const list = screen.getByRole('list')
   expect(within(list).queryByText(/Promoción|Consumo propio/)).toBeNull()
   expect(within(list).queryByText(/−/)).toBeNull()
-})
-
-/** Opens a list the way the seller does, from Variedades by a link, so the entry carries the in-app state. */
-async function openFromVariedades(path: string) {
-  fakeApi()
-  renderAt(VARIETIES_PATH, undefined, { entries: [VARIETIES_PATH], opens: path })
-  await userEvent.click(await screen.findByRole('link', { name: 'Abrir' }))
-}
-
-test("a variety's list goes back by history to where the seller came from", async () => {
-  await openFromVariedades(pathTo(VARIETY_ENTRIES, { id: 3 }))
-
-  await userEvent.click(await screen.findByRole('button', { name: '‹ 24K Gold' }))
-  expect((await screen.findByTestId('where')).textContent).toBe(VARIETIES_PATH)
-})
-
-test('"Todas las entradas" goes back by history to where the seller came from', async () => {
-  await openFromVariedades(STOCK_PATH)
-
-  await userEvent.click(await screen.findByRole('button', { name: /^‹ / }))
-  expect((await screen.findByTestId('where')).textContent).toBe(VARIETIES_PATH)
-})
-
-test("a variety's list with no history goes back to the variety's page", async () => {
-  fakeApi()
-  renderAt(pathTo(VARIETY_ENTRIES, { id: 3 }), undefined, { entries: [pathTo(VARIETY_ENTRIES, { id: 3 })] })
-
-  await userEvent.click(await screen.findByRole('button', { name: '‹ 24K Gold' }))
-  expect((await screen.findByTestId('where')).textContent).toBe(pathTo(VARIETY, { id: 3 }))
-})
-
-test('"Todas las entradas" with no history goes back to Variedades', async () => {
-  fakeApi()
-  renderAt(STOCK_PATH, undefined, { entries: [STOCK_PATH] })
-
-  await userEvent.click(await screen.findByRole('button', { name: /^‹ / }))
-  expect((await screen.findByTestId('where')).textContent).toBe(VARIETIES_PATH)
 })
 
 test('Editar links to the entry form', async () => {
@@ -343,7 +323,7 @@ test('the list keeps the icon and text rule: Borrar is the icon-only control wit
   expect(borrar).toHaveClass('boton-icono')
   expect(borrar).toHaveTextContent('')
   expect(borrar.querySelector('svg')).not.toBeNull()
-  expectIconAndTextRule(document.body, { limits: LIMITS })
+  expectIconAndTextRule(screen.getByRole('main'), { limits: LIMITS })
 })
 
 test('the empty state keeps the title and the line within their limits', async () => {
@@ -359,5 +339,5 @@ test('the empty state keeps the title and the line within their limits', async (
 
   await screen.findByText('Sin entradas de stock')
   expect(document.querySelectorAll('[data-copy="emptyTitle"], [data-copy="emptyLine"]')).toHaveLength(2)
-  expectIconAndTextRule(document.body, { limits: LIMITS })
+  expectIconAndTextRule(screen.getByRole('main'), { limits: LIMITS })
 })

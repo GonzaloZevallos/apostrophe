@@ -1,7 +1,7 @@
 /**
  * `VarietyPage` (`VariedadDetalle.dc.html`; varieties.md, "A variety's page"): one variety
  * on its own page. It receives its id only as a prop (`VarietyRoute` is the one reader of
- * the route's `:id`). A detail: "‹ Variedades", no "+ Nueva venta" (the route declares
+ * the route's `:id`). A detail (the shell draws its back: "‹ Variedades", or "‹ Archivadas"), no "+ Nueva venta" (the route declares
  * `chrome: 'card'`). One summary line; "+ Entrada", "Nuevo precio" and "Sacar del stock" (the
  * withdrawal form with this variety chosen); four read-only
  * sections. Forms open over the page by history state (`varietyForms.ts`); the rename form
@@ -11,7 +11,7 @@
  * Stock, status and days left are what `GET /stock` answered; whether the variety is shown
  * is the server's own `shown` from `GET /catalog`; nothing here decides a status or a reason.
  *
- * An archived variety (`archived` true) is the same page, read-only: "‹ Archivadas", "Archivada"
+ * An archived variety (`archived` true) is the same page, read-only: "Archivada"
  * in words, its stock from `GET /stock?archived=true`, no "+ Entrada", "Nuevo precio", "Sacar
  * del stock", price delete, threshold, "Editar", form or removal; its one action is "Restaurar".
  */
@@ -35,11 +35,10 @@ import LeaveConfirm from '../../components/LeaveConfirm'
 import Loading from '../../components/Loading'
 import MarcaEstado from '../../components/MarcaEstado'
 import SinConexion from '../../components/SinConexion'
-import { useLeaveGuard } from '../../components/useLeaveGuard'
+import { type LeaveGuard, useLeaveGuard } from '../../components/useLeaveGuard'
 import { useFlash } from '../../flash/useFlash'
 import { formatGrams, formatMoney } from '../../format/money'
 import {
-  ARCHIVED_VARIETIES,
   CATALOG_SECTION_ID,
   STOCK_ENTRY_NEW,
   VARIETIES,
@@ -57,6 +56,7 @@ import { readForm, useOpenForm } from './varietyForms'
 import VarietyRemoval from './VarietyRemoval'
 import VarietyPricesSection from './VarietyPricesSection'
 import VarietyStockSection from './VarietyStockSection'
+import { useBackParent } from '../../shell/useBackParent'
 import VarietyThresholdSection from './VarietyThresholdSection'
 import { useRestore } from './useRestore'
 
@@ -68,7 +68,35 @@ function Card({ children }: { children: React.ReactNode }) {
   )
 }
 
+/** The guard of a page drawn behind the price modal: a router supports one blocker at a
+ * time and the modal's host holds it, so this page asks for none. It is inert anyway. */
+const UNBLOCKED: LeaveGuard = {
+  blocker: { state: 'unblocked', proceed: undefined, reset: undefined, location: undefined },
+  disarm: () => undefined,
+}
+function useNoGuard(): LeaveGuard {
+  return UNBLOCKED
+}
+
 export default function VarietyPage({ varietyId }: { varietyId: number }) {
+  return <VarietyPageView varietyId={varietyId} useGuard={useLeaveGuard} publishRecord />
+}
+
+/** The page drawn behind the price modal (`VarietiesLayout`), with no leave guard of its own. */
+export function VarietyPageBehind({ varietyId }: { varietyId: number }) {
+  return <VarietyPageView varietyId={varietyId} useGuard={useNoGuard} publishRecord={false} />
+}
+
+function VarietyPageView({
+  varietyId,
+  useGuard,
+  publishRecord,
+}: {
+  varietyId: number
+  useGuard: (dirty: boolean) => LeaveGuard
+  /** The routed page tells the shell's arrow about its variety; the copy behind the modal has no arrow. */
+  publishRecord: boolean
+}) {
   const id = String(varietyId)
   const me = useOutletContext<Me>()
   const location = useLocation()
@@ -77,7 +105,7 @@ export default function VarietyPage({ varietyId }: { varietyId: number }) {
   const openForm = useOpenForm()
   const [dirty, setDirty] = useState(false)
   const [gone, setGone] = useState(false)
-  const { blocker, disarm } = useLeaveGuard(dirty)
+  const { blocker, disarm } = useGuard(dirty)
   const onDirtyChange = useCallback((value: boolean) => setDirty(value), [])
 
   const varietyQuery = useQuery({ queryKey: keys.variety(id), queryFn: () => get<VarietyDetail & Variety>(`/varieties/${id}`) })
@@ -86,6 +114,7 @@ export default function VarietyPage({ varietyId }: { varietyId: number }) {
     queryFn: () => get<PriceRow[]>(`/varieties/${id}/prices`),
   })
   const archived = varietyQuery.data?.archived === true
+  useBackParent('variety', !publishRecord || varietyQuery.data === undefined ? undefined : archived ? { parent: 'varieties-archived' } : { title: 'Variedades' })
   const liveStockQuery = useQuery({ queryKey: keys.stock(), queryFn: readStock })
   const archivedStockQuery = useQuery({
     queryKey: keys.archivedStock(),
@@ -146,17 +175,6 @@ export default function VarietyPage({ varietyId }: { varietyId: number }) {
   return (
     <main className="pantalla">
       <div className="cuerpo">
-        <div className="encabezado__fila">
-          {archived ? (
-            <BotonLink to={ARCHIVED_VARIETIES} variant="back">
-              ‹ Archivadas
-            </BotonLink>
-          ) : (
-            <BotonLink to={VARIETIES} variant="back">
-              ‹ Variedades
-            </BotonLink>
-          )}
-        </div>
         <div className="encabezado-fila">
           <h1 className="encabezado__titulo">{variety.name}</h1>
           {!archived && (

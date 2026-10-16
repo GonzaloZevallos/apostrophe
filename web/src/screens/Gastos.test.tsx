@@ -11,7 +11,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import { GONE_NOTICE } from '../api/refusals'
 import { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
-import { SIN_CONEXION_TITULO } from '../components/SinConexion'
+import { SIN_CONEXION_MENSAJE } from '../components/estadosMessages'
 import { EXPENSES, EXPENSE_CATEGORIES } from '../routes'
 import { expectIconAndTextRule } from '../test/iconAndTextRule'
 import { FLOWER_NOTICE } from './Gastos'
@@ -349,7 +349,7 @@ test('a dropped network on delete shows "Sin conexión", never the gone notice',
   await userEvent.click(await screen.findByRole('button', { name: 'Borrar gasto' }))
   await userEvent.click(screen.getByRole('button', { name: 'Sí, borrala' }))
 
-  expect(await screen.findByText(SIN_CONEXION_TITULO)).toBeInTheDocument()
+  expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
   expect(screen.queryByText(GONE_NOTICE)).not.toBeInTheDocument()
   // The confirmation stays open so the user can retry once back online.
   expect(screen.getByRole('button', { name: 'Sí, borrala' })).toBeInTheDocument()

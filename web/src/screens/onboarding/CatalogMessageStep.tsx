@@ -9,6 +9,7 @@
 import { useCallback, useState } from 'react'
 import { sendPass } from '../../api/onboarding'
 import CatalogMessageForm from '../settings/CatalogMessageForm'
+import StepSubmit from './StepSubmit'
 import { useOnboardingWrite } from './useOnboardingWrite'
 import type { StepBodyProps } from './stepBodies'
 
@@ -27,16 +28,19 @@ export default function CatalogMessageStep({ onDirtyChange, onProgress }: StepBo
 
   return (
     <>
-      <CatalogMessageForm onDirtyChange={onDirty} onSaved={() => void run(() => sendPass('header_footer', 'done'))} />
+      <CatalogMessageForm
+        submitLabel="Guardar"
+        onDirtyChange={onDirty}
+        onSaved={() => void run(() => sendPass('header_footer', 'done'))}
+      />
       {!dirty && (
-        <button
-          type="button"
-          className="boton boton--suave"
+        <StepSubmit
+          variant="secondary"
           disabled={sending}
-          onClick={() => void run(() => sendPass('header_footer', 'done'))}
+          onSubmit={() => void run(() => sendPass('header_footer', 'done'))}
         >
           Dejar así
-        </button>
+        </StepSubmit>
       )}
       {notice}
     </>

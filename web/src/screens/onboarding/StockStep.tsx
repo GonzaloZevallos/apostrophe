@@ -1,7 +1,7 @@
 /**
  * Step 2, "Cargá lo que tenés hoy": the owner's stock form, locked to the variety the API
  * names as `stock_target` and to the origin Stock inicial, dated today. With no cost the lot
- * costs $0, and the step says so. Once saved (or when the step is already done and no variety
+ * costs $0, and the form says so next to the cost field. Once saved (or when the step is already done and no variety
  * is waiting for stock) the step offers "Seguir" (which sends `advance`) and "Agregar otra
  * variedad" (back to step 1); the progress stays on steps 1 and 2 while varieties are added.
  */
@@ -15,10 +15,9 @@ import { inAppState } from '../../components/inAppState'
 import { ONBOARDING_VARIETY } from '../../routes'
 import StockEntryForm from '../StockEntryForm'
 import { anotherVarietyState } from './anotherVariety'
+import StepSubmit from './StepSubmit'
 import { useOnboardingWrite } from './useOnboardingWrite'
 import type { StepBodyProps } from './stepBodies'
-
-export const NO_COST_LINE = 'Si no cargás el costo, el lote cuesta $ 0.'
 
 export default function StockStep({ me, progress, onDirtyChange, onProgress }: StepBodyProps) {
   const queryClient = useQueryClient()
@@ -55,9 +54,9 @@ export default function StockStep({ me, progress, onDirtyChange, onProgress }: S
           </div>
         )}
         <div className="onboarding__acciones">
-          <button type="button" className="boton" disabled={sending} onClick={() => void run(sendAdvance)}>
+          <StepSubmit disabled={sending} onSubmit={() => void run(sendAdvance)}>
             Seguir
-          </button>
+          </StepSubmit>
           <Boton
             variant="secondary"
             icon="agregar"
@@ -75,15 +74,14 @@ export default function StockStep({ me, progress, onDirtyChange, onProgress }: S
     return (
       <>
         <p className="onboarding__porque">Primero cargá una variedad con su precio de hoy.</p>
-        <button type="button" className="boton" onClick={() => void navigate(ONBOARDING_VARIETY)}>
+        <Boton icon="agregar" onClick={() => void navigate(ONBOARDING_VARIETY)}>
           Cargar una variedad
-        </button>
+        </Boton>
       </>
     )
   }
   return (
     <>
-      <p className="pie">{`Variedad: ${target.name}`}</p>
       <StockEntryForm
         mode="nuevo"
         today={me.today}
@@ -92,7 +90,6 @@ export default function StockStep({ me, progress, onDirtyChange, onProgress }: S
         onSaved={() => void stockSaved()}
         onDirtyChange={onDirtyChange}
       />
-      <p className="pie">{NO_COST_LINE}</p>
     </>
   )
 }
