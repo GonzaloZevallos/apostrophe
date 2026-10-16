@@ -9,7 +9,8 @@ from pathlib import Path
 import pytest
 
 from app.business_removal.adapters.cli import main
-from tests.business_removal.adapters.seed import EMAIL_LEAVING, seed, set_env
+from tests.business_removal.adapters.seed import EMAIL_LEAVING, PINNED, seed, set_env
+from tests.conftest import MovableClock
 
 
 def _settings(db_path: Path) -> dict[str, tuple[int, int]]:
@@ -26,7 +27,8 @@ def test_removal_deletes_its_settings_row_and_exports_both_switches(
 ) -> None:
     db_path = tmp_path / "apostrophe.db"
     export_dir = tmp_path / "exports"
-    seed(db_path)
+    clock = MovableClock(PINNED)
+    seed(db_path, clock)
     set_env(monkeypatch, db_path, export_dir)
     with sqlite3.connect(db_path) as connection:
         connection.execute(
@@ -35,7 +37,9 @@ def test_removal_deletes_its_settings_row_and_exports_both_switches(
         )
     assert _settings(db_path) == {"La Huerta": (1, 0), "Otro Negocio": (0, 0)}
 
-    result = main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=io.StringIO())
+    result = main(
+        [EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=io.StringIO(), clock=clock
+    )
 
     assert result == 0
     assert _settings(db_path) == {"Otro Negocio": (0, 0)}

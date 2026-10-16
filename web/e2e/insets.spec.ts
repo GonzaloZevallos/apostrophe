@@ -31,6 +31,7 @@ import { expectPath } from './helpers/url.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
+import { uniqueTag } from './helpers/unique.js'
 
 const TOP = 47
 const BOTTOM = 34
@@ -109,7 +110,7 @@ test('every screen, bar, sheet and toast keeps clear of the notch and the home b
   }
 
   await page.setViewportSize(VIEWPORTS[0])
-  await signUpNewBusiness(page, { businessName: `Flores del Borde ${Date.now()}`, email: `duena-bordes-${Date.now()}@example.com` })
+  await signUpNewBusiness(page, { businessName: `Flores del Borde ${uniqueTag()}`, email: `duena-bordes-${uniqueTag()}@example.com` })
 
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'Nueva variedad' }).click()
@@ -215,8 +216,8 @@ test('a settings group on a computer keeps its 80px top padding at inset 0 and s
 
   await page.setViewportSize(VIEWPORTS[2])
   await signUpNewBusiness(page, {
-    businessName: `Flores del Margen ${Date.now()}`,
-    email: `duena-margen-${Date.now()}@example.com`,
+    businessName: `Flores del Margen ${uniqueTag()}`,
+    email: `duena-margen-${uniqueTag()}@example.com`,
   })
 
   const groups = [

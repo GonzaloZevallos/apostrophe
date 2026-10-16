@@ -134,49 +134,54 @@ export default function Shell() {
   const onComputer = useViewport() === 'computer'
   const showRailNuevaVenta = showNuevaVenta || (leaf.pane === 'detail' && onComputer)
   const showBar = leaf.kind !== 'form'
+  // The price form is a modal on a computer and draws the form kind's chrome: no rail at all
+  // (invariant 8), so there is nothing behind its scrim for Tab or a click to reach.
+  const noRail = onComputer && leaf.id === 'variety-price-new'
 
   return (
     <div className="disposicion">
-      <nav className="riel-lateral" aria-label="Navegación" data-menu>
-        {showRailNuevaVenta && (
-          <BotonLink to={SALE_NEW} icon="agregar" className={NUEVA_VENTA_ESCRITORIO_CLASS}>
-            Nueva venta
-          </BotonLink>
-        )}
-        {RAIL_ITEMS.map((item, index) => {
-          const active = railPlace === item.place
-          return (
-            <Fragment key={item.to}>
-              {index > 0 && RAIL_ITEMS[index - 1]?.group !== item.group && (
-                <div role="separator" className="riel-lateral__divisor" />
-              )}
-              <Link
-                to={item.to}
-                aria-current={active ? 'page' : undefined}
-                className={railClassName(item, active)}
-              >
-                {item.icono !== undefined && <Icono nombre={item.icono} />}
-                {item.label}
-              </Link>
-            </Fragment>
-          )
-        })}
-        <InAppLink
-          to={SETTINGS}
-          aria-label={`Configuración de ${me.business_name}`}
-          aria-current={railPlace === 'business' ? 'page' : undefined}
-          className={
-            railPlace === 'business'
-              ? 'riel-lateral__negocio riel-lateral__negocio--activo'
-              : 'riel-lateral__negocio'
-          }
-        >
-          <span className="riel-lateral__avatar" aria-hidden="true">
-            {initialsOf(me.business_name)}
-          </span>
-          <span className="riel-lateral__negocio-nombre">{me.business_name}</span>
-        </InAppLink>
-      </nav>
+      {!noRail && (
+        <nav className="riel-lateral" aria-label="Navegación" data-menu>
+          {showRailNuevaVenta && (
+            <BotonLink to={SALE_NEW} icon="agregar" className={NUEVA_VENTA_ESCRITORIO_CLASS}>
+              Nueva venta
+            </BotonLink>
+          )}
+          {RAIL_ITEMS.map((item, index) => {
+            const active = railPlace === item.place
+            return (
+              <Fragment key={item.to}>
+                {index > 0 && RAIL_ITEMS[index - 1]?.group !== item.group && (
+                  <div role="separator" className="riel-lateral__divisor" />
+                )}
+                <Link
+                  to={item.to}
+                  aria-current={active ? 'page' : undefined}
+                  className={railClassName(item, active)}
+                >
+                  {item.icono !== undefined && <Icono nombre={item.icono} />}
+                  {item.label}
+                </Link>
+              </Fragment>
+            )
+          })}
+          <InAppLink
+            to={SETTINGS}
+            aria-label={`Configuración de ${me.business_name}`}
+            aria-current={railPlace === 'business' ? 'page' : undefined}
+            className={
+              railPlace === 'business'
+                ? 'riel-lateral__negocio riel-lateral__negocio--activo'
+                : 'riel-lateral__negocio'
+            }
+          >
+            <span className="riel-lateral__avatar" aria-hidden="true">
+              {initialsOf(me.business_name)}
+            </span>
+            <span className="riel-lateral__negocio-nombre">{me.business_name}</span>
+          </InAppLink>
+        </nav>
+      )}
       <div className="columna-principal">
         {leaf.kind === 'card' && <BackArrow id={leaf.id} />}
         <Outlet context={me} />

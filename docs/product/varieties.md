@@ -13,6 +13,14 @@ Which price fields a price entry shows and stores follows the business's pricing
 
 **When** I start selling a new variety or change what I charge, **I want** to record the variety once and each price with the date it starts to apply, **so I can** charge the right price on any day without remembering when it changed.
 
+**When** a price changes mid-day and I'm on my phone between orders or mid-chat with a customer, **I want** to record the new price and the day it applies from in a short form that reads as pesos and starts on today, without leaving the variety I was looking at, **so I can** get back to the customer sure the right price is in force, without second-guessing the amount or the date.
+
+This refines the job above for the phone and the computer (on the computer, the variety's page stays behind the form); it is not a new job. Its secondary situation is the Onboarding's step 1, which shares the price fields (onboarding.md). Before it, the computer opened the price form as a page of its own, amounts carried no "$" and the date was a native date field.
+
+**When** I change a message or a screen's chrome, **I want** each shared message to live in one place and the chrome rule to be proven by a test of what the screen shows, **so I** never fix a message in one screen and leave it stale in another, and never ship a card that shows "+ Nueva venta" unnoticed.
+
+Its protagonist is the maintainer of the app, or the reviewer acting for them, in the style of accounts.md's maintainer job; the seller is affected only indirectly. It is served here by the one source of "Revisá los gramos cargados" and "Precio guardado", and by the chrome test that navigation.md's chrome metric asks for. No behaviour of the app changes.
+
 **When** I set up how my business prices, record a variety's price or hand over an order, **I want** the app to use only the pricing rules my business has (a bulk price if I sell by quantity, and a VIP price I set per variety if I have VIP customers), **so I can** charge every customer exactly what I mean to without typing a special price by hand, without seeing fields that don't apply to me, and without anyone's price changing by surprise. (Served here by the price entry's VIP price and by price fields that follow the switches; defined in pricing-settings.md.)
 
 **When** I run my business from my phone, **I want to** keep my prices up to date from the phone, **so I can** stop keeping them in the spreadsheet and have real data in place when sales arrive.
@@ -91,6 +99,12 @@ Success criteria:
     - With Precio por cantidad off, no bulk price or bulk minimum shows in the price form or on the variety's page.
     - With Clientes VIP off, no VIP price shows.
     - Switched back on, every stored bulk and VIP price shows again.
+16. **The price form looks as designed**: it matches `docs/product/design-system/pantallas/` on the phone and the computer, in both themes:
+    - on the computer, a modal over the variety's page, never a page of its own;
+    - a "$" before every peso amount (list, bulk and VIP price; never the bulk minimum);
+    - the effective date shown as a "Hoy" chip by default.
+17. **A price from today in the fewest taps**: recording a price effective today never requires opening a date picker. Choosing another date stays possible.
+18. **One message, one source**: every message shown on more than one screen ("Revisá los gramos cargados" in the price, stock entry and withdrawal forms) has one source, and so does the toast "Precio guardado". The wording a seller sees does not change anywhere.
 
 ## Behaviour
 
@@ -190,7 +204,7 @@ Success criteria:
   `/varieties/archived` (the Archivadas card). An archived variety's page is the same
   `/varieties/{low}`, read-only.
 - A reload on any of them opens the screen, never the API's answer (ADR-0024 and
-  ADR-0030 govern paths shared with the API).
+  ADR-0033 govern paths shared with the API).
 - Old paths (`/variedades`, `/mi-stock`, `/mi-stock/nueva-entrada`,
   `/mi-stock/entradas/{id}`, `/catalogo` and every other former Stock, Variedades or
   Catálogo path) redirect permanently (navigation.md).
@@ -282,10 +296,6 @@ Success criteria:
     - each refusal (for example an aroma over 200 characters) shows under its own field and keeps everything typed;
     - leaving with something typed and not saved asks before discarding;
     - a save shows the toast "Catálogo guardado".
-- **The price entry form** ("Nuevo precio"):
-  - it holds the effective date and the list price;
-  - it adds the bulk price and bulk minimum only while Precio por cantidad is on, and "Precio VIP" only while Clientes VIP is on, each optional;
-  - it says nothing about a rule that is switched off.
 - **One removal action**, worked out from history when the page is read:
   - with no history: "Eliminar variedad", through a destructive ConfirmDialog, then the
     toast "Variedad eliminada" and back to Variedades;
@@ -337,6 +347,30 @@ Success criteria:
 - Everything works on phone and computer, light and dark; no state is told by colour
   alone.
 
+### On screen: the price entry form ("Nuevo precio")
+
+- **Kind**: a form (navigation.md) on both devices: no bar and no "+ Nueva venta"; "Cerrar"; leaving with something typed asks before discarding, and an untouched form closes at once. Back with no history goes to the variety's page. Only how it is drawn on the computer differs.
+- **Fields**:
+  - the effective date and the list price;
+  - the bulk price and bulk minimum only while Precio por cantidad is on, and "Precio VIP" only while Clientes VIP is on, each optional;
+  - it says nothing about a rule that is switched off.
+- **Amounts in pesos**: the list price, the bulk price and the VIP price each show "$" before the amount. The bulk minimum, in grams, never does. The "$" is text under the design README's contrast rule (ADR-0029), drawn with existing tokens only. These fields are the shared price fields, so the "$" also shows in the Onboarding's step 1 (onboarding.md).
+- **"Rige desde", a date chip**:
+  - it reads "Hoy dd/mm" by default, as Nueva venta's date does (sales.md);
+  - tapping it opens the date choice; how that choice looks is design's, as long as it is reached from the chip;
+  - a chosen day that is not today reads "dd/mm", without "Hoy";
+  - going back to today is done from the same chip, where "Hoy" can be found; there is no separate control, and it never takes more than the chip and its choice;
+  - recording a price effective today never requires opening a date picker;
+  - the date rules are unchanged: any date is allowed, one entry per variety per date, and a refused date is refused as before;
+  - the chosen date is kept when the save is refused for any field.
+- **On the phone**: a full form screen, closing with "Cerrar".
+- **On a computer**: a modal over the variety's page.
+  - "Cerrar" returns to that page; a successful save returns there too, shows the toast "Precio guardado", and the Precios section shows the new entry.
+  - A refusal keeps the modal open with everything typed, inline on its field.
+  - Opened by a direct link (`/varieties/{low}/prices/new`), it shows the modal over that variety's page.
+  - While the modal is open, the variety list behind it cannot be used.
+- **A variety archived or gone** while the form is open follows accounts.md's "Eso ya no está" rule, as before.
+
 ### Constraints
 
 - Every route, the delete, archive and restore routes included, joins the isolation sweep
@@ -344,6 +378,7 @@ Success criteria:
 - Refusal codes in `contract.json` (ADR-0008): a delete with history; a name held by an
   archived variety; an archived variety referenced for a new record (gone). Archive has no
   refusal of its own. None repeats a name or an amount (ADR-0005).
+- **One source per shared message**: in the front, "Revisá los gramos cargados" (shown by the price, stock entry and withdrawal forms) and the toast "Precio guardado" are each defined once and read from there; no screen restates either as its own literal.
 
 ## Metrics
 
@@ -440,6 +475,15 @@ Success criteria:
   Archivadas and the archived page, phone and computer, both themes, attached to the PR
   and judged by eye. The PR lists the two agreed departures from the drawing (the
   "Editar" forms of Aviso de stock bajo and En el catálogo).
+- **Price form looks as designed (criterion 16)**:
+  - `scripts/design/compare.sh` runs before and after for the price form, phone and computer, both themes, and for the Onboarding's step 1, attached to the PR and judged by eye; every design-vs-docs difference is listed in the PR;
+  - `scripts/design/screens.json` holds the price form's dark twins (phone and computer), following the dark-twin convention, and the Onboarding's price step, and `compare.sh` measures them.
+- **"$" scope (criterion 16)**: front tests show the "$" on the list, bulk and VIP price, never on the bulk minimum, and the same in the Onboarding's step 1, which shows no date chip.
+- **Date chip (criterion 17)**: front tests show "Hoy dd/mm" by default and "dd/mm" for another day, going back to today from the chip, the chosen date kept after a refused save, and no native date input opened to record a price from today.
+- **Modal (criterion 16)**: front tests through the real routes show the modal on a computer viewport and a full form screen on the phone, a direct link rendering the modal over its variety, the list behind it inert, and the close, save ("Precio guardado", the new entry in Precios) and discard flows.
+- **One source (criterion 18)**: a test shows "Revisá los gramos cargados" and "Precio guardado" each defined once, and the rendered text in every screen that shows them unchanged.
+- **Chrome proven by behaviour** (navigation.md, criterion 5): a Shell test shows "+ Nueva venta" on a tab root and absent under card chrome.
+- **No regression (criteria 16–18)**: the existing suites pass; the only edited tests are those that found the native date input or the page layout, each listed in the PR; the contrast guard (ADR-0029) passes with no token change.
 - **Speed**: Variedades answers in under 300 ms with a few dozen varieties.
 
 ## Out of scope
@@ -460,3 +504,6 @@ Success criteria:
 - Editing a price entry, its VIP price included (ADR-0003).
 - Copying a hidden rule's prices forward onto a new entry.
 - Other VIP rules (a percent off list); price promotions by date.
+- Documenting the price form's divergence from the design instead of bringing it in line.
+- A date choice in the Onboarding's step 1; any change to a price entry's date rules.
+- A new token or a change to any token value for the price form.

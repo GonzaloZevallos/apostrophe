@@ -16,6 +16,7 @@
 import { expect } from '../fixtures.js'
 import type { Page } from '@playwright/test'
 import { newBusinessInvitationUrl } from '../backend.js'
+import { uniqueTag } from './unique.js'
 
 export const DEFAULT_PASSWORD = 'correcthorsebattery'
 
@@ -47,7 +48,7 @@ export async function signUpNewBusiness(
   page: Page,
   options: SignUpOptions = {},
 ): Promise<SignedUpBusiness> {
-  const unique = `${Date.now()}-${Math.floor(Math.random() * 1e6)}`
+  const unique = `${uniqueTag()}`
   const {
     businessName = `Negocio ${unique}`,
     email = `duena-${unique}@example.com`,

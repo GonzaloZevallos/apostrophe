@@ -17,6 +17,7 @@ import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { openGastos, openMas } from './helpers/openMas.js'
 import { fillSaleLine } from './helpers/sale.js'
+import { uniqueTag } from './helpers/unique.js'
 
 test('a seller opens Análisis from Más, moves back a month and reads each section', async ({
   page,
@@ -24,8 +25,8 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   const consoleMessages: string[] = []
   watchConsole(page, consoleMessages)
 
-  const ownerEmail = `duena-analisis-${Date.now()}@example.com`
-  const businessName = `Flores del Análisis ${Date.now()}`
+  const ownerEmail = `duena-analisis-${uniqueTag()}@example.com`
+  const businessName = `Flores del Análisis ${uniqueTag()}`
 
   await signUpNewBusiness(page, { businessName, email: ownerEmail })
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)

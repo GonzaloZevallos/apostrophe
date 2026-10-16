@@ -6,9 +6,15 @@ from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
+from httpx2 import Response
+from sqlalchemy import func, select
+from sqlalchemy.engine import Engine
+from sqlalchemy.orm import Session
 
+from app.stock.adapters.tables import StockWithdrawalLineRow, StockWithdrawalRow
 from tests.conftest import MovableClock
 from tests.contract_shapes import assert_matches_fixture
+from tests.fakes.archive import archive_by_hand
 
 TODAY = "2026-10-02"
 
@@ -30,6 +36,10 @@ def _body(variety_id: int, **overrides: Any) -> dict[str, Any]:
     }
     body.update(overrides)
     return body
+
+
+def _line(variety_id: int, grams: str = "5") -> dict[str, Any]:
+    return {"variety_id": variety_id, "grams": grams}
 
 
 def _record(client: TestClient, variety_id: int, **overrides: Any) -> dict[str, Any]:
@@ -416,3 +426,148 @@ def test_the_business_wide_entries_list_holds_no_withdrawal(client: TestClient) 
     assert len(entries) == 1
     assert {entry["origin"] for entry in entries} == {"opening_stock"}
     assert all("reason" not in entry for entry in entries)
+
+
+def _archived(client: TestClient, engine: Engine, name: str) -> int:
+    variety_id = _variety(client, name)
+    archive_by_hand(engine, variety_id)
+    return variety_id
+
+
+def _rows(engine: Engine) -> tuple[int, int]:
+    with Session(engine) as session:
+        return (
+            session.scalar(select(func.count()).select_from(StockWithdrawalRow)) or 0,
+            session.scalar(select(func.count()).select_from(StockWithdrawalLineRow)) or 0,
+        )
+
+
+def _refusal(response: Response) -> tuple[int, str]:
+    return response.status_code, response.json()["code"]
+
+
+def test_a_withdrawal_with_any_line_on_an_archived_variety_is_refused_and_writes_nothing(
+    client: TestClient, engine: Engine
+) -> None:
+    live = _variety(client)
+    archived = _archived(client, engine, "Gone")
+    before = _rows(engine)
+
+    last = client.post(
+        "/stock/withdrawals",
+        json=_body(live, lines=[_line(live), _line(archived)]),
+    )
+    first = client.post("/stock/withdrawals", json=_body(archived))
+
+    assert _refusal(last) == (404, "variety.archived")
+    assert _refusal(first) == (404, "variety.archived")
+    assert _rows(engine) == before
+
+
+def test_two_lines_on_the_same_archived_variety_are_one_refusal(
+    client: TestClient, engine: Engine
+) -> None:
+    archived = _archived(client, engine, "Gone")
+
+    response = client.post(
+        "/stock/withdrawals", json=_body(archived, lines=[_line(archived), _line(archived)])
+    )
+
+    assert _refusal(response) == (404, "variety.archived")
+    assert _rows(engine) == (0, 0)
+
+
+def test_a_missing_variety_wins_over_an_archived_one_whichever_line_comes_first(
+    client: TestClient, engine: Engine
+) -> None:
+    archived = _archived(client, engine, "Gone")
+    missing = archived + 1000
+
+    archived_first = client.post(
+        "/stock/withdrawals", json=_body(archived, lines=[_line(archived), _line(missing)])
+    )
+    missing_first = client.post(
+        "/stock/withdrawals", json=_body(archived, lines=[_line(missing), _line(archived)])
+    )
+
+    assert _refusal(archived_first) == (404, "stock.withdrawal_variety_not_found")
+    assert _refusal(missing_first) == (404, "stock.withdrawal_variety_not_found")
+    assert _rows(engine) == (0, 0)
+
+
+def test_an_edit_keeps_a_variety_archived_since_and_changes_the_rest(
+    client: TestClient, engine: Engine
+) -> None:
+    kept = _variety(client, "Kept")
+    withdrawal = _record(client, kept)
+    archive_by_hand(engine, kept)
+
+    response = client.put(
+        f"/stock/withdrawals/{withdrawal['id']}",
+        json=_body(
+            kept,
+            reason="own_use",
+            date="2026-09-20",
+            note="cambió",
+            lines=[_line(kept, "7")],
+        ),
+    )
+
+    assert response.status_code == 200, response.text
+    stored = client.get(f"/stock/withdrawals/{withdrawal['id']}").json()
+    assert (stored["reason"], stored["date"], stored["note"]) == ("own_use", "2026-09-20", "cambió")
+    assert [line["grams"] for line in stored["lines"]] == [7]
+
+
+def test_an_edit_that_keeps_one_archived_variety_and_adds_another_is_refused_unchanged(
+    client: TestClient, engine: Engine
+) -> None:
+    kept = _variety(client, "Kept")
+    withdrawal = _record(client, kept)
+    archive_by_hand(engine, kept)
+    other = _archived(client, engine, "Other")
+    before = client.get(f"/stock/withdrawals/{withdrawal['id']}").json()
+
+    response = client.put(
+        f"/stock/withdrawals/{withdrawal['id']}",
+        json=_body(kept, lines=[_line(kept, "9"), _line(other)]),
+    )
+
+    assert _refusal(response) == (404, "variety.archived")
+    assert client.get(f"/stock/withdrawals/{withdrawal['id']}").json() == before
+
+
+def test_an_edit_that_moves_a_line_onto_an_archived_variety_is_refused_unchanged(
+    client: TestClient, engine: Engine
+) -> None:
+    mine = _variety(client, "Mine")
+    withdrawal = _record(client, mine)
+    other = _archived(client, engine, "Other")
+    before = client.get(f"/stock/withdrawals/{withdrawal['id']}").json()
+
+    response = client.put(f"/stock/withdrawals/{withdrawal['id']}", json=_body(other))
+
+    assert _refusal(response) == (404, "variety.archived")
+    assert client.get(f"/stock/withdrawals/{withdrawal['id']}").json() == before
+
+
+def test_an_unknown_withdrawal_is_not_found_before_any_variety_is_checked(
+    client: TestClient, engine: Engine
+) -> None:
+    archived = _archived(client, engine, "Gone")
+
+    response = client.put("/stock/withdrawals/9999", json=_body(archived))
+
+    assert _refusal(response) == (404, "stock.withdrawal_not_found")
+
+
+def test_a_withdrawal_touching_an_archived_variety_can_still_be_read_and_deleted(
+    client: TestClient, engine: Engine
+) -> None:
+    variety_id = _variety(client)
+    withdrawal = _record(client, variety_id)
+    archive_by_hand(engine, variety_id)
+
+    assert client.get(f"/stock/withdrawals/{withdrawal['id']}").json() == withdrawal
+    assert client.delete(f"/stock/withdrawals/{withdrawal['id']}").status_code == 204
+    assert _rows(engine) == (0, 0)

@@ -14,7 +14,7 @@ export default function CategoriesStep({ onDirtyChange, onProgress }: StepBodyPr
   const { run, sending, notice } = useOnboardingWrite(onProgress)
   return (
     <>
-      <ExpenseCategoriesEditor onDirtyChange={onDirtyChange} />
+      <ExpenseCategoriesEditor onDirtyChange={onDirtyChange} addCollapsed />
       <StepSubmit disabled={sending} onSubmit={() => void run(() => sendPass('categories', 'done'))}>
         Seguir
       </StepSubmit>

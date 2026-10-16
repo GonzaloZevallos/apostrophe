@@ -12,6 +12,8 @@ import { SALES, VARIETIES } from '../src/routes.js'
 import { expect, test } from './fixtures.js'
 import type { Locator, Page } from '@playwright/test'
 import { signUpNewBusiness } from './helpers/signup.js'
+import { setPriceDate } from './helpers/priceDate.js'
+import { uniqueTag } from './helpers/unique.js'
 
 const TOUCH_TARGET = 44
 const MIN_INPUT_FONT = 16
@@ -46,7 +48,7 @@ async function expectInsideTheScreen(page: Page, locator: Locator): Promise<void
 test('Ventas and a sale detail fit, and are thumb-sized, at 320, 430 and 130 % on the phone', async ({
   page,
 }) => {
-  await signUpNewBusiness(page, { businessName: `Vivero Telefono ${Date.now()}`, email: `duena-telefono-${Date.now()}@example.com` })
+  await signUpNewBusiness(page, { businessName: `Vivero Telefono ${uniqueTag()}`, email: `duena-telefono-${uniqueTag()}@example.com` })
 
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'Nueva variedad' }).click()
@@ -55,17 +57,15 @@ test('Ventas and a sale detail fit, and are thumb-sized, at 320, 430 and 130 % o
   await expect(page.getByText('Variedad guardada')).toBeVisible()
   await page.getByRole('link', { name: /Jazmín/ }).click()
   await page.getByRole('link', { name: 'Nuevo precio' }).click()
-  await page.getByLabel('Rige desde').fill('2000-01-01')
+  await setPriceDate(page, '2000-01-01')
   await page.getByLabel(/^Precio de lista/).fill('500')
   await page.getByRole('button', { name: 'Guardá el precio' }).click()
   await expect(page.getByText('Precio guardado')).toBeVisible()
 
   await page.goto(SALES)
-  const today = await page.evaluate(() =>
-    new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' }).format(
-      new Date(),
-    ),
-  )
+  // The backend's own business day, as the app shows it: the spec reads no clock.
+  const me: { today: string } = await (await page.request.get('/auth/me')).json()
+  const today = me.today
   const varieties: { id: number; name: string }[] = await (
     await page.request.get(`/varieties?on=${today}`)
   ).json()
