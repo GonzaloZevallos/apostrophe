@@ -44,7 +44,6 @@ test('does not flag a "Volver a …" action, nor the arrow named in a comment', 
 /** The only screens that still hold a `‹`, each with its reason. It only shrinks. */
 const ALLOWED: Record<string, string> = {
   '/src/screens/Analisis.tsx': 'the month steppers, and the root\'s own "Volver" to Más: not a card\'s back arrow',
-  '/src/screens/onboarding/OnboardingStep.tsx': '"‹ Atrás", a step control inside a form',
 }
 
 const modules = import.meta.glob(['/src/screens/**/*.tsx', '!/src/screens/**/*.test.tsx'], {

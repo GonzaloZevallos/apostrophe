@@ -25,7 +25,8 @@ and the registry and navigation.md disagreed on one parent.
 3. **A scan ends the old shape.** `findSelfDrawnBackArrows` (`web/src/architecture/`) flags
    `variant="back"` on `Boton`/`BotonLink`, a literal `‹` and the `flecha-atras` class in
    `web/src/screens/**`, outside a shrink-only allowlist: `Analisis.tsx` (month steppers and the
-   root's own "Volver") and `OnboardingStep.tsx` ("‹ Atrás", a step control in a form).
+   root's own "Volver"). `OnboardingStep.tsx` left it in GH-166: its "Atrás" is the icon `atras` and
+   the word, with no '‹'.
 
 ## Consequences
 
