@@ -21,7 +21,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
-import { assertScreens } from './screens.mjs'
+import { assertScreens, assertSelectedAccounts } from './screens.mjs'
 import { fontCss, fontRoute } from './fonts.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -47,25 +47,41 @@ const facts = JSON.parse(readFileSync(values.facts, 'utf-8'))
 const { screens } = JSON.parse(readFileSync(join(HERE, 'screens.json'), 'utf-8'))
 assertScreens(screens)
 const only = values.only ? new Set(values.only.split(',')) : null
+// `facts.accounts`: the sample's extra businesses by name, each `{ email, password }`.
+const accounts = facts.accounts ?? {}
+// A configuration error, like bad usage: nothing is captured, and no credential is printed.
+try {
+  assertSelectedAccounts(
+    screens.filter((s) => !only || only.has(s.screen)),
+    Object.keys(accounts),
+  )
+} catch (error) {
+  console.error(`comparisons: ${error.message}`)
+  process.exit(2)
+}
 const out = resolve(values.out)
 mkdirSync(out, { recursive: true })
 
 const PHONE = [390, 844]
 const TIMEOUT = 8000
 
-// `{name}` in a route or a step value: one of the sample's ids, or its user's email.
-const PLACEHOLDERS = { ...facts.ids, email: facts.email }
+// The user a screen signs in as: its `account`'s, else La Huerta's.
+const userOf = (s) => (s.account ? accounts[s.account] : facts)
 
-function resolveFacts(template) {
+// `{name}` in a route or a step value: one of the sample's ids, or its user's email. An
+// account's entry has only its own email: the ids are La Huerta's.
+const placeholdersOf = (s) => (s.account ? { email: userOf(s).email } : { ...facts.ids, email: facts.email })
+
+function resolveFacts(template, placeholders) {
   return template.replace(/\{(\w+)\}/g, (_, name) => {
-    if (!(name in PLACEHOLDERS)) throw new Error(`no sample fact named ${name}`)
-    return String(PLACEHOLDERS[name])
+    if (!(name in placeholders)) throw new Error(`no sample fact named ${name}`)
+    return String(placeholders[name])
   })
 }
 
-async function run(page, step) {
+async function run(page, step, placeholders) {
   if (step.click) await page.getByText(step.click, { exact: true }).first().click()
-  else if (step.fill) await page.getByLabel(step.fill.label).first().fill(resolveFacts(step.fill.value))
+  else if (step.fill) await page.getByLabel(step.fill.label).first().fill(resolveFacts(step.fill.value, placeholders))
   else if (step.select) await page.getByLabel(step.select.label).first().selectOption({ index: step.select.index })
   else if (step.wait) await page.getByText(step.wait, { exact: true }).first().waitFor()
   // The page has settled by now: only the network goes, the page is never reloaded.
@@ -202,19 +218,21 @@ async function captureBuiltIn(context, s, options, ctx, notes) {
       else document.addEventListener('DOMContentLoaded', apply, { once: true })
     }, s.tema)
   }
+  const user = userOf(s)
+  const placeholders = placeholdersOf(s)
   if (!s.signed_out) {
     const login = await context.request.post('/auth/login', {
-      data: { email: facts.email, password: facts.password },
+      data: { email: user.email, password: user.password },
     })
     if (!login.ok()) throw new Error(`login failed: ${login.status()}`)
   }
   const page = await context.newPage()
   page.setDefaultTimeout(TIMEOUT)
-  await page.goto(resolveFacts(s.route))
+  await page.goto(resolveFacts(s.route, placeholders))
   await settle(page)
   for (const step of s.steps ?? []) {
     try {
-      await run(page, step)
+      await run(page, step, placeholders)
       await settle(page)
     } catch (error) {
       notes.push(`estado no alcanzado en ${JSON.stringify(step)}: ${String(error).split('\n')[0]}`)
