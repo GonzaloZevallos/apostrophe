@@ -11,6 +11,11 @@ The evidence a reviewer uses to judge that a screen looks as designed: the desig
 - It also serves when a design guard or a registry test fails and the maintainer must tell a real defect from a broken registry row.
 - Before it (GH-142's follow-up): a one-test edit broke the plan's own invariant, the OnboardingListo row could not reach Listo, the OnboardingListoOscuro crop was clipped, and those two defects had no issue.
 
+**When** I review a change against the design capture, **I want** every row of the screens registry to name the screen and the record it actually reaches and captures, **so I can** approve from the capture alone, without checking the registry against the screenshots by hand and without leaving a finding open on an approved head.
+
+- This refines the job above and its criterion 2; it is not a new job. Its protagonist is the same maintainer or reviewer.
+- Before it (GH-166's follow-up): the light `VariedadArchivada` row declared `/varieties/{low}` while it navigated to `/varieties/{sold_out}` and captured Sir Jack. ADR-0033's cross-check reads both placeholders as `{id}`, so no test saw it, and the reviewer reconciled the row by hand.
+
 Success criteria:
 
 1. **One green run.** One `--strict` call over Inicio* and the Onboarding block exits 0.
@@ -18,6 +23,10 @@ Success criteria:
 3. **Registry, tests and plan agree.** The change needs no recorded exception and no test edited outside a declared seam.
 4. **Nothing a seller sees changes.** onboarding.md, navigation.md and every screen read and behave as before, and every test passes. The only edited tests are the two registry tests; the only other edited files are design tooling (`scripts/design/screens.json`, `scripts/design/screens.mjs`, `scripts/design/sample_app.py`, `scripts/design/comparisons.mjs`); no file under `app/` or `web/src/` changes beyond those two tests.
 5. **No test loosened.** A changed registry or enforcement test keeps everything it guarded and states the corrected rule.
+6. **Every row tells the truth about its record.** A row's declared path names the same sample record its route and steps reach and capture. The light `VariedadArchivada` row names Sir Jack (`{sold_out}`), an archived variety reached from Archivadas. A dark twin's own declaration matches its own capture; it need not show the light row's record.
+7. **The registry, its tests and navigation.md agree on the archived variety's page** and its parent "‹ Archivadas", with no recorded exception and no loosened test.
+8. **Truthfulness costs the seller nothing.** Fixing a row's declaration changes no capability doc, nothing under `app/`, and nothing under `web/src/` but `web/src/design/screens.test.ts` within its declared seam. No row's steps change to make it truthful.
+9. **A wrong record never passes unnoticed again.** An entry whose path names a record different from the one its route names fails the registry test in the diff that introduces it.
 
 ## Behaviour
 
@@ -26,6 +35,17 @@ Success criteria:
 - Fonts are pinned and the design capture never touches the network; `--strict` turns a font or screen-level failure into a non-zero exit, after every screen ran and `index.json` was written (ADR-0042).
 - Each screen writes its composed sheet and its raw design and built captures; a before/after compares the raw captures by exact AE, never the sheet (ADR-0042).
 - A capture is review evidence, judged by eye in the PR. It is never a gate step, and no new automated check is added for it.
+
+### A row names what it reaches
+
+- The record a row names in its path is the record its route and steps reach and capture. A path that names no record (a form such as `/varieties/entries/new`, reached from a record) makes no claim about one.
+- **The light `VariedadArchivada` row** declares `/varieties/{sold_out}`. Its route (`/varieties/{sold_out}`), its steps (archive, open "Archivadas (1)", click "Sir Jack") and its capture are unchanged.
+- **`VariedadArchivadaOscuro`** declares and reaches `/varieties/{low}` (opens "Archivadas (2)", clicks Golden Cookies). The two themes need not show the same record.
+- **The `EntradaStockSinEntradas` rows** (light, dark, Compu and CompuOscuro) declare the stock entry form, `/varieties/entries/new`, and start from `/varieties/{no_entries}`: that is how a seller reaches the form with "Stock inicial" preselected, and they are true as they stand.
+- **A row found naming a record other than the one it reaches** (path and route naming different records, or steps clicking a different record):
+  - a fix to its declaration alone is made in the task that finds it;
+  - a fix needing different steps or sample data becomes a follow-up issue linked from that task's PR;
+  - nothing found is left unexplained in the PR.
 
 ### Registry rows for Listo
 
@@ -51,6 +71,11 @@ Success criteria:
   - a Listo entry that names an account the sample does not write fails;
   - two entries on one account are refused (`assertSelectedAccounts`), the default Listo row included.
 - The account-validation tests and `assertSelectedAccounts` keep everything they guarded.
+- **Same record in path and route**: the same test states that when an entry's `path` names at least one `{name}` placeholder, its placeholders equal the `route`'s exactly: the same names, in the same order, compared as written, before any normalisation.
+  - A path with no placeholder names no record and passes, whatever its route holds. This is part of the rule, not an exemption: no entry is listed as exempt.
+  - It only adds to the cross-check; ADR-0033's normalisation to `{id}` for matching against the front registry is unchanged.
+  - A failure names the entry and the two placeholder lists, nothing else.
+  - Known blind spot, accepted: a row whose path names no record while its route does is not checked by this rule. Its steps and capture are still checked by the audit and by eye.
 
 ### Plan rules for a registry change
 
@@ -62,6 +87,7 @@ Success criteria:
 - A row that cannot reach its screen fails while it steps there, so `--strict` exits non-zero.
 - A capture that shows a screen other than its row names, or a clipped section, is caught by eye in review and blocks approval. Neither is ever accepted as a pass.
 - A Listo entry naming an account the sample does not write fails the registry test.
+- An entry whose path names placeholders different from its route's fails the registry test.
 
 ### Evidence in the PR
 
@@ -70,6 +96,7 @@ Success criteria:
 - The list of crops whose result changed: only ones that were clipped.
 - The installed `@fontsource/plus-jakarta-sans` version (ADR-0042).
 - No before/after AE pair is required for a change with no seller-visible difference whose "before" row never reached its screen.
+- For a change that corrects a row's record: the captures of the corrected row and its twin, light and dark, judged by eye, and the audit of every row (rows checked, fixes made, follow-ups linked).
 
 ## Metrics
 
@@ -81,6 +108,11 @@ No telemetry; read from the PR evidence and from tests.
 - **Nothing a seller sees changes (criterion 4)**: every suite passes; the only edited tests are the two registry tests; the only other edited files are `screens.json`, `screens.mjs`, `sample_app.py` and `comparisons.mjs`; nothing else under `app/` or `web/src/` changes.
 - **No test loosened (criterion 5)**: the real-registry test keeps every guard, and each of these is a tested case: an account on an entry that does not reach Listo fails; a Listo entry with an unwritten account fails; two entries on one account fail.
 - **Run B closed**: the clipped OnboardingListoOscuro crop and the unreachable OnboardingListo row are fixed by the same task; no issue is left open for either.
+- **Row tells the truth (criterion 6)**: the light `VariedadArchivada` entry's `path` and `route` name the same placeholder; the same-record rule passes on it and is shown failing on the uncorrected row; it passes the `EntradaStockSinEntradas` rows, whose path names no record, with no exemption listed.
+- **Archived page agrees (criterion 7)**: both registry tests pass; only `screens.test.ts` is edited, with no guard dropped or loosened; the PR records no exception.
+- **Nothing a seller sees changes (criterion 8)**: the diff touches only `scripts/design/screens.json`, `web/src/design/screens.test.ts` and this file; every suite passes; no row's steps change.
+- **Audit**: the PR lists every row checked and every mismatch found, each fixed there or linked to a follow-up issue: 0 unexplained. The GH-166 finding is linked as closed, with the light and dark captures of the corrected row attached.
+- **Recurrence (criterion 9)**: an entry whose path names placeholders different from its route's fails the registry test in the diff that adds it; the blind spot (a path with no placeholder) is named in the test's description and the PR.
 
 ## Out of scope
 
@@ -89,3 +121,7 @@ No telemetry; read from the PR evidence and from tests.
 - Making the design comparison a gate step, or any new automated check of a capture.
 - A before/after AE pair for a change with nothing seller-visible to compare.
 - Judging whether a screen looks good: the capture finds unintended differences.
+- Making a light row and its dark twin show the same record.
+- Changing a row's route, steps or sample data to make its declaration truthful: that is a follow-up issue.
+- Any change to ADR-0033's normalisation, or any exemption in the registry cross-check.
+- Checking, by rule, a row whose path names no record while its route does.
