@@ -227,7 +227,7 @@ describe('the Onboarding rows of the real screens.json', () => {
     const at = rows.findIndex((row) => row.screen === 'OnboardingVariedad')
     expect(at).toBeGreaterThan(-1)
     rows.forEach((row, index) => {
-      if (row.account !== undefined || !(row.path ?? '').startsWith('/onboarding/')) return
+      if (row.account !== undefined || !/^\/onboarding\//.test(row.path ?? '')) return
       if (row.screen === 'OnboardingVariedad') return
       if (designOf(row) === 'OnboardingVariedad') expect(index, row.screen).toBeGreaterThan(at)
       else expect(index, row.screen).toBeLessThan(at)
@@ -242,7 +242,7 @@ describe('the Onboarding rows of the real screens.json', () => {
     expect(new Set(accounts).size).toBe(listo.length)
     for (const row of listo) {
       const route = (row as Row & { route?: string }).route
-      expect(route, row.screen).not.toBe('/onboarding/categories')
+      expect(route, row.screen).not.toMatch(/\/categories$/)
     }
   })
 })

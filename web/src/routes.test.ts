@@ -385,9 +385,13 @@ const REACHED_BY_STEPS = [
   "OnboardingListo",
   "OnboardingListoCompu",
   "OnboardingListoOscuro",
+  "OnboardingListoCompuOscuro",
+  "OnboardingListoTexto130",
   "OnboardingVariedad",
   "OnboardingVariedadOscuro",
   "OnboardingVariedadCompu",
+  "OnboardingVariedadCompuOscuro",
+  "OnboardingVariedadTexto130",
   "VariedadArchivada",
   "VariedadArchivadaOscuro",
 ];
