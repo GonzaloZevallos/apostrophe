@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { assertScreens, assertSelectedAccounts } from '../../../scripts/design/screens.mjs'
+import { assertScreens, assertSelectedAccounts, sectionOccurrences } from '../../../scripts/design/screens.mjs'
 import screens from '../../../scripts/design/screens.json'
 
 describe('assertScreens', () => {
@@ -150,8 +150,50 @@ describe('assertScreens', () => {
     ).not.toThrow()
   })
 
+  it('refuses a text_scale that is not exactly the model\'s, whatever it looks like', () => {
+    for (const value of [1, 1.30001, '130%', null]) {
+      expect(() => assertScreens([{ screen: 'Inicio', text_scale: value }])).toThrow(
+        /^Inicio: text_scale must be exactly 1\.3$/,
+      )
+    }
+  })
+
+  it('refuses a viewport that is not a pair of positive integers', () => {
+    for (const value of [[320], [320, 0], [320.5, 844], [320, 844, 1], [-320, 844], '320x844', null]) {
+      expect(() => assertScreens([{ screen: 'Inicio', viewport: value }])).toThrow(
+        /^Inicio: viewport must be two positive integers, width and height$/,
+      )
+    }
+  })
+
+  it('accepts a 320 px viewport with the text scale', () => {
+    expect(() =>
+      assertScreens([{ screen: 'InicioTexto130', route: 'ruta', viewport: [320, 844], text_scale: 1.3 }]),
+    ).not.toThrow()
+  })
+
+  it('refuses a section that occurs more than once in its design file', () => {
+    expect(() =>
+      assertScreens([{ screen: 'AnalisisX', design: 'Analisis', section: 'Promoción' }]),
+    ).toThrow(/^AnalisisX: section "Promoción" occurs \d+ times in Analisis\.dc\.html, expected exactly once$/)
+  })
+
   it('accepts the real screens.json, imported, never copied', () => {
     expect(() => assertScreens(screens.screens)).not.toThrow()
+  })
+})
+
+describe('sectionOccurrences', () => {
+  it('counts a label as the text between a tag end and the next tag', () => {
+    expect(sectionOccurrences('<b>Otra</b>', 'Listo')).toBe(0)
+    expect(sectionOccurrences('<b>Listo</b>', 'Listo')).toBe(1)
+    expect(sectionOccurrences('<b>Listo</b><i>Listo</i>', 'Listo')).toBe(2)
+    expect(sectionOccurrences('<b>Listo ya</b>', 'Listo')).toBe(0)
+  })
+
+  it('counts a label with a literal middle dot, and not the same label written as an entity', () => {
+    expect(sectionOccurrences('<b>Listo · oscuro</b>', 'Listo · oscuro')).toBe(1)
+    expect(sectionOccurrences('<b>Listo &middot; oscuro</b>', 'Listo · oscuro')).toBe(0)
   })
 })
 

@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { TEXT_SCALE } from './textScale.mjs'
 
 const PANTALLAS = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'docs', 'product', 'design-system', 'pantallas')
 
@@ -24,6 +25,12 @@ export function assertScreens(screens) {
     if ('tema' in s && s.tema !== 'oscuro') throw new Error(`${s.screen}: unknown tema ${JSON.stringify(s.tema)}`)
     if (seen.has(s.screen)) throw new Error(`${s.screen}: screen is not unique across the file`)
     seen.add(s.screen)
+    if ('text_scale' in s && s.text_scale !== TEXT_SCALE) {
+      throw new Error(`${s.screen}: text_scale must be exactly ${TEXT_SCALE}`)
+    }
+    if ('viewport' in s && !isViewport(s.viewport)) {
+      throw new Error(`${s.screen}: viewport must be two positive integers, width and height`)
+    }
     if ('design' in s || 'section' in s) assertDesign(s)
     if ('account' in s) assertAccount(s)
     if ('account' in s && !reachesListo(s)) {
@@ -33,6 +40,23 @@ export function assertScreens(screens) {
       throw new Error(`${s.screen}: an entry that reaches ${LISTO} must name an account of its own`)
     }
   }
+}
+
+/** @param {unknown} value */
+function isViewport(value) {
+  return Array.isArray(value) && value.length === 2 && value.every((n) => Number.isInteger(n) && n > 0)
+}
+
+// How many times a label stands as a line of text of its own in a design file's source:
+// the text between a tag's end and the next tag, written literally (`&middot;` is not `·`).
+// An early static guard only: the DOM count in comparisons.mjs decides the crop.
+/**
+ * @param {string} html
+ * @param {string} label
+ * @returns {number}
+ */
+export function sectionOccurrences(html, label) {
+  return html.split(`>${label}<`).length - 1
 }
 
 // `account` names one of the sample's extra businesses (`facts.accounts`, written by the
@@ -103,8 +127,13 @@ function assertDesign(s) {
   if (!existsSync(file)) throw new Error(`${s.screen}: design ${design} has no pantallas/${design}.dc.html`)
   if (!('section' in s)) return
   if (typeof s.section !== 'string') throw new Error(`${s.screen}: section must be a string`)
-  // A label is a line of text of its own: the text between a tag's end and the next tag.
-  if (!readFileSync(file, 'utf-8').includes(`>${s.section}<`)) {
+  const occurrences = sectionOccurrences(readFileSync(file, 'utf-8'), s.section)
+  if (occurrences === 0) {
     throw new Error(`${s.screen}: section ${JSON.stringify(s.section)} is not in ${design}.dc.html`)
+  }
+  if (occurrences > 1) {
+    throw new Error(
+      `${s.screen}: section ${JSON.stringify(s.section)} occurs ${occurrences} times in ${design}.dc.html, expected exactly once`,
+    )
   }
 }
