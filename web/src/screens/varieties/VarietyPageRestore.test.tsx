@@ -219,7 +219,9 @@ describe('the stored catalog values across restore, edit and archive', () => {
 
     await waitFor(() => expect(api.state.archived).toBe(true))
     await router.navigate(VARIETY_ONE)
-    expect(await (await catalog()).findByText('Nueva', {}, { timeout: 3000 })).toBeInTheDocument()
+    // The archived page, not the live one still on its way out, must be what is on screen.
+    await screen.findByText('Archivada', {}, { timeout: 3000 })
+    await waitFor(async () => expect((await catalog()).getByText('Nueva')).toBeInTheDocument(), { timeout: 3000 })
     expect(screen.queryByText('Vieja')).toBeNull()
   }, 20000)
 })
