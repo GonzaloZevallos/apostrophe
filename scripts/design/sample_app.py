@@ -47,7 +47,7 @@ PASSWORD = "muestra-de-la-huerta"
 BUSINESS = "La Huerta"
 # One extra business per "Listo" row of `screens.json`: reaching "Listo" ends a business's
 # Onboarding for good (docs/adr/0036), so each capture of it needs a business of its own.
-ONBOARDING_ACCOUNTS = ("listo", "listo_compu", "listo_oscuro")
+ONBOARDING_ACCOUNTS = ("listo", "listo_compu", "listo_oscuro", "listo_compu_oscuro")
 
 
 class Api(Protocol):

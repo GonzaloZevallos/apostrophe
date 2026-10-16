@@ -3,3 +3,7 @@ export function assertSelectedAccounts(
   selected: ReadonlyArray<Readonly<Record<string, unknown>>>,
   accountNames: ReadonlyArray<string>,
 ): void;
+export function assertSelectedNeeds(
+  selected: ReadonlyArray<Readonly<Record<string, unknown>>>,
+  all: ReadonlyArray<Readonly<Record<string, unknown>>>,
+): void;
