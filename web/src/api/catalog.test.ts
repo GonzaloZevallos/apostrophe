@@ -8,7 +8,7 @@ afterEach(() => {
 
 test('reads one variety\'s stored values from its own route, and keys the query under the catalog prefix', async () => {
   const stored = { shown: false, emoji: null, indica_share: 60, aroma: 'cítrico' }
-  const fetchMock = vi.fn(async () => new Response(JSON.stringify(stored), { status: 200, headers: { 'Content-Type': 'application/json' } }))
+  const fetchMock = vi.fn(async (_url: string) => new Response(JSON.stringify(stored), { status: 200, headers: { 'Content-Type': 'application/json' } }))
   vi.stubGlobal('fetch', fetchMock)
 
   expect(await readVarietyAttributes('4')).toEqual(stored)

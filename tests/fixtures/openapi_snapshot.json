@@ -435,6 +435,56 @@
         "title": "CatalogAttributesIn",
         "type": "object"
       },
+      "CatalogAttributesOut": {
+        "description": "The stored values of one variety, as plain facts (docs/adr/0032, amendment).",
+        "properties": {
+          "aroma": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Aroma"
+          },
+          "emoji": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Emoji"
+          },
+          "indica_share": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Indica Share"
+          },
+          "shown": {
+            "title": "Shown",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "shown",
+          "emoji",
+          "indica_share",
+          "aroma"
+        ],
+        "title": "CatalogAttributesOut",
+        "type": "object"
+      },
       "CatalogOut": {
         "properties": {
           "footer": {
@@ -2687,7 +2737,7 @@
         "type": "object"
       },
       "SaleDetailOut": {
-        "description": "`GET /sales/{id}`'s own shape, never the list's: the same labelled read shape as\n`SaleOut` (docs/adr/0011), plus each line's cost of goods, allocated fresh on this\none read (ADR-0009), so `SaleOut` \u2014 used by the list and by every write \u2014 never\nallocates.",
+        "description": "`GET /sales/{id}`'s own shape, never the list's: the same labelled read shape as\n`SaleOut` (docs/adr/0011), plus each line's cost of goods, allocated fresh on this\none read (ADR-0009), so `SaleOut` — used by the list and by every write — never\nallocates.",
         "properties": {
           "customer": {
             "anyOf": [
@@ -4178,6 +4228,51 @@
       }
     },
     "/catalog/varieties/{variety_id}": {
+      "get": {
+        "operationId": "get_variety_attributes_catalog_varieties__variety_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "variety_id",
+            "required": true,
+            "schema": {
+              "title": "Variety Id",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogAttributesOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Variety Attributes",
+        "tags": [
+          "catalog"
+        ]
+      },
       "put": {
         "operationId": "put_variety_attributes_catalog_varieties__variety_id__put",
         "parameters": [
