@@ -163,3 +163,32 @@ budget moved.
 - Only phase 1 red: exit 1, phase 2 still ran and reported (1 failed, 86 passed; 1 passed).
 - Only phase 2 red: exit 1 (86 passed; 1 failed, 1 passed).
 - Both green: exit 0 (the five runs above).
+
+## Amendment (GH-251): one phase, a pinned zone and locale, evidence on failure
+
+`web-e2e` went red and then green on the same head and left nothing to say which test failed.
+This amendment supersedes the "N workers and the timed phase" text above wherever it speaks
+of `timed` or of two phases. **N = 3 stands**, with `retries: 0` and every `timeout` and
+`expect` ceiling as measured there.
+
+1. **One phase.** No spec reads elapsed time any more (ADR-0038), so the `timed` project is
+   gone and `sales.spec.ts` runs in `secure-origin` with the others. `web/scripts/e2e.sh` is
+   `vite build` (exit 1 if it fails) and one `npx playwright test "$@"`, whose exit status it
+   returns unchanged. `--only-changed=<base>` still passes through. No option that turns zero
+   selected tests into success is added: `scripts/affected.py` already sends an empty
+   selection to the full run. `npx playwright test sales.spec.ts` now runs it in
+   `secure-origin`.
+2. **The browser's zone and locale are pinned once.** `web/playwright.config.ts`'s top-level
+   `use` sets `timezoneId: 'America/Argentina/Buenos_Aires'` and `locale: 'es-AR'`; no spec and
+   no project sets its own, so a machine's own zone never reaches a spec.
+3. **A red run leaves evidence.** The config reads `PLAYWRIGHT_OUTPUT_DIR` once, with the
+   fixed default `test-results/local`, and never computes a name from the time or the sha; the
+   caller chooses a per-run name. Reporters are `list` and `junit` (`<dir>/junit.xml`); a
+   trace is kept on failure only, and so is a screenshot. CI uploads `web/test-results/` with
+   `if: failure()`, retention 14 days.
+4. **What enforces it.** `web/src/architecture/e2eShape.test.ts` imports the real config and
+   checks the above: no `timed` project, every spec file in exactly one project, the pins, and
+   the output directory with the variable unset and set.
+
+The root cause of the red run on `dbe57a27` is not proven; `docs/evidence/GH-251-e2e-flake.md`
+holds the loaded runs, their maxima and what they do and do not show.

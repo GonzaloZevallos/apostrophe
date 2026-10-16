@@ -49,3 +49,9 @@ jobs:
       - run: npm --prefix web ci --no-fund --no-audit
       - run: npx --prefix web playwright install --with-deps chromium
       - run: npm --prefix web run e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: e2e-test-results
+          path: web/test-results/
+          retention-days: 14
