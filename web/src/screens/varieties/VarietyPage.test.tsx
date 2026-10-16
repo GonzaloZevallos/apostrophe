@@ -271,7 +271,7 @@ describe('the actions and the sections', () => {
     expect(screen.getByRole('link', { name: 'Nuevo precio' })).toHaveAttribute('href', pathTo(VARIETY_PRICE_NEW, { id: 1 }))
   })
 
-  test('the page is a detail with exactly one "‹" (the shell's) and no "+ Nueva venta"', async () => {
+  test("the page is a detail with exactly one '‹' (the shell's arrow) and no '+ Nueva venta'", async () => {
     renderPage(VARIETY_ONE)
 
     expect(await screen.findByRole('heading', { name: '24K Gold' })).toBeInTheDocument()
