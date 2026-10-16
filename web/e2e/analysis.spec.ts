@@ -212,7 +212,13 @@ test('Análisis reads Costo de lo vendido, Faltante de stock, Promoción and Con
   const lastMonth = firstOfMonth(today, 1)
   const twoWeeksAgo = daysFrom(today, -14)
 
-  await recordEntry(page, { date: daysFrom(today, -30), grams: '10', variety: 'Lirio', origin: 'Compra', cost: '10000' })
+  await recordEntry(page, {
+    date: daysFrom(today, -30),
+    grams: '10',
+    variety: 'Lirio',
+    origin: 'Compra',
+    cost: '10000',
+  })
   await recordEntry(page, { date: today, grams: '-1', variety: 'Rosa', origin: 'Ajuste' })
   await recordWithdrawal(page, { date: lastMonth, grams: '2', variety: 'Rosa', reason: 'Promoción' })
   await recordWithdrawal(page, { date: today, grams: '1', variety: 'Rosa', reason: 'Consumo propio' })
@@ -239,7 +245,9 @@ test('Análisis reads Costo de lo vendido, Faltante de stock, Promoción and Con
   }
 
   // A past week, partly pending: the costed 10 g plus 5 g still without a cost.
-  await expect(weekCosts.filter({ hasText: 'Costo de lo vendido $ 10.000 y 5 g sin costo' })).toHaveCount(1)
+  await expect(
+    weekCosts.filter({ hasText: 'Costo de lo vendido $ 10.000 y 5 g sin costo' }),
+  ).toHaveCount(1)
   // A week with no sales reads a real $ 0.
   await expect(weekCosts.filter({ hasText: 'Costo de lo vendido $ 0' }).first()).toBeVisible()
   // The current week, its last row, has the fully pending shortfall and own use.
