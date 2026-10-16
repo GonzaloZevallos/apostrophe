@@ -28,13 +28,12 @@ import { parseMoney, parseSignedGrams } from '../format/parse'
 import type { Variety } from './Variedades'
 import { varietiesByName } from './varieties/varietiesByName'
 import Boton from '../components/Boton'
-import { COST_REQUIRED_HELP, onHandHelp, perGramPreview } from './stockMessages'
+import { COST_REQUIRED_HELP, GRAMS_INVALID, onHandHelp, perGramPreview } from './stockMessages'
 
 export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
 export const COST_REQUIRED = 'Una compra necesita un costo total'
 export const COST_ON_NEGATIVE = 'Un ajuste negativo no lleva costo'
 export const DATE_IN_FUTURE = 'La fecha no puede ser futura'
-export const GRAMS_INVALID = 'Revisá los gramos cargados'
 
 const ORIGIN_OPTIONS: { value: Origin; label: string }[] = [
   { value: 'purchase', label: 'Compra' },

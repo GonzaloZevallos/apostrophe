@@ -8,10 +8,10 @@
 import type { PricingSettings } from '../../api/pricingSettings'
 import { VARIETY_REFUSAL_TEXT, type RefusalCode } from '../../api/refusals'
 import { parseGrams, parseMoney } from '../../format/parse'
+import { GRAMS_INVALID } from '../stockMessages'
 
 export const DUPLICATE_DATE_MESSAGE = 'Ya cargaste un precio con esa fecha'
 export const PRICE_INVALID_MESSAGE = 'Revisá los precios cargados'
-export const GRAMS_INVALID_MESSAGE = 'Revisá los gramos cargados'
 
 export type PriceField = 'effectiveFrom' | 'listPrice' | 'bulkPrice' | 'bulkMinimum' | 'vipPrice' | 'form'
 export type PriceErrors = Partial<Record<PriceField, string>>
@@ -26,7 +26,7 @@ export interface PriceValues {
 const FIELD_OF_CODE: Partial<Record<RefusalCode, { field: PriceField; message: string }>> = {
   'variety.duplicate_effective_date': { field: 'effectiveFrom', message: DUPLICATE_DATE_MESSAGE },
   'variety.price_entry_invalid': { field: 'listPrice', message: PRICE_INVALID_MESSAGE },
-  'grams.invalid': { field: 'bulkMinimum', message: GRAMS_INVALID_MESSAGE },
+  'grams.invalid': { field: 'bulkMinimum', message: GRAMS_INVALID },
   'variety.vip_price_not_below_list': {
     field: 'vipPrice',
     message: VARIETY_REFUSAL_TEXT['variety.vip_price_not_below_list'] ?? PRICE_INVALID_MESSAGE,
@@ -60,7 +60,7 @@ export function readPriceValues(values: PriceValues, settings: PricingSettings):
   const errors: PriceErrors = {}
   if (!money.ok) errors.listPrice = PRICE_INVALID_MESSAGE
   if (hasBulk && !bulkMoney.ok) errors.bulkPrice = PRICE_INVALID_MESSAGE
-  if (hasBulk && !bulkGrams.ok) errors.bulkMinimum = GRAMS_INVALID_MESSAGE
+  if (hasBulk && !bulkGrams.ok) errors.bulkMinimum = GRAMS_INVALID
   if (hasVip && !vipMoney.ok) errors.vipPrice = PRICE_INVALID_MESSAGE
   if (!money.ok || (hasBulk && (!bulkMoney.ok || !bulkGrams.ok)) || (hasVip && !vipMoney.ok)) {
     return { ok: false, errors }

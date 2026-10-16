@@ -39,9 +39,9 @@ import { guiltyKeys, keptOptions, preselected } from './goneLines'
 import { REASON_OPTIONS } from './withdrawalReasons'
 import type { Variety } from '../Variedades'
 import Boton from '../../components/Boton'
+import { GRAMS_INVALID } from '../stockMessages'
 
 export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
-export const GRAMS_INVALID = 'Revisá los gramos cargados'
 
 const REFUSAL_MESSAGES: Partial<Record<RefusalCode, string>> = WITHDRAWAL_REFUSAL_MESSAGES
 

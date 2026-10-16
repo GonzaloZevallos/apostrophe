@@ -35,7 +35,7 @@ import LeaveConfirm from '../../components/LeaveConfirm'
 import Loading from '../../components/Loading'
 import MarcaEstado from '../../components/MarcaEstado'
 import SinConexion from '../../components/SinConexion'
-import { useLeaveGuard } from '../../components/useLeaveGuard'
+import { type LeaveGuard, useLeaveGuard } from '../../components/useLeaveGuard'
 import { useFlash } from '../../flash/useFlash'
 import { formatGrams, formatMoney } from '../../format/money'
 import {
@@ -68,7 +68,32 @@ function Card({ children }: { children: React.ReactNode }) {
   )
 }
 
+/** The guard of a page drawn behind the price modal: a router supports one blocker at a
+ * time and the modal's host holds it, so this page asks for none. It is inert anyway. */
+const UNBLOCKED: LeaveGuard = {
+  blocker: { state: 'unblocked', proceed: undefined, reset: undefined, location: undefined },
+  disarm: () => undefined,
+}
+function useNoGuard(): LeaveGuard {
+  return UNBLOCKED
+}
+
 export default function VarietyPage({ varietyId }: { varietyId: number }) {
+  return <VarietyPageView varietyId={varietyId} useGuard={useLeaveGuard} />
+}
+
+/** The page drawn behind the price modal (`VarietiesLayout`), with no leave guard of its own. */
+export function VarietyPageBehind({ varietyId }: { varietyId: number }) {
+  return <VarietyPageView varietyId={varietyId} useGuard={useNoGuard} />
+}
+
+function VarietyPageView({
+  varietyId,
+  useGuard,
+}: {
+  varietyId: number
+  useGuard: (dirty: boolean) => LeaveGuard
+}) {
   const id = String(varietyId)
   const me = useOutletContext<Me>()
   const location = useLocation()
@@ -77,7 +102,7 @@ export default function VarietyPage({ varietyId }: { varietyId: number }) {
   const openForm = useOpenForm()
   const [dirty, setDirty] = useState(false)
   const [gone, setGone] = useState(false)
-  const { blocker, disarm } = useLeaveGuard(dirty)
+  const { blocker, disarm } = useGuard(dirty)
   const onDirtyChange = useCallback((value: boolean) => setDirty(value), [])
 
   const varietyQuery = useQuery({ queryKey: keys.variety(id), queryFn: () => get<VarietyDetail & Variety>(`/varieties/${id}`) })

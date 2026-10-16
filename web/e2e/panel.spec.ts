@@ -28,6 +28,7 @@ import { CUSTOMER, CUSTOMERS, CUSTOMER_NEW, HOME, SALES, SALE_NEW, STOCK_ENTRY_N
 import { expectPath } from './helpers/url.js'
 import { expect, test } from './fixtures.js'
 import { signUpNewBusiness } from './helpers/signup.js'
+import { setPriceDate } from './helpers/priceDate.js'
 import { watchConsole } from './console.js'
 import { openGastos } from './helpers/openMas.js'
 import { fillSaleLine } from './helpers/sale.js'
@@ -184,7 +185,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   // Backdated well before this run's own month (sales.spec.ts does the same for
   // Jazmín): the extra, month-only sale seeded below needs a price that reaches
   // back that far too.
-  await page.getByLabel('Rige desde').fill('2000-01-01')
+  await setPriceDate(page, '2000-01-01')
   await page.getByLabel(/^Precio de lista/).fill('1000')
   await page.getByRole('button', { name: 'Guardá el precio' }).click()
   await expect(page.getByText('Precio guardado')).toBeVisible()

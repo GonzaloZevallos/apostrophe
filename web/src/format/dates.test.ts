@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import {
+  chipDate,
   formatDate,
   formatDateLong,
   formatDateShort,
@@ -24,6 +25,24 @@ describe('formatDate', () => {
 
   test('rejects a string that is not an API date', () => {
     expect(() => formatDate('02/10/2026', '2026-10-02')).toThrow()
+  })
+})
+
+describe('chipDate', () => {
+  test('reads "Hoy dd/mm" for today', () => {
+    expect(chipDate('2026-10-15', '2026-10-15')).toBe('Hoy 15/10')
+  })
+
+  test('reads "dd/mm" for another day, without "Hoy" and without the year', () => {
+    expect(chipDate('2026-10-02', '2026-10-15')).toBe('02/10')
+  })
+
+  test('a day with the same month and day in a different year is not today', () => {
+    expect(chipDate('2025-10-15', '2026-10-15')).toBe('15/10')
+  })
+
+  test('rejects a string that is not an API date', () => {
+    expect(() => chipDate('15/10/2026', '2026-10-15')).toThrow()
   })
 })
 
