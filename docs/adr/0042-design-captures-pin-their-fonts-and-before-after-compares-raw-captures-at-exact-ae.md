@@ -76,3 +76,25 @@ arrived over the network, and whether it did varied from run to run.
 - `ae(a, b)`, `decode(buffer)` and `compareIndexes(before, after, only, load)` are exported
   and pure apart from `decode`'s use of `pngjs`; the command runs only when the file is the
   entry point. `@types/pngjs` is a dev dependency so the test file type-checks.
+
+## Amendment: before-run tooling (GH-219)
+
+Narrows point 6. Point 6 says one script from one install; it does not say how a base that
+predates the registry's newest rows is captured.
+
+- **The overlay.** A before-run takes head's whole `scripts/design/` (the capture script, the
+  sample app, `screens.json`) and head's font install, and puts them over the base's own `app/`
+  and `web/`, which are what gets served and captured. The seed speaks only HTTP, so head's
+  sample app seeds the base's server; the two sides still capture the same registry by the same
+  script.
+- **How it runs.** Each side captures the whole registry in file order with `--strict` and no
+  `--only`, each on a fresh sample, on the same Argentina day. `--only` is for `ae.mjs`, never
+  for a capture.
+- **What the evidence records.** The base and head SHAs, the overlay's diff stat (it must equal
+  `git diff --stat <base>..<head> -- scripts/design`) and the installed fontsource version.
+- **A seed the base cannot run.** A head seed that needs an API the base lacks makes the
+  before-run fail. That escalates: the base is never patched and no exception is recorded.
+- **Guards on a partial run.** A registry row may name `needs`, the earlier row whose state it
+  relies on. `assertScreens` refuses a `needs` that names no earlier screen, and
+  `assertSelectedNeeds` makes `comparisons.mjs` exit 2 before capturing when a selection keeps
+  a row and drops the one it needs.
