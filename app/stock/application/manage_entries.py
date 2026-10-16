@@ -3,8 +3,9 @@ from datetime import date, datetime
 from app.shared.grams import Grams
 from app.shared.reference import ReferenceRefused
 from app.shared.transaction import Transaction
-from app.stock.application.errors import VarietyArchived, VarietyNotFound
+from app.stock.application.errors import VarietyNotFound
 from app.stock.application.ports import StockEntries, VarietyCatalog
+from app.stock.application.variety_use import require_usable
 from app.stock.domain.entry import Origin, StockEntry
 from app.stock.domain.errors import EntryNotFound
 
@@ -22,8 +23,7 @@ def _check_variety(catalog: VarietyCatalog, variety_id: int, *, keeps: bool = Fa
     records stay workable (ADR-0009); only a new reference needs a usable variety."""
     if not catalog.exists(variety_id):
         raise VarietyNotFound()
-    if not keeps and not catalog.usable(variety_id):
-        raise VarietyArchived()
+    require_usable(catalog, variety_id, keeps=keeps)
 
 
 def record_entry(

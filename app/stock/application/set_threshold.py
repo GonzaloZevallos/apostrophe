@@ -9,7 +9,7 @@ from datetime import date
 
 from app.shared.grams import Grams
 from app.shared.transaction import Transaction
-from app.stock.application.errors import VarietyArchived, VarietyNotFound
+from app.stock.application.errors import VarietyNotFound
 from app.stock.application.ports import (
     Draws,
     StockEntries,
@@ -18,6 +18,7 @@ from app.stock.application.ports import (
     WithdrawalDraws,
 )
 from app.stock.application.read_stock import VarietyStock, read_variety_stock
+from app.stock.application.variety_use import require_usable
 from app.stock.domain.threshold import Threshold
 
 
@@ -34,8 +35,7 @@ def set_threshold(
 ) -> VarietyStock:
     if not catalog.exists(variety_id):
         raise VarietyNotFound()
-    if not catalog.usable(variety_id):
-        raise VarietyArchived()
+    require_usable(catalog, variety_id, keeps=False)
     if grams is None:
         thresholds.clear(variety_id)
     else:
