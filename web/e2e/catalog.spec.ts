@@ -20,6 +20,7 @@ import { expect, test } from './fixtures.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { openCatalog } from './helpers/openMas.js'
+import { uniqueTag } from './helpers/unique.js'
 
 test('a seller edits a variety, the header and footer, then copies today\'s catalog', async ({
   page,
@@ -29,8 +30,8 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
   watchConsole(page, consoleMessages)
   await context.grantPermissions(['clipboard-read', 'clipboard-write'])
 
-  const ownerEmail = `duena-catalogo-${Date.now()}@example.com`
-  const businessName = `Flores del Catálogo ${Date.now()}`
+  const ownerEmail = `duena-catalogo-${uniqueTag()}@example.com`
+  const businessName = `Flores del Catálogo ${uniqueTag()}`
 
   await signUpNewBusiness(page, { businessName, email: ownerEmail })
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)

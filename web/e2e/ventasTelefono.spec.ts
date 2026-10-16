@@ -26,6 +26,7 @@ import {
   expectNoSidewaysOverflow,
   expectThumbSized,
 } from './helpers/textScale.js'
+import { uniqueTag } from './helpers/unique.js'
 
 const HEIGHT_AT = { 246: 720, 320: 720, 331: 900, 375: 812, 430: 900 }
 
@@ -58,7 +59,7 @@ const CASES: PhoneCase[] = [
 test.use({ ...PHONE_CONTEXT, viewport: { width: 375, height: 812 } })
 
 async function signUpWithAVariety(page: Page): Promise<void> {
-  await signUpNewBusiness(page, { businessName: `Vivero Telefono ${Date.now()}`, email: `telefono-venta-${Date.now()}@example.com` })
+  await signUpNewBusiness(page, { businessName: `Vivero Telefono ${uniqueTag()}`, email: `telefono-venta-${uniqueTag()}@example.com` })
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'Nueva variedad' }).click()
   await page.getByLabel('Nombre').fill('Jazmín')

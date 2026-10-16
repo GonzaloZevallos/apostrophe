@@ -16,7 +16,6 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy.engine import Engine
 
-from app.business_removal.adapters import cli as removal_cli
 from app.clock import business_day
 from app.db import make_engine
 from app.main import create_app
@@ -73,11 +72,6 @@ def build_app(db_path: Path, clock: MovableClock) -> tuple[FastAPI, Engine]:
         upkeep_ticker=False,
     )
     return application, engine
-
-
-def pin_cli_clock(monkeypatch: pytest.MonkeyPatch, clock: MovableClock) -> None:
-    """Makes `main` read `clock` where it would read the real one."""
-    monkeypatch.setattr(removal_cli, "system_clock", clock)
 
 
 def accept_invitation(

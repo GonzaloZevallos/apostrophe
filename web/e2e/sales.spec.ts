@@ -56,6 +56,7 @@ import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
 import { whilePressed } from './helpers/pressed.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
+import { uniqueTag } from './helpers/unique.js'
 
 test.use({ viewport: { width: 390, height: 844 } }) // a phone (PRD metric 1).
 
@@ -72,7 +73,7 @@ function shortDate(iso: string): string {
 /** This test script is not the front — only `web/src` is held to "never `Date`"
  * (plan, invariants: `format/dates.ts` alone computes periods from `me.today`).
  * Plain UTC day arithmetic on an API date's digits, for this file's own fixtures,
- * the same way `Date.now()` already names this run's own business and emails. */
+ * the same way `uniqueTag()` names this run's own business and emails. */
 function parseIso(iso: string): { year: number; month: number; day: number } {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso)
   if (match === null) throw new Error(`not an ISO date: ${iso}`)
@@ -117,8 +118,8 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   const consoleMessages: string[] = []
   watchConsole(page, consoleMessages)
 
-  const ownerEmail = `duena-ventas-${Date.now()}@example.com`
-  const businessName = `Vivero Jacarandá ${Date.now()}`
+  const ownerEmail = `duena-ventas-${uniqueTag()}@example.com`
+  const businessName = `Vivero Jacarandá ${uniqueTag()}`
 
   // Accept a new-business invitation.
   await signUpNewBusiness(page, { businessName, email: ownerEmail })
@@ -371,8 +372,8 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   const otherPage = await otherContext.newPage()
   watchConsole(otherPage, consoleMessages)
   await signUpNewBusiness(otherPage, {
-    businessName: `Otro negocio ${Date.now()}`,
-    email: `otra-${Date.now()}@example.com`,
+    businessName: `Otro negocio ${uniqueTag()}`,
+    email: `otra-${uniqueTag()}@example.com`,
   })
 
   await otherPage.goto(saleBUrl)
@@ -402,8 +403,8 @@ test('the Regalo switch is checked by a real tap, shows a press without flipping
   page,
 }) => {
   await signUpNewBusiness(page, {
-    businessName: `Vivero del Regalo ${Date.now()}`,
-    email: `duena-regalo-${Date.now()}@example.com`,
+    businessName: `Vivero del Regalo ${uniqueTag()}`,
+    email: `duena-regalo-${uniqueTag()}@example.com`,
   })
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'Nueva variedad' }).click()
