@@ -233,12 +233,14 @@ describe('the icon and text rule', () => {
     }
   })
 
-  test('"Eliminar variedad" is the icon-only delete with its current word as its name', async () => {
+  test('"Eliminar variedad" is the destructive button: its word is the name, its icon is hidden', async () => {
     renderPage(VARIETY_ONE, { 'GET /varieties/1': () => json(200, { ...VARIETY_ROW, removal: 'delete' }) })
 
     const button = await screen.findByRole('button', { name: 'Eliminar variedad' })
-    expect(button).toHaveClass('boton-icono')
-    expect(button.textContent).toBe('')
+    expect(button).toHaveClass('boton--destructivo')
+    expect(button).not.toHaveClass('boton-icono')
+    expect(button.textContent).toBe('Eliminar variedad')
+    expect(button.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
   })
 
   test('what the live page keeps as text is only its links and the switch; Archivar variedad has its icon', async () => {

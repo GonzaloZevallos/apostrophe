@@ -124,7 +124,9 @@ export default function VarietyRemoval({ varietyId, removal, grams }: Props) {
       {failed && <ErrorGenerico />}
       <div className="variedad-retiro">
         {deleting ? (
-          <Boton variant="icon" action="delete" ariaLabel="Eliminar variedad" onClick={() => setAsking(true)} />
+          <Boton variant="destructive" icon="tacho" onClick={() => setAsking(true)}>
+            Eliminar variedad
+          </Boton>
         ) : (
           <Boton variant="secondary" icon="archivar" onClick={() => setAsking(true)}>
             Archivar variedad

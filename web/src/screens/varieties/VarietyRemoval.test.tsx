@@ -15,6 +15,7 @@ import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
 import FlashProvider from '../../flash/FlashProvider'
 import { VARIETIES, VARIETY, pathTo, relative } from '../../routes'
+import { iconAndTextProblems } from '../../test/iconAndTextRule'
 import VarietyPage from './VarietyPage'
 import VarietyRoute from './VarietyRoute'
 
@@ -139,6 +140,28 @@ describe('the action the page offers', () => {
 
     expect(await screen.findByRole('button', { name: offered })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: refused })).not.toBeInTheDocument()
+  })
+
+  test('"Eliminar variedad" is the destructive button with its icon hidden and its word as the name', async () => {
+    renderPage({ removal: 'delete' })
+
+    const button = await screen.findByRole('button', { name: 'Eliminar variedad' })
+    expect(button).toHaveClass('boton--destructivo')
+    expect(button).not.toHaveClass('boton-icono')
+    expect(button.textContent).toBe('Eliminar variedad')
+    expect(button.querySelectorAll('svg')).toHaveLength(1)
+    expect(button.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+    expect(iconAndTextProblems(button.parentElement as HTMLElement)).toEqual([])
+  })
+
+  test('"Archivar variedad" is the secondary button with its icon hidden', async () => {
+    renderPage({ removal: 'archive' })
+
+    const button = await screen.findByRole('button', { name: 'Archivar variedad' })
+    expect(button).toHaveClass('boton--suave')
+    expect(button).not.toHaveClass('boton--destructivo')
+    expect(button.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+    expect(iconAndTextProblems(button.parentElement as HTMLElement)).toEqual([])
   })
 
   test('a page that offers no removal shows neither action', async () => {

@@ -3130,15 +3130,11 @@ body {
   margin-top: var(--espacio-lg);
 }
 
-/* The icon-only delete (`Boton variant="icon"`) on a variety's page: the price row's is a
- * bare icon in the row's own muted ink, "Eliminar variedad" sits at the start of its row. */
+/* The icon-only delete (`Boton variant="icon"`) of a price row: a bare icon in the row's own
+ * muted ink. */
 .historial-fila .boton-icono {
   background: none;
   color: var(--tinta2);
-}
-
-.variedad-retiro .boton-icono {
-  align-self: flex-start;
 }
 
 /* "Ver todas" is a link (`BotonLink variant="link"`), drawn as the section's plain accent
