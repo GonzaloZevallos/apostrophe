@@ -163,7 +163,7 @@
     { "screen": "RetiroDetalleOscuro", "design": "VentaDetalle", "route": "/withdrawals/{withdrawal}", "path": "/withdrawals/{withdrawal}", "tema": "oscuro" },
     { "screen": "EstadosSinConexionOscuro", "design": "Estados", "section": "Sin conexión", "route": "/sales", "path": "/sales", "tema": "oscuro", "steps": [{ "offline": true }, { "wait": "Sin conexión: revisá tu internet y probá de nuevo." }] },
     { "screen": "EstadosSinConexionCompuOscuro", "design": "Estados", "section": "Sin conexión", "route": "/sales", "path": "/sales", "tema": "oscuro", "viewport": [1280, 920], "steps": [{ "offline": true }, { "wait": "Sin conexión: revisá tu internet y probá de nuevo." }] },
-    { "screen": "VariedadArchivada", "design": "VariedadDetalle", "route": "/varieties/{sold_out}", "path": "/varieties/{low}",
+    { "screen": "VariedadArchivada", "design": "VariedadDetalle", "route": "/varieties/{sold_out}", "path": "/varieties/{sold_out}",
       "steps": [{ "click": "Archivar variedad" }, { "click": "Sí, archivala" }, { "click": "Archivadas (1)" }, { "click": "Sir Jack" }, { "wait": "Stock y entradas" }] },
     { "screen": "VariedadArchivadaOscuro", "design": "VariedadDetalle", "route": "/varieties/{low}", "path": "/varieties/{low}", "tema": "oscuro",
       "steps": [{ "click": "Archivar variedad" }, { "click": "Sí, archivala" }, { "click": "Archivadas (2)" }, { "click": "Golden Cookies" }, { "wait": "Stock y entradas" }] }
