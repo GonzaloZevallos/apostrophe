@@ -85,8 +85,8 @@ arrived over the network, and whether it did varied from run to run.
   before the screenshot. It lives only in `scripts/design/`: nothing under `app/` or `web/src`
   reads, sets or branches on it. `screens.mjs` validates the field (the `registry-checks`
   subtask), `comparisons.mjs` only reads it.
-- **Verify twice.** The apply and a first verify run in one `page.evaluate`; the screenshot is
-  taken; a second verify runs in the same page. Between the scaling and the screenshot a React
+- **Verify twice.** The apply is one `page.evaluate` and the first verify a second one right
+  after it (a late-mounted element still shows up untagged); the screenshot is taken; a second verify runs in the same page. Between the scaling and the screenshot a React
   re-render can mount elements the stylesheet never saw, and the second verify is what makes
   that a failure instead of a screenshot that says "130 %" over unscaled text. A miss in
   either verify is a note on the sheet and in that screen's `index.json` entry, and a non-zero
@@ -96,7 +96,8 @@ arrived over the network, and whether it did varied from run to run.
   `web/e2e/helpers/textScale.ts` (GH-104): tag `<html>` and every element under the root, set
   each `font-size` to baseline × factor (`!important`), scale a px `line-height` the same
   way, leave `normal` alone. The e2e helper is a gate helper five specs use and is not
-  edited. Each file's header names the other, and `web/src/design/textScale.test.ts` reads
+  edited, so only `textScale.mjs`'s header names its twin (the helper does not name
+  `scripts/design`), and `web/src/design/textScale.test.ts` reads
   the helper with `?raw` and ties its `TEXT_SCALE` and `TOLERANCE` literals to the module's
   exports. Accepted risk: a change in the scaling rule beyond those two constants is not
   caught by anything.

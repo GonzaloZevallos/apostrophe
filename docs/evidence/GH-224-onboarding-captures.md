@@ -72,10 +72,10 @@ For one file they differ:
 
 | File | GH-164 | Undo | Why |
 | --- | --- | --- | --- |
-| `web/src/screens/onboarding/OnboardingStep.tsx` | +4/−8 | +3/−1 | GH-166 rewrote the "Atrás" line GH-164 had changed; only "Cerrar" and the `Icono` import come back (1.3) |
+| `web/src/screens/onboarding/OnboardingStep.tsx` | +4/−8 | +3/−1 | GH-166 rewrote the "Atrás" line GH-164 had changed; only the "Cerrar" lines come back; the `Icono` import stays removed (1.3) |
 
-Equal numbers can still hide a different line (a conflict hunk kept the later line): that is
-the case of `CONTEXT.md`, `icon-and-text-rule.md` and `CategoriesStep.tsx`, all listed in 1.3.
+`CONTEXT.md`, `icon-and-text-rule.md` and `CategoriesStep.tsx` also had conflict hunks (1.3),
+but in the diff they are pure mirrors of GH-164's hunks: the kept later lines are only context.
 The 23 files that merged with no conflict are the exact mirror of GH-164's hunks.
 
 ### 1.5 What the undo touches, by whether a capture can see it
@@ -91,8 +91,10 @@ The 23 files that merged with no conflict are the exact mirror of GH-164's hunks
 
 **Renders inside the Onboarding** (the captures can show a difference; each non-zero AE line
 is classified against GH-164's brief in the comparison section): `BotStep.tsx`,
-`CatalogMessageStep.tsx`, `CategoriesStep.tsx`, `Listo.tsx`, `OnboardingNotice.tsx`,
-`OnboardingStep.tsx`, `PartnerStep.tsx`, `StockStep.tsx` and `StepSubmit.tsx` (removed).
+`CatalogMessageStep.tsx`, `CategoriesStep.tsx`, `Listo.tsx`, `OnboardingStep.tsx`, `PartnerStep.tsx`, `StockStep.tsx` and `StepSubmit.tsx` (removed).
+
+**Renders outside the Onboarding**: `OnboardingNotice.tsx` renders only on Inicio, so undoing
+it changes "before" there, which is not captured and shows no difference in the Onboarding block.
 
 **Shared rendering files**: `web/src/components/Boton.tsx`, `botonVisual.tsx` and
 `web/src/styles/app.css` (the `.onboarding__enlace`, `.onboarding__boton-resto`,
@@ -255,7 +257,7 @@ Every "after" capture was judged against its design file, in this way:
 | --- | --- | --- |
 | the six steps, built: phone light, computer light | AE 6415 on each | **intended**: the step frame's "Cerrar" text link is now the icon-only `Boton` close (an X, accessible name "Cerrar"), seen on `Stock` and `Listo` before and after. GH-164's brief; icon-and-text-rule.md: "Close is one form everywhere" |
 | the six steps, built: phone dark, computer dark | AE 6396 on each | **intended**, same cause |
-| the five `…Texto130`, built | AE 6833 on each | **intended**, same cause, at 130 % |
+| the six step `…Texto130` rows, built | AE 6833 on each | **intended**, same cause, at 130 % |
 | `OnboardingListo`, `OnboardingListoOscuro`, `OnboardingListoTexto130`, built | `FAIL different dimensions`: the page is 6 CSS px taller after (1706 px against 1718 px at DPR 2) | **intended**. Read on `Listo` before and after: the "Cerrar" text link became the X icon button, "Cargar mi primera venta" gained the `+` icon and "Ir a Inicio" gained the house icon (the icon is taller than the text, which is the 6 CSS px). icon-and-text-rule.md: an action that is not icon-only is icon + text ("+ Nueva venta"). Nothing a seller reads changed: the words are the same |
 | `OnboardingListoCompu`, `OnboardingListoCompuOscuro`, built | AE 25916 and 25892 | **intended**, same three controls at the computer viewport (read on `ListoCompuOscuro` after; the before side of the computer pair was not read, the cause is the same components) |
 | every row, design side | AE 0 | the design files and the fonts did not move |
