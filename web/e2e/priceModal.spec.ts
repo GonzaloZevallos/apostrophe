@@ -1,5 +1,5 @@
 /**
- * The price form's modal on a computer (ADR-0043), in a real browser: jsdom proves only
+ * The price form's modal on a computer, in a real browser: jsdom proves only
  * that the panes behind it carry `inert`; here Tab never reaches them and a click at a list
  * row's position does nothing. Each test signs up its own business and makes its own
  * variety (ADR-0040).
@@ -36,13 +36,13 @@ async function openPriceModal(page: Page): Promise<number> {
   return Number(found[1])
 }
 
-test('Tab cycled through the dialog never focuses anything in the list or the variety page', async ({ page }) => {
+test('Tab cycled through the dialog never focuses anything in the list, the variety page or the side rail', async ({ page }) => {
   await openPriceModal(page)
 
   for (let press = 0; press < 20; press++) {
     await page.keyboard.press('Tab')
     const outside = await page.evaluate(
-      () => document.activeElement?.closest('.variedades-paneles__lista, .variedades-paneles__detalle') !== null,
+      () => document.activeElement?.closest('.variedades-paneles__lista, .variedades-paneles__detalle, nav.riel-lateral') !== null,
     )
     expect(outside).toBe(false)
   }

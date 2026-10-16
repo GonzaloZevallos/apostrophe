@@ -4585,7 +4585,7 @@ body {
   line-height: 1.4;
 }
 
-/* The price form's modal on a computer (`PrecioNuevoCompu.dc.html`, ADR-0043): the host's
+/* The price form's modal on a computer (`PrecioNuevoCompu.dc.html`): the host's
  * frame is a fixed backdrop and the form's `.cuerpo` is the 480 px dialog; the panes behind
  * it are inert. On a phone `.variedades-paneles--solo` adds no box of its own. */
 .variedades-paneles--solo {

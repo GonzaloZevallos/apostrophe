@@ -134,10 +134,18 @@ export default function Shell() {
   const onComputer = useViewport() === 'computer'
   const showRailNuevaVenta = showNuevaVenta || (leaf.pane === 'detail' && onComputer)
   const showBar = leaf.kind !== 'form'
+  // The price form is a modal on a computer: the rail behind its scrim cannot be reached.
+  const railBehindModal = onComputer && leaf.id === 'variety-price-new'
 
   return (
     <div className="disposicion">
-      <nav className="riel-lateral" aria-label="Navegación" data-menu>
+      <nav
+        className="riel-lateral"
+        aria-label="Navegación"
+        data-menu
+        inert={railBehindModal}
+        aria-hidden={railBehindModal ? true : undefined}
+      >
         {showRailNuevaVenta && (
           <BotonLink to={SALE_NEW} icon="agregar" className={NUEVA_VENTA_ESCRITORIO_CLASS}>
             Nueva venta

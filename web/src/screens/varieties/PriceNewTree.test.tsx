@@ -1,7 +1,7 @@
 /**
- * The price form's modal at the tree seam (ADR-0043): the app's real route table
+ * The price form's modal at the tree seam: the app's real route table
  * (`appRouter.routes`) rendered with `fetch` faked. On a computer `/varieties/{id}/prices/new`
- * is a dialog over the list and the variety's page, both inert and `aria-hidden`; on a phone
+ * is a dialog over the list and the variety's page and the side rail, all inert and `aria-hidden`; on a phone
  * it is the full form screen. Every way out of the dialog is the host's one leave.
  *
  * jsdom does not implement `inert`: these tests prove the attribute is on both panes, and
@@ -82,6 +82,9 @@ describe('on a computer', () => {
       expect(pane).toHaveAttribute('aria-hidden', 'true')
       expect(pane).not.toContainElement(dialog)
     }
+    const rail = document.querySelector('nav.riel-lateral')
+    expect(rail).toHaveAttribute('inert')
+    expect(rail).toHaveAttribute('aria-hidden', 'true')
     expect(await within(detail as HTMLElement).findByText('Precios')).toBeInTheDocument()
   })
 })
@@ -103,6 +106,7 @@ describe('on a phone', () => {
     expect(document.querySelector('.variedades-paneles__lista')).toBeNull()
     expect(document.querySelector('.variedades-paneles__detalle')).toBeNull()
     expect(document.querySelector('[inert]')).toBeNull()
+    expect(document.querySelector('nav.riel-lateral')).not.toHaveAttribute('aria-hidden')
   })
 
   test('Escape does nothing: the phone has no dialog to dismiss', async () => {
