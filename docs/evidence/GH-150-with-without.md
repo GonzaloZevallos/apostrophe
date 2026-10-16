@@ -289,3 +289,9 @@ Comments 6179162045 and 6180452261 on #101 already say that only run 4 of Entrar
 | `VentasOscuro` | `a1969edd847169c48c5cef9cdc28d3bc2c4ac8848278cbefc884ee980813bb2b` | `9698009455a7ad3612acc3a6b4b46f8c826946a15aeaee7c410fa5b47ec414c8` | `a1969edd847169c48c5cef9cdc28d3bc2c4ac8848278cbefc884ee980813bb2b` | `9698009455a7ad3612acc3a6b4b46f8c826946a15aeaee7c410fa5b47ec414c8` | identical |
 | `VerTodas` | `c0dd1e0acba7dcdd9d2b8d3b46266b054d0a08d1628fc877639b4fa5cd3579ff` | `97e0e31d5a3a3e38d2b49a77e77e4b87aca11b8ca378c37efc2512791039b62b` | `c0dd1e0acba7dcdd9d2b8d3b46266b054d0a08d1628fc877639b4fa5cd3579ff` | `97e0e31d5a3a3e38d2b49a77e77e4b87aca11b8ca378c37efc2512791039b62b` | identical |
 | `VerTodasOscuro` | `c0dd1e0acba7dcdd9d2b8d3b46266b054d0a08d1628fc877639b4fa5cd3579ff` | `075d01ee8fa43d929ead1af63a5ddc5c5d5499e3db4f83f07d61871fb8ad10ce` | `c0dd1e0acba7dcdd9d2b8d3b46266b054d0a08d1628fc877639b4fa5cd3579ff` | `075d01ee8fa43d929ead1af63a5ddc5c5d5499e3db4f83f07d61871fb8ad10ce` | identical |
+
+## Screens added on master after the captured tree
+
+`origin/master` has moved since `fe7bdef` (GH-237, GH-242, GH-243) and its `scripts/design/screens.json` lists three more screens: `OnboardingVariedadCompu`, `OnboardingListoCompu` and `OnboardingListoOscuro`. They are **not captured** and have no row above; the table covers the 127 screens of the tree it was captured from.
+
+Why the fix cannot reach them, by reading, not by a run: `git grep -n "ajustes-grupo" origin/master -- web/src ':!web/src/styles'` finds the class only in `web/src/screens/settings/SettingsGroup.tsx:45`, and `git diff fe7bdef origin/master --stat -- web/src/styles` is empty, so `app.css` (the hunk included) is the same on both. The three screens are Onboarding steps, which do not render `SettingsGroup`.
