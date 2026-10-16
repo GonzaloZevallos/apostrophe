@@ -1,0 +1,5 @@
+<div className="fila-entrada__volver">
+  <Boton variant="back" onClick={back}>
+    {varietyId === undefined ? '‹ Variedades' : `‹ ${varietyQuery.data?.name ?? ''}`}
+  </Boton>
+</div>

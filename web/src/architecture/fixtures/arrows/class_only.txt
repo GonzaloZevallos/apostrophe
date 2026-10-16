@@ -1,0 +1,3 @@
+<div className="flecha-atras">
+  <span>Volver</span>
+</div>

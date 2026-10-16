@@ -1,0 +1,5 @@
+// the arrow the shell draws is "‹ Variedades"; this one is an action to leave a dead end
+/* variant="back" in prose, and a ‹ in a comment, are not a use */
+<BotonLink variant="primary" icon="atras" to={to}>
+  Volver a {label}
+</BotonLink>

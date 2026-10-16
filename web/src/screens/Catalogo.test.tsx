@@ -253,12 +253,11 @@ test('a variety left out opens its "En el catálogo" section on its page', async
   expect(await screen.findByText('Aterrizaste en /varieties/7#en-el-catalogo')).toBeInTheDocument()
 })
 
-test('"‹ Variedades" goes back to the list', async () => {
+test('the page draws no "‹" arrow of its own: the shell draws the one back arrow', async () => {
   renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
 
-  await userEvent.click(await screen.findByRole('link', { name: '‹ Variedades' }))
-
-  expect(await screen.findByText('Aterrizaste en Variedades')).toBeInTheDocument()
+  expect(await screen.findByRole('heading', { name: 'Catálogo' })).toBeInTheDocument()
+  expect(screen.queryByText(/^‹/)).toBeNull()
 })
 
 test('Compartir hands the share sheet exactly the API text, byte for byte, and shows nothing after', async () => {

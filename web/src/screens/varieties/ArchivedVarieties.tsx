@@ -11,17 +11,16 @@
 import { useQuery } from '@tanstack/react-query'
 
 import Boton from '../../components/Boton'
-import BotonLink from '../../components/BotonLink'
 import { NetworkError } from '../../api/client'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import Loading from '../../components/Loading'
+import PaneRowLink from '../../components/PaneRowLink'
 import SinConexion from '../../components/SinConexion'
-import { VARIETIES, VARIETY, pathTo } from '../../routes'
+import { VARIETY, pathTo } from '../../routes'
 import { useViewport } from '../../shell/useViewport'
 import { archivedVarietiesQueryOptions } from './archivedVarieties'
 import { useRestore } from './useRestore'
 import { NO_ARCHIVED_MESSAGE } from './varietiesMessages'
-import VarietyRowLink from './VarietyRowLink'
 import { varietiesByName } from './varietiesByName'
 
 
@@ -34,11 +33,6 @@ export default function ArchivedVarieties() {
   return (
     <main className="pantalla variedades">
       <div className="cuerpo">
-        <div className="encabezado__fila">
-          <BotonLink to={VARIETIES} variant="back">
-            ‹ Variedades
-          </BotonLink>
-        </div>
         <h1 className="encabezado__titulo">Archivadas</h1>
         {notice}
         {failure !== null && (failure instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />)}
@@ -52,12 +46,17 @@ export default function ArchivedVarieties() {
           <div className="lista-variedades">
             {varietiesByName(query.data).map((variety) => (
               <div key={variety.id} className="variedad-archivada">
-                <VarietyRowLink to={pathTo(VARIETY, { id: variety.id })} replace={computer}>
+                <PaneRowLink
+                  to={pathTo(VARIETY, { id: variety.id })}
+                  replace={computer}
+                  className="variedad-fila"
+                  activeClassName="variedad-fila variedad-fila--activa"
+                >
                   <span className="variedad-fila__encabezado">
                     <span className="variedad-fila__nombre">{variety.name}</span>
                     <span className="variedad-fila__oculta">Archivada</span>
                   </span>
-                </VarietyRowLink>
+                </PaneRowLink>
                 <Boton variant="secondary" icon="restaurar" disabled={sending} onClick={() => void restore(variety.id)}>
                   Restaurar
                 </Boton>
