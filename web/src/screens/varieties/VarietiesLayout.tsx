@@ -5,6 +5,7 @@
  * the child alone, which for `/varieties` itself is the list. The selection is the URL.
  */
 
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Outlet, useMatch, useOutletContext } from 'react-router'
 import { get } from '../../api/client'
@@ -28,7 +29,13 @@ export default function VarietiesLayout() {
     queryFn: () => get<VarietyDetail>(`/varieties/${varietyId}`),
     enabled: computer && varietyId !== undefined && /^[0-9]+$/.test(varietyId),
   })
-  const archivedPane = onArchivedCard || opened?.archived === true
+  // Moving the selection from one archived variety to the next keeps the card on the left
+  // while the next one's answer is on its way, so it is not unmounted and redrawn: only the
+  // answer for the variety that is open decides, and until it comes the last decision stands.
+  const [openedArchived, setOpenedArchived] = useState(false)
+  const settled = opened !== undefined && String(opened.id) === varietyId
+  if (settled && opened.archived !== openedArchived) setOpenedArchived(opened.archived)
+  const archivedPane = onArchivedCard || (varietyId !== undefined && (settled ? opened.archived : openedArchived))
   if (!computer) return <Outlet context={me} />
   return (
     <div className="variedades-paneles">

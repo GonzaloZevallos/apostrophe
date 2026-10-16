@@ -3,10 +3,12 @@
  * toast "Variedad restaurada" shows where the seller is (no name, no amount) and the live
  * and archived lists, the stock and the catalog are read again. A variety that is gone
  * shows the generic gone notice; offline and any other failure keep their own notices.
- * Shared by the Archivadas card's rows and the archived variety's page.
+ * Shared by the Archivadas card's rows and the archived variety's page. A caller that must
+ * move the seller somewhere once the variety is restored passes `onRestored(id)`: it runs
+ * after the restore answers, before the toast and the refresh.
  */
 
-import { useState, type ReactNode } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { ApiError, NetworkError } from '../../api/client'
 import { invalidateResource } from '../../api/keys'
@@ -19,7 +21,7 @@ import { useFlash } from '../../flash/useFlash'
 
 type Problem = 'gone' | 'offline' | 'failed'
 
-export function useRestore(): {
+export function useRestore(onRestored?: (varietyId: number) => void): {
   restore: (varietyId: number) => Promise<void>
   sending: boolean
   notice: ReactNode
@@ -27,6 +29,8 @@ export function useRestore(): {
   const queryClient = useQueryClient()
   const flash = useFlash()
   const [sending, setSending] = useState(false)
+  // A ref as well: two taps in one tick both read the state before it re-renders.
+  const inFlight = useRef(false)
   const [problem, setProblem] = useState<Problem | null>(null)
 
   function refresh(): void {
@@ -35,11 +39,13 @@ export function useRestore(): {
   }
 
   async function restore(varietyId: number): Promise<void> {
-    if (sending) return
+    if (inFlight.current) return
+    inFlight.current = true
     setSending(true)
     setProblem(null)
     try {
       await restoreVariety(varietyId)
+      onRestored?.(varietyId)
       flash.showNow('Variedad restaurada')
       refresh()
     } catch (caught) {
@@ -52,6 +58,7 @@ export function useRestore(): {
         setProblem('failed')
       }
     } finally {
+      inFlight.current = false
       setSending(false)
     }
   }

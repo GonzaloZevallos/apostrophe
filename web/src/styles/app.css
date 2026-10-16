@@ -4454,3 +4454,23 @@ body {
   color: var(--tinta2);
   line-height: 1.4;
 }
+
+/* ===== gh131-archivadas ===== */
+/* An Archivadas row's second line (Archivadas.dc.html): the badge, "Oculta" when hidden and the
+ * plain grams side by side in the secondary ink. "Oculta" is the drawing's plain bold word here,
+ * not the live list's pill. */
+.variedad-fila__estado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-sm);
+  font-size: 14px;
+  color: var(--tinta2);
+}
+
+.variedad-archivada .variedad-fila__oculta {
+  background: none;
+  padding: 0;
+  font-size: inherit;
+}
+/* ===== end gh131-archivadas ===== */

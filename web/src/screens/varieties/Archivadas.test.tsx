@@ -39,6 +39,7 @@ const ARCHIVED_STOCK = {
   varieties: [{ variety_id: 4, grams: 7, status: 'ok', sold_out_since: null, threshold: null, days_left: null }],
   entries: [],
 }
+const SHOWN = { shown: true, emoji: null, indica_share: null, aroma: null }
 const CATALOG = { text: '', header: '', footer: '', varieties: [] }
 
 type Answers = Record<string, () => Response>
@@ -63,6 +64,8 @@ function renderAt(path: string, overrides: Answers = {}) {
     'GET /stock': () => json(200, NO_STOCK),
     'GET /stock?archived=true': () => json(200, ARCHIVED_STOCK),
     'GET /catalog': () => json(200, CATALOG),
+    'GET /catalog/varieties/4': () => json(200, SHOWN),
+    'GET /catalog/varieties/5': () => json(200, SHOWN),
     'GET /varieties/4': () => json(200, { id: 4, name: 'Alfa Vieja', archived: true, removal: null, current_price: null }),
     'GET /varieties/4/prices': () => json(200, []),
     'POST /varieties/4/restore': () => json(200, { id: 4, name: 'Alfa Vieja', archived: false, removal: 'archive' }),
@@ -123,6 +126,11 @@ describe('the Archivadas card', () => {
     const title = await screen.findByText('No tenés variedades archivadas')
 
     expect(title).toHaveAttribute('data-copy', 'emptyTitle')
+    expect(screen.getByText('Lo que archives aparece acá y lo podés restaurar cuando quieras.')).toHaveAttribute(
+      'data-copy',
+      'emptyLine',
+    )
+    expect(screen.getByRole('link', { name: 'Volver a Variedades' })).toBeTruthy()
     expectIconAndTextRule(screen.getByRole('main'), { limits: LIMITS, samples: SAMPLES })
     title.textContent = 'x'.repeat(LIMITS.emptyTitle + 1)
     expect(iconAndTextProblems(screen.getByRole('main'), { limits: LIMITS, samples: SAMPLES })).toHaveLength(1)
@@ -149,6 +157,8 @@ describe('the Archivadas card', () => {
   test('says so with a fixed line when there are none', async () => {
     renderAt(ARCHIVED_VARIETIES, { 'GET /varieties?archived=true': () => json(200, []) })
     expect(await screen.findByText('No tenés variedades archivadas')).toBeTruthy()
+    expect(screen.getByText('Lo que archives aparece acá y lo podés restaurar cuando quieras.')).toBeTruthy()
+    expect(screen.getByRole('link', { name: 'Volver a Variedades' }).getAttribute('href')).toBe(VARIETIES)
   })
 
   test('restores in one tap, with the toast and no confirmation', async () => {
@@ -229,6 +239,8 @@ describe('on a computer (two panes)', () => {
       'GET /stock': () => json(200, { total: 7, varieties: restored ? [LIVE_ROW] : [], entries: [] }),
       'GET /stock?archived=true': () => json(200, ARCHIVED_STOCK),
       'GET /catalog': () => json(200, CATALOG),
+      'GET /catalog/varieties/4': () => json(200, SHOWN),
+      'GET /catalog/varieties/5': () => json(200, SHOWN),
       'GET /varieties/4': () =>
         json(200, { id: 4, name: 'Alfa Vieja', archived: !restored, removal: restored ? 'archive' : null, current_price: null }),
       'GET /varieties/4/prices': () => json(200, []),
