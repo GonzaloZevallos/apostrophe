@@ -19,7 +19,14 @@ export const FOOTER_TOO_LONG_MESSAGE = 'El pie es demasiado largo'
 /** The line under a fresh invitation link: one sentence, a help line (<= 80). `date` is `dd/mm`. */
 export const inviteExpiry = (date: string): string => `Un link de un solo uso, vence el ${date}`
 
+/** The line under the Onboarding's collapsed "Categoría" action (a help line, <= 80): true because
+ * adding, renaming and removing each save at once, through the owner's own routes. */
+export const CATEGORIES_SAVE_AT_ONCE = 'Agregar, renombrar o sacar una categoría se guarda al toque.'
+
 /** Every always-visible help line of these groups, measured with `SAMPLES`; the screens
  * render `inviteExpiry` itself. Checked by `copy/copyLimits.test.ts`. */
-export const LIMITED_COPY: readonly LimitedCopy[] = [{ kind: 'help', text: inviteExpiry(SAMPLES.date) }]
+export const LIMITED_COPY: readonly LimitedCopy[] = [
+  { kind: 'help', text: inviteExpiry(SAMPLES.date) },
+  { kind: 'help', text: CATEGORIES_SAVE_AT_ONCE },
+]
 export const LONG_REFUSALS: readonly string[] = []

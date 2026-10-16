@@ -33,10 +33,10 @@ def _routes(app: FastAPI) -> list[tuple[str, str]]:
 ROUTES = _routes(
     create_app(
         SETTINGS,
+        clock=MovableClock(NOW),
         hasher=TEST_HASHER,
         telegram=FakeTelegram(),
         upkeep_ticker=False,
-        clock=MovableClock(NOW),
     )
 )
 GATED = [route for route in ROUTES if route not in PUBLIC]

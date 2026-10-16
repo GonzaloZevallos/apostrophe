@@ -321,10 +321,10 @@ PUBLIC_PATHS = {"/health", "/auth/login", "/auth/logout"}
 def _operations() -> list[tuple[str, str, bool]]:
     document = create_app(
         SETTINGS,
+        clock=MovableClock(NOW),
         hasher=TEST_HASHER,
         telegram=FakeTelegram(),
         upkeep_ticker=False,
-        clock=MovableClock(NOW),
     ).openapi()
     return sorted(
         (method.upper(), path, "requestBody" in operation)

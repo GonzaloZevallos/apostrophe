@@ -6,6 +6,7 @@ import asyncio
 import contextlib
 from collections.abc import AsyncIterator, Callable, Sequence
 from contextlib import asynccontextmanager
+from functools import partial
 from typing import Protocol, cast
 
 from fastapi import Depends, FastAPI, Request
@@ -198,7 +199,7 @@ def create_app(
         ExpenseCategoriesOpening,
         CatalogHeaderFooterOpening,
         PricingSettingsOpening,
-        OnboardingOpening,
+        partial(OnboardingOpening, clock=clock),
     )
     # A factory, not an instance (the same shape as `business_opening` above): sales
     # reaches line cost only through its own `LineCosts` port, never `app.stock`
