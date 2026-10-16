@@ -19,6 +19,7 @@ import FlashProvider from '../../flash/FlashProvider'
 import { ARCHIVED_VARIETIES, VARIETIES, VARIETY, pathTo, relative } from '../../routes'
 import Variedades from '../Variedades'
 import ArchivedIndex from './ArchivedIndex'
+import ArchivedVarieties from './ArchivedVarieties'
 import VarietiesIndex from './VarietiesIndex'
 import VarietiesLayout from './VarietiesLayout'
 import VarietyPage from './VarietyPage'
@@ -89,7 +90,11 @@ function setComputer(matches: boolean): void {
   })
 }
 
-function render_(api: ReturnType<typeof fakeApi>, computer: boolean) {
+function render_(
+  api: ReturnType<typeof fakeApi>,
+  computer: boolean,
+  entries: string[] = [VARIETIES, ARCHIVED_VARIETIES, VARIETY_ONE],
+) {
   setComputer(computer)
   const fetchMock = vi.fn((url: string, init?: RequestInit) => {
     const key = `${init?.method ?? 'GET'} ${url}`
@@ -134,12 +139,12 @@ function render_(api: ReturnType<typeof fakeApi>, computer: boolean) {
             element: shell,
             children: [
               { path: relative(VARIETIES), element: <Variedades /> },
-              { path: relative(ARCHIVED_VARIETIES), element: <main>Pantalla Archivadas</main> },
+              { path: relative(ARCHIVED_VARIETIES), element: <ArchivedVarieties /> },
               { path: relative(VARIETY), element: page },
             ],
           },
         ],
-    { initialEntries: [VARIETIES, ARCHIVED_VARIETIES, VARIETY_ONE], initialIndex: 2 },
+    { initialEntries: entries, initialIndex: entries.length - 1 },
   )
   render(<RouterProvider router={router} />)
   return { router, fetchMock }
@@ -152,9 +157,11 @@ afterEach(() => {
 })
 
 describe('Restaurar on the archived page (a characterisation: the page turns live in place)', () => {
-  test('on the phone, the same history entry becomes the live page and Back leaves it for Archivadas', async () => {
+  test('on the phone, the same history entry becomes the live page and Back leaves it for an Archivadas without it', async () => {
     const user = userEvent.setup()
-    const { router } = render_(fakeApi({ archived: true, stored: STORED }), false)
+    const { router } = render_(fakeApi({ archived: true, stored: STORED }), false, [VARIETIES, ARCHIVED_VARIETIES])
+    // Opened from the real Archivadas, which lists the variety and so holds it in its cache.
+    await user.click(await screen.findByRole('link', { name: /24K Gold/ }))
     await user.click(await screen.findByRole('button', { name: 'Restaurar' }))
 
     expect(await screen.findByText('Variedad restaurada')).toBeInTheDocument()
@@ -165,7 +172,9 @@ describe('Restaurar on the archived page (a characterisation: the page turns liv
 
     await router.navigate(-1)
     expect(router.state.location.pathname).toBe(ARCHIVED_VARIETIES)
-    expect(await screen.findByText('Pantalla Archivadas')).toBeInTheDocument()
+    expect(await screen.findByText('No tenés variedades archivadas')).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /24K Gold/ })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Restaurar' })).toBeNull()
   })
 
   test('on the phone, restoring adds no history entry and keeps every flag: Oculta is still there', async () => {
@@ -194,6 +203,10 @@ describe('Restaurar on the archived page (a characterisation: the page turns liv
     expect(screen.queryByRole('heading', { name: 'Archivadas' })).toBeNull()
     expect(await screen.findByRole('button', { name: 'Archivar variedad' })).toBeInTheDocument()
     expect(router.state.location.pathname).toBe(VARIETY_ONE)
+    // The left pane's row for this variety is the selected one.
+    const list = document.querySelector('.variedades-paneles__lista') as HTMLElement
+    expect(await within(list).findByRole('link', { name: /24K Gold/ })).toHaveAttribute('aria-current', 'page')
+    expect(within(list).queryByRole('button', { name: 'Restaurar' })).toBeNull()
   })
 })
 
