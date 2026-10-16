@@ -151,7 +151,9 @@ describe('the action the page offers', () => {
     expect(button.textContent).toBe('Eliminar variedad')
     expect(button.querySelectorAll('svg')).toHaveLength(1)
     expect(button.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
-    expect(iconAndTextProblems(button.parentElement as HTMLElement)).toEqual([])
+    const actions = button.parentElement
+    expect(actions).not.toBeNull()
+    expect(iconAndTextProblems(actions!)).toEqual([])
   })
 
   test('"Archivar variedad" is the secondary button with its icon hidden', async () => {
@@ -161,7 +163,9 @@ describe('the action the page offers', () => {
     expect(button).toHaveClass('boton--suave')
     expect(button).not.toHaveClass('boton--destructivo')
     expect(button.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
-    expect(iconAndTextProblems(button.parentElement as HTMLElement)).toEqual([])
+    const actions = button.parentElement
+    expect(actions).not.toBeNull()
+    expect(iconAndTextProblems(actions!)).toEqual([])
   })
 
   test('a page that offers no removal shows neither action', async () => {
