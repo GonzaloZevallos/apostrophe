@@ -8,7 +8,7 @@
 // yet and a page wider than its viewport are written on the image and in `index.json`,
 // never thrown: one broken screen must not hide the others.
 //
-// A design capture never touches the network (ADR-0041): its Google Fonts requests are
+// A design capture never touches the network (ADR-0042): its Google Fonts requests are
 // served from @fontsource/plus-jakarta-sans, every other non-file request is aborted. Both
 // captures check, after their final settle, that the page's own font family is applied.
 // A font failure (or a screen that threw) is a note on the sheet and in `index.json`; with

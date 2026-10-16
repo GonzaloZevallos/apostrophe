@@ -41,7 +41,7 @@ Success criteria:
 9. **The help line tells the truth**: before testing, the own-chat help says to tap Iniciar on the bot and where to get the number, and the screen does what it promises.
 10. **The seller gets to a successful test alone**: with a valid token, the seller goes from a failed Probarlo to a successful one from the phone, following only the screen's reasons and help.
 11. **A restyle of Integraciones changes only what it meant to**:
-    - a restyle is approved on a before and after comparison: phone and computer, light and dark, captured the same way (ADR-0041);
+    - a restyle is approved on a before and after comparison: phone and computer, light and dark, captured the same way (ADR-0042);
     - every difference is listed as intended or fixed;
     - nothing the seller reads or does there changes.
 
@@ -202,7 +202,7 @@ Setup (token, chats, Buscar mi chat, first Probarlo and Publicar) is judged by c
     - while the restyle is unmerged, the code just before it;
     - once later changes have landed on the same files, that same merging head with only the restyle's own change undone. The PR shows that undo diff.
   - If undoing the restyle alone changes more than the restyle did (later changes rely on it), the PR says so and lists the extra differences for Zeta. Nothing more is undone.
-  - Both are taken by the head's own `scripts/design/comparisons.mjs`, from one install, on the same Argentina day, with fonts pinned and `--strict` (ADR-0041).
+  - Both are taken by the head's own `scripts/design/comparisons.mjs`, from one install, on the same Argentina day, with fonts pinned and `--strict` (ADR-0042).
   - The PR records the installed `@fontsource/plus-jakarta-sans` version.
 - **Coverage**: phone and computer, light and dark. A missing screen, side or one-sided `null` is a failure, never AE 0.
 - **Measure**: the raw captures are compared by exact AE with `scripts/design/ae.mjs`, never the composed sheet.
