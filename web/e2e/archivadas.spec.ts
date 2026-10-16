@@ -79,12 +79,20 @@ for (const viewport of VIEWPORTS) {
       } else {
         await expect(page).toHaveURL(/\/varieties\/archived$/)
         await expect(page.getByRole('link', { name: '‹ Variedades' })).toBeVisible()
-        await page.getByRole('link', { name: /Rosa/ }).click()
       }
+      // Its row: the name, the neutral badge and the plain grams (a gift with no stock left -4 g).
+      const row = page.locator('.variedad-archivada', { hasText: 'Rosa' })
+      await expect(row.getByText('Archivada', { exact: true })).toBeVisible()
+      await expect(row.getByText('-4 g')).toBeVisible()
+      await expect(row.getByText('Oculta')).toHaveCount(0)
+      if (!computer) await row.getByRole('link', { name: /Rosa/ }).click()
       // The archived page's own heading, on both viewports (a phone has no Rosa link here).
       await expect(page.getByRole('heading', { name: 'Rosa' })).toBeVisible()
       await expect(page.getByRole('link', { name: '‹ Archivadas' })).toBeVisible()
       await expect(page.locator('.variedad-resumen').getByText('Archivada', { exact: true })).toBeVisible()
+      await expect(page.getByText('Aviso apagado')).toBeVisible()
+      await expect(page.getByRole('heading', { name: 'En el catálogo' })).toBeVisible()
+      await expect(page.getByRole('button', { name: /^Editar/ })).toHaveCount(0)
       await expect(page.getByText('+ Entrada')).toHaveCount(0)
       await expect(page.getByText('Nuevo precio')).toHaveCount(0)
       await expect(page.getByText('Sacar del stock')).toHaveCount(0)
