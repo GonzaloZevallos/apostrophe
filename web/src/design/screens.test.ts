@@ -76,34 +76,34 @@ describe('assertScreens', () => {
   })
 
   it('refuses an account that is not a non-empty string', () => {
-    expect(() => assertScreens([{ screen: 'Listo', route: 'ruta', account: 7 }])).toThrow(
+    expect(() => assertScreens([{ screen: 'Listo', design: 'OnboardingListo', route: 'ruta', account: 7 }])).toThrow(
       /Listo: account must be a non-empty string/,
     )
-    expect(() => assertScreens([{ screen: 'Listo', route: 'ruta', account: '' }])).toThrow(
+    expect(() => assertScreens([{ screen: 'Listo', design: 'OnboardingListo', route: 'ruta', account: '' }])).toThrow(
       /Listo: account must be a non-empty string/,
     )
   })
 
   it('refuses an account on a signed-out entry', () => {
     expect(() =>
-      assertScreens([{ screen: 'Entrar', route: 'ruta', account: 'a_b', signed_out: true }]),
+      assertScreens([{ screen: 'Entrar', design: 'OnboardingListo', route: 'ruta', account: 'a_b', signed_out: true }]),
     ).toThrow(/Entrar: account cannot be used with signed_out/)
   })
 
   it('refuses an account entry that uses a placeholder other than {email}', () => {
     expect(() =>
-      assertScreens([{ screen: 'Ficha', route: 'ruta/{customer_id}', account: 'a_b' }]),
+      assertScreens([{ screen: 'Ficha', design: 'OnboardingListo', route: 'ruta/{customer_id}', account: 'a_b' }]),
     ).toThrow(/Ficha: an account entry can only use \{email\}, not \{customer_id\}/)
     expect(() =>
       assertScreens([
-        { screen: 'Paso', route: 'ruta', account: 'a_b', steps: [{ fill: { label: 'Cliente', value: '{customer_id}' } }] },
+        { screen: 'Paso', design: 'OnboardingListo', route: 'ruta', account: 'a_b', steps: [{ fill: { label: 'Cliente', value: '{customer_id}' } }] },
       ]),
     ).toThrow(/Paso: an account entry can only use \{email\}, not \{customer_id\}/)
     expect(() =>
-      assertScreens([{ screen: 'Click', route: 'ruta', account: 'a_b', steps: [{ click: '{sale_id}' }] }]),
+      assertScreens([{ screen: 'Click', design: 'OnboardingListo', route: 'ruta', account: 'a_b', steps: [{ click: '{sale_id}' }] }]),
     ).toThrow(/Click: an account entry can only use/)
     expect(() =>
-      assertScreens([{ screen: 'Wait', route: 'ruta', account: 'a_b', steps: [{ wait: '{sale_id}' }] }]),
+      assertScreens([{ screen: 'Wait', design: 'OnboardingListo', route: 'ruta', account: 'a_b', steps: [{ wait: '{sale_id}' }] }]),
     ).toThrow(/Wait: an account entry can only use/)
   })
 
@@ -112,10 +112,39 @@ describe('assertScreens', () => {
       assertScreens([
         {
           screen: 'ListoCompu',
+          design: 'OnboardingListo',
           route: 'ruta',
           account: 'listo_compu',
           steps: [{ fill: { label: 'Email', value: '{email}' } }, { click: 'Listo' }, { wait: 'Listo' }],
         },
+        { screen: 'Ficha', route: 'ruta/{customer_id}' },
+      ]),
+    ).not.toThrow()
+  })
+
+  it('refuses an account on an entry that does not reach Listo, by name and never by credential', () => {
+    expect(() => assertScreens([{ screen: 'Inicio', route: 'ruta', account: 'listo_compu' }])).toThrow(
+      /^Inicio: only an entry that reaches OnboardingListo can name an account$/,
+    )
+    expect(() =>
+      assertScreens([{ screen: 'Ventas', design: 'Estados', route: 'ruta', account: 'listo' }]),
+    ).toThrow(/Ventas: only an entry that reaches OnboardingListo can name an account/)
+  })
+
+  it('refuses an entry that reaches Listo with no account', () => {
+    expect(() => assertScreens([{ screen: 'OnboardingListo', route: 'ruta' }])).toThrow(
+      /^OnboardingListo: an entry that reaches OnboardingListo must name an account of its own$/,
+    )
+    expect(() =>
+      assertScreens([{ screen: 'ListoOscuro', design: 'OnboardingListo', tema: 'oscuro' }]),
+    ).toThrow(/ListoOscuro: an entry that reaches OnboardingListo must name an account of its own/)
+  })
+
+  it('accepts a Listo entry with its own account, named by design or by screen', () => {
+    expect(() =>
+      assertScreens([
+        { screen: 'OnboardingListo', route: 'ruta', account: 'listo' },
+        { screen: 'ListoOscuro', design: 'OnboardingListo', route: 'ruta', account: 'listo_oscuro' },
         { screen: 'Ficha', route: 'ruta/{customer_id}' },
       ]),
     ).not.toThrow()
@@ -127,7 +156,7 @@ describe('assertScreens', () => {
 })
 
 describe('assertSelectedAccounts', () => {
-  const accounts = ['listo_compu', 'listo_oscuro']
+  const accounts = ['listo', 'listo_compu', 'listo_oscuro']
 
   it('refuses an account the sample did not write, without naming a credential', () => {
     expect(() =>
@@ -142,8 +171,8 @@ describe('assertSelectedAccounts', () => {
     expect(() =>
       assertSelectedAccounts(
         [
-          { screen: 'OnboardingListo' },
-          { screen: 'ListoOscuro', design: 'OnboardingListo', tema: 'oscuro' },
+          { screen: 'OnboardingListo', account: 'listo' },
+          { screen: 'ListoOscuro', design: 'OnboardingListo', account: 'listo', tema: 'oscuro' },
         ],
         accounts,
       ),
@@ -159,15 +188,26 @@ describe('assertSelectedAccounts', () => {
     ).toThrow(/B: reaches OnboardingListo with the same account as A/)
   })
 
-  it('accepts one Listo per business, and other entries sharing an account', () => {
+  it('refuses two Listo entries whose accounts are both missing, the default owner included', () => {
     expect(() =>
       assertSelectedAccounts(
         [
           { screen: 'OnboardingListo' },
+          { screen: 'ListoOscuro', design: 'OnboardingListo', tema: 'oscuro' },
+        ],
+        accounts,
+      ),
+    ).toThrow(/ListoOscuro: reaches OnboardingListo with the same account as OnboardingListo/)
+  })
+
+  it('accepts one Listo entry per account', () => {
+    expect(() =>
+      assertSelectedAccounts(
+        [
+          { screen: 'OnboardingListo', account: 'listo' },
           { screen: 'ListoCompu', design: 'OnboardingListo', account: 'listo_compu' },
           { screen: 'ListoOscuro', design: 'OnboardingListo', account: 'listo_oscuro', tema: 'oscuro' },
-          { screen: 'Inicio', account: 'listo_compu' },
-          { screen: 'Ventas', account: 'listo_compu' },
+          { screen: 'Inicio' },
         ],
         accounts,
       ),

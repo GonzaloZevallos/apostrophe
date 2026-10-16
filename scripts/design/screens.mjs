@@ -26,6 +26,12 @@ export function assertScreens(screens) {
     seen.add(s.screen)
     if ('design' in s || 'section' in s) assertDesign(s)
     if ('account' in s) assertAccount(s)
+    if ('account' in s && !reachesListo(s)) {
+      throw new Error(`${s.screen}: only an entry that reaches ${LISTO} can name an account`)
+    }
+    if (reachesListo(s) && !('account' in s)) {
+      throw new Error(`${s.screen}: an entry that reaches ${LISTO} must name an account of its own`)
+    }
   }
 }
 
@@ -55,6 +61,13 @@ function assertAccount(s) {
 const LISTO = 'OnboardingListo'
 const DEFAULT_ACCOUNT = 'La Huerta'
 
+// The one definition of "this entry reaches Listo": the design it is compared against,
+// which is its own screen name unless `design` says otherwise.
+/** @param {Readonly<Record<string, unknown>>} s */
+function reachesListo(s) {
+  return (s.design ?? s.screen) === LISTO
+}
+
 // Checks the selected entries against the account names the sample wrote, before any
 // capture. The messages are fixed text: they name the screens, never a credential.
 /**
@@ -72,7 +85,7 @@ export function assertSelectedAccounts(selected, accountNames) {
   /** @type {Map<string, unknown>} */
   const listoBy = new Map()
   for (const s of selected) {
-    if (s.screen !== LISTO && s.design !== LISTO) continue
+    if (!reachesListo(s)) continue
     const owner = typeof s.account === 'string' ? s.account : DEFAULT_ACCOUNT
     const other = listoBy.get(owner)
     if (other !== undefined) {
