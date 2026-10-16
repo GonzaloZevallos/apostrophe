@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { assertScreens, assertSelectedAccounts } from '../../../scripts/design/screens.mjs'
 import screens from '../../../scripts/design/screens.json'
@@ -172,7 +174,12 @@ describe('assertSelectedAccounts', () => {
     ).not.toThrow()
   })
 
-  it('accepts the real screens.json with no accounts', () => {
-    expect(() => assertSelectedAccounts(screens.screens, [])).not.toThrow()
+  it("accepts the real screens.json with the accounts sample_app.py seeds", () => {
+    const source = readFileSync(resolve(process.cwd(), '..', 'scripts/design/sample_app.py'), 'utf-8')
+    const declared = /^ONBOARDING_ACCOUNTS = \(([^)]*)\)/m.exec(source)?.[1]
+    if (declared === undefined) throw new Error('sample_app.py declares no ONBOARDING_ACCOUNTS')
+    const seeded = declared.match(/"[^"]+"/g)?.map((name) => name.slice(1, -1)) ?? []
+    expect(seeded.length).toBeGreaterThan(0)
+    expect(() => assertSelectedAccounts(screens.screens, seeded)).not.toThrow()
   })
 })
