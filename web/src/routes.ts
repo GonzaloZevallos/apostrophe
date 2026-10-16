@@ -3,9 +3,6 @@
  * what kind of screen each path is. No other file in `web/src` or `web/e2e` carries a route
  * literal (a source scan in `routes.test.ts` fails if one does).
  *
- * A parent may vary by the card's record (`recordParent`), never by how the screen was reached
- * (ADR-0045).
- *
  * Pure data and functions, with no import of any screen: the e2e specs import it too, and
  * they type-check under the node project, which has no JSX. `router.tsx` binds each declared
  * screen to its element (`bind`) and each public page through `outside`.
@@ -88,20 +85,6 @@ export type ScreenId =
 
 /** A screen's parent: one id, or one per viewport. */
 export type Parent = ScreenId | { phone: ScreenId; computer: ScreenId }
-
-/**
- * The only way a parent varies, and only by the record the card shows, never by how the screen
- * was reached: `{ archived }` names the parent an archived record has (a variety's page, whose
- * parent is Archivadas then); `{ titleFromRecord }` keeps the static parent's path and takes the
- * record's name as its title ("‹ Sir Jack" on a variety's "Ver todas" lists).
- */
-export type RecordParent = { archived: ScreenId } | { titleFromRecord: true }
-
-/** What `parentOf` reads from a card's record. */
-export interface ParentRecord {
-  archived: boolean
-  name: string
-}
 
 // Paths. A `:name` segment is a parameter; `pathTo` fills it.
 export const HOME = '/'
@@ -194,8 +177,12 @@ interface ScreenBase {
   title: string
   /** Which pane a two-pane screen fills; inert until the area issues build the panes. */
   pane?: 'list' | 'detail'
-  /** How the parent changes with the card's record; see `RecordParent`. Cards only. */
-  recordParent?: RecordParent
+  /**
+   * Marks a card whose parent's word depends on the record shown (a variety's name). Such a
+   * leaf draws its back only from an override the screen declared for this very record
+   * (`useBackParent`), and nothing until then. Only a screen marked here may call the hook.
+   */
+  backLabel?: 'record'
   /** The route is a modal on a computer: the shell draws no side rail behind its scrim. The
    * only thing that hides the rail; it is never inferred from `pane` or `kind`. */
   modalOnComputer?: true
@@ -220,7 +207,7 @@ export function outside<O extends Outside>(declaration: O): O {
   return declaration
 }
 
-export const SCREENS: readonly Screen[] = [
+export const SCREENS = [
   screen({ id: 'home', path: HOME, kind: 'root', title: 'Inicio', place: { bar: 'home', rail: 'home' } }),
   screen({ id: 'more', path: MORE, kind: 'root', title: 'Más', place: { bar: 'more', rail: 'more' } }),
 
@@ -249,40 +236,11 @@ export const SCREENS: readonly Screen[] = [
     pane: 'list',
     place: { bar: 'varieties', rail: 'varieties' },
   }),
-  screen({
-    id: 'variety',
-    path: VARIETY,
-    kind: 'card',
-    title: 'Variedad',
-    pane: 'detail',
-    parent: 'varieties',
-    recordParent: { archived: 'varieties-archived' },
-  }),
+  screen({ id: 'variety', path: VARIETY, kind: 'card', title: 'Variedad', pane: 'detail', parent: 'varieties', backLabel: 'record' }),
   screen({ id: 'variety-new', path: VARIETY_NEW, kind: 'form', title: 'Nueva variedad', parent: 'varieties' }),
-  screen({
-    id: 'variety-prices',
-    path: VARIETY_PRICES,
-    kind: 'card',
-    title: 'Precios',
-    parent: 'variety',
-    recordParent: { titleFromRecord: true },
-  }),
-  screen({
-    id: 'variety-price-new',
-    path: VARIETY_PRICE_NEW,
-    kind: 'form',
-    title: 'Nuevo precio',
-    parent: 'variety',
-    modalOnComputer: true,
-  }),
-  screen({
-    id: 'variety-entries',
-    path: VARIETY_ENTRIES,
-    kind: 'card',
-    title: 'Entradas',
-    parent: 'variety',
-    recordParent: { titleFromRecord: true },
-  }),
+  screen({ id: 'variety-prices', path: VARIETY_PRICES, kind: 'card', title: 'Precios', parent: 'variety', backLabel: 'record' }),
+  screen({ id: 'variety-price-new', path: VARIETY_PRICE_NEW, kind: 'form', title: 'Nuevo precio', parent: 'variety', modalOnComputer: true }),
+  screen({ id: 'variety-entries', path: VARIETY_ENTRIES, kind: 'card', title: 'Entradas', parent: 'variety', backLabel: 'record' }),
   screen({ id: 'catalog', path: CATALOG, kind: 'card', title: 'Catálogo', parent: 'varieties' }),
   screen({ id: 'stock', path: STOCK, kind: 'card', title: 'Todas las entradas', parent: 'varieties' }),
   screen({ id: 'stock-entry-new', path: STOCK_ENTRY_NEW, kind: 'form', title: 'Entrada de stock', parent: 'varieties' }),
@@ -379,7 +337,10 @@ export const SCREENS: readonly Screen[] = [
     parent: 'home',
   }),
   screen({ id: 'onboarding-done', path: ONBOARDING_DONE, kind: 'form', title: 'Listo', parent: 'home' }),
-]
+] as const satisfies readonly Screen[]
+
+/** The ids marked `backLabel: 'record'`: the only screens `useBackParent` accepts, by type. */
+export type RecordLabelledScreen = Extract<(typeof SCREENS)[number], { backLabel: 'record' }>['id']
 
 /** The Onboarding's screens: drawn by `OnboardingLayout`, outside `Shell` (onboarding.md). */
 export const ONBOARDING_SCREENS: ReadonlySet<ScreenId> = new Set<ScreenId>([
@@ -422,27 +383,10 @@ export interface ParentRef {
   title: string
 }
 
-/**
- * The screen's parent: the "‹ parent" label and the back fallback, from one result. With no
- * `record` it is the static parent; with one, the screen's `recordParent` (if it has one) says
- * how the record changes it. A screen with no `recordParent` ignores the record.
- */
-export function parentOf(id: ScreenId, viewport: Viewport, record?: ParentRecord): ParentRef | undefined {
-  const entry = screenOf(id)
-  const parentId = parentIdOf(entry, viewport)
+/** The screen's fixed parent: the "‹ parent" label and the back fallback, from one result. */
+export function parentOf(id: ScreenId, viewport: Viewport): ParentRef | undefined {
+  const parentId = parentIdOf(screenOf(id), viewport)
   if (parentId === undefined) return undefined
-  const rule = entry.recordParent
-  if (record !== undefined && rule !== undefined) {
-    if ('archived' in rule) {
-      if (record.archived) {
-        const archived = screenOf(rule.archived)
-        return { id: archived.id, path: archived.path, title: archived.title }
-      }
-    } else {
-      const parent = screenOf(parentId)
-      return { id: parent.id, path: parent.path, title: record.name }
-    }
-  }
   const parent = screenOf(parentId)
   return { id: parent.id, path: parent.path, title: parent.title }
 }

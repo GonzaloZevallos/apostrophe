@@ -16,6 +16,7 @@ import { GONE_NOTICE } from '../../api/refusals'
 import type { Me } from '../../api/me'
 import Ventas from './Ventas'
 import { stubFetchWithSettings } from '../stubFetchWithSettings'
+import { SIN_CONEXION_MENSAJE } from '../../components/estadosMessages'
 
 
 function jsonResponse(status: number, body: unknown): Response {
@@ -237,7 +238,7 @@ test('a dropped network shows Sin conexión, never the empty-list text', async (
   api.mockRejectedValue(new TypeError('network error'))
   renderVentas()
 
-  expect(await screen.findByText('Te quedaste sin internet')).toBeInTheDocument()
+  expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
   expect(
     screen.queryByText('Todavía no registraste ninguna venta en este período.'),
   ).not.toBeInTheDocument()

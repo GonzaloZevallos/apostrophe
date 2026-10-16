@@ -2,8 +2,8 @@
  * `EntriesList` (`stock.md`, "Todas las entradas"; `TodasLasEntradas.dc.html`): every stock
  * entry, newest first, and no withdrawal; or with a `varietyId` that variety's movements as
  * `GET /stock/varieties/{id}/movements` answers them: its entries and the withdrawals that
- * touch it, a withdrawal told by its reason word and a minus sign and opening its detail. It is a card: "‹ Variedades" (or "‹ <variety>" for one
- * variety's list) goes back by history, and with none to the list it came from. Each row
+ * touch it, a withdrawal told by its reason word and a minus sign and opening its detail. It is a card; the shell draws its one back ("‹ Variedades",
+ * or "‹ <variety>" for one variety's list, declared through `useBackParent`). Each row
  * links to the entry's form to edit it and deletes it after "Antes de borrar", naming the
  * date, variety and grams. Every figure is what `GET /stock` answered; a variety's name
  * comes from `GET /varieties`, joined by id.
@@ -27,11 +27,11 @@ import Loading from '../components/Loading'
 import SinConexion from '../components/SinConexion'
 import Boton from '../components/Boton'
 import BotonLink from '../components/BotonLink'
-import { useCardRecord } from '../shell/useCardRecord'
 import { useFlash } from '../flash/useFlash'
 import { formatDate } from '../format/dates'
 import { formatGrams, formatMoney } from '../format/money'
 import { STOCK_ENTRY, VARIETIES, WITHDRAWAL, pathTo } from '../routes'
+import { useBackParent } from '../shell/useBackParent'
 import type { Variety } from './Variedades'
 import { ORIGIN_LABEL } from './originLabel'
 import { EMPTY_STATE_DETAIL, EMPTY_STATE_TITLE } from './stockMessages'
@@ -71,12 +71,7 @@ export default function EntriesList({ varietyId }: Props) {
     enabled: varietyId !== undefined,
   })
 
-  const loaded = varietyQuery.data
-  useCardRecord(
-    varietyId === undefined || loaded === undefined
-      ? undefined
-      : { id: varietyId, archived: loaded.archived === true, name: loaded.name },
-  )
+  useBackParent('variety-entries', varietyQuery.data === undefined ? undefined : { title: varietyQuery.data.name })
 
   const [confirming, setConfirming] = useState<StockEntry | null>(null)
   const [deleting, setDeleting] = useState(false)

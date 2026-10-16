@@ -1,7 +1,7 @@
 /**
  * `WithdrawalDetail` (`/withdrawals/:id`, `RetiroDetalle`): a detail under the navigation
- * rule, with the bar or sidebar and a "‹" back to the screen it was opened from
- * (Variedades with no history to go back to, `useBackOr`), and no "+ Nueva venta" (a `card`
+ * rule, with the bar or sidebar and the shell's one back, "‹ Variedades"
+ * (history, or Variedades with none; `useBackOr` serves the delete's exit), and no "+ Nueva venta" (a `card`
  * in `routes.ts`). It shows the date, the reason by word, every line and the note, with
  * "Editar" (the same form, filled in) and "Borrar" ("Antes de borrar", naming the reason,
  * the date and the total grams: `stock.md`).

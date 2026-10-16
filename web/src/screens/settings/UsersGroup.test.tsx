@@ -13,7 +13,7 @@ import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import type { Me } from '../../api/me'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
-import { SIN_CONEXION_TITULO } from '../../components/SinConexion'
+import { SIN_CONEXION_MENSAJE } from '../../components/estadosMessages'
 import * as clipboard from '../../clipboard'
 import { LIMITS, measure, SAMPLES } from '../../copy/limits'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
@@ -132,7 +132,7 @@ test('a dropped network while inviting shows "Sin conexión", never the generic 
 
   await userEvent.click(await screen.findByRole('button', { name: 'Invitá a un socio' }))
 
-  expect(await screen.findByText(SIN_CONEXION_TITULO)).toBeInTheDocument()
+  expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
   expect(screen.queryByText(ERROR_GENERICO_MENSAJE)).not.toBeInTheDocument()
 })
 

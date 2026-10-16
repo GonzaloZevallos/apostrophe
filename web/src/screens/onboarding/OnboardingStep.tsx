@@ -116,8 +116,8 @@ export default function OnboardingStep({
       <div className="onboarding__columna">
         <div className={`onboarding__cabecera${previous === undefined ? ' onboarding__cabecera--derecha' : ''}`}>
           {previous !== undefined && (
-            <Boton variant="back" ariaLabel="Atrás" onClick={() => void navigate(previous)}>
-              ‹ Atrás
+            <Boton variant="secondary" icon="atras" onClick={() => void navigate(previous)}>
+              Atrás
             </Boton>
           )}
           <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={() => void navigate(HOME)} />

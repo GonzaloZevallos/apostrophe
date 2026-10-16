@@ -25,7 +25,8 @@ and the registry and navigation.md disagreed on one parent.
 3. **A scan ends the old shape.** `findSelfDrawnBackArrows` (`web/src/architecture/`) flags
    `variant="back"` on `Boton`/`BotonLink`, a literal `‹` and the `flecha-atras` class in
    `web/src/screens/**`, outside a shrink-only allowlist: `Analisis.tsx` (month steppers and the
-   root's own "Volver") and `OnboardingStep.tsx` ("‹ Atrás", a step control in a form).
+   root's own "Volver"). `OnboardingStep.tsx` left it in GH-166: its "Atrás" is the icon `atras` and
+   the word, with no '‹'.
 
 ## Consequences
 
@@ -33,3 +34,15 @@ and the registry and navigation.md disagreed on one parent.
   escapes it: a ratchet, not a proof.
 - An archived variety opened cold reads "‹ Variedades" for one request before "‹ Archivadas",
   in return for always having a way out.
+
+## Amendment (GH-166)
+
+Point 2's mechanism is replaced; its rule is kept. A parent still varies only by its record,
+matched on the route's `:id`, never by how the screen was reached, but the record no longer travels
+through a published `useCardRecord` and a `recordParent` rule in the registry. A card the registry
+marks `backLabel: 'record'` (a variety's page, its prices, its entries) declares its word through
+the typed `useBackParent(screen, override)`, and the shell's arrow uses it only for the same screen
+and route param. Until the card declares one, such a leaf draws no arrow and no placeholder word,
+instead of the static parent "‹ Variedades" for a request: the plan's invariant 4 for GH-166 wins
+over "a card is never without one" in the Consequences below. `chromeOf` and `modalOnComputer`
+(point 1) and the self-drawn-arrow scan (point 3) are unchanged.

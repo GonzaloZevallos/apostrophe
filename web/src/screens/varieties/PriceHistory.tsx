@@ -1,6 +1,6 @@
 /**
  * `PriceHistory` (`VerTodas.dc.html`): a variety's whole price history, newest first, as the
- * API answers it, with "Rige desde". A card: "‹ <variety>" and no "+ Nueva venta" (the route
+ * API answers it, with "Rige desde". A card (the shell draws its "‹ <variety>") and no "+ Nueva venta" (the route
  * declares `chrome: 'card'`). Each row's delete asks "Antes de borrar" first, worded by
  * `priceDeleteNotice.ts` from the history alone (ADR-0003: it never mentions sales).
  */
@@ -14,7 +14,7 @@ import GoneScreen from '../../components/GoneScreen'
 import Loading from '../../components/Loading'
 import SinConexion from '../../components/SinConexion'
 import { VARIETIES } from '../../routes'
-import { useCardRecord } from '../../shell/useCardRecord'
+import { useBackParent } from '../../shell/useBackParent'
 import type { Variety } from '../Variedades'
 import PriceRows, { type PriceRow } from './PriceRows'
 import { PRICE_HISTORY_HELP } from './varietiesMessages'
@@ -26,10 +26,7 @@ export default function PriceHistory({ varietyId }: { varietyId: number }) {
     queryKey: keys.varietyPrices(id),
     queryFn: () => get<PriceRow[]>(`/varieties/${id}/prices`),
   })
-  const loaded = varietyQuery.data
-  useCardRecord(
-    loaded === undefined ? undefined : { id: varietyId, archived: loaded.archived === true, name: loaded.name },
-  )
+  useBackParent('variety-prices', varietyQuery.data === undefined ? undefined : { title: varietyQuery.data.name })
   const failure = varietyQuery.error ?? pricesQuery.error
   if (failure !== null) {
     if (failure instanceof ApiError && isGone(failure.code)) return <GoneScreen label="Variedades" to={VARIETIES} />

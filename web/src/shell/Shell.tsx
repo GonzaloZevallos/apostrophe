@@ -20,7 +20,7 @@
  * has to re-run `GET /auth/me`.
  */
 
-import { Fragment } from 'react'
+import { Fragment, useCallback, useMemo, useState } from 'react'
 import { Link, Outlet, useMatches, useOutletContext } from 'react-router'
 import type { Me } from '../api/me'
 import Icono, { type NombreIcono } from '../components/Icono'
@@ -44,9 +44,9 @@ import {
 import BotonLink from '../components/BotonLink'
 import { NUEVA_VENTA_CLASS, NUEVA_VENTA_ESCRITORIO_CLASS } from '../components/botonVisual'
 import BackArrow from './BackArrow'
-import { CardRecordProvider } from './cardRecord'
 import { chromeOf } from './chrome'
 import { initialsOf } from './initials'
+import { BackParentContext, type BackParentSlot, type BackParentStore } from './useBackParent'
 import { useViewport } from './useViewport'
 
 type Placement = 'bar' | 'rail' | 'both'
@@ -125,14 +125,28 @@ function BarItem({ item, active }: { item: Item; active: boolean }) {
   )
 }
 
+/** The one slot a record-labelled card's `useBackParent` writes and `BackArrow` reads. */
+function useBackParentStore(): BackParentStore {
+  const [slot, setSlot] = useState<BackParentSlot>()
+  const write = useCallback((next: BackParentSlot) => setSlot(next), [])
+  const clearIf = useCallback(
+    (own: Pick<BackParentSlot, 'screen' | 'param'>) =>
+      setSlot((now) => (now !== undefined && now.screen === own.screen && now.param === own.param ? undefined : now)),
+    [],
+  )
+  return useMemo(() => ({ slot, write, clearIf }), [slot, write, clearIf])
+}
+
 export default function Shell() {
   const me = useOutletContext<Me>()
   const leaf = leafScreen(useMatches())
   const barPlace = placeOf(leaf.id, 'phone').bar
   const railPlace = placeOf(leaf.id, 'computer').rail
   const chrome = chromeOf(leaf, useViewport())
+  const backParent = useBackParentStore()
 
   return (
+    <BackParentContext.Provider value={backParent}>
     <div className="disposicion">
       {chrome.rail && (
         <nav className="riel-lateral" aria-label="Navegación" data-menu>
@@ -177,7 +191,6 @@ export default function Shell() {
         </nav>
       )}
       <div className="columna-principal">
-        <CardRecordProvider>
           {chrome.backArrow && <BackArrow id={leaf.id} />}
           <Outlet context={me} />
           {chrome.barNuevaVenta && (
@@ -192,8 +205,8 @@ export default function Shell() {
               ))}
             </nav>
           )}
-        </CardRecordProvider>
       </div>
     </div>
+    </BackParentContext.Provider>
   )
 }

@@ -1,7 +1,7 @@
 /**
  * `Catalogo` at `/varieties/catalog` (`Catalogo.dc.html`, `CatalogoCompu.dc.html`): today's
  * catalog text, built by the backend alone from today's prices and stock. A detail, so
- * "‹ Variedades" and no "+ Nueva venta". "Cómo se ve en Telegram" comes only from
+ * (the shell draws its "‹ Variedades") and no "+ Nueva venta". "Cómo se ve en Telegram" comes only from
  * `telegramPreview(data.text)` (plan, invariants: "No component splits on `**`").
  * Compartir hands the native share sheet (`share.ts`, the only module naming it) and
  * Copiar copies (`clipboard.ts`, the one path that works over the home network's plain

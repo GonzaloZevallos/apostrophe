@@ -7,7 +7,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
-import { SIN_CONEXION_TITULO } from '../../components/SinConexion'
+import { SIN_CONEXION_MENSAJE } from '../../components/estadosMessages'
 import InvitePartner from './InvitePartner'
 
 vi.mock('../../clipboard', () => ({ copyText: vi.fn().mockResolvedValue(true) }))
@@ -53,7 +53,7 @@ test('a failed tap does not tell the parent a link was created', async () => {
 
   await userEvent.click(screen.getByRole('button', { name: 'Invitá a un socio' }))
 
-  expect(await screen.findByText(SIN_CONEXION_TITULO)).toBeInTheDocument()
+  expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
   expect(onLinkCreated).not.toHaveBeenCalled()
 })
 

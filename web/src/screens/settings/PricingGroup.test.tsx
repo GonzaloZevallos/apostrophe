@@ -14,7 +14,7 @@ import type { PricingSettings } from '../../api/pricingSettings'
 import type { Me } from '../../api/me'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import { inAppState } from '../../components/inAppState'
-import { SIN_CONEXION_TITULO } from '../../components/SinConexion'
+import { SIN_CONEXION_MENSAJE } from '../../components/estadosMessages'
 import { SETTINGS as SETTINGS_PATH, SETTINGS_PRICES } from '../../routes'
 import PricingGroup, { PAST_SALES_LINE, VIP_HELP_LINE } from './PricingGroup'
 
@@ -134,7 +134,7 @@ test('a dropped network shows "Sin conexión" and keeps the switches as set', as
   await userEvent.click(screen.getByRole('switch', { name: 'Clientes VIP' }))
   await userEvent.click(screen.getByRole('button', { name: 'Guardá los precios' }))
 
-  expect(await screen.findByText(SIN_CONEXION_TITULO)).toBeInTheDocument()
+  expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
   expect(screen.getByRole('switch', { name: 'Clientes VIP' })).toHaveAttribute('aria-checked', 'true')
 })
 
