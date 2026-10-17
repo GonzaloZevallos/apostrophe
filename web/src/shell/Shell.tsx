@@ -47,10 +47,22 @@ import BotonLink from '../components/BotonLink'
 import { NUEVA_VENTA_CLASS, NUEVA_VENTA_ESCRITORIO_CLASS } from '../components/botonVisual'
 import BackArrow from './BackArrow'
 import { NUEVA_VENTA_MISSING } from '../copy/home'
+import {
+  NAVIGATION,
+  NEW_SALE,
+  settingsOf,
+  TAB_ANALYSIS,
+  TAB_CUSTOMERS,
+  TAB_EXPENSES,
+  TAB_HOME,
+  TAB_MORE,
+  TAB_SALES,
+  TAB_VARIETIES,
+} from '../copy/shell'
 import { chromeOf } from './chrome'
 import { initialsOf } from './initials'
 import { BackParentContext, type BackParentSlot, type BackParentStore } from './useBackParent'
-import { useViewport } from './useViewport'
+import { COMPUTER_VIEWPORT, PHONE_VIEWPORT, useViewport } from './useViewport'
 
 type Placement = 'bar' | 'rail' | 'both'
 
@@ -69,11 +81,11 @@ interface Item {
 }
 
 const ITEMS: Item[] = [
-  { to: HOME, label: 'Inicio', icono: 'inicio', placement: 'both', group: 'main', place: 'home' },
-  { to: SALES, label: 'Ventas', icono: 'ventas', placement: 'both', group: 'main', place: 'sales' },
+  { to: HOME, label: TAB_HOME, icono: 'inicio', placement: 'both', group: 'main', place: 'home' },
+  { to: SALES, label: TAB_SALES, icono: 'ventas', placement: 'both', group: 'main', place: 'sales' },
   {
     to: CUSTOMERS,
-    label: 'Clientes',
+    label: TAB_CUSTOMERS,
     icono: 'clientes',
     placement: 'both',
     group: 'main',
@@ -81,15 +93,15 @@ const ITEMS: Item[] = [
   },
   {
     to: VARIETIES,
-    label: 'Variedades',
+    label: TAB_VARIETIES,
     icono: 'variedades',
     placement: 'both',
     group: 'main',
     place: 'varieties',
   },
-  { to: EXPENSES, label: 'Gastos', icono: 'gastos', placement: 'rail', group: 'more', place: 'expenses' },
-  { to: ANALYSIS, label: 'Análisis', icono: 'analisis', placement: 'rail', group: 'more', place: 'analysis' },
-  { to: MORE, label: 'Más', icono: 'mas', placement: 'bar', group: 'more', place: 'more' },
+  { to: EXPENSES, label: TAB_EXPENSES, icono: 'gastos', placement: 'rail', group: 'more', place: 'expenses' },
+  { to: ANALYSIS, label: TAB_ANALYSIS, icono: 'analisis', placement: 'rail', group: 'more', place: 'analysis' },
+  { to: MORE, label: TAB_MORE, icono: 'mas', placement: 'bar', group: 'more', place: 'more' },
 ]
 
 const BAR_ITEMS = ITEMS.filter((item) => item.placement !== 'rail')
@@ -107,11 +119,11 @@ function leafScreen(matches: readonly { handle: unknown }[]): Screen {
 }
 
 function railClassName(item: Item, active: boolean): string {
-  const base =
+  const baseClass =
     item.group === 'more'
       ? 'riel-lateral__item riel-lateral__item--secundario'
       : 'riel-lateral__item'
-  return active ? `${base} riel-lateral__item--activo` : base
+  return active ? `${baseClass} riel-lateral__item--activo` : baseClass
 }
 
 /** One bottom-bar entry; `active` is the registry's mark, not a path comparison. */
@@ -157,8 +169,8 @@ function useNuevaVentaMissing(enabled: boolean): boolean {
 export default function Shell() {
   const me = useOutletContext<Me>()
   const leaf = leafScreen(useMatches())
-  const barPlace = placeOf(leaf.id, 'phone').bar
-  const railPlace = placeOf(leaf.id, 'computer').rail
+  const barPlace = placeOf(leaf.id, PHONE_VIEWPORT).bar
+  const railPlace = placeOf(leaf.id, COMPUTER_VIEWPORT).rail
   const chrome = chromeOf(leaf, useViewport())
   const backParent = useBackParentStore()
   const missing = useNuevaVentaMissing(chrome.railNuevaVenta || chrome.barNuevaVenta)
@@ -169,7 +181,7 @@ export default function Shell() {
     <BackParentContext.Provider value={backParent}>
     <div className="disposicion">
       {chrome.rail && (
-        <nav className="riel-lateral" aria-label="Navegación" data-menu>
+        <nav className="riel-lateral" aria-label={NAVIGATION} data-menu>
           {chrome.railNuevaVenta && (
             <>
               <BotonLink
@@ -178,7 +190,7 @@ export default function Shell() {
                 className={NUEVA_VENTA_ESCRITORIO_CLASS}
                 ariaDescribedBy={railDescribedBy}
               >
-                Nueva venta
+                {NEW_SALE}
               </BotonLink>
               {missing && (
                 <span className="nueva-venta__falta nueva-venta__falta--escritorio" id={RAIL_MISSING_ID}>
@@ -207,7 +219,7 @@ export default function Shell() {
           })}
           <InAppLink
             to={SETTINGS}
-            aria-label={`Configuración de ${me.business_name}`}
+            aria-label={settingsOf(me.business_name)}
             aria-current={railPlace === 'business' ? 'page' : undefined}
             className={
               railPlace === 'business'
@@ -228,7 +240,7 @@ export default function Shell() {
           {chrome.barNuevaVenta && (
             <>
               <BotonLink to={SALE_NEW} icon="agregar" className={NUEVA_VENTA_CLASS} ariaDescribedBy={barDescribedBy}>
-                Nueva venta
+                {NEW_SALE}
               </BotonLink>
               {missing && (
                 <span className="nueva-venta__falta" id={NUEVA_VENTA_MISSING_ID}>
@@ -238,7 +250,7 @@ export default function Shell() {
             </>
           )}
           {chrome.bar && (
-            <nav className="bar-inferior" aria-label="Navegación" data-menu>
+            <nav className="bar-inferior" aria-label={NAVIGATION} data-menu>
               {BAR_ITEMS.map((item) => (
                 <BarItem key={item.to} item={item} active={barPlace === item.place} />
               ))}

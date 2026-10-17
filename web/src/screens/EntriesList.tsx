@@ -37,6 +37,7 @@ import { useBackParent } from '../shell/useBackParent'
 import type { Variety } from './Variedades'
 import { ORIGIN_LABEL } from './originLabel'
 import { EMPTY_STATE_DETAIL, EMPTY_STATE_TITLE } from '../copy/stock'
+import { ENTRY_DELETED } from '../copy/common'
 import { REASON_LABEL } from './withdrawals/withdrawalReasons'
 
 
@@ -115,7 +116,7 @@ export default function EntriesList({ varietyId }: Props) {
     setFailed(false)
     try {
       await deleteEntry(String(entry.id))
-      flash.showNow('Entrada eliminada')
+      flash.showNow(ENTRY_DELETED)
     } catch (caught) {
       if (caught instanceof ApiError && isGone(caught.code)) setGoneNotice(true)
       else if (caught instanceof NetworkError) setOffline(true)

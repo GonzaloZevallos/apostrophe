@@ -133,7 +133,7 @@ const ELEMENTS: Record<ScreenId, ReactElement> = {
 }
 
 /** The customer screens share `ClientesLayout`, which keeps the search across them. */
-const WITH_VARIETIES_PANES: ReadonlySet<ScreenId> = new Set([
+const VARIETIES_PANE_IDS: ReadonlySet<ScreenId> = new Set([
   'varieties',
   'variety-new',
   'variety',
@@ -141,7 +141,7 @@ const WITH_VARIETIES_PANES: ReadonlySet<ScreenId> = new Set([
   'varieties-archived',
 ])
 
-const WITH_CUSTOMER_SEARCH: ReadonlySet<ScreenId> = new Set([
+const CUSTOMER_SEARCH_IDS: ReadonlySet<ScreenId> = new Set([
   'customers',
   'customer-new',
   'customer',
@@ -158,15 +158,15 @@ function bind(entry: Screen): RouteObject {
 const shellChildren: RouteObject[] = [
   ...SCREENS.filter(
     (entry) =>
-      !WITH_CUSTOMER_SEARCH.has(entry.id) && !WITH_VARIETIES_PANES.has(entry.id) && !ONBOARDING_SCREENS.has(entry.id),
+      !CUSTOMER_SEARCH_IDS.has(entry.id) && !VARIETIES_PANE_IDS.has(entry.id) && !ONBOARDING_SCREENS.has(entry.id),
   ).map(bind),
   {
     element: <VarietiesLayout />,
-    children: SCREENS.filter((entry) => WITH_VARIETIES_PANES.has(entry.id)).map(bind),
+    children: SCREENS.filter((entry) => VARIETIES_PANE_IDS.has(entry.id)).map(bind),
   },
   {
     element: <ClientesLayout />,
-    children: SCREENS.filter((entry) => WITH_CUSTOMER_SEARCH.has(entry.id)).map(bind),
+    children: SCREENS.filter((entry) => CUSTOMER_SEARCH_IDS.has(entry.id)).map(bind),
   },
 ]
 

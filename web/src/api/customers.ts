@@ -31,8 +31,8 @@ export interface CustomerIn {
 export type CustomerPatchIn = Partial<CustomerIn>
 
 export function listCustomers(q: string): Promise<Customer[]> {
-  const search = q.trim() === '' ? '' : `?q=${encodeURIComponent(q)}`
-  return get<Customer[]>(`/customers${search}`)
+  const searchQuery = q.trim() === '' ? '' : `?q=${encodeURIComponent(q)}`
+  return get<Customer[]>(`/customers${searchQuery}`)
 }
 
 export function getCustomer(id: string): Promise<Customer> {

@@ -46,8 +46,8 @@ export interface Sale {
 }
 
 export function listSales(dateFrom: string, dateTo: string): Promise<Sale[]> {
-  const search = `?date_from=${encodeURIComponent(dateFrom)}&date_to=${encodeURIComponent(dateTo)}`
-  return get<Sale[]>(`/sales${search}`)
+  const searchQuery = `?date_from=${encodeURIComponent(dateFrom)}&date_to=${encodeURIComponent(dateTo)}`
+  return get<Sale[]>(`/sales${searchQuery}`)
 }
 
 /** A line's cost of goods (ADR-0009): `costed` is `null` exactly when none of the

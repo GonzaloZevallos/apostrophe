@@ -12,6 +12,7 @@
  */
 
 import { useId, useState } from 'react'
+import { MORE_INFO } from '../copy/common'
 import Icono from './Icono'
 
 export interface MasInfoProps {
@@ -33,7 +34,7 @@ export default function MasInfo({ line, more }: MasInfoProps) {
         <button
           type="button"
           className="mas-info__boton"
-          aria-label="Más info"
+          aria-label={MORE_INFO}
           aria-expanded={open}
           aria-controls={panelId}
           onClick={() => setOpen((was) => !was)}

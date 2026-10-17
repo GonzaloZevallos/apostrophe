@@ -12,6 +12,20 @@
  */
 
 import type { Status } from '../api/stock'
+import {
+  AT_THE_PACE,
+  daysLeft,
+  FIRST_ENTRY_HINT,
+  NO_GRAMS,
+  noGramsSince,
+  STATUS_NO_ENTRIES,
+  STATUS_SOLD_OUT,
+  WARNING_OFF,
+  warningLow,
+  warnMeBelow,
+  warnsBelow,
+  WARNS_BELOW_THRESHOLD,
+} from '../copy/common'
 import { formatDate } from '../format/dates'
 import { formatGrams } from '../format/money'
 
@@ -29,34 +43,34 @@ export interface StockSideNoteSubject {
 export function detailFor(variety: StockDetailSubject, today: string): string {
   switch (variety.status) {
     case 'no_entries':
-      return 'Cargale la primera entrada'
+      return FIRST_ENTRY_HINT
     case 'sold_out':
       return variety.sold_out_since === null
-        ? 'Sin gramos'
-        : `Sin gramos desde el ${formatDate(variety.sold_out_since, today)}`
+        ? NO_GRAMS
+        : noGramsSince(formatDate(variety.sold_out_since, today))
     case 'low':
       return variety.threshold === null
-        ? 'Avisás por debajo del umbral'
-        : `Avisás abajo de ${formatGrams(variety.threshold)}`
+        ? WARNS_BELOW_THRESHOLD
+        : warnsBelow(formatGrams(variety.threshold))
     case 'ok':
-      return 'Al ritmo de los últimos 30 días'
+      return AT_THE_PACE
   }
 }
 
 export function sideNoteFor(variety: StockSideNoteSubject): string | null {
-  // "agotada" is a visible word on its own right here (PRD: "the inverted chip, not
+  // "sold out" is a visible word on its own right here (PRD: "the inverted chip, not
   // red"), not only the one MarcaEstado keeps for screen readers — a sold-out variety
   // never has a `days_left` to fall back on, so it must be checked before that.
-  if (variety.status === 'sold_out') return 'agotada'
-  if (variety.status === 'no_entries') return 'sin entradas'
+  if (variety.status === 'sold_out') return STATUS_SOLD_OUT
+  if (variety.status === 'no_entries') return STATUS_NO_ENTRIES
   if (variety.days_left === null) return null
-  return `${variety.days_left} días`
+  return daysLeft(variety.days_left)
 }
 
 /** The warning line next to a variety's status mark (`stock.md`, "On screen"): told from
  * the same `GET /stock` row `MarcaEstado` reads, never a figure the front works out itself. */
 export function warningFor(row: StockDetailSubject & { grams: number }): string {
-  if (row.threshold === null) return 'Aviso apagado'
-  if (row.status === 'low') return `Avisando: quedan ${formatGrams(row.grams)}`
-  return `Avisame abajo de ${formatGrams(row.threshold)}`
+  if (row.threshold === null) return WARNING_OFF
+  if (row.status === 'low') return warningLow(formatGrams(row.grams))
+  return warnMeBelow(formatGrams(row.threshold))
 }

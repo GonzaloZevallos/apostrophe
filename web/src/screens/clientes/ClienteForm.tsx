@@ -43,9 +43,10 @@ import { toast } from '../../components/feedback'
 import GoneScreen from '../../components/GoneScreen'
 import SinConexion from '../../components/SinConexion'
 import Loading from '../../components/Loading'
+import { CUSTOMER_SAVED } from '../../copy/common'
 import CustomerFields from './CustomerFields'
 
-export const SAVED_TOAST = 'Cliente guardado'
+export const SAVED_TOAST = CUSTOMER_SAVED
 export const NAME_REQUIRED = 'Ponele un nombre'
 export const PHONE_INVALID = 'Eso no parece un teléfono con su código de área'
 export const PHONE_TAKEN = 'Ese teléfono ya es de otro cliente'

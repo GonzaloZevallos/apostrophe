@@ -6,6 +6,7 @@
  */
 
 import BotonLink from './BotonLink'
+import { backTo } from '../copy/common'
 import { GONE_DETAIL } from '../copy/refusals'
 
 export default function GoneScreen({ label, to }: { label: string; to: string }) {
@@ -15,7 +16,7 @@ export default function GoneScreen({ label, to }: { label: string; to: string })
         <div className="estado-vacio">
           <span className="estado-vacio__titulo">{GONE_DETAIL}</span>
           <BotonLink variant="primary" icon="atras" to={to}>
-            Volver a {label}
+            {backTo(label)}
           </BotonLink>
         </div>
       </div>

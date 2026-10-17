@@ -27,6 +27,19 @@ describe('a visible literal is flagged', () => {
     ['flagged_jsx_text', [{ line: 2, node: 'jsx-text' }]],
     ['flagged_aria_label', [{ line: 2, node: 'string' }, { line: 2, node: 'string' }]],
     ['flagged_inner_element_in_prop', [{ line: 2, node: 'jsx-text' }]],
+    [
+      'flagged_look_alikes',
+      [
+        { line: 2, node: 'string' },
+        { line: 5, node: 'string' },
+        { line: 5, node: 'string' },
+        { line: 8, node: 'string' },
+        { line: 8, node: 'string' },
+        { line: 8, node: 'string' },
+        { line: 10, node: 'string' },
+        { line: 10, node: 'jsx-text' },
+      ],
+    ],
   ])('%s', (name, expected) => {
     expect(findVisibleLiterals('fixture.tsx', fixture(name))).toEqual(expected)
   })
@@ -41,6 +54,7 @@ describe('what shows nothing passes', () => {
     'allowed_property_names',
     'allowed_intl_number_format',
     'allowed_formats_and_codes',
+    'allowed_code_contexts',
   ])('%s', (name) => {
     expect(findVisibleLiterals('fixture.tsx', fixture(name))).toEqual([])
   })

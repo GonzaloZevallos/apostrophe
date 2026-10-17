@@ -1,6 +1,6 @@
 /**
  * What `Boton` and `BotonLink` both draw from one `BotonProps`: the class, the
- * `aria-label` (if any) and the content, the icon hidden next to a word. `ACTION_ICON` is
+ * `aria-label` (if any) and the content, the icon hidden next to a word. `ACTION_ICON_NAMES` is
  * the closed map of the icon-only actions to their icons.
  */
 
@@ -8,7 +8,7 @@ import type { ReactNode } from 'react'
 import type { BotonProps, BotonVariant, IconOnlyAction } from './Boton'
 import Icono, { type NombreIcono } from './Icono'
 
-const ACTION_ICON: Record<IconOnlyAction, NombreIcono> = {
+const ACTION_ICON_NAMES: Record<IconOnlyAction, NombreIcono> = {
   delete: 'tacho',
   search: 'buscar',
   close: 'cerrar',
@@ -51,7 +51,7 @@ export function botonVisual(props: BotonProps): {
     return {
       className,
       ariaLabel: props.ariaLabel,
-      content: <Icono nombre={ACTION_ICON[props.action]} />,
+      content: <Icono nombre={ACTION_ICON_NAMES[props.action]} />,
     }
   }
   return {

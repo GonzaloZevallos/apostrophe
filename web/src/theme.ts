@@ -11,16 +11,16 @@
 type Theme = 'claro' | 'oscuro'
 
 const KEY = 'tema'
-const DARK = 'oscuro'
+const DARK_THEME: Theme = 'oscuro'
 
 function setAttribute(theme: Theme): void {
-  if (theme === 'oscuro') document.documentElement.setAttribute('data-tema', DARK)
+  if (theme === 'oscuro') document.documentElement.setAttribute('data-tema', DARK_THEME)
   else document.documentElement.removeAttribute('data-tema')
 }
 
 function readStored(): Theme {
   try {
-    return window.localStorage.getItem(KEY) === DARK ? 'oscuro' : 'claro'
+    return window.localStorage.getItem(KEY) === DARK_THEME ? 'oscuro' : 'claro'
   } catch {
     return 'claro'
   }
@@ -28,7 +28,7 @@ function readStored(): Theme {
 
 /** The theme the page shows now, for a control that marks it; the attribute stays this module's. */
 export function currentTheme(): Theme {
-  return document.documentElement.getAttribute('data-tema') === DARK ? 'oscuro' : 'claro'
+  return document.documentElement.getAttribute('data-tema') === DARK_THEME ? 'oscuro' : 'claro'
 }
 
 export function applyStoredTheme(): void {
@@ -38,7 +38,7 @@ export function applyStoredTheme(): void {
 export function chooseTheme(theme: Theme): void {
   setAttribute(theme)
   try {
-    if (theme === 'oscuro') window.localStorage.setItem(KEY, DARK)
+    if (theme === 'oscuro') window.localStorage.setItem(KEY, DARK_THEME)
     else window.localStorage.removeItem(KEY)
   } catch {
     // The choice holds for this page only; nothing is stored and nothing is reported.

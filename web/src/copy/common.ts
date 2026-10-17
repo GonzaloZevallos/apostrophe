@@ -31,6 +31,59 @@ export const GONE_NOTICE = "That's gone. The list is up to date."
 /** Shown instead of a detail screen for a record that is gone, with no data of its own. */
 export const GONE_DETAIL = "That's gone."
 
+/** The accessible name of the progress indicator `Estados` draws. */
+export const LOADING = 'Loading'
+
+/** The accessible name of the "i" that opens a shortened line's longer explanation. */
+export const MORE_INFO = 'More info'
+
+/** The password field's reveal toggle. */
+export const SHOW = 'Show'
+export const HIDE = 'Hide'
+
+/** The three ways a sale is paid, as the payment selector words them. */
+export const PAID_CASH = 'Cash'
+export const PAID_TRANSFER = 'Transfer'
+export const PAID_OWING = 'Owing'
+export const HOW_PAID = 'How it was paid'
+
+/** The pricing rule's pill: the one word of each rule. */
+export const RULE_LIST = 'list'
+export const RULE_BULK = 'bulk'
+export const RULE_VIP = 'VIP'
+export const RULE_GIFT = 'gift'
+export const RULE_SPECIAL = 'special'
+
+/** The stock status words: the mark, the side note and the list's summary line. */
+export const STATUS_NO_ENTRIES = 'no entries'
+export const STATUS_SOLD_OUT = 'sold out'
+export const STATUS_LOW = 'low'
+export const STATUS_OK = 'ok'
+
+/** The way back from a gone record's screen to its list. */
+export const backTo = (label: string) => `Back to ${label}`
+
+/** The plain success toasts a screen shows by navigating away, and the saved sale's notice. */
+export const CUSTOMER_SAVED = 'Customer saved'
+export const SALE_DELETED = 'Sale deleted'
+export const SALE_DELETED_STOCK_BACK = 'Sale deleted · the grams go back to stock'
+export const ENTRY_SAVED = 'Entry saved'
+export const ENTRY_DELETED = 'Entry deleted'
+export const SALE_SAVED = 'Sale saved'
+
+/** What the stock lines say (`stock/detail.ts` and `stock/summaryLine.ts`). */
+export const FIRST_ENTRY_HINT = 'Add the first entry'
+export const NO_GRAMS = 'No grams'
+export const noGramsSince = (date: string) => `No grams since ${date}`
+export const WARNS_BELOW_THRESHOLD = 'Warns you below the threshold'
+export const warnsBelow = (grams: string) => `Warns you below ${grams}`
+export const AT_THE_PACE = 'At the pace of the last 30 days'
+export const daysLeft = (days: number) => `${days} days`
+export const WARNING_OFF = 'Warning off'
+export const warningLow = (grams: string) => `Warning: ${grams} left`
+export const warnMeBelow = (grams: string) => `Warn me below ${grams}`
+export const varietiesAllOk = (count: number) => `${count} ${count === 1 ? 'variety' : 'varieties'} · all ok`
+
 export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'emptyTitle', text: NOBODY_OWES },
   { kind: 'notice', text: NO_CONNECTION_MESSAGE },

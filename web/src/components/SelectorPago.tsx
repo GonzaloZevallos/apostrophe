@@ -23,6 +23,7 @@
  */
 
 import { useId } from 'react'
+import { HOW_PAID, PAID_CASH, PAID_OWING, PAID_TRANSFER } from '../copy/common'
 import type { PaymentChoice } from '../sales/pricing'
 
 export interface SelectorPagoProps {
@@ -33,9 +34,9 @@ export interface SelectorPagoProps {
 }
 
 const OPTIONS: { value: PaymentChoice; label: string }[] = [
-  { value: 'cash', label: 'Efectivo' },
-  { value: 'transfer', label: 'Transferencia' },
-  { value: 'owing', label: 'Debiendo' },
+  { value: 'cash', label: PAID_CASH },
+  { value: 'transfer', label: PAID_TRANSFER },
+  { value: 'owing', label: PAID_OWING },
 ]
 
 export default function SelectorPago({
@@ -49,7 +50,7 @@ export default function SelectorPago({
 
   return (
     <div>
-      <div className="selector-pago" role="radiogroup" aria-label="Cómo se pagó">
+      <div className="selector-pago" role="radiogroup" aria-label={HOW_PAID}>
         {OPTIONS.map((option) => {
           const checked = value === option.value
           const disabled = option.value === 'owing' && owingDisabled

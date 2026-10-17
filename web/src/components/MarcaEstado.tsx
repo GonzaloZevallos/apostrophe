@@ -7,12 +7,13 @@
  */
 
 import type { Status } from '../api/stock'
+import { STATUS_LOW, STATUS_NO_ENTRIES, STATUS_OK, STATUS_SOLD_OUT } from '../copy/common'
 
 const WORD: Record<Status, string> = {
-  no_entries: 'sin entradas',
-  sold_out: 'agotada',
-  low: 'baja',
-  ok: 'ok',
+  no_entries: STATUS_NO_ENTRIES,
+  sold_out: STATUS_SOLD_OUT,
+  low: STATUS_LOW,
+  ok: STATUS_OK,
 }
 
 export default function MarcaEstado({ estado }: { estado: Status }) {

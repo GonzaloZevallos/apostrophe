@@ -1,46 +1,13 @@
 /**
- * A success toast (PRD, "Feedback": a fixed string from the closed union, never
- * "Deshacer"). Blue, never green (accessibility rule: blue ↔ amber only) — `--acento`,
+ * A success toast (PRD, "Feedback": a fixed string from a copy section, never
+ * "Undo"). Blue, never green (accessibility rule: blue ↔ amber only) — `--acento`,
  * the same accent the rest of the app uses, not a state color of its own.
  *
- * `SuccessToast` is the PRD's own closed union ("Feedback": the full list of fixed
- * toasts) — every screen's toast state is typed on it, not on a bare `string`, so a
- * typo or an invented message fails `tsc` instead of rendering silently.
  */
 
-import type { PRICE_SAVED } from '../copy/varieties'
-
-export type SuccessToast =
-  | 'Cliente guardado'
-  | 'Entrada guardada'
-  | 'Entrada eliminada'
-  | 'Variedad guardada'
-  | 'Variedad eliminada'
-  | 'Variedad archivada'
-  | 'Variedad restaurada'
-  | typeof PRICE_SAVED
-  | 'Precio eliminado'
-  | 'Gasto guardado'
-  | 'Gasto eliminado'
-  | 'Categoría guardada'
-  | 'Categoría eliminada'
-  | 'Negocio renombrado'
-  | 'Contraseña cambiada · cerramos tus otras sesiones'
-  | 'Invitación lista'
-  | 'Cliente asignado'
-  | 'Aviso guardado'
-  | 'Catálogo guardado'
-  | 'Precios guardados'
-  | 'Catálogo copiado'
-  | 'Cobro eliminado'
-  | 'Cobro guardado'
-  | `Cobro guardado · queda debiendo ${string}`
-  | 'Prueba enviada'
-  | 'Catálogo publicado'
-  | 'Entrada guardada'
-  | 'Entrada eliminada'
-  | 'Retiro guardado'
-  | 'Retiro eliminado'
+/** A toast's text comes from a section of `copy/`; the visible-literal guard (ADR-0048) keeps a
+ * screen from writing one of its own, which is what the closed union used to prevent. */
+export type SuccessToast = string
 
 export default function AvisoExito({ texto }: { texto: SuccessToast }) {
   return (

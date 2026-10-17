@@ -13,7 +13,20 @@
  * - the `className` attribute and the class helpers' arguments;
  * - `data-*` attributes;
  * - the props in `NON_VISIBLE_PROPS`;
- * - the first argument of `Intl.NumberFormat`.
+ * - the first argument of `Intl.NumberFormat`;
+ * - anything inside the index of an element access, a lookup that shows nothing;
+ * - the default of a destructured code-valued property (`tono = 'neutro'`);
+ * - the initializer of a declaration annotated with a string-literal union type (or an array,
+ *   set or record of one) declared in the same file;
+ * - the operand of `in` and the value assigned to a `style` property;
+ * - an argument of a call in `NON_VISIBLE_CALLEES` (the API helpers' paths, DOM and storage
+ *   names, an `Error`'s message, which no screen reads: ADR-0008) and of `super(...)`;
+ * - the value of an object property in `CODE_VALUED_PROPERTIES` (`status`, `rule`, `tone`...);
+ * - the initializer of a declaration whose name says it is a code (`CODE_NAME`: `*_CLASS`,
+ *   `*_KEY`, `*_PATH`, `*_ID`...);
+ * - anything inside an `as const` tuple or object, which is a code table, never a sentence;
+ * - a value returned by a function whose declared return type is a union of string
+ *   literals, or a local alias of one.
  *
  * A context added later is added to this list with its reason, never as a per-file
  * exemption: the only allowance is a text-ledger (`textLeft/<owner>.json`), which only
@@ -48,7 +61,87 @@ export const NON_VISIBLE_PROPS: readonly string[] = [
   'href',
   'textOnly',
   'kind',
+  'mode',
+  'slug',
+  // SVG geometry and the ARIA states with a fixed value: neither is a word.
+  'd',
+  'viewBox',
+  'fill',
+  'stroke',
+  'strokeLinecap',
+  'strokeLinejoin',
+  'xmlns',
+  'aria-hidden',
+  'aria-modal',
+  'aria-busy',
+  'aria-current',
+  'aria-live',
+  'aria-atomic',
+  'aria-checked',
+  'aria-pressed',
+  'aria-expanded',
+  'aria-haspopup',
+  'aria-orientation',
 ]
+
+/** Calls whose arguments are a path, a name or a developer message, never a shown text. The
+ * API helpers take a path; the DOM, event and storage methods take a name; `Error` and
+ * `super` (an `Error` subclass) take a message the front never shows (ADR-0008). */
+export const NON_VISIBLE_CALLEES: readonly string[] = [
+  'get',
+  'post',
+  'patch',
+  'put',
+  'del',
+  'send',
+  'encodeURIComponent',
+  'Error',
+  'addEventListener',
+  'removeEventListener',
+  'setAttribute',
+  'removeAttribute',
+  'getAttribute',
+  'setProperty',
+  'removeProperty',
+  'getPropertyValue',
+  'getElementById',
+  'querySelector',
+  'createElement',
+  'execCommand',
+  'getItem',
+  'setItem',
+  'removeItem',
+  'register',
+  'getAll',
+  'matchMedia',
+  'stubGlobal',
+]
+
+/** Object properties whose value is a code, a state or a table key, never a text. A property
+ * that carries a text (`label`, `title`, `message`) is not here. */
+export const CODE_VALUED_PROPERTIES: readonly string[] = [
+  'status',
+  'type',
+  'kind',
+  'rule',
+  'tone',
+  'field',
+  'placement',
+  'group',
+  'place',
+  'icono',
+  'tono',
+  'to',
+  'block',
+  'credentials',
+  'Accept',
+  'Content-Type',
+]
+
+/** A declaration named like this holds a code: a class list, a key, a path, a selector, an
+ * id. */
+const CODE_NAME =
+  /(?:^|_)(?:CLASS|CLASSES|KEY|PATH|QUERY|SELECTOR|ATTRIBUTE|FIELDS|CONTAINERS|NAMES|PREFIX|ID|IDS|CODE|VIEWPORT)$|(?:Class|Classes|Key|Path|Query|Selector|Attribute|Id|Ids|Code|Viewport)$/
 
 /** Functions that build a class list: their arguments are class names. */
 export const CLASS_HELPERS: readonly string[] = ['classNames', 'cx', 'railClassName']
@@ -106,8 +199,61 @@ function isComparison(node: ts.Node): boolean {
   return (
     ts.isBinaryExpression(node) &&
     (node.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken ||
-      node.operatorToken.kind === ts.SyntaxKind.ExclamationEqualsEqualsToken)
+      node.operatorToken.kind === ts.SyntaxKind.ExclamationEqualsEqualsToken ||
+      node.operatorToken.kind === ts.SyntaxKind.InKeyword)
   )
+}
+
+function calleeName(expression: ts.Expression): string | null {
+  if (ts.isIdentifier(expression)) return expression.text
+  if (ts.isPropertyAccessExpression(expression)) return expression.name.text
+  return null
+}
+
+function propertyKey(name: ts.PropertyName): string | null {
+  return ts.isIdentifier(name) || ts.isStringLiteral(name) ? name.text : null
+}
+
+/** Whether a left-hand side is some `….style.x`, an inline style value. */
+function isStyleTarget(expression: ts.Expression): boolean {
+  return (
+    ts.isPropertyAccessExpression(expression) &&
+    ts.isPropertyAccessExpression(expression.expression) &&
+    expression.expression.name.text === 'style'
+  )
+}
+
+/** Whether a type is a union of string literals, directly or through a local alias. */
+function isCodeType(type: ts.TypeNode | undefined, file: ts.SourceFile): boolean {
+  if (type === undefined) return false
+  if (ts.isParenthesizedTypeNode(type)) return isCodeType(type.type, file)
+  if (ts.isLiteralTypeNode(type)) return true
+  if (ts.isUnionTypeNode(type)) return type.types.every((member) => isCodeType(member, file))
+  if (ts.isTypeReferenceNode(type) && ts.isIdentifier(type.typeName)) {
+    const name = type.typeName.text
+    const alias = file.statements.find((statement) => ts.isTypeAliasDeclaration(statement) && statement.name.text === name)
+    return alias !== undefined && ts.isTypeAliasDeclaration(alias) && isCodeType(alias.type, file)
+  }
+  return false
+}
+
+/** Whether a value type bottoms out in string literals: a code type, or an array, set, record
+ * or promise of one. */
+function isCodeValued(type: ts.TypeNode | undefined, file: ts.SourceFile): boolean {
+  if (type === undefined) return false
+  if (ts.isArrayTypeNode(type)) return isCodeValued(type.elementType, file)
+  if (ts.isTypeOperatorNode(type)) return isCodeValued(type.type, file)
+  if (ts.isTypeReferenceNode(type) && type.typeArguments !== undefined && type.typeArguments.length > 0) {
+    return isCodeValued(type.typeArguments[type.typeArguments.length - 1], file)
+  }
+  return isCodeType(type, file)
+}
+
+function enclosingFunction(node: ts.Node): ts.SignatureDeclaration | undefined {
+  for (let current: ts.Node | undefined = node; current !== undefined; current = current.parent) {
+    if (ts.isFunctionLike(current)) return current
+  }
+  return undefined
 }
 
 /** Whether the literal `node` sits in a context that shows nothing. */
@@ -134,6 +280,33 @@ function isAllowedContext(node: ts.Node): boolean {
       return true
     }
     if (ts.isCallExpression(current) && isClassHelper(current.expression) && child !== current.expression) return true
+    if (ts.isCallExpression(current) || ts.isNewExpression(current)) {
+      const name = calleeName(current.expression)
+      const isArgument = child !== current.expression
+      if (isArgument && (current.expression.kind === ts.SyntaxKind.SuperKeyword || (name !== null && NON_VISIBLE_CALLEES.includes(name)))) {
+        return true
+      }
+    }
+    if (ts.isAsExpression(current) && ts.isTypeReferenceNode(current.type) && current.type.typeName.getText() === 'const') return true
+    if (ts.isPropertyAssignment(current) && current.initializer === child) {
+      const key = propertyKey(current.name)
+      if (key !== null && CODE_VALUED_PROPERTIES.includes(key)) return true
+    }
+    if (ts.isVariableDeclaration(current) && current.initializer === child) {
+      if (ts.isIdentifier(current.name) && CODE_NAME.test(current.name.text)) return true
+      if (isCodeValued(current.type, node.getSourceFile())) return true
+    }
+    if (ts.isBindingElement(current) && current.initializer === child && ts.isIdentifier(current.name)) {
+      if (CODE_VALUED_PROPERTIES.includes(current.name.text)) return true
+    }
+    if (ts.isElementAccessExpression(current) && current.argumentExpression === child) return true
+    if (ts.isBinaryExpression(current) && current.operatorToken.kind === ts.SyntaxKind.EqualsToken && current.right === child && isStyleTarget(current.left)) {
+      return true
+    }
+    if (ts.isReturnStatement(current) || (ts.isArrowFunction(current) && current.body === child)) {
+      const owner = enclosingFunction(current)
+      if (owner !== undefined && isCodeValued(owner.type, node.getSourceFile())) return true
+    }
     if (ts.isJsxAttribute(current)) {
       const name = attributeName(current)
       return name === 'className' || name.startsWith('data-') || NON_VISIBLE_PROPS.includes(name)

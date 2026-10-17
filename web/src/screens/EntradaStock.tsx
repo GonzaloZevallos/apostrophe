@@ -29,6 +29,7 @@ import { useLeaveGuard } from '../components/useLeaveGuard'
 import { useFlash } from '../flash/useFlash'
 import { STOCK, VARIETIES } from '../routes'
 import Boton from '../components/Boton'
+import { ENTRY_DELETED, ENTRY_SAVED } from '../copy/common'
 import StockEntryForm from './StockEntryForm'
 
 interface Props {
@@ -133,7 +134,7 @@ function EntradaStockBody({ mode, entryId, today, initial, chosenVariety, hasEnt
     setDirty(next)
   }, [])
 
-  function leave(toast: 'Entrada guardada' | 'Entrada eliminada'): void {
+  function leave(toast: typeof ENTRY_SAVED | typeof ENTRY_DELETED): void {
     disarm()
     flash.armAfterLeaving(toast)
     back()
@@ -164,8 +165,8 @@ function EntradaStockBody({ mode, entryId, today, initial, chosenVariety, hasEnt
           initial={initial}
           preselectedVarietyId={chosenVariety}
           preselectedOrigin={chosenVariety !== undefined && hasEntries === false ? 'opening_stock' : undefined}
-          onSaved={() => leave('Entrada guardada')}
-          onDeleted={() => leave('Entrada eliminada')}
+          onSaved={() => leave(ENTRY_SAVED)}
+          onDeleted={() => leave(ENTRY_DELETED)}
           onGone={entryIsGone}
           onDirtyChange={onDirtyChange}
           dialogHost={dialogHost}

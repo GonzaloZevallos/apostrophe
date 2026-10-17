@@ -12,6 +12,9 @@ import type { Viewport } from '../routes'
 
 export const COMPUTER_MIN_WIDTH = 900
 
+export const PHONE_VIEWPORT: Viewport = 'phone'
+export const COMPUTER_VIEWPORT: Viewport = 'computer'
+
 const COMPUTER_QUERY = `(min-width: ${COMPUTER_MIN_WIDTH}px)`
 
 function subscribe(onChange: () => void): () => void {
@@ -27,9 +30,9 @@ function isComputer(): boolean {
 
 /** The viewport now, for code that decides when the user acts rather than when it renders. */
 export function currentViewport(): Viewport {
-  return isComputer() ? 'computer' : 'phone'
+  return isComputer() ? COMPUTER_VIEWPORT : PHONE_VIEWPORT
 }
 
 export function useViewport(): Viewport {
-  return useSyncExternalStore(subscribe, isComputer) ? 'computer' : 'phone'
+  return useSyncExternalStore(subscribe, isComputer) ? COMPUTER_VIEWPORT : PHONE_VIEWPORT
 }

@@ -12,12 +12,14 @@
  * hidden progressbar a screen announces itself with while those markers are on.
  */
 
+import { LOADING } from '../copy/common'
+
 export interface LoadingProps {
   compacto?: boolean
 }
 
 export function LoadingAnuncio() {
-  return <div className="cargando__anuncio" role="progressbar" aria-label="Cargando" aria-busy="true" />
+  return <div className="cargando__anuncio" role="progressbar" aria-label={LOADING} aria-busy="true" />
 }
 
 export default function Loading({ compacto = false }: LoadingProps) {
@@ -29,7 +31,7 @@ export default function Loading({ compacto = false }: LoadingProps) {
     )
   }
   return (
-    <div className="cargando" role="progressbar" aria-label="Cargando" aria-busy="true">
+    <div className="cargando" role="progressbar" aria-label={LOADING} aria-busy="true">
       <span className="cargando__barra cargando__barra--corta" />
       <span className="cargando__barra cargando__barra--ancha" />
       <div className="cargando__tarjetas">

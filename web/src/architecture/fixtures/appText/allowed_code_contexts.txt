@@ -1,0 +1,24 @@
+type Theme = 'light' | 'dark'
+export const STORAGE_KEY = 'theme'
+export const ROW_CLASS = { primary: 'row', secondary: 'row row--soft' }
+export const TABLE = ['one', 'two'] as const
+export function current(): Theme {
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+}
+export const mode = (dark: boolean): Theme => (dark ? 'dark' : 'light')
+export function load(id: string) {
+  document.documentElement.setAttribute('data-theme', 'dark')
+  window.addEventListener('online', () => undefined)
+  return get(`/items/${id}`, { status: 'fresh', credentials: 'include' })
+}
+export class Refused extends Error {
+  constructor() {
+    super('a developer message')
+  }
+}
+export function check(state: object) {
+  const el = document.createElement('textarea')
+  el.style.position = 'fixed'
+  throw new Error('no root')
+}
+export const has = (state: object) => 'inApp' in state

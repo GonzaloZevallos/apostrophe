@@ -7,15 +7,16 @@
  * rule 2): the rule is never told by color alone.
  */
 
+import { RULE_BULK, RULE_GIFT, RULE_LIST, RULE_SPECIAL, RULE_VIP } from '../copy/common'
 import type { PricingRule } from '../sales/pricing'
 import Insignia from './Insignia'
 
 const RULE_BADGE: Record<PricingRule, { text: string; tone: 'neutro' | 'acento' }> = {
-  list: { text: 'lista', tone: 'neutro' },
-  bulk: { text: 'por cantidad', tone: 'acento' },
-  vip: { text: 'VIP', tone: 'acento' },
-  gift: { text: 'regalo', tone: 'acento' },
-  special: { text: 'especial', tone: 'acento' },
+  list: { text: RULE_LIST, tone: 'neutro' },
+  bulk: { text: RULE_BULK, tone: 'acento' },
+  vip: { text: RULE_VIP, tone: 'acento' },
+  gift: { text: RULE_GIFT, tone: 'acento' },
+  special: { text: RULE_SPECIAL, tone: 'acento' },
 }
 
 export default function ReglaInsignia({ rule }: { rule: PricingRule }) {

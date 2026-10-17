@@ -1,0 +1,10 @@
+export function show(): string {
+  return label('Delete it?')
+}
+export function title() {
+  return { label: 'Save sale', message: 'Nothing here yet', status: 'fresh' }
+}
+export function words(): string {
+  return window.confirm('Sure?') ? 'Yes' : 'No'
+}
+export const Notice = () => <p aria-live="polite" title="Careful">text</p>

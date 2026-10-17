@@ -53,6 +53,7 @@ import { SheetStackProvider, useSheet } from '../../components/useSheetStack'
 import { formatDateShort } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
 import { GENERIC_REFUSAL } from './NuevaVenta'
+import { SALE_DELETED, SALE_DELETED_STOCK_BACK } from '../../copy/common'
 import NuevaVentaCliente from './NuevaVentaCliente'
 
 export const CUSTOMER_ALREADY_ASSIGNED_MESSAGE = 'Esta venta ya tiene cliente.'
@@ -105,8 +106,8 @@ function deleteTitle(sale: SaleDetail): string {
   return `¿Borrás la venta de ${money} del ${day}? Vuelven ${grams} al stock.`
 }
 
-const DELETE_TOAST = 'Venta eliminada'
-const UNDO_TOAST = 'Venta eliminada · los gramos vuelven al stock'
+const DELETE_TOAST = SALE_DELETED
+const UNDO_TOAST = SALE_DELETED_STOCK_BACK
 
 /** One sheet stack per screen (ADR-0027): Asignar cliente is level 1, Nuevo cliente level 2. */
 export default function VentaDetalle() {
