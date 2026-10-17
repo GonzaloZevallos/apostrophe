@@ -1,0 +1,148 @@
+import { describe, expect, test } from 'vitest'
+import { RULES, type Rule, type Violation } from '../violation.ts'
+import {
+  AREA_ISSUES,
+  diffOffenders,
+  FILES,
+  OFFENDERS,
+  offendersOfCell,
+  parseOffenders,
+  type Offender,
+} from './index.ts'
+
+function filesWith(rule: Rule, entries: unknown[]): Record<Rule, unknown> {
+  return { ...FILES, [rule]: entries }
+}
+
+const violation = (extra: Partial<Violation> = {}): Violation => ({
+  screen: 'Entrar',
+  size: '320x568',
+  theme: 'claro',
+  rule: 'touch-target',
+  target: 'button:Entrá',
+  ...extra,
+})
+
+const entry = (extra: Record<string, unknown> = {}) => ({
+  screen: 'Entrar',
+  rule: 'touch-target',
+  target: 'button:Entrá',
+  issue: 49,
+  ...extra,
+})
+
+describe('parseOffenders', () => {
+  test('the shipped files parse', () => {
+    expect(() => parseOffenders()).not.toThrow()
+    expect(OFFENDERS).toEqual(parseOffenders())
+  })
+
+  test('an entry without sizes or themes expands into every cell', () => {
+    const cells = parseOffenders(filesWith('touch-target', [entry()]))
+    expect(cells).toHaveLength(8)
+    expect(new Set(cells.map((c) => `${c.size}/${c.theme}`)).size).toBe(8)
+  })
+
+  test('listed sizes and themes expand to exactly those cells', () => {
+    const cells = parseOffenders(filesWith('touch-target', [entry({ sizes: ['320x568'], themes: ['oscuro'] })]))
+    expect(cells).toEqual([{ ...violation({ theme: 'oscuro' }), issue: 49 }])
+  })
+
+  test('refuses an entry with no issue, a non-integer or a non-positive one', () => {
+    for (const issue of [undefined, 0, -3, 1.5, '49', null]) {
+      expect(() => parseOffenders(filesWith('touch-target', [entry({ issue })]))).toThrow(/issue/)
+    }
+  })
+
+  test('refuses an issue outside the fixed area map', () => {
+    expect(AREA_ISSUES).toEqual([45, 46, 47, 48, 49, 59, 60, 78])
+    expect(() => parseOffenders(filesWith('touch-target', [entry({ issue: 12 })]))).toThrow(/area map/)
+  })
+
+  test('refuses an unknown screen, rule, size or theme', () => {
+    expect(() => parseOffenders(filesWith('touch-target', [entry({ screen: 'Nope' })]))).toThrow(/screen/)
+    expect(() => parseOffenders(filesWith('touch-target', [entry({ rule: 'nope' })]))).toThrow(/rule/)
+    expect(() => parseOffenders(filesWith('touch-target', [entry({ sizes: ['100x100'] })]))).toThrow(/sizes/)
+    expect(() => parseOffenders(filesWith('touch-target', [entry({ themes: ['sepia'] })]))).toThrow(/themes/)
+  })
+
+  test('refuses a rule that sits in another rule’s file', () => {
+    expect(() => parseOffenders(filesWith('input-font', [entry()]))).toThrow(/file of input-font/)
+  })
+
+  test('a page rule has an empty target and an element rule a non-empty one', () => {
+    expect(() =>
+      parseOffenders(filesWith('h-scroll', [entry({ rule: 'h-scroll', target: 'main' })])),
+    ).toThrow(/page rule/)
+    expect(() => parseOffenders(filesWith('touch-target', [entry({ target: '' })]))).toThrow(/element rule/)
+    expect(parseOffenders(filesWith('h-scroll', [entry({ rule: 'h-scroll', target: '', issue: 59 })]))).toHaveLength(8)
+  })
+
+  test('refuses two entries that expand to the same cell', () => {
+    expect(() =>
+      parseOffenders(filesWith('touch-target', [entry(), entry({ sizes: ['320x568'] })])),
+    ).toThrow(/twice/)
+  })
+})
+
+describe('diffOffenders', () => {
+  const listed: Offender = { ...violation(), issue: 49 }
+
+  test('a listed failure is allowed and leaves nothing over', () => {
+    expect(diffOffenders([listed], [violation()])).toEqual({ unlisted: [], fixedButListed: [] })
+  })
+
+  test('a new offender is unlisted', () => {
+    const fresh = violation({ target: 'button:Otro' })
+    expect(diffOffenders([listed], [violation(), fresh]).unlisted).toEqual([fresh])
+  })
+
+  test('a fixed entry left listed is reported', () => {
+    expect(diffOffenders([listed], []).fixedButListed).toEqual([listed])
+  })
+
+  test('matches on all five fields: any one differing is a new offender and a fixed entry', () => {
+    const variants: Partial<Violation>[] = [
+      { screen: 'Inicio' },
+      { size: '375x812' },
+      { theme: 'oscuro' },
+      { rule: 'input-font' },
+      { target: 'button:Entra' },
+    ]
+    for (const variant of variants) {
+      const diff = diffOffenders([listed], [violation(variant)])
+      expect(diff.unlisted).toHaveLength(1)
+      expect(diff.fixedButListed).toEqual([listed])
+    }
+  })
+
+  test('the same failure reported twice counts once', () => {
+    const fresh = violation({ target: 'button:Otro' })
+    expect(diffOffenders([], [fresh, fresh]).unlisted).toEqual([fresh])
+  })
+})
+
+describe('offendersOfCell', () => {
+  test('keeps only the entries of one screen, size and theme', () => {
+    const cells = parseOffenders(filesWith('touch-target', [entry()]))
+    const mine = offendersOfCell(cells, { screen: 'Entrar', size: '375x812', theme: 'oscuro' })
+    expect(mine).toHaveLength(1)
+    expect(mine[0]).toMatchObject({ size: '375x812', theme: 'oscuro' })
+    expect(offendersOfCell(cells, { screen: 'Inicio', size: '375x812', theme: 'oscuro' })).toEqual([])
+  })
+})
+
+describe('the offender files', () => {
+  const files = import.meta.glob('./*.json', { eager: true })
+
+  test('there is a file for every rule and none for a rule that does not exist', () => {
+    const names = Object.keys(files)
+      .map((path) => path.replace(/^\.\//, '').replace(/\.json$/, ''))
+      .sort()
+    expect(names).toEqual([...RULES].sort())
+  })
+
+  test('the table holds one entry per rule', () => {
+    expect(Object.keys(FILES).sort()).toEqual([...RULES].sort())
+  })
+})
