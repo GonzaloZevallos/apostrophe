@@ -16,6 +16,7 @@ INVITATION_TABLE = "invitation"
 LOGIN_GUARD_TABLE = "login_guard"
 RESET_LINK_TABLE = "reset_link"
 PINNED_CATALOG_TABLE = "pinned_catalog"
+INICIO_SETUP_STATE_TABLE = "inicio_setup_state"
 
 # Tables with no `business_id` of their own (docs/adr/0004); the only tables a business
 # row delete reaches by a column other than `business_id`.
@@ -29,9 +30,11 @@ SKIPPED_TABLES: frozenset[str] = frozenset({"alembic_version", "login_address_gu
 # Deleted along with the business, but never written to the export file (docs/adr/0019).
 # `reset_link` carries its own `business_id` (unlike `invitation` and `login_guard`,
 # both platform tables) and is withheld whole rather than exported: a reset link holds
-# nothing a business export is for.
+# nothing a business export is for. `inicio_setup_state` (ADR-0024) is withheld the
+# same way: two moments of Inicio's own bookkeeping, deleted with the business and never
+# exported.
 WITHHELD_TABLES: frozenset[str] = frozenset(
-    {INVITATION_TABLE, LOGIN_GUARD_TABLE, RESET_LINK_TABLE}
+    {INVITATION_TABLE, LOGIN_GUARD_TABLE, RESET_LINK_TABLE, INICIO_SETUP_STATE_TABLE}
 )
 
 # (table, column) pairs dropped from every exported row, even though their table is

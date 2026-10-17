@@ -75,9 +75,7 @@ def get_period_expenses(
 def get_payments_received(
     request: Request, session: SessionDep, business_id: CurrentBusinessId
 ) -> PaymentsReceived:
-    factory = cast(
-        Callable[[Session, int], PaymentsReceived], request.app.state.payments_received
-    )
+    factory = cast(Callable[[Session, int], PaymentsReceived], request.app.state.payments_received)
     return factory(session, business_id)
 
 

@@ -44,7 +44,9 @@ class SqlSetupStateStore:
         self._keep_first("bot_notice_dismissed_at", now)
 
     def _keep_first(self, column: str, now: datetime) -> None:
-        statement = insert(_TABLE).values({"business_id": self._business_id, column: now})
+        statement = insert(InicioSetupStateRow).values(
+            {"business_id": self._business_id, column: now}
+        )
         self._session.execute(
             statement.on_conflict_do_update(
                 index_elements=[_TABLE.c.business_id],
