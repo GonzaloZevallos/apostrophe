@@ -111,7 +111,7 @@ def test_probarlo_without_a_channel_saves_but_cannot_publish(
     assert call[0] == "send"
     assert call[1] == TOKEN
     assert call[2] == "111"
-    assert "Por ahora no tenemos nada para ofrecer." in call[3]
+    assert "Nothing to offer for now." in call[3]
 
 
 def test_status_matches_its_fixture_after_a_successful_publish(

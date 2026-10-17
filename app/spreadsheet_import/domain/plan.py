@@ -42,6 +42,14 @@ from app.shared.grams import Grams
 from app.shared.names import collapse_spaces
 from app.shared.pricing_settings import PricingSettings
 from app.spreadsheet_import.domain.rows import (
+    CATALOG_PROBLEM_COLUMN,
+    CATEGORY_PROBLEM_COLUMN,
+    CUSTOMER_PROBLEM_COLUMN,
+    ENTRIES_PROBLEM_COLUMN,
+    EXPENSES_PROBLEM_COLUMN,
+    PAYMENT_PROBLEM_COLUMN,
+    SALES_PROBLEM_COLUMN,
+    VARIETY_PROBLEM_COLUMN,
     CatalogRow,
     CategoryRow,
     CellProblem,
@@ -194,19 +202,19 @@ def split(parsed: ParsedWorkbook) -> Split:
 
     for entrada in parsed.entradas:
         if entrada.revisar:
-            unfinished.append(UnfinishedRow(entrada.ref, "Entradas", entrada.revisar))
+            unfinished.append(UnfinishedRow(entrada.ref, ENTRIES_PROBLEM_COLUMN, entrada.revisar))
         else:
             entradas.append(entrada)
 
     for gasto in parsed.gastos:
         if gasto.revisar:
-            unfinished.append(UnfinishedRow(gasto.ref, "Gastos", gasto.revisar))
+            unfinished.append(UnfinishedRow(gasto.ref, EXPENSES_PROBLEM_COLUMN, gasto.revisar))
         else:
             gastos.append(gasto)
 
     for venta in parsed.ventas:
         if isinstance(venta.total, str):
-            unfinished.append(UnfinishedRow(venta.ref, "Ventas", venta.total))
+            unfinished.append(UnfinishedRow(venta.ref, SALES_PROBLEM_COLUMN, venta.total))
         elif venta.total is None:
             problems.append(CellProblem(venta.ref, "Total", "import.total_not_recalculated"))
         else:
@@ -263,7 +271,7 @@ def sale_inputs(
 
         variety_result = variety_names.get(row.variety or "")
         if variety_result is None or isinstance(variety_result, Refusal):
-            results.append(CellProblem(row.ref, "Variedad", "import.unknown_variety"))
+            results.append(CellProblem(row.ref, VARIETY_PROBLEM_COLUMN, "import.unknown_variety"))
             continue
 
         kind = row.kind or ""
@@ -281,7 +289,9 @@ def sale_inputs(
 
         has_customer = row.customer is not None
         if vip and not has_customer:
-            results.append(CellProblem(row.ref, "Cliente", "import.amigo_without_customer"))
+            results.append(
+                CellProblem(row.ref, CUSTOMER_PROBLEM_COLUMN, "import.amigo_without_customer")
+            )
             continue
 
         left_owing: bool
@@ -296,7 +306,9 @@ def sale_inputs(
         else:
             pago = PAGO_WORDS.get(row.payment)
             if pago is None:
-                results.append(CellProblem(row.ref, "Pago", "import.payment_unknown"))
+                results.append(
+                    CellProblem(row.ref, PAYMENT_PROBLEM_COLUMN, "import.payment_unknown")
+                )
                 continue
             match pago:
                 case "owing":
@@ -592,12 +604,14 @@ def build_plan(split: Split, mapping: ParsedMapping, checks: Checks) -> ImportPl
     for row in split.varieties:
         result = checks.variety_names.get(row.raw_name)
         if isinstance(result, Refusal):
-            problems.append(CellProblem(row.ref, "Variedad", result.code))
+            problems.append(CellProblem(row.ref, VARIETY_PROBLEM_COLUMN, result.code))
             continue
         if result is None:
             continue
         if result.key in seen_variety_keys:
-            problems.append(CellProblem(row.ref, "Variedad", "import.duplicate_variety"))
+            problems.append(
+                CellProblem(row.ref, VARIETY_PROBLEM_COLUMN, "import.duplicate_variety")
+            )
             continue
         seen_variety_keys.add(result.key)
         valid_variety_keys.add(result.key)
@@ -609,7 +623,7 @@ def build_plan(split: Split, mapping: ParsedMapping, checks: Checks) -> ImportPl
         _check_variety_mention(
             history_row.ref,
             history_row.variety,
-            "Variedad",
+            VARIETY_PROBLEM_COLUMN,
             checks.variety_names,
             valid_variety_keys,
             problems,
@@ -622,14 +636,14 @@ def build_plan(split: Split, mapping: ParsedMapping, checks: Checks) -> ImportPl
         _check_variety_mention(
             catalog_entry.ref,
             catalog_entry.variety,
-            "Variedad",
+            VARIETY_PROBLEM_COLUMN,
             checks.variety_names,
             valid_variety_keys,
             problems,
         )
         refusal = checks.catalog_attributes.get(catalog_entry.ref)
         if refusal is not None:
-            problems.append(CellProblem(catalog_entry.ref, "Catálogo", refusal.code))
+            problems.append(CellProblem(catalog_entry.ref, CATALOG_PROBLEM_COLUMN, refusal.code))
 
     if checks.header_footer is not None:
         problems.append(
@@ -642,14 +656,14 @@ def build_plan(split: Split, mapping: ParsedMapping, checks: Checks) -> ImportPl
         _check_variety_mention(
             entrada.ref,
             entrada.variety,
-            "Variedad",
+            VARIETY_PROBLEM_COLUMN,
             checks.variety_names,
             valid_variety_keys,
             problems,
         )
         refusal = checks.entradas.get(entrada.ref)
         if refusal is not None:
-            problems.append(CellProblem(entrada.ref, "Entradas", refusal.code))
+            problems.append(CellProblem(entrada.ref, ENTRIES_PROBLEM_COLUMN, refusal.code))
 
     # -- Categories: match or merge Ajustes A21:A28, block an outside category. ------
     category_groups: dict[str, list[str]] = {}
@@ -657,7 +671,9 @@ def build_plan(split: Split, mapping: ParsedMapping, checks: Checks) -> ImportPl
     for category_entry in split.categories:
         category_result = checks.category_names.get(category_entry.raw_name)
         if isinstance(category_result, Refusal):
-            problems.append(CellProblem(category_entry.ref, "Categoría", category_result.code))
+            problems.append(
+                CellProblem(category_entry.ref, CATEGORY_PROBLEM_COLUMN, category_result.code)
+            )
             continue
         if category_result is None:
             continue
@@ -675,14 +691,18 @@ def build_plan(split: Split, mapping: ParsedMapping, checks: Checks) -> ImportPl
     for gasto in split.gastos:
         refusal = checks.expenses.get(gasto.ref)
         if refusal is not None:
-            problems.append(CellProblem(gasto.ref, "Gastos", refusal.code))
+            problems.append(CellProblem(gasto.ref, EXPENSES_PROBLEM_COLUMN, refusal.code))
         if gasto.category is None:
             continue
         category_result = checks.category_names.get(gasto.category)
         if isinstance(category_result, Refusal):
-            problems.append(CellProblem(gasto.ref, "Categoría", category_result.code))
+            problems.append(
+                CellProblem(gasto.ref, CATEGORY_PROBLEM_COLUMN, category_result.code)
+            )
         elif category_result is not None and category_result not in valid_category_keys:
-            problems.append(CellProblem(gasto.ref, "Categoría", "import.category_outside_list"))
+            problems.append(
+                CellProblem(gasto.ref, CATEGORY_PROBLEM_COLUMN, "import.category_outside_list")
+            )
 
     # -- Customers: one check per distinct collapsed name, filed by its own field. ---
     rows_by_customer_name: dict[str, list[VentaRow]] = {}
@@ -710,7 +730,9 @@ def build_plan(split: Split, mapping: ParsedMapping, checks: Checks) -> ImportPl
                     )
                 )
             if customer_result.name_code is not None and mention.ref is not None:
-                problems.append(CellProblem(mention.ref, "Cliente", customer_result.name_code))
+                problems.append(
+                    CellProblem(mention.ref, CUSTOMER_PROBLEM_COLUMN, customer_result.name_code)
+                )
             continue
         if mention.ref is not None:
             identity_by_name[mention.collapsed_name] = (
@@ -759,7 +781,12 @@ def build_plan(split: Split, mapping: ParsedMapping, checks: Checks) -> ImportPl
     # -- Ventas variety mentions against the Ajustes list (like every other sheet). --
     for venta in split.ventas:
         _check_variety_mention(
-            venta.ref, venta.variety, "Variedad", checks.variety_names, valid_variety_keys, problems
+            venta.ref,
+            venta.variety,
+            VARIETY_PROBLEM_COLUMN,
+            checks.variety_names,
+            valid_variety_keys,
+            problems,
         )
 
     # -- Sales: sale_inputs' own problems, owner refusals, Pendiente-without-customer,
@@ -776,7 +803,7 @@ def build_plan(split: Split, mapping: ParsedMapping, checks: Checks) -> ImportPl
         if check is None:
             continue
         if check.refusal is not None:
-            problems.append(CellProblem(venta.ref, "Ventas", check.refusal.code))
+            problems.append(CellProblem(venta.ref, SALES_PROBLEM_COLUMN, check.refusal.code))
             continue
         assert check.total is not None
         # A `Pendiente` row with no customer is never reached here: the owner's own

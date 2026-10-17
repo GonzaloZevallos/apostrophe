@@ -20,7 +20,7 @@ class CatalogEntry:
     price: CatalogPrice
 
 
-NOTHING_TO_OFFER = "Por ahora no tenemos nada para ofrecer."
+NOTHING_TO_OFFER = "Nothing to offer for now."
 
 
 def catalog_text(header: str, footer: str, entries: Sequence[CatalogEntry]) -> str | None:
@@ -34,7 +34,7 @@ def catalog_text(header: str, footer: str, entries: Sequence[CatalogEntry]) -> s
 
 def pinned_catalog_text(header: str, footer: str, entries: Sequence[CatalogEntry]) -> str:
     """What Telegram needs (#10): `catalog_text`'s text, or — when nothing qualifies —
-    the header, "Por ahora no tenemos nada para ofrecer." and the footer, so the pin
+    the header, "Nothing to offer for now." and the footer, so the pin
     always has something to show. `GET /catalog` and Copiar keep `catalog_text`'s own
     `None` and their own empty state; this is the only other caller of `_join`."""
     text = catalog_text(header, footer, entries)
@@ -59,14 +59,14 @@ def _block(entry: CatalogEntry) -> str:
     lines = [_name_line(entry)]
     if entry.attributes.indica_share is not None:
         percent = entry.attributes.indica_share.percent
-        lines.append(f"• {percent}% índica / {100 - percent}% sativa")
+        lines.append(f"• {percent}% indica / {100 - percent}% sativa")
     if entry.attributes.aroma is not None:
-        lines.append(f"• Aroma/sabor: {entry.attributes.aroma.text}")
-    lines.append(f"• Precio x gramo: {_money(entry.price.list_price)}")
+        lines.append(f"• Aroma/flavour: {entry.attributes.aroma.text}")
+    lines.append(f"• Price per gram: {_money(entry.price.list_price)}")
     if entry.price.bulk_price is not None and entry.price.bulk_minimum is not None:
         lines.append(
-            f"• Desde {_grams(entry.price.bulk_minimum)}: "
-            f"{_money(entry.price.bulk_price)} c/u"
+            f"• From {_grams(entry.price.bulk_minimum)}: "
+            f"{_money(entry.price.bulk_price)} each"
         )
     return "\n".join(lines)
 

@@ -1,0 +1,11 @@
+{
+  "characters": "áéíóúñü¿¡",
+  "words": [
+    "de", "del", "la", "las", "los", "el", "que", "para", "por", "con", "sin",
+    "una", "hoy", "desde", "tu", "vos", "ya", "todavía", "acá", "borrar", "guardá", "cargá",
+    "guardar", "cargar", "eliminar", "cancelar", "nueva", "nuevo", "venta", "ventas", "cliente", "clientes", "gasto",
+    "gastos", "variedad", "variedades", "debe", "pago", "pagos", "cobrar", "fecha", "monto", "negocio", "usuario",
+    "contraseña", "este", "esta", "nada", "ahora", "podés", "tenés", "mensaje", "salió", "reintentar", "cerrar",
+    "sesión", "inicio", "ajustes", "catálogo"
+  ]
+}

@@ -153,15 +153,15 @@ def test_turning_bulk_off_edits_the_pin_to_a_text_without_the_bulk_line(
     _put(client, bulk=True, vip=False)
     _publish_a_catalog_with_a_bulk_price(client)
     sent = [call for call in telegram.calls if call[0] == "send"]
-    assert "Desde 10 g" in sent[-1][3]
+    assert "From 10 g" in sent[-1][3]
     telegram.calls.clear()
 
     assert _put(client, bulk=False, vip=False).status_code == 200
 
     edits = _edits(telegram)
     assert len(edits) == 1
-    assert "Desde 10 g" not in edits[0][3]
-    assert "Precio x gramo: $9.000" in edits[0][3]
+    assert "From 10 g" not in edits[0][3]
+    assert "Price per gram: $9.000" in edits[0][3]
 
 
 def test_a_pin_published_while_bulk_is_off_has_no_bulk_line(

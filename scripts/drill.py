@@ -30,7 +30,7 @@ DEFAULT_DATABASE_URL = "sqlite:///./apostrophe.db"
 # `recorded_at` elsewhere (a catalog edit, say) says nothing about lost work.
 RECENCY_TABLES = ("sale", "payment", "stock_entry", "expense")
 COPY_AGE_WARNING_DAYS = 2
-COPY_AGE_WARNING = "la copia diaria más nueva tiene más de 2 días"
+COPY_AGE_WARNING = "the newest daily copy is more than 2 days old"
 
 
 class RestoreTargetIsTheLiveDatabase(RuntimeError):

@@ -120,7 +120,7 @@ def test_the_warning_speaks_once_the_copy_is_more_than_two_days_old() -> None:
     latest_copy = datetime(2026, 10, 1, 12, 0, tzinfo=UTC)
     now = datetime(2026, 10, 3, 12, 0, 1, tzinfo=UTC)
 
-    assert copy_age_warning(latest_copy, now) == "la copia diaria más nueva tiene más de 2 días"
+    assert copy_age_warning(latest_copy, now) == "the newest daily copy is more than 2 days old"
 
 
 def test_restoring_into_the_configured_live_database_is_refused(

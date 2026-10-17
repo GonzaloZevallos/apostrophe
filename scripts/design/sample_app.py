@@ -45,6 +45,14 @@ REPO = Path(__file__).resolve().parents[2]
 EMAIL = "vos@lahuerta.com"
 PASSWORD = "muestra-de-la-huerta"
 BUSINESS = "La Huerta"
+# What `pantallas/` draws for La Huerta, set over the new business's English defaults.
+DESIGN_CATEGORIES = {
+    "Growing supplies": "Insumos de cultivo",
+    "Shipping and travel": "Envíos y traslados",
+    "Other": "Otros",
+}
+DESIGN_HEADER = "\U0001f33f **CATÁLOGO** \U0001f33f"
+DESIGN_FOOTER = "\U0001f4e9 Consultas y pedidos por privado."
 # One extra business per "Listo" row of `screens.json`: reaching "Listo" ends a business's
 # Onboarding for good (docs/adr/0036), so each capture of it needs a business of its own.
 ONBOARDING_ACCOUNTS = (
@@ -110,6 +118,15 @@ def seed(api: Api, today: date) -> Sample:
     # entry (an entry stores nothing for a rule that is off) and gives each bulk-priced
     # variety VIP price = bulk price, as the migration did for existing businesses.
     api.call("PUT", "/pricing-settings", {"is_bulk_pricing": True, "is_vip_customers": True})
+
+    # A new business is seeded in English (GH-53), but `pantallas/` draws La Huerta's own
+    # categories, header and footer in Spanish: they are the seller's data, so the sample
+    # sets them through the API. The design material and `muestra.md` stay as they are.
+    for existing in api.call("GET", "/expense-categories"):
+        spanish = DESIGN_CATEGORIES.get(existing["name"])
+        if spanish is not None:
+            api.call("PATCH", f"/expense-categories/{existing['id']}", {"name": spanish})
+    api.call("PUT", "/catalog/header-footer", {"header": DESIGN_HEADER, "footer": DESIGN_FOOTER})
 
     def variety(name: str, list_price: int, bulk: int | None = None) -> int:
         made: int = api.call("POST", "/varieties", {"name": name})["id"]

@@ -174,8 +174,8 @@ test('a seller does everything the backend offers today, from the front alone', 
     page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /^Gastos/ }),
   ).toBeVisible()
 
-  // Add and remove an expense category. "Insumos de cultivo", "Packaging",
-  // "Envíos y traslados" and "Otros" are the four the business starts with
+  // Add and remove an expense category. "Growing supplies", "Packaging",
+  // "Shipping and travel" and "Other" are the four the business starts with
   // (`app/expenses/domain/category.py`'s `DEFAULT_CATEGORY_NAMES`), so this one
   // uses a name of its own.
   await page.goto(EXPENSE_CATEGORIES)
