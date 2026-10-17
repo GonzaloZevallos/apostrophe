@@ -383,5 +383,9 @@ The list on Hoy of what a business still lacks before it can sell and publish: a
 _Avoid_: onboarding, wizard, tutorial, to-do list, progress bar
 
 **Bot notice**:
-One notice on Hoy for a business that has records but has never published its catalog, shown only once the setup checklist is gone. It opens Catálogo. Dismissing it is one permanent decision for the whole business, and it also goes once the catalog is first published. _In the app_: fixed copy from the design.
+One notice on Hoy for a business that has records but has never published its catalog. It shows only once the setup checklist is gone, and opens Catálogo. Dismissing it is one permanent decision for the whole business, and it also goes once the catalog is first published. _In the app_: "Conectá el bot para publicar tu catálogo en Telegram." ("Conectar el bot" · "No mostrar más").
 _Avoid_: banner, alert, reminder, nag
+
+**Inicio's setup state**:
+A business's two stored Inicio facts: that its setup checklist is gone, and that its bot notice was dismissed. Removing the business deletes them, and they are never exported. _In the app_: no word of its own.
+_Avoid_: panel state, onboarding state, flags, preferences

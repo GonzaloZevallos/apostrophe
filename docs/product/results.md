@@ -143,24 +143,25 @@ Each figure is counted on its own date.
 
 ### Setup checklist (Hoy only)
 
-- Four steps, each with a box and, when done, the word "Hecho". Each opens the screen where it is done. Conditions are read live from the business's data:
-  - **Variety with its price** (required): Hecho when at least one variety has a current price today. Opens Variedades.
-  - **Initial stock** (required): Hecho when the business has at least one stock entry of any origin; a purchase counts as much as opening stock. Opens Nueva entrada in Stock.
-  - **Connect the bot** (optional): Hecho when the catalog has been published at least once (a first successful Publicar, pinned-catalog.md). A successful Probarlo alone is not enough. Opens Catálogo.
-  - **Invite a partner** (optional): Hecho when the business has more than one user. A join link created but not accepted is not done. Opens Negocio's "Invitá a un socio".
+- **Heading**: "Para empezar a vender".
+- Four steps, in this order, each with a box. A done step shows its box ticked and the word "Hecho". Each step opens the screen where it is done. Conditions are read live from the business's data:
+  1. **"Cargá una variedad con su precio"** (required): Hecho when at least one variety has a current price today. Opens Variedades.
+  2. **"Cargá tu stock inicial"** (required): Hecho when the business has at least one stock entry of any origin; a purchase counts as much as opening stock. Opens Nueva entrada in Stock.
+  3. **"Conectá el bot de Telegram"**, marked "Opcional": Hecho when the catalog has been published at least once (a first successful Publicar, pinned-catalog.md). A successful Probarlo alone is not enough. Opens Catálogo.
+  4. **"Invitá a un socio"**, marked "Opcional": Hecho when the business has more than one user. A join link created but not accepted is not done. Opens Negocio's "Invitá a un socio".
 - The optional steps show only while the checklist shows.
 - The checklist is gone once both required steps are true at the same time, whatever the optional ones. Once gone, it never comes back for that business or any of its users, even if a price or a stock entry is later deleted.
 - While it shows, it replaces "Arrancá por las variedades".
 - After it is gone, if no variety has a current price today, "Arrancá por las variedades" shows above Hoy, and the panel still shows its real figures.
-- Step labels are fixed copy from the design, in Rioplatense Spanish with vos.
+- This copy governs. #58's design is the reference for layout and treatment, checked by eye.
 
 ### Bot notice (Hoy only)
 
+- **Copy**: "Conectá el bot para publicar tu catálogo en Telegram.", with the button "Conectar el bot", which opens Catálogo, and the dismiss control "No mostrar más".
 - It shows when all hold: the checklist is not showing; the business has at least one sale or stock entry; its catalog was never published; nobody in the business has dismissed it.
-- It opens Catálogo and can be dismissed. Dismissing is one decision for the whole business, shared by all its users, and permanent, even with no bot connected. It shows no toast.
+- Dismissing is one decision for the whole business, shared by all its users, and permanent, even with no bot connected. It shows no toast; the notice simply goes.
 - It goes on its own once the catalog is first published.
 - Because the spreadsheet import is invisible on screen, it reaches a business that came in through the import and a hand-built one that skipped the bot step alike. That is intended.
-- Its wording and dismiss control are fixed copy from the design, in Rioplatense Spanish with vos.
 
 ### Notices on Inicio
 
@@ -175,6 +176,10 @@ Only three, on Hoy:
 - One rule, no special case. A business whose two required steps were already true when the change shipped has its checklist gone from that moment and never sees it. Otherwise it sees the checklist with its done steps marked "Hecho". A business set up but never published sees the bot notice until it is dismissed or the catalog is published.
 - No migration writes a "gone" or "dismissed" fact ahead of time for anyone.
 - A business with stock but no price today sees the checklist with the stock step "Hecho". That is true: it cannot sell today.
+
+### Inicio's setup state on removal
+
+- The "checklist gone" and "bot notice dismissed" facts are a business's Inicio setup state. Removing the business deletes them, counted as deleted only, and the export file never holds them (accounts.md).
 
 ### Avatar
 
@@ -221,6 +226,7 @@ Only three, on Hoy:
   - Cobrar's share of payments is not measured: a payment records no origin.
 - **Set up by the list (criterion 8)**: the end-to-end run takes an empty business through the checklist alone (priced variety, then stock) with no visit to Más, and the checklist disappears. Indicator only: businesses whose checklist went before their first sale.
 - **"Hecho" is true (criterion 10)**: a matrix, 100% passing, of every step's condition against the box and word shown (a price today or not; one stock entry of each origin; a published catalog versus Probarlo only; one user, two, and a pending join link). It also covers the checklist gone at both required steps and still gone after a deletion, a business meeting both at deploy never seeing it, and stock without a price showing stock "Hecho".
+- **Copy**: the checklist heading, the four step labels, "Opcional", "Hecho" and the bot notice's line, button and dismiss control read exactly as written above, checked by front tests.
 - **Bot notice**: a matrix of its four conditions, 100% passing; one user's dismissal hides it for a partner; it goes on first publish; it never shows with the checklist; no pre-dismissed or pre-gone fact exists after migration.
 - **Notices**: Inicio shows no notices other than the three; the stale-catalog notice opens Catálogo.
 - **Hoy's rows**: "baja" and "agotada" rows open Variedad detail, "ok" and "sin entradas" are not tappable; Cobrar's accessible name equals "Cobrar a <name>"; the row's other area opens the card.
@@ -244,4 +250,5 @@ Only three, on Hoy:
 - Stock's total grams on the panel.
 - The bar, routes and renaming Negocio to Configuración: part 2.
 - Bringing the checklist back once gone; undoing a dismissal.
+- Exporting Inicio's setup state.
 - An image or color of the business's own for the avatar.

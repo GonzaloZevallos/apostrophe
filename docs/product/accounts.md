@@ -34,7 +34,7 @@ These two refine the "log in once and stay in" job above. The operator's command
 - The protagonist of this last job is the operator of the installation, not a user in the app.
 - For a seller, only two things change: where they can reach the app from, and that it is on HTTPS.
 
-Inicio's own jobs (acting on today, and the first-run setup checklist whose "Invite a partner" step opens Negocio's "Invitá a un socio") are in results.md.
+Inicio's own jobs (acting on today, and the first-run setup checklist whose "Invitá a un socio" step opens Negocio's "Invitá a un socio") are in results.md.
 
 Success criteria:
 
@@ -101,10 +101,10 @@ Success criteria, changing and resetting a password:
 
 Success criteria, removing a business:
 
-8. **The file is their books and stands on its own**: one JSON file holds every recorded fact of the business, opens without the app, identifies the business by its name, and names what each record refers to as well as its id. It holds no password hash, no stored secret, no invitation and no reset link.
+8. **The file is their books and stands on its own**: one JSON file holds every recorded fact of the business, opens without the app, identifies the business by its name, and names what each record refers to as well as its id. It holds no password hash, no stored secret, no invitation, no reset link and no Inicio setup state.
 9. **Named back before anything is lost**: the dry run names the business and counts by kind what would go, writing nothing. The real run asks for the business name typed exactly before it touches anything.
 10. **Nothing deleted until the export is safe**: the delete runs only after the file was written and read back in the same run, and the exported counts equal the deleted counts. Any failure or mismatch deletes nothing.
-11. **Nothing survives**: no row carrying the business's id is left in any table, including tables added later. Its invitations and its users' reset links, of every status, and its users' login-attempt history go too. The export is built from the same tables as the delete; invitations and reset links are deleted, never exported.
+11. **Nothing survives**: no row carrying the business's id is left in any table, including tables added later. Its invitations and its users' reset links, of every status, its Inicio setup state, and its users' login-attempt history go too. The export is built from the same tables as the delete; invitations, reset links and Inicio setup state are deleted, never exported.
 12. **Every other business is untouched**: their record counts are the same before and after, and they keep working, are never slowed on purpose and are never told anything.
 13. **No personal data outside the file, and a clean slate**: the terminal and logs show only the business name, the file's path and counts. Afterwards the same email can open a new business with nothing carried over.
 
@@ -195,7 +195,7 @@ Success criteria, removing a business:
   - An email matching no user prints a plain "no business for that email" and does nothing, in either mode.
 - **Dry run**:
   - names the business found;
-  - prints counts by kind: users, customers, varieties, price entries, stock entries, sales, sale lines, payments, expenses, expense categories, catalog settings, and invitations and reset links (deleted only);
+  - prints counts by kind: users, customers, varieties, price entries, stock entries, sales, sale lines, payments, expenses, expense categories, catalog settings, and invitations, reset links and Inicio's setup state (deleted only);
   - writes no file, changes no row, never asks for confirmation.
 - **Real run**:
   1. Names the business and asks the operator to type its name exactly; it cannot skip this. A wrong name, a cancel or no answer writes nothing and deletes nothing.
@@ -203,6 +203,7 @@ Success criteria, removing a business:
   3. In one transaction, deletes every row of the business across every table discovered from the schema (not a hand-kept list). That includes:
      - the business and its users;
      - every invitation and every reset link of its users, whatever their status;
+     - its Inicio setup state (the setup checklist gone, the bot notice dismissed);
      - the removed users' emails' login-attempt history.
   4. Commits and reports success only if the exported counts equal the deleted counts for every exported kind.
   5. Reports the business name, the file's path, and the counts exported and deleted.
@@ -239,6 +240,7 @@ Success criteria, removing a business:
     - password hashes;
     - any stored secret, such as a Telegram bot token;
     - invitations and reset links;
+    - Inicio's setup state;
     - login-attempt history.
 - **After removal**:
   - a session left open by a removed user gets 401 and goes to login;
@@ -293,7 +295,7 @@ Success criteria, removing a business:
     - the bot notice (results.md), which opens Catálogo;
     - "Tu catálogo en Telegram está desactualizado", a fixed notice while the pinned catalog is out of date (pinned-catalog.md). It opens Catálogo.
 - **Más**: Gastos, Variedades, Catálogo ("Catálogo · El mensaje de hoy, listo para copiar", catalog.md), Análisis ("Análisis · Variedades, semanas, meses y días", analysis.md), Negocio.
-- **Negocio** (also reached from Inicio's avatar, and from the setup checklist's "Invite a partner" step):
+- **Negocio** (also reached from Inicio's avatar, and from the setup checklist's "Invitá a un socio" step):
   - rename the business;
   - the users by email, the signed-in one marked "vos";
   - "Invitá a un socio": each tap creates one fresh join link, to copy or share with the phone's share sheet;
@@ -418,13 +420,14 @@ Success criteria, removing a business:
   - after a real run on one of two seeded businesses with one of everything, 0 rows carry its id in any table discovered from the schema;
   - pending, used and expired invitations all go;
   - reset links of every status of its users go;
+  - its Inicio setup state (checklist gone, bot notice dismissed) goes;
   - `login_guard` holds nothing for the removed emails;
   - a table added to the schema later is covered without changing the command, proven by a test.
 - **Export = delete (criteria 8, 11)**:
   - for every exported kind, the count in the file equals the count deleted;
   - every stored field listed above is present, and every reference carries a name and an id;
-  - no password hash, invitation digest, reset-link digest or secret is in the file;
-  - the dry run counts reset links among what is deleted only.
+  - no password hash, invitation digest, reset-link digest, secret or Inicio setup state is in the file;
+  - the dry run counts invitations, reset links and Inicio's setup state among what is deleted only.
 - **Others untouched (criterion 12)**: every table's row count for the other business is identical before and after, and it reads all its data afterwards.
 - **Guards (criteria 9, 10)**: 0 rows changed after each of:
   - a dry run (and no file);
@@ -466,6 +469,7 @@ Success criteria, removing a business:
 - The reset command reporting earlier or retired links.
 - Listing past or pending invitations; revoking an invitation.
 - Exporting a business without removing it (a backup of an active one).
+- Exporting Inicio's setup state.
 - Importing an export back.
 - Removing a business from the app.
 - Checking that every user agreed to the removal.
