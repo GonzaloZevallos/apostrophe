@@ -107,7 +107,7 @@ test('the document never lets the system pick a color or draws an iOS splash', (
 test('the manifest carries its identity fields and the light papel', () => {
   expect(manifest.id).toBe(HOME)
   expect(manifest.scope).toBe(HOME)
-  expect(manifest.lang).toBe('es')
+  expect(manifest.lang).toBe('en')
   expect(manifest.display).toBe('standalone')
   expect(manifest.theme_color).toBe(lightPapel())
   expect(manifest.background_color).toBe(lightPapel())
