@@ -215,6 +215,15 @@ body {
   color: var(--critico-texto);
 }
 
+/* The critical action's trigger ("Eliminar variedad", VariedadDetalle): a 2 px outline and
+ * text in --critico on the page, never a fill. The fill is the answer of a confirmation. */
+.boton--critico {
+  box-sizing: border-box;
+  background: transparent;
+  color: var(--critico);
+  border: 2px solid var(--critico);
+}
+
 .confirmacion {
   background: var(--superficie);
   border-radius: var(--radio-panel-grande);
@@ -3222,15 +3231,18 @@ body {
   margin-top: var(--espacio-lg);
 }
 
-/* The icon-only delete (`Boton variant="icon"`) on a variety's page: the price row's is a
- * bare icon in the row's own muted ink, "Eliminar variedad" sits at the start of its row. */
+/* The icon-only delete (`Boton variant="icon"`) of a price row on a variety's page: a bare
+ * icon in the row's own muted ink. */
 .historial-fila .boton-icono {
   background: none;
   color: var(--tinta2);
 }
 
-.variedad-retiro .boton-icono {
-  align-self: flex-start;
+/* "Eliminar variedad" (`Boton variant="critical"`), at the size of the page's other actions
+ * (VariedadDetalle). */
+.variedad-retiro .boton--critico {
+  height: 52px;
+  font-size: 15px;
 }
 
 /* "Ver todas" is a link (`BotonLink variant="link"`), drawn as the section's plain accent
@@ -4031,6 +4043,13 @@ body {
   transform: scale(0.98);
   background-color: var(--superficie);
   transition: none;
+}
+
+/* `Boton`'s critical kind wears `.boton` too, so the filled ring above would also match it:
+ * it is transparent, so its cue is the --superficie fill of the family just above, no ring. */
+.boton--critico:active:not(:disabled):not([aria-disabled='true']) {
+  background-color: var(--superficie);
+  box-shadow: none;
 }
 
 /* The Regalo and Precios switches are label-wrapped: the real checkbox inside is stretched
