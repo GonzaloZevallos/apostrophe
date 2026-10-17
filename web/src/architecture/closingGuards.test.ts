@@ -230,6 +230,34 @@ describe('findActionLinks', () => {
     expect(findActionLinks(at(action))).toEqual([offence('{A}')])
   })
 
+  describe('a chevron exempts a link only as a record row\'s single trailing mark', () => {
+    const chevron = '<Icono nombre="chevron" />'
+    const link = (body: string) => `<InAppLink to={A}>${body}</InAppLink>`
+
+    test.each([
+      ['a word before it', `Siguiente ${chevron}`],
+      ['an expression before it', `{label} ${chevron}`],
+      ['it leads', `${chevron} Atrás`],
+      ['content follows it', `<span>t</span>${chevron}<span>x</span>`],
+      ['it is the whole body', chevron],
+      ['two trailing chevrons', `<span>t</span>${chevron}${chevron}`],
+      ['it is conditional', `<span>t</span>{cond && ${chevron}}`],
+      ['its name is an expression', '<span>t</span><Icono nombre={"chevron"} />'],
+      ['it carries another prop', '<span>t</span><Icono nombre="chevron" tamano={16} />'],
+    ])('rejects a link where %s', (_name, body) => {
+      expect(findActionLinks(at(link(body)))).toEqual([offence('{A}')])
+    })
+
+    test('accepts the Ventas row shape split over lines', () => {
+      const row = `<InAppLink to={A} className="fila-venta">\n  <span>t</span>{' '}\n    ${chevron}\n  </InAppLink>`
+      expect(findActionLinks(at(row))).toEqual([])
+    })
+
+    test('KNOWN GAP, the review owns it: a word wrapped in an element before the chevron is not flagged', () => {
+      expect(findActionLinks(at(link(`<span>Siguiente</span>${chevron}`)))).toEqual([])
+    })
+  })
+
   test('accepts a link written inside a comment', () => {
     const content = '// <a href="x"><Icono nombre="a"/></a>\n/* <Link to={A}>\n<Icono nombre="a"/></Link> */'
     expect(findActionLinks(at(content))).toEqual([])

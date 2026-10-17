@@ -8,6 +8,13 @@ How every screen labels its entries, actions and notices: which controls are ico
 
 This refines the navigation job (navigation.md) and the "feels like a phone app" job (accounts.md); it is not a new job and adds no capability. Its protagonist is the seller, in busy, one-handed phone use; setup screens (Configuración, Integraciones, the catalog) follow the same rule and are not designed apart. The computer is the same job on a bigger screen. Before it, the app had 13 icons and screens read as walls of words: finding an entry or an action took reading instead of a glance.
 
+**When** a change adds or edits a link and the gate checks it, **I want** the guard to let through only the links this rule allows to carry a chevron, and to flag every other link that carries an icon, **so I can** trust a green gate and never let an action reach the seller looking like a link.
+
+- Its protagonist is the maintainer, or the reviewer acting for them, as in gate.md's and design-capture.md's maintainer jobs. The seller is affected only indirectly.
+- It is served by the closing guard (`findActionLinks`, ADR-0037's "action links" amendment). That guard lets a link carry only a record row's trailing chevron. It never judges whether a link "does" or "opens".
+- No rule of this file changes because of it.
+- Before it (GH-227, follow-up of GH-165), the guard exempted a chevron anywhere in a link. A link that was not a record row, holding a word and a chevron (e.g. "Siguiente ›"), passed the gate, and only a reviewer reading the diff caught it.
+
 Success criteria:
 
 1. **Found at a glance**: every entry in Más, in Configuración's list of groups and in action rows, and every action, shows an icon next to its text, except the two closed lists below. Navigation and menus always show icon + text; "no tab is an icon alone" stays.
@@ -20,6 +27,12 @@ Success criteria:
 
    Any other test edit means the implementation is wrong, not the test.
 6. **Looks as designed**: `scripts/design/compare.sh` runs before and after for every screen, phone and computer, both themes, judged by eye.
+7. **The gate lets a link carry only a record row's trailing chevron.**
+   - A link that is not a record row and holds a word and a chevron (e.g. "Siguiente ›") is flagged. So is a link whose chevron is anywhere other than a record row's trailing mark.
+   - The real tree stays green with no false alarms. Record rows with their trailing chevron, `shell/` navigation with `aria-current`, `mas__item` and `ajustes__item` stay unflagged.
+   - `ACTION_LINKS_LEFT` stays exactly Gastos' "Cargar gasto", and `ENTRY_CLASSES` does not grow.
+   - A real offender found on the tree is fixed, never exempted.
+   - Nothing the seller sees changes.
 
 ## Behaviour
 
@@ -129,6 +142,12 @@ No telemetry; from tests and the design check.
 - **Tappable notice**: Inicio's "Seguí con la configuración" is drawn as a tappable card, with no row spacing or row divider, its accessible name its visible text and no attention icon; `compare.sh` shows it unchanged, phone and computer, both themes.
 - **Nothing else changes (criterion 5)**: the existing suites pass; the only edited tests are shortened copy and text-to-role-and-name lookups of controls made icon-only, each listed in the PR; tap budgets and the redirect table unchanged; security texts add no information.
 - **Looks as designed (criterion 6)**: `compare.sh` before and after for every screen, phone and computer, both themes, judged by eye; at 320 px with text at 130 %, no icon or label is clipped and the bar still fits.
+- **Only a record row's trailing chevron (criterion 7)**, from the closing guard's own tests and the gate:
+  - gap closed: a link that is not a record row and holds a word and a chevron ("Siguiente ›") fails the guard, and so does a link whose chevron is not a record row's trailing mark;
+  - no false alarms: the guard passes over the real tree, and tests keep record rows with their trailing chevron, `shell/` navigation with `aria-current`, `mas__item` and `ajustes__item` unflagged;
+  - `ACTION_LINKS_LEFT` is exactly Gastos' "Cargar gasto", and `ENTRY_CLASSES` is the same two entries;
+  - the change touches no screen, copy or route; the only edited tests are the guard's own, and they keep every case they guarded;
+  - every real offender found is listed in the PR and shown fixed. Expected: 0.
 
 ## Out of scope
 
@@ -141,3 +160,5 @@ No telemetry; from tests and the design check.
 - Remembering whether More info was opened.
 - A back label that depends on how a screen was reached (navigation.md).
 - A dashboard or any business metric.
+- Closing the closing guard's other known gaps: an icon drawn by a helper component, a link re-exported under another name, an action link with no icon.
+- Judging a link's intent ("does" versus "opens") in the guard.
