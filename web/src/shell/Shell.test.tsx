@@ -10,10 +10,12 @@
  * `useViewport` is mocked per case for the viewport (its own test owns `matchMedia`).
  */
 
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Outlet, RouterProvider, useLocation, type RouteObject } from 'react-router'
-import { expect, test, vi } from 'vitest'
+import { afterEach, expect, test, vi } from 'vitest'
+import type { FirstRunAnswer } from '../api/firstRun'
 import type { Me } from '../api/me'
 import { expectIconAndTextRule, iconAndTextProblems } from '../test/iconAndTextRule'
 import { inAppState } from '../components/inAppState'
@@ -86,13 +88,41 @@ function leaf(entry: Screen): RouteObject {
   return { path: entry.path, element, handle: { screen: entry.id } }
 }
 
-function renderShell(entries: string[], options: { computer?: boolean; index?: number } = {}) {
+/** What the stubbed `GET /first-run` answers; a failed read when it is `undefined`. */
+function stubFirstRun(answer: FirstRunAnswer | 'pending' | undefined): void {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: RequestInfo | URL) => {
+      if (!String(input).includes('/first-run')) return Promise.reject(new Error('unexpected fetch'))
+      if (answer === 'pending') return new Promise<Response>(() => undefined)
+      if (answer === undefined) return Promise.reject(new Error('network error'))
+      return Promise.resolve(
+        new Response(JSON.stringify(answer), { status: 200, headers: { 'Content-Type': 'application/json' } }),
+      )
+    }),
+  )
+}
+
+afterEach(() => {
+  vi.unstubAllGlobals()
+})
+
+function renderShell(
+  entries: string[],
+  options: { computer?: boolean; index?: number; firstRun?: FirstRunAnswer | 'pending' } = {},
+) {
+  stubFirstRun(options.firstRun)
   viewport.current = options.computer === true ? 'computer' : 'phone'
   const router = createMemoryRouter(
     [{ element: <Outlet context={ME} />, children: [{ element: <Shell />, children: SCREENS.map(leaf) }] }],
     { initialEntries: entries, initialIndex: options.index ?? entries.length - 1 },
   )
-  const view = render(<RouterProvider router={router} />)
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  const view = render(
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>,
+  )
   return { router, ...view }
 }
 
@@ -447,4 +477,73 @@ test('a bar that repeats an icon is rejected by the rule', () => {
     </nav>,
   )
   expect(iconAndTextProblems(container)).toEqual([expect.stringContaining('shares its icon with "Uno"')])
+})
+
+const MISSING_LINE = 'Cargale un precio a una variedad para poder vender'
+
+function checklist(pricedDone: boolean): FirstRunAnswer {
+  return {
+    kind: 'checklist',
+    checklist: [
+      { step: 'priced_variety', required: true, done: pricedDone },
+      { step: 'stock_entry', required: true, done: false },
+      { step: 'published', required: false, done: false },
+      { step: 'second_user', required: false, done: false },
+    ],
+    import_notice: false,
+    nothing_qualifies: true,
+  }
+}
+
+test.each([
+  ['phone', false, 2],
+  ['computer', true, 2],
+])('%s: while the checklist shows with no priced variety, "Nueva venta" stays a link and says what is missing', async (_name, computer, buttons) => {
+  renderShell([HOME], { computer, firstRun: checklist(false) })
+
+  const lines = await screen.findAllByText(MISSING_LINE)
+  expect(lines.length).toBeGreaterThan(0)
+  const links = screen.getAllByRole('link', { name: /Nueva venta/ })
+  expect(links).toHaveLength(buttons)
+  for (const link of links) expect(link).toHaveAttribute('href', SALE_NEW)
+  for (const link of links) {
+    const describedBy = link.getAttribute('aria-describedby')
+    expect(describedBy === null ? null : document.getElementById(describedBy)?.textContent).toBe(MISSING_LINE)
+  }
+})
+
+test.each([
+  ['the priced-variety step is done', checklist(true)],
+  ['the first-run slot is something else', { ...checklist(false), kind: 'start_varieties' as const, checklist: [] }],
+  ['no first-run element shows', { ...checklist(false), kind: 'none' as const, checklist: [] }],
+])('no missing line when %s', async (_name, answer) => {
+  renderShell([HOME], { firstRun: answer })
+
+  await act(async () => {
+    await Promise.resolve()
+  })
+  await screen.findAllByRole('link', { name: /Nueva venta/ })
+  await new Promise((resolve) => setTimeout(resolve, 20))
+  expect(screen.queryByText(MISSING_LINE)).not.toBeInTheDocument()
+})
+
+test.each([
+  ['pending', 'pending' as const],
+  ['failed', undefined],
+])('while /first-run is %s, "Nueva venta" draws normally, with no line', async (_name, firstRun) => {
+  renderShell([HOME], { firstRun })
+
+  const links = screen.getAllByRole('link', { name: /Nueva venta/ })
+  expect(links).toHaveLength(2)
+  for (const link of links) expect(link).not.toHaveAttribute('aria-describedby')
+  await new Promise((resolve) => setTimeout(resolve, 20))
+  expect(screen.queryByText(MISSING_LINE)).not.toBeInTheDocument()
+})
+
+test('a form shows no "Nueva venta", so it asks nothing of /first-run', async () => {
+  renderShell([SALE_NEW], { firstRun: checklist(false) })
+
+  await new Promise((resolve) => setTimeout(resolve, 20))
+  expect(screen.queryByText(MISSING_LINE)).not.toBeInTheDocument()
+  expect(vi.mocked(fetch)).not.toHaveBeenCalled()
 })
