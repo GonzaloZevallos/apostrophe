@@ -40,6 +40,7 @@ vi.mock('./useViewport', () => ({ useViewport: () => viewport.current }))
 const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
 const LIVE = { id: 1, name: '24K Gold', archived: false, removal: null, current_price: null }
 const ARCHIVED = { id: 2, name: 'Vieja', archived: true, removal: null, current_price: null }
+const FIRST_RUN_NONE = { kind: 'none', checklist: [], import_notice: false, nothing_qualifies: false }
 const CATALOG_ANSWER = { text: null, header: '', footer: '', varieties: [] }
 
 function json(body: unknown, status = 200): Promise<Response> {
@@ -60,6 +61,8 @@ function answer(input: RequestInfo | URL): Promise<Response> {
   if (path === '/stock') return json({ total: 0, varieties: [], entries: [] })
   if (/^\/stock\/varieties\/\d+\/movements$/.test(path)) return json([])
   if (path === '/catalog') return json(CATALOG_ANSWER)
+  if (path === '/catalog/archived') return json([])
+  if (path === '/first-run') return json(FIRST_RUN_NONE)
   if (path === '/pricing-settings') return json({ is_bulk_pricing: true, is_vip_customers: true })
   if (path === '/customers') return json([])
   if (path === '/customers/1') return json(CUSTOMER_FIXTURE)
@@ -75,9 +78,13 @@ beforeEach(() => {
 })
 
 afterEach(async () => {
-  vi.unstubAllGlobals()
-  queryClient.clear()
+  // Let the card's own requests land while the API is still faked, so a late answer or the
+  // navigation it triggers cannot reach the next test's route.
+  await waitFor(() => expect(queryClient.isFetching()).toBe(0))
   await act(() => router.navigate(HOME))
+  await waitFor(() => expect(queryClient.isFetching()).toBe(0))
+  queryClient.clear()
+  vi.unstubAllGlobals()
 })
 
 async function open(path: string): Promise<void> {
@@ -125,7 +132,7 @@ describe.each(['phone', 'computer'] as const)('on a %s', (size) => {
     // The label settles with the record (an archived variety first reads "‹ Variedades").
     if (size === 'computer' && label === '‹ Más') expect(arrows()).toHaveLength(1)
     else await waitFor(() => expect(arrows()).toEqual([label]))
-    expect(document.querySelectorAll('.flecha-atras')).toHaveLength(1)
+    await waitFor(() => expect(document.querySelectorAll('.flecha-atras')).toHaveLength(1))
     expect(backControls()).toHaveLength(1)
   })
 })
