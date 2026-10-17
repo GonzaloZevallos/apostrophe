@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { TEXT_SCALE } from './textScale.mjs'
 
 const PANTALLAS = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'docs', 'product', 'design-system', 'pantallas')
 
@@ -25,6 +26,13 @@ export function assertScreens(screens) {
     if ('tema' in s && s.tema !== 'oscuro') throw new Error(`${s.screen}: unknown tema ${JSON.stringify(s.tema)}`)
     if (seen.has(s.screen)) throw new Error(`${s.screen}: screen is not unique across the file`)
     seen.add(s.screen)
+    if ('text_scale' in s && s.text_scale !== TEXT_SCALE) {
+      throw new Error(`${s.screen}: text_scale must be exactly ${TEXT_SCALE}`)
+    }
+    if ('viewport' in s && !isViewport(s.viewport)) {
+      throw new Error(`${s.screen}: viewport must be two positive integers, width and height`)
+    }
+    if ('steps' in s) assertSteps(s)
     if ('needs' in s) assertNeeds(s, all, seen)
     if ('design' in s || 'section' in s) assertDesign(s)
     if ('account' in s) assertAccount(s)
@@ -35,6 +43,62 @@ export function assertScreens(screens) {
       throw new Error(`${s.screen}: an entry that reaches ${LISTO} must name an account of its own`)
     }
   }
+}
+
+/** @param {unknown} value */
+function isViewport(value) {
+  return Array.isArray(value) && value.length === 2 && value.every((n) => Number.isInteger(n) && n > 0)
+}
+
+// How many times a label stands as a line of text of its own in a design file's source:
+// the text between a tag's end and the next tag, written literally (`&middot;` is not `·`).
+// An early static guard only: the DOM count in comparisons.mjs decides the crop.
+/**
+ * @param {string} html
+ * @param {string} label
+ * @returns {number}
+ */
+export function sectionOccurrences(html, label) {
+  return html.split(`>${label}<`).length - 1
+}
+
+// Every step is an object with exactly one key, from one closed list. A refusal names the
+// entry and the step's index, never the step's data.
+const STRING_STEPS = ['click', 'press', 'wait']
+const STEP_KEYS = [...STRING_STEPS, 'fill', 'select', 'offline']
+
+/** @param {unknown} value */
+const isPlainObject = (value) => typeof value === 'object' && value !== null && !Array.isArray(value)
+/** @param {unknown} value */
+const isText = (value) => typeof value === 'string' && value !== ''
+
+/**
+ * @param {unknown} value
+ * @param {ReadonlyArray<string>} keys
+ */
+const hasExactly = (value, keys) =>
+  isPlainObject(value) && Object.keys(/** @type {object} */ (value)).sort().join() === [...keys].sort().join()
+
+/** @param {Readonly<Record<string, unknown>>} s */
+function assertSteps(s) {
+  if (!Array.isArray(s.steps)) throw new Error(`${s.screen}: steps must be a list`)
+  s.steps.forEach((step, index) => {
+    const at = `${s.screen}: step ${index}`
+    if (!isPlainObject(step)) throw new Error(`${at} must be an object`)
+    const keys = Object.keys(step)
+    if (keys.length !== 1) throw new Error(`${at} must have exactly one key`)
+    const key = /** @type {string} */ (keys[0])
+    if (!STEP_KEYS.includes(key)) throw new Error(`${at} is not one of ${STEP_KEYS.join(', ')}`)
+    const value = step[key]
+    if (STRING_STEPS.includes(key) && !isText(value)) throw new Error(`${at} ${key} must be a non-empty string`)
+    if (key === 'fill' && !(hasExactly(value, ['label', 'value']) && typeof value.label === 'string' && typeof value.value === 'string')) {
+      throw new Error(`${at} fill must be exactly {label, value}, both strings`)
+    }
+    if (key === 'select' && !(hasExactly(value, ['label', 'index']) && typeof value.label === 'string' && Number.isInteger(value.index) && value.index >= 0)) {
+      throw new Error(`${at} select must be exactly {label, index}, a string and a non-negative integer`)
+    }
+    if (key === 'offline' && value !== true) throw new Error(`${at} offline must be true`)
+  })
 }
 
 // `needs` names the earlier entry whose state this one relies on (a capture runs the whole
@@ -85,7 +149,7 @@ function assertAccount(s) {
   const steps = Array.isArray(s.steps) ? s.steps : []
   const templates = [
     s.route,
-    ...steps.flatMap((step) => [step?.fill?.value, step?.click, step?.wait]),
+    ...steps.flatMap((step) => [step?.fill?.value, step?.click, step?.press, step?.wait]),
   ]
   for (const template of templates) {
     if (typeof template !== 'string') continue
@@ -142,8 +206,13 @@ function assertDesign(s) {
   if (!existsSync(file)) throw new Error(`${s.screen}: design ${design} has no pantallas/${design}.dc.html`)
   if (!('section' in s)) return
   if (typeof s.section !== 'string') throw new Error(`${s.screen}: section must be a string`)
-  // A label is a line of text of its own: the text between a tag's end and the next tag.
-  if (!readFileSync(file, 'utf-8').includes(`>${s.section}<`)) {
+  const occurrences = sectionOccurrences(readFileSync(file, 'utf-8'), s.section)
+  if (occurrences === 0) {
     throw new Error(`${s.screen}: section ${JSON.stringify(s.section)} is not in ${design}.dc.html`)
+  }
+  if (occurrences > 1) {
+    throw new Error(
+      `${s.screen}: section ${JSON.stringify(s.section)} occurs ${occurrences} times in ${design}.dc.html, expected exactly once`,
+    )
   }
 }
