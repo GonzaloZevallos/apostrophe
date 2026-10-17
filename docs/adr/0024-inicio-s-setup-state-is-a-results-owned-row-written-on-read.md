@@ -46,3 +46,7 @@ today, a stock entry, a first publish, a second user) belong to other hexagons.
   conditions never true at one instant. Accepted; revisit if facts ever come from a store
   with real snapshot reads, or if a support case shows it.
 - The 300 ms budget for `GET /panel` is measured by hand, not asserted in CI.
+- `GET /panel` adds at most four bounded probes (`EXISTS` / `LIMIT 2`) and one write in a
+  business's life; `tests/results/test_panel_setup.py` asserts its statement count is the
+  same for a one-sale business and a twelve-sale one. The hand measurement of the 300 ms
+  budget on a seeded history is still to be taken and its figure recorded here.
