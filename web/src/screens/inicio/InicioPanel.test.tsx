@@ -61,7 +61,6 @@ const OWING_CUSTOMER = {
   id: 1,
   name: 'Ana Pérez',
   phone: '+5491122334455',
-  channel: 'whatsapp',
   vip: false,
   balance: 11000,
   owing_since: '2026-09-14',

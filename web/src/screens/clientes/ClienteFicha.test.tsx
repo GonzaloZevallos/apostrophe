@@ -96,7 +96,6 @@ const SETTLED_CUSTOMER = {
   id: 3,
   name: 'Fer',
   phone: '+5491158423310',
-  channel: 'telegram',
   vip: true,
   balance: 0,
   owing_since: null,
@@ -141,7 +140,7 @@ test('a customer that is gone shows the gone screen, with a way back to the list
   expect(screen.queryByText(/999/)).not.toBeInTheDocument()
 })
 
-test('a settled customer shows their phone, channel and VIP, no balance and no Registrar cobro', async () => {
+test('a settled customer shows their phone and VIP, no balance and no Registrar cobro', async () => {
   api.mockImplementation(
     dispatchFetch({
       'GET /customers/3': () => jsonResponse(200, SETTLED_CUSTOMER),
@@ -151,7 +150,7 @@ test('a settled customer shows their phone, channel and VIP, no balance and no R
   renderFicha('3')
 
   expect(await screen.findByText('+54 9 11 5842-3310')).toBeInTheDocument()
-  expect(screen.getByText('Telegram')).toBeInTheDocument()
+  expect(screen.queryByText(/telegram|whatsapp/i)).not.toBeInTheDocument()
   expect(screen.queryByText(/te debe/i)).not.toBeInTheDocument()
   expect(screen.queryByRole('link', { name: 'Registrar cobro' })).not.toBeInTheDocument()
 })
@@ -160,7 +159,6 @@ const NO_PHONE_CUSTOMER = {
   id: 4,
   name: 'Caro',
   phone: null,
-  channel: null,
   vip: false,
   balance: 0,
   owing_since: null,
@@ -235,7 +233,6 @@ const OWING_CUSTOMER = {
   id: 1,
   name: 'Ana',
   phone: '+5491122334455',
-  channel: 'whatsapp',
   vip: false,
   balance: 11000,
   owing_since: '2026-09-14',
@@ -276,7 +273,6 @@ const CREDIT_CUSTOMER = {
   id: 2,
   name: 'Lu',
   phone: '+5491100000000',
-  channel: null,
   vip: false,
   balance: -2000,
   owing_since: null,

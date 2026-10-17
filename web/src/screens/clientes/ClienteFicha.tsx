@@ -1,5 +1,5 @@
 /**
- * `ClienteFicha`: a customer's card — phone, channel, VIP, the balance and
+ * `ClienteFicha`: a customer's card — phone, VIP, the balance and
  * "Registrar cobro" (`payments.md`, "On screen"). Every figure here —
  * `balance`, `owing_since`, `standing`, the account's rows and their own
  * `running_balance`/`standing` — is the payments domain's own answer
@@ -18,7 +18,7 @@ import Boton from '../../components/Boton'
 import BotonLink from '../../components/BotonLink'
 import { useGoneNotice } from '../../components/goneExit'
 import { ApiError, NetworkError } from '../../api/client'
-import { type Channel, getCustomer } from '../../api/customers'
+import { getCustomer } from '../../api/customers'
 import { invalidateResource, keys } from '../../api/keys'
 import type { Me } from '../../api/me'
 import { useIsVipCustomers } from '../../api/pricingSettings'
@@ -50,11 +50,6 @@ import { formatMoney, formatMoneyMagnitude } from '../../format/money'
 import { formatPhone } from '../../format/phone'
 import { deleteRowIndices } from './accountRows'
 import Cobro from './Cobro'
-
-const CHANNEL_LABEL: Record<Channel, string> = {
-  telegram: 'Telegram',
-  whatsapp: 'WhatsApp',
-}
 
 const HOW_PAID_LABEL: Record<Exclude<HowPaid, 'none'>, string> = {
   cash: 'Pagada por efectivo',
@@ -246,10 +241,6 @@ export default function ClienteFicha({ payment = false }: ClienteFichaProps) {
               <span>{formatPhone(data.phone)}</span>
             </div>
           )}
-          <div className="campo">
-            <span className="campo__rotulo">Canal</span>
-            <span>{data.channel !== null ? CHANNEL_LABEL[data.channel] : 'Sin canal'}</span>
-          </div>
           {vipCustomers && (
             <div className="campo">
               <span className="campo__rotulo">VIP</span>

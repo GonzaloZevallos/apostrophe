@@ -54,7 +54,6 @@ const CUSTOMER = {
   id: 1,
   name: 'Ana Pérez',
   phone: null,
-  channel: null,
   vip: false,
   balance: 0,
   owing_since: null,
