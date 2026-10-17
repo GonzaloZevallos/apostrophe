@@ -39,3 +39,18 @@ class OnboardingRow(Base):
     categories_pass: Mapped[str | None] = mapped_column(String(PASS_MAX_LENGTH))
     ended_at: Mapped[datetime | None] = mapped_column(UtcDateTime)
     created_at: Mapped[datetime] = mapped_column(UtcDateTime)
+
+
+class FirstRunRow(Base):
+    """One row per business, created when its first stamp is written (docs/adr/0046):
+    the three first-run facts the data cannot say, each `NULL` until it happened, then
+    set once and never cleared or moved. A business with no row has none of them. No
+    checklist step is stored here."""
+
+    __tablename__ = "first_run"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    business_id: Mapped[int] = mapped_column(ForeignKey("business.id"), unique=True)
+    checklist_gone_at: Mapped[datetime | None] = mapped_column(UtcDateTime)
+    imported_at: Mapped[datetime | None] = mapped_column(UtcDateTime)
+    import_notice_over_at: Mapped[datetime | None] = mapped_column(UtcDateTime)
