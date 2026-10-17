@@ -220,12 +220,24 @@ OnboardingSocioCompuOscuro built: AE 0
 OnboardingSocioCompuOscuro design: AE 0
 OnboardingCategoriasCompuOscuro built: AE 0
 OnboardingCategoriasCompuOscuro design: AE 0
+OnboardingStockTexto130 built: AE 0
+OnboardingStockTexto130 design: AE 0
+OnboardingMensajeTexto130 built: AE 0
+OnboardingMensajeTexto130 design: AE 0
+OnboardingBotTexto130 built: AE 0
+OnboardingBotTexto130 design: AE 0
+OnboardingSocioTexto130 built: AE 0
+OnboardingSocioTexto130 design: AE 0
+OnboardingCategoriasTexto130 built: AE 0
+OnboardingCategoriasTexto130 design: AE 0
 OnboardingVariedad built: AE 0
 OnboardingVariedad design: AE 0
 OnboardingVariedadOscuro built: AE 0
 OnboardingVariedadOscuro design: AE 0
 OnboardingVariedadCompu built: AE 0
 OnboardingVariedadCompu design: AE 0
+OnboardingVariedadTexto130 built: AE 0
+OnboardingVariedadTexto130 design: AE 0
 OnboardingVariedadCompuOscuro built: AE 0
 OnboardingVariedadCompuOscuro design: AE 0
 OnboardingListo built: AE 0
@@ -236,6 +248,8 @@ OnboardingListoOscuro built: AE 0
 OnboardingListoOscuro design: AE 0
 OnboardingListoCompuOscuro built: AE 0
 OnboardingListoCompuOscuro design: AE 0
+OnboardingListoTexto130 built: AE 0
+OnboardingListoTexto130 design: AE 0
 EstadosSinConexion built: AE 0
 EstadosSinConexion design: AE 0
 EstadosSinConexionCompu built: AE 0
@@ -268,6 +282,6 @@ EstadosSinConexionCompuOscuro built: AE 0
 EstadosSinConexionCompuOscuro design: AE 0
 VariedadArchivada built: AE 0
 VariedadArchivada design: AE 0
-VariedadArchivadaOscuro built: AE 20214
+VariedadArchivadaOscuro built: AE 148549
 VariedadArchivadaOscuro design: AE 0
 ae: the before/after differ, or could not be compared
