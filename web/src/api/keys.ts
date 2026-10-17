@@ -79,6 +79,12 @@ export const keys = {
   // the last answer always wins, and no write anywhere ever needs to invalidate it.
   paymentPreview: (customerId: string, paidOn: string, amount: number) =>
     ['payment-form', 'preview', customerId, paidOn, amount] as const,
+  // `Cobro`'s own read of the customer it collects from: the balance it shows
+  // ("Todo", the pre-filled amount) is read here, on open, and never handed in by a
+  // caller. Frozen at the call site (`gcTime: 0`, `staleTime: Infinity`) and outside
+  // `Resource`/`PREFIX` the same way `paymentPreview` is, so no write elsewhere can
+  // mark it stale and no earlier open's answer is ever replayed.
+  cobroCustomer: (id: string) => ['cobro', id] as const,
   // `Analisis`'s own read (plan, "API client"): frozen the same way `catalog` is
   // (`gcTime: 0`, `staleTime: Infinity` at the call site) — the screen always
   // fetches on open, so this key is never invalidated by a write elsewhere either.

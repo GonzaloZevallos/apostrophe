@@ -25,15 +25,11 @@ import { type Customer, type CustomerIn, listCustomers, registerCustomer } from 
 import { keys } from '../../api/keys'
 import { resolveOverride, type RefusalCode } from '../../api/refusals'
 import Boton from '../../components/Boton'
+import { GENERIC_REFUSAL } from '../../components/feedback'
 import Icono from '../../components/Icono'
 import SinConexion from '../../components/SinConexion'
 import CustomerFields, { type CustomerFieldsValue } from '../clientes/CustomerFields'
-import {
-  GENERIC_REFUSAL,
-  NAME_REQUIRED,
-  PHONE_INVALID,
-  PHONE_TAKEN,
-} from '../clientes/ClienteForm'
+import { NAME_REQUIRED, PHONE_INVALID, PHONE_TAKEN } from '../clientes/ClienteForm'
 
 export interface NuevaVentaClienteProps {
   allowNone: boolean

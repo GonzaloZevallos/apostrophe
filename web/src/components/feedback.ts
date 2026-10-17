@@ -47,6 +47,12 @@ function isToastMessage(value: unknown): value is ToastMessage {
   return typeof value === 'string' && (TOAST_MESSAGES as readonly string[]).includes(value)
 }
 
+/** Shown when the backend refuses a form for a reason the screen has no more
+ * specific text for: no field, no data, only that the seller should check and
+ * try again. Lives here, with the other fixed copy, so a sheet and a form share
+ * one spelling (`ClienteForm` and `Cobro`). */
+export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
+
 /** The fixed text `VentaDetalle` announces alongside its own Deshacer button
  * (plan, invariants: "Venta guardada" is the only success notice with
  * Deshacer) — exported so that screen never invents the copy itself. */

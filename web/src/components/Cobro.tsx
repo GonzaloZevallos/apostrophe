@@ -16,82 +16,83 @@
  * *current* key is always the one shown — an in-flight call for an amount the
  * seller has since changed is simply never the active query anymore.
  *
- * `payment.*` codes are matched by a local, literal string union here, not
- * through `refusals.ts`'s contract-backed `RefusalCode` (plan, invariants: "a
- * refusal carries a payment.* code ... appears in contract.json in the same
- * diff" — that diff is the `payments-api` subtask's, still open as this one
- * ships; `tests/test_refusal_codes.py` refuses a code in `contract.json` the
- * backend does not yet answer). Once `payments-api` lands those codes, this can
- * move onto `resolveOverride`/`isGone` like every other screen's refusals.
+ * The balance is never handed in: on open the sheet reads `GET /customers/{id}`
+ * itself, under `keys.cobroCustomer` (form-only, frozen: `gcTime: 0`,
+ * `staleTime: Infinity`, no refetch on focus or reconnect), so "Todo" and the
+ * pre-filled amount are the balance as it stands now, never a figure some list
+ * showed earlier. Until that answer arrives there is no amount and no "Todo".
+ *
+ * Refusals map through `refusals.ts`'s contract-backed `RefusalCode`
+ * (`resolveOverride`, `isGone`), like every other screen's.
  */
 
-import { type FormEvent, useEffect, useState } from 'react'
+import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ApiError, NetworkError } from '../../api/client'
-import { invalidateResource, keys } from '../../api/keys'
+import { ApiError, NetworkError } from '../api/client'
+import { getCustomer } from '../api/customers'
+import { invalidateResource, keys } from '../api/keys'
 import {
   type PaymentIn,
   type PaymentMethod,
   type RecordedPayment,
   previewPayment,
   recordPayment,
-} from '../../api/payments'
-import SinConexion from '../../components/SinConexion'
-import { formatDateShort } from '../../format/dates'
-import { formatMoney } from '../../format/money'
-import { parseMoney } from '../../format/parse'
-import { GENERIC_REFUSAL } from './ClienteForm'
+} from '../api/payments'
+import { type RefusalCode, isGone, resolveOverride } from '../api/refusals'
+import { formatDateShort } from '../format/dates'
+import { formatMoney } from '../format/money'
+import { parseMoney } from '../format/parse'
+import { GENERIC_REFUSAL } from './feedback'
+import SinConexion from './SinConexion'
 
 export interface CobroProps {
   customerId: string
-  balance: number
   today: string
   onClose: () => void
   onSaved: (recorded: RecordedPayment) => void
   onGone: () => void
 }
 
-type PaymentRefusalCode =
-  | 'payment.above_balance'
-  | 'payment.future_date'
-  | 'payment.amount_invalid'
-  | 'payment.method_required'
-  | 'payment.customer_not_found'
-  | 'payment.not_found'
-
-const GONE_CODES: ReadonlySet<PaymentRefusalCode> = new Set([
-  'payment.customer_not_found',
-  'payment.not_found',
-])
-
-const AMOUNT_MESSAGES: Partial<Record<PaymentRefusalCode, string>> = {
+const AMOUNT_MESSAGES: Partial<Record<RefusalCode, string>> = {
   'payment.above_balance': 'El monto supera lo que te debe.',
   'payment.future_date': 'La fecha no puede ser futura.',
   'payment.amount_invalid': 'Ingresá un monto válido.',
 }
 const METHOD_REQUIRED_MESSAGE = 'Elegí efectivo o transferencia.'
 
-/** `code` comes off the wire as a plain `string` (`ApiError.code`): this only
- * narrows it enough to index `AMOUNT_MESSAGES` safely, never asserting it is a
- * `payment.*` code the backend actually answers. */
-function amountMessage(code: string): string | undefined {
-  return Object.prototype.hasOwnProperty.call(AMOUNT_MESSAGES, code)
-    ? AMOUNT_MESSAGES[code as PaymentRefusalCode]
-    : undefined
-}
-
-function isPaymentGone(code: string): boolean {
-  return (GONE_CODES as ReadonlySet<string>).has(code)
-}
-
-export default function Cobro({ customerId, balance, today, onClose, onSaved, onGone }: CobroProps) {
-  const [amount, setAmount] = useState(String(balance))
+export default function Cobro({ customerId, today, onClose, onSaved, onGone }: CobroProps) {
+  // `null` until the seller types: the amount then shows the balance as read now.
+  const [typedAmount, setTypedAmount] = useState<string | null>(null)
   const [date, setDate] = useState(today)
   const [method, setMethod] = useState<PaymentMethod | null>(null)
   const [amountError, setAmountError] = useState<string | null>(null)
   const [methodError, setMethodError] = useState<string | null>(null)
   const [offline, setOffline] = useState(false)
   const queryClient = useQueryClient()
+
+  const customer = useQuery({
+    queryKey: keys.cobroCustomer(customerId),
+    queryFn: () => getCustomer(customerId),
+    gcTime: 0,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    retry: false,
+  })
+  const balance = customer.data?.balance
+  const amount = typedAmount ?? (balance === undefined ? '' : String(balance))
+  const customerError = customer.error
+  const customerGone =
+    customerError instanceof ApiError && (customerError.status === 404 || isGone(customerError.code))
+  // `onGone` is the caller's own closure, new on every render: held in a ref so
+  // the effect fires once per answer, not once per render.
+  const onGoneRef = useRef(onGone)
+  useEffect(() => {
+    onGoneRef.current = onGone
+  })
+  useEffect(() => {
+    if (customerGone) onGoneRef.current()
+  }, [customerGone])
 
   const parsedAmount = parseMoney(amount)
 
@@ -140,11 +141,11 @@ export default function Cobro({ customerId, balance, today, onClose, onSaved, on
       invalidateResource(queryClient, 'payments')
       onSaved(recorded)
     } catch (caught) {
-      if (caught instanceof ApiError && isPaymentGone(caught.code)) {
+      if (caught instanceof ApiError && isGone(caught.code)) {
         onGone()
       } else if (caught instanceof ApiError) {
         if (caught.code === 'payment.method_required') setMethodError(METHOD_REQUIRED_MESSAGE)
-        else setAmountError(amountMessage(caught.code) ?? GENERIC_REFUSAL)
+        else setAmountError(resolveOverride(AMOUNT_MESSAGES, caught.code) ?? GENERIC_REFUSAL)
       } else if (caught instanceof NetworkError) {
         setOffline(true)
       } else {
@@ -165,13 +166,16 @@ export default function Cobro({ customerId, balance, today, onClose, onSaved, on
               type="text"
               inputMode="numeric"
               value={amount}
-              onChange={(event) => setAmount(event.target.value)}
+              onChange={(event) => setTypedAmount(event.target.value)}
               required
             />
           </label>
-          <button type="button" className="boton-enlace" onClick={() => setAmount(String(balance))}>
-            Todo: {formatMoney(balance)}
-          </button>
+          {balance !== undefined && (
+            <button type="button" className="boton-enlace" onClick={() => setTypedAmount(String(balance))}>
+              Todo: {formatMoney(balance)}
+            </button>
+          )}
+          {customerError instanceof NetworkError && <SinConexion />}
           {amountError !== null && (
             <span className="campo__error" role="alert">
               {amountError}
@@ -231,7 +235,7 @@ export default function Cobro({ customerId, balance, today, onClose, onSaved, on
             </div>
           )}
 
-          {offline && <SinConexion />}
+          {offline && customerError === null && <SinConexion />}
 
           <button className="boton" type="submit" disabled={record.isPending}>
             Guardar

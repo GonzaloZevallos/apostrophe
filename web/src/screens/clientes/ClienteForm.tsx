@@ -31,7 +31,7 @@ import {
 import { invalidateResource, keys } from '../../api/keys'
 import { isGone, resolveOverride, type RefusalCode } from '../../api/refusals'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
-import { gone, toast, type ToastMessage } from '../../components/feedback'
+import { GENERIC_REFUSAL, gone, toast, type ToastMessage } from '../../components/feedback'
 import GoneScreen from '../../components/GoneScreen'
 import SinConexion from '../../components/SinConexion'
 import CustomerFields from './CustomerFields'
@@ -40,7 +40,6 @@ export const SAVED_TOAST: ToastMessage = 'Cliente guardado'
 export const NAME_REQUIRED = 'Ponele un nombre'
 export const PHONE_INVALID = 'Eso no parece un teléfono con su código de área'
 export const PHONE_TAKEN = 'Ese teléfono ya es de otro cliente'
-export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
 
 type Field = 'name' | 'phone' | 'form'
 

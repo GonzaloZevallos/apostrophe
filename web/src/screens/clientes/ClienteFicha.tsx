@@ -34,6 +34,7 @@ import { GONE_NOTICE, isGone } from '../../api/refusals'
 // Checked here by its literal string, not through the shared, contract-backed
 // `isGone`, until that lands.
 const PAYMENT_NOT_FOUND = 'payment.not_found'
+import Cobro from '../../components/Cobro'
 import ConfirmDialog from '../../components/ConfirmDialog'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import { newSaleFor, readFeedback } from '../../components/feedback'
@@ -43,7 +44,6 @@ import SinConexion from '../../components/SinConexion'
 import { formatDateShort } from '../../format/dates'
 import { formatMoney, formatMoneyMagnitude } from '../../format/money'
 import { formatPhone } from '../../format/phone'
-import Cobro from './Cobro'
 
 const CHANNEL_LABEL: Record<Channel, string> = {
   telegram: 'Telegram',
@@ -290,7 +290,6 @@ export default function ClienteFicha() {
       {showCobro && (
         <Cobro
           customerId={customerId}
-          balance={data.balance}
           today={me.today}
           onClose={() => setShowCobro(false)}
           onSaved={onCobroSaved}
