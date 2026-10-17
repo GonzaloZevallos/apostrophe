@@ -316,6 +316,46 @@ describe("an archived variety's summary line and its one action", () => {
   })
 })
 
+describe("an archived variety's four sections, read-only", () => {
+  const ARCHIVED: Answers = {
+    'GET /varieties/1': () => json(200, { ...VARIETY_ROW, archived: true, removal: null }),
+    'GET /stock?archived=true': () => json(200, stockOf(STOCK_ROW)),
+    'GET /catalog/archived': () => json(200, [archivedRow(false)]),
+  }
+
+  test('Stock y entradas, Precios, Aviso de stock bajo and En el catálogo are all shown, none editable', async () => {
+    renderPage(VARIETY_ONE, ARCHIVED)
+
+    const section = async (name: string) => within((await screen.findByRole('heading', { name })).closest('section')!)
+    const stock = await section('Stock y entradas')
+    expect(stock.getAllByRole('listitem')).toHaveLength(3)
+    expect(stock.getByRole('link', { name: 'Ver todas' })).toBeInTheDocument()
+    const prices = await section('Precios')
+    expect(prices.getByRole('link', { name: 'Ver todas' })).toBeInTheDocument()
+    expect(prices.queryByRole('button', { name: 'Borrar este precio' })).toBeNull()
+    const warning = await section('Aviso de stock bajo')
+    expect(warning.getByText('Avisame abajo de 20 g')).toBeInTheDocument()
+    expect(warning.queryByText(/Avisando/)).toBeNull()
+    const catalog = await section('En el catálogo')
+    expect(catalog.getByText('No se muestra')).toBeInTheDocument()
+    expect(catalog.getByText('🍪')).toBeInTheDocument()
+    expect(catalog.getByText('70 %')).toBeInTheDocument()
+    expect(catalog.getByText('Galletita y vainilla')).toBeInTheDocument()
+    const main = screen.getByRole('main')
+    expect(within(main).queryByRole('switch')).toBeNull()
+    expect(within(main).queryByRole('button', { name: /^Editar/ })).toBeNull()
+  })
+
+  test('a threshold that is off reads Aviso apagado', async () => {
+    renderPage(VARIETY_ONE, {
+      ...ARCHIVED,
+      'GET /stock?archived=true': () => json(200, stockOf({ ...STOCK_ROW, threshold: null, status: 'ok' })),
+    })
+
+    expect(await screen.findByText('Aviso apagado')).toBeInTheDocument()
+  })
+})
+
 describe('the actions and the sections', () => {
   test('"+ Entrada" opens the entry form with this variety, "Nuevo precio" its price form', async () => {
     renderPage(VARIETY_ONE)

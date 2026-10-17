@@ -180,6 +180,37 @@ test("a variety's list shows only its entries", async () => {
   expect(screen.queryByText('26/08 · Sir Jack')).not.toBeInTheDocument()
 })
 
+const ARCHIVED_VARIETY = { id: 3, name: '24K Gold', current_price: null, archived: true }
+
+test("an archived variety's list is read-only: entry rows have no edit, no delete and open nothing", async () => {
+  fakeApi({ 'GET /varieties/3': () => jsonResponse(200, ARCHIVED_VARIETY) })
+  renderAt(pathTo(VARIETY_ENTRIES, { id: 3 }))
+
+  const rows = await screen.findAllByRole('listitem')
+  expect(rows).toHaveLength(2)
+  expect(within(rows[0]!).getByText('05/10 · 24K Gold')).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Borrar' })).toBeNull()
+  expect(screen.queryByRole('link', { name: 'Editar' })).toBeNull()
+  expect(within(screen.getByRole('list')).queryAllByRole('link')).toHaveLength(0)
+})
+
+test("an archived variety's withdrawal rows still open the withdrawal's detail", async () => {
+  fakeApi({
+    'GET /varieties/3': () => jsonResponse(200, ARCHIVED_VARIETY),
+    'GET /stock/varieties/3/movements': () =>
+      jsonResponse(200, [
+        { kind: 'withdrawal', id: 9, date: '2026-10-06', reason: 'promotion', grams: 5.5 },
+        { ...STOCK.entries[0], kind: 'entry' },
+      ]),
+  })
+  renderAt(pathTo(VARIETY_ENTRIES, { id: 3 }))
+
+  const rows = await screen.findAllByRole('listitem')
+  expect(within(rows[0]!).getByRole('link')).toHaveAttribute('href', pathTo(WITHDRAWAL, { id: 9 }))
+  expect(within(rows[1]!).queryByRole('link')).toBeNull()
+  expect(within(rows[1]!).queryByRole('button', { name: 'Borrar' })).toBeNull()
+})
+
 test("a variety's list holds its withdrawals, told by reason word and minus sign, each opening its detail", async () => {
   fakeApi({
     'GET /stock/varieties/3/movements': () =>

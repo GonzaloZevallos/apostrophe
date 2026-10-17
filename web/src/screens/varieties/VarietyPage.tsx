@@ -12,8 +12,10 @@
  * is the server's own `shown` from `GET /catalog`; nothing here decides a status or a reason.
  *
  * An archived variety (`archived` true) is the same page, read-only: "Archivada"
- * in words, its stock from `GET /stock?archived=true`, no "+ Entrada", "Nuevo precio", "Sacar
- * del stock", price delete, threshold, "Editar", form or removal; its one action is "Restaurar".
+ * in words, its stock from `GET /stock?archived=true` and its catalog attributes from
+ * `GET /catalog/archived`; the four sections are shown (the threshold as its stored setting
+ * only), with no "+ Entrada", "Nuevo precio", "Sacar del stock", price delete, switch,
+ * "Editar", form or removal; its one action is "Restaurar".
  */
 
 import { useCallback, useEffect, useState } from 'react'
@@ -274,8 +276,20 @@ function VarietyPageView({
           currentPriceId={variety.current_price?.id ?? null}
           readOnly={archived}
         />
-        {!archived && row !== undefined && <VarietyThresholdSection varietyId={varietyId} row={row} refreshing={stockQuery.isFetching} onGone={() => setGone(true)} />}
-        {!archived && catalogRow !== null && <VarietyCatalogSection row={catalogRow} />}
+        {row !== undefined && (
+          <VarietyThresholdSection
+            varietyId={varietyId}
+            row={row}
+            refreshing={stockQuery.isFetching}
+            onGone={() => setGone(true)}
+            readOnly={archived}
+          />
+        )}
+        {archived ? (
+          archivedAttributes !== null && <VarietyCatalogSection row={archivedAttributes} readOnly />
+        ) : (
+          catalogRow !== null && <VarietyCatalogSection row={catalogRow} />
+        )}
         {catalogQuery.isError && (catalogQuery.error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />)}
         {!archived && <VarietyRemoval varietyId={varietyId} removal={variety.removal} grams={row?.grams ?? null} />}
       </div>
