@@ -339,6 +339,65 @@
         "title": "AppliedToOut",
         "type": "object"
       },
+      "ArchivedCatalogVarietyOut": {
+        "properties": {
+          "aroma": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Aroma"
+          },
+          "emoji": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Emoji"
+          },
+          "indica_share": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Indica Share"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "shown": {
+            "title": "Shown",
+            "type": "boolean"
+          },
+          "variety_id": {
+            "title": "Variety Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "variety_id",
+          "name",
+          "shown",
+          "emoji",
+          "indica_share",
+          "aroma"
+        ],
+        "title": "ArchivedCatalogVarietyOut",
+        "type": "object"
+      },
       "AssignCustomerIn": {
         "properties": {
           "customer_id": {
@@ -4191,6 +4250,36 @@
           }
         ],
         "summary": "Get Catalog",
+        "tags": [
+          "catalog"
+        ]
+      }
+    },
+    "/catalog/archived": {
+      "get": {
+        "operationId": "get_archived_catalog_archived_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ArchivedCatalogVarietyOut"
+                  },
+                  "title": "Response Get Archived Catalog Archived Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Archived",
         "tags": [
           "catalog"
         ]
