@@ -52,6 +52,19 @@ export const STATE_NAMES: readonly string[] = [
   'VentasFechas',
 ]
 
+/** What is wrong between the names a state list carries and the vocabulary's `STATE_NAMES`; empty when they agree. */
+export function stateNameProblems(
+  stateNames: readonly string[],
+  vocabulary: readonly string[],
+): string[] {
+  const own = new Set(stateNames)
+  const problems: string[] = []
+  if (own.size !== stateNames.length) problems.push('a state name is a repeat')
+  for (const name of own) if (!vocabulary.includes(name)) problems.push(`${name} is not in STATE_NAMES`)
+  for (const name of vocabulary) if (!own.has(name)) problems.push(`${name} has no state`)
+  return problems
+}
+
 function asRecord(value: unknown, what: string): Record<string, unknown> {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
     throw new Error(`${what} is not an object`)

@@ -11,11 +11,12 @@ export const STEP_TIMEOUT_MS = 3_000
 
 export type Facts = Readonly<Record<string, string | number>>
 
-/** A click names what the seller reads: its text, or, for an icon-only button, its accessible name. */
-async function clickTarget(page: Page, name: string): Promise<Locator> {
-  const byText = page.getByText(name, { exact: true })
-  if ((await byText.count()) > 0) return byText.first()
-  return page.getByRole('button', { name, exact: true }).first()
+/** A click names what the seller reads: its text, or, for an icon-only button, its accessible name. Waits for either. */
+function clickTarget(page: Page, name: string): Locator {
+  return page
+    .getByText(name, { exact: true })
+    .or(page.getByRole('button', { name, exact: true }))
+    .first()
 }
 
 /** A fill types into an input or textarea, and picks the option with that label in a select. */
@@ -28,7 +29,7 @@ async function fill(page: Page, label: string, value: string, timeout: number): 
 
 async function run(page: Page, step: RegistryStep, facts: Facts): Promise<void> {
   const options = { timeout: STEP_TIMEOUT_MS }
-  if ('click' in step) await (await clickTarget(page, step.click)).click(options)
+  if ('click' in step) await clickTarget(page, step.click).click(options)
   else if ('fill' in step) {
     await fill(page, step.fill.label, resolvePlaceholders(step.fill.value, facts), STEP_TIMEOUT_MS)
   } else if ('wait' in step) await page.getByText(step.wait, { exact: true }).first().waitFor(options)

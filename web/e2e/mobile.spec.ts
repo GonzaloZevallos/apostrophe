@@ -13,11 +13,11 @@ import { expectOnlyTheThemeStored } from './helpers/storage.js'
 import type { CellId } from './mobile/collect.js'
 import { newCell, SIZES, THEMES, type Size, type Theme } from './mobile/cells.js'
 import { guardWrites } from './mobile/network.js'
-import { stateNameProblems, stateScreens, STATES } from './mobile/states.js'
+import { stateScreens } from './mobile/states.js'
 import { settle, type Facts } from './mobile/walk.js'
 import { walkScreen } from './mobile/walkScreen.js'
 import { OFFENDERS, diffOffenders } from '../src/mobile-standard/offenders/index.ts'
-import { parseFacts, STATE_NAMES, WALKABLE } from '../src/mobile-standard/registry.ts'
+import { parseFacts, WALKABLE } from '../src/mobile-standard/registry.ts'
 import type { Violation } from '../src/mobile-standard/violation.ts'
 
 /** What a cell walks: every walkable registry screen (loaded, then held) and every state (loaded). */
@@ -110,17 +110,6 @@ test.describe('the walk rejects what it cannot reach', () => {
 })
 
 test.describe('the states the walk adds', () => {
-  test('every state is in the screen vocabulary and the vocabulary has no state without a walk', () => {
-    expect(stateNameProblems(STATES, STATE_NAMES)).toEqual([])
-  })
-
-  test('a state missing from the vocabulary, a repeat and an orphan name are each refused', () => {
-    const state = { name: 'Uno', route: '/ventas', steps: [], visible: 'Hoy' }
-    expect(stateNameProblems([state], [])).toEqual(['Uno is not in STATE_NAMES'])
-    expect(stateNameProblems([], ['Huerfano'])).toEqual(['Huerfano has no state'])
-    expect(stateNameProblems([state, state], ['Uno'])).toContain('a state name is a repeat')
-  })
-
   test('a state whose named element never shows is unreachable, not a pass', async ({ browser }) => {
     const context = await newCell(browser, PROBE_SIZE, 'claro', MOBILE_STATE_FILE)
     const page = await context.newPage()

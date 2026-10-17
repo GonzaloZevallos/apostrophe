@@ -107,16 +107,3 @@ export function stateScreens(states: readonly WalkState[] = STATES): RegistryScr
     steps: [...state.steps, { wait: state.visible }],
   }))
 }
-
-/** What is wrong between this list and the vocabulary's `STATE_NAMES`; empty when they agree. */
-export function stateNameProblems(
-  states: readonly WalkState[],
-  names: readonly string[],
-): string[] {
-  const own = new Set(states.map((state) => state.name))
-  const problems: string[] = []
-  if (own.size !== states.length) problems.push('a state name is a repeat')
-  for (const name of own) if (!names.includes(name)) problems.push(`${name} is not in STATE_NAMES`)
-  for (const name of names) if (!own.has(name)) problems.push(`${name} has no state`)
-  return problems
-}

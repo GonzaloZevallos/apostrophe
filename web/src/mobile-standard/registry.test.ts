@@ -10,8 +10,10 @@ import {
   SKIP_THEME_TWIN,
   skippedScreens,
   STATE_NAMES,
+  stateNameProblems,
   walkableScreens,
 } from './registry.ts'
+import { STATES } from '../../e2e/mobile/states.ts'
 
 const entry = (extra: Record<string, unknown>) => ({ screen: 'X', route: '/x', path: '/x', ...extra })
 
@@ -157,5 +159,23 @@ describe('parseFacts', () => {
     ['a list', []],
   ])('refuses %s', (_name, raw) => {
     expect(() => parseFacts(raw)).toThrow(/facts/)
+  })
+})
+
+describe('stateNameProblems', () => {
+  test('the walked states and the vocabulary agree', () => {
+    expect(stateNameProblems(STATES.map((state) => state.name), STATE_NAMES)).toEqual([])
+  })
+
+  test('a state missing from the vocabulary is refused', () => {
+    expect(stateNameProblems(['Uno'], [])).toEqual(['Uno is not in STATE_NAMES'])
+  })
+
+  test('a vocabulary name with no state is refused', () => {
+    expect(stateNameProblems([], ['Huerfano'])).toEqual(['Huerfano has no state'])
+  })
+
+  test('a repeated state name is refused', () => {
+    expect(stateNameProblems(['Uno', 'Uno'], ['Uno'])).toContain('a state name is a repeat')
   })
 })
