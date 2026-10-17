@@ -19,16 +19,17 @@ from collections.abc import Callable
 from datetime import date
 from typing import Annotated, cast
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Response
 from sqlalchemy.orm import Session
 
 from app.accounts.adapters.deps import CurrentBusinessId
-from app.clock import get_today
+from app.clock import Clock, get_clock, get_today
 from app.db import get_session
 from app.http_errors import TranslateErrors
 from app.results.adapters.assemble import assemble
 from app.results.adapters.schemas import AnalysisOut, PanelOut
 from app.results.application.analyse import AnalysisRuleBroken, analyse
+from app.results.application.dismiss_bot_notice import dismiss_bot_notice
 from app.results.application.ports import (
     DebtSummary,
     DrawCosts,
@@ -39,6 +40,7 @@ from app.results.application.ports import (
     PeriodSales,
     Purchases,
     SalesLedger,
+    SetupStateStore,
     StockFigures,
 )
 from app.results.application.read_panel import read_panel
@@ -104,6 +106,25 @@ def get_panel(
 ) -> PanelOut:
     panel = read_panel(today, sales, stock, expenses, received, debts)
     return PanelOut.of(panel)
+
+
+def get_setup_state_store(
+    request: Request, session: SessionDep, business_id: CurrentBusinessId
+) -> SetupStateStore:
+    factory = cast(Callable[[Session, int], SetupStateStore], request.app.state.setup_state_store)
+    return factory(session, business_id)
+
+
+SetupStateStoreDep = Annotated[SetupStateStore, Depends(get_setup_state_store)]
+ClockDep = Annotated[Clock, Depends(get_clock)]
+
+
+@router.post("/panel/bot-notice/dismissal", status_code=204)
+def dismiss_the_bot_notice(
+    store: SetupStateStoreDep, session: SessionDep, clock: ClockDep
+) -> Response:
+    dismiss_bot_notice(store, session, clock())
+    return Response(status_code=204)
 
 
 def get_draw_costs(
