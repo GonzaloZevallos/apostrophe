@@ -46,7 +46,6 @@ export interface NuevaVentaClienteProps {
 const EMPTY_NEW_CUSTOMER: CustomerFieldsValue = {
   name: '',
   phone: '',
-  channel: null,
   vip: false,
 }
 

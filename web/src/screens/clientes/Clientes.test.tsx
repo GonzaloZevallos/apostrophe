@@ -118,7 +118,7 @@ test('a stale answer still in flight shows marked pending, never as the current 
       }
       if (query === 'ni') {
         return jsonResponse(200, [
-          { id: 2, name: 'Nico Parra', phone: '+5491131785094', channel: null, vip: false },
+          { id: 2, name: 'Nico Parra', phone: '+5491131785094', vip: false },
         ])
       }
       return jsonResponse(200, [])
@@ -162,7 +162,7 @@ test('a result still catching up to a newer keystroke is marked pending, not cur
     fetchStub((query) => {
       if (query === '') {
         return jsonResponse(200, [
-          { id: 1, name: 'Mica Solano', phone: '+5491160337725', channel: null, vip: false },
+          { id: 1, name: 'Mica Solano', phone: '+5491160337725', vip: false },
         ])
       }
       if (query === 'x') {
@@ -210,7 +210,7 @@ test('the header reads "N clientes", and the Te deben section sits above the lis
       () =>
         jsonResponse(200, [
           customerFixture,
-          { id: 2, name: 'Lu', phone: '+5491100000002', channel: null, vip: false, balance: 0, owing_since: null, standing: 'settled' },
+          { id: 2, name: 'Lu', phone: '+5491100000002', vip: false, balance: 0, owing_since: null, standing: 'settled' },
         ]),
       () => jsonResponse(200, debtorsFixture),
     ),
@@ -239,7 +239,7 @@ test('"Cobrar a X" is on every row that owes, in the section and in the list, an
       () =>
         jsonResponse(200, [
           customerFixture,
-          { id: 2, name: 'Lu', phone: '+5491100000002', channel: null, vip: false, balance: 0, owing_since: null, standing: 'settled' },
+          { id: 2, name: 'Lu', phone: '+5491100000002', vip: false, balance: 0, owing_since: null, standing: 'settled' },
         ]),
       () => jsonResponse(200, debtorsFixture),
     ),
@@ -278,8 +278,8 @@ test('a customer who owes shows the amber mark; one in credit shows the blue "A 
   vi.mocked(fetch).mockImplementation(
     fetchStub(() =>
       jsonResponse(200, [
-        { id: 1, name: 'Ana', phone: '+5491100000001', channel: null, vip: false, balance: 15000, owing_since: '2026-09-14', standing: 'owes' },
-        { id: 2, name: 'Lu', phone: '+5491100000002', channel: null, vip: false, balance: -2000, owing_since: null, standing: 'credit' },
+        { id: 1, name: 'Ana', phone: '+5491100000001', vip: false, balance: 15000, owing_since: '2026-09-14', standing: 'owes' },
+        { id: 2, name: 'Lu', phone: '+5491100000002', vip: false, balance: -2000, owing_since: null, standing: 'credit' },
       ]),
     ),
   )

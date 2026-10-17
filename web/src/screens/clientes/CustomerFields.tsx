@@ -1,5 +1,5 @@
 /**
- * The shared "Teléfono / Nombre / Canal / VIP" fields (`NuevaVentaCliente.dc.html`,
+ * The shared "Teléfono / Nombre / VIP" fields (`NuevaVentaCliente.dc.html`,
  * `ClienteForm.tsx`): split out of `ClienteForm` (plan, "Shape") so the "Nuevo
  * cliente" sub-form inside `NuevaVentaCliente`'s sheet renders exactly the same
  * markup, labels and structure as /clientes/nuevo — one place that knows what a
@@ -12,12 +12,9 @@
  * happens next.
  */
 
-import type { Channel } from '../../api/customers'
-
 export interface CustomerFieldsValue {
   name: string
   phone: string
-  channel: Channel | null
   vip: boolean
 }
 
@@ -72,36 +69,6 @@ export default function CustomerFields({
           </span>
         )}
       </div>
-      <fieldset className="campo">
-        <legend className="campo__rotulo">Canal</legend>
-        <label>
-          <input
-            type="radio"
-            name="channel"
-            checked={value.channel === null}
-            onChange={() => onChange({ ...value, channel: null })}
-          />
-          Ninguno
-        </label>
-        <label>
-          <input
-            type="radio"
-            name="channel"
-            checked={value.channel === 'whatsapp'}
-            onChange={() => onChange({ ...value, channel: 'whatsapp' })}
-          />
-          WhatsApp
-        </label>
-        <label>
-          <input
-            type="radio"
-            name="channel"
-            checked={value.channel === 'telegram'}
-            onChange={() => onChange({ ...value, channel: 'telegram' })}
-          />
-          Telegram
-        </label>
-      </fieldset>
       {showVip && (
         <label className="campo">
           <span className="campo__rotulo">VIP</span>
