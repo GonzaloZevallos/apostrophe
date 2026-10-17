@@ -6,6 +6,7 @@
  * could send is aborted by the walk, and these states stop before one.
  */
 
+import { EXPENSE_CATEGORIES, EXPENSES, MORE } from '../routes.ts'
 import type { WalkState } from './states.ts'
 
 /*
@@ -88,38 +89,38 @@ export const RECORDS_STATES: readonly WalkState[] = [
 
   {
     screen: 'GastoDesdeMas',
-    route: '/more',
+    route: MORE,
     steps: [{ click: '+ Cargar gasto' }],
     visible: 'Guardá el gasto',
   },
   {
     screen: 'GastoDesdeGastos',
-    route: '/expenses',
+    route: EXPENSES,
     steps: [{ activate: 'Cargar gasto' }],
     visible: 'Guardá el gasto',
   },
   {
     screen: 'GastoEditar',
-    route: '/expenses',
+    route: EXPENSES,
     steps: [{ activate: 'Bolsitas zip' }],
     visible: 'Borrar gasto',
   },
   {
     screen: 'GastoConfirmarBorrado',
-    route: '/expenses',
+    route: EXPENSES,
     steps: [{ activate: 'Bolsitas zip' }, { activate: 'Borrar gasto' }],
     visible: '¿Borrás el gasto?',
   },
 
   {
     screen: 'ConfiguracionCategoriaRenombrar',
-    route: '/settings/expense-categories',
+    route: EXPENSE_CATEGORIES,
     steps: [{ click: 'Renombrar' }],
     visible: 'Guardar',
   },
   {
     screen: 'ConfiguracionCategoriaConfirmarBorrado',
-    route: '/settings/expense-categories',
+    route: EXPENSE_CATEGORIES,
     steps: [{ click: 'Eliminar' }],
     visible: '¿Borrás la categoría?',
   },
