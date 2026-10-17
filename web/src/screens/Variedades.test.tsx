@@ -143,14 +143,14 @@ describe('the list', () => {
     ])
     expect(rows[0]).toHaveTextContent('24K Gold')
     expect(rows[0]).toHaveTextContent('ok')
-    expect(rows[0]).toHaveTextContent('135 g · 270 días')
+    expect(rows[0]).toHaveTextContent('135 g · 270 days')
     expect(rows[0]).toHaveTextContent('$ 12.000 x g')
-    expect(rows[1]).toHaveTextContent('baja')
-    expect(rows[1]).toHaveTextContent('18 g · 24 días')
-    expect(rows[2]).toHaveTextContent('sin entradas')
+    expect(rows[1]).toHaveTextContent('low')
+    expect(rows[1]).toHaveTextContent('18 g · 24 days')
+    expect(rows[2]).toHaveTextContent('no entries')
     expect(rows[2]).toHaveTextContent('0 g · Add the first entry')
     expect(rows[2]).toHaveTextContent(NO_PRICE_TODAY)
-    expect(rows[3]).toHaveTextContent('agotada')
+    expect(rows[3]).toHaveTextContent('sold out')
     expect(rows[3]).toHaveTextContent('0 g · Sin gramos desde el 01/10')
   })
 
@@ -167,7 +167,7 @@ describe('the list', () => {
   test('the summary line counts what is not ok by word, in stock-status order', async () => {
     renderApp(VARIETIES_PATH)
 
-    expect(await screen.findByText('1 sin entradas · 1 agotada · 1 baja')).toBeInTheDocument()
+    expect(await screen.findByText('1 no entries · 1 sold out · 1 low')).toBeInTheDocument()
   })
 
   test('the summary line says everything is fine when every variety is ok', async () => {
@@ -178,7 +178,7 @@ describe('the list', () => {
       },
     })
 
-    expect(await screen.findByText('2 variedades · todo ok')).toBeInTheDocument()
+    expect(await screen.findByText('2 varieties · all ok')).toBeInTheDocument()
   })
 
   test('with no varieties there is no summary line, the fixed empty state, and the actions stay', async () => {

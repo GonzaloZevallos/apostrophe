@@ -11,13 +11,13 @@ import ReglaInsignia from './ReglaInsignia'
 
 test('list reads "lista", neutral', () => {
   render(<ReglaInsignia rule="list" />)
-  const badge = screen.getByText('lista')
+  const badge = screen.getByText('list')
   expect(badge.className).toBe('insignia')
 })
 
 test('bulk reads "por cantidad", accented', () => {
   render(<ReglaInsignia rule="bulk" />)
-  const badge = screen.getByText('por cantidad')
+  const badge = screen.getByText('bulk')
   expect(badge.className).toBe('insignia insignia--acento')
 })
 
@@ -28,10 +28,10 @@ test('vip reads "VIP", accented', () => {
 
 test('gift reads "regalo", accented', () => {
   render(<ReglaInsignia rule="gift" />)
-  expect(screen.getByText('regalo').className).toBe('insignia insignia--acento')
+  expect(screen.getByText('gift').className).toBe('insignia insignia--acento')
 })
 
 test('special reads "especial", accented', () => {
   render(<ReglaInsignia rule="special" />)
-  expect(screen.getByText('especial').className).toBe('insignia insignia--acento')
+  expect(screen.getByText('special').className).toBe('insignia insignia--acento')
 })

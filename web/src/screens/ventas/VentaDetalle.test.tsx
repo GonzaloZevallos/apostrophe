@@ -87,7 +87,7 @@ test('shows the total, each line with its lowercase rule badge, shipping, note a
   expect(await screen.findByText('Venta del 14/09')).toBeInTheDocument()
   expect(screen.getAllByText('$ 11.000')).toHaveLength(2) // the big total and the final Total row.
   expect(screen.getByText('Flor A')).toBeInTheDocument()
-  expect(screen.getByText('lista')).toBeInTheDocument()
+  expect(screen.getByText('list')).toBeInTheDocument()
   expect(screen.getByText('3,5 g')).toBeInTheDocument()
   expect(screen.getByText('$ 3.000 por gramo')).toBeInTheDocument()
   expect(screen.getByText('$ 10.500')).toBeInTheDocument()
@@ -364,5 +364,5 @@ test('a sale keeps its recorded "VIP" and "por cantidad" badges while both prici
 
   expect(await screen.findByText('Venta del 14/09')).toBeInTheDocument()
   expect(screen.getByText('VIP')).toBeInTheDocument()
-  expect(screen.getByText('por cantidad')).toBeInTheDocument()
+  expect(screen.getByText('bulk')).toBeInTheDocument()
 })

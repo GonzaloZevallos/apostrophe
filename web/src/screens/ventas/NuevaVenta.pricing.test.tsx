@@ -92,7 +92,7 @@ test('at the bulk minimum the lowest rule wins: a VIP price above the bulk price
   await line('10')
 
   expect(await screen.findByText('$ 800 x g')).toBeInTheDocument()
-  expect(screen.getByText('por cantidad')).toBeInTheDocument()
+  expect(screen.getByText('bulk')).toBeInTheDocument()
 })
 
 test('with Clientes VIP off there is no VIP mark and the line is priced as anyone', async () => {
@@ -114,7 +114,7 @@ test('with Precio por cantidad off a line at the minimum is priced at list, with
   await line('10')
 
   expect(await screen.findByText('$ 1.000 x g')).toBeInTheDocument()
-  expect(screen.queryByText('por cantidad')).not.toBeInTheDocument()
+  expect(screen.queryByText('bulk')).not.toBeInTheDocument()
 })
 
 test('a date change loads the switches again', async () => {

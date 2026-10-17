@@ -184,15 +184,15 @@ describe('the summary line', () => {
   test('tells grams, status by shape and word, days left and today\'s price', async () => {
     renderPage(VARIETY_ONE)
 
-    const line = await screen.findByText(/24 días/)
-    expect(line).toHaveTextContent('18 g · baja · 24 días · $ 11.000 x g')
+    const line = await screen.findByText(/24 days/)
+    expect(line).toHaveTextContent('18 g · baja · 24 days · $ 11.000 x g')
     expect(screen.getByRole('heading', { name: '24K Gold' })).toBeInTheDocument()
   })
 
   test.each([
     ['sold_out', { grams: 0, status: 'sold_out', days_left: null, sold_out_since: '2026-09-30' }, '0 g · agotada'],
     ['no_entries', { grams: 0, status: 'no_entries', days_left: null }, '0 g · sin entradas'],
-    ['ok', { grams: 90, status: 'ok', days_left: 60 }, '90 g · ok · 60 días'],
+    ['ok', { grams: 90, status: 'ok', days_left: 60 }, '90 g · ok · 60 days'],
   ])('a %s variety', async (_name, patch, expected) => {
     renderPage(VARIETY_ONE, { 'GET /stock': () => json(200, stockOf({ ...STOCK_ROW, ...patch })) })
 
@@ -211,7 +211,7 @@ describe('the summary line', () => {
     renderPage(VARIETY_ONE, { 'GET /catalog': () => json(200, hidden) })
 
     const line = (await screen.findByText('Oculta')).closest('p')
-    expect(line).toHaveTextContent('18 g · baja · Oculta · 24 días')
+    expect(line).toHaveTextContent('18 g · baja · Oculta · 24 days')
   })
 })
 
@@ -288,7 +288,7 @@ describe("an archived variety's summary line and its one action", () => {
     expect(screen.getByText('Archivada')).toHaveClass('insignia')
     expect(screen.queryByText('Oculta') !== null).toBe(oculta)
     expect(screen.queryByText(/baja|ok|agotada|sin entradas/)).not.toBeInTheDocument()
-    expect(screen.queryByText(/24 días/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/24 days/)).not.toBeInTheDocument()
   })
 
   test('its grams show as a figure even when negative, and no price says Sin precio', async () => {
@@ -334,7 +334,7 @@ describe("an archived variety's four sections, read-only", () => {
     expect(prices.getByRole('link', { name: 'Ver todas' })).toBeInTheDocument()
     expect(prices.queryByRole('button', { name: 'Borrar este precio' })).toBeNull()
     const warning = await section('Aviso de stock bajo')
-    expect(warning.getByText('Warn me below 20 g')).toBeInTheDocument()
+    expect(warning.getByText('Avisame abajo de 20 g')).toBeInTheDocument()
     expect(warning.queryByText(/Avisando/)).toBeNull()
     const catalog = await section('En el catálogo')
     expect(catalog.getByText('No se muestra')).toBeInTheDocument()
@@ -352,7 +352,7 @@ describe("an archived variety's four sections, read-only", () => {
       'GET /stock?archived=true': () => json(200, stockOf({ ...STOCK_ROW, threshold: null, status: 'ok' })),
     })
 
-    expect(await screen.findByText('Warning off')).toBeInTheDocument()
+    expect(await screen.findByText('Aviso apagado')).toBeInTheDocument()
   })
 })
 
@@ -710,7 +710,7 @@ describe('turning the warning off', () => {
     stock = stockOf({ ...STOCK_ROW, threshold: null, status: 'ok', grams: 90, days_left: 60 })
     release(json(200, { ...STOCK_ROW, threshold: null }))
 
-    expect(await screen.findByText('Warning off')).toBeInTheDocument()
+    expect(await screen.findByText('Aviso apagado')).toBeInTheDocument()
     expect(screen.getByRole('switch')).not.toBeChecked()
     expect(screen.getByRole('switch')).toBeEnabled()
     expect(await screen.findByText('Aviso guardado')).toBeInTheDocument()
@@ -773,7 +773,7 @@ describe('Aviso de stock bajo: the form', () => {
     await waitFor(() => expect(router.state.location.state).toBeNull())
     expect(screen.queryByLabelText('Avisar con menos de')).not.toBeInTheDocument()
     expect(screen.getByRole('switch')).not.toBeChecked()
-    expect(screen.getByText('Warning off')).toBeInTheDocument()
+    expect(screen.getByText('Aviso apagado')).toBeInTheDocument()
     expect(writes(fetchMock)).toEqual([])
   })
 

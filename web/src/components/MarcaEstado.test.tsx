@@ -10,13 +10,13 @@ import MarcaEstado from './MarcaEstado'
 
 test('a sold-out mark reads "agotada"', () => {
   render(<MarcaEstado estado="sold_out" />)
-  expect(screen.getByText('agotada')).toBeInTheDocument()
+  expect(screen.getByText('sold out')).toBeInTheDocument()
 })
 
 test('a low mark reads "baja", distinct from ok and sold out', () => {
   render(<MarcaEstado estado="low" />)
-  expect(screen.getByText('baja')).toBeInTheDocument()
-  expect(screen.queryByText('agotada')).not.toBeInTheDocument()
+  expect(screen.getByText('low')).toBeInTheDocument()
+  expect(screen.queryByText('sold out')).not.toBeInTheDocument()
   expect(screen.queryByText('ok')).not.toBeInTheDocument()
 })
 

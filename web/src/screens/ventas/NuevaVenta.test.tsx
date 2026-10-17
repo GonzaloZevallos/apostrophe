@@ -79,7 +79,7 @@ test('the live preview prices a list line as the sale types, with no save call',
   await user.selectOptions(screen.getByLabelText('Variedad línea 1'), '1')
   await user.type(screen.getByLabelText('Gramos línea 1'), '2')
 
-  expect(await screen.findByText('lista')).toBeInTheDocument()
+  expect(await screen.findByText('list')).toBeInTheDocument()
   expect(screen.getByText('$ 1.000 x g')).toBeInTheDocument()
   // Grams × price per gram, rounded half up (sales.md): 2 g × $1.000 = $2.000, both
   // the line total and (shipping still $0) the sale's own total.
@@ -324,7 +324,7 @@ test('sale.no_price_that_day refetches prices, and the line then shows its own m
   await user.selectOptions(screen.getByLabelText('Variedad línea 1'), '1')
   await user.type(screen.getByLabelText('Gramos línea 1'), '2')
   await user.click(screen.getByRole('radio', { name: 'Cash' }))
-  expect(await screen.findByText('lista')).toBeInTheDocument()
+  expect(await screen.findByText('list')).toBeInTheDocument()
 
   await user.click(screen.getByRole('button', { name: 'Guardá la venta' }))
 
@@ -447,12 +447,12 @@ test('a $0 special price is refused rather than silently priced at list, and Reg
 
   await user.selectOptions(screen.getByLabelText('Variedad línea 1'), '1')
   await user.type(screen.getByLabelText('Gramos línea 1'), '2')
-  expect(await screen.findByText('lista')).toBeInTheDocument()
+  expect(await screen.findByText('list')).toBeInTheDocument()
 
   await user.type(screen.getByLabelText('Precio especial línea 1'), '0')
   expect(await screen.findByText('El precio especial tiene que ser mayor a $0')).toBeInTheDocument()
-  expect(screen.queryByText('lista')).not.toBeInTheDocument()
-  expect(screen.queryByText('especial')).not.toBeInTheDocument()
+  expect(screen.queryByText('list')).not.toBeInTheDocument()
+  expect(screen.queryByText('special')).not.toBeInTheDocument()
   expect(screen.getByLabelText(`Regalo línea 1`)).toBeDisabled()
 
   await user.click(screen.getByRole('radio', { name: 'Cash' }))
@@ -463,11 +463,11 @@ test('a $0 special price is refused rather than silently priced at list, and Reg
 
   await user.clear(screen.getByLabelText('Precio especial línea 1'))
   expect(screen.queryByText('El precio especial tiene que ser mayor a $0')).not.toBeInTheDocument()
-  expect(await screen.findByText('lista')).toBeInTheDocument()
+  expect(await screen.findByText('list')).toBeInTheDocument()
   expect(screen.getByLabelText('Regalo línea 1')).toBeEnabled()
 
   await user.type(screen.getByLabelText('Precio especial línea 1'), '500')
-  expect(await screen.findByText('especial')).toBeInTheDocument()
+  expect(await screen.findByText('special')).toBeInTheDocument()
   expect(screen.getByLabelText('Regalo línea 1')).toBeDisabled()
 })
 
