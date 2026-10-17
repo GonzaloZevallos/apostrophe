@@ -45,3 +45,19 @@ archive one that has, keeping every past sale, stock movement and figure unchang
   `Varieties.name_holder` says whether a live or an archived variety holds a name.
 - The business export picks `archived_at` up through ADR-0015's reflection, as an ISO
   instant with no secret flag, with no change to the command.
+
+## Amendment (2026-10-16): the archived varieties' catalog attributes have one read
+
+GH-131. `GET /catalog` never lists an archived variety, so an archived variety's stored
+shown flag, emoji, indica share and aroma had no read.
+
+- **`GET /catalog/archived`** is the one read of them, for the archived page and the
+  Archivadas rows alike. It takes no parameters and answers a list
+  `[{variety_id, name, shown, emoji, indica_share, aroma}]` of the session business's
+  archived varieties, by name; an unset attribute is `null` and a variety with no
+  attributes row reads as the defaults. It is a list, so it never answers 404 and adds no
+  refusal code: `contract.json` is unchanged. There is no one-variety catalog `GET`.
+- **The catalog reaches archived varieties only through its `CatalogVarieties` port**
+  (`archived()`); only `SqlCatalogVarieties` imports `app.varieties`.
+- Its cost is one business's archived varieties plus their attributes rows, in two
+  statements, whatever the count.
