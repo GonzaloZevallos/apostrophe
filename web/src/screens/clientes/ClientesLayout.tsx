@@ -6,17 +6,18 @@
  *
  * On a computer Clientes is two panes (`ClientesCompu.dc.html`): the list stays on the left
  * while a customer's card fills the right one, and `/customers` alone selects nobody, so its
- * right pane stays empty. The forms and Registrar cobro keep the whole width. The selection
+ * right pane stays empty. The forms keep the whole width, and Registrar cobro is a modal over both panes (`CobroPanes`). The selection
  * is the URL.
  */
 
 import { useState } from 'react'
 import { Outlet, useMatch, useOutletContext } from 'react-router'
 import type { Me } from '../../api/me'
-import { CUSTOMER, CUSTOMERS } from '../../routes'
+import { CUSTOMER, CUSTOMER_PAYMENT, CUSTOMERS } from '../../routes'
 import { useViewport } from '../../shell/useViewport'
 import Clientes from './Clientes'
 import { CustomerSearchContext } from './CustomerSearch'
+import CobroPanes from './CobroPanes'
 
 export default function ClientesLayout() {
   const me = useOutletContext<Me>()
@@ -25,10 +26,14 @@ export default function ClientesLayout() {
   const onList = useMatch(CUSTOMERS) !== null
   const customerId = useMatch(CUSTOMER)?.params.id
   const onCard = customerId !== undefined && /^[0-9]+$/.test(customerId)
+  // Registrar cobro is a modal over the list and the card on a computer (ADR-0044).
+  const onPayment = useMatch(CUSTOMER_PAYMENT) !== null
 
   return (
     <CustomerSearchContext.Provider value={{ query, setQuery }}>
-      {computer && (onList || onCard) ? (
+      {onPayment ? (
+        <CobroPanes />
+      ) : computer && (onList || onCard) ? (
         <div className="clientes-paneles">
           <div className="clientes-paneles__lista">
             <Clientes />

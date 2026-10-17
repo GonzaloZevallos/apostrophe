@@ -226,7 +226,14 @@ export const SCREENS = [
   screen({ id: 'customer-new', path: CUSTOMER_NEW, kind: 'form', title: 'Nuevo cliente', parent: 'customers' }),
   screen({ id: 'customer', path: CUSTOMER, kind: 'card', title: 'Cliente', pane: 'detail', parent: 'customers' }),
   screen({ id: 'customer-edit', path: CUSTOMER_EDIT, kind: 'form', title: 'Editar cliente', parent: 'customer' }),
-  screen({ id: 'customer-payment', path: CUSTOMER_PAYMENT, kind: 'form', title: 'Registrar cobro', parent: 'customers' }),
+  screen({
+    id: 'customer-payment',
+    path: CUSTOMER_PAYMENT,
+    kind: 'form',
+    title: 'Registrar cobro',
+    parent: 'customers',
+    modalOnComputer: true,
+  }),
 
   screen({
     id: 'varieties',
