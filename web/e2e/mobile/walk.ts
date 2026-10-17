@@ -9,11 +9,32 @@ import {
 
 export const STEP_TIMEOUT_MS = 3_000
 
+/**
+ * Clicks a control by its text or its accessible name (`aria-label`) without a pointer: for
+ * one with no visible text on the phone (an icon link) or one another element covers there
+ * today. The cover itself is for the geometry checkers to report, not for the walk to trip on.
+ */
+export interface ActivateStep {
+  activate: string
+}
+export type WalkStep = RegistryStep | ActivateStep
+
+/** What the walk visits: a registry screen, or a state with steps of its own. */
+export interface WalkScreen extends Omit<RegistryScreen, 'steps'> {
+  steps: readonly WalkStep[]
+}
+
 export type Facts = Readonly<Record<string, string | number>>
 
-async function run(page: Page, step: RegistryStep, facts: Facts): Promise<void> {
+async function run(page: Page, step: WalkStep, facts: Facts): Promise<void> {
   const options = { timeout: STEP_TIMEOUT_MS }
-  if ('click' in step) await page.getByText(step.click, { exact: true }).first().click(options)
+  if ('activate' in step) {
+    const control = page
+      .getByText(step.activate, { exact: true })
+      .or(page.getByLabel(step.activate, { exact: true }))
+      .first()
+    await control.dispatchEvent('click', undefined, options)
+  } else if ('click' in step) await page.getByText(step.click, { exact: true }).first().click(options)
   else if ('fill' in step) {
     await page.getByLabel(step.fill.label).first().fill(resolvePlaceholders(step.fill.value, facts), options)
   } else if ('wait' in step) await page.getByText(step.wait, { exact: true }).first().waitFor(options)
@@ -32,13 +53,13 @@ export async function settle(page: Page): Promise<void> {
   await page.evaluate(() => document.fonts.ready)
 }
 
-export async function open(page: Page, screen: RegistryScreen, facts: Facts): Promise<void> {
+export async function open(page: Page, screen: WalkScreen, facts: Facts): Promise<void> {
   if (screen.route === null) throw new Error(`${screen.screen} has no route`)
   await page.goto(resolvePlaceholders(screen.route, facts))
 }
 
 /** Runs the registry's steps; answers whether every one was reachable. */
-export async function runSteps(page: Page, screen: RegistryScreen, facts: Facts): Promise<boolean> {
+export async function runSteps(page: Page, screen: WalkScreen, facts: Facts): Promise<boolean> {
   try {
     for (const step of screen.steps) {
       await run(page, step, facts)

@@ -6,15 +6,14 @@
  */
 
 import type { Page } from '@playwright/test'
-import type { RegistryScreen } from '../../src/mobile-standard/registry.ts'
 import type { Violation } from '../../src/mobile-standard/violation.ts'
 import { collect, pageViolation, type CellId } from './collect.js'
 import { holdApi } from './network.js'
-import { open, painted, runSteps, settle, type Facts } from './walk.js'
+import { open, painted, runSteps, settle, type Facts, type WalkScreen } from './walk.js'
 
 export async function walkScreen(
   page: Page,
-  screen: RegistryScreen,
+  screen: WalkScreen,
   cell: CellId,
   held: boolean,
   facts: Facts,

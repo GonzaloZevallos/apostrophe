@@ -38,7 +38,27 @@ export interface RegistryScreen {
  * The forms, sheets and shared `Estados` states the walk visits beside the registry's
  * routes. The `states-*` subtasks append their names here, one per line.
  */
-export const STATE_NAMES: readonly string[] = []
+export const STATE_NAMES: readonly string[] = [
+  // Records areas (e2e/mobile/statesRecords.ts)
+  'ClientesBusqueda',
+  'ClienteNuevo',
+  'ClienteEditar',
+  'EntradaStockDesdeStock',
+  'EntradaStockEditar',
+  'EntradaStockConfirmarCambios',
+  'EntradaStockConfirmarBorrado',
+  'PrecioNuevoFormulario',
+  'PrecioConfirmarBorrado',
+  'VariedadNuevaFormulario',
+  'VariedadRenombrar',
+  'VariedadUmbral',
+  'CatalogoAtributos',
+  'GastoDesdeMas',
+  'GastoDesdeGastos',
+  'GastoEditar',
+  'GastoConfirmarBorrado',
+  'ConfiguracionContrasena',
+]
 
 function asRecord(value: unknown, what: string): Record<string, unknown> {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
