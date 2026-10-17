@@ -36,44 +36,74 @@ lines 14 are non-zero, all on the screens of this task; the other 142 are AE 0.
 ## By eye (built side against the design, after)
 
 Judged on the sheets: Clientes, ClientesCompu, ClientesOscuro, ClienteFicha, ClienteFichaOscuro,
-Cobro, CobroCompu, NuevaVentaCliente, NuevaVentaClienteOscuro, and the form rows ClienteNuevo
-(before and after). Dark twins have no dark drawing: the design column stays light, so a dark
-twin is judged for structure and the tokens only.
+Cobro, CobroCompu, CobroOscuro, NuevaVentaCliente, NuevaVentaClienteOscuro, and the form rows
+ClienteNuevo (before and after). Dark twins have no dark drawing: the design column stays light,
+so a dark twin is judged for structure and the tokens only. CobroOscuro: the built page is the
+Cobro page in the dark tokens (text, the "Todo" chip, the field backgrounds and the dark button
+all read; the two radio circles are dim against the dark field, which belongs to the radios in
+#279). Its structure is Cobro's, so its verdicts are Cobro's.
 
-Better than before: Te deben leads, balance is amber at the row's end with "te debe desde dd/mm",
-"Cobrar" on each debtor row, Registrar cobro in the card's Te debe block, "Nueva venta a Nico
-Parra", Cobro as a modal on a computer, no Canal anywhere.
+Better than before: Te deben leads, the balance is amber at the row's end with "te debe desde
+dd/mm", "Cobrar" on each debtor row, Registrar cobro in the card's Te debe block, "Nueva venta a
+Nico Parra", Cobro as a modal on a computer, no Canal anywhere.
 
-Still different from the design (none is CSS-only: each needs structure, so none was "fixed" here
-and nothing was retaken). Pre-existing or follow-up of this task; **not filed**: this run has no
-issue-tracker step, so each needs an issue by Zeta.
+Every difference below has exactly one verdict. "Pre-existing" ones are in the before capture
+(the base `e08228dd`) and are filed and linked. Three introduced by this task fit none of the three
+verdicts and are escalated (E1 to E3), not hidden.
 
-1. Clientes (phone): the built list has a "Nuevo cliente" button and a count line "4 clientes"
-   where the design has a "+" in the header; no avatar initials, no chevron on non-debtors; the
-   Te deben rows repeat in A-Z (design too). "Cobrar" carries an icon the design does not.
-2. ClientesCompu: no sidebar brand; the card pane shows an edit pencil under the name where the
-   design has "Editar" at the right, no "Cuenta · saldo acumulado" label, ledger rows do not show
-   "A cuenta de la venta del..." as a second line and the pane's "Nueva venta a" button sits
-   under the ledger rather than at the foot.
-3. ClienteFicha: Te debe block is below the phone/VIP rows in the design, above here; the amount is
-   not the large figure; "Registrar cobro" in design is a full-width inside the block (same), the
-   ledger rows wrap ("$ / 25.000", "saldo $ / 25.000") instead of the design's right-aligned
-   amount over "saldo $ X"; no "Cuenta · saldo acumulado" label; "Borrar cobro" is a trash icon.
-4. Cobro (phone): a full page "Registrar cobro" with "Monto" as a plain number (`20000`, no
-   `$ 10.000` formatting), date as a native date input (design: "Hoy 05/10"), Efectivo and
-   Transferencia as radio inputs (design: a segmented control), button "Guardar" (design:
-   "Guardá el cobro"), no "Le queda debiendo" row in the preview. The design draws a sheet over the
-   card with "Cerrar"; the built page uses an icon close. The docs win on wording: payments.md
-   says "Registrar cobro", "Todo: $ X" and "Le queda debiendo $ X".
-5. CobroCompu: the modal exists as drawn but carries the same inner differences as 4; behind it,
-   Clientes keeps its scrim.
-6. NuevaVentaCliente: the picker is "Elegir cliente" with a full list and "Nuevo cliente" button;
-   the design shows a search result and the inline "Nuevo cliente" form with "Guardá y usá". The
-   form itself is at `/customers/new` (ClienteNuevo): Teléfono comes before Nombre, VIP is a bare
-   checkbox, not the design's "No" switch.
-7. Sample dates differ from the design's fixed ones (16/09 against 28/09): intended, sample data.
+### Intended (introduced by this task)
+
+| Where | Difference | Why |
+| --- | --- | --- |
+| ClientesCompu | Two panes, the list left and the card right | The design draws them; customers.md |
+| Clientes, ClientesCompu | "Cobrar" on every debtor row, which the compu drawing's compact rows lack | customers.md: every row of a customer who owes has "Cobrar"; the docs win |
+| Clientes, ClientesCompu | "Cobrar" and "Sin cliente" carry an icon the drawing does not | icon-and-text-rule.md: icon + text for everything outside the closed lists |
+| ClientesCompu | A "‹ Clientes" link at the top of the card pane; the compu drawing has none | customers.md: the card is "a card with ‹ Clientes"; the docs win |
+| ClienteFicha, ClientesCompu | The edit pencil where the drawing writes "Editar"; a trash icon where it writes "Borrar cobro" | icon-and-text-rule.md: edit and delete are icon-only with the word as accessible name |
+| Cobro, CobroCompu, CobroOscuro | A close icon where the drawing writes "Cerrar" | Same rule: close is icon-only everywhere |
+| Cobro, CobroCompu | Title "Registrar cobro" where the drawing writes "Registrá un cobro" | payments.md names the screen "Registrar cobro"; the docs win |
+| CobroCompu | A modal over the Clientes panes | The design draws it; ADR-0044 |
+| Cobro | The amount drawn as a large unboxed figure with a "Todo: $ X" chip | Brought to the design by this task |
+| Cobro (all captures) | No "Le queda debiendo $ X" row | Correct for the capture: it pays the whole balance, and the row shows for a partial amount (`ClienteFicha.test.tsx` pins both); the design's example is a partial one |
+| ClienteNuevo, ClienteEditar (4 rows) | The Canal fieldset is gone | The task's point |
+| Clientes, ClientesCompu, ClienteFicha, Cobro | Dates and sample figures (28/09 against 16/09, today's date against 05/10) | The sample runs on today's date; the drawings are static |
+| NuevaVentaCliente, NuevaVentaClienteOscuro | None | AE 0 before and after; the picker never carried a channel |
+
+### Pre-existing, filed
+
+| Difference | Filed |
+| --- | --- |
+| Clientes header: a "Nuevo cliente" button and a "4 clientes" line where the drawing has a "+" | #278 |
+| No avatar initials and no chevron on rows | #278 |
+| No sidebar brand and no "Cuenta · saldo acumulado" label | #278 |
+| Ledger rows wrap their amounts and have no sub-line; "Nueva venta a" sits under the ledger instead of at the foot; the Te debe amount is label-sized | #278 |
+| Cobro: digits as typed, native date input ("10/17/2026" against "Hoy 05/10"), radios against a segmented control, "Monto" against "Cuánto te pagó", and "Guardar" against "Guardá el cobro" (payments.md names no save label, so the drawing wins and the built wording differs) | #279 |
+| Nuevo cliente form: Teléfono before Nombre, VIP as a bare checkbox, no focus ring on the first field; the "Elegir cliente" sheet lists everyone and opens the form from a button, where the drawing searches and shows the form inline | #279 |
+
+### Introduced by this task and fitting none of the three: escalated to the Tech Lead
+
+- **E1, ClienteFicha (phone, dark twin, and the compu card).** The Te debe block sits above the
+  phone and VIP rows. The drawing and customers.md (:106-109, phone and VIP first, then "Te debe")
+  put it below. Introduced by C2. It is a JSX order change, not CSS only, so it was not fixed
+  here.
+- **E2, ClientesCompu and ClientesCompuOscuro.** The Te deben section in the left pane keeps the
+  phone's large total and a count line over taller rows; the compu drawing is one compact line
+  ("Te deben · $ 32.000 · 2 ventas debiendo") over compact rows. The docs fix only the content,
+  not the size. A CSS-only candidate that was not fixed: a fix retakes both sides (about 25
+  minutes for the whole registry) and changes the rows the phone shares.
+- **E3, Cobro (phone, CobroOscuro).** The built Cobro is a full page; the drawing is a sheet over
+  the faded card, and payments.md calls it "A sheet". The plan chose a form screen on the phone
+  and a modal on a computer; chrome (no bar, close, leave-confirmation) is the same. A sheet
+  needs a structural change, so it was not fixed here.
 
 ## Design vs docs wording
 
-None found beyond item 4: the built text follows the docs; the design's "Guardá el cobro" and
-"Registrá un cobro" are not used.
+Resolved against the docs, one per line:
+
+- "Registrá un cobro" (design) and "Registrar cobro" (docs): the docs win; built says "Registrar cobro".
+- "Cerrar", "Editar" and "Borrar cobro" as words (design) and icon-only with that accessible name (docs): the docs win; built is icon-only.
+- "Elegí el cliente" (design) and "Elegir cliente" (docs, sales.md and the PRD): the docs win; built says "Elegir cliente".
+- "Guardá el cobro" (design), "Guardar" (built): payments.md names no label. The drawing is the only source and the built word differs: pre-existing, #279.
+- "Hoy 05/10" (design): the docs say only "the date comes filled with today"; built shows a raw date input: pre-existing, #279.
+- "Cuánto te pagó" (design), "Monto" (built): the docs name no label: pre-existing, #279.
+- "Guardá y usá": the design and the built form agree, and the docs name no label: nothing to resolve.
