@@ -11,6 +11,7 @@ import {
   flattenRoutes,
   NOT_SCREENS,
   patternsMatch,
+  redirectExcuses,
   unregistered,
   UNREGISTERED_ROUTES,
 } from './mobile-standard/routeCoverage.ts'
@@ -18,21 +19,18 @@ import { redirects } from './redirects'
 import { router } from './router'
 
 const registryRoutes = REGISTRY.flatMap((screen) => (screen.route === null ? [] : [screen.route]))
+const excused = [NOT_SCREENS, redirectExcuses(redirects), UNREGISTERED_ROUTES]
 const patterns = flattenRoutes(router.routes)
 
 test('every route the router renders is a registry route or excused', () => {
   expect(patterns.length).toBeGreaterThan(20)
-  expect(unregistered(patterns, registryRoutes)).toEqual([])
+  expect(unregistered(patterns, registryRoutes, excused)).toEqual([])
 })
 
 test('every excuse names a pattern the router really has', () => {
-  for (const pattern of [...Object.keys(NOT_SCREENS), ...Object.keys(UNREGISTERED_ROUTES)]) {
+  for (const pattern of excused.flatMap((list) => Object.keys(list))) {
     expect(patterns).toContain(pattern)
   }
-})
-
-test('NOT_SCREENS lists exactly the catch-all and the redirect table', () => {
-  expect(Object.keys(NOT_SCREENS).sort()).toEqual(['*', ...redirects.map((r) => r.from)].sort())
 })
 
 test('no unregistered-route entry is covered by the registry now', () => {

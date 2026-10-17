@@ -4,15 +4,17 @@ import {
   flattenRoutes,
   NOT_SCREENS,
   patternsMatch,
+  redirectExcuses,
   unregistered,
   UNREGISTERED_ROUTES,
 } from './routeCoverage.ts'
 
+const excused = [NOT_SCREENS, redirectExcuses([{ from: '/old' }]), UNREGISTERED_ROUTES]
 const registryRoutes = REGISTRY.flatMap((screen) => (screen.route === null ? [] : [screen.route]))
 
 describe('route coverage, pure half', () => {
   test('a route missing from the registry is reported (fixture)', () => {
-    expect(unregistered(['/', '/ventas', '/nueva-pantalla', '/ventas/:id/recibo'], registryRoutes)).toEqual([
+    expect(unregistered(['/', '/ventas', '/nueva-pantalla', '/ventas/:id/recibo'], registryRoutes, excused)).toEqual([
       '/nueva-pantalla',
       '/ventas/:id/recibo',
     ])
@@ -20,12 +22,13 @@ describe('route coverage, pure half', () => {
 
   test('a registry route, a placeholder match, and the two excuse lists are accepted', () => {
     expect(
-      unregistered(['/ventas/:id', '*', '/negocio', '/mi-stock', '/clientes/:id/editar'], registryRoutes),
+      unregistered(['/ventas/:id', '*', '/old', '/mi-stock', '/clientes/:id/editar'], registryRoutes, excused),
     ).toEqual([])
   })
 
-  test('NOT_SCREENS holds only the catch-all and redirects; each excuse has a reason', () => {
-    expect(Object.keys(NOT_SCREENS).sort()).toEqual(['*', '/gastos/categorias', '/negocio'])
+  test('NOT_SCREENS holds only the catch-all; every excuse has a reason', () => {
+    expect(Object.keys(NOT_SCREENS)).toEqual(['*'])
+    expect(redirectExcuses([{ from: '/old' }])).toEqual({ '/old': expect.stringContaining('redirect-only') })
     for (const reason of [...Object.values(NOT_SCREENS), ...Object.values(UNREGISTERED_ROUTES)]) {
       expect(reason).not.toBe('')
     }

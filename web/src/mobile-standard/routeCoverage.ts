@@ -13,14 +13,19 @@ export interface RouteNode {
   children?: readonly RouteNode[] | undefined
 }
 
-/**
- * Router patterns that are not a screen, each with its reason: the catch-all and the
- * redirect-only routes (`src/redirects.ts`). Nothing else belongs here.
- */
+/** Router patterns that are not a screen and are not redirects: the catch-all. */
 export const NOT_SCREENS: Readonly<Record<string, string>> = {
   '*': 'catch-all: redirects to the home screen',
-  '/negocio': 'redirect-only: replaces itself with another route (src/redirects.ts)',
-  '/gastos/categorias': 'redirect-only: replaces itself with another route (src/redirects.ts)',
+}
+
+/**
+ * The redirect-only routes (`src/redirects.ts`) as excuses, each with its reason. The table
+ * is passed in, not imported: it lives in a module that pulls in React.
+ */
+export function redirectExcuses(table: readonly { from: string }[]): Record<string, string> {
+  return Object.fromEntries(
+    table.map(({ from }) => [from, 'redirect-only: replaces itself with another route (src/redirects.ts)']),
+  )
 }
 
 /**
@@ -69,7 +74,7 @@ export function patternsMatch(a: string, b: string): boolean {
 export function unregistered(
   patterns: readonly string[],
   registryRoutes: readonly string[],
-  excused: readonly Readonly<Record<string, string>>[] = [NOT_SCREENS, UNREGISTERED_ROUTES],
+  excused: readonly Readonly<Record<string, string>>[],
 ): string[] {
   return patterns.filter(
     (pattern) =>
