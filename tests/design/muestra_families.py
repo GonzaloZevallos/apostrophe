@@ -85,10 +85,17 @@ ANALISIS = Family(
     ),
 )
 
+# The archived variety's page and Archivadas; the `registry` piece lists its screens.
+ARCHIVED = Family(
+    name="archived",
+    screens=(),
+    denylist=(),
+)
+
 OTRAS = Family(
     name="otras",
     screens=(),
     denylist=(),
 )
 
-FAMILIES: tuple[Family, ...] = (INICIO, VARIEDADES, VENTAS, ANALISIS, OTRAS)
+FAMILIES: tuple[Family, ...] = (INICIO, VARIEDADES, VENTAS, ANALISIS, ARCHIVED, OTRAS)

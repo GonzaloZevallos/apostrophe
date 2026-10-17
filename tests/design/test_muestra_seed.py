@@ -66,10 +66,10 @@ def test_a_hand_edited_figure_is_caught() -> None:
     assert drift(text.replace("Capturada: 2026-10-07", "Capturada: 2026-10-08", 1))
 
 
-def seeded_at_capture_date(client: TestClient, clock: MovableClock) -> None:
+def seeded_at_capture_date(client: TestClient, clock: MovableClock) -> Any:
     day = captured_on(MUESTRA.read_text(encoding="utf-8"))
     clock.set(datetime.combine(day, time(18, 0), tzinfo=UTC))
-    load_script().seed(ClientApi(client), day)
+    return load_script().seed(ClientApi(client), day)
 
 
 def amounts(line: dict[str, Any] | None) -> tuple[int, bool] | None:
@@ -173,6 +173,75 @@ def test_the_seed_at_the_capture_date_has_the_states_the_screens_draw(
     # The current month's shortfall is one figure in the header, on the row and on Inicio.
     assert analysis["month"]["shortfall"] == analysis["months"][-1]["shortfall"]
     assert amounts(analysis["months"][-1]["shortfall"]) == amounts(periods["month"]["shortfall"])
+
+
+ARCHIVED_NAME = "Blue Dream"
+
+
+def test_the_archived_variety_has_one_opening_stock_entry_and_nothing_else(
+    client: TestClient, clock: MovableClock
+) -> None:
+    sample = seeded_at_capture_date(client, clock)
+
+    archived = client.get("/varieties", params={"archived": "true"}).json()
+    assert [(v["id"], v["name"], v["archived"]) for v in archived] == [
+        (sample.archived, ARCHIVED_NAME, True)
+    ]
+    assert archived[0]["current_price"] is not None
+    movements = movements_of(client, sample.archived)
+    assert [(m["kind"], m["origin"], m["grams"], m["total_cost"]) for m in movements] == [
+        ("entry", "opening_stock", 25, None)
+    ]
+    first_record = client.get("/analysis").json()["first_record"]
+    assert movements[0]["date"] >= first_record
+    # A day the sample already has a record on: the sales and entries of the others.
+    others = {
+        m["date"] for vid in varieties_by_name(client).values() for m in movements_of(client, vid)
+    }
+    assert movements[0]["date"] in others
+    stock = {
+        r["variety_id"]: r
+        for r in client.get("/stock", params={"archived": "true"}).json()["varieties"]
+    }
+    assert stock[sample.archived]["threshold"] == 15
+    assert stock[sample.archived]["grams"] == 25
+
+
+def test_the_archived_variety_is_hidden_and_carries_its_catalog_attributes(
+    client: TestClient, clock: MovableClock
+) -> None:
+    sample = seeded_at_capture_date(client, clock)
+
+    client.post(f"/varieties/{sample.archived}/restore")
+    catalog = {v["id"]: v for v in client.get("/catalog").json()["varieties"]}
+
+    assert catalog[sample.archived]["shown"] is False
+    assert catalog[sample.archived]["emoji"] == "🫐"
+    assert catalog[sample.archived]["indica_share"] == 40
+    assert catalog[sample.archived]["aroma"] == "Frutos rojos"
+
+
+def test_the_archived_variety_touches_no_read_of_the_live_business(
+    client: TestClient, clock: MovableClock
+) -> None:
+    sample = seeded_at_capture_date(client, clock)
+    gone = sample.archived
+
+    assert gone not in [r["variety_id"] for r in client.get("/panel").json()["stock"]]
+    assert gone not in [r["variety_id"] for r in client.get("/stock").json()["varieties"]]
+    assert gone not in [v["id"] for v in client.get("/varieties").json()]
+    catalog = client.get("/catalog").json()
+    assert gone not in [v["id"] for v in catalog["varieties"]]
+    assert ARCHIVED_NAME not in (catalog["text"] or "")
+    analysis = client.get("/analysis").json()
+    assert gone not in [v["variety_id"] for v in analysis["month"]["varieties"]]
+
+    assert gone in [
+        r["variety_id"]
+        for r in client.get("/stock", params={"archived": "true"}).json()["varieties"]
+    ]
+    assert gone in [v["id"] for v in client.get("/varieties", params={"archived": "true"}).json()]
+    assert gone in {e["variety_id"] for e in client.get("/stock").json()["entries"]}
 
 
 def test_the_panel_and_the_analysis_agree_on_the_current_week_and_month(
