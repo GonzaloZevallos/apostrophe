@@ -71,7 +71,7 @@ def offset_seconds(source: Clock = system_clock) -> int:
 def environment_clock() -> Clock:
     """The e2e clock: anchored when the offset variable is set, the real one otherwise."""
     raw = os.environ.get(CLOCK_OFFSET_VARIABLE)
-    if raw is None:
+    if not raw:
         return system_clock
     return anchored_clock(timedelta(seconds=int(raw)))
 

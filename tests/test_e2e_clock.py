@@ -3,7 +3,10 @@ instant and keeps advancing, whatever the real date is."""
 
 from __future__ import annotations
 
+import os
 import re
+import subprocess
+import sys
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
@@ -126,25 +129,106 @@ def test_offset_prints_only_the_integer(capsys: pytest.CaptureFixture[str]) -> N
     assert abs(int(printed) - offset_seconds()) <= 5
 
 
-def _files_naming_the_variable(roots: tuple[str, ...], suffixes: tuple[str, ...]) -> set[str]:
+def files_naming_the_variable(
+    base: Path, roots: tuple[str, ...], suffixes: tuple[str, ...]
+) -> set[str]:
+    """Files under `base/<root>` that name the variable, by its literal name or through the
+    `CLOCK_OFFSET_VARIABLE` constant."""
     found: set[str] = set()
     for root in roots:
-        for path in (REPO_ROOT / root).rglob("*"):
-            if path.suffix in suffixes and "node_modules" not in path.parts:
-                if CLOCK_OFFSET_VARIABLE in path.read_text(encoding="utf-8"):
-                    found.add(path.relative_to(REPO_ROOT).as_posix())
+        for path in (base / root).rglob("*"):
+            if path.suffix not in suffixes or "node_modules" in path.parts:
+                continue
+            text = path.read_text(encoding="utf-8")
+            if CLOCK_OFFSET_VARIABLE in text or "CLOCK_OFFSET_VARIABLE" in text:
+                found.add(path.relative_to(base).as_posix())
     return found
 
 
 def test_only_the_e2e_app_names_the_offset_variable() -> None:
-    assert _files_naming_the_variable(("app", "web/src"), (".py", ".ts", ".tsx")) == set()
+    assert files_naming_the_variable(REPO_ROOT, ("app", "web/src"), (".py", ".ts", ".tsx")) == set()
     own = {"tests/e2e_app.py", "tests/test_e2e_clock.py"}
-    assert _files_naming_the_variable(("tests", "scripts"), (".py",)) - own == set()
-    assert "tests/e2e_app.py" in _files_naming_the_variable(("tests",), (".py",))
+    assert files_naming_the_variable(REPO_ROOT, ("tests", "scripts"), (".py",)) == own
 
 
-def test_the_scan_rejects_a_file_that_names_the_variable(tmp_path: Path) -> None:
-    stray = tmp_path / "stray.py"
-    stray.write_text(f'import os\nos.environ["{CLOCK_OFFSET_VARIABLE}"]\n', encoding="utf-8")
+def test_the_scan_reports_files_that_name_the_variable_by_name_or_constant(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "app").mkdir()
+    (tmp_path / "web/src").mkdir(parents=True)
+    (tmp_path / "app/literal.py").write_text(f'KEY = "{CLOCK_OFFSET_VARIABLE}"\n', encoding="utf-8")
+    (tmp_path / "app/imported.py").write_text(
+        "from tests.e2e_app import CLOCK_OFFSET_VARIABLE\n", encoding="utf-8"
+    )
+    (tmp_path / "web/src/stray.ts").write_text(
+        f"process.env.{CLOCK_OFFSET_VARIABLE} = '1'\n", encoding="utf-8"
+    )
+    (tmp_path / "web/src/clean.ts").write_text("export const x = 1\n", encoding="utf-8")
 
-    assert CLOCK_OFFSET_VARIABLE in stray.read_text(encoding="utf-8")
+    found = files_naming_the_variable(tmp_path, ("app", "web/src"), (".py", ".ts", ".tsx"))
+
+    assert found == {"app/literal.py", "app/imported.py", "web/src/stray.ts"}
+
+
+def _run_module(*args: str) -> subprocess.CompletedProcess[str]:
+    """`python -m tests.e2e_app <args>` in a child process, with the current environment."""
+    return subprocess.run(
+        [sys.executable, "-m", "tests.e2e_app", *args],
+        cwd=REPO_ROOT,
+        env=dict(os.environ),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+
+def test_module_execution_prints_only_the_offset_integer(e2e_environment: None) -> None:
+    run = _run_module("offset")
+
+    assert run.returncode == 0, run.stderr
+    assert re.fullmatch(r"-?\d+\n", run.stdout)
+    assert abs(int(run.stdout) - offset_seconds()) <= 5
+    assert run.stderr == ""
+
+
+def test_module_execution_invites_a_business_on_the_anchored_clock(
+    e2e_environment: None, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv(CLOCK_OFFSET_VARIABLE, str(offset_seconds()))
+
+    run = _run_module("invite-business")
+
+    assert run.returncode == 0, run.stderr
+    assert re.fullmatch(
+        r"http://localhost:9/invitation/\S+\nValid once, until 2026-10-14 15:00 UTC\.\n",
+        run.stdout,
+    )
+
+
+def test_module_execution_issues_a_reset_link_a_day_after_the_anchor(
+    e2e_environment: None, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv(CLOCK_OFFSET_VARIABLE, str(offset_seconds()))
+    token = _run_module("invite-business").stdout.splitlines()[0].rsplit("/", 1)[1]
+    with TestClient(create_e2e_app()) as client:
+        accepted = client.post(
+            f"/invitations/{token}/accept",
+            json={"business_name": "Reset", "email": "reset@example.com", "password": PASSWORD},
+        )
+        assert accepted.status_code == 201, accepted.text
+
+    run = _run_module("reset-password", "reset@example.com")
+
+    assert run.returncode == 0, run.stderr
+    assert re.fullmatch(
+        r"http://localhost:9/reset/\S+\nValid once, until 2026-10-08 15:00 UTC\.\n", run.stdout
+    )
+
+
+def test_an_empty_offset_variable_means_the_real_clock(
+    e2e_environment: None, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv(CLOCK_OFFSET_VARIABLE, "")
+    monkeypatch.setattr(e2e_app, "system_clock", MovableClock(REAL_DAY))
+
+    assert e2e_app.environment_clock()() == REAL_DAY
