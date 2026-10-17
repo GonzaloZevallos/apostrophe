@@ -18,10 +18,10 @@ def real_muestra() -> Muestra:
     return parse_muestra((DESIGN / "muestra.md").read_text(encoding="utf-8"))
 
 
-def test_the_five_families_are_declared_once_each() -> None:
+def test_the_six_families_are_declared_once_each() -> None:
     names = [family.name for family in FAMILIES]
 
-    assert names == ["inicio", "variedades", "ventas", "analisis", "otras"]
+    assert names == ["inicio", "variedades", "ventas", "analisis", "archived", "otras"]
     assert set(CHECKS) == set(names)
 
 
