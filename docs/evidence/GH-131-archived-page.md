@@ -54,3 +54,8 @@ The before sheet shows the defects this task fixes: "ok · Archivada" in the sta
 ## Result
 
 No difference found outside the list except the `VariedadDetalle` drawing, which is the drawings subtask's intended edit. No regression found.
+
+## Notes added at merge
+
+- Master moved after the captures (PR #259, `83fae65`, 23:28 Argentina time) and was merged into the branch at `8b0533f`, so the branch contains `origin/master`. The incoming changes are documentation only (`docs/evidence/GH-247/`, `docs/product/design-capture.md`): no file under `app/`, `web/` or `scripts/` changed, so the captures stay valid. The head SHA the captures used stays `2e1cdc1`.
+- The `VariedadDetalle` and `VariedadDetalleOscuro` design-side difference comes from the planned `drawings` change, which the brief's "what may differ" list does not name. Planned, not a defect.
