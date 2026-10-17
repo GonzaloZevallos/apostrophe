@@ -11,7 +11,7 @@
  * invariants): nothing here runs again once a sale is saved.
  */
 
-import { noPriceMessage, OWING_HINT } from './messages'
+import { noPriceMessage, OWING_HINT } from '../copy/sales'
 
 export type PricingRule = 'list' | 'bulk' | 'vip' | 'gift' | 'special'
 

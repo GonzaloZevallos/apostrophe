@@ -13,7 +13,7 @@
  * `GoneNotice` hard-coding one placement for every screen (review finding, e2e).
  */
 
-import { GONE_NOTICE } from '../api/refusals'
+import { GONE_NOTICE } from '../copy/refusals'
 
 export default function GoneNotice() {
   return (

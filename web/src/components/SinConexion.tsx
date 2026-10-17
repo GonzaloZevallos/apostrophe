@@ -6,7 +6,7 @@
  */
 
 import AvisoAmbar from './AvisoAmbar'
-import { SIN_CONEXION_MENSAJE } from './estadosMessages'
+import { SIN_CONEXION_MENSAJE } from '../copy/states'
 
 export default function SinConexion() {
   return (

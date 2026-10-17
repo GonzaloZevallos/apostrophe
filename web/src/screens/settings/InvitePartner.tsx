@@ -18,7 +18,7 @@ import SinConexion from '../../components/SinConexion'
 import { copyText } from '../../clipboard'
 import { canShare, shareText } from '../../share'
 import { formatDateShort } from '../../format/dates'
-import { inviteExpiry } from './messages'
+import { inviteExpiry } from '../../copy/settings'
 
 interface Invite {
   url: string

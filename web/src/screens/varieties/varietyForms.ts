@@ -7,7 +7,8 @@
 
 import { useCallback } from 'react'
 import { useNavigate } from 'react-router'
-import { NAME_ARCHIVED_MESSAGE, type RefusalCode } from '../../api/refusals'
+import { NAME_ARCHIVED_MESSAGE } from '../../copy/refusals'
+import { type RefusalCode } from '../../api/refusals'
 import { NAME_INVALID_MESSAGE, NAME_TAKEN_MESSAGE } from '../Variedades'
 
 export type VarietyForm = 'rename' | 'threshold' | 'catalog'

@@ -4,7 +4,21 @@
  * its query never settles, and the skeleton must stand where the content will go.
  */
 
-import { CUSTOMER, CUSTOMER_EDIT, EXPENSES, EXPENSE_CATEGORIES, SALE, SALES, SETTINGS_BUSINESS, SETTINGS_CATALOG_MESSAGE, SETTINGS_INTEGRATIONS, SETTINGS_USERS, STOCK, STOCK_ENTRY, pathTo } from '../routes'
+import {
+  CUSTOMER,
+  CUSTOMER_EDIT,
+  EXPENSES,
+  EXPENSE_CATEGORIES,
+  SALE,
+  SALES,
+  SETTINGS_BUSINESS,
+  SETTINGS_CATALOG_MESSAGE,
+  SETTINGS_INTEGRATIONS,
+  SETTINGS_USERS,
+  STOCK,
+  STOCK_ENTRY,
+  pathTo,
+} from '../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor } from '@testing-library/react'
 import type { ReactElement } from 'react'
@@ -33,7 +47,7 @@ import IntegrationsGroup from './settings/IntegrationsGroup'
 import UsersGroup from './settings/UsersGroup'
 import Ventas from './ventas/Ventas'
 import VentaDetalle from './ventas/VentaDetalle'
-import { SIN_CONEXION_MENSAJE } from '../components/estadosMessages'
+import { SIN_CONEXION_MENSAJE } from '../copy/states'
 
 const ME: Me = { email: 'a@b.com', business_name: 'Negocio', today: '2026-10-03' }
 

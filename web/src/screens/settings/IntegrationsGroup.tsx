@@ -17,7 +17,8 @@ import { type FormEvent, type KeyboardEvent, useEffect, useId, useState } from '
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ApiError, NetworkError, get, post } from '../../api/client'
 import { invalidateResource, keys } from '../../api/keys'
-import { PINNED_CATALOG_REFUSAL_OVERRIDES, resolveOverride } from '../../api/refusals'
+import { PINNED_CATALOG_REFUSAL_OVERRIDES } from '../../copy/refusals'
+import { resolveOverride } from '../../api/refusals'
 import AvisoExito, { type SuccessToast } from '../../components/AvisoExito'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
@@ -32,7 +33,7 @@ import {
   LOAD_THE_TOKEN_FIRST,
   OWN_CHAT_INFO,
   PREVIOUS_PIN_NOTICE,
-} from './integrationsMessages'
+} from '../../copy/settings'
 
 const TITLE = 'Integraciones'
 const TEST_SENT_TOAST: SuccessToast = 'Prueba enviada'

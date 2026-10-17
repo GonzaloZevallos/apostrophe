@@ -9,7 +9,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import ExpenseCategoriesEditor, { CANNOT_REMOVE } from './ExpenseCategoriesEditor'
-import { CATEGORIES_SAVE_AT_ONCE } from './messages'
+import { CATEGORIES_SAVE_AT_ONCE } from '../../copy/settings'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {

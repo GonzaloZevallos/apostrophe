@@ -44,7 +44,7 @@ import {
   SHORTFALL_LABEL,
   SINCE_FIRST_RECORD_LABEL,
   VARIETY_TOTAL_NOTE,
-} from './analisisMessages'
+} from '../copy/analysis'
 
 export {
   COST_OF_GOODS_LABEL,

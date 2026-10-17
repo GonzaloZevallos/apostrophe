@@ -22,7 +22,7 @@ import { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import AuthPage from '../components/AuthPage'
 import Boton from '../components/Boton'
 import PasswordField from '../components/PasswordField'
-import { BRAKE_MESSAGE, INVITE_ONLY_LINE, LOGIN_HINT } from './authMessages'
+import { BRAKE_MESSAGE, INVITE_ONLY_LINE, LOGIN_HINT } from '../copy/auth'
 
 export const CREDENTIALS_WRONG = 'Email o contraseña incorrectos'
 export const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'

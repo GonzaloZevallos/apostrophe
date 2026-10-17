@@ -13,7 +13,12 @@ import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import IntegrationsGroup from './IntegrationsGroup'
 import { iconAndTextProblems } from '../../test/iconAndTextRule'
-import { LIMITED_COPY, OWN_CHAT_HELP, OWN_CHAT_INFO, PREVIOUS_PIN_NOTICE } from './integrationsMessages'
+import {
+  LIMITED_COPY,
+  OWN_CHAT_HELP,
+  OWN_CHAT_INFO,
+  PREVIOUS_PIN_NOTICE,
+} from '../../copy/settings'
 import { LIMITS } from '../../copy/limits'
 
 vi.mock('../../shell/useViewport', () => ({ useViewport: () => 'phone' }))

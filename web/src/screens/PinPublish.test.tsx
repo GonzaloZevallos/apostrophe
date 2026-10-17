@@ -10,12 +10,12 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
-import { PINNED_CATALOG_REASON_LABEL } from '../api/refusals'
+import { PINNED_CATALOG_REASON_LABEL } from '../copy/refusals'
 import { copyProblems, measure } from '../copy/limits'
 import PinPublish from './PinPublish'
 import { expectIconAndTextRule } from '../test/iconAndTextRule'
-import * as pinPublishMessages from './pinPublishMessages'
-import type { PinReason } from '../api/refusals'
+import * as catalogCopy from '../copy/catalog'
+import type { PinReason } from '../copy/refusals'
 import {
   INTEGRATIONS_LINK_WORD,
   LIMITED_COPY,
@@ -23,7 +23,7 @@ import {
   OUT_OF_DATE_LINES,
   NOT_READY_LINE,
   CHANNEL_MISSING_LINE,
-} from './pinPublishMessages'
+} from '../copy/catalog'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -192,7 +192,7 @@ test('the line a reason makes over 80 as shown is listed, not left out: too_long
   const line = OUT_OF_DATE_LINES.too_long
   expect(measure(line)).toBeGreaterThan(80)
   expect(LONG_REFUSALS).toEqual([line])
-  expect(copyProblems('pinPublishMessages', pinPublishMessages)).toEqual([])
+  expect(copyProblems('copy/catalog', catalogCopy)).toEqual([])
 })
 
 function renderOutOfDate(reason: PinReason) {

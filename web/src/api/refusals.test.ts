@@ -1,12 +1,6 @@
 import { describe, expect, test } from 'vitest'
-import {
-  GONE_DETAIL,
-  GONE_NOTICE,
-  isGone,
-  kindOf,
-  resolveOverride,
-  type RefusalCode,
-} from './refusals'
+import { GONE_DETAIL, GONE_NOTICE } from '../copy/refusals'
+import { isGone, kindOf, resolveOverride, type RefusalCode } from './refusals'
 
 describe('kindOf', () => {
   test('reads a refusal code\'s kind from the shared contract', () => {

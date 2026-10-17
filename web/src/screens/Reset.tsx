@@ -36,7 +36,7 @@ import PasswordField from '../components/PasswordField'
 import SinConexion from '../components/SinConexion'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import { isGone, resolveOverride, type RefusalCode } from '../api/refusals'
-import { DEAD_LINK_MESSAGE, WEAK_PASSWORD_MESSAGE } from './authMessages'
+import { DEAD_LINK_MESSAGE, WEAK_PASSWORD_MESSAGE } from '../copy/auth'
 
 export { DEAD_LINK_MESSAGE }
 export { ERROR_GENERICO_MENSAJE as RETRY_MESSAGE }

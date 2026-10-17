@@ -23,7 +23,7 @@ import { useFlash } from '../../flash/useFlash'
 import { formatGrams } from '../../format/money'
 import { warningFor } from '../../stock/detail'
 import { GENERIC_REFUSAL_MESSAGE } from '../Variedades'
-import { THRESHOLD_OVERRIDES, THRESHOLD_SAVED } from './thresholdMessages'
+import { THRESHOLD_OVERRIDES, THRESHOLD_SAVED } from '../../copy/varieties'
 import { useOpenForm } from './varietyForms'
 
 export default function VarietyThresholdSection({

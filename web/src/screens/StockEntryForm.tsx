@@ -19,7 +19,14 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ApiError, NetworkError, UNKNOWN_CODE, get } from '../api/client'
 import { invalidateResource, keys } from '../api/keys'
 import { isGone, resolveOverride, type RefusalCode } from '../api/refusals'
-import { type Origin, type StockEntry, deleteEntry, editEntry, readStock, recordEntry } from '../api/stock'
+import {
+  type Origin,
+  type StockEntry,
+  deleteEntry,
+  editEntry,
+  readStock,
+  recordEntry,
+} from '../api/stock'
 import { costPerGram, gramsToHundredths } from '../domain/costPerGram'
 import ConfirmDialog from '../components/ConfirmDialog'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
@@ -30,7 +37,13 @@ import { parseMoney, parseSignedGrams } from '../format/parse'
 import type { Variety } from './Variedades'
 import { varietiesByName } from './varieties/varietiesByName'
 import Boton from '../components/Boton'
-import { COST_REQUIRED_HELP, GRAMS_INVALID, OPENING_COST_HINT, onHandHelp, perGramPreview } from './stockMessages'
+import {
+  COST_REQUIRED_HELP,
+  GRAMS_INVALID,
+  OPENING_COST_HINT,
+  onHandHelp,
+  perGramPreview,
+} from '../copy/stock'
 
 export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
 export const COST_REQUIRED = 'Una compra necesita un costo total'

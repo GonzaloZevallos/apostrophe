@@ -8,7 +8,7 @@
  * typo or an invented message fails `tsc` instead of rendering silently.
  */
 
-import type { PRICE_SAVED } from '../screens/varieties/priceMessages'
+import type { PRICE_SAVED } from '../copy/varieties'
 
 export type SuccessToast =
   | 'Cliente guardado'

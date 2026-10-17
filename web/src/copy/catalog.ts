@@ -1,17 +1,21 @@
 /**
- * The always-visible lines of the pin's status card on the catalog screen (`PinPublish`),
- * shared with its test (no JSX). Listed in `LIMITED_COPY` as the same bindings the screen
- * renders: each "Desactualizado" reason (`api/refusals.ts` owns the sentences, the
- * server's reasons worded once) and the two lines that say why Publicar is blocked, with
- * the link word the screen draws at their end. `copy/copyLimits.test.ts` measures them.
+ * The fixed words of the catalog screen that are always on screen, shared with its test
+ * (no JSX): its empty state and the always-visible lines of the pin's status card
+ * (`PinPublish`). Listed in `LIMITED_COPY` so `copy/copyLimits.test.ts` measures the very
+ * bindings `Catalogo` and `PinPublish` render: each "Desactualizado" reason (`refusals.ts`
+ * owns the sentences, the server's reasons worded once) and the two lines that say why
+ * Publicar is blocked, with the link word the screen draws at their end.
  */
 
 import {
   PINNED_CATALOG_NOT_READY_REASON,
   PINNED_CATALOG_REASON_LABEL,
   type PinReason,
-} from '../api/refusals'
-import type { LimitedCopy } from '../copy/limits'
+} from './refusals'
+import type { LimitedCopy } from './limits'
+
+export const EMPTY_STATE_TITLE = 'No hay nada en el catálogo hoy'
+export const EMPTY_STATE_DETAIL = 'No hay nada para copiar todavía'
 
 /** The word of the link to Configuración → Integraciones that ends both blocked lines. */
 export const INTEGRATIONS_LINK_WORD = 'Integraciones'
@@ -38,6 +42,8 @@ export const OUT_OF_DATE_LINES: Record<PinReason, string> = {
 }
 
 export const LIMITED_COPY: readonly LimitedCopy[] = [
+  { kind: 'emptyTitle', text: EMPTY_STATE_TITLE },
+  { kind: 'emptyLine', text: EMPTY_STATE_DETAIL },
   ...Object.values(OUT_OF_DATE_LINES)
     .filter((text) => text !== OUT_OF_DATE_TOO_LONG_LINE)
     .map((text): LimitedCopy => ({ kind: 'notice', text })),

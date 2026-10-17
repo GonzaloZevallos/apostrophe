@@ -8,7 +8,11 @@
 
 import type { PricingSettings } from '../../api/pricingSettings'
 import type { PriceErrors, PriceValues } from './priceFieldRules'
-import { PRICE_DISCOUNT_HELP, PRICE_FROM_GRAMS_HELP, PRICE_PER_GRAM_HELP } from './priceMessages'
+import {
+  PRICE_DISCOUNT_HELP,
+  PRICE_FROM_GRAMS_HELP,
+  PRICE_PER_GRAM_HELP,
+} from '../../copy/varieties'
 
 export function FieldError({ message }: { message: string | undefined }) {
   if (message === undefined) return null

@@ -14,7 +14,7 @@ import OpcionInterruptor from '../../components/OpcionInterruptor'
 import ReglaInsignia from '../../components/ReglaInsignia'
 import { formatGrams, formatMoney } from '../../format/money'
 import { type priceLine, fromHundredths } from '../../sales/pricing'
-import { GRAMS_HELP } from '../../sales/messages'
+import { GRAMS_HELP } from '../../copy/sales'
 import { useViewport } from '../../shell/useViewport'
 import type { Variety } from '../Variedades'
 

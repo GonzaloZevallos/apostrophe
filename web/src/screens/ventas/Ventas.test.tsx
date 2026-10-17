@@ -12,11 +12,11 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import saleFixture from '../../api/fixtures/sale.json'
-import { GONE_NOTICE } from '../../api/refusals'
+import { GONE_NOTICE } from '../../copy/refusals'
 import type { Me } from '../../api/me'
 import Ventas from './Ventas'
 import { stubFetchWithSettings } from '../stubFetchWithSettings'
-import { SIN_CONEXION_MENSAJE } from '../../components/estadosMessages'
+import { SIN_CONEXION_MENSAJE } from '../../copy/states'
 
 
 function jsonResponse(status: number, body: unknown): Response {

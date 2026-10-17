@@ -13,11 +13,11 @@ import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import type { Me } from '../../api/me'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
-import { SIN_CONEXION_MENSAJE } from '../../components/estadosMessages'
+import { SIN_CONEXION_MENSAJE } from '../../copy/states'
 import * as clipboard from '../../clipboard'
 import { LIMITS, measure, SAMPLES } from '../../copy/limits'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
-import { inviteExpiry, LIMITED_COPY } from './messages'
+import { inviteExpiry, LIMITED_COPY } from '../../copy/settings'
 import UsersGroup from './UsersGroup'
 
 vi.mock('../../clipboard', () => ({ copyText: vi.fn().mockResolvedValue(true) }))

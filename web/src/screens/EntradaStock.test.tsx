@@ -14,14 +14,21 @@ import { createMemoryRouter, Outlet, RouterProvider, useLocation } from 'react-r
 import { afterEach, expect, test, vi } from 'vitest'
 import { catalogQueryOptions } from '../api/catalog'
 import type { Me } from '../api/me'
-import { GONE_NOTICE } from '../api/refusals'
+import { GONE_NOTICE } from '../copy/refusals'
 import { useGoneNotice } from '../components/goneExit'
 import InAppLink from '../components/InAppLink'
 import { inAppState } from '../components/inAppState'
 import { SheetRouterProvider } from '../components/useSheetStack'
 import { stubViewport } from '../test-viewport'
 import FlashProvider from '../flash/FlashProvider'
-import { STOCK, STOCK_ENTRY, STOCK_ENTRY_NEW, VARIETIES as VARIETIES_PATH, VARIETY, pathTo } from '../routes'
+import {
+  STOCK,
+  STOCK_ENTRY,
+  STOCK_ENTRY_NEW,
+  VARIETIES as VARIETIES_PATH,
+  VARIETY,
+  pathTo,
+} from '../routes'
 import EntradaStock from './EntradaStock'
 import { LIMITS } from '../copy/limits'
 import { expectIconAndTextRule } from '../test/iconAndTextRule'

@@ -18,7 +18,11 @@ import SinConexion from '../../components/SinConexion'
 import { formatGramsInput } from '../../format/money'
 import { parseGrams } from '../../format/parse'
 import { GENERIC_REFUSAL_MESSAGE } from '../Variedades'
-import { THRESHOLD_INVALID_MESSAGE, THRESHOLD_OVERRIDES, THRESHOLD_SAVED } from './thresholdMessages'
+import {
+  THRESHOLD_INVALID_MESSAGE,
+  THRESHOLD_OVERRIDES,
+  THRESHOLD_SAVED,
+} from '../../copy/varieties'
 import Boton from '../../components/Boton'
 
 /** The saved amount as a person types it: a comma, no unit. */

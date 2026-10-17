@@ -25,7 +25,7 @@ import {
   pathTo,
 } from '../routes'
 import { NO_PRICE_TODAY } from './Variedades'
-import { EMPTY_DETAIL, EMPTY_TITLE } from './varieties/varietiesMessages'
+import { EMPTY_DETAIL, EMPTY_TITLE } from '../copy/varieties'
 import { LIMITS, SAMPLES } from '../copy/limits'
 
 const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }

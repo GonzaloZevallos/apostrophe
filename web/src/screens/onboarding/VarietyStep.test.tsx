@@ -19,7 +19,7 @@ import { ONBOARDING_STOCK, ONBOARDING_VARIETY } from '../../routes'
 import Listo from './Listo'
 import OnboardingLayout from './OnboardingLayout'
 import { OnboardingEntry, OnboardingStepRoute } from './OnboardingRoutes'
-import { DISCARD_DETAIL, PARTLY_SAVED_DETAIL } from './onboardingMessages'
+import { DISCARD_DETAIL, PARTLY_SAVED_DETAIL } from '../../copy/onboarding'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03' }
 

@@ -6,7 +6,7 @@
  */
 
 import AvisoAmbar from './AvisoAmbar'
-import { ERROR_GENERICO_MENSAJE } from './estadosMessages'
+import { ERROR_GENERICO_MENSAJE } from '../copy/states'
 
 export { ERROR_GENERICO_MENSAJE }
 

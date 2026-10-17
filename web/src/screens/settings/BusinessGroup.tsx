@@ -23,7 +23,8 @@ import Boton from '../../components/Boton'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import Loading from '../../components/Loading'
-import { BUSINESS_NAME_INVALID_MESSAGE, GENERIC_REFUSAL_MESSAGE, RENAME_SUCCESS } from './messages'
+import { BUSINESS_NAME_INVALID_MESSAGE, RENAME_SUCCESS } from '../../copy/settings'
+import { GENERIC_REFUSAL_MESSAGE } from '../../copy/common'
 import SettingsGroup from './SettingsGroup'
 
 interface Business {

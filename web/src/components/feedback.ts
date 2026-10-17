@@ -27,7 +27,7 @@
  * by code outside this file) renders and unlocks nothing.
  */
 
-import { GONE_NOTICE } from '../api/refusals'
+import { GONE_NOTICE } from '../copy/refusals'
 
 /** Every plain success toast a screen can show by navigating away (PRD,
  * "Feedback"; sales.md round 3). "Venta guardada" is deliberately not here —

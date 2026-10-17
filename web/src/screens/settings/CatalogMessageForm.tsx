@@ -30,9 +30,9 @@ import Loading from '../../components/Loading'
 import {
   CATALOG_SAVED,
   FOOTER_TOO_LONG_MESSAGE,
-  GENERIC_REFUSAL_MESSAGE,
   HEADER_TOO_LONG_MESSAGE,
-} from './messages'
+} from '../../copy/settings'
+import { GENERIC_REFUSAL_MESSAGE } from '../../copy/common'
 
 const SUBMIT_LABEL = 'Guardá el mensaje'
 

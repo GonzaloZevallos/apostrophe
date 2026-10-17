@@ -3,7 +3,7 @@
  * renders this same binding.
  */
 
-import type { LimitedCopy } from '../copy/limits'
+import type { LimitedCopy } from './limits'
 
 export const FLOWER_NOTICE = 'Las compras de flores no van acá: se cargan en Stock.'
 

@@ -6,7 +6,7 @@
  */
 
 import BotonLink from './BotonLink'
-import { GONE_DETAIL } from '../api/refusals'
+import { GONE_DETAIL } from '../copy/refusals'
 
 export default function GoneScreen({ label, to }: { label: string; to: string }) {
   return (

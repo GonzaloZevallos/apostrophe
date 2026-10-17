@@ -9,13 +9,8 @@ import { type FormEvent, useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { ApiError, NetworkError, UNKNOWN_CODE, patch } from '../../api/client'
 import { invalidateResource } from '../../api/keys'
-import {
-  NAME_ARCHIVED_MESSAGE,
-  isGone,
-  kindOf,
-  resolveOverride,
-  type RefusalCode,
-} from '../../api/refusals'
+import { NAME_ARCHIVED_MESSAGE } from '../../copy/refusals'
+import { isGone, kindOf, resolveOverride, type RefusalCode } from '../../api/refusals'
 import type { SuccessToast } from '../../components/AvisoExito'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'

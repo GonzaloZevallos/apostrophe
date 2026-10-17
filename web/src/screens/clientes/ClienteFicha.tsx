@@ -28,7 +28,8 @@ import {
   deletePayment,
   getAccount,
 } from '../../api/payments'
-import { GONE_NOTICE, isGone } from '../../api/refusals'
+import { GONE_NOTICE } from '../../copy/refusals'
+import { isGone } from '../../api/refusals'
 
 // `payment.not_found` is not yet in `contract.json` (`isGone` would answer
 // `false` for it): that code's own `kind: "gone"` entry ships with the

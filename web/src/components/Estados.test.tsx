@@ -2,12 +2,12 @@ import { SALES } from '../routes'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { expect, test } from 'vitest'
-import { GONE_DETAIL } from '../api/refusals'
+import { GONE_DETAIL } from '../copy/refusals'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from './ErrorGenerico'
 import GoneScreen from './GoneScreen'
 import Notice from './Notice'
 import SinConexion from './SinConexion'
-import { SIN_CONEXION_MENSAJE } from './estadosMessages'
+import { SIN_CONEXION_MENSAJE } from '../copy/states'
 
 test('the gone screen says one fixed line and offers one way back, with no data', () => {
   const { container } = render(

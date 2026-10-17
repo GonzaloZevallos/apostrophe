@@ -29,7 +29,7 @@ import {
 import { iconAndTextProblems } from '../../test/iconAndTextRule'
 import VarietyPage from './VarietyPage'
 import VarietyRoute from './VarietyRoute'
-import { SIN_CONEXION_MENSAJE } from '../../components/estadosMessages'
+import { SIN_CONEXION_MENSAJE } from '../../copy/states'
 
 const VARIETY_ONE = pathTo(VARIETY, { id: 1 })
 

@@ -38,13 +38,22 @@ import PaneRowLink from '../components/PaneRowLink'
 import SinConexion from '../components/SinConexion'
 import { readFeedback } from '../components/feedback'
 import { formatGrams, formatMoney } from '../format/money'
-import { ARCHIVED_VARIETIES, CATALOG, STOCK, STOCK_ENTRY_NEW, VARIETY, VARIETY_NEW, WITHDRAWAL_NEW, pathTo } from '../routes'
+import {
+  ARCHIVED_VARIETIES,
+  CATALOG,
+  STOCK,
+  STOCK_ENTRY_NEW,
+  VARIETY,
+  VARIETY_NEW,
+  WITHDRAWAL_NEW,
+  pathTo,
+} from '../routes'
 import { useViewport } from '../shell/useViewport'
 import { detailFor } from '../stock/detail'
 import { summaryLine } from '../stock/summaryLine'
 import { archivedVarietiesQueryOptions } from './varieties/archivedVarieties'
 import { varietiesByName } from './varieties/varietiesByName'
-import { CATALOG_DISABLED_REASON, EMPTY_DETAIL, EMPTY_TITLE } from './varieties/varietiesMessages'
+import { CATALOG_DISABLED_REASON, EMPTY_DETAIL, EMPTY_TITLE } from '../copy/varieties'
 
 const CATALOG_REASON_ID = 'mandar-catalogo-motivo'
 

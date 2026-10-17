@@ -31,7 +31,7 @@ import { salesCount } from '../../format/counts'
 import { formatDateShort } from '../../format/dates'
 import { formatGrams, formatMoney, formatSignedMoney } from '../../format/money'
 import { detailFor, sideNoteFor } from '../../stock/detail'
-import { NOBODY_OWES } from '../inicioMessages'
+import { NOBODY_OWES } from '../../copy/common'
 
 const PENDING_NOTE = 'incluye costo pendiente'
 

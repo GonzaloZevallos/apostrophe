@@ -22,9 +22,9 @@ import {
   PINNED_CATALOG_NOT_READY_REASON,
   PINNED_CATALOG_REASON_LABEL,
   PINNED_CATALOG_REFUSAL_OVERRIDES,
-  resolveOverride,
   type PinReason,
-} from '../api/refusals'
+} from '../copy/refusals'
+import { resolveOverride } from '../api/refusals'
 import AvisoExito, { type SuccessToast } from '../components/AvisoExito'
 import SinConexion from '../components/SinConexion'
 import Boton from '../components/Boton'
@@ -35,7 +35,7 @@ import {
   INTEGRATIONS_LINK_WORD,
   OUT_OF_DATE_SEPARATOR,
   OUT_OF_DATE_TITLE,
-} from './pinPublishMessages'
+} from '../copy/catalog'
 
 const PUBLISHED_TOAST: SuccessToast = 'Catálogo publicado'
 const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'

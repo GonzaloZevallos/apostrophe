@@ -36,7 +36,7 @@ import { STOCK_ENTRY, VARIETIES, WITHDRAWAL, pathTo } from '../routes'
 import { useBackParent } from '../shell/useBackParent'
 import type { Variety } from './Variedades'
 import { ORIGIN_LABEL } from './originLabel'
-import { EMPTY_STATE_DETAIL, EMPTY_STATE_TITLE } from './stockMessages'
+import { EMPTY_STATE_DETAIL, EMPTY_STATE_TITLE } from '../copy/stock'
 import { REASON_LABEL } from './withdrawals/withdrawalReasons'
 
 

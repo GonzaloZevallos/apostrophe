@@ -6,7 +6,7 @@
  */
 
 import { CUSTOMER, CUSTOMERS, CUSTOMER_EDIT, CUSTOMER_NEW, LOGIN, pathTo } from '../../routes'
-import { GONE_NOTICE } from '../../api/refusals'
+import { GONE_NOTICE } from '../../copy/refusals'
 import { useGoneNotice } from '../../components/goneExit'
 import { SheetRouterProvider } from '../../components/useSheetStack'
 import { stubViewport } from '../../test-viewport'

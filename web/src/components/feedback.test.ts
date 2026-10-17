@@ -5,7 +5,7 @@
  */
 
 import { expect, test } from 'vitest'
-import { GONE_NOTICE } from '../api/refusals'
+import { GONE_NOTICE } from '../copy/refusals'
 import {
   clearSaleJustSaved,
   newSaleFor,

@@ -36,7 +36,7 @@ import Loading from '../components/Loading'
 import { useFlash } from '../flash/useFlash'
 import { EXPENSE_CATEGORIES, EXPENSE_NEW } from '../routes'
 import ExpenseForm from './expenses/ExpenseForm'
-import { FLOWER_NOTICE } from './gastosMessages'
+import { FLOWER_NOTICE } from '../copy/expenses'
 
 export { FLOWER_NOTICE }
 export const NO_DISCARD_TITLE = 'No, dejala'

@@ -15,14 +15,8 @@ import { useOutletContext } from 'react-router'
 import { ApiError, NetworkError, UNKNOWN_CODE, get } from '../../api/client'
 import { invalidateResource, keys } from '../../api/keys'
 import type { Me } from '../../api/me'
-import {
-  GONE_DETAIL,
-  WITHDRAWAL_REFUSAL_MESSAGES,
-  isGone,
-  kindOf,
-  resolveOverride,
-  type RefusalCode,
-} from '../../api/refusals'
+import { GONE_DETAIL, WITHDRAWAL_REFUSAL_MESSAGES } from '../../copy/refusals'
+import { isGone, kindOf, resolveOverride, type RefusalCode } from '../../api/refusals'
 import {
   type Withdrawal,
   type WithdrawalInput,
@@ -39,7 +33,7 @@ import { guiltyKeys, keptOptions, preselected } from './goneLines'
 import { REASON_OPTIONS } from './withdrawalReasons'
 import type { Variety } from '../Variedades'
 import Boton from '../../components/Boton'
-import { GRAMS_INVALID } from '../stockMessages'
+import { GRAMS_INVALID } from '../../copy/stock'
 
 export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
 

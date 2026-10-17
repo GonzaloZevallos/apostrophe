@@ -4,7 +4,7 @@
  * from `noPriceMessage`), registered here and measured with `SAMPLES` by
  * `copy/copyLimits.test.ts`, never with fixture or API data. */
 
-import { SAMPLES, type LimitedCopy } from '../copy/limits'
+import { SAMPLES, type LimitedCopy } from './limits'
 
 export const EMPTY_LIST = 'Todavía no registraste ninguna venta en este período.'
 export const GRAMS_HELP = 'Coma, hasta dos decimales'

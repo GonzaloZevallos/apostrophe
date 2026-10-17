@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
-import { GONE_NOTICE } from '../api/refusals'
+import { GONE_NOTICE } from '../copy/refusals'
 import GoneNotice from './GoneNotice'
 
 test('announces the fixed gone-record text, never styled or read as a success toast', () => {

@@ -12,14 +12,21 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { createMemoryRouter, MemoryRouter, Outlet, Route, RouterProvider, Routes } from 'react-router'
+import {
+  createMemoryRouter,
+  MemoryRouter,
+  Outlet,
+  Route,
+  RouterProvider,
+  Routes,
+} from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { stubViewport } from '../../test-viewport'
 import type { Viewport } from '../../routes'
 import type { Me } from '../../api/me'
 import saleFixture from '../../api/fixtures/sale.json'
 import SALE_DETAIL from '../../api/fixtures/sale-detail.json'
-import { GRAMS_HELP } from '../../sales/messages'
+import { GRAMS_HELP } from '../../copy/sales'
 import { LIMITS, SAMPLES } from '../../copy/limits'
 import { saleJustSaved } from '../../components/feedback'
 import { SheetRouterProvider } from '../../components/useSheetStack'

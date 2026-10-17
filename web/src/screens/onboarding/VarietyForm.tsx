@@ -15,7 +15,7 @@ import Boton from '../../components/Boton'
 import SinConexion from '../../components/SinConexion'
 import PriceFields, { FieldError } from '../varieties/PriceFields'
 import type { PriceValues } from '../varieties/priceFieldRules'
-import { VARIETY_NAME_HELP } from '../varieties/priceMessages'
+import { VARIETY_NAME_HELP } from '../../copy/varieties'
 import { useVarietyWithPrice } from './useVarietyWithPrice'
 
 export interface VarietyFormProps {

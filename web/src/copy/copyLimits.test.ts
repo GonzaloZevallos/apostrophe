@@ -1,6 +1,6 @@
 /**
- * The limits on always-visible copy (docs/product/icon-and-text-rule.md): every copy
- * module (`messages.ts` or `*Messages.ts`) registers its fixed help lines, notices and
+ * The limits on always-visible copy (docs/product/icon-and-text-rule.md): every section of
+ * `web/src/copy/` registers its fixed help lines, notices and
  * empty-state strings in `LIMITED_COPY` — the same binding the screen renders, with
  * placeholders filled from `SAMPLES`, never fixture or API data — and lists the
  * refusals it keeps over 80 characters in `LONG_REFUSALS`.
@@ -9,30 +9,34 @@
 import { describe, expect, test } from 'vitest'
 import { copyProblems, LIMITS, measure, SAMPLES, type CopyModule } from './limits'
 
-/** Today's copy modules, written once. A new module is added here in the diff that
- * creates it; the glob below fails until it is. */
+/** The sections of `web/src/copy/`, written once. A new section is added here in the diff
+ * that creates it; the glob below fails until it is. `index.ts` re-exports them and
+ * `limits.ts` is the checker, so neither is a section. */
 const KNOWN_MODULES = [
-  '/src/sales/messages.ts',
-  '/src/screens/authMessages.ts',
-  '/src/screens/clientes/messages.ts',
-  '/src/screens/catalogMessages.ts',
-  '/src/screens/pinPublishMessages.ts',
-  '/src/screens/settings/integrationsMessages.ts',
-  '/src/components/estadosMessages.ts',
-  '/src/screens/analisisMessages.ts',
-  '/src/screens/gastosMessages.ts',
-  '/src/screens/inicioMessages.ts',
-  '/src/screens/onboarding/onboardingMessages.ts',
-  '/src/screens/settings/messages.ts',
-  '/src/screens/stockMessages.ts',
-  '/src/screens/varieties/priceMessages.ts',
-  '/src/screens/varieties/thresholdMessages.ts',
-  '/src/screens/varieties/varietiesMessages.ts',
-]
+  'analysis',
+  'auth',
+  'catalog',
+  'common',
+  'customers',
+  'expenses',
+  'format',
+  'home',
+  'onboarding',
+  'refusals',
+  'sales',
+  'settings',
+  'shell',
+  'states',
+  'stock',
+  'varieties',
+].map((section) => `/src/copy/${section}.ts`)
 
-const found = import.meta.glob<CopyModule>('/src/**/{messages,*Messages}.ts', { eager: true })
+const found = import.meta.glob<CopyModule>(
+  ['/src/copy/*.ts', '!/src/copy/{index,limits}.ts', '!/src/copy/*.test.ts'],
+  { eager: true },
+)
 
-describe('the copy modules', () => {
+describe('the copy sections', () => {
   test('are exactly the ones this list names', () => {
     expect(Object.keys(found).sort()).toEqual([...KNOWN_MODULES].sort())
   })

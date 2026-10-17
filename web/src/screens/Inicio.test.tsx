@@ -32,7 +32,7 @@ import { invalidateResource } from '../api/keys'
 import { expectIconAndTextRule } from '../test/iconAndTextRule'
 import type { OnboardingProgress } from '../api/onboarding'
 import Inicio, { EMPTY_DETAIL, EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE } from './Inicio'
-import { SIN_CONEXION_MENSAJE } from '../components/estadosMessages'
+import { SIN_CONEXION_MENSAJE } from '../copy/states'
 
 const PANEL: PanelAnswer = panelFixture as PanelAnswer
 

@@ -33,7 +33,7 @@ import Insignia, { type InsigniaTono } from '../components/Insignia'
 import ErrorGenerico from '../components/ErrorGenerico'
 import SinConexion from '../components/SinConexion'
 import PinPublish from './PinPublish'
-import { EMPTY_STATE_DETAIL, EMPTY_STATE_TITLE } from './catalogMessages'
+import { EMPTY_STATE_DETAIL, EMPTY_STATE_TITLE } from '../copy/catalog'
 import { telegramPreview } from './telegramPreview'
 import { CATALOG_SECTION_ID, SETTINGS_CATALOG_MESSAGE, VARIETY, pathTo } from '../routes'
 
