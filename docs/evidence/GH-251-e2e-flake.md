@@ -7,14 +7,16 @@ developer's machine (16 cores, shared), recorded once.
 ## What is and is not proven
 
 The root cause on `dbe57a27` is **not** proven, and this document does not claim the fold
-removed the flake. Results are "k of n runs", outcome by outcome, never a rate. Outcomes are
+removed the flake. Results are "k of n runs", outcome by outcome, never a rate. Runs listed as "obtained" are fewer than 5 where the remaining
+ones were not yet run when this was written (b-b5, b-c5, b-d3, b-d4, b-d5): they are work still
+to do, not voids and not "not obtainable". Outcomes are
 defined in "Outcomes and void rules for a shifted run" below; the runs are in "Shifted runs,
 loaded".
 
 - **Case (a), real clock, base, loaded:** 0 failed of 5 runs (5 green). Nothing stronger.
 - **Shifted, base, loaded** (the code of `195a0af2`, all three clocks shifted):
-  - (b) a minute before an Argentina midnight: 3 of 5 runs obtained (2 green-except-artifact, 1 red);
-  - (c) a Monday: 3 of 5 runs obtained (3 green-except-artifact);
+  - (b) a minute before an Argentina midnight: 4 of 5 runs obtained (3 green-except-artifact, 1 red);
+  - (c) a Monday: 4 of 5 runs obtained (4 green-except-artifact);
   - (d) a month's last day into the next month: 2 of 5 runs obtained (2 green-except-artifact).
   In every obtained base run the only test that failed was the Variedades test; no other test
   failed. A run is green-except-artifact only if that test failed as the 160 s timeout on
@@ -108,8 +110,11 @@ after.
 **The load check** in each row is the share of cores 0 and 1 and the load average read just
 before the loop starts, and the processes found by `pgrep -af 'playwright test|uvicorn
 tests.e2e_app'` (the agentic runtime's own process excluded). "others at launch" counts those
-processes from other checkouts or earlier runs. No two of this document's runs overlapped;
-other tasks on this shared machine ran their own e2e, which is a load this document records but
+processes from other checkouts or earlier runs. No two of the runs in the table overlapped.
+Three earlier base runs (labelled b-b4, b-c4, b-d3 at the time) did overlap, because two run
+chains of mine were alive at once on the one base tree; they are **not in the table**, were
+not read for an outcome, and were rerun alone under the same labels. That overlap is not one of
+the closed void reasons, so it is disclosed here and not counted as a void. Other tasks on this shared machine ran their own e2e, which is a load this document records but
 does not control.
 
 ### Outcomes and void rules for a shifted run
@@ -204,9 +209,11 @@ timeout on `send.click` (spec line 40), and red otherwise.
 | b-b1 | (b) midnight | base | 76643 / 2026-10-17T05:38:11Z / 2026-10-18T02:56:00Z | before: backend 2026-10-17, node 2026-10-18T02:56:11Z, browser 2026-10-18T02:56:11Z; after: backend 2026-10-18, node 2026-10-18T03:03:43Z, browser 2026-10-18T03:03:43Z | 102 (100 + 2) | green-except-artifact | Variedades (160 s timeout on send.click (line 40)) | `(log only: /tmp/gh263/logs/b-b1.e2e.log; no junit on the base)` | cpu0=22% cpu1=11%  loadavg=7.38 15.46 18.71; others at launch: 0 [] | Rules 2 and 3: pass
 | b-b2 | (b) midnight | base | 74459 / 2026-10-17T06:14:35Z / 2026-10-18T02:56:00Z | before: backend 2026-10-17, node 2026-10-18T02:56:11Z, browser 2026-10-18T02:56:11Z; after: backend 2026-10-18, node 2026-10-18T03:05:24Z, browser 2026-10-18T03:05:24Z | 102 (100 + 2) | green-except-artifact | Variedades (160 s timeout on send.click (line 40)) | `(log only: /tmp/gh263/logs/b-b2.e2e.log; no junit on the base)` | cpu0=31% cpu1=29%  loadavg=13.79 18.83 18.80; others at launch: 2 ['GH-220'] | Rules 2 and 3: pass
 | b-b3 | (b) midnight | base | 72544 / 2026-10-17T06:46:30Z / 2026-10-18T02:56:00Z | before: backend 2026-10-17, node 2026-10-18T02:56:13Z, browser 2026-10-18T02:56:13Z; after: backend 2026-10-18, node 2026-10-18T03:03:42Z, browser 2026-10-18T03:03:42Z | 102 (100 + 2) | red | Variedades (cdpSession.send at spec line 42: Target page, context or browser has been closed) | `(log only: /tmp/gh263/logs/b-b3.e2e.log; no junit on the base)` | cpu0=24% cpu1=12%  loadavg=5.53 8.98 12.19; others at launch: 0 [] | Rules 2 and 3: pass
+| b-b4 | (b) midnight | base | 67538 / 2026-10-17T08:09:56Z / 2026-10-18T02:56:00Z | before: backend 2026-10-17, node 2026-10-18T02:56:42Z, browser 2026-10-18T02:56:42Z; after: backend 2026-10-18, node 2026-10-18T03:07:34Z, browser 2026-10-18T03:07:34Z | 102 (100 + 2) | green-except-artifact | Variedades (160 s timeout on send.click (line 40)) | `(log only: /tmp/gh263/logs/b-b4.e2e.log; no junit on the base)` | cpu0=98% cpu1=99%  loadavg=29.93 19.21 26.71; others at launch: 0 [] | Rules 2 and 3: pass
 | b-c1 | (c) Monday | base | 195040 / 2026-10-17T05:48:53Z / 2026-10-19T12:00:00Z | before: backend 2026-10-19, node 2026-10-19T12:00:33Z, browser 2026-10-19T12:00:33Z; after: backend 2026-10-19, node 2026-10-19T12:10:45Z, browser 2026-10-19T12:10:45Z | 102 (100 + 2) | green-except-artifact | Variedades (160 s timeout on send.click (line 40)) | `(log only: /tmp/gh263/logs/b-c1.e2e.log; no junit on the base)` | cpu0=25% cpu1=17%  loadavg=15.16 15.99 16.90; others at launch: 0 [] |
 | b-c2 | (c) Monday | base | 192772 / 2026-10-17T06:26:42Z / 2026-10-19T12:00:00Z | before: backend 2026-10-19, node 2026-10-19T12:00:12Z, browser 2026-10-19T12:00:12Z; after: backend 2026-10-19, node 2026-10-19T12:07:44Z, browser 2026-10-19T12:07:44Z | 102 (100 + 2) | green-except-artifact | Variedades (160 s timeout on send.click (line 40)) | `(log only: /tmp/gh263/logs/b-c2.e2e.log; no junit on the base)` | cpu0=30% cpu1=18%  loadavg=8.07 16.12 18.68; others at launch: 0 [] |
 | b-c3 | (c) Monday | base | 190994 / 2026-10-17T06:56:20Z / 2026-10-19T12:00:00Z | before: backend 2026-10-19, node 2026-10-19T12:00:12Z, browser 2026-10-19T12:00:12Z; after: backend 2026-10-19, node 2026-10-19T12:09:32Z, browser 2026-10-19T12:09:32Z | 102 (100 + 2) | green-except-artifact | Variedades (160 s timeout on send.click (line 40)) | `(log only: /tmp/gh263/logs/b-c3.e2e.log; no junit on the base)` | cpu0=49% cpu1=33%  loadavg=6.76 9.25 11.18; others at launch: 0 [] |
+| b-c4 | (c) Monday | base | 185660 / 2026-10-17T08:25:14Z / 2026-10-19T12:00:00Z | before: backend 2026-10-19, node 2026-10-19T12:00:15Z, browser 2026-10-19T12:00:15Z; after: backend 2026-10-19, node 2026-10-19T12:11:09Z, browser 2026-10-19T12:11:09Z | 102 (100 + 2) | green-except-artifact | Variedades (160 s timeout on send.click (line 40)) | `(log only: /tmp/gh263/logs/b-c4.e2e.log; no junit on the base)` | cpu0=80% cpu1=92%  loadavg=20.45 23.90 26.94; others at launch: 0 [] |
 | b-d1 | (d) month end | base | 1284817 / 2026-10-17T06:01:56Z / 2026-11-01T02:56:00Z | before: backend 2026-10-31, node 2026-11-01T02:56:11Z, browser 2026-11-01T02:56:11Z; after: backend 2026-11-01, node 2026-11-01T03:04:44Z, browser 2026-11-01T03:04:44Z | 102 (100 + 2) | green-except-artifact | Variedades (160 s timeout on send.click (line 40)) | `(log only: /tmp/gh263/logs/b-d1.e2e.log; no junit on the base)` | cpu0=51% cpu1=30%  loadavg=8.86 15.06 18.39; others at launch: 0 [] | Rules 2 and 3: pass
 | b-d2 | (d) month end | base | 1282741 / 2026-10-17T06:36:33Z / 2026-11-01T02:56:00Z | before: backend 2026-10-31, node 2026-11-01T02:56:11Z, browser 2026-11-01T02:56:11Z; after: backend 2026-11-01, node 2026-11-01T03:03:48Z, browser 2026-11-01T03:03:48Z | 102 (100 + 2) | green-except-artifact | Variedades (160 s timeout on send.click (line 40)) | `(log only: /tmp/gh263/logs/b-d2.e2e.log; no junit on the base)` | cpu0=28% cpu1=17%  loadavg=5.92 9.63 14.29; others at launch: 0 [] | Rules 2 and 3: pass
 | h-b1 | (b) midnight | head | 80184 / 2026-10-17T04:39:10Z / 2026-10-18T02:56:00Z | before: backend 2026-10-07, node 2026-10-18T02:56:22Z, browser 2026-10-18T02:56:22Z; after: backend 2026-10-07, node 2026-10-18T03:07:45Z, browser 2026-10-18T03:07:45Z | 102 (102) | green-except-artifact | Variedades (160 s timeout on send.click (line 40)) | `test-results/81fdfb2-20261018T025623Z` | cpu0=62% cpu1=50%  loadavg=36.57 32.93 26.00; others at launch: 6 ['GH-263'] | Rules 2 and 3: pass
