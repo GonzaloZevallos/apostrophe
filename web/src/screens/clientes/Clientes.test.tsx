@@ -487,8 +487,9 @@ function fetchTwoCustomers(input: RequestInfo | URL): Promise<Response> {
   return Promise.resolve(jsonResponse(404, {}))
 }
 
-/** The list beside the card, as navigation.md describes the computer's two panes: the list stays
- * mounted while the card changes, so a second customer can be picked from it. */
+/** The real layout route, as the router mounts it: on a computer it draws the list beside the card
+ * (navigation.md's two panes) and the list stays mounted while the card changes, so a second
+ * customer can be picked from it. */
 function renderTwoPanes(entries: string[]) {
   const router = createMemoryRouter(
     [
@@ -496,18 +497,8 @@ function renderTwoPanes(entries: string[]) {
       {
         element: <ClientesLayout />,
         children: [
-          {
-            element: (
-              <>
-                <Clientes />
-                <Outlet />
-              </>
-            ),
-            children: [
-              { path: CUSTOMERS, element: null },
-              { path: CUSTOMER, element: <ClienteFicha /> },
-            ],
-          },
+          { path: CUSTOMERS, element: <Clientes /> },
+          { path: CUSTOMER, element: <ClienteFicha /> },
         ],
       },
     ],
@@ -581,4 +572,34 @@ test('the two empty states are the registered strings, mounted and within their 
   const nobody = await screen.findByText(NOBODY_OWES)
   expect(nobody).toHaveAttribute('data-copy', 'emptyTitle')
   expectIconAndTextRule(document.body, RULE)
+})
+
+test('on a computer the list stays on the left beside a customer\'s card, and /customers alone selects nobody', async () => {
+  stubViewport('computer')
+  vi.mocked(fetch).mockImplementation(fetchTwoCustomers)
+
+  const alone = renderTwoPanes([CUSTOMERS])
+  await screen.findAllByRole('link', { name: /Ana Pérez/ })
+  expect(screen.getAllByRole('region', { name: 'Todos · A–Z' })).toHaveLength(1)
+  expect(screen.queryByRole('button', { name: 'Registrar cobro' })).not.toBeInTheDocument()
+  expect(alone.state.location.pathname).toBe(CUSTOMERS)
+})
+
+test('on a computer, a customer\'s card has the list beside it, once', async () => {
+  stubViewport('computer')
+  vi.mocked(fetch).mockImplementation(fetchTwoCustomers)
+  renderTwoPanes([ANA])
+
+  expect(await screen.findByRole('region', { name: 'Todos · A–Z' })).toBeInTheDocument()
+  expect(await screen.findByText('Registrar cobro')).toBeInTheDocument()
+  expect(screen.getAllByRole('region', { name: 'Todos · A–Z' })).toHaveLength(1)
+})
+
+test('on a phone, a customer\'s card is alone, with no list behind it', async () => {
+  stubViewport('phone')
+  vi.mocked(fetch).mockImplementation(fetchTwoCustomers)
+  renderTwoPanes([ANA])
+
+  expect(await screen.findByText('Registrar cobro')).toBeInTheDocument()
+  expect(screen.queryByRole('region', { name: 'Todos · A–Z' })).not.toBeInTheDocument()
 })

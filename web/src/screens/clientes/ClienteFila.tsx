@@ -40,11 +40,13 @@ export default function ClienteFila({ id, name, phone = null, vip = false, balan
         className="lista-clientes__fila"
         activeClassName="lista-clientes__fila"
       >
-        <span className="lista-clientes__nombre">
-          {name}
-          {vip && <span className="vip-insignia">VIP</span>}
+        <span className="lista-clientes__datos">
+          <span className="lista-clientes__nombre">
+            {name}
+            {vip && <span className="vip-insignia">VIP</span>}
+          </span>
+          {phone !== null && <span className="lista-clientes__telefono">{formatPhone(phone)}</span>}
         </span>
-        {phone !== null && <span className="lista-clientes__telefono">{formatPhone(phone)}</span>}
         {standing === 'owes' && owingSince !== null && (
           <span className="lista-clientes__balance">
             <span className="monto-deuda">{formatMoney(balance)}</span>

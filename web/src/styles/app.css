@@ -1067,6 +1067,36 @@ body {
   min-height: var(--alto-tocable);
 }
 
+/* Name over number on the left; the balance, when there is one, sits at the end of the row. */
+.lista-clientes__datos {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.lista-clientes__balance {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+  font-size: 12px;
+}
+
+.lista-clientes__balance > :first-child {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+/* "Te deben" and the count line, and the "Todos · A–Z" heading, as `Clientes.dc.html` sets them. */
+.clientes__seccion-cabecera {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .lista-clientes__nombre {
   display: flex;
   align-items: center;
@@ -3539,6 +3569,28 @@ body {
 }
 
 .variedades-paneles__detalle {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Clientes on a computer (`ClientesCompu.dc.html`): the list on the left, a customer's card on
+ * the right, the same two-pane frame as Variedades. */
+.clientes-paneles {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  gap: var(--espacio-xxl);
+  align-items: flex-start;
+}
+
+.clientes-paneles__lista {
+  flex: 0 0 360px;
+  border-right: 1px solid var(--linea);
+  padding-right: var(--espacio-xxl);
+  min-width: 0;
+}
+
+.clientes-paneles__detalle {
   flex: 1;
   min-width: 0;
 }

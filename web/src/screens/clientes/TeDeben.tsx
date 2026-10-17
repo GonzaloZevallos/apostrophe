@@ -27,7 +27,7 @@ export default function TeDeben() {
 
   return (
     <section aria-label="Te deben">
-      <div className="campo__rotulo">
+      <div className="campo__rotulo clientes__seccion-cabecera">
         <span>Te deben</span>
         {data.debtors.length > 0 && <span>{`${salesCount(data.sales_owing_count)} debiendo`}</span>}
       </div>
