@@ -11,6 +11,7 @@ import userEvent from '@testing-library/user-event'
 import { Outlet, RouterProvider, createMemoryRouter, type InitialEntry } from 'react-router'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import type { Me } from '../../api/me'
+import { inAppState } from '../../components/inAppState'
 import FlashProvider from '../../flash/FlashProvider'
 import { ARCHIVED_VARIETIES, VARIETIES, VARIETY, pathTo, relative } from '../../routes'
 import { LIMITS, SAMPLES } from '../../copy/limits'
@@ -31,7 +32,7 @@ function json(status: number, body: unknown): Response {
 }
 
 /** Variedades, then Archivadas opened by the foot link (an in-app entry). */
-const FROM_FOOT_LINK: InitialEntry[] = [VARIETIES, { pathname: ARCHIVED_VARIETIES, state: { inApp: true, from: VARIETIES } }]
+const FROM_FOOT_LINK: InitialEntry[] = [VARIETIES, { pathname: ARCHIVED_VARIETIES, state: inAppState({ pathname: VARIETIES }) }]
 const NAMES: Record<number, string> = { 4: 'Alfa Vieja', 5: 'Zeta Vieja' }
 const GRAMS: Record<number, number> = { 4: 7, 5: 3 }
 const CATALOG = { text: '', header: '', footer: '', varieties: [] }
@@ -206,7 +207,7 @@ describe('the Archivadas card', () => {
 
   test('an empty list reached by an in-app link goes on to Variedades; a typed address says so', async () => {
     const { router } = renderAt(
-      [{ pathname: VARIETIES }, { pathname: ARCHIVED_VARIETIES, state: { inApp: true, from: VARIETIES } }],
+      [{ pathname: VARIETIES }, { pathname: ARCHIVED_VARIETIES, state: inAppState({ pathname: VARIETIES }) }],
       { 'GET /varieties?archived=true': () => json(200, []) },
     )
     await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES))
@@ -473,7 +474,7 @@ describe('on a computer (two panes)', () => {
     const user = userEvent.setup()
     const { router } = renderComputer([
       VARIETIES,
-      { pathname: ARCHIVED_VARIETIES, state: { inApp: true, from: VARIETIES } },
+      { pathname: ARCHIVED_VARIETIES, state: inAppState({ pathname: VARIETIES }) },
     ])
     await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(VARIETY, { id: 4 })))
     await screen.findByRole('heading', { name: 'Alfa Vieja' })
