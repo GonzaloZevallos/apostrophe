@@ -101,15 +101,21 @@ export default function Cobro({ customerId, today, onClose, onSaved, onGone }: C
   // Debounced 150 ms behind the amount/date the seller is typing (same delay as
   // `Clientes`' search box): the preview's own query key only moves once typing
   // pauses, so a figure typed digit by digit fires one request, not one per key.
+  // The amount pre-filled from the balance is not typing: it previews at once, as
+  // it did when the balance was handed in, so a quick save never overtakes it.
   const [debouncedAmount, setDebouncedAmount] = useState(previewAmount)
   const [debouncedDate, setDebouncedDate] = useState(date)
+  const prefilled = typedAmount === null && date === debouncedDate
   useEffect(() => {
-    const id = setTimeout(() => {
-      setDebouncedAmount(previewAmount)
-      setDebouncedDate(date)
-    }, 150)
+    const id = setTimeout(
+      () => {
+        setDebouncedAmount(previewAmount)
+        setDebouncedDate(date)
+      },
+      prefilled ? 0 : 150,
+    )
     return () => clearTimeout(id)
-  }, [previewAmount, date])
+  }, [previewAmount, date, prefilled])
 
   const preview = useQuery({
     queryKey: keys.paymentPreview(customerId, debouncedDate, debouncedAmount ?? 0),

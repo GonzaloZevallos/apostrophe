@@ -141,3 +141,28 @@ test('a refusal to save that says the customer is gone calls onGone, through the
 
   await waitFor(() => expect(onGone).toHaveBeenCalledTimes(1))
 })
+
+test('the amount pre-filled from the balance is previewed at once, not after the typing delay', async () => {
+  vi.mocked(fetch).mockImplementation((input, init) => {
+    if (init?.method === 'POST') {
+      return Promise.resolve(
+        jsonResponse(200, {
+          applied_to: [{ sale_id: 10, sale_date: '2026-09-14', amount: 4000 }],
+          after: { balance: 0, owing_since: null, standing: 'settled' },
+        }),
+      )
+    }
+    return Promise.resolve(String(input) === '/customers/1' ? jsonResponse(200, customer(4000)) : jsonResponse(404, {}))
+  })
+  renderCobro()
+
+  await screen.findByRole('button', { name: 'Todo: $ 4.000' })
+  await waitFor(
+    () =>
+      expect(fetch).toHaveBeenCalledWith(
+        '/customers/1/payments/preview',
+        expect.objectContaining({ method: 'POST', body: JSON.stringify({ paid_on: '2026-10-03', amount: 4000 }) }),
+      ),
+    { timeout: 100 },
+  )
+})
