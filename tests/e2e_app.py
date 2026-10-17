@@ -13,6 +13,9 @@ its own (`APOSTROPHE_SECRET_KEY`, `APOSTROPHE_DATABASE_URL`, ...), so
 
 from __future__ import annotations
 
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
 from fastapi import FastAPI
 
 from app.main import create_app
@@ -22,3 +25,18 @@ from tests.fakes.telegram import FakeTelegram
 
 def create_e2e_app() -> FastAPI:
     return create_app(Settings.from_env(), telegram=FakeTelegram(), upkeep_ticker=False)
+
+
+# The phone check's second server (GH-80, invariant 7): its clock answers this one instant
+# on every call, so the business day, the week and the month never move under the walk
+# and the offender lists stay true. The front's clock is pinned to the same instant.
+PINNED_INSTANT = datetime(2026, 9, 16, 12, 0, tzinfo=ZoneInfo("America/Argentina/Buenos_Aires"))
+
+
+def create_mobile_e2e_app() -> FastAPI:
+    return create_app(
+        Settings.from_env(),
+        clock=lambda: PINNED_INSTANT,
+        telegram=FakeTelegram(),
+        upkeep_ticker=False,
+    )
