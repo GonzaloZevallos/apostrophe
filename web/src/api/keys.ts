@@ -91,9 +91,10 @@ export const keys = {
   analysis: (month: string) => ['analysis', month] as const,
   // Inicio's own panel (plan, "Front": "gcTime: 0, staleTime: Infinity and no
   // refetch on focus or reconnect"), frozen at the call site the same way
-  // `catalog` is: nothing ever invalidates it, so it sits outside the
-  // `Resource`/`PREFIX` system — the current mount's own fetch is always the
-  // answer shown, never a write elsewhere in the app replaying a stale one.
+  // `catalog` is: only Inicio's own writes invalidate it (a Cobrar payment and a bot
+  // notice dismissal, both followed by a refetch), so it sits outside the
+  // `Resource`/`PREFIX` system — no write elsewhere in the app can replay a stale
+  // answer, and the current mount's own fetch is always the answer shown.
   panel: () => ['panel'] as const,
 }
 

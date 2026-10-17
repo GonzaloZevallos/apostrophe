@@ -12,9 +12,18 @@
  * figures shown are always the current mount's own resolved answer, never a
  * stale one left behind by an earlier mount or another business.
  *
+ * Hoy is for acting (`results.md`): sold today, Te deben with a "Cobrar" per debtor
+ * (`components/Cobro`, handed only the customer id) and Lo que te queda. Semana and
+ * Mes carry the period's results. The checklist, the bot notice and "Arrancá por las
+ * variedades" are decided on the server (`panel.setup`, plan invariants 4 and 7): this
+ * screen renders them as given and never filters or reorders steps. After a payment
+ * or a dismissal it only invalidates `keys.panel()` and renders what the server
+ * answers next — never `setQueryData`, never removing a debtor, step or notice from
+ * its own cache (plan invariant 10).
+ *
  * "Arrancá por las variedades" sits above the panel instead of replacing it (PM,
  * adjustment 5): a business can have history and no price today, and its figures
- * are real.
+ * are real. It shows only once the checklist is gone and `setup.priced_today` is false.
  *
  * The pinned-catalog notice (plan, "Front"; accounts.md's Inicio rule): a fixed
  * line, never a figure, while `GET /pinned-catalog/status` reads `out_of_date` —
@@ -23,7 +32,7 @@
  */
 
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useOutletContext } from 'react-router'
 import { get, NetworkError } from '../api/client'
 import { keys } from '../api/keys'
@@ -34,11 +43,18 @@ import {
   type PanelDebts,
   type PanelPeriod,
   type PanelToday,
+  type PanelVarietyOut,
   type PanelTab,
 } from '../api/panel'
+import BotNotice from '../components/BotNotice'
+import Boton from '../components/Boton'
+import Cobro from '../components/Cobro'
 import ErrorGenerico from '../components/ErrorGenerico'
+import Icono from '../components/Icono'
 import MarcaEstado from '../components/MarcaEstado'
+import SetupChecklist from '../components/SetupChecklist'
 import SinConexion from '../components/SinConexion'
+import type { RecordedPayment } from '../api/payments'
 import { salesCount } from '../format/counts'
 import { formatDateShort } from '../format/dates'
 import { formatGrams, formatMoney, formatSignedMoney } from '../format/money'
@@ -57,10 +73,6 @@ const SALES_HEADING: Record<PanelTab, string> = {
   today: 'Vendiste hoy',
   week: 'Vendiste esta semana',
   month: 'Vendiste este mes',
-}
-
-interface VarietySummary {
-  current_price: unknown
 }
 
 interface PinnedCatalogStatus {
@@ -82,15 +94,10 @@ function salesSubtitle(period: PanelPeriod | PanelToday): string {
 
 export default function Inicio() {
   const me = useOutletContext<Me>()
+  const queryClient = useQueryClient()
   const [tab, setTab] = useState<PanelTab>('today')
-
-  const varietiesQuery = useQuery({
-    queryKey: keys.varieties(),
-    queryFn: () => get<VarietySummary[]>('/varieties'),
-  })
-  const hasPricedVariety = (varietiesQuery.data ?? []).some(
-    (variety) => variety.current_price !== null,
-  )
+  const [cobrandoId, setCobrandoId] = useState<string | null>(null)
+  const [savedNotice, setSavedNotice] = useState<string | null>(null)
 
   const panelQuery = useQuery({
     queryKey: keys.panel(),
@@ -107,23 +114,60 @@ export default function Inicio() {
   })
   const pinOutOfDate = pinnedCatalog.data?.status?.state === 'out_of_date'
 
+  function refetchPanel(): void {
+    void queryClient.invalidateQueries({ queryKey: keys.panel() })
+  }
+
+  function onCobroSaved(recorded: RecordedPayment): void {
+    setCobrandoId(null)
+    setSavedNotice(
+      recorded.after.standing === 'owes'
+        ? `Cobro guardado · queda debiendo ${formatMoney(recorded.after.balance)}`
+        : 'Cobro guardado',
+    )
+    refetchPanel()
+  }
+
+  const setup = panelQuery.data?.setup
+  const onToday = tab === 'today'
+
   return (
     <main className="pantalla">
       <div className="cuerpo">
-        <div>
-          <span className="encabezado__negocio">{me.business_name}</span>
-          <span className="encabezado__titulo">Inicio</span>
+        <div className="encabezado-fila">
+          <span className="encabezado-fila__texto">
+            <span className="encabezado__negocio">{me.business_name}</span>
+            <span className="encabezado__titulo">Inicio</span>
+          </span>
+          <Link to="/negocio" className="avatar" aria-label="Configuración">
+            {initialOf(me.business_name)}
+          </Link>
         </div>
 
-        {pinOutOfDate && (
+        {onToday && setup !== undefined && (
+          <>
+            {setup.checklist !== null ? (
+              <SetupChecklist steps={setup.checklist.steps} />
+            ) : (
+              !setup.priced_today && (
+                <div className="estado-vacio">
+                  <span className="estado-vacio__titulo">{EMPTY_TITLE}</span>
+                  <span className="estado-vacio__detalle">{EMPTY_DETAIL}</span>
+                </div>
+              )
+            )}
+            {setup.bot_notice && <BotNotice onDismissed={refetchPanel} />}
+          </>
+        )}
+        {onToday && pinOutOfDate && (
           <Link to="/catalogo" className="aviso-ambar" role="status">
             <span className="aviso-ambar__titulo">{PINNED_CATALOG_OUT_OF_DATE}</span>
           </Link>
         )}
-        {varietiesQuery.data !== undefined && !hasPricedVariety && (
-          <div className="estado-vacio">
-            <span className="estado-vacio__titulo">{EMPTY_TITLE}</span>
-            <span className="estado-vacio__detalle">{EMPTY_DETAIL}</span>
+
+        {savedNotice !== null && (
+          <div className="toast" role="status">
+            <span className="toast__texto">{savedNotice}</span>
           </div>
         )}
 
@@ -131,11 +175,39 @@ export default function Inicio() {
         {panelQuery.isError && !(panelQuery.error instanceof NetworkError) && <ErrorGenerico />}
 
         {panelQuery.data !== undefined && (
-          <Panel panel={panelQuery.data} tab={tab} onTab={setTab} today={me.today} />
+          <Panel
+            panel={panelQuery.data}
+            tab={tab}
+            onTab={setTab}
+            today={me.today}
+            onCobrar={(customerId) => {
+              setSavedNotice(null)
+              setCobrandoId(customerId)
+            }}
+          />
         )}
       </div>
+
+      {cobrandoId !== null && (
+        <Cobro
+          customerId={cobrandoId}
+          today={me.today}
+          onClose={() => setCobrandoId(null)}
+          onSaved={onCobroSaved}
+          onGone={() => {
+            setCobrandoId(null)
+            refetchPanel()
+          }}
+        />
+      )}
     </main>
   )
+}
+
+/** The first character of the business's name, upper-cased; a non-letter shows as it is. */
+function initialOf(name: string): string {
+  const [first] = Array.from(name)
+  return first === undefined ? '' : first.toLocaleUpperCase('es')
 }
 
 function Panel({
@@ -143,11 +215,13 @@ function Panel({
   tab,
   onTab,
   today,
+  onCobrar,
 }: {
   panel: PanelAnswer
   tab: PanelTab
   onTab: (tab: PanelTab) => void
   today: string
+  onCobrar: (customerId: string) => void
 }) {
   const period = panel.periods[tab]
   const { debts, stock } = panel
@@ -177,36 +251,61 @@ function Panel({
 
       {'profit' in period && <PeriodResults period={period} />}
 
-      {/* Both columns full-width on the phone; side by side on a computer
-          (`InicioCompu.dc.html`): CSS alone switches between them, the same way
-          `Shell`'s own bar/rail does. */}
-      <div className="panel-dos-columnas">
-        <TeDebenBlock debts={debts} />
-
-        <div>
-          <span className="rotulo">Lo que te queda</span>
-          <div className="lista-stock">
-            {stock.map((variety) => (
-              <div key={variety.variety_id} className="fila-stock">
-                <MarcaEstado estado={variety.status} />
-                <span className="fila-stock__texto">
-                  <span className="fila-stock__nombre">{variety.name}</span>
-                  <span className="fila-stock__detalle">{detailFor(variety, today)}</span>
-                </span>
-                <span className="fila-stock__cifras">
-                  <span className="fila-stock__gramos">
-                    {variety.status === 'no_entries' ? '—' : formatGrams(variety.grams)}
-                  </span>
-                  {sideNoteFor(variety) !== null && (
-                    <span className="fila-stock__insignia">{sideNoteFor(variety)}</span>
-                  )}
-                </span>
-              </div>
-            ))}
-          </div>
+      {tab === 'today' && (
+        /* Both columns full-width on the phone; side by side on a computer
+           (`InicioCompu.dc.html`): CSS alone switches between them, the same way
+           `Shell`'s own bar/rail does. */
+        <div className="panel-dos-columnas">
+          <TeDebenBlock debts={debts} onCobrar={onCobrar} />
+          <StockBlock stock={stock} today={today} />
         </div>
-      </div>
+      )}
     </>
+  )
+}
+
+function StockBlock({ stock, today }: { stock: PanelVarietyOut[]; today: string }) {
+  return (
+    <div>
+      <span className="rotulo">Lo que te queda</span>
+      <div className="lista-stock">
+        {stock.map((variety) => {
+          const row = (
+            <>
+              <MarcaEstado estado={variety.status} />
+              <span className="fila-stock__texto">
+                <span className="fila-stock__nombre">{variety.name}</span>
+                <span className="fila-stock__detalle">{detailFor(variety, today)}</span>
+              </span>
+              <span className="fila-stock__cifras">
+                <span className="fila-stock__gramos">
+                  {variety.status === 'no_entries' ? '—' : formatGrams(variety.grams)}
+                </span>
+                {sideNoteFor(variety) !== null && (
+                  <span className="fila-stock__insignia">{sideNoteFor(variety)}</span>
+                )}
+              </span>
+            </>
+          )
+          // Only a low or sold-out variety has something to open: its detail. The
+          // chevron says so by shape, never by color alone.
+          return variety.status === 'low' || variety.status === 'sold_out' ? (
+            <Link
+              key={variety.variety_id}
+              to={`/variedades/${variety.variety_id}`}
+              className="fila-stock fila-stock--enlace"
+            >
+              {row}
+              <Icono nombre="chevron" size={18} />
+            </Link>
+          ) : (
+            <div key={variety.variety_id} className="fila-stock">
+              {row}
+            </div>
+          )
+        })}
+      </div>
+    </div>
   )
 }
 
@@ -250,7 +349,13 @@ function PeriodResults({ period }: { period: PanelPeriod }) {
   )
 }
 
-function TeDebenBlock({ debts }: { debts: PanelDebts }) {
+function TeDebenBlock({
+  debts,
+  onCobrar,
+}: {
+  debts: PanelDebts
+  onCobrar: (customerId: string) => void
+}) {
   // `oldest` is a date-or-null, never an amount (review finding: deciding this from
   // `total_owed === 0` compared an API amount inside a screen, which the plan
   // invariant forbids) — the contract sets it to `null` exactly when nobody owes.
@@ -274,11 +379,20 @@ function TeDebenBlock({ debts }: { debts: PanelDebts }) {
         {debts.oldest !== null && ` · desde ${formatDateShort(debts.oldest)}`}
       </span>
       {debts.teaser.map((row) => (
-        <Link key={row.customer_id} to={`/clientes/${row.customer_id}`} className="bloque-deben__fila">
-          <span>{row.name}</span>
-          <span>{formatMoney(row.balance)}</span>
-          <span className="pie">{`desde ${formatDateShort(row.owing_since)}`}</span>
-        </Link>
+        <div key={row.customer_id} className="bloque-deben__fila">
+          <Link to={`/clientes/${row.customer_id}`} className="bloque-deben__enlace">
+            <span>{row.name}</span>
+            <span>{formatMoney(row.balance)}</span>
+            <span className="pie">{`desde ${formatDateShort(row.owing_since)}`}</span>
+          </Link>
+          <Boton
+            variant="secondary"
+            ariaLabel={`Cobrar a ${row.name}`}
+            onClick={() => onCobrar(String(row.customer_id))}
+          >
+            Cobrar
+          </Boton>
+        </div>
       ))}
     </div>
   )
