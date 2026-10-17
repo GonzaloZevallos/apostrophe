@@ -13,23 +13,26 @@ loaded".
 
 - **Case (a), real clock, base, loaded:** 0 failed of 5 runs (5 green). Nothing stronger.
 - **Shifted, base, loaded** (the code of `195a0af2`, all three clocks shifted):
-  - (b) a minute before an Argentina midnight: 3 of 5 runs obtained (3 green-except-artifact);
-  - (c) a Monday: 2 of 5 runs obtained (2 green-except-artifact);
+  - (b) a minute before an Argentina midnight: 3 of 5 runs obtained (2 green-except-artifact, 1 red);
+  - (c) a Monday: 3 of 5 runs obtained (3 green-except-artifact);
   - (d) a month's last day into the next month: 2 of 5 runs obtained (2 green-except-artifact).
-  Every obtained run shows exactly one failed test, the classified Variedades test, so the
-  only failure under a shifted clock, on the base, is the artifact failure that also appears
-  at `+0d`. No other test failed in any obtained base run. The flake of `dbe57a27` (a failure
-  other than the classified test) was **not reproduced** in these runs: with so few runs that
-  is evidence neither for nor against it, and no rate is given.
+  In every obtained base run the only test that failed was the Variedades test; no other test
+  failed. A run is green-except-artifact only if that test failed as the 160 s timeout on
+  `send.click` (spec line 40), the way it fails at `+0d`; a run where it failed at another step is
+  **red** by the definition, and its step is named in the table. The flake of `dbe57a27` (a
+  failure other than the classified test) was **not reproduced** in these runs: with so few runs
+  that is evidence neither for nor against it, and no rate is given.
 - **Shifted, head, loaded** (node and browser shifted, backend on the anchor day):
-  (b) midnight: 1 of 1 runs obtained (1 green-except-artifact); +400d: 1 of 1 runs obtained (1 green-except-artifact); (c) a Monday: 1 of 1 runs obtained (1 green-except-artifact); (d) month end: 1 of 1 runs obtained (1 green-except-artifact). The same single failure
-  in each, and the same reading.
+  (b) midnight: 1 of 1 runs obtained (1 green-except-artifact); +400d: 1 of 1 runs obtained (1 green-except-artifact); (c) a Monday: 1 of 1 runs obtained (1 red); (d) month end: 1 of 1 runs obtained (1 green-except-artifact). The only failing test is again Variedades in each; the table gives
+  its step, and a run where it is not the `send.click` timeout is red.
 - **The Variedades test under the preload:** it fails with the preload at `+0d` (no shift) on
   the base and on the head, and passes without the preload (see "`+0d` comparison"). That is
   the ADR-0043 amendment point 5 reading (a setup artifact of the shifting tool), now checked
   by the comparison. Its cause inside the tool is not explained. Because of it, no shifted run
-  here is "green": all are green-except-artifact, and that test's behaviour under a shifted
-  clock is not examined by them.
+  here is "green"; the runs are green-except-artifact or red, and that test's behaviour under a
+  shifted clock is not examined by them. That the same test also failed at a different step in
+  the red runs (a viewport change or a closed target, still while its 20x CPU throttle was on)
+  is not explained by the `+0d` comparison, which saw only the `send.click` timeout.
 - **Browser coverage.** The browser canary followed the preload in every run (it shows the
   shifted instant), so browser-side date handling was shifted in all of them.
 - **Earlier faketime runs** (table "Anchored clock, zones and drift") were unloaded and left
@@ -190,30 +193,38 @@ tree with no canary spec in it. A run directory under `web/test-results/` holds 
 kept outside the repository. Rules 2 and 3 apply to (b) and (d) only; "pass" means the
 before-canary was before the boundary, the after-canary past it, the first test before the
 boundary and the last test after it, with the tests' times taken from the real-time stamps of
-the run's log, converted with N. No run was voided by rules 1 to 4.
-Every failure named is `varietiesAutoSelect.spec.ts › a tap that leaves Variedades on the
-phone is not replaced when the viewport turns computer`, and it failed, in each, as a 160 s
-timeout on `send.click` (checked in the junit for the head and in the log for the base).
+the run's log, converted with N. No run was voided by rules 1 to 4. In every row the failed test
+is `varietiesAutoSelect.spec.ts › a tap that leaves Variedades on the phone is not replaced when
+the viewport turns computer`; the table gives the step it failed at, read from the head's junit
+and, for the base, from the log. A run is green-except-artifact only if that step is the 160 s
+timeout on `send.click` (spec line 40), and red otherwise.
 
 | run | case | code | N / real launch / planned instant | canary before and after | listed | outcome | failed tests | run directory | load check | rules 2 and 3 |
 |---|---|---|---|---|---|---|---|---|---|---|
-| b-b1 | (b) midnight | base | 76643 / 2026-10-17T05:38:11Z / 2026-10-18T02:56:00Z | before: backend 2026-10-17, node 2026-10-18T02:56:11Z, browser 2026-10-18T02:56:11Z; after: backend 2026-10-18, node 2026-10-18T03:03:43Z, browser 2026-10-18T03:03:43Z | 102 (100 + 2) | green-except-artifact | Variedades (160 s timeout on send.click) | `(log only: /tmp/gh263/logs/b-b1.e2e.log; no junit on the base)` | cpu0=22% cpu1=11%  loadavg=7.38 15.46 18.71; others at launch: 0 [] | Rules 2 and 3: pass
-| b-b2 | (b) midnight | base | 74459 / 2026-10-17T06:14:35Z / 2026-10-18T02:56:00Z | before: backend 2026-10-17, node 2026-10-18T02:56:11Z, browser 2026-10-18T02:56:11Z; after: backend 2026-10-18, node 2026-10-18T03:05:24Z, browser 2026-10-18T03:05:24Z | 102 (100 + 2) | green-except-artifact | Variedades (160 s timeout on send.click) | `(log only: /tmp/gh263/logs/b-b2.e2e.log; no junit on the base)` | cpu0=31% cpu1=29%  loadavg=13.79 18.83 18.80; others at launch: 2 ['GH-220'] | Rules 2 and 3: pass
-| b-b3 | (b) midnight | base | 72544 / 2026-10-17T06:46:30Z / 2026-10-18T02:56:00Z | before: backend 2026-10-17, node 2026-10-18T02:56:13Z, browser 2026-10-18T02:56:13Z; after: backend 2026-10-18, node 2026-10-18T03:03:42Z, browser 2026-10-18T03:03:42Z | 102 (100 + 2) | green-except-artifact | Variedades (160 s timeout on send.click) | `(log only: /tmp/gh263/logs/b-b3.e2e.log; no junit on the base)` | cpu0=24% cpu1=12%  loadavg=5.53 8.98 12.19; others at launch: 0 [] | Rules 2 and 3: pass
-| b-c1 | (c) Monday | base | 195040 / 2026-10-17T05:48:53Z / 2026-10-19T12:00:00Z | before: backend 2026-10-19, node 2026-10-19T12:00:33Z, browser 2026-10-19T12:00:33Z; after: backend 2026-10-19, node 2026-10-19T12:10:45Z, browser 2026-10-19T12:10:45Z | 102 (100 + 2) | green-except-artifact | Variedades (160 s timeout on send.click) | `(log only: /tmp/gh263/logs/b-c1.e2e.log; no junit on the base)` | cpu0=25% cpu1=17%  loadavg=15.16 15.99 16.90; others at launch: 0 [] |
-| b-c2 | (c) Monday | base | 192772 / 2026-10-17T06:26:42Z / 2026-10-19T12:00:00Z | before: backend 2026-10-19, node 2026-10-19T12:00:12Z, browser 2026-10-19T12:00:12Z; after: backend 2026-10-19, node 2026-10-19T12:07:44Z, browser 2026-10-19T12:07:44Z | 102 (100 + 2) | green-except-artifact | Variedades (160 s timeout on send.click) | `(log only: /tmp/gh263/logs/b-c2.e2e.log; no junit on the base)` | cpu0=30% cpu1=18%  loadavg=8.07 16.12 18.68; others at launch: 0 [] |
-| b-d1 | (d) month end | base | 1284817 / 2026-10-17T06:01:56Z / 2026-11-01T02:56:00Z | before: backend 2026-10-31, node 2026-11-01T02:56:11Z, browser 2026-11-01T02:56:11Z; after: backend 2026-11-01, node 2026-11-01T03:04:44Z, browser 2026-11-01T03:04:44Z | 102 (100 + 2) | green-except-artifact | Variedades (160 s timeout on send.click) | `(log only: /tmp/gh263/logs/b-d1.e2e.log; no junit on the base)` | cpu0=51% cpu1=30%  loadavg=8.86 15.06 18.39; others at launch: 0 [] | Rules 2 and 3: pass
-| b-d2 | (d) month end | base | 1282741 / 2026-10-17T06:36:33Z / 2026-11-01T02:56:00Z | before: backend 2026-10-31, node 2026-11-01T02:56:11Z, browser 2026-11-01T02:56:11Z; after: backend 2026-11-01, node 2026-11-01T03:03:48Z, browser 2026-11-01T03:03:48Z | 102 (100 + 2) | green-except-artifact | Variedades (160 s timeout on send.click) | `(log only: /tmp/gh263/logs/b-d2.e2e.log; no junit on the base)` | cpu0=28% cpu1=17%  loadavg=5.92 9.63 14.29; others at launch: 0 [] | Rules 2 and 3: pass
-| h-b1 | (b) midnight | head | 80184 / 2026-10-17T04:39:10Z / 2026-10-18T02:56:00Z | before: backend 2026-10-07, node 2026-10-18T02:56:22Z, browser 2026-10-18T02:56:22Z; after: backend 2026-10-07, node 2026-10-18T03:07:45Z, browser 2026-10-18T03:07:45Z | 102 (102) | green-except-artifact | Variedades (160 s timeout on send.click) | `test-results/81fdfb2-20261018T025623Z` | cpu0=62% cpu1=50%  loadavg=36.57 32.93 26.00; others at launch: 6 ['GH-263'] | Rules 2 and 3: pass
-| h-c1 | (c) Monday | head | 197492 / 2026-10-17T05:08:02Z / 2026-10-19T12:00:00Z | before: backend 2026-10-07, node 2026-10-19T12:00:21Z, browser 2026-10-19T12:00:21Z; after: backend 2026-10-07, node 2026-10-19T12:13:21Z, browser 2026-10-19T12:13:21Z | 102 (102) | green-except-artifact | Variedades (160 s timeout on send.click) | `test-results/81fdfb2-20261019T120022Z` | cpu0=38% cpu1=40%  loadavg=17.15 18.71 19.00; others at launch: 0 [] |
-| h-d1 | (d) month end | head | 1287095 / 2026-10-17T05:23:59Z / 2026-11-01T02:56:00Z | before: backend 2026-10-07, node 2026-11-01T02:56:14Z, browser 2026-11-01T02:56:14Z; after: backend 2026-10-07, node 2026-11-01T03:07:46Z, browser 2026-11-01T03:07:46Z | 102 (102) | green-except-artifact | Variedades (160 s timeout on send.click) | `test-results/81fdfb2-20261101T025616Z` | cpu0=33% cpu1=23%  loadavg=9.72 21.21 21.67; others at launch: 0 [] | Rules 2 and 3: pass
-| h-400 | +400d | head | 33807978 / 2026-10-17T04:53:15Z / 2027-11-12T12:00:00Z | before: backend 2026-10-07, node 2027-11-12T12:00:14Z, browser 2027-11-12T12:00:14Z; after: backend 2026-10-07, node 2027-11-12T12:11:43Z, browser 2027-11-12T12:11:43Z | 102 (102) | green-except-artifact | Variedades (160 s timeout on send.click) | `test-results/81fdfb2-20271112T120015Z` | cpu0=29% cpu1=22%  loadavg=7.82 13.80 18.99; others at launch: 0 [] |
+| b-b1 | (b) midnight | base | 76643 / 2026-10-17T05:38:11Z / 2026-10-18T02:56:00Z | before: backend 2026-10-17, node 2026-10-18T02:56:11Z, browser 2026-10-18T02:56:11Z; after: backend 2026-10-18, node 2026-10-18T03:03:43Z, browser 2026-10-18T03:03:43Z | 102 (100 + 2) | green-except-artifact | Variedades (160 s timeout on send.click (line 40)) | `(log only: /tmp/gh263/logs/b-b1.e2e.log; no junit on the base)` | cpu0=22% cpu1=11%  loadavg=7.38 15.46 18.71; others at launch: 0 [] | Rules 2 and 3: pass
+| b-b2 | (b) midnight | base | 74459 / 2026-10-17T06:14:35Z / 2026-10-18T02:56:00Z | before: backend 2026-10-17, node 2026-10-18T02:56:11Z, browser 2026-10-18T02:56:11Z; after: backend 2026-10-18, node 2026-10-18T03:05:24Z, browser 2026-10-18T03:05:24Z | 102 (100 + 2) | green-except-artifact | Variedades (160 s timeout on send.click (line 40)) | `(log only: /tmp/gh263/logs/b-b2.e2e.log; no junit on the base)` | cpu0=31% cpu1=29%  loadavg=13.79 18.83 18.80; others at launch: 2 ['GH-220'] | Rules 2 and 3: pass
+| b-b3 | (b) midnight | base | 72544 / 2026-10-17T06:46:30Z / 2026-10-18T02:56:00Z | before: backend 2026-10-17, node 2026-10-18T02:56:13Z, browser 2026-10-18T02:56:13Z; after: backend 2026-10-18, node 2026-10-18T03:03:42Z, browser 2026-10-18T03:03:42Z | 102 (100 + 2) | red | Variedades (cdpSession.send at spec line 42: Target page, context or browser has been closed) | `(log only: /tmp/gh263/logs/b-b3.e2e.log; no junit on the base)` | cpu0=24% cpu1=12%  loadavg=5.53 8.98 12.19; others at launch: 0 [] | Rules 2 and 3: pass
+| b-c1 | (c) Monday | base | 195040 / 2026-10-17T05:48:53Z / 2026-10-19T12:00:00Z | before: backend 2026-10-19, node 2026-10-19T12:00:33Z, browser 2026-10-19T12:00:33Z; after: backend 2026-10-19, node 2026-10-19T12:10:45Z, browser 2026-10-19T12:10:45Z | 102 (100 + 2) | green-except-artifact | Variedades (160 s timeout on send.click (line 40)) | `(log only: /tmp/gh263/logs/b-c1.e2e.log; no junit on the base)` | cpu0=25% cpu1=17%  loadavg=15.16 15.99 16.90; others at launch: 0 [] |
+| b-c2 | (c) Monday | base | 192772 / 2026-10-17T06:26:42Z / 2026-10-19T12:00:00Z | before: backend 2026-10-19, node 2026-10-19T12:00:12Z, browser 2026-10-19T12:00:12Z; after: backend 2026-10-19, node 2026-10-19T12:07:44Z, browser 2026-10-19T12:07:44Z | 102 (100 + 2) | green-except-artifact | Variedades (160 s timeout on send.click (line 40)) | `(log only: /tmp/gh263/logs/b-c2.e2e.log; no junit on the base)` | cpu0=30% cpu1=18%  loadavg=8.07 16.12 18.68; others at launch: 0 [] |
+| b-c3 | (c) Monday | base | 190994 / 2026-10-17T06:56:20Z / 2026-10-19T12:00:00Z | before: backend 2026-10-19, node 2026-10-19T12:00:12Z, browser 2026-10-19T12:00:12Z; after: backend 2026-10-19, node 2026-10-19T12:09:32Z, browser 2026-10-19T12:09:32Z | 102 (100 + 2) | green-except-artifact | Variedades (160 s timeout on send.click (line 40)) | `(log only: /tmp/gh263/logs/b-c3.e2e.log; no junit on the base)` | cpu0=49% cpu1=33%  loadavg=6.76 9.25 11.18; others at launch: 0 [] |
+| b-d1 | (d) month end | base | 1284817 / 2026-10-17T06:01:56Z / 2026-11-01T02:56:00Z | before: backend 2026-10-31, node 2026-11-01T02:56:11Z, browser 2026-11-01T02:56:11Z; after: backend 2026-11-01, node 2026-11-01T03:04:44Z, browser 2026-11-01T03:04:44Z | 102 (100 + 2) | green-except-artifact | Variedades (160 s timeout on send.click (line 40)) | `(log only: /tmp/gh263/logs/b-d1.e2e.log; no junit on the base)` | cpu0=51% cpu1=30%  loadavg=8.86 15.06 18.39; others at launch: 0 [] | Rules 2 and 3: pass
+| b-d2 | (d) month end | base | 1282741 / 2026-10-17T06:36:33Z / 2026-11-01T02:56:00Z | before: backend 2026-10-31, node 2026-11-01T02:56:11Z, browser 2026-11-01T02:56:11Z; after: backend 2026-11-01, node 2026-11-01T03:03:48Z, browser 2026-11-01T03:03:48Z | 102 (100 + 2) | green-except-artifact | Variedades (160 s timeout on send.click (line 40)) | `(log only: /tmp/gh263/logs/b-d2.e2e.log; no junit on the base)` | cpu0=28% cpu1=17%  loadavg=5.92 9.63 14.29; others at launch: 0 [] | Rules 2 and 3: pass
+| h-b1 | (b) midnight | head | 80184 / 2026-10-17T04:39:10Z / 2026-10-18T02:56:00Z | before: backend 2026-10-07, node 2026-10-18T02:56:22Z, browser 2026-10-18T02:56:22Z; after: backend 2026-10-07, node 2026-10-18T03:07:45Z, browser 2026-10-18T03:07:45Z | 102 (102) | green-except-artifact | Variedades (160 s timeout on send.click (line 40)) | `test-results/81fdfb2-20261018T025623Z` | cpu0=62% cpu1=50%  loadavg=36.57 32.93 26.00; others at launch: 6 ['GH-263'] | Rules 2 and 3: pass
+| h-c1 | (c) Monday | head | 197492 / 2026-10-17T05:08:02Z / 2026-10-19T12:00:00Z | before: backend 2026-10-07, node 2026-10-19T12:00:21Z, browser 2026-10-19T12:00:21Z; after: backend 2026-10-07, node 2026-10-19T12:13:21Z, browser 2026-10-19T12:13:21Z | 102 (102) | red | Variedades (page.setViewportSize at spec line 41: Test timeout of 160000ms exceeded.) | `test-results/81fdfb2-20261019T120022Z` | cpu0=38% cpu1=40%  loadavg=17.15 18.71 19.00; others at launch: 0 [] |
+| h-d1 | (d) month end | head | 1287095 / 2026-10-17T05:23:59Z / 2026-11-01T02:56:00Z | before: backend 2026-10-07, node 2026-11-01T02:56:14Z, browser 2026-11-01T02:56:14Z; after: backend 2026-10-07, node 2026-11-01T03:07:46Z, browser 2026-11-01T03:07:46Z | 102 (102) | green-except-artifact | Variedades (160 s timeout on send.click (line 40)) | `test-results/81fdfb2-20261101T025616Z` | cpu0=33% cpu1=23%  loadavg=9.72 21.21 21.67; others at launch: 0 [] | Rules 2 and 3: pass
+| h-400 | +400d | head | 33807978 / 2026-10-17T04:53:15Z / 2027-11-12T12:00:00Z | before: backend 2026-10-07, node 2027-11-12T12:00:14Z, browser 2027-11-12T12:00:14Z; after: backend 2026-10-07, node 2027-11-12T12:11:43Z, browser 2027-11-12T12:11:43Z | 102 (102) | green-except-artifact | Variedades (160 s timeout on send.click (line 40)) | `test-results/81fdfb2-20271112T120015Z` | cpu0=29% cpu1=22%  loadavg=7.82 13.80 18.99; others at launch: 0 [] |
 
 The first head run, h-b1, was launched while the processes of a review's own `web-e2e` check
 (on this same checkout, just finished) were still being torn down, which is why its load check
 shows "others at launch: 6"; the run's own listed set and canaries are unaffected, and the load
 only made it slower (11.1 m).
 
+**Run directories.** `web/test-results/` is ignored by git and local. Of the directories named
+above, those of h-b1 and of the head `+0d` runs are no longer there; `web/scripts/e2e.sh` removes
+directories older than 14 days with `find -mtime +14` run under the same preload, so a later run
+shifted forward (h-400, +400d, in particular) very probably removed them. That was not checked.
+The run logs of every run, base and head, are kept under `/tmp/gh263/logs` outside the repository;
+the table's results are read from them.
 ### Ceiling: issue request for the integrator
 
 Title: "e2e: tapBudget.spec.ts runs within 2x of the 160 s test timeout under load".
