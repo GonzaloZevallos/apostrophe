@@ -134,7 +134,7 @@ describe('leaving an untouched form', () => {
     const warn = vi.spyOn(console, 'warn')
     const user = userEvent.setup()
     const { router } = renderApp([NEW_PATH], 'computer')
-    await screen.findByRole('dialog', { name: 'Nuevo precio' })
+    await screen.findByLabelText(/^Precio de lista/)
 
     await gesture(user)
 
@@ -150,7 +150,8 @@ describe('leaving an untouched form', () => {
   test('a click inside the dialog is not a click on the backdrop', async () => {
     const user = userEvent.setup()
     const { router } = renderApp([NEW_PATH], 'computer')
-    const dialog = await screen.findByRole('dialog', { name: 'Nuevo precio' })
+    await screen.findByLabelText(/^Precio de lista/)
+    const dialog = screen.getByRole('dialog', { name: 'Nuevo precio' })
 
     await user.click(within(dialog).getByText('Nuevo precio'))
 
@@ -180,8 +181,8 @@ describe('leaving a form with something typed', () => {
   test('the question is a sibling of the dialog, and a second Escape while it asks does nothing', async () => {
     const user = userEvent.setup()
     const { router } = renderApp([NEW_PATH], 'computer')
-    const dialog = await screen.findByRole('dialog', { name: 'Nuevo precio' })
-    await user.type(screen.getByLabelText(/^Precio de lista/), '12000')
+    await user.type(await screen.findByLabelText(/^Precio de lista/), '12000')
+    const dialog = screen.getByRole('dialog', { name: 'Nuevo precio' })
 
     await user.keyboard('{Escape}')
     const question = await screen.findByRole('alertdialog')
