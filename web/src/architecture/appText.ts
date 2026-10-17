@@ -71,17 +71,17 @@ export function isScanned(path: string): boolean {
   return !SKIPPED_DIRECTORIES.some((directory) => path.startsWith(directory))
 }
 
-function nodeKind(node: ts.Node): VisibleLiteral['node'] | null {
-  if (ts.isStringLiteral(node)) return 'string'
+function literalOf(node: ts.Node): { kind: VisibleLiteral['node']; text: string } | null {
+  if (ts.isStringLiteral(node)) return { kind: 'string', text: node.text }
   if (
     ts.isNoSubstitutionTemplateLiteral(node) ||
     ts.isTemplateHead(node) ||
     ts.isTemplateMiddle(node) ||
     ts.isTemplateTail(node)
   ) {
-    return 'template'
+    return { kind: 'template', text: node.text }
   }
-  if (ts.isJsxText(node)) return 'jsx-text'
+  if (ts.isJsxText(node)) return { kind: 'jsx-text', text: node.text }
   return null
 }
 
@@ -158,9 +158,9 @@ export function findVisibleLiterals(path: string, source: string): VisibleLitera
   const file = ts.createSourceFile(path, source, ts.ScriptTarget.ES2023, true)
   const found: VisibleLiteral[] = []
   const visit = (node: ts.Node): void => {
-    const kind = nodeKind(node)
-    if (kind !== null && LETTER.test(node.text) && !isAllowedContext(node)) {
-      found.push({ line: file.getLineAndCharacterOfPosition(node.getStart(file)).line + 1, node: kind })
+    const literal = literalOf(node)
+    if (literal !== null && LETTER.test(literal.text) && !isAllowedContext(node)) {
+      found.push({ line: file.getLineAndCharacterOfPosition(node.getStart(file)).line + 1, node: literal.kind })
     }
     ts.forEachChild(node, visit)
   }
