@@ -82,8 +82,10 @@ export function probeColour(): ColourFacts {
     }
   }
 
+  const papel = getComputedStyle(document.documentElement).getPropertyValue('--papel').trim()
+  if (papel === '') throw new Error('--papel is not defined: the base under every chain is unknown')
   return {
-    papel: getComputedStyle(document.documentElement).getPropertyValue('--papel').trim(),
+    papel,
     samples: Array.from(samples.values()),
   }
 }

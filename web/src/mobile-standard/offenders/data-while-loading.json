@@ -1,1 +1,26 @@
-[]
+[
+  {
+    "screen": "Clientes",
+    "rule": "data-while-loading",
+    "target": "span:# clientes",
+    "issue": 46
+  },
+  {
+    "screen": "Gastos",
+    "rule": "data-while-loading",
+    "target": "span:Septiembre #",
+    "issue": 48
+  },
+  {
+    "screen": "NuevaVenta",
+    "rule": "data-while-loading",
+    "target": "span:Hoy #/#",
+    "issue": 78
+  },
+  {
+    "screen": "NuevaVentaCliente",
+    "rule": "data-while-loading",
+    "target": "span:Hoy #/#",
+    "issue": 78
+  }
+]

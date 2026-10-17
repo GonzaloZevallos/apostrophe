@@ -10,7 +10,9 @@ import { readFileSync } from 'node:fs'
 import { expect, test, type Browser, type Page } from '@playwright/test'
 import { MOBILE_FACTS_FILE, MOBILE_STATE_FILE } from './env.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
-import { collect, type CellId } from './mobile/collect.js'
+import { collect, GEOMETRY_COLLECTOR, type CellId } from './mobile/collect.js'
+import { COLOUR_COLLECTOR } from './mobile/collectColour.js'
+import { LOADING_COLLECTOR, SHIFT_COLLECTOR } from './mobile/collectLoading.js'
 import { newCell, SIZES, THEMES, type Size, type Theme } from './mobile/cells.js'
 import { guardWrites } from './mobile/network.js'
 import { asScreen } from './mobile/states.js'
@@ -171,7 +173,7 @@ test.describe('the geometry checkers', () => {
     const context = await newCell(browser, PROBE_SIZE, 'claro', SIGNED_OUT)
     const page = await context.newPage()
     await page.setContent(`<meta name="viewport" content="width=device-width, initial-scale=1">${html}`)
-    const found = await collect(page, 'loaded', PROBE_CELL)
+    const found = await collect(page, 'loaded', PROBE_CELL, [GEOMETRY_COLLECTOR])
     await context.close()
     return found
   }
@@ -309,4 +311,82 @@ test('opening a live invitation under the write guard shows its form, not "Sin c
   await expect(page.getByText('Te quedaste sin internet')).toHaveCount(0)
   await expect(page.getByLabel('Email')).toBeVisible()
   await context.close()
+})
+
+// The colour, loading and shift checkers must reject what breaks the standard, not only accept what keeps it.
+test.describe('the colour, loading and shift checkers', () => {
+  const COLLECTOR = { loaded: COLOUR_COLLECTOR, loading: LOADING_COLLECTOR, released: SHIFT_COLLECTOR }
+  async function onPage(browser: Browser, html: string, phase: 'loaded' | 'loading' | 'released'): Promise<Violation[]> {
+    const context = await newCell(browser, PROBE_SIZE, 'claro', SIGNED_OUT)
+    const page = await context.newPage()
+    await page.setContent(`<meta name="viewport" content="width=device-width, initial-scale=1">${html}`)
+    const found = await collect(page, phase, PROBE_CELL, [COLLECTOR[phase]])
+    await context.close()
+    return found
+  }
+  const rulesOf = (found: Violation[]): string[] => [...new Set(found.map((v) => v.rule))].sort()
+
+  test('a faint text, a faint placeholder and a text over a picture are each reported, a legible one is not', async ({ browser }) => {
+    const found = await onPage(
+      browser,
+      `<style>:root{--papel:#fcfbf8}input::placeholder{color:#ccc}</style><p style="color:#bbb;font-size:16px">Gris claro</p>
+       <input aria-label="Buscar" placeholder="Buscá" style="font-size:16px;width:200px;height:48px;color:#000">
+       <div style="background-image:linear-gradient(#000,#fff)"><p style="font-size:16px">Sobre un degradado</p></div>
+       <p style="color:#1a1815;font-size:16px">Legible</p>`,
+      'loaded',
+    )
+    expect(rulesOf(found)).toEqual(['contrast', 'contrast-unprovable'])
+    expect(found.filter((v) => v.rule === 'contrast').map((v) => v.target)).toEqual(['p:Gris claro', 'textbox:Buscar::placeholder'])
+    expect(found.filter((v) => v.rule === 'contrast-unprovable').map((v) => v.target)).toEqual(['p:Sobre un degradado'])
+  })
+
+  test('a disabled control keeps its label out of the ratio, its reason does not', async ({ browser }) => {
+    const found = await onPage(
+      browser,
+      `<style>:root{--papel:#fcfbf8}</style><button disabled style="color:#bbb;font-size:16px">Guardar</button><span style="color:#bbb;font-size:16px">Falta el monto</span>`,
+      'loaded',
+    )
+    expect(found.map((v) => v.target)).toEqual(['span:Falta el monto'])
+  })
+
+  test('a loading screen with no content area, no aria-busy, an empty-state wording and a figure is reported for each', async ({ browser }) => {
+    const found = await onPage(browser, '<p>Nadie te debe.</p>', 'loading')
+    expect(rulesOf(found)).toEqual(['aria-busy', 'blank-while-loading', 'false-empty'])
+    const busy = await onPage(
+      browser,
+      '<main aria-busy="true"><span style="display:block;width:100px;height:20px;background:#ccc"></span><p>$ 0</p></main>',
+      'loading',
+    )
+    expect(rulesOf(busy)).toEqual(['data-while-loading'])
+    const clean = await onPage(
+      browser,
+      '<main><div aria-busy="true" role="progressbar" style="width:100px;height:20px;background:#ccc"></div></main>',
+      'loading',
+    )
+    expect(clean).toEqual([])
+  })
+
+  test('chrome that moves is reported at any distance, content only beyond the tolerance', async ({ browser }) => {
+    const context = await newCell(browser, PROBE_SIZE, 'claro', SIGNED_OUT)
+    const page = await context.newPage()
+    await page.setContent(
+      `<div id="above" style="height:10px"></div>
+       <nav class="bar-inferior" style="height:48px">Inicio</nav>
+       <div style="height:48px">Cerca</div><div style="height:48px">Lejos</div>`,
+    )
+    await page.evaluate(() => new Promise<void>((done) => requestAnimationFrame(() => requestAnimationFrame(() => done()))))
+    await page.evaluate(() => {
+      const above = document.getElementById('above')
+      if (above !== null) above.style.height = '50px'
+    })
+    const found = await collect(page, 'released', PROBE_CELL, [SHIFT_COLLECTOR])
+    expect(found.filter((v) => v.rule === 'chrome-shift').map((v) => v.target)).toEqual(['navigation:Inicio'])
+    expect(found.filter((v) => v.rule === 'content-shift')).toEqual([])
+    await page.evaluate(() => {
+      const above = document.getElementById('above')
+      if (above !== null) above.style.height = '170px'
+    })
+    expect(rulesOf(await collect(page, 'released', PROBE_CELL, [SHIFT_COLLECTOR]))).toEqual(['chrome-shift', 'content-shift'])
+    await context.close()
+  })
 })

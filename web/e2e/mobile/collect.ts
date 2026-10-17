@@ -29,8 +29,14 @@ export interface Collector {
 }
 
 /** The registered collectors; later subtasks append, one per line. */
+export const GEOMETRY_COLLECTOR: Collector = {
+  name: 'geometry',
+  phase: 'loaded',
+  run: (page, cell) => page.evaluate(collectGeometry, cell),
+}
+
 export const COLLECTORS: readonly Collector[] = [
-  { name: 'geometry', phase: 'loaded', run: (page, cell) => page.evaluate(collectGeometry, cell) },
+  GEOMETRY_COLLECTOR,
   COLOUR_COLLECTOR,
   LOADING_COLLECTOR,
   SHIFT_COLLECTOR,

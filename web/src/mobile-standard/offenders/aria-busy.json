@@ -1,1 +1,50 @@
-[]
+[
+  {
+    "screen": "Analisis",
+    "rule": "aria-busy",
+    "target": "",
+    "issue": 48
+  },
+  {
+    "screen": "Catalogo",
+    "rule": "aria-busy",
+    "target": "",
+    "issue": 47
+  },
+  {
+    "screen": "Clientes",
+    "rule": "aria-busy",
+    "target": "",
+    "issue": 46
+  },
+  {
+    "screen": "EntradaStock",
+    "rule": "aria-busy",
+    "target": "",
+    "issue": 47
+  },
+  {
+    "screen": "GastoNuevo",
+    "rule": "aria-busy",
+    "target": "",
+    "issue": 48
+  },
+  {
+    "screen": "Inicio",
+    "rule": "aria-busy",
+    "target": "",
+    "issue": 45
+  },
+  {
+    "screen": "VariedadDetalle",
+    "rule": "aria-busy",
+    "target": "",
+    "issue": 47
+  },
+  {
+    "screen": "Variedades",
+    "rule": "aria-busy",
+    "target": "",
+    "issue": 47
+  }
+]
