@@ -41,6 +41,7 @@ function jsonResponse(status: number, body: unknown): Response {
   })
 }
 
+const LU_SETTLED = { id: 2, name: 'Lu', phone: '+5491100000002', vip: false, balance: 0, owing_since: null, standing: 'settled' }
 const EMPTY_DEBTORS = { total_owed: 0, sales_owing_count: 0, debtors: [] }
 
 /** Dispatches on the request's own path, not on call order (plan, invariants):
@@ -200,11 +201,10 @@ test('a server error on the list shows the generic retry, never the empty-list t
   expect(screen.queryByText('Todavía no agregaste ningún cliente.')).not.toBeInTheDocument()
 })
 
-test('the header reads "N clientes", and the Te deben section sits above the list with the debtors', async () => {
+test('Te deben sits above everyone A–Z, and the header carries no debt figure', async () => {
   // `customer.json` and `debtors.json` (plan, invariants: "used by the front's
   // fetch fakes") drive this: the customer list carries the fixture's own owing
-  // entry plus a settled one, and the section reads straight off `debtors.json`. The old
-  // Te deben screen is gone (`/clientes/deben` redirects here), so this is where it lives.
+  // entry plus a settled one, and the section reads straight off `debtors.json`.
   vi.mocked(fetch).mockImplementation(
     fetchStub(
       () =>
@@ -218,19 +218,90 @@ test('the header reads "N clientes", and the Te deben section sits above the lis
   renderClientes()
 
   expect(await screen.findByText('2 clientes')).toBeInTheDocument()
-  expect(
-    await screen.findByText(
-      `· ${debtorsFixture.debtors.length} te deben $ ${debtorsFixture.total_owed.toLocaleString('es-AR')}`,
-    ),
-  ).toBeInTheDocument()
+  expect(screen.queryByText(/ te deben \$/)).not.toBeInTheDocument()
   const section = await screen.findByRole('region', { name: 'Te deben' })
+  const everyone = await screen.findByRole('region', { name: 'Todos · A–Z' })
+  expect(section.compareDocumentPosition(everyone) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   expect(
     within(section).getByText(`$ ${debtorsFixture.total_owed.toLocaleString('es-AR')}`),
   ).toBeInTheDocument()
   expect(within(section).getAllByRole('link').map((link) => link.textContent)).toEqual([
-    'Ana Pérez$ 15.000desde 14/09',
+    'Ana Pérez$ 15.000te debe desde 14/09',
     'Cobrar',
   ])
+  expect(within(everyone).getByText('Lu')).toBeInTheDocument()
+})
+
+test("Te deben shows the API's order and total as answered, never a client sort or sum", async () => {
+  // Later owing-since first, and a total that is not the sum of the rows: nothing here may
+  // resort or add (payments.md, "Who owes and the totals").
+  vi.mocked(fetch).mockImplementation(
+    fetchStub(
+      () => jsonResponse(200, []),
+      () =>
+        jsonResponse(200, {
+          total_owed: 99000,
+          sales_owing_count: 1,
+          debtors: [
+            { customer: { id: 5, name: 'Zoe' }, balance: 1000, owing_since: '2026-10-01', standing: 'owes' },
+            { customer: { id: 4, name: 'Abel' }, balance: 9000, owing_since: '2026-08-01', standing: 'owes' },
+          ],
+        }),
+    ),
+  )
+  renderClientes()
+
+  const section = await screen.findByRole('region', { name: 'Te deben' })
+  expect(within(section).getByText('$ 99.000')).toBeInTheDocument()
+  expect(within(section).getByText('1 venta debiendo')).toBeInTheDocument()
+  expect(
+    within(section).getAllByRole('link', { name: /^Cobrar a / }).map((link) => link.getAttribute('aria-label')),
+  ).toEqual(['Cobrar a Zoe', 'Cobrar a Abel'])
+})
+
+test('a customer in credit is only in A–Z, never in Te deben', async () => {
+  vi.mocked(fetch).mockImplementation(
+    fetchStub(
+      () =>
+        jsonResponse(200, [
+          { id: 2, name: 'Lu', phone: '+5491100000002', vip: false, balance: -2000, owing_since: null, standing: 'credit' },
+        ]),
+      () => jsonResponse(200, debtorsFixture),
+    ),
+  )
+  renderClientes()
+
+  const everyone = screen.getByRole('region', { name: 'Todos · A–Z' })
+  expect(await within(everyone).findByText('A favor $ 2.000')).toBeInTheDocument()
+  expect(within(screen.getByRole('region', { name: 'Te deben' })).queryByText(/A favor/)).not.toBeInTheDocument()
+})
+
+test('searching collapses both sections into one flat list that keeps Cobrar, and clearing brings them back', async () => {
+  vi.mocked(fetch).mockImplementation(
+    fetchStub(
+      (query) =>
+        jsonResponse(
+          200,
+          query === '' ? [customerFixture, LU_SETTLED] : [customerFixture],
+        ),
+      () => jsonResponse(200, debtorsFixture),
+    ),
+  )
+  renderClientes()
+  await screen.findByRole('region', { name: 'Te deben' })
+
+  const input = screen.getByLabelText('Buscar cliente')
+  await userEvent.type(input, 'ana')
+
+  await waitFor(() => expect(screen.queryByRole('region', { name: 'Te deben' })).not.toBeInTheDocument())
+  expect(screen.queryByRole('region', { name: 'Todos · A–Z' })).not.toBeInTheDocument()
+  expect(await screen.findAllByRole('link', { name: `Cobrar a ${customerFixture.name}` })).toHaveLength(1)
+  expect(screen.getByText('te debe desde 14/09')).toBeInTheDocument()
+
+  await userEvent.clear(input)
+
+  expect(await screen.findByRole('region', { name: 'Te deben' })).toBeInTheDocument()
+  expect(screen.getByRole('region', { name: 'Todos · A–Z' })).toBeInTheDocument()
 })
 
 test('"Cobrar a X" is on every row that owes, in the section and in the list, and never on one that does not', async () => {
@@ -255,13 +326,18 @@ test('"Cobrar a X" is on every row that owes, in the section and in the list, an
   expect(screen.queryByRole('link', { name: 'Cobrar a Lu' })).not.toBeInTheDocument()
 })
 
-test('with no debtors, the header shows no debt part and the section says "Nadie te debe."', async () => {
-  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [])))
+test('with nobody owing, a fixed "Nadie te debe" with nothing to tap sits above the full A–Z list', async () => {
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [LU_SETTLED])))
   renderClientes()
 
-  expect(await screen.findByText('0 clientes')).toBeInTheDocument()
-  expect(await screen.findByText('Nadie te debe.')).toBeInTheDocument()
-  expect(screen.queryByText(/ te deben \$/)).not.toBeInTheDocument()
+  const nobody = await screen.findByText('Nadie te debe')
+  expect(nobody.closest('a, button')).toBeNull()
+  const section = screen.getByRole('region', { name: 'Te deben' })
+  expect(within(section).queryByRole('link')).not.toBeInTheDocument()
+  expect(within(section).queryByText(/debiendo/)).not.toBeInTheDocument()
+  const everyone = await screen.findByRole('region', { name: 'Todos · A–Z' })
+  expect(section.compareDocumentPosition(everyone) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  expect(within(everyone).getByText('Lu')).toBeInTheDocument()
 })
 
 test('a customer with no phone shows no phone element, no dash, no empty label', async () => {
