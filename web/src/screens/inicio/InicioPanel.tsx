@@ -126,21 +126,11 @@ export default function InicioPanel({
 function PeriodResults({ period }: { period: PanelPeriod }) {
   return (
     <>
-      <div className="panel-resultados">
-        <div className="panel-resultados__celda">
-          <span className="rotulo">Ganancia</span>
-          <span className="panel-resultados__valor panel-resultados__valor--acento">
-            {formatSignedMoney(period.profit)}
-          </span>
-          {period.profit_pending && <span className="pie">{PENDING_NOTE}</span>}
-        </div>
-        <div className="panel-resultados__celda">
-          <span className="rotulo">Caja</span>
-          <span className="panel-resultados__valor">{formatSignedMoney(period.cash)}</span>
-        </div>
-      </div>
-
       <div className="panel-lista">
+        <div className="panel-lista__fila">
+          <span>Regalaste</span>
+          <span className="panel-lista__valor">{formatGrams(period.grams_gifted)}</span>
+        </div>
         <div className="panel-lista__fila">
           <span>Costo de lo vendido</span>
           <span className="panel-lista__valor">{formatMoney(period.cost_of_goods)}</span>
@@ -164,12 +154,22 @@ function PeriodResults({ period }: { period: PanelPeriod }) {
           <span className="panel-lista__valor">{formatMoney(period.expenses)}</span>
         </div>
         <div className="panel-lista__fila">
-          <span>Regalaste</span>
-          <span className="panel-lista__valor">{formatGrams(period.grams_gifted)}</span>
-        </div>
-        <div className="panel-lista__fila">
           <span>Compras de flores</span>
           <span className="panel-lista__valor">{formatMoney(period.purchases)}</span>
+        </div>
+      </div>
+
+      <div className="panel-resultados">
+        <div className="panel-resultados__celda">
+          <span className="rotulo">Ganancia</span>
+          <span className="panel-resultados__valor panel-resultados__valor--acento">
+            {formatSignedMoney(period.profit)}
+          </span>
+          {period.profit_pending && <span className="pie">{PENDING_NOTE}</span>}
+        </div>
+        <div className="panel-resultados__celda">
+          <span className="rotulo">Caja</span>
+          <span className="panel-resultados__valor">{formatSignedMoney(period.cash)}</span>
         </div>
       </div>
     </>

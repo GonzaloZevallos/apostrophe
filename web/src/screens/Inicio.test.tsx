@@ -228,7 +228,8 @@ test('Semana: Promoción and Consumo propio follow Faltante de stock and come be
   const labels = Array.from(container.querySelectorAll('.panel-lista__fila > span:first-child')).map(
     (node) => node.textContent,
   )
-  expect(labels.slice(0, 5)).toEqual([
+  expect(labels.slice(0, 6)).toEqual([
+    'Regalaste',
     'Costo de lo vendido',
     'Faltante de stock',
     'Promoción',

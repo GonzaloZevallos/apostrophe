@@ -227,14 +227,18 @@ test('Semana and Mes keep every result figure, Promoción and Consumo propio rig
     (node) => node.textContent,
   )
   expect(labels).toEqual([
+    'Regalaste',
     'Costo de lo vendido',
     'Faltante de stock',
     'Promoción',
     'Consumo propio',
     'Gastos',
-    'Regalaste',
     'Compras de flores',
   ])
+  // Ganancia and Caja close the figures, as the design and results.md draw them.
+  const list = container.querySelector('.panel-lista') as Element
+  const results = container.querySelector('.panel-resultados') as Element
+  expect(list.compareDocumentPosition(results)).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
 
   await userEvent.click(screen.getByRole('button', { name: 'Mes' }))
   await screen.findByText('Vendiste este mes')
