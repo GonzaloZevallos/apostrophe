@@ -198,7 +198,7 @@ describe('signatureOf', () => {
     for (const variant of variants) expect(signatureOf([record], variant)).not.toBe(base)
   })
 
-  it('does not tell texts apart from their neighbours by concatenation', () => {
+  it('tells texts apart from their neighbours: moving text between records changes the hash', () => {
     const one: LayoutRecord = { ...record, text: 'ab' }
     const two: LayoutRecord = { ...record, text: 'c' }
     const left = signatureOf([{ ...one, text: 'a' }, { ...two, text: 'bc' }], page)

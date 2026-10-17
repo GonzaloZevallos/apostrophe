@@ -90,7 +90,14 @@ function resolveFacts(template, placeholders) {
 }
 
 async function run(page, step, placeholders) {
-  if (step.click) await page.getByText(step.click, { exact: true }).first().click()
+  if (step.click) {
+    // The visible text a seller reads; an icon-only button has none, so its accessible name
+    // ("Borrar venta") is what a seller using a screen reader reads. Text wins when both exist.
+    const byText = page.getByText(step.click, { exact: true })
+    const byName = page.getByRole('button', { name: step.click, exact: true })
+    await byText.or(byName).first().waitFor()
+    await ((await byText.count()) > 0 ? byText : byName).first().click()
+  }
   else if (step.fill) await page.getByLabel(step.fill.label).first().fill(resolveFacts(step.fill.value, placeholders))
   else if (step.select) await page.getByLabel(step.select.label).first().selectOption({ index: step.select.index })
   else if (step.wait) await page.getByText(step.wait, { exact: true }).first().waitFor()

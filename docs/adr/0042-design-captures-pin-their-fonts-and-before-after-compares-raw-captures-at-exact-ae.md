@@ -129,6 +129,12 @@ page text, sample data, amounts or names, and the page sends back only a hash an
 Under `--strict` the run exits non-zero after every screen ran and `index.json` was written. A
 step that throws used to be only a note, so `--strict` stayed green; it now fails.
 
+**A click step finds its target by visible text, then by accessible name.** An icon-only button
+(`Borrar venta`, `aria-label` with no text) has no visible text, so the step falls back to the
+button whose accessible name is the label; text wins when both exist, so no other row changes
+target. The step still waits for either to appear and still fails, through `fail(ctx, …)`, if
+neither does.
+
 **Cost.** `screens.json` has 130 rows, which is at most 578 settles per run (design: first and
 final, 260; built: first, one per step, final, 318; at most 5 steps in a row). Each settle samples
 3 frames typically and 120 at worst, so at most 69,360 frames, each costing one pass over the
