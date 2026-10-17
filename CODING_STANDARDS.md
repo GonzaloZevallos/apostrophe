@@ -125,7 +125,7 @@ the design README's "En el celular"; the two texts are one rule.
 
 Each part is **checked** (`web/e2e/mobile.spec.ts` fails on it, under the named `Rule` of
 `web/src/mobile-standard/violation.ts`) or **review** (a reviewer enforces it). Where
-`docs/product/accounts.md` (the installed shell), ADR-0027, ADR-0028, ADR-0029 or ADR-0030
+`docs/product/accounts.md` (the installed shell), ADR-0027, ADR-0028, ADR-0029 or ADR-0048
 already decides a point, this section cites it and does not restate it. An area's product
 doc may record a deliberate exception; without one, this standard wins over an area issue.
 
@@ -198,7 +198,7 @@ doc may record a deliberate exception; without one, this standard wins over an a
    - A disabled control's own label is exempt; a reason shown in words beside it is not.
      Icon-only tokens (`--tenue` chevrons) are not measured.
    - The README's contrast table stays the token guard (ADR-0029); the DOM check is the
-     authority for what a person reads (ADR-0030).
+     authority for what a person reads (ADR-0048).
 
 **New forms, sheets and routes** (review): a new form, sheet, confirmation or shared
 `Estados` state is added to the walked states (`WalkState`, in
@@ -213,7 +213,7 @@ optional `sizes` and `themes`. It can only shrink: the run fails on a new offend
 entry whose cell now passes, and on an entry with no valid issue number. There is no
 network lookup; review checks that the number is a real, open area issue. An area issue is
 not done while its own screens are still on the list. The list is valid only against the
-pinned fixture and date (ADR-0030); a change to either is a change to the lists, in the
+pinned fixture and date (ADR-0048); a change to either is a change to the lists, in the
 same diff.
 
 **Attached.** Every area PR (#45-#49, #59, #60, #78) attaches the check's result: the

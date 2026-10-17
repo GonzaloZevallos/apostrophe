@@ -126,7 +126,7 @@ son una sola regla.
 Cada parte es **chequeada** (`web/e2e/mobile.spec.ts` falla, con la `Rule` que se nombra, de
 `web/src/mobile-standard/violation.ts`) o **de revisión** (la hace cumplir quien revisa).
 Donde `docs/product/accounts.md` (el shell instalado), ADR-0027, ADR-0028, ADR-0029 o
-ADR-0030 ya decidieron un punto, acá se cita y no se repite. El documento de producto de un
+ADR-0048 ya decidieron un punto, acá se cita y no se repite. El documento de producto de un
 área puede registrar una excepción deliberada; sin una, esta regla manda sobre el issue del
 área.
 
@@ -204,7 +204,7 @@ ADR-0030 ya decidieron un punto, acá se cita y no se repite. El documento de pr
    - La etiqueta de un control deshabilitado queda exenta; un motivo escrito al lado, no.
      Los tokens sólo de ícono (las flechas `--tenue`) no se miden.
    - La tabla de contraste de arriba sigue siendo la guarda de los tokens (ADR-0029); lo que
-     manda para lo que una persona lee es el chequeo sobre el DOM (ADR-0030).
+     manda para lo que una persona lee es el chequeo sobre el DOM (ADR-0048).
 
 **Formularios, hojas y rutas nuevos** (revisión): un formulario, hoja, confirmación o
 estado compartido de `Estados` nuevo se suma a los estados que recorre el chequeo
@@ -219,7 +219,7 @@ pantalla, una regla, un elemento y un issue (uno de área del mapa fijo #45-#49,
 infractor nuevo, ante una entrada cuya celda ya pasa y ante una entrada sin número de issue
 válido. No consulta ninguna red; quien revisa comprueba que el número sea un issue de área
 real y abierto. Un issue de área no está terminado mientras sus pantallas sigan en la lista.
-Vale sólo para el dato y la fecha fijos (ADR-0030); cambiar cualquiera de los dos es
+Vale sólo para el dato y la fecha fijos (ADR-0048); cambiar cualquiera de los dos es
 cambiar las listas, en el mismo diff.
 
 **Se adjunta.** Todo PR de un área (#45-#49, #59, #60, #78) adjunta el resultado del
