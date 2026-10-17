@@ -180,9 +180,9 @@ _In the app_: Gasto
 _Avoid_: cost, outflow, bill
 
 **Expense category**:
-A business's own heading for its expenses, with a name unique within that business whatever the case or spacing. Every business starts with "Insumos de cultivo", "Packaging", "Envíos y traslados" and "Otros"; a category cannot be removed while it has expenses.
-_In the app_: Categoría
+A business's own heading for its expenses, with a name unique within that business whatever the case or spacing. A new business starts with "Growing supplies", "Packaging", "Shipping and travel" and "Other"; a business opened earlier keeps the names it was given, which are its own data. A category cannot be removed while it has expenses.
 _Avoid_: type, tag, label, account, cost center
+_In the app_: Categoría
 
 **Profit**:
 Sales (shipping included, paid or not) minus cost of goods sold, stock shortfall, promotion cost, own-use cost and expenses, over a period, each counted on its own date; purchases never enter it. When any cost is pending, it is worked out over the costed part and marked "y N g sin costo", N adding the pending grams sold, gifted, taken out by negative adjustments and withdrawn in the period. It may be negative and is then shown with a minus sign; in the app: Ganancia.
@@ -202,7 +202,7 @@ _Avoid_: menu, price list, flyer
 _In the app_: Catálogo
 
 **Pinned catalog**:
-The catalog message pinned in the business's Telegram channel chat by its own bot. Once first published, it is edited in place whenever the catalog text changes, and it is never posted again in that chat. When nothing qualifies, it shows the header, "Por ahora no tenemos nada para ofrecer." and the footer. _In the app_: Mensaje fijado.
+The catalog message pinned in the business's Telegram channel chat by its own bot, edited in place whenever the catalog text changes and never posted again in that chat. When nothing qualifies, it shows the header, "Nothing to offer for now." and the footer.
 _Avoid_: post, broadcast
 _In the app_: Mensaje fijado
 
@@ -260,7 +260,7 @@ One line of free text describing a variety's aroma and flavour for the catalog, 
 _Avoid_: description, notes, flavor profile
 
 **Catalog header and footer**:
-A business's own text opening and closing the catalog, multi-line and up to 500 characters each; either may be blank, and is then left out. They start as "🌿 **CATÁLOGO** 🌿" and "📩 Consultas y pedidos por privado." and are edited only in Configuración. In the app: Encabezado, Pie, under Mensaje del catálogo.
+A business's own text opening and closing the catalog, multi-line and up to 500 characters each; either may be blank, and is then left out. A new business starts with "🌿 **CATALOG** 🌿" and "📩 Questions and orders by private message."; a header and footer already stored are the seller's data and stay as stored. They are edited only in Configuración.
 _Avoid_: title, signature, intro, outro
 
 **On-the-spot payment**:
@@ -452,3 +452,7 @@ _Avoid_: banner, card button, row, callout, alert
 **Design capture**:
 The side-by-side capture of a screen's design file and the built app, taken from the screens registry with pinned fonts, attached to a PR as review evidence and judged by eye. A registry row reaches its screen the way a seller does and captures its named section whole, only once the screen has finished drawing. Its result never depends on how loaded the machine is, and it is never a step of the gate.
 _Avoid_: screenshot test, visual regression test, snapshot, gate step
+
+**App text**:
+Every word the app itself writes for a person to read: on screen, in the API's messages, in the catalog and the bot's posts, in the page title and manifest, and in the operator commands' output. It is in English by default and lives in one keyed module. Seller data and the spreadsheet's own words are never app text.
+_Avoid_: strings, i18n, translations, labels, locale
