@@ -462,6 +462,9 @@ describe('the archived variety rows of the real screens.json', () => {
     'ArchivadasCompuOscuro',
   ]
 
+  // The Archivadas list's own path, read from the registry's list row.
+  const listPath = screens.registry.find((r) => r.kind === 'card' && r.path.endsWith('archived'))!.path
+
   it('has each key exactly once', () => {
     for (const key of keys) {
       expect(screens.screens.filter((s) => s.screen === key).length, key).toBe(1)
@@ -480,8 +483,8 @@ describe('the archived variety rows of the real screens.json', () => {
   it('reaches the archived page through the seeded variety, on the phone and on the computer', () => {
     for (const key of keys.filter((k) => k.startsWith('VariedadArchivada'))) {
       const entry = screens.screens.find((s) => s.screen === key)!
-      expect(entry.route, key).toBe('/varieties/archived')
-      expect(entry.path, key).toBe('/varieties/{archived}')
+      expect(entry.route, key).toBe(listPath)
+      expect(entry.path, key).toBe(`${listPath.replace(/archived$/, '')}{archived}`)
       expect(entry.steps, key).toEqual([{ click: 'Blue Dream' }, { wait: 'Stock y entradas' }])
       expect(entry.viewport !== undefined, key).toBe(key.includes('Compu'))
       expect(entry.tema === 'oscuro', key).toBe(key.endsWith('Oscuro'))
@@ -491,8 +494,8 @@ describe('the archived variety rows of the real screens.json', () => {
   it('draws Archivadas at the list, on the phone and on the computer, with no step', () => {
     for (const key of keys.filter((k) => k.startsWith('Archivadas'))) {
       const entry = screens.screens.find((s) => s.screen === key)!
-      expect(entry.route, key).toBe('/varieties/archived')
-      expect(entry.path, key).toBe('/varieties/archived')
+      expect(entry.route, key).toBe(listPath)
+      expect(entry.path, key).toBe(listPath)
       expect('steps' in entry, key).toBe(false)
       expect(entry.viewport !== undefined, key).toBe(key.includes('Compu'))
     }
@@ -500,7 +503,7 @@ describe('the archived variety rows of the real screens.json', () => {
 
   it('keeps archived_parent as the registry row it was', () => {
     const row = screens.registry.find((r) => r.path === '/varieties/{id}')
-    expect(row?.archived_parent).toBe('/varieties/archived')
+    expect(row?.archived_parent).toBe(listPath)
   })
 })
 
@@ -537,14 +540,14 @@ describe('an entry whose path names a record names the same placeholders in its 
   }
 
   it('refuses an entry whose path names a record its route does not, naming the screen and the two lists', () => {
-    const uncorrected = { screen: 'VariedadArchivada', path: '/varieties/{low}', route: '/varieties/{sold_out}' }
+    const uncorrected = { screen: 'VariedadArchivada', path: 'varieties/{low}', route: 'varieties/{sold_out}' }
     expect(pathRecordMismatches([uncorrected])).toEqual([
       { screen: 'VariedadArchivada', path: ['low'], route: ['sold_out'] },
     ])
   })
 
   it('refuses a path that names a record when the route names none and no step clicks to it', () => {
-    const entry = { screen: 'VariedadArchivada', path: '/varieties/{archived}', route: '/varieties/archived' }
+    const entry = { screen: 'VariedadArchivada', path: 'varieties/{archived}', route: 'varieties/archived' }
     expect(pathRecordMismatches([entry])).toEqual([{ screen: 'VariedadArchivada', path: ['archived'], route: [] }])
     expect(pathRecordMismatches([{ ...entry, steps: [{ click: 'Blue Dream' }] }])).toEqual([])
   })

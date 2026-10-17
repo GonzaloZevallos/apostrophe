@@ -401,6 +401,8 @@ const REACHED_BY_STEPS = [
   "EntradaStockSinEntradasCompuOscuro",
   "VariedadArchivada",
   "VariedadArchivadaOscuro",
+  "VariedadArchivadaCompu",
+  "VariedadArchivadaCompuOscuro",
 ];
 
 interface RouteEntry {
