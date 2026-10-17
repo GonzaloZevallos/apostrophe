@@ -85,10 +85,23 @@ ANALISIS = Family(
     ),
 )
 
+# The archived variety's page and Archivadas, phone and computer; the dark twins of the
+# registry compare against these same files.
+ARCHIVED = Family(
+    name="archived",
+    screens=(
+        "VariedadArchivada.dc.html",
+        "VariedadArchivadaCompu.dc.html",
+        "Archivadas.dc.html",
+        "ArchivadasCompu.dc.html",
+    ),
+    denylist=(),
+)
+
 OTRAS = Family(
     name="otras",
     screens=(),
     denylist=(),
 )
 
-FAMILIES: tuple[Family, ...] = (INICIO, VARIEDADES, VENTAS, ANALISIS, OTRAS)
+FAMILIES: tuple[Family, ...] = (INICIO, VARIEDADES, VENTAS, ANALISIS, ARCHIVED, OTRAS)

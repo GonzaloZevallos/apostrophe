@@ -107,3 +107,24 @@ The guard reads source with regular expressions. It does not see:
 It is a ratchet, not a proof. The follow-up that would close the hole is to make `BotonLink` and a
 typed text-only link the only link components a screen may import.
 `docs/product/icon-and-text-rule.md` does not change.
+
+## Amendment (GH-131): a critical kind, and the filled `--critico` kept inside the confirmation
+
+`Boton` gains `variant="critical"` in the icon + text arm (`icon: NombreIcono` required; no
+`textOnly`, no `action`; `Boton.types.test.tsx` rejects those shapes). It is the trigger of a
+destructive action, drawn in `pantallas/VariedadDetalle.dc.html`: a 2 px outline and the text in
+`--critico` on the page, with the `tacho`, and no fill. Only "Eliminar variedad" uses it.
+
+- **No fill outside the answer.** The filled `--critico` with `--critico-texto` stays the answer of
+  a confirmation (`AnswerButton`, through `ConfirmDialog`). `findFilledCritical`
+  (`web/src/architecture/closingGuards.ts`) flags `variant="destructive"` and the class
+  `boton--destructivo` anywhere else but `ConfirmDialog.tsx` and the `.boton*` authors. The one
+  use on master, the withdrawal detail's "Borrar", sits on `FILLED_CRITICAL_LEFT`
+  (`closingGuards.real.test.ts`), keyed by file; the list only shrinks.
+- **The class map is total.** `botonVisual.tsx` types it as `Record<BotonVariant, string>`, so a
+  variant added to `Boton` with no class fails `tsc`.
+- **Pressed.** The kind is transparent, so its cue is the `--superficie` fill of the transparent
+  family and the scale, without the filled family's `--papel` ring.
+- **Contrast.** The README's contrast table lists `--critico` as text on `--papel`, `--superficie`,
+  `--deuda-fondo` and `--acento-suave`, in both themes; `tests/test_design_contrast.py` computes
+  the ratios. No token value changes.

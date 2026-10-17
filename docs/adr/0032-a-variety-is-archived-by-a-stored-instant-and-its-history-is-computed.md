@@ -45,3 +45,39 @@ archive one that has, keeping every past sale, stock movement and figure unchang
   `Varieties.name_holder` says whether a live or an archived variety holds a name.
 - The business export picks `archived_at` up through ADR-0015's reflection, as an ISO
   instant with no secret flag, with no change to the command.
+
+## Amendment (2026-10-16): the archived varieties' catalog attributes have one read
+
+GH-131. `GET /catalog` never lists an archived variety, so an archived variety's stored
+shown flag, emoji, indica share and aroma had no read.
+
+- **`GET /catalog/archived`** is the one read of them, for the archived page and the
+  Archivadas rows alike. It takes no parameters and answers a list
+  `[{variety_id, name, shown, emoji, indica_share, aroma}]` of the session business's
+  archived varieties, by name; an unset attribute is `null` and a variety with no
+  attributes row reads as the defaults. It is a list, so it never answers 404 and adds no
+  refusal code: `contract.json` is unchanged. There is no one-variety catalog `GET`.
+- **The catalog reaches archived varieties only through its `CatalogVarieties` port**
+  (`archived()`); only `SqlCatalogVarieties` imports `app.varieties`.
+- Its cost is one business's archived varieties plus their attributes rows, in two
+  statements, whatever the count.
+
+### Restore from the archived page: where it lands, and in what order
+
+- **`restoreLanding(archivedByName, id)` is the only code that picks the landing**: the next
+  archived variety by name, otherwise the previous one, otherwise `null`, or `unknown` when
+  the archived list is not in the cache.
+- **`restoreFromPage` runs in a fixed order**: the restore request; the landing; the id
+  dropped from the cached archived varieties list and from the `/catalog/archived` list
+  (`setQueryData`); the toast armed to show on the next location (`showNow` would be
+  dismissed by the navigation); the navigation; last, `invalidateResource` with
+  `refetchType: 'none'` for varieties and stock. No active query is read again before the
+  page is gone, so it never redraws as the live variety.
+- **Where it navigates**: on a computer, `replace` to the landing variety, or to `/varieties`
+  with none left; on a phone, back in history when the page was reached in-app (`useBackOr`),
+  otherwise `replace` to `/varieties/archived`; with an `unknown` landing, `replace` to
+  `/varieties/archived`. The Archivadas card, opened by a link of the app with its loaded
+  list empty, replaces its own entry with `/varieties`, so an empty Archivadas is never
+  shown to someone who walked in; a typed address still reads the fixed line.
+- **Restoring a variety that is already live is a success**: the endpoint answers 200;
+  only `variety.not_found` fails.

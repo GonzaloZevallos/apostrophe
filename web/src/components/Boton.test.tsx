@@ -8,6 +8,7 @@
 import { render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 import Boton from './Boton'
+import { expectIconAndTextRule } from '../test/iconAndTextRule'
 
 test('a primary button is named by its own text', () => {
   render(
@@ -60,6 +61,19 @@ test('the destructive variant carries both the base and the destructive class', 
   )
   const button = screen.getByRole('button', { name: 'Sí, borrala' })
   expect(button.className).toBe('boton boton--destructivo')
+})
+
+test('the critical variant is icon + text in its own class, never the filled destructive one', () => {
+  render(
+    <Boton variant="critical" icon="tacho" onClick={() => {}}>
+      Eliminar variedad
+    </Boton>,
+  )
+  const button = screen.getByRole('button', { name: 'Eliminar variedad' })
+  expect(button.className).toBe('boton boton--critico')
+  expect(button.className).not.toContain('destructivo')
+  expect(button.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  expectIconAndTextRule(document.body)
 })
 
 test('a secondary button with an icon still carries the icon beside its text', () => {

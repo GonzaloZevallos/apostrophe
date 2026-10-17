@@ -449,11 +449,70 @@ describe('the real registry covers its evidence', () => {
   })
 })
 
-describe('an entry whose path names a record names the same placeholders in its route, as written (a path with no placeholder makes no claim, so a route that names a record through it is not checked)', () => {
+describe('the archived variety rows of the real screens.json', () => {
+  const pantallas = resolve(process.cwd(), '..', 'docs/product/design-system/pantallas')
+  const keys = [
+    'VariedadArchivada',
+    'VariedadArchivadaOscuro',
+    'VariedadArchivadaCompu',
+    'VariedadArchivadaCompuOscuro',
+    'Archivadas',
+    'ArchivadasOscuro',
+    'ArchivadasCompu',
+    'ArchivadasCompuOscuro',
+  ]
+
+  // The Archivadas list's own path, read from the registry's list row.
+  const listPath = screens.registry.find((r) => r.kind === 'card' && r.path.endsWith('archived'))!.path
+
+  it('has each key exactly once', () => {
+    for (const key of keys) {
+      expect(screens.screens.filter((s) => s.screen === key).length, key).toBe(1)
+    }
+  })
+
+  it('names, for each, a design file that exists, the light file for a dark twin', () => {
+    for (const key of keys) {
+      const entry = screens.screens.find((s) => s.screen === key)!
+      const design = entry.design ?? key
+      expect(design, key).toBe(key.replace('Oscuro', ''))
+      expect(readdirSync(pantallas), key).toContain(`${design}.dc.html`)
+    }
+  })
+
+  it('reaches the archived page through the seeded variety, on the phone and on the computer', () => {
+    for (const key of keys.filter((k) => k.startsWith('VariedadArchivada'))) {
+      const entry = screens.screens.find((s) => s.screen === key)!
+      expect(entry.route, key).toBe(listPath)
+      expect(entry.path, key).toBe(`${listPath.replace(/archived$/, '')}{archived}`)
+      expect(entry.steps, key).toEqual([{ click: 'Blue Dream' }, { wait: 'Stock y entradas' }])
+      expect(entry.viewport !== undefined, key).toBe(key.includes('Compu'))
+      expect(entry.tema === 'oscuro', key).toBe(key.endsWith('Oscuro'))
+    }
+  })
+
+  it('draws Archivadas at the list, on the phone and on the computer, with no step', () => {
+    for (const key of keys.filter((k) => k.startsWith('Archivadas'))) {
+      const entry = screens.screens.find((s) => s.screen === key)!
+      expect(entry.route, key).toBe(listPath)
+      expect(entry.path, key).toBe(listPath)
+      expect('steps' in entry, key).toBe(false)
+      expect(entry.viewport !== undefined, key).toBe(key.includes('Compu'))
+    }
+  })
+
+  it('keeps archived_parent as the registry row it was', () => {
+    const row = screens.registry.find((r) => r.path === '/varieties/{id}')
+    expect(row?.archived_parent).toBe(listPath)
+  })
+})
+
+describe('an entry whose path names a record names the same placeholders in its route, as written (a path with no placeholder makes no claim, so a route that names a record through it is not checked; nor is a route with no placeholder with a click step that goes through to the record, the archived page reached from the Archivadas list)', () => {
   interface Declared {
     screen: string
     path?: string | null
     route?: string | null
+    steps?: readonly Record<string, unknown>[]
   }
   interface Mismatch {
     screen: string
@@ -469,6 +528,7 @@ describe('an entry whose path names a record names the same placeholders in its 
       const path = placeholders(entry.path)
       const route = placeholders(entry.route)
       if (path.length === 0) return []
+      if (route.length === 0 && (entry.steps ?? []).some((step) => 'click' in step)) return []
       const same = path.length === route.length && path.every((name, index) => name === route[index])
       return same ? [] : [{ screen: entry.screen, path, route }]
     })
@@ -480,11 +540,19 @@ describe('an entry whose path names a record names the same placeholders in its 
   }
 
   it('refuses an entry whose path names a record its route does not, naming the screen and the two lists', () => {
-    // The dark twin's path names {low}, the record the light row's did before it was corrected.
-    const uncorrected = { ...real('VariedadArchivada'), path: real('VariedadArchivadaOscuro').path }
+    const uncorrected = { screen: 'VariedadArchivada', path: 'varieties/{low}', route: 'varieties/{sold_out}' }
     expect(pathRecordMismatches([uncorrected])).toEqual([
       { screen: 'VariedadArchivada', path: ['low'], route: ['sold_out'] },
     ])
+  })
+
+  it('refuses a path that names a record when the route names none and no step clicks to it', () => {
+    const entry = { screen: 'VariedadArchivada', path: 'varieties/{archived}', route: 'varieties/archived' }
+    expect(pathRecordMismatches([entry])).toEqual([{ screen: 'VariedadArchivada', path: ['archived'], route: [] }])
+    expect(pathRecordMismatches([{ ...entry, steps: [{ wait: 'Stock y entradas' }] }])).toEqual([
+      { screen: 'VariedadArchivada', path: ['archived'], route: [] },
+    ])
+    expect(pathRecordMismatches([{ ...entry, steps: [{ click: 'Blue Dream' }] }])).toEqual([])
   })
 
   it('accepts an entry whose path names no record, though its route does', () => {

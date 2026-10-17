@@ -3,8 +3,11 @@
  * (`docs/product/icon-and-text-rule.md`, ADR-0037) written as a type. The union below
  * is the rule: what it forbids does not compile (`Boton.types.test.tsx`).
  *
- * - **Icon + text** (`variant` primary, secondary or destructive, with an `icon`): an
+ * - **Icon + text** (`variant` primary, secondary, destructive or critical, with an `icon`): an
  *   action. The icon is decorative (`aria-hidden`), so the accessible name is the word.
+ *   `critical` is the destructive action's trigger ("Eliminar variedad"): an outline and text in
+ *   `--critico`, never a fill. The filled `--critico` is only the answer of a confirmation
+ *   (`AnswerButton`), which `findFilledCritical` keeps true.
  * - **Text only**, and only these kinds: `textOnly="submit"` with `type="submit"` (the
  *   submit of a form or sheet), `link` (enlace), `undo` (Deshacer) and `back`
  *   ("‹ <parent>"). They accept no `icon`. Back is never close.
@@ -53,7 +56,7 @@ interface BotonWithText extends BotonCommon {
 }
 
 export interface BotonIconText extends BotonWithText {
-  variant?: 'primary' | 'secondary' | 'destructive'
+  variant?: 'primary' | 'secondary' | 'destructive' | 'critical'
   icon: NombreIcono
   textOnly?: undefined
   type?: 'button'
@@ -106,6 +109,9 @@ export interface BotonIconOnly extends BotonCommon {
 export type BotonVisualProps = BotonIconText | BotonTextKind | BotonRow | BotonNotice | BotonIconOnly
 
 export type BotonProps = BotonVisualProps | BotonSubmit
+
+/** Every variant a `Boton` can be drawn as, `primary` being the default of an absent one. */
+export type BotonVariant = NonNullable<BotonProps['variant']> | 'primary'
 
 export default function Boton(props: BotonProps) {
   const { className, ariaLabel, content } = botonVisual(props)

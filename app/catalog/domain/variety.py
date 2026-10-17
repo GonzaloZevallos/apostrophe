@@ -39,6 +39,15 @@ class CatalogVariety:
     price: CatalogPrice | None
 
 
+@dataclass(frozen=True)
+class ArchivedCatalogVariety:
+    """An archived variety, named only: its stored attributes are read apart from the
+    varieties (docs/adr/0032)."""
+
+    id: int
+    name: str
+
+
 def catalog_state(
     attributes: CatalogAttributes, price: CatalogPrice | None, stock_status: StockStatus
 ) -> CatalogState:
