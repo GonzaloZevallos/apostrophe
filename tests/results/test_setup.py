@@ -110,3 +110,37 @@ def test_a_set_up_business_with_no_sale_and_no_stock_entry_never_gets_the_notice
     view = setup_view(stored, NEW_BUSINESS)
 
     assert view.bot_notice is False
+
+
+def test_each_optional_step_follows_its_own_fact_not_the_other() -> None:
+    published_only = setup_view(NOTHING_STORED, replace(NEW_BUSINESS, ever_published=True))
+    partner_only = setup_view(NOTHING_STORED, replace(NEW_BUSINESS, has_partner=True))
+
+    assert published_only.checklist is not None and partner_only.checklist is not None
+    assert {s.step: s.done for s in published_only.checklist} == {
+        "priced_variety": False,
+        "stock_entry": False,
+        "bot_published": True,
+        "partner": False,
+    }
+    assert {s.step: s.done for s in partner_only.checklist} == {
+        "priced_variety": False,
+        "stock_entry": False,
+        "bot_published": False,
+        "partner": True,
+    }
+
+
+def test_each_required_step_follows_its_own_fact_not_the_other() -> None:
+    priced_only = setup_view(NOTHING_STORED, replace(NEW_BUSINESS, priced_today=True))
+    stocked_only = setup_view(NOTHING_STORED, replace(NEW_BUSINESS, has_stock_entry=True))
+
+    assert priced_only.checklist is not None and stocked_only.checklist is not None
+    assert [(s.step, s.done) for s in priced_only.checklist[:2]] == [
+        ("priced_variety", True),
+        ("stock_entry", False),
+    ]
+    assert [(s.step, s.done) for s in stocked_only.checklist[:2]] == [
+        ("priced_variety", False),
+        ("stock_entry", True),
+    ]
