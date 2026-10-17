@@ -253,6 +253,12 @@ red with no code change. Suggested limit: a timeout of at least 2x the largest l
 (so at least 228 s for 114 s), or split the spec. The timeout is not changed here; the integrator
 files the issue.
 
+## Unchanged guard tests, run once on the head
+
+On the head, with this branch's diff touching only this document: `npx vitest run
+src/architecture/e2eShape.test.ts src/architecture/noWallClock.test.ts` in `web/`: 2 files, 15
+tests, all passed; `uv run --no-project pytest tests/test_e2e_clock.py -q`: 14 passed.
+
 ## Load figures (from the five loaded runs)
 
 - **Accept-invitation POST** (scrypt, ADR-0002): 235 signups, max **5_203 ms**, p95
