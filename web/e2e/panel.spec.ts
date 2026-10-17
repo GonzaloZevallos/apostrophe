@@ -91,7 +91,7 @@ function grams(value: number): string {
 }
 
 function countLabel(count: number): string {
-  return `${count} ${count === 1 ? 'venta' : 'ventas'}`
+  return `${count} ${count === 1 ? 'sale' : 'sales'}`
 }
 
 // A local mirror of `web/src/components/MarcaEstado.tsx`'s own word table and

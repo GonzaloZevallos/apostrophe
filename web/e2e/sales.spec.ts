@@ -103,7 +103,7 @@ function pesos(amount: number): string {
 }
 
 function countLabel(count: number): string {
-  return `${count} ${count === 1 ? 'venta' : 'ventas'}`
+  return `${count} ${count === 1 ? 'sale' : 'sales'}`
 }
 
 test('a seller records, undoes, fixes and isolates sales, from the front alone', async ({
@@ -245,7 +245,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   await page.getByRole('button', { name: 'Deshacer' }).click()
   await expectPath(page, SALES)
   await expect(page.getByText('Venta eliminada')).toBeVisible()
-  await expect(page.getByText('0 ventas')).toBeVisible()
+  await expect(page.getByText('0 sales')).toBeVisible()
   await expect(page.getByText('Todavía no registraste ninguna venta en este período.')).toBeVisible()
 
   // --- Sale B: "Nueva venta a <name>", a gift line, no payment needed for $0. ---
