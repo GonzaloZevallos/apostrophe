@@ -116,6 +116,111 @@ React, Vite and TypeScript in `web/`, built from the design in `docs/product/des
   (`scripts/design/comparisons.mjs`, design README) before delivering, and keep its entry
   in `scripts/design/screens.json` true.
 
+### Phone
+
+What "feels like an app" means below the 900 px computer breakpoint (the computer layouts
+are out of its scope). The app ships to phones as this same web app, so whatever the web
+does on a phone is the final app. The same eight requirements, with the same labels, are in
+the design README's "En el celular"; the two texts are one rule.
+
+Each part is **checked** (`web/e2e/mobile.spec.ts` fails on it, under the named `Rule` of
+`web/src/mobile-standard/violation.ts`) or **review** (a reviewer enforces it). Where
+`docs/product/accounts.md` (the installed shell), ADR-0027, ADR-0028, ADR-0029 or ADR-0030
+already decides a point, this section cites it and does not restate it. An area's product
+doc may record a deliberate exception; without one, this standard wins over an area issue.
+
+1. **Chrome.**
+   - Checked: the bottom bar, the header and "+ Nueva venta" are inside the viewport at load
+     and after scrolling to the middle (`chrome-at-load`, `chrome-mid-scroll`).
+   - Review: the bar and header are fixed; content is padded so nothing sits behind them.
+     Insets and `dvh` are the installed shell's (accounts.md): the `--inset-*` tokens, and
+     never `100vh`.
+2. **Touch.**
+   - Checked: every visible button, link and input is at least 44x44 CSS px, the native
+     date control included, and a text action gets padding, not just its line height
+     (`touch-target`); the only exemption is a link inside running text. `user-select: none`
+     and `touch-action: manipulation` on buttons, tabs and the bar (`user-select`,
+     `touch-action`).
+   - Review: 8 px between neighbours; nothing depends on hover; every button and row has an
+     `:active` state and no default tap highlight (both the installed shell's, accounts.md).
+3. **Inputs.**
+   - Checked: font-size of at least 16 px on every input, select and date (`input-font`);
+     an `autocomplete` value on every visible input: `username` on the login email,
+     `organization` on the business name, `current-password`, `new-password`, and `off` on a
+     customer's name and phone (`autocomplete`); `inputmode="decimal"` on grams and
+     `inputmode="numeric"` on pesos (`inputmode`); `type="email"` and `type="tel"`
+     (`input-type`).
+   - Review: `enterkeyhint`, except on Nueva venta's lines, which sales.md's tests check.
+     The keyboard is by outcome only: the focused field stays in view and the submit is
+     reachable by scrolling. The viewport meta is the installed shell's; nobody changes it
+     outside #77 (ADR-0028).
+4. **Forms and sheets** (review as a whole; their controls fall under the checked rules of
+   touch, inputs and readability).
+   - A sheet that holds fields or a list is full screen on the phone, with "Cerrar" on top;
+     its primary action is fixed at the bottom within thumb reach while the keyboard is
+     closed (pinning it above the keyboard is each screen's decision, as Nueva venta did,
+     ADR-0028).
+   - A sheet is a history entry: system back and Escape close it, and the background scroll
+     is locked (ADR-0027).
+   - A confirmation ("Antes de borrar", "¿Descartás la venta?") is a short dialog with two
+     buttons of at least 44 px, not a sheet. Escape and system back dismiss it as its "No"
+     does.
+   - A getting-in screen (Entrar, NegocioNuevo, Invitacion, Reset) is a screen, not a sheet:
+     it keeps its centred column, and every other rule applies to it in full.
+5. **Layout.**
+   - Checked: no horizontal page scroll at 320 px or at 130 % (246 CSS px) (`h-scroll`); a
+     long name truncates with an ellipsis (`name-overflow`); a figure never splits across
+     lines and "$" never stays alone on a line (`figure-split`), shown with the check's
+     fixture of a 60-character name and nine-digit figures.
+   - Review: lists, not tables, on the phone.
+6. **Gestures.**
+   - Checked: `overscroll-behavior: none` on `html` and `body` (`overscroll`).
+   - Review: system back follows history (ADR-0027); scrolling regions use `contain`
+     (accounts.md).
+7. **Loading** (checked), with the API held:
+   - the content area is shaped like its final layout and carries `aria-busy="true"`
+     (`blank-while-loading`, `aria-busy`);
+   - no fixed empty-state wording shows until the response arrives (`false-empty`), and the
+     loading state holds no digit or currency symbol (`data-while-loading`);
+   - when the data arrives the chrome moves 0 px (`chrome-shift`) and the content area at
+     most `CONTENT_SHIFT_PX` (`content-shift`);
+   - a tap on Nueva venta's save, Registrar cobro's save and Entrar's "Entrá" shows its
+     pending state at once (`pending-state`).
+
+   Review: a new fixed empty or no-activity wording goes into
+   `web/src/screens/emptyStates.ts`; screens render from it, and the check forbids every
+   wording in it while data loads. A literal copy in a screen fails its guard.
+8. **Readability** (checked).
+   - Every text node is at least 4.5:1 against its effective background, in both themes,
+     with no large-text relaxation (`contrast`); a background the arithmetic cannot prove is
+     reported, never passed (`contrast-unprovable`). No text is under 12 px, with no
+     exemption (`text-size`).
+   - A disabled control's own label is exempt; a reason shown in words beside it is not.
+     Icon-only tokens (`--tenue` chevrons) are not measured.
+   - The README's contrast table stays the token guard (ADR-0029); the DOM check is the
+     authority for what a person reads (ADR-0030).
+
+**New forms, sheets and routes** (review): a new form, sheet, confirmation or shared
+`Estados` state is added to the walked states (`WalkState`, in
+`web/src/mobile-standard/states*.ts`), so the check visits it; a new route is registered in
+`scripts/design/screens.json`, and a front route missing from it fails the check. A walk
+step that cannot reach its screen is reported as `unreachable`, never skipped.
+
+**The offender list.** A failure the app has today is listed, never skipped:
+`web/src/mobile-standard/offenders/<rule>.json`, one file per rule, each entry one screen,
+rule, target and issue (an area issue from the fixed map #45-#49, #59, #60, #78), with
+optional `sizes` and `themes`. It can only shrink: the run fails on a new offender, on an
+entry whose cell now passes, and on an entry with no valid issue number. There is no
+network lookup; review checks that the number is a real, open area issue. An area issue is
+not done while its own screens are still on the list. The list is valid only against the
+pinned fixture and date (ADR-0030); a change to either is a change to the lists, in the
+same diff.
+
+**Attached.** Every area PR (#45-#49, #59, #60, #78) attaches the check's result: the
+`mobile` project of `npm --prefix web run e2e`, and the offender counts that
+`scripts/design/compare.sh` prints (`COMPARE_MOBILE=1` runs the check there too). The real
+keyboard and the real-device pass stay by eye (accounts.md, ADR-0028).
+
 ## 11. Database naming
 
 `tests/migrations/test_naming.py` machine-checks every rule below stated as **checked**,
