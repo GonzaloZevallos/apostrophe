@@ -129,12 +129,6 @@ page text, sample data, amounts or names, and the page sends back only a hash an
 Under `--strict` the run exits non-zero after every screen ran and `index.json` was written. A
 step that throws used to be only a note, so `--strict` stayed green; it now fails.
 
-**A click step finds its target by visible text, then by accessible name.** An icon-only button
-(`Borrar venta`, `aria-label` with no text) has no visible text, so the step falls back to the
-button whose accessible name is the label; text wins when both exist, so no other row changes
-target. The step still waits for either to appear and still fails, through `fail(ctx, …)`, if
-neither does.
-
 **Cost.** `screens.json` has 130 rows, which is at most 578 settles per run (design: first and
 final, 260; built: first, one per step, final, 318; at most 5 steps in a row). Each settle samples
 3 frames typically and 120 at worst, so at most 69,360 frames, each costing one pass over the
@@ -152,3 +146,87 @@ an assertion.
   Argentina day; near midnight they can differ.
 - If the fake clock stalls actions (a click, fill or select timing out because the page never
   advances), the task stops and goes back to the Tech Lead; the mechanism is not changed in place.
+
+## Amendment: text at 130 % and the strict section crop (GH-224)
+
+- **`text_scale` in `screens.json`.** An entry may carry `text_scale` (the one value is
+  `TEXT_SCALE` in `scripts/design/textScale.mjs`, 1.3). `comparisons.mjs` applies it on both
+  the design page and the built page, after the first `settle()` and the entry's steps; the
+  page then settles again (`SETTLE_ADVANCE_MS`) and the final `settle()` of the GH-220 amendment
+  is still the call right before the screenshot. It lives only in `scripts/design/`: nothing under `app/` or `web/src`
+  reads, sets or branches on it. `screens.mjs` validates the field (the `registry-checks`
+  subtask), `comparisons.mjs` only reads it.
+- **Verify twice.** The apply is one `page.evaluate` and the first verify a second one right
+  after it (a late-mounted element still shows up untagged); the screenshot is taken; a
+  second verify runs in the same page. Between the scaling and the screenshot a React
+  re-render can mount elements the stylesheet never saw, and the second verify is what makes
+  that a failure instead of a screenshot that says "130 %" over unscaled text. A miss in
+  either verify is a note on the sheet and in that screen's `index.json` entry, and a non-zero
+  exit under `--strict`, the same path as a failed applied-check: that side is `null` and no PNG
+  is written under any name (after the screenshot, the capture is discarded). The first verify
+  runs before the final settle, so nothing runs between that settle and the screenshot. A note
+  names the side and a count, never page text.
+- **Two copies of one model.** `scripts/design/textScale.mjs` repeats the scaling model of
+  `web/e2e/helpers/textScale.ts` (GH-104): tag `<html>` and every element under the root, set
+  each `font-size` to baseline × factor (`!important`), scale a px `line-height` the same
+  way, leave `normal` alone. The e2e helper is a gate helper five specs use and is not
+  edited, so only `textScale.mjs`'s header names its twin (the helper does not name
+  `scripts/design`), and `web/src/design/textScale.test.ts` reads
+  the helper with `?raw` and ties its `TEXT_SCALE` and `TOLERANCE` literals to the module's
+  exports. Accepted risk: a change in the scaling rule beyond those two constants is not
+  caught by anything.
+- **The crop authority is the DOM count.** A `section` crop requires
+  `page.getByText(section, { exact: true })` to match exactly one element; any other count is
+  a screen that threw (`<screen>: section matches N elements, expected 1`), written in
+  `index.json` and a non-zero exit under `--strict`. This replaces the silent `.first()`.
+  `sectionOccurrences` (a count of `>label<` in the design file, in `screens.mjs`) is only an
+  earlier, weaker static guard: when the two disagree the run stops, and a crop never moves
+  silently.
+
+## Amendment: before-run tooling (GH-219)
+
+Narrows point 6. Point 6 says one script from one install; it does not say how a base that
+predates the registry's newest rows is captured.
+
+- **The overlay.** A before-run takes head's whole `scripts/design/` (the capture script, the
+  sample app, `screens.json`) and head's font install, and puts them over the base's own `app/`
+  and `web/`, which are what gets served and captured. The seed speaks only HTTP, so head's
+  sample app seeds the base's server; the two sides still capture the same registry by the same
+  script.
+- **How it runs.** Each side captures the whole registry in file order with `--strict` and no
+  `--only`, each on a fresh sample, on the same Argentina day. `--only` is for `ae.mjs`, never
+  for a capture.
+- **What the evidence records.** The base and head SHAs, the overlay's diff stat (it must equal
+  `git diff --stat <base>..<head> -- scripts/design`) and the installed fontsource version.
+- **A seed the base cannot run.** A head seed that needs an API the base lacks makes the
+  before-run fail. That escalates: the base is never patched and no exception is recorded.
+- **Guards on a partial run.** A registry row may name `needs`, the earlier row whose state it
+  relies on. `assertScreens` refuses a `needs` that names no earlier screen, and
+  `assertSelectedNeeds` makes `comparisons.mjs` exit 2 before capturing when a selection keeps
+  a row and drops the one it needs.
+
+**Which rule governs a later before-run.** GH-219's: the whole registry in file order, with no
+`--only`, on each side; `--only` stays for `ae.mjs`. GH-224's evidence (docs/evidence/GH-224-onboarding-captures.md)
+captured one explicit `--only` list for both sides, as its plan required; that is safe only
+because `assertSelectedNeeds` refuses a selection that drops a row another one needs, and it is
+not a precedent. The two before-run methods are not mixed within one evidence note.
+
+## Amendment: every registry row reaches its screen (GH-254)
+
+Narrows points 3 and 4. A whole-registry `--strict` run exits 0 only if every row reaches its
+screen and passes the applied-check; three rows did neither.
+
+- **`offline` loads the fonts first.** Before the network goes, the step loads every face of
+  `document.fonts` that is still `unloaded`, whatever its family, waits for `document.fonts.ready`
+  and only then calls `setOffline(true)`. A face the page had not drawn yet (a weight, a
+  unicode-range subset) would otherwise be fetched offline and end in `error`. The preload records
+  no failure and no note: the applied-check, unchanged, is the only verdict on fonts, so a face
+  that still errors is reported once, by it.
+- **`press` for an icon-only control.** `{ "press": "<name>" }` finds a button by role and exact
+  accessible name, with no `.first()`: zero matches or two fail the row. `click` keeps matching
+  exact text, so no other row changes what it targets. `EstadosConfirmar` uses `press`, because
+  "Borrar venta" is only the accessible name of an icon button.
+- **A closed list of step shapes.** `assertScreens` refuses a step that is not an object with
+  exactly one key of `click`, `press`, `wait` (a non-empty string), `fill` (`label` and `value`,
+  strings), `select` (`label` string, `index` a non-negative integer) or `offline` (`true`). The
+  message names the entry and the step's index, never the step's data.

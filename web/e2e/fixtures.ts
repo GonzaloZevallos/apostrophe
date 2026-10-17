@@ -7,13 +7,14 @@
  * worker's.
  *
  * This is the only module that picks a port, starts a backend, or writes
- * `APOSTROPHE_E2E_WORKER_PORT`; `env.ts` reads that variable back for every other caller.
+ * `APOSTROPHE_E2E_WORKER_PORT` and `APOSTROPHE_E2E_CLOCK_OFFSET`; `env.ts` reads them back
+ * for every other caller.
  * It is also the only e2e module allowed to import the values `test` and `expect` from
  * `@playwright/test` (`web/.oxlintrc.json`): every spec imports them from here, so a spec
  * can never run without its worker's server.
  */
 
-import { spawn, type ChildProcess } from 'node:child_process'
+import { execFileSync, spawn, type ChildProcess } from 'node:child_process'
 import { mkdirSync, rmSync } from 'node:fs'
 import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -56,6 +57,23 @@ async function stop(child: ChildProcess): Promise<void> {
   signalGroup(child, 'SIGTERM')
   await Promise.race([exited, new Promise<void>((resolve) => setTimeout(resolve, TERM_GRACE_MS))])
   signalGroup(child, 'SIGKILL')
+}
+
+/**
+ * Asks `tests.e2e_app` for the clock offset (whole seconds) and puts it in this worker's
+ * environment, once, before any backend starts: the server and the CLI calls then run on
+ * one clock that began at the anchor (ADR-0043). The offset is computed in Python only, so
+ * no TypeScript reads the wall clock.
+ */
+function setClockOffset(): void {
+  const output = execFileSync('uv', ['run', '--no-project', 'python', '-m', 'tests.e2e_app', 'offset'], {
+    cwd: REPO_ROOT,
+    encoding: 'utf-8',
+  }).trim()
+  if (!/^-?[0-9]+$/.test(output)) {
+    throw new Error('tests.e2e_app offset did not print a whole number of seconds.')
+  }
+  process.env.APOSTROPHE_E2E_CLOCK_OFFSET = output
 }
 
 /** The child stayed silent for `READY_TIMEOUT_MS`: not a lost port race, so never retried. */
@@ -129,6 +147,7 @@ export const test = base.extend<object, { workerServer: WorkerServer }>({
   workerServer: [
     async ({ playwright }, provide) => {
       void playwright
+      setClockOffset()
       let child: ChildProcess | undefined
       for (let attempt = 1; child === undefined && attempt <= ATTEMPTS; attempt += 1) {
         try {

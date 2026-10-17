@@ -274,6 +274,12 @@ Total: $ 32.000
 | Desde el primer registro | 28/08 – 07/10 | Ganancia | $ 236.500 | y 1 g sin costo |
 | Desde el primer registro | 28/08 – 07/10 | Caja | −$ 537.500 | no |
 
+### Archivadas
+
+| Variedad | Gramos | Precio hoy | Oculta |
+| --- | --- | --- | --- |
+| Blue Dream | 25 g | $ 13.000 x g | sí |
+
 ## Cómo se obtuvo
 
 ```sh

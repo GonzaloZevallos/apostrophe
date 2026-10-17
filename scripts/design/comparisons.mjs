@@ -8,7 +8,7 @@
 // yet and a page wider than its viewport are written on the image and in `index.json`,
 // never thrown: one broken screen must not hide the others. The facts carry `today`.
 //
-// A design capture never touches the network (ADR-0041): its Google Fonts requests are
+// A design capture never touches the network (ADR-0042): its Google Fonts requests are
 // served from @fontsource/plus-jakarta-sans, every other non-file request is aborted. Both
 // captures run on a paused fake clock (the facts' `today` at noon, Argentina) and are taken
 // only once the page has finished drawing (ADR-0042, `settle.mjs`): the applied-check passes
@@ -18,15 +18,22 @@
 // `--strict` the run also exits non-zero, after writing everything. Besides `<screen>.png`
 // the raw captures go to `<screen>.design.png` and `<screen>.built.png`, listed in
 // `index.json` as `design` and `built` (an absolute path, or null when there is none).
+//
+// An entry with `text_scale` is captured with its text scaled (`textScale.mjs`), on both
+// sides: applied and verified after the page has settled and its steps are done, then verified
+// again right after the screenshot, in the same page. A miss in either is a failure of the
+// screen, like a font failure. A `section` crop needs exactly one element with that label;
+// any other count is a screen that threw, never a silent first match.
 
 import { createRequire } from 'node:module'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
-import { assertScreens, assertSelectedAccounts } from './screens.mjs'
+import { assertScreens, assertSelectedAccounts, assertSelectedNeeds } from './screens.mjs'
 import { fontCss, fontRoute } from './fonts.mjs'
 import { SETTLE_ADVANCE_MS, SETTLE_BOUND, SETTLE_FRAMES, settleWith, signatureOf, sideOutcome } from './settle.mjs'
+import { applyInPage, gatherInPage, TOLERANCE, unscaled } from './textScale.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO = resolve(HERE, '..', '..')
@@ -55,10 +62,9 @@ const only = values.only ? new Set(values.only.split(',')) : null
 const accounts = facts.accounts ?? {}
 // A configuration error, like bad usage: nothing is captured, and no credential is printed.
 try {
-  assertSelectedAccounts(
-    screens.filter((s) => !only || only.has(s.screen)),
-    Object.keys(accounts),
-  )
+  const selected = screens.filter((s) => !only || only.has(s.screen))
+  assertSelectedAccounts(selected, Object.keys(accounts))
+  assertSelectedNeeds(selected, screens)
 } catch (error) {
   console.error(`comparisons: ${error.message}`)
   process.exit(2)
@@ -90,19 +96,24 @@ function resolveFacts(template, placeholders) {
 }
 
 async function run(page, step, placeholders) {
-  if (step.click) {
-    // The visible text a seller reads; an icon-only button has none, so its accessible name
-    // ("Borrar venta") is what a seller using a screen reader reads. Text wins when both exist.
-    const byText = page.getByText(step.click, { exact: true })
-    const byName = page.getByRole('button', { name: step.click, exact: true })
-    await byText.or(byName).first().waitFor()
-    await ((await byText.count()) > 0 ? byText : byName).first().click()
-  }
+  if (step.click) await page.getByText(step.click, { exact: true }).first().click()
+  // An icon-only control has an accessible name and no text: found by role and exact name,
+  // and strict, so zero matches or two fail the row instead of picking one.
+  else if (step.press) await page.getByRole('button', { name: step.press, exact: true }).click()
   else if (step.fill) await page.getByLabel(step.fill.label).first().fill(resolveFacts(step.fill.value, placeholders))
   else if (step.select) await page.getByLabel(step.select.label).first().selectOption({ index: step.select.index })
   else if (step.wait) await page.getByText(step.wait, { exact: true }).first().waitFor()
-  // The page has settled by now: only the network goes, the page is never reloaded.
-  else if (step.offline) await page.context().setOffline(true)
+  // The page has settled by now: only the network goes, the page is never reloaded. Every
+  // font face it has not loaded yet is loaded first, since offline it could never be. The
+  // preload records nothing: `appliedCheck` stays the only verdict on fonts.
+  else if (step.offline) {
+    await page.evaluate(async () => {
+      const unloaded = [...document.fonts].filter((face) => face.status === 'unloaded')
+      await Promise.allSettled(unloaded.map((face) => face.load()))
+      await document.fonts.ready
+    })
+    await page.context().setOffline(true)
+  }
   else throw new Error(`unknown step ${JSON.stringify(step)}`)
 }
 
@@ -298,6 +309,29 @@ async function appliedCheck(page, ofFirstText) {
   }, ofFirstText)
 }
 
+// An entry's scaled text (`text_scale`, both sides): applied once the page has settled and its
+// steps are done, verified at once (a miss is a failure of the side), and verified again right
+// after the screenshot, in the same page. A note names the side and a count, never page text.
+// Applying it moves the layout, so the page settles again before the final settle.
+async function scaleMisses(page, s, side, when) {
+  const misses = unscaled(await page.evaluate(gatherInPage), s.text_scale, TOLERANCE)
+  return misses.length ? `texto al ${Math.round(s.text_scale * 100)} %: ${misses.length} elementos fuera de escala ${when} (${side})` : null
+}
+
+async function applyTextScale(page, s, side, ofFirstText) {
+  if (!s.text_scale) return null
+  await page.evaluate(applyInPage, { factor: s.text_scale })
+  const miss = await scaleMisses(page, s, side, 'antes de la captura')
+  if (miss) return miss
+  return settle(page, { advanceMs: SETTLE_ADVANCE_MS, ofFirstText })
+}
+
+// The screenshot has been taken: the scaled text is checked once more, and a miss discards it.
+async function verifyAfterShot(page, s, side, png) {
+  const miss = s.text_scale ? await scaleMisses(page, s, side, 'después de la captura') : null
+  return sideOutcome(miss, png)
+}
+
 // The design file an entry is compared against: `design`, else the entry's own name.
 const designOf = (s) => s.design ?? s.screen
 
@@ -342,13 +376,26 @@ async function captureDesign(browser, s, options, ctx) {
     await page.goto(pathToFileURL(join(PROTOTYPE, `${designOf(s)}.dc.html`)).href)
     const first = await settle(page, { advanceMs: SETTLE_ADVANCE_MS, afterGoto: true, ofFirstText: true })
     if (first) return sideOutcome(first, null)
-    // A file that draws several states: only the block under the entry's `section` label.
-    const block = s.section ? page.getByText(s.section, { exact: true }).first().locator('xpath=..') : null
+    const scaled = await applyTextScale(page, s, 'diseño', true)
+    if (scaled) return sideOutcome(scaled, null)
+    // A file that draws several states: only the block under the entry's `section` label, which
+    // must be exactly one element, never a silent first match.
+    let block = null
+    if (s.section) {
+      const label = page.getByText(s.section, { exact: true })
+      const count = await label.count()
+      if (count !== 1) throw new Error(`${s.screen}: section matches ${count} elements, expected 1`)
+      block = label.locator('xpath=..')
+    }
     const clip = block ? await sectionClip(block) : null
     const last = await settle(page, { advanceMs: 0, ofFirstText: true })
     if (last) return sideOutcome(last, null)
-    if (!block) return sideOutcome(null, await page.screenshot({ fullPage: true, ...SHOT }))
-    return sideOutcome(null, clip ? await page.screenshot({ fullPage: true, clip, ...SHOT }) : await block.screenshot(SHOT))
+    const png = !block
+      ? await page.screenshot({ fullPage: true, ...SHOT })
+      : clip
+        ? await page.screenshot({ fullPage: true, clip, ...SHOT })
+        : await block.screenshot(SHOT)
+    return await verifyAfterShot(page, s, 'diseño', png)
   } finally {
     await context.close()
   }
@@ -404,12 +451,15 @@ async function captureBuiltIn(context, s, options, ctx, notes) {
     }
     if (reason) return sideOutcome(`estado no alcanzado en ${JSON.stringify(step)}: ${reason}`, null)
   }
+  const scaled = await applyTextScale(page, s, 'construido', false)
+  if (scaled) return sideOutcome(scaled, null)
   const width = options.viewport.width
   const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth)
   if (scrollWidth > width) notes.push(`desborda: ${scrollWidth}px de ancho en ${width}px`)
   const last = await settle(page, { advanceMs: 0, ofFirstText: false })
   if (last) return sideOutcome(last, null)
-  return sideOutcome(null, await page.screenshot({ fullPage: true, ...SHOT }))
+  const png = await page.screenshot({ fullPage: true, ...SHOT })
+  return await verifyAfterShot(page, s, 'construido', png)
 }
 
 async function composeSheet(browser, s, width, design, built, notes, file) {

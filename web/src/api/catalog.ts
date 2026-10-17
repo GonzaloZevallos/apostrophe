@@ -28,6 +28,25 @@ export interface Catalog {
   varieties: CatalogVariety[]
 }
 
+/** One row of `GET /catalog/archived`: an archived variety's stored catalog attributes (ADR-0032).
+ * `GET /catalog` never lists an archived variety, so this list is the only place they are read. */
+export interface ArchivedAttributes {
+  variety_id: number
+  name: string
+  shown: boolean
+  emoji: string | null
+  indica_share: number | null
+  aroma: string | null
+}
+
+/** The archived varieties' attributes, by name. A list: no parameter, no refusal. */
+export function archivedCatalogQueryOptions() {
+  return queryOptions({
+    queryKey: keys.archivedCatalog(),
+    queryFn: () => get<ArchivedAttributes[]>('/catalog/archived'),
+  })
+}
+
 /** Always stale and never kept once nobody watches it: each mount asks the server again,
  * and neither a focus nor a reconnect recomputes it behind the seller's back. */
 export function catalogQueryOptions() {

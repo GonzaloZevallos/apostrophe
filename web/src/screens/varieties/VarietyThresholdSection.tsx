@@ -1,10 +1,13 @@
 /**
- * "Aviso de stock bajo" on a variety's page, read-only: the saved warning as `GET /stock`
+ * "Aviso de stock bajo" on a variety's page: the saved warning as `GET /stock`
  * answered it, an on/off switch and "Editar". The switch is derived from the saved
  * threshold and changes only when the server has answered. Turning it on only opens the
  * form (a warning that is off has no saved amount to bring back); turning it off saves at
  * once with `{grams: null}`, stays on and disabled while that runs, and stays on after a
  * refusal, a dropped network or a gone variety.
+ *
+ * `readOnly` (an archived variety) states only the stored setting, "Avisame abajo de N g" or
+ * "Aviso apagado": never the live "Avisando: quedan N g", and no switch, no "Editar".
  */
 
 import { useState } from 'react'
@@ -17,6 +20,7 @@ import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import Boton from '../../components/Boton'
 import SinConexion from '../../components/SinConexion'
 import { useFlash } from '../../flash/useFlash'
+import { formatGrams } from '../../format/money'
 import { warningFor } from '../../stock/detail'
 import { GENERIC_REFUSAL_MESSAGE } from '../Variedades'
 import { THRESHOLD_OVERRIDES, THRESHOLD_SAVED } from './thresholdMessages'
@@ -27,12 +31,14 @@ export default function VarietyThresholdSection({
   row,
   refreshing,
   onGone,
+  readOnly = false,
 }: {
   varietyId: number
   row: VarietyStock
   /** `GET /stock` is being asked again: the switch waits for the server's new answer. */
   refreshing: boolean
   onGone: () => void
+  readOnly?: boolean
 }) {
   const queryClient = useQueryClient()
   const flash = useFlash()
@@ -67,6 +73,21 @@ export default function VarietyThresholdSection({
     } finally {
       setSaving(false)
     }
+  }
+
+  if (readOnly) {
+    return (
+      <section className="seccion-variedad">
+        <div className="seccion-variedad__cabecera">
+          <h2 className="seccion-variedad__titulo">Aviso de stock bajo</h2>
+        </div>
+        <div className="seccion-variedad__fila">
+          <span className="seccion-variedad__valor">
+            {row.threshold === null ? 'Aviso apagado' : `Avisame abajo de ${formatGrams(row.threshold)}`}
+          </span>
+        </div>
+      </section>
+    )
   }
 
   return (

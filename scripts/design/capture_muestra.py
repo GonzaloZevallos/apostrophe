@@ -214,6 +214,35 @@ def _varieties(api: _ClientApi) -> list[str]:
     return ["### Variedades", "", *table(header, rows)]
 
 
+def _archived(api: _ClientApi) -> list[str]:
+    """The archived varieties' own rows: grams as the archived page shows them, today's
+    list price, and whether the variety is hidden from the public catalog (the "Oculta"
+    mark). They are in no other table, since every live read leaves them out.
+
+    The catalog lists no archived variety, so the flag is read from `GET /catalog` while
+    the variety is restored for an instant, then archived again: archive and restore touch
+    no stock, lot or price (varieties.md), and this is the capture's last read."""
+    stock = {row["variety_id"]: row for row in api.get("/stock?archived=true")["varieties"]}
+    archived = api.get("/varieties?archived=true")
+    for variety in archived:
+        api.call("POST", f"/varieties/{variety['id']}/restore")
+    shown = {v["id"]: v["shown"] for v in api.get("/catalog")["varieties"]}
+    for variety in archived:
+        api.call("POST", f"/varieties/{variety['id']}/archive")
+    rows = []
+    for variety in archived:
+        price = variety["current_price"]
+        rows.append(
+            [
+                variety["name"],
+                grams(stock[variety["id"]]["grams"]),
+                f"{money(price['list_price'])} x g" if price else "Sin precio",
+                yes_no(not shown[variety["id"]]),
+            ]
+        )
+    return ["### Archivadas", "", *table(["Variedad", "Gramos", "Precio hoy", "Oculta"], rows)]
+
+
 def _movements(api: _ClientApi) -> list[str]:
     names = {v["id"]: v["name"] for v in api.get("/varieties")}
     rows = []
@@ -511,6 +540,7 @@ def render_muestra(day: date) -> str:
             _sales,
             _accounts,
             _analysis,
+            _archived,
         ):
             lines += part(api)
     finally:

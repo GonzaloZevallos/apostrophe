@@ -13,6 +13,7 @@
  */
 
 const PORT_VARIABLE = 'APOSTROPHE_E2E_WORKER_PORT'
+const CLOCK_OFFSET_VARIABLE = 'APOSTROPHE_E2E_CLOCK_OFFSET'
 
 export const E2E_HOST = '127.0.0.1'
 export const E2E_SECRET_KEY = 'e2e-secret-key-not-for-production'
@@ -40,8 +41,15 @@ export function e2eDbPath(): string {
   return `web/e2e/.tmp/e2e-${e2ePort()}.db`
 }
 
+/**
+ * `fixtures.ts` writes the clock offset once per worker, before its backend starts; this
+ * passes it on to every child (the server and the CLI calls), so they share one anchored
+ * clock (ADR-0043). Only `tests/e2e_app.py` reads it. No offset set, nothing passed.
+ */
 export function e2eEnv(): Record<string, string> {
+  const offset = process.env[CLOCK_OFFSET_VARIABLE]
   return {
+    ...(offset === undefined ? {} : { [CLOCK_OFFSET_VARIABLE]: offset }),
     APOSTROPHE_SECRET_KEY: E2E_SECRET_KEY,
     APOSTROPHE_DATABASE_URL: `sqlite:///${e2eDbPath()}`,
     APOSTROPHE_PUBLIC_URL: e2eBaseUrl(),

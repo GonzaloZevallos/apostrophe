@@ -1047,3 +1047,18 @@ def test_another_business_cannot_delete_a_variety_with_no_history(
     assert response.status_code == 404, response.text
     assert response.json()["code"] == "variety.not_found"
     assert business_a.get(f"/varieties/{variety['id']}").status_code == 200
+
+
+def test_another_business_reads_none_of_the_archived_catalog_attributes(
+    business_a: TestClient, business_b: TestClient, engine: Engine
+) -> None:
+    variety = business_a.post("/varieties", json={"name": "Archived catalog here"}).json()
+    attributes = business_a.put(
+        f"/catalog/varieties/{variety['id']}",
+        json={"shown": False, "emoji": None, "indica_share": 40, "aroma": MARKER},
+    )
+    assert attributes.status_code == 200, attributes.text
+    archive_by_hand(engine, variety["id"])
+    assert [r["variety_id"] for r in business_a.get("/catalog/archived").json()] == [variety["id"]]
+
+    assert business_b.get("/catalog/archived").json() == []

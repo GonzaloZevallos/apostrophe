@@ -380,16 +380,29 @@ describe("a path resolves to its own screen", () => {
 
 /** Screens compare.sh reaches by steps from another route: "Listo" opens only from the write
  * that ended the Onboarding, never by loading its own path (onboarding.md). An archived variety's
- * page is reached only by archiving a live one and opening it from "Archivadas" (varieties.md). */
+ * page is reached only by archiving a live one and opening it from "Archivadas" (varieties.md).
+ * The stock entry form of a variety with no entries is opened from that variety's page with
+ * "Entrada", so the form preselects "Stock inicial" (stock.md). A registry row that reaches its
+ * screen by steps is named here, or the route check below reports its route as not its path. */
 const REACHED_BY_STEPS = [
   "OnboardingListo",
   "OnboardingListoCompu",
   "OnboardingListoOscuro",
+  "OnboardingListoCompuOscuro",
+  "OnboardingListoTexto130",
   "OnboardingVariedad",
   "OnboardingVariedadOscuro",
   "OnboardingVariedadCompu",
+  "OnboardingVariedadCompuOscuro",
+  "OnboardingVariedadTexto130",
+  "EntradaStockSinEntradas",
+  "EntradaStockSinEntradasOscuro",
+  "EntradaStockSinEntradasCompu",
+  "EntradaStockSinEntradasCompuOscuro",
   "VariedadArchivada",
   "VariedadArchivadaOscuro",
+  "VariedadArchivadaCompu",
+  "VariedadArchivadaCompuOscuro",
 ];
 
 interface RouteEntry {
