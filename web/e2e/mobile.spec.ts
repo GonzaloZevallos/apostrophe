@@ -13,11 +13,13 @@ import { expectOnlyTheThemeStored } from './helpers/storage.js'
 import type { CellId } from './mobile/collect.js'
 import { newCell, SIZES, THEMES, type Size, type Theme } from './mobile/cells.js'
 import { guardWrites } from './mobile/network.js'
-import { STATES } from './mobile/states.js'
+import { asScreen } from './mobile/states.js'
 import { settle, type Facts } from './mobile/walk.js'
 import { walkScreen, walkState } from './mobile/walkScreen.js'
+import { STATES } from '../src/mobile-standard/allStates.ts'
 import { OFFENDERS, diffOffenders } from '../src/mobile-standard/offenders/index.ts'
-import { parseFacts, STATE_NAMES, WALKABLE } from '../src/mobile-standard/registry.ts'
+import { parseFacts, WALKABLE } from '../src/mobile-standard/registry.ts'
+import { GETTING_IN_STATES } from '../src/mobile-standard/statesGettingIn.ts'
 import type { Violation } from '../src/mobile-standard/violation.ts'
 
 const SIGNED_OUT = { cookies: [], origins: [] } as { cookies: []; origins: [] }
@@ -48,10 +50,11 @@ for (const size of SIZES) {
         })
       }
 
+      // A state's starting route is a registry route already walked held; only its steps are new.
       for (const state of STATES) {
-        await test.step(state.screen.screen, async () => {
-          const page = state.screen.signedOut ? outPage : inPage
-          actual.push(...(await walkState(page, state, cellOf(state.screen.screen), facts)))
+        await test.step(state.screen, async () => {
+          const page = state.signedOut === true ? outPage : inPage
+          actual.push(...(await walkState(page, state, cellOf(state.screen), facts)))
         })
       }
 
@@ -106,6 +109,33 @@ test.describe('the walk rejects what it cannot reach', () => {
   })
 })
 
+test.describe('the states the walk adds', () => {
+  test('a state whose named element never shows is unreachable, not a pass', async ({ browser }) => {
+    const context = await newCell(browser, PROBE_SIZE, 'claro', MOBILE_STATE_FILE)
+    const page = await context.newPage()
+    const screen = asScreen({ screen: 'Probe', route: '/ventas', steps: [], visible: 'texto que no existe' })
+    expect(await walkScreen(page, screen, PROBE_CELL, false, readFacts())).toEqual([
+      { ...PROBE_CELL, rule: 'unreachable', target: '' },
+    ])
+    await context.close()
+  })
+
+  test('a fill picks a select option by its label, and a click reaches an icon-only button by name', async ({
+    browser,
+  }) => {
+    const context = await newCell(browser, PROBE_SIZE, 'claro', MOBILE_STATE_FILE)
+    const page = await context.newPage()
+    const screen = asScreen({
+      screen: 'Probe',
+      route: '/ventas/nueva',
+      steps: [{ fill: { label: 'Variedad línea 1', value: 'Sir Jack' } }, { click: 'Volver' }],
+      visible: '¿Descartás la venta?',
+    })
+    expect(await walkScreen(page, screen, PROBE_CELL, false, readFacts())).toEqual([])
+    await context.close()
+  })
+})
+
 test.describe('the write guard keeps every write from the backend', () => {
   async function post(page: Page, path: string): Promise<string> {
     return page.evaluate(async (target) => {
@@ -135,27 +165,20 @@ test.describe('the write guard keeps every write from the backend', () => {
   })
 })
 
-// The states the walk adds beside the registry's routes.
-const GETTING_IN = STATES.filter((s) => s.screen.signedOut || s.screen.screen.startsWith('Estados'))
-
-test.describe('the states the walk visits', () => {
-  test('are exactly the names the registry vocabulary lists', () => {
-    expect(STATES.map((s) => s.screen.screen)).toEqual([...STATE_NAMES])
-  })
-
-  for (const state of GETTING_IN) {
-    test(`${state.screen.screen} is reachable`, async ({ browser }) => {
-      const context = await newCell(browser, PROBE_SIZE, 'claro', state.screen.signedOut ? SIGNED_OUT : MOBILE_STATE_FILE)
+test.describe('the getting-in states the walk visits', () => {
+  for (const state of GETTING_IN_STATES) {
+    test(`${state.screen} is reachable`, async ({ browser }) => {
+      const context = await newCell(browser, PROBE_SIZE, 'claro', state.signedOut === true ? SIGNED_OUT : MOBILE_STATE_FILE)
       await guardWrites(context)
       const page = await context.newPage()
-      const cell = { ...PROBE_CELL, screen: state.screen.screen }
+      const cell = { ...PROBE_CELL, screen: state.screen }
       expect(await walkState(page, state, cell, readFacts())).toEqual([])
       await context.close()
     })
   }
 
   test('a write the state does not stub is aborted, so its answer never shows', async ({ browser }) => {
-    const brake = STATES.find((s) => s.screen.screen === 'EntrarFreno')
+    const brake = GETTING_IN_STATES.find((s) => s.screen === 'EntrarFreno')
     if (brake === undefined) throw new Error('EntrarFreno is not a state')
     const context = await newCell(browser, PROBE_SIZE, 'claro', SIGNED_OUT)
     await guardWrites(context)
@@ -167,7 +190,7 @@ test.describe('the states the walk visits', () => {
   })
 
   test('a stubbed GET lasts for its state only', async ({ browser }) => {
-    const retry = STATES.find((s) => s.screen.screen === 'EstadosReintento')
+    const retry = GETTING_IN_STATES.find((s) => s.screen === 'EstadosReintento')
     if (retry === undefined) throw new Error('EstadosReintento is not a state')
     const context = await newCell(browser, PROBE_SIZE, 'claro', MOBILE_STATE_FILE)
     await guardWrites(context)

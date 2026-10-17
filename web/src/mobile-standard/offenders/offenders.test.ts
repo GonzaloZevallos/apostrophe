@@ -10,8 +10,10 @@ import {
   type Offender,
 } from './index.ts'
 
+/** Every rule's file empty but `rule`'s: the shipped files list real offenders and change with the code. */
 function filesWith(rule: Rule, entries: unknown[]): Record<Rule, unknown> {
-  return { ...FILES, [rule]: entries }
+  const empty = Object.fromEntries(RULES.map((name) => [name, []]))
+  return { ...FILES, ...empty, [rule]: entries }
 }
 
 const violation = (extra: Partial<Violation> = {}): Violation => ({

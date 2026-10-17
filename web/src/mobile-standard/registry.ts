@@ -39,6 +39,17 @@ export interface RegistryScreen {
  * routes. The `states-*` subtasks append their names here, one per line.
  */
 export const STATE_NAMES: readonly string[] = [
+  // Sales and collections (`states-sales`).
+  'NuevaVentaConLinea',
+  'ElegirCliente',
+  'NuevoClienteEnVenta',
+  'DescartarVenta',
+  'VentaAsignarCliente',
+  'VentaBorrar',
+  'CobroDesdeClientes',
+  'CobroDesdeInicio',
+  'CobroBorrar',
+  'VentasFechas',
   // Getting in and the shared Estados (`states-getting-in`).
   'EntrarFreno',
   'InvitacionMuerta',

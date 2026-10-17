@@ -5,22 +5,7 @@
  */
 
 import type { BrowserContext, Route } from '@playwright/test'
-
-export interface WriteStub {
-  method: string
-  /** Matched against the request's path. */
-  path: RegExp
-  status: number
-  body?: unknown
-}
-
-/** A GET answered with a fixed status instead of the backend's own (a state the real server never shows). */
-export interface ReadStub {
-  /** Matched against the request's path. */
-  path: RegExp
-  status: number
-  body?: unknown
-}
+import type { ReadStub, WriteStub } from '../../src/mobile-standard/states.ts'
 
 const READS = new Set(['GET', 'HEAD'])
 

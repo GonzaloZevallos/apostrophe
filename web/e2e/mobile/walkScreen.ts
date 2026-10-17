@@ -6,16 +6,16 @@
  */
 
 import type { Page } from '@playwright/test'
-import type { RegistryScreen } from '../../src/mobile-standard/registry.ts'
+import type { WalkState } from '../../src/mobile-standard/states.ts'
 import type { Violation } from '../../src/mobile-standard/violation.ts'
 import { collect, pageViolation, type CellId } from './collect.js'
 import { guardWrites, holdApi, stubReads } from './network.js'
-import type { WalkState } from './states.js'
-import { open, painted, runSteps, settle, type Facts } from './walk.js'
+import { asScreen } from './states.js'
+import { open, painted, runSteps, settle, type Facts, type WalkScreen } from './walk.js'
 
 export async function walkScreen(
   page: Page,
-  screen: RegistryScreen,
+  screen: WalkScreen,
   cell: CellId,
   held: boolean,
   facts: Facts,
@@ -55,10 +55,10 @@ export async function walkState(
   facts: Facts,
 ): Promise<Violation[]> {
   const context = page.context()
-  const undoWrites = await guardWrites(context, state.writes)
-  const undoReads = await stubReads(context, state.reads)
+  const undoWrites = await guardWrites(context, state.writes ?? [])
+  const undoReads = await stubReads(context, state.reads ?? [])
   try {
-    return await walkScreen(page, state.screen, cell, false, facts)
+    return await walkScreen(page, asScreen(state), cell, false, facts)
   } finally {
     await undoReads()
     await undoWrites()
