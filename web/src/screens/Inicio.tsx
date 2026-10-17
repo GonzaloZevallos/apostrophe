@@ -33,6 +33,7 @@ import {
   type PanelAnswer,
   type PanelDebts,
   type PanelPeriod,
+  type PanelToday,
   type PanelTab,
 } from '../api/panel'
 import ErrorGenerico from '../components/ErrorGenerico'
@@ -66,15 +67,15 @@ interface PinnedCatalogStatus {
   status: { state: 'up_to_date' | 'out_of_date' } | null
 }
 
-function rangeLabel(tab: PanelTab, period: PanelPeriod): string {
+function rangeLabel(tab: PanelTab, period: { start: string; end: string }): string {
   if (tab === 'today') return `Hoy ${formatDateShort(period.start)}`
   return `${formatDateShort(period.start)} – ${formatDateShort(period.end)}`
 }
 
-function salesSubtitle(period: PanelPeriod): string {
+function salesSubtitle(period: PanelPeriod | PanelToday): string {
   const count = salesCount(period.sales_count)
   const grams = formatGrams(period.grams_sold)
-  return period.average_sale === null
+  return !('average_sale' in period) || period.average_sale === null
     ? `${count} · ${grams}`
     : `${count} · promedio ${formatMoney(period.average_sale)} · ${grams}`
 }
@@ -174,6 +175,44 @@ function Panel({
         <span className="pie">{salesSubtitle(period)}</span>
       </div>
 
+      {'profit' in period && <PeriodResults period={period} />}
+
+      {/* Both columns full-width on the phone; side by side on a computer
+          (`InicioCompu.dc.html`): CSS alone switches between them, the same way
+          `Shell`'s own bar/rail does. */}
+      <div className="panel-dos-columnas">
+        <TeDebenBlock debts={debts} />
+
+        <div>
+          <span className="rotulo">Lo que te queda</span>
+          <div className="lista-stock">
+            {stock.map((variety) => (
+              <div key={variety.variety_id} className="fila-stock">
+                <MarcaEstado estado={variety.status} />
+                <span className="fila-stock__texto">
+                  <span className="fila-stock__nombre">{variety.name}</span>
+                  <span className="fila-stock__detalle">{detailFor(variety, today)}</span>
+                </span>
+                <span className="fila-stock__cifras">
+                  <span className="fila-stock__gramos">
+                    {variety.status === 'no_entries' ? '—' : formatGrams(variety.grams)}
+                  </span>
+                  {sideNoteFor(variety) !== null && (
+                    <span className="fila-stock__insignia">{sideNoteFor(variety)}</span>
+                  )}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </>
+  )
+}
+
+function PeriodResults({ period }: { period: PanelPeriod }) {
+  return (
+    <>
       <div className="panel-resultados">
         <div className="panel-resultados__celda">
           <span className="rotulo">Ganancia</span>
@@ -205,36 +244,6 @@ function Panel({
         <div className="panel-lista__fila">
           <span>Compras de flores</span>
           <span className="panel-lista__valor">{formatMoney(period.purchases)}</span>
-        </div>
-      </div>
-
-      {/* Both columns full-width on the phone; side by side on a computer
-          (`InicioCompu.dc.html`): CSS alone switches between them, the same way
-          `Shell`'s own bar/rail does. */}
-      <div className="panel-dos-columnas">
-        <TeDebenBlock debts={debts} />
-
-        <div>
-          <span className="rotulo">Lo que te queda</span>
-          <div className="lista-stock">
-            {stock.map((variety) => (
-              <div key={variety.variety_id} className="fila-stock">
-                <MarcaEstado estado={variety.status} />
-                <span className="fila-stock__texto">
-                  <span className="fila-stock__nombre">{variety.name}</span>
-                  <span className="fila-stock__detalle">{detailFor(variety, today)}</span>
-                </span>
-                <span className="fila-stock__cifras">
-                  <span className="fila-stock__gramos">
-                    {variety.status === 'no_entries' ? '—' : formatGrams(variety.grams)}
-                  </span>
-                  {sideNoteFor(variety) !== null && (
-                    <span className="fila-stock__insignia">{sideNoteFor(variety)}</span>
-                  )}
-                </span>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
     </>

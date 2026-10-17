@@ -25,8 +25,18 @@ export interface PanelPeriod {
   cash: number
 }
 
+/** Hoy carries only what it shows (`TodayFiguresOut`): Ganancia, Caja, Gastos,
+ * Regalaste and Compras live in `week` and `month`. */
+export interface PanelToday {
+  start: string
+  end: string
+  sales: number
+  sales_count: number
+  grams_sold: number
+}
+
 export interface PanelPeriods {
-  today: PanelPeriod
+  today: PanelToday
   week: PanelPeriod
   month: PanelPeriod
 }
@@ -53,10 +63,27 @@ export interface PanelVarietyOut extends VarietyStock {
   name: string
 }
 
+export type SetupStepId = 'priced_variety' | 'stock_entry' | 'bot_published' | 'partner'
+
+export interface SetupStep {
+  step: SetupStepId
+  done: boolean
+  required: boolean
+}
+
+/** Decided on the server (`setup_view`): the front renders the steps in this order and
+ * never filters or reorders them. */
+export interface PanelSetup {
+  checklist: { steps: SetupStep[] } | null
+  priced_today: boolean
+  bot_notice: boolean
+}
+
 export interface PanelAnswer {
   periods: PanelPeriods
   debts: PanelDebts
   stock: PanelVarietyOut[]
+  setup: PanelSetup
 }
 
 export function getPanel(): Promise<PanelAnswer> {

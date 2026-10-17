@@ -70,17 +70,15 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-test('shows today\'s figures on open: heading, count, average, grams, Ganancia, Caja', async () => {
+test('shows today\'s figures on open: heading, count, grams, and nothing that moved to Semana and Mes', async () => {
   stubFetch(PANEL)
   const { container } = renderInicio()
   await screen.findByText('Vendiste hoy')
 
-  expect(within(container).getByText('2 ventas · promedio $ 7.500 · 10 g')).toBeInTheDocument()
+  expect(within(container).getByText('2 ventas · 10 g')).toBeInTheDocument()
   expect(within(container.querySelector<HTMLElement>('.panel-ventas')!).getByText('$ 15.000')).toBeInTheDocument()
-  expect(within(container.querySelector<HTMLElement>('.panel-lista')!).getByText('$ 6.000')).toBeInTheDocument()
-  const resultados = container.querySelector<HTMLElement>('.panel-resultados')!
-  expect(within(resultados).getByText('$ 9.000')).toBeInTheDocument() // profit (positive)
-  expect(within(resultados).getByText('$ 15.000')).toBeInTheDocument() // cash
+  expect(container.querySelector('.panel-resultados')).toBeNull() // Ganancia and Caja
+  expect(container.querySelector('.panel-lista')).toBeNull() // Costo, Gastos, Regalaste, Compras
 })
 
 test('switching to Semana shows the week\'s figures, including a negative Caja', async () => {

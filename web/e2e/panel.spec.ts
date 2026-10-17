@@ -47,10 +47,18 @@ interface PanelPeriod {
   cash: number
 }
 
+interface PanelToday {
+  start: string
+  end: string
+  sales: number
+  sales_count: number
+  grams_sold: number
+}
+
 type Status = 'no_entries' | 'sold_out' | 'low' | 'ok'
 
 interface PanelAnswer {
-  periods: { today: PanelPeriod; week: PanelPeriod; month: PanelPeriod }
+  periods: { today: PanelToday; week: PanelPeriod; month: PanelPeriod }
   debts: {
     total_owed: number
     sales_owing_count: number
@@ -283,6 +291,17 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await page.goto('/')
   await expect(page.locator('.encabezado__titulo')).toHaveText('Inicio')
 
+  async function assertToday(today: PanelToday, rangeText: string): Promise<void> {
+    await expect(page.locator('.periodos .pie')).toContainText(rangeText)
+    await expect(page.locator('.panel-ventas .cifra-xl')).toHaveText(pesos(today.sales))
+    await expect(page.locator('.panel-ventas .pie')).toHaveText(
+      `${countLabel(today.sales_count)} · ${grams(today.grams_sold)}`,
+    )
+    // Hoy shows none of the figures that moved to Semana and Mes.
+    await expect(page.locator('.panel-resultados')).toHaveCount(0)
+    await expect(page.locator('.panel-lista')).toHaveCount(0)
+  }
+
   async function assertPeriod(period: PanelPeriod, rangeText: string): Promise<void> {
     await expect(page.locator('.periodos .pie')).toContainText(rangeText)
     await expect(page.locator('.panel-ventas .cifra-xl')).toHaveText(pesos(period.sales))
@@ -322,7 +341,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
 
   // Hoy: the panel opens here (plan, "Front").
   await expect(page.getByRole('button', { name: 'Hoy', exact: true })).toHaveAttribute('aria-pressed', 'true')
-  await assertPeriod(panel.periods.today, shortDate(todayIso))
+  await assertToday(panel.periods.today, shortDate(todayIso))
 
   // Semana.
   await page.getByRole('button', { name: 'Semana' }).click()
