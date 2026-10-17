@@ -16,7 +16,7 @@ const RETRY = 'Algo falló. Probá de nuevo.'
 const GONE_NOTICE = 'Eso ya no está. La lista ya está al día.'
 
 /** A token no invitation or reset link was ever minted with: the backend answers it as gone. */
-const UNKNOWN_TOKEN = 'no-such-token-0000000000000000'
+const NEVER_MINTED = 'no-such-link-0000000000000000'
 
 export const GETTING_IN_STATES: readonly WalkState[] = [
   {
@@ -31,8 +31,8 @@ export const GETTING_IN_STATES: readonly WalkState[] = [
     visible: BRAKE,
     writes: [{ method: 'POST', path: /^\/auth\/login$/, status: 429, body: { code: 'account.login_locked' } }],
   },
-  { screen: 'InvitacionMuerta', route: `/invitation/${UNKNOWN_TOKEN}`, signedOut: true, steps: [], visible: INVITATION_DEAD },
-  { screen: 'ResetMuerto', route: `/reset/${UNKNOWN_TOKEN}`, signedOut: true, steps: [], visible: LINK_DEAD },
+  { screen: 'InvitacionMuerta', route: `/invitation/${NEVER_MINTED}`, signedOut: true, steps: [], visible: INVITATION_DEAD },
+  { screen: 'ResetMuerto', route: `/reset/${NEVER_MINTED}`, signedOut: true, steps: [], visible: LINK_DEAD },
   {
     screen: 'EstadosReintento',
     route: '/ventas',
