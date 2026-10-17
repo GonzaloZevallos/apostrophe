@@ -148,3 +148,46 @@ def test_the_analisis_denylist_keeps_the_figures_muestra_has() -> None:
     body = (DESIGN / "muestra.md").read_text(encoding="utf-8")
 
     assert [literal for literal in denylist if literal in body] == []
+
+
+ARCHIVED_SCREENS = next(f for f in FAMILIES if f.name == "archived").screens
+
+
+def test_the_archived_family_lists_the_four_drawings() -> None:
+    assert ARCHIVED_SCREENS == (
+        "VariedadArchivada.dc.html",
+        "VariedadArchivadaCompu.dc.html",
+        "Archivadas.dc.html",
+        "ArchivadasCompu.dc.html",
+    )
+
+
+ARCHIVED_DRIFTS = [
+    (screen, what, right, wrong)
+    for screen in ARCHIVED_SCREENS
+    for what, right, wrong in (
+        ("the grams", "25 g", "30 g"),
+        ("the Archivada mark", "Archivada", "Guardada"),
+        ("the Oculta mark", "Oculta", "Visible"),
+    )
+    if right in (SCREENS / screen).read_text(encoding="utf-8")
+]
+
+
+@pytest.mark.parametrize(("screen", "what", "right", "wrong"), ARCHIVED_DRIFTS)
+def test_the_archived_guard_rejects_a_drawing_that_drifts_from_muestra(
+    screen: str, what: str, right: str, wrong: str
+) -> None:
+    page = (SCREENS / screen).read_text(encoding="utf-8")
+
+    problems = check_screen("archived", screen, page.replace(right, wrong), real_muestra(), ())
+
+    assert problems != [], what
+
+
+def test_every_archived_drawing_is_checked_for_its_marks() -> None:
+    assert {(s, w) for s, w, _, _ in ARCHIVED_DRIFTS} >= {
+        (screen, what)
+        for screen in ARCHIVED_SCREENS
+        for what in ("the Archivada mark", "the Oculta mark")
+    }

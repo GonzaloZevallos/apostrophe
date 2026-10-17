@@ -85,10 +85,16 @@ ANALISIS = Family(
     ),
 )
 
-# The archived variety's page and Archivadas; the `registry` piece lists its screens.
+# The archived variety's page and Archivadas, phone and computer; the dark twins of the
+# registry compare against these same files.
 ARCHIVED = Family(
     name="archived",
-    screens=(),
+    screens=(
+        "VariedadArchivada.dc.html",
+        "VariedadArchivadaCompu.dc.html",
+        "Archivadas.dc.html",
+        "ArchivadasCompu.dc.html",
+    ),
     denylist=(),
 )
 
