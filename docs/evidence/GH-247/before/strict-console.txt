@@ -118,9 +118,9 @@ OnboardingListoCompu: ok
 OnboardingListoOscuro: ok
 OnboardingListoCompuOscuro: ok
 EstadosSinConexion: ok
-EstadosSinConexionCompu: una tipografía de la página quedó en error
+EstadosSinConexionCompu: ok
 EstadosGone: ok
-EstadosConfirmar: estado no alcanzado en {"click":"Borrar venta"}: TimeoutError: locator.click: Timeout 8000ms exceeded.
+EstadosConfirmar: ok
 MasOscuro: ok
 VariedadDetalleOscuro: ok
 ArchivadasOscuro: ok
@@ -131,7 +131,6 @@ TodasLasEntradasOscuro: ok
 TodasLasEntradasVariedadOscuro: ok
 RetiroDetalleOscuro: ok
 EstadosSinConexionOscuro: ok
-EstadosSinConexionCompuOscuro: una tipografía de la página quedó en error
+EstadosSinConexionCompuOscuro: ok
 VariedadArchivada: ok
 VariedadArchivadaOscuro: ok
-comparisons: --strict and a capture failed (a font, or a screen that threw)

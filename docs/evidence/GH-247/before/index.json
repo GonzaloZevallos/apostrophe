@@ -1,960 +1,954 @@
 [
   {
     "screen": "Entrar",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Entrar.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Entrar.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Entrar.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Entrar.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Entrar.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Entrar.built.png"
   },
   {
     "screen": "EntrarOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EntrarOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EntrarOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EntrarOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EntrarOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EntrarOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EntrarOscuro.built.png"
   },
   {
     "screen": "NegocioNuevo",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/NegocioNuevo.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/NegocioNuevo.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/NegocioNuevo.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/NegocioNuevo.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/NegocioNuevo.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/NegocioNuevo.built.png"
   },
   {
     "screen": "Invitacion",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Invitacion.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Invitacion.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Invitacion.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Invitacion.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Invitacion.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Invitacion.built.png"
   },
   {
     "screen": "Reset",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Reset.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Reset.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Reset.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Reset.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Reset.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Reset.built.png"
   },
   {
     "screen": "ResetOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ResetOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ResetOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ResetOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ResetOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ResetOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ResetOscuro.built.png"
   },
   {
     "screen": "Inicio",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Inicio.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Inicio.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Inicio.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Inicio.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Inicio.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Inicio.built.png"
   },
   {
     "screen": "InicioOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/InicioOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/InicioOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/InicioOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/InicioOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/InicioOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/InicioOscuro.built.png"
   },
   {
     "screen": "InicioCompu",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/InicioCompu.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/InicioCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/InicioCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/InicioCompu.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/InicioCompu.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/InicioCompu.built.png"
   },
   {
     "screen": "InicioPrimeraVez",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/InicioPrimeraVez.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/InicioPrimeraVez.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/InicioPrimeraVez.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/InicioPrimeraVez.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/InicioPrimeraVez.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/InicioPrimeraVez.built.png"
   },
   {
     "screen": "InicioPrimeraVezCompu",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/InicioPrimeraVezCompu.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/InicioPrimeraVezCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/InicioPrimeraVezCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/InicioPrimeraVezCompu.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/InicioPrimeraVezCompu.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/InicioPrimeraVezCompu.built.png"
   },
   {
     "screen": "InicioPrimeraVezOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/InicioPrimeraVezOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/InicioPrimeraVezOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/InicioPrimeraVezOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/InicioPrimeraVezOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/InicioPrimeraVezOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/InicioPrimeraVezOscuro.built.png"
   },
   {
     "screen": "Ventas",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Ventas.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Ventas.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Ventas.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Ventas.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Ventas.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Ventas.built.png"
   },
   {
     "screen": "VentasCompu",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VentasCompu.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VentasCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VentasCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VentasCompu.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VentasCompu.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VentasCompu.built.png"
   },
   {
     "screen": "NuevaVenta",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/NuevaVenta.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/NuevaVenta.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/NuevaVenta.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/NuevaVenta.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/NuevaVenta.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/NuevaVenta.built.png"
   },
   {
     "screen": "NuevaVentaCliente",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/NuevaVentaCliente.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/NuevaVentaCliente.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/NuevaVentaCliente.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/NuevaVentaCliente.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/NuevaVentaCliente.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/NuevaVentaCliente.built.png"
   },
   {
     "screen": "NuevaVentaCompu",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/NuevaVentaCompu.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/NuevaVentaCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/NuevaVentaCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/NuevaVentaCompu.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/NuevaVentaCompu.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/NuevaVentaCompu.built.png"
   },
   {
     "screen": "VentaDetalle",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VentaDetalle.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VentaDetalle.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VentaDetalle.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VentaDetalle.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VentaDetalle.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VentaDetalle.built.png"
   },
   {
     "screen": "VentaDetalleCompu",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VentaDetalleCompu.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VentaDetalleCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VentaDetalleCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VentaDetalleCompu.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VentaDetalleCompu.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VentaDetalleCompu.built.png"
   },
   {
     "screen": "VentasOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VentasOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VentasOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VentasOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VentasOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VentasOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VentasOscuro.built.png"
   },
   {
     "screen": "VentasCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VentasCompuOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VentasCompuOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VentasCompuOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VentasCompuOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VentasCompuOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VentasCompuOscuro.built.png"
   },
   {
     "screen": "NuevaVentaOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/NuevaVentaOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/NuevaVentaOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/NuevaVentaOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/NuevaVentaOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/NuevaVentaOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/NuevaVentaOscuro.built.png"
   },
   {
     "screen": "NuevaVentaClienteOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/NuevaVentaClienteOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/NuevaVentaClienteOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/NuevaVentaClienteOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/NuevaVentaClienteOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/NuevaVentaClienteOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/NuevaVentaClienteOscuro.built.png"
   },
   {
     "screen": "NuevaVentaCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/NuevaVentaCompuOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/NuevaVentaCompuOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/NuevaVentaCompuOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/NuevaVentaCompuOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/NuevaVentaCompuOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/NuevaVentaCompuOscuro.built.png"
   },
   {
     "screen": "VentaDetalleOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VentaDetalleOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VentaDetalleOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VentaDetalleOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VentaDetalleOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VentaDetalleOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VentaDetalleOscuro.built.png"
   },
   {
     "screen": "VentaDetalleCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VentaDetalleCompuOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VentaDetalleCompuOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VentaDetalleCompuOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VentaDetalleCompuOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VentaDetalleCompuOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VentaDetalleCompuOscuro.built.png"
   },
   {
     "screen": "VentaGuardada",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VentaGuardada.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VentaGuardada.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VentaGuardada.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VentaGuardada.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VentaGuardada.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VentaGuardada.built.png"
   },
   {
     "screen": "VentaGuardadaOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VentaGuardadaOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VentaGuardadaOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VentaGuardadaOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VentaGuardadaOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VentaGuardadaOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VentaGuardadaOscuro.built.png"
   },
   {
     "screen": "Clientes",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Clientes.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Clientes.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Clientes.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Clientes.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Clientes.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Clientes.built.png"
   },
   {
     "screen": "ClientesCompu",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ClientesCompu.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ClientesCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ClientesCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ClientesCompu.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ClientesCompu.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ClientesCompu.built.png"
   },
   {
     "screen": "ClienteFicha",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ClienteFicha.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ClienteFicha.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ClienteFicha.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ClienteFicha.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ClienteFicha.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ClienteFicha.built.png"
   },
   {
     "screen": "ClienteNuevo",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ClienteNuevo.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ClienteNuevo.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ClienteNuevo.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ClienteNuevo.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ClienteNuevo.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ClienteNuevo.built.png"
   },
   {
     "screen": "ClienteNuevoCompu",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ClienteNuevoCompu.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ClienteNuevoCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ClienteNuevoCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ClienteNuevoCompu.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ClienteNuevoCompu.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ClienteNuevoCompu.built.png"
   },
   {
     "screen": "ClienteEditar",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ClienteEditar.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ClienteEditar.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ClienteEditar.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ClienteEditar.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ClienteEditar.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ClienteEditar.built.png"
   },
   {
     "screen": "ClienteEditarCompu",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ClienteEditarCompu.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ClienteEditarCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ClienteEditarCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ClienteEditarCompu.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ClienteEditarCompu.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ClienteEditarCompu.built.png"
   },
   {
     "screen": "Cobro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Cobro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Cobro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Cobro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Cobro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Cobro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Cobro.built.png"
   },
   {
     "screen": "CobroCompu",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/CobroCompu.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/CobroCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/CobroCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/CobroCompu.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/CobroCompu.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/CobroCompu.built.png"
   },
   {
     "screen": "EntradaStock",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EntradaStock.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EntradaStock.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EntradaStock.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EntradaStock.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EntradaStock.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EntradaStock.built.png"
   },
   {
     "screen": "EntradaStockEditar",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EntradaStockEditar.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EntradaStockEditar.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EntradaStockEditar.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EntradaStockEditar.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EntradaStockEditar.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EntradaStockEditar.built.png"
   },
   {
     "screen": "EntradaStockCompu",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EntradaStockCompu.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EntradaStockCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EntradaStockCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EntradaStockCompu.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EntradaStockCompu.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EntradaStockCompu.built.png"
   },
   {
     "screen": "EntradaStockSinEntradas",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EntradaStockSinEntradas.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EntradaStockSinEntradas.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EntradaStockSinEntradas.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EntradaStockSinEntradas.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EntradaStockSinEntradas.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EntradaStockSinEntradas.built.png"
   },
   {
     "screen": "EntradaStockSinEntradasOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EntradaStockSinEntradasOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EntradaStockSinEntradasOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EntradaStockSinEntradasOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EntradaStockSinEntradasOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EntradaStockSinEntradasOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EntradaStockSinEntradasOscuro.built.png"
   },
   {
     "screen": "EntradaStockSinEntradasCompu",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EntradaStockSinEntradasCompu.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EntradaStockSinEntradasCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EntradaStockSinEntradasCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EntradaStockSinEntradasCompu.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EntradaStockSinEntradasCompu.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EntradaStockSinEntradasCompu.built.png"
   },
   {
     "screen": "EntradaStockSinEntradasCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EntradaStockSinEntradasCompuOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EntradaStockSinEntradasCompuOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EntradaStockSinEntradasCompuOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EntradaStockSinEntradasCompuOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EntradaStockSinEntradasCompuOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EntradaStockSinEntradasCompuOscuro.built.png"
   },
   {
     "screen": "TodasLasEntradas",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/TodasLasEntradas.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/TodasLasEntradas.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/TodasLasEntradas.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/TodasLasEntradas.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/TodasLasEntradas.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/TodasLasEntradas.built.png"
   },
   {
     "screen": "TodasLasEntradasVariedad",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/TodasLasEntradasVariedad.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/TodasLasEntradasVariedad.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/TodasLasEntradasVariedad.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/TodasLasEntradasVariedad.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/TodasLasEntradasVariedad.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/TodasLasEntradasVariedad.built.png"
   },
   {
     "screen": "SacarDelStock",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/SacarDelStock.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/SacarDelStock.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/SacarDelStock.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/SacarDelStock.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/SacarDelStock.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/SacarDelStock.built.png"
   },
   {
     "screen": "SacarDelStockCompu",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/SacarDelStockCompu.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/SacarDelStockCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/SacarDelStockCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/SacarDelStockCompu.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/SacarDelStockCompu.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/SacarDelStockCompu.built.png"
   },
   {
     "screen": "RetiroDetalle",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/RetiroDetalle.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/RetiroDetalle.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/RetiroDetalle.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/RetiroDetalle.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/RetiroDetalle.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/RetiroDetalle.built.png"
   },
   {
     "screen": "VerTodas",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VerTodas.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VerTodas.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VerTodas.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VerTodas.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VerTodas.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VerTodas.built.png"
   },
   {
     "screen": "PrecioNuevo",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/PrecioNuevo.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/PrecioNuevo.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/PrecioNuevo.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/PrecioNuevo.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/PrecioNuevo.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/PrecioNuevo.built.png"
   },
   {
     "screen": "PrecioNuevoCompu",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/PrecioNuevoCompu.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/PrecioNuevoCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/PrecioNuevoCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/PrecioNuevoCompu.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/PrecioNuevoCompu.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/PrecioNuevoCompu.built.png"
   },
   {
     "screen": "PrecioNuevoOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/PrecioNuevoOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/PrecioNuevoOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/PrecioNuevoOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/PrecioNuevoOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/PrecioNuevoOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/PrecioNuevoOscuro.built.png"
   },
   {
     "screen": "PrecioNuevoCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/PrecioNuevoCompuOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/PrecioNuevoCompuOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/PrecioNuevoCompuOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/PrecioNuevoCompuOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/PrecioNuevoCompuOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/PrecioNuevoCompuOscuro.built.png"
   },
   {
     "screen": "VariedadNueva",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VariedadNueva.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VariedadNueva.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VariedadNueva.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VariedadNueva.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VariedadNueva.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VariedadNueva.built.png"
   },
   {
     "screen": "VariedadNuevaCompu",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VariedadNuevaCompu.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VariedadNuevaCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VariedadNuevaCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VariedadNuevaCompu.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VariedadNuevaCompu.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VariedadNuevaCompu.built.png"
   },
   {
     "screen": "Variedades",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Variedades.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Variedades.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Variedades.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Variedades.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Variedades.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Variedades.built.png"
   },
   {
     "screen": "VariedadesCompu",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VariedadesCompu.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VariedadesCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VariedadesCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VariedadesCompu.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VariedadesCompu.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VariedadesCompu.built.png"
   },
   {
     "screen": "VariedadDetalle",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VariedadDetalle.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VariedadDetalle.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VariedadDetalle.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VariedadDetalle.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VariedadDetalle.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VariedadDetalle.built.png"
   },
   {
     "screen": "Archivadas",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Archivadas.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Archivadas.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Archivadas.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Archivadas.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Archivadas.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Archivadas.built.png"
   },
   {
     "screen": "Gastos",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Gastos.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Gastos.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Gastos.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Gastos.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Gastos.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Gastos.built.png"
   },
   {
     "screen": "GastosCompu",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/GastosCompu.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/GastosCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/GastosCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/GastosCompu.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/GastosCompu.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/GastosCompu.built.png"
   },
   {
     "screen": "GastoNuevo",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/GastoNuevo.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/GastoNuevo.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/GastoNuevo.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/GastoNuevo.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/GastoNuevo.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/GastoNuevo.built.png"
   },
   {
     "screen": "GastoNuevoCompu",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/GastoNuevoCompu.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/GastoNuevoCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/GastoNuevoCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/GastoNuevoCompu.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/GastoNuevoCompu.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/GastoNuevoCompu.built.png"
   },
   {
     "screen": "Catalogo",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Catalogo.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Catalogo.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Catalogo.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Catalogo.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Catalogo.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Catalogo.built.png"
   },
   {
     "screen": "CatalogoCompu",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/CatalogoCompu.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/CatalogoCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/CatalogoCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/CatalogoCompu.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/CatalogoCompu.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/CatalogoCompu.built.png"
   },
   {
     "screen": "Analisis",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Analisis.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Analisis.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Analisis.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Analisis.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Analisis.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Analisis.built.png"
   },
   {
     "screen": "AnalisisCompu",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/AnalisisCompu.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/AnalisisCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/AnalisisCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/AnalisisCompu.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/AnalisisCompu.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/AnalisisCompu.built.png"
   },
   {
     "screen": "AnalisisOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/AnalisisOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/AnalisisOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/AnalisisOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/AnalisisOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/AnalisisOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/AnalisisOscuro.built.png"
   },
   {
     "screen": "AnalisisCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/AnalisisCompuOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/AnalisisCompuOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/AnalisisCompuOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/AnalisisCompuOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/AnalisisCompuOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/AnalisisCompuOscuro.built.png"
   },
   {
     "screen": "Mas",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Mas.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Mas.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Mas.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Mas.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Mas.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Mas.built.png"
   },
   {
     "screen": "Configuracion",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Configuracion.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Configuracion.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Configuracion.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/Configuracion.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Configuracion.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/Configuracion.built.png"
   },
   {
     "screen": "ConfiguracionCompu",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionCompu.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionCompu.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionCompu.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionCompu.built.png"
   },
   {
     "screen": "ConfiguracionNegocio",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionNegocio.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionNegocio.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionNegocio.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionNegocio.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionNegocio.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionNegocio.built.png"
   },
   {
     "screen": "ConfiguracionNegocioCompu",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionNegocioCompu.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionNegocioCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionNegocioCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionNegocioCompu.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionNegocioCompu.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionNegocioCompu.built.png"
   },
   {
     "screen": "ConfiguracionUsuarios",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionUsuarios.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionUsuarios.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionUsuarios.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionUsuarios.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionUsuarios.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionUsuarios.built.png"
   },
   {
     "screen": "ConfiguracionUsuariosCompu",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionUsuariosCompu.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionUsuariosCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionUsuariosCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionUsuariosCompu.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionUsuariosCompu.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionUsuariosCompu.built.png"
   },
   {
     "screen": "ConfiguracionPrecios",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionPrecios.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionPrecios.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionPrecios.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionPrecios.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionPrecios.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionPrecios.built.png"
   },
   {
     "screen": "ConfiguracionPreciosCompu",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionPreciosCompu.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionPreciosCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionPreciosCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionPreciosCompu.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionPreciosCompu.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionPreciosCompu.built.png"
   },
   {
     "screen": "ConfiguracionIntegraciones",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionIntegraciones.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionIntegraciones.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionIntegraciones.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionIntegraciones.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionIntegraciones.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionIntegraciones.built.png"
   },
   {
     "screen": "ConfiguracionIntegracionesCompu",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionIntegracionesCompu.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionIntegracionesCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionIntegracionesCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionIntegracionesCompu.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionIntegracionesCompu.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionIntegracionesCompu.built.png"
   },
   {
     "screen": "ConfiguracionIntegracionesOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionIntegracionesOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionIntegracionesOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionIntegracionesOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionIntegracionesOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionIntegracionesOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionIntegracionesOscuro.built.png"
   },
   {
     "screen": "ConfiguracionIntegracionesCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionIntegracionesCompuOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionIntegracionesCompuOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionIntegracionesCompuOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionIntegracionesCompuOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionIntegracionesCompuOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionIntegracionesCompuOscuro.built.png"
   },
   {
     "screen": "ConfiguracionMensaje",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionMensaje.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionMensaje.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionMensaje.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionMensaje.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionMensaje.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionMensaje.built.png"
   },
   {
     "screen": "ConfiguracionMensajeCompu",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionMensajeCompu.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionMensajeCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionMensajeCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionMensajeCompu.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionMensajeCompu.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionMensajeCompu.built.png"
   },
   {
     "screen": "ConfiguracionCategorias",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionCategorias.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionCategorias.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionCategorias.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionCategorias.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionCategorias.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionCategorias.built.png"
   },
   {
     "screen": "ConfiguracionCategoriasCompu",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionCategoriasCompu.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionCategoriasCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionCategoriasCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionCategoriasCompu.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionCategoriasCompu.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionCategoriasCompu.built.png"
   },
   {
     "screen": "ConfiguracionApariencia",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionApariencia.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionApariencia.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionApariencia.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionApariencia.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionApariencia.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionApariencia.built.png"
   },
   {
     "screen": "ConfiguracionAparienciaCompu",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionAparienciaCompu.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionAparienciaCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionAparienciaCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionAparienciaCompu.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionAparienciaCompu.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionAparienciaCompu.built.png"
   },
   {
     "screen": "ConfiguracionCuenta",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionCuenta.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionCuenta.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionCuenta.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionCuenta.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionCuenta.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionCuenta.built.png"
   },
   {
     "screen": "ConfiguracionCuentaCompu",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionCuentaCompu.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionCuentaCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionCuentaCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ConfiguracionCuentaCompu.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionCuentaCompu.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ConfiguracionCuentaCompu.built.png"
   },
   {
     "screen": "OnboardingStock",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingStock.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingStock.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingStock.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingStock.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingStock.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingStock.built.png"
   },
   {
     "screen": "OnboardingMensaje",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingMensaje.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingMensaje.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingMensaje.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingMensaje.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingMensaje.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingMensaje.built.png"
   },
   {
     "screen": "OnboardingBot",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingBot.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingBot.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingBot.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingBot.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingBot.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingBot.built.png"
   },
   {
     "screen": "OnboardingSocio",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingSocio.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingSocio.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingSocio.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingSocio.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingSocio.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingSocio.built.png"
   },
   {
     "screen": "OnboardingCategorias",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingCategorias.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingCategorias.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingCategorias.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingCategorias.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingCategorias.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingCategorias.built.png"
   },
   {
     "screen": "OnboardingStockOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingStockOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingStockOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingStockOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingStockOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingStockOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingStockOscuro.built.png"
   },
   {
     "screen": "OnboardingMensajeOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingMensajeOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingMensajeOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingMensajeOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingMensajeOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingMensajeOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingMensajeOscuro.built.png"
   },
   {
     "screen": "OnboardingBotOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingBotOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingBotOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingBotOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingBotOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingBotOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingBotOscuro.built.png"
   },
   {
     "screen": "OnboardingSocioOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingSocioOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingSocioOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingSocioOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingSocioOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingSocioOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingSocioOscuro.built.png"
   },
   {
     "screen": "OnboardingCategoriasOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingCategoriasOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingCategoriasOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingCategoriasOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingCategoriasOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingCategoriasOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingCategoriasOscuro.built.png"
   },
   {
     "screen": "OnboardingStockCompu",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingStockCompu.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingStockCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingStockCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingStockCompu.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingStockCompu.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingStockCompu.built.png"
   },
   {
     "screen": "OnboardingMensajeCompu",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingMensajeCompu.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingMensajeCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingMensajeCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingMensajeCompu.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingMensajeCompu.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingMensajeCompu.built.png"
   },
   {
     "screen": "OnboardingBotCompu",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingBotCompu.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingBotCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingBotCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingBotCompu.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingBotCompu.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingBotCompu.built.png"
   },
   {
     "screen": "OnboardingSocioCompu",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingSocioCompu.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingSocioCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingSocioCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingSocioCompu.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingSocioCompu.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingSocioCompu.built.png"
   },
   {
     "screen": "OnboardingCategoriasCompu",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingCategoriasCompu.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingCategoriasCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingCategoriasCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingCategoriasCompu.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingCategoriasCompu.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingCategoriasCompu.built.png"
   },
   {
     "screen": "OnboardingStockCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingStockCompuOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingStockCompuOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingStockCompuOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingStockCompuOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingStockCompuOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingStockCompuOscuro.built.png"
   },
   {
     "screen": "OnboardingMensajeCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingMensajeCompuOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingMensajeCompuOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingMensajeCompuOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingMensajeCompuOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingMensajeCompuOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingMensajeCompuOscuro.built.png"
   },
   {
     "screen": "OnboardingBotCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingBotCompuOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingBotCompuOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingBotCompuOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingBotCompuOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingBotCompuOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingBotCompuOscuro.built.png"
   },
   {
     "screen": "OnboardingSocioCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingSocioCompuOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingSocioCompuOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingSocioCompuOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingSocioCompuOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingSocioCompuOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingSocioCompuOscuro.built.png"
   },
   {
     "screen": "OnboardingCategoriasCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingCategoriasCompuOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingCategoriasCompuOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingCategoriasCompuOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingCategoriasCompuOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingCategoriasCompuOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingCategoriasCompuOscuro.built.png"
   },
   {
     "screen": "OnboardingVariedad",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingVariedad.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingVariedad.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingVariedad.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingVariedad.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingVariedad.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingVariedad.built.png"
   },
   {
     "screen": "OnboardingVariedadOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingVariedadOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingVariedadOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingVariedadOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingVariedadOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingVariedadOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingVariedadOscuro.built.png"
   },
   {
     "screen": "OnboardingVariedadCompu",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingVariedadCompu.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingVariedadCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingVariedadCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingVariedadCompu.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingVariedadCompu.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingVariedadCompu.built.png"
   },
   {
     "screen": "OnboardingVariedadCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingVariedadCompuOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingVariedadCompuOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingVariedadCompuOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingVariedadCompuOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingVariedadCompuOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingVariedadCompuOscuro.built.png"
   },
   {
     "screen": "OnboardingListo",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingListo.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingListo.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingListo.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingListo.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingListo.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingListo.built.png"
   },
   {
     "screen": "OnboardingListoCompu",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingListoCompu.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingListoCompu.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingListoCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingListoCompu.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingListoCompu.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingListoCompu.built.png"
   },
   {
     "screen": "OnboardingListoOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingListoOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingListoOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingListoOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingListoOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingListoOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingListoOscuro.built.png"
   },
   {
     "screen": "OnboardingListoCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingListoCompuOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingListoCompuOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingListoCompuOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/OnboardingListoCompuOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingListoCompuOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/OnboardingListoCompuOscuro.built.png"
   },
   {
     "screen": "EstadosSinConexion",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EstadosSinConexion.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EstadosSinConexion.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EstadosSinConexion.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EstadosSinConexion.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EstadosSinConexion.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EstadosSinConexion.built.png"
   },
   {
     "screen": "EstadosSinConexionCompu",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EstadosSinConexionCompu.png",
-    "notes": [
-      "una tipografía de la página quedó en error"
-    ],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EstadosSinConexionCompu.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EstadosSinConexionCompu.built.png"
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EstadosSinConexionCompu.png",
+    "notes": [],
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EstadosSinConexionCompu.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EstadosSinConexionCompu.built.png"
   },
   {
     "screen": "EstadosGone",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EstadosGone.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EstadosGone.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EstadosGone.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EstadosGone.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EstadosGone.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EstadosGone.built.png"
   },
   {
     "screen": "EstadosConfirmar",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EstadosConfirmar.png",
-    "notes": [
-      "estado no alcanzado en {\"click\":\"Borrar venta\"}: TimeoutError: locator.click: Timeout 8000ms exceeded."
-    ],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EstadosConfirmar.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EstadosConfirmar.built.png"
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EstadosConfirmar.png",
+    "notes": [],
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EstadosConfirmar.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EstadosConfirmar.built.png"
   },
   {
     "screen": "MasOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/MasOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/MasOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/MasOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/MasOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/MasOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/MasOscuro.built.png"
   },
   {
     "screen": "VariedadDetalleOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VariedadDetalleOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VariedadDetalleOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VariedadDetalleOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VariedadDetalleOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VariedadDetalleOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VariedadDetalleOscuro.built.png"
   },
   {
     "screen": "ArchivadasOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ArchivadasOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ArchivadasOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ArchivadasOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/ArchivadasOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ArchivadasOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/ArchivadasOscuro.built.png"
   },
   {
     "screen": "CatalogoOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/CatalogoOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/CatalogoOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/CatalogoOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/CatalogoOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/CatalogoOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/CatalogoOscuro.built.png"
   },
   {
     "screen": "CatalogoCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/CatalogoCompuOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/CatalogoCompuOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/CatalogoCompuOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/CatalogoCompuOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/CatalogoCompuOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/CatalogoCompuOscuro.built.png"
   },
   {
     "screen": "VerTodasOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VerTodasOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VerTodasOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VerTodasOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VerTodasOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VerTodasOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VerTodasOscuro.built.png"
   },
   {
     "screen": "TodasLasEntradasOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/TodasLasEntradasOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/TodasLasEntradasOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/TodasLasEntradasOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/TodasLasEntradasOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/TodasLasEntradasOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/TodasLasEntradasOscuro.built.png"
   },
   {
     "screen": "TodasLasEntradasVariedadOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/TodasLasEntradasVariedadOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/TodasLasEntradasVariedadOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/TodasLasEntradasVariedadOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/TodasLasEntradasVariedadOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/TodasLasEntradasVariedadOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/TodasLasEntradasVariedadOscuro.built.png"
   },
   {
     "screen": "RetiroDetalleOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/RetiroDetalleOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/RetiroDetalleOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/RetiroDetalleOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/RetiroDetalleOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/RetiroDetalleOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/RetiroDetalleOscuro.built.png"
   },
   {
     "screen": "EstadosSinConexionOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EstadosSinConexionOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EstadosSinConexionOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EstadosSinConexionOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EstadosSinConexionOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EstadosSinConexionOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EstadosSinConexionOscuro.built.png"
   },
   {
     "screen": "EstadosSinConexionCompuOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EstadosSinConexionCompuOscuro.png",
-    "notes": [
-      "una tipografía de la página quedó en error"
-    ],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EstadosSinConexionCompuOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/EstadosSinConexionCompuOscuro.built.png"
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EstadosSinConexionCompuOscuro.png",
+    "notes": [],
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EstadosSinConexionCompuOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/EstadosSinConexionCompuOscuro.built.png"
   },
   {
     "screen": "VariedadArchivada",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VariedadArchivada.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VariedadArchivada.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VariedadArchivada.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VariedadArchivada.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VariedadArchivada.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VariedadArchivada.built.png"
   },
   {
     "screen": "VariedadArchivadaOscuro",
-    "file": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VariedadArchivadaOscuro.png",
+    "file": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VariedadArchivadaOscuro.png",
     "notes": [],
-    "design": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VariedadArchivadaOscuro.design.png",
-    "built": "/home/zeta/.cache/apostrophe-GH-247/5a73ee50356f919c21a5b67c36bb144cd889c0e9/before/VariedadArchivadaOscuro.built.png"
+    "design": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VariedadArchivadaOscuro.design.png",
+    "built": "/home/zeta/.cache/apostrophe-GH-247/7bb4164d2220f051d635b5dcf0b0187755d12131/before/VariedadArchivadaOscuro.built.png"
   }
 ]
