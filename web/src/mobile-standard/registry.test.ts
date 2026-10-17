@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import {
+  parseFacts,
   parseRegistry,
   resolvePlaceholders,
   REGISTRY,
@@ -137,5 +138,24 @@ describe('resolvePlaceholders', () => {
 
   test('refuses a placeholder no fact names, saying which', () => {
     expect(() => resolvePlaceholders('/x/{nobody}', facts)).toThrow(/nobody/)
+  })
+})
+
+describe('parseFacts', () => {
+  test('keeps the ids and adds the email', () => {
+    expect(parseFacts({ email: 'a@b.c', password: 'x', ids: { debtor: 3, reset_token: 'abc' } })).toEqual({
+      debtor: 3,
+      reset_token: 'abc',
+      email: 'a@b.c',
+    })
+  })
+
+  test.each([
+    ['no email', { ids: {} }],
+    ['no ids', { email: 'a@b.c' }],
+    ['an id that is neither text nor a number', { email: 'a@b.c', ids: { debtor: null } }],
+    ['a list', []],
+  ])('refuses %s', (_name, raw) => {
+    expect(() => parseFacts(raw)).toThrow(/facts/)
   })
 })

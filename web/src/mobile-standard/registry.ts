@@ -164,3 +164,22 @@ export const SCREEN_NAMES: ReadonlySet<string> = new Set([
   ...REGISTRY.map((screen) => screen.screen),
   ...STATE_NAMES,
 ])
+
+/**
+ * The seeded facts file (`scripts/design/mobile_seed.py`) as the placeholders see it: the
+ * ids and tokens plus `email`. Parsed, not cast: a missing `ids` or `email` fails here and says so.
+ */
+export function parseFacts(raw: unknown): Record<string, string | number> {
+  const facts = asRecord(raw, 'facts')
+  const email = facts['email']
+  if (typeof email !== 'string' || email === '') throw new Error('facts: email is not text')
+  const ids = asRecord(facts['ids'], 'facts: ids')
+  const out: Record<string, string | number> = {}
+  for (const [name, value] of Object.entries(ids)) {
+    if (typeof value !== 'string' && typeof value !== 'number') {
+      throw new Error(`facts: ids.${name} is not text or a number`)
+    }
+    out[name] = value
+  }
+  return { ...out, email }
+}

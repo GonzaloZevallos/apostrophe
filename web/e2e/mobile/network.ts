@@ -52,7 +52,7 @@ export async function holdApi(context: BrowserContext): Promise<Held> {
   const signal = new Promise<void>((resolve) => {
     go = resolve
   })
-  await context.route('**/*', async (route: Route) => {
+  const handler = async (route: Route): Promise<void> => {
     const request = route.request()
     const isApi = request.method() === 'GET' && ['fetch', 'xhr'].includes(request.resourceType())
     if (!isApi || open) {
@@ -62,13 +62,15 @@ export async function holdApi(context: BrowserContext): Promise<Held> {
     held += 1
     await signal
     await route.fallback()
-  })
+  }
+  await context.route('**/*', handler)
   return {
     count: () => held,
-    release: () => {
+    release: async () => {
       open = true
       go()
-      return Promise.resolve()
+      // The hold is over: take its route off so a long cell does not stack one per walk.
+      await context.unroute('**/*', handler)
     },
   }
 }
