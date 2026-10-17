@@ -11,7 +11,7 @@ from tests.conftest import MovableClock
 TODAY = "2026-10-02"
 
 
-def _category_id(client: TestClient, name: str = "Otros") -> int:
+def _category_id(client: TestClient, name: str = "Other") -> int:
     category = next(c for c in client.get("/expense-categories").json() if c["name"] == name)
     return int(category["id"])
 
@@ -171,7 +171,7 @@ def test_a_badly_formed_month_is_refused(client: TestClient) -> None:
 
 
 def test_the_total_and_subtotal_hold_after_an_edit_and_a_delete(client: TestClient) -> None:
-    otros = _category_id(client, "Otros")
+    otros = _category_id(client, "Other")
     packaging = _category_id(client, "Packaging")
     first = _record(client, category_id=otros, amount=100)
     second = _record(client, category_id=packaging, amount=200)
@@ -184,12 +184,12 @@ def test_the_total_and_subtotal_hold_after_an_edit_and_a_delete(client: TestClie
 
     view = client.get("/expenses").json()
     assert view["total"] == 300
-    assert [c["name"] for c in view["categories"]] == ["Otros"]
+    assert [c["name"] for c in view["categories"]] == ["Other"]
     assert view["categories"][0]["subtotal"] == 300
 
 
 def test_expenses_within_a_category_are_ordered_newest_date_first(client: TestClient) -> None:
-    otros = _category_id(client, "Otros")
+    otros = _category_id(client, "Other")
     older = client.post(
         "/expenses",
         json={"spent_on": "2026-10-01", "category_id": otros, "amount": 10, "detail": "a"},
@@ -211,7 +211,7 @@ def test_on_the_same_date_the_most_recently_recorded_comes_first(
     the clock but gets the lower id, B is recorded earlier by the clock but gets the
     higher id. Only `recorded_at DESC` can produce the expected order; `id DESC` alone
     would list B first."""
-    otros = _category_id(client, "Otros")
+    otros = _category_id(client, "Other")
     original = clock()
     clock.set(original + timedelta(minutes=5))
     recorded_later_lower_id = client.post(

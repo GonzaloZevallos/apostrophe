@@ -42,6 +42,8 @@ from app.shared.grams import Grams
 from app.shared.names import collapse_spaces
 from app.shared.pricing_settings import PricingSettings
 from app.spreadsheet_import.domain.rows import (
+    CATALOG_PROBLEM_COLUMN,
+    CATEGORY_PROBLEM_COLUMN,
     CatalogRow,
     CategoryRow,
     CellProblem,
@@ -629,7 +631,7 @@ def build_plan(split: Split, mapping: ParsedMapping, checks: Checks) -> ImportPl
         )
         refusal = checks.catalog_attributes.get(catalog_entry.ref)
         if refusal is not None:
-            problems.append(CellProblem(catalog_entry.ref, "Catálogo", refusal.code))
+            problems.append(CellProblem(catalog_entry.ref, CATALOG_PROBLEM_COLUMN, refusal.code))
 
     if checks.header_footer is not None:
         problems.append(
@@ -657,7 +659,9 @@ def build_plan(split: Split, mapping: ParsedMapping, checks: Checks) -> ImportPl
     for category_entry in split.categories:
         category_result = checks.category_names.get(category_entry.raw_name)
         if isinstance(category_result, Refusal):
-            problems.append(CellProblem(category_entry.ref, "Categoría", category_result.code))
+            problems.append(
+                CellProblem(category_entry.ref, CATEGORY_PROBLEM_COLUMN, category_result.code)
+            )
             continue
         if category_result is None:
             continue
@@ -680,9 +684,13 @@ def build_plan(split: Split, mapping: ParsedMapping, checks: Checks) -> ImportPl
             continue
         category_result = checks.category_names.get(gasto.category)
         if isinstance(category_result, Refusal):
-            problems.append(CellProblem(gasto.ref, "Categoría", category_result.code))
+            problems.append(
+                CellProblem(gasto.ref, CATEGORY_PROBLEM_COLUMN, category_result.code)
+            )
         elif category_result is not None and category_result not in valid_category_keys:
-            problems.append(CellProblem(gasto.ref, "Categoría", "import.category_outside_list"))
+            problems.append(
+                CellProblem(gasto.ref, CATEGORY_PROBLEM_COLUMN, "import.category_outside_list")
+            )
 
     # -- Customers: one check per distinct collapsed name, filed by its own field. ---
     rows_by_customer_name: dict[str, list[VentaRow]] = {}

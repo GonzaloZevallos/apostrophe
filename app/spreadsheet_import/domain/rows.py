@@ -16,6 +16,12 @@ from decimal import Decimal
 
 from app.shared.grams import Grams
 
+# The sheet's own words for the `column` of a `CellProblem` the plan files itself (not
+# read from a header cell): they name the sheet's tab and column, so they stay Spanish
+# like every sheet word (GH-53).
+CATALOG_PROBLEM_COLUMN = "Catálogo"
+CATEGORY_PROBLEM_COLUMN = "Categoría"
+
 
 @dataclass(frozen=True)
 class SheetRef:
