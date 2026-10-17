@@ -1,6 +1,6 @@
 /** Visits a registry screen and runs its steps; what cannot be reached is recorded, never thrown. */
 
-import type { Page } from '@playwright/test'
+import type { Locator, Page } from '@playwright/test'
 import {
   resolvePlaceholders,
   type RegistryScreen,
@@ -11,11 +11,26 @@ export const STEP_TIMEOUT_MS = 3_000
 
 export type Facts = Readonly<Record<string, string | number>>
 
+/** A click names what the seller reads: its text, or, for an icon-only button, its accessible name. */
+async function clickTarget(page: Page, name: string): Promise<Locator> {
+  const byText = page.getByText(name, { exact: true })
+  if ((await byText.count()) > 0) return byText.first()
+  return page.getByRole('button', { name, exact: true }).first()
+}
+
+/** A fill types into an input or textarea, and picks the option with that label in a select. */
+async function fill(page: Page, label: string, value: string, timeout: number): Promise<void> {
+  const field = page.getByLabel(label).first()
+  const isSelect = await field.evaluate((element) => element.tagName === 'SELECT', undefined, { timeout })
+  if (isSelect) await field.selectOption({ label: value }, { timeout })
+  else await field.fill(value, { timeout })
+}
+
 async function run(page: Page, step: RegistryStep, facts: Facts): Promise<void> {
   const options = { timeout: STEP_TIMEOUT_MS }
-  if ('click' in step) await page.getByText(step.click, { exact: true }).first().click(options)
+  if ('click' in step) await (await clickTarget(page, step.click)).click(options)
   else if ('fill' in step) {
-    await page.getByLabel(step.fill.label).first().fill(resolvePlaceholders(step.fill.value, facts), options)
+    await fill(page, step.fill.label, resolvePlaceholders(step.fill.value, facts), STEP_TIMEOUT_MS)
   } else if ('wait' in step) await page.getByText(step.wait, { exact: true }).first().waitFor(options)
   else await page.context().setOffline(true)
 }
@@ -34,6 +49,10 @@ export async function settle(page: Page): Promise<void> {
 
 export async function open(page: Page, screen: RegistryScreen, facts: Facts): Promise<void> {
   if (screen.route === null) throw new Error(`${screen.screen} has no route`)
+  // A screen opens from a blank entry, never over the last walk's: going to the same URL again
+  // keeps its history state, and then a form's own "Volver" would leave the app instead of
+  // asking (`location.key` is no longer 'default').
+  await page.goto('about:blank')
   await page.goto(resolvePlaceholders(screen.route, facts))
 }
 

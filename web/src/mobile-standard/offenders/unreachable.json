@@ -1,1 +1,38 @@
-[]
+[
+  {
+    "screen": "VentaAsignarCliente",
+    "rule": "unreachable",
+    "target": "",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "CobroDesdeClientes",
+    "rule": "unreachable",
+    "target": "",
+    "issue": 46,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "CobroDesdeInicio",
+    "rule": "unreachable",
+    "target": "",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "CobroBorrar",
+    "rule": "unreachable",
+    "target": "",
+    "issue": 46,
+    "sizes": [
+      "246x437"
+    ]
+  }
+]

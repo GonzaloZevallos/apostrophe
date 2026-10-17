@@ -13,11 +13,15 @@ import { expectOnlyTheThemeStored } from './helpers/storage.js'
 import type { CellId } from './mobile/collect.js'
 import { newCell, SIZES, THEMES, type Size, type Theme } from './mobile/cells.js'
 import { guardWrites } from './mobile/network.js'
+import { stateNameProblems, stateScreens, STATES } from './mobile/states.js'
 import { settle, type Facts } from './mobile/walk.js'
 import { walkScreen } from './mobile/walkScreen.js'
 import { OFFENDERS, diffOffenders } from '../src/mobile-standard/offenders/index.ts'
-import { parseFacts, WALKABLE } from '../src/mobile-standard/registry.ts'
+import { parseFacts, STATE_NAMES, WALKABLE } from '../src/mobile-standard/registry.ts'
 import type { Violation } from '../src/mobile-standard/violation.ts'
+
+/** What a cell walks: every walkable registry screen (loaded, then held) and every state (loaded). */
+const STATE_SCREENS = stateScreens()
 
 const SIGNED_OUT = { cookies: [], origins: [] } as { cookies: []; origins: [] }
 
@@ -44,6 +48,13 @@ for (const size of SIZES) {
           const cell = cellOf(screen.screen)
           actual.push(...(await walkScreen(page, screen, cell, false, facts)))
           actual.push(...(await walkScreen(page, screen, cell, true, facts)))
+        })
+      }
+
+      // A state's starting route is a registry route already walked held; only its steps are new.
+      for (const screen of STATE_SCREENS) {
+        await test.step(screen.screen, async () => {
+          actual.push(...(await walkScreen(inPage, screen, cellOf(screen.screen), false, facts)))
         })
       }
 
@@ -93,6 +104,48 @@ test.describe('the walk rejects what it cannot reach', () => {
     const context = await newCell(browser, PROBE_SIZE, 'claro', MOBILE_STATE_FILE)
     const page = await context.newPage()
     const screen = { ...PROBE, steps: [{ click: 'Semana' }] }
+    expect(await walkScreen(page, screen, PROBE_CELL, false, readFacts())).toEqual([])
+    await context.close()
+  })
+})
+
+test.describe('the states the walk adds', () => {
+  test('every state is in the screen vocabulary and the vocabulary has no state without a walk', () => {
+    expect(stateNameProblems(STATES, STATE_NAMES)).toEqual([])
+  })
+
+  test('a state missing from the vocabulary, a repeat and an orphan name are each refused', () => {
+    const state = { name: 'Uno', route: '/ventas', steps: [], visible: 'Hoy' }
+    expect(stateNameProblems([state], [])).toEqual(['Uno is not in STATE_NAMES'])
+    expect(stateNameProblems([], ['Huerfano'])).toEqual(['Huerfano has no state'])
+    expect(stateNameProblems([state, state], ['Uno'])).toContain('a state name is a repeat')
+  })
+
+  test('a state whose named element never shows is unreachable, not a pass', async ({ browser }) => {
+    const context = await newCell(browser, PROBE_SIZE, 'claro', MOBILE_STATE_FILE)
+    const page = await context.newPage()
+    const [screen] = stateScreens([{ name: 'Probe', route: '/ventas', steps: [], visible: 'texto que no existe' }])
+    if (screen === undefined) throw new Error('no state screen')
+    expect(await walkScreen(page, screen, PROBE_CELL, false, readFacts())).toEqual([
+      { ...PROBE_CELL, rule: 'unreachable', target: '' },
+    ])
+    await context.close()
+  })
+
+  test('a fill picks a select option by its label, and a click reaches an icon-only button by name', async ({
+    browser,
+  }) => {
+    const context = await newCell(browser, PROBE_SIZE, 'claro', MOBILE_STATE_FILE)
+    const page = await context.newPage()
+    const [screen] = stateScreens([
+      {
+        name: 'Probe',
+        route: '/ventas/nueva',
+        steps: [{ fill: { label: 'Variedad línea 1', value: 'Sir Jack' } }, { click: 'Volver' }],
+        visible: '¿Descartás la venta?',
+      },
+    ])
+    if (screen === undefined) throw new Error('no state screen')
     expect(await walkScreen(page, screen, PROBE_CELL, false, readFacts())).toEqual([])
     await context.close()
   })
