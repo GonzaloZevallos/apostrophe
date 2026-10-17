@@ -52,6 +52,11 @@ This refines the "log in once and stay in" job above and criterion 5; it is not 
 - The protagonist of this job is the operator of the installation, not a user in the app.
 - For a seller, only two things change: where they can reach the app from, and that it is on HTTPS.
 
+**When** a backend check goes red on a diff that touches no backend code, **I want** the cookie-security test to give the same result on any day, using only a fixed time it is handed and never the real date or anything else outside the test, **so I can** trust that a red check means a real regression and merge a green one without re-running it.
+
+- This refines the "log in once and stay in" job and criterion 14 for the people who merge through the gate (the agentic maintainers and the PM); it is not a seller's job.
+- No product behaviour changes for it: the `Secure` rule and the 30-day session stay as they are.
+
 **When** I merge a change and the test suite runs again on a later day, **I want** the gate to give the same verdict whatever the date, and the change's record to say exactly what its evidence proves and what it does not, **so I can** trust a green gate, act on a red one without guessing, and never treat evidence as proof of something it never covered.
 
 - The protagonist of this job is the maintainer of the installation, or the reviewer acting for them. The seller is affected only indirectly: a gate that goes red because the date changed holds up every fix they are waiting for.
@@ -177,6 +182,13 @@ Success criteria, removing a business:
 37. **The removal tests give the same verdict on any day.**
     - Every instant in `tests/business_removal/`, invitations included, comes from the movable clock (ADR-0001). No test there reads the real clock.
     - The suite gives the same result when the clock is moved to different Argentina days, across a month boundary and a year boundary included.
+
+Success criteria, the cookie-security test (GH-130 follow-up):
+
+37. **Same result on any day.** The cookie-security test uses only a fixed time handed to it through the injected clock (ADR-0001) and gives the same result whatever the real date, earlier or later, with no edit to its fixed time. Nothing in it reads the real clock.
+38. **The rule is still proven.** It keeps asserting that `Secure` is present when HTTPS is configured, absent otherwise, and never inferred from the request's scheme or headers (criterion 14). No assertion is dropped or loosened.
+39. **No product behaviour changes.** The session still lasts 30 days, as a cookie and a token. Product code found reading the real date wrongly is a separate bug item.
+40. **The gate means something.** The full backend tests check is green.
 
 ## Behaviour
 
@@ -457,6 +469,7 @@ These groups of Configuración (navigation.md) replace the former Negocio screen
   - reset link gone (one code for unknown, used, expired and retired).
 - **Secrets**: passwords are stored only as scrypt hashes and reset tokens only as digests (ADR-0002). No password, hash, token, digest or link appears in logs, answers, the console or browser storage.
 - **Browser storage** holds only the device's theme choice.
+- **Tests of this capability are self-contained**: every time they depend on comes from the injected clock (ADR-0001), never from the real date, so a check gives the same result on any day.
 
 ### Feedback, on every screen
 
@@ -608,7 +621,7 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
     - a success resetting only the email's count;
     - the same 429 answer and timing from both locks, disclosing nothing.
   - **Address source (criterion 15)**: the forwarded header is used only from the configured trusted proxy and ignored from anywhere else.
-  - **Cookie (criterion 14)**: `Secure` is present when HTTPS is configured and absent otherwise.
+  - **Cookie (criteria 14, 37–38)**: `Secure` is present when HTTPS is configured and absent otherwise, and never follows the request's scheme or headers. The test uses only the fixed time it is handed and gives the same result with the real date moved earlier and later, its own fixed time unchanged; its assertions are never fewer.
   - **No leakage (criteria 14, 15)**:
     - no log line from the login path contains a client address, email or token;
     - the health endpoint answers no business name, id or count.
@@ -616,6 +629,7 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
   - **Drill (criterion 16)**:
     - Automated: against a local scratch copy, the drill produces integrity, row counts and the latest change.
     - By hand: the run before going live shows, from the recency field, that the restore is within the under-1-minute bound.
+- **Gate green (criteria 39–40)**: the full backend tests check (`uv run --no-project pytest -n auto`) is green, with passed equal to collected and 0 errors; the existing session-length tests pass unchanged. The PR names the cause of the red, and lists any other test that compares a fixed date with the real date (or says none was found).
 
 ## Out of scope
 
@@ -651,5 +665,6 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
 - An iOS status bar that follows the theme live.
 - A landscape-specific design; locking orientation or disabling zoom.
 - A new icon look (a branding change).
+- Fixing product code that reads the real date wrongly (its own bug item), and fixing tests that compare a fixed date with the real date but are not red.
 - A general guard, across the product, against date-dependent tests or missing evidence.
 - A before/after pair for #107's change measured on the old tree 90320f8 (optional, never required).
