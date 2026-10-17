@@ -1,6 +1,6 @@
 # Design capture
 
-The evidence a reviewer uses to judge that a screen looks as designed: the design file and the built app are captured side by side from the screens registry (`scripts/design/screens.json`), with pinned fonts, by `scripts/design/comparisons.mjs`, and when a change needs a before/after pair, the raw captures are compared by exact AE with `scripts/design/ae.mjs` (ADR-0041, ADR-0042). This file holds what the capture and its registry must guarantee for the people who rely on them. It changes no product behaviour: no capability's rule, screen, route, step or copy is defined here, and the capture always follows the product, never the reverse. It is review evidence attached to a PR and judged by eye; it is never a step of the gate (gate.md). Sellers and the operator see nothing of it.
+The evidence a reviewer uses to judge that a screen looks as designed: the design file and the built app are captured side by side from the screens registry (`scripts/design/screens.json`), with pinned fonts, by `scripts/design/comparisons.mjs`, and when a change needs a before/after pair, the raw captures are compared by exact AE with `scripts/design/ae.mjs` (ADR-0042). This file holds what the capture and its registry must guarantee for the people who rely on them. It changes no product behaviour: no capability's rule, screen, route, step or copy is defined here, and the capture always follows the product, never the reverse. It is review evidence attached to a PR and judged by eye; it is never a step of the gate (gate.md). Sellers and the operator see nothing of it.
 
 ## Jobs
 
@@ -10,6 +10,16 @@ The evidence a reviewer uses to judge that a screen looks as designed: the desig
 - It refines the "looks as designed" criteria (navigation.md criterion 7, onboarding.md criterion 5 and its design metric, icon-and-text-rule.md criterion 6); it is not a new product job.
 - It also serves when a design guard or a registry test fails and the maintainer must tell a real defect from a broken registry row.
 - Before it (GH-142's follow-up): a one-test edit broke the plan's own invariant, the OnboardingListo row could not reach Listo, the OnboardingListoOscuro crop was clipped, and those two defects had no issue.
+
+**When** I review a change against the design capture, **I want** every row of the screens registry to name the screen and the record it actually reaches and captures, **so I can** approve from the capture alone, without checking the registry against the screenshots by hand and without leaving a finding open on an approved head.
+
+- This refines the job above and its criterion 2; it is not a new job. Its protagonist is the same maintainer or reviewer.
+- Before it (GH-166's follow-up): the light `VariedadArchivada` row declared `/varieties/{low}` while it navigated to `/varieties/{sold_out}` and captured Sir Jack. ADR-0033's cross-check reads both placeholders as `{id}`, so no test saw it, and the reviewer reconciled the row by hand.
+
+**When** I run the design capture over the whole registry, as a before/after run does (ADR-0042), **I want** every row to reach its screen and every capture to pass its font check, **so I can** read a non-zero exit as a real failure and attach the run as evidence without explaining away rows that always fail.
+
+- This refines the first job and its criterion 1 for the whole registry; it is not a new job. Its protagonist is the same maintainer or reviewer.
+- Before it (GH-219's and GH-150's evidence): `EstadosConfirmar` never reached "Borrar venta", and `EstadosSinConexionCompu` and `EstadosSinConexionCompuOscuro` failed the font check on their offline step, on base and head alike, so every whole-registry `--strict` run exited 1 with every other row ok.
 
 **When** I review a change to how Análisis looks, **I want** current before and after captures of Análisis, a comparison over every other screen in the registry, and a plan that names every file the change edits, **so I can** approve or reject from the PR's evidence alone, without retaking captures, hand-checking screens or carrying an open finding into the next task.
 
@@ -24,6 +34,13 @@ Success criteria:
 3. **Registry, tests and plan agree.** The change needs no recorded exception and no test edited outside a declared seam.
 4. **Nothing a seller sees changes.** onboarding.md, navigation.md and every screen read and behave as before, and every test passes. The only edited tests are the two registry tests; the only other edited files are design tooling (`scripts/design/screens.json`, `scripts/design/screens.mjs`, `scripts/design/sample_app.py`, `scripts/design/comparisons.mjs`); no file under `app/` or `web/src/` changes beyond those two tests.
 5. **No test loosened.** A changed registry or enforcement test keeps everything it guarded and states the corrected rule.
+6. **Every row tells the truth about its record.** A row's declared path names the same sample record its route and steps reach and capture. The light `VariedadArchivada` row names Sir Jack (`{sold_out}`), an archived variety reached from Archivadas. A dark twin's own declaration matches its own capture; it need not show the light row's record.
+7. **The registry, its tests and navigation.md agree on the archived variety's page** and its parent "‹ Archivadas", with no recorded exception and no loosened test.
+8. **Truthfulness costs the seller nothing.** Fixing a row's declaration changes no capability doc, nothing under `app/`, and nothing under `web/src/` but `web/src/design/screens.test.ts` within its declared seam. No row's steps change to make it truthful.
+9. **A wrong record never passes unnoticed again.** An entry whose path names a record different from the one its route names fails the registry test in the diff that introduces it.
+10. **The whole registry runs green.** One `--strict` call over the whole registry, with no `--only`, exits 0. No row is removed, skipped, excused or listed as a known failure to get there.
+11. **Offline captures keep their fonts.** A row that takes the app offline is captured with the page's own fonts applied, and the applied-check runs on it exactly as on every other row.
+12. **Reaching every row costs the seller nothing.** Making a row reach its screen changes only that row's steps, the sample data and the capture tooling under `scripts/design/`, plus the two registry tests within their declared seams. No screen, copy, capability doc or the app's own font loading changes.
 
 Success criteria, reviewing GH-141's change to Análisis:
 
@@ -42,6 +59,26 @@ Success criteria, reviewing GH-141's change to Análisis:
 - Fonts are pinned and the design capture never touches the network; `--strict` turns a font or screen-level failure into a non-zero exit, after every screen ran and `index.json` was written (ADR-0042).
 - Each screen writes its composed sheet and its raw design and built captures; a before/after compares the raw captures by exact AE, never the sheet (ADR-0042).
 - A capture is review evidence, judged by eye in the PR. It is never a gate step, and no new automated check is added for it.
+
+### Every row reaches its screen
+
+- Every row of the registry, not only Inicio* and the Onboarding, reaches its screen the way a seller does and captures its named section whole. A whole-registry `--strict` run exits non-zero only when a row truly fails.
+- **`EstadosConfirmar`** reaches Antes de borrar on a sale's detail as a seller does: it opens a sale that exists in the sample and taps "Borrar venta". Its capture shows the confirmation whole: the question naming the sale's date, amount and grams that return, and "No, dejala / Sí, borrala" (sales.md).
+- **`EstadosSinConexionCompu` and `EstadosSinConexionCompuOscuro`** show "Sin conexión" in the computer layout, light and dark. The page's own fonts are in place before the network drops, so going offline never leaves a page font in error. The capture's fonts stay pinned and local (ADR-0042).
+- The applied-check is unchanged and covers every row, offline rows included: a font in error stays a failure, never a pass.
+- A row is made to reach its screen by its steps, the sample data or the capture tooling alone. Never by changing the screen, its copy, the app's own `font-display`, or the applied-check, and never by dropping or excusing the row.
+- A row that fails because the app itself no longer shows the seller's path is a product defect: it is escalated to the PM, never excused in the registry.
+
+### A row names what it reaches
+
+- The record a row names in its path is the record its route and steps reach and capture. A path that names no record (a form such as `/varieties/entries/new`, reached from a record) makes no claim about one.
+- **The light `VariedadArchivada` row** declares `/varieties/{sold_out}`. Its route (`/varieties/{sold_out}`), its steps (archive, open "Archivadas (1)", click "Sir Jack") and its capture are unchanged.
+- **`VariedadArchivadaOscuro`** declares and reaches `/varieties/{low}` (opens "Archivadas (2)", clicks Golden Cookies). The two themes need not show the same record.
+- **The `EntradaStockSinEntradas` rows** (light, dark, Compu and CompuOscuro) declare the stock entry form, `/varieties/entries/new`, and start from `/varieties/{no_entries}`: that is how a seller reaches the form with "Stock inicial" preselected, and they are true as they stand.
+- **A row found naming a record other than the one it reaches** (path and route naming different records, or steps clicking a different record):
+  - a fix to its declaration alone is made in the task that finds it;
+  - a fix needing different steps or sample data becomes a follow-up issue linked from that task's PR;
+  - nothing found is left unexplained in the PR.
 
 ### Registry rows for Listo
 
@@ -67,6 +104,11 @@ Success criteria, reviewing GH-141's change to Análisis:
   - a Listo entry that names an account the sample does not write fails;
   - two entries on one account are refused (`assertSelectedAccounts`), the default Listo row included.
 - The account-validation tests and `assertSelectedAccounts` keep everything they guarded.
+- **Same record in path and route**: the same test states that when an entry's `path` names at least one `{name}` placeholder, its placeholders equal the `route`'s exactly: the same names, in the same order, compared as written, before any normalisation.
+  - A path with no placeholder names no record and passes, whatever its route holds. This is part of the rule, not an exemption: no entry is listed as exempt.
+  - It only adds to the cross-check; ADR-0033's normalisation to `{id}` for matching against the front registry is unchanged.
+  - A failure names the entry and the two placeholder lists, nothing else.
+  - Known blind spot, accepted: a row whose path names no record while its route does is not checked by this rule. Its steps and capture are still checked by the audit and by eye.
 
 ### Plan rules for a registry change
 
@@ -76,17 +118,21 @@ Success criteria, reviewing GH-141's change to Análisis:
 
 ### Failures
 
-- A row that cannot reach its screen fails while it steps there, so `--strict` exits non-zero.
+- A row that cannot reach its screen fails while it steps there, so `--strict` exits non-zero. That row is a defect to fix, never a known failure to report around.
+- A font left in error on a capture, an offline step included, fails the applied-check, so `--strict` exits non-zero.
 - A capture that shows a screen other than its row names, or a clipped section, is caught by eye in review and blocks approval. Neither is ever accepted as a pass.
 - A Listo entry naming an account the sample does not write fails the registry test.
+- An entry whose path names placeholders different from its route's fails the registry test.
 
 ### Evidence in the PR
 
 - The output of one `--strict` call over Inicio* and the Onboarding block, exit 0.
+- For a change that makes a row reach its screen: the output of one `--strict` call over the whole registry with no `--only`, exit 0, and the captures of every row it fixed, judged by eye.
 - The Listo captures in light, dark and Compu, judged by eye.
 - The list of crops whose result changed: only ones that were clipped.
 - The installed `@fontsource/plus-jakarta-sans` version (ADR-0042).
 - No before/after AE pair is required for a change with no seller-visible difference whose "before" row never reached its screen.
+- For a change that corrects a row's record: the captures of the corrected row and its twin, light and dark, judged by eye, and the audit of every row (rows checked, fixes made, follow-ups linked).
 
 ### Reviewing GH-141's change to Análisis (criteria 6–9)
 
@@ -114,10 +160,19 @@ No telemetry; read from the PR evidence and from tests.
 - **Nothing a seller sees changes (criterion 4)**: every suite passes; the only edited tests are the two registry tests; the only other edited files are `screens.json`, `screens.mjs`, `sample_app.py` and `comparisons.mjs`; nothing else under `app/` or `web/src/` changes.
 - **No test loosened (criterion 5)**: the real-registry test keeps every guard, and each of these is a tested case: an account on an entry that does not reach Listo fails; a Listo entry with an unwritten account fails; two entries on one account fail.
 - **Run B closed**: the clipped OnboardingListoOscuro crop and the unreachable OnboardingListo row are fixed by the same task; no issue is left open for either.
-- **Current Análisis captures (criterion 6)**: all 4 cells attached on both sides, 0 missing; the recorded SHA equals the merging head; the undo diff and the fontsource version are present.
-- **Every difference explained (criterion 7)**: `ae.mjs` exits 0, or every non-zero line is matched to intended, a fix, an undo extra for Zeta, or a linked follow-up; 0 unlisted differences; 0 failures from a missing or unreadable side.
-- **Guard declared, not loosened (criterion 8)**: the plan's seam names the two muestra files; the only edited tests are those two; the guard's existing checks all still run.
-- **Nothing a seller sees changes (criterion 9)**: every suite passes; no capture or comparison step is added to `.agentic/stack.yaml`, CI or the gate.
+- **Row tells the truth (criterion 6)**: the light `VariedadArchivada` entry's `path` and `route` name the same placeholder; the same-record rule passes on it and is shown failing on the uncorrected row; it passes the `EntradaStockSinEntradas` rows, whose path names no record, with no exemption listed.
+- **Archived page agrees (criterion 7)**: both registry tests pass; only `screens.test.ts` is edited, with no guard dropped or loosened; the PR records no exception.
+- **Nothing a seller sees changes (criterion 8)**: the diff touches only `scripts/design/screens.json`, `web/src/design/screens.test.ts` and this file; every suite passes; no row's steps change.
+- **Audit**: the PR lists every row checked and every mismatch found, each fixed there or linked to a follow-up issue: 0 unexplained. The GH-166 finding is linked as closed, with the light and dark captures of the corrected row attached.
+- **Recurrence (criterion 9)**: an entry whose path names placeholders different from its route's fails the registry test in the diff that adds it; the blind spot (a path with no placeholder) is named in the test's description and the PR.
+- **Whole registry green (criterion 10)**: the PR holds one whole-registry `--strict` output, no `--only`, exit 0; the registry has the same rows as before the fix, `EstadosConfirmar`, `EstadosSinConexionCompu` and `EstadosSinConexionCompuOscuro` included.
+- **Offline fonts (criterion 11)**: the two `EstadosSinConexionCompu*` rows pass the applied-check with no note; the applied-check's code and its weights are unchanged; their captures show "Sin conexión" in the computer layout in the app's own font, judged by eye in both themes.
+- **Reached as a seller does**: the `EstadosConfirmar` capture shows Antes de borrar whole, with the sale's date, amount and grams and both answers, judged by eye.
+- **Costs the seller nothing (criterion 12)**: the diff touches only `scripts/design/` and, if needed, the two registry tests within their seams; every suite passes with no other test edited; nothing under `app/` or `web/src/` (outside those tests) changes.
+- **Current Análisis captures (Análisis criterion 6)**: all 4 cells attached on both sides, 0 missing; the recorded SHA equals the merging head; the undo diff and the fontsource version are present.
+- **Every difference explained (Análisis criterion 7)**: `ae.mjs` exits 0, or every non-zero line is matched to intended, a fix, an undo extra for Zeta, or a linked follow-up; 0 unlisted differences; 0 failures from a missing or unreadable side.
+- **Guard declared, not loosened (Análisis criterion 8)**: the plan's seam names the two muestra files; the only edited tests are those two; the guard's existing checks all still run.
+- **Nothing a seller sees changes (Análisis criterion 9)**: every suite passes; no capture or comparison step is added to `.agentic/stack.yaml`, CI or the gate.
 - **Business measure**: spec-scope findings for missing or stale design evidence on the merging head: goal 0 (GH-141 had 3).
 
 ## Out of scope
@@ -127,6 +182,12 @@ No telemetry; read from the PR evidence and from tests.
 - Making the design comparison a gate step, or any new automated check of a capture.
 - A before/after AE pair for a change with nothing seller-visible to compare.
 - Judging whether a screen looks good: the capture finds unintended differences.
+- Making a light row and its dark twin show the same record.
+- Changing a row's route, steps or sample data to make its declaration truthful: that is a follow-up issue. Changing a row's steps or sample data so it reaches its screen as a seller does is in scope.
+- Any change to ADR-0033's normalisation, or any exemption in the registry cross-check.
+- Checking, by rule, a row whose path names no record while its route does.
+- Removing, skipping or excusing a row, or keeping a list of rows known to fail, to make a `--strict` run exit 0.
+- Loosening the applied-check, letting a capture load fonts from the network, or changing the app's own font loading to make a capture pass.
 - Widening the standing seam rule so every registry change declares the muestra guard files.
 - Fixing, in GH-141's follow-up, design differences GH-141 did not cause: they are filed as follow-ups.
 - Any change to Análisis's behaviour, figures or copy.

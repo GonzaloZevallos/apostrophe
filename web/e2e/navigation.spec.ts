@@ -88,6 +88,7 @@ test.describe.serial('navigation', () => {
       owing_sale: records.sale,
       debtor: records.customer,
       low: records.variety,
+      sold_out: records.variety,
       entry: records.entry,
       withdrawal: records.withdrawal,
     }
@@ -207,6 +208,7 @@ test.describe.serial('navigation', () => {
       owing_sale: records.sale,
       debtor: records.customer,
       low: records.variety,
+      sold_out: records.variety,
       entry: records.entry,
       withdrawal: records.withdrawal,
     }

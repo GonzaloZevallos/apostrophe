@@ -181,6 +181,97 @@ describe('assertScreens', () => {
   })
 })
 
+describe('assertScreens checks every step against one closed list of shapes', () => {
+  const withSteps = (steps: unknown) => [{ screen: 'Paso', steps }] as const
+
+  it('accepts each shape: click, press, wait, fill, select and offline', () => {
+    expect(() =>
+      assertScreens(
+        withSteps([
+          { click: 'Semana' },
+          { press: 'Borrar venta' },
+          { wait: 'Stock y entradas' },
+          { fill: { label: 'Gramos', value: '{email}' } },
+          { select: { label: 'Variedad línea 1', index: 0 } },
+          { offline: true },
+        ]),
+      ),
+    ).not.toThrow()
+  })
+
+  it('refuses a step with an unknown key, naming the entry and the step index', () => {
+    expect(() => assertScreens(withSteps([{ click: 'A' }, { hover: 'B' }]))).toThrow(
+      /^Paso: step 1 is not one of click, press, wait, fill, select, offline$/,
+    )
+  })
+
+  it('refuses a step with no key or with two keys', () => {
+    expect(() => assertScreens(withSteps([{}]))).toThrow(/^Paso: step 0 must have exactly one key$/)
+    expect(() => assertScreens(withSteps([{ click: 'A', wait: 'B' }]))).toThrow(
+      /^Paso: step 0 must have exactly one key$/,
+    )
+  })
+
+  it('refuses a step that is not an object, and steps that are not a list', () => {
+    expect(() => assertScreens(withSteps(['click']))).toThrow(/^Paso: step 0 must be an object$/)
+    expect(() => assertScreens(withSteps([null]))).toThrow(/^Paso: step 0 must be an object$/)
+    expect(() => assertScreens(withSteps({ click: 'A' }))).toThrow(/^Paso: steps must be a list$/)
+  })
+
+  it.each(['click', 'press', 'wait'])('refuses %s with anything but a non-empty string', (key) => {
+    for (const value of ['', 7, true, null, { label: 'A' }]) {
+      expect(() => assertScreens(withSteps([{ [key]: value }]))).toThrow(
+        new RegExp(`^Paso: step 0 ${key} must be a non-empty string$`),
+      )
+    }
+  })
+
+  it('refuses fill without exactly a string label and a string value', () => {
+    const message = /^Paso: step 0 fill must be exactly \{label, value\}, both strings$/
+    for (const fill of ['x', null, {}, { label: 'A' }, { label: 'A', value: 1 }, { label: 7, value: 'a' }]) {
+      expect(() => assertScreens(withSteps([{ fill }]))).toThrow(message)
+    }
+    expect(() => assertScreens(withSteps([{ fill: { label: 'A', value: 'a', extra: 'b' } }]))).toThrow(message)
+  })
+
+  it('refuses select without exactly a string label and a non-negative integer index', () => {
+    const message = /^Paso: step 0 select must be exactly \{label, index\}, a string and a non-negative integer$/
+    for (const select of [
+      'x',
+      null,
+      {},
+      { label: 'A' },
+      { label: 'A', index: '1' },
+      { label: 'A', index: -1 },
+      { label: 'A', index: 1.5 },
+      { label: 7, index: 1 },
+    ]) {
+      expect(() => assertScreens(withSteps([{ select }]))).toThrow(message)
+    }
+    expect(() => assertScreens(withSteps([{ select: { label: 'A', index: 1, extra: 'b' } }]))).toThrow(message)
+  })
+
+  it('refuses offline with anything but true', () => {
+    for (const offline of [false, 1, 'true', null, {}]) {
+      expect(() => assertScreens(withSteps([{ offline }]))).toThrow(/^Paso: step 0 offline must be true$/)
+    }
+  })
+
+  it('does not put the step data in a refusal', () => {
+    expect(() => assertScreens(withSteps([{ fill: { label: 'Secreto', value: 'clave-1234', extra: 1 } }]))).toThrow(
+      /^(?!.*(Secreto|clave-1234))/,
+    )
+  })
+
+  it('scans a press step for placeholders in an account entry', () => {
+    expect(() =>
+      assertScreens([
+        { screen: 'Paso', design: 'OnboardingListo', route: 'ruta', account: 'a_b', steps: [{ press: '{sale_id}' }] },
+      ]),
+    ).toThrow(/Paso: an account entry can only use/)
+  })
+})
+
 describe('assertSelectedNeeds', () => {
   const all = [{ screen: 'A' }, { screen: 'B', needs: 'A' }, { screen: 'C' }]
 
@@ -244,6 +335,56 @@ describe('the real registry covers its evidence', () => {
       'EntradaStockSinEntradasCompu',
       'EntradaStockSinEntradasCompuOscuro',
     ])
+  })
+})
+
+describe('an entry whose path names a record names the same placeholders in its route, as written (a path with no placeholder makes no claim, so a route that names a record through it is not checked)', () => {
+  interface Declared {
+    screen: string
+    path?: string | null
+    route?: string | null
+  }
+  interface Mismatch {
+    screen: string
+    path: string[]
+    route: string[]
+  }
+
+  const placeholders = (text: string | null | undefined): string[] =>
+    Array.from((text ?? '').matchAll(/\{([^{}]+)\}/g), (match) => match[1]!)
+
+  const pathRecordMismatches = (entries: readonly Declared[]): Mismatch[] =>
+    entries.flatMap((entry) => {
+      const path = placeholders(entry.path)
+      const route = placeholders(entry.route)
+      if (path.length === 0) return []
+      const same = path.length === route.length && path.every((name, index) => name === route[index])
+      return same ? [] : [{ screen: entry.screen, path, route }]
+    })
+
+  const real = (screen: string): Declared => {
+    const entry = screens.screens.find((s) => s.screen === screen)
+    if (entry === undefined) throw new Error(`screens.json has no ${screen} entry`)
+    return entry
+  }
+
+  it('refuses an entry whose path names a record its route does not, naming the screen and the two lists', () => {
+    // The dark twin's path names {low}, the record the light row's did before it was corrected.
+    const uncorrected = { ...real('VariedadArchivada'), path: real('VariedadArchivadaOscuro').path }
+    expect(pathRecordMismatches([uncorrected])).toEqual([
+      { screen: 'VariedadArchivada', path: ['low'], route: ['sold_out'] },
+    ])
+  })
+
+  it('accepts an entry whose path names no record, though its route does', () => {
+    const entry = real('EntradaStockSinEntradas')
+    expect(placeholders(entry.route)).toEqual(['no_entries'])
+    expect(placeholders(entry.path)).toEqual([])
+    expect(pathRecordMismatches([entry])).toEqual([])
+  })
+
+  it('accepts the real screens.json, imported, never copied', () => {
+    expect(pathRecordMismatches(screens.screens)).toEqual([])
   })
 })
 
