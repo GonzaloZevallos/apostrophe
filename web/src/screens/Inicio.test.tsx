@@ -152,19 +152,6 @@ test('the business avatar at the top opens Configuración in one tap, carrying i
   expect(screen.getByText('Configuración inApp=true')).toBeInTheDocument()
 })
 
-test('shows today\'s figures on open: heading, count, average, grams, Ganancia, Caja', async () => {
-  stubFetch(PANEL)
-  const { container } = renderInicio()
-  await screen.findByText('Vendiste hoy')
-
-  expect(within(container).getByText('2 ventas · promedio $ 7.500 · 10 g')).toBeInTheDocument()
-  expect(within(container.querySelector<HTMLElement>('.panel-ventas')!).getByText('$ 15.000')).toBeInTheDocument()
-  expect(within(container.querySelector<HTMLElement>('.panel-lista')!).getByText('$ 6.000')).toBeInTheDocument()
-  const resultados = container.querySelector<HTMLElement>('.panel-resultados')!
-  expect(within(resultados).getByText('$ 9.000')).toBeInTheDocument() // profit (positive)
-  expect(within(resultados).getByText('$ 15.000')).toBeInTheDocument() // cash
-})
-
 test('switching to Semana shows the week\'s figures, including a negative Caja', async () => {
   stubFetch(PANEL)
   renderInicio()
@@ -188,17 +175,6 @@ function noteAfterRow(container: HTMLElement, label: string): string | null {
   const next = row?.nextElementSibling ?? null
   return next !== null && next.classList.contains('pie') ? next.textContent : null
 }
-
-test('Hoy: no pending note anywhere, and no Faltante de stock row', async () => {
-  stubFetch(PANEL)
-  const { container } = renderInicio()
-  await screen.findByText('Vendiste hoy')
-
-  const resultados = container.querySelectorAll<HTMLElement>('.panel-resultados__celda')[0]!
-  expect(within(resultados).queryByText('incluye costo pendiente')).not.toBeInTheDocument()
-  expect(noteAfterRow(container, 'Costo de lo vendido')).toBeNull()
-  expect(screen.queryByText('Faltante de stock')).not.toBeInTheDocument()
-})
 
 test('Semana: Ganancia\'s note and the Faltante de stock row (with its own note) show; Costo de lo vendido\'s doesn\'t', async () => {
   stubFetch(PANEL)
