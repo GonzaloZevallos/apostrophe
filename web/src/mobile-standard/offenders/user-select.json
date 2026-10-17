@@ -1,1 +1,92 @@
-[]
+[
+  {
+    "screen": "ConfiguracionApariencia",
+    "rule": "user-select",
+    "target": "radio:Claro",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionApariencia",
+    "rule": "user-select",
+    "target": "radio:Oscuro",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionContrasena",
+    "rule": "user-select",
+    "target": "button:Cambiar contraseña",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionContrasena",
+    "rule": "user-select",
+    "target": "button:Cerrar sesión",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCuenta",
+    "rule": "user-select",
+    "target": "button:Cambiar contraseña",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCuenta",
+    "rule": "user-select",
+    "target": "button:Cerrar sesión",
+    "issue": 60
+  },
+  {
+    "screen": "GastoConfirmarBorrado",
+    "rule": "user-select",
+    "target": "button:#/#Categoría LarguísimoLarguísimoLarguísimoLarguísimo",
+    "issue": 48
+  },
+  {
+    "screen": "GastoConfirmarBorrado",
+    "rule": "user-select",
+    "target": "button:#/#EnvíosCadete a Caballito$ #.#",
+    "issue": 48
+  },
+  {
+    "screen": "GastoConfirmarBorrado",
+    "rule": "user-select",
+    "target": "button:#/#PackagingBolsitas zip$ #.#",
+    "issue": 48
+  },
+  {
+    "screen": "GastoEditar",
+    "rule": "user-select",
+    "target": "button:#/#Categoría LarguísimoLarguísimoLarguísimoLarguísimo",
+    "issue": 48
+  },
+  {
+    "screen": "GastoEditar",
+    "rule": "user-select",
+    "target": "button:#/#EnvíosCadete a Caballito$ #.#",
+    "issue": 48
+  },
+  {
+    "screen": "GastoEditar",
+    "rule": "user-select",
+    "target": "button:#/#PackagingBolsitas zip$ #.#",
+    "issue": 48
+  },
+  {
+    "screen": "Gastos",
+    "rule": "user-select",
+    "target": "button:#/#Categoría LarguísimoLarguísimoLarguísimoLarguísimo",
+    "issue": 48
+  },
+  {
+    "screen": "Gastos",
+    "rule": "user-select",
+    "target": "button:#/#EnvíosCadete a Caballito$ #.#",
+    "issue": 48
+  },
+  {
+    "screen": "Gastos",
+    "rule": "user-select",
+    "target": "button:#/#PackagingBolsitas zip$ #.#",
+    "issue": 48
+  }
+]

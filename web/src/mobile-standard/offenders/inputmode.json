@@ -1,1 +1,26 @@
-[]
+[
+  {
+    "screen": "GastoDesdeGastos",
+    "rule": "inputmode",
+    "target": "combobox:CategoríaElegí una categoríaCategoría LarguísimoLar",
+    "issue": 48
+  },
+  {
+    "screen": "GastoDesdeMas",
+    "rule": "inputmode",
+    "target": "combobox:CategoríaElegí una categoríaCategoría LarguísimoLar",
+    "issue": 48
+  },
+  {
+    "screen": "GastoEditar",
+    "rule": "inputmode",
+    "target": "combobox:CategoríaElegí una categoríaCategoría LarguísimoLar",
+    "issue": 48
+  },
+  {
+    "screen": "GastoNuevo",
+    "rule": "inputmode",
+    "target": "combobox:CategoríaElegí una categoríaCategoría LarguísimoLar",
+    "issue": 48
+  }
+]

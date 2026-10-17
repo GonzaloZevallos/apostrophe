@@ -1,1 +1,480 @@
-[]
+[
+  {
+    "screen": "Analisis",
+    "rule": "chrome-at-load",
+    "target": "link:Nueva venta",
+    "issue": 59
+  },
+  {
+    "screen": "Analisis",
+    "rule": "chrome-at-load",
+    "target": "navigation:Navegación",
+    "issue": 59
+  },
+  {
+    "screen": "Catalogo",
+    "rule": "chrome-at-load",
+    "target": "link:Nueva venta",
+    "issue": 59
+  },
+  {
+    "screen": "Catalogo",
+    "rule": "chrome-at-load",
+    "target": "navigation:Navegación",
+    "issue": 59
+  },
+  {
+    "screen": "CatalogoAtributos",
+    "rule": "chrome-at-load",
+    "target": "link:Nueva venta",
+    "issue": 59
+  },
+  {
+    "screen": "CatalogoAtributos",
+    "rule": "chrome-at-load",
+    "target": "navigation:Navegación",
+    "issue": 59
+  },
+  {
+    "screen": "ClienteEditar",
+    "rule": "chrome-at-load",
+    "target": "link:Nueva venta",
+    "issue": 59
+  },
+  {
+    "screen": "ClienteEditar",
+    "rule": "chrome-at-load",
+    "target": "navigation:Navegación",
+    "issue": 59
+  },
+  {
+    "screen": "ClienteFicha",
+    "rule": "chrome-at-load",
+    "target": "link:Nueva venta",
+    "issue": 59
+  },
+  {
+    "screen": "ClienteFicha",
+    "rule": "chrome-at-load",
+    "target": "navigation:Navegación",
+    "issue": 59
+  },
+  {
+    "screen": "ClienteNuevo",
+    "rule": "chrome-at-load",
+    "target": "link:Nueva venta",
+    "issue": 59
+  },
+  {
+    "screen": "ClienteNuevo",
+    "rule": "chrome-at-load",
+    "target": "navigation:Navegación",
+    "issue": 59
+  },
+  {
+    "screen": "ClientesBusqueda",
+    "rule": "chrome-at-load",
+    "target": "link:Nueva venta",
+    "issue": 59
+  },
+  {
+    "screen": "ClientesBusqueda",
+    "rule": "chrome-at-load",
+    "target": "navigation:Navegación",
+    "issue": 59
+  },
+  {
+    "screen": "Cobro",
+    "rule": "chrome-at-load",
+    "target": "link:Nueva venta",
+    "issue": 59
+  },
+  {
+    "screen": "Cobro",
+    "rule": "chrome-at-load",
+    "target": "navigation:Navegación",
+    "issue": 59
+  },
+  {
+    "screen": "CobroBorrar",
+    "rule": "chrome-at-load",
+    "target": "link:Nueva venta",
+    "issue": 59,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "CobroBorrar",
+    "rule": "chrome-at-load",
+    "target": "navigation:Navegación",
+    "issue": 59,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "CobroDesdeClientes",
+    "rule": "chrome-at-load",
+    "target": "link:Nueva venta",
+    "issue": 59,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "CobroDesdeClientes",
+    "rule": "chrome-at-load",
+    "target": "navigation:Navegación",
+    "issue": 59,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "CobroDesdeInicio",
+    "rule": "chrome-at-load",
+    "target": "link:Nueva venta",
+    "issue": 59,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "CobroDesdeInicio",
+    "rule": "chrome-at-load",
+    "target": "navigation:Navegación",
+    "issue": 59,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "Configuracion",
+    "rule": "chrome-at-load",
+    "target": "navigation:Navegación",
+    "issue": 59
+  },
+  {
+    "screen": "EntradaStock",
+    "rule": "chrome-at-load",
+    "target": "link:Nueva venta",
+    "issue": 59
+  },
+  {
+    "screen": "EntradaStock",
+    "rule": "chrome-at-load",
+    "target": "navigation:Navegación",
+    "issue": 59
+  },
+  {
+    "screen": "EntradaStockConfirmarBorrado",
+    "rule": "chrome-at-load",
+    "target": "link:Nueva venta",
+    "issue": 59
+  },
+  {
+    "screen": "EntradaStockConfirmarBorrado",
+    "rule": "chrome-at-load",
+    "target": "navigation:Navegación",
+    "issue": 59
+  },
+  {
+    "screen": "EntradaStockConfirmarCambios",
+    "rule": "chrome-at-load",
+    "target": "link:Nueva venta",
+    "issue": 59
+  },
+  {
+    "screen": "EntradaStockConfirmarCambios",
+    "rule": "chrome-at-load",
+    "target": "navigation:Navegación",
+    "issue": 59
+  },
+  {
+    "screen": "EntradaStockDesdeStock",
+    "rule": "chrome-at-load",
+    "target": "link:Nueva venta",
+    "issue": 59
+  },
+  {
+    "screen": "EntradaStockDesdeStock",
+    "rule": "chrome-at-load",
+    "target": "navigation:Navegación",
+    "issue": 59
+  },
+  {
+    "screen": "EntradaStockEditar",
+    "rule": "chrome-at-load",
+    "target": "link:Nueva venta",
+    "issue": 59
+  },
+  {
+    "screen": "EntradaStockEditar",
+    "rule": "chrome-at-load",
+    "target": "navigation:Navegación",
+    "issue": 59
+  },
+  {
+    "screen": "EstadosGoneAviso",
+    "rule": "chrome-at-load",
+    "target": "link:Nueva venta",
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "EstadosGoneAviso",
+    "rule": "chrome-at-load",
+    "target": "navigation:Navegación",
+    "issue": 59,
+    "sizes": [
+      "320x568",
+      "246x437"
+    ]
+  },
+  {
+    "screen": "EstadosReintento",
+    "rule": "chrome-at-load",
+    "target": "link:Nueva venta",
+    "issue": 59
+  },
+  {
+    "screen": "EstadosReintento",
+    "rule": "chrome-at-load",
+    "target": "navigation:Navegación",
+    "issue": 59
+  },
+  {
+    "screen": "EstadosSinConexion",
+    "rule": "chrome-at-load",
+    "target": "link:Nueva venta",
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "EstadosSinConexion",
+    "rule": "chrome-at-load",
+    "target": "navigation:Navegación",
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "GastoConfirmarBorrado",
+    "rule": "chrome-at-load",
+    "target": "link:Nueva venta",
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "GastoConfirmarBorrado",
+    "rule": "chrome-at-load",
+    "target": "navigation:Navegación",
+    "issue": 59,
+    "sizes": [
+      "320x568",
+      "246x437"
+    ]
+  },
+  {
+    "screen": "GastoEditar",
+    "rule": "chrome-at-load",
+    "target": "link:Nueva venta",
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "GastoEditar",
+    "rule": "chrome-at-load",
+    "target": "navigation:Navegación",
+    "issue": 59,
+    "sizes": [
+      "320x568",
+      "246x437"
+    ]
+  },
+  {
+    "screen": "Gastos",
+    "rule": "chrome-at-load",
+    "target": "link:Nueva venta",
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "Gastos",
+    "rule": "chrome-at-load",
+    "target": "navigation:Navegación",
+    "issue": 59,
+    "sizes": [
+      "320x568",
+      "246x437"
+    ]
+  },
+  {
+    "screen": "Inicio",
+    "rule": "chrome-at-load",
+    "target": "link:Nueva venta",
+    "issue": 59
+  },
+  {
+    "screen": "Inicio",
+    "rule": "chrome-at-load",
+    "target": "navigation:Navegación",
+    "issue": 59
+  },
+  {
+    "screen": "Mas",
+    "rule": "chrome-at-load",
+    "target": "link:Nueva venta",
+    "issue": 59
+  },
+  {
+    "screen": "Mas",
+    "rule": "chrome-at-load",
+    "target": "navigation:Navegación",
+    "issue": 59
+  },
+  {
+    "screen": "PrecioConfirmarBorrado",
+    "rule": "chrome-at-load",
+    "target": "link:Nueva venta",
+    "issue": 59
+  },
+  {
+    "screen": "PrecioConfirmarBorrado",
+    "rule": "chrome-at-load",
+    "target": "navigation:Navegación",
+    "issue": 59
+  },
+  {
+    "screen": "PrecioNuevoFormulario",
+    "rule": "chrome-at-load",
+    "target": "link:Nueva venta",
+    "issue": 59
+  },
+  {
+    "screen": "PrecioNuevoFormulario",
+    "rule": "chrome-at-load",
+    "target": "navigation:Navegación",
+    "issue": 59
+  },
+  {
+    "screen": "VariedadDetalle",
+    "rule": "chrome-at-load",
+    "target": "link:Nueva venta",
+    "issue": 59
+  },
+  {
+    "screen": "VariedadDetalle",
+    "rule": "chrome-at-load",
+    "target": "navigation:Navegación",
+    "issue": 59
+  },
+  {
+    "screen": "VariedadNuevaFormulario",
+    "rule": "chrome-at-load",
+    "target": "link:Nueva venta",
+    "issue": 59
+  },
+  {
+    "screen": "VariedadNuevaFormulario",
+    "rule": "chrome-at-load",
+    "target": "navigation:Navegación",
+    "issue": 59
+  },
+  {
+    "screen": "VariedadRenombrar",
+    "rule": "chrome-at-load",
+    "target": "link:Nueva venta",
+    "issue": 59
+  },
+  {
+    "screen": "VariedadRenombrar",
+    "rule": "chrome-at-load",
+    "target": "navigation:Navegación",
+    "issue": 59
+  },
+  {
+    "screen": "VariedadUmbral",
+    "rule": "chrome-at-load",
+    "target": "link:Nueva venta",
+    "issue": 59
+  },
+  {
+    "screen": "VariedadUmbral",
+    "rule": "chrome-at-load",
+    "target": "navigation:Navegación",
+    "issue": 59
+  },
+  {
+    "screen": "Variedades",
+    "rule": "chrome-at-load",
+    "target": "link:Nueva venta",
+    "issue": 59
+  },
+  {
+    "screen": "Variedades",
+    "rule": "chrome-at-load",
+    "target": "navigation:Navegación",
+    "issue": 59
+  },
+  {
+    "screen": "Ventas",
+    "rule": "chrome-at-load",
+    "target": "link:Nueva venta",
+    "issue": 59,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "Ventas",
+    "rule": "chrome-at-load",
+    "target": "navigation:Navegación",
+    "issue": 59,
+    "sizes": [
+      "320x568",
+      "246x437"
+    ]
+  },
+  {
+    "screen": "VentasFechas",
+    "rule": "chrome-at-load",
+    "target": "link:Nueva venta",
+    "issue": 59,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "246x437"
+    ]
+  },
+  {
+    "screen": "VentasFechas",
+    "rule": "chrome-at-load",
+    "target": "navigation:Navegación",
+    "issue": 59
+  }
+]

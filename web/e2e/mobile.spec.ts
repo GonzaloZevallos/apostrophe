@@ -7,10 +7,10 @@
  */
 
 import { readFileSync } from 'node:fs'
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test, type Browser, type Page } from '@playwright/test'
 import { MOBILE_FACTS_FILE, MOBILE_STATE_FILE } from './env.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
-import type { CellId } from './mobile/collect.js'
+import { collect, type CellId } from './mobile/collect.js'
 import { newCell, SIZES, THEMES, type Size, type Theme } from './mobile/cells.js'
 import { guardWrites } from './mobile/network.js'
 import { asScreen } from './mobile/states.js'
@@ -75,6 +75,11 @@ for (const size of SIZES) {
 
 // The harness's own rejections: the walk must record what it cannot reach, and the write
 // guard must keep every write from the backend. They run in the same project as the cells.
+/** What the harness could not reach: the checkers' own findings are not what these probes are about. */
+function unreachable(found: Violation[]): Violation[] {
+  return found.filter((v) => v.rule === 'unreachable')
+}
+
 const PROBE_SIZE: Size = '375x812'
 const PROBE_CELL: CellId = { screen: 'Probe', size: PROBE_SIZE, theme: 'claro' }
 const PROBE = { screen: 'Probe', route: '/ventas', path: '/sales', viewport: null, signedOut: false, theme: null }
@@ -104,7 +109,7 @@ test.describe('the walk rejects what it cannot reach', () => {
     const context = await newCell(browser, PROBE_SIZE, 'claro', MOBILE_STATE_FILE)
     const page = await context.newPage()
     const screen = { ...PROBE, steps: [{ click: 'Semana' }] }
-    expect(await walkScreen(page, screen, PROBE_CELL, false, readFacts())).toEqual([])
+    expect(unreachable(await walkScreen(page, screen, PROBE_CELL, false, readFacts()))).toEqual([])
     await context.close()
   })
 })
@@ -131,8 +136,49 @@ test.describe('the states the walk adds', () => {
       steps: [{ fill: { label: 'Variedad línea 1', value: 'Sir Jack' } }, { click: 'Volver' }],
       visible: '¿Descartás la venta?',
     })
-    expect(await walkScreen(page, screen, PROBE_CELL, false, readFacts())).toEqual([])
+    expect(unreachable(await walkScreen(page, screen, PROBE_CELL, false, readFacts()))).toEqual([])
     await context.close()
+  })
+})
+
+// The geometry checkers must reject what breaks the standard, not only accept what keeps it.
+const NONE = 'user-select:none;touch-action:manipulation'
+const BROKEN = `
+  <div style="width:2000px;height:20px"></div>
+  <nav class="bar-inferior" style="position:absolute;top:5000px"><a href="#" style="display:block;height:48px">Inicio</a></nav>
+  <button style="width:20px;height:20px">x</button>
+  <input aria-label="Gramos" style="font-size:10px;width:200px;height:48px">
+  <input aria-label="Email" style="width:200px;height:48px">
+  <p style="font-size:9px">tiny</p>
+  <span style="display:inline-block;width:30px;word-break:break-all">$ 999.999.999</span>
+  <div style="width:80px">LarguísimoLarguísimoLarguísimoLarguísimo</div>`
+const CLEAN = `
+  <html style="overscroll-behavior:none"><head><meta name="viewport" content="width=device-width, initial-scale=1"></head><body style="overscroll-behavior:none;margin:0">
+  <nav class="bar-inferior" style="position:fixed;bottom:0;left:0;width:100%;${NONE}"><a href="#" style="display:block;height:48px;font-size:16px;${NONE}">Inicio</a></nav>
+  <p style="font-size:16px">Hola</p></body></html>`
+
+test.describe('the geometry checkers', () => {
+  async function rulesOn(browser: Browser, html: string): Promise<string[]> {
+    const context = await newCell(browser, PROBE_SIZE, 'claro', SIGNED_OUT)
+    const page = await context.newPage()
+    await page.setContent(html)
+    const found = await collect(page, 'loaded', PROBE_CELL)
+    await context.close()
+    return [...new Set(found.map((v) => v.rule))].sort()
+  }
+
+  test('a page that breaks each geometry, type and input rule is reported for each', async ({ browser }) => {
+    expect(await rulesOn(browser, BROKEN)).toEqual(
+      [
+        'autocomplete', 'chrome-at-load', 'chrome-mid-scroll', 'figure-split', 'h-scroll', 'input-font',
+        'input-type', 'inputmode', 'name-overflow', 'overscroll', 'text-size', 'touch-action', 'touch-target',
+        'user-select',
+      ].sort(),
+    )
+  })
+
+  test('a page that keeps them is not reported', async ({ browser }) => {
+    expect(await rulesOn(browser, CLEAN)).toEqual([])
   })
 })
 
@@ -172,7 +218,7 @@ test.describe('the getting-in states the walk visits', () => {
       await guardWrites(context)
       const page = await context.newPage()
       const cell = { ...PROBE_CELL, screen: state.screen }
-      expect(await walkState(page, state, cell, readFacts())).toEqual([])
+      expect(unreachable(await walkState(page, state, cell, readFacts()))).toEqual([])
       await context.close()
     })
   }

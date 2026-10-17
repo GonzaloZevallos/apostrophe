@@ -1,1 +1,215 @@
-[]
+[
+  {
+    "screen": "Analisis",
+    "rule": "name-overflow",
+    "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu",
+    "issue": 48
+  },
+  {
+    "screen": "Analisis",
+    "rule": "name-overflow",
+    "target": "span:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
+    "issue": 48
+  },
+  {
+    "screen": "Catalogo",
+    "rule": "name-overflow",
+    "target": "span:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
+    "issue": 47
+  },
+  {
+    "screen": "CatalogoAtributos",
+    "rule": "name-overflow",
+    "target": "span:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
+    "issue": 47
+  },
+  {
+    "screen": "Clientes",
+    "rule": "name-overflow",
+    "target": "span:Cliente LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
+    "issue": 46
+  },
+  {
+    "screen": "ConfiguracionCategoriaConfirmarBorrado",
+    "rule": "name-overflow",
+    "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaConfirmarBorrado",
+    "rule": "name-overflow",
+    "target": "span:Se borra “Categoría LarguísimoLarguísimoLarguísimoLargu",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategorias",
+    "rule": "name-overflow",
+    "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu",
+    "issue": 60
+  },
+  {
+    "screen": "EstadosGoneAviso",
+    "rule": "name-overflow",
+    "target": "span:Cliente LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
+    "issue": 49,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "EstadosGoneAviso",
+    "rule": "name-overflow",
+    "target": "span:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
+    "issue": 49,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "EstadosSinConexion",
+    "rule": "name-overflow",
+    "target": "span:Cliente LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
+    "issue": 49,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "EstadosSinConexion",
+    "rule": "name-overflow",
+    "target": "span:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
+    "issue": 49,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "GastoConfirmarBorrado",
+    "rule": "name-overflow",
+    "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu",
+    "issue": 48
+  },
+  {
+    "screen": "GastoEditar",
+    "rule": "name-overflow",
+    "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu",
+    "issue": 48
+  },
+  {
+    "screen": "Gastos",
+    "rule": "name-overflow",
+    "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu",
+    "issue": 48
+  },
+  {
+    "screen": "Inicio",
+    "rule": "name-overflow",
+    "target": "span:Negocio LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
+    "issue": 45
+  },
+  {
+    "screen": "Inicio",
+    "rule": "name-overflow",
+    "target": "span:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
+    "issue": 45
+  },
+  {
+    "screen": "Invitacion",
+    "rule": "name-overflow",
+    "target": "button:Sumate a Negocio LarguísimoLarguísimoLarguísimoLarguí",
+    "issue": 49
+  },
+  {
+    "screen": "Invitacion",
+    "rule": "name-overflow",
+    "target": "h#:Negocio LarguísimoLarguísimoLarguísimoLarguísimoLarguísim",
+    "issue": 49
+  },
+  {
+    "screen": "NuevaVentaCliente",
+    "rule": "name-overflow",
+    "target": "span:Cliente LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
+    "issue": 78
+  },
+  {
+    "screen": "NuevoClienteEnVenta",
+    "rule": "name-overflow",
+    "target": "span:Cliente LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
+    "issue": 78
+  },
+  {
+    "screen": "VariedadNuevaFormulario",
+    "rule": "name-overflow",
+    "target": "span:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
+    "issue": 47
+  },
+  {
+    "screen": "Variedades",
+    "rule": "name-overflow",
+    "target": "span:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
+    "issue": 47
+  },
+  {
+    "screen": "VentaAsignarCliente",
+    "rule": "name-overflow",
+    "target": "span:Cliente LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
+    "issue": 78,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "Ventas",
+    "rule": "name-overflow",
+    "target": "span:Cliente LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
+    "issue": 78,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "Ventas",
+    "rule": "name-overflow",
+    "target": "span:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
+    "issue": 78,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "VentasFechas",
+    "rule": "name-overflow",
+    "target": "span:Cliente LarguísimoLarguísimoLarguísimoLarguísimoLarguís",
+    "issue": 78,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "VentasFechas",
+    "rule": "name-overflow",
+    "target": "span:Variedad LarguísimoLarguísimoLarguísimoLarguísimoLarguí",
+    "issue": 78,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  }
+]
