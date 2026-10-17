@@ -163,3 +163,73 @@ budget moved.
 - Only phase 1 red: exit 1, phase 2 still ran and reported (1 failed, 86 passed; 1 passed).
 - Only phase 2 red: exit 1 (86 passed; 1 failed, 1 passed).
 - Both green: exit 0 (the five runs above).
+
+## Amendment (GH-251): one phase, a pinned zone and locale, evidence on failure
+
+`web-e2e` went red and then green on the same head and left nothing to say which test failed.
+This amendment supersedes the "N workers and the timed phase" text above wherever it speaks
+of `timed` or of two phases. **N = 3 stands**, with `retries: 0` and every `timeout` and
+`expect` ceiling as measured there.
+
+1. **One phase.** No spec reads elapsed time any more (ADR-0038), so the `timed` project is
+   gone and `sales.spec.ts` runs in `secure-origin` with the others. `web/scripts/e2e.sh` is
+   `vite build` (exit 1 if it fails) and one `npx playwright test "$@"`, whose exit status it
+   returns unchanged. `--only-changed=<base>` still passes through. No option that turns zero
+   selected tests into success is added: `scripts/affected.py` already sends an empty
+   selection to the full run. `npx playwright test sales.spec.ts` now runs it in
+   `secure-origin`.
+2. **The browser's zone and locale are pinned once.** `web/playwright.config.ts`'s top-level
+   `use` sets `timezoneId: 'America/Argentina/Buenos_Aires'` and `locale: 'es-AR'`; no spec and
+   no project sets its own, so a machine's own zone never reaches a spec.
+3. **A red run leaves evidence.** The config reads `PLAYWRIGHT_OUTPUT_DIR` once, with the
+   fixed default `test-results/local`, and never computes a name from the time or the sha; the
+   caller chooses a per-run name. Reporters are `list` and `junit` (`<dir>/junit.xml`); a
+   trace is kept on failure only, and so is a screenshot. CI uploads `web/test-results/` with
+   `if: failure()`, retention 14 days.
+4. **What enforces it.** `web/src/architecture/e2eShape.test.ts` imports the real config and
+   checks the above: no `timed` project, every spec file in exactly one project, the pins, and
+   the output directory with the variable unset and set.
+
+The root cause of the red run on `dbe57a27` is not proven; `docs/evidence/GH-251-e2e-flake.md`
+holds the loaded runs, their maxima and what they do and do not show.
+
+### Amendment (GH-251): one directory per run, and the failing tests named at the end
+
+5. **Each run has its own directory.** `web/scripts/e2e.sh` sets and exports
+   `PLAYWRIGHT_OUTPUT_DIR=test-results/<short sha>-<UTC stamp>` (`git rev-parse --short HEAD`,
+   `date -u +%Y%m%dT%H%M%SZ`), so the junit file, traces and screenshots of a run are never
+   overwritten by a rerun of the same head. The config only reads the variable (item 3); a run
+   that does not go through the script writes to `test-results/local`. The `date -u` in
+   `e2e.sh` is the harness's one deliberate real-clock read: it names a directory, no
+   assertion reads it, and it sits outside both wall-clock guards by design.
+6. **Pruning.** Before the run, `e2e.sh` removes directories under `web/test-results/` older
+   than 14 days, matching the CI artefact retention. A missing directory is fine.
+7. **The epilogue of a red run.** When Playwright's status is non-zero, the last lines of the
+   output are `e2e: failed:`, one `<file> › <title>` per failed or errored test
+   (`scripts/e2e_failures.py`, read from the run's `junit.xml`; names only, never a message or
+   an output body) and `e2e: traces in <run dir>`. A missing or unreadable junit prints one
+   fixed line and the helper still exits 0. `e2e.sh` exits with Playwright's own status. The
+   gate's captured output tail is the evidence this relies on: what the agentic system keeps
+   after a red check is outside this repository, so the worktree surviving is a bonus.
+
+### Amendment (GH-251): every worker runs on the anchored clock
+
+8. **The calendar is no longer shared.** This supersedes point 5's reading that the workers
+   and the browser share the real calendar (and ADR-0043's "shares the real clock with the CLI
+   subprocess" reason for `tests/e2e_app.py`). Before its backend starts, each worker's
+   `workerServer` fixture runs `python -m tests.e2e_app offset` once (`cwd` the repository
+   root), checks the output is a whole number and writes it to
+   `APOSTROPHE_E2E_CLOCK_OFFSET` in its own environment. `e2eEnv()` passes it on, so the
+   worker's uvicorn and the `invite-business` and `reset-password` calls
+   (`web/e2e/backend.ts`, now `python -m tests.e2e_app`) read one clock that started at
+   `2026-10-07T15:00:00Z`, 12:00 in Argentina, and keeps advancing. The offset is computed
+   in Python only, so no TypeScript reads the clock. Only `tests/e2e_app.py` reads the
+   variable, only `fixtures.ts` writes it and only `env.ts` passes it on;
+   `tests/test_e2e_clock.py` scans `web/e2e` for it.
+9. **The browser's contexts inherit the zone and locale; no `CONTEXT_DEFAULTS`.** A
+   throwaway spec (not committed), run under `TZ=Pacific/Auckland`, read the zone and
+   `navigator.language` in the fixture's `page` and in a page of a context made by hand with
+   `browser.newContext({ baseURL })`: both `America/Buenos_Aires` and `es-AR`. So the config's
+   `use` stays the only place that names them, and the `newContext` call sites are unchanged.
+10. **`analysis.spec.ts`'s last-month date** is `firstOfMonth(todayIso, 1)`, the file's own
+    UTC helper, instead of local-time `setDate`/`setMonth` over a UTC-parsed date.
