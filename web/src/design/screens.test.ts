@@ -305,6 +305,16 @@ describe('the Inicio rows of the real screens.json', () => {
     expect(row('InicioHoyCompu')).toMatchObject({ design: 'InicioCompu', viewport: [1280, 920] })
   })
 
+  it('captures the dark computer Hoy against the light computer drawing, as the other CompuOscuro twins do', () => {
+    expect(clicks(row('InicioHoyCompuOscuro'))).toEqual([])
+    expect(row('InicioHoyCompuOscuro')).toMatchObject({
+      design: 'InicioCompu',
+      tema: 'oscuro',
+      viewport: [1280, 920],
+    })
+    expect(row('InicioHoyCompuOscuro').section).toBeUndefined()
+  })
+
   it('captures the dark Hoy against the dark drawing, which draws Hoy alone', () => {
     expect(clicks(row('InicioOscuro'))).toEqual([])
     expect(row('InicioOscuro').tema).toBe('oscuro')
@@ -319,7 +329,14 @@ describe('the Inicio rows of the real screens.json', () => {
 
   it('keeps every Inicio row in the Inicio drawings, which assertScreens accepts', () => {
     const inicio = rows.filter((r) => /^Inicio(Hoy|Oscuro|Compu)*$/.test(r.screen))
-    expect(inicio.map((r) => r.screen)).toEqual(['Inicio', 'InicioHoy', 'InicioOscuro', 'InicioCompu', 'InicioHoyCompu'])
+    expect(inicio.map((r) => r.screen)).toEqual([
+      'Inicio',
+      'InicioHoy',
+      'InicioOscuro',
+      'InicioCompu',
+      'InicioHoyCompu',
+      'InicioHoyCompuOscuro',
+    ])
     expect(() => assertScreens(inicio)).not.toThrow()
   })
 

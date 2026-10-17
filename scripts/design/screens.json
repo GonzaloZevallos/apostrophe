@@ -22,6 +22,7 @@
     { "screen": "InicioOscuro", "route": "/", "path": "/", "tema": "oscuro" },
     { "screen": "InicioCompu", "section": "Semana · Ganancia y Caja sólo acá y en Mes", "route": "/", "path": "/", "viewport": [1280, 920], "steps": [{ "click": "Semana" }] },
     { "screen": "InicioHoyCompu", "design": "InicioCompu", "route": "/", "path": "/", "viewport": [1280, 920] },
+    { "screen": "InicioHoyCompuOscuro", "design": "InicioCompu", "route": "/", "path": "/", "tema": "oscuro", "viewport": [1280, 920] },
     { "screen": "InicioPrimeraVez", "route": "/", "path": "/" },
     { "screen": "InicioPrimeraVezCompu", "route": "/", "path": "/", "viewport": [1280, 920] },
     { "screen": "InicioPrimeraVezOscuro", "design": "InicioPrimeraVez", "route": "/", "path": "/", "tema": "oscuro" },
