@@ -1,8 +1,9 @@
 /**
  * `router.routes` against `scripts/design/screens.json`. It lives beside the router, not
- * in `mobile-standard/`: reading the real route table needs `router.tsx`, which imports
- * React, and that folder holds no React import (the pure logic is in
- * `mobile-standard/routeCoverage.ts`).
+ * in `mobile-standard/`: it is not a browserless guard. `router.tsx` calls
+ * `createBrowserRouter` at import, which needs `document` (under vitest's node
+ * environment the import fails with "document is not defined") and imports React; the
+ * pure logic it uses is in `mobile-standard/routeCoverage.ts`.
  */
 
 import { expect, test } from 'vitest'
