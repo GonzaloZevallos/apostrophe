@@ -61,7 +61,7 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   await page.getByLabel('Nombre').fill('Noe Sinnumero')
   await page.getByRole('button', { name: 'Guardá y usá' }).click()
   await expectPath(page, CUSTOMER)
-  await expect(page.getByText('Cliente guardado')).toBeVisible()
+  await expect(page.getByText('Customer saved')).toBeVisible()
 
   await page.goto(CUSTOMERS)
   // Found by name, in the list: no phone line, no dash, no placeholder.
@@ -81,17 +81,17 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   await page.getByRole('link', { name: 'Editar' }).click()
   await expect(page.getByLabel('Teléfono')).toHaveValue('')
   await page.getByRole('button', { name: 'Guardá y usá' }).click()
-  await expect(page.getByText('Cliente guardado')).toBeVisible()
+  await expect(page.getByText('Customer saved')).toBeVisible()
   await expect(page.getByText('Teléfono')).toHaveCount(0)
 
   // Chosen for a sale, left owing — $4.000.
   await page.getByRole('link', { name: 'Nueva venta a Noe Sinnumero' }).click()
   await expectPath(page, SALE_NEW)
   await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '4' })
-  await page.getByRole('radio', { name: 'Debiendo' }).check()
+  await page.getByRole('radio', { name: 'Owing' }).check()
   await page.getByRole('button', { name: 'Guardá la venta' }).click()
   await expectPath(page, SALE)
-  await expect(page.getByText('Venta guardada')).toBeVisible()
+  await expect(page.getByText('Sale saved')).toBeVisible()
 
   await page.goto(CUSTOMERS)
   await page.getByRole('link', { name: 'Noe Sinnumero' }).first().click()
@@ -113,7 +113,7 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   // Paid in full through Registrar cobro.
   await page.getByRole('link', { name: 'Registrar cobro' }).click()
   await page.getByRole('button', { name: 'Todo: $ 4.000' }).click()
-  await page.getByRole('radio', { name: 'Efectivo' }).check()
+  await page.getByRole('radio', { name: 'Cash' }).check()
   await page.getByRole('button', { name: 'Guardar' }).click()
   await expect(page.getByText('Cobro guardado', { exact: true })).toBeVisible()
   await expect(cardOf(page).getByText('Te debe', { exact: false })).toHaveCount(0)
@@ -130,10 +130,10 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   const chip = page.getByRole('button', { name: /Sol Sinnumero/ })
   await expect(chip.locator('.nueva-venta__cliente-telefono')).toHaveCount(0)
   await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '2' })
-  await page.getByRole('radio', { name: 'Debiendo' }).check()
+  await page.getByRole('radio', { name: 'Owing' }).check()
   await page.getByRole('button', { name: 'Guardá la venta' }).click()
   await expectPath(page, SALE)
-  await expect(page.getByText('Venta guardada')).toBeVisible()
+  await expect(page.getByText('Sale saved')).toBeVisible()
 
   // Te deben lists the second, no-number customer's own fresh debt — the first
   // customer's debt is already settled, so she never named here.

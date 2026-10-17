@@ -35,10 +35,10 @@ async function openCobroModal(page: Page): Promise<void> {
   await page.getByRole('link', { name: 'Nueva venta a Carla Cobrar' }).click()
   await expectPath(page, SALE_NEW)
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '5' })
-  await page.getByRole('radio', { name: 'Debiendo' }).check()
+  await page.getByRole('radio', { name: 'Owing' }).check()
   await page.getByRole('button', { name: 'Guardá la venta' }).click()
   await expectPath(page, SALE)
-  await expect(page.getByText('Venta guardada')).toBeVisible()
+  await expect(page.getByText('Sale saved')).toBeVisible()
 
   await page.goto(CUSTOMERS)
   await page.getByRole('link', { name: 'Cobrar a Carla Cobrar' }).first().click()

@@ -153,19 +153,19 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   // Shell metric: the bar shows exactly Inicio, Ventas, Clientes, Variedades and Más, in that
   // order — the mobile bottom bar at this viewport (`Shell.tsx`'s `.bar-inferior`;
   // the side rail, `.riel-lateral`, shares the same `aria-label` but is hidden here).
-  const tabBar = page.getByRole('navigation', { name: 'Navegación' }).last()
+  const tabBar = page.getByRole('navigation', { name: 'Navigation' }).last()
   await expect(tabBar.getByRole('link')).toHaveText([
-    'Inicio',
-    'Ventas',
-    'Clientes',
-    'Variedades',
-    'Más',
+    'Home',
+    'Sales',
+    'Customers',
+    'Varieties',
+    'More',
   ])
 
   // --- Sale A: caught-before-save, a new customer, two varieties, one shipping. ---
   // `.last()`: at this phone viewport the side rail's own "Nueva venta" link (first
   // in `Shell.tsx`'s markup) is the one CSS hides; the fixed bottom button is last.
-  await page.getByRole('link', { name: 'Nueva venta' }).last().click()
+  await page.getByRole('link', { name: 'New sale' }).last().click()
   await expectPath(page, SALE_NEW)
   const todayIso = await page.getByLabel('Fecha').inputValue()
 
@@ -177,7 +177,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   const jazminId = jazmin.id
 
   // Debiendo is disabled and explained while there is no customer.
-  await expect(page.getByRole('radio', { name: 'Debiendo' })).toBeDisabled()
+  await expect(page.getByRole('radio', { name: 'Owing' })).toBeDisabled()
   await expect(page.getByText('Para dejar debiendo elegí un cliente')).toBeVisible()
 
   // A variety with no price that day is caught on its own line, before saving.
@@ -200,8 +200,8 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   await expect(page.locator('.lista-clientes__nombre')).toHaveText('Carla Pérez')
 
   // Choosing a customer turns Debiendo back on; Efectivo is used here instead.
-  await expect(page.getByRole('radio', { name: 'Debiendo' })).toBeEnabled()
-  await page.getByRole('radio', { name: 'Efectivo' }).check()
+  await expect(page.getByRole('radio', { name: 'Owing' })).toBeEnabled()
+  await page.getByRole('radio', { name: 'Cash' }).check()
 
   // The live preview, before saving — every line, not only the sale's own total:
   // PRD metric 2, "0 differences" against what the detail shows after saving.
@@ -223,7 +223,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
 
   await page.getByRole('button', { name: 'Guardá la venta' }).click()
   await expectPath(page, SALE)
-  await expect(page.getByText('Venta guardada')).toBeVisible()
+  await expect(page.getByText('Sale saved')).toBeVisible()
 
   // What is shown now is what the API answered, not the preview — but it is the
   // same figures, line for line, since nothing changed in between.
@@ -244,7 +244,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   // Deshacer, right after saving: nothing of this sale survives.
   await page.getByRole('button', { name: 'Deshacer' }).click()
   await expectPath(page, SALES)
-  await expect(page.getByText('Venta eliminada')).toBeVisible()
+  await expect(page.getByText('Sale deleted')).toBeVisible()
   await expect(page.getByText('0 sales')).toBeVisible()
   await expect(page.getByText('Todavía no registraste ninguna venta en este período.')).toBeVisible()
 
@@ -269,18 +269,18 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   await saveButtonB.click()
   await expectPath(page, SALE)
   const saleBUrl = page.url()
-  await expect(page.getByText('Venta guardada')).toBeVisible()
+  await expect(page.getByText('Sale saved')).toBeVisible()
   await expect(page.locator('.cifra-xl')).toHaveText('$ 0')
   await expect(page.getByRole('button', { name: 'Asignar cliente' })).toHaveCount(0) // already has one.
 
   // --- Sale C: no customer, assigned afterwards, then deleted. ---
   await page.goto(SALES)
-  await page.getByRole('link', { name: 'Nueva venta' }).last().click()
+  await page.getByRole('link', { name: 'New sale' }).last().click()
   await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '2' })
-  await page.getByRole('radio', { name: 'Efectivo' }).check()
+  await page.getByRole('radio', { name: 'Cash' }).check()
   await page.getByRole('button', { name: 'Guardá la venta' }).click()
   await expectPath(page, SALE)
-  await expect(page.getByText('Venta guardada')).toBeVisible()
+  await expect(page.getByText('Sale saved')).toBeVisible()
   await expect(page.getByText('Sin cliente')).toBeVisible()
 
   // Assigning a customer: the sheet never offers "Sin cliente" here.
@@ -300,7 +300,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   ).toBeVisible()
   await page.getByRole('button', { name: 'Sí, borrala' }).click()
   await expectPath(page, SALES)
-  await expect(page.getByText('Venta eliminada')).toBeVisible()
+  await expect(page.getByText('Sale deleted')).toBeVisible()
 
   // --- Ventas' periods: sums across several sales, and the Monday-to-Sunday week
   // edge. Only the $0 gift sale (Sale B, dated today) is left from the form so far;
@@ -378,7 +378,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
 
   await otherPage.goto(saleBUrl)
   await expect(otherPage.getByText("That's gone.")).toBeVisible()
-  await otherPage.getByRole('link', { name: 'Volver a Ventas' }).click()
+  await otherPage.getByRole('link', { name: 'Back to Ventas' }).click()
   await expectPath(otherPage, SALES)
   await otherContext.close()
 

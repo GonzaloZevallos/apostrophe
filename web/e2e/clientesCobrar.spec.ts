@@ -36,7 +36,7 @@ async function registerCustomer(page: Page, name: string): Promise<void> {
   await page.getByLabel('Nombre').fill(name)
   await page.getByRole('button', { name: 'Guardá y usá' }).click()
   await expectPath(page, CUSTOMER)
-  await expect(page.getByText('Cliente guardado')).toBeVisible()
+  await expect(page.getByText('Customer saved')).toBeVisible()
 }
 
 /** Sells `grams` g of Rosa ($1.000 a gram) to the customer on credit, from the customer's card,
@@ -50,10 +50,10 @@ async function sellOnCredit(page: Page, name: string, grams: string, older = fal
   }
   // An older date has no list price, so the older sale carries its own, $1.000 a gram too: the line's total.
   await fillSaleLine(page, 1, { variety: 'Rosa', grams, specialPrice: older ? String(Number(grams) * 1000) : undefined })
-  await page.getByRole('radio', { name: 'Debiendo' }).check()
+  await page.getByRole('radio', { name: 'Owing' }).check()
   await page.getByRole('button', { name: 'Guardá la venta' }).click()
   await expectPath(page, SALE)
-  await expect(page.getByText('Venta guardada')).toBeVisible()
+  await expect(page.getByText('Sale saved')).toBeVisible()
 }
 
 /** The names of the debtors' "Cobrar a <name>" buttons, in the order Te deben lists them. */
@@ -118,7 +118,7 @@ for (const viewport of VIEWPORTS) {
     // "Todo" fills the whole balance in one tap, and the payment is saved.
     await page.getByRole('button', { name: 'Todo: $ 5.000' }).click()
     await expect(page.getByLabel('Monto')).toHaveValue('5000')
-    await page.getByRole('radio', { name: 'Efectivo' }).check()
+    await page.getByRole('radio', { name: 'Cash' }).check()
     await page.getByRole('button', { name: 'Guardar' }).click()
     await expectPath(page, CUSTOMERS)
     await expect(page.getByText('Cobro guardado', { exact: true })).toBeVisible()
@@ -153,10 +153,10 @@ for (const viewport of VIEWPORTS) {
     await expectPath(page, SALE_NEW)
     await expect(page.getByRole('button', { name: /Beto Deudor/ })).toBeVisible()
     await fillSaleLine(page, 1, { variety: 'Rosa', grams: '1' })
-    await page.getByRole('radio', { name: 'Debiendo' }).check()
+    await page.getByRole('radio', { name: 'Owing' }).check()
     await page.getByRole('button', { name: 'Guardá la venta' }).click()
     await expectPath(page, SALE)
-    await expect(page.getByText('Venta guardada')).toBeVisible()
+    await expect(page.getByText('Sale saved')).toBeVisible()
 
     // The sale landed on the customer who was chosen: his debt grew from $ 2.000 to $ 3.000.
     await page.goto(CUSTOMERS)

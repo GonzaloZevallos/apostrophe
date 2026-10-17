@@ -100,9 +100,9 @@ function countLabel(count: number): string {
 // every value fed through it below comes from the one `GET /panel` answer this
 // run fetches, never invented.
 const STATUS_WORD: Record<Status, string> = {
-  no_entries: 'sin entradas',
-  sold_out: 'agotada',
-  low: 'baja',
+  no_entries: 'no entries',
+  sold_out: 'sold out',
+  low: 'low',
   ok: 'ok',
 }
 
@@ -112,27 +112,27 @@ function detailFor(
 ): string {
   switch (variety.status) {
     case 'no_entries':
-      return 'Cargale la primera entrada'
+      return 'Add the first entry'
     case 'sold_out':
       return variety.sold_out_since === null
-        ? 'Sin gramos'
-        : `Sin gramos desde el ${formatDate(variety.sold_out_since, today)}`
+        ? 'No grams'
+        : `No grams since ${formatDate(variety.sold_out_since, today)}`
     case 'low':
       return variety.threshold === null
-        ? 'Avisás por debajo del umbral'
-        : `Avisás abajo de ${grams(variety.threshold)}`
+        ? 'Warns you below the threshold'
+        : `Warns you below ${grams(variety.threshold)}`
     case 'ok':
-      return 'Al ritmo de los últimos 30 días'
+      return 'At the pace of the last 30 days'
   }
 }
 
 /** `web/src/stock/detail.ts`'s own `sideNoteFor`: the one place `days_left`
  * itself shows, in `.fila-stock__insignia` — never in the detail line. */
 function sideNoteFor(variety: { status: Status; days_left: number | null }): string | null {
-  if (variety.status === 'sold_out') return 'agotada'
-  if (variety.status === 'no_entries') return 'sin entradas'
+  if (variety.status === 'sold_out') return 'sold out'
+  if (variety.status === 'no_entries') return 'no entries'
   if (variety.days_left === null) return null
-  return `${variety.days_left} días`
+  return `${variety.days_left} days`
 }
 
 /** `web/src/format/dates.ts`'s own `formatDate`: dd/mm, or dd/mm/yyyy when the
@@ -197,7 +197,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await expect(page.getByRole('button', { name: 'Compra' })).toHaveAttribute('aria-pressed', 'true')
   await page.getByLabel('Costo total').fill('45000')
   await page.getByRole('button', { name: 'Guardá la entrada' }).click()
-  await expect(page.getByText('Entrada guardada')).toBeVisible()
+  await expect(page.getByText('Entry saved')).toBeVisible()
 
   // A customer, for the sale left owing.
   await page.goto(CUSTOMER_NEW)
@@ -205,24 +205,24 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await page.getByLabel('Nombre').fill('Carla Pérez')
   await page.getByRole('button', { name: 'Guardá y usá' }).click()
   await expectPath(page, CUSTOMER)
-  await expect(page.getByText('Cliente guardado')).toBeVisible()
+  await expect(page.getByText('Customer saved')).toBeVisible()
 
   // A sale left owing, to Carla.
   await page.getByRole('link', { name: 'Nueva venta a Carla Pérez' }).click()
   await expectPath(page, SALE_NEW)
   const todayIso = await page.getByLabel('Fecha').inputValue()
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '5' })
-  await page.getByRole('radio', { name: 'Debiendo' }).check()
+  await page.getByRole('radio', { name: 'Owing' }).check()
   await page.getByRole('button', { name: 'Guardá la venta' }).click()
-  await expect(page.getByText('Venta guardada')).toBeVisible()
+  await expect(page.getByText('Sale saved')).toBeVisible()
 
   // A sale paid on the spot, no customer.
   await page.goto(SALES)
-  await page.getByRole('link', { name: 'Nueva venta' }).click()
+  await page.getByRole('link', { name: 'New sale' }).click()
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '3' })
-  await page.getByRole('radio', { name: 'Efectivo' }).check()
+  await page.getByRole('radio', { name: 'Cash' }).check()
   await page.getByRole('button', { name: 'Guardá la venta' }).click()
-  await expect(page.getByText('Venta guardada')).toBeVisible()
+  await expect(page.getByText('Sale saved')).toBeVisible()
 
   // Two more sales, dated at the start of this week and the start of this month —
   // so Hoy, Semana and Mes can differ by more than their range label, whatever day

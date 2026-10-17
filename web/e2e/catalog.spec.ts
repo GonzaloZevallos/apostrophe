@@ -53,7 +53,7 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
   await page.getByLabel('Variedad').selectOption({ label: 'Rosa' })
   await page.getByLabel('Costo total').fill('45000')
   await page.getByRole('button', { name: 'Guardá la entrada' }).click()
-  await expect(page.getByText('Entrada guardada')).toBeVisible()
+  await expect(page.getByText('Entry saved')).toBeVisible()
 
   // Variedades → Mandar catálogo.
   await openCatalog(page)

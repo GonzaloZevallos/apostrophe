@@ -54,14 +54,14 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   await page.getByLabel('Variedad').selectOption({ label: 'Rosa' })
   await page.getByLabel('Costo total').fill('20000')
   await page.getByRole('button', { name: 'Guardá la entrada' }).click()
-  await expect(page.getByText('Entrada guardada')).toBeVisible()
+  await expect(page.getByText('Entry saved')).toBeVisible()
 
   // A cash sale, today.
   await page.goto(SALE_NEW)
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '10' })
-  await page.getByRole('radio', { name: 'Efectivo' }).check()
+  await page.getByRole('radio', { name: 'Cash' }).check()
   await page.getByRole('button', { name: 'Guardá la venta' }).click()
-  await expect(page.getByText('Venta guardada')).toBeVisible()
+  await expect(page.getByText('Sale saved')).toBeVisible()
 
   // An expense, today, with a category created inline.
   await openGastos(page)
@@ -164,7 +164,7 @@ async function recordEntry(
   await page.getByRole('button', { name: entry.origin, exact: true }).click()
   if (entry.cost !== undefined) await page.getByLabel('Costo total').fill(entry.cost)
   await page.getByRole('button', { name: 'Guardá la entrada' }).click()
-  await expect(page.getByText('Entrada guardada')).toBeVisible()
+  await expect(page.getByText('Entry saved')).toBeVisible()
 }
 
 async function recordWithdrawal(
@@ -225,9 +225,9 @@ test('Análisis reads Costo de lo vendido, Faltante de stock, Promoción and Con
   await page.goto(SALE_NEW)
   await page.getByLabel('Fecha').fill(twoWeeksAgo)
   await fillSaleLine(page, 1, { variety: 'Lirio', grams: '15' })
-  await page.getByRole('radio', { name: 'Efectivo' }).check()
+  await page.getByRole('radio', { name: 'Cash' }).check()
   await page.getByRole('button', { name: 'Guardá la venta' }).click()
-  await expect(page.getByText('Venta guardada')).toBeVisible()
+  await expect(page.getByText('Sale saved')).toBeVisible()
 
   // The computer: the week and month tables carry one cost sub-row under each row.
   await page.setViewportSize({ width: 1280, height: 920 })

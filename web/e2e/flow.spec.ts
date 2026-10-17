@@ -46,7 +46,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.getByLabel('Nombre').fill('Marisa Gómez')
   await page.getByRole('button', { name: 'Guardá y usá' }).click()
   await expectPath(page, CUSTOMER)
-  await expect(page.getByText('Cliente guardado')).toBeVisible()
+  await expect(page.getByText('Customer saved')).toBeVisible()
 
   // Add a variety.
   await page.goto(VARIETIES)
@@ -85,7 +85,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await expect(page.getByText('Te queda en $ 900 el gramo')).toBeVisible()
   await page.getByRole('button', { name: 'Guardá la entrada' }).click()
   await expectAnyPath(page, [VARIETIES, VARIETY])
-  await expect(page.getByText('Entrada guardada')).toBeVisible()
+  await expect(page.getByText('Entry saved')).toBeVisible()
   await page.goto(STOCK)
   await expect(page.getByText('Compra · 50 g')).toBeVisible()
 
@@ -98,7 +98,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await expect(page.getByText('¿Guardás los cambios?')).toBeVisible()
   await page.getByRole('button', { name: 'Sí, guardar' }).click()
   await expectPath(page, STOCK)
-  await expect(page.getByText('Entrada guardada')).toBeVisible()
+  await expect(page.getByText('Entry saved')).toBeVisible()
   await expect(page.getByText('Compra · 60 g')).toBeVisible()
 
   // Delete it: confirmed first, naming the date, variety and grams ("Antes de borrar").
@@ -106,7 +106,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await expect(page.getByText('Antes de borrar')).toBeVisible()
   await page.getByRole('button', { name: 'Sí, borrala' }).click()
   await expectPath(page, STOCK)
-  await expect(page.getByText('Entrada eliminada')).toBeVisible()
+  await expect(page.getByText('Entry deleted')).toBeVisible()
   await expect(page.getByText('Compra · 60 g')).toHaveCount(0)
 
   // Rosa's page: set the low-stock warning through its form (turning it on only opens the

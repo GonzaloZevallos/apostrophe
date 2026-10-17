@@ -298,9 +298,9 @@ test.describe('Deshacer', () => {
       // notice is up, so it cannot go while the button is read.
       await page.clock.install({ time: PAGE_CLOCK_START })
       await fillSaleLine(page, 1, { variety: 'Rosa', grams: '2' })
-      await page.getByRole('radio', { name: 'Efectivo' }).check()
+      await page.getByRole('radio', { name: 'Cash' }).check()
       await page.getByRole('button', { name: 'Guardá la venta' }).click()
-      await expect(page.getByText('Venta guardada')).toBeVisible()
+      await expect(page.getByText('Sale saved')).toBeVisible()
       // `performance.now()` counts the fake milliseconds since the install, so the page's
       // clock is read from the start instant the spec chose, never from the real one.
       const sinceInstall = await page.evaluate(() => performance.now())
@@ -322,8 +322,8 @@ test.describe('Deshacer', () => {
       await page.mouse.up()
       expect(effectiveRatio(pressed, backdrop), 'Deshacer while pressed').toBeGreaterThanOrEqual(4.5)
 
-      await expect(page.getByText('Venta guardada')).toBeVisible()
-      await expect(page.getByText('Venta eliminada · los gramos vuelven al stock')).toHaveCount(0)
+      await expect(page.getByText('Sale saved')).toBeVisible()
+      await expect(page.getByText('Sale deleted · the grams go back to stock')).toHaveCount(0)
     })
   }
 })

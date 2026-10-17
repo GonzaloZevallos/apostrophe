@@ -98,10 +98,10 @@ test('a sale is recorded from a phone: existing customer, new customer, none', a
       await expect(page.locator('.cliente-sheet')).toHaveCount(0)
       await expect(page.locator('.lista-clientes__nombre')).toHaveText('Luz Díaz')
     }
-    await page.getByRole('radio', { name: 'Efectivo' }).check()
+    await page.getByRole('radio', { name: 'Cash' }).check()
     await expect(page.locator('.nueva-venta__pie')).toContainText('$ 5.000')
     await page.getByRole('button', { name: 'Guardá la venta' }).click()
-    await expect(page.getByText('Venta guardada')).toBeVisible()
+    await expect(page.getByText('Sale saved')).toBeVisible()
   }
 })
 
@@ -127,9 +127,9 @@ test.describe('phone sales sweep', () => {
     await signUpWithAVariety(page)
     await page.goto(SALE_NEW)
     await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '10' })
-    await page.getByRole('radio', { name: 'Efectivo' }).check()
+    await page.getByRole('radio', { name: 'Cash' }).check()
     await page.getByRole('button', { name: 'Guardá la venta' }).click()
-    await expect(page.getByText('Venta guardada')).toBeVisible()
+    await expect(page.getByText('Sale saved')).toBeVisible()
     session = await context.storageState()
     await context.close()
   })

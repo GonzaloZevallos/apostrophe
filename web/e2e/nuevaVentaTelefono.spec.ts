@@ -111,7 +111,7 @@ test('the form is three zones at every phone width: footer in view, header fixed
     const hintBox = await box(hint)
     expect(hintBox.x).toBeGreaterThan(0)
     expect(hintBox.y + hintBox.height).toBeLessThanOrEqual((await box(footer)).y)
-    const group = await box(page.getByRole('radiogroup', { name: 'Cómo se pagó' }))
+    const group = await box(page.getByRole('radiogroup', { name: 'How it was paid' }))
     expect(group.y + group.height).toBeLessThanOrEqual((await box(footer)).y)
 
     await expectShellFitsTheScreen(page)

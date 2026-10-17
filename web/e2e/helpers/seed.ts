@@ -74,7 +74,7 @@ export async function seedRecords(page: Page, customerName: string): Promise<Rec
   const customer = await idAt(page, CUSTOMER)
   await page.getByRole('link', { name: `Nueva venta a ${customerName}` }).click()
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '5' })
-  await page.getByRole('radio', { name: 'Debiendo' }).check()
+  await page.getByRole('radio', { name: 'Owing' }).check()
   await page.getByRole('button', { name: 'Guardá la venta' }).click()
   const sale = await idAt(page, SALE)
 
@@ -83,7 +83,7 @@ export async function seedRecords(page: Page, customerName: string): Promise<Rec
   await page.getByLabel('Variedad').selectOption({ label: 'Rosa' })
   await page.getByLabel('Costo total').fill('45000')
   await page.getByRole('button', { name: 'Guardá la entrada' }).click()
-  await expect(page.getByText('Entrada guardada')).toBeVisible()
+  await expect(page.getByText('Entry saved')).toBeVisible()
   await page.goto(STOCK)
   await page.getByRole('link', { name: 'Editar' }).click()
   const entry = await idAt(page, STOCK_ENTRY)

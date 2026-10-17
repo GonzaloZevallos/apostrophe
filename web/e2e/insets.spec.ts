@@ -130,7 +130,7 @@ test('every screen, bar, sheet and toast keeps clear of the notch and the home b
   await expectPath(page, CUSTOMER)
   await page.getByRole('link', { name: 'Nueva venta a Lucía Borde' }).click()
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '5' })
-  await page.getByRole('radio', { name: 'Debiendo' }).check()
+  await page.getByRole('radio', { name: 'Owing' }).check()
   await page.getByRole('button', { name: 'Guardá la venta' }).click()
   await expectPath(page, SALE)
   const saleUrl = new URL(page.url()).pathname

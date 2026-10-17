@@ -37,7 +37,7 @@ test('a seller records, edits and deletes withdrawals and reads Promoción and C
   await page.getByLabel('Variedad').selectOption({ label: 'Rosa' })
   await page.getByLabel('Costo total').fill('20000')
   await page.getByRole('button', { name: 'Guardá la entrada' }).click()
-  await expect(page.getByText('Entrada guardada')).toBeVisible()
+  await expect(page.getByText('Entry saved')).toBeVisible()
 
   // From Más: a promotion of 5 g. The reason has no default, so saving waits for it.
   await openMas(page)
