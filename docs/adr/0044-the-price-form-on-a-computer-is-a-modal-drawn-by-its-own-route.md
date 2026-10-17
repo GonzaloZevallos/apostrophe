@@ -45,3 +45,21 @@ constant number of requests, each costing what the variety page already costs
   there is none to dim. The list and the variety's page behind the dialog are `inert`.
 - The design writes "Cerrar" as a word. The icon-and-text rule keeps the app's icon
   button named "Cerrar".
+
+## Amendment (GH-46): Registrar cobro uses the same pattern
+
+`CobroCompu.dc.html` draws Registrar cobro as a scrim over Clientes, so on a computer
+`/customers/{id}/payment` is a modal drawn by its own route, by the five rules above:
+
+- `CobroRoute` is the host: it keeps the customer's query, the gone, error and loading
+  states, `useLeaveGuard`, `useBackOr(CUSTOMERS)`, Escape and focus. `CobroFrame` is
+  presentational, and `Cobro` is the form.
+- Escape, the backdrop, "Cerrar" and a save all end in one `leave`, which does nothing
+  while the save is in flight or while the leave confirmation shows.
+- `ClientesLayout` renders `CobroPanes` on this route: on a computer the list and that
+  customer's card behind it, both `inert` and `aria-hidden`, with the host as their sibling.
+  The route's registry row carries `modalOnComputer`, so `Shell` draws no side rail behind it.
+- On a phone the same wrapper holds the host alone, a full form screen.
+
+Nothing new is reachable: the card behind reads what Clientes and the card already read. One
+Playwright test (`web/e2e/cobroModal.spec.ts`) proves the panes cannot be reached.

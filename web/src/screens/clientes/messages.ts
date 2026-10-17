@@ -9,8 +9,10 @@ import type { LimitedCopy } from '../../copy/limits'
 
 /** Clientes' empty list. */
 export const EMPTY_CUSTOMERS = 'Todavía no agregaste ningún cliente.'
+/** Heads everyone A–Z, under "Te deben" (`Clientes.dc.html`). */
+export const EVERYONE = 'Todos · A–Z'
 /** "Te deben" with nobody owing. */
-export const NOBODY_OWES = 'Nadie te debe.'
+export const NOBODY_OWES = 'Nadie te debe'
 
 export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'emptyTitle', text: EMPTY_CUSTOMERS },

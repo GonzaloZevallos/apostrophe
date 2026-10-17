@@ -185,12 +185,14 @@ test('every screen, bar, sheet and toast keeps clear of the notch and the home b
     await sheetButton.scrollIntoViewIfNeeded()
     expectInside(where('customer sheet button'), await box(page, '.cliente-sheet__contenido button', 'last'), viewport)
 
-    // Registrar cobro, opened from Clientes' "Cobrar a".
+    // Registrar cobro, opened from Clientes' "Cobrar a": a form screen, a modal on a computer.
     await page.goto(CUSTOMERS)
     await page.getByRole('link', { name: 'Cobrar a Lucía Borde' }).first().click()
     await setInsets(page, true)
-    await page.locator('.capa__contenido button').last().scrollIntoViewIfNeeded()
-    expectInside(where('cobro sheet button'), await box(page, '.capa__contenido button', 'last'), viewport)
+    await page.getByRole('button', { name: 'Guardar' }).evaluate((button) => {
+      for (let el: Element | null = button; el; el = el.parentElement) el.scrollTop = el.scrollHeight
+    })
+    expectInside(where('cobro form button'), await box(page, 'button:has-text("Guardar")'), viewport)
 
     // A toast: the offline notice is the one that needs no timing.
     await page.context().setOffline(true)

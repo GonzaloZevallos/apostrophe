@@ -222,7 +222,7 @@ export default function Shell() {
           </InAppLink>
         </nav>
       )}
-      <div className="columna-principal">
+      <div className={chrome.bar ? 'columna-principal' : 'columna-principal columna-principal--sin-bar'}>
           {chrome.backArrow && <BackArrow id={leaf.id} />}
           <Outlet context={me} />
           {chrome.barNuevaVenta && (

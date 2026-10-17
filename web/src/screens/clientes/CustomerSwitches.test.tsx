@@ -68,7 +68,6 @@ const FER = {
   id: 3,
   name: 'Fer',
   phone: '+5491158423310',
-  channel: 'telegram',
   vip: true,
   balance: 0,
   owing_since: null,

@@ -29,7 +29,6 @@ import { useLeaveGuard } from '../../components/useLeaveGuard'
 import { useViewport } from '../../shell/useViewport'
 import { ApiError, NetworkError, UNKNOWN_CODE } from '../../api/client'
 import {
-  type Channel,
   type Customer,
   type CustomerIn,
   editCustomer,
@@ -127,7 +126,6 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
 
   const [name, setName] = useState(initial?.name ?? '')
   const [phone, setPhone] = useState(initial?.phone ?? '')
-  const [channel, setChannel] = useState<Channel | null>(initial?.channel ?? null)
   const [vip, setVip] = useState(initial?.vip ?? false)
   const [nameError, setNameError] = useState<string | null>(null)
   const [phoneError, setPhoneError] = useState<string | null>(null)
@@ -137,7 +135,6 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
   const dirty =
     name !== (initial?.name ?? '') ||
     phone !== (initial?.phone ?? '') ||
-    channel !== (initial?.channel ?? null) ||
     vip !== (initial?.vip ?? false)
   const { blocker, disarm } = useLeaveGuard(dirty)
   const parent = parentOf(mode === 'nuevo' ? 'customer-new' : 'customer-edit', viewport)
@@ -163,7 +160,7 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
     setFormError(null)
     setOffline(false)
     try {
-      const saved = await save.mutateAsync({ name, phone, channel, vip })
+      const saved = await save.mutateAsync({ name, phone, vip })
       invalidateResource(queryClient, 'customers')
       disarm()
       if (mode === 'nuevo') {
@@ -215,11 +212,10 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
         </div>
         <form className="formulario" onSubmit={onSubmit}>
           <CustomerFields
-            value={{ name, phone, channel, vip }}
+            value={{ name, phone, vip }}
             onChange={(next) => {
               setName(next.name)
               setPhone(next.phone)
-              setChannel(next.channel)
               setVip(next.vip)
             }}
             nameError={nameError}

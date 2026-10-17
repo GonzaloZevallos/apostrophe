@@ -704,3 +704,45 @@ describe('assertSelectedAccounts', () => {
     expect(() => assertSelectedAccounts(screens.screens, seeded)).not.toThrow()
   })
 })
+
+describe('the customer dark twins of the real screens.json', () => {
+  const pantallas = resolve(process.cwd(), '..', 'docs/product/design-system/pantallas')
+  const pairs = [
+    ['Clientes', 'ClientesOscuro'],
+    ['ClientesCompu', 'ClientesCompuOscuro'],
+    ['ClienteFicha', 'ClienteFichaOscuro'],
+    ['Cobro', 'CobroOscuro'],
+    ['CobroCompu', 'CobroCompuOscuro'],
+  ] as const
+  const entry = (key: string) => screens.screens.find((s) => s.screen === key)
+
+  it('has each twin exactly once, compared against the light design file, which exists', () => {
+    for (const [light, dark] of pairs) {
+      expect(screens.screens.filter((s) => s.screen === dark).length, dark).toBe(1)
+      expect(entry(dark)?.design, dark).toBe(light)
+      expect(readdirSync(pantallas), dark).toContain(`${light}.dc.html`)
+    }
+  })
+
+  it('reaches each twin the way its light row does, forced to the dark theme and nothing else', () => {
+    for (const [light, dark] of pairs) {
+      const { screen: _lightName, ...lightRest } = entry(light) as Record<string, unknown>
+      const { screen: _darkName, design: _design, tema, ...darkRest } = entry(dark) as Record<string, unknown>
+      expect(tema, dark).toBe('oscuro')
+      expect(darkRest, dark).toEqual(lightRest)
+    }
+  })
+
+  it('captures each twin whole: no section, since these design files draw one screen', () => {
+    for (const [, dark] of pairs) expect(entry(dark)?.section, dark).toBeUndefined()
+  })
+
+  it('puts each twin after its light row, so the sample app is in the state the light row found', () => {
+    const names = screens.screens.map((s) => s.screen)
+    for (const [light, dark] of pairs) expect(names.indexOf(dark), dark).toBeGreaterThan(names.indexOf(light))
+  })
+
+  it('refuses a twin whose design file does not exist', () => {
+    expect(() => assertScreens([{ screen: 'ClientesOscuro', design: 'NoExiste', tema: 'oscuro', route: 'ruta' }])).toThrow(/ClientesOscuro/)
+  })
+})

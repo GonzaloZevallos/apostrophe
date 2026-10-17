@@ -77,7 +77,7 @@ test('a sale is recorded from a phone: existing customer, new customer, none', a
   test.setTimeout(180_000)
   await signUpWithAVariety(page)
   const created = await page.request.post('/customers', {
-    data: { name: 'Marta Gómez', phone: '+5491155550011', channel: null, vip: false },
+    data: { name: 'Marta Gómez', phone: '+5491155550011', vip: false },
   })
   expect(created.ok()).toBe(true)
 

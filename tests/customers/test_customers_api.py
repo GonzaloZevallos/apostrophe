@@ -31,7 +31,6 @@ def test_a_registered_customer_comes_back_with_the_canonical_phone(client: TestC
 
     assert customer["name"] == "Fran Araujo"
     assert customer["phone"] == "+5491123456789"
-    assert customer["channel"] is None
     assert customer["vip"] is False
     assert_matches_fixture(customer, "customer")
 
@@ -121,14 +120,40 @@ def test_a_later_payment_lowers_the_balance_everywhere_it_is_read(client: TestCl
     assert sale_settled["still_owing"] is False
 
 
-def test_a_customer_can_be_registered_vip_with_a_channel(
-    client: TestClient, engine: Engine
-) -> None:
+def test_a_customer_can_be_registered_vip(client: TestClient, engine: Engine) -> None:
     set_switches(engine, bulk=False, vip=True)
-    customer = _register(client, channel="telegram", vip=True)
+    customer = _register(client, vip=True)
 
-    assert customer["channel"] == "telegram"
     assert customer["vip"] is True
+
+
+@pytest.mark.parametrize("sent", ["telegram", "carrier-pigeon", None])
+def test_registering_with_a_channel_in_the_body_succeeds_and_stores_nothing(
+    client: TestClient, sent: str | None
+) -> None:
+    created = client.post(
+        "/customers", json={"name": "Fran Araujo", "phone": "11 2345-6789", "channel": sent}
+    )
+
+    assert created.status_code == 201, created.text
+    assert "channel" not in created.json()
+    assert "channel" not in client.get(f"/customers/{created.json()['id']}").json()
+    assert all("channel" not in c for c in client.get("/customers").json())
+
+
+def test_patching_with_a_channel_in_the_body_succeeds_and_stores_nothing(
+    client: TestClient,
+) -> None:
+    customer = _register(client)
+
+    edited = client.patch(
+        f"/customers/{customer['id']}", json={"name": "Fran B", "channel": "whatsapp"}
+    )
+
+    assert edited.status_code == 200, edited.text
+    assert edited.json()["name"] == "Fran B"
+    assert "channel" not in edited.json()
+    assert "channel" not in client.get(f"/customers/{customer['id']}").json()
 
 
 def test_a_customer_that_does_not_exist_is_not_found(client: TestClient) -> None:
@@ -213,13 +238,12 @@ def test_editing_a_customer_keeps_fields_left_out_of_the_body(
     client: TestClient, engine: Engine
 ) -> None:
     set_switches(engine, bulk=False, vip=True)
-    customer = _register(client, channel="telegram", vip=True)
+    customer = _register(client, vip=True)
 
     edited = client.patch(f"/customers/{customer['id']}", json={"name": "New Name"})
 
     assert edited.status_code == 200
     assert edited.json()["name"] == "New Name"
-    assert edited.json()["channel"] == "telegram"
     assert edited.json()["vip"] is True
     assert edited.json()["phone"] == customer["phone"]
 
@@ -231,15 +255,6 @@ def test_an_empty_patch_body_answers_the_customer_unchanged(client: TestClient) 
 
     assert edited.status_code == 200
     assert edited.json() == customer
-
-
-def test_patching_channel_to_null_clears_it(client: TestClient) -> None:
-    customer = _register(client, channel="whatsapp")
-
-    edited = client.patch(f"/customers/{customer['id']}", json={"channel": None})
-
-    assert edited.status_code == 200
-    assert edited.json()["channel"] is None
 
 
 def test_clearing_the_name_with_null_is_refused(client: TestClient) -> None:
@@ -479,7 +494,7 @@ def test_with_clientes_vip_off_editing_a_vip_customer_never_changes_the_mark(
     set_switches(engine, bulk=False, vip=False)
 
     cleared = client.patch(f"/customers/{customer['id']}", json={"vip": False, "name": "Fran B"})
-    left_out = client.patch(f"/customers/{customer['id']}", json={"channel": "telegram"})
+    left_out = client.patch(f"/customers/{customer['id']}", json={"phone": None})
 
     assert cleared.status_code == 200
     assert (cleared.json()["vip"], cleared.json()["name"]) == (True, "Fran B")

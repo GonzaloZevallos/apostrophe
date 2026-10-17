@@ -64,8 +64,8 @@ test("heads with the total owed and lists debtors in the API's own order", async
     .getAllByRole('link')
     .filter((link) => link.getAttribute('href')?.startsWith(`${CUSTOMERS}/`) && link.textContent !== 'Cobrar')
   expect(rows.map((row) => row.textContent)).toEqual([
-    'Ana Pérez$ 15.000desde 14/09',
-    'Beto$ 22.000desde 20/09',
+    'Ana Pérez$ 15.000te debe desde 14/09',
+    'Beto$ 22.000te debe desde 20/09',
   ])
   expect(screen.getAllByRole('link', { name: /^Cobrar a / }).map((link) => link.getAttribute('aria-label'))).toEqual([
     'Cobrar a Ana Pérez',
@@ -90,11 +90,11 @@ test('three sales still owing read "3 ventas debiendo", plural', async () => {
   expect(await screen.findByText('3 ventas debiendo')).toBeInTheDocument()
 })
 
-test('nobody owing shows the empty state "Nadie te debe."', async () => {
+test('nobody owing shows the fixed "Nadie te debe"', async () => {
   vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { total_owed: 0, sales_owing_count: 0, debtors: [] }))
   renderTeDeben()
 
-  expect(await screen.findByText('Nadie te debe.')).toBeInTheDocument()
+  expect(await screen.findByText('Nadie te debe')).toBeInTheDocument()
   expect(screen.getByRole('region', { name: 'Te deben' })).toBeInTheDocument()
 })
 

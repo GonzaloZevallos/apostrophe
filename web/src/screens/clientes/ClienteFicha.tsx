@@ -1,5 +1,5 @@
 /**
- * `ClienteFicha`: a customer's card — phone, channel, VIP, the balance and
+ * `ClienteFicha`: a customer's card — phone, VIP, the balance and
  * "Registrar cobro" (`payments.md`, "On screen"). Every figure here —
  * `balance`, `owing_since`, `standing`, the account's rows and their own
  * `running_balance`/`standing` — is the payments domain's own answer
@@ -13,14 +13,13 @@
 import { CUSTOMERS, CUSTOMER_EDIT, CUSTOMER_PAYMENT, SALE_NEW, pathTo } from '../../routes'
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useLocation, useOutletContext, useParams } from 'react-router'
+import { useLocation, useParams } from 'react-router'
 import Boton from '../../components/Boton'
 import BotonLink from '../../components/BotonLink'
 import { useGoneNotice } from '../../components/goneExit'
 import { ApiError, NetworkError } from '../../api/client'
-import { type Channel, getCustomer } from '../../api/customers'
+import { getCustomer } from '../../api/customers'
 import { invalidateResource, keys } from '../../api/keys'
-import type { Me } from '../../api/me'
 import { useIsVipCustomers } from '../../api/pricingSettings'
 import {
   type AccountRow,
@@ -49,12 +48,6 @@ import { formatDateShort } from '../../format/dates'
 import { formatMoney, formatMoneyMagnitude } from '../../format/money'
 import { formatPhone } from '../../format/phone'
 import { deleteRowIndices } from './accountRows'
-import Cobro from './Cobro'
-
-const CHANNEL_LABEL: Record<Channel, string> = {
-  telegram: 'Telegram',
-  whatsapp: 'WhatsApp',
-}
 
 const HOW_PAID_LABEL: Record<Exclude<HowPaid, 'none'>, string> = {
   cash: 'Pagada por efectivo',
@@ -109,19 +102,13 @@ function rowKey(row: AccountRow): string {
   return `credit-${row.payment.id}`
 }
 
-export interface ClienteFichaProps {
-  /** The payment route: the card with "Registrar cobro" open over it. */
-  payment?: boolean
-}
-
-export default function ClienteFicha({ payment = false }: ClienteFichaProps) {
+export default function ClienteFicha() {
   const { id } = useParams<{ id: string }>()
   const customerId = id ?? ''
   const location = useLocation()
   const goneShown = useGoneNotice()
   const feedback = readFeedback(location.state) ?? (goneShown ? { kind: 'notice' as const, message: GONE_NOTICE } : null)
   const queryClient = useQueryClient()
-  const me = useOutletContext<Me>()
   const vipCustomers = useIsVipCustomers()
 
   const [deletedToast, setDeletedToast] = useState(false)
@@ -226,11 +213,16 @@ export default function ClienteFicha({ payment = false }: ClienteFichaProps) {
         {deletePaymentFailed && <ErrorGenerico />}
 
         {data.standing === 'owes' && (
-          <div className="campo">
+          <div className="ficha-deuda">
             <span className="cifra-m monto-deuda">Te debe {formatMoney(data.balance)}</span>
             {data.owing_since !== null && (
               <span className="rotulo">desde el {formatDateShort(data.owing_since)}</span>
             )}
+            <div className="clientes__accion">
+              <BotonLink to={pathTo(CUSTOMER_PAYMENT, { id: customerId })} icon="cobro">
+                Registrar cobro
+              </BotonLink>
+            </div>
           </div>
         )}
         {data.standing === 'credit' && (
@@ -246,10 +238,6 @@ export default function ClienteFicha({ payment = false }: ClienteFichaProps) {
               <span>{formatPhone(data.phone)}</span>
             </div>
           )}
-          <div className="campo">
-            <span className="campo__rotulo">Canal</span>
-            <span>{data.channel !== null ? CHANNEL_LABEL[data.channel] : 'Sin canal'}</span>
-          </div>
           {vipCustomers && (
             <div className="campo">
               <span className="campo__rotulo">VIP</span>
@@ -257,14 +245,6 @@ export default function ClienteFicha({ payment = false }: ClienteFichaProps) {
             </div>
           )}
         </div>
-
-        {data.standing === 'owes' && (
-          <div className="clientes__accion">
-            <BotonLink to={pathTo(CUSTOMER_PAYMENT, { id: customerId })} icon="cobro">
-              Registrar cobro
-            </BotonLink>
-          </div>
-        )}
 
         <div className="cuenta-cliente">
           {rows.map((row, index) => {
@@ -301,8 +281,6 @@ export default function ClienteFicha({ payment = false }: ClienteFichaProps) {
           </BotonLink>
         </div>
       </div>
-
-      {payment && <Cobro customerId={customerId} balance={data.balance} today={me.today} />}
 
       {confirmingDelete !== null && (
         <ConfirmDialog

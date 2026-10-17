@@ -24,7 +24,7 @@ const EXPECTED: Record<ScreenId, readonly [Chrome, Chrome]> = {
   'customer-new': [FORM, FORM],
   customer: [CARD, CARD],
   'customer-edit': [FORM, FORM],
-  'customer-payment': [FORM, FORM],
+  'customer-payment': [FORM, MODAL_FORM],
   varieties: [ROOT, ROOT],
   variety: [CARD, CARD],
   'variety-new': [FORM, FORM],

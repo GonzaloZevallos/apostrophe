@@ -120,7 +120,7 @@ afterEach(() => {
 
 test('registers a customer and lands on its card', async () => {
   api.mockResolvedValue(
-    jsonResponse(201, { id: 9, name: 'Nico', phone: '+5491131785094', channel: null, vip: false }),
+    jsonResponse(201, { id: 9, name: 'Nico', phone: '+5491131785094', vip: false }),
   )
   renderForm(CUSTOMER_NEW)
 
@@ -142,9 +142,27 @@ test('only Nombre is marked required; Teléfono stays optional', () => {
   expect(screen.getByLabelText('Teléfono')).not.toBeRequired()
 })
 
+test('the form has Nombre required, an optional phone and no Canal field', async () => {
+  renderForm(CUSTOMER_NEW)
+
+  expect(await screen.findByLabelText('VIP')).toBeInTheDocument()
+  expect(screen.getByLabelText('Nombre')).toBeRequired()
+  expect(screen.getByLabelText('Teléfono')).not.toBeRequired()
+  expect(screen.queryByRole('radio')).not.toBeInTheDocument()
+  expect(screen.queryByText(/canal|whatsapp|telegram/i)).not.toBeInTheDocument()
+})
+
+test('with Clientes VIP off the form has no VIP field', async () => {
+  api = stubFetchWithSettings(false)
+  renderForm(CUSTOMER_NEW)
+
+  expect(await screen.findByLabelText('Nombre')).toBeInTheDocument()
+  expect(screen.queryByLabelText('VIP')).not.toBeInTheDocument()
+})
+
 test('registering with no phone sends the request and shows the saved toast', async () => {
   api.mockResolvedValue(
-    jsonResponse(201, { id: 10, name: 'Sol', phone: null, channel: null, vip: false }),
+    jsonResponse(201, { id: 10, name: 'Sol', phone: null, vip: false }),
   )
   renderForm(CUSTOMER_NEW)
 
@@ -154,16 +172,16 @@ test('registering with no phone sends the request and shows the saved toast', as
   expect(await screen.findByText('Cliente guardado')).toBeInTheDocument()
   expect(api).toHaveBeenCalledWith(
     '/customers',
-    expect.objectContaining({ method: 'POST', body: JSON.stringify({ name: 'Sol', phone: '', channel: null, vip: false }) }),
+    expect.objectContaining({ method: 'POST', body: JSON.stringify({ name: 'Sol', phone: '', vip: false }) }),
   )
 })
 
 test('clearing a phone when editing sends it and shows the saved toast', async () => {
   api.mockResolvedValueOnce(
-    jsonResponse(200, { id: 7, name: 'Tincho', phone: '+5491144861258', channel: null, vip: false }),
+    jsonResponse(200, { id: 7, name: 'Tincho', phone: '+5491144861258', vip: false }),
   )
   api.mockResolvedValueOnce(
-    jsonResponse(200, { id: 7, name: 'Tincho', phone: null, channel: null, vip: false }),
+    jsonResponse(200, { id: 7, name: 'Tincho', phone: null, vip: false }),
   )
   renderForm(pathTo(CUSTOMER_EDIT, { id: 7 }))
 
@@ -175,7 +193,7 @@ test('clearing a phone when editing sends it and shows the saved toast', async (
   expect(await screen.findByText('Cliente guardado')).toBeInTheDocument()
   expect(api).toHaveBeenCalledWith(
     '/customers/7',
-    expect.objectContaining({ method: 'PATCH', body: JSON.stringify({ name: 'Tincho', phone: '', channel: null, vip: false }) }),
+    expect.objectContaining({ method: 'PATCH', body: JSON.stringify({ name: 'Tincho', phone: '', vip: false }) }),
   )
 })
 
@@ -200,7 +218,6 @@ test('edit loads the existing customer and saves the change', async () => {
       id: 7,
       name: 'Tincho',
       phone: '+5491144861258',
-      channel: 'whatsapp',
       vip: false,
     }),
   )
@@ -209,7 +226,6 @@ test('edit loads the existing customer and saves the change', async () => {
       id: 7,
       name: 'Tincho Aguirre',
       phone: '+5491144861258',
-      channel: 'whatsapp',
       vip: false,
     }),
   )
@@ -227,7 +243,7 @@ test('edit loads the existing customer and saves the change', async () => {
 
 test('saving an edit on a customer that is gone shows the gone notice, not the toast', async () => {
   api.mockResolvedValueOnce(
-    jsonResponse(200, { id: 7, name: 'Tincho', phone: '+5491144861258', channel: null, vip: false }),
+    jsonResponse(200, { id: 7, name: 'Tincho', phone: '+5491144861258', vip: false }),
   )
   api.mockResolvedValueOnce(
     jsonResponse(404, { detail: 'no such customer', code: 'customer.not_found' }),
@@ -325,7 +341,7 @@ test('with no in-app history, Cerrar goes to the parent replacing the form', asy
 
 test('editing, Cerrar with no in-app history goes to the customer card', async () => {
   api.mockResolvedValue(
-    jsonResponse(200, { id: 7, name: 'Tincho', phone: '+5491144861258', channel: null, vip: false }),
+    jsonResponse(200, { id: 7, name: 'Tincho', phone: '+5491144861258', vip: false }),
   )
   const router = renderForm(pathTo(CUSTOMER_EDIT, { id: 7 }))
 
@@ -337,7 +353,7 @@ test('editing, Cerrar with no in-app history goes to the customer card', async (
 
 test('after registering, the form is replaced by the new customer card and Back skips the form', async () => {
   api.mockResolvedValue(
-    jsonResponse(201, { id: 10, name: 'Sol', phone: null, channel: null, vip: false }),
+    jsonResponse(201, { id: 10, name: 'Sol', phone: null, vip: false }),
   )
   const router = await openFromList()
   await userEvent.type(screen.getByLabelText('Nombre'), 'Sol')
@@ -355,7 +371,7 @@ test('after registering, the form is replaced by the new customer card and Back 
 test('after editing from the card, the save goes back by history: no second card behind it', async () => {
   api.mockImplementation(() =>
     Promise.resolve(
-      jsonResponse(200, { id: 7, name: 'Tincho', phone: '+5491144861258', channel: null, vip: false }),
+      jsonResponse(200, { id: 7, name: 'Tincho', phone: '+5491144861258', vip: false }),
     ),
   )
   const router = renderForm(CUSTOMERS)
@@ -380,7 +396,7 @@ function fakeGoneCustomer() {
     const method = init?.method ?? 'GET'
     const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url
     if (method === 'GET' && url === '/customers/7') {
-      return Promise.resolve(jsonResponse(200, { id: 7, name: 'Tincho', phone: null, channel: null, vip: false }))
+      return Promise.resolve(jsonResponse(200, { id: 7, name: 'Tincho', phone: null, vip: false }))
     }
     return Promise.resolve(jsonResponse(404, { detail: 'no such customer', code: 'customer.not_found' }))
   })

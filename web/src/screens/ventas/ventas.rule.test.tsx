@@ -35,7 +35,7 @@ const ROSA = {
   name: 'Rosa',
   current_price: { id: 9, effective_from: '2026-09-01', list_price: 1000, bulk_price: null, bulk_minimum: null },
 }
-const ANA = { id: 5, name: 'Ana', phone: '+5491100000000', channel: null, vip: false }
+const ANA = { id: 5, name: 'Ana', phone: '+5491100000000', vip: false }
 const OPTIONS = { limits: LIMITS, samples: SAMPLES }
 
 function json(body: unknown): Response {

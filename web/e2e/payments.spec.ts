@@ -23,6 +23,7 @@
  */
 
 import { CUSTOMER, CUSTOMERS, CUSTOMER_NEW, SALE, SALES, SALE_NEW, VARIETIES } from '../src/routes.js'
+import type { Page } from '@playwright/test'
 import { expectPath } from './helpers/url.js'
 import { expect, test } from './fixtures.js'
 import { signUpNewBusiness } from './helpers/signup.js'
@@ -34,6 +35,12 @@ import { uniqueTag } from './helpers/unique.js'
 function shortDate(iso: string): string {
   const [, month, day] = iso.split('-')
   return `${day}/${month}`
+}
+
+/** The customer's card, never the list beside it on a computer (the list holds the search box):
+ * its "Te debe" and "A favor" are what these specs read. */
+function cardOf(page: Page) {
+  return page.locator('main').filter({ hasNot: page.getByLabel('Buscar cliente') })
 }
 
 test('a seller records, settles, undoes and traces payments, from the front alone', async ({
@@ -100,7 +107,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   // Settled: no more "Te debe", no more "Registrar cobro", and the account names
   // how it was paid and the sale as "Quedó debiendo" no more — it reads the cash
   // cobro reaching that sale instead.
-  await expect(page.getByText('Te debe', { exact: false })).toHaveCount(0)
+  await expect(cardOf(page).getByText('Te debe', { exact: false })).toHaveCount(0)
   await expect(page.getByRole('link', { name: 'Registrar cobro' })).toHaveCount(0)
   await expect(
     page.getByText(`Cobro · efectivo · A cuenta de la venta del ${today}`),
@@ -171,8 +178,8 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   // credit (recording never creates one, and this sale took no payment with it).
   await page.goto(CUSTOMERS)
   await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
-  await expect(page.getByText('Te debe', { exact: false })).toHaveCount(0)
-  await expect(page.getByText('A favor', { exact: false })).toHaveCount(0)
+  await expect(cardOf(page).getByText('Te debe', { exact: false })).toHaveCount(0)
+  await expect(cardOf(page).getByText('A favor', { exact: false })).toHaveCount(0)
 
   // --- A payment that is only "A favor" can still be deleted: sell on credit,
   // collect it later, delete the sale (the cobro becomes a credit), then delete
@@ -216,8 +223,8 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   ).toBeVisible()
   await page.getByRole('button', { name: 'Sí, borralo' }).click()
   await expect(page.getByText('Cobro eliminado')).toBeVisible()
-  await expect(page.getByText('Te debe', { exact: false })).toHaveCount(0)
-  await expect(page.getByText('A favor', { exact: false })).toHaveCount(0)
+  await expect(cardOf(page).getByText('Te debe', { exact: false })).toHaveCount(0)
+  await expect(cardOf(page).getByText('A favor', { exact: false })).toHaveCount(0)
   await expect(page.getByRole('button', { name: 'Borrar cobro' })).toHaveCount(1)
 
   // Nothing personal or technical reaches the console or the browser's own storage.

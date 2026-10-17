@@ -10,20 +10,15 @@
  * of a misleading "no customers yet" (PRD, "Feedback").
  */
 
-import { CUSTOMER, CUSTOMER_NEW, CUSTOMER_PAYMENT, pathTo } from '../../routes'
+import { CUSTOMER_NEW } from '../../routes'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router'
 import BotonLink from '../../components/BotonLink'
-import PaneRowLink from '../../components/PaneRowLink'
 import { NetworkError } from '../../api/client'
 import { listCustomers } from '../../api/customers'
 import { keys } from '../../api/keys'
-import { getDebtors } from '../../api/payments'
 import { useIsVipCustomers } from '../../api/pricingSettings'
-import { formatPhone } from '../../format/phone'
-import { formatDateShort } from '../../format/dates'
-import { formatMoney, formatMoneyMagnitude } from '../../format/money'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import { readFeedback } from '../../components/feedback'
 import { useGoneNotice } from '../../components/goneExit'
@@ -31,22 +26,21 @@ import { GONE_NOTICE } from '../../api/refusals'
 import Notice from '../../components/Notice'
 import SinConexion from '../../components/SinConexion'
 import { useCustomerSearch } from './CustomerSearch'
-import { EMPTY_CUSTOMERS } from './messages'
+import { EMPTY_CUSTOMERS, EVERYONE } from './messages'
+import ClienteFila from './ClienteFila'
 import TeDeben from './TeDeben'
-import { useViewport } from '../../shell/useViewport'
 
 export const SEARCH_LABEL = 'Buscar cliente'
 export const SEARCH_PLACEHOLDER = 'Teléfono o nombre'
 export const SEARCHING = 'Buscando…'
 export default function Clientes() {
   const { query, setQuery } = useCustomerSearch()
+  const vipCustomers = useIsVipCustomers()
   const [debounced, setDebounced] = useState(query)
   const location = useLocation()
   const [stateFeedback] = useState(() => readFeedback(location.state))
   const goneShown = useGoneNotice()
   const feedback = stateFeedback ?? (goneShown ? { kind: 'notice' as const, message: GONE_NOTICE } : null)
-  const vipCustomers = useIsVipCustomers()
-  const computer = useViewport() === 'computer'
 
   useEffect(() => {
     const id = setTimeout(() => setDebounced(query), 150)
@@ -67,11 +61,6 @@ export default function Clientes() {
     queryFn: () => listCustomers(''),
   })
 
-  const debtors = useQuery({
-    queryKey: keys.debtors(),
-    queryFn: () => getDebtors(),
-  })
-
   const customers = data ?? []
 
   return (
@@ -82,11 +71,7 @@ export default function Clientes() {
         </div>
         <div className="campo__rotulo">
           <span>{`${total.data?.length ?? 0} clientes`}</span>
-          {debtors.data !== undefined && debtors.data.debtors.length > 0 && (
-            <span>{` · ${debtors.data.debtors.length} te deben ${formatMoney(debtors.data.total_owed)}`}</span>
-          )}
         </div>
-        {query === '' && <TeDeben />}
         {feedback !== null && <Notice kind={feedback.kind} message={feedback.message} />}
         <label className="campo">
           <span className="visualmente-oculto">{SEARCH_LABEL}</span>
@@ -103,59 +88,37 @@ export default function Clientes() {
             Nuevo cliente
           </BotonLink>
         </div>
+        {query === '' && <TeDeben />}
         {isError && error instanceof NetworkError && <SinConexion />}
         {isError && !(error instanceof NetworkError) && <ErrorGenerico />}
         {!isError && (
-          <div
-            className="lista-clientes"
-            aria-busy={isPlaceholderData}
-            aria-label={isPlaceholderData ? SEARCHING : undefined}
-          >
-            {isPlaceholderData && <span className="campo__rotulo">{SEARCHING}</span>}
-            {!isPlaceholderData && customers.length === 0 && (
-              <span className="campo__rotulo" data-copy="emptyTitle">
-                {EMPTY_CUSTOMERS}
-              </span>
-            )}
-            {customers.map((customer) => (
-              <div key={customer.id} className="lista-clientes__item">
-                <PaneRowLink
-                  to={pathTo(CUSTOMER, { id: customer.id })}
-                  replace={computer}
-                  className="lista-clientes__fila"
-                  activeClassName="lista-clientes__fila"
-                >
-                  <span className="lista-clientes__nombre">
-                    {customer.name}
-                    {vipCustomers && customer.vip && <span className="vip-insignia">VIP</span>}
-                  </span>
-                  {customer.phone !== null && (
-                    <span className="lista-clientes__telefono">{formatPhone(customer.phone)}</span>
-                  )}
-                  {customer.standing === 'owes' && customer.owing_since !== null && (
-                    <span className="lista-clientes__balance">
-                      <span className="monto-deuda">{formatMoney(customer.balance)}</span>
-                      <span className="monto-deuda">
-                        te debe desde {formatDateShort(customer.owing_since)}
-                      </span>
-                    </span>
-                  )}
-                  {customer.standing === 'credit' && (
-                    <span className="monto-credito">A favor {formatMoneyMagnitude(customer.balance)}</span>
-                  )}
-                </PaneRowLink>
-                {customer.standing === 'owes' && (
-                  <BotonLink
-                    to={pathTo(CUSTOMER_PAYMENT, { id: customer.id })}
-                    icon="cobro"
-                    ariaLabel={`Cobrar a ${customer.name}`}
-                  >
-                    Cobrar
-                  </BotonLink>
-                )}
-              </div>
-            ))}
-          </div>
+          <section aria-label={query === '' ? EVERYONE : undefined} className="clientes__todos">
+            {query === '' && <span className="campo__rotulo">{EVERYONE}</span>}
+            <div
+              className="lista-clientes"
+              aria-busy={isPlaceholderData}
+              aria-label={isPlaceholderData ? SEARCHING : undefined}
+            >
+              {isPlaceholderData && <span className="campo__rotulo">{SEARCHING}</span>}
+              {!isPlaceholderData && customers.length === 0 && (
+                <span className="campo__rotulo" data-copy="emptyTitle">
+                  {EMPTY_CUSTOMERS}
+                </span>
+              )}
+              {customers.map((customer) => (
+                <ClienteFila
+                  key={customer.id}
+                  id={customer.id}
+                  name={customer.name}
+                  phone={customer.phone}
+                  vip={vipCustomers && customer.vip}
+                  balance={customer.balance}
+                  owingSince={customer.owing_since}
+                  standing={customer.standing}
+                />
+              ))}
+            </div>
+          </section>
         )}
       </div>
     </main>

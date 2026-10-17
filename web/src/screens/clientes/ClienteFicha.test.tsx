@@ -37,6 +37,7 @@ import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import { readNewSaleState } from '../../components/feedback'
 import { SIN_CONEXION_MENSAJE } from '../../components/estadosMessages'
 import ClienteFicha from './ClienteFicha'
+import CobroRoute from './CobroRoute'
 import Shell from '../../shell/Shell'
 import { stubFetchWithSettings } from '../stubFetchWithSettings'
 
@@ -76,7 +77,7 @@ function renderFicha(id: string, entries: string[] = [pathTo(CUSTOMER, { id })])
         element: <Flash />,
         children: [
           { path: CUSTOMER, element: <ClienteFicha /> },
-          { path: CUSTOMER_PAYMENT, element: <ClienteFicha payment /> },
+          { path: CUSTOMER_PAYMENT, element: <CobroRoute /> },
           { path: CUSTOMERS, element: <span>la lista</span> },
           { path: SALE_NEW, element: <NuevaVentaStub /> },
         ],
@@ -96,7 +97,6 @@ const SETTLED_CUSTOMER = {
   id: 3,
   name: 'Fer',
   phone: '+5491158423310',
-  channel: 'telegram',
   vip: true,
   balance: 0,
   owing_since: null,
@@ -141,7 +141,7 @@ test('a customer that is gone shows the gone screen, with a way back to the list
   expect(screen.queryByText(/999/)).not.toBeInTheDocument()
 })
 
-test('a settled customer shows their phone, channel and VIP, no balance and no Registrar cobro', async () => {
+test('a settled customer shows their phone and VIP, no balance and no Registrar cobro', async () => {
   api.mockImplementation(
     dispatchFetch({
       'GET /customers/3': () => jsonResponse(200, SETTLED_CUSTOMER),
@@ -151,7 +151,7 @@ test('a settled customer shows their phone, channel and VIP, no balance and no R
   renderFicha('3')
 
   expect(await screen.findByText('+54 9 11 5842-3310')).toBeInTheDocument()
-  expect(screen.getByText('Telegram')).toBeInTheDocument()
+  expect(screen.queryByText(/telegram|whatsapp/i)).not.toBeInTheDocument()
   expect(screen.queryByText(/te debe/i)).not.toBeInTheDocument()
   expect(screen.queryByRole('link', { name: 'Registrar cobro' })).not.toBeInTheDocument()
 })
@@ -160,7 +160,6 @@ const NO_PHONE_CUSTOMER = {
   id: 4,
   name: 'Caro',
   phone: null,
-  channel: null,
   vip: false,
   balance: 0,
   owing_since: null,
@@ -235,7 +234,6 @@ const OWING_CUSTOMER = {
   id: 1,
   name: 'Ana',
   phone: '+5491122334455',
-  channel: 'whatsapp',
   vip: false,
   balance: 11000,
   owing_since: '2026-09-14',
@@ -276,7 +274,6 @@ const CREDIT_CUSTOMER = {
   id: 2,
   name: 'Lu',
   phone: '+5491100000000',
-  channel: null,
   vip: false,
   balance: -2000,
   owing_since: null,
@@ -568,7 +565,7 @@ test('registering a payment shows "Cobro guardado · queda debiendo $ X" when so
   renderFicha('1')
 
   await userEvent.click(await screen.findByRole('link', { name: 'Registrar cobro' }))
-  const sheet = (await screen.findByRole('button', { name: 'Guardar' })).closest('.capa__contenido')
+  const sheet = (await screen.findByRole('button', { name: 'Guardar' })).closest('form')
   expect(sheet).not.toBeNull()
   await userEvent.clear(within(sheet as HTMLElement).getByLabelText('Monto'))
   await userEvent.type(within(sheet as HTMLElement).getByLabelText('Monto'), '5000')
@@ -595,7 +592,7 @@ test('"Todo" fills the amount with the balance, and the debounced preview shows 
   renderFicha('1')
 
   await userEvent.click(await screen.findByRole('link', { name: 'Registrar cobro' }))
-  const sheet = (await screen.findByRole('button', { name: 'Guardar' })).closest('.capa__contenido')
+  const sheet = (await screen.findByRole('button', { name: 'Guardar' })).closest('form')
   expect(sheet).not.toBeNull()
   const within_ = within(sheet as HTMLElement)
 
@@ -620,7 +617,7 @@ test('a partial amount\'s preview shows "Le queda debiendo $ X", from the previe
   renderFicha('1')
 
   await userEvent.click(await screen.findByRole('link', { name: 'Registrar cobro' }))
-  const sheet = (await screen.findByRole('button', { name: 'Guardar' })).closest('.capa__contenido')
+  const sheet = (await screen.findByRole('button', { name: 'Guardar' })).closest('form')
   expect(sheet).not.toBeNull()
   const within_ = within(sheet as HTMLElement)
 
@@ -647,7 +644,7 @@ test('registering a payment that settles everything shows the plain "Cobro guard
   renderFicha('1')
 
   await userEvent.click(await screen.findByRole('link', { name: 'Registrar cobro' }))
-  const sheet = (await screen.findByRole('button', { name: 'Guardar' })).closest('.capa__contenido')
+  const sheet = (await screen.findByRole('button', { name: 'Guardar' })).closest('form')
   expect(sheet).not.toBeNull()
   await userEvent.click(within(sheet as HTMLElement).getByRole('button', { name: 'Todo: $ 11.000' }))
   await userEvent.click(within(sheet as HTMLElement).getByLabelText('Efectivo'))
@@ -764,7 +761,7 @@ test('a payment above the balance shows the fixed refusal inline and keeps what 
   renderFicha('1')
 
   await userEvent.click(await screen.findByRole('link', { name: 'Registrar cobro' }))
-  const sheet = (await screen.findByRole('button', { name: 'Guardar' })).closest('.capa__contenido')
+  const sheet = (await screen.findByRole('button', { name: 'Guardar' })).closest('form')
   expect(sheet).not.toBeNull()
   await userEvent.clear(within(sheet as HTMLElement).getByLabelText('Monto'))
   await userEvent.type(within(sheet as HTMLElement).getByLabelText('Monto'), '999000')
@@ -877,7 +874,7 @@ function renderGone(entries: HistoryEntry[]) {
         element: <Flash />,
         children: [
           { path: CUSTOMER, element: <ClienteFicha /> },
-          { path: CUSTOMER_PAYMENT, element: <ClienteFicha payment /> },
+          { path: CUSTOMER_PAYMENT, element: <CobroRoute /> },
           { path: CUSTOMERS, element: <ListWithNotice /> },
           { path: HOME, element: <span>Inicio</span> },
         ],
@@ -987,7 +984,7 @@ test.each([
 
 const RULE = { limits: LIMITS, samples: { name: SAMPLES.name } }
 
-test('the card and its sheet follow the icon and text rule: Borrar cobro is icon-only, the rest keep their words', async () => {
+test('the card and its form follow the icon and text rule: Borrar cobro is icon-only, the rest keep their words', async () => {
   api.mockImplementation(
     dispatchFetch({
       'GET /customers/1': () => jsonResponse(200, OWING_CUSTOMER),
@@ -1009,7 +1006,7 @@ test('the card and its sheet follow the icon and text rule: Borrar cobro is icon
         }),
     }),
   )
-  renderFicha('1', [pathTo(CUSTOMER_PAYMENT, { id: 1 })])
+  renderFicha('1')
 
   const borrar = await screen.findByRole('button', { name: 'Borrar cobro' })
   expect(borrar).toHaveClass('boton-icono')
@@ -1019,6 +1016,9 @@ test('the card and its sheet follow the icon and text rule: Borrar cobro is icon
   expect(registrar.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
   const nueva = screen.getByRole('link', { name: /^Nueva venta a / })
   expect(nueva.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  expectIconAndTextRule(document.body, RULE)
+
+  await userEvent.click(registrar)
   await screen.findByRole('button', { name: 'Guardar' })
   expectIconAndTextRule(document.body, RULE)
 })
