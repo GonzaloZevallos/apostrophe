@@ -3202,6 +3202,25 @@ body {
   font-weight: 600;
 }
 
+/* An archived variety's summary (VariedadArchivada.dc.html): the figures in the quiet ink, then
+ * the marks on their own line, "Archivada" as the neutral Insignia and "Oculta" in words. */
+.variedad-resumen--archivada {
+  color: var(--tinta2);
+}
+
+.variedad-marcas {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-sm);
+}
+
+.variedad-marcas .variedad-resumen__oculta {
+  font-size: 13px;
+  font-weight: 500;
+  font-style: italic;
+  color: var(--tinta2);
+}
+
 .variedad-acciones {
   display: flex;
   flex-wrap: wrap;
