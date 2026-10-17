@@ -19,7 +19,7 @@ test('the gone screen says one fixed line and offers one way back, with no data'
   expect(screen.getByText(GONE_DETAIL)).toBeInTheDocument()
   const links = screen.getAllByRole('link')
   expect(links).toHaveLength(1)
-  expect(links[0]).toHaveTextContent('Volver a Ventas')
+  expect(links[0]).toHaveTextContent('Back to Ventas')
   expect(links[0]).toHaveAttribute('href', SALES)
   expect(screen.queryAllByRole('button')).toHaveLength(0)
   expect(container.textContent).not.toMatch(/\d/)
@@ -53,10 +53,10 @@ test('the notice for a gone record is announced like a toast, with no Deshacer a
 })
 
 test('a plain success toast is a status with its fixed text, never an action and never data', () => {
-  const { container } = render(<Notice kind="toast" message="Venta eliminada · los gramos vuelven al stock" />)
+  const { container } = render(<Notice kind="toast" message="Sale deleted · the grams go back to stock" />)
 
   expect(screen.getByRole('status')).toHaveTextContent(
-    'Venta eliminada · los gramos vuelven al stock',
+    'Sale deleted · the grams go back to stock',
   )
   expect(screen.queryAllByRole('button')).toHaveLength(0)
   expect(screen.queryByText(/Deshacer/)).toBeNull()

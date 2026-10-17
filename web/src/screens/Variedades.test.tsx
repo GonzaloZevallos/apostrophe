@@ -148,7 +148,7 @@ describe('the list', () => {
     expect(rows[1]).toHaveTextContent('baja')
     expect(rows[1]).toHaveTextContent('18 g · 24 días')
     expect(rows[2]).toHaveTextContent('sin entradas')
-    expect(rows[2]).toHaveTextContent('0 g · Cargale la primera entrada')
+    expect(rows[2]).toHaveTextContent('0 g · Add the first entry')
     expect(rows[2]).toHaveTextContent(NO_PRICE_TODAY)
     expect(rows[3]).toHaveTextContent('agotada')
     expect(rows[3]).toHaveTextContent('0 g · Sin gramos desde el 01/10')

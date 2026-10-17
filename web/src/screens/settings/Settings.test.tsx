@@ -78,7 +78,7 @@ test('shows the bar and no "+ Nueva venta"', async () => {
   await screen.findByRole('navigation', { name: 'Configuración' })
 
   expect(container.querySelector('.bar-inferior')).not.toBeNull()
-  expect(screen.queryByRole('link', { name: /Nueva venta/ })).not.toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: /New sale/ })).not.toBeInTheDocument()
 })
 
 test('a group route shows no bar and no "+ Nueva venta"', async () => {
@@ -88,7 +88,7 @@ test('a group route shows no bar and no "+ Nueva venta"', async () => {
   await screen.findByRole('button', { name: 'Cerrar' })
 
   expect(container.querySelector('.bar-inferior')).toBeNull()
-  expect(screen.queryByRole('link', { name: /Nueva venta/ })).not.toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: /New sale/ })).not.toBeInTheDocument()
 })
 
 test.each(GROUPS)('"%s" opens its group, marking the entry as in-app', async (name, path) => {

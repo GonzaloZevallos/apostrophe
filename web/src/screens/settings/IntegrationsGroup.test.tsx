@@ -442,11 +442,11 @@ test('the help lines, the token hint and the consequence line each fit their lim
   expect(Array.from(notice.textContent ?? '').length).toBeLessThanOrEqual(80)
 })
 
-test('the own-chat help is a MasInfo: closed at mount, "Más info" opens the longer how and a second tap closes it', async () => {
+test('the own-chat help is a MasInfo: closed at mount, "More info" opens the longer how and a second tap closes it', async () => {
   renderGroup(SAVED)
   await screen.findByLabelText('Tu chat')
 
-  const more = screen.getByRole('button', { name: 'Más info' })
+  const more = screen.getByRole('button', { name: 'More info' })
   expect(more).toHaveAttribute('aria-expanded', 'false')
   expect(screen.getByText(OWN_CHAT_HELP)).toBeVisible()
   expect(screen.getByText(OWN_CHAT_INFO.more)).not.toBeVisible()
@@ -464,7 +464,7 @@ test('opening More info is not an unsaved change: Cerrar leaves without asking',
   renderGroup(SAVED)
   await screen.findByLabelText('Tu chat')
 
-  await userEvent.click(screen.getByRole('button', { name: 'Más info' }))
+  await userEvent.click(screen.getByRole('button', { name: 'More info' }))
   await userEvent.click(screen.getByRole('button', { name: 'Cerrar' }))
 
   expect(await screen.findByRole('heading', { name: 'Lista' })).toBeInTheDocument()

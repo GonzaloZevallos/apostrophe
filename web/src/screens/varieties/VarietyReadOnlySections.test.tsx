@@ -33,22 +33,22 @@ test('a read-only threshold states the stored setting, never "Avisando", with no
   threshold(LOW, true)
 
   expect(screen.getByRole('heading', { name: 'Aviso de stock bajo' })).toBeInTheDocument()
-  expect(screen.getByText('Avisame abajo de 20 g')).toBeInTheDocument()
+  expect(screen.getByText('Warn me below 20 g')).toBeInTheDocument()
   expect(screen.queryByText(/Avisando/)).toBeNull()
   expect(screen.queryByRole('switch')).toBeNull()
   expect(screen.queryByRole('button', { name: 'Editar aviso' })).toBeNull()
 })
 
-test('a read-only threshold that is off says Aviso apagado', () => {
+test('a read-only threshold that is off says Warning off', () => {
   threshold({ ...LOW, threshold: null, status: 'ok' }, true)
 
-  expect(screen.getByText('Aviso apagado')).toBeInTheDocument()
+  expect(screen.getByText('Warning off')).toBeInTheDocument()
 })
 
 test('the same threshold on a live variety keeps "Avisando", its switch and Editar', () => {
   threshold(LOW, false)
 
-  expect(screen.getByText('Avisando: quedan 18 g')).toBeInTheDocument()
+  expect(screen.getByText('Warning: 18 g left')).toBeInTheDocument()
   expect(screen.getByRole('switch')).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Editar aviso' })).toBeInTheDocument()
 })

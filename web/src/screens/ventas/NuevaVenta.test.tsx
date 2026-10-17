@@ -98,7 +98,7 @@ test('a variety with no price that day shows its message and blocks saving', asy
 
   await user.selectOptions(screen.getByLabelText('Variedad línea 1'), '2')
   await user.type(screen.getByLabelText('Gramos línea 1'), '1')
-  await user.click(screen.getByRole('radio', { name: 'Efectivo' }))
+  await user.click(screen.getByRole('radio', { name: 'Cash' }))
 
   expect(await screen.findByText('Tulipán no tiene precio para esa fecha')).toBeInTheDocument()
 
@@ -118,16 +118,16 @@ test('Debiendo is disabled with no customer, enables once one is chosen, and res
     'GET /customers': () => jsonResponse(200, [ANA]),
   })
 
-  expect(screen.getByRole('radio', { name: 'Debiendo' })).toBeDisabled()
+  expect(screen.getByRole('radio', { name: 'Owing' })).toBeDisabled()
   expect(screen.getByText('Para dejar debiendo elegí un cliente')).toBeInTheDocument()
 
   await user.click(screen.getByRole('button', { name: 'Elegir cliente' }))
   await user.click(await screen.findByRole('button', { name: /Ana/ }))
 
   expect(await screen.findByText('Ana')).toBeInTheDocument()
-  expect(screen.getByRole('radio', { name: 'Debiendo' })).toBeEnabled()
-  await user.click(screen.getByRole('radio', { name: 'Debiendo' }))
-  expect(screen.getByRole('radio', { name: 'Debiendo' })).toBeChecked()
+  expect(screen.getByRole('radio', { name: 'Owing' })).toBeEnabled()
+  await user.click(screen.getByRole('radio', { name: 'Owing' }))
+  expect(screen.getByRole('radio', { name: 'Owing' })).toBeChecked()
 
   // The whole customer row is one tappable `Boton` now (name, phone, "Cambiar"),
   // not a dead name next to a separate link — its accessible name is the row's
@@ -135,8 +135,8 @@ test('Debiendo is disabled with no customer, enables once one is chosen, and res
   await user.click(screen.getByRole('button', { name: /Cambiar/ }))
   await user.click(await screen.findByRole('button', { name: 'Sin cliente' }))
 
-  expect(screen.getByRole('radio', { name: 'Debiendo' })).toBeDisabled()
-  expect(screen.getByRole('radio', { name: 'Debiendo' })).not.toBeChecked()
+  expect(screen.getByRole('radio', { name: 'Owing' })).toBeDisabled()
+  expect(screen.getByRole('radio', { name: 'Owing' })).not.toBeChecked()
 })
 
 test('a customer with no phone shows no phone element in Elegir cliente nor the chosen chip', async () => {
@@ -168,7 +168,7 @@ test('a successful save opens the sale the API answered with, replacing history'
     'GET /varieties?on=2026-10-02': () => jsonResponse(200, [ROSA, TULIPAN]),
     'POST /sales': () => jsonResponse(201, savedSale),
     // `VentaDetalle` (sales-list-and-detail) renders what the API answered,
-    // never the preview, and shows "Venta guardada" once it reads the marker
+    // never the preview, and shows "Sale saved" once it reads the marker
     // `NuevaVenta` navigated with — this is that detail fetch, not a second
     // sale.
     'GET /sales/42': () => jsonResponse(200, savedSale),
@@ -176,11 +176,11 @@ test('a successful save opens the sale the API answered with, replacing history'
 
   await user.selectOptions(screen.getByLabelText('Variedad línea 1'), '1')
   await user.type(screen.getByLabelText('Gramos línea 1'), '2')
-  await user.click(screen.getByRole('radio', { name: 'Efectivo' }))
+  await user.click(screen.getByRole('radio', { name: 'Cash' }))
   await user.click(screen.getByRole('button', { name: 'Guardá la venta' }))
 
   await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(SALE, { id: 42 })))
-  expect(await screen.findByText('Venta guardada')).toBeInTheDocument()
+  expect(await screen.findByText('Sale saved')).toBeInTheDocument()
 })
 
 test('the form closes with "Cerrar" and shows no back control named "Volver"', async () => {
@@ -276,7 +276,7 @@ test('a refused save keeps everything typed, the message on its field', async ()
 
   await user.selectOptions(screen.getByLabelText('Variedad línea 1'), '1')
   await user.type(screen.getByLabelText('Gramos línea 1'), '2')
-  await user.click(screen.getByRole('radio', { name: 'Efectivo' }))
+  await user.click(screen.getByRole('radio', { name: 'Cash' }))
   await user.type(screen.getByLabelText('Nota'), 'una nota bien larga')
   await user.click(screen.getByRole('button', { name: 'Guardá la venta' }))
 
@@ -284,7 +284,7 @@ test('a refused save keeps everything typed, the message on its field', async ()
   expect(screen.getByLabelText('Variedad línea 1')).toHaveValue('1')
   expect(screen.getByLabelText('Gramos línea 1')).toHaveValue('2')
   expect(screen.getByLabelText('Nota')).toHaveValue('una nota bien larga')
-  expect(screen.getByRole('radio', { name: 'Efectivo' })).toBeChecked()
+  expect(screen.getByRole('radio', { name: 'Cash' })).toBeChecked()
   expect(screen.getByText('Nueva venta')).toBeInTheDocument()
 })
 
@@ -323,7 +323,7 @@ test('sale.no_price_that_day refetches prices, and the line then shows its own m
 
   await user.selectOptions(screen.getByLabelText('Variedad línea 1'), '1')
   await user.type(screen.getByLabelText('Gramos línea 1'), '2')
-  await user.click(screen.getByRole('radio', { name: 'Efectivo' }))
+  await user.click(screen.getByRole('radio', { name: 'Cash' }))
   expect(await screen.findByText('lista')).toBeInTheDocument()
 
   await user.click(screen.getByRole('button', { name: 'Guardá la venta' }))
@@ -358,7 +358,7 @@ test('sale.no_price_that_day opens the flagged line even when it was closed', as
   await user.click(screen.getByRole('button', { name: 'Agregar otra variedad' }))
   await user.selectOptions(screen.getByLabelText('Variedad línea 2'), '3')
   await user.type(screen.getByLabelText('Gramos línea 2'), '1')
-  await user.click(screen.getByRole('radio', { name: 'Efectivo' }))
+  await user.click(screen.getByRole('radio', { name: 'Cash' }))
 
   // Line 1 (Rosa) is closed now; line 2 (Clavel) is the open one.
   expect(screen.queryByLabelText('Variedad línea 1')).not.toBeInTheDocument()
@@ -389,7 +389,7 @@ test('sale.customer_not_found and sale.variety_not_found keep the form open with
 
   await user.selectOptions(screen.getByLabelText('Variedad línea 1'), '1')
   await user.type(screen.getByLabelText('Gramos línea 1'), '2')
-  await user.click(screen.getByRole('radio', { name: 'Efectivo' }))
+  await user.click(screen.getByRole('radio', { name: 'Cash' }))
 
   await user.click(screen.getByRole('button', { name: 'Guardá la venta' }))
   expect(await screen.findByText('Revisá los datos e intentá de nuevo.')).toBeInTheDocument()
@@ -455,7 +455,7 @@ test('a $0 special price is refused rather than silently priced at list, and Reg
   expect(screen.queryByText('especial')).not.toBeInTheDocument()
   expect(screen.getByLabelText(`Regalo línea 1`)).toBeDisabled()
 
-  await user.click(screen.getByRole('radio', { name: 'Efectivo' }))
+  await user.click(screen.getByRole('radio', { name: 'Cash' }))
   await user.click(screen.getByRole('button', { name: 'Guardá la venta' }))
   expect(fetchMock.mock.calls.some(([path, init]) => path === '/sales' && (init as RequestInit)?.method === 'POST')).toBe(
     false,
@@ -536,7 +536,7 @@ test('a closed line with bad grams shows its own message and opens on save, with
   await user.click(screen.getByRole('button', { name: 'Agregar otra variedad' }))
   await user.selectOptions(screen.getByLabelText('Variedad línea 2'), '2')
   await user.type(screen.getByLabelText('Gramos línea 2'), '1')
-  await user.click(screen.getByRole('radio', { name: 'Efectivo' }))
+  await user.click(screen.getByRole('radio', { name: 'Cash' }))
 
   // Line 1, now closed, shows its message under the row rather than figures.
   expect(await screen.findByText('Cargá los gramos: coma, hasta dos decimales')).toBeInTheDocument()
@@ -563,7 +563,7 @@ test('a forced sale.grams_invalid answer keeps everything typed, the message at 
 
   await user.selectOptions(screen.getByLabelText('Variedad línea 1'), '1')
   await user.type(screen.getByLabelText('Gramos línea 1'), '2')
-  await user.click(screen.getByRole('radio', { name: 'Efectivo' }))
+  await user.click(screen.getByRole('radio', { name: 'Cash' }))
   await user.click(screen.getByRole('button', { name: 'Guardá la venta' }))
 
   expect(await screen.findByText('Revisá los datos e intentá de nuevo.')).toBeInTheDocument()

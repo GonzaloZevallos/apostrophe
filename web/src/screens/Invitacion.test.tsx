@@ -231,7 +231,7 @@ test('shows the Cargando progressbar, and no text of its own, while the lookup i
   vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>(() => undefined)))
   renderInvitacion()
 
-  expect(screen.getByRole('progressbar', { name: 'Cargando' })).toBeInTheDocument()
+  expect(screen.getByRole('progressbar', { name: 'Loading' })).toBeInTheDocument()
   expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
 })
 

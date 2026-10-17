@@ -186,7 +186,7 @@ test('a variety that is gone says "That\'s gone." and goes back to Variedades', 
   )
 
   expect(await screen.findByText("That's gone.")).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Volver a Variedades' })).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Back to Variedades' })).toBeInTheDocument()
 })
 
 test('a variety that vanishes while saving shows the gone screen', async () => {

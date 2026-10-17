@@ -16,16 +16,16 @@ import {
 } from './feedback'
 
 test('accepts a toast from the closed set', () => {
-  expect(readFeedback({ toast: 'Cliente guardado' })).toEqual({
+  expect(readFeedback({ toast: 'Customer saved' })).toEqual({
     kind: 'toast',
-    message: 'Cliente guardado',
+    message: 'Customer saved',
   })
 })
 
-test('accepts "Venta eliminada · los gramos vuelven al stock", added to the closed set for Borrar venta and Deshacer', () => {
-  expect(readFeedback({ toast: 'Venta eliminada · los gramos vuelven al stock' })).toEqual({
+test('accepts "Sale deleted · the grams go back to stock", added to the closed set for Borrar venta and Deshacer', () => {
+  expect(readFeedback({ toast: 'Sale deleted · the grams go back to stock' })).toEqual({
     kind: 'toast',
-    message: 'Venta eliminada · los gramos vuelven al stock',
+    message: 'Sale deleted · the grams go back to stock',
   })
 })
 
@@ -44,7 +44,7 @@ test('rejects a notice that is not the fixed gone text', () => {
 test('rejects a state with neither key, and a non-object state', () => {
   expect(readFeedback({})).toBeNull()
   expect(readFeedback(null)).toBeNull()
-  expect(readFeedback('Cliente guardado')).toBeNull()
+  expect(readFeedback('Customer saved')).toBeNull()
 })
 
 test('saleJustSaved writes a marker readFeedback turns into the "saved" kind', () => {

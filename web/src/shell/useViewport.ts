@@ -8,12 +8,9 @@
  */
 
 import { useSyncExternalStore } from 'react'
-import type { Viewport } from '../routes'
+import { COMPUTER_VIEWPORT, PHONE_VIEWPORT, type Viewport } from '../routes'
 
 export const COMPUTER_MIN_WIDTH = 900
-
-export const PHONE_VIEWPORT: Viewport = 'phone'
-export const COMPUTER_VIEWPORT: Viewport = 'computer'
 
 const COMPUTER_QUERY = `(min-width: ${COMPUTER_MIN_WIDTH}px)`
 

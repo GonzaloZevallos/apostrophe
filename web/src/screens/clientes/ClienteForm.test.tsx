@@ -1,7 +1,7 @@
 /**
  * `ClienteForm` at the screen seam: add and edit share the form; a refusal maps
  * to its field and keeps what was typed (`customers.md`); a save on a `gone`
- * customer closes the form and shows `GONE_NOTICE` instead of "Cliente guardado"
+ * customer closes the form and shows `GONE_NOTICE` instead of "Customer saved"
  * (plan, "Gone records").
  */
 
@@ -169,7 +169,7 @@ test('registering with no phone sends the request and shows the saved toast', as
   await userEvent.type(screen.getByLabelText('Nombre'), 'Sol')
   await userEvent.click(screen.getByRole('button', { name: 'Guardá y usá' }))
 
-  expect(await screen.findByText('Cliente guardado')).toBeInTheDocument()
+  expect(await screen.findByText('Customer saved')).toBeInTheDocument()
   expect(api).toHaveBeenCalledWith(
     '/customers',
     expect.objectContaining({ method: 'POST', body: JSON.stringify({ name: 'Sol', phone: '', vip: false }) }),
@@ -190,7 +190,7 @@ test('clearing a phone when editing sends it and shows the saved toast', async (
   await userEvent.click(screen.getByRole('button', { name: 'Guardá y usá' }))
 
   expect(await screen.findByText('la ficha')).toBeInTheDocument()
-  expect(await screen.findByText('Cliente guardado')).toBeInTheDocument()
+  expect(await screen.findByText('Customer saved')).toBeInTheDocument()
   expect(api).toHaveBeenCalledWith(
     '/customers/7',
     expect.objectContaining({ method: 'PATCH', body: JSON.stringify({ name: 'Tincho', phone: '', vip: false }) }),
@@ -255,7 +255,7 @@ test('saving an edit on a customer that is gone shows the gone notice, not the t
 
   await waitFor(() => expect(screen.getByText('la ficha')).toBeInTheDocument())
   expect(screen.getByText("That's gone. The list is up to date.")).toBeInTheDocument()
-  expect(screen.queryByText('Cliente guardado')).not.toBeInTheDocument()
+  expect(screen.queryByText('Customer saved')).not.toBeInTheDocument()
 })
 
 test('a 401 on save clears the cache and goes to Entrar, through the session boundary', async () => {
@@ -360,7 +360,7 @@ test('after registering, the form is replaced by the new customer card and Back 
 
   await userEvent.click(screen.getByRole('button', { name: 'Guardá y usá' }))
 
-  expect(await screen.findByText('Cliente guardado')).toBeInTheDocument()
+  expect(await screen.findByText('Customer saved')).toBeInTheDocument()
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
   expect(router.state.location.pathname).toBe(pathTo(CUSTOMER, { id: 10 }))
   expect(router.state.historyAction).toBe('REPLACE')
@@ -382,7 +382,7 @@ test('after editing from the card, the save goes back by history: no second card
   await userEvent.click(screen.getByRole('button', { name: 'Guardá y usá' }))
 
   expect(await screen.findByText('la ficha')).toBeInTheDocument()
-  expect(await screen.findByText('Cliente guardado')).toBeInTheDocument()
+  expect(await screen.findByText('Customer saved')).toBeInTheDocument()
   expect(router.state.historyAction).toBe('POP')
   await act(() => router.navigate(-1))
   expect(router.state.location.pathname).toBe(CUSTOMERS)

@@ -142,7 +142,7 @@ test.each(SCREENS)('$name shows the skeleton while its query is pending', async 
     renderPending(screenCase.element(), screenCase.route, screenCase.path)
   }
 
-  expect(await screen.findByRole('progressbar', { name: 'Cargando' })).toBeInTheDocument()
+  expect(await screen.findByRole('progressbar', { name: 'Loading' })).toBeInTheDocument()
 })
 
 const SETTINGS_GROUPS: { name: string; element: () => ReactElement; path: string }[] = [
@@ -164,14 +164,14 @@ const SETTINGS_GROUPS: { name: string; element: () => ReactElement; path: string
 test.each(SETTINGS_GROUPS)('$name shows the skeleton while its query is pending', async (group) => {
   renderPendingInDataRouter(group.element(), group.path)
 
-  expect(await screen.findByRole('progressbar', { name: 'Cargando' })).toBeInTheDocument()
+  expect(await screen.findByRole('progressbar', { name: 'Loading' })).toBeInTheDocument()
 })
 
 test('a screen opened offline shows the skeleton under the offline banner, without throwing', async () => {
   vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
   renderPending(<Ventas />, SALES, SALES)
 
-  expect(await screen.findByRole('progressbar', { name: 'Cargando' })).toBeInTheDocument()
+  expect(await screen.findByRole('progressbar', { name: 'Loading' })).toBeInTheDocument()
   expect(screen.getByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
 })
 

@@ -186,7 +186,7 @@ test('records an entry and lands back on the list with the saved toast', async (
   await userEvent.click(screen.getByRole('button', { name: 'Guardá la entrada' }))
 
   expect(await screen.findByText('la lista de variedades')).toBeInTheDocument()
-  expect(await screen.findByText('Entrada guardada')).toBeInTheDocument()
+  expect(await screen.findByText('Entry saved')).toBeInTheDocument()
   expect(fetch).toHaveBeenCalledWith('/stock/entries', expect.objectContaining({ method: 'POST' }))
 })
 
@@ -337,7 +337,7 @@ test('editing an entry confirms before saving', async () => {
   await userEvent.click(screen.getByRole('button', { name: 'Sí, guardar' }))
 
   expect(await screen.findByText('todas las entradas')).toBeInTheDocument()
-  expect(await screen.findByText('Entrada guardada')).toBeInTheDocument()
+  expect(await screen.findByText('Entry saved')).toBeInTheDocument()
   expect(fetch).toHaveBeenCalledWith('/stock/entries/10', expect.objectContaining({ method: 'PUT' }))
 })
 
@@ -377,7 +377,7 @@ test('deleting an entry confirms first, naming the date, variety and grams', asy
   await userEvent.click(screen.getByRole('button', { name: 'Sí, borrala' }))
 
   expect(await screen.findByText('todas las entradas')).toBeInTheDocument()
-  expect(await screen.findByText('Entrada eliminada')).toBeInTheDocument()
+  expect(await screen.findByText('Entry deleted')).toBeInTheDocument()
   expect(fetch).toHaveBeenCalledWith('/stock/entries/10', expect.objectContaining({ method: 'DELETE' }))
 })
 
@@ -533,7 +533,7 @@ test('Cerrar with no history goes to "Todas las entradas" for an edit', async ()
   expect(await screen.findByText('todas las entradas')).toBeInTheDocument()
 })
 
-test('a save goes back by history too, and says "Entrada guardada" there', async () => {
+test('a save goes back by history too, and says "Entry saved" there', async () => {
   fakeFor(stockOf([]), {
     'POST /stock/entries': () =>
       jsonResponse(201, {
@@ -552,17 +552,17 @@ test('a save goes back by history too, and says "Entrada guardada" there', async
   await userEvent.type(await screen.findByLabelText('Gramos'), '30')
   await userEvent.click(screen.getByRole('button', { name: 'Guardá la entrada' }))
   expect(await screen.findByText('la página de la variedad')).toBeInTheDocument()
-  expect(await screen.findByText('Entrada guardada')).toBeInTheDocument()
+  expect(await screen.findByText('Entry saved')).toBeInTheDocument()
 })
 
-test('a missing or foreign entry shows "That\'s gone." with "Volver a Variedades"', async () => {
+test('a missing or foreign entry shows "That\'s gone." with "Back to Variedades"', async () => {
   fakeFor(stockOf([]), {
     'GET /stock/entries/99': () => jsonResponse(404, { code: 'stock.entry_not_found', detail: 'x' }),
   })
   renderForm(pathTo(STOCK_ENTRY, { id: 99 }))
 
   expect(await screen.findByText("That's gone.")).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Volver a Variedades' })).toHaveAttribute('href', VARIETIES_PATH)
+  expect(screen.getByRole('link', { name: 'Back to Variedades' })).toHaveAttribute('href', VARIETIES_PATH)
 })
 
 test('a save marks the catalog stale, since stock changes what it says', async () => {

@@ -334,7 +334,7 @@ describe("an archived variety's four sections, read-only", () => {
     expect(prices.getByRole('link', { name: 'Ver todas' })).toBeInTheDocument()
     expect(prices.queryByRole('button', { name: 'Borrar este precio' })).toBeNull()
     const warning = await section('Aviso de stock bajo')
-    expect(warning.getByText('Avisame abajo de 20 g')).toBeInTheDocument()
+    expect(warning.getByText('Warn me below 20 g')).toBeInTheDocument()
     expect(warning.queryByText(/Avisando/)).toBeNull()
     const catalog = await section('En el catálogo')
     expect(catalog.getByText('No se muestra')).toBeInTheDocument()
@@ -346,13 +346,13 @@ describe("an archived variety's four sections, read-only", () => {
     expect(within(main).queryByRole('button', { name: /^Editar/ })).toBeNull()
   })
 
-  test('a threshold that is off reads Aviso apagado', async () => {
+  test('a threshold that is off reads Warning off', async () => {
     renderPage(VARIETY_ONE, {
       ...ARCHIVED,
       'GET /stock?archived=true': () => json(200, stockOf({ ...STOCK_ROW, threshold: null, status: 'ok' })),
     })
 
-    expect(await screen.findByText('Aviso apagado')).toBeInTheDocument()
+    expect(await screen.findByText('Warning off')).toBeInTheDocument()
   })
 })
 
@@ -480,14 +480,14 @@ describe('the actions and the sections', () => {
 
     const section = (await screen.findByRole('heading', { name: 'Aviso de stock bajo' })).closest('section')
     const inside = within(section as HTMLElement)
-    expect(inside.getByText('Avisando: quedan 18 g')).toBeInTheDocument()
+    expect(inside.getByText('Warning: 18 g left')).toBeInTheDocument()
     expect(inside.getByRole('switch')).toBeChecked()
     expect(inside.getByRole('button', { name: /Editar/ })).toBeInTheDocument()
   })
 
   test.each([
-    ['no threshold', { threshold: null, status: 'ok', grams: 90, days_left: 60 }, 'Aviso apagado'],
-    ['a threshold not reached', { threshold: 15, status: 'ok', grams: 90, days_left: 60 }, 'Avisame abajo de 15 g'],
+    ['no threshold', { threshold: null, status: 'ok', grams: 90, days_left: 60 }, 'Warning off'],
+    ['a threshold not reached', { threshold: 15, status: 'ok', grams: 90, days_left: 60 }, 'Warn me below 15 g'],
   ])('Aviso de stock bajo with %s', async (_name, patch, expected) => {
     renderPage(VARIETY_ONE, { 'GET /stock': () => json(200, stockOf({ ...STOCK_ROW, ...patch })) })
 
@@ -524,7 +524,7 @@ describe('gone and foreign varieties', () => {
     })
 
     expect(await screen.findByText("That's gone.")).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Volver a Variedades' })).toHaveAttribute('href', VARIETIES)
+    expect(screen.getByRole('link', { name: 'Back to Variedades' })).toHaveAttribute('href', VARIETIES)
   })
 
   test('VarietyRoute: an id that is not a whole number is gone, and the API is never asked', async () => {
@@ -710,7 +710,7 @@ describe('turning the warning off', () => {
     stock = stockOf({ ...STOCK_ROW, threshold: null, status: 'ok', grams: 90, days_left: 60 })
     release(json(200, { ...STOCK_ROW, threshold: null }))
 
-    expect(await screen.findByText('Aviso apagado')).toBeInTheDocument()
+    expect(await screen.findByText('Warning off')).toBeInTheDocument()
     expect(screen.getByRole('switch')).not.toBeChecked()
     expect(screen.getByRole('switch')).toBeEnabled()
     expect(await screen.findByText('Aviso guardado')).toBeInTheDocument()
@@ -773,7 +773,7 @@ describe('Aviso de stock bajo: the form', () => {
     await waitFor(() => expect(router.state.location.state).toBeNull())
     expect(screen.queryByLabelText('Avisar con menos de')).not.toBeInTheDocument()
     expect(screen.getByRole('switch')).not.toBeChecked()
-    expect(screen.getByText('Aviso apagado')).toBeInTheDocument()
+    expect(screen.getByText('Warning off')).toBeInTheDocument()
     expect(writes(fetchMock)).toEqual([])
   })
 

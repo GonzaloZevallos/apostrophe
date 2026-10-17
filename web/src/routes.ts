@@ -23,6 +23,9 @@
 
 export type Viewport = 'phone' | 'computer'
 
+export const PHONE_VIEWPORT: Viewport = 'phone'
+export const COMPUTER_VIEWPORT: Viewport = 'computer'
+
 /** Which kind of screen a route is; the chrome follows from it and from nothing else. */
 export type Kind = 'root' | 'card' | 'form'
 

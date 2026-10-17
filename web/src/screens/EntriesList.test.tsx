@@ -278,7 +278,7 @@ test('Borrar asks "Antes de borrar" naming date, variety and grams, then deletes
   expect(dialog).toHaveTextContent('¿Borrás la entrada del 05/10 de 24K Gold, 30 g?')
 
   await userEvent.click(screen.getByRole('button', { name: 'Sí, borrala' }))
-  expect(await screen.findByText('Entrada eliminada')).toBeInTheDocument()
+  expect(await screen.findByText('Entry deleted')).toBeInTheDocument()
   expect(fetch).toHaveBeenCalledWith('/stock/entries/12', expect.objectContaining({ method: 'DELETE' }))
 })
 
@@ -304,7 +304,7 @@ test('deleting an entry that is already gone says so and refreshes the list', as
   await userEvent.click(within(rows[0]!).getByRole('button', { name: 'Borrar' }))
   await userEvent.click(await screen.findByRole('button', { name: 'Sí, borrala' }))
   expect(await screen.findByText("That's gone. The list is up to date.")).toBeInTheDocument()
-  expect(screen.queryByText('Entrada eliminada')).not.toBeInTheDocument()
+  expect(screen.queryByText('Entry deleted')).not.toBeInTheDocument()
 })
 
 test('with no entries the empty state shows, with no rows', async () => {
@@ -327,7 +327,7 @@ test('a variety that is gone, or an id that is not a number, shows "That\'s gone
   fakeApi()
   renderAt(pathTo(VARIETY_ENTRIES, { id: 99 }))
   expect(await screen.findByText("That's gone.")).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Volver a Variedades' })).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Back to Variedades' })).toBeInTheDocument()
 })
 
 test('a delete marks the catalog stale and the stock list refetches', async () => {
@@ -339,7 +339,7 @@ test('a delete marks the catalog stale and the stock list refetches', async () =
   const rows = await screen.findAllByRole('listitem')
   await userEvent.click(within(rows[0]!).getByRole('button', { name: 'Borrar' }))
   await userEvent.click(await screen.findByRole('button', { name: 'Sí, borrala' }))
-  await screen.findByText('Entrada eliminada')
+  await screen.findByText('Entry deleted')
   const stockCalls = vi.mocked(fetch).mock.calls.filter(([url]) => url === '/stock')
   expect(stockCalls.length).toBeGreaterThanOrEqual(2)
   expect(client.getQueryState(catalogQueryOptions().queryKey)?.isInvalidated).toBe(true)

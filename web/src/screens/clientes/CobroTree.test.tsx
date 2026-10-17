@@ -186,5 +186,5 @@ test('a customer that is gone shows "That\'s gone." with a way back to Clientes'
   })
 
   expect(await screen.findByText("That's gone.")).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Volver a Clientes' })).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Back to Clientes' })).toBeInTheDocument()
 })

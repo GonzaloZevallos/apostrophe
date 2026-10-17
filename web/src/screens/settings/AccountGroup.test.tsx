@@ -179,7 +179,7 @@ test('the reveal control toggles the new-password field between hidden and shown
   const field = screen.getByLabelText('Contraseña nueva')
   expect(field).toHaveAttribute('type', 'password')
 
-  await userEvent.click(screen.getByRole('button', { name: 'Mostrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Show' }))
   expect(field).toHaveAttribute('type', 'text')
 })
 

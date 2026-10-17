@@ -41,7 +41,7 @@ test('shows the date, the reason by word, every line and the note, with the bar 
   expect(screen.getByText('Para la fiesta')).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Editar' })).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Borrar' })).toBeInTheDocument()
-  expect(screen.queryByRole('link', { name: /Nueva venta/ })).not.toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: /New sale/ })).not.toBeInTheDocument()
   expect(document.querySelector('.bar-inferior')).not.toBeNull()
 })
 
@@ -141,11 +141,11 @@ test('Editar opens the form filled in; saving is confirmed first and toasts "Ret
   ])
 })
 
-test('opening a withdrawal that is gone shows "That\'s gone." and "Volver a Variedades"', async () => {
+test('opening a withdrawal that is gone shows "That\'s gone." and "Back to Variedades"', async () => {
   renderWithdrawals([ONE], async () => jsonResponse(404, { code: 'stock.withdrawal_not_found' }))
 
   expect(await screen.findByText("That's gone.")).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Volver a Variedades' })).toHaveAttribute('href', VARIETIES_PATH)
+  expect(screen.getByRole('link', { name: 'Back to Variedades' })).toHaveAttribute('href', VARIETIES_PATH)
 })
 
 test('deleting a withdrawal that is gone goes to Variedades with "That\'s gone. The list is up to date."', async () => {

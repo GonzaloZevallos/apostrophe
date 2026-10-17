@@ -108,7 +108,7 @@ test('shows the skeleton while the sale is pending, then the sale in its place',
   vi.mocked(fetch).mockImplementation(() => Promise.resolve(jsonResponse(200, SALE)))
   renderDetalle()
 
-  expect(await screen.findByRole('progressbar', { name: 'Cargando' })).toBeInTheDocument()
+  expect(await screen.findByRole('progressbar', { name: 'Loading' })).toBeInTheDocument()
   expect(screen.queryByText('Venta del 14/09')).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Borrar venta' })).not.toBeInTheDocument()
   expect(fetch).toHaveBeenCalledTimes(1)
@@ -146,7 +146,7 @@ test('a gone sale shows the plain gone-detail state, never the generic retry', a
   renderDetalle()
 
   expect(await screen.findByText("That's gone.")).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Volver a Ventas' })).toHaveAttribute('href', SALES)
+  expect(screen.getByRole('link', { name: 'Back to Ventas' })).toHaveAttribute('href', SALES)
 })
 
 test('Borrar venta asks "Antes de borrar" naming the date, the amount and the grams returning to stock, then deletes and returns to Ventas with the plain toast', async () => {
@@ -166,7 +166,7 @@ test('Borrar venta asks "Antes de borrar" naming the date, the amount and the gr
     expect(fetch).toHaveBeenCalledWith('/sales/10', expect.objectContaining({ method: 'DELETE' })),
   )
   expect(await screen.findByText('lista de ventas')).toBeInTheDocument()
-  expect(await screen.findByText('Venta eliminada')).toBeInTheDocument()
+  expect(await screen.findByText('Sale deleted')).toBeInTheDocument()
 })
 
 test('cancelling the delete confirmation keeps the sale', async () => {
@@ -189,7 +189,7 @@ test('right after a save, Deshacer deletes the sale with no confirmation and nam
   renderDetalle(saleJustSaved())
   await screen.findByText('Venta del 14/09')
 
-  expect(screen.getByText('Venta guardada')).toBeInTheDocument()
+  expect(screen.getByText('Sale saved')).toBeInTheDocument()
 
   await userEvent.click(screen.getByRole('button', { name: 'Deshacer' }))
 
@@ -198,7 +198,7 @@ test('right after a save, Deshacer deletes the sale with no confirmation and nam
   )
   expect(await screen.findByText('lista de ventas')).toBeInTheDocument()
   expect(
-    screen.getByText('Venta eliminada · los gramos vuelven al stock'),
+    screen.getByText('Sale deleted · the grams go back to stock'),
   ).toBeInTheDocument()
 })
 
@@ -207,7 +207,7 @@ test('opening the detail without the just-saved marker never shows Deshacer', as
   renderDetalle()
   await screen.findByText('Venta del 14/09')
 
-  expect(screen.queryByText('Venta guardada')).not.toBeInTheDocument()
+  expect(screen.queryByText('Sale saved')).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Deshacer' })).not.toBeInTheDocument()
 })
 

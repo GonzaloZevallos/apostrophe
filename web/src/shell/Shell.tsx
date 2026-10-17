@@ -42,6 +42,8 @@ import {
   VARIETIES,
   type RailPlace,
   type Screen,
+  COMPUTER_VIEWPORT,
+  PHONE_VIEWPORT,
 } from '../routes'
 import BotonLink from '../components/BotonLink'
 import { NUEVA_VENTA_CLASS, NUEVA_VENTA_ESCRITORIO_CLASS } from '../components/botonVisual'
@@ -62,7 +64,7 @@ import {
 import { chromeOf } from './chrome'
 import { initialsOf } from './initials'
 import { BackParentContext, type BackParentSlot, type BackParentStore } from './useBackParent'
-import { COMPUTER_VIEWPORT, PHONE_VIEWPORT, useViewport } from './useViewport'
+import { useViewport } from './useViewport'
 
 type Placement = 'bar' | 'rail' | 'both'
 

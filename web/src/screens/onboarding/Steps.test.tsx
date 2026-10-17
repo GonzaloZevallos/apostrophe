@@ -485,7 +485,7 @@ test('step 4 draws "Seguir" as a form submit that is not inside another form, un
   const button = await screen.findByRole('button', { name: 'Seguir' })
   expect(button).toHaveAttribute('type', 'submit')
   expectNoNestedForm()
-  // Más info is a shared component the integrations form owns (IntegrationsGroup.test.tsx
+  // More info is a shared component the integrations form owns (IntegrationsGroup.test.tsx
   // filters it the same way); every other control of the step obeys the rule.
   expect(iconAndTextProblems(document.body).filter((problem) => !problem.includes('mas-info__boton'))).toEqual([])
 })

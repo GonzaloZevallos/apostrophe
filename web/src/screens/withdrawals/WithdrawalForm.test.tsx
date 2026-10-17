@@ -29,7 +29,7 @@ test('is a form: Cerrar, no bar and no "+ Nueva venta"', async () => {
   await openFromVariedades()
 
   expect(screen.getByText('Sacar del stock')).toBeInTheDocument()
-  expect(screen.queryByRole('link', { name: /Nueva venta/ })).not.toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: /New sale/ })).not.toBeInTheDocument()
   // the side rail is CSS-hidden on a phone; the bottom bar is what a form drops
   expect(document.querySelector('.bar-inferior')).toBeNull()
 })
