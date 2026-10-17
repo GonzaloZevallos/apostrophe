@@ -9,7 +9,8 @@ It writes:
 - expense categories and expenses (expenses.md);
 - customers (customers.md);
 - sales with their on-the-spot payments (sales.md);
-- the pricing switches it needs (pricing-settings.md).
+- the pricing switches it needs (pricing-settings.md);
+- the end of the business's Onboarding, and the fact that the business was loaded by the import, with when (navigation.md, onboarding.md).
 
 Every imported record is the same data, under the same rules, as if it had been entered by hand. Everything it writes belongs to the target business alone (ADR-0004).
 
@@ -20,6 +21,8 @@ Every imported record is the same data, under the same rules, as if it had been 
 **When** I register a customer (from Clientes, in the middle of a sale, or through the one-time spreadsheet import) and I don't have their phone number, **I want** to save them under their name anyway and add the number later if I ever get it, **so I can** record every sale and every debt against the person who actually owes it, without inventing a number or keeping that person outside the app. (Served here by the optional mapping file; defined in customers.md.)
 
 **When** I set up how my business prices, record a variety's price or hand over an order, **I want** the app to use only the pricing rules my business has, **so I can** charge every customer exactly what I mean to, without anyone's price changing by surprise. (Served here by switching on the rules the sheet uses; defined in pricing-settings.md.)
+
+**When** I open the app between orders or at the end of the day, **I want** to see what I sold today, who owes me and what is running out, and act on it at once (collect from a debtor, open a variety that is running low, fix what a notice tells me), **so I can** get back to the customer without going through Clientes and Variedades one by one or doing any arithmetic. (Served here by recording that the business was imported, so Inicio's after-import notice reaches it; defined in navigation.md and results.md.)
 
 Success criteria:
 
@@ -35,6 +38,7 @@ Success criteria:
 4. **One business, once, never mixed.** It imports only into one business that has no records yet, and never touches a business that has data. Everything imported belongs to that business alone (ADR-0004). The real sheet and its customers' data never enter the repository.
 5. **A sheet with no phone numbers imports in full.** The run goes through with no mapping file or only part of one. The report says how many customers came in without a number and never repeats a number. A number the mapping does give is still checked, and a malformed one still blocks.
 6. **The sheet's pricing keeps working.** A business whose sheet uses bulk prices or "Amigo" rows opens with those rules switched on, so its prices and its VIP customers' next sales come out as the sheet priced them.
+7. **The app knows it was imported.** A successful real run records, in its single commit, that the business was loaded by the import and when, so Inicio's after-import notice shows for it and for no other business.
 
 ## Behaviour
 
@@ -65,6 +69,14 @@ Success criteria:
   - unused mapping entries.
 - **What the report may show**: it exists only on the operator's terminal. It may name customers and show amounts. It never repeats a phone number, including a malformed one. Nothing of it goes to logs (ADR-0005).
 
+### Recording the import (navigation.md)
+
+- **A successful real run** ends the business's Onboarding (onboarding.md) and records that the business was loaded by the import, with the instant of the run, both inside the import's single commit and through ports the import declares (ADR-0006).
+- **The record holds** the business and that instant only: no personal data, no counts and nothing from the sheet.
+- **It is never cleared or moved**, and nothing else writes it. A refused run and a dry run write neither.
+- **It is not a record for eligibility**: it never makes the import refuse.
+- **Before it existed**: a business imported before this record existed has none, and is not backfilled; it never sees the after-import notice.
+
 ### Eligibility
 
 - The import is refused if the business has any variety, price entry, stock entry, customer, sale, payment or expense. The refusal comes before any sheet check and changes nothing.
@@ -72,7 +84,8 @@ Success criteria:
   - the business, its name, its users and its invitations;
   - the seeded expense categories, even if renamed or removed;
   - the seeded catalog header and footer;
-  - the pricing switches, whatever their state.
+  - the pricing switches, whatever their state;
+  - the Onboarding's remembered passes and the first-run state (navigation.md).
 - The import overwrites the header and footer. It matches or adds categories, and never renames or removes one.
 
 ### Reading the file
@@ -244,6 +257,11 @@ From test fixtures, with no telemetry:
   - A fixture with neither ends with both off.
   - A switch already on before the import stays on.
   - Every row's stored price, rule and total equal what the import stored before pricing settings existed, "Amigo" rows included.
+- **Import recorded (criterion 7)**: 100% passing.
+  - A successful real run records the import fact with the run's instant, in the same commit as everything else.
+  - A dry run and a refused real run record nothing.
+  - The record never makes a later eligibility check refuse.
+  - Business removal exports and deletes it, and it is invisible from another business through the isolation sweep.
 - **Nothing invented (criterion 3)**:
   - a matrix of every blocking case passes 100%, including a missing column and a filled-in Ventas row with an empty Total;
   - Ventas rows with text in Total, and Entradas and Gastos rows with text in Revisar, are left out and listed with that text, without blocking;
@@ -275,3 +293,4 @@ From test fixtures, with no telemetry:
 - Undoing an import once it is done.
 - How a phone number stored as a number in the mapping is read (#54).
 - A VIP price column in the sheet; turning a pricing switch off.
+- Backfilling the import fact for a business imported before it existed.

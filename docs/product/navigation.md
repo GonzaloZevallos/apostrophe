@@ -178,7 +178,12 @@ This covers Configuración and its groups, the catalog screen and a variety's pa
   - **the after-import notice**, for a business loaded by the spreadsheet import. Once the import loads a business, its Onboarding is over.
 - There is no tour and no welcome screen beyond these.
 - **First-run state belongs to the business.** Every user of it sees the same element: a user who joined by a join invitation sees whatever the business they joined has, or none. A join invitation never opens a business, so it never starts a first run of its own.
-- **What is stored**: the Onboarding's own state (ADR-0036) is never copied. Beyond it, only two facts of the business are kept: that the checklist has gone for good, and that the after-import notice was dismissed. No checklist step is ever stored as ticked.
+- **What is stored**: the Onboarding's own state (ADR-0036) is never copied. Beyond it, only three facts of the business are kept:
+  1. that the business was loaded by the spreadsheet import, and when. Only the import writes it, inside its single commit, and it is never cleared or moved (import.md). A business imported before this fact existed has none, and is not backfilled;
+  2. that the checklist has gone for good;
+  3. that the after-import notice was dismissed.
+
+  None of them holds personal data. No checklist step is ever stored as ticked.
 - Which element shows, and each checklist step, is answered by the server for the session's business.
 
 ### The Onboarding (first run of a brand-new business)
@@ -210,15 +215,16 @@ This covers Configuración and its groups, the catalog screen and a variety's pa
 
 ### After-import notice
 
-- A business loaded by the spreadsheet import (import.md) shows, on Inicio, "Conectá el bot para que el catálogo fijado se actualice solo", with the attention icon (icon-and-text-rule.md).
+- A business the spreadsheet import loaded (import.md), as recorded by the import itself, shows on Inicio "Conectá el bot para que el catálogo fijado se actualice solo", with the attention icon (icon-and-text-rule.md).
 - It can be dismissed. It shows until it is dismissed or the pinned catalog is first published, whichever comes first, and then never again. A dismissal is for the business: no partner sees it afterwards.
+- A business imported before the import recorded it never sees the notice.
 
 ### Constraints
 
-- Nothing here adds a route that answers business data beyond what Inicio's panel and the first-run state need; each screen reads its owner's routes, already in the isolation sweep and the gated-route test. The Onboarding's own routes, and any route for the checklist's or the after-import notice's state, join both, and that state carries `business_id` and is exported and deleted by business removal (ADR-0015).
+- Nothing here adds a route that answers business data beyond what Inicio's panel and the first-run state need; each screen reads its owner's routes, already in the isolation sweep and the gated-route test. The Onboarding's own routes, and any route for the first-run state (the import fact, the checklist's end, the after-import notice's dismissal), join both, and that state carries `business_id` and is exported and deleted by business removal (ADR-0015).
 - Serving a front path to a browser navigation never widens what the API answers to a JSON request, and adds no API route (ADR-0024).
 - Whatever decides the Onboarding notice, the checklist and the after-import notice is answered by the server for the session's business only.
-- No business id in a URL; no personal data or money in the console or browser storage (accounts.md). The theme choice is the only thing kept on the device; the dismissal of the after-import notice is kept on the server, never in the browser.
+- No business id in a URL; no personal data or money in the console or browser storage (accounts.md). The theme choice is the only thing kept on the device; the first-run facts are kept on the server, never in the browser.
 - Feedback follows accounts.md, in Configuración, the Onboarding and Inicio as everywhere:
   - no network shows "Sin conexión";
   - a server error shows a generic retry;
@@ -260,6 +266,7 @@ This covers Configuración and its groups, the catalog screen and a variety's pa
   - it goes the first time steps 1 and 2 are both met, whatever 3 and 4;
   - deleting the only price entry afterwards never brings it back;
   - an imported business never sees it, and sees the after-import notice until dismissed or published; once dismissed, no partner sees it;
+  - a business that finished the Onboarding through "Listo" never sees the after-import notice, and neither does a business imported before the import fact existed;
   - a joined user sees their business's element, or none;
   - two first-run elements never show at once;
   - "Mandar catálogo" is disabled only while the checklist shows and nothing qualifies.
@@ -278,6 +285,7 @@ This covers Configuración and its groups, the catalog screen and a variety's pa
 - An entry to run the Onboarding again.
 - Side rules on "+ Nueva venta" or "Mandar catálogo" tied to the Onboarding.
 - A checklist for a brand-new business; storing a checklist step as ticked.
+- Backfilling the import fact for a business imported before it existed.
 - Promotions (as campaigns or offers), automations, languages, and any entry for them before they exist. A stock withdrawal for promotion is a stock record, not this.
 - A "follow the system" theme.
 - The pin's status or Publicar in Integraciones.
