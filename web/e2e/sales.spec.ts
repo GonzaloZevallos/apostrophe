@@ -37,7 +37,7 @@
  *   checked here: `tests/sales/test_list_cost.py` guards it by the query plan and
  *   the statement count of `GET /sales`, never by time (docs/adr/0038).
  * - Isolation (ADR-0004): a second business opening the first one's sale by its own
- *   id sees "Eso ya no está.", never the sale itself.
+ *   id sees "That's gone.", never the sale itself.
  *
  * `consoleMessages` is asserted empty at the end bar one line, exactly like
  * `flow.spec.ts` (CODING_STANDARDS.md section 9: nothing personal or technical
@@ -377,7 +377,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   })
 
   await otherPage.goto(saleBUrl)
-  await expect(otherPage.getByText('Eso ya no está.')).toBeVisible()
+  await expect(otherPage.getByText("That's gone.")).toBeVisible()
   await otherPage.getByRole('link', { name: 'Volver a Ventas' }).click()
   await expectPath(otherPage, SALES)
   await otherContext.close()

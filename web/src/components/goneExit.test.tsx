@@ -15,7 +15,7 @@ function Page({ name }: { name: string }) {
   return (
     <main>
       <h1>{name}</h1>
-      {shown && <p role="status">Eso ya no está.</p>}
+      {shown && <p role="status">That's gone.</p>}
     </main>
   )
 }

@@ -221,7 +221,7 @@ test('a send that finds the withdrawal gone goes to Variedades with the fixed no
     within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Sí, guardar' }),
   )
 
-  expect(await screen.findByText('Eso ya no está. La lista ya está al día.')).toBeInTheDocument()
+  expect(await screen.findByText("That's gone. The list is up to date.")).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(VARIETIES_PATH)
 })
 

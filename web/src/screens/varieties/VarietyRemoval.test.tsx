@@ -19,7 +19,7 @@ import VarietyPage from './VarietyPage'
 import VarietyRoute from './VarietyRoute'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
-const GONE_TEXT = 'Eso ya no está. La lista ya está al día.'
+const GONE_TEXT = "That's gone. The list is up to date."
 const ARCHIVE_DETAIL =
   'Te quedan 12 g. Si la archivás, dejan de verse en Inicio y en las listas, pero el stock queda guardado.'
 
@@ -311,7 +311,7 @@ describe('a dropped network or a failure', () => {
 
     await user.click(screen.getByRole('button', { name: 'Sí, archivala' }))
 
-    expect(await screen.findByText(/conexión/i)).toBeInTheDocument()
+    expect(await screen.findByText(/connection/i)).toBeInTheDocument()
     expect(screen.queryByText(/^Variedad (eliminada|archivada)$/)).not.toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Blue Dream' })).toBeInTheDocument()
   })

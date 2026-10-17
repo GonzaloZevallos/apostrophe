@@ -303,7 +303,7 @@ test('deleting an entry that is already gone says so and refreshes the list', as
   const rows = await screen.findAllByRole('listitem')
   await userEvent.click(within(rows[0]!).getByRole('button', { name: 'Borrar' }))
   await userEvent.click(await screen.findByRole('button', { name: 'Sí, borrala' }))
-  expect(await screen.findByText('Eso ya no está. La lista ya está al día.')).toBeInTheDocument()
+  expect(await screen.findByText("That's gone. The list is up to date.")).toBeInTheDocument()
   expect(screen.queryByText('Entrada eliminada')).not.toBeInTheDocument()
 })
 
@@ -323,10 +323,10 @@ test('with no entries the empty state shows, with no rows', async () => {
   expect(screen.queryByRole('listitem')).not.toBeInTheDocument()
 })
 
-test('a variety that is gone, or an id that is not a number, shows "Eso ya no está."', async () => {
+test('a variety that is gone, or an id that is not a number, shows "That\'s gone."', async () => {
   fakeApi()
   renderAt(pathTo(VARIETY_ENTRIES, { id: 99 }))
-  expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
+  expect(await screen.findByText("That's gone.")).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Volver a Variedades' })).toBeInTheDocument()
 })
 

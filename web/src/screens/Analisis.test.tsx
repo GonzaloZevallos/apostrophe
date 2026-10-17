@@ -93,11 +93,11 @@ test('pending marks show their own N, never a $0 cost', async () => {
   renderAnalisis(async () => jsonResponse(200, analysisFixture))
 
   // The month header: average margin and stock shortfall each carry their own N.
-  expect(await screen.findByText(/margen promedio 55% y 2,5 g sin costo/)).toBeInTheDocument()
-  expect(screen.getByText(/Faltante de stock \$ 3\.000 y 1 g sin costo/)).toBeInTheDocument()
+  expect(await screen.findByText(/margen promedio 55% and 2,5 g not yet costed/)).toBeInTheDocument()
+  expect(screen.getByText(/Faltante de stock \$ 3\.000 and 1 g not yet costed/)).toBeInTheDocument()
 
   // "Flor B"'s own cost and margin carry the same mark.
-  expect(screen.getByText(/costo \$ 9\.000 y 2,5 g sin costo/)).toBeInTheDocument()
+  expect(screen.getByText(/costo \$ 9\.000 and 2,5 g not yet costed/)).toBeInTheDocument()
 })
 
 test('a variety only gifted shows no margin percentage', async () => {
@@ -135,7 +135,7 @@ test('month navigation requests the previous month and disables at the bounds', 
     return jsonResponse(200, analysisFixture)
   })
 
-  await screen.findByText('Octubre 2026', { selector: '.gastos__mes-etiqueta' })
+  await screen.findByText('October 2026', { selector: '.gastos__mes-etiqueta' })
   // The fixture's `next` is null: October is the current month, nothing comes after.
   expect(screen.getByRole('button', { name: 'Mes siguiente' })).toBeDisabled()
 
@@ -184,8 +184,8 @@ test('the computer table carries headers, the margin stack, pending marks and th
   expect(florBCell).not.toBeUndefined()
   const florBRow = (florBCell as HTMLElement).closest('tr') as HTMLElement
   const florBCells = within(florBRow).getAllByRole('cell')
-  expect(florBCells[costoIndex]).toHaveTextContent('y 2,5 g sin costo')
-  expect(florBCells[margenIndex]).toHaveTextContent('y 2,5 g sin costo')
+  expect(florBCells[costoIndex]).toHaveTextContent('and 2,5 g not yet costed')
+  expect(florBCells[margenIndex]).toHaveTextContent('and 2,5 g not yet costed')
 
   // Request item 1 ("Done when"): the margin stack's own child order. In that
   // same Margen cell, the amount sits above (before, in source order) the
@@ -194,7 +194,7 @@ test('the computer table carries headers, the margin stack, pending marks and th
   const marginSpans = florBMarginCell.querySelectorAll('span')
   expect(marginSpans).toHaveLength(2)
   expect(marginSpans[0]).toHaveTextContent('$ 6.000')
-  expect(marginSpans[0]).toHaveTextContent('y 2,5 g sin costo')
+  expect(marginSpans[0]).toHaveTextContent('and 2,5 g not yet costed')
   expect(marginSpans[1]).toHaveTextContent('40%')
 
   const weekTables = (await screen.findAllByText('Semana')).map((node) => node.closest('table'))
@@ -239,7 +239,7 @@ test('month navigation disables "Mes anterior" when there is no earlier month', 
   }
   renderAnalisis(async () => jsonResponse(200, firstMonthFixture))
 
-  await screen.findByText('Octubre 2026', { selector: '.gastos__mes-etiqueta' })
+  await screen.findByText('October 2026', { selector: '.gastos__mes-etiqueta' })
   expect(screen.getByRole('button', { name: 'Mes anterior' })).toBeDisabled()
 })
 
@@ -247,12 +247,12 @@ test('Promoción and Consumo propio show apart from Faltante de stock, each with
   renderAnalisis(async () => jsonResponse(200, analysisFixture))
 
   // The month header: a promotion with half a pending gram, an own use fully costed.
-  expect(await screen.findByText(/^Promoción \$ 4\.000 y 0,5 g sin costo$/)).toBeInTheDocument()
+  expect(await screen.findByText(/^Promoción \$ 4\.000 and 0,5 g not yet costed$/)).toBeInTheDocument()
   expect(screen.getByText(/^Consumo propio \$ 1\.500$/)).toBeInTheDocument()
-  expect(screen.getByText(/Faltante de stock \$ 3\.000 y 1 g sin costo/)).toBeInTheDocument()
+  expect(screen.getByText(/Faltante de stock \$ 3\.000 and 1 g not yet costed/)).toBeInTheDocument()
 
   // The since-the-first-record totals read the same two lines.
-  expect(screen.getByText(/^Promoción \$ 9\.000 y 0,5 g sin costo$/)).toBeInTheDocument()
+  expect(screen.getByText(/^Promoción \$ 9\.000 and 0,5 g not yet costed$/)).toBeInTheDocument()
   expect(screen.getByText(/^Consumo propio \$ 2\.500$/)).toBeInTheDocument()
 })
 
@@ -353,12 +353,12 @@ test('a fully pending figure reads only its grams on the header, the since lines
   renderAnalisis(async () => jsonResponse(200, pendingRowFixture()))
   await screen.findByText(SINCE_FIRST_RECORD_LABEL)
 
-  expect(screen.getByText('Faltante de stock 2 g sin costo')).toBeInTheDocument()
-  expect(screen.getByText('Promoción 3 g sin costo')).toBeInTheDocument()
+  expect(screen.getByText('Faltante de stock 2 g not yet costed')).toBeInTheDocument()
+  expect(screen.getByText('Promoción 3 g not yet costed')).toBeInTheDocument()
   const monthRows = Array.from(document.querySelectorAll<HTMLElement>('.analisis__mes-fila'))
-  expect(within(monthRows[1]!).getByText('Promoción 4 g sin costo')).toBeInTheDocument()
+  expect(within(monthRows[1]!).getByText('Promoción 4 g not yet costed')).toBeInTheDocument()
   const weekRows = Array.from(document.querySelectorAll<HTMLElement>('.analisis__semana'))
-  expect(within(weekRows[2]!).getByText('Costo de lo vendido 4 g sin costo')).toBeInTheDocument()
+  expect(within(weekRows[2]!).getByText('Costo de lo vendido 4 g not yet costed')).toBeInTheDocument()
   expect(screen.queryByText(/\$ 0 y \d+ g sin costo/)).not.toBeInTheDocument()
 })
 
@@ -368,7 +368,7 @@ test('a partly pending cost of goods reads its amount and its grams; a real zero
 
   const weekRows = Array.from(document.querySelectorAll<HTMLElement>('.analisis__semana'))
   expect(
-    within(weekRows[1]!).getByText('Costo de lo vendido $ 7.000 y 1,5 g sin costo'),
+    within(weekRows[1]!).getByText('Costo de lo vendido $ 7.000 and 1,5 g not yet costed'),
   ).toBeInTheDocument()
   expect(within(weekRows[3]!).getByText('Costo de lo vendido $ 0')).toBeInTheDocument()
 })
@@ -380,11 +380,11 @@ test('the computer tables carry the same cost lines under each row', async () =>
   const weekTable = document.querySelector<HTMLElement>('.analisis__tabla-contenedor--semanas')!
   const costRows = weekTable.querySelectorAll<HTMLElement>('.analisis__fila-costos')
   expect(costRows).toHaveLength(analysisFixture.weeks.length)
-  expect(within(costRows[2]!).getByText('Costo de lo vendido 4 g sin costo')).toBeInTheDocument()
+  expect(within(costRows[2]!).getByText('Costo de lo vendido 4 g not yet costed')).toBeInTheDocument()
   expect(within(costRows[0]!).getByText('Faltante de stock $ 2.000')).toBeInTheDocument()
 
   const monthTable = document.querySelector<HTMLElement>('.analisis__tabla-contenedor--meses')!
   const monthCostRows = monthTable.querySelectorAll<HTMLElement>('.analisis__fila-costos')
   expect(monthCostRows).toHaveLength(analysisFixture.months.length)
-  expect(within(monthCostRows[1]!).getByText('Promoción 4 g sin costo')).toBeInTheDocument()
+  expect(within(monthCostRows[1]!).getByText('Promoción 4 g not yet costed')).toBeInTheDocument()
 })

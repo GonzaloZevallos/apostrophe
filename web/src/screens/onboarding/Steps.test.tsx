@@ -444,7 +444,7 @@ test('a failed Onboarding write after a saved step shows the retry and the same 
   renderAt(ONBOARDING_CATEGORIES)
 
   await user.click(await screen.findByRole('button', { name: 'Seguir' }))
-  expect(await screen.findByText('Algo falló. Probá de nuevo.')).toBeInTheDocument()
+  expect(await screen.findByText('Something went wrong. Try again.')).toBeInTheDocument()
   expect(screen.getByText('Insumos')).toBeInTheDocument()
 
   fail = false

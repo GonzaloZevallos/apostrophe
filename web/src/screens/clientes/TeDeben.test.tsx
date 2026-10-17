@@ -80,21 +80,21 @@ test('one sale still owing reads "1 venta debiendo", singular', async () => {
   vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { ...debtorsFixture, sales_owing_count: 1 }))
   renderTeDeben()
 
-  expect(await screen.findByText('1 venta debiendo')).toBeInTheDocument()
+  expect(await screen.findByText('1 sale debiendo')).toBeInTheDocument()
 })
 
 test('three sales still owing read "3 ventas debiendo", plural', async () => {
   vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { ...debtorsFixture, sales_owing_count: 3 }))
   renderTeDeben()
 
-  expect(await screen.findByText('3 ventas debiendo')).toBeInTheDocument()
+  expect(await screen.findByText('3 sales debiendo')).toBeInTheDocument()
 })
 
-test('nobody owing shows the fixed "Nadie te debe"', async () => {
+test('nobody owing shows the fixed "Nobody owes you"', async () => {
   vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { total_owed: 0, sales_owing_count: 0, debtors: [] }))
   renderTeDeben()
 
-  expect(await screen.findByText('Nadie te debe')).toBeInTheDocument()
+  expect(await screen.findByText('Nobody owes you')).toBeInTheDocument()
   expect(screen.getByRole('region', { name: 'Te deben' })).toBeInTheDocument()
 })
 

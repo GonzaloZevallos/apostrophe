@@ -38,7 +38,7 @@ const ZKITTLEZ: Listed = { id: 1, name: 'Zkittlez', archived: false, current_pri
 const GELATO: Listed = { id: 2, name: 'Gelato', archived: false, current_price: null }
 const GORILLA: Listed = { id: 3, name: 'Gorilla', archived: false, current_price: null }
 
-const GONE = 'Eso ya no está.'
+const GONE = "That's gone."
 const GENERIC = 'Revisá los datos e intentá de nuevo.'
 
 interface Gate {
@@ -194,7 +194,7 @@ test('a stale save keeps the guilty line\'s variety and name, says it is gone an
   expect(screen.getByLabelText('Gramos 1')).toHaveValue('2')
   expect(screen.getByRole('button', { name: SUBMIT_NEW })).toBeDisabled()
   expect(router.state.location.pathname).toBe(WITHDRAWAL_NEW)
-  expect(screen.queryByText('Eso ya no está. La lista ya está al día.')).not.toBeInTheDocument()
+  expect(screen.queryByText("That's gone. The list is up to date.")).not.toBeInTheDocument()
   // the list was fetched again to learn who is gone
   expect(fetchMock.mock.calls.filter(([url]) => url === '/varieties').length).toBeGreaterThanOrEqual(2)
   expect(state.writes).toHaveLength(1)

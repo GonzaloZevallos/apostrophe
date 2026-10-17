@@ -30,7 +30,7 @@ test('"Sin conexión" is announced as one sentence in a status, promises no retr
 
   const status = screen.getByRole('status')
   expect(status).toHaveTextContent(SIN_CONEXION_MENSAJE)
-  expect(SIN_CONEXION_MENSAJE).toMatch(/^Sin conexión/)
+  expect(SIN_CONEXION_MENSAJE).toMatch(/^No connection/)
   expect(SIN_CONEXION_MENSAJE).not.toMatch(/reintent|solo|autom/i)
   expect(status.querySelectorAll('.aviso-ambar__detalle')).toHaveLength(0)
   expect(screen.queryAllByRole('button')).toHaveLength(0)
@@ -45,9 +45,9 @@ test('the server-error retry is an alert with its fixed text and no data', () =>
 })
 
 test('the notice for a gone record is announced like a toast, with no Deshacer and no Reintentar', () => {
-  render(<Notice kind="notice" message="Eso ya no está. La lista ya está al día." />)
+  render(<Notice kind="notice" message="That's gone. The list is up to date." />)
 
-  expect(screen.getByRole('status')).toHaveTextContent('Eso ya no está. La lista ya está al día.')
+  expect(screen.getByRole('status')).toHaveTextContent("That's gone. The list is up to date.")
   expect(screen.queryByText(/Deshacer|Reintentar/)).toBeNull()
   expect(screen.queryAllByRole('button')).toHaveLength(0)
 })

@@ -117,7 +117,7 @@ test('a delete marks the catalog stale', async () => {
   expect(queryClient.getQueryState(catalogQueryOptions().queryKey)?.isInvalidated).toBe(true)
 })
 
-test('a variety that is gone says "Eso ya no está." and goes back to Variedades', async () => {
+test('a variety that is gone says "That\'s gone." and goes back to Variedades', async () => {
   renderVarieties(
     [pathTo(VARIETY_PRICES, { id: 1 })],
     api({
@@ -126,14 +126,14 @@ test('a variety that is gone says "Eso ya no está." and goes back to Variedades
     }),
   )
 
-  expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
+  expect(await screen.findByText("That's gone.")).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Volver a Variedades' })).toBeInTheDocument()
 })
 
 test('an id that is not a number is gone too, and asks the API nothing', async () => {
   const { fetchMock } = renderVarieties([pathTo(VARIETY_PRICES, { id: 'abc' })], api())
 
-  expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
+  expect(await screen.findByText("That's gone.")).toBeInTheDocument()
   expect(fetchMock).not.toHaveBeenCalled()
 })
 
@@ -148,7 +148,7 @@ test('a delete that finds the price gone says so and refreshes the list', async 
   await user.click(buttons[0]!)
   await user.click(await screen.findByRole('button', { name: 'Sí, borrala' }))
 
-  expect(await screen.findByText('Eso ya no está. La lista ya está al día.')).toBeInTheDocument()
+  expect(await screen.findByText("That's gone. The list is up to date.")).toBeInTheDocument()
 })
 
 function switches(bulk: boolean, vip: boolean): Record<string, () => Response> {

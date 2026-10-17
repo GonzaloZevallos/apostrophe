@@ -80,14 +80,14 @@ for (const viewport of VIEWPORTS) {
     await expect(toast).not.toContainText('Carla')
     await expect(page.locator('.bloque-deben .cifra-xl')).toHaveText('$ 3.000')
 
-    // The rest, with "Todo": the row leaves and the block reads "Nadie te debe".
+    // The rest, with "Todo": the row leaves and the block reads "Nobody owes you".
     await page.getByRole('link', { name: 'Cobrar a Carla Cobrar' }).click()
     await page.getByRole('button', { name: 'Todo: $ 3.000' }).click()
     await page.getByRole('radio', { name: 'Transferencia' }).check()
     await page.getByRole('button', { name: 'Guardar' }).click()
     await expectPath(page, HOME)
     await expect(page.getByText('Cobro guardado', { exact: true })).toBeVisible()
-    await expect(page.getByText('Nadie te debe')).toBeVisible()
+    await expect(page.getByText('Nobody owes you')).toBeVisible()
     await expect(page.getByRole('link', { name: /^Cobrar a / })).toHaveCount(0)
 
     // One move: Back from Inicio does not land on Registrar cobro again.

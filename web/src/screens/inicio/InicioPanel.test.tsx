@@ -173,7 +173,7 @@ for (const theme of ['claro', 'oscuro'] as const) {
     })
     expect(order[0]?.compareDocumentPosition(order[1] as Element)).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
     expect(order[1]?.compareDocumentPosition(order[2] as Element)).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
-    expect(screen.getByText('2 ventas · promedio $ 7.500 · 10 g')).toBeInTheDocument()
+    expect(screen.getByText('2 sales · promedio $ 7.500 · 10 g')).toBeInTheDocument()
     for (const label of RESULT_LABELS) expect(screen.queryByText(label)).not.toBeInTheDocument()
     expect(container.querySelector('.panel-resultados')).toBeNull()
     expect(container.querySelector('.panel-lista')).toBeNull()
@@ -192,7 +192,7 @@ test('Hoy shows the average only when there were sales, and real zeros otherwise
   renderInicio()
   await screen.findByText('Vendiste hoy')
 
-  expect(screen.getByText('0 ventas · 0 g')).toBeInTheDocument()
+  expect(screen.getByText('0 sales · 0 g')).toBeInTheDocument()
   expect(screen.queryByText(/promedio/)).not.toBeInTheDocument()
 })
 
@@ -300,11 +300,11 @@ test('every stock row says its state in a word as well as its mark, in both them
   }
 })
 
-test('"Nadie te debe" shows with nothing to tap when nobody owes', async () => {
+test('"Nobody owes you" shows with nothing to tap when nobody owes', async () => {
   panelNow = { ...PANEL, debts: debts([], 0, 0) }
   renderInicio()
 
-  expect(await screen.findByText('Nadie te debe')).toBeInTheDocument()
+  expect(await screen.findByText('Nobody owes you')).toBeInTheDocument()
   expect(screen.queryByRole('link', { name: /Cobrar a/ })).not.toBeInTheDocument()
   expect(screen.queryByRole('link', { name: 'Te deben' })).not.toBeInTheDocument()
 })
@@ -396,10 +396,10 @@ test('Registrar cobro opened from Inicio: a full payment says plain "Cobro guard
   await waitFor(() => expect(screen.queryByText('Ana Pérez')).not.toBeInTheDocument())
   expect(screen.getAllByRole('link', { name: /^Cobrar a / })).toHaveLength(3)
   expect(screen.getByRole('link', { name: 'Cobrar a Dani Ruiz' })).toBeInTheDocument()
-  expect(screen.getByText('3 ventas · desde 14/09')).toBeInTheDocument()
+  expect(screen.getByText('3 sales · desde 14/09')).toBeInTheDocument()
 })
 
-test('Registrar cobro opened from Inicio: with nobody left owing the block reads "Nadie te debe"', async () => {
+test('Registrar cobro opened from Inicio: with nobody left owing the block reads "Nobody owes you"', async () => {
   paymentAnswer = {
     ...paymentFixture,
     after: { balance: 0, owing_since: null, standing: 'settled' },
@@ -409,7 +409,7 @@ test('Registrar cobro opened from Inicio: with nobody left owing the block reads
   renderInicio()
   await payFromInicio('11000')
 
-  expect(await screen.findByText('Nadie te debe')).toBeInTheDocument()
+  expect(await screen.findByText('Nobody owes you')).toBeInTheDocument()
   expect(screen.queryByRole('link', { name: /Cobrar a/ })).not.toBeInTheDocument()
 })
 

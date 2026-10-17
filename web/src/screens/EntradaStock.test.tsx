@@ -555,13 +555,13 @@ test('a save goes back by history too, and says "Entrada guardada" there', async
   expect(await screen.findByText('Entrada guardada')).toBeInTheDocument()
 })
 
-test('a missing or foreign entry shows "Eso ya no está." with "Volver a Variedades"', async () => {
+test('a missing or foreign entry shows "That\'s gone." with "Volver a Variedades"', async () => {
   fakeFor(stockOf([]), {
     'GET /stock/entries/99': () => jsonResponse(404, { code: 'stock.entry_not_found', detail: 'x' }),
   })
   renderForm(pathTo(STOCK_ENTRY, { id: 99 }))
 
-  expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
+  expect(await screen.findByText("That's gone.")).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Volver a Variedades' })).toHaveAttribute('href', VARIETIES_PATH)
 })
 

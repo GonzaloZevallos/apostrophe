@@ -254,7 +254,7 @@ test('saving an edit on a customer that is gone shows the gone notice, not the t
   await userEvent.click(screen.getByRole('button', { name: 'Guardá y usá' }))
 
   await waitFor(() => expect(screen.getByText('la ficha')).toBeInTheDocument())
-  expect(screen.getByText('Eso ya no está. La lista ya está al día.')).toBeInTheDocument()
+  expect(screen.getByText("That's gone. The list is up to date.")).toBeInTheDocument()
   expect(screen.queryByText('Cliente guardado')).not.toBeInTheDocument()
 })
 

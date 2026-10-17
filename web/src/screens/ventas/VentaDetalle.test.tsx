@@ -145,7 +145,7 @@ test('a gone sale shows the plain gone-detail state, never the generic retry', a
   vi.mocked(fetch).mockResolvedValue(jsonResponse(404, { code: 'sale.not_found' }))
   renderDetalle()
 
-  expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
+  expect(await screen.findByText("That's gone.")).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Volver a Ventas' })).toHaveAttribute('href', SALES)
 })
 
@@ -220,7 +220,7 @@ test('a sale already gone when deleted shows the gone notice and returns to Vent
   await userEvent.click(screen.getByRole('button', { name: 'Borrar venta' }))
   await userEvent.click(screen.getByRole('button', { name: 'Sí, borrala' }))
 
-  expect(await screen.findByText('Eso ya no está. La lista ya está al día.')).toBeInTheDocument()
+  expect(await screen.findByText("That's gone. The list is up to date.")).toBeInTheDocument()
 })
 
 test('a sale with a customer already never shows Asignar cliente', async () => {
@@ -322,7 +322,7 @@ test('assigning to a sale a partner deleted meanwhile shows the gone notice on V
   fireEvent.change(screen.getByPlaceholderText('Teléfono o nombre'), { target: { value: 'Nico' } })
   await userEvent.click(await screen.findByText('Nico'))
 
-  expect(await screen.findByText('Eso ya no está. La lista ya está al día.')).toBeInTheDocument()
+  expect(await screen.findByText("That's gone. The list is up to date.")).toBeInTheDocument()
 })
 
 test('assigning a customer a partner deleted meanwhile shows the gone notice on Ventas', async () => {
@@ -340,7 +340,7 @@ test('assigning a customer a partner deleted meanwhile shows the gone notice on 
   fireEvent.change(screen.getByPlaceholderText('Teléfono o nombre'), { target: { value: 'Nico' } })
   await userEvent.click(await screen.findByText('Nico'))
 
-  expect(await screen.findByText('Eso ya no está. La lista ya está al día.')).toBeInTheDocument()
+  expect(await screen.findByText("That's gone. The list is up to date.")).toBeInTheDocument()
 })
 
 test('a sale keeps its recorded "VIP" and "por cantidad" badges while both pricing switches are off', async () => {

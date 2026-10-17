@@ -231,7 +231,7 @@ describe('the list', () => {
   test('a failed read shows the generic retry, ', async () => {
     renderApp(VARIETIES_PATH, { answers: { 'GET /stock': () => json(500, { code: 'unknown' }) } })
 
-    expect(await screen.findByText('Algo falló. Probá de nuevo.')).toBeInTheDocument()
+    expect(await screen.findByText('Something went wrong. Try again.')).toBeInTheDocument()
   })
 })
 

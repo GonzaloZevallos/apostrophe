@@ -88,7 +88,7 @@ function RecordStub({ screen: id }: { screen: RecordLabelledScreen }) {
   }, [param])
   const shown = loaded?.param === param ? loaded : undefined
   if (shown === undefined) return <p>Cargando</p>
-  return shown.detail === null ? <p>Eso ya no está.</p> : <Declare screen={id} detail={shown.detail} />
+  return shown.detail === null ? <p>That's gone.</p> : <Declare screen={id} detail={shown.detail} />
 }
 
 /** The shell asks `GET /first-run` on a root, so it needs a client; the read fails here and the
@@ -249,7 +249,7 @@ test('a marked screen whose fetch answers 404 shows no back', async () => {
   fakeApi({})
   renderAt([pathTo(VARIETY_ENTRIES, { id: 9 })])
 
-  expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
+  expect(await screen.findByText("That's gone.")).toBeInTheDocument()
   expect(backs()).toEqual([])
 })
 

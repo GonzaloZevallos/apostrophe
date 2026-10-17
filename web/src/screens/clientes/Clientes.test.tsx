@@ -199,7 +199,7 @@ test('a server error on the list shows the generic retry, never the empty-list t
   vi.mocked(fetch).mockResolvedValue(new Response('boom', { status: 500 }))
   renderClientes()
 
-  expect(await screen.findByText('Algo falló. Probá de nuevo.')).toBeInTheDocument()
+  expect(await screen.findByText('Something went wrong. Try again.')).toBeInTheDocument()
   expect(screen.queryByText('Todavía no agregaste ningún cliente.')).not.toBeInTheDocument()
 })
 
@@ -255,7 +255,7 @@ test("Te deben shows the API's order and total as answered, never a client sort 
 
   const section = await screen.findByRole('region', { name: 'Te deben' })
   expect(within(section).getByText('$ 99.000')).toBeInTheDocument()
-  expect(within(section).getByText('1 venta debiendo')).toBeInTheDocument()
+  expect(within(section).getByText('1 sale debiendo')).toBeInTheDocument()
   expect(
     within(section).getAllByRole('link', { name: /^Cobrar a / }).map((link) => link.getAttribute('aria-label')),
   ).toEqual(['Cobrar a Zoe', 'Cobrar a Abel'])
@@ -328,11 +328,11 @@ test('"Cobrar a X" is on every row that owes, in the section and in the list, an
   expect(screen.queryByRole('link', { name: 'Cobrar a Lu' })).not.toBeInTheDocument()
 })
 
-test('with nobody owing, a fixed "Nadie te debe" with nothing to tap sits above the full A–Z list', async () => {
+test('with nobody owing, a fixed "Nobody owes you" with nothing to tap sits above the full A–Z list', async () => {
   vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [LU_SETTLED])))
   renderClientes()
 
-  const nobody = await screen.findByText('Nadie te debe')
+  const nobody = await screen.findByText('Nobody owes you')
   expect(nobody.closest('a, button')).toBeNull()
   const section = screen.getByRole('region', { name: 'Te deben' })
   expect(within(section).queryByRole('link')).not.toBeInTheDocument()

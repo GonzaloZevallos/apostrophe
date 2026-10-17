@@ -180,11 +180,11 @@ test('a customer answered as settled opens without an error, and the save is ref
   expect(screen.getByLabelText('Efectivo')).toBeChecked()
 })
 
-test('a customer that is gone shows "Eso ya no está." with a way back to Clientes', async () => {
+test('a customer that is gone shows "That\'s gone." with a way back to Clientes', async () => {
   renderApp([{ pathname: PAYMENT }], 'phone', {
     'GET /customers/1': () => jsonResponse(404, { code: 'customer.not_found' }),
   })
 
-  expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
+  expect(await screen.findByText("That's gone.")).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Volver a Clientes' })).toBeInTheDocument()
 })

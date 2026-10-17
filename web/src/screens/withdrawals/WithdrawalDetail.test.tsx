@@ -2,7 +2,7 @@
  * The withdrawal detail screen (route `/withdrawals/:id`) through Testing Library, `fetch`
  * faked with the withdrawal fixture: its chrome, what it shows, "Editar" opening the
  * filled form with a confirmed save, "Borrar" with its fixed text and toast, and both
- * "Eso ya no está." forms (`stock.md`, "A withdrawal's detail").
+ * "That's gone." forms (`stock.md`, "A withdrawal's detail").
  */
 
 import { screen, waitFor, within } from '@testing-library/react'
@@ -141,14 +141,14 @@ test('Editar opens the form filled in; saving is confirmed first and toasts "Ret
   ])
 })
 
-test('opening a withdrawal that is gone shows "Eso ya no está." and "Volver a Variedades"', async () => {
+test('opening a withdrawal that is gone shows "That\'s gone." and "Volver a Variedades"', async () => {
   renderWithdrawals([ONE], async () => jsonResponse(404, { code: 'stock.withdrawal_not_found' }))
 
-  expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
+  expect(await screen.findByText("That's gone.")).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Volver a Variedades' })).toHaveAttribute('href', VARIETIES_PATH)
 })
 
-test('deleting a withdrawal that is gone goes to Variedades with "Eso ya no está. La lista ya está al día."', async () => {
+test('deleting a withdrawal that is gone goes to Variedades with "That\'s gone. The list is up to date."', async () => {
   const { router } = renderWithdrawals(
     [VARIETIES_PATH, ONE],
     serving(WITHDRAWAL, async (url, init) =>
@@ -162,7 +162,7 @@ test('deleting a withdrawal that is gone goes to Variedades with "Eso ya no est�
     within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Sí, borralo' }),
   )
 
-  expect(await screen.findByText('Eso ya no está. La lista ya está al día.')).toBeInTheDocument()
+  expect(await screen.findByText("That's gone. The list is up to date.")).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(VARIETIES_PATH)
 })
 

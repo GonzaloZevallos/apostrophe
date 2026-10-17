@@ -236,7 +236,7 @@ describe('the Archivadas card', () => {
     })
     await screen.findByText('Alfa Vieja')
     await user.click(screen.getAllByRole('button', { name: 'Restaurar' })[0]!)
-    expect(await screen.findByText('Eso ya no está. La lista ya está al día.')).toBeTruthy()
+    expect(await screen.findByText("That's gone. The list is up to date.")).toBeTruthy()
   })
 })
 

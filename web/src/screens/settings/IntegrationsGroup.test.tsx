@@ -386,7 +386,7 @@ test('Buscar mi chat with no connection shows the offline notice and keeps the f
   await screen.findByLabelText('Tu chat')
   await userEvent.click(screen.getByRole('button', { name: 'Buscar mi chat' }))
 
-  expect(await screen.findByText(/conexión/i)).toBeInTheDocument()
+  expect(await screen.findByText(/connection/i)).toBeInTheDocument()
   expect(screen.getByLabelText('Tu chat')).toHaveValue('123456789')
 })
 

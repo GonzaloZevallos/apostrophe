@@ -517,20 +517,20 @@ describe('the actions and the sections', () => {
 })
 
 describe('gone and foreign varieties', () => {
-  test('a variety that is not there, or is another business\'s, shows "Eso ya no está."', async () => {
+  test('a variety that is not there, or is another business\'s, shows "That\'s gone."', async () => {
     renderPage(VARIETY_ONE, {
       'GET /varieties/1': () => json(404, { code: 'variety.not_found' }),
       'GET /varieties/1/prices': () => json(404, { code: 'variety.not_found' }),
     })
 
-    expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
+    expect(await screen.findByText("That's gone.")).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Volver a Variedades' })).toHaveAttribute('href', VARIETIES)
   })
 
   test('VarietyRoute: an id that is not a whole number is gone, and the API is never asked', async () => {
     const { fetchMock } = renderPage(pathTo(VARIETY, { id: 'abc' }))
 
-    expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
+    expect(await screen.findByText("That's gone.")).toBeInTheDocument()
     expect(fetchMock).not.toHaveBeenCalled()
   })
 })
@@ -827,14 +827,14 @@ describe('Aviso de stock bajo: the form', () => {
     expect(writes(fetchMock)).toEqual([])
   })
 
-  test('a variety that is gone while saving shows "Eso ya no está."', async () => {
+  test('a variety that is gone while saving shows "That\'s gone."', async () => {
     const user = userEvent.setup()
     renderPage(VARIETY_ONE, { 'PUT /stock/varieties/1/threshold': () => json(404, { code: 'variety.not_found' }) })
     await user.click(await screen.findByRole('button', { name: 'Editar aviso' }))
     await user.type(await screen.findByLabelText('Avisar con menos de'), '1')
     await user.click(screen.getByRole('button', { name: 'Guardá el aviso' }))
 
-    expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
+    expect(await screen.findByText("That's gone.")).toBeInTheDocument()
   })
 
   test('Back closes the form', async () => {
@@ -973,13 +973,13 @@ describe('En el catálogo: the form', () => {
     expect(writes(fetchMock)).toEqual([])
   })
 
-  test('a variety that is gone while saving shows "Eso ya no está."', async () => {
+  test('a variety that is gone while saving shows "That\'s gone."', async () => {
     const user = userEvent.setup()
     renderPage(VARIETY_ONE, { 'PUT /catalog/varieties/1': () => json(404, { code: 'catalog.variety_not_found' }) })
     await user.click(within(await section()).getByRole('button', { name: 'Editar catálogo' }))
     await user.click(screen.getByRole('button', { name: 'Guardá el catálogo' }))
 
-    expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
+    expect(await screen.findByText("That's gone.")).toBeInTheDocument()
   })
 
   test('Back closes the form', async () => {

@@ -301,7 +301,7 @@ describe('across 900 px', () => {
     const user = userEvent.setup()
     renderApp([NEW_PATH], 'computer')
     await user.type(await screen.findByLabelText(/^Precio de lista/), '12000')
-    await user.click(screen.getByRole('button', { name: /^Hoy 02\/10/ }))
+    await user.click(screen.getByRole('button', { name: /^Today 02\/10/ }))
     fireEvent.change(screen.getByLabelText('Rige desde', { exact: true }), { target: { value: '2026-09-28' } })
     await user.click(screen.getByRole('button', { name: '28/09' }))
     const form = screen.getByRole('button', { name: 'Guardá el precio' }).closest('form')

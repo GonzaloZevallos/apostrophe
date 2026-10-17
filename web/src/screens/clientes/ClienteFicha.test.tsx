@@ -133,7 +133,7 @@ test('a customer that is gone shows the gone screen, with a way back to the list
   )
   renderFicha('999')
 
-  expect(await screen.findByText('Eso ya no está.')).toBeInTheDocument()
+  expect(await screen.findByText("That's gone.")).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Volver a Clientes' })).toHaveAttribute(
     'href',
     CUSTOMERS,
@@ -470,7 +470,7 @@ test('Borrar cobro on a credit-only payment already gone closes the dialog and s
   await userEvent.click(await screen.findByRole('button', { name: 'Borrar cobro' }))
   await userEvent.click(screen.getByRole('button', { name: 'Sí, borralo' }))
 
-  expect(await screen.findByText('Eso ya no está. La lista ya está al día.')).toBeInTheDocument()
+  expect(await screen.findByText("That's gone. The list is up to date.")).toBeInTheDocument()
   expect(screen.queryByText('¿Borrás el cobro de $ 44.000 (efectivo) del 06/10?')).not.toBeInTheDocument()
   expect(screen.queryByText('Cobro eliminado')).not.toBeInTheDocument()
 })
@@ -683,7 +683,7 @@ test('a payment deleted by a partner meanwhile shows the gone notice, never the 
   await userEvent.click(borrar)
   await userEvent.click(screen.getByRole('button', { name: 'Sí, borralo' }))
 
-  expect(await screen.findByText('Eso ya no está. La lista ya está al día.')).toBeInTheDocument()
+  expect(await screen.findByText("That's gone. The list is up to date.")).toBeInTheDocument()
   expect(screen.queryByText('Cobro eliminado')).not.toBeInTheDocument()
 })
 
@@ -723,7 +723,7 @@ test('Borrar cobro when the connection drops shows "Sin conexión", never the ge
 
   expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
   expect(screen.queryByText(ERROR_GENERICO_MENSAJE)).not.toBeInTheDocument()
-  expect(screen.queryByText('Eso ya no está. La lista ya está al día.')).not.toBeInTheDocument()
+  expect(screen.queryByText("That's gone. The list is up to date.")).not.toBeInTheDocument()
   expect(screen.queryByText('Cobro eliminado')).not.toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Borrar cobro' })).toBeInTheDocument()
 })
@@ -745,7 +745,7 @@ test('Borrar cobro refused for a reason other than "gone" shows the generic retr
 
   expect(await screen.findByText(ERROR_GENERICO_MENSAJE)).toBeInTheDocument()
   expect(screen.queryByText(SIN_CONEXION_MENSAJE)).not.toBeInTheDocument()
-  expect(screen.queryByText('Eso ya no está. La lista ya está al día.')).not.toBeInTheDocument()
+  expect(screen.queryByText("That's gone. The list is up to date.")).not.toBeInTheDocument()
   expect(screen.queryByText('Cobro eliminado')).not.toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Borrar cobro' })).toBeInTheDocument()
 })

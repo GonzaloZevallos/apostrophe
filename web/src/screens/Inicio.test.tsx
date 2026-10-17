@@ -1,7 +1,7 @@
 /**
  * `Inicio`, now the panel (plan, "Front": built only from
  * `web/src/api/fixtures/panel.json`): every figure on every tab, negative
- * Ganancia/Caja, the pending-cost note's placement, no-average, "Nadie te debe",
+ * Ganancia/Caja, the pending-cost note's placement, no-average, "Nobody owes you",
  * navigation, stock rows, a no-year range across a year boundary, the
  * "Arrancá por las variedades" banner above the figures, and a remount with a
  * different answer never showing the first answer's figures (`gcTime: 0`).
@@ -186,7 +186,7 @@ test('switching to Semana shows the week\'s figures, including a negative Caja',
   expect(await screen.findByText('Vendiste esta semana')).toBeInTheDocument()
   expect(screen.getByText('28/09 – 04/10')).toBeInTheDocument()
   expect(screen.getByText('$ 42.000')).toBeInTheDocument()
-  expect(screen.getByText('5 ventas · promedio $ 8.400 · 28 g')).toBeInTheDocument()
+  expect(screen.getByText('5 sales · promedio $ 8.400 · 28 g')).toBeInTheDocument()
   expect(screen.getByText('−$ 12.000')).toBeInTheDocument() // cash is negative
 })
 
@@ -344,7 +344,7 @@ test('no sales shows no average, and the range reads with no year', async () => 
 
   expect(await screen.findByText('Vendiste este mes')).toBeInTheDocument()
   expect(screen.getByText('01/10 – 31/10')).toBeInTheDocument()
-  expect(screen.getByText('0 ventas · 0 g')).toBeInTheDocument()
+  expect(screen.getByText('0 sales · 0 g')).toBeInTheDocument()
   expect(screen.queryByText(/promedio/)).not.toBeInTheDocument()
   expect(screen.getAllByText('−$ 5.000')).toHaveLength(2) // profit and cash
   expect(container.querySelector<HTMLElement>('.panel-resultados')).not.toBeNull()
@@ -355,7 +355,7 @@ test('Te deben: total, count, oldest date, and the teaser opens a customer card'
   renderInicio()
 
   expect(await screen.findByText('$ 37.000')).toBeInTheDocument()
-  expect(screen.getByText('4 ventas · desde 14/09')).toBeInTheDocument()
+  expect(screen.getByText('4 sales · desde 14/09')).toBeInTheDocument()
   const row = screen.getByText('Ana Pérez').closest('a')
   expect(row).not.toBeNull()
   row?.click()
@@ -400,7 +400,7 @@ test('tapping "Te deben" opens Clientes, where the debtors section is', async ()
   expect(await screen.findByText('pantalla clientes')).toBeInTheDocument()
 })
 
-test('"Nadie te debe" with nothing to tap when nobody owes', async () => {
+test('"Nobody owes you" with nothing to tap when nobody owes', async () => {
   const empty: PanelAnswer = {
     ...PANEL,
     debts: { total_owed: 0, sales_owing_count: 0, oldest: null, teaser: [] },
@@ -408,7 +408,7 @@ test('"Nadie te debe" with nothing to tap when nobody owes', async () => {
   stubFetch(empty)
   renderInicio()
 
-  expect(await screen.findByText('Nadie te debe')).toBeInTheDocument()
+  expect(await screen.findByText('Nobody owes you')).toBeInTheDocument()
   expect(screen.queryByRole('link', { name: 'Te deben' })).not.toBeInTheDocument()
 })
 
