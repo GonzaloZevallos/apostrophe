@@ -279,9 +279,9 @@ describe("an archived variety's page", () => {
     expect(screen.getByText('Zeta Vieja')).toBeTruthy()
     // Nothing refetched the page under the seller's finger before it left.
     const posted = fetchMock.mock.calls.findIndex(([, init]) => init?.method === 'POST')
-    const afterPost = fetchMock.mock.calls.slice(posted + 1).map(([url]) => url)
-    expect(afterPost).not.toContain('/varieties/4')
-    expect(afterPost).not.toContain('/stock?archived=true')
+    const requested = fetchMock.mock.calls.slice(posted + 1).map(([url]) => url)
+    expect(requested).not.toContain('/varieties/4')
+    expect(requested).not.toContain('/stock?archived=true')
     watch.stop()
     expect(watch.seen()).toBe(false)
     // One entry back is Variedades: Archivadas was not pushed a second time.

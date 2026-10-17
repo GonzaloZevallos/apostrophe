@@ -85,7 +85,7 @@ for (const viewport of VIEWPORTS) {
       // The archived page's own heading, on both viewports (a phone has no Rosa link here).
       await expect(page.getByRole('heading', { name: 'Rosa' })).toBeVisible()
       await expect(page.getByRole('button', { name: '‹ Archivadas' })).toBeVisible()
-      await expect(page.locator('.variedad-marcas').getByText('Archivada', { exact: true })).toBeVisible()
+      await expect(page.locator('.variedad-resumen--archivada + .variedad-marcas').getByText('Archivada', { exact: true })).toBeVisible()
       await expect(page.getByText('+ Entrada')).toHaveCount(0)
       await expect(page.getByText('Nuevo precio')).toHaveCount(0)
       await expect(page.getByText('Sacar del stock')).toHaveCount(0)
@@ -101,8 +101,11 @@ for (const viewport of VIEWPORTS) {
         await page.getByRole('link', { name: /Rosa/ }).click()
       }
       await page.getByRole('button', { name: 'Restaurar' }).last().click()
+      // The page never turns into the live variety: it goes back, and with none archived left
+      // lands on Variedades, where the restored variety is listed.
       await expect(page.getByText('Variedad restaurada')).toBeVisible()
-      await expect(page.getByRole('button', { name: 'Archivar variedad' })).toBeVisible()
+      await expect(page.getByRole('link', { name: /Rosa/ })).toBeVisible()
+      await expect(page.getByText(/Archivadas \(/)).toHaveCount(0)
       await page.goto(VARIETIES)
       await expect(page.getByRole('link', { name: /Rosa/ })).toBeVisible()
       await expect(page.getByText(/Archivadas \(/)).toHaveCount(0)
