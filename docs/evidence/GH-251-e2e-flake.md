@@ -113,7 +113,7 @@ tests.e2e_app'` (the agentic runtime's own process excluded). "others at launch"
 processes from other checkouts or earlier runs. No two of the runs in the table overlapped.
 Three earlier base runs (labelled b-b4, b-c4, b-d3 at the time) did overlap, because two run
 chains of mine were alive at once on the one base tree; they are **not in the table**, were
-not read for an outcome, and were rerun alone under the same labels. That overlap is not one of
+not read for an outcome, and are being rerun alone under the same labels, one at a time (b-b4 and b-c4 are done). That overlap is not one of
 the closed void reasons, so it is disclosed here and not counted as a void. Other tasks on this shared machine ran their own e2e, which is a load this document records but
 does not control.
 
