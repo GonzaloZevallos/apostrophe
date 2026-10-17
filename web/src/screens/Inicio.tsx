@@ -4,8 +4,7 @@
  * straight from `GET /panel` (`PanelAnswer`, `web/src/api/fixtures/panel.json`) —
  * this screen never computes, sorts or sign-tests an amount itself (plan
  * invariant: "No screen does arithmetic, sorting, sign tests or comparisons on an
- * amount from the API"). Ganancia and Caja render through `formatSignedMoney`;
- * ranges through `formatDateShort` only.
+ * amount from the API"). The figures and ranges are drawn by `inicio/InicioPanel.tsx`.
  *
  * The panel query is frozen (`gcTime: 0`, `staleTime: Infinity`, no refetch on
  * focus or reconnect, plan invariant): a remount always re-fetches, so the

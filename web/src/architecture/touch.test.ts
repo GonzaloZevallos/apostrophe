@@ -422,7 +422,6 @@ const SELECTABLE: Record<string, string> = Object.fromEntries(
     '.variedad-item',
     '.fila-entrada__enlace',
     '.bloque-deben__datos',
-    '.fila-stock--enlace',
     '.variedad-fila',
     '.catalogo__fila-nombre',
   ].map(

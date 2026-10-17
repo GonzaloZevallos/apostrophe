@@ -4145,7 +4145,8 @@ body {
     .selector-pago__opcion,
     .gastos__mes-boton,
     .encabezado__volver,
-    .historial-fila__borrar
+    .historial-fila__borrar,
+    .fila-stock--enlace
   ) {
   -webkit-user-select: none;
   user-select: none;

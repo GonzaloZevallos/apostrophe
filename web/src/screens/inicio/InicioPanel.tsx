@@ -224,7 +224,7 @@ function TeDebenBlock({ debts }: { debts: PanelDebts }) {
       <span className="cifra-xl">{formatMoney(debts.total_owed)}</span>
       <span className="pie">
         {salesCount(debts.sales_owing_count)}
-        {debts.oldest !== null && ` · desde ${formatDateShort(debts.oldest)}`}
+        {` · desde ${formatDateShort(debts.oldest)}`}
       </span>
       {debts.teaser.map((row) => (
         <div key={row.customer_id} className="bloque-deben__fila">
