@@ -11,6 +11,7 @@ from typing import Any
 
 from fastapi.testclient import TestClient
 
+from app.clock import system_clock
 from app.db import make_engine
 from app.main import create_app
 from app.settings import Settings
@@ -102,8 +103,12 @@ def test_reset_token_opens_a_live_reset_link(tmp_path: Path) -> None:
     }
     invite = sample_app.new_business_token(env)
     app = create_app(
-        Settings("sample-secret", url), engine=make_engine(url), hasher=TEST_HASHER,
-        telegram=FakeTelegram(), upkeep_ticker=False,
+        Settings("sample-secret", url),
+        engine=make_engine(url),
+        clock=system_clock,
+        hasher=TEST_HASHER,
+        telegram=FakeTelegram(),
+        upkeep_ticker=False,
     )
     with TestClient(app) as web:
         accepted = web.post(

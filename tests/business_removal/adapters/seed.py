@@ -7,13 +7,13 @@ Public so more than one test module can build the same fixture without repeating
 from __future__ import annotations
 
 import sqlite3
-from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.engine import Engine
 
+from app.clock import system_clock
 from app.db import make_engine
 from app.main import create_app
 from app.settings import Settings
@@ -29,8 +29,6 @@ EXPENSE_DETAIL = "Factura de electricidad de septiembre"
 PAYMENT_AMOUNT = 54321
 EXPENSE_AMOUNT = 112233
 SHIPPING_CHARGED = 98765
-NOW = datetime(2026, 10, 3, 12, 0, tzinfo=UTC)
-
 LOW_STOCK_THRESHOLD = 15
 CATALOG_HEADER = "Catalogo de La Huerta"
 CATALOG_FOOTER = "Gracias por tu compra"
@@ -38,7 +36,7 @@ CATALOG_FOOTER = "Gracias por tu compra"
 
 def _accept(client: TestClient, engine: Engine, name: str, email: str) -> str:
     accepted = client.post(
-        f"/invitations/{invite(engine, datetime.now(UTC))}/accept",
+        f"/invitations/{invite(engine, system_clock())}/accept",
         json={"business_name": name, "email": email, "password": PASSWORD},
     )
     assert accepted.status_code == 201, accepted.text
@@ -60,6 +58,7 @@ def seed(db_path: Path) -> tuple[str, str]:
     app = create_app(
         settings,
         engine=engine,
+        clock=system_clock,
         hasher=TEST_HASHER,
         telegram=FakeTelegram(),
         upkeep_ticker=False,

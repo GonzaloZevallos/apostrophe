@@ -12,6 +12,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.accounts.adapters.cli import main
+from app.clock import system_clock
 from app.db import make_engine
 from app.main import create_app
 from app.settings import Settings
@@ -37,8 +38,12 @@ def test_the_command_prints_a_link_that_resets_a_known_user_s_password(
     invite_link = capsys.readouterr().out.splitlines()[0]
     invite_token = invite_link.rsplit("/", 1)[-1]
     app = create_app(
-        Settings("cli-secret", url), engine=make_engine(url), hasher=TEST_HASHER,
-        telegram=FakeTelegram(), upkeep_ticker=False,
+        Settings("cli-secret", url),
+        engine=make_engine(url),
+        clock=system_clock,
+        hasher=TEST_HASHER,
+        telegram=FakeTelegram(),
+        upkeep_ticker=False,
     )
     with TestClient(app) as client:
         client.post(f"/invitations/{invite_token}/accept", json=NEW_USER)
@@ -101,8 +106,12 @@ def test_a_second_issue_replaces_the_first_link(
     assert main(["invite-business"]) == 0
     invite_token = capsys.readouterr().out.splitlines()[0].rsplit("/", 1)[-1]
     app = create_app(
-        Settings("cli-secret", url), engine=make_engine(url), hasher=TEST_HASHER,
-        telegram=FakeTelegram(), upkeep_ticker=False,
+        Settings("cli-secret", url),
+        engine=make_engine(url),
+        clock=system_clock,
+        hasher=TEST_HASHER,
+        telegram=FakeTelegram(),
+        upkeep_ticker=False,
     )
     with TestClient(app) as client:
         client.post(f"/invitations/{invite_token}/accept", json=NEW_USER)
@@ -133,8 +142,12 @@ def test_no_log_record_from_the_command_carries_an_email_a_digest_or_a_token(
     assert main(["invite-business"]) == 0
     invite_token = capsys.readouterr().out.splitlines()[0].rsplit("/", 1)[-1]
     app = create_app(
-        Settings("cli-secret", url), engine=make_engine(url), hasher=TEST_HASHER,
-        telegram=FakeTelegram(), upkeep_ticker=False,
+        Settings("cli-secret", url),
+        engine=make_engine(url),
+        clock=system_clock,
+        hasher=TEST_HASHER,
+        telegram=FakeTelegram(),
+        upkeep_ticker=False,
     )
     with TestClient(app) as client:
         client.post(f"/invitations/{invite_token}/accept", json=NEW_USER)

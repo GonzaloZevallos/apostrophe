@@ -4,6 +4,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.accounts.adapters.cli import main
+from app.clock import system_clock
 from app.db import make_engine
 from app.main import create_app
 from app.settings import Settings
@@ -29,6 +30,7 @@ def test_the_command_prints_a_link_that_opens_a_business(
     app = create_app(
         Settings("cli-secret", url),
         engine=make_engine(url),
+        clock=system_clock,
         hasher=TEST_HASHER,
         telegram=FakeTelegram(),
         upkeep_ticker=False,

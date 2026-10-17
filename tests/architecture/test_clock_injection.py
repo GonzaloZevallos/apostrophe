@@ -10,8 +10,10 @@ it with `ast` (never a text search), per call site and not per file:
    the clock an app runs on is always written out where the app is built. A wrapper of
    `create_app` — a function whose own parameter feeds `clock=` — is accepted only when
    it is listed in `ACCEPTED_WRAPPERS` and that parameter has no default, so a caller
-   cannot leave it out. The accepted wrappers are conftest's `app` fixture and the
-   `served_app` fixture of `tests/test_serving.py`; a new one is added deliberately.
+   cannot leave it out. The accepted wrappers are conftest's `app` fixture, the
+   `served_app` fixture of `tests/test_serving.py` and the `app` fixture of
+   `tests/business_removal/adapters/test_sql_schema_rows.py`; a new one is added
+   deliberately.
 2. Under `tests/`, `datetime.now` and `system_clock` appear only at the (file,
    enclosing function) pairs of `ALLOWED_TEST_READS`. A listed pair that no longer reads
    either fails, so the list can only shrink.
@@ -34,10 +36,60 @@ ACCEPTED_WRAPPERS = frozenset(
     {
         ("tests/conftest.py", "app"),
         ("tests/test_serving.py", "served_app"),
+        ("tests/business_removal/adapters/test_sql_schema_rows.py", "app"),
     }
 )
 
-ALLOWED_TEST_READS = frozenset[tuple[str, str]]()
+# Tests that deliberately run on the real date: an operator command line issues what has
+# an expiry on `system_clock` (the commands read it themselves), so the app that checks
+# it runs on `system_clock` too. The list can only shrink.
+ALLOWED_TEST_READS = frozenset(
+    {
+        ("tests/accounts/test_cli.py", "test_the_command_prints_a_link_that_opens_a_business"),
+        (
+            "tests/accounts/test_reset_password_cli.py",
+            "test_the_command_prints_a_link_that_resets_a_known_user_s_password",
+        ),
+        (
+            "tests/accounts/test_reset_password_cli.py",
+            "test_a_second_issue_replaces_the_first_link",
+        ),
+        (
+            "tests/accounts/test_reset_password_cli.py",
+            "test_no_log_record_from_the_command_carries_an_email_a_digest_or_a_token",
+        ),
+        ("tests/business_removal/adapters/seed.py", "_accept"),
+        ("tests/business_removal/adapters/seed.py", "seed"),
+        ("tests/business_removal/adapters/test_cli.py", "_accept"),
+        (
+            "tests/business_removal/adapters/test_cli.py",
+            "test_a_clean_slate_lets_the_same_email_open_a_new_business",
+        ),
+        (
+            "tests/business_removal/adapters/test_cli.py",
+            "test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole",
+        ),
+        (
+            "tests/business_removal/adapters/test_cli.py",
+            "test_an_nfd_typed_name_matches_through_main",
+        ),
+        (
+            "tests/business_removal/adapters/test_cli.py",
+            "test_removal_withholds_a_live_reset_link",
+        ),
+        (
+            "tests/business_removal/adapters/test_cli.py",
+            "test_the_other_business_still_reads_its_own_data_after_the_run",
+        ),
+        ("tests/design/test_sample_app.py", "test_reset_token_opens_a_live_reset_link"),
+        # The default clock is read off `create_app`'s signature, not by building an app.
+        (
+            "tests/test_clock_wiring.py",
+            "test_an_app_built_without_a_clock_runs_on_the_system_clock",
+        ),
+        ("tests/e2e_app.py", "create_e2e_app"),
+    }
+)
 ALLOWED_APP_READS = frozenset(
     {
         ("app/clock.py", "system_clock"),
@@ -187,13 +239,10 @@ def clock_reads(module: Path) -> set[tuple[str, str]]:
     return {(where, function) for function, _ in _walk(module).clock_reads}
 
 
-def unlisted_or_stale_reads(
-    modules: list[Path], allowed: frozenset[tuple[str, str]]
-) -> list[str]:
+def unlisted_or_stale_reads(modules: list[Path], allowed: frozenset[tuple[str, str]]) -> list[str]:
     found = {pair for module in modules for pair in clock_reads(module)}
     unlisted = [
-        f"{path}:{function} reads the clock and is not listed"
-        for path, function in found - allowed
+        f"{path}:{function} reads the clock and is not listed" for path, function in found - allowed
     ]
     stale = [
         f"{path}:{function} is listed and reads no clock" for path, function in allowed - found
@@ -203,9 +252,7 @@ def unlisted_or_stale_reads(
 
 def _python_files(root: str) -> list[Path]:
     return sorted(
-        module
-        for module in (REPO_ROOT / root).rglob("*.py")
-        if FIXTURES not in module.parents
+        module for module in (REPO_ROOT / root).rglob("*.py") if FIXTURES not in module.parents
     )
 
 

@@ -21,6 +21,7 @@ from collections.abc import Callable, Sequence
 
 from fastapi import FastAPI
 
+from app.clock import system_clock
 from app.main import create_app
 from app.pinned_catalog.domain.errors import SendRefusal, TelegramRefused
 from app.settings import Settings
@@ -80,7 +81,9 @@ def watch_parent(
 
 
 def create_e2e_app() -> FastAPI:
-    app = create_app(Settings.from_env(), telegram=E2eTelegram(), upkeep_ticker=False)
+    app = create_app(
+        Settings.from_env(), clock=system_clock, telegram=E2eTelegram(), upkeep_ticker=False
+    )
     parent = os.environ.get(_PARENT_PID_VARIABLE)
     if parent:
         threading.Thread(

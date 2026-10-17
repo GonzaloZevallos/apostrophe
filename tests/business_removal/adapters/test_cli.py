@@ -13,7 +13,6 @@ import re
 import sqlite3
 import stat
 import unicodedata
-from datetime import UTC, datetime
 from pathlib import Path
 from typing import TextIO, cast
 
@@ -46,7 +45,6 @@ EXPENSE_DETAIL = "Factura de electricidad de septiembre"
 PAYMENT_AMOUNT = 54321
 EXPENSE_AMOUNT = 112233
 SHIPPING_CHARGED = 98765
-NOW = datetime(2026, 10, 3, 12, 0, tzinfo=UTC)
 
 LOW_STOCK_THRESHOLD = 15
 CATALOG_HEADER = "Catalogo de La Huerta"
@@ -74,7 +72,7 @@ EXPORTED_KINDS = (
 
 def _accept(client: TestClient, engine: Engine, name: str, email: str) -> str:
     accepted = client.post(
-        f"/invitations/{invite(engine, datetime.now(UTC))}/accept",
+        f"/invitations/{invite(engine, system_clock())}/accept",
         json={"business_name": name, "email": email, "password": PASSWORD},
     )
     assert accepted.status_code == 201, accepted.text
@@ -118,6 +116,7 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
     app = create_app(
         Settings(secret_key="test-secret", database_url=f"sqlite:///{db_path}"),
         engine=engine,
+        clock=system_clock,
         hasher=TEST_HASHER,
         telegram=FakeTelegram(),
         upkeep_ticker=False,
@@ -138,9 +137,7 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
         ).fetchone()["id"]
     all_tables = _all_table_names(db_path)
     other_before = {name: row_counts(db_path, name, other_business_id) for name in all_tables}
-    leaving_before = {
-        name: row_counts(db_path, name, leaving_business_id) for name in all_tables
-    }
+    leaving_before = {name: row_counts(db_path, name, leaving_business_id) for name in all_tables}
     assert other_before["customer"] == 1  # the other business's own seed
 
     stdout = io.StringIO()
@@ -292,6 +289,7 @@ def test_the_other_business_still_reads_its_own_data_after_the_run(
     app = create_app(
         settings,
         engine=engine,
+        clock=system_clock,
         hasher=TEST_HASHER,
         telegram=FakeTelegram(),
         upkeep_ticker=False,
@@ -321,8 +319,8 @@ def test_removal_withholds_a_live_reset_link(
 
     with Session(make_engine(url)) as session:
         accounts = SqlAccounts(session)
-        leaving_issued = issue_reset_link(accounts, session, EMAIL_LEAVING, NOW)
-        staying_issued = issue_reset_link(accounts, session, EMAIL_STAYING, NOW)
+        leaving_issued = issue_reset_link(accounts, session, EMAIL_LEAVING, system_clock())
+        staying_issued = issue_reset_link(accounts, session, EMAIL_STAYING, system_clock())
     assert leaving_issued is not None and staying_issued is not None
     leaving_digest = token_digest(leaving_issued.token)
 
@@ -393,9 +391,7 @@ def test_a_dry_run_writes_no_file_and_deletes_nothing(
         assert secret not in captured.err
 
 
-def test_an_unknown_email_changes_nothing(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_an_unknown_email_changes_nothing(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     db_path = tmp_path / "apostrophe.db"
     export_dir = tmp_path / "exports"
     seed(db_path)
@@ -426,9 +422,7 @@ def test_a_wrong_name_at_the_prompt_writes_no_file(
     assert row_counts(db_path, "customer", business_id) == 1
 
 
-def test_eof_at_the_prompt_writes_no_file(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_eof_at_the_prompt_writes_no_file(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     db_path = tmp_path / "apostrophe.db"
     export_dir = tmp_path / "exports"
     seed(db_path)
@@ -456,9 +450,7 @@ def test_secure_delete_scrubs_the_removed_customers_bytes_from_the_database_file
     assert b"Otro Negocio" in raw
 
 
-def test_the_export_file_is_owner_only(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_the_export_file_is_owner_only(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     db_path = tmp_path / "apostrophe.db"
     export_dir = tmp_path / "exports"
     seed(db_path)
@@ -574,6 +566,7 @@ def test_a_clean_slate_lets_the_same_email_open_a_new_business(
     app = create_app(
         settings,
         engine=engine,
+        clock=system_clock,
         hasher=TEST_HASHER,
         telegram=FakeTelegram(),
         upkeep_ticker=False,
@@ -632,6 +625,7 @@ def test_an_nfd_typed_name_matches_through_main(
     app = create_app(
         settings,
         engine=engine,
+        clock=system_clock,
         hasher=TEST_HASHER,
         telegram=FakeTelegram(),
         upkeep_ticker=False,
@@ -678,9 +672,7 @@ def test_a_broken_pipe_on_the_report_keeps_the_commit_through_main(
         ).fetchone()[0]
     stdout = _BreaksAfterExportWritten()
 
-    result = main(
-        [EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=cast(TextIO, stdout)
-    )
+    result = main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=cast(TextIO, stdout))
 
     assert result == 1
     assert "nothing deleted" not in stdout.text.lower()
