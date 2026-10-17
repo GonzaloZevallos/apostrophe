@@ -4657,7 +4657,8 @@ body {
 }
 
 @media (min-width: 900px) {
-  .precio-modal {
+  .precio-modal,
+  .cobro-modal {
     position: fixed;
     inset: 0;
     z-index: 20;
@@ -4670,7 +4671,8 @@ body {
     background: transparent;
   }
 
-  .precio-modal::before {
+  .precio-modal::before,
+  .cobro-modal::before {
     content: '';
     position: absolute;
     inset: 0;
@@ -4678,7 +4680,8 @@ body {
     opacity: 0.28;
   }
 
-  .precio-modal > .cuerpo {
+  .precio-modal > .cuerpo,
+  .cobro-modal > .cuerpo {
     position: relative;
     flex: 0 0 auto;
     min-height: 0;
@@ -4692,12 +4695,63 @@ body {
     box-shadow: 0 20px 60px color-mix(in srgb, var(--tinta) 28%, transparent);
   }
 
-  .precio-modal > .confirmacion {
+  .precio-modal > .confirmacion,
+  .cobro-modal > .confirmacion {
     position: relative;
     width: 480px;
     max-width: calc(100% - 2 * var(--espacio-xl));
     box-sizing: border-box;
   }
+}
+
+/* Registrar cobro's route over Clientes (ADR-0044): on a computer the list and the card sit
+ * behind the modal, inert; on a phone the wrapper adds no box of its own. */
+.cobro-paneles {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  gap: var(--espacio-xxl);
+  align-items: flex-start;
+}
+
+.cobro-paneles--solo {
+  display: contents;
+}
+
+.cobro-paneles__lista {
+  flex: 0 0 340px;
+  border-right: 1px solid var(--linea);
+  padding-right: var(--espacio-xxl);
+  min-width: 0;
+}
+
+.cobro-paneles__detalle {
+  flex: 1;
+  min-width: 0;
+}
+
+.cobro__cliente {
+  font-size: 14px;
+  color: var(--tinta2);
+}
+
+.cobro-modal .panel__titulo:focus {
+  outline: none;
+}
+
+/* The debt on a customer's card (`ClienteFicha.dc.html`): an amber surface holding the
+ * figure, since when, and "Registrar cobro". */
+.ficha-deuda {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-xs);
+  background: var(--deuda-fondo);
+  border-radius: var(--radio-panel-grande);
+  padding: var(--espacio-lg);
+}
+
+.ficha-deuda > .clientes__accion {
+  margin-top: var(--espacio-md);
 }
 
 /* The dialog's title takes focus when the modal opens so a screen reader reads it; it is

@@ -20,6 +20,7 @@ import { stubViewport } from '../../test-viewport'
 import { Outlet, createMemoryRouter, RouterProvider } from 'react-router'
 import FlashProvider from '../../flash/FlashProvider'
 import ClienteFicha from './ClienteFicha'
+import CobroRoute from './CobroRoute'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -329,7 +330,7 @@ function renderApp(entries: string[] = [CUSTOMERS]) {
             children: [
               { path: CUSTOMERS, element: <Clientes /> },
               { path: CUSTOMER, element: <ClienteFicha /> },
-              { path: CUSTOMER_PAYMENT, element: <ClienteFicha payment /> },
+              { path: CUSTOMER_PAYMENT, element: <CobroRoute /> },
             ],
           },
         ],
@@ -353,7 +354,7 @@ test('"Cobrar a X" opens Registrar cobro for that customer as an in-app entry, a
   await userEvent.click((await screen.findAllByRole('link', { name: `Cobrar a ${customerFixture.name}` }))[0]!)
 
   expect(await screen.findByRole('button', { name: 'Guardar' })).toBeInTheDocument()
-  expect(screen.getByText(customerFixture.name)).toBeInTheDocument()
+  expect(screen.getByText(new RegExp(`^${customerFixture.name}`))).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(ANA_PAYMENT)
   expect(router.state.location.state).toEqual(inAppState({ pathname: CUSTOMERS }))
   await act(() => router.navigate(-1))

@@ -41,6 +41,7 @@ import OnboardingLayout from './screens/onboarding/OnboardingLayout'
 import { OnboardingEntry, OnboardingStepRoute } from './screens/onboarding/OnboardingRoutes'
 import Catalogo from './screens/Catalogo'
 import ClienteFicha from './screens/clientes/ClienteFicha'
+import CobroRoute from './screens/clientes/CobroRoute'
 import ClienteForm from './screens/clientes/ClienteForm'
 import Clientes from './screens/clientes/Clientes'
 import ClientesLayout from './screens/clientes/ClientesLayout'
@@ -93,7 +94,7 @@ const ELEMENTS: Record<ScreenId, ReactElement> = {
   customers: <Clientes />,
   'customer-new': <ClienteForm mode="nuevo" />,
   customer: <ClienteFicha />,
-  'customer-payment': <ClienteFicha payment />,
+  'customer-payment': <CobroRoute />,
   'customer-edit': <ClienteForm mode="editar" />,
   varieties: <VarietiesIndex />,
   'variety-new': <VarietyNew />,

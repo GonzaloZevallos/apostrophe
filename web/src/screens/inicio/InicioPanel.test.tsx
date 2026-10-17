@@ -17,7 +17,7 @@ import type { PanelAnswer, PanelDebts } from '../../api/panel'
 import FlashProvider from '../../flash/FlashProvider'
 import { CUSTOMER, CUSTOMER_PAYMENT, CUSTOMERS, HOME, VARIETY, pathTo } from '../../routes'
 import { chooseTheme } from '../../theme'
-import ClienteFicha from '../clientes/ClienteFicha'
+import CobroRoute from '../clientes/CobroRoute'
 import Inicio from '../Inicio'
 import { stubFetchWithSettings } from '../stubFetchWithSettings'
 
@@ -116,7 +116,7 @@ function renderInicio() {
           { path: HOME, element: <Inicio /> },
           { path: CUSTOMERS, element: <span>pantalla clientes</span> },
           { path: CUSTOMER, element: <CustomerStub /> },
-          { path: CUSTOMER_PAYMENT, element: <ClienteFicha payment /> },
+          { path: CUSTOMER_PAYMENT, element: <CobroRoute /> },
           { path: VARIETY, element: <VarietyStub /> },
         ],
       },
@@ -326,7 +326,7 @@ test('a debtor row names its Cobrar by the customer and keeps the rest of the ro
 
 async function payFromInicio(amount: string): Promise<void> {
   await userEvent.click(await screen.findByRole('link', { name: 'Cobrar a Ana Pérez' }))
-  const sheet = (await screen.findByRole('button', { name: 'Guardar' })).closest('.capa__contenido')
+  const sheet = (await screen.findByRole('button', { name: 'Guardar' })).closest('form')
   const inside = within(sheet as HTMLElement)
   await userEvent.clear(inside.getByLabelText('Monto'))
   await userEvent.type(inside.getByLabelText('Monto'), amount)
