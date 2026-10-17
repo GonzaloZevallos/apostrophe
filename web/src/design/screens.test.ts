@@ -1,9 +1,15 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { assertScreens, assertSelectedAccounts, assertSelectedNeeds } from '../../../scripts/design/screens.mjs'
+import {
+  assertScreens,
+  assertSelectedAccounts,
+  assertSelectedNeeds,
+  sectionOccurrences,
+} from '../../../scripts/design/screens.mjs'
 import { COMPUTER_MIN_WIDTH } from '../shell/useViewport'
 import screens from '../../../scripts/design/screens.json'
+import { TEXT_SCALE } from '../../../scripts/design/textScale.mjs'
 
 describe('assertScreens', () => {
   it('refuses an entry with color_scheme', () => {
@@ -151,6 +157,34 @@ describe('assertScreens', () => {
     ).not.toThrow()
   })
 
+  it('refuses a text_scale that is not exactly the model\'s, whatever it looks like', () => {
+    for (const value of [1, 1.30001, '130%', null]) {
+      expect(() => assertScreens([{ screen: 'Inicio', text_scale: value }])).toThrow(
+        /^Inicio: text_scale must be exactly 1\.3$/,
+      )
+    }
+  })
+
+  it('refuses a viewport that is not a pair of positive integers', () => {
+    for (const value of [[320], [320, 0], [320.5, 844], [320, 844, 1], [-320, 844], '320x844', null]) {
+      expect(() => assertScreens([{ screen: 'Inicio', viewport: value }])).toThrow(
+        /^Inicio: viewport must be two positive integers, width and height$/,
+      )
+    }
+  })
+
+  it('accepts a 320 px viewport with the text scale', () => {
+    expect(() =>
+      assertScreens([{ screen: 'InicioTexto130', route: 'ruta', viewport: [320, 844], text_scale: 1.3 }]),
+    ).not.toThrow()
+  })
+
+  it('refuses a section that occurs more than once in its design file', () => {
+    expect(() =>
+      assertScreens([{ screen: 'AnalisisX', design: 'Analisis', section: 'Promoción' }]),
+    ).toThrow(/^AnalisisX: section "Promoción" occurs \d+ times in Analisis\.dc\.html, expected exactly once$/)
+  })
+
   it('refuses a needs that is not a non-empty string', () => {
     expect(() => assertScreens([{ screen: 'A' }, { screen: 'B', needs: 7 }])).toThrow(
       /^B: needs must be a non-empty string$/,
@@ -178,6 +212,83 @@ describe('assertScreens', () => {
 
   it('accepts the real screens.json, imported, never copied', () => {
     expect(() => assertScreens(screens.screens)).not.toThrow()
+  })
+})
+
+describe('the Onboarding rows of the real screens.json', () => {
+  type Row = {
+    screen: string
+    design?: string
+    account?: string
+    path?: string
+    tema?: string
+    viewport?: number[]
+    text_scale?: number
+  }
+  const rows = screens.screens as Row[]
+  const designOf = (row: Row): string => row.design ?? row.screen
+  const SCREENS = [
+    'OnboardingVariedad',
+    'OnboardingStock',
+    'OnboardingMensaje',
+    'OnboardingBot',
+    'OnboardingSocio',
+    'OnboardingCategorias',
+    'OnboardingListo',
+  ]
+  const isComputer = (row: Row): boolean => row.viewport?.[0] === 1280
+  const isNarrowScaled = (row: Row): boolean =>
+    row.viewport?.[0] === 320 && row.viewport[1] === 844 && row.text_scale === TEXT_SCALE
+  const isPlain = (row: Row): boolean => row.viewport === undefined && row.text_scale === undefined
+
+  it.each(SCREENS)('%s is captured on phone and computer, light and dark, and at 320 px with 130 % text', (name) => {
+    const own = rows.filter((row) => designOf(row) === name)
+    const dark = (row: Row): boolean => row.tema === 'oscuro'
+    expect(own.filter((row) => isPlain(row) && !dark(row))).toHaveLength(1)
+    expect(own.filter((row) => isPlain(row) && dark(row))).toHaveLength(1)
+    expect(own.filter((row) => isComputer(row) && !dark(row))).toHaveLength(1)
+    expect(own.filter((row) => isComputer(row) && dark(row))).toHaveLength(1)
+    expect(own.filter((row) => isNarrowScaled(row) && !dark(row))).toHaveLength(1)
+  })
+
+  // OnboardingVariedad saves the first stock entry on La Huerta, the one default-account
+  // row that changes the Onboarding's state; everything else on that account reads the
+  // state as it was before, so it has to run first, and its twins after it.
+  it('puts every other default-account Onboarding row before OnboardingVariedad, and its twins after', () => {
+    const at = rows.findIndex((row) => row.screen === 'OnboardingVariedad')
+    expect(at).toBeGreaterThan(-1)
+    rows.forEach((row, index) => {
+      if (row.account !== undefined || !/^\/onboarding\//.test(row.path ?? '')) return
+      if (row.screen === 'OnboardingVariedad') return
+      if (designOf(row) === 'OnboardingVariedad') expect(index, row.screen).toBeGreaterThan(at)
+      else expect(index, row.screen).toBeLessThan(at)
+    })
+  })
+
+  it('gives each Listo row an account of its own, and none skips the rest from step 6', () => {
+    const listo = rows.filter((row) => designOf(row) === 'OnboardingListo')
+    expect(listo).toHaveLength(5)
+    const accounts = listo.map((row) => row.account)
+    expect(accounts.every((account) => typeof account === 'string')).toBe(true)
+    expect(new Set(accounts).size).toBe(listo.length)
+    for (const row of listo) {
+      const route = (row as Row & { route?: string }).route
+      expect(route, row.screen).not.toMatch(/\/categories$/)
+    }
+  })
+})
+
+describe('sectionOccurrences', () => {
+  it('counts a label as the text between a tag end and the next tag', () => {
+    expect(sectionOccurrences('<b>Otra</b>', 'Listo')).toBe(0)
+    expect(sectionOccurrences('<b>Listo</b>', 'Listo')).toBe(1)
+    expect(sectionOccurrences('<b>Listo</b><i>Listo</i>', 'Listo')).toBe(2)
+    expect(sectionOccurrences('<b>Listo ya</b>', 'Listo')).toBe(0)
+  })
+
+  it('counts a label with a literal middle dot, and not the same label written as an entity', () => {
+    expect(sectionOccurrences('<b>Listo · oscuro</b>', 'Listo · oscuro')).toBe(1)
+    expect(sectionOccurrences('<b>Listo &middot; oscuro</b>', 'Listo · oscuro')).toBe(0)
   })
 })
 
