@@ -32,6 +32,9 @@ export const MONTH_NAMES = [
 /** Index 0 is Monday. */
 export const WEEKDAY_SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const
 
+/** The unit after a grams figure: `3,5 g`. */
+export const GRAMS_SUFFIX = ' g'
+
 /** "1 sale" and "N sales": the one author of a sales count's wording. */
 export const salesCount = (count: number) => (count === 1 ? '1 sale' : `${count} sales`)
 

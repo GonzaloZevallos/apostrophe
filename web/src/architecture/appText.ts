@@ -131,6 +131,7 @@ export const CODE_VALUED_PROPERTIES: readonly string[] = [
   'place',
   'icono',
   'tono',
+  'value',
   'to',
   'block',
   'credentials',

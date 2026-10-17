@@ -118,12 +118,14 @@ function leafScreen(matches: readonly { handle: unknown }[]): Screen {
   throw new Error('Shell: the leaf route does not declare a screen (routes.ts)')
 }
 
+const ACTIVE_RAIL_ITEM_CLASS = 'riel-lateral__item--activo'
+
 function railClassName(item: Item, active: boolean): string {
   const baseClass =
     item.group === 'more'
       ? 'riel-lateral__item riel-lateral__item--secundario'
       : 'riel-lateral__item'
-  return active ? `${baseClass} riel-lateral__item--activo` : baseClass
+  return active ? `${baseClass} ${ACTIVE_RAIL_ITEM_CLASS}` : baseClass
 }
 
 /** One bottom-bar entry; `active` is the registry's mark, not a path comparison. */

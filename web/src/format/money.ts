@@ -8,6 +8,8 @@
  */
 
 const MONEY_FMT = new Intl.NumberFormat('es-AR', { maximumFractionDigits: 0 })
+import { GRAMS_SUFFIX } from '../copy/format'
+
 const GRAMS_FMT = new Intl.NumberFormat('es-AR', { maximumFractionDigits: 2 })
 
 /** `11000` → `"$ 11.000"`. */
@@ -19,7 +21,7 @@ export function formatMoney(pesos: number): string {
  * string a form field holds before it is sent. */
 export function formatGrams(grams: number | string): string {
   const value = typeof grams === 'string' ? Number(grams) : grams
-  return `${GRAMS_FMT.format(value)} g`
+  return `${GRAMS_FMT.format(value)}${GRAMS_SUFFIX}`
 }
 
 const GRAMS_INPUT_FMT = new Intl.NumberFormat('es-AR', { maximumFractionDigits: 2, useGrouping: false })
