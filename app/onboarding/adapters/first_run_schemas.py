@@ -1,7 +1,7 @@
 """The wire shape of `GET /first-run` (docs/adr/0046): which first-run element Inicio
 shows, the checklist's steps when it is the checklist (an empty list otherwise), whether
-the after-import notice shows, and whether nothing qualifies for the catalog. No answer carries an amount, grams,
-token, phone number or name."""
+the after-import notice shows, and whether nothing qualifies for the catalog. No answer
+carries an amount, grams, token, phone number or name."""
 
 from __future__ import annotations
 
