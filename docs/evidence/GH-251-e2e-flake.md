@@ -83,3 +83,15 @@ makes the backend independent of the date; the shifted runs belong to `e2e-clock
 Not part of this subtask: the browser-zone pin is asserted by `web/src/architecture/e2eShape.test.ts`
 (`timezoneId` and `locale` in the top-level `use`, none in a project). The two zone runs and the
 run 400 days after the anchor belong to `e2e-clock-ts`.
+
+## Red-run epilogue (`web/scripts/e2e.sh`, subtask `e2e-failures`)
+
+Throwaway specs under `web/e2e/` (not committed), run as `sh scripts/e2e.sh e2e/<spec>`:
+
+- **Red.** A spec with one failing and one passing test: exit **1**, and the last lines were
+  `e2e: failed:`, `zz_throwaway.spec.ts › throwaway fails`, and
+  `e2e: traces in test-results/f86e8a0-20261017T002736Z`; the directory held `junit.xml` and
+  the failing test's `trace.zip`.
+- **Green.** One passing test: exit **0**, no epilogue.
+- **Two consecutive runs** left two directories, `f86e8a0-20261017T002736Z` and
+  `f86e8a0-20261017T002748Z`, each with its own `junit.xml`.

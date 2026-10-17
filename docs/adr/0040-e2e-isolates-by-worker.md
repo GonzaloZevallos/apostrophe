@@ -192,3 +192,22 @@ of `timed` or of two phases. **N = 3 stands**, with `retries: 0` and every `time
 
 The root cause of the red run on `dbe57a27` is not proven; `docs/evidence/GH-251-e2e-flake.md`
 holds the loaded runs, their maxima and what they do and do not show.
+
+### Amendment (GH-251): one directory per run, and the failing tests named at the end
+
+5. **Each run has its own directory.** `web/scripts/e2e.sh` sets and exports
+   `PLAYWRIGHT_OUTPUT_DIR=test-results/<short sha>-<UTC stamp>` (`git rev-parse --short HEAD`,
+   `date -u +%Y%m%dT%H%M%SZ`), so the junit file, traces and screenshots of a run are never
+   overwritten by a rerun of the same head. The config only reads the variable (item 3); a run
+   that does not go through the script writes to `test-results/local`. The `date -u` in
+   `e2e.sh` is the harness's one deliberate real-clock read: it names a directory, no
+   assertion reads it, and it sits outside both wall-clock guards by design.
+6. **Pruning.** Before the run, `e2e.sh` removes directories under `web/test-results/` older
+   than 14 days, matching the CI artefact retention. A missing directory is fine.
+7. **The epilogue of a red run.** When Playwright's status is non-zero, the last lines of the
+   output are `e2e: failed:`, one `<file> › <title>` per failed or errored test
+   (`scripts/e2e_failures.py`, read from the run's `junit.xml`; names only, never a message or
+   an output body) and `e2e: traces in <run dir>`. A missing or unreadable junit prints one
+   fixed line and the helper still exits 0. `e2e.sh` exits with Playwright's own status. The
+   gate's captured output tail is the evidence this relies on: what the agentic system keeps
+   after a red check is outside this repository, so the worktree surviving is a bonus.
