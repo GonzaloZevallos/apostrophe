@@ -200,7 +200,7 @@ export default function Cobro({
           <label className="campo">
             <span className="campo__rotulo">Monto</span>
             <input
-              className="campo__input"
+              className="campo__input cobro__monto"
               type="text"
               inputMode="numeric"
               value={amount}
@@ -208,9 +208,11 @@ export default function Cobro({
               required
             />
           </label>
-          <Boton variant="link" onClick={() => setAmount(String(balance))}>
-            Todo: {formatMoney(balance)}
-          </Boton>
+          <div className="cobro__todo">
+            <Boton variant="link" onClick={() => setAmount(String(balance))}>
+              Todo: {formatMoney(balance)}
+            </Boton>
+          </div>
           {amountError !== null && (
             <span className="campo__error" role="alert">
               {amountError}
@@ -229,7 +231,7 @@ export default function Cobro({
             />
           </label>
 
-          <fieldset className="campo">
+          <fieldset className="campo cobro__metodo">
             <legend className="campo__rotulo">Método</legend>
             <label>
               <input
@@ -257,7 +259,7 @@ export default function Cobro({
           </fieldset>
 
           {parsedAmount.ok && preview.data !== undefined && (
-            <div className="campo">
+            <div className="campo cobro__resumen">
               <span className="campo__rotulo">Se descuenta de la deuda más vieja</span>
               {preview.data.applied_to.map((split) => (
                 <span key={split.sale_id}>

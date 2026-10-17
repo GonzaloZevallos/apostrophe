@@ -4735,6 +4735,79 @@ body {
   color: var(--tinta2);
 }
 
+/* Registrar cobro's form (`Cobro.dc.html`): the amount drawn large, "Todo" a pill, the method
+ * a two-part pill (the chosen one bolder as well as lighter-backed), the preview a card. */
+.cobro__monto {
+  height: auto;
+  padding-top: var(--espacio-sm);
+  padding-bottom: var(--espacio-sm);
+  background: transparent;
+  font-size: 44px;
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  padding-left: 0;
+}
+
+.cobro__todo {
+  display: flex;
+}
+
+.cobro__todo > .boton,
+.cobro__todo > .boton--enlace {
+  width: auto;
+  height: auto;
+  min-height: var(--alto-tocable);
+  padding: 0 var(--espacio-lg);
+  border-radius: var(--radio-pildora);
+  background: var(--superficie);
+  color: var(--tinta);
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: none;
+  text-decoration: none;
+}
+
+.cobro__metodo {
+  display: flex;
+  flex-direction: row;
+  gap: var(--espacio-xs);
+  border: 0;
+  padding: var(--espacio-xs);
+  margin: 0;
+  background: var(--superficie);
+  border-radius: var(--radio-pildora);
+}
+
+.cobro__metodo > legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.cobro__metodo > label {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espacio-xs);
+  padding: var(--espacio-md) 0;
+  border-radius: var(--radio-pildora);
+  font-size: 15px;
+}
+
+.cobro__metodo > label:has(input:checked) {
+  background: var(--papel);
+  font-weight: 600;
+}
+
+.cobro__resumen {
+  background: var(--superficie);
+  border-radius: var(--radio-panel-grande);
+  padding: var(--espacio-lg);
+}
+
 .cobro-modal .panel__titulo:focus {
   outline: none;
 }
