@@ -1390,18 +1390,11 @@
       "FirstRunOut": {
         "properties": {
           "checklist": {
-            "anyOf": [
-              {
-                "items": {
-                  "$ref": "#/components/schemas/ChecklistStepOut"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Checklist"
+            "items": {
+              "$ref": "#/components/schemas/ChecklistStepOut"
+            },
+            "title": "Checklist",
+            "type": "array"
           },
           "import_notice": {
             "title": "Import Notice",

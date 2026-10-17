@@ -95,7 +95,7 @@ def _first_run(client: TestClient) -> dict[str, Any]:
 
 
 def _done(answer: dict[str, Any]) -> dict[str, bool]:
-    assert answer["checklist"] is not None
+    assert answer["checklist"] != []
     return {item["step"]: item["done"] for item in answer["checklist"]}
 
 
@@ -123,7 +123,7 @@ def _publish(client: TestClient) -> None:
 def test_a_brand_new_business_gets_the_onboarding_and_nothing_else(client: TestClient) -> None:
     assert _first_run(client) == {
         "kind": "onboarding",
-        "checklist": None,
+        "checklist": [],
         "import_notice": False,
         "nothing_qualifies": False,
     }
@@ -181,14 +181,14 @@ def test_the_checklist_goes_when_both_required_steps_are_met_and_never_returns(
     met = _first_run(client)
 
     assert met["kind"] == "none"
-    assert met["checklist"] is None
+    assert met["checklist"] == []
     assert _stamps(engine)["checklist_gone_at"] == NOW
 
     assert client.delete(f"/varieties/{variety_id}/prices/{price_id}").status_code == 204
     after = _first_run(client)
 
     assert after["kind"] == "start_varieties"
-    assert after["checklist"] is None
+    assert after["checklist"] == []
 
 
 def test_an_imported_business_never_sees_the_checklist_but_sees_the_notice(
@@ -200,7 +200,7 @@ def test_an_imported_business_never_sees_the_checklist_but_sees_the_notice(
     answer = _first_run(client)
 
     assert answer["kind"] == "start_varieties"
-    assert answer["checklist"] is None
+    assert answer["checklist"] == []
     assert answer["import_notice"] is True
     assert answer["nothing_qualifies"] is False
 
@@ -334,9 +334,7 @@ def _statement_count(engine: Engine, client: TestClient) -> int:
     return len(statements)
 
 
-def test_a_quiet_read_issues_no_insert_update_or_delete(
-    client: TestClient, engine: Engine
-) -> None:
+def test_a_quiet_read_issues_no_insert_update_or_delete(client: TestClient, engine: Engine) -> None:
     _without_onboarding(engine)
     _small_checklist(client)
 
@@ -410,7 +408,7 @@ def test_a_stamp_that_the_database_cannot_take_never_changes_the_answer(
     _stock(client, variety_id)
     expected = {
         "kind": "none",
-        "checklist": None,
+        "checklist": [],
         "import_notice": False,
         "nothing_qualifies": False,
     }

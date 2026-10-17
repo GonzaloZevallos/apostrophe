@@ -96,9 +96,6 @@ NULLABLE: Mapping[str, Mapping[str, JsonType | ShapeOf]] = {
     "debtors": {
         "debtors[].owing_since": "string",
     },
-    "firstRun": {
-        "checklist": ShapeOf("firstRun", "checklist"),
-    },
     "movements": {
         # The fixture is a bare list of `kind`-discriminated items.
         "[entry].total_cost": "integer",

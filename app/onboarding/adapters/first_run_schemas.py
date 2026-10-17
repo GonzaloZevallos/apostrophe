@@ -1,6 +1,6 @@
 """The wire shape of `GET /first-run` (docs/adr/0046): which first-run element Inicio
-shows, the checklist's steps when it is the checklist, whether the after-import notice
-shows, and whether nothing qualifies for the catalog. No answer carries an amount, grams,
+shows, the checklist's steps when it is the checklist (an empty list otherwise), whether
+the after-import notice shows, and whether nothing qualifies for the catalog. No answer carries an amount, grams,
 token, phone number or name."""
 
 from __future__ import annotations
@@ -19,7 +19,7 @@ class ChecklistStepOut(BaseModel):
 
 class FirstRunOut(BaseModel):
     kind: FirstRunKind
-    checklist: list[ChecklistStepOut] | None
+    checklist: list[ChecklistStepOut]
     import_notice: bool
     nothing_qualifies: bool
 
@@ -28,14 +28,10 @@ class FirstRunOut(BaseModel):
         decision = read.decision
         return cls(
             kind=decision.kind,
-            checklist=(
-                None
-                if decision.checklist is None
-                else [
-                    ChecklistStepOut(step=item.step, required=item.required, done=item.done)
-                    for item in decision.checklist
-                ]
-            ),
+            checklist=[
+                ChecklistStepOut(step=item.step, required=item.required, done=item.done)
+                for item in decision.checklist or ()
+            ],
             import_notice=decision.import_notice,
             nothing_qualifies=read.nothing_qualifies,
         )

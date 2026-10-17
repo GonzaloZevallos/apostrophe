@@ -16,7 +16,7 @@ const answer: FirstRunAnswer = fixture as FirstRunAnswer
 
 const noMoreFirstRun: FirstRunAnswer = {
   kind: 'none',
-  checklist: null,
+  checklist: [],
   import_notice: false,
   nothing_qualifies: false,
 }

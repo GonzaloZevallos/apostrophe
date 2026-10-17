@@ -28,8 +28,8 @@ export interface ChecklistStepAnswer {
 
 export interface FirstRunAnswer {
   kind: FirstRunKind
-  /** The four steps, in order, only while `kind` is `checklist`. */
-  checklist: ChecklistStepAnswer[] | null
+  /** The four steps, in order, only while `kind` is `checklist`; empty otherwise. */
+  checklist: ChecklistStepAnswer[]
   /** The after-import notice to connect the bot, shown beside any slot-1 element. */
   import_notice: boolean
   /** True only while the checklist shows and the catalog has nothing to send. */
