@@ -433,7 +433,8 @@ def main(argv: list[str] | None = None) -> int:
             {"email": EMAIL, "password": PASSWORD, "business_name": BUSINESS},
         )
         api.call("POST", "/auth/login", {"email": EMAIL, "password": PASSWORD})
-        sample = seed(api, date.today())
+        today = date.today()
+        sample = seed(api, today)
         links = {
             # Unused, so their screens can be compared: one opens a new business, the
             # other joins La Huerta.
@@ -442,7 +443,7 @@ def main(argv: list[str] | None = None) -> int:
             # A live reset link for the sample's user, so the reset screen can be compared.
             "reset_token": reset_token(env, EMAIL),
         }
-        accounts = onboarding_accounts(env, base, date.today())
+        accounts = onboarding_accounts(env, base, today)
     except BaseException:
         server.terminate()
         raise
@@ -451,6 +452,8 @@ def main(argv: list[str] | None = None) -> int:
         "url": base,
         "email": EMAIL,
         "password": PASSWORD,
+        # The day the sample is seeded on: the capture's fake clock reads it, never the wall clock.
+        "today": today.isoformat(),
         "ids": {**asdict(sample), **links},
         "accounts": {name: asdict(account) for name, account in accounts.items()},
     }
