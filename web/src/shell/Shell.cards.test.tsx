@@ -124,15 +124,18 @@ const CARDS: [string, string, string][] = [
 ]
 
 describe.each(['phone', 'computer'] as const)('on a %s', (size) => {
-  test.each(CARDS)('%s shows exactly one "‹", the shell\'s', async (_name, path, label) => {
+  test.each(CARDS)('%s shows exactly one "‹", the shell\'s', async (_name, path, card) => {
     viewport.current = size
+    // On a computer `/varieties/archived` replaces itself with the first archived variety once
+    // the list is in (ArchivedIndex), so the card that settles is that variety's: "‹ Archivadas".
+    const label = size === 'computer' && path === ARCHIVED_VARIETIES ? '‹ Archivadas' : card
     await open(path)
     await settled()
 
     // The label settles with the record (an archived variety first reads "‹ Variedades").
     if (size === 'computer' && label === '‹ Más') expect(arrows()).toHaveLength(1)
     else await waitFor(() => expect(arrows()).toEqual([label]))
-    await waitFor(() => expect(document.querySelectorAll('.flecha-atras')).toHaveLength(1))
+    expect(document.querySelectorAll('.flecha-atras')).toHaveLength(1)
     expect(backControls()).toHaveLength(1)
   })
 })
