@@ -1,0 +1,2936 @@
+diff --git a/app/results/adapters/assemble.py b/app/results/adapters/assemble.py
+index dd61e5e..76148b0 100644
+--- a/app/results/adapters/assemble.py
++++ b/app/results/adapters/assemble.py
+@@ -15,7 +15,6 @@ from app.results.adapters.schemas import (
+     ExpenseCategoryTotalOut,
+     MarginOut,
+     MonthRowOut,
+-    RowCostOut,
+     SinceFirstRecordOut,
+     VarietyRowOut,
+     WeekdayOut,
+@@ -27,7 +26,6 @@ from app.results.domain.figures import (
+     CostFigure,
+     ExpenseBreakdown,
+     MarginFigure,
+-    RowCost,
+ )
+ 
+ 
+@@ -49,17 +47,8 @@ def _amount_with_pending(figure: AmountWithPending) -> AmountWithPendingOut:
+     )
+ 
+ 
+-def _row_cost(figure: RowCost) -> RowCostOut:
+-    """Copies `all_pending`; only `row_cost` in the domain decides it."""
+-    return RowCostOut(
+-        amount=figure.amount,
+-        pending_grams=figure.pending_grams.as_decimal(),
+-        all_pending=figure.all_pending,
+-    )
+-
+-
+-def _optional(figure: RowCost | None) -> RowCostOut | None:
+-    return None if figure is None else _row_cost(figure)
++def _optional(figure: AmountWithPending | None) -> AmountWithPendingOut | None:
++    return None if figure is None else _amount_with_pending(figure)
+ 
+ 
+ def _breakdown(breakdown: ExpenseBreakdown) -> ExpenseBreakdownOut:
+@@ -111,11 +100,9 @@ def assemble(today: date, figures: AnalysisFigures) -> AnalysisOut:
+                 last_day=w.last_day,
+                 sales=w.sales,
+                 grams=w.grams.as_decimal(),
+-                cost_of_goods=_row_cost(w.cost_of_goods),
+-                shortfall=_optional(w.shortfall),
++                expenses=w.expenses,
+                 promotion=_optional(w.promotion),
+                 own_use=_optional(w.own_use),
+-                expenses=w.expenses,
+                 profit=_amount_with_pending(w.profit),
+                 cash=w.cash,
+                 best=w.best,
+@@ -129,11 +116,9 @@ def assemble(today: date, figures: AnalysisFigures) -> AnalysisOut:
+                 last_day=m.last_day,
+                 sales=m.sales,
+                 grams=m.grams.as_decimal(),
+-                cost_of_goods=_row_cost(m.cost_of_goods),
+-                shortfall=_optional(m.shortfall),
++                expenses=m.expenses,
+                 promotion=_optional(m.promotion),
+                 own_use=_optional(m.own_use),
+-                expenses=m.expenses,
+                 profit=_amount_with_pending(m.profit),
+                 cash=m.cash,
+             )
+diff --git a/app/results/adapters/schemas.py b/app/results/adapters/schemas.py
+index 864c0de..5a0ab50 100644
+--- a/app/results/adapters/schemas.py
++++ b/app/results/adapters/schemas.py
+@@ -177,24 +177,13 @@ class CostOut(BaseModel):
+ 
+ 
+ class AmountWithPendingOut(BaseModel):
+-    """A money figure (profit) together with the pending grams behind it, for one
+-    period."""
++    """A money figure (profit, stock shortfall, promotion or own use) together with the
++    pending grams behind it, for one period."""
+ 
+     amount: int
+     pending_grams: GramsOut
+ 
+ 
+-class RowCostOut(BaseModel):
+-    """One Análisis cost line (cost of goods, stock shortfall, promotion or own use): its
+-    costed `amount` and its own `pending_grams` (a positive magnitude). `all_pending` is
+-    the domain's answer (`row_cost`) that every gram behind the line is pending, so the
+-    screen says "N g sin costo" and never "$ 0"."""
+-
+-    amount: int
+-    pending_grams: GramsOut
+-    all_pending: bool
+-
+-
+ class VarietyRowOut(BaseModel):
+     variety_id: int
+     name: str
+@@ -215,9 +204,9 @@ class AnalysisMonthOut(BaseModel):
+     grams_sold: GramsOut
+     grams_gifted: GramsOut
+     average_margin: MarginOut
+-    shortfall: RowCostOut | None
+-    promotion: RowCostOut | None
+-    own_use: RowCostOut | None
++    shortfall: AmountWithPendingOut | None
++    promotion: AmountWithPendingOut | None
++    own_use: AmountWithPendingOut | None
+     varieties: list[VarietyRowOut]
+ 
+ 
+@@ -226,11 +215,9 @@ class WeekOut(BaseModel):
+     last_day: date
+     sales: int
+     grams: GramsOut
+-    cost_of_goods: RowCostOut
+-    shortfall: RowCostOut | None
+-    promotion: RowCostOut | None
+-    own_use: RowCostOut | None
+     expenses: int
++    promotion: AmountWithPendingOut | None
++    own_use: AmountWithPendingOut | None
+     profit: AmountWithPendingOut
+     cash: int
+     best: bool
+@@ -242,11 +229,9 @@ class MonthRowOut(BaseModel):
+     last_day: date
+     sales: int
+     grams: GramsOut
+-    cost_of_goods: RowCostOut
+-    shortfall: RowCostOut | None
+-    promotion: RowCostOut | None
+-    own_use: RowCostOut | None
+     expenses: int
++    promotion: AmountWithPendingOut | None
++    own_use: AmountWithPendingOut | None
+     profit: AmountWithPendingOut
+     cash: int
+ 
+@@ -263,9 +248,9 @@ class SinceFirstRecordOut(BaseModel):
+     expenses: int
+     profit: AmountWithPendingOut
+     cash: int
+-    shortfall: RowCostOut | None
+-    promotion: RowCostOut | None
+-    own_use: RowCostOut | None
++    shortfall: AmountWithPendingOut | None
++    promotion: AmountWithPendingOut | None
++    own_use: AmountWithPendingOut | None
+ 
+ 
+ class ExpenseCategoryTotalOut(BaseModel):
+diff --git a/app/results/application/read_panel.py b/app/results/application/read_panel.py
+index 79e9d7a..a84b3dc 100644
+--- a/app/results/application/read_panel.py
++++ b/app/results/application/read_panel.py
+@@ -23,7 +23,7 @@ from app.results.application.ports import (
+     StockRow,
+ )
+ from app.results.domain.arithmetic import average_sale
+-from app.results.domain.figures import RowCost
++from app.results.domain.figures import AmountWithPending
+ from app.results.domain.period_figures import scan, totals_between
+ from app.results.domain.periods import Period, periods
+ from app.results.domain.sorting import oldest, sorted_by_name, teaser
+@@ -77,7 +77,7 @@ class Panel:
+     stock: tuple[StockRow, ...]
+ 
+ 
+-def _cost_line(figure: RowCost | None) -> CostLineFigures | None:
++def _cost_line(figure: AmountWithPending | None) -> CostLineFigures | None:
+     return (
+         None
+         if figure is None
+diff --git a/app/results/domain/figures.py b/app/results/domain/figures.py
+index 1ea69dc..a452ad7 100644
+--- a/app/results/domain/figures.py
++++ b/app/results/domain/figures.py
+@@ -31,33 +31,13 @@ class CostFigure:
+ 
+ @dataclass(frozen=True)
+ class AmountWithPending:
+-    """A money figure (profit) together with the pending grams behind it, for one
+-    period."""
++    """A money figure (profit, or stock shortfall) together with the pending grams
++    behind it, for one period."""
+ 
+     amount: int
+     pending_grams: Grams
+ 
+ 
+-@dataclass(frozen=True)
+-class RowCost:
+-    """One Análisis cost line (cost of goods, stock shortfall, promotion or own use):
+-    its costed amount, its own pending grams and whether *every* gram behind it is
+-    pending, so the screen reads "N g sin costo" and never "$ 0". `row_cost` in
+-    `period_figures` is the only place `all_pending` is decided."""
+-
+-    amount: int
+-    pending_grams: Grams
+-    all_pending: bool
+-
+-    def __post_init__(self) -> None:
+-        if self.amount < 0:
+-            raise ValueError("a cost line's amount cannot be negative")
+-        if self.pending_grams.hundredths < 0:
+-            raise ValueError("a cost line's pending grams cannot be negative")
+-        if self.all_pending and not self.pending_grams.is_positive:
+-            raise ValueError("a fully pending cost line has pending grams")
+-
+-
+ @dataclass(frozen=True)
+ class VarietyRow:
+     variety_id: int
+@@ -80,9 +60,9 @@ class MonthFigures:
+     grams_sold: Grams
+     grams_gifted: Grams
+     average_margin: MarginFigure
+-    shortfall: RowCost | None
+-    promotion: RowCost | None
+-    own_use: RowCost | None
++    shortfall: AmountWithPending | None
++    promotion: AmountWithPending | None
++    own_use: AmountWithPending | None
+     varieties: tuple[VarietyRow, ...]
+ 
+ 
+@@ -93,10 +73,8 @@ class WeekFigures:
+     sales: int
+     grams: Grams
+     expenses: int
+-    cost_of_goods: RowCost
+-    shortfall: RowCost | None
+-    promotion: RowCost | None
+-    own_use: RowCost | None
++    promotion: AmountWithPending | None
++    own_use: AmountWithPending | None
+     profit: AmountWithPending
+     cash: int
+     best: bool
+@@ -110,10 +88,8 @@ class MonthRowFigures:
+     sales: int
+     grams: Grams
+     expenses: int
+-    cost_of_goods: RowCost
+-    shortfall: RowCost | None
+-    promotion: RowCost | None
+-    own_use: RowCost | None
++    promotion: AmountWithPending | None
++    own_use: AmountWithPending | None
+     profit: AmountWithPending
+     cash: int
+ 
+@@ -132,9 +108,9 @@ class SinceFirstRecordFigures:
+     expenses: int
+     profit: AmountWithPending
+     cash: int
+-    shortfall: RowCost | None
+-    promotion: RowCost | None
+-    own_use: RowCost | None
++    shortfall: AmountWithPending | None
++    promotion: AmountWithPending | None
++    own_use: AmountWithPending | None
+ 
+ 
+ @dataclass(frozen=True)
+@@ -163,10 +139,9 @@ class PeriodTotals:
+     grams_sold: Grams
+     grams_gifted: Grams
+     cost_of_goods: CostFigure
+-    cost_of_goods_row: RowCost
+-    shortfall: RowCost | None
+-    promotion: RowCost | None
+-    own_use: RowCost | None
++    shortfall: AmountWithPending | None
++    promotion: AmountWithPending | None
++    own_use: AmountWithPending | None
+     expenses: int
+     purchases: int
+     profit: AmountWithPending
+diff --git a/app/results/domain/period_figures.py b/app/results/domain/period_figures.py
+index 79cb6ea..be17bda 100644
+--- a/app/results/domain/period_figures.py
++++ b/app/results/domain/period_figures.py
+@@ -27,7 +27,6 @@ from app.results.domain.figures import (
+     MonthFigures,
+     MonthRowFigures,
+     PeriodTotals,
+-    RowCost,
+     SinceFirstRecordFigures,
+     VarietyRow,
+     WeekdayFigures,
+@@ -50,17 +49,6 @@ WithdrawalKind = Literal["promotion", "own_use"]
+ CostLine = Literal["shortfall", "promotion", "own_use"]
+ 
+ 
+-def row_cost(amount: int, pending_grams: Grams, grams: Grams) -> RowCost:
+-    """A cost line's costed amount and pending grams, with `all_pending` set exactly
+-    when there are grams and every one is pending. The only place that rule exists:
+-    a lot costed at $0 (a harvest) is costed, so "amount == 0" is not the test."""
+-    return RowCost(
+-        amount=amount,
+-        pending_grams=pending_grams,
+-        all_pending=grams.is_positive and pending_grams == grams,
+-    )
+-
+-
+ def _days(start: date, end_inclusive: date) -> list[date]:
+     if start > end_inclusive:
+         return []
+@@ -96,7 +84,6 @@ class _CostDayTotals:
+ 
+     costed: int = 0
+     pending_grams: Grams = ZERO
+-    grams: Grams = ZERO
+ 
+ 
+ @dataclass
+@@ -195,7 +182,7 @@ class Buckets:
+                 total = total + totals.pending_grams
+         return total
+ 
+-    def _cost_line(self, line: CostLine, start: date, end: date) -> RowCost | None:
++    def _cost_line(self, line: CostLine, start: date, end: date) -> AmountWithPending | None:
+         """One cost line's costed amount and pending grams in `[start, end]`, `None`
+         exactly when no draw of that kind falls in the window."""
+         days: list[_CostDayTotals] = []
+@@ -212,30 +199,19 @@ class Buckets:
+         if not days:
+             return None
+         pending = ZERO
+-        grams = ZERO
+         for day_totals in days:
+             pending = pending + day_totals.pending_grams
+-            grams = grams + day_totals.grams
+-        return row_cost(sum(t.costed for t in days), pending, grams)
++        return AmountWithPending(sum(t.costed for t in days), pending)
+ 
+-    def shortfall(self, start: date, end: date) -> RowCost | None:
++    def shortfall(self, start: date, end: date) -> AmountWithPending | None:
+         return self._cost_line("shortfall", start, end)
+ 
+-    def promotion(self, start: date, end: date) -> RowCost | None:
++    def promotion(self, start: date, end: date) -> AmountWithPending | None:
+         return self._cost_line("promotion", start, end)
+ 
+-    def own_use(self, start: date, end: date) -> RowCost | None:
++    def own_use(self, start: date, end: date) -> AmountWithPending | None:
+         return self._cost_line("own_use", start, end)
+ 
+-    def cost_of_goods_row(self, start: date, end: date) -> RowCost:
+-        """Cost of goods as an Análisis row reads it: the costed cost and the pending
+-        grams of the sold and gifted grams in `[start, end]`, never `None`."""
+-        return row_cost(
+-            self.costed_cost(start, end),
+-            self.pending_grams(start, end),
+-            self.grams(start, end),
+-        )
+-
+     def profit(self, start: date, end: date) -> AmountWithPending:
+         sales_total = self.sales(start, end)
+         sales_no_shipping = self.sales_without_shipping(start, end)
+@@ -330,7 +306,6 @@ def scan(
+                 agg = buckets.shortfall_totals.setdefault(row.day, _CostDayTotals())
+                 agg.costed += row.costed or 0
+                 agg.pending_grams = agg.pending_grams + row.pending
+-                agg.grams = agg.grams + row.grams
+             case "promotion" | "own_use":
+                 # A withdrawal is neither a sale nor a shortfall: it writes only its
+                 # own bucket, and its date counts as a first record.
+@@ -339,7 +314,6 @@ def scan(
+                 )
+                 withdrawn.costed += row.costed or 0
+                 withdrawn.pending_grams = withdrawn.pending_grams + row.pending
+-                withdrawn.grams = withdrawn.grams + row.grams
+                 if first_record is None or row.day < first_record:
+                     first_record = row.day
+             case "sold" | "gifted":
+@@ -401,7 +375,6 @@ def totals_between(buckets: Buckets, start: date, end: date) -> PeriodTotals:
+             costed=buckets.costed_cost(start, end),
+             pending_grams=buckets.pending_grams(start, end),
+         ),
+-        cost_of_goods_row=buckets.cost_of_goods_row(start, end),
+         shortfall=buckets.shortfall(start, end),
+         promotion=buckets.promotion(start, end),
+         own_use=buckets.own_use(start, end),
+@@ -513,8 +486,6 @@ def _weeks(buckets: Buckets, today: date, first_record: date | None) -> tuple[We
+                 sales=totals.sales,
+                 grams=totals.grams_sold + totals.grams_gifted,
+                 expenses=totals.expenses,
+-                cost_of_goods=totals.cost_of_goods_row,
+-                shortfall=totals.shortfall,
+                 promotion=totals.promotion,
+                 own_use=totals.own_use,
+                 profit=totals.profit,
+@@ -566,8 +537,6 @@ def _months(
+                 sales=totals.sales,
+                 grams=totals.grams_sold + totals.grams_gifted,
+                 expenses=totals.expenses,
+-                cost_of_goods=totals.cost_of_goods_row,
+-                shortfall=totals.shortfall,
+                 promotion=totals.promotion,
+                 own_use=totals.own_use,
+                 profit=totals.profit,
+diff --git a/docs/adr/0020-period-figures-are-summed-once-in-results.md b/docs/adr/0020-period-figures-are-summed-once-in-results.md
+index 0471335..91d2755 100644
+--- a/docs/adr/0020-period-figures-are-summed-once-in-results.md
++++ b/docs/adr/0020-period-figures-are-summed-once-in-results.md
+@@ -84,19 +84,3 @@ decided it (stock shortfall, CONTEXT.md).
+ - **Telling a gift by a $0 line total**: 0,01 g at $10 rounds to a $0 list line.
+ - **Leaving a negative adjustment out of profit**: the lots it uses up would leave the
+   books without ever reaching a profit figure.
+-
+-## Amendment (GH-141): Análisis rows carry cost of goods and shortfall, and say when a cost line is fully pending
+-
+-- **The rows read the same `totals_between`.** Each week and month row of `GET /analysis`
+-  carries `cost_of_goods` and `shortfall` from the `PeriodTotals` that already feeds
+-  `/panel`'s `periods.week` and `periods.month`; no new query and no second sum, so the
+-  statement-count tests stay as they were.
+-- **`all_pending` is decided only by `row_cost`** (`period_figures.py`), from the grams
+-  behind each figure (`grams > 0 and pending_grams == grams`), never from an amount: a
+-  harvest lot costs $0 and is still costed. The schemas copy the flag and never compute it.
+-- **The closed list of changed models**: `RowCostOut` (new, `{amount, pending_grams,
+-  all_pending}`), `WeekOut` and `MonthRowOut` (gain `cost_of_goods` and `shortfall`; their
+-  `promotion` and `own_use` become `RowCostOut | None`), `AnalysisMonthOut` and
+-  `SinceFirstRecordOut` (`shortfall`, `promotion`, `own_use` become `RowCostOut | None`).
+-  Profit and margin keep `AmountWithPendingOut` and `MarginOut`.
+-- **`/panel` is unchanged**: no model, no fixture.
+diff --git a/docs/product/analysis.md b/docs/product/analysis.md
+index 6685ac1..37650af 100644
+--- a/docs/product/analysis.md
++++ b/docs/product/analysis.md
+@@ -1,6 +1,6 @@
+ # Analysis
+ 
+-Where a business makes and loses money, across periods and down to each variety: margins per variety for a chosen month, sales, cost of goods sold, stock shortfall, profit and cash over the last 8 weeks and 12 months, the weekday pattern, totals since the first record, and expenses by category. Read only and seen only by its business (ADR-0004). Every figure it shares with Results (#7) comes from #7's computation; cost of goods, stock shortfall and the cost of stock withdrawals follow the lots as they stand today (ADR-0009, ADR-0010). Reads sales, stock (entries and withdrawals), payments and expenses. Reached from Más on the phone and from the sidebar on a computer (navigation.md).
++Where a business makes and loses money, across periods and down to each variety: margins per variety for a chosen month, sales, profit and cash over the last 8 weeks and 12 months, the weekday pattern, totals since the first record, and expenses by category. Read only and seen only by its business (ADR-0004). Every figure it shares with Results (#7) comes from #7's computation; cost of goods, stock shortfall and the cost of stock withdrawals follow the lots as they stand today (ADR-0009, ADR-0010). Reads sales, stock (entries and withdrawals), payments and expenses. Reached from Más on the phone and from the sidebar on a computer (navigation.md).
+ 
+ ## Jobs
+ 
+@@ -8,10 +8,6 @@ Where a business makes and loses money, across periods and down to each variety:
+ 
+ This serves the brief's results job ("When I look at a day, a week or a month, I want sales, profit and cash side by side, so I can tell whether I make money and how much I actually have") across periods and by variety, and feeds the stock job. The daily check of cash stays with Results (#7).
+ 
+-**When** I close a week or a month in Análisis, or see that one earned less than I expected, **I want** to see on that period's row what the sales cost me and what I lost to stock shortfall, next to the profit, **so I can** understand where the profit came from without going back to Inicio or doing the arithmetic, and trust that Análisis and Inicio say the same thing.
+-
+-This refines the job above for each week and month row; it is not a new job. Before it, cost of goods and shortfall for a past period could not be seen anywhere: the shortfall was only inside profit, where it could not be separated out, and Inicio shows the current week and month only.
+-
+ **When** I take grams out of my own stock without selling them (to share at a party so people get to know the business, or for my own use), **I want** to record them from my phone in a few taps (date, varieties and grams, the reason), **so I can** keep stock right and see in Ganancia what promoting the business and my own consumption cost me, without recording a sale nobody made or an adjustment that reads as lost flower. (Served here by the Promoción and Consumo propio lines; the withdrawal is defined in stock.md.)
+ 
+ **When** I run my business from my phone between orders or mid-chat with a customer, several times a day, **I want** the app laid out around what I actually do and how often, with analysis within reach for the weekly or monthly look, **so I can** get back to the customer instead of hunting through menus. (The navigation job, navigation.md.)
+@@ -19,22 +15,16 @@ This refines the job above for each week and month row; it is not a new job. Bef
+ Success criteria:
+ 
+ 1. **Answers without arithmetic**: from one screen on the phone, a seller can name the chosen month's variety with the highest margin and the one with the lowest, the best of the last 8 weeks, the best weekday, and the expense category that took the most that month.
+-2. **One computation**: every figure equals what Results (#7) shows for the same period and a direct computation over the same sales, stock entries, withdrawals, payments and expenses. That covers sales, cost of goods sold, stock shortfall, promotion cost, own-use cost, expenses, profit and cash, on every week row, every month row and since the first record. For the current week and month, the rows' cost of goods sold and stock shortfall equal Inicio's Semana and Mes. For the current month, the stock shortfall is one figure, read the same way, in the month header, on the month row and on Inicio's Mes. 0 differences.
+-3. **Honest cost** (ADR-0009, ADR-0010):
+-   - Margins come from each lot's actual cost as the lots stand today.
+-   - When a figure's cost includes pending grams, it says so with its own grams and never treats them as costing $0. A cost figure that is entirely pending never shows "$ 0", wherever it appears.
+-   - Flower lost to a negative adjustment lowers profit.
+-   - Grams withdrawn for promotion or own use lower profit on their own lines, never inside cost of goods sold, stock shortfall or a margin.
+-   - A stock entry or withdrawal corrected later shows in every affected past week and month the next time the screen is opened. No period is ever closed.
++2. **One computation**: every figure equals what Results (#7) shows for the same period and a direct computation over the same sales, stock entries, withdrawals, payments and expenses: sales, cost of goods sold, stock shortfall, promotion cost, own-use cost, expenses, profit and cash, per week, per month and since the first record. 0 differences.
++3. **Honest cost** (ADR-0009, ADR-0010): margins come from each lot's actual cost as the lots stand today. When a variety's or a period's cost includes pending grams, it says so and never treats them as costing $0. Flower lost to a negative adjustment lowers profit. Grams withdrawn for promotion or own use lower profit on their own lines, never inside cost of goods sold, stock shortfall or a margin. A stock entry or withdrawal corrected later shows in every affected past week and month the next time the screen is opened. No period is ever closed.
+ 4. **Nothing read from color alone, nothing invented**: every bar and row carries its own figure. A period with no activity shows $0 or is left out by a stated rule, never with a placeholder figure.
+ 5. **Businesses never mix** (ADR-0004): every figure covers only the session's business.
+-6. **Every row explains its profit**: all 8 week rows and all 12 month rows show Costo de lo vendido, and Faltante de stock when the period has one, next to Promoción, Consumo propio, expenses, profit and cash.
+ 
+ ## Behaviour
+ 
+ ### Windows
+ 
+-- **Chosen month**: opens on the current month in Argentina time and moves one month at a time, as in Gastos. It runs from the month of the business's first record to the current month. There is no custom range (no Fechas).
++- **Chosen month**: opens on the current month in Argentina time; moved one month at a time, as in Gastos; from the month of the business's first record to the current month. No custom range (no Fechas).
+ - **Last 8 weeks**: Monday-to-Sunday weeks in Argentina time, the current one included, as in Ventas.
+ - **Last 12 months**: calendar months, the current one included.
+ - **Since the first record**: from the business's first record (its earliest sale, stock entry, stock withdrawal, payment or expense in the app) to today. A withdrawal dated before every other record starts the history, so its cost is never left out. The spreadsheet's history is the import's job (#11).
+@@ -46,79 +36,40 @@ Success criteria:
+ ### Shared definitions (identical to Results #7)
+ 
+ - **Sales** on week, month and all-time rows: sale totals, shipping included, paid or not, each on its own date, as in Ventas and Results. Withdrawals are never sales.
+-- **Cost of goods sold, expenses and cash**: CONTEXT.md's definitions, read through Results' (#7) computation, never a second one.
+-  - Cost of goods sold is what the grams of the period's sale lines (gifts included) cost, from their lots as they stand today. It never includes a negative adjustment or a withdrawal.
+-  - Cash is payments (on-the-spot and later) on their own dates − expenses − purchases on their dates.
+-- **Stock shortfall**: the cost of the grams negative adjustments take out in the period, on the adjustment's date, from their lots as they stand today, oldest first, through the same allocation as sale lines. A part beyond every lot is pending, and the figure carries its own "y N g sin costo". It never includes a withdrawal and never enters cost of goods sold.
++- **Cost of goods sold, expenses and cash**: CONTEXT.md's definitions, read through Results' (#7) computation, never a second one. Cash is payments (on-the-spot and later) on their own dates − expenses − purchases on their dates.
++- **Stock shortfall**: the cost of the grams negative adjustments take out in the period, on the adjustment's date, from their lots as they stand today, oldest first, through the same allocation as sale lines. A part beyond every lot is pending and the figure carries its own "y N g sin costo". It never includes a withdrawal.
+ - **Promotion cost ("Promoción") and own-use cost ("Consumo propio")**: the cost of the grams the period's withdrawals of that reason take out, on the withdrawal's date, from their lots as they stand today, oldest first, through the same allocation. A part beyond every lot is pending, and each figure carries its own "y N g sin costo", counting only its own reason's pending grams.
+ - **Sales of costed grams**: per sale line, line total × costed grams ÷ line grams, rounded half up to the peso. A fully costed line counts its whole total, a fully pending line $0, a gift $0.
+-- **Profit**: sales − cost of goods sold − stock shortfall − promotion cost − own-use cost − expenses.
+-  - When any of its cost is pending, profit is worked out over the costed part, leaving out the sales of pending grams: sales − (sales without shipping − sales of costed grams) − costed cost of goods − costed shortfall − costed promotion cost − costed own-use cost − expenses.
++- **Profit**: sales − cost of goods sold − stock shortfall − promotion cost − own-use cost − expenses. When any of its cost is pending, profit is worked out over the costed part: the sales of pending grams are left out (sales − (sales without shipping − sales of costed grams) − costed cost of goods − costed shortfall − costed promotion cost − costed own-use cost − expenses).
+   - It carries "y N g sin costo", where N adds every pending gram behind it: grams sold or gifted, grams taken out by negative adjustments and grams withdrawn, each counted in the period of its own date.
+-  - Example: a week that sold 4 g with no cost yet, whose count took out 2 g with no cost yet, and that withdrew 1 g for promotion with no cost yet reads profit "y 7 g sin costo", its Faltante de stock "2 g sin costo" and its Promoción "1 g sin costo".
++  - Example: a week that sold 4 g with no cost yet, whose count took out 2 g with no cost yet, and that withdrew 1 g for promotion with no cost yet reads profit "y 7 g sin costo", its Faltante de stock "y 2 g sin costo" and its Promoción "y 1 g sin costo".
+   - The sales figure shown next to it stays the full sales.
+ - **Pending grams** are never costed $0 anywhere. Every figure they touch carries "y N g sin costo", with N counting only the grams behind that figure.
+-- **A fully pending cost figure**:
+-  - When every gram behind Costo de lo vendido, Faltante de stock, Promoción or Consumo propio is pending, the figure shows only its pending grams in words (e.g. "2 g sin costo"), never "$ 0" and never "$ 0 y N g sin costo". The exact wording is design's.
+-  - This holds wherever the figure appears in Análisis: the week and month rows, the month header, and the since-the-first-record lines.
+-  - A partly pending figure shows its costed amount plus "y N g sin costo".
+-  - The line is never hidden because its cost is pending.
+-  - Profit, margins, margin percentages and the average margin keep their own rules.
+-  - The API says whether a figure is fully pending, once per figure; the front only formats it.
+ 
+ ### The chosen month, by variety
+ 
+ - **Rows**: only varieties sold or gifted that month. A variety only withdrawn that month has no row.
+-- **Sales without shipping**: the sum of the variety's stored line totals that month. A gift counts $0 and a special price its typed total.
++- **Sales without shipping**: the sum of the variety's stored line totals that month; gifts $0, a special price its typed total.
+ - **Share of the month**: its sales without shipping over the month's sales without shipping. Not shown when the month's sales without shipping are $0.
+ - **Grams**: grams sold and grams gifted, as two figures. A negative adjustment and a withdrawal are neither, and stay out of every variety's grams, cost and margin.
+ - **Cost of goods sold**: what its sold and gifted grams cost, from their lots as they stand today, with the pending mark when it applies.
+ - **Margin**: sales of costed grams − costed cost of goods sold, in pesos; it can be negative. With no pending grams, sales of costed grams equal sales without shipping.
+-- **Margin percentage**: margin over the variety's sales of costed grams. Not shown when those are $0 (only gifted, or every gram pending).
+-- **Pending grams**: margin and percentage carry "y N g sin costo", N counting only that variety's sold and gifted pending grams. Example: 10 g sold for $10.000, 6 g from a $3.000 purchase and 4 g pending, shows sales $10.000, margin $3.000 "y 4 g sin costo" and 50%.
+-- **Sorting**: by margin in pesos, highest first. A marked margin sorts by its shown figure and keeps its mark.
++- **Margin percentage**: margin over the variety's sales of costed grams; not shown when those are $0 (only gifted, or every gram pending).
++- **Pending grams**: margin and percentage carry "y N g sin costo", N counting only that variety's sold and gifted pending grams. Example: 10 g sold for $10.000, 6 g from a $3.000 purchase and 4 g pending show sales $10.000, margin $3.000 "y 4 g sin costo", 50%.
++- **Sorting**: by margin in pesos, highest first; a marked margin sorts by its shown figure and keeps its mark.
+ - **Month header**:
+   - sales (shipping included), grams sold or gifted, and the average margin;
+-  - the average margin is the month's total margin over its sales of costed grams. It is marked when any variety carries pending grams (counting sold and gifted grams only), and has no percentage when those sales are $0;
+-  - "Faltante de stock $ X" when the month has any stock shortfall, with its own pending mark, or only its pending grams when it is fully pending. It is the same figure, read the same way, as the month row's and Inicio's Mes;
+-  - "Promoción $ X" and "Consumo propio $ X" when the month has a withdrawal of that reason, each with its own pending mark (or only its pending grams when fully pending), apart from Faltante de stock;
+-  - the screen states that the variety table adds up to the month's sales minus shipping;
+-  - the header carries no Costo de lo vendido total.
++  - the average margin is the month's total margin over its sales of costed grams, marked (sold and gifted grams only) when any variety carries pending grams, with no percentage when those sales are $0;
++  - "Faltante de stock $ X" when the month has any stock shortfall, with its own pending mark;
++  - "Promoción $ X" and "Consumo propio $ X" when the month has a withdrawal of that reason, each with its own pending mark, apart from Faltante de stock;
++  - the screen states that the variety table adds up to the month's sales minus shipping.
+ - **A month with no sales or gifts**: totals at $0, no variety rows, and a fixed line saying nothing was sold that month. Its Faltante de stock, Promoción and Consumo propio still show when it has them.
+ 
+ ### Week by week (last 8) and month by month (last 12)
+ 
+-- **Each row**, in this order (the same order as Inicio's Semana and Mes, results.md):
+-  1. sales;
+-  2. grams sold or gifted, as one combined figure;
+-  3. Costo de lo vendido, on every row;
+-  4. Faltante de stock, only when the period has a negative adjustment;
+-  5. Promoción, only when the period has a withdrawal of that reason;
+-  6. Consumo propio, likewise;
+-  7. expenses;
+-  8. profit;
+-  9. cash.
+-
+-  Withdrawn and adjusted grams are never in the grams figure.
+-- **Costo de lo vendido** on a row is the period's cost of goods sold, past periods included. A period with no sales shows a real $0. It never includes a shortfall or a withdrawal.
+-- **Faltante de stock** on a row is the period's stock shortfall, a separate figure that never enters Costo de lo vendido. A period with no negative adjustment has no Faltante de stock line.
+-- **Pending grams on a row**:
+-  - Costo de lo vendido, Faltante de stock, Promoción and Consumo propio each show their costed amount plus their own "y N g sin costo", or only their pending grams when fully pending (see Shared definitions).
+-  - N counts only the grams behind that figure, each in the period of its own date:
+-    - Costo de lo vendido: sold and gifted grams;
+-    - Faltante de stock: grams taken out by negative adjustments;
+-    - Promoción and Consumo propio: grams withdrawn for that reason.
+-  - Profit keeps its own rule and its total N.
+-  - Example: a week with 4 g sold, 2 g adjusted out and 1 g withdrawn for promotion, all with no cost yet, reads:
+-    - Costo de lo vendido "4 g sin costo";
+-    - Faltante de stock "2 g sin costo";
+-    - Promoción "1 g sin costo";
+-    - profit "y 7 g sin costo".
+-- **Agreement with Inicio**: for the current week and the current month, the row's Costo de lo vendido and Faltante de stock equal Inicio's Semana and Mes. Any difference is a defect.
+-- **Profit** includes stock shortfall, promotion and own-use cost, and carries the pending mark when it applies.
++- **Each row**: sales, grams sold or gifted (one combined figure), Promoción and Consumo propio (each when the row has one), expenses, profit and cash. Profit includes stock shortfall, promotion and own-use cost and carries the pending mark when it applies. Withdrawn grams are never in the grams figure.
+ - **Best week**: the highest sales; on a tie, the most recent week. When all 8 weeks are $0, none is marked. Withdrawals never affect it.
+ - **Months**: no "best" mark.
+-- No chart, variation or comparison between periods is drawn.
+ 
+ ### By weekday, since the first record
+ 
+@@ -127,7 +78,7 @@ Success criteria:
+ 
+ ### Since the first record
+ 
+-- Sales, expenses, profit and cash, with the same definitions as the week and month rows. "Faltante de stock $ X", "Promoción $ X" and "Consumo propio $ X" are added when there is any, each with its own pending mark, or only its pending grams when fully pending. No Costo de lo vendido total.
++- Sales, expenses, profit and cash, with the same definitions as the week and month rows, plus "Faltante de stock $ X", "Promoción $ X" and "Consumo propio $ X" when there is any.
+ - Labelled as money moved since the first record, never as money on hand: the app has no opening cash balance.
+ 
+ ### Expenses by category: the chosen month, and since the first record
+@@ -141,10 +92,9 @@ Success criteria:
+ 
+ - **Where**: a tab root (navigation.md). On the phone, the Más entry "Análisis · Variedades, semanas, meses y días"; on a computer, "Análisis" in the sidebar, under the divider.
+ - **Computer**: the `AnalisisCompu` layout.
+-- **Week and month rows**: how Costo de lo vendido and Faltante de stock sit on a row (lines or sub-rows), on the phone and on a computer, is design's call. Each figure is in words, and pending and negative are told by word or sign, never by color alone, in both themes.
+ - **Charts**: the accent and the tokens only; every bar carries its figure. Best marks, pending marks and negatives are told by word or shape, never by color alone.
+-- **Language and formats**: Rioplatense Spanish with vos. Money `$ 11.000`, grams `3,5 g`, dates `dd/mm`.
+-- **Read only**: no forms and no toasts. Figures come from the API on every open; the browser computes nothing, including whether a figure is fully pending.
++- **Language and formats**: Rioplatense Spanish with vos; money `$ 11.000`, grams `3,5 g`, dates `dd/mm`.
++- **Read only**: no forms and no toasts. Figures come from the API on every open; the browser computes nothing.
+ - **Feedback**: network loss and server errors follow accounts.md.
+ 
+ ### Constraints
+@@ -154,69 +104,35 @@ Success criteria:
+ 
+ ## Metrics
+ 
+-- **Answers without arithmetic (criterion 1)**: a front test over a seeded business reads, from the screen alone, the best and worst variety by margin, the marked best week, the marked best weekday and the month's largest category. Each matches the expected answer.
+-- **One computation (criterion 2)**:
+-  - Over every week, every month and the all-time window of a seeded history, sales, cost of goods, stock shortfall, promotion cost, own-use cost, expenses, profit and cash equal Results' (#7) figures and a direct computation. 0 differences.
+-  - The variety table's sales add up to the month's sales minus its shipping.
+-  - The seeded history includes a costed negative adjustment, a pending one, a sale line with pending grams, a costed withdrawal and a pending withdrawal. Over it, every week and month row's cost of goods and shortfall equal a direct computation. The current week and month equal `/panel`'s `periods.week` and `periods.month`. The current month's shortfall is the same, and reads the same, in the header, the row and the panel. 0 differences.
+-  - `tests/design/test_muestra_seed.py` checks the rows against the panel instead of asserting the shortfall is absent.
+-- **First record includes withdrawals (criterion 2)**: a withdrawal dated before every other record starts the history.
+-  - Its week and month rows, and the since-the-first-record profit, carry its cost and equal Inicio's figures for the same week and month. 0 differences.
+-  - A business whose only record is a withdrawal shows that history, not the nothing-to-analyse line.
++- **Answers without arithmetic (criterion 1)**: a front test over a seeded business reads from the screen alone the best and worst variety by margin, the marked best week, the marked best weekday and the month's largest category, each matching the expected answer.
++- **One computation (criterion 2)**: for every week, month and the all-time window of a seeded history, sales, cost of goods, stock shortfall, promotion cost, own-use cost, expenses, profit and cash equal Results' (#7) figures and a direct computation. 0 differences. The variety table's sales add up to the month's sales minus its shipping.
++- **First record includes withdrawals (criterion 2)**: a withdrawal dated before every other record starts the history; its week and month rows and the since-the-first-record profit carry its cost, and they equal Inicio's figures for the same week and month, 0 differences. A business whose only record is a withdrawal shows that history, not the nothing-to-analyse line.
+ - **Honest cost (criterion 3)**: 100% passing.
+-  - A backdated or edited stock entry or withdrawal moves the cost and margin of the affected past weeks, months and varieties on the next read, and nothing else.
+-  - Pending grams always show their grams and are never costed $0.
+-  - A negative adjustment lowers profit on its date by its lots' cost, shows on its period's Faltante de stock, and moves no variety's margin or Costo de lo vendido.
+-  - A withdrawal of each reason lowers profit on its date by its lots' cost and shows on its own line. It moves none of these:
+-    - a variety's row, grams, margin or share;
+-    - the average margin;
+-    - best week or best weekday;
+-    - cost of goods sold or stock shortfall.
+-  - The 4 g / 2 g / 1 g example week reads:
+-    - Costo de lo vendido "4 g sin costo";
+-    - Faltante de stock "2 g sin costo";
+-    - Promoción "1 g sin costo";
+-    - profit "y 7 g sin costo".
+-  - Each row figure's N counts only its own grams. Profit's N is unchanged.
+-  - A fully pending figure shows grams, never "$ 0": on a row, in the month header (Faltante de stock, Promoción, Consumo propio) and on the since-the-first-record lines. A current month whose only shortfall is 2 g with no cost reads "2 g sin costo" in the header and on the row alike.
+-- **Rows explain profit (criterion 6)**: a front test over a seeded history reads Costo de lo vendido on all 8 week rows and all 12 month rows, in the stated order, and Faltante de stock only on periods with a negative adjustment.
++  - A backdated or edited stock entry or withdrawal moves the affected past weeks', months' and varieties' cost and margin on the next read, and nothing else.
++  - Pending grams always show "y N g sin costo" and are never costed $0.
++  - A negative adjustment lowers profit on its date by its lots' cost and moves no variety's margin.
++  - A withdrawal of each reason lowers profit on its date by its lots' cost, shows on its own line, and moves no variety's row, grams, margin, share, average margin, best week or best weekday, nor cost of goods sold or stock shortfall.
++  - A week with 4 g sold pending, 2 g adjusted out pending and 1 g withdrawn for promotion pending reads profit "y 7 g sin costo", Faltante de stock "y 2 g sin costo" and Promoción "y 1 g sin costo".
+ - **Margin matrix**: 100% passing. It covers:
+   - a variety only gifted (negative margin, no percentage);
+   - a mix of sold and gifted;
+-  - pending grams: 10 g for $10.000, with 6 g costing $3.000, shows $3.000 "y 4 g sin costo" and 50%, sorted by shown figure;
++  - pending grams: 10 g for $10.000 with 6 g costing $3.000 shows $3.000 "y 4 g sin costo" and 50%, sorted by shown figure;
+   - a line split across costed and pending grams, with the half-up rounding of its costed sales;
+   - a negative adjustment kept out of the variety table and counted as shortfall;
+   - a withdrawal kept out of the variety table and counted on its reason's line;
+   - a month with only gifts (no share, no average percentage).
+-- **Best and ties**: 100% passing. It covers:
+-  - a best week chosen by sales, not profit;
+-  - a week tie going to the most recent week;
+-  - a weekday tie going to the earlier day;
+-  - all $0 marking none.
++- **Best and ties**: 100% passing. It covers a best week by sales (not profit), a week tie going to the most recent, a weekday tie going to the earlier day, and all $0 marking none.
+ - **Nothing invented (criterion 4)**:
+   - no week or month before the first record;
+-  - $0 rows inside the history, Costo de lo vendido included;
++  - $0 rows inside the history;
+   - an empty month shows its fixed line and no variety rows;
+-  - a period with no negative adjustment shows no Faltante de stock line;
+   - a period with no withdrawal of a reason shows no line for it;
+   - a business with no records shows its fixed line;
+   - every bar carries its figure, and no state is told by color alone.
+-- **Unchanged figures**: over the same seeded history, these keep their values before and after the rows gained Costo de lo vendido and Faltante de stock:
+-  - profit and cash;
+-  - the month header;
+-  - the since-the-first-record figures;
+-  - the by-variety table;
+-  - best week.
+-
+-  The only display change outside the rows is a fully pending Faltante de stock, Promoción or Consumo propio in the header or since the first record, which now shows only its grams instead of "$ 0 y N g sin costo".
+ - **Isolation (criterion 5)**: every analysis route is in the sweep and answers only its own business's figures, never the seeded other business's data.
+ - **No echo**: after a full front run, the console and browser storage hold no amounts or names.
+ - **Speed**: the screen answers in under 300 ms with a year of a few hundred sales and a few dozen varieties (ADR-0010's revisit trigger).
+-- **No curl**: the end-to-end front run:
+-  - opens Más → Análisis on the phone, and the sidebar entry on a computer;
+-  - moves back a month;
+-  - reads each section, including Costo de lo vendido, Faltante de stock, Promoción and Consumo propio on the rows.
+-- **Design**: `scripts/design/compare.sh` runs before and after for Análisis, phone and computer, both themes, with the captures attached to the PR.
++- **No curl**: the end-to-end front run opens Más → Análisis on the phone (and the sidebar entry on a computer), moves back a month and reads each section, Promoción and Consumo propio included.
+ 
+ ## Out of scope
+ 
+@@ -224,9 +140,6 @@ Success criteria:
+ - Editing anything from Análisis.
+ - An opening cash balance or money on hand.
+ - Stock shortfall per variety; promotion or own-use cost per variety.
+-- A Costo de lo vendido total in the month header or since the first record.
+-- Charts, variations or comparisons between periods.
+-- Changing Inicio's fixed "incluye costo pendiente" note.
+ - Importing the spreadsheet's history: #11.
+ - Exporting, printing or sharing the analysis.
+ - Live updates between partners while the screen is open.
+diff --git a/docs/product/design-system/muestra.md b/docs/product/design-system/muestra.md
+index 7a490ed..2c25576 100644
+--- a/docs/product/design-system/muestra.md
++++ b/docs/product/design-system/muestra.md
+@@ -179,44 +179,36 @@ Total: $ 32.000
+ | --- | --- | --- | --- | --- |
+ | Semana | 24/08 – 30/08 | Ventas | $ 0 | no |
+ | Semana | 24/08 – 30/08 | Gramos | 0 g | no |
+-| Semana | 24/08 – 30/08 | Costo de lo vendido | $ 0 | no |
+ | Semana | 24/08 – 30/08 | Gastos | $ 0 | no |
+ | Semana | 24/08 – 30/08 | Ganancia | $ 0 | no |
+ | Semana | 24/08 – 30/08 | Caja | −$ 880.000 | no |
+ | Semana | 31/08 – 06/09 | Ventas | $ 0 | no |
+ | Semana | 31/08 – 06/09 | Gramos | 0 g | no |
+-| Semana | 31/08 – 06/09 | Costo de lo vendido | $ 0 | no |
+ | Semana | 31/08 – 06/09 | Gastos | $ 0 | no |
+ | Semana | 31/08 – 06/09 | Ganancia | $ 0 | no |
+ | Semana | 31/08 – 06/09 | Caja | $ 0 | no |
+ | Semana | 07/09 – 13/09 | Ventas | $ 0 | no |
+ | Semana | 07/09 – 13/09 | Gramos | 0 g | no |
+-| Semana | 07/09 – 13/09 | Costo de lo vendido | $ 0 | no |
+ | Semana | 07/09 – 13/09 | Gastos | $ 0 | no |
+ | Semana | 07/09 – 13/09 | Ganancia | $ 0 | no |
+ | Semana | 07/09 – 13/09 | Caja | $ 0 | no |
+ | Semana | 14/09 – 20/09 | Ventas | $ 39.000 | no |
+ | Semana | 14/09 – 20/09 | Gramos | 3 g | no |
+-| Semana | 14/09 – 20/09 | Costo de lo vendido | $ 17.000 | no |
+ | Semana | 14/09 – 20/09 | Gastos | $ 0 | no |
+ | Semana | 14/09 – 20/09 | Ganancia | $ 22.000 | no |
+ | Semana | 14/09 – 20/09 | Caja | $ 14.000 | no |
+ | Semana | 21/09 – 27/09 | Ventas | $ 129.000 | no |
+ | Semana | 21/09 – 27/09 | Gramos | 11 g | no |
+-| Semana | 21/09 – 27/09 | Costo de lo vendido | $ 56.000 | no |
+ | Semana | 21/09 – 27/09 | Gastos | $ 0 | no |
+ | Semana | 21/09 – 27/09 | Ganancia | $ 73.000 | no |
+ | Semana | 21/09 – 27/09 | Caja | $ 129.000 | no |
+ | Semana | 28/09 – 04/10 | Ventas | $ 163.000 | no |
+ | Semana | 28/09 – 04/10 | Gramos | 14 g | no |
+-| Semana | 28/09 – 04/10 | Costo de lo vendido | $ 63.000 | no |
+ | Semana | 28/09 – 04/10 | Gastos | $ 0 | no |
+ | Semana | 28/09 – 04/10 | Ganancia | $ 100.000 | no |
+ | Semana | 28/09 – 04/10 | Caja | $ 163.000 | no |
+ | Semana | 05/10 – 11/10 | Ventas | $ 206.000 | no |
+ | Semana | 05/10 – 11/10 | Gramos | 19 g | no |
+-| Semana | 05/10 – 11/10 | Costo de lo vendido | $ 93.000 | no |
+-| Semana | 05/10 – 11/10 | Faltante de stock | $ 10.000 | no |
+ | Semana | 05/10 – 11/10 | Promoción | $ 35.000 | no |
+ | Semana | 05/10 – 11/10 | Consumo propio | $ 14.000 | y 1 g sin costo |
+ | Semana | 05/10 – 11/10 | Gastos | $ 12.500 | no |
+@@ -230,20 +222,16 @@ Total: $ 32.000
+ | --- | --- | --- | --- | --- |
+ | Mes | 01/08 – 31/08 | Ventas | $ 0 | no |
+ | Mes | 01/08 – 31/08 | Gramos | 0 g | no |
+-| Mes | 01/08 – 31/08 | Costo de lo vendido | $ 0 | no |
+ | Mes | 01/08 – 31/08 | Gastos | $ 0 | no |
+ | Mes | 01/08 – 31/08 | Ganancia | $ 0 | no |
+ | Mes | 01/08 – 31/08 | Caja | −$ 880.000 | no |
+ | Mes | 01/09 – 30/09 | Ventas | $ 168.000 | no |
+ | Mes | 01/09 – 30/09 | Gramos | 14 g | no |
+-| Mes | 01/09 – 30/09 | Costo de lo vendido | $ 73.000 | no |
+ | Mes | 01/09 – 30/09 | Gastos | $ 0 | no |
+ | Mes | 01/09 – 30/09 | Ganancia | $ 95.000 | no |
+ | Mes | 01/09 – 30/09 | Caja | $ 143.000 | no |
+ | Mes | 01/10 – 31/10 | Ventas | $ 369.000 | no |
+ | Mes | 01/10 – 31/10 | Gramos | 33 g | no |
+-| Mes | 01/10 – 31/10 | Costo de lo vendido | $ 156.000 | no |
+-| Mes | 01/10 – 31/10 | Faltante de stock | $ 10.000 | no |
+ | Mes | 01/10 – 31/10 | Promoción | $ 35.000 | no |
+ | Mes | 01/10 – 31/10 | Consumo propio | $ 14.000 | y 1 g sin costo |
+ | Mes | 01/10 – 31/10 | Gastos | $ 12.500 | no |
+diff --git a/docs/product/design-system/pantallas/Analisis.dc.html b/docs/product/design-system/pantallas/Analisis.dc.html
+index 859ea48..c5a3030 100644
+--- a/docs/product/design-system/pantallas/Analisis.dc.html
++++ b/docs/product/design-system/pantallas/Analisis.dc.html
+@@ -68,19 +68,13 @@ a { color: #1B4FA8 } a:hover { color: #231E18 }
+   <div style="padding: 18px 24px 6px; font-size: 14px; color: #706659">Semana a semana · últimas 8</div>
+   <div style="padding: 0 24px; display: flex; flex-direction: column; gap: 9px">
+     <div style="display: flex; align-items: center; gap: 12px"><span style="width: 44px; font-size: 14px; font-weight: 400; color: #706659">24/08</span><span style="flex: 1"><span style="display: block; height: 10px; border-radius: 999px; background: #EBE5DA"><span style="display: block; width: 0%; height: 10px; border-radius: 999px; background: #706659"></span></span></span><span style="width: 80px; text-align: right; font-size: 15px; font-weight: 600">$ 0</span></div>
+-    <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; padding-left: 56px; margin-top: -4px; font-size: 12px; color: #706659"><span>Costo de lo vendido</span><span style="color: #231E18; font-weight: 600">$ 0</span></div>
+     <div style="display: flex; align-items: center; gap: 12px"><span style="width: 44px; font-size: 14px; font-weight: 400; color: #706659">31/08</span><span style="flex: 1"><span style="display: block; height: 10px; border-radius: 999px; background: #EBE5DA"><span style="display: block; width: 0%; height: 10px; border-radius: 999px; background: #706659"></span></span></span><span style="width: 80px; text-align: right; font-size: 15px; font-weight: 600">$ 0</span></div>
+-    <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; padding-left: 56px; margin-top: -4px; font-size: 12px; color: #706659"><span>Costo de lo vendido</span><span style="color: #231E18; font-weight: 600">$ 0</span></div>
+     <div style="display: flex; align-items: center; gap: 12px"><span style="width: 44px; font-size: 14px; font-weight: 400; color: #706659">07/09</span><span style="flex: 1"><span style="display: block; height: 10px; border-radius: 999px; background: #EBE5DA"><span style="display: block; width: 0%; height: 10px; border-radius: 999px; background: #706659"></span></span></span><span style="width: 80px; text-align: right; font-size: 15px; font-weight: 600">$ 0</span></div>
+-    <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; padding-left: 56px; margin-top: -4px; font-size: 12px; color: #706659"><span>Costo de lo vendido</span><span style="color: #231E18; font-weight: 600">$ 0</span></div>
+     <div style="display: flex; align-items: center; gap: 12px"><span style="width: 44px; font-size: 14px; font-weight: 400; color: #706659">14/09</span><span style="flex: 1"><span style="display: block; height: 10px; border-radius: 999px; background: #EBE5DA"><span style="display: block; width: 19%; height: 10px; border-radius: 999px; background: #706659"></span></span></span><span style="width: 80px; text-align: right; font-size: 15px; font-weight: 600">$ 39.000</span></div>
+-    <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; padding-left: 56px; margin-top: -4px; font-size: 12px; color: #706659"><span>Costo de lo vendido</span><span style="color: #231E18; font-weight: 600">$ 17.000 y 1 g sin costo</span></div>
+     <div style="display: flex; align-items: center; gap: 12px"><span style="width: 44px; font-size: 14px; font-weight: 400; color: #706659">21/09</span><span style="flex: 1"><span style="display: block; height: 10px; border-radius: 999px; background: #EBE5DA"><span style="display: block; width: 63%; height: 10px; border-radius: 999px; background: #706659"></span></span></span><span style="width: 80px; text-align: right; font-size: 15px; font-weight: 600">$ 129.000</span></div>
+-    <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; padding-left: 56px; margin-top: -4px; font-size: 12px; color: #706659"><span>Costo de lo vendido</span><span style="color: #231E18; font-weight: 600">$ 56.000</span></div>
+     <div style="display: flex; align-items: center; gap: 12px"><span style="width: 44px; font-size: 14px; font-weight: 400; color: #706659">28/09</span><span style="flex: 1"><span style="display: block; height: 10px; border-radius: 999px; background: #EBE5DA"><span style="display: block; width: 79%; height: 10px; border-radius: 999px; background: #706659"></span></span></span><span style="width: 80px; text-align: right; font-size: 15px; font-weight: 600">$ 163.000</span></div>
+-    <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; padding-left: 56px; margin-top: -4px; font-size: 12px; color: #706659"><span>Costo de lo vendido</span><span style="color: #231E18; font-weight: 600">$ 63.000</span></div>
+     <div style="display: flex; align-items: center; gap: 12px"><span style="width: 44px; font-size: 14px; font-weight: 600; color: #231E18">05/10</span><span style="flex: 1"><span style="display: block; height: 10px; border-radius: 999px; background: #EBE5DA"><span style="display: block; width: 100%; height: 10px; border-radius: 999px; background: #231E18"></span></span></span><span style="width: 80px; text-align: right; font-size: 15px; font-weight: 600">$ 206.000</span></div>
+-    <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; padding-left: 56px; margin-top: -4px; font-size: 12px; color: #706659"><span>Costo de lo vendido</span><span style="color: #231E18; font-weight: 600">$ 93.000</span><span>Faltante de stock</span><span style="color: #231E18; font-weight: 600">$ 10.000</span><span>Promoción</span><span style="color: #231E18; font-weight: 600">$ 35.000</span><span>Consumo propio</span><span style="color: #231E18; font-weight: 600">$ 14.000</span><span>y 1 g sin costo</span></div>
++    <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; padding-left: 56px; margin-top: -4px; font-size: 12px; color: #706659"><span>Promoción</span><span style="color: #231E18; font-weight: 600">$ 35.000</span><span>Consumo propio</span><span style="color: #231E18; font-weight: 600">$ 14.000</span><span>y 1 g sin costo</span></div>
+   </div>
+   <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 10px 24px 0; font-size: 13px; color: #706659">
+     <span>Mejor semana: 05/10 · $ 206.000</span><span style="color: #231E18; font-weight: 600">Esta: $ 206.000</span>
+@@ -88,11 +82,9 @@ a { color: #1B4FA8 } a:hover { color: #231E18 }
+   <div style="padding: 18px 24px 6px; font-size: 14px; color: #706659">Mes a mes · últimos 12</div>
+   <div style="padding: 0 24px; display: flex; flex-direction: column; gap: 9px">
+     <div style="display: flex; align-items: center; gap: 12px"><span style="width: 96px; font-size: 14px; font-weight: 400; color: #706659">01/08 – 31/08</span><span style="flex: 1"><span style="display: block; height: 10px; border-radius: 999px; background: #EBE5DA"><span style="display: block; width: 0%; height: 10px; border-radius: 999px; background: #706659"></span></span></span><span style="width: 80px; text-align: right; font-size: 15px; font-weight: 600">$ 0</span></div>
+-    <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; padding-left: 108px; margin-top: -4px; font-size: 12px; color: #706659"><span>Costo de lo vendido</span><span style="color: #231E18; font-weight: 600">$ 0</span></div>
+     <div style="display: flex; align-items: center; gap: 12px"><span style="width: 96px; font-size: 14px; font-weight: 400; color: #706659">01/09 – 30/09</span><span style="flex: 1"><span style="display: block; height: 10px; border-radius: 999px; background: #EBE5DA"><span style="display: block; width: 46%; height: 10px; border-radius: 999px; background: #706659"></span></span></span><span style="width: 80px; text-align: right; font-size: 15px; font-weight: 600">$ 168.000</span></div>
+-    <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; padding-left: 108px; margin-top: -4px; font-size: 12px; color: #706659"><span>Costo de lo vendido</span><span style="color: #231E18; font-weight: 600">$ 73.000</span></div>
+     <div style="display: flex; align-items: center; gap: 12px"><span style="width: 96px; font-size: 14px; font-weight: 400; color: #706659">01/10 – 31/10</span><span style="flex: 1"><span style="display: block; height: 10px; border-radius: 999px; background: #EBE5DA"><span style="display: block; width: 100%; height: 10px; border-radius: 999px; background: #706659"></span></span></span><span style="width: 80px; text-align: right; font-size: 15px; font-weight: 600">$ 369.000</span></div>
+-    <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; padding-left: 108px; margin-top: -4px; font-size: 12px; color: #706659"><span>Costo de lo vendido</span><span style="color: #231E18; font-weight: 600">$ 156.000</span><span>Faltante de stock</span><span style="color: #231E18; font-weight: 600">$ 10.000</span><span>Promoción</span><span style="color: #231E18; font-weight: 600">$ 35.000</span><span>Consumo propio</span><span style="color: #231E18; font-weight: 600">$ 14.000</span><span>y 1 g sin costo</span></div>
++    <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; padding-left: 108px; margin-top: -4px; font-size: 12px; color: #706659"><span>Promoción</span><span style="color: #231E18; font-weight: 600">$ 35.000</span><span>Consumo propio</span><span style="color: #231E18; font-weight: 600">$ 14.000</span><span>y 1 g sin costo</span></div>
+   </div>
+   <div style="padding: 18px 24px 6px; font-size: 14px; color: #706659">Por día de la semana</div>
+   <div style="padding: 0 24px; display: flex; flex-direction: column; gap: 9px">
+diff --git a/docs/product/design-system/pantallas/AnalisisCompu.dc.html b/docs/product/design-system/pantallas/AnalisisCompu.dc.html
+index 01a7513..7d7c618 100644
+--- a/docs/product/design-system/pantallas/AnalisisCompu.dc.html
++++ b/docs/product/design-system/pantallas/AnalisisCompu.dc.html
+@@ -77,20 +77,14 @@ a { color: #1B4FA8 } a:hover { color: #231E18 }
+             <span style="width: 80px; text-align: left; font-size: 15px; font-weight: 400; color: #231E18">Semana</span><span style="flex: 1; min-width: 0; text-align: right; font-size: 15px; font-weight: 400; color: #231E18">Ventas</span><span style="width: 80px; text-align: right; font-size: 15px; font-weight: 400; color: #231E18">Gramos</span><span style="width: 100px; text-align: right; font-size: 15px; font-weight: 400; color: #231E18">Gastos</span><span style="width: 110px; text-align: right; font-size: 15px; font-weight: 400; color: #231E18">Ganancia</span><span style="width: 110px; text-align: right; font-size: 15px; font-weight: 400; color: #231E18">Caja</span>
+           </div>
+           <div style="display: flex; gap: 12px; align-items: center; padding: 11px 0; border-bottom: 1px solid #EBE5DA"><span style="width: 80px; text-align: left; font-size: 15px; font-weight: 400; color: #706659">24/08</span><span style="flex: 1; min-width: 0; text-align: right; font-size: 15px; font-weight: 600; color: #231E18">$ 0</span><span style="width: 80px; text-align: right; font-size: 15px; font-weight: 400; color: #231E18">0 g</span><span style="width: 100px; text-align: right; font-size: 15px; font-weight: 400; color: #706659">$ 0</span><span style="width: 110px; text-align: right; font-size: 15px; font-weight: 600; color: #1B4FA8">$ 0</span><span style="width: 110px; text-align: right; font-size: 15px; font-weight: 600; color: #7A4A00">−$ 880.000</span></div>
+-          <div style="padding-left: 92px; "><div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; padding: 0 0 10px; font-size: 13px; color: #706659; border-bottom: 1px solid #EBE5DA"><span>Costo de lo vendido</span><span style="color: #231E18; font-weight: 600">$ 0</span></div></div>
+           <div style="display: flex; gap: 12px; align-items: center; padding: 11px 0; border-bottom: 1px solid #EBE5DA"><span style="width: 80px; text-align: left; font-size: 15px; font-weight: 400; color: #706659">31/08</span><span style="flex: 1; min-width: 0; text-align: right; font-size: 15px; font-weight: 600; color: #231E18">$ 0</span><span style="width: 80px; text-align: right; font-size: 15px; font-weight: 400; color: #231E18">0 g</span><span style="width: 100px; text-align: right; font-size: 15px; font-weight: 400; color: #706659">$ 0</span><span style="width: 110px; text-align: right; font-size: 15px; font-weight: 600; color: #1B4FA8">$ 0</span><span style="width: 110px; text-align: right; font-size: 15px; font-weight: 600; color: #231E18">$ 0</span></div>
+-          <div style="padding-left: 92px; "><div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; padding: 0 0 10px; font-size: 13px; color: #706659; border-bottom: 1px solid #EBE5DA"><span>Costo de lo vendido</span><span style="color: #231E18; font-weight: 600">$ 0</span></div></div>
+           <div style="display: flex; gap: 12px; align-items: center; padding: 11px 0; border-bottom: 1px solid #EBE5DA"><span style="width: 80px; text-align: left; font-size: 15px; font-weight: 400; color: #706659">07/09</span><span style="flex: 1; min-width: 0; text-align: right; font-size: 15px; font-weight: 600; color: #231E18">$ 0</span><span style="width: 80px; text-align: right; font-size: 15px; font-weight: 400; color: #231E18">0 g</span><span style="width: 100px; text-align: right; font-size: 15px; font-weight: 400; color: #706659">$ 0</span><span style="width: 110px; text-align: right; font-size: 15px; font-weight: 600; color: #1B4FA8">$ 0</span><span style="width: 110px; text-align: right; font-size: 15px; font-weight: 600; color: #231E18">$ 0</span></div>
+-          <div style="padding-left: 92px; "><div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; padding: 0 0 10px; font-size: 13px; color: #706659; border-bottom: 1px solid #EBE5DA"><span>Costo de lo vendido</span><span style="color: #231E18; font-weight: 600">$ 0</span></div></div>
+           <div style="display: flex; gap: 12px; align-items: center; padding: 11px 0; border-bottom: 1px solid #EBE5DA"><span style="width: 80px; text-align: left; font-size: 15px; font-weight: 400; color: #706659">14/09</span><span style="flex: 1; min-width: 0; text-align: right; font-size: 15px; font-weight: 600; color: #231E18">$ 39.000</span><span style="width: 80px; text-align: right; font-size: 15px; font-weight: 400; color: #231E18">3 g</span><span style="width: 100px; text-align: right; font-size: 15px; font-weight: 400; color: #706659">$ 0</span><span style="width: 110px; text-align: right; font-size: 15px; font-weight: 600; color: #1B4FA8">$ 22.000</span><span style="width: 110px; text-align: right; font-size: 15px; font-weight: 600; color: #231E18">$ 14.000</span></div>
+-          <div style="padding-left: 92px; "><div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; padding: 0 0 10px; font-size: 13px; color: #706659; border-bottom: 1px solid #EBE5DA"><span>Costo de lo vendido</span><span style="color: #231E18; font-weight: 600">$ 17.000 y 1 g sin costo</span></div></div>
+           <div style="display: flex; gap: 12px; align-items: center; padding: 11px 0; border-bottom: 1px solid #EBE5DA"><span style="width: 80px; text-align: left; font-size: 15px; font-weight: 400; color: #706659">21/09</span><span style="flex: 1; min-width: 0; text-align: right; font-size: 15px; font-weight: 600; color: #231E18">$ 129.000</span><span style="width: 80px; text-align: right; font-size: 15px; font-weight: 400; color: #231E18">11 g</span><span style="width: 100px; text-align: right; font-size: 15px; font-weight: 400; color: #706659">$ 0</span><span style="width: 110px; text-align: right; font-size: 15px; font-weight: 600; color: #1B4FA8">$ 73.000</span><span style="width: 110px; text-align: right; font-size: 15px; font-weight: 600; color: #231E18">$ 129.000</span></div>
+-          <div style="padding-left: 92px; "><div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; padding: 0 0 10px; font-size: 13px; color: #706659; border-bottom: 1px solid #EBE5DA"><span>Costo de lo vendido</span><span style="color: #231E18; font-weight: 600">$ 56.000</span></div></div>
+           <div style="display: flex; gap: 12px; align-items: center; padding: 11px 0; border-bottom: 1px solid #EBE5DA"><span style="width: 80px; text-align: left; font-size: 15px; font-weight: 400; color: #706659">28/09</span><span style="flex: 1; min-width: 0; text-align: right; font-size: 15px; font-weight: 600; color: #231E18">$ 163.000</span><span style="width: 80px; text-align: right; font-size: 15px; font-weight: 400; color: #231E18">14 g</span><span style="width: 100px; text-align: right; font-size: 15px; font-weight: 400; color: #706659">$ 0</span><span style="width: 110px; text-align: right; font-size: 15px; font-weight: 600; color: #1B4FA8">$ 100.000</span><span style="width: 110px; text-align: right; font-size: 15px; font-weight: 600; color: #231E18">$ 163.000</span></div>
+-          <div style="padding-left: 92px; "><div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; padding: 0 0 10px; font-size: 13px; color: #706659; border-bottom: 1px solid #EBE5DA"><span>Costo de lo vendido</span><span style="color: #231E18; font-weight: 600">$ 63.000</span></div></div>
+           <div style="background: #F2EEE6;">
+           <div style="display: flex; gap: 12px; align-items: center; padding: 11px 0; "><span style="width: 80px; text-align: left; font-size: 15px; font-weight: 400; color: #706659">05/10</span><span style="flex: 1; min-width: 0; text-align: right; font-size: 15px; font-weight: 600; color: #231E18">$ 206.000</span><span style="width: 80px; text-align: right; font-size: 15px; font-weight: 400; color: #231E18">19 g</span><span style="width: 100px; text-align: right; font-size: 15px; font-weight: 400; color: #706659">$ 12.500</span><span style="width: 110px; text-align: right; font-size: 15px; font-weight: 600; color: #1B4FA8">$ 41.500<span style="display: block; font-size: 12px; font-weight: 400; color: #706659">y 1 g sin costo</span></span><span style="width: 110px; text-align: right; font-size: 15px; font-weight: 600; color: #231E18">$ 36.500</span></div>
+-          <div style="padding-left: 92px; "><div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; padding: 0 0 10px; font-size: 13px; color: #706659"><span style="color: #1B4FA8; font-weight: 600">Mejor semana</span><span>Costo de lo vendido</span><span style="color: #231E18; font-weight: 600">$ 93.000</span><span>Faltante de stock</span><span style="color: #231E18; font-weight: 600">$ 10.000</span><span>Promoción</span><span style="color: #231E18; font-weight: 600">$ 35.000</span><span>Consumo propio</span><span style="color: #231E18; font-weight: 600">$ 14.000</span><span>y 1 g sin costo</span></div></div>
++          <div style="padding-left: 92px; "><div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; padding: 0 0 10px; font-size: 13px; color: #706659"><span style="color: #1B4FA8; font-weight: 600">Mejor semana</span><span>Promoción</span><span style="color: #231E18; font-weight: 600">$ 35.000</span><span>Consumo propio</span><span style="color: #231E18; font-weight: 600">$ 14.000</span><span>y 1 g sin costo</span></div></div>
+           </div>
+         </div>
+ 
+@@ -100,12 +94,10 @@ a { color: #1B4FA8 } a:hover { color: #231E18 }
+             <span style="width: 120px; text-align: left; font-size: 15px; font-weight: 400; color: #231E18">Mes</span><span style="flex: 1; min-width: 0; text-align: right; font-size: 15px; font-weight: 400; color: #231E18">Ventas</span><span style="width: 80px; text-align: right; font-size: 15px; font-weight: 400; color: #231E18">Gramos</span><span style="width: 100px; text-align: right; font-size: 15px; font-weight: 400; color: #231E18">Gastos</span><span style="width: 110px; text-align: right; font-size: 15px; font-weight: 400; color: #231E18">Ganancia</span><span style="width: 110px; text-align: right; font-size: 15px; font-weight: 400; color: #231E18">Caja</span>
+           </div>
+           <div style="display: flex; gap: 12px; align-items: center; padding: 11px 0; border-bottom: 1px solid #EBE5DA"><span style="width: 120px; text-align: left; font-size: 15px; font-weight: 400; color: #706659">01/08 – 31/08</span><span style="flex: 1; min-width: 0; text-align: right; font-size: 15px; font-weight: 600; color: #231E18">$ 0</span><span style="width: 80px; text-align: right; font-size: 15px; font-weight: 400; color: #231E18">0 g</span><span style="width: 100px; text-align: right; font-size: 15px; font-weight: 400; color: #706659">$ 0</span><span style="width: 110px; text-align: right; font-size: 15px; font-weight: 600; color: #1B4FA8">$ 0</span><span style="width: 110px; text-align: right; font-size: 15px; font-weight: 600; color: #7A4A00">−$ 880.000</span></div>
+-          <div style="padding-left: 132px; "><div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; padding: 0 0 10px; font-size: 13px; color: #706659; border-bottom: 1px solid #EBE5DA"><span>Costo de lo vendido</span><span style="color: #231E18; font-weight: 600">$ 0</span></div></div>
+           <div style="display: flex; gap: 12px; align-items: center; padding: 11px 0; border-bottom: 1px solid #EBE5DA"><span style="width: 120px; text-align: left; font-size: 15px; font-weight: 400; color: #706659">01/09 – 30/09</span><span style="flex: 1; min-width: 0; text-align: right; font-size: 15px; font-weight: 600; color: #231E18">$ 168.000</span><span style="width: 80px; text-align: right; font-size: 15px; font-weight: 400; color: #231E18">14 g</span><span style="width: 100px; text-align: right; font-size: 15px; font-weight: 400; color: #706659">$ 0</span><span style="width: 110px; text-align: right; font-size: 15px; font-weight: 600; color: #1B4FA8">$ 95.000</span><span style="width: 110px; text-align: right; font-size: 15px; font-weight: 600; color: #231E18">$ 143.000</span></div>
+-          <div style="padding-left: 132px; "><div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; padding: 0 0 10px; font-size: 13px; color: #706659; border-bottom: 1px solid #EBE5DA"><span>Costo de lo vendido</span><span style="color: #231E18; font-weight: 600">$ 73.000</span></div></div>
+           <div style="background: #F2EEE6;">
+           <div style="display: flex; gap: 12px; align-items: center; padding: 11px 0; "><span style="width: 120px; text-align: left; font-size: 15px; font-weight: 400; color: #706659">01/10 – 31/10</span><span style="flex: 1; min-width: 0; text-align: right; font-size: 15px; font-weight: 600; color: #231E18">$ 369.000</span><span style="width: 80px; text-align: right; font-size: 15px; font-weight: 400; color: #231E18">33 g</span><span style="width: 100px; text-align: right; font-size: 15px; font-weight: 400; color: #706659">$ 12.500</span><span style="width: 110px; text-align: right; font-size: 15px; font-weight: 600; color: #1B4FA8">$ 141.500<span style="display: block; font-size: 12px; font-weight: 400; color: #706659">y 1 g sin costo</span></span><span style="width: 110px; text-align: right; font-size: 15px; font-weight: 600; color: #231E18">$ 199.500</span></div>
+-          <div style="padding-left: 132px; "><div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; padding: 0 0 10px; font-size: 13px; color: #706659"><span>Costo de lo vendido</span><span style="color: #231E18; font-weight: 600">$ 156.000</span><span>Faltante de stock</span><span style="color: #231E18; font-weight: 600">$ 10.000</span><span>Promoción</span><span style="color: #231E18; font-weight: 600">$ 35.000</span><span>Consumo propio</span><span style="color: #231E18; font-weight: 600">$ 14.000</span><span>y 1 g sin costo</span></div></div>
++          <div style="padding-left: 132px; "><div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; padding: 0 0 10px; font-size: 13px; color: #706659"><span>Promoción</span><span style="color: #231E18; font-weight: 600">$ 35.000</span><span>Consumo propio</span><span style="color: #231E18; font-weight: 600">$ 14.000</span><span>y 1 g sin costo</span></div></div>
+           </div>
+         </div>
+       </div>
+diff --git a/scripts/design/capture_muestra.py b/scripts/design/capture_muestra.py
+index 9b674c6..913710f 100644
+--- a/scripts/design/capture_muestra.py
++++ b/scripts/design/capture_muestra.py
+@@ -90,15 +90,6 @@ def pending_grams(value: float) -> str:
+     return f"y {grams(value)} sin costo" if value > 0 else "no"
+ 
+ 
+-def row_cost(line: Json) -> str:
+-    """The Valor of an Análisis cost line. Everything behind it pending reads as grams
+-    alone (`formatRowCost`), never `$ 0`; otherwise the amount, with a partly pending
+-    figure's grams in the Pendiente column."""
+-    if line["all_pending"]:
+-        return f"{grams(line['pending_grams'])} sin costo"
+-    return money(line["amount"])
+-
+-
+ def days(count: int | None) -> str:
+     if count is None:
+         return _NONE
+@@ -365,18 +356,17 @@ def _accounts(api: _ClientApi) -> list[str]:
+     return ["### Cuentas", "", *table(header, rows)]
+ 
+ 
+-def _cost_rows(add: Any, figures: Json, *, cost_of_goods: bool = False) -> None:
+-    fields = [
++def _cost_rows(add: Any, figures: Json, *, shortfall: bool = True) -> None:
++    for field, label in (
+         ("shortfall", "Faltante de stock"),
+         ("promotion", "Promoción"),
+         ("own_use", "Consumo propio"),
+-    ]
+-    if cost_of_goods:
+-        fields.insert(0, ("cost_of_goods", "Costo de lo vendido"))
+-    for field, label in fields:
++    ):
++        if field == "shortfall" and not shortfall:
++            continue
+         if figures.get(field) is not None:
+             line = figures[field]
+-            add(label, row_cost(line), pending_grams(line["pending_grams"]))
++            add(label, money(line["amount"]), pending_grams(line["pending_grams"]))
+ 
+ 
+ def _analysis(api: _ClientApi) -> list[str]:
+@@ -447,7 +437,7 @@ def _analysis(api: _ClientApi) -> list[str]:
+ 
+         add("Ventas", money(row["sales"]))
+         add("Gramos", grams(row["grams"]))
+-        _cost_rows(add, row, cost_of_goods=True)
++        _cost_rows(add, row, shortfall=False)
+         add("Gastos", money(row["expenses"]))
+         profit = row["profit"]
+         add("Ganancia", money(profit["amount"]), pending_grams(profit["pending_grams"]))
+diff --git a/tests/contract_nullable.py b/tests/contract_nullable.py
+index 5eaee73..a0cb6a9 100644
+--- a/tests/contract_nullable.py
++++ b/tests/contract_nullable.py
+@@ -52,10 +52,8 @@ NULLABLE: Mapping[str, Mapping[str, JsonType | ShapeOf]] = {
+         "since_first_record.shortfall": ShapeOf("analysis", "since_first_record.shortfall"),
+         "since_first_record.promotion": ShapeOf("analysis", "since_first_record.promotion"),
+         "since_first_record.own_use": ShapeOf("analysis", "since_first_record.own_use"),
+-        "weeks[].shortfall": ShapeOf("analysis", "weeks[].shortfall"),
+         "weeks[].promotion": ShapeOf("analysis", "weeks[].promotion"),
+         "weeks[].own_use": ShapeOf("analysis", "weeks[].own_use"),
+-        "months[].shortfall": ShapeOf("analysis", "months[].shortfall"),
+         "months[].promotion": ShapeOf("analysis", "months[].promotion"),
+         "months[].own_use": ShapeOf("analysis", "months[].own_use"),
+     },
+@@ -75,10 +73,8 @@ NULLABLE: Mapping[str, Mapping[str, JsonType | ShapeOf]] = {
+         "since_first_record.shortfall": ShapeOf("analysis", "since_first_record.shortfall"),
+         "since_first_record.promotion": ShapeOf("analysis", "since_first_record.promotion"),
+         "since_first_record.own_use": ShapeOf("analysis", "since_first_record.own_use"),
+-        "weeks[].shortfall": ShapeOf("analysis", "weeks[].shortfall"),
+         "weeks[].promotion": ShapeOf("analysis", "weeks[].promotion"),
+         "weeks[].own_use": ShapeOf("analysis", "weeks[].own_use"),
+-        "months[].shortfall": ShapeOf("analysis", "months[].shortfall"),
+         "months[].promotion": ShapeOf("analysis", "months[].promotion"),
+         "months[].own_use": ShapeOf("analysis", "months[].own_use"),
+     },
+diff --git a/tests/design/test_muestra_screens.py b/tests/design/test_muestra_screens.py
+index 6e0c4b9..adbdfc4 100644
+--- a/tests/design/test_muestra_screens.py
++++ b/tests/design/test_muestra_screens.py
+@@ -96,53 +96,6 @@ def test_the_analisis_guard_rejects_a_screen_that_drifts(
+     assert problems != [], what
+ 
+ 
+-@pytest.mark.parametrize("screen", ANALISIS_SCREENS)
+-def test_the_analisis_guard_still_requires_the_other_cost_lines_on_the_rows(screen: str) -> None:
+-    page = (SCREENS / screen).read_text(encoding="utf-8")
+-    # Every Consumo propio the screen draws, rows included, loses its label.
+-    drawn = "<span>Consumo propio</span>"
+-    assert drawn in page
+-    broken = page.replace(drawn, "<span>Consumo</span>")
+-
+-    problems = check_screen("analisis", screen, broken, real_muestra(), ())
+-
+-    assert any("'Consumo propio' is missing" in p for p in problems)
+-
+-
+-@pytest.mark.parametrize("screen", ANALISIS_SCREENS)
+-def test_the_analisis_guard_requires_faltante_in_the_since_the_first_record_block(
+-    screen: str,
+-) -> None:
+-    page = (SCREENS / screen).read_text(encoding="utf-8")
+-    label = "Faltante de stock</span>"
+-    # The header draws it first, then the current week's and month's rows; the last one is
+-    # the since-the-first-record block's.
+-    assert page.count(label) == 4
+-    head, last = page.rsplit(label, 1)
+-    broken = head + "Faltante</span>" + last
+-
+-    problems = check_screen("analisis", screen, broken, real_muestra(), ())
+-
+-    assert any("since 28/08 – 07/10: 'Faltante de stock' is missing" in p for p in problems)
+-
+-
+-@pytest.mark.parametrize("screen", ANALISIS_SCREENS)
+-@pytest.mark.parametrize("cost", ["$ 93.000", "$ 156.000"])
+-def test_the_analisis_guard_requires_faltante_on_the_current_week_and_month_rows(
+-    screen: str, cost: str
+-) -> None:
+-    page = (SCREENS / screen).read_text(encoding="utf-8")
+-    bold = '<span style="color: #231E18; font-weight: 600">'
+-    after = f"{cost}</span><span>Faltante de stock</span>{bold}$ 10.000</span>"
+-    assert page.count(after) == 1
+-    gone = page.replace(after, f"{cost}</span>")
+-    wrong = page.replace(after, after.replace("$ 10.000", "$ 9.000"))
+-
+-    for broken, expected in ((gone, "'Faltante de stock' is missing"), (wrong, "$ 9.000")):
+-        problems = check_screen("analisis", screen, broken, real_muestra(), ())
+-        assert any(expected in p for p in problems)
+-
+-
+ def test_the_analisis_denylist_keeps_the_figures_muestra_has() -> None:
+     denylist = next(f for f in FAMILIES if f.name == "analisis").denylist
+     body = (DESIGN / "muestra.md").read_text(encoding="utf-8")
+diff --git a/tests/design/test_muestra_seed.py b/tests/design/test_muestra_seed.py
+index 1bf1b2b..45bb900 100644
+--- a/tests/design/test_muestra_seed.py
++++ b/tests/design/test_muestra_seed.py
+@@ -113,8 +113,7 @@ def assert_seed_states(client: TestClient) -> None:
+     week, month = analysis["weeks"][-1], analysis["months"][-1]
+ 
+     # Own use: Sir Jack's gram goes beyond every lot, so only it is pending.
+-    own_use = {"amount": OWN_USE_AMOUNT, "pending_grams": 1, "all_pending": False}
+-    assert week["own_use"] == own_use, "own use" + HINT
++    assert week["own_use"] == {"amount": OWN_USE_AMOUNT, "pending_grams": 1}, "own use" + HINT
+     assert periods["week"]["own_use"] == {"amount": OWN_USE_AMOUNT, "pending": True}, HINT
+     stock = {row["variety_id"]: row["status"] for row in client.get("/stock").json()["varieties"]}
+     assert stock[jack] == "sold_out", "Sir Jack sold out" + HINT
+@@ -131,8 +130,7 @@ def assert_seed_states(client: TestClient) -> None:
+ 
+     # The shortfall is 24K Gold's costed 2 g adjustment, and nobody else's.
+     for where in (analysis["month"], analysis["since_first_record"]):
+-        costed = {"amount": SHORTFALL_AMOUNT, "pending_grams": 0, "all_pending": False}
+-        assert where["shortfall"] == costed, HINT
++        assert where["shortfall"] == {"amount": SHORTFALL_AMOUNT, "pending_grams": 0}, HINT
+     for name in ("today", "week", "month"):
+         assert amounts(periods[name]["shortfall"]) == (SHORTFALL_AMOUNT, False), name + HINT
+     adjustments = {
+@@ -158,21 +156,16 @@ def test_the_seed_at_the_capture_date_has_the_states_the_screens_draw(
+ 
+     assert_seed_states(client)
+ 
++    # The analysis spells the shortfall on the month's header and on the total since the
++    # first record; its week and month rows carry it only inside their profit.
+     analysis = client.get("/analysis").json()
+     periods = client.get("/panel").json()["periods"]
+-    # The analysis spells the shortfall on the month's header, on the total since the
+-    # first record and on the current week and month rows.
+-    assert analysis["month"]["shortfall"] is not None
+-    assert analysis["since_first_record"]["shortfall"] is not None
+     assert amounts(analysis["month"]["shortfall"]) == amounts(periods["month"]["shortfall"])
+     assert amounts(analysis["since_first_record"]["shortfall"]) == amounts(
+         periods["month"]["shortfall"]
+     )
+-    assert amounts(analysis["weeks"][-1]["shortfall"]) == amounts(periods["week"]["shortfall"])
+-    assert amounts(analysis["months"][-1]["shortfall"]) == amounts(periods["month"]["shortfall"])
+-    # The current month's shortfall is one figure in the header, on the row and on Inicio.
+-    assert analysis["month"]["shortfall"] == analysis["months"][-1]["shortfall"]
+-    assert amounts(analysis["months"][-1]["shortfall"]) == amounts(periods["month"]["shortfall"])
++    assert "shortfall" not in analysis["weeks"][-1]
++    assert "shortfall" not in analysis["months"][-1]
+ 
+ 
+ def test_the_panel_and_the_analysis_agree_on_the_current_week_and_month(
+@@ -188,9 +181,6 @@ def test_the_panel_and_the_analysis_agree_on_the_current_week_and_month(
+         assert row["first_day"] == panel["start"] and row["last_day"] == panel["end"]
+         assert row["profit"]["amount"] == panel["profit"]
+         assert (row["profit"]["pending_grams"] > 0) == panel["profit_pending"]
+-        assert row["cost_of_goods"]["amount"] == panel["cost_of_goods"]
+-        assert (row["cost_of_goods"]["pending_grams"] > 0) == panel["pending_cost"]
+-        assert amounts(row["shortfall"]) == amounts(panel["shortfall"])
+         assert amounts(row["promotion"]) == amounts(panel["promotion"])
+         assert amounts(row["own_use"]) == amounts(panel["own_use"])
+         assert row["expenses"] == panel["expenses"]
+@@ -201,30 +191,6 @@ def test_the_panel_and_the_analysis_agree_on_the_current_week_and_month(
+     assert analysis["month"]["sales"] == periods["month"]["sales"]
+ 
+ 
+-def test_every_analysis_week_and_month_row_prints_its_cost_of_goods() -> None:
+-    capture = load_capture()
+-    text: str = capture.render_muestra(captured_on(MUESTRA.read_text(encoding="utf-8")))
+-    weeks = generated_section(text + "§", "### Análisis · semanas", "### Análisis · meses")
+-    months = generated_section(text + "§", "### Análisis · meses", "### Análisis · días")
+-    # Periods before the first record are absent, so each table has as many rows of
+-    # Ventas as it has periods, and every one of them prints its cost of goods.
+-    for table in (weeks, months):
+-        periods = table.count(" | Ventas |")
+-        assert periods > 1
+-        assert table.count(" | Costo de lo vendido |") == periods
+-        # Faltante de stock appears only on the periods that have one.
+-        assert 0 < table.count(" | Faltante de stock |") < periods
+-
+-
+-def test_a_row_cost_reads_grams_alone_only_when_everything_behind_it_is_pending() -> None:
+-    row_cost = load_capture().row_cost
+-    assert row_cost({"amount": 0, "pending_grams": 4.0, "all_pending": True}) == "4 g sin costo"
+-    # A partly pending figure keeps its amount; its grams are the Pendiente column.
+-    assert row_cost({"amount": 9000, "pending_grams": 2.5, "all_pending": False}) == "$ 9.000"
+-    # Costed at zero with nothing pending is a real $ 0, not a missing cost.
+-    assert row_cost({"amount": 0, "pending_grams": 0, "all_pending": False}) == "$ 0"
+-
+-
+ @dataclass
+ class Rewrite:
+     """A call's replacement body and the calls to make right after it."""
+diff --git a/tests/fixtures/openapi_snapshot.json b/tests/fixtures/openapi_snapshot.json
+index 9c7d3c6..63a754e 100644
+--- a/tests/fixtures/openapi_snapshot.json
++++ b/tests/fixtures/openapi_snapshot.json
+@@ -121,7 +121,7 @@
+         "type": "object"
+       },
+       "AmountWithPendingOut": {
+-        "description": "A money figure (profit) together with the pending grams behind it, for one\nperiod.",
++        "description": "A money figure (profit, stock shortfall, promotion or own use) together with the\npending grams behind it, for one period.",
+         "properties": {
+           "amount": {
+             "title": "Amount",
+@@ -170,7 +170,7 @@
+           "own_use": {
+             "anyOf": [
+               {
+-                "$ref": "#/components/schemas/RowCostOut"
++                "$ref": "#/components/schemas/AmountWithPendingOut"
+               },
+               {
+                 "type": "null"
+@@ -191,7 +191,7 @@
+           "promotion": {
+             "anyOf": [
+               {
+-                "$ref": "#/components/schemas/RowCostOut"
++                "$ref": "#/components/schemas/AmountWithPendingOut"
+               },
+               {
+                 "type": "null"
+@@ -209,7 +209,7 @@
+           "shortfall": {
+             "anyOf": [
+               {
+-                "$ref": "#/components/schemas/RowCostOut"
++                "$ref": "#/components/schemas/AmountWithPendingOut"
+               },
+               {
+                 "type": "null"
+@@ -1531,9 +1531,6 @@
+             "title": "Cash",
+             "type": "integer"
+           },
+-          "cost_of_goods": {
+-            "$ref": "#/components/schemas/RowCostOut"
+-          },
+           "expenses": {
+             "title": "Expenses",
+             "type": "integer"
+@@ -1559,7 +1556,7 @@
+           "own_use": {
+             "anyOf": [
+               {
+-                "$ref": "#/components/schemas/RowCostOut"
++                "$ref": "#/components/schemas/AmountWithPendingOut"
+               },
+               {
+                 "type": "null"
+@@ -1572,7 +1569,7 @@
+           "promotion": {
+             "anyOf": [
+               {
+-                "$ref": "#/components/schemas/RowCostOut"
++                "$ref": "#/components/schemas/AmountWithPendingOut"
+               },
+               {
+                 "type": "null"
+@@ -1582,16 +1579,6 @@
+           "sales": {
+             "title": "Sales",
+             "type": "integer"
+-          },
+-          "shortfall": {
+-            "anyOf": [
+-              {
+-                "$ref": "#/components/schemas/RowCostOut"
+-              },
+-              {
+-                "type": "null"
+-              }
+-            ]
+           }
+         },
+         "required": [
+@@ -1600,11 +1587,9 @@
+           "last_day",
+           "sales",
+           "grams",
+-          "cost_of_goods",
+-          "shortfall",
++          "expenses",
+           "promotion",
+           "own_use",
+-          "expenses",
+           "profit",
+           "cash"
+         ],
+@@ -2650,30 +2635,6 @@
+         "title": "ReturnedGramsOut",
+         "type": "object"
+       },
+-      "RowCostOut": {
+-        "description": "One An\u00e1lisis cost line (cost of goods, stock shortfall, promotion or own use): its\ncosted `amount` and its own `pending_grams` (a positive magnitude). `all_pending` is\nthe domain's answer (`row_cost`) that every gram behind the line is pending, so the\nscreen says \"N g sin costo\" and never \"$ 0\".",
+-        "properties": {
+-          "all_pending": {
+-            "title": "All Pending",
+-            "type": "boolean"
+-          },
+-          "amount": {
+-            "title": "Amount",
+-            "type": "integer"
+-          },
+-          "pending_grams": {
+-            "title": "Pending Grams",
+-            "type": "number"
+-          }
+-        },
+-        "required": [
+-          "amount",
+-          "pending_grams",
+-          "all_pending"
+-        ],
+-        "title": "RowCostOut",
+-        "type": "object"
+-      },
+       "SaleAccountRowOut": {
+         "properties": {
+           "date": {
+@@ -3108,7 +3069,7 @@
+           "own_use": {
+             "anyOf": [
+               {
+-                "$ref": "#/components/schemas/RowCostOut"
++                "$ref": "#/components/schemas/AmountWithPendingOut"
+               },
+               {
+                 "type": "null"
+@@ -3121,7 +3082,7 @@
+           "promotion": {
+             "anyOf": [
+               {
+-                "$ref": "#/components/schemas/RowCostOut"
++                "$ref": "#/components/schemas/AmountWithPendingOut"
+               },
+               {
+                 "type": "null"
+@@ -3135,7 +3096,7 @@
+           "shortfall": {
+             "anyOf": [
+               {
+-                "$ref": "#/components/schemas/RowCostOut"
++                "$ref": "#/components/schemas/AmountWithPendingOut"
+               },
+               {
+                 "type": "null"
+@@ -3540,9 +3501,6 @@
+             "title": "Cash",
+             "type": "integer"
+           },
+-          "cost_of_goods": {
+-            "$ref": "#/components/schemas/RowCostOut"
+-          },
+           "expenses": {
+             "title": "Expenses",
+             "type": "integer"
+@@ -3564,7 +3522,7 @@
+           "own_use": {
+             "anyOf": [
+               {
+-                "$ref": "#/components/schemas/RowCostOut"
++                "$ref": "#/components/schemas/AmountWithPendingOut"
+               },
+               {
+                 "type": "null"
+@@ -3577,7 +3535,7 @@
+           "promotion": {
+             "anyOf": [
+               {
+-                "$ref": "#/components/schemas/RowCostOut"
++                "$ref": "#/components/schemas/AmountWithPendingOut"
+               },
+               {
+                 "type": "null"
+@@ -3587,16 +3545,6 @@
+           "sales": {
+             "title": "Sales",
+             "type": "integer"
+-          },
+-          "shortfall": {
+-            "anyOf": [
+-              {
+-                "$ref": "#/components/schemas/RowCostOut"
+-              },
+-              {
+-                "type": "null"
+-              }
+-            ]
+           }
+         },
+         "required": [
+@@ -3604,11 +3552,9 @@
+           "last_day",
+           "sales",
+           "grams",
+-          "cost_of_goods",
+-          "shortfall",
++          "expenses",
+           "promotion",
+           "own_use",
+-          "expenses",
+           "profit",
+           "cash",
+           "best"
+diff --git a/tests/results/domain/__init__.py b/tests/results/domain/__init__.py
+deleted file mode 100644
+index e69de29..0000000
+diff --git a/tests/results/domain/test_row_cost.py b/tests/results/domain/test_row_cost.py
+deleted file mode 100644
+index a7f091f..0000000
+--- a/tests/results/domain/test_row_cost.py
++++ /dev/null
+@@ -1,258 +0,0 @@
+-"""`row_cost` and the grams behind each cost line, with no infrastructure
+-(CODING_STANDARDS §5, ADR-0020): the one place that decides a cost figure is fully
+-pending, and the rows of `period_figures` that carry it."""
+-
+-from datetime import date, timedelta
+-from typing import Literal
+-
+-import pytest
+-
+-from app.results.domain.figures import RowCost
+-from app.results.domain.ledger import DrawRow, SaleRecord
+-from app.results.domain.period_figures import (
+-    Buckets,
+-    period_figures,
+-    row_cost,
+-    scan,
+-    totals_between,
+-)
+-from app.shared.calendar import Month
+-from app.shared.grams import Grams
+-
+-TODAY = date(2026, 10, 4)  # a Sunday
+-YESTERDAY = TODAY - timedelta(days=1)
+-
+-Reason = Literal["shortfall", "promotion", "own_use", "cost_of_goods"]
+-REASONS: tuple[Reason, ...] = ("shortfall", "promotion", "own_use", "cost_of_goods")
+-
+-
+-def _g(value: str) -> Grams:
+-    return Grams.of(value)
+-
+-
+-def _draw(reason: Reason, day: date, *, grams: str, costed: int | None, pending: str) -> DrawRow:
+-    if reason == "cost_of_goods":
+-        return DrawRow(
+-            kind="sold",
+-            day=day,
+-            variety_id=1,
+-            variety_name="Flor",
+-            sale_id=1,
+-            line_total=1_000,
+-            grams=_g(grams),
+-            costed=costed,
+-            pending=_g(pending),
+-        )
+-    return DrawRow(
+-        kind=reason,
+-        day=day,
+-        variety_id=None,
+-        variety_name=None,
+-        sale_id=None,
+-        line_total=None,
+-        grams=_g(grams),
+-        costed=costed,
+-        pending=_g(pending),
+-    )
+-
+-
+-def _scan(draws: list[DrawRow]) -> Buckets:
+-    buckets, _ = scan(
+-        draws=draws,
+-        sales=[SaleRecord(1, TODAY, 0, 1_000)] if any(d.kind == "sold" for d in draws) else [],
+-        payments=[],
+-        expenses=[],
+-        purchases=[],
+-        earliest_entry_day=YESTERDAY,
+-    )
+-    return buckets
+-
+-
+-def _line(reason: Reason, draws: list[DrawRow], start: date, end: date) -> RowCost | None:
+-    totals = totals_between(_scan(draws), start, end)
+-    match reason:
+-        case "shortfall":
+-            return totals.shortfall
+-        case "promotion":
+-            return totals.promotion
+-        case "own_use":
+-            return totals.own_use
+-        case "cost_of_goods":
+-            return totals.cost_of_goods_row
+-
+-
+-# --- row_cost ---
+-
+-
+-def test_row_cost_with_no_grams_is_never_fully_pending() -> None:
+-    assert row_cost(0, _g("0"), _g("0")) == RowCost(0, _g("0"), False)
+-
+-
+-def test_row_cost_partly_pending_is_not_fully_pending() -> None:
+-    assert row_cost(500, _g("1"), _g("2")) == RowCost(500, _g("1"), False)
+-
+-
+-def test_row_cost_with_every_gram_pending_is_fully_pending() -> None:
+-    assert row_cost(0, _g("4"), _g("4")) == RowCost(0, _g("4"), True)
+-
+-
+-def test_row_cost_costed_at_zero_with_some_pending_is_not_fully_pending() -> None:
+-    # A harvest or opening-stock lot costs $0: "costed == 0" is not "all pending".
+-    assert row_cost(0, _g("1"), _g("3")) == RowCost(0, _g("1"), False)
+-
+-
+-def test_row_cost_with_every_gram_costed_at_zero_is_not_fully_pending() -> None:
+-    assert row_cost(0, _g("0"), _g("3")) == RowCost(0, _g("0"), False)
+-
+-
+-def test_a_row_cost_flagged_fully_pending_without_pending_grams_is_rejected() -> None:
+-    with pytest.raises(ValueError, match="fully pending"):
+-        RowCost(0, _g("0"), True)
+-
+-
+-def test_a_row_cost_with_a_negative_amount_or_pending_is_rejected() -> None:
+-    with pytest.raises(ValueError, match="amount"):
+-        RowCost(-1, _g("0"), False)
+-    with pytest.raises(ValueError, match="pending"):
+-        RowCost(0, _g("-1"), False)
+-
+-
+-# --- through scan + totals_between, for every cost line ---
+-
+-
+-@pytest.mark.parametrize("reason", REASONS)
+-def test_one_fully_pending_draw_is_fully_pending(reason: Reason) -> None:
+-    draws = [_draw(reason, TODAY, grams="4", costed=None, pending="4")]
+-
+-    assert _line(reason, draws, TODAY, TODAY) == RowCost(0, _g("4"), True)
+-
+-
+-@pytest.mark.parametrize("reason", REASONS)
+-def test_a_half_costed_draw_is_not_fully_pending(reason: Reason) -> None:
+-    draws = [_draw(reason, TODAY, grams="4", costed=300, pending="2")]
+-
+-    assert _line(reason, draws, TODAY, TODAY) == RowCost(300, _g("2"), False)
+-
+-
+-@pytest.mark.parametrize("reason", REASONS)
+-def test_a_pending_day_and_a_costed_day_over_one_range_are_not_fully_pending(
+-    reason: Reason,
+-) -> None:
+-    draws = [
+-        _draw(reason, YESTERDAY, grams="4", costed=None, pending="4"),
+-        _draw(reason, TODAY, grams="2", costed=200, pending="0"),
+-    ]
+-
+-    assert _line(reason, draws, YESTERDAY, TODAY) == RowCost(200, _g("4"), False)
+-    assert _line(reason, draws, YESTERDAY, YESTERDAY) == RowCost(0, _g("4"), True)
+-
+-
+-@pytest.mark.parametrize("reason", REASONS)
+-def test_two_fully_pending_days_over_one_range_are_fully_pending(reason: Reason) -> None:
+-    draws = [
+-        _draw(reason, YESTERDAY, grams="4", costed=None, pending="4"),
+-        _draw(reason, TODAY, grams="2", costed=None, pending="2"),
+-    ]
+-
+-    assert _line(reason, draws, YESTERDAY, TODAY) == RowCost(0, _g("6"), True)
+-
+-
+-@pytest.mark.parametrize("reason", ["shortfall", "promotion", "own_use"])
+-def test_a_period_without_that_draw_has_no_line(reason: Reason) -> None:
+-    draws = [_draw(reason, YESTERDAY, grams="1", costed=100, pending="0")]
+-
+-    assert _line(reason, draws, TODAY, TODAY) is None
+-
+-
+-def test_a_period_with_no_sales_has_a_zero_cost_of_goods_that_is_not_pending() -> None:
+-    assert _line("cost_of_goods", [], TODAY, TODAY) == RowCost(0, _g("0"), False)
+-
+-
+-def test_cost_of_goods_counts_sold_and_gifted_grams_only() -> None:
+-    sold = _draw("cost_of_goods", TODAY, grams="3", costed=None, pending="3")
+-    shortfall = _draw("shortfall", TODAY, grams="5", costed=None, pending="5")
+-    promotion = _draw("promotion", TODAY, grams="7", costed=None, pending="7")
+-
+-    cost = _line("cost_of_goods", [sold, shortfall, promotion], TODAY, TODAY)
+-
+-    assert cost == RowCost(0, _g("3"), True)
+-
+-
+-def test_cost_of_goods_row_keeps_the_panel_figure_unchanged() -> None:
+-    draws = [_draw("cost_of_goods", TODAY, grams="4", costed=300, pending="1")]
+-
+-    totals = totals_between(_scan(draws), TODAY, TODAY)
+-
+-    assert totals.cost_of_goods.costed == totals.cost_of_goods_row.amount == 300
+-    assert totals.cost_of_goods.pending_grams == totals.cost_of_goods_row.pending_grams
+-
+-
+-# --- through period_figures: rows, header and since-the-first-record ---
+-
+-
+-def test_every_row_the_header_and_since_carry_the_same_row_cost_as_totals_between() -> None:
+-    draws = [
+-        _draw("cost_of_goods", TODAY, grams="4", costed=None, pending="4"),
+-        _draw("shortfall", TODAY, grams="2", costed=None, pending="2"),
+-        _draw("promotion", TODAY, grams="1", costed=None, pending="1"),
+-        _draw("own_use", TODAY, grams="3", costed=90, pending="1"),
+-    ]
+-    month = Month.containing(TODAY)
+-
+-    figures = period_figures(
+-        today=TODAY,
+-        month=month,
+-        draws=draws,
+-        sales=[SaleRecord(1, TODAY, 0, 1_000)],
+-        payments=[],
+-        expenses=[],
+-        purchases=[],
+-        earliest_entry_day=TODAY,
+-    )
+-
+-    week = figures.weeks[-1]
+-    month_row = figures.months[-1]
+-    assert week.cost_of_goods == RowCost(0, _g("4"), True)
+-    assert week.shortfall == RowCost(0, _g("2"), True)
+-    assert week.promotion == RowCost(0, _g("1"), True)
+-    assert week.own_use == RowCost(90, _g("1"), False)
+-    assert month_row.cost_of_goods == week.cost_of_goods
+-    assert month_row.shortfall == week.shortfall
+-    assert figures.month.shortfall == week.shortfall
+-    assert figures.month.promotion == week.promotion
+-    assert figures.month.own_use == week.own_use
+-    assert figures.since_first_record is not None
+-    assert figures.since_first_record.shortfall == week.shortfall
+-    assert figures.since_first_record.promotion == week.promotion
+-    assert figures.since_first_record.own_use == week.own_use
+-
+-
+-def test_a_week_without_a_shortfall_has_none_and_a_real_zero_cost_of_goods() -> None:
+-    draws = [_draw("promotion", YESTERDAY, grams="1", costed=100, pending="0")]
+-
+-    figures = period_figures(
+-        today=TODAY,
+-        month=Month.containing(TODAY),
+-        draws=draws,
+-        sales=[],
+-        payments=[],
+-        expenses=[],
+-        purchases=[],
+-        earliest_entry_day=YESTERDAY,
+-    )
+-
+-    week = figures.weeks[-1]
+-    assert week.shortfall is None
+-    assert week.cost_of_goods == RowCost(0, _g("0"), False)
+-
+-
+-def test_profit_keeps_summing_the_pending_grams_of_every_line() -> None:
+-    draws = [
+-        _draw("cost_of_goods", TODAY, grams="4", costed=None, pending="4"),
+-        _draw("shortfall", TODAY, grams="2", costed=None, pending="2"),
+-        _draw("promotion", TODAY, grams="1", costed=None, pending="1"),
+-    ]
+-
+-    totals = totals_between(_scan(draws), TODAY, TODAY)
+-
+-    assert totals.profit.pending_grams == _g("7")
+diff --git a/tests/results/test_panel_router.py b/tests/results/test_panel_router.py
+index f8d0ab9..1276317 100644
+--- a/tests/results/test_panel_router.py
++++ b/tests/results/test_panel_router.py
+@@ -573,181 +573,6 @@ def test_cost_of_goods_follows_each_period(client: TestClient) -> None:
+     assert since["profit"] == {"amount": 6_000 - 600, "pending_grams": 1.0}
+ 
+ 
+-def _adjust(client: TestClient, variety_id: int, *, grams: str, on: str) -> None:
+-    response = client.post(
+-        "/stock/entries",
+-        json={"variety_id": variety_id, "origin": "adjustment", "grams": grams, "date": on},
+-    )
+-    assert response.status_code == 201, response.text
+-
+-
+-def _withdraw(client: TestClient, variety_id: int, *, reason: str, grams: str, on: str) -> None:
+-    response = client.post(
+-        "/stock/withdrawals",
+-        json={
+-            "reason": reason,
+-            "date": on,
+-            "lines": [{"variety_id": variety_id, "grams": grams}],
+-        },
+-    )
+-    assert response.status_code == 201, response.text
+-
+-
+-def test_the_analysis_rows_carry_cost_of_goods_and_shortfall_that_agree_with_the_panel(
+-    client: TestClient,
+-) -> None:
+-    """GH-141. The clock is Friday 2026-10-02: the week is 28/09-04/10, the month 01/10-31/10.
+-    A is 100 g for $10.000 ($100/g); B has no entry, so everything drawn from it is
+-    pending. The week holds costed and pending grams of each line; October holds only
+-    pending shortfall and promotion."""
+-    a_id = _variety(client, "A", price=1_000)
+-    b_id = _variety(client, "B", price=1_000)
+-    _entry(client, a_id, grams="100", total_cost=10_000, on="2026-09-01")
+-    _sale(client, a_id, grams="1", on="2026-09-22")
+-    _sale(client, a_id, grams="2", on="2026-09-29")
+-    _sale(client, b_id, grams="1", on="2026-09-29")
+-    _sale(client, a_id, grams="3", on=TODAY.isoformat())
+-    _adjust(client, a_id, grams="-2", on="2026-09-30")
+-    _adjust(client, b_id, grams="-1", on=TODAY.isoformat())
+-    _withdraw(client, a_id, reason="promotion", grams="4", on="2026-09-29")
+-    _withdraw(client, b_id, reason="promotion", grams="2", on=TODAY.isoformat())
+-    _withdraw(client, a_id, reason="own_use", grams="3", on="2026-10-01")
+-
+-    panel = client.get("/panel").json()["periods"]
+-    analysis = client.get("/analysis").json()
+-    week_row, month_row = analysis["weeks"][-1], analysis["months"][-1]
+-    header = analysis["month"]
+-
+-    # The current week and month equal the panel's, to the peso.
+-    assert week_row["cost_of_goods"]["amount"] == panel["week"]["cost_of_goods"] == 500
+-    assert month_row["cost_of_goods"]["amount"] == panel["month"]["cost_of_goods"] == 300
+-    assert week_row["shortfall"]["amount"] == panel["week"]["shortfall"]["amount"] == 200
+-    assert month_row["shortfall"]["amount"] == panel["month"]["shortfall"]["amount"] == 0
+-    # The current month's shortfall is one figure in three places.
+-    assert header["shortfall"] == month_row["shortfall"]
+-    assert header["shortfall"]["amount"] == panel["month"]["shortfall"]["amount"]
+-
+-    # Each figure has its own pending grams and its own fully-pending flag.
+-    assert week_row["cost_of_goods"] == {"amount": 500, "pending_grams": 1.0, "all_pending": False}
+-    assert month_row["cost_of_goods"] == {"amount": 300, "pending_grams": 0.0, "all_pending": False}
+-    assert week_row["shortfall"] == {"amount": 200, "pending_grams": 1.0, "all_pending": False}
+-    assert month_row["shortfall"] == {"amount": 0, "pending_grams": 1.0, "all_pending": True}
+-    assert week_row["promotion"] == {"amount": 400, "pending_grams": 2.0, "all_pending": False}
+-    assert month_row["promotion"] == {"amount": 0, "pending_grams": 2.0, "all_pending": True}
+-    assert month_row["own_use"] == {"amount": 300, "pending_grams": 0.0, "all_pending": False}
+-    assert header["promotion"] == month_row["promotion"]
+-    assert header["own_use"] == month_row["own_use"]
+-
+-    # A past row, worked by hand: the week of 21/09 sold A's 1 g and had no adjustment;
+-    # September sold 4 g (A's 3 g costed $300, B's 1 g pending) and adjusted A out by $200.
+-    previous_week = analysis["weeks"][-2]
+-    assert previous_week["first_day"] == "2026-09-21"
+-    assert previous_week["cost_of_goods"] == {
+-        "amount": 100,
+-        "pending_grams": 0.0,
+-        "all_pending": False,
+-    }
+-    assert previous_week["shortfall"] is None
+-    september = analysis["months"][-2]
+-    assert september["month"] == "2026-09"
+-    assert september["cost_of_goods"] == {
+-        "amount": 300,
+-        "pending_grams": 1.0,
+-        "all_pending": False,
+-    }
+-    assert september["shortfall"] == {"amount": 200, "pending_grams": 0.0, "all_pending": False}
+-    # A period with no sales reads a real $0, never null.
+-    quiet_week = analysis["weeks"][-3]
+-    assert quiet_week["cost_of_goods"] == {"amount": 0, "pending_grams": 0.0, "all_pending": False}
+-
+-    # Since the first record: costed $200 plus B's pending gram, not fully pending.
+-    assert analysis["since_first_record"]["shortfall"] == {
+-        "amount": 200,
+-        "pending_grams": 1.0,
+-        "all_pending": False,
+-    }
+-    # The row order is the PRD's.
+-    assert list(week_row)[:10] == [
+-        "first_day",
+-        "last_day",
+-        "sales",
+-        "grams",
+-        "cost_of_goods",
+-        "shortfall",
+-        "promotion",
+-        "own_use",
+-        "expenses",
+-        "profit",
+-    ]
+-
+-
+-def test_a_wholly_pending_shortfall_reads_all_pending_on_the_row_header_and_since(
+-    client: TestClient,
+-) -> None:
+-    """Nothing costed anywhere: a negative adjustment of 3 g on a variety with no entry
+-    answers its grams as a positive magnitude and `all_pending` true everywhere the
+-    shortfall appears; the sale of the same variety is pending too."""
+-    b_id = _variety(client, "B", price=1_000)
+-    _sale(client, b_id, grams="4", on=TODAY.isoformat())
+-    _adjust(client, b_id, grams="-3", on=TODAY.isoformat())
+-
+-    analysis = client.get("/analysis").json()
+-    pending = {"amount": 0, "pending_grams": 3.0, "all_pending": True}
+-
+-    assert analysis["weeks"][-1]["shortfall"] == pending
+-    assert analysis["months"][-1]["shortfall"] == pending
+-    assert analysis["month"]["shortfall"] == pending
+-    assert analysis["since_first_record"]["shortfall"] == pending
+-    assert analysis["weeks"][-1]["cost_of_goods"] == {
+-        "amount": 0,
+-        "pending_grams": 4.0,
+-        "all_pending": True,
+-    }
+-
+-
+-def test_a_zero_cost_lot_with_pending_overflow_is_not_fully_pending(client: TestClient) -> None:
+-    """A harvest lot costs $0 yet is costed: a 1 g sale leaves 4 g, so a shortfall of 8 g
+-    is $0 with 4 g pending, and `all_pending` is false because the lot's 4 g are costed."""
+-    harvest_id = _variety(client, "Cosecha", price=1_000)
+-    _entry(client, harvest_id, grams="5", origin="harvest", on="2026-09-01")
+-    _sale(client, harvest_id, grams="1", on="2026-09-29")
+-    _adjust(client, harvest_id, grams="-8", on=TODAY.isoformat())
+-
+-    analysis = client.get("/analysis").json()
+-
+-    assert analysis["months"][-1]["shortfall"] == {
+-        "amount": 0,
+-        "pending_grams": 4.0,
+-        "all_pending": False,
+-    }
+-    assert analysis["weeks"][-1]["cost_of_goods"] == {
+-        "amount": 0,
+-        "pending_grams": 0.0,
+-        "all_pending": False,
+-    }
+-
+-
+-def test_a_current_week_and_month_without_a_negative_adjustment_read_shortfall_null_like_the_panel(
+-    client: TestClient,
+-) -> None:
+-    """No negative adjustment anywhere: the panel's week and month shortfall are null, and
+-    so are the Análisis rows' and the header's (absent, never a $0 line), while cost of
+-    goods still reads a real figure."""
+-    a_id = _variety(client, "A", price=1_000)
+-    _entry(client, a_id, grams="10", total_cost=1_000, on="2026-09-01")
+-    _sale(client, a_id, grams="2", on=TODAY.isoformat())
+-
+-    panel = client.get("/panel").json()["periods"]
+-    analysis = client.get("/analysis").json()
+-
+-    assert panel["week"]["shortfall"] is None
+-    assert panel["month"]["shortfall"] is None
+-    assert analysis["weeks"][-1]["shortfall"] is None
+-    assert analysis["months"][-1]["shortfall"] is None
+-    assert analysis["month"]["shortfall"] is None
+-    assert analysis["weeks"][-1]["cost_of_goods"]["amount"] == panel["week"]["cost_of_goods"] == 200
+-
+-
+ # -- Statement count (plan invariant: the same number of SQL statements for a small
+ # business as for a seeded one, in the style of Análisis's own
+ # `test_one_get_analysis_issues_the_same_number_of_statements_small_or_seeded`) ------
+diff --git a/tests/results/test_period_figures.py b/tests/results/test_period_figures.py
+index 6834837..f2df10d 100644
+--- a/tests/results/test_period_figures.py
++++ b/tests/results/test_period_figures.py
+@@ -8,7 +8,7 @@ from typing import Literal
+ 
+ import pytest
+ 
+-from app.results.domain.figures import AmountWithPending, AnalysisFigures, CostFigure, RowCost
++from app.results.domain.figures import AmountWithPending, AnalysisFigures, CostFigure
+ from app.results.domain.ledger import (
+     DrawRow,
+     ExpenseRecord,
+@@ -566,10 +566,10 @@ def test_a_promotion_and_an_own_use_each_lower_profit_by_their_costed_amount_on_
+     on_today = totals_between(buckets, TODAY, TODAY)
+ 
+     assert on_yesterday.profit.amount == -600
+-    assert on_yesterday.promotion == RowCost(600, Grams.of("0"), False)
++    assert on_yesterday.promotion == AmountWithPending(600, Grams.of("0"))
+     assert on_yesterday.own_use is None
+     assert on_today.profit.amount == 10_000 - 3_000 - 300
+-    assert on_today.own_use == RowCost(300, Grams.of("0"), False)
++    assert on_today.own_use == AmountWithPending(300, Grams.of("0"))
+     assert on_today.promotion is None
+ 
+ 
+@@ -640,7 +640,7 @@ def test_a_pending_only_withdrawal_gives_profit_a_pending_count_and_cost_of_good
+     totals = totals_between(buckets, TODAY, TODAY)
+ 
+     assert totals.profit == AmountWithPending(0, Grams.of("4"))
+-    assert totals.promotion == RowCost(0, Grams.of("4"), True)
++    assert totals.promotion == AmountWithPending(0, Grams.of("4"))
+     assert totals.cost_of_goods == CostFigure(0, Grams.of("0"))
+ 
+ 
+@@ -719,7 +719,7 @@ def test_the_month_header_shows_each_reason_only_when_present_with_its_own_pendi
+     promotion = _withdrawal(kind="promotion", day=TODAY, grams="2", costed=600, pending="1")
+     figures = _figures(draws=[promotion], earliest_entry_day=TODAY)
+ 
+-    assert figures.month.promotion == RowCost(600, Grams.of("1"), False)
++    assert figures.month.promotion == AmountWithPending(600, Grams.of("1"))
+     assert figures.month.own_use is None
+ 
+ 
+@@ -734,8 +734,8 @@ def test_a_week_and_a_month_row_carry_the_lines_and_profit_equals_totals_between
+     week_totals = totals_between(buckets, week.first_day, week.last_day)
+     month_totals = totals_between(buckets, month_row.first_day, month_row.last_day)
+ 
+-    assert week.promotion == RowCost(600, Grams.of("0"), False)
+-    assert week.own_use == RowCost(0, Grams.of("3"), True)
++    assert week.promotion == AmountWithPending(600, Grams.of("0"))
++    assert week.own_use == AmountWithPending(0, Grams.of("3"))
+     assert week.profit == week_totals.profit == AmountWithPending(-600, Grams.of("3"))
+     assert month_row.promotion == week.promotion
+     assert month_row.own_use == week.own_use
+@@ -752,8 +752,8 @@ def test_since_the_first_record_carries_both_lines() -> None:
+ 
+     assert figures.first_record == earlier
+     assert figures.since_first_record is not None
+-    assert figures.since_first_record.promotion == RowCost(100, Grams.of("0"), False)
+-    assert figures.since_first_record.own_use == RowCost(300, Grams.of("0"), False)
++    assert figures.since_first_record.promotion == AmountWithPending(100, Grams.of("0"))
++    assert figures.since_first_record.own_use == AmountWithPending(300, Grams.of("0"))
+     assert figures.since_first_record.profit == AmountWithPending(-400, Grams.of("0"))
+ 
+ 
+@@ -803,6 +803,6 @@ def test_a_week_with_7_g_sold_2_g_promoted_and_1_g_own_use_pending_reads_exactly
+     )
+ 
+     [week] = [w for w in figures.weeks if w.first_day <= TODAY <= w.last_day]
+-    assert week.promotion == RowCost(0, Grams.of("2"), True)
+-    assert week.own_use == RowCost(0, Grams.of("1"), True)
++    assert week.promotion == AmountWithPending(0, Grams.of("2"))
++    assert week.own_use == AmountWithPending(0, Grams.of("1"))
+     assert week.profit.pending_grams == Grams.of("10")
+diff --git a/tests/results/test_withdrawal_answers.py b/tests/results/test_withdrawal_answers.py
+index fed6c95..adecdc5 100644
+--- a/tests/results/test_withdrawal_answers.py
++++ b/tests/results/test_withdrawal_answers.py
+@@ -166,7 +166,7 @@ def test_the_panel_and_analysis_agree_on_every_withdrawal_figure(client: TestCli
+     header = analysis["month"]
+     assert header["promotion"] == month_row["promotion"]
+     assert header["own_use"] == month_row["own_use"]
+-    assert header["shortfall"] == {"amount": 0, "pending_grams": 1.0, "all_pending": True}
++    assert header["shortfall"] == {"amount": 0, "pending_grams": 1.0}
+     assert sum(v["cost"]["costed"] for v in header["varieties"]) == month["cost_of_goods"] == 500
+     # The panel's month shortfall is the header's, amount and pending flag.
+     assert _same_line(month["shortfall"], header["shortfall"])
+@@ -182,13 +182,13 @@ def test_the_panel_and_analysis_agree_on_every_withdrawal_figure(client: TestCli
+     # The shortfall is the adjustments' own: A's lot is 100 g for $10.000 = $100/g, so the
+     # -2 g on 30/09 costs $200; B's -1 g has no lot, so it is pending. Withdrawals never
+     # count.
+-    assert since["shortfall"] == {"amount": 200, "pending_grams": 1.0, "all_pending": False}
+-    assert since["promotion"] == {"amount": 500, "pending_grams": 2.0, "all_pending": False}
+-    assert since["own_use"] == {"amount": 300, "pending_grams": 0.0, "all_pending": False}
++    assert since["shortfall"] == {"amount": 200, "pending_grams": 1.0}
++    assert since["promotion"] == {"amount": 500, "pending_grams": 2.0}
++    assert since["own_use"] == {"amount": 300, "pending_grams": 0.0}
+ 
+     # A month with only one reason shows no line for the other (September: no own use).
+     september = next(m for m in analysis["months"] if m["month"] == "2026-09")
+-    assert september["promotion"] == {"amount": 500, "pending_grams": 0.0, "all_pending": False}
++    assert september["promotion"] == {"amount": 500, "pending_grams": 0.0}
+     assert september["own_use"] is None
+ 
+ 
+@@ -210,16 +210,8 @@ def test_a_withdrawal_dated_before_every_other_record_starts_the_history(
+     assert _same_line(panel["month"]["shortfall"], analysis["month"]["shortfall"])
+     assert not _same_line({"amount": 0, "pending": False}, None)
+     # The later entry settles the withdrawn grams at its $100/g.
+-    assert analysis["weeks"][-1]["promotion"] == {
+-        "amount": 200,
+-        "pending_grams": 0.0,
+-        "all_pending": False,
+-    }
+-    assert analysis["months"][-1]["promotion"] == {
+-        "amount": 200,
+-        "pending_grams": 0.0,
+-        "all_pending": False,
+-    }
++    assert analysis["weeks"][-1]["promotion"] == {"amount": 200, "pending_grams": 0.0}
++    assert analysis["months"][-1]["promotion"] == {"amount": 200, "pending_grams": 0.0}
+     for period, row in (
+         (panel["week"], analysis["weeks"][-1]),
+         (panel["month"], analysis["months"][-1]),
+@@ -238,22 +230,10 @@ def test_a_business_whose_only_record_is_a_withdrawal_has_a_history(client: Test
+     assert analysis["first_record"] == HOY
+     assert len(analysis["weeks"]) >= 1
+     assert analysis["weeks"][-1]["sales"] == 0
+-    assert analysis["weeks"][-1]["own_use"] == {
+-        "amount": 0,
+-        "pending_grams": 3.0,
+-        "all_pending": True,
+-    }
++    assert analysis["weeks"][-1]["own_use"] == {"amount": 0, "pending_grams": 3.0}
+     assert analysis["weeks"][-1]["promotion"] is None
+-    assert analysis["months"][-1]["own_use"] == {
+-        "amount": 0,
+-        "pending_grams": 3.0,
+-        "all_pending": True,
+-    }
+-    assert analysis["since_first_record"]["own_use"] == {
+-        "amount": 0,
+-        "pending_grams": 3.0,
+-        "all_pending": True,
+-    }
++    assert analysis["months"][-1]["own_use"] == {"amount": 0, "pending_grams": 3.0}
++    assert analysis["since_first_record"]["own_use"] == {"amount": 0, "pending_grams": 3.0}
+     assert analysis["since_first_record"]["profit"]["pending_grams"] == 3.0
+     assert panel["month"]["own_use"] == {"amount": 0, "pending": True}
+     assert panel["month"]["profit_pending"] is True
+diff --git a/web/e2e/analysis.spec.ts b/web/e2e/analysis.spec.ts
+index 51b58aa..62b7118 100644
+--- a/web/e2e/analysis.spec.ts
++++ b/web/e2e/analysis.spec.ts
+@@ -10,15 +10,13 @@
+  * through the built front alone, against the real backend.
+  */
+ 
+-import { ANALYSIS, SALE_NEW, STOCK_ENTRY_NEW, VARIETIES, WITHDRAWAL_NEW } from '../src/routes.js'
++import { ANALYSIS, SALE_NEW, STOCK_ENTRY_NEW, VARIETIES } from '../src/routes.js'
+ import { expectPath } from './helpers/url.js'
+ import { expect, test } from './fixtures.js'
+-import type { Page } from '@playwright/test'
+ import { signUpNewBusiness } from './helpers/signup.js'
+ import { watchConsole } from './console.js'
+ import { openGastos, openMas } from './helpers/openMas.js'
+ import { fillSaleLine } from './helpers/sale.js'
+-import { setPriceDate } from './helpers/priceDate.js'
+ import { uniqueTag } from './helpers/unique.js'
+ 
+ test('a seller opens Análisis from Más, moves back a month and reads each section', async ({
+@@ -127,187 +125,3 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
+ 
+   expect(consoleMessages).toEqual([])
+ })
+-
+-/**
+- * The cost lines on the rows, the header and "Desde el primer registro" (GH-141), through the
+- * built front against the real backend. A cost is pending for the grams beyond every lot
+- * (CONTEXT.md, Pending cost). The seeded business has:
+- *
+- * - Rosa: no stock entry at all, so everything taken from it is pending: a promotion of 2 g on
+- *   the first of last month (a past month, fully pending), and today a negative adjustment of
+- *   1 g (the current month's Faltante de stock, fully pending) and an own use of 1 g.
+- * - Lirio: one purchase lot of 10 g for $ 10.000 and a sale of 15 g two weeks ago: its Costo de
+- *   lo vendido is $ 10.000 y 5 g sin costo (a past week, partly pending).
+- *
+- * It saves screenshots of the header, the rows and "Desde el primer registro" at a phone and a
+- * computer viewport, in both themes, as attachments of this test (the PR's evidence).
+- */
+-
+-function daysFrom(iso: string, days: number): string {
+-  const day = new Date(`${iso}T00:00:00Z`)
+-  day.setUTCDate(day.getUTCDate() + days)
+-  return day.toISOString().slice(0, 10)
+-}
+-
+-function firstOfMonth(iso: string, monthsBack: number): string {
+-  const day = new Date(`${iso}T00:00:00Z`)
+-  day.setUTCDate(1)
+-  day.setUTCMonth(day.getUTCMonth() - monthsBack)
+-  return day.toISOString().slice(0, 10)
+-}
+-
+-async function recordEntry(
+-  page: Page,
+-  entry: { date: string; grams: string; variety: string; origin: string; cost?: string },
+-): Promise<void> {
+-  await page.goto(STOCK_ENTRY_NEW)
+-  await page.getByLabel('Fecha').fill(entry.date)
+-  await page.getByLabel('Gramos').fill(entry.grams)
+-  await page.getByLabel('Variedad').selectOption({ label: entry.variety })
+-  await page.getByRole('button', { name: entry.origin, exact: true }).click()
+-  if (entry.cost !== undefined) await page.getByLabel('Costo total').fill(entry.cost)
+-  await page.getByRole('button', { name: 'Guardá la entrada' }).click()
+-  await expect(page.getByText('Entrada guardada')).toBeVisible()
+-}
+-
+-async function recordWithdrawal(
+-  page: Page,
+-  withdrawal: { date: string; grams: string; variety: string; reason: string },
+-): Promise<void> {
+-  await page.goto(WITHDRAWAL_NEW)
+-  await page.getByLabel('Fecha').fill(withdrawal.date)
+-  await page.getByLabel('Variedad 1', { exact: true }).selectOption({ label: withdrawal.variety })
+-  await page.getByLabel('Gramos 1', { exact: true }).fill(withdrawal.grams)
+-  await page.getByRole('button', { name: withdrawal.reason, exact: true }).click()
+-  await page.getByRole('button', { name: 'Guardá el retiro' }).click()
+-  await expect(page.getByText('Retiro guardado')).toBeVisible()
+-}
+-
+-test('Análisis reads Costo de lo vendido, Faltante de stock, Promoción and Consumo propio, fully and partly pending', async ({
+-  page,
+-}, testInfo) => {
+-  const consoleMessages: string[] = []
+-  watchConsole(page, consoleMessages)
+-  await signUpNewBusiness(page, {
+-    businessName: `Flores del Costo ${uniqueTag()}`,
+-    email: `duena-costo-${uniqueTag()}@example.com`,
+-  })
+-
+-  for (const name of ['Rosa', 'Lirio']) {
+-    await page.goto(VARIETIES)
+-    await page.getByRole('link', { name: 'Nueva variedad' }).click()
+-    await page.getByLabel('Nombre').fill(name)
+-    await page.getByRole('button', { name: 'Agregá la variedad' }).click()
+-    await expect(page.getByText('Variedad guardada')).toBeVisible()
+-  }
+-  await page.goto(STOCK_ENTRY_NEW)
+-  const today = await page.getByLabel('Fecha').inputValue()
+-  await page.goto(VARIETIES)
+-  await page.getByRole('link', { name: /Lirio/ }).click()
+-  await page.getByRole('link', { name: 'Nuevo precio' }).click()
+-  // The sale below is two weeks old, so the price has to be in force by then.
+-  await setPriceDate(page, firstOfMonth(today, 2))
+-  await page.getByLabel(/^Precio de lista/).fill('900')
+-  await page.getByRole('button', { name: 'Guardá el precio' }).click()
+-  await expect(page.getByText('Precio guardado')).toBeVisible()
+-
+-  const lastMonth = firstOfMonth(today, 1)
+-  const twoWeeksAgo = daysFrom(today, -14)
+-
+-  await recordEntry(page, {
+-    date: daysFrom(today, -30),
+-    grams: '10',
+-    variety: 'Lirio',
+-    origin: 'Compra',
+-    cost: '10000',
+-  })
+-  await recordEntry(page, { date: today, grams: '-1', variety: 'Rosa', origin: 'Ajuste' })
+-  await recordWithdrawal(page, { date: lastMonth, grams: '2', variety: 'Rosa', reason: 'Promoción' })
+-  await recordWithdrawal(page, { date: today, grams: '1', variety: 'Rosa', reason: 'Consumo propio' })
+-
+-  await page.goto(SALE_NEW)
+-  await page.getByLabel('Fecha').fill(twoWeeksAgo)
+-  await fillSaleLine(page, 1, { variety: 'Lirio', grams: '15' })
+-  await page.getByRole('radio', { name: 'Efectivo' }).check()
+-  await page.getByRole('button', { name: 'Guardá la venta' }).click()
+-  await expect(page.getByText('Venta guardada')).toBeVisible()
+-
+-  // The computer: the week and month tables carry one cost sub-row under each row.
+-  await page.setViewportSize({ width: 1280, height: 920 })
+-  await page.goto(ANALYSIS)
+-  await expect(page.getByText('Vendiste en el mes')).toBeVisible()
+-  const weekCosts = page.locator('.analisis__tabla-contenedor--semanas .analisis__fila-costos')
+-  const monthCosts = page.locator('.analisis__tabla-contenedor--meses .analisis__fila-costos')
+-  const weekRows = await weekCosts.count()
+-  expect(weekRows).toBeGreaterThan(2)
+-  for (const costs of [weekCosts, monthCosts]) {
+-    for (let i = 0; i < (await costs.count()); i += 1) {
+-      await expect(costs.nth(i)).toContainText('Costo de lo vendido')
+-    }
+-  }
+-
+-  // A past week, partly pending: the costed 10 g plus 5 g still without a cost.
+-  await expect(
+-    weekCosts.filter({ hasText: 'Costo de lo vendido $ 10.000 y 5 g sin costo' }),
+-  ).toHaveCount(1)
+-  // A week with no sales reads a real $ 0.
+-  await expect(weekCosts.filter({ hasText: 'Costo de lo vendido $ 0' }).first()).toBeVisible()
+-  // The current week, its last row, has the fully pending shortfall and own use.
+-  await expect(weekCosts.last()).toContainText('Faltante de stock 1 g sin costo')
+-  await expect(weekCosts.last()).toContainText('Consumo propio 1 g sin costo')
+-  await expect(weekCosts.first()).not.toContainText('Faltante de stock')
+-  // A past month, fully pending promotion; only the current month has the shortfall.
+-  await expect(monthCosts.filter({ hasText: 'Promoción 2 g sin costo' })).toHaveCount(1)
+-  await expect(monthCosts.filter({ hasText: 'Faltante de stock 1 g sin costo' })).toHaveCount(1)
+-  await expect(monthCosts.last()).toContainText('Faltante de stock 1 g sin costo')
+-
+-  // The header and "Desde el primer registro": fully pending, grams only.
+-  const header = page.locator('.cuerpo > div').filter({ hasText: 'Vendiste en el mes' }).first()
+-  await expect(header).toContainText('Faltante de stock 1 g sin costo')
+-  await expect(header).toContainText('Consumo propio 1 g sin costo')
+-  const since = page.locator('.analisis__historico')
+-  await expect(since).toContainText('Faltante de stock 1 g sin costo')
+-  await expect(since).toContainText('Promoción 2 g sin costo')
+-  await expect(since).toContainText('Consumo propio 1 g sin costo')
+-
+-  // Never a pending cost read as a zero, anywhere a cost line is drawn.
+-  for (const region of [weekCosts, monthCosts, header, since]) {
+-    await expect(region.first()).not.toContainText(/\$ 0 y \d/)
+-  }
+-
+-  // The same rows on the phone, as cards.
+-  await page.setViewportSize({ width: 390, height: 844 })
+-  const phoneWeeks = page.locator('.analisis__semana')
+-  await expect(phoneWeeks.filter({ hasText: 'Costo de lo vendido $ 10.000 y 5 g sin costo' })).toHaveCount(1)
+-  await expect(phoneWeeks.last()).toContainText('Faltante de stock 1 g sin costo')
+-  await expect(page.locator('.analisis__mes-fila').filter({ hasText: 'Promoción 2 g sin costo' })).toHaveCount(1)
+-
+-  // Screenshots for the PR: header, the rows and the since-the-first-record block, per
+-  // viewport and theme.
+-  for (const [viewport, size] of [
+-    ['telefono', { width: 390, height: 844 }],
+-    ['computadora', { width: 1280, height: 920 }],
+-  ] as const) {
+-    await page.setViewportSize(size)
+-    for (const theme of ['claro', 'oscuro']) {
+-      await page.evaluate((value) => {
+-        if (value === 'oscuro') document.documentElement.dataset.tema = 'oscuro'
+-        else document.documentElement.removeAttribute('data-tema')
+-      }, theme)
+-      const rows = viewport === 'telefono' ? page.locator('.analisis__semanas') : page.locator('.analisis__tabla-contenedor--semanas')
+-      const months = viewport === 'telefono' ? page.locator('.analisis__meses') : page.locator('.analisis__tabla-contenedor--meses')
+-      for (const [name, target] of [
+-        ['encabezado', header],
+-        ['semanas', rows],
+-        ['meses', months],
+-        ['desde-el-primer-registro', since],
+-      ] as const) {
+-        const file = testInfo.outputPath(`analisis-${viewport}-${theme}-${name}.png`)
+-        await target.screenshot({ path: file })
+-        await testInfo.attach(`analisis-${viewport}-${theme}-${name}`, { path: file, contentType: 'image/png' })
+-      }
+-    }
+-  }
+-
+-  expect(consoleMessages).toEqual([])
+-})
+diff --git a/web/src/api/analysis.ts b/web/src/api/analysis.ts
+index 47dc35a..29cdf93 100644
+--- a/web/src/api/analysis.ts
++++ b/web/src/api/analysis.ts
+@@ -23,15 +23,6 @@ export interface AmountWithPending {
+   pending_grams: number
+ }
+ 
+-/** One Análisis cost line (`RowCostOut`): a costed amount, the grams still without a
+- * cost, and the backend's own answer on whether every gram behind the figure is
+- * pending. The front never works that out itself. */
+-export interface RowCost {
+-  amount: number
+-  pending_grams: number
+-  all_pending: boolean
+-}
+-
+ export interface VarietyRow {
+   variety_id: number
+   name: string
+@@ -52,9 +43,9 @@ export interface AnalysisMonth {
+   grams_sold: number
+   grams_gifted: number
+   average_margin: MarginFigure
+-  shortfall: RowCost | null
+-  promotion: RowCost | null
+-  own_use: RowCost | null
++  shortfall: AmountWithPending | null
++  promotion: AmountWithPending | null
++  own_use: AmountWithPending | null
+   varieties: VarietyRow[]
+ }
+ 
+@@ -64,10 +55,8 @@ export interface AnalysisWeek {
+   sales: number
+   grams: number
+   expenses: number
+-  cost_of_goods: RowCost
+-  shortfall: RowCost | null
+-  promotion: RowCost | null
+-  own_use: RowCost | null
++  promotion: AmountWithPending | null
++  own_use: AmountWithPending | null
+   profit: AmountWithPending
+   cash: number
+   best: boolean
+@@ -80,10 +69,8 @@ export interface AnalysisMonthRow {
+   sales: number
+   grams: number
+   expenses: number
+-  cost_of_goods: RowCost
+-  shortfall: RowCost | null
+-  promotion: RowCost | null
+-  own_use: RowCost | null
++  promotion: AmountWithPending | null
++  own_use: AmountWithPending | null
+   profit: AmountWithPending
+   cash: number
+ }
+@@ -100,9 +87,9 @@ export interface SinceFirstRecord {
+   expenses: number
+   profit: AmountWithPending
+   cash: number
+-  shortfall: RowCost | null
+-  promotion: RowCost | null
+-  own_use: RowCost | null
++  shortfall: AmountWithPending | null
++  promotion: AmountWithPending | null
++  own_use: AmountWithPending | null
+ }
+ 
+ export interface ExpenseCategoryTotal {
+diff --git a/web/src/api/fixtures/analysis.json b/web/src/api/fixtures/analysis.json
+index 6b3db9b..3c055ca 100644
+--- a/web/src/api/fixtures/analysis.json
++++ b/web/src/api/fixtures/analysis.json
+@@ -10,9 +10,9 @@
+     "grams_sold": 28.0,
+     "grams_gifted": 15.0,
+     "average_margin": { "amount": 41000, "percent": 55, "pending_grams": 2.5 },
+-    "shortfall": { "amount": 3000, "pending_grams": 1.0, "all_pending": false },
+-    "promotion": { "amount": 4000, "pending_grams": 0.5, "all_pending": false },
+-    "own_use": { "amount": 1500, "pending_grams": 0.0, "all_pending": false },
++    "shortfall": { "amount": 3000, "pending_grams": 1.0 },
++    "promotion": { "amount": 4000, "pending_grams": 0.5 },
++    "own_use": { "amount": 1500, "pending_grams": 0.0 },
+     "varieties": [
+       {
+         "variety_id": 1,
+@@ -52,11 +52,9 @@
+       "last_day": "2026-08-16",
+       "sales": 15000,
+       "grams": 10.0,
+-      "cost_of_goods": { "amount": 6000, "pending_grams": 0.0, "all_pending": false },
+-      "shortfall": { "amount": 2000, "pending_grams": 0.0, "all_pending": false },
+-      "promotion": { "amount": 1000, "pending_grams": 0.0, "all_pending": false },
+-      "own_use": { "amount": 500, "pending_grams": 0.0, "all_pending": false },
+       "expenses": 2000,
++      "promotion": { "amount": 1000, "pending_grams": 0.0 },
++      "own_use": { "amount": 500, "pending_grams": 0.0 },
+       "profit": { "amount": 5000, "pending_grams": 0.0 },
+       "cash": 13000,
+       "best": false
+@@ -66,11 +64,9 @@
+       "last_day": "2026-08-23",
+       "sales": 18000,
+       "grams": 12.0,
+-      "cost_of_goods": { "amount": 7000, "pending_grams": 0.0, "all_pending": false },
+-      "shortfall": null,
++      "expenses": 1500,
+       "promotion": null,
+       "own_use": null,
+-      "expenses": 1500,
+       "profit": { "amount": 7000, "pending_grams": 0.0 },
+       "cash": 16000,
+       "best": false
+@@ -80,11 +76,9 @@
+       "last_day": "2026-08-30",
+       "sales": 20000,
+       "grams": 13.0,
+-      "cost_of_goods": { "amount": 8000, "pending_grams": 0.0, "all_pending": false },
+-      "shortfall": null,
++      "expenses": 2500,
+       "promotion": null,
+       "own_use": null,
+-      "expenses": 2500,
+       "profit": { "amount": 6000, "pending_grams": 0.0 },
+       "cash": 17000,
+       "best": false
+@@ -94,11 +88,9 @@
+       "last_day": "2026-09-06",
+       "sales": 22000,
+       "grams": 14.0,
+-      "cost_of_goods": { "amount": 9000, "pending_grams": 0.0, "all_pending": false },
+-      "shortfall": null,
++      "expenses": 1800,
+       "promotion": null,
+       "own_use": null,
+-      "expenses": 1800,
+       "profit": { "amount": 8000, "pending_grams": 0.0 },
+       "cash": 19000,
+       "best": false
+@@ -108,11 +100,9 @@
+       "last_day": "2026-09-13",
+       "sales": 19000,
+       "grams": 12.5,
+-      "cost_of_goods": { "amount": 8500, "pending_grams": 0.0, "all_pending": false },
+-      "shortfall": null,
++      "expenses": 2200,
+       "promotion": null,
+       "own_use": null,
+-      "expenses": 2200,
+       "profit": { "amount": 6500, "pending_grams": 0.0 },
+       "cash": 17500,
+       "best": false
+@@ -122,11 +112,9 @@
+       "last_day": "2026-09-20",
+       "sales": 24000,
+       "grams": 16.0,
+-      "cost_of_goods": { "amount": 9500, "pending_grams": 0.0, "all_pending": false },
+-      "shortfall": null,
++      "expenses": 2000,
+       "promotion": null,
+       "own_use": null,
+-      "expenses": 2000,
+       "profit": { "amount": 9000, "pending_grams": 6.0 },
+       "cash": 21000,
+       "best": false
+@@ -136,11 +124,9 @@
+       "last_day": "2026-09-27",
+       "sales": 21000,
+       "grams": 13.5,
+-      "cost_of_goods": { "amount": 9000, "pending_grams": 0.0, "all_pending": false },
+-      "shortfall": null,
++      "expenses": 1900,
+       "promotion": null,
+       "own_use": null,
+-      "expenses": 1900,
+       "profit": { "amount": 7500, "pending_grams": 0.0 },
+       "cash": 19500,
+       "best": false
+@@ -150,11 +136,9 @@
+       "last_day": "2026-10-04",
+       "sales": 30000,
+       "grams": 18.0,
+-      "cost_of_goods": { "amount": 10000, "pending_grams": 0.0, "all_pending": false },
+-      "shortfall": null,
++      "expenses": 2100,
+       "promotion": null,
+       "own_use": null,
+-      "expenses": 2100,
+       "profit": { "amount": 11000, "pending_grams": 0.0 },
+       "cash": 27500,
+       "best": true
+@@ -167,11 +151,9 @@
+       "last_day": "2026-05-31",
+       "sales": 40000,
+       "grams": 25.0,
+-      "cost_of_goods": { "amount": 20000, "pending_grams": 0.0, "all_pending": false },
+-      "shortfall": { "amount": 2000, "pending_grams": 0.0, "all_pending": false },
+-      "promotion": { "amount": 1000, "pending_grams": 0.0, "all_pending": false },
+-      "own_use": { "amount": 500, "pending_grams": 0.0, "all_pending": false },
+       "expenses": 6000,
++      "promotion": { "amount": 1000, "pending_grams": 0.0 },
++      "own_use": { "amount": 500, "pending_grams": 0.0 },
+       "profit": { "amount": 12000, "pending_grams": 0.0 },
+       "cash": 35000
+     },
+@@ -181,11 +163,9 @@
+       "last_day": "2026-06-30",
+       "sales": 55000,
+       "grams": 30.0,
+-      "cost_of_goods": { "amount": 24000, "pending_grams": 0.0, "all_pending": false },
+-      "shortfall": null,
++      "expenses": 7000,
+       "promotion": null,
+       "own_use": null,
+-      "expenses": 7000,
+       "profit": { "amount": 18000, "pending_grams": 0.0 },
+       "cash": 48000
+     },
+@@ -195,11 +175,9 @@
+       "last_day": "2026-07-31",
+       "sales": 60000,
+       "grams": 32.0,
+-      "cost_of_goods": { "amount": 26000, "pending_grams": 0.0, "all_pending": false },
+-      "shortfall": null,
++      "expenses": 8000,
+       "promotion": null,
+       "own_use": null,
+-      "expenses": 8000,
+       "profit": { "amount": 20000, "pending_grams": 0.0 },
+       "cash": 52000
+     },
+@@ -209,11 +187,9 @@
+       "last_day": "2026-08-31",
+       "sales": 75000,
+       "grams": 49.0,
+-      "cost_of_goods": { "amount": 30000, "pending_grams": 0.0, "all_pending": false },
+-      "shortfall": null,
++      "expenses": 8200,
+       "promotion": null,
+       "own_use": null,
+-      "expenses": 8200,
+       "profit": { "amount": 26000, "pending_grams": 0.0 },
+       "cash": 65000
+     },
+@@ -223,11 +199,9 @@
+       "last_day": "2026-09-30",
+       "sales": 86000,
+       "grams": 56.0,
+-      "cost_of_goods": { "amount": 32000, "pending_grams": 0.0, "all_pending": false },
+-      "shortfall": null,
++      "expenses": 7600,
+       "promotion": null,
+       "own_use": null,
+-      "expenses": 7600,
+       "profit": { "amount": 30500, "pending_grams": 6.0 },
+       "cash": 77000
+     },
+@@ -237,11 +211,9 @@
+       "last_day": "2026-10-31",
+       "sales": 83818,
+       "grams": 43.0,
+-      "cost_of_goods": { "amount": 28000, "pending_grams": 0.0, "all_pending": false },
+-      "shortfall": null,
++      "expenses": 6500,
+       "promotion": null,
+       "own_use": null,
+-      "expenses": 6500,
+       "profit": { "amount": 33500, "pending_grams": 3.5 },
+       "cash": 40000
+     }
+@@ -260,9 +232,9 @@
+     "expenses": 43300,
+     "profit": { "amount": 140000, "pending_grams": 9.5 },
+     "cash": 317000,
+-    "shortfall": { "amount": 8000, "pending_grams": 3.0, "all_pending": false },
+-    "promotion": { "amount": 9000, "pending_grams": 0.5, "all_pending": false },
+-    "own_use": { "amount": 2500, "pending_grams": 0.0, "all_pending": false }
++    "shortfall": { "amount": 8000, "pending_grams": 3.0 },
++    "promotion": { "amount": 9000, "pending_grams": 0.5 },
++    "own_use": { "amount": 2500, "pending_grams": 0.0 }
+   },
+   "month_expenses": {
+     "categories": [
+diff --git a/web/src/screens/Analisis.test.tsx b/web/src/screens/Analisis.test.tsx
+index b73a830..41a0c17 100644
+--- a/web/src/screens/Analisis.test.tsx
++++ b/web/src/screens/Analisis.test.tsx
+@@ -199,11 +199,7 @@ test('the computer table carries headers, the margin stack, pending marks and th
+ 
+   const weekTables = (await screen.findAllByText('Semana')).map((node) => node.closest('table'))
+   const weekTable = weekTables.find((t) => t !== null) as HTMLElement
+-  // Drop the header row and each row's cost sub-row.
+-  const rows = within(weekTable)
+-    .getAllByRole('row')
+-    .slice(1)
+-    .filter((row) => !row.classList.contains('analisis__fila-costos'))
++  const rows = within(weekTable).getAllByRole('row').slice(1) // drop the header row
+   const lastRow = rows.at(-1)
+   expect(lastRow).not.toBeUndefined()
+   expect((lastRow as HTMLElement).className).toContain('analisis__fila-actual')
+@@ -274,117 +270,3 @@ test('a week and a month row show a withdrawal line only when the period has one
+   expect(within(monthRows[0]!).getByText('Promoción $ 1.000')).toBeInTheDocument()
+   expect(within(monthRows[monthRows.length - 1]!).queryByText(/Promoción/)).not.toBeInTheDocument()
+ })
+-
+-const FIXTURE_FIRST_WEEK = analysisFixture.weeks[0]!
+-const FIXTURE_LAST_WEEK = analysisFixture.weeks.at(-1)!
+-
+-function pendingRowFixture() {
+-  const fullyPending = { amount: 0, pending_grams: 4, all_pending: true }
+-  const partlyPending = { amount: 7000, pending_grams: 1.5, all_pending: false }
+-  return {
+-    ...analysisFixture,
+-    month: { ...analysisFixture.month, shortfall: { amount: 0, pending_grams: 2, all_pending: true } },
+-    since_first_record: {
+-      ...analysisFixture.since_first_record,
+-      promotion: { amount: 0, pending_grams: 3, all_pending: true },
+-    },
+-    weeks: analysisFixture.weeks.map((week, index) =>
+-      index === 1
+-        ? { ...week, cost_of_goods: partlyPending }
+-        : index === 2
+-          ? { ...week, cost_of_goods: fullyPending }
+-          : index === 3
+-            ? { ...week, cost_of_goods: { amount: 0, pending_grams: 0, all_pending: false } }
+-            : week,
+-    ),
+-    months: analysisFixture.months.map((row, index) =>
+-      index === 1 ? { ...row, promotion: fullyPending } : row,
+-    ),
+-  }
+-}
+-
+-test('every week and month row shows Costo de lo vendido, in the PRD order', async () => {
+-  renderAnalisis(async () => jsonResponse(200, analysisFixture))
+-  await screen.findByText(SINCE_FIRST_RECORD_LABEL)
+-
+-  const weekRows = Array.from(document.querySelectorAll<HTMLElement>('.analisis__semana'))
+-  const monthRows = Array.from(document.querySelectorAll<HTMLElement>('.analisis__mes-fila'))
+-  expect(weekRows).toHaveLength(analysisFixture.weeks.length)
+-  expect(monthRows).toHaveLength(analysisFixture.months.length)
+-  for (const row of [...weekRows, ...monthRows]) {
+-    expect(within(row).getByText(/^Costo de lo vendido \$ [\d.]+$/)).toBeInTheDocument()
+-  }
+-
+-  // Sales, grams, Costo de lo vendido, Faltante de stock, Promoción, Consumo propio,
+-  // gastos, ganancia, caja.
+-  const first = weekRows[0]!
+-  const lines = Array.from(first.querySelectorAll('span'))
+-    .map((node) => node.textContent ?? '')
+-    .filter((text) => /^(Costo de lo vendido|Faltante de stock|Promoción|Consumo propio|gastos|ganancia|caja)/.test(text))
+-    .map((text) => text.replace(/ \$.*$/, ''))
+-  expect(lines).toEqual([
+-    'Costo de lo vendido',
+-    'Faltante de stock',
+-    'Promoción',
+-    'Consumo propio',
+-    'gastos',
+-    'ganancia',
+-    'caja',
+-  ])
+-  expect(within(first).getByText(`Costo de lo vendido $ ${FIXTURE_FIRST_WEEK.cost_of_goods.amount.toLocaleString('es-AR')}`)).toBeInTheDocument()
+-})
+-
+-test('Faltante de stock shows on a row only when its shortfall is not null', async () => {
+-  renderAnalisis(async () => jsonResponse(200, analysisFixture))
+-  await screen.findByText(SINCE_FIRST_RECORD_LABEL)
+-
+-  const weekRows = Array.from(document.querySelectorAll<HTMLElement>('.analisis__semana'))
+-  expect(within(weekRows[0]!).getByText('Faltante de stock $ 2.000')).toBeInTheDocument()
+-  for (const row of weekRows.slice(1)) {
+-    expect(within(row).queryByText(/Faltante de stock/)).not.toBeInTheDocument()
+-  }
+-  const monthRows = Array.from(document.querySelectorAll<HTMLElement>('.analisis__mes-fila'))
+-  expect(within(monthRows[0]!).getByText('Faltante de stock $ 2.000')).toBeInTheDocument()
+-  expect(within(monthRows.at(-1)!).queryByText(/Faltante de stock/)).not.toBeInTheDocument()
+-  expect(FIXTURE_LAST_WEEK.shortfall).toBeNull()
+-})
+-
+-test('a fully pending figure reads only its grams on the header, the since lines and the rows', async () => {
+-  renderAnalisis(async () => jsonResponse(200, pendingRowFixture()))
+-  await screen.findByText(SINCE_FIRST_RECORD_LABEL)
+-
+-  expect(screen.getByText('Faltante de stock 2 g sin costo')).toBeInTheDocument()
+-  expect(screen.getByText('Promoción 3 g sin costo')).toBeInTheDocument()
+-  const monthRows = Array.from(document.querySelectorAll<HTMLElement>('.analisis__mes-fila'))
+-  expect(within(monthRows[1]!).getByText('Promoción 4 g sin costo')).toBeInTheDocument()
+-  const weekRows = Array.from(document.querySelectorAll<HTMLElement>('.analisis__semana'))
+-  expect(within(weekRows[2]!).getByText('Costo de lo vendido 4 g sin costo')).toBeInTheDocument()
+-  expect(screen.queryByText(/\$ 0 y \d+ g sin costo/)).not.toBeInTheDocument()
+-})
+-
+-test('a partly pending cost of goods reads its amount and its grams; a real zero reads $ 0', async () => {
+-  renderAnalisis(async () => jsonResponse(200, pendingRowFixture()))
+-  await screen.findByText(SINCE_FIRST_RECORD_LABEL)
+-
+-  const weekRows = Array.from(document.querySelectorAll<HTMLElement>('.analisis__semana'))
+-  expect(
+-    within(weekRows[1]!).getByText('Costo de lo vendido $ 7.000 y 1,5 g sin costo'),
+-  ).toBeInTheDocument()
+-  expect(within(weekRows[3]!).getByText('Costo de lo vendido $ 0')).toBeInTheDocument()
+-})
+-
+-test('the computer tables carry the same cost lines under each row', async () => {
+-  renderAnalisis(async () => jsonResponse(200, pendingRowFixture()))
+-  await screen.findByText(SINCE_FIRST_RECORD_LABEL)
+-
+-  const weekTable = document.querySelector<HTMLElement>('.analisis__tabla-contenedor--semanas')!
+-  const costRows = weekTable.querySelectorAll<HTMLElement>('.analisis__fila-costos')
+-  expect(costRows).toHaveLength(analysisFixture.weeks.length)
+-  expect(within(costRows[2]!).getByText('Costo de lo vendido 4 g sin costo')).toBeInTheDocument()
+-  expect(within(costRows[0]!).getByText('Faltante de stock $ 2.000')).toBeInTheDocument()
+-
+-  const monthTable = document.querySelector<HTMLElement>('.analisis__tabla-contenedor--meses')!
+-  const monthCostRows = monthTable.querySelectorAll<HTMLElement>('.analisis__fila-costos')
+-  expect(monthCostRows).toHaveLength(analysisFixture.months.length)
+-  expect(within(monthCostRows[1]!).getByText('Promoción 4 g sin costo')).toBeInTheDocument()
+-})
+diff --git a/web/src/screens/Analisis.tsx b/web/src/screens/Analisis.tsx
+index 44c7572..c7bbaf6 100644
+--- a/web/src/screens/Analisis.tsx
++++ b/web/src/screens/Analisis.tsx
+@@ -15,15 +15,15 @@
+  * read only, no forms, no toasts (PRD, "Read only").
+  */
+ 
+-import { Fragment, useState } from 'react'
++import { useState } from 'react'
+ import { useQuery } from '@tanstack/react-query'
+ import { useOutletContext } from 'react-router'
+ import { NetworkError } from '../api/client'
+ import {
+   type Analysis,
++  type AmountWithPending,
+   type AnalysisMonth,
+   type ExpenseBreakdown as ExpenseBreakdownT,
+-  type RowCost,
+   readAnalysis,
+ } from '../api/analysis'
+ import { keys } from '../api/keys'
+@@ -32,32 +32,16 @@ import { formatDateShort, formatMonthLong } from '../format/dates'
+ import { formatGrams, formatMoney } from '../format/money'
+ import ErrorGenerico from '../components/ErrorGenerico'
+ import SinConexion from '../components/SinConexion'
+-import { formatRowCost } from './analisisCost'
+ import {
+-  COST_OF_GOODS_LABEL,
+   EMPTY_MONTH_LINE,
+   NO_BEST_WEEK_LINE,
+   NO_HISTORY_LINE,
+-  OWN_USE_LABEL,
+-  PROMOTION_LABEL,
+   PURCHASES_NOTE,
+-  SHORTFALL_LABEL,
+   SINCE_FIRST_RECORD_LABEL,
+   VARIETY_TOTAL_NOTE,
+ } from './analisisMessages'
+ 
+-export {
+-  COST_OF_GOODS_LABEL,
+-  EMPTY_MONTH_LINE,
+-  NO_BEST_WEEK_LINE,
+-  NO_HISTORY_LINE,
+-  OWN_USE_LABEL,
+-  PROMOTION_LABEL,
+-  PURCHASES_NOTE,
+-  SHORTFALL_LABEL,
+-  SINCE_FIRST_RECORD_LABEL,
+-  VARIETY_TOTAL_NOTE,
+-}
++export { EMPTY_MONTH_LINE, NO_BEST_WEEK_LINE, NO_HISTORY_LINE, PURCHASES_NOTE, SINCE_FIRST_RECORD_LABEL, VARIETY_TOTAL_NOTE }
+ export const BEST_WEEK_MARK = 'Mejor semana'
+ export const BEST_WEEKDAY_MARK = 'Mejor día'
+ export const BEST_WEEK_TABLE_MARK = 'mejor'
+@@ -77,84 +61,39 @@ function pendingSuffix(grams: number): string {
+   return grams > 0 ? ` y ${formatGrams(grams)} sin costo` : ''
+ }
+ 
+-/** One cost line, "Faltante de stock $ 3.000 y 1 g sin costo": the label and
+- * `formatRowCost`, in one node. */
+-function CostLine({ label, cost, className }: { label: string; cost: RowCost; className?: string }) {
+-  return (
+-    <span className={className}>
+-      {label} {formatRowCost(cost)}
+-    </span>
+-  )
+-}
+-
+-/** Faltante de stock, Promoción and Consumo propio (CONTEXT.md), each apart and each
+- * with only its own "y N g sin costo" (or only its grams when all of it is pending).
+- * `null` when the period has none of that reason's records: nothing is shown. */
+-function WithdrawalLines({
+-  shortfall,
++/** Promoción and Consumo propio (CONTEXT.md), each apart from Faltante de stock and
++ * each with only its own reason's "y N g sin costo". `null` when the period has none
++ * of that reason's records: nothing is shown. */
++function CostLines({
+   promotion,
+   ownUse,
+   className,
+ }: {
+-  shortfall: RowCost | null
+-  promotion: RowCost | null
+-  ownUse: RowCost | null
++  promotion: AmountWithPending | null
++  ownUse: AmountWithPending | null
+   className?: string
+ }) {
+   return (
+     <>
+-      {shortfall !== null && <CostLine className={className} label={SHORTFALL_LABEL} cost={shortfall} />}
+-      {promotion !== null && <CostLine className={className} label={PROMOTION_LABEL} cost={promotion} />}
+-      {ownUse !== null && <CostLine className={className} label={OWN_USE_LABEL} cost={ownUse} />}
+-    </>
+-  )
+-}
+-
+-/** What a week or month row's sales cost and lost, in the PRD order: Costo de lo
+- * vendido always, then Faltante de stock, Promoción and Consumo propio when present. */
+-function RowCostLines({
+-  period,
+-  className,
+-}: {
+-  period: {
+-    cost_of_goods: RowCost
+-    shortfall: RowCost | null
+-    promotion: RowCost | null
+-    own_use: RowCost | null
+-  }
+-  className?: string
+-}) {
+-  return (
+-    <>
+-      <CostLine className={className} label={COST_OF_GOODS_LABEL} cost={period.cost_of_goods} />
+-      <WithdrawalLines
+-        className={className}
+-        shortfall={period.shortfall}
+-        promotion={period.promotion}
+-        ownUse={period.own_use}
+-      />
++      {promotion !== null && (
++        <span className={className}>
++          Promoción {formatMoney(promotion.amount)}
++          {pendingSuffix(promotion.pending_grams)}
++        </span>
++      )}
++      {ownUse !== null && (
++        <span className={className}>
++          Consumo propio {formatMoney(ownUse.amount)}
++          {pendingSuffix(ownUse.pending_grams)}
++        </span>
++      )}
+     </>
+   )
+ }
+ 
+-/** The computer tables' sub-row under a week or month: the same cost lines the phone's
+- * card shows, spanning the row's columns (`AnalisisCompu.dc.html`). */
+-function CostSubRow({
+-  period,
+-  current,
+-}: {
+-  period: Parameters<typeof RowCostLines>[0]['period']
+-  current: boolean
+-}) {
+-  return (
+-    <tr className={current ? 'analisis__fila-costos analisis__fila-actual' : 'analisis__fila-costos'}>
+-      <td colSpan={6}>
+-        <div className="analisis__costos">
+-          <RowCostLines period={period} />
+-        </div>
+-      </td>
+-    </tr>
+-  )
++/** A table cell's twin of `CostLines` for one reason: empty when the period has none. */
++function costCell(line: AmountWithPending | null): string {
++  return line === null ? '' : `${formatMoney(line.amount)}${pendingSuffix(line.pending_grams)}`
+ }
+ 
+ /** A bar's fill, purely a rendering proportion against the widest value in its own
+@@ -265,12 +204,13 @@ function AnalisisContenido({
+             m.average_margin.pending_grams > 0 &&
+             ` · margen promedio${pendingSuffix(m.average_margin.pending_grams)}`}
+         </span>
+-        <WithdrawalLines
+-          className="pie"
+-          shortfall={m.shortfall}
+-          promotion={m.promotion}
+-          ownUse={m.own_use}
+-        />
++        {m.shortfall !== null && (
++          <span className="pie">
++            Faltante de stock {formatMoney(m.shortfall.amount)}
++            {pendingSuffix(m.shortfall.pending_grams)}
++          </span>
++        )}
++        <CostLines className="pie" promotion={m.promotion} ownUse={m.own_use} />
+       </div>
+ 
+       <span className="pie">{VARIETY_TOTAL_NOTE}</span>
+@@ -377,10 +317,8 @@ function AnalisisContenido({
+                 <Bar value={week.sales} max={maxWeekSales} />
+                 <span>{formatMoney(week.sales)}</span>
+                 <span>{formatGrams(week.grams)}</span>
+-                <div className="analisis__costos">
+-                  <RowCostLines period={week} />
+-                </div>
+                 <span>gastos {formatMoney(week.expenses)}</span>
++                <CostLines promotion={week.promotion} ownUse={week.own_use} />
+                 <span>
+                   ganancia {formatMoney(week.profit.amount)}
+                   {pendingSuffix(week.profit.pending_grams)}
+@@ -399,14 +337,16 @@ function AnalisisContenido({
+                   <th className="analisis__num">Ventas</th>
+                   <th className="analisis__num">Gramos</th>
+                   <th className="analisis__num">Gastos</th>
++                  <th className="analisis__num">Promoción</th>
++                  <th className="analisis__num">Consumo propio</th>
+                   <th className="analisis__num">Ganancia</th>
+                   <th className="analisis__num">Caja</th>
+                 </tr>
+               </thead>
+               <tbody>
+                 {data.weeks.map((week, index) => (
+-                  <Fragment key={week.first_day}>
+                   <tr
++                    key={week.first_day}
+                     className={
+                       index === data.weeks.length - 1 ? 'analisis__fila-actual' : undefined
+                     }
+@@ -415,6 +355,8 @@ function AnalisisContenido({
+                     <td className="analisis__num">{formatMoney(week.sales)}</td>
+                     <td className="analisis__num">{formatGrams(week.grams)}</td>
+                     <td className="analisis__num">{formatMoney(week.expenses)}</td>
++                    <td className="analisis__num">{costCell(week.promotion)}</td>
++                    <td className="analisis__num">{costCell(week.own_use)}</td>
+                     <td className="analisis__num">
+                       {formatMoney(week.profit.amount)}
+                       {pendingSuffix(week.profit.pending_grams)}
+@@ -424,8 +366,6 @@ function AnalisisContenido({
+                     </td>
+                     <td className="analisis__num">{formatMoney(week.cash)}</td>
+                   </tr>
+-                  <CostSubRow period={week} current={index === data.weeks.length - 1} />
+-                  </Fragment>
+                 ))}
+               </tbody>
+             </table>
+@@ -441,10 +381,8 @@ function AnalisisContenido({
+                 <span>{formatMonthLong(row.month)}</span>
+                 <span>{formatMoney(row.sales)}</span>
+                 <span>{formatGrams(row.grams)}</span>
+-                <div className="analisis__costos">
+-                  <RowCostLines period={row} />
+-                </div>
+                 <span>gastos {formatMoney(row.expenses)}</span>
++                <CostLines promotion={row.promotion} ownUse={row.own_use} />
+                 <span>
+                   ganancia {formatMoney(row.profit.amount)}
+                   {pendingSuffix(row.profit.pending_grams)}
+@@ -462,26 +400,27 @@ function AnalisisContenido({
+                   <th className="analisis__num">Ventas</th>
+                   <th className="analisis__num">Gramos</th>
+                   <th className="analisis__num">Gastos</th>
++                  <th className="analisis__num">Promoción</th>
++                  <th className="analisis__num">Consumo propio</th>
+                   <th className="analisis__num">Ganancia</th>
+                   <th className="analisis__num">Caja</th>
+                 </tr>
+               </thead>
+               <tbody>
+                 {data.months.map((row) => (
+-                  <Fragment key={row.month}>
+-                  <tr>
++                  <tr key={row.month}>
+                     <td>{formatMonthLong(row.month)}</td>
+                     <td className="analisis__num">{formatMoney(row.sales)}</td>
+                     <td className="analisis__num">{formatGrams(row.grams)}</td>
+                     <td className="analisis__num">{formatMoney(row.expenses)}</td>
++                    <td className="analisis__num">{costCell(row.promotion)}</td>
++                    <td className="analisis__num">{costCell(row.own_use)}</td>
+                     <td className="analisis__num">
+                       {formatMoney(row.profit.amount)}
+                       {pendingSuffix(row.profit.pending_grams)}
+                     </td>
+                     <td className="analisis__num">{formatMoney(row.cash)}</td>
+                   </tr>
+-                  <CostSubRow period={row} current={false} />
+-                  </Fragment>
+                 ))}
+               </tbody>
+             </table>
+@@ -512,8 +451,13 @@ function AnalisisContenido({
+                 {pendingSuffix(data.since_first_record.profit.pending_grams)}
+               </span>
+               <span>caja {formatMoney(data.since_first_record.cash)}</span>
+-              <WithdrawalLines
+-                shortfall={data.since_first_record.shortfall}
++              {data.since_first_record.shortfall !== null && (
++                <span>
++                  Faltante de stock {formatMoney(data.since_first_record.shortfall.amount)}
++                  {pendingSuffix(data.since_first_record.shortfall.pending_grams)}
++                </span>
++              )}
++              <CostLines
+                 promotion={data.since_first_record.promotion}
+                 ownUse={data.since_first_record.own_use}
+               />
+diff --git a/web/src/screens/analisisCost.test.ts b/web/src/screens/analisisCost.test.ts
+deleted file mode 100644
+index bd0fd46..0000000
+--- a/web/src/screens/analisisCost.test.ts
++++ /dev/null
+@@ -1,26 +0,0 @@
+-/** `formatRowCost` (plain unit test): the one place an Análisis `RowCost` becomes text. */
+-
+-import { expect, test } from 'vitest'
+-import { formatRowCost } from './analisisCost'
+-
+-test('a fully pending figure reads only its grams, never a peso amount', () => {
+-  expect(formatRowCost({ amount: 0, pending_grams: 4, all_pending: true })).toBe('4 g sin costo')
+-  expect(formatRowCost({ amount: 0, pending_grams: 2.5, all_pending: true })).toBe('2,5 g sin costo')
+-})
+-
+-test('a partly pending figure reads its amount and its own grams', () => {
+-  expect(formatRowCost({ amount: 9000, pending_grams: 2.5, all_pending: false })).toBe(
+-    '$ 9.000 y 2,5 g sin costo',
+-  )
+-})
+-
+-test('a fully costed figure reads its amount, and a real $0 reads $ 0', () => {
+-  expect(formatRowCost({ amount: 1500, pending_grams: 0, all_pending: false })).toBe('$ 1.500')
+-  expect(formatRowCost({ amount: 0, pending_grams: 0, all_pending: false })).toBe('$ 0')
+-})
+-
+-test('it follows all_pending, not the amount: a costed $0 with pending grams keeps its $ 0', () => {
+-  expect(formatRowCost({ amount: 0, pending_grams: 1, all_pending: false })).toBe(
+-    '$ 0 y 1 g sin costo',
+-  )
+-})
+diff --git a/web/src/screens/analisisCost.ts b/web/src/screens/analisisCost.ts
+deleted file mode 100644
+index c90375d..0000000
+--- a/web/src/screens/analisisCost.ts
++++ /dev/null
+@@ -1,19 +0,0 @@
+-/**
+- * The only code that turns an Análisis `RowCost` into text (Tech Lead's plan,
+- * invariant 6). Whether a figure is entirely pending is the backend's answer
+- * (`all_pending`); this module never works it out from an amount or from grams.
+- * Profit, margin and the average margin keep `pendingSuffix` in `Analisis.tsx`.
+- */
+-
+-import type { RowCost } from '../api/analysis'
+-import { formatGrams, formatMoney } from '../format/money'
+-
+-/** "4 g sin costo" when everything behind the figure is pending (never "$ 0"),
+- * "$ 9.000 y 2,5 g sin costo" when part of it is, "$ 9.000" when none is. */
+-export function formatRowCost(cost: RowCost): string {
+-  if (cost.all_pending) return `${formatGrams(cost.pending_grams)} sin costo`
+-  if (cost.pending_grams > 0) {
+-    return `${formatMoney(cost.amount)} y ${formatGrams(cost.pending_grams)} sin costo`
+-  }
+-  return formatMoney(cost.amount)
+-}
+diff --git a/web/src/screens/analisisMessages.ts b/web/src/screens/analisisMessages.ts
+index aff0f6c..867aeaf 100644
+--- a/web/src/screens/analisisMessages.ts
++++ b/web/src/screens/analisisMessages.ts
+@@ -3,7 +3,7 @@
+  * `copy/copyLimits.test.ts`. `Analisis.tsx` renders these same bindings.
+  */
+ 
+-import { SAMPLES, type LimitedCopy } from '../copy/limits'
++import type { LimitedCopy } from '../copy/limits'
+ 
+ export const NO_HISTORY_LINE = 'Todavía no hay nada para analizar.'
+ export const EMPTY_MONTH_LINE = 'No vendiste ni regalaste nada este mes.'
+@@ -13,13 +13,6 @@ export const SINCE_FIRST_RECORD_LABEL =
+ export const PURCHASES_NOTE = 'Van aparte, se cargan en Stock'
+ export const NO_BEST_WEEK_LINE = 'Ninguna se destacó'
+ 
+-export const COST_OF_GOODS_LABEL = 'Costo de lo vendido'
+-export const SHORTFALL_LABEL = 'Faltante de stock'
+-export const PROMOTION_LABEL = 'Promoción'
+-export const OWN_USE_LABEL = 'Consumo propio'
+-const PENDING_ONLY = `${SAMPLES.grams} sin costo`
+-const AMOUNT_AND_PENDING = `${SAMPLES.amount} y ${SAMPLES.grams} sin costo`
+-
+ export const LIMITED_COPY: readonly LimitedCopy[] = [
+   { kind: 'emptyLine', text: NO_HISTORY_LINE },
+   { kind: 'emptyLine', text: EMPTY_MONTH_LINE },
+@@ -27,14 +20,5 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
+   { kind: 'help', text: SINCE_FIRST_RECORD_LABEL },
+   { kind: 'help', text: PURCHASES_NOTE },
+   { kind: 'help', text: NO_BEST_WEEK_LINE },
+-  // The cost lines on the rows, the month header and "Desde el primer registro"
+-  // (`formatRowCost`): each label with its longest form, a fully pending one reading
+-  // only its grams.
+-  ...[COST_OF_GOODS_LABEL, SHORTFALL_LABEL, PROMOTION_LABEL, OWN_USE_LABEL].flatMap(
+-    (label): LimitedCopy[] => [
+-      { kind: 'help', text: `${label} ${PENDING_ONLY}` },
+-      { kind: 'help', text: `${label} ${AMOUNT_AND_PENDING}` },
+-    ],
+-  ),
+ ]
+ export const LONG_REFUSALS: readonly string[] = []
+diff --git a/web/src/styles/app.css b/web/src/styles/app.css
+index 5eaffce..6168713 100644
+--- a/web/src/styles/app.css
++++ b/web/src/styles/app.css
+@@ -2824,34 +2824,6 @@ body {
+   background: var(--acento);
+ }
+ 
+-/* The cost lines of a week or month (`Analisis.dc.html`, `AnalisisCompu.dc.html`):
+-   Costo de lo vendido, Faltante de stock, Promoción and Consumo propio, each in
+-   words, on a line of their own under the row's figures. */
+-.analisis__costos {
+-  display: flex;
+-  flex-basis: 100%;
+-  flex-wrap: wrap;
+-  align-items: baseline;
+-  gap: var(--espacio-xs) var(--espacio-md);
+-  font-size: 12px;
+-  color: var(--tinta2);
+-}
+-
+-.analisis__tabla td:first-child .analisis__costos,
+-.analisis__tabla .analisis__fila-costos td {
+-  font-size: 13px;
+-  font-weight: 400;
+-  color: var(--tinta2);
+-}
+-
+-.analisis__tabla .analisis__fila-costos td {
+-  padding-top: 0;
+-}
+-
+-.analisis__fila-costos .analisis__costos {
+-  font-size: 13px;
+-}
+-
+ .analisis__marca-mejor {
+   font-weight: 600;
+   color: var(--acento);
