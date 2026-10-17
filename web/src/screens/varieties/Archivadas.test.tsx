@@ -480,11 +480,13 @@ describe('on a computer (two panes)', () => {
 
     await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES))
     expect(await screen.findByText('Todas las entradas')).toBeTruthy()
-    expect(screen.queryByRole('heading', { name: 'Archivadas' })).toBeNull()
+    // The list takes the left pane back one render after the path changes: wait for it.
+    await waitFor(() => expect(screen.queryByRole('heading', { name: 'Archivadas' })).toBeNull())
+    expect(await screen.findByText('Alfa Vieja')).toBeTruthy()
+    expect(await screen.findByText('Zeta Vieja')).toBeTruthy()
+    await waitFor(() => expect(screen.queryByText('No tenés variedades archivadas')).toBeNull())
     // The old two-pane test's assertion, kept: the restored variety appears in the live list.
     expect(screen.getAllByText('Alfa Vieja').length).toBeGreaterThan(0)
-    expect(screen.getByText('Zeta Vieja')).toBeTruthy()
-    expect(screen.queryByText('No tenés variedades archivadas')).toBeNull()
     await goBackToTheList(router)
   })
 
