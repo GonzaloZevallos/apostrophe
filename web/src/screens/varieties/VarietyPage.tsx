@@ -124,7 +124,7 @@ function VarietyPageView({
   })
   const stockQuery = archived ? archivedStockQuery : liveStockQuery
   const movementsQuery = useQuery({ queryKey: keys.stockMovements(id), queryFn: () => readMovements(id) })
-  const { restore, sending: restoring, notice: restoreNotice } = useRestore()
+  const { restoreFromPage, sending: restoring, notice: restoreNotice } = useRestore()
   const catalogQuery = useQuery({
     ...catalogQueryOptions(),
     select: (catalog) => catalog.varieties.find((row) => row.id === varietyId) ?? null,
@@ -248,7 +248,7 @@ function VarietyPageView({
           <>
             {restoreNotice}
             <div className="variedad-acciones">
-              <Boton variant="primary" icon="restaurar" disabled={restoring} onClick={() => void restore(varietyId)}>
+              <Boton variant="primary" icon="restaurar" disabled={restoring} onClick={() => void restoreFromPage(varietyId)}>
                 Restaurar
               </Boton>
             </div>
