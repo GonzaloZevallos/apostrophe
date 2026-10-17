@@ -12,7 +12,7 @@ export const STEP_TIMEOUT_MS = 3_000
 /**
  * Clicks a control by its text or its accessible name (`aria-label`) without a pointer: for
  * one with no visible text on the phone (an icon link) or one another element covers there
- * today. The cover itself is for the geometry checkers to report, not for the walk to trip on.
+ * today (a list row or a button under the bar at 320 and 246). The cover itself is for the geometry checkers to report, not for the walk to trip on.
  */
 export interface ActivateStep {
   activate: string

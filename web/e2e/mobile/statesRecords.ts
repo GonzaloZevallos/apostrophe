@@ -28,7 +28,7 @@ export const RECORDS_STATES: readonly WalkState[] = [
   {
     screen: 'EntradaStockDesdeStock',
     route: '/mi-stock',
-    steps: [{ click: 'Nueva entrada' }],
+    steps: [{ activate: 'Nueva entrada' }],
     visible: 'Guardá la entrada',
   },
   {
@@ -93,13 +93,13 @@ export const RECORDS_STATES: readonly WalkState[] = [
   {
     screen: 'GastoEditar',
     route: '/expenses',
-    steps: [{ click: 'Bolsitas zip' }],
+    steps: [{ activate: 'Bolsitas zip' }],
     visible: 'Borrar gasto',
   },
   {
     screen: 'GastoConfirmarBorrado',
     route: '/expenses',
-    steps: [{ click: 'Bolsitas zip' }, { activate: 'Borrar gasto' }],
+    steps: [{ activate: 'Bolsitas zip' }, { activate: 'Borrar gasto' }],
     visible: '¿Borrás el gasto?',
   },
 
