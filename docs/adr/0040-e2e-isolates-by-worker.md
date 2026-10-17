@@ -233,3 +233,72 @@ holds the loaded runs, their maxima and what they do and do not show.
    `use` stays the only place that names them, and the `newContext` call sites are unchanged.
 10. **`analysis.spec.ts`'s last-month date** is `firstOfMonth(todayIso, 1)`, the file's own
     UTC helper, instead of local-time `setDate`/`setMonth` over a UTC-parsed date.
+
+## Amendment (GH-171): the CI run, a loaded serial baseline and the rule that chose N
+
+All figures below are indicative: single runs or small medians, taken on a shared machine or on one CI run, read on 2026-10-17. None is asserted by any test, gate step or config value (ADR-0038); this section only records them. It supersedes nothing above; the text above stays as written.
+
+### 1. The rule N = 3 was actually chosen by
+
+The "Floor estimate" above says N is the smallest worker count whose loaded full run lands within about 10 % of the floor. No N met that: "Choosing N" computes floors of about 107, 135 and 110 s and loaded runs of 327 s (N = 2), 260 s (N = 3) and 235 s (N = 4). N = 3 was chosen as the smallest N whose loaded full run finished under 300 s on the 16-core machine (N = 2 took 327 s). With 86 tests on 3 or 4 workers the run is bound by total work divided by N, not by the longest file, so the 10 % rule cannot be met on this suite. Nothing was re-measured against it. N = 3 stands.
+
+### 2. The CI run of PR #170
+
+| figure | value | where it is read |
+|---|---|---|
+| run | https://github.com/GonzaloZevallos/apostrophe/actions/runs/37734508993/job/113170898273 | `gh api repos/GonzaloZevallos/apostrophe/actions/jobs/113170898273` |
+| event, branch, head | `pull_request`, `agentic/GH-152`, head `21770d2499ea8ab6cb34eb54bc1f682924232889`; the job checked out the PR merge ref `654437f2bb9bc35b74b2d98502aabcd4dc2faea2`; PR #170 merged at 2026-10-08T05:56:33Z as `4166445b7f12b3643ba72f9d54df5052ab80dbf6` | `gh run view 37734508993 --json event,headSha,headBranch`; `gh pr view 170 --json mergeCommit,mergedAt`; the job log |
+| runner label | `ubuntu-24.04`, image version 20260927.320.1 | the job's `labels` and the log's "Runner Image" group |
+| vCPU | 2, **documented for the label, not measured in this run**: the log prints no CPU count and nothing in this run printed `nproc`. This repository is private; docs.github.com lists `ubuntu-24.04` as 2 vCPU / 8 GB for private repositories (4 vCPU / 16 GB for public ones). | https://docs.github.com/en/actions/reference/runners/github-hosted-runners, read 2026-10-17 |
+| suite shape | the suite of that head, before GH-251: `workers: 3`, `retries: 0`, **two phases** (a first phase of 86 tests, then the `timed` phase of 1 test). It is not the current one-phase suite. | the log: "Running 86 tests using 3 workers", "Running 1 test using 1 worker" |
+| Playwright phase 1 | `86 passed (2.5m)`, as printed by Playwright | the job log, step "Run npm --prefix web run e2e" |
+| Playwright phase 2 | `1 passed (10.9s)`, as printed by Playwright | the same step |
+| job time | 4m07s, **including** set-up, checkout, installs, `playwright install` and post-job steps | `gh pr checks 170`; the job's `started_at` 2026-10-08T05:51:44Z and `completed_at` 2026-10-08T05:55:51Z |
+| e2e step | started 2026-10-08T05:53:02Z, completed 2026-10-08T05:55:47Z, success | the job's `steps` array |
+
+The step's duration is not printed as a figure anywhere I could read, and it is not derived here: the two Playwright figures are what the run printed, and the step lies inside the 4m07s job. One run, so no median.
+
+### 3. What the 300 s criterion is, and what it is not
+
+The 300 s criterion was measured locally, on the 16-core machine, and it chose N. It does not transfer to CI (2 vCPU documented for the label against 16 cores), and CI does not validate N = 3. The CI figure to compare with the agentic system's 600 s check timeout and its 300 s margin is the e2e step. The step's own duration was not printed. The two phases it printed (2.5 min and 10.9 s) and the whole 4m07s job that contains the step all lie inside both the 300 s margin and the 600 s timeout. This is one CI run of the suite as it was on 2026-10-08; the suite has 106 tests now, and no CI run of the current suite is recorded here.
+
+### 4. Loaded runs on the current one-phase suite (dated 2026-10-17, one machine, indicative)
+
+Machine: `nproc` = 16, AMD Ryzen 7 5700U with Radeon Graphics, head `e08228dd44cd0fbb632ac0dc4d90931daffd07dd`, `workers: 3` in the config, `retries: 0`, one phase, **106 tests** (the 86 + 1 of the tables above are the older suite). Load: `uv run --no-project pytest -n auto -q` looping in another shell for the whole session. The six runs ran back to back, serial first, then 3 workers. Each run's header was read from its output: "Running 106 tests using 1 worker" for the serial set (checked on the first run before the other two) and "Running 106 tests using 3 workers" for the other.
+
+Before each run `pgrep -af '(^|/)(pytest|mypy|ruff|vitest|playwright)'` was recorded. It shows two idle `playwright-mcp` servers throughout, and the generator. The precondition "nothing but the generator" was **not always met**: this is a shared machine, other worktrees ran their own e2e, vitest and pytest, and the script waited up to 20 minutes for them to leave before it started each run anyway. The column "other worktrees' test processes" counts the lines that were neither the generator nor `playwright-mcp`. Only runs with 0 had a clean `pgrep`. The load average (1/5/15 min, `/proc/loadavg`) at each start had a 1-minute value of 16 to 52, so the runs were not under one steady load.
+
+**Serial, `workers: 1`.**
+
+| run | started (UTC) | seconds | outcome | Playwright summary | other worktrees' test processes at start | load average at start (1/5/15 min) |
+|---|---|---|---|---|---|---|
+| 1 | 16:18:09 | 974.5 | green | 106 passed (16.1m) | 0 | 16.46 11.98 15.76 |
+| 2 | 16:55:14 | 1382.4 | RED | 1 failed; 105 passed (22.8m) (pressed.spec.ts › Deshacer › keeps 4.5:1 at rest and while pressed (oscuro)) | 11 | 43.44 48.03 44.64 |
+| 3 | 17:38:53 | 1745.8 | green | 106 passed (28.9m) | 4 | 51.58 47.57 47.00 |
+
+2 green of 3; median of the green runs 1360 s; (max - min)/median 57 %.
+
+`/usr/bin/time -f %e npm --prefix web run e2e`
+
+
+The red run is kept in the table with its time and name and left out of the median; it was not re-run; the cause was not investigated. The spread is large: the three runs ran under different foreign load, so the median of two green runs says little.
+
+**Three workers (the configured default).**
+
+|---|---|---|---|---|---|---|
+| 1 | 18:21:00 | 508.7 | green | 106 passed (8.3m) | 0 | 32.33 34.47 42.18 |
+| 2 | 18:29:45 | 593.6 | green | 106 passed (9.8m) | 0 | 44.77 45.65 44.06 |
+| 3 | 19:00:13 | 649.2 | green | 106 passed (10.7m) | 9 | 36.84 42.27 46.71 |
+
+3 green of 3; median of the green runs 594 s; (max - min)/median 24 %.
+
+
+Reading, with that caution: on this suite and this machine the 3-worker runs finished in 509 to 649 s, which is past the 300 s criterion in all three runs and, for the last one (649 s), past the 600 s check timeout itself. The 300 s figures of "Choosing N" were taken on 86 tests and under a 17 to 32 load average, so they do not carry over to 106 tests under a 1-minute load average of 32 to 45 at the start of each run. The 300 s criterion is recorded here as the rule that chose N; this amendment does not claim N = 3 meets it today, and does not change N.
+
+### 5. Comparison with the earlier `workers: 1` figures
+
+The serial figures in section 4 are not comparable with the earlier `workers: 1` runs (3m49s to 6m01s over five runs, "on a shared machine with other work running", the ADR's own words, taken before N workers existed, on the older 87-test suite). The load they ran under is not recorded; the serial set above is the first `workers: 1` set taken under the backend suite's load and on the current suite. The earlier text says the issue records a loaded `workers: 1` run past 600 s; the loaded serial runs above (975 s and 1746 s green, 1382 s red) are consistent with that.
+
+### 6. What guards these figures
+
+Nothing. No test, gate step or config value reads any figure in this amendment (ADR-0038). `workers: 3` and the `playwright.config.ts` timeouts stay as set, and the 600 s check timeout belongs to the agentic system, outside this repository.
