@@ -177,6 +177,15 @@ interface ScreenBase {
   title: string
   /** Which pane a two-pane screen fills; inert until the area issues build the panes. */
   pane?: 'list' | 'detail'
+  /**
+   * Marks a card whose parent's word depends on the record shown (a variety's name). Such a
+   * leaf draws its back only from an override the screen declared for this very record
+   * (`useBackParent`), and nothing until then. Only a screen marked here may call the hook.
+   */
+  backLabel?: 'record'
+  /** The route is a modal on a computer: the shell draws no side rail behind its scrim. The
+   * only thing that hides the rail; it is never inferred from `pane` or `kind`. */
+  modalOnComputer?: true
 }
 
 export type Screen =
@@ -198,7 +207,7 @@ export function outside<O extends Outside>(declaration: O): O {
   return declaration
 }
 
-export const SCREENS: readonly Screen[] = [
+export const SCREENS = [
   screen({ id: 'home', path: HOME, kind: 'root', title: 'Inicio', place: { bar: 'home', rail: 'home' } }),
   screen({ id: 'more', path: MORE, kind: 'root', title: 'Más', place: { bar: 'more', rail: 'more' } }),
 
@@ -227,14 +236,14 @@ export const SCREENS: readonly Screen[] = [
     pane: 'list',
     place: { bar: 'varieties', rail: 'varieties' },
   }),
-  screen({ id: 'variety', path: VARIETY, kind: 'card', title: 'Variedad', pane: 'detail', parent: 'varieties' }),
+  screen({ id: 'variety', path: VARIETY, kind: 'card', title: 'Variedad', pane: 'detail', parent: 'varieties', backLabel: 'record' }),
   screen({ id: 'variety-new', path: VARIETY_NEW, kind: 'form', title: 'Nueva variedad', parent: 'varieties' }),
-  screen({ id: 'variety-prices', path: VARIETY_PRICES, kind: 'card', title: 'Precios', parent: 'variety' }),
-  screen({ id: 'variety-price-new', path: VARIETY_PRICE_NEW, kind: 'form', title: 'Nuevo precio', parent: 'variety' }),
-  screen({ id: 'variety-entries', path: VARIETY_ENTRIES, kind: 'card', title: 'Entradas', parent: 'variety' }),
+  screen({ id: 'variety-prices', path: VARIETY_PRICES, kind: 'card', title: 'Precios', parent: 'variety', backLabel: 'record' }),
+  screen({ id: 'variety-price-new', path: VARIETY_PRICE_NEW, kind: 'form', title: 'Nuevo precio', parent: 'variety', modalOnComputer: true }),
+  screen({ id: 'variety-entries', path: VARIETY_ENTRIES, kind: 'card', title: 'Entradas', parent: 'variety', backLabel: 'record' }),
   screen({ id: 'catalog', path: CATALOG, kind: 'card', title: 'Catálogo', parent: 'varieties' }),
   screen({ id: 'stock', path: STOCK, kind: 'card', title: 'Todas las entradas', parent: 'varieties' }),
-  screen({ id: 'stock-entry-new', path: STOCK_ENTRY_NEW, kind: 'form', title: 'Entrada de stock', parent: 'stock' }),
+  screen({ id: 'stock-entry-new', path: STOCK_ENTRY_NEW, kind: 'form', title: 'Entrada de stock', parent: 'varieties' }),
   screen({ id: 'stock-entry', path: STOCK_ENTRY, kind: 'form', title: 'Entrada de stock', parent: 'stock' }),
   screen({
     id: 'varieties-archived',
@@ -328,7 +337,10 @@ export const SCREENS: readonly Screen[] = [
     parent: 'home',
   }),
   screen({ id: 'onboarding-done', path: ONBOARDING_DONE, kind: 'form', title: 'Listo', parent: 'home' }),
-]
+] as const satisfies readonly Screen[]
+
+/** The ids marked `backLabel: 'record'`: the only screens `useBackParent` accepts, by type. */
+export type RecordLabelledScreen = Extract<(typeof SCREENS)[number], { backLabel: 'record' }>['id']
 
 /** The Onboarding's screens: drawn by `OnboardingLayout`, outside `Shell` (onboarding.md). */
 export const ONBOARDING_SCREENS: ReadonlySet<ScreenId> = new Set<ScreenId>([

@@ -6,7 +6,12 @@ from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 
 from app.accounts.adapters.deps import CurrentBusinessId
-from app.catalog.adapters.schemas import CatalogAttributesIn, CatalogOut, HeaderFooterIn
+from app.catalog.adapters.schemas import (
+    ArchivedCatalogVarietyOut,
+    CatalogAttributesIn,
+    CatalogOut,
+    HeaderFooterIn,
+)
 from app.catalog.adapters.sql_attributes import SqlCatalogAttributes
 from app.catalog.adapters.sql_catalog_varieties import SqlCatalogVarieties
 from app.catalog.adapters.sql_header_footer import SqlCatalogHeaderFooter
@@ -15,6 +20,7 @@ from app.catalog.application import set_header_footer as set_header_footer_uc
 from app.catalog.application import set_variety_attributes as set_variety_attributes_uc
 from app.catalog.application.errors import CatalogVarietyArchived, CatalogVarietyNotFound
 from app.catalog.application.ports import CatalogPricingSettings
+from app.catalog.application.read_archived import read_archived
 from app.catalog.application.read_catalog import read_catalog
 from app.catalog.domain.errors import (
     AromaTooLong,
@@ -90,6 +96,13 @@ def get_catalog(
 ) -> CatalogOut:
     view = read_catalog(varieties, stock, attributes, header_footer, pricing_settings, today)
     return CatalogOut.of(view)
+
+
+@router.get("/archived")
+def get_archived(
+    varieties: VarietiesDep, attributes: AttributesDep
+) -> list[ArchivedCatalogVarietyOut]:
+    return [ArchivedCatalogVarietyOut.of(view) for view in read_archived(varieties, attributes)]
 
 
 @router.put("/varieties/{variety_id}")

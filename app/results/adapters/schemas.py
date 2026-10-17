@@ -177,11 +177,22 @@ class CostOut(BaseModel):
 
 
 class AmountWithPendingOut(BaseModel):
-    """A money figure (profit, stock shortfall, promotion or own use) together with the
-    pending grams behind it, for one period."""
+    """A money figure (profit) together with the pending grams behind it, for one
+    period."""
 
     amount: int
     pending_grams: GramsOut
+
+
+class RowCostOut(BaseModel):
+    """One Análisis cost line (cost of goods, stock shortfall, promotion or own use): its
+    costed `amount` and its own `pending_grams` (a positive magnitude). `all_pending` is
+    the domain's answer (`row_cost`) that every gram behind the line is pending, so the
+    screen says "N g sin costo" and never "$ 0"."""
+
+    amount: int
+    pending_grams: GramsOut
+    all_pending: bool
 
 
 class VarietyRowOut(BaseModel):
@@ -204,9 +215,9 @@ class AnalysisMonthOut(BaseModel):
     grams_sold: GramsOut
     grams_gifted: GramsOut
     average_margin: MarginOut
-    shortfall: AmountWithPendingOut | None
-    promotion: AmountWithPendingOut | None
-    own_use: AmountWithPendingOut | None
+    shortfall: RowCostOut | None
+    promotion: RowCostOut | None
+    own_use: RowCostOut | None
     varieties: list[VarietyRowOut]
 
 
@@ -215,9 +226,11 @@ class WeekOut(BaseModel):
     last_day: date
     sales: int
     grams: GramsOut
+    cost_of_goods: RowCostOut
+    shortfall: RowCostOut | None
+    promotion: RowCostOut | None
+    own_use: RowCostOut | None
     expenses: int
-    promotion: AmountWithPendingOut | None
-    own_use: AmountWithPendingOut | None
     profit: AmountWithPendingOut
     cash: int
     best: bool
@@ -229,9 +242,11 @@ class MonthRowOut(BaseModel):
     last_day: date
     sales: int
     grams: GramsOut
+    cost_of_goods: RowCostOut
+    shortfall: RowCostOut | None
+    promotion: RowCostOut | None
+    own_use: RowCostOut | None
     expenses: int
-    promotion: AmountWithPendingOut | None
-    own_use: AmountWithPendingOut | None
     profit: AmountWithPendingOut
     cash: int
 
@@ -248,9 +263,9 @@ class SinceFirstRecordOut(BaseModel):
     expenses: int
     profit: AmountWithPendingOut
     cash: int
-    shortfall: AmountWithPendingOut | None
-    promotion: AmountWithPendingOut | None
-    own_use: AmountWithPendingOut | None
+    shortfall: RowCostOut | None
+    promotion: RowCostOut | None
+    own_use: RowCostOut | None
 
 
 class ExpenseCategoryTotalOut(BaseModel):

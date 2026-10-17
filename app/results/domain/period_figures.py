@@ -27,6 +27,7 @@ from app.results.domain.figures import (
     MonthFigures,
     MonthRowFigures,
     PeriodTotals,
+    RowCost,
     SinceFirstRecordFigures,
     VarietyRow,
     WeekdayFigures,
@@ -47,6 +48,17 @@ ZERO = Grams(0)
 
 WithdrawalKind = Literal["promotion", "own_use"]
 CostLine = Literal["shortfall", "promotion", "own_use"]
+
+
+def row_cost(amount: int, pending_grams: Grams, grams: Grams) -> RowCost:
+    """A cost line's costed amount and pending grams, with `all_pending` set exactly
+    when there are grams and every one is pending. The only place that rule exists:
+    a lot costed at $0 (a harvest) is costed, so "amount == 0" is not the test."""
+    return RowCost(
+        amount=amount,
+        pending_grams=pending_grams,
+        all_pending=grams.is_positive and pending_grams == grams,
+    )
 
 
 def _days(start: date, end_inclusive: date) -> list[date]:
@@ -84,6 +96,7 @@ class _CostDayTotals:
 
     costed: int = 0
     pending_grams: Grams = ZERO
+    grams: Grams = ZERO
 
 
 @dataclass
@@ -182,7 +195,7 @@ class Buckets:
                 total = total + totals.pending_grams
         return total
 
-    def _cost_line(self, line: CostLine, start: date, end: date) -> AmountWithPending | None:
+    def _cost_line(self, line: CostLine, start: date, end: date) -> RowCost | None:
         """One cost line's costed amount and pending grams in `[start, end]`, `None`
         exactly when no draw of that kind falls in the window."""
         days: list[_CostDayTotals] = []
@@ -199,18 +212,29 @@ class Buckets:
         if not days:
             return None
         pending = ZERO
+        grams = ZERO
         for day_totals in days:
             pending = pending + day_totals.pending_grams
-        return AmountWithPending(sum(t.costed for t in days), pending)
+            grams = grams + day_totals.grams
+        return row_cost(sum(t.costed for t in days), pending, grams)
 
-    def shortfall(self, start: date, end: date) -> AmountWithPending | None:
+    def shortfall(self, start: date, end: date) -> RowCost | None:
         return self._cost_line("shortfall", start, end)
 
-    def promotion(self, start: date, end: date) -> AmountWithPending | None:
+    def promotion(self, start: date, end: date) -> RowCost | None:
         return self._cost_line("promotion", start, end)
 
-    def own_use(self, start: date, end: date) -> AmountWithPending | None:
+    def own_use(self, start: date, end: date) -> RowCost | None:
         return self._cost_line("own_use", start, end)
+
+    def cost_of_goods_row(self, start: date, end: date) -> RowCost:
+        """Cost of goods as an Análisis row reads it: the costed cost and the pending
+        grams of the sold and gifted grams in `[start, end]`, never `None`."""
+        return row_cost(
+            self.costed_cost(start, end),
+            self.pending_grams(start, end),
+            self.grams(start, end),
+        )
 
     def profit(self, start: date, end: date) -> AmountWithPending:
         sales_total = self.sales(start, end)
@@ -306,6 +330,7 @@ def scan(
                 agg = buckets.shortfall_totals.setdefault(row.day, _CostDayTotals())
                 agg.costed += row.costed or 0
                 agg.pending_grams = agg.pending_grams + row.pending
+                agg.grams = agg.grams + row.grams
             case "promotion" | "own_use":
                 # A withdrawal is neither a sale nor a shortfall: it writes only its
                 # own bucket, and its date counts as a first record.
@@ -314,6 +339,7 @@ def scan(
                 )
                 withdrawn.costed += row.costed or 0
                 withdrawn.pending_grams = withdrawn.pending_grams + row.pending
+                withdrawn.grams = withdrawn.grams + row.grams
                 if first_record is None or row.day < first_record:
                     first_record = row.day
             case "sold" | "gifted":
@@ -375,6 +401,7 @@ def totals_between(buckets: Buckets, start: date, end: date) -> PeriodTotals:
             costed=buckets.costed_cost(start, end),
             pending_grams=buckets.pending_grams(start, end),
         ),
+        cost_of_goods_row=buckets.cost_of_goods_row(start, end),
         shortfall=buckets.shortfall(start, end),
         promotion=buckets.promotion(start, end),
         own_use=buckets.own_use(start, end),
@@ -486,6 +513,8 @@ def _weeks(buckets: Buckets, today: date, first_record: date | None) -> tuple[We
                 sales=totals.sales,
                 grams=totals.grams_sold + totals.grams_gifted,
                 expenses=totals.expenses,
+                cost_of_goods=totals.cost_of_goods_row,
+                shortfall=totals.shortfall,
                 promotion=totals.promotion,
                 own_use=totals.own_use,
                 profit=totals.profit,
@@ -537,6 +566,8 @@ def _months(
                 sales=totals.sales,
                 grams=totals.grams_sold + totals.grams_gifted,
                 expenses=totals.expenses,
+                cost_of_goods=totals.cost_of_goods_row,
+                shortfall=totals.shortfall,
                 promotion=totals.promotion,
                 own_use=totals.own_use,
                 profit=totals.profit,

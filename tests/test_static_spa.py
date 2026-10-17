@@ -19,7 +19,7 @@ from app.static_spa import (
     matches_template,
     parse_legacy_front_paths,
 )
-from tests.conftest import SETTINGS, TEST_HASHER
+from tests.conftest import SETTINGS, TEST_HASHER, MovableClock
 from tests.fakes.telegram import FakeTelegram
 from tests.legacy_pin import PINNED_LEGACY_ROWS
 
@@ -132,17 +132,54 @@ def test_a_path_with_no_screen_in_the_design_is_refused() -> None:
     ]
 
 
+def registry_problems(registry: list[dict[str, str]], paths: set[str]) -> list[str]:
+    """What is wrong with the design registry's rows: a kind that is not one of the three, a
+    root with a parent or a non-root with none, or a parent, computer parent or archived parent
+    that is not a screen path. `archived_parent` is also only allowed on a card."""
+    problems: list[str] = []
+    for entry in registry:
+        name = entry["path"]
+        if entry["kind"] not in {"root", "card", "form"}:
+            problems.append(f"{name}: unknown kind {entry['kind']}")
+        if (entry["kind"] == "root") != (entry.get("parent") is None):
+            problems.append(f"{name}: a root has no parent and every other kind has one")
+        for key in ("parent", "computer_parent", "archived_parent"):
+            if entry.get(key) is not None and normalise(entry[key]) not in paths:
+                problems.append(f"{name}: {key} {entry[key]} is not a screen path")
+        if entry.get("archived_parent") is not None and entry["kind"] != "card":
+            problems.append(f"{name}: archived_parent belongs to a card")
+    return problems
+
+
+def test_a_registry_row_with_a_bad_kind_parent_or_archived_parent_is_refused() -> None:
+    paths = _screen_paths()
+    good = {"path": "/varieties/{id}", "kind": "card", "parent": "/varieties"}
+
+    assert registry_problems([{**good, "archived_parent": "/varieties/archived"}], paths) == []
+    assert registry_problems([{**good, "archived_parent": "/nowhere"}], paths) == [
+        "/varieties/{id}: archived_parent /nowhere is not a screen path"
+    ]
+    assert registry_problems(
+        [{**good, "kind": "form", "archived_parent": "/varieties/archived"}], paths
+    ) == ["/varieties/{id}: archived_parent belongs to a card"]
+    assert registry_problems([{**good, "kind": "root"}], paths) == [
+        "/varieties/{id}: a root has no parent and every other kind has one"
+    ]
+    assert registry_problems([{**good, "kind": "page"}], paths) == [
+        "/varieties/{id}: unknown kind page"
+    ]
+
+
 def test_the_registry_entries_of_screens_json_say_a_kind_and_a_parent_that_are_paths() -> None:
     document = json.loads(SCREENS_JSON.read_text())
     paths = _screen_paths()
 
-    for entry in document["registry"]:
-        assert entry["kind"] in {"root", "card", "form"}, entry
-        assert (entry["kind"] == "root") == (entry.get("parent") is None), entry
-        if entry.get("parent") is not None:
-            assert normalise(entry["parent"]) in paths, entry
-        if entry.get("computer_parent") is not None:
-            assert normalise(entry["computer_parent"]) in paths, entry
+    assert registry_problems(document["registry"], paths) == []
+    assert [entry["path"] for entry in document["registry"] if "archived_parent" in entry] == [
+        "/varieties/{id}"
+    ]
+    stock_entry_new = next(e for e in document["registry"] if e["path"] == "/varieties/entries/new")
+    assert stock_entry_new["parent"] == "/varieties"
     registered = {normalise(entry["path"]) for entry in document["registry"]}
     assert {"/customers/new", "/customers/{id}/edit", "/varieties/entries/{id}"} <= registered
 
@@ -159,9 +196,7 @@ def test_a_templates_sample_matches_that_template_and_no_other(template: str) ->
     assert matching == [template]
 
 
-@pytest.mark.parametrize(
-    "template", sorted(path for path in SHARED_FRONT_PATHS if "{id}" in path)
-)
+@pytest.mark.parametrize("template", sorted(path for path in SHARED_FRONT_PATHS if "{id}" in path))
 def test_no_literal_shared_path_is_claimed_by_an_id_template(template: str) -> None:
     literals = [path for path in SHARED_FRONT_PATHS if "{id}" not in path]
 
@@ -209,10 +244,16 @@ def test_a_malformed_rows_file_is_refused(text: str) -> None:
         parse_legacy_front_paths(text)
 
 
-def test_the_api_document_is_the_one_committed_before_the_english_routes() -> None:
+def test_the_api_document_is_the_one_committed_before_the_english_routes(
+    clock: MovableClock,
+) -> None:
     snapshot = json.loads((FIXTURES / "openapi_snapshot.json").read_text())
     document = create_app(
-        SETTINGS, hasher=TEST_HASHER, telegram=FakeTelegram(), upkeep_ticker=False
+        SETTINGS,
+        clock=clock,
+        hasher=TEST_HASHER,
+        telegram=FakeTelegram(),
+        upkeep_ticker=False,
     ).openapi()
 
     assert json.loads(json.dumps(document)) == snapshot

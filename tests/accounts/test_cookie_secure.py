@@ -4,25 +4,25 @@
 
 The module fixes every input it depends on: its own client address, an environment with
 no `APOSTROPHE_*` variable, and a clock handed to `create_app`. The any-day test moves the
-real date under the one place the app reads it (`tables.datetime`)."""
+real date under the one place the app reads it (`app.clock.datetime`, the name
+`system_clock` looks up on every call)."""
 
 import os
 from collections.abc import Iterator
 from contextlib import contextmanager
-from datetime import UTC, datetime
-from http.cookies import SimpleCookie
-from typing import Any
+from datetime import UTC, datetime, tzinfo
+from http.cookies import Morsel, SimpleCookie
 
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import text
 from sqlalchemy.engine import Engine
 
+from app import clock as app_clock
 from app.accounts.adapters.deps import SESSION_COOKIE
 from app.accounts.domain.session_token import SESSION_LIFETIME
 from app.db import make_engine
 from app.main import create_app
-from app.onboarding.adapters import tables
 from app.settings import Settings
 from tests.conftest import NOW, PASSWORD, TEST_HASHER, MovableClock, invite
 from tests.fakes.telegram import FakeTelegram
@@ -38,12 +38,25 @@ NEW_USER = {"email": "nueva@example.com", "password": PASSWORD, "business_name":
 # Inside `HTTPS_SETTINGS.trusted_proxies`, so the trusted-proxy branch really runs there.
 CLIENT_ADDRESS = ("10.0.0.1", 12345)
 LOGIN = {"email": NEW_USER["email"], "password": NEW_USER["password"]}
-FORWARDED = {"X-Forwarded-For": "203.0.113.9", "X-Forwarded-Proto": "http"}
+# Per settings, headers that argue for the opposite of what `Settings.secure_cookie` says:
+# an https claim under http (a mutant inferring `Secure` from the request would switch it
+# on), an http claim under https (one that would switch it off).
+OPPOSING_HEADERS = {
+    "http": {
+        "X-Forwarded-For": "203.0.113.9",
+        "X-Forwarded-Proto": "https",
+        "X-Forwarded-Ssl": "on",
+        "Forwarded": "proto=https",
+    },
+    "https": {"X-Forwarded-For": "203.0.113.9", "X-Forwarded-Proto": "http"},
+}
 SETTINGS_BY_NAME = {"http": HTTP_SETTINGS, "https": HTTPS_SETTINGS}
 
 
 @pytest.fixture(autouse=True)
 def _no_apostrophe_environment(monkeypatch: pytest.MonkeyPatch) -> None:
+    # Every `Settings` here is explicit, so nothing reads the environment today; this keeps
+    # it that way if a helper ever falls back to `Settings.from_env`.
     for name in [name for name in os.environ if name.startswith("APOSTROPHE_")]:
         monkeypatch.delenv(name, raising=False)
 
@@ -57,20 +70,23 @@ def _attributes(set_cookie_header: str) -> SimpleCookie:
 @contextmanager
 def _opened_business(settings: Settings) -> Iterator[tuple[TestClient, Engine]]:
     engine = make_engine(settings.database_url)
+    clock = MovableClock(NOW)
     app = create_app(
         settings,
         engine=engine,
-        clock=MovableClock(NOW),
+        clock=clock,
         hasher=TEST_HASHER,
         telegram=FakeTelegram(),
         upkeep_ticker=False,
     )
-    with TestClient(app, client=CLIENT_ADDRESS) as client:
-        token = invite(engine, NOW)
-        response = client.post(f"/invitations/{token}/accept", json=NEW_USER)
-        assert response.status_code == 201, response.text
-        yield client, engine
-    engine.dispose()
+    try:
+        with TestClient(app, client=CLIENT_ADDRESS) as client:
+            token = invite(engine, clock())
+            response = client.post(f"/invitations/{token}/accept", json=NEW_USER)
+            assert response.status_code == 201, response.text
+            yield client, engine
+    finally:
+        engine.dispose()
 
 
 def _login_set_cookie(settings: Settings, headers: dict[str, str] | None = None) -> str:
@@ -124,38 +140,42 @@ def test_secure_ignores_the_forwarded_headers_of_the_request(name: str) -> None:
     settings = SETTINGS_BY_NAME[name]
 
     plain = _attributes(_login_set_cookie(settings))[SESSION_COOKIE]
-    forwarded = _attributes(_login_set_cookie(settings, FORWARDED))[SESSION_COOKIE]
+    forwarded = _attributes(_login_set_cookie(settings, OPPOSING_HEADERS[name]))[SESSION_COOKIE]
 
     assert forwarded["secure"] == plain["secure"]
     assert (forwarded["secure"] != "") == (name == "https")
 
 
 class _FrozenDatetime:
-    """Stands in for the `datetime` name `tables._now` looks up on every call."""
+    """Stands in for the `datetime` name `app.clock.system_clock` looks up on every call."""
 
     def __init__(self, instant: datetime) -> None:
         self._instant = instant
 
-    def now(self, tz: Any = None) -> datetime:
+    def now(self, tz: tzinfo | None = None) -> datetime:
         return self._instant.astimezone(tz) if tz is not None else self._instant
 
 
-def _shape(morsel: Any) -> dict[str, Any]:
+def _shape(morsel: Morsel[str]) -> dict[str, str]:
     keys = ("secure", "httponly", "samesite", "path", "max-age")
     return {key: morsel[key] for key in keys}
 
 
 def _day_shapes(
     settings: Settings, real_now: datetime, monkeypatch: pytest.MonkeyPatch
-) -> tuple[dict[str, Any], dict[str, Any]]:
-    # The name `datetime` inside `tables`, resolved at call time by `_now`: SQLAlchemy keeps
-    # the default's function object, so patching `_now` itself would never be seen.
-    monkeypatch.setattr(tables, "datetime", _FrozenDatetime(real_now))
+) -> tuple[dict[str, str], dict[str, str]]:
+    # The name `datetime` inside `app.clock`, resolved at call time by `system_clock`:
+    # `create_app` binds that function as its default argument at import, so patching the
+    # function itself would never be seen.
+    frozen = _FrozenDatetime(real_now)
+    monkeypatch.setattr(app_clock, "datetime", frozen)
+    # Control: the name `system_clock` resolves on every call now answers the chosen instant.
+    assert vars(app_clock)["datetime"].now(UTC) == real_now
     with _opened_business(settings) as (client, engine):
         with engine.connect() as connection:
             stored = connection.execute(text("SELECT created_at FROM onboarding")).scalar_one()
-        # Control: the stand-in reached a real insert, so the date really moved.
-        assert datetime.fromisoformat(str(stored)).replace(tzinfo=UTC) == real_now
+        # The insert is stamped by the injected clock, not by the moved real date.
+        assert datetime.fromisoformat(str(stored)).replace(tzinfo=UTC) == NOW
         client.cookies.clear()
         login = client.post("/auth/login", json=LOGIN)
         assert login.status_code == 200, login.text

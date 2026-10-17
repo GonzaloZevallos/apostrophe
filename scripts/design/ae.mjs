@@ -1,4 +1,4 @@
-// Before/after measure (ADR-0041): the exact count of differing pixels between the raw
+// Before/after measure (ADR-0042): the exact count of differing pixels between the raw
 // captures `comparisons.mjs` wrote, never between the composed sheets.
 //
 //   node scripts/design/ae.mjs <before-dir> <after-dir> [--only A,B]

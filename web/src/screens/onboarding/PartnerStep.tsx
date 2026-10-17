@@ -8,8 +8,11 @@
 import { useState } from 'react'
 import { sendPass } from '../../api/onboarding'
 import InvitePartner from '../settings/InvitePartner'
+import StepSubmit from './StepSubmit'
 import { useOnboardingWrite } from './useOnboardingWrite'
 import type { StepBodyProps } from './stepBodies'
+
+const CREATE_LINK = { label: 'Crear el link', variant: 'primary' } as const
 
 export default function PartnerStep({ progress, onProgress }: StepBodyProps) {
   const [created, setCreated] = useState(false)
@@ -19,16 +22,11 @@ export default function PartnerStep({ progress, onProgress }: StepBodyProps) {
   return (
     <>
       {done && <span className="onboarding__insignia">Hecho</span>}
-      <InvitePartner onLinkCreated={() => setCreated(true)} />
+      <InvitePartner onLinkCreated={() => setCreated(true)} action={CREATE_LINK} />
       {(created || done) && (
-        <button
-          type="button"
-          className="boton"
-          disabled={sending}
-          onClick={() => void run(() => sendPass('partner', 'done'))}
-        >
+        <StepSubmit disabled={sending} onSubmit={() => void run(() => sendPass('partner', 'done'))}>
           Seguir
-        </button>
+        </StepSubmit>
       )}
       {notice}
     </>

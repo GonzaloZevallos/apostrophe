@@ -573,6 +573,181 @@ def test_cost_of_goods_follows_each_period(client: TestClient) -> None:
     assert since["profit"] == {"amount": 6_000 - 600, "pending_grams": 1.0}
 
 
+def _adjust(client: TestClient, variety_id: int, *, grams: str, on: str) -> None:
+    response = client.post(
+        "/stock/entries",
+        json={"variety_id": variety_id, "origin": "adjustment", "grams": grams, "date": on},
+    )
+    assert response.status_code == 201, response.text
+
+
+def _withdraw(client: TestClient, variety_id: int, *, reason: str, grams: str, on: str) -> None:
+    response = client.post(
+        "/stock/withdrawals",
+        json={
+            "reason": reason,
+            "date": on,
+            "lines": [{"variety_id": variety_id, "grams": grams}],
+        },
+    )
+    assert response.status_code == 201, response.text
+
+
+def test_the_analysis_rows_carry_cost_of_goods_and_shortfall_that_agree_with_the_panel(
+    client: TestClient,
+) -> None:
+    """GH-141. The clock is Friday 2026-10-02: the week is 28/09-04/10, the month 01/10-31/10.
+    A is 100 g for $10.000 ($100/g); B has no entry, so everything drawn from it is
+    pending. The week holds costed and pending grams of each line; October holds only
+    pending shortfall and promotion."""
+    a_id = _variety(client, "A", price=1_000)
+    b_id = _variety(client, "B", price=1_000)
+    _entry(client, a_id, grams="100", total_cost=10_000, on="2026-09-01")
+    _sale(client, a_id, grams="1", on="2026-09-22")
+    _sale(client, a_id, grams="2", on="2026-09-29")
+    _sale(client, b_id, grams="1", on="2026-09-29")
+    _sale(client, a_id, grams="3", on=TODAY.isoformat())
+    _adjust(client, a_id, grams="-2", on="2026-09-30")
+    _adjust(client, b_id, grams="-1", on=TODAY.isoformat())
+    _withdraw(client, a_id, reason="promotion", grams="4", on="2026-09-29")
+    _withdraw(client, b_id, reason="promotion", grams="2", on=TODAY.isoformat())
+    _withdraw(client, a_id, reason="own_use", grams="3", on="2026-10-01")
+
+    panel = client.get("/panel").json()["periods"]
+    analysis = client.get("/analysis").json()
+    week_row, month_row = analysis["weeks"][-1], analysis["months"][-1]
+    header = analysis["month"]
+
+    # The current week and month equal the panel's, to the peso.
+    assert week_row["cost_of_goods"]["amount"] == panel["week"]["cost_of_goods"] == 500
+    assert month_row["cost_of_goods"]["amount"] == panel["month"]["cost_of_goods"] == 300
+    assert week_row["shortfall"]["amount"] == panel["week"]["shortfall"]["amount"] == 200
+    assert month_row["shortfall"]["amount"] == panel["month"]["shortfall"]["amount"] == 0
+    # The current month's shortfall is one figure in three places.
+    assert header["shortfall"] == month_row["shortfall"]
+    assert header["shortfall"]["amount"] == panel["month"]["shortfall"]["amount"]
+
+    # Each figure has its own pending grams and its own fully-pending flag.
+    assert week_row["cost_of_goods"] == {"amount": 500, "pending_grams": 1.0, "all_pending": False}
+    assert month_row["cost_of_goods"] == {"amount": 300, "pending_grams": 0.0, "all_pending": False}
+    assert week_row["shortfall"] == {"amount": 200, "pending_grams": 1.0, "all_pending": False}
+    assert month_row["shortfall"] == {"amount": 0, "pending_grams": 1.0, "all_pending": True}
+    assert week_row["promotion"] == {"amount": 400, "pending_grams": 2.0, "all_pending": False}
+    assert month_row["promotion"] == {"amount": 0, "pending_grams": 2.0, "all_pending": True}
+    assert month_row["own_use"] == {"amount": 300, "pending_grams": 0.0, "all_pending": False}
+    assert header["promotion"] == month_row["promotion"]
+    assert header["own_use"] == month_row["own_use"]
+
+    # A past row, worked by hand: the week of 21/09 sold A's 1 g and had no adjustment;
+    # September sold 4 g (A's 3 g costed $300, B's 1 g pending) and adjusted A out by $200.
+    previous_week = analysis["weeks"][-2]
+    assert previous_week["first_day"] == "2026-09-21"
+    assert previous_week["cost_of_goods"] == {
+        "amount": 100,
+        "pending_grams": 0.0,
+        "all_pending": False,
+    }
+    assert previous_week["shortfall"] is None
+    september = analysis["months"][-2]
+    assert september["month"] == "2026-09"
+    assert september["cost_of_goods"] == {
+        "amount": 300,
+        "pending_grams": 1.0,
+        "all_pending": False,
+    }
+    assert september["shortfall"] == {"amount": 200, "pending_grams": 0.0, "all_pending": False}
+    # A period with no sales reads a real $0, never null.
+    quiet_week = analysis["weeks"][-3]
+    assert quiet_week["cost_of_goods"] == {"amount": 0, "pending_grams": 0.0, "all_pending": False}
+
+    # Since the first record: costed $200 plus B's pending gram, not fully pending.
+    assert analysis["since_first_record"]["shortfall"] == {
+        "amount": 200,
+        "pending_grams": 1.0,
+        "all_pending": False,
+    }
+    # The row order is the PRD's.
+    assert list(week_row)[:10] == [
+        "first_day",
+        "last_day",
+        "sales",
+        "grams",
+        "cost_of_goods",
+        "shortfall",
+        "promotion",
+        "own_use",
+        "expenses",
+        "profit",
+    ]
+
+
+def test_a_wholly_pending_shortfall_reads_all_pending_on_the_row_header_and_since(
+    client: TestClient,
+) -> None:
+    """Nothing costed anywhere: a negative adjustment of 3 g on a variety with no entry
+    answers its grams as a positive magnitude and `all_pending` true everywhere the
+    shortfall appears; the sale of the same variety is pending too."""
+    b_id = _variety(client, "B", price=1_000)
+    _sale(client, b_id, grams="4", on=TODAY.isoformat())
+    _adjust(client, b_id, grams="-3", on=TODAY.isoformat())
+
+    analysis = client.get("/analysis").json()
+    pending = {"amount": 0, "pending_grams": 3.0, "all_pending": True}
+
+    assert analysis["weeks"][-1]["shortfall"] == pending
+    assert analysis["months"][-1]["shortfall"] == pending
+    assert analysis["month"]["shortfall"] == pending
+    assert analysis["since_first_record"]["shortfall"] == pending
+    assert analysis["weeks"][-1]["cost_of_goods"] == {
+        "amount": 0,
+        "pending_grams": 4.0,
+        "all_pending": True,
+    }
+
+
+def test_a_zero_cost_lot_with_pending_overflow_is_not_fully_pending(client: TestClient) -> None:
+    """A harvest lot costs $0 yet is costed: a 1 g sale leaves 4 g, so a shortfall of 8 g
+    is $0 with 4 g pending, and `all_pending` is false because the lot's 4 g are costed."""
+    harvest_id = _variety(client, "Cosecha", price=1_000)
+    _entry(client, harvest_id, grams="5", origin="harvest", on="2026-09-01")
+    _sale(client, harvest_id, grams="1", on="2026-09-29")
+    _adjust(client, harvest_id, grams="-8", on=TODAY.isoformat())
+
+    analysis = client.get("/analysis").json()
+
+    assert analysis["months"][-1]["shortfall"] == {
+        "amount": 0,
+        "pending_grams": 4.0,
+        "all_pending": False,
+    }
+    assert analysis["weeks"][-1]["cost_of_goods"] == {
+        "amount": 0,
+        "pending_grams": 0.0,
+        "all_pending": False,
+    }
+
+
+def test_a_current_week_and_month_without_a_negative_adjustment_read_shortfall_null_like_the_panel(
+    client: TestClient,
+) -> None:
+    """No negative adjustment anywhere: the panel's week and month shortfall are null, and
+    so are the Análisis rows' and the header's (absent, never a $0 line), while cost of
+    goods still reads a real figure."""
+    a_id = _variety(client, "A", price=1_000)
+    _entry(client, a_id, grams="10", total_cost=1_000, on="2026-09-01")
+    _sale(client, a_id, grams="2", on=TODAY.isoformat())
+
+    panel = client.get("/panel").json()["periods"]
+    analysis = client.get("/analysis").json()
+
+    assert panel["week"]["shortfall"] is None
+    assert panel["month"]["shortfall"] is None
+    assert analysis["weeks"][-1]["shortfall"] is None
+    assert analysis["months"][-1]["shortfall"] is None
+    assert analysis["month"]["shortfall"] is None
+    assert analysis["weeks"][-1]["cost_of_goods"]["amount"] == panel["week"]["cost_of_goods"] == 200
+
+
 # -- Statement count (plan invariant: the same number of SQL statements for a small
 # business as for a seeded one, in the style of Análisis's own
 # `test_one_get_analysis_issues_the_same_number_of_statements_small_or_seeded`) ------

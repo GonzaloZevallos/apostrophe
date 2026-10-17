@@ -14,7 +14,7 @@ import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
-import { SIN_CONEXION_TITULO } from '../../components/SinConexion'
+import { SIN_CONEXION_MENSAJE } from '../../components/estadosMessages'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import CatalogMessageGroup from './CatalogMessageGroup'
 
@@ -156,7 +156,7 @@ test('a dropped network shows "Sin conexión" and keeps what was typed', async (
   await type('Encabezado', 'Nuevo')
   await userEvent.click(screen.getByRole('button', { name: 'Guardá el mensaje' }))
 
-  expect(await screen.findByText(SIN_CONEXION_TITULO)).toBeInTheDocument()
+  expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
   expect(screen.getByLabelText('Encabezado')).toHaveValue('Nuevo')
 })
 

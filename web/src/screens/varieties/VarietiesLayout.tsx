@@ -3,6 +3,11 @@
  * Clientes: on a computer the list stays on the left and the active child route fills the
  * right pane (a variety's page, or the new-variety form drawn over them); on a phone it is
  * the child alone, which for `/varieties` itself is the list. The selection is the URL.
+ *
+ * The price form's route is a modal over the panes (`PrecioNuevoCompu.dc.html`): on a computer
+ * the list and that variety's page are drawn behind it, both `inert` and `aria-hidden`, with
+ * the form as their sibling. On a phone the same wrapper holds the form alone, so a resize
+ * across 900 px never remounts it and what was typed is kept.
  */
 
 import { useQuery } from '@tanstack/react-query'
@@ -11,10 +16,11 @@ import { get } from '../../api/client'
 import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
 import type { VarietyDetail } from '../../api/varieties'
-import { ARCHIVED_VARIETIES, VARIETY } from '../../routes'
+import { ARCHIVED_VARIETIES, VARIETY, VARIETY_PRICE_NEW } from '../../routes'
 import { useViewport } from '../../shell/useViewport'
 import Variedades from '../Variedades'
 import ArchivedVarieties from './ArchivedVarieties'
+import { VarietyPageBehind } from './VarietyPage'
 
 export default function VarietiesLayout() {
   const me = useOutletContext<Me>()
@@ -23,12 +29,32 @@ export default function VarietiesLayout() {
   // page (the same query as the page's own, so no extra request); the live list otherwise.
   const onArchivedCard = useMatch(ARCHIVED_VARIETIES) !== null
   const varietyId = useMatch(VARIETY)?.params.id
+  // The variety the price form is for: its page is drawn behind the form.
+  const priceFormFor = useMatch(VARIETY_PRICE_NEW)?.params.id
   const { data: opened } = useQuery({
     queryKey: keys.variety(varietyId ?? ''),
     queryFn: () => get<VarietyDetail>(`/varieties/${varietyId}`),
     enabled: computer && varietyId !== undefined && /^[0-9]+$/.test(varietyId),
   })
   const archivedPane = onArchivedCard || opened?.archived === true
+  if (priceFormFor !== undefined) {
+    const behind = /^[0-9]+$/.test(priceFormFor) ? Number(priceFormFor) : null
+    return (
+      <div className={computer ? 'variedades-paneles' : 'variedades-paneles variedades-paneles--solo'}>
+        {computer && (
+          <div className="variedades-paneles__lista" inert aria-hidden="true">
+            {archivedPane ? <ArchivedVarieties /> : <Variedades />}
+          </div>
+        )}
+        {computer && (
+          <div className="variedades-paneles__detalle" inert aria-hidden="true">
+            {behind !== null && <VarietyPageBehind varietyId={behind} />}
+          </div>
+        )}
+        <Outlet context={me} />
+      </div>
+    )
+  }
   if (!computer) return <Outlet context={me} />
   return (
     <div className="variedades-paneles">

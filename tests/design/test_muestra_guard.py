@@ -110,6 +110,11 @@ def muestra_text(*, drop: str = "") -> str:
             "| Período | Rango | Etiqueta | Valor | Pendiente |",
             "| Desde el primer registro | 28/08 – 07/10 | Ventas | $ 537.000 | no |",
         ),
+        "Archivadas": table(
+            "| Variedad | Gramos | Precio hoy | Oculta |",
+            "| Blue Dream | 25 g | $ 13.000 x g | sí |",
+            "| Old Kush | 4 g | $ 9.000 x g | no |",
+        ),
     }
     body = "".join(f"### {h}\n\n{t}\n" for h, t in sections.items() if h != drop)
     return (
@@ -589,3 +594,48 @@ def test_a_muestra_without_a_vendiste_row_for_a_period_fails() -> None:
 def test_a_muestra_without_its_capture_line_is_refused() -> None:
     with pytest.raises(MuestraError):
         parse_muestra("### Variedades\n")
+
+
+# --- archived varieties -----------------------------------------------------------------
+
+
+def archived_problems(*items: str) -> list[str]:
+    return check_screen("archived", "Archivada", page(*items), MUESTRA, ())
+
+
+def test_an_archived_page_with_its_own_grams_and_marks_has_no_problems() -> None:
+    assert (
+        archived_problems("Blue Dream", "Archivada", "Oculta", "25 g", "$ 13.000 por gramo") == []
+    )
+    assert archived_problems("Old Kush", "Archivada", "4 g") == []
+    # A list row has no grams: the marks are what it must carry.
+    assert archived_problems("Blue Dream", "Archivada", "Oculta", "Old Kush", "Archivada") == []
+
+
+@pytest.mark.parametrize(
+    ("items", "message"),
+    [
+        (("Blue Dream", "Archivada", "Oculta", "30 g"), "'Blue Dream' has 30 g"),
+        (("Blue Dream", "Oculta", "25 g"), "'Blue Dream' lacks Archivada"),
+        (("Blue Dream", "Archivada", "25 g"), "'Blue Dream' lacks Oculta"),
+        (("Old Kush", "Archivada", "Oculta", "4 g"), "'Old Kush' says Oculta"),
+        (
+            ("Blue Dream", "Archivada", "Oculta", "25 g", "$ 12.000 por gramo"),
+            "'Blue Dream' costs $ 12.000 x g",
+        ),
+    ],
+)
+def test_an_archived_screen_that_disagrees_with_muestra_is_rejected(
+    items: tuple[str, ...], message: str
+) -> None:
+    problems = archived_problems(*items)
+
+    assert any(p.startswith("Archivada:") and message in p for p in problems), problems
+
+
+def test_a_muestra_without_the_archived_table_fails_naming_the_screen() -> None:
+    muestra = parse_muestra(muestra_text(drop="Archivadas"))
+
+    problems = check_screen("archived", "Pantalla", page("x"), muestra, ())
+
+    assert any(p.startswith("Pantalla: muestra.md has no table") for p in problems)

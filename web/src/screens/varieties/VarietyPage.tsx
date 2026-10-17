@@ -1,7 +1,7 @@
 /**
  * `VarietyPage` (`VariedadDetalle.dc.html`; varieties.md, "A variety's page"): one variety
  * on its own page. It receives its id only as a prop (`VarietyRoute` is the one reader of
- * the route's `:id`). A detail: "‹ Variedades", no "+ Nueva venta" (the route declares
+ * the route's `:id`). A detail (the shell draws its back: "‹ Variedades", or "‹ Archivadas"), no "+ Nueva venta" (the route declares
  * `chrome: 'card'`). One summary line; "+ Entrada", "Nuevo precio" and "Sacar del stock" (the
  * withdrawal form with this variety chosen); four read-only
  * sections. Forms open over the page by history state (`varietyForms.ts`); the rename form
@@ -11,16 +11,18 @@
  * Stock, status and days left are what `GET /stock` answered; whether the variety is shown
  * is the server's own `shown` from `GET /catalog`; nothing here decides a status or a reason.
  *
- * An archived variety (`archived` true) is the same page, read-only: "‹ Archivadas", "Archivada"
- * in words, its stock from `GET /stock?archived=true`, no "+ Entrada", "Nuevo precio", "Sacar
- * del stock", price delete, threshold, "Editar", form or removal; its one action is "Restaurar".
+ * An archived variety (`archived` true) is the same page, read-only: "Archivada"
+ * in words, its stock from `GET /stock?archived=true` and its catalog attributes from
+ * `GET /catalog/archived`; the four sections are shown (the threshold as its stored setting
+ * only), with no "+ Entrada", "Nuevo precio", "Sacar del stock", price delete, switch,
+ * "Editar", form or removal; its one action is "Restaurar".
  */
 
 import { useCallback, useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useLocation, useNavigate, useOutletContext } from 'react-router'
 import { ApiError, NetworkError, get } from '../../api/client'
-import { catalogQueryOptions } from '../../api/catalog'
+import { archivedCatalogQueryOptions, catalogQueryOptions } from '../../api/catalog'
 import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
 import { isGone } from '../../api/refusals'
@@ -31,15 +33,15 @@ import ErrorGenerico from '../../components/ErrorGenerico'
 import GoneScreen from '../../components/GoneScreen'
 import BotonLink from '../../components/BotonLink'
 import Boton from '../../components/Boton'
+import Insignia from '../../components/Insignia'
 import LeaveConfirm from '../../components/LeaveConfirm'
 import Loading from '../../components/Loading'
 import MarcaEstado from '../../components/MarcaEstado'
 import SinConexion from '../../components/SinConexion'
-import { useLeaveGuard } from '../../components/useLeaveGuard'
+import { type LeaveGuard, useLeaveGuard } from '../../components/useLeaveGuard'
 import { useFlash } from '../../flash/useFlash'
 import { formatGrams, formatMoney } from '../../format/money'
 import {
-  ARCHIVED_VARIETIES,
   CATALOG_SECTION_ID,
   STOCK_ENTRY_NEW,
   VARIETIES,
@@ -57,6 +59,7 @@ import { readForm, useOpenForm } from './varietyForms'
 import VarietyRemoval from './VarietyRemoval'
 import VarietyPricesSection from './VarietyPricesSection'
 import VarietyStockSection from './VarietyStockSection'
+import { useBackParent } from '../../shell/useBackParent'
 import VarietyThresholdSection from './VarietyThresholdSection'
 import { useRestore } from './useRestore'
 
@@ -68,7 +71,35 @@ function Card({ children }: { children: React.ReactNode }) {
   )
 }
 
+/** The guard of a page drawn behind the price modal: a router supports one blocker at a
+ * time and the modal's host holds it, so this page asks for none. It is inert anyway. */
+const UNBLOCKED: LeaveGuard = {
+  blocker: { state: 'unblocked', proceed: undefined, reset: undefined, location: undefined },
+  disarm: () => undefined,
+}
+function useNoGuard(): LeaveGuard {
+  return UNBLOCKED
+}
+
 export default function VarietyPage({ varietyId }: { varietyId: number }) {
+  return <VarietyPageView varietyId={varietyId} useGuard={useLeaveGuard} publishRecord />
+}
+
+/** The page drawn behind the price modal (`VarietiesLayout`), with no leave guard of its own. */
+export function VarietyPageBehind({ varietyId }: { varietyId: number }) {
+  return <VarietyPageView varietyId={varietyId} useGuard={useNoGuard} publishRecord={false} />
+}
+
+function VarietyPageView({
+  varietyId,
+  useGuard,
+  publishRecord,
+}: {
+  varietyId: number
+  useGuard: (dirty: boolean) => LeaveGuard
+  /** The routed page tells the shell's arrow about its variety; the copy behind the modal has no arrow. */
+  publishRecord: boolean
+}) {
   const id = String(varietyId)
   const me = useOutletContext<Me>()
   const location = useLocation()
@@ -77,7 +108,7 @@ export default function VarietyPage({ varietyId }: { varietyId: number }) {
   const openForm = useOpenForm()
   const [dirty, setDirty] = useState(false)
   const [gone, setGone] = useState(false)
-  const { blocker, disarm } = useLeaveGuard(dirty)
+  const { blocker, disarm } = useGuard(dirty)
   const onDirtyChange = useCallback((value: boolean) => setDirty(value), [])
 
   const varietyQuery = useQuery({ queryKey: keys.variety(id), queryFn: () => get<VarietyDetail & Variety>(`/varieties/${id}`) })
@@ -86,6 +117,7 @@ export default function VarietyPage({ varietyId }: { varietyId: number }) {
     queryFn: () => get<PriceRow[]>(`/varieties/${id}/prices`),
   })
   const archived = varietyQuery.data?.archived === true
+  useBackParent('variety', !publishRecord || varietyQuery.data === undefined ? undefined : archived ? { parent: 'varieties-archived' } : { title: 'Variedades' })
   const liveStockQuery = useQuery({ queryKey: keys.stock(), queryFn: readStock })
   const archivedStockQuery = useQuery({
     queryKey: keys.archivedStock(),
@@ -94,11 +126,14 @@ export default function VarietyPage({ varietyId }: { varietyId: number }) {
   })
   const stockQuery = archived ? archivedStockQuery : liveStockQuery
   const movementsQuery = useQuery({ queryKey: keys.stockMovements(id), queryFn: () => readMovements(id) })
-  const { restore, sending: restoring, notice: restoreNotice } = useRestore()
+  const { restoreFromPage, sending: restoring, notice: restoreNotice } = useRestore()
   const catalogQuery = useQuery({
     ...catalogQueryOptions(),
     select: (catalog) => catalog.varieties.find((row) => row.id === varietyId) ?? null,
   })
+
+  const archivedCatalogQuery = useQuery({ ...archivedCatalogQueryOptions(), enabled: archived })
+  const archivedAttributes = archivedCatalogQuery.data?.find((attributes) => attributes.variety_id === varietyId) ?? null
 
   const catalogRow = catalogQuery.data ?? null
   const ready = varietyQuery.data !== undefined && pricesQuery.data !== undefined && stockQuery.data !== undefined
@@ -108,14 +143,19 @@ export default function VarietyPage({ varietyId }: { varietyId: number }) {
     document.getElementById(CATALOG_SECTION_ID)?.scrollIntoView()
   }, [anchored, location.hash])
 
-  const failure = varietyQuery.error ?? pricesQuery.error ?? stockQuery.error
+  const failure = varietyQuery.error ?? pricesQuery.error ?? stockQuery.error ?? archivedCatalogQuery.error
   if (gone || (failure instanceof ApiError && isGone(failure.code))) {
     return <GoneScreen label="Variedades" to={VARIETIES} />
   }
   if (failure !== null) {
     return <Card>{failure instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />}</Card>
   }
-  if (varietyQuery.data === undefined || pricesQuery.data === undefined || stockQuery.data === undefined) {
+  if (
+    varietyQuery.data === undefined ||
+    pricesQuery.data === undefined ||
+    stockQuery.data === undefined ||
+    (archived && archivedCatalogQuery.data === undefined)
+  ) {
     return (
       <Card>
         <Loading />
@@ -146,28 +186,29 @@ export default function VarietyPage({ varietyId }: { varietyId: number }) {
   return (
     <main className="pantalla">
       <div className="cuerpo">
-        <div className="encabezado__fila">
-          {archived ? (
-            <BotonLink to={ARCHIVED_VARIETIES} variant="back">
-              ‹ Archivadas
-            </BotonLink>
-          ) : (
-            <BotonLink to={VARIETIES} variant="back">
-              ‹ Variedades
-            </BotonLink>
-          )}
-        </div>
         <div className="encabezado-fila">
           <h1 className="encabezado__titulo">{variety.name}</h1>
           {!archived && (
             <Boton variant="icon" action="edit" ariaLabel="Editar nombre" onClick={() => openForm('rename')} />
           )}
         </div>
-        {row !== undefined && (
+        {row !== undefined && archived && (
+          <>
+            <p className="variedad-resumen variedad-resumen--archivada">
+              {formatGrams(row.grams)}
+              {' · '}
+              {variety.current_price === null ? NO_PRICE_TODAY : `${formatMoney(variety.current_price.list_price)} x g`}
+            </p>
+            <div className="variedad-marcas">
+              <Insignia>Archivada</Insignia>
+              {archivedAttributes !== null && !archivedAttributes.shown && <span className="variedad-resumen__oculta">Oculta</span>}
+            </div>
+          </>
+        )}
+        {row !== undefined && !archived && (
           <p className="variedad-resumen">
             {formatGrams(row.grams)} · <MarcaEstado estado={row.status} />
-            {archived && <> · <span className="variedad-resumen__oculta">Archivada</span></>}
-            {!archived && catalogRow !== null && !catalogRow.shown && <> · <span className="variedad-resumen__oculta">Oculta</span></>}
+            {catalogRow !== null && !catalogRow.shown && <> · <span className="variedad-resumen__oculta">Oculta</span></>}
             {row.days_left !== null && <> · {row.days_left} días</>}
             {' · '}
             {variety.current_price === null ? NO_PRICE_TODAY : `${formatMoney(variety.current_price.list_price)} x g`}
@@ -209,7 +250,7 @@ export default function VarietyPage({ varietyId }: { varietyId: number }) {
           <>
             {restoreNotice}
             <div className="variedad-acciones">
-              <Boton variant="secondary" icon="restaurar" disabled={restoring} onClick={() => void restore(varietyId)}>
+              <Boton variant="primary" icon="restaurar" disabled={restoring} onClick={() => void restoreFromPage(varietyId)}>
                 Restaurar
               </Boton>
             </div>
@@ -235,8 +276,20 @@ export default function VarietyPage({ varietyId }: { varietyId: number }) {
           currentPriceId={variety.current_price?.id ?? null}
           readOnly={archived}
         />
-        {!archived && row !== undefined && <VarietyThresholdSection varietyId={varietyId} row={row} refreshing={stockQuery.isFetching} onGone={() => setGone(true)} />}
-        {!archived && catalogRow !== null && <VarietyCatalogSection row={catalogRow} />}
+        {row !== undefined && (
+          <VarietyThresholdSection
+            varietyId={varietyId}
+            row={row}
+            refreshing={stockQuery.isFetching}
+            onGone={() => setGone(true)}
+            readOnly={archived}
+          />
+        )}
+        {archived ? (
+          archivedAttributes !== null && <VarietyCatalogSection row={archivedAttributes} readOnly />
+        ) : (
+          catalogRow !== null && <VarietyCatalogSection row={catalogRow} />
+        )}
         {catalogQuery.isError && (catalogQuery.error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />)}
         {!archived && <VarietyRemoval varietyId={varietyId} removal={variety.removal} grams={row?.grams ?? null} />}
       </div>

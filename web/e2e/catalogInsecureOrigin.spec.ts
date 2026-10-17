@@ -36,6 +36,7 @@ import { e2eBaseUrl } from './env.js'
 import { newBusinessInvitationUrl } from './backend.js'
 import { leaveOnboarding } from './helpers/signup.js'
 import { CATALOG, STOCK_ENTRY_NEW, VARIETIES } from '../src/routes.js'
+import { uniqueTag } from './helpers/unique.js'
 
 const PASSWORD = 'correcthorsebattery'
 const INSECURE_ORIGIN = 'http://apostrophe.test'
@@ -67,8 +68,8 @@ test('Copiar still works through the execCommand fallback on a plain-http, non-l
     }
   })
 
-  const ownerEmail = `duena-insegura-${Date.now()}@example.com`
-  const businessName = `Flores Inseguras ${Date.now()}`
+  const ownerEmail = `duena-insegura-${uniqueTag()}@example.com`
+  const businessName = `Flores Inseguras ${uniqueTag()}`
   const inviteUrl = newBusinessInvitationUrl().replace(e2eBaseUrl(), INSECURE_ORIGIN)
 
   // Not `signUpNewBusiness`: this spec opens the invitation on `INSECURE_ORIGIN`, which

@@ -1,0 +1,3 @@
+const a = Date.now()
+const b = new Date()
+const c = Date()

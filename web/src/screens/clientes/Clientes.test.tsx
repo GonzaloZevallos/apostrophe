@@ -32,6 +32,7 @@ import debtorsFixture from '../../api/fixtures/debtors.json'
 import Clientes from './Clientes'
 import ClientesLayout from './ClientesLayout'
 import { EMPTY_CUSTOMERS, NOBODY_OWES } from './messages'
+import { SIN_CONEXION_MENSAJE } from '../../components/estadosMessages'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -187,7 +188,7 @@ test('a dropped network on the list shows Sin conexión, never the empty-list te
   vi.mocked(fetch).mockRejectedValue(new TypeError('network error'))
   renderClientes()
 
-  expect(await screen.findByText('Te quedaste sin internet')).toBeInTheDocument()
+  expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
   expect(screen.queryByText('Todavía no agregaste ningún cliente.')).not.toBeInTheDocument()
 })
 
@@ -311,6 +312,8 @@ async function openCustomerRow() {
   await userEvent.click(links.find((link) => link.getAttribute('href') === ANA)!)
 }
 
+const BEFORE = '/antes'
+
 function renderApp(entries: string[] = [CUSTOMERS]) {
   const router = createMemoryRouter(
     [
@@ -386,6 +389,90 @@ test('on a phone, opening a customer pushes an entry, and Back returns to the li
   await waitFor(() => expect(router.state.location.pathname).toBe(ANA))
   expect(router.state.historyAction).toBe('PUSH')
   expect(router.state.location.state).toEqual(inAppState({ pathname: CUSTOMERS }))
+  await act(() => router.navigate(-1))
+  expect(router.state.location.pathname).toBe(CUSTOMERS)
+})
+
+const LU = pathTo(CUSTOMER, { id: 2 })
+const LU_CUSTOMER = { ...customerFixture, id: 2, name: 'Lu Gómez', phone: '+5491100000002' }
+
+function fetchTwoCustomers(input: RequestInfo | URL): Promise<Response> {
+  const url = typeof input === 'string' ? input : input.toString()
+  if (url === '/payments/debtors') return Promise.resolve(jsonResponse(200, EMPTY_DEBTORS))
+  if (url === `/customers/${LU_CUSTOMER.id}`) return Promise.resolve(jsonResponse(200, LU_CUSTOMER))
+  if (url === `/customers/${LU_CUSTOMER.id}/account`) {
+    return Promise.resolve(jsonResponse(200, { balance: 0, owing_since: null, standing: 'even', rows: [] }))
+  }
+  if (url === `/customers/${customerFixture.id}`) return Promise.resolve(jsonResponse(200, customerFixture))
+  if (url === `/customers/${customerFixture.id}/account`) {
+    return Promise.resolve(jsonResponse(200, { balance: 15000, owing_since: '2026-09-14', standing: 'owes', rows: [] }))
+  }
+  if (url.startsWith('/customers')) return Promise.resolve(jsonResponse(200, [customerFixture, LU_CUSTOMER]))
+  return Promise.resolve(jsonResponse(404, {}))
+}
+
+/** The list beside the card, as navigation.md describes the computer's two panes: the list stays
+ * mounted while the card changes, so a second customer can be picked from it. */
+function renderTwoPanes(entries: string[]) {
+  const router = createMemoryRouter(
+    [
+      { path: BEFORE, element: <p>Pantalla anterior</p> },
+      {
+        element: <ClientesLayout />,
+        children: [
+          {
+            element: (
+              <>
+                <Clientes />
+                <Outlet />
+              </>
+            ),
+            children: [
+              { path: CUSTOMERS, element: null },
+              { path: CUSTOMER, element: <ClienteFicha /> },
+            ],
+          },
+        ],
+      },
+    ],
+    { initialEntries: entries },
+  )
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  render(
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>,
+  )
+  return router
+}
+
+test('on a computer, picking two customers replaces the entry each time, and one Back leaves Clientes', async () => {
+  stubViewport('computer')
+  vi.mocked(fetch).mockImplementation(fetchTwoCustomers)
+  const router = renderTwoPanes([BEFORE, CUSTOMERS])
+
+  const pick = async (name: RegExp, href: string) => {
+    const rows = await screen.findAllByRole('link', { name })
+    await userEvent.click(rows.find((link) => link.getAttribute('href') === href)!)
+    await waitFor(() => expect(router.state.location.pathname).toBe(href))
+    expect(router.state.historyAction).toBe('REPLACE')
+  }
+  await pick(/Ana Pérez/, ANA)
+  await pick(/Lu Gómez/, LU)
+
+  await act(() => router.navigate(-1))
+  expect(router.state.location.pathname).toBe(BEFORE)
+})
+
+test('on a phone, picking a customer pushes, so Back returns to the list and not past it', async () => {
+  stubViewport('phone')
+  vi.mocked(fetch).mockImplementation(fetchTwoCustomers)
+  const router = renderTwoPanes([BEFORE, CUSTOMERS])
+
+  const rows = await screen.findAllByRole('link', { name: /Lu Gómez/ })
+  await userEvent.click(rows.find((link) => link.getAttribute('href') === LU)!)
+  await waitFor(() => expect(router.state.location.pathname).toBe(LU))
+  expect(router.state.historyAction).toBe('PUSH')
   await act(() => router.navigate(-1))
   expect(router.state.location.pathname).toBe(CUSTOMERS)
 })

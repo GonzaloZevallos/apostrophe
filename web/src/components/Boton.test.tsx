@@ -8,6 +8,7 @@
 import { render, screen } from '@testing-library/react'
 import { expect, test } from 'vitest'
 import Boton from './Boton'
+import { expectIconAndTextRule } from '../test/iconAndTextRule'
 
 test('a primary button is named by its own text', () => {
   render(
@@ -62,6 +63,19 @@ test('the destructive variant carries both the base and the destructive class', 
   expect(button.className).toBe('boton boton--destructivo')
 })
 
+test('the critical variant is icon + text in its own class, never the filled destructive one', () => {
+  render(
+    <Boton variant="critical" icon="tacho" onClick={() => {}}>
+      Eliminar variedad
+    </Boton>,
+  )
+  const button = screen.getByRole('button', { name: 'Eliminar variedad' })
+  expect(button.className).toBe('boton boton--critico')
+  expect(button.className).not.toContain('destructivo')
+  expect(button.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  expectIconAndTextRule(document.body)
+})
+
 test('a secondary button with an icon still carries the icon beside its text', () => {
   render(
     <Boton variant="secondary" icon="agregar" onClick={() => {}}>
@@ -112,4 +126,18 @@ test('disabled passes through to the native button', () => {
     </Boton>,
   )
   expect(screen.getByRole('button', { name: 'Guardá la venta' })).toBeDisabled()
+})
+
+test('a notice is the card class, named by its whole visible text, with no aria-label', () => {
+  render(
+    <Boton variant="notice">
+      <span>Seguí con la configuración</span>
+      <span>Falta: Categorías</span>
+    </Boton>,
+  )
+  const button = screen.getByRole('button', {
+    name: 'Seguí con la configuraciónFalta: Categorías',
+  })
+  expect(button.className).toBe('boton-aviso')
+  expect(button.getAttribute('aria-label')).toBeNull()
 })

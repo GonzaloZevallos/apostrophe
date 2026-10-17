@@ -11,7 +11,7 @@ from typing import Protocol
 
 from app.catalog.domain.attributes import CatalogAttributes
 from app.catalog.domain.header_footer import CatalogHeaderFooter
-from app.catalog.domain.variety import CatalogVariety, StockStatus
+from app.catalog.domain.variety import ArchivedCatalogVariety, CatalogVariety, StockStatus
 from app.shared.pricing_settings import PricingSettings
 
 
@@ -19,6 +19,10 @@ class CatalogVarieties(Protocol):
     def on(self, day: date) -> list[CatalogVariety]:
         """Every variety of the business, in name-key order, with its current price on
         `day` or `None`."""
+        ...
+
+    def archived(self) -> list[ArchivedCatalogVariety]:
+        """Every archived variety of the business, in name-key order."""
         ...
 
     def exists(self, variety_id: int) -> bool:

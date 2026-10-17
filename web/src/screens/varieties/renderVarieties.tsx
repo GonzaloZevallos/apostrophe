@@ -1,7 +1,9 @@
 /**
  * Test harness for a variety's price screens: the real data router with the gated
  * layout's flash provider, the three routes mounted as `router.tsx` mounts them, a
- * stand-in for a variety's page (built by another subtask), and `fetch` faked.
+ * stand-in for a variety's page (built by another subtask), and `fetch` faked. The routes sit
+ * under `Shell` with their registry ids, as `router.tsx` has them: the card's one back is the
+ * shell's.
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -11,9 +13,21 @@ import { vi } from 'vitest'
 import type { Me } from '../../api/me'
 import InAppLink from '../../components/InAppLink'
 import FlashProvider from '../../flash/FlashProvider'
-import { VARIETIES, VARIETY, VARIETY_PRICE_NEW, VARIETY_PRICES, pathTo, relative } from '../../routes'
+import {
+  ARCHIVED_VARIETIES,
+  VARIETIES,
+  VARIETY,
+  VARIETY_ENTRIES,
+  VARIETY_PRICE_NEW,
+  VARIETY_PRICES,
+  pathTo,
+  relative,
+} from '../../routes'
+import Shell from '../../shell/Shell'
+import EntriesList from '../EntriesList'
 import PriceHistory from './PriceHistory'
 import PriceNew from './PriceNew'
+import VarietyPage from './VarietyPage'
 import VarietyRoute from './VarietyRoute'
 
 export const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
@@ -72,26 +86,35 @@ export function renderVarieties(initialEntries: string[], fetchImpl: FetchImpl) 
         ),
         children: [
           {
-            path: relative(VARIETIES),
-            element: <main>Pantalla Variedades</main>,
-          },
-          {
-            path: relative(VARIETY),
-            element: (
-              <main>
-                <span>Página de la variedad</span>
-                <InAppLink to={pathTo(VARIETY_PRICES, { id: 1 })}>Ver todos los precios</InAppLink>
-                <InAppLink to={pathTo(VARIETY_PRICE_NEW, { id: 1 })}>Nuevo precio</InAppLink>
-              </main>
-            ),
-          },
-          {
-            path: relative(VARIETY_PRICES),
-            element: <VarietyRoute render={(varietyId) => <PriceHistory varietyId={varietyId} />} />,
-          },
-          {
-            path: relative(VARIETY_PRICE_NEW),
-            element: <VarietyRoute render={(varietyId) => <PriceNew varietyId={varietyId} />} />,
+            element: <Shell />,
+            children: [
+              {
+                path: relative(VARIETIES),
+                handle: { screen: 'varieties' },
+                element: <main>Pantalla Variedades</main>,
+              },
+              {
+                path: relative(VARIETY),
+                handle: { screen: 'variety' },
+                element: (
+                  <main>
+                    <span>Página de la variedad</span>
+                    <InAppLink to={pathTo(VARIETY_PRICES, { id: 1 })}>Ver todos los precios</InAppLink>
+                    <InAppLink to={pathTo(VARIETY_PRICE_NEW, { id: 1 })}>Nuevo precio</InAppLink>
+                  </main>
+                ),
+              },
+              {
+                path: relative(VARIETY_PRICES),
+                handle: { screen: 'variety-prices' },
+                element: <VarietyRoute render={(varietyId) => <PriceHistory varietyId={varietyId} />} />,
+              },
+              {
+                path: relative(VARIETY_PRICE_NEW),
+                handle: { screen: 'variety-price-new' },
+                element: <VarietyRoute render={(varietyId) => <PriceNew varietyId={varietyId} />} />,
+              },
+            ],
           },
         ],
       },
@@ -111,4 +134,74 @@ export function writes(fetchMock: ReturnType<typeof vi.fn>): { call: string; bod
       call: `${init?.method} ${url}`,
       body: typeof init?.body === 'string' ? (JSON.parse(init.body) as unknown) : undefined,
     }))
+}
+
+/** A `fetch` answer the test settles itself: `resolve` or `reject` it when the screen should see it. */
+export function deferredAnswer(): {
+  promise: Promise<Response>
+  resolve: (response: Response) => void
+  reject: (reason: Error) => void
+} {
+  let resolve: (response: Response) => void = () => undefined
+  let reject: (reason: Error) => void = () => undefined
+  const promise = new Promise<Response>((done, fail) => {
+    resolve = done
+    reject = fail
+  })
+  return { promise, resolve, reject }
+}
+
+/**
+ * Renders a variety's page, its "Ver todas" lists and the two list screens (as stand-ins) under
+ * the real `Shell`, each route carrying its registry `handle`, so the shell's chrome (the
+ * "‹ parent" arrow) is what the test sees. `useViewport` is the test's to mock.
+ */
+export function renderVarietiesInShell(initialEntries: string[], fetchImpl: FetchImpl) {
+  const fetchMock = vi.fn(fetchImpl)
+  vi.stubGlobal('fetch', fetchMock)
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  const router = createMemoryRouter(
+    [
+      {
+        element: (
+          <QueryClientProvider client={queryClient}>
+            <FlashProvider>
+              <Outlet context={ME} />
+            </FlashProvider>
+          </QueryClientProvider>
+        ),
+        children: [
+          {
+            element: <Shell />,
+            children: [
+              { path: relative(VARIETIES), element: <main>Pantalla Variedades</main>, handle: { screen: 'varieties' } },
+              {
+                path: relative(ARCHIVED_VARIETIES),
+                element: <main>Pantalla Archivadas</main>,
+                handle: { screen: 'varieties-archived' },
+              },
+              {
+                path: relative(VARIETY),
+                element: <VarietyRoute render={(varietyId) => <VarietyPage varietyId={varietyId} />} />,
+                handle: { screen: 'variety' },
+              },
+              {
+                path: relative(VARIETY_PRICES),
+                element: <VarietyRoute render={(varietyId) => <PriceHistory varietyId={varietyId} />} />,
+                handle: { screen: 'variety-prices' },
+              },
+              {
+                path: relative(VARIETY_ENTRIES),
+                element: <VarietyRoute render={(varietyId) => <EntriesList varietyId={varietyId} />} />,
+                handle: { screen: 'variety-entries' },
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    { initialEntries, initialIndex: initialEntries.length - 1 },
+  )
+  render(<RouterProvider router={router} />)
+  return { router, queryClient, fetchMock }
 }

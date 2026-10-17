@@ -84,3 +84,19 @@ decided it (stock shortfall, CONTEXT.md).
 - **Telling a gift by a $0 line total**: 0,01 g at $10 rounds to a $0 list line.
 - **Leaving a negative adjustment out of profit**: the lots it uses up would leave the
   books without ever reaching a profit figure.
+
+## Amendment (GH-141): Análisis rows carry cost of goods and shortfall, and say when a cost line is fully pending
+
+- **The rows read the same `totals_between`.** Each week and month row of `GET /analysis`
+  carries `cost_of_goods` and `shortfall` from the `PeriodTotals` that already feeds
+  `/panel`'s `periods.week` and `periods.month`; no new query and no second sum, so the
+  statement-count tests stay as they were.
+- **`all_pending` is decided only by `row_cost`** (`period_figures.py`), from the grams
+  behind each figure (`grams > 0 and pending_grams == grams`), never from an amount: a
+  harvest lot costs $0 and is still costed. The schemas copy the flag and never compute it.
+- **The closed list of changed models**: `RowCostOut` (new, `{amount, pending_grams,
+  all_pending}`), `WeekOut` and `MonthRowOut` (gain `cost_of_goods` and `shortfall`; their
+  `promotion` and `own_use` become `RowCostOut | None`), `AnalysisMonthOut` and
+  `SinceFirstRecordOut` (`shortfall`, `promotion`, `own_use` become `RowCostOut | None`).
+  Profit and margin keep `AmountWithPendingOut` and `MarginOut`.
+- **`/panel` is unchanged**: no model, no fixture.

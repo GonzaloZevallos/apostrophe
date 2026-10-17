@@ -214,17 +214,20 @@ def record_withdrawal(
     clock: ClockDep,
 ) -> WithdrawalOut:
     with as_http:
-        view = manage_withdrawals.record_withdrawal(
-            withdrawals,
-            catalog,
-            session,
-            reason=body.reason,
-            withdrawn_on=body.date or today,
-            note=body.note,
-            lines=[(line.variety_id, line.grams) for line in body.lines],
-            today=today,
-            now=clock(),
-        )
+        try:
+            view = manage_withdrawals.record_withdrawal(
+                withdrawals,
+                catalog,
+                session,
+                reason=body.reason,
+                withdrawn_on=body.date or today,
+                note=body.note,
+                lines=[(line.variety_id, line.grams) for line in body.lines],
+                today=today,
+                now=clock(),
+            )
+        except _ArchivedVariety as exc:
+            raise VarietyArchived(exc.variety_id) from exc
         return WithdrawalOut.of(view)
 
 
@@ -248,17 +251,20 @@ def edit_withdrawal(
     today: TodayDep,
 ) -> WithdrawalOut:
     with as_http:
-        view = manage_withdrawals.edit_withdrawal(
-            withdrawals,
-            catalog,
-            session,
-            withdrawal_id,
-            reason=body.reason,
-            withdrawn_on=body.date or today,
-            note=body.note,
-            lines=[(line.variety_id, line.grams) for line in body.lines],
-            today=today,
-        )
+        try:
+            view = manage_withdrawals.edit_withdrawal(
+                withdrawals,
+                catalog,
+                session,
+                withdrawal_id,
+                reason=body.reason,
+                withdrawn_on=body.date or today,
+                note=body.note,
+                lines=[(line.variety_id, line.grams) for line in body.lines],
+                today=today,
+            )
+        except _ArchivedVariety as exc:
+            raise VarietyArchived(exc.variety_id) from exc
         return WithdrawalOut.of(view)
 
 

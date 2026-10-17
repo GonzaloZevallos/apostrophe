@@ -33,6 +33,9 @@ The two lists are closed. Adding to either changes this file and the README, nev
   - Being on the list allows icon-only; it never requires it. A screen's main action always carries its text (Compartir on the catalog screen keeps its word).
   - **Close is one form everywhere**: every form and sheet closes with the same icon-only control, accessible name "Cerrar". No form shows the word while another shows the icon.
   - Back is not on the list: it is navigation and stays "‹ <parent>" (navigation.md).
+    - The parent is the fixed one navigation.md names for that screen (its "‹ <parent>" and its back-with-no-history table), whatever screen it was reached from. Back still follows history.
+    - A screen shows exactly one back, the one its chrome gives it (the shell's); a screen never draws a second one of its own.
+    - Back is never "‹" alone and never a generic word such as "Volver": its visible text and its accessible name both name the parent.
   - More info's "i" is the one icon-only control outside this list, defined by its own term below.
 - **Text only**:
   - links (`enlace`), such as "Editar encabezado y pie" and "Ver todas";
@@ -41,6 +44,12 @@ The two lists are closed. Adding to either changes this file and the README, nev
   - choices among options, which are not actions: the period tabs (Hoy · Semana · Mes · Fechas), Efectivo · Transferencia · Debiendo, Promoción · Consumo propio, an entry's origin, Claro · Oscuro, "Todo: $ X";
   - Deshacer inside "Venta guardada".
 - **Icon + text**: everything else, e.g. "+ Nueva venta", "+ Entrada de stock", "Sacar del stock", "Mandar catálogo", Cobrar (accessible name still "Cobrar a <name>"), Publicar, Probarlo, Buscar mi chat, Archivar, Restaurar, "Invitá a un socio", Cambiar contraseña, Cerrar sesión, Copiar and the main Compartir. A new action that fits neither list is icon + text. The icon next to a word is decorative and hidden from assistive technology, so the accessible name stays the word.
+  - **The "+" in the docs is the icon**: in "+ Nueva venta", "+ Cargar gasto", "+ Entrada de stock", "+ Entrada" and any other label written with a leading "+", the "+" stands for the `agregar` icon. On screen the icon draws it and the visible text is the word alone, never a literal "+" beside the icon. The accessible name is unchanged.
+- **An action never looks like a link**: only a link (`enlace`) is drawn as one (underlined, in the link style). An action, in any form, including one that opens another screen such as "Nueva venta" or "Nueva venta a <name>", is drawn as the action it is.
+- **Tappable notice**: a notice the seller taps to open what it points to, such as Inicio's "Seguí con la configuración". It is neither an action row nor a control of either closed list, and it does not change them.
+  - It keeps its card exactly as designed: its surface, rounded corners and own padding, with no row spacing and no row divider.
+  - Its sentence carries the meaning, and its accessible name is its visible text.
+  - Its chevron is the decorative mark that it opens something; it takes no other icon, and the attention icon only when Notices below lists it.
 - No action is removed or renamed while it gains an icon.
 
 ### Navigation, menus and rows
@@ -91,6 +100,7 @@ The two lists are closed. Adding to either changes this file and the README, nev
   - the generic server-error retry.
 - The sentence carries the state; the icon never replaces it or appears without it. Colour and wording do not change.
 - No icon on: "Al día"; "Eso ya no está." and its list form; toasts; the first-run checklist (it keeps its boxes and "Hecho"); help lines; empty states.
+- A notice the seller taps to open something is a tappable notice (see above): it keeps its designed card, never a row's frame. Inicio's "Seguí con la configuración" is one; it carries its chevron and no attention icon.
 
 ### Actions that swap their word by state
 
@@ -107,12 +117,16 @@ The two lists are closed. Adding to either changes this file and the README, nev
 No telemetry; from tests and the design check.
 
 - **Found at a glance (criterion 1)**: a front test over every screen in `scripts/design/screens.json`: every entry row, action row and action outside the closed lists has an icon and its text; every icon-only control has its exact current accessible name and a 44 px target; the icon next to a word is hidden from assistive technology; no menu repeats an icon; every form and sheet closes with the same icon-only "Cerrar". 0 exceptions.
-- **One rule (criterion 2)**: this file and the README state the same lists and limits; `componentes.ts` and `Icono.tsx` name the same set; every `NombreIcono` name added by this rule is used by a screen. 0 unused new names, 0 mismatches.
+- **Icon and word not doubled**: no visible label carries a literal "+" beside an `agregar` icon, and every such control keeps its accessible name. 0 exceptions.
+- **One back per screen**: every card and detail in `scripts/design/screens.json` shows exactly one back control, reading "‹ <parent>" with the fixed parent navigation.md names, its accessible name naming that parent; none reads "‹" alone or "Volver". 0 exceptions.
+- **Actions are not links**: no action is drawn in the link style; checked by eye in the design check.
+- **One rule (criterion 2)**: this file and the README state the same lists and limits, the tappable notice included; `componentes.ts` and `Icono.tsx` name the same set; every `NombreIcono` name added by this rule is used by a screen. 0 unused new names, 0 mismatches.
 - **Short by default (criterion 3)**:
   - help lines and notices ≤ 80 characters, empty-state titles ≤ 40 with one line ≤ 80, asserted over the fixed copy; refusals over 80 are listed for review;
   - More info opens closed, toggles `aria-expanded`, never triggers the leave confirmation and holds no consequence or fix;
   - a PR list shows every shortened or moved text and where its long form went. 0 silent deletions.
 - **Icon family and states (criterion 4)**: a guard for stroke 1.6, 22 px and no emoji; front tests show every state keeps its word or shape in both themes; the attention icon is on the six listed notices and on none of the informational ones.
+- **Tappable notice**: Inicio's "Seguí con la configuración" is drawn as a tappable card, with no row spacing or row divider, its accessible name its visible text and no attention icon; `compare.sh` shows it unchanged, phone and computer, both themes.
 - **Nothing else changes (criterion 5)**: the existing suites pass; the only edited tests are shortened copy and text-to-role-and-name lookups of controls made icon-only, each listed in the PR; tap budgets and the redirect table unchanged; security texts add no information.
 - **Looks as designed (criterion 6)**: `compare.sh` before and after for every screen, phone and computer, both themes, judged by eye; at 320 px with text at 130 %, no icon or label is clipped and the bar still fits.
 
@@ -122,6 +136,8 @@ No telemetry; from tests and the design check.
 - Adding, removing, renaming or reordering any action or entry; changing a route, a confirmation or toast wording.
 - Icons on record rows.
 - An optional icon on notices; icons no screen uses.
+- Drawing a tappable notice as a list row, or giving it a row's spacing or divider.
 - Moving a consequence, a refusal's fix or a state behind More info.
 - Remembering whether More info was opened.
+- A back label that depends on how a screen was reached (navigation.md).
 - A dashboard or any business metric.

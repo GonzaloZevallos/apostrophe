@@ -23,6 +23,7 @@ import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
+import { uniqueTag } from './helpers/unique.js'
 
 test('a customer with no phone number is registered, edited, sold to, paid and shown in Te deben', async ({
   page,
@@ -30,8 +31,8 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   const consoleMessages: string[] = []
   watchConsole(page, consoleMessages)
 
-  const ownerEmail = `duena-sin-telefono-${Date.now()}@example.com`
-  const businessName = `Flores Sin Telefono ${Date.now()}`
+  const ownerEmail = `duena-sin-telefono-${uniqueTag()}@example.com`
+  const businessName = `Flores Sin Telefono ${uniqueTag()}`
 
   await signUpNewBusiness(page, { businessName, email: ownerEmail })
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)

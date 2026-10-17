@@ -7,11 +7,12 @@
  * "Precio de lista", a grams refusal under "Mínimo en gramos".
  */
 
-import { type FormEvent, useEffect, useState } from 'react'
+import { type FormEvent, type Ref, useEffect, useId, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { ApiError, NetworkError, UNKNOWN_CODE, post } from '../../api/client'
 import { invalidateResource } from '../../api/keys'
 import type { PricingSettings } from '../../api/pricingSettings'
+import { chipDate } from '../../format/dates'
 import { isGone, kindOf } from '../../api/refusals'
 import type { SuccessToast } from '../../components/AvisoExito'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
@@ -19,6 +20,7 @@ import SinConexion from '../../components/SinConexion'
 import { GENERIC_REFUSAL_MESSAGE } from '../Variedades'
 import Boton from '../../components/Boton'
 import PriceFields, { FieldError } from './PriceFields'
+import { PRICE_SAVED } from './priceMessages'
 import {
   fieldOfCode,
   readPriceValues,
@@ -35,6 +37,11 @@ export interface PriceFormProps {
   onCancel: () => void
   onDirtyChange: (dirty: boolean) => void
   onGone: () => void
+  /** Told whether the save is in flight, so the host can hold every way out meanwhile. */
+  onSendingChange: (sending: boolean) => void
+  /** The id and ref of the title: the host names its dialog by it and puts focus on it. */
+  titleId: string
+  titleRef: Ref<HTMLSpanElement>
 }
 
 export default function PriceForm({
@@ -45,6 +52,9 @@ export default function PriceForm({
   onCancel,
   onDirtyChange,
   onGone,
+  onSendingChange,
+  titleId,
+  titleRef,
 }: PriceFormProps) {
   const queryClient = useQueryClient()
   const [effectiveFrom, setEffectiveFrom] = useState(today)
@@ -58,11 +68,19 @@ export default function PriceForm({
   const [errors, setErrors] = useState<PriceErrors>({})
   const [offline, setOffline] = useState(false)
   const [sending, setSending] = useState(false)
+  // The date choice starts closed at every open and is mounted only while open.
+  const [choosingDate, setChoosingDate] = useState(false)
+  const captionId = useId()
+  const choiceId = useId()
 
   const dirty = effectiveFrom !== today || listPrice !== '' || bulkPrice !== '' || bulkMinimum !== '' || vipPrice !== ''
   useEffect(() => {
     onDirtyChange(dirty)
   }, [dirty, onDirtyChange])
+
+  useEffect(() => {
+    onSendingChange(sending)
+  }, [sending, onSendingChange])
 
   async function onSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault()
@@ -80,7 +98,7 @@ export default function PriceForm({
         ...read.amounts,
       })
       invalidateResource(queryClient, 'varieties')
-      onDone('Precio guardado')
+      onDone(PRICE_SAVED)
     } catch (caught) {
       if (caught instanceof ApiError && isGone(caught.code)) {
         invalidateResource(queryClient, 'varieties')
@@ -104,23 +122,56 @@ export default function PriceForm({
   return (
     <div className="gasto-form">
       <div className="gasto-form__cabecera">
-        <span className="gasto-form__titulo">Nuevo precio</span>
+        <span id={titleId} ref={titleRef} tabIndex={-1} className="gasto-form__titulo">
+          Nuevo precio
+        </span>
         <span className="gasto-form__cerrar">
-          <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={onCancel} />
+          <Boton variant="icon" action="close" ariaLabel="Cerrar" disabled={sending} onClick={onCancel} />
         </span>
       </div>
       <form className="formulario" onSubmit={onSubmit}>
-        <label className="campo">
-          <span className="campo__rotulo">Rige desde</span>
-          <input
-            className="campo__input"
-            type="date"
-            value={effectiveFrom}
-            onChange={(event) => setEffectiveFrom(event.target.value)}
-            required
-          />
+        <div className="campo">
+          <span id={captionId} className="campo__rotulo">Rige desde</span>
+          <span className="precio-chip">
+            <Boton
+              variant="secondary"
+              icon="calendario"
+              ariaDescribedBy={captionId}
+              ariaExpanded={choosingDate}
+              ariaControls={choiceId}
+              onClick={() => setChoosingDate((open) => !open)}
+            >
+              {chipDate(effectiveFrom, today)}
+            </Boton>
+          </span>
+          {choosingDate && (
+            <div id={choiceId} className="precio-fecha">
+              <Boton
+                variant="link"
+                onClick={() => {
+                  setEffectiveFrom(today)
+                  setChoosingDate(false)
+                }}
+              >
+                Hoy
+              </Boton>
+              <label className="precio-fecha__campo">
+                <span className="campo__rotulo">Rige desde</span>
+                <input
+                  className="campo__input"
+                  type="date"
+                  value={effectiveFrom}
+                  onChange={(event) => {
+                    setEffectiveFrom(event.target.value)
+                    setChoosingDate(false)
+                  }}
+                  required
+                />
+              </label>
+            </div>
+          )}
           <FieldError message={errors.effectiveFrom} />
-        </label>
+        </div>
         <PriceFields
           settings={settings}
           values={values}

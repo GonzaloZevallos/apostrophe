@@ -10,7 +10,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { CUSTOMER, CUSTOMER_EDIT, HOME, LOGIN, SALE, STOCK_ENTRY, VARIETY, pathTo } from '../src/routes.js'
 import { expect, test } from './fixtures.js'
-import type { Page } from '@playwright/test'
+import type { Locator, Page } from '@playwright/test'
 import { watchConsole } from './console.js'
 import { LEGACY_REDIRECTS } from './helpers/legacyPaths.js'
 import { seedRecords, signUp, type Records } from './helpers/seed.js'
@@ -88,6 +88,7 @@ test.describe.serial('navigation', () => {
       owing_sale: records.sale,
       debtor: records.customer,
       low: records.variety,
+      sold_out: records.variety,
       entry: records.entry,
       withdrawal: records.withdrawal,
     }
@@ -160,6 +161,43 @@ test.describe.serial('navigation', () => {
     await expect(page).toHaveURL(new RegExp(`${HOME}$`))
   })
 
+  test('"Nueva venta", in every form, is drawn as an action: no underline, no link box-shadow', async ({ browser, workerServer }) => {
+    // The real stylesheet in a real browser (computed style is meaningless in jsdom).
+    const expectAction = async (control: Locator): Promise<void> => {
+      await expect(control).toBeVisible()
+      const look = await control.evaluate((element) => {
+        const style = getComputedStyle(element)
+        return { line: style.textDecorationLine, shadow: style.boxShadow }
+      })
+      expect(look.line).toBe('none')
+      expect(look.shadow).not.toMatch(/\b0px 1px 0px 0px\b/)
+    }
+
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto(HOME)
+    await expectAction(page.locator('.columna-principal > .boton-nueva-venta'))
+
+    await page.setViewportSize({ width: 1280, height: 920 })
+    await page.goto(HOME)
+    await expectAction(page.locator('.boton-nueva-venta--escritorio'))
+
+    for (const size of [{ width: 390, height: 844 }, { width: 1280, height: 920 }]) {
+      await page.setViewportSize(size)
+      await page.goto(pathTo(CUSTOMER, { id: records.customer }))
+      await expectAction(page.getByRole('link', { name: `Nueva venta a ${records.customerName}` }))
+    }
+
+    // InicioPrimeraVez: Inicio of a business with nothing in it yet.
+    const context = await browser.newContext({ baseURL: workerServer.url, viewport: { width: 390, height: 844 } })
+    const fresh = await context.newPage()
+    await signUp(fresh, 'PrimeraVez')
+    await fresh.goto(HOME)
+    await expectAction(fresh.locator('.columna-principal > .boton-nueva-venta'))
+    await fresh.setViewportSize({ width: 1280, height: 920 })
+    await expectAction(fresh.locator('.boton-nueva-venta--escritorio'))
+    await context.close()
+  })
+
   test('nothing but the theme is stored after the run, and the console stayed quiet', async () => {
     await expectOnlyTheThemeStored(page)
     expect(consoleMessages.filter((message) => !API_NOT_FOUND.test(message))).toEqual([])
@@ -170,6 +208,7 @@ test.describe.serial('navigation', () => {
       owing_sale: records.sale,
       debtor: records.customer,
       low: records.variety,
+      sold_out: records.variety,
       entry: records.entry,
       withdrawal: records.withdrawal,
     }

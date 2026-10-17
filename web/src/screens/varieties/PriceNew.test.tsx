@@ -5,7 +5,7 @@
  * leaving with something typed asks first.
  */
 
-import { screen } from '@testing-library/react'
+import { fireEvent, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import { catalogQueryOptions } from '../../api/catalog'
@@ -41,7 +41,7 @@ test('the date starts as today and a save posts the amounts, goes back and toast
   const { router, fetchMock } = await renderOpened(api({ 'POST /varieties/1/prices': () => CREATED.clone() }),
   )
 
-  expect(await screen.findByLabelText('Rige desde')).toHaveValue(ME.today)
+  expect(await screen.findByRole('button', { name: 'Hoy 02/10' })).toBeInTheDocument()
   await user.type(screen.getByLabelText(/^Precio de lista/), '12000')
   await user.click(screen.getByRole('button', { name: 'Guardá el precio' }))
 
@@ -96,7 +96,8 @@ test('a repeated date is refused under "Rige desde" and keeps what was typed', a
   await user.click(screen.getByRole('button', { name: 'Guardá el precio' }))
 
   const alert = await screen.findByText('Ya cargaste un precio con esa fecha')
-  expect(alert.closest('label')).toHaveTextContent('Rige desde')
+  expect(alert.closest('.campo')).toHaveTextContent('Rige desde')
+  expect(alert.closest('.campo')).toContainElement(screen.getByRole('button', { name: 'Hoy 02/10' }))
   expect(screen.getByLabelText(/^Precio de lista/)).toHaveValue('12000')
   expect(router.state.location.pathname).toBe(NEW_PATH)
 })
@@ -202,9 +203,9 @@ test('a variety that vanishes while saving shows the gone screen', async () => {
 test('the form keeps the icon and text rule, its help lines within their limits', async () => {
   await renderOpened(api({}))
 
-  await screen.findByLabelText('Rige desde')
+  await screen.findByRole('button', { name: 'Hoy 02/10' })
   expect(document.querySelectorAll('[data-copy="help"]')).toHaveLength(4)
-  expectIconAndTextRule(document.body, { limits: LIMITS })
+  expectIconAndTextRule(screen.getByRole('main'), { limits: LIMITS })
 })
 
 const SETTINGS_URL = 'GET /pricing-settings'
@@ -307,4 +308,105 @@ test('a VIP price that is not a whole amount is refused before sending', async (
 
   expect(await screen.findByText('Revisá los precios cargados')).toBeInTheDocument()
   expect(writes(fetchMock)).toEqual([])
+})
+
+test('a "$" goes before the list, bulk and VIP price and never before the minimum, outside the name and the value', async () => {
+  const user = userEvent.setup()
+  await renderOpened(api({}))
+
+  const amounts = [/^Precio de lista/, /^Precio por cantidad/, /^Precio VIP/]
+  for (const label of amounts) {
+    const input = await screen.findByLabelText(label)
+    const prefix = input.previousElementSibling
+    expect(prefix).toHaveTextContent('$')
+    expect(prefix).toHaveAttribute('aria-hidden', 'true')
+    expect(input.parentElement).toHaveClass('campo__monto')
+    await user.type(input, '1500')
+    expect(input).toHaveValue('1500')
+    expect(screen.getByRole('textbox', { name: label })).toBe(input)
+    expect(input).not.toHaveAccessibleName(/\$/)
+  }
+  const minimum = screen.getByLabelText(/^Mínimo en gramos/)
+  expect(minimum.parentElement).not.toHaveClass('campo__monto')
+  expect(minimum.closest('.campo')).not.toHaveTextContent('$')
+})
+
+const CHIP_TODAY = { name: 'Hoy 02/10' }
+
+test('the date is a chip reading "Hoy dd/mm" with "Rige desde" as its description, not its name', async () => {
+  await renderOpened(api({}))
+
+  const chip = await screen.findByRole('button', CHIP_TODAY)
+  expect(chip).toHaveAccessibleDescription('Rige desde')
+  expect(chip).toHaveAttribute('aria-expanded', 'false')
+  expect(screen.queryByRole('button', { name: /Rige desde/ })).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Rige desde')).not.toBeInTheDocument()
+})
+
+test('picking another day reads "dd/mm" on the chip, and "Hoy" from the chip goes back to today', async () => {
+  const user = userEvent.setup()
+  await renderOpened(api({}))
+
+  await user.click(await screen.findByRole('button', CHIP_TODAY))
+  const input = screen.getByLabelText('Rige desde', { exact: true })
+  expect(screen.getByLabelText('Rige desde')).toBe(input)
+  expect(input).toHaveAttribute('type', 'date')
+  expect(input).toHaveValue(ME.today)
+  fireEvent.change(input, { target: { value: '2026-10-09' } })
+
+  const chip = await screen.findByRole('button', { name: '09/10' })
+  expect(chip).toHaveAttribute('aria-expanded', 'false')
+  expect(document.querySelector('input[type=date]')).toBeNull()
+
+  await user.click(chip)
+  await user.click(screen.getByRole('button', { name: 'Hoy' }))
+  expect(await screen.findByRole('button', CHIP_TODAY)).toBeInTheDocument()
+  expect(document.querySelector('input[type=date]')).toBeNull()
+})
+
+test('a save at today\'s date never puts a date input in the DOM', async () => {
+  const user = userEvent.setup()
+  await renderOpened(api({ 'POST /varieties/1/prices': () => CREATED.clone() }))
+
+  await user.type(await screen.findByLabelText(/^Precio de lista/), '12000')
+  expect(document.querySelector('input[type=date]')).toBeNull()
+  await user.click(screen.getByRole('button', { name: 'Guardá el precio' }))
+
+  await screen.findByText('Precio guardado')
+  expect(document.querySelector('input[type=date]')).toBeNull()
+})
+
+test('a refused save keeps the chosen date, and a save sends it', async () => {
+  const user = userEvent.setup()
+  let calls = 0
+  const { fetchMock } = await renderOpened(api({
+    'POST /varieties/1/prices': () =>
+      ++calls === 1 ? jsonResponse(409, { code: 'variety.duplicate_effective_date' }) : CREATED.clone(),
+  }))
+
+  await user.click(await screen.findByRole('button', CHIP_TODAY))
+  fireEvent.change(screen.getByLabelText('Rige desde', { exact: true }), { target: { value: '2026-09-20' } })
+  await user.type(await screen.findByLabelText(/^Precio de lista/), '12000')
+  await user.click(screen.getByRole('button', { name: 'Guardá el precio' }))
+
+  expect(await screen.findByText('Ya cargaste un precio con esa fecha')).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: '20/09' })).toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Guardá el precio' }))
+
+  await screen.findByText('Precio guardado')
+  expect(writes(fetchMock).map((write) => write.body)).toEqual([
+    { effective_from: '2026-09-20', list_price: 12000 },
+    { effective_from: '2026-09-20', list_price: 12000 },
+  ])
+})
+
+test('another day counts as typed: leaving asks first', async () => {
+  const user = userEvent.setup()
+  await renderOpened(api())
+
+  await user.click(await screen.findByRole('button', CHIP_TODAY))
+  fireEvent.change(screen.getByLabelText('Rige desde', { exact: true }), { target: { value: '2026-10-09' } })
+  await user.click(screen.getByRole('button', { name: 'Cerrar' }))
+
+  expect(await screen.findByText('¿Descartás el precio?')).toBeInTheDocument()
 })

@@ -11,7 +11,7 @@ import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import type { Me } from '../../api/me'
-import { SIN_CONEXION_TITULO } from '../../components/SinConexion'
+import { SIN_CONEXION_MENSAJE } from '../../components/estadosMessages'
 import { WRONG_CURRENT_PASSWORD_MESSAGE } from '../CambiarContrasena'
 import { WEAK_PASSWORD_MESSAGE } from '../Invitacion'
 import { BRAKE_MESSAGE } from '../Entrar'
@@ -193,7 +193,7 @@ test('a dropped network while logging out shows "Sin conexión" and re-enables t
   const button = await screen.findByRole('button', { name: 'Cerrar sesión' })
   await userEvent.click(button)
 
-  expect(await screen.findByText(SIN_CONEXION_TITULO)).toBeInTheDocument()
+  expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
   expect(button).not.toBeDisabled()
 })
 

@@ -2,11 +2,13 @@
  * `EntriesList` (`stock.md`, "Todas las entradas"; `TodasLasEntradas.dc.html`): every stock
  * entry, newest first, and no withdrawal; or with a `varietyId` that variety's movements as
  * `GET /stock/varieties/{id}/movements` answers them: its entries and the withdrawals that
- * touch it, a withdrawal told by its reason word and a minus sign and opening its detail. It is a card: "‹ Variedades" (or "‹ <variety>" for one
- * variety's list) goes back by history, and with none to the list it came from. Each row
+ * touch it, a withdrawal told by its reason word and a minus sign and opening its detail. It is a card; the shell draws its one back ("‹ Variedades",
+ * or "‹ <variety>" for one variety's list, declared through `useBackParent`). Each row
  * links to the entry's form to edit it and deletes it after "Antes de borrar", naming the
  * date, variety and grams. Every figure is what `GET /stock` answered; a variety's name
- * comes from `GET /varieties`, joined by id.
+ * comes from `GET /varieties`, joined by id. One archived variety's list is read-only: its
+ * entry rows have no edit or delete and open nothing (they stay editable and deletable from
+ * "Todas las entradas"); its withdrawal rows still open the withdrawal's detail.
  */
 
 import { useState } from 'react'
@@ -27,11 +29,11 @@ import Loading from '../components/Loading'
 import SinConexion from '../components/SinConexion'
 import Boton from '../components/Boton'
 import BotonLink from '../components/BotonLink'
-import { useBackOr } from '../components/useBackOr'
 import { useFlash } from '../flash/useFlash'
 import { formatDate } from '../format/dates'
 import { formatGrams, formatMoney } from '../format/money'
-import { STOCK_ENTRY, VARIETIES, VARIETY, WITHDRAWAL, pathTo } from '../routes'
+import { STOCK_ENTRY, VARIETIES, WITHDRAWAL, pathTo } from '../routes'
+import { useBackParent } from '../shell/useBackParent'
 import type { Variety } from './Variedades'
 import { ORIGIN_LABEL } from './originLabel'
 import { EMPTY_STATE_DETAIL, EMPTY_STATE_TITLE } from './stockMessages'
@@ -54,7 +56,6 @@ export default function EntriesList({ varietyId }: Props) {
   const me = useOutletContext<Me>()
   const queryClient = useQueryClient()
   const flash = useFlash()
-  const back = useBackOr(varietyId === undefined ? VARIETIES : pathTo(VARIETY, { id: varietyId }))
 
   const stockQuery = useQuery({ queryKey: keys.stock(), queryFn: readStock })
   const varietiesQuery = useQuery({
@@ -71,6 +72,8 @@ export default function EntriesList({ varietyId }: Props) {
     queryFn: () => readMovements(String(varietyId)),
     enabled: varietyId !== undefined,
   })
+
+  useBackParent('variety-entries', varietyQuery.data === undefined ? undefined : { title: varietyQuery.data.name })
 
   const [confirming, setConfirming] = useState<StockEntry | null>(null)
   const [deleting, setDeleting] = useState(false)
@@ -98,6 +101,7 @@ export default function EntriesList({ varietyId }: Props) {
   }
 
   const stock = stockQuery.data
+  const readOnly = varietyQuery.data?.archived === true
   const rows: Movement[] =
     varietyId === undefined || movementsQuery.data === undefined
       ? stock.entries.map((entry) => ({ ...entry, kind: 'entry' as const }))
@@ -125,11 +129,6 @@ export default function EntriesList({ varietyId }: Props) {
 
   return (
     <Card>
-      <div className="fila-entrada__volver">
-        <Boton variant="back" onClick={back}>
-          {varietyId === undefined ? '‹ Variedades' : `‹ ${varietyQuery.data?.name ?? ''}`}
-        </Boton>
-      </div>
       <h1 className="encabezado__titulo">
         {varietyId === undefined ? 'Todas las entradas' : 'Entradas'}
       </h1>
@@ -182,15 +181,17 @@ export default function EntriesList({ varietyId }: Props) {
                     </>
                   )}
                 </span>
-                <span className="fila-entrada__acciones">
-                  <BotonLink variant="icon" action="edit" ariaLabel="Editar" to={pathTo(STOCK_ENTRY, { id: entry.id })} />
-                  <Boton
-                    variant="icon"
-                    action="delete"
-                    ariaLabel="Borrar"
-                    onClick={() => setConfirming(entry)}
-                  />
-                </span>
+                {!readOnly && (
+                  <span className="fila-entrada__acciones">
+                    <BotonLink variant="icon" action="edit" ariaLabel="Editar" to={pathTo(STOCK_ENTRY, { id: entry.id })} />
+                    <Boton
+                      variant="icon"
+                      action="delete"
+                      ariaLabel="Borrar"
+                      onClick={() => setConfirming(entry)}
+                    />
+                  </span>
+                )}
               </li>
             ),
           )}

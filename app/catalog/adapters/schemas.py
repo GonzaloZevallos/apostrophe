@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel
 
+from app.catalog.application.read_archived import ArchivedCatalogVarietyView
 from app.catalog.application.read_catalog import CatalogVarietyView, CatalogView
 from app.catalog.domain.variety import CatalogState
 
@@ -53,4 +54,24 @@ class CatalogOut(BaseModel):
             header=view.header,
             footer=view.footer,
             varieties=[CatalogVarietyOut.of(v) for v in view.varieties],
+        )
+
+
+class ArchivedCatalogVarietyOut(BaseModel):
+    variety_id: int
+    name: str
+    shown: bool
+    emoji: str | None
+    indica_share: int | None
+    aroma: str | None
+
+    @classmethod
+    def of(cls, view: ArchivedCatalogVarietyView) -> ArchivedCatalogVarietyOut:
+        return cls(
+            variety_id=view.variety_id,
+            name=view.name,
+            shown=view.shown,
+            emoji=view.emoji,
+            indica_share=view.indica_share,
+            aroma=view.aroma,
         )

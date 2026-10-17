@@ -5,6 +5,7 @@ import {
   ENTRY_CLASSES,
   findActionLinks,
   findBotonClasses,
+  findFilledCritical,
   findLinkAliases,
   findRawButtons,
   findRawSvg,
@@ -148,6 +149,13 @@ describe('findActionLinks', () => {
     expect(findActionLinks(at('<a href="/x"><Icono nombre="a" />Ir</a>'))).toEqual([offence('<unreadable>')])
   })
 
+  test('rejects a PaneRowLink that holds an icon other than the trailing chevron', () => {
+    const row = '<PaneRowLink to={A} className="fila" activeClassName="fila fila--activa"><Icono nombre="agregar" />Ir</PaneRowLink>'
+    expect(findActionLinks(at(row))).toEqual([offence('{A}')])
+    const chevron = '<PaneRowLink to={A} className="fila" activeClassName="fila"><span>t</span><Icono nombre="chevron" /></PaneRowLink>'
+    expect(findActionLinks(at(chevron))).toEqual([])
+  })
+
   test('rejects a tag that spans several lines, at the line it opens', () => {
     const content = '\n\n<InAppLink\n  to={pathTo(X, { id: a })}\n  className="x"\n>\n<Icono nombre="a"/>\n</InAppLink>'
     expect(findActionLinks(at(content))).toEqual([offence('{pathTo(X, { id: a })}', 3)])
@@ -269,5 +277,34 @@ describe('findLinkAliases', () => {
     const content =
       "import { Link, useMatch as match } from 'react-router'\nimport InAppLink from '../components/InAppLink'"
     expect(findLinkAliases(at(content))).toEqual([])
+  })
+})
+
+describe('findFilledCritical', () => {
+  test('rejects a filled critical button outside the confirmation, in every form it is written', () => {
+    const files = [
+      { path: '/src/screens/A.tsx', content: '<Boton variant="destructive" icon="tacho">Borrar</Boton>' },
+      { path: '/src/screens/B.tsx', content: "const props = { variant: 'destructive' }" },
+      { path: '/src/screens/C.tsx', content: "<Boton variant={sure ? 'destructive' : 'secondary'}>x</Boton>" },
+      { path: '/src/shell/D.tsx', content: 'const c = "boton boton--destructivo"' },
+    ]
+    expect(findFilledCritical(files)).toEqual([
+      '/src/screens/A.tsx:1: asks for the filled variant="destructive"',
+      '/src/screens/B.tsx:1: asks for the filled variant="destructive"',
+      '/src/screens/C.tsx:1: asks for the filled variant="destructive"',
+      '/src/shell/D.tsx:1: carries the filled class boton--destructivo',
+    ])
+  })
+
+  test('accepts the confirmation, the .boton* authors, tests, prose, and the critical kind', () => {
+    const files = [
+      { path: '/src/components/ConfirmDialog.tsx', content: '<Boton variant="destructive" icon="tacho">x</Boton>' },
+      { path: '/src/components/AnswerButton.tsx', content: "const c = 'boton boton--destructivo'" },
+      { path: '/src/components/botonVisual.tsx', content: "destructive: 'boton boton--destructivo'," },
+      { path: '/src/components/Boton.tsx', content: "variant?: 'primary' | 'destructive'" },
+      { path: '/src/screens/A.test.tsx', content: '<Boton variant="destructive">x</Boton>' },
+      { path: '/src/screens/B.tsx', content: '// variant="destructive" is the dialog answer\n<Boton variant="critical" icon="tacho">x</Boton>' },
+    ]
+    expect(findFilledCritical(files)).toEqual([])
   })
 })
