@@ -320,9 +320,8 @@ class HttpApi:
 
     def __init__(self, base: str) -> None:
         self.base = base
-        self.opener = urllib.request.build_opener(
-            urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar())
-        )
+        self.jar = http.cookiejar.CookieJar()
+        self.opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(self.jar))
 
     def call(self, method: str, path: str, body: object | None = None) -> Any:
         data = None if body is None else json.dumps(body).encode()

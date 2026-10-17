@@ -18,7 +18,17 @@
 
 import { defineConfig } from '@playwright/test'
 import { freePort } from './e2e/freePort.js'
-import { E2E_HOST, e2eBaseUrl, e2eDbPath, e2eEnv, e2ePort } from './e2e/env.js'
+import {
+  E2E_HOST,
+  e2eBaseUrl,
+  e2eDbPath,
+  e2eEnv,
+  e2ePort,
+  mobileBaseUrl,
+  mobileDbPath,
+  mobileEnv,
+  mobilePort,
+} from './e2e/env.js'
 
 if (process.env.APOSTROPHE_E2E_PORT === undefined) {
   process.env.APOSTROPHE_E2E_PORT = String(await freePort(E2E_HOST))
@@ -26,19 +36,29 @@ if (process.env.APOSTROPHE_E2E_PORT === undefined) {
 // Validates the variable whether it was already set or was just picked above —
 // `e2ePort()` never picks a port itself, by decision.
 e2ePort()
+// The phone check's second server gets its own port the same way (GH-80).
+if (process.env.APOSTROPHE_E2E_MOBILE_PORT === undefined) {
+  process.env.APOSTROPHE_E2E_MOBILE_PORT = String(await freePort(E2E_HOST))
+}
+mobilePort()
 
-const envAssignments = Object.entries(e2eEnv())
-  .map(([key, value]) => `${key}=${value}`)
-  .join(' ')
+const assignments = (env: Record<string, string>): string =>
+  Object.entries(env)
+    .map(([key, value]) => `${key}=${value}`)
+    .join(' ')
+
+const envAssignments = assignments(e2eEnv())
 
 // Playwright races a `url` poll against `wait` (`node_modules/playwright/lib/runner/
 // index.js:946-951`), so keeping `url` set would let another worktree's server,
 // already answering on the same port, win that race and mark this run ready against
 // a server it never started. The only readiness signal is this run's own uvicorn
 // announcing itself on its own port.
-const readyPattern = new RegExp(
-  `Uvicorn running on http://${E2E_HOST.replace(/\./g, '\\.')}:${e2ePort()}\\b`,
-)
+const readyOn = (port: number): RegExp =>
+  new RegExp(`Uvicorn running on http://${E2E_HOST.replace(/\./g, '\\.')}:${port}\\b`)
+
+// One cell walks every registry screen twice (loaded, then held); a cell's own budget.
+const MOBILE_TEST_TIMEOUT_MS = 300_000
 
 export default defineConfig({
   testDir: './e2e',
@@ -58,14 +78,37 @@ export default defineConfig({
   // every other spec shares. It needs no real DNS entry: the spec itself proxies
   // every request for that host to the one real server this config starts below.
   projects: [
-    { name: 'secure-origin', testIgnore: /catalogInsecureOrigin\.spec\.ts/ },
+    // The phone check runs on its own server and clock (the `mobile` project below), so the
+    // original specs, which keep the first server and the real clock, never match it.
+    {
+      name: 'secure-origin',
+      testIgnore: [/catalogInsecureOrigin\.spec\.ts/, /mobile\.(spec|setup)\.ts/],
+    },
     {
       name: 'insecure-origin',
       testMatch: /catalogInsecureOrigin\.spec\.ts/,
       use: { baseURL: 'http://apostrophe.test' },
     },
+    // GH-80: the phone check. The setup project seeds the second server once (the walk only
+    // reads, so every cell shares that business); `npm run e2e` runs this project with its
+    // own worker count (its cells are independent), the others stay at `workers: 1`.
+    {
+      name: 'mobile-setup',
+      testMatch: /mobile\.setup\.ts/,
+      timeout: 120_000,
+      use: { baseURL: mobileBaseUrl() },
+    },
+    {
+      name: 'mobile',
+      testMatch: /mobile\.spec\.ts/,
+      dependencies: ['mobile-setup'],
+      fullyParallel: true,
+      timeout: MOBILE_TEST_TIMEOUT_MS,
+      use: { baseURL: mobileBaseUrl(), isMobile: true, hasTouch: true },
+    },
   ],
-  webServer: {
+  webServer: [
+    {
     // A throwaway SQLite file, keyed on the port so two runs never share one,
     // removed before every run; `cwd: '..'` so the paths in `e2eEnv()`
     // (repo-root-relative, matching `scripts/serve.sh`'s own) resolve the same way.
@@ -84,6 +127,20 @@ export default defineConfig({
     timeout: 30_000,
     stdout: 'pipe',
     stderr: 'pipe',
-    wait: { stderr: readyPattern },
-  },
+    wait: { stderr: readyOn(e2ePort()) },
+    },
+    {
+      // The second server (GH-80, invariant 7): `create_mobile_e2e_app`, its clock pinned.
+      command:
+        `mkdir -p "$(dirname '${mobileDbPath()}')" && rm -f '${mobileDbPath()}' && ` +
+        `${assignments(mobileEnv())} uv run --no-project uvicorn tests.e2e_app:create_mobile_e2e_app ` +
+        `--factory --host ${E2E_HOST} --port ${mobilePort()} --no-access-log`,
+      cwd: '..',
+      reuseExistingServer: false,
+      timeout: 30_000,
+      stdout: 'pipe',
+      stderr: 'pipe',
+      wait: { stderr: readyOn(mobilePort()) },
+    },
+  ],
 })

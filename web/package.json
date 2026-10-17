@@ -10,7 +10,7 @@
     "lint": "oxlint --deny-warnings",
     "test": "vitest run",
     "preview": "vite preview",
-    "e2e": "vite build && playwright test"
+    "e2e": "vite build && playwright test --project=secure-origin --project=insecure-origin && playwright test --project=mobile --workers=4"
   },
   "dependencies": {
     "@fontsource/plus-jakarta-sans": "^5.3.0",

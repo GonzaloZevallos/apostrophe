@@ -39,7 +39,12 @@ def pinned_client() -> Iterator[TestClient]:
     engine = make_engine("sqlite://")
     clock = MovableClock(PINNED_INSTANT)
     app = create_app(
-        SETTINGS, engine=engine, clock=clock, hasher=TEST_HASHER, telegram=FakeTelegram(), upkeep_ticker=False
+        SETTINGS,
+        engine=engine,
+        clock=clock,
+        hasher=TEST_HASHER,
+        telegram=FakeTelegram(),
+        upkeep_ticker=False,
     )
     with TestClient(app) as client:
         yield signed_in(client, open_business(client, engine, clock, "Primer", "uno@example.com"))

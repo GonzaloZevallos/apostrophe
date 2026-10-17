@@ -12,8 +12,17 @@ import registryJson from '../../../scripts/design/screens.json' with { type: 'js
 export const SKIP_NO_ROUTE = 'not built yet: route is null'
 /** The standard governs phone widths only; a computer layout is out of its scope. */
 export const SKIP_COMPUTER_VIEWPORT = 'computer layout: viewport width of 900 px or more'
+/** Both themes run in every cell, so a dark twin of a registry entry would repeat its walk. */
+export const SKIP_THEME_TWIN = 'dark twin: every cell already runs both themes'
 /** The computer breakpoint, in CSS px (design README, accounts.md). */
 export const COMPUTER_MIN_WIDTH = 900
+
+/** One step of a registry entry, as `scripts/design/comparisons.mjs` runs it. */
+export type RegistryStep =
+  | { click: string }
+  | { fill: { label: string; value: string } }
+  | { wait: string }
+  | { offline: true }
 
 export interface RegistryScreen {
   screen: string
@@ -22,6 +31,7 @@ export interface RegistryScreen {
   viewport: readonly [number, number] | null
   signedOut: boolean
   theme: string | null
+  steps: readonly RegistryStep[]
 }
 
 /**
@@ -48,6 +58,37 @@ function parseViewport(value: unknown, screen: string): readonly [number, number
     return [value[0], value[1]]
   }
   throw new Error(`${screen}: viewport is not [width, height]`)
+}
+
+function parseStep(value: unknown, screen: string): RegistryStep {
+  const where = `${screen}: step`
+  const step = asRecord(value, where)
+  const keys = Object.keys(step)
+  const only = keys.length === 1 ? keys[0] : undefined
+  if (only === 'click' || only === 'wait') {
+    const text = step[only]
+    if (typeof text !== 'string' || text === '') throw new Error(`${where} ${only} is not text`)
+    return only === 'click' ? { click: text } : { wait: text }
+  }
+  if (only === 'fill') {
+    const fill = asRecord(step['fill'], `${where} fill`)
+    const { label, value: text } = fill
+    if (typeof label !== 'string' || typeof text !== 'string') {
+      throw new Error(`${where} fill needs a label and a value`)
+    }
+    return { fill: { label, value: text } }
+  }
+  if (only === 'offline') {
+    if (step['offline'] !== true) throw new Error(`${where} offline is not true`)
+    return { offline: true }
+  }
+  throw new Error(`${where} is not a click, fill, wait or offline`)
+}
+
+function parseSteps(value: unknown, screen: string): readonly RegistryStep[] {
+  if (value === undefined) return []
+  if (!Array.isArray(value)) throw new Error(`${screen}: steps is not a list`)
+  return value.map((step: unknown) => parseStep(step, screen))
 }
 
 /** The registry's screens, validated; `stateNames` are checked against them for repeats. */
@@ -77,13 +118,27 @@ export function parseRegistry(
       viewport: parseViewport(row['viewport'], name),
       signedOut: row['signed_out'] === true,
       theme: typeof theme === 'string' ? theme : null,
+      steps: parseSteps(row['steps'], name),
     }
+  })
+}
+
+/** `{name}` in a route or a step value: one of the seeded facts. A name no fact has is an error. */
+export function resolvePlaceholders(
+  template: string,
+  facts: Readonly<Record<string, string | number>>,
+): string {
+  return template.replace(/\{(\w+)\}/g, (_match, name: string) => {
+    const value = facts[name]
+    if (value === undefined) throw new Error(`no seeded fact named ${name}`)
+    return String(value)
   })
 }
 
 /** Why the phone walk leaves a screen out, or `null` when it visits it. The one place that decides. */
 function skipReason(screen: RegistryScreen): string | null {
   if (screen.route === null) return SKIP_NO_ROUTE
+  if (screen.theme !== null) return SKIP_THEME_TWIN
   if (screen.viewport !== null && screen.viewport[0] >= COMPUTER_MIN_WIDTH) return SKIP_COMPUTER_VIEWPORT
   return null
 }

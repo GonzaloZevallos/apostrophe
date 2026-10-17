@@ -1,10 +1,12 @@
 import { describe, expect, test } from 'vitest'
 import {
   parseRegistry,
+  resolvePlaceholders,
   REGISTRY,
   SCREEN_NAMES,
   SKIP_COMPUTER_VIEWPORT,
   SKIP_NO_ROUTE,
+  SKIP_THEME_TWIN,
   skippedScreens,
   STATE_NAMES,
   walkableScreens,
@@ -39,6 +41,14 @@ describe('walkableScreens', () => {
     ])
   })
 
+  test('skips a dark twin: every cell already runs both themes, so the twin repeats a walk', () => {
+    const parsed = parseRegistry({
+      screens: [entry({ screen: 'Ventas' }), entry({ screen: 'VentasOscuro', tema: 'oscuro' })],
+    })
+    expect(walkableScreens(parsed).map((s) => s.screen)).toEqual(['Ventas'])
+    expect(skippedScreens(parsed)).toEqual([{ screen: 'VentasOscuro', reason: SKIP_THEME_TWIN }])
+  })
+
   test('every registry screen is walked or skipped with a reason, never dropped', () => {
     const walked = walkableScreens(REGISTRY).length
     expect(walked + skippedScreens(REGISTRY).length).toBe(REGISTRY.length)
@@ -68,5 +78,64 @@ describe('the screen vocabulary', () => {
 
   test('a state name that repeats a registry screen is refused', () => {
     expect(() => parseRegistry({ screens: [entry({ screen: 'A' })] }, ['A'])).toThrow(/repeat/)
+  })
+})
+
+describe('steps', () => {
+  test('parses click, fill, wait and offline steps in order', () => {
+    const [screen] = parseRegistry({
+      screens: [
+        entry({
+          steps: [
+            { fill: { label: 'Email', value: '{email}' } },
+            { click: 'Entrá' },
+            { wait: 'Listo' },
+            { offline: true },
+          ],
+        }),
+      ],
+    })
+    expect(screen?.steps).toEqual([
+      { fill: { label: 'Email', value: '{email}' } },
+      { click: 'Entrá' },
+      { wait: 'Listo' },
+      { offline: true },
+    ])
+  })
+
+  test('a screen without steps has none', () => {
+    expect(parseRegistry({ screens: [entry({})] })[0]?.steps).toEqual([])
+  })
+
+  test.each([
+    ['an unknown step', { tap: 'x' }],
+    ['a click that is not text', { click: 3 }],
+    ['a fill without its value', { fill: { label: 'Email' } }],
+    ['an offline that is not true', { offline: false }],
+    ['a step that is not an object', 'click'],
+  ])('refuses %s', (_name, step) => {
+    expect(() => parseRegistry({ screens: [entry({ steps: [step] })] })).toThrow(/step/)
+  })
+
+  test('refuses steps that are not a list', () => {
+    expect(() => parseRegistry({ screens: [entry({ steps: {} })] })).toThrow(/steps/)
+  })
+})
+
+describe('resolvePlaceholders', () => {
+  const facts = { email: 'vos@lahuerta.com', debtor: 12 }
+
+  test('fills every {name} from the facts, numbers as text', () => {
+    expect(resolvePlaceholders('/clientes/{debtor}?e={email}', facts)).toBe(
+      '/clientes/12?e=vos@lahuerta.com',
+    )
+  })
+
+  test('leaves text without placeholders alone', () => {
+    expect(resolvePlaceholders('/ventas', facts)).toBe('/ventas')
+  })
+
+  test('refuses a placeholder no fact names, saying which', () => {
+    expect(() => resolvePlaceholders('/x/{nobody}', facts)).toThrow(/nobody/)
   })
 })
