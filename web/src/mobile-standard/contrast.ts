@@ -4,6 +4,9 @@
  * relaxation: `MIN_CONTRAST` is the one threshold.
  */
 
+import { nameTargets, type CellId, type Finding, type RawTarget } from './targets.ts'
+import type { Violation } from './violation.ts'
+
 export const MIN_CONTRAST = 4.5
 
 export interface Rgb {
@@ -54,4 +57,59 @@ export function parseColor(text: string): Rgb | Rgba {
   const alpha = fn[4]
   if (alpha === undefined) return rgb
   return { ...rgb, a: alpha.endsWith('%') ? Number.parseFloat(alpha) / 100 : Number(alpha) }
+}
+
+/** One layer behind a text, from the root down: its `background-color` and the opacity it is painted with (its own and its ancestors' product). */
+export interface Layer {
+  color: string
+  opacity: number
+}
+
+/** One text as the page reports it: its colour, the layers behind it and the name of its element. */
+export interface ColourSample {
+  raw: RawTarget
+  color: string
+  /** The product of the opacity of the element and its ancestors. */
+  opacity: number
+  layers: readonly Layer[]
+  /** A `background-image` (a gradient, a picture) sits in the chain: the ratio cannot be proven. */
+  image: boolean
+}
+
+export interface ColourFacts {
+  /** `--papel`, the base under every chain. */
+  papel: string
+  samples: readonly ColourSample[]
+}
+
+function withAlpha(color: Rgb | Rgba): Rgba {
+  return 'a' in color ? color : { ...color, a: 1 }
+}
+
+/** The ratio of a text against the layers behind it, over `papel`; `null` when a colour cannot be read. */
+export function ratioOf(sample: ColourSample, papel: string): number | null {
+  try {
+    const base = sample.layers.reduce<Rgb>(
+      (below, layer) => composite(withAlpha(parseColor(layer.color)), below, layer.opacity),
+      parseColor(papel),
+    )
+    return ratio(composite(withAlpha(parseColor(sample.color)), base, sample.opacity), base)
+  } catch {
+    return null
+  }
+}
+
+/**
+ * The checker's verdict on a page's texts: `contrast` under `MIN_CONTRAST`, and
+ * `contrast-unprovable` where a background image (or a colour this arithmetic cannot
+ * read) sits behind the text. It returns Violations and decides nothing about them.
+ */
+export function judgeContrast(facts: ColourFacts, cell: CellId): Violation[] {
+  const findings: Finding[] = []
+  for (const sample of facts.samples) {
+    const value = sample.image ? null : ratioOf(sample, facts.papel)
+    if (value === null) findings.push({ rule: 'contrast-unprovable', raw: sample.raw })
+    else if (value < MIN_CONTRAST) findings.push({ rule: 'contrast', raw: sample.raw })
+  }
+  return nameTargets(findings, cell)
 }

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { composite, MIN_CONTRAST, parseColor, ratio, relativeLuminance } from './contrast.ts'
+import { composite, judgeContrast, MIN_CONTRAST, parseColor, ratio, relativeLuminance, type ColourSample } from './contrast.ts'
 
 describe('ratio', () => {
   test('black on white is 21:1 and a colour on itself 1:1', () => {
@@ -63,5 +63,57 @@ describe('parseColor', () => {
   test('refuses what it cannot read instead of guessing', () => {
     expect(() => parseColor('transparent')).toThrow()
     expect(() => parseColor('oklch(0.5 0.1 20)')).toThrow()
+  })
+})
+
+describe('judgeContrast', () => {
+  const cell = { screen: 'Ventas', size: '375x812', theme: 'claro' } as const
+  const papel = '#fcfbf8'
+  const raw = (label: string) => ({ testid: '', role: 'p', label, identity: '' })
+  const sample = (over: Partial<ColourSample>): ColourSample => ({
+    raw: raw('Hola'),
+    color: 'rgb(26, 24, 21)',
+    opacity: 1,
+    layers: [],
+    image: false,
+    ...over,
+  })
+  const rules = (samples: ColourSample[]) => judgeContrast({ papel, samples }, cell).map((v) => v.rule)
+
+  test('a text that clears 4.5:1 is not reported, and one under it is, by its element', () => {
+    expect(rules([sample({})])).toEqual([])
+    const found = judgeContrast({ papel, samples: [sample({ raw: raw('Gris'), color: '#9a9085' })] }, cell)
+    expect(found).toEqual([{ ...cell, rule: 'contrast', target: 'p:Gris' }])
+  })
+
+  test('a layer behind the text decides the ratio: dark ink on a dark panel fails', () => {
+    expect(rules([sample({ layers: [{ color: 'rgb(26, 24, 21)', opacity: 1 }] })])).toEqual(['contrast'])
+  })
+
+  test('a half-transparent panel over the paper is composited with its opacity', () => {
+    const faded = { color: 'rgba(0, 0, 0, 1)', opacity: 0.05 }
+    expect(rules([sample({ layers: [faded] })])).toEqual([])
+    const solid = { color: 'rgba(0, 0, 0, 1)', opacity: 1 }
+    expect(rules([sample({ layers: [solid] })])).toEqual(['contrast'])
+  })
+
+  test('a text faded by its own opacity loses its ratio', () => {
+    expect(rules([sample({ opacity: 0.4 })])).toEqual(['contrast'])
+  })
+
+  test('a background image is unprovable, never passed or failed', () => {
+    expect(rules([sample({ image: true, color: '#9a9085' })])).toEqual(['contrast-unprovable'])
+  })
+
+  test('a colour the arithmetic cannot read is unprovable', () => {
+    expect(rules([sample({ color: 'oklch(0.5 0.1 20)' })])).toEqual(['contrast-unprovable'])
+  })
+
+  test('the same failing element twice is two Violations, told apart by position', () => {
+    const twin = sample({ raw: raw('Gris'), color: '#9a9085' })
+    expect(judgeContrast({ papel, samples: [twin, twin] }, cell).map((v) => v.target)).toEqual([
+      'p:Gris[1]',
+      'p:Gris[2]',
+    ])
   })
 })
