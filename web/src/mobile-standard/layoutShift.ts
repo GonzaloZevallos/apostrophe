@@ -36,12 +36,19 @@ export interface ShiftSample {
   raw: RawTarget
 }
 
+/**
+ * The content area is one finding, not one per node: the browser reports at most five
+ * sources per shift, picked by impact, so which nodes it names changes from run to run
+ * while whether the content moved beyond the tolerance does not.
+ */
+const CONTENT_AREA: RawTarget = { testid: '', role: 'main', label: 'content', identity: '' }
+
 const isEmpty = (box: BoxRect): boolean => box.width === 0 && box.height === 0
 
 /**
  * The verdict on what moved when the data arrived: a chrome node moving more than
  * `CHROME_SHIFT_PX` is `chrome-shift`, any other more than `CONTENT_SHIFT_PX` is
- * `content-shift`. A node that was inserted or removed (an empty rect on either side) is
+ * `content-shift`, once for the whole content area. A node that was inserted or removed (an empty rect on either side) is
  * not a shift; a node that moved in several entries counts by its largest move.
  */
 export function judgeShifts(samples: readonly ShiftSample[], cell: CellId): Violation[] {
@@ -53,9 +60,11 @@ export function judgeShifts(samples: readonly ShiftSample[], cell: CellId): Viol
     if (seen === undefined || px > seen.px) largest.set(sample.node, { sample, px })
   }
   const findings: Finding[] = []
+  let contentMoved = false
   for (const { sample, px } of largest.values()) {
     if (sample.chrome && px > CHROME_SHIFT_PX) findings.push({ rule: 'chrome-shift', raw: sample.raw })
-    else if (!sample.chrome && px > CONTENT_SHIFT_PX) findings.push({ rule: 'content-shift', raw: sample.raw })
+    else if (!sample.chrome && px > CONTENT_SHIFT_PX) contentMoved = true
   }
+  if (contentMoved) findings.push({ rule: 'content-shift', raw: CONTENT_AREA })
   return nameTargets(findings, cell)
 }

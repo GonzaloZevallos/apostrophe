@@ -41,6 +41,11 @@ describe('judgeShifts', () => {
     expect(rules([move(1, false, CONTENT_SHIFT_PX + 1)])).toEqual(['content-shift'])
   })
 
+  test('every content node that moved is one finding, named by the content area', () => {
+    const found = judgeShifts([move(1, false, 60, 'a'), move(2, false, 90, 'b')], cell)
+    expect(found).toEqual([{ ...cell, rule: 'content-shift', target: 'main:content' }])
+  })
+
   test('chrome that did not move is not reported', () => {
     expect(rules([move(1, true, 0)])).toEqual([])
   })

@@ -29,8 +29,12 @@ check. The phone check (`web/e2e/mobile.spec.ts`, GH-80) reads the page itself.
   gated layout renders nothing and no screen's loading state could be read), a screen that
   asked for data is read for `blank-while-loading`, `aria-busy`, `false-empty` (the one
   list, `screens/emptyStates.ts`) and `data-while-loading`. After the release,
-  `chrome-shift` and `content-shift` come from a buffered `layout-shift` observer. A node
-  inserted or removed is not a shift; a node that moved several times counts by its largest.
+  `chrome-shift` and `content-shift` come from a `layout-shift` observer installed before
+  the app's scripts, counting only what moved from the release on: what moved before it
+  (a font swapping in) is the page's own timing, and measured from navigation the content
+  rule flipped between identical runs. A node inserted or removed is not a shift; a node
+  that moved several times counts by its largest. The browser names at most five sources
+  per shift, so the content area is one finding per screen (`main:content`), not one per node.
 - **`CONTENT_SHIFT_PX` = 48**: a 44 px target plus half the 8 px gap between neighbours.
   Chrome (the bar, the header, "+ Nueva venta", anything fixed) is allowed 0 px. The spec
   and both documents refer to it by name.

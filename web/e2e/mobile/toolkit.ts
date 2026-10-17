@@ -12,6 +12,8 @@ export interface ShiftEntry {
   node: Element
   previous: DOMRectReadOnly
   current: DOMRectReadOnly
+  /** When the browser reported it (`performance.now()`). */
+  at: number
 }
 
 export interface PhoneToolkit {
@@ -20,6 +22,8 @@ export interface PhoneToolkit {
   raw: (element: Element, suffix?: string) => RawTarget
   /** Every `layout-shift` source since the document began, in order. */
   shifts: ShiftEntry[]
+  /** When the held answers were let through; only what moved after it is what the data moved. */
+  releasedAt: number
 }
 
 declare global {
@@ -75,7 +79,7 @@ export function installToolkit(): void {
       if (!Array.isArray(sources)) continue
       for (const source of sources as { node: Node | null; previousRect: DOMRectReadOnly; currentRect: DOMRectReadOnly }[]) {
         const node = source.node instanceof Text ? source.node.parentElement : source.node
-        if (node instanceof Element) shifts.push({ node, previous: source.previousRect, current: source.currentRect })
+        if (node instanceof Element) shifts.push({ node, previous: source.previousRect, current: source.currentRect, at: entry.startTime })
       }
     }
   }).observe({ type: 'layout-shift', buffered: true })
@@ -84,6 +88,7 @@ export function installToolkit(): void {
     squash,
     visible,
     shifts,
+    releasedAt: 0,
     raw: (element, suffix = '') => ({
       testid: element.getAttribute('data-testid') ?? '',
       role: roleOf(element),

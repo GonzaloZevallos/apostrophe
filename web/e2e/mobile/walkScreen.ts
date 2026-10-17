@@ -33,6 +33,9 @@ export async function walkScreen(
       await painted(page)
       fetched = await hold.whenHeld(FETCH_WAIT_MS)
       if (fetched) found.push(...(await collect(page, 'loading', cell)))
+      await page.evaluate(() => {
+        if (window.__phone !== undefined) window.__phone.releasedAt = performance.now()
+      })
       await hold.release()
     }
     await settle(page)

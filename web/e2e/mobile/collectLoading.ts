@@ -1,8 +1,9 @@
 /**
  * The loading probes. While the screen's API is held: is the content area (`main`) drawn,
  * does it say it is busy, does a fixed empty-state wording show, does a digit or a
- * currency symbol show. After the release: what moved (`layout-shift` sources buffered by
- * the toolkit since the document started). The page only reads; `judgeLoading` and
+ * currency symbol show. After the release: what moved when the answers came (`layout-shift` sources
+ * the toolkit buffered from the release on; what moved before it, a font swapping in, is
+ * the page's own timing and not the data's). The page only reads; `judgeLoading` and
  * `judgeShifts` decide.
  */
 
@@ -62,7 +63,7 @@ export function probeShifts(): ShiftSample[] {
     element.closest('header') !== null && element.closest('header')?.closest('article, section, li, form, dialog, [role=dialog]') === null ||
     fixed(element)
   return phone.shifts
-    .filter((entry) => entry.node.isConnected)
+    .filter((entry) => entry.node.isConnected && entry.at >= phone.releasedAt)
     .map((entry) => {
       if (!nodes.has(entry.node)) nodes.set(entry.node, nodes.size)
       return {
