@@ -1,0 +1,19 @@
+[
+  "src/screens/CambiarContrasena.tsx",
+  "src/screens/Entrar.tsx",
+  "src/screens/Invitacion.tsx",
+  "src/screens/Reset.tsx",
+  "src/screens/settings/AccountGroup.tsx",
+  "src/screens/settings/AppearanceGroup.tsx",
+  "src/screens/settings/BusinessGroup.tsx",
+  "src/screens/settings/CatalogMessageForm.tsx",
+  "src/screens/settings/CatalogMessageGroup.tsx",
+  "src/screens/settings/ExpenseCategoriesEditor.tsx",
+  "src/screens/settings/ExpenseCategoriesGroup.tsx",
+  "src/screens/settings/IntegrationsGroup.tsx",
+  "src/screens/settings/InvitePartner.tsx",
+  "src/screens/settings/PricingGroup.tsx",
+  "src/screens/settings/Settings.tsx",
+  "src/screens/settings/SettingsGroup.tsx",
+  "src/screens/settings/UsersGroup.tsx"
+]

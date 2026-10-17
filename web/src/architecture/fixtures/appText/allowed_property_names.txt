@@ -1,0 +1,4 @@
+const rows = { sale: 1, 'credit note': 2 }
+export function read(key: string): number | undefined {
+  return rows['sale'] ?? Reflect.get(rows, key)
+}

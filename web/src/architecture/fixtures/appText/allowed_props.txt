@@ -1,0 +1,9 @@
+export function Field() {
+  return (
+    <form action="/sale">
+      <input type="text" role="textbox" id="total" name="total" inputMode="numeric" enterKeyHint="done" autoComplete="off" />
+      <label htmlFor="total" />
+      <Boton variant="primary" icon="plus" to="/sales/new" href="/sales" kind="keep" textOnly />
+    </form>
+  )
+}

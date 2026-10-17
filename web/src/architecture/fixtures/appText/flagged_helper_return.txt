@@ -1,0 +1,4 @@
+function emptyLine(): string {
+  return 'Nothing here yet'
+}
+export default emptyLine

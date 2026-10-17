@@ -1,0 +1,3 @@
+export function greeting(count: number): string {
+  return `You have ${count} customers`
+}

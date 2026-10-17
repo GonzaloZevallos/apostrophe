@@ -1,0 +1,4 @@
+const TITLE = 'Save sale'
+export function title(): string {
+  return TITLE
+}

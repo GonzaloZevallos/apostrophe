@@ -1,0 +1,3 @@
+export function Close() {
+  return <button type="button" aria-label="Close" title="Close the sheet" />
+}

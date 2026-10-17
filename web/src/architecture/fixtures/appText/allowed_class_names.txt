@@ -1,0 +1,8 @@
+export function Chip({ on, rail }: { on: boolean; rail: string }) {
+  return (
+    <div className={on ? 'chip chip--on' : 'chip'} data-state="open" data-label={`row ${rail}`}>
+      <i className={cx('chip__icon', on && 'chip__icon--on')} />
+      <b className={railClassName(rail, on)} />
+    </div>
+  )
+}

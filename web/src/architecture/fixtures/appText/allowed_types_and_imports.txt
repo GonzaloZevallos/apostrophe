@@ -1,0 +1,8 @@
+import type { Row } from './row'
+export type Kind = 'gift' | 'credit' | `kind-${string}`
+export { type Row } from './row'
+export const lazyRoute = () => import('./screens/Sales')
+export const kind = Math.random() as unknown as 'gift'
+export interface Shape {
+  unit: 'grams'
+}
