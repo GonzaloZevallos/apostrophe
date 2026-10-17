@@ -4,23 +4,20 @@
  * straight from `GET /panel` (`PanelAnswer`, `web/src/api/fixtures/panel.json`) —
  * this screen never computes, sorts or sign-tests an amount itself (plan
  * invariant: "No screen does arithmetic, sorting, sign tests or comparisons on an
- * amount from the API"). Ganancia and Caja render through `formatSignedMoney`;
- * ranges through `formatDateShort` only.
+ * amount from the API"). The figures and ranges are drawn by `inicio/InicioPanel.tsx`.
  *
  * The panel query is frozen (`gcTime: 0`, `staleTime: Infinity`, no refetch on
  * focus or reconnect, plan invariant): a remount always re-fetches, so the
  * figures shown are always the current mount's own resolved answer, never a
  * stale one left behind by an earlier mount or another business.
  *
- * "Arrancá por las variedades" sits above the panel instead of replacing it (PM,
- * adjustment 5): a business can have history and no price today, and its figures
- * are real.
- *
- * Slot 1 is `inicioNotices`' call (results.md's order): "Seguí con la configuración" while
- * the Onboarding is offered and not over, otherwise "Arrancá por las variedades". It stays
- * empty until `/panel` and `/onboarding-progress` have both answered, so an Onboarding
- * business never flashes "Arrancá" whichever answer comes first; a failure of either shows
- * the existing "Sin conexión" or the generic retry.
+ * Slot 1 is `GET /first-run`'s `kind` (`inicioNotices`, ADR-0046): the Onboarding notice, the
+ * first-run checklist, "Arrancá por las variedades" or nothing, drawn above the panel
+ * instead of replacing it (a business can have history and no price today, and its
+ * figures are real). The front derives none of it: it stays empty until `/first-run` has
+ * answered, so nothing flashes, and a failure of it draws no slot 1 and no error (the
+ * figures still show). The after-import notice is slot 3, after the pin notice. The
+ * panel's and the Onboarding's failures show the existing "Sin conexión" or the retry.
  *
  * The pinned-catalog notice (plan, "Front"; accounts.md's Inicio rule): a fixed
  * line, never a figure, while `GET /pinned-catalog/status` reads `out_of_date` —
@@ -28,88 +25,37 @@
  * first Publicar").
  */
 
-import { CATALOG, CUSTOMER, CUSTOMER_PAYMENT, CUSTOMERS, SETTINGS, pathTo } from '../routes'
-import { Fragment, useState } from 'react'
+import { CATALOG, SETTINGS } from '../routes'
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useOutletContext } from 'react-router'
 import InAppLink from '../components/InAppLink'
 import { get, NetworkError } from '../api/client'
+import { firstRunQuery } from '../api/firstRun'
 import { onboardingProgressQuery } from '../api/onboarding'
 import { keys } from '../api/keys'
 import type { Me } from '../api/me'
-import {
-  getPanel,
-  type PanelAnswer,
-  type PanelDebts,
-  type PanelPeriod,
-  type PanelTab,
-} from '../api/panel'
+import { getPanel, type PanelTab } from '../api/panel'
 import ErrorGenerico from '../components/ErrorGenerico'
-import BotonLink from '../components/BotonLink'
 import { AvisoCuerpo } from '../components/AvisoAmbar'
-import MarcaEstado from '../components/MarcaEstado'
 import SinConexion from '../components/SinConexion'
-import { salesCount } from '../format/counts'
-import { formatDateShort } from '../format/dates'
-import { formatGrams, formatMoney, formatSignedMoney } from '../format/money'
 import { initialsOf } from '../shell/initials'
-import { detailFor, sideNoteFor } from '../stock/detail'
-import { EMPTY_DETAIL, EMPTY_TITLE, NOBODY_OWES, PINNED_CATALOG_OUT_OF_DATE } from './inicioMessages'
+import { EMPTY_DETAIL, EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE } from './inicioMessages'
 import { inicioNotices } from './inicioNotices'
+import FirstRunChecklist from './inicio/FirstRunChecklist'
+import ImportNotice from './inicio/ImportNotice'
+import InicioPanel from './inicio/InicioPanel'
 import OnboardingNotice from './onboarding/OnboardingNotice'
 
 export { EMPTY_DETAIL, EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE }
-
-const PENDING_NOTE = 'incluye costo pendiente'
-
-/** Faltante de stock, then Promoción and Consumo propio, each on its own line and only
- * when the period has one (`null` otherwise), right before Gastos. */
-const COST_LINES: Array<{ key: 'shortfall' | 'promotion' | 'own_use'; label: string }> = [
-  { key: 'shortfall', label: 'Faltante de stock' },
-  { key: 'promotion', label: 'Promoción' },
-  { key: 'own_use', label: 'Consumo propio' },
-]
-
-const TAB_LABEL: Record<PanelTab, string> = { today: 'Hoy', week: 'Semana', month: 'Mes' }
-const TABS: PanelTab[] = ['today', 'week', 'month']
-const SALES_HEADING: Record<PanelTab, string> = {
-  today: 'Vendiste hoy',
-  week: 'Vendiste esta semana',
-  month: 'Vendiste este mes',
-}
-
-interface VarietySummary {
-  current_price: unknown
-}
 
 interface PinnedCatalogStatus {
   status: { state: 'up_to_date' | 'out_of_date' } | null
 }
 
-function rangeLabel(tab: PanelTab, period: PanelPeriod): string {
-  if (tab === 'today') return `Hoy ${formatDateShort(period.start)}`
-  return `${formatDateShort(period.start)} – ${formatDateShort(period.end)}`
-}
-
-function salesSubtitle(period: PanelPeriod): string {
-  const count = salesCount(period.sales_count)
-  const grams = formatGrams(period.grams_sold)
-  return period.average_sale === null
-    ? `${count} · ${grams}`
-    : `${count} · promedio ${formatMoney(period.average_sale)} · ${grams}`
-}
-
 export default function Inicio() {
   const me = useOutletContext<Me>()
   const [tab, setTab] = useState<PanelTab>('today')
-
-  const varietiesQuery = useQuery({
-    queryKey: keys.varieties(),
-    queryFn: () => get<VarietySummary[]>('/varieties'),
-  })
-  const hasPricedVariety = (varietiesQuery.data ?? []).some(
-    (variety) => variety.current_price !== null,
-  )
 
   const panelQuery = useQuery({
     queryKey: keys.panel(),
@@ -127,9 +73,10 @@ export default function Inicio() {
   const pinOutOfDate = pinnedCatalog.data?.status?.state === 'out_of_date'
 
   const onboardingQuery = useQuery(onboardingProgressQuery)
+  const firstRun = useQuery(firstRunQuery)
   const notices = inicioNotices({
-    onboarding: panelQuery.data === undefined ? undefined : onboardingQuery.data,
-    pricedToday: varietiesQuery.data === undefined ? undefined : hasPricedVariety,
+    firstRun: firstRun.data,
+    onboarding: onboardingQuery.data,
     pinOutOfDate,
   })
   const failed = [panelQuery, onboardingQuery].find((query) => query.isError)
@@ -152,6 +99,7 @@ export default function Inicio() {
         </div>
 
         {notices.first?.kind === 'onboarding' && <OnboardingNotice progress={notices.first.progress} />}
+        {notices.first?.kind === 'checklist' && <FirstRunChecklist steps={notices.first.steps} />}
         {notices.first?.kind === 'start' && (
           <div className="estado-vacio estado-vacio--atencion">
             <AvisoCuerpo attention>
@@ -168,176 +116,15 @@ export default function Inicio() {
           </InAppLink>
         )}
 
+        {notices.importNotice && <ImportNotice />}
+
         {failed !== undefined && failed.error instanceof NetworkError && <SinConexion />}
         {failed !== undefined && !(failed.error instanceof NetworkError) && <ErrorGenerico />}
 
         {panelQuery.data !== undefined && (
-          <Panel panel={panelQuery.data} tab={tab} onTab={setTab} today={me.today} />
+          <InicioPanel panel={panelQuery.data} tab={tab} onTab={setTab} today={me.today} />
         )}
       </div>
     </main>
-  )
-}
-
-function Panel({
-  panel,
-  tab,
-  onTab,
-  today,
-}: {
-  panel: PanelAnswer
-  tab: PanelTab
-  onTab: (tab: PanelTab) => void
-  today: string
-}) {
-  const period = panel.periods[tab]
-  const { debts, stock } = panel
-
-  return (
-    <>
-      <div className="periodos" role="group" aria-label="Período">
-        {TABS.map((item) => (
-          <button
-            key={item}
-            type="button"
-            className={tab === item ? 'periodos__boton periodos__boton--activo' : 'periodos__boton'}
-            aria-pressed={tab === item}
-            onClick={() => onTab(item)}
-          >
-            {TAB_LABEL[item]}
-          </button>
-        ))}
-        <span className="pie">{rangeLabel(tab, period)}</span>
-      </div>
-
-      <div className="panel-ventas">
-        <span className="rotulo">{SALES_HEADING[tab]}</span>
-        <span className="cifra-xl">{formatMoney(period.sales)}</span>
-        <span className="pie">{salesSubtitle(period)}</span>
-      </div>
-
-      <div className="panel-resultados">
-        <div className="panel-resultados__celda">
-          <span className="rotulo">Ganancia</span>
-          <span className="panel-resultados__valor panel-resultados__valor--acento">
-            {formatSignedMoney(period.profit)}
-          </span>
-          {period.profit_pending && <span className="pie">{PENDING_NOTE}</span>}
-        </div>
-        <div className="panel-resultados__celda">
-          <span className="rotulo">Caja</span>
-          <span className="panel-resultados__valor">{formatSignedMoney(period.cash)}</span>
-        </div>
-      </div>
-
-      <div className="panel-lista">
-        <div className="panel-lista__fila">
-          <span>Costo de lo vendido</span>
-          <span className="panel-lista__valor">{formatMoney(period.cost_of_goods)}</span>
-        </div>
-        {period.pending_cost && <span className="pie">{PENDING_NOTE}</span>}
-        {COST_LINES.map(({ key, label }) => {
-          // Hoy never shows the withdrawal lines, even when the API answers one for
-          // today (results.md): they belong to Semana and Mes.
-          if (tab === 'today' && key !== 'shortfall') return null
-          const line = period[key]
-          if (line === null) return null
-          return (
-            <Fragment key={key}>
-              <div className="panel-lista__fila">
-                <span>{label}</span>
-                <span className="panel-lista__valor">{formatMoney(line.amount)}</span>
-              </div>
-              {line.pending && <span className="pie">{PENDING_NOTE}</span>}
-            </Fragment>
-          )
-        })}
-        <div className="panel-lista__fila">
-          <span>Gastos</span>
-          <span className="panel-lista__valor">{formatMoney(period.expenses)}</span>
-        </div>
-        <div className="panel-lista__fila">
-          <span>Regalaste</span>
-          <span className="panel-lista__valor">{formatGrams(period.grams_gifted)}</span>
-        </div>
-        <div className="panel-lista__fila">
-          <span>Compras de flores</span>
-          <span className="panel-lista__valor">{formatMoney(period.purchases)}</span>
-        </div>
-      </div>
-
-      {/* Both columns full-width on the phone; side by side on a computer
-          (`InicioCompu.dc.html`): CSS alone switches between them, the same way
-          `Shell`'s own bar/rail does. */}
-      <div className="panel-dos-columnas">
-        <TeDebenBlock debts={debts} />
-
-        <div>
-          <span className="rotulo">Lo que te queda</span>
-          <div className="lista-stock">
-            {stock.map((variety) => (
-              <div key={variety.variety_id} className="fila-stock">
-                <MarcaEstado estado={variety.status} />
-                <span className="fila-stock__texto">
-                  <span className="fila-stock__nombre">{variety.name}</span>
-                  <span className="fila-stock__detalle">{detailFor(variety, today)}</span>
-                </span>
-                <span className="fila-stock__cifras">
-                  <span className="fila-stock__gramos">
-                    {variety.status === 'no_entries' ? '—' : formatGrams(variety.grams)}
-                  </span>
-                  {sideNoteFor(variety) !== null && (
-                    <span className="fila-stock__insignia">{sideNoteFor(variety)}</span>
-                  )}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </>
-  )
-}
-
-function TeDebenBlock({ debts }: { debts: PanelDebts }) {
-  // `oldest` is a date-or-null, never an amount (review finding: deciding this from
-  // `total_owed === 0` compared an API amount inside a screen, which the plan
-  // invariant forbids) — the contract sets it to `null` exactly when nobody owes.
-  if (debts.oldest === null) {
-    return (
-      <div className="bloque-deben">
-        <span className="rotulo">Te deben</span>
-        <span className="pie">{NOBODY_OWES}</span>
-      </div>
-    )
-  }
-
-  return (
-    <div className="bloque-deben">
-      <InAppLink to={CUSTOMERS} className="bloque-deben__titulo">
-        Te deben
-      </InAppLink>
-      <span className="cifra-xl">{formatMoney(debts.total_owed)}</span>
-      <span className="pie">
-        {salesCount(debts.sales_owing_count)}
-        {debts.oldest !== null && ` · desde ${formatDateShort(debts.oldest)}`}
-      </span>
-      {debts.teaser.map((row) => (
-        <div key={row.customer_id} className="bloque-deben__fila">
-          <InAppLink to={pathTo(CUSTOMER, { id: row.customer_id })} className="bloque-deben__datos">
-            <span>{row.name}</span>
-            <span>{formatMoney(row.balance)}</span>
-            <span className="pie">{`desde ${formatDateShort(row.owing_since)}`}</span>
-          </InAppLink>
-          <BotonLink
-            icon="cobro"
-            to={pathTo(CUSTOMER_PAYMENT, { id: row.customer_id })}
-            ariaLabel={`Cobrar a ${row.name}`}
-          >
-            Cobrar
-          </BotonLink>
-        </div>
-      ))}
-    </div>
   )
 }

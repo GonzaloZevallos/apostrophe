@@ -1,0 +1,11 @@
+{
+  "kind": "checklist",
+  "checklist": [
+    { "step": "priced_variety", "required": true, "done": true },
+    { "step": "stock_entry", "required": true, "done": false },
+    { "step": "published", "required": false, "done": false },
+    { "step": "second_user", "required": false, "done": false }
+  ],
+  "import_notice": false,
+  "nothing_qualifies": true
+}

@@ -5,9 +5,10 @@
  * deferred promise, and `findBy*` waits for what it settles.
  */
 
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { useContext, useEffect, useLayoutEffect, useState } from 'react'
+import { useContext, useEffect, useLayoutEffect, useState, type ReactNode } from 'react'
 import { createMemoryRouter, Outlet, RouterProvider, useParams, type RouteObject } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import type { Me } from '../api/me'
@@ -90,6 +91,13 @@ function RecordStub({ screen: id }: { screen: RecordLabelledScreen }) {
   return shown.detail === null ? <p>Eso ya no está.</p> : <Declare screen={id} detail={shown.detail} />
 }
 
+/** The shell asks `GET /first-run` on a root, so it needs a client; the read fails here and the
+ * shell draws normally. */
+function Client({ children }: { children: ReactNode }) {
+  const [client] = useState(() => new QueryClient({ defaultOptions: { queries: { retry: false } } }))
+  return <QueryClientProvider client={client}>{children}</QueryClientProvider>
+}
+
 function renderAt(entries: string[]) {
   const leaf = (path: string, id: string): RouteObject => {
     const marked = id === 'variety' || id === 'variety-prices' || id === 'variety-entries'
@@ -108,7 +116,11 @@ function renderAt(entries: string[]) {
     ],
     { initialEntries: entries },
   )
-  const view = render(<RouterProvider router={router} />)
+  const view = render(
+    <Client>
+      <RouterProvider router={router} />
+    </Client>,
+  )
   return { router, ...view }
 }
 
@@ -217,7 +229,11 @@ test("a declaration for another record or another screen is ignored, even if it 
     ],
     { initialEntries: [pathTo(VARIETY, { id: 1 })] },
   )
-  render(<RouterProvider router={router} />)
+  render(
+    <Client>
+      <RouterProvider router={router} />
+    </Client>,
+  )
   expect(await screen.findByRole('button', { name: '‹ Alpha' })).toBeInTheDocument()
 
   await act(async () => router.navigate(pathTo(VARIETY, { id: 2 })))

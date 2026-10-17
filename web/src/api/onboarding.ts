@@ -73,9 +73,12 @@ export const onboardingProgressQuery = queryOptions({
 /** Keeps the answer a write returned, so the next screen reads it without asking again. */
 export function keepProgress(queryClient: QueryClient, answer: OnboardingProgress): void {
   queryClient.setQueryData(keys.onboardingProgress(), answer)
+  // Any Onboarding write can end it, and what ends it changes `GET /first-run`'s slot 1.
+  void queryClient.invalidateQueries({ queryKey: keys.firstRun() })
 }
 
 /** For a step that saved through its owner's route: the answer is now stale. */
 export function refreshProgress(queryClient: QueryClient): Promise<void> {
+  void queryClient.invalidateQueries({ queryKey: keys.firstRun() })
   return queryClient.invalidateQueries({ queryKey: keys.onboardingProgress() })
 }

@@ -11,17 +11,21 @@
  * `GET /varieties`', "Oculta" is `GET /catalog`'s own `shown`, and the summary line is counted
  * only by `summaryLine`. A row links to a variety's page by its id alone, never a business id.
  *
- * "Mandar catálogo" is enabled always: the first-run checklist that would disable it while
- * nothing qualifies has no source in the app yet (`navigation.md`, "First-run checklist").
+ * "Mandar catálogo" is disabled, with its reason in words, only while `GET /first-run` says the
+ * checklist shows and nothing qualifies (`navigation.md`, "First-run checklist"); the server
+ * decides, the front never counts what the catalog could send. While that read is pending or
+ * has failed it is enabled, like in every other state.
  */
 
 import { useQuery } from '@tanstack/react-query'
 import { useLocation, useOutletContext } from 'react-router'
 import { NetworkError, get } from '../api/client'
 import { catalogQueryOptions } from '../api/catalog'
+import { actionableFirstRun, firstRunQuery } from '../api/firstRun'
 import { keys } from '../api/keys'
 import type { Me } from '../api/me'
 import { readStock, type VarietyStock } from '../api/stock'
+import Boton from '../components/Boton'
 import BotonLink from '../components/BotonLink'
 import ErrorGenerico from '../components/ErrorGenerico'
 import GoneNotice from '../components/GoneNotice'
@@ -40,7 +44,9 @@ import { detailFor } from '../stock/detail'
 import { summaryLine } from '../stock/summaryLine'
 import { archivedVarietiesQueryOptions } from './varieties/archivedVarieties'
 import { varietiesByName } from './varieties/varietiesByName'
-import { EMPTY_DETAIL, EMPTY_TITLE } from './varieties/varietiesMessages'
+import { CATALOG_DISABLED_REASON, EMPTY_DETAIL, EMPTY_TITLE } from './varieties/varietiesMessages'
+
+const CATALOG_REASON_ID = 'mandar-catalogo-motivo'
 
 export const VARIETY_SAVED = 'Variedad guardada'
 export const NO_PRICE_TODAY = 'Sin precio: no se puede vender'
@@ -83,6 +89,8 @@ export default function Variedades() {
   })
   const stockQuery = useQuery({ queryKey: keys.stock(), queryFn: readStock })
   const catalogQuery = useQuery(catalogQueryOptions())
+  const firstRun = actionableFirstRun(useQuery(firstRunQuery))
+  const catalogDisabled = firstRun?.kind === 'checklist' && firstRun.nothing_qualifies
   const archivedCount = useQuery(archivedVarietiesQueryOptions()).data?.length ?? 0
 
   const failure = varietiesQuery.error ?? stockQuery.error
@@ -102,9 +110,20 @@ export default function Variedades() {
         <h1 className="encabezado__titulo">Variedades</h1>
         {summary !== null && <p className="pie variedades__resumen">{summary}</p>}
         <div className="variedades__acciones">
-          <BotonLink to={CATALOG} icon="telegram">
-            Mandar catálogo
-          </BotonLink>
+          {catalogDisabled ? (
+            <>
+              <Boton icon="telegram" disabled ariaDescribedBy={CATALOG_REASON_ID}>
+                Mandar catálogo
+              </Boton>
+              <p className="variedades__motivo" id={CATALOG_REASON_ID} data-copy="help">
+                {CATALOG_DISABLED_REASON}
+              </p>
+            </>
+          ) : (
+            <BotonLink to={CATALOG} icon="telegram">
+              Mandar catálogo
+            </BotonLink>
+          )}
           <BotonLink to={STOCK_ENTRY_NEW} variant="secondary" icon="agregar" ariaLabel="+ Entrada de stock">
             Entrada de stock
           </BotonLink>

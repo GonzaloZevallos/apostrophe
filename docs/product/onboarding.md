@@ -45,8 +45,8 @@ Success criteria:
 
 - For a brand-new business the Onboarding fully replaces the checklist; the two never both apply.
 - While it is not over, neither the checklist nor "Arrancá por las variedades" shows. "Arrancá por las variedades" takes over once it is over.
-- **No side rules of its own**: "+ Nueva venta" and "Mandar catálogo" behave while the Onboarding runs as they do for any business. What is missing is told by the Inicio notice ("Falta: …"), by Nueva venta's own "<variety> no tiene precio para esa fecha" before saving, and by the catalog screen's own empty state. The checklist's side rules (navigation.md) belong to the checklist and are built with it.
-- **This capability builds neither the checklist nor the after-import notice** (navigation.md); they come with their own task. Until then, a business that existed before the Onboarding and an imported business see Inicio as they do today: "Arrancá por las variedades" when no variety has a price today, and the out-of-date pin notice.
+- **No side rules of its own**: "+ Nueva venta" and "Mandar catálogo" behave while the Onboarding runs as they do for any business. What is missing is told by the Inicio notice ("Falta: …"), by Nueva venta's own "<variety> no tiene precio para esa fecha" before saving, and by the catalog screen's own empty state. The checklist's side rules (navigation.md) belong to the checklist.
+- **The Onboarding itself builds neither the checklist nor the after-import notice**: Inicio's "Para arrancar" checklist and the "Conectá el bot…" notice are built by the first-run capability (navigation.md, results.md), which reads `/first-run`. A business that existed before the Onboarding and an imported business see the element that capability decides, not an Onboarding notice.
 
 ### Entry and the Inicio notice
 

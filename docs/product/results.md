@@ -17,6 +17,10 @@ It computes nothing those capabilities already compute, beyond adding them up. I
 
 Ganancia and Caja exist nowhere else in the product, and they are why the panel exists. The spreadsheet's Panel got profit wrong: its profit dropped the week flower was bought. Showing debt and stock on the same screen is a convenience on top of that.
 
+**When** I open the app between orders or at the end of the day, **I want** to see what I sold today, who owes me and what is running out, and act on it at once (collect from a debtor, open a variety that is running low, fix what a notice tells me), **so I can** get back to the customer without going through Clientes and Variedades one by one or doing any arithmetic.
+
+This refines the panel job above and the navigation job for Hoy (GH-45); it is not a new job. Its protagonist is the seller, on the phone, with little time; Semana and Mes are for the weekly or monthly look, Análisis for anything deeper. Before it, the seller went into Clientes to collect and into Variedades variety by variety, and set the business up without a guide, often forgetting the bot.
+
 **When** I take grams out of my own stock without selling them (to share at a party so people get to know the business, or for my own use), **I want** to record them from my phone in a few taps (date, varieties and grams, the reason), **so I can** keep stock right and see in Ganancia what promoting the business and my own consumption cost me, without recording a sale nobody made or an adjustment that reads as lost flower. (Served here by the Promoción and Consumo propio lines of Semana and Mes; the withdrawal is defined in stock.md.)
 
 **When** I run my business from my phone between orders or mid-chat with a customer, several times a day, **I want** the app laid out around what I actually do and how often, **so I can** get back to the customer instead of hunting through menus. (The navigation job, navigation.md: served here by Hoy showing what can be acted on today, with "Cobrar" on each debtor.)
@@ -52,6 +56,11 @@ Success criteria:
    - a period with no activity shows real zeros;
    - average sale shows nothing when the period has no sales.
 7. **A withdrawal is not a sale**: recording one leaves sales, number of sales, average sale, grams sold, Regalaste, cost of goods sold, stock shortfall and Caja exactly as they were.
+8. **Collect in one tap from Hoy**: "Cobrar" on each debtor row of the Te deben block opens Registrar cobro with that customer chosen, accessible name "Cobrar a <name>"; back or "Cerrar" leaves it in one move.
+9. **Hoy is only what can be acted on**: sold today, then Te deben, then Lo que te queda; a low variety links to its page; no result figure (Ganancia, Caja, costs, Gastos, Regalaste, Compras) shows on Hoy.
+10. **First run follows today's definition**: a brand-new business gets the Onboarding notice; only a business that existed before the Onboarding shipped sees the four-step checklist; an imported business sees the dismissable after-import notice; at most one first-run element shows at a time (navigation.md).
+11. **Every notice leads to its fix**: "Tu catálogo en Telegram está desactualizado" opens the catalog screen; the business avatar opens Configuración.
+12. **Looks as designed**: Inicio, InicioOscuro and InicioCompu match `docs/product/design-system/pantallas/`, phone and computer, both themes.
 
 ## Behaviour
 
@@ -87,7 +96,7 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
 
 ### What each tab shows
 
-- **Hoy** shows what can be acted on today: what was sold today (sales, number of sales, average sale and grams sold), then the Te deben block, then Lo que te queda.
+- **Hoy** shows what can be acted on today, top to bottom: what was sold today (sales, number of sales, average sale and grams sold), then the Te deben block, then Lo que te queda.
 - **Semana and Mes** show sales, number of sales, average sale, grams sold, Regalaste, Costo de lo vendido, Faltante de stock (when the period has one), Promoción and Consumo propio (each when the period has one), Gastos, Compras de flores, Ganancia and Caja, then the Te deben block and Lo que te queda. Promoción and Consumo propio sit right after Faltante de stock and before Gastos.
 - Ganancia, Caja, Costo de lo vendido, Faltante de stock, Promoción, Consumo propio, Gastos, Regalaste and Compras never show on Hoy.
 
@@ -110,13 +119,20 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
 
 ### Te deben block
 
-- **Figures**: the total owed, the count of sales still owing, and the oldest owing-since date, as payments.md defines them.
+- **Figures**: the total owed, the count of sales still owing ("1 venta debiendo" or "N ventas debiendo") and the oldest owing-since date, as payments.md defines them.
 - **Teaser**: up to 3 customers with the highest balance above $0. Ties go by owing since (oldest first), then by name. The design may tune the number.
-  - Each row shows the balance and "desde dd/mm", and carries "Cobrar" (accessible name "Cobrar a <name>"), which opens Registrar cobro with that customer already chosen (payments.md).
+  - Each row shows the balance in amber and "desde dd/mm", and carries "Cobrar" (accessible name "Cobrar a <name>"), which opens Registrar cobro with that customer already chosen (payments.md), as an entry in the app's history.
   - Tapping the rest of the row opens that customer's card.
 - Tapping the block's heading opens Clientes, on its Te deben section.
 - Customers in credit never appear and count in no figure.
 - **Nobody owes**: the block stays and reads a fixed "Nadie te debe", with nothing to tap.
+- **After "Cobrar"**: Registrar cobro follows payments.md unchanged (a partial payment allowed, a payment above the balance refused inline keeping everything typed, "Todo" filling the whole balance). Saving or "Cerrar" returns to Inicio in one move. The toast is payments.md's "Cobro guardado · queda debiendo $ X", or "Cobro guardado" when nothing is left owing; it never names the customer. The block refreshes from the API:
+  - the total, the count and the oldest date update;
+  - a debtor still owing stays, with the new balance;
+  - a debtor paid in full leaves, and the teaser refills to 3 by its own order;
+  - with nobody left owing, it reads "Nadie te debe".
+
+  Inicio adds no animation and no rule of its own.
 
 ### Lo que te queda
 
@@ -128,6 +144,7 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
   - its detail line: "Sin gramos desde el 30/09", "Avisás abajo de 20 g" or "Cargale la primera entrada".
 - A variety that is low links to its page (varieties.md).
 - A variety with no threshold shows no warning line.
+- Low varieties are not moved first; the order is by name.
 - There is no total grams.
 
 ### On screen (Inicio, InicioOscuro, InicioCompu)
@@ -143,25 +160,26 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
   2. "Tu catálogo en Telegram está desactualizado", while the pinned catalog is out of date (pinned-catalog.md). It opens the catalog screen (catalog.md);
   3. "Conectá el bot para que el catálogo fijado se actualice solo", for a business loaded by the spreadsheet import, until dismissed or the bot is first published (navigation.md);
   4. the tab's figures, as listed above.
+- First-run state belongs to the business: every user of it, a partner who joined included, sees the same element.
 - Semana and Mes keep the same notices above their own figures.
 - On a computer, it uses `InicioCompu`'s two-column layout, with the same notices in the same order at the top.
-- It follows the light and dark themes.
+- It follows the light and dark themes, and matches `docs/product/design-system/pantallas/` in both.
 - It is not an action menu:
-  - it records nothing itself and has no toasts;
-  - its one main action is the shell's "+ Nueva venta"; "Cobrar" on debtor rows is the only other direct action, besides the Onboarding notice, which only opens the Onboarding.
+  - it records nothing itself and has no toasts of its own;
+  - its one main action is the shell's "+ Nueva venta"; "Cobrar" on debtor rows is the only other direct action, besides the notices, which only open where their fix is.
 - The figures are read when the panel is opened, with no live updates.
-- A dropped network shows "Sin conexión" (accounts.md).
+- A dropped network shows "Sin conexión"; a server error shows the generic retry (accounts.md).
 
 ### Constraints
 
 - The business comes from the session.
 - The panel route joins the isolation sweep and the gated-route test.
-- Every figure is computed on the server, and so is whether the Onboarding notice shows, its count and what is next.
+- Every figure is computed on the server, and so is which first-run element and which notices show, the Onboarding notice's count and what is next, and each checklist step.
 - No figure or name goes to logs, the console or browser storage.
 
 ## Metrics
 
-- **Speed (criterion 1)**: the panel, and each period switch, answer in under 300 ms with a few hundred sales and a few dozen varieties and customers.
+- **Speed (criterion 1)**: the panel, and each period switch, answer in under 300 ms with a few hundred sales and a few dozen varieties and customers. Guarded by query plan and statement count, never elapsed time (ADR-0038): the same number of statements on a small seeded business as on a seeded year.
 - **Agreement (criterion 2)**: 0 differences, per period:
   - sales total and count against Ventas;
   - Te deben figures against Clientes' Te deben section;
@@ -179,15 +197,20 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
   - negative Ganancia and Caja shown as "−$ X".
 - **Archiving moves nothing (criterion 3)**: every period figure is identical before archiving a variety with history, after archiving and after restoring; the archived variety is absent from Lo que te queda and does not count for "Arrancá por las variedades".
 - **Not a sale (criterion 7)**: after recording a withdrawal, 0 differences in sales, number of sales, average sale, grams sold, Regalaste, cost of goods sold, stock shortfall and Caja.
-- **Tabs**: front tests show Hoy with sales, Te deben and Lo que te queda only, and Ganancia, Caja, Costo de lo vendido, Faltante de stock, Promoción, Consumo propio, Gastos, Regalaste and Compras only on Semana and Mes, Promoción and Consumo propio right after Faltante de stock.
-- **Inicio's order**: front tests, phone and computer, show at most one of the Onboarding notice, the checklist or "Arrancá por las variedades" (never two), then the out-of-date notice, then the after-import notice, then the figures.
+- **Tabs (criterion 9)**: front tests, phone and computer, show Hoy with sold today, Te deben and Lo que te queda only, in that order, and Ganancia, Caja, Costo de lo vendido, Faltante de stock, Promoción, Consumo propio, Gastos, Regalaste and Compras only on Semana and Mes, Promoción and Consumo propio right after Faltante de stock.
+- **One-tap collect (criterion 8)**: the end-to-end front run, phone and computer viewports, taps "Cobrar a <name>" on Hoy, Registrar cobro opens with that customer chosen, a payment is saved, and one back move returns to Inicio.
+- **Refresh after Cobrar**: front tests show a partial payment leaving the debtor with the new balance, a full payment removing the row and the teaser refilling to 3 by its order, "Nadie te debe" when nobody is left owing, and both toasts reading as specified with no customer name.
+- **Inicio's order (criteria 10, 11)**: front tests, phone and computer, show at most one of the Onboarding notice, the checklist or "Arrancá por las variedades" (never two), then the out-of-date notice, then the after-import notice, then the figures; the out-of-date notice opens the catalog screen and the avatar opens Configuración.
+- **First run (criterion 10)**: the first-run matrices of navigation.md, 100% passing.
 - **Period edges**: a week that crosses a month and a year, Monday as the first day, and a day boundary in Argentina time. 100% passing.
-- **Debtors teaser (criterion 4)**: ordered by balance, then owing since, then name; credits excluded; "Nadie te debe" when nobody owes; "Cobrar" with its accessible name on every row. No state is told by color alone.
-- **Isolation (criterion 5)**: from another business, the panel route shows none of the first business's figures or Onboarding state. After a full front run, the console and browser storage hold no figures or names.
+- **Debtors teaser (criterion 4)**: ordered by balance, then owing since, then name; credits excluded; "Nadie te debe" when nobody owes; "Cobrar" with its accessible name on every row. No state is told by color alone, in both themes.
+- **Isolation (criterion 5)**: from another business, the panel route shows none of the first business's figures, Onboarding state or first-run state. After a full front run, the console and browser storage hold no figures or names.
 - **Nothing invented (criterion 6)**:
   - an empty business shows $ 0 and 0 g, with no average sale and no Faltante de stock, Promoción or Consumo propio line;
   - every figure on screen equals the API's answer.
+- **Looks as designed (criterion 12)**: `scripts/design/compare.sh` runs before and after for Inicio, InicioOscuro and InicioCompu, phone and computer, with the captures attached to the PR and every difference from the design listed.
 - **No curl**: the end-to-end front run opens Inicio, switches across the three periods, reads Promoción and Consumo propio after recording a withdrawal of each reason, opens Clientes from the block's heading, a customer from the teaser, and Registrar cobro from a teaser row's "Cobrar".
+- **Business measure**, read by the operator from existing records only, never shown in the app: the share of pre-Onboarding businesses that complete the checklist, and the share of imported businesses that publish the catalog.
 
 ## Out of scope
 
@@ -199,3 +222,6 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
 - Stock's total grams on the panel.
 - Dismissing the Onboarding notice.
 - Archived varieties on the panel.
+- Putting low varieties first in Lo que te queda.
+- Restyling Registrar cobro to `Cobro.dc.html`: the payments screen's own work.
+- A checklist for a brand-new business: it gets the Onboarding.

@@ -255,6 +255,7 @@ FIXTURE_ROUTES: Mapping[str, tuple[RouteShape, ...]] = {
         RouteShape("GET", "/customers", item=True),
     ),
     "debtors": (RouteShape("GET", "/payments/debtors"),),
+    "firstRun": (RouteShape("GET", "/first-run"),),
     "movements": (RouteShape("GET", "/stock/varieties/{variety_id}/movements"),),
     "panel": (RouteShape("GET", "/panel"),),
     "payment": (RouteShape("POST", "/customers/{customer_id}/payments"),),

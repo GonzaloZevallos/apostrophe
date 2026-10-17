@@ -191,6 +191,13 @@ def seeded(
         staying = signed_in(client, staying_token)
         staying_records = _seed_everything(staying, "staying@example.com")
         _seed_withdrawal(staying, staying_records["variety_id"])
+    # One first-run row each (docs/adr/0046), so the delete meets the table with data.
+    with file_engine.begin() as connection:
+        for email in ("leaving@example.com", "staying@example.com"):
+            connection.execute(
+                text("INSERT INTO first_run (business_id, imported_at) VALUES (:b, :at)"),
+                {"b": _business_id(file_engine, email), "at": "2026-10-01 12:00:00"},
+            )
     return {"leaving": leaving_records, "staying": staying_records}
 
 

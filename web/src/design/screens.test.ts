@@ -278,6 +278,75 @@ describe('the Onboarding rows of the real screens.json', () => {
   })
 })
 
+describe('the Inicio rows of the real screens.json', () => {
+  type Row = {
+    screen: string
+    design?: string
+    section?: string
+    tema?: string
+    viewport?: number[]
+    steps?: Record<string, unknown>[]
+  }
+  const rows = screens.screens as Row[]
+  const row = (name: string): Row => {
+    const found = rows.find((r) => r.screen === name)
+    if (found === undefined) throw new Error(`screens.json has no ${name} entry`)
+    return found
+  }
+  const clicks = (r: Row): unknown[] => (r.steps ?? []).flatMap((step) => ('click' in step ? [step.click] : []))
+  const HOY_PHONE = 'Hoy · la pestaña con la que abre el panel'
+  const SEMANA_PHONE = 'Semana · Ganancia y Caja sólo acá y en Mes, nunca en Hoy'
+  const SEMANA_COMPU = 'Semana · Ganancia y Caja sólo acá y en Mes'
+
+  it('captures Hoy, the tab Inicio opens on, with no step, on phone and computer', () => {
+    expect(clicks(row('InicioHoy'))).toEqual([])
+    expect(row('InicioHoy')).toMatchObject({ design: 'Inicio', section: HOY_PHONE })
+    expect(clicks(row('InicioHoyCompu'))).toEqual([])
+    expect(row('InicioHoyCompu')).toMatchObject({ design: 'InicioCompu', viewport: [1280, 920] })
+  })
+
+  it('captures the dark computer Hoy against the light computer drawing, as the other CompuOscuro twins do', () => {
+    expect(clicks(row('InicioHoyCompuOscuro'))).toEqual([])
+    expect(row('InicioHoyCompuOscuro')).toMatchObject({
+      design: 'InicioCompu',
+      tema: 'oscuro',
+      viewport: [1280, 920],
+    })
+    expect(row('InicioHoyCompuOscuro').section).toBeUndefined()
+  })
+
+  it('captures the dark Hoy against the dark drawing, which draws Hoy alone', () => {
+    expect(clicks(row('InicioOscuro'))).toEqual([])
+    expect(row('InicioOscuro').tema).toBe('oscuro')
+  })
+
+  it('crops each Semana capture to the block that draws Semana', () => {
+    expect(clicks(row('Inicio'))).toEqual(['Semana'])
+    expect(row('Inicio').section).toBe(SEMANA_PHONE)
+    expect(clicks(row('InicioCompu'))).toEqual(['Semana'])
+    expect(row('InicioCompu').section).toBe(SEMANA_COMPU)
+  })
+
+  it('keeps every Inicio row in the Inicio drawings, which assertScreens accepts', () => {
+    const inicio = rows.filter((r) => /^Inicio(Hoy|Oscuro|Compu)*$/.test(r.screen))
+    expect(inicio.map((r) => r.screen)).toEqual([
+      'Inicio',
+      'InicioHoy',
+      'InicioOscuro',
+      'InicioCompu',
+      'InicioHoyCompu',
+      'InicioHoyCompuOscuro',
+    ])
+    expect(() => assertScreens(inicio)).not.toThrow()
+  })
+
+  it('refuses a section that Compu draws more than once, the reason InicioHoyCompu has none', () => {
+    expect(() =>
+      assertScreens([{ screen: 'InicioHoyCompu', design: 'InicioCompu', section: 'Hoy' }]),
+    ).toThrow(/^InicioHoyCompu: section "Hoy" occurs \d+ times in InicioCompu\.dc\.html, expected exactly once$/)
+  })
+})
+
 describe('sectionOccurrences', () => {
   it('counts a label as the text between a tag end and the next tag', () => {
     expect(sectionOccurrences('<b>Otra</b>', 'Listo')).toBe(0)

@@ -5,11 +5,12 @@
  * API answered: nothing here asks the front to decide one.
  */
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClient, QueryClientProvider, focusManager } from '@tanstack/react-query'
 import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { RouterProvider, createMemoryRouter } from 'react-router'
 import { afterEach, describe, expect, test, vi } from 'vitest'
+import type { FirstRunAnswer } from '../api/firstRun'
 import { router as appRouter } from '../router'
 import { renderWithViewport } from '../test-viewport'
 import { expectIconAndTextRule, iconAndTextProblems } from '../test/iconAndTextRule'
@@ -72,11 +73,13 @@ function catalogOf(hidden: number[]) {
   }
 }
 
+const FIRST_RUN_NONE: FirstRunAnswer = { kind: 'none', checklist: [], import_notice: false, nothing_qualifies: false }
+
 function json(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
 }
 
-type Answers = Record<string, () => Response>
+type Answers = Record<string, () => Response | Promise<Response>>
 
 function defaults(): Answers {
   return {
@@ -84,6 +87,7 @@ function defaults(): Answers {
     'GET /varieties': () => json(200, VARIETIES),
     'GET /stock': () => json(200, STOCK),
     'GET /catalog': () => json(200, catalogOf([])),
+    'GET /first-run': () => json(200, FIRST_RUN_NONE),
     'GET /varieties/1': () => json(200, VARIETIES[3]),
     'GET /varieties/1/prices': () => json(200, [price(12000)]),
     'GET /varieties/7': () => json(200, { id: 7, name: 'Sir Jack', current_price: null }),
@@ -553,5 +557,75 @@ describe('Nueva variedad and the icon and text rule', () => {
     await screen.findByRole('button', { name: 'Agregá la variedad' })
     expect(document.querySelectorAll('[data-copy="help"]')).toHaveLength(1)
     expectIconAndTextRule(screen.getByRole('main'), { limits: LIMITS })
+  })
+})
+
+describe('"Mandar catálogo" and the first-run checklist', () => {
+  const REASON = 'Cargá una variedad con precio y su stock'
+  const CHECKLIST_EMPTY: FirstRunAnswer = {
+    kind: 'checklist',
+    checklist: [
+      { step: 'priced_variety', required: true, done: false },
+      { step: 'stock_entry', required: true, done: false },
+      { step: 'published', required: false, done: false },
+      { step: 'second_user', required: false, done: false },
+    ],
+    import_notice: false,
+    nothing_qualifies: true,
+  }
+
+  test('is disabled with its reason in words while the checklist shows and nothing qualifies', async () => {
+    renderApp(VARIETIES_PATH, { answers: { 'GET /first-run': () => json(200, CHECKLIST_EMPTY) } })
+
+    const button = await screen.findByRole('button', { name: 'Mandar catálogo' })
+    expect(button).toBeDisabled()
+    expect(button).toHaveAccessibleDescription(REASON)
+    expect(screen.queryByRole('link', { name: 'Mandar catálogo' })).not.toBeInTheDocument()
+    expect(document.querySelectorAll('[data-copy="help"]')).toHaveLength(1)
+    expectIconAndTextRule(button.closest<HTMLElement>('.variedades__acciones')!, { limits: LIMITS })
+  })
+
+  test.each([
+    ['the checklist shows and something qualifies', { ...CHECKLIST_EMPTY, nothing_qualifies: false }],
+    ['no first-run element shows', FIRST_RUN_NONE],
+    ['the Onboarding shows', { ...FIRST_RUN_NONE, kind: 'onboarding' as const }],
+  ])('is enabled and has no reason when %s', async (_name, answer) => {
+    renderApp(VARIETIES_PATH, { answers: { 'GET /first-run': () => json(200, answer) } })
+
+    await screen.findByText('24K Gold')
+    await waitFor(() => expect(screen.getByRole('link', { name: 'Mandar catálogo' })).toHaveAttribute('href', CATALOG))
+    expect(screen.queryByText(REASON)).not.toBeInTheDocument()
+  })
+
+  test('is enabled while /first-run is pending', async () => {
+    renderApp(VARIETIES_PATH, { answers: { 'GET /first-run': () => new Promise<Response>(() => undefined) } })
+
+    await screen.findByText('24K Gold')
+    expect(screen.getByRole('link', { name: 'Mandar catálogo' })).toHaveAttribute('href', CATALOG)
+    expect(screen.queryByText(REASON)).not.toBeInTheDocument()
+  })
+
+  test('is enabled again when a refetch of /first-run fails after an answer', async () => {
+    let reads = 0
+    renderApp(VARIETIES_PATH, {
+      answers: { 'GET /first-run': () => (reads++ === 0 ? json(200, CHECKLIST_EMPTY) : json(500, { code: 'boom' })) },
+    })
+    expect(await screen.findByRole('button', { name: 'Mandar catálogo' })).toBeDisabled()
+
+    act(() => {
+      focusManager.setFocused(false)
+      focusManager.setFocused(true)
+    })
+
+    expect(await screen.findByRole('link', { name: 'Mandar catálogo' })).toHaveAttribute('href', CATALOG)
+    expect(screen.queryByText(REASON)).not.toBeInTheDocument()
+  })
+
+  test('is enabled when /first-run fails', async () => {
+    renderApp(VARIETIES_PATH, { answers: { 'GET /first-run': () => json(500, { code: 'boom' }) } })
+
+    await screen.findByText('24K Gold')
+    expect(screen.getByRole('link', { name: 'Mandar catálogo' })).toHaveAttribute('href', CATALOG)
+    expect(screen.queryByText(REASON)).not.toBeInTheDocument()
   })
 })

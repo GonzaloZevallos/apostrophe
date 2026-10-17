@@ -21,7 +21,9 @@
  */
 
 import { Fragment, useCallback, useMemo, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Link, Outlet, useMatches, useOutletContext } from 'react-router'
+import { actionableFirstRun, firstRunQuery } from '../api/firstRun'
 import type { Me } from '../api/me'
 import Icono, { type NombreIcono } from '../components/Icono'
 import InAppLink from '../components/InAppLink'
@@ -44,6 +46,7 @@ import {
 import BotonLink from '../components/BotonLink'
 import { NUEVA_VENTA_CLASS, NUEVA_VENTA_ESCRITORIO_CLASS } from '../components/botonVisual'
 import BackArrow from './BackArrow'
+import { NUEVA_VENTA_MISSING } from '../screens/inicioMessages'
 import { chromeOf } from './chrome'
 import { initialsOf } from './initials'
 import { BackParentContext, type BackParentSlot, type BackParentStore } from './useBackParent'
@@ -137,6 +140,20 @@ function useBackParentStore(): BackParentStore {
   return useMemo(() => ({ slot, write, clearIf }), [slot, write, clearIf])
 }
 
+const NUEVA_VENTA_MISSING_ID = 'nueva-venta-falta'
+const RAIL_MISSING_ID = 'nueva-venta-falta-riel'
+
+/** Whether `GET /first-run` says the checklist shows with its priced-variety step not done.
+ * Asked only where "+ Nueva venta" is drawn; while pending or failed it is `false`, so the
+ * button draws normally. The shell decides nothing: it shows the server's answer. */
+function useNuevaVentaMissing(enabled: boolean): boolean {
+  const data = actionableFirstRun(useQuery({ ...firstRunQuery, enabled }))
+  return (
+    data?.kind === 'checklist' &&
+    data.checklist.some((step) => step.step === 'priced_variety' && !step.done)
+  )
+}
+
 export default function Shell() {
   const me = useOutletContext<Me>()
   const leaf = leafScreen(useMatches())
@@ -144,6 +161,9 @@ export default function Shell() {
   const railPlace = placeOf(leaf.id, 'computer').rail
   const chrome = chromeOf(leaf, useViewport())
   const backParent = useBackParentStore()
+  const missing = useNuevaVentaMissing(chrome.railNuevaVenta || chrome.barNuevaVenta)
+  const barDescribedBy = missing ? NUEVA_VENTA_MISSING_ID : undefined
+  const railDescribedBy = missing ? RAIL_MISSING_ID : undefined
 
   return (
     <BackParentContext.Provider value={backParent}>
@@ -151,9 +171,21 @@ export default function Shell() {
       {chrome.rail && (
         <nav className="riel-lateral" aria-label="Navegación" data-menu>
           {chrome.railNuevaVenta && (
-            <BotonLink to={SALE_NEW} icon="agregar" className={NUEVA_VENTA_ESCRITORIO_CLASS}>
-              Nueva venta
-            </BotonLink>
+            <>
+              <BotonLink
+                to={SALE_NEW}
+                icon="agregar"
+                className={NUEVA_VENTA_ESCRITORIO_CLASS}
+                ariaDescribedBy={railDescribedBy}
+              >
+                Nueva venta
+              </BotonLink>
+              {missing && (
+                <span className="nueva-venta__falta nueva-venta__falta--escritorio" id={RAIL_MISSING_ID}>
+                  {NUEVA_VENTA_MISSING}
+                </span>
+              )}
+            </>
           )}
           {RAIL_ITEMS.map((item, index) => {
             const active = railPlace === item.place
@@ -194,9 +226,16 @@ export default function Shell() {
           {chrome.backArrow && <BackArrow id={leaf.id} />}
           <Outlet context={me} />
           {chrome.barNuevaVenta && (
-            <BotonLink to={SALE_NEW} icon="agregar" className={NUEVA_VENTA_CLASS}>
-              Nueva venta
-            </BotonLink>
+            <>
+              <BotonLink to={SALE_NEW} icon="agregar" className={NUEVA_VENTA_CLASS} ariaDescribedBy={barDescribedBy}>
+                Nueva venta
+              </BotonLink>
+              {missing && (
+                <span className="nueva-venta__falta" id={NUEVA_VENTA_MISSING_ID}>
+                  {NUEVA_VENTA_MISSING}
+                </span>
+              )}
+            </>
           )}
           {chrome.bar && (
             <nav className="bar-inferior" aria-label="Navegación" data-menu>

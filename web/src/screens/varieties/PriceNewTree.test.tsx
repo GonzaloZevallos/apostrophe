@@ -27,6 +27,7 @@ const STOCK = {
   varieties: [{ variety_id: 1, grams: 135, status: 'ok', sold_out_since: null, threshold: null, days_left: 270 }],
   entries: [],
 }
+const FIRST_RUN_NONE = { kind: 'none', checklist: [], import_notice: false, nothing_qualifies: false }
 const CATALOG = { text: 'texto', header: '', footer: '', varieties: [] }
 
 type Answers = Record<string, () => Response>
@@ -35,12 +36,14 @@ function defaults(): Answers {
   return {
     'GET /auth/me': () => jsonResponse(200, ME),
     'GET /varieties': () => jsonResponse(200, [VARIETY_ROW]),
+    'GET /varieties?archived=true': () => jsonResponse(200, []),
     'GET /varieties/1': () => jsonResponse(200, VARIETY_ROW),
     'GET /varieties/1/prices': () => jsonResponse(200, HISTORY),
     'GET /pricing-settings': () => jsonResponse(200, SETTINGS_ON),
     'GET /stock': () => jsonResponse(200, STOCK),
     'GET /stock/varieties/1/movements': () => jsonResponse(200, []),
     'GET /catalog': () => jsonResponse(200, CATALOG),
+    'GET /first-run': () => jsonResponse(200, FIRST_RUN_NONE),
   }
 }
 
@@ -131,7 +134,7 @@ describe('leaving an untouched form', () => {
     const warn = vi.spyOn(console, 'warn')
     const user = userEvent.setup()
     const { router } = renderApp([NEW_PATH], 'computer')
-    await screen.findByRole('dialog', { name: 'Nuevo precio' })
+    await screen.findByLabelText(/^Precio de lista/)
 
     await gesture(user)
 
@@ -147,7 +150,8 @@ describe('leaving an untouched form', () => {
   test('a click inside the dialog is not a click on the backdrop', async () => {
     const user = userEvent.setup()
     const { router } = renderApp([NEW_PATH], 'computer')
-    const dialog = await screen.findByRole('dialog', { name: 'Nuevo precio' })
+    await screen.findByLabelText(/^Precio de lista/)
+    const dialog = screen.getByRole('dialog', { name: 'Nuevo precio' })
 
     await user.click(within(dialog).getByText('Nuevo precio'))
 
@@ -177,8 +181,8 @@ describe('leaving a form with something typed', () => {
   test('the question is a sibling of the dialog, and a second Escape while it asks does nothing', async () => {
     const user = userEvent.setup()
     const { router } = renderApp([NEW_PATH], 'computer')
-    const dialog = await screen.findByRole('dialog', { name: 'Nuevo precio' })
-    await user.type(screen.getByLabelText(/^Precio de lista/), '12000')
+    await user.type(await screen.findByLabelText(/^Precio de lista/), '12000')
+    const dialog = screen.getByRole('dialog', { name: 'Nuevo precio' })
 
     await user.keyboard('{Escape}')
     const question = await screen.findByRole('alertdialog')

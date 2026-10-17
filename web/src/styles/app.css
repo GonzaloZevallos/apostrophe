@@ -2326,6 +2326,12 @@ body {
   border-bottom: 0;
 }
 
+/* A low variety in Inicio's Lo que te queda is a link to its page; it reads as the same row. */
+.fila-stock--enlace {
+  color: inherit;
+  text-decoration: none;
+}
+
 .fila-stock__texto {
   flex: 1;
   min-width: 0;
@@ -4000,7 +4006,7 @@ body {
  *   .boton--fila, .enlace-texto, .bar-inferior__item, .riel-lateral__item,
  *   .riel-lateral__negocio, .mas__item, .ajustes__item, .mas-info__boton, .fila-venta,
  *   .fila-gasto, .fila-entrada, .fila-entrada__enlace, .lista-clientes__fila,
- *   .bloque-deben__titulo, .bloque-deben__fila, .bloque-deben__datos, .variedad-item,
+ *   .bloque-deben__titulo, .bloque-deben__fila, .bloque-deben__datos, .fila-stock--enlace, .variedad-item,
  *   .variedad-fila, .variedades__todas, .catalogo__fila-nombre, .pestanas__opcion,
  *   .selector-pago__opcion, .gastos__mes-boton, .encabezado__volver, .historial-fila__borrar;
  *   resting on --superficie or --papel itself, so --linea is the fill cue (these come after
@@ -4049,6 +4055,7 @@ body {
     .bloque-deben__titulo,
     .bloque-deben__fila,
     .bloque-deben__datos,
+    .fila-stock--enlace,
     .variedad-item,
     .variedad-fila,
     .variedades__todas,
@@ -4138,7 +4145,8 @@ body {
     .selector-pago__opcion,
     .gastos__mes-boton,
     .encabezado__volver,
-    .historial-fila__borrar
+    .historial-fila__borrar,
+    .fila-stock--enlace
   ) {
   -webkit-user-select: none;
   user-select: none;
@@ -4696,4 +4704,120 @@ body {
  * not a control, so it draws no ring. */
 .gasto-form__titulo:focus {
   outline: none;
+}
+
+/* The first-run checklist, the after-import notice and the missing line under "+ Nueva venta"
+ * (`InicioPrimeraVez.dc.html`, `InicioPrimeraVezCompu.dc.html`), tokens only. */
+.checklist {
+  background: var(--superficie);
+  border-radius: var(--radio-panel-grande);
+  padding: var(--espacio-lg) var(--espacio-lg) var(--espacio-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-sm);
+}
+
+.checklist__titulo {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--tinta);
+}
+
+.checklist__lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.checklist__paso {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espacio-md);
+  padding: 10px 0;
+  border-bottom: 1px solid var(--linea);
+}
+
+.checklist__paso:last-child {
+  border-bottom: none;
+}
+
+.checklist__caja {
+  width: 22px;
+  height: 22px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: 2px solid var(--tinta2);
+}
+
+.checklist__caja--hecha {
+  background: var(--boton);
+  border-color: var(--boton);
+  color: var(--boton-texto);
+}
+
+.checklist__caja svg {
+  width: 16px;
+  height: 16px;
+}
+
+.checklist__texto {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.checklist__nombre {
+  font-size: 15px;
+  color: var(--tinta);
+}
+
+.checklist__requisito {
+  font-size: 13px;
+  color: var(--tinta2);
+}
+
+.checklist__hecho {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--tinta);
+}
+
+.aviso-importado {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--espacio-md);
+  padding: 14px 16px;
+}
+
+.aviso-importado .aviso-ambar__cuerpo {
+  flex: 1;
+}
+
+.aviso-importado .aviso-ambar__titulo {
+  font-size: 14px;
+}
+
+.nueva-venta__falta {
+  display: block;
+  margin: calc(-1 * var(--espacio-sm) + var(--espacio-xs)) var(--margen-pantalla) var(--espacio-md);
+  font-size: 13px;
+  color: var(--tinta2);
+  text-align: center;
+}
+
+.nueva-venta__falta--escritorio {
+  margin: calc(-1 * var(--espacio-lg) + var(--espacio-xs)) 0 var(--espacio-lg);
+}
+
+.variedades__motivo {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 13px;
+  color: var(--tinta2);
 }

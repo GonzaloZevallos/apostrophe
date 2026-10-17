@@ -1,12 +1,16 @@
 # Navigation
 
-The app's one structure for a business: the tabs on the phone, the sidebar on a computer, Más, Configuración, the one rule that gives every screen its chrome and its way back, which place is marked, the routes and their redirects, and the first run (the Onboarding for a brand-new business, the first-run checklist for a business that existed before it). It says where every capability is reached from. What each capability does stays in its own file; nothing here changes a rule of pricing, settlement, stock, the catalog, isolation or feedback. Seen only by the session's business (ADR-0004).
+The app's one structure for a business: the tabs on the phone, the sidebar on a computer, Más, Configuración, the one rule that gives every screen its chrome and its way back, which place is marked, the routes and their redirects, and the first run (the Onboarding for a brand-new business, the first-run checklist for a business that existed before it, the after-import notice for an imported one). It says where every capability is reached from. What each capability does stays in its own file; nothing here changes a rule of pricing, settlement, stock, the catalog, isolation or feedback. Seen only by the session's business (ADR-0004).
 
 ## Jobs
 
 **When** I run my business from my phone between orders or mid-chat with a customer, several times a day, **I want** the app laid out around what I actually do and how often: record a sale, see who owes and collect, send the catalog, record incoming stock. Each should be one or two taps away. Everything about one variety should be in one place, every business setting in one other place, and expenses and analysis within reach for the weekly or monthly look. **So I can** get back to the customer instead of hunting through menus, and never wonder which of several screens holds what I need.
 
 This is the navigation job underneath every capability's own "from my phone" job (sales, payments, stock, catalog, expenses). It replaces none of them. The computer is the same job on a bigger screen. The protagonist is the seller; the operator's tools stay outside the app (accounts.md).
+
+**When** I open the app between orders or at the end of the day, **I want** to see what I sold today, who owes me and what is running out, and act on it at once (collect from a debtor, open a variety that is running low, fix what a notice tells me), **so I can** get back to the customer without going through Clientes and Variedades one by one or doing any arithmetic.
+
+This refines the navigation job and results.md's panel job for Inicio (GH-45); it is not a new job. Served here by "Cobrar" on Inicio's debtor rows, the first-run checklist and the after-import notice, each leading to its fix.
 
 **When** a customer asks me what I have or how much something costs, or flower comes in, runs out or gets a new price, **I want** to open one variety and find everything about it on its own page, the list to tell me at a glance what I have, what is running out and what I can't sell, and today's catalog one tap from that list, ready to share from my phone, **so I can** answer the customer, record what came in and send an up-to-date catalog without moving between screens, and my customers never get a stale price or a variety I can't sell.
 
@@ -53,6 +57,7 @@ Success criteria:
 9. **Chrome by kind, everywhere.** Every screen, the Variedades screens included (the two-pane list, a variety's page, its "Ver todas" lists of prices and entries, Nuevo precio, Nueva variedad, "Todas las entradas" and the stock entry form), is exactly one kind with a parent. The stock entry form reads "Cerrar", never "Volver".
 10. **One move back.** Back or "Cerrar" leaves a screen in one tap and never lands on the same screen twice in history, the "Eso ya no está." exits and Registrar cobro included. With no history, back goes to the screen the form, sheet or card belongs to.
 11. **Every address opens its screen.** A reload on any Variedades route, parameterised ones included, opens the screen and never the API's answer. Every old Spanish path, `/variedades/{id}` and `/mi-stock/entradas/{id}` included, answers a permanent redirect to its new route with the id carried across.
+12. **First run, one element at a time.** A brand-new business gets the Onboarding notice; only a business that existed before the Onboarding shipped sees the first-run checklist; an imported business sees the dismissable after-import notice; never two first-run elements at once, and each leads to its fix.
 
 ## Behaviour
 
@@ -140,7 +145,7 @@ Every screen is exactly one of three kinds, has one parent, and gets its chrome 
 | An Onboarding step or "Listo" | Inicio |
 
 - **A gone exit is the same move as "Cerrar".** When saving, deleting or undoing in the stock entry form, the customer form or Registrar cobro hits a record that no longer exists, the screen goes back one step in history when it was opened from inside the app, or to its parent when it was opened by a direct link. The list refreshes and "Eso ya no está. La lista ya está al día." shows, as accounts.md defines it. No history entry is ever duplicated.
-- **"Cobrar a <name>"** on a debtor row opens Registrar cobro with that customer chosen, as an entry in the app's history; back or "Cerrar" closes it in one move.
+- **"Cobrar a <name>"** on a debtor row (Clientes or Inicio) opens Registrar cobro with that customer chosen, as an entry in the app's history; back or "Cerrar" closes it in one move, back to the screen it came from.
 
 ### Routes
 
@@ -172,7 +177,14 @@ This covers Configuración and its groups, the catalog screen and a variety's pa
   - **the first-run checklist**, for a business that existed before the Onboarding shipped;
   - **the after-import notice**, for a business loaded by the spreadsheet import. Once the import loads a business, its Onboarding is over.
 - There is no tour and no welcome screen beyond these.
-- The checklist and the after-import notice are built by their own task, not by the Onboarding's. Until they exist, a business that existed before the Onboarding and an imported business see Inicio as they do today: "Arrancá por las variedades" when no variety has a price today, and the pinned catalog's out-of-date notice.
+- **First-run state belongs to the business.** Every user of it sees the same element: a user who joined by a join invitation sees whatever the business they joined has, or none. A join invitation never opens a business, so it never starts a first run of its own.
+- **What is stored**: the Onboarding's own state (ADR-0036) is never copied. Beyond it, only three facts of the business are kept:
+  1. that the business was loaded by the spreadsheet import, and when. Only the import writes it, inside its single commit, and it is never cleared or moved (import.md). A business imported before this fact existed has none, and is not backfilled;
+  2. that the checklist has gone for good;
+  3. that the after-import notice was dismissed.
+
+  None of them holds personal data. No checklist step is ever stored as ticked.
+- Which element shows, and each checklist step, is answered by the server for the session's business.
 
 ### The Onboarding (first run of a brand-new business)
 
@@ -190,29 +202,30 @@ This covers Configuración and its groups, the catalog screen and a variety's pa
   2. any stock entry (required);
   3. the pinned catalog published at least once (optional);
   4. a second user in the business (optional).
-- A met step shows its box checked and the word "Hecho", never color alone.
-- **Who sees it**: a business that existed before the Onboarding shipped and has not yet met both required steps. A brand-new business gets the Onboarding instead and never sees the checklist. The optional steps never hold it on screen; they stay reachable in Configuración (Integraciones, Usuarios).
+- A met step shows its box checked and the word "Hecho", never color alone. The step labels are design's wording, within the icon and text rule's length limits; the checklist carries no attention icon.
+- **Who sees it**: a business that existed before the Onboarding shipped and has not yet met both required steps, and every user of it. A brand-new business gets the Onboarding instead and never sees the checklist. The optional steps never hold it on screen; they stay reachable in Configuración (Integraciones, Usuarios).
 - **When it goes**: for good, the first time steps 1 and 2 are both met.
   - It never comes back, even if a required step's condition later becomes false again (say, the only price entry is deleted).
   - Ongoing gaps are told by the standing notices: "Arrancá por las variedades" and the pinned catalog's out-of-date notice.
-- **Where**: at the top of Inicio, on the phone and on `InicioCompu` alike (results.md gives Inicio's order).
+- **Where**: at the top of Inicio, on the phone and on `InicioCompu` alike (results.md gives Inicio's order). While it applies, it takes the first-run slot, and "Arrancá por las variedades" does not show.
 - **While it shows**:
-  - with no variety priced today, "+ Nueva venta" stays visible and says in words what is missing;
+  - "+ Nueva venta" stays visible and, with no variety priced today, says in words what is missing;
   - while nothing qualifies for the catalog, "Mandar catálogo" is disabled with its reason in words (e.g. "Cargá una variedad con precio y su stock"). This is the only time it is ever disabled (catalog.md). Integraciones' link to the catalog screen is never disabled.
 - **An imported business** arrives with prices and stock, so it never sees the checklist.
 
 ### After-import notice
 
-- A business loaded by the spreadsheet import (import.md) shows, on Inicio, "Conectá el bot para que el catálogo fijado se actualice solo".
-- It shows until the seller dismisses it or the pinned catalog is first published, whichever comes first, and then never again.
+- A business the spreadsheet import loaded (import.md), as recorded by the import itself, shows on Inicio "Conectá el bot para que el catálogo fijado se actualice solo", with the attention icon (icon-and-text-rule.md).
+- It can be dismissed. It shows until it is dismissed or the pinned catalog is first published, whichever comes first, and then never again. A dismissal is for the business: no partner sees it afterwards.
+- A business imported before the import recorded it never sees the notice.
 
 ### Constraints
 
-- Nothing here adds a route that answers business data; each screen reads its owner's routes, already in the isolation sweep and the gated-route test. The Onboarding's own routes join both (onboarding.md).
+- Nothing here adds a route that answers business data beyond what Inicio's panel and the first-run state need; each screen reads its owner's routes, already in the isolation sweep and the gated-route test. The Onboarding's own routes, and any route for the first-run state (the import fact, the checklist's end, the after-import notice's dismissal), join both, and that state carries `business_id` and is exported and deleted by business removal (ADR-0015).
 - Serving a front path to a browser navigation never widens what the API answers to a JSON request, and adds no API route (ADR-0024).
 - Whatever decides the Onboarding notice, the checklist and the after-import notice is answered by the server for the session's business only.
-- No business id in a URL; no personal data or money in the console or browser storage (accounts.md). The theme choice is the only thing kept on the device.
-- Feedback follows accounts.md, in Configuración and the Onboarding as everywhere:
+- No business id in a URL; no personal data or money in the console or browser storage (accounts.md). The theme choice is the only thing kept on the device; the first-run facts are kept on the server, never in the browser.
+- Feedback follows accounts.md, in Configuración, the Onboarding and Inicio as everywhere:
   - no network shows "Sin conexión";
   - a server error shows a generic retry;
   - a record that is gone follows the "Eso ya no está." rule.
@@ -228,7 +241,7 @@ This covers Configuración and its groups, the catalog screen and a variety's pa
   - each gone exit (stock entry form, customer form, Registrar cobro), opened from its parent, leaves history holding the parent once, and one back leaves; opened by a direct link, it goes to the named parent;
   - each row of the back-with-no-history table is tested one by one; back with no history from Configuración's list goes to Más on the phone and Inicio on a computer; from a withdrawal's detail, to Variedades; from an archived variety's page, to Archivadas; from Archivadas, to Variedades; from the Onboarding, to Inicio;
   - on a computer, picking rows in Variedades' and Clientes' two panes, and Variedades' auto-selected first variety, leave back at one step; on the phone, opening a record pushes an entry;
-  - tapping "Cobrar a <name>" on a Clientes row opens Registrar cobro with the customer chosen, carries the in-app history state, and back closes it in one move.
+  - tapping "Cobrar a <name>" on a Clientes row and on an Inicio row opens Registrar cobro with the customer chosen, carries the in-app history state, and back closes it in one move.
 - **Accessible bar (criterion 6)**: a Playwright test at 320 px with text at 130 % shows every tab label whole; the active tab carries `aria-current` and a non-color mark; no state is told by color alone.
 - **Configuración (criterion 8)**:
   - front tests:
@@ -244,20 +257,24 @@ This covers Configuración and its groups, the catalog screen and a variety's pa
     - edits the header and footer;
     - adds, renames and removes a category, a refused removal included;
     - switches Apariencia, changes the password and logs out.
-- **First-run matrix, the Onboarding** (built with it): 100% passing, phone and computer:
+- **First-run matrix, the Onboarding**: 100% passing, phone and computer:
   - a brand-new business lands in the Onboarding on accepting its invitation and sees "Seguí con la configuración" while it is not over, never with "Arrancá por las variedades";
   - while it runs, "+ Nueva venta" and "Mandar catálogo" behave as for any business;
-  - a pre-existing business, a joined user's business and an imported business (including one that landed in the Onboarding before the import) never see it.
-- **First-run matrix, the checklist and the after-import notice** (built with their own task): 100% passing, phone and computer:
+  - a pre-existing business and an imported business (including one that landed in the Onboarding before the import) never see it; a user who joins a business mid-Onboarding sees the same notice.
+- **First-run matrix, the checklist and the after-import notice (criterion 12)**: 100% passing, phone and computer:
   - a business that existed before the Onboarding sees the checklist, and each met step shows "Hecho";
   - it goes the first time steps 1 and 2 are both met, whatever 3 and 4;
   - deleting the only price entry afterwards never brings it back;
-  - an imported business never sees it, and sees the after-import notice until dismissed or published;
+  - an imported business never sees it, and sees the after-import notice until dismissed or published; once dismissed, no partner sees it;
+  - a business that finished the Onboarding through "Listo" never sees the after-import notice, and neither does a business imported before the import fact existed;
+  - a joined user sees their business's element, or none;
+  - two first-run elements never show at once;
   - "Mandar catálogo" is disabled only while the checklist shows and nothing qualifies.
+- **First-run state isolated**: its routes are in the sweep and the gated-route test; business removal leaves 0 rows of it and exported count = deleted count.
 - **Redirects (criterion 11)**: every old Spanish path that has moved answers a permanent redirect to its English route, tested one by one, including `/negocio`, `/gastos/categorias`, `/catalogo`, `/mi-stock/nueva-entrada`, and `/variedades/{id}` and `/mi-stock/entradas/{id}` with the id carried across. A test shows every redirect target is a `screens.json` path, with no exemption. There is one redirect mechanism, on the server, and none in the front.
 - **Reloads under `/varieties` (criterion 11)**: a browser navigation to each Variedades route, parameterised ones included (`/varieties/{id}`, `/varieties/{id}/entries`, `/varieties/{id}/prices`, `/varieties/{id}/prices/new`, `/varieties/entries/{id}`) and `/varieties/archived`, opens the screen, never the API's answer; the front's own API calls still reach the API.
-- **One structure (criterion 7)**: the docs, CONTEXT.md, `pantallas/` and `screens.json` name the same screens and routes, the withdrawal form and detail, the Archivadas card, the archived variety's page, Precios and the Onboarding's screens included; Zeta approves the pull request that states them.
-- **Design**: `scripts/design/compare.sh` runs before and after for the stock entry form, the customer form and Nueva venta, phone and computer, attached to the PR and judged by eye; `NuevaVentaCompu` comes out unchanged; any difference from the design is listed in the PR.
+- **One structure (criterion 7)**: the docs, CONTEXT.md, `pantallas/` and `screens.json` name the same screens and routes, the withdrawal form and detail, the Archivadas card, the archived variety's page, Precios, the Onboarding's screens and Inicio's first-run states included; Zeta approves the pull request that states them.
+- **Design**: `scripts/design/compare.sh` runs before and after for the stock entry form, the customer form, Nueva venta and Inicio (phone and computer, both themes), attached to the PR and judged by eye; `NuevaVentaCompu` comes out unchanged; any difference from the design is listed in the PR.
 
 ## Out of scope
 
@@ -267,6 +284,8 @@ This covers Configuración and its groups, the catalog screen and a variety's pa
 - A tour or welcome screen beyond the Onboarding.
 - An entry to run the Onboarding again.
 - Side rules on "+ Nueva venta" or "Mandar catálogo" tied to the Onboarding.
+- A checklist for a brand-new business; storing a checklist step as ticked.
+- Backfilling the import fact for a business imported before it existed.
 - Promotions (as campaigns or offers), automations, languages, and any entry for them before they exist. A stock withdrawal for promotion is a stock record, not this.
 - A "follow the system" theme.
 - The pin's status or Publicar in Integraciones.

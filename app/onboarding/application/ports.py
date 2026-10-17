@@ -3,8 +3,10 @@ business; a repository writes but never commits (CODING_STANDARDS section 9)."""
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Protocol
 
+from app.onboarding.domain.first_run import FirstRun, Stamp
 from app.onboarding.domain.onboarding import Onboarding
 from app.onboarding.domain.progress import VarietyFact
 
@@ -44,8 +46,41 @@ class BotFacts(Protocol):
 
     def is_bot_saved(self) -> bool: ...
 
+    def has_ever_published(self) -> bool:
+        """The pinned catalog was published at least once: `last_published_at` is set.
+        No row means `False`; the column never goes back to null (docs/adr/0046)."""
+        ...
+
+
+class CatalogFacts(Protocol):
+    """Read-only, implemented in `catalog`'s adapters."""
+
+    def any_qualifies(self) -> bool:
+        """Something of the catalog qualifies today: the catalog's own `_qualify` finds at
+        least one variety that would be sent (docs/adr/0046)."""
+        ...
+
 
 class UserFacts(Protocol):
     """Read-only, implemented in `accounts`' adapters."""
 
     def user_count(self) -> int: ...
+
+
+class FirstRuns(Protocol):
+    """The three first-run stamps of one business (docs/adr/0046). A stamp is written
+    only while it is null and never cleared or moved; neither method commits."""
+
+    def get(self) -> FirstRun | None:
+        """This business's stamps, or `None` when it has no row yet."""
+        ...
+
+    def stamp(self, column: Stamp, at: datetime) -> None:
+        """Creates the row when it is absent, then sets `column` to `at` only while it is
+        still null: one insert that does nothing on a conflict, then one guarded update.
+        Flushes."""
+        ...
+
+    def imported(self, at: datetime) -> None:
+        """`stamp(Stamp.IMPORTED, at)`: the import's own fact, written by nobody else."""
+        ...

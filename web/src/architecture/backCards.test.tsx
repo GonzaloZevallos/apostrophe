@@ -188,7 +188,11 @@ test('the count catches a card that draws its own back next to the shell\'s', as
     ],
     { initialEntries: [pathTo(SALE_PATH, { id: 1 })] },
   )
-  render(<RouterProvider router={memory} />)
+  render(
+    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+      <RouterProvider router={memory} />
+    </QueryClientProvider>,
+  )
 
   await screen.findAllByRole('button', { name: /^‹ / })
 

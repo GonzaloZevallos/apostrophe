@@ -30,6 +30,7 @@ from sqlalchemy import select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
+from app.accounts.adapters.tables import BusinessRow
 from app.accounts.application import manage_business
 from app.accounts.application.ports import Accounts
 from app.expenses.adapters.sql_expense_categories import SqlExpenseCategories
@@ -37,6 +38,7 @@ from app.expenses.adapters.tables import ExpenseCategoryRow
 from app.expenses.application import manage_categories
 from app.expenses.domain.category import CategoryNotFound
 from app.main import create_app
+from app.onboarding.adapters.sql_first_runs import SqlFirstRuns
 from app.onboarding.adapters.sql_onboardings import SqlOnboardings
 from app.onboarding.adapters.tables import OnboardingRow
 from app.onboarding.domain.onboarding import Onboarding
@@ -224,6 +226,15 @@ def seed_pricing_settings(client: TestClient) -> dict[str, int]:
     return {}
 
 
+def seed_first_run(client: TestClient) -> dict[str, int]:
+    # `/first-run` has no record to name and nothing a client can write but the dismissal,
+    # which stamps only an imported business. Its rows are stamped by the import, so the
+    # stamped case is `test_another_business_dismissing_the_import_notice_leaves_a_s_own`.
+    answer = client.get("/first-run")
+    assert answer.status_code == 200, answer.text
+    return {}
+
+
 SEEDERS: list[Callable[[TestClient], dict[str, int]]] = [
     seed_varieties,
     seed_customers,
@@ -234,6 +245,7 @@ SEEDERS: list[Callable[[TestClient], dict[str, int]]] = [
     seed_pinned_catalog,
     seed_payments,
     seed_pricing_settings,
+    seed_first_run,
 ]
 
 BODIES: dict[tuple[str, str], dict[str, Any]] = {
@@ -988,6 +1000,29 @@ def test_each_business_has_its_own_onboarding_row_and_reads_no_other(
         assert SqlOnboardings(session, a_id).get() == Onboarding.opened()
         assert SqlOnboardings(session, b_id).get() == Onboarding.opened()
         assert SqlOnboardings(session, max(ids) + 1).get() is None
+
+
+def test_another_business_dismissing_the_import_notice_leaves_a_s_own(
+    business_a: TestClient, business_b: TestClient, engine: Engine
+) -> None:
+    with Session(engine) as session:
+        a_id = session.scalars(
+            select(BusinessRow.id).where(BusinessRow.name.like(f"%{MARKER}%"))
+        ).one()
+        SqlFirstRuns(session, a_id).imported(NOW)
+        session.commit()
+    before = business_a.get("/first-run").json()
+    assert before["import_notice"] is True
+
+    dismissed = business_b.post("/first-run/import-notice/dismissal")
+
+    assert dismissed.status_code == 204, dismissed.text
+    assert business_a.get("/first-run").json() == before
+    with Session(engine) as session:
+        stored = SqlFirstRuns(session, a_id).get()
+    assert stored is not None
+    assert stored.import_notice_over_at is None
+    assert business_b.get("/first-run").json()["import_notice"] is False
 
 
 def test_another_business_has_no_priced_target_while_a_has_one(

@@ -108,6 +108,10 @@ export const keys = {
   // The Onboarding's one read (`api/onboarding.ts`), frozen the same way and for the same
   // reason: outside the `Resource`/`PREFIX` system, set by its own writes.
   onboardingProgress: () => ['onboarding-progress'] as const,
+  // The first-run element's one read (`api/firstRun.ts`, ADR-0046): outside the
+  // `Resource`/`PREFIX` system, and never frozen, since a write on another screen can
+  // change it (`staleTime: 0`, refetched on mount and on focus).
+  firstRun: () => ['first-run'] as const,
 }
 
 // A write on one resource that also stales another, beyond its own prefix (plan,
@@ -125,6 +129,11 @@ const CROSS_INVALIDATES: Partial<Record<Resource, Resource[]>> = {
   stock: ['catalog'],
   varieties: ['catalog'],
 }
+
+// The writes that can change what `GET /first-run` answers (ADR-0046): a variety or a price
+// entry (`varieties`), a stock entry (`stock`) and Publicar (`pinnedCatalog`). Each also
+// stales the first-run read, so every writer of these is covered here, not one by one.
+const FIRST_RUN_WRITES: readonly Resource[] = ['varieties', 'stock', 'pinnedCatalog']
 
 /** Invalidates the whole prefix a write belongs to, plus its cross rule if it has
  * one. A mutation calls this instead of naming the query keys it affects by hand.
@@ -152,5 +161,8 @@ export function invalidateResource(
       queryKey: [PREFIX[affected]],
       refetchType: options?.refetchType,
     })
+  }
+  if (FIRST_RUN_WRITES.includes(resource)) {
+    queryClient.invalidateQueries({ queryKey: keys.firstRun(), refetchType: options?.refetchType })
   }
 }

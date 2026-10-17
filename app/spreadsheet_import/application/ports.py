@@ -302,10 +302,11 @@ class BusinessDirectory(Protocol):
 
 
 class OnboardingEnding(Protocol):
-    """The Onboarding's end (docs/adr/0036): a successful import ends it. Nothing else
-    of the Onboarding is touched, and eligibility never looks at its state."""
+    """The Onboarding's end (docs/adr/0036) and the business's first-run fact that it was
+    imported (docs/adr/0046). Eligibility never looks at the state of either."""
 
     def imported(self, at: datetime, transaction: Transaction) -> None:
-        """Ends this business's Onboarding at `at` while it is open; does nothing when
-        it is over already or the business was never offered one. Never commits."""
+        """Ends this business's Onboarding at `at` while it is open (nothing to end when it
+        is over already or was never offered) and stamps `imported_at` with `at`, once.
+        Never commits."""
         ...

@@ -1,8 +1,10 @@
 """In-memory stand-ins for the Onboarding's ports, for use-case tests."""
 
 from dataclasses import dataclass, field
+from datetime import datetime
 
 from app.onboarding.application.facts import FactSources
+from app.onboarding.domain.first_run import FirstRun, Stamp
 from app.onboarding.domain.onboarding import Onboarding
 from app.onboarding.domain.progress import VarietyFact
 
@@ -40,6 +42,7 @@ class FakeFacts:
     stocked: set[int] = field(default_factory=set)
     entries: int = 0
     bot_saved: bool = False
+    published: bool = False
     users: int = 1
 
     def varieties(self) -> list[VarietyFact]:
@@ -54,6 +57,9 @@ class FakeFacts:
     def is_bot_saved(self) -> bool:
         return self.bot_saved
 
+    def has_ever_published(self) -> bool:
+        return self.published
+
     def user_count(self) -> int:
         return self.users
 
@@ -64,3 +70,27 @@ class FakeFacts:
         self.varieties_list = [VarietyFact(1, "Amnesia", True)]
         self.stocked = {1}
         self.entries = 1
+
+
+class FakeFirstRuns:
+    """Plays `FirstRuns` in memory, with the same write-once rule as the table."""
+
+    def __init__(self) -> None:
+        self.stamps: dict[Stamp, datetime] = {}
+        self.writes: list[Stamp] = []
+
+    def get(self) -> FirstRun | None:
+        if not self.stamps:
+            return None
+        return FirstRun(
+            checklist_gone_at=self.stamps.get(Stamp.CHECKLIST_GONE),
+            imported_at=self.stamps.get(Stamp.IMPORTED),
+            import_notice_over_at=self.stamps.get(Stamp.IMPORT_NOTICE_OVER),
+        )
+
+    def stamp(self, column: Stamp, at: datetime) -> None:
+        self.writes.append(column)
+        self.stamps.setdefault(column, at)
+
+    def imported(self, at: datetime) -> None:
+        self.stamp(Stamp.IMPORTED, at)
