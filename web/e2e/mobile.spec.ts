@@ -13,10 +13,11 @@ import { expectOnlyTheThemeStored } from './helpers/storage.js'
 import type { CellId } from './mobile/collect.js'
 import { newCell, SIZES, THEMES, type Size, type Theme } from './mobile/cells.js'
 import { guardWrites } from './mobile/network.js'
+import { STATES } from './mobile/states.js'
 import { settle, type Facts } from './mobile/walk.js'
-import { walkScreen } from './mobile/walkScreen.js'
+import { walkScreen, walkState } from './mobile/walkScreen.js'
 import { OFFENDERS, diffOffenders } from '../src/mobile-standard/offenders/index.ts'
-import { parseFacts, WALKABLE } from '../src/mobile-standard/registry.ts'
+import { parseFacts, STATE_NAMES, WALKABLE } from '../src/mobile-standard/registry.ts'
 import type { Violation } from '../src/mobile-standard/violation.ts'
 
 const SIGNED_OUT = { cookies: [], origins: [] } as { cookies: []; origins: [] }
@@ -44,6 +45,13 @@ for (const size of SIZES) {
           const cell = cellOf(screen.screen)
           actual.push(...(await walkScreen(page, screen, cell, false, facts)))
           actual.push(...(await walkScreen(page, screen, cell, true, facts)))
+        })
+      }
+
+      for (const state of STATES) {
+        await test.step(state.screen.screen, async () => {
+          const page = state.screen.signedOut ? outPage : inPage
+          actual.push(...(await walkState(page, state, cellOf(state.screen.screen), facts)))
         })
       }
 
@@ -125,4 +133,59 @@ test.describe('the write guard keeps every write from the backend', () => {
     expect(reached.filter((entry) => !entry.includes('/sales/1'))).toEqual([])
     await context.close()
   })
+})
+
+// The states the walk adds beside the registry's routes.
+const GETTING_IN = STATES.filter((s) => s.screen.signedOut || s.screen.screen.startsWith('Estados'))
+
+test.describe('the states the walk visits', () => {
+  test('are exactly the names the registry vocabulary lists', () => {
+    expect(STATES.map((s) => s.screen.screen)).toEqual([...STATE_NAMES])
+  })
+
+  for (const state of GETTING_IN) {
+    test(`${state.screen.screen} is reachable`, async ({ browser }) => {
+      const context = await newCell(browser, PROBE_SIZE, 'claro', state.screen.signedOut ? SIGNED_OUT : MOBILE_STATE_FILE)
+      await guardWrites(context)
+      const page = await context.newPage()
+      const cell = { ...PROBE_CELL, screen: state.screen.screen }
+      expect(await walkState(page, state, cell, readFacts())).toEqual([])
+      await context.close()
+    })
+  }
+
+  test('a write the state does not stub is aborted, so its answer never shows', async ({ browser }) => {
+    const brake = STATES.find((s) => s.screen.screen === 'EntrarFreno')
+    if (brake === undefined) throw new Error('EntrarFreno is not a state')
+    const context = await newCell(browser, PROBE_SIZE, 'claro', SIGNED_OUT)
+    await guardWrites(context)
+    const page = await context.newPage()
+    const unstubbed = { ...brake, writes: [] }
+    const cell = { ...PROBE_CELL, screen: 'EntrarFreno' }
+    expect(await walkState(page, unstubbed, cell, readFacts())).toEqual([{ ...cell, rule: 'unreachable', target: '' }])
+    await context.close()
+  })
+
+  test('a stubbed GET lasts for its state only', async ({ browser }) => {
+    const retry = STATES.find((s) => s.screen.screen === 'EstadosReintento')
+    if (retry === undefined) throw new Error('EstadosReintento is not a state')
+    const context = await newCell(browser, PROBE_SIZE, 'claro', MOBILE_STATE_FILE)
+    await guardWrites(context)
+    const page = await context.newPage()
+    await walkState(page, retry, { ...PROBE_CELL, screen: 'EstadosReintento' }, readFacts())
+    await page.goto('/ventas')
+    expect(await page.evaluate(async () => (await fetch('/sales', { headers: { Accept: 'application/json' } })).status)).toBe(200)
+    await context.close()
+  })
+})
+
+test('opening a live invitation under the write guard shows its form, not "Sin conexión"', async ({ browser }) => {
+  const context = await newCell(browser, PROBE_SIZE, 'claro', SIGNED_OUT)
+  await guardWrites(context)
+  const page = await context.newPage()
+  await page.goto(`/invitation/${readFacts()['join_token']}`)
+  await settle(page)
+  await expect(page.getByText('Te quedaste sin internet')).toHaveCount(0)
+  await expect(page.getByLabel('Email')).toBeVisible()
+  await context.close()
 })

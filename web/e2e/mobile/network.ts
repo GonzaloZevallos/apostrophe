@@ -14,19 +14,57 @@ export interface WriteStub {
   body?: unknown
 }
 
+/** A GET answered with a fixed status instead of the backend's own (a state the real server never shows). */
+export interface ReadStub {
+  /** Matched against the request's path. */
+  path: RegExp
+  status: number
+  body?: unknown
+}
+
 const READS = new Set(['GET', 'HEAD'])
 
-export async function guardWrites(context: BrowserContext, stubs: readonly WriteStub[] = []): Promise<void> {
-  await context.route('**/*', async (route: Route) => {
+/**
+ * Opening an invitation or a reset link signs the device out first (`session.ts`'s
+ * `openInvitation`, `openResetLink`): an aborted logout would show "Sin conexión" in place
+ * of the screen. Its stub answers 204 and drops no cookie, so the shared session survives.
+ */
+export const LOGOUT_STUB: WriteStub = { method: 'POST', path: /^\/auth\/logout$/, status: 204 }
+
+/** Takes a route off its context; every route this module adds returns one. */
+export type Undo = () => Promise<void>
+
+export async function guardWrites(context: BrowserContext, stubs: readonly WriteStub[] = []): Promise<Undo> {
+  const handler = async (route: Route): Promise<void> => {
     const request = route.request()
     if (READS.has(request.method())) {
       await route.fallback()
       return
     }
     const { pathname } = new URL(request.url())
-    const stub = stubs.find((s) => s.method === request.method() && s.path.test(pathname))
+    const stub = [LOGOUT_STUB, ...stubs].find((s) => s.method === request.method() && s.path.test(pathname))
     if (stub === undefined) {
       await route.abort()
+      return
+    }
+    await route.fulfill(
+      stub.status === 204
+        ? { status: 204 }
+        : { status: stub.status, contentType: 'application/json', body: JSON.stringify(stub.body ?? {}) },
+    )
+  }
+  await context.route('**/*', handler)
+  return () => context.unroute('**/*', handler)
+}
+
+/** Answers the GETs `stubs` name with their status; every other request falls through. */
+export async function stubReads(context: BrowserContext, stubs: readonly ReadStub[]): Promise<Undo> {
+  const handler = async (route: Route): Promise<void> => {
+    const request = route.request()
+    const { pathname } = new URL(request.url())
+    const stub = request.method() === 'GET' ? stubs.find((s) => s.path.test(pathname)) : undefined
+    if (stub === undefined) {
+      await route.fallback()
       return
     }
     await route.fulfill({
@@ -34,7 +72,9 @@ export async function guardWrites(context: BrowserContext, stubs: readonly Write
       contentType: 'application/json',
       body: JSON.stringify(stub.body ?? {}),
     })
-  })
+  }
+  await context.route('**/*', handler)
+  return () => context.unroute('**/*', handler)
 }
 
 export interface Held {

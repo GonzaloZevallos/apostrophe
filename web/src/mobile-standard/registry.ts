@@ -38,7 +38,14 @@ export interface RegistryScreen {
  * The forms, sheets and shared `Estados` states the walk visits beside the registry's
  * routes. The `states-*` subtasks append their names here, one per line.
  */
-export const STATE_NAMES: readonly string[] = []
+export const STATE_NAMES: readonly string[] = [
+  // Getting in and the shared Estados (`states-getting-in`).
+  'EntrarFreno',
+  'InvitacionMuerta',
+  'ResetMuerto',
+  'EstadosReintento',
+  'EstadosGoneAviso',
+]
 
 function asRecord(value: unknown, what: string): Record<string, unknown> {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {

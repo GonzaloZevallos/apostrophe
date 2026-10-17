@@ -9,7 +9,8 @@ import type { Page } from '@playwright/test'
 import type { RegistryScreen } from '../../src/mobile-standard/registry.ts'
 import type { Violation } from '../../src/mobile-standard/violation.ts'
 import { collect, pageViolation, type CellId } from './collect.js'
-import { holdApi } from './network.js'
+import { guardWrites, holdApi, stubReads } from './network.js'
+import type { WalkState } from './states.js'
 import { open, painted, runSteps, settle, type Facts } from './walk.js'
 
 export async function walkScreen(
@@ -40,4 +41,26 @@ export async function walkScreen(
     if (hold !== null) await hold.release()
   }
   return found
+}
+
+/**
+ * Visits one state loaded, with the answers it is given in place of the backend's: its
+ * stubbed writes (every other write is still aborted) and its stubbed GETs, taken off
+ * again when the visit ends so the next screen sees the real server.
+ */
+export async function walkState(
+  page: Page,
+  state: WalkState,
+  cell: CellId,
+  facts: Facts,
+): Promise<Violation[]> {
+  const context = page.context()
+  const undoWrites = await guardWrites(context, state.writes)
+  const undoReads = await stubReads(context, state.reads)
+  try {
+    return await walkScreen(page, state.screen, cell, false, facts)
+  } finally {
+    await undoReads()
+    await undoWrites()
+  }
 }
