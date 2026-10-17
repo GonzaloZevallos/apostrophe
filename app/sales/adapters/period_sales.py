@@ -13,17 +13,25 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 
+from sqlalchemy import exists, select
 from sqlalchemy.orm import Session
 
 from app.results.application.ports import SalesSummary
 from app.results.domain.periods import Period
 from app.sales.adapters.sql_sales import SqlSales
+from app.sales.adapters.tables import SaleRow
 from app.sales.domain.period_summary import period_summary
 
 
 class SqlPeriodSales:
     def __init__(self, session: Session, business_id: int) -> None:
+        self._session = session
+        self._business_id = business_id
         self._sales = SqlSales(session, business_id)
+
+    def has_any(self) -> bool:
+        probe = select(exists().where(SaleRow.business_id == self._business_id))
+        return bool(self._session.scalar(probe))
 
     def summaries(self, periods: Sequence[Period]) -> Mapping[Period, SalesSummary]:
         if not periods:

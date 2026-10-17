@@ -46,8 +46,29 @@ class SetupView:
     mark_gone: bool
 
 
+@dataclass(frozen=True)
+class Probes:
+    """Which of the business's facts `setup_view` can still use, so the use case reads
+    only those: a business already past its checklist never needs its partner probe, and
+    a notice nobody can see never needs the publishing or sales probes."""
+
+    partner: bool
+    published: bool
+    sale: bool
+
+
+def probes_needed(stored: StoredSetup, priced_today: bool, has_stock_entry: bool) -> Probes:
+    gone = _is_gone(stored, priced_today, has_stock_entry)
+    notice_open = gone and not stored.bot_notice_dismissed
+    return Probes(partner=not gone, published=not gone or notice_open, sale=notice_open)
+
+
+def _is_gone(stored: StoredSetup, priced_today: bool, has_stock_entry: bool) -> bool:
+    return stored.checklist_gone or (priced_today and has_stock_entry)
+
+
 def setup_view(stored: StoredSetup, facts: SetupFacts) -> SetupView:
-    gone = stored.checklist_gone or (facts.priced_today and facts.has_stock_entry)
+    gone = _is_gone(stored, facts.priced_today, facts.has_stock_entry)
     checklist = None if gone else _steps(facts)
     bot_notice = (
         gone

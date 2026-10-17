@@ -535,3 +535,17 @@ def test_a_path_behind_a_deref_d_ref_declared_the_wrong_json_type_fails() -> Non
     wrong: dict[str, JsonType] = {"x": "string", "x.nested": "string"}
     with pytest.raises(AssertionError):
         _assert_declared_matches_schema(_REF_BEHIND_NULLABLE_ANY_OF, wrong, components=COMPONENTS)
+
+
+def test_the_panel_checklist_step_ids_are_the_fixtures_in_order(app: FastAPI) -> None:
+    schemas = app.openapi()["components"]["schemas"]
+    declared = schemas["StepOut"]["properties"]["step"]["enum"]
+    setup = _load("panel")["setup"]
+    assert isinstance(setup, dict)
+    checklist = setup["checklist"]
+    assert isinstance(checklist, dict)
+
+    in_the_fixture = [step["step"] for step in checklist["steps"]]
+
+    assert declared == in_the_fixture
+

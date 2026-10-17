@@ -70,5 +70,8 @@ class SqlStockFigures:
             purchases[period] = _purchases_in(all_entries, period.start, period.end)
 
         return StockFiguresAnswer(
-            rows=tuple(rows), cost_of_goods=cost_of_goods, purchases=purchases
+            rows=tuple(rows),
+            cost_of_goods=cost_of_goods,
+            purchases=purchases,
+            has_entries=bool(all_entries),
         )

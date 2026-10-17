@@ -57,6 +57,11 @@ class PeriodSales(Protocol):
 
     def summaries(self, periods: Sequence[Period]) -> Mapping[Period, SalesSummary]: ...
 
+    def has_any(self) -> bool:
+        """Whether the business has recorded at least one sale, on any date: one bounded
+        `EXISTS` probe (the bot notice's condition)."""
+        ...
+
 
 @dataclass(frozen=True)
 class CostOfGoods:
@@ -86,6 +91,9 @@ class StockFiguresAnswer:
     rows: tuple[StockRow, ...]
     cost_of_goods: Mapping[Period, CostOfGoods]
     purchases: Mapping[Period, int]
+    # Whether the one `lots_and_draws` load held any stock entry, adjustments included
+    # (the checklist's stock step): it rides that load, never a statement of its own.
+    has_entries: bool
 
 
 class StockFigures(Protocol):

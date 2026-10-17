@@ -5,15 +5,7 @@
       "end": "2026-10-03",
       "sales": 15000,
       "sales_count": 2,
-      "average_sale": 7500,
-      "grams_sold": 10.0,
-      "grams_gifted": 0.0,
-      "cost_of_goods": 6000,
-      "pending_cost": false,
-      "expenses": 0,
-      "purchases": 0,
-      "profit": 9000,
-      "cash": 15000
+      "grams_sold": 10.0
     },
     "week": {
       "start": "2026-09-28",
@@ -51,7 +43,12 @@
     "sales_owing_count": 4,
     "oldest": "2026-09-14",
     "teaser": [
-      { "customer_id": 1, "name": "Ana Pérez", "balance": 15000, "owing_since": "2026-09-14" }
+      {
+        "customer_id": 1,
+        "name": "Ana Pérez",
+        "balance": 15000,
+        "owing_since": "2026-09-14"
+      }
     ]
   },
   "stock": [
@@ -64,5 +61,33 @@
       "threshold": 20.0,
       "days_left": 6
     }
-  ]
+  ],
+  "setup": {
+    "checklist": {
+      "steps": [
+        {
+          "step": "priced_variety",
+          "done": true,
+          "required": true
+        },
+        {
+          "step": "stock_entry",
+          "done": false,
+          "required": true
+        },
+        {
+          "step": "bot_published",
+          "done": false,
+          "required": false
+        },
+        {
+          "step": "partner",
+          "done": false,
+          "required": false
+        }
+      ]
+    },
+    "priced_today": true,
+    "bot_notice": false
+  }
 }

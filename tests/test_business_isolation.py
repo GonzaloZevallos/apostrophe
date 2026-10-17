@@ -197,6 +197,19 @@ def seed_payments(client: TestClient) -> dict[str, int]:
 def seed_inicio_setup_state(client: TestClient) -> dict[str, int]:
     # Inicio's dismissal names no record; it is checked through the singleton-write
     # sweep (B's dismissal must move nothing A can read) and its own test.
+    # It also makes the business set up, so its first `GET /panel` stores "gone".
+    variety = client.post("/varieties", json={"name": "Inicio setup variety"}).json()
+    priced = client.post(
+        f"/varieties/{variety['id']}/prices",
+        json={"effective_from": "2020-01-01", "list_price": 9_000},
+    )
+    assert priced.status_code == 201, priced.text
+    entry = client.post(
+        "/stock/entries",
+        json={"variety_id": variety["id"], "origin": "opening_stock", "grams": "10"},
+    )
+    assert entry.status_code == 201, entry.text
+    assert client.get("/panel").json()["setup"]["checklist"] is None
     dismissed = client.post("/panel/bot-notice/dismissal")
     assert dismissed.status_code == 204, dismissed.text
     return {}
@@ -710,11 +723,11 @@ def test_another_business_reads_the_panel_as_zero_while_a_has_every_figure(
     assert purchase.status_code == 201, purchase.text
 
     a_panel = business_a.get("/panel").json()
-    today_figures = a_panel["periods"]["today"]
-    assert today_figures["sales"] > 0
-    assert today_figures["grams_gifted"] > 0
-    assert today_figures["expenses"] > 0
-    assert today_figures["purchases"] > 0
+    assert a_panel["periods"]["today"]["sales"] > 0
+    week_figures = a_panel["periods"]["week"]
+    assert week_figures["grams_gifted"] > 0
+    assert week_figures["expenses"] > 0
+    assert week_figures["purchases"] > 0
     assert a_panel["debts"]["total_owed"] > 0
     assert a_panel["stock"] != []
 
@@ -724,15 +737,7 @@ def test_another_business_reads_the_panel_as_zero_while_a_has_every_figure(
         "end": today,
         "sales": 0,
         "sales_count": 0,
-        "average_sale": None,
         "grams_sold": 0,
-        "grams_gifted": 0,
-        "cost_of_goods": 0,
-        "pending_cost": False,
-        "expenses": 0,
-        "purchases": 0,
-        "profit": 0,
-        "cash": 0,
     }
     assert b_panel["periods"]["today"] == fresh
     assert b_panel["debts"] == {
@@ -836,3 +841,25 @@ def test_another_business_s_analysis_is_exactly_the_empty_shape(
         "month_expenses": {"categories": [], "total": 0, "purchases": 0},
         "since_first_record_expenses": {"categories": [], "total": 0, "purchases": 0},
     }
+
+
+def test_another_business_reads_its_own_full_checklist_while_a_is_gone_and_dismissed(
+    business_a: TestClient, business_b: TestClient, seeded: dict[str, int]
+) -> None:
+    b_setup = business_b.get("/panel").json()["setup"]
+
+    assert b_setup == {
+        "checklist": {
+            "steps": [
+                {"step": "priced_variety", "done": False, "required": True},
+                {"step": "stock_entry", "done": False, "required": True},
+                {"step": "bot_published", "done": False, "required": False},
+                {"step": "partner", "done": False, "required": False},
+            ]
+        },
+        "priced_today": False,
+        "bot_notice": False,
+    }
+    a_setup = business_a.get("/panel").json()["setup"]
+    assert a_setup["checklist"] is None
+    assert a_setup["bot_notice"] is False

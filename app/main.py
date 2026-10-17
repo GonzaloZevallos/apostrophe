@@ -14,6 +14,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
+from app.accounts.adapters.business_users import SqlBusinessUsers
 from app.accounts.adapters.deps import require_session
 from app.accounts.adapters.router import public_router as accounts_public_router
 from app.accounts.adapters.router import router as accounts_router
@@ -35,6 +36,7 @@ from app.payments.adapters.results_ports import SqlDebtSummary, SqlPaymentsRecei
 from app.payments.adapters.router import customers_router as payments_customers_router
 from app.payments.adapters.router import router as payments_router
 from app.payments.adapters.settlements import SqlBalances, SqlOwingSales
+from app.pinned_catalog.adapters.catalog_publishing import SqlCatalogPublishing
 from app.pinned_catalog.adapters.router import router as pinned_catalog_router
 from app.pinned_catalog.adapters.telegram_http import HttpTelegram
 from app.pinned_catalog.adapters.ticker import run_ticker
@@ -54,6 +56,7 @@ from app.stock.adapters.line_costs import SqlLineCosts
 from app.stock.adapters.purchases import SqlPurchases
 from app.stock.adapters.router import router as stock_router
 from app.stock.adapters.stock_figures import SqlStockFigures
+from app.varieties.adapters.priced_varieties import SqlPricedVarieties
 from app.varieties.adapters.router import router as varieties_router
 
 
@@ -210,6 +213,12 @@ def create_app(
     # Results' own store, the same `(Session, business_id)` factory shape: the
     # dismissal route builds it over the request's own `Session` and business.
     app.state.setup_state_store = SqlSetupStateStore
+    # The three owners' setup probes, the same `(Session, business_id)` factory shape:
+    # results reaches a price, a second user and a first publication only through its
+    # own `PricedVarieties`, `BusinessUsers` and `CatalogPublishing` ports (ADR-0024).
+    app.state.priced_varieties = SqlPricedVarieties
+    app.state.business_users = SqlBusinessUsers
+    app.state.catalog_publishing = SqlCatalogPublishing
 
     @app.get("/health", tags=["health"])
     def health() -> dict[str, str]:

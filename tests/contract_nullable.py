@@ -77,10 +77,10 @@ NULLABLE: Mapping[str, Mapping[str, JsonType | ShapeOf]] = {
         "debtors[].owing_since": "string",
     },
     "panel": {
-        "periods.today.average_sale": "integer",
         "periods.week.average_sale": "integer",
         "periods.month.average_sale": "integer",
         "debts.oldest": "string",
+        "setup.checklist": ShapeOf("panel", "setup.checklist"),
         "stock[].sold_out_since": "string",
         "stock[].threshold": "number",
         "stock[].days_left": "integer",

@@ -31,6 +31,8 @@ from app.results.adapters.schemas import AnalysisOut, PanelOut
 from app.results.application.analyse import AnalysisRuleBroken, analyse
 from app.results.application.dismiss_bot_notice import dismiss_bot_notice
 from app.results.application.ports import (
+    BusinessUsers,
+    CatalogPublishing,
     DebtSummary,
     DrawCosts,
     ExpensesLedger,
@@ -38,12 +40,13 @@ from app.results.application.ports import (
     PaymentsReceived,
     PeriodExpenses,
     PeriodSales,
+    PricedVarieties,
     Purchases,
     SalesLedger,
     SetupStateStore,
     StockFigures,
 )
-from app.results.application.read_panel import read_panel
+from app.results.application.read_panel import SetupPorts, read_panel
 
 router = APIRouter(tags=["results"])
 
@@ -95,19 +98,6 @@ PaymentsReceivedDep = Annotated[PaymentsReceived, Depends(get_payments_received)
 DebtSummaryDep = Annotated[DebtSummary, Depends(get_debt_summary)]
 
 
-@router.get("/panel")
-def get_panel(
-    today: TodayDep,
-    sales: PeriodSalesDep,
-    stock: StockFiguresDep,
-    expenses: PeriodExpensesDep,
-    received: PaymentsReceivedDep,
-    debts: DebtSummaryDep,
-) -> PanelOut:
-    panel = read_panel(today, sales, stock, expenses, received, debts)
-    return PanelOut.of(panel)
-
-
 def get_setup_state_store(
     request: Request, session: SessionDep, business_id: CurrentBusinessId
 ) -> SetupStateStore:
@@ -115,8 +105,63 @@ def get_setup_state_store(
     return factory(session, business_id)
 
 
+def get_priced_varieties(
+    request: Request, session: SessionDep, business_id: CurrentBusinessId
+) -> PricedVarieties:
+    factory = cast(Callable[[Session, int], PricedVarieties], request.app.state.priced_varieties)
+    return factory(session, business_id)
+
+
+def get_business_users(
+    request: Request, session: SessionDep, business_id: CurrentBusinessId
+) -> BusinessUsers:
+    factory = cast(Callable[[Session, int], BusinessUsers], request.app.state.business_users)
+    return factory(session, business_id)
+
+
+def get_catalog_publishing(
+    request: Request, session: SessionDep, business_id: CurrentBusinessId
+) -> CatalogPublishing:
+    factory = cast(
+        Callable[[Session, int], CatalogPublishing], request.app.state.catalog_publishing
+    )
+    return factory(session, business_id)
+
+
 SetupStateStoreDep = Annotated[SetupStateStore, Depends(get_setup_state_store)]
+PricedVarietiesDep = Annotated[PricedVarieties, Depends(get_priced_varieties)]
+BusinessUsersDep = Annotated[BusinessUsers, Depends(get_business_users)]
+CatalogPublishingDep = Annotated[CatalogPublishing, Depends(get_catalog_publishing)]
 ClockDep = Annotated[Clock, Depends(get_clock)]
+
+
+@router.get("/panel")
+def get_panel(
+    today: TodayDep,
+    clock: ClockDep,
+    session: SessionDep,
+    sales: PeriodSalesDep,
+    stock: StockFiguresDep,
+    expenses: PeriodExpensesDep,
+    received: PaymentsReceivedDep,
+    debts: DebtSummaryDep,
+    store: SetupStateStoreDep,
+    priced: PricedVarietiesDep,
+    users: BusinessUsersDep,
+    publishing: CatalogPublishingDep,
+) -> PanelOut:
+    panel = read_panel(
+        today,
+        clock(),
+        sales,
+        stock,
+        expenses,
+        received,
+        debts,
+        SetupPorts(store=store, priced=priced, users=users, publishing=publishing),
+        session,
+    )
+    return PanelOut.of(panel)
 
 
 @router.post("/panel/bot-notice/dismissal", status_code=204)

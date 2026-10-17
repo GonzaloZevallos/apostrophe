@@ -18,11 +18,13 @@ grams or percentage path"), it does not compute them.
 from __future__ import annotations
 
 from datetime import date
+from typing import Literal
 
 from pydantic import BaseModel
 
 from app.results.application.ports import DebtorRow, StockRow
 from app.results.application.read_panel import DebtsSummary, Panel, PeriodFigures
+from app.results.domain.setup import SetupView, Step
 from app.stock.adapters.schemas import VarietyStockOut
 from app.varieties.adapters.schemas import GramsOut
 
@@ -115,27 +117,85 @@ class PeriodOut(BaseModel):
         )
 
 
+class TodayFiguresOut(BaseModel):
+    """Hoy carries only what it shows: the period and the sold-today figures. Ganancia,
+    Caja, Gastos, Regalaste and Compras live in `week` and `month`."""
+
+    start: date
+    end: date
+    sales: int
+    sales_count: int
+    grams_sold: GramsOut
+
+    @classmethod
+    def of(cls, figures: PeriodFigures) -> TodayFiguresOut:
+        return cls(
+            start=figures.period.start,
+            end=figures.period.end,
+            sales=figures.sales,
+            sales_count=figures.sales_count,
+            grams_sold=figures.grams_sold.as_decimal(),
+        )
+
+
 class PeriodsOut(BaseModel):
-    today: PeriodOut
+    today: TodayFiguresOut
     week: PeriodOut
     month: PeriodOut
+
+
+class StepOut(BaseModel):
+    step: Literal["priced_variety", "stock_entry", "bot_published", "partner"]
+    done: bool
+    required: bool
+
+    @classmethod
+    def of(cls, step: Step) -> StepOut:
+        return cls(step=step.step, done=step.done, required=step.required)
+
+
+class ChecklistOut(BaseModel):
+    steps: list[StepOut]
+
+
+class SetupOut(BaseModel):
+    """Inicio's first-run state, every condition decided on the server (`setup_view`):
+    the front renders the steps in this order and never filters or reorders them."""
+
+    checklist: ChecklistOut | None
+    priced_today: bool
+    bot_notice: bool
+
+    @classmethod
+    def of(cls, view: SetupView) -> SetupOut:
+        return cls(
+            checklist=(
+                None
+                if view.checklist is None
+                else ChecklistOut(steps=[StepOut.of(step) for step in view.checklist])
+            ),
+            priced_today=view.priced_today,
+            bot_notice=view.bot_notice,
+        )
 
 
 class PanelOut(BaseModel):
     periods: PeriodsOut
     debts: DebtsOut
     stock: list[PanelVarietyOut]
+    setup: SetupOut
 
     @classmethod
     def of(cls, panel: Panel) -> PanelOut:
         return cls(
             periods=PeriodsOut(
-                today=PeriodOut.of(panel.today),
+                today=TodayFiguresOut.of(panel.today),
                 week=PeriodOut.of(panel.week),
                 month=PeriodOut.of(panel.month),
             ),
             debts=DebtsOut.of(panel.debts),
             stock=[PanelVarietyOut.of_row(row) for row in panel.stock],
+            setup=SetupOut.of(panel.setup),
         )
 
 

@@ -52,7 +52,10 @@ class SqlPinRecorder:
             row.message_chat = message_chat
             row.message_token_fingerprint = message_token_fingerprint
             row.last_published_text = last_published_text
-            row.last_published_at = last_published_at
+            # Monotone: once published, never unpublished. `None` means "unchanged"
+            # (Inicio's checklist reads this as "published at least once", ADR-0024).
+            if last_published_at is not None:
+                row.last_published_at = last_published_at
             row.last_failure = last_failure.value if last_failure is not None else None
             row.last_checked_on = last_checked_on
             session.commit()

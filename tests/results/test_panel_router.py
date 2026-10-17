@@ -106,7 +106,9 @@ def test_the_panel_matches_the_fixture_s_shape(client: TestClient, clock: Movabl
 def test_an_empty_business_answers_real_zeros(client: TestClient) -> None:
     answer = client.get("/panel").json()
 
-    for period in ("today", "week", "month"):
+    today = answer["periods"]["today"]
+    assert (today["sales"], today["sales_count"], today["grams_sold"]) == (0, 0, 0)
+    for period in ("week", "month"):
         figures = answer["periods"][period]
         assert figures["sales"] == 0
         assert figures["sales_count"] == 0
@@ -150,12 +152,12 @@ def test_a_payment_is_counted_on_its_own_paid_on_date_not_the_sale_s_date(
     )
     assert payment.status_code == 201, payment.text
 
-    today = client.get("/panel").json()["periods"]["today"]
+    week = client.get("/panel").json()["periods"]["week"]
 
-    # The sale is dated in September, so today's sales stay at 0 — but the payment,
-    # dated today, still counts toward today's Caja.
-    assert today["sales"] == 0
-    assert today["cash"] == 20_000
+    # The sale is dated in September, so the week's sales stay at 0 — but the payment,
+    # dated within the week, still counts toward its Caja.
+    assert week["sales"] == 0
+    assert week["cash"] == 20_000
 
 
 def test_a_backdated_purchase_turns_pending_cost_into_a_real_one(
@@ -167,7 +169,7 @@ def test_a_backdated_purchase_turns_pending_cost_into_a_real_one(
     # No stock at all yet: the sale's grams have no lot behind them.
     _sale(client, variety_id, grams="5", on=day.isoformat())
 
-    pending_answer = client.get("/panel").json()["periods"]["today"]
+    pending_answer = client.get("/panel").json()["periods"]["week"]
     assert pending_answer["cost_of_goods"] == 0
     assert pending_answer["pending_cost"] is True
 
@@ -175,7 +177,7 @@ def test_a_backdated_purchase_turns_pending_cost_into_a_real_one(
     # whole history, so the same sale line now costs something real.
     _entry(client, variety_id, grams="10", total_cost=500, on=day.replace(day=13).isoformat())
 
-    costed_answer = client.get("/panel").json()["periods"]["today"]
+    costed_answer = client.get("/panel").json()["periods"]["week"]
     assert costed_answer["pending_cost"] is False
     assert costed_answer["cost_of_goods"] == 250  # 5g at 50/g (500/10)
     assert costed_answer["profit"] == costed_answer["sales"] - 250
@@ -190,7 +192,7 @@ def test_editing_a_stock_entry_s_cost_moves_cost_of_goods_and_profit(
     entry_id = _entry(client, variety_id, grams="10", total_cost=1_000, on=day.isoformat())
     _sale(client, variety_id, grams="5", on=day.isoformat())
 
-    before = client.get("/panel").json()["periods"]["today"]
+    before = client.get("/panel").json()["periods"]["week"]
     assert before["cost_of_goods"] == 500  # 5g at 100/g
 
     edited = client.put(
@@ -205,7 +207,7 @@ def test_editing_a_stock_entry_s_cost_moves_cost_of_goods_and_profit(
     )
     assert edited.status_code == 200, edited.text
 
-    after = client.get("/panel").json()["periods"]["today"]
+    after = client.get("/panel").json()["periods"]["week"]
     assert after["cost_of_goods"] == 1_000  # 5g at 200/g
     assert after["profit"] == after["sales"] - 1_000
 
@@ -228,12 +230,12 @@ def test_a_negative_adjustment_s_grams_are_never_summed_into_cost_of_goods(
     assert adjustment.status_code == 201, adjustment.text
     _sale(client, variety_id, grams="5", on="2026-10-15")
 
-    today = client.get("/panel").json()["periods"]["today"]
+    week = client.get("/panel").json()["periods"]["week"]
 
     # 10g at $100/g; the adjustment removes 4g with no cost of its own; the sale then
     # draws 5g from what is left of the same lot: 5 * 100 = 500, never inflated by the
     # adjustment's grams.
-    assert today["cost_of_goods"] == 500
+    assert week["cost_of_goods"] == 500
 
 
 def test_negative_ganancia_and_cash_are_shown_not_floored(
@@ -243,10 +245,10 @@ def test_negative_ganancia_and_cash_are_shown_not_floored(
     clock.set(datetime(2026, 10, 15, 18, 0, tzinfo=UTC))
     _expense(client, amount=5_000, on=day.isoformat())
 
-    today = client.get("/panel").json()["periods"]["today"]
+    week = client.get("/panel").json()["periods"]["week"]
 
-    assert today["profit"] == -5_000
-    assert today["cash"] == -5_000
+    assert week["profit"] == -5_000
+    assert week["cash"] == -5_000
 
 
 def test_agreement_with_sales_debts_and_stock_at_2026_12_31(
@@ -304,6 +306,8 @@ def test_agreement_with_sales_debts_and_stock_at_2026_12_31(
         assert panel["periods"][key]["sales_count"] == len(sales_in_period)
         ids_by_period[key] = {s["id"] for s in sales_in_period}
 
+        if key == "today":
+            continue  # Hoy carries no cost: only sales, their count and grams sold
         cost_from_lines = 0
         for sale_summary in sales_in_period:
             detail = client.get(f"/sales/{sale_summary['id']}").json()
