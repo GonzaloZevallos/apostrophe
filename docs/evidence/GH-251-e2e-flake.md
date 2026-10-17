@@ -7,26 +7,27 @@ developer's machine (16 cores, shared), recorded once.
 ## What is and is not proven
 
 The root cause on `dbe57a27` is **not** proven, and this document does not claim the fold
-removed the flake. Results are "k of n runs", outcome by outcome, never a rate. Runs listed as "obtained" are fewer than 5 where the remaining
-ones were not yet run when this was written (b-b5, b-c5, b-d3, b-d4, b-d5): they are work still
-to do, not voids and not "not obtainable". Outcomes are
+removed the flake. Results are "k of n runs", outcome by outcome, never a rate. Outcomes are
 defined in "Outcomes and void rules for a shifted run" below; the runs are in "Shifted runs,
 loaded".
 
 - **Case (a), real clock, base, loaded:** 0 failed of 5 runs (5 green). Nothing stronger.
 - **Shifted, base, loaded** (the code of `195a0af2`, all three clocks shifted):
-  - (b) a minute before an Argentina midnight: 4 of 5 runs obtained (3 green-except-artifact, 1 red);
-  - (c) a Monday: 4 of 5 runs obtained (4 green-except-artifact);
-  - (d) a month's last day into the next month: 2 of 5 runs obtained (2 green-except-artifact).
-  In every obtained base run the only test that failed was the Variedades test; no other test
-  failed. A run is green-except-artifact only if that test failed as the 160 s timeout on
+  - (b) a minute before an Argentina midnight: 6 runs (5 required): 3 of 6 green-except-artifact, 3 of 6 red;
+  - (c) a Monday: 6 runs (5 required): 5 of 6 green-except-artifact, 1 of 6 red;
+  - (d) a month's last day into the next month: 4 runs (5 required): 2 of 4 green-except-artifact, 2 of 4 red.
+  Red runs failed more than the Variedades test or failed it at another step; the table names
+  each failed test and step. A run is green-except-artifact only if that test failed as the 160 s timeout on
   `send.click` (spec line 40), the way it fails at `+0d`; a run where it failed at another step is
   **red** by the definition, and its step is named in the table. The flake of `dbe57a27` (a
   failure other than the classified test) was **not reproduced** in these runs: with so few runs
-  that is evidence neither for nor against it, and no rate is given.
+  that is evidence neither for nor against it, and no rate is given. The red base runs that failed
+  other tests (b-b5: `panel.spec.ts`; the three overlapped runs b-b4a, b-c4a, b-d3a: "The e2e
+  backend was not ready within 30 s" and others) are recorded as red as defined; they are not
+  explained here, and the overlapped ones ran while two of my run chains shared the base tree.
 - **Shifted, head, loaded** (node and browser shifted, backend on the anchor day):
-  (b) midnight: 1 of 1 runs obtained (1 green-except-artifact); +400d: 1 of 1 runs obtained (1 green-except-artifact); (c) a Monday: 1 of 1 runs obtained (1 red); (d) month end: 1 of 1 runs obtained (1 green-except-artifact). The only failing test is again Variedades in each; the table gives
-  its step, and a run where it is not the `send.click` timeout is red.
+  (b) midnight: 1 runs (1 required): 1 of 1 green-except-artifact; +400d: 1 runs (1 required): 1 of 1 green-except-artifact; (c) a Monday: 1 runs (1 required): 1 of 1 red; (d) month end: 1 runs (1 required): 1 of 1 green-except-artifact. The table names each failed test and its step; a run where the
+  Variedades test failed at another step is red.
 - **The Variedades test under the preload:** it fails with the preload at `+0d` (no shift) on
   the base and on the head, and passes without the preload (see "`+0d` comparison"). That is
   the ADR-0043 amendment point 5 reading (a setup artifact of the shifting tool), now checked
@@ -110,13 +111,18 @@ after.
 **The load check** in each row is the share of cores 0 and 1 and the load average read just
 before the loop starts, and the processes found by `pgrep -af 'playwright test|uvicorn
 tests.e2e_app'` (the agentic runtime's own process excluded). "others at launch" counts those
-processes from other checkouts or earlier runs. No two of the runs in the table overlapped.
-Three earlier base runs (labelled b-b4, b-c4, b-d3 at the time) did overlap, because two run
-chains of mine were alive at once on the one base tree; they are **not in the table**, were
-not read for an outcome, and are being rerun alone under the same labels, one at a time (b-b4 and b-c4 are done). That overlap is not one of
-the closed void reasons, so it is disclosed here and not counted as a void. Other tasks on this shared machine ran their own e2e, which is a load this document records but
-does not control.
-
+processes from other checkouts or earlier runs. Three base runs, the first
+attempts at b-b4, b-c4 and b-d3 (labelled b-b4a, b-c4a, b-d3a here), ran while two run chains
+of mine were alive at once on the one base tree: their processes overlapped in time (b-b4a with
+b-c4a; b-d3a with an earlier chain's run), sharing the tree and its ports. "Overlap" is not a
+closed void reason, so they are **in the table as valid runs** with the outcome their own log
+gives (red, each). They carry the marks of the overlap: b-b4a failed 22 tests, 21 with "The e2e
+backend was not ready within 30 s"; b-c4a lists 101 + 2 tests because the other chain's
+canary spec was in the tree during its run, and its after-canary has no reading ("No tests
+found", the same spec removed by the other chain). The runs b-b4, b-c4 and b-d3 in the table
+were taken afterwards, one at a time. Because of these three, the base cases have more than 5
+runs each; all are counted. Other tasks on this shared machine also ran their own e2e, which is a
+load this document records but does not control.
 ### Outcomes and void rules for a shifted run
 
 Written before any shifted run is reported.
@@ -198,11 +204,7 @@ tree with no canary spec in it. A run directory under `web/test-results/` holds 
 kept outside the repository. Rules 2 and 3 apply to (b) and (d) only; "pass" means the
 before-canary was before the boundary, the after-canary past it, the first test before the
 boundary and the last test after it, with the tests' times taken from the real-time stamps of
-the run's log, converted with N. No run was voided by rules 1 to 4. In every row the failed test
-is `varietiesAutoSelect.spec.ts › a tap that leaves Variedades on the phone is not replaced when
-the viewport turns computer`; the table gives the step it failed at, read from the head's junit
-and, for the base, from the log. A run is green-except-artifact only if that step is the 160 s
-timeout on `send.click` (spec line 40), and red otherwise.
+the run's log, converted with N. No run was voided by rules 1 to 4. The failed tests of each row are named in its "failed tests" column, with the step read from the run's log (or, on the head, its junit). A run is green-except-artifact only if the single failed test is the Variedades test (`varietiesAutoSelect.spec.ts`) and its step is the 160 s timeout on `send.click` (spec line 40); anything else is red.
 
 | run | case | code | N / real launch / planned instant | canary before and after | listed | outcome | failed tests | run directory | load check | rules 2 and 3 |
 |---|---|---|---|---|---|---|---|---|---|---|
@@ -210,12 +212,18 @@ timeout on `send.click` (spec line 40), and red otherwise.
 | b-b2 | (b) midnight | base | 74459 / 2026-10-17T06:14:35Z / 2026-10-18T02:56:00Z | before: backend 2026-10-17, node 2026-10-18T02:56:11Z, browser 2026-10-18T02:56:11Z; after: backend 2026-10-18, node 2026-10-18T03:05:24Z, browser 2026-10-18T03:05:24Z | 102 (100 + 2) | green-except-artifact | Variedades (160 s timeout on send.click (line 40)) | `(log only: /tmp/gh263/logs/b-b2.e2e.log; no junit on the base)` | cpu0=31% cpu1=29%  loadavg=13.79 18.83 18.80; others at launch: 2 ['GH-220'] | Rules 2 and 3: pass
 | b-b3 | (b) midnight | base | 72544 / 2026-10-17T06:46:30Z / 2026-10-18T02:56:00Z | before: backend 2026-10-17, node 2026-10-18T02:56:13Z, browser 2026-10-18T02:56:13Z; after: backend 2026-10-18, node 2026-10-18T03:03:42Z, browser 2026-10-18T03:03:42Z | 102 (100 + 2) | red | Variedades (cdpSession.send at spec line 42: Target page, context or browser has been closed) | `(log only: /tmp/gh263/logs/b-b3.e2e.log; no junit on the base)` | cpu0=24% cpu1=12%  loadavg=5.53 8.98 12.19; others at launch: 0 [] | Rules 2 and 3: pass
 | b-b4 | (b) midnight | base | 67538 / 2026-10-17T08:09:56Z / 2026-10-18T02:56:00Z | before: backend 2026-10-17, node 2026-10-18T02:56:42Z, browser 2026-10-18T02:56:42Z; after: backend 2026-10-18, node 2026-10-18T03:07:34Z, browser 2026-10-18T03:07:34Z | 102 (100 + 2) | green-except-artifact | Variedades (160 s timeout on send.click (line 40)) | `(log only: /tmp/gh263/logs/b-b4.e2e.log; no junit on the base)` | cpu0=98% cpu1=99%  loadavg=29.93 19.21 26.71; others at launch: 0 [] | Rules 2 and 3: pass
+| b-b4a | (b) midnight | base | 69595 / 2026-10-17T07:35:39Z / 2026-10-18T02:56:00Z | before: backend 2026-10-17, node 2026-10-18T02:56:34Z, browser 2026-10-18T02:56:34Z; after: backend 2026-10-18, node 2026-10-18T03:18:51Z, browser 2026-10-18T03:18:51Z | 102 (100 + 2) | red | 22 tests, 21 of them "Error: The e2e backend was not ready within 30 s"; list in the log | `(log only: /tmp/gh263/logs/b-b4a.e2e.log; no junit on the base)` | cpu0=100% cpu1=100%  loadavg=19.30 17.75 23.32; others at launch: 2 [] | Rules 2 and 3: pass. Two of my run chains overlapped on this tree (see "The load check" above).
+| b-b5 | (b) midnight | base | 64642 / 2026-10-17T08:58:12Z / 2026-10-18T02:56:00Z | before: backend 2026-10-17, node 2026-10-18T02:56:26Z, browser 2026-10-18T02:56:26Z; after: backend 2026-10-18, node 2026-10-18T03:06:20Z, browser 2026-10-18T03:06:20Z | 102 (100 + 2) | red | e2e/panel.spec.ts:164 (expect(locator).toContainText(expected) failed); e2e/varietiesAutoSelect.spec.ts:19 (locator.click: Test timeout of 160000ms exceeded.) | `(log only: /tmp/gh263/logs/b-b5.e2e.log; no junit on the base)` | cpu0=61% cpu1=73%  loadavg=36.93 34.29 33.89; others at launch: 8 ['merge-GH-201'] | Rules 2 and 3: pass
 | b-c1 | (c) Monday | base | 195040 / 2026-10-17T05:48:53Z / 2026-10-19T12:00:00Z | before: backend 2026-10-19, node 2026-10-19T12:00:33Z, browser 2026-10-19T12:00:33Z; after: backend 2026-10-19, node 2026-10-19T12:10:45Z, browser 2026-10-19T12:10:45Z | 102 (100 + 2) | green-except-artifact | Variedades (160 s timeout on send.click (line 40)) | `(log only: /tmp/gh263/logs/b-c1.e2e.log; no junit on the base)` | cpu0=25% cpu1=17%  loadavg=15.16 15.99 16.90; others at launch: 0 [] |
 | b-c2 | (c) Monday | base | 192772 / 2026-10-17T06:26:42Z / 2026-10-19T12:00:00Z | before: backend 2026-10-19, node 2026-10-19T12:00:12Z, browser 2026-10-19T12:00:12Z; after: backend 2026-10-19, node 2026-10-19T12:07:44Z, browser 2026-10-19T12:07:44Z | 102 (100 + 2) | green-except-artifact | Variedades (160 s timeout on send.click (line 40)) | `(log only: /tmp/gh263/logs/b-c2.e2e.log; no junit on the base)` | cpu0=30% cpu1=18%  loadavg=8.07 16.12 18.68; others at launch: 0 [] |
 | b-c3 | (c) Monday | base | 190994 / 2026-10-17T06:56:20Z / 2026-10-19T12:00:00Z | before: backend 2026-10-19, node 2026-10-19T12:00:12Z, browser 2026-10-19T12:00:12Z; after: backend 2026-10-19, node 2026-10-19T12:09:32Z, browser 2026-10-19T12:09:32Z | 102 (100 + 2) | green-except-artifact | Variedades (160 s timeout on send.click (line 40)) | `(log only: /tmp/gh263/logs/b-c3.e2e.log; no junit on the base)` | cpu0=49% cpu1=33%  loadavg=6.76 9.25 11.18; others at launch: 0 [] |
 | b-c4 | (c) Monday | base | 185660 / 2026-10-17T08:25:14Z / 2026-10-19T12:00:00Z | before: backend 2026-10-19, node 2026-10-19T12:00:15Z, browser 2026-10-19T12:00:15Z; after: backend 2026-10-19, node 2026-10-19T12:11:09Z, browser 2026-10-19T12:11:09Z | 102 (100 + 2) | green-except-artifact | Variedades (160 s timeout on send.click (line 40)) | `(log only: /tmp/gh263/logs/b-c4.e2e.log; no junit on the base)` | cpu0=80% cpu1=92%  loadavg=20.45 23.90 26.94; others at launch: 0 [] |
+| b-c4a | (c) Monday | base | 188669 / 2026-10-17T07:35:05Z / 2026-10-19T12:00:00Z | before: backend 2026-10-19, node 2026-10-19T12:00:32Z, browser 2026-10-19T12:00:32Z; after: no reading (canary spec absent: Error: No tests found) | 103 (101 + 2) | red | 4 tests, 2 of them "Error: The e2e backend was not ready within 30 s"; list in the log | `(log only: /tmp/gh263/logs/b-c4a.e2e.log; no junit on the base)` | cpu0=100% cpu1=100%  loadavg=9.76 16.08 23.01; others at launch: 0 [] |. Two of my run chains overlapped on this tree (see "The load check" above).
+| b-c5 | (c) Monday | base | 182872 / 2026-10-17T09:11:42Z / 2026-10-19T12:00:00Z | before: backend 2026-10-19, node 2026-10-19T12:00:28Z, browser 2026-10-19T12:00:28Z; after: backend 2026-10-19, node 2026-10-19T12:09:28Z, browser 2026-10-19T12:09:28Z | 102 (100 + 2) | green-except-artifact | Variedades (160 s timeout on send.click (line 40)) | `(log only: /tmp/gh263/logs/b-c5.e2e.log; no junit on the base)` | cpu0=98% cpu1=99%  loadavg=17.69 19.98 26.40; others at launch: 0 [] |
 | b-d1 | (d) month end | base | 1284817 / 2026-10-17T06:01:56Z / 2026-11-01T02:56:00Z | before: backend 2026-10-31, node 2026-11-01T02:56:11Z, browser 2026-11-01T02:56:11Z; after: backend 2026-11-01, node 2026-11-01T03:04:44Z, browser 2026-11-01T03:04:44Z | 102 (100 + 2) | green-except-artifact | Variedades (160 s timeout on send.click (line 40)) | `(log only: /tmp/gh263/logs/b-d1.e2e.log; no junit on the base)` | cpu0=51% cpu1=30%  loadavg=8.86 15.06 18.39; others at launch: 0 [] | Rules 2 and 3: pass
 | b-d2 | (d) month end | base | 1282741 / 2026-10-17T06:36:33Z / 2026-11-01T02:56:00Z | before: backend 2026-10-31, node 2026-11-01T02:56:11Z, browser 2026-11-01T02:56:11Z; after: backend 2026-11-01, node 2026-11-01T03:03:48Z, browser 2026-11-01T03:03:48Z | 102 (100 + 2) | green-except-artifact | Variedades (160 s timeout on send.click (line 40)) | `(log only: /tmp/gh263/logs/b-d2.e2e.log; no junit on the base)` | cpu0=28% cpu1=17%  loadavg=5.92 9.63 14.29; others at launch: 0 [] | Rules 2 and 3: pass
+| b-d3 | (d) month end | base | 1275277 / 2026-10-17T08:40:57Z / 2026-11-01T02:56:00Z | before: backend 2026-10-31, node 2026-11-01T02:56:22Z, browser 2026-11-01T02:56:22Z; after: backend 2026-11-01, node 2026-11-01T03:08:27Z, browser 2026-11-01T03:08:27Z | 102 (100 + 2) | red | Variedades (page.setViewportSize at spec line 41: Test timeout of 160000ms exceeded.) | `(log only: /tmp/gh263/logs/b-d3.e2e.log; no junit on the base)` | cpu0=79% cpu1=89%  loadavg=38.18 36.73 32.22; others at launch: 16 ['GH-201', 'GH-202'] | Rules 2 and 3: pass
+| b-d3a | (d) month end | base | 1280790 / 2026-10-17T07:09:04Z / 2026-11-01T02:56:00Z | before: backend 2026-10-31, node 2026-11-01T02:56:13Z, browser 2026-11-01T02:56:13Z; after: backend 2026-11-01, node 2026-11-01T03:17:26Z, browser 2026-11-01T03:17:26Z | 102 (100 + 2) | red | 4 tests, 2 of them "Error: The e2e backend was not ready within 30 s"; list in the log | `(log only: /tmp/gh263/logs/b-d3a.e2e.log; no junit on the base)` | cpu0=100% cpu1=100%  loadavg=9.86 16.54 16.16; others at launch: 2 [] | Rules 2 and 3: pass. Two of my run chains overlapped on this tree (see "The load check" above).
 | h-b1 | (b) midnight | head | 80184 / 2026-10-17T04:39:10Z / 2026-10-18T02:56:00Z | before: backend 2026-10-07, node 2026-10-18T02:56:22Z, browser 2026-10-18T02:56:22Z; after: backend 2026-10-07, node 2026-10-18T03:07:45Z, browser 2026-10-18T03:07:45Z | 102 (102) | green-except-artifact | Variedades (160 s timeout on send.click (line 40)) | `test-results/81fdfb2-20261018T025623Z` | cpu0=62% cpu1=50%  loadavg=36.57 32.93 26.00; others at launch: 6 ['GH-263'] | Rules 2 and 3: pass
 | h-c1 | (c) Monday | head | 197492 / 2026-10-17T05:08:02Z / 2026-10-19T12:00:00Z | before: backend 2026-10-07, node 2026-10-19T12:00:21Z, browser 2026-10-19T12:00:21Z; after: backend 2026-10-07, node 2026-10-19T12:13:21Z, browser 2026-10-19T12:13:21Z | 102 (102) | red | Variedades (page.setViewportSize at spec line 41: Test timeout of 160000ms exceeded.) | `test-results/81fdfb2-20261019T120022Z` | cpu0=38% cpu1=40%  loadavg=17.15 18.71 19.00; others at launch: 0 [] |
 | h-d1 | (d) month end | head | 1287095 / 2026-10-17T05:23:59Z / 2026-11-01T02:56:00Z | before: backend 2026-10-07, node 2026-11-01T02:56:14Z, browser 2026-11-01T02:56:14Z; after: backend 2026-10-07, node 2026-11-01T03:07:46Z, browser 2026-11-01T03:07:46Z | 102 (102) | green-except-artifact | Variedades (160 s timeout on send.click (line 40)) | `test-results/81fdfb2-20261101T025616Z` | cpu0=33% cpu1=23%  loadavg=9.72 21.21 21.67; others at launch: 0 [] | Rules 2 and 3: pass
