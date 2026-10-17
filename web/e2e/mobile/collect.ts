@@ -6,27 +6,35 @@
  */
 
 import type { Page } from '@playwright/test'
+import type { CellId } from '../../src/mobile-standard/targets.ts'
 import type { Rule, Violation } from '../../src/mobile-standard/violation.ts'
 import { collectGeometry } from './collectGeometry.js'
+import { COLOUR_COLLECTOR } from './collectColour.js'
+import { LOADING_COLLECTOR, SHIFT_COLLECTOR } from './collectLoading.js'
 
-export interface CellId {
-  screen: string
-  size: Violation['size']
-  theme: Violation['theme']
-}
+export type { CellId }
 
-/** What runs in the page: no Node, no closure over this file. */
-export type PageCollector = (cell: CellId) => Violation[]
-
+/**
+ * A collector reads the page (what runs in it is self-contained: no Node, no closure) and
+ * returns the Violations it finds; this side may judge what the page reported.
+ */
 export interface Collector {
   name: string
-  /** `loaded`: after the data arrived. `loading`: while the API is held. */
-  phase: 'loaded' | 'loading'
-  run: PageCollector
+  /**
+   * `loaded`: after the data arrived. `loading`: while the API is held. `released`: after
+   * the held answers came, when what moved is known.
+   */
+  phase: 'loaded' | 'loading' | 'released'
+  run: (page: Page, cell: CellId) => Promise<Violation[]>
 }
 
 /** The registered collectors; later subtasks append, one per line. */
-export const COLLECTORS: readonly Collector[] = [{ name: 'geometry', phase: 'loaded', run: collectGeometry }]
+export const COLLECTORS: readonly Collector[] = [
+  { name: 'geometry', phase: 'loaded', run: (page, cell) => page.evaluate(collectGeometry, cell) },
+  COLOUR_COLLECTOR,
+  LOADING_COLLECTOR,
+  SHIFT_COLLECTOR,
+]
 
 /** Quiet window the page must hold, with no DOM change, before the loaded screen is measured. */
 export const QUIET_MS = 400
@@ -66,9 +74,9 @@ export async function collect(
   collectors: readonly Collector[] = COLLECTORS,
 ): Promise<Violation[]> {
   const found: Violation[] = []
-  if (phase === 'loaded') await quiet(page)
+  if (phase !== 'loading') await quiet(page)
   for (const collector of collectors.filter((c) => c.phase === phase)) {
-    found.push(...(await page.evaluate(collector.run, cell)))
+    found.push(...(await collector.run(page, cell)))
   }
   return found
 }

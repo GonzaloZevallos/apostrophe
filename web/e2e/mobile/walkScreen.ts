@@ -13,6 +13,9 @@ import { guardWrites, holdApi, stubReads } from './network.js'
 import { asScreen } from './states.js'
 import { open, painted, runSteps, settle, type Facts, type WalkScreen } from './walk.js'
 
+/** How long a held screen has to ask for its data before it counts as asking for none. */
+const FETCH_WAIT_MS = 300
+
 export async function walkScreen(
   page: Page,
   screen: WalkScreen,
@@ -24,15 +27,19 @@ export async function walkScreen(
   const hold = held ? await holdApi(page.context()) : null
   try {
     await open(page, screen, facts)
+    // A screen that asks for nothing has no loading state to read.
+    let fetched = false
     if (hold !== null) {
       await painted(page)
-      found.push(...(await collect(page, 'loading', cell)))
+      fetched = await hold.whenHeld(FETCH_WAIT_MS)
+      if (fetched) found.push(...(await collect(page, 'loading', cell)))
       await hold.release()
     }
     await settle(page)
     if (!screen.signedOut && new URL(page.url()).pathname.startsWith('/entrar')) {
       return [...found, pageViolation(cell, 'unreachable')]
     }
+    if (hold !== null && fetched) found.push(...(await collect(page, 'released', cell)))
     if (hold === null) {
       if (!(await runSteps(page, screen, facts))) return [pageViolation(cell, 'unreachable')]
       found.push(...(await collect(page, 'loaded', cell)))

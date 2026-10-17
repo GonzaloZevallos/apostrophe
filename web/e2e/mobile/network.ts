@@ -4,7 +4,7 @@
  * held-API mode keeps GET API answers back until the spec releases them by signal.
  */
 
-import type { BrowserContext, Route } from '@playwright/test'
+import type { BrowserContext, Request, Route } from '@playwright/test'
 import type { ReadStub, WriteStub } from '../../src/mobile-standard/states.ts'
 
 const READS = new Set(['GET', 'HEAD'])
@@ -63,34 +63,56 @@ export async function stubReads(context: BrowserContext, stubs: readonly ReadStu
 }
 
 export interface Held {
-  /** GET API requests held so far. */
+  /** Requests held so far. */
   readonly count: () => number
+  /** Answers whether a request was held within `ms`: a screen that never fetches has no loading state to read. */
+  whenHeld: (ms: number) => Promise<boolean>
   /** Lets every held and every later answer through: the signal, never a timer. */
   release: () => Promise<void>
 }
 
-/** Holds every GET `fetch`/`xhr` request until `release()`; pages and assets pass. */
-export async function holdApi(context: BrowserContext): Promise<Held> {
+/**
+ * The session's own question: held, the gated layout renders nothing and no screen's own
+ * loading state could ever be read, so it is the one GET the hold lets through.
+ */
+const SESSION_PATH = '/auth/me'
+
+/** Holds `wanted` requests until `release()`; the rest pass. `onRelease` is what a released request then does. */
+async function holdRequests(
+  context: BrowserContext,
+  wanted: (request: Request) => boolean,
+  onRelease: (route: Route) => Promise<void>,
+): Promise<Held> {
   let held = 0
   let open = false
   let go: () => void = () => {}
+  let first: () => void = () => {}
   const signal = new Promise<void>((resolve) => {
     go = resolve
   })
+  const firstHeld = new Promise<boolean>((resolve) => {
+    first = () => resolve(true)
+  })
   const handler = async (route: Route): Promise<void> => {
-    const request = route.request()
-    const isApi = request.method() === 'GET' && ['fetch', 'xhr'].includes(request.resourceType())
-    if (!isApi || open) {
+    if (!wanted(route.request()) || open) {
       await route.fallback()
       return
     }
     held += 1
+    first()
     await signal
-    await route.fallback()
+    await onRelease(route)
   }
   await context.route('**/*', handler)
   return {
     count: () => held,
+    whenHeld: (ms) =>
+      Promise.race([
+        firstHeld,
+        new Promise<boolean>((resolve) => {
+          setTimeout(() => resolve(held > 0), ms)
+        }),
+      ]),
     release: async () => {
       open = true
       go()
@@ -98,4 +120,28 @@ export async function holdApi(context: BrowserContext): Promise<Held> {
       await context.unroute('**/*', handler)
     },
   }
+}
+
+/** Holds every GET `fetch`/`xhr` request but the session's until `release()`; pages and assets pass. */
+export function holdApi(context: BrowserContext): Promise<Held> {
+  return holdRequests(
+    context,
+    (request) =>
+      request.method() === 'GET' &&
+      ['fetch', 'xhr'].includes(request.resourceType()) &&
+      new URL(request.url()).pathname !== SESSION_PATH,
+    (route) => route.fallback(),
+  )
+}
+
+/**
+ * Holds one write until `release()`, then aborts it: the seller's tap is pending while
+ * the request is out, and the backend never receives it (invariant 6).
+ */
+export function holdWrite(context: BrowserContext, method: string, path: RegExp): Promise<Held> {
+  return holdRequests(
+    context,
+    (request) => request.method() === method && path.test(new URL(request.url()).pathname),
+    (route) => route.abort(),
+  )
 }

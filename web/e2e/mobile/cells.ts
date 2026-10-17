@@ -2,6 +2,7 @@
 
 import type { Browser, BrowserContext } from '@playwright/test'
 import { mobileBaseUrl } from '../env.js'
+import { installToolkit } from './toolkit.js'
 import { SIZES, THEMES, type Size, type Theme } from '../../src/mobile-standard/violation.ts'
 
 export { SIZES, THEMES }
@@ -36,6 +37,7 @@ export async function newCell(
     storageState,
   })
   await context.clock.setFixedTime(PINNED_INSTANT)
+  await context.addInitScript(installToolkit)
   if (theme === 'oscuro') {
     await context.addInitScript(() => {
       localStorage.setItem('tema', 'oscuro')

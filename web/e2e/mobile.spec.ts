@@ -15,8 +15,10 @@ import { newCell, SIZES, THEMES, type Size, type Theme } from './mobile/cells.js
 import { guardWrites } from './mobile/network.js'
 import { asScreen } from './mobile/states.js'
 import { settle, type Facts } from './mobile/walk.js'
+import { walkPending } from './mobile/walkPending.js'
 import { walkScreen, walkState } from './mobile/walkScreen.js'
 import { STATES } from '../src/mobile-standard/allStates.ts'
+import { PENDING_TAPS } from '../src/mobile-standard/pending.ts'
 import { OFFENDERS, diffOffenders } from '../src/mobile-standard/offenders/index.ts'
 import { parseFacts, WALKABLE } from '../src/mobile-standard/registry.ts'
 import { GETTING_IN_STATES } from '../src/mobile-standard/statesGettingIn.ts'
@@ -55,6 +57,13 @@ for (const size of SIZES) {
         await test.step(state.screen, async () => {
           const page = state.signedOut === true ? outPage : inPage
           actual.push(...(await walkState(page, state, cellOf(state.screen), facts)))
+        })
+      }
+
+      for (const tap of PENDING_TAPS) {
+        await test.step(`${tap.screen} pending`, async () => {
+          const page = tap.signedOut === true ? outPage : inPage
+          actual.push(...(await walkPending(page, tap, cellOf(tap.screen), facts)))
         })
       }
 
