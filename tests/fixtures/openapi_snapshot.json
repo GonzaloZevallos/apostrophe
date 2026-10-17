@@ -691,6 +691,28 @@
         "title": "Channel",
         "type": "string"
       },
+      "ChecklistStepOut": {
+        "properties": {
+          "done": {
+            "title": "Done",
+            "type": "boolean"
+          },
+          "required": {
+            "title": "Required",
+            "type": "boolean"
+          },
+          "step": {
+            "$ref": "#/components/schemas/StepName"
+          }
+        },
+        "required": [
+          "step",
+          "required",
+          "done"
+        ],
+        "title": "ChecklistStepOut",
+        "type": "object"
+      },
       "CostLineOut": {
         "description": "A period's stock shortfall, promotion or own-use cost (CONTEXT.md), `null`\nexactly when the period has none of that line's records. `pending` is decided from\nthat line's own pending grams (plan invariant); no grams cross the wire (PM).",
         "properties": {
@@ -1353,6 +1375,53 @@
           "detail"
         ],
         "title": "ExpenseOut",
+        "type": "object"
+      },
+      "FirstRunKind": {
+        "enum": [
+          "onboarding",
+          "checklist",
+          "start_varieties",
+          "none"
+        ],
+        "title": "FirstRunKind",
+        "type": "string"
+      },
+      "FirstRunOut": {
+        "properties": {
+          "checklist": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ChecklistStepOut"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checklist"
+          },
+          "import_notice": {
+            "title": "Import Notice",
+            "type": "boolean"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/FirstRunKind"
+          },
+          "nothing_qualifies": {
+            "title": "Nothing Qualifies",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "kind",
+          "checklist",
+          "import_notice",
+          "nothing_qualifies"
+        ],
+        "title": "FirstRunOut",
         "type": "object"
       },
       "HTTPValidationError": {
@@ -3213,6 +3282,16 @@
         ],
         "title": "SinceFirstRecordOut",
         "type": "object"
+      },
+      "StepName": {
+        "enum": [
+          "priced_variety",
+          "stock_entry",
+          "published",
+          "second_user"
+        ],
+        "title": "StepName",
+        "type": "string"
       },
       "StepOut": {
         "properties": {
@@ -5106,6 +5185,51 @@
         "summary": "Edit Expense",
         "tags": [
           "expenses"
+        ]
+      }
+    },
+    "/first-run": {
+      "get": {
+        "operationId": "get_first_run_first_run_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FirstRunOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get First Run",
+        "tags": [
+          "onboarding"
+        ]
+      }
+    },
+    "/first-run/import-notice/dismissal": {
+      "post": {
+        "operationId": "post_import_notice_dismissal_first_run_import_notice_dismissal_post",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Post Import Notice Dismissal",
+        "tags": [
+          "onboarding"
         ]
       }
     },

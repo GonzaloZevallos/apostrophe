@@ -20,8 +20,10 @@ from app.accounts.adapters.tables import BusinessRow
 from app.onboarding.adapters.sql_first_runs import SqlFirstRuns
 from app.onboarding.adapters.sql_onboardings import SqlOnboardings
 from app.onboarding.adapters.tables import OnboardingRow
+from app.onboarding.application.ports import CatalogFacts
 from app.onboarding.domain.first_run import Stamp
 from tests.conftest import NOW, TODAY
+from tests.contract_shapes import assert_matches_fixture
 from tests.statement_log import captured_statements
 
 BOT = {"token": "123456:bot-token", "own_chat": "5551", "channel_chat": "@canal"}
@@ -275,6 +277,18 @@ def test_the_first_run_of_a_business_is_not_read_by_another(
     assert _first_run(other_client)["import_notice"] is False
 
 
+def test_the_answers_match_the_fixture_the_front_is_built_from(
+    client: TestClient, engine: Engine
+) -> None:
+    assert_matches_fixture(_first_run(client), "firstRun")  # onboarding: no checklist
+    _without_onboarding(engine)
+    assert_matches_fixture(_first_run(client), "firstRun")  # the checklist
+    variety_id = _variety(client)
+    _price(client, variety_id)
+    _stock(client, variety_id)
+    assert_matches_fixture(_first_run(client), "firstRun")  # none
+
+
 def test_the_app_wires_the_first_run_routes(app: FastAPI) -> None:
     paths = app.openapi()["paths"]
 
@@ -463,10 +477,12 @@ def _agrees(app: FastAPI, client: TestClient, engine: Engine) -> bool:
     """`any_qualifies` through the port the Onboarding reads it by, against `GET /catalog`:
     it holds exactly when the catalog answers no text."""
     with Session(engine) as session:
-        facts = app.state.onboarding_catalog_facts(session, _business_id(engine), TODAY)
+        facts: CatalogFacts = app.state.onboarding_catalog_facts(
+            session, _business_id(engine), TODAY
+        )
         qualifies = facts.any_qualifies()
     text = client.get("/catalog").json()["text"]
-    return qualifies == (text is not None)
+    return bool(qualifies == (text is not None))
 
 
 def _flag_when_checklist(client: TestClient) -> None:

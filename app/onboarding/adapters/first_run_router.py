@@ -27,6 +27,7 @@ from app.onboarding.adapters.first_run_schemas import FirstRunOut
 from app.onboarding.adapters.sql_first_runs import SqlFirstRuns
 from app.onboarding.adapters.sql_onboardings import SqlOnboardings
 from app.onboarding.application.dismiss_import_notice import dismiss_import_notice
+from app.onboarding.application.first_run import settle_first_run
 from app.onboarding.application.ports import (
     BotFacts,
     CatalogFacts,
@@ -35,7 +36,6 @@ from app.onboarding.application.ports import (
     VarietyFacts,
 )
 from app.onboarding.application.read_first_run import FirstRunSources, read_first_run
-from app.onboarding.application.first_run import settle_first_run
 
 router = APIRouter(prefix="/first-run", tags=["onboarding"])
 logger = logging.getLogger("apostrophe.onboarding")

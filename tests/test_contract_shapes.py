@@ -21,7 +21,12 @@ import pytest
 from fastapi import FastAPI
 
 from tests.contract_nullable import NULLABLE, JsonType, ShapeOf
-from tests.contract_shapes import FIXTURES_DIR, assert_matches_fixture, check_shape
+from tests.contract_shapes import (
+    FIXTURES_DIR,
+    _resolve_shape_of,
+    assert_matches_fixture,
+    check_shape,
+)
 
 
 def _load(name: str) -> dict[str, object]:
@@ -255,6 +260,7 @@ FIXTURE_ROUTES: Mapping[str, tuple[RouteShape, ...]] = {
         RouteShape("GET", "/customers", item=True),
     ),
     "debtors": (RouteShape("GET", "/payments/debtors"),),
+    "firstRun": (RouteShape("GET", "/first-run"),),
     "movements": (RouteShape("GET", "/stock/varieties/{variety_id}/movements"),),
     "panel": (RouteShape("GET", "/panel"),),
     "payment": (RouteShape("POST", "/customers/{customer_id}/payments"),),
@@ -375,9 +381,15 @@ def _response_schema(spec: dict[str, Any], route: RouteShape) -> dict[str, Any]:
 
 def _declared_json_types(name: str) -> dict[str, JsonType]:
     return {
-        path: ("object" if isinstance(declared, ShapeOf) else declared)
+        path: (_shape_of_type(declared) if isinstance(declared, ShapeOf) else declared)
         for path, declared in NULLABLE.get(name, {}).items()
     }
+
+
+def _shape_of_type(declared: ShapeOf) -> JsonType:
+    """What a `ShapeOf` field is in the OpenAPI document: an array when its target is a
+    list (`firstRun`'s `checklist`), an object otherwise."""
+    return "array" if isinstance(_resolve_shape_of(declared), list) else "object"
 
 
 def test_every_fixture_routes_nullable_fields_match_openapi(app: FastAPI) -> None:
@@ -389,6 +401,22 @@ def test_every_fixture_routes_nullable_fields_match_openapi(app: FastAPI) -> Non
             found: dict[str, JsonType] = {}
             _walk(_response_schema(spec, route), components, "", found)
             assert found == declared, f"{name} {route}: openapi={found} NULLABLE={declared}"
+
+
+def test_a_nullable_array_declared_with_shape_of_is_an_array_in_the_declared_types() -> None:
+    assert _declared_json_types("firstRun") == {"checklist": "array"}
+    assert _declared_json_types("pinnedCatalogStatus")["status"] == "object"
+
+
+def test_a_nullable_array_answered_with_the_wrong_type_or_a_wrong_item_fails_the_checker() -> None:
+    assert_matches_fixture(_load("firstRun") | {"checklist": None}, "firstRun")
+    with pytest.raises(AssertionError, match="checklist"):
+        assert_matches_fixture(_load("firstRun") | {"checklist": "none"}, "firstRun")
+    with pytest.raises(AssertionError, match="done"):
+        assert_matches_fixture(
+            _load("firstRun") | {"checklist": [{"step": "priced_variety", "required": True}]},
+            "firstRun",
+        )
 
 
 # -- the walker itself, proven on schemas a wrong NULLABLE must disagree with --------
