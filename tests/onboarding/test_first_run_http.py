@@ -4,19 +4,25 @@ adapters. A pre-Onboarding business is one with no `onboarding` row, made here b
 deleting it; an imported one has `imported_at`, which only the import writes, so the
 tests stamp it through the same `FirstRuns` port the import uses."""
 
+import logging
+from datetime import datetime
 from typing import Any
 
+import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy import delete, select
 from sqlalchemy.engine import Engine
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
 from app.accounts.adapters.tables import BusinessRow
 from app.onboarding.adapters.sql_first_runs import SqlFirstRuns
 from app.onboarding.adapters.sql_onboardings import SqlOnboardings
 from app.onboarding.adapters.tables import OnboardingRow
-from tests.conftest import NOW
+from app.onboarding.domain.first_run import Stamp
+from tests.conftest import NOW, TODAY
+from tests.statement_log import captured_statements
 
 BOT = {"token": "123456:bot-token", "own_chat": "5551", "channel_chat": "@canal"}
 STEPS = ["priced_variety", "stock_entry", "published", "second_user"]
@@ -274,3 +280,235 @@ def test_the_app_wires_the_first_run_routes(app: FastAPI) -> None:
 
     assert "get" in paths["/first-run"]
     assert "post" in paths["/first-run/import-notice/dismissal"]
+
+
+# -- reads and writes ------------------------------------------------------------------
+
+
+def _dml(statements: list[tuple[str, object]]) -> list[str]:
+    return [
+        statement
+        for statement, _ in statements
+        if statement.lstrip().upper().startswith(("INSERT", "UPDATE", "DELETE"))
+    ]
+
+
+def _small_checklist(client: TestClient) -> None:
+    """A pre-Onboarding business whose checklist shows: one variety whose price takes
+    effect tomorrow, one stock entry."""
+    variety_id = _variety(client, "Chica")
+    _price(client, variety_id, effective_from="2026-10-03")
+    _stock(client, variety_id)
+
+
+def _year_checklist(client: TestClient) -> None:
+    """The same quiet state over many rows: many varieties, each with a run of price
+    entries that all take effect after today, and many stock entries, so no variety is
+    priced today, the checklist still shows and the catalog qualification pass runs over
+    all of it."""
+    for index in range(8):
+        variety_id = _variety(client, f"Variedad {index}")
+        for day in range(3, 28):
+            _price(client, variety_id, effective_from=f"2026-11-{day:02d}")
+        for _ in range(9):
+            _stock(client, variety_id, grams="100")
+
+
+def _statement_count(engine: Engine, client: TestClient) -> int:
+    with captured_statements(engine) as statements:
+        assert client.get("/first-run").status_code == 200
+    return len(statements)
+
+
+def test_a_quiet_read_issues_no_insert_update_or_delete(
+    client: TestClient, engine: Engine
+) -> None:
+    _without_onboarding(engine)
+    _small_checklist(client)
+
+    with captured_statements(engine) as statements:
+        answer = _first_run(client)
+
+    assert answer["kind"] == "checklist"
+    assert _dml(statements) == []
+
+
+def test_a_quiet_read_costs_the_same_statements_on_a_small_business_and_a_seeded_year(
+    client: TestClient, other_client: TestClient, engine: Engine
+) -> None:
+    with Session(engine) as session:
+        session.execute(delete(OnboardingRow))
+        session.commit()
+    _small_checklist(client)
+    _year_checklist(other_client)
+
+    small = _statement_count(engine, client)
+    year = _statement_count(engine, other_client)
+
+    assert _first_run(client)["kind"] == "checklist"
+    assert _first_run(other_client)["kind"] == "checklist"
+    assert small == year, (small, year)
+
+
+def test_a_quiet_read_of_a_new_business_costs_the_same_small_or_seeded(
+    client: TestClient, other_client: TestClient, engine: Engine
+) -> None:
+    _small_checklist(client)
+    _year_checklist(other_client)
+
+    assert _statement_count(engine, client) == _statement_count(engine, other_client)
+
+
+def test_the_stamping_read_costs_exactly_one_insert_and_one_update_more_than_a_quiet_one(
+    client: TestClient, engine: Engine
+) -> None:
+    _without_onboarding(engine)
+    variety_id = _variety(client)
+    _price(client, variety_id)
+    _stock(client, variety_id)
+
+    with captured_statements(engine) as stamping:
+        _first_run(client)
+    with captured_statements(engine) as quiet:
+        _first_run(client)
+
+    assert [statement.split()[0] for statement in _dml(stamping)] == ["INSERT", "UPDATE"]
+    assert _dml(quiet) == []
+    assert len(stamping) - len(quiet) == 2
+
+
+def test_a_dismissal_for_a_business_that_was_not_imported_writes_nothing(
+    client: TestClient, engine: Engine
+) -> None:
+    with captured_statements(engine) as statements:
+        response = client.post("/first-run/import-notice/dismissal")
+
+    assert response.status_code == 204, response.text
+    assert _dml(statements) == []
+
+
+def test_a_stamp_that_the_database_cannot_take_never_changes_the_answer(
+    client: TestClient, engine: Engine, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _without_onboarding(engine)
+    variety_id = _variety(client)
+    _price(client, variety_id)
+    _stock(client, variety_id)
+    expected = {
+        "kind": "none",
+        "checklist": None,
+        "import_notice": False,
+        "nothing_qualifies": False,
+    }
+
+    def locked(self: SqlFirstRuns, column: Stamp, at: datetime) -> None:
+        raise OperationalError("UPDATE first_run", {}, Exception("database is locked"))
+
+    monkeypatch.setattr(SqlFirstRuns, "stamp", locked)
+    response = client.get("/first-run")
+
+    assert response.status_code == 200, response.text
+    assert response.json() == expected
+    monkeypatch.undo()
+    with Session(engine) as session:
+        assert SqlFirstRuns(session, _business_id(engine)).get() is None
+    assert client.get("/first-run").json() == expected
+    assert _stamps(engine)["checklist_gone_at"] == NOW
+
+
+def test_the_guard_logs_the_exception_class_only(
+    client: TestClient,
+    engine: Engine,
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    _without_onboarding(engine)
+    variety_id = _variety(client, "Nombre Secreto")
+    _price(client, variety_id)
+    _stock(client, variety_id)
+
+    def locked(self: SqlFirstRuns, column: Stamp, at: datetime) -> None:
+        raise OperationalError("UPDATE first_run", {}, Exception("secreto 11000"))
+
+    monkeypatch.setattr(SqlFirstRuns, "stamp", locked)
+    with caplog.at_level(logging.WARNING, logger="apostrophe.onboarding"):
+        client.get("/first-run")
+
+    assert [record.getMessage() for record in caplog.records] == [
+        "first run stamp failed: OperationalError"
+    ]
+
+
+def test_any_other_failure_of_the_stamp_is_not_swallowed(
+    client: TestClient, engine: Engine, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _without_onboarding(engine)
+    variety_id = _variety(client)
+    _price(client, variety_id)
+    _stock(client, variety_id)
+
+    def broken(self: SqlFirstRuns, column: Stamp, at: datetime) -> None:
+        raise RuntimeError("not a locked database")
+
+    monkeypatch.setattr(SqlFirstRuns, "stamp", broken)
+
+    with pytest.raises(RuntimeError, match="not a locked database"):
+        client.get("/first-run")
+
+
+# -- nothing_qualifies agrees with the catalog -----------------------------------------
+
+
+def _agrees(app: FastAPI, client: TestClient, engine: Engine) -> bool:
+    """`any_qualifies` through the port the Onboarding reads it by, against `GET /catalog`:
+    it holds exactly when the catalog answers no text."""
+    with Session(engine) as session:
+        facts = app.state.onboarding_catalog_facts(session, _business_id(engine), TODAY)
+        qualifies = facts.any_qualifies()
+    text = client.get("/catalog").json()["text"]
+    return qualifies == (text is not None)
+
+
+def _flag_when_checklist(client: TestClient) -> None:
+    answer = _first_run(client)
+    if answer["kind"] == "checklist":
+        assert answer["nothing_qualifies"] is (client.get("/catalog").json()["text"] is None)
+
+
+def test_nothing_qualifies_agrees_with_the_catalog_text_over_every_reason_not_to_qualify(
+    app: FastAPI, client: TestClient, engine: Engine
+) -> None:
+    _without_onboarding(engine)
+    unpriced = _variety(client, "Sin precio")
+    assert unpriced > 0
+    assert _agrees(app, client, engine)
+    _flag_when_checklist(client)
+
+    hidden = _variety(client, "Oculta")
+    _price(client, hidden)
+    hid = client.put(
+        f"/catalog/varieties/{hidden}",
+        json={"shown": False, "emoji": None, "indica_share": None, "aroma": None},
+    )
+    assert hid.status_code == 200, hid.text
+    never_stocked = _variety(client, "Sin stock")
+    _price(client, never_stocked)
+    assert _agrees(app, client, engine)
+    _flag_when_checklist(client)
+    assert _first_run(client)["nothing_qualifies"] is True
+
+    sold_out = _variety(client, "Agotada")
+    _price(client, sold_out)
+    _stock(client, sold_out, grams="10")
+    sold = client.post(
+        "/sales", json={"payment": "cash", "lines": [{"variety_id": sold_out, "grams": "10"}]}
+    )
+    assert sold.status_code == 201, sold.text
+    assert client.get("/catalog").json()["text"] is None
+    assert _agrees(app, client, engine)
+
+    qualifying = _variety(client, "Buena")
+    _price(client, qualifying)
+    _stock(client, qualifying)
+    assert client.get("/catalog").json()["text"] is not None
+    assert _agrees(app, client, engine)
