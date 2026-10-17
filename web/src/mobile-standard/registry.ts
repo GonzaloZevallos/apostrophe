@@ -56,6 +56,27 @@ export const STATE_NAMES: readonly string[] = [
   'ResetMuerto',
   'EstadosReintento',
   'EstadosGoneAviso',
+  // Records areas (`states-records`).
+  'ClientesBusqueda',
+  'ClienteNuevo',
+  'ClienteEditar',
+  'EntradaStockDesdeStock',
+  'EntradaStockEditar',
+  'EntradaStockConfirmarCambios',
+  'EntradaStockConfirmarBorrado',
+  'PrecioNuevoFormulario',
+  'PrecioConfirmarBorrado',
+  'VariedadNuevaFormulario',
+  'VariedadRenombrar',
+  'VariedadUmbral',
+  'CatalogoAtributos',
+  'GastoDesdeMas',
+  'GastoDesdeGastos',
+  'GastoEditar',
+  'GastoConfirmarBorrado',
+  'ConfiguracionCategoriaRenombrar',
+  'ConfiguracionCategoriaConfirmarBorrado',
+  'ConfiguracionContrasena',
 ]
 
 function asRecord(value: unknown, what: string): Record<string, unknown> {
