@@ -20,7 +20,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useLocation, useNavigate, useOutletContext } from 'react-router'
 import { ApiError, NetworkError, get } from '../../api/client'
-import { catalogQueryOptions } from '../../api/catalog'
+import { archivedCatalogQueryOptions, catalogQueryOptions } from '../../api/catalog'
 import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
 import { isGone } from '../../api/refusals'
@@ -31,6 +31,7 @@ import ErrorGenerico from '../../components/ErrorGenerico'
 import GoneScreen from '../../components/GoneScreen'
 import BotonLink from '../../components/BotonLink'
 import Boton from '../../components/Boton'
+import Insignia from '../../components/Insignia'
 import LeaveConfirm from '../../components/LeaveConfirm'
 import Loading from '../../components/Loading'
 import MarcaEstado from '../../components/MarcaEstado'
@@ -129,6 +130,9 @@ function VarietyPageView({
     select: (catalog) => catalog.varieties.find((row) => row.id === varietyId) ?? null,
   })
 
+  const archivedCatalogQuery = useQuery({ ...archivedCatalogQueryOptions(), enabled: archived })
+  const archivedAttributes = archivedCatalogQuery.data?.find((attributes) => attributes.variety_id === varietyId) ?? null
+
   const catalogRow = catalogQuery.data ?? null
   const ready = varietyQuery.data !== undefined && pricesQuery.data !== undefined && stockQuery.data !== undefined
   const anchored = ready && catalogRow !== null
@@ -137,14 +141,19 @@ function VarietyPageView({
     document.getElementById(CATALOG_SECTION_ID)?.scrollIntoView()
   }, [anchored, location.hash])
 
-  const failure = varietyQuery.error ?? pricesQuery.error ?? stockQuery.error
+  const failure = varietyQuery.error ?? pricesQuery.error ?? stockQuery.error ?? archivedCatalogQuery.error
   if (gone || (failure instanceof ApiError && isGone(failure.code))) {
     return <GoneScreen label="Variedades" to={VARIETIES} />
   }
   if (failure !== null) {
     return <Card>{failure instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />}</Card>
   }
-  if (varietyQuery.data === undefined || pricesQuery.data === undefined || stockQuery.data === undefined) {
+  if (
+    varietyQuery.data === undefined ||
+    pricesQuery.data === undefined ||
+    stockQuery.data === undefined ||
+    (archived && archivedCatalogQuery.data === undefined)
+  ) {
     return (
       <Card>
         <Loading />
@@ -181,11 +190,23 @@ function VarietyPageView({
             <Boton variant="icon" action="edit" ariaLabel="Editar nombre" onClick={() => openForm('rename')} />
           )}
         </div>
-        {row !== undefined && (
+        {row !== undefined && archived && (
+          <>
+            <p className="variedad-resumen variedad-resumen--archivada">
+              {formatGrams(row.grams)}
+              {' · '}
+              {variety.current_price === null ? NO_PRICE_TODAY : `${formatMoney(variety.current_price.list_price)} x g`}
+            </p>
+            <div className="variedad-marcas">
+              <Insignia>Archivada</Insignia>
+              {archivedAttributes !== null && !archivedAttributes.shown && <span className="variedad-resumen__oculta">Oculta</span>}
+            </div>
+          </>
+        )}
+        {row !== undefined && !archived && (
           <p className="variedad-resumen">
             {formatGrams(row.grams)} · <MarcaEstado estado={row.status} />
-            {archived && <> · <span className="variedad-resumen__oculta">Archivada</span></>}
-            {!archived && catalogRow !== null && !catalogRow.shown && <> · <span className="variedad-resumen__oculta">Oculta</span></>}
+            {catalogRow !== null && !catalogRow.shown && <> · <span className="variedad-resumen__oculta">Oculta</span></>}
             {row.days_left !== null && <> · {row.days_left} días</>}
             {' · '}
             {variety.current_price === null ? NO_PRICE_TODAY : `${formatMoney(variety.current_price.list_price)} x g`}
@@ -227,7 +248,7 @@ function VarietyPageView({
           <>
             {restoreNotice}
             <div className="variedad-acciones">
-              <Boton variant="secondary" icon="restaurar" disabled={restoring} onClick={() => void restore(varietyId)}>
+              <Boton variant="primary" icon="restaurar" disabled={restoring} onClick={() => void restore(varietyId)}>
                 Restaurar
               </Boton>
             </div>

@@ -75,6 +75,10 @@ const ENTRIES = [
   entry(10, 1, '2026-09-01', 40),
 ]
 
+function archivedRow(shown: boolean) {
+  return { variety_id: 1, name: '24K Gold', shown, emoji: '🍪', indica_share: 70, aroma: 'Galletita y vainilla' }
+}
+
 const CATALOG = {
   text: 'texto',
   header: '',
@@ -97,6 +101,7 @@ function defaults(): Answers {
     'GET /varieties/1/prices': () => json(200, PRICES),
     'GET /stock': () => json(200, stockOf(STOCK_ROW)),
     'GET /catalog': () => json(200, CATALOG),
+    'GET /catalog/archived': () => json(200, [archivedRow(true)]),
     'GET /pricing-settings': () => json(200, { is_bulk_pricing: true, is_vip_customers: true }),
     'GET /stock/varieties/1/movements': () =>
       json(
@@ -263,6 +268,51 @@ describe('the icon and text rule', () => {
 
     expect(await screen.findByRole('button', { name: 'Restaurar' })).toBeInTheDocument()
     expect(iconAndTextProblems(screen.getByRole('main'))).toEqual([])
+  })
+})
+
+describe("an archived variety's summary line and its one action", () => {
+  const ARCHIVED: Answers = {
+    'GET /varieties/1': () => json(200, { ...VARIETY_ROW, archived: true, removal: null }),
+    'GET /stock?archived=true': () => json(200, stockOf(STOCK_ROW)),
+  }
+
+  test.each([
+    ['hidden', false, true],
+    ['shown', true, false],
+  ])('a %s one says Archivada, and Oculta only when hidden, with no status mark nor days left', async (_name, shown, oculta) => {
+    renderPage(VARIETY_ONE, { ...ARCHIVED, 'GET /catalog/archived': () => json(200, [archivedRow(shown)]) })
+
+    const line = await screen.findByText(/\$ 11\.000 x g/)
+    expect(line).toHaveTextContent(/^18 g · \$ 11\.000 x g$/)
+    expect(screen.getByText('Archivada')).toHaveClass('insignia')
+    expect(screen.queryByText('Oculta') !== null).toBe(oculta)
+    expect(screen.queryByText(/baja|ok|agotada|sin entradas/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/24 días/)).not.toBeInTheDocument()
+  })
+
+  test('its grams show as a figure even when negative, and no price says Sin precio', async () => {
+    renderPage(VARIETY_ONE, {
+      ...ARCHIVED,
+      'GET /varieties/1': () => json(200, { ...NO_PRICE_ROW, archived: true, removal: null }),
+      'GET /stock?archived=true': () => json(200, stockOf({ ...STOCK_ROW, grams: -4, status: 'sold_out' })),
+    })
+
+    expect(await screen.findByText(/Sin precio/)).toHaveTextContent('-4 g · Sin precio: no se puede vender')
+  })
+
+  test('Restaurar is the only action: no entry, price, withdrawal, archive or delete', async () => {
+    renderPage(VARIETY_ONE, ARCHIVED)
+
+    await screen.findByRole('button', { name: 'Restaurar' })
+    const main = screen.getByRole('main')
+    const buttons = within(main).getAllByRole('button').map((button) => button.textContent)
+    expect(buttons.filter((name) => name !== '')).toEqual(['Restaurar'])
+    expect(within(main).queryByRole('button', { name: 'Eliminar variedad' })).toBeNull()
+    expect(within(main).queryByRole('button', { name: 'Archivar variedad' })).toBeNull()
+    for (const name of ['+ Entrada', 'Nuevo precio', 'Sacar del stock']) {
+      expect(within(main).queryByRole('link', { name })).toBeNull()
+    }
   })
 })
 

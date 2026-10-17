@@ -64,6 +64,7 @@ function renderAt(path: string, overrides: Answers = {}) {
     'GET /stock': () => json(200, NO_STOCK),
     'GET /stock?archived=true': () => json(200, ARCHIVED_STOCK),
     'GET /catalog': () => json(200, CATALOG),
+    'GET /catalog/archived': () => json(200, [{ variety_id: 4, name: 'Alfa Vieja', shown: true, emoji: null, indica_share: null, aroma: null }]),
     'GET /varieties/4': () => json(200, { id: 4, name: 'Alfa Vieja', archived: true, removal: null, current_price: null }),
     'GET /varieties/4/prices': () => json(200, []),
     'POST /varieties/4/restore': () => json(200, { id: 4, name: 'Alfa Vieja', archived: false, removal: 'archive' }),
@@ -239,6 +240,7 @@ describe('on a computer (two panes)', () => {
       'GET /stock': () => json(200, { total: 7, varieties: restored ? [LIVE_ROW] : [], entries: [] }),
       'GET /stock?archived=true': () => json(200, ARCHIVED_STOCK),
       'GET /catalog': () => json(200, CATALOG),
+      'GET /catalog/archived': () => json(200, restored ? [] : [{ variety_id: 4, name: 'Alfa Vieja', shown: true, emoji: null, indica_share: null, aroma: null }]),
       'GET /varieties/4': () =>
         json(200, { id: 4, name: 'Alfa Vieja', archived: !restored, removal: restored ? 'archive' : null, current_price: null }),
       'GET /varieties/4/prices': () => json(200, []),
