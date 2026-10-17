@@ -62,3 +62,16 @@ def test_upgrade_downgrade_and_upgrade_again_on_libsql(tmp_path: Path) -> None:
     engine = make_engine(f"sqlite+libsql:///{tmp_path / 'apostrophe.db'}")
     _walk(engine)
     engine.dispose()
+
+
+def test_a_second_row_for_a_business_and_a_row_with_no_business_are_refused() -> None:
+    engine = make_engine("sqlite://")
+    upgrade_to_head(engine)
+    with engine.begin() as connection:
+        connection.execute(text("INSERT INTO business (id, name) VALUES (1, 'b')"))
+        connection.execute(text("INSERT INTO first_run (business_id) VALUES (1)"))
+
+    with pytest.raises(IntegrityError), engine.begin() as connection:
+        connection.execute(text("INSERT INTO first_run (business_id) VALUES (1)"))
+    with pytest.raises(IntegrityError), engine.begin() as connection:
+        connection.execute(text("INSERT INTO first_run (business_id) VALUES (NULL)"))

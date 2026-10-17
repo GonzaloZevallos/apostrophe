@@ -1,11 +1,12 @@
 """A successful import stamps `first_run.imported_at` with its own import instant, in its
 single commit, and still ends an open Onboarding (docs/adr/0036, docs/adr/0046). Driven
-through `cli.main` with the movable clock; the state is read back through the
-repositories."""
+through `cli.run`, which `cli.main` only wraps with the environment's engine, on the movable
+clock; the state is read back through the repositories."""
 
 from __future__ import annotations
 
-from collections.abc import Callable, Iterator
+import io
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -16,17 +17,13 @@ from sqlalchemy import delete, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
-from app.db import make_engine
-from app.main import create_app
 from app.onboarding.adapters.sql_first_runs import SqlFirstRuns
 from app.onboarding.adapters.sql_onboardings import SqlOnboardings
 from app.onboarding.adapters.tables import OnboardingRow
 from app.onboarding.domain.first_run import FirstRun
-from app.settings import Settings
 from app.spreadsheet_import.adapters import layout
-from app.spreadsheet_import.adapters.cli import main
-from tests.conftest import TEST_HASHER, MovableClock, open_business
-from tests.fakes.telegram import FakeTelegram
+from app.spreadsheet_import.adapters.cli import run
+from tests.conftest import MovableClock
 from tests.spreadsheet_import.test_cli import (
     CUSTOMER,
     PHONE,
@@ -46,23 +43,8 @@ class Setup:
 
 
 @pytest.fixture
-def setup(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, clock: MovableClock) -> Iterator[Setup]:
-    url = f"sqlite:///{tmp_path / 'apostrophe.db'}"
-    monkeypatch.setenv("APOSTROPHE_SECRET_KEY", "cli-secret")
-    monkeypatch.setenv("APOSTROPHE_DATABASE_URL", url)
-    engine = make_engine(url)
-    app = create_app(
-        Settings("cli-secret", url),
-        engine=engine,
-        hasher=TEST_HASHER,
-        telegram=FakeTelegram(),
-        upkeep_ticker=False,
-        clock=clock,
-    )
-    with TestClient(app) as seed_client:
-        open_business(seed_client, engine, clock, "Primer Negocio", "uno@example.com")
-    yield Setup(engine, _business_id(engine), clock, tmp_path)
-    engine.dispose()
+def setup(client: TestClient, engine: Engine, clock: MovableClock, tmp_path: Path) -> Setup:
+    return Setup(engine, _business_id(engine), clock, tmp_path)
 
 
 def _first_run(setup: Setup) -> FirstRun | None:
@@ -80,7 +62,7 @@ def _import(setup: Setup, *flags: str) -> int:
     xlsx = _save_workbook(_workbook(), setup.tmp_path)
     mapping = _save_mapping(setup.tmp_path, ((CUSTOMER, PHONE),))
     argv = [str(setup.business_id), str(xlsx), "--mapping", str(mapping), *flags]
-    return main(argv, clock=setup.clock)
+    return run(argv, engine=setup.engine, clock=setup.clock, out=io.StringIO(), err=io.StringIO())
 
 
 def _no_rows(setup: Setup) -> None:
@@ -137,7 +119,9 @@ def test_a_refused_real_run_leaves_no_first_run_row(setup: Setup) -> None:
     xlsx = _save_workbook(workbook, setup.tmp_path, "blocked.xlsx")
     argv = [str(setup.business_id), str(xlsx)]
 
-    assert main(argv, clock=setup.clock) == 1
+    code = run(argv, engine=setup.engine, clock=setup.clock, out=io.StringIO(), err=io.StringIO())
+
+    assert code == 1
 
     assert _first_run(setup) is None
     assert _open_onboarding_ended_at(setup) is None
