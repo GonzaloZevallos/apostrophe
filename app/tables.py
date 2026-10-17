@@ -14,6 +14,7 @@ from app.db import Base
 from app.expenses.adapters import tables as expenses_tables
 from app.payments.adapters import tables as payments_tables
 from app.pinned_catalog.adapters import tables as pinned_catalog_tables
+from app.results.adapters import tables as results_tables
 from app.sales.adapters import tables as sales_tables
 from app.stock.adapters import tables as stock_tables
 from app.varieties.adapters import tables as varieties_tables
@@ -28,6 +29,7 @@ TABLE_MODULES = (
     catalog_tables,
     payments_tables,
     pinned_catalog_tables,
+    results_tables,
 )
 
 metadata: MetaData = Base.metadata

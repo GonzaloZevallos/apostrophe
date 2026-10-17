@@ -194,6 +194,14 @@ def seed_payments(client: TestClient) -> dict[str, int]:
     return {"customer_id": customer_id, "payment_id": payment.json()["payment"]["id"]}
 
 
+def seed_inicio_setup_state(client: TestClient) -> dict[str, int]:
+    # Inicio's dismissal names no record; it is checked through the singleton-write
+    # sweep (B's dismissal must move nothing A can read) and its own test.
+    dismissed = client.post("/panel/bot-notice/dismissal")
+    assert dismissed.status_code == 204, dismissed.text
+    return {}
+
+
 SEEDERS: list[Callable[[TestClient], dict[str, int]]] = [
     seed_varieties,
     seed_customers,
@@ -203,6 +211,7 @@ SEEDERS: list[Callable[[TestClient], dict[str, int]]] = [
     seed_catalog,
     seed_pinned_catalog,
     seed_payments,
+    seed_inicio_setup_state,
 ]
 
 BODIES: dict[tuple[str, str], dict[str, Any]] = {
@@ -267,6 +276,7 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
         "amount": 100,
         "method": "cash",
     },
+    ("POST", "/panel/bot-notice/dismissal"): {},
     ("POST", "/auth/password"): {
         "current_password": "the wrong current password",
         "new_password": "a new password of some length",

@@ -43,6 +43,7 @@ from app.pinned_catalog.adapters.upkeep_trigger import schedule_upkeep
 from app.pinned_catalog.application.ports import Telegram
 from app.pinned_catalog.application.push import BusinessLocks
 from app.results.adapters.router import router as results_router
+from app.results.adapters.sql_setup_state import SqlSetupStateStore
 from app.sales.adapters.period_sales import SqlPeriodSales
 from app.sales.adapters.router import router as sales_router
 from app.sales.adapters.sales_ledger import SqlSalesLedger
@@ -206,6 +207,9 @@ def create_app(
     app.state.payments_ledger = SqlPaymentsLedger
     app.state.expenses_ledger = SqlExpensesLedger
     app.state.purchases_ledger = SqlPurchases
+    # Results' own store, the same `(Session, business_id)` factory shape: the
+    # dismissal route builds it over the request's own `Session` and business.
+    app.state.setup_state_store = SqlSetupStateStore
 
     @app.get("/health", tags=["health"])
     def health() -> dict[str, str]:

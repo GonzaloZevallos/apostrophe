@@ -30,6 +30,7 @@ from app.business_removal.application.remove_business import BUSY_MESSAGE
 from app.clock import business_day, system_clock
 from app.db import make_engine
 from app.main import create_app
+from app.results.adapters.sql_setup_state import SqlSetupStateStore
 from app.settings import Settings
 from tests.business_removal.adapters.seed import row_counts, seed, set_env
 from tests.conftest import PASSWORD, TEST_HASHER, invite
@@ -73,7 +74,7 @@ EXPORTED_KINDS = (
 
 def _accept(client: TestClient, engine: Engine, name: str, email: str) -> str:
     accepted = client.post(
-        f"/invitations/{invite(engine, NOW)}/accept",
+        f"/invitations/{invite(engine, system_clock())}/accept",
         json={"business_name": name, "email": email, "password": PASSWORD},
     )
     assert accepted.status_code == 201, accepted.text
@@ -741,3 +742,42 @@ def test_a_locked_database_ends_on_the_busy_line_through_main(
     assert row_counts(db_path, "customer", leaving_id) == 1
     assert row_counts(db_path, "customer", staying_id) == 1
     assert not export_dir.exists() or list(export_dir.glob("*")) == []
+
+
+def test_removal_deletes_inicio_s_setup_state_and_never_exports_it(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A business holding Inicio's setup state (gone and dismissed): the dry run counts
+    it as "deleted only", the real export carries no `inicio_setup_state` kind, its row
+    is gone afterwards, and the other business's own row is untouched."""
+    db_path = tmp_path / "apostrophe.db"
+    export_dir = tmp_path / "exports"
+    seed(db_path)
+    set_env(monkeypatch, db_path, export_dir)
+
+    with sqlite3.connect(db_path) as connection:
+        leaving_id = connection.execute(
+            "SELECT id FROM business WHERE name = 'La Huerta'"
+        ).fetchone()[0]
+        other_business_id = connection.execute(
+            "SELECT id FROM business WHERE name = 'Otro Negocio'"
+        ).fetchone()[0]
+    with Session(make_engine(f"sqlite:///{db_path}")) as session:
+        for business_id in (leaving_id, other_business_id):
+            store = SqlSetupStateStore(session, business_id)
+            store.mark_checklist_gone(NOW)
+            store.dismiss_bot_notice(NOW)
+        session.commit()
+
+    dry_stdout = io.StringIO()
+    assert main([EMAIL_LEAVING, "--dry-run"], stdin=io.StringIO(""), stdout=dry_stdout) == 0
+    assert "inicio_setup_state: 1 (deleted only)" in dry_stdout.getvalue()
+    assert row_counts(db_path, "inicio_setup_state", leaving_id) == 1
+
+    assert main([EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=io.StringIO()) == 0
+
+    [export_file] = list(export_dir.glob("*.json"))
+    document = json.loads(export_file.read_text())
+    assert "inicio_setup_state" not in document["kinds"]
+    assert row_counts(db_path, "inicio_setup_state", leaving_id) == 0
+    assert row_counts(db_path, "inicio_setup_state", other_business_id) == 1

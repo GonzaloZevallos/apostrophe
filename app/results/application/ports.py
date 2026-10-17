@@ -28,7 +28,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 from typing import Literal, Protocol
 
 from app.results.domain.ledger import (
@@ -39,6 +39,7 @@ from app.results.domain.ledger import (
     SaleRecord,
 )
 from app.results.domain.periods import Period
+from app.results.domain.setup import StoredSetup
 from app.shared.grams import Grams
 
 
@@ -130,6 +131,39 @@ class DebtSummary(Protocol):
     """Implemented in `app/payments/adapters/`, over `view_accounts.debtors()`."""
 
     def read(self) -> Debts: ...
+
+
+class SetupStateStore(Protocol):
+    """Results' own stored Inicio facts (ADR-0024), built for one business. The writes
+    only ever turn a fact on, keeping the first instant if it was already on, and never
+    commit: the use case does, once."""
+
+    def read(self) -> StoredSetup: ...
+
+    def mark_checklist_gone(self, now: datetime) -> None: ...
+
+    def dismiss_bot_notice(self, now: datetime) -> None: ...
+
+
+class PricedVarieties(Protocol):
+    """Implemented in `app/varieties/adapters/`. One bounded probe: whether any variety
+    has a current price on `today`."""
+
+    def any_priced_on(self, today: date) -> bool: ...
+
+
+class BusinessUsers(Protocol):
+    """Implemented in `app/accounts/adapters/`. Whether the business has more than one
+    user; a join link not yet accepted does not count."""
+
+    def has_partner(self) -> bool: ...
+
+
+class CatalogPublishing(Protocol):
+    """Implemented in `app/pinned_catalog/adapters/`. Whether the catalog was ever
+    published, whatever the bot or channel is now."""
+
+    def ever_published(self) -> bool: ...
 
 
 __all__ = [
