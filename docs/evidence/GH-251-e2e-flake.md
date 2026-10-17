@@ -95,3 +95,43 @@ Throwaway specs under `web/e2e/` (not committed), run as `sh scripts/e2e.sh e2e/
 - **Green.** One passing test: exit **0**, no epilogue.
 - **Two consecutive runs** left two directories, `f86e8a0-20261017T002736Z` and
   `f86e8a0-20261017T002748Z`, each with its own `junit.xml`.
+
+## Anchored clock, zones and drift (subtask `e2e-clock-ts`)
+
+Head under test: the `e2e-clock-ts` branch (workers on the anchored clock, `analysis.spec.ts`
+date in UTC). All runs are `npm --prefix web run e2e`, unloaded, on the developer's machine.
+
+| run | how | result |
+|---|---|---|
+| default | none | 102 passed (3.2 m), exit 0 |
+| zone | `TZ=Pacific/Auckland` | 102 passed (5.2 m), exit 0 |
+| zone | `TZ=UTC` | 102 passed (6.0 m), exit 0 |
+| faketime, crossing an Argentina midnight | start `@2026-10-16 02:58:30` UTC (23:58:30 in Argentina, time running, the run took 10 m so it crossed 03:00 UTC), `TZ=UTC` | 101 passed + the canary, exit 0, with one spec excluded (below) |
+| faketime, 400 days after the anchor | start `@2027-11-12 12:00:00`, `TZ=UTC` | 101 passed + the canary, exit 0, with the same spec excluded |
+
+`faketime` is libfaketime 0.9.10 (Ubuntu package `faketime` + `libfaketime`, unpacked with
+`dpkg -x` under `/tmp`, used with `LD_PRELOAD` and `FAKETIME_CACHE_DURATION=1`). It is
+inherited by node, python, uvicorn and Chromium alike.
+
+**Canary.** A throwaway spec (not committed) signed a business up and read `GET /auth/me`.
+Midnight run: `CANARY server today=2026-10-07 node-now=2026-10-16T03:07:14Z`. 400-day run:
+`CANARY server today=2026-10-07 node-now=2027-11-12T12:06:19Z`. The process clock was shifted
+(`node-now`) and the backend's calendar still read the anchor, 2026-10-07: the runs are not void.
+
+**One spec excluded under faketime.** `varietiesAutoSelect.spec.ts › a tap that leaves
+Variedades on the phone is not replaced when the viewport turns computer` times out at 160 s
+on `send.click` (it drives `Emulation.setCPUThrottlingRate` 20x). It failed in 2 of 2 full
+runs under faketime and in a single-spec run under faketime at a fixed noon (so not tied to
+midnight or to the date), and passed in the default, Auckland and UTC runs and in a
+single-spec run with no faketime (32.8 s). So it depends on `LD_PRELOAD`-ed time in the
+browser, not on the calendar: I read it as a faketime artifact (throttled Chromium with a
+hooked clock), **not proven**. Both faketime runs above exclude it with
+`--grep-invert "a tap that leaves Variedades"`; the 101 are green. The first midnight run
+(with the spec included, `FAKETIME_NO_CACHE=1`) was 102 passed and that 1 failed.
+
+**Contexts made by hand.** A throwaway spec (not committed), under `TZ=Pacific/Auckland`,
+compared the fixture's `page` with a page of `browser.newContext({ baseURL })`: both
+`America/Buenos_Aires` and `es-AR`. So `CONTEXT_DEFAULTS` was not needed.
+
+**Listed total.** `npx playwright test --list` after this subtask: 102 tests in 29 files,
+the same as before.
