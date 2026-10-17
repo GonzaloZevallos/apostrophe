@@ -19,8 +19,8 @@ export interface RouteNode {
  */
 export const NOT_SCREENS: Readonly<Record<string, string>> = {
   '*': 'catch-all: redirects to the home screen',
-  '/negocio': 'redirect-only: replaces itself with /settings',
-  '/gastos/categorias': 'redirect-only: replaces itself with /settings/expense-categories',
+  '/negocio': 'redirect-only: replaces itself with another route (src/redirects.ts)',
+  '/gastos/categorias': 'redirect-only: replaces itself with another route (src/redirects.ts)',
 }
 
 /**
