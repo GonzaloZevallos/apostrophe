@@ -11,15 +11,13 @@
  * figures shown are always the current mount's own resolved answer, never a
  * stale one left behind by an earlier mount or another business.
  *
- * "Arrancá por las variedades" sits above the panel instead of replacing it (PM,
- * adjustment 5): a business can have history and no price today, and its figures
- * are real.
- *
- * Slot 1 is `inicioNotices`' call (results.md's order): "Seguí con la configuración" while
- * the Onboarding is offered and not over, otherwise "Arrancá por las variedades". It stays
- * empty until `/panel` and `/onboarding-progress` have both answered, so an Onboarding
- * business never flashes "Arrancá" whichever answer comes first; a failure of either shows
- * the existing "Sin conexión" or the generic retry.
+ * Slot 1 is `GET /first-run`'s `kind` (`inicioNotices`, ADR-0046): the Onboarding notice, the
+ * first-run checklist, "Arrancá por las variedades" or nothing, drawn above the panel
+ * instead of replacing it (a business can have history and no price today, and its
+ * figures are real). The front derives none of it: it stays empty until `/first-run` has
+ * answered, so nothing flashes, and a failure of it draws no slot 1 and no error (the
+ * figures still show). The after-import notice is slot 3, after the pin notice. The
+ * panel's and the Onboarding's failures show the existing "Sin conexión" or the retry.
  *
  * The pinned-catalog notice (plan, "Front"; accounts.md's Inicio rule): a fixed
  * line, never a figure, while `GET /pinned-catalog/status` reads `out_of_date` —
@@ -33,6 +31,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useOutletContext } from 'react-router'
 import InAppLink from '../components/InAppLink'
 import { get, NetworkError } from '../api/client'
+import { firstRunQuery } from '../api/firstRun'
 import { onboardingProgressQuery } from '../api/onboarding'
 import { keys } from '../api/keys'
 import type { Me } from '../api/me'
@@ -43,14 +42,12 @@ import SinConexion from '../components/SinConexion'
 import { initialsOf } from '../shell/initials'
 import { EMPTY_DETAIL, EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE } from './inicioMessages'
 import { inicioNotices } from './inicioNotices'
+import FirstRunChecklist from './inicio/FirstRunChecklist'
+import ImportNotice from './inicio/ImportNotice'
 import InicioPanel from './inicio/InicioPanel'
 import OnboardingNotice from './onboarding/OnboardingNotice'
 
 export { EMPTY_DETAIL, EMPTY_TITLE, PINNED_CATALOG_OUT_OF_DATE }
-
-interface VarietySummary {
-  current_price: unknown
-}
 
 interface PinnedCatalogStatus {
   status: { state: 'up_to_date' | 'out_of_date' } | null
@@ -59,14 +56,6 @@ interface PinnedCatalogStatus {
 export default function Inicio() {
   const me = useOutletContext<Me>()
   const [tab, setTab] = useState<PanelTab>('today')
-
-  const varietiesQuery = useQuery({
-    queryKey: keys.varieties(),
-    queryFn: () => get<VarietySummary[]>('/varieties'),
-  })
-  const hasPricedVariety = (varietiesQuery.data ?? []).some(
-    (variety) => variety.current_price !== null,
-  )
 
   const panelQuery = useQuery({
     queryKey: keys.panel(),
@@ -84,9 +73,10 @@ export default function Inicio() {
   const pinOutOfDate = pinnedCatalog.data?.status?.state === 'out_of_date'
 
   const onboardingQuery = useQuery(onboardingProgressQuery)
+  const firstRun = useQuery(firstRunQuery)
   const notices = inicioNotices({
-    onboarding: panelQuery.data === undefined ? undefined : onboardingQuery.data,
-    pricedToday: varietiesQuery.data === undefined ? undefined : hasPricedVariety,
+    firstRun: firstRun.data,
+    onboarding: onboardingQuery.data,
     pinOutOfDate,
   })
   const failed = [panelQuery, onboardingQuery].find((query) => query.isError)
@@ -109,6 +99,7 @@ export default function Inicio() {
         </div>
 
         {notices.first?.kind === 'onboarding' && <OnboardingNotice progress={notices.first.progress} />}
+        {notices.first?.kind === 'checklist' && <FirstRunChecklist steps={notices.first.steps} />}
         {notices.first?.kind === 'start' && (
           <div className="estado-vacio estado-vacio--atencion">
             <AvisoCuerpo attention>
@@ -124,6 +115,8 @@ export default function Inicio() {
             </AvisoCuerpo>
           </InAppLink>
         )}
+
+        {notices.importNotice && <ImportNotice />}
 
         {failed !== undefined && failed.error instanceof NetworkError && <SinConexion />}
         {failed !== undefined && !(failed.error instanceof NetworkError) && <ErrorGenerico />}

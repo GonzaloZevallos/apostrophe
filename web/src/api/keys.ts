@@ -130,6 +130,11 @@ const CROSS_INVALIDATES: Partial<Record<Resource, Resource[]>> = {
   varieties: ['catalog'],
 }
 
+// The writes that can change what `GET /first-run` answers (ADR-0046): a variety or a price
+// entry (`varieties`), a stock entry (`stock`) and Publicar (`pinnedCatalog`). Each also
+// stales the first-run read, so every writer of these is covered here, not one by one.
+const FIRST_RUN_WRITES: readonly Resource[] = ['varieties', 'stock', 'pinnedCatalog']
+
 /** Invalidates the whole prefix a write belongs to, plus its cross rule if it has
  * one. A mutation calls this instead of naming the query keys it affects by hand.
  *
@@ -156,5 +161,8 @@ export function invalidateResource(
       queryKey: [PREFIX[affected]],
       refetchType: options?.refetchType,
     })
+  }
+  if (FIRST_RUN_WRITES.includes(resource)) {
+    queryClient.invalidateQueries({ queryKey: keys.firstRun(), refetchType: options?.refetchType })
   }
 }

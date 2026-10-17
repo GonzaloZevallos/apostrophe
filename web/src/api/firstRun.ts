@@ -12,7 +12,7 @@
  */
 
 import { queryOptions } from '@tanstack/react-query'
-import { get } from './client'
+import { get, post } from './client'
 import { keys } from './keys'
 
 /** Slot 1 of Inicio's notices: at most one of these shows at a time. */
@@ -38,6 +38,11 @@ export interface FirstRunAnswer {
 
 export function getFirstRun(): Promise<FirstRunAnswer> {
   return get<FirstRunAnswer>('/first-run')
+}
+
+/** `POST /first-run/import-notice/dismissal` (204, idempotent): the business's notice is over. */
+export function sendImportNoticeDismissal(): Promise<void> {
+  return post<void>('/first-run/import-notice/dismissal')
 }
 
 export const firstRunQuery = queryOptions({
