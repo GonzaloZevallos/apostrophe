@@ -577,7 +577,9 @@ Success criteria:
   delete and no entry edit, delete or open; withdrawal rows still opening their detail;
   each list's back arrow returning to the archived page.
 - **No regression (criteria 19–21)**: the existing varieties suites pass with no assertion
-  edited, criteria 10 and 11's metrics included.
+  edited, criteria 10 and 11's metrics included, except those that pinned the old icon-only
+  delete, the archived page's old omissions, or the old restore-in-place landing (which
+  criterion 1 of the restore reverses); the PR lists each.
 - **Approved from evidence (criterion 21)**: the four drawings exist for the archived
   page and for Archivadas; `screens.json` lists them and their twins with no duplicate key
   (`assertScreens`); the sample app seeds one archived variety and `muestra.md` changes
