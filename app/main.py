@@ -6,6 +6,7 @@ import asyncio
 import contextlib
 from collections.abc import AsyncIterator, Callable, Sequence
 from contextlib import asynccontextmanager
+from datetime import date
 from functools import partial
 from typing import Protocol, cast
 
@@ -22,6 +23,7 @@ from app.accounts.adapters.router import router as accounts_router
 from app.accounts.domain.password import PasswordHasher
 from app.accounts.domain.session_token import SessionSigner
 from app.catalog.adapters.leaving import SqlCatalogLeaving
+from app.catalog.adapters.onboarding_facts import SqlCatalogFacts
 from app.catalog.adapters.opening import CatalogHeaderFooterOpening
 from app.catalog.adapters.router import router as catalog_router
 from app.clock import Clock, system_clock
@@ -32,6 +34,7 @@ from app.expenses.adapters.expenses_ledger import SqlExpensesLedger
 from app.expenses.adapters.router import router as expenses_router
 from app.http_errors import Refused
 from app.migrations.runner import upgrade_to_head
+from app.onboarding.adapters.first_run_router import router as first_run_router
 from app.onboarding.adapters.opening import OnboardingOpening
 from app.onboarding.adapters.router import router as onboarding_router
 from app.payments.adapters.payments_ledger import SqlPaymentsLedger
@@ -118,6 +121,10 @@ class CompositeOpening:
 
     def __call__(self, session: Session) -> _BoundComposite:
         return _BoundComposite([factory(session) for factory in self._factories])
+
+
+def _catalog_facts(session: Session, business_id: int, today: date) -> SqlCatalogFacts:
+    return SqlCatalogFacts(session, business_id, today, SqlPricingSettings(session, business_id))
 
 
 async def _without_request_data(request: Request, exc: Exception) -> JSONResponse:
@@ -259,6 +266,10 @@ def create_app(
     app.state.onboarding_stock_facts = SqlStockFacts
     app.state.onboarding_bot_facts = SqlBotFacts
     app.state.onboarding_user_facts = SqlUserFacts
+    # `GET /first-run` asks the catalog whether anything qualifies through the Onboarding's
+    # own `CatalogFacts` port (ADR-0006, ADR-0046). It also takes today, and the catalog
+    # reads the pricing switches through its own port, so the factory hands it that one.
+    app.state.onboarding_catalog_facts = _catalog_facts
 
     @app.get("/health", tags=["health"])
     def health() -> dict[str, str]:
@@ -283,6 +294,7 @@ def create_app(
     app.include_router(pinned_catalog_router, dependencies=gated)
     app.include_router(results_router, dependencies=gated)
     app.include_router(onboarding_router, dependencies=gated)
+    app.include_router(first_run_router, dependencies=gated)
     # Not `upkeep_gated`: only a PUT that changed a switch may touch the pin, and its
     # router decides that itself (ADR-0014).
     app.include_router(pricing_settings_router, dependencies=gated)

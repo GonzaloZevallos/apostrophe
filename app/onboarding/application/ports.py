@@ -46,6 +46,20 @@ class BotFacts(Protocol):
 
     def is_bot_saved(self) -> bool: ...
 
+    def has_ever_published(self) -> bool:
+        """The pinned catalog was published at least once: `last_published_at` is set.
+        No row means `False`; the column never goes back to null (docs/adr/0046)."""
+        ...
+
+
+class CatalogFacts(Protocol):
+    """Read-only, implemented in `catalog`'s adapters."""
+
+    def any_qualifies(self) -> bool:
+        """Something of the catalog qualifies today: the catalog's own `_qualify` finds at
+        least one variety that would be sent (docs/adr/0046)."""
+        ...
+
 
 class UserFacts(Protocol):
     """Read-only, implemented in `accounts`' adapters."""
