@@ -262,13 +262,13 @@
   {
     "screen": "EntradaStock",
     "rule": "autocomplete",
-    "target": "combobox:VariedadElegí una variedad#K GoldGolden CookiesMang",
+    "target": "combobox:Variedad",
     "issue": 47
   },
   {
     "screen": "EntradaStock",
     "rule": "autocomplete",
-    "target": "textbox:Costo totalObligatorio cuando es una compra",
+    "target": "textbox:Costo total Obligatorio cuando es una compra",
     "issue": 47
   },
   {
@@ -292,13 +292,13 @@
   {
     "screen": "EntradaStockConfirmarBorrado",
     "rule": "autocomplete",
-    "target": "combobox:VariedadElegí una variedad#K GoldGolden CookiesMang",
+    "target": "combobox:Variedad Hoy tiene # g",
     "issue": 47
   },
   {
     "screen": "EntradaStockConfirmarBorrado",
     "rule": "autocomplete",
-    "target": "textbox:Costo totalObligatorio cuando es una compra",
+    "target": "textbox:Costo total Obligatorio cuando es una compra",
     "issue": 47
   },
   {
@@ -322,13 +322,13 @@
   {
     "screen": "EntradaStockConfirmarCambios",
     "rule": "autocomplete",
-    "target": "combobox:VariedadElegí una variedad#K GoldGolden CookiesMang",
+    "target": "combobox:Variedad Hoy tiene # g",
     "issue": 47
   },
   {
     "screen": "EntradaStockConfirmarCambios",
     "rule": "autocomplete",
-    "target": "textbox:Costo totalObligatorio cuando es una compra",
+    "target": "textbox:Costo total Obligatorio cuando es una compra",
     "issue": 47
   },
   {
@@ -352,13 +352,13 @@
   {
     "screen": "EntradaStockDesdeStock",
     "rule": "autocomplete",
-    "target": "combobox:VariedadElegí una variedad#K GoldGolden CookiesMang",
+    "target": "combobox:Variedad",
     "issue": 47
   },
   {
     "screen": "EntradaStockDesdeStock",
     "rule": "autocomplete",
-    "target": "textbox:Costo totalObligatorio cuando es una compra",
+    "target": "textbox:Costo total Obligatorio cuando es una compra",
     "issue": 47
   },
   {
@@ -382,13 +382,13 @@
   {
     "screen": "EntradaStockEditar",
     "rule": "autocomplete",
-    "target": "combobox:VariedadElegí una variedad#K GoldGolden CookiesMang",
+    "target": "combobox:Variedad Hoy tiene # g",
     "issue": 47
   },
   {
     "screen": "EntradaStockEditar",
     "rule": "autocomplete",
-    "target": "textbox:Costo totalObligatorio cuando es una compra",
+    "target": "textbox:Costo total Obligatorio cuando es una compra",
     "issue": 47
   },
   {
@@ -436,7 +436,7 @@
   {
     "screen": "GastoDesdeGastos",
     "rule": "autocomplete",
-    "target": "combobox:CategoríaElegí una categoríaCategoría LarguísimoLar",
+    "target": "combobox:Categoría",
     "issue": 48
   },
   {
@@ -460,7 +460,7 @@
   {
     "screen": "GastoDesdeMas",
     "rule": "autocomplete",
-    "target": "combobox:CategoríaElegí una categoríaCategoría LarguísimoLar",
+    "target": "combobox:Categoría",
     "issue": 48
   },
   {
@@ -484,7 +484,7 @@
   {
     "screen": "GastoEditar",
     "rule": "autocomplete",
-    "target": "combobox:CategoríaElegí una categoríaCategoría LarguísimoLar",
+    "target": "combobox:Categoría",
     "issue": 48
   },
   {
@@ -508,7 +508,7 @@
   {
     "screen": "GastoNuevo",
     "rule": "autocomplete",
-    "target": "combobox:CategoríaElegí una categoríaCategoría LarguísimoLar",
+    "target": "combobox:Categoría",
     "issue": 48
   },
   {

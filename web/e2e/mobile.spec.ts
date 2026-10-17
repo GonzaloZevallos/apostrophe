@@ -158,14 +158,19 @@ const CLEAN = `
   <p style="font-size:16px">Hola</p></body></html>`
 
 test.describe('the geometry checkers', () => {
-  async function rulesOn(browser: Browser, html: string): Promise<string[]> {
+  async function violationsOn(browser: Browser, html: string): Promise<Violation[]> {
     const context = await newCell(browser, PROBE_SIZE, 'claro', SIGNED_OUT)
     const page = await context.newPage()
-    await page.setContent(html)
+    await page.setContent(`<meta name="viewport" content="width=device-width, initial-scale=1">${html}`)
     const found = await collect(page, 'loaded', PROBE_CELL)
     await context.close()
-    return [...new Set(found.map((v) => v.rule))].sort()
+    return found
   }
+  async function rulesOn(browser: Browser, html: string): Promise<string[]> {
+    return [...new Set((await violationsOn(browser, html)).map((v) => v.rule))].sort()
+  }
+  const targetsOf = (found: Violation[], rule: string): string[] =>
+    found.filter((v) => v.rule === rule).map((v) => v.target)
 
   test('a page that breaks each geometry, type and input rule is reported for each', async ({ browser }) => {
     expect(await rulesOn(browser, BROKEN)).toEqual(
@@ -175,6 +180,44 @@ test.describe('the geometry checkers', () => {
         'user-select',
       ].sort(),
     )
+  })
+
+  test('identical offenders with no identity are one Violation each, by position', async ({ browser }) => {
+    const found = await violationsOn(
+      browser,
+      '<button style="width:20px;height:20px">x</button><button style="width:20px;height:20px">x</button><button style="width:20px;height:20px">x</button>',
+    )
+    expect(targetsOf(found, 'touch-target')).toEqual(['button:x[1]', 'button:x[2]', 'button:x[3]'])
+  })
+
+  test('identical offenders under different identified ancestors take the ancestor as identity', async ({ browser }) => {
+    const found = await violationsOn(
+      browser,
+      `<div data-testid="uno"><button style="width:20px;height:20px">x</button></div>
+       <div data-testid="dos"><button style="width:20px;height:20px">x</button></div>`,
+    )
+    expect(targetsOf(found, 'touch-target')).toEqual(['button:x@uno', 'button:x@dos'])
+  })
+
+  test('a lone offender keeps its plain name, and two under one identity are told apart by position', async ({ browser }) => {
+    const found = await violationsOn(
+      browser,
+      `<button style="width:20px;height:20px">solo</button>
+       <div data-testid="fila"><button style="width:20px;height:20px">x</button><button style="width:20px;height:20px">x</button></div>`,
+    )
+    expect(targetsOf(found, 'touch-target')).toEqual(['button:solo', 'button:x@fila[1]', 'button:x@fila[2]'])
+  })
+
+  test('a select whose options look like money is not a typed field', async ({ browser }) => {
+    const found = await violationsOn(
+      browser,
+      `<label style="display:block">Categoría
+         <select autocomplete="off" style="font-size:16px;width:200px;height:48px"><option>Precio en $ del envío</option><option>Gramos</option></select>
+       </label>
+       <label style="display:block">Monto <input autocomplete="off" style="font-size:16px;width:200px;height:48px"></label>`,
+    )
+    expect(targetsOf(found, 'inputmode')).toEqual(['textbox:Monto'])
+    expect(targetsOf(found, 'input-type')).toEqual([])
   })
 
   test('a page that keeps them is not reported', async ({ browser }) => {

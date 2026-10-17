@@ -918,7 +918,37 @@
   {
     "screen": "ConfiguracionCategoriaConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Eliminar",
+    "target": "button:Eliminar[1]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Eliminar[2]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Eliminar[3]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Eliminar[4]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Eliminar[5]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Eliminar[6]",
     "issue": 60
   },
   {
@@ -930,7 +960,37 @@
   {
     "screen": "ConfiguracionCategoriaConfirmarBorrado",
     "rule": "touch-action",
-    "target": "button:Renombrar",
+    "target": "button:Renombrar[1]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Renombrar[2]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Renombrar[3]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Renombrar[4]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Renombrar[5]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaConfirmarBorrado",
+    "rule": "touch-action",
+    "target": "button:Renombrar[6]",
     "issue": 60
   },
   {
@@ -954,7 +1014,31 @@
   {
     "screen": "ConfiguracionCategoriaRenombrar",
     "rule": "touch-action",
-    "target": "button:Eliminar",
+    "target": "button:Eliminar[1]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaRenombrar",
+    "rule": "touch-action",
+    "target": "button:Eliminar[2]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaRenombrar",
+    "rule": "touch-action",
+    "target": "button:Eliminar[3]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaRenombrar",
+    "rule": "touch-action",
+    "target": "button:Eliminar[4]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaRenombrar",
+    "rule": "touch-action",
+    "target": "button:Eliminar[5]",
     "issue": 60
   },
   {
@@ -966,7 +1050,31 @@
   {
     "screen": "ConfiguracionCategoriaRenombrar",
     "rule": "touch-action",
-    "target": "button:Renombrar",
+    "target": "button:Renombrar[1]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaRenombrar",
+    "rule": "touch-action",
+    "target": "button:Renombrar[2]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaRenombrar",
+    "rule": "touch-action",
+    "target": "button:Renombrar[3]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaRenombrar",
+    "rule": "touch-action",
+    "target": "button:Renombrar[4]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategoriaRenombrar",
+    "rule": "touch-action",
+    "target": "button:Renombrar[5]",
     "issue": 60
   },
   {
@@ -984,13 +1092,73 @@
   {
     "screen": "ConfiguracionCategorias",
     "rule": "touch-action",
-    "target": "button:Eliminar",
+    "target": "button:Eliminar[1]",
     "issue": 60
   },
   {
     "screen": "ConfiguracionCategorias",
     "rule": "touch-action",
-    "target": "button:Renombrar",
+    "target": "button:Eliminar[2]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategorias",
+    "rule": "touch-action",
+    "target": "button:Eliminar[3]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategorias",
+    "rule": "touch-action",
+    "target": "button:Eliminar[4]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategorias",
+    "rule": "touch-action",
+    "target": "button:Eliminar[5]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategorias",
+    "rule": "touch-action",
+    "target": "button:Eliminar[6]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategorias",
+    "rule": "touch-action",
+    "target": "button:Renombrar[1]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategorias",
+    "rule": "touch-action",
+    "target": "button:Renombrar[2]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategorias",
+    "rule": "touch-action",
+    "target": "button:Renombrar[3]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategorias",
+    "rule": "touch-action",
+    "target": "button:Renombrar[4]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategorias",
+    "rule": "touch-action",
+    "target": "button:Renombrar[5]",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionCategorias",
+    "rule": "touch-action",
+    "target": "button:Renombrar[6]",
     "issue": 60
   },
   {

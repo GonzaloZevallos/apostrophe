@@ -3,24 +3,84 @@
     "screen": "Analisis",
     "rule": "figure-split",
     "target": "span:$ #.#",
+    "issue": 48,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "Analisis",
+    "rule": "figure-split",
+    "target": "span:$ #.#.#.#[1]",
     "issue": 48
   },
   {
     "screen": "Analisis",
     "rule": "figure-split",
-    "target": "span:$ #.#.#",
+    "target": "span:$ #.#.#.#[2]",
     "issue": 48
   },
   {
     "screen": "Analisis",
     "rule": "figure-split",
-    "target": "span:$ #.#.#.#",
+    "target": "span:$ #.#.#.#[3]",
     "issue": 48
   },
   {
     "screen": "Analisis",
     "rule": "figure-split",
-    "target": "span:Faltante de stock $ #.#",
+    "target": "span:$ #.#.#.#[4]",
+    "issue": 48,
+    "sizes": [
+      "320x568",
+      "246x437"
+    ]
+  },
+  {
+    "screen": "Analisis",
+    "rule": "figure-split",
+    "target": "span:$ #.#.#[1]",
+    "issue": 48
+  },
+  {
+    "screen": "Analisis",
+    "rule": "figure-split",
+    "target": "span:$ #.#.#[2]",
+    "issue": 48
+  },
+  {
+    "screen": "Analisis",
+    "rule": "figure-split",
+    "target": "span:$ #.#[1]",
+    "issue": 48,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "Analisis",
+    "rule": "figure-split",
+    "target": "span:$ #.#[2]",
+    "issue": 48,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "Analisis",
+    "rule": "figure-split",
+    "target": "span:Faltante de stock $ #.#[1]",
+    "issue": 48,
+    "sizes": [
+      "320x568"
+    ]
+  },
+  {
+    "screen": "Analisis",
+    "rule": "figure-split",
+    "target": "span:Faltante de stock $ #.#[2]",
     "issue": 48,
     "sizes": [
       "320x568"
@@ -35,14 +95,48 @@
   {
     "screen": "ClienteFicha",
     "rule": "figure-split",
-    "target": "span:$ #.#",
+    "target": "span:$ #.#[1]",
     "issue": 46
   },
   {
     "screen": "ClienteFicha",
     "rule": "figure-split",
-    "target": "span:saldo $ #.#",
+    "target": "span:$ #.#[2]",
     "issue": 46
+  },
+  {
+    "screen": "ClienteFicha",
+    "rule": "figure-split",
+    "target": "span:$ #.#[3]",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "246x437"
+    ]
+  },
+  {
+    "screen": "ClienteFicha",
+    "rule": "figure-split",
+    "target": "span:saldo $ #.#[1]",
+    "issue": 46
+  },
+  {
+    "screen": "ClienteFicha",
+    "rule": "figure-split",
+    "target": "span:saldo $ #.#[2]",
+    "issue": 46
+  },
+  {
+    "screen": "ClienteFicha",
+    "rule": "figure-split",
+    "target": "span:saldo $ #.#[3]",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "246x437"
+    ]
   },
   {
     "screen": "Clientes",
@@ -56,19 +150,53 @@
   {
     "screen": "Cobro",
     "rule": "figure-split",
-    "target": "span:$ #.#",
+    "target": "span:$ #.#[1]",
     "issue": 46
   },
   {
     "screen": "Cobro",
     "rule": "figure-split",
-    "target": "span:saldo $ #.#",
+    "target": "span:$ #.#[2]",
     "issue": 46
   },
   {
+    "screen": "Cobro",
+    "rule": "figure-split",
+    "target": "span:$ #.#[3]",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "246x437"
+    ]
+  },
+  {
+    "screen": "Cobro",
+    "rule": "figure-split",
+    "target": "span:saldo $ #.#[1]",
+    "issue": 46
+  },
+  {
+    "screen": "Cobro",
+    "rule": "figure-split",
+    "target": "span:saldo $ #.#[2]",
+    "issue": 46
+  },
+  {
+    "screen": "Cobro",
+    "rule": "figure-split",
+    "target": "span:saldo $ #.#[3]",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "246x437"
+    ]
+  },
+  {
     "screen": "CobroBorrar",
     "rule": "figure-split",
-    "target": "span:$ #.#",
+    "target": "span:$ #.#[1]",
     "issue": 46,
     "sizes": [
       "320x568",
@@ -79,7 +207,60 @@
   {
     "screen": "CobroBorrar",
     "rule": "figure-split",
-    "target": "span:saldo $ #.#",
+    "target": "span:$ #.#[2]",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "CobroBorrar",
+    "rule": "figure-split",
+    "target": "span:$ #.#[3]",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812"
+    ]
+  },
+  {
+    "screen": "CobroBorrar",
+    "rule": "figure-split",
+    "target": "span:saldo $ #.#[1]",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "CobroBorrar",
+    "rule": "figure-split",
+    "target": "span:saldo $ #.#[2]",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "CobroBorrar",
+    "rule": "figure-split",
+    "target": "span:saldo $ #.#[3]",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812"
+    ]
+  },
+  {
+    "screen": "CobroDesdeClientes",
+    "rule": "figure-split",
+    "target": "span:$ #.#[1]",
     "issue": 46,
     "sizes": [
       "320x568",
@@ -90,7 +271,7 @@
   {
     "screen": "CobroDesdeClientes",
     "rule": "figure-split",
-    "target": "span:$ #.#",
+    "target": "span:$ #.#[2]",
     "issue": 46,
     "sizes": [
       "320x568",
@@ -101,7 +282,49 @@
   {
     "screen": "CobroDesdeClientes",
     "rule": "figure-split",
-    "target": "span:saldo $ #.#",
+    "target": "span:$ #.#[3]",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812"
+    ]
+  },
+  {
+    "screen": "CobroDesdeClientes",
+    "rule": "figure-split",
+    "target": "span:saldo $ #.#[1]",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "CobroDesdeClientes",
+    "rule": "figure-split",
+    "target": "span:saldo $ #.#[2]",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "CobroDesdeClientes",
+    "rule": "figure-split",
+    "target": "span:saldo $ #.#[3]",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812"
+    ]
+  },
+  {
+    "screen": "CobroDesdeInicio",
+    "rule": "figure-split",
+    "target": "span:$ #.#[1]",
     "issue": 46,
     "sizes": [
       "320x568",
@@ -112,7 +335,7 @@
   {
     "screen": "CobroDesdeInicio",
     "rule": "figure-split",
-    "target": "span:$ #.#",
+    "target": "span:$ #.#[2]",
     "issue": 46,
     "sizes": [
       "320x568",
@@ -123,12 +346,43 @@
   {
     "screen": "CobroDesdeInicio",
     "rule": "figure-split",
-    "target": "span:saldo $ #.#",
+    "target": "span:$ #.#[3]",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812"
+    ]
+  },
+  {
+    "screen": "CobroDesdeInicio",
+    "rule": "figure-split",
+    "target": "span:saldo $ #.#[1]",
     "issue": 46,
     "sizes": [
       "320x568",
       "375x812",
       "430x932"
+    ]
+  },
+  {
+    "screen": "CobroDesdeInicio",
+    "rule": "figure-split",
+    "target": "span:saldo $ #.#[2]",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "CobroDesdeInicio",
+    "rule": "figure-split",
+    "target": "span:saldo $ #.#[3]",
+    "issue": 46,
+    "sizes": [
+      "320x568",
+      "375x812"
     ]
   },
   {
@@ -174,19 +428,37 @@
   {
     "screen": "GastoConfirmarBorrado",
     "rule": "figure-split",
-    "target": "span:$ #.#.#.#",
+    "target": "span:$ #.#.#.#[1]",
+    "issue": 48
+  },
+  {
+    "screen": "GastoConfirmarBorrado",
+    "rule": "figure-split",
+    "target": "span:$ #.#.#.#[2]",
     "issue": 48
   },
   {
     "screen": "GastoEditar",
     "rule": "figure-split",
-    "target": "span:$ #.#.#.#",
+    "target": "span:$ #.#.#.#[1]",
+    "issue": 48
+  },
+  {
+    "screen": "GastoEditar",
+    "rule": "figure-split",
+    "target": "span:$ #.#.#.#[2]",
     "issue": 48
   },
   {
     "screen": "Gastos",
     "rule": "figure-split",
-    "target": "span:$ #.#.#.#",
+    "target": "span:$ #.#.#.#[1]",
+    "issue": 48
+  },
+  {
+    "screen": "Gastos",
+    "rule": "figure-split",
+    "target": "span:$ #.#.#.#[2]",
     "issue": 48
   },
   {
@@ -204,9 +476,7 @@
     "target": "span:$ #.#",
     "issue": 45,
     "sizes": [
-      "320x568",
-      "375x812",
-      "246x437"
+      "375x812"
     ]
   },
   {
@@ -218,7 +488,69 @@
   {
     "screen": "Inicio",
     "rule": "figure-split",
-    "target": "span:−$ #.#.#.#",
+    "target": "span:$ #.#[1]",
+    "issue": 45,
+    "sizes": [
+      "320x568",
+      "246x437"
+    ]
+  },
+  {
+    "screen": "Inicio",
+    "rule": "figure-split",
+    "target": "span:$ #.#[2]",
+    "issue": 45,
+    "sizes": [
+      "320x568",
+      "246x437"
+    ]
+  },
+  {
+    "screen": "Inicio",
+    "rule": "figure-split",
+    "target": "span:$ #.#[3]",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "Inicio",
+    "rule": "figure-split",
+    "target": "span:$ #.#[4]",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "Inicio",
+    "rule": "figure-split",
+    "target": "span:$ #.#[5]",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "Inicio",
+    "rule": "figure-split",
+    "target": "span:$ #.#[6]",
+    "issue": 45,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "Inicio",
+    "rule": "figure-split",
+    "target": "span:−$ #.#.#.#[1]",
+    "issue": 45
+  },
+  {
+    "screen": "Inicio",
+    "rule": "figure-split",
+    "target": "span:−$ #.#.#.#[2]",
     "issue": 45
   },
   {
@@ -242,7 +574,25 @@
   {
     "screen": "PrecioConfirmarBorrado",
     "rule": "figure-split",
-    "target": "span:$ #.#",
+    "target": "span:$ #.#[1]",
+    "issue": 47,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "PrecioConfirmarBorrado",
+    "rule": "figure-split",
+    "target": "span:$ #.#[2]",
+    "issue": 47,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "PrecioConfirmarBorrado",
+    "rule": "figure-split",
+    "target": "span:$ #.#[3]",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -251,7 +601,25 @@
   {
     "screen": "PrecioNuevoFormulario",
     "rule": "figure-split",
-    "target": "span:$ #.#",
+    "target": "span:$ #.#[1]",
+    "issue": 47,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "PrecioNuevoFormulario",
+    "rule": "figure-split",
+    "target": "span:$ #.#[2]",
+    "issue": 47,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "PrecioNuevoFormulario",
+    "rule": "figure-split",
+    "target": "span:$ #.#[3]",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -260,7 +628,25 @@
   {
     "screen": "VariedadDetalle",
     "rule": "figure-split",
-    "target": "span:$ #.#",
+    "target": "span:$ #.#[1]",
+    "issue": 47,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "VariedadDetalle",
+    "rule": "figure-split",
+    "target": "span:$ #.#[2]",
+    "issue": 47,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "VariedadDetalle",
+    "rule": "figure-split",
+    "target": "span:$ #.#[3]",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -269,7 +655,34 @@
   {
     "screen": "VariedadNuevaFormulario",
     "rule": "figure-split",
-    "target": "span:$ #.#",
+    "target": "span:$ #.#[1]",
+    "issue": 47,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "VariedadNuevaFormulario",
+    "rule": "figure-split",
+    "target": "span:$ #.#[2]",
+    "issue": 47,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "VariedadNuevaFormulario",
+    "rule": "figure-split",
+    "target": "span:$ #.#[3]",
+    "issue": 47,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "VariedadNuevaFormulario",
+    "rule": "figure-split",
+    "target": "span:$ #.#[4]",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -278,7 +691,25 @@
   {
     "screen": "VariedadRenombrar",
     "rule": "figure-split",
-    "target": "span:$ #.#",
+    "target": "span:$ #.#[1]",
+    "issue": 47,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "VariedadRenombrar",
+    "rule": "figure-split",
+    "target": "span:$ #.#[2]",
+    "issue": 47,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "VariedadRenombrar",
+    "rule": "figure-split",
+    "target": "span:$ #.#[3]",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -287,7 +718,25 @@
   {
     "screen": "VariedadUmbral",
     "rule": "figure-split",
-    "target": "span:$ #.#",
+    "target": "span:$ #.#[1]",
+    "issue": 47,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "VariedadUmbral",
+    "rule": "figure-split",
+    "target": "span:$ #.#[2]",
+    "issue": 47,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "VariedadUmbral",
+    "rule": "figure-split",
+    "target": "span:$ #.#[3]",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -296,7 +745,34 @@
   {
     "screen": "Variedades",
     "rule": "figure-split",
-    "target": "span:$ #.#",
+    "target": "span:$ #.#[1]",
+    "issue": 47,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "Variedades",
+    "rule": "figure-split",
+    "target": "span:$ #.#[2]",
+    "issue": 47,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "Variedades",
+    "rule": "figure-split",
+    "target": "span:$ #.#[3]",
+    "issue": 47,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "Variedades",
+    "rule": "figure-split",
+    "target": "span:$ #.#[4]",
     "issue": 47,
     "sizes": [
       "246x437"
@@ -305,7 +781,16 @@
   {
     "screen": "VentaBorrar",
     "rule": "figure-split",
-    "target": "span:$ #.#",
+    "target": "span:$ #.#[1]",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "VentaBorrar",
+    "rule": "figure-split",
+    "target": "span:$ #.#[2]",
     "issue": 78,
     "sizes": [
       "246x437"
@@ -323,7 +808,16 @@
   {
     "screen": "VentaDetalle",
     "rule": "figure-split",
-    "target": "span:$ #.#",
+    "target": "span:$ #.#[1]",
+    "issue": 78,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "VentaDetalle",
+    "rule": "figure-split",
+    "target": "span:$ #.#[2]",
     "issue": 78,
     "sizes": [
       "246x437"

@@ -2,7 +2,13 @@
   {
     "screen": "Analisis",
     "rule": "name-overflow",
-    "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu",
+    "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu[1]",
+    "issue": 48
+  },
+  {
+    "screen": "Analisis",
+    "rule": "name-overflow",
+    "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu[2]",
     "issue": 48
   },
   {
@@ -95,19 +101,94 @@
     "screen": "GastoConfirmarBorrado",
     "rule": "name-overflow",
     "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu",
-    "issue": 48
+    "issue": 48,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "GastoConfirmarBorrado",
+    "rule": "name-overflow",
+    "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu[1]",
+    "issue": 48,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "GastoConfirmarBorrado",
+    "rule": "name-overflow",
+    "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu[2]",
+    "issue": 48,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
   },
   {
     "screen": "GastoEditar",
     "rule": "name-overflow",
     "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu",
-    "issue": 48
+    "issue": 48,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "GastoEditar",
+    "rule": "name-overflow",
+    "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu[1]",
+    "issue": 48,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "GastoEditar",
+    "rule": "name-overflow",
+    "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu[2]",
+    "issue": 48,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
   },
   {
     "screen": "Gastos",
     "rule": "name-overflow",
     "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu",
-    "issue": 48
+    "issue": 48,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "Gastos",
+    "rule": "name-overflow",
+    "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu[1]",
+    "issue": 48,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
+  },
+  {
+    "screen": "Gastos",
+    "rule": "name-overflow",
+    "target": "span:Categoría LarguísimoLarguísimoLarguísimoLarguísimoLargu[2]",
+    "issue": 48,
+    "sizes": [
+      "320x568",
+      "375x812",
+      "430x932"
+    ]
   },
   {
     "screen": "Inicio",

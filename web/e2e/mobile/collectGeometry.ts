@@ -5,7 +5,9 @@
  * closure over this file: `page.evaluate` serialises it. Targets follow the plan: the
  * element's `data-testid`, else `role:accessible name` with digit runs as `#`, cut to 60
  * characters; a repeated target carries the identity of its nearest identified ancestor,
- * and one with no identity is collapsed (the same element name, the same fact).
+ * and one that is still repeated (no identity, or the identity is shared) takes a positional
+ * ordinal `[n]` in document order, so N identical offenders are N Violations and fixing or
+ * adding one always changes the diff.
  *
  * Rules: h-scroll, chrome-at-load, chrome-mid-scroll, touch-target, input-font,
  * text-size, figure-split, name-overflow, autocomplete, inputmode, input-type,
@@ -25,7 +27,7 @@ export function collectGeometry(cell: CellId): Violation[] {
 
   const found: { rule: Rule; element: Element | null }[] = []
   const add = (rule: Rule, element: Element | null): void => {
-    found.push({ rule, element })
+    if (!found.some((entry) => entry.rule === rule && entry.element === element)) found.push({ rule, element })
   }
 
   const squash = (text: string | null): string => (text ?? '').replace(/\s+/g, ' ').trim()
@@ -37,6 +39,17 @@ export function collectGeometry(cell: CellId): Violation[] {
 
   const FIELDS =
     'input:not([type=hidden]):not([type=checkbox]):not([type=radio]):not([type=submit]):not([type=button]):not([type=range]):not([type=file]), textarea, select'
+
+  // A label that wraps its control also holds the control's options: only its own words name it.
+  function labelText(label: Element | undefined): string {
+    if (label === undefined) return ''
+    const walker = document.createTreeWalker(label, NodeFilter.SHOW_TEXT)
+    const words: string[] = []
+    for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) {
+      if (node.parentElement?.closest('select, textarea, option') === null) words.push(node.textContent ?? '')
+    }
+    return squash(words.join(' '))
+  }
 
   function labelOf(element: Element): string {
     const aria = element.getAttribute('aria-label')
@@ -52,7 +65,7 @@ export function collectGeometry(cell: CellId): Violation[] {
       if (text !== '') return text
     }
     if (element instanceof HTMLInputElement || element instanceof HTMLSelectElement || element instanceof HTMLTextAreaElement) {
-      const label = squash(element.labels?.[0]?.textContent ?? '')
+      const label = labelText(element.labels?.[0])
       if (label !== '') return label
       if ('placeholder' in element && element.placeholder !== '') return element.placeholder
     }
@@ -215,11 +228,14 @@ export function collectGeometry(cell: CellId): Violation[] {
     const name = labelOf(element).toLowerCase()
     const type = element.getAttribute('type') ?? ''
     const own = element.getAttribute('autocomplete')
+    // A select is never typed into: no inputmode, no type, no expected autocomplete.
+    const typed = !(element instanceof HTMLSelectElement)
     const inCustomer =
       /^(nombre|tel[eé]fono|celular|whatsapp)/.test(name) &&
       /cliente/i.test((element.closest('form, [role=dialog], dialog, main') ?? document.body).textContent ?? '')
     let expected: string | null = null
-    if (inCustomer) expected = 'off'
+    if (!typed) expected = null
+    else if (inCustomer) expected = 'off'
     else if (type === 'password') expected = /actual/.test(name) || onSignIn ? 'current-password' : 'new-password'
     else if (onSignIn && /email/.test(name)) expected = 'username'
     else if (/negocio/.test(name) && /^(nombre|negocio)/.test(name)) expected = 'organization'
@@ -228,10 +244,10 @@ export function collectGeometry(cell: CellId): Violation[] {
     const mode = element.getAttribute('inputmode')
     const grams = /gramos|\(g\)/.test(name)
     const pesos = !grams && /precio|monto|importe|costo|pesos|\$|env[ií]o|cobr/.test(name)
-    if ((grams && mode !== 'decimal') || (pesos && mode !== 'numeric')) add('inputmode', element)
+    if (typed && ((grams && mode !== 'decimal') || (pesos && mode !== 'numeric'))) add('inputmode', element)
 
-    if (/email|correo/.test(name) && type !== 'email') add('input-type', element)
-    if (/tel[eé]fono|celular|whatsapp/.test(name) && type !== 'tel') add('input-type', element)
+    if (typed && /email|correo/.test(name) && type !== 'email') add('input-type', element)
+    if (typed && /tel[eé]fono|celular|whatsapp/.test(name) && type !== 'tel') add('input-type', element)
   }
 
   // --- gestures ----------------------------------------------------------------------
@@ -246,14 +262,18 @@ export function collectGeometry(cell: CellId): Violation[] {
     ...entry,
     target: entry.element === null ? '' : baseTarget(entry.element),
   }))
-  const count = new Map<string, number>()
-  for (const entry of base) count.set(`${entry.rule}|${entry.target}`, (count.get(`${entry.rule}|${entry.target}`) ?? 0) + 1)
-  const unique = new Map<string, Violation>()
-  for (const entry of base) {
-    const repeated = (count.get(`${entry.rule}|${entry.target}`) ?? 0) > 1
+  const named = base.map((entry) => {
+    const repeated = base.filter((other) => other.rule === entry.rule && other.target === entry.target).length > 1
     const identity = repeated && entry.element !== null ? identityOf(entry.element) : ''
-    const target = identity === '' ? entry.target : `${entry.target}@${identity}`
-    unique.set(`${entry.rule}|${target}`, { screen: cell.screen, size: cell.size, theme: cell.theme, rule: entry.rule, target })
-  }
-  return Array.from(unique.values())
+    return { ...entry, target: identity === '' ? entry.target : `${entry.target}@${identity}` }
+  })
+  const seen = new Map<string, number>()
+  return named.map((entry) => {
+    const key = `${entry.rule}|${entry.target}`
+    const same = named.filter((other) => `${other.rule}|${other.target}` === key).length
+    const ordinal = (seen.get(key) ?? 0) + 1
+    seen.set(key, ordinal)
+    const target = same > 1 ? `${entry.target}[${ordinal}]` : entry.target
+    return { screen: cell.screen, size: cell.size, theme: cell.theme, rule: entry.rule, target }
+  })
 }
