@@ -14,6 +14,8 @@
  *   `BotonLink`: an icon and a word on a link is an action, and only `BotonLink` draws one.
  * - `findLinkAliases`: `Link` and `InAppLink` are imported under their own names, so the
  *   guard above can find them.
+ * - `findFilledCritical`: the filled `--critico` button (`variant="destructive"`, the class
+ *   `boton--destructivo`) is only the answer of a confirmation, so it appears nowhere else.
  */
 
 /** A path inside `src/`, written from its parts so no route-looking literal is in the source. */
@@ -393,4 +395,35 @@ export function findUnusedIcons(files: readonly SourceFile[]): string[] {
     const throughAction = [...actions].some(([action, icon]) => icon === name && passesAction(action))
     return writes(name) || throughAction ? [] : [`${name}: no screen uses it`]
   })
+}
+
+/** The files that may write the filled critical button: the confirmation (`ConfirmDialog`) and the
+ * authors of `.boton*`, `AnswerButton` being the one that draws the dialog's answers. */
+const FILLED_CRITICAL_AUTHORS = [inSrc('components', 'ConfirmDialog.tsx'), ...BOTON_AUTHORS]
+
+/** A `variant` handed the filled kind on one line, whatever the form: `="destructive"`,
+ * `={'destructive'}`, `: 'destructive'`, or inside a ternary. */
+const FILLED_VARIANT = /\bvariant\s*[=:][^\n]*["'`]destructive["'`]/
+
+/**
+ * The filled `--critico` button appears only inside `ConfirmDialog` (ADR-0037): one line per
+ * `variant` that asks for `destructive` or class `boton--destructivo` written outside
+ * `ConfirmDialog.tsx` and the `.boton*` authors. The trigger of a destructive action is
+ * `Boton variant="critical"`, an outline. Comments are blanked first, so prose is not a use.
+ */
+export function findFilledCritical(files: readonly SourceFile[]): string[] {
+  return sources(files)
+    .filter(({ path }) => !FILLED_CRITICAL_AUTHORS.includes(path))
+    .flatMap(({ path, content }) => {
+      const clean = withoutComments(content)
+      const variants = clean
+        .split('\n')
+        .flatMap((text, index) =>
+          FILLED_VARIANT.test(text) ? [`${path}:${index + 1}: asks for the filled variant="destructive"`] : [],
+        )
+      const classes = stringTokens(clean)
+        .filter(({ token }) => token === 'boton--destructivo')
+        .map(({ line }) => `${path}:${line}: carries the filled class boton--destructivo`)
+      return [...variants, ...classes]
+    })
 }

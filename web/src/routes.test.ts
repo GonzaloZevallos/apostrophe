@@ -389,16 +389,20 @@ const REACHED_BY_STEPS = [
   "OnboardingListoCompu",
   "OnboardingListoOscuro",
   "OnboardingListoCompuOscuro",
+  "OnboardingListoTexto130",
   "OnboardingVariedad",
   "OnboardingVariedadOscuro",
   "OnboardingVariedadCompu",
   "OnboardingVariedadCompuOscuro",
+  "OnboardingVariedadTexto130",
   "EntradaStockSinEntradas",
   "EntradaStockSinEntradasOscuro",
   "EntradaStockSinEntradasCompu",
   "EntradaStockSinEntradasCompuOscuro",
   "VariedadArchivada",
   "VariedadArchivadaOscuro",
+  "VariedadArchivadaCompu",
+  "VariedadArchivadaCompuOscuro",
 ];
 
 interface RouteEntry {

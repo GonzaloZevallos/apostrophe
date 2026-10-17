@@ -5,7 +5,7 @@
  */
 
 import type { ReactNode } from 'react'
-import type { BotonProps, IconOnlyAction } from './Boton'
+import type { BotonProps, BotonVariant, IconOnlyAction } from './Boton'
 import Icono, { type NombreIcono } from './Icono'
 
 const ACTION_ICON: Record<IconOnlyAction, NombreIcono> = {
@@ -21,21 +21,23 @@ const ACTION_ICON: Record<IconOnlyAction, NombreIcono> = {
 export const NUEVA_VENTA_CLASS = 'boton-nueva-venta'
 export const NUEVA_VENTA_ESCRITORIO_CLASS = 'boton-nueva-venta--escritorio'
 
-const CLASS = {
+/** A `Record` over every variant, so a variant added to `Boton` without a class fails `tsc`. */
+const CLASS: Record<BotonVariant, string> = {
   primary: 'boton',
   secondary: 'boton boton--suave',
   destructive: 'boton boton--destructivo',
+  critical: 'boton boton--critico',
   link: 'boton--enlace',
   undo: 'boton--enlace',
   back: 'boton--enlace',
   icon: 'boton-icono',
   row: 'boton--fila',
   notice: 'boton-aviso',
-} as const
+}
 
 /** The class string of a variant, for a component that draws a choice (an option tab) over a
  * button look without writing a `boton*` literal itself. */
-export function botonClass(variant: keyof typeof CLASS): string {
+export function botonClass(variant: BotonVariant): string {
   return CLASS[variant]
 }
 

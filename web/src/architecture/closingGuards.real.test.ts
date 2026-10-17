@@ -13,6 +13,7 @@ import { expect, test } from 'vitest'
 import {
   findActionLinks,
   findBotonClasses,
+  findFilledCritical,
   findLinkAliases,
   findRawButtons,
   findRawSvg,
@@ -87,4 +88,16 @@ test('the link scanner still finds the links it guards', () => {
 
 test('no import renames Link or InAppLink', () => {
   expect(findLinkAliases(files)).toEqual([])
+})
+
+/**
+ * The files that still draw the filled critical button outside the confirmation, by file. It only
+ * shrinks: no entry may be added. "Borrar" on a withdrawal's detail is the one use master had; it
+ * moves to the critical kind when its own drawing says so.
+ */
+const FILLED_CRITICAL_LEFT = ['/src/screens/withdrawals/WithdrawalDetail.tsx']
+
+test('the filled critical button appears only in ConfirmDialog, and the files left only shrink', () => {
+  const found = Array.from(new Set(findFilledCritical(files).map((line) => line.split(':')[0] ?? ''))).sort()
+  expect(found).toEqual(FILLED_CRITICAL_LEFT)
 })

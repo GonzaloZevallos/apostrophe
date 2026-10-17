@@ -6,15 +6,24 @@
 // `--facts` is what `scripts/design/sample-app.sh` wrote. Screens and how to reach each
 // state come from `scripts/design/screens.json`. A step that fails, a screen not built
 // yet and a page wider than its viewport are written on the image and in `index.json`,
-// never thrown: one broken screen must not hide the others.
+// never thrown: one broken screen must not hide the others. The facts carry `today`.
 //
-// A design capture never touches the network (ADR-0041): its Google Fonts requests are
+// A design capture never touches the network (ADR-0042): its Google Fonts requests are
 // served from @fontsource/plus-jakarta-sans, every other non-file request is aborted. Both
-// captures check, after their final settle, that the page's own font family is applied.
-// A font failure (or a screen that threw) is a note on the sheet and in `index.json`; with
+// captures run on a paused fake clock (the facts' `today` at noon, Argentina) and are taken
+// only once the page has finished drawing (ADR-0042, `settle.mjs`): the applied-check passes
+// and the layout is the same for three frames, so what is captured does not depend on how
+// loaded the machine is. A side that did not settle, whose font is not applied, or whose step
+// threw has no capture (`null`); each is a note on the sheet and in `index.json`, and with
 // `--strict` the run also exits non-zero, after writing everything. Besides `<screen>.png`
 // the raw captures go to `<screen>.design.png` and `<screen>.built.png`, listed in
 // `index.json` as `design` and `built` (an absolute path, or null when there is none).
+//
+// An entry with `text_scale` is captured with its text scaled (`textScale.mjs`), on both
+// sides: applied and verified after the page has settled and its steps are done, then verified
+// again right after the screenshot, in the same page. A miss in either is a failure of the
+// screen, like a font failure. A `section` crop needs exactly one element with that label;
+// any other count is a screen that threw, never a silent first match.
 
 import { createRequire } from 'node:module'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
@@ -23,6 +32,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
 import { assertScreens, assertSelectedAccounts, assertSelectedNeeds } from './screens.mjs'
 import { fontCss, fontRoute } from './fonts.mjs'
+import { SETTLE_ADVANCE_MS, SETTLE_BOUND, SETTLE_FRAMES, settleWith, signatureOf, sideOutcome } from './settle.mjs'
+import { applyInPage, gatherInPage, TOLERANCE, unscaled } from './textScale.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO = resolve(HERE, '..', '..')
@@ -58,10 +69,16 @@ try {
   console.error(`comparisons: ${error.message}`)
   process.exit(2)
 }
+// The capture's clock is the sample's own day at noon in Argentina, never the wall clock.
+if (typeof facts.today !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(facts.today)) {
+  console.error('comparisons.mjs: the facts have no `today` (an ISO date); rerun scripts/design/sample-app.sh')
+  process.exit(2)
+}
 const out = resolve(values.out)
 mkdirSync(out, { recursive: true })
 
 const PHONE = [390, 844]
+const CAPTURE_INSTANT = new Date(`${facts.today}T12:00:00-03:00`)
 const TIMEOUT = 8000
 
 // The user a screen signs in as: its `account`'s, else La Huerta's.
@@ -80,17 +97,142 @@ function resolveFacts(template, placeholders) {
 
 async function run(page, step, placeholders) {
   if (step.click) await page.getByText(step.click, { exact: true }).first().click()
+  // An icon-only control has an accessible name and no text: found by role and exact name,
+  // and strict, so zero matches or two fail the row instead of picking one.
+  else if (step.press) await page.getByRole('button', { name: step.press, exact: true }).click()
   else if (step.fill) await page.getByLabel(step.fill.label).first().fill(resolveFacts(step.fill.value, placeholders))
   else if (step.select) await page.getByLabel(step.select.label).first().selectOption({ index: step.select.index })
   else if (step.wait) await page.getByText(step.wait, { exact: true }).first().waitFor()
-  // The page has settled by now: only the network goes, the page is never reloaded.
-  else if (step.offline) await page.context().setOffline(true)
+  // The page has settled by now: only the network goes, the page is never reloaded. Every
+  // font face it has not loaded yet is loaded first, since offline it could never be. The
+  // preload records nothing: `appliedCheck` stays the only verdict on fonts.
+  else if (step.offline) {
+    await page.evaluate(async () => {
+      const unloaded = [...document.fonts].filter((face) => face.status === 'unloaded')
+      await Promise.allSettled(unloaded.map((face) => face.load()))
+      await document.fonts.ready
+    })
+    await page.context().setOffline(true)
+  }
   else throw new Error(`unknown step ${JSON.stringify(step)}`)
 }
 
-async function settle(page) {
-  await page.waitForLoadState('networkidle').catch(() => {})
-  await page.evaluate(() => document.fonts.ready)
+// Installed and paused before any page exists, so the page starts on the capture's instant
+// and no timer fires until the capture advances the clock.
+async function pauseClock(context) {
+  await context.clock.install({ time: new Date(CAPTURE_INSTANT.getTime() - 1000) })
+  await context.clock.pauseAt(CAPTURE_INSTANT)
+}
+
+// Before any page script runs: a count of the page's own `fetch` calls in flight (the one
+// request channel the built app uses, ADR-0042) and the layout signature, so the frame
+// loop can ask both without sending any page text out.
+function pageProbe(signature) {
+  let inFlight = 0
+  let waiting = []
+  const release = () => {
+    const ready = waiting
+    waiting = []
+    for (const resolve of ready) resolve()
+  }
+  const original = window.fetch
+  window.fetch = function (...args) {
+    inFlight += 1
+    const done = () => {
+      inFlight -= 1
+      if (inFlight === 0) release()
+    }
+    let result
+    try {
+      result = original.apply(this, args)
+    } catch (error) {
+      done()
+      throw error
+    }
+    result.then(done, done)
+    return result
+  }
+  window.__captureInFlight = () => inFlight
+  window.__captureIdle = async () => {
+    while (inFlight > 0) await new Promise((resolve) => waiting.push(resolve))
+  }
+  window.__captureSignature = signature
+}
+
+async function addProbe(context) {
+  await context.addInitScript(`(${pageProbe.toString()})(${signatureOf.toString()})`)
+}
+
+// One frame of the fake clock, then what the page looks like: the in-flight count at zero
+// first, one real macrotask so queued work has run, then only a hash and booleans go back.
+function sampleFrame() {
+  return (async () => {
+    await window.__captureIdle()
+    await new Promise((resolve) => {
+      const channel = new MessageChannel()
+      channel.port1.onmessage = () => resolve()
+      channel.port2.postMessage(0)
+    })
+    const drawn = [document.body, ...document.body.querySelectorAll('*')].filter((e) => e instanceof HTMLElement)
+    const records = drawn.map((e) => ({
+      tag: e.tagName,
+      left: e.offsetLeft,
+      top: e.offsetTop,
+      width: e.offsetWidth,
+      height: e.offsetHeight,
+      text: [...e.childNodes].filter((n) => n.nodeType === Node.TEXT_NODE).map((n) => n.textContent).join(''),
+    }))
+    const fontsLoaded = document.fonts.status === 'loaded'
+    const pendingFiniteAnimation = document
+      .getAnimations()
+      .some((a) => a.playState === 'running' && Number.isFinite(a.effect?.getComputedTiming().iterations))
+    return {
+      idle: window.__captureInFlight() === 0,
+      pendingFiniteAnimation,
+      fontsLoaded,
+      hash: window.__captureSignature(records, {
+        scrollWidth: document.documentElement.scrollWidth,
+        scrollHeight: document.documentElement.scrollHeight,
+        imagesComplete: [...document.images].every((i) => i.complete),
+        fontsLoaded,
+      }),
+    }
+  })()
+}
+
+// A wait bound, not an assertion: a fetch that never settles must not hang the capture.
+function withinTimeout(promise) {
+  let timer
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error('timeout')), TIMEOUT)
+  })
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer))
+}
+
+// `null` when the page has finished drawing, else a reason with no page data in it. In this
+// order: the network once after a navigation, the applied-check (it loads fonts, so it runs
+// before the clock moves), then the clock advance and the frame sampling.
+async function settle(page, { advanceMs, afterGoto = false, ofFirstText }) {
+  if (afterGoto) {
+    try {
+      await page.waitForLoadState('networkidle')
+    } catch (error) {
+      return `la red no se aquietó: ${firstLine(error)}`
+    }
+  }
+  const applied = await appliedCheck(page, ofFirstText)
+  if (applied) return applied
+  const clock = page.context().clock
+  return settleWith(
+    {
+      advance: (ms) => clock.runFor(ms),
+      frame: async () => {
+        await clock.runFor(16)
+        return withinTimeout(page.evaluate(sampleFrame))
+      },
+    },
+    { advanceMs, frames: SETTLE_FRAMES, bound: SETTLE_BOUND },
+  )
 }
 
 const firstLine = (error) => String(error?.code ?? error?.message ?? error).split('\n')[0]
@@ -167,9 +309,27 @@ async function appliedCheck(page, ofFirstText) {
   }, ofFirstText)
 }
 
-async function checkApplied(page, ctx, ofFirstText) {
-  const reason = await appliedCheck(page, ofFirstText)
-  if (reason) fail(ctx, reason)
+// An entry's scaled text (`text_scale`, both sides): applied once the page has settled and its
+// steps are done, verified at once (a miss is a failure of the side), and verified again right
+// after the screenshot, in the same page. A note names the side and a count, never page text.
+// Applying it moves the layout, so the page settles again before the final settle.
+async function scaleMisses(page, s, side, when) {
+  const misses = unscaled(await page.evaluate(gatherInPage), s.text_scale, TOLERANCE)
+  return misses.length ? `texto al ${Math.round(s.text_scale * 100)} %: ${misses.length} elementos fuera de escala ${when} (${side})` : null
+}
+
+async function applyTextScale(page, s, side, ofFirstText) {
+  if (!s.text_scale) return null
+  await page.evaluate(applyInPage, { factor: s.text_scale })
+  const miss = await scaleMisses(page, s, side, 'antes de la captura')
+  if (miss) return miss
+  return settle(page, { advanceMs: SETTLE_ADVANCE_MS, ofFirstText })
+}
+
+// The screenshot has been taken: the scaled text is checked once more, and a miss discards it.
+async function verifyAfterShot(page, s, side, png) {
+  const miss = s.text_scale ? await scaleMisses(page, s, side, 'después de la captura') : null
+  return sideOutcome(miss, png)
 }
 
 // The design file an entry is compared against: `design`, else the entry's own name.
@@ -178,9 +338,10 @@ const designOf = (s) => s.design ?? s.screen
 // A section is cropped to its parent block. When a direct child sticks out of that block
 // (a fixed-width card inside a padded column), the crop is the union of the block and its
 // children, in page coordinates, so no line of the section is cut; a block that holds its
-// children is cropped exactly as `locator.screenshot()` does.
-async function captureSection(page, block) {
-  const union = await block.evaluate((el) => {
+// children is cropped exactly as `locator.screenshot()` does. The clip is read before the
+// final settle, so that the screenshot is the very next call after it.
+async function sectionClip(block) {
+  return block.evaluate((el) => {
     const box = (e) => {
       const r = e.getBoundingClientRect()
       return { left: r.left + scrollX, top: r.top + scrollY, right: r.right + scrollX, bottom: r.bottom + scrollY }
@@ -201,20 +362,40 @@ async function captureSection(page, block) {
     const y = Math.floor(top)
     return { x, y, width: Math.ceil(right) - x, height: Math.ceil(bottom) - y }
   })
-  return union ? await page.screenshot({ fullPage: true, clip: union }) : await block.screenshot()
 }
+
+const SHOT = { animations: 'disabled', caret: 'hide' }
 
 async function captureDesign(browser, s, options, ctx) {
   const context = await browser.newContext(options)
   try {
+    await pauseClock(context)
+    await addProbe(context)
     await routeDesign(context, ctx)
     const page = await context.newPage()
     await page.goto(pathToFileURL(join(PROTOTYPE, `${designOf(s)}.dc.html`)).href)
-    await settle(page)
-    await checkApplied(page, ctx, true)
-    // A file that draws several states: only the block under the entry's `section` label.
-    if (!s.section) return await page.screenshot({ fullPage: true })
-    return await captureSection(page, page.getByText(s.section, { exact: true }).first().locator('xpath=..'))
+    const first = await settle(page, { advanceMs: SETTLE_ADVANCE_MS, afterGoto: true, ofFirstText: true })
+    if (first) return sideOutcome(first, null)
+    const scaled = await applyTextScale(page, s, 'diseño', true)
+    if (scaled) return sideOutcome(scaled, null)
+    // A file that draws several states: only the block under the entry's `section` label, which
+    // must be exactly one element, never a silent first match.
+    let block = null
+    if (s.section) {
+      const label = page.getByText(s.section, { exact: true })
+      const count = await label.count()
+      if (count !== 1) throw new Error(`${s.screen}: section matches ${count} elements, expected 1`)
+      block = label.locator('xpath=..')
+    }
+    const clip = block ? await sectionClip(block) : null
+    const last = await settle(page, { advanceMs: 0, ofFirstText: true })
+    if (last) return sideOutcome(last, null)
+    const png = !block
+      ? await page.screenshot({ fullPage: true, ...SHOT })
+      : clip
+        ? await page.screenshot({ fullPage: true, clip, ...SHOT })
+        : await block.screenshot(SHOT)
+    return await verifyAfterShot(page, s, 'diseño', png)
   } finally {
     await context.close()
   }
@@ -233,6 +414,8 @@ async function captureBuilt(browser, s, options, ctx) {
 }
 
 async function captureBuiltIn(context, s, options, ctx, notes) {
+  await pauseClock(context)
+  await addProbe(context)
   if (s.tema) {
     // `document.documentElement` does not exist yet when this init script
     // runs (proven against this build), so it waits for the parser to
@@ -256,21 +439,27 @@ async function captureBuiltIn(context, s, options, ctx, notes) {
   const page = await context.newPage()
   page.setDefaultTimeout(TIMEOUT)
   await page.goto(resolveFacts(s.route, placeholders))
-  await settle(page)
+  const first = await settle(page, { advanceMs: SETTLE_ADVANCE_MS, afterGoto: true, ofFirstText: false })
+  if (first) return sideOutcome(first, null)
   for (const step of s.steps ?? []) {
+    let reason
     try {
       await run(page, step, placeholders)
-      await settle(page)
+      reason = await settle(page, { advanceMs: SETTLE_ADVANCE_MS, ofFirstText: false })
     } catch (error) {
-      notes.push(`estado no alcanzado en ${JSON.stringify(step)}: ${String(error).split('\n')[0]}`)
-      break
+      reason = firstLine(error)
     }
+    if (reason) return sideOutcome(`estado no alcanzado en ${JSON.stringify(step)}: ${reason}`, null)
   }
-  await checkApplied(page, ctx, false)
+  const scaled = await applyTextScale(page, s, 'construido', false)
+  if (scaled) return sideOutcome(scaled, null)
   const width = options.viewport.width
   const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth)
   if (scrollWidth > width) notes.push(`desborda: ${scrollWidth}px de ancho en ${width}px`)
-  return page.screenshot({ fullPage: true })
+  const last = await settle(page, { advanceMs: 0, ofFirstText: false })
+  if (last) return sideOutcome(last, null)
+  const png = await page.screenshot({ fullPage: true, ...SHOT })
+  return await verifyAfterShot(page, s, 'construido', png)
 }
 
 async function composeSheet(browser, s, width, design, built, notes, file) {
@@ -291,14 +480,17 @@ async function composeSheet(browser, s, width, design, built, notes, file) {
   await context.close()
 }
 
-// The capture of one side: what it could not do is a failure of the screen, not a throw.
+// The capture of one side: what it could not do is a failure of the screen, not a throw, and
+// that side has no PNG under any name.
 async function attempt(label, ctx, capture) {
   try {
-    return await capture()
+    const outcome = await capture()
+    if (outcome.failure === null) return outcome.png
+    fail(ctx, `${label} no se pudo capturar: ${outcome.failure}`)
   } catch (error) {
     fail(ctx, `${label} no se pudo capturar: ${firstLine(error)}`)
-    return null
   }
+  return null
 }
 
 const browser = await chromium.launch()
@@ -345,6 +537,6 @@ try {
   writeFileSync(join(out, 'index.json'), JSON.stringify(results, null, 2))
 }
 if (values.strict && failed) {
-  console.error('comparisons: --strict and a capture failed (a font, or a screen that threw)')
+  console.error('comparisons: --strict and a capture failed (a side that did not settle or could not be reached, a font, or a screen that threw)')
   process.exitCode = 1
 }

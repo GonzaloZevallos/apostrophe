@@ -6,7 +6,9 @@
  * or "‹ <variety>" for one variety's list, declared through `useBackParent`). Each row
  * links to the entry's form to edit it and deletes it after "Antes de borrar", naming the
  * date, variety and grams. Every figure is what `GET /stock` answered; a variety's name
- * comes from `GET /varieties`, joined by id.
+ * comes from `GET /varieties`, joined by id. One archived variety's list is read-only: its
+ * entry rows have no edit or delete and open nothing (they stay editable and deletable from
+ * "Todas las entradas"); its withdrawal rows still open the withdrawal's detail.
  */
 
 import { useState } from 'react'
@@ -99,6 +101,7 @@ export default function EntriesList({ varietyId }: Props) {
   }
 
   const stock = stockQuery.data
+  const readOnly = varietyQuery.data?.archived === true
   const rows: Movement[] =
     varietyId === undefined || movementsQuery.data === undefined
       ? stock.entries.map((entry) => ({ ...entry, kind: 'entry' as const }))
@@ -178,15 +181,17 @@ export default function EntriesList({ varietyId }: Props) {
                     </>
                   )}
                 </span>
-                <span className="fila-entrada__acciones">
-                  <BotonLink variant="icon" action="edit" ariaLabel="Editar" to={pathTo(STOCK_ENTRY, { id: entry.id })} />
-                  <Boton
-                    variant="icon"
-                    action="delete"
-                    ariaLabel="Borrar"
-                    onClick={() => setConfirming(entry)}
-                  />
-                </span>
+                {!readOnly && (
+                  <span className="fila-entrada__acciones">
+                    <BotonLink variant="icon" action="edit" ariaLabel="Editar" to={pathTo(STOCK_ENTRY, { id: entry.id })} />
+                    <Boton
+                      variant="icon"
+                      action="delete"
+                      ariaLabel="Borrar"
+                      onClick={() => setConfirming(entry)}
+                    />
+                  </span>
+                )}
               </li>
             ),
           )}

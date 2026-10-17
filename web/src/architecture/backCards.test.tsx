@@ -115,6 +115,7 @@ function fakeApi(): void {
         'GET /varieties': [VARIETY_ROW],
         'GET /varieties?archived=true': [ARCHIVED],
         'GET /catalog': CATALOG,
+        'GET /catalog/archived': [],
       }
       return Promise.resolve(key in answers ? jsonResponse(200, answers[key]) : jsonResponse(404, { detail: 'No existe' }))
     }),

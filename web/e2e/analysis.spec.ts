@@ -49,10 +49,7 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   // business's first record — and so "Mes anterior" — is not this same month.
   await page.goto(STOCK_ENTRY_NEW)
   const todayIso = await page.getByLabel('Fecha').inputValue()
-  const lastMonth = new Date(todayIso)
-  lastMonth.setDate(1)
-  lastMonth.setMonth(lastMonth.getMonth() - 1)
-  await page.getByLabel('Fecha').fill(lastMonth.toISOString().slice(0, 10))
+  await page.getByLabel('Fecha').fill(firstOfMonth(todayIso, 1))
   await page.getByLabel('Gramos').fill('50')
   await page.getByLabel('Variedad').selectOption({ label: 'Rosa' })
   await page.getByLabel('Costo total').fill('20000')

@@ -47,7 +47,13 @@ PASSWORD = "muestra-de-la-huerta"
 BUSINESS = "La Huerta"
 # One extra business per "Listo" row of `screens.json`: reaching "Listo" ends a business's
 # Onboarding for good (docs/adr/0036), so each capture of it needs a business of its own.
-ONBOARDING_ACCOUNTS = ("listo", "listo_compu", "listo_oscuro", "listo_compu_oscuro")
+ONBOARDING_ACCOUNTS = (
+    "listo",
+    "listo_compu",
+    "listo_oscuro",
+    "listo_compu_oscuro",
+    "listo_texto130",
+)
 
 
 class Api(Protocol):
@@ -81,6 +87,7 @@ class Sample:
     no_entries: int
     withdrawal: int
     entry: int
+    archived: int
 
 
 def seed(api: Api, today: date) -> Sample:
@@ -275,6 +282,19 @@ def seed(api: Api, today: date) -> Sample:
             {"shown": True, "emoji": emoji, "indica_share": indica, "aroma": aroma},
         )
 
+    # The one archived variety (GH-131), last: its catalog attributes are read-only once it
+    # is archived. Hidden, with a price, a threshold and a single opening-stock entry with
+    # no cost on the day the sample's history starts, so no period figure moves.
+    archived = variety("Blue Dream", 13_000)
+    api.call(
+        "PUT",
+        f"/catalog/varieties/{archived}",
+        {"shown": False, "emoji": "🫐", "indica_share": 40, "aroma": "Frutos rojos"},
+    )
+    api.call("PUT", f"/stock/varieties/{archived}/threshold", {"grams": "15"})
+    entry(ago(40), archived, "opening_stock", "25", None)
+    api.call("POST", f"/varieties/{archived}/archive")
+
     return Sample(
         debtor=nico,
         owing_sale=owing,
@@ -284,6 +304,7 @@ def seed(api: Api, today: date) -> Sample:
         no_entries=mango,
         withdrawal=promotion,
         entry=first_entry,
+        archived=archived,
     )
 
 
@@ -433,7 +454,8 @@ def main(argv: list[str] | None = None) -> int:
             {"email": EMAIL, "password": PASSWORD, "business_name": BUSINESS},
         )
         api.call("POST", "/auth/login", {"email": EMAIL, "password": PASSWORD})
-        sample = seed(api, date.today())
+        today = date.today()
+        sample = seed(api, today)
         links = {
             # Unused, so their screens can be compared: one opens a new business, the
             # other joins La Huerta.
@@ -442,7 +464,7 @@ def main(argv: list[str] | None = None) -> int:
             # A live reset link for the sample's user, so the reset screen can be compared.
             "reset_token": reset_token(env, EMAIL),
         }
-        accounts = onboarding_accounts(env, base, date.today())
+        accounts = onboarding_accounts(env, base, today)
     except BaseException:
         server.terminate()
         raise
@@ -451,6 +473,8 @@ def main(argv: list[str] | None = None) -> int:
         "url": base,
         "email": EMAIL,
         "password": PASSWORD,
+        # The day the sample is seeded on: the capture's fake clock reads it, never the wall clock.
+        "today": today.isoformat(),
         "ids": {**asdict(sample), **links},
         "accounts": {name: asdict(account) for name, account in accounts.items()},
     }

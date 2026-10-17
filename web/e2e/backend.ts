@@ -5,6 +5,9 @@
  * out the HTTP shortcut, not the install step every business already needs once).
  * Everything after this runs through the browser alone.
  *
+ * Both run through `tests.e2e_app`, the accounts command line on the worker's anchored
+ * clock (ADR-0043), so a link's expiry agrees with the server's.
+ *
  * `e2eEnv()` names the calling worker's own database and port, which only
  * `web/e2e/fixtures.ts` decides, so these CLI calls reach that worker's server's data.
  */
@@ -15,7 +18,7 @@ import { e2eEnv } from './env.js'
 export function newBusinessInvitationUrl(): string {
   const output = execFileSync(
     'uv',
-    ['run', '--no-project', 'python', '-m', 'app.accounts.adapters.cli', 'invite-business'],
+    ['run', '--no-project', 'python', '-m', 'tests.e2e_app', 'invite-business'],
     { cwd: '..', env: { ...process.env, ...e2eEnv() }, encoding: 'utf-8' },
   )
   const firstLine = output.split('\n')[0]
@@ -38,7 +41,7 @@ export function supportsPasswordReset(): boolean {
   try {
     execFileSync(
       'uv',
-      ['run', '--no-project', 'python', '-m', 'app.accounts.adapters.cli', 'reset-password', '--help'],
+      ['run', '--no-project', 'python', '-m', 'tests.e2e_app', 'reset-password', '--help'],
       { cwd: '..', env: { ...process.env, ...e2eEnv() }, encoding: 'utf-8' },
     )
     return true
@@ -53,7 +56,7 @@ export function supportsPasswordReset(): boolean {
 export function resetLink(email: string): string {
   const output = execFileSync(
     'uv',
-    ['run', '--no-project', 'python', '-m', 'app.accounts.adapters.cli', 'reset-password', email],
+    ['run', '--no-project', 'python', '-m', 'tests.e2e_app', 'reset-password', email],
     { cwd: '..', env: { ...process.env, ...e2eEnv() }, encoding: 'utf-8' },
   )
   const firstLine = output.split('\n')[0]

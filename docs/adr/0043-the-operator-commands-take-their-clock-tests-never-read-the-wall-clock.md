@@ -53,7 +53,9 @@ commands did not follow it.
 3. **The allowlists are closed.** A wall-clock read is allowed by path and enclosing function:
    `app/clock.py::system_clock`. Naming `system_clock` is allowed by exact path, no glob: the
    composition roots `app/main.py` and the three command lines, and `tests/e2e_app.py`, which
-   shares the real clock with the CLI subprocess and the browser by design (ADR-0040). Each
+   shares the real clock with the CLI subprocess and the browser by design (ADR-0040;
+   *the e2e reason is superseded by the amendment "e2e-anchored-clock" below: the file stays
+   on the list because it is where the e2e clock is built*). Each
    entry has a one-line reason, a test fails when an entry no longer matches a read, and
    another entry is added only with a decision of its own. A test that reads the clock is
    fixed with a controlled clock. Out of reach, by design: patching by string, and an alias
@@ -95,8 +97,9 @@ is no allowlist.
 - **Page clocks start at a literal.** Where a spec fakes the browser's clock
   (`pressed.spec.ts`), it installs it at a literal instant and reads the fake time with
   `performance.now()`.
-- **No pinned e2e clock.** The e2e backend runs on the real clock by design, so a spec
-  takes "today" from `GET /auth/me`, never from the browser.
+- **No pinned e2e clock.** *(Superseded by the amendment "e2e-anchored-clock" below.)* The
+  e2e backend runs on the real clock by design, so a spec takes "today" from
+  `GET /auth/me`, never from the browser.
 
 ## Amendment (shifted-run): the one-off shifted-date verification
 
@@ -121,5 +124,37 @@ is no allowlist.
 5. **A failure that also appears at `+0d` is not about the date.** A spec that fails with the
    preload in place and no shift is recorded as a setup artifact of the shifting tool, not
    fixed in the spec, and not counted against the date result.
+
+## Amendment (e2e-anchored-clock): the e2e backend starts from a fixed instant
+
+GH-251 (`web-e2e` went red and green on one head). The e2e backend and its CLI calls no
+longer run on the real calendar: a spec that depends on the date, an invitation that expires
+after seven days, or a day boundary crossed mid-run all made the run depend on when it ran.
+This supersedes the web amendment's "No pinned e2e clock" bullet and the e2e reason in the
+pytest guard amendment's point 3.
+
+1. **The anchor.** `tests/e2e_app.py` defines `ANCHOR = 2026-10-07T15:00:00Z`, which is 12:00
+   in Argentina, and `anchored_clock(offset, source=system_clock)`, which returns
+   `source() + offset`.
+2. **It advances; it is not frozen.** A frozen clock would break the 15-minute brake windows
+   (the login and reset brakes compare instants a test lets pass), so the e2e clock starts
+   at the anchor and keeps running at the real rate.
+3. **The offset contract.** `offset_seconds()` is the whole seconds from now to the anchor
+   (rounded up, so the clock starts at the anchor or under a second after it). It is computed
+   only in Python: `python -m tests.e2e_app offset` prints just the integer, so no TypeScript
+   reads the clock (the web guard stays without an allowlist). The integer travels as
+   `APOSTROPHE_E2E_CLOCK_OFFSET`, which only `tests/e2e_app.py` reads, only
+   `web/e2e/fixtures.ts` writes and only `web/e2e/env.ts` passes on. When it is unset,
+   `create_e2e_app` keeps `system_clock`, as before.
+4. **The CLI calls use the same clock.** `python -m tests.e2e_app invite-business` and
+   `reset-password <email>` call `app.accounts.adapters.cli.main(..., clock=...)` with it and
+   print what the accounts command prints. The default `system_clock` of the three commands'
+   `main` is untouched (decision 2 above): the entry points reachable by an operator are the
+   same.
+5. **Session cookies do not drift.** The session cookie sets `Max-Age` only
+   (`set_cookie(max_age=...)`) and every expiry is checked on the server against the anchored
+   clock, so the growing gap between the anchor and the real date is harmless. A future
+   absolute instant that the browser compares (an `Expires`, a timestamp in a payload checked
+   in the page) means revisiting the anchor.
 
 Evidence: `docs/evidence/GH-211-gate-clock.md` (GH-211's close-out document).

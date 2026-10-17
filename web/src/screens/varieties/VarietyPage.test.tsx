@@ -75,6 +75,10 @@ const ENTRIES = [
   entry(10, 1, '2026-09-01', 40),
 ]
 
+function archivedRow(shown: boolean) {
+  return { variety_id: 1, name: '24K Gold', shown, emoji: '🍪', indica_share: 70, aroma: 'Galletita y vainilla' }
+}
+
 const CATALOG = {
   text: 'texto',
   header: '',
@@ -97,6 +101,7 @@ function defaults(): Answers {
     'GET /varieties/1/prices': () => json(200, PRICES),
     'GET /stock': () => json(200, stockOf(STOCK_ROW)),
     'GET /catalog': () => json(200, CATALOG),
+    'GET /catalog/archived': () => json(200, [archivedRow(true)]),
     'GET /pricing-settings': () => json(200, { is_bulk_pricing: true, is_vip_customers: true }),
     'GET /stock/varieties/1/movements': () =>
       json(
@@ -234,12 +239,14 @@ describe('the icon and text rule', () => {
     }
   })
 
-  test('"Eliminar variedad" is the icon-only delete with its current word as its name', async () => {
+  test('"Eliminar variedad" is the critical icon + text action with its current word as its name', async () => {
     renderPage(VARIETY_ONE, { 'GET /varieties/1': () => json(200, { ...VARIETY_ROW, removal: 'delete' }) })
 
     const button = await screen.findByRole('button', { name: 'Eliminar variedad' })
-    expect(button).toHaveClass('boton-icono')
-    expect(button.textContent).toBe('')
+    expect(button).toHaveClass('boton--critico')
+    expect(button).not.toHaveClass('boton-icono')
+    expect(button.textContent).toBe('Eliminar variedad')
+    expect(button.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
   })
 
   test('what the live page keeps as text is only its links and the switch; Archivar variedad has its icon', async () => {
@@ -261,6 +268,91 @@ describe('the icon and text rule', () => {
 
     expect(await screen.findByRole('button', { name: 'Restaurar' })).toBeInTheDocument()
     expect(iconAndTextProblems(screen.getByRole('main'))).toEqual([])
+  })
+})
+
+describe("an archived variety's summary line and its one action", () => {
+  const ARCHIVED: Answers = {
+    'GET /varieties/1': () => json(200, { ...VARIETY_ROW, archived: true, removal: null }),
+    'GET /stock?archived=true': () => json(200, stockOf(STOCK_ROW)),
+  }
+
+  test.each([
+    ['hidden', false, true],
+    ['shown', true, false],
+  ])('a %s one says Archivada, and Oculta only when hidden, with no status mark nor days left', async (_name, shown, oculta) => {
+    renderPage(VARIETY_ONE, { ...ARCHIVED, 'GET /catalog/archived': () => json(200, [archivedRow(shown)]) })
+
+    const line = await screen.findByText(/\$ 11\.000 x g/)
+    expect(line).toHaveTextContent(/^18 g · \$ 11\.000 x g$/)
+    expect(screen.getByText('Archivada')).toHaveClass('insignia')
+    expect(screen.queryByText('Oculta') !== null).toBe(oculta)
+    expect(screen.queryByText(/baja|ok|agotada|sin entradas/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/24 días/)).not.toBeInTheDocument()
+  })
+
+  test('its grams show as a figure even when negative, and no price says Sin precio', async () => {
+    renderPage(VARIETY_ONE, {
+      ...ARCHIVED,
+      'GET /varieties/1': () => json(200, { ...NO_PRICE_ROW, archived: true, removal: null }),
+      'GET /stock?archived=true': () => json(200, stockOf({ ...STOCK_ROW, grams: -4, status: 'sold_out' })),
+    })
+
+    expect(await screen.findByText(/Sin precio/)).toHaveTextContent('-4 g · Sin precio: no se puede vender')
+  })
+
+  test('Restaurar is the only action: no entry, price, withdrawal, archive or delete', async () => {
+    renderPage(VARIETY_ONE, ARCHIVED)
+
+    await screen.findByRole('button', { name: 'Restaurar' })
+    const main = screen.getByRole('main')
+    const buttons = within(main).getAllByRole('button').map((button) => button.textContent)
+    expect(buttons.filter((name) => name !== '')).toEqual(['Restaurar'])
+    expect(within(main).queryByRole('button', { name: 'Eliminar variedad' })).toBeNull()
+    expect(within(main).queryByRole('button', { name: 'Archivar variedad' })).toBeNull()
+    for (const name of ['+ Entrada', 'Nuevo precio', 'Sacar del stock']) {
+      expect(within(main).queryByRole('link', { name })).toBeNull()
+    }
+  })
+})
+
+describe("an archived variety's four sections, read-only", () => {
+  const ARCHIVED: Answers = {
+    'GET /varieties/1': () => json(200, { ...VARIETY_ROW, archived: true, removal: null }),
+    'GET /stock?archived=true': () => json(200, stockOf(STOCK_ROW)),
+    'GET /catalog/archived': () => json(200, [archivedRow(false)]),
+  }
+
+  test('Stock y entradas, Precios, Aviso de stock bajo and En el catálogo are all shown, none editable', async () => {
+    renderPage(VARIETY_ONE, ARCHIVED)
+
+    const section = async (name: string) => within((await screen.findByRole('heading', { name })).closest('section')!)
+    const stock = await section('Stock y entradas')
+    expect(stock.getAllByRole('listitem')).toHaveLength(3)
+    expect(stock.getByRole('link', { name: 'Ver todas' })).toBeInTheDocument()
+    const prices = await section('Precios')
+    expect(prices.getByRole('link', { name: 'Ver todas' })).toBeInTheDocument()
+    expect(prices.queryByRole('button', { name: 'Borrar este precio' })).toBeNull()
+    const warning = await section('Aviso de stock bajo')
+    expect(warning.getByText('Avisame abajo de 20 g')).toBeInTheDocument()
+    expect(warning.queryByText(/Avisando/)).toBeNull()
+    const catalog = await section('En el catálogo')
+    expect(catalog.getByText('No se muestra')).toBeInTheDocument()
+    expect(catalog.getByText('🍪')).toBeInTheDocument()
+    expect(catalog.getByText('70 %')).toBeInTheDocument()
+    expect(catalog.getByText('Galletita y vainilla')).toBeInTheDocument()
+    const main = screen.getByRole('main')
+    expect(within(main).queryByRole('switch')).toBeNull()
+    expect(within(main).queryByRole('button', { name: /^Editar/ })).toBeNull()
+  })
+
+  test('a threshold that is off reads Aviso apagado', async () => {
+    renderPage(VARIETY_ONE, {
+      ...ARCHIVED,
+      'GET /stock?archived=true': () => json(200, stockOf({ ...STOCK_ROW, threshold: null, status: 'ok' })),
+    })
+
+    expect(await screen.findByText('Aviso apagado')).toBeInTheDocument()
   })
 })
 

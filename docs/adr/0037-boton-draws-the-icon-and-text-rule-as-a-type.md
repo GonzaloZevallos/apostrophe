@@ -144,3 +144,24 @@ Otherwise the body is left as it is, and the usual `<Icono` test flags the link.
 - Text between elements before the chevron (`<b>a</b> y <b>b</b><Icono nombre="chevron" />` is
   read as an element-led row).
 - The three gaps above (a helper-drawn icon, a re-exported link, an icon-less action link) stay.
+
+## Amendment (GH-131): a critical kind, and the filled `--critico` kept inside the confirmation
+
+`Boton` gains `variant="critical"` in the icon + text arm (`icon: NombreIcono` required; no
+`textOnly`, no `action`; `Boton.types.test.tsx` rejects those shapes). It is the trigger of a
+destructive action, drawn in `pantallas/VariedadDetalle.dc.html`: a 2 px outline and the text in
+`--critico` on the page, with the `tacho`, and no fill. Only "Eliminar variedad" uses it.
+
+- **No fill outside the answer.** The filled `--critico` with `--critico-texto` stays the answer of
+  a confirmation (`AnswerButton`, through `ConfirmDialog`). `findFilledCritical`
+  (`web/src/architecture/closingGuards.ts`) flags `variant="destructive"` and the class
+  `boton--destructivo` anywhere else but `ConfirmDialog.tsx` and the `.boton*` authors. The one
+  use on master, the withdrawal detail's "Borrar", sits on `FILLED_CRITICAL_LEFT`
+  (`closingGuards.real.test.ts`), keyed by file; the list only shrinks.
+- **The class map is total.** `botonVisual.tsx` types it as `Record<BotonVariant, string>`, so a
+  variant added to `Boton` with no class fails `tsc`.
+- **Pressed.** The kind is transparent, so its cue is the `--superficie` fill of the transparent
+  family and the scale, without the filled family's `--papel` ring.
+- **Contrast.** The README's contrast table lists `--critico` as text on `--papel`, `--superficie`,
+  `--deuda-fondo` and `--acento-suave`, in both themes; `tests/test_design_contrast.py` computes
+  the ratios. No token value changes.
