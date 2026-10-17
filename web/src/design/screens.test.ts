@@ -507,12 +507,12 @@ describe('the archived variety rows of the real screens.json', () => {
   })
 })
 
-describe('an entry whose path names a record names the same placeholders in its route, as written (a path with no placeholder makes no claim, so a route that names a record through it is not checked; nor is a route with no placeholder whose steps click through to the record, the archived page reached from the Archivadas list)', () => {
+describe('an entry whose path names a record names the same placeholders in its route, as written (a path with no placeholder makes no claim, so a route that names a record through it is not checked; nor is a route with no placeholder with a click step that goes through to the record, the archived page reached from the Archivadas list)', () => {
   interface Declared {
     screen: string
     path?: string | null
     route?: string | null
-    steps?: readonly object[]
+    steps?: readonly Record<string, unknown>[]
   }
   interface Mismatch {
     screen: string
@@ -528,7 +528,7 @@ describe('an entry whose path names a record names the same placeholders in its 
       const path = placeholders(entry.path)
       const route = placeholders(entry.route)
       if (path.length === 0) return []
-      if (route.length === 0 && (entry.steps?.length ?? 0) > 0) return []
+      if (route.length === 0 && (entry.steps ?? []).some((step) => 'click' in step)) return []
       const same = path.length === route.length && path.every((name, index) => name === route[index])
       return same ? [] : [{ screen: entry.screen, path, route }]
     })
@@ -549,6 +549,9 @@ describe('an entry whose path names a record names the same placeholders in its 
   it('refuses a path that names a record when the route names none and no step clicks to it', () => {
     const entry = { screen: 'VariedadArchivada', path: 'varieties/{archived}', route: 'varieties/archived' }
     expect(pathRecordMismatches([entry])).toEqual([{ screen: 'VariedadArchivada', path: ['archived'], route: [] }])
+    expect(pathRecordMismatches([{ ...entry, steps: [{ wait: 'Stock y entradas' }] }])).toEqual([
+      { screen: 'VariedadArchivada', path: ['archived'], route: [] },
+    ])
     expect(pathRecordMismatches([{ ...entry, steps: [{ click: 'Blue Dream' }] }])).toEqual([])
   })
 
