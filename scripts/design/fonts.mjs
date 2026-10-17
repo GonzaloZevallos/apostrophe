@@ -1,4 +1,4 @@
-// Fonts of a design capture (ADR-0041). The design files load Plus Jakarta Sans from Google
+// Fonts of a design capture (ADR-0042). The design files load Plus Jakarta Sans from Google
 // Fonts with `display=swap`; a capture must not depend on the network, so the request is
 // answered from the app's own self-hosted package (@fontsource/plus-jakarta-sans), with
 // `font-display: block`. Pure: no file is read here, `comparisons.mjs` injects the reader.
