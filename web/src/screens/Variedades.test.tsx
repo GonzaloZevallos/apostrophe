@@ -427,7 +427,7 @@ describe('removing the selected variety on a computer', () => {
     }
     expect(router.state.historyAction).toBe('REPLACE')
     expect(await screen.findByText(WORDS[action].toast)).toBeInTheDocument()
-    expect(screen.queryByText(/Eso ya no está/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/That's gone/)).not.toBeInTheDocument()
   })
 })
 

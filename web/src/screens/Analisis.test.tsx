@@ -359,7 +359,7 @@ test('a fully pending figure reads only its grams on the header, the since lines
   expect(within(monthRows[1]!).getByText('Promoción 4 g not yet costed')).toBeInTheDocument()
   const weekRows = Array.from(document.querySelectorAll<HTMLElement>('.analisis__semana'))
   expect(within(weekRows[2]!).getByText('Costo de lo vendido 4 g not yet costed')).toBeInTheDocument()
-  expect(screen.queryByText(/\$ 0 y \d+ g sin costo/)).not.toBeInTheDocument()
+  expect(screen.queryByText(/\$ 0 and \d+ g not yet costed/)).not.toBeInTheDocument()
 })
 
 test('a partly pending cost of goods reads its amount and its grams; a real zero reads $ 0', async () => {

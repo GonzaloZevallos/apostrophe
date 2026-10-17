@@ -5,6 +5,7 @@
  */
 
 import { expect, test } from 'vitest'
+import { WEEKDAY_SHORT } from '../copy/format'
 import { chipDate, formatDate, formatDateShort, formatMonthLong, sinceWhen } from './dates'
 import { amountAndPending, pendingOnly, pendingSuffix } from './pending'
 import { formatGrams, formatMoney, formatSignedMoney } from './money'
@@ -43,6 +44,10 @@ test('a figure with grams not yet costed says so after its amount, or alone when
   expect(pendingOnly(4)).toBe('4 g not yet costed')
   expect(pendingSuffix(2.5)).toBe(' and 2,5 g not yet costed')
   expect(pendingSuffix(0)).toBe('')
+})
+
+test('weekdays are three English letters, Monday first', () => {
+  expect([...WEEKDAY_SHORT]).toEqual(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'])
 })
 
 test('a sales count reads "1 sale" and "N sales"', () => {

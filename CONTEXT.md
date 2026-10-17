@@ -9,7 +9,7 @@ Each term carries `_In the app_`: the English word a user sees on screen. Code, 
 **Business**:
 One seller's operation and everything recorded for it: varieties, prices, customers, sales, stock, expenses and catalog. Nothing recorded for one business is ever visible from another.
 _In the app_: Business
-_Avoid_: tenant, account, store, shop, organization
+_Avoid_: tenant, store, shop, organization
 
 **User**:
 A person who logs in to the app and works on exactly one business.
@@ -181,11 +181,11 @@ _Avoid_: cost, outflow, bill
 
 **Expense category**:
 A business's own heading for its expenses, with a name unique within that business whatever the case or spacing. A new business starts with "Growing supplies", "Packaging", "Shipping and travel" and "Other"; a business opened earlier keeps the names it was given, which are its own data. A category cannot be removed while it has expenses.
-_Avoid_: type, tag, label, account, cost center
+_Avoid_: type, tag, label, cost center
 _In the app_: Category
 
 **Profit**:
-Sales (shipping included, paid or not) minus cost of goods sold, stock shortfall, promotion cost, own-use cost and expenses, over a period, each counted on its own date; purchases never enter it. When any cost is pending, it is worked out over the costed part and marked "and N g not yet costed", N adding the pending grams sold, gifted, taken out by negative adjustments and withdrawn in the period. It may be negative and is then shown with a minus sign; in the app: Ganancia.
+Sales (shipping included, paid or not) minus cost of goods sold, stock shortfall, promotion cost, own-use cost and expenses, over a period, each counted on its own date; purchases never enter it. When any cost is pending, it is worked out over the costed part and marked "and N g not yet costed", N adding the pending grams sold, gifted, taken out by negative adjustments and withdrawn in the period. It may be negative and is then shown with a minus sign; in the app: Profit.
 _Avoid_: margin, earnings, net
 _In the app_: Profit
 
@@ -272,7 +272,7 @@ Which sales a later payment covers: the customer's oldest debt first (sales by d
 _Avoid_: allocation, application, imputación
 
 **Credit**:
-A balance below zero, left only when a sale that payments had settled is deleted; recording never creates one. It applies automatically to the customer's next sales left owing and counts in no debt figure. _In the app_: A favor.
+A balance below zero, left only when a sale that payments had settled is deleted; recording never creates one. It applies automatically to the customer's next sales left owing and counts in no debt figure. _In the app_: Credit.
 _Avoid_: refund, saldo a favor, overpayment
 
 **Sales still owing**:
@@ -284,7 +284,7 @@ The sum of every customer's balance above $0 in a business; credits never subtra
 _Avoid_: receivables, outstanding
 
 **Margin**:
-A variety's sales of costed grams in a period minus what those grams cost, in pesos; gifts add their cost and $0 of sales, so it can be negative. Sales of costed grams are, per line, line total × costed grams ÷ line grams, half up; pending grams are left out and marked "and N g not yet costed". In the app: Margen.
+A variety's sales of costed grams in a period minus what those grams cost, in pesos; gifts add their cost and $0 of sales, so it can be negative. Sales of costed grams are, per line, line total × costed grams ÷ line grams, half up; pending grams are left out and marked "and N g not yet costed". In the app: Margin.
 _Avoid_: earnings, markup, ganancia
 
 **Margin percentage**:
@@ -321,7 +321,7 @@ _Avoid_: broadcast, push, sync
 
 **Bot settings**:
 A business's one Telegram bot token, stored encrypted and never shown again once saved, plus its channel chat and the user's own chat. Changing any of them requires a new test send before publishing. In the app: Integrations, in Settings.
-_Avoid_: integration, connection, config
+_Avoid_: integration, config
 
 **Out of date**:
 The pinned catalog's state when customers are not seeing today's catalog: the last automatic update failed (Telegram down, bot can't post, message deleted, text too long), or a new token or channel was tested but not yet published. It shows one fixed reason and, when the current chat has been published to, the last publish date. Its only other state is up to date. _In the app_: Out of date / Up to date.
@@ -329,7 +329,7 @@ _Avoid_: stale, pending, out of sync, error
 
 **Panel**:
 Home's one-screen view of a business in Argentina time. Today shows what was sold today, money owed and stock per variety. Week and Month add cost of goods sold, stock shortfall, promotion and own-use cost, expenses, grams gifted, purchases, profit and cash; read only, every figure from the server. In the app: Home (tabs Today · Week · Month).
-_Avoid_: dashboard, overview, summary, Analysis
+_Avoid_: dashboard, overview, summary
 
 **Average sale**:
 A period's sales total, shipping included, divided by its number of sales (not lines), rounded half up to the whole peso. Not shown when the period has no sales.
@@ -367,7 +367,7 @@ _In the app_: (operator terminal only; never shown on screen)
 
 **Session**:
 A signed-in device of one user, lasting 30 days as a cookie and a token. A change of that user's password closes every session of theirs, except the device that changed it by Change, which gets a fresh one. _In the app_: Session (Log out).
-_Avoid_: login, device, token, connection
+_Avoid_: login, device, token
 
 **Password change**:
 A user setting a new password with their current one, from Settings → Your account. The only rule is at least 10 characters, and the same password is accepted. It closes every other session of that user and retires their unused reset links, while the device that made the change stays signed in. In the app: Change password.
@@ -406,7 +406,7 @@ Finding the seller's own chat number among the private chats that wrote to the b
 _Avoid_: auto-detect, discovery, getUpdates, chat search, sync
 
 **VIP price**:
-An optional price per gram in a price entry, for VIP customers: a whole peso above $0 and below that entry's list price, independent of the bulk price. Never shown in the catalog. _In the app_: Precio VIP.
+An optional price per gram in a price entry, for VIP customers: a whole peso above $0 and below that entry's list price, independent of the bulk price. Never shown in the catalog. _In the app_: VIP price.
 _Avoid_: friend price, discount, Amigo price
 
 **Pricing settings**:
