@@ -191,10 +191,14 @@ def unlisted_or_stale_reads(
     modules: list[Path], allowed: frozenset[tuple[str, str]]
 ) -> list[str]:
     found = {pair for module in modules for pair in clock_reads(module)}
-    return sorted(
-        [f"{path}:{function} reads the clock and is not listed" for path, function in found - allowed]
-        + [f"{path}:{function} is listed and reads no clock" for path, function in allowed - found]
-    )
+    unlisted = [
+        f"{path}:{function} reads the clock and is not listed"
+        for path, function in found - allowed
+    ]
+    stale = [
+        f"{path}:{function} is listed and reads no clock" for path, function in allowed - found
+    ]
+    return sorted(unlisted + stale)
 
 
 def _python_files(root: str) -> list[Path]:
