@@ -29,11 +29,11 @@ describe('formatDate', () => {
 })
 
 describe('chipDate', () => {
-  test('reads "Hoy dd/mm" for today', () => {
-    expect(chipDate('2026-10-15', '2026-10-15')).toBe('Hoy 15/10')
+  test('reads "Today dd/mm" for today', () => {
+    expect(chipDate('2026-10-15', '2026-10-15')).toBe('Today 15/10')
   })
 
-  test('reads "dd/mm" for another day, without "Hoy" and without the year', () => {
+  test('reads "dd/mm" for another day, without "Today" and without the year', () => {
     expect(chipDate('2026-10-02', '2026-10-15')).toBe('02/10')
   })
 
@@ -63,14 +63,14 @@ describe('formatDateLong', () => {
 })
 
 describe('sinceWhen', () => {
-  test('wraps formatDate for a price\'s "Rige desde"', () => {
-    expect(sinceWhen('2026-09-12', '2026-10-02')).toBe('desde el 12/09')
+  test('wraps formatDate for a price\'s "Effective from"', () => {
+    expect(sinceWhen('2026-09-12', '2026-10-02')).toBe('since 12/09')
   })
 })
 
 describe('formatMonthLong', () => {
-  test('names the month in Spanish, with its year', () => {
-    expect(formatMonthLong('2026-10')).toBe('Octubre 2026')
+  test('names the month in English, with its year', () => {
+    expect(formatMonthLong('2026-10')).toBe('October 2026')
   })
 
   test('rejects a string that is not an API month', () => {

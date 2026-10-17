@@ -6,6 +6,8 @@
  * never from the device's clock.
  */
 
+import { MONTH_NAMES, sinceDate, TODAY } from '../copy/format'
+
 const DATE_RE = /^(\d{4})-(\d{2})-(\d{2})$/
 const MONTH_RE = /^(\d{4})-(\d{2})$/
 
@@ -41,10 +43,10 @@ export function formatDateShort(iso: string): string {
   return `${day}/${month}`
 }
 
-/** The "Rige desde" chip's text: `"Hoy 15/10"` for today, else `"02/10"` (no year, no
- * "Hoy"). Equality is the whole date, so the same day of another year is not today. */
+/** The "Effective from" chip's text: `"Today 15/10"` for today, else `"02/10"` (no year, no
+ * "Today"). Equality is the whole date, so the same day of another year is not today. */
 export function chipDate(iso: string, todayIso: string): string {
-  return iso === todayIso ? `Hoy ${formatDateShort(iso)}` : formatDateShort(iso)
+  return iso === todayIso ? `${TODAY} ${formatDateShort(iso)}` : formatDateShort(iso)
 }
 
 /** Always with the year: for a card or a detail with no "today" to compare against. */
@@ -53,15 +55,10 @@ export function formatDateLong(iso: string): string {
   return `${day}/${month}/${year}`
 }
 
-/** `"desde el 02/10"`, for a price's "Rige desde". */
+/** `"since 02/10"`, for a price's "Effective from". */
 export function sinceWhen(iso: string, todayIso: string): string {
-  return `desde el ${formatDate(iso, todayIso)}`
+  return sinceDate(formatDate(iso, todayIso))
 }
-
-const MONTH_NAMES = [
-  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
-]
 
 const SEARCH_MONTH_RE = /^\d{4}-(0[1-9]|1[0-2])$/
 
@@ -73,7 +70,7 @@ export function parseMonth(search: URLSearchParams, today: string): string {
   return valid ?? today.slice(0, 7)
 }
 
-/** `"2026-10"` → `"Octubre 2026"`, for Gastos's month header. */
+/** `"2026-10"` → `"October 2026"`, for Expenses' month header. */
 export function formatMonthLong(month: string): string {
   const { year, monthNumber } = splitMonth(month)
   return `${MONTH_NAMES[monthNumber - 1]} ${year}`

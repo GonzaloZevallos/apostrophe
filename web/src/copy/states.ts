@@ -5,10 +5,11 @@
  * performs none (`queryClient.ts`).
  */
 
+import { NO_CONNECTION_MESSAGE, RETRY_MESSAGE } from './common'
 import type { LimitedCopy } from './limits'
 
-export const SIN_CONEXION_MENSAJE = 'Sin conexión: revisá tu internet y probá de nuevo.'
-export const ERROR_GENERICO_MENSAJE = 'Algo falló. Probá de nuevo.'
+export const SIN_CONEXION_MENSAJE = NO_CONNECTION_MESSAGE
+export const ERROR_GENERICO_MENSAJE = RETRY_MESSAGE
 
 /** Still the Spanish the app had: the Spanish rule (`architecture/copySpanish.ts`) skips a
  * section that says so. Removed with the section's English wording (ADR-0048). */

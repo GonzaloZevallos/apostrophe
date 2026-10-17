@@ -3,6 +3,7 @@
  * `copy/copyLimits.test.ts`. `Analisis.tsx` renders these same bindings.
  */
 
+import { andPending, pendingOnly } from './format'
 import { SAMPLES, type LimitedCopy } from './limits'
 
 export const NO_HISTORY_LINE = 'Todavía no hay nada para analizar.'
@@ -17,8 +18,8 @@ export const COST_OF_GOODS_LABEL = 'Costo de lo vendido'
 export const SHORTFALL_LABEL = 'Faltante de stock'
 export const PROMOTION_LABEL = 'Promoción'
 export const OWN_USE_LABEL = 'Consumo propio'
-const PENDING_ONLY = `${SAMPLES.grams} sin costo`
-const AMOUNT_AND_PENDING = `${SAMPLES.amount} y ${SAMPLES.grams} sin costo`
+const PENDING_ONLY = pendingOnly(SAMPLES.grams)
+const AMOUNT_AND_PENDING = `${SAMPLES.amount} ${andPending(SAMPLES.grams)}`
 
 /** Still the Spanish the app had: the Spanish rule (`architecture/copySpanish.ts`) skips a
  * section that says so. Removed with the section's English wording (ADR-0048). */

@@ -6,14 +6,13 @@
  */
 
 import type { RowCost } from '../api/analysis'
-import { formatGrams, formatMoney } from '../format/money'
+import { formatMoney } from '../format/money'
+import { amountAndPending, pendingOnly } from '../format/pending'
 
-/** "4 g sin costo" when everything behind the figure is pending (never "$ 0"),
- * "$ 9.000 y 2,5 g sin costo" when part of it is, "$ 9.000" when none is. */
+/** "4 g not yet costed" when everything behind the figure is pending (never "$ 0"),
+ * "$ 9.000 and 2,5 g not yet costed" when part of it is, "$ 9.000" when none is. */
 export function formatRowCost(cost: RowCost): string {
-  if (cost.all_pending) return `${formatGrams(cost.pending_grams)} sin costo`
-  if (cost.pending_grams > 0) {
-    return `${formatMoney(cost.amount)} y ${formatGrams(cost.pending_grams)} sin costo`
-  }
+  if (cost.all_pending) return pendingOnly(cost.pending_grams)
+  if (cost.pending_grams > 0) return amountAndPending(cost.amount, cost.pending_grams)
   return formatMoney(cost.amount)
 }

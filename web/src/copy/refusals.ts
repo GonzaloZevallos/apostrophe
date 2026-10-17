@@ -12,11 +12,11 @@ import type { LimitedCopy } from './limits'
 /** Shown after a save or a delete lands on a record that is gone (plan, "Gone
  * records"): no id, name, date or amount, so it reads the same whatever was
  * deleted, foreign, or never existed (ADR-0004). Not a success toast. */
-export const GONE_NOTICE = 'Eso ya no está. La lista ya está al día.'
+export { GONE_NOTICE } from './common'
 
 /** Shown instead of a detail screen for a record that is gone, with no data of its
  * own (plan, "Gone records"). */
-export const GONE_DETAIL = 'Eso ya no está.'
+export { GONE_DETAIL } from './common'
 
 /** Fixed text for `variety.name_archived`: the name belongs to an archived variety. It
  * repeats nothing the seller typed (ADR-0005). */

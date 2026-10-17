@@ -33,6 +33,8 @@ import { formatGrams, formatMoney } from '../format/money'
 import ErrorGenerico from '../components/ErrorGenerico'
 import SinConexion from '../components/SinConexion'
 import { formatRowCost } from './analisisCost'
+import { WEEKDAY_SHORT } from '../copy/format'
+import { pendingSuffix } from '../format/pending'
 import {
   COST_OF_GOODS_LABEL,
   EMPTY_MONTH_LINE,
@@ -61,21 +63,6 @@ export {
 export const BEST_WEEK_MARK = 'Mejor semana'
 export const BEST_WEEKDAY_MARK = 'Mejor día'
 export const BEST_WEEK_TABLE_MARK = 'mejor'
-
-const WEEKDAY_LABEL: Record<number, string> = {
-  1: 'Lun',
-  2: 'Mar',
-  3: 'Mié',
-  4: 'Jue',
-  5: 'Vie',
-  6: 'Sáb',
-  7: 'Dom',
-}
-
-/** "y N g sin costo" (PM, round 1): never shown for a figure with nothing pending. */
-function pendingSuffix(grams: number): string {
-  return grams > 0 ? ` y ${formatGrams(grams)} sin costo` : ''
-}
 
 /** One cost line, "Faltante de stock $ 3.000 y 1 g sin costo": the label and
  * `formatRowCost`, in one node. */
@@ -493,7 +480,7 @@ function AnalisisContenido({
           <div className="analisis__dias">
             {data.weekdays.map((day) => (
               <div key={day.weekday} className="analisis__dia">
-                <span>{WEEKDAY_LABEL[day.weekday]}</span>
+                <span>{WEEKDAY_SHORT[day.weekday - 1]}</span>
                 <Bar value={day.sales} max={maxWeekdaySales} />
                 <span>{formatMoney(day.sales)}</span>
                 <span>{day.count} ventas</span>

@@ -3,7 +3,6 @@
   "src/screens/Gastos.tsx",
   "src/screens/Inicio.tsx",
   "src/screens/Mas.tsx",
-  "src/screens/analisisCost.ts",
   "src/screens/expenses/ExpenseForm.tsx",
   "src/screens/expenses/ExpenseNewRoute.tsx",
   "src/screens/expenses/renderExpenses.tsx",
