@@ -143,7 +143,7 @@ function renderAt(path: string | InitialEntry[], overrides: Answers = {}, hidden
 function watchForLiveActions(): { seen: () => boolean; stop: () => void } {
   let seen = false
   const look = () => {
-    if (/Eliminar variedad|Archivar variedad|Nuevo precio/.test(document.body.textContent ?? '')) seen = true
+    if (/Eliminar variedad|Archivar variedad|Editar|Nuevo precio/.test(document.body.textContent ?? '')) seen = true
   }
   const observer = new MutationObserver(look)
   observer.observe(document.body, { childList: true, subtree: true, characterData: true })
@@ -190,7 +190,7 @@ describe('the Archivadas card', () => {
     const names = screen.getAllByText(/Vieja$/).map((node) => node.textContent)
     expect(names).toEqual(['Alfa Vieja', 'Zeta Vieja'])
     expect(screen.getAllByText('Archivada')).toHaveLength(2)
-    for (const mark of screen.getAllByText('Archivada')) expect(mark).toHaveClass('insignia')
+    for (const mark of screen.getAllByText('Archivada')) expect(mark.className).toBe('insignia')
     expect(screen.queryByText('Oculta')).toBeNull()
     expect(screen.getAllByRole('button', { name: 'Restaurar' })).toHaveLength(2)
     expect(screen.getByRole('button', { name: '‹ Variedades' })).toBeTruthy()
@@ -205,7 +205,7 @@ describe('the Archivadas card', () => {
     expect(screen.getAllByText('Oculta')).toHaveLength(1)
   })
 
-  test('an empty list reached by an in-app link goes on to Variedades; a typed address says so', async () => {
+  test('an empty list reached by an in-app link goes on to Variedades (a typed address keeps the fixed line, below)', async () => {
     const { router } = renderAt(
       [{ pathname: VARIETIES }, { pathname: ARCHIVED_VARIETIES, state: inAppState({ pathname: VARIETIES }) }],
       { 'GET /varieties?archived=true': () => json(200, []) },
@@ -287,6 +287,41 @@ describe("an archived variety's page", () => {
     // One entry back is Variedades: Archivadas was not pushed a second time.
     await act(() => router.navigate(-1))
     expect(router.state.location.pathname).toBe(VARIETIES)
+  })
+
+  test('while the pop is delayed, the page stays archived: no live action is ever drawn', async () => {
+    const user = userEvent.setup()
+    const { router, fetchMock } = renderAt(FROM_FOOT_LINK)
+    await user.click(await screen.findByRole('link', { name: /Alfa Vieja/ }))
+    const restoreButton = await screen.findByRole('button', { name: 'Restaurar' })
+    // Hold every navigation open: the restore resolves and the caches are rewritten while the
+    // archived page is still on screen, the window a slow pop leaves.
+    let release: () => void = () => undefined
+    const gate = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    const navigate = router.navigate.bind(router)
+    vi.spyOn(router, 'navigate').mockImplementation(async (...args: Parameters<typeof navigate>) => {
+      await gate
+      return navigate(...args)
+    })
+    const watch = watchForLiveActions()
+    await user.click(restoreButton)
+    await waitFor(() => expect(fetchMock.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(true))
+    await waitFor(() => expect(restoreButton).toBeEnabled())
+    await act(() => new Promise((resolve) => setTimeout(resolve, 100)))
+
+    expect(router.state.location.pathname).toBe(pathTo(VARIETY, { id: 4 }))
+    expect(screen.getByRole('heading', { name: 'Alfa Vieja' })).toBeTruthy()
+    for (const name of ['Eliminar variedad', 'Archivar variedad', 'Editar', 'Nuevo precio']) {
+      expect(screen.queryByRole('button', { name })).toBeNull()
+      expect(screen.queryByRole('link', { name })).toBeNull()
+    }
+    release()
+    expect(await screen.findByRole('heading', { name: 'Archivadas' })).toBeTruthy()
+    watch.stop()
+    expect(watch.seen()).toBe(false)
+    expect(screen.queryByText('Alfa Vieja')).toBeNull()
   })
 
   test('the last archived variety restored lands on Variedades, never on an empty Archivadas', async () => {
