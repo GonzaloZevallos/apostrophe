@@ -73,6 +73,7 @@ EXPORTED_KINDS = (
     "catalog_header_footer",
     "catalog_attributes",
     "onboarding",
+    "first_run",
 )
 
 
@@ -150,6 +151,14 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
         leaving_business_id = connection.execute(
             "SELECT id FROM business WHERE name = 'La Huerta'"
         ).fetchone()["id"]
+    # The first-run stamps the import and the guarded read leave (docs/adr/0046): one row
+    # for each business, so the export, the count and the delete all meet it.
+    with sqlite3.connect(db_path) as connection:
+        for owner in (other_business_id, leaving_business_id):
+            connection.execute(
+                "INSERT INTO first_run (business_id, imported_at) VALUES (?, ?)",
+                (owner, "2026-10-01 12:00:00"),
+            )
     all_tables = _all_table_names(db_path)
     other_before = {name: row_counts(db_path, name, other_business_id) for name in all_tables}
     leaving_before = {name: row_counts(db_path, name, leaving_business_id) for name in all_tables}
@@ -207,6 +216,11 @@ def test_a_real_run_exports_then_deletes_and_leaves_the_other_business_whole(
     onboarding = kinds["onboarding"][0]
     assert onboarding["ended_at"] is None
     assert onboarding["bot_pass"] is None
+
+    first_run = kinds["first_run"][0]
+    assert first_run["imported_at"] == "2026-10-01T12:00:00Z"
+    assert first_run["checklist_gone_at"] is None
+    assert first_run["import_notice_over_at"] is None
 
     header_footer = kinds["catalog_header_footer"][0]
     assert header_footer["header"] == CATALOG_HEADER
