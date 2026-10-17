@@ -49,3 +49,18 @@ over unchanged.
   but the agentic system has never run a JavaScript product; the API comes first and is
   where most of the logic lives.
 - **Decimal pesos**: no price, cost or expense in the spreadsheet has ever had cents.
+
+## Amendment (GH-201): one clock per app
+
+- **The clock is read only through the injected clock** (`app.state.clock`) or the named
+  composition roots: `app/clock.py` itself, `create_app`'s default in `app/main.py` and the three
+  operator command lines (accounts, business removal, spreadsheet import). Onboarding's
+  `created_at` comes from the injected clock too, with no default of its own. No other module under
+  `app/` or `tests/` reads the system date; `tests/architecture/test_no_real_clock.py` (ADR-0043)
+  enforces that.
+- **A test issues anything with an expiry on the clock its app reads**: the fixture's
+  `MovableClock`, or `system_clock` on both sides where an operator command issues. Moving the
+  fixed `NOW` is not a fix: it only restarts the countdown to the next 7-day, 24-hour or 30-day window.
+- **`tests/architecture/test_clock_injection.py` enforces the second**, with `ast` and per call
+  site: every `create_app` call under `tests/` names a `clock` (not `None`, no `**` unpacking, and a
+  wrapper only if listed and its `clock` has no default).
