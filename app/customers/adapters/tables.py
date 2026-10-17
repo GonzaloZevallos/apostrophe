@@ -14,8 +14,8 @@ class CustomerRow(Base):
     __tablename__ = "customer"
     # The only unique or check constraint on this table: uniqueness of a phone number
     # within a business is the one rule the database also enforces, so `SqlCustomers`
-    # can translate exactly this `IntegrityError` into `PhoneTaken`. `channel` has no
-    # CHECK and `vip` has no `create_constraint`: the domain enforces both.
+    # can translate exactly this `IntegrityError` into `PhoneTaken`. `vip` has no
+    # `create_constraint`: the domain enforces it.
     __table_args__ = (UniqueConstraint("business_id", "phone", name="uq_customer_business_phone"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)

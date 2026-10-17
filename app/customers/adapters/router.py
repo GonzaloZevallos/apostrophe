@@ -90,7 +90,6 @@ def register_customer(
             session,
             name=body.name,
             phone=body.phone,
-            channel=body.channel,
             vip=body.vip,
         )
         return _out(customer, balances)

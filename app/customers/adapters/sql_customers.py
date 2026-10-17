@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.customers.adapters.tables import CustomerRow
 from app.customers.application.errors import PhoneTaken
-from app.customers.domain.customer import Channel, Customer, CustomerName, PhoneNumber
+from app.customers.domain.customer import Customer, CustomerName, PhoneNumber
 
 
 class SqlCustomers:
@@ -44,7 +44,6 @@ class SqlCustomers:
         assert row is not None, "save takes a customer of this business"
         row.name = customer.name.value
         row.phone = customer.phone.value if customer.phone is not None else None
-        row.channel = customer.channel.value if customer.channel else None
         row.vip = customer.vip
         self._flush_or_mark_taken()
         return _customer(row)
@@ -77,7 +76,6 @@ class SqlCustomers:
             business_id=self._business_id,
             name=customer.name.value,
             phone=customer.phone.value if customer.phone is not None else None,
-            channel=customer.channel.value if customer.channel else None,
             vip=customer.vip,
         )
 
@@ -95,7 +93,6 @@ def _customer(row: CustomerRow) -> Customer:
     return Customer(
         name=CustomerName(row.name),
         phone=PhoneNumber(row.phone) if row.phone is not None else None,
-        channel=Channel(row.channel) if row.channel else None,
         vip=row.vip,
         id=row.id,
     )

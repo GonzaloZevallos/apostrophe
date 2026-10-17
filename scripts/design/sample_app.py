@@ -156,16 +156,14 @@ def seed(api: Api, today: date) -> Sample:
     entry(ago(0), gold, "adjustment", "-2", None)
     api.call("PUT", f"/stock/varieties/{cookies}/threshold", {"grams": "20"})
 
-    def customer(name: str, phone: str, channel: str | None, vip: bool = False) -> int:
-        made: int = api.call(
-            "POST", "/customers", {"name": name, "phone": phone, "channel": channel, "vip": vip}
-        )["id"]
+    def customer(name: str, phone: str, vip: bool = False) -> int:
+        made: int = api.call("POST", "/customers", {"name": name, "phone": phone, "vip": vip})["id"]
         return made
 
-    nico = customer("Nico Parra", "11 5555-0101", "telegram")
-    tincho = customer("Tincho Aguirre", "11 5555-0102", "whatsapp")
-    mica = customer("Mica Solano", "11 6033-7725", "telegram", vip=True)
-    lu = customer("Lu Fernández", "11 5555-0104", None)
+    nico = customer("Nico Parra", "11 5555-0101")
+    tincho = customer("Tincho Aguirre", "11 5555-0102")
+    mica = customer("Mica Solano", "11 6033-7725", vip=True)
+    lu = customer("Lu Fernández", "11 5555-0104")
 
     def sale(
         when: str,

@@ -683,14 +683,6 @@
         "title": "ChangePasswordIn",
         "type": "object"
       },
-      "Channel": {
-        "enum": [
-          "telegram",
-          "whatsapp"
-        ],
-        "title": "Channel",
-        "type": "string"
-      },
       "ChecklistStepOut": {
         "properties": {
           "done": {
@@ -796,16 +788,6 @@
       },
       "CustomerIn": {
         "properties": {
-          "channel": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/Channel"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
           "name": {
             "title": "Name",
             "type": "string"
@@ -838,16 +820,6 @@
           "balance": {
             "title": "Balance",
             "type": "integer"
-          },
-          "channel": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/Channel"
-              },
-              {
-                "type": "null"
-              }
-            ]
           },
           "id": {
             "title": "Id",
@@ -898,7 +870,6 @@
           "id",
           "name",
           "phone",
-          "channel",
           "vip",
           "balance",
           "owing_since",
@@ -909,16 +880,6 @@
       },
       "CustomerPatchIn": {
         "properties": {
-          "channel": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/Channel"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
           "name": {
             "anyOf": [
               {
