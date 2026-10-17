@@ -87,6 +87,7 @@ class Sample:
     no_entries: int
     withdrawal: int
     entry: int
+    archived: int
 
 
 def seed(api: Api, today: date) -> Sample:
@@ -281,6 +282,19 @@ def seed(api: Api, today: date) -> Sample:
             {"shown": True, "emoji": emoji, "indica_share": indica, "aroma": aroma},
         )
 
+    # The one archived variety (GH-131), last: its catalog attributes are read-only once it
+    # is archived. Hidden, with a price, a threshold and a single opening-stock entry with
+    # no cost on the day the sample's history starts, so no period figure moves.
+    archived = variety("Blue Dream", 13_000)
+    api.call(
+        "PUT",
+        f"/catalog/varieties/{archived}",
+        {"shown": False, "emoji": "🫐", "indica_share": 40, "aroma": "Frutos rojos"},
+    )
+    api.call("PUT", f"/stock/varieties/{archived}/threshold", {"grams": "15"})
+    entry(ago(40), archived, "harvest", "25", None)
+    api.call("POST", f"/varieties/{archived}/archive")
+
     return Sample(
         debtor=nico,
         owing_sale=owing,
@@ -290,6 +304,7 @@ def seed(api: Api, today: date) -> Sample:
         no_entries=mango,
         withdrawal=promotion,
         entry=first_entry,
+        archived=archived,
     )
 
 
