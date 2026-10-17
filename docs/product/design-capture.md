@@ -11,9 +11,15 @@ The evidence a reviewer uses to judge that a screen looks as designed: the desig
 - It also serves when a design guard or a registry test fails and the maintainer must tell a real defect from a broken registry row.
 - Before it (GH-142's follow-up): a one-test edit broke the plan's own invariant, the OnboardingListo row could not reach Listo, the OnboardingListoOscuro crop was clipped, and those two defects had no issue.
 
+**When** I am about to approve the Onboarding restyle from GH-164 and the evidence on the PR covers only some of its screens, **I want** every Onboarding step and "Listo" compared with its design (phone and computer viewports, light and dark, the narrowest phone at 130 % text) and a before/after pair of the restyle, **so I can** approve knowing that only the intended things changed and that nothing a seller reads or taps there moved, without approving on partial evidence or holding the PR.
+
+- Its protagonist is the maintainer, or the reviewer acting for them; the seller is affected only indirectly.
+- It refines onboarding.md criterion 5 and icon-and-text-rule.md criterion 6; it is not a new product job.
+- Before it (GH-164's follow-up): approval rested on two of the seven screens (Bot and Listo); Socio and Categorías were never read; there was no dark theme, no 320 px / 130 % check and no before/after pair.
+
 **When** I review a change against the design capture, **I want** every row of the screens registry to name the screen and the record it actually reaches and captures, **so I can** approve from the capture alone, without checking the registry against the screenshots by hand and without leaving a finding open on an approved head.
 
-- This refines the job above and its criterion 2; it is not a new job. Its protagonist is the same maintainer or reviewer.
+- This refines the first job and its criterion 2; it is not a new job. Its protagonist is the same maintainer or reviewer.
 - Before it (GH-166's follow-up): the light `VariedadArchivada` row declared `/varieties/{low}` while it navigated to `/varieties/{sold_out}` and captured Sir Jack. ADR-0033's cross-check reads both placeholders as `{id}`, so no test saw it, and the reviewer reconciled the row by hand.
 
 **When** I run the design capture over the whole registry, as a before/after run does (ADR-0042), **I want** every row to reach its screen and every capture to pass its font check, **so I can** read a non-zero exit as a real failure and attach the run as evidence without explaining away rows that always fail.
@@ -35,6 +41,14 @@ Success criteria:
 10. **The whole registry runs green.** One `--strict` call over the whole registry, with no `--only`, exits 0. No row is removed, skipped, excused or listed as a known failure to get there.
 11. **Offline captures keep their fonts.** A row that takes the app offline is captured with the page's own fonts applied, and the applied-check runs on it exactly as on every other row.
 12. **Reaching every row costs the seller nothing.** Making a row reach its screen changes only that row's steps, the sample data and the capture tooling under `scripts/design/`, plus the two registry tests within their declared seams. No screen, copy, capability doc or the app's own font loading changes.
+
+Success criteria, the Onboarding restyle's evidence (GH-164 follow-up) (numbered on their own; Metrics cites them as "Onboarding criterion N", and the plain "criterion N" there is the list above).
+
+6. **Every Onboarding screen covered.** Each of the six steps and "Listo" has captures for the phone and computer viewports, in light and dark, plus one phone capture at 320 px with text at 130 %, in light only, all from one `--strict` run that exits 0. A missing screen, a missing side or a one-sided `null` is a failure, never a pass.
+7. **A before/after pair of the restyle.** "Before" is the code without GH-164's change (once it has merged, the merging head with only that change undone, the undo diff in the PR); "after" is the head that merges. Both come from the head's own `comparisons.mjs`, one install, the same Argentina day, fonts pinned, and are compared as raw captures by exact AE with `ae.mjs`. The PR records the installed `@fontsource/plus-jakarta-sans` version.
+8. **Every difference accounted for.** Each non-zero difference, and each difference between the design and the docs, is listed in the PR with its screen and side, as intended (by GH-164's brief) or fixed. Where onboarding.md and the drawing disagree, onboarding.md wins and the drawing is the defect. A difference neither the brief nor the docs can settle goes to Zeta in the PR.
+9. **Nothing clipped.** At 320 px with text at 130 %, no line, control or crop of any step or "Listo" is clipped, and controls stay at least 44 px.
+10. **No seller-visible change beyond a listed fix.** Every suite passes; no test is edited to fit, the two registry tests excepted when rows are added.
 
 ## Behaviour
 
@@ -67,8 +81,10 @@ Success criteria:
 ### Registry rows for Listo
 
 - **Every Listo row reaches Listo the way a seller does**: it starts on an optional step once both required steps are met, on an account of its own in that state, and passes the remaining optional steps as onboarding.md defines them. The account state is setup, not behaviour.
-- **`OnboardingListo`** (the default row) follows that rule, on its own account written by the sample app (`scripts/design/sample_app.py`'s `ONBOARDING_ACCOUNTS`). It does not start at `/onboarding/categories`, does not run the whole flow through step 6, and never clicks "Saltar el resto" on step 6.
+- **Listo has four rows**: phone light, phone dark, computer light and computer dark, so that it is covered on both viewports in both themes like every other Onboarding screen.
+- **`OnboardingListo`** (the default row, phone light) follows that rule, on its own account written by the sample app (`scripts/design/sample_app.py`'s `ONBOARDING_ACCOUNTS`). It does not start at `/onboarding/categories`, does not run the whole flow through step 6, and never clicks "Saltar el resto" on step 6.
 - **`OnboardingListoCompu` and `OnboardingListoOscuro`** keep their accounts, `listo_compu` and `listo_oscuro`.
+- **The computer dark row** (GH-164 follow-up) is new: it follows the registry's dark-twin convention for its name, on an account of its own written by the sample app. Its exact row and account names are the Tech Lead's.
 - **Each Listo entry has a distinct account**; two entries on one account are refused.
 - **Capture accounts are design tooling only**: written by the sample app alone, never by product code or by the seed `muestra.md` is rendered from.
 - **No product rule bends for a capture**: "Saltar el resto" never appears on step 6, and Listo is reached when the last optional step is passed (step 6 by "Seguir").
@@ -76,7 +92,7 @@ Success criteria:
 ### Captured whole
 
 - "Whole" means the entire named section as the design file in `docs/product/design-system/pantallas/` draws it. For Listo that is its title, every step line ("Hecho", or "Para después" with where) and its two actions ("Cargar mi primera venta", "Ir a Inicio"). It never means `muestra.md`, which holds the sample business's figures, not the layout.
-- The same rule holds in light, dark and Compu, each at its own registered width: a clipped section is fixed in the crop, never by widening the screen.
+- The same rule holds in light, dark and Compu (light and dark), each at its own registered width: a clipped section is fixed in the crop, never by widening the screen.
 - The section crop takes the section's whole content, not a narrow label column beside it. Fixing it leaves every crop that already fit unchanged.
 - A crop that cuts any line of the section is a capture defect and is never accepted.
 
@@ -111,22 +127,39 @@ Success criteria:
 
 - The output of one `--strict` call over Inicio* and the Onboarding block, exit 0.
 - For a change that makes a row reach its screen: the output of one `--strict` call over the whole registry with no `--only`, exit 0, and the captures of every row it fixed, judged by eye.
-- The Listo captures in light, dark and Compu, judged by eye.
+- The Listo captures on phone and computer, in light and dark, judged by eye.
 - The list of crops whose result changed: only ones that were clipped.
 - The installed `@fontsource/plus-jakarta-sans` version (ADR-0042).
 - No before/after AE pair is required for a change with no seller-visible difference whose "before" row never reached its screen.
 - For a change that corrects a row's record: the captures of the corrected row and its twin, light and dark, judged by eye, and the audit of every row (rows checked, fixes made, follow-ups linked).
+
+### The Onboarding restyle's evidence (GH-164 follow-up)
+
+- **Screens**: the six Onboarding steps (variety and price, opening stock, header and footer, Telegram bot, partner, expense categories) and "Listo", which has its four rows (phone and computer, light and dark), each reached as above.
+- **Computer** means the Onboarding's one phone-width column captured at the computer viewport; the Onboarding has no computer layout of its own (onboarding.md).
+- **Per screen**: phone and computer, light and dark; plus one phone capture at 320 px with text at 130 %, light only. Each shows its named section whole.
+- **Registry**: every capture is a row of `scripts/design/screens.json`. A missing row is added as design tooling, with the two registry tests as its seams; a row that cannot reach its screen is a defect, never an exemption. Any mechanism for the 130 % text lives in `scripts/design/` only, never in product code.
+- **Before/after**: "before" is the code without GH-164's change; once GH-164 has merged, it is the merging head with only GH-164's own change undone, and the PR shows that undo diff. If undoing it alone changes more than GH-164 did, the PR says so and lists the extra differences for Zeta; nothing more is undone. "After" is the merging head. Both are taken by the head's own `comparisons.mjs`, from one install, on the same Argentina day, fonts pinned, `--strict`; raw captures are compared by exact AE with `ae.mjs`, never the composed sheet.
+- **Judging**: every capture by eye against its design file; every non-zero AE line and every design-vs-docs difference listed with its screen and side as intended (by GH-164's brief) or fixed. Where onboarding.md and the drawing disagree, onboarding.md wins and the drawing is the defect. What neither the brief nor the docs can settle goes to Zeta in the PR.
+- **Mismatches fixed here** only when the fix is CSS only, within the existing tokens (no token value changed), adds no component or colour, and changes nothing a seller reads or does: a clip at 320–430 px or 130 % text, or a step frame that strays from `OnboardingVariedad` and `OnboardingCategorias`. After a fix, both sides are captured again from the fixed head and compared again.
+- **Never fixed here**: a wording difference is never fixed by changing copy (the doc wins, the difference is listed); anything that changes behaviour, copy, steps, actions or routes is split into its own bug and only listed in the PR.
+- **Everything matches**: the PR says so with the evidence; that is a valid outcome.
 
 ## Metrics
 
 No telemetry; read from the PR evidence and from tests.
 
 - **One green run (criterion 1)**: the PR holds the `--strict` output, exit 0.
-- **Reached and whole (criterion 2)**: the three Listo captures are attached, each showing its whole section as the design file draws it, judged by eye; no row captures a screen other than the one it names; every crop that changed was clipped before.
+- **Reached and whole (criterion 2)**: the four Listo captures are attached, each showing its whole section as the design file draws it, judged by eye; no row captures a screen other than the one it names; every crop that changed was clipped before.
 - **Agree (criterion 3)**: `web/src/design/screens.test.ts` and `routes.test.ts` pass with the corrected rule; the plan's invariants and Seams line name both; the PR records no exception.
 - **Nothing a seller sees changes (criterion 4)**: every suite passes; the only edited tests are the two registry tests; the only other edited files are `screens.json`, `screens.mjs`, `sample_app.py` and `comparisons.mjs`; nothing else under `app/` or `web/src/` changes.
 - **No test loosened (criterion 5)**: the real-registry test keeps every guard, and each of these is a tested case: an account on an entry that does not reach Listo fails; a Listo entry with an unwritten account fails; two entries on one account fail.
 - **Run B closed**: the clipped OnboardingListoOscuro crop and the unreachable OnboardingListo row are fixed by the same task; no issue is left open for either.
+- **Onboarding coverage (Onboarding criterion 6)**: the `--strict` output, exit 0; `index.json` holds a result for each of the seven screens at phone and computer in light and dark (Listo's computer dark row included), and each one's 320 px / 130 % capture in light; 0 missing sides.
+- **Onboarding before/after (Onboarding criterion 7)**: `ae.mjs` output for every screen and side is attached, with the undo diff when GH-164 had merged; the PR records the script, the single install, the date and the fontsource version.
+- **Differences accounted for (Onboarding criterion 8)**: every non-zero `ae.mjs` line and every design-vs-docs difference is matched in the PR to "intended" or "fixed": 0 unlisted. Items sent to Zeta are named.
+- **Nothing clipped (Onboarding criterion 9)**: 0 clipped crops, judged by eye on the seven 320 px / 130 % captures.
+- **No seller-visible change (Onboarding criterion 10)**: every suite passes; the only edited tests are the two registry tests; each CSS fix is listed with its screen; each behaviour, copy, step, action or route mismatch is reported with its own bug.
 - **Row tells the truth (criterion 6)**: the light `VariedadArchivada` entry's `path` and `route` name the same placeholder; the same-record rule passes on it and is shown failing on the uncorrected row; it passes the `EntradaStockSinEntradas` rows, whose path names no record, with no exemption listed.
 - **Archived page agrees (criterion 7)**: both registry tests pass; only `screens.test.ts` is edited, with no guard dropped or loosened; the PR records no exception.
 - **Nothing a seller sees changes (criterion 8)**: the diff touches only `scripts/design/screens.json`, `web/src/design/screens.test.ts` and this file; every suite passes; no row's steps change.
@@ -144,6 +177,8 @@ No telemetry; read from the PR evidence and from tests.
 - Making the design comparison a gate step, or any new automated check of a capture.
 - A before/after AE pair for a change with nothing seller-visible to compare.
 - Judging whether a screen looks good: the capture finds unintended differences.
+- A dark capture at 320 px / 130 % text for the Onboarding.
+- Fixing an Onboarding mismatch that changes behaviour, copy, steps, actions or routes inside the evidence task: it is its own bug.
 - Making a light row and its dark twin show the same record.
 - Changing a row's route, steps or sample data to make its declaration truthful: that is a follow-up issue. Changing a row's steps or sample data so it reaches its screen as a seller does is in scope.
 - Any change to ADR-0033's normalisation, or any exemption in the registry cross-check.
