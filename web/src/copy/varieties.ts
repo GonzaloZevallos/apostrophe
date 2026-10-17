@@ -32,6 +32,10 @@ export const THRESHOLD_OVERRIDES: Partial<Record<RefusalCode, string>> = {
   'stock.threshold_invalid': THRESHOLD_INVALID_MESSAGE,
 }
 
+/** Still the Spanish the app had: the Spanish rule (`architecture/copySpanish.ts`) skips a
+ * section that says so. Removed with the section's English wording (ADR-0048). */
+export const PENDING = true
+
 export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'emptyTitle', text: EMPTY_TITLE },
   { kind: 'emptyLine', text: EMPTY_DETAIL },

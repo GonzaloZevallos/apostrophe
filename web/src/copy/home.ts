@@ -23,6 +23,10 @@ export const IMPORT_NOTICE_DISMISS = 'Descartar aviso'
 /** The line under "+ Nueva venta" while the checklist shows and no variety has a price. */
 export const NUEVA_VENTA_MISSING = 'Cargale un precio a una variedad para poder vender'
 
+/** Still the Spanish the app had: the Spanish rule (`architecture/copySpanish.ts`) skips a
+ * section that says so. Removed with the section's English wording (ADR-0048). */
+export const PENDING = true
+
 export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'emptyTitle', text: EMPTY_TITLE },
   { kind: 'emptyLine', text: EMPTY_DETAIL },

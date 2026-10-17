@@ -15,6 +15,10 @@ export function noPriceMessage(varietyName: string): string {
   return `${varietyName} no tiene precio para esa fecha`
 }
 
+/** Still the Spanish the app had: the Spanish rule (`architecture/copySpanish.ts`) skips a
+ * section that says so. Removed with the section's English wording (ADR-0048). */
+export const PENDING = true
+
 export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'emptyLine', text: EMPTY_LIST },
   { kind: 'help', text: OWING_HINT },

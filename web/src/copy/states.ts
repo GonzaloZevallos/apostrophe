@@ -10,6 +10,10 @@ import type { LimitedCopy } from './limits'
 export const SIN_CONEXION_MENSAJE = 'Sin conexión: revisá tu internet y probá de nuevo.'
 export const ERROR_GENERICO_MENSAJE = 'Algo falló. Probá de nuevo.'
 
+/** Still the Spanish the app had: the Spanish rule (`architecture/copySpanish.ts`) skips a
+ * section that says so. Removed with the section's English wording (ADR-0048). */
+export const PENDING = true
+
 export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'notice', text: SIN_CONEXION_MENSAJE },
   { kind: 'notice', text: ERROR_GENERICO_MENSAJE },

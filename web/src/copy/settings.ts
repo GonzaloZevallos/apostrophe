@@ -39,6 +39,10 @@ export const PREVIOUS_PIN_NOTICE =
 
 /** Every always-visible help line of these groups, measured with `SAMPLES`; the screens
  * render `inviteExpiry` itself. Checked by `copy/copyLimits.test.ts`. */
+/** Still the Spanish the app had: the Spanish rule (`architecture/copySpanish.ts`) skips a
+ * section that says so. Removed with the section's English wording (ADR-0048). */
+export const PENDING = true
+
 export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'help', text: inviteExpiry(SAMPLES.date) },
   { kind: 'help', text: CATEGORIES_SAVE_AT_ONCE },

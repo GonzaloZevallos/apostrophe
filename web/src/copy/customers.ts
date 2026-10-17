@@ -13,6 +13,10 @@ export const EMPTY_CUSTOMERS = 'Todavía no agregaste ningún cliente.'
 /** Heads everyone A–Z, under "Te deben" (`Clientes.dc.html`). */
 export const EVERYONE = 'Todos · A–Z'
 
+/** Still the Spanish the app had: the Spanish rule (`architecture/copySpanish.ts`) skips a
+ * section that says so. Removed with the section's English wording (ADR-0048). */
+export const PENDING = true
+
 export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'emptyTitle', text: EMPTY_CUSTOMERS },
   { kind: 'emptyTitle', text: NOBODY_OWES },

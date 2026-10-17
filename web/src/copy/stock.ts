@@ -30,6 +30,10 @@ export function perGramPreview(perGram: string): string {
 }
 
 /** Checked by `copy/copyLimits.test.ts`: placeholders filled from `SAMPLES`. */
+/** Still the Spanish the app had: the Spanish rule (`architecture/copySpanish.ts`) skips a
+ * section that says so. Removed with the section's English wording (ADR-0048). */
+export const PENDING = true
+
 export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'emptyTitle', text: EMPTY_STATE_TITLE },
   { kind: 'emptyLine', text: EMPTY_STATE_DETAIL },

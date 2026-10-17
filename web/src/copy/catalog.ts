@@ -41,6 +41,10 @@ export const OUT_OF_DATE_LINES: Record<PinReason, string> = {
   too_long: OUT_OF_DATE_TOO_LONG_LINE,
 }
 
+/** Still the Spanish the app had: the Spanish rule (`architecture/copySpanish.ts`) skips a
+ * section that says so. Removed with the section's English wording (ADR-0048). */
+export const PENDING = true
+
 export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'emptyTitle', text: EMPTY_STATE_TITLE },
   { kind: 'emptyLine', text: EMPTY_STATE_DETAIL },

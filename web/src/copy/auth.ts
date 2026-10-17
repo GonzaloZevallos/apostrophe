@@ -19,6 +19,10 @@ export const NOT_USABLE_DETAIL = 'Venció o alguien la usó antes. Pedile al neg
 
 /** The always-visible notices here, measured by `copy/copyLimits.test.ts`. The weak-password
  * refusal stays out: it is an inline refusal, aimed at 80 and kept with its fix. */
+/** Still the Spanish the app had: the Spanish rule (`architecture/copySpanish.ts`) skips a
+ * section that says so. Removed with the section's English wording (ADR-0048). */
+export const PENDING = true
+
 export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'notice', text: DEAD_LINK_MESSAGE },
   { kind: 'notice', text: BRAKE_MESSAGE },

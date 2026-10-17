@@ -20,6 +20,10 @@ export const OWN_USE_LABEL = 'Consumo propio'
 const PENDING_ONLY = `${SAMPLES.grams} sin costo`
 const AMOUNT_AND_PENDING = `${SAMPLES.amount} y ${SAMPLES.grams} sin costo`
 
+/** Still the Spanish the app had: the Spanish rule (`architecture/copySpanish.ts`) skips a
+ * section that says so. Removed with the section's English wording (ADR-0048). */
+export const PENDING = true
+
 export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'emptyLine', text: NO_HISTORY_LINE },
   { kind: 'emptyLine', text: EMPTY_MONTH_LINE },
