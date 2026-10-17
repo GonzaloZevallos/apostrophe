@@ -268,7 +268,7 @@ Machine: `nproc` = 16, AMD Ryzen 7 5700U with Radeon Graphics, head `e08228dd44c
 
 Before each run `pgrep -af '(^|/)(pytest|mypy|ruff|vitest|playwright)'` was recorded. It shows two idle `playwright-mcp` servers throughout, and the generator. The precondition "nothing but the generator" was **not always met**: this is a shared machine, other worktrees ran their own e2e, vitest and pytest, and the script waited up to 20 minutes for them to leave before it started each run anyway. The column "other worktrees' test processes" counts the lines that were neither the generator nor `playwright-mcp`. Only runs with 0 had a clean `pgrep`. The load average (1/5/15 min, `/proc/loadavg`) at each start had a 1-minute value of 16 to 52, so the runs were not under one steady load.
 
-**Serial, `workers: 1`.**
+**Serial, `workers: 1`.** Command, one run per row: `/usr/bin/time -f %e npm --prefix web run e2e -- --workers=1`.
 
 | run | started (UTC) | seconds | outcome | Playwright summary | other worktrees' test processes at start | load average at start (1/5/15 min) |
 |---|---|---|---|---|---|---|
@@ -278,13 +278,11 @@ Before each run `pgrep -af '(^|/)(pytest|mypy|ruff|vitest|playwright)'` was reco
 
 2 green of 3; median of the green runs 1360 s; (max - min)/median 57 %.
 
-`/usr/bin/time -f %e npm --prefix web run e2e`
-
-
 The red run is kept in the table with its time and name and left out of the median; it was not re-run; the cause was not investigated. The spread is large: the three runs ran under different foreign load, so the median of two green runs says little.
 
-**Three workers (the configured default).**
+**Three workers (the configured default).** Command, one run per row: `/usr/bin/time -f %e npm --prefix web run e2e`.
 
+| run | started (UTC) | seconds | outcome | Playwright summary | other worktrees' test processes at start | load average at start (1/5/15 min) |
 |---|---|---|---|---|---|---|
 | 1 | 18:21:00 | 508.7 | green | 106 passed (8.3m) | 0 | 32.33 34.47 42.18 |
 | 2 | 18:29:45 | 593.6 | green | 106 passed (9.8m) | 0 | 44.77 45.65 44.06 |
