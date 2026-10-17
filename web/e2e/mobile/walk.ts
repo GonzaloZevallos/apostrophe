@@ -1,23 +1,10 @@
 /** Visits a registry screen and runs its steps; what cannot be reached is recorded, never thrown. */
 
 import type { Page } from '@playwright/test'
-import {
-  resolvePlaceholders,
-  type RegistryScreen,
-  type RegistryStep,
-} from '../../src/mobile-standard/registry.ts'
+import { resolvePlaceholders, type RegistryScreen } from '../../src/mobile-standard/registry.ts'
+import type { WalkStep } from '../../src/mobile-standard/states.ts'
 
 export const STEP_TIMEOUT_MS = 3_000
-
-/**
- * Clicks a control by its text or its accessible name (`aria-label`) without a pointer: for
- * one with no visible text on the phone (an icon link) or one another element covers there
- * today (a list row or a button under the bar at 320 and 246). The cover itself is for the geometry checkers to report, not for the walk to trip on.
- */
-export interface ActivateStep {
-  activate: string
-}
-export type WalkStep = RegistryStep | ActivateStep
 
 /** What the walk visits: a registry screen, or a state with steps of its own. */
 export interface WalkScreen extends Omit<RegistryScreen, 'steps'> {

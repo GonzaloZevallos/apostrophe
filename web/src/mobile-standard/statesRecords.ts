@@ -6,7 +6,15 @@
  * could send is aborted by the walk, and these states stop before one.
  */
 
-import type { WalkState } from './states.js'
+import type { WalkState } from './states.ts'
+
+/*
+ * Configuración's other inner states are not walked, each for a reason: Usuarios' invite
+ * panel and the Integraciones token field exist only after a write the walk aborts (the
+ * invitation is a POST), or never in this fixture (no bot token is saved, so the field is
+ * already open and "Cambiar" is absent). The new-category field is always on its group's
+ * route, which the registry walks.
+ */
 
 /**
  * The first stock entry the sample app seeds (24K Gold, 120 g): entries are numbered in the
@@ -103,6 +111,18 @@ export const RECORDS_STATES: readonly WalkState[] = [
     visible: '¿Borrás el gasto?',
   },
 
+  {
+    screen: 'ConfiguracionCategoriaRenombrar',
+    route: '/settings/expense-categories',
+    steps: [{ click: 'Renombrar' }],
+    visible: 'Guardar',
+  },
+  {
+    screen: 'ConfiguracionCategoriaConfirmarBorrado',
+    route: '/settings/expense-categories',
+    steps: [{ click: 'Eliminar' }],
+    visible: '¿Borrás la categoría?',
+  },
   {
     screen: 'ConfiguracionContrasena',
     route: '/settings/account',

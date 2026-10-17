@@ -57,6 +57,8 @@ export const STATE_NAMES: readonly string[] = [
   'GastoDesdeGastos',
   'GastoEditar',
   'GastoConfirmarBorrado',
+  'ConfiguracionCategoriaRenombrar',
+  'ConfiguracionCategoriaConfirmarBorrado',
   'ConfiguracionContrasena',
 ]
 

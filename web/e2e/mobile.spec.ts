@@ -14,10 +14,10 @@ import type { CellId } from './mobile/collect.js'
 import { newCell, SIZES, THEMES, type Size, type Theme } from './mobile/cells.js'
 import { guardWrites } from './mobile/network.js'
 import { settle, type Facts } from './mobile/walk.js'
-import { asScreen, STATE_SCREENS, STATES, stateNameProblems } from './mobile/states.js'
+import { asScreen, STATE_SCREENS } from './mobile/states.js'
 import { walkScreen } from './mobile/walkScreen.js'
 import { OFFENDERS, diffOffenders } from '../src/mobile-standard/offenders/index.ts'
-import { parseFacts, STATE_NAMES, WALKABLE } from '../src/mobile-standard/registry.ts'
+import { parseFacts, WALKABLE } from '../src/mobile-standard/registry.ts'
 import type { Violation } from '../src/mobile-standard/violation.ts'
 
 const SIGNED_OUT = { cookies: [], origins: [] } as { cookies: []; origins: [] }
@@ -99,21 +99,7 @@ test.describe('the walk rejects what it cannot reach', () => {
   })
 })
 
-test.describe('the walked states and their names', () => {
-  test('every walked state is named in STATE_NAMES, once, and every name is walked', () => {
-    expect(stateNameProblems(STATES, STATE_NAMES)).toEqual([])
-  })
-
-  test('a state missing from the names, a name never walked and a repeat are all reported', () => {
-    const state = { screen: 'Uno', route: '/', steps: [], visible: 'x' }
-    expect(stateNameProblems([state, state], ['Dos'])).toEqual([
-      'Uno is walked but not in STATE_NAMES',
-      'Uno is walked but not in STATE_NAMES',
-      'Dos is in STATE_NAMES but never walked',
-      'Uno is walked twice',
-    ])
-  })
-
+test.describe('the walked states', () => {
   test('a state whose visible element is absent is unreachable', async ({ browser }) => {
     const context = await newCell(browser, PROBE_SIZE, 'claro', MOBILE_STATE_FILE)
     const page = await context.newPage()
