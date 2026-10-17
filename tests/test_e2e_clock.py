@@ -149,6 +149,11 @@ def test_only_the_e2e_app_names_the_offset_variable() -> None:
     assert files_naming_the_variable(REPO_ROOT, ("app", "web/src"), (".py", ".ts", ".tsx")) == set()
     own = {"tests/e2e_app.py", "tests/test_e2e_clock.py"}
     assert files_naming_the_variable(REPO_ROOT, ("tests", "scripts"), (".py",)) == own
+    # The e2e harness: `fixtures.ts` writes it, `env.ts` passes it on, no spec names it.
+    assert files_naming_the_variable(REPO_ROOT, ("web/e2e",), (".ts",)) == {
+        "web/e2e/fixtures.ts",
+        "web/e2e/env.ts",
+    }
 
 
 def test_the_scan_reports_files_that_name_the_variable_by_name_or_constant(
@@ -168,6 +173,20 @@ def test_the_scan_reports_files_that_name_the_variable_by_name_or_constant(
     found = files_naming_the_variable(tmp_path, ("app", "web/src"), (".py", ".ts", ".tsx"))
 
     assert found == {"app/literal.py", "app/imported.py", "web/src/stray.ts"}
+
+
+def test_the_scan_of_the_e2e_folder_reports_a_spec_that_names_the_variable(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "web/e2e").mkdir(parents=True)
+    (tmp_path / "web/e2e/stray.spec.ts").write_text(
+        f"process.env.{CLOCK_OFFSET_VARIABLE} = '1'\n", encoding="utf-8"
+    )
+    (tmp_path / "web/e2e/clean.spec.ts").write_text("export const x = 1\n", encoding="utf-8")
+
+    found = files_naming_the_variable(tmp_path, ("web/e2e",), (".ts",))
+
+    assert found == {"web/e2e/stray.spec.ts"}
 
 
 def _run_module(*args: str) -> subprocess.CompletedProcess[str]:
