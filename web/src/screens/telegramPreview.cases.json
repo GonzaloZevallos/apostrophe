@@ -1,5 +1,5 @@
 [
-  { "input": "hola", "plain": "hola", "spans": [] },
+  { "input": "hello", "plain": "hello", "spans": [] },
   { "input": "a **b** c", "plain": "a b c", "spans": [[2, 1]] },
   {
     "input": "a **b** c **d** e",
@@ -14,8 +14,8 @@
   { "input": "**", "plain": "**", "spans": [] },
   { "input": "", "plain": "", "spans": [] },
   {
-    "input": "👍🏽 **Oferta**",
-    "plain": "👍🏽 Oferta",
-    "spans": [[5, 6]]
+    "input": "👍🏽 **Offer**",
+    "plain": "👍🏽 Offer",
+    "spans": [[5, 5]]
   }
 ]

@@ -115,7 +115,7 @@ def test_a_sheet_with_bulk_prices_and_an_amigo_row_turns_both_switches_on(
     code, out = _import(client, engine, clock, tmp_path, sheet)
 
     assert code == 0
-    assert "Switches turned on: Precio por cantidad, Clientes VIP" in out
+    assert "Switches turned on: Bulk pricing, VIP customers" in out
     assert _switches(client) == (True, True)
     price = client.get("/varieties").json()[0]["current_price"]
     assert (price["list_price"], price["bulk_price"], price["vip_price"]) == (1000, 800, 800)
@@ -130,7 +130,7 @@ def test_the_dry_run_reports_the_switches_and_changes_none(
     code, out = _import(client, engine, clock, tmp_path, sheet, dry_run=True)
 
     assert code == 0
-    assert "Switches turned on: Precio por cantidad, Clientes VIP" in out
+    assert "Switches turned on: Bulk pricing, VIP customers" in out
     assert _switches(client) == (False, False)
     assert client.get("/varieties").json() == []
 
@@ -157,7 +157,7 @@ def test_bulk_prices_without_a_vip_customer_switch_only_bulk_on_and_store_no_vip
     code, out = _import(client, engine, clock, tmp_path, sheet)
 
     assert code == 0
-    assert "Switches turned on: Precio por cantidad\n" in out
+    assert "Switches turned on: Bulk pricing\n" in out
     assert _switches(client) == (True, False)
     price = client.get("/varieties").json()[0]["current_price"]
     assert (price["bulk_price"], price["vip_price"]) == (800, None)
@@ -173,7 +173,7 @@ def test_a_switch_already_on_stays_on_and_is_not_reported(
     code, out = _import(client, engine, clock, tmp_path, sheet)
 
     assert code == 0
-    assert "Switches turned on: Clientes VIP\n" in out
+    assert "Switches turned on: VIP customers\n" in out
     assert _switches(client) == (True, True)
 
 
@@ -242,7 +242,7 @@ def test_a_switch_turned_on_between_the_plan_and_the_write_still_succeeds_with_t
     code, out = _import(client, engine, clock, tmp_path, sheet)
 
     assert code == 0
-    assert "Switches turned on: Precio por cantidad, Clientes VIP" in out
+    assert "Switches turned on: Bulk pricing, VIP customers" in out
     assert _switches(client) == (True, True)
     sale = _only_sale(client)
     assert sale["total"] == 8000
