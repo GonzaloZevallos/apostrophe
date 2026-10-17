@@ -34,19 +34,22 @@ def _variety(client: TestClient, name: str, aroma: str | None = None) -> int:
     created = client.post("/varieties", json={"name": name})
     assert created.status_code == 201, created.text
     variety_id = int(created.json()["id"])
-    client.post(
+    priced = client.post(
         f"/varieties/{variety_id}/prices",
         json={"effective_from": "2026-01-01", "list_price": 9000},
     )
-    client.post(
+    assert priced.status_code == 201, priced.text
+    stocked = client.post(
         "/stock/entries",
         json={"variety_id": variety_id, "origin": "opening_stock", "grams": "50"},
     )
+    assert stocked.status_code == 201, stocked.text
     if aroma is not None:
-        client.put(
+        described = client.put(
             f"/catalog/varieties/{variety_id}",
             json={"shown": True, "emoji": None, "indica_share": None, "aroma": aroma},
         )
+        assert described.status_code == 200, described.text
     return variety_id
 
 
@@ -95,27 +98,45 @@ def test_another_business_never_published(
     assert _ever_published(app, "Otro Negocio") is False
 
 
+def _status(client: TestClient) -> dict[str, object]:
+    response = client.get("/pinned-catalog/status")
+    assert response.status_code == 200, response.text
+    status = response.json()["status"]
+    assert isinstance(status, dict)
+    return status
+
+
 def _upkeep_unchanged(client: TestClient, telegram: FakeTelegram, variety_id: int) -> None:
     # A write that leaves the text as it was: upkeep finds nothing to send.
-    client.put(
+    calls_before = list(telegram.calls)
+    saved = client.put(
         f"/catalog/varieties/{variety_id}",
         json={"shown": True, "emoji": None, "indica_share": None, "aroma": None},
     )
+    assert saved.status_code == 200, saved.text
+    assert telegram.calls == calls_before
+    assert _status(client)["state"] == "up_to_date"
 
 
 def _upkeep_too_long(client: TestClient, telegram: FakeTelegram, variety_id: int) -> None:
     for index in range(1, 18):
         _variety(client, f"Over{index}", aroma="a" * 200)
+    status = _status(client)
+    assert (status["state"], status["reason"]) == ("out_of_date", "too_long")
 
 
 def _upkeep_unreachable(client: TestClient, telegram: FakeTelegram, variety_id: int) -> None:
     telegram.fail_next(TelegramUnreachable(), "edit")
     _rename(client, variety_id, "V1 unreachable")
+    status = _status(client)
+    assert (status["state"], status["reason"]) == ("out_of_date", "telegram_unreachable")
 
 
 def _upkeep_cannot_post(client: TestClient, telegram: FakeTelegram, variety_id: int) -> None:
     telegram.fail_next(BotCannotPost(), "edit")
     _rename(client, variety_id, "V1 cannot post")
+    status = _status(client)
+    assert (status["state"], status["reason"]) == ("out_of_date", "bot_cannot_post")
 
 
 def _upkeep_message_gone(client: TestClient, telegram: FakeTelegram, variety_id: int) -> None:
@@ -123,6 +144,8 @@ def _upkeep_message_gone(client: TestClient, telegram: FakeTelegram, variety_id:
     assert message_id is not None
     telegram.delete(TOKEN, CHANNEL, message_id)
     _rename(client, variety_id, "V1 gone")
+    status = _status(client)
+    assert (status["state"], status["reason"]) == ("out_of_date", "message_gone")
 
 
 def _failed_publicar(client: TestClient, telegram: FakeTelegram, variety_id: int) -> None:
