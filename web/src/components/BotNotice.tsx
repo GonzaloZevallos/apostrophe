@@ -6,35 +6,29 @@
  * No toast: the notice just goes.
  */
 
-import { useState } from "react";
-import { Link } from "react-router";
-import { dismissBotNotice } from "../api/panel";
-import Boton from "./Boton";
+import { useState } from 'react'
+import { Link } from 'react-router'
+import { dismissBotNotice } from '../api/panel'
+import Boton from './Boton'
 
-export default function BotNotice({
-  onDismissed,
-}: {
-  onDismissed: () => void;
-}) {
-  const [pending, setPending] = useState(false);
+export default function BotNotice({ onDismissed }: { onDismissed: () => void }) {
+  const [pending, setPending] = useState(false)
 
   async function dismiss(): Promise<void> {
-    setPending(true);
+    setPending(true)
     try {
-      await dismissBotNotice();
+      await dismissBotNotice()
     } catch {
       // The notice stays: the next Inicio read decides, and a retry is one tap away.
-      setPending(false);
-      return;
+      setPending(false)
+      return
     }
-    onDismissed();
+    onDismissed()
   }
 
   return (
     <section className="aviso-bot">
-      <p className="aviso-bot__texto">
-        Conectá el bot para publicar tu catálogo en Telegram.
-      </p>
+      <p className="aviso-bot__texto">Conectá el bot para publicar tu catálogo en Telegram.</p>
       <div className="aviso-bot__acciones">
         <Link to="/catalogo" className="boton">
           Conectar el bot
@@ -44,5 +38,5 @@ export default function BotNotice({
         </Boton>
       </div>
     </section>
-  );
+  )
 }

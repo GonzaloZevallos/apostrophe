@@ -4,9 +4,9 @@
  * renders `steps` exactly as given and never filters or reorders them.
  */
 
-import { Link } from "react-router";
-import type { SetupStep } from "../api/panel";
-import { STEP_COPY } from "./setupSteps";
+import { Link } from 'react-router'
+import type { SetupStep } from '../api/panel'
+import { STEP_COPY } from './setupSteps'
 
 export default function SetupChecklist({ steps }: { steps: SetupStep[] }) {
   return (
@@ -20,23 +20,17 @@ export default function SetupChecklist({ steps }: { steps: SetupStep[] }) {
             <Link to={STEP_COPY[s.step].to} className="paso-inicial__fila">
               <span
                 className={
-                  s.done
-                    ? "paso-inicial__caja paso-inicial__caja--hecha"
-                    : "paso-inicial__caja"
+                  s.done ? 'paso-inicial__caja paso-inicial__caja--hecha' : 'paso-inicial__caja'
                 }
                 aria-hidden="true"
               />
-              <span className="paso-inicial__texto">
-                {STEP_COPY[s.step].label}
-              </span>
-              {!s.required && (
-                <span className="paso-inicial__etiqueta">Opcional</span>
-              )}
+              <span className="paso-inicial__texto">{STEP_COPY[s.step].label}</span>
+              {!s.required && <span className="paso-inicial__etiqueta">Opcional</span>}
               {s.done && <span className="paso-inicial__hecho">Hecho</span>}
             </Link>
           </li>
         ))}
       </ul>
     </section>
-  );
+  )
 }
