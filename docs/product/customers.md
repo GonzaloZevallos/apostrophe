@@ -22,6 +22,10 @@ VIP and fixing a customer's details serve the same jobs. In a business with VIP 
 
 **When** I run my business from my phone between orders or mid-chat with a customer, several times a day, **I want** the app laid out around what I actually do and how often, **so I can** get back to the customer instead of hunting through menus. (The navigation job, navigation.md: served here by Clientes opening on who owes, with "Cobrar" on every debtor row.)
 
+**When** a customer pays me part or all of what they owe, or between orders I want to know who still owes me and since when, **I want** Clientes to open on who owes me (the total, and each debtor oldest debt first with their balance and since when) and to collect from any of them in one tap, **so I can** keep every balance right and chase the oldest debts first, without opening cards one by one, doing arithmetic or filling in fields I never use.
+
+This refines the payments job and the navigation job above for Clientes (GH-46); it is not a new job. Its protagonist is the seller, on the phone; the computer, with two panes, is the same job on a bigger screen. It has two moments: collecting (the main one: a customer hands over money, mid-chat or at handover) and checking (between orders or at the end of the day). Before it, who owes lived on a separate Te deben screen, collecting a debt took four taps from Clientes, and the customer form asked for a channel (Telegram or WhatsApp) that nothing in the product used.
+
 Success criteria:
 
 1. From the phone, a seller finds an existing customer by part of the name or part of the number, or registers a new one with or without a number, fast enough that a sale with a new customer still takes under a minute.
@@ -34,16 +38,22 @@ Success criteria:
 6. **Nothing regresses for customers who have a number.**
    - Normalisation, the malformed-number refusal, uniqueness (on registering and on editing), search by number and refusals that never echo the number or the name all stay as they are.
    - A number can be removed from a customer, and their sales, payments and balance stay with them.
-7. **No channel.** A customer has no channel (Telegram or WhatsApp): not in the API, the forms, the card or the database. Removing it changes nothing else about any customer.
+7. **No channel.** A customer has no channel (Telegram or WhatsApp): not in the API, the forms, the card, the list, the export or the database. Removing it changes nothing else about any customer.
 8. **VIP follows the switch and is never lost.**
    - While Clientes VIP is off, no VIP mark or field shows on any customer screen.
    - Switched back on, every stored VIP mark is back as it was, including for customers edited while it was off.
+9. **Collect fast.** Registrar cobro opens with the customer chosen in at most 2 taps from any tab root ("Cobrar" on a Clientes row or an Inicio row). A payment is recorded in under a minute, and "Todo" settles the whole balance in one tap. On a computer it takes no more taps than on the phone.
+10. **Who owes, at a glance.** Clientes opens on "Te deben": the total owed, the count line ("1 venta debiendo" or "N ventas debiendo") and every debtor oldest owing-since first, each with balance and "desde dd/mm". Everyone A–Z sits below. Every figure comes from the API and equals Inicio's Te deben block and a direct computation. No scrolling through the A–Z list and no sums.
+11. **The card closes the loop.** From a customer's card the seller sees their balance and account, "Registrar cobro" (when they owe) and "Nueva venta a <name>", with that customer already chosen.
 
 ## Behaviour
 
 - **Customer**: a name, an optional phone number and VIP. A customer is identified by their own record (their id), never by their number. Their balance and owing since are worked out from their sales and payments (`payments.md`) and never stored on the customer.
 - **Name**: required. Trimmed, with inner spaces collapsed, up to 60 characters. Not unique.
-- **No channel**: the former channel (Telegram or WhatsApp) is removed from the domain, the API and the database. A request that still sends one is not a reason to refuse it; the field is simply not part of a customer.
+- **No channel**: the former channel (Telegram or WhatsApp) is removed from the domain, the API, the forms, the card, the list, the export and the database.
+  - A request that still sends one succeeds: the channel is ignored, never stored, and no answer carries it. The seller sees no difference, because no form offers the field.
+  - **The stored values are dropped for good.** The migration that drops the column keeps no copy anywhere; the product cannot bring them back, and the drop cannot be undone from inside it.
+  - **Assumption**: no seller will need the old channel values back; anyone who does can still find the customer by name or number.
 - **VIP**: yes or no, `false` by default. It can be edited.
   - A change applies to sales recorded from then on; sales already recorded keep their stored prices (ADR-0003).
   - In the Ventas list, a sale's VIP badge shows the customer's current status, not how that sale was priced (sales.md).
@@ -72,7 +82,8 @@ Success criteria:
   - An empty query returns every customer.
   - Results are sorted by name.
   - There is no paging, no minimum query length, no VIP filter and no filter for customers without a number.
-- **Storage**: the phone column is nullable; uniqueness within a business applies only to stored numbers. Customers who existed before the number became optional kept their numbers. The channel column is dropped; every other column and every customer's sales, payments and balance stay as they were.
+- **Storage**: the phone column is nullable; uniqueness within a business applies only to stored numbers. Customers who existed before the number became optional kept their numbers. The channel column is dropped by a migration in the single Alembic chain; every other column and every customer's name, number, VIP, sales, payments and balance stay exactly as they were.
+- **Business export** (accounts.md, ADR-0015): it follows the schema, so new exports and the removal's table and column registry carry no channel. Exports written before the change keep what they held; nothing imports an export back. Exported counts still equal deleted counts.
 - **Isolation (ADR-0004)**:
   - The business comes from the session.
   - Another business's customer answers 404 for both reading and editing.
@@ -81,34 +92,39 @@ Success criteria:
 
 ### On screen (Clientes)
 
-- **Clientes** is a tab root (navigation.md). On a computer it is two panes: the list on the left, the selected customer's card on the right.
+- **Clientes** is a tab root (navigation.md). On a computer it is two panes: the list on the left, the selected customer's card on the right. Clientes selects nothing on its own.
 - **The screen opens with two sections**, with no tappable debt figure in its header:
-  1. **"Te deben"**, on top: the total owed, the count line, and every customer whose balance is above $0, oldest owing-since first, each row with "Cobrar" (`payments.md`). With nobody owing it reads "Nadie te debe".
+  1. **"Te deben"**, on top: the total owed, the count line ("1 venta debiendo" or "N ventas debiendo"), and every customer whose balance is above $0, oldest owing-since first, ties by name, each row with "Cobrar" (`payments.md`). With nobody owing it reads a fixed "Nadie te debe", with nothing to tap, above the full A–Z list.
   2. **Everyone, A–Z**, below, sorted by name.
-- **Every row of a customer who owes**, in either section and in search results, shows the amount in amber with "te debe desde dd/mm" under it, never as a chip, and a "Cobrar" button (accessible name "Cobrar a <name>") that opens Registrar cobro with that customer already chosen. Tapping the rest of the row opens the customer's card.
-- **A customer in credit** shows "A favor $ X" in the neutral/blue treatment.
+- Every figure of Te deben comes from the API and equals Inicio's Te deben block; the browser computes nothing.
+- **Every row of a customer who owes**, in either section and in search results, shows the amount in amber with "te debe desde dd/mm" under it, never as a chip, and a "Cobrar" button (accessible name "Cobrar a <name>") that opens Registrar cobro with that customer already chosen, as an entry in the app's history; back or "Cerrar" leaves it in one move. Tapping the rest of the row opens the customer's card.
+- **A customer in credit** never appears in Te deben and counts in no figure. In everyone A–Z they show "A favor $ X" in the neutral/blue treatment, never green or amber.
+- **A customer with a $0 balance** shows nothing about money.
 - **A customer without a number** shows nothing in the number's place: no dash, no empty label, no "Sin teléfono".
 - **The VIP mark** shows on the list and the card only while Clientes VIP is on. While it is off, nothing shows in its place.
-- **Search** by part of the name or of the phone number: while a query is typed, both sections collapse into one flat list sorted by name, matched as above. Clearing the query brings the two sections back.
+- **Search** by part of the name or of the phone number: while a query is typed, both sections collapse into one flat list sorted by name, matched as above; a customer who owes keeps their balance, "te debe desde dd/mm" and "Cobrar". Clearing the query brings the two sections back.
 - **A customer's card** (`ClienteFicha`), a card with "‹ Clientes":
   - phone (only when there is one; with none, the line is left out entirely) and VIP (only while Clientes VIP is on);
-  - "Te debe $ X desde dd/mm" or "A favor $ X", the account, "Registrar cobro" when the balance is above $0, and "Borrar cobro" on later payments (`payments.md`);
+  - "Te debe $ X desde dd/mm" or "A favor $ X" (neither for a $0 balance), the account, "Registrar cobro" only when the balance is above $0, and "Borrar cobro" on later payments (`payments.md`);
   - **"Nueva venta a <name>"**, which opens Nueva venta with that customer already chosen (sales.md). The card shows no "+ Nueva venta".
   - Adding a number later is the card's ordinary edit; there is no prompt to fill it in.
+- **Registrar cobro** (`Cobro`) follows payments.md unchanged and its design, `Cobro.dc.html`, opened with the customer chosen from a debtor row or from the card.
 - **Add and edit**: the one "Nuevo cliente" form of `NuevaVentaCliente`, the same from Clientes and from "Elegir cliente" in Nueva venta.
   - Its fields are "Nombre" (the only one marked required), the phone (optional, and it can be cleared when editing) and VIP. VIP shows only while Clientes VIP is on. There is no channel field.
   - The same form registers a customer from inside a sale, through the "Elegir cliente" sheet, and that customer is used for the sale.
   - It is a form: "Cerrar", and a confirmation when leaving with unsaved changes.
 - **On success**, the toast "Cliente guardado". It never carries a name or a number.
 - **Refusals** show inline on the field, with the domain's fixed string, and keep what was typed. They never repeat the number or the name.
+- **Design**: Clientes, `ClienteFicha`, `Cobro` and `NuevaVentaCliente` match `docs/product/design-system/pantallas/` on phone and computer, in both themes. Where the design's wording differs from the docs, the docs win and the difference is listed in the PR. No state is told by colour alone.
+- **Feedback**: no network shows "Sin conexión", a server error the generic retry, and a customer that is gone follows accounts.md's "Eso ya no está." rule.
 
 ## Metrics
 
 - **Duplicate numbers**: customers sharing one stored number within a business, 0. A database constraint enforces it and a test covers it. (Criterion 2)
 - **No collision without a number**: two or more customers with no number coexist in a business, tested. (Criteria 2, 5)
 - **Normalisation matrix**: every equivalent form resolves to one number, every invalid non-blank form is refused, and a blank value is stored as no number. 100% passing. (Criteria 2, 6)
-- **No echo**: no refusal body or toast contains the submitted number, any of its digit runs, or a customer's name. (Criteria 2, 6)
-- **Isolation coverage**: every customer route sits in the isolation sweep and answers 404 or empty from another business. (Criterion 3)
+- **No echo**: no refusal body or toast contains the submitted number, any of its digit runs, or a customer's name. After a full front run, the console and browser storage hold no name, number or amount. (Criteria 2, 6)
+- **Isolation coverage**: every customer route sits in the isolation sweep and the gated-route test, and answers 404 or empty from another business. (Criterion 3)
 - **Find-or-register time**:
   - registering a new customer from the phone is run through the front (`web/e2e/customers.spec.ts`) and the tap budget holds (`web/e2e/tapBudget.spec.ts`); its duration is not measured by any test;
   - a search answers in under 300 ms with a few dozen customers;
@@ -119,13 +135,26 @@ Success criteria:
 - **No placeholder**: front tests show no phone line, no dash, no empty label and no "Sin teléfono" on the card and the list for a customer without a number. (Criterion 5)
 - **Number removed**: clearing a customer's number keeps their sales, payments and balance unchanged, tested. (Criterion 6)
 - **Migration**: every customer's number is unchanged after the migration that made it optional, tested. (Criterion 6)
-- **No channel (criterion 7)**: after the migration that drops it, no customer answer, form, card or export carries a channel; every customer's name, number, VIP, sales, payments and balance are unchanged, tested.
+- **No channel (criterion 7)**:
+  - after the migration that drops it, no customer answer, form, card, list or export carries a channel;
+  - every customer's name, number, VIP, sales, payments and balance are unchanged before and after it: 0 differences, tested on the single Alembic chain;
+  - a request that still sends a channel succeeds and stores nothing;
+  - channel fields on screen and in the API go from 1 to 0 (the business measure of "one field less");
+  - the business-removal suite passes after the migration: exported count equals deleted count for every kind, every stored field accounts.md lists is present, and no channel is in the file.
 - **VIP follows the switch (criterion 8)**:
   - front tests show no VIP mark on the list or the card, and no VIP field in the form, while Clientes VIP is off;
   - an edit or a request sending VIP while it is off leaves the stored mark unchanged, and a customer created then is not VIP;
   - switching it back on shows every stored mark as before.
-- **Clientes' layout**: front tests show Te deben above everyone A–Z, "Nadie te debe" with nobody owing, "Cobrar" with its accessible name on every debtor row (sections and search results), the search collapsing into one list and the sections returning when it is cleared.
+- **Collect fast (criterion 9)**: the end-to-end front run, phone and computer viewports, taps "Cobrar a <name>" from a Clientes row and from an Inicio row; Registrar cobro opens with the customer chosen in at most 2 taps from every tab root, never more on the computer; "Todo" fills the whole balance in one tap; a payment is recorded from a phone viewport, and one back move returns to the screen it came from. No test measures duration.
+- **Who owes, at a glance (criterion 10)**:
+  - front tests show Te deben above everyone A–Z, the count line in both forms, debtors oldest first with ties by name, and "Nadie te debe" above a full A–Z list when nobody owes;
+  - the total, the count and each debtor's balance and date equal Inicio's block and a direct computation over sales and payments: 0 differences;
+  - customers in credit are in no section and no figure, and show "A favor" only in A–Z.
+- **Clientes' layout**: front tests show "Cobrar" with its accessible name on every debtor row (both sections and search results), the search collapsing into one list sorted by name and the sections returning when it is cleared.
+- **The card (criterion 11)**: front tests and the end-to-end run show "Registrar cobro" only with a balance above $0, and "Nueva venta a <name>" opening Nueva venta with that customer chosen; the card shows no "+ Nueva venta".
+- **No regression**: the existing customers, payments and navigation suites pass with no assertion loosened.
 - **No curl**: the end-to-end front run adds, finds and edits a customer, adds one without a number, opens Registrar cobro from "Cobrar" with the customer chosen, and opens "Nueva venta a <name>" with that customer chosen. (Criterion 4)
+- **Design**: `scripts/design/compare.sh` runs before and after for Clientes, `ClienteFicha`, `Cobro` and `NuevaVentaCliente`, phone and computer, light and dark where the registry has both, attached to the PR and judged by eye, with every difference from the design listed.
 - Balance, account and Te deben figure metrics live in `payments.md`.
 
 ## Out of scope
@@ -134,5 +163,7 @@ Success criteria:
 - Merging duplicates; importing from the spreadsheet (import.md).
 - A new unique key for customers.
 - A VIP filter; a filter, list, badge, sort or prompt for customers without a number.
-- A customer channel, or any replacement for it.
+- A customer channel, or any replacement for it; keeping a copy of the old channel values anywhere.
+- A separate Te deben screen; a tappable debt figure in Clientes' header; any filter or sort of Clientes beyond what is defined here.
+- Importing an old business export back.
 - Other VIP rules (a percent off list); turning Clientes VIP on or off (pricing-settings.md).
