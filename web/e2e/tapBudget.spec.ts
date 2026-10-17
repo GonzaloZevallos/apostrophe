@@ -167,6 +167,18 @@ test('the sale form, Registrar cobro, the catalog and a stock entry open within 
         measure(`payment ${root}`, device, counter.taps)
       }
 
+      // Collecting from any tab root: Clientes through its tab (none from Clientes itself),
+      // then "Cobrar a <name>" on the debtor's row. Two taps at most, never more on a computer.
+      await page.goto(root)
+      counter = { taps: 0 }
+      if (root !== CUSTOMERS) await viaTab(page, counter, computer, 'Clientes')
+      await expectPath(page, CUSTOMERS)
+      await tap(counter, page.getByRole('link', { name: 'Cobrar a Carla Toques' }).first())
+      await expectPath(page, CUSTOMER_PAYMENT)
+      await expect(page.getByRole('button', { name: 'Cerrar' }), label).toBeVisible()
+      await expect(page.locator('.cobro__cliente'), label).toContainText('Carla Toques')
+      measure(`collect ${root}`, device, counter.taps)
+
       await page.goto(root)
       counter = { taps: 0 }
       if (root !== VARIETIES) await viaTab(page, counter, computer, 'Variedades')
