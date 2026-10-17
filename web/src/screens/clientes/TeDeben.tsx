@@ -16,8 +16,9 @@ import Loading from '../../components/Loading'
 import { salesCount } from '../../format/counts'
 import { formatDateShort } from '../../format/dates'
 import { formatMoney } from '../../format/money'
+import { EMPTY_STATES } from '../emptyStates'
 
-export const EMPTY_LIST = 'Nadie te debe.'
+export const EMPTY_LIST = EMPTY_STATES.debtorsList
 
 export default function TeDeben() {
   const { data, isPending, isError, error } = useQuery({

@@ -32,11 +32,12 @@ import PinPublish from './PinPublish'
 import { CATALOG_SAVED } from './settings/messages'
 import { telegramPreview } from './telegramPreview'
 import { MORE } from '../routes'
+import { EMPTY_STATES } from './emptyStates'
 
 export const CATALOG_COPIED = 'Catálogo copiado'
 export const COPY_FAILED_MESSAGE = 'No se pudo copiar.'
-export const EMPTY_STATE_TITLE = 'No hay nada en el catálogo hoy'
-export const EMPTY_STATE_DETAIL = 'No hay nada para copiar todavía'
+export const EMPTY_STATE_TITLE = EMPTY_STATES.catalogTitle
+export const EMPTY_STATE_DETAIL = EMPTY_STATES.catalogDetail
 export const EMOJI_INVALID_MESSAGE = 'Poné exactamente un emoji'
 export const INDICA_SHARE_INVALID_MESSAGE = 'El porcentaje de índica va de 0 a 100'
 export const AROMA_TOO_LONG_MESSAGE = 'El aroma es demasiado largo'

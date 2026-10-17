@@ -40,10 +40,11 @@ import { salesCount } from '../../format/counts'
 import { type DateRange, formatDate, monthRange, todayRange, weekRange } from '../../format/dates'
 import { formatGrams, formatMoney } from '../../format/money'
 import { saleGrams } from '../../sales/grams'
+import { EMPTY_STATES } from '../emptyStates'
 
 export type Period = 'hoy' | 'semana' | 'mes' | 'fechas'
 
-export const EMPTY_LIST = 'Todavía no registraste ninguna venta en este período.'
+export const EMPTY_LIST = EMPTY_STATES.salesList
 
 const PERIOD_LABEL: Record<Period, string> = {
   hoy: 'Hoy',

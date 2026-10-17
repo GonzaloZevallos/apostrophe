@@ -25,11 +25,12 @@ import { readFeedback } from '../../components/feedback'
 import Notice from '../../components/Notice'
 import SinConexion from '../../components/SinConexion'
 import { useCustomerSearch } from './CustomerSearch'
+import { EMPTY_STATES } from '../emptyStates'
 
 export const SEARCH_LABEL = 'Buscar cliente'
 export const SEARCH_PLACEHOLDER = 'Teléfono o nombre'
 export const SEARCHING = 'Buscando…'
-export const EMPTY_LIST = 'Todavía no agregaste ningún cliente.'
+export const EMPTY_LIST = EMPTY_STATES.customersList
 
 export default function Clientes() {
   const { query, setQuery } = useCustomerSearch()

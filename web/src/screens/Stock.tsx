@@ -30,9 +30,10 @@ import { formatGrams, formatMoney } from '../format/money'
 import { detailFor, sideNoteFor } from '../stock/detail'
 import type { Variety } from './Variedades'
 import { get } from '../api/client'
+import { EMPTY_STATES } from './emptyStates'
 
-export const EMPTY_STATE_TITLE = 'Sin entradas de stock'
-export const EMPTY_STATE_DETAIL = 'Cargá tu stock inicial o una compra'
+export const EMPTY_STATE_TITLE = EMPTY_STATES.stockTitle
+export const EMPTY_STATE_DETAIL = EMPTY_STATES.stockDetail
 
 const ORIGIN_LABEL: Record<StockEntry['origin'], string> = {
   purchase: 'Compra',

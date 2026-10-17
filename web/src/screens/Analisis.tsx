@@ -32,9 +32,10 @@ import { formatGrams, formatMoney } from '../format/money'
 import ErrorGenerico from '../components/ErrorGenerico'
 import SinConexion from '../components/SinConexion'
 import { MORE } from '../routes'
+import { EMPTY_STATES } from './emptyStates'
 
-export const NO_HISTORY_LINE = 'Todavía no hay nada para analizar.'
-export const EMPTY_MONTH_LINE = 'No vendiste ni regalaste nada este mes.'
+export const NO_HISTORY_LINE = EMPTY_STATES.analysisNoHistory
+export const EMPTY_MONTH_LINE = EMPTY_STATES.analysisEmptyMonth
 export const VARIETY_TOTAL_NOTE =
   'La tabla de variedades suma las ventas del mes sin el envío.'
 export const SINCE_FIRST_RECORD_LABEL =

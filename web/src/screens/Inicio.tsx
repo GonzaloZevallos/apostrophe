@@ -43,10 +43,10 @@ import { formatDateShort } from '../format/dates'
 import { formatGrams, formatMoney, formatSignedMoney } from '../format/money'
 import { initialsOf } from '../shell/initials'
 import { detailFor, sideNoteFor } from '../stock/detail'
+import { EMPTY_STATES } from './emptyStates'
 
-export const EMPTY_TITLE = 'Arrancá por las variedades'
-export const EMPTY_DETAIL =
-  'Cargá tu primera variedad con su precio. Sin precio no se puede cargar una venta.'
+export const EMPTY_TITLE = EMPTY_STATES.homeVarietiesTitle
+export const EMPTY_DETAIL = EMPTY_STATES.homeVarietiesDetail
 export const PINNED_CATALOG_OUT_OF_DATE = 'Tu catálogo en Telegram está desactualizado'
 
 const PENDING_NOTE = 'incluye costo pendiente'
@@ -269,7 +269,7 @@ function TeDebenBlock({ debts }: { debts: PanelDebts }) {
     return (
       <div className="bloque-deben">
         <span className="rotulo">Te deben</span>
-        <span className="pie">Nadie te debe</span>
+        <span className="pie">{EMPTY_STATES.homeNobodyOwes}</span>
       </div>
     )
   }
