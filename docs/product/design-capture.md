@@ -11,13 +11,25 @@ The evidence a reviewer uses to judge that a screen looks as designed: the desig
 - It also serves when a design guard or a registry test fails and the maintainer must tell a real defect from a broken registry row.
 - Before it (GH-142's follow-up): a one-test edit broke the plan's own invariant, the OnboardingListo row could not reach Listo, the OnboardingListoOscuro crop was clipped, and those two defects had no issue.
 
-Success criteria:
+**When** I review a change whose before/after design capture (`compare.sh` / `comparisons.mjs`) was taken on the shared development machine, where other agents and worktrees are always running, **I want** that capture to count as evidence whatever load the machine was under, **so I can** approve on it without the Developer recording a rule as "unsatisfiable" and shipping past it.
+
+- Same protagonist as the job above; it refines that job and is not a new product job.
+- Before it (GH-150's follow-up): a plan invariant asked for `compare.sh` runs with no foreign load; all six runs had load, so it could never hold, and it was recorded as unsatisfiable and shipped past.
+
+Success criteria, the Listo registry change:
 
 1. **One green run.** One `--strict` call over Inicio* and the Onboarding block exits 0.
 2. **Reached and whole.** Every Onboarding screen the registry lists, Listo in light and dark included, is reached as onboarding.md defines and captured whole. No crop is clipped, and no row captures a screen other than the one it names.
 3. **Registry, tests and plan agree.** The change needs no recorded exception and no test edited outside a declared seam.
 4. **Nothing a seller sees changes.** onboarding.md, navigation.md and every screen read and behave as before, and every test passes. The only edited tests are the two registry tests; the only other edited files are design tooling (`scripts/design/screens.json`, `scripts/design/screens.mjs`, `scripts/design/sample_app.py`, `scripts/design/comparisons.mjs`); no file under `app/` or `web/src/` changes beyond those two tests.
 5. **No test loosened.** A changed registry or enforcement test keeps everything it guarded and states the corrected rule.
+
+Success criteria, captures under load:
+
+6. **Accepted under load.** A before/after captured while the machine carries foreign load is valid evidence. No plan invariant or evidence rule asks for an idle machine, and nothing is recorded as "unsatisfiable" or as an exception.
+7. **Load doesn't change the result.** A commit captured under load and captured idle gives exact AE 0 on every raw capture, design side and built side. If load changes a capture's pixels, that is a capture defect, fixed in the capture, never by asking for an idle machine and never by loosening the comparison.
+8. **The gate is untouched.** The capture stays review evidence judged by eye and is never a gate step. No elapsed-time check is added (ADR-0038).
+9. **Nothing a seller sees changes.** No screen, copy, route or product rule changes. Every suite passes with no test loosened.
 
 ## Behaviour
 
@@ -26,6 +38,7 @@ Success criteria:
 - Fonts are pinned and the design capture never touches the network; `--strict` turns a font or screen-level failure into a non-zero exit, after every screen ran and `index.json` was written (ADR-0042).
 - Each screen writes its composed sheet and its raw design and built captures; a before/after compares the raw captures by exact AE, never the sheet (ADR-0042).
 - A capture is review evidence, judged by eye in the PR. It is never a gate step, and no new automated check is added for it.
+- **A capture's result does not depend on machine load.** No plan invariant or evidence rule asks for an idle machine; a capture taken on the shared, loaded development machine is valid evidence as it stands.
 
 ### Registry rows for Listo
 
@@ -56,10 +69,13 @@ Success criteria:
 
 - A change to `scripts/design/screens.json` rows declares both registry enforcement tests, `web/src/design/screens.test.ts` and `routes.test.ts`, as its seams. Its invariants read "screens.json plus the two registry tests", with the design tooling the change needs named alongside.
 - Any other edited test means the implementation is wrong.
+- No plan invariant asks for an idle or unloaded machine for a capture run.
 
 ### Failures
 
 - A row that cannot reach its screen fails while it steps there, so `--strict` exits non-zero.
+- **A row whose screen has not finished drawing when it is captured fails.** Under `--strict` it gives a non-zero exit, like a row that cannot reach its screen. It is never captured half-drawn and never accepted as a pass. How the capture tells that a screen has finished drawing is the Tech Lead's decision; this file names no mechanism.
+- A difference that machine load causes in a capture's pixels is a capture defect, fixed in the capture; the comparison is never loosened and an idle machine is never asked for.
 - A capture that shows a screen other than its row names, or a clipped section, is caught by eye in review and blocks approval. Neither is ever accepted as a pass.
 - A Listo entry naming an account the sample does not write fails the registry test.
 
@@ -70,6 +86,8 @@ Success criteria:
 - The list of crops whose result changed: only ones that were clipped.
 - The installed `@fontsource/plus-jakarta-sans` version (ADR-0042).
 - No before/after AE pair is required for a change with no seller-visible difference whose "before" row never reached its screen.
+- Captures taken on the loaded shared machine are submitted as they are, with no note about load, no "unsatisfiable" entry and no exception.
+- **Load-independence proof (once, for the change that settled it, GH-150's follow-up)**: the change's base and head are each captured twice, once under foreign load (at least one other worktree's checks running) and once idle (no other check, agent or worktree run, recorded as ADR-0041 records it), all by the head's own `comparisons.mjs`, from one install, on the same Argentina day (ADR-0042). For each commit, `ae.mjs` compares the loaded run with the idle run. It is never repeated as a recurring check or a gate step.
 
 ## Metrics
 
@@ -81,6 +99,11 @@ No telemetry; read from the PR evidence and from tests.
 - **Nothing a seller sees changes (criterion 4)**: every suite passes; the only edited tests are the two registry tests; the only other edited files are `screens.json`, `screens.mjs`, `sample_app.py` and `comparisons.mjs`; nothing else under `app/` or `web/src/` changes.
 - **No test loosened (criterion 5)**: the real-registry test keeps every guard, and each of these is a tested case: an account on an entry that does not reach Listo fails; a Listo entry with an unwritten account fails; two entries on one account fail.
 - **Run B closed**: the clipped OnboardingListoOscuro crop and the unreachable OnboardingListo row are fixed by the same task; no issue is left open for either.
+- **Accepted under load (criterion 6)**: the PR's before/after evidence was taken on the loaded shared machine with no "unsatisfiable" note and no recorded exception; no plan invariant asks for an idle machine.
+- **Load doesn't change the result (criterion 7)**: the PR holds the load-independence proof; for both commits, `ae.mjs` shows exact AE 0 between the loaded and the idle run on every raw capture, design and built side, with no missing or one-sided capture, and exits 0; the installed `@fontsource/plus-jakarta-sans` version is recorded.
+- **Unfinished screen fails**: a deliberately unsettled row under `--strict` exits non-zero and is not captured as a pass, shown once in the PR.
+- **Gate untouched (criterion 8)**: no change to `.agentic/stack.yaml` or CI, no new gate step, no elapsed-time assertion.
+- **Nothing a seller sees changes (criterion 9)**: every suite passes and no test is loosened, read from the diff.
 
 ## Out of scope
 
@@ -89,3 +112,8 @@ No telemetry; read from the PR evidence and from tests.
 - Making the design comparison a gate step, or any new automated check of a capture.
 - A before/after AE pair for a change with nothing seller-visible to compare.
 - Judging whether a screen looks good: the capture finds unintended differences.
+- Requiring an idle or unloaded machine for a capture.
+- Recording the machine's load alongside a capture, or narrowing a capture's claim by it.
+- A pixel tolerance in the comparison.
+- Timed evidence (mypy timings, e2e worker runs): ADR-0038, ADR-0040 and ADR-0041.
+- Re-judging GH-150's capture runs.
