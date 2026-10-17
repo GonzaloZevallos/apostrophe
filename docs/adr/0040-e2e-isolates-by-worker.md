@@ -211,3 +211,25 @@ holds the loaded runs, their maxima and what they do and do not show.
    fixed line and the helper still exits 0. `e2e.sh` exits with Playwright's own status. The
    gate's captured output tail is the evidence this relies on: what the agentic system keeps
    after a red check is outside this repository, so the worktree surviving is a bonus.
+
+### Amendment (GH-251): every worker runs on the anchored clock
+
+8. **The calendar is no longer shared.** This supersedes point 5's reading that the workers
+   and the browser share the real calendar (and ADR-0043's "shares the real clock with the CLI
+   subprocess" reason for `tests/e2e_app.py`). Before its backend starts, each worker's
+   `workerServer` fixture runs `python -m tests.e2e_app offset` once (`cwd` the repository
+   root), checks the output is a whole number and writes it to
+   `APOSTROPHE_E2E_CLOCK_OFFSET` in its own environment. `e2eEnv()` passes it on, so the
+   worker's uvicorn and the `invite-business` and `reset-password` calls
+   (`web/e2e/backend.ts`, now `python -m tests.e2e_app`) read one clock that started at
+   `2026-10-07T15:00:00Z`, 12:00 in Argentina, and keeps advancing. The offset is computed
+   in Python only, so no TypeScript reads the clock. Only `tests/e2e_app.py` reads the
+   variable, only `fixtures.ts` writes it and only `env.ts` passes it on;
+   `tests/test_e2e_clock.py` scans `web/e2e` for it.
+9. **The browser's contexts inherit the zone and locale; no `CONTEXT_DEFAULTS`.** A
+   throwaway spec (not committed), run under `TZ=Pacific/Auckland`, read the zone and
+   `navigator.language` in the fixture's `page` and in a page of a context made by hand with
+   `browser.newContext({ baseURL })`: both `America/Buenos_Aires` and `es-AR`. So the config's
+   `use` stays the only place that names them, and the `newContext` call sites are unchanged.
+10. **`analysis.spec.ts`'s last-month date** is `firstOfMonth(todayIso, 1)`, the file's own
+    UTC helper, instead of local-time `setDate`/`setMonth` over a UTC-parsed date.
