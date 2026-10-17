@@ -129,11 +129,13 @@ page text, sample data, amounts or names, and the page sends back only a hash an
 Under `--strict` the run exits non-zero after every screen ran and `index.json` was written. A
 step that throws used to be only a note, so `--strict` stayed green; it now fails.
 
-**Cost.** `screens.json` has 130 rows, which is at most 578 settles per run (design: first and
-final, 260; built: first, one per step, final, 318; at most 5 steps in a row). Each settle samples
-3 frames typically and 120 at worst, so at most 69,360 frames, each costing one pass over the
-page's elements. A full `--strict` run took 9 min 29 s on a shared machine: documentation only, not
-an assertion.
+**Cost.** `screens.json` has 147 rows, which is at most 678 settles per run, counted from its
+steps (design: first and final, 2 per row, plus one more for each of the 7 `text_scale` rows, 301;
+built: first and final, 2 per row, plus one per step, 76 in all, plus one more for each
+`text_scale` row, 377). Each settle samples 3 frames typically and 120 at worst, so at most 81,360
+frames, each costing one pass over the page's elements. A full `--strict` run of the merged
+registry took 7 min 22 s on a shared machine (an earlier run of the 130-row registry, before
+GH-224 and GH-254 were merged, took 9 min 29 s): documentation only, not an assertion.
 
 **Known risks.**
 
