@@ -77,12 +77,85 @@ arrived over the network, and whether it did varied from run to run.
   and pure apart from `decode`'s use of `pngjs`; the command runs only when the file is the
   entry point. `@types/pngjs` is a dev dependency so the test file type-checks.
 
+## Amendment: a capture is taken only once the page has finished drawing (GH-220)
+
+GH-150's evidence rule asked for `compare.sh` runs on an idle machine, which could never hold on
+a shared one. The defect was in the capture: `settle()` swallowed its `networkidle` timeout,
+waited for no frame and no timer, and left animations running at screenshot time, so what was
+captured depended on machine speed. Machine load is never a condition of valid evidence
+(design-capture.md, criteria 6 to 9).
+
+**Settled, in this order** (this supersedes point 3's "after the final `settle()`"):
+
+1. `networkidle` once after each `goto`, never swallowed: a timeout is a failure.
+2. The applied-check, which also loads the fonts. It runs before the fake clock moves and before
+   any frame is sampled, on every settle.
+3. A paused fake clock advanced by `SETTLE_ADVANCE_MS` (0 on the final settle), then frames of
+   `clock.runFor(16)`, each followed by one `evaluate` in the page. The evaluate awaits the
+   page's in-flight fetch counter at zero, yields one real macrotask (a `MessageChannel`), and
+   answers only a FNV-1a hash of the layout and booleans. A frame is counted only when that
+   counter is zero in that evaluate; `networkidle` is not used as a wait after the first load.
+4. Settled after 3 consecutive counted frames with equal hashes, none with a running finite
+   animation, fonts loaded (`document.fonts.status === 'loaded'`). At most 120 frames are
+   sampled; a fetch that never settles is cut by the evaluate timeout (`TIMEOUT`). Both are
+   bounds on how long the capture waits and assert nothing about duration.
+
+Each side settles after its first load and after each step, then once more with `advanceMs: 0`
+immediately before the screenshot; nothing runs between that settle and the screenshot, and every
+screenshot passes `animations: 'disabled'` and `caret: 'hide'`. The section crop's clip is read
+before that final settle, so the screenshot stays the next call after it.
+
+**The fake clock** is installed and paused before `goto` on both the design and the built
+context, at `<facts.today>T12:00:00-03:00` (Argentina, matching ADR-0042's day). `today` is
+written by `scripts/design/sample_app.py` from the same `date.today()` it seeds with; facts
+without it are a usage error (exit 2), and there is no wall-clock fallback.
+
+**`SETTLE_ADVANCE_MS` is 350**: the smallest advance that fires every debounce or wait whose
+result a capture must show, `KEYBOARD_WAIT_MS` (300 ms, `web/src/shell/keepFocusVisible.ts`) and
+the 150 ms debounces in `Clientes` and `Cobro`.
+
+**The in-flight counter covers `fetch` only**, an init script that wraps `window.fetch` before
+the app loads. That is every request channel the built app uses today:
+`web/src/architecture/forbiddenApis.ts` allows `fetch` only in `api/client.ts` and bans
+`XMLHttpRequest`, and `web/src` has no `lazy(` or `import(`, beacon, `EventSource` or
+`WebSocket`. The first lazy route, or any other request channel, must extend the counter in the
+same diff that adds it.
+
+**A side that did not settle, whose applied-check fails, whose `networkidle` times out or whose
+step throws** goes through `fail(ctx, …)`: that side is `null` in `index.json` and no `.design.png`
+or `.built.png` is written (the sheet `<screen>.png` is still composed and draws "—" for it).
+The note names the side, the step as JSON when a step failed, and a fixed reason; it carries no
+page text, sample data, amounts or names, and the page sends back only a hash and booleans.
+Under `--strict` the run exits non-zero after every screen ran and `index.json` was written. A
+step that throws used to be only a note, so `--strict` stayed green; it now fails.
+
+**Cost.** `screens.json` has 147 rows, which is at most 678 settles per run, counted from its
+steps (design: first and final, 2 per row, plus one more for each of the 7 `text_scale` rows, 301;
+built: first and final, 2 per row, plus one per step, 76 in all, plus one more for each
+`text_scale` row, 377). Each settle samples 3 frames typically and 120 at worst, so at most 81,360
+frames, each costing one pass over the page's elements. A full `--strict` run of the merged
+registry took 7 min 22 s on a shared machine (an earlier run of the 130-row registry, before
+GH-224 and GH-254 were merged, took 9 min 29 s): documentation only, not an assertion.
+
+**Known risks.**
+
+- The collector, the fake clock wiring and the counter have no unit test; only `settle.mjs` does.
+  Two throwaway `--strict` demonstrations in the PR cover them (a rotating spinner settles; an
+  endlessly reflowing block fails with the side `null` and no PNG).
+- SVG children carry no `offset*`, so a change inside an SVG shows only through its HTML ancestors.
+- Three yielded frames is a bound, not a proof, against long chains of React scheduler work.
+- `sample_app.py` reads `date.today()` (the machine's local day) while the browser runs on the
+  Argentina day; near midnight they can differ.
+- If the fake clock stalls actions (a click, fill or select timing out because the page never
+  advances), the task stops and goes back to the Tech Lead; the mechanism is not changed in place.
+
 ## Amendment: text at 130 % and the strict section crop (GH-224)
 
 - **`text_scale` in `screens.json`.** An entry may carry `text_scale` (the one value is
   `TEXT_SCALE` in `scripts/design/textScale.mjs`, 1.3). `comparisons.mjs` applies it on both
-  the design page and the built page, after the final `settle()` and the entry's steps and
-  before the screenshot. It lives only in `scripts/design/`: nothing under `app/` or `web/src`
+  the design page and the built page, after the first `settle()` and the entry's steps; the
+  page then settles again (`SETTLE_ADVANCE_MS`) and the final `settle()` of the GH-220 amendment
+  is still the call right before the screenshot. It lives only in `scripts/design/`: nothing under `app/` or `web/src`
   reads, sets or branches on it. `screens.mjs` validates the field (the `registry-checks`
   subtask), `comparisons.mjs` only reads it.
 - **Verify twice.** The apply is one `page.evaluate` and the first verify a second one right
@@ -91,8 +164,10 @@ arrived over the network, and whether it did varied from run to run.
   re-render can mount elements the stylesheet never saw, and the second verify is what makes
   that a failure instead of a screenshot that says "130 %" over unscaled text. A miss in
   either verify is a note on the sheet and in that screen's `index.json` entry, and a non-zero
-  exit under `--strict`, the same path as a font failure. A note names the side and a count,
-  never page text.
+  exit under `--strict`, the same path as a failed applied-check: that side is `null` and no PNG
+  is written under any name (after the screenshot, the capture is discarded). The first verify
+  runs before the final settle, so nothing runs between that settle and the screenshot. A note
+  names the side and a count, never page text.
 - **Two copies of one model.** `scripts/design/textScale.mjs` repeats the scaling model of
   `web/e2e/helpers/textScale.ts` (GH-104): tag `<html>` and every element under the root, set
   each `font-size` to baseline × factor (`!important`), scale a px `line-height` the same
