@@ -4752,12 +4752,12 @@ body {
   justify-content: center;
   border-radius: 6px;
   border: 2px solid var(--tinta2);
-  color: var(--boton-texto);
 }
 
 .checklist__caja--hecha {
   background: var(--boton);
   border-color: var(--boton);
+  color: var(--boton-texto);
 }
 
 .checklist__caja svg {
