@@ -34,7 +34,6 @@ function json(status: number, body: unknown): Response {
 const FROM_FOOT_LINK: InitialEntry[] = [VARIETIES, { pathname: ARCHIVED_VARIETIES, state: { inApp: true, from: VARIETIES } }]
 const NAMES: Record<number, string> = { 4: 'Alfa Vieja', 5: 'Zeta Vieja' }
 const GRAMS: Record<number, number> = { 4: 7, 5: 3 }
-const NO_STOCK = { total: 0, varieties: [], entries: [] }
 const CATALOG = { text: '', header: '', footer: '', varieties: [] }
 
 type Answers = Record<string, () => Response>
