@@ -168,6 +168,13 @@ describe("parentOf and placeOf, every screen on both viewports", () => {
   });
 });
 
+describe("the screens that are a modal on a computer", () => {
+  test("are the price form and Registrar cobro, and no other: the rail goes only for a declared one", () => {
+    const modals = SCREENS.filter((entry) => entry.modalOnComputer === true).map((entry) => entry.id);
+    expect(modals.sort()).toEqual(["customer-payment", "variety-price-new"]);
+  });
+});
+
 describe("the new stock entry form's parent", () => {
   const VARIEDADES: ParentRef = { id: "varieties", path: "/varieties", title: "Variedades" };
 
