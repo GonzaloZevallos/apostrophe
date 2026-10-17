@@ -16,11 +16,11 @@ const files = import.meta.glob('./**/*.ts', {
 const OWN_PATH = './imports.test.ts'
 
 const NODE_IMPORT = /(?:from|import)\s*\(?\s*['"]node:/
-const REACT_IMPORT = /(?:from|import)\s*\(?\s*['"]react(?:-dom)?(?:\/[^'"]*)?['"]/
+const REACT_IMPORT = /(?:from|import)\s*\(?\s*['"]react(?:-[\w-]+)?(?:\/[^'"]*)?['"]/
 const DOM_TYPE =
   /\b(?:HTMLElement|HTMLInputElement|DOMRect|DOMRectReadOnly|PerformanceObserver|MutationObserver)\b|\b(?:document|window)\./
 const GLOB = /import\.meta\.glob/
-const ANY = /:\s*any\b|\bas any\b|<any>/
+const ANY = /(?:[:<,|&]|\bas|=>)\s*any\b/
 
 function strip(source: string): string {
   return source
@@ -57,6 +57,9 @@ describe('the mobile-standard folder', () => {
     const bad = {
       './a.ts': "import { readFileSync } from 'node:fs'",
       './b.ts': "import { useState } from 'react'",
+      './b2.ts': "import { createBrowserRouter } from 'react-router'",
+      './b3.ts': "import type { RouteObject } from 'react-router/dom'",
+      './e2.ts': 'const xs: Record<string, any> = {}',
       './c.ts': 'const el: HTMLElement | null = null',
       './d.ts': "const all = import.meta.glob('./*.json')",
       './e.ts': 'const x: any = 1',
@@ -66,6 +69,9 @@ describe('the mobile-standard folder', () => {
     expect(importViolations(bad)).toEqual([
       { path: './a.ts', rule: 'node' },
       { path: './b.ts', rule: 'react' },
+      { path: './b2.ts', rule: 'react' },
+      { path: './b3.ts', rule: 'react' },
+      { path: './e2.ts', rule: 'any' },
       { path: './c.ts', rule: 'dom' },
       { path: './d.ts', rule: 'glob' },
       { path: './e.ts', rule: 'any' },
