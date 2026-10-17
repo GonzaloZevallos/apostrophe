@@ -52,3 +52,15 @@ export const firstRunQuery = queryOptions({
   refetchOnMount: true,
   refetchOnWindowFocus: true,
 })
+
+/**
+ * The answer a button may act on: the last one only while the read has not failed. React
+ * Query keeps the last `data` when a refetch fails; a failed read must draw "+ Nueva venta"
+ * and "Mandar catálogo" enabled, as a pending one does, so it is `undefined` then.
+ */
+export function actionableFirstRun(read: {
+  data: FirstRunAnswer | undefined
+  isError: boolean
+}): FirstRunAnswer | undefined {
+  return read.isError ? undefined : read.data
+}

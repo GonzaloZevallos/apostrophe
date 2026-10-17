@@ -5,7 +5,7 @@
  * API answered: nothing here asks the front to decide one.
  */
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClient, QueryClientProvider, focusManager } from '@tanstack/react-query'
 import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { RouterProvider, createMemoryRouter } from 'react-router'
@@ -602,6 +602,22 @@ describe('"Mandar catálogo" and the first-run checklist', () => {
 
     await screen.findByText('24K Gold')
     expect(screen.getByRole('link', { name: 'Mandar catálogo' })).toHaveAttribute('href', CATALOG)
+    expect(screen.queryByText(REASON)).not.toBeInTheDocument()
+  })
+
+  test('is enabled again when a refetch of /first-run fails after an answer', async () => {
+    let reads = 0
+    renderApp(VARIETIES_PATH, {
+      answers: { 'GET /first-run': () => (reads++ === 0 ? json(200, CHECKLIST_EMPTY) : json(500, { code: 'boom' })) },
+    })
+    expect(await screen.findByRole('button', { name: 'Mandar catálogo' })).toBeDisabled()
+
+    act(() => {
+      focusManager.setFocused(false)
+      focusManager.setFocused(true)
+    })
+
+    expect(await screen.findByRole('link', { name: 'Mandar catálogo' })).toHaveAttribute('href', CATALOG)
     expect(screen.queryByText(REASON)).not.toBeInTheDocument()
   })
 

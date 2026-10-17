@@ -21,7 +21,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useLocation, useOutletContext } from 'react-router'
 import { NetworkError, get } from '../api/client'
 import { catalogQueryOptions } from '../api/catalog'
-import { firstRunQuery } from '../api/firstRun'
+import { actionableFirstRun, firstRunQuery } from '../api/firstRun'
 import { keys } from '../api/keys'
 import type { Me } from '../api/me'
 import { readStock, type VarietyStock } from '../api/stock'
@@ -89,7 +89,7 @@ export default function Variedades() {
   })
   const stockQuery = useQuery({ queryKey: keys.stock(), queryFn: readStock })
   const catalogQuery = useQuery(catalogQueryOptions())
-  const firstRun = useQuery(firstRunQuery).data
+  const firstRun = actionableFirstRun(useQuery(firstRunQuery))
   const catalogDisabled = firstRun?.kind === 'checklist' && firstRun.nothing_qualifies
   const archivedCount = useQuery(archivedVarietiesQueryOptions()).data?.length ?? 0
 

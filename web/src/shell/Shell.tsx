@@ -23,7 +23,7 @@
 import { Fragment, useCallback, useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link, Outlet, useMatches, useOutletContext } from 'react-router'
-import { firstRunQuery } from '../api/firstRun'
+import { actionableFirstRun, firstRunQuery } from '../api/firstRun'
 import type { Me } from '../api/me'
 import Icono, { type NombreIcono } from '../components/Icono'
 import InAppLink from '../components/InAppLink'
@@ -147,7 +147,7 @@ const RAIL_MISSING_ID = 'nueva-venta-falta-riel'
  * Asked only where "+ Nueva venta" is drawn; while pending or failed it is `false`, so the
  * button draws normally. The shell decides nothing: it shows the server's answer. */
 function useNuevaVentaMissing(enabled: boolean): boolean {
-  const { data } = useQuery({ ...firstRunQuery, enabled })
+  const data = actionableFirstRun(useQuery({ ...firstRunQuery, enabled }))
   return (
     data?.kind === 'checklist' &&
     data.checklist.some((step) => step.step === 'priced_variety' && !step.done)
