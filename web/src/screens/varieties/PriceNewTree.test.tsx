@@ -27,6 +27,7 @@ const STOCK = {
   varieties: [{ variety_id: 1, grams: 135, status: 'ok', sold_out_since: null, threshold: null, days_left: 270 }],
   entries: [],
 }
+const FIRST_RUN_NONE = { kind: 'none', checklist: [], import_notice: false, nothing_qualifies: false }
 const CATALOG = { text: 'texto', header: '', footer: '', varieties: [] }
 
 type Answers = Record<string, () => Response>
@@ -35,12 +36,14 @@ function defaults(): Answers {
   return {
     'GET /auth/me': () => jsonResponse(200, ME),
     'GET /varieties': () => jsonResponse(200, [VARIETY_ROW]),
+    'GET /varieties?archived=true': () => jsonResponse(200, []),
     'GET /varieties/1': () => jsonResponse(200, VARIETY_ROW),
     'GET /varieties/1/prices': () => jsonResponse(200, HISTORY),
     'GET /pricing-settings': () => jsonResponse(200, SETTINGS_ON),
     'GET /stock': () => jsonResponse(200, STOCK),
     'GET /stock/varieties/1/movements': () => jsonResponse(200, []),
     'GET /catalog': () => jsonResponse(200, CATALOG),
+    'GET /first-run': () => jsonResponse(200, FIRST_RUN_NONE),
   }
 }
 
