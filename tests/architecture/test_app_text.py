@@ -66,7 +66,7 @@ def spanish_in(text: str) -> str | None:
             return character
     for token in re.findall(r"[^\W\d_]+", text.casefold()):
         if token in words:
-            return token
+            return str(token)
     return None
 
 
