@@ -2190,3 +2190,119 @@ button {
     color: var(--tinta2);
   }
 }
+
+/* `SetupChecklist` and `BotNotice` (`results.md`, "Setup checklist" / "Bot notice"):
+ * tokens only, so both themes follow. A done step is told by its ticked box and the
+ * word "Hecho", never by colour alone. */
+.paso-inicial {
+  background: var(--superficie);
+  border-radius: var(--radio-panel-grande);
+  padding: var(--espacio-xl) var(--espacio-lg) var(--espacio-sm);
+}
+
+.paso-inicial__titulo {
+  margin: 0 0 var(--espacio-xs);
+  padding: 0 var(--espacio-xs);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--tinta);
+}
+
+.paso-inicial__lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.paso-inicial__fila {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+  min-height: var(--alto-tocable);
+  padding: var(--espacio-md) var(--espacio-xs);
+  border-bottom: 1px solid var(--linea);
+  color: var(--tinta);
+  text-decoration: none;
+}
+
+.paso-inicial__lista li:last-child .paso-inicial__fila {
+  border-bottom: 0;
+}
+
+.paso-inicial__caja {
+  position: relative;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  box-sizing: border-box;
+  border: 2px solid var(--tinta2);
+  border-radius: 6px;
+}
+
+.paso-inicial__caja--hecha {
+  background: var(--acento);
+  border-color: var(--acento);
+}
+
+.paso-inicial__caja--hecha::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 1px;
+  width: 5px;
+  height: 10px;
+  border: solid var(--papel);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.paso-inicial__texto {
+  flex: 1;
+  font-size: 16px;
+}
+
+.paso-inicial__etiqueta {
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--papel);
+  color: var(--tinta2);
+  padding: 3px 9px;
+  border-radius: var(--radio-pildora);
+}
+
+.paso-inicial__hecho {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--acento);
+}
+
+.aviso-bot {
+  background: var(--acento-suave);
+  border-radius: var(--radio-panel-grande);
+  padding: var(--espacio-lg) var(--espacio-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-md);
+}
+
+.aviso-bot__texto {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--tinta);
+  line-height: 1.4;
+}
+
+.aviso-bot__acciones {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-md);
+}
+
+.aviso-bot__acciones .boton {
+  height: var(--alto-tocable);
+  padding: 0 var(--espacio-xl);
+  font-size: 15px;
+  text-decoration: none;
+}

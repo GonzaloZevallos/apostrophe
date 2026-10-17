@@ -6,7 +6,7 @@
  * session.
  */
 
-import { get } from './client'
+import { get, post } from './client'
 import type { VarietyStock } from './stock'
 
 export interface PanelPeriod {
@@ -88,4 +88,10 @@ export interface PanelAnswer {
 
 export function getPanel(): Promise<PanelAnswer> {
   return get<PanelAnswer>('/panel')
+}
+
+/** `POST /panel/bot-notice/dismissal`: gated, no body, answers 204 every time. One
+ * decision for the whole business, permanent. */
+export function dismissBotNotice(): Promise<void> {
+  return post<void>('/panel/bot-notice/dismissal')
 }
