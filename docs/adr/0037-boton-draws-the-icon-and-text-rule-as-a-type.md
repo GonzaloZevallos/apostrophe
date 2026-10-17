@@ -107,3 +107,40 @@ The guard reads source with regular expressions. It does not see:
 It is a ratchet, not a proof. The follow-up that would close the hole is to make `BotonLink` and a
 typed text-only link the only link components a screen may import.
 `docs/product/icon-and-text-rule.md` does not change.
+
+### Amendment (GH-227): only a record row's single trailing chevron is exempt
+
+This supersedes the sentence above, "A row's trailing `<Icono nombre="chevron" />` says "opens",
+not "do", and is not counted". As written, the guard removed every chevron from a link's body, so
+"Siguiente ›" or a leading chevron passed. The icon and text rule allows a chevron on a record row
+only, as its trailing "opens" mark.
+
+`withoutTrailingChevron` in `closingGuards.ts` is the only place a chevron is exempted, and it is
+decided by the body's structure alone, never by a class name, a path or a list entry. It removes a
+chevron when all of these hold:
+
+- there is **one** chevron, in the exact spelling `<Icono nombre="chevron" />` (whitespace allowed
+  between the tokens as before);
+- it is **last** in the body once trailing whitespace and any number of `{' '}` / `{" "}` are trimmed;
+- it comes **directly after an element**: what precedes it, trimmed the same way, starts with `<`
+  and ends with `>`, so the body is element-led.
+
+Otherwise the body is left as it is, and the usual `<Icono` test flags the link. Flagged:
+
+- a word or an `{expression}` right before the chevron;
+- a leading chevron;
+- any content after the chevron;
+- a body that is only a chevron;
+- a second icon, a second chevron included;
+- a conditional chevron (`{cond && <Icono nombre="chevron" />}`);
+- a variant spelling (`nombre={"chevron"}`, `nombre='chevron'`, an extra prop).
+
+`ACTION_LINKS_LEFT` and `ENTRY_CLASSES` do not change.
+
+#### Known risks added
+
+- A word wrapped in an element before the chevron (`<span>Siguiente</span><Icono nombre="chevron" />`)
+  is not flagged. A test pins it as a known gap that the review owns.
+- Text between elements before the chevron (`<b>a</b> y <b>b</b><Icono nombre="chevron" />` is
+  read as an element-led row).
+- The three gaps above (a helper-drawn icon, a re-exported link, an icon-less action link) stay.

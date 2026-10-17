@@ -194,8 +194,31 @@ export function findRawButtons(files: readonly SourceFile[]): string[] {
  */
 export const ENTRY_CLASSES = ['mas__item', 'ajustes__item'] as const
 
-/** The chevron at the end of a row says "opens", it is not an icon on an action. */
-const ROW_CHEVRON = /<Icono\s+nombre="chevron"\s*\/>/g
+/**
+ * The chevron at the end of a record row says "opens", it is not an icon on an action. Only this
+ * exact spelling counts, and only through `withoutTrailingChevron`: a variant spelling is an icon.
+ */
+const ROW_CHEVRON = String.raw`<Icono\s+nombre="chevron"\s*\/>`
+/** Whitespace or a `{' '}` / `{" "}` spacer, which JSX writes between a row's last element and its chevron. */
+const SPACER = String.raw`(?:\s|\{(?:' '|" ")\})`
+const LEADING_SPACE = new RegExp(`^${SPACER}+`)
+const TRAILING_SPACE = new RegExp(`${SPACER}+$`)
+const TRAILING_CHEVRON = new RegExp(`${ROW_CHEVRON}$`)
+
+/**
+ * The body without its row chevron, when it has one: a single `ROW_CHEVRON`, last once the trailing
+ * spacers are trimmed, directly after an element (what precedes it, trimmed, starts with `<` and
+ * ends with `>`). Anything else (a word or an expression before it, a leading chevron, content
+ * after it, a chevron alone) comes back unchanged, so the chevron is counted as an icon.
+ */
+function withoutTrailingChevron(body: string): string {
+  const trimmed = body.replace(TRAILING_SPACE, '')
+  const chevron = TRAILING_CHEVRON.exec(trimmed)
+  if (chevron === null) return body
+  const before = trimmed.slice(0, chevron.index).replace(LEADING_SPACE, '').replace(TRAILING_SPACE, '')
+  if (!before.startsWith('<') || !before.endsWith('>')) return body
+  return body.slice(0, chevron.index) + body.slice(chevron.index + chevron[0].length)
+}
 
 const LINK_FOLDERS = [inSrc('screens', ''), inSrc('shell', ''), inSrc('components', '')]
 const IN_APP_LINK = inSrc('components', 'InAppLink.tsx')
@@ -253,8 +276,8 @@ export function linkTags(files: readonly SourceFile[]): LinkTag[] {
 }
 
 /**
- * A link that holds an `<Icono` in its own body (a row's trailing chevron aside) draws an action,
- * and only `BotonLink` does.
+ * A link that holds an `<Icono` in its own body draws an action, and only `BotonLink` does. The one
+ * icon that does not count is a record row's single trailing chevron (see `withoutTrailingChevron`).
  * Not flagged: the `ENTRY_CLASSES` rows, and under `shell/` a link with `aria-current`.
  */
 export function findActionLinks(files: readonly SourceFile[]): string[] {
@@ -262,7 +285,7 @@ export function findActionLinks(files: readonly SourceFile[]): string[] {
     const name = to ?? '<unreadable>'
     if (selfClosing) return []
     if (body === undefined) return [`${path}:${line}: cannot read the body of a link (to=${name}), close it`]
-    if (!/<Icono(?=[\s/>])/.test(body.replace(ROW_CHEVRON, ''))) return []
+    if (!/<Icono(?=[\s/>])/.test(withoutTrailingChevron(body))) return []
     if (classTokens(attributes).some((token) => (ENTRY_CLASSES as readonly string[]).includes(token))) return []
     if (path.includes(inSrc('shell', '')) && attributeValue(attributes, 'aria-current') !== undefined) return []
     return [`${path}:${line}: an action drawn as a link (to=${name}), use BotonLink`]
