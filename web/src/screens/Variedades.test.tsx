@@ -143,15 +143,15 @@ describe('the list', () => {
     ])
     expect(rows[0]).toHaveTextContent('24K Gold')
     expect(rows[0]).toHaveTextContent('ok')
-    expect(rows[0]).toHaveTextContent('135 g · 270 days')
+    expect(rows[0]).toHaveTextContent('135 g · 270 días')
     expect(rows[0]).toHaveTextContent('$ 12.000 x g')
     expect(rows[1]).toHaveTextContent('low')
-    expect(rows[1]).toHaveTextContent('18 g · 24 days')
+    expect(rows[1]).toHaveTextContent('18 g · 24 días')
     expect(rows[2]).toHaveTextContent('no entries')
     expect(rows[2]).toHaveTextContent('0 g · Add the first entry')
     expect(rows[2]).toHaveTextContent(NO_PRICE_TODAY)
     expect(rows[3]).toHaveTextContent('sold out')
-    expect(rows[3]).toHaveTextContent('0 g · Sin gramos desde el 01/10')
+    expect(rows[3]).toHaveTextContent('0 g · No grams since 01/10')
   })
 
   test('"Oculta" sits beside the status of a hidden variety, never in its place', async () => {
@@ -190,7 +190,7 @@ describe('the list', () => {
     })
 
     expect(await screen.findByText('Todavía no cargaste ninguna variedad')).toBeInTheDocument()
-    expect(screen.queryByText(/todo ok|sin entradas ·/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/all ok|no entries ·/)).not.toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Mandar catálogo' })).toHaveAttribute('href', CATALOG)
     expect(screen.getByRole('link', { name: 'Nueva variedad' })).toBeInTheDocument()
   })
@@ -218,13 +218,13 @@ describe('the list', () => {
     renderApp(VARIETIES_PATH)
 
     await screen.findByText('24K Gold')
-    const bar = screen.getAllByRole('navigation', { name: 'Navegación' }).at(-1) as HTMLElement
+    const bar = screen.getAllByRole('navigation', { name: 'Navigation' }).at(-1) as HTMLElement
     expect(within(bar).getAllByRole('link').map((link) => link.textContent)).toEqual([
-      'Inicio',
-      'Ventas',
-      'Clientes',
-      'Variedades',
-      'Más',
+      'Home',
+      'Sales',
+      'Customers',
+      'Varieties',
+      'More',
     ])
   })
 

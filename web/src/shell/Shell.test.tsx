@@ -379,7 +379,7 @@ test('the phone reaches Settings in two taps: the More tab, then its Settings en
 
   await userEvent.click(within(bar(container)).getByRole('link', { name: 'More' }))
   await userEvent.click(
-    within(screen.getByRole('navigation', { name: 'Más' })).getByRole('link', { name: /^Settings/ }),
+    within(screen.getByRole('navigation', { name: 'Más' })).getByRole('link', { name: /^Configuración/ }),
   )
 
   expect(screen.getByText(`en ${SETTINGS} inApp=true`)).toBeInTheDocument()

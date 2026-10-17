@@ -184,14 +184,14 @@ test('the form route has no bar and no "Nueva venta"; Gastos has both', async ()
   await screen.findByText("Gastaste en el mes");
   const navsOnGastos = screen.getAllByRole("navigation").length;
   expect(
-    screen.getAllByRole("link", { name: "Nueva venta" }).length,
+    screen.getAllByRole("link", { name: "New sale" }).length,
   ).toBeGreaterThan(0);
 
   await userEvent.click(screen.getByRole("link", { name: "Cargar gasto" }));
   await screen.findByLabelText("Detalle");
 
   expect(
-    screen.queryByRole("link", { name: "Nueva venta" }),
+    screen.queryByRole("link", { name: "New sale" }),
   ).not.toBeInTheDocument();
   expect(screen.getAllByRole("navigation")).toHaveLength(navsOnGastos - 1);
 });
