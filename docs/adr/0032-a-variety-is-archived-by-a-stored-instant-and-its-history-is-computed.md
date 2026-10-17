@@ -61,3 +61,23 @@ shown flag, emoji, indica share and aroma had no read.
   (`archived()`); only `SqlCatalogVarieties` imports `app.varieties`.
 - Its cost is one business's archived varieties plus their attributes rows, in two
   statements, whatever the count.
+
+### Restore from the archived page: where it lands, and in what order
+
+- **`restoreLanding(archivedByName, id)` is the only code that picks the landing**: the next
+  archived variety by name, otherwise the previous one, otherwise `null`, or `unknown` when
+  the archived list is not in the cache.
+- **`restoreFromPage` runs in a fixed order**: the restore request; the landing; the id
+  dropped from the cached archived varieties list and from the `/catalog/archived` list
+  (`setQueryData`); the toast armed to show on the next location (`showNow` would be
+  dismissed by the navigation); the navigation; last, `invalidateResource` with
+  `refetchType: 'none'` for varieties and stock. No active query is read again before the
+  page is gone, so it never redraws as the live variety.
+- **Where it navigates**: on a computer, `replace` to the landing variety, or to `/varieties`
+  with none left; on a phone, back in history when the page was reached in-app (`useBackOr`),
+  otherwise `replace` to `/varieties/archived`; with an `unknown` landing, `replace` to
+  `/varieties/archived`. The Archivadas card, opened by a link of the app with its loaded
+  list empty, replaces its own entry with `/varieties`, so an empty Archivadas is never
+  shown to someone who walked in; a typed address still reads the fixed line.
+- **Restoring a variety that is already live is a success**: the endpoint answers 200;
+  only `variety.not_found` fails.
