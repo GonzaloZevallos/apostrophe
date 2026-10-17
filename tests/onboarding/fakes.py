@@ -42,6 +42,7 @@ class FakeFacts:
     stocked: set[int] = field(default_factory=set)
     entries: int = 0
     bot_saved: bool = False
+    published: bool = False
     users: int = 1
 
     def varieties(self) -> list[VarietyFact]:
@@ -55,6 +56,9 @@ class FakeFacts:
 
     def is_bot_saved(self) -> bool:
         return self.bot_saved
+
+    def has_ever_published(self) -> bool:
+        return self.published
 
     def user_count(self) -> int:
         return self.users

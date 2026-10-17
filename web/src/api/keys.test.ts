@@ -26,6 +26,10 @@ describe('keys', () => {
     expect(keys.expenseCategories()).toEqual(['expense-categories'])
   })
 
+  test('the first-run read keys outside every resource prefix', () => {
+    expect(keys.firstRun()).toEqual(['first-run'])
+  })
+
   test('a customer\'s account and the debtors list key under "payments"', () => {
     expect(keys.customerAccount('1')).toEqual(['payments', 'account', '1'])
     expect(keys.debtors()).toEqual(['payments', 'debtors'])
