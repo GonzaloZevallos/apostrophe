@@ -95,6 +95,12 @@ def file_engine(tmp_path: Path) -> Engine:
 
 
 @pytest.fixture
+def clock() -> MovableClock:
+    """The one clock the app, its invitations and the seeded rows all run on."""
+    return MovableClock(NOW)
+
+
+@pytest.fixture
 def app(file_engine: Engine, clock: MovableClock) -> FastAPI:
     return create_app(
         SETTINGS,
@@ -130,12 +136,12 @@ def _issue_join_invitation(engine: Engine, business_id: int, now: datetime) -> s
 
 
 def _seed_join_invitations(
-    client: TestClient, engine: Engine, clock: MovableClock, business_id: int
+    client: TestClient, engine: Engine, business_id: int, clock: MovableClock
 ) -> None:
     """A pending, a used and an expired join invitation for one business (round-3
     Q1's three statuses), so the delete is proven to sweep all of them, whatever their
     status."""
-    today = clock()  # the app under test runs on this same clock.
+    today = clock()
     _issue_join_invitation(engine, business_id, today)  # left pending, never accepted.
 
     used_token = _issue_join_invitation(engine, business_id, today)
@@ -145,8 +151,8 @@ def _seed_join_invitations(
     )
     assert accepted.status_code == 201, accepted.text
 
-    # Issued well before its 7-day lifetime, so it is already expired as of the app's
-    # own clock, without moving it.
+    # Issued well before its 7-day lifetime, so it is already expired as of today,
+    # without moving the clock.
     _issue_join_invitation(engine, business_id, today - timedelta(days=30))
 
 
@@ -179,7 +185,7 @@ def seeded(
         leaving = signed_in(client, leaving_token)
         leaving_records = _seed_everything(leaving, "leaving@example.com")
         leaving_business_id = _business_id(file_engine, "leaving@example.com")
-        _seed_join_invitations(leaving, file_engine, clock, leaving_business_id)
+        _seed_join_invitations(leaving, file_engine, leaving_business_id, clock)
         _seed_withdrawal(leaving, leaving_records["variety_id"])
 
         staying = signed_in(client, staying_token)

@@ -11,7 +11,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
-import { SIN_CONEXION_TITULO } from '../components/SinConexion'
+import { SIN_CONEXION_MENSAJE } from '../components/estadosMessages'
 import { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import GatedLayout from './GatedLayout'
 
@@ -48,7 +48,7 @@ test('a dropped network on GET /auth/me shows "Sin conexión", not a blank page'
 
   renderGated()
 
-  expect(await screen.findByText(SIN_CONEXION_TITULO)).toBeInTheDocument()
+  expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
   expect(screen.queryByText('contenido del negocio')).not.toBeInTheDocument()
 })
 

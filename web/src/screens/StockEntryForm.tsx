@@ -5,8 +5,10 @@
  * cost-per-gram preview, the owner's refusals, the edit confirmation and the delete
  * confirmation, all through the owner's routes (`api/stock`). It owns no chrome and no
  * navigation: the host learns what happened through `onSaved`, `onDeleted`, `onGone` and
- * `onDirtyChange`. A `fixedVarietyId` locks the variety and a `fixedOrigin` removes the
- * choice of origin; a host that only wants a starting point passes the `preselected*` ones.
+ * `onDirtyChange`. A `fixedVarietyId` with a `fixedOrigin` is the locked form (only a new
+ * entry can be locked: the types say so): the variety is named, the origin is a static chip,
+ * the date is `today` and implied, and only the grams and the optional total cost are asked.
+ * A host that only wants a starting point passes the `preselected*` ones.
  * Its dialogs sit inline after the form, or in `dialogHost` when the host wants them
  * elsewhere in its own markup.
  */
@@ -28,13 +30,12 @@ import { parseMoney, parseSignedGrams } from '../format/parse'
 import type { Variety } from './Variedades'
 import { varietiesByName } from './varieties/varietiesByName'
 import Boton from '../components/Boton'
-import { COST_REQUIRED_HELP, onHandHelp, perGramPreview } from './stockMessages'
+import { COST_REQUIRED_HELP, GRAMS_INVALID, OPENING_COST_HINT, onHandHelp, perGramPreview } from './stockMessages'
 
 export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
 export const COST_REQUIRED = 'Una compra necesita un costo total'
 export const COST_ON_NEGATIVE = 'Un ajuste negativo no lleva costo'
 export const DATE_IN_FUTURE = 'La fecha no puede ser futura'
-export const GRAMS_INVALID = 'Revisá los gramos cargados'
 
 const ORIGIN_OPTIONS: { value: Origin; label: string }[] = [
   { value: 'purchase', label: 'Compra' },
@@ -52,18 +53,12 @@ const FIELD_OVERRIDES: Partial<Record<RefusalCode, string>> = {
   'stock.note_too_long': GENERIC_REFUSAL,
 }
 
-export interface StockEntryFormProps {
-  mode: 'nuevo' | 'editar'
+interface CommonProps {
   today: string
-  /** The entry being edited (`mode="editar"`). */
-  initial?: StockEntry
   entryId?: string
   /** A starting choice the person can still change. */
   preselectedVarietyId?: number
   preselectedOrigin?: Origin
-  /** A choice the person cannot change: the variety is locked, the origin is not offered. */
-  fixedVarietyId?: number
-  fixedOrigin?: 'opening_stock'
   /** Called after the entry is saved (and the stock queries marked stale). */
   onSaved: () => void
   /** Called after the entry is deleted (and the stock queries marked stale). */
@@ -75,6 +70,27 @@ export interface StockEntryFormProps {
   /** Where the dialogs go; inline after the form when absent. */
   dialogHost?: HTMLElement | null
 }
+
+/** The owner's form: a new entry or an edit, nothing locked. */
+interface OpenProps extends CommonProps {
+  mode: 'nuevo' | 'editar'
+  /** The entry being edited (`mode="editar"`). */
+  initial?: StockEntry
+  fixedVarietyId?: undefined
+  fixedOrigin?: undefined
+}
+
+/** The locked form: only a new entry, with no starting entry, can lock its variety and origin. */
+interface LockedProps extends CommonProps {
+  mode: 'nuevo'
+  initial?: undefined
+  /** The variety is named, not chosen. */
+  fixedVarietyId: number
+  /** The origin is a static chip, not offered. */
+  fixedOrigin: 'opening_stock'
+}
+
+export type StockEntryFormProps = OpenProps | LockedProps
 
 export default function StockEntryForm({
   mode,
@@ -288,16 +304,15 @@ export default function StockEntryForm({
   return (
     <>
       <form className="formulario" onSubmit={onSubmit}>
-        <label className="campo">
-          <span className="campo__rotulo">Fecha</span>
-          <input
-            className="campo__input"
-            type="date"
-            value={date}
-            onChange={(event) => setDate(event.target.value)}
-            required
-          />
-        </label>
+        {fixedVarietyId !== undefined ? (
+          <>
+        <div className="campo">
+          <span className="campo__rotulo">Variedad</span>
+          <span className="campo__valor">{varietyName}</span>
+          {varietyGrams !== null && (
+            <span className="campo__ayuda" data-copy="help">{onHandHelp(formatGrams(varietyGrams))}</span>
+          )}
+        </div>
         <label className="campo">
           <span className="campo__rotulo">Gramos</span>
           <input
@@ -308,44 +323,11 @@ export default function StockEntryForm({
             required
           />
         </label>
-        <label className="campo">
-          <span className="campo__rotulo">Variedad</span>
-          <select
-            className="campo__input"
-            value={varietyId}
-            onChange={(event) => setVarietyId(event.target.value)}
-            disabled={fixedVarietyId !== undefined}
-            required
-          >
-            <option value="">Elegí una variedad</option>
-            {varietiesByName(pickable).map((variety) => (
-              <option key={variety.id} value={variety.id}>
-                {variety.name}
-              </option>
-            ))}
-          </select>
-          {varietyGrams !== null && (
-            <span className="campo__ayuda" data-copy="help">{onHandHelp(formatGrams(varietyGrams))}</span>
-          )}
-        </label>
-        {fixedOrigin === undefined && (
-          <fieldset className="campo">
-            <legend className="campo__rotulo">Origen</legend>
-            <div className="origen-pildoras">
-              {ORIGIN_OPTIONS.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  className={origin === option.value ? 'pildora pildora--activa' : 'pildora'}
-                  aria-pressed={origin === option.value}
-                  onClick={() => setOrigin(option.value)}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          </fieldset>
-        )}
+        <div className="campo">
+          <div className="origen-pildoras">
+            <span className="pildora pildora--activa pildora--fija">Stock inicial</span>
+          </div>
+        </div>
         <label className="campo">
           <span className="campo__rotulo">Costo total</span>
           <input
@@ -354,17 +336,90 @@ export default function StockEntryForm({
             value={totalCost}
             onChange={(event) => setTotalCost(event.target.value)}
           />
-          <span className="campo__ayuda" data-copy="help">{COST_REQUIRED_HELP}</span>
+          <span className="campo__ayuda" data-copy="help">{OPENING_COST_HINT}</span>
         </label>
-        <label className="campo">
-          <span className="campo__rotulo">Nota</span>
-          <input
-            className="campo__input"
-            value={note}
-            maxLength={200}
-            onChange={(event) => setNote(event.target.value)}
-          />
-        </label>
+          </>
+        ) : (
+          <>
+            <label className="campo">
+              <span className="campo__rotulo">Fecha</span>
+              <input
+                className="campo__input"
+                type="date"
+                value={date}
+                onChange={(event) => setDate(event.target.value)}
+                required
+              />
+            </label>
+            <label className="campo">
+              <span className="campo__rotulo">Gramos</span>
+              <input
+                className="campo__input"
+                inputMode="decimal"
+                value={grams}
+                onChange={(event) => setGrams(event.target.value)}
+                required
+              />
+            </label>
+            <label className="campo">
+              <span className="campo__rotulo">Variedad</span>
+              <select
+                className="campo__input"
+                value={varietyId}
+                onChange={(event) => setVarietyId(event.target.value)}
+                disabled={fixedVarietyId !== undefined}
+                required
+              >
+                <option value="">Elegí una variedad</option>
+                {varietiesByName(pickable).map((variety) => (
+                  <option key={variety.id} value={variety.id}>
+                    {variety.name}
+                  </option>
+                ))}
+              </select>
+              {varietyGrams !== null && (
+                <span className="campo__ayuda" data-copy="help">{onHandHelp(formatGrams(varietyGrams))}</span>
+              )}
+            </label>
+            {fixedOrigin === undefined && (
+              <fieldset className="campo">
+                <legend className="campo__rotulo">Origen</legend>
+                <div className="origen-pildoras">
+                  {ORIGIN_OPTIONS.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      className={origin === option.value ? 'pildora pildora--activa' : 'pildora'}
+                      aria-pressed={origin === option.value}
+                      onClick={() => setOrigin(option.value)}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+            )}
+            <label className="campo">
+              <span className="campo__rotulo">Costo total</span>
+              <input
+                className="campo__input"
+                inputMode="numeric"
+                value={totalCost}
+                onChange={(event) => setTotalCost(event.target.value)}
+              />
+              <span className="campo__ayuda" data-copy="help">{COST_REQUIRED_HELP}</span>
+            </label>
+            <label className="campo">
+              <span className="campo__rotulo">Nota</span>
+              <input
+                className="campo__input"
+                value={note}
+                maxLength={200}
+                onChange={(event) => setNote(event.target.value)}
+              />
+            </label>
+          </>
+        )}
         {formError !== null && (
           <span className="campo__error" role="alert">
             {formError}

@@ -20,7 +20,7 @@ from app.accounts.adapters.router import invitation_url, reset_url
 from app.accounts.adapters.sql_accounts import SqlAccounts
 from app.accounts.application.invitations import invite_new_business
 from app.accounts.application.reset_password import issue_reset_link
-from app.clock import system_clock
+from app.clock import Clock, system_clock
 from app.db import make_engine
 from app.migrations.runner import upgrade_to_head
 from app.settings import Settings
@@ -28,7 +28,7 @@ from app.settings import Settings
 NO_USER_MESSAGE = "no user for that email"
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(argv: list[str] | None = None, *, clock: Clock = system_clock) -> int:
     parser = argparse.ArgumentParser(prog="apostrophe")
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("invite-business", help="print a link that opens one new business")
@@ -44,8 +44,8 @@ def main(argv: list[str] | None = None) -> int:
         upgrade_to_head(engine)
         with Session(engine) as session:
             if args.command == "invite-business":
-                return _invite_business(session, settings)
-            return _reset_password(session, settings, args.email)
+                return _invite_business(session, settings, clock)
+            return _reset_password(session, settings, args.email, clock)
     except SystemExit:
         raise
     except BaseException as exc:
@@ -54,15 +54,15 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
 
-def _invite_business(session: Session, settings: Settings) -> int:
-    issued = invite_new_business(SqlAccounts(session), session, system_clock())
+def _invite_business(session: Session, settings: Settings, clock: Clock) -> int:
+    issued = invite_new_business(SqlAccounts(session), session, clock())
     sys.stdout.write(f"{invitation_url(settings.public_url, issued.token)}\n")
     sys.stdout.write(f"Valid once, until {issued.expires_at:%Y-%m-%d %H:%M} UTC.\n")
     return 0
 
 
-def _reset_password(session: Session, settings: Settings, email: str) -> int:
-    issued = issue_reset_link(SqlAccounts(session), session, email, system_clock())
+def _reset_password(session: Session, settings: Settings, email: str, clock: Clock) -> int:
+    issued = issue_reset_link(SqlAccounts(session), session, email, clock())
     if issued is None:
         session.rollback()
         sys.stderr.write(f"{NO_USER_MESSAGE}\n")

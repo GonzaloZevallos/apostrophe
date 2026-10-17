@@ -11,6 +11,7 @@ import { SALE_NEW, VARIETIES } from '../src/routes.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
 import { signUpNewBusiness } from './helpers/signup.js'
+import { uniqueTag } from './helpers/unique.js'
 
 const VIEWPORTS = [
   { name: 'phone', width: 390, height: 844 },
@@ -28,8 +29,8 @@ for (const viewport of VIEWPORTS) {
       const consoleMessages: string[] = []
       watchConsole(page, consoleMessages)
       await signUpNewBusiness(page, {
-        businessName: `Archivo ${viewport.name} ${Date.now()}`,
-        email: `archivo-${viewport.name}-${Date.now()}@example.com`,
+        businessName: `Archivo ${viewport.name} ${uniqueTag()}`,
+        email: `archivo-${viewport.name}-${uniqueTag()}@example.com`,
       })
 
       async function addVariety(name: string): Promise<void> {
@@ -78,13 +79,13 @@ for (const viewport of VIEWPORTS) {
         await expect(page).toHaveURL(/\/varieties\/[0-9]+$/)
       } else {
         await expect(page).toHaveURL(/\/varieties\/archived$/)
-        await expect(page.getByRole('link', { name: '‹ Variedades' })).toBeVisible()
+        await expect(page.getByRole('button', { name: '‹ Variedades' })).toBeVisible()
         await page.getByRole('link', { name: /Rosa/ }).click()
       }
       // The archived page's own heading, on both viewports (a phone has no Rosa link here).
       await expect(page.getByRole('heading', { name: 'Rosa' })).toBeVisible()
-      await expect(page.getByRole('link', { name: '‹ Archivadas' })).toBeVisible()
-      await expect(page.locator('.variedad-resumen').getByText('Archivada', { exact: true })).toBeVisible()
+      await expect(page.getByRole('button', { name: '‹ Archivadas' })).toBeVisible()
+      await expect(page.locator('.variedad-resumen--archivada + .variedad-marcas').getByText('Archivada', { exact: true })).toBeVisible()
       await expect(page.getByText('+ Entrada')).toHaveCount(0)
       await expect(page.getByText('Nuevo precio')).toHaveCount(0)
       await expect(page.getByText('Sacar del stock')).toHaveCount(0)
@@ -95,13 +96,16 @@ for (const viewport of VIEWPORTS) {
 
       // Phone: back goes to Archivadas. Then Restaurar: one tap, no confirmation.
       if (!computer) {
-        await page.getByRole('link', { name: '‹ Archivadas' }).click()
+        await page.getByRole('button', { name: '‹ Archivadas' }).click()
         await expect(page).toHaveURL(/\/varieties\/archived$/)
         await page.getByRole('link', { name: /Rosa/ }).click()
       }
       await page.getByRole('button', { name: 'Restaurar' }).last().click()
+      // The page never turns into the live variety: it goes back, and with none archived left
+      // lands on Variedades, where the restored variety is listed.
       await expect(page.getByText('Variedad restaurada')).toBeVisible()
-      await expect(page.getByRole('button', { name: 'Archivar variedad' })).toBeVisible()
+      await expect(page.getByRole('link', { name: /Rosa/ })).toBeVisible()
+      await expect(page.getByText(/Archivadas \(/)).toHaveCount(0)
       await page.goto(VARIETIES)
       await expect(page.getByRole('link', { name: /Rosa/ })).toBeVisible()
       await expect(page.getByText(/Archivadas \(/)).toHaveCount(0)

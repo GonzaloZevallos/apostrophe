@@ -16,3 +16,6 @@ __pycache__/
 
 # Vitest run cache written at the repo root by runs from web/.
 node_modules/
+
+# Playwright run directories (GH-251): junit, traces and screenshots of a run.
+web/test-results/

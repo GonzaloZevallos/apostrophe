@@ -113,6 +113,10 @@ impreso no es el calculado. Si cambiás un color, cambiá la fila.
 | `--deuda2` | general | `--superficie` | 5,19 | 5,68 |  |
 | `--deuda2` | general | `--deuda-fondo` | 4,86 | 5,41 |  |
 | `--deuda2` | general | `--acento-suave` | 5,12 | 5,26 |  |
+| `--critico` | general | `--papel` | 13,91 | 11,80 |  |
+| `--critico` | general | `--superficie` | 12,44 | 10,49 |  |
+| `--critico` | general | `--deuda-fondo` | 11,64 | 9,99 |  |
+| `--critico` | general | `--acento-suave` | 12,28 | 9,71 |  |
 | `--boton-texto` | par | `--boton` | 15,97 | 15,80 |  |
 | `--critico-texto` | par | `--critico` | 12,59 | 11,13 |  |
 | `--nav-inactivo` | par | `--papel` | 4,69 | 4,97 | `.bar-inferior__item` |
@@ -143,6 +147,18 @@ esta regla, nunca una pantalla suelta.
   Efectivo · Transferencia · Debiendo, Claro · Oscuro…) y Deshacer.
 - **Ícono + texto**: todo lo demás. El ícono al lado de una palabra es decorativo
   (`aria-hidden`), así que el nombre accesible sigue siendo la palabra.
+  - **Crítica**: "Eliminar variedad" (`tacho`) es ícono + texto en contorno de 2 px,
+    sin relleno, con texto e ícono en `--critico` (texto general: filas de la tabla de
+    arriba). El relleno `--critico` con `--critico-texto` queda sólo para la respuesta
+    de una confirmación. Dibujada en `pantallas/VariedadDetalle.dc.html`.
+- **Aviso tocable**: un aviso que el vendedor toca para abrir lo que señala, como
+  "Seguí con la configuración" en Inicio. No es una fila de acción ni un control de
+  ninguna de las dos listas, y no las cambia.
+  - Conserva su tarjeta tal como está diseñada: su fondo, sus esquinas redondeadas y
+    su propio relleno, sin el espaciado ni el divisor de una fila.
+  - Su frase lleva el significado, y su nombre accesible es su texto visible.
+  - Su flecha es la marca decorativa de que abre algo; no lleva otro ícono, y el ícono
+    de atención sólo si la lista de avisos de la regla lo nombra.
 - La barra, la barra lateral, Más y la lista de Configuración llevan siempre ícono +
   texto, y dos entradas de un mismo menú nunca comparten ícono.
 

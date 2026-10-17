@@ -166,7 +166,7 @@ def test_the_panel_and_analysis_agree_on_every_withdrawal_figure(client: TestCli
     header = analysis["month"]
     assert header["promotion"] == month_row["promotion"]
     assert header["own_use"] == month_row["own_use"]
-    assert header["shortfall"] == {"amount": 0, "pending_grams": 1.0}
+    assert header["shortfall"] == {"amount": 0, "pending_grams": 1.0, "all_pending": True}
     assert sum(v["cost"]["costed"] for v in header["varieties"]) == month["cost_of_goods"] == 500
     # The panel's month shortfall is the header's, amount and pending flag.
     assert _same_line(month["shortfall"], header["shortfall"])
@@ -182,13 +182,13 @@ def test_the_panel_and_analysis_agree_on_every_withdrawal_figure(client: TestCli
     # The shortfall is the adjustments' own: A's lot is 100 g for $10.000 = $100/g, so the
     # -2 g on 30/09 costs $200; B's -1 g has no lot, so it is pending. Withdrawals never
     # count.
-    assert since["shortfall"] == {"amount": 200, "pending_grams": 1.0}
-    assert since["promotion"] == {"amount": 500, "pending_grams": 2.0}
-    assert since["own_use"] == {"amount": 300, "pending_grams": 0.0}
+    assert since["shortfall"] == {"amount": 200, "pending_grams": 1.0, "all_pending": False}
+    assert since["promotion"] == {"amount": 500, "pending_grams": 2.0, "all_pending": False}
+    assert since["own_use"] == {"amount": 300, "pending_grams": 0.0, "all_pending": False}
 
     # A month with only one reason shows no line for the other (September: no own use).
     september = next(m for m in analysis["months"] if m["month"] == "2026-09")
-    assert september["promotion"] == {"amount": 500, "pending_grams": 0.0}
+    assert september["promotion"] == {"amount": 500, "pending_grams": 0.0, "all_pending": False}
     assert september["own_use"] is None
 
 
@@ -210,8 +210,16 @@ def test_a_withdrawal_dated_before_every_other_record_starts_the_history(
     assert _same_line(panel["month"]["shortfall"], analysis["month"]["shortfall"])
     assert not _same_line({"amount": 0, "pending": False}, None)
     # The later entry settles the withdrawn grams at its $100/g.
-    assert analysis["weeks"][-1]["promotion"] == {"amount": 200, "pending_grams": 0.0}
-    assert analysis["months"][-1]["promotion"] == {"amount": 200, "pending_grams": 0.0}
+    assert analysis["weeks"][-1]["promotion"] == {
+        "amount": 200,
+        "pending_grams": 0.0,
+        "all_pending": False,
+    }
+    assert analysis["months"][-1]["promotion"] == {
+        "amount": 200,
+        "pending_grams": 0.0,
+        "all_pending": False,
+    }
     for period, row in (
         (panel["week"], analysis["weeks"][-1]),
         (panel["month"], analysis["months"][-1]),
@@ -230,10 +238,22 @@ def test_a_business_whose_only_record_is_a_withdrawal_has_a_history(client: Test
     assert analysis["first_record"] == HOY
     assert len(analysis["weeks"]) >= 1
     assert analysis["weeks"][-1]["sales"] == 0
-    assert analysis["weeks"][-1]["own_use"] == {"amount": 0, "pending_grams": 3.0}
+    assert analysis["weeks"][-1]["own_use"] == {
+        "amount": 0,
+        "pending_grams": 3.0,
+        "all_pending": True,
+    }
     assert analysis["weeks"][-1]["promotion"] is None
-    assert analysis["months"][-1]["own_use"] == {"amount": 0, "pending_grams": 3.0}
-    assert analysis["since_first_record"]["own_use"] == {"amount": 0, "pending_grams": 3.0}
+    assert analysis["months"][-1]["own_use"] == {
+        "amount": 0,
+        "pending_grams": 3.0,
+        "all_pending": True,
+    }
+    assert analysis["since_first_record"]["own_use"] == {
+        "amount": 0,
+        "pending_grams": 3.0,
+        "all_pending": True,
+    }
     assert analysis["since_first_record"]["profit"]["pending_grams"] == 3.0
     assert panel["month"]["own_use"] == {"amount": 0, "pending": True}
     assert panel["month"]["profit_pending"] is True

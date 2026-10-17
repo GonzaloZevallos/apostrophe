@@ -49,8 +49,13 @@ This refines the "log in once and stay in" job above and criterion 5; it is not 
 
 **When** a seller needs the app away from my home network, **I want** the installation published on the internet over HTTPS, with every business's data copied off the server continuously, encrypted, and proven restorable, **so I can** let sellers work from anywhere without one lost server, disk or leaked backup costing anyone their books or exposing their customers.
 
-- The protagonist of this last job is the operator of the installation, not a user in the app.
+- The protagonist of this job is the operator of the installation, not a user in the app.
 - For a seller, only two things change: where they can reach the app from, and that it is on HTTPS.
+
+**When** I merge a change and the test suite runs again on a later day, **I want** the gate to give the same verdict whatever the date, and the change's record to say exactly what its evidence proves and what it does not, **so I can** trust a green gate, act on a red one without guessing, and never treat evidence as proof of something it never covered.
+
+- The protagonist of this job is the maintainer of the installation, or the reviewer acting for them. The seller is affected only indirectly: a gate that goes red because the date changed holds up every fix they are waiting for.
+- It is served here by the business-removal tests. Every instant in them comes from the movable clock (ADR-0001), so their verdict never depends on the day they run. No behaviour of the app changes.
 
 The navigation job (navigation.md) decides where Negocio, Usuarios, Apariencia and Tu cuenta are reached from: Configuración.
 
@@ -169,6 +174,9 @@ Success criteria, removing a business:
     - the export is built from the same tables as the delete; invitations and reset links are deleted, never exported.
 12. **Every other business is untouched**: their record counts are the same before and after, and they keep working, are never slowed on purpose and are never told anything.
 13. **No personal data outside the file, and a clean slate**: the terminal and logs show only the business name, the file's path and counts. Afterwards the same email can open a new business with nothing carried over.
+37. **The removal tests give the same verdict on any day.**
+    - Every instant in `tests/business_removal/`, invitations included, comes from the movable clock (ADR-0001). No test there reads the real clock.
+    - The suite gives the same result when the clock is moved to different Argentina days, across a month boundary and a year boundary included.
 
 ## Behaviour
 
@@ -309,6 +317,7 @@ Success criteria, removing a business:
   - a session left open by a removed user gets 401 and goes to login;
   - a new invitation to the same email opens a new business like any other, with a clean login-attempt count and nothing of the old business.
 - **Privacy** (ADR-0005): nothing personal is printed or logged (no emails, names, phone numbers, amounts or file contents). The business name is not personal data and may be printed.
+- **Its tests and the clock** (criterion 37): every instant the removal tests use, an invitation's issue time included, comes from the movable clock (ADR-0001), never from the real one. Ordinary runs pin one Argentina day, and one check moves the clock across a month boundary and a year boundary.
 
 ### The app
 
@@ -586,6 +595,11 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
 - **No echo (criterion 13)**: the captured terminal output and logs of both modes hold no email, customer name, phone number or amount, only the business name, the path and counts.
 - **Clean slate (criterion 13)**: after removal, a removed user's token answers 401, and a new-business invitation accepted with the same email opens an empty business with a clean brake count.
 - Removal and password metrics run as fast, self-contained tests.
+- **Removal tests and the date (criterion 37)**:
+  - the removal suite passes on its pinned Argentina day;
+  - one check moves the clock across a month boundary and a year boundary and gives the same verdict on each day. It is never skipped or loosened;
+  - the scan (`tests/architecture/test_no_real_clock.py`) covers every file under `tests/` and `app/` and resolves imports, so an alias or a default that resolves to `datetime.now`, `utcnow`, `date.today` or `time.time` is found too. Its only exceptions are the production clock (`app/clock.py::system_clock`), the composition roots that wire the clock (`app/main.py` and the three CLIs) and the e2e backend (`tests/e2e_app.py`, ADR-0040);
+  - no assertion on elapsed time is added (ADR-0038).
 - **Publishing (criteria 14–17)**: no test reaches the network, Render, Turso or GitHub.
   - **Brakes (criteria 3, 15)**: tested at the HTTP seam with a fake clock, 100% passing. They cover:
     - the email brake (5 in a row, 15 minutes);
@@ -637,3 +651,5 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
 - An iOS status bar that follows the theme live.
 - A landscape-specific design; locking orientation or disabling zoom.
 - A new icon look (a branding change).
+- A general guard, across the product, against date-dependent tests or missing evidence.
+- A before/after pair for #107's change measured on the old tree 90320f8 (optional, never required).

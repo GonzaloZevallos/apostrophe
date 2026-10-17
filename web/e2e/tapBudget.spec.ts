@@ -13,6 +13,7 @@ import type { Locator, Page } from '@playwright/test'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { seedRecords, signUp } from './helpers/seed.js'
+import { uniqueTag } from './helpers/unique.js'
 
 
 const PHONE = { width: 390, height: 844 }
@@ -57,7 +58,7 @@ test('the expense form opens within the tap budget from every tab root, phone an
   const consoleMessages: string[] = []
   watchConsole(page, consoleMessages)
 
-  await signUpNewBusiness(page, { businessName: `Flores del Gasto ${Date.now()}`, email: `duena-gasto-${Date.now()}@example.com` })
+  await signUpNewBusiness(page, { businessName: `Flores del Gasto ${uniqueTag()}`, email: `duena-gasto-${uniqueTag()}@example.com` })
 
   const taps: Record<'phone' | 'computer', Record<string, number>> = { phone: {}, computer: {} }
   for (const [device, size] of [
@@ -89,7 +90,7 @@ test('a seller records an expense from Más and Cerrar goes back to where the fo
   watchConsole(page, consoleMessages)
   await page.setViewportSize(PHONE)
 
-  await signUpNewBusiness(page, { businessName: `Flores de Más ${Date.now()}`, email: `duena-mas-${Date.now()}@example.com` })
+  await signUpNewBusiness(page, { businessName: `Flores de Más ${uniqueTag()}`, email: `duena-mas-${uniqueTag()}@example.com` })
 
   await page.goto(MORE)
   await page.getByRole('link', { name: /^\+ Cargar gasto/ }).click()
@@ -141,9 +142,21 @@ test('the sale form, Registrar cobro, the catalog and a stock entry open within 
 
       await page.goto(root)
       let counter: Counter = { taps: 0 }
-      await tap(counter, page.getByRole('link', { name: /Nueva venta$/ }).filter({ visible: true }).first())
-      await expectPath(page, SALE_NEW)
-      measure(`sale ${root}`, device, counter.taps)
+      if (computer && root === VARIETIES) {
+        // Variedades selects its first variety on its own, and a variety's page is a card: a
+        // card never shows "+ Nueva venta" (navigation.md, "Chrome and back"), the rail
+        // included. So the sale is not one tap from here on a computer; the tab roots that
+        // stay roots (the others) are measured below.
+        await settled(page, computer)
+        await expect(
+          page.locator('.riel-lateral').getByRole('link', { name: /Nueva venta$/ }),
+          label,
+        ).toHaveCount(0)
+      } else {
+        await tap(counter, page.getByRole('link', { name: /Nueva venta$/ }).filter({ visible: true }).first())
+        await expectPath(page, SALE_NEW)
+        measure(`sale ${root}`, device, counter.taps)
+      }
 
       if (root === HOME || root === CUSTOMERS) {
         await page.goto(root)

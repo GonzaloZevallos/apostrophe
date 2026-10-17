@@ -27,7 +27,6 @@ import { isGone } from '../../api/refusals'
 import Boton from '../../components/Boton'
 import ConfirmDialog from '../../components/ConfirmDialog'
 import ErrorGenerico from '../../components/ErrorGenerico'
-import Icono from '../../components/Icono'
 import LeaveConfirm from '../../components/LeaveConfirm'
 import SinConexion from '../../components/SinConexion'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
@@ -117,14 +116,11 @@ export default function OnboardingStep({
       <div className="onboarding__columna">
         <div className={`onboarding__cabecera${previous === undefined ? ' onboarding__cabecera--derecha' : ''}`}>
           {previous !== undefined && (
-            <button type="button" className="onboarding__enlace" onClick={() => void navigate(previous)}>
-              <Icono nombre="atras" />
+            <Boton variant="secondary" icon="atras" onClick={() => void navigate(previous)}>
               Atrás
-            </button>
+            </Boton>
           )}
-          <button type="button" className="onboarding__enlace" onClick={() => void navigate(HOME)}>
-            Cerrar
-          </button>
+          <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={() => void navigate(HOME)} />
         </div>
 
         <div className="onboarding__progreso">

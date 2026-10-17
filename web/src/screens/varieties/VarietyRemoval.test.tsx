@@ -141,6 +141,33 @@ describe('the action the page offers', () => {
     expect(screen.queryByRole('button', { name: refused })).not.toBeInTheDocument()
   })
 
+  test('"Eliminar variedad" is an icon + text critical action, not a filled button; only the dialog fills', async () => {
+    const user = userEvent.setup()
+    renderPage({ removal: 'delete' })
+
+    const trigger = await screen.findByRole('button', { name: 'Eliminar variedad' })
+    expect(trigger.textContent).toBe('Eliminar variedad')
+    expect(trigger.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+    expect(trigger).toHaveClass('boton--critico')
+    expect(trigger).not.toHaveClass('boton--destructivo')
+    expect(trigger).not.toHaveClass('boton-icono')
+    expect(document.querySelectorAll('.boton--destructivo')).toHaveLength(0)
+
+    await user.click(trigger)
+
+    const confirm = screen.getByRole('button', { name: 'Sí, eliminala' })
+    expect(confirm).toHaveClass('boton--destructivo')
+    expect(document.querySelectorAll('.boton--destructivo')).toHaveLength(1)
+  })
+
+  test('"Archivar variedad" keeps its non-destructive look', async () => {
+    renderPage({ removal: 'archive' })
+
+    const trigger = await screen.findByRole('button', { name: 'Archivar variedad' })
+    expect(trigger).toHaveClass('boton--suave')
+    expect(trigger).not.toHaveClass('boton--critico')
+  })
+
   test('a page that offers no removal shows neither action', async () => {
     renderPage({ removal: null })
 

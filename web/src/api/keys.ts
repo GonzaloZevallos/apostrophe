@@ -74,6 +74,10 @@ export const keys = {
   // freshness (`staleTime: 0`, `gcTime: 0`). A stock or varieties write invalidates it
   // through `CROSS_INVALIDATES`; the catalog's own saves set its data directly.
   catalog: () => [PREFIX.catalog] as const,
+  // `GET /catalog/archived` (ADR-0032 amendment): the one list of the archived varieties'
+  // stored catalog attributes, read by the archived page and by the Archivadas rows alike.
+  // It shares the `catalog` prefix, so a stock or varieties write stales it too.
+  archivedCatalog: () => [PREFIX.catalog, 'archived'] as const,
   // Both share `pinned-catalog`'s own prefix (plan, "Front": "invalidate the
   // pinned-catalog and status queries"), so invalidating the bare prefix through
   // `invalidateResource` reaches Catálogo's own settings query and Inicio's status

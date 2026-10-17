@@ -90,6 +90,15 @@ def pending_grams(value: float) -> str:
     return f"y {grams(value)} sin costo" if value > 0 else "no"
 
 
+def row_cost(line: Json) -> str:
+    """The Valor of an Análisis cost line. Everything behind it pending reads as grams
+    alone (`formatRowCost`), never `$ 0`; otherwise the amount, with a partly pending
+    figure's grams in the Pendiente column."""
+    if line["all_pending"]:
+        return f"{grams(line['pending_grams'])} sin costo"
+    return money(line["amount"])
+
+
 def days(count: int | None) -> str:
     if count is None:
         return _NONE
@@ -203,6 +212,35 @@ def _varieties(api: _ClientApi) -> list[str]:
         )
     header = ["Variedad", "Gramos", "Estado", "Detalle", "Días restantes", "Precio hoy"]
     return ["### Variedades", "", *table(header, rows)]
+
+
+def _archived(api: _ClientApi) -> list[str]:
+    """The archived varieties' own rows: grams as the archived page shows them, today's
+    list price, and whether the variety is hidden from the public catalog (the "Oculta"
+    mark). They are in no other table, since every live read leaves them out.
+
+    The catalog lists no archived variety, so the flag is read from `GET /catalog` while
+    the variety is restored for an instant, then archived again: archive and restore touch
+    no stock, lot or price (varieties.md), and this is the capture's last read."""
+    stock = {row["variety_id"]: row for row in api.get("/stock?archived=true")["varieties"]}
+    archived = api.get("/varieties?archived=true")
+    for variety in archived:
+        api.call("POST", f"/varieties/{variety['id']}/restore")
+    shown = {v["id"]: v["shown"] for v in api.get("/catalog")["varieties"]}
+    for variety in archived:
+        api.call("POST", f"/varieties/{variety['id']}/archive")
+    rows = []
+    for variety in archived:
+        price = variety["current_price"]
+        rows.append(
+            [
+                variety["name"],
+                grams(stock[variety["id"]]["grams"]),
+                f"{money(price['list_price'])} x g" if price else "Sin precio",
+                yes_no(not shown[variety["id"]]),
+            ]
+        )
+    return ["### Archivadas", "", *table(["Variedad", "Gramos", "Precio hoy", "Oculta"], rows)]
 
 
 def _movements(api: _ClientApi) -> list[str]:
@@ -356,17 +394,18 @@ def _accounts(api: _ClientApi) -> list[str]:
     return ["### Cuentas", "", *table(header, rows)]
 
 
-def _cost_rows(add: Any, figures: Json, *, shortfall: bool = True) -> None:
-    for field, label in (
+def _cost_rows(add: Any, figures: Json, *, cost_of_goods: bool = False) -> None:
+    fields = [
         ("shortfall", "Faltante de stock"),
         ("promotion", "Promoción"),
         ("own_use", "Consumo propio"),
-    ):
-        if field == "shortfall" and not shortfall:
-            continue
+    ]
+    if cost_of_goods:
+        fields.insert(0, ("cost_of_goods", "Costo de lo vendido"))
+    for field, label in fields:
         if figures.get(field) is not None:
             line = figures[field]
-            add(label, money(line["amount"]), pending_grams(line["pending_grams"]))
+            add(label, row_cost(line), pending_grams(line["pending_grams"]))
 
 
 def _analysis(api: _ClientApi) -> list[str]:
@@ -437,7 +476,7 @@ def _analysis(api: _ClientApi) -> list[str]:
 
         add("Ventas", money(row["sales"]))
         add("Gramos", grams(row["grams"]))
-        _cost_rows(add, row, shortfall=False)
+        _cost_rows(add, row, cost_of_goods=True)
         add("Gastos", money(row["expenses"]))
         profit = row["profit"]
         add("Ganancia", money(profit["amount"]), pending_grams(profit["pending_grams"]))
@@ -501,6 +540,7 @@ def render_muestra(day: date) -> str:
             _sales,
             _accounts,
             _analysis,
+            _archived,
         ):
             lines += part(api)
     finally:

@@ -7,7 +7,9 @@ cost, taken from the lots it came out of, oldest first. Seen only by its busines
 sold feeds profit (#7) and margins (#8); the cost of withdrawn grams feeds profit as
 Promoción and Consumo propio, never cost of goods sold or margins. Cost follows the lots
 as they stand and is never frozen (ADR-0009). Stock has no tab of its own: it is shown on
-Variedades, in the list and on each variety's page (varieties.md).
+Variedades, in the list and on each variety's page (varieties.md). Nothing new is recorded
+against an archived variety, neither a stock entry nor a withdrawal line (varieties.md,
+ADR-0032).
 
 ## Jobs
 
@@ -35,6 +37,13 @@ several times a day, **I want** the app laid out around what I actually do and h
 **so I can** get back to the customer instead of hunting through menus. (The navigation
 job, navigation.md: served here by "+ Entrada de stock" and "Sacar del stock" on
 Variedades, at most 2 taps from any tab root, and a variety's stock on its own page.)
+
+**When** a variety I loaded by mistake, or one I no longer work with, keeps showing in my
+lists and pickers, **I want** to take it out from my phone in a few taps, deleting it if
+it never moved and archiving it if it has history, **so** my lists show only what I still
+sell, no past sale, stock, cost or profit figure changes, and I can bring it back exactly
+as it was if I start selling it again. (Served here by refusing new entries and withdrawal
+lines on an archived variety while existing ones stay editable; defined in varieties.md.)
 
 Success criteria:
 
@@ -72,6 +81,11 @@ Success criteria:
    shortfall never includes a withdrawal. Its cost shows only as Promoción or Consumo
    propio (results.md, analysis.md).
 10. **Businesses never mix** (ADR-0004), for withdrawals as for entries.
+11. **Nothing new on an archived variety, nothing past locked**: a new stock entry or
+    withdrawal line naming an archived variety is refused as gone, through the API and
+    the forms alike. An entry or withdrawal that already names a variety archived since
+    stays editable and deletable, keeping that variety. A form left open while a partner
+    archives a variety loses nothing typed.
 
 ## Behaviour
 
@@ -82,6 +96,9 @@ Success criteria:
 - **Date**: defaults to today in Argentina time. Earlier days are allowed; a future date
   is refused.
 - **Variety**: must be one of the business's own. Any other id answers 404.
+- **Archived varieties**: a new entry naming an archived variety is refused as gone
+  (`variety.archived`, 404). An edit may keep the archived variety the entry already has,
+  but can never move the entry onto a different archived one (varieties.md).
 - **Grams**: up to two decimals, never zero.
   - Above zero for purchase, harvest and opening stock.
   - An adjustment may be positive or negative.
@@ -113,6 +130,16 @@ Success criteria:
 - **Lines**: each a variety of the business (any other id answers 404) and grams above
   zero with at most two decimals. The same variety may appear in several lines, with no
   merging. A withdrawal with no lines is refused.
+- **Archived varieties** (varieties.md, ADR-0032):
+  - a new withdrawal with any line naming an archived variety is refused whole as gone
+    (`variety.archived`, 404, kind `gone`); nothing is recorded;
+  - an edit is refused the same way when a line names an archived variety the stored
+    withdrawal did not already have on one of its lines (a line added onto it, or a
+    line's variety changed to it);
+  - an edit that keeps a variety the withdrawal already had, archived since, is accepted,
+    and every other field (date, reason, grams, note, other lines) edits as usual;
+  - opening, editing and deleting a withdrawal that touches an archived variety always
+    work (ADR-0009).
 - **Note**: optional, trimmed, up to 200 characters; empty means none. Never logged,
   searched or repeated in errors.
 - **Never refused for lack of stock** (ADR-0009). Stock may go negative and then shows
@@ -223,15 +250,31 @@ Success criteria:
   - Opened from Más (second, after "+ Cargar gasto"), from the secondary "Sacar del
     stock" on Variedades (next to "+ Entrada de stock", phone and computer), with no
     variety chosen, and from "Sacar del stock" on a variety's page, with that variety
-    already chosen.
+    already chosen. An archived variety's page offers no "Sacar del stock".
   - reason (Promoción · Consumo propio, required, no default), date (filled with today),
     one or more lines of variety and grams, and note.
+  - The variety picker offers unarchived varieties only. Opened with a variety
+    preselected that is archived or unknown (`/withdrawals/new?variety=<id>`), the form
+    opens with no variety chosen, as if opened with none; nothing is recorded against
+    that variety and no message is shown for it.
   - Editing opens the same form with the withdrawal filled in; saving an edit is
     confirmed first.
+  - **Editing a withdrawal that touches a variety archived since**: each such line shows
+    its variety by name as a fixed label, with the picker of unarchived varieties next
+    to it. The seller may keep it (saving succeeds), choose an unarchived variety
+    instead, or remove the line.
+  - **A variety archived while the form is open** (a partner archived it): saving is
+    refused with `variety.archived`, following accounts.md's "Eso ya no está" rule:
+    - the form stays open and nothing typed is cleared, each guilty line's variety
+      included, still shown by its name;
+    - "Eso ya no está." shows under each guilty line, and the variety list refreshes;
+    - the form cannot be saved again while a guilty line still names the archived
+      variety: the seller chooses another variety for it or removes the line, which
+      clears its message.
 - **A withdrawal's detail**, opened from its row: a detail (navigation.md), with the bar
   or sidebar and a "‹" back to the variety's page it came from (Variedades when there is
   no history), and no "+ Nueva venta". It shows the date, the reason, every line and the
-  note, with "Editar" and "Borrar".
+  note, with "Editar" and "Borrar", also when a line's variety is archived.
 - **Editing an entry**: saving is confirmed first.
 - **Deleting an entry**: confirmed with "Antes de borrar", naming the date, variety and
   grams.
@@ -257,7 +300,9 @@ Success criteria:
 - Business removal exports and deletes withdrawals and their lines through ADR-0015's
   schema reflection.
 - Refusals carry codes from `contract.json` (ADR-0008) and never repeat the note, grams,
-  amounts or names (ADR-0005).
+  amounts or names (ADR-0005). An archived variety named by a new entry or withdrawal
+  line answers varieties' existing `variety.archived` (kind `gone`); there is no
+  withdrawal-specific code for it.
 - No note, grams or amount goes to logs, the console or browser storage.
 - Copy is in Rioplatense Spanish with vos.
 
@@ -288,6 +333,24 @@ Success criteria:
 - **Withdrawal validation matrix**: grams at or below zero, more than two decimals, a
   future date, a missing reason, no lines, a note over 200 characters and another
   business's variety each give their own coded refusal, which never repeats the input.
+- **Archived varieties, API (criterion 11)**: through HTTP, 100% passing:
+  - a new withdrawal with a line on an archived variety answers 404 `variety.archived`
+    and writes 0 rows;
+  - an edit adding a line onto, or moving a line onto, an archived variety the stored
+    withdrawal did not have answers the same and changes nothing;
+  - an edit keeping a variety the withdrawal already had, archived since, is accepted,
+    with its grams, date, reason and note changed as sent;
+  - opening and deleting a withdrawal that touches an archived variety work;
+  - the same matrix for stock entries (new refused, kept accepted, moved onto another
+    archived refused).
+- **Archived varieties, form (criterion 11)**: Testing Library tests, 100% passing:
+  - `/withdrawals/new?variety=<archived id>` opens with no variety chosen;
+  - editing a withdrawal with a line on a variety archived since shows that variety's
+    name as a fixed label and saves while keeping it;
+  - a save refused with `variety.archived` keeps the form open with every field, the
+    guilty line's variety and its name included, shows "Eso ya no está." under that
+    line, and keeps save disabled until another variety is chosen or the line is
+    removed. No test asserts the guilty line's variety field is emptied.
 - **Isolation (criterion 10)**: every stock and withdrawal route sits in the sweep and
   answers 404 or empty from another business, including a reference to another business's
   variety.
@@ -324,3 +387,5 @@ Success criteria:
 - Planned or draft withdrawals; splitting one withdrawal across two reasons.
 - Who attended a party or how many tried; tying a promotion to later sales; money spent
   on a party (an expense).
+- Recording a new entry or withdrawal line against an archived variety, by any path;
+  offering archived varieties in the entry or withdrawal pickers.

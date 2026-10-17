@@ -7,17 +7,20 @@ Public so more than one test module can build the same fixture without repeating
 from __future__ import annotations
 
 import sqlite3
+from dataclasses import dataclass
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 
 import pytest
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy.engine import Engine
 
-from app.clock import system_clock
+from app.clock import business_day
 from app.db import make_engine
 from app.main import create_app
 from app.settings import Settings
-from tests.conftest import PASSWORD, TEST_HASHER, invite
+from tests.conftest import PASSWORD, TEST_HASHER, MovableClock, invite
 from tests.fakes.telegram import FakeTelegram
 
 EMAIL_LEAVING = "closing@example.com"
@@ -29,14 +32,53 @@ EXPENSE_DETAIL = "Factura de electricidad de septiembre"
 PAYMENT_AMOUNT = 54321
 EXPENSE_AMOUNT = 112233
 SHIPPING_CHARGED = 98765
+# Midday in Argentina: the one instant every test that does not move its clock uses.
+PINNED = datetime(2026, 10, 3, 15, 0, tzinfo=UTC)
+
 LOW_STOCK_THRESHOLD = 15
 CATALOG_HEADER = "Catalogo de La Huerta"
 CATALOG_FOOTER = "Gracias por tu compra"
 
 
-def _accept(client: TestClient, engine: Engine, name: str, email: str) -> str:
+@dataclass(frozen=True)
+class SeededDays:
+    price: date
+    payment: date
+    expense: date
+
+
+def seeded_days(clock: MovableClock) -> SeededDays:
+    """The calendar days `seed` posts, each a fixed number of days before the clock's
+    business day. The price day falls before the stock entry, which is recorded on the
+    business day itself."""
+    today = business_day(clock())
+    return SeededDays(
+        price=today - timedelta(days=90),
+        payment=today - timedelta(days=2),
+        expense=today - timedelta(days=1),
+    )
+
+
+def build_app(db_path: Path, clock: MovableClock) -> tuple[FastAPI, Engine]:
+    url = f"sqlite:///{db_path}"
+    engine = make_engine(url)
+    settings = Settings(secret_key="test-secret", database_url=url)
+    application = create_app(
+        settings,
+        engine=engine,
+        hasher=TEST_HASHER,
+        telegram=FakeTelegram(),
+        clock=clock,
+        upkeep_ticker=False,
+    )
+    return application, engine
+
+
+def accept_invitation(
+    client: TestClient, engine: Engine, clock: MovableClock, name: str, email: str
+) -> str:
     accepted = client.post(
-        f"/invitations/{invite(engine, system_clock())}/accept",
+        f"/invitations/{invite(engine, clock())}/accept",
         json={"business_name": name, "email": email, "password": PASSWORD},
     )
     assert accepted.status_code == 201, accepted.text
@@ -45,26 +87,19 @@ def _accept(client: TestClient, engine: Engine, name: str, email: str) -> str:
     return token
 
 
-def seed(db_path: Path) -> tuple[str, str]:
+def seed(db_path: Path, clock: MovableClock | None = None) -> tuple[str, str]:
     """Business B (staying) opened first, with a customer of its own; business A
     (leaving, the newest) opened second, with one of everything the export holds:
     a customer, a variety, a price entry, a stock entry, a sale with a line and a
     note, a payment, an expense category and expense, and catalog settings. One
     failed login for the leaving business's email leaves a `login_guard` row, so
-    the clean slate can be checked afterwards. Returns both session tokens."""
-    url = f"sqlite:///{db_path}"
-    engine = make_engine(url)
-    settings = Settings(secret_key="test-secret", database_url=url)
-    app = create_app(
-        settings,
-        engine=engine,
-        clock=system_clock,
-        hasher=TEST_HASHER,
-        telegram=FakeTelegram(),
-        upkeep_ticker=False,
-    )
-    with TestClient(app) as client:
-        token_b = _accept(client, engine, "Otro Negocio", EMAIL_STAYING)
+    the clean slate can be checked afterwards. Everything is stamped by `clock`
+    (a fresh one at `PINNED` when none is given). Returns both session tokens."""
+    clock = clock if clock is not None else MovableClock(PINNED)
+    days = seeded_days(clock)
+    application, engine = build_app(db_path, clock)
+    with TestClient(application) as client:
+        token_b = accept_invitation(client, engine, clock, "Otro Negocio", EMAIL_STAYING)
         client.headers["Authorization"] = f"Bearer {token_b}"
         other_customer = client.post(
             "/customers", json={"name": "Cliente de Otro Negocio", "phone": "+5491100000000"}
@@ -72,7 +107,7 @@ def seed(db_path: Path) -> tuple[str, str]:
         assert other_customer.status_code == 201, other_customer.text
         del client.headers["Authorization"]
 
-        token_a = _accept(client, engine, "La Huerta", EMAIL_LEAVING)
+        token_a = accept_invitation(client, engine, clock, "La Huerta", EMAIL_LEAVING)
         client.headers["Authorization"] = f"Bearer {token_a}"
 
         customer = client.post(
@@ -87,7 +122,7 @@ def seed(db_path: Path) -> tuple[str, str]:
 
         price = client.post(
             f"/varieties/{variety_id}/prices",
-            json={"effective_from": "2026-01-01", "list_price": 5000},
+            json={"effective_from": days.price.isoformat(), "list_price": 5000},
         )
         assert price.status_code == 201, price.text
 
@@ -117,7 +152,7 @@ def seed(db_path: Path) -> tuple[str, str]:
 
         payment = client.post(
             f"/customers/{customer_id}/payments",
-            json={"paid_on": "2026-10-01", "amount": PAYMENT_AMOUNT, "method": "cash"},
+            json={"paid_on": days.payment.isoformat(), "amount": PAYMENT_AMOUNT, "method": "cash"},
         )
         assert payment.status_code == 201, payment.text
 
@@ -128,7 +163,7 @@ def seed(db_path: Path) -> tuple[str, str]:
         expense = client.post(
             "/expenses",
             json={
-                "spent_on": "2026-10-02",
+                "spent_on": days.expense.isoformat(),
                 "category_id": category_id,
                 "amount": EXPENSE_AMOUNT,
                 "detail": EXPENSE_DETAIL,

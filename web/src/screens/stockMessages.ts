@@ -10,6 +10,13 @@ export const EMPTY_STATE_DETAIL = 'Cargá tu stock inicial o una compra'
 
 export const COST_REQUIRED_HELP = 'Obligatorio cuando es una compra'
 
+/** The locked (Onboarding) form's line under the cost: the cost is optional and, left out,
+ * the lot costs $ 0 (the entry is posted without `total_cost`). */
+export const OPENING_COST_HINT = 'Opcional · si no lo cargás, el lote cuesta $ 0'
+
+/** The refusal of a bad grams amount, shared by the price, stock entry and withdrawal forms. */
+export const GRAMS_INVALID = 'Revisá los gramos cargados'
+
 /** The grams on hand under the variety picker; `grams` is already formatted from what
  * the API answered (`formatGrams`), so the registry can measure it with `SAMPLES.grams`. */
 export function onHandHelp(grams: string): string {
@@ -27,6 +34,8 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'emptyTitle', text: EMPTY_STATE_TITLE },
   { kind: 'emptyLine', text: EMPTY_STATE_DETAIL },
   { kind: 'help', text: COST_REQUIRED_HELP },
+  { kind: 'help', text: OPENING_COST_HINT },
+  { kind: 'help', text: GRAMS_INVALID },
   { kind: 'help', text: onHandHelp(SAMPLES.grams) },
   { kind: 'help', text: perGramPreview(SAMPLES.amount) },
 ]

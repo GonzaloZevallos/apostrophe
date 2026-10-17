@@ -45,6 +45,28 @@ rule has to live where a screen cannot get around it: the types of the one butto
 - The raw `<button>`s and action-styled links that screens still draw are migrated by
   each area; the closing subtask's guards end that state.
 
+## Amendment (GH-164): a fourth kind, the tappable notice
+
+`row` could not draw a tappable notice such as Inicio's "Seguí con la configuración".
+`.boton--fila` is a list row: it adds `padding: var(--espacio-lg) 0` and a
+`border-bottom`, and PM ruled (GH-164, round 3) that a notice keeps its designed card
+(surface, rounded corners, its own padding) with no row spacing and no row divider.
+The rule document defines the control first (`icon-and-text-rule.md`, "Tappable notice";
+the design-system README says the same), and the union follows it:
+
+- **`variant="notice"`** on `Boton` and, through `BotonVisualProps`, on `BotonLink`.
+  `children` is required. `icon`, `ariaLabel` and `textOnly` are typed `undefined`, so
+  an icon, a name of its own or a text-only submit does not compile. The accessible name
+  is the visible text. A chevron inside the children is a decorative mark of the screen,
+  not an icon of the control.
+- **Its look lives under its own class**, `boton-aviso` (`botonVisual.tsx`, `app.css`),
+  never as a selector on or a reuse of `.boton--fila`. It takes the pressed cue of the
+  filled controls (the `--papel` ring), since it rests on `--superficie`.
+- **The closed lists are unchanged.** A tappable notice is neither an icon-only control
+  nor a text-only one; `IconOnlyAction` and the text-only kinds do not grow.
+- `expectIconAndTextRule` accepts the kind and rejects one whose accessible name is not
+  its visible text. The type-level tests grow with it.
+
 ## Amendment: action links (GH-165)
 
 The closing guards could not see an action drawn as a raw link. `findActionLinks` in
@@ -85,3 +107,24 @@ The guard reads source with regular expressions. It does not see:
 It is a ratchet, not a proof. The follow-up that would close the hole is to make `BotonLink` and a
 typed text-only link the only link components a screen may import.
 `docs/product/icon-and-text-rule.md` does not change.
+
+## Amendment (GH-131): a critical kind, and the filled `--critico` kept inside the confirmation
+
+`Boton` gains `variant="critical"` in the icon + text arm (`icon: NombreIcono` required; no
+`textOnly`, no `action`; `Boton.types.test.tsx` rejects those shapes). It is the trigger of a
+destructive action, drawn in `pantallas/VariedadDetalle.dc.html`: a 2 px outline and the text in
+`--critico` on the page, with the `tacho`, and no fill. Only "Eliminar variedad" uses it.
+
+- **No fill outside the answer.** The filled `--critico` with `--critico-texto` stays the answer of
+  a confirmation (`AnswerButton`, through `ConfirmDialog`). `findFilledCritical`
+  (`web/src/architecture/closingGuards.ts`) flags `variant="destructive"` and the class
+  `boton--destructivo` anywhere else but `ConfirmDialog.tsx` and the `.boton*` authors. The one
+  use on master, the withdrawal detail's "Borrar", sits on `FILLED_CRITICAL_LEFT`
+  (`closingGuards.real.test.ts`), keyed by file; the list only shrinks.
+- **The class map is total.** `botonVisual.tsx` types it as `Record<BotonVariant, string>`, so a
+  variant added to `Boton` with no class fails `tsc`.
+- **Pressed.** The kind is transparent, so its cue is the `--superficie` fill of the transparent
+  family and the scale, without the filled family's `--papel` ring.
+- **Contrast.** The README's contrast table lists `--critico` as text on `--papel`, `--superficie`,
+  `--deuda-fondo` and `--acento-suave`, in both themes; `tests/test_design_contrast.py` computes
+  the ratios. No token value changes.

@@ -440,3 +440,15 @@ _Avoid_: style guide, UI guidelines, icon policy
 **Attention icon**:
 The one icon, the same everywhere, set next to the sentence of a notice or status that asks the seller to act or says something failed; the sentence still carries the state. Informational lines never carry it. In the app: no word of its own.
 _Avoid_: warning icon, alert icon, badge, error icon
+
+**Gate**:
+The checks every change must pass before it merges: pytest, vitest and e2e. A red gate must mean a product regression, never the calendar moving past an expiry or a day boundary. In the app: no word of its own.
+_Avoid_: pipeline, build, test run
+
+**Tappable notice**:
+A notice the seller taps to open what it points to, such as Inicio's "Seguí con la configuración". It keeps its designed card (no row spacing or divider), its sentence carries the meaning and is its accessible name, and its chevron is decorative. It is neither an action row nor a control of the icon and text rule's closed lists.
+_Avoid_: banner, card button, row, callout, alert
+
+**Design capture**:
+The side-by-side capture of a screen's design file and the built app, taken from the screens registry with pinned fonts, attached to a PR as review evidence and judged by eye. A registry row reaches its screen the way a seller does and captures its named section whole, only once the screen has finished drawing. Its result never depends on how loaded the machine is, and it is never a step of the gate.
+_Avoid_: screenshot test, visual regression test, snapshot, gate step

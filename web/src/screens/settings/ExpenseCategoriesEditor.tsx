@@ -13,9 +13,13 @@
  * a partner's edit can move under the form. The query is frozen for the same reason: the list
  * on screen is `accepted`, not whatever a refetch brings. The parent hears `dirty` through
  * `onDirtyChange`, and keeps its own chrome and its own leave question.
+ *
+ * `addCollapsed` (the Onboarding's step 6, `OnboardingCategorias.dc.html`): the "Nueva categoría"
+ * field starts closed behind an add action, and a saved add closes it again; the submit and the
+ * owner's POST are the same. With it off (Configuración) the field is always there, as drawn.
  */
 
-import { type FormEvent, useEffect, useState } from 'react'
+import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ApiError, NetworkError, UNKNOWN_CODE } from '../../api/client'
 import {
@@ -34,7 +38,7 @@ import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGen
 import GoneNotice from '../../components/GoneNotice'
 import SinConexion from '../../components/SinConexion'
 import Loading from '../../components/Loading'
-import { GENERIC_REFUSAL_MESSAGE } from './messages'
+import { CATEGORIES_SAVE_AT_ONCE, GENERIC_REFUSAL_MESSAGE } from './messages'
 
 export const CANNOT_REMOVE = 'No se puede borrar: todavía tiene gastos. Podés renombrarla.'
 
@@ -48,8 +52,10 @@ function isRefusal(caught: unknown): caught is ApiError {
 
 export default function ExpenseCategoriesEditor({
   onDirtyChange,
+  addCollapsed = false,
 }: {
   onDirtyChange: (dirty: boolean) => void
+  addCollapsed?: boolean
 }) {
   const { data, isPending, isError, error } = useQuery({
     queryKey: keys.expenseCategories(),
@@ -68,7 +74,7 @@ export default function ExpenseCategoriesEditor({
       </>
     )
   }
-  return <Categories initial={data} onDirtyChange={onDirtyChange} />
+  return <Categories initial={data} onDirtyChange={onDirtyChange} addCollapsed={addCollapsed} />
 }
 
 /** The server orders by the case-folded name (binary); the list keeps that order after an add or a rename. */
@@ -80,9 +86,11 @@ function byNameKey(categories: ExpenseCategory[]): ExpenseCategory[] {
 function Categories({
   initial,
   onDirtyChange,
+  addCollapsed,
 }: {
   initial: ExpenseCategory[]
   onDirtyChange: (dirty: boolean) => void
+  addCollapsed: boolean
 }) {
   const queryClient = useQueryClient()
   const [accepted, setAccepted] = useState(initial)
@@ -93,6 +101,10 @@ function Categories({
   const [toast, setToast] = useState<SuccessToast | null>(null)
   const [goneNotice, setGoneNotice] = useState(false)
   const [sending, setSending] = useState(false)
+  const [adding, setAdding] = useState(!addCollapsed)
+  const addRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const focusAddAction = useRef(false)
 
   const dirty =
     newName !== '' ||
@@ -104,6 +116,17 @@ function Categories({
   useEffect(() => {
     onDirtyChange(dirty)
   }, [dirty, onDirtyChange])
+
+  // Opening the field moves focus into it; closing it after a save gives focus back to the add action.
+  useEffect(() => {
+    if (!addCollapsed) return
+    if (adding) {
+      inputRef.current?.focus()
+    } else if (focusAddAction.current) {
+      focusAddAction.current = false
+      addRef.current?.querySelector('button')?.focus()
+    }
+  }, [adding, addCollapsed])
 
   function flash(message: SuccessToast): void {
     setToast(message)
@@ -143,6 +166,10 @@ function Categories({
       const created = await addCategory(newName)
       accept([...accepted, created])
       setNewName('')
+      if (addCollapsed) {
+        focusAddAction.current = true
+        setAdding(false)
+      }
       flash('Categoría guardada')
     } catch (caught) {
       if (caught instanceof NetworkError) setOffline(true)
@@ -179,25 +206,39 @@ function Categories({
         ))}
       </div>
 
-      <form className="formulario" onSubmit={onAdd}>
-        <label className="campo">
-          <span className="campo__rotulo">Nueva categoría</span>
-          <input
-            className="campo__input"
-            value={newName}
-            onChange={(event) => setNewName(event.target.value)}
-          />
-        </label>
-        {error !== null && (
-          <span className="campo__error" role="alert">
-            {error}
-          </span>
-        )}
-        {offline && <SinConexion />}
-        <Boton variant="secondary" textOnly="submit" type="submit" disabled={sending || newName.trim() === ''}>
-          + Categoría
-        </Boton>
-      </form>
+      {adding ? (
+        <form className="formulario" onSubmit={onAdd}>
+          <label className="campo">
+            <span className="campo__rotulo">Nueva categoría</span>
+            <input
+              ref={inputRef}
+              className="campo__input"
+              value={newName}
+              onChange={(event) => setNewName(event.target.value)}
+            />
+          </label>
+          {error !== null && (
+            <span className="campo__error" role="alert">
+              {error}
+            </span>
+          )}
+          {offline && <SinConexion />}
+          <Boton variant="secondary" textOnly="submit" type="submit" disabled={sending || newName.trim() === ''}>
+            + Categoría
+          </Boton>
+        </form>
+      ) : (
+        <div ref={addRef}>
+          <Boton variant="secondary" icon="agregar" onClick={() => setAdding(true)}>
+            Categoría
+          </Boton>
+        </div>
+      )}
+      {addCollapsed && (
+        <span className="campo__rotulo" data-copy="help">
+          {CATEGORIES_SAVE_AT_ONCE}
+        </span>
+      )}
 
       {toast !== null && <Aviso texto={toast} />}
       {goneNotice && (

@@ -14,7 +14,7 @@ import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import { GONE_NOTICE } from '../../api/refusals'
-import { SIN_CONEXION_TITULO } from '../../components/SinConexion'
+import { SIN_CONEXION_MENSAJE } from '../../components/estadosMessages'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import ExpenseCategoriesGroup, { CANNOT_REMOVE } from './ExpenseCategoriesGroup'
 
@@ -232,7 +232,7 @@ test('a dropped network on add shows the offline notice and keeps what was typed
   await userEvent.type(screen.getByLabelText('Nueva categoría'), 'Insumos')
   await userEvent.click(screen.getByRole('button', { name: '+ Categoría' }))
 
-  expect(await screen.findByText(SIN_CONEXION_TITULO)).toBeInTheDocument()
+  expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
   expect(screen.getByLabelText('Nueva categoría')).toHaveValue('Insumos')
 })
 

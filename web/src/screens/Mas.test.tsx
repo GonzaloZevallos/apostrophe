@@ -25,7 +25,7 @@ test('lists "+ Cargar gasto", "Sacar del stock", Gastos and Análisis first, in 
   const entries = within(renderMas()).getAllByRole('link')
 
   expect(entries.map((entry) => entry.querySelector('.mas__item-rotulo')?.textContent)).toEqual([
-    '+ Cargar gasto',
+    'Cargar gasto',
     'Sacar del stock',
     'Gastos',
     'Análisis',
@@ -39,6 +39,18 @@ test('lists "+ Cargar gasto", "Sacar del stock", Gastos and Análisis first, in 
     'Negocio, usuarios, bot, catálogo, categorías, apariencia y tu cuenta',
   )
   expect(entries[4]).toHaveAttribute('href', SETTINGS)
+})
+
+test('"Cargar gasto" shows the agregar icon and the word alone, and keeps its "+ Cargar gasto" name', () => {
+  const nav = renderMas()
+  const entry = within(nav).getByRole('link', { name: /^\+ Cargar gasto Categoría, monto y detalle$/ })
+
+  expect(entry).toHaveAttribute('href', EXPENSE_NEW)
+  expect(entry.textContent).not.toContain('+')
+  expect(entry.querySelector('.mas__item-icono svg')).not.toBeNull()
+  for (const other of within(nav).getAllByRole('link').slice(1)) {
+    expect(other).not.toHaveAttribute('aria-label')
+  }
 })
 
 test('every entry opens a route the table mounts: no placeholder, nothing not built', () => {

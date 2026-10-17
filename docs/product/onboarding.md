@@ -10,6 +10,12 @@ Before it, the seller landed on an empty Inicio and opened Variedades, the catal
 
 **When** I run my business from my phone between orders or mid-chat with a customer, several times a day, **I want** the app laid out around what I actually do and how often, **so I can** get back to the customer instead of hunting through menus. (The navigation job, navigation.md: served here by the Onboarding as the one first-run element of a new business.)
 
+**When** a price changes mid-day and I'm on my phone between orders or mid-chat with a customer, **I want** to record the new price and the day it applies from in a short form that reads as pesos and starts on today, without leaving the variety I was looking at, **so I can** get back to the customer sure the right price is in force, without second-guessing the amount or the date. (Defined in varieties.md; served here as its secondary situation: step 1 shares the price fields, so its amounts read as pesos with "$". Step 1 always saves a price effective today and shows no date.)
+
+**When** I review an Onboarding change against its design before approving it, **I want** every difference between the built steps (opening stock's "Stock inicial" chip included) and the drawing to be either fixed or recorded as a decision in this doc, and the before and after captures to cover every screen the change touches, **so I can** approve from the PR's evidence alone, without hand-checking screens or carrying an open finding into the next task.
+
+This refines criterion 5 and its design metric; it is not a new product job. Its protagonist is the reviewer acting for the maintainer, and in the end Zeta, as in design-capture.md and pinned-catalog.md criterion 11. The seller is affected only indirectly. It came from GH-144's follow-up, where the "Origen" label on step 2's chip was undecided and the comparison evidence had no before-run, no dark steps and no Inicio notice.
+
 Success criteria:
 
 1. **Fast, from the phone**: from accepting the invitation to a business ready for its first sale (a variety priced today, with opening stock) in under 5 minutes, from the phone alone.
@@ -17,6 +23,11 @@ Success criteria:
 3. **Nothing lost**: leaving halfway loses nothing already saved. Resuming picks up at the first step that is neither done nor passed.
 4. **One fact, one place**: every step saves the same setting, under the same rules and refusals, that Configuración or the variety's page saves. A value set in a step is the value seen afterwards in its usual place, and the reverse.
 5. **Simple and attractive, inventing nothing**: built from design-system elements and judged by eye on phone and computer. No placeholder data, no fake figures, and no step for a setting that does not exist yet.
+6. **A change is approved from its evidence alone**:
+   - every difference between a built step and its drawing is either fixed or decided here, and the built screen, its tests and this doc agree;
+   - the before (task base) and after (head) captures cover every screen the change touches, with no cell missing;
+   - every difference the captures show is listed in the PR;
+   - the comparison is never a gate step (ADR-0042, gate.md).
 
 ## Behaviour
 
@@ -77,6 +88,7 @@ Success criteria:
 | 6 | Expense categories | No | Add, rename and remove, as Categorías de gastos (expenses.md) |
 
 - **Step 2** says plainly that with no cost the lot costs $0.
+- **Step 2's origin** shows as the fixed text-only chip "Stock inicial", with no "Origen" label above it: the step's title already says it is the opening stock, and the origin cannot change there. The "Origen" label in `Onboarding*.dc.html` is a known defect of the drawing, corrected by design in its own work. This applies only where the origin is the fixed chip: the full stock entry form keeps its origin choice, and whatever label it draws over it, as stock.md defines it.
 - **More varieties**: after a variety and its opening stock, the seller sees "Agregar otra variedad" (another name, price and opening stock) or "Seguir".
   - There is no cap, and each variety is saved the moment its step is saved.
   - One variety is enough to continue.
@@ -89,6 +101,8 @@ Success criteria:
 ### Step 1
 
 - **One form, one primary action**: the variety's name, its list price and the price form's optional fields as Variedades shows them under the pricing switches (pricing-settings.md), saved by one primary action. There is no separate save for the name and for the price.
+- **Amounts in pesos**: the price fields are the ones the price entry form shares (varieties.md), so the list price, the bulk price and the VIP price each show "$" before the amount, and the bulk minimum, in grams, never does.
+- **No date**: step 1 always saves a price effective today. It shows no date field and no date chip; the price form's "Rige desde" chip (varieties.md) is not part of it.
 - **Two writes through the owners**: that one action may save the variety and then its price entry effective today, each through its owner's route and refusals (varieties.md). Nothing is restated here.
   - A refused name saves nothing and keeps everything typed.
   - A refused price leaves the variety saved, keeps everything typed and shows the refusal on its field. The retry sends only the price and never adds a second variety.
@@ -142,6 +156,26 @@ Success criteria:
 - Rioplatense Spanish with vos. Nothing clipped at 320–430 px or at 130 % text; controls at least 44 px tall and inputs at least 16 px.
 - Every step and "Listo" go into `scripts/design/screens.json`; `scripts/design/compare.sh` runs before and after, phone and computer, judged by eye.
 
+### Reviewing a change against the design (criterion 6)
+
+- **The evidence matrix**: every cell is captured on the task base (before) and on the head (after) with `scripts/design/comparisons.mjs --strict`. One script from one install takes both sides, on the same Argentina day, with fonts pinned (ADR-0042). The PR records the installed `@fontsource/plus-jakarta-sans` version. The cells are:
+  - every Onboarding step and "Listo", light and dark, phone and computer;
+  - the "Seguí con la configuración" notice on Inicio, InicioOscuro and InicioCompu;
+  - when the change touches step 2's chip, the stock entry form opened from a variety with no entries ("Stock inicial" preselected), light and dark, phone and computer.
+
+  Screens the change does not touch are left out.
+- **Registry rows**: a cell with no row in `scripts/design/screens.json` gets one under design-capture.md's rules:
+  - the row reaches its screen the way a seller does;
+  - it captures the named section whole;
+  - the two registry tests are declared as seams;
+  - every guard of those tests is kept.
+- **Every difference is listed** in the PR as intended, as a known design defect (such as the drawing's "Origen" label on step 2), or as a defect.
+  - A difference the change introduced compared with the task base is a regression, and it is fixed in the same task, unless it is the change's own decided intent.
+  - A difference already present on the task base is filed as a new follow-up issue, which the PR links, and is not fixed there.
+  - No difference is left unexplained.
+- **A missing capture**: a cell that cannot be captured, on either side, means the change is not done. There is no exception (design-capture.md).
+- **Review evidence only**: the captures are judged by eye and are never a gate step (ADR-0042, gate.md).
+
 ### Constraints
 
 - The Onboarding's state carries `business_id`, taken from the session. Its routes join the isolation sweep and the gated-route test; another business's state does not exist (404 or absent).
@@ -174,7 +208,13 @@ There is no telemetry.
   - one primary action, saving the variety and its price;
   - a refused price keeping everything typed, with the retry sending only the price and no second variety created;
   - returning to step 1 after a variety is priced today showing that variety marked "Hecho", and moving on to step 2 adding no variety;
-  - with one variety priced today and a second saved with no price, returning to step 1 showing the second's name kept and only its price to fill in, saving only the price, with the progress count unchanged.
+  - with one variety priced today and a second saved with no price, returning to step 1 showing the second's name kept and only its price to fill in, saving only the price, with the progress count unchanged;
+  - the "$" before the list, bulk and VIP price and never before the bulk minimum, and no date field or date chip.
+- **Step 2's chip**: front tests (`web/src/screens/StockEntryForm.test.tsx`) show:
+  - no "Origen" label over the fixed "Stock inicial" chip on step 2. The assertion that it was present changes to absent in the same diff as this doc, and the PR lists it (icon-and-text-rule.md criterion 5);
+  - the full stock entry form's origin choice unchanged, with every assertion about it unedited.
+
+  0 open findings on the label.
 - **Who gets it**:
   - a brand-new business gets it;
   - an imported business (including one that landed in the Onboarding before the import) never sees it again;
@@ -187,7 +227,13 @@ There is no telemetry.
   - the Onboarding has no bar and no "+ Nueva venta";
   - Nueva venta opened from "Listo" returns to Inicio.
 - **Isolation**: the routes are in the isolation sweep and the gated-route test; business removal leaves 0 rows of the state and exported count = deleted count.
-- **Design (criterion 5)**: every screen in `screens.json`, `compare.sh` before and after, and a by-eye pass on phone and computer in both themes; the step frame and step 1 match `OnboardingVariedad` and `OnboardingCategorias`.
+- **Design (criterion 5)**: every screen in `screens.json`, `compare.sh` before and after, and a by-eye pass on phone and computer in both themes; the step frame and step 1 match `OnboardingVariedad` and `OnboardingCategorias`. Step 1's price step is registered in `screens.json` and captured before and after the "$" reaches it (varieties.md).
+- **Approval from the evidence (criterion 6)**, read from the PR:
+  - before and after captures are attached for every cell of the matrix: 0 cells missing;
+  - every difference is listed as intended, a known design defect or a defect: 0 unlisted;
+  - 0 regressions left on the head that merges, and every pre-existing difference is linked to a follow-up issue;
+  - every suite passes, and the only edited tests are the registry tests within their declared seams and any assertion changed in the same diff as the doc that decides it;
+  - no capture or comparison step is added to `.agentic/stack.yaml`, CI or the gate.
 - **Business metrics**, read by the operator from existing records only (no tool, no dashboard, never shown in the app):
   - the share of brand-new businesses with a priced variety and a stock entry;
   - the share whose first sale falls on the day they were opened.
@@ -206,6 +252,11 @@ There is no telemetry.
 - Publishing the catalog from the Onboarding.
 - Waiting for a partner to join.
 - Editing or renaming a saved variety from step 1: that is the variety's page.
+- A date field or date chip in step 1: it always saves a price effective today.
+- An "Origen" label over step 2's chip; any change to the full stock entry form's origin choice or its label.
+- Correcting `Onboarding*.dc.html` as part of a change's review: design corrects its own drawings.
+- Fixing, in the change under review, a design difference already present on its task base: it goes to a follow-up.
+- Making the design comparison a gate step, or any automated check of a capture.
 - Usage tracking, a dashboard or an operator script for its metrics.
 - Illustrations, animation, marketing copy, new colours or new components.
 - Live updates between partners while it is open.

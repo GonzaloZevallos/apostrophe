@@ -25,6 +25,7 @@ import { resetLink, supportsPasswordReset } from './backend.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
+import { uniqueTag } from './helpers/unique.js'
 
 const PASSWORD = 'correcthorsebattery'
 const NEW_PASSWORD = 'unanuevaclave99'
@@ -44,8 +45,8 @@ test('changes a password from Configuración → Tu cuenta, signing an older dev
   const consoleMessages: string[] = []
   watchConsole(page, consoleMessages)
 
-  const ownerEmail = `duena-clave-${Date.now()}@example.com`
-  const businessName = `Flores del Cambio ${Date.now()}`
+  const ownerEmail = `duena-clave-${uniqueTag()}@example.com`
+  const businessName = `Flores del Cambio ${uniqueTag()}`
 
   await signUpNewBusiness(page, { businessName, email: ownerEmail })
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
@@ -100,8 +101,8 @@ test('resets a forgotten password from a printed link through to Inicio, then sh
   const consoleMessages: string[] = []
   watchConsole(page, consoleMessages)
 
-  const ownerEmail = `duena-reset-${Date.now()}@example.com`
-  const businessName = `Flores del Reinicio ${Date.now()}`
+  const ownerEmail = `duena-reset-${uniqueTag()}@example.com`
+  const businessName = `Flores del Reinicio ${uniqueTag()}`
 
   await signUpNewBusiness(page, { businessName, email: ownerEmail })
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)

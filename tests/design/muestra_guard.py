@@ -908,6 +908,39 @@ def denylist_problems(name: str, screen: Screen, denylist: tuple[str, ...]) -> l
     return problems
 
 
+def archived_problems(name: str, screen: Screen, muestra: Muestra) -> list[str]:
+    """An archived variety's name is followed by its own marks: "Archivada" always, "Oculta"
+    when `muestra.md` says it is hidden and never when it is not, and the grams and list
+    price it gives wherever the screen shows them (a list row may show neither)."""
+    rows = {r["Variedad"]: r for r in muestra.table("Archivadas")}
+    problems: list[str] = []
+    for i, part in enumerate(screen.parts):
+        if part not in rows:
+            continue
+        row = rows[part]
+        where = f"'{part}'"
+        window = _window(screen.parts, i, set(rows))
+        if "Archivada" not in window:
+            problems.append(_problem(name, f"{where} lacks Archivada"))
+        hidden = row["Oculta"] == "sí"
+        if hidden and "Oculta" not in window:
+            problems.append(_problem(name, f"{where} lacks Oculta, muestra.md says it is hidden"))
+        if not hidden and "Oculta" in window:
+            problems.append(_problem(name, f"{where} says Oculta, muestra.md says it is shown"))
+        grams = first_matching(window, GRAMS)
+        if grams is not None and minus(grams) != row["Gramos"]:
+            problems.append(_problem(name, f"{where} has {grams}, muestra.md says {row['Gramos']}"))
+        price = first_matching(window, re.compile(r"^\$ [\d.]+ (?:x g|por gramo)$"))
+        if price is not None and _price_per_gram(price) != row["Precio hoy"]:
+            problems.append(
+                _problem(
+                    name,
+                    f"{where} costs {_price_per_gram(price)}, muestra.md says {row['Precio hoy']}",
+                )
+            )
+    return problems
+
+
 Check = Callable[[str, Screen, Muestra], list[str]]
 
 
@@ -924,6 +957,7 @@ CHECKS: dict[str, tuple[Check, ...]] = {
     "variedades": (variety_problems,),
     "ventas": (_ventas_periods, customer_problems, sale_problems),
     "analisis": (analysis_problems,),
+    "archived": (archived_problems,),
     "otras": (),
 }
 

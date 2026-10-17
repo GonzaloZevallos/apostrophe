@@ -12,6 +12,7 @@
 
 import { useNavigate } from 'react-router'
 import type { StepSlug } from '../../api/onboarding'
+import Boton from '../../components/Boton'
 import Icono from '../../components/Icono'
 import { inAppState } from '../../components/inAppState'
 import { HOME, SALE_NEW } from '../../routes'
@@ -48,9 +49,12 @@ export default function Listo() {
     <main className="pantalla onboarding">
       <div className="onboarding__columna">
         <div className="onboarding__cabecera onboarding__cabecera--derecha">
-          <button type="button" className="onboarding__enlace" onClick={() => void navigate(HOME, { replace: true })}>
-            Cerrar
-          </button>
+          <Boton
+            variant="icon"
+            action="close"
+            ariaLabel="Cerrar"
+            onClick={() => void navigate(HOME, { replace: true })}
+          />
         </div>
         <div className="onboarding__progreso">
           <span className="onboarding__paso">{`${STEP_COUNT} de ${STEP_COUNT} pasos`}</span>
@@ -80,16 +84,12 @@ export default function Listo() {
           })}
         </ul>
         <div className="onboarding__acciones">
-          <button type="button" className="boton" onClick={() => void firstSale()}>
+          <Boton icon="agregar" onClick={() => void firstSale()}>
             Cargar mi primera venta
-          </button>
-          <button
-            type="button"
-            className="boton boton--suave onboarding__boton-saltar"
-            onClick={() => void navigate(HOME, { replace: true })}
-          >
+          </Boton>
+          <Boton variant="secondary" icon="inicio" onClick={() => void navigate(HOME, { replace: true })}>
             Ir a Inicio
-          </button>
+          </Boton>
         </div>
       </div>
     </main>

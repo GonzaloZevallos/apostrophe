@@ -1,0 +1,960 @@
+[
+  {
+    "screen": "Entrar",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/Entrar.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/Entrar.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/Entrar.built.png"
+  },
+  {
+    "screen": "EntrarOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/EntrarOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/EntrarOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/EntrarOscuro.built.png"
+  },
+  {
+    "screen": "NegocioNuevo",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/NegocioNuevo.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/NegocioNuevo.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/NegocioNuevo.built.png"
+  },
+  {
+    "screen": "Invitacion",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/Invitacion.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/Invitacion.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/Invitacion.built.png"
+  },
+  {
+    "screen": "Reset",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/Reset.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/Reset.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/Reset.built.png"
+  },
+  {
+    "screen": "ResetOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/ResetOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/ResetOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/ResetOscuro.built.png"
+  },
+  {
+    "screen": "Inicio",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/Inicio.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/Inicio.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/Inicio.built.png"
+  },
+  {
+    "screen": "InicioOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/InicioOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/InicioOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/InicioOscuro.built.png"
+  },
+  {
+    "screen": "InicioCompu",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/InicioCompu.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/InicioCompu.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/InicioCompu.built.png"
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/InicioPrimeraVez.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/InicioPrimeraVez.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/InicioPrimeraVez.built.png"
+  },
+  {
+    "screen": "InicioPrimeraVezCompu",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/InicioPrimeraVezCompu.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/InicioPrimeraVezCompu.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/InicioPrimeraVezCompu.built.png"
+  },
+  {
+    "screen": "InicioPrimeraVezOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/InicioPrimeraVezOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/InicioPrimeraVezOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/InicioPrimeraVezOscuro.built.png"
+  },
+  {
+    "screen": "Ventas",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/Ventas.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/Ventas.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/Ventas.built.png"
+  },
+  {
+    "screen": "VentasCompu",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/VentasCompu.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/VentasCompu.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/VentasCompu.built.png"
+  },
+  {
+    "screen": "NuevaVenta",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/NuevaVenta.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/NuevaVenta.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/NuevaVenta.built.png"
+  },
+  {
+    "screen": "NuevaVentaCliente",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/NuevaVentaCliente.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/NuevaVentaCliente.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/NuevaVentaCliente.built.png"
+  },
+  {
+    "screen": "NuevaVentaCompu",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/NuevaVentaCompu.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/NuevaVentaCompu.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/NuevaVentaCompu.built.png"
+  },
+  {
+    "screen": "VentaDetalle",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/VentaDetalle.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/VentaDetalle.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/VentaDetalle.built.png"
+  },
+  {
+    "screen": "VentaDetalleCompu",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/VentaDetalleCompu.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/VentaDetalleCompu.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/VentaDetalleCompu.built.png"
+  },
+  {
+    "screen": "VentasOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/VentasOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/VentasOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/VentasOscuro.built.png"
+  },
+  {
+    "screen": "VentasCompuOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/VentasCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/VentasCompuOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/VentasCompuOscuro.built.png"
+  },
+  {
+    "screen": "NuevaVentaOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/NuevaVentaOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/NuevaVentaOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/NuevaVentaOscuro.built.png"
+  },
+  {
+    "screen": "NuevaVentaClienteOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/NuevaVentaClienteOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/NuevaVentaClienteOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/NuevaVentaClienteOscuro.built.png"
+  },
+  {
+    "screen": "NuevaVentaCompuOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/NuevaVentaCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/NuevaVentaCompuOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/NuevaVentaCompuOscuro.built.png"
+  },
+  {
+    "screen": "VentaDetalleOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/VentaDetalleOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/VentaDetalleOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/VentaDetalleOscuro.built.png"
+  },
+  {
+    "screen": "VentaDetalleCompuOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/VentaDetalleCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/VentaDetalleCompuOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/VentaDetalleCompuOscuro.built.png"
+  },
+  {
+    "screen": "VentaGuardada",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/VentaGuardada.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/VentaGuardada.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/VentaGuardada.built.png"
+  },
+  {
+    "screen": "VentaGuardadaOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/VentaGuardadaOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/VentaGuardadaOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/VentaGuardadaOscuro.built.png"
+  },
+  {
+    "screen": "Clientes",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/Clientes.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/Clientes.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/Clientes.built.png"
+  },
+  {
+    "screen": "ClientesCompu",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/ClientesCompu.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/ClientesCompu.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/ClientesCompu.built.png"
+  },
+  {
+    "screen": "ClienteFicha",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/ClienteFicha.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/ClienteFicha.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/ClienteFicha.built.png"
+  },
+  {
+    "screen": "ClienteNuevo",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/ClienteNuevo.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/ClienteNuevo.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/ClienteNuevo.built.png"
+  },
+  {
+    "screen": "ClienteNuevoCompu",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/ClienteNuevoCompu.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/ClienteNuevoCompu.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/ClienteNuevoCompu.built.png"
+  },
+  {
+    "screen": "ClienteEditar",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/ClienteEditar.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/ClienteEditar.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/ClienteEditar.built.png"
+  },
+  {
+    "screen": "ClienteEditarCompu",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/ClienteEditarCompu.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/ClienteEditarCompu.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/ClienteEditarCompu.built.png"
+  },
+  {
+    "screen": "Cobro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/Cobro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/Cobro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/Cobro.built.png"
+  },
+  {
+    "screen": "CobroCompu",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/CobroCompu.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/CobroCompu.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/CobroCompu.built.png"
+  },
+  {
+    "screen": "EntradaStock",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/EntradaStock.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/EntradaStock.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/EntradaStock.built.png"
+  },
+  {
+    "screen": "EntradaStockEditar",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/EntradaStockEditar.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/EntradaStockEditar.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/EntradaStockEditar.built.png"
+  },
+  {
+    "screen": "EntradaStockCompu",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/EntradaStockCompu.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/EntradaStockCompu.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/EntradaStockCompu.built.png"
+  },
+  {
+    "screen": "EntradaStockSinEntradas",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/EntradaStockSinEntradas.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/EntradaStockSinEntradas.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/EntradaStockSinEntradas.built.png"
+  },
+  {
+    "screen": "EntradaStockSinEntradasOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/EntradaStockSinEntradasOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/EntradaStockSinEntradasOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/EntradaStockSinEntradasOscuro.built.png"
+  },
+  {
+    "screen": "EntradaStockSinEntradasCompu",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/EntradaStockSinEntradasCompu.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/EntradaStockSinEntradasCompu.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/EntradaStockSinEntradasCompu.built.png"
+  },
+  {
+    "screen": "EntradaStockSinEntradasCompuOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/EntradaStockSinEntradasCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/EntradaStockSinEntradasCompuOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/EntradaStockSinEntradasCompuOscuro.built.png"
+  },
+  {
+    "screen": "TodasLasEntradas",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/TodasLasEntradas.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/TodasLasEntradas.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/TodasLasEntradas.built.png"
+  },
+  {
+    "screen": "TodasLasEntradasVariedad",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/TodasLasEntradasVariedad.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/TodasLasEntradasVariedad.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/TodasLasEntradasVariedad.built.png"
+  },
+  {
+    "screen": "SacarDelStock",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/SacarDelStock.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/SacarDelStock.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/SacarDelStock.built.png"
+  },
+  {
+    "screen": "SacarDelStockCompu",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/SacarDelStockCompu.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/SacarDelStockCompu.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/SacarDelStockCompu.built.png"
+  },
+  {
+    "screen": "RetiroDetalle",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/RetiroDetalle.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/RetiroDetalle.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/RetiroDetalle.built.png"
+  },
+  {
+    "screen": "VerTodas",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/VerTodas.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/VerTodas.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/VerTodas.built.png"
+  },
+  {
+    "screen": "PrecioNuevo",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/PrecioNuevo.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/PrecioNuevo.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/PrecioNuevo.built.png"
+  },
+  {
+    "screen": "PrecioNuevoCompu",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/PrecioNuevoCompu.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/PrecioNuevoCompu.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/PrecioNuevoCompu.built.png"
+  },
+  {
+    "screen": "PrecioNuevoOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/PrecioNuevoOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/PrecioNuevoOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/PrecioNuevoOscuro.built.png"
+  },
+  {
+    "screen": "PrecioNuevoCompuOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/PrecioNuevoCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/PrecioNuevoCompuOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/PrecioNuevoCompuOscuro.built.png"
+  },
+  {
+    "screen": "VariedadNueva",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/VariedadNueva.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/VariedadNueva.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/VariedadNueva.built.png"
+  },
+  {
+    "screen": "VariedadNuevaCompu",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/VariedadNuevaCompu.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/VariedadNuevaCompu.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/VariedadNuevaCompu.built.png"
+  },
+  {
+    "screen": "Variedades",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/Variedades.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/Variedades.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/Variedades.built.png"
+  },
+  {
+    "screen": "VariedadesCompu",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/VariedadesCompu.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/VariedadesCompu.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/VariedadesCompu.built.png"
+  },
+  {
+    "screen": "VariedadDetalle",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/VariedadDetalle.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/VariedadDetalle.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/VariedadDetalle.built.png"
+  },
+  {
+    "screen": "Archivadas",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/Archivadas.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/Archivadas.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/Archivadas.built.png"
+  },
+  {
+    "screen": "Gastos",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/Gastos.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/Gastos.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/Gastos.built.png"
+  },
+  {
+    "screen": "GastosCompu",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/GastosCompu.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/GastosCompu.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/GastosCompu.built.png"
+  },
+  {
+    "screen": "GastoNuevo",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/GastoNuevo.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/GastoNuevo.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/GastoNuevo.built.png"
+  },
+  {
+    "screen": "GastoNuevoCompu",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/GastoNuevoCompu.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/GastoNuevoCompu.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/GastoNuevoCompu.built.png"
+  },
+  {
+    "screen": "Catalogo",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/Catalogo.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/Catalogo.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/Catalogo.built.png"
+  },
+  {
+    "screen": "CatalogoCompu",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/CatalogoCompu.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/CatalogoCompu.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/CatalogoCompu.built.png"
+  },
+  {
+    "screen": "Analisis",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/Analisis.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/Analisis.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/Analisis.built.png"
+  },
+  {
+    "screen": "AnalisisCompu",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/AnalisisCompu.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/AnalisisCompu.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/AnalisisCompu.built.png"
+  },
+  {
+    "screen": "AnalisisOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/AnalisisOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/AnalisisOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/AnalisisOscuro.built.png"
+  },
+  {
+    "screen": "AnalisisCompuOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/AnalisisCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/AnalisisCompuOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/AnalisisCompuOscuro.built.png"
+  },
+  {
+    "screen": "Mas",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/Mas.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/Mas.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/Mas.built.png"
+  },
+  {
+    "screen": "Configuracion",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/Configuracion.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/Configuracion.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/Configuracion.built.png"
+  },
+  {
+    "screen": "ConfiguracionCompu",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionCompu.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionCompu.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionCompu.built.png"
+  },
+  {
+    "screen": "ConfiguracionNegocio",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionNegocio.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionNegocio.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionNegocio.built.png"
+  },
+  {
+    "screen": "ConfiguracionNegocioCompu",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionNegocioCompu.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionNegocioCompu.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionNegocioCompu.built.png"
+  },
+  {
+    "screen": "ConfiguracionUsuarios",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionUsuarios.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionUsuarios.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionUsuarios.built.png"
+  },
+  {
+    "screen": "ConfiguracionUsuariosCompu",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionUsuariosCompu.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionUsuariosCompu.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionUsuariosCompu.built.png"
+  },
+  {
+    "screen": "ConfiguracionPrecios",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionPrecios.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionPrecios.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionPrecios.built.png"
+  },
+  {
+    "screen": "ConfiguracionPreciosCompu",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionPreciosCompu.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionPreciosCompu.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionPreciosCompu.built.png"
+  },
+  {
+    "screen": "ConfiguracionIntegraciones",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionIntegraciones.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionIntegraciones.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionIntegraciones.built.png"
+  },
+  {
+    "screen": "ConfiguracionIntegracionesCompu",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionIntegracionesCompu.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionIntegracionesCompu.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionIntegracionesCompu.built.png"
+  },
+  {
+    "screen": "ConfiguracionIntegracionesOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionIntegracionesOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionIntegracionesOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionIntegracionesOscuro.built.png"
+  },
+  {
+    "screen": "ConfiguracionIntegracionesCompuOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionIntegracionesCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionIntegracionesCompuOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionIntegracionesCompuOscuro.built.png"
+  },
+  {
+    "screen": "ConfiguracionMensaje",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionMensaje.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionMensaje.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionMensaje.built.png"
+  },
+  {
+    "screen": "ConfiguracionMensajeCompu",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionMensajeCompu.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionMensajeCompu.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionMensajeCompu.built.png"
+  },
+  {
+    "screen": "ConfiguracionCategorias",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionCategorias.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionCategorias.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionCategorias.built.png"
+  },
+  {
+    "screen": "ConfiguracionCategoriasCompu",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionCategoriasCompu.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionCategoriasCompu.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionCategoriasCompu.built.png"
+  },
+  {
+    "screen": "ConfiguracionApariencia",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionApariencia.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionApariencia.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionApariencia.built.png"
+  },
+  {
+    "screen": "ConfiguracionAparienciaCompu",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionAparienciaCompu.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionAparienciaCompu.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionAparienciaCompu.built.png"
+  },
+  {
+    "screen": "ConfiguracionCuenta",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionCuenta.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionCuenta.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionCuenta.built.png"
+  },
+  {
+    "screen": "ConfiguracionCuentaCompu",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionCuentaCompu.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionCuentaCompu.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/ConfiguracionCuentaCompu.built.png"
+  },
+  {
+    "screen": "OnboardingStock",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingStock.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingStock.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingStock.built.png"
+  },
+  {
+    "screen": "OnboardingMensaje",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingMensaje.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingMensaje.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingMensaje.built.png"
+  },
+  {
+    "screen": "OnboardingBot",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingBot.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingBot.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingBot.built.png"
+  },
+  {
+    "screen": "OnboardingSocio",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingSocio.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingSocio.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingSocio.built.png"
+  },
+  {
+    "screen": "OnboardingCategorias",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingCategorias.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingCategorias.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingCategorias.built.png"
+  },
+  {
+    "screen": "OnboardingStockOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingStockOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingStockOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingStockOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingMensajeOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingMensajeOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingMensajeOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingMensajeOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingBotOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingBotOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingBotOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingBotOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingSocioOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingSocioOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingSocioOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingSocioOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingCategoriasOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingCategoriasOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingCategoriasOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingCategoriasOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingStockCompu",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingStockCompu.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingStockCompu.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingStockCompu.built.png"
+  },
+  {
+    "screen": "OnboardingMensajeCompu",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingMensajeCompu.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingMensajeCompu.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingMensajeCompu.built.png"
+  },
+  {
+    "screen": "OnboardingBotCompu",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingBotCompu.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingBotCompu.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingBotCompu.built.png"
+  },
+  {
+    "screen": "OnboardingSocioCompu",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingSocioCompu.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingSocioCompu.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingSocioCompu.built.png"
+  },
+  {
+    "screen": "OnboardingCategoriasCompu",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingCategoriasCompu.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingCategoriasCompu.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingCategoriasCompu.built.png"
+  },
+  {
+    "screen": "OnboardingStockCompuOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingStockCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingStockCompuOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingStockCompuOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingMensajeCompuOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingMensajeCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingMensajeCompuOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingMensajeCompuOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingBotCompuOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingBotCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingBotCompuOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingBotCompuOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingSocioCompuOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingSocioCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingSocioCompuOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingSocioCompuOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingCategoriasCompuOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingCategoriasCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingCategoriasCompuOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingCategoriasCompuOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingVariedad",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingVariedad.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingVariedad.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingVariedad.built.png"
+  },
+  {
+    "screen": "OnboardingVariedadOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingVariedadOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingVariedadOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingVariedadOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingVariedadCompu",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingVariedadCompu.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingVariedadCompu.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingVariedadCompu.built.png"
+  },
+  {
+    "screen": "OnboardingVariedadCompuOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingVariedadCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingVariedadCompuOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingVariedadCompuOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingListo",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingListo.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingListo.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingListo.built.png"
+  },
+  {
+    "screen": "OnboardingListoCompu",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingListoCompu.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingListoCompu.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingListoCompu.built.png"
+  },
+  {
+    "screen": "OnboardingListoOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingListoOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingListoOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingListoOscuro.built.png"
+  },
+  {
+    "screen": "OnboardingListoCompuOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingListoCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingListoCompuOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/OnboardingListoCompuOscuro.built.png"
+  },
+  {
+    "screen": "EstadosSinConexion",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/EstadosSinConexion.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/EstadosSinConexion.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/EstadosSinConexion.built.png"
+  },
+  {
+    "screen": "EstadosSinConexionCompu",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/EstadosSinConexionCompu.png",
+    "notes": [
+      "una tipografía de la página quedó en error"
+    ],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/EstadosSinConexionCompu.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/EstadosSinConexionCompu.built.png"
+  },
+  {
+    "screen": "EstadosGone",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/EstadosGone.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/EstadosGone.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/EstadosGone.built.png"
+  },
+  {
+    "screen": "EstadosConfirmar",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/EstadosConfirmar.png",
+    "notes": [
+      "estado no alcanzado en {\"click\":\"Borrar venta\"}: TimeoutError: locator.click: Timeout 8000ms exceeded."
+    ],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/EstadosConfirmar.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/EstadosConfirmar.built.png"
+  },
+  {
+    "screen": "MasOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/MasOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/MasOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/MasOscuro.built.png"
+  },
+  {
+    "screen": "VariedadDetalleOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/VariedadDetalleOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/VariedadDetalleOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/VariedadDetalleOscuro.built.png"
+  },
+  {
+    "screen": "ArchivadasOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/ArchivadasOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/ArchivadasOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/ArchivadasOscuro.built.png"
+  },
+  {
+    "screen": "CatalogoOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/CatalogoOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/CatalogoOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/CatalogoOscuro.built.png"
+  },
+  {
+    "screen": "CatalogoCompuOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/CatalogoCompuOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/CatalogoCompuOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/CatalogoCompuOscuro.built.png"
+  },
+  {
+    "screen": "VerTodasOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/VerTodasOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/VerTodasOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/VerTodasOscuro.built.png"
+  },
+  {
+    "screen": "TodasLasEntradasOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/TodasLasEntradasOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/TodasLasEntradasOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/TodasLasEntradasOscuro.built.png"
+  },
+  {
+    "screen": "TodasLasEntradasVariedadOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/TodasLasEntradasVariedadOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/TodasLasEntradasVariedadOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/TodasLasEntradasVariedadOscuro.built.png"
+  },
+  {
+    "screen": "RetiroDetalleOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/RetiroDetalleOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/RetiroDetalleOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/RetiroDetalleOscuro.built.png"
+  },
+  {
+    "screen": "EstadosSinConexionOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/EstadosSinConexionOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/EstadosSinConexionOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/EstadosSinConexionOscuro.built.png"
+  },
+  {
+    "screen": "EstadosSinConexionCompuOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/EstadosSinConexionCompuOscuro.png",
+    "notes": [
+      "una tipografía de la página quedó en error"
+    ],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/EstadosSinConexionCompuOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/EstadosSinConexionCompuOscuro.built.png"
+  },
+  {
+    "screen": "VariedadArchivada",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/VariedadArchivada.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/VariedadArchivada.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/VariedadArchivada.built.png"
+  },
+  {
+    "screen": "VariedadArchivadaOscuro",
+    "file": "/tmp/tmp.G5h7xes6qD/comparisons/VariedadArchivadaOscuro.png",
+    "notes": [],
+    "design": "/tmp/tmp.G5h7xes6qD/comparisons/VariedadArchivadaOscuro.design.png",
+    "built": "/tmp/tmp.G5h7xes6qD/comparisons/VariedadArchivadaOscuro.built.png"
+  }
+]

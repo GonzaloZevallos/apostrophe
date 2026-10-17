@@ -121,7 +121,7 @@
         "type": "object"
       },
       "AmountWithPendingOut": {
-        "description": "A money figure (profit, stock shortfall, promotion or own use) together with the\npending grams behind it, for one period.",
+        "description": "A money figure (profit) together with the pending grams behind it, for one\nperiod.",
         "properties": {
           "amount": {
             "title": "Amount",
@@ -170,7 +170,7 @@
           "own_use": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/AmountWithPendingOut"
+                "$ref": "#/components/schemas/RowCostOut"
               },
               {
                 "type": "null"
@@ -191,7 +191,7 @@
           "promotion": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/AmountWithPendingOut"
+                "$ref": "#/components/schemas/RowCostOut"
               },
               {
                 "type": "null"
@@ -209,7 +209,7 @@
           "shortfall": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/AmountWithPendingOut"
+                "$ref": "#/components/schemas/RowCostOut"
               },
               {
                 "type": "null"
@@ -337,6 +337,65 @@
           "amount"
         ],
         "title": "AppliedToOut",
+        "type": "object"
+      },
+      "ArchivedCatalogVarietyOut": {
+        "properties": {
+          "aroma": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Aroma"
+          },
+          "emoji": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Emoji"
+          },
+          "indica_share": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Indica Share"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "shown": {
+            "title": "Shown",
+            "type": "boolean"
+          },
+          "variety_id": {
+            "title": "Variety Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "variety_id",
+          "name",
+          "shown",
+          "emoji",
+          "indica_share",
+          "aroma"
+        ],
+        "title": "ArchivedCatalogVarietyOut",
         "type": "object"
       },
       "AssignCustomerIn": {
@@ -1531,6 +1590,9 @@
             "title": "Cash",
             "type": "integer"
           },
+          "cost_of_goods": {
+            "$ref": "#/components/schemas/RowCostOut"
+          },
           "expenses": {
             "title": "Expenses",
             "type": "integer"
@@ -1556,7 +1618,7 @@
           "own_use": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/AmountWithPendingOut"
+                "$ref": "#/components/schemas/RowCostOut"
               },
               {
                 "type": "null"
@@ -1569,7 +1631,7 @@
           "promotion": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/AmountWithPendingOut"
+                "$ref": "#/components/schemas/RowCostOut"
               },
               {
                 "type": "null"
@@ -1579,6 +1641,16 @@
           "sales": {
             "title": "Sales",
             "type": "integer"
+          },
+          "shortfall": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RowCostOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -1587,9 +1659,11 @@
           "last_day",
           "sales",
           "grams",
-          "expenses",
+          "cost_of_goods",
+          "shortfall",
           "promotion",
           "own_use",
+          "expenses",
           "profit",
           "cash"
         ],
@@ -2635,6 +2709,30 @@
         "title": "ReturnedGramsOut",
         "type": "object"
       },
+      "RowCostOut": {
+        "description": "One An\u00e1lisis cost line (cost of goods, stock shortfall, promotion or own use): its\ncosted `amount` and its own `pending_grams` (a positive magnitude). `all_pending` is\nthe domain's answer (`row_cost`) that every gram behind the line is pending, so the\nscreen says \"N g sin costo\" and never \"$ 0\".",
+        "properties": {
+          "all_pending": {
+            "title": "All Pending",
+            "type": "boolean"
+          },
+          "amount": {
+            "title": "Amount",
+            "type": "integer"
+          },
+          "pending_grams": {
+            "title": "Pending Grams",
+            "type": "number"
+          }
+        },
+        "required": [
+          "amount",
+          "pending_grams",
+          "all_pending"
+        ],
+        "title": "RowCostOut",
+        "type": "object"
+      },
       "SaleAccountRowOut": {
         "properties": {
           "date": {
@@ -3069,7 +3167,7 @@
           "own_use": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/AmountWithPendingOut"
+                "$ref": "#/components/schemas/RowCostOut"
               },
               {
                 "type": "null"
@@ -3082,7 +3180,7 @@
           "promotion": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/AmountWithPendingOut"
+                "$ref": "#/components/schemas/RowCostOut"
               },
               {
                 "type": "null"
@@ -3096,7 +3194,7 @@
           "shortfall": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/AmountWithPendingOut"
+                "$ref": "#/components/schemas/RowCostOut"
               },
               {
                 "type": "null"
@@ -3501,6 +3599,9 @@
             "title": "Cash",
             "type": "integer"
           },
+          "cost_of_goods": {
+            "$ref": "#/components/schemas/RowCostOut"
+          },
           "expenses": {
             "title": "Expenses",
             "type": "integer"
@@ -3522,7 +3623,7 @@
           "own_use": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/AmountWithPendingOut"
+                "$ref": "#/components/schemas/RowCostOut"
               },
               {
                 "type": "null"
@@ -3535,7 +3636,7 @@
           "promotion": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/AmountWithPendingOut"
+                "$ref": "#/components/schemas/RowCostOut"
               },
               {
                 "type": "null"
@@ -3545,6 +3646,16 @@
           "sales": {
             "title": "Sales",
             "type": "integer"
+          },
+          "shortfall": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RowCostOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -3552,9 +3663,11 @@
           "last_day",
           "sales",
           "grams",
-          "expenses",
+          "cost_of_goods",
+          "shortfall",
           "promotion",
           "own_use",
+          "expenses",
           "profit",
           "cash",
           "best"
@@ -4137,6 +4250,36 @@
           }
         ],
         "summary": "Get Catalog",
+        "tags": [
+          "catalog"
+        ]
+      }
+    },
+    "/catalog/archived": {
+      "get": {
+        "operationId": "get_archived_catalog_archived_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ArchivedCatalogVarietyOut"
+                  },
+                  "title": "Response Get Archived Catalog Archived Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Archived",
         "tags": [
           "catalog"
         ]
