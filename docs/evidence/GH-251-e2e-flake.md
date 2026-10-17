@@ -127,7 +127,7 @@ single-spec run with no faketime (32.8 s). So it depends on `LD_PRELOAD`-ed time
 browser, not on the calendar: I read it as a faketime artifact (throttled Chromium with a
 hooked clock), **not proven**. Both faketime runs above exclude it with
 `--grep-invert "a tap that leaves Variedades"`; the 101 are green. The first midnight run
-(with the spec included, `FAKETIME_NO_CACHE=1`) was 102 passed and that 1 failed.
+(with the spec included, `FAKETIME_NO_CACHE=1`) was 101 passed and that 1 failed (the excluded spec).
 
 **Contexts made by hand.** A throwaway spec (not committed), under `TZ=Pacific/Auckland`,
 compared the fixture's `page` with a page of `browser.newContext({ baseURL })`: both
