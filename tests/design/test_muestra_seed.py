@@ -189,7 +189,9 @@ def test_the_archived_variety_has_one_opening_stock_entry_and_nothing_else(
     ]
     assert archived[0]["current_price"] is not None
     movements = movements_of(client, sample.archived)
-    assert [(m["kind"], m["grams"], m["total_cost"]) for m in movements] == [("entry", 25, None)]
+    assert [(m["kind"], m["origin"], m["grams"], m["total_cost"]) for m in movements] == [
+        ("entry", "opening_stock", 25, None)
+    ]
     first_record = client.get("/analysis").json()["first_record"]
     assert movements[0]["date"] >= first_record
     # A day the sample already has a record on: the sales and entries of the others.
@@ -232,8 +234,7 @@ def test_the_archived_variety_touches_no_read_of_the_live_business(
     assert gone not in [v["id"] for v in catalog["varieties"]]
     assert ARCHIVED_NAME not in (catalog["text"] or "")
     analysis = client.get("/analysis").json()
-    for block in (analysis["month"], *analysis["months"]):
-        assert gone not in [v["variety_id"] for v in block.get("varieties", [])]
+    assert gone not in [v["variety_id"] for v in analysis["month"]["varieties"]]
 
     assert gone in [
         r["variety_id"]

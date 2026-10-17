@@ -292,7 +292,7 @@ def seed(api: Api, today: date) -> Sample:
         {"shown": False, "emoji": "🫐", "indica_share": 40, "aroma": "Frutos rojos"},
     )
     api.call("PUT", f"/stock/varieties/{archived}/threshold", {"grams": "15"})
-    entry(ago(40), archived, "harvest", "25", None)
+    entry(ago(40), archived, "opening_stock", "25", None)
     api.call("POST", f"/varieties/{archived}/archive")
 
     return Sample(
