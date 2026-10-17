@@ -37,7 +37,9 @@ export default function TeDeben() {
           {NOBODY_OWES}
         </span>
       ) : (
-        <span className="cifra-xl monto-deuda">{formatMoney(data.total_owed)}</span>
+        <div className="ventas__resumen">
+          <span className="cifra-xl monto-deuda">{formatMoney(data.total_owed)}</span>
+        </div>
       )}
 
       <div className="lista-clientes">

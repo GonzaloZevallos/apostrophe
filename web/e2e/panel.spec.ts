@@ -386,7 +386,11 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   // The teaser: Carla's own row, opening her card.
   await page.getByRole('link', { name: teaserRow.name }).first().click()
   await expect(page).toHaveURL(new RegExp(`${pathTo(CUSTOMER, { id: teaserRow.customer_id })}$`))
-  await expect(page.locator('.encabezado__titulo')).toHaveText(teaserRow.name)
+  // On a computer the list sits beside the card and has its own title: read the card's (the pane
+  // without the search box).
+  await expect(
+    page.locator('main').filter({ hasNot: page.getByLabel('Buscar cliente') }).locator('.encabezado__titulo'),
+  ).toHaveText(teaserRow.name)
   await expect(page.getByText(`Te debe ${pesos(teaserRow.balance)}`)).toBeVisible()
 
   // Nothing personal or technical reaches the console or the browser's own storage

@@ -17,6 +17,7 @@
  */
 
 import { CUSTOMER, CUSTOMERS, CUSTOMER_NEW, SALE, SALE_NEW, VARIETIES } from '../src/routes.js'
+import type { Page } from '@playwright/test'
 import { expectPath } from './helpers/url.js'
 import { expect, test } from './fixtures.js'
 import { signUpNewBusiness } from './helpers/signup.js'
@@ -24,6 +25,12 @@ import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
 import { uniqueTag } from './helpers/unique.js'
+
+/** The customer's card, never the list beside it on a computer (the list holds the search box):
+ * its "Te debe" and "A favor" are what these specs read. */
+function cardOf(page: Page) {
+  return page.locator('main').filter({ hasNot: page.getByLabel('Buscar cliente') })
+}
 
 test('a customer with no phone number is registered, edited, sold to, paid and shown in Te deben', async ({
   page,
@@ -109,7 +116,7 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   await page.getByRole('radio', { name: 'Efectivo' }).check()
   await page.getByRole('button', { name: 'Guardar' }).click()
   await expect(page.getByText('Cobro guardado', { exact: true })).toBeVisible()
-  await expect(page.getByText('Te debe', { exact: false })).toHaveCount(0)
+  await expect(cardOf(page).getByText('Te debe', { exact: false })).toHaveCount(0)
 
   // A second customer, also without a phone number, created straight from Elegir
   // cliente inside a new sale, chosen and sold to in one run.
