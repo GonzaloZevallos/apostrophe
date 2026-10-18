@@ -16,15 +16,9 @@ import Boton from '../../components/Boton'
 import SinConexion from '../../components/SinConexion'
 import { logOut } from '../../session'
 import CambiarContrasena from '../CambiarContrasena'
-import { PASSWORD_CHANGED_SUCCESS } from '../../copy/settings'
+import { CHANGE_PASSWORD } from '../../copy/auth'
+import { GROUP_ACCOUNT, LEAVE_PASSWORD, LOG_OUT, PASSWORD_CHANGED_SUCCESS } from '../../copy/settings'
 import SettingsGroup from './SettingsGroup'
-
-const LEAVE = {
-  question: '¿Descartás la contraseña nueva?',
-  detail: 'Se pierde lo que cargaste: todavía no se guardó nada.',
-  keepLabel: 'No, seguí editando',
-  discardLabel: 'Sí, descartala',
-}
 
 export default function AccountGroup() {
   const queryClient = useQueryClient()
@@ -53,7 +47,7 @@ export default function AccountGroup() {
   }
 
   return (
-    <SettingsGroup title="Tu cuenta" dirty={false} leave={LEAVE}>
+    <SettingsGroup title={GROUP_ACCOUNT} dirty={false} leave={LEAVE_PASSWORD}>
       {({ disarm }) => (
         <>
           {passwordChanged && (
@@ -62,10 +56,10 @@ export default function AccountGroup() {
             </div>
           )}
           <Boton variant="secondary" icon="candado" onClick={() => setChangingPassword(true)}>
-            Cambiar contraseña
+            {CHANGE_PASSWORD}
           </Boton>
           <Boton variant="secondary" icon="salirSesion" onClick={() => void onLogOut(disarm)} disabled={loggingOut}>
-            Cerrar sesión
+            {LOG_OUT}
           </Boton>
           {logoutOffline && <SinConexion />}
           {changingPassword && (

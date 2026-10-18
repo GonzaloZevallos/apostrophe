@@ -28,10 +28,16 @@ import Boton from '../components/Boton'
 import SinConexion from '../components/SinConexion'
 import { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import { changePassword } from '../session'
-import { BRAKE_MESSAGE, WEAK_PASSWORD_MESSAGE } from '../copy/auth'
-
-export const WRONG_CURRENT_PASSWORD_MESSAGE = 'La contraseña actual no es esa.'
-export const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
+import {
+  BRAKE_MESSAGE,
+  CANCEL,
+  CHANGE_PASSWORD,
+  CURRENT_PASSWORD_LABEL,
+  NEW_PASSWORD_LABEL,
+  WEAK_PASSWORD_MESSAGE,
+  WRONG_CURRENT_PASSWORD_MESSAGE,
+} from '../copy/auth'
+import { GENERIC_REFUSAL_MESSAGE, HIDE, SAVE, SHOW } from '../copy/common'
 const CURRENT_PASSWORD_WRONG_CODE: RefusalCode = 'account.current_password_wrong'
 
 export interface CambiarContrasenaProps {
@@ -92,10 +98,10 @@ export default function CambiarContrasena({ onClose, onSaved }: CambiarContrasen
   return (
     <div className="capa" role="presentation">
       <div className="capa__contenido">
-        <span className="panel__titulo">Cambiar contraseña</span>
+        <span className="panel__titulo">{CHANGE_PASSWORD}</span>
         <form className="formulario" onSubmit={(event) => void onSubmit(event)}>
           <label className="campo">
-            <span className="campo__rotulo">Contraseña actual</span>
+            <span className="campo__rotulo">{CURRENT_PASSWORD_LABEL}</span>
             <input
               className="campo__input"
               type="password"
@@ -110,7 +116,7 @@ export default function CambiarContrasena({ onClose, onSaved }: CambiarContrasen
             )}
           </label>
           <label className="campo">
-            <span className="campo__rotulo">Contraseña nueva</span>
+            <span className="campo__rotulo">{NEW_PASSWORD_LABEL}</span>
             <input
               className="campo__input"
               type={reveal ? 'text' : 'password'}
@@ -126,7 +132,7 @@ export default function CambiarContrasena({ onClose, onSaved }: CambiarContrasen
           </label>
           <span className="campo__mostrar">
             <Boton variant="link" onClick={() => setReveal((shown) => !shown)}>
-              {reveal ? 'Ocultar' : 'Mostrar'}
+              {reveal ? HIDE : SHOW}
             </Boton>
           </span>
           {formError !== null && (
@@ -136,10 +142,10 @@ export default function CambiarContrasena({ onClose, onSaved }: CambiarContrasen
           )}
           {offline && <SinConexion />}
           <Boton textOnly="submit" type="submit" disabled={sending}>
-            Guardar
+            {SAVE}
           </Boton>
           <Boton variant="link" onClick={onClose}>
-            Cancelar
+            {CANCEL}
           </Boton>
         </form>
       </div>

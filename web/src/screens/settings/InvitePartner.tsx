@@ -18,7 +18,7 @@ import SinConexion from '../../components/SinConexion'
 import { copyText } from '../../clipboard'
 import { canShare, shareText } from '../../share'
 import { formatDateShort } from '../../format/dates'
-import { inviteExpiry } from '../../copy/settings'
+import { COPY_LINK, INVITE_PARTNER, inviteExpiry, SHARE_LINK } from '../../copy/settings'
 
 interface Invite {
   url: string
@@ -32,7 +32,7 @@ export interface InviteAction {
   variant: 'primary' | 'secondary'
 }
 
-const DEFAULT_ACTION: InviteAction = { label: 'Invitá a un socio', variant: 'secondary' }
+const DEFAULT_ACTION: InviteAction = { label: INVITE_PARTNER, variant: 'secondary' }
 
 export default function InvitePartner({
   onLinkCreated,
@@ -88,9 +88,9 @@ export default function InvitePartner({
           <div className="usuarios__link">{invite.url}</div>
           <div className="usuarios__acciones">
             <Boton variant="primary" icon="copiar" onClick={onCopy}>
-              Copiar
+              {COPY_LINK}
             </Boton>
-            <Boton variant="icon" action="share" ariaLabel="Compartir" onClick={onShare} />
+            <Boton variant="icon" action="share" ariaLabel={SHARE_LINK} onClick={onShare} />
           </div>
           <span className="campo__rotulo" data-copy="help">
             {inviteExpiry(formatDateShort(invite.expires_at.slice(0, 10)))}

@@ -23,16 +23,27 @@ import {
   SETTINGS_PRICES,
   SETTINGS_USERS,
 } from '../../routes'
+import {
+  GROUP_ACCOUNT,
+  GROUP_APPEARANCE,
+  GROUP_BUSINESS,
+  GROUP_CATALOG_MESSAGE,
+  GROUP_EXPENSE_CATEGORIES,
+  GROUP_INTEGRATIONS,
+  GROUP_PRICES,
+  GROUP_USERS,
+  SETTINGS_TITLE,
+} from '../../copy/settings'
 
 const GROUPS: readonly { to: string; label: string; icon: NombreIcono }[] = [
-  { to: SETTINGS_BUSINESS, label: 'Negocio', icon: 'negocio' },
-  { to: SETTINGS_USERS, label: 'Usuarios', icon: 'usuarios' },
-  { to: SETTINGS_PRICES, label: 'Precios', icon: 'precio' },
-  { to: SETTINGS_INTEGRATIONS, label: 'Integraciones', icon: 'integraciones' },
-  { to: SETTINGS_CATALOG_MESSAGE, label: 'Mensaje del catálogo', icon: 'mensaje' },
-  { to: EXPENSE_CATEGORIES, label: 'Categorías de gastos', icon: 'categorias' },
-  { to: SETTINGS_APPEARANCE, label: 'Apariencia', icon: 'apariencia' },
-  { to: SETTINGS_ACCOUNT, label: 'Tu cuenta', icon: 'cuenta' },
+  { to: SETTINGS_BUSINESS, label: GROUP_BUSINESS, icon: 'negocio' },
+  { to: SETTINGS_USERS, label: GROUP_USERS, icon: 'usuarios' },
+  { to: SETTINGS_PRICES, label: GROUP_PRICES, icon: 'precio' },
+  { to: SETTINGS_INTEGRATIONS, label: GROUP_INTEGRATIONS, icon: 'integraciones' },
+  { to: SETTINGS_CATALOG_MESSAGE, label: GROUP_CATALOG_MESSAGE, icon: 'mensaje' },
+  { to: EXPENSE_CATEGORIES, label: GROUP_EXPENSE_CATEGORIES, icon: 'categorias' },
+  { to: SETTINGS_APPEARANCE, label: GROUP_APPEARANCE, icon: 'apariencia' },
+  { to: SETTINGS_ACCOUNT, label: GROUP_ACCOUNT, icon: 'cuenta' },
 ]
 
 export default function Settings() {
@@ -43,9 +54,9 @@ export default function Settings() {
       <div className="cuerpo ajustes">
         <div className="ajustes__titulos">
           <span className="encabezado__negocio ajustes__negocio">{me.business_name}</span>
-          <h1 className="ajustes__titulo">Configuración</h1>
+          <h1 className="ajustes__titulo">{SETTINGS_TITLE}</h1>
         </div>
-        <nav className="ajustes__lista" aria-label="Configuración" data-menu>
+        <nav className="ajustes__lista" aria-label={SETTINGS_TITLE} data-menu>
           {GROUPS.map((group) => (
             <InAppLink key={group.to} to={group.to} className="ajustes__item">
               <span className="ajustes__item-icono">

@@ -8,11 +8,12 @@
 
 import { useState } from 'react'
 import { chooseTheme, currentTheme } from '../../theme'
+import { GROUP_APPEARANCE, LEAVE_THEME, THEME_DARK, THEME_LABEL, THEME_LIGHT } from '../../copy/settings'
 import SettingsGroup from './SettingsGroup'
 
 const CHOICES = [
-  { value: 'claro', label: 'Claro' },
-  { value: 'oscuro', label: 'Oscuro' },
+  { value: 'claro', label: THEME_LIGHT },
+  { value: 'oscuro', label: THEME_DARK },
 ] as const
 
 export default function AppearanceGroup() {
@@ -25,17 +26,12 @@ export default function AppearanceGroup() {
 
   return (
     <SettingsGroup
-      title="Apariencia"
+      title={GROUP_APPEARANCE}
       dirty={false}
-      leave={{
-        question: '¿Descartás el tema?',
-        detail: 'Se pierde lo que cargaste: todavía no se guardó nada.',
-        keepLabel: 'No, seguí editando',
-        discardLabel: 'Sí, descartalo',
-      }}
+      leave={LEAVE_THEME}
     >
       <span className="rotulo ajustes-tema__rotulo" id="ajustes-tema-rotulo">
-        Tema
+        {THEME_LABEL}
       </span>
       <div className="ajustes-tema" role="radiogroup" aria-labelledby="ajustes-tema-rotulo">
         {CHOICES.map((choice) => {

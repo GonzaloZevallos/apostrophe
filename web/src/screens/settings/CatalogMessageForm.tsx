@@ -30,11 +30,12 @@ import Loading from '../../components/Loading'
 import {
   CATALOG_SAVED,
   FOOTER_TOO_LONG_MESSAGE,
+  FOOTER_LABEL,
+  HEADER_LABEL,
   HEADER_TOO_LONG_MESSAGE,
+  SAVE_MESSAGE,
 } from '../../copy/settings'
 import { GENERIC_REFUSAL_MESSAGE } from '../../copy/common'
-
-const SUBMIT_LABEL = 'Guardá el mensaje'
 
 interface HeaderFooter {
   header: string
@@ -74,7 +75,7 @@ interface MessageFormProps extends CatalogMessageFormProps {
   initial: HeaderFooter
 }
 
-function MessageForm({ initial, onSaved, onDirtyChange, submitLabel = SUBMIT_LABEL }: MessageFormProps) {
+function MessageForm({ initial, onSaved, onDirtyChange, submitLabel = SAVE_MESSAGE }: MessageFormProps) {
   const queryClient = useQueryClient()
   const [accepted, setAccepted] = useState(initial)
   const [header, setHeader] = useState(initial.header)
@@ -143,7 +144,7 @@ function MessageForm({ initial, onSaved, onDirtyChange, submitLabel = SUBMIT_LAB
       <form className="formulario" onSubmit={onSave}>
         <div className="campo">
           <label className="campo__rotulo" htmlFor="catalog-header">
-            Encabezado
+            {HEADER_LABEL}
           </label>
           <textarea
             id="catalog-header"
@@ -163,7 +164,7 @@ function MessageForm({ initial, onSaved, onDirtyChange, submitLabel = SUBMIT_LAB
         </div>
         <div className="campo">
           <label className="campo__rotulo" htmlFor="catalog-footer">
-            Pie
+            {FOOTER_LABEL}
           </label>
           <textarea
             id="catalog-footer"

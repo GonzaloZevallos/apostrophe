@@ -29,19 +29,25 @@ import SinConexion from '../components/SinConexion'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import { formatDateShort } from '../format/dates'
 import {
+  BUSINESS_NAME_LABEL,
+  CREATE_BUSINESS,
+  EMAIL_INVALID_MESSAGE,
+  EMAIL_LABEL,
+  EMAIL_TAKEN_MESSAGE,
   expiryLine,
+  INVITED_TO,
+  joinBusiness,
+  JOIN_SUBTITLE,
+  NEW_BUSINESS_SUBTITLE,
   NOT_USABLE_DETAIL,
   NOT_USABLE_TITLE,
+  PASSWORD_LABEL,
+  SET_UP_BUSINESS,
+  VALID_INVITATION,
   WEAK_PASSWORD_MESSAGE,
 } from '../copy/auth'
-
-export { NOT_USABLE_DETAIL, NOT_USABLE_TITLE }
-export const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
-export { ERROR_GENERICO_MENSAJE as RETRY_MESSAGE }
-export const EMAIL_TAKEN_MESSAGE = 'Ya hay una cuenta con ese email'
-export { WEAK_PASSWORD_MESSAGE }
-export const EMAIL_INVALID_MESSAGE = 'Ingresá un email válido'
-export const BUSINESS_NAME_INVALID_MESSAGE = 'Ponele un nombre al negocio, sin espacios de más'
+import { GENERIC_REFUSAL_MESSAGE } from '../copy/common'
+import { BUSINESS_NAME_INVALID_MESSAGE } from '../copy/settings'
 
 type AcceptAction = { kind: 'inline'; message: string } | { kind: 'not_usable' }
 
@@ -161,18 +167,18 @@ export default function Invitacion() {
   return (
     <AuthPage
       titleClass="invitacion__titulo"
-      eyebrow={isNewBusiness ? 'Invitación válida' : 'Te invitaron a'}
-      title={isNewBusiness ? 'Armá tu negocio' : (view.business_name ?? undefined)}
+      eyebrow={isNewBusiness ? VALID_INVITATION : INVITED_TO}
+      title={isNewBusiness ? SET_UP_BUSINESS : (view.business_name ?? undefined)}
       subtitle={
         isNewBusiness
-          ? 'Ponele un nombre y creá tu usuario. Después podés invitar a un socio.'
-          : 'Creá tu usuario y vas a ver las ventas, el stock y los clientes de este negocio. Sólo de este.'
+          ? NEW_BUSINESS_SUBTITLE
+          : JOIN_SUBTITLE
       }
     >
       <form className="formulario" onSubmit={onSubmit}>
         {isNewBusiness && (
           <label className="campo">
-            <span className="campo__rotulo">Nombre del negocio</span>
+            <span className="campo__rotulo">{BUSINESS_NAME_LABEL}</span>
             <input
               className="campo__input"
               type="text"
@@ -183,7 +189,7 @@ export default function Invitacion() {
           </label>
         )}
         <label className="campo">
-          <span className="campo__rotulo">Email</span>
+          <span className="campo__rotulo">{EMAIL_LABEL}</span>
           <input
             className="campo__input"
             type="email"
@@ -192,9 +198,9 @@ export default function Invitacion() {
             required
           />
         </label>
-        <PasswordField label="Contraseña" value={password} onChange={setPassword} error={error} />
+        <PasswordField label={PASSWORD_LABEL} value={password} onChange={setPassword} error={error} />
         <Boton textOnly="submit" type="submit" disabled={sending}>
-          {isNewBusiness ? 'Creá el negocio' : `Sumate a ${view.business_name}`}
+          {isNewBusiness ? CREATE_BUSINESS : joinBusiness(view.business_name ?? '')}
         </Boton>
       </form>
       <div className="pie">

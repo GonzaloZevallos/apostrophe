@@ -12,22 +12,14 @@
  */
 
 import { useState } from 'react'
+import { GROUP_CATALOG_MESSAGE, LEAVE_CATALOG_MESSAGE } from '../../copy/settings'
 import CatalogMessageForm from './CatalogMessageForm'
 import SettingsGroup from './SettingsGroup'
-
-const TITLE = 'Mensaje del catálogo'
-
-const LEAVE = {
-  question: '¿Descartás el mensaje?',
-  detail: 'Se pierde lo que cargaste: todavía no se guardó nada.',
-  keepLabel: 'No, seguí editando',
-  discardLabel: 'Sí, descartalo',
-}
 
 export default function CatalogMessageGroup() {
   const [dirty, setDirty] = useState(false)
   return (
-    <SettingsGroup title={TITLE} dirty={dirty} leave={LEAVE}>
+    <SettingsGroup title={GROUP_CATALOG_MESSAGE} dirty={dirty} leave={LEAVE_CATALOG_MESSAGE}>
       <CatalogMessageForm onDirtyChange={setDirty} />
     </SettingsGroup>
   )

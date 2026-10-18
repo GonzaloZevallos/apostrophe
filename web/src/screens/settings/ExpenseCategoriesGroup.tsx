@@ -7,22 +7,14 @@
  */
 
 import { useState } from 'react'
+import { GROUP_EXPENSE_CATEGORIES, LEAVE_CATEGORY } from '../../copy/settings'
 import ExpenseCategoriesEditor from './ExpenseCategoriesEditor'
 import SettingsGroup from './SettingsGroup'
-
-export { CANNOT_REMOVE } from './ExpenseCategoriesEditor'
-
-const LEAVE = {
-  question: '¿Descartás la categoría?',
-  detail: 'Se pierde lo que cargaste: todavía no se guardó nada.',
-  keepLabel: 'No, seguí editando',
-  discardLabel: 'Sí, descartala',
-}
 
 export default function ExpenseCategoriesGroup() {
   const [dirty, setDirty] = useState(false)
   return (
-    <SettingsGroup title="Categorías de gastos" dirty={dirty} leave={LEAVE}>
+    <SettingsGroup title={GROUP_EXPENSE_CATEGORIES} dirty={dirty} leave={LEAVE_CATEGORY}>
       <ExpenseCategoriesEditor onDirtyChange={setDirty} />
     </SettingsGroup>
   )

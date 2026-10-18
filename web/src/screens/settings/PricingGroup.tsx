@@ -31,29 +31,24 @@ import Loading from '../../components/Loading'
 import OpcionInterruptor from '../../components/OpcionInterruptor'
 import SinConexion from '../../components/SinConexion'
 import { GENERIC_REFUSAL_MESSAGE } from '../../copy/common'
-import { PRICES_SAVED } from '../../copy/settings'
+import {
+  BULK_PRICING_LABEL,
+  GROUP_PRICES,
+  LEAVE_PRICES,
+  PAST_SALES_LINE,
+  PRICES_SAVED,
+  SAVE_PRICES,
+  VIP_CUSTOMERS_LABEL,
+  VIP_HELP_LINE,
+} from '../../copy/settings'
 import SettingsGroup from './SettingsGroup'
-
-const TITLE = 'Precios'
-
-export const PAST_SALES_LINE =
-  'Las ventas ya hechas conservan el precio con el que se registraron. Apagar una opción no borra nada.'
-export const VIP_HELP_LINE =
-  'Cada variedad necesita su precio VIP: sin él, un cliente VIP paga como cualquiera.'
-
-const LEAVE = {
-  question: '¿Descartás los precios?',
-  detail: 'Se pierde lo que cargaste: todavía no se guardó nada.',
-  keepLabel: 'No, seguí editando',
-  discardLabel: 'Sí, descartalo',
-}
 
 export default function PricingGroup() {
   const { data, isPending, isError, error } = useQuery(pricingSettingsQueryOptions())
 
   if (isPending || isError) {
     return (
-      <SettingsGroup title={TITLE} dirty={false} leave={LEAVE}>
+      <SettingsGroup title={GROUP_PRICES} dirty={false} leave={LEAVE_PRICES}>
         {isPending && <Loading />}
         {isError && (error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />)}
       </SettingsGroup>
@@ -105,9 +100,9 @@ function PricingForm({ initial }: { initial: PricingSettings }) {
 
   return (
     <SettingsGroup
-      title={TITLE}
+      title={GROUP_PRICES}
       dirty={bulk !== accepted.is_bulk_pricing || vip !== accepted.is_vip_customers}
-      leave={LEAVE}
+      leave={LEAVE_PRICES}
     >
       {saved && (
         <div className="aviso-flotante">
@@ -116,7 +111,7 @@ function PricingForm({ initial }: { initial: PricingSettings }) {
       )}
       <form className="formulario" onSubmit={onSave}>
         <OpcionInterruptor
-          label="Precio por cantidad"
+          label={BULK_PRICING_LABEL}
           checked={bulk}
           onChange={(next) => {
             setBulk(next)
@@ -124,7 +119,7 @@ function PricingForm({ initial }: { initial: PricingSettings }) {
           }}
         />
         <OpcionInterruptor
-          label="Clientes VIP"
+          label={VIP_CUSTOMERS_LABEL}
           checked={vip}
           onChange={(next) => {
             setVip(next)
@@ -140,7 +135,7 @@ function PricingForm({ initial }: { initial: PricingSettings }) {
         )}
         {offline && <SinConexion />}
         <Boton textOnly="submit" type="submit" disabled={saving}>
-          Guardá los precios
+          {SAVE_PRICES}
         </Boton>
       </form>
     </SettingsGroup>

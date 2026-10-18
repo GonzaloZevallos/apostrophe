@@ -36,10 +36,14 @@ import PasswordField from '../components/PasswordField'
 import SinConexion from '../components/SinConexion'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import { isGone, resolveOverride, type RefusalCode } from '../api/refusals'
-import { DEAD_LINK_MESSAGE, WEAK_PASSWORD_MESSAGE } from '../copy/auth'
-
-export { DEAD_LINK_MESSAGE }
-export { ERROR_GENERICO_MENSAJE as RETRY_MESSAGE }
+import {
+  CHOOSE_NEW_PASSWORD,
+  DEAD_LINK_MESSAGE,
+  NEW_PASSWORD_LABEL,
+  SAVE_AND_SIGN_IN,
+  SIGN_IN,
+  WEAK_PASSWORD_MESSAGE,
+} from '../copy/auth'
 
 const SUBMIT_OVERRIDES: Partial<Record<RefusalCode, string>> = {
   'account.password_weak': WEAK_PASSWORD_MESSAGE,
@@ -114,7 +118,7 @@ export default function Reset() {
     return (
       <AuthPage title={DEAD_LINK_MESSAGE}>
         <BotonLink variant="link" to={LOGIN}>
-          Entrar
+          {SIGN_IN}
         </BotonLink>
       </AuthPage>
     )
@@ -137,11 +141,11 @@ export default function Reset() {
   }
 
   return (
-    <AuthPage title="Elegí tu contraseña nueva">
+    <AuthPage title={CHOOSE_NEW_PASSWORD}>
       <form className="formulario" onSubmit={(event) => void onSubmit(event)}>
-        <PasswordField label="Contraseña nueva" value={password} onChange={setPassword} error={error} />
+        <PasswordField label={NEW_PASSWORD_LABEL} value={password} onChange={setPassword} error={error} />
         <Boton textOnly="submit" type="submit" disabled={sending}>
-          Guardar y entrar
+          {SAVE_AND_SIGN_IN}
         </Boton>
       </form>
     </AuthPage>

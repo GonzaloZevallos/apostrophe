@@ -16,6 +16,7 @@ import Boton from '../../components/Boton'
 import LeaveConfirm from '../../components/LeaveConfirm'
 import { useBackOr } from '../../components/useBackOr'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
+import { CLOSE } from '../../copy/common'
 
 export const SETTINGS_PATH = SETTINGS
 
@@ -46,7 +47,7 @@ export default function SettingsGroup({ title, dirty, leave, children }: Setting
       <div className="ajustes-grupo__tarjeta">
         <div className="ajustes-grupo__encabezado">
           <span className="ajustes-grupo__titulo">{title}</span>
-          <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={close} />
+          <Boton variant="icon" action="close" ariaLabel={CLOSE} onClick={close} />
         </div>
         <div className="ajustes-grupo__cuerpo">
           {typeof children === 'function' ? children({ disarm }) : children}

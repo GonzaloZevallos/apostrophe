@@ -16,18 +16,12 @@ import type { Me } from '../../api/me'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import Loading from '../../components/Loading'
+import { GROUP_USERS, LEAVE_INVITATION, YOU_MARK } from '../../copy/settings'
 import InvitePartner from './InvitePartner'
 import SettingsGroup from './SettingsGroup'
 
 interface Business {
   users: { email: string }[]
-}
-
-const LEAVE = {
-  question: '¿Descartás la invitación?',
-  detail: 'Se pierde lo que cargaste: todavía no se guardó nada.',
-  keepLabel: 'No, seguí editando',
-  discardLabel: 'Sí, descartala',
 }
 
 export default function UsersGroup() {
@@ -38,7 +32,7 @@ export default function UsersGroup() {
   })
 
   return (
-    <SettingsGroup title="Usuarios" dirty={false} leave={LEAVE}>
+    <SettingsGroup title={GROUP_USERS} dirty={false} leave={LEAVE_INVITATION}>
       {isPending && <Loading />}
       {isError && (error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />)}
       {!isPending && !isError && (
@@ -46,7 +40,7 @@ export default function UsersGroup() {
           {data.users.map((user) => (
             <li key={user.email} className="usuarios__usuario">
               <span>{user.email}</span>
-              {user.email === me.email && <span className="usuarios__vos">vos</span>}
+              {user.email === me.email && <span className="usuarios__vos">{YOU_MARK}</span>}
             </li>
           ))}
         </ul>

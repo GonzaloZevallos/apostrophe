@@ -23,28 +23,30 @@ import AvisoExito, { type SuccessToast } from '../../components/AvisoExito'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import Loading from '../../components/Loading'
-import SettingsGroup, { type LeaveWording } from './SettingsGroup'
+import SettingsGroup from './SettingsGroup'
 import Boton from '../../components/Boton'
 import BotonLink from '../../components/BotonLink'
 import MasInfo from '../../components/MasInfo'
 import { CATALOG } from '../../routes'
 import {
+  BOT_TOKEN_LABEL,
+  CHANGE,
   CHANNEL_CHAT_HELP,
+  CHANNEL_CHAT_LABEL,
+  FIND_MY_CHAT,
+  GO_TO_CATALOG,
+  GROUP_INTEGRATIONS,
+  LEAVE_CHANGE,
   LOAD_THE_TOKEN_FIRST,
   OWN_CHAT_INFO,
+  OWN_CHAT_LABEL,
   PREVIOUS_PIN_NOTICE,
+  SEND_ME_A_TEST,
+  TEST_SENT_TOAST,
+  tokenSavedOn,
 } from '../../copy/settings'
+import { GENERIC_REFUSAL_MESSAGE } from '../../copy/common'
 
-const TITLE = 'Integraciones'
-const TEST_SENT_TOAST: SuccessToast = 'Prueba enviada'
-const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
-
-const LEAVE: LeaveWording = {
-  question: '¿Descartás el cambio?',
-  detail: 'Se pierde lo que cargaste: todavía no se guardó nada.',
-  keepLabel: 'No, seguí editando',
-  discardLabel: 'Sí, descartalo',
-}
 
 export interface PinnedCatalog {
   token_saved_on: string | null
@@ -206,7 +208,7 @@ export function IntegrationsForm({
       <form className="formulario" onSubmit={onFormSubmit} onKeyDown={onFormKeyDown}>
         {tokenFieldOpen ? (
           <label className="campo">
-            <span className="campo__rotulo">Token del bot</span>
+            <span className="campo__rotulo">{BOT_TOKEN_LABEL}</span>
             <input
               className="campo__input"
               type="password"
@@ -218,20 +220,20 @@ export function IntegrationsForm({
         ) : (
           <div className="catalogo__fila">
             <span className="catalogo__fila-texto">
-              <span>Token del bot</span>
+              <span>{BOT_TOKEN_LABEL}</span>
               <span className="catalogo__fila-detalle">
-                Guardado el {formatDate(accepted.tokenSavedOn as string)} · no se muestra más
+                {tokenSavedOn(formatDate(accepted.tokenSavedOn as string))}
               </span>
             </span>
             <Boton variant="link" onClick={() => setTokenChanging(true)}>
-              Cambiar
+              {CHANGE}
             </Boton>
           </div>
         )}
 
         <div className="campo">
           <label className="campo__rotulo" htmlFor={`${fieldId}-channel`}>
-            Chat del canal
+            {CHANNEL_CHAT_LABEL}
           </label>
           <input
             id={`${fieldId}-channel`}
@@ -248,7 +250,7 @@ export function IntegrationsForm({
 
         <div className="campo">
           <label className="campo__rotulo" htmlFor={`${fieldId}-own`}>
-            Tu chat
+            {OWN_CHAT_LABEL}
           </label>
           <div className="campo__fila">
             <input
@@ -266,7 +268,7 @@ export function IntegrationsForm({
               ariaDescribedBy={canSearch ? undefined : `${fieldId}-search-help`}
               onClick={() => void onSearchOwnChat()}
             >
-              Buscar mi chat
+              {FIND_MY_CHAT}
             </Boton>
           </div>
           <div id={`${fieldId}-own-help`}>
@@ -292,13 +294,13 @@ export function IntegrationsForm({
         )}
 
         <Boton icon="probar" disabled={testing} onClick={() => void onProbarlo()}>
-          Probarlo
+          {SEND_ME_A_TEST}
         </Boton>
       </form>
 
       {showCatalogLink && (
         <BotonLink to={CATALOG} variant="link">
-          Ir al catálogo
+          {GO_TO_CATALOG}
         </BotonLink>
       )}
     </>
@@ -314,14 +316,14 @@ export default function IntegrationsGroup() {
 
   if (query.data !== undefined) {
     return (
-      <SettingsGroup title={TITLE} dirty={dirty} leave={LEAVE}>
+      <SettingsGroup title={GROUP_INTEGRATIONS} dirty={dirty} leave={LEAVE_CHANGE}>
         <IntegrationsForm initial={query.data} onDirtyChange={setDirty} showCatalogLink />
       </SettingsGroup>
     )
   }
 
   return (
-    <SettingsGroup title={TITLE} dirty={false} leave={LEAVE}>
+    <SettingsGroup title={GROUP_INTEGRATIONS} dirty={false} leave={LEAVE_CHANGE}>
       {query.isPending && <Loading />}
       {query.isError ? query.error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico /> : null}
     </SettingsGroup>

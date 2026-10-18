@@ -40,32 +40,32 @@ export type PinReason =
   | 'too_long'
 
 export const PINNED_CATALOG_REASON_LABEL = {
-  telegram_unreachable: 'Telegram no respondió',
-  bot_cannot_post: 'El bot no puede publicar en el canal',
-  message_gone: 'El mensaje fijado ya no está: publicalo de nuevo',
-  missing_publish: 'Falta publicarlo con el bot o el canal nuevo',
-  too_long: 'Es demasiado largo para Telegram: acortá aromas u ocultá variedades.',
+  telegram_unreachable: 'Telegram did not respond',
+  bot_cannot_post: 'The bot cannot post in the channel',
+  message_gone: 'The pinned message is gone: publish it again',
+  missing_publish: 'Publish it again with the new bot or channel',
+  too_long: 'It is too long for Telegram: shorten aromas or hide varieties.',
 } as const satisfies Record<PinReason, string>
 
-export const PINNED_CATALOG_NOT_READY_REASON = 'Probalo primero para ver cómo queda'
+export const PINNED_CATALOG_NOT_READY_REASON = 'Send yourself a test first to see how it looks'
 
 /** What Probarlo says for each cause Telegram's refusal carries (the PRD's table): the
  * seller's own chat and token, never the channel. Fixed text, repeating nothing typed. */
-const PROBARLO_TOKEN_INVALID_REASON = 'El token no es válido: copialo de nuevo de @BotFather.'
+const PROBARLO_TOKEN_INVALID_REASON = 'The token is not valid: copy it again from @BotFather.'
 const PROBARLO_OWN_CHAT_NOT_STARTED_REASON =
-  'Abrí tu bot en Telegram y tocá Iniciar, después probalo de nuevo.'
+  'Open your bot in Telegram and tap Start, then send the test again.'
 const PROBARLO_OWN_CHAT_NOT_FOUND_REASON =
-  'No encontramos tu chat: revisá el número y tocá Iniciar en tu bot.'
-const PROBARLO_TEST_FAILED_REASON = 'No pudimos enviarte la prueba: revisá el token y tu chat.'
+  'We could not find your chat: check the number and tap Start in your bot.'
+const PROBARLO_TEST_FAILED_REASON = 'We could not send you the test: check the token and your chat.'
 
 /** What Buscar mi chat says when it finds no one person (the PRD's table): fixed text,
  * repeating nothing typed and showing no name or number. */
 const LOOKUP_NO_MESSAGES_REASON =
-  'Todavía no vemos mensajes en tu bot: abrilo en Telegram, tocá Iniciar y buscá de nuevo.'
+  'We see no messages in your bot yet: open it in Telegram, tap Start and search again.'
 const LOOKUP_SEVERAL_CHATS_REASON =
-  'Le escribió más de una persona a tu bot: buscá tu número con @userinfobot y escribilo acá.'
+  'More than one person wrote to your bot: look up your number with @userinfobot and type it here.'
 const LOOKUP_UPDATES_UNREADABLE_REASON =
-  'No pudimos leer los mensajes de tu bot: buscá tu número con @userinfobot y escribilo acá.'
+  "We could not read your bot's messages: look up your number with @userinfobot and type it here."
 
 /** Every `pinned_catalog.*` code `contract.json` lists, mapped here exhaustively
  * (plan, "Front": "Map every `pinned_catalog.*` code in `web/src/api/refusals.ts`;

@@ -23,19 +23,19 @@ import Boton from '../../components/Boton'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import Loading from '../../components/Loading'
-import { BUSINESS_NAME_INVALID_MESSAGE, RENAME_SUCCESS } from '../../copy/settings'
+import { BUSINESS_NAME_LABEL } from '../../copy/auth'
+import {
+  BUSINESS_NAME_INVALID_MESSAGE,
+  GROUP_BUSINESS,
+  LEAVE_BUSINESS_NAME,
+  RENAME_SUCCESS,
+  SAVE_NAME,
+} from '../../copy/settings'
 import { GENERIC_REFUSAL_MESSAGE } from '../../copy/common'
 import SettingsGroup from './SettingsGroup'
 
 interface Business {
   name: string
-}
-
-const LEAVE = {
-  question: '¿Descartás el nombre?',
-  detail: 'Se pierde lo que cargaste: todavía no se guardó nada.',
-  keepLabel: 'No, seguí editando',
-  discardLabel: 'Sí, descartalo',
 }
 
 const RENAME_OVERRIDES: Partial<Record<RefusalCode, string>> = {
@@ -50,7 +50,7 @@ export default function BusinessGroup() {
 
   if (isPending || isError) {
     return (
-      <SettingsGroup title="Negocio" dirty={false} leave={LEAVE}>
+      <SettingsGroup title={GROUP_BUSINESS} dirty={false} leave={LEAVE_BUSINESS_NAME}>
         {isPending && <Loading />}
         {isError && (error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />)}
       </SettingsGroup>
@@ -108,7 +108,7 @@ function BusinessForm({ initialName }: { initialName: string }) {
   }
 
   return (
-    <SettingsGroup title="Negocio" dirty={name !== accepted} leave={LEAVE}>
+    <SettingsGroup title={GROUP_BUSINESS} dirty={name !== accepted} leave={LEAVE_BUSINESS_NAME}>
       {renamed && (
         <div className="aviso-flotante">
           <AvisoExito texto={RENAME_SUCCESS} />
@@ -116,7 +116,7 @@ function BusinessForm({ initialName }: { initialName: string }) {
       )}
       <form className="formulario" onSubmit={onRename}>
         <label className="campo">
-          <span className="campo__rotulo">Nombre del negocio</span>
+          <span className="campo__rotulo">{BUSINESS_NAME_LABEL}</span>
           <input
             className="campo__input"
             type="text"
@@ -131,7 +131,7 @@ function BusinessForm({ initialName }: { initialName: string }) {
           )}
         </label>
         <Boton textOnly="submit" type="submit" disabled={saving}>
-          Guardá el nombre
+          {SAVE_NAME}
         </Boton>
         {offline && <SinConexion />}
       </form>

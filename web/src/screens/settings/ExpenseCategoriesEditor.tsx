@@ -31,17 +31,30 @@ import {
 } from '../../api/expenses'
 import { invalidateResource, keys } from '../../api/keys'
 import { isGone, kindOf, resolveOverride, type RefusalCode } from '../../api/refusals'
-import Aviso, { type SuccessToast } from '../../components/Aviso'
+import type { SuccessToast } from '../../components/AvisoExito'
 import Boton from '../../components/Boton'
 import AnswerButton from '../../components/AnswerButton'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import GoneNotice from '../../components/GoneNotice'
 import SinConexion from '../../components/SinConexion'
 import Loading from '../../components/Loading'
-import { CATEGORIES_SAVE_AT_ONCE } from '../../copy/settings'
-import { GENERIC_REFUSAL_MESSAGE } from '../../copy/common'
-
-export const CANNOT_REMOVE = 'No se puede borrar: todavía tiene gastos. Podés renombrarla.'
+import {
+  ADD_CATEGORY,
+  ADD_CATEGORY_FORM,
+  CANNOT_REMOVE,
+  CATEGORIES_SAVE_AT_ONCE,
+  CATEGORY_REMOVED,
+  CATEGORY_SAVED,
+  DELETE,
+  DELETE_CATEGORY_QUESTION,
+  DELETE_IT,
+  deleteCategoryDetail,
+  KEEP_IT,
+  nameOf,
+  NEW_CATEGORY_LABEL,
+  RENAME,
+} from '../../copy/settings'
+import { GENERIC_REFUSAL_MESSAGE, SAVE } from '../../copy/common'
 
 const REMOVE_OVERRIDES: Partial<Record<RefusalCode, 'in-use'>> = {
   'expense_category.in_use': 'in-use',
@@ -171,7 +184,7 @@ function Categories({
         focusAddAction.current = true
         setAdding(false)
       }
-      flash('Categoría guardada')
+      flash(CATEGORY_SAVED)
     } catch (caught) {
       if (caught instanceof NetworkError) setOffline(true)
       else if (isRefusal(caught)) setError(GENERIC_REFUSAL_MESSAGE)
@@ -193,11 +206,11 @@ function Categories({
             onRenamed={(renamed) => {
               setDraft(category.id, undefined)
               accept(accepted.map((each) => (each.id === renamed.id ? renamed : each)))
-              flash('Categoría guardada')
+              flash(CATEGORY_SAVED)
             }}
             onRemoved={() => {
               drop(category.id)
-              flash('Categoría eliminada')
+              flash(CATEGORY_REMOVED)
             }}
             onGone={() => {
               drop(category.id)
@@ -210,7 +223,7 @@ function Categories({
       {adding ? (
         <form className="formulario" onSubmit={onAdd}>
           <label className="campo">
-            <span className="campo__rotulo">Nueva categoría</span>
+            <span className="campo__rotulo">{NEW_CATEGORY_LABEL}</span>
             <input
               ref={inputRef}
               className="campo__input"
@@ -225,13 +238,13 @@ function Categories({
           )}
           {offline && <SinConexion />}
           <Boton variant="secondary" textOnly="submit" type="submit" disabled={sending || newName.trim() === ''}>
-            + Categoría
+            {ADD_CATEGORY_FORM}
           </Boton>
         </form>
       ) : (
         <div ref={addRef}>
           <Boton variant="secondary" icon="agregar" onClick={() => setAdding(true)}>
-            Categoría
+            {ADD_CATEGORY}
           </Boton>
         </div>
       )}
@@ -241,7 +254,13 @@ function Categories({
         </span>
       )}
 
-      {toast !== null && <Aviso texto={toast} />}
+      {toast !== null && (
+        <div className="aviso-flotante">
+          <div className="aviso-toast" role="status">
+            <span className="aviso-toast__texto">{toast}</span>
+          </div>
+        </div>
+      )}
       {goneNotice && (
         <div className="aviso-flotante">
           <GoneNotice />
@@ -323,10 +342,10 @@ function CategoryRow({
           className="campo__input"
           value={draft}
           onChange={(event) => onDraft(event.target.value)}
-          aria-label={`Nombre de ${category.name}`}
+          aria-label={nameOf(category.name)}
         />
         <Boton textOnly="submit" type="submit" disabled={sending}>
-          Guardar
+          {SAVE}
         </Boton>
         {error !== null && (
           <span className="campo__error" role="alert">
@@ -342,9 +361,9 @@ function CategoryRow({
     <div className="fila">
       <span className="categoria-fila__nombre">{category.name}</span>
       <span className="categoria-fila__accion">
-        <Boton variant="icon" action="edit" ariaLabel="Renombrar" onClick={() => onDraft(category.name)} />
+        <Boton variant="icon" action="edit" ariaLabel={RENAME} onClick={() => onDraft(category.name)} />
       </span>
-      <Boton variant="icon" action="delete" ariaLabel="Eliminar" onClick={() => setConfirming(true)} />
+      <Boton variant="icon" action="delete" ariaLabel={DELETE} onClick={() => setConfirming(true)} />
       {error !== null && (
         <span className="campo__error" role="alert">
           {error}
@@ -354,16 +373,14 @@ function CategoryRow({
       {confirming && (
         <div className="capa" role="presentation">
           <div className="capa__contenido panel">
-            <span className="panel__titulo">¿Borrás la categoría?</span>
-            <span className="panel__detalle">
-              Se borra &ldquo;{category.name}&rdquo;. Esto no se puede deshacer.
-            </span>
+            <span className="panel__titulo">{DELETE_CATEGORY_QUESTION}</span>
+            <span className="panel__detalle">{deleteCategoryDetail(category.name)}</span>
             <div className="panel__botones">
               <AnswerButton kind="keep" onClick={() => setConfirming(false)}>
-                No, dejala
+                {KEEP_IT}
               </AnswerButton>
               <AnswerButton kind="confirm" disabled={sending} onClick={remove}>
-                Sí, borrala
+                {DELETE_IT}
               </AnswerButton>
             </div>
           </div>
