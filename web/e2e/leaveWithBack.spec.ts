@@ -21,10 +21,10 @@ test('Back on a dirty Registrar cobro and on a dirty Nueva venta asks, and "No" 
   page,
 }) => {
   await page.goto(newBusinessInvitationUrl())
-  await page.getByLabel('Nombre del negocio').fill(`Flores del Norte ${uniqueTag()}`)
+  await page.getByLabel('Business name').fill(`Flores del Norte ${uniqueTag()}`)
   await page.getByLabel('Email').fill(`duena-volver-${uniqueTag()}@example.com`)
-  await page.getByLabel('Contraseña').fill(PASSWORD)
-  await page.getByRole('button', { name: 'Creá el negocio' }).click()
+  await page.getByLabel('Password').fill(PASSWORD)
+  await page.getByRole('button', { name: 'Create the business' }).click()
   // A new business lands in the Onboarding; this spec is about something else.
   await leaveOnboarding(page)
 

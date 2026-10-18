@@ -68,7 +68,7 @@ test('a seller does everything the backend offers today, from the front alone', 
 
   // Delete the price entry (the only one): the variety is left with no price.
   await page.getByRole('button', { name: 'Borrar este precio' }).click();
-  await page.getByRole('button', { name: 'Sí, borrala' }).click();
+  await page.getByRole('button', { name: 'Yes, delete it' }).click();
   await expect(page.getByText('Precio eliminado')).toBeVisible()
   await expect(page.getByText('Sin precio: no se puede vender').first()).toBeVisible()
 
@@ -104,7 +104,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   // Delete it: confirmed first, naming the date, variety and grams ("Antes de borrar").
   await page.getByRole('button', { name: 'Borrar', exact: true }).click()
   await expect(page.getByText('Antes de borrar')).toBeVisible()
-  await page.getByRole('button', { name: 'Sí, borrala' }).click()
+  await page.getByRole('button', { name: 'Yes, delete it' }).click()
   await expectPath(page, STOCK)
   await expect(page.getByText('Entry deleted')).toBeVisible()
   await expect(page.getByText('Compra · 60 g')).toHaveCount(0)
@@ -144,7 +144,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   // Delete it.
   await page.getByText('Flete al mercado central').click()
   await page.getByRole('button', { name: 'Borrar gasto' }).click()
-  await page.getByRole('button', { name: 'Sí, borrala' }).click()
+  await page.getByRole('button', { name: 'Yes, delete it' }).click()
   await expect(page.getByText('Gasto eliminado')).toBeVisible()
   await expect(page.getByText('Flete al mercado central')).toHaveCount(0)
 
@@ -179,26 +179,26 @@ test('a seller does everything the backend offers today, from the front alone', 
   // (`app/expenses/domain/category.py`'s `DEFAULT_CATEGORY_NAMES`), so this one
   // uses a name of its own.
   await page.goto(EXPENSE_CATEGORIES)
-  await page.getByLabel('Nueva categoría').fill('Delivery en bici')
-  await page.getByRole('button', { name: '+ Categoría' }).click()
-  await expect(page.getByText('Categoría guardada')).toBeVisible()
+  await page.getByLabel('New category').fill('Delivery en bici')
+  await page.getByRole('button', { name: '+ Category' }).click()
+  await expect(page.getByText('Category saved')).toBeVisible()
   const newRow = page.locator('.fila', { hasText: 'Delivery en bici' })
-  await newRow.getByRole('button', { name: 'Eliminar' }).click()
-  await page.getByRole('button', { name: 'Sí, borrala' }).click()
-  await expect(page.getByText('Categoría eliminada')).toBeVisible()
+  await newRow.getByRole('button', { name: 'Delete' }).click()
+  await page.getByRole('button', { name: 'Yes, delete it' }).click()
+  await expect(page.getByText('Category deleted')).toBeVisible()
   await expect(page.getByText('Delivery en bici')).toHaveCount(0)
 
   // Rename the business.
   await page.goto(SETTINGS_BUSINESS)
   const renamedTo = `${businessName} Renombrado`
-  await page.getByLabel('Nombre del negocio').fill(renamedTo)
-  await page.getByRole('button', { name: 'Guardá el nombre' }).click()
-  await expect(page.getByText('Negocio renombrado')).toBeVisible()
+  await page.getByLabel('Business name').fill(renamedTo)
+  await page.getByRole('button', { name: 'Save the name' }).click()
+  await expect(page.getByText('Business renamed')).toBeVisible()
 
   // Create a join link and accept it as a second user, from a separate browser
   // context (its own cookie jar — a second device).
   await page.goto(SETTINGS_USERS)
-  await page.getByRole('button', { name: 'Invitá a un socio' }).click()
+  await page.getByRole('button', { name: 'Invite a partner' }).click()
   await expect(page.locator('.usuarios__link')).toHaveText(/^https?:\/\//)
   const inviteUrl = await page.locator('.usuarios__link').textContent()
   if (inviteUrl === null || inviteUrl === '') throw new Error('no invitation link shown')
@@ -209,8 +209,8 @@ test('a seller does everything the backend offers today, from the front alone', 
   await partnerPage.goto(inviteUrl)
   await expect(partnerPage.locator('.invitacion__titulo')).toHaveText(renamedTo)
   await partnerPage.getByLabel('Email').fill(`socio-${uniqueTag()}@example.com`)
-  await partnerPage.getByLabel('Contraseña').fill(PASSWORD)
-  await partnerPage.getByRole('button', { name: `Sumate a ${renamedTo}` }).click()
+  await partnerPage.getByLabel('Password').fill(PASSWORD)
+  await partnerPage.getByRole('button', { name: `Join ${renamedTo}` }).click()
   await expect(partnerPage.locator('.encabezado__negocio')).toHaveText(renamedTo)
   await partnerContext.close()
 

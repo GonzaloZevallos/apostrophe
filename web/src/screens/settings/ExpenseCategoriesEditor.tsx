@@ -56,6 +56,8 @@ import {
 } from '../../copy/settings'
 import { GENERIC_REFUSAL_MESSAGE, SAVE } from '../../copy/common'
 
+const EXPENSE_CATEGORIES_KEY = 'expenseCategories'
+
 const REMOVE_OVERRIDES: Partial<Record<RefusalCode, 'in-use'>> = {
   'expense_category.in_use': 'in-use',
 }
@@ -163,7 +165,7 @@ function Categories({
 
   function accept(next: ExpenseCategory[]): void {
     setAccepted(byNameKey(next))
-    invalidateResource(queryClient, 'expenseCategories')
+    invalidateResource(queryClient, EXPENSE_CATEGORIES_KEY)
   }
 
   function drop(id: number): void {

@@ -34,6 +34,8 @@ import {
 import { GENERIC_REFUSAL_MESSAGE } from '../../copy/common'
 import SettingsGroup from './SettingsGroup'
 
+const BUSINESS_KEY = 'business'
+
 interface Business {
   name: string
 }
@@ -83,7 +85,7 @@ function BusinessForm({ initialName }: { initialName: string }) {
     setSaving(true)
     try {
       const updated = await patch<Business>('/business', { name })
-      invalidateResource(queryClient, 'business')
+      invalidateResource(queryClient, BUSINESS_KEY)
       setAccepted(updated.name)
       setName(updated.name)
       setRenamed(true)

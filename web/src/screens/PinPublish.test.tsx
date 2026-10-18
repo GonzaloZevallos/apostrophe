@@ -60,7 +60,7 @@ test('not_tested disables Publicar, says why and links to Integraciones', async 
   renderPin({ can_publish: false, publish_blocked_by: 'not_tested', status: null })
 
   expect(await screen.findByRole('button', { name: 'Publicar' })).toBeDisabled()
-  expect(screen.getByText(/Probalo primero para ver cómo queda/)).toBeInTheDocument()
+  expect(screen.getByText(/Send yourself a test first to see how it looks/)).toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'Integraciones' })).toHaveAttribute(
     'href',
     SETTINGS_INTEGRATIONS,
@@ -83,17 +83,17 @@ test('null enables Publicar and shows neither reason nor link', async () => {
 
   expect(await screen.findByRole('button', { name: 'Publicar' })).toBeEnabled()
   expect(screen.queryByRole('link', { name: 'Integraciones' })).not.toBeInTheDocument()
-  expect(screen.queryByText(/Probalo primero/)).not.toBeInTheDocument()
+  expect(screen.queryByText(/Send yourself a test first/)).not.toBeInTheDocument()
   expect(screen.getByText('Al día')).toBeInTheDocument()
   expect(screen.getByText(/El último fue el 29\/09/)).toBeInTheDocument()
 })
 
 test.each([
-  ['telegram_unreachable', 'Telegram no respondió'],
-  ['bot_cannot_post', 'El bot no puede publicar en el canal'],
-  ['message_gone', 'El mensaje fijado ya no está: publicalo de nuevo'],
-  ['missing_publish', 'Falta publicarlo con el bot o el canal nuevo'],
-  ['too_long', 'Es demasiado largo para Telegram: acortá aromas u ocultá variedades.'],
+  ['telegram_unreachable', 'Telegram did not respond'],
+  ['bot_cannot_post', 'The bot cannot post in the channel'],
+  ['message_gone', 'The pinned message is gone: publish it again'],
+  ['missing_publish', 'Publish it again with the new bot or channel'],
+  ['too_long', 'It is too long for Telegram: shorten aromas or hide varieties.'],
 ] as const)(
   'Desactualizado for %s reads its reason, shows no link and keeps Publicar enabled',
   async (reason, text) => {
@@ -146,13 +146,13 @@ test('a failed Publicar shows its fixed reason', async () => {
 
   await userEvent.click(await screen.findByRole('button', { name: 'Publicar' }))
 
-  expect(await screen.findByRole('alert')).toHaveTextContent('El bot no puede publicar en el canal')
+  expect(await screen.findByRole('alert')).toHaveTextContent('The bot cannot post in the channel')
 })
 
 test('the blocked lines and the out-of-date reasons are the registered, measured bindings', async () => {
   renderPin({ can_publish: false, publish_blocked_by: 'not_tested', status: null })
   await screen.findByRole('button', { name: 'Publicar' })
-  expect(screen.getByText(/Probalo primero/).textContent).toBe(NOT_READY_LINE)
+  expect(screen.getByText(/Send yourself a test first/).textContent).toBe(NOT_READY_LINE)
 
   const registered = LIMITED_COPY.map((entry) => entry.text)
   expect(registered).toContain(NOT_READY_LINE)

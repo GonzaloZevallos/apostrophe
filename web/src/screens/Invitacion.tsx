@@ -59,13 +59,22 @@ const ACCEPT_OVERRIDES: Partial<Record<RefusalCode, AcceptAction>> = {
   'account.business_name_invalid': { kind: 'inline', message: BUSINESS_NAME_INVALID_MESSAGE },
 }
 
-type Status = 'loading' | 'not_usable' | 'offline' | 'error' | 'ready'
+const TITLE_CLASS = 'invitacion__titulo'
+
+const STATUS = {
+  loading: 'loading',
+  not_usable: 'not_usable',
+  offline: 'offline',
+  error: 'error',
+  ready: 'ready',
+} as const
+type Status = (typeof STATUS)[keyof typeof STATUS]
 
 export default function Invitacion() {
   const { token } = useParams<{ token: string }>()
   const queryClient = useQueryClient()
   const navigate = useNavigate()
-  const [status, setStatus] = useState<Status>('loading')
+  const [status, setStatus] = useState<Status>(STATUS.loading)
   const [view, setView] = useState<InvitationView | null>(null)
   const [businessName, setBusinessName] = useState('')
   const [email, setEmail] = useState('')
@@ -80,16 +89,16 @@ export default function Invitacion() {
       .then((looked) => {
         if (cancelled) return
         setView(looked)
-        setStatus('ready')
+        setStatus(STATUS.ready)
       })
       .catch((caught: unknown) => {
         if (cancelled) return
         if (caught instanceof ApiError && isGone(caught.code)) {
-          setStatus('not_usable')
+          setStatus(STATUS.not_usable)
         } else if (caught instanceof NetworkError) {
-          setStatus('offline')
+          setStatus(STATUS.offline)
         } else {
-          setStatus('error')
+          setStatus(STATUS.error)
         }
       })
     return () => {
@@ -115,7 +124,7 @@ export default function Invitacion() {
       if (caught instanceof ApiError) {
         const action = resolveOverride(ACCEPT_OVERRIDES, caught.code)
         if (action?.kind === 'not_usable') {
-          setStatus('not_usable')
+          setStatus(STATUS.not_usable)
         } else if (action?.kind === 'inline') {
           setError(action.message)
         } else if (caught.code !== UNKNOWN_CODE && kindOf(caught.code) === 'refusal') {
@@ -124,7 +133,7 @@ export default function Invitacion() {
           setError(ERROR_GENERICO_MENSAJE)
         }
       } else if (caught instanceof NetworkError) {
-        setStatus('offline')
+        setStatus(STATUS.offline)
       } else {
         setError(ERROR_GENERICO_MENSAJE)
       }
@@ -166,7 +175,7 @@ export default function Invitacion() {
 
   return (
     <AuthPage
-      titleClass="invitacion__titulo"
+      titleClass={TITLE_CLASS}
       eyebrow={isNewBusiness ? VALID_INVITATION : INVITED_TO}
       title={isNewBusiness ? SET_UP_BUSINESS : (view.business_name ?? undefined)}
       subtitle={

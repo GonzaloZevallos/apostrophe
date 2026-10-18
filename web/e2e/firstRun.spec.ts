@@ -48,7 +48,7 @@ for (const viewport of VIEWPORTS) {
     for (const text of NOT_THERE) await expect(page.getByText(text)).toHaveCount(0)
 
     await page.goto(SETTINGS_USERS)
-    await page.getByRole('button', { name: 'Invitá a un socio' }).click()
+    await page.getByRole('button', { name: 'Invite a partner' }).click()
     await expect(page.locator('.usuarios__link')).toHaveText(/^https?:\/\//)
     const inviteUrl = await page.locator('.usuarios__link').textContent()
     if (inviteUrl === null || inviteUrl === '') throw new Error('no invitation link shown')
@@ -61,8 +61,8 @@ for (const viewport of VIEWPORTS) {
     watchConsole(partnerPage, consoleMessages)
     await partnerPage.goto(inviteUrl)
     await partnerPage.getByLabel('Email').fill(`socio-${uniqueTag()}@example.com`)
-    await partnerPage.getByLabel('Contraseña').fill(DEFAULT_PASSWORD)
-    await partnerPage.getByRole('button', { name: /^Sumate a / }).click()
+    await partnerPage.getByLabel('Password').fill(DEFAULT_PASSWORD)
+    await partnerPage.getByRole('button', { name: /^Join / }).click()
     await expect(partnerPage.locator('.encabezado__negocio')).toBeVisible()
 
     await expect(partnerPage.getByText(ONBOARDING_NOTICE)).toBeVisible()

@@ -11,6 +11,8 @@ import { chooseTheme, currentTheme } from '../../theme'
 import { GROUP_APPEARANCE, LEAVE_THEME, THEME_DARK, THEME_LABEL, THEME_LIGHT } from '../../copy/settings'
 import SettingsGroup from './SettingsGroup'
 
+const THEME_LABEL_ID = 'ajustes-tema-rotulo'
+
 const CHOICES = [
   { value: 'claro', label: THEME_LIGHT },
   { value: 'oscuro', label: THEME_DARK },
@@ -30,10 +32,10 @@ export default function AppearanceGroup() {
       dirty={false}
       leave={LEAVE_THEME}
     >
-      <span className="rotulo ajustes-tema__rotulo" id="ajustes-tema-rotulo">
+      <span className="rotulo ajustes-tema__rotulo" id={THEME_LABEL_ID}>
         {THEME_LABEL}
       </span>
-      <div className="ajustes-tema" role="radiogroup" aria-labelledby="ajustes-tema-rotulo">
+      <div className="ajustes-tema" role="radiogroup" aria-labelledby={THEME_LABEL_ID}>
         {CHOICES.map((choice) => {
           const checked = theme === choice.value
           return (

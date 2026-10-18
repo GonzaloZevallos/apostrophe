@@ -18,6 +18,8 @@ import { useBackOr } from '../../components/useBackOr'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
 import { CLOSE } from '../../copy/common'
 
+const SETTINGS_GROUP_ID = 'settings-business'
+
 export const SETTINGS_PATH = SETTINGS
 
 export interface LeaveWording {
@@ -40,7 +42,7 @@ export interface SettingsGroupProps {
 
 export default function SettingsGroup({ title, dirty, leave, children }: SettingsGroupProps) {
   const { blocker, disarm } = useLeaveGuard(dirty)
-  const close = useBackOr(parentOf('settings-business', useViewport())?.path ?? SETTINGS_PATH)
+  const close = useBackOr(parentOf(SETTINGS_GROUP_ID, useViewport())?.path ?? SETTINGS_PATH)
 
   return (
     <main className="pantalla ajustes-grupo">

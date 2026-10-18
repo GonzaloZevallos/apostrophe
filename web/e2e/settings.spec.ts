@@ -2,7 +2,7 @@
  * Configuración end to end, from a phone viewport (PRD metric "Nothing lost, no curl";
  * criteria 3 and 4): one business, opened from Inicio's avatar, and every group done through
  * the screen alone against the real backend wired to `FakeTelegram` — rename the business,
- * create a join link, Probarlo and follow the link to the catalog screen, edit the header and
+ * create a join link, Send me a test and follow the link to the catalog screen, edit the header and
  * footer, add / rename / remove a category (a removal refused while it still has expenses),
  * switch Apariencia, change the password and log out by tapping "Cerrar sesión", then sign in
  * again with the new password. Browser storage holds only the theme choice at the end, and
@@ -51,89 +51,89 @@ test('a seller goes through every Configuración group from the phone, with no c
     await page.getByRole('link', { name, exact: true }).click()
   }
   const close = async (): Promise<void> => {
-    await page.getByRole('button', { name: 'Cerrar', exact: true }).click()
-    await expect(page.getByRole('heading', { name: 'Configuración' })).toBeVisible()
+    await page.getByRole('button', { name: 'Close', exact: true }).click()
+    await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible()
   }
   await page.goto(HOME)
-  await page.getByRole('link', { name: /^Configuración de / }).click()
-  await expect(page.getByRole('heading', { name: 'Configuración' })).toBeVisible()
+  await page.getByRole('link', { name: /^Settings of / }).click()
+  await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible()
 
   // Negocio.
   const renamedTo = `${businessName} Renombrado`
-  await openGroup('Negocio')
-  await page.getByLabel('Nombre del negocio').fill(renamedTo)
-  await page.getByRole('button', { name: 'Guardá el nombre' }).click()
-  await expect(page.getByText('Negocio renombrado')).toBeVisible()
+  await openGroup('Business')
+  await page.getByLabel('Business name').fill(renamedTo)
+  await page.getByRole('button', { name: 'Save the name' }).click()
+  await expect(page.getByText('Business renamed')).toBeVisible()
   await close()
 
   // Usuarios: a fresh join link.
-  await openGroup('Usuarios')
-  await page.getByRole('button', { name: 'Invitá a un socio' }).click()
+  await openGroup('Users')
+  await page.getByRole('button', { name: 'Invite a partner' }).click()
   await expect(page.locator('.usuarios__link')).not.toHaveText('')
   await close()
 
-  // Integraciones: Probarlo, then the link to the catalog screen.
-  await openGroup('Integraciones')
-  await page.getByLabel('Token del bot').fill('123456:fake-token-for-e2e')
-  await page.getByLabel('Tu chat').fill('111111')
-  await page.getByRole('button', { name: 'Probarlo' }).click()
-  await expect(page.getByText('Prueba enviada')).toBeVisible()
-  await page.getByRole('link', { name: 'Ir al catálogo' }).click()
+  // Integraciones: Send me a test, then the link to the catalog screen.
+  await openGroup('Integrations')
+  await page.getByLabel('Bot token').fill('123456:fake-token-for-e2e')
+  await page.getByLabel('Your chat').fill('111111')
+  await page.getByRole('button', { name: 'Send me a test' }).click()
+  await expect(page.getByText('Test sent')).toBeVisible()
+  await page.getByRole('link', { name: 'Go to the catalog' }).click()
   await expectPath(page, CATALOG)
   await page.goBack()
   await close()
 
   // Mensaje del catálogo.
-  await openGroup('Mensaje del catálogo')
-  await page.getByLabel('Encabezado').fill('🌿 Catálogo de la semana')
-  await page.getByLabel('Pie').fill('Consultas por privado.')
-  await page.getByRole('button', { name: 'Guardá el mensaje' }).click()
-  await expect(page.getByText('Catálogo guardado')).toBeVisible()
+  await openGroup('Catalog message')
+  await page.getByLabel('Header').fill('🌿 Catálogo de la semana')
+  await page.getByLabel('Footer').fill('Consultas por privado.')
+  await page.getByRole('button', { name: 'Save the message' }).click()
+  await expect(page.getByText('Catalog saved')).toBeVisible()
   await close()
 
   // Categorías de gastos: add, rename, a refused removal, then remove.
-  await openGroup('Categorías de gastos')
-  await page.getByLabel('Nueva categoría').fill('Delivery en bici')
-  await page.getByRole('button', { name: '+ Categoría' }).click()
-  await expect(page.getByText('Categoría guardada')).toBeVisible()
+  await openGroup('Expense categories')
+  await page.getByLabel('New category').fill('Delivery en bici')
+  await page.getByRole('button', { name: '+ Category' }).click()
+  await expect(page.getByText('Category saved')).toBeVisible()
   const delivery = page.locator('.fila', { hasText: 'Delivery en bici' })
-  await delivery.getByRole('button', { name: 'Renombrar' }).click()
-  await page.getByLabel('Nombre de Delivery en bici').fill('Mensajería')
-  await page.getByRole('button', { name: 'Guardar' }).click()
+  await delivery.getByRole('button', { name: 'Rename' }).click()
+  await page.getByLabel('Name of Delivery en bici').fill('Mensajería')
+  await page.getByRole('button', { name: 'Save' }).click()
   await expect(page.locator('.fila', { hasText: 'Mensajería' })).toBeVisible()
-  await page.locator('.fila', { hasText: 'Flete' }).getByRole('button', { name: 'Eliminar' }).click()
-  await page.getByRole('button', { name: 'Sí, borrala' }).click()
+  await page.locator('.fila', { hasText: 'Flete' }).getByRole('button', { name: 'Delete' }).click()
+  await page.getByRole('button', { name: 'Yes, delete it' }).click()
   await expect(
-    page.getByText('No se puede borrar: todavía tiene gastos. Podés renombrarla.'),
+    page.getByText("Can't delete it: it still has expenses. You can rename it."),
   ).toBeVisible()
-  await page.locator('.fila', { hasText: 'Mensajería' }).getByRole('button', { name: 'Eliminar' }).click()
-  await page.getByRole('button', { name: 'Sí, borrala' }).click()
-  await expect(page.getByText('Categoría eliminada')).toBeVisible()
+  await page.locator('.fila', { hasText: 'Mensajería' }).getByRole('button', { name: 'Delete' }).click()
+  await page.getByRole('button', { name: 'Yes, delete it' }).click()
+  await expect(page.getByText('Category deleted')).toBeVisible()
   await expect(page.getByText('Mensajería')).toHaveCount(0)
   await close()
 
   // Apariencia: Oscuro applies at once, Claro removes it.
-  await openGroup('Apariencia')
-  await page.getByRole('radio', { name: 'Oscuro' }).click()
+  await openGroup('Appearance')
+  await page.getByRole('radio', { name: 'Dark' }).click()
   await expect(page.locator('html')).toHaveAttribute('data-tema', 'oscuro')
-  await page.getByRole('radio', { name: 'Claro' }).click()
+  await page.getByRole('radio', { name: 'Light' }).click()
   await expect(page.locator('html')).not.toHaveAttribute('data-tema', /.*/)
   await close()
 
   // Tu cuenta: change the password, then log out by tapping "Cerrar sesión".
-  await openGroup('Tu cuenta')
-  await page.getByRole('button', { name: 'Cambiar contraseña' }).click()
+  await openGroup('Your account')
+  await page.getByRole('button', { name: 'Change password' }).click()
   const sheet = page.locator('.capa')
-  await sheet.getByLabel('Contraseña actual').fill(PASSWORD)
-  await sheet.getByLabel('Contraseña nueva').fill(NEW_PASSWORD)
-  await sheet.getByRole('button', { name: 'Guardar' }).click()
-  await expect(page.getByText('Contraseña cambiada · cerramos tus otras sesiones')).toBeVisible()
-  await page.getByRole('button', { name: 'Cerrar sesión' }).click()
+  await sheet.getByLabel('Current password').fill(PASSWORD)
+  await sheet.getByLabel('New password').fill(NEW_PASSWORD)
+  await sheet.getByRole('button', { name: 'Save' }).click()
+  await expect(page.getByText('Password changed · we signed out your other sessions')).toBeVisible()
+  await page.getByRole('button', { name: 'Log out' }).click()
   await expectPath(page, LOGIN)
 
   await page.getByLabel('Email').fill(ownerEmail)
-  await page.getByLabel('Contraseña').fill(NEW_PASSWORD)
-  await page.getByRole('button', { name: 'Entrá' }).click()
+  await page.getByLabel('Password').fill(NEW_PASSWORD)
+  await page.getByRole('button', { name: 'Sign in' }).click()
   await expect(page.locator('.encabezado__negocio')).toHaveText(renamedTo)
 
   await expectOnlyTheThemeStored(page)

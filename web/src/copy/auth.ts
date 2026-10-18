@@ -18,6 +18,7 @@ export const NOT_USABLE_TITLE = 'This invitation no longer works'
 export const NOT_USABLE_DETAIL = 'It expired or somebody used it first. Ask the business for a new one.'
 
 /** The getting-in screens' own words: labels, buttons, headings and inline refusals. */
+export const BRAND_NAME = 'apostrophe'
 export const TAGLINE = 'Your sales, your stock and what customers owe you.'
 export const EMAIL_LABEL = 'Email'
 export const PASSWORD_LABEL = 'Password'

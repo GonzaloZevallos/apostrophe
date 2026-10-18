@@ -24,6 +24,7 @@ import Boton from '../components/Boton'
 import PasswordField from '../components/PasswordField'
 import {
   BRAKE_MESSAGE,
+  BRAND_NAME,
   CREDENTIALS_WRONG,
   EMAIL_LABEL,
   INVITE_ONLY_LINE,
@@ -77,7 +78,7 @@ export default function Entrar() {
     <AuthPage>
       <div>
         <span className="marca">
-          apostrophe<span className="marca__apostrofe">’</span>
+          {BRAND_NAME}<span className="marca__apostrofe">’</span>
         </span>
         <p className="subtitulo">{TAGLINE}</p>
       </div>

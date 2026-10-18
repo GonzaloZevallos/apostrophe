@@ -67,7 +67,7 @@ const ACCOUNT = { balance: 0, owing_since: null, standing: 'settled', rows: [] }
 const LOADED: Partial<Record<ScreenId, string>> = {
   sale: 'Líneas',
   customer: 'Ana Pérez',
-  settings: 'Configuración',
+  settings: 'Settings',
   variety: '24K Gold',
   'variety-prices': 'Precios',
   'variety-entries': 'Entradas',

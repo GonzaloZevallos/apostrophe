@@ -35,15 +35,15 @@ import {
   SETTINGS_TITLE,
 } from '../../copy/settings'
 
-const GROUPS: readonly { to: string; label: string; icon: NombreIcono }[] = [
-  { to: SETTINGS_BUSINESS, label: GROUP_BUSINESS, icon: 'negocio' },
-  { to: SETTINGS_USERS, label: GROUP_USERS, icon: 'usuarios' },
-  { to: SETTINGS_PRICES, label: GROUP_PRICES, icon: 'precio' },
-  { to: SETTINGS_INTEGRATIONS, label: GROUP_INTEGRATIONS, icon: 'integraciones' },
-  { to: SETTINGS_CATALOG_MESSAGE, label: GROUP_CATALOG_MESSAGE, icon: 'mensaje' },
-  { to: EXPENSE_CATEGORIES, label: GROUP_EXPENSE_CATEGORIES, icon: 'categorias' },
-  { to: SETTINGS_APPEARANCE, label: GROUP_APPEARANCE, icon: 'apariencia' },
-  { to: SETTINGS_ACCOUNT, label: GROUP_ACCOUNT, icon: 'cuenta' },
+const GROUPS: readonly { to: string; label: string; icono: NombreIcono }[] = [
+  { to: SETTINGS_BUSINESS, label: GROUP_BUSINESS, icono: 'negocio' },
+  { to: SETTINGS_USERS, label: GROUP_USERS, icono: 'usuarios' },
+  { to: SETTINGS_PRICES, label: GROUP_PRICES, icono: 'precio' },
+  { to: SETTINGS_INTEGRATIONS, label: GROUP_INTEGRATIONS, icono: 'integraciones' },
+  { to: SETTINGS_CATALOG_MESSAGE, label: GROUP_CATALOG_MESSAGE, icono: 'mensaje' },
+  { to: EXPENSE_CATEGORIES, label: GROUP_EXPENSE_CATEGORIES, icono: 'categorias' },
+  { to: SETTINGS_APPEARANCE, label: GROUP_APPEARANCE, icono: 'apariencia' },
+  { to: SETTINGS_ACCOUNT, label: GROUP_ACCOUNT, icono: 'cuenta' },
 ]
 
 export default function Settings() {
@@ -60,7 +60,7 @@ export default function Settings() {
           {GROUPS.map((group) => (
             <InAppLink key={group.to} to={group.to} className="ajustes__item">
               <span className="ajustes__item-icono">
-                <Icono nombre={group.icon} />
+                <Icono nombre={group.icono} />
               </span>
               <span className="ajustes__item-rotulo">{group.label}</span>
               <span className="ajustes__item-flecha">

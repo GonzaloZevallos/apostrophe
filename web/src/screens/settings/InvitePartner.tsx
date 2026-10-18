@@ -27,12 +27,15 @@ interface Invite {
 
 /** The button that creates a link: its word and weight. The Onboarding's step 5 passes its own
  * ("Crear el link", primary); with none, Configuración → Usuarios keeps today's. */
+type Variant = 'primary' | 'secondary'
+
 export interface InviteAction {
   label: string
-  variant: 'primary' | 'secondary'
+  variant: Variant
 }
 
-const DEFAULT_ACTION: InviteAction = { label: INVITE_PARTNER, variant: 'secondary' }
+const DEFAULT_VARIANT: Variant = 'secondary'
+const DEFAULT_ACTION: InviteAction = { label: INVITE_PARTNER, variant: DEFAULT_VARIANT }
 
 export default function InvitePartner({
   onLinkCreated,

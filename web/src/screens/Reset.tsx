@@ -49,13 +49,20 @@ const SUBMIT_OVERRIDES: Partial<Record<RefusalCode, string>> = {
   'account.password_weak': WEAK_PASSWORD_MESSAGE,
 }
 
-type Status = 'loading' | 'dead' | 'offline' | 'error' | 'ready'
+const STATUS = {
+  loading: 'loading',
+  dead: 'dead',
+  offline: 'offline',
+  error: 'error',
+  ready: 'ready',
+} as const
+type Status = (typeof STATUS)[keyof typeof STATUS]
 
 export default function Reset() {
   const { token } = useParams<{ token: string }>()
   const queryClient = useQueryClient()
   const navigate = useNavigate()
-  const [status, setStatus] = useState<Status>('loading')
+  const [status, setStatus] = useState<Status>(STATUS.loading)
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [sending, setSending] = useState(false)
@@ -66,16 +73,16 @@ export default function Reset() {
     openResetLink({ queryClient }, token)
       .then(() => {
         if (cancelled) return
-        setStatus('ready')
+        setStatus(STATUS.ready)
       })
       .catch((caught: unknown) => {
         if (cancelled) return
         if (caught instanceof ApiError && isGone(caught.code)) {
-          setStatus('dead')
+          setStatus(STATUS.dead)
         } else if (caught instanceof NetworkError) {
-          setStatus('offline')
+          setStatus(STATUS.offline)
         } else {
-          setStatus('error')
+          setStatus(STATUS.error)
         }
       })
     return () => {
@@ -92,12 +99,12 @@ export default function Reset() {
       await submitReset({ queryClient, navigate }, token, password)
     } catch (caught) {
       if (caught instanceof ApiError && isGone(caught.code)) {
-        setStatus('dead')
+        setStatus(STATUS.dead)
       } else if (caught instanceof ApiError) {
         const message = resolveOverride(SUBMIT_OVERRIDES, caught.code)
         setError(message ?? ERROR_GENERICO_MENSAJE)
       } else if (caught instanceof NetworkError) {
-        setStatus('offline')
+        setStatus(STATUS.offline)
       } else {
         setError(ERROR_GENERICO_MENSAJE)
       }

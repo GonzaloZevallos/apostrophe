@@ -37,6 +37,9 @@ import {
 } from '../../copy/settings'
 import { GENERIC_REFUSAL_MESSAGE } from '../../copy/common'
 
+const HEADER_ERROR_ID = 'catalog-header-error'
+const FOOTER_ERROR_ID = 'catalog-footer-error'
+
 interface HeaderFooter {
   header: string
   footer: string
@@ -149,7 +152,7 @@ function MessageForm({ initial, onSaved, onDirtyChange, submitLabel = SAVE_MESSA
           <textarea
             id="catalog-header"
             className="campo__input"
-            aria-describedby={fieldError?.field === 'header' ? 'catalog-header-error' : undefined}
+            aria-describedby={fieldError?.field === 'header' ? HEADER_ERROR_ID : undefined}
             value={header}
             onChange={(event) => {
               setHeader(event.target.value)
@@ -157,7 +160,7 @@ function MessageForm({ initial, onSaved, onDirtyChange, submitLabel = SAVE_MESSA
             }}
           />
           {fieldError?.field === 'header' && (
-            <span id="catalog-header-error" className="campo__error" role="alert">
+            <span id={HEADER_ERROR_ID} className="campo__error" role="alert">
               {fieldError.message}
             </span>
           )}
@@ -169,7 +172,7 @@ function MessageForm({ initial, onSaved, onDirtyChange, submitLabel = SAVE_MESSA
           <textarea
             id="catalog-footer"
             className="campo__input"
-            aria-describedby={fieldError?.field === 'footer' ? 'catalog-footer-error' : undefined}
+            aria-describedby={fieldError?.field === 'footer' ? FOOTER_ERROR_ID : undefined}
             value={footer}
             onChange={(event) => {
               setFooter(event.target.value)
@@ -177,7 +180,7 @@ function MessageForm({ initial, onSaved, onDirtyChange, submitLabel = SAVE_MESSA
             }}
           />
           {fieldError?.field === 'footer' && (
-            <span id="catalog-footer-error" className="campo__error" role="alert">
+            <span id={FOOTER_ERROR_ID} className="campo__error" role="alert">
               {fieldError.message}
             </span>
           )}

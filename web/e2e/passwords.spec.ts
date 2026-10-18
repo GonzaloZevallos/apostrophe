@@ -57,17 +57,17 @@ test('changes a password from Configuración → Tu cuenta, signing an older dev
   watchConsole(otherPage, consoleMessages)
   await otherPage.goto(LOGIN)
   await otherPage.getByLabel('Email').fill(ownerEmail)
-  await otherPage.getByLabel('Contraseña').fill(PASSWORD)
-  await otherPage.getByRole('button', { name: 'Entrá' }).click()
+  await otherPage.getByLabel('Password').fill(PASSWORD)
+  await otherPage.getByRole('button', { name: 'Sign in' }).click()
   await expect(otherPage.locator('.encabezado__negocio')).toHaveText(businessName)
 
   await page.goto(SETTINGS_ACCOUNT)
-  await page.getByRole('button', { name: 'Cambiar contraseña' }).click()
+  await page.getByRole('button', { name: 'Change password' }).click()
   const sheet = page.locator('.capa')
-  await sheet.getByLabel('Contraseña actual').fill(PASSWORD)
-  await sheet.getByLabel('Contraseña nueva').fill(NEW_PASSWORD)
-  await sheet.getByRole('button', { name: 'Guardar' }).click()
-  await expect(page.getByText('Contraseña cambiada · cerramos tus otras sesiones')).toBeVisible()
+  await sheet.getByLabel('Current password').fill(PASSWORD)
+  await sheet.getByLabel('New password').fill(NEW_PASSWORD)
+  await sheet.getByRole('button', { name: 'Save' }).click()
+  await expect(page.getByText('Password changed · we signed out your other sessions')).toBeVisible()
 
   // This device stays signed in: `.encabezado__negocio` only renders on Inicio
   // (`Inicio.tsx`), never on a Configuración group itself, so the check navigates home rather
@@ -110,9 +110,9 @@ test('resets a forgotten password from a printed link through to Inicio, then sh
   const link = resetLink(ownerEmail)
 
   await page.goto(link)
-  await expect(page.getByText('Elegí tu contraseña nueva')).toBeVisible()
-  await page.getByLabel('Contraseña nueva').fill(NEW_PASSWORD)
-  await page.getByRole('button', { name: 'Guardar y entrar' }).click()
+  await expect(page.getByText('Choose your new password')).toBeVisible()
+  await page.getByLabel('New password').fill(NEW_PASSWORD)
+  await page.getByRole('button', { name: 'Save and sign in' }).click()
   await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
 
   // The same link, spent, now shows the dead-link state. The lookup itself

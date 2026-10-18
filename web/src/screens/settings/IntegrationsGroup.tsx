@@ -47,6 +47,8 @@ import {
 } from '../../copy/settings'
 import { GENERIC_REFUSAL_MESSAGE } from '../../copy/common'
 
+const PINNED_CATALOG_KEY = 'pinnedCatalog'
+
 
 export interface PinnedCatalog {
   token_saved_on: string | null
@@ -99,6 +101,9 @@ export function IntegrationsForm({
 }: IntegrationsFormProps) {
   const queryClient = useQueryClient()
   const fieldId = useId()
+  const channelHelpId = `${fieldId}-channel-help`
+  const ownHelpId = `${fieldId}-own-help`
+  const searchHelpId = `${fieldId}-search-help`
   const [accepted, setAccepted] = useState<Accepted>(() => acceptedFrom(initial))
   const [tokenChanging, setTokenChanging] = useState(false)
   const [tokenInput, setTokenInput] = useState('')
@@ -185,7 +190,7 @@ export function IntegrationsForm({
       showRefusal(caught)
     } finally {
       setTesting(false)
-      invalidateResource(queryClient, 'pinnedCatalog')
+      invalidateResource(queryClient, PINNED_CATALOG_KEY)
     }
   }
 
@@ -239,11 +244,11 @@ export function IntegrationsForm({
             id={`${fieldId}-channel`}
             className="campo__input"
             type="text"
-            aria-describedby={`${fieldId}-channel-help`}
+            aria-describedby={channelHelpId}
             value={channelChatInput}
             onChange={(event) => setChannelChatInput(event.target.value)}
           />
-          <span id={`${fieldId}-channel-help`} className="campo__ayuda">
+          <span id={channelHelpId} className="campo__ayuda">
             {CHANNEL_CHAT_HELP}
           </span>
         </div>
@@ -257,7 +262,7 @@ export function IntegrationsForm({
               id={`${fieldId}-own`}
               className="campo__input"
               type="text"
-              aria-describedby={`${fieldId}-own-help`}
+              aria-describedby={ownHelpId}
               value={ownChatInput}
               onChange={(event) => setOwnChatInput(event.target.value)}
             />
@@ -265,17 +270,17 @@ export function IntegrationsForm({
               variant="secondary"
               icon="buscar"
               disabled={!canSearch || searching}
-              ariaDescribedBy={canSearch ? undefined : `${fieldId}-search-help`}
+              ariaDescribedBy={canSearch ? undefined : searchHelpId}
               onClick={() => void onSearchOwnChat()}
             >
               {FIND_MY_CHAT}
             </Boton>
           </div>
-          <div id={`${fieldId}-own-help`}>
+          <div id={ownHelpId}>
             <MasInfo line={OWN_CHAT_INFO.line} more={OWN_CHAT_INFO.more} />
           </div>
           {!canSearch && (
-            <span id={`${fieldId}-search-help`} className="campo__ayuda">
+            <span id={searchHelpId} className="campo__ayuda">
               {LOAD_THE_TOKEN_FIRST}
             </span>
           )}
