@@ -11,7 +11,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { expectIconAndTextRule } from '../test/iconAndTextRule'
-import Entrar, { BRAKE_MESSAGE, CREDENTIALS_WRONG, LOGIN_HINT, RETRY_MESSAGE } from './Entrar'
+import Entrar from './Entrar'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -40,15 +40,15 @@ afterEach(() => {
 
 test('the submit is text only and the screen follows the icon and text rule', () => {
   renderEntrar(new QueryClient())
-  expect(screen.getByRole('button', { name: 'Entrá' })).toHaveAttribute('type', 'submit')
-  // "Mostrar" is PasswordField's own show/hide toggle, an option control.
+  expect(screen.getByRole('button', { name: 'Sign in' })).toHaveAttribute('type', 'submit')
+  // "Show" is PasswordField's own show/hide toggle, an option control.
   expectIconAndTextRule(document.body)
 })
 
 test('shows the fixed hint under the button, never a count of attempts', () => {
   renderEntrar(new QueryClient())
 
-  expect(screen.getByText(LOGIN_HINT)).toBeInTheDocument()
+  expect(screen.getByText('After 5 failed attempts, the email is locked for 15 minutes')).toBeInTheDocument()
   expect(screen.queryByText(/intentos? restantes?|te quedan/i)).not.toBeInTheDocument()
 })
 
@@ -57,10 +57,10 @@ test('a wrong email or password shows the same inline refusal, naming neither', 
   renderEntrar(new QueryClient())
 
   await userEvent.type(screen.getByLabelText('Email'), 'ana@x.com')
-  await userEvent.type(screen.getByLabelText('Contraseña'), 'wrongpass1')
-  await userEvent.click(screen.getByRole('button', { name: 'Entrá' }))
+  await userEvent.type(screen.getByLabelText('Password'), 'wrongpass1')
+  await userEvent.click(screen.getByRole('button', { name: 'Sign in' }))
 
-  expect(await screen.findByRole('alert')).toHaveTextContent(CREDENTIALS_WRONG)
+  expect(await screen.findByRole('alert')).toHaveTextContent('Wrong email or password')
 })
 
 test('the lock shows the brake message in place of the fixed hint', async () => {
@@ -70,11 +70,11 @@ test('the lock shows the brake message in place of the fixed hint', async () => 
   renderEntrar(new QueryClient())
 
   await userEvent.type(screen.getByLabelText('Email'), 'ana@x.com')
-  await userEvent.type(screen.getByLabelText('Contraseña'), 'wrongpass1')
-  await userEvent.click(screen.getByRole('button', { name: 'Entrá' }))
+  await userEvent.type(screen.getByLabelText('Password'), 'wrongpass1')
+  await userEvent.click(screen.getByRole('button', { name: 'Sign in' }))
 
-  expect(await screen.findByText(BRAKE_MESSAGE)).toBeInTheDocument()
-  expect(screen.queryByText(LOGIN_HINT)).not.toBeInTheDocument()
+  expect(await screen.findByText('5 failed attempts · try again in 15 minutes')).toBeInTheDocument()
+  expect(screen.queryByText('After 5 failed attempts, the email is locked for 15 minutes')).not.toBeInTheDocument()
 })
 
 test('a server error shows the generic retry, never a refusal that blames the input', async () => {
@@ -82,10 +82,10 @@ test('a server error shows the generic retry, never a refusal that blames the in
   renderEntrar(new QueryClient())
 
   await userEvent.type(screen.getByLabelText('Email'), 'ana@x.com')
-  await userEvent.type(screen.getByLabelText('Contraseña'), 'secreta123')
-  await userEvent.click(screen.getByRole('button', { name: 'Entrá' }))
+  await userEvent.type(screen.getByLabelText('Password'), 'secreta123')
+  await userEvent.click(screen.getByRole('button', { name: 'Sign in' }))
 
-  expect(await screen.findByRole('alert')).toHaveTextContent(RETRY_MESSAGE)
+  expect(await screen.findByRole('alert')).toHaveTextContent('Something went wrong. Try again.')
 })
 
 test('a successful login clears the whole cache before landing on Inicio', async () => {
@@ -95,8 +95,8 @@ test('a successful login clears the whole cache before landing on Inicio', async
   renderEntrar(queryClient)
 
   await userEvent.type(screen.getByLabelText('Email'), 'ana@x.com')
-  await userEvent.type(screen.getByLabelText('Contraseña'), 'secreta123')
-  await userEvent.click(screen.getByRole('button', { name: 'Entrá' }))
+  await userEvent.type(screen.getByLabelText('Password'), 'secreta123')
+  await userEvent.click(screen.getByRole('button', { name: 'Sign in' }))
 
   await vi.waitFor(() => {
     expect(queryClient.getQueryData(['me'])).toBeUndefined()

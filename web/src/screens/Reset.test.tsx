@@ -13,8 +13,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import { expectIconAndTextRule } from '../test/iconAndTextRule'
-import Reset, { DEAD_LINK_MESSAGE } from './Reset'
-import { WEAK_PASSWORD_MESSAGE } from './Invitacion'
+import Reset from './Reset'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -55,9 +54,9 @@ test('logs out before looking the link up, then shows the one-field form', async
 
   renderReset()
 
-  expect(await screen.findByText('Elegí tu contraseña nueva')).toBeInTheDocument()
+  expect(await screen.findByText('Choose your new password')).toBeInTheDocument()
   expect(calls).toEqual(['/auth/logout', '/reset-links/tok123'])
-  expect(screen.getByRole('button', { name: 'Guardar y entrar' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Save and sign in' })).toBeInTheDocument()
 })
 
 test('while the lookup is pending it shows the Cargando progressbar and no form', async () => {
@@ -72,10 +71,10 @@ test('while the lookup is pending it shows the Cargando progressbar and no form'
   renderReset()
 
   expect(await screen.findByRole('progressbar', { name: 'Loading' })).toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Guardar y entrar' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Save and sign in' })).not.toBeInTheDocument()
 })
 
-test('the dead link offers a router link to Entrar, not a page reload', async () => {
+test('the dead link offers a router link to Sign in, not a page reload', async () => {
   vi.stubGlobal(
     'fetch',
     vi.fn((url: string) => {
@@ -95,12 +94,12 @@ test('the dead link offers a router link to Entrar, not a page reload', async ()
     </QueryClientProvider>,
   )
 
-  await screen.findByText(DEAD_LINK_MESSAGE)
-  // "Entrar" is a link kind drawn by BotonLink, never a raw action-styled link.
-  expect(screen.getByRole('link', { name: 'Entrar' })).toHaveClass('boton--enlace')
+  await screen.findByText('This link no longer works. Ask whoever sent it for a new one.')
+  // "Sign in" is a link kind drawn by BotonLink, never a raw action-styled link.
+  expect(screen.getByRole('link', { name: 'Sign in' })).toHaveClass('boton--enlace')
   expectIconAndTextRule(document.body)
   const user = userEvent.setup()
-  await user.click(screen.getByRole('link', { name: 'Entrar' }))
+  await user.click(screen.getByRole('link', { name: 'Sign in' }))
   expect(await screen.findByText('Pantalla de entrar')).toBeInTheDocument()
 })
 
@@ -115,8 +114,8 @@ test('a dead link on open shows the fixed notice, never the form', async () => {
 
   renderReset()
 
-  expect(await screen.findByText(DEAD_LINK_MESSAGE)).toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Guardar y entrar' })).not.toBeInTheDocument()
+  expect(await screen.findByText('This link no longer works. Ask whoever sent it for a new one.')).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Save and sign in' })).not.toBeInTheDocument()
 })
 
 test('submitting a live link signs the device in and lands on Inicio, with no toast', async () => {
@@ -134,8 +133,8 @@ test('submitting a live link signs the device in and lands on Inicio, with no to
 
   renderReset()
 
-  await userEvent.type(await screen.findByLabelText('Contraseña nueva'), 'nuevaclave123')
-  await userEvent.click(screen.getByRole('button', { name: 'Guardar y entrar' }))
+  await userEvent.type(await screen.findByLabelText('New password'), 'nuevaclave123')
+  await userEvent.click(screen.getByRole('button', { name: 'Save and sign in' }))
 
   expect(await screen.findByText('Pantalla de inicio')).toBeInTheDocument()
   expect(screen.queryByRole('status')).not.toBeInTheDocument()
@@ -155,11 +154,11 @@ test('a short new password shows the invitation\'s own too-short text, keeping i
 
   renderReset()
 
-  const field = await screen.findByLabelText('Contraseña nueva')
+  const field = await screen.findByLabelText('New password')
   await userEvent.type(field, 'corta')
-  await userEvent.click(screen.getByRole('button', { name: 'Guardar y entrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Save and sign in' }))
 
-  expect(await screen.findByRole('alert')).toHaveTextContent(WEAK_PASSWORD_MESSAGE)
+  expect(await screen.findByRole('alert')).toHaveTextContent('The password must have at least 10 characters')
   expect(field).toHaveValue('corta')
 })
 
@@ -179,10 +178,10 @@ test('a link that goes stale between opening and submitting answers the same dea
 
   renderReset()
 
-  await userEvent.type(await screen.findByLabelText('Contraseña nueva'), 'nuevaclave123')
-  await userEvent.click(screen.getByRole('button', { name: 'Guardar y entrar' }))
+  await userEvent.type(await screen.findByLabelText('New password'), 'nuevaclave123')
+  await userEvent.click(screen.getByRole('button', { name: 'Save and sign in' }))
 
-  expect(await screen.findByText(DEAD_LINK_MESSAGE)).toBeInTheDocument()
+  expect(await screen.findByText('This link no longer works. Ask whoever sent it for a new one.')).toBeInTheDocument()
 })
 
 test('the reveal control toggles the field between hidden and shown', async () => {
@@ -196,7 +195,7 @@ test('the reveal control toggles the field between hidden and shown', async () =
 
   renderReset()
 
-  const field = await screen.findByLabelText('Contraseña nueva')
+  const field = await screen.findByLabelText('New password')
   expect(field).toHaveAttribute('type', 'password')
 
   await userEvent.click(screen.getByRole('button', { name: 'Show' }))

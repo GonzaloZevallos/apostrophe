@@ -7,7 +7,6 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
-import { SIN_CONEXION_MENSAJE } from '../../copy/states'
 import InvitePartner from './InvitePartner'
 
 vi.mock('../../clipboard', () => ({ copyText: vi.fn().mockResolvedValue(true) }))
@@ -36,14 +35,14 @@ test('a tap creates one link through the route and tells the parent', async () =
   const onLinkCreated = vi.fn()
   render(<InvitePartner onLinkCreated={onLinkCreated} />)
 
-  await userEvent.click(screen.getByRole('button', { name: 'Invitá a un socio' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Invite a partner' }))
 
   expect(await screen.findByText(LINK_URL)).toBeInTheDocument()
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock.mock.calls[0]?.[0]).toBe('/invitations')
   expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({ method: 'POST' })
   expect(onLinkCreated).toHaveBeenCalledTimes(1)
-  expect(screen.queryByText('Invitación lista')).not.toBeInTheDocument()
+  expect(screen.queryByText('Invitation ready')).not.toBeInTheDocument()
 })
 
 test('a failed tap does not tell the parent a link was created', async () => {
@@ -51,9 +50,9 @@ test('a failed tap does not tell the parent a link was created', async () => {
   const onLinkCreated = vi.fn()
   render(<InvitePartner onLinkCreated={onLinkCreated} />)
 
-  await userEvent.click(screen.getByRole('button', { name: 'Invitá a un socio' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Invite a partner' }))
 
-  expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
+  expect(await screen.findByText('No connection: check your internet and try again.')).toBeInTheDocument()
   expect(onLinkCreated).not.toHaveBeenCalled()
 })
 
@@ -71,7 +70,7 @@ test('the token goes to no console and no browser storage', async () => {
   ]
   render(<InvitePartner onLinkCreated={() => undefined} />)
 
-  await userEvent.click(screen.getByRole('button', { name: 'Invitá a un socio' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Invite a partner' }))
   await screen.findByText(LINK_URL)
 
   for (const spy of spies) {
@@ -88,7 +87,7 @@ test('with its own action the button says that word and still creates the link t
   vi.stubGlobal('fetch', fetchMock)
   render(<InvitePartner onLinkCreated={() => undefined} action={{ label: 'Crear el link', variant: 'primary' }} />)
 
-  expect(screen.queryByRole('button', { name: 'Invitá a un socio' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Invite a partner' })).not.toBeInTheDocument()
   const button = screen.getByRole('button', { name: 'Crear el link' })
   expect(button).toHaveClass('boton')
   expect(button).not.toHaveClass('boton--suave')
@@ -98,8 +97,8 @@ test('with its own action the button says that word and still creates the link t
   expect(fetchMock.mock.calls[0]?.[0]).toBe('/invitations')
 })
 
-test('with no action it renders today\'s soft "Invitá a un socio"', () => {
+test('with no action it renders today\'s soft "Invite a partner"', () => {
   render(<InvitePartner onLinkCreated={() => undefined} />)
-  const button = screen.getByRole('button', { name: 'Invitá a un socio' })
+  const button = screen.getByRole('button', { name: 'Invite a partner' })
   expect(button).toHaveClass('boton--suave')
 })

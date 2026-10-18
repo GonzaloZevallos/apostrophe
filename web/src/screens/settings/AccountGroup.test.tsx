@@ -1,6 +1,6 @@
 /**
- * `AccountGroup` at the screen seam (plan, "Tu cuenta"; `accounts.md`): "Cambiar contraseña"
- * and "Cerrar sesión". The API is faked at `fetch`, never mocked deeper (CODING_STANDARDS §10).
+ * `AccountGroup` at the screen seam (plan, "Your account"; `accounts.md`): "Change password"
+ * and "Log out". The API is faked at `fetch`, never mocked deeper (CODING_STANDARDS §10).
  */
 
 import { LOGIN, SETTINGS, SETTINGS_ACCOUNT } from '../../routes'
@@ -11,12 +11,7 @@ import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import type { Me } from '../../api/me'
-import { SIN_CONEXION_MENSAJE } from '../../copy/states'
-import { WRONG_CURRENT_PASSWORD_MESSAGE } from '../CambiarContrasena'
-import { WEAK_PASSWORD_MESSAGE } from '../Invitacion'
-import { BRAKE_MESSAGE } from '../Entrar'
 import AccountGroup from './AccountGroup'
-import { PASSWORD_CHANGED_SUCCESS } from '../../copy/settings'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 
 function noContent(): Response {
@@ -72,7 +67,7 @@ function renderAccount(fetchMock: ReturnType<typeof vi.fn>): QueryClient {
   return queryClient
 }
 
-test('logging out posts to /auth/logout, clears the query cache and navigates to Entrar', async () => {
+test('logging out posts to /auth/logout, clears the query cache and navigates to Sign in', async () => {
   const calls: string[] = []
   const fetchMock = vi.fn((url: string, init?: RequestInit) => {
     calls.push(`${init?.method ?? 'GET'} ${url}`)
@@ -80,10 +75,10 @@ test('logging out posts to /auth/logout, clears the query cache and navigates to
     return Promise.resolve(jsonResponse(200, BUSINESS))
   })
   const queryClient = renderAccount(fetchMock)
-  await screen.findByRole('button', { name: 'Cerrar sesión' })
+  await screen.findByRole('button', { name: 'Log out' })
   queryClient.setQueryData(['something-else'], { stale: true })
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Cerrar sesión' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Log out' }))
 
   expect(await screen.findByText('Pantalla de entrada')).toBeInTheDocument()
   expect(calls).toContain('POST /auth/logout')
@@ -99,14 +94,14 @@ test('changing the password shows the fixed toast and closes the sheet, with no 
   })
   renderAccount(fetchMock)
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Cambiar contraseña' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Change password' }))
   const sheet = within(screen.getByRole('presentation'))
-  await userEvent.type(screen.getByLabelText('Contraseña actual'), 'viejaclave123')
-  await userEvent.type(screen.getByLabelText('Contraseña nueva'), 'nuevaclave123')
-  await userEvent.click(sheet.getByRole('button', { name: 'Guardar' }))
+  await userEvent.type(screen.getByLabelText('Current password'), 'viejaclave123')
+  await userEvent.type(screen.getByLabelText('New password'), 'nuevaclave123')
+  await userEvent.click(sheet.getByRole('button', { name: 'Save' }))
 
-  expect(await screen.findByText(PASSWORD_CHANGED_SUCCESS)).toBeInTheDocument()
-  expect(screen.queryByLabelText('Contraseña actual')).not.toBeInTheDocument()
+  expect(await screen.findByText('Password changed · we signed out your other sessions')).toBeInTheDocument()
+  expect(screen.queryByLabelText('Current password')).not.toBeInTheDocument()
 })
 
 test('a wrong current password clears it inline and keeps the new one, never navigating to Entrar', async () => {
@@ -120,15 +115,15 @@ test('a wrong current password clears it inline and keeps the new one, never nav
   })
   renderAccount(fetchMock)
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Cambiar contraseña' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Change password' }))
   const sheet = within(screen.getByRole('presentation'))
-  const currentField = screen.getByLabelText('Contraseña actual')
-  const newField = screen.getByLabelText('Contraseña nueva')
+  const currentField = screen.getByLabelText('Current password')
+  const newField = screen.getByLabelText('New password')
   await userEvent.type(currentField, 'viejaequivocada')
   await userEvent.type(newField, 'nuevaclave123')
-  await userEvent.click(sheet.getByRole('button', { name: 'Guardar' }))
+  await userEvent.click(sheet.getByRole('button', { name: 'Save' }))
 
-  expect(await screen.findByText(WRONG_CURRENT_PASSWORD_MESSAGE)).toBeInTheDocument()
+  expect(await screen.findByText("That isn't the current password.")).toBeInTheDocument()
   expect(currentField).toHaveValue('')
   expect(newField).toHaveValue('nuevaclave123')
   expect(screen.queryByText('Pantalla de entrada')).not.toBeInTheDocument()
@@ -143,14 +138,14 @@ test('a short new password shows the invitation\'s own too-short text, keeping e
   })
   renderAccount(fetchMock)
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Cambiar contraseña' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Change password' }))
   const sheet = within(screen.getByRole('presentation'))
-  await userEvent.type(screen.getByLabelText('Contraseña actual'), 'viejaclave123')
-  await userEvent.type(screen.getByLabelText('Contraseña nueva'), 'corta')
-  await userEvent.click(sheet.getByRole('button', { name: 'Guardar' }))
+  await userEvent.type(screen.getByLabelText('Current password'), 'viejaclave123')
+  await userEvent.type(screen.getByLabelText('New password'), 'corta')
+  await userEvent.click(sheet.getByRole('button', { name: 'Save' }))
 
-  expect(await screen.findByText(WEAK_PASSWORD_MESSAGE)).toBeInTheDocument()
-  expect(screen.getByLabelText('Contraseña actual')).toHaveValue('viejaclave123')
+  expect(await screen.findByText('The password must have at least 10 characters')).toBeInTheDocument()
+  expect(screen.getByLabelText('Current password')).toHaveValue('viejaclave123')
 })
 
 test('a lock shows the login brake\'s own message, keeping everything typed', async () => {
@@ -162,60 +157,60 @@ test('a lock shows the login brake\'s own message, keeping everything typed', as
   })
   renderAccount(fetchMock)
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Cambiar contraseña' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Change password' }))
   const sheet = within(screen.getByRole('presentation'))
-  await userEvent.type(screen.getByLabelText('Contraseña actual'), 'viejaclave123')
-  await userEvent.type(screen.getByLabelText('Contraseña nueva'), 'nuevaclave123')
-  await userEvent.click(sheet.getByRole('button', { name: 'Guardar' }))
+  await userEvent.type(screen.getByLabelText('Current password'), 'viejaclave123')
+  await userEvent.type(screen.getByLabelText('New password'), 'nuevaclave123')
+  await userEvent.click(sheet.getByRole('button', { name: 'Save' }))
 
-  expect(await screen.findByText(BRAKE_MESSAGE)).toBeInTheDocument()
-  expect(screen.getByLabelText('Contraseña nueva')).toHaveValue('nuevaclave123')
+  expect(await screen.findByText('5 failed attempts · try again in 15 minutes')).toBeInTheDocument()
+  expect(screen.getByLabelText('New password')).toHaveValue('nuevaclave123')
 })
 
 test('the reveal control toggles the new-password field between hidden and shown', async () => {
   renderAccount(vi.fn().mockResolvedValue(jsonResponse(200, BUSINESS)))
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Cambiar contraseña' }))
-  const field = screen.getByLabelText('Contraseña nueva')
+  await userEvent.click(await screen.findByRole('button', { name: 'Change password' }))
+  const field = screen.getByLabelText('New password')
   expect(field).toHaveAttribute('type', 'password')
 
-  await userEvent.click(screen.getByRole('button', { name: 'Mostrar' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Show' }))
   expect(field).toHaveAttribute('type', 'text')
 })
 
-test('a dropped network while logging out shows "Sin conexión" and re-enables the button', async () => {
+test('a dropped network while logging out shows "No connection" and re-enables the button', async () => {
   const fetchMock = vi.fn((url: string) => {
     if (url === '/auth/logout') return Promise.reject(new TypeError('network error'))
     return Promise.resolve(jsonResponse(200, BUSINESS))
   })
   renderAccount(fetchMock)
 
-  const button = await screen.findByRole('button', { name: 'Cerrar sesión' })
+  const button = await screen.findByRole('button', { name: 'Log out' })
   await userEvent.click(button)
 
-  expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
+  expect(await screen.findByText('No connection: check your internet and try again.')).toBeInTheDocument()
   expect(button).not.toBeDisabled()
 })
 
-test('an untouched group closes at once, with no confirmation, and "Cerrar" never logs out', async () => {
+test('an untouched group closes at once, with no confirmation, and "Close" never logs out', async () => {
   const fetchMock = vi.fn().mockResolvedValue(jsonResponse(200, BUSINESS))
   renderAccount(fetchMock)
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Close' }))
 
   expect(await screen.findByText('Lista de grupos')).toBeInTheDocument()
   expect(fetchMock).not.toHaveBeenCalled()
 })
 
-test('Cambiar contraseña and Cerrar sesión are icon + text, "Cerrar" the icon-only close', async () => {
+test('Change password and Log out are icon + text, "Close" the icon-only close', async () => {
   renderAccount(vi.fn().mockResolvedValue(jsonResponse(200, BUSINESS)))
 
-  for (const name of ['Cambiar contraseña', 'Cerrar sesión']) {
+  for (const name of ['Change password', 'Log out']) {
     const button = await screen.findByRole('button', { name })
     expect(button).toHaveTextContent(name)
     expect(button.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
   }
-  const close = screen.getByRole('button', { name: 'Cerrar' })
+  const close = screen.getByRole('button', { name: 'Close' })
   expect(close).toHaveClass('boton-icono')
   expect(close).toHaveTextContent('')
   expect(screen.queryByText('Volver')).not.toBeInTheDocument()
@@ -224,8 +219,8 @@ test('Cambiar contraseña and Cerrar sesión are icon + text, "Cerrar" the icon-
 
 test('the password sheet follows the icon and text rule', async () => {
   renderAccount(vi.fn().mockResolvedValue(jsonResponse(200, BUSINESS)))
-  await userEvent.click(await screen.findByRole('button', { name: 'Cambiar contraseña' }))
-  await screen.findByLabelText('Contraseña actual')
+  await userEvent.click(await screen.findByRole('button', { name: 'Change password' }))
+  await screen.findByLabelText('Current password')
 
   expectIconAndTextRule(document.body)
 })

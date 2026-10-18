@@ -2,7 +2,7 @@
  * `/invitation/:token` at the screen seam: a join invitation shows the business's
  * name and takes only email and password; a new-business one also asks the business
  * name — both in the design's own words. An unusable invitation shows the fixed
- * "Esta invitación ya no sirve" (plan, "Gone records": the override for
+ * "This invitation no longer works" (plan, "Gone records": the override for
  * `account.invitation_not_usable`), not the generic gone notice. Every mount logs out
  * first, through the backend, before the lookup. Every other refusal on accept is
  * dispatched through `refusals.ts`, never a raw code comparison.
@@ -14,12 +14,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
-import Invitacion, {
-  EMAIL_INVALID_MESSAGE,
-  GENERIC_REFUSAL_MESSAGE,
-  NOT_USABLE_TITLE,
-  RETRY_MESSAGE,
-} from './Invitacion'
+import Invitacion from './Invitacion'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -66,16 +61,16 @@ test('logs out before looking the invitation up, and asks only email and passwor
   renderInvitacion()
 
   expect(await screen.findByText('La Esquina')).toBeInTheDocument()
-  expect(screen.getByText('Te invitaron a')).toBeInTheDocument()
+  expect(screen.getByText('You were invited to')).toBeInTheDocument()
   expect(
     screen.getByText(
-      'Creá tu usuario y vas a ver las ventas, el stock y los clientes de este negocio. Sólo de este.',
+      "Create your user to see this business's sales, stock and customers only.",
     ),
   ).toBeInTheDocument()
   expect(calls).toEqual(['/auth/logout', '/invitations/tok123'])
-  expect(screen.queryByLabelText('Nombre del negocio')).not.toBeInTheDocument()
-  expect(screen.getByRole('button', { name: 'Sumate a La Esquina' })).toBeInTheDocument()
-  expect(screen.getByText('Esta invitación vence el 09/10 y se usa una sola vez.')).toBeInTheDocument()
+  expect(screen.queryByLabelText('Business name')).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Join La Esquina' })).toBeInTheDocument()
+  expect(screen.getByText('This invitation expires on 09/10 and can be used once.')).toBeInTheDocument()
 })
 
 test('a new-business invitation also asks for the business name, in the design\'s own words', async () => {
@@ -91,14 +86,14 @@ test('a new-business invitation also asks for the business name, in the design\'
 
   renderInvitacion()
 
-  expect(await screen.findByText('Invitación válida')).toBeInTheDocument()
-  expect(screen.getByText('Armá tu negocio')).toBeInTheDocument()
+  expect(await screen.findByText('Valid invitation')).toBeInTheDocument()
+  expect(screen.getByText('Set up your business')).toBeInTheDocument()
   expect(
-    screen.getByText('Ponele un nombre y creá tu usuario. Después podés invitar a un socio.'),
+    screen.getByText('Name it and create your user. Later you can invite a partner.'),
   ).toBeInTheDocument()
-  expect(screen.getByLabelText('Nombre del negocio')).toBeInTheDocument()
-  expect(screen.getByRole('button', { name: 'Creá el negocio' })).toBeInTheDocument()
-  expect(screen.getByText('La invitación se usa una sola vez y vence el 09/10.')).toBeInTheDocument()
+  expect(screen.getByLabelText('Business name')).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Create the business' })).toBeInTheDocument()
+  expect(screen.getByText('The invitation can be used once and expires on 09/10.')).toBeInTheDocument()
 })
 
 test('an unusable invitation shows the fixed notice, not the form', async () => {
@@ -114,8 +109,8 @@ test('an unusable invitation shows the fixed notice, not the form', async () => 
 
   renderInvitacion()
 
-  expect(await screen.findByText(NOT_USABLE_TITLE)).toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: /Sumate a/ })).not.toBeInTheDocument()
+  expect(await screen.findByText('This invitation no longer works')).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: /Join/ })).not.toBeInTheDocument()
 })
 
 test('a refusal named by the contract (account.email_invalid) shows its own inline message', async () => {
@@ -146,10 +141,10 @@ test('a refusal named by the contract (account.email_invalid) shows its own inli
   // Uppercase still passes the input's own `type="email"` constraint validation; the
   // backend's stricter rule (lowercased, trimmed) is what actually refuses it.
   await userEvent.type(await screen.findByLabelText('Email'), 'ANA@X.COM')
-  await userEvent.type(screen.getByLabelText('Contraseña'), 'secreta123')
-  await userEvent.click(screen.getByRole('button', { name: 'Sumate a La Esquina' }))
+  await userEvent.type(screen.getByLabelText('Password'), 'secreta123')
+  await userEvent.click(screen.getByRole('button', { name: 'Join La Esquina' }))
 
-  expect(await screen.findByRole('alert')).toHaveTextContent(EMAIL_INVALID_MESSAGE)
+  expect(await screen.findByRole('alert')).toHaveTextContent('Enter a valid email')
 })
 
 test('an unmapped refusal (RequestInvalid) shows the generic inline message, never the retry banner', async () => {
@@ -176,10 +171,10 @@ test('an unmapped refusal (RequestInvalid) shows the generic inline message, nev
   renderInvitacion()
 
   await userEvent.type(await screen.findByLabelText('Email'), 'ana@x.com')
-  await userEvent.type(screen.getByLabelText('Contraseña'), 'secreta123')
-  await userEvent.click(screen.getByRole('button', { name: 'Sumate a La Esquina' }))
+  await userEvent.type(screen.getByLabelText('Password'), 'secreta123')
+  await userEvent.click(screen.getByRole('button', { name: 'Join La Esquina' }))
 
-  expect(await screen.findByRole('alert')).toHaveTextContent(GENERIC_REFUSAL_MESSAGE)
+  expect(await screen.findByRole('alert')).toHaveTextContent('Check the details and try again.')
 })
 
 test('a server error on accepting shows the generic retry, never a refusal', async () => {
@@ -206,10 +201,10 @@ test('a server error on accepting shows the generic retry, never a refusal', asy
   renderInvitacion()
 
   await userEvent.type(await screen.findByLabelText('Email'), 'ana@x.com')
-  await userEvent.type(screen.getByLabelText('Contraseña'), 'secreta123')
-  await userEvent.click(screen.getByRole('button', { name: 'Sumate a La Esquina' }))
+  await userEvent.type(screen.getByLabelText('Password'), 'secreta123')
+  await userEvent.click(screen.getByRole('button', { name: 'Join La Esquina' }))
 
-  expect(await screen.findByRole('alert')).toHaveTextContent(RETRY_MESSAGE)
+  expect(await screen.findByRole('alert')).toHaveTextContent('Something went wrong. Try again.')
 })
 
 test('a server error on the lookup itself shows the generic retry, not a refusal', async () => {
@@ -223,8 +218,8 @@ test('a server error on the lookup itself shows the generic retry, not a refusal
 
   renderInvitacion()
 
-  expect(await screen.findByText(RETRY_MESSAGE)).toBeInTheDocument()
-  expect(screen.queryByText(GENERIC_REFUSAL_MESSAGE)).not.toBeInTheDocument()
+  expect(await screen.findByText('Something went wrong. Try again.')).toBeInTheDocument()
+  expect(screen.queryByText('Check the details and try again.')).not.toBeInTheDocument()
 })
 
 test('shows the Cargando progressbar, and no text of its own, while the lookup is pending', () => {
@@ -262,9 +257,9 @@ async function acceptAs(kind: 'new_business' | 'join_business'): Promise<void> {
     </QueryClientProvider>,
   )
   await userEvent.type(await screen.findByLabelText('Email'), 'ana@x.com')
-  await userEvent.type(screen.getByLabelText('Contraseña'), 'secreta123')
-  if (kind === 'new_business') await userEvent.type(screen.getByLabelText('Nombre del negocio'), 'La Huerta')
-  await userEvent.click(screen.getByRole('button', { name: /Creá el negocio|Sumate a/ }))
+  await userEvent.type(screen.getByLabelText('Password'), 'secreta123')
+  if (kind === 'new_business') await userEvent.type(screen.getByLabelText('Business name'), 'La Huerta')
+  await userEvent.click(screen.getByRole('button', { name: /Create the business|Join/ }))
 }
 
 test('accepting a new-business invitation lands in the Onboarding', async () => {
