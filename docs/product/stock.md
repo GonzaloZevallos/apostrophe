@@ -7,7 +7,7 @@ cost, taken from the lots it came out of, oldest first. Seen only by its busines
 sold feeds profit (#7) and margins (#8); the cost of withdrawn grams feeds profit as
 Promotion and Own use, never cost of goods sold or margins. Cost follows the lots
 as they stand and is never frozen (ADR-0009). Stock has no tab of its own: it is shown on
-Variedades, in the list and on each variety's page (varieties.md). Nothing new is recorded
+Varieties, in the list and on each variety's page (varieties.md). Nothing new is recorded
 against an archived variety, neither a stock entry nor a withdrawal line (varieties.md,
 ADR-0032).
 
@@ -35,8 +35,8 @@ phone, **so I can** stop keeping it in the spreadsheet's stock tab.
 **When** I run my business from my phone between orders or mid-chat with a customer,
 several times a day, **I want** the app laid out around what I actually do and how often,
 **so I can** get back to the customer instead of hunting through menus. (The navigation
-job, navigation.md: served here by "+ Entrada de stock" and "Take out of stock" on
-Variedades, at most 2 taps from any tab root, and a variety's stock on its own page.)
+job, navigation.md: served here by "+ Stock entry" and "Take out of stock" on
+Varieties, at most 2 taps from any tab root, and a variety's stock on its own page.)
 
 **When** a variety I loaded by mistake, or one I no longer work with, keeps showing in my
 lists and pickers, **I want** to take it out from my phone in a few taps, deleting it if
@@ -59,7 +59,7 @@ Success criteria:
    - Across all draws, the cost taken from a lot never exceeds the lot's cost.
    - Once a lot is used up, the costs taken from it add up to exactly its cost.
    - Grams with no lot behind them are pending, never $0.
-4. **Visible status, no surprises**: Variedades (the list and each variety's page) says on
+4. **Visible status, no surprises**: Varieties (the list and each variety's page) says on
    its own, by shape and word and never by color alone, when a variety is sold out or
    below its threshold, so the seller never finds out partway through a sale. A variety
    with no threshold still shows sold out. Days left at the pace of the last 30 days sits
@@ -197,7 +197,7 @@ Success criteria:
   2. **Sold out**: stock ≤ 0. This includes a variety with sales, gifts or withdrawals but
      no stock entry, and one whose entries net to 0 (ADR-0009: overselling shows sold out
      at once). It shows the date of the movement (a withdrawal included) after which
-     stock has stayed at or below 0 ("Sin gramos desde el 30/09"), and for a variety with
+     stock has stayed at or below 0 ("No grams since 30/09"), and for a variety with
      no entries that is the day of its first sale, gift or withdrawal.
   3. **Low**: stock > 0 and under the variety's low-stock threshold.
   4. **Ok**: otherwise.
@@ -209,13 +209,13 @@ Success criteria:
   grams went out in those 30 days.
 - **Total**: the sum of every variety's stock. The API answers it; no screen shows it.
 
-### On screen (in Variedades)
+### On screen (in Varieties)
 
-- **No Stock tab.** Stock lives in Variedades (varieties.md, navigation.md); the old
+- **No Stock tab.** Stock lives in Varieties (varieties.md, navigation.md); the old
   Stock path redirects there.
-- **Per variety**, on Variedades' list and at the top of its page: its grams, its status
-  mark and its detail ("Sin gramos desde el 30/09", "Avisás abajo de 20 g", "Al ritmo de
-  los últimos 30 días", "Cargale la primera entrada" only for no entries), plus days
+- **Per variety**, on Varieties' list and at the top of its page: its grams, its status
+  mark and its detail ("No grams since 30/09", "Warns you below 20 g", "At the pace of
+  the last 30 days", "Add the first entry" only for no entries), plus days
   left.
 - **Status marks** (`MarcaEstado`): told by shape and word, never by color alone.
   - square = agotada, as the inverted chip, not red;
@@ -227,7 +227,7 @@ Success criteria:
   - A withdrawal row shows its date, "Promotion" or "Own use", and that variety's
     grams in it with a minus sign (e.g. "−5 g"): going out is told by word and sign,
     never by color. A withdrawal touching several varieties shows on each one's page.
-- **"All entries"**, at the foot of Variedades: a detail ("‹ Variedades") with
+- **"All entries"**, at the foot of Varieties: a detail ("‹ Varieties") with
   every entry of the business, with date, variety, origin, grams, total cost and cost per
   gram, newest date first, then most recently recorded first. Each can be edited or
   deleted. It lists entries only, never withdrawals; there is no business-wide list of
@@ -235,8 +235,8 @@ Success criteria:
   - Its empty state: "No stock entries · Add your opening stock or a purchase".
 - **New entry** (`EntradaStock`), a form (navigation.md): "Close", and a
   confirmation when leaving with something typed.
-  - Opened from "+ Entrada de stock" on Variedades (the seller chooses the variety) or
-    from "+ Entrada" on a variety's page (that variety already chosen, and "Stock
+  - Opened from "+ Stock entry" on Varieties (the seller chooses the variety) or
+    from "+ Entry" on a variety's page (that variety already chosen, and "Stock
     inicial" preselected as the origin when the variety has no entries yet).
   - date (filled with today), grams, and variety with "On hand today: N g";
   - origin: Purchase · Harvest · Opening stock · Adjustment;
@@ -248,7 +248,7 @@ Success criteria:
   "+ Nueva venta", and a confirmation when leaving with something typed. It follows the
   phone standard for inputs and targets (#80).
   - Opened from Más (second, after "+ Cargar gasto"), from the secondary "Take out of
-    stock" on Variedades (next to "+ Entrada de stock", phone and computer), with no
+    stock" on Varieties (next to "+ Stock entry", phone and computer), with no
     variety chosen, and from "Take out of stock" on a variety's page, with that variety
     already chosen. An archived variety's page offers no "Take out of stock".
   - reason (Promotion · Own use, required, no default), date (filled with today),
@@ -264,15 +264,15 @@ Success criteria:
     to it. The seller may keep it (saving succeeds), choose an unarchived variety
     instead, or remove the line.
   - **A variety archived while the form is open** (a partner archived it): saving is
-    refused with `variety.archived`, following accounts.md's "Eso ya no está" rule:
+    refused with `variety.archived`, following accounts.md's "That's gone" rule:
     - the form stays open and nothing typed is cleared, each guilty line's variety
       included, still shown by its name;
-    - "Eso ya no está." shows under each guilty line, and the variety list refreshes;
+    - "That's gone." shows under each guilty line, and the variety list refreshes;
     - the form cannot be saved again while a guilty line still names the archived
       variety: the seller chooses another variety for it or removes the line, which
       clears its message.
 - **A withdrawal's detail**, opened from its row: a detail (navigation.md), with the bar
-  or sidebar and a "‹" back to the variety's page it came from (Variedades when there is
+  or sidebar and a "‹" back to the variety's page it came from (Varieties when there is
   no history), and no "+ Nueva venta". It shows the date, the reason, every line and the
   note, with "Edit" and "Delete", also when a line's variety is archived.
 - **Editing an entry**: saving is confirmed first.
@@ -285,9 +285,9 @@ Success criteria:
 - **Toasts**: "Entry saved", "Entry deleted", "Aviso guardado", "Withdrawal
   saved" and "Withdrawal deleted". None carries grams or amounts.
 - **Refusals** show inline and keep what was typed.
-- **An entry or withdrawal that is gone** follows accounts.md's "Eso ya no está." rule:
-  opening it offers "Volver a Variedades"; saving, deleting or confirming on it shows
-  "Eso ya no está. La lista ya está al día."
+- **An entry or withdrawal that is gone** follows accounts.md's "That's gone." rule:
+  opening it offers "Back to Varieties"; saving, deleting or confirming on it shows
+  "That's gone. The list is up to date."
 - **Pinned catalog**: recording, editing or deleting an entry or a withdrawal is an
   upkeep trigger (pinned-catalog.md).
 
@@ -348,7 +348,7 @@ Success criteria:
   - editing a withdrawal with a line on a variety archived since shows that variety's
     name as a fixed label and saves while keeping it;
   - a save refused with `variety.archived` keeps the form open with every field, the
-    guilty line's variety and its name included, shows "Eso ya no está." under that
+    guilty line's variety and its name included, shows "That's gone." under that
     line, and keeps save disabled until another variety is chosen or the line is
     removed. No test asserts the guilty line's variety field is emptied.
 - **Isolation (criterion 10)**: every stock and withdrawal route sits in the sweep and
@@ -362,14 +362,14 @@ Success criteria:
   answers in under 300 ms with a few dozen varieties.
 - **Withdrawal screens**: front tests show the form's chrome and its discard
   confirmation, the detail's chrome, the edit and delete confirmations, "Withdrawal saved"
-  and "Withdrawal deleted", both "Eso ya no está." forms, history rows told apart by word
+  and "Withdrawal deleted", both "That's gone." forms, history rows told apart by word
   and sign, and "All entries" holding no withdrawal.
-- **No curl (criteria 6, 7)**: the end-to-end front run records an entry from Variedades
+- **No curl (criteria 6, 7)**: the end-to-end front run records an entry from Varieties
   and one from a variety's page, edits and deletes one from "All entries", sets
   and turns off a threshold on a variety's page, records a withdrawal from Más and one
   from a variety's page, and edits and deletes a withdrawal.
 - **Looks as designed**: before and after comparisons from `scripts/design/compare.sh`
-  for the withdrawal form, its detail, Variedades and a variety's page, phone and
+  for the withdrawal form, its detail, Varieties and a variety's page, phone and
   computer, judged by eye.
 
 ## Out of scope
