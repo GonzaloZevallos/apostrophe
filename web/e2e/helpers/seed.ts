@@ -69,7 +69,7 @@ export async function seedRecords(page: Page, customerName: string): Promise<Rec
   await expect(page.getByText('Precio guardado')).toBeVisible()
 
   await page.goto(CUSTOMER_NEW)
-  await page.getByLabel('Nombre').fill(customerName)
+  await page.getByLabel('Name').fill(customerName)
   await page.getByRole('button', { name: 'Guardá y usá' }).click()
   const customer = await idAt(page, CUSTOMER)
   await page.getByRole('link', { name: `Nueva venta a ${customerName}` }).click()

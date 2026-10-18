@@ -193,8 +193,8 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   // A brand-new customer, created from inside the sheet, without leaving the sale.
   await page.getByRole('button', { name: 'Elegir cliente' }).click()
   await page.getByRole('button', { name: 'Nuevo cliente' }).click()
-  await page.getByLabel('Teléfono').fill('+5491155550010')
-  await page.getByLabel('Nombre').fill('Carla Pérez')
+  await page.getByLabel('Phone').fill('+5491155550010')
+  await page.getByLabel('Name').fill('Carla Pérez')
   await page.getByRole('button', { name: 'Crear cliente' }).click()
   await expect(page.getByText('Elegir cliente')).toHaveCount(0)
   await expect(page.locator('.lista-clientes__nombre')).toHaveText('Carla Pérez')

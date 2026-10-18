@@ -70,8 +70,8 @@ test('a seller records, settles, undoes and traces payments, from the front alon
 
   // A customer, left owing on its first sale.
   await page.goto(CUSTOMER_NEW)
-  await page.getByLabel('Teléfono').fill('+5491155550099')
-  await page.getByLabel('Nombre').fill('Carla Pérez')
+  await page.getByLabel('Phone').fill('+5491155550099')
+  await page.getByLabel('Name').fill('Carla Pérez')
   await page.getByRole('button', { name: 'Guardá y usá' }).click()
   await expectPath(page, CUSTOMER)
   await expect(page.getByText('Customer saved')).toBeVisible()

@@ -201,8 +201,8 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
 
   // A customer, for the sale left owing.
   await page.goto(CUSTOMER_NEW)
-  await page.getByLabel('Teléfono').fill('+5491155550077')
-  await page.getByLabel('Nombre').fill('Carla Pérez')
+  await page.getByLabel('Phone').fill('+5491155550077')
+  await page.getByLabel('Name').fill('Carla Pérez')
   await page.getByRole('button', { name: 'Guardá y usá' }).click()
   await expectPath(page, CUSTOMER)
   await expect(page.getByText('Customer saved')).toBeVisible()

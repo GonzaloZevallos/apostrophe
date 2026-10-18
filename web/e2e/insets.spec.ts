@@ -124,8 +124,8 @@ test('every screen, bar, sheet and toast keeps clear of the notch and the home b
   await expect(page.getByText('Precio guardado')).toBeVisible()
 
   await page.goto(CUSTOMER_NEW)
-  await page.getByLabel('Teléfono').fill('+5491155550077')
-  await page.getByLabel('Nombre').fill('Lucía Borde')
+  await page.getByLabel('Phone').fill('+5491155550077')
+  await page.getByLabel('Name').fill('Lucía Borde')
   await page.getByRole('button', { name: 'Guardá y usá' }).click()
   await expectPath(page, CUSTOMER)
   await page.getByRole('link', { name: 'Nueva venta a Lucía Borde' }).click()

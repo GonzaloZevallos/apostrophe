@@ -33,7 +33,7 @@ function aYearBefore(iso: string): string {
 
 async function registerCustomer(page: Page, name: string): Promise<void> {
   await page.goto(CUSTOMER_NEW)
-  await page.getByLabel('Nombre').fill(name)
+  await page.getByLabel('Name').fill(name)
   await page.getByRole('button', { name: 'Guardá y usá' }).click()
   await expectPath(page, CUSTOMER)
   await expect(page.getByText('Customer saved')).toBeVisible()

@@ -58,7 +58,7 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
 
   // Registered with no phone number at all.
   await page.goto(CUSTOMER_NEW)
-  await page.getByLabel('Nombre').fill('Noe Sinnumero')
+  await page.getByLabel('Name').fill('Noe Sinnumero')
   await page.getByRole('button', { name: 'Guardá y usá' }).click()
   await expectPath(page, CUSTOMER)
   await expect(page.getByText('Customer saved')).toBeVisible()
@@ -79,7 +79,7 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   // Edited: still no phone number, and the edit form shows no required marker on
   // the phone field while it stays usable.
   await page.getByRole('link', { name: 'Editar' }).click()
-  await expect(page.getByLabel('Teléfono')).toHaveValue('')
+  await expect(page.getByLabel('Phone')).toHaveValue('')
   await page.getByRole('button', { name: 'Guardá y usá' }).click()
   await expect(page.getByText('Customer saved')).toBeVisible()
   await expect(page.getByText('Teléfono')).toHaveCount(0)
@@ -123,7 +123,7 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   await page.goto(SALE_NEW)
   await page.getByRole('button', { name: 'Elegir cliente' }).click()
   await page.getByRole('button', { name: 'Nuevo cliente' }).click()
-  await page.getByLabel('Nombre').fill('Sol Sinnumero')
+  await page.getByLabel('Name').fill('Sol Sinnumero')
   await page.getByRole('button', { name: 'Crear cliente' }).click()
   await expect(page.getByRole('button', { name: /Sol Sinnumero/ })).toBeVisible()
   // The chosen chip carries no phone element either.
