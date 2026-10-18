@@ -179,7 +179,7 @@ test('choosing Oscuro in Apariencia applies it, survives a reload and a logout, 
   // Signed in again, Claro removes the attribute and the key.
   await page.getByLabel('Email').fill(email)
   await page.getByLabel('Password').fill(PASSWORD)
-  await page.getByRole('button', { name: 'Sign in' }).click()
+  await page.getByRole('button', { name: 'Log in' }).click()
   await expect(page.locator('.encabezado__negocio')).toBeVisible()
   expect(await themeAttribute(page)).toBe('oscuro')
   await page.goto(SETTINGS_APPEARANCE)

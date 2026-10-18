@@ -34,7 +34,7 @@ These two refine the "log in once and stay in" job above. The operator's command
 
 This refines the "log in once and stay in", "get in with the link I was sent" and forgotten-password jobs above; it is not a new job. Its protagonist is the seller; the operator's commands stay outside the app.
 
-**When** I open the app on my phone or computer, whatever my device's light or dark setting, **I want** to see it as it was designed ("Papel y azul": warm paper background, brown-black ink, one blue), **so I** always work in the one look that was designed and checked for reading figures, states and amounts, and the dark theme shows only once I choose it (in Configuración → Apariencia, navigation.md) and stays on that device once chosen.
+**When** I open the app on my phone or computer, whatever my device's light or dark setting, **I want** to see it as it was designed ("Papel y azul": warm paper background, brown-black ink, one blue), **so I** always work in the one look that was designed and checked for reading figures, states and amounts, and the dark theme shows only once I choose it (in Settings → Apariencia, navigation.md) and stays on that device once chosen.
 
 **When** I need to change how my business is set up (rename it, bring in a partner, connect or switch the Telegram bot, edit the catalog's header and footer, manage my expense categories, switch to dark, change my password or log out), **I want** every business-wide setting in one place, each in its own short screen, **so I can** change it in a few taps from my phone and get back to the customer, without wondering which screen holds it. (Served here by Configuración's Negocio, Usuarios, Apariencia and Tu cuenta; the structure is navigation.md.)
 
@@ -109,7 +109,7 @@ Success criteria, the theme:
 Success criteria, changing and resetting a password:
 
 18. **Change, fast and final.**
-    - From Configuración → Tu cuenta on the phone, a user with the right current password sets a new one (at least 10 characters) in under a minute.
+    - From Settings → Tu cuenta on the phone, a user with the right current password sets a new one (at least 10 characters) in under a minute.
     - Every other session of that user is closed at once.
     - The device that changed it stays signed in.
     - Partners' sessions are untouched.
@@ -308,7 +308,7 @@ Success criteria, the cookie-security test (GH-130 follow-up):
   - plain values: ISO 8601 dates, whole pesos, grams as decimals with up to two places;
   - each record names what it refers to (customer, variety, category) as well as its id;
   - it holds every recorded fact as stored:
-    - the business name and its pricing settings (Precio por cantidad and Clientes VIP);
+    - the business name and its pricing settings (Bulk price and VIP customers);
     - users (email and joining date);
     - customers (name, phone number, VIP);
     - varieties with their low-stock threshold and catalog attributes;
@@ -346,7 +346,7 @@ Success criteria, the cookie-security test (GH-130 follow-up):
   - the app shows no banner or explanation of the difference.
 - **Install on the published installation**, over Render's TLS: Android's own install prompt is offered when the browser makes it available. The manifest and service worker already in place need no further work for it.
 - **No network**: when a request fails because the network dropped, the open app shows "No connection: check your internet and try again." on any origin. This does not rely on the service worker.
-- **Theme**: the app opens in the light theme whatever the phone or computer is set to, unless Oscuro is stored on that device. The dark theme applies only when it is chosen (`data-tema="oscuro"`), and the one place a person chooses it is Configuración → Apariencia, Claro or Oscuro (navigation.md).
+- **Theme**: the app opens in the light theme whatever the phone or computer is set to, unless Oscuro is stored on that device. The dark theme applies only when it is chosen (`data-tema="oscuro"`), and the one place a person chooses it is Settings → Apariencia, Claro or Oscuro (navigation.md).
   - The rule is one: no attribute on `<html>` means light, `data-tema="oscuro"` means dark. There is no exception per screen, route or session, and the system's light or dark setting picks nothing. `oscuro` is the only recognised value.
   - **The theme choice is remembered per device**:
     - tapping Claro or Oscuro applies and remembers it at once, with no save, toast or unsaved-changes warning;
@@ -364,7 +364,7 @@ Success criteria, the cookie-security test (GH-130 follow-up):
   - **Drawn from the design** in `docs/product/design-system/pantallas/` (GH-49). Where the design's wording differs from this file, this file wins and the difference is a defect in the design.
   - **One centred, phone-width layout** on every viewport, the computer's included; there is no computer-only layout for these screens.
   - **Entrar**:
-    - the labels "Email" and "Password" and the button "Sign in";
+    - the labels "Email" and "Password" and the button "Log in";
     - a fixed hint under the button that five failed attempts lock the email for 15 minutes, and no count of attempts left;
     - a wrong password and an unknown email show the same refusal; refusals show inline and keep what was typed.
   - Either lock shows the brake message. No copy names the address brake, and both locks look and read the same.
@@ -418,19 +418,19 @@ How the app fills a phone's screen and responds to touch once installed (criteri
 
 ### In Configuración: Negocio, Usuarios, Apariencia, Tu cuenta
 
-These groups of Configuración (navigation.md) replace the former Negocio screen, which no longer exists; `/negocio` redirects to Configuración. Each is its own subscreen, a form: "Cerrar", and a confirmation when leaving with unsaved changes; an untouched one closes at once. (Precios, between Usuarios and Integraciones, is pricing-settings.md.)
+These groups of Configuración (navigation.md) replace the former Negocio screen, which no longer exists; `/negocio` redirects to Configuración. Each is its own subscreen, a form: "Cerrar", and a confirmation when leaving with unsaved changes; an untouched one closes at once. (Precios, between Usuarios and Integrations, is pricing-settings.md.)
 
-- **Negocio**: rename the business. Toast "Negocio renombrado"; refusals inline, keeping what was typed.
+- **Negocio**: rename the business. Toast "Business renamed"; refusals inline, keeping what was typed.
 - **Usuarios**:
-  - the users by email, sorted by email, the signed-in one marked "vos"; it always lists at least the signed-in user;
+  - the users by email, sorted by email, the signed-in one marked "you"; it always lists at least the signed-in user;
   - "Invite a partner": each tap creates one fresh join link, to copy or share with the phone's share sheet.
-- **Apariencia**: Claro and Oscuro, the current one marked by word or shape and `aria-checked` or equivalent, never by color alone. A tap applies and remembers the choice on the device (see Theme). It never has unsaved changes, so "Cerrar" always closes at once.
-- **Tu cuenta**:
+- **Appearance**: Light and Dark, the current one marked by word or shape and `aria-checked` or equivalent, never by color alone. A tap applies and remembers the choice on the device (see Theme). It never has unsaved changes, so "Close" always closes at once.
+- **Your account**:
   - "Change password", above "Log out", opens a sheet:
-    - the fields are "Contraseña actual" and "Contraseña nueva";
-    - "Contraseña nueva" is asked once, hidden by default with a reveal, here and on the reset screen;
-    - on success, the toast "Contraseña cambiada · cerramos tus otras sesiones";
-    - a wrong current password reads "La contraseña actual no es esa.". "Contraseña actual" is cleared and "Contraseña nueva" keeps what was typed;
+    - the fields are "Current password" and "New password";
+    - "New password" is asked once, hidden by default with a reveal, here and on the reset screen;
+    - on success, the toast "Password changed · we signed out your other sessions";
+    - a wrong current password reads "That isn't the current password.". "Current password" is cleared and "New password" keeps what was typed;
     - a password under 10 characters shows the same refusal as accepting an invitation, and a lock shows the login brake message, keeping what was typed;
   - log out ("Log out"), which goes to login.
 
@@ -477,16 +477,16 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
 
 - **Success toasts** are short, fixed and carry no data, with one deliberate exception.
   - This capability's toasts:
-    - "Negocio renombrado";
+    - "Business renamed";
     - "Invitation ready", unless the link is shown on the screen;
-    - "Contraseña cambiada · cerramos tus otras sesiones".
+    - "Password changed · we signed out your other sessions".
   - Choosing a theme shows no toast.
   - The exception is "Cobro guardado · queda debiendo $ X" (payments.md). It names what the customer still owes, because seeing that is the point of recording a payment. When nothing is left owing it reads "Cobro guardado".
 - **No "Deshacer" on success toasts, with one deliberate exception**: "Venta guardada" (sales.md) carries Deshacer, because recording a sale is the fastest and most frequent entry. It still carries no data. No other success notice gets one.
 - **Loading**: while a screen waits for the server, it shows a loading state whose wording and shape follow the design. It shows no figure, no placeholder amount and no text that could be read as data (criterion 7).
 - **Empty states** keep each capability's own fixed wording.
 - **Leaving a form or sheet** with unsaved changes asks before discarding, and an untouched one closes at once (navigation.md). Nueva venta's question is "¿Descartás la venta?" (sales.md).
-- **Refusals** show inline and keep what was typed. The one exception: a wrong current password clears "Contraseña actual".
+- **Refusals** show inline and keep what was typed. The one exception: a wrong current password clears "Current password".
 - **No network** shows "No connection: check your internet and try again."; a server error shows a generic retry.
 - **A record that is gone** answers 404 whether it was deleted, never existed or belongs to another business (ADR-0004). The app never says who deleted it or that it once existed.
   - **Saving an edit, confirming a delete or undoing** on a record that is gone:
@@ -506,7 +506,7 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
 
 ## Metrics
 
-- **No curl (criterion 4)**: an end-to-end run through the front alone passes. It accepts a new-business invitation, renames the business from Configuración → Negocio, creates a join link from Usuarios and accepts it as a second user.
+- **No curl (criterion 4)**: an end-to-end run through the front alone passes. It accepts a new-business invitation, renames the business from Settings → Negocio, creates a join link from Usuarios and accepts it as a second user.
 - **Isolation (criteria 1, 6)**:
   - the business routes sit in the isolation sweep and the gated-route test;
   - serving tests prove no path reaches outside `web/dist`;
@@ -522,7 +522,7 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
 - **Theme (criteria 23–26)**:
   - light wins: an e2e run with the system emulated in dark (`emulateMedia({ colorScheme: 'dark' })`), nothing stored and no attribute reads the page background as `--papel` (#fcfbf8), Entrar included;
   - dark on request: an e2e run with `data-tema="oscuro"` on `<html>`, whatever the system setting, reads the page background as the dark theme's own value from `tokens.css`;
-  - choosing Oscuro in Configuración → Apariencia sets the attribute, and Claro removes it, with no toast, save button or unsaved-changes warning, and the current choice marked by more than color;
+  - choosing Oscuro in Settings → Apariencia sets the attribute, and Claro removes it, with no toast, save button or unsaved-changes warning, and the current choice marked by more than color;
   - the choice survives a reload and a logout; with Oscuro stored, Entrar, the invitation and the reset screens show dark;
   - browser storage holds only the theme choice;
   - no test or fixture reaches the dark theme by emulating a dark system;
@@ -569,7 +569,7 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
   - the reset routes are never braked.
 - **Reset command (criteria 20, 22)**: an email with no user writes 0 rows and retires 0 links.
 - **No curl for passwords (criterion 22)**: the end-to-end front run:
-  - changes a password from Configuración → Tu cuenta, after which an old session is signed out and this one stays in;
+  - changes a password from Settings → Tu cuenta, after which an old session is signed out and this one stays in;
   - completes a reset from a printed link through to Inicio;
   - sees the dead-link state for a used link.
 - **Getting in, redesigned (criteria 27–32)**:
@@ -660,7 +660,7 @@ These states are drawn by `Estados` (GH-49), restyled from the design with their
 - An admin screen, route or navigation entry, or anything operated from a signed-in session.
 - A per-business publishing flag or staged rollout.
 - The bar's and header's own behaviour (#59), and each screen's own layout, including a save action pinned above the keyboard.
-- Building Configuración → Apariencia, and whether or where the theme choice is kept: its own issue.
+- Building Settings → Apariencia, and whether or where the theme choice is kept: its own issue.
 - A dark splash, and iOS `apple-touch-startup-image` splash images.
 - An iOS status bar that follows the theme live.
 - A landscape-specific design; locking orientation or disabling zoom.

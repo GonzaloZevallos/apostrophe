@@ -80,7 +80,7 @@ export const THEME_LIGHT = 'Light'
 export const THEME_DARK = 'Dark'
 
 /** Prices. */
-export const BULK_PRICING_LABEL = 'Bulk pricing'
+export const BULK_PRICING_LABEL = 'Bulk price'
 export const VIP_CUSTOMERS_LABEL = 'VIP customers'
 export const SAVE_PRICES = 'Save the prices'
 export const PAST_SALES_LINE = 'Past sales keep their recorded price. Turning an option off deletes nothing.'

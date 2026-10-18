@@ -68,7 +68,7 @@ test('a seller does everything the backend offers today, from the front alone', 
 
   // Delete the price entry (the only one): the variety is left with no price.
   await page.getByRole('button', { name: 'Borrar este precio' }).click();
-  await page.getByRole('button', { name: 'Yes, delete it' }).click();
+  await page.getByRole('button', { name: 'Sí, borrala' }).click();
   await expect(page.getByText('Precio eliminado')).toBeVisible()
   await expect(page.getByText('Sin precio: no se puede vender').first()).toBeVisible()
 
@@ -104,7 +104,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   // Delete it: confirmed first, naming the date, variety and grams ("Antes de borrar").
   await page.getByRole('button', { name: 'Borrar', exact: true }).click()
   await expect(page.getByText('Antes de borrar')).toBeVisible()
-  await page.getByRole('button', { name: 'Yes, delete it' }).click()
+  await page.getByRole('button', { name: 'Sí, borrala' }).click()
   await expectPath(page, STOCK)
   await expect(page.getByText('Entry deleted')).toBeVisible()
   await expect(page.getByText('Compra · 60 g')).toHaveCount(0)
@@ -144,7 +144,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   // Delete it.
   await page.getByText('Flete al mercado central').click()
   await page.getByRole('button', { name: 'Borrar gasto' }).click()
-  await page.getByRole('button', { name: 'Yes, delete it' }).click()
+  await page.getByRole('button', { name: 'Sí, borrala' }).click()
   await expect(page.getByText('Gasto eliminado')).toBeVisible()
   await expect(page.getByText('Flete al mercado central')).toHaveCount(0)
 

@@ -67,7 +67,7 @@ function renderAccount(fetchMock: ReturnType<typeof vi.fn>): QueryClient {
   return queryClient
 }
 
-test('logging out posts to /auth/logout, clears the query cache and navigates to Sign in', async () => {
+test('logging out posts to /auth/logout, clears the query cache and navigates to Log in', async () => {
   const calls: string[] = []
   const fetchMock = vi.fn((url: string, init?: RequestInit) => {
     calls.push(`${init?.method ?? 'GET'} ${url}`)

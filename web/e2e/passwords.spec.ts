@@ -58,7 +58,7 @@ test('changes a password from Configuración → Tu cuenta, signing an older dev
   await otherPage.goto(LOGIN)
   await otherPage.getByLabel('Email').fill(ownerEmail)
   await otherPage.getByLabel('Password').fill(PASSWORD)
-  await otherPage.getByRole('button', { name: 'Sign in' }).click()
+  await otherPage.getByRole('button', { name: 'Log in' }).click()
   await expect(otherPage.locator('.encabezado__negocio')).toHaveText(businessName)
 
   await page.goto(SETTINGS_ACCOUNT)
@@ -125,7 +125,7 @@ test('resets a forgotten password from a printed link through to Inicio, then sh
     'error: Failed to load resource: the server responded with a status of 404 (Not Found)'
   await page.goto(link)
   await expect(
-    page.getByText('Este enlace ya no sirve. Pedile uno nuevo a quien te lo pasó.'),
+    page.getByText('This link no longer works. Ask whoever sent it for a new one.'),
   ).toBeVisible()
 
   await expectOnlyTheThemeStored(page)

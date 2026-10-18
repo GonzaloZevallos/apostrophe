@@ -67,7 +67,7 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
   await page.getByLabel('% índica').fill('30')
   await page.getByLabel('Aroma/sabor').fill('floral, dulce')
   await page.getByRole('button', { name: 'Guardá el catálogo' }).click()
-  await expect(page.getByText('Catálogo guardado')).toBeVisible()
+  await expect(page.getByText('Catalog saved')).toBeVisible()
   await expect(page.getByText('floral, dulce')).toBeVisible()
   await page.goto(CATALOG)
 
@@ -77,9 +77,9 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
   await expectPath(page, SETTINGS_CATALOG_MESSAGE)
   await page.getByLabel('Header').fill('🌸 Catálogo de Flores del Catálogo 🌸')
   await page.getByLabel('Footer').fill('Pedidos por privado.')
-  await page.getByRole('button', { name: 'Guardá el mensaje' }).click()
-  await expect(page.getByText('Catálogo guardado')).toBeVisible()
-  await page.getByRole('button', { name: 'Cerrar' }).click()
+  await page.getByRole('button', { name: 'Save the message' }).click()
+  await expect(page.getByText('Catalog saved')).toBeVisible()
+  await page.getByRole('button', { name: 'Close' }).click()
   await expectPath(page, CATALOG)
   await expect(page.getByLabel('Footer')).toHaveCount(0)
 

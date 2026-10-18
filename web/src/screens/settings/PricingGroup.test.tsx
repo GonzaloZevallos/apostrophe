@@ -73,7 +73,7 @@ function serving(put?: (body: PricingSettings) => Response) {
 test('shows the two switches as the server has them, told by aria-checked', async () => {
   renderGroup(serving())
 
-  const bulk = await screen.findByRole('switch', { name: 'Bulk pricing' })
+  const bulk = await screen.findByRole('switch', { name: 'Bulk price' })
   expect(bulk).toHaveAttribute('aria-checked', 'true')
   expect(screen.getByRole('switch', { name: 'VIP customers' })).toHaveAttribute('aria-checked', 'false')
 })
@@ -97,7 +97,7 @@ test('saving sends both switches and shows the fixed toast "Prices saved"', asyn
   await screen.findByRole('switch', { name: 'VIP customers' })
 
   await userEvent.click(screen.getByRole('switch', { name: 'VIP customers' }))
-  await userEvent.click(screen.getByRole('switch', { name: 'Bulk pricing' }))
+  await userEvent.click(screen.getByRole('switch', { name: 'Bulk price' }))
   await userEvent.click(screen.getByRole('button', { name: 'Save the prices' }))
 
   expect(await screen.findByText('Prices saved')).toBeInTheDocument()
@@ -164,7 +164,7 @@ test('discarding leaves the group; turning a switch back to its saved value is n
   await screen.findByRole('switch', { name: 'VIP customers' })
   await userEvent.click(screen.getByRole('switch', { name: 'VIP customers' }))
   await userEvent.click(screen.getByRole('switch', { name: 'VIP customers' }))
-  await userEvent.click(screen.getByRole('switch', { name: 'Bulk pricing' }))
+  await userEvent.click(screen.getByRole('switch', { name: 'Bulk price' }))
 
   await userEvent.click(screen.getByRole('button', { name: 'Close' }))
   await userEvent.click(await screen.findByRole('button', { name: 'Yes, discard them' }))

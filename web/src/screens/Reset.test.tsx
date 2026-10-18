@@ -74,7 +74,7 @@ test('while the lookup is pending it shows the Cargando progressbar and no form'
   expect(screen.queryByRole('button', { name: 'Save and sign in' })).not.toBeInTheDocument()
 })
 
-test('the dead link offers a router link to Sign in, not a page reload', async () => {
+test('the dead link offers a router link to Log in, not a page reload', async () => {
   vi.stubGlobal(
     'fetch',
     vi.fn((url: string) => {
@@ -95,11 +95,11 @@ test('the dead link offers a router link to Sign in, not a page reload', async (
   )
 
   await screen.findByText('This link no longer works. Ask whoever sent it for a new one.')
-  // "Sign in" is a link kind drawn by BotonLink, never a raw action-styled link.
-  expect(screen.getByRole('link', { name: 'Sign in' })).toHaveClass('boton--enlace')
+  // "Log in" is a link kind drawn by BotonLink, never a raw action-styled link.
+  expect(screen.getByRole('link', { name: 'Log in' })).toHaveClass('boton--enlace')
   expectIconAndTextRule(document.body)
   const user = userEvent.setup()
-  await user.click(screen.getByRole('link', { name: 'Sign in' }))
+  await user.click(screen.getByRole('link', { name: 'Log in' }))
   expect(await screen.findByText('Pantalla de entrar')).toBeInTheDocument()
 })
 

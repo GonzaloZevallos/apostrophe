@@ -133,7 +133,7 @@ test('a seller goes through every Configuración group from the phone, with no c
 
   await page.getByLabel('Email').fill(ownerEmail)
   await page.getByLabel('Password').fill(NEW_PASSWORD)
-  await page.getByRole('button', { name: 'Sign in' }).click()
+  await page.getByRole('button', { name: 'Log in' }).click()
   await expect(page.locator('.encabezado__negocio')).toHaveText(renamedTo)
 
   await expectOnlyTheThemeStored(page)

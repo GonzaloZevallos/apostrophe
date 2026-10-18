@@ -13,9 +13,9 @@ import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import type { Me } from '../../api/me'
 import * as clipboard from '../../clipboard'
-import { LIMITS, measure, SAMPLES } from '../../copy/limits'
+import { LIMITS, measure } from '../../copy/limits'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
-import { inviteExpiry, LIMITED_COPY } from '../../copy/settings'
+import { LIMITED_COPY } from '../../copy/settings'
 import UsersGroup from './UsersGroup'
 
 vi.mock('../../clipboard', () => ({ copyText: vi.fn().mockResolvedValue(true) }))
@@ -164,10 +164,10 @@ test('the fresh link\'s expiry line is the registered binding, rendered as a hel
 
   await userEvent.click(await screen.findByRole('button', { name: 'Invite a partner' }))
 
-  const line = await screen.findByText(inviteExpiry('09/10'))
+  const line = await screen.findByText('Single-use link, expires on 09/10')
   expect(line).toHaveAttribute('data-copy', 'help')
-  expect(LIMITED_COPY).toContainEqual({ kind: 'help', text: inviteExpiry(SAMPLES.date) })
-  expect(measure(inviteExpiry(SAMPLES.date))).toBeLessThanOrEqual(LIMITS.help)
+  expect(LIMITED_COPY).toContainEqual({ kind: 'help', text: 'Single-use link, expires on 28/09' })
+  expect(measure('Single-use link, expires on 28/09')).toBeLessThanOrEqual(LIMITS.help)
 })
 
 test('Copiar is icon + text and Compartir under the fresh link is the icon-only share, both with their words as names', async () => {

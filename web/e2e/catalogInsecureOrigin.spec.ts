@@ -76,10 +76,10 @@ test('Copiar still works through the execCommand fallback on a plain-http, non-l
   // the helper (always the project's base URL) cannot do, and checks the origin first.
   await page.goto(inviteUrl)
   expect(page.url().startsWith(INSECURE_ORIGIN)).toBe(true)
-  await page.getByLabel('Nombre del negocio').fill(businessName)
+  await page.getByLabel('Business name').fill(businessName)
   await page.getByLabel('Email').fill(ownerEmail)
-  await page.getByLabel('Contraseña').fill(PASSWORD)
-  const create = page.getByRole('button', { name: 'Creá el negocio' })
+  await page.getByLabel('Password').fill(PASSWORD)
+  const create = page.getByRole('button', { name: 'Create the business' })
   await expect(create).toBeEnabled()
   await create.click()
   await leaveOnboarding(page)

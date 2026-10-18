@@ -40,7 +40,7 @@ afterEach(() => {
 
 test('the submit is text only and the screen follows the icon and text rule', () => {
   renderEntrar(new QueryClient())
-  expect(screen.getByRole('button', { name: 'Sign in' })).toHaveAttribute('type', 'submit')
+  expect(screen.getByRole('button', { name: 'Log in' })).toHaveAttribute('type', 'submit')
   // "Show" is PasswordField's own show/hide toggle, an option control.
   expectIconAndTextRule(document.body)
 })
@@ -58,7 +58,7 @@ test('a wrong email or password shows the same inline refusal, naming neither', 
 
   await userEvent.type(screen.getByLabelText('Email'), 'ana@x.com')
   await userEvent.type(screen.getByLabelText('Password'), 'wrongpass1')
-  await userEvent.click(screen.getByRole('button', { name: 'Sign in' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Log in' }))
 
   expect(await screen.findByRole('alert')).toHaveTextContent('Wrong email or password')
 })
@@ -71,7 +71,7 @@ test('the lock shows the brake message in place of the fixed hint', async () => 
 
   await userEvent.type(screen.getByLabelText('Email'), 'ana@x.com')
   await userEvent.type(screen.getByLabelText('Password'), 'wrongpass1')
-  await userEvent.click(screen.getByRole('button', { name: 'Sign in' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Log in' }))
 
   expect(await screen.findByText('5 failed attempts · try again in 15 minutes')).toBeInTheDocument()
   expect(screen.queryByText('After 5 failed attempts, the email is locked for 15 minutes')).not.toBeInTheDocument()
@@ -83,7 +83,7 @@ test('a server error shows the generic retry, never a refusal that blames the in
 
   await userEvent.type(screen.getByLabelText('Email'), 'ana@x.com')
   await userEvent.type(screen.getByLabelText('Password'), 'secreta123')
-  await userEvent.click(screen.getByRole('button', { name: 'Sign in' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Log in' }))
 
   expect(await screen.findByRole('alert')).toHaveTextContent('Something went wrong. Try again.')
 })
@@ -96,7 +96,7 @@ test('a successful login clears the whole cache before landing on Inicio', async
 
   await userEvent.type(screen.getByLabelText('Email'), 'ana@x.com')
   await userEvent.type(screen.getByLabelText('Password'), 'secreta123')
-  await userEvent.click(screen.getByRole('button', { name: 'Sign in' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Log in' }))
 
   await vi.waitFor(() => {
     expect(queryClient.getQueryData(['me'])).toBeUndefined()
