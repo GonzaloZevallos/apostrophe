@@ -59,6 +59,7 @@ import { readForm, useOpenForm } from './varietyForms'
 import VarietyRemoval from './VarietyRemoval'
 import VarietyPricesSection from './VarietyPricesSection'
 import VarietyStockSection from './VarietyStockSection'
+import { TAB_VARIETIES } from '../../copy/shell'
 import { useBackParent } from '../../shell/useBackParent'
 import VarietyThresholdSection from './VarietyThresholdSection'
 import { useRestore } from './useRestore'
@@ -117,7 +118,7 @@ function VarietyPageView({
     queryFn: () => get<PriceRow[]>(`/varieties/${id}/prices`),
   })
   const archived = varietyQuery.data?.archived === true
-  useBackParent('variety', !publishRecord || varietyQuery.data === undefined ? undefined : archived ? { parent: 'varieties-archived' } : { title: 'Variedades' })
+  useBackParent('variety', !publishRecord || varietyQuery.data === undefined ? undefined : archived ? { parent: 'varieties-archived' } : { title: TAB_VARIETIES })
   const liveStockQuery = useQuery({ queryKey: keys.stock(), queryFn: readStock })
   const archivedStockQuery = useQuery({
     queryKey: keys.archivedStock(),

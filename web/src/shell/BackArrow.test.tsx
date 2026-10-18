@@ -185,7 +185,7 @@ test("from variety A to variety B on the same screen, '‹ A' is gone while B lo
   expect(backs()).toEqual(['‹ Beta'])
 })
 
-test("an archived variety shows only '‹ Archivadas', never a flash of '‹ Variedades'", async () => {
+test("an archived variety shows only '‹ Archived', never a flash of '‹ Varieties'", async () => {
   const pending = deferred()
   fakeApi({ 5: pending })
   const seen: string[] = []
@@ -197,11 +197,11 @@ test("an archived variety shows only '‹ Archivadas', never a flash of '‹ Var
   expect(await screen.findByText('Cargando')).toBeInTheDocument()
 
   await act(async () => pending.settle(json({ id: 5, name: 'Vieja', archived: true })))
-  expect(await screen.findByRole('button', { name: '‹ Archivadas' })).toBeInTheDocument()
+  expect(await screen.findByRole('button', { name: '‹ Archived' })).toBeInTheDocument()
   watch.disconnect()
 
-  expect(backs()).toEqual(['‹ Archivadas'])
-  expect(seen.filter((word) => word !== '‹ Archivadas')).toEqual([])
+  expect(backs()).toEqual(['‹ Archived'])
+  expect(seen.filter((word) => word !== '‹ Archived')).toEqual([])
 })
 
 /** Writes the slot for variety 1 once and never clears it: a declaration left behind. */
@@ -270,7 +270,7 @@ test("an archived variety's back with no history goes to Archivadas; an active p
     6: json({ id: 6, name: 'Nueva', archived: false }),
   })
   const first = renderAt([pathTo(VARIETY, { id: 5 })])
-  await user.click(await screen.findByRole('button', { name: '‹ Archivadas' }))
+  await user.click(await screen.findByRole('button', { name: '‹ Archived' }))
   expect(first.router.state.location.pathname).toBe(ARCHIVED_VARIETIES)
   first.unmount()
 
@@ -282,7 +282,7 @@ test("an archived variety's back with no history goes to Archivadas; an active p
 test('an unmarked card still prints its registry parent, a tab root no back', () => {
   fakeApi({})
   const card = renderAt([pathTo(SALE, { id: 7 })])
-  expect(backs()).toEqual(['‹ Ventas'])
+  expect(backs()).toEqual(['‹ Sales'])
   card.unmount()
   renderAt([ANALYSIS])
   expect(backs()).toEqual([])

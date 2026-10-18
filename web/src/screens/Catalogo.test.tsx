@@ -262,7 +262,7 @@ test('a variety left out opens its "En el catálogo" section on its page', async
   expect(await screen.findByText('Aterrizaste en /varieties/7#en-el-catalogo')).toBeInTheDocument()
 })
 
-test('the shell\'s "‹ Variedades" is the only back and goes to the list, by history and with none', async () => {
+test('the shell\'s "‹ Varieties" is the only back and goes to the list, by history and with none', async () => {
   vi.stubGlobal('fetch', vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
   const router = createMemoryRouter(
     [
@@ -288,7 +288,7 @@ test('the shell\'s "‹ Variedades" is the only back and goes to the list, by hi
   )
 
   const backs = await screen.findAllByRole('button', { name: /^‹ / })
-  expect(backs.map((back) => back.textContent)).toEqual(['‹ Variedades'])
+  expect(backs.map((back) => back.textContent)).toEqual(['‹ Varieties'])
   await userEvent.click(backs[0]!)
 
   expect(await screen.findByText('Aterrizaste en Variedades')).toBeInTheDocument()

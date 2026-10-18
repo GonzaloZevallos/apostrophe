@@ -48,7 +48,7 @@ test('shows the date, the reason by word, every line and the note, with the bar 
 test('the "‹" back goes to the page it was opened from', async () => {
   const { router } = renderWithdrawals([VARIETIES_PATH, ONE], serving(WITHDRAWAL))
 
-  await userEvent.click(await screen.findByRole('button', { name: '‹ Variedades' }))
+  await userEvent.click(await screen.findByRole('button', { name: '‹ Varieties' }))
 
   await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES_PATH))
 })
@@ -56,7 +56,7 @@ test('the "‹" back goes to the page it was opened from', async () => {
 test('with no history, back goes to Variedades', async () => {
   const { router } = renderWithdrawals([ONE], serving(WITHDRAWAL))
 
-  await userEvent.click(await screen.findByRole('button', { name: '‹ Variedades' }))
+  await userEvent.click(await screen.findByRole('button', { name: '‹ Varieties' }))
 
   await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES_PATH))
 })
@@ -171,6 +171,6 @@ test('the detail keeps the icon and text rule: Borrar carries its icon and word,
 
   const borrar = await screen.findByRole('button', { name: 'Borrar' })
   expect(borrar.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
-  expect(screen.getByRole('button', { name: '‹ Variedades' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: '‹ Varieties' })).toBeInTheDocument()
   expectIconAndTextRule(screen.getByRole('main'), { limits: LIMITS })
 })

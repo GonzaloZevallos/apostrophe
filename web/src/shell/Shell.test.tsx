@@ -238,8 +238,8 @@ test.each([
 })
 
 test.each([
-  ['the catalog on a phone', CATALOG, false, '‹ Variedades'],
-  ['the catalog on a computer', CATALOG, true, '‹ Variedades'],
+  ['the catalog on a phone', CATALOG, false, '‹ Varieties'],
+  ['the catalog on a computer', CATALOG, true, '‹ Varieties'],
 ])('a card (%s) shows its "‹ parent" arrow and never "+ Nueva venta"', (_name, path, computer, arrow) => {
   renderShell([path], { computer })
 
@@ -385,55 +385,55 @@ test('the phone reaches Settings in two taps: the More tab, then its Settings en
   expect(screen.getByText(`en ${SETTINGS} inApp=true`)).toBeInTheDocument()
 })
 
-test('Inicio\'s teaser opens the card with inApp state; the card reads "‹ Clientes" and Back lands on Inicio', async () => {
+test('Inicio\'s teaser opens the card with inApp state; the card reads "‹ Customers" and Back lands on Inicio', async () => {
   const user = userEvent.setup()
   const { router } = renderShell([HOME])
 
   await user.click(screen.getByRole('link', { name: 'Cobrar a Ana' }))
   expect(router.state.location.state).toEqual(inAppState({ pathname: HOME }))
-  await user.click(screen.getByRole('button', { name: '‹ Clientes' }))
+  await user.click(screen.getByRole('button', { name: '‹ Customers' }))
 
   expect(router.state.location.pathname).toBe(HOME)
 })
 
-test('a card opened from Clientes reads "‹ Clientes" and Back lands on Clientes', async () => {
+test('a card opened from Clientes reads "‹ Customers" and Back lands on Clientes', async () => {
   const user = userEvent.setup()
   const { router } = renderShell([CUSTOMERS])
   await act(() => router.navigate(pathTo(CUSTOMER, { id: 3 }), { state: inAppState({ pathname: HOME }) }))
 
-  await user.click(screen.getByRole('button', { name: '‹ Clientes' }))
+  await user.click(screen.getByRole('button', { name: '‹ Customers' }))
 
   expect(router.state.location.pathname).toBe(CUSTOMERS)
 })
 
-test('a card opened directly reads "‹ Clientes" and Back goes to Clientes, replacing the entry', async () => {
+test('a card opened directly reads "‹ Customers" and Back goes to Clientes, replacing the entry', async () => {
   const user = userEvent.setup()
   const { router } = renderShell([SALES, pathTo(CUSTOMER, { id: 3 })], { index: 1 })
 
-  await user.click(screen.getByRole('button', { name: '‹ Clientes' }))
+  await user.click(screen.getByRole('button', { name: '‹ Customers' }))
 
   expect(router.state.location.pathname).toBe(CUSTOMERS)
   expect(router.state.historyAction).toBe('REPLACE')
 })
 
-test('a sale reads "‹ Ventas"; a variety, whose word is the record\'s, shows no back until declared', () => {
+test('a sale reads "‹ Sales"; a variety, whose word is the record\'s, shows no back until declared', () => {
   const sale = renderShell([pathTo(SALE, { id: 7 })])
-  expect(screen.getByRole('button', { name: '‹ Ventas' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: '‹ Sales' })).toBeInTheDocument()
   sale.unmount()
 
   renderShell([pathTo(VARIETY, { id: 2 })])
   expect(screen.queryByRole('button', { name: /^‹ / })).not.toBeInTheDocument()
 })
 
-test('Configuración\'s list opened directly reads "‹ Más" on the phone and "‹ Inicio" on a computer', async () => {
+test('Configuración\'s list opened directly reads "‹ More" on the phone and "‹ Home" on a computer', async () => {
   const phone = renderShell([SETTINGS])
-  expect(screen.getByRole('button', { name: '‹ Más' })).toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: '‹ Inicio' })).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: '‹ More' })).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: '‹ Home' })).not.toBeInTheDocument()
   phone.unmount()
 
   renderShell([SETTINGS], { computer: true })
-  expect(screen.getByRole('button', { name: '‹ Inicio' })).toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: '‹ Más' })).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: '‹ Home' })).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: '‹ More' })).not.toBeInTheDocument()
 })
 
 test('a root has no arrow', () => {

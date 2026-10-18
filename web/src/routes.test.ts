@@ -158,11 +158,11 @@ describe("parentOf and placeOf, every screen on both viewports", () => {
 
   test("the label and the back fallback are one result: Configuración says Más on the phone, Inicio on a computer", () => {
     expect(parentOf("settings", "phone")).toMatchObject({
-      title: "Más",
+      title: "More",
       path: routes.MORE,
     });
     expect(parentOf("settings", "computer")).toMatchObject({
-      title: "Inicio",
+      title: "Home",
       path: routes.HOME,
     });
   });
@@ -176,12 +176,12 @@ describe("the screens that are a modal on a computer", () => {
 });
 
 describe("the new stock entry form's parent", () => {
-  const VARIEDADES: ParentRef = { id: "varieties", path: "/varieties", title: "Variedades" };
+  const VARIEDADES: ParentRef = { id: "varieties", path: "/varieties", title: "Varieties" };
 
   test("is Variedades, and editing an entry keeps Todas las entradas", () => {
     expect(parentOf("stock-entry-new", "phone")).toEqual(VARIEDADES);
     expect(parentOf("stock-entry-new", "computer")).toEqual(VARIEDADES);
-    expect(parentOf("stock-entry", "phone")).toEqual({ id: "stock", path: "/varieties/entries", title: "Todas las entradas" });
+    expect(parentOf("stock-entry", "phone")).toEqual({ id: "stock", path: "/varieties/entries", title: "All entries" });
   });
 });
 
@@ -539,7 +539,7 @@ describe("screens.json against the English routes", () => {
   test("/varieties/entries shows today's entries list, as a card under Variedades", () => {
     const leaf = matchRoutes(router.routes, "/varieties/entries")?.at(-1);
     expect(screenIdOf(leaf?.route ?? {})).toBe("stock");
-    expect(parentOf("stock", "phone")?.title).toBe("Variedades");
+    expect(parentOf("stock", "phone")?.title).toBe("Varieties");
   });
 
   test("routes.ts keeps no legacy list: the old paths live only in app/legacy_front_paths.json", () => {

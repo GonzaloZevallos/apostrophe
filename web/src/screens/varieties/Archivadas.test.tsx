@@ -193,7 +193,7 @@ describe('the Archivadas card', () => {
     for (const mark of screen.getAllByText('Archivada')) expect(mark.className).toBe('insignia')
     expect(screen.queryByText('Oculta')).toBeNull()
     expect(screen.getAllByRole('button', { name: 'Restaurar' })).toHaveLength(2)
-    expect(screen.getByRole('button', { name: '‹ Variedades' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: '‹ Varieties' })).toBeTruthy()
     expect(screen.queryByText('+ Nueva venta')).toBeNull()
   })
 
@@ -244,7 +244,7 @@ describe("an archived variety's page", () => {
   test('is read-only: back to Archivadas, Archivada in words, and Restaurar the one action', async () => {
     const { router } = renderAt(pathTo(VARIETY, { id: 4 }))
     expect(await screen.findByRole('heading', { name: 'Alfa Vieja' })).toBeTruthy()
-    expect(screen.getByRole('button', { name: '‹ Archivadas' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: '‹ Archived' })).toBeTruthy()
     expect(screen.getByText('Archivada')).toBeTruthy()
     expect(screen.getByText('7 g', { exact: false })).toBeTruthy()
     for (const gone of [
@@ -259,9 +259,9 @@ describe("an archived variety's page", () => {
       expect(screen.queryByText(gone)).toBeNull()
     }
     expect(screen.queryByRole('button', { name: /Editar|Borrar/ })).toBeNull()
-    expect(screen.getAllByRole('button').map((button) => button.textContent)).toEqual(['‹ Archivadas', 'Restaurar'])
+    expect(screen.getAllByRole('button').map((button) => button.textContent)).toEqual(['‹ Archived', 'Restaurar'])
     // With no history to go back to, the one back goes to Archivadas.
-    await userEvent.click(screen.getByRole('button', { name: '‹ Archivadas' }))
+    await userEvent.click(screen.getByRole('button', { name: '‹ Archived' }))
     await waitFor(() => expect(router.state.location.pathname).toBe(ARCHIVED_VARIETIES))
   })
 
@@ -423,7 +423,7 @@ describe('on a computer (two panes)', () => {
     renderComputer(pathTo(VARIETY, { id: 4 }))
     expect(await screen.findByRole('heading', { name: 'Archivadas' })).toBeTruthy()
     expect(await screen.findAllByRole('button', { name: /^‹ / })).toHaveLength(1)
-    expect(screen.getByRole('button', { name: '‹ Archivadas' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: '‹ Archived' })).toBeTruthy()
     expect(screen.getAllByText('Zeta Vieja')).toHaveLength(1)
     expect(screen.queryByText('Todas las entradas')).toBeNull()
   })
