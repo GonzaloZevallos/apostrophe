@@ -474,7 +474,7 @@ test('a duplicate category name inside the form is refused, keeping what was typ
   await userEvent.type(screen.getByLabelText('New category name'), 'Packaging')
   await userEvent.click(screen.getByRole('button', { name: 'Create category' }))
 
-  expect(await screen.findByText('Revisá los datos e intentá de nuevo.')).toBeInTheDocument()
+  expect(await screen.findByText('Check the details and try again.')).toBeInTheDocument()
   expect(screen.getByLabelText('New category name')).toHaveValue('Packaging')
   expect(screen.getByLabelText('Detail')).toHaveValue('Sustrato nuevo')
   expect(screen.getByLabelText('Category')).toHaveValue('')
