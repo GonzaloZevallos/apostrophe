@@ -56,7 +56,7 @@ test('a seller sets up the bot in Integraciones, then publishes from the catalog
   await expect(page.getByRole('button', { name: 'Publicar' })).toBeDisabled()
   await expect(page.getByText('Al día')).toHaveCount(0)
   await expect(page.getByText('Desactualizado')).toHaveCount(0)
-  await page.getByRole('link', { name: 'Integrations' }).click()
+  await page.getByRole('link', { name: 'Integraciones' }).click()
   await expectPath(page, SETTINGS_INTEGRATIONS)
 
   // Enter the token and the seller's own chat; the channel is still blank, which

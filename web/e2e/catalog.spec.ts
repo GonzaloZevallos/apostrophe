@@ -67,7 +67,7 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
   await page.getByLabel('% índica').fill('30')
   await page.getByLabel('Aroma/sabor').fill('floral, dulce')
   await page.getByRole('button', { name: 'Guardá el catálogo' }).click()
-  await expect(page.getByText('Catalog saved')).toBeVisible()
+  await expect(page.getByText('Catálogo guardado')).toBeVisible()
   await expect(page.getByText('floral, dulce')).toBeVisible()
   await page.goto(CATALOG)
 
