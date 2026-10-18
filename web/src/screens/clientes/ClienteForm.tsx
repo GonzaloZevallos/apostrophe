@@ -43,20 +43,35 @@ import { toast } from '../../components/feedback'
 import GoneScreen from '../../components/GoneScreen'
 import SinConexion from '../../components/SinConexion'
 import Loading from '../../components/Loading'
-import { CUSTOMER_SAVED } from '../../copy/common'
+import { CLOSE, CUSTOMER_SAVED, GENERIC_REFUSAL_MESSAGE } from '../../copy/common'
+import {
+  DISCARD,
+  DISCARD_CUSTOMER_QUESTION,
+  EDIT_CUSTOMER,
+  KEEP_EDITING,
+  LEAVE_DETAIL,
+  NAME_REQUIRED,
+  NAME_TOO_LONG,
+  NEW_CUSTOMER,
+  PHONE_INVALID,
+  PHONE_TAKEN,
+  SAVE_AND_USE,
+} from '../../copy/customers'
+import { TAB_CUSTOMERS } from '../../copy/shell'
 import CustomerFields from './CustomerFields'
 
 export const SAVED_TOAST = CUSTOMER_SAVED
-export const NAME_REQUIRED = 'Ponele un nombre'
-export const PHONE_INVALID = 'Eso no parece un teléfono con su código de área'
-export const PHONE_TAKEN = 'Ese teléfono ya es de otro cliente'
-export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
+export const GENERIC_REFUSAL = GENERIC_REFUSAL_MESSAGE
+
+const NEW_SCREEN_ID = 'customer-new'
+const EDIT_SCREEN_ID = 'customer-edit'
+const CUSTOMERS_RESOURCE_KEY = 'customers'
 
 type Field = 'name' | 'phone' | 'form'
 
 const FIELD_OVERRIDES: Partial<Record<RefusalCode, { field: Field; message: string }>> = {
   'customer.name_missing': { field: 'name', message: NAME_REQUIRED },
-  'customer.name_too_long': { field: 'name', message: 'El nombre es demasiado largo' },
+  'customer.name_too_long': { field: 'name', message: NAME_TOO_LONG },
   'customer.phone_invalid': { field: 'phone', message: PHONE_INVALID },
   'customer.phone_taken': { field: 'phone', message: PHONE_TAKEN },
 }
@@ -79,7 +94,7 @@ export default function ClienteForm({ mode }: Props) {
 
   if (existing.isError) {
     if (existing.error instanceof ApiError && isGone(existing.error.code)) {
-      return <GoneScreen label="Clientes" to={CUSTOMERS} />
+      return <GoneScreen label={TAB_CUSTOMERS} to={CUSTOMERS} />
     }
     if (existing.error instanceof NetworkError) {
       return (
@@ -138,8 +153,9 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
     phone !== (initial?.phone ?? '') ||
     vip !== (initial?.vip ?? false)
   const { blocker, disarm } = useLeaveGuard(dirty)
-  const parent = parentOf(mode === 'nuevo' ? 'customer-new' : 'customer-edit', viewport)
-  const goneExit = useGoneExit(mode === 'nuevo' ? 'customer-new' : 'customer-edit', { id: customerId })
+  const screenId = mode === 'nuevo' ? NEW_SCREEN_ID : EDIT_SCREEN_ID
+  const parent = parentOf(screenId, viewport)
+  const goneExit = useGoneExit(screenId, { id: customerId })
   const close = useBackOr(
     parent === undefined ? CUSTOMERS : pathTo(parent.path, mode === 'editar' ? { id: customerId } : {}),
   )
@@ -162,7 +178,7 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
     setOffline(false)
     try {
       const saved = await save.mutateAsync({ name, phone, vip })
-      invalidateResource(queryClient, 'customers')
+      invalidateResource(queryClient, CUSTOMERS_RESOURCE_KEY)
       disarm()
       if (mode === 'nuevo') {
         void navigate(pathTo(CUSTOMER, { id: saved.id }), { replace: true, state: toast(SAVED_TOAST) })
@@ -178,7 +194,7 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
         return
       }
       if (caught instanceof ApiError && mode === 'editar' && isGone(caught.code)) {
-        invalidateResource(queryClient, 'customers')
+        invalidateResource(queryClient, CUSTOMERS_RESOURCE_KEY)
         disarm()
         goneExit()
         return
@@ -207,9 +223,9 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
       <div className="cuerpo">
         <div className="encabezado-fila">
           <span className="encabezado__titulo">
-            {mode === 'nuevo' ? 'Nuevo cliente' : 'Editar cliente'}
+            {mode === 'nuevo' ? NEW_CUSTOMER : EDIT_CUSTOMER}
           </span>
-          <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={close} />
+          <Boton variant="icon" action="close" ariaLabel={CLOSE} onClick={close} />
         </div>
         <form className="formulario" onSubmit={onSubmit}>
           <CustomerFields
@@ -230,17 +246,17 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
           )}
           {offline && <SinConexion />}
           <Boton textOnly="submit" type="submit" disabled={save.isPending}>
-            Guardá y usá
+            {SAVE_AND_USE}
           </Boton>
         </form>
       </div>
       {blocker.state === 'blocked' && (
         <LeaveConfirm
           blocker={blocker}
-          question="¿Descartás el cliente?"
-          detail="Se pierde lo que cargaste: todavía no se guardó nada."
-          keepLabel="No, seguí cargando"
-          discardLabel="Sí, descartalo"
+          question={DISCARD_CUSTOMER_QUESTION}
+          detail={LEAVE_DETAIL}
+          keepLabel={KEEP_EDITING}
+          discardLabel={DISCARD}
         />
       )}
     </main>

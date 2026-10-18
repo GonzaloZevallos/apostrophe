@@ -31,12 +31,17 @@ import Loading from '../../components/Loading'
 import SinConexion from '../../components/SinConexion'
 import { useSheet } from '../../components/useSheetStack'
 import CustomerFields, { type CustomerFieldsValue } from '../clientes/CustomerFields'
+import { CLOSE, GENERIC_REFUSAL_MESSAGE, RULE_VIP } from '../../copy/common'
 import {
-  GENERIC_REFUSAL,
+  CREATE_CUSTOMER,
   NAME_REQUIRED,
+  NAME_TOO_LONG,
+  NEW_CUSTOMER,
   PHONE_INVALID,
   PHONE_TAKEN,
-} from '../clientes/ClienteForm'
+  SEARCH_PLACEHOLDER,
+} from '../../copy/customers'
+import { CHOOSE_CUSTOMER, NO_CUSTOMER, SEARCH } from '../../copy/sales'
 
 export interface NuevaVentaClienteProps {
   allowNone: boolean
@@ -53,7 +58,7 @@ type Field = 'name' | 'phone' | 'form'
 
 const FIELD_OVERRIDES: Partial<Record<RefusalCode, { field: Field; message: string }>> = {
   'customer.name_missing': { field: 'name', message: NAME_REQUIRED },
-  'customer.name_too_long': { field: 'name', message: 'El nombre es demasiado largo' },
+  'customer.name_too_long': { field: 'name', message: NAME_TOO_LONG },
   'customer.phone_invalid': { field: 'phone', message: PHONE_INVALID },
   'customer.phone_taken': { field: 'phone', message: PHONE_TAKEN },
 }
@@ -110,12 +115,12 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
           else if (override.field === 'phone') setPhoneError(override.message)
           else setFormError(override.message)
         } else {
-          setFormError(GENERIC_REFUSAL)
+          setFormError(GENERIC_REFUSAL_MESSAGE)
         }
       } else if (caught instanceof NetworkError) {
         setOffline(true)
       } else {
-        setFormError(GENERIC_REFUSAL)
+        setFormError(GENERIC_REFUSAL_MESSAGE)
       }
     }
   }
@@ -125,18 +130,18 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
       <div className="cliente-sheet__contenido">
         <span className="cliente-sheet__manija" aria-hidden="true" />
         <div className="cliente-sheet__encabezado">
-          <span className="panel__titulo">Elegir cliente</span>
-          <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={chooser.close} />
+          <span className="panel__titulo">{CHOOSE_CUSTOMER}</span>
+          <Boton variant="icon" action="close" ariaLabel={CLOSE} onClick={chooser.close} />
         </div>
         <label className="campo campo--buscar">
-          <span className="campo__rotulo visualmente-oculto">Buscar</span>
+          <span className="campo__rotulo visualmente-oculto">{SEARCH}</span>
           <span className="campo--buscar__icono">
             <Icono nombre="buscar" />
           </span>
           <input
             className="campo__input campo--buscar__input"
             type="text"
-            placeholder="Teléfono o nombre"
+            placeholder={SEARCH_PLACEHOLDER}
             value={query}
             onChange={(event) => setQuery(event.target.value)}
           />
@@ -155,7 +160,7 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
               <span className="lista-clientes__fila-contenido">
                 <span className="lista-clientes__nombre">
                   {customer.name}
-                  {vipCustomers && customer.vip && <span className="vip-insignia">VIP</span>}
+                  {vipCustomers && customer.vip && <span className="vip-insignia">{RULE_VIP}</span>}
                 </span>
                 {customer.phone !== null && (
                   <span className="lista-clientes__telefono">{customer.phone}</span>
@@ -173,12 +178,12 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
               chooser.closeAll()
             }}
           >
-            Sin cliente
+            {NO_CUSTOMER}
           </Boton>
         )}
         {!creator.isOpen ? (
           <Boton variant="secondary" icon="personaMas" onClick={creator.open}>
-            Nuevo cliente
+            {NEW_CUSTOMER}
           </Boton>
         ) : (
           <form className="formulario" onSubmit={onCreate}>
@@ -196,7 +201,7 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
             )}
             {offline && <SinConexion />}
             <Boton textOnly="submit" type="submit" disabled={create.isPending}>
-              Crear cliente
+              {CREATE_CUSTOMER}
             </Boton>
           </form>
         )}
