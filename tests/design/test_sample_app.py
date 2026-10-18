@@ -13,6 +13,7 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any
 
+import pytest
 import uvicorn
 from fastapi.testclient import TestClient
 
@@ -210,3 +211,85 @@ def test_onboarding_accounts_are_isolated_businesses_still_in_onboarding(tmp_pat
         for other in others:
             assert apis[other].call("GET", "/onboarding-progress")["over"] is False
         assert huerta.call("GET", "/onboarding-progress")["over"] is False
+
+
+def test_a_business_opened_as_an_ended_account_has_its_onboarding_over_beside_la_huerta(
+    tmp_path: Path,
+) -> None:
+    with running_sample(tmp_path) as (sample_app, env, base):
+        huerta = sample_app.HttpApi(base)
+        huerta.call(
+            "POST",
+            f"/invitations/{sample_app.new_business_token(env)}/accept",
+            {
+                "email": sample_app.EMAIL,
+                "password": sample_app.PASSWORD,
+                "business_name": sample_app.BUSINESS,
+            },
+        )
+        huerta.call(
+            "POST", "/auth/login", {"email": sample_app.EMAIL, "password": sample_app.PASSWORD}
+        )
+        sample_app.seed(huerta, TODAY)
+
+        def accept_invitation(api: Any) -> Any:
+            account = sample_app.Account(email="ended@lahuerta.com", password=sample_app.PASSWORD)
+            api.call(
+                "POST",
+                f"/invitations/{sample_app.new_business_token(env)}/accept",
+                {
+                    "email": account.email,
+                    "password": account.password,
+                    "business_name": sample_app.BUSINESS,
+                },
+            )
+            return account
+
+        account = sample_app.open_ended_account(sample_app.HttpApi(base), accept_invitation, TODAY)
+
+        ended = sign_in(sample_app, base, account.email, account.password)
+        assert ended.call("GET", "/onboarding-progress")["over"] is True
+        first_run = ended.call("GET", "/first-run")
+        assert first_run["kind"] == "none"
+        assert first_run["import_notice"] is False
+        assert ended.call("GET", "/varieties")
+
+        progress = huerta.call("GET", "/onboarding-progress")
+        assert progress["over"] is False
+        assert progress["count"] == 2
+        assert len(progress["steps"]) == 6
+
+
+def test_end_onboarding_refuses_an_onboarding_the_app_leaves_open() -> None:
+    sample_app = load_script()
+
+    class StillOpen:
+        def call(self, method: str, path: str, body: object | None = None) -> Any:
+            return {"over": False}
+
+    with pytest.raises(SystemExit) as refused:
+        sample_app.end_onboarding(StillOpen())
+
+    assert str(refused.value) == "sample-app: the Onboarding did not end"
+
+
+def test_end_onboarding_refuses_a_business_that_still_shows_a_first_run_element() -> None:
+    sample_app = load_script()
+
+    class ShowsChecklist:
+        def call(self, method: str, path: str, body: object | None = None) -> Any:
+            if path == "/first-run":
+                return {"kind": "checklist", "import_notice": False}
+            return {"over": True}
+
+    with pytest.raises(SystemExit) as refused:
+        sample_app.end_onboarding(ShowsChecklist())
+
+    assert str(refused.value) == "sample-app: the ended account still shows a first-run element"
+
+
+def test_the_ended_and_the_onboarding_accounts_share_no_name() -> None:
+    sample_app = load_script()
+
+    assert sample_app.ENDED_ONBOARDING_ACCOUNTS
+    assert set(sample_app.ENDED_ONBOARDING_ACCOUNTS).isdisjoint(sample_app.ONBOARDING_ACCOUNTS)
