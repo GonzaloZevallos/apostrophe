@@ -225,7 +225,7 @@ test.each([
   expect(within(rail(container)).queryAllByRole('link', { name: /New sale/ }).length > 0).toBe(inRail)
 })
 
-// The chrome rule by what the seller can find: "+ Nueva venta" only on a tab root, a "‹ parent"
+// The chrome rule by what the seller can find: "+ New sale" only on a tab root, a "‹ parent"
 // arrow on a card, neither on a form. Controls are found by role and accessible name.
 test.each([
   ['Home', HOME],
@@ -240,7 +240,7 @@ test.each([
 test.each([
   ['the catalog on a phone', CATALOG, false, '‹ Varieties'],
   ['the catalog on a computer', CATALOG, true, '‹ Varieties'],
-])('a card (%s) shows its "‹ parent" arrow and never "+ Nueva venta"', (_name, path, computer, arrow) => {
+])('a card (%s) shows its "‹ parent" arrow and never "+ New sale"', (_name, path, computer, arrow) => {
   renderShell([path], { computer })
 
   expect(screen.getByRole('button', { name: arrow })).toBeInTheDocument()
@@ -248,7 +248,7 @@ test.each([
 })
 
 // A variety's back names the loaded record, so the shell shows no arrow for it until its screen
-// declares one (never a bare '‹' or the registry's 'Variedad'); it still shows no "Nueva venta".
+// declares one (never a bare '‹' or the registry's 'Variedad'); it still shows no "New sale".
 test('a card that is a variety on a phone shows no arrow before its screen declares one, and no "New sale"', () => {
   renderShell([pathTo(VARIETY, { id: 2 })])
 
@@ -379,7 +379,7 @@ test('the phone reaches Settings in two taps: the More tab, then its Settings en
 
   await userEvent.click(within(bar(container)).getByRole('link', { name: 'More' }))
   await userEvent.click(
-    within(screen.getByRole('navigation', { name: 'Más' })).getByRole('link', { name: /^Configuración/ }),
+    within(screen.getByRole('navigation', { name: 'More' })).getByRole('link', { name: /^Settings/ }),
   )
 
   expect(screen.getByText(`en ${SETTINGS} inApp=true`)).toBeInTheDocument()
@@ -479,7 +479,7 @@ test('a bar that repeats an icon is rejected by the rule', () => {
   expect(iconAndTextProblems(container)).toEqual([expect.stringContaining('shares its icon with "Uno"')])
 })
 
-const MISSING_LINE = 'Cargale un precio a una variedad para poder vender'
+const MISSING_LINE = 'Add a price to a variety to be able to sell'
 
 function checklist(pricedDone: boolean): FirstRunAnswer {
   return {

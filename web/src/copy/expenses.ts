@@ -30,6 +30,11 @@ export const DISCARD_CHANGES_DETAIL = 'You lose what you changed: the expense st
 export const DISCARD_CHANGES_CONFIRM = 'Yes, discard them'
 export const DISCARD_CHANGES_CANCEL = 'No, keep editing'
 
+export const DISCARD_NEW_TITLE = 'Discard the expense?'
+export const DISCARD_NEW_DETAIL = 'You lose what you entered: nothing has been saved yet.'
+export const DISCARD_NEW_CANCEL = 'No, keep entering'
+export const DISCARD_NEW_CONFIRM = 'Yes, discard it'
+
 /** The expense form. */
 export const CATEGORY_GONE = 'That category is gone. Pick another.'
 export const FORM_TITLE_NEW = 'Add expense'

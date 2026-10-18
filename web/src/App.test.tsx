@@ -54,7 +54,7 @@ test('the sales list renders the Ventas stub under the gated shell', async () =>
   render(<App />)
 
   // Scoped to `main` (shell-entries, GH-20): the gated shell now has its own
-  // "Ventas" tab and fixed "Nueva venta" button alongside it, so an unscoped
+  // "Ventas" tab and fixed "New sale" button alongside it, so an unscoped
   // query would match more than the stub screen's own heading.
   expect(await within(await screen.findByRole('main')).findByText('Ventas')).toBeInTheDocument()
 })
@@ -108,23 +108,23 @@ function fetchFor(view: unknown) {
   })
 }
 
-test('Más renders Más under the gated shell', async () => {
+test('More renders More under the gated shell', async () => {
   vi.stubGlobal('fetch', fetchFor({}))
   await act(() => router.navigate(MORE))
 
   render(<App />)
 
-  expect(await within(await screen.findByRole('main')).findByText('Más')).toBeInTheDocument()
+  expect(await within(await screen.findByRole('main')).findByText('More')).toBeInTheDocument()
 })
 
-test('Gastos renders Gastos, with its month, under the gated shell', async () => {
+test('Expenses renders Expenses, with its month, under the gated shell', async () => {
   vi.stubGlobal('fetch', fetchFor({ month: '2026-10', total: 0, categories: [] }))
   await act(() => router.navigate(EXPENSES))
 
   render(<App />)
 
   expect(
-    await within(await screen.findByRole('main')).findByText(/Las compras de flores no van acá/),
+    await within(await screen.findByRole('main')).findByText(/Flower purchases don't go here/),
   ).toBeInTheDocument()
 })
 

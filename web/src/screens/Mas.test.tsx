@@ -1,5 +1,5 @@
 /**
- * `Mas` at the screen seam: "+ Cargar gasto", Gastos and Análisis come first and in
+ * `Mas` at the screen seam: "+ Add expense", Expenses and Análisis come first and in
  * that order, each linking to a route the table mounts; the entries that have not
  * moved yet stay after them, and Configuración closes the list (PRD, "Más (phone)"; metric criterion 2).
  */
@@ -18,32 +18,32 @@ function renderMas() {
       <Mas />
     </MemoryRouter>,
   )
-  return screen.getByRole('navigation', { name: 'Más' })
+  return screen.getByRole('navigation', { name: 'More' })
 }
 
-test('lists "+ Cargar gasto", "Sacar del stock", Gastos and Análisis first, in that order, Configuración last, nothing else', () => {
+test('lists "+ Add expense", "Take out of stock", Expenses and Análisis first, in that order, Configuración last, nothing else', () => {
   const entries = within(renderMas()).getAllByRole('link')
 
   expect(entries.map((entry) => entry.querySelector('.mas__item-rotulo')?.textContent)).toEqual([
-    'Cargar gasto',
-    'Sacar del stock',
-    'Gastos',
-    'Análisis',
-    'Configuración',
+    'Add expense',
+    'Take out of stock',
+    'Expenses',
+    'Analysis',
+    'Settings',
   ])
-  expect(entries[0]).toHaveTextContent('Categoría, monto y detalle')
+  expect(entries[0]).toHaveTextContent('Category, amount and detail')
   expect(entries[1]).toHaveAttribute('href', WITHDRAWAL_NEW)
-  expect(entries[2]).toHaveTextContent('Por mes y por categoría')
-  expect(entries[3]).toHaveTextContent('Variedades, semanas, meses y días')
+  expect(entries[2]).toHaveTextContent('By month and by category')
+  expect(entries[3]).toHaveTextContent('Varieties, weeks, months and days')
   expect(entries[4]).toHaveTextContent(
-    'Negocio, usuarios, bot, catálogo, categorías, apariencia y tu cuenta',
+    'Business, users, bot, catalog, categories, appearance and your account',
   )
   expect(entries[4]).toHaveAttribute('href', SETTINGS)
 })
 
-test('"Cargar gasto" shows the agregar icon and the word alone, and keeps its "+ Cargar gasto" name', () => {
+test('"Add expense" shows the agregar icon and the word alone, and keeps its "+ Add expense" name', () => {
   const nav = renderMas()
-  const entry = within(nav).getByRole('link', { name: /^\+ Cargar gasto Categoría, monto y detalle$/ })
+  const entry = within(nav).getByRole('link', { name: /^\+ Add expense Category, amount and detail$/ })
 
   expect(entry).toHaveAttribute('href', EXPENSE_NEW)
   expect(entry.textContent).not.toContain('+')
