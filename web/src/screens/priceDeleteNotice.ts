@@ -8,7 +8,7 @@
 
 import { formatDateShort } from '../format/dates'
 import { formatMoney } from '../format/money'
-import { NO_PRICE_TODAY } from './Variedades'
+import { NO_PRICE_TODAY, noPriceBefore, priceBack } from '../copy/varieties'
 
 export interface HistoryEntry {
   id: number
@@ -21,11 +21,11 @@ export function deleteNotice(history: readonly HistoryEntry[], entryId: number):
   const index = chronological.findIndex((entry) => entry.id === entryId)
   const earlier = index > 0 ? chronological[index - 1] : undefined
   if (earlier !== undefined) {
-    return `Vuelve a regir ${formatMoney(earlier.list_price)} x g desde el ${formatDateShort(earlier.effective_from)}`
+    return priceBack(formatMoney(earlier.list_price), formatDateShort(earlier.effective_from))
   }
   const next = chronological[index + 1]
   if (next !== undefined) {
-    return `No va a haber precio antes del ${formatDateShort(next.effective_from)}`
+    return noPriceBefore(formatDateShort(next.effective_from))
   }
   return NO_PRICE_TODAY
 }

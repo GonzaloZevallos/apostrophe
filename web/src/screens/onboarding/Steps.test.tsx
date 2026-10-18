@@ -156,11 +156,11 @@ test('step 1 with a price target shows the price form only and ends with one var
   // The price is effective today: there is no date to change.
   expect(screen.queryByLabelText('Rige desde')).not.toBeInTheDocument()
   // Both pricing switches are off: no bulk or VIP field, as on a variety's page.
-  expect(screen.queryByLabelText(/^Precio por cantidad/)).not.toBeInTheDocument()
-  expect(screen.queryByLabelText(/^Precio VIP/)).not.toBeInTheDocument()
+  expect(screen.queryByLabelText(/^Bulk price/)).not.toBeInTheDocument()
+  expect(screen.queryByLabelText(/^VIP price/)).not.toBeInTheDocument()
   // One "Cerrar", the frame's own: the price form draws no title row here.
   expect(screen.getAllByRole('button', { name: 'Cerrar' })).toHaveLength(1)
-  await user.type(screen.getByLabelText(/^Precio de lista/), '12000')
+  await user.type(screen.getByLabelText(/^List price/), '12000')
   await user.click(screen.getByRole('button', { name: 'Guardá la variedad' }))
 
   expect(await screen.findByRole('heading', { name: 'Cargá lo que tenés hoy' })).toBeInTheDocument()
@@ -174,19 +174,19 @@ test('step 1 follows the pricing switches: with both on, the price form offers t
   })
   renderAt(ONBOARDING_VARIETY)
 
-  expect(await screen.findByLabelText(/^Precio por cantidad/)).toBeInTheDocument()
-  expect(screen.getByLabelText(/^Mínimo en gramos/)).toBeInTheDocument()
-  expect(screen.getByLabelText(/^Precio VIP/)).toBeInTheDocument()
+  expect(await screen.findByLabelText(/^Bulk price/)).toBeInTheDocument()
+  expect(screen.getByLabelText(/^Minimum quantity/)).toBeInTheDocument()
+  expect(screen.getByLabelText(/^VIP price/)).toBeInTheDocument()
   expect(screen.queryByLabelText('Rige desde')).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: /^Hoy / })).not.toBeInTheDocument()
   // The "$" is drawn before the list, bulk and VIP price, never before the minimum in grams.
-  for (const label of [/^Precio de lista/, /^Precio por cantidad/, /^Precio VIP/]) {
+  for (const label of [/^List price/, /^Bulk price/, /^VIP price/]) {
     const prefix = screen.getByLabelText(label).previousElementSibling
     expect(prefix).toHaveTextContent('$')
     expect(prefix).toHaveAttribute('aria-hidden', 'true')
   }
-  expect(screen.getByLabelText(/^Mínimo en gramos/).parentElement).not.toHaveClass('campo__monto')
-  expect(screen.getByLabelText(/^Mínimo en gramos/).closest('.campo')).not.toHaveTextContent('$')
+  expect(screen.getByLabelText(/^Minimum quantity/).parentElement).not.toHaveClass('campo__monto')
+  expect(screen.getByLabelText(/^Minimum quantity/).closest('.campo')).not.toHaveTextContent('$')
 })
 
 test('step 1 with no target saves the variety and its price with one action; a refused price keeps what was typed and the retry sends only the price', async () => {
@@ -200,11 +200,11 @@ test('step 1 with no target saves the variety and its price with one action; a r
   renderAt(ONBOARDING_VARIETY)
 
   await user.type(await screen.findByLabelText(/^Nombre/), 'Mango Bomb')
-  await user.type(screen.getByLabelText(/^Precio de lista/), '12000')
+  await user.type(screen.getByLabelText(/^List price/), '12000')
   await user.click(screen.getByRole('button', { name: 'Guardá la variedad' }))
 
-  expect(await screen.findByRole('alert')).toHaveTextContent('Revisá los precios cargados')
-  expect(screen.getByLabelText(/^Precio de lista/)).toHaveValue('12000')
+  expect(await screen.findByRole('alert')).toHaveTextContent('Check the prices you entered')
+  expect(screen.getByLabelText(/^List price/)).toHaveValue('12000')
 
   refuse = false
   await user.click(screen.getByRole('button', { name: 'Guardá la variedad' }))
@@ -233,12 +233,12 @@ test('step 2 saves the opening stock of the stock target through the owner, then
   renderAt(ONBOARDING_STOCK)
 
   expect(await screen.findByText('Mango Bomb')).toBeInTheDocument()
-  expect(screen.getByLabelText(/^Costo total/).closest('label')).toHaveTextContent(
-    'Opcional · si no lo cargás, el lote cuesta $ 0',
+  expect(screen.getByLabelText(/^Total cost/).closest('label')).toHaveTextContent(
+    'Optional · if you leave it out, the lot costs $ 0',
   )
-  expect(screen.queryByLabelText('Fecha')).not.toBeInTheDocument()
-  await user.type(screen.getByLabelText('Gramos'), '500')
-  await user.click(screen.getByRole('button', { name: 'Guardá la entrada' }))
+  expect(screen.queryByLabelText('Date')).not.toBeInTheDocument()
+  await user.type(screen.getByLabelText('Grams'), '500')
+  await user.click(screen.getByRole('button', { name: 'Save entry' }))
 
   expect(await screen.findByRole('button', { name: 'Agregar otra variedad' })).toBeInTheDocument()
   expect(bodies).toEqual([

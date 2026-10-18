@@ -27,9 +27,10 @@ import { VARIETIES, VARIETY, pathTo } from '../../routes'
 import { useViewport } from '../../shell/useViewport'
 import { archivedVarietiesQueryOptions } from './archivedVarieties'
 import { useRestore } from './useRestore'
-import { NO_ARCHIVED_MESSAGE } from '../../copy/varieties'
+import { ARCHIVED, HIDDEN, NO_ARCHIVED_MESSAGE, RESTORE } from '../../copy/varieties'
 import { varietiesByName } from './varietiesByName'
 
+const ACTIVE_ROW_CLASS = 'variedad-fila variedad-fila--activa'
 
 /** Whether this entry was opened by a link of the app (`inAppState`), not typed or reloaded. */
 function isInApp(state: unknown): boolean {
@@ -53,7 +54,7 @@ export default function ArchivedVarieties() {
   return (
     <main className="pantalla variedades">
       <div className="cuerpo">
-        <h1 className="encabezado__titulo">Archivadas</h1>
+        <h1 className="encabezado__titulo">{ARCHIVED}</h1>
         {notice}
         {failure !== null && (failure instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />)}
         {failure === null && !loaded && <Loading />}
@@ -70,16 +71,16 @@ export default function ArchivedVarieties() {
                   to={pathTo(VARIETY, { id: variety.id })}
                   replace={computer}
                   className="variedad-fila"
-                  activeClassName="variedad-fila variedad-fila--activa"
+                  activeClassName={ACTIVE_ROW_CLASS}
                 >
                   <span className="variedad-fila__nombre">{variety.name}</span>
                   <span className="variedad-marcas">
-                    <Insignia>Archivada</Insignia>
-                    {hidden.has(variety.id) && <span className="variedad-resumen__oculta">Oculta</span>}
+                    <Insignia>{ARCHIVED}</Insignia>
+                    {hidden.has(variety.id) && <span className="variedad-resumen__oculta">{HIDDEN}</span>}
                   </span>
                 </PaneRowLink>
                 <Boton variant="secondary" icon="restaurar" disabled={sending} onClick={() => void restore(variety.id)}>
-                  Restaurar
+                  {RESTORE}
                 </Boton>
               </div>
             ))}

@@ -6,11 +6,11 @@
  * backend's alone.
  */
 
+import { AROMA_TOO_LONG_MESSAGE, EMOJI_INVALID_MESSAGE, INDICA_SHARE_INVALID_MESSAGE } from '../../copy/varieties'
+
 export type CatalogField = 'emoji' | 'indica_share' | 'aroma'
 
-export const EMOJI_INVALID_MESSAGE = 'Poné exactamente un emoji'
-export const INDICA_SHARE_INVALID_MESSAGE = 'El porcentaje de índica va de 0 a 100'
-export const AROMA_TOO_LONG_MESSAGE = 'El aroma es demasiado largo'
+export { AROMA_TOO_LONG_MESSAGE, EMOJI_INVALID_MESSAGE, INDICA_SHARE_INVALID_MESSAGE }
 
 const FIELD_OF_CODE = new Map<string, { field: CatalogField; message: string }>([
   ['catalog.emoji_invalid', { field: 'emoji', message: EMOJI_INVALID_MESSAGE }],

@@ -38,21 +38,21 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
 
   // A variety with a price and stock, so the catalog has something to show.
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'Nueva variedad' }).click()
+  await page.getByRole('link', { name: 'New variety' }).click()
   await page.getByLabel('Nombre').fill('Rosa')
-  await page.getByRole('button', { name: 'Agregá la variedad' }).click()
-  await expect(page.getByText('Variedad guardada')).toBeVisible()
+  await page.getByRole('button', { name: 'Add variety' }).click()
+  await expect(page.getByText('Variety saved')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()
-  await page.getByRole('link', { name: 'Nuevo precio' }).click()
-  await page.getByLabel(/^Precio de lista/).fill('9000')
-  await page.getByRole('button', { name: 'Guardá el precio' }).click()
-  await expect(page.getByText('Precio guardado')).toBeVisible()
+  await page.getByRole('link', { name: 'New price' }).click()
+  await page.getByLabel(/^List price/).fill('9000')
+  await page.getByRole('button', { name: 'Save price' }).click()
+  await expect(page.getByText('Price saved')).toBeVisible()
 
   await page.goto(STOCK_ENTRY_NEW)
-  await page.getByLabel('Gramos').fill('50')
-  await page.getByLabel('Variedad').selectOption({ label: 'Rosa' })
-  await page.getByLabel('Costo total').fill('45000')
-  await page.getByRole('button', { name: 'Guardá la entrada' }).click()
+  await page.getByLabel('Grams').fill('50')
+  await page.getByLabel('Variety').selectOption({ label: 'Rosa' })
+  await page.getByLabel('Total cost').fill('45000')
+  await page.getByRole('button', { name: 'Save entry' }).click()
   await expect(page.getByText('Entry saved')).toBeVisible()
 
   // Variedades → Mandar catálogo.
@@ -62,23 +62,23 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
   // Edit Rosa's catalog attributes on its own page, from "En el catálogo".
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: /Rosa/ }).click()
-  await page.getByRole('button', { name: 'Editar catálogo' }).click()
+  await page.getByRole('button', { name: 'Edit catalog' }).click()
   await page.getByLabel('Emoji').fill('🌹')
   await page.getByLabel('% índica').fill('30')
   await page.getByLabel('Aroma/sabor').fill('floral, dulce')
   await page.getByRole('button', { name: 'Guardá el catálogo' }).click()
-  await expect(page.getByText('Catálogo guardado')).toBeVisible()
+  await expect(page.getByText('Catalog saved')).toBeVisible()
   await expect(page.getByText('floral, dulce')).toBeVisible()
   await page.goto(CATALOG)
 
   // Edit the header and footer in Configuración → Mensaje del catálogo, then close back
   // to the catalog screen, which only links out to it and shows neither value.
-  await page.getByRole('link', { name: 'Editar encabezado y pie' }).click()
+  await page.getByRole('link', { name: 'Edit header and footer' }).click()
   await expectPath(page, SETTINGS_CATALOG_MESSAGE)
   await page.getByLabel('Encabezado').fill('🌸 Catálogo de Flores del Catálogo 🌸')
   await page.getByLabel('Pie').fill('Pedidos por privado.')
   await page.getByRole('button', { name: 'Guardá el mensaje' }).click()
-  await expect(page.getByText('Catálogo guardado')).toBeVisible()
+  await expect(page.getByText('Catalog saved')).toBeVisible()
   await page.getByRole('button', { name: 'Cerrar' }).click()
   await expectPath(page, CATALOG)
   await expect(page.getByLabel('Pie')).toHaveCount(0)
@@ -96,8 +96,8 @@ test('a seller edits a variety, the header and footer, then copies today\'s cata
     .poll(() => page.locator('.catalogo__vista-previa').textContent())
     .toBe(apiText.replaceAll('**', ''))
 
-  await page.getByRole('button', { name: 'Copiar' }).click()
-  await expect(page.getByText('Catálogo copiado')).toBeVisible()
+  await page.getByRole('button', { name: 'Copy' }).click()
+  await expect(page.getByText('Catalog copied')).toBeVisible()
   const clipboardText = await page.evaluate(() => navigator.clipboard.readText())
   expect(clipboardText).toBe(apiText)
 

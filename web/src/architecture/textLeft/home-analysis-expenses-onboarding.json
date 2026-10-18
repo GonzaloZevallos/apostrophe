@@ -21,6 +21,5 @@
   "src/screens/onboarding/VarietyDone.tsx",
   "src/screens/onboarding/VarietyForm.tsx",
   "src/screens/onboarding/steps.ts",
-  "src/screens/onboarding/useOnboardingWrite.tsx",
-  "src/screens/onboarding/useVarietyWithPrice.ts"
+  "src/screens/onboarding/useOnboardingWrite.tsx"
 ]

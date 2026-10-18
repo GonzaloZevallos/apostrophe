@@ -50,64 +50,64 @@ test('a seller does everything the backend offers today, from the front alone', 
 
   // Add a variety.
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'Nueva variedad' }).click()
+  await page.getByRole('link', { name: 'New variety' }).click()
   await page.getByLabel('Nombre').fill('Rosa')
-  await page.getByRole('button', { name: 'Agregá la variedad' }).click()
-  await expect(page.getByText('Variedad guardada')).toBeVisible()
+  await page.getByRole('button', { name: 'Add variety' }).click()
+  await expect(page.getByText('Variety saved')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()
   await expectPath(page, VARIETY)
 
-  // Add a price. "Rige desde" already defaults to `me.today` — the business day
+  // Add a price. "Effective from" already defaults to `me.today` — the business day
   // the backend's clock reports, read through `GET /auth/me` — so it is left as
   // is, never dated from the browser's own UTC clock (plan, "One clock").
-  await page.getByRole('link', { name: 'Nuevo precio' }).click()
-  await page.getByLabel(/^Precio de lista/).fill('9000')
-  await page.getByRole('button', { name: 'Guardá el precio' }).click()
-  await expect(page.getByText('Precio guardado')).toBeVisible()
+  await page.getByRole('link', { name: 'New price' }).click()
+  await page.getByLabel(/^List price/).fill('9000')
+  await page.getByRole('button', { name: 'Save price' }).click()
+  await expect(page.getByText('Price saved')).toBeVisible()
   await expect(page.getByText(/\$ 9\.000 x g/).first()).toBeVisible()
 
   // Delete the price entry (the only one): the variety is left with no price.
-  await page.getByRole('button', { name: 'Borrar este precio' }).click();
+  await page.getByRole('button', { name: 'Delete this price' }).click();
   await page.getByRole('button', { name: 'Sí, borrala' }).click();
-  await expect(page.getByText('Precio eliminado')).toBeVisible()
+  await expect(page.getByText('Price deleted')).toBeVisible()
   await expect(page.getByText('Sin precio: no se puede vender').first()).toBeVisible()
 
   // Record a stock entry for Rosa from Variedades ("+ Entrada de stock"), then read it in
   // "Todas las entradas" (stock.md).
   await page.goto(STOCK)
-  await expect(page.getByText('Sin entradas de stock')).toBeVisible()
+  await expect(page.getByText('No stock entries')).toBeVisible()
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: '+ Entrada de stock' }).click()
   await expectPath(page, STOCK_ENTRY_NEW)
-  await page.getByLabel('Gramos').fill('50')
-  await page.getByLabel('Variedad').selectOption({ label: 'Rosa' })
-  await page.getByLabel('Costo total').fill('45000')
+  await page.getByLabel('Grams').fill('50')
+  await page.getByLabel('Variety').selectOption({ label: 'Rosa' })
+  await page.getByLabel('Total cost').fill('45000')
   await expect(page.getByText('Te queda en $ 900 el gramo')).toBeVisible()
-  await page.getByRole('button', { name: 'Guardá la entrada' }).click()
+  await page.getByRole('button', { name: 'Save entry' }).click()
   await expectAnyPath(page, [VARIETIES, VARIETY])
   await expect(page.getByText('Entry saved')).toBeVisible()
   await page.goto(STOCK)
-  await expect(page.getByText('Compra · 50 g')).toBeVisible()
+  await expect(page.getByText('Purchase · 50 g')).toBeVisible()
 
   // Edit it: editing confirms before saving (stock.md).
   await page.getByRole('link', { name: 'Editar' }).click()
   await expectPath(page, STOCK_ENTRY)
-  await expect(page.getByLabel('Gramos')).toHaveValue('50')
-  await page.getByLabel('Gramos').fill('60')
+  await expect(page.getByLabel('Grams')).toHaveValue('50')
+  await page.getByLabel('Grams').fill('60')
   await page.getByRole('button', { name: 'Guardar' }).click()
   await expect(page.getByText('¿Guardás los cambios?')).toBeVisible()
   await page.getByRole('button', { name: 'Sí, guardar' }).click()
   await expectPath(page, STOCK)
   await expect(page.getByText('Entry saved')).toBeVisible()
-  await expect(page.getByText('Compra · 60 g')).toBeVisible()
+  await expect(page.getByText('Purchase · 60 g')).toBeVisible()
 
   // Delete it: confirmed first, naming the date, variety and grams ("Antes de borrar").
   await page.getByRole('button', { name: 'Borrar', exact: true }).click()
-  await expect(page.getByText('Antes de borrar')).toBeVisible()
-  await page.getByRole('button', { name: 'Sí, borrala' }).click()
+  await expect(page.getByText('Before deleting')).toBeVisible()
+  await page.getByRole('button', { name: 'Yes, delete it' }).click()
   await expectPath(page, STOCK)
   await expect(page.getByText('Entry deleted')).toBeVisible()
-  await expect(page.getByText('Compra · 60 g')).toHaveCount(0)
+  await expect(page.getByText('Purchase · 60 g')).toHaveCount(0)
 
   // Rosa's page: set the low-stock warning through its form (turning it on only opens the
   // form), then turn it off (saved at once).
@@ -117,7 +117,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.getByRole('switch', { name: 'Avisar cuando quede poco' }).click()
   await page.getByLabel('Avisar con menos de').fill('15')
   await page.getByRole('button', { name: 'Guardá el aviso' }).click()
-  await expect(page.getByText('Aviso guardado')).toBeVisible()
+  await expect(page.getByText('Warning saved')).toBeVisible()
   await expect(page.getByText('Warn me below 15 g')).toBeVisible()
   await page.getByRole('switch', { name: 'Avisar cuando quede poco' }).click()
   await expect(page.getByText('Warning off')).toBeVisible()
@@ -192,7 +192,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.goto(SETTINGS_BUSINESS)
   const renamedTo = `${businessName} Renombrado`
   await page.getByLabel('Nombre del negocio').fill(renamedTo)
-  await page.getByRole('button', { name: 'Guardá el nombre' }).click()
+  await page.getByRole('button', { name: 'Save' }).click()
   await expect(page.getByText('Negocio renombrado')).toBeVisible()
 
   // Create a join link and accept it as a second user, from a separate browser

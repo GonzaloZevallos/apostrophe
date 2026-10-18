@@ -18,11 +18,17 @@ import { isGone, kindOf } from '../../api/refusals'
 import type { SuccessToast } from '../../components/AvisoExito'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
-import { GENERIC_REFUSAL_MESSAGE } from '../Variedades'
+import { CLOSE, GENERIC_REFUSAL_MESSAGE, SAVE } from '../../copy/common'
+import {
+  AROMA_FLAVOUR,
+  CATALOG_ATTRIBUTES_SAVED,
+  EMOJI,
+  INDICA_SHARE,
+  IN_THE_CATALOG,
+  SHOW_IN_CATALOG,
+} from '../../copy/varieties'
 import { INDICA_SHARE_INVALID_MESSAGE, fieldOfRefusal, type CatalogField } from './catalogFormErrors'
 import Boton from '../../components/Boton'
-
-export const CATALOG_ATTRIBUTES_SAVED: SuccessToast = 'Catálogo guardado'
 
 export interface CatalogAttributesFormProps {
   row: Pick<CatalogVariety, 'id' | 'shown' | 'emoji' | 'indica_share' | 'aroma'>
@@ -117,19 +123,19 @@ export default function CatalogAttributesForm({ row, onDone, onCancel, onDirtyCh
   return (
     <div className="gasto-form">
       <div className="gasto-form__cabecera">
-        <span className="gasto-form__titulo">En el catálogo</span>
+        <span className="gasto-form__titulo">{IN_THE_CATALOG}</span>
         <span className="gasto-form__cerrar">
-          <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={onCancel} />
+          <Boton variant="icon" action="close" ariaLabel={CLOSE} onClick={onCancel} />
         </span>
       </div>
       <form className="formulario" onSubmit={onSubmit}>
         <div className="seccion-variedad__fila">
-          <span className="campo__rotulo">Mostrar en el catálogo</span>
+          <span className="campo__rotulo">{SHOW_IN_CATALOG}</span>
           <button
             type="button"
             role="switch"
             aria-checked={typed.shown}
-            aria-label="Mostrar en el catálogo"
+            aria-label={SHOW_IN_CATALOG}
             className="interruptor"
             onClick={() => setTyped({ ...typed, shown: !typed.shown })}
           >
@@ -137,7 +143,7 @@ export default function CatalogAttributesForm({ row, onDone, onCancel, onDirtyCh
           </button>
         </div>
         <label className="campo">
-          <span className="campo__rotulo">Emoji</span>
+          <span className="campo__rotulo">{EMOJI}</span>
           <input
             className="campo__input"
             type="text"
@@ -147,7 +153,7 @@ export default function CatalogAttributesForm({ row, onDone, onCancel, onDirtyCh
           {errorUnder('emoji')}
         </label>
         <label className="campo">
-          <span className="campo__rotulo">% índica</span>
+          <span className="campo__rotulo">{INDICA_SHARE}</span>
           <input
             className="campo__input"
             type="text"
@@ -158,7 +164,7 @@ export default function CatalogAttributesForm({ row, onDone, onCancel, onDirtyCh
           {errorUnder('indica_share')}
         </label>
         <label className="campo">
-          <span className="campo__rotulo">Aroma/sabor</span>
+          <span className="campo__rotulo">{AROMA_FLAVOUR}</span>
           <input
             className="campo__input"
             type="text"
@@ -174,7 +180,7 @@ export default function CatalogAttributesForm({ row, onDone, onCancel, onDirtyCh
         )}
         {offline && <SinConexion />}
         <Boton textOnly="submit" type="submit" disabled={sending}>
-          Guardá el catálogo
+          {SAVE}
         </Boton>
       </form>
     </div>

@@ -10,9 +10,9 @@ import { VARIETY_REFUSAL_TEXT } from '../../copy/refusals'
 import { type RefusalCode } from '../../api/refusals'
 import { parseGrams, parseMoney } from '../../format/parse'
 import { GRAMS_INVALID } from '../../copy/stock'
+import { DUPLICATE_DATE_MESSAGE, PRICE_INVALID_MESSAGE } from '../../copy/varieties'
 
-export const DUPLICATE_DATE_MESSAGE = 'Ya cargaste un precio con esa fecha'
-export const PRICE_INVALID_MESSAGE = 'Revisá los precios cargados'
+export { DUPLICATE_DATE_MESSAGE, PRICE_INVALID_MESSAGE }
 
 export type PriceField = 'effectiveFrom' | 'listPrice' | 'bulkPrice' | 'bulkMinimum' | 'vipPrice' | 'form'
 export type PriceErrors = Partial<Record<PriceField, string>>

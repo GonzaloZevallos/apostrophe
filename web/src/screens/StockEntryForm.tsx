@@ -1,7 +1,7 @@
 /**
  * `StockEntryForm`: the body of `EntradaStock` (`stock.md`, "On screen") as a component of its
  * own, so another screen can host the same form under the same rules: date, variety with
- * "Hoy tiene N g", grams, origin, total cost with "Obligatorio cuando es una compra", note, the
+ * "On hand today: N g", grams, origin, total cost with "Required for a purchase", note, the
  * cost-per-gram preview, the owner's refusals, the edit confirmation and the delete
  * confirmation, all through the owner's routes (`api/stock`). It owns no chrome and no
  * navigation: the host learns what happened through `onSaved`, `onDeleted`, `onGone` and
@@ -37,25 +37,47 @@ import { parseMoney, parseSignedGrams } from '../format/parse'
 import type { Variety } from './Variedades'
 import { varietiesByName } from './varieties/varietiesByName'
 import Boton from '../components/Boton'
+import { GENERIC_REFUSAL_MESSAGE as GENERIC_REFUSAL, SAVE } from '../copy/common'
 import {
+  BEFORE_DELETING,
+  CHOOSE_VARIETY,
+  COST_ON_NEGATIVE,
+  COST_REQUIRED,
   COST_REQUIRED_HELP,
+  DATE_IN_FUTURE,
+  DELETE_ENTRY,
+  FIELD_DATE,
+  FIELD_GRAMS,
+  FIELD_NOTE,
+  FIELD_ORIGIN,
+  FIELD_TOTAL_COST,
+  FIELD_VARIETY,
   GRAMS_INVALID,
+  NO_KEEP_EDITING,
+  NO_KEEP_IT,
   OPENING_COST_HINT,
+  ORIGIN_ADJUSTMENT,
+  ORIGIN_HARVEST,
+  ORIGIN_OPENING_STOCK,
+  ORIGIN_PURCHASE,
+  SAVE_CHANGES_TITLE,
+  SAVE_ENTRY,
+  SAVE_ENTRY_DETAIL,
+  YES_DELETE_IT,
+  YES_SAVE,
+  deleteEntryQuestion,
   onHandHelp,
   perGramPreview,
 } from '../copy/stock'
 
-export const GENERIC_REFUSAL = 'Revisá los datos e intentá de nuevo.'
-export const COST_REQUIRED = 'Una compra necesita un costo total'
-export const COST_ON_NEGATIVE = 'Un ajuste negativo no lleva costo'
-export const DATE_IN_FUTURE = 'La fecha no puede ser futura'
-
 const ORIGIN_OPTIONS: { value: Origin; label: string }[] = [
-  { value: 'purchase', label: 'Compra' },
-  { value: 'harvest', label: 'Cosecha' },
-  { value: 'opening_stock', label: 'Stock inicial' },
-  { value: 'adjustment', label: 'Ajuste' },
+  { value: 'purchase', label: ORIGIN_PURCHASE },
+  { value: 'harvest', label: ORIGIN_HARVEST },
+  { value: 'opening_stock', label: ORIGIN_OPENING_STOCK },
+  { value: 'adjustment', label: ORIGIN_ADJUSTMENT },
 ]
+
+const DEFAULT_ORIGIN_CODE: Origin = 'purchase'
 
 const FIELD_OVERRIDES: Partial<Record<RefusalCode, string>> = {
   'stock.cost_required': COST_REQUIRED,
@@ -152,7 +174,7 @@ export default function StockEntryForm({
           ? String(preselectedVarietyId)
           : '',
   )
-  const [origin, setOrigin] = useState<Origin>(initial?.origin ?? fixedOrigin ?? preselectedOrigin ?? 'purchase')
+  const [origin, setOrigin] = useState<Origin>(initial?.origin ?? fixedOrigin ?? preselectedOrigin ?? DEFAULT_ORIGIN_CODE)
   const [totalCost, setTotalCost] = useState(
     initial?.total_cost !== null && initial?.total_cost !== undefined ? String(initial.total_cost) : '',
   )
@@ -287,10 +309,10 @@ export default function StockEntryForm({
     <>
       {confirmingSave && (
         <ConfirmDialog
-          title="¿Guardás los cambios?"
-          detail="Esto actualiza la entrada."
-          confirmText="Sí, guardar"
-          cancelText="No, seguir editando"
+          title={SAVE_CHANGES_TITLE}
+          detail={SAVE_ENTRY_DETAIL}
+          confirmText={YES_SAVE}
+          cancelText={NO_KEEP_EDITING}
           onConfirm={() => {
             if (!sending) void save()
           }}
@@ -300,10 +322,14 @@ export default function StockEntryForm({
 
       {confirmingDelete && initial !== undefined && (
         <ConfirmDialog
-          title="Antes de borrar"
-          detail={`¿Borrás la entrada del ${formatDate(initial.date, initial.date)} de ${varietyName}, ${formatGrams(initial.grams)}? Esto no se puede deshacer.`}
-          confirmText="Sí, borrala"
-          cancelText="No, dejala"
+          title={BEFORE_DELETING}
+          detail={deleteEntryQuestion(
+            formatDate(initial.date, initial.date),
+            varietyName,
+            formatGrams(initial.grams),
+          )}
+          confirmText={YES_DELETE_IT}
+          cancelText={NO_KEEP_IT}
           onConfirm={() => {
             if (!deleting) void onConfirmDelete()
           }}
@@ -320,14 +346,14 @@ export default function StockEntryForm({
         {fixedVarietyId !== undefined ? (
           <>
         <div className="campo">
-          <span className="campo__rotulo">Variedad</span>
+          <span className="campo__rotulo">{FIELD_VARIETY}</span>
           <span className="campo__valor">{varietyName}</span>
           {varietyGrams !== null && (
             <span className="campo__ayuda" data-copy="help">{onHandHelp(formatGrams(varietyGrams))}</span>
           )}
         </div>
         <label className="campo">
-          <span className="campo__rotulo">Gramos</span>
+          <span className="campo__rotulo">{FIELD_GRAMS}</span>
           <input
             className="campo__input"
             inputMode="decimal"
@@ -338,11 +364,11 @@ export default function StockEntryForm({
         </label>
         <div className="campo">
           <div className="origen-pildoras">
-            <span className="pildora pildora--activa pildora--fija">Stock inicial</span>
+            <span className="pildora pildora--activa pildora--fija">{ORIGIN_OPENING_STOCK}</span>
           </div>
         </div>
         <label className="campo">
-          <span className="campo__rotulo">Costo total</span>
+          <span className="campo__rotulo">{FIELD_TOTAL_COST}</span>
           <input
             className="campo__input"
             inputMode="numeric"
@@ -355,7 +381,7 @@ export default function StockEntryForm({
         ) : (
           <>
             <label className="campo">
-              <span className="campo__rotulo">Fecha</span>
+              <span className="campo__rotulo">{FIELD_DATE}</span>
               <input
                 className="campo__input"
                 type="date"
@@ -365,7 +391,7 @@ export default function StockEntryForm({
               />
             </label>
             <label className="campo">
-              <span className="campo__rotulo">Gramos</span>
+              <span className="campo__rotulo">{FIELD_GRAMS}</span>
               <input
                 className="campo__input"
                 inputMode="decimal"
@@ -375,7 +401,7 @@ export default function StockEntryForm({
               />
             </label>
             <label className="campo">
-              <span className="campo__rotulo">Variedad</span>
+              <span className="campo__rotulo">{FIELD_VARIETY}</span>
               <select
                 className="campo__input"
                 value={varietyId}
@@ -383,7 +409,7 @@ export default function StockEntryForm({
                 disabled={fixedVarietyId !== undefined}
                 required
               >
-                <option value="">Elegí una variedad</option>
+                <option value="">{CHOOSE_VARIETY}</option>
                 {varietiesByName(pickable).map((variety) => (
                   <option key={variety.id} value={variety.id}>
                     {variety.name}
@@ -396,7 +422,7 @@ export default function StockEntryForm({
             </label>
             {fixedOrigin === undefined && (
               <fieldset className="campo">
-                <legend className="campo__rotulo">Origen</legend>
+                <legend className="campo__rotulo">{FIELD_ORIGIN}</legend>
                 <div className="origen-pildoras">
                   {ORIGIN_OPTIONS.map((option) => (
                     <button
@@ -413,7 +439,7 @@ export default function StockEntryForm({
               </fieldset>
             )}
             <label className="campo">
-              <span className="campo__rotulo">Costo total</span>
+              <span className="campo__rotulo">{FIELD_TOTAL_COST}</span>
               <input
                 className="campo__input"
                 inputMode="numeric"
@@ -423,7 +449,7 @@ export default function StockEntryForm({
               <span className="campo__ayuda" data-copy="help">{COST_REQUIRED_HELP}</span>
             </label>
             <label className="campo">
-              <span className="campo__rotulo">Nota</span>
+              <span className="campo__rotulo">{FIELD_NOTE}</span>
               <input
                 className="campo__input"
                 value={note}
@@ -443,13 +469,13 @@ export default function StockEntryForm({
           <span className="pie" data-copy="help">{perGramPreview(formatMoney(preview))}</span>
         )}
         <Boton textOnly="submit" type="submit" disabled={sending}>
-          {mode === 'nuevo' ? 'Guardá la entrada' : 'Guardar'}
+          {mode === 'nuevo' ? SAVE_ENTRY : SAVE}
         </Boton>
         {mode === 'editar' && (
           <Boton
             variant="icon"
             action="delete"
-            ariaLabel="Borrar entrada"
+            ariaLabel={DELETE_ENTRY}
             onClick={() => setConfirmingDelete(true)}
           />
         )}

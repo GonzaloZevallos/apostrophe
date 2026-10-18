@@ -1,16 +1,16 @@
 /**
  * `Catalogo` at `/varieties/catalog` (`Catalogo.dc.html`, `CatalogoCompu.dc.html`): today's
  * catalog text, built by the backend alone from today's prices and stock. A detail, so
- * (the shell draws its "‹ Variedades") and no "+ Nueva venta". "Cómo se ve en Telegram" comes only from
+ * (the shell draws its "‹ Varieties") and no "+ New sale". "How it looks in Telegram" comes only from
  * `telegramPreview(data.text)` (plan, invariants: "No component splits on `**`").
- * Compartir hands the native share sheet (`share.ts`, the only module naming it) and
- * Copiar copies (`clipboard.ts`, the one path that works over the home network's plain
+ * Share hands the native share sheet (`share.ts`, the only module naming it) and
+ * Copy copies (`clipboard.ts`, the one path that works over the home network's plain
  * http, ADR-0002) exactly the API's `text`, byte for byte; both are enabled only once
  * this mount's own fetch has resolved, so neither can hand over a text a cache kept.
- * "Qué no sale y por qué" words every variety the server says is out, one reason each
- * (`REASON_LABEL`), never by color alone; each name opens that variety's "En el catálogo"
- * section. The header and footer are edited in Configuración → Mensaje del catálogo, the
- * bot in Integraciones: this screen only links out. The pin's status and Publicar are
+ * "What's left out and why" words every variety the server says is out, one reason each
+ * (`REASON_LABEL`), never by color alone; each name opens that variety's "In the catalog"
+ * section. The header and footer are edited in Settings → Catalog message, the
+ * bot in Integrations: this screen only links out. The pin's status and Publish are
  * `PinPublish`. Until section-forms moves it, a variety's catalog attributes are still
  * edited from here.
  *
@@ -33,21 +33,33 @@ import Insignia, { type InsigniaTono } from '../components/Insignia'
 import ErrorGenerico from '../components/ErrorGenerico'
 import SinConexion from '../components/SinConexion'
 import PinPublish from './PinPublish'
-import { EMPTY_STATE_DETAIL, EMPTY_STATE_TITLE } from '../copy/catalog'
+import {
+  CATALOG_COPIED,
+  CATALOG_TITLE,
+  COPY,
+  COPY_FAILED_MESSAGE,
+  EDIT_HEADER_AND_FOOTER,
+  EMPTY_STATE_DETAIL,
+  EMPTY_STATE_TITLE,
+  LEFT_OUT_HIDDEN,
+  LEFT_OUT_LABEL,
+  LEFT_OUT_NO_ENTRIES,
+  LEFT_OUT_NO_PRICE,
+  LEFT_OUT_SOLD_OUT,
+  PREVIEW_LABEL,
+  SHARE,
+  SHARE_FAILED_MESSAGE,
+} from '../copy/catalog'
 import { telegramPreview } from './telegramPreview'
 import { CATALOG_SECTION_ID, SETTINGS_CATALOG_MESSAGE, VARIETY, pathTo } from '../routes'
-
-export const CATALOG_COPIED = 'Catálogo copiado'
-export const COPY_FAILED_MESSAGE = 'No se pudo copiar.'
-export const SHARE_FAILED_MESSAGE = 'No se pudo compartir.'
 
 // The one table from GET /catalog's `state` to the word that says why a variety does not
 // go out (PRD criterion 4). The front never decides the reason, it only words the server's.
 const REASON_LABEL: Record<Exclude<CatalogVarietyState, 'in'>, { word: string; tono: InsigniaTono }> = {
-  hidden: { word: 'oculta', tono: 'neutro' },
-  no_price: { word: 'sin precio', tono: 'neutro' },
-  sold_out: { word: 'agotada', tono: 'critico' },
-  no_entries: { word: 'sin entradas', tono: 'neutro' },
+  hidden: { word: LEFT_OUT_HIDDEN, tono: 'neutro' },
+  no_price: { word: LEFT_OUT_NO_PRICE, tono: 'neutro' },
+  sold_out: { word: LEFT_OUT_SOLD_OUT, tono: 'critico' },
+  no_entries: { word: LEFT_OUT_NO_ENTRIES, tono: 'neutro' },
 }
 
 export default function Catalogo() {
@@ -114,13 +126,13 @@ export default function Catalogo() {
   return (
     <main className="pantalla">
       <div className="cuerpo">
-        <h1 className="encabezado__titulo">Catálogo</h1>
+        <h1 className="encabezado__titulo">{CATALOG_TITLE}</h1>
 
         {toast !== null && <AvisoExito texto={toast} />}
 
         <div className="catalogo__columnas">
         <div className="catalogo__vista">
-        <span className="rotulo">Cómo se ve en Telegram</span>
+        <span className="rotulo">{PREVIEW_LABEL}</span>
         {catalog === undefined ? (
           <div className="catalogo__vista-previa" />
         ) : catalog.text === null ? (
@@ -151,7 +163,7 @@ export default function Catalogo() {
                   disabled={!settled || sharing}
                   onClick={() => void onShare(catalog.text as string)}
                 >
-                  Compartir
+                  {SHARE}
                 </Boton>
               )}
               <Boton
@@ -160,7 +172,7 @@ export default function Catalogo() {
                 disabled={!settled || copying}
                 onClick={() => void onCopy(catalog.text as string)}
               >
-                Copiar
+                {COPY}
               </Boton>
             </div>
             {shareFailed && (
@@ -182,7 +194,7 @@ export default function Catalogo() {
           <>
             {leftOut.length > 0 && (
               <div className="catalogo__no-sale">
-                <span className="rotulo">Qué no sale y por qué</span>
+                <span className="rotulo">{LEFT_OUT_LABEL}</span>
                 <ul className="catalogo__lista">
                   {leftOut.map((variety) => {
                     const reason = REASON_LABEL[variety.state as Exclude<CatalogVarietyState, 'in'>]
@@ -205,7 +217,7 @@ export default function Catalogo() {
             )}
 
             <BotonLink to={SETTINGS_CATALOG_MESSAGE} variant="link">
-              Editar encabezado y pie
+              {EDIT_HEADER_AND_FOOTER}
             </BotonLink>
           </>
         )}

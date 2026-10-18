@@ -1,16 +1,16 @@
 /**
- * "Publicar" and the pin's status, on the catalog screen (`Catalogo.dc.html`, the card
- * under Compartir and Copiar). The bot settings and Probarlo live in Configuración →
- * Integraciones (`settings/IntegrationsGroup.tsx`); this component only reads
+ * "Publish" and the pin's status, on the catalog screen (`Catalogo.dc.html`, the card
+ * under Share and Copy). The bot settings and Send-me-a-test live in Settings →
+ * Integrations (`settings/IntegrationsGroup.tsx`); this component only reads
  * `GET /pinned-catalog` and publishes.
  *
- * Publicar is disabled exactly when `publish_blocked_by` is not null, and the reason in
- * words and the link to Integraciones come from that one field (invariant: never from the
+ * Publish is disabled exactly when `publish_blocked_by` is not null, and the reason in
+ * words and the link to Integrations come from that one field (invariant: never from the
  * status's reasons or from null fields). The status line never carries the link, and
- * Publicar stays enabled under every status reason.
+ * Publish stays enabled under every status reason.
  *
- * Publicar invalidates `keys.pinnedCatalog()` when it settles: that one prefix covers this
- * query and Inicio's status query (`keys.ts`), so Inicio's notice follows.
+ * Publish invalidates `keys.pinnedCatalog()` when it settles: that one prefix covers this
+ * query and Home's status query (`keys.ts`), so Home's notice follows.
  */
 
 import { SETTINGS_INTEGRATIONS } from '../routes'
@@ -31,14 +31,18 @@ import Boton from '../components/Boton'
 import { AvisoCuerpo } from '../components/AvisoAmbar'
 import BotonLink from '../components/BotonLink'
 import {
+  CATALOG_PUBLISHED,
   CHANNEL_MISSING_LEAD,
   INTEGRATIONS_LINK_WORD,
   OUT_OF_DATE_SEPARATOR,
   OUT_OF_DATE_TITLE,
+  PUBLISH,
+  UP_TO_DATE_TITLE,
+  lastPublishedOn,
 } from '../copy/catalog'
+import { GENERIC_REFUSAL_MESSAGE } from '../copy/common'
 
-const PUBLISHED_TOAST: SuccessToast = 'Catálogo publicado'
-const GENERIC_REFUSAL_MESSAGE = 'Revisá los datos e intentá de nuevo.'
+const PUBLISHED_TOAST: SuccessToast = CATALOG_PUBLISHED
 const INTEGRATIONS_PATH = SETTINGS_INTEGRATIONS
 
 interface PinStatus {
@@ -70,7 +74,7 @@ function StatusLine({ status }: { status: PinStatus }) {
     >
       <AvisoCuerpo attention={status.state === 'out_of_date'}>
         <span className="catalogo__publicar-titulo">
-          {status.state === 'up_to_date' ? 'Al día' : OUT_OF_DATE_TITLE}
+          {status.state === 'up_to_date' ? UP_TO_DATE_TITLE : OUT_OF_DATE_TITLE}
         </span>
         {status.state === 'out_of_date' && status.reason !== null && (
           <span className="catalogo__publicar-detalle">
@@ -80,8 +84,8 @@ function StatusLine({ status }: { status: PinStatus }) {
         )}
         {status.last_published_on !== null && (
           <span className="catalogo__publicar-detalle">
-            {' '}
-            · El último fue el {formatDate(status.last_published_on)}
+            {OUT_OF_DATE_SEPARATOR}
+            {lastPublishedOn(formatDate(status.last_published_on))}
           </span>
         )}
       </AvisoCuerpo>
@@ -150,7 +154,7 @@ export default function PinPublish() {
       }
     } finally {
       setPublishing(false)
-      // A failed Publicar records its failure server-side too, so the status follows
+      // A failed Publish records its failure server-side too, so the status follows
       // the last attempt: refetch on both paths.
       invalidateResource(queryClient, 'pinnedCatalog')
     }
@@ -168,7 +172,7 @@ export default function PinPublish() {
         disabled={blockedBy !== null || publishing}
         onClick={() => void onPublicar()}
       >
-        Publicar
+        {PUBLISH}
       </Boton>
       {blockedBy !== null && <BlockedReason blockedBy={blockedBy} />}
       {publishError !== null && (

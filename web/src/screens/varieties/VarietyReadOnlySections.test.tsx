@@ -1,7 +1,7 @@
 /**
  * The threshold and catalog sections in their `readOnly` mode (varieties.md, "An archived
  * variety's page"), through Testing Library: the stored setting and the stored attributes
- * only, with no switch, no "Editar" and nothing from the live computation.
+ * only, with no switch, no "Edit" and nothing from the live computation.
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -29,56 +29,56 @@ function threshold(row: VarietyStock, readOnly: boolean) {
   inApp(<VarietyThresholdSection varietyId={1} row={row} refreshing={false} onGone={() => undefined} readOnly={readOnly} />)
 }
 
-test('a read-only threshold states the stored setting, never "Avisando", with no switch and no Editar', () => {
+test('a read-only threshold states the stored setting, never "Warning", with no switch and no Edit', () => {
   threshold(LOW, true)
 
-  expect(screen.getByRole('heading', { name: 'Aviso de stock bajo' })).toBeInTheDocument()
-  expect(screen.getByText('Avisame abajo de 20 g')).toBeInTheDocument()
-  expect(screen.queryByText(/Avisando/)).toBeNull()
+  expect(screen.getByRole('heading', { name: 'Low-stock warning' })).toBeInTheDocument()
+  expect(screen.getByText('Warn me below 20 g')).toBeInTheDocument()
+  expect(screen.queryByText(/Warning/)).toBeNull()
   expect(screen.queryByRole('switch')).toBeNull()
-  expect(screen.queryByRole('button', { name: 'Editar aviso' })).toBeNull()
+  expect(screen.queryByRole('button', { name: 'Edit warning' })).toBeNull()
 })
 
 test('a read-only threshold that is off says Warning off', () => {
   threshold({ ...LOW, threshold: null, status: 'ok' }, true)
 
-  expect(screen.getByText('Aviso apagado')).toBeInTheDocument()
+  expect(screen.getByText('Warning off')).toBeInTheDocument()
 })
 
-test('the same threshold on a live variety keeps "Avisando", its switch and Editar', () => {
+test('the same threshold on a live variety keeps "Warning", its switch and Edit', () => {
   threshold(LOW, false)
 
   expect(screen.getByText('Warning: 18 g left')).toBeInTheDocument()
   expect(screen.getByRole('switch')).toBeInTheDocument()
-  expect(screen.getByRole('button', { name: 'Editar aviso' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Edit warning' })).toBeInTheDocument()
 })
 
 const ATTRIBUTES = { shown: false, emoji: '🍪', indica_share: 70, aroma: 'Galletita y vainilla' }
 
-test('a read-only catalog section shows the four stored attributes in words, with no Editar', () => {
+test('a read-only catalog section shows the four stored attributes in words, with no Edit', () => {
   inApp(<VarietyCatalogSection row={ATTRIBUTES} readOnly />)
 
-  expect(screen.getByRole('heading', { name: 'En el catálogo' })).toBeInTheDocument()
-  expect(screen.getByText('No se muestra')).toBeInTheDocument()
+  expect(screen.getByRole('heading', { name: 'In the catalog' })).toBeInTheDocument()
+  expect(screen.getByText('Not shown')).toBeInTheDocument()
   expect(screen.getByText('🍪')).toBeInTheDocument()
   expect(screen.getByText('70 %')).toBeInTheDocument()
   expect(screen.getByText('Galletita y vainilla')).toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Editar catálogo' })).toBeNull()
+  expect(screen.queryByRole('button', { name: 'Edit catalog' })).toBeNull()
 })
 
 test('a read-only catalog section leaves out an attribute that was never set', () => {
   inApp(<VarietyCatalogSection row={{ shown: true, emoji: null, indica_share: null, aroma: 'Cítrico' }} readOnly />)
 
-  expect(screen.getByText('Se muestra')).toBeInTheDocument()
+  expect(screen.getByText('Shown')).toBeInTheDocument()
   expect(screen.getByText('Cítrico')).toBeInTheDocument()
   expect(screen.queryByText('Emoji')).toBeNull()
-  expect(screen.queryByText('% índica')).toBeNull()
+  expect(screen.queryByText('% indica')).toBeNull()
   expect(screen.queryByText('—')).toBeNull()
 })
 
-test('the live catalog section keeps its dashes and Editar', () => {
+test('the live catalog section keeps its dashes and Edit', () => {
   inApp(<VarietyCatalogSection row={{ shown: true, emoji: null, indica_share: null, aroma: null }} />)
 
   expect(screen.getAllByText('—')).toHaveLength(3)
-  expect(screen.getByRole('button', { name: 'Editar catálogo' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Edit catalog' })).toBeInTheDocument()
 })

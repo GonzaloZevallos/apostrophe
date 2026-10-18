@@ -4,11 +4,11 @@
  * `/withdrawals/:id/edit` (the same form, filled in). It owns how the form is left:
  *
  * - Back goes by history to whichever screen opened it (`useBackOr`), or, opened by a
- *   direct link, to Variedades (new) or the withdrawal's detail (edit).
- * - A save arms "Retiro guardado" for the screen history returns to, then leaves.
+ *   direct link, to Varieties (new) or the withdrawal's detail (edit).
+ * - A save arms "Withdrawal saved" for the screen history returns to, then leaves.
  * - Leaving with something typed asks first (`useLeaveGuard`); a save never is blocked.
- * - A withdrawal that is gone shows "Eso ya no está." when opened for editing, and
- *   "Eso ya no está. La lista ya está al día." on Variedades when a save finds it gone
+ * - A withdrawal that is gone shows "That's gone." when opened for editing, and
+ *   "That's gone. The list is up to date." on Varieties when a save finds it gone
  *   (`useGoneExit`).
  */
 
@@ -31,6 +31,16 @@ import { useLeaveGuard } from '../../components/useLeaveGuard'
 import { useFlash } from '../../flash/useFlash'
 import { VARIETIES, WITHDRAWAL, pathTo } from '../../routes'
 import WithdrawalForm, { type WithdrawalTarget } from './WithdrawalForm'
+import { TAB_VARIETIES } from '../../copy/shell'
+import {
+  DISCARD_CHANGES_TITLE,
+  DISCARD_ENTRY_DETAIL,
+  DISCARD_WITHDRAWAL_EDIT_DETAIL,
+  DISCARD_WITHDRAWAL_TITLE,
+  NO_KEEP_EDITING,
+  NO_KEEP_ENTERING,
+  YES_DISCARD_IT,
+} from '../../copy/stock'
 
 
 function Frame({ children }: { children: ReactNode }) {
@@ -56,7 +66,7 @@ function EditHost() {
   })
   if (existing.isError) {
     if (existing.error instanceof ApiError && isGone(existing.error.code)) {
-      return <GoneScreen label="Variedades" to={VARIETIES} />
+      return <GoneScreen label={TAB_VARIETIES} to={VARIETIES} />
     }
     return (
       <Frame>{existing.error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />}</Frame>
@@ -109,14 +119,10 @@ function FormHost({ target }: { target: WithdrawalTarget }) {
       {blocker.state === 'blocked' && (
         <LeaveConfirm
           blocker={blocker}
-          question={editing ? '¿Descartás los cambios?' : '¿Descartás el retiro?'}
-          detail={
-            editing
-              ? 'Se pierde lo que cambiaste: el retiro sigue como estaba.'
-              : 'Se pierde lo que cargaste: todavía no se guardó nada.'
-          }
-          keepLabel={editing ? 'No, seguí editando' : 'No, seguí cargando'}
-          discardLabel="Sí, descartalo"
+          question={editing ? DISCARD_CHANGES_TITLE : DISCARD_WITHDRAWAL_TITLE}
+          detail={editing ? DISCARD_WITHDRAWAL_EDIT_DETAIL : DISCARD_ENTRY_DETAIL}
+          keepLabel={editing ? NO_KEEP_EDITING : NO_KEEP_ENTERING}
+          discardLabel={YES_DISCARD_IT}
         />
       )}
     </Frame>

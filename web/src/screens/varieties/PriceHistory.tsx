@@ -17,7 +17,8 @@ import { VARIETIES } from '../../routes'
 import { useBackParent } from '../../shell/useBackParent'
 import type { Variety } from '../Variedades'
 import PriceRows, { type PriceRow } from './PriceRows'
-import { PRICE_HISTORY_HELP } from '../../copy/varieties'
+import { TAB_VARIETIES } from '../../copy/shell'
+import { PRICES, PRICE_HISTORY_HELP } from '../../copy/varieties'
 
 export default function PriceHistory({ varietyId }: { varietyId: number }) {
   const id = String(varietyId)
@@ -29,7 +30,7 @@ export default function PriceHistory({ varietyId }: { varietyId: number }) {
   useBackParent('variety-prices', varietyQuery.data === undefined ? undefined : { title: varietyQuery.data.name })
   const failure = varietyQuery.error ?? pricesQuery.error
   if (failure !== null) {
-    if (failure instanceof ApiError && isGone(failure.code)) return <GoneScreen label="Variedades" to={VARIETIES} />
+    if (failure instanceof ApiError && isGone(failure.code)) return <GoneScreen label={TAB_VARIETIES} to={VARIETIES} />
     return (
       <main className="pantalla">
         <div className="cuerpo">{failure instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />}</div>
@@ -51,7 +52,7 @@ export default function PriceHistory({ varietyId }: { varietyId: number }) {
   return (
     <main className="pantalla">
       <div className="cuerpo">
-        <span className="encabezado__titulo">Precios</span>
+        <span className="encabezado__titulo">{PRICES}</span>
         <PriceRows
           varietyId={varietyId}
           history={history}

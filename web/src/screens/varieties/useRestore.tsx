@@ -26,6 +26,7 @@ import SinConexion from '../../components/SinConexion'
 import { inAppState } from '../../components/inAppState'
 import { useBackOr } from '../../components/useBackOr'
 import { useFlash } from '../../flash/useFlash'
+import { VARIETY_RESTORED } from '../../copy/varieties'
 import { ARCHIVED_VARIETIES, VARIETIES, VARIETY, pathTo } from '../../routes'
 import { useViewport } from '../../shell/useViewport'
 import type { Variety } from '../Variedades'
@@ -77,7 +78,7 @@ export function useRestore(): {
 
   function restore(varietyId: number): Promise<void> {
     return send(varietyId, () => {
-      flash.showNow('Variedad restaurada')
+      flash.showNow(VARIETY_RESTORED)
       refresh()
     })
   }
@@ -100,7 +101,7 @@ export function useRestore(): {
       queryClient.setQueryData<ArchivedAttributes[]>(keys.archivedCatalog(), (old) =>
         old?.filter((attributes) => attributes.variety_id !== varietyId),
       )
-      flash.armAfterLeaving('Variedad restaurada')
+      flash.armAfterLeaving(VARIETY_RESTORED)
       leaveTo(landing)
       invalidateResource(queryClient, 'varieties', { refetchType: 'none' })
       invalidateResource(queryClient, 'stock', { refetchType: 'none' })

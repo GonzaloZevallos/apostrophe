@@ -15,13 +15,15 @@ import type { SuccessToast } from '../../components/AvisoExito'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import Boton from '../../components/Boton'
+import { CLOSE, GENERIC_REFUSAL_MESSAGE, SAVE } from '../../copy/common'
 import {
-  GENERIC_REFUSAL_MESSAGE,
+  NAME,
   NAME_INVALID_MESSAGE,
   NAME_TAKEN_MESSAGE,
+  RENAME_VARIETY,
   VARIETY_SAVED,
-  type Variety,
-} from '../Variedades'
+} from '../../copy/varieties'
+import type { Variety } from '../Variedades'
 
 const RENAME_OVERRIDES: Partial<Record<RefusalCode, string>> = {
   'variety.name_taken': NAME_TAKEN_MESSAGE,
@@ -80,14 +82,14 @@ export default function RenameForm({ variety, onDone, onCancel, onDirtyChange, o
   return (
     <div className="gasto-form">
       <div className="gasto-form__cabecera">
-        <span className="gasto-form__titulo">Renombrar variedad</span>
+        <span className="gasto-form__titulo">{RENAME_VARIETY}</span>
         <span className="gasto-form__cerrar">
-          <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={onCancel} />
+          <Boton variant="icon" action="close" ariaLabel={CLOSE} onClick={onCancel} />
         </span>
       </div>
       <form className="formulario" onSubmit={onSubmit}>
         <label className="campo">
-          <span className="campo__rotulo">Nombre</span>
+          <span className="campo__rotulo">{NAME}</span>
           <input
             className="campo__input"
             type="text"
@@ -103,7 +105,7 @@ export default function RenameForm({ variety, onDone, onCancel, onDirtyChange, o
         </label>
         {offline && <SinConexion />}
         <Boton textOnly="submit" type="submit" disabled={sending}>
-          Guardá el nombre
+          {SAVE}
         </Boton>
       </form>
     </div>

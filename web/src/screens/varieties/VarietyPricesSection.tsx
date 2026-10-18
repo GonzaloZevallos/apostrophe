@@ -4,6 +4,7 @@
  */
 
 import BotonLink from '../../components/BotonLink'
+import { PRICES, SEE_ALL } from '../../copy/varieties'
 import { VARIETY_PRICES, pathTo } from '../../routes'
 import PriceRows, { type PriceRow } from './PriceRows'
 
@@ -21,8 +22,8 @@ export default function VarietyPricesSection({
   return (
     <section className="seccion-variedad">
       <div className="seccion-variedad__cabecera">
-        <h2 className="seccion-variedad__titulo">Precios</h2>
-        <BotonLink variant="link" to={pathTo(VARIETY_PRICES, { id: varietyId })}>Ver todas</BotonLink>
+        <h2 className="seccion-variedad__titulo">{PRICES}</h2>
+        <BotonLink variant="link" to={pathTo(VARIETY_PRICES, { id: varietyId })}>{SEE_ALL}</BotonLink>
       </div>
       <PriceRows varietyId={varietyId} history={history} currentPriceId={currentPriceId} limit={3} readOnly={readOnly} />
     </section>

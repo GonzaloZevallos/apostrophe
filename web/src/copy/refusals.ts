@@ -20,11 +20,11 @@ export { GONE_DETAIL } from './common'
 
 /** Fixed text for `variety.name_archived`: the name belongs to an archived variety. It
  * repeats nothing the seller typed (ADR-0005). */
-export const NAME_ARCHIVED_MESSAGE = 'Ese nombre es de una variedad archivada. Buscala en Archivadas.'
+export const NAME_ARCHIVED_MESSAGE = 'That name belongs to an archived variety. Look for it in Archived.'
 
 /** Fixed text for `variety.has_history`: a delete was refused because the variety has
  * sales or stock. It repeats no name or amount (ADR-0005). */
-export const HAS_HISTORY_MESSAGE = 'Esta variedad ya tiene historia: archivala en vez de eliminarla.'
+export const HAS_HISTORY_MESSAGE = 'This variety already has history: archive it instead of deleting it.'
 
 /** The pinned catalog's own closed set of status reasons (plan, "Status"): the same
  * five codes `PinStatusOut.reason` answers, so the front's `PinReason` type and the table
@@ -40,14 +40,14 @@ export type PinReason =
   | 'too_long'
 
 export const PINNED_CATALOG_REASON_LABEL = {
-  telegram_unreachable: 'Telegram no respondió',
-  bot_cannot_post: 'El bot no puede publicar en el canal',
-  message_gone: 'El mensaje fijado ya no está: publicalo de nuevo',
-  missing_publish: 'Falta publicarlo con el bot o el canal nuevo',
-  too_long: 'Es demasiado largo para Telegram: acortá aromas u ocultá variedades.',
+  telegram_unreachable: "Telegram didn't respond",
+  bot_cannot_post: "The bot can't post in the channel",
+  message_gone: 'The pinned message is gone: publish it again',
+  missing_publish: 'It still has to be published with the new bot or channel',
+  too_long: "It's too long for Telegram: shorten aromas or hide varieties.",
 } as const satisfies Record<PinReason, string>
 
-export const PINNED_CATALOG_NOT_READY_REASON = 'Probalo primero para ver cómo queda'
+export const PINNED_CATALOG_NOT_READY_REASON = 'Send yourself a test first to see how it looks'
 
 /** What Probarlo says for each cause Telegram's refusal carries (the PRD's table): the
  * seller's own chat and token, never the channel. Fixed text, repeating nothing typed. */
@@ -105,7 +105,7 @@ export const PINNED_CATALOG_REFUSAL_OVERRIDES = {
 
 /** The fixed text of the varieties refusal that has a field of its own: a VIP
  * price at or above the list price. It carries no amount (ADR-0005). */
-export const VIP_PRICE_NOT_BELOW_LIST_MESSAGE = 'El precio VIP tiene que ser menor al precio de lista'
+export const VIP_PRICE_NOT_BELOW_LIST_MESSAGE = 'The VIP price has to be lower than the list price'
 
 export const VARIETY_REFUSAL_TEXT: Partial<Record<RefusalCode, string>> = {
   'variety.vip_price_not_below_list': VIP_PRICE_NOT_BELOW_LIST_MESSAGE,
@@ -126,13 +126,13 @@ type WithdrawalRefusalCode =
   | 'stock.withdrawal_variety_not_found'
 
 export const WITHDRAWAL_REFUSAL_MESSAGES = {
-  'stock.withdrawal_reason_required': 'Elegí el motivo: Promoción o Consumo propio',
-  'stock.withdrawal_date_in_future': 'La fecha no puede ser futura',
-  'stock.withdrawal_no_lines': 'Agregá al menos una variedad con sus gramos',
-  'stock.withdrawal_grams_not_positive': 'Los gramos tienen que ser más que cero',
-  'stock.withdrawal_grams_too_precise': 'Los gramos admiten hasta dos decimales',
-  'stock.withdrawal_note_too_long': 'La nota admite hasta 200 caracteres',
-  'stock.withdrawal_variety_not_found': 'Alguna variedad ya no está: elegí otra',
+  'stock.withdrawal_reason_required': 'Choose a reason: Promotion or Own use',
+  'stock.withdrawal_date_in_future': "The date can't be in the future",
+  'stock.withdrawal_no_lines': 'Add at least one variety with its grams',
+  'stock.withdrawal_grams_not_positive': 'The grams must be more than zero',
+  'stock.withdrawal_grams_too_precise': 'The grams can have up to two decimals',
+  'stock.withdrawal_note_too_long': 'The note can be up to 200 characters',
+  'stock.withdrawal_variety_not_found': 'A variety is no longer there: choose another',
 } as const satisfies Record<WithdrawalRefusalCode, string>
 
 /** The refusals' texts are not always-visible copy: none is a help line, notice or empty

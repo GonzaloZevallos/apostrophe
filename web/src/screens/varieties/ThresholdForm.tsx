@@ -17,11 +17,13 @@ import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
 import { formatGramsInput } from '../../format/money'
 import { parseGrams } from '../../format/parse'
-import { GENERIC_REFUSAL_MESSAGE } from '../Variedades'
+import { CLOSE, GENERIC_REFUSAL_MESSAGE, SAVE } from '../../copy/common'
 import {
+  LOW_STOCK_WARNING,
   THRESHOLD_INVALID_MESSAGE,
   THRESHOLD_OVERRIDES,
   THRESHOLD_SAVED,
+  WARN_BELOW,
 } from '../../copy/varieties'
 import Boton from '../../components/Boton'
 
@@ -89,14 +91,14 @@ export default function ThresholdForm({ varietyId, threshold, onDone, onCancel, 
   return (
     <div className="gasto-form">
       <div className="gasto-form__cabecera">
-        <span className="gasto-form__titulo">Aviso de stock bajo</span>
+        <span className="gasto-form__titulo">{LOW_STOCK_WARNING}</span>
         <span className="gasto-form__cerrar">
-          <Boton variant="icon" action="close" ariaLabel="Cerrar" onClick={onCancel} />
+          <Boton variant="icon" action="close" ariaLabel={CLOSE} onClick={onCancel} />
         </span>
       </div>
       <form className="formulario" onSubmit={onSubmit}>
         <label className="campo">
-          <span className="campo__rotulo">Avisar con menos de</span>
+          <span className="campo__rotulo">{WARN_BELOW}</span>
           <input
             className="campo__input"
             type="text"
@@ -112,7 +114,7 @@ export default function ThresholdForm({ varietyId, threshold, onDone, onCancel, 
         </label>
         {offline && <SinConexion />}
         <Boton textOnly="submit" type="submit" disabled={sending}>
-          Guardá el aviso
+          {SAVE}
         </Boton>
       </form>
     </div>

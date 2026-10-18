@@ -10,6 +10,16 @@
 
 import type { CatalogVariety } from '../../api/catalog'
 import Boton from '../../components/Boton'
+import {
+  AROMA_FLAVOUR,
+  EDIT_CATALOG,
+  EMOJI,
+  INDICA_SHARE,
+  IN_THE_CATALOG,
+  NOT_SHOWN,
+  SHOWN,
+  SHOW_IN_CATALOG,
+} from '../../copy/varieties'
 import { CATALOG_SECTION_ID } from '../../routes'
 import { useOpenForm } from './varietyForms'
 
@@ -21,19 +31,19 @@ export default function VarietyCatalogSection({ row, readOnly = false }: { row: 
   const openForm = useOpenForm()
   if (readOnly) {
     const stored: [string, string | null][] = [
-      ['Emoji', row.emoji],
-      ['% índica', row.indica_share === null ? null : `${row.indica_share} %`],
-      ['Aroma/sabor', row.aroma],
+      [EMOJI, row.emoji],
+      [INDICA_SHARE, row.indica_share === null ? null : `${row.indica_share} %`],
+      [AROMA_FLAVOUR, row.aroma],
     ]
     return (
       <section id={CATALOG_SECTION_ID} className="seccion-variedad">
         <div className="seccion-variedad__cabecera">
-          <h2 className="seccion-variedad__titulo">En el catálogo</h2>
+          <h2 className="seccion-variedad__titulo">{IN_THE_CATALOG}</h2>
         </div>
         <dl className="seccion-variedad__datos">
           <div className="seccion-variedad__dato">
-            <dt>Mostrar en el catálogo</dt>
-            <dd>{row.shown ? 'Se muestra' : 'No se muestra'}</dd>
+            <dt>{SHOW_IN_CATALOG}</dt>
+            <dd>{row.shown ? SHOWN : NOT_SHOWN}</dd>
           </div>
           {stored.map(([label, value]) =>
             value === null ? null : (
@@ -50,24 +60,24 @@ export default function VarietyCatalogSection({ row, readOnly = false }: { row: 
   return (
     <section id={CATALOG_SECTION_ID} className="seccion-variedad">
       <div className="seccion-variedad__cabecera">
-        <h2 className="seccion-variedad__titulo">En el catálogo</h2>
-        <Boton variant="icon" action="edit" ariaLabel="Editar catálogo" onClick={() => openForm('catalog')} />
+        <h2 className="seccion-variedad__titulo">{IN_THE_CATALOG}</h2>
+        <Boton variant="icon" action="edit" ariaLabel={EDIT_CATALOG} onClick={() => openForm('catalog')} />
       </div>
       <dl className="seccion-variedad__datos">
         <div className="seccion-variedad__dato">
-          <dt>Mostrar en el catálogo</dt>
-          <dd>{row.shown ? 'Se muestra' : 'No se muestra'}</dd>
+          <dt>{SHOW_IN_CATALOG}</dt>
+          <dd>{row.shown ? SHOWN : NOT_SHOWN}</dd>
         </div>
         <div className="seccion-variedad__dato">
-          <dt>Emoji</dt>
+          <dt>{EMOJI}</dt>
           <dd>{row.emoji ?? NONE}</dd>
         </div>
         <div className="seccion-variedad__dato">
-          <dt>% índica</dt>
+          <dt>{INDICA_SHARE}</dt>
           <dd>{row.indica_share === null ? NONE : `${row.indica_share} %`}</dd>
         </div>
         <div className="seccion-variedad__dato">
-          <dt>Aroma/sabor</dt>
+          <dt>{AROMA_FLAVOUR}</dt>
           <dd>{row.aroma ?? NONE}</dd>
         </div>
       </dl>

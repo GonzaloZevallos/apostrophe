@@ -64,6 +64,10 @@ export const NON_VISIBLE_PROPS: readonly string[] = [
   'kind',
   'mode',
   'slug',
+  // A list key is an identity, never a word.
+  'key',
+  // Which record a form is for: a code of the form's own union, never a word.
+  'target',
   // SVG geometry and the ARIA states with a fixed value: neither is a word.
   'd',
   'viewBox',
@@ -116,6 +120,15 @@ export const NON_VISIBLE_CALLEES: readonly string[] = [
   'getAll',
   'matchMedia',
   'stubGlobal',
+  // Calls whose arguments are a resource name, a screen id, a locale, a form id or a field id.
+  'invalidateResource',
+  'useBackParent',
+  'useGoneExit',
+  'localeCompare',
+  'openForm',
+  'setProblem',
+  'errorUnder',
+  'onChange',
 ]
 
 /** Object properties whose value is a code, a state or a table key, never a text. A property
@@ -132,7 +145,9 @@ export const CODE_VALUED_PROPERTIES: readonly string[] = [
   'place',
   'icono',
   'tono',
+  'refetchType',
   'value',
+  'state',
   'to',
   'block',
   'credentials',
@@ -232,7 +247,7 @@ function isStyleTarget(expression: ts.Expression): boolean {
 function isCodeType(type: ts.TypeNode | undefined, file: ts.SourceFile): boolean {
   if (type === undefined) return false
   if (ts.isParenthesizedTypeNode(type)) return isCodeType(type.type, file)
-  if (ts.isLiteralTypeNode(type)) return true
+  if (ts.isLiteralTypeNode(type) || type.kind === ts.SyntaxKind.NumberKeyword) return true
   if (ts.isUnionTypeNode(type)) return type.types.every((member) => isCodeType(member, file))
   if (ts.isTypeReferenceNode(type) && ts.isIdentifier(type.typeName)) {
     const name = type.typeName.text

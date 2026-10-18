@@ -1,7 +1,7 @@
 /**
  * `IntegrationsGroup` at the screen seam, under a memory data router (the leave guard
  * needs one), with the API faked at `fetch`: the saved token is never shown, Probarlo is
- * the only save, a refusal keeps everything typed, and there is no pin status nor Publicar.
+ * the only save, a refusal keeps everything typed, and there is no pin status nor Publish.
  */
 
 import { CATALOG, SETTINGS, SETTINGS_INTEGRATIONS } from '../../routes'
@@ -112,9 +112,9 @@ test('links to the catalog screen, with no pin status and no Publicar', async ()
 
   await screen.findByLabelText('Tu chat')
   expect(screen.getByRole('link', { name: 'Ir al catálogo' })).toHaveAttribute('href', CATALOG)
-  expect(screen.queryByRole('button', { name: 'Publicar' })).not.toBeInTheDocument()
-  expect(screen.queryByText('Desactualizado')).not.toBeInTheDocument()
-  expect(screen.queryByText('Al día')).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Publish' })).not.toBeInTheDocument()
+  expect(screen.queryByText('Out of date')).not.toBeInTheDocument()
+  expect(screen.queryByText('Up to date')).not.toBeInTheDocument()
 })
 
 test('"Ir al catálogo" opens Catálogo as an in-app entry', async () => {
@@ -159,7 +159,7 @@ test('a refused Probarlo saves nothing and keeps everything typed, the token inc
   await userEvent.type(screen.getByLabelText('Chat del canal'), '@probando')
   await userEvent.click(screen.getByRole('button', { name: 'Probarlo' }))
 
-  expect(await screen.findByRole('alert')).toHaveTextContent('Telegram no respondió')
+  expect(await screen.findByRole('alert')).toHaveTextContent("Telegram didn't respond")
   expect(screen.queryByText('Prueba enviada')).not.toBeInTheDocument()
   expect(screen.getByLabelText('Token del bot')).toHaveValue('123:secret')
   expect(screen.getByLabelText('Tu chat')).toHaveValue('555')
@@ -178,10 +178,10 @@ const PROBARLO_REASONS: [string, string][] = [
     'No encontramos tu chat: revisá el número y tocá Iniciar en tu bot.',
   ],
   ['pinned_catalog.test_failed', 'No pudimos enviarte la prueba: revisá el token y tu chat.'],
-  ['pinned_catalog.telegram_unreachable', 'Telegram no respondió'],
+  ['pinned_catalog.telegram_unreachable', "Telegram didn't respond"],
   [
     'pinned_catalog.too_long',
-    'Es demasiado largo para Telegram: acortá aromas u ocultá variedades.',
+    "It's too long for Telegram: shorten aromas or hide varieties.",
   ],
 ]
 
@@ -197,7 +197,7 @@ test.each(PROBARLO_REASONS)(
 
     const alert = await screen.findByRole('alert')
     expect(alert).toHaveTextContent(copy)
-    expect(alert).not.toHaveTextContent('El bot no puede publicar en el canal')
+    expect(alert).not.toHaveTextContent("The bot can't post in the channel")
     expect(alert).not.toHaveTextContent('123:secret')
     expect(screen.queryByText('Prueba enviada')).not.toBeInTheDocument()
     expect(screen.getByLabelText('Token del bot')).toHaveValue('123:secret')
@@ -359,7 +359,7 @@ const LOOKUP_REFUSALS: [string, string][] = [
     'No pudimos leer los mensajes de tu bot: buscá tu número con @userinfobot y escribilo acá.',
   ],
   ['pinned_catalog.token_invalid', 'El token no es válido: copialo de nuevo de @BotFather.'],
-  ['pinned_catalog.telegram_unreachable', 'Telegram no respondió'],
+  ['pinned_catalog.telegram_unreachable', "Telegram didn't respond"],
 ]
 
 test.each(LOOKUP_REFUSALS)(
