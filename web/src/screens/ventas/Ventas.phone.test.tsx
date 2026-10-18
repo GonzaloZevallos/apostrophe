@@ -1,5 +1,5 @@
 /**
- * `Ventas` on the phone, at the screen seam (CODING_STANDARDS §10): Testing Library,
+ * `Sales` on the phone, at the screen seam (CODING_STANDARDS §10): Testing Library,
  * `fetch` faked. The period tabs take `Pestanas`' equal-cells fit on the phone only: the
  * computer layout (`VentasCompu`) keeps the plain tab list, so its output is the one it
  * always had. The loading state before the list's first answer carries none of the list.
@@ -12,7 +12,7 @@ import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import type { Me } from '../../api/me'
 import { COMPUTER_QUERY } from '../../format/breakpoints'
 import { SALES } from '../../routes'
-import Ventas, { EMPTY_LIST } from './Ventas'
+import Ventas from './Ventas'
 
 const ME: Me = { email: 'a@b.com', business_name: 'Negocio', today: '2026-10-03' }
 
@@ -61,7 +61,7 @@ test('on the phone the period tabs sit in the equal-cells grid', () => {
   stubViewport(false)
   renderVentas()
 
-  const group = screen.getByRole('group', { name: 'Período' })
+  const group = screen.getByRole('group', { name: 'Period' })
   expect(group).toHaveClass('pestanas--celdas')
   expect(group.querySelectorAll('.pestanas__celdas > button')).toHaveLength(4)
 })
@@ -70,7 +70,7 @@ test('on the computer the period tabs stay the plain tab list', () => {
   stubViewport(true)
   renderVentas()
 
-  const group = screen.getByRole('group', { name: 'Período' })
+  const group = screen.getByRole('group', { name: 'Period' })
   expect(group).not.toHaveClass('pestanas--celdas')
   expect(group.querySelector('.pestanas__celdas')).toBeNull()
 })
@@ -80,7 +80,7 @@ test('before its first answer the list is only the loading state: no figure, no 
   renderVentas()
 
   expect(screen.getAllByRole('progressbar')).toHaveLength(1)
-  expect(screen.queryByText(EMPTY_LIST)).not.toBeInTheDocument()
+  expect(screen.queryByText("You haven't recorded any sales in this period yet.")).not.toBeInTheDocument()
   expect(screen.queryByText(/\$/)).not.toBeInTheDocument()
   expect(screen.queryByRole('link')).not.toBeInTheDocument()
 })

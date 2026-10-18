@@ -87,9 +87,6 @@ export const LEFT_OWING = 'left owing'
 export const deleteSaleQuestion = (money: string, day: string, grams: string) =>
   `Delete the ${money} sale from ${day}? ${grams} go back to stock.`
 
-/** The same word as the Spanish one, so the Spanish rule lets it through. */
-export const SAME_IN_BOTH = [{ value: 'Total', reason: 'the same word in English and Spanish' }]
-
 export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'emptyLine', text: EMPTY_LIST },
   { kind: 'help', text: OWING_HINT },

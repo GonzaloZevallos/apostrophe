@@ -65,7 +65,7 @@ const ACCOUNT = { balance: 0, owing_since: null, standing: 'settled', rows: [] }
 /** What only a card's loaded screen shows, awaited before its backs are counted, so a card
  * left in its not-found state (`GoneScreen`) cannot pass for the real one. */
 const LOADED: Partial<Record<ScreenId, string>> = {
-  sale: 'Líneas',
+  sale: 'Lines',
   customer: 'Ana Pérez',
   settings: 'Configuración',
   variety: '24K Gold',

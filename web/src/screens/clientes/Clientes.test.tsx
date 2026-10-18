@@ -4,7 +4,7 @@
  * (plan, invariants); a stale answer is only ever shown marked pending, never as
  * the answer to the query currently typed (`customers.md`, "List and search").
  *
- * The "Te deben" section and each row's amber/blue mark come from
+ * The "Owes youn" section and each row's amber/blue mark come from
  * `GET /payments/debtors` and the customer's own `balance`/`owing_since`/
  * `standing` (payments.md, "On screen") — `fetchStub` below dispatches on the
  * request's own path and query, never on call order, since the header's two
@@ -32,9 +32,6 @@ import customerNoPhoneFixture from '../../api/fixtures/customer-no-phone.json'
 import debtorsFixture from '../../api/fixtures/debtors.json'
 import Clientes from './Clientes'
 import ClientesLayout from './ClientesLayout'
-import { EMPTY_CUSTOMERS } from '../../copy/customers'
-import { NOBODY_OWES } from '../../copy/common'
-import { SIN_CONEXION_MENSAJE } from '../../copy/states'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -191,7 +188,7 @@ test('a dropped network on the list shows Sin conexión, never the empty-list te
   vi.mocked(fetch).mockRejectedValue(new TypeError('network error'))
   renderClientes()
 
-  expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
+  expect(await screen.findByText('No connection: check your internet and try again.')).toBeInTheDocument()
   expect(screen.queryByText('Todavía no agregaste ningún cliente.')).not.toBeInTheDocument()
 })
 
@@ -203,7 +200,7 @@ test('a server error on the list shows the generic retry, never the empty-list t
   expect(screen.queryByText('Todavía no agregaste ningún cliente.')).not.toBeInTheDocument()
 })
 
-test('Te deben sits above everyone A–Z, and the header carries no debt figure', async () => {
+test('Owes youn sits above everyone A–Z, and the header carries no debt figure', async () => {
   // `customer.json` and `debtors.json` (plan, invariants: "used by the front's
   // fetch fakes") drive this: the customer list carries the fixture's own owing
   // entry plus a settled one, and the section reads straight off `debtors.json`.
@@ -220,7 +217,7 @@ test('Te deben sits above everyone A–Z, and the header carries no debt figure'
   renderClientes()
 
   expect(await screen.findByText('2 customers')).toBeInTheDocument()
-  expect(screen.queryByText(/ te deben \$/)).not.toBeInTheDocument()
+  expect(screen.queryByText(/ owes youn \$/)).not.toBeInTheDocument()
   const section = await screen.findByRole('region', { name: 'Owed' })
   const everyone = await screen.findByRole('region', { name: 'Everyone · A–Z' })
   expect(section.compareDocumentPosition(everyone) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
@@ -234,7 +231,7 @@ test('Te deben sits above everyone A–Z, and the header carries no debt figure'
   expect(within(everyone).getByText('Lu')).toBeInTheDocument()
 })
 
-test("Te deben shows the API's order and total as answered, never a client sort or sum", async () => {
+test("Owes youn shows the API's order and total as answered, never a client sort or sum", async () => {
   // Later owing-since first, and a total that is not the sum of the rows: nothing here may
   // resort or add (payments.md, "Who owes and the totals").
   vi.mocked(fetch).mockImplementation(
@@ -261,7 +258,7 @@ test("Te deben shows the API's order and total as answered, never a client sort 
   ).toEqual(['Collect from Zoe', 'Collect from Abel'])
 })
 
-test('a customer in credit is only in A–Z, never in Te deben', async () => {
+test('a customer in credit is only in A–Z, never in Owes youn', async () => {
   vi.mocked(fetch).mockImplementation(
     fetchStub(
       () =>
@@ -352,7 +349,7 @@ test('a customer with no phone shows no phone element, no dash, no empty label',
   expect(row).not.toHaveTextContent('Sin teléfono')
 })
 
-test('a customer who owes shows the amber mark; one in credit shows the blue "A favor"', async () => {
+test('a customer who owes shows the amber mark; one in credit shows the blue "Credit"', async () => {
   vi.mocked(fetch).mockImplementation(
     fetchStub(() =>
       jsonResponse(200, [
@@ -424,13 +421,13 @@ function renderApp(entries: string[] = [CUSTOMERS]) {
   return router
 }
 
-test('"Collect from X" opens Registrar cobro for that customer as an in-app entry, and one Back returns to Clientes', async () => {
+test('"Collect from X" opens Record payment for that customer as an in-app entry, and one Back returns to Clientes', async () => {
   vi.mocked(fetch).mockImplementation(fetchApp)
   const router = renderApp()
 
   await userEvent.click((await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` }))[0]!)
 
-  expect(await screen.findByRole('button', { name: 'Guardar' })).toBeInTheDocument()
+  expect(await screen.findByRole('button', { name: 'Save' })).toBeInTheDocument()
   expect(screen.getByText(new RegExp(`^${customerFixture.name}`))).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(ANA_PAYMENT)
   expect(router.state.location.state).toEqual(inAppState({ pathname: CUSTOMERS }))
@@ -438,11 +435,11 @@ test('"Collect from X" opens Registrar cobro for that customer as an in-app entr
   expect(router.state.location.pathname).toBe(CUSTOMERS)
 })
 
-test('Cerrar on Registrar cobro with nothing behind it goes to Clientes', async () => {
+test('Close on Record payment with nothing behind it goes to Clientes', async () => {
   vi.mocked(fetch).mockImplementation(fetchApp)
   const router = renderApp([ANA_PAYMENT])
 
-  await userEvent.click(await screen.findByRole('button', { name: 'Cerrar' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Close' }))
 
   await waitFor(() => expect(router.state.location.pathname).toBe(CUSTOMERS))
 })
@@ -549,7 +546,7 @@ test('on a phone, picking a customer pushes, so Back returns to the list and not
 // A customer's row is a record row: it keeps its layout and takes no icon (the rule's out of scope).
 const RULE = { limits: LIMITS, samples: { name: SAMPLES.name }, optionClasses: ['lista-clientes__fila'] }
 
-test('every action on the list and in Te deben is icon + text, and Cobrar keeps its accessible name', async () => {
+test('every action on the list and in Owes youn is icon + text, and Cobrar keeps its accessible name', async () => {
   vi.mocked(fetch).mockImplementation(
     fetchStub(() => jsonResponse(200, [customerFixture]), () => jsonResponse(200, debtorsFixture)),
   )
@@ -569,9 +566,9 @@ test('the two empty states are the registered strings, mounted and within their 
   vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [])))
   renderClientes()
 
-  const empty = await screen.findByText(EMPTY_CUSTOMERS)
+  const empty = await screen.findByText("You haven't added any customers yet.")
   expect(empty).toHaveAttribute('data-copy', 'emptyTitle')
-  const nobody = await screen.findByText(NOBODY_OWES)
+  const nobody = await screen.findByText('Nobody owes you')
   expect(nobody).toHaveAttribute('data-copy', 'emptyTitle')
   expectIconAndTextRule(document.body, RULE)
 })
@@ -583,7 +580,7 @@ test('on a computer the list stays on the left beside a customer\'s card, and /c
   const alone = renderTwoPanes([CUSTOMERS])
   await screen.findAllByRole('link', { name: /Ana Pérez/ })
   expect(screen.getAllByRole('region', { name: 'Everyone · A–Z' })).toHaveLength(1)
-  expect(screen.queryByRole('button', { name: 'Registrar cobro' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Record payment' })).not.toBeInTheDocument()
   expect(alone.state.location.pathname).toBe(CUSTOMERS)
 })
 
@@ -593,7 +590,7 @@ test('on a computer, a customer\'s card has the list beside it, once', async () 
   renderTwoPanes([ANA])
 
   expect(await screen.findByRole('region', { name: 'Everyone · A–Z' })).toBeInTheDocument()
-  expect(await screen.findByText('Registrar cobro')).toBeInTheDocument()
+  expect(await screen.findByText('Record payment')).toBeInTheDocument()
   expect(screen.getAllByRole('region', { name: 'Everyone · A–Z' })).toHaveLength(1)
 })
 
@@ -602,6 +599,6 @@ test('on a phone, a customer\'s card is alone, with no list behind it', async ()
   vi.mocked(fetch).mockImplementation(fetchTwoCustomers)
   renderTwoPanes([ANA])
 
-  expect(await screen.findByText('Registrar cobro')).toBeInTheDocument()
+  expect(await screen.findByText('Record payment')).toBeInTheDocument()
   expect(screen.queryByRole('region', { name: 'Everyone · A–Z' })).not.toBeInTheDocument()
 })
