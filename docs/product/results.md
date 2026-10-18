@@ -9,7 +9,7 @@ Whether a business makes money and how much it actually has, over today, this we
 - payments, balances and settlement from payments (ADR-0012);
 - stock status and days left from stock.
 
-It computes nothing those capabilities already compute, beyond adding them up. Its period figures come from the one computation Análisis also reads (ADR-0020): Ganancia here and profit in Análisis are the same figure. Inicio also carries the Onboarding's notice (onboarding.md), the first-run checklist and the after-import notice (navigation.md); their place on Inicio is set here. An archived variety (varieties.md) leaves Lo que te queda and "Arrancá por las variedades", while every period figure keeps it.
+It computes nothing those capabilities already compute, beyond adding them up. Its period figures come from the one computation Análisis also reads (ADR-0020): Ganancia here and profit in Análisis are the same figure. Inicio also carries the Onboarding's notice (onboarding.md), the first-run checklist and the after-import notice (navigation.md); their place on Inicio is set here. An archived variety (varieties.md) leaves Lo que te queda and "Start with varieties", while every period figure keeps it.
 
 ## Jobs
 
@@ -59,7 +59,7 @@ Success criteria:
 8. **Collect in one tap from Hoy**: "Cobrar" on each debtor row of the Te deben block opens Registrar cobro with that customer chosen, accessible name "Cobrar a <name>"; back or "Cerrar" leaves it in one move.
 9. **Hoy is only what can be acted on**: sold today, then Te deben, then Lo que te queda; a low variety links to its page; no result figure (Ganancia, Caja, costs, Gastos, Regalaste, Compras) shows on Hoy.
 10. **First run follows today's definition**: a brand-new business gets the Onboarding notice; only a business that existed before the Onboarding shipped sees the four-step checklist; an imported business sees the dismissable after-import notice; at most one first-run element shows at a time (navigation.md).
-11. **Every notice leads to its fix**: "Tu catálogo en Telegram está desactualizado" opens the catalog screen; the business avatar opens Configuración.
+11. **Every notice leads to its fix**: "Your Telegram catalog is out of date" opens the catalog screen; the business avatar opens Configuración.
 12. **Looks as designed**: Inicio, InicioOscuro and InicioCompu match `docs/product/design-system/pantallas/`, phone and computer, both themes.
 
 ## Behaviour
@@ -83,9 +83,9 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
 - **Average sale**: sales ÷ number of sales, rounded half up to the whole peso. Nothing shows when there are no sales.
 - **Grams sold**: the grams of the period's lines that are not gifts.
 - **Grams gifted** ("Regalaste"): the grams of the period's gift lines. Withdrawn grams are never gifted grams.
-- **Cost of goods sold** ("Costo de lo vendido"): what the grams of the period's sale lines (gifts included) cost, from their lots as the lots stand now (ADR-0009, ADR-0010). Neither a negative adjustment's cost nor a withdrawal's is part of it.
-- **Stock shortfall** ("Faltante de stock"): what the grams taken out by the period's negative adjustments cost, on the adjustment's date, from their lots as they stand now, oldest first (CONTEXT.md: Stock shortfall). It shows as "Faltante de stock $ X" only when the period has any negative adjustment; otherwise the line is left out. It never includes a withdrawal.
-- **Promotion cost** ("Promoción") and **own-use cost** ("Consumo propio"): what the grams of the period's withdrawals of that reason cost, on the withdrawal's date, from their lots as they stand now, oldest first. Each shows as "Promoción $ X" or "Consumo propio $ X" only when the period has a withdrawal of that reason; otherwise its line is left out.
+- **Cost of goods sold** ("Cost of goods sold"): what the grams of the period's sale lines (gifts included) cost, from their lots as the lots stand now (ADR-0009, ADR-0010). Neither a negative adjustment's cost nor a withdrawal's is part of it.
+- **Stock shortfall** ("Stock shortfall"): what the grams taken out by the period's negative adjustments cost, on the adjustment's date, from their lots as they stand now, oldest first (CONTEXT.md: Stock shortfall). It shows as "Faltante de stock $ X" only when the period has any negative adjustment; otherwise the line is left out. It never includes a withdrawal.
+- **Promotion cost** ("Promotion") and **own-use cost** ("Own use"): what the grams of the period's withdrawals of that reason cost, on the withdrawal's date, from their lots as they stand now, oldest first. Each shows as "Promoción $ X" or "Consumo propio $ X" only when the period has a withdrawal of that reason; otherwise its line is left out.
 - **Expenses** ("Gastos"): the sum of the period's expenses.
 - **Purchases** ("Compras de flores"): the total cost of the period's purchase stock entries.
 - **Ganancia**: sales − cost of goods sold − stock shortfall − promotion cost − own-use cost − expenses.
@@ -156,9 +156,9 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
      - "Seguí con la configuración", while the Onboarding is not over (onboarding.md): "N de 6 pasos" and what is next, not dismissible;
      - the first-run checklist while it shows (navigation.md), for a business that existed before the Onboarding.
 
-     Once neither applies, "Arrancá por las variedades" takes this place whenever no unarchived variety has a current price today. It never shows together with the Onboarding notice or the checklist;
-  2. "Tu catálogo en Telegram está desactualizado", while the pinned catalog is out of date (pinned-catalog.md). It opens the catalog screen (catalog.md);
-  3. "Conectá el bot para que el catálogo fijado se actualice solo", for a business loaded by the spreadsheet import, until dismissed or the bot is first published (navigation.md);
+     Once neither applies, "Start with varieties" takes this place whenever no unarchived variety has a current price today. It never shows together with the Onboarding notice or the checklist;
+  2. "Your Telegram catalog is out of date", while the pinned catalog is out of date (pinned-catalog.md). It opens the catalog screen (catalog.md);
+  3. "Connect the bot so the pinned catalog updates itself", for a business loaded by the spreadsheet import, until dismissed or the bot is first published (navigation.md);
   4. the tab's figures, as listed above.
 - First-run state belongs to the business: every user of it, a partner who joined included, sees the same element.
 - Semana and Mes keep the same notices above their own figures.
@@ -195,12 +195,12 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
   - pending grams on a sale line leaving their sales out of Ganancia while "Vendiste" keeps the full sales;
   - pending cost showing the note under Costo de lo vendido, Faltante de stock, Promoción, Consumo propio and Ganancia as defined, and never under Caja;
   - negative Ganancia and Caja shown as "−$ X".
-- **Archiving moves nothing (criterion 3)**: every period figure is identical before archiving a variety with history, after archiving and after restoring; the archived variety is absent from Lo que te queda and does not count for "Arrancá por las variedades".
+- **Archiving moves nothing (criterion 3)**: every period figure is identical before archiving a variety with history, after archiving and after restoring; the archived variety is absent from Lo que te queda and does not count for "Start with varieties".
 - **Not a sale (criterion 7)**: after recording a withdrawal, 0 differences in sales, number of sales, average sale, grams sold, Regalaste, cost of goods sold, stock shortfall and Caja.
 - **Tabs (criterion 9)**: front tests, phone and computer, show Hoy with sold today, Te deben and Lo que te queda only, in that order, and Ganancia, Caja, Costo de lo vendido, Faltante de stock, Promoción, Consumo propio, Gastos, Regalaste and Compras only on Semana and Mes, Promoción and Consumo propio right after Faltante de stock.
 - **One-tap collect (criterion 8)**: the end-to-end front run, phone and computer viewports, taps "Cobrar a <name>" on Hoy, Registrar cobro opens with that customer chosen, a payment is saved, and one back move returns to Inicio.
 - **Refresh after Cobrar**: front tests show a partial payment leaving the debtor with the new balance, a full payment removing the row and the teaser refilling to 3 by its order, "Nadie te debe" when nobody is left owing, and both toasts reading as specified with no customer name.
-- **Inicio's order (criteria 10, 11)**: front tests, phone and computer, show at most one of the Onboarding notice, the checklist or "Arrancá por las variedades" (never two), then the out-of-date notice, then the after-import notice, then the figures; the out-of-date notice opens the catalog screen and the avatar opens Configuración.
+- **Inicio's order (criteria 10, 11)**: front tests, phone and computer, show at most one of the Onboarding notice, the checklist or "Start with varieties" (never two), then the out-of-date notice, then the after-import notice, then the figures; the out-of-date notice opens the catalog screen and the avatar opens Configuración.
 - **First run (criterion 10)**: the first-run matrices of navigation.md, 100% passing.
 - **Period edges**: a week that crosses a month and a year, Monday as the first day, and a day boundary in Argentina time. 100% passing.
 - **Debtors teaser (criterion 4)**: ordered by balance, then owing since, then name; credits excluded; "Nadie te debe" when nobody owes; "Cobrar" with its accessible name on every row. No state is told by color alone, in both themes.

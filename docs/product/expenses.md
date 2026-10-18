@@ -114,7 +114,7 @@ Success criteria:
   computer, with Gastos active, and "+ Nueva venta". It is reached from Más on the phone
   and from the sidebar on a computer, under the divider. It holds:
   - month navigation;
-  - the fixed line "Las compras de flores no van acá: se cargan en Stock.";
+  - the fixed line "Flower purchases don't go here: enter them in Stock.";
   - a link that opens Configuración → Categorías de gastos. Gastos itself never adds,
     renames or removes a category;
   - its own way to record a new expense, opening the expense form with today's date in

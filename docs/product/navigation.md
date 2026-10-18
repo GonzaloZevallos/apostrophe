@@ -53,7 +53,7 @@ Success criteria:
 5. **One rule for chrome and back.** Every screen is one of three kinds: tab root, card or detail, form or sheet. Each kind gets its chrome by the rule. Back follows history, and the parent screen is the fallback.
 6. **Readable and accessible.** Tab labels are always visible. The active tab and every state are marked by shape or word, never color alone. The bar fits at 320 px with text at 130 %, measured in a real browser.
 7. **One structure, said once.** The product docs, CONTEXT.md, the design (`docs/product/design-system/pantallas/`, phone and computer) and `scripts/design/screens.json` state the same structure and routes.
-8. **Configuración, group by group.** Each group is its own subscreen with "Cerrar"; leaving with unsaved changes asks first, an untouched group closes at once. Renaming, "Invitá a un socio", the pricing switches, the bot (token, chats, Probarlo), the header and footer, categories (add, rename, remove, the refused removal included), Apariencia, changing the password and logging out all work from the phone, and the end-to-end front run goes through every group.
+8. **Configuración, group by group.** Each group is its own subscreen with "Cerrar"; leaving with unsaved changes asks first, an untouched group closes at once. Renaming, "Invite a partner", the pricing switches, the bot (token, chats, Probarlo), the header and footer, categories (add, rename, remove, the refused removal included), Apariencia, changing the password and logging out all work from the phone, and the end-to-end front run goes through every group.
 9. **Chrome by kind, everywhere.** Every screen, the Variedades screens included (the two-pane list, a variety's page, its "Ver todas" lists of prices and entries, Nuevo precio, Nueva variedad, "Todas las entradas" and the stock entry form), is exactly one kind with a parent. The stock entry form reads "Cerrar", never "Volver".
 10. **One move back.** Back or "Cerrar" leaves a screen in one tap and never lands on the same screen twice in history, the "Eso ya no está." exits and Registrar cobro included. With no history, back goes to the screen the form, sheet or card belongs to.
 11. **Every address opens its screen.** A reload on any Variedades route, parameterised ones included, opens the screen and never the API's answer. Every old Spanish path, `/variedades/{id}` and `/mi-stock/entradas/{id}` included, answers a permanent redirect to its new route with the id carried across.
@@ -87,7 +87,7 @@ Success criteria:
 
 - **One screen holding every business-wide setting, in groups, and nothing else.** The groups, in this order (each group's behaviour belongs to its owner):
   - **Negocio**: the business's name (accounts.md). Toast "Negocio renombrado".
-  - **Usuarios**: the partners by email, sorted by email, the signed-in one marked "vos", and "Invitá a un socio", which creates one fresh join link per tap, to copy or share (accounts.md). No list of invitations, no revoking, no roles.
+  - **Usuarios**: the partners by email, sorted by email, the signed-in one marked "vos", and "Invite a partner", which creates one fresh join link per tap, to copy or share (accounts.md). No list of invitations, no revoking, no roles.
   - **Precios** (pricing-settings.md), at `/settings/prices`:
     - the two switches, Precio por cantidad and Clientes VIP;
     - "Guardá los precios", and the toast "Precios guardados";
@@ -165,7 +165,7 @@ Every screen is exactly one of three kinds, has one parent, and gets its chrome 
 
 This covers Configuración and its groups, the catalog screen and a variety's page, whose screens their own issues rebuild.
 
-- A route shows the existing screen or content that holds that function today, inside the new chrome. For example, `/settings/users` shows today's users list and "Invitá a un socio".
+- A route shows the existing screen or content that holds that function today, inside the new chrome. For example, `/settings/users` shows today's users list and "Invite a partner".
 - A route with nothing existing behind it is not registered. The issue that builds that screen adds it.
 - No route renders an empty page, a placeholder or "coming soon".
 - Every function a seller reaches today stays reachable from some registered route. If a function would lose its only way in, its route is registered with today's content.
@@ -190,7 +190,7 @@ This covers Configuración and its groups, the catalog screen and a variety's pa
 
 - **Entry**: accepting a new-business invitation lands in the Onboarding instead of Inicio. That is the only time it opens by itself.
 - **The Inicio notice**: while it is not over, "Seguí con la configuración" sits at the top of Inicio, on the phone and on `InicioCompu`, in the checklist's place (results.md gives Inicio's order). It shows "N de 6 pasos" and what is next, opens the Onboarding at its resume step, and cannot be dismissed.
-- **While it is not over**, the checklist and "Arrancá por las variedades" do not show.
+- **While it is not over**, the checklist and "Start with varieties" do not show.
 - **It adds no side rule**: "+ Nueva venta" and "Mandar catálogo" behave as for any business. What is missing is told by the notice, by Nueva venta's own no-price line before saving and by the catalog screen's empty state.
 - **Once it is over** ("Listo" reached, or the import loaded the business), it never shows again; ongoing gaps are told by the standing notices.
 - Its steps, passes, resume and closing screen are onboarding.md.
@@ -202,12 +202,12 @@ This covers Configuración and its groups, the catalog screen and a variety's pa
   2. any stock entry (required);
   3. the pinned catalog published at least once (optional);
   4. a second user in the business (optional).
-- A met step shows its box checked and the word "Hecho", never color alone. The step labels are design's wording, within the icon and text rule's length limits; the checklist carries no attention icon.
+- A met step shows its box checked and the word "Done", never color alone. The step labels are design's wording, within the icon and text rule's length limits; the checklist carries no attention icon.
 - **Who sees it**: a business that existed before the Onboarding shipped and has not yet met both required steps, and every user of it. A brand-new business gets the Onboarding instead and never sees the checklist. The optional steps never hold it on screen; they stay reachable in Configuración (Integraciones, Usuarios).
 - **When it goes**: for good, the first time steps 1 and 2 are both met.
   - It never comes back, even if a required step's condition later becomes false again (say, the only price entry is deleted).
-  - Ongoing gaps are told by the standing notices: "Arrancá por las variedades" and the pinned catalog's out-of-date notice.
-- **Where**: at the top of Inicio, on the phone and on `InicioCompu` alike (results.md gives Inicio's order). While it applies, it takes the first-run slot, and "Arrancá por las variedades" does not show.
+  - Ongoing gaps are told by the standing notices: "Start with varieties" and the pinned catalog's out-of-date notice.
+- **Where**: at the top of Inicio, on the phone and on `InicioCompu` alike (results.md gives Inicio's order). While it applies, it takes the first-run slot, and "Start with varieties" does not show.
 - **While it shows**:
   - "+ Nueva venta" stays visible and, with no variety priced today, says in words what is missing;
   - while nothing qualifies for the catalog, "Mandar catálogo" is disabled with its reason in words (e.g. "Cargá una variedad con precio y su stock"). This is the only time it is ever disabled (catalog.md). Integraciones' link to the catalog screen is never disabled.
@@ -215,7 +215,7 @@ This covers Configuración and its groups, the catalog screen and a variety's pa
 
 ### After-import notice
 
-- A business the spreadsheet import loaded (import.md), as recorded by the import itself, shows on Inicio "Conectá el bot para que el catálogo fijado se actualice solo", with the attention icon (icon-and-text-rule.md).
+- A business the spreadsheet import loaded (import.md), as recorded by the import itself, shows on Inicio "Connect the bot so the pinned catalog updates itself", with the attention icon (icon-and-text-rule.md).
 - It can be dismissed. It shows until it is dismissed or the pinned catalog is first published, whichever comes first, and then never again. A dismissal is for the business: no partner sees it afterwards.
 - A business imported before the import recorded it never sees the notice.
 
@@ -258,11 +258,11 @@ This covers Configuración and its groups, the catalog screen and a variety's pa
     - adds, renames and removes a category, a refused removal included;
     - switches Apariencia, changes the password and logs out.
 - **First-run matrix, the Onboarding**: 100% passing, phone and computer:
-  - a brand-new business lands in the Onboarding on accepting its invitation and sees "Seguí con la configuración" while it is not over, never with "Arrancá por las variedades";
+  - a brand-new business lands in the Onboarding on accepting its invitation and sees "Seguí con la configuración" while it is not over, never with "Start with varieties";
   - while it runs, "+ Nueva venta" and "Mandar catálogo" behave as for any business;
   - a pre-existing business and an imported business (including one that landed in the Onboarding before the import) never see it; a user who joins a business mid-Onboarding sees the same notice.
 - **First-run matrix, the checklist and the after-import notice (criterion 12)**: 100% passing, phone and computer:
-  - a business that existed before the Onboarding sees the checklist, and each met step shows "Hecho";
+  - a business that existed before the Onboarding sees the checklist, and each met step shows "Done";
   - it goes the first time steps 1 and 2 are both met, whatever 3 and 4;
   - deleting the only price entry afterwards never brings it back;
   - an imported business never sees it, and sees the after-import notice until dismissed or published; once dismissed, no partner sees it;

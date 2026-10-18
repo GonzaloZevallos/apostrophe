@@ -44,9 +44,9 @@ Success criteria:
 ### Relation to the first-run checklist and the after-import notice
 
 - For a brand-new business the Onboarding fully replaces the checklist; the two never both apply.
-- While it is not over, neither the checklist nor "Arrancá por las variedades" shows. "Arrancá por las variedades" takes over once it is over.
+- While it is not over, neither the checklist nor "Start with varieties" shows. "Start with varieties" takes over once it is over.
 - **No side rules of its own**: "+ Nueva venta" and "Mandar catálogo" behave while the Onboarding runs as they do for any business. What is missing is told by the Inicio notice ("Falta: …"), by Nueva venta's own "<variety> no tiene precio para esa fecha" before saving, and by the catalog screen's own empty state. The checklist's side rules (navigation.md) belong to the checklist.
-- **The Onboarding itself builds neither the checklist nor the after-import notice**: Inicio's "Para arrancar" checklist and the "Conectá el bot…" notice are built by the first-run capability (navigation.md, results.md), which reads `/first-run`. A business that existed before the Onboarding and an imported business see the element that capability decides, not an Onboarding notice.
+- **The Onboarding itself builds neither the checklist nor the after-import notice**: Inicio's "To get started" checklist and the "Conectá el bot…" notice are built by the first-run capability (navigation.md, results.md), which reads `/first-run`. A business that existed before the Onboarding and an imported business see the element that capability decides, not an Onboarding notice.
 
 ### Entry and the Inicio notice
 
@@ -108,7 +108,7 @@ Success criteria:
   - A refused price leaves the variety saved, keeps everything typed and shows the refusal on its field. The retry sends only the price and never adds a second variety.
 - **What step 1 shows on a return**, the first that fits:
   1. **A variety saved with no price entry** (a refused price, then left; on the first variety or on one added through "Agregar otra variedad"): step 1 shows that variety's name kept and only the price to fill in, whether or not another variety already has a price today. With several, it shows the first by name, and each saved price moves on to the next. Saving the price carries on exactly as any save of step 1 does, and sends only the price.
-  2. **Otherwise, a done step 1** (a variety has a price today): the step shows the saved variety, its name and today's list price, marked "Hecho", never an empty form. With several, it shows the first by name that has a price today. Its primary action moves on to step 2 and saves nothing.
+  2. **Otherwise, a done step 1** (a variety has a price today): the step shows the saved variety, its name and today's list price, marked "Done", never an empty form. With several, it shows the first by name that has a price today. Its primary action moves on to step 2 and saves nothing.
   3. **Otherwise** (no variety yet): the empty form.
 - In every case step 1 counts as done from the data alone (a variety with a price today): showing an unpriced variety's price form never moves the progress count or the resume point, and "Cerrar" leaves at once with everything kept.
 - A further variety is added only through "Agregar otra variedad".
@@ -121,11 +121,11 @@ Success criteria:
 | Step | Passed by |
 |---|---|
 | 3. Header and footer | "Guardar" (edited) or "Dejar así" (defaults kept) |
-| 4. Bot | A successful Probarlo (the only way it is saved) shows "Hecho". "Saltar" passes the step without a bot. A failed Probarlo shows its reason and saves nothing |
+| 4. Bot | A successful Probarlo (the only way it is saved) shows "Done". "Saltar" passes the step without a bot. A failed Probarlo shows its reason and saves nothing |
 | 5. Partner | "Seguir" once a link has been created, or "Saltar" |
 | 6. Categories | "Seguir" only. Adding, renaming or removing a category saves at once but never passes the step |
 
-- **Data that already exists** shows "Hecho" and counts as passed: a bot saved earlier, a second user already in the business. A done required step shows "Hecho" the same way (step 1 as above).
+- **Data that already exists** shows "Done" and counts as passed: a bot saved earlier, a second user already in the business. A done required step shows "Done" the same way (step 1 as above).
 - **Resume** lands on the first step that is neither done nor passed, or on "Listo" when there is none.
 - **Leaving** ("Cerrar", closing the app, a dropped connection) keeps everything saved and the resume point.
 - **"Saltar el resto"** passes every remaining optional step at once.
@@ -136,7 +136,7 @@ Success criteria:
 - Once both required steps are done and every optional step is passed, the next screen the Onboarding shows is "Listo", and **reaching "Listo" ends the Onboarding**. Usually that is on the tap that passes the last optional step (its own action, or "Saltar el resto"); when every step became done or passed outside it, it is on tapping the Inicio notice.
 - From then on it is over for good: leaving "Listo" by any means, or closing the app on it, never brings the Onboarding back, and the Inicio notice goes. No tap on "Listo" itself is needed.
 - **One line per step**:
-  - "Hecho" for a step whose data exists or that was saved;
+  - "Done" for a step whose data exists or that was saved;
   - "Para después — en Configuración → <grupo>" or "en Variedades" for a skipped step;
   - the required steps' lines count the records made, e.g. "Hecho · 2 variedades": a count, never a figure or an amount.
 - **Actions**: the primary "Cargar mi primera venta", which opens Nueva venta, and the secondary "Ir a Inicio". No celebration and no extra content.
@@ -147,7 +147,7 @@ Success criteria:
 - Step 1 starts with empty fields while the business has no variety. No step shows a figure, a placeholder or sample data.
 - Refusals and failures belong to each setting's owner: inline, keeping what was typed, carrying no data. No network shows "Sin conexión", a server error the generic retry.
 - A record that is gone follows accounts.md's "Eso ya no está." rule.
-- Data a partner created shows "Hecho" on the next open. No live updates.
+- Data a partner created shows "Done" on the next open. No live updates.
 
 ### Design
 
@@ -193,7 +193,7 @@ There is no telemetry.
   - a resume matrix, 100 % passing, covers:
     - required steps worked out from the data;
     - optional passes remembered;
-    - "Hecho" for data that already exists;
+    - "Done" for data that already exists;
     - no end before both required steps are met, and none from a change made outside the Onboarding;
     - every step done or passed outside it: the notice reads "6 de 6 pasos" with no "Falta" line, opens "Listo", and reaching "Listo" ends it;
     - the end on reaching "Listo".
@@ -207,7 +207,7 @@ There is no telemetry.
 - **Step 1**: front tests show:
   - one primary action, saving the variety and its price;
   - a refused price keeping everything typed, with the retry sending only the price and no second variety created;
-  - returning to step 1 after a variety is priced today showing that variety marked "Hecho", and moving on to step 2 adding no variety;
+  - returning to step 1 after a variety is priced today showing that variety marked "Done", and moving on to step 2 adding no variety;
   - with one variety priced today and a second saved with no price, returning to step 1 showing the second's name kept and only its price to fill in, saving only the price, with the progress count unchanged;
   - the "$" before the list, bulk and VIP price and never before the bulk minimum, and no date field or date chip.
 - **Step 2's chip**: front tests (`web/src/screens/StockEntryForm.test.tsx`) show:
@@ -222,7 +222,7 @@ There is no telemetry.
   - the remembered passes never make the import refuse.
 - **Inicio and chrome**, front tests on phone and computer:
   - the notice sits at the top with its words, cannot be dismissed, and keeps its count on steps 1–2 while varieties are added;
-  - "Arrancá por las variedades" never shows with it;
+  - "Start with varieties" never shows with it;
   - "+ Nueva venta" and "Mandar catálogo" behave as for any business while it runs;
   - the Onboarding has no bar and no "+ Nueva venta";
   - Nueva venta opened from "Listo" returns to Inicio.
