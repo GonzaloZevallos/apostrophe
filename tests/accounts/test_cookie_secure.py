@@ -8,10 +8,11 @@ from fastapi.testclient import TestClient
 from sqlalchemy.engine import Engine
 
 from app.accounts.adapters.deps import SESSION_COOKIE
+from app.clock import system_clock
 from app.db import make_engine
 from app.main import create_app
 from app.settings import Settings
-from tests.conftest import NOW, PASSWORD, TEST_HASHER, MovableClock, invite
+from tests.conftest import PASSWORD, TEST_HASHER, invite
 from tests.fakes.telegram import FakeTelegram
 
 HTTP_SETTINGS = Settings(secret_key="k", database_url="sqlite://", public_url="http://example.com")
@@ -31,8 +32,8 @@ def _attributes(set_cookie_header: str) -> SimpleCookie:
 
 
 def _open_business(settings: Settings, engine: Engine, client: TestClient) -> None:
-    clock = MovableClock(NOW)
-    token = invite(engine, clock())
+    # The app under test runs on the real clock, so the invitation is issued on it too.
+    token = invite(engine, system_clock())
     response = client.post(f"/invitations/{token}/accept", json=NEW_USER)
     assert response.status_code == 201, response.text
 

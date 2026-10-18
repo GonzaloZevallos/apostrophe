@@ -22,6 +22,7 @@ from app.accounts.application.invitations import invite_partner
 from app.business_removal.adapters.sql_schema_rows import SqlSchemaRows
 from app.business_removal.domain.classification import delete_order
 from app.business_removal.domain.labels import exported_tables
+from app.clock import system_clock
 from app.db import make_engine
 from app.main import create_app
 from app.settings import Settings
@@ -106,14 +107,14 @@ def app(file_engine: Engine) -> FastAPI:
 
 @pytest.fixture
 def leaving_token(app: FastAPI, file_engine: Engine) -> str:
-    clock = MovableClock(NOW)
+    clock = MovableClock(system_clock())  # the `app` fixture runs on the real clock
     with TestClient(app) as client:
         return open_business(client, file_engine, clock, "Leaving Business", "leaving@example.com")
 
 
 @pytest.fixture
 def staying_token(app: FastAPI, file_engine: Engine, leaving_token: str) -> str:
-    clock = MovableClock(NOW)
+    clock = MovableClock(system_clock())
     with TestClient(app) as client:
         return open_business(client, file_engine, clock, "Staying Business", "staying@example.com")
 
@@ -122,9 +123,7 @@ def _issue_join_invitation(engine: Engine, business_id: int, now: datetime) -> s
     """Issues a join invitation the way `POST /invitations` does, but lets the test
     pick `now` directly so an expired one needs no clock to move."""
     with Session(engine) as session:
-        issued = invite_partner(
-            SqlAccounts(session), session, business_id=business_id, now=now
-        )
+        issued = invite_partner(SqlAccounts(session), session, business_id=business_id, now=now)
         session.commit()
     return issued.token
 
@@ -133,9 +132,9 @@ def _seed_join_invitations(client: TestClient, engine: Engine, business_id: int)
     """A pending, a used and an expired join invitation for one business (round-3
     Q1's three statuses), so the delete is proven to sweep all of them, whatever their
     status."""
-    _issue_join_invitation(engine, business_id, NOW)  # left pending, never accepted.
+    _issue_join_invitation(engine, business_id, system_clock())  # left pending, never accepted.
 
-    used_token = _issue_join_invitation(engine, business_id, NOW)
+    used_token = _issue_join_invitation(engine, business_id, system_clock())
     accepted = client.post(
         f"/invitations/{used_token}/accept",
         json={"email": "partner@example.com", "password": PASSWORD},
@@ -144,7 +143,7 @@ def _seed_join_invitations(client: TestClient, engine: Engine, business_id: int)
 
     # Issued well before its 7-day lifetime, so it is already expired as of NOW,
     # without moving any clock.
-    _issue_join_invitation(engine, business_id, NOW - timedelta(days=30))
+    _issue_join_invitation(engine, business_id, system_clock() - timedelta(days=30))
 
 
 @pytest.fixture
@@ -348,9 +347,7 @@ def test_a_table_added_after_migrating_is_found_ordered_and_emptied(
 
     assert deleted.tables["later_table"] == {later_rows[0]["id"]}
     with file_engine.connect() as connection:
-        remaining = connection.execute(
-            text("SELECT COUNT(*) FROM later_table")
-        ).scalar_one()
+        remaining = connection.execute(text("SELECT COUNT(*) FROM later_table")).scalar_one()
     assert remaining == 0
 
 
