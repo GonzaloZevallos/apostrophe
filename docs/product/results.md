@@ -23,9 +23,9 @@ This refines the panel job above and the navigation job for Hoy (GH-45); it is n
 
 **When** I take grams out of my own stock without selling them (to share at a party so people get to know the business, or for my own use), **I want** to record them from my phone in a few taps (date, varieties and grams, the reason), **so I can** keep stock right and see in Profit what promoting the business and my own consumption cost me, without recording a sale nobody made or an adjustment that reads as lost flower. (Served here by the Promotion and Own use lines of Semana and Mes; the withdrawal is defined in stock.md.)
 
-**When** I run my business from my phone between orders or mid-chat with a customer, several times a day, **I want** the app laid out around what I actually do and how often, **so I can** get back to the customer instead of hunting through menus. (The navigation job, navigation.md: served here by Hoy showing what can be acted on today, with "Cobrar" on each debtor.)
+**When** I run my business from my phone between orders or mid-chat with a customer, several times a day, **I want** the app laid out around what I actually do and how often, **so I can** get back to the customer instead of hunting through menus. (The navigation job, navigation.md: served here by Hoy showing what can be acted on today, with "Collect" on each debtor.)
 
-**When** I have just opened my business and it is still empty, **I want** to be walked through what it needs, one short step at a time, with defaults already filled in, **so I can** record my first sale the same day without hunting through Configuración, Variedades and the catalog screen. (Served here by the "Seguí con la configuración" notice at the top of Inicio, the only way back into the Onboarding; defined in onboarding.md.)
+**When** I have just opened my business and it is still empty, **I want** to be walked through what it needs, one short step at a time, with defaults already filled in, **so I can** record my first sale the same day without hunting through Configuración, Variedades and the catalog screen. (Served here by the "Keep going with setup" notice at the top of Inicio, the only way back into the Onboarding; defined in onboarding.md.)
 
 **When** a variety I loaded by mistake, or one I no longer work with, keeps showing in my lists and pickers, **I want** to take it out from my phone in a few taps, deleting it if it never moved and archiving it if it has history, **so** my lists show only what I still sell, no past sale, stock, cost or profit figure changes, and I can bring it back exactly as it was if I start selling it again. (Served here by What you have left leaving archived varieties out while every period figure stays the same; defined in varieties.md.)
 
@@ -78,7 +78,7 @@ Success criteria:
 
 Each figure is counted on its own date. Sales, cost of goods sold, stock shortfall, promotion and own-use cost, expenses, Profit and Cash come from the same period computation as Análisis (ADR-0020), never from a second sum. They count every variety, archived ones included.
 
-- **Sales**: the sum of the period's sale totals, shipping included, paid or not. It is the same figure as Ventas' total. Its heading follows the tab: "Vendiste hoy", "Vendiste esta semana" or "Vendiste este mes". Withdrawals are never sales.
+- **Sales**: the sum of the period's sale totals, shipping included, paid or not. It is the same figure as Ventas' total. Its heading follows the tab: "You sold today", "You sold this week" or "You sold this month". Withdrawals are never sales.
 - **Number of sales**: counts sales, not lines.
 - **Average sale**: sales ÷ number of sales, rounded half up to the whole peso. Nothing shows when there are no sales.
 - **Grams sold**: the grams of the period's lines that are not gifts.
@@ -86,7 +86,7 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
 - **Cost of goods sold** ("Cost of goods sold"): what the grams of the period's sale lines (gifts included) cost, from their lots as the lots stand now (ADR-0009, ADR-0010). Neither a negative adjustment's cost nor a withdrawal's is part of it.
 - **Stock shortfall** ("Stock shortfall"): what the grams taken out by the period's negative adjustments cost, on the adjustment's date, from their lots as they stand now, oldest first (CONTEXT.md: Stock shortfall). It shows as "Stock shortfall $ X" only when the period has any negative adjustment; otherwise the line is left out. It never includes a withdrawal.
 - **Promotion cost** ("Promotion") and **own-use cost** ("Own use"): what the grams of the period's withdrawals of that reason cost, on the withdrawal's date, from their lots as they stand now, oldest first. Each shows as "Promotion $ X" or "Own use $ X" only when the period has a withdrawal of that reason; otherwise its line is left out.
-- **Expenses** ("Gastos"): the sum of the period's expenses.
+- **Expenses** ("Expenses"): the sum of the period's expenses.
 - **Purchases** ("Flower purchases"): the total cost of the period's purchase stock entries.
 - **Profit**: sales − cost of goods sold − stock shortfall − promotion cost − own-use cost − expenses.
   - When any of its cost is pending, it is worked out over the costed part: the sales of pending grams are left out (sales − (sales without shipping − sales of costed grams) − costed cost of goods − costed shortfall − costed promotion cost − costed own-use cost − expenses), with sales of costed grams per line as CONTEXT.md's Margin defines them (line total × costed grams ÷ line grams, half up). The sales figure shown stays the full sales.
@@ -102,7 +102,7 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
 
 ### Pending cost
 
-- A fixed "incluye costo pendiente" note, with no grams or amounts:
+- A fixed "includes pending cost" note, with no grams or amounts:
   - under Cost of goods sold, when any of the period's sale lines has pending grams as the lots stand now;
   - under Stock shortfall, when any of the period's negative adjustments has pending grams;
   - under Promotion, when any of the period's promotion withdrawals has pending grams; under Own use, likewise for own use;
@@ -119,9 +119,9 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
 
 ### Owed to you block
 
-- **Figures**: the total owed, the count of sales still owing ("1 venta debiendo" or "N ventas debiendo") and the oldest owing-since date, as payments.md defines them.
+- **Figures**: the total owed, the count of sales still owing ("1 sale" or "N sales") and the oldest owing-since date, as payments.md defines them.
 - **Teaser**: up to 3 customers with the highest balance above $0. Ties go by owing since (oldest first), then by name. The design may tune the number.
-  - Each row shows the balance in amber and "desde dd/mm", and carries "Cobrar" (accessible name "Collect from <name>"), which opens Registrar cobro with that customer already chosen (payments.md), as an entry in the app's history.
+  - Each row shows the balance in amber and "since dd/mm", and carries "Collect" (accessible name "Collect from <name>"), which opens Registrar cobro with that customer already chosen (payments.md), as an entry in the app's history.
   - Tapping the rest of the row opens that customer's card.
 - Tapping the block's heading opens Clientes, on its Te deben section.
 - Customers in credit never appear and count in no figure.
@@ -141,7 +141,7 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
   - grams;
   - its status mark, told by shape and word;
   - days left;
-  - its detail line: "Sin gramos desde el 30/09", "Avisás abajo de 20 g" or "Cargale la primera entrada".
+  - its detail line: "No grams since 30/09", "Warns you below 20 g" or "Add the first entry".
 - A variety that is low links to its page (varieties.md).
 - A variety with no threshold shows no warning line.
 - Low varieties are not moved first; the order is by name.
@@ -153,7 +153,7 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
 - **At its top**: the business's avatar, which opens Configuración.
 - **Top to bottom, above the figures**:
   1. the first-run element of the business, at most one of:
-     - "Seguí con la configuración", while the Onboarding is not over (onboarding.md): "N de 6 pasos" and what is next, not dismissible;
+     - "Keep going with setup", while the Onboarding is not over (onboarding.md): "N of 6 steps" and what is next, not dismissible;
      - the first-run checklist while it shows (navigation.md), for a business that existed before the Onboarding.
 
      Once neither applies, "Start with varieties" takes this place whenever no unarchived variety has a current price today. It never shows together with the Onboarding notice or the checklist;
@@ -166,7 +166,7 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
 - It follows the light and dark themes, and matches `docs/product/design-system/pantallas/` in both.
 - It is not an action menu:
   - it records nothing itself and has no toasts of its own;
-  - its one main action is the shell's "+ Nueva venta"; "Collect" on debtor rows is the only other direct action, besides the notices, which only open where their fix is.
+  - its one main action is the shell's "+ New sale"; "Collect" on debtor rows is the only other direct action, besides the notices, which only open where their fix is.
 - The figures are read when the panel is opened, with no live updates.
 - A dropped network shows "Sin conexión"; a server error shows the generic retry (accounts.md).
 
@@ -192,7 +192,7 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
   - a negative adjustment lowering Profit by its costed shortfall on its own date, showing "Stock shortfall $ X", and leaving cost of goods sold and Cash unchanged;
   - a withdrawal of each reason lowering Profit on its own date, showing its own line, and leaving cost of goods sold, stock shortfall and Cash unchanged;
   - a period with no negative adjustment showing no Stock shortfall line, and one with no withdrawal of a reason showing no line for it;
-  - pending grams on a sale line leaving their sales out of Profit while "Vendiste" keeps the full sales;
+  - pending grams on a sale line leaving their sales out of Profit while "You sold" keeps the full sales;
   - pending cost showing the note under Cost of goods sold, Stock shortfall, Promotion, Own use and Profit as defined, and never under Cash;
   - negative Profit and Cash shown as "−$ X".
 - **Archiving moves nothing (criterion 3)**: every period figure is identical before archiving a variety with history, after archiving and after restoring; the archived variety is absent from What you have left and does not count for "Start with varieties".
@@ -209,13 +209,13 @@ Each figure is counted on its own date. Sales, cost of goods sold, stock shortfa
   - an empty business shows $ 0 and 0 g, with no average sale and no Stock shortfall, Promotion or Own use line;
   - every figure on screen equals the API's answer.
 - **Looks as designed (criterion 12)**: `scripts/design/compare.sh` runs before and after for Inicio, InicioOscuro and InicioCompu, phone and computer, with the captures attached to the PR and every difference from the design listed.
-- **No curl**: the end-to-end front run opens Inicio, switches across the three periods, reads Promotion and Own use after recording a withdrawal of each reason, opens Clientes from the block's heading, a customer from the teaser, and Registrar cobro from a teaser row's "Cobrar".
+- **No curl**: the end-to-end front run opens Inicio, switches across the three periods, reads Promotion and Own use after recording a withdrawal of each reason, opens Clientes from the block's heading, a customer from the teaser, and Registrar cobro from a teaser row's "Collect".
 - **Business measure**, read by the operator from existing records only, never shown in the app: the share of pre-Onboarding businesses that complete the checklist, and the share of imported businesses that publish the catalog.
 
 ## Out of scope
 
 - Fechas or any custom range; comparing with earlier periods; charts.
-- Recording anything from the panel other than through "+ Nueva venta" and "Collect".
+- Recording anything from the panel other than through "+ New sale" and "Collect".
 - Live updates between partners.
 - Margins per variety (#8), stock shortfall per variety, and promotion or own-use cost per variety.
 - Pending grams counted on the panel ("and N g not yet costed"): the panel's note is fixed and carries no grams; Análisis shows the counts.

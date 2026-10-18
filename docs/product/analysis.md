@@ -75,7 +75,7 @@ Success criteria:
 - **Cost of goods sold**: what its sold and gifted grams cost, from their lots as they stand today, with the pending mark when it applies.
 - **Margin**: sales of costed grams − costed cost of goods sold, in pesos; it can be negative. With no pending grams, sales of costed grams equal sales without shipping.
 - **Margin percentage**: margin over the variety's sales of costed grams. Not shown when those are $0 (only gifted, or every gram pending).
-- **Pending grams**: margin and percentage carry "and N g not yet costed", N counting only that variety's sold and gifted pending grams. Example: 10 g sold for $10.000, 6 g from a $3.000 purchase and 4 g pending, shows sales $10.000, margin $3.000 "y 4 g not yet costed" and 50%.
+- **Pending grams**: margin and percentage carry "and N g not yet costed", N counting only that variety's sold and gifted pending grams. Example: 10 g sold for $10.000, 6 g from a $3.000 purchase and 4 g pending, shows sales $10.000, margin $3.000 "and 4 g not yet costed" and 50%.
 - **Sorting**: by margin in pesos, highest first. A marked margin sorts by its shown figure and keeps its mark.
 - **Month header**:
   - sales (shipping included), grams sold or gifted, and the average margin;
@@ -139,7 +139,7 @@ Success criteria:
 
 ### On screen (`Analisis`, `AnalisisCompu`)
 
-- **Where**: a tab root (navigation.md). On the phone, the Más entry "Análisis · Variedades, semanas, meses y días"; on a computer, "Análisis" in the sidebar, under the divider.
+- **Where**: a tab root (navigation.md). On the phone, the Más entry "Analysis · Varieties, weeks, months and days"; on a computer, "Analysis" in the sidebar, under the divider.
 - **Computer**: the `AnalisisCompu` layout.
 - **Week and month rows**: how Cost of goods sold and Stock shortfall sit on a row (lines or sub-rows), on the phone and on a computer, is design's call. Each figure is in words, and pending and negative are told by word or sign, never by color alone, in both themes.
 - **Charts**: the accent and the tokens only; every bar carries its figure. Best marks, pending marks and negatives are told by word or shape, never by color alone.
@@ -183,7 +183,7 @@ Success criteria:
 - **Margin matrix**: 100% passing. It covers:
   - a variety only gifted (negative margin, no percentage);
   - a mix of sold and gifted;
-  - pending grams: 10 g for $10.000, with 6 g costing $3.000, shows $3.000 "y 4 g not yet costed" and 50%, sorted by shown figure;
+  - pending grams: 10 g for $10.000, with 6 g costing $3.000, shows $3.000 "and 4 g not yet costed" and 50%, sorted by shown figure;
   - a line split across costed and pending grams, with the half-up rounding of its costed sales;
   - a negative adjustment kept out of the variety table and counted as shortfall;
   - a withdrawal kept out of the variety table and counted on its reason's line;
@@ -226,7 +226,7 @@ Success criteria:
 - Stock shortfall per variety; promotion or own-use cost per variety.
 - A Cost of goods sold total in the month header or since the first record.
 - Charts, variations or comparisons between periods.
-- Changing Inicio's fixed "incluye costo pendiente" note.
+- Changing Inicio's fixed "includes pending cost" note.
 - Importing the spreadsheet's history: #11.
 - Exporting, printing or sharing the analysis.
 - Live updates between partners while the screen is open.

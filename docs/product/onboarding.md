@@ -35,7 +35,7 @@ Success criteria:
 
 - Only a business just opened by a new-business invitation, from the moment the invitation is accepted.
 - **Never offered to**:
-  - an imported business. Once the spreadsheet import loads a business, the Onboarding is over for it: its notice never shows and "Listo" is never shown. Its remembered passes are not records for the import's eligibility check (import.md);
+  - an imported business. Once the spreadsheet import loads a business, the Onboarding is over for it: its notice never shows and "All set" is never shown. Its remembered passes are not records for the import's eligibility check (import.md);
   - a business a user joined by a join invitation;
   - a business that existed before the Onboarding shipped.
 - **No "run it again"**: once it is over, nothing in the app points back to it.
@@ -45,15 +45,15 @@ Success criteria:
 
 - For a brand-new business the Onboarding fully replaces the checklist; the two never both apply.
 - While it is not over, neither the checklist nor "Start with varieties" shows. "Start with varieties" takes over once it is over.
-- **No side rules of its own**: "+ Nueva venta" and "Mandar catálogo" behave while the Onboarding runs as they do for any business. What is missing is told by the Inicio notice ("Falta: …"), by Nueva venta's own "<variety> no tiene precio para esa fecha" before saving, and by the catalog screen's own empty state. The checklist's side rules (navigation.md) belong to the checklist.
-- **The Onboarding itself builds neither the checklist nor the after-import notice**: Inicio's "To get started" checklist and the "Conectá el bot…" notice are built by the first-run capability (navigation.md, results.md), which reads `/first-run`. A business that existed before the Onboarding and an imported business see the element that capability decides, not an Onboarding notice.
+- **No side rules of its own**: "+ New sale" and "Send catalog" behave while the Onboarding runs as they do for any business. What is missing is told by the Inicio notice ("Missing: …"), by Nueva venta's own "<variety> no tiene precio para esa fecha" before saving, and by the catalog screen's own empty state. The checklist's side rules (navigation.md) belong to the checklist.
+- **The Onboarding itself builds neither the checklist nor the after-import notice**: Inicio's "To get started" checklist and the "Connect the bot…" notice are built by the first-run capability (navigation.md, results.md), which reads `/first-run`. A business that existed before the Onboarding and an imported business see the element that capability decides, not an Onboarding notice.
 
 ### Entry and the Inicio notice
 
 - **Entry**: accepting a new-business invitation lands in the Onboarding, not on an empty Inicio. A join invitation still lands on Inicio. This is the only time the Onboarding opens by itself.
-- **The notice**: while the Onboarding is not over, Inicio shows "Seguí con la configuración" at the top, in position 1 of results.md's order, on the phone and on `InicioCompu`.
-  - It shows progress in words ("2 de 6 pasos"), counting steps done or passed, and the resume step by its short name (e.g. "Falta: stock inicial").
-  - When every step is done or passed but "Listo" has not been reached yet (say, the only price was deleted while the optional steps were passed, and later added again from the variety's page), it reads "6 de 6 pasos" with no "Falta" line, and opens "Listo".
+- **The notice**: while the Onboarding is not over, Inicio shows "Keep going with setup" at the top, in position 1 of results.md's order, on the phone and on `InicioCompu`.
+  - It shows progress in words ("2 of 6 steps"), counting steps done or passed, and the resume step by its short name (e.g. "Missing: starting stock").
+  - When every step is done or passed but "All set" has not been reached yet (say, the only price was deleted while the optional steps were passed, and later added again from the variety's page), it reads "6 of 6 steps" with no "Missing" line, and opens "All set".
   - Adding more varieties never moves the count past steps 1–2.
   - Otherwise it opens the Onboarding at the resume step.
   - It cannot be dismissed. It goes for good when the Onboarding is over.
@@ -62,18 +62,18 @@ Success criteria:
 
 ### The screens
 
-- **Kind**: a full screen of the form-or-sheet kind (navigation.md): no bar or sidebar, no "+ Nueva venta". One centred, phone-width column on every viewport, with no computer layout of its own.
+- **Kind**: a full screen of the form-or-sheet kind (navigation.md): no bar or sidebar, no "+ New sale". One centred, phone-width column on every viewport, with no computer layout of its own.
 - **Every step shows**:
   - one short title and one sentence on why it matters;
   - its fields and one primary action;
-  - progress in words as well as shape ("Paso 2 de 6"), never by colour alone;
+  - progress in words as well as shape ("Step 2 of 6"), never by colour alone;
   - "Back", to the step before, on every step but step 1. Step 1 has no step before it: it shows no "Back", and "Close" is its way out;
-  - "Saltar", on optional steps only;
-  - "Skip the rest", on optional steps only, only once both required steps are done, and never on the last step (step 6), where it would pass nothing "Saltar" does not;
+  - "Skip", on optional steps only;
+  - "Skip the rest", on optional steps only, only once both required steps are done, and never on the last step (step 6), where it would pass nothing "Skip" does not;
   - "Close", which lands on Inicio and keeps everything saved and the resume point.
-- **The skip controls**: "Saltar" and, when it shows, "Skip the rest" sit together on one line as text links, as the design draws them; neither is a button.
+- **The skip controls**: "Skip" and, when it shows, "Skip the rest" sit together on one line as text links, as the design draws them; neither is a button.
 - **The step frame follows the drawn design** (`docs/product/design-system/pantallas/Onboarding*.dc.html`); where this file and the drawing disagree on what a step shows, this file wins and the difference is a defect in the design.
-- **Unsaved changes**: leaving a step with something typed and not saved, by "Close", "Back" or "Saltar", asks before discarding. An untouched step leaves at once.
+- **Unsaved changes**: leaving a step with something typed and not saved, by "Close", "Back" or "Skip", asks before discarding. An untouched step leaves at once.
 - **Inside the steps**, the owners' own behaviour applies unchanged: field rules, refusals inline keeping what was typed, toasts, Probarlo's and Buscar mi chat's reasons, "Sin conexión", the generic retry and "Eso ya no está.".
 
 ### The six steps, in order
@@ -89,13 +89,13 @@ Success criteria:
 
 - **Step 2** says plainly that with no cost the lot costs $0.
 - **Step 2's origin** shows as the fixed text-only chip "Stock inicial", with no "Origen" label above it: the step's title already says it is the opening stock, and the origin cannot change there. The "Origen" label in `Onboarding*.dc.html` is a known defect of the drawing, corrected by design in its own work. This applies only where the origin is the fixed chip: the full stock entry form keeps its origin choice, and whatever label it draws over it, as stock.md defines it.
-- **More varieties**: after a variety and its opening stock, the seller sees "Agregar otra variedad" (another name, price and opening stock) or "Seguir".
+- **More varieties**: after a variety and its opening stock, the seller sees "Add another variety" (another name, price and opening stock) or "Continue".
   - There is no cap, and each variety is saved the moment its step is saved.
   - One variety is enough to continue.
   - Progress stays on steps 1–2 while varieties are being added.
-  - "Agregar otra variedad" is the only way the Onboarding adds a further variety.
-- **Step 4** ends at the saved bot and says: "Cuando quieras, publicalo desde Variedades → Mandar catálogo". Publicar and the pin's status stay on the catalog screen.
-- **Step 5** reads "Enviale el link a tu socio" and never waits for the partner to join.
+  - "Add another variety" is the only way the Onboarding adds a further variety.
+- **Step 4** ends at the saved bot and says: "Whenever you want, publish it from Varieties → Send catalog". Publicar and the pin's status stay on the catalog screen.
+- **Step 5** reads "Send the link to your partner" and never waits for the partner to join.
 - **A skipped step** says where it can be done later: Configuración → Integraciones, Usuarios, Mensaje del catálogo or Categorías de gastos. Skipping step 3 or 6 keeps the defaults.
 
 ### Step 1
@@ -107,11 +107,11 @@ Success criteria:
   - A refused name saves nothing and keeps everything typed.
   - A refused price leaves the variety saved, keeps everything typed and shows the refusal on its field. The retry sends only the price and never adds a second variety.
 - **What step 1 shows on a return**, the first that fits:
-  1. **A variety saved with no price entry** (a refused price, then left; on the first variety or on one added through "Agregar otra variedad"): step 1 shows that variety's name kept and only the price to fill in, whether or not another variety already has a price today. With several, it shows the first by name, and each saved price moves on to the next. Saving the price carries on exactly as any save of step 1 does, and sends only the price.
+  1. **A variety saved with no price entry** (a refused price, then left; on the first variety or on one added through "Add another variety"): step 1 shows that variety's name kept and only the price to fill in, whether or not another variety already has a price today. With several, it shows the first by name, and each saved price moves on to the next. Saving the price carries on exactly as any save of step 1 does, and sends only the price.
   2. **Otherwise, a done step 1** (a variety has a price today): the step shows the saved variety, its name and today's list price, marked "Done", never an empty form. With several, it shows the first by name that has a price today. Its primary action moves on to step 2 and saves nothing.
   3. **Otherwise** (no variety yet): the empty form.
 - In every case step 1 counts as done from the data alone (a variety with a price today): showing an unpriced variety's price form never moves the progress count or the resume point, and "Close" leaves at once with everything kept.
-- A further variety is added only through "Agregar otra variedad".
+- A further variety is added only through "Add another variety".
 
 ### Done and passed
 
@@ -120,27 +120,27 @@ Success criteria:
 
 | Step | Passed by |
 |---|---|
-| 3. Header and footer | "Guardar" (edited) or "Dejar así" (defaults kept) |
-| 4. Bot | A successful Probarlo (the only way it is saved) shows "Done". "Saltar" passes the step without a bot. A failed Probarlo shows its reason and saves nothing |
-| 5. Partner | "Seguir" once a link has been created, or "Saltar" |
-| 6. Categories | "Seguir" only. Adding, renaming or removing a category saves at once but never passes the step |
+| 3. Header and footer | "Save" (edited) or "Leave as is" (defaults kept) |
+| 4. Bot | A successful Probarlo (the only way it is saved) shows "Done". "Skip" passes the step without a bot. A failed Probarlo shows its reason and saves nothing |
+| 5. Partner | "Continue" once a link has been created, or "Skip" |
+| 6. Categories | "Continue" only. Adding, renaming or removing a category saves at once but never passes the step |
 
 - **Data that already exists** shows "Done" and counts as passed: a bot saved earlier, a second user already in the business. A done required step shows "Done" the same way (step 1 as above).
-- **Resume** lands on the first step that is neither done nor passed, or on "Listo" when there is none.
+- **Resume** lands on the first step that is neither done nor passed, or on "All set" when there is none.
 - **Leaving** ("Close", closing the app, a dropped connection) keeps everything saved and the resume point.
 - **"Skip the rest"** passes every remaining optional step at once.
 - **No early end**: the Onboarding never ends before both required steps are met, and nothing outside it (a price added on the variety's page, say) ends it.
 
-### "Listo"
+### "All set"
 
-- Once both required steps are done and every optional step is passed, the next screen the Onboarding shows is "Listo", and **reaching "Listo" ends the Onboarding**. Usually that is on the tap that passes the last optional step (its own action, or "Skip the rest"); when every step became done or passed outside it, it is on tapping the Inicio notice.
-- From then on it is over for good: leaving "Listo" by any means, or closing the app on it, never brings the Onboarding back, and the Inicio notice goes. No tap on "Listo" itself is needed.
+- Once both required steps are done and every optional step is passed, the next screen the Onboarding shows is "All set", and **reaching "All set" ends the Onboarding**. Usually that is on the tap that passes the last optional step (its own action, or "Skip the rest"); when every step became done or passed outside it, it is on tapping the Inicio notice.
+- From then on it is over for good: leaving "All set" by any means, or closing the app on it, never brings the Onboarding back, and the Inicio notice goes. No tap on "All set" itself is needed.
 - **One line per step**:
   - "Done" for a step whose data exists or that was saved;
-  - "Para después — en Configuración → <grupo>" or "en Variedades" for a skipped step;
-  - the required steps' lines count the records made, e.g. "Hecho · 2 variedades": a count, never a figure or an amount.
-- **Actions**: the primary "Cargar mi primera venta", which opens Nueva venta, and the secondary "Go to Home". No celebration and no extra content.
-- **Nueva venta opened from "Listo"** goes back to Inicio, whether closed with "Close" or saved. It never goes back to "Listo" or the Onboarding.
+  - "For later — in Settings → <group>" or "in Varieties" for a skipped step;
+  - the required steps' lines count the records made, e.g. "Done · 2 varieties": a count, never a figure or an amount.
+- **Actions**: the primary "Record my first sale", which opens Nueva venta, and the secondary "Go to Home". No celebration and no extra content.
+- **Nueva venta opened from "All set"** goes back to Inicio, whether closed with "Close" or saved. It never goes back to "All set" or the Onboarding.
 
 ### Empty states and errors
 
@@ -154,13 +154,13 @@ Success criteria:
 - Design-system elements only: tokens, components and both themes. No illustrations, animation, marketing copy, new colours or new components.
 - If nothing existing fits the progress indicator or the step layout, design draws it from tokens only, inside the design system, before it is built; it is never invented in code.
 - Rioplatense Spanish with vos. Nothing clipped at 320–430 px or at 130 % text; controls at least 44 px tall and inputs at least 16 px.
-- Every step and "Listo" go into `scripts/design/screens.json`; `scripts/design/compare.sh` runs before and after, phone and computer, judged by eye.
+- Every step and "All set" go into `scripts/design/screens.json`; `scripts/design/compare.sh` runs before and after, phone and computer, judged by eye.
 
 ### Reviewing a change against the design (criterion 6)
 
 - **The evidence matrix**: every cell is captured on the task base (before) and on the head (after) with `scripts/design/comparisons.mjs --strict`. One script from one install takes both sides, on the same Argentina day, with fonts pinned (ADR-0042). The PR records the installed `@fontsource/plus-jakarta-sans` version. The cells are:
-  - every Onboarding step and "Listo", light and dark, phone and computer;
-  - the "Seguí con la configuración" notice on Inicio, InicioOscuro and InicioCompu;
+  - every Onboarding step and "All set", light and dark, phone and computer;
+  - the "Keep going with setup" notice on Inicio, InicioOscuro and InicioCompu;
   - when the change touches step 2's chip, the stock entry form opened from a variety with no entries ("Stock inicial" preselected), light and dark, phone and computer.
 
   Screens the change does not touch are left out.
@@ -187,7 +187,7 @@ Success criteria:
 
 There is no telemetry.
 
-- **Under 5 minutes (criterion 1)**: an end-to-end front run from a phone viewport accepts a new-business invitation, prices a variety, loads its opening stock, passes the optional steps and opens Nueva venta from "Listo" (`web/e2e/onboarding.spec.ts`); its duration is not measured by any test.
+- **Under 5 minutes (criterion 1)**: an end-to-end front run from a phone viewport accepts a new-business invitation, prices a variety, loads its opening stock, passes the optional steps and opens Nueva venta from "All set" (`web/e2e/onboarding.spec.ts`); its duration is not measured by any test.
 - **Nothing lost (criterion 3)**:
   - a second end-to-end run leaves halfway, resumes from Inicio's notice and lands on the first step neither done nor passed;
   - a resume matrix, 100 % passing, covers:
@@ -195,14 +195,14 @@ There is no telemetry.
     - optional passes remembered;
     - "Done" for data that already exists;
     - no end before both required steps are met, and none from a change made outside the Onboarding;
-    - every step done or passed outside it: the notice reads "6 de 6 pasos" with no "Falta" line, opens "Listo", and reaching "Listo" ends it;
-    - the end on reaching "Listo".
+    - every step done or passed outside it: the notice reads "6 of 6 steps" with no "Missing" line, opens "All set", and reaching "All set" ends it;
+    - the end on reaching "All set".
 - **One fact, one place (criterion 4)**: a value saved in each step reads the same in Configuración or on the variety's page, and the reverse.
 - **Only the sale is required (criterion 2)**: front tests show:
   - every optional step skipped in one tap;
   - "Skip the rest" only once both required steps are done, and never on step 6;
-  - "Saltar" and "Skip the rest" as text links on one line;
-  - "Listo" naming where each skipped step lives.
+  - "Skip" and "Skip the rest" as text links on one line;
+  - "All set" naming where each skipped step lives.
 - **The step frame**: front tests show no "Back" on step 1 and "Back" opening the step before on steps 2–6.
 - **Step 1**: front tests show:
   - one primary action, saving the variety and its price;
@@ -223,9 +223,9 @@ There is no telemetry.
 - **Inicio and chrome**, front tests on phone and computer:
   - the notice sits at the top with its words, cannot be dismissed, and keeps its count on steps 1–2 while varieties are added;
   - "Start with varieties" never shows with it;
-  - "+ Nueva venta" and "Mandar catálogo" behave as for any business while it runs;
-  - the Onboarding has no bar and no "+ Nueva venta";
-  - Nueva venta opened from "Listo" returns to Inicio.
+  - "+ New sale" and "Send catalog" behave as for any business while it runs;
+  - the Onboarding has no bar and no "+ New sale";
+  - Nueva venta opened from "All set" returns to Inicio.
 - **Isolation**: the routes are in the isolation sweep and the gated-route test; business removal leaves 0 rows of the state and exported count = deleted count.
 - **Design (criterion 5)**: every screen in `screens.json`, `compare.sh` before and after, and a by-eye pass on phone and computer in both themes; the step frame and step 1 match `OnboardingVariedad` and `OnboardingCategorias`. Step 1's price step is registered in `screens.json` and captured before and after the "$" reaches it (varieties.md).
 - **Approval from the evidence (criterion 6)**, read from the PR:
@@ -247,8 +247,8 @@ There is no telemetry.
 - Running it again, or any entry pointing back to it once it is over.
 - "Terminar por ahora" as a second exit.
 - Offering it to imported, joined or pre-existing businesses.
-- Building the first-run checklist, its side rules ("+ Nueva venta" saying what is missing, "Mandar catálogo" disabled) or the after-import notice: their own task (navigation.md).
-- Ending the Onboarding from outside it, without reaching "Listo".
+- Building the first-run checklist, its side rules ("+ New sale" saying what is missing, "Send catalog" disabled) or the after-import notice: their own task (navigation.md).
+- Ending the Onboarding from outside it, without reaching "All set".
 - Publishing the catalog from the Onboarding.
 - Waiting for a partner to join.
 - Editing or renaming a saved variety from step 1: that is the variety's page.

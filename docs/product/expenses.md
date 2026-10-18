@@ -111,7 +111,7 @@ Success criteria:
 
 - **Gastos** (`Gastos`, route `/expenses`; the old `/gastos` redirects there permanently)
   is a tab root (navigation.md). It shows the bar on the phone or the sidebar on a
-  computer, with Gastos active, and "+ Nueva venta". It is reached from Más on the phone
+  computer, with Gastos active, and "+ New sale". It is reached from Más on the phone
   and from the sidebar on a computer, under the divider. It holds:
   - month navigation;
   - the fixed line "Flower purchases don't go here: enter them in Stock.";
@@ -120,16 +120,16 @@ Success criteria:
   - its own way to record a new expense, opening the expense form with today's date in
     1 tap:
     - on the phone, a secondary action in Gastos' body, never a second floating "+"
-      competing with "+ Nueva venta";
+      competing with "+ New sale";
     - on a computer, the "Add expense" button in the page header.
 
     Its exact look is design's call.
 - **"+ Add expense"**, first in Más on the phone (route `/more`; the old `/mas`
   redirects there permanently), opens the expense form directly with today's date. Its
   subtitle is design's call.
-- **The expense form** is a form (navigation.md): no bar and no "+ Nueva venta", and it
+- **The expense form** is a form (navigation.md): no bar and no "+ New sale", and it
   closes with "Close".
-  - "Categoría", "Monto" and "Detalle" are marked required.
+  - "Category", "Amount" and "Detail" are marked required.
   - Submit is blocked while the detail is blank.
   - The date comes filled with today.
   - "Close" and a successful save go back by history to the screen that opened it (Más
@@ -141,11 +141,11 @@ Success criteria:
     once.
 - **A category gone while the expense form is open** (a partner removed it):
   - saving keeps the form open and everything typed;
-  - the category list refreshes and "Categoría" is left empty;
-  - the field shows "Esa categoría ya no está. Elegí otra."
+  - the category list refreshes and "Category" is left empty;
+  - the field shows "That category is gone. Pick another."
 - **Deleting an expense**, from the expense reached in the monthly view:
-  - it is confirmed with "Antes de borrar", naming the date, category and amount, e.g.
-    "¿Borrás el gasto de $ 4.500 en Packaging del 28/09?";
+  - it is confirmed with "Delete the expense?", naming the date, category and amount, e.g.
+    "Delete the $ 4.500 expense in Packaging from 28/09?";
   - there is no undo;
   - the total and the subtotal update at once, and a category left with no expenses that
     month disappears.
@@ -198,7 +198,7 @@ Read from the data and from tests; there is no telemetry.
 
   Target: 100% within budget.
 - **M8, Gastos chrome (criteria 1, 5)**: front tests show:
-  - the bar or sidebar, with "+ Nueva venta";
+  - the bar or sidebar, with "+ New sale";
   - the month navigation and the fixed flower line;
   - the record action: secondary on the phone (no second floating "+"), the header
     button on a computer.
