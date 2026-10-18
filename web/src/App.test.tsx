@@ -54,9 +54,9 @@ test('the sales list renders the Ventas stub under the gated shell', async () =>
   render(<App />)
 
   // Scoped to `main` (shell-entries, GH-20): the gated shell now has its own
-  // "Ventas" tab and fixed "Nueva venta" button alongside it, so an unscoped
+  // "Sales" tab and fixed "New sale" button alongside it, so an unscoped
   // query would match more than the stub screen's own heading.
-  expect(await within(await screen.findByRole('main')).findByText('Ventas')).toBeInTheDocument()
+  expect(await within(await screen.findByRole('main')).findByText('Sales')).toBeInTheDocument()
 })
 
 test('the new sale form renders the NuevaVenta stub under the gated shell', async () => {
@@ -70,7 +70,7 @@ test('the new sale form renders the NuevaVenta stub under the gated shell', asyn
 
   render(<App />)
 
-  expect(await screen.findByText('Nueva venta')).toBeInTheDocument()
+  expect(await screen.findByText('New sale')).toBeInTheDocument()
 })
 
 test('a sale detail renders VentaDetalle, from the API, under the gated shell', async () => {
@@ -93,7 +93,7 @@ test('a sale detail renders VentaDetalle, from the API, under the gated shell', 
 
   render(<App />)
 
-  expect(await screen.findByText('Venta del 14/09')).toBeInTheDocument()
+  expect(await screen.findByText('Sale of 14/09')).toBeInTheDocument()
   expect(await screen.findByText('Flor A')).toBeInTheDocument()
 })
 
