@@ -121,7 +121,7 @@ describe('on a computer', () => {
     await userEvent.click(screen.getByLabelText('Efectivo'))
 
     fireEvent.keyDown(document, { key: 'Escape' })
-    expect(await screen.findByText('¿Descartás el cobro?')).toBeInTheDocument()
+    expect(await screen.findByText('Discard the payment?')).toBeInTheDocument()
     expect(router.state.location.pathname).toBe(PAYMENT)
     // A second Escape does nothing while the question shows.
     fireEvent.keyDown(document, { key: 'Escape' })
@@ -143,7 +143,7 @@ describe('on a phone', () => {
 describe.each<Viewport>(['phone', 'computer'])('opened from a list, on a %s', (viewport) => {
   test('from Clientes: a save lands on Clientes with the toast, and one back afterwards leaves', async () => {
     const router = renderApp([{ pathname: HOME }, { pathname: CUSTOMERS }], viewport)
-    await userEvent.click((await screen.findAllByRole('link', { name: 'Cobrar a Ana Pérez' }))[0]!)
+    await userEvent.click((await screen.findAllByRole('link', { name: 'Collect from Ana Pérez' }))[0]!)
     await userEvent.click(await screen.findByLabelText('Efectivo'))
     await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
 

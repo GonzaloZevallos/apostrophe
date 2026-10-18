@@ -63,7 +63,7 @@ test('Elegir cliente shows no VIP mark and the new-customer form no VIP field wh
 
   await user.click(screen.getByRole('button', { name: 'Nuevo cliente' }))
 
-  expect(await screen.findByLabelText('Nombre')).toBeInTheDocument()
+  expect(await screen.findByLabelText('Name')).toBeInTheDocument()
   expect(screen.queryByLabelText('VIP')).not.toBeInTheDocument()
   expect(screen.queryByText('VIP')).not.toBeInTheDocument()
 })
@@ -72,14 +72,14 @@ test('the new-customer form of Elegir cliente has Nombre required, a clearable o
   const user = await openChooser(false)
   await user.click(await screen.findByRole('button', { name: 'Nuevo cliente' }))
 
-  expect(await screen.findByLabelText('Nombre')).toBeRequired()
-  expect(screen.getByLabelText('Teléfono')).not.toBeRequired()
-  const sheet = screen.getByLabelText('Nombre').closest('form')
+  expect(await screen.findByLabelText('Name')).toBeRequired()
+  expect(screen.getByLabelText('Phone')).not.toBeRequired()
+  const sheet = screen.getByLabelText('Name').closest('form')
   expect(sheet).not.toBeNull()
   expect(within(sheet as HTMLElement).queryByRole('radio')).not.toBeInTheDocument()
   expect(screen.queryByText(/canal|whatsapp|telegram/i)).not.toBeInTheDocument()
 
-  await user.type(screen.getByLabelText('Teléfono'), '+5491100000009')
-  await user.clear(screen.getByLabelText('Teléfono'))
-  expect(screen.getByLabelText('Teléfono')).toHaveValue('')
+  await user.type(screen.getByLabelText('Phone'), '+5491100000009')
+  await user.clear(screen.getByLabelText('Phone'))
+  expect(screen.getByLabelText('Phone')).toHaveValue('')
 })

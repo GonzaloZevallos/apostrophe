@@ -797,7 +797,7 @@ test('an untouched sheet leaves at once on history back', async () => {
   await act(() => router.navigate(-1))
 
   await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(CUSTOMER, { id: 1 })))
-  expect(screen.queryByText('¿Descartás el cobro?')).not.toBeInTheDocument()
+  expect(screen.queryByText('Discard the payment?')).not.toBeInTheDocument()
 })
 
 test('a touched sheet asks before history back leaves, "No" keeps what was typed and "Sí" leaves to Clientes, its parent', async () => {
@@ -806,19 +806,19 @@ test('a touched sheet asks before history back leaves, "No" keeps what was typed
   await userEvent.click(await screen.findByLabelText('Efectivo'))
   await act(() => router.navigate(-1))
 
-  expect(await screen.findByText('¿Descartás el cobro?')).toBeInTheDocument()
+  expect(await screen.findByText('Discard the payment?')).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(pathTo(CUSTOMER_PAYMENT, { id: 1 }))
-  await userEvent.click(screen.getByRole('button', { name: 'No, seguí cargando' }))
+  await userEvent.click(screen.getByRole('button', { name: 'No, keep going' }))
   // React takes the dialog off the screen after the click, not inside it: wait for it
   // before reading anything else (`waitFor`, not `waitForElementToBeRemoved`, which
   // throws when the element is already gone).
-  await waitFor(() => expect(screen.queryByText('¿Descartás el cobro?')).not.toBeInTheDocument())
+  await waitFor(() => expect(screen.queryByText('Discard the payment?')).not.toBeInTheDocument())
   // A regression check that "No" did not navigate, not a sync point.
   await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(CUSTOMER_PAYMENT, { id: 1 })))
   expect(await screen.findByLabelText('Efectivo')).toBeChecked()
 
   await userEvent.click(await screen.findByRole('button', { name: 'Cerrar' }))
-  await userEvent.click(await screen.findByRole('button', { name: 'Sí, descartalo' }))
+  await userEvent.click(await screen.findByRole('button', { name: 'Yes, discard it' }))
   await waitFor(() => expect(router.state.location.pathname).toBe(CUSTOMERS))
 })
 

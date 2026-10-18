@@ -40,7 +40,7 @@ test('Back on a dirty Registrar cobro and on a dirty Nueva venta asks, and "No" 
   await expect(page.getByText('Precio guardado')).toBeVisible()
 
   await page.goto(CUSTOMER_NEW)
-  await page.getByLabel('Nombre').fill('Carla Volver')
+  await page.getByLabel('Name').fill('Carla Volver')
   await page.getByRole('button', { name: 'Guardá y usá' }).click()
   await expectPath(page, CUSTOMER)
   await page.getByRole('link', { name: 'Nueva venta a Carla Volver' }).click()

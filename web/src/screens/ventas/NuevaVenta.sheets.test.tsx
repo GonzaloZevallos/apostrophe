@@ -168,7 +168,7 @@ test.each([
 
   await user.click(screen.getByRole('button', { name: 'Elegir cliente' }))
   await user.click(await screen.findByRole('button', { name: 'Nuevo cliente' }))
-  await user.type(screen.getByLabelText('Nombre'), 'Luz')
+  await user.type(screen.getByLabelText('Name'), 'Luz')
   await user.click(screen.getByRole('button', { name: 'Crear cliente' }))
   await waitFor(() => expect(releaseCreate).not.toBeNull())
 

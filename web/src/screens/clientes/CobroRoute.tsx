@@ -26,14 +26,17 @@ import SinConexion from '../../components/SinConexion'
 import { useBackOr } from '../../components/useBackOr'
 import { useGoneExit } from '../../components/useGoneExit'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
+import { DISCARD, RECORD_PAYMENT, DISCARD_PAYMENT_QUESTION, KEEP_EDITING, LEAVE_DETAIL } from '../../copy/customers'
+import { TAB_CUSTOMERS } from '../../copy/shell'
 import { CUSTOMERS } from '../../routes'
 import { useViewport } from '../../shell/useViewport'
 import Cobro from './Cobro'
 import CobroFrame from './CobroFrame'
 
-const LABEL = 'Registrar cobro'
+const LABEL = RECORD_PAYMENT
+const SCREEN_ID = 'customer-payment'
 
-/** The element focus returns to after "No, seguí cargando": the title when it is gone or is `body`. */
+/** The element focus returns to after "No, keep going": the title when it is gone or is `body`. */
 function stillFocusable(element: Element | null): element is HTMLElement {
   return element instanceof HTMLElement && element !== document.body && element.isConnected
 }
@@ -44,7 +47,7 @@ export default function CobroRoute() {
   const me = useOutletContext<Me>()
   const dialog = useViewport() === 'computer'
   const back = useBackOr(CUSTOMERS)
-  const goneExit = useGoneExit('customer-payment', { id: customerId })
+  const goneExit = useGoneExit(SCREEN_ID, { id: customerId })
   const [dirty, setDirty] = useState(false)
   const [sending, setSending] = useState(false)
   const { blocker, disarm } = useLeaveGuard(dirty)
@@ -108,7 +111,7 @@ export default function CobroRoute() {
   if (isError) {
     const state =
       error instanceof ApiError && isGone(error.code) ? (
-        <GoneScreen label="Clientes" to={CUSTOMERS} />
+        <GoneScreen label={TAB_CUSTOMERS} to={CUSTOMERS} />
       ) : error instanceof NetworkError ? (
         <SinConexion />
       ) : (
@@ -143,10 +146,10 @@ export default function CobroRoute() {
       {blocked && (
         <LeaveConfirm
           blocker={blocker}
-          question="¿Descartás el cobro?"
-          detail="Se pierde lo que cargaste: todavía no se guardó nada."
-          keepLabel="No, seguí cargando"
-          discardLabel="Sí, descartalo"
+          question={DISCARD_PAYMENT_QUESTION}
+          detail={LEAVE_DETAIL}
+          keepLabel={KEEP_EDITING}
+          discardLabel={DISCARD}
         />
       )}
     </CobroFrame>

@@ -126,7 +126,7 @@ test('the customer form shows the VIP field only while Clientes VIP is on', asyn
 test('the customer form has no VIP field while Clientes VIP is off', async () => {
   stub(false, {})
   renderAt(CUSTOMER_NEW)
-  expect(await screen.findByText('Nombre')).toBeInTheDocument()
+  expect(await screen.findByText('Name')).toBeInTheDocument()
   expect(screen.queryByText('VIP')).not.toBeInTheDocument()
 })
 
