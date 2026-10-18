@@ -65,7 +65,7 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
 
   // An expense, today, with a category created inline.
   await openGastos(page)
-  await page.getByRole('link', { name: 'Cargar gasto' }).click()
+  await page.getByRole('link', { name: 'Add expense' }).click()
   await page.getByRole('button', { name: 'Crear una categoría nueva' }).click()
   await page.getByLabel('Nombre de la categoría nueva').fill('Flete')
   await page.getByRole('button', { name: 'Crear categoría' }).click()
@@ -76,7 +76,7 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
 
   // Más → Análisis.
   await openMas(page)
-  await page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /^Análisis/ }).click()
+  await page.getByRole('navigation', { name: 'More' }).getByRole('link', { name: /^Analysis/ }).click()
   await expectPath(page, ANALYSIS)
 
   // The current month: the variety row, week by week, by weekday and both expense
@@ -84,7 +84,7 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   // `AnalisisCompu.dc.html`'s tables are the ones on screen — the phone's cards
   // carry the same rows but are CSS-hidden here, the same switch the shell's own
   // side rail/bottom bar already make.
-  await expect(page.getByText('Vendiste en el mes')).toBeVisible()
+  await expect(page.getByText('You sold this month')).toBeVisible()
   const varietyRow = page
     .locator('.analisis__tabla-contenedor--variedades tbody tr')
     .filter({ hasText: 'Rosa' })
@@ -92,14 +92,14 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   await expect(varietyRow.getByRole('cell').nth(5)).toContainText('$') // Costo
   await expect(varietyRow.getByRole('cell').nth(6)).toContainText('$') // Margen
 
-  await expect(page.getByText('Semana a semana · últimas 8')).toBeVisible()
+  await expect(page.getByText('Week by week · last 8')).toBeVisible()
   const weekRows = page.locator('.analisis__tabla-contenedor--semanas tbody tr')
   await expect(weekRows.first()).toBeVisible()
 
   await expect(page.getByText('Por día de la semana')).toBeVisible()
   await expect(page.locator('.analisis__dia').first()).toBeVisible()
 
-  await expect(page.getByText('Gastos del mes')).toBeVisible()
+  await expect(page.getByText("This month's expenses")).toBeVisible()
   await expect(page.getByText('Flete').first()).toBeVisible()
   await expect(page.getByText('Van aparte, se cargan en Stock').first()).toBeVisible()
 
@@ -112,12 +112,12 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   // Move back a month: nothing happened then, so the variety table says so, while
   // the week/weekday sections (not tied to the chosen month) and the purchases line
   // keep showing, at $0.
-  await page.getByRole('button', { name: 'Mes anterior' }).click()
+  await page.getByRole('button', { name: 'Previous month' }).click()
   await expect(page.locator('.gastos__mes-etiqueta').first()).not.toHaveText(
     monthLabelBefore ?? '',
   )
   await expect(page.getByText('No vendiste ni regalaste nada este mes.')).toBeVisible()
-  await expect(page.getByText('Semana a semana · últimas 8')).toBeVisible()
+  await expect(page.getByText('Week by week · last 8')).toBeVisible()
   await expect(weekRows.first()).toBeVisible()
   await expect(page.getByText('Por día de la semana')).toBeVisible()
   await expect(page.getByText('Van aparte, se cargan en Stock').first()).toBeVisible()
@@ -232,7 +232,7 @@ test('Análisis reads Costo de lo vendido, Faltante de stock, Promoción and Con
   // The computer: the week and month tables carry one cost sub-row under each row.
   await page.setViewportSize({ width: 1280, height: 920 })
   await page.goto(ANALYSIS)
-  await expect(page.getByText('Vendiste en el mes')).toBeVisible()
+  await expect(page.getByText('You sold this month')).toBeVisible()
   const weekCosts = page.locator('.analisis__tabla-contenedor--semanas .analisis__fila-costos')
   const monthCosts = page.locator('.analisis__tabla-contenedor--meses .analisis__fila-costos')
   const weekRows = await weekCosts.count()
@@ -259,7 +259,7 @@ test('Análisis reads Costo de lo vendido, Faltante de stock, Promoción and Con
   await expect(monthCosts.last()).toContainText('Faltante de stock 1 g not yet costed')
 
   // The header and "Desde el primer registro": fully pending, grams only.
-  const header = page.locator('.cuerpo > div').filter({ hasText: 'Vendiste en el mes' }).first()
+  const header = page.locator('.cuerpo > div').filter({ hasText: 'You sold this month' }).first()
   await expect(header).toContainText('Faltante de stock 1 g not yet costed')
   await expect(header).toContainText('Consumo propio 1 g not yet costed')
   const since = page.locator('.analisis__historico')

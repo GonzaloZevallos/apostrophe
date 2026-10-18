@@ -63,14 +63,14 @@ for (const viewport of VIEWPORTS) {
     await expect(page.locator('.bloque-deben .cifra-xl')).toHaveText('$ 5.000')
 
     // "Cerrar" returns to Inicio in one move.
-    await page.getByRole('link', { name: 'Cobrar a Carla Cobrar' }).click()
+    await page.getByRole('link', { name: 'Collect from Carla Cobrar' }).click()
     await expect(page.locator('.panel__titulo', { hasText: 'Registrar cobro' })).toBeVisible()
     await page.getByRole('button', { name: 'Cerrar' }).click()
     await expectPath(page, HOME)
     await expect(page.locator('.bloque-deben .cifra-xl')).toHaveText('$ 5.000')
 
     // A partial payment: back on Inicio, the row keeps its new balance.
-    await page.getByRole('link', { name: 'Cobrar a Carla Cobrar' }).click()
+    await page.getByRole('link', { name: 'Collect from Carla Cobrar' }).click()
     await page.getByLabel('Monto').fill('2000')
     await page.getByRole('radio', { name: 'Efectivo' }).check()
     await page.getByRole('button', { name: 'Guardar' }).click()
@@ -81,14 +81,14 @@ for (const viewport of VIEWPORTS) {
     await expect(page.locator('.bloque-deben .cifra-xl')).toHaveText('$ 3.000')
 
     // The rest, with "Todo": the row leaves and the block reads "Nobody owes you".
-    await page.getByRole('link', { name: 'Cobrar a Carla Cobrar' }).click()
+    await page.getByRole('link', { name: 'Collect from Carla Cobrar' }).click()
     await page.getByRole('button', { name: 'Todo: $ 3.000' }).click()
     await page.getByRole('radio', { name: 'Transferencia' }).check()
     await page.getByRole('button', { name: 'Guardar' }).click()
     await expectPath(page, HOME)
     await expect(page.getByText('Cobro guardado', { exact: true })).toBeVisible()
     await expect(page.getByText('Nobody owes you')).toBeVisible()
-    await expect(page.getByRole('link', { name: /^Cobrar a / })).toHaveCount(0)
+    await expect(page.getByRole('link', { name: /^Collect from / })).toHaveCount(0)
 
     // One move: Back from Inicio does not land on Registrar cobro again.
     await page.goBack()

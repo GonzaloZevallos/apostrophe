@@ -266,7 +266,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
 
   // An expense, in the business's own default "Other" category.
   await openGastos(page)
-  await page.getByRole('link', { name: 'Cargar gasto' }).click()
+  await page.getByRole('link', { name: 'Add expense' }).click()
   await page.getByLabel('Categoría').selectOption({ label: 'Other' })
   await page.getByLabel('Monto').fill('1500')
   await page.getByLabel('Detalle').fill('Bolsas de regalo')
@@ -280,7 +280,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   )
 
   await page.goto(HOME)
-  await expect(page.locator('.encabezado__titulo')).toHaveText('Inicio')
+  await expect(page.locator('.encabezado__titulo')).toHaveText('Home')
 
   async function assertPeriod(period: PanelPeriod, rangeText: string, showsResults: boolean): Promise<void> {
     await expect(page.locator('.periodos .pie')).toContainText(rangeText)
@@ -296,7 +296,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
         page.locator('.panel-lista__fila').filter({ hasText: 'Costo de lo vendido' }).locator('.panel-lista__valor'),
       ).toHaveText(pesos(period.cost_of_goods))
       await expect(
-        page.locator('.panel-lista__fila').filter({ hasText: 'Gastos' }).locator('.panel-lista__valor'),
+        page.locator('.panel-lista__fila').filter({ hasText: 'Expenses' }).locator('.panel-lista__valor'),
       ).toHaveText(pesos(period.expenses))
       await expect(
         page.locator('.panel-lista__fila').filter({ hasText: 'Regalaste' }).locator('.panel-lista__valor'),
@@ -309,7 +309,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
       await expect(page.getByText('incluye costo pendiente')).toHaveCount(period.pending_cost ? 2 : 0)
     } else {
       // Hoy is only what can be acted on (results.md): no result figure at all.
-      for (const label of ['Ganancia', 'Caja', 'Costo de lo vendido', 'Gastos', 'Regalaste', 'Compras de flores']) {
+      for (const label of ['Profit', 'Cash', 'Cost of goods sold', 'Expenses', 'You gifted', 'Flower purchases']) {
         await expect(page.locator('main').getByText(label, { exact: true })).toHaveCount(0)
       }
       await expect(page.getByText('incluye costo pendiente')).toHaveCount(0)
@@ -327,19 +327,19 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   }
 
   // Hoy: the panel opens here (plan, "Front").
-  await expect(page.getByRole('button', { name: 'Hoy', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByRole('button', { name: 'Today', exact: true })).toHaveAttribute('aria-pressed', 'true')
   await assertPeriod(panel.periods.today, shortDate(todayIso), false)
 
   // Semana.
-  await page.getByRole('button', { name: 'Semana' }).click()
+  await page.getByRole('button', { name: 'Week' }).click()
   await assertPeriod(panel.periods.week, `${shortDate(panel.periods.week.start)} – ${shortDate(panel.periods.week.end)}`, true)
 
   // Mes.
-  await page.getByRole('button', { name: 'Mes' }).click()
+  await page.getByRole('button', { name: 'Month' }).click()
   await assertPeriod(panel.periods.month, `${shortDate(panel.periods.month.start)} – ${shortDate(panel.periods.month.end)}`, true)
 
   // Back to Hoy for the rest of the run.
-  await page.getByRole('button', { name: 'Hoy', exact: true }).click()
+  await page.getByRole('button', { name: 'Today', exact: true }).click()
 
   // Lo que te queda: Rosa's own row, straight from the fetched answer — grams,
   // status (shape and word), the detail line, and the side badge, which is the
@@ -381,7 +381,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await expect(page.locator('.ventas__resumen .cifra-xl')).toHaveText(pesos(panel.debts.total_owed))
   await page.goBack()
   await expectPath(page, HOME)
-  await expect(page.locator('.encabezado__titulo')).toHaveText('Inicio')
+  await expect(page.locator('.encabezado__titulo')).toHaveText('Home')
 
   // The teaser: Carla's own row, opening her card.
   await page.getByRole('link', { name: teaserRow.name }).first().click()

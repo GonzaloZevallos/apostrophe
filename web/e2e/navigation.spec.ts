@@ -155,7 +155,7 @@ test.describe.serial('navigation', () => {
   test('an unknown address goes to Inicio', async () => {
     await page.goto('/no-such-screen')
     await expect(page).toHaveURL(new RegExp(`${HOME}$`))
-    await expect(page.locator('.encabezado__titulo')).toHaveText('Inicio')
+    await expect(page.locator('.encabezado__titulo')).toHaveText('Home')
     // An old Spanish path with nothing behind it is no redirect row: the front's `*` takes it.
     await page.goto(`${LEGACY_REDIRECTS[0]?.[0] ?? ''}/basura`)
     await expect(page).toHaveURL(new RegExp(`${HOME}$`))

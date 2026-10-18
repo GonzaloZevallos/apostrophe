@@ -37,7 +37,7 @@ test('a seller goes through every Configuración group from the phone, with no c
 
   // A category with an expense in it, so its removal is refused later.
   await openGastos(page)
-  await page.getByRole('link', { name: 'Cargar gasto' }).click()
+  await page.getByRole('link', { name: 'Add expense' }).click()
   await page.getByRole('button', { name: 'Crear una categoría nueva' }).click()
   await page.getByLabel('Nombre de la categoría nueva').fill('Flete')
   await page.getByRole('button', { name: 'Crear categoría' }).click()
@@ -68,7 +68,7 @@ test('a seller goes through every Configuración group from the phone, with no c
 
   // Usuarios: a fresh join link.
   await openGroup('Usuarios')
-  await page.getByRole('button', { name: 'Invitá a un socio' }).click()
+  await page.getByRole('button', { name: 'Invite a partner' }).click()
   await expect(page.locator('.usuarios__link')).not.toHaveText('')
   await close()
 
@@ -92,7 +92,7 @@ test('a seller goes through every Configuración group from the phone, with no c
   await close()
 
   // Categorías de gastos: add, rename, a refused removal, then remove.
-  await openGroup('Categorías de gastos')
+  await openGroup('Expense categories')
   await page.getByLabel('Nueva categoría').fill('Delivery en bici')
   await page.getByRole('button', { name: '+ Categoría' }).click()
   await expect(page.getByText('Categoría guardada')).toBeVisible()

@@ -124,7 +124,7 @@ test('a seller does everything the backend offers today, from the front alone', 
 
   // Record an expense, with a category created inline.
   await openGastos(page)
-  await page.getByRole('link', { name: 'Cargar gasto' }).click()
+  await page.getByRole('link', { name: 'Add expense' }).click()
   await page.getByRole('button', { name: 'Crear una categoría nueva' }).click()
   await page.getByLabel('Nombre de la categoría nueva').fill('Flete')
   await page.getByRole('button', { name: 'Crear categoría' }).click()
@@ -149,9 +149,9 @@ test('a seller does everything the backend offers today, from the front alone', 
   await expect(page.getByText('Flete al mercado central')).toHaveCount(0)
 
   // Move between months: the month lives in the URL, one step back and one forward.
-  await page.getByRole('button', { name: 'Mes anterior' }).click()
+  await page.getByRole('button', { name: 'Previous month' }).click()
   await expectPath(page, EXPENSES, /\?month=\d{4}-\d{2}/)
-  await page.getByRole('button', { name: 'Mes siguiente' }).click()
+  await page.getByRole('button', { name: 'Next month' }).click()
   await expect(page.getByText(/Las compras de flores no van acá/)).toBeVisible()
 
   // The Spanish paths stay on purpose here: the server answers them with a 308 and the
@@ -166,12 +166,12 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.goto(legacyFor(MORE))
   await expectPath(page, MORE)
   await expect(
-    page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /^Gastos/ }),
+    page.getByRole('navigation', { name: 'More' }).getByRole('link', { name: /^Expenses/ }),
   ).toBeVisible()
   await page.reload()
   await expectPath(page, MORE)
   await expect(
-    page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /^Gastos/ }),
+    page.getByRole('navigation', { name: 'More' }).getByRole('link', { name: /^Expenses/ }),
   ).toBeVisible()
 
   // Add and remove an expense category. "Growing supplies", "Packaging",
@@ -198,7 +198,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   // Create a join link and accept it as a second user, from a separate browser
   // context (its own cookie jar — a second device).
   await page.goto(SETTINGS_USERS)
-  await page.getByRole('button', { name: 'Invitá a un socio' }).click()
+  await page.getByRole('button', { name: 'Invite a partner' }).click()
   await expect(page.locator('.usuarios__link')).toHaveText(/^https?:\/\//)
   const inviteUrl = await page.locator('.usuarios__link').textContent()
   if (inviteUrl === null || inviteUrl === '') throw new Error('no invitation link shown')
