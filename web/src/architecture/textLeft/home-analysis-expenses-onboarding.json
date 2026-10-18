@@ -1,11 +1,9 @@
 [
-  "src/screens/Analisis.tsx",
   "src/screens/Gastos.tsx",
   "src/screens/Inicio.tsx",
   "src/screens/Mas.tsx",
   "src/screens/expenses/ExpenseForm.tsx",
   "src/screens/expenses/ExpenseNewRoute.tsx",
-  "src/screens/expenses/renderExpenses.tsx",
   "src/screens/inicio/FirstRunChecklist.tsx",
   "src/screens/inicio/ImportNotice.tsx",
   "src/screens/inicio/InicioPanel.tsx",
