@@ -55,7 +55,7 @@ test('a new business goes from the invitation to Nueva venta from "Listo", with 
   await page.getByRole('button', { name: 'Cargar mi primera venta' }).click()
   await expectPath(page, SALE_NEW)
 
-  await page.getByRole('button', { name: 'Cerrar' }).click()
+  await page.getByRole('button', { name: 'Close' }).click()
   await expect(page.locator('.encabezado__negocio')).toBeVisible()
   await expect(page.getByText(NOTICE)).toHaveCount(0)
   await expectOnlyTheThemeStored(page)

@@ -133,7 +133,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   async function addVariety(name: string, listPrice?: string, effectiveFrom?: string): Promise<void> {
     await page.goto(VARIETIES)
     await page.getByRole('link', { name: 'Nueva variedad' }).click()
-    await page.getByLabel('Name').fill(name)
+    await page.getByLabel('Nombre').fill(name)
     await page.getByRole('button', { name: 'Agregá la variedad' }).click()
     await expect(page.getByText('Variedad guardada')).toBeVisible()
     if (listPrice === undefined) return
@@ -182,7 +182,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
 
   // A variety with no price that day is caught on its own line, before saving.
   await fillSaleLine(page, 1, { variety: 'Mimosa', grams: '5' })
-  await expect(page.getByText('Mimosa no tiene precio para esa fecha')).toBeVisible()
+  await expect(page.getByText('Mimosa has no price for that date')).toBeVisible()
 
   // Swap it for a priced variety and add a second line.
   await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '10' })
@@ -246,7 +246,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   await expectPath(page, SALES)
   await expect(page.getByText('Sale deleted')).toBeVisible()
   await expect(page.getByText('0 sales')).toBeVisible()
-  await expect(page.getByText('Todavía no registraste ninguna venta en este período.')).toBeVisible()
+  await expect(page.getByText("You haven't recorded any sales in this period yet.")).toBeVisible()
 
   // --- Sale B: "New sale for <name>", a gift line, no payment needed for $0. ---
   await page.goto(CUSTOMERS)
@@ -408,7 +408,7 @@ test('the Regalo switch is checked by a real tap, shows a press without flipping
   })
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'Nueva variedad' }).click()
-  await page.getByLabel('Name').fill('Rosa')
+  await page.getByLabel('Nombre').fill('Rosa')
   await page.getByRole('button', { name: 'Agregá la variedad' }).click()
   await expect(page.getByText('Variedad guardada')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()

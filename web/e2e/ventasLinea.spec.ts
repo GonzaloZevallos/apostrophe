@@ -21,7 +21,7 @@ async function signUpWithAVariety(page: Page): Promise<void> {
   await signUpNewBusiness(page, { businessName: `Vivero Line ${uniqueTag()}`, email: `duena-linea-${uniqueTag()}@example.com` })
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'Nueva variedad' }).click()
-  await page.getByLabel('Name').fill('Jazmín con un nombre bastante largo')
+  await page.getByLabel('Nombre').fill('Jazmín con un nombre bastante largo')
   await page.getByRole('button', { name: 'Agregá la variedad' }).click()
   await expect(page.getByText('Variedad guardada')).toBeVisible()
   await page.getByRole('link', { name: /Jazmín/ }).click()

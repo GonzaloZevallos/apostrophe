@@ -223,7 +223,7 @@ test('Análisis reads Costo de lo vendido, Faltante de stock, Promoción and Con
   await recordWithdrawal(page, { date: today, grams: '1', variety: 'Rosa', reason: 'Consumo propio' })
 
   await page.goto(SALE_NEW)
-  await page.getByLabel('Fecha').fill(twoWeeksAgo)
+  await page.getByLabel('Date').fill(twoWeeksAgo)
   await fillSaleLine(page, 1, { variety: 'Lirio', grams: '15' })
   await page.getByRole('radio', { name: 'Cash' }).check()
   await page.getByRole('button', { name: 'Save sale' }).click()

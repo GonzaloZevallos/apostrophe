@@ -47,7 +47,7 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   // One priced variety, $1.000/g — round figures for every assertion below.
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'Nueva variedad' }).click()
-  await page.getByLabel('Name').fill('Jazmín')
+  await page.getByLabel('Nombre').fill('Jazmín')
   await page.getByRole('button', { name: 'Agregá la variedad' }).click()
   await expect(page.getByText('Variedad guardada')).toBeVisible()
   await page.getByRole('link', { name: /Jazmín/ }).click()

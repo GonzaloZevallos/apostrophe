@@ -210,7 +210,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   // A sale left owing, to Carla.
   await page.getByRole('link', { name: 'New sale for Carla Pérez' }).click()
   await expectPath(page, SALE_NEW)
-  const todayIso = await page.getByLabel('Fecha').inputValue()
+  const todayIso = await page.getByLabel('Date').inputValue()
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '5' })
   await page.getByRole('radio', { name: 'Owing' }).check()
   await page.getByRole('button', { name: 'Save sale' }).click()
@@ -391,7 +391,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await expect(
     page.locator('main').filter({ hasNot: page.getByLabel('Search customer') }).locator('.encabezado__titulo'),
   ).toHaveText(teaserRow.name)
-  await expect(page.getByText(`Te debe ${pesos(teaserRow.balance)}`)).toBeVisible()
+  await expect(page.getByText(`Owes you ${pesos(teaserRow.balance)}`)).toBeVisible()
 
   // Nothing personal or technical reaches the console or the browser's own storage
   // (CODING_STANDARDS.md section 9) — a customer's name and several amounts moved

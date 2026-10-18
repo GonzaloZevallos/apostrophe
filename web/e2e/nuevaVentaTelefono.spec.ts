@@ -39,7 +39,7 @@ async function signInWithAPricedVariety(page: Page): Promise<void> {
   await signUpNewBusiness(page, { businessName: `Vivero Telefono ${uniqueTag()}`, email: `telefono-${uniqueTag()}@example.com` })
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'Nueva variedad' }).click()
-  await page.getByLabel('Name').fill('Jazmín')
+  await page.getByLabel('Nombre').fill('Jazmín')
   await page.getByRole('button', { name: 'Agregá la variedad' }).click()
   await expect(page.getByText('Variedad guardada')).toBeVisible()
   await page.getByRole('link', { name: /Jazmín/ }).click()
@@ -125,7 +125,7 @@ test('with the viewport shortened the footer stays in view, and the keyboard fla
   await page.goto(SALE_NEW)
   const save = page.getByRole('button', { name: 'Save sale' })
   await expect(save).toBeVisible()
-  const grams = page.getByText('vendidos')
+  const grams = page.getByText('sold')
   await expect(grams).toBeVisible()
 
   await page.setViewportSize({ width: 375, height: 380 })

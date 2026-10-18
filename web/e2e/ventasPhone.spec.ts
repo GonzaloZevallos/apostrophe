@@ -52,7 +52,7 @@ test('Ventas and a sale detail fit, and are thumb-sized, at 320, 430 and 130 % o
 
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'Nueva variedad' }).click()
-  await page.getByLabel('Name').fill('Jazmín')
+  await page.getByLabel('Nombre').fill('Jazmín')
   await page.getByRole('button', { name: 'Agregá la variedad' }).click()
   await expect(page.getByText('Variedad guardada')).toBeVisible()
   await page.getByRole('link', { name: /Jazmín/ }).click()

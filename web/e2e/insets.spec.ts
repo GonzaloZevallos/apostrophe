@@ -192,7 +192,7 @@ test('every screen, bar, sheet and toast keeps clear of the notch and the home b
     await page.getByRole('button', { name: 'Save' }).evaluate((button) => {
       for (let el: Element | null = button; el; el = el.parentElement) el.scrollTop = el.scrollHeight
     })
-    expectInside(where('cobro form button'), await box(page, 'button:has-text("Guardar")'), viewport)
+    expectInside(where('cobro form button'), await box(page, 'button:has-text("Save")'), viewport)
 
     // A toast: the offline notice is the one that needs no timing.
     await page.context().setOffline(true)

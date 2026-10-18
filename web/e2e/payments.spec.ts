@@ -59,7 +59,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   // One priced variety, $1.000/g — round figures for every assertion below.
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'Nueva variedad' }).click()
-  await page.getByLabel('Name').fill('Rosa')
+  await page.getByLabel('Nombre').fill('Rosa')
   await page.getByRole('button', { name: 'Agregá la variedad' }).click()
   await expect(page.getByText('Variedad guardada')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()
@@ -91,7 +91,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await page.goto(CUSTOMERS)
   await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
   await expect(page.getByText('Owes you $ 5.000')).toBeVisible()
-  await expect(page.getByText(`since ${today}`)).toBeVisible()
+  await expect(page.getByText(`since ${today}`, { exact: true })).toBeVisible()
   // Clientes' own header already counts her (checked again, with the figure, below).
 
   // --- Record payment: "Todo" fills and settles the whole balance. ---
@@ -138,7 +138,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expect(page.getByText('Owes you $ 5.000')).toBeVisible()
 
   // --- Delete payment: confirmed first, then the debt it had settled returns. ---
-  const transferRow = page.locator('.cuenta-cliente__fila').filter({ hasText: 'transferencia' })
+  const transferRow = page.locator('.cuenta-cliente__fila').filter({ hasText: 'transfer' })
   await expect(transferRow).toContainText('$ 3.000')
   await transferRow.getByRole('button', { name: 'Delete payment' }).click()
   await expect(
