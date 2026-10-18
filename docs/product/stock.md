@@ -202,7 +202,7 @@ Success criteria:
   3. **Low**: stock > 0 and under the variety's low-stock threshold.
   4. **Ok**: otherwise.
 - **Low-stock threshold**: optional, per variety, above zero, up to two decimals. It is
-  set or turned off on the variety's page, in "Aviso de stock bajo". With none, a variety
+  set or turned off on the variety's page, in "Low-stock warning". With none, a variety
   is never low, but it can still be sold out.
 - **Days left**: stock ÷ (grams sold, gifted or withdrawn in the last 30 days, today
   included, ÷ 30), rounded down to whole days. Nothing shows when stock ≤ 0 or when no
@@ -221,7 +221,7 @@ Success criteria:
   - square = agotada, as the inverted chip, not red;
   - filled circle = baja;
   - empty circle = ok.
-- **"Stock y entradas"** on a variety's page: its last 3 movements (entries and
+- **"Stock and entries"** on a variety's page: its last 3 movements (entries and
   withdrawals) and "See all" for all of that variety's movements, newest date first,
   then most recently recorded first.
   - A withdrawal row shows its date, "Promotion" or "Own use", and that variety's
@@ -236,8 +236,8 @@ Success criteria:
 - **New entry** (`EntradaStock`), a form (navigation.md): "Close", and a
   confirmation when leaving with something typed.
   - Opened from "+ Stock entry" on Varieties (the seller chooses the variety) or
-    from "+ Entry" on a variety's page (that variety already chosen, and "Stock
-    inicial" preselected as the origin when the variety has no entries yet).
+    from "+ Entry" on a variety's page (that variety already chosen, and "Opening
+    stock" preselected as the origin when the variety has no entries yet).
   - date (filled with today), grams, and variety with "On hand today: N g";
   - origin: Purchase · Harvest · Opening stock · Adjustment;
   - total cost, with "Required for a purchase";
@@ -282,7 +282,7 @@ Success criteria:
   - "Costo pendiente" when none of the line is costed;
   - the costed part plus "y N g sin costo" for a split line;
   - a gift reads "Regalo".
-- **Toasts**: "Entry saved", "Entry deleted", "Aviso guardado", "Withdrawal
+- **Toasts**: "Entry saved", "Entry deleted", "Warning saved", "Withdrawal
   saved" and "Withdrawal deleted". None carries grams or amounts.
 - **Refusals** show inline and keep what was typed.
 - **An entry or withdrawal that is gone** follows accounts.md's "That's gone." rule:
