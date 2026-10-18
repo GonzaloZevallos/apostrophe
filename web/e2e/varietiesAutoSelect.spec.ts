@@ -41,7 +41,7 @@ test('a tap that leaves Varieties on the phone is not replaced when the viewport
     await page.setViewportSize(COMPUTER)
     await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 })
     await expectPath(page, CATALOG)
-    await expect(page.getByRole('heading', { name: 'Catálogo', level: 1 })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Catalog', level: 1 })).toBeVisible()
     await expectPath(page, CATALOG)
   }
 })

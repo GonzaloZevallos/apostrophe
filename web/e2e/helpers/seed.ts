@@ -85,7 +85,7 @@ export async function seedRecords(page: Page, customerName: string): Promise<Rec
   await page.getByRole('button', { name: 'Save entry' }).click()
   await expect(page.getByText('Entry saved')).toBeVisible()
   await page.goto(STOCK)
-  await page.getByRole('link', { name: 'Editar' }).click()
+  await page.getByRole('link', { name: 'Edit', exact: true }).click()
   const entry = await idAt(page, STOCK_ENTRY)
 
   await page.goto(withdrawalNewFor(variety))

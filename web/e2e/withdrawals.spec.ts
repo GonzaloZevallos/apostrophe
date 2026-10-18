@@ -80,7 +80,7 @@ test('a seller records, edits and deletes withdrawals and reads Promoción and C
   await expect(page).toHaveURL(/\/withdrawals\/\d+$/)
   await page.getByRole('button', { name: 'Delete' }).click()
   await expect(page.getByText('Before deleting')).toBeVisible()
-  await expect(page.getByText(/Vuelven 1 g al stock\./)).toBeVisible()
+  await expect(page.getByText(/1 g will go back to stock\./)).toBeVisible()
   await page.getByRole('button', { name: 'Yes, delete it' }).click()
   await expect(page.getByText('Withdrawal deleted')).toBeVisible()
 

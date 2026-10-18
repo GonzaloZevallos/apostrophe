@@ -38,6 +38,6 @@ export async function openCatalog(page: Page): Promise<void> {
   // between re-renders the screen still on show: Variedades, which on a computer selects its first
   // variety. So wait for the catalog's own heading too, not only the address.
   await expectPath(page, CATALOG)
-  await expect(page.getByRole('heading', { name: 'Catálogo', level: 1 })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Catalog', level: 1 })).toBeVisible()
   if (before !== null) await page.setViewportSize(before)
 }

@@ -154,7 +154,7 @@ test('step 1 with a price target shows the price form only and ends with one var
   expect(await screen.findByText('Variedad: Mango Bomb')).toBeInTheDocument()
   expect(screen.queryByLabelText(/^Nombre/)).not.toBeInTheDocument()
   // The price is effective today: there is no date to change.
-  expect(screen.queryByLabelText('Rige desde')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Effective from')).not.toBeInTheDocument()
   // Both pricing switches are off: no bulk or VIP field, as on a variety's page.
   expect(screen.queryByLabelText(/^Bulk price/)).not.toBeInTheDocument()
   expect(screen.queryByLabelText(/^VIP price/)).not.toBeInTheDocument()
@@ -177,7 +177,7 @@ test('step 1 follows the pricing switches: with both on, the price form offers t
   expect(await screen.findByLabelText(/^Bulk price/)).toBeInTheDocument()
   expect(screen.getByLabelText(/^Minimum quantity/)).toBeInTheDocument()
   expect(screen.getByLabelText(/^VIP price/)).toBeInTheDocument()
-  expect(screen.queryByLabelText('Rige desde')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Effective from')).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: /^Hoy / })).not.toBeInTheDocument()
   // The "$" is drawn before the list, bulk and VIP price, never before the minimum in grams.
   for (const label of [/^List price/, /^Bulk price/, /^VIP price/]) {

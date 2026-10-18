@@ -90,7 +90,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await expect(page.getByText('Purchase · 50 g')).toBeVisible()
 
   // Edit it: editing confirms before saving (stock.md).
-  await page.getByRole('link', { name: 'Editar' }).click()
+  await page.getByRole('link', { name: 'Edit', exact: true }).click()
   await expectPath(page, STOCK_ENTRY)
   await expect(page.getByLabel('Grams')).toHaveValue('50')
   await page.getByLabel('Grams').fill('60')
