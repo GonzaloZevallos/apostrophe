@@ -23,7 +23,6 @@ import {
   SPECIAL_PRICE,
   VARIETY,
   giftOfLine,
-  gramsFigure,
   gramsOfLine,
   lineSummary,
   pricePerGram,
@@ -124,7 +123,7 @@ export default function NuevaVentaLinea({
           <span className="nueva-venta__linea-nombre">{displayName}</span>
           {preview !== null && (
             <span className="nueva-venta__linea-gramos">
-              {gramsFigure(formatGrams(fromHundredths(preview.gramsHundredths)))}
+              {formatGrams(fromHundredths(preview.gramsHundredths))}
             </span>
           )}
         </div>
