@@ -42,12 +42,12 @@ export async function guardWrites(context: BrowserContext, stubs: readonly Write
   return () => context.unroute('**/*', handler)
 }
 
-/** Answers the GETs `stubs` name with their status; every other request falls through. */
+/** Answers the fetch and xhr GETs `stubs` name with their status; pages, assets and every other request fall through (a front path such as /sales is also an API path). */
 export async function stubReads(context: BrowserContext, stubs: readonly ReadStub[]): Promise<Undo> {
   const handler = async (route: Route): Promise<void> => {
     const request = route.request()
     const { pathname } = new URL(request.url())
-    const stub = request.method() === 'GET' ? stubs.find((s) => s.path.test(pathname)) : undefined
+    const stub = request.method() === 'GET' && ['fetch', 'xhr'].includes(request.resourceType()) ? stubs.find((s) => s.path.test(pathname)) : undefined
     if (stub === undefined) {
       await route.fallback()
       return

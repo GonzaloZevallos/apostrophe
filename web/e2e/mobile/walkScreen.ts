@@ -5,6 +5,7 @@
  * with an empty target (a page rule).
  */
 
+import { LOGIN } from '../../src/routes.ts'
 import type { Page } from '@playwright/test'
 import type { WalkState } from '../../src/mobile-standard/states.ts'
 import type { Violation } from '../../src/mobile-standard/violation.ts'
@@ -39,7 +40,7 @@ export async function walkScreen(
       await hold.release()
     }
     await settle(page)
-    if (!screen.signedOut && new URL(page.url()).pathname.startsWith('/entrar')) {
+    if (!screen.signedOut && new URL(page.url()).pathname.startsWith(LOGIN)) {
       return [...found, pageViolation(cell, 'unreachable')]
     }
     if (hold !== null && fetched) found.push(...(await collect(page, 'released', cell)))

@@ -32,7 +32,7 @@ export const SALES_STATES: readonly WalkState[] = [
     steps: [
       { fill: { label: 'Variedad línea 1', value: 'Sir Jack' } },
       { fill: { label: 'Gramos línea 1', value: '5' } },
-      { click: 'Volver' },
+      { press: 'Cerrar' },
     ],
     visible: '¿Descartás la venta?',
   },

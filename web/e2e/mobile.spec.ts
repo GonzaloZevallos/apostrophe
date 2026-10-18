@@ -146,7 +146,7 @@ test.describe('the states the walk adds', () => {
     const screen = asScreen({
       screen: 'Probe',
       route: SALE_NEW,
-      steps: [{ fill: { label: 'Variedad línea 1', value: 'Sir Jack' } }, { click: 'Volver' }],
+      steps: [{ fill: { label: 'Variedad línea 1', value: 'Sir Jack' } }, { press: 'Cerrar' }],
       visible: '¿Descartás la venta?',
     })
     expect(unreachable(await walkScreen(page, screen, PROBE_CELL, false, readFacts()))).toEqual([])
@@ -260,7 +260,7 @@ test.describe('the write guard keeps every write from the backend', () => {
     const page = await context.newPage()
     await page.goto(LOGIN)
     expect(await post(page, CUSTOMERS)).toBe('aborted')
-    expect(await page.evaluate(async () => (await fetch(SALE_ONE, { method: 'DELETE' })).status)).toBe(404)
+    expect(await page.evaluate(async (target) => (await fetch(target, { method: 'DELETE' })).status, SALE_ONE)).toBe(404)
     expect(await page.evaluate(async () => (await fetch('/health')).status)).toBe(200)
     expect(reached.filter((entry) => !entry.includes(SALE_ONE))).toEqual([])
     await context.close()
