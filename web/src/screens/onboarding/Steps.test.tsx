@@ -278,10 +278,10 @@ test('step 3 sends the pass done only after the save answered, and a refused sav
   const user = userEvent.setup()
   renderAt(ONBOARDING_CATALOG_MESSAGE)
 
-  const header = await screen.findByLabelText('Encabezado')
+  const header = await screen.findByLabelText('Header')
   await user.type(header, '!')
   expect(screen.queryByRole('button', { name: 'Dejar así' })).not.toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Guardá el mensaje' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Save the message' })).not.toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: 'Guardar' }))
   expect(await screen.findByRole('alert')).toBeInTheDocument()
   expect(header).toHaveValue('H!')
@@ -330,16 +330,16 @@ test('step 4 passes done after a successful Probarlo and shows no catalog link; 
   const user = userEvent.setup()
   renderAt(ONBOARDING_BOT)
 
-  await user.type(await screen.findByLabelText('Token del bot'), '123:abc')
-  expect(screen.queryByText('Ir al catálogo')).not.toBeInTheDocument()
-  await user.type(screen.getByLabelText('Tu chat'), '555')
-  await user.click(screen.getByRole('button', { name: 'Probarlo' }))
+  await user.type(await screen.findByLabelText('Bot token'), '123:abc')
+  expect(screen.queryByText('Go to the catalog')).not.toBeInTheDocument()
+  await user.type(screen.getByLabelText('Your chat'), '555')
+  await user.click(screen.getByRole('button', { name: 'Send me a test' }))
   expect(await screen.findByRole('alert')).toBeInTheDocument()
   expect(bodies).toEqual([])
-  expect(screen.getByLabelText('Tu chat')).toHaveValue('555')
+  expect(screen.getByLabelText('Your chat')).toHaveValue('555')
 
   refuse = false
-  await user.click(screen.getByRole('button', { name: 'Probarlo' }))
+  await user.click(screen.getByRole('button', { name: 'Send me a test' }))
   expect(await screen.findByRole('heading', { name: 'Enviale el link a tu socio' })).toBeInTheDocument()
   expect(bodies).toEqual([{ step: 'bot', as: 'done' }])
 })
@@ -357,15 +357,15 @@ test('step 4 says where to publish only after a successful Probarlo, not before 
   const user = userEvent.setup()
   renderAt(ONBOARDING_BOT)
 
-  await user.type(await screen.findByLabelText('Token del bot'), '123:abc')
+  await user.type(await screen.findByLabelText('Bot token'), '123:abc')
   expect(screen.queryByText(PUBLISH_LINE)).not.toBeInTheDocument()
-  await user.type(screen.getByLabelText('Tu chat'), '555')
-  await user.click(screen.getByRole('button', { name: 'Probarlo' }))
+  await user.type(screen.getByLabelText('Your chat'), '555')
+  await user.click(screen.getByRole('button', { name: 'Send me a test' }))
   expect(await screen.findByRole('alert')).toBeInTheDocument()
   expect(screen.queryByText(PUBLISH_LINE)).not.toBeInTheDocument()
 
   refuse = false
-  await user.click(screen.getByRole('button', { name: 'Probarlo' }))
+  await user.click(screen.getByRole('button', { name: 'Send me a test' }))
   expect(await screen.findByText(PUBLISH_LINE)).toBeInTheDocument()
 })
 
@@ -421,10 +421,10 @@ test('step 6 adding a category saves at once and passes nothing; only Seguir pas
   renderAt(ONBOARDING_CATEGORIES)
 
   expect(await screen.findByText('Insumos')).toBeInTheDocument()
-  expect(screen.queryByLabelText('Nueva categoría')).not.toBeInTheDocument()
-  await user.click(screen.getByRole('button', { name: 'Categoría' }))
-  await user.type(screen.getByLabelText('Nueva categoría'), 'Luz')
-  await user.click(screen.getByRole('button', { name: '+ Categoría' }))
+  expect(screen.queryByLabelText('New category')).not.toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Category' }))
+  await user.type(screen.getByLabelText('New category'), 'Luz')
+  await user.click(screen.getByRole('button', { name: '+ Category' }))
   await waitFor(() => expect(calls).toContain('POST /expense-categories'))
   expect(bodies).toEqual([])
 

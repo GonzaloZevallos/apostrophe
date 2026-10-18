@@ -93,7 +93,7 @@ test.each([
   ['bot_cannot_post', 'The bot cannot post in the channel'],
   ['message_gone', 'The pinned message is gone: publish it again'],
   ['missing_publish', 'Publish it again with the new bot or channel'],
-  ['too_long', 'It is too long for Telegram: shorten aromas or hide varieties.'],
+  ['too_long', 'It is too long for Telegram: shorten the aromas or hide some varieties.'],
 ] as const)(
   'Desactualizado for %s reads its reason, shows no link and keeps Publicar enabled',
   async (reason, text) => {

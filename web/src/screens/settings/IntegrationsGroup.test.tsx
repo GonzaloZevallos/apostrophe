@@ -176,7 +176,7 @@ const PROBARLO_REASONS: [string, string][] = [
   ['pinned_catalog.telegram_unreachable', 'Telegram did not respond'],
   [
     'pinned_catalog.too_long',
-    'It is too long for Telegram: shorten aromas or hide varieties.',
+    'It is too long for Telegram: shorten the aromas or hide some varieties.',
   ],
 ]
 
