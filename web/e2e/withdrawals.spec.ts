@@ -27,12 +27,12 @@ test('a seller records, edits and deletes withdrawals and reads Promoción and C
 
   // A variety with one lot: 50 g for $ 20.000.
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'Nueva variedad' }).click()
-  await page.getByLabel('Nombre').fill('Rosa')
-  await page.getByRole('button', { name: 'Agregá la variedad' }).click()
-  await expect(page.getByText('Variedad guardada')).toBeVisible()
+  await page.getByRole('link', { name: 'New variety' }).click()
+  await page.getByLabel('Name').fill('Rosa')
+  await page.getByRole('button', { name: 'Add variety' }).click()
+  await expect(page.getByText('Variety saved')).toBeVisible()
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: '+ Entrada de stock' }).click()
+  await page.getByRole('link', { name: '+ Stock entry' }).click()
   await page.getByLabel('Grams').fill('50')
   await page.getByLabel('Variety').selectOption({ label: 'Rosa' })
   await page.getByLabel('Total cost').fill('20000')
@@ -41,9 +41,9 @@ test('a seller records, edits and deletes withdrawals and reads Promoción and C
 
   // From Más: a promotion of 5 g. The reason has no default, so saving waits for it.
   await openMas(page)
-  await page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /^Take out of stock/ }).click()
+  await page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /^Sacar del stock/ }).click()
   await expect(page).toHaveURL((url) => url.pathname === WITHDRAWAL_NEW)
-  await expect(page.getByRole('button', { name: 'Cerrar' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Close' })).toBeVisible()
   await page.getByLabel('Variety 1', { exact: true }).selectOption({ label: 'Rosa' })
   await page.getByLabel('Grams 1', { exact: true }).fill('5')
   await expect(page.getByRole('button', { name: 'Save withdrawal' })).toBeDisabled()
@@ -55,7 +55,7 @@ test('a seller records, edits and deletes withdrawals and reads Promoción and C
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: /Rosa/ }).click()
   await expect(page.getByText('−5 g')).toBeVisible()
-  // The variety's own "Sacar del stock" (the list beside it carries one with no variety).
+  // The variety's own "Take out of stock" (the list beside it carries one with no variety).
   await page.locator(`a[href*="${WITHDRAWAL_NEW}?variety="]`, { hasText: 'Take out of stock' }).click()
   await expect(page.getByLabel('Variety 1', { exact: true })).toHaveValue(/\d+/)
   await page.getByRole('button', { name: 'Own use', exact: true }).click()
@@ -66,7 +66,7 @@ test('a seller records, edits and deletes withdrawals and reads Promoción and C
 
   // A third one, a promotion of 1 g, to delete.
   await openMas(page)
-  await page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /^Take out of stock/ }).click()
+  await page.getByRole('navigation', { name: 'Más' }).getByRole('link', { name: /^Sacar del stock/ }).click()
   await page.getByLabel('Variety 1', { exact: true }).selectOption({ label: 'Rosa' })
   await page.getByLabel('Grams 1', { exact: true }).fill('1')
   await page.getByRole('button', { name: 'Promotion', exact: true }).click()

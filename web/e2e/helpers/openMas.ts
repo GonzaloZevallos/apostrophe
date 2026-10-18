@@ -31,7 +31,7 @@ export async function openCatalog(page: Page): Promise<void> {
   await page.setViewportSize(PHONE)
   await page.goto(HOME)
   await page.getByRole('link', { name: 'Varieties', exact: true }).click()
-  await page.getByRole('link', { name: 'Mandar catálogo' }).click()
+  await page.getByRole('link', { name: 'Send catalog' }).click()
   // Wait for the move before the viewport changes back: on a computer Variedades would select its
   // first variety and take the click's navigation over. The address changes before React commits
   // the new screen (the router renders a navigation in a transition), and a viewport change in

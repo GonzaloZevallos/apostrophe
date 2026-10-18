@@ -30,7 +30,7 @@ test('Back on a dirty Registrar cobro and on a dirty Nueva venta asks, and "No" 
 
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New variety' }).click()
-  await page.getByLabel('Nombre').fill('Rosa')
+  await page.getByLabel('Name').fill('Rosa')
   await page.getByRole('button', { name: 'Add variety' }).click()
   await expect(page.getByText('Variety saved')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()

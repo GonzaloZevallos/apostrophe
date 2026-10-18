@@ -133,7 +133,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   async function addVariety(name: string, listPrice?: string, effectiveFrom?: string): Promise<void> {
     await page.goto(VARIETIES)
     await page.getByRole('link', { name: 'New variety' }).click()
-    await page.getByLabel('Nombre').fill(name)
+    await page.getByLabel('Name').fill(name)
     await page.getByRole('button', { name: 'Add variety' }).click()
     await expect(page.getByText('Variety saved')).toBeVisible()
     if (listPrice === undefined) return
@@ -408,7 +408,7 @@ test('the Regalo switch is checked by a real tap, shows a press without flipping
   })
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New variety' }).click()
-  await page.getByLabel('Nombre').fill('Rosa')
+  await page.getByLabel('Name').fill('Rosa')
   await page.getByRole('button', { name: 'Add variety' }).click()
   await expect(page.getByText('Variety saved')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()

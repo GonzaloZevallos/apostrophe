@@ -36,7 +36,7 @@ test('a seller opens Análisis from Más, moves back a month and reads each sect
   // A priced variety.
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New variety' }).click()
-  await page.getByLabel('Nombre').fill('Rosa')
+  await page.getByLabel('Name').fill('Rosa')
   await page.getByRole('button', { name: 'Add variety' }).click()
   await expect(page.getByText('Variety saved')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()
@@ -193,7 +193,7 @@ test('Análisis reads Costo de lo vendido, Faltante de stock, Promoción and Con
   for (const name of ['Rosa', 'Lirio']) {
     await page.goto(VARIETIES)
     await page.getByRole('link', { name: 'New variety' }).click()
-    await page.getByLabel('Nombre').fill(name)
+    await page.getByLabel('Name').fill(name)
     await page.getByRole('button', { name: 'Add variety' }).click()
     await expect(page.getByText('Variety saved')).toBeVisible()
   }

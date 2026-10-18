@@ -38,7 +38,7 @@ test('a seller sets up the bot in Integraciones, then publishes from the catalog
   // A variety with a price, so the catalog has something to publish.
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: 'New variety' }).click()
-  await page.getByLabel('Nombre').fill('Rosa')
+  await page.getByLabel('Name').fill('Rosa')
   await page.getByRole('button', { name: 'Add variety' }).click()
   await expect(page.getByText('Variety saved')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()
