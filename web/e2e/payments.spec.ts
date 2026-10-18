@@ -40,7 +40,7 @@ function shortDate(iso: string): string {
 /** The customer's card, never the list beside it on a computer (the list holds the search box):
  * its "Te debe" and "A favor" are what these specs read. */
 function cardOf(page: Page) {
-  return page.locator('main').filter({ hasNot: page.getByLabel('Buscar cliente') })
+  return page.locator('main').filter({ hasNot: page.getByLabel('Search customer') })
 }
 
 test('a seller records, settles, undoes and traces payments, from the front alone', async ({
@@ -151,9 +151,9 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   // --- Te deben: opened from the Clientes header, lists her with the same figure,
   // and the total/count head the view. ---
   await page.goto(CUSTOMERS)
-  const owing = page.getByRole('region', { name: 'Te deben' })
+  const owing = page.getByRole('region', { name: 'Owed' })
   await expect(owing.locator('.cifra-xl')).toHaveText('$ 8.000')
-  await expect(owing.getByText('1 sale debiendo')).toBeVisible()
+  await expect(owing.getByText('1 sale owing')).toBeVisible()
   await owing.getByRole('link', { name: 'Carla Pérez' }).first().click()
   await expectPath(page, CUSTOMER)
   await expect(page.getByText('Te debe $ 8.000')).toBeVisible()
@@ -255,6 +255,6 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expect(page.getByText('Sale saved')).toBeVisible()
 
   await page.goto(CUSTOMERS)
-  await expect(page.getByRole('region', { name: 'Te deben' }).locator('.cifra-xl')).toHaveText('$ 5.000')
-  await expect(page.getByText('2 sales debiendo')).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Owed' }).locator('.cifra-xl')).toHaveText('$ 5.000')
+  await expect(page.getByText('2 sales owing')).toBeVisible()
 })

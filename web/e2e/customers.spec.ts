@@ -29,7 +29,7 @@ import { uniqueTag } from './helpers/unique.js'
 /** The customer's card, never the list beside it on a computer (the list holds the search box):
  * its "Te debe" and "A favor" are what these specs read. */
 function cardOf(page: Page) {
-  return page.locator('main').filter({ hasNot: page.getByLabel('Buscar cliente') })
+  return page.locator('main').filter({ hasNot: page.getByLabel('Search customer') })
 }
 
 test('a customer with no phone number is registered, edited, sold to, paid and shown in Te deben', async ({
@@ -138,10 +138,10 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   // Te deben lists the second, no-number customer's own fresh debt — the first
   // customer's debt is already settled, so she never named here.
   await page.goto(CUSTOMERS)
-  const debtorRow = page.getByRole('region', { name: 'Te deben' }).getByRole('link', { name: /^Sol Sinnumero/ })
+  const debtorRow = page.getByRole('region', { name: 'Owed' }).getByRole('link', { name: /^Sol Sinnumero/ })
   await expect(debtorRow).toBeVisible()
   await expect(debtorRow).toContainText('$ 2.000')
-  await expect(page.getByRole('region', { name: 'Te deben' }).getByRole('link', { name: 'Noe Sinnumero' })).toHaveCount(0)
+  await expect(page.getByRole('region', { name: 'Owed' }).getByRole('link', { name: 'Noe Sinnumero' })).toHaveCount(0)
 
   // Nothing personal or technical reaches the console or the browser's own storage.
   await expectOnlyTheThemeStored(page)

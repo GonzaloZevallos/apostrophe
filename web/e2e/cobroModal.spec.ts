@@ -41,7 +41,7 @@ async function openCobroModal(page: Page): Promise<void> {
   await expect(page.getByText('Sale saved')).toBeVisible()
 
   await page.goto(CUSTOMERS)
-  await page.getByRole('link', { name: 'Cobrar a Carla Cobrar' }).first().click()
+  await page.getByRole('link', { name: 'Collect from Carla Cobrar' }).first().click()
   await expect(page.getByRole('dialog', { name: 'Registrar cobro' })).toBeVisible()
   // The host takes focus to the title once the form is there: its effects have run.
   await expect(page.locator('.cobro-modal .panel__titulo')).toBeFocused()

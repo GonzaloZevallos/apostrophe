@@ -389,7 +389,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   // On a computer the list sits beside the card and has its own title: read the card's (the pane
   // without the search box).
   await expect(
-    page.locator('main').filter({ hasNot: page.getByLabel('Buscar cliente') }).locator('.encabezado__titulo'),
+    page.locator('main').filter({ hasNot: page.getByLabel('Search customer') }).locator('.encabezado__titulo'),
   ).toHaveText(teaserRow.name)
   await expect(page.getByText(`Te debe ${pesos(teaserRow.balance)}`)).toBeVisible()
 
