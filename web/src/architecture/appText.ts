@@ -143,7 +143,7 @@ export const CODE_VALUED_PROPERTIES: readonly string[] = [
 /** A declaration named like this holds a code: a class list, a key, a path, a selector, an
  * id. */
 /** A lowercase token with no space: the shape of a code in a table, never of a shown word. */
-const CODE_TOKEN = /^[a-z0-9_.:/#-]+$/
+const CODE_SHAPE = /^[a-z0-9_.:/#-]+$/
 
 const CODE_NAME =
   /(?:^|_)(?:CLASS|CLASSES|KEY|PATH|QUERY|SELECTOR|ATTRIBUTE|FIELDS|CONTAINERS|NAMES|PREFIX|ID|IDS|CODE|VIEWPORT)$|(?:Class|Classes|Key|Path|Query|Selector|Attribute|Id|Ids|Code|Viewport)$/
@@ -296,7 +296,7 @@ function isAllowedContext(node: ts.Node): boolean {
       ts.isAsExpression(current) &&
       ts.isTypeReferenceNode(current.type) &&
       current.type.typeName.getText() === 'const' &&
-      CODE_TOKEN.test(literalOf(node)?.text ?? '')
+      CODE_SHAPE.test(literalOf(node)?.text ?? '')
     ) {
       return true
     }
