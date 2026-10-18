@@ -52,11 +52,11 @@ test('Back on a dirty Registrar cobro and on a dirty Nueva venta asks, and "No" 
   // A dirty Registrar cobro, reached from Clientes' "Cobrar a".
   await page.goto(CUSTOMERS)
   await page.getByRole('link', { name: 'Cobrar a Carla Volver' }).first().click()
-  await page.getByRole('radio', { name: 'Cash' }).check()
+  await page.getByRole('radio', { name: 'Efectivo' }).check()
   await page.goBack()
   await expect(page.getByText('¿Descartás el cobro?')).toBeVisible()
   await page.getByRole('button', { name: 'No, seguí cargando' }).click()
-  await expect(page.getByRole('radio', { name: 'Cash' })).toBeChecked()
+  await expect(page.getByRole('radio', { name: 'Efectivo' })).toBeChecked()
   await page.getByRole('button', { name: 'Cerrar' }).click()
   await page.getByRole('button', { name: 'Sí, descartalo' }).click()
   await expectPath(page, CUSTOMERS)

@@ -72,7 +72,7 @@ for (const viewport of VIEWPORTS) {
     // A partial payment: back on Inicio, the row keeps its new balance.
     await page.getByRole('link', { name: 'Cobrar a Carla Cobrar' }).click()
     await page.getByLabel('Monto').fill('2000')
-    await page.getByRole('radio', { name: 'Cash' }).check()
+    await page.getByRole('radio', { name: 'Efectivo' }).check()
     await page.getByRole('button', { name: 'Guardar' }).click()
     await expectPath(page, HOME)
     const toast = page.getByText('Cobro guardado · queda debiendo $ 3.000')
@@ -83,7 +83,7 @@ for (const viewport of VIEWPORTS) {
     // The rest, with "Todo": the row leaves and the block reads "Nobody owes you".
     await page.getByRole('link', { name: 'Cobrar a Carla Cobrar' }).click()
     await page.getByRole('button', { name: 'Todo: $ 3.000' }).click()
-    await page.getByRole('radio', { name: 'Transfer' }).check()
+    await page.getByRole('radio', { name: 'Transferencia' }).check()
     await page.getByRole('button', { name: 'Guardar' }).click()
     await expectPath(page, HOME)
     await expect(page.getByText('Cobro guardado', { exact: true })).toBeVisible()

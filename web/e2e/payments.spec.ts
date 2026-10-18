@@ -97,7 +97,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   // --- Registrar cobro: "Todo" fills and settles the whole balance. ---
   await page.getByRole('link', { name: 'Registrar cobro' }).click()
   await page.getByRole('button', { name: 'Todo: $ 5.000' }).click()
-  await page.getByRole('radio', { name: 'Cash' }).check()
+  await page.getByRole('radio', { name: 'Efectivo' }).check()
   await expect(page.getByText('Se descuenta de la deuda más vieja')).toBeVisible()
   await expect(page.getByText(`$ 5.000 a la venta del ${today}`)).toBeVisible()
   await expect(page.getByText(/Le queda debiendo/)).toHaveCount(0) // nothing left.
@@ -130,7 +130,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   // saving, and the toast after saving carries the same figure (PRD metric 2). ---
   await page.getByRole('link', { name: 'Registrar cobro' }).click()
   await page.getByLabel('Monto').fill('3000')
-  await page.getByRole('radio', { name: 'Transfer' }).check()
+  await page.getByRole('radio', { name: 'Transferencia' }).check()
   await expect(page.getByText(`$ 3.000 a la venta del ${today}`)).toBeVisible()
   await expect(page.getByText('Le queda debiendo $ 5.000')).toBeVisible()
   await page.getByRole('button', { name: 'Guardar' }).click()
@@ -198,7 +198,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
   await page.getByRole('link', { name: 'Registrar cobro' }).click()
   await page.getByRole('button', { name: 'Todo: $ 5.000' }).click()
-  await page.getByRole('radio', { name: 'Cash' }).check()
+  await page.getByRole('radio', { name: 'Efectivo' }).check()
   await page.getByRole('button', { name: 'Guardar' }).click()
   await expect(page.getByText('Cobro guardado', { exact: true })).toBeVisible()
 

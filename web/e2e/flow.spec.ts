@@ -113,14 +113,14 @@ test('a seller does everything the backend offers today, from the front alone', 
   // form), then turn it off (saved at once).
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: /Rosa/ }).click()
-  await expect(page.getByText('Aviso apagado')).toBeVisible()
+  await expect(page.getByText('Warning off')).toBeVisible()
   await page.getByRole('switch', { name: 'Avisar cuando quede poco' }).click()
   await page.getByLabel('Avisar con menos de').fill('15')
   await page.getByRole('button', { name: 'Guardá el aviso' }).click()
   await expect(page.getByText('Aviso guardado')).toBeVisible()
   await expect(page.getByText('Avisame abajo de 15 g')).toBeVisible()
   await page.getByRole('switch', { name: 'Avisar cuando quede poco' }).click()
-  await expect(page.getByText('Aviso apagado')).toBeVisible()
+  await expect(page.getByText('Warning off')).toBeVisible()
 
   // Record an expense, with a category created inline.
   await openGastos(page)

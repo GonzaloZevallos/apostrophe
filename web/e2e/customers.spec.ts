@@ -113,7 +113,7 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   // Paid in full through Registrar cobro.
   await page.getByRole('link', { name: 'Registrar cobro' }).click()
   await page.getByRole('button', { name: 'Todo: $ 4.000' }).click()
-  await page.getByRole('radio', { name: 'Cash' }).check()
+  await page.getByRole('radio', { name: 'Efectivo' }).check()
   await page.getByRole('button', { name: 'Guardar' }).click()
   await expect(page.getByText('Cobro guardado', { exact: true })).toBeVisible()
   await expect(cardOf(page).getByText('Te debe', { exact: false })).toHaveCount(0)

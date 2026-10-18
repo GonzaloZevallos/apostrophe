@@ -118,7 +118,7 @@ for (const viewport of VIEWPORTS) {
     // "Todo" fills the whole balance in one tap, and the payment is saved.
     await page.getByRole('button', { name: 'Todo: $ 5.000' }).click()
     await expect(page.getByLabel('Monto')).toHaveValue('5000')
-    await page.getByRole('radio', { name: 'Cash' }).check()
+    await page.getByRole('radio', { name: 'Efectivo' }).check()
     await page.getByRole('button', { name: 'Guardar' }).click()
     await expectPath(page, CUSTOMERS)
     await expect(page.getByText('Cobro guardado', { exact: true })).toBeVisible()
